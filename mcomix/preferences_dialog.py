@@ -537,7 +537,8 @@ class _PreferencesDialog(Gtk.Dialog):
         sortkey_items = (
                 (_('No sorting'), 0),
                 (_('Natural order'), constants.SORT_NAME),
-                (_('Literal order'), constants.SORT_NAME_LITERAL))
+                (_('Literal order'), constants.SORT_NAME_LITERAL),
+                (_('Locale order'), constants.SORT_NAME_LOCALE))
 
         sortkey_box = self._create_combobox(sortkey_items, prefs['sort archive by'],
             self._sort_archive_by_changed_cb)
@@ -557,7 +558,8 @@ class _PreferencesDialog(Gtk.Dialog):
         label = _("Files within archives will be sorted according to the order specified here. "
                   "Natural order will sort numbered files based on their natural order, "
                   "i.e. 1, 2, ..., 10, while literal order uses standard C sorting, "
-                  "i.e. 1, 2, 34, 5.")
+                  "i.e. 1, 2, 34, 5."
+                  "Locale order sorts according to your system's locale.")
         sortkey_box.set_tooltip_text(label)
         sortorder_box.set_tooltip_text(label)
 
