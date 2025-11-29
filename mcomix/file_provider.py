@@ -4,6 +4,7 @@
 
 import os
 import re
+from gi.repository import GLib
 
 from mcomix import image_tools
 from mcomix import archive_tools
@@ -69,6 +70,8 @@ class FileProvider(object):
         The list is sorted in-place. """
         if preferences.prefs['sort by'] == constants.SORT_NAME:
             tools.alphanumeric_sort(files)
+        elif preferences.prefs['sort by'] == constants.SORT_NAME_GLIB:
+            files.sort(key=lambda filename: GLib.utf8_collate_key_for_filename(filename, -1))
         elif preferences.prefs['sort by'] == constants.SORT_LAST_MODIFIED:
             # Most recently modified file first
             files.sort(key=lambda filename: os.path.getmtime(filename)*-1)

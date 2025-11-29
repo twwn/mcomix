@@ -7,8 +7,7 @@ import tempfile
 import threading
 import re
 import pickle
-from gi.repository import Gtk
-import locale
+from gi.repository import Gtk, GLib
 
 from mcomix.preferences import prefs
 from mcomix import archive_extractor
@@ -324,8 +323,8 @@ class FileHandler(object):
             tools.alphanumeric_sort(filelist)
         elif prefs['sort archive by'] == constants.SORT_NAME_LITERAL:
             filelist.sort()
-        elif prefs['sort archive by'] == constants.SORT_NAME_LOCALE:
-            filelist.sort(key=locale.strxfrm)
+        elif prefs['sort archive by'] == constants.SORT_NAME_GLIB:
+            filelist.sort(key=lambda filename: GLib.utf8_collate_key_for_filename(filename, -1))
         else:
             # No sorting
             pass
