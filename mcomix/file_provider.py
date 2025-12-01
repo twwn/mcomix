@@ -71,7 +71,7 @@ class FileProvider(object):
         if preferences.prefs['sort by'] == constants.SORT_NAME:
             tools.alphanumeric_sort(files)
         elif preferences.prefs['sort by'] == constants.SORT_NAME_GLIB:
-            files.sort(key=lambda filename: GLib.utf8_collate_key_for_filename(filename, -1))
+            files.sort(key=lambda filename: GLib.utf8_collate_key_for_filename(os.path.basename(filename), -1))
         elif preferences.prefs['sort by'] == constants.SORT_LAST_MODIFIED:
             # Most recently modified file first
             files.sort(key=lambda filename: os.path.getmtime(filename)*-1)

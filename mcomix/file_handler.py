@@ -324,7 +324,7 @@ class FileHandler(object):
         elif prefs['sort archive by'] == constants.SORT_NAME_LITERAL:
             filelist.sort()
         elif prefs['sort archive by'] == constants.SORT_NAME_GLIB:
-            filelist.sort(key=lambda filename: GLib.utf8_collate_key_for_filename(filename, -1))
+            filelist.sort(key=lambda filename: GLib.utf8_collate_key_for_filename(os.path.basename(filename), -1))
         else:
             # No sorting
             pass
