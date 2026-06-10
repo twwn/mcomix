@@ -5,6 +5,8 @@
 
 - Adapt keybinding handling to changed API of Gtk.accelerator_parse
   in newer versions of Gtk. This fixes broken keybindings.
+- The pytest package needed for running MComix' unit tests is now
+  installed when installing the `dev` dependency group.
 
 ### Features
 
