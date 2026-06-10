@@ -15,6 +15,8 @@
   relative to the home directory on UNIX systems. Nothing changes
   on Windows. Note: Existing thumbnails in the former cache directory
   ($HOME/.thumbnails) are not moved automatically by this update.
+- Added new sort order option (GLib order) that uses GTK collate keys
+  when computing file order.
 
 # MComix 3.1.1
 ## Release date: 2025-09-06
