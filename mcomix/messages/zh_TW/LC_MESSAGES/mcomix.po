@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix zh_TW\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2024-01-21 19:52+0100\n"
+"POT-Creation-Date: 2026-08-20 11:16+0200\n"
 "PO-Revision-Date: 2013-07-05 21:37+0800\n"
 "Last-Translator: Wayne Su <mstarmstar@hotmail.com>\n"
 "Language-Team: \n"
@@ -105,12 +105,12 @@ msgstr "編輯書籤"
 msgid "Type"
 msgstr "類型"
 
-#: mcomix/bookmark_dialog.py:52 mcomix/edit_comment_area.py:33
+#: mcomix/bookmark_dialog.py:52 mcomix/edit_comment_area.py:34
 #: mcomix/keybindings_editor.py:36
 msgid "Name"
 msgstr "檔案名稱"
 
-#: mcomix/bookmark_dialog.py:53 mcomix/main.py:1099
+#: mcomix/bookmark_dialog.py:53 mcomix/main.py:1103
 #: mcomix/library/control_area.py:141
 msgid "Page"
 msgstr "頁次"
@@ -137,27 +137,27 @@ msgstr "編輯書籤(_E)..."
 msgid "! Callback %(function)r failed: %(error)s"
 msgstr "！ 呼叫 %(function)r 失敗：%(error)s"
 
-#: mcomix/comment_dialog.py:12 mcomix/preferences_dialog.py:336
+#: mcomix/comment_dialog.py:13 mcomix/preferences_dialog.py:336
 msgid "Comments"
 msgstr "註解"
 
-#: mcomix/comment_dialog.py:93
+#: mcomix/comment_dialog.py:94
 #, python-format
 msgid "Could not read %s"
 msgstr "無法讀取 %s"
 
-#: mcomix/edit_comment_area.py:20
+#: mcomix/edit_comment_area.py:21
 msgid ""
 "Please note that the only files that are automatically added to this list "
 "are those files in archives that MComix recognizes as comments."
 msgstr ""
 "請注意：只有壓縮檔內被 MComix 認為是註解的檔案，才會被自動加入這個清單。"
 
-#: mcomix/edit_comment_area.py:37 mcomix/properties_dialog.py:126
+#: mcomix/edit_comment_area.py:38 mcomix/properties_dialog.py:126
 msgid "Size"
 msgstr "大小"
 
-#: mcomix/edit_comment_area.py:54 mcomix/edit_image_area.py:69
+#: mcomix/edit_comment_area.py:55 mcomix/edit_image_area.py:69
 msgid "Remove from archive"
 msgstr "從壓縮檔移除"
 
@@ -290,17 +290,17 @@ msgstr "%s 裏沒有圖片"
 msgid "Could not open %s: No such file."
 msgstr "無法開啟 %s：沒有這個檔案。"
 
-#: mcomix/file_handler.py:267 mcomix/file_provider.py:135
+#: mcomix/file_handler.py:267 mcomix/file_provider.py:138
 #, python-format
 msgid "Could not open %s: Permission denied."
 msgstr "無法開啟 %s：沒有權限。"
 
-#: mcomix/file_handler.py:364
+#: mcomix/file_handler.py:366
 #, python-format
 msgid "Continue reading from page %d?"
 msgstr "要從第%d頁開始繼續讀嗎？"
 
-#: mcomix/file_handler.py:365
+#: mcomix/file_handler.py:367
 #, python-format
 msgid ""
 "You stopped reading here on %(date)s, %(time)s. If you choose \"Yes\", "
@@ -310,12 +310,12 @@ msgstr ""
 "你在 %(date)s %(time)s 時讀到這裏就停了。如果你選「是」，可以從第 %(page)d 頁"
 "開始讀；否則就會載入第一頁。"
 
-#: mcomix/file_handler.py:664
+#: mcomix/file_handler.py:666
 #, python-format
 msgid "! Corrupt preferences file \"%s\", deleting..."
 msgstr "！ 設定檔 %s 損壞，正在刪除..."
 
-#: mcomix/file_provider.py:105
+#: mcomix/file_provider.py:108
 #, python-format
 msgid "Invalid path: '%s'"
 msgstr "不正確的路徑：%s"
@@ -711,20 +711,20 @@ msgstr "按鍵 %d"
 msgid "! Could not remove file \"%s\""
 msgstr "！ 無法移除檔案 %s"
 
-#: mcomix/main.py:965
+#: mcomix/main.py:969
 msgid "SLIDESHOW"
 msgstr "投影片放映"
 
-#: mcomix/main.py:1009
+#: mcomix/main.py:1013
 msgid "Save page as"
 msgstr "頁面另存為"
 
-#: mcomix/main.py:1044
+#: mcomix/main.py:1048
 #, python-format
 msgid "Delete \"%s\"?"
 msgstr "要刪除 %s ？"
 
-#: mcomix/main.py:1045
+#: mcomix/main.py:1049
 msgid "The file will be deleted from your harddisk."
 msgstr "檔案將會從你的硬碟中刪除。"
 
@@ -1306,8 +1306,8 @@ msgstr "清除你之前已選過的確認選項，不要再重問。"
 msgid "Auto-detect (Default)"
 msgstr "自動偵測 (預設)"
 
-#: mcomix/preferences_dialog.py:440 mcomix/preferences_dialog.py:587
-#: mcomix/preferences_dialog.py:661 mcomix/ui.py:162
+#: mcomix/preferences_dialog.py:440 mcomix/preferences_dialog.py:591
+#: mcomix/preferences_dialog.py:665 mcomix/ui.py:162
 msgid "Never"
 msgstr "永遠不要"
 
@@ -1319,7 +1319,7 @@ msgstr "只限第一頁"
 msgid "Only for wide images"
 msgstr "只限較寬的圖片"
 
-#: mcomix/preferences_dialog.py:443 mcomix/preferences_dialog.py:588
+#: mcomix/preferences_dialog.py:443 mcomix/preferences_dialog.py:592
 msgid "Always"
 msgstr "永遠都要"
 
@@ -1348,7 +1348,7 @@ msgstr "符合大小模式"
 msgid "Maintain relative size or fit to same size."
 msgstr ""
 
-#: mcomix/preferences_dialog.py:490 mcomix/preferences_dialog.py:538
+#: mcomix/preferences_dialog.py:490 mcomix/preferences_dialog.py:539
 msgid "No sorting"
 msgstr "不排序"
 
@@ -1356,25 +1356,30 @@ msgstr "不排序"
 msgid "File name"
 msgstr "檔案名稱"
 
-#: mcomix/preferences_dialog.py:492 mcomix/library/book_area.py:177
+#: mcomix/preferences_dialog.py:492
+#, fuzzy
+msgid "File name (GLib)"
+msgstr "檔案名稱"
+
+#: mcomix/preferences_dialog.py:493 mcomix/library/book_area.py:177
 msgid "File size"
 msgstr "檔案大小"
 
-#: mcomix/preferences_dialog.py:493
+#: mcomix/preferences_dialog.py:494
 msgid "Last modified"
 msgstr "最後修改時間"
 
-#: mcomix/preferences_dialog.py:499 mcomix/preferences_dialog.py:546
+#: mcomix/preferences_dialog.py:500 mcomix/preferences_dialog.py:548
 #: mcomix/library/book_area.py:181
 msgid "Ascending"
 msgstr "遞增"
 
-#: mcomix/preferences_dialog.py:500 mcomix/preferences_dialog.py:547
+#: mcomix/preferences_dialog.py:501 mcomix/preferences_dialog.py:549
 #: mcomix/library/book_area.py:183
 msgid "Descending"
 msgstr "遞減"
 
-#: mcomix/preferences_dialog.py:510
+#: mcomix/preferences_dialog.py:511
 msgid ""
 "Files will be opened and displayed according to the sort order specified "
 "here. This option does not affect ordering within archives."
@@ -1382,68 +1387,76 @@ msgstr ""
 "檔案開啟與顯示的順序都會依據這裏的設定決定，但不會影響到壓縮檔裏面原本的檔案"
 "順序。"
 
-#: mcomix/preferences_dialog.py:539
+#: mcomix/preferences_dialog.py:540
 msgid "Natural order"
 msgstr "自然順序"
 
-#: mcomix/preferences_dialog.py:540
+#: mcomix/preferences_dialog.py:541
 msgid "Literal order"
 msgstr "文字順序"
 
-#: mcomix/preferences_dialog.py:557
+#: mcomix/preferences_dialog.py:542
+#, fuzzy
+msgid "GLib order"
+msgstr "檔案順序"
+
+#: mcomix/preferences_dialog.py:559
+#, fuzzy
 msgid ""
 "Files within archives will be sorted according to the order specified here. "
 "Natural order will sort numbered files based on their natural order, i.e. 1, "
-"2, ..., 10, while literal order uses standard C sorting, i.e. 1, 2, 34, 5."
+"2, ..., 10, while literal order uses standard C sorting, i.e. 1, 2, 34, 5. "
+"GLib order will sort files using collate keys generated by GLib/GTK, used by "
+"many other GTK applications."
 msgstr ""
 "壓縮檔理的檔案會安照這裏指定的順序排序。自然順序會依據數字大小：1、2、....、"
 "10、34；文字順序會依據標準 C 語言次序：1、2、34、5。"
 
-#: mcomix/preferences_dialog.py:600
+#: mcomix/preferences_dialog.py:604
 msgid ""
 "Add information about all files opened from within MComix to the shared "
 "recent files list."
 msgstr "將 MComix 開啟過的檔案資訊加入共享的「最近開啟過的的檔案」清單中。"
 
-#: mcomix/preferences_dialog.py:623
+#: mcomix/preferences_dialog.py:627
 msgid "Delete information about recently opened files?"
 msgstr "要刪除「最近開啟過的檔案」資訊？"
 
-#: mcomix/preferences_dialog.py:624
+#: mcomix/preferences_dialog.py:628
 msgid ""
 "This will remove all entries from the \"Recent\" menu, and clear information "
 "about last read pages."
 msgstr ""
 "這樣將會移除「最近開啟過的檔案」選單裏的項目、並清除最後讀取頁數的資訊。"
 
-#: mcomix/preferences_dialog.py:635
+#: mcomix/preferences_dialog.py:639
 msgid "Normal (fast)"
 msgstr "正常 (快)"
 
-#: mcomix/preferences_dialog.py:636
+#: mcomix/preferences_dialog.py:640
 msgid "Bilinear"
 msgstr "雙線性"
 
-#: mcomix/preferences_dialog.py:637
+#: mcomix/preferences_dialog.py:641
 msgid "Hyperbolic (slow)"
 msgstr "雙曲線 (慢)"
 
-#: mcomix/preferences_dialog.py:643
+#: mcomix/preferences_dialog.py:647
 msgid ""
 "Changes how images are scaled. Slower algorithms result in higher quality "
 "resizing, but longer page loading times."
 msgstr ""
 "變更圖片縮放設定：較慢的演算法可以有較高品質，但頁面載入時間也會比較久。"
 
-#: mcomix/preferences_dialog.py:662 mcomix/library/book_area.py:193
+#: mcomix/preferences_dialog.py:666 mcomix/library/book_area.py:193
 msgid "Normal"
 msgstr "正常"
 
-#: mcomix/preferences_dialog.py:668
+#: mcomix/preferences_dialog.py:672
 msgid "Controls how animated images should be displayed."
 msgstr ""
 
-#: mcomix/preferences_dialog.py:729
+#: mcomix/preferences_dialog.py:733
 msgid ""
 "Treat all files found within archives, that have one of these file endings, "
 "as comments."
@@ -2114,11 +2127,11 @@ msgstr ""
 msgid "Adding books"
 msgstr "正在加入書籍"
 
-#: mcomix/library/add_progress_dialog.py:43
+#: mcomix/library/add_progress_dialog.py:45
 msgid "Added books:"
 msgstr "已經加入的書籍："
 
-#: mcomix/library/add_progress_dialog.py:72
+#: mcomix/library/add_progress_dialog.py:74
 #, python-format
 msgid "Adding '%s'..."
 msgstr "正在加入 %s ..."
@@ -2290,7 +2303,7 @@ msgid_plural "Removed %(num)d books from '%(collection)s'."
 msgstr[0] "已經移除 %(num)d 本 %(collection)s 書集的書。"
 msgstr[1] "已經移除 %(num)d 本 %(collection)s 書集的書。"
 
-#: mcomix/library/book_area.py:547 mcomix/library/collection_area.py:194
+#: mcomix/library/book_area.py:547 mcomix/library/collection_area.py:197
 #, python-format
 msgid "Removed %d book from the library."
 msgid_plural "Removed %d books from the library."
@@ -2351,57 +2364,57 @@ msgstr "移除(_R)"
 msgid "Deletes the selected collection."
 msgstr "刪除選取的書集。"
 
-#: mcomix/library/collection_area.py:158
+#: mcomix/library/collection_area.py:159
 msgid "Add new collection?"
 msgstr "要新增書集嗎？"
 
-#: mcomix/library/collection_area.py:159
+#: mcomix/library/collection_area.py:160
 msgid "Please enter a name for the new collection."
 msgstr "請輸入新書集的名稱。"
 
-#: mcomix/library/collection_area.py:178
+#: mcomix/library/collection_area.py:181
 #, python-format
 msgid "Could not add a new collection called '%s'."
 msgstr "無法新增 %s 書集。"
 
-#: mcomix/library/collection_area.py:183 mcomix/library/collection_area.py:276
+#: mcomix/library/collection_area.py:186 mcomix/library/collection_area.py:282
 msgid "A collection by that name already exists."
 msgstr "已有相同名稱的書集。"
 
-#: mcomix/library/collection_area.py:252
+#: mcomix/library/collection_area.py:256
 msgid "Rename collection?"
 msgstr "重新命名書集？"
 
-#: mcomix/library/collection_area.py:253
+#: mcomix/library/collection_area.py:257
 msgid "Please enter a new name for the selected collection."
 msgstr "請輸入這個書集的新名稱。"
 
-#: mcomix/library/collection_area.py:272
+#: mcomix/library/collection_area.py:278
 #, python-format
 msgid "Could not change the name to '%s'."
 msgstr "無法重新命名為 %s 。"
 
-#: mcomix/library/collection_area.py:286
+#: mcomix/library/collection_area.py:292
 msgid "Could not duplicate collection."
 msgstr "無法備份書集。"
 
-#: mcomix/library/collection_area.py:413
+#: mcomix/library/collection_area.py:419
 msgid "Root"
 msgstr "Root"
 
-#: mcomix/library/collection_area.py:417
+#: mcomix/library/collection_area.py:423
 #, python-format
 msgid ""
 "Put the collection '%(subcollection)s' in the collection "
 "'%(supercollection)s'."
 msgstr "將 %(subcollection)s 書集放到 %(supercollection)s 書集。"
 
-#: mcomix/library/collection_area.py:437
+#: mcomix/library/collection_area.py:443
 #, python-format
 msgid "Add books to '%s'."
 msgstr "將書籍加入 %s 。"
 
-#: mcomix/library/collection_area.py:441
+#: mcomix/library/collection_area.py:447
 #, python-format
 msgid ""
 "Move books from '%(source collection)s' to '%(destination collection)s'."
