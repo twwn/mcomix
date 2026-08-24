@@ -125,7 +125,7 @@ def copy_other_files() -> None:
     win32_newline('COPYING', 'dist/MComix/licenses/mcomix/COPYING.txt')
 
     if os.path.isdir('../mcomix-other/unrar'):
-        shutil.copy('../mcomix-other/unrar/UnRar64.dll', 'dist/MComix/UnRar64.dll')
+        shutil.copy('../mcomix-other/unrar/UnRAR64.dll', 'dist/MComix/UnRAR64.dll')
         win32_newline('../mcomix-other/unrar/license.txt', 'dist/MComix/licenses/unrar/license.txt')
 
     if os.path.isdir('../mcomix-other/7z'):

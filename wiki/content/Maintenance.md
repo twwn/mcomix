@@ -62,7 +62,7 @@ This will create `mcomix-version.tar.gz` in the `dist` subfolder, ready for uplo
 4. The installer script expects optional archive extractors in the directory `../mcomix-other`,  relative to MComix' root directory.  At this time, those are:
 4.1. `../mcomix-other/7z/7z.exe`, `../mcomix-other/7z/License.txt` (from [7-zip](https://www.7-zip.org/download.html))
 4.2. `../mcomix-other/mutool/COPYING.txt`, `../mcomix-other/mutool/mutool.exe` (from [mupdf](https://mupdf.com/releases/index.html))
-4.3. `../mcomix-other/unrar/license.txt`, `../mcomix-other/unrar/UnRAR64.dll7` (from [WinRar](https://www.rarlab.com/rar_add.htm))
+4.3. `../mcomix-other/unrar/license.txt`, `../mcomix-other/unrar/UnRAR64.dll` (from [WinRar](https://www.rarlab.com/rar_add.htm))
 
 Afterwards, open a MINGW64 shell in MComix root directory and execute:
 

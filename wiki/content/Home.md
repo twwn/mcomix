@@ -23,7 +23,7 @@ The following programs and libraries are required in order to install and run MC
 
 The above packages are only required if you intend to run MComix from source or on UNIX-like systems. The pre-built Windows packages already include all dependencies.
 
-In order to to read RAR/CBR archives, either `rar` or `unrar` has to be installed. Alternatively, MComix can also make use of [unrar64.dll/libunrar.so](http://www.rarsoft.com/rar_add.htm). The library should be placed either in your default system library directory, or directly in MComix' root directory. To open 7Zip archives, the `7z` executable is required. Likewise, LZA/LHA archives require the `lha` executable (with fallback to `7z`). Opening PDF files requires either the [PyMuPDF](https://pypi.org/project/PyMuPDF/) package, or `mutool`, which is provided by the [MuPDF](https://mupdf.com/) software.
+In order to to read RAR/CBR archives, either `rar` or `unrar` has to be installed. Alternatively, MComix can also make use of [UnRAR64.dll/libunrar.so](http://www.rarsoft.com/rar_add.htm). The library should be placed either in your default system library directory, or directly in MComix' root directory. To open 7Zip archives, the `7z` executable is required. Likewise, LZA/LHA archives require the `lha` executable (with fallback to `7z`). Opening PDF files requires either the [PyMuPDF](https://pypi.org/project/PyMuPDF/) package, or `mutool`, which is provided by the [MuPDF](https://mupdf.com/) software.
 
 User manual
 ---
