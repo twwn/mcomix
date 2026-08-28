@@ -1,6 +1,7 @@
 """tools.py - Contains various helper functions."""
 
 import bisect
+import contextlib
 import gc
 import itertools
 import math
@@ -8,9 +9,10 @@ import operator
 import os
 import re
 import sys
+import tempfile
 from functools import reduce
-from typing import (Any, Iterable, List, Mapping, Sequence, Tuple, TypeVar,
-                    Union)
+from typing import (Any, IO, Iterable, Iterator, List, Mapping, Sequence,
+                    Tuple, TypeVar, Union)
 
 Numeric = TypeVar('Numeric', int, float)
 
@@ -230,6 +232,41 @@ def formats_to_regex(formats: Mapping) -> re.Pattern:
     file extensions specified in C{formats}. """
     return re.compile(r'\.' + fixed_strings_regex(
         itertools.chain.from_iterable([e[1] for e in formats.values()])) + r'$', re.I)
+
+
+@contextlib.contextmanager
+def atomic_write(path: str, binary: bool = False) -> Iterator[IO]:
+    """ Context manager that yields a file object for writing to C{path}.
+
+    The data is written to a temporary file in the same directory, which is
+    only renamed over C{path} after writing finished without error.  Since
+    that rename is atomic, concurrently running instances can neither read a
+    half-written file nor leave a truncated one behind by writing at the
+    same time. """
+    directory = os.path.dirname(path) or os.curdir
+    fd, temp_path = tempfile.mkstemp(dir=directory,
+                                     prefix=os.path.basename(path) + '.',
+                                     suffix='.tmp')
+    try:
+        with os.fdopen(fd, 'wb' if binary else 'w') as file:
+            yield file
+            file.flush()
+            os.fsync(file.fileno())
+
+        try:
+            # Keep the permissions of an already existing file instead of
+            # silently replacing them by the restrictive ones of mkstemp.
+            os.chmod(temp_path, os.stat(path).st_mode & 0o7777)
+        except OSError:
+            pass
+
+        os.replace(temp_path, path)
+    except BaseException:
+        try:
+            os.unlink(temp_path)
+        except OSError:
+            pass
+        raise
 
 
 def append_number_to_filename(filename: str, number: int) -> str:

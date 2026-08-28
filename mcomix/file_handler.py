@@ -639,14 +639,12 @@ class FileHandler(object):
         """Write current open file information."""
 
         if self.file_loaded:
-            config = open(constants.FILEINFO_PICKLE_PATH, 'wb')
-
             path = self._window.imagehandler.get_real_path()
             page_index = self._window.imagehandler.get_current_page() - 1
             current_file_info = [ path, page_index ]
 
-            pickle.dump(current_file_info, config, pickle.HIGHEST_PROTOCOL)
-            config.close()
+            with tools.atomic_write(constants.FILEINFO_PICKLE_PATH, binary=True) as config:
+                pickle.dump(current_file_info, config, pickle.HIGHEST_PROTOCOL)
 
     def read_fileinfo_file(self):
         """Read last loaded file info from disk."""

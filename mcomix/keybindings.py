@@ -32,6 +32,7 @@ from collections import defaultdict
 
 from mcomix import constants
 from mcomix import log
+from mcomix import tools
 from mcomix.i18n import _
 
 #: Bindings defined in this dictionary will appear in the configuration dialog.
@@ -282,9 +283,8 @@ class _KeybindingManager(object):
                     Gtk.accelerator_name(keyval, modifiers) for
                     (keyval, modifiers) in bindings
                 ]
-        fp = open(constants.KEYBINDINGS_CONF_PATH, "w")
-        json.dump(action_to_keys, fp, indent=2)
-        fp.close()
+        with tools.atomic_write(constants.KEYBINDINGS_CONF_PATH) as fp:
+            json.dump(action_to_keys, fp, indent=2)
 
     def _initialize(self):
         """ Restore keybindings from disk. """

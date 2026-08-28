@@ -8,6 +8,7 @@ import shutil
 import sys
 
 from mcomix import constants
+from mcomix import tools
 
 # All the preferences are stored here.
 prefs = {
@@ -178,11 +179,10 @@ def write_preferences_file():
     # TODO: it might be better to save only those options that were (ever)
     # explicitly changed by the used, leaving everything else as default
     # and available (if really needed) to change of defaults on upgrade.
-    config_file = open(constants.PREFERENCE_PATH, 'w')
     # XXX: constants.VERSION? It's *preferable* to not complicate the YAML
     # file by adding a `{'version': constants.VERSION, 'prefs': config}`
     # dict or a list.  Adding an extra init line sounds bad too.
-    json.dump(prefs, config_file, indent=2)
-    config_file.close()
+    with tools.atomic_write(constants.PREFERENCE_PATH) as config_file:
+        json.dump(prefs, config_file, indent=2)
 
 # vim: expandtab:sw=4:ts=4

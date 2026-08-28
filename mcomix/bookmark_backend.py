@@ -13,6 +13,7 @@ from mcomix import bookmark_menu_item
 from mcomix import callback
 from mcomix import i18n
 from mcomix import message_dialog
+from mcomix import tools
 from mcomix.i18n import _
 
 class __BookmarksStore(object):
@@ -181,12 +182,11 @@ class __BookmarksStore(object):
             new_bookmarks, _ = self.load_bookmarks()
             self._bookmarks = list(set(self._bookmarks + new_bookmarks))
 
-        fd = open(constants.BOOKMARK_PICKLE_PATH, 'wb')
-        pickle.dump(constants.VERSION, fd, pickle.HIGHEST_PROTOCOL)
+        with tools.atomic_write(constants.BOOKMARK_PICKLE_PATH, binary=True) as fd:
+            pickle.dump(constants.VERSION, fd, pickle.HIGHEST_PROTOCOL)
 
-        packs = [bookmark.pack() for bookmark in self._bookmarks]
-        pickle.dump(packs, fd, pickle.HIGHEST_PROTOCOL)
-        fd.close()
+            packs = [bookmark.pack() for bookmark in self._bookmarks]
+            pickle.dump(packs, fd, pickle.HIGHEST_PROTOCOL)
 
         self._bookmarks_mtime = int(time.time())
 
