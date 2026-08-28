@@ -34,6 +34,23 @@ class RarArchive(archive_base.BaseArchive):
         RAR_SKIP       = 0
         RAR_EXTRACT    = 2
 
+    class _CallbackMessage(object):
+        """ Messages passed to the unrar callback function """
+        UCM_CHANGEVOLUME  = 0
+        UCM_PROCESSDATA   = 1
+        UCM_NEEDPASSWORD  = 2
+        UCM_CHANGEVOLUMEW = 3
+        UCM_NEEDPASSWORDW = 4
+        UCM_PROCESSDATAW  = 5
+
+    class _VolumeMode(object):
+        """ Reason a UCM_CHANGEVOLUME message was sent """
+        # The next volume is missing, and unrar is asking for it. Answering
+        # anything but -1 makes it retry the very same volume, forever.
+        RAR_VOL_ASK    = 0
+        # The next volume is about to be opened, this is just a notification.
+        RAR_VOL_NOTIFY = 1
+
     class _ErrorCode(object):
         """ Rar error codes """
         ERAR_END_ARCHIVE = 10
@@ -176,6 +193,7 @@ class RarArchive(archive_base.BaseArchive):
                 # archive.
                 if looped:
                     break
+                looped = True
                 self._open()
         # After the method returns, the RAR handler is still open and pointing
         # to the next archive file. This will improve extraction speed for sequential file reads.
@@ -187,7 +205,7 @@ class RarArchive(archive_base.BaseArchive):
 
     def _open(self):
         """ Open rar handle for extraction. """
-        self._callback_function = UNRARCALLBACK(self._password_callback)
+        self._callback_function = UNRARCALLBACK(self._unrar_callback)
         archivedata = RarArchive._RAROpenArchiveDataEx(ArcNameW=self.archive,
                                                        OpenMode=RarArchive._OpenMode.RAR_OM_EXTRACT,
                                                        Callback=self._callback_function,
@@ -239,26 +257,38 @@ class RarArchive(archive_base.BaseArchive):
             raise UnrarException("Couldn't close archive: %s" % errormessage)
         self._handle = None
 
-    def _password_callback(self, msg, userdata, buffer_address, buffer_size):
-        """ Called by the unrar library in case of missing password. """
-        if msg == 2: # UCM_NEEDPASSWORD
+    def _unrar_callback(self, msg, userdata, param1, param2):
+        """ Called by the unrar library for missing passwords and volumes. """
+        if msg == RarArchive._CallbackMessage.UCM_NEEDPASSWORD:
             self._get_password()
             if not self._password or len(self._password) == 0:
                 # Abort extraction
                 return -1
             password = ctypes.create_string_buffer(self._password.encode('utf-8'))
-            copy_size = min(buffer_size, len(password))
-            ctypes.memmove(buffer_address, password, copy_size)
+            copy_size = min(param2, len(password))
+            ctypes.memmove(param1, password, copy_size)
             return 1
-        elif msg == 4: # UCM_NEEDPASSWORDW
+        elif msg == RarArchive._CallbackMessage.UCM_NEEDPASSWORDW:
             self._get_password()
             if not self._password or len(self._password) == 0:
                 # Abort extraction
                 return -1
             password = ctypes.create_string_buffer(self._password.encode('utf-16le'))
-            copy_size = min(buffer_size, len(password))
-            ctypes.memmove(buffer_address, password, copy_size)
+            copy_size = min(param2, len(password))
+            ctypes.memmove(param1, password, copy_size)
             return 1
+        elif msg in (RarArchive._CallbackMessage.UCM_CHANGEVOLUME,
+                     RarArchive._CallbackMessage.UCM_CHANGEVOLUMEW):
+            if param2 == RarArchive._VolumeMode.RAR_VOL_ASK:
+                # A volume of the set is missing. We have no way of supplying
+                # it, and continuing would just make unrar retry the same
+                # volume in an endless loop, so give up on the rest of the
+                # archive; whatever came before is still extractable.
+                log.warning('Missing volume for archive "%s", ignoring the rest of the set',
+                            self.archive)
+                return -1
+            # RAR_VOL_NOTIFY: the next volume was found, carry on.
+            return 0
         else:
             # Continue operation
             return 0
