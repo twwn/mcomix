@@ -3,7 +3,7 @@
 import io
 import os
 import multiprocessing as mp
-from PIL import Image
+from PIL import Image, ExifTags
 from typing import Generator, Optional
 
 try:
@@ -12,7 +12,6 @@ except ImportError:
     import fitz_old as fitz
 
 from mcomix.constants import PDF_RENDER_DPI_DEF
-from mcomix.preferences import prefs
 
 
 # Will delimit the page name from the xref part of a file name
@@ -164,17 +163,20 @@ class FitzWorker:
 
         # The extract_image method always returns the unrotated version of the image,
         # unaffected by any page modifications of rotation.
+        EXIF_ROTS = {
+            90: 6,
+            180: 3,
+            270: 8,
+        }
         rotation = self.doc[page].rotation
-        if rotation in (90, 180, 270) and prefs['auto rotate from exif']:
+        if rotation in EXIF_ROTS.keys():
+            # Embed rotation in image as EXIF data
             buffer = io.BytesIO(img_bytes)
-            pil_img = Image.open(buffer)
-            transpose = Image.Transpose.ROTATE_270
-            if rotation == 180:
-                transpose = Image.Transpose.ROTATE_180
-            elif rotation == 270:
-                transpose = Image.Transpose.ROTATE_90
-            pil_img = pil_img.transpose(transpose)
-            pil_img.save(path)
+            with Image.open(buffer) as pil_img:
+                exif_data = pil_img.getexif()
+                exif_data[ExifTags.Base.Orientation] = EXIF_ROTS[rotation]
+                pil_img.save(path, exif=exif_data)
+            del buffer
 
         else:
             with open(path, "wb") as out:
