@@ -40,7 +40,7 @@ Number of "steps" to take before flipping the page | How many scrolls past the e
 Flip two pages in double page mode | Turn two pages at a time while two are shown. CTRL with PageUp or PageDown always turns one.
 Show only one page where appropriate | When double page mode shows one page anyway: "Never", "Only for title pages" (the first page, which is the cover), "Only for wide images", or "Always", which is both.
 Page auto-resizing | How two pages of different sizes are fitted beside each other: "Prefer same scale", "Prefer same size" or "Fit to same size".
-Space between two pages (in pixels) | From 0 to 2; 2 by default.
+Space between two pages (in pixels) | From 0 to 100; 2 by default.
 Automatically open the last viewed file on startup | Started with no file to open, MComix reopens the one that was open when it last closed. After "Save and quit", it does so whatever this is set to.
 Store information about recently opened files | "Always" keeps the history under File &rarr; Recent and the page each book was left at, which the library's "Recent" collection lists. Switching to "Never" offers to clear both.
 Save As opens at the last directory saved into | Rather than at the directory the book came from.

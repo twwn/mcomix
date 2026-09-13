@@ -29,6 +29,13 @@ _dialog: "_PreferencesDialog | None" = None
 #: How many characters wide every spinner on a page is.
 _SPINNER_WIDTH = 7
 
+#: The widest gap the spinner offers between the two pages of a spread.
+#: The fit modes take the gap out of the window before scaling the pages
+#: to what is left, so a gap near the window's width shrinks both pages
+#: to a few pixels; 100 is ample for a visible gutter and leaves most of
+#: even a small window to the pages.
+LARGEST_PAGE_GAP = 100
+
 
 def _sort_row(first: Gtk.Widget, second: Gtk.Widget) -> Gtk.Box:
     """A row of two boxes, ending where the page ends.
@@ -255,7 +262,7 @@ class _PreferencesDialog(Dialog):
         page.add_row(Gtk.Label(label=_('Space between two pages (in pixels):')),
                      self._create_pref_spinner(
                          'space between two pages',
-                         1, 0, 2, 1, 2, 0, None))
+                         1, 0, LARGEST_PAGE_GAP, 1, 10, 0, None))
 
         page.new_section(_('Files'))
 

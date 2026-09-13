@@ -53,6 +53,23 @@ class PreferencesDialogTest(MComixTest):
         pump()
         return self.dialog
 
+    def test_the_gap_between_two_pages_goes_up_to_the_largest_gap(self):
+        """The spinner stopped at 2 pixels, too narrow a gutter to see."""
+        bounds = {}
+        original = preferences_dialog._PreferencesDialog._create_pref_spinner
+
+        def record(dialog, prefkey, scale, lower, upper, *rest):
+            bounds[prefkey] = (lower, upper)
+            return original(dialog, prefkey, scale, lower, upper, *rest)
+
+        with unittest.mock.patch.object(
+                preferences_dialog._PreferencesDialog,
+                '_create_pref_spinner', record):
+            self._open()
+        self.assertEqual((0, preferences_dialog.LARGEST_PAGE_GAP),
+                         bounds['space between two pages'])
+        self.assertEqual(100, preferences_dialog.LARGEST_PAGE_GAP)
+
     def _background_buttons(self):
         """The two buttons of the Background section, in the order they
         are shown: the fixed colour, then the one off the page."""
