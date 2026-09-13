@@ -431,4 +431,30 @@ class DialogMnemonicTest(MComixTest):
         self.assertEqual({}, found, 'a dialog has two labels on one key')
 
 
+class TermTest(unittest.TestCase):
+
+    """A catalogue that names one thing in two ways."""
+
+    #: Spellings each catalogue has given up for the one GTK's own catalogue
+    #: for that language uses: 책갈피 for a bookmark in Korean, and סימנייה
+    #: and סימניות for one and several in Hebrew.
+    REJECTED = {
+        'ko': ('북마크',),
+        'he': ('סמניות', 'סימניה'),
+    }
+
+    def test_a_bookmark_is_named_one_way(self):
+        """The Korean catalogue called the Bookmarks menu 북마크 and its
+        items 책갈피, and the Hebrew one spelled the word three ways; the
+        Shortcuts tab shows the group's name above its keys' titles, so
+        the two spellings stood one above the other."""
+        for language, spellings in self.REJECTED.items():
+            translations = read_catalogue(os.path.join(
+                MESSAGES_PATH, language, 'LC_MESSAGES', 'mcomix.mo')).values()
+            for spelling in spellings:
+                with self.subTest(language=language, spelling=spelling):
+                    self.assertEqual([], [text for text in translations
+                                          if spelling in text])
+
+
 # vim: expandtab:sw=4:ts=4
