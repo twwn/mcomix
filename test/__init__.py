@@ -8,6 +8,20 @@ mcomix_path = os.environ.get('MCOMIXPATH', None)
 if mcomix_path is not None:
     sys.path.insert(0, mcomix_path)
 
+# Keep the test windows off the user's own desktop.
+
+# GTK connects to Wayland whenever WAYLAND_DISPLAY is set, whatever
+# DISPLAY says, so running the suite under xvfb-run isolated nothing:
+# every window it opened went to the real compositor, where the user's
+# mouse and keyboard reach it - and where the compositor, rather than the
+# test, decides whether a window is mapped and how large it comes out.
+# Pin the backend to the X server DISPLAY names, which is the one
+# xvfb-run started.
+
+if os.environ.get('DISPLAY'):
+    os.environ['GDK_BACKEND'] = 'x11'
+    os.environ.pop('WAYLAND_DISPLAY', None)
+
 # Make sure the GTK version MComix targets is selected before any module
 # pulls in gi.repository; mcomix.run does this for the application itself.
 

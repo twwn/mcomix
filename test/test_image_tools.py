@@ -14,6 +14,7 @@ from difflib import unified_diff
 from . import MComixTest, get_testfile_path
 
 from mcomix import image_tools
+from mcomix import preferences
 from mcomix.preferences import prefs
 
 
@@ -302,6 +303,21 @@ class ImageToolsTest(MComixTest):
             self.assertEqual((result.get_width(), result.get_height()),
                              (image.size[0] // 2, image.size[1] // 2))
 
+    def test_load_pixbuf_size_of_nothing(self):
+        # A widget that has not been given its size yet asks for a box
+        # with a zero side.  gdk-pixbuf refuses that scale and PIL then
+        # divides by it, so this used to raise ZeroDivisionError.
+        path = get_image_path('pattern.jpg')  # 200x100
+        for (width, height), expected in (((0, 0), (1, 1)),
+                                          ((0, 50), (1, 1)),
+                                          ((50, 0), (2, 1))):
+            # A zero side asks for one pixel, and the ratio is kept, so
+            # 50x0 of a 2:1 image is two pixels by one.
+            pixbuf = image_tools.load_pixbuf_size(path, width, height)
+            self.assertEqual((pixbuf.get_width(), pixbuf.get_height()),
+                             expected,
+                             'load_pixbuf_size(%d, %d)' % (width, height))
+
     def test_load_pixbuf_size_invalid(self):
         self.assertRaises(IOError, image_tools.load_pixbuf_size,
                           os.devnull, 50, 50)
@@ -318,6 +334,33 @@ class ImageToolsTest(MComixTest):
         im.save(tmp_file.name)
         pixbuf = image_tools.load_pixbuf_size(tmp_file.name, *target_size)
         self.assertEqual((pixbuf.get_width(), pixbuf.get_height()), expected_size)
+
+    def test_convert_rgba_to_rgba8int(self):
+        # What GdkPixbuf.Pixbuf.fill() takes, from the Gdk.RGBA
+        # components the background colour preference holds.
+        for colour, expected in (
+                ([0.0, 0.0, 0.0, 1.0], 0x000000FF),
+                ([1.0, 1.0, 1.0, 1.0], 0xFFFFFFFF),
+                ([1.0, 0.0, 0.0, 1.0], 0xFF0000FF),
+                ([0.0, 1.0, 0.0, 0.0], 0x00FF0000),
+                # The default grey, which is what 5000 >> 8 gave
+                # when these were 16-bit components.
+                (preferences.DEFAULT_BG_COLOUR, 0x131313FF),
+                # Short of an alpha, and out of range.
+                ([0.0, 0.0, 1.0], 0x0000FFFF),
+                ([-1.0, 2.0, 0.5, 1.0], 0x00FF80FF),
+        ):
+            self.assertEqual(image_tools.convert_rgba_to_rgba8int(colour),
+                             expected,
+                             'convert_rgba_to_rgba8int(%r)' % (colour,))
+
+    def test_the_lens_can_fill_its_canvas_with_the_background_colour(self):
+        # The colour preferences became Gdk.RGBA components, and this is
+        # the one place still reading them as 16-bit integers: the lens
+        # raised TypeError on every use.
+        pixbuf = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, True, 8, 2, 2)
+        pixbuf.fill(image_tools.convert_rgba_to_rgba8int(prefs['bg colour']))
+        self.assertEqual(pixbuf.get_pixels()[:4], bytes((0x13, 0x13, 0x13, 0xFF)))
 
     def test_pixbuf_to_pil(self):
         for image in (

@@ -380,6 +380,17 @@ def load_pixbuf_size(path, width, height):
     # TODO similar to load_pixbuf, should be merged using callbacks etc.
     pixbuf = None
     last_error = None
+    # A box with a zero side asks gdk-pixbuf for a scale it refuses -
+    # "assertion 'width > 0 || width == -1' failed" - and then makes PIL
+    # divide by it, so what came back was a ZeroDivisionError rather than
+    # a picture.  Callers reach this with a widget that has not been
+    # given its size yet.  Ask for the one pixel that fit_in_rectangle()
+    # would have clamped it to anyway; a negative side still means
+    # "unbounded" there, so leave those alone.
+    if 0 == width:
+        width = 1
+    if 0 == height:
+        height = 1
     # Only the format and the dimensions are wanted here, and asking
     # get_image_info() for them means a gdk-pixbuf header query, which
     # costs as much again as the decode below where its loaders run
@@ -636,8 +647,17 @@ def is_image_file(path):
     """
     return _SUPPORTED_IMAGE_REGEX.search(path) is not None
 
-def convert_rgb16list_to_rgba8int(c):
-    return 0x000000FF | (c[0] >> 8 << 24) | (c[1] >> 8 << 16) | (c[2] >> 8 << 8)
+def convert_rgba_to_rgba8int(colour):
+    """Return <colour> as the packed integer GdkPixbuf.Pixbuf.fill() takes.
+
+    <colour> is a sequence of Gdk.RGBA components, each between 0 and 1.
+    A shorter one is taken to be opaque.
+    """
+    def component(value):
+        return min(255, max(0, int(round(value * 255))))
+    red, green, blue = (component(value) for value in colour[:3])
+    alpha = component(colour[3]) if len(colour) > 3 else 255
+    return (red << 24) | (green << 16) | (blue << 8) | alpha
 
 def rgb_to_y_601(colour):
     """Return the luma of <colour>, given as Gdk.RGBA components."""

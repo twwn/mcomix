@@ -98,22 +98,50 @@ class LastReadPage(object):
         if not self.backend.enabled:
             return
 
-        # Collect books that are only present in "Recent" collection
-        # and have an entry in table "recent". Those must be removed.
+        # Collect books whose only collection is "Recent". Those are in
+        # the library solely because they were read, so they go with the
+        # information about having read them.
+        #
+        # This used to require an entry in table "recent" as well, which
+        # let books leak. Closing an archive on page 1 clears that entry
+        # (file_handler) without touching the book or its membership, so
+        # such a book was not collected here - and the statement below
+        # then removed it from "Recent" anyway, leaving a row in "book"
+        # belonging to no collection at all, which nothing ever removes.
+        #
+        # Those leaked rows cannot be cleaned up retroactively: a book in
+        # no collection is also what add_book(path, None) creates, which
+        # is how the library adds a book without filing it, so the two
+        # are indistinguishable after the fact.
         sql = """SELECT c.book FROM contain c
                  JOIN (SELECT book FROM contain
                        GROUP BY book HAVING COUNT(*) = 1
                       ) t ON t.book = c.book
-                 JOIN recent r ON r.book = c.book
                  WHERE c.collection = ?"""
-        cursor = self.backend.execute(sql,
-            (self.backend.get_recent_collection().id,))
-        for book in cursor.fetchall():
-            self.backend.remove_book(book)
-        cursor.execute("""DELETE FROM recent""")
-        cursor.execute("""DELETE FROM contain WHERE collection = ?""",
-                       (self.backend.get_recent_collection().id,))
+        recent_collection = self.backend.get_recent_collection().id
+        cursor = self.backend.execute(sql, (recent_collection,))
+        books = cursor.fetchall()
         cursor.close()
+
+        # The connection is in auto-commit mode, so without a transaction
+        # around them each of the statements below is committed on its
+        # own, two per book removed.  The other bulk removal, _BookArea's
+        # "remove from library", wraps its loop for the same reason.
+        self.backend.begin_transaction()
+        try:
+            for book in books:
+                self.backend.remove_book(book)
+            cursor = self.backend.execute("""DELETE FROM recent""")
+            cursor.close()
+            cursor = self.backend.execute(
+                """DELETE FROM contain WHERE collection = ?""",
+                (recent_collection,))
+            cursor.close()
+        finally:
+            # Leaving the connection in transactional mode would make
+            # every later write wait for an explicit commit that never
+            # comes.
+            self.backend.end_transaction()
 
     def get_page(self, path):
         """ Gets the last read page for book at C{path}.

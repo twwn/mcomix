@@ -593,6 +593,11 @@ class MainUI(object):
                 self.slideshow_button = button
         toolbar.set_style(Gtk.ToolbarStyle.ICONS)
         toolbar.set_icon_size(Gtk.IconSize.LARGE_TOOLBAR)
+        # The buttons have to be shown here.  Gtk.UIManager did it for the
+        # tool bar it built; the window only ever shows and hides the bar
+        # itself, following the "show toolbar" preference, so buttons that
+        # were never shown leave it collapsed to a few pixels.
+        toolbar.show_all()
         return toolbar
 
     def set_sensitivities(self) -> None:

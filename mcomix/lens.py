@@ -142,7 +142,7 @@ class MagnifyingLens(object):
         canvas = GdkPixbuf.Pixbuf.new(colorspace=GdkPixbuf.Colorspace.RGB,
             has_alpha=not opaque, bits_per_sample=8, width=lens_size[0],
             height=lens_size[1]) # 2D only
-        canvas.fill(image_tools.convert_rgb16list_to_rgba8int(self._window.get_bg_colour()))
+        canvas.fill(image_tools.convert_rgba_to_rgba8int(self._window.get_bg_colour()))
         for b, source_pixbuf, tf in zip(cb, source_pixbufs, transforms):
             if image_tools.is_animation(source_pixbuf):
                 continue

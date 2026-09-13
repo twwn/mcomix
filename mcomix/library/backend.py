@@ -33,7 +33,7 @@ class _LibraryBackend(object):
 
     #: Current version of the library database structure.
     # See method _upgrade_database() for changes between versions.
-    DB_VERSION = 7
+    DB_VERSION = 8
 
     def __init__(self) -> None:
 
@@ -624,6 +624,11 @@ class _LibraryBackend(object):
                 self._con.execute('''update collection set name = ? where id = ?''',
                                   ('RECENT', COLLECTION_RECENT))
 
+            if 7 in upgrades:
+                # Added an index on contain (book); see
+                # _create_index_contain_book().
+                self._create_index_contain_book()
+
             self._con.execute('''update info set value = ? where key = 'version' ''',
                               (str(_LibraryBackend.DB_VERSION),))
 
@@ -648,6 +653,19 @@ class _LibraryBackend(object):
             collection integer not null,
             book integer not null,
             primary key (collection, book))''')
+        self._create_index_contain_book()
+
+    def _create_index_contain_book(self) -> None:
+        """Index the second half of contain's primary key.
+
+        That key is (collection, book), which a lookup by book alone
+        cannot use, so 'delete from Contain where book = ?' - one of the
+        two statements remove_book() runs - scanned the whole table.
+        Removing books in bulk was therefore quadratic in the size of
+        the library.
+        """
+        self._con.execute('''create index if not exists contain_book
+            on contain (book)''')
 
     def _create_table_info(self) -> None:
         self._con.execute('''create table if not exists info (

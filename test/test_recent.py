@@ -31,6 +31,19 @@ class RecentFilesMenuTest(MComixTest):
 
     def setUp(self):
         super(RecentFilesMenuTest, self).setUp()
+        # Gtk.RecentManager keeps nothing at all when the desktop has
+        # turned file history off - and answers add_full() with True
+        # either way - or when it says to keep it for no days, which
+        # empties the list on the next reload.  A bare X server has no
+        # settings daemon to say otherwise and defaults to both, so say
+        # it here: these tests are about MComix' menu, not GTK's gate.
+        self.settings = Gtk.Settings.get_default()
+        self.saved_settings = {
+            name: self.settings.get_property(name)
+            for name in ('gtk-recent-files-enabled',
+                         'gtk-recent-files-max-age')}
+        self.settings.set_property('gtk-recent-files-enabled', True)
+        self.settings.set_property('gtk-recent-files-max-age', 30)
         # Never the default manager: that one writes to the real
         # recently-used list in the user's home directory.
         self.storage = os.path.join(self.tmp_dir, 'recently-used.xbel')
@@ -41,6 +54,8 @@ class RecentFilesMenuTest(MComixTest):
 
     def tearDown(self):
         Gtk.RecentManager.get_default = self.real_get_default
+        for name, value in self.saved_settings.items():
+            self.settings.set_property(name, value)
         super(RecentFilesMenuTest, self).tearDown()
 
     def _add(self, name, mime_type='application/zip'):
