@@ -41,12 +41,12 @@ BINDING_INFO = {
     # Navigation between pages, archives, directories
     'previous_page' : { 'title' : _('Previous page'), 'group' : _('Navigation') },
     'next_page' : { 'title' : _('Next page'), 'group' : _('Navigation') },
-    'previous_page_ff' : { 'title': _('Back ten pages'), 'group': _('Navigation') },
-    'next_page_ff' : { 'title': _('Forward ten pages'), 'group': _('Navigation') },
-    'previous_page_dynamic' : { 'title': _('Previous page (dynamic)'), 'group': _('Navigation') },
-    'next_page_dynamic' : { 'title': _('Next page (dynamic)'), 'group': _('Navigation') },
-    'previous_page_singlestep': { 'title': _('Previous page (always one page)'), 'group': _('Navigation') },
-    'next_page_singlestep': { 'title': _('Next page (always one page)'), 'group': _('Navigation') },
+    'previous_page_ff' : { 'title': _('Back 10 pages'), 'group': _('Navigation') },
+    'next_page_ff' : { 'title': _('Forward 10 pages'), 'group': _('Navigation') },
+    'previous_page_dynamic' : { 'title': _('Page to the left'), 'group': _('Navigation') },
+    'next_page_dynamic' : { 'title': _('Page to the right'), 'group': _('Navigation') },
+    'previous_page_singlestep': { 'title': _('Previous single page'), 'group': _('Navigation') },
+    'next_page_singlestep': { 'title': _('Next single page'), 'group': _('Navigation') },
 
     'first_page' : { 'title': _('First page'), 'group': _('Navigation') },
     'last_page' : { 'title': _('Last page'), 'group': _('Navigation') },
@@ -58,17 +58,17 @@ BINDING_INFO = {
     'previous_directory' : { 'title': _('Previous directory'), 'group': _('Navigation') },
 
     # Scrolling
-    'scroll_left_bottom' : { 'title' : _('Scroll to bottom left'), 'group' : _('Scroll')},
-    'scroll_middle_bottom' : { 'title' : _('Scroll to bottom center'), 'group' : _('Scroll')},
-    'scroll_right_bottom' : { 'title' : _('Scroll to bottom right'), 'group' : _('Scroll')},
+    'scroll_left_bottom' : { 'title' : _('Align bottom left'), 'group' : _('Scroll')},
+    'scroll_middle_bottom' : { 'title' : _('Align bottom center'), 'group' : _('Scroll')},
+    'scroll_right_bottom' : { 'title' : _('Align bottom right'), 'group' : _('Scroll')},
 
-    'scroll_left_middle' : { 'title' : _('Scroll to middle left'), 'group' : _('Scroll')},
-    'scroll_middle' : { 'title' : _('Scroll to center'), 'group' : _('Scroll')},
-    'scroll_right_middle' : { 'title' : _('Scroll to middle right'), 'group' : _('Scroll')},
+    'scroll_left_middle' : { 'title' : _('Align middle left'), 'group' : _('Scroll')},
+    'scroll_middle' : { 'title' : _('Align center'), 'group' : _('Scroll')},
+    'scroll_right_middle' : { 'title' : _('Align middle right'), 'group' : _('Scroll')},
 
-    'scroll_left_top' : { 'title' : _('Scroll to top left'), 'group' : _('Scroll')},
-    'scroll_middle_top' : { 'title' : _('Scroll to top center'), 'group' : _('Scroll')},
-    'scroll_right_top' : { 'title' : _('Scroll to top right'), 'group' : _('Scroll')},
+    'scroll_left_top' : { 'title' : _('Align top left'), 'group' : _('Scroll')},
+    'scroll_middle_top' : { 'title' : _('Align top center'), 'group' : _('Scroll')},
+    'scroll_right_top' : { 'title' : _('Align top right'), 'group' : _('Scroll')},
 
     'scroll_down' : { 'title' : _('Scroll down'), 'group' : _('Scroll') },
     'scroll_up' : { 'title' : _('Scroll up'), 'group' : _('Scroll') },
@@ -84,17 +84,17 @@ BINDING_INFO = {
     'zoom_original' : { 'title' : _('Normal size'), 'group' : _('Zoom')},
 
     'keep_transformation' : { 'title': _('Keep transformation'), 'group': _('Transformation') },
-    'rotate_90' : { 'title': _('Rotate 90 degrees CW'), 'group': _('Transformation') },
-    'rotate_180' : { 'title': _('Rotate 180 degrees'), 'group': _('Transformation') },
-    'rotate_270' : { 'title': _('Rotate 90 degrees CCW'), 'group': _('Transformation') },
+    'rotate_90' : { 'title': _('Rotate 90° CW'), 'group': _('Transformation') },
+    'rotate_180' : { 'title': _('Rotate 180°'), 'group': _('Transformation') },
+    'rotate_270' : { 'title': _('Rotate 90° CCW'), 'group': _('Transformation') },
     'flip_horiz' : { 'title': _('Flip horizontally'), 'group': _('Transformation') },
     'flip_vert' : { 'title': _('Flip vertically'), 'group': _('Transformation') },
     'no_autorotation' : { 'title': _('Never autorotate'), 'group': _('Transformation') },
 
-    'rotate_90_width' : { 'title': _('Rotate 90 degrees CW'), 'group': _('Autorotate by width') },
-    'rotate_270_width' : { 'title': _('Rotate 90 degrees CCW'), 'group': _('Autorotate by width') },
-    'rotate_90_height' : { 'title': _('Rotate 90 degrees CW'), 'group': _('Autorotate by height') },
-    'rotate_270_height' : { 'title': _('Rotate 90 degrees CCW'), 'group': _('Autorotate by height') },
+    'rotate_90_width' : { 'title': _('Rotate 90° CW'), 'group': _('Autorotate by width') },
+    'rotate_270_width' : { 'title': _('Rotate 90° CCW'), 'group': _('Autorotate by width') },
+    'rotate_90_height' : { 'title': _('Rotate 90° CW'), 'group': _('Autorotate by height') },
+    'rotate_270_height' : { 'title': _('Rotate 90° CCW'), 'group': _('Autorotate by height') },
 
     'double_page' : { 'title': _('Double page mode'), 'group': _('View mode') },
     'manga_mode' : { 'title': _('Manga mode'), 'group': _('View mode') },
@@ -110,17 +110,17 @@ BINDING_INFO = {
     'fit_manual_mode' : { 'title': _('Manual zoom mode'), 'group': _('View mode') },
 
     # General UI
-    'exit_fullscreen' : { 'title' : _('Exit from fullscreen'), 'group' : _('User interface')},
+    'exit_fullscreen' : { 'title' : _('Leave fullscreen'), 'group' : _('User interface')},
 
-    'osd_panel' : { 'title' : _('Show OSD panel'), 'group' : _('User interface') },
+    'osd_panel' : { 'title' : _('OSD panel'), 'group' : _('User interface') },
     'minimize' : { 'title' : _('Minimize'), 'group' : _('User interface') },
     'fullscreen' : { 'title': _('Fullscreen'), 'group': _('User interface') },
-    'toolbar' : { 'title': _('Show/hide toolbar'), 'group': _('User interface') },
-    'menubar' : { 'title': _('Show/hide menubar'), 'group': _('User interface') },
-    'statusbar' : { 'title': _('Show/hide statusbar'), 'group': _('User interface') },
-    'scrollbar' : { 'title': _('Show/hide scrollbars'), 'group': _('User interface') },
+    'toolbar' : { 'title': _('Toolbar'), 'group': _('User interface') },
+    'menubar' : { 'title': _('Menubar'), 'group': _('User interface') },
+    'statusbar' : { 'title': _('Statusbar'), 'group': _('User interface') },
+    'scrollbar' : { 'title': _('Scrollbars'), 'group': _('User interface') },
     'thumbnails' : { 'title': _('Thumbnails'), 'group': _('User interface') },
-    'hide_all' : { 'title': _('Show/hide all'), 'group': _('User interface') },
+    'hide_all' : { 'title': _('Hide all'), 'group': _('User interface') },
     'slideshow' : { 'title': _('Start slideshow'), 'group': _('User interface') },
 
     # File operations
@@ -144,8 +144,10 @@ BINDING_INFO = {
 
 # Generate 9 entries for executing command 1 to 9
 for i in range(1, 10):
-    BINDING_INFO['execute_command_%d' %i] = { 
-            'title' : _('Execute external command') + ' (%d)' % i,
+    BINDING_INFO['execute_command_%d' % i] = {
+            # The group says what kind of command it is, so the title
+            # only has to tell one from another.
+            'title' : _('Command') + ' %d' % i,
             'group' : _('External commands')
     }
 

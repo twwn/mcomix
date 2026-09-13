@@ -59,7 +59,13 @@ class TemplateTest(MComixTest):
 
     def _extract(self):
         """The msgids xgettext finds in the source right now. The file set
-        is the one wiki/content/Maintenance.md documents."""
+        is the one wiki/content/Maintenance.md documents.
+
+        The header is kept, though read_msgids() drops it again: it is
+        where xgettext states the encoding it wrote, and asked to omit
+        it xgettext writes ASCII instead and drops what will not fit -
+        a msgid of "Rotate 90° CW" comes back as "Rotate 90 CW".
+        """
         extracted = os.path.join(self.tmp_dir, 'extracted.pot')
         sources = []
         for pattern in ('mcomix/*.py', 'mcomix/archive/*.py',
@@ -68,8 +74,8 @@ class TemplateTest(MComixTest):
                 os.path.join(constants.BASE_PATH, pattern))))
         self.assertTrue(sources, 'no sources to extract from')
         subprocess.run(
-            ['xgettext', '-LPython', '-o', extracted, '--from-code=utf-8',
-             '--omit-header'] + sources,
+            ['xgettext', '-LPython', '-o', extracted, '--from-code=utf-8']
+            + sources,
             check=True, capture_output=True)
         return read_msgids(extracted)
 

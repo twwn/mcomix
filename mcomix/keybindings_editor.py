@@ -13,7 +13,7 @@ from mcomix import widgets
 class KeybindingEditorWindow(Gtk.ScrolledWindow):
 
     #: How much of the name of an action is always shown, in characters.
-    _NAME_WIDTH = 20
+    _NAME_WIDTH = 16
 
     def __init__(self, keymanager):
         """ @param keymanager: KeybindingManager instance. """

@@ -5,21 +5,22 @@ from gi.repository import Gdk, Gio, GLib, GObject, Gtk, Pango
 from mcomix.i18n import _
 
 from collections.abc import Callable, Iterable, Iterator
+import re
 from typing import Any, cast
 
 
 #: What an accelerator cell says while it is waiting for one.
 _ASK_FOR_ONE_HINT = _('New accelerator...')
 
-#: How wide an accelerator cell asks to be, in characters.  A shortcut
-#: is usually far shorter than this - 79 of the 98 MComix binds by
-#: default fit, measured in a German locale, which is a wordier one than
-#: most - and a list of them is several columns wide, so the long ones
-#: are cut off, with a tooltip, rather than allowed to take the room the
-#: column naming the action needs.  The ones that do not fit are mostly
-#: the numeric keypad's, which are spelled out to tell them from the
-#: keys of the same name.
-_ACCEL_WIDTH_CHARS = 12
+#: How wide an accelerator cell asks to be, in characters.  It is the
+#: width at which all 98 of the shortcuts MComix binds by default fit
+#: in a German locale, which is a wordier one than most, and in an
+#: English one; a language whose keypad keys cannot be shortened has
+#: some that do not, four of the 98 in French.  A list of shortcuts is
+#: several columns wide, so what does not fit is ellipsized, with a
+#: tooltip, rather than allowed to take the room the column naming the
+#: action needs.
+_ACCEL_WIDTH_CHARS = 14
 
 
 def _text_width(characters: int) -> int:
@@ -166,29 +167,86 @@ class _EditableCell(Gtk.EditableLabel, _Cell):
             self.edited(self.row, self.get_text())
 
 
-#: Keys drawn as the sign a keyboard prints on them rather than by
-#: name.  A Gtk.ShortcutLabel does this for the arrows, space and
-#: return, and spells the rest out; what it spells out is the longest
-#: thing in a column of shortcuts.  The numeric keypad's own keys are
-#: left spelled out, because that is what tells them from these.
+#: The sign a keyboard prints on a key, which the key is drawn as
+#: rather than by name - the name is the longest thing in a column of
+#: shortcuts.  A Gtk.ShortcutLabel draws the arrows, space and return
+#: this way for itself, and spells the rest out; they are listed all the
+#: same, because this is also where the keys of the numeric keypad find
+#: the sign of the key they stand beside.
+#:
+#: Only keys that can be bound are listed: the locks - caps, num and
+#: scroll - are printed with a sign of their own, but no accelerator
+#: can be made of them, so an entry for one would never be read.
 _KEY_SYMBOLS = {
     'Page_Up': '\u21de', 'Page_Down': '\u21df',
     'BackSpace': '\u232b', 'Delete': '\u2326', 'Insert': '\u2380',
     'Tab': '\u21e5', 'ISO_Left_Tab': '\u21e4', 'Escape': '\u238b',
     'Home': '\u21f1', 'End': '\u21f2',
+    'Menu': '\u2630', 'Print': '\u2399',
+    'Pause': '\u2389', 'Break': '\u238a',
+    # The ones the label draws for itself, listed for the keypad's sake.
+    'Left': '\u2190', 'Right': '\u2192', 'Up': '\u2191', 'Down': '\u2193',
+    'space': '\u2423', 'Return': '\u23ce',
 }
+
+#: What the name of one of the numeric keypad's keys begins with, and
+#: the mark a Gtk.ShortcutLabel ends it with to tell it from the key of
+#: the same name: German draws KP_Page_Up as "Bild auf (Nmblck)".
+_KEYPAD_PREFIX = 'KP_'
+_KEYPAD_MARK = re.compile(r'\s*\([^()]*\)$')
+
+
+def _keypad_symbol(name: str, spelled: str) -> "str | None":
+    """The sign for the keypad key <name>, or None to leave it be.
+
+    <spelled> is what the label spelled the key out as.  A keypad key is
+    told from the key of the same name by the mark the label puts after
+    it, not by the name itself, so the sign of the key it stands beside
+    is drawn with that mark kept.
+
+    Which is only possible where the mark can be told from the name.
+    Half the desktop's languages bracket it, as German and English and
+    French do; Spanish writes "TN Re Pag" and Polish spells the whole
+    keypad out after the name, and there the key is left as it stands.
+    Enter is left as it stands everywhere: the keypad's is KP_Enter, and
+    there is no plain Enter for it to stand beside.
+
+    The key it stands beside is looked up by keyval rather than by name,
+    because GDK answers with a different one of a key's names on either
+    side of the keypad: 0xff9b is KP_Next, whose plain twin 0xff56 is
+    Page_Down.
+    """
+    plain = Gdk.keyval_from_name(name[len(_KEYPAD_PREFIX):])
+    if not plain:
+        return None
+    symbol = _KEY_SYMBOLS.get(Gdk.keyval_name(plain) or '')
+    if symbol is None:
+        return None
+    mark = _KEYPAD_MARK.search(spelled)
+    return None if mark is None else symbol + mark.group(0)
+
+#: The sign printed on the shift key.  The other modifiers are printed
+#: as words - Ctrl, Alt - and are left as the label spells them out;
+#: this one has a sign, and is the one worth drawing as one, being the
+#: widest cap of the three in several languages.  German's "Umschalt"
+#: comes to as much as the two caps it is usually held down with put
+#: together.
+_SHIFT_SYMBOL = '\u21e7'
 
 
 def _draw_caps(label: Gtk.ShortcutLabel, accelerator: str) -> None:
     """Redraw what <label> made of <accelerator>.
 
-    Two things: the key is drawn as the sign printed on it where it has
-    one, and the plusses the label puts between the caps are dropped -
-    keys drawn as keys are read as keys held together, and the plusses
-    are a third of the width of a short shortcut.
+    The key is drawn as the sign printed on it where it has one - one of
+    the keypad's keeping the mark that tells it from the key of the same
+    name - and so is shift; the plusses the label puts between the caps are dropped,
+    because keys drawn as keys are read as keys held together and the
+    plusses are a third of the width of a short shortcut; and the caps
+    are left free to be drawn at the width they need rather than the
+    one GTK asks for.
 
     The key is the last cap the label drew; the caps before it are the
-    modifiers, which keep their names.  Which cap is which is worked out
+    modifiers, shift always first.  Which cap is which is worked out
     from the order they are drawn in rather than from what they say,
     because what they say is in the desktop's language.
     """
@@ -206,12 +264,28 @@ def _draw_caps(label: Gtk.ShortcutLabel, accelerator: str) -> None:
         return
     for joiner in joiners:
         joiner.set_visible(False)
-    parsed, keyval, _modifiers = Gtk.accelerator_parse(accelerator)
+    for cap in caps:
+        # A cap that will not fit is ellipsized rather than cut off
+        # halfway through a letter, which is what clipping alone did.
+        cap.set_ellipsize(Pango.EllipsizeMode.END)
+    for modifier_cap in caps[:-1]:
+        # GTK asks for fifty pixels for every modifier cap, whatever
+        # it says, to line the modifiers of one shortcut up under those
+        # of the next.  Here they stand one to a row, with nothing to
+        # line up with, and the room is worth more to the key beside
+        # them: it is fourteen pixels of white space around a "Ctrl".
+        modifier_cap.set_size_request(-1, -1)
+    parsed, keyval, modifiers = Gtk.accelerator_parse(accelerator)
     if not parsed:
         return
-    symbol = _KEY_SYMBOLS.get(Gdk.keyval_name(keyval) or '')
+    name = Gdk.keyval_name(keyval) or ''
+    symbol = _KEY_SYMBOLS.get(name)
+    if symbol is None and name.startswith(_KEYPAD_PREFIX):
+        symbol = _keypad_symbol(name, caps[-1].get_text())
     if symbol is not None:
         caps[-1].set_text(symbol)
+    if modifiers & Gdk.ModifierType.SHIFT_MASK and len(caps) > 1:
+        caps[0].set_text(_SHIFT_SYMBOL)
 
 
 class _ClampLayout(Gtk.LayoutManager):
@@ -246,11 +320,13 @@ class _ClampLayout(Gtk.LayoutManager):
         child = widget.get_first_child()
         if child is None:
             return
-        # Its own width, whether that is less than the room it was given
-        # - it is drawn at its own size, not stretched to fill - or more,
-        # which is what the clipping answers for.
+        # Its own width where that is less than the room it was given -
+        # it is drawn at its own size, not stretched to fill - and the
+        # room itself where it is more, so that a child that can be
+        # drawn narrower does the cutting itself, in whole letters.
+        # What still overflows is what the clipping answers for.
         wanted = child.measure(Gtk.Orientation.HORIZONTAL, -1)[1]
-        child.allocate(wanted, height, baseline, None)
+        child.allocate(min(wanted, self._width), height, baseline, None)
 
 
 class _AccelCell(Gtk.Button, _Cell):

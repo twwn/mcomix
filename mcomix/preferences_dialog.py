@@ -44,8 +44,10 @@ class _PreferencesDialog(Dialog):
     """
 
     #: How wide the dialog opens.  The Shortcuts tab is what needs it:
-    #: its list comes to 780 pixels, and the dialog's own borders and
-    #: the notebook's take 32 of whatever the dialog is given.
+    #: its list will not go under 832 pixels, and the dialog's own
+    #: borders and the notebook's take 32 of whatever the dialog is
+    #: given.  Past that the room goes to the column naming the action,
+    #: which is the one that can use it.
     _DEFAULT_WIDTH = 900
 
     def __init__(self, window):

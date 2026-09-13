@@ -65,6 +65,9 @@ class FileHandler(object):
         self._condition = None
         #: Provides a list of available files/archives in the open directory.
         self._file_provider = None
+        #: Which kind of file the walk through sibling directories is
+        #: looking for, archives or images.
+        self._directory_listmode = file_provider.FileProvider.IMAGES
         #: Keeps track of the last read page in archives
         self.last_read_page = last_read_page.LastReadPage(backend.LibraryBackend())
         #: Regexp used for determining which archive files are comment files.
@@ -111,6 +114,9 @@ class FileHandler(object):
 
         self.filelist = self._file_provider.list_files()
         self.archive_type = archive_tools.archive_mime_type(path)
+        self._directory_listmode = (file_provider.FileProvider.ARCHIVES
+                                    if self.archive_type is not None
+                                    else file_provider.FileProvider.IMAGES)
         self._start_page = start_page
         self._current_file = os.path.abspath(path)
         self._stop_waiting = False
@@ -516,10 +522,7 @@ class FileHandler(object):
         if self._file_provider is None:
             return
 
-        if self.archive_type is not None:
-            listmode = file_provider.FileProvider.ARCHIVES
-        else:
-            listmode = file_provider.FileProvider.IMAGES
+        listmode = self._directory_listmode
 
         current_dir = self._file_provider.get_directory()
         if not self._file_provider.next_directory():
@@ -534,6 +537,10 @@ class FileHandler(object):
         else:
             path = self._file_provider.get_directory()
         self.open_file(path, keep_fileprovider=True)
+        # A directory with nothing to open leaves no file behind to say
+        # what the walk is looking for, and the walk has to go on looking
+        # for the same kind of file rather than fall back to images.
+        self._directory_listmode = listmode
         return True
 
     def open_previous_directory(self, *args):
@@ -543,10 +550,7 @@ class FileHandler(object):
         if self._file_provider is None:
             return
 
-        if self.archive_type is not None:
-            listmode = file_provider.FileProvider.ARCHIVES
-        else:
-            listmode = file_provider.FileProvider.IMAGES
+        listmode = self._directory_listmode
 
         current_dir = self._file_provider.get_directory()
         if not self._file_provider.previous_directory():
@@ -565,6 +569,8 @@ class FileHandler(object):
             prefs['open first file in prev archive'] or \
             prefs['open first file in prev directory'])-1,
                        keep_fileprovider=True)
+        # See open_next_directory().
+        self._directory_listmode = listmode
         return True
 
     def file_is_available(self, filepath):

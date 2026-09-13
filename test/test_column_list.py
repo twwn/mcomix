@@ -9,7 +9,7 @@ are the ones the TreeView did for itself: reading a row back, selecting
 one, and answering which row is under the pointer.
 """
 
-from gi.repository import Gdk, Gtk
+from gi.repository import Gdk, Gtk, Pango
 
 from . import MComixTest, pump
 
@@ -363,7 +363,9 @@ class ColumnListViewTest(MComixTest):
             pump()
             empty = column_list._AccelCell()
             long = column_list._AccelCell()
-            long.accelerator = '<Control><Shift>Page_Up'
+            # Four caps cannot be drawn under their minimum widths,
+            # whatever the desktop's language calls them.
+            long.accelerator = '<Control><Shift><Alt>a'
             long._show()
             for cell in (empty, long):
                 box.append(cell)
@@ -376,10 +378,22 @@ class ColumnListViewTest(MComixTest):
             self.assertEqual(
                 long.get_tooltip_text(),
                 Gtk.accelerator_get_label(
-                    *Gtk.accelerator_parse('<Control><Shift>Page_Up')[1:]))
+                    *Gtk.accelerator_parse('<Control><Shift><Alt>a')[1:]))
         finally:
             window.destroy()
             pump()
+
+    @staticmethod
+    def _cap_widths(label):
+        """How wide each key cap of a shortcut label wants to be."""
+        wanted = []
+        child = label.get_first_child()
+        while child is not None:
+            if isinstance(child, Gtk.Label) \
+                    and 'keycap' in child.get_css_classes():
+                wanted.append(child.measure(Gtk.Orientation.HORIZONTAL, -1)[1])
+            child = child.get_next_sibling()
+        return wanted
 
     @staticmethod
     def _caps(label):
@@ -400,6 +414,8 @@ class ColumnListViewTest(MComixTest):
         for accelerator, sign in (('Page_Up', '\u21de'),
                                   ('BackSpace', '\u232b'),
                                   ('Tab', '\u21e5'),
+                                  ('Menu', '\u2630'),
+                                  ('Print', '\u2399'),
                                   ('<Control><Shift>Home', '\u21f1')):
             cell.accelerator = accelerator
             cell._show()
@@ -421,23 +437,74 @@ class ColumnListViewTest(MComixTest):
         self.assertTrue(joined, 'the label drew no joiners to drop')
         self.assertFalse(any(joined))
 
-    def test_the_modifiers_keep_the_names_the_desktop_gives_them(self):
+    def test_the_modifiers_but_shift_keep_the_names_they_are_given(self):
+        """Ctrl and Alt are printed as words, and are left as words."""
         cell = column_list._AccelCell()
-        cell.accelerator = '<Control><Shift>Page_Up'
+        cell.accelerator = '<Control><Alt>Page_Up'
         cell._show()
         caps = self._caps(cell.label)
         self.assertEqual(len(caps), 3)
         self.assertEqual(
             caps[:2],
-            [Gtk.accelerator_get_label(0, Gdk.ModifierType.SHIFT_MASK),
-             Gtk.accelerator_get_label(0, Gdk.ModifierType.CONTROL_MASK)])
+            [Gtk.accelerator_get_label(0, Gdk.ModifierType.CONTROL_MASK),
+             Gtk.accelerator_get_label(0, Gdk.ModifierType.ALT_MASK)])
 
-    def test_a_key_of_the_numeric_keypad_is_still_spelled_out(self):
-        """Which is what tells it from the key of the same name."""
+    def test_shift_is_drawn_as_the_sign_printed_on_it(self):
+        """It is the widest of the modifiers in several languages -
+        German spells it "Umschalt" - and the only one a keyboard puts
+        a sign on rather than a word."""
         cell = column_list._AccelCell()
-        cell.accelerator = 'KP_Page_Up'
+        cell.accelerator = '<Control><Shift>Page_Up'
         cell._show()
-        self.assertNotEqual(self._caps(cell.label)[-1], '\u21de')
+        caps = self._caps(cell.label)
+        self.assertEqual(len(caps), 3)
+        self.assertEqual(caps[0], '\u21e7')
+        self.assertEqual(
+            caps[1], Gtk.accelerator_get_label(0, Gdk.ModifierType.CONTROL_MASK))
+
+    def test_a_modifier_is_drawn_no_wider_than_what_it_says(self):
+        """GTK asks for fifty pixels for every modifier cap, whatever
+        is printed on it, to line the modifiers of one shortcut up
+        under those of the next.  Here they stand one to a row, with
+        nothing to line up with."""
+        cell = column_list._AccelCell()
+        cell.accelerator = '<Control>a'
+        cell._show()
+        drawn = self._cap_widths(cell.label)
+        asked = self._cap_widths(Gtk.ShortcutLabel(accelerator='<Control>a'))
+        self.assertEqual(len(drawn), 2)
+        self.assertLess(drawn[0], asked[0])
+        # The key beside it is untouched: GTK asks nothing for that one.
+        self.assertEqual(drawn[1], asked[1])
+
+    def test_a_key_of_the_numeric_keypad_keeps_the_mark_that_is_its_own(self):
+        """The mark is what tells it from the key of the same name, so
+        the sign is drawn with the mark rather than instead of it - and
+        the key is left spelled out where the two cannot be told apart,
+        which is the case in Spanish, Polish and Japanese."""
+        cell = column_list._AccelCell()
+        for accelerator, sign in (('KP_Page_Up', '\u21de'),
+                                  ('KP_Page_Down', '\u21df'),
+                                  ('KP_Home', '\u21f1'),
+                                  ('KP_Right', '\u2192')):
+            cell.accelerator = accelerator
+            cell._show()
+            drawn = self._caps(cell.label)[-1]
+            spelled = Gtk.ShortcutLabel(accelerator=accelerator)
+            spelled_out = self._caps(spelled)[-1]
+            if not spelled_out.endswith(')'):
+                self.assertEqual(drawn, spelled_out)
+                continue
+            self.assertTrue(drawn.startswith(sign), drawn)
+            self.assertTrue(drawn.endswith(')'), drawn)
+            self.assertLess(len(drawn), len(spelled_out))
+
+    def test_the_plain_key_of_that_name_is_drawn_as_the_sign_alone(self):
+        """Nothing marks it, because there is nothing to tell it from."""
+        cell = column_list._AccelCell()
+        cell.accelerator = 'Page_Down'
+        cell._show()
+        self.assertEqual(self._caps(cell.label)[-1], '\u21df')
 
     def test_an_accelerator_is_drawn_at_the_size_its_caps_come_to(self):
         """The cell asks for one width whatever it holds; the shortcut
@@ -462,6 +529,44 @@ class ColumnListViewTest(MComixTest):
                           -1, None)
             pump()
             self.assertEqual(cell.label.get_width(), wanted)
+        finally:
+            window.destroy()
+            pump()
+
+    def test_a_shortcut_too_wide_for_its_cell_is_cut_in_whole_letters(self):
+        """Clipping alone cut through whatever letter fell on the edge
+        of the cell.  The caps ellipsize instead, so what is dropped is
+        dropped as text, and the tooltip spells the shortcut out."""
+        window = Gtk.Window()
+        box = Gtk.Box()
+        window.set_child(box)
+        window.present()
+        try:
+            pump()
+            cell = column_list._AccelCell()
+            # Four caps cannot be drawn under their minimum widths.
+            cell.accelerator = '<Control><Shift><Alt>a'
+            cell._show()
+            box.append(cell)
+            pump()
+            room = cell.measure(Gtk.Orientation.HORIZONTAL, -1)[1]
+            self.assertGreater(
+                cell.label.measure(Gtk.Orientation.HORIZONTAL, -1)[1], room,
+                'the shortcut fits, and says nothing about one that does not')
+            cell.allocate(room, cell.measure(Gtk.Orientation.VERTICAL, -1)[1],
+                          -1, None)
+            pump()
+            self.assertLessEqual(cell.label.get_width(), room)
+            child = cell.label.get_first_child()
+            ellipsized = []
+            while child is not None:
+                if isinstance(child, Gtk.Label) \
+                        and 'keycap' in child.get_css_classes():
+                    ellipsized.append(child.get_ellipsize())
+                child = child.get_next_sibling()
+            self.assertTrue(ellipsized, 'the label drew no caps')
+            self.assertTrue(all(mode == Pango.EllipsizeMode.END
+                                for mode in ellipsized))
         finally:
             window.destroy()
             pump()
