@@ -58,6 +58,17 @@ from gi.repository import GLib
 
 assert GLib.get_tmp_dir() == _SESSION_TMPDIR, GLib.get_tmp_dir()
 
+# Pin multiprocessing's temporary directory the same way.  It is worked
+# out once per process, the first time a manager or a forkserver needs a
+# socket, and it would otherwise land in the directory MComixTest gives
+# the first such test: named after the test, that made the socket's path
+# too long for AF_UNIX on Python 3.12 and 3.13, where the socket is a
+# file, and it is removed when that test ends.
+
+import multiprocessing.util
+
+multiprocessing.util.get_temp_dir()
+
 # Configure locale.
 
 import locale
