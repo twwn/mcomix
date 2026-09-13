@@ -1,0 +1,36 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  gates:
+    # Ubuntu's own GTK 4, with PyGObject and pycairo built by pip against
+    # it, so that each Python in the matrix gets bindings of its own.
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        # The floor requires-python sets, and the newest release.
+        python-version: ["3.12", "3.14"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install GTK 4 and the tools the tests call
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            gir1.2-gtk-4.0 gir1.2-adw-1 libgirepository-2.0-dev \
+            libcairo2-dev pkg-config xvfb xauth gettext \
+            7zip unzip mupdf-tools
+      - name: Install MComix and its development dependencies
+        run: python -m pip install -e '.[dev,fileformats]' mypy flake8
+      - name: pyflakes
+        run: python -m flake8 --select=F mcomix/ test/
+      - name: mypy
+        run: python -m mypy mcomix
+      - name: pytest
+        run: xvfb-run -a python -m pytest test/ -q -n auto
