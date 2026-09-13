@@ -7,9 +7,20 @@ import multiprocessing as mp
 from multiprocessing.managers import BaseManager, BaseProxy
 
 from collections.abc import Iterable, Iterator
+from multiprocessing.context import BaseContext
 from typing import TYPE_CHECKING, cast
 
-from .child import FitzWorker
+
+def worker_context() -> BaseContext:
+    """How the worker process is started: never by forking MComix.
+
+    A forked worker starts with everything MComix has loaded, GTK
+    included, and PyMuPDF up to 1.24.5 crashes when its extension is
+    loaded after GTK 4.  Forkserver starts workers from a clean process
+    of its own, and is Python 3.14's default on Linux; Windows has only
+    spawn.
+    """
+    return mp.get_context('spawn' if sys.platform == 'win32' else 'forkserver')
 
 
 class GeneratorProxy(BaseProxy):
@@ -53,18 +64,23 @@ class WorkerProxy(BaseProxy):
     @classmethod
     def _count_pages(cls) -> int:
         """How many pages the document has."""
+        # Imported here, in the worker: the module imports PyMuPDF, which
+        # the process drawing the window is to be kept free of.
+        from .child import FitzWorker
         w = FitzWorker(cls.filename)
         return w.page_count()
 
     @classmethod
     def _list_pages(cls) -> Iterator[str]:
         """A name for every page, as a generator the parent steps."""
+        from .child import FitzWorker
         w = FitzWorker(cls.filename)
         return w.iter_contents()
 
     @classmethod
     def _extract_pages(cls, entries: Iterable[str], save_path: str) -> Iterator[str]:
         """Write each of <entries> into <save_path>, naming it as it lands."""
+        from .child import FitzWorker
         w = FitzWorker(cls.filename)
         for e in entries:
             w.extract_file(e, save_path)
@@ -101,7 +117,7 @@ class FitzProcessWrangler(threading.local):
     """
 
     def __init__(self, filename: str, log_level: int | None) -> None:
-        self.mgr = FitzManager()
+        self.mgr = FitzManager(ctx=worker_context())
         self.mgr.start()
         self.mgr.open(filename)
         self.log = mp.get_logger()

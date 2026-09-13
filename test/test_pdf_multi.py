@@ -114,6 +114,31 @@ class RequiredVersionTest(unittest.TestCase):
                 mock.patch.dict(sys.modules, {'pymupdf': module}):
             self.assertEqual('1.24.10', pdf_multi.installed_version())
 
+    def test_loading_the_handler_keeps_pymupdf_out_of_the_process(self):
+        """PyMuPDF runs in the worker process, and nowhere else: loaded
+        into MComix' own process it costs a fifth of a second of every
+        start, and a release that crashes beside GTK takes the window
+        down with it."""
+        import subprocess
+        probe = ("import sys; from mcomix.archive import pdf_multi; "
+                 "print(pdf_multi.PdfMultiArchive.__name__, sorted("
+                 "{'pymupdf', 'fitz', 'mcomix.archive.native_pdf.child'}"
+                 " & set(sys.modules)))")
+        root = os.path.dirname(os.path.dirname(os.path.abspath(mcomix.__file__)))
+        answer = subprocess.run([sys.executable, '-c', probe], cwd=root,
+                                capture_output=True, text=True, timeout=60)
+        self.assertEqual(0, answer.returncode, answer.stderr)
+        name, _separator, loaded = answer.stdout.strip().partition(' ')
+        self.assertEqual('[]', loaded, answer.stdout)
+        if pdf_multi.PdfMultiArchive is not pdf_multi.DisabledFitzArchive:
+            self.assertEqual('FitzArchive', name)
+
+    def test_the_worker_is_never_forked_from_the_window(self):
+        """A worker forked from MComix starts with GTK already loaded."""
+        from mcomix.archive.native_pdf import manager
+        self.assertIn(manager.worker_context().get_start_method(),
+                      ('forkserver', 'spawn'))
+
     def test_no_pymupdf_at_all_has_no_version(self):
         with mock.patch('importlib.metadata.version',
                         side_effect=metadata.PackageNotFoundError('PyMuPDF')), \
