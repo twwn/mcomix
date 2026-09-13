@@ -6,7 +6,7 @@ parented to a widget and pointed at a rectangle in that widget's
 coordinates - which is not the widget the pointer was over.
 """
 
-from gi.repository import Gio, Gtk
+from gi.repository import Gdk, Gio, Gtk
 
 from . import MComixTest, pump
 
@@ -107,6 +107,91 @@ class EmptyTest(MComixTest):
         other = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
         other.append(label)
         self.assertEqual(self._children(other), [label])
+
+
+class MenuClickTest(MComixTest):
+
+    """Which mouse button a menu item was reached with.
+
+    A Gio menu item hands its action nothing but its target, and GTK4
+    activates an item on whichever button was pressed, so the middle
+    click that opens a recent file in an MComix of its own is told from
+    a plain one by the press that comes before the activation.
+    """
+
+    def setUp(self):
+        super().setUp()
+        entries = Gio.Menu()
+        entries.append('Something', 'app.something')
+        submenu = Gio.Menu()
+        submenu.append_submenu('More', entries)
+        self.model = Gio.Menu()
+        self.model.append_submenu('Menu', submenu)
+        self.window = Gtk.Window()
+        self.menubar = Gtk.PopoverMenuBar.new_from_model(self.model)
+        self.window.set_child(self.menubar)
+        self.window.set_visible(True)
+        pump()
+        self.addCleanup(self.window.destroy)
+        # A press left over from another test would be handed to the
+        # first one here that asks.
+        widgets.take_middle_click()
+
+    def _watches(self):
+        return [popover for popover in widgets._menu_popovers(self.menubar)
+                if any(isinstance(controller, widgets._MenuClickGesture)
+                       for controller in popover.observe_controllers())]
+
+    def _popovers(self):
+        return list(widgets._menu_popovers(self.menubar))
+
+    def test_every_popover_is_watched_submenus_included(self):
+        """A Gtk.PopoverMenu is a Gtk.Native with a surface of its own,
+        so a press in a submenu reaches neither the window nor the
+        popover the submenu hangs off: each needs its own watch."""
+        self.assertGreater(len(self._popovers()), 1,
+                           'the menu has no submenu to watch')
+        widgets.watch_menu_clicks(self.menubar)
+        self.assertEqual(self._watches(), self._popovers())
+
+    def test_watching_twice_leaves_one_watch(self):
+        """The menus are rebuilt whenever an accelerator changes, and
+        the popovers that survive it must not collect a gesture each
+        time."""
+        widgets.watch_menu_clicks(self.menubar)
+        widgets.watch_menu_clicks(self.menubar)
+        for popover in self._popovers():
+            gestures = [controller
+                        for controller in popover.observe_controllers()
+                        if isinstance(controller, widgets._MenuClickGesture)]
+            self.assertEqual(len(gestures), 1)
+
+    def test_a_new_model_is_watched_as_well(self):
+        widgets.watch_menu_clicks(self.menubar)
+        self.menubar.set_menu_model(self.model)
+        pump()
+        widgets.watch_menu_clicks(self.menubar)
+        self.assertEqual(self._watches(), self._popovers())
+
+    def test_nothing_is_a_middle_click_until_one_happens(self):
+        self.assertFalse(widgets.take_middle_click())
+
+    def test_a_middle_press_is_reported_once(self):
+        """Taken rather than read: an item activated from the keyboard
+        has no press of its own, and would otherwise be handed the
+        answer belonging to the last one."""
+        widgets._menu_button_pressed(Gdk.BUTTON_MIDDLE)
+        self.assertTrue(widgets.take_middle_click())
+        self.assertFalse(widgets.take_middle_click())
+
+    def test_another_button_clears_what_a_middle_press_set(self):
+        widgets._menu_button_pressed(Gdk.BUTTON_MIDDLE)
+        widgets._menu_button_pressed(Gdk.BUTTON_PRIMARY)
+        self.assertFalse(widgets.take_middle_click())
+
+    def test_the_right_button_is_not_the_middle_one(self):
+        widgets._menu_button_pressed(Gdk.BUTTON_SECONDARY)
+        self.assertFalse(widgets.take_middle_click())
 
 
 # vim: expandtab:sw=4:ts=4

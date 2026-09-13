@@ -56,6 +56,12 @@ By default, MComix will scroll down 50 pixels every three seconds. For a smoothe
 
 For all key bindings available, please refer to [Keybindings].
 
+### Opening a book in a window of its own ###
+
+The entries under "File &rarr; Recent" and in the "Bookmarks" menu open in the window they were picked from, which closes the book being read. Clicking one with the middle mouse button starts a second MComix on it instead, and leaves the first one where it is. A bookmark opened this way opens at the page it marks.
+
+The same thing can be asked for from a shell: `mcomix --page 42 book.cbz` opens the book at page 42.
+
 Preferences
 ---
 
@@ -93,7 +99,7 @@ The left side shows a list of collections, while the right side shows all books 
 
 Right-clicking the collection list offers "New" for an empty collection, "Add..." to put books into the one clicked, and, for the collection clicked, "Rename", "Duplicate", "Clean up" - which drops the books whose files have gone away - and "Remove". Removing a collection removes the shelf and not the books on it: they stay in the library, and a collection filed under the one removed is moved to the top level rather than going with it.
 
-Right-clicking the book view offers "Open", "Open without closing library" and "Add...", three ways to take books out - "Remove from this collection", "Remove from the library" and "Remove and delete from disk", which is the only one that touches the files - and "Copy", which puts the books on the clipboard. The same menu sets how the view is sorted, by book name, full path, file size or date added, ascending or descending, and how large the covers are drawn.
+Right-clicking the book view offers "Open", "Open without closing library" and "Add...", three ways to take books out - "Remove from this collection", "Remove from the library" and "Remove and delete from disk", which is the only one that touches the files - and "Copy", which puts the books on the clipboard. The same menu sets how the view is sorted, by book name, full path, file size or date added, ascending or descending, and how large the covers are drawn. Clicking a cover with the middle mouse button starts a second MComix on that book, leaving the library and the book being read where they are.
 
 ### Library watch list ###
 

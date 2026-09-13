@@ -2,7 +2,7 @@
 
 from gi.repository import Gdk, Gio, Graphene, Gtk
 
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Iterator
 from typing import cast
 
 
@@ -221,6 +221,87 @@ def menu_label(text: str) -> str:
     underscore, so nothing needed this before the menus became models.
     """
     return text.replace('_', '__')
+
+
+class _MenuClickGesture(Gtk.GestureClick):
+
+    """What watch_menu_clicks() leaves on a popover.
+
+    A type of its own so that a popover already being watched can be
+    told from one that is not: GTK hands out the controllers a widget
+    carries, and there is nowhere on a widget to leave a note.
+    """
+
+    __gtype_name__ = 'MComixMenuClickGesture'
+
+
+#: Whether the menu press GTK is acting on was the middle button.  Read
+#: it through take_middle_click(); watch_menu_clicks() sets it.
+_middle_click = False
+
+
+def _menu_popovers(root: Gtk.Widget) -> Iterator[Gtk.PopoverMenu]:
+    """Every menu popover in <root>'s widget tree, <root> included."""
+    if isinstance(root, Gtk.PopoverMenu):
+        yield root
+    child = root.get_first_child()
+    while child is not None:
+        yield from _menu_popovers(child)
+        child = child.get_next_sibling()
+
+
+def _menu_button_pressed(button: int) -> None:
+    """Remember which mouse <button> a menu was last pressed with."""
+    global _middle_click
+    _middle_click = button == Gdk.BUTTON_MIDDLE
+
+
+def watch_menu_clicks(root: Gtk.Widget) -> None:
+    """Note which mouse button presses the menus under <root>.
+
+    A Gtk.MenuItem was a widget, so telling a middle click from a left
+    one was a matter of connecting to its button-press-event.  A GTK4
+    menu is a model: an item carries an action name and a target, the
+    action handler is handed the target and nothing else, and GTK
+    activates the item on whichever button was pressed.  The press that
+    comes before the activation is all that separates the two.
+
+    Every popover is watched separately.  A Gtk.PopoverMenu is a
+    Gtk.Native with a surface of its own, so an event in one is
+    propagated from that popover down to the item it lands on, passing
+    neither the window nor the popover whose item opened it.
+
+    Call this again whenever a menu model is replaced: GTK builds the
+    popovers from the model, so a submenu's popover is a new widget
+    afterwards.  Popovers already being watched are left alone.
+    """
+    for popover in _menu_popovers(root):
+        if any(isinstance(controller, _MenuClickGesture)
+               for controller in popover.observe_controllers()):
+            continue
+        gesture = _MenuClickGesture()
+        # Every button, so that a left click clears what a middle click
+        # set, and the capture phase, so that the press is seen before
+        # the item under it acts on it.
+        gesture.set_button(0)
+        gesture.set_propagation_phase(Gtk.PropagationPhase.CAPTURE)
+        gesture.connect(
+            'pressed',
+            lambda gesture, presses, x, y:
+            _menu_button_pressed(gesture.get_current_button()))
+        popover.add_controller(gesture)
+
+
+def take_middle_click() -> bool:
+    """Whether the menu activation being handled came of a middle click.
+
+    The answer is taken rather than read: an item activated from the
+    keyboard is preceded by no press at all, and would otherwise be
+    handed the answer belonging to the last one.
+    """
+    global _middle_click
+    middle, _middle_click = _middle_click, False
+    return middle
 
 
 def simple_action(actions: Gio.ActionMap, name: str) -> Gio.SimpleAction:

@@ -89,6 +89,26 @@ class EditArchiveDialogTest(MComixTest):
                 if isinstance(window, message_dialog.MessageDialog)
                 and window.get_transient_for() is self.window]
 
+    def test_a_page_arriving_after_the_editor_closed_leaves_it_closed(self):
+        """cleanup() stops the thumbnailing thread, and the
+        page_available listener's refresh() starts it again: a page
+        extracted afterwards put a destroyed editor back to work, for as
+        long as Python had not collected it."""
+        area = self.dialog._image_area
+        self.dialog.destroy()
+        pump()
+        self.assertTrue(area._grid._updates_stopped,
+                        'cleanup() left the thumbnailer running')
+
+        handler = self.window.imagehandler
+        # page_available() refuses a page it has already announced.
+        handler._available_images.discard(0)
+        handler.page_available(1)
+        pump()
+
+        self.assertTrue(area._grid._updates_stopped,
+                        'a closed editor was put back to work')
+
     def test_a_failed_load_gives_the_window_its_cursor_back(self):
         """The wait cursor is set on the main window rather than on the
         editor, so anything getting out of the loading left the whole

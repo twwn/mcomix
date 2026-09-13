@@ -34,4 +34,25 @@ class DependencyCheckTest(MComixTest):
         self.assertEqual(1, exit.code)
 
 
+class ArgumentTest(MComixTest):
+
+    """The command line, which is also how MComix asks another MComix to
+    open something: a middle click on a bookmark starts one with the
+    bookmark's file and its page."""
+
+    def test_a_book_is_opened_at_its_first_page_by_default(self):
+        opts, args = run.parse_arguments(['/books/one.cbz'])
+        self.assertEqual(args, ['/books/one.cbz'])
+        self.assertEqual(opts.page, 0)
+
+    def test_a_page_can_be_named(self):
+        opts, args = run.parse_arguments(['--page', '7', '/books/one.cbz'])
+        self.assertEqual(args, ['/books/one.cbz'])
+        self.assertEqual(opts.page, 7)
+
+    def test_a_page_that_is_not_a_number_is_refused(self):
+        with self.assertRaises(SystemExit):
+            run.parse_arguments(['--page', 'seven', '/books/one.cbz'])
+
+
 # vim: expandtab:sw=4:ts=4

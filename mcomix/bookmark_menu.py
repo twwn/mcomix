@@ -100,7 +100,11 @@ class BookmarksMenu:
 
     def _open_activated(self, action: Gio.SimpleAction,
                         target: GLib.Variant) -> None:
-        self._bookmarks[target.get_int32()].load()
+        bookmark = self._bookmarks[target.get_int32()]
+        if widgets.take_middle_click():
+            bookmark.open_in_new_instance()
+        else:
+            bookmark.load()
 
     def _add_activated(self, *args: object) -> None:
         """Add the current page to the bookmarks list."""

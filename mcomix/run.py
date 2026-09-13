@@ -55,6 +55,8 @@ def parse_arguments(argv: list[str]) -> tuple[argparse.Namespace, list[str]]:
                         help=_('Show the version number and exit.'))
     parser.add_argument('--lang', dest='language_code',
                         help=_('Temporarily override the interface language.'))
+    parser.add_argument('--page', dest='page', type=int, default=0,
+                        help=_('Open the file at the given page.'))
 
     viewmodes = parser.add_argument_group(_('View modes'))
     viewmodes.add_argument('-f', '--fullscreen', dest='fullscreen', action='store_true',
@@ -208,6 +210,11 @@ def run() -> None:
             and os.path.isfile(preferences.prefs['path to last file']):
         open_path = preferences.prefs['path to last file']
         open_page = preferences.prefs['page of last file']
+
+    # --page is about the book that was named, not about the one the
+    # last session was left on: a page without a path is ignored.
+    if args and opts.page:
+        open_page = opts.page
 
     apply_layout_direction()
 

@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 
 from mcomix import preferences
 from mcomix import portability
+from mcomix import process
 from mcomix import archive_tools
 from mcomix import image_tools
 from mcomix import log
@@ -134,7 +135,11 @@ class RecentFilesMenu:
 
     def _open_activated(self, action: Gio.SimpleAction,
                         target: GLib.Variant) -> None:
-        self._load(target.get_string())
+        uri = target.get_string()
+        if widgets.take_middle_click():
+            self._open_in_new_instance(uri)
+        else:
+            self._load(uri)
 
     def _load(self, uri: str) -> None:
         path = urllib.request.url2pathname(uri[7:])
@@ -142,6 +147,15 @@ class RecentFilesMenu:
 
         if not did_file_load:
             self.remove_path(path)
+
+    def _open_in_new_instance(self, uri: str) -> None:
+        """Open what <uri> names in an MComix of its own.
+
+        The book being read stays where it is, which is what the middle
+        button means everywhere it opens something: a window of its own
+        rather than this one's contents replaced.
+        """
+        process.launch_mcomix(urllib.request.url2pathname(uri[7:]))
 
     def count(self) -> int:
         """ Returns the amount of stored entries. """

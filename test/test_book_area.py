@@ -2,6 +2,7 @@
 
 import contextlib
 import sqlite3
+import unittest.mock
 import warnings
 
 from gi.repository import Gdk, GLib, Gtk
@@ -11,6 +12,7 @@ from .test_theme import background_of
 
 from mcomix import constants
 from mcomix import message_dialog
+from mcomix import process
 from mcomix.dialog import Response
 from mcomix.library import book_area
 from mcomix.preferences import prefs
@@ -446,5 +448,84 @@ class DragIconTest(MComixTest):
 
     def test_nothing_selected_sets_no_icon(self):
         self.assertEqual([], self._icon_for(0))
+
+
+class _PathBackend(_Backend):
+
+    """A backend that knows where its books are, and can lose one."""
+
+    def __init__(self):
+        self.missing = None
+
+    def get_book_path(self, book):
+        return None if book == self.missing else '/books/%d.cbz' % book
+
+
+class _PathLibrary:
+
+    def __init__(self):
+        self.backend = _PathBackend()
+
+
+class MiddleClickTest(MComixTest):
+
+    """The middle button over a cover opens that book on its own.
+
+    It means here what it means in the recent and bookmark menus: the
+    book goes into an MComix of its own and neither the book being read
+    nor the library window moves. The cover under the pointer is what it
+    acts on, so the coordinates have to be turned into a position, which
+    needs the view laid out - hence the window.
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.library = _PathLibrary()
+        self.area = book_area._BookArea(self.library)
+        self.area._covers.set_items(
+            book_area._BookItem(_Book(index, '/books/%d.cbz' % index))
+            for index in range(4))
+        self.window = Gtk.Window()
+        self.window.set_default_size(600, 400)
+        self.window.set_child(self.area)
+        self.window.present()
+        wait_for(lambda: self.area._covers.position_at(*self.FIRST) >= 0)
+
+    def tearDown(self):
+        # The thumbnailer thread starts as soon as there are items, and
+        # parks on a condition if nobody stops it.
+        self.area.close()
+        self.window.destroy()
+        super().tearDown()
+
+    #: A point inside the first cover, and one past the last one.
+    FIRST = (60, 60)
+    EMPTY = (580, 380)
+
+    def _click(self, x, y):
+        launched = []
+        with unittest.mock.patch.object(
+                process, 'launch_mcomix',
+                side_effect=lambda name, page=0: launched.append((name, page))):
+            self.area._middle_click(None, 1, x, y)
+        return launched
+
+    def test_it_opens_the_book_under_the_pointer(self):
+        self.assertEqual(0, self.area._covers.position_at(*self.FIRST))
+        self.assertEqual([('/books/0.cbz', 0)], self._click(*self.FIRST))
+
+    def test_nothing_is_opened_where_there_is_no_cover(self):
+        self.assertEqual(-1, self.area._covers.position_at(*self.EMPTY))
+        self.assertEqual([], self._click(*self.EMPTY))
+
+    def test_a_book_the_library_no_longer_has_a_path_for_is_left_alone(self):
+        self.library.backend.missing = self.area.get_book_at_path(0)
+        self.assertEqual([], self._click(*self.FIRST))
+
+    def test_the_selection_is_left_as_it_was(self):
+        self.area._covers.select_only(3)
+        self._click(*self.FIRST)
+        self.assertEqual([3], self.area._covers.get_selected_positions())
+
 
 # vim: expandtab:sw=4:ts=4

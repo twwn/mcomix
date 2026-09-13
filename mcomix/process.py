@@ -202,4 +202,46 @@ if sys.platform == 'win32':
                                   i18n.to_unicode(ctypes.FormatError()))
 
 
+def mcomix_command() -> list[str]:
+    """How to start another MComix, given how this one was started.
+
+    A frozen build is one executable and takes its arguments directly.
+    Everything else is the interpreter running either a script or a
+    package: sys.argv[0] names the script an installed entry point or
+    mcomixstarter.py was reached by, but names mcomix/__main__.py once
+    "python -m mcomix" is what started the program - and running that
+    file as a script fails, its relative imports having no package to
+    resolve against.
+    """
+    if getattr(sys, 'frozen', False):
+        return [sys.executable]
+    spec = getattr(sys.modules['__main__'], '__spec__', None)
+    if spec is not None and spec.parent:
+        return [sys.executable, '-m', spec.parent]
+    return [sys.executable, os.path.abspath(sys.argv[0])]
+
+
+def launch_mcomix(path: "str | None" = None, page: int = 0) -> None:
+    """Open <path> in an MComix of its own, at <page> if one is given.
+
+    The new program is passed the file the way the command line would
+    pass it, so a file that has gone missing is reported by the reader
+    that was asked to show it, as it would be from a shell.  With no
+    path it starts as a launcher would start it, on whatever the
+    preferences say to open; a page without a file to find it in is
+    nothing to pass on.
+    """
+    command = mcomix_command()
+    if path is not None:
+        if page:
+            command += ['--page', str(page)]
+        command.append(path)
+    # It runs on its own from here; on Unix the SIGCHLD handler
+    # installed in run.py collects it once it exits.
+    if sys.platform == 'win32':
+        Win32Popen(command)
+    else:
+        popen(command, stdout=NULL)
+
+
 # vim: expandtab:sw=4:ts=4

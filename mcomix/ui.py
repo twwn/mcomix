@@ -14,6 +14,7 @@ from mcomix import enhance_dialog
 from mcomix import preferences_dialog
 from mcomix import recent
 from mcomix import dialog_handler
+from mcomix import widgets
 from mcomix import constants
 from mcomix import file_chooser_main_dialog
 from mcomix.preferences import prefs
@@ -572,6 +573,12 @@ class MainUI:
         self.popup.set_parent(window)
         self.toolbar = self._build_toolbar()
 
+        # A middle click on a recent file or a bookmark opens it in an
+        # MComix of its own, and a menu model says nothing about which
+        # button reached an item.
+        widgets.watch_menu_clicks(self.menubar)
+        widgets.watch_menu_clicks(self.popup)
+
         # Only the menu bar, which is a widget in the window like any
         # other.  The popup is a Gtk.PopoverMenu, and a popover that is
         # visible is *open*: it takes an input grab, and on Wayland it is
@@ -599,6 +606,9 @@ class MainUI:
         self._rebuild_pending = None
         self.menubar.set_menu_model(self._build(_MENUBAR))
         self.popup.set_menu_model(self._build(_POPUP))
+        # A new model is a new set of popovers below the two roots.
+        widgets.watch_menu_clicks(self.menubar)
+        widgets.watch_menu_clicks(self.popup)
         return GLib.SOURCE_REMOVE
 
     def add_shortcut(self, accelerator: str, action: str) -> None:

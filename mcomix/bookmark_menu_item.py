@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 from mcomix import column_list
 from mcomix import i18n
+from mcomix import process
 
 if TYPE_CHECKING:
     from mcomix import file_handler
@@ -58,6 +59,15 @@ class _Bookmark:
             self._file_handler.open_file(self._path, self._page)
         else:
             self._window.set_page(self._page)
+
+    def open_in_new_instance(self) -> None:
+        """Open the file and page in an MComix of its own.
+
+        The book being read stays where it is, which is what the middle
+        button means everywhere it opens something: a window of its own
+        rather than this one's contents replaced.
+        """
+        process.launch_mcomix(self._path, self._page)
 
     def get_directory(self) -> str:
         """The directory the bookmarked file is in."""

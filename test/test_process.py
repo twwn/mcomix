@@ -1,8 +1,11 @@
 
+import importlib.machinery
 import os
 import stat
 import sys
 import tempfile
+import types
+import unittest.mock
 
 from . import MComixTest
 
@@ -156,3 +159,79 @@ class ProcessTest(MComixTest):
             proc.stdout.close()
             self.assertEqual(0, proc.wait())
             self.assertEqual([name], os.listdir(tmp_dir))
+
+
+class LaunchTest(MComixTest):
+
+    """Starting another MComix, which is what a middle click on a recent
+    file or a bookmark does."""
+
+    def setUp(self):
+        super().setUp()
+        self.spawned = []
+        patch = unittest.mock.patch.object(
+            process, 'popen',
+            side_effect=lambda command, **kwargs: self.spawned.append(
+                list(command)))
+        patch.start()
+        self.addCleanup(patch.stop)
+
+    def _as_main(self, name):
+        """Pretend the program was started as the module <name>."""
+        main = types.ModuleType('__main__')
+        main.__spec__ = importlib.machinery.ModuleSpec(
+            name, None, is_package=False)
+        return unittest.mock.patch.dict(sys.modules, {'__main__': main})
+
+    def test_a_module_run_is_started_the_same_way(self):
+        """sys.argv[0] names mcomix/__main__.py after "python -m mcomix",
+        and running that file as a script fails: its relative imports
+        have no package to resolve against."""
+        with self._as_main('mcomix.__main__'):
+            self.assertEqual(process.mcomix_command(),
+                             [sys.executable, '-m', 'mcomix'])
+
+    def test_a_script_is_started_by_its_path(self):
+        main = types.ModuleType('__main__')
+        main.__spec__ = None
+        with unittest.mock.patch.dict(sys.modules, {'__main__': main}), \
+                unittest.mock.patch.object(sys, 'argv', ['bin/mcomix']):
+            self.assertEqual(process.mcomix_command(),
+                             [sys.executable, os.path.abspath('bin/mcomix')])
+
+    def test_a_frozen_build_is_its_own_executable(self):
+        with unittest.mock.patch.object(sys, 'frozen', True, create=True):
+            self.assertEqual(process.mcomix_command(), [sys.executable])
+
+    @unittest.skipIf(sys.platform == 'win32', 'Win32Popen is used there')
+    def test_the_file_is_the_last_argument(self):
+        with self._as_main('mcomix.__main__'):
+            process.launch_mcomix('/books/one.cbz')
+        self.assertEqual(self.spawned,
+                         [[sys.executable, '-m', 'mcomix', '/books/one.cbz']])
+
+    @unittest.skipIf(sys.platform == 'win32', 'Win32Popen is used there')
+    def test_a_page_is_passed_on(self):
+        """A bookmark is a file and a page, so opening one elsewhere has
+        to name the page as well."""
+        with self._as_main('mcomix.__main__'):
+            process.launch_mcomix('/books/one.cbz', 7)
+        self.assertEqual(self.spawned, [[sys.executable, '-m', 'mcomix',
+                                         '--page', '7', '/books/one.cbz']])
+
+    @unittest.skipIf(sys.platform == 'win32', 'Win32Popen is used there')
+    def test_no_file_starts_it_as_a_launcher_would(self):
+        """Restarting with nothing open passes nothing on, and leaves
+        the new program to read the preferences for what to open."""
+        with self._as_main('mcomix.__main__'):
+            process.launch_mcomix(None, 3)
+        self.assertEqual(self.spawned, [[sys.executable, '-m', 'mcomix']])
+
+    @unittest.skipIf(sys.platform == 'win32', 'Win32Popen is used there')
+    def test_no_page_means_no_page_argument(self):
+        """0 is what a recent file is opened with, and it leaves the
+        choice to the file handler: the first page, or the last one
+        read."""
+        with self._as_main('mcomix.__main__'):
+            process.launch_mcomix('/books/one.cbz', 0)
+        self.assertNotIn('--page', self.spawned[0])

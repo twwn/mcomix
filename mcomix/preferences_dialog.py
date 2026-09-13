@@ -16,6 +16,7 @@ from mcomix import message_dialog
 from mcomix import keybindings
 from mcomix import keybindings_editor
 from mcomix import theme
+from mcomix import i18n
 from mcomix.i18n import _
 from mcomix.dialog import Response
 
@@ -531,10 +532,17 @@ class _PreferencesDialog(Dialog):
             ('正體中文', 'zh_TW')]  # Chinese (traditional)
         languages.sort(key=operator.itemgetter(0))
 
-        box = self._create_combobox(languages, prefs['language'],
-                                    self._language_changed_cb)
+        # What the interface on screen was built from, which is not
+        # necessarily what the preference holds: a reader who picks
+        # another language and declines the restart leaves the
+        # preference ahead of the interface, and this dialog is built
+        # afresh every time it is opened.  Picking the language already
+        # on screen is nothing to restart for.
+        self._language_in_use = i18n.get_language_preference()
+        self._language_chooser = self._create_combobox(
+            languages, prefs['language'], self._language_changed_cb)
 
-        return box
+        return self._language_chooser
 
     def _create_theme_control(self) -> "widgets.Chooser[str]":
         """ Creates the ComboBox control for selecting how MComix is painted. """
@@ -569,6 +577,32 @@ class _PreferencesDialog(Dialog):
                              *args: object) -> None:
         """ Called whenever the language was changed. """
         prefs['language'] = combobox.get_value()
+        if prefs['language'] != self._language_in_use:
+            self._offer_restart()
+
+    def _offer_restart(self) -> None:
+        """Ask whether to start MComix again in the language just picked.
+
+        The interface cannot change language while it is up - see
+        main.MainWindow.restart_program() for why - so this is an offer
+        rather than a notice, and declining it leaves the preference
+        set for the next start.
+        """
+        dialog = message_dialog.MessageDialog(
+            self, modal=True, buttons=Gtk.ButtonsType.YES_NO)
+        dialog.set_default_response(Response.YES)
+        dialog.set_text(
+            _('Restart MComix in the language you picked?'),
+            _('MComix is translated as it starts, so most of the '
+              'interface stays in the language it started in until it '
+              'is started again. The book being read, its page and the '
+              'window size are kept.'))
+
+        def responded(response: int) -> None:
+            if response == Response.YES:
+                self._window.restart_program()
+
+        dialog.run_async(responded)
 
     def _create_doublepage_as_one_control(self) -> "widgets.Chooser[int]":
         """ Creates the ComboBox control for selecting virtual double page options. """

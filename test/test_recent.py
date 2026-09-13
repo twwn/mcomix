@@ -3,12 +3,15 @@ now that the chooser widget that used to do it is going away. """
 
 import os
 import time
+import unittest.mock
 
-from gi.repository import GLib, Gtk
+from gi.repository import Gdk, GLib, Gtk
 
 from . import MComixTest, pump, session_tmp_dir
 
+from mcomix import process
 from mcomix import recent
+from mcomix import widgets
 
 
 class _StubWindow(Gtk.Window):
@@ -70,6 +73,9 @@ class RecentFilesMenuTest(MComixTest):
         self.real_get_default = Gtk.RecentManager.get_default
         Gtk.RecentManager.get_default = staticmethod(lambda: self.manager)
         self.window = _StubWindow()
+        # A press left over from another test would be handed to the
+        # first activation here that asks.
+        widgets.take_middle_click()
 
     def tearDown(self):
         Gtk.RecentManager.get_default = self.real_get_default
@@ -153,6 +159,23 @@ class RecentFilesMenuTest(MComixTest):
         menu._actions.lookup_action(
             recent.RecentFilesMenu.OPEN_ACTION).activate(target)
         self.assertEqual(self.window.opened, [path])
+
+    def test_a_middle_click_opens_an_entry_in_an_mcomix_of_its_own(self):
+        """The book being read stays where it is, which is what the
+        middle button means everywhere it opens something."""
+        path = self._add('book.cbz')
+        menu = recent.RecentFilesMenu(None, self.window)
+        target = menu.model.get_item_attribute_value(0, 'target')
+        launched = []
+        with unittest.mock.patch.object(
+                process, 'launch_mcomix',
+                side_effect=lambda name, page=0: launched.append((name, page))):
+            widgets._menu_button_pressed(Gdk.BUTTON_MIDDLE)
+            menu._actions.lookup_action(
+                recent.RecentFilesMenu.OPEN_ACTION).activate(target)
+        self.assertEqual(launched, [(path, 0)])
+        self.assertEqual(self.window.opened, [],
+                         'the file was opened here as well')
 
     def test_the_menu_follows_the_list(self):
         menu = recent.RecentFilesMenu(None, self.window)

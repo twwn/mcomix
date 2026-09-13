@@ -21,6 +21,7 @@ from mcomix import image_handler
 from mcomix import image_tools
 from mcomix import lens
 from mcomix import preferences
+from mcomix import process
 from mcomix.preferences import prefs
 from mcomix import ui
 from mcomix import slideshow
@@ -1716,11 +1717,15 @@ class MainWindow(Gtk.Window):
         """Quit, and open this book at this page next time.
 
         The preference is what the next start reads to tell a quit that
-        meant to be resumed from one that did not.
+        meant to be resumed from one that did not.  Everything else is
+        what any other quit does, the window size included: this went
+        straight to terminate_program(), so the one menu entry that
+        promises to put the reader back where they were was also the one
+        that forgot how large their window had been.
         """
         prefs['previous quit was quit and save'] = True
 
-        self.terminate_program()
+        self.close_program()
 
     def get_window_size(self) -> tuple[int, int]:
         """Return the size of the window.
@@ -1782,6 +1787,31 @@ class MainWindow(Gtk.Window):
         """Quit, keeping the window size unless it is a fullscreen one."""
         self.save_window_geometry()
         self.terminate_program()
+
+    def restart_program(self) -> None:
+        """Quit, and start MComix again on the book being read.
+
+        Some of what the preferences dialog offers cannot reach an
+        interface that is already on screen.  The interface language is
+        the clearest case: gettext is asked for the catalogue as the
+        modules are imported, so several hundred of the strings shown -
+        the keybinding names, the error messages, the menu and toolbar
+        tables - are translated before any window exists, and changing
+        the preference afterwards leaves most of the interface in the
+        language it started in.  Starting again is the only way to show
+        one language throughout.
+
+        What carries over is what the configuration files hold, which
+        close_program() has just written, plus the book and its page,
+        which are passed on the command line the way a shell would pass
+        them.  The window geometry is among the written settings, so the
+        new window comes up where this one stood.
+        """
+        # Both have to be read before the file handler is closed.
+        path = self.imagehandler.get_real_path()
+        page = self.imagehandler.get_current_page()
+        self.close_program()
+        process.launch_mcomix(path, page)
 
     def terminate_program(self) -> None:
         """Run clean-up tasks and exit the program."""

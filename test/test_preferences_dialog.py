@@ -8,12 +8,14 @@ said went out with the wash.
 """
 
 import os
+import unittest.mock
 
 from gi.repository import Gdk, Gtk
 
 from . import MComixTest, pump
 
 from mcomix import constants
+from mcomix import i18n
 from mcomix import icons
 from mcomix import main
 from mcomix import message_dialog
@@ -252,6 +254,79 @@ class PreferencesDialogTest(MComixTest):
         pump()
         self.assertEqual({}, prefs['stored dialog choices'])
         self.assertFalse(self.dialog.reset_button.get_sensitive())
+
+    # -- Changing the interface language -----------------------------------
+
+    def _prompts(self):
+        """The prompts the dialog has put on screen."""
+        return [window for window in Gtk.Window.list_toplevels()
+                if isinstance(window, message_dialog.MessageDialog)
+                and window.get_visible()]
+
+    def _pick_language(self, language):
+        """Pick <language> in the dialog's language chooser."""
+        self._open()
+        self.dialog._language_chooser.set_value(language)
+        pump()
+        return self._prompts()
+
+    def test_picking_another_language_offers_a_restart(self):
+        """Most of the interface is translated before any window exists,
+        so the language picked here cannot reach the one on screen."""
+        prompts = self._pick_language('de')
+        self.assertEqual(1, len(prompts))
+        self.assertEqual('de', prefs['language'])
+        prompts[0].destroy()
+
+    def test_picking_the_language_in_use_offers_nothing(self):
+        """A reader who picks another language and then picks the one
+        they started in is back where they were."""
+        self._open()
+        self.dialog._language_chooser.set_value('de')
+        pump()
+        for prompt in self._prompts():
+            prompt.destroy()
+        pump()
+        self.dialog._language_chooser.set_value('auto')
+        pump()
+        self.assertEqual([], self._prompts())
+        self.assertEqual('auto', prefs['language'])
+
+    def test_the_offer_follows_the_interface_not_the_stored_choice(self):
+        """A reader who picks a language and declines the restart leaves
+        the preference ahead of the interface, and this dialog is built
+        afresh every time it is opened.  A second opening compared the
+        next choice against the preference, so picking the language
+        actually on screen offered a restart that would change nothing.
+        """
+        with unittest.mock.patch.object(i18n, '_language_preference',
+                                        'auto'):
+            # What the earlier, declined choice left behind.
+            prefs['language'] = 'de'
+            self._open()
+            self.dialog._language_chooser.set_value('auto')
+            pump()
+            self.assertEqual([], self._prompts())
+            self.assertEqual('auto', prefs['language'])
+
+    def test_answering_yes_starts_mcomix_again(self):
+        restarted = []
+        self.window.restart_program = lambda: restarted.append(True)
+        prompts = self._pick_language('de')
+        prompts[0].response(Response.YES)
+        pump()
+        self.assertEqual([True], restarted)
+
+    def test_answering_no_leaves_the_program_where_it_is(self):
+        """The preference is kept even so: it is what the next start
+        reads."""
+        restarted = []
+        self.window.restart_program = lambda: restarted.append(True)
+        prompts = self._pick_language('de')
+        prompts[0].response(Response.NO)
+        pump()
+        self.assertEqual([], restarted)
+        self.assertEqual('de', prefs['language'])
 
     def test_the_shortcuts_tab_offers_the_keys_instead(self):
         """The same button resets the keyboard shortcuts there, so a

@@ -26,6 +26,11 @@ _translation: gettext.NullTranslations | None = None
 #: language to. Read it through get_language() rather than directly.
 _language = 'C'
 
+#: What install_gettext() was asked for, before it resolved anything:
+#: the "language" preference, or the code --language named. Read it
+#: through get_language_preference().
+_language_preference = 'auto'
+
 #: Languages MComix is translated into whose script runs right to left.
 #: Pango knows the full set, but pango_language_get_direction() has no
 #: introspection binding, so the two that have catalogues are listed here.
@@ -110,9 +115,12 @@ def install_gettext(force_lang: str | None = None) -> None:
     # Make sure GTK uses the correct language.
     os.environ['LANGUAGE'] = lang
 
-    # Remember it before the loop below reuses the name.
-    global _language
+    # Remember both before the loop below reuses the name: the locale
+    # that was resolved, and what it was resolved from.
+    global _language, _language_preference
     _language = lang
+    _language_preference = (force_lang if force_lang is not None
+                            else preferences.prefs['language'])
 
     domain = constants.APPNAME.lower()
 
@@ -138,6 +146,18 @@ def get_language() -> str:
     displayed in. This is the preference, the --language argument or the
     user's locale, whichever install_gettext() settled on."""
     return _language
+
+
+def get_language_preference() -> str:
+    """What the interface on screen was built from: a language code, or
+    'auto'.
+
+    This is the value the preferences dialog offers, so it is the one a
+    choice made there can be compared against. get_language() answers
+    with the locale that was resolved from it instead, which 'auto'
+    never equals and which a preference of 'pt_BR' need not either.
+    """
+    return _language_preference
 
 
 def is_rtl_language() -> bool:

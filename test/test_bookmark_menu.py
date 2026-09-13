@@ -1,8 +1,9 @@
 """ Tests for the bookmarks menu, which is a Gio.Menu model now. """
 
 import os
+import unittest.mock
 
-from gi.repository import GLib, Gtk
+from gi.repository import Gdk, GLib, Gtk
 
 from . import MComixTest, pump
 
@@ -12,6 +13,7 @@ from mcomix import constants
 from mcomix import bookmark_dialog
 from mcomix import bookmark_menu
 from mcomix import message_dialog
+from mcomix import process
 from mcomix import widgets
 from mcomix.dialog import Response
 
@@ -87,6 +89,9 @@ class BookmarksMenuTest(MComixTest):
         self.store._initialized = False
         self.store._bookmarks = []
         self.menu = bookmark_menu.BookmarksMenu(self.ui, self.window)
+        # A press left over from another test would be handed to the
+        # first activation here that asks.
+        widgets.take_middle_click()
 
     def tearDown(self):
         # Anything left on screen would be answered by the next test that
@@ -249,6 +254,31 @@ class BookmarksMenuTest(MComixTest):
     def test_opening_a_bookmark_loads_it(self):
         self._bookmark(3)
         self.menu._actions.lookup_action('open').activate(GLib.Variant('i', 0))
+        self.assertEqual(self.window.filehandler.opened, [('/tmp/book.cbz', 3)])
+
+    def test_a_middle_click_opens_a_bookmark_in_an_mcomix_of_its_own(self):
+        """The book being read stays where it is, which is what the
+        middle button means everywhere it opens something."""
+        self._bookmark(3)
+        launched = []
+        with unittest.mock.patch.object(
+                process, 'launch_mcomix',
+                side_effect=lambda path, page=0: launched.append((path, page))):
+            widgets._menu_button_pressed(Gdk.BUTTON_MIDDLE)
+            self.menu._actions.lookup_action('open').activate(
+                GLib.Variant('i', 0))
+        self.assertEqual(launched, [('/tmp/book.cbz', 3)])
+        self.assertEqual(self.window.filehandler.opened, [],
+                         'the bookmark was opened here as well')
+
+    def test_a_middle_click_is_not_remembered_for_the_next_one(self):
+        """An item activated from the keyboard has no press of its own."""
+        self._bookmark(3)
+        widgets._menu_button_pressed(Gdk.BUTTON_MIDDLE)
+        open_action = self.menu._actions.lookup_action('open')
+        with unittest.mock.patch.object(process, 'launch_mcomix'):
+            open_action.activate(GLib.Variant('i', 0))
+        open_action.activate(GLib.Variant('i', 0))
         self.assertEqual(self.window.filehandler.opened, [('/tmp/book.cbz', 3)])
 
     def test_adding_needs_a_file_to_be_open(self):

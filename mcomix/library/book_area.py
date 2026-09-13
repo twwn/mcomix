@@ -19,6 +19,7 @@ from mcomix import file_chooser_library_dialog
 from mcomix import image_tools
 from mcomix import constants
 from mcomix import preview
+from mcomix import process
 from mcomix import icons
 from mcomix import widgets
 from mcomix import i18n
@@ -87,6 +88,11 @@ class _BookArea(Gtk.ScrolledWindow):
         clicks.set_button(3)
         clicks.connect('pressed', self._button_press)
         self._covers.add_controller(clicks)
+
+        middle_clicks = Gtk.GestureClick()
+        middle_clicks.set_button(Gdk.BUTTON_MIDDLE)
+        middle_clicks.connect('pressed', self._middle_click)
+        self._covers.add_controller(middle_clicks)
 
         keys = Gtk.EventControllerKey()
         keys.connect('key-pressed', self._key_press)
@@ -645,6 +651,28 @@ class _BookArea(Gtk.ScrolledWindow):
             # already paid.
             self._library._window.clipboard.copy(item.path,
                                                  self._get_pixbuf(item.uid))
+
+    def _middle_click(self, gesture: Gtk.GestureClick, n_press: int,
+                      x: float, y: float) -> None:
+        """Open the book under the pointer in an MComix of its own.
+
+        The middle button means here what it means in the recent and
+        bookmark menus: what it opens goes into a program of its own,
+        leaving both the book being read and the library as they are.
+        It acts on the cover under the pointer rather than on the
+        selection, and leaves the selection alone, so a reader can send
+        off one book without losing the several they had picked.
+        """
+        position = self._covers.position_at(x, y)
+        if position < 0:
+            return
+        book = self.get_book_at_path(position)
+        if book is None:
+            return
+        path = self._library.backend.get_book_path(book)
+        if path is None:
+            return
+        process.launch_mcomix(path)
 
     def _button_press(self, gesture: Gtk.GestureClick, n_press: int,
                       x: float, y: float) -> None:

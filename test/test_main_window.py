@@ -362,6 +362,23 @@ class MainWindowTest(MComixTest):
         self.assertEqual(self.window.get_window_size(),
                          (prefs['window width'], prefs['window height']))
 
+    def test_save_and_quit_keeps_the_window_size(self):
+        """It is the entry that promises to put the reader back where
+        they were, and it went straight to terminate_program(), which
+        writes the configuration files without asking the window how
+        large it is.  Plain Quit and the window's own close button both
+        go through close_program(), which does ask."""
+        prefs['window width'] = -1
+        prefs['window height'] = -1
+        with unittest.mock.patch.object(type(self.window),
+                                        'terminate_program'):
+            self.window.save_and_terminate_program()
+
+        self.assertEqual(self.window.get_window_size(),
+                         (prefs['window width'], prefs['window height']))
+        self.assertTrue(prefs['previous quit was quit and save'],
+                        'the preference the next start reads was not set')
+
     def test_showing_a_toggle_as_on_does_not_run_it(self):
         """What the start-up sync needs: the tick moves, the colours
         are left alone because they are already what it says."""
@@ -1470,6 +1487,56 @@ class MainWindowTest(MComixTest):
         self.window.draw_image()
         self._pump()
         self.assertEqual(1, len(scrolls))
+
+
+class RestartTest(MComixTest):
+
+    """Starting MComix again, which is how a new language is shown."""
+
+    def setUp(self):
+        super().setUp()
+        for directory in (constants.CONFIG_DIR, constants.DATA_DIR):
+            os.makedirs(directory, exist_ok=True)
+        icons.load_icons()
+        self.window = main.MainWindow()
+        main.set_main_window(self.window)
+        # What restart_program() has to get right is the order: the path
+        # and the page are read while the file is still open, because
+        # terminate_program() closes the file handler. These answer as a
+        # closed handler would once the program has been closed.
+        self.closed = []
+        self.window.imagehandler.get_real_path = (
+            lambda: None if self.closed else '/books/one.cbz')
+        self.window.imagehandler.get_current_page = (
+            lambda: 0 if self.closed else 7)
+        self.window.close_program = lambda: self.closed.append('closed')
+        pump()
+
+    def tearDown(self):
+        self.window.terminate_program()
+        self.window.destroy()
+        main.set_main_window(None)
+        pump()
+        super().tearDown()
+
+    def test_it_carries_the_book_and_its_page_over(self):
+        with unittest.mock.patch.object(main.process,
+                                        'launch_mcomix') as launch:
+            self.window.restart_program()
+        self.assertEqual(['closed'], self.closed)
+        launch.assert_called_once_with('/books/one.cbz', 7)
+
+    def test_the_program_is_closed_before_the_new_one_starts(self):
+        """Two MComix writing the configuration files at once is a race
+        of its own; closing first keeps them apart, and is also what
+        writes the geometry the new window comes up with."""
+        order = []
+        self.window.close_program = lambda: order.append('closed')
+        with unittest.mock.patch.object(
+                main.process, 'launch_mcomix',
+                side_effect=lambda *args: order.append('launched')):
+            self.window.restart_program()
+        self.assertEqual(['closed', 'launched'], order)
 
 
 class InvertedColoursAtStartUpTest(MComixTest):

@@ -49,13 +49,14 @@ class LanguageTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self._saved = (i18n._language, i18n._translation,
-                       os.environ.get('LANGUAGE'))
+        self._saved = (i18n._language, i18n._language_preference,
+                       i18n._translation, os.environ.get('LANGUAGE'))
         self._saved_locale = portability.get_default_locale
 
     def tearDown(self):
         portability.get_default_locale = self._saved_locale
-        i18n._language, i18n._translation, language = self._saved
+        (i18n._language, i18n._language_preference,
+         i18n._translation, language) = self._saved
         if language is None:
             os.environ.pop('LANGUAGE', None)
         else:
@@ -76,6 +77,22 @@ class LanguageTest(MComixTest):
         portability.get_default_locale = lambda: 'he_IL'
         i18n.install_gettext()
         self.assertEqual('he_IL', i18n.get_language())
+
+    def test_the_preference_it_was_asked_for_is_remembered(self):
+        """What the preferences dialog compares a new choice against.
+        The resolved locale will not do: "auto" never equals one."""
+        prefs['language'] = 'auto'
+        portability.get_default_locale = lambda: 'he_IL'
+        i18n.install_gettext()
+        self.assertEqual('auto', i18n.get_language_preference())
+        self.assertEqual('he_IL', i18n.get_language())
+
+    def test_a_forced_language_is_what_was_asked_for(self):
+        """--language overrides the preference for that run, so it is
+        what the interface on screen was built from."""
+        prefs['language'] = 'auto'
+        i18n.install_gettext('he')
+        self.assertEqual('he', i18n.get_language_preference())
 
     def test_the_search_loop_does_not_overwrite_the_language(self):
         # install_gettext() reuses the name while looking for a catalogue,
