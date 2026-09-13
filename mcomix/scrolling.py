@@ -1,4 +1,18 @@
-""" Smart scrolling. """
+"""scrolling.py - Reading a page one screenful at a time.
+
+"Smart scrolling" is what a single press of the space bar does: it
+moves the viewport to the next part of the page that has not been read
+yet, going along the fastest axis first and carrying into the next one
+when that axis runs out, the way a ripple-carry adder does.  The axes
+are ordered by how quickly they change while reading, fastest first,
+which an axis map can override.
+
+Each axis is stepped along a grid of positions rather than by a fixed
+number of pixels, so that the last step of an axis lands exactly on the
+end of the content instead of overshooting it or leaving a sliver
+unread.  The grid is Bresenham's line algorithm spreading the remainder
+of the division evenly over the steps.
+"""
 
 from mcomix import tools
 from mcomix import constants
@@ -9,6 +23,13 @@ from collections.abc import Sequence
 
 
 class Scrolling:
+
+    """Where a scrolling step lands, given the content and the viewport.
+
+    It holds nothing about the page but the last two step grids it
+    worked out, which is what makes it worth having an instance of
+    rather than a set of functions.
+    """
 
     def __init__(self) -> None:
         #: The last two answers of _bresenham_sums(), each kept beside
@@ -22,25 +43,21 @@ class Scrolling:
                        orientation: Sequence[int],
                        max_scroll: Sequence[float],
                        axis_map: Sequence[int] | None = None) -> list[int]:
-        """ Returns a new viewport position when reading forwards using
-        the given orientation. If there is no space left to go, the empty
-        list is returned. Note that all params are lists of ints (except
-        max_scroll which might also contain floats) where each index
-        corresponds to one dimension. The lower the index, the faster the
-        corresponding position changes when reading. If you need to override
-        this behavior, use the optional axis_map.
-        @param content_box: The Box of the content to display.
-        @param viewport_box: The viewport Box we are looking through.
-        @param orientation: The orientation which shows where "forward"
-        points to. Either 1 (towards larger values in this dimension when
-        reading) or -1 (towards smaller values in this dimension when reading).
-        Note that you can emulate "reading backwards" by flipping the sign
-        of this argument.
-        @param max_scroll: The maximum number of pixels to scroll in one step.
-        (Floats allowed.)
-        @param axis_map: The index of the dimension to modify.
-        @return: A new viewport_position if you can read further or the
-        empty list if there is nothing left to read. """
+        """Where the viewport goes next, reading <content_box> forwards.
+
+        The answer is a new position for <viewport_box>, or the empty
+        list when there is nothing left to read.
+
+        Every argument holds one value per dimension.  <orientation>
+        says which way "forwards" is on each axis, 1 towards the larger
+        values and -1 towards the smaller, so reading backwards is the
+        same call with the signs flipped.  <max_scroll> is how far one
+        step may move, in pixels, and may hold floats.
+
+        The axes are taken in order, the lowest index changing fastest,
+        and <axis_map> reorders them where that is not what is wanted -
+        which is the "invert smart scroll" preference.
+        """
         # Translate content and viewport so that content position equals origin
         offset = content_box.get_position()
         content_size = content_box.get_size()
@@ -57,87 +74,90 @@ class Scrolling:
         result = list(viewport_position)
         carry = True
         reset_all_axes = False
-        for i, (content, viewport, position, o) in enumerate(
+        # The viewport may be sitting before the content rather than in
+        # it - a page smaller than the last one, or one just opened - in
+        # which case the step is to the start of the content and not
+        # one grid point further on.
+        for axis, (content, viewport, position, direction) in enumerate(
                 zip(content_size, viewport_size, viewport_position,
                     orientation)):
             invisible_size = content - viewport
-            # Find a nice starting point
-            if o == 1:
+            if direction == 1:
                 if position < 0:
-                    result[i] = 0
+                    result[axis] = 0
                     carry = False
                     if position <= -viewport:
                         reset_all_axes = True
                         break
-            else:  # o == -1
+            else:  # direction == -1
                 if position > invisible_size:
-                    result[i] = invisible_size
+                    result[axis] = invisible_size
                     carry = False
                     if position > content:
                         reset_all_axes = True
                         break
         if reset_all_axes:
-            # We don't see anything at all because we are somewhere way before
-            # the content box. Let's go to it.
-            for i, (content, viewport, o) in enumerate(
+            # Not even an edge of the content is in view, so there is no
+            # part-read axis to preserve: go to the start of all of them.
+            for axis, (content, viewport, direction) in enumerate(
                     zip(content_size, viewport_size, orientation)):
-                result[i] = 0 if o == 1 else content - viewport
+                result[axis] = 0 if direction == 1 else content - viewport
 
-        # This code is somewhat similar to a simple ripple-carry adder.
+        # A ripple-carry adder: each axis is stepped on, and an axis
+        # with no room left goes back to its start and carries into the
+        # next one.
         if carry:
-            for i, (content, viewport, position, o, axis_max_scroll) in \
+            for axis, (content, viewport, position, direction,
+                       axis_max_scroll) in \
                     enumerate(zip(content_size, viewport_size,
                                   viewport_position, orientation, max_scroll)):
                 invisible_size = content - viewport
-                ms = min(axis_max_scroll, invisible_size)
-                # Let's calculate the grid we want to snap to.
-                if ms != 0:
-                    steps_to_take = int(math.ceil(float(invisible_size) / ms))
-                if ms == 0 or steps_to_take >= invisible_size:
-                    # special case: We MUST go forward by at least 1 pixel.
-                    if o >= 0:
-                        result[i] += 1
-                        carry = result[i] > invisible_size
+                step = min(axis_max_scroll, invisible_size)
+                # A step of no pixels, or a grid finer than the pixels
+                # it is drawn on, is no grid at all.
+                by_one_pixel = step == 0
+                if not by_one_pixel:
+                    steps_to_take = math.ceil(invisible_size / step)
+                    by_one_pixel = steps_to_take >= invisible_size
+                if by_one_pixel:
+                    # Whatever else happens, the step has to move.
+                    if direction >= 0:
+                        result[axis] += 1
+                        carry = result[axis] > invisible_size
                         if carry:
-                            result[i] = 0
+                            result[axis] = 0
                             continue
                     else:
-                        result[i] -= 1
-                        carry = result[i] < 0
+                        result[axis] -= 1
+                        carry = result[axis] < 0
                         if carry:
-                            result[i] = invisible_size
+                            result[axis] = invisible_size
                             continue
                     break
-                # If orientation is -1, we need to round half up instead of
-                # half down.
-                positions = self._cached_bs(invisible_size, steps_to_take, o == -1)
+                # Reading towards the smaller values rounds the other
+                # way, so that the two directions land on the same
+                # grid points.
+                positions = self._cached_bresenham_sums(
+                    invisible_size, steps_to_take, direction == -1)
 
-                # Where are we now (according to the grid)?
                 index = tools.bin_search(positions, position)
-
                 if index < 0:
-                    # We're somewhere between two valid grid points, so
-                    # let's go to the next one.
+                    # Between two grid points: ~index is the one after,
+                    # which is where reading backwards is headed and one
+                    # too far for reading forwards.
                     index = ~index
-                    if o >= 0:
-                        # index tends to be greater, so we need to go back
-                        # manually, if needed.
+                    if direction >= 0:
                         index -= 1
-                # Let's go to where we're headed for.
-                index += o
+                index += direction
 
                 carry = index < 0 or index >= len(positions)
                 if carry:
-                    # There is no space left in this dimension, so let's go
-                    # back in this one and one step forward in the next one.
-                    result[i] = 0 if o > 0 else invisible_size
+                    result[axis] = 0 if direction > 0 else invisible_size
                 else:
-                    # We found a valid grid point in this dimension, so let's
-                    # stop here.
-                    result[i] = positions[index]
+                    result[axis] = positions[index]
                     break
         if carry:
-            # No space left.
+            # Every axis carried, so the whole content has been read.
             return []
 
         # Undo axis remapping, if any
@@ -150,49 +170,53 @@ class Scrolling:
                              viewport_box: box.Box,
                              orientation: Sequence[int],
                              destination: Sequence[int]) -> list[int]:
-        """ Returns a new viewport position when scrolling towards a
-        predefined destination. Note that all params are lists of integers
-        where each index corresponds to one dimension.
-        @param content_box: The Box of the content to display.
-        @param viewport_box: The viewport Box we are looking through.
-        @param orientation: The orientation which shows where "forward"
-        points to. Either 1 (towards larger values in this dimension when
-        reading) or -1 (towards smaller values in this dimension when reading).
-        @param destination: An integer representing a predefined destination.
-        Either 1 (towards the greatest possible values in this dimension),
-        -1 (towards the smallest value in this dimension), 0 (keep position),
-        SCROLL_TO_CENTER (scroll to the center of the content in this
-        dimension), SCROLL_TO_START (scroll to where the content starts in this
-        dimension) or SCROLL_TO_END (scroll to where the content ends in this
-        dimension).
-        @return: A new viewport position as specified above. """
+        """Where the viewport goes to reach <destination>.
+
+        Every argument holds one value per dimension.  <orientation>
+        says which way "forwards" is on each axis, 1 towards the larger
+        values and -1 towards the smaller.
+
+        Each value of <destination> is 1 (towards the greatest values
+        in this dimension), -1 (towards the smallest), 0 (keep the
+        position), or one of SCROLL_TO_CENTER, SCROLL_TO_START and
+        SCROLL_TO_END.  The last two are relative to the reading
+        direction rather than to the axis, so they are the orientation
+        and its opposite.
+        """
         content_position = content_box.get_position()
         content_size = content_box.get_size()
         viewport_size = viewport_box.get_size()
         result = list(viewport_box.get_position())
-        for i, (content, viewport, start, o, d) in enumerate(
+        for axis, (content, viewport, start, direction, target) in enumerate(
                 zip(content_size, viewport_size, content_position,
                     orientation, destination)):
-            if d == 0:
+            if target == 0:
                 continue
-            if d < constants.SCROLL_TO_END or d > 1:
-                raise ValueError('invalid destination %d at index %d' % (d, i))
-            if d == constants.SCROLL_TO_END:
-                d = o
-            if d == constants.SCROLL_TO_START:
-                d = -o
+            if target < constants.SCROLL_TO_END or target > 1:
+                raise ValueError('invalid destination %d at index %d'
+                                 % (target, axis))
+            if target == constants.SCROLL_TO_END:
+                target = direction
+            if target == constants.SCROLL_TO_START:
+                target = -direction
             invisible_size = content - viewport
-            result[i] = start + (box.Box._box_to_center_offset_1d(
-                invisible_size, o) if d == constants.SCROLL_TO_CENTER
-                else invisible_size if d == 1
-                else 0)  # if d == -1
+            result[axis] = start + (box.Box._box_to_center_offset_1d(
+                invisible_size, direction) if target == constants.SCROLL_TO_CENTER
+                else invisible_size if target == 1
+                else 0)  # if target == -1
         return result
 
-    def _cached_bs(self, num: int, denom: int, half_up: bool) -> list[int]:
-        """ A simple (and ugly) caching mechanism used to avoid
-        recomputations. The current implementation offers a cache with
-        only two entries so it's only useful for the two "fastest"
-        dimensions. """
+    def _cached_bresenham_sums(self, num: int, denom: int,
+                               half_up: bool) -> list[int]:
+        """_bresenham_sums(), remembering its last two answers.
+
+        Two entries because a scrolling step asks for the same grid on
+        the same two axes over and over, and the axes are asked about in
+        turn: a one-entry cache would be overwritten by the second axis
+        before the first asked again.  The matching entry is moved to
+        the front, so what is thrown away is the one asked for longer
+        ago.
+        """
         if (self._cache0[0] != num or
                 self._cache0[1] != denom or
                 self._cache0[2] != half_up):
@@ -205,15 +229,23 @@ class Scrolling:
         return self._cache0[3]
 
     def clear_cache(self) -> None:
-        """ Clears all caches that are used internally. """
+        """Forget the remembered step grids."""
         self._cache0 = (0, 0, False, [])
         self._cache1 = (0, 0, False, [])
 
     @staticmethod
     def _bresenham_sums(num: int, denom: int, half_up: bool) -> list[int]:
-        """ This algorithm is derived from Bresenham's line algorithm in
-        order to distribute the remainder of num/denom equally. See
-        https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm for details.
+        """The <denom> + 1 grid points from 0 to <num>, evenly spread.
+
+        <num> rarely divides by <denom>, and the remainder has to go
+        somewhere: this spreads it over the steps rather than letting it
+        pile up at one end, by Bresenham's line algorithm.  See
+        https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm.
+
+        <half_up> rounds a step that falls exactly between two pixels
+        upwards instead of downwards, which is what makes reading
+        towards the smaller values land on the same grid as reading
+        towards the larger.
         """
         if num < 0:
             raise ValueError("num < 0")

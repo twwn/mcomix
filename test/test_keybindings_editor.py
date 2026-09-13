@@ -131,6 +131,31 @@ class KeybindingEditorTest(MComixTest):
         self.assertEqual(self._row(self.ACTION).key1, '<Control>n')
         self.assertEqual(self._row(self.ACTION).key0, '')
 
+    def _bound(self, action):
+        """The shortcuts the manager holds for <action>, as names."""
+        return [Gtk.accelerator_name(*binding)
+                for binding in self.manager.get_bindings_for_action(action)]
+
+    def test_moving_a_shortcut_onto_another_of_its_own_replaces_it(self):
+        """The reader gives an action a second shortcut, then puts the
+        first one in that second column on top of it.  The shortcut
+        being replaced has to go: the editor clears the column it came
+        from either way, so a manager that kept it showed the reader a
+        shortcut that was gone from the dialog and still working, and
+        back again the next time the dialog was opened."""
+        self.editor._rebound(1)(self._row(self.ACTION), '<Control>j')
+        self.assertEqual(self._bound(self.ACTION),
+                         ['<Control>n', '<Control>j'])
+        self.editor._rebound(1)(self._row(self.ACTION), '<Control>n')
+        self.assertEqual(self._bound(self.ACTION), ['<Control>n'],
+                         'the shortcut that was replaced is still bound')
+
+    def test_rebinding_a_shortcut_to_what_it_already_is_keeps_it(self):
+        """Nothing has to change, and nothing may be lost either."""
+        self.editor._rebound(0)(self._row(self.ACTION), '<Control>n')
+        self.assertEqual(self._bound(self.ACTION), ['<Control>n'])
+        self.assertEqual(self._row(self.ACTION).key0, '<Control>n')
+
     def test_the_menus_are_told_about_the_first_shortcut(self):
         self.editor._rebound(0)(self._row(self.ACTION), '<Control>k')
         self.assertIn((self.ACTION, '<Control>k'),

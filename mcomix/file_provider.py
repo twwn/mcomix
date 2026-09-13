@@ -98,8 +98,12 @@ class FileProvider:
 
     @staticmethod
     def sort_files(files: list[str]) -> None:
-        """ Sorts a list of C{files} depending on the current preferences.
-        The list is sorted in-place. """
+        """Sort <files> in place, the way the sort preferences say.
+
+        One of the choices is not to sort at all, which leaves whatever
+        order the file system listed them in; a descending sort order
+        still reverses that.
+        """
         if preferences.prefs['sort by'] == constants.SORT_NAME:
             tools.alphanumeric_sort(files)
         elif preferences.prefs['sort by'] == constants.SORT_NAME_GLIB:

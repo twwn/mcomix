@@ -26,15 +26,15 @@ if TYPE_CHECKING:
 
 class ImageHandler:
 
-    """The FileHandler keeps track of images, pages, caches and reads files.
+    """The pages of the open book: their files, their pixbufs, the cache.
 
-    When the Filehandler's methods refer to pages, they are indexed from 1,
-    i.e. the first page is page 1 etc.
+    Pages are numbered from 1 throughout, so the first page is page 1.
 
-    Other modules should *never* read directly from the files pointed to by
-    paths given by the FileHandler's methods. The files are not even
-    guaranteed to exist at all times since the extraction of archives is
-    threaded.
+    A page's file is written by the extractor's thread, and until that
+    has happened there is nothing to read at the path this hands out.
+    Other modules should therefore ask the handler for a page rather
+    than opening the file themselves: only the handler knows how to
+    wait for one that has not arrived yet.
     """
 
     def __init__(self, window: 'main.MainWindow') -> None:
@@ -50,7 +50,7 @@ class ImageHandler:
         self._base_path: str | None = None
         #: List of image file names, either from extraction or directory
         self._image_files: list[str] | None = None
-        #: Map of image file name to its index in C{_image_files}
+        #: Map of image file name to its index in _image_files
         self._image_file_index: dict[str, int] = {}
         #: Index of current page, or None before one has been chosen
         self._current_image_index: int | None = None

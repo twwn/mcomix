@@ -16,7 +16,14 @@ class KeybindingEditorWindow(Gtk.ScrolledWindow):
     _NAME_WIDTH = 16
 
     def __init__(self, keymanager: keybindings._KeybindingManager) -> None:
-        """ @param keymanager: KeybindingManager instance. """
+        """A list of every action, with a column for each of its shortcuts.
+
+        How many shortcut columns there are is settled here: three, or
+        as many as the action that already has the most bindings needs,
+        so that nothing configured earlier is left out of the list.  It
+        does not change afterwards, so filling the last column gives no
+        further one until the dialog is opened again.
+        """
         super().__init__()
         widgets.set_border(self, 5)
         self.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.ALWAYS)

@@ -18,10 +18,6 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from mcomix.library import main_dialog
 
-# The "All books" collection is not a real collection stored in the library,
-# but is represented by this ID in the library's TreeModels.
-_COLLECTION_ALL = -1
-
 
 class _ControlArea(Gtk.Box):
 

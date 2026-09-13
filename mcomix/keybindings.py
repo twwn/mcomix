@@ -5,21 +5,17 @@ one of them, which is why the bindings live here rather than on the menu
 items: a menu model item carries a single accelerator, and this module
 tells the menus which one to show.
 
-At runtime, other modules can register a callback for a specific action name.
-This action name has to be registered in BINDING_INFO, or an Exception will be
-thrown. The module can pass a list of default keybindings. If the user hasn't
-configured different bindings, the default ones will be used.
+Other modules register a callback under an action name, which has to be
+one of the names in BINDING_INFO; anything else fails an assertion.  The
+manager keeps three maps, because it has to get each of these three
+things from the others: the callback and its arguments by action name,
+the accelerators by action name, and the action name by accelerator.
+The last is what a key press is looked up in.
 
-Afterwards, the action will be stored together with its keycode/modifier in a
-dictionary:
-(keycode: int, modifier: GdkModifierType) =>
-    (action: string, callback: func, args: list, kwargs: dict)
-
-Default keybindings will be stored here at initialization:
-action-name: string => [keycodes: list]
-
-
-Each action_name can have multiple keybindings.
+The accelerators a reader has configured are read from the keybindings
+file when the manager is built, before any action is registered, and the
+defaults an action registers with are used only where that file held
+nothing for it.
 """
 
 import os
@@ -196,14 +192,18 @@ class _KeybindingManager:
                  callback: Callable[..., Any],
                  args: Sequence[Any] | None = None,
                  kwargs: Mapping[str, Any] | None = None) -> None:
-        """ Registers an action for a predefined keybinding name.
-        @param name: Action name, defined in L{BINDING_INFO}.
-        @param bindings: List of keybinding strings, as understood
-                         by L{Gtk.accelerator_parse}. Only used if no
-                         bindings were loaded for this action.
-        @param callback: Function callback
-        @param args: List of arguments to pass to the callback
-        @param kwargs: List of keyword arguments to pass to the callback.
+        """Have <callback> answer the action <name>, an entry of BINDING_INFO.
+
+        <bindings> are the accelerators the action answers to by
+        default, written the way Gtk.accelerator_parse() reads them, and
+        they are used only where the reader's keybindings file held none
+        for this action.  <args> and <kwargs> are passed to the callback
+        whenever it runs; the key that was pressed is not, so an action
+        bound to several keys cannot tell which of them reached it.
+
+        An accelerator that already reaches another action is left where
+        it is and only warned about, so of two actions asking for the
+        same key the one registered first keeps it.
         """
         assert name in BINDING_INFO, "'%s' isn't a valid keyboard action." % name
 
@@ -245,38 +245,45 @@ class _KeybindingManager:
             uimanager.set_accelerator(name, accelerator)
 
     def edit_accel(self, name: str, new_binding: str, old_binding: str) -> str | None:
-        """ Changes binding for an action
-        @param name: Action name
-        @param new_binding: Binding to be assigned to action
-        @param old_binding: Binding to be removed from action [ can be empty: "" ]
+        """Give the action <name> the accelerator <new_binding>.
 
-        @return None: new_binding wasn't in any action
-                action name: where new_binding was before
+        <old_binding> is the accelerator it replaces, and is empty where
+        the action is being given a further key rather than having one
+        changed.  A replacement keeps the place the old key held in the
+        action's list, so that the key the menus show does not move
+        about; a further key goes on the end.
+
+        An accelerator reaches one action only, so <new_binding> is
+        taken off whatever action held it before.  That action's name is
+        the answer, and None where the key was free.  The bindings are
+        written to disk before returning.
         """
         assert name in BINDING_INFO, "'%s' isn't a valid keyboard action." % name
 
         nb = parse_accelerator(new_binding)
         old_action_with_nb = self._binding_to_action.get(nb)
         if old_action_with_nb is not None:
-            # The new key is already bound to an action, erase the action
+            # An accelerator answers to one action, so wherever it was
+            # bound before, it is not bound there any more.
             self._binding_to_action.pop(nb)
             self._action_to_bindings[old_action_with_nb].remove(nb)
 
-        if old_binding and name != old_action_with_nb:
-            # The action already had a key that is now being replaced
-            ob = parse_accelerator(old_binding)
-            self._binding_to_action[nb] = name
-
-            # Remove action bound to the key.
-            if ob in self._binding_to_action:
-                self._binding_to_action.pop(ob)
-
-            if ob in self._action_to_bindings[name]:
-                idx = self._action_to_bindings[name].index(ob)
-                self._action_to_bindings[name].pop(idx)
-                self._action_to_bindings[name].insert(idx, nb)
+        ob = parse_accelerator(old_binding) if old_binding else None
+        self._binding_to_action[nb] = name
+        # Whether this replaces a key turns on whether the key being
+        # replaced is a different one, not on which action held the new
+        # key: the action can hold both, and then the old key has to go
+        # just the same.  Testing the action instead let a key the same
+        # action held in another column arrive here, take the else
+        # branch, and leave the key it was replacing bound - so the
+        # editor showed it gone while it went on working, and came back
+        # the next time the dialog was opened.
+        if ob is not None and ob != nb \
+                and ob in self._action_to_bindings[name]:
+            self._binding_to_action.pop(ob, None)
+            position = self._action_to_bindings[name].index(ob)
+            self._action_to_bindings[name][position] = nb
         else:
-            self._binding_to_action[nb] = name
             self._action_to_bindings[name].append(nb)
 
         self.save()
@@ -354,7 +361,8 @@ class _KeybindingManager:
                 self._action_to_bindings[action] = []
 
     def get_bindings_for_action(self, name: str) -> list[Binding]:
-        """ Returns a list of (keycode, modifier) for the action C{name}. """
+        """ Returns the accelerators bound to the action <name>, as
+        (key, modifiers) pairs. """
         return self._action_to_bindings[name]
 
     def _migrate_from_old_bindings(self) -> None:

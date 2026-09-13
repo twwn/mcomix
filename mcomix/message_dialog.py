@@ -88,20 +88,19 @@ class MessageDialog(Dialog):
                  buttons: Gtk.ButtonsType = Gtk.ButtonsType.NONE,
                  modal: bool = False,
                  destroy_with_parent: bool = False) -> None:
-        """ Creates a dialog window.
-        @param parent: Parent window
-        @param buttons: Which buttons to offer, as a Gtk.ButtonsType.
-        @param modal: Whether the dialog holds the parent's input while
-                      it is up.
-        @param destroy_with_parent: Whether closing the parent closes
-                                    this dialog with it.
+        """A dialog window under <parent>, offering <buttons>.
 
-        These were a Gtk.DialogFlags bitfield and a Gtk.MessageType up
-        to GTK 4.20, which deprecated the first and left MComix reading
-        one bit out of it.  The type picked an icon no version of this
-        dialog has drawn, and nothing else ever read it.  Everything
-        after <parent> is keyword-only, so a call left in the old shape
-        raises rather than quietly taking a button set for a flag.
+        <modal> holds the parent's input while the dialog is up, and
+        <destroy_with_parent> takes the dialog down when the parent
+        closes.
+
+        The last two were a Gtk.DialogFlags bitfield up to GTK 4.20,
+        which deprecated it and left MComix reading one bit out of it,
+        and beside them stood a Gtk.MessageType that picked an icon no
+        version of this dialog has drawn and that nothing else ever
+        read.  Everything after <parent> is keyword-only, so a call
+        left in the old shape raises rather than quietly taking a
+        button set for a flag.
         """
         if parent is None:
             # Fix "mapped without a transient parent" Gtk warning.
@@ -141,12 +140,11 @@ class MessageDialog(Dialog):
 
     def set_text(self, primary: str | None,
                  secondary: str | None = None) -> None:
-        """ Say what the dialog is about, in one or two lines.
+        """Say what the dialog is about, in one or two lines.
 
-        @param primary: What is being asked or reported, in bold.
-        @param secondary: What that means, under it, in ordinary type.
-
-        Both are shown as they are given; neither is markup.
+        <primary> is what is being asked or reported, in bold, and
+        <secondary> what that means, in ordinary type under it.  Both
+        are shown as they are given; neither is markup.
         """
         if primary:
             self._primary.set_text(primary)

@@ -1,4 +1,14 @@
-"""library_backend.py - Comic book library backend using sqlite."""
+"""backend.py - The comic book library, as a sqlite database.
+
+One connection, in auto-commit mode, to a file holding a table of books,
+a table of collections, the contain table that files one in the other,
+the recent table of where a book was left, and a watchlist of
+directories to look in for more.  A book's id is its sqlite rowid, which
+sqlite hands out again as soon as the highest row is free.
+
+The schema is versioned: DB_VERSION below is what this code expects, and
+_upgrade_database() brings an older file up to it a version at a time.
+"""
 
 import os
 import datetime
@@ -22,14 +32,14 @@ if TYPE_CHECKING:
     from gi.repository import GdkPixbuf
 
 
-#: Identifies the 'Recent' collection that stores recently read books.
-COLLECTION_RECENT = -2
-
-
 class _LibraryBackend:
 
-    """The LibraryBackend handles the storing and retrieval of library
-    data to and from disk.
+    """The library database, and the statements run against it.
+
+    There is one of these, handed out by LibraryBackend() at the foot of
+    this module.  The types in backend_types reach it that way rather
+    than being handed it, which is how a book fetched from the library
+    can go on asking the library questions.
     """
 
     #: Current version of the library database structure.
@@ -67,7 +77,9 @@ class _LibraryBackend:
                 cur = self._con.execute('''select id from Book
                     where path like ?''', ("%%%s%%" % filter_string, ))
 
-            return cur.fetchall()
+            books: list[int] = cur.fetchall()
+            cur.close()
+            return books
         # One statement over the collection and everything under it,
         # rather than one each with the answers added together, which
         # named a book filed in both a collection and one under it once
@@ -89,9 +101,12 @@ class _LibraryBackend:
                                  parameters).fetchall()
 
     def get_book_by_path(self, path: str) -> backend_types._Book | None:
-        """ Retrieves a book from the library, specified by C{path}.
-        If the book doesn't exist, None is returned. Otherwise, a
-        L{backend_types._Book} instance is returned. """
+        """Return the book at <path>, or None if the library has no
+        book there.
+
+        The path is made absolute first: that is the form add_book()
+        stores, and the column it is looked up in is unique.
+        """
 
         path = os.path.abspath(path)
 
@@ -107,9 +122,8 @@ class _LibraryBackend:
             return None
 
     def get_book_by_id(self, id: int) -> backend_types._Book | None:
-        """ Retrieves a book from the library, specified by C{id}.
-        If the book doesn't exist, C{None} is returned. Otherwise, a
-        L{backend_types._Book} instance is returned. """
+        """Return the book with <id>, or None if the library has no
+        such book."""
 
         cur = self.execute('''select id, name, path, pages, format,
                                      size, added
@@ -172,6 +186,7 @@ class _LibraryBackend:
         cur = self._con.execute('''select name from Book
             where id = ?''', (book,))
         name: str | None = cur.fetchone()
+        cur.close()
         return name
 
     def get_book_pages(self, book: int) -> int | None:
@@ -181,6 +196,7 @@ class _LibraryBackend:
         cur = self._con.execute('''select pages from Book
             where id = ?''', (book,))
         pages: int | None = cur.fetchone()
+        cur.close()
         return pages
 
     def get_book_format(self, book: int) -> str | None:
@@ -190,6 +206,7 @@ class _LibraryBackend:
         cur = self._con.execute('''select format from Book
             where id = ?''', (book,))
         format: str | None = cur.fetchone()
+        cur.close()
         return format
 
     def get_book_size(self, book: int) -> int | None:
@@ -199,27 +216,39 @@ class _LibraryBackend:
         cur = self._con.execute('''select size from Book
             where id = ?''', (book,))
         size: int | None = cur.fetchone()
+        cur.close()
         return size
 
     def get_collections_in_collection(self, collection: int | None = None) -> list[int]:
         """Return a sequence with all the subcollections in <collection>,
         or all top-level collections if <collection> is None.
+
+        Either way they sort by name, but the top-level ones have to
+        sort "Recent" under its translation: the row holds the
+        untranslated name RECENT, so that a library carried from one
+        language to another still finds the collection, and sorting on
+        what the row holds would put it wherever the letter R falls.
         """
         if collection is None:
             cur = self._con.execute('''select id from Collection
                 where supercollection isnull
                 order by case when id = ? then ? else name end''',
-                                    (COLLECTION_RECENT, _('Recent')))
+                                    (constants.COLLECTION_RECENT, _('Recent')))
         else:
             cur = self._con.execute('''select id from Collection
                 where supercollection = ?
                 order by name''', (collection,))
-        return cur.fetchall()
+        collections: list[int] = cur.fetchall()
+        cur.close()
+        return collections
 
     def get_all_collections_in_collection(self, collection: int) -> list[int]:
-        """ Returns a sequence of <all> subcollections in <collection>,
-        that is, even subcollections that are again a subcollection of one
-        of the previous subcollections. """
+        """Return every collection under <collection>, including the
+        ones under those.
+
+        A <collection> of None means the whole library elsewhere in this
+        class; here it is not a collection at all and raises ValueError.
+        """
 
         if collection is None:
             raise ValueError("Collection must not be <None>")
@@ -237,21 +266,30 @@ class _LibraryBackend:
 
     def get_all_collections(self) -> list[int]:
         """Return a sequence with all collections (flattened hierarchy).
-        The sequence is sorted alphabetically by collection name.
+
+        Sorted alphabetically by collection name, with "Recent" under
+        its translated name rather than under the RECENT it is stored
+        as.
         """
         cur = self._con.execute('''select id from Collection
             order by case when id = ? then ? else name end''',
-                                (COLLECTION_RECENT, _('Recent')))
-        return cur.fetchall()
+                                (constants.COLLECTION_RECENT, _('Recent')))
+        collections: list[int] = cur.fetchall()
+        cur.close()
+        return collections
 
     def get_collection_name(self, collection: int | None) -> str | None:
         """Return the name field of the <collection>, or None if the
         collection does not exist.  No collection has None for an id, so
         that is one of the ways of not existing.
+
+        "Recent" is stored under the untranslated name RECENT and comes
+        back translated, which is what the case expression is for.
         """
         cur = self._con.execute('''select case when id = ? then ? else name end from Collection
-            where id = ?''', (COLLECTION_RECENT, _('Recent'), collection,))
+            where id = ?''', (constants.COLLECTION_RECENT, _('Recent'), collection,))
         name: str | None = cur.fetchone()
+        cur.close()
         return name
 
     def get_collection_by_name(self, name: str) -> backend_types._Collection | None:
@@ -270,14 +308,18 @@ class _LibraryBackend:
             return None
 
     def get_collection_by_id(self, id: int) -> backend_types._Collection | None:
-        """ Returns the collection with ID C{id}.
-        @param id: Integer value. May be C{-1} or C{None} for default collection.
-        @return: L{_Collection} if found, None otherwise.
+        """Return the collection with <id>, or None if there is none.
+
+        Two ids are answered without asking the database.  None and
+        COLLECTION_ALL are both the default collection, which stands for
+        the whole library and has no row of its own; COLLECTION_RECENT
+        has a row, but it holds the untranslated name RECENT, so the
+        collection is built here with the translation instead.
         """
-        if id is None or id == -1:
+        if id is None or id == constants.COLLECTION_ALL:
             return backend_types.DefaultCollection
-        elif id == COLLECTION_RECENT:
-            return backend_types._Collection(COLLECTION_RECENT, _('Recent'))
+        elif id == constants.COLLECTION_RECENT:
+            return backend_types._Collection(constants.COLLECTION_RECENT, _('Recent'))
         else:
             cur = self._con.execute('''select id, name, supercollection
                 from collection
@@ -291,9 +333,14 @@ class _LibraryBackend:
                 return None
 
     def get_recent_collection(self) -> backend_types._Collection:
-        """ Returns the "Recent" collection, especially created for
-        storing recently opened files. """
-        collection = self.get_collection_by_id(COLLECTION_RECENT)
+        """The "Recent" collection, which a book is filed in when it is
+        read.
+
+        Never None: get_collection_by_id() builds this one rather than
+        looking it up, and the assertion is what says so to the type
+        checker.
+        """
+        collection = self.get_collection_by_id(constants.COLLECTION_RECENT)
         assert collection is not None
         return collection
 
@@ -302,6 +349,7 @@ class _LibraryBackend:
         cur = self._con.execute('''select supercollection from Collection
             where id = ?''', (collection,))
         supercollection: int | None = cur.fetchone()
+        cur.close()
         return supercollection
 
     def add_book(self, path: str, collection: int | None = None) -> bool:
@@ -353,18 +401,23 @@ class _LibraryBackend:
 
     @callback.Callback
     def book_added(self, book: backend_types._Book) -> None:
-        """ Event that triggers when a new book is successfully added to the
-        library.
-        @param book: L{_Book} instance of the newly added book.
+        """Called when add_book() has put a book in the library that was
+        not there before.
+
+        Re-adding a book that is there already updates its row and says
+        nothing.  The body does nothing either: the point of the call is
+        the listeners the Callback decorator runs afterwards.
         """
         pass
 
     @callback.Callback
     def book_added_to_collection(self, book: backend_types._Book, collection_id: int) -> None:
-        """ Event that triggers when a book is added to the
-        specified collection.
-        @param book: L{_Book} instance of the added book.
-        @param collection_id: ID of the collection.
+        """Called when a book has been filed in a collection.
+
+        Only for a book that is really there: add_book_to_collection()
+        will file an id that names no row, and stays quiet when it does.
+        Like book_added(), the body is empty and the listeners are the
+        point.
         """
         pass
 
@@ -378,6 +431,7 @@ class _LibraryBackend:
             # auto-incremental will start from -1. Avoid this.
             cur = self._con.execute('''select max(id) from collection''')
             maxid = cur.fetchone()
+            cur.close()
             if maxid is not None and maxid < 1:
                 self._con.execute('''insert into collection
                     (id, name) values (?, ?)''', (1, name))
@@ -509,7 +563,10 @@ class _LibraryBackend:
     def execute(self, statement: str,
                 parameters: "Sequence[str | int | float | bytes | None]" = ()
                 ) -> dbapi2.Cursor:
-        """Run <statement> on the library's connection."""
+        """Run <statement> on the library's connection.
+
+        The cursor that comes back is the caller's to close.
+        """
         return self._con.execute(statement, parameters)
 
     def begin_transaction(self) -> None:
@@ -525,7 +582,12 @@ class _LibraryBackend:
         self._con.isolation_level = None
 
     def close(self) -> None:
-        """Commit changes and close cleanly."""
+        """Commit changes and close the connection.
+
+        The singleton goes with it, so that the next LibraryBackend()
+        call opens the database again rather than handing out a closed
+        connection.
+        """
         self._con.commit()
         self._con.close()
 
@@ -533,18 +595,23 @@ class _LibraryBackend:
         _backend = None
 
     def _table_exists(self, table: str) -> bool:
-        """ Checks if C{table} exists in the database. """
+        """Whether <table> exists in the database."""
         cursor = self._con.cursor()
         exists = cursor.execute('pragma table_info(%s)' % table).fetchone() is not None
         cursor.close()
         return exists
 
     def _library_version(self) -> int:
-        """ Examines the library database structure to determine
-        which version of MComix created it.
+        """Which version of the schema the database file holds.
 
-        @return C{version} from the table C{Info} if available,
-        C{0} otherwise. C{-1} if the database has not been created yet."""
+        The version is a row of the info table.  A file without the
+        book, collection and contain tables has not been created yet and
+        answers -1; one that has them but no info table was written by
+        Comix, before the version was recorded, and answers 0.  An info
+        table with no version row is a file this cannot place, and
+        answers -1 as well, which has the tables created over it - every
+        create is "if not exists", so what is there survives.
+        """
 
         # Check if Comix' tables exist
         tables = ('book', 'collection', 'contain')
@@ -577,10 +644,15 @@ class _LibraryBackend:
         self._create_table_recent()
 
     def _upgrade_database(self, from_version: int, to_version: int) -> None:
-        """ Performs sequential upgrades to the database, bringing
-        it from C{from_version} to C{to_version}. If C{from_version}
-        is -1, the database structure will simply be re-created at the
-        current version. """
+        """Bring the database from <from_version> up to <to_version>.
+
+        Each step is written against the schema the step before it left,
+        so they are applied in order and a file of any age arrives at
+        the current one.  A <from_version> of -1 is a database that is
+        not there yet, and is created at the current version instead of
+        being upgraded.  The version is written last, so an upgrade that
+        fails part way is attempted again next time.
+        """
 
         if from_version == -1:
             self._create_tables()
@@ -625,7 +697,7 @@ class _LibraryBackend:
                 # create a collection (-2, Recent)
                 self._create_table_recent()
                 lastread = last_read_page.LastReadPage(self)
-                lastread.migrate_database_to_library(COLLECTION_RECENT)
+                lastread.migrate_database_to_library(constants.COLLECTION_RECENT)
 
             if 5 in upgrades:
                 # Changed all 'string' columns into 'text' columns
@@ -646,7 +718,7 @@ class _LibraryBackend:
             if 6 in upgrades:
                 # Non-localized name for Recent collection
                 self._con.execute('''update collection set name = ? where id = ?''',
-                                  ('RECENT', COLLECTION_RECENT))
+                                  ('RECENT', constants.COLLECTION_RECENT))
 
             if 7 in upgrades:
                 # Added an index on contain (book); see
@@ -725,14 +797,19 @@ class _LibraryBackend:
             page integer,
             time_set datetime)''')
         self._con.execute('''insert or ignore into collection (id, name)
-            values (?, ?)''', (COLLECTION_RECENT, 'RECENT'))
+            values (?, ?)''', (constants.COLLECTION_RECENT, 'RECENT'))
 
 
 _backend: "_LibraryBackend | None" = None
 
 
 def LibraryBackend() -> _LibraryBackend:
-    """ Returns the singleton instance of the library backend. """
+    """The one library backend, opened on the first call.
+
+    Everything that touches the library goes through this, so that there
+    is a single connection to the database file rather than one per
+    caller.
+    """
     global _backend
     if _backend is not None:
         return _backend

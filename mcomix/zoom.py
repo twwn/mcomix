@@ -225,9 +225,15 @@ class ZoomModel:
     def _preferred_scale(image_size: Sequence[float],
                          limits: Sequence[int | None],
                          distribution_axis: int) -> float:
-        """ Returns scale that makes an image of size image_size respect the
-        limits imposed by limits. If no proper value can be determined,
-        IDENTITY_ZOOM is returned. """
+        """The largest scale at which <image_size> still fits <limits>.
+
+        The distribution axis is passed over: the pages share the room
+        along it, so no one page can be scaled against the whole of it,
+        and _scale_distributed() works that axis out for all of them at
+        once.  An axis whose limit is None is passed over as well, and
+        where that leaves nothing to measure against the answer is
+        IDENTITY_ZOOM.
+        """
         scales = [tools.div(limit, image_size[axis])
                   for axis, limit in enumerate(limits)
                   if axis != distribution_axis and limit is not None]
@@ -266,22 +272,32 @@ class ZoomModel:
     def _scale_distributed(sizes: Sequence[Sequence[float]], axis: int,
                            max_size: int, allow_upscaling: bool,
                            do_not_transform: Sequence[bool]) -> list[float]:
-        """ Calculates scales for a list of boxes that are distributed along a
-        given axis (without any gaps). If the resulting scales are applied to
-        their respective boxes, their new total size along axis will be as close
-        as possible to max_size. The current implementation ensures that equal
-        box sizes are mapped to equal scales.
-        @param sizes: A list of box sizes.
-        @param axis: The axis along which those boxes are distributed.
-        @param max_size: The maximum size the scaled boxes may have along axis.
-        @param allow_upscaling: True if upscaling is allowed, False otherwise.
-        @param do_not_transform: True if the resulting scale must be 1, False
-        otherwise.
-        @return: A list of scales where the i-th scale belongs to the i-th box
-        size. If sizes is empty, the empty list is returned. If there are more
-        boxes than max_size, an approximation is returned where all resulting
-        scales will shrink their respective boxes to 1 along axis. In this case,
-        the scaled total size might be greater than max_size. """
+        """One scale per box, fitting <sizes> into <max_size> along <axis>.
+
+        The boxes stand side by side without gaps, so their sizes add up
+        along <axis>, and the scales returned bring that total as close
+        to <max_size> as whole pixels allow.  A box marked in
+        <do_not_transform> keeps the size it came in at, and the room it
+        takes is set aside before the rest is shared out.  Without
+        <allow_upscaling> a total that already fits is left alone rather
+        than grown to <max_size>.
+
+        Boxes of equal size always come out at equal scales, so that two
+        pages that arrived alike are drawn alike.  Every box is first
+        rounded to its nearest whole size, which may overshoot
+        <max_size>, and boxes are then taken down by one pixel at a time
+        until the total fits, cheapest first - the smallest relative
+        error in area - and every box of that same size along with it.
+        Scaling them together is what costs the accuracy: the total can
+        fall further short of <max_size> than taking them one at a time
+        would.
+
+        There is no room to fit anything into once there are at least
+        <max_size> boxes, since no box can be narrower than one pixel.
+        Every box that may be scaled is put at a single pixel along
+        <axis>, and the total may then be larger than <max_size>.  An
+        empty <sizes> gives an empty list.
+        """
         n = len(sizes)
         # trivial cases first
         if n == 0:

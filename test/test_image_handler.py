@@ -241,7 +241,7 @@ class VirtualDoublePageTest(MComixTest):
 
 class CacheWindowTest(MComixTest):
 
-    """The set of pages C{_ask_for_pages} picks must always contain the page
+    """The set of pages _ask_for_pages() picks must always contain the page
     that is on screen: it doubles as the list of pixbufs worth keeping, so a
     window that misses the current page throws it away as soon as it is
     shown."""

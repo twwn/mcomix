@@ -692,7 +692,7 @@ class ExternalExecutableContractTest(MComixTest):
 
 
 def _expect_failure(klass, attr):
-    """ Mark the C{attr} test of C{klass} as an expected failure.
+    """Mark the <attr> test of <klass> as an expected failure.
 
     unittest.expectedFailure() flags the function object handed to it and
     returns it unchanged, so marking a method inherited from

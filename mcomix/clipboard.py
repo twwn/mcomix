@@ -13,7 +13,10 @@ if TYPE_CHECKING:
 
 class Clipboard:
 
-    """The Clipboard takes care of all necessary copy-paste functionality
+    """Copying the open page to the system clipboard.
+
+    Nothing here reads the clipboard: MComix copies a page out of
+    itself and never pastes one in.
     """
 
     def __init__(self, window: "main.MainWindow") -> None:
@@ -23,7 +26,7 @@ class Clipboard:
         self._window = window
 
     def copy(self, text: str, pixbuf: GdkPixbuf.Pixbuf) -> None:
-        """ Copies C{text} and C{pixbuf} to clipboard. """
+        """Put <text> and <pixbuf> on the clipboard."""
         # A GTK4 clipboard holds one content provider rather than a set
         # of targets set one at a time, so offer both and leave whoever
         # pastes to take the one it understands.
@@ -34,7 +37,12 @@ class Clipboard:
         ]))
 
     def copy_page(self, *args: object) -> None:
-        """ Copies the currently opened page and pixbuf to clipboard. """
+        """Put the open page on the clipboard, as an image and as a path.
+
+        Two pages shown side by side are copied as the single image
+        they make on screen, in the order they are shown; the path is
+        the current page's either way.
+        """
 
         if self._window.filehandler.file_loaded:
             # Get pixbuf for current page

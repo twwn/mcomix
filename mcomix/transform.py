@@ -105,15 +105,17 @@ class Matrix:
         return self.flipped(y=True)
 
     def to_image_transforms(self) -> tuple[tuple[float, float], int, tuple[bool, bool]]:
-        """ Decomposes the transform to a sequence of hints to basic transform
-        instructions typically found in image processing libraries. The sequence
-        will refer to the positive scaling factors to be applied for each axis
-        first, followed by at most one rotation, and finally followed by at most
-        one flip.
-        @return a tuple (s, r, f) where s is a sequence of positive scaling
-        factors for the corresponding axes, r is one of (0, 90, 180, 270),
-        referring to the clockwise rotation to be applied, and f is a sequence
-        of bools where True refers to the corresponding axis to be flipped. """
+        """Break this matrix down into a scale, a rotation and a flip.
+
+        Image processing libraries offer those three operations rather
+        than a matrix, and the answer is meant to be applied in that
+        order: a pair of positive scaling factors, one per axis, then a
+        clockwise rotation of 0, 90, 180 or 270 degrees, then a pair of
+        flags saying which axes to flip.
+
+        At most one of the two flips is ever set, since flipping both
+        axes is a half turn and is folded into the rotation instead.
+        """
         # The scales belong to the axes as they were before the
         # rotation, since that is the order the sequence puts them in
         # and the order from_image_transforms() rebuilds them in.  Read

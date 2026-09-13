@@ -27,7 +27,7 @@ _SEPARATORS = '.-_+ '
 
 
 def _sort_key(version: str) -> "tuple[tuple[int, int | str], ...]":
-    """Return a tuple ordering C{version} against other versions."""
+    """Return a tuple ordering <version> against other versions."""
     key: "list[tuple[int, int | str]]" = []
     for token in _COMPONENT_RE.split(version.strip().lower()):
         token = token.strip(_SEPARATORS)

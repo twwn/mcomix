@@ -1,4 +1,12 @@
-""" Data class for library books and collections. """
+"""backend_types.py - The things the library database holds.
+
+A book, a collection and a watched directory, a class each, with the
+default collection that stands for the whole library beside them.  None
+of them holds more than the row it was built from: which collections a
+book is in, which books a collection holds, what has turned up in a
+watched directory, are all queries made when they are asked for, through
+the one backend that mcomix.library.backend hands out.
+"""
 
 import os
 import threading
@@ -6,6 +14,7 @@ import datetime
 
 from mcomix import callback
 from mcomix import archive_tools
+from mcomix import constants
 from mcomix.i18n import _
 
 from collections.abc import Sequence
@@ -17,6 +26,8 @@ if TYPE_CHECKING:
 
 class _BackendObject:
 
+    """Something that reads and writes through the library backend."""
+
     def get_backend(self) -> '_LibraryBackend':
         # XXX: Delayed import to avoid circular import
         from mcomix.library.backend import LibraryBackend
@@ -24,18 +35,17 @@ class _BackendObject:
 
 
 class _Book(_BackendObject):
-    """ Library book instance. """
+    """One book in the library: a row of the book table."""
 
     def __init__(self, id: int, name: str, path: str, pages: int,
                  format: int, size: int, added: str) -> None:
-        """ Creates a book instance.
-        @param id: Book id
-        @param name: Base name of the book
-        @param path: Full path to the book
-        @param pages: Number of pages
-        @param format: One of the archive formats in L{constants}
-        @param size: File size in bytes
-        @param added: Datetime when book was added to library """
+        """The row the library keeps for one book.
+
+        <name> is the base name of <path>, <format> one of the archive
+        formats in constants, <size> the size of the file in bytes, and
+        <added> when the book was added, as the text sqlite stores it
+        in rather than as a datetime.
+        """
 
         self.id = id
         self.name = name
@@ -46,21 +56,30 @@ class _Book(_BackendObject):
         self.added = added
 
     def get_collections(self) -> list['_Collection']:
-        """ Gets a list of collections this book is part of. If it
-        belongs to no collections, [DefaultCollection] is returned. """
+        """The collections this book is filed in.
+
+        A book filed in none of them is in the library all the same, so
+        the answer is then the default collection, which stands for the
+        library as a whole.
+        """
         cursor = self.get_backend().execute(
             '''SELECT id, name, supercollection FROM collection
                JOIN contain on contain.collection = collection.id
                WHERE contain.book = ?''', (self.id,))
         rows = cursor.fetchall()
+        cursor.close()
         if rows:
             return [_Collection(*row) for row in rows]
         else:
             return [DefaultCollection]
 
     def get_last_read_page(self) -> int | None:
-        """ Gets the page of this book that was last read when the book was
-        closed. Returns C{None} if no such page exists. """
+        """The page this book was left on.
+
+        None if it has no row in the recent table: it was never read, or
+        it was last closed on page 1, which the file handler clears
+        rather than stores.
+        """
         cursor = self.get_backend().execute(
             '''SELECT page FROM recent WHERE book = ?''', (self.id,))
         # The connection's row factory unwraps a one column row, so this
@@ -72,8 +91,12 @@ class _Book(_BackendObject):
         return int(row)
 
     def get_last_read_date(self) -> datetime.datetime | None:
-        """ Gets the datetime the book was most recently read. Returns
-        C{None} if no information was set, or a datetime object otherwise. """
+        """When this book was last read, or None if it has no row in the
+        recent table.
+
+        The time is stored as text, and comes back through whichever of
+        the two formats below it was written in.
+        """
         cursor = self.get_backend().execute(
             """SELECT time_set FROM recent WHERE book = ?""", (self.id,))
         date = cursor.fetchone()
@@ -83,22 +106,27 @@ class _Book(_BackendObject):
             try:
                 return datetime.datetime.strptime(date, '%Y-%m-%d %H:%M:%S.%f')
             except ValueError:
-                # Certain operating systems do not store fractions
+                # A time that falls on a whole second is written without
+                # a fractional part, by isoformat() below and by the
+                # sqlite3 adapter that used to write these rows alike.
                 return datetime.datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
         else:
             return None
 
     def set_last_read_page(self, page: int | None,
                            time: datetime.datetime | None = None) -> None:
-        """ Sets the page that was last read when the book was closed.
-        Passing C{None} as argument clears the recent information.
+        """Remember <page> as where this book was left, at <time>.
 
-        @param page: Page number, starting from 1 (page 1 throws ValueError)
-        @param time: Time of reading. If None, current time is used. """
+        A <page> of None removes what was remembered instead, and a
+        <time> of None is now.  Pages count from 1, and anything below
+        that is not a page: it raises ValueError.
+        """
 
         if page is not None and page < 1:
-            # Avoid wasting memory by creating a recently viewed entry when
-            # an archive was opened on page 1.
+            # Page 1 is stored like any other page.  It is the file
+            # handler, closing a book, that clears the row instead of
+            # writing it, so that the position every book starts at
+            # costs the library nothing.
             raise ValueError('Invalid page (must start from 1)')
 
         # Remove any old recent row for this book
@@ -121,16 +149,20 @@ class _Book(_BackendObject):
 
 
 class _Collection(_BackendObject):
-    """ Library collection instance.
-    This class should NOT be instianted directly, but only with methods from
-    L{LibraryBackend} instead. """
+    """One collection of books: a row of the collection table.
+
+    Collections are handed out by the backend and by the queries here
+    rather than built by hand, since an id that names no row makes a
+    collection every query of which answers nothing.
+    """
 
     def __init__(self, id: int, name: str,
                  supercollection: 'int | None' = None) -> None:
-        """ Creates a collection instance.
-        @param id: Collection id
-        @param name: Name of the collection
-        @param supercollection: Parent collection, or C{None} """
+        """The row the library keeps for one collection.
+
+        <supercollection> is the id of the collection this one sits
+        under, or None for one at the root of the tree.
+        """
 
         #: The default collection stands for every book and has no row of
         #: its own, so it carries no id.
@@ -139,6 +171,12 @@ class _Collection(_BackendObject):
         self.supercollection = supercollection
 
     def __eq__(self, other: object) -> bool:
+        """A collection is its id, and equals that bare id as well.
+
+        The backend deals in ids where this module deals in collections,
+        and the two meet in comparisons such as the one in
+        _scan_for_new_files_thread() below.
+        """
         if isinstance(other, _Collection):
             return self.id == other.id
         elif isinstance(other, int):
@@ -222,7 +260,7 @@ class _Collection(_BackendObject):
         return collections
 
     def add_collection(self, subcollection: '_Collection') -> None:
-        """ Sets C{subcollection} as child of this collection. """
+        """Make <subcollection> a child of this collection."""
 
         self.get_backend().execute('''UPDATE collection
                 SET supercollection = ?
@@ -231,8 +269,12 @@ class _Collection(_BackendObject):
 
 
 class _DefaultCollection(_Collection):
-    """ Represents the default collection that books belong to if
-    no explicit collection was specified. """
+    """The library as a whole, in the shape of a collection.
+
+    It has no row of its own and so no id, and its queries go over the
+    book table rather than over the contain table, which is what makes
+    it show a book that is filed nowhere as readily as one that is.
+    """
 
     def __init__(self) -> None:
 
@@ -241,7 +283,8 @@ class _DefaultCollection(_Collection):
         self.supercollection = None
 
     def get_books(self, filter_string: str | None = None) -> list['_Book']:
-        """ Returns all books in the library """
+        """Every book in the library, or the ones whose name or path
+        <filter_string> occurs in."""
         sql = '''SELECT book.id, book.name, book.path, book.pages, book.format,
                         book.size, book.added
                  FROM book
@@ -261,8 +304,8 @@ class _DefaultCollection(_Collection):
         return [_Book(*cols) for cols in rows]
 
     def add_collection(self, subcollection: '_Collection') -> None:
-        """ Removes C{subcollection} from any supercollections and moves
-        it to the root level of the tree. """
+        """Move <subcollection> to the root of the tree, out of whatever
+        collection it was under."""
 
         assert subcollection is not DefaultCollection, "Cannot change DefaultCollection"
 
@@ -288,9 +331,12 @@ DefaultCollection = _DefaultCollection()
 
 
 class _WatchList:
-    """ Scans watched directories and updates the database when new books have
-    been added. This object is part of the library backend, i.e.
-    C{library.backend.watchlist}. """
+    """The directories the library watches for new books.
+
+    The backend holds one of these as its watchlist attribute.  It only
+    reports what it finds, through new_files_found(); adding the books
+    is the library window's part.
+    """
 
     def __init__(self, backend: '_LibraryBackend') -> None:
         self.backend = backend
@@ -298,7 +344,12 @@ class _WatchList:
     def add_directory(self, path: str,
                       collection: '_Collection' = DefaultCollection,
                       recursive: bool = False) -> None:
-        """ Adds a new watched directory. """
+        """Watch <path>, filing what turns up there in <collection>.
+
+        The path is the primary key of the table, so watching a
+        directory that is watched already changes nothing, not even the
+        collection it was filed under.
+        """
 
         directory = os.path.normpath(os.path.abspath(path))
         sql = """INSERT OR IGNORE INTO watchlist (path, collection, recursive)
@@ -307,8 +358,12 @@ class _WatchList:
         cursor.close()
 
     def get_watchlist(self) -> list['_WatchListEntry']:
-        """ Returns a list of watched directories.
-        @return: List of L{_WatchListEntry} objects. """
+        """Every watched directory.
+
+        A left join because an entry need not name a collection: the
+        backend sets the column to NULL when the collection it named is
+        removed, and such an entry files what it finds nowhere.
+        """
 
         sql = """SELECT watchlist.path,
                         watchlist.recursive,
@@ -324,7 +379,11 @@ class _WatchList:
         return entries
 
     def get_watchlist_entry(self, path: str) -> '_WatchListEntry':
-        """ Returns a single watchlist entry, specified by C{path} """
+        """The entry watching <path>, matched as add_directory() stored
+        it, which is to say absolute.
+
+        Raises ValueError if the directory is not watched.
+        """
         sql = """SELECT watchlist.path,
                         watchlist.recursive,
                         collection.id, collection.name,
@@ -343,25 +402,38 @@ class _WatchList:
             raise ValueError("Watchlist entry doesn't exist")
 
     def scan_for_new_files(self) -> None:
-        """ Begins scanning for new files in the watched directories.
-        When the scan finishes, L{new_files_found} will be called
-        asynchronously. """
+        """Start looking for new files in the watched directories.
+
+        The scan runs in a thread of its own and this returns at once.
+        Each watched directory is reported through new_files_found()
+        when it has been walked.
+        """
         thread = threading.Thread(target=self._scan_for_new_files_thread)
         thread.name += '-scan_for_new_files'
         thread.start()
 
     def _scan_for_new_files_thread(self) -> None:
-        """ Executes the actual scanning operation in a new thread. """
+        """The body of the scan thread."""
+        # A book that is in no collection but "Recent" is in the library
+        # only because it was read once, so it still counts as new: the
+        # scan will add it to the collection the directory is watched
+        # for.
         existing_books = [book.path for book in DefaultCollection.get_books()
-                          # Also add book if it was only found in Recent collection
-                          if book.get_collections() != [-2]]
+                          if book.get_collections()
+                          != [constants.COLLECTION_RECENT]]
         for entry in self.get_watchlist():
             new_files = entry.get_new_files(existing_books)
             self.new_files_found(new_files, entry)
 
     def _result_row_to_watchlist_entry(  # type: ignore[explicit-any]  # a row holds whatever the query selected
             self, row: Sequence[Any]) -> '_WatchListEntry':
-        """ Converts the result of a SELECT statement to a WatchListEntry. """
+        """Build an entry from a row of path, recursive flag, and the
+        three columns of the collection joined to it.
+
+        A row whose collection is NULL is an entry that files what it
+        finds in no collection, which is what the default collection
+        amounts to here: it has no id to file anything under.
+        """
         collection_id = row[2]
         if collection_id:
             collection = _Collection(*row[2:])
@@ -373,10 +445,13 @@ class _WatchList:
     @callback.Callback
     def new_files_found(self, paths: Sequence[str],
                         watchentry: '_WatchListEntry') -> None:
-        """ Called after scan_for_new_files finishes.
-        @param paths: List of filenames for newly added files. This list
-                      may be empty if no new files were found during the scan.
-        @param watchentry: Watchentry for files/directory.
+        """Called with the files a scan of <watchentry> turned up.
+
+        <paths> may be empty, since a watched directory is reported on
+        whether it held anything new or not.  The body does nothing: the
+        point of the call is the listeners the Callback decorator runs
+        afterwards, in the main thread rather than in the scan thread
+        this is called from.
         """
         pass
 
@@ -392,8 +467,12 @@ class _WatchListEntry(_BackendObject):
         self.collection: '_Collection | None' = collection
 
     def get_new_files(self, filelist: Sequence[str]) -> list[str]:
-        """ Returns a list of files that are present in the watched directory,
-        but not in the list of files passed in C{filelist}. """
+        """The archives in the watched directory that are not in
+        <filelist>.
+
+        A directory that has gone away holds nothing new, rather than
+        being an error.
+        """
 
         if not self.is_valid():
             return []

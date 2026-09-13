@@ -17,7 +17,6 @@ from mcomix import column_list
 from mcomix import constants
 from mcomix import icons
 from mcomix import main
-from mcomix.library import backend
 from mcomix.library import collection_area
 from mcomix.library import main_dialog
 
@@ -59,7 +58,7 @@ class LibraryDialogTest(MComixTest):
         # A fresh database holds the "Recent" pseudo collection and
         # nothing else.
         self.assertEqual(dialog.backend.get_all_collections(),
-                         [backend.COLLECTION_RECENT])
+                         [constants.COLLECTION_RECENT])
 
     def test_the_window_carries_the_three_areas(self):
         dialog = self._open()

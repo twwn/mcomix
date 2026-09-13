@@ -24,9 +24,6 @@ if TYPE_CHECKING:
     from mcomix.library import backend_types
 
 _dialog: "_LibraryDialog | None" = None
-# The "All books" collection is not a real collection stored in the library,
-# but is represented by this ID in the library's TreeModels.
-_COLLECTION_ALL = -1
 
 
 class _LibraryDialog(Gtk.Window):

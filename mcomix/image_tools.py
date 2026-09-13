@@ -147,7 +147,10 @@ def fit_in_rectangle(src: GdkPixbuf.Pixbuf, width: int, height: int,
     If <keep_ratio> is True, the image ratio is kept, and the result
     dimensions may be smaller than the target dimensions.
 
-    If <src> has an alpha channel it gets a checkboard background.
+    A pixbuf with an alpha channel is composited onto a background
+    first - the grey chequerboard, or plain white, as the "checkered bg
+    for transparent images" preference says - so what comes back is
+    opaque either way.
     """
     # Normalize the angle, so callers can pass e.g. -90 or 450 as well.
     rotation %= 360
@@ -208,22 +211,36 @@ def add_border(pixbuf: GdkPixbuf.Pixbuf, thickness: int,
 
 def get_most_common_edge_colour(pixbufs: GdkPixbuf.Pixbuf | Sequence[GdkPixbuf.Pixbuf],
                                 edge: int = 2) -> list[float]:
-    """Return the most commonly occurring pixel value along the four edges
-    of <pixbuf>. The return value is a sequence of Gdk.RGBA components,
-    (r, g, b, a). If <pixbuf> is a tuple, the edges will be computed from
-    both the left and the right image.
+    """The colour of the paper of <pixbufs>, as Gdk.RGBA components.
 
-    Note: This could be done more cleanly with subpixbuf(), but that
-    doesn't work as expected together with get_pixels().
+    This is where the dynamic background colour comes from, so what is
+    wanted is the colour the page appears to fade into: it is read
+    <edge> pixels deep down the two outer sides of what is on screen,
+    the left and the right of a single page, or the left of the first
+    of two and the right of the second.  The answer is (r, g, b, 1.0),
+    each a float between 0 and 1, and black where there is no page at
+    all.
+
+    This could be done more cleanly with subpixbuf(), but that does not
+    work as expected together with get_pixels().
     """
 
     def group_colors(colors: Sequence[tuple[int, Sequence[int]]],
                      steps: int = 10) -> Sequence[int]:
-        """ This rounds a list of colors in C{colors} to the next nearest value,
-        i.e. 128, 83, 10 becomes 130, 85, 10 with C{steps}=5. This compensates for
-        dirty colors where no clear dominating color can be made out.
+        """The commonest colour in <colors>, near shades counted as one.
 
-        @return: The color that appears most often in the prominent group."""
+        <colors> is (count, colour) pairs sorted by colour, the way
+        Image.getcolors() counts them.  Each colour is rounded to the
+        nearest multiple of <steps> - 128, 83, 10 becomes 130, 85, 10
+        at <steps> of 5 - and neighbours that round alike make a group,
+        which is why the pairs have to arrive sorted.  The answer is
+        the commonest colour, unrounded, of the group whose colours
+        cover the most pixels between them.
+
+        Grouping is what lets a scanned margin answer with the grey it
+        looks like, rather than with whichever of its hundred nearly
+        equal greys happened to be counted once more than the rest.
+        """
 
         # No group yet: the first colour read starts one.  This was a
         # (0, 0, 0) tuple, which no rounded colour could ever equal,
@@ -873,13 +890,30 @@ def text_color_for_background_color(bgcolour: Sequence[float]) -> Gdk.RGBA:
 
 
 def get_composite_color_args(variant: int) -> tuple[int, int, int]:
+    """The check size and the two colours composite_color_simple() takes.
+
+    Variant 0 is the grey chequerboard drawn behind a transparent page,
+    in squares of eight pixels; variant 1 is plain white, both squares
+    the same colour, so the size it is given never shows.
+    """
     return ((8, 0x777777, 0x999999), (1024, 0xFFFFFF, 0xFFFFFF))[variant]
 
 
 def get_image_info(path: str) -> tuple[str, tuple[int, int], tuple[int, ...]]:
-    """Return information about and select preferred providers for loading
-    the image specified by C{path}. The result is a tuple
-    C{(format, (width, height), providers)}.
+    """The format and size of the image at <path>, and how to load it.
+
+    The answer is (format, (width, height), providers).  gdk-pixbuf is
+    asked first, and PIL only about a file gdk-pixbuf cannot name;
+    whichever of the two recognised the file comes first in providers.
+    A file neither of them knows is an "Unknown filetype" of (0, 0),
+    with both providers offered anyway, so that a loader raises about
+    it rather than the caller having to invent an error.
+
+    Nothing reads the provider order any more - the loaders in this
+    module try gdk-pixbuf and then PIL whatever it says - and asking
+    here costs a gdk-pixbuf header query, which is as expensive as
+    decoding the image where its loaders run sandboxed.  For the format
+    and the size alone, call get_image_header().
     """
     image_format: str | None = None
     image_dimensions: tuple[int, int] | None = None

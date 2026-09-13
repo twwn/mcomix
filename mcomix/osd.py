@@ -81,7 +81,12 @@ class OnScreenDisplay:
         return GLib.SOURCE_REMOVE  # The timer that called this is done.
 
     def _wrap_text(self, text: str, width: int = 70) -> str:
-        """ Wraps the text to be C{width} characters at most. """
+        """Break <text> into lines of at most <width> characters.
+
+        Each line is wrapped on its own so that the blank lines between
+        the fields of the OSD survive: textwrap.wrap() answers an empty
+        list for an empty string, which would run the fields together.
+        """
         parts = text.split('\n')
         result = []
 
@@ -104,8 +109,14 @@ class OnScreenDisplay:
 
     def _scale_font(self, font: Pango.FontDescription, layout: Pango.Layout,
                     max_width: int) -> None:
-        """ Scales the font used by C{layout} up to the largest size the
-        text still fits C{max_width} at. """
+        """Set the font of <layout> to the largest size the text fits at.
+
+        Sizes are tried from 10 points to 60 in steps of five, and the
+        first one wider than <max_width> ends the search with the size
+        before it put back.  A size can only be tried by laying the
+        text out at it, so <font> and <layout> are both left holding
+        the answer.
+        """
 
         SIZE_MIN, SIZE_MAX = 10, 60
         for font_size in range(SIZE_MIN, SIZE_MAX, 5):
@@ -120,7 +131,7 @@ class OnScreenDisplay:
 
     def _draw_osd(self, layout: Pango.Layout,
                   rect: tuple[int, int, int, int]) -> None:
-        """ Draws the text specified in C{layout} into a box at C{rect}. """
+        """Draw the text of <layout> in white on a black box at <rect>."""
 
         # There is no window to paint into any more, and no damage to
         # work out: the canvas draws the OSD over the pages, and cairo

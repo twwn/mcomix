@@ -517,8 +517,13 @@ class _BaseFileChooserDialog(Dialog):
 
     def collect_files_from_subdir(self, path: str, filter: "Gtk.FileFilter | None",
                                   recursive: bool = False) -> Iterator[str]:
-        """ Finds archives within C{path} that match the
-        L{Gtk.FileFilter} passed in C{filter}. """
+        """Yield the files under <path> that <filter> accepts.
+
+        Only the files directly in <path>, unless <recursive> is set.
+        The "All files" filter is let through by identity before the
+        rules are consulted, although the "*" it was built with would
+        match everything anyway.
+        """
 
         for root, dirs, files in os.walk(path):
             for file in files:

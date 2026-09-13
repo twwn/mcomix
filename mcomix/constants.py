@@ -58,6 +58,14 @@ ANIMATION_DISABLED, ANIMATION_NORMAL = list(range(2))
 
 ZIP, RAR, TAR, GZIP, BZIP2, XZ, PDF, SEVENZIP, LHA, ZIP_EXTERNAL, MOBI = list(range(11))
 NORMAL_CURSOR, GRAB_CURSOR, WAIT_CURSOR, NO_CURSOR = list(range(4))
+#: The two collections the library shows that are not rows in its
+#: database.  "All books" is not a collection at all - it stands for the
+#: whole library, and a book in no collection is in it - and "Recent" is
+#: created by the schema itself under an id no other collection can take,
+#: since the ids of real ones are assigned by SQLite and start at 1.
+COLLECTION_ALL = -1
+COLLECTION_RECENT = -2
+
 #: What a drag within the library carries, as the first part of the
 #: text it hands over.  GTK4 has no drag target names to tell one kind
 #: from another by; a drop target answers for one type, so the two say

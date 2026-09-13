@@ -101,15 +101,15 @@ class CollectionAreaTest(MComixTest):
     # -- What it lists ----------------------------------------------------
 
     def test_all_books_comes_first(self):
-        self.assertEqual(self._shown()[0], collection_area._COLLECTION_ALL)
+        self.assertEqual(self._shown()[0], constants.COLLECTION_ALL)
 
     def test_the_top_level_collections_are_listed(self):
         # "Recent" is one the backend keeps for itself, beside the
         # collections the user made.
         self.assertEqual(
             sorted(self._shown()),
-            sorted([collection_area._COLLECTION_ALL,
-                    collection_area._COLLECTION_RECENT,
+            sorted([constants.COLLECTION_ALL,
+                    constants.COLLECTION_RECENT,
                     self.comics, self.manga]))
 
     def test_a_collection_inside_another_is_under_it(self):
@@ -128,7 +128,7 @@ class CollectionAreaTest(MComixTest):
         return walk(list(self.area._list.store))
 
     def test_the_name_is_drawn_as_markup(self):
-        row = self._row_for(collection_area._COLLECTION_ALL)
+        row = self._row_for(constants.COLLECTION_ALL)
         self.assertTrue(row.name.startswith('<b>'))
 
     # -- Selection --------------------------------------------------------
@@ -155,9 +155,9 @@ class CollectionAreaTest(MComixTest):
 
     def test_all_books_is_not_a_collection_that_can_be_removed(self):
         self.area._list.select_row(
-            self._row_for(collection_area._COLLECTION_ALL))
+            self._row_for(constants.COLLECTION_ALL))
         self.area._remove_collection()
-        self.assertIn(collection_area._COLLECTION_ALL, self._shown())
+        self.assertIn(constants.COLLECTION_ALL, self._shown())
 
     def test_duplicating_a_collection_adds_another_one(self):
         before = len(self._shown())

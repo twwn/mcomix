@@ -169,7 +169,13 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
         self._set_selected_row(self._currently_selected_row)
 
     def _generate_thumbnail(self, uid: int) -> "GdkPixbuf.Pixbuf | None":
-        """ Generate the pixbuf for C{uid} at demand. """
+        """The thumbnail for page <uid>, made on the list's worker thread.
+
+        A page whose file is not out of the archive yet is not waited
+        for, since the thread has other rows to fill: the answer is
+        None and the row stays empty until the page arrives and
+        _on_page_available() below has the list ask again.
+        """
         assert isinstance(uid, int)
         page = uid
         size = self._thumbnail_size

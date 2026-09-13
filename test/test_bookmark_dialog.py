@@ -298,15 +298,43 @@ class BookmarksDialogTest(MComixTest):
         self.assertEqual(self._stored(), ['alpha', 'beta'])
 
     def test_closing_keeps_a_bookmark_added_since_it_opened(self):
-        """The dialog lists what the store held when it opened.
-
-        One added since is not in that list, and re-adding the listed
-        ones one at a time moved it to the front of the store rather
-        than leaving it where it was put.
-        """
+        """Closing writes back an order that has the newcomer in it,
+        rather than one that moves it to the front or drops it."""
         self.store.add_bookmark(self._bookmark('delta', 4))
         self.dialog._close()
         self.assertEqual(self._stored(), ['alpha', 'beta', 'gamma', 'delta'])
+
+    # -- Following the store ----------------------------------------------
+
+    def test_a_bookmark_added_while_it_is_open_is_listed(self):
+        """The store is a backend for the menu and the dialog alike, so
+        Ctrl+D with the dialog open, or a second window adding one, has
+        to show in it.  The dialog listed what the store held when it
+        opened and nothing after that."""
+        self.store.add_bookmark(self._bookmark('delta', 4))
+        self.assertEqual(self._names(), ['delta', 'gamma', 'beta', 'alpha'])
+
+    def test_a_bookmark_removed_elsewhere_leaves_the_list(self):
+        self.store.remove_bookmark(self.store.get_bookmarks()[1])
+        self.assertEqual(self._names(), ['gamma', 'alpha'])
+
+    def test_the_store_being_cleared_empties_the_list(self):
+        self.store.clear_bookmarks()
+        self.assertEqual(self._names(), [])
+        self.assertFalse(self.dialog._clear_button.get_sensitive())
+
+    def test_a_bookmark_added_after_a_clear_can_be_cleared_again(self):
+        self.store.clear_bookmarks()
+        self.store.add_bookmark(self._bookmark('delta', 4))
+        self.assertEqual(self._names(), ['delta'])
+        self.assertTrue(self.dialog._clear_button.get_sensitive())
+
+    def test_a_closed_dialog_no_longer_follows_the_store(self):
+        """The store keeps the callbacks it is given, so a dialog that
+        does not take them back is one the store still talks to."""
+        self.dialog._close()
+        self.store.add_bookmark(self._bookmark('delta', 4))
+        self.assertEqual(self._names(), ['gamma', 'beta', 'alpha'])
 
     # -- The headings that sort -------------------------------------------
 
@@ -325,7 +353,6 @@ class BookmarksDialogTest(MComixTest):
         bookmark with no archive type sorts before every one that has
         one."""
         self.store.add_bookmark(self._bookmark('zipped', 4, archive_type=0))
-        self.dialog._add_bookmark(self._bookmark('zipped', 4, archive_type=0))
         self.dialog._list.sort_by(self.dialog._icon_col)
         self.assertEqual(self._names(),
                          ['alpha', 'beta', 'gamma', 'zipped'])

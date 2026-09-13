@@ -1,4 +1,26 @@
-"""file_handler.py - File handler that takes care of opening archives and images."""
+"""file_handler.py - Opening a book, and unpacking it as it is read.
+
+A book is either an archive or a run of loose image files, and this is
+what tells the two apart and hands the image handler a list of image
+files either way.  For loose images that list is ready at once.  An
+archive is unpacked into a temporary directory in the background, so
+the list names files that do not exist yet: file_is_available() says
+whether one has been written out, _wait_on_file() blocks until it has,
+and the file_available callback announces each one as it arrives.
+
+Opening an archive is therefore not over when open_file() returns.  The
+extractor lists the archive on a thread of its own and calls back into
+_listed_contents(), which sorts the images out from the comment files
+and goes on to _archive_opened() - and even that can end in a question
+to the reader about resuming where they left off, whose answer arrives
+later still.
+
+Where the reader left off is kept in two places.  The library records
+the last page read of each archive, which is what that question offers.
+Separately, the file and page open at any moment are written to a
+pickle of their own, and a start-up after "quit and save" reads it back
+to reopen the book.
+"""
 
 
 import os
@@ -51,16 +73,19 @@ class FileHandler:
         #: None if current file is not an archive, or unrecognized format.
         self.archive_type: int | None = None
 
-        #: Either path to the current archive, or first file in image list.
-        #: This is B{not} the path to the currently open page.
+        #: The archive that is open, or the image file the book was
+        #: opened at.  Not the page on screen: which page that is
+        #: belongs to the image handler, and it moves as the book is
+        #: read while this does not.
         self._current_file: str | None = None
-        #: Reference to L{MainWindow}.
         self._window = window
         #: Path to opened archive file, or directory containing current images.
         self._base_path: str | None = None
         #: Temporary directory used for extracting archives.
         self._tmp_dir: str | None = None
-        #: If C{True}, no longer wait for files to get extracted.
+        #: Set when the file is closed, so that a thread waiting on an
+        #: extraction gives up instead of waiting for a file that is no
+        #: longer coming.
         self._stop_waiting = False
         #: List of comment files inside of the currently opened archive.
         self._comment_files: list[str] = []
@@ -287,17 +312,22 @@ class FileHandler:
 
     def _initialize_fileprovider(self, path: str | list[str],
                                  keep_fileprovider: bool) -> str:
-        """ Creates the L{file_provider.FileProvider} for C{path}.
+        """Set up what lists the files around <path>; return the one to open.
 
-        If C{path} is a list, assumes that only the files in the list
-        should be available. If C{path} is a string, assume that it is
-        either a directory or an image file, and all files in that directory
-        should be opened.
+        A list of names is taken to be the whole of what should be
+        available, and the first of them is the one to open.  A single
+        name is the classic Comix way round: the file or directory named
+        brings the rest of its directory with it, and the name itself is
+        what opens.
 
-        @param path: List of file names, or single file/directory as string.
-        @param keep_fileprovider: If C{True}, no new provider is constructed.
-        @return: If C{path} was a list, returns the first list element.
-            Otherwise, C{path} is not modified."""
+        <keep_fileprovider> leaves a provider that is already there
+        alone, which is how refreshing a file, paging on into the next
+        archive and walking into the next directory keep the listing
+        they have instead of starting a fresh one around the new file.
+
+        Raises ValueError, carrying a message meant for the reader, for
+        a single name that is neither a file nor a directory.
+        """
 
         if isinstance(path, list) and len(path) == 0:
             # This is a programming error and does not need translation.
@@ -319,10 +349,9 @@ class FileHandler:
             return path
 
     def _check_access(self, path: str) -> str | None:
-        """ Checks for various error that could occur when opening C{path}.
+        """Return why <path> cannot be opened, or None if it can.
 
-        @param path: Path to file that should be opened.
-        @return: An appropriate error string, or C{None} if no error was found.
+        The answer is shown to the reader, so it is translated.
         """
         if not os.path.exists(path):
             return _('Could not open %s: No such file.') % path
@@ -334,12 +363,19 @@ class FileHandler:
             return None
 
     def _open_archive(self, path: str) -> None:
-        """ Opens the archive passed in C{path}.
+        """Point the extractor at the archive <path>, and return at once.
 
-        Creates an L{archive_extractor.Extractor} and extracts all images
-        found within the archive.
+        Nothing has been listed and nothing extracted by the time this
+        is done.  The extractor reads the archive on a thread of its own
+        and calls _listed_contents() when it knows what is in there,
+        which is where the opening carries on.  What is kept here is the
+        temporary directory the archive will be unpacked into, and the
+        condition the extractor signals on as files appear.
 
-        @return: A tuple containing C{(image_files, image_index)}. """
+        An archive that cannot be opened - an unsupported format, most
+        often - raises, and the condition is put back to None so that a
+        later question about a file cannot find a half-open archive.
+        """
 
         self._tmp_dir = tempfile.mkdtemp(prefix='mcomix.', suffix=os.sep)
         self._base_path = path
@@ -382,8 +418,12 @@ class FileHandler:
         self._archive_opened(image_files)
 
     def _sort_archive_images(self, filelist: list[str]) -> None:
-        """ Sorts the image list passed in C{filelist} based on the sorting
-        preference option. """
+        """Sort <filelist> in place, by the archive sort preferences.
+
+        One of the choices is not to sort at all, which leaves the order
+        the archive itself gave; a descending sort order still reverses
+        that.
+        """
 
         if prefs['sort archive by'] == constants.SORT_NAME:
             tools.alphanumeric_sort(filelist)
@@ -400,11 +440,18 @@ class FileHandler:
 
     def _get_index_for_page(self, start_page: int, num_of_pages: int,
                             path: str) -> int:
-        """ Returns the page that should be displayed for an archive.
-        @param start_page: If -1, show last page. If 0, show either first page
-                           or last read page. If > 0, show C{start_page}.
-        @param num_of_pages: Page count.
-        @param path: Archive path.
+        """The index, not the page number, to open the archive <path> at.
+
+        A negative <start_page> means the end of the book, which in
+        double page mode is the second page from the end so that the
+        last pair is what shows.  Zero means wherever the book was left
+        off, or its first page when nothing was recorded for it.
+        Anything else is that page.
+
+        The answer is clamped to the <num_of_pages> pages there are,
+        because <start_page> is whatever the caller had - a bookmark,
+        the page a "quit and save" ended on, a preference - and none of
+        those need still fit this book.
         """
         if start_page < 0 and prefs['default double page']:
             current_image_index = num_of_pages - 2
@@ -454,12 +501,12 @@ class FileHandler:
 
     def _open_image_files(self, filelist: list[str],
                           image_path: str) -> tuple[list[str], int]:
-        """ Opens all files passed in C{filelist}.
+        """Return <filelist> and where <image_path> sits in it.
 
-        If C{image_path} is found in C{filelist}, the current page will be set
-        to its index within C{filelist}.
-
-        @return: Tuple of C{(image_files, image_index)}
+        Nothing is opened here, since loose image files are already
+        there; the work is noting the directory they are in as the base
+        path.  An <image_path> that is not among them answers with the
+        first file instead.
         """
 
         self._base_path = self._opened_provider.get_directory()
@@ -668,8 +715,13 @@ class FileHandler:
 
     @callback.Callback
     def file_available(self, filepaths: list[str]) -> None:
-        """ Called every time a new file from the Filehandler's opened
-        files becomes available. C{filepaths} is a list of now available files.
+        """Announce that the files named in <filepaths> can now be read.
+
+        A callback, so what it does is whatever has subscribed to it:
+        the image handler, which is waiting to draw those pages, and the
+        comments dialog.  Loose image files are all announced in one go
+        when the book opens, since none of them has to be extracted
+        first.
         """
         pass
 

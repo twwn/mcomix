@@ -94,9 +94,15 @@ class _BookmarksDialog(Dialog):
 
         for bookmark in self._bookmarks_store.get_bookmarks():
             self._add_bookmark(bookmark)
-        self._clear_button.set_sensitive(
-            not self._bookmarks_store.is_empty())
-        self._selection_changed()
+        self._store_changed()
+
+        # What the store's own docstring promises: a change to it shows
+        # in the menu and in the dialog alike.  Adding a bookmark with
+        # Ctrl+D, or a second window removing one, used to leave the
+        # dialog listing what the store held when it opened.
+        self._bookmarks_store.add_bookmark += self._bookmark_added
+        self._bookmarks_store.remove_bookmark += self._bookmark_removed
+        self._bookmarks_store.clear_bookmarks += self._bookmarks_cleared
 
         self.set_visible(True)
 
@@ -136,6 +142,44 @@ class _BookmarksDialog(Dialog):
         """Add the <bookmark> to the dialog, newest first."""
         self._list.insert_row(0, bookmark.to_row())
 
+    def _row_for(self, bookmark: "bookmark_menu_item._Bookmark") \
+            -> "column_list.Row | None":
+        """The row standing for <bookmark>, if it is listed.
+
+        By the bookmark rather than by the row: a store that has been
+        read again from the file holds bookmarks that are equal to the
+        listed ones without being the same objects, and a row is found
+        in the list by identity.
+        """
+        return next((row for row in self._list.each_stored_row()
+                     if row.bookmark == bookmark), None)
+
+    def _bookmark_added(self,
+                        bookmark: "bookmark_menu_item._Bookmark") -> None:
+        """List a bookmark added while the dialog is open."""
+        if self._row_for(bookmark) is None:
+            self._add_bookmark(bookmark)
+        self._store_changed()
+
+    def _bookmark_removed(self,
+                          bookmark: "bookmark_menu_item._Bookmark") -> None:
+        """Drop a bookmark removed while the dialog is open."""
+        row = self._row_for(bookmark)
+        if row is not None:
+            self._list.remove_row(row)
+        self._store_changed()
+
+    def _bookmarks_cleared(self) -> None:
+        """Empty the list, the store having been emptied."""
+        self._list.clear()
+        self._store_changed()
+
+    def _store_changed(self) -> None:
+        """Follow the store's contents with the buttons that act on it."""
+        self._clear_button.set_sensitive(
+            not self._bookmarks_store.is_empty())
+        self._selection_changed()
+
     def _selection_changed(self, *args: object) -> None:
         """Only a bookmark that is selected can be removed.
 
@@ -161,14 +205,10 @@ class _BookmarksDialog(Dialog):
 
         if row is not None:
             position = self._list.get_selected_positions()[0]
-            self._list.remove_row(row)
             self._bookmarks_store.remove_bookmark(row.bookmark)
             left = self._list.store.get_n_items()
             if left:
                 self._list.select_only(min(position, left - 1))
-            self._clear_button.set_sensitive(
-                not self._bookmarks_store.is_empty())
-            self._selection_changed()
 
     def _clear_all(self) -> None:
         """Remove every bookmark, once the reader has confirmed it."""
@@ -177,13 +217,8 @@ class _BookmarksDialog(Dialog):
     def _clear_answered(self, response: int) -> None:
         if response != Response.YES:
             return
-        # The rows go first: _close() writes back whatever is left in
-        # the list, so a cleared store under a full list would be
-        # refilled from it on the way out.
-        self._list.clear()
+        # The rows go with it, through _bookmarks_cleared().
         self._bookmarks_store.clear_bookmarks()
-        self._clear_button.set_sensitive(False)
-        self._selection_changed()
 
     def _bookmark_activated(self, view: Gtk.ListView, position: int,
                             *args: object) -> None:
@@ -230,6 +265,10 @@ class _BookmarksDialog(Dialog):
         list shows the newest bookmark first and the store keeps it
         last, so the one is the other reversed.
         """
+        self._bookmarks_store.add_bookmark -= self._bookmark_added
+        self._bookmarks_store.remove_bookmark -= self._bookmark_removed
+        self._bookmarks_store.clear_bookmarks -= self._bookmarks_cleared
+
         ordering = [row.bookmark for row in self._list.each_stored_row()]
         ordering.reverse()
         self._bookmarks_store.set_bookmark_order(ordering)

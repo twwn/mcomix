@@ -18,11 +18,6 @@ from collections.abc import Iterator
 if TYPE_CHECKING:
     from mcomix.library.main_dialog import _LibraryDialog
 
-# The "All books" collection is not a real collection stored in the library,
-# but is represented by this ID in the library's TreeModels.
-_COLLECTION_ALL = -1
-_COLLECTION_RECENT = -2
-
 #: What a drop handler answers with when it will not take the drop.
 _NO_DRAG_ACTION = Gdk.DragAction(0)
 
@@ -190,7 +185,7 @@ class _CollectionArea(Gtk.ScrolledWindow):
                                 for row in self._list.expanded_rows()]
         rows = [column_list.Row(
             name='<b>%s</b>' % xmlescape(_('All books')),
-            collection=_COLLECTION_ALL, children=[])]
+            collection=constants.COLLECTION_ALL, children=[])]
         rows.extend(_rows_under(None))
         self._list.set_rows(rows)
 
@@ -252,9 +247,10 @@ class _CollectionArea(Gtk.ScrolledWindow):
                 self._library.set_status_message(message)
 
     def clean_collection(self, collection: int | None) -> None:
-        """ Check all books in the collection, removing those that
-        no longer exist. If C{collection} is None, the whole library
-        will be cleaned. """
+        """ Removes from the library every book in <collection> whose
+        file has gone away, or every such book there is when
+        <collection> is None, says in the status bar how many went and
+        redraws the covers of the collection on show. """
 
         removed = self._library.backend.clean_collection(collection)
 
@@ -284,8 +280,8 @@ class _CollectionArea(Gtk.ScrolledWindow):
 
         collection = self.get_current_collection()
 
-        # The backend expects _COLLECTION_ALL to be passed as None
-        if collection == _COLLECTION_ALL:
+        # The backend expects constants.COLLECTION_ALL to be passed as None
+        if collection == constants.COLLECTION_ALL:
             collection = None
 
         self.clean_collection(collection)
@@ -295,9 +291,9 @@ class _CollectionArea(Gtk.ScrolledWindow):
         collection = self.get_current_collection()
 
         if collection is not None \
-                and collection not in (_COLLECTION_ALL, _COLLECTION_RECENT):
+                and collection not in (constants.COLLECTION_ALL, constants.COLLECTION_RECENT):
             self._library.backend.remove_collection(collection)
-            prefs['last library collection'] = _COLLECTION_ALL
+            prefs['last library collection'] = constants.COLLECTION_ALL
             self.display_collections()
 
     def _rename_collection(self, *args: object) -> None:
@@ -369,10 +365,15 @@ class _CollectionArea(Gtk.ScrolledWindow):
         self._popup_collection_menu(self.get_current_collection())
 
     def _popup_collection_menu(self, collection: int | None) -> None:
-        """ Show the library collection popup. Depending on the
-        value of C{collection}, menu items will be disabled or enabled. """
+        """ Shows the collection popup over <collection>, with the
+        items that suit it enabled.  Renaming, duplicating and removing
+        want a collection of the user's own, so they are off over the
+        built-in "All books" and "Recent" rows, and over no collection
+        at all - which is what a right click on empty space gives, and
+        the only thing adding books and cleaning up are off over.
+        Creating a collection is always offered. """
 
-        is_collection_all = collection in (_COLLECTION_ALL, _COLLECTION_RECENT)
+        is_collection_all = collection in (constants.COLLECTION_ALL, constants.COLLECTION_RECENT)
 
         for name in ('rename', 'duplicate', 'remove'):
             widgets.simple_action(self._popup_actions, name).set_enabled(
@@ -439,7 +440,7 @@ class _CollectionArea(Gtk.ScrolledWindow):
             # Books dragged out of "All books" are filed rather than
             # moved, and so are books dragged with no collection shown.
             move_from = (src_collection if src_collection is not None
-                         and src_collection != _COLLECTION_ALL else None)
+                         and src_collection != constants.COLLECTION_ALL else None)
             for book in books:
                 if book is None:
                     continue
@@ -512,8 +513,8 @@ class _CollectionArea(Gtk.ScrolledWindow):
             if pos != self._list.DROP_INTO:
                 dest_collection = self._library.backend.get_supercollection(
                     dest_collection)
-            if (_COLLECTION_ALL in (src_collection, dest_collection) or
-                    _COLLECTION_RECENT in (src_collection, dest_collection) or
+            if (constants.COLLECTION_ALL in (src_collection, dest_collection) or
+                    constants.COLLECTION_RECENT in (src_collection, dest_collection) or
                     src_collection == dest_collection):
                 self._set_acceptable_drop(False)
                 self._library.set_status_message('')
@@ -533,12 +534,12 @@ class _CollectionArea(Gtk.ScrolledWindow):
                 return _NO_DRAG_ACTION
             dest_row, pos = drop
             dest_collection = dest_row.collection
-            if src_collection == dest_collection or dest_collection == _COLLECTION_ALL:
+            if src_collection == dest_collection or dest_collection == constants.COLLECTION_ALL:
                 self._set_acceptable_drop(False)
                 self._library.set_status_message('')
                 return _NO_DRAG_ACTION
             dest_name = self._collection_name(dest_collection)
-            if src_collection == _COLLECTION_ALL:
+            if src_collection == constants.COLLECTION_ALL:
                 message = _("Add books to '%s'.") % dest_name
             else:
                 src_name = self._collection_name(src_collection)

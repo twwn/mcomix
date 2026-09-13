@@ -1,4 +1,4 @@
-""" Library watch list dialog and backend classes. """
+""" Library watch list dialog. """
 
 import os
 from gi.repository import Gio, Gtk, GLib
@@ -23,9 +23,6 @@ class WatchListDialog(Dialog):
     RESPONSE_SCANNOW = 1000
 
     def __init__(self, library: "main_dialog._LibraryDialog") -> None:
-        """ Dialog constructor.
-        @param library: Dialog parent window, should be library window.
-        """
         super().__init__(
             title=_("Library watch list"), transient_for=library,
             destroy_with_parent=True, modal=True)
@@ -86,8 +83,8 @@ class WatchListDialog(Dialog):
 
     def get_selected_watchlist_entry(
             self) -> "backend_types._WatchListEntry | None":
-        """ Returns the selected watchlist entry, or C{None} if no
-        item is selected. """
+        """ Returns the selected watchlist entry, or None if no row is
+        selected. """
         row = self._list.get_selected_row()
         if row is None:
             return None

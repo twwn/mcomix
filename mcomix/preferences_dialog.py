@@ -807,15 +807,11 @@ class _PreferencesDialog(Dialog):
                             change_callback:
                             "Callable[[widgets.Chooser[V]], None] | None"
                             ) -> "widgets.Chooser[V]":
-        """ Creates a new dropdown and populates it with the items
-        passed in C{options}.
+        """A dropdown of <options>, pairs of label and value, opening
+        on <selected_value>.
 
-        @param options: List of tuples: (Option display text, option value)
-        @param selected_value: One of the values passed in C{options} that will
-            be pre-selected when the control is created.
-        @param change_callback: Function that will be called when a
-            different option is picked.
-        @returns widgets.Chooser
+        <change_callback>, where there is one, is called with the
+        dropdown whenever a different option is picked.
         """
         assert options and len(options[0]) == 2, "Invalid format for options."
 

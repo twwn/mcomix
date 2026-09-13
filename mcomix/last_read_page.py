@@ -1,3 +1,22 @@
+"""last_read_page.py - The page a book was left on.
+
+Where the reader stopped in a book is kept in the library database, in
+a row of table "recent" beside the book's own row, and the book itself
+is filed in the library's "Recent" collection.  Opening that book again
+offers to carry on from the stored page.
+
+None of it happens while the "store recent file info" preference is
+off, which is what the enabled flag stands for.  The two methods that
+count and clear what was stored earlier ignore that flag, because the
+preferences dialog reaches for them exactly when the preference has
+just been turned off.
+
+The module also carries a one-time migration.  Before the library grew
+its "recent" table, the last read page lived in a standalone SQLite
+database of its own, lastreadpage.db; upgrading a library from before
+that moves what the old file holds into the library and deletes it.
+"""
+
 import datetime
 import os
 from typing import TYPE_CHECKING
@@ -16,28 +35,27 @@ if TYPE_CHECKING:
 
 
 class LastReadPage:
-    """ Automatically stores the last page the user read for all book files,
-    and restores the page the next time the archive is opened. When the book
-    is finished, the page will be cleared.
+    """ Stores the page a book was left on, and hands it back when the
+    book is opened again.
 
-    If L{enabled} is set to C{false}, all methods will do nothing. This
-    simplifies code in other places, as it does not have to check each time
-    if the preference option to store pages automatically is enabled.
+    A book read to its last page counts as finished: the page is still
+    stored, but get_page() answers None for it, so the book opens at the
+    beginning again rather than at its final page.
+
+    While enabled is false, every method that reads or writes the page
+    of one book does nothing, which spares each caller from testing the
+    preference itself.  count() and clear_all() work either way, since
+    what they are for is disposing of what was stored while it was on.
     """
 
     def __init__(self, backend: '_LibraryBackend') -> None:
-        """ Constructor.
-        @param backend: Library backend instance.
-        """
-        #: If disabled, all methods will be no-ops.
+        #: While false, the methods that read or write the page of one
+        #: book do nothing.
         self.enabled = False
-        #: Library backend.
         self.backend = backend
 
     def set_enabled(self, enabled: bool) -> None:
-        """ Enables (or disables) all functionality of this module.
-        @type enabled: bool
-        """
+        """ Follows the "store recent file info" preference. """
         self.enabled = enabled
 
     def _recent_collection_id(self) -> int:
@@ -49,9 +67,9 @@ class LastReadPage:
         return collection_id
 
     def count(self) -> int:
-        """ Number of stored book/page combinations. This method is
-        not affected by setting L{enabled} to false.
-        @return: The number of entries stored by this module. """
+        """ How many books have a stored page.  Answers whether or not
+        this is enabled, because the preferences dialog asks it just
+        after the preference has been turned off. """
 
         cursor = self.backend.execute("""SELECT COUNT(*) FROM recent""")
         # The connection's row factory unwraps a one column row, so this
@@ -62,10 +80,11 @@ class LastReadPage:
         return int(count)
 
     def set_page(self, path: str, page: int) -> None:
-        """ Sets C{page} as last read page for the book at C{path}.
-        @param path: Path to book. Raises ValueError if file doesn't exist.
-        @param page: Page number.
-        """
+        """ Stores <page> as the last read page of the book at <path>,
+        adding the book to the library if it is not there yet and filing
+        it in the "Recent" collection either way.  Raises ValueError
+        when the book cannot be added, which is what a file that has
+        gone away comes to. """
         if not self.enabled:
             return
 
@@ -85,9 +104,9 @@ class LastReadPage:
         book.set_last_read_page(page)
 
     def clear_page(self, path: str) -> None:
-        """ Removes stored page for book at C{path}.
-        @param path: Path to book.
-        """
+        """ Forgets the page stored for the book at <path>.  The book
+        keeps its row in the library and its place in the "Recent"
+        collection; only the stored page goes. """
         if not self.enabled:
             return
 
@@ -98,9 +117,11 @@ class LastReadPage:
             book.set_last_read_page(None)
 
     def clear_all(self) -> None:
-        """ Removes all stored books from the library's 'Recent' collection,
-        and removes all information from the recent table. This method is
-        not affected by setting L{enabled} to false. """
+        """ Empties the "Recent" collection and the stored pages that go
+        with it, taking with them the books that are in the library only
+        because they were read.  Works whether or not this is enabled:
+        the preferences dialog offers it when the preference has just
+        been turned off. """
 
         # Collect books whose only collection is "Recent". Those are in
         # the library solely because they were read, so they go with the
@@ -148,12 +169,9 @@ class LastReadPage:
             self.backend.end_transaction()
 
     def get_page(self, path: str) -> int | None:
-        """ Gets the last read page for book at C{path}.
-
-        @param path: Path to book.
-        @return: Page that was last read, or C{None} if the book
-                 wasn't opened before.
-        """
+        """ The page to carry on from in the book at <path>, or None
+        when there is none: the book was never opened, or it was read to
+        the end and starts over from the beginning. """
         if not self.enabled:
             return None
 
@@ -171,11 +189,8 @@ class LastReadPage:
             return None
 
     def get_date(self, path: str) -> datetime.datetime | None:
-        """ Gets the date at which the page for path was set.
-
-        @param path: Path to book.
-        @return: C{datetime} object, or C{None} if no page was set.
-        """
+        """ When the stored page of the book at <path> was set, or None
+        if no page is stored. """
         if not self.enabled:
             return None
 
@@ -187,9 +202,17 @@ class LastReadPage:
             return None
 
     def migrate_database_to_library(self, recent_collection: int) -> None:
-        """ Moves all information saved in the legacy database
-        constants.LASTPAGE_DATABASE_PATH into the library,
-        and deleting the old database. """
+        """ Moves what the legacy lastreadpage.db holds into the
+        library, filing each of its books in <recent_collection>, and
+        deletes the old database afterwards.  A book whose file has gone
+        away is dropped; one the library already has keeps the row it
+        has and only gains the collection.
+
+        The library backend runs this once, while upgrading a database
+        to version 4, the version that added table "recent".  The old
+        file is opened through _init_database(), which creates it when
+        it is not there, so an upgrade of a library that never had one
+        moves nothing and then deletes the file it has just made. """
 
         database = self._init_database(constants.LASTPAGE_DATABASE_PATH)
 
@@ -234,12 +257,8 @@ class LastReadPage:
                 log.info('Error was: %s', error)
 
     def _init_database(self, dbfile: str) -> dbapi2.Connection:
-        """ Creates or opens new SQLite database at C{dbfile}, and initalizes
-        the required table(s).
-
-        @param dbfile: Database file name. This file needn't exist.
-        @return: Open SQLite database connection.
-        """
+        """ Opens the legacy database at <dbfile>, creating the file and
+        the one table it holds if they are not there. """
         db = dbapi2.connect(dbfile, isolation_level=None)
         sql = """CREATE TABLE IF NOT EXISTS lastread (
             path TEXT PRIMARY KEY,

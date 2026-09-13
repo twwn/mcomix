@@ -192,8 +192,15 @@ class _BookmarksStore:
         return len(self._bookmarks) == 0
 
     def load_bookmarks(self) -> tuple[list[bookmark_menu_item._Bookmark], int]:
-        """ Loads persisted bookmarks from a local file.
-        @return: Tuple of (bookmarks, file mtime)
+        """Read the stored bookmarks, and return them with the file's mtime.
+
+        The mtime comes back with them because that is what
+        file_was_modified() compares against later to tell another
+        instance's write from this one's own.
+
+        A file that is not there, or one that cannot be unpickled, gives
+        back an empty list or however much of it was read: a damaged
+        bookmarks file should cost the bookmarks, not the session.
         """
 
         path = constants.BOOKMARK_PICKLE_PATH
@@ -243,12 +250,11 @@ class _BookmarksStore:
     def write_bookmarks_file(self, merge: bool = True) -> None:
         """Store relevant bookmark info in the mcomix directory.
 
-        @param merge: Whether to take in what another instance has
-                      written since the file was last read.  True for
-                      every change to one bookmark; False only for
-                      clear_bookmarks(), which is meant to empty the
-                      file rather than to leave the other instance's
-                      bookmarks standing in it.
+        <merge> takes in what another instance has written since the
+        file was last read, which is what every change to a single
+        bookmark wants.  Only clear_bookmarks() passes False: it is
+        meant to empty the file, not to leave another instance's
+        bookmarks standing in it.
         """
 
         # Another instance may have written the file since it was last

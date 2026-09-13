@@ -747,10 +747,28 @@ class EventHandler:
             self._window.update_viewport_position()
 
     def _next_page_with_protection(self) -> bool:
-        """ Advances to the next page. If L{_scroll_protection} is enabled,
-        this method will only advance if enough scrolling attempts have been made.
+        """Advance a page, unless the reader should scroll on first.
 
-        @return: True when the page was flipped."""
+        Returns True when the page was turned.
+
+        Nothing happens at all while the "flip with wheel" preference is
+        off, since scrolling past the end of a page is the only thing
+        that arrives here.  When it is on and the scroll protection is
+        armed, the end of the page has to be hit as many times as
+        "number of key presses before page turn" says before the page
+        turns, so that scrolling down to the bottom does not run
+        straight on into the next page.  A page that does not scroll at
+        all has no end to overshoot and turns on the first attempt.
+
+        What arms the protection is a wheel event, or one of the plain
+        scroll bindings.  A key press clears it before anything is
+        dispatched, so smart scrolling from the keyboard turns the page
+        as soon as the page runs out.
+
+        The count of attempts is signed - forwards counts up and
+        backwards counts down - and changing direction restarts it
+        rather than working off what was counted the other way.
+        """
 
         if not prefs['flip with wheel']:
             self._extra_scroll_events = 0
@@ -772,10 +790,12 @@ class EventHandler:
             assert False, "Programmer is moron, incorrect assertion."
 
     def _previous_page_with_protection(self) -> bool:
-        """ Goes back to the previous page. If L{_scroll_protection} is enabled,
-        this method will only go back if enough scrolling attempts have been made.
+        """Go back a page, unless the reader should scroll on first.
 
-        @return: True when the page was flipped."""
+        The mirror image of _next_page_with_protection(), which explains
+        the protection.  The count of attempts runs negative in this
+        direction.  Returns True when the page was turned.
+        """
 
         if not prefs['flip with wheel']:
             self._extra_scroll_events = 0
@@ -798,8 +818,14 @@ class EventHandler:
 
     def _flip_page(self, number_of_pages: int,
                    single_step: bool = False) -> None:
-        """ Switches a number of pages forwards/backwards. If C{single_step} is True,
-        the page count will be advanced by only one page even in double page mode. """
+        """Turn <number_of_pages> pages, forwards or backwards.
+
+        In double page mode a turn of one page moves two, unless
+        <single_step> asks for the single page.  Any scroll attempts
+        counted towards a page turn are forgotten, because they were
+        counted against a page that is about to stop being the current
+        one.
+        """
         self._extra_scroll_events = 0
         self._window.flip_page(number_of_pages, single_step=single_step)
 

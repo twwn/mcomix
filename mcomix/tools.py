@@ -70,11 +70,14 @@ def alphanumeric_sort(filenames: list[str]) -> None:
 
 
 def bin_search(lst: "list[Comparable]", value: Comparable) -> int:
-    """ Binary search for sorted list C{lst}, looking for C{value}.
-    @return: List index on success. On failure, it returns the 1's
-    complement of the index where C{value} would be inserted.
-    This implies that the return value is non-negative if and only if
-    C{value} is contained in C{lst}. """
+    """Return the index of <value> in the sorted list <lst>.
+
+    A <value> that is not in <lst> gives the one's complement of the
+    index it would be inserted at, so the answer is negative exactly
+    when the search failed, and ~answer still says where the value
+    belongs.  The scroller reads it that way: a viewport position that
+    falls between two grid points tells it which two.
+    """
 
     index = bisect.bisect_left(lst, value)
     if index != len(lst) and lst[index] == value:
@@ -258,18 +261,23 @@ def fixed_strings_regex(strings: Iterable[str]) -> str:
 def formats_to_regex(
         formats: "Mapping[str, tuple[Collection[str], Collection[str]]]"
         ) -> "re.Pattern[str]":
-    """ Returns a compiled regular expression that can be used to search for
-    file extensions specified in C{formats}. """
+    """Return a pattern matching the file extensions <formats> names.
+
+    <formats> maps a format name to its MIME types and its extensions,
+    the shape get_supported_formats() answers in; only the extensions
+    are read.  The pattern matches one of them, case-insensitively, at
+    the end of a name, and puts it in a group.
+    """
     return re.compile(r'\.' + fixed_strings_regex(
         itertools.chain.from_iterable([e[1] for e in formats.values()])) + r'$', re.I)
 
 
 @contextlib.contextmanager
 def atomic_write(path: str, binary: bool = False) -> "Iterator[IO[Any]]":  # type: ignore[explicit-any]  # the mode decides whether it is text or bytes
-    """ Context manager that yields a file object for writing to C{path}.
+    """ Context manager that yields a file object for writing to <path>.
 
     The data is written to a temporary file in the same directory, which is
-    only renamed over C{path} after writing finished without error.  Since
+    only renamed over <path> after writing finished without error.  Since
     that rename is atomic, concurrently running instances can neither read a
     half-written file nor leave a truncated one behind by writing at the
     same time. """

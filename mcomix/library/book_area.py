@@ -28,10 +28,6 @@ if TYPE_CHECKING:
     from mcomix.library import backend_types
     from mcomix.library import main_dialog
 
-# The "All books" collection is not a real collection stored in the library, but is represented by this ID in the
-# library's TreeModels.
-_COLLECTION_ALL = -1
-
 
 class _BookItem(thumbnail_list.ThumbnailItem):
 
@@ -259,19 +255,21 @@ class _BookArea(Gtk.ScrolledWindow):
         self._covers.stop_update()
 
     def add_books(self, books: Iterable['backend_types._Book']) -> None:
-        """ Adds new book covers to the grid.
-        @param books: List of L{_Book} instances. """
+        """ Adds a cover to the grid for each of <books>. """
         for book in books:
             self._covers.append_item(_BookItem(book))
 
     def _new_book_added(self, book: 'backend_types._Book',
                         collection: int | None) -> None:
-        """ Callback function for L{LibraryBackend.book_added}. """
+        """ Bound to the backend's book_added_to_collection: draws
+        the cover of <book> when <collection> is the one on show, or
+        when all books are, and the filter does not hide it.  A book
+        filed in no collection counts as being in "All books". """
         if collection is None:
-            collection = _COLLECTION_ALL
+            collection = constants.COLLECTION_ALL
 
         if (collection == self._library.collection_area.get_current_collection() or
-                self._library.collection_area.get_current_collection() == _COLLECTION_ALL):
+                self._library.collection_area.get_current_collection() == constants.COLLECTION_ALL):
             # Make sure not to show a book twice when COLLECTION_ALL is selected
             # and the book is added to another collection, triggering this event.
             if self.is_book_displayed(book):
@@ -283,8 +281,9 @@ class _BookArea(Gtk.ScrolledWindow):
                 self.add_books([book])
 
     def is_book_displayed(self, book: 'backend_types._Book | None') -> bool:
-        """ Returns True when the current view contains the book passed.
-        @param book: L{_Book} instance. """
+        """ Returns True when <book> is one of the covers on show.
+        None, which is what a lookup that found no book gives back,
+        never is. """
         if not book:
             return False
 
@@ -351,9 +350,8 @@ class _BookArea(Gtk.ScrolledWindow):
         self._open_books(True)
 
     def set_sort_order(self) -> None:
-        """ Orders the covers by the key in C{lib sort key}.
-        Should be one of the C{SORT_} constants from L{constants}.
-        """
+        """ Orders the covers by the "lib sort key" and "lib sort
+        order" preferences. """
         key = prefs['lib sort key']
         ascending = prefs['lib sort order'] == constants.SORT_ASCENDING
 
@@ -532,7 +530,7 @@ class _BookArea(Gtk.ScrolledWindow):
         and thus also from the _BookArea.
         """
         collection = self._library.collection_area.get_current_collection()
-        if collection is None or collection == _COLLECTION_ALL:
+        if collection is None or collection == constants.COLLECTION_ALL:
             # There is no one collection to take the books out of.
             return
         selected = self._selected_items()
@@ -663,7 +661,7 @@ class _BookArea(Gtk.ScrolledWindow):
         selected = self._selected_items()
         books_selected = len(selected) > 0
         collection = self._library.collection_area.get_current_collection()
-        is_collection_all = collection == _COLLECTION_ALL
+        is_collection_all = collection == constants.COLLECTION_ALL
 
         for action in ('open', 'open-keep-library', 'remove-from-library',
                        'completely-remove'):
