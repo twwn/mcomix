@@ -335,15 +335,27 @@ def static_image(pixbuf):
     return pixbuf
 
 def pixbuf_to_texture(pixbuf: GdkPixbuf.Pixbuf) -> Gdk.Texture:
-    """Return <pixbuf> as the Gdk.Texture GTK4 draws from."""
-    if pixbuf.get_has_alpha():
-        memory_format = Gdk.MemoryFormat.R8G8B8A8
-    else:
-        memory_format = Gdk.MemoryFormat.R8G8B8
-    return Gdk.MemoryTexture.new(pixbuf.get_width(), pixbuf.get_height(),
-                                 memory_format,
-                                 GLib.Bytes.new(pixbuf.get_pixels()),
-                                 pixbuf.get_rowstride())
+    """Return <pixbuf> as the Gdk.Texture GTK4 draws from.
+
+    The texture keeps <pixbuf> rather than a copy of its pixels, so hand
+    it one that nothing is going to paint over afterwards.  Copying the
+    pixels out through Python instead - get_pixels() copies once and
+    GLib.Bytes.new() again - cost a millisecond on a page-sized picture,
+    for nothing.
+    """
+    return Gdk.Texture.new_for_pixbuf(pixbuf)
+
+def pil_to_texture(im) -> Gdk.Texture:
+    """Return the PIL image <im> as the Gdk.Texture GTK4 draws from."""
+    if im.mode not in ('RGB', 'RGBA'):
+        im = im.convert('RGBA')
+    has_alpha = im.mode == 'RGBA'
+    memory_format = Gdk.MemoryFormat.R8G8B8A8 if has_alpha \
+        else Gdk.MemoryFormat.R8G8B8
+    width, height = im.size
+    return Gdk.MemoryTexture.new(width, height, memory_format,
+                                 GLib.Bytes.new(im.tobytes()),
+                                 width * (4 if has_alpha else 3))
 
 
 #: The providers load_pixbuf() tries, in order.
@@ -367,6 +379,13 @@ def load_pixbuf(path):
                         pixbuf = GdkPixbuf.PixbufAnimation.new_from_file(path)
                         if pixbuf.is_static_image():
                             pixbuf = pixbuf.get_static_image()
+                        else:
+                            # Whoever draws the frames needs the file
+                            # back: gdk-pixbuf decodes them one at a
+                            # time in a process of its own, far too
+                            # slowly to keep up with a page that is
+                            # really a video.  See mcomix.animation.
+                            setattr(pixbuf, 'path', path)
                     except GLib.GError:
                         # NOTE: Broken JPEGs sometimes result in this exception.
                         # However, one may be able to load them using
@@ -663,7 +682,10 @@ def combine_pixbufs( pixbuf1, pixbuf2, are_in_manga_mode ):
     return new_pix_buf
 
 def is_image_file(path):
-    """Return True if the file at <path> is an image file recognized by PyGTK.
+    """Return True if <path> ends in an extension MComix can read.
+
+    This is a decision about the name alone; nothing opens the file.
+    get_supported_formats() is what settles which extensions those are.
     """
     return _SUPPORTED_IMAGE_REGEX.search(path) is not None
 

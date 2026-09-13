@@ -81,6 +81,7 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
         self._pixbuf_cellrenderer = Gtk.CellRendererPixbuf()
         self._thumbnail_image_treeviewcolumn.set_sizing(Gtk.TreeViewColumnSizing.FIXED)
         self._thumbnail_image_treeviewcolumn.set_fixed_width(self._pixbuf_size)
+        preview.draw_cells_at(self._treeview, self._pixbuf_size)
         self._thumbnail_image_treeviewcolumn.pack_start(self._pixbuf_cellrenderer, True)
         self._thumbnail_image_treeviewcolumn.add_attribute(self._pixbuf_cellrenderer, 'pixbuf', 1)
 
@@ -137,6 +138,7 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
         """
         self.clear()
         self._thumbnail_image_treeviewcolumn.set_fixed_width(self._pixbuf_size)
+        preview.draw_cells_at(self._treeview, self._pixbuf_size)
         self.load_thumbnails()
 
     def change_thumbnail_background_color(self, colour):

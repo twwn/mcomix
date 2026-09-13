@@ -54,9 +54,9 @@ dev = [
   # For mypy
   "types-Pillow",
   # Which GTK the stubs describe is chosen when they are built, and the
-  # default is GTK4.  While MComix is on GTK3 they have to be installed as
-  #   PYGOBJECT_STUB_CONFIG=Gtk3.0,Gdk3.0 pip install --no-binary :all: pygobject-stubs
-  # or mypy checks this code against an API it does not use.
+  # default is GTK4, which is the GTK this code uses.  Install them as
+  # they come; setting PYGOBJECT_STUB_CONFIG would check this code
+  # against an API it does not use.
   "pygobject-stubs"
 ]
 

@@ -2,6 +2,7 @@
 
 """ The parts of portability.py that differ between desktops. """
 
+import os
 import unittest.mock
 
 from gi.repository import Gio, GLib
@@ -36,6 +37,30 @@ class _Connection(object):
         if isinstance(answer, GLib.Error):
             raise answer
         return _Answer(answer)
+
+
+class DefaultLocaleTest(MComixTest):
+
+    """What the environment says the user's language is."""
+
+    def _locale(self, name):
+        with unittest.mock.patch.dict(os.environ, {'LANGUAGE': name}):
+            return portability.get_default_locale()
+
+    def test_a_locale_name_is_spelled_out_in_full(self):
+        self.assertEqual('de_DE', self._locale('de'))
+        self.assertEqual('he_IL', self._locale('he_IL.UTF-8'))
+
+    def test_the_first_of_several_languages_wins(self):
+        self.assertEqual('en_GB', self._locale('en_GB:en:de'))
+
+    def test_a_name_python_cannot_parse_falls_back_on_c(self):
+        # locale.normalize() has no entry for a BCP 47 shaped name, and
+        # answers with ValueError rather than a locale.
+        self.assertEqual('C', self._locale('zh_Hans_CN'))
+
+    def test_the_c_locale_is_reported_as_c(self):
+        self.assertEqual('C', self._locale('C'))
 
 
 class ColourSchemeTest(MComixTest):

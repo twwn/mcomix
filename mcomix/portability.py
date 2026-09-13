@@ -46,7 +46,13 @@ def get_default_locale() -> str:
         code = windll.GetUserDefaultUILanguage()
         return locale.windows_locale[code]
     else:
-        lang, _ = locale.getdefaultlocale(("LANGUAGE", "LC_ALL", "LC_MESSAGES", "LANG"))
+        try:
+            lang = locale.getdefaultlocale(
+                ("LANGUAGE", "LC_ALL", "LC_MESSAGES", "LANG"))[0]
+        except ValueError:
+            # A name locale.normalize() has no entry for, such as the
+            # BCP 47 shaped zh_Hans_CN. Nothing better than "C" is known.
+            return "C"
         if lang:
             return str(lang)
         else:

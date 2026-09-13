@@ -98,7 +98,7 @@ def parse_arguments(argv):
     return opts, opts.paths
 
 def setup_dependencies() -> None:
-    """Check for PyGTK and PIL dependencies."""
+    """Check for the PyGObject and PIL dependencies."""
     from mcomix.i18n import _
 
     try:
@@ -108,14 +108,12 @@ def setup_dependencies() -> None:
         require_version('Gtk', '4.0')
         require_version('Gdk', '4.0')
 
-        from gi.repository import GLib, Gtk  # noqa
+        # require_version() only settles which typelib will be read;
+        # importing is what fails when the libraries behind it are absent.
+        from gi.repository import Gtk  # noqa
 
-        # Older GLib requires initialization before using threads
-        if GLib.check_version(2, 32, 0) is not None:
-            GLib.threads_init()
-
-    except AssertionError:
-        log.error(_("You do not have the required versions of GTK+ 3.0 and PyGObject installed."))
+    except ValueError:
+        log.error(_("You do not have the required versions of GTK 4.0 and PyGObject installed."))
         wait_and_exit()
 
     except ImportError:
@@ -136,6 +134,20 @@ def setup_dependencies() -> None:
         log.error(_('Python Imaging Library Fork (Pillow) %s or higher is required.') % PIL_VERSION_REQUIRED)
         log.error(_('No version of the Python Imaging Library was found on your system.'))
         wait_and_exit()
+
+
+def apply_layout_direction() -> None:
+    """Lay the interface out right to left when it is being displayed in a
+    language that reads that way. A widget takes the default direction when
+    it is built, so this has to run before the main window does."""
+    from gi.repository import Gtk
+    from mcomix import i18n
+
+    # Ask i18n which language it settled on rather than reading the
+    # preference: the preference is one of three sources, and it holds
+    # 'auto' by default.
+    if i18n.is_rtl_language():
+        Gtk.Widget.set_default_direction(Gtk.TextDirection.RTL)
 
 
 def run() -> None:
@@ -173,6 +185,9 @@ def run() -> None:
     from mcomix import icons
     icons.load_icons()
 
+    from mcomix import theme
+    theme.follow_palette()
+
     open_path = None
     # 0 leaves the choice of page to the file handler: the first one, or
     # the last read page if there is one for this book.
@@ -188,9 +203,7 @@ def run() -> None:
         open_path = preferences.prefs['path to last file']
         open_page = preferences.prefs['page of last file']
 
-    # Some languages require a RTL layout
-    if preferences.prefs['language'] in ('he', 'fa'):
-        Gtk.widget_set_default_direction(Gtk.TextDirection.RTL)
+    apply_layout_direction()
 
     # Gdk.set_program_class() is gone in GTK4; the program name is what
     # the class is taken from now, and it is already being set.

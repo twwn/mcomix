@@ -57,12 +57,7 @@ Simply install the MSI package. The installation requires administrator access. 
 The uninstaller leaves user data, such as the configuration and library contents, on your disk. To completely remove these files, manually delete the folder `%APPDATA%/MComix`.
 
 # Running MComix from source
-Since MComix has heavy dependencies on non-Python binary packages that are tendious to install, running it from source is somewhat difficult. At the very least, you will need PyGObject, which has a very good [Getting Started guide](https://pygobject.readthedocs.io/en/latest/getting_started.html) for various operating systems. Please remember that MComix still requires *GTK 3*, while the documentation usually refers to the GTK 4 package. Adapt package manager calls as needed when installing the packages.
-
-Some examples:
-* Replace `mingw-w64-x86_64-gtk4` with `mingw-w64-x86_64-gtk3` on Windows/MSYS2
-* Replace `gir1.2-gtk-4.0` with `gir1.2-gtk-3.0` on Ubuntu/Debian
-* Replace `gtk4` with `gtk3` on Arch Linux
+Since MComix has heavy dependencies on non-Python binary packages that are tendious to install, running it from source is somewhat difficult. At the very least, you will need PyGObject, which has a very good [Getting Started guide](https://pygobject.readthedocs.io/en/latest/getting_started.html) for various operating systems. MComix requires *GTK 4*, which is the version that guide installs, so its package manager calls can be followed as they are written.
 
 _Windows/MSYS2 note_: Due to a bug in Setuptools, the ujson package, which is needed to process pyproject.toml projects, cannot be built on MSYS2. Please install the `mingw-w64-x86_64-python-ujson` package from Pacman.
 
@@ -98,7 +93,6 @@ The extracted MComix directory can now be safely deleted. To uninstall MComix, s
 You can mostly follow the regular instructions above. Instead of using a source tarball, check out the repository from SourceForge with Git. Then, in the repository folder, install an editable package of MComix by passing the `-e` switch to `pip install`. This will still download all dependencies, but instead of copying a read-only package to your virtual environment, the package will be linked to the repository source code. This way, you can modify the source code, and changes will appear immediately after restarting MComix.
 
     :::bash
-    (mcomix-venv) mcomix $ export PYGOBJECT_STUB_CONFIG=Gtk3,Gdk3,Soup2
     (mcomix-venv) mcomix $ python -m pip install -e .[dev]
 
 The `dev` optional depdency installs tools for static code analysis, Python language server and other useful tools.

@@ -26,7 +26,7 @@ having to play around with relative path names.
     1. Using the MSYS2 mingw64 shell, install:
 
            pacman -Sy \
-               mingw-w64-x86_64-gtk3 \
+               mingw-w64-x86_64-gtk4 \
                mingw-w64-x86_64-python \
                mingw-w64-x86_64-python-gobject \
                mingw-w64-x86_64-python-pillow \
@@ -138,7 +138,7 @@ def copy_other_files() -> None:
         win32_newline('../mcomix-other/mutool/COPYING.txt', 'dist/MComix/licenses/mupdf/COPYING.txt')
 
     licenses_basedir = '/mingw64/share/licenses'
-    components = ('atk', 'cairo', 'fontconfig', 'freetype', 'gdk-pixbuf2', 'glib2', 'gtk3', 'pango',
+    components = ('cairo', 'fontconfig', 'freetype', 'gdk-pixbuf2', 'glib2', 'gtk4', 'pango',
                   'python-cairo', 'python-Pillow')
     if os.path.isdir(licenses_basedir):
         for entry in components:

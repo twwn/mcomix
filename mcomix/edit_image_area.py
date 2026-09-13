@@ -50,6 +50,7 @@ class _ImageArea(Gtk.ScrolledWindow):
         # As every other preview in MComix, as large as this screen
         # wants it.
         self._thumbnail_size = preview.scaled(128, self)
+        preview.draw_cells_at(self._iconview, self._thumbnail_size)
         self._thumbnailer = thumbnail_tools.Thumbnailer(store_on_disk=False,
                                                         size=(self._thumbnail_size,
                                                               self._thumbnail_size))

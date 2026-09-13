@@ -5,6 +5,7 @@ import io
 import locale
 import os
 import pkgutil
+import re
 import sys
 
 try:
@@ -15,10 +16,20 @@ except ImportError:
 from mcomix import preferences
 from mcomix import portability
 from mcomix import constants
+from mcomix import log
 
 # Translation instance to enable other modules to use
 # functions other than the global _() if necessary
 _translation = None
+
+#: The locale identifier install_gettext() last resolved the interface
+#: language to. Read it through get_language() rather than directly.
+_language = 'C'
+
+#: Languages MComix is translated into whose script runs right to left.
+#: Pango knows the full set, but pango_language_get_direction() has no
+#: introspection binding, so the two that have catalogues are listed here.
+_RTL_LANGUAGES = frozenset(('fa', 'he'))
 
 def to_unicode(string):
     """Convert <string> to unicode. First try the default filesystem
@@ -68,8 +79,17 @@ def install_gettext(force_lang=None):
     # explicitly installing the package.
     sys.path.append(constants.BASE_PATH)
 
-    # Initialize default locale
-    locale.setlocale(locale.LC_ALL, '')
+    # Initialize default locale. The environment routinely names a locale
+    # the system has not generated - a French desktop on an installation
+    # carrying only C.UTF-8 and en_US.UTF-8 is enough - and setlocale()
+    # answers that with locale.Error. It decides how numbers and dates are
+    # formatted, not which catalogue is loaded below, so a failure here is
+    # worth saying out loud and no reason to stop.
+    try:
+        locale.setlocale(locale.LC_ALL, '')
+    except locale.Error:
+        log.warning('Could not use the locale the environment asks for; '
+                    'falling back on the C locale.')
 
     if force_lang is not None:
         lang = force_lang
@@ -84,6 +104,10 @@ def install_gettext(force_lang=None):
 
     # Make sure GTK uses the correct language.
     os.environ['LANGUAGE'] = lang
+
+    # Remember it before the loop below reuses the name.
+    global _language
+    _language = lang
 
     domain = constants.APPNAME.lower()
 
@@ -103,6 +127,16 @@ def install_gettext(force_lang=None):
 
     global _translation
     _translation = translation
+
+def get_language() -> str:
+    """Returns the locale identifier of the language the interface is being
+    displayed in. This is the preference, the --language argument or the
+    user's locale, whichever install_gettext() settled on."""
+    return _language
+
+def is_rtl_language() -> bool:
+    """Returns whether the interface language is written right to left."""
+    return re.split(r'[-_.@]', _language, maxsplit=1)[0] in _RTL_LANGUAGES
 
 def get_translation() -> gettext.NullTranslations:
     """Returns the loaded translation instance.

@@ -6,7 +6,7 @@ MComix is a user-friendly, customizable image viewer. It is specifically
 designed to handle comic books (both Western comics and manga) and supports a
 variety of container formats.
 
-MComix is a fork of Comix. It is written in Python and uses GTK 3 through the
+MComix is a fork of Comix. It is written in Python and uses GTK 4 through the
 PyGObject bindings.
 
 ## Installation

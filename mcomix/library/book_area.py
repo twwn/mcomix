@@ -38,6 +38,9 @@ class _BookArea(Gtk.ScrolledWindow):
     # Thumbnail border width in pixels.
     _BORDER_SIZE = 1
 
+    #: The class the covers' black background is written against.
+    _BLACK_CSS_CLASS = 'mcomix-library-covers'
+
     def __init__(self, library):
         super(_BookArea, self).__init__()
 
@@ -78,10 +81,15 @@ class _BookArea(Gtk.ScrolledWindow):
         keys.connect('key-pressed', self._key_press)
         self._iconview.add_controller(keys)
         # Covers are shown on black, whatever base colour the theme has.
+        # A style provider belongs to a display rather than to a widget,
+        # so the view carries a class for the rule to single it out.
+        self._iconview.add_css_class(self._BLACK_CSS_CLASS)
         self._black_background = Gtk.CssProvider()
-        self._black_background.load_from_data(b'* { background-color: black; }')
-        self._iconview.get_style_context().add_provider(
-            self._black_background, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+        self._black_background.load_from_string(
+            '.%s { background-color: black; }' % self._BLACK_CSS_CLASS)
+        Gtk.StyleContext.add_provider_for_display(
+            self._iconview.get_display(), self._black_background,
+            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
         # Books drag out to the collection area, and files drop in from
         # a file manager.  GTK4 has neither a model drag source nor a
         # model drag destination; controllers do both, and a drop target
@@ -377,6 +385,7 @@ class _BookArea(Gtk.ScrolledWindow):
         """ Justifies the alignment of all cell renderers when new data is
         added to the model. """
         width, height = self._pixbuf_size()
+        preview.draw_cells_at(self._iconview, max(width, height))
         for cell in self._iconview.get_cells():
             cell.set_fixed_size(width, height)
             cell.set_alignment(0.5, 0.5)

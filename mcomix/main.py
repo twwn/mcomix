@@ -426,8 +426,12 @@ class MainWindow(Gtk.Window):
             self.layout = layout.FiniteLayout.create_finite_layout(
                 pixbuf_count, orientation, self._spacing, distribution_axis,
                 alignment_axis, self._show_scrollbars, self.get_visible_area_size,
+                # Every page is laid out at the size the zoom mode
+                # asks for, animations included: they cannot be scaled
+                # ahead of time, but the size is what tells the widget
+                # what to scale each frame to.
                 lambda zoom_dummy_size: self.zoom.get_zoomed_size(size_list, zoom_dummy_size,
-                distribution_axis, do_not_transform,
+                distribution_axis, [False] * pixbuf_count,
                 prefs['double page autoresize'] in (constants.DOUBLE_PAGE_AUTORESIZE_SIZE,
                 constants.DOUBLE_PAGE_AUTORESIZE_FIT_SIZE),
                 prefs['double page autoresize'] == constants.DOUBLE_PAGE_AUTORESIZE_FIT_SIZE))
@@ -454,7 +458,7 @@ class MainWindow(Gtk.Window):
                 pixbuf_list[i] = self.enhancer.enhance(pixbuf_list[i])
 
             for i in range(pixbuf_count):
-                self.images[i].set_pixbuf(pixbuf_list[i])
+                self.images[i].set_pixbuf(pixbuf_list[i], scaled_sizes[i])
 
             scales = tuple(map(lambda x, y: math.sqrt(tools.div(
                 tools.volume(x), tools.volume(y))), scaled_sizes, size_list))
