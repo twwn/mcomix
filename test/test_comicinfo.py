@@ -7,10 +7,13 @@ the pages being written.
 """
 
 import os
+import tempfile
 import xml.etree.ElementTree as ElementTree
+import zipfile
 
 from . import MComixTest, get_testfile_path
 
+from mcomix import archive_tools
 from mcomix import comicinfo
 
 
@@ -195,5 +198,45 @@ class DescribeTest(MComixTest):
         self.assertEqual([], self._describe(
             b'<ComicInfo><Series>Night Watch</Series>' + padding
             + b'</ComicInfo>'))
+
+
+class SampleComicTest(MComixTest):
+
+    """test/files/pepper-and-carrot, the one book with real pages.
+
+    It is Pepper&Carrot, licensed CC BY 4.0, so it may only be kept with
+    its attribution: the README beside it and the ComicInfo.xml inside it
+    both have to go on naming the author and the licence.
+    """
+
+    DIRECTORY = get_testfile_path('pepper-and-carrot')
+    BOOK = os.path.join(DIRECTORY, 'Pepper-and-Carrot_E01_The-Potion-of-Flight.cbz')
+
+    def test_the_book_has_its_four_pages(self):
+        _mime, pages, _size = archive_tools.get_archive_info(self.BOOK)
+        self.assertEqual(4, pages)
+
+    def test_its_comicinfo_describes_the_episode(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with zipfile.ZipFile(self.BOOK) as archive:
+                path = archive.extract(comicinfo.NAME, directory)
+            self.assertEqual([('Series', 'Pepper&Carrot'), ('Number', '1'),
+                              ('Title', 'The Potion of Flight'),
+                              ('Writer', 'David Revoy')],
+                             comicinfo.describe(path))
+            with open(path, encoding='utf-8') as fp:
+                document = fp.read()
+        self.assertIn('Creative Commons Attribution 4.0', document)
+
+    def test_the_readme_attributes_it(self):
+        with open(os.path.join(self.DIRECTORY, 'README.md'),
+                  encoding='utf-8') as fp:
+            readme = fp.read()
+        for required in ('David Revoy', 'CC BY 4.0',
+                         'https://creativecommons.org/licenses/by/4.0/',
+                         'https://www.peppercarrot.com',
+                         'Changes made for MComix'):
+            with self.subTest(required=required):
+                self.assertIn(required, readme)
 
 # vim: expandtab:sw=4:ts=4

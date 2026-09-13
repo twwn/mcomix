@@ -35,7 +35,7 @@ The pages use SourceForge's Allura markup, which GitHub does not render. Each Al
 
 Construct | The one permitted shape | GitHub equivalent
 ----------|-------------------------|------------------
-Image | `[[img src="<file>" alt="<text>"]]` alone on its line, always with `alt`, `src` being the attachment's file name with no path | `![<text>](images/<file>)`
+Image | `[[img src="<file>" alt="<text>"]]` alone on its line, always with `alt`, `src` being the attachment's file name with no path | `![<text>](images/<file>)`, the file taken from `wiki/images`, where the attachments are kept
 Download button | `[[download_button]]` alone on its line, on `Home.md` only | A link to the project's files on SourceForge, where the releases are
 Screenshots | `[[project_screenshots]]` alone on its line, on `Home.md` only | Every image the pages show, from `images/`
 Table of contents | `[TOC]` alone on its line, directly after the page title and a blank line, or not at all | Nothing: GitHub draws its own outline

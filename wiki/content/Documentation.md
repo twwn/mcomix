@@ -10,6 +10,8 @@ The main window
 
 [[img src="mcomix-mainwindow.png" alt="MComix' main window"]]
 
+The pages in the screenshots on this page are from "The Potion of Flight", episode 1 of [Pepper&Carrot](https://www.peppercarrot.com/) by David Revoy, published under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) and scaled down here.
+
 The window has a menu bar and a toolbar at the top, the page thumbnails on the left, the page in the middle and a status bar at the bottom. "View &rarr; Toolbars" turns the menubar, the toolbar, the statusbar, the scrollbars and the thumbnails on and off, and "Hide all" in the same menu, or the I key, puts all of them away at once. Fullscreen mode, the F key, hides them too while "Automatically hide all toolbars in fullscreen" is set in the preferences.
 
 The arrow keys scroll the page, and PageDown and PageUp turn it. "Move to", in the page's right-click menu, moves the file that is open, or the archive the page is in, to another folder.

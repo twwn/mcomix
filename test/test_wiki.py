@@ -558,6 +558,37 @@ def load_converter():
 
 github = load_converter()
 
+#: The files the pages show as attachments, which SourceForge keeps apart
+#: from the pages' text.
+IMAGES = os.path.join(os.path.dirname(WIKI), 'images')
+
+
+class ImagesTest(unittest.TestCase):
+
+    """wiki/images against the images the pages show."""
+
+    def setUp(self):
+        self.shown = {image.filename
+                      for image in github.images(read_pages())}
+        self.kept = {name for name in os.listdir(IMAGES)
+                     if name != 'README.md'}
+
+    def test_every_image_a_page_shows_is_kept(self):
+        self.assertEqual(set(), self.shown - self.kept)
+
+    def test_every_image_kept_is_shown_by_a_page(self):
+        self.assertEqual(set(), self.kept - self.shown)
+
+    def test_the_readme_credits_the_comic_they_show(self):
+        """The screenshots show pages of a CC BY 4.0 comic, whose licence
+        asks for the author, the licence and the change to be named."""
+        with open(os.path.join(IMAGES, 'README.md'), encoding='utf-8') as fp:
+            readme = fp.read()
+        for required in ('Pepper&Carrot', 'David Revoy', 'scaled',
+                         'https://creativecommons.org/licenses/by/4.0/'):
+            with self.subTest(required=required):
+                self.assertIn(required, readme)
+
 
 class GitHubConversionTest(unittest.TestCase):
 
