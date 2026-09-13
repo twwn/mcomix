@@ -4,10 +4,11 @@
 
 import operator
 from collections.abc import Callable, Sequence
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
-from gi.repository import Gdk, GdkPixbuf, Gtk
+from gi.repository import Gdk, GdkPixbuf, Gio, GObject, Gtk
 
+from mcomix import preferences
 from mcomix.preferences import prefs
 from mcomix.dialog import Dialog
 from mcomix import preferences_page
@@ -79,6 +80,11 @@ class _PreferencesDialog(Dialog):
         widgets.pack(self.get_content_area(), notebook, True, True, 0)
         widgets.set_border(self, 4)
         widgets.set_border(notebook, 6)
+
+        #: The choosers for the prompts that are answered without being
+        #: asked, so that clearing every answer can put them all back to
+        #: asking.  The Behaviour tab fills this as it is built.
+        self._remembered_answers: "list[widgets.Chooser[int | None]]" = []
 
         page_inits = (
             (_('Appearance'), self._init_appearance_tab),
@@ -259,6 +265,13 @@ class _PreferencesDialog(Dialog):
         page.add_row(self._create_pref_check_button(_('Save As opens at the last directory saved into'),
             'store last saved in directory', 'Open the Save As dialog at the directory in which the last file was saved.'))
 
+        page.new_section(_('Prompts answered for good'))
+
+        for dialog_id, prompt in message_dialog.REMEMBERED_DIALOGS.items():
+            chooser = self._create_remembered_answer_control(dialog_id, prompt)
+            self._remembered_answers.append(chooser)
+            page.add_row(Gtk.Label(label=prompt.label), chooser)
+
         return page
 
     def _init_display_tab(self) -> preferences_page._PreferencePage:
@@ -395,7 +408,9 @@ class _PreferencesDialog(Dialog):
         self.shortcuts = page
         return page
 
-    def _tab_page_changed(self, notebook: Any, page_ptr: Any, page_num: int) -> None:
+    def _tab_page_changed(self, notebook: Gtk.Notebook,
+                          page_ptr: "Gtk.Widget | None",
+                          page_num: int) -> None:
         """ Dynamically switches the "Reset" button's text and tooltip
         depending on the currently selected tab page. """
         new_page = notebook.get_nth_page(page_num)
@@ -410,7 +425,7 @@ class _PreferencesDialog(Dialog):
                 _('Clears all dialog choices that you have previously chosen not to be asked again.'))
             self.reset_button.set_sensitive(len(prefs['stored dialog choices']) > 0)
 
-    def _response(self, dialog: Any, response: int) -> None:
+    def _response(self, dialog: Dialog, response: int) -> None:
         if response == Response.CLOSE:
             _close_dialog()
 
@@ -423,15 +438,49 @@ class _PreferencesDialog(Dialog):
                 km.save()
                 self.shortcuts.refresh_model()
             else:
-                # Reset stored choices
                 prefs['stored dialog choices'] = {}
+                for chooser in self._remembered_answers:
+                    chooser.set_value(None)
                 self.reset_button.set_sensitive(False)
 
         else:
             # Other responses close the dialog, e.g. clicking the X icon on the dialog.
             _close_dialog()
 
-    def _create_language_control(self) -> widgets.Chooser:
+    def _create_remembered_answer_control(
+            self, dialog_id: "message_dialog.RememberedDialog",
+            prompt: "message_dialog._Prompt") -> "widgets.Chooser[int | None]":
+        """The chooser for how <prompt> is answered without being asked.
+
+        "Ask every time" is the prompt having no answer stored at all,
+        so picking it is what taking one answer back means; picking one
+        of the answers is what ticking "Do not ask again" on the prompt
+        itself does.
+        """
+        options: "list[tuple[str, int | None]]" = [(_('Ask every time'), None)]
+        options.extend(prompt.answers)
+        chooser = widgets.Chooser(
+            options, prefs['stored dialog choices'].get(dialog_id))
+        chooser.set_tooltip_text(
+            _('What MComix answers this prompt with instead of asking. '
+              'This is what the prompt\'s "Do not ask again" box sets.'))
+
+        def answered(picked: "widgets.Chooser[int | None]") -> None:
+            answer = picked.get_value()
+            if answer is None:
+                prefs['stored dialog choices'].pop(dialog_id, None)
+            else:
+                prefs['stored dialog choices'][dialog_id] = answer
+            # The preference is the dictionary, which is the same
+            # dictionary it was: only the answer in it is new.
+            preferences.changed()
+            self.reset_button.set_sensitive(
+                bool(prefs['stored dialog choices']))
+
+        chooser.connect_changed(answered)
+        return chooser
+
+    def _create_language_control(self) -> "widgets.Chooser[str]":
         """ Creates and returns the combobox for language selection. """
         # Source: http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
         languages = [
@@ -467,7 +516,7 @@ class _PreferencesDialog(Dialog):
 
         return box
 
-    def _create_theme_control(self) -> widgets.Chooser:
+    def _create_theme_control(self) -> "widgets.Chooser[str]":
         """ Creates the ComboBox control for selecting how MComix is painted. """
         items = ((_('Follow the system'), theme.SYSTEM),
                  (_('Light'), theme.LIGHT),
@@ -485,7 +534,8 @@ class _PreferencesDialog(Dialog):
 
         return box
 
-    def _colour_scheme_changed_cb(self, combobox: widgets.Chooser, *args: Any) -> None:
+    def _colour_scheme_changed_cb(self, combobox: "widgets.Chooser[str]",
+                                  *args: object) -> None:
         """ Called whenever MComix is told to paint itself differently. """
         prefs['colour scheme'] = combobox.get_value()
         theme.apply_colour_scheme()
@@ -495,11 +545,12 @@ class _PreferencesDialog(Dialog):
         self._window.thumbnailsidebar.change_thumbnail_background_color(
             prefs['thumb bg colour'])
 
-    def _language_changed_cb(self, combobox: widgets.Chooser, *args: Any) -> None:
+    def _language_changed_cb(self, combobox: "widgets.Chooser[str]",
+                             *args: object) -> None:
         """ Called whenever the language was changed. """
         prefs['language'] = combobox.get_value()
 
-    def _create_doublepage_as_one_control(self) -> widgets.Chooser:
+    def _create_doublepage_as_one_control(self) -> "widgets.Chooser[int]":
         """ Creates the ComboBox control for selecting virtual double page options. """
         items = (
                 (_('Never'), 0),
@@ -517,13 +568,14 @@ class _PreferencesDialog(Dialog):
 
         return box
 
-    def _double_page_changed_cb(self, combobox: widgets.Chooser, *args: Any) -> None:
+    def _double_page_changed_cb(self, combobox: "widgets.Chooser[int]",
+                                *args: object) -> None:
         """ Called when a new option was selected for the virtual double page option. """
         value = combobox.get_value()
         prefs['virtual double page for fitting images'] = value
         self._window.draw_image()
 
-    def _create_double_page_autoresize_control(self) -> widgets.Chooser:
+    def _create_double_page_autoresize_control(self) -> "widgets.Chooser[int]":
         """ Creates the ComboBox control for selecting double page autoresize options. """
         items = (
                 (_('Prefer same scale'), constants.DOUBLE_PAGE_AUTORESIZE_SCALE),
@@ -539,7 +591,8 @@ class _PreferencesDialog(Dialog):
 
         return box
 
-    def _double_page_autoresize_changed_cb(self, combobox: widgets.Chooser, *args: Any) -> None:
+    def _double_page_autoresize_changed_cb(self, combobox: "widgets.Chooser[int]",
+                                           *args: object) -> None:
         """ Called when a new option was selected for the double page autoresize option. """
         value = combobox.get_value()
         prefs['double page autoresize'] = value
@@ -574,14 +627,16 @@ class _PreferencesDialog(Dialog):
 
         return box
 
-    def _sort_by_changed_cb(self, combobox: widgets.Chooser, *args: Any) -> None:
+    def _sort_by_changed_cb(self, combobox: "widgets.Chooser[int]",
+                            *args: object) -> None:
         """ Called when a new option was selected for the virtual double page option. """
         value = combobox.get_value()
         prefs['sort by'] = value
 
         self._window.filehandler.refresh_file()
 
-    def _sort_order_changed_cb(self, combobox: widgets.Chooser, *args: Any) -> None:
+    def _sort_order_changed_cb(self, combobox: "widgets.Chooser[int]",
+                               *args: object) -> None:
         """ Called when sort order changes (ascending or descending) """
         value = combobox.get_value()
         prefs['sort order'] = value
@@ -620,21 +675,23 @@ class _PreferencesDialog(Dialog):
 
         return box
 
-    def _sort_archive_by_changed_cb(self, combobox: widgets.Chooser, *args: Any) -> None:
+    def _sort_archive_by_changed_cb(self, combobox: "widgets.Chooser[int]",
+                                    *args: object) -> None:
         """ Called when a new option was selected for the virtual double page option. """
         value = combobox.get_value()
         prefs['sort archive by'] = value
 
         self._window.filehandler.refresh_file()
 
-    def _sort_archive_order_changed_cb(self, combobox: widgets.Chooser, *args: Any) -> None:
+    def _sort_archive_order_changed_cb(self, combobox: "widgets.Chooser[int]",
+                                       *args: object) -> None:
         """ Called when sort order changes (ascending or descending) """
         value = combobox.get_value()
         prefs['sort archive order'] = value
 
         self._window.filehandler.refresh_file()
 
-    def _create_store_recent_combobox(self) -> widgets.Chooser:
+    def _create_store_recent_combobox(self) -> "widgets.Chooser[bool]":
         """ Creates the combobox for "Store recently opened files". """
         items = (
                 (_('Never'), False),
@@ -653,7 +710,8 @@ class _PreferencesDialog(Dialog):
             _('Add information about all files opened from within MComix to the shared recent files list.'))
         return box
 
-    def _store_recent_changed_cb(self, combobox: widgets.Chooser, *args: Any) -> None:
+    def _store_recent_changed_cb(self, combobox: "widgets.Chooser[bool]",
+                                 *args: object) -> None:
         """ Called when option "Store recently opened files" was changed. """
         value = combobox.get_value()
         last_value = prefs['store recent file info']
@@ -679,7 +737,7 @@ class _PreferencesDialog(Dialog):
 
             dialog.run_async(responded)
 
-    def _create_scaling_quality_combobox(self) -> widgets.Chooser:
+    def _create_scaling_quality_combobox(self) -> "widgets.Chooser[int]":
         """ Creates combo box for image scaling quality """
         items = (
                 (_('Normal (fast)'), int(GdkPixbuf.InterpType.TILES)),
@@ -694,7 +752,8 @@ class _PreferencesDialog(Dialog):
 
         return box
 
-    def _scaling_quality_changed_cb(self, combobox: widgets.Chooser, *args: Any) -> None:
+    def _scaling_quality_changed_cb(self, combobox: "widgets.Chooser[int]",
+                                    *args: object) -> None:
         """ Called whan image scaling quality changes. """
         value = combobox.get_value()
         last_value = prefs['scaling quality']
@@ -703,7 +762,7 @@ class _PreferencesDialog(Dialog):
         if value != last_value:
             self._window.draw_image()
 
-    def _create_animation_mode_combobox(self) -> widgets.Chooser:
+    def _create_animation_mode_combobox(self) -> "widgets.Chooser[int]":
         """ Creates combo box for animation mode """
         items = (
                 (_('Never'), constants.ANIMATION_DISABLED),
@@ -717,7 +776,8 @@ class _PreferencesDialog(Dialog):
 
         return box
 
-    def _animation_mode_changed_cb(self, combobox: widgets.Chooser, *args: Any) -> None:
+    def _animation_mode_changed_cb(self, combobox: "widgets.Chooser[int]",
+                                   *args: object) -> None:
         """ Called whenever animation mode has been changed. """
         value = combobox.get_value()
         last_value = prefs['animation mode']
@@ -726,9 +786,11 @@ class _PreferencesDialog(Dialog):
         if value != last_value:
             self._window.filehandler.refresh_file()
 
-    def _create_combobox(self, options: Sequence[tuple[str, Any]],
-                         selected_value: Any,
-                         change_callback: "Callable[..., None] | None") -> widgets.Chooser:
+    def _create_combobox[V](self, options: Sequence[tuple[str, V]],
+                            selected_value: V,
+                            change_callback:
+                            "Callable[[widgets.Chooser[V]], None] | None"
+                            ) -> "widgets.Chooser[V]":
         """ Creates a new dropdown and populates it with the items
         passed in C{options}.
 
@@ -766,7 +828,7 @@ class _PreferencesDialog(Dialog):
     def _create_pref_check_button(self, label: str, prefkey: str,
                                   tooltip_text: str | None) -> Gtk.CheckButton:
         button = Gtk.CheckButton(label=label)
-        button.set_active(prefs[prefkey])
+        button.set_active(preferences.by_name(prefkey))
         button.connect('toggled', self._check_button_cb, prefkey)
         if tooltip_text:
             button.set_tooltip_text(tooltip_text)
@@ -800,8 +862,8 @@ class _PreferencesDialog(Dialog):
         button2.set_group(button1)
         if tooltip_text2:
             button2.set_tooltip_text(tooltip_text2)
-        button1.set_active(not prefs[prefkey])
-        button2.set_active(prefs[prefkey])
+        button1.set_active(not preferences.by_name(prefkey))
+        button2.set_active(preferences.by_name(prefkey))
         # Only the one the preference is about: a group announces both
         # the button that was turned on and the one that was turned off.
         button2.connect('toggled', self._check_button_cb, prefkey)
@@ -815,7 +877,7 @@ class _PreferencesDialog(Dialog):
         # that comes back arrives as a change to the rgba property, so
         # the button is given its own colour before anything listens.
         button = Gtk.ColorDialogButton(dialog=Gtk.ColorDialog())
-        button.set_rgba(Gdk.RGBA(*prefs[prefkey]))
+        button.set_rgba(Gdk.RGBA(*preferences.by_name(prefkey)))
         button.connect('notify::rgba', self._color_button_cb, prefkey)
         return button
 
@@ -823,7 +885,7 @@ class _PreferencesDialog(Dialog):
     def _check_button_cb(self, button: Gtk.CheckButton, preference: str) -> None:
         """Callback for all checkbutton-type preferences."""
 
-        prefs[preference] = button.get_active()
+        preferences.set_by_name(preference, button.get_active())
 
         if preference == 'smart bg':
 
@@ -857,7 +919,7 @@ class _PreferencesDialog(Dialog):
             self._window.thumbnailsidebar.toggle_page_numbers_visible()
 
     def _color_button_cb(self, colorbutton: Gtk.ColorDialogButton,
-                         _pspec: Any, preference: str) -> None:
+                         _pspec: GObject.ParamSpec, preference: str) -> None:
         """Callback for the background colour selection button."""
 
         colour = colorbutton.get_rgba()
@@ -882,7 +944,7 @@ class _PreferencesDialog(Dialog):
                              lower: float, upper: float, step_incr: float,
                              page_incr: float, digits: int,
                              tooltip_text: str | None) -> Gtk.SpinButton:
-        value = prefs[prefkey] / scale
+        value = preferences.by_name(prefkey) / scale
         adjustment = Gtk.Adjustment.new(value, lower, upper, step_incr,
                                         page_incr, 0.0)
         spinner = Gtk.SpinButton.new(adjustment, 0.0, digits)
@@ -905,13 +967,13 @@ class _PreferencesDialog(Dialog):
         # Most preferences are plain pixel/item counts; only those stored in
         # another unit than the spinner displays need converting.
         if preference == 'lens magnification':
-            prefs[preference] = value
+            preferences.set_by_name(preference, value)
         elif preference == 'slideshow delay':
-            prefs[preference] = int(round(value * 1000))
+            preferences.set_by_name(preference, int(round(value * 1000)))
         elif preference == 'smart scroll percentage':
-            prefs[preference] = value / 100.0
+            preferences.set_by_name(preference, value / 100.0)
         else:
-            prefs[preference] = int(value)
+            preferences.set_by_name(preference, int(value))
 
         # Preferences that take more than storing the new value.
         if preference == 'slideshow delay':
@@ -935,14 +997,14 @@ class _PreferencesDialog(Dialog):
             self._window.update_space()
 
 
-    def _entry_cb(self, entry: Gtk.Entry, *args: Any) -> None:
+    def _entry_cb(self, entry: Gtk.Entry, *args: object) -> None:
         """Callback for entry-type preferences."""
         text = entry.get_text()
         extensions = [e.strip() for e in text.split(',')]
         prefs['comment extensions'] = [e for e in extensions if e]
         self._window.filehandler.update_comment_extensions()
 
-def open_dialog(action: Any, window: "main.MainWindow") -> None:
+def open_dialog(action: Gio.SimpleAction, window: "main.MainWindow") -> None:
     """Create and display the preference dialog."""
 
     global _dialog

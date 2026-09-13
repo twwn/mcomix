@@ -97,7 +97,7 @@ class _GlycinFrames(Frames):
         self._file = Gio.File.new_for_path(path)
         self._image = self._load()
 
-    def _load(self) -> Any:
+    def _load(self) -> Any:  # type: ignore[explicit-any]  # glycin is optional, so there is no Gly to name
         return self._Gly.Loader.new(self._file).load()
 
     def next(self) -> tuple[Gdk.Texture, int]:

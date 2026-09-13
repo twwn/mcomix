@@ -45,7 +45,6 @@ from mcomix.i18n import _
 from mcomix.dialog import Response
 
 from collections.abc import Iterable, Sequence
-from typing import Any
 
 
 
@@ -195,7 +194,7 @@ class MainWindow(Gtk.Window):
         if zoom_mode is not None:
             zoom_action = zoom_actions[zoom_mode]
         else:
-            zoom_action = zoom_actions[prefs['zoom mode']]
+            zoom_action = zoom_actions[constants.ZoomMode(prefs['zoom mode'])]
 
         if zoom_action == 'fit_manual_mode':
             # This little ugly hack is to get the activate call on
@@ -251,7 +250,8 @@ class MainWindow(Gtk.Window):
 
         # Sync each "toggle" widget active state with its preference.
         for preference, action, widget_list in self._toggle_list:
-            self.actiongroup.get_action(action).set_active(prefs[preference])
+            self.actiongroup.get_action(action).set_active(
+                preferences.by_name(preference))
 
         # Inverted colours are not one of those widgets, and the item
         # started unticked however the preferences had been left: the
@@ -312,8 +312,8 @@ class MainWindow(Gtk.Window):
 
         self.cursor_handler.auto_hide_on()
 
-    def gained_focus(self, *args: Any) -> None:
-        def _delayed_unset_out_of_focus(_: Any) -> bool:
+    def gained_focus(self, *args: object) -> None:
+        def _delayed_unset_out_of_focus(_: None) -> bool:
             self.was_out_of_focus = False
             return False
 
@@ -325,7 +325,7 @@ class MainWindow(Gtk.Window):
             GLib.idle_add(_delayed_unset_out_of_focus, None,
                           priority=GLib.PRIORITY_DEFAULT_IDLE)
 
-    def lost_focus(self, *args: Any) -> None:
+    def lost_focus(self, *args: object) -> None:
         self.was_out_of_focus = True
 
     def draw_image(self, scroll_to: int | None = None) -> None:
@@ -342,11 +342,12 @@ class MainWindow(Gtk.Window):
             GLib.idle_add(self._draw_image,
                              priority=GLib.PRIORITY_HIGH_IDLE)
 
-    def _update_toggle_preference(self, preference: str, toggleaction: Any) -> None:
+    def _update_toggle_preference(self, preference: str,
+                                  toggleaction: "ui._Action") -> None:
         ''' Update "toggle" widget corresponding <preference>.
 
         Note: the widget visibily itself is left unchanged. '''
-        prefs[preference] = toggleaction.get_active()
+        preferences.set_by_name(preference, toggleaction.get_active())
         if 'hide all' == preference:
             self._update_toggles_sensitivity()
         # Since the size of the drawing area is dependent
@@ -359,7 +360,7 @@ class MainWindow(Gtk.Window):
             visible = not prefs['hide all in fullscreen']
         else:
             visible = not prefs['hide all']
-        visible &= prefs[preference]
+        visible &= preferences.by_name(preference)
         if 'show thumbnails' == preference:
             visible &= self.filehandler.file_loaded
             visible &= self.imagehandler.get_number_of_pages() > 0
@@ -557,11 +558,20 @@ class MainWindow(Gtk.Window):
             return
         double = self.displayed_double()
 
-        def make_status(info: Any) -> Any:
+        def make_status(info: "str | tuple[str, str] | None") -> str:
+            """One status bar field, from one page or from both.
+
+            A double page answers with a value for each of its two
+            pages, and manga mode reads them right to left, so they are
+            listed in that order too.  A page with no file behind it
+            has nothing to say, and the field is left empty.
+            """
+            if info is None:
+                return ''
             if not isinstance(info, tuple):
                 return info
             if self.is_manga_mode:
-                info = reversed(info)
+                info = (info[1], info[0])
             return ", ".join(info)
 
         filename = make_status(self.imagehandler.get_page_filename(double=double))
@@ -709,44 +719,44 @@ class MainWindow(Gtk.Window):
         if number_of_pages:
             self.set_page(number_of_pages)
 
-    def page_select(self, *args: Any) -> None:
+    def page_select(self, *args: object) -> None:
         pageselect.Pageselector(self)
 
-    def rotate_90(self, *args: Any) -> None:
+    def rotate_90(self, *args: object) -> None:
         prefs['rotation'] = tools.compile_rotations(prefs['rotation'], 90)
         self.draw_image()
 
-    def rotate_180(self, *args: Any) -> None:
+    def rotate_180(self, *args: object) -> None:
         prefs['rotation'] = tools.compile_rotations(prefs['rotation'], 180)
         self.draw_image()
 
-    def rotate_270(self, *args: Any) -> None:
+    def rotate_270(self, *args: object) -> None:
         prefs['rotation'] = tools.compile_rotations(prefs['rotation'], 270)
         self.draw_image()
 
-    def flip_horizontally(self, *args: Any) -> None:
+    def flip_horizontally(self, *args: object) -> None:
         prefs['horizontal flip'] = not prefs['horizontal flip']
         self.draw_image()
 
-    def flip_vertically(self, *args: Any) -> None:
+    def flip_vertically(self, *args: object) -> None:
         prefs['vertical flip'] = not prefs['vertical flip']
         self.draw_image()
 
-    def change_double_page(self, toggleaction: Any) -> None:
+    def change_double_page(self, toggleaction: "ui._Action") -> None:
         prefs['default double page'] = toggleaction.get_active()
         self._update_page_information()
         self.draw_image()
 
-    def change_manga_mode(self, toggleaction: Any) -> None:
+    def change_manga_mode(self, toggleaction: "ui._Action") -> None:
         prefs['default manga mode'] = toggleaction.get_active()
         self.is_manga_mode = toggleaction.get_active()
         self._update_page_information()
         self.draw_image()
 
-    def change_invert_scroll(self, toggleaction: Any) -> None:
+    def change_invert_scroll(self, toggleaction: "ui._Action") -> None:
         prefs['invert smart scroll'] = toggleaction.get_active()
 
-    def change_fullscreen(self, toggleaction: Any) -> None:
+    def change_fullscreen(self, toggleaction: "ui._Action") -> None:
         # Disable action until transition if complete.
         toggleaction.set_sensitive(False)
         if toggleaction.get_active():
@@ -769,7 +779,8 @@ class MainWindow(Gtk.Window):
         self.enhancer.invert_color = prefs['invert color']
         self.enhancer.signal_update()
 
-    def change_zoom_mode(self, radioaction: Any = None, *args: Any) -> None:
+    def change_zoom_mode(self, radioaction: "ui._Action | None" = None,
+                         *args: object) -> None:
         if radioaction:
             prefs['zoom mode'] = radioaction.get_current_value()
         self.zoom.set_fit_mode(prefs['zoom mode'])
@@ -777,49 +788,50 @@ class MainWindow(Gtk.Window):
         self.zoom.reset_user_zoom()
         self.draw_image()
 
-    def change_autorotation(self, radioaction: Any = None, *args: Any) -> None:
+    def change_autorotation(self, radioaction: "ui._Action | None" = None,
+                            *args: object) -> None:
         """ Switches between automatic rotation modes, depending on which
         radiobutton is currently activated. """
         if radioaction:
             prefs['auto rotate depending on size'] = radioaction.get_current_value()
         self.draw_image()
 
-    def change_stretch(self, toggleaction: Any, *args: Any) -> None:
+    def change_stretch(self, toggleaction: "ui._Action", *args: object) -> None:
         """ Toggles stretching small images. """
         prefs['stretch'] = toggleaction.get_active()
         self.zoom.set_scale_up(prefs['stretch'])
         self.draw_image()
 
-    def change_toolbar_visibility(self, toggleaction: Any) -> None:
+    def change_toolbar_visibility(self, toggleaction: "ui._Action") -> None:
         self._update_toggle_preference('show toolbar', toggleaction)
 
-    def change_menubar_visibility(self, toggleaction: Any) -> None:
+    def change_menubar_visibility(self, toggleaction: "ui._Action") -> None:
         self._update_toggle_preference('show menubar', toggleaction)
 
-    def change_statusbar_visibility(self, toggleaction: Any) -> None:
+    def change_statusbar_visibility(self, toggleaction: "ui._Action") -> None:
         self._update_toggle_preference('show statusbar', toggleaction)
 
-    def change_scrollbar_visibility(self, toggleaction: Any) -> None:
+    def change_scrollbar_visibility(self, toggleaction: "ui._Action") -> None:
         self._update_toggle_preference('show scrollbar', toggleaction)
 
-    def change_thumbnails_visibility(self, toggleaction: Any) -> None:
+    def change_thumbnails_visibility(self, toggleaction: "ui._Action") -> None:
         self._update_toggle_preference('show thumbnails', toggleaction)
 
-    def change_hide_all(self, toggleaction: Any) -> None:
+    def change_hide_all(self, toggleaction: "ui._Action") -> None:
         self._update_toggle_preference('hide all', toggleaction)
 
-    def change_keep_transformation(self, *args: Any) -> None:
+    def change_keep_transformation(self, *args: object) -> None:
         prefs['keep transformation'] = not prefs['keep transformation']
 
-    def manual_zoom_in(self, *args: Any) -> None:
+    def manual_zoom_in(self, *args: object) -> None:
         self.zoom.zoom_in()
         self.draw_image()
 
-    def manual_zoom_out(self, *args: Any) -> None:
+    def manual_zoom_out(self, *args: object) -> None:
         self.zoom.zoom_out()
         self.draw_image()
 
-    def manual_zoom_original(self, *args: Any) -> None:
+    def manual_zoom_original(self, *args: object) -> None:
         self.zoom.reset_user_zoom()
         self.draw_image()
 
@@ -1027,11 +1039,11 @@ class MainWindow(Gtk.Window):
                 return current + offset
         return None
 
-    def extract_page(self, *args: Any) -> None:
+    def extract_page(self, *args: object) -> None:
         """Save the pages on screen to disk."""
         self._save_pages(self.displayed_pages())
 
-    def extract_popup_page(self, *args: Any) -> None:
+    def extract_popup_page(self, *args: object) -> None:
         """Save the page the right-click menu was opened over.
 
         In double page mode two pages stand side by side and the menu is
@@ -1083,7 +1095,8 @@ class MainWindow(Gtk.Window):
             # they stand at the same time: each answer needs the page it
             # was asked about, not whichever one the loop ended on.
             def saved(paths: list[str], file_path: str = file_path,
-                      dialog: Any = save_dialog) -> None:
+                      dialog: file_chooser_simple_dialog.SimpleFileChooserDialog
+                      = save_dialog) -> None:
                 dialog.destroy()
                 if paths:
                     self._save_page_to(file_path, paths[0])
@@ -1108,7 +1121,7 @@ class MainWindow(Gtk.Window):
             if prefs['store last saved in directory'] \
             else constants.HOME_DIR
 
-    def delete(self, *args: Any) -> None:
+    def delete(self, *args: object) -> None:
         """ The currently opened file/archive will be deleted after showing
         a confirmation dialog. """
 
@@ -1118,7 +1131,8 @@ class MainWindow(Gtk.Window):
             return
         dialog = message_dialog.MessageDialog(
                 self, modal=True, buttons=Gtk.ButtonsType.NONE)
-        dialog.set_should_remember_choice('delete-opend-file', (Response.OK,))
+        dialog.set_should_remember_choice(
+                message_dialog.RememberedDialog.DELETE_OPENED_FILE)
         dialog.set_text(
                 _('Delete "%s"?') % os.path.basename(current_file),
                 _('The file will be deleted from your harddisk.'))
@@ -1188,7 +1202,7 @@ class MainWindow(Gtk.Window):
         if text:
             self.osd.show(text)
 
-    def minimize(self, *args: Any) -> None:
+    def minimize(self, *args: object) -> None:
         """ Minimizes the MComix window.
 
         The extra arguments are the ones a Gio action hands its callback;
@@ -1205,7 +1219,7 @@ class MainWindow(Gtk.Window):
         # Write keyboard accelerator map
         keybindings.keybinding_manager(self).save()
 
-    def save_and_terminate_program(self, *args: Any) -> None:
+    def save_and_terminate_program(self, *args: object) -> None:
         prefs['previous quit was quit and save'] = True
 
         self.terminate_program()
@@ -1249,7 +1263,7 @@ class MainWindow(Gtk.Window):
         self._spacing = prefs['space between two pages']
         self.draw_image()
 
-    def close_program(self, *args: Any) -> None:
+    def close_program(self, *args: object) -> None:
         if not self.is_fullscreen():
             self.save_window_geometry()
         self.terminate_program()
@@ -1263,7 +1277,8 @@ class MainWindow(Gtk.Window):
             _main_loop.quit()
 
         if prefs['auto load last file'] and self.filehandler.file_loaded:
-            prefs['path to last file'] = self.imagehandler.get_real_path()
+            prefs['path to last file'] = \
+                self.imagehandler.get_real_path() or ''
             prefs['page of last file'] = self.imagehandler.get_current_page()
 
         else:

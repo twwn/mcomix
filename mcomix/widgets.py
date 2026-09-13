@@ -3,10 +3,10 @@
 from gi.repository import Gdk, Gio, Graphene, Gtk
 
 from collections.abc import Callable, Iterable
-from typing import Any, cast
+from typing import cast
 
 
-class Chooser(Gtk.DropDown):
+class Chooser[V](Gtk.DropDown):
 
     """One of a fixed set of values, picked from a dropdown.
 
@@ -20,8 +20,8 @@ class Chooser(Gtk.DropDown):
 
     __gtype_name__ = 'MComixChooser'
 
-    def __init__(self, options: "Iterable[tuple[str, Any]]",
-                 chosen: Any = None) -> None:
+    def __init__(self, options: "Iterable[tuple[str, V]]",
+                 chosen: "V | None" = None) -> None:
         """Offer <options>, pairs of label and value, with <chosen> set.
 
         A value is whatever the preference behind the chooser holds - a
@@ -29,21 +29,28 @@ class Chooser(Gtk.DropDown):
         only half of a pair with a type of its own.
         """
         labels = Gtk.StringList()
-        self._values: list[Any] = []
+        self._values: list[V] = []
         for label, value in options:
             labels.append(label)
             self._values.append(value)
+        if not self._values:
+            raise ValueError('a chooser must have something to choose from')
         super(Chooser, self).__init__(model=labels)
         self.set_value(chosen)
 
-    def get_value(self) -> Any:
-        """The value that is picked, or None if there are no options."""
+    def get_value(self) -> V:
+        """The value that is picked.
+
+        A Gtk.DropDown shows one of its options unless it is told to show
+        none, which nothing here does, and the constructor above refuses
+        a chooser with nothing to offer: there is always an answer.
+        """
         position = self.get_selected()
         if position == Gtk.INVALID_LIST_POSITION:
-            return None
+            raise ValueError('nothing is picked')
         return self._values[position]
 
-    def set_value(self, value: Any) -> None:
+    def set_value(self, value: "V | None") -> None:
         """Pick <value>.
 
         A Gtk.DropDown always shows one of its options, where a
@@ -56,7 +63,7 @@ class Chooser(Gtk.DropDown):
             self.set_selected(self._values.index(value))
 
     def connect_changed(self,
-                        changed: 'Callable[["Chooser"], None]') -> None:
+                        changed: 'Callable[["Chooser[V]"], None]') -> None:
         """Call <changed> with this chooser whenever the pick changes."""
         self.connect('notify::selected',
                      lambda widget, _param: changed(widget))

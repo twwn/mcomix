@@ -15,11 +15,9 @@ from mcomix.i18n import _
 from mcomix.dialog import Response
 
 from collections.abc import Iterator
-from typing import Any
 if TYPE_CHECKING:
     from mcomix.library.main_dialog import _LibraryDialog
 
-_dialog: Any = None
 # The "All books" collection is not a real collection stored in the library,
 # but is represented by this ID in the library's TreeModels.
 _COLLECTION_ALL = -1
@@ -102,7 +100,7 @@ class _CollectionArea(Gtk.ScrolledWindow):
 
         self.display_collections()
 
-    def _create_popup_menu(self) -> Any:
+    def _create_popup_menu(self) -> Gtk.PopoverMenu:
         """Build the right-click menu for the collection list."""
         entries = (
             ('add', _('_Add...'),
@@ -211,7 +209,7 @@ class _CollectionArea(Gtk.ScrolledWindow):
                 self._list.expand_to(row)
                 self._list.toggle_expanded(row)
 
-    def add_collection(self, *args: Any) -> None:
+    def add_collection(self, *args: object) -> None:
         """Add a new collection to the library, through a dialog."""
         add_dialog = message_dialog.MessageDialog(
             self._library, buttons=Gtk.ButtonsType.OK_CANCEL)
@@ -234,7 +232,8 @@ class _CollectionArea(Gtk.ScrolledWindow):
         add_dialog.run_async(lambda response: self._add_answered(
             response, entry.get_text(), add_dialog))
 
-    def _add_answered(self, response: int, name: str, add_dialog: Any) -> None:
+    def _add_answered(self, response: int, name: str,
+                      add_dialog: message_dialog.MessageDialog) -> None:
         """Create the collection the add dialog asked about."""
         add_dialog.destroy()
         if response == Response.OK and name:
@@ -269,7 +268,7 @@ class _CollectionArea(Gtk.ScrolledWindow):
             collection = self._library.collection_area.get_current_collection()
             GLib.idle_add(self._library.book_area.display_covers, collection)
 
-    def _collection_selected(self, *args: Any) -> None:
+    def _collection_selected(self, *args: object) -> None:
         """Change the viewed collection (in the _BookArea) to the
         currently selected one in the sidebar, if it has been changed.
         """
@@ -280,7 +279,7 @@ class _CollectionArea(Gtk.ScrolledWindow):
         prefs['last library collection'] = collection
         GLib.idle_add(self._library.book_area.display_covers, collection)
 
-    def _clean_collection(self, *args: Any) -> None:
+    def _clean_collection(self, *args: object) -> None:
         """ Menu item hook to clean a collection. """
 
         collection = self.get_current_collection()
@@ -291,7 +290,7 @@ class _CollectionArea(Gtk.ScrolledWindow):
 
         self.clean_collection(collection)
 
-    def _remove_collection(self, action: Any = None) -> None:
+    def _remove_collection(self, *args: object) -> None:
         """Remove the currently selected collection from the library."""
         collection = self.get_current_collection()
 
@@ -301,7 +300,7 @@ class _CollectionArea(Gtk.ScrolledWindow):
             prefs['last library collection'] = _COLLECTION_ALL
             self.display_collections()
 
-    def _rename_collection(self, action: Any) -> None:
+    def _rename_collection(self, *args: object) -> None:
         """Rename the currently selected collection, using a dialog."""
         collection = self.get_current_collection()
         if collection is None:
@@ -330,7 +329,7 @@ class _CollectionArea(Gtk.ScrolledWindow):
             response, collection, entry.get_text(), rename_dialog))
 
     def _rename_answered(self, response: int, collection: int, new_name: str,
-                         rename_dialog: Any) -> None:
+                         rename_dialog: message_dialog.MessageDialog) -> None:
         """Rename the collection the rename dialog asked about."""
         rename_dialog.destroy()
         if response == Response.OK and new_name:
@@ -344,7 +343,7 @@ class _CollectionArea(Gtk.ScrolledWindow):
                         _('A collection by that name already exists.'))
                 self._library.set_status_message(message)
 
-    def _duplicate_collection(self, action: Any) -> None:
+    def _duplicate_collection(self, *args: object) -> None:
         """Duplicate the currently selected collection."""
         collection = self.get_current_collection()
         if collection is None:
@@ -355,7 +354,8 @@ class _CollectionArea(Gtk.ScrolledWindow):
             self._library.set_status_message(
                 _('Could not duplicate collection.'))
 
-    def _button_press(self, gesture: Any, n_press: int, x: float, y: float) -> None:
+    def _button_press(self, gesture: Gtk.GestureClick, n_press: int,
+                      x: float, y: float) -> None:
         """Handle mouse button presses on the _CollectionArea."""
 
         row = self._list.row_at(x, y)
@@ -384,7 +384,8 @@ class _CollectionArea(Gtk.ScrolledWindow):
 
         widgets.popup_at(self._collection_menu, self, 0, 0)
 
-    def _key_press(self, controller: Any, keyval: int, keycode: int,
+    def _key_press(self, controller: Gtk.EventControllerKey,
+                   keyval: int, keycode: int,
                    state: Gdk.ModifierType) -> bool:
         """Handle key presses on the _CollectionArea."""
         if keyval == Gdk.KEY_Delete:
@@ -397,13 +398,15 @@ class _CollectionArea(Gtk.ScrolledWindow):
             return Gdk.EVENT_STOP
         return Gdk.EVENT_PROPAGATE
 
-    def _expand_or_collapse_row(self, view: Any, position: int) -> None:
+    def _expand_or_collapse_row(self, view: column_list.ColumnListView,
+                                position: int) -> None:
         """Expand or collapse the activated row."""
         row = self._list.get_row(position)
         if row is not None:
             self._list.toggle_expanded(row)
 
-    def _drag_data_received(self, target: Any, value: str, x: int, y: int) -> bool:
+    def _drag_data_received(self, target: Gtk.DropTarget, value: str,
+                            x: float, y: float) -> bool:
         """Move books dragged from the _BookArea to the target collection,
         or move some collection into another collection.
         """
@@ -467,7 +470,8 @@ class _CollectionArea(Gtk.ScrolledWindow):
             return None
         return rows[-1], self._list.DROP_AFTER
 
-    def _drag_prepare(self, source: Any, x: float, y: float) -> "Gdk.ContentProvider | None":
+    def _drag_prepare(self, source: Gtk.DragSource, x: float,
+                      y: float) -> "Gdk.ContentProvider | None":
         """Offer the collection being dragged."""
         collection = self.get_current_collection()
         if collection is None:
@@ -475,7 +479,8 @@ class _CollectionArea(Gtk.ScrolledWindow):
         return Gdk.ContentProvider.new_for_value(
             '%s:%d' % (constants.LIBRARY_DRAG_COLLECTION, collection))
 
-    def _drag_motion(self, target: Any, x: int, y: int) -> Gdk.DragAction:
+    def _drag_motion(self, target: Gtk.DropTarget, x: float,
+                     y: float) -> Gdk.DragAction:
         """Set the library statusbar text when hovering a drag-n-drop over
         a collection (either books or from the collection area itself).
         Also set the TreeView to accept drops only when we are hovering over
@@ -550,7 +555,7 @@ class _CollectionArea(Gtk.ScrolledWindow):
         """Note whether a drop here would be accepted."""
         self._acceptable_drop = acceptable
 
-    def _drag_begin(self, source: Any, drag: Any) -> None:
+    def _drag_begin(self, source: Gtk.DragSource, drag: Gdk.Drag) -> None:
         """Create a cursor image for drag-n-drop of collections. We use the
         default one (i.e. the row with text), but put the hotspot in the
         top left corner so that one can actually see where one is dropping,

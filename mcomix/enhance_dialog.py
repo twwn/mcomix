@@ -10,7 +10,7 @@ from mcomix import image_tools
 from mcomix.i18n import _
 from mcomix.dialog import Response
 
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from mcomix import main
@@ -143,7 +143,7 @@ class _EnhanceImageDialog(Dialog):
         """Clear the histogram in the dialog."""
         self._hist_image.set_paintable(None)
 
-    def _change_values(self, *args: Any) -> None:
+    def _change_values(self, *args: object) -> None:
         if self._block:
             return
 
@@ -199,7 +199,7 @@ def open_dialog(action: Gio.SimpleAction, window: "main.MainWindow") -> None:
     else:
         _dialog.present()
 
-def _close_dialog(*args: Any) -> None:
+def _close_dialog(*args: object) -> None:
     """Destroy the image enhancement dialog."""
     global _dialog
 

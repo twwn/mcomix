@@ -2,7 +2,6 @@
 
 from gi.repository import Gio, GLib
 
-from typing import Any
 
 from mcomix import bookmark_backend
 from mcomix import bookmark_dialog
@@ -88,11 +87,11 @@ class BookmarksMenu(object):
                         target: GLib.Variant) -> None:
         self._bookmarks[target.get_int32()].load()
 
-    def _add_activated(self, *args: Any) -> None:
+    def _add_activated(self, *args: object) -> None:
         """Add the current page to the bookmarks list."""
         self._bookmarks_store.add_current_to_bookmarks()
 
-    def _edit_activated(self, *args: Any) -> None:
+    def _edit_activated(self, *args: object) -> None:
         """Open the bookmarks dialog."""
         bookmark_dialog._BookmarksDialog(self._window, self._bookmarks_store)
 

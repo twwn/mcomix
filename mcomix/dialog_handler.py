@@ -3,7 +3,6 @@
    information and then exit with no added functionality inbetween.
 """
 
-from typing import Any
 
 from gi.repository import Gio, Gtk
 
@@ -53,7 +52,7 @@ def open_dialog(action: Gio.SimpleAction,
         dialog.connect('close-request', _close_dialog, name_of_dialog)
 
 
-def _close_dialog(dialog: Gtk.Window, *args: Any) -> None:
+def _close_dialog(dialog: Gtk.Window, *args: object) -> None:
     """Destroy the dialog the signal came from.
 
     A response hands the callback the response id before the name and a
@@ -61,6 +60,7 @@ def _close_dialog(dialog: Gtk.Window, *args: Any) -> None:
     """
 
     name_of_dialog = args[-1]
+    assert isinstance(name_of_dialog, str)
 
     closing = _open_dialogs.pop(name_of_dialog, None)
     if closing is not None:

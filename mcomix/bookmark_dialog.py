@@ -5,11 +5,13 @@ from gi.repository import Gdk, Gtk
 from mcomix.dialog import Dialog
 from mcomix.preferences import prefs
 from mcomix import column_list
+from mcomix import tools
 from mcomix import widgets
 from mcomix import constants
 from mcomix.i18n import _
 from mcomix.dialog import Response
 
+from collections.abc import Callable
 from typing import Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -95,7 +97,8 @@ class _BookmarksDialog(Dialog):
         prefs['hidden bookmark columns'] = hidden
 
     @staticmethod
-    def _sort_key(*fields: str) -> "Any":
+    def _sort_key(*fields: str) -> \
+            "Callable[[column_list.Row], tools.SupportsLessThan]":
         """Order the rows by <fields> of the bookmark, in turn.
 
         The fields go into a tuple rather than being compared one at a
@@ -105,7 +108,9 @@ class _BookmarksDialog(Dialog):
         the moment the Type heading was clicked on a mixed list.  A None
         sorts before every number here.
         """
-        def key(row: column_list.Row) -> tuple[Any, ...]:
+        def key(row: column_list.Row) -> "tuple[tuple[bool, Any], ...]":  # type: ignore[explicit-any]  # a bookmark field read by a run-time name
+            # Any, because a field read by a name worked out at run time
+            # is whatever that field of a bookmark holds.
             values = []
             for field in fields:
                 value = getattr(row.bookmark, field)
@@ -129,7 +134,7 @@ class _BookmarksDialog(Dialog):
             self._bookmarks_store.remove_bookmark(row.bookmark)
 
     def _bookmark_activated(self, view: Gtk.ListView, position: int,
-                            *args: Any) -> None:
+                            *args: object) -> None:
         """ Open the activated bookmark. """
 
         row = self._list.get_row(position)
@@ -159,7 +164,7 @@ class _BookmarksDialog(Dialog):
             return Gdk.EVENT_STOP
         return Gdk.EVENT_PROPAGATE
 
-    def _close(self, *args: Any) -> None:
+    def _close(self, *args: object) -> None:
         """Close the dialog and update the _BookmarksStore with the new
         ordering."""
 

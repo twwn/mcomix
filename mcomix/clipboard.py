@@ -5,7 +5,7 @@ from gi.repository import Gdk, GdkPixbuf
 from mcomix import widgets
 from mcomix import image_tools
 
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from mcomix import main
@@ -33,7 +33,7 @@ class Clipboard(object):
                 image_tools.pixbuf_to_texture(pixbuf)),
         ]))
 
-    def copy_page(self, *args: Any) -> None:
+    def copy_page(self, *args: object) -> None:
         """ Copies the currently opened page and pixbuf to clipboard. """
 
         if self._window.filehandler.file_loaded:

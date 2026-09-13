@@ -51,11 +51,15 @@ class ZoomModel(object):
         self._fitmode = constants.ZoomMode.MANUAL
         self._scale_up = False
 
-    def set_fit_mode(self, fitmode: constants.ZoomMode) -> None:
-        if fitmode < constants.ZoomMode.BEST or \
-           fitmode > constants.ZoomMode.SIZE:
-            raise ValueError("No fit mode for id %d." % fitmode)
-        self._fitmode = fitmode
+    def set_fit_mode(self, fitmode: int) -> None:
+        """Fit pages the way <fitmode>, one of the ZoomMode values, says.
+
+        A plain number rather than the member itself: the preference it
+        comes from holds one, because that is what survives a trip
+        through the preferences file.  Converting it here is also what
+        rejects a number that names no mode.
+        """
+        self._fitmode = constants.ZoomMode(fitmode)
 
     def get_scale_up(self) -> bool:
         return self._scale_up

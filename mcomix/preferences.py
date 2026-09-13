@@ -7,7 +7,8 @@ import os
 import pickle
 import shutil
 import sys
-from typing import Any
+from collections.abc import Sequence
+from typing import Any, TypedDict, cast
 
 from mcomix import constants
 from mcomix import tools
@@ -17,7 +18,9 @@ from mcomix import tools
 #: History:
 #:   1: background colours are Gdk.RGBA components - four floats between
 #:      0 and 1 - where they used to be three 16-bit integers.
-CONFIG_FORMAT_VERSION = 1
+#:   2: the answer to the prompt that deletes the opened file is stored
+#:      under "delete-opened-file", where the name used to be misspelt.
+CONFIG_FORMAT_VERSION = 2
 
 #: The key the version above is stored under.  It lives among the
 #: preferences rather than wrapping them, so the file stays a flat mapping.
@@ -27,7 +30,114 @@ _FORMAT_VERSION_KEY = 'config format version'
 #: divides out of the 16-bit 5000 it was stored as before version 1.
 DEFAULT_BG_COLOUR = [5000 / 65535, 5000 / 65535, 5000 / 65535, 1.0]
 
-class _Preferences(dict[str, Any]):
+#: Every preference there is: the name it goes under in the file, and
+#: the type it holds.  The defaults below are annotated with this, so the
+#: checker holds the two tables together - a preference named in one and
+#: not the other is an error, and so is a default of the wrong type - and
+#: every `prefs['...']` in MComix is checked against it.
+Preferences = TypedDict('Preferences', {
+    'config format version': int,
+    'comment extensions': list[str],
+    'auto load last file': bool,
+    'page of last file': int,
+    'path to last file': str,
+    'number of key presses before page turn': int,
+    'auto open next archive': bool,
+    'auto open next directory': bool,
+    'open first file in prev archive': bool,
+    'open first file in prev directory': bool,
+    'sort by': int,
+    'sort order': int,
+    'sort archive by': int,
+    'sort archive order': int,
+    'bg colour': list[float],
+    'thumb bg colour': list[float],
+    'smart bg': bool,
+    'smart thumb bg': bool,
+    'thumbnail bg uses main colour': bool,
+    'checkered bg for transparent images': bool,
+    'stretch': bool,
+    'default double page': bool,
+    'default fullscreen': bool,
+    'zoom mode': int,
+    'default manga mode': bool,
+    # The dialog's spinner for this one has a decimal place.
+    'lens magnification': float,
+    'lens size': int,
+    'virtual double page for fitting images': int,
+    'double step in double page mode': bool,
+    'show page numbers on thumbnails': bool,
+    'thumbnail size': int,
+    'colour scheme': str,
+    'create thumbnails': bool,
+    'number of pixels to scroll per key event': int,
+    'number of pixels to scroll per mouse wheel event': int,
+    'slideshow delay': int,
+    'slideshow can go to next archive': bool,
+    'number of pixels to scroll per slideshow event': int,
+    'smart scroll': bool,
+    'invert smart scroll': bool,
+    'smart scroll percentage': float,
+    'flip with wheel': bool,
+    'store recent file info': bool,
+    'hide all': bool,
+    'hide all in fullscreen': bool,
+    'path of last browsed in filechooser': str,
+    'store last saved in directory': bool,
+    'path of last saved in filechooser': str,
+    'last filter in main filechooser': int,
+    'last filter in library filechooser': int,
+    'show menubar': bool,
+    'previous quit was quit and save': bool,
+    'show scrollbar': bool,
+    'show statusbar': bool,
+    'show toolbar': bool,
+    'show thumbnails': bool,
+    'rotation': int,
+    'auto rotate from exif': bool,
+    'auto rotate depending on size': int,
+    'vertical flip': bool,
+    'horizontal flip': bool,
+    'keep transformation': bool,
+    'stored dialog choices': dict[str, int],
+    'brightness': float,
+    'contrast': float,
+    'saturation': float,
+    'sharpness': float,
+    'auto contrast': bool,
+    'invert color': bool,
+    'max pages to cache': int,
+    'window height': int,
+    'window width': int,
+    'window maximized': bool,
+    'pageselector height': int,
+    'pageselector width': int,
+    'library cover size': int,
+    'last library collection': "int | None",
+    'lib window height': int,
+    'lib window width': int,
+    'lib sort key': int,
+    'lib sort order': int,
+    'language': str,
+    'statusbar fields': int,
+    'max threads': int,
+    'max extract threads': int,
+    'scaling quality': int,
+    'escape quits': bool,
+    'fit to size width wide': int,
+    'fit to size height wide': int,
+    'fit to size width other': int,
+    'fit to size height other': int,
+    'scan for new books on library startup': bool,
+    'openwith commands': "list[Sequence[str | bool]]",
+    'hidden bookmark columns': list[str],
+    'animation mode': int,
+    'double page autoresize': int,
+    'space between two pages': int,
+})
+
+
+class _Preferences(dict[str, object]):
 
     """The preferences, which see themselves written out when they change.
 
@@ -37,7 +147,7 @@ class _Preferences(dict[str, Any]):
     schedules the write instead, and quitting is only the last of them.
     """
 
-    def __setitem__(self, key: str, value: Any) -> None:
+    def __setitem__(self, key: str, value: object) -> None:
         was = self.get(key, _NOTHING)
         super().__setitem__(key, value)
         if value != was:
@@ -47,7 +157,7 @@ class _Preferences(dict[str, Any]):
         super().__delitem__(key)
         changed()
 
-    def update(self, *args: Any, **keywords: Any) -> None:
+    def update(self, *args: object, **keywords: object) -> None:
         super().update(*args, **keywords)
         changed()
 
@@ -60,9 +170,9 @@ class _Preferences(dict[str, Any]):
 #: of them really hold.
 _NOTHING = object()
 
-# All the preferences are stored here.
-prefs = _Preferences({
-    _FORMAT_VERSION_KEY: CONFIG_FORMAT_VERSION,
+#: What every preference holds before a file is read over it.
+_DEFAULTS: Preferences = {
+    'config format version': CONFIG_FORMAT_VERSION,
     'comment extensions': constants.ACCEPTED_COMMENT_EXTENSIONS,
     'auto load last file': False,
     'page of last file': 1,
@@ -164,7 +274,36 @@ prefs = _Preferences({
     'animation mode': constants.ANIMATION_NORMAL,
     'double page autoresize': constants.DOUBLE_PAGE_AUTORESIZE_SIZE,
     'space between two pages': 2,
-})
+}
+
+#: All the preferences are stored here.  The instance is a dict that
+#: schedules a write when it is assigned to; it is handed out as the
+#: TypedDict above so that every subscript in MComix is checked, which a
+#: dict subclass cannot be and a TypedDict cannot do.
+prefs = cast(Preferences, _Preferences(copy.deepcopy(_DEFAULTS)))
+
+
+def by_name(name: str) -> Any:  # type: ignore[explicit-any]  # whatever that preference holds
+    """The preference called <name>, looked up at run time.
+
+    The preferences dialog and the menu's toggles work over names they
+    are handed rather than names written into them, which is the one
+    thing the mapping's type cannot check.  Any, because the answer is
+    whatever that preference holds.
+    """
+    return cast("dict[str, object]", prefs)[name]
+
+
+def set_by_name(name: str, value: Any) -> None:  # type: ignore[explicit-any]  # whatever that preference holds
+    """Set the preference called <name>, looked up at run time.
+
+    A name that is not one of the preferences is refused: a mapping
+    would take it and keep it, so a name misspelt in the dialog would
+    read as a setting that quietly does nothing.
+    """
+    if name not in _DEFAULTS:
+        raise KeyError('%r is not a preference' % name)
+    cast("dict[str, object]", prefs)[name] = value
 
 #: How long a change waits for the ones after it before the file is
 #: written.  Long enough that dragging a slider writes once rather than
@@ -182,7 +321,7 @@ _write_source = 0
 #: what another one changed while it was running.  Empty until the file
 #: is read, which means an instance that never read one has nothing of
 #: its own to write.
-_as_read: dict[str, Any] = {}
+_as_read: dict[str, object] = {}
 
 
 def migrate_home_config_path() -> None:
@@ -228,23 +367,34 @@ def _back_up_preferences(version: int) -> None:
         print('! Could not back up the preferences file: %s' % error)
 
 
-def _rgba_from_16bit_colour(colour: Any) -> list[float]:
-    """Turn a 16-bit RGB triple into the components Gdk.RGBA takes."""
-    try:
-        red, green, blue = (component / 65535.0 for component in colour[:3])
-    except (TypeError, ValueError):
-        # Not a colour at all; the default is a better guess than a crash.
+def _rgba_from_16bit_colour(colour: object) -> list[float]:
+    """Turn a 16-bit RGB triple into the components Gdk.RGBA takes.
+
+    Whatever the file held, which need not be a colour at all: the
+    default is a better answer for anything that is not one than a
+    crash on the way up.
+    """
+    if not isinstance(colour, Sequence) or len(colour) < 3:
         return list(DEFAULT_BG_COLOUR)
-    return [red, green, blue, 1.0]
+    components = []
+    for component in colour[:3]:
+        if not isinstance(component, (int, float)):
+            return list(DEFAULT_BG_COLOUR)
+        components.append(component / 65535.0)
+    return components + [1.0]
 
 
-def _migrate_preferences(saved_prefs: dict[str, Any]) -> None:
+def _migrate_preferences(saved_prefs: dict[str, object]) -> None:
     """Bring <saved_prefs> forward to CONFIG_FORMAT_VERSION, in place.
 
     A file older than the current format is backed up first, once, before
     anything in it is rewritten.
     """
-    version = saved_prefs.get(_FORMAT_VERSION_KEY, 0)
+    stored_version = saved_prefs.get(_FORMAT_VERSION_KEY, 0)
+    # A file that says nothing sensible about the format it is in is
+    # taken to be the oldest there is, which is where the steps below
+    # start: comparing a hand-edited "1" against a number raised.
+    version = stored_version if isinstance(stored_version, int) else 0
     if version >= CONFIG_FORMAT_VERSION:
         return
 
@@ -254,6 +404,11 @@ def _migrate_preferences(saved_prefs: dict[str, Any]) -> None:
         for key in ('bg colour', 'thumb bg colour'):
             if key in saved_prefs:
                 saved_prefs[key] = _rgba_from_16bit_colour(saved_prefs[key])
+
+    if version < 2:
+        choices = saved_prefs.get('stored dialog choices')
+        if isinstance(choices, dict) and 'delete-opend-file' in choices:
+            choices['delete-opened-file'] = choices.pop('delete-opend-file')
 
     saved_prefs[_FORMAT_VERSION_KEY] = CONFIG_FORMAT_VERSION
 
@@ -292,9 +447,12 @@ def read_preferences_file() -> None:
 
     if saved_prefs:
         _migrate_preferences(saved_prefs)
+        # A file written by a later MComix, or edited by hand, can name
+        # preferences this one has never heard of; those are left where
+        # they are rather than taken in.
         for key in saved_prefs:
-            if key in prefs:
-                prefs[key] = saved_prefs[key]
+            if key in _DEFAULTS:
+                set_by_name(key, saved_prefs[key])
 
     global _as_read
     _as_read = copy.deepcopy(dict(prefs))
@@ -343,7 +501,7 @@ def cancel_scheduled_write() -> None:
     _write_source = 0
 
 
-def _stored_preferences() -> dict[str, Any]:
+def _stored_preferences() -> dict[str, object]:
     """Whatever is in the preferences file now, or nothing.
 
     Nothing is also the answer for a file that cannot be read: writing
@@ -366,7 +524,7 @@ def _stored_preferences() -> dict[str, Any]:
     return stored
 
 
-def _changed_here() -> dict[str, Any]:
+def _changed_here() -> dict[str, object]:
     """The preferences this instance has changed since it read them.
 
     A preference the baseline does not name is not one of them, and the

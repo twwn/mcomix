@@ -23,7 +23,7 @@ class SupportsLessThan(Protocol):
     """Anything that can be put in order, which needs only __lt__:
     Python answers a > b with b.__lt__(a) when a has no __gt__."""
 
-    def __lt__(self, other: Any, /) -> bool: ...
+    def __lt__(self, other: Any, /) -> bool: ...  # type: ignore[explicit-any]  # a protocol asking for object matches no real __lt__
 
 
 Comparable = TypeVar('Comparable', bound=SupportsLessThan)
@@ -69,7 +69,7 @@ def alphanumeric_sort(filenames: list[str]) -> None:
     filenames.sort(key=AlphanumericSortKey)
 
 
-def bin_search(lst: list[Any], value: Any) -> int:
+def bin_search(lst: "list[Comparable]", value: Comparable) -> int:
     """ Binary search for sorted list C{lst}, looking for C{value}.
     @return: List index on success. On failure, it returns the 1's
     complement of the index where C{value} would be inserted.
@@ -253,7 +253,7 @@ def formats_to_regex(
 
 
 @contextlib.contextmanager
-def atomic_write(path: str, binary: bool = False) -> "Iterator[IO[Any]]":
+def atomic_write(path: str, binary: bool = False) -> "Iterator[IO[Any]]":  # type: ignore[explicit-any]  # the mode decides whether it is text or bytes
     """ Context manager that yields a file object for writing to C{path}.
 
     The data is written to a temporary file in the same directory, which is

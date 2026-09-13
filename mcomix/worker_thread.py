@@ -5,7 +5,7 @@ import threading
 import traceback
 from collections.abc import Callable, Iterable
 from types import TracebackType
-from typing import Any, Generic, TypeVar
+from typing import Generic, TypeVar
 
 from mcomix import log
 from mcomix.i18n import _
@@ -37,7 +37,7 @@ class WorkerThread(Generic[Order]):
         # Queue of orders waiting for processing.
         self._orders_queue: list[Order] = []
         # Track orders, when they have to be unique.
-        self._orders_set: set[Any] = set()
+        self._orders_set: set[object] = set()
         self._condition = threading.Condition()
 
     def __enter__(self) -> bool:
@@ -59,13 +59,13 @@ class WorkerThread(Generic[Order]):
             thread.start()
             self._threads.append(thread)
 
-    def _order_uid(self, order: Order) -> Any:
+    def _order_uid(self, order: Order) -> object:
         if isinstance(order, tuple) or isinstance(order, list):
             return order[0]
         return order
 
     def _run(self) -> None:
-        order_uid: Any = None
+        order_uid: object = None
         while True:
             with self._condition:
                 if order_uid is not None:

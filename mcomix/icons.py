@@ -3,8 +3,6 @@
 from gi.repository import GdkPixbuf, Gtk
 import os
 
-from typing import Any
-
 from mcomix import widgets
 
 
@@ -21,7 +19,7 @@ def icon_search_path() -> str:
                         'images', 'icons')
 
 
-def icon_theme() -> Any:
+def icon_theme() -> Gtk.IconTheme:
     """The icon theme of the default display.
 
     GTK4 has no single default theme: it keeps one per display, so this
@@ -35,7 +33,7 @@ def load_icons() -> None:
     icon_theme().add_search_path(icon_search_path())
 
 
-def load_pixbuf(name: str, size: int) -> Any:
+def load_pixbuf(name: str, size: int) -> "GdkPixbuf.Pixbuf | None":
     """Return the icon <name> from the icon theme, at <size> pixels.
 
     GTK4's icon theme hands back a Gtk.IconPaintable rather than a pixbuf,
@@ -45,8 +43,11 @@ def load_pixbuf(name: str, size: int) -> Any:
     paintable = icon_theme().lookup_icon(
         name, None, size, 1, Gtk.TextDirection.NONE, Gtk.IconLookupFlags(0))
     file = paintable.get_file() if paintable is not None else None
-    if file is None or file.get_path() is None:
+    # An icon that lives in a GResource rather than in a file has no path
+    # to load, and there is nothing to hand back.
+    path = file.get_path() if file is not None else None
+    if path is None:
         return None
-    return GdkPixbuf.Pixbuf.new_from_file_at_size(file.get_path(), size, size)
+    return GdkPixbuf.Pixbuf.new_from_file_at_size(path, size, size)
 
 # vim: expandtab:sw=4:ts=4

@@ -10,7 +10,7 @@ from mcomix.i18n import _
 from mcomix.dialog import Response
 
 from collections.abc import Sequence
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from mcomix import main
@@ -99,7 +99,7 @@ class _AddLibraryProgressDialog(Dialog):
 
         self._response()
 
-    def _response(self, *args: Any) -> None:
+    def _response(self, *args: object) -> None:
         self._destroy = True
         self.destroy()
 

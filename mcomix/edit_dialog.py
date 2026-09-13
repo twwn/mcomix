@@ -20,7 +20,7 @@ from mcomix import preview
 from mcomix.i18n import _
 from mcomix.dialog import Response
 
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from mcomix import main
@@ -273,7 +273,7 @@ def open_dialog(action: Gio.SimpleAction, window: "main.MainWindow") -> None:
         _dialog.present()
 
 
-def _close_dialog(*args: Any) -> None:
+def _close_dialog(*args: object) -> None:
     global _dialog
 
     if _dialog is not None:

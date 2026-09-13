@@ -11,7 +11,7 @@ from mcomix import callback
 from mcomix.i18n import _
 from mcomix.dialog import Response
 
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from gi.repository import GdkPixbuf
@@ -99,13 +99,13 @@ class Pageselector(Dialog):
         self._update_thumbnail(int(self._selector_adjustment.props.value))
         self._window.imagehandler.page_available += self._page_available
 
-    def _cb_value_changed(self, *args: Any) -> None:
+    def _cb_value_changed(self, *args: object) -> None:
         """ Called whenever the spinbox value changes. Updates the preview thumbnail. """
         page = int(self._selector_adjustment.props.value)
         if page != self._thumbnail_page:
             self._update_thumbnail(page)
 
-    def _size_changed_cb(self, *args: Any) -> None:
+    def _size_changed_cb(self, *args: object) -> None:
         # Window cannot be scaled down unless the size request is reset
         self.set_size_request(-1, -1)
         # Store dialog size
@@ -115,7 +115,7 @@ class Pageselector(Dialog):
         self._update_thumbnail(int(self._selector_adjustment.props.value))
 
     def _page_text_changed(self, control: Gtk.SpinButton,
-                           *args: Any) -> None:
+                           *args: object) -> None:
         """ Called when the page selector has been changed. Used to instantly update
             the preview thumbnail when entering page numbers by hand. """
         if control.get_text().isdigit():
@@ -123,11 +123,11 @@ class Pageselector(Dialog):
             if page > 0 and page <= self._number_of_pages:
                 control.set_value(page)
 
-    def _stop_thumbnailing(self, *args: Any) -> None:
+    def _stop_thumbnailing(self, *args: object) -> None:
         self._thread.stop()
 
     def _response(self, widget: Gtk.Widget, event: int,
-                  *args: Any) -> None:
+                  *args: object) -> None:
         if event == Response.OK:
             self._window.set_page(int(self._selector_adjustment.props.value))
 

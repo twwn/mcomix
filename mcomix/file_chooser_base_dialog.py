@@ -3,10 +3,10 @@
 import os
 import mimetypes
 import fnmatch
-from gi.repository import Gdk, Gio, GLib, Gtk, Pango
+from gi.repository import Gdk, Gio, GLib, GObject, Gtk, Pango
 
 from collections.abc import Iterable, Iterator, Sequence
-from typing import Any, TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
     from gi.repository import GdkPixbuf
@@ -237,7 +237,7 @@ class _BaseFileChooserDialog(Dialog):
 
         self.set_visible(True)
 
-    def _widen_the_places(self, *args: Any) -> None:
+    def _widen_the_places(self, *args: object) -> None:
         """Give the places on the left room for their own names.
 
         GTK4 puts the sidebar in a Gtk.Paned and opens it at a fixed
@@ -259,7 +259,7 @@ class _BaseFileChooserDialog(Dialog):
         if paned.get_position() < _PLACES_WIDTH:
             GLib.idle_add(paned.set_position, _PLACES_WIDTH)
 
-    def place_buttons(self, buttons: Sequence[Any]) -> None:
+    def place_buttons(self, buttons: "Sequence[str | int]") -> None:
         """Put <buttons> - label, response, label, response - in the row
         the chooser keeps its filter menu in.
 
@@ -283,7 +283,11 @@ class _BaseFileChooserDialog(Dialog):
                     parent.remove(button)
         self._buttons = []
 
-        pairs = list(zip(buttons[::2], buttons[1::2]))
+        # The arguments come in pairs, which a sequence cannot say: to
+        # the checker every one of them is a label or a response.
+        pairs = [(label, response)
+                 for label, response in zip(buttons[::2], buttons[1::2])
+                 if isinstance(label, str) and isinstance(response, int)]
         bar = self._filter_action_bar()
         if bar is None:
             for label, response in pairs:
@@ -393,7 +397,8 @@ class _BaseFileChooserDialog(Dialog):
             return False
         # A Gtk.SelectionModel is a Gio.ListModel as well, whatever the
         # introspection data says of it.
-        model = cast("Gio.ListModel[Any] | None", self._listing.get_model())
+        model = cast("Gio.ListModel[GObject.Object] | None",
+                    self._listing.get_model())
         if model is None or not model.get_n_items():
             return False
         self._listing.grab_focus()
@@ -416,14 +421,16 @@ class _BaseFileChooserDialog(Dialog):
         self._search.grab_focus()
         return True
 
-    def list_filters(self) -> list[Any]:
+    def list_filters(self) -> list[Gtk.FileFilter]:
         """The filters the chooser offers, in the order they were added.
 
         Gtk.FileChooser.list_filters() is get_filters() in GTK4, and it
         answers with a Gio.ListModel rather than a list.
         """
         model = self.filechooser.get_filters()
-        return [model.get_item(index) for index in range(model.get_n_items())]
+        return [filter for filter in
+                (model.get_item(index) for index in range(model.get_n_items()))
+                if filter is not None]
 
     def add_filter(self, name: str, mimes: Iterable[str],
                    patterns: Iterable[str] = ()) -> Gtk.FileFilter:
@@ -528,12 +535,13 @@ class _BaseFileChooserDialog(Dialog):
     def should_open_recursive(self) -> bool:
         return False
 
-    def _activated(self, gesture: Any, n_press: int, x: float, y: float) -> None:
+    def _activated(self, gesture: Gtk.GestureClick, n_press: int,
+                   x: float, y: float) -> None:
         """Confirm the dialog when a file is double clicked."""
         if n_press == 2 and self.filechooser.get_file() is not None:
             self._response(self, Response.OK)
 
-    def _response(self, widget: Any, response: int) -> None:
+    def _response(self, widget: Gtk.Widget, response: int) -> None:
         """Return a list of the paths of the chosen files, or None if the
         event only changed the current directory.
         """
@@ -594,7 +602,7 @@ class _BaseFileChooserDialog(Dialog):
         # Do not store path if the user chose not to keep a file history
         if prefs['store recent file info']:
             prefs['path of last browsed in filechooser'] = \
-                widgets.chooser_folder(self.filechooser)
+                widgets.chooser_folder(self.filechooser) or constants.HOME_DIR
         else:
             prefs['path of last browsed in filechooser'] = \
                 constants.HOME_DIR
@@ -612,12 +620,12 @@ class _BaseFileChooserDialog(Dialog):
             self._update_preview()
         return GLib.SOURCE_CONTINUE
 
-    def _stop_previewing(self, *args: Any) -> None:
+    def _stop_previewing(self, *args: object) -> None:
         if self._preview_timer is not None:
             GLib.source_remove(self._preview_timer)
             self._preview_timer = None
 
-    def _update_preview(self, *args: Any) -> None:
+    def _update_preview(self, *args: object) -> None:
         path = self._previewed
 
         if path and os.path.isfile(path):

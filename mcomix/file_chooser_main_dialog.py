@@ -6,7 +6,7 @@ from gi.repository import Gio
 from mcomix.preferences import prefs
 from mcomix import file_chooser_base_dialog
 
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from mcomix import main
@@ -39,12 +39,12 @@ class _MainFileChooserDialog(file_chooser_base_dialog._BaseFileChooserDialog):
 
     def files_chosen(self, paths: list[str]) -> None:
         if paths:
-            try: # For some reason this fails sometimes (GTK+ bug?)
-                filter_index = self.list_filters().index(
-                    self.filechooser.get_filter())
-                prefs['last filter in main filechooser'] = filter_index
-            except:
-                pass
+            # There is nothing to remember while the chooser is showing
+            # everything, which is what it does with no filter set.
+            chosen = self.filechooser.get_filter()
+            filters = self.list_filters()
+            if chosen in filters:
+                prefs['last filter in main filechooser'] = filters.index(chosen)
             _close_main_filechooser_dialog()
 
             # If more than one file is selected, restrict opening
@@ -65,7 +65,7 @@ def open_main_filechooser_dialog(action: Gio.SimpleAction,
         _main_filechooser_dialog.present()
 
 
-def _close_main_filechooser_dialog(*args: Any) -> None:
+def _close_main_filechooser_dialog(*args: object) -> None:
     """Close the main filechooser dialog."""
     global _main_filechooser_dialog
     if _main_filechooser_dialog is not None:

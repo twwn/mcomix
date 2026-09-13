@@ -16,7 +16,7 @@ from mcomix import i18n
 from mcomix.i18n import _
 
 from collections.abc import Callable, Sequence
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from mcomix import main
@@ -41,14 +41,12 @@ class OpenWithManager(object):
             for cmd in cmds]
 
     def get_commands(self) -> list['OpenWithCommand']:
-        try:
-            return [OpenWithCommand(label, command, cwd, disabled_for_archives)
-                    for label, command, cwd, disabled_for_archives
-                    in prefs['openwith commands']]
-        except ValueError:
-            # Backwards compatibility for early versions with only two parameters
-            return [OpenWithCommand(label, command, '', False)
-                    for label, command in prefs['openwith commands']]
+        # Early versions stored a label and a command and nothing else,
+        # so the two fields after them are read only if they are there.
+        return [OpenWithCommand(str(stored[0]), str(stored[1]),
+                                str(stored[2]) if len(stored) > 2 else '',
+                                bool(stored[3]) if len(stored) > 3 else False)
+                for stored in prefs['openwith commands']]
 
 
 class OpenWithCommand(object):
@@ -460,7 +458,7 @@ class OpenWithEditor(Dialog):
         if command and not command.is_separator():
             command.execute(self._window)
 
-    def _item_selected(self, *args: Any) -> None:
+    def _item_selected(self, *args: object) -> None:
         """ Enable or disable buttons that depend on an item being selected. """
         selected = bool(self._command_list.get_selected_positions())
         for button in (self._remove_button, self._up_button,

@@ -37,8 +37,16 @@ def missing_image_icon() -> GdkPixbuf.Pixbuf:
     global MISSING_IMAGE_ICON
     if MISSING_IMAGE_ICON is None:
         from mcomix import icons
-        MISSING_IMAGE_ICON = icons.load_pixbuf('image-missing',
-                                               _MISSING_IMAGE_SIZE)
+        # A theme that keeps its icons in a GResource has no file to
+        # load one from, and a blank square is still something to draw.
+        MISSING_IMAGE_ICON = (
+            icons.load_pixbuf('image-missing', _MISSING_IMAGE_SIZE)
+            or GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, True, 8,
+                                    _MISSING_IMAGE_SIZE,
+                                    _MISSING_IMAGE_SIZE))
+        # Pixbuf.new() answers with nothing only when the allocation
+        # fails, and a square this small will not be what runs out.
+        assert MISSING_IMAGE_ICON is not None
     return MISSING_IMAGE_ICON
 
 #: Colours are Gdk.RGBA components throughout: four floats between 0 and 1.
@@ -150,7 +158,7 @@ def fit_in_rectangle(src: GdkPixbuf.Pixbuf, width: int, height: int,
         width, height = height, width
 
     if scaling_quality is None:
-        scaling_quality = prefs['scaling quality']
+        scaling_quality = scaling_quality_preference()
 
     src_width = src.get_width()
     src_height = src.get_height()
@@ -360,10 +368,19 @@ def pixbuf_to_pil(pixbuf: GdkPixbuf.Pixbuf) -> Image.Image:
     im = Image.frombuffer(mode, dimensions, pixels, 'raw', mode, stride, 1)
     return im
 
+def scaling_quality_preference() -> GdkPixbuf.InterpType:
+    """How the scaling quality preference says pages should be scaled.
+
+    The preference holds a plain number, because that is what survives a
+    trip through the preferences file; every gdk-pixbuf call that scales
+    wants the member it stands for.
+    """
+    return GdkPixbuf.InterpType(prefs['scaling quality'])
+
 #: What load_pixbuf() writes the file a moving page came from under.
 ANIMATION_PATH = 'animation_path'
 
-def is_animation(pixbuf: Any) -> bool:
+def is_animation(pixbuf: GdkPixbuf.Pixbuf) -> bool:
     """Whether <pixbuf> is the still frame of a page that moves.
 
     GdkPixbuf.PixbufAnimation was an object of its own, and being one
@@ -373,7 +390,7 @@ def is_animation(pixbuf: Any) -> bool:
     """
     return getattr(pixbuf, ANIMATION_PATH, None) is not None
 
-def animation_path(pixbuf: Any) -> "str | None":
+def animation_path(pixbuf: GdkPixbuf.Pixbuf) -> "str | None":
     """The file the frames of <pixbuf> are read from, if it moves."""
     return getattr(pixbuf, ANIMATION_PATH, None)
 
@@ -424,7 +441,7 @@ def _pixbuf_animates(path: str) -> bool:
         return False
     return animation is not None and not animation.is_static_image()
 
-def glycin() -> tuple[Any, Any]:
+def glycin() -> tuple[Any, Any]:  # type: ignore[explicit-any]  # glycin is optional, so there is no Gly to name
     """The glycin modules, or raise if this tree has none.
 
     glycin ships with GTK on Linux, where it is what gdk-pixbuf hands

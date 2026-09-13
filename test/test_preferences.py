@@ -8,6 +8,7 @@ from . import MComixTest, default_prefs, wait_for
 from mcomix import constants
 from mcomix import preferences
 from mcomix.preferences import prefs
+from mcomix.preferences import _FORMAT_VERSION_KEY
 
 
 class ReadPreferencesFileTest(MComixTest):
@@ -134,6 +135,38 @@ class MigratePreferencesTest(MComixTest):
         self.assertEqual(prefs['bg colour'], migrated,
                          'a second read must not divide the colour again')
 
+    def test_the_misspelt_delete_answer_is_renamed(self) -> None:
+        """Up to format version 2 the prompt that deletes the opened
+        file stored its answer under "delete-opend-file"; a file holding
+        that name would be asked again for good."""
+        self._write({'stored dialog choices': {'delete-opend-file': -5}})
+        preferences.read_preferences_file()
+        self.assertEqual(prefs['stored dialog choices'],
+                         {'delete-opened-file': -5})
+
+    def test_the_rename_reaches_a_file_that_is_already_at_version_1(self) -> None:
+        """Format version 1 is this branch's own and never was released,
+        but files at it exist all the same - anyone running from this
+        branch has one - so the rename is a step of its own rather than
+        an addition to the step before it."""
+        self._write({preferences._FORMAT_VERSION_KEY: 1,
+                     'stored dialog choices': {'delete-opend-file': -5}})
+        preferences.read_preferences_file()
+        self.assertEqual(prefs['stored dialog choices'],
+                         {'delete-opened-file': -5})
+
+    def test_a_version_that_is_not_a_number_is_taken_as_the_oldest(self) -> None:
+        """The version comes out of the file like everything else in it,
+        so it can be anything a hand edit or a half-written file left
+        there.  Comparing that against the current version raised
+        TypeError, which nothing on the way up caught: MComix would not
+        start."""
+        self._write({_FORMAT_VERSION_KEY: '1',
+                     'bg colour': self.OLD_DEFAULT})
+        preferences.read_preferences_file()
+        self.assertEqual(len(prefs['bg colour']), 4)
+        self.assertAlmostEqual(prefs['bg colour'][0], 5000 / 65535)
+
     def test_a_colour_that_is_not_one_falls_back_to_the_default(self) -> None:
         self._write({'bg colour': 'not a colour'})
         preferences.read_preferences_file()
@@ -215,6 +248,36 @@ class WritePreferencesFileTest(MComixTest):
             stored = json.load(config_file)
         self.assertEqual(stored['config format version'],
                          preferences.CONFIG_FORMAT_VERSION)
+
+
+class ByNameTest(MComixTest):
+
+    """Reading and writing a preference by a name worked out at run time.
+
+    The preferences dialog and the menu's toggles are built over the
+    names they are handed, which is the one thing the mapping's type
+    cannot check: nothing tells the checker that a name in a variable is
+    one of the ninety-seven there are.  These two are where that is
+    checked instead.
+    """
+
+    def test_a_preference_can_be_read_by_name(self) -> None:
+        self.assertEqual(prefs['thumbnail size'],
+                         preferences.by_name('thumbnail size'))
+
+    def test_a_preference_can_be_set_by_name(self) -> None:
+        preferences.set_by_name('thumbnail size', 111)
+        self.assertEqual(111, prefs['thumbnail size'])
+
+    def test_reading_one_that_does_not_exist_is_an_error(self) -> None:
+        self.assertRaises(KeyError, preferences.by_name, 'no such preference')
+
+    def test_setting_one_that_does_not_exist_is_an_error(self) -> None:
+        # A dict would take the new key and keep it, so a misspelled
+        # name in the dialog would read as a setting that does nothing.
+        self.assertRaises(KeyError, preferences.set_by_name,
+                          'no such preference', 1)
+        self.assertNotIn('no such preference', prefs)
 
 
 class IsolationTest(MComixTest):

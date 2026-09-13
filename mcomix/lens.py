@@ -2,7 +2,7 @@
 
 
 from collections.abc import Sequence
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from gi.repository import GdkPixbuf, Graphene, Gtk
 
@@ -130,7 +130,7 @@ class MagnifyingLens:
 
         return lens_x, lens_y, width + 2 * border_size, height + 2 * border_size
 
-    def _clear_lens(self, current_lens_region: Any = None) -> None:
+    def _clear_lens(self) -> None:
         """ Takes the lens off the pages again. """
 
         if not self._last_lens_rect:
@@ -143,7 +143,8 @@ class MagnifyingLens:
         """Toggle on or off the lens depending on the state of <action>."""
         self.enabled = action.get_active()
 
-    def _motion_event(self, controller: Any, x: float, y: float) -> None:
+    def _motion_event(self, controller: Gtk.EventControllerMotion,
+                      x: float, y: float) -> None:
         """ Called whenever the mouse moves over the image area. """
         # The lens works in canvas coordinates, which is what the events
         # on Gtk.Layout's scrolling window carried; a controller reports
@@ -183,7 +184,8 @@ class MagnifyingLens:
                 source_pixbuf.get_has_alpha() and opaque else None
             self._draw_lens_pixbuf((x - cpos[0], y - cpos[1]), b.get_size(),
                 source_pixbuf, rotation, flips,
-                lens_size, lens_scale, canvas, prefs['scaling quality'],
+                lens_size, lens_scale, canvas,
+                image_tools.scaling_quality_preference(),
                 composite_color_args, (x - border_size - check_offset[0],
                 y - border_size - check_offset[1])) # 2D only
 
@@ -204,7 +206,7 @@ class MagnifyingLens:
 
         # Some computations are the same for each axis.
         def calc_1d(ref_pos: int, csize: int, src_pixbuf_size: int,
-                    lens_size: int, lens_scale: float) -> tuple[Any, ...]:
+                    lens_size: int, lens_scale: float) -> tuple[float, ...]:
             # compute initial scales, sizes and positions
             page_scale = csize / src_pixbuf_size
             source_ref_pos = ref_pos / page_scale

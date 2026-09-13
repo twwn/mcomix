@@ -178,7 +178,8 @@ class _Collection(_BackendObject):
                                    WHERE collection IN (%s))
               ''' % ', '.join('?' * len(collections))
 
-        sql_args: list[Any] = [collection.id for collection in collections]
+        sql_args: "list[str | int | None]" = [collection.id
+                                             for collection in collections]
         if filter_string:
             # Parenthesised: AND binds tighter than OR, so without them
             # a matching path would answer for the whole library.
@@ -358,7 +359,7 @@ class _WatchList(object):
             new_files = entry.get_new_files(existing_books)
             self.new_files_found(new_files, entry)
 
-    def _result_row_to_watchlist_entry(
+    def _result_row_to_watchlist_entry(  # type: ignore[explicit-any]  # a row holds whatever the query selected
             self, row: Sequence[Any]) -> '_WatchListEntry':
         """ Converts the result of a SELECT statement to a WatchListEntry. """
         collection_id = row[2]

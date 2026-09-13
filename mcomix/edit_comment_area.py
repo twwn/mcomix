@@ -7,14 +7,17 @@ from mcomix import widgets
 from mcomix import tools
 from mcomix.i18n import _
 
-from typing import Any
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from mcomix import edit_dialog as edit_dialog_module
 
 
 class _CommentArea(Gtk.Box):
 
     """The area used for displaying and handling non-image files."""
 
-    def __init__(self, edit_dialog: Any) -> None:
+    def __init__(self, edit_dialog: "edit_dialog_module._EditArchiveDialog") -> None:
         super().__init__(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         self._edit_dialog = edit_dialog
 
@@ -46,7 +49,7 @@ class _CommentArea(Gtk.Box):
 
         self._popup_menu = self._create_popup_menu()
 
-    def _create_popup_menu(self) -> Any:
+    def _create_popup_menu(self) -> Gtk.PopoverMenu:
         """Build the right-click menu for the comment list."""
         actions = Gio.SimpleActionGroup()
         remove = Gio.SimpleAction.new('remove', None)
@@ -78,7 +81,7 @@ class _CommentArea(Gtk.Box):
         """Return a list with the full paths to all the files, in order."""
         return [row.path for row in self._list.each_row()]
 
-    def _remove_file(self, *args: Any) -> None:
+    def _remove_file(self, *args: object) -> None:
         """Remove the currently selected file from the list."""
         row = self._list.get_selected_row()
         if row is not None:

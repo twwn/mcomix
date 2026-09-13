@@ -43,9 +43,10 @@ if TYPE_CHECKING:
 #: A parsed accelerator: the key, and the modifiers held with it.
 Binding = tuple[int, Gdk.ModifierType]
 
-#: Bindings defined in this dictionary will appear in the configuration dialog.
-#: If 'group' is None, the binding cannot be modified from the preferences dialog.
-BINDING_INFO: dict[str, dict[str, Any]] = {
+#: Bindings defined in this dictionary will appear in the configuration
+#: dialog: a title to show against the action, and the group the
+#: shortcuts editor files it under.
+BINDING_INFO: "dict[str, dict[str, str]]" = {
     # Navigation between pages, archives, directories
     'previous_page' : { 'title' : _('Previous page'), 'group' : _('Navigation') },
     'next_page' : { 'title' : _('Next page'), 'group' : _('Navigation') },
@@ -182,7 +183,7 @@ class _KeybindingManager:
         self._window = window
 
         #: action name => (func, args, kwargs)
-        self._action_to_callback: dict[str, tuple[Callable[..., Any],
+        self._action_to_callback: dict[str, tuple[Callable[..., Any],  # type: ignore[explicit-any]  # an action takes what it was registered with
                                                   Sequence[Any],
                                                   Mapping[str, Any]]] = {}
         #: action name => the accelerators that reach it
@@ -193,7 +194,7 @@ class _KeybindingManager:
         self._migrate_from_old_bindings()
         self._initialize()
 
-    def register(self, name: str, bindings: Sequence[str],
+    def register(self, name: str, bindings: Sequence[str],  # type: ignore[explicit-any]  # an action takes what it was registered with
                  callback: Callable[..., Any],
                  args: Sequence[Any] | None = None,
                  kwargs: Mapping[str, Any] | None = None) -> None:

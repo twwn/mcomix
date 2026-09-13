@@ -24,7 +24,7 @@ from mcomix.library import backend
 from mcomix.i18n import _
 
 from collections.abc import Sequence
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     # main imports this module, so the window it is handed can only be
@@ -110,7 +110,7 @@ class FileHandler(object):
             raise ValueError('no file has been opened')
         return self._file_provider
 
-    def refresh_file(self, *args: Any, **kwargs: Any) -> None:
+    def refresh_file(self, *args: object, **kwargs: object) -> None:
         """ Closes the current file(s)/archive and reloads them. """
         real_path = self._window.imagehandler.get_real_path()
         if self.file_loaded and real_path is not None:
@@ -204,12 +204,18 @@ class FileHandler(object):
                 last_image_index = self._get_index_for_page(self._start_page,
                                                             len(image_files),
                                                             current_file)
-                if self._start_page or \
-                   prefs['stored dialog choices'].get('resume-from-last-read-page', False):
+                # A page the caller asked for, or a standing "yes" to
+                # the prompt below, opens the book where it was left.
+                # That standing answer is the response the prompt was
+                # last answered with, so it is compared against one
+                # rather than asked whether it is there at all.
+                remembered = prefs['stored dialog choices'].get(
+                    message_dialog.RememberedDialog.RESUME_FROM_LAST_READ_PAGE)
+                if self._start_page or remembered == Response.YES:
                     current_image_index = last_image_index
                 else:
-                    # Don't switch to last page yet; since we have not asked
-                    # the user for confirmation yet.
+                    # The front of the book: either the prompt has still
+                    # to be answered, or the standing answer is no.
                     current_image_index = 0
                 if last_image_index != current_image_index:
                     # Bump last page closer to the front of the extractor queue.
@@ -345,7 +351,8 @@ class FileHandler(object):
             self._condition = None
             raise
 
-    def _listed_contents(self, archive: Any, files: list[str]) -> None:
+    def _listed_contents(self, archive: archive_extractor.Extractor,
+                         files: list[str]) -> None:
 
         if not self.file_loading:
             return
@@ -435,8 +442,8 @@ class FileHandler(object):
         dialog = message_dialog.MessageDialog(
             self._window, modal=True, buttons=Gtk.ButtonsType.YES_NO)
         dialog.set_default_response(Response.YES)
-        dialog.set_should_remember_choice('resume-from-last-read-page',
-            (Response.YES, Response.NO))
+        dialog.set_should_remember_choice(
+            message_dialog.RememberedDialog.RESUME_FROM_LAST_READ_PAGE)
         dialog.set_text(
             (_('Continue reading from page %d?') % last_read_page),
             _('You stopped reading here on %(date)s, %(time)s. '
@@ -536,7 +543,7 @@ class FileHandler(object):
 
         return self._window.imagehandler.get_pretty_current_filename()
 
-    def _open_next_archive(self, *args: Any) -> bool:
+    def _open_next_archive(self, *args: object) -> bool:
         """Open the archive that comes directly after the currently loaded
         archive in that archive's directory listing, sorted alphabetically.
         Returns True if a new archive was opened, False otherwise.
@@ -558,7 +565,7 @@ class FileHandler(object):
 
         return False
 
-    def _open_previous_archive(self, *args: Any) -> bool:
+    def _open_previous_archive(self, *args: object) -> bool:
         """Open the archive that comes directly before the currently loaded
         archive in that archive's directory listing, sorted alphabetically.
         Returns True if a new archive was opened, False otherwise.
@@ -581,7 +588,7 @@ class FileHandler(object):
 
         return False
 
-    def open_next_directory(self, *args: Any) -> bool:
+    def open_next_directory(self, *args: object) -> bool:
         """ Opens the next sibling directory of the current file, as specified by
         file provider. Returns True if a new directory was opened and files found. """
 
@@ -609,7 +616,7 @@ class FileHandler(object):
         self._directory_listmode = listmode
         return True
 
-    def open_previous_directory(self, *args: Any) -> bool:
+    def open_previous_directory(self, *args: object) -> bool:
         """ Opens the previous sibling directory of the current file, as specified by
         file provider. Returns True if a new directory was opened and files found. """
 
@@ -666,7 +673,8 @@ class FileHandler(object):
         """
         pass
 
-    def _extracted_file(self, extractor: Any, name: str) -> None:
+    def _extracted_file(self, extractor: archive_extractor.Extractor,
+                        name: str) -> None:
         """ Called when the extractor finishes extracting the file at
         <name>. This name is relative to the temporary directory
         the files were extracted to. """
@@ -739,8 +747,13 @@ class FileHandler(object):
             with tools.atomic_write(constants.FILEINFO_PICKLE_PATH, binary=True) as config:
                 pickle.dump(current_file_info, config, pickle.HIGHEST_PROTOCOL)
 
-    def read_fileinfo_file(self) -> Any:
-        """Read last loaded file info from disk."""
+    def read_fileinfo_file(self) -> "tuple[str, int] | None":
+        """The file and page a "quit and save" left off at.
+
+        What the pickle holds is whatever was written to it, so the pair
+        is checked rather than trusted: a file of the wrong shape says
+        nothing about where to reopen.
+        """
 
         fileinfo = None
 
@@ -761,7 +774,11 @@ class FileHandler(object):
                     config.close()
                 os.remove(constants.FILEINFO_PICKLE_PATH)
 
-        return fileinfo
+        if not (isinstance(fileinfo, (list, tuple)) and len(fileinfo) == 2
+                and isinstance(fileinfo[0], str)
+                and isinstance(fileinfo[1], int)):
+            return None
+        return fileinfo[0], fileinfo[1]
 
     def update_last_read_page(self) -> None:
         """ Stores the currently viewed page. """

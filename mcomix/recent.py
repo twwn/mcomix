@@ -4,7 +4,7 @@ import urllib.request, urllib.parse, urllib.error
 from gi.repository import Gio, GLib, GObject, Gtk
 import os
 
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from mcomix import main
@@ -67,7 +67,7 @@ class RecentFilesMenu(object):
         self._manager.connect('changed', self._changed)
         self._rebuild()
 
-    def _changed(self, *args: Any) -> None:
+    def _changed(self, *args: object) -> None:
         self._rebuild()
 
     def _is_supported(self, info: Gtk.RecentInfo) -> bool:

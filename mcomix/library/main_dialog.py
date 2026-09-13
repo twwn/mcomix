@@ -16,7 +16,7 @@ from mcomix.library import add_progress_dialog as library_add_progress_dialog
 from mcomix.i18n import _
 
 from collections.abc import Sequence
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from mcomix import file_handler as file_handler_module
@@ -145,7 +145,7 @@ class _LibraryDialog(Gtk.Window):
         self._statusbar.set_text(
             ' ' * status.Statusbar.SPACING + '%s' % i18n.to_unicode(message))
 
-    def close(self, *args: Any) -> None:
+    def close(self, *args: object) -> None:
         """Close the library and do required cleanup tasks."""
         # Gtk.Window.get_size() is gone; a GTK4 window is a widget
         # with a width and a height of its own.
@@ -207,7 +207,7 @@ def open_dialog(action: Gio.SimpleAction, window: "main.MainWindow") -> None:
         _dialog.scan_for_new_files()
 
 
-def _close_dialog(*args: Any) -> None:
+def _close_dialog(*args: object) -> None:
     global _dialog
 
     if _dialog is not None:

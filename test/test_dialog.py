@@ -198,15 +198,24 @@ class MessageDialogTest(MComixTest):
 
     # -- Answers the reader asked not to be asked for again ---------------
 
-    def _remembering(self, dialog_id='a-dialog'):
-        """A dialog offering to remember an OK, as the ones that delete
-        something do."""
+    #: A prompt whose only remembered answer is an OK, as the ones that
+    #: delete something are.
+    _PROMPT = message_dialog.RememberedDialog.DELETE_OPENED_FILE
+
+    def _remembering(self):
+        """A dialog offering to remember an OK.
+
+        Which answers the tick keeps is not the dialog's to say: it
+        comes from what message_dialog.REMEMBERED_DIALOGS records about
+        the prompt, so that nothing can be answered for good without the
+        preferences dialog being able to list it.
+        """
         built = self._build(buttons=Gtk.ButtonsType.OK_CANCEL)
-        built.set_should_remember_choice(dialog_id, (Response.OK,))
+        built.set_should_remember_choice(self._PROMPT)
         return built
 
     def test_an_answer_that_was_remembered_is_given_without_asking(self):
-        prefs['stored dialog choices']['a-dialog'] = int(Response.OK)
+        prefs['stored dialog choices'][self._PROMPT] = int(Response.OK)
         built = self._remembering()
         answers = []
         built.run_async(answers.append)
@@ -217,7 +226,7 @@ class MessageDialogTest(MComixTest):
     def test_clearing_the_choices_makes_it_ask_again(self):
         """Emptying the dictionary is what the preferences dialog's
         "Clear dialog choices" does, and it is the only way back."""
-        prefs['stored dialog choices']['a-dialog'] = int(Response.OK)
+        prefs['stored dialog choices'][self._PROMPT] = int(Response.OK)
         prefs['stored dialog choices'] = {}
         built = self._remembering()
         built.run_async(lambda response: None)
@@ -241,7 +250,7 @@ class MessageDialogTest(MComixTest):
         built.remember_checkbox.set_active(True)
         built.response(Response.OK)
         pump()
-        self.assertEqual({'a-dialog': int(Response.OK)},
+        self.assertEqual({self._PROMPT: int(Response.OK)},
                          prefs['stored dialog choices'])
 
     def test_nothing_is_remembered_without_the_tick(self):

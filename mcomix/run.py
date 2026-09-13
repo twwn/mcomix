@@ -3,8 +3,8 @@ import argparse
 import os
 import signal
 import sys
+import types
 
-from typing import Any
 
 if __name__ == '__main__':
     print('PROGRAM TERMINATED', file=sys.stderr)
@@ -223,7 +223,7 @@ def run() -> None:
         # Add a SIGCHLD handler to reap zombie processes. Signals coalesce,
         # so one delivery can stand for several children having exited;
         # reap until there is nothing left to collect.
-        def on_sigchld(signum: int, frame: Any) -> None:
+        def on_sigchld(signum: int, frame: "types.FrameType | None") -> None:
             try:
                 while os.waitpid(-1, os.WNOHANG)[0] != 0:
                     pass

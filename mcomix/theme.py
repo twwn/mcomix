@@ -259,7 +259,7 @@ def _state_colours(colours: dict[str, str],
         display, _stated, Gtk.STYLE_PROVIDER_PRIORITY_USER + 1)
 
 
-def _style_manager() -> Any:
+def _style_manager() -> Any:  # type: ignore[explicit-any]  # libadwaita is optional, so there is no Adw to name
     """libadwaita's, where libadwaita is running.
 
     Any, because libadwaita is optional: there is no Adw to name in an

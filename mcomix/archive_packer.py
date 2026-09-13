@@ -3,7 +3,7 @@
 import os
 import zipfile
 import threading
-from collections.abc import Sequence
+from collections.abc import Iterator, Sequence
 
 from mcomix import log
 from mcomix.i18n import _
@@ -54,66 +54,57 @@ class Packer:
 
         return self._packing_successful
 
+    def _files_to_pack(self) -> "Iterator[tuple[str, str, int]]":
+        """Every file to write, as (path, name in the archive, method).
+
+        The pages come first, numbered so that their names sort the way
+        they were given; a file that came with them keeps its own name
+        unless one of the pages has already taken it.  A page is stored
+        rather than deflated, being a compressed image already.
+        """
+        digits = len(str(len(self._image_files)))
+        taken = set()
+
+        for number, path in enumerate(self._image_files, start=1):
+            extension = os.path.splitext(path)[1]
+            name = f'{number:0{digits}d} - {self._base_name}{extension}'
+            taken.add(name)
+            yield path, name, zipfile.ZIP_STORED
+
+        for path in self._other_files:
+            name = os.path.basename(path)
+            while name in taken:
+                name = '_%s' % name
+            taken.add(name)
+            yield path, name, zipfile.ZIP_DEFLATED
+
     def _thread_pack(self) -> None:
         try:
-            zfile = zipfile.ZipFile(self._archive_path, 'w')
+            archive = zipfile.ZipFile(self._archive_path, 'w')
         except Exception:
             log.error(_('! Could not create archive at path "%s"'),
                       self._archive_path)
             return
 
-        used_names = []
-        pattern = '%%0%dd - %s%%s' % (len(str(len(self._image_files))),
-            self._base_name)
-
-        for i, path in enumerate(self._image_files):
-            filename = pattern % (i + 1, os.path.splitext(path)[1])
-
-            try:
-                zfile.write(path, filename, zipfile.ZIP_STORED)
-            except Exception:
-                log.error(_('! Could not add file %(sourcefile)s '
-                            'to archive %(archivefile)s, aborting...'),
-                          { "sourcefile" : path,
-                            "archivefile" : self._archive_path})
-
-                zfile.close()
-
+        with archive:
+            for path, name, compression in self._files_to_pack():
                 try:
-                    os.remove(self._archive_path)
-                except:
-                    pass
+                    archive.write(path, name, compression)
+                except Exception:
+                    log.error(_('! Could not add file %(sourcefile)s '
+                                'to archive %(archivefile)s, aborting...'),
+                              { "sourcefile" : path,
+                                "archivefile" : self._archive_path})
+                    break
+            else:
+                self._packing_successful = True
 
-                return
-
-            used_names.append(filename)
-
-        for path in self._other_files:
-            filename = os.path.basename(path)
-
-            while filename in used_names:
-                filename = '_%s' % filename
-
+        if not self._packing_successful:
+            # Half an archive is worse than none: the caller renames
+            # whatever is there over the file being edited.
             try:
-                zfile.write(path, filename, zipfile.ZIP_DEFLATED)
-            except Exception:
-                log.error(_('! Could not add file %(sourcefile)s '
-                            'to archive %(archivefile)s, aborting...'),
-                          { "sourcefile" : path,
-                            "archivefile" : self._archive_path})
-
-                zfile.close()
-
-                try:
-                    os.remove(self._archive_path)
-                except:
-                    pass
-
-                return
-
-            used_names.append(filename)
-
-        zfile.close()
-        self._packing_successful = True
+                os.remove(self._archive_path)
+            except OSError:
+                pass
 
 # vim: expandtab:sw=4:ts=4

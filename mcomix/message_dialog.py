@@ -11,8 +11,9 @@ from mcomix.preferences import prefs
 from mcomix.i18n import _
 from mcomix.dialog import Response
 
-from collections.abc import Callable, Sequence
-from typing import Any
+from collections.abc import Callable
+from enum import StrEnum
+from typing import NamedTuple
 
 #: What each Gtk.ButtonsType asks for, as label and response. There is
 #: no Gtk.MessageDialog to build them any more, and Gtk.AlertDialog -
@@ -27,6 +28,57 @@ _BUTTONS = {
                              (_('_Yes'), Response.YES)),
     Gtk.ButtonsType.OK_CANCEL: ((_('_Cancel'), Response.CANCEL),
                                 (_('_OK'), Response.OK)),
+}
+
+
+class RememberedDialog(StrEnum):
+
+    """A prompt that offers to be answered once and for all.
+
+    A member is the key its answer is stored under in
+    ``prefs['stored dialog choices']``, so the answer written by a
+    dialog and the answer read back out of the preferences file are
+    found under the same string.
+    """
+
+    RESUME_FROM_LAST_READ_PAGE = 'resume-from-last-read-page'
+    DELETE_OPENED_FILE = 'delete-opened-file'
+    REPLACE_EXISTING_BOOKMARK = 'replace-existing-bookmark'
+    LIBRARY_REMOVE_BOOK_FROM_DISK = 'library-remove-book-from-disk'
+
+
+class _Prompt(NamedTuple):
+
+    """What a remembered prompt is called, and what it can be told."""
+
+    #: What the prompt asks about, as the preferences dialog lists it.
+    label: str
+    #: The answers that can be remembered, as label and response.  An
+    #: answer that is not here is one the dialog keeps asking for: a
+    #: remembered Cancel would be a prompt that can never say yes again.
+    answers: "tuple[tuple[str, int], ...]"
+
+
+#: Every prompt with a "Do not ask again" tick.  The dialogs take their
+#: answers from here rather than naming them at each call site, and the
+#: preferences dialog lists what is in here, so a prompt that is added
+#: without an entry cannot be answered for good and one that is added
+#: with one needs nothing else to be taken back.
+REMEMBERED_DIALOGS = {
+    RememberedDialog.RESUME_FROM_LAST_READ_PAGE: _Prompt(
+        _('Opening a book that was left part-read:'),
+        ((_('Continue from the last read page'), Response.YES),
+         (_('Start at the first page'), Response.NO))),
+    RememberedDialog.DELETE_OPENED_FILE: _Prompt(
+        _('Deleting the opened file:'),
+        ((_('Delete it'), Response.OK),)),
+    RememberedDialog.REPLACE_EXISTING_BOOKMARK: _Prompt(
+        _('Bookmarking a page that is bookmarked already:'),
+        ((_('Replace the existing bookmark'), Response.YES),
+         (_('Keep both bookmarks'), Response.NO))),
+    RememberedDialog.LIBRARY_REMOVE_BOOK_FROM_DISK: _Prompt(
+        _('Deleting books that are removed from the library:'),
+        ((_('Delete them'), Response.YES),)),
 }
 
 
@@ -76,7 +128,7 @@ class MessageDialog(Dialog):
             self.add_button(label, response)
 
         #: Unique dialog identifier (for storing 'Do not ask again')
-        self.dialog_id: str | None = None
+        self.dialog_id: "RememberedDialog | None" = None
         #: List of response IDs that should be remembered
         self.choices: list[int] = []
         #: Automatically destroy dialog after run?
@@ -105,15 +157,16 @@ class MessageDialog(Dialog):
         """ Returns True when the dialog choice should be remembered. """
         return self.remember_checkbox.get_active()
 
-    def set_should_remember_choice(self, dialog_id: str,
-                                   choices: "Sequence[int]") -> None:
-        """ This method enables the 'Do not ask again' checkbox.
-        @param dialog_id: Unique identifier for the dialog (a string).
-        @param choices: List of response IDs that should be remembered
+    def set_should_remember_choice(self, dialog_id: RememberedDialog) -> None:
+        """ Show the 'Do not ask again' checkbox, for the prompt <dialog_id>.
+
+        Which answers the tick keeps is what REMEMBERED_DIALOGS says
+        about that prompt.
         """
         self.remember_checkbox.set_visible(True)
         self.dialog_id = dialog_id
-        self.choices = [int(choice) for choice in choices]
+        self.choices = [response for _label, response
+                        in REMEMBERED_DIALOGS[dialog_id].answers]
 
     def set_auto_destroy(self, auto_destroy: bool) -> None:
         """ Determines if the dialog should automatically destroy itself
@@ -143,8 +196,9 @@ class MessageDialog(Dialog):
             GLib.idle_add(deliver_remembered)
             return
 
-        def responded(dialog: Any, response: int) -> None:
-            if self.should_remember_choice() and int(response) in self.choices:
+        def responded(dialog: "MessageDialog", response: int) -> None:
+            if (self.dialog_id is not None and self.should_remember_choice()
+                    and int(response) in self.choices):
                 prefs['stored dialog choices'][self.dialog_id] = int(response)
                 # The preference is the dictionary, which is the same
                 # dictionary it was: only the answer in it is new.

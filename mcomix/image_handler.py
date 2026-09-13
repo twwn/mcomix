@@ -16,7 +16,7 @@ from mcomix import log
 from mcomix.worker_thread import WorkerThread
 
 from collections.abc import Iterable, Sequence
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     # main imports this module, so the window it is handed can only be
@@ -71,7 +71,7 @@ class ImageHandler(object):
         though the preferences dialog writes the new value and asks the
         handler to cache again in the same breath.
         """
-        return cast(int, prefs['max pages to cache'])
+        return prefs['max pages to cache']
 
     def _get_pixbuf(self, index: int) -> GdkPixbuf.Pixbuf:
         """Return the pixbuf indexed by <index> from cache.

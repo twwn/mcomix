@@ -25,7 +25,7 @@ class ThumbnailItem(GObject.Object):
 
     thumbnail = GObject.Property(type=Gdk.Texture)
 
-    def __init__(self, uid: Any, label: str = '', tooltip: str = '') -> None:
+    def __init__(self, uid: Any, label: str = '', tooltip: str = '') -> None:  # type: ignore[explicit-any]  # the view does not care what a uid is
         super(ThumbnailItem, self).__init__()
         self.uid = uid
         #: What the view writes beside or under the thumbnail.
@@ -98,7 +98,7 @@ class _ThumbnailViewBase(object):
 
     def _init_thumbnails(self) -> None:
         #: Replaced by whoever knows how to make a thumbnail for a uid.
-        self.generate_thumbnail: Callable[[Any], GdkPixbuf.Pixbuf | None] | None = None
+        self.generate_thumbnail: "Callable[..., GdkPixbuf.Pixbuf | None] | None" = None  # type: ignore[explicit-any]  # the view does not care what a uid is
         #: The size a thumbnail is drawn at, and whether the label is
         #: drawn with it.  A cover is taller than it is wide, so the two
         #: are kept apart.

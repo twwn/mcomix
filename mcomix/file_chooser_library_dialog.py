@@ -6,7 +6,7 @@ from mcomix import file_chooser_base_dialog
 from mcomix.i18n import _
 from mcomix.dialog import Response
 
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from mcomix.library import main_dialog
@@ -56,13 +56,13 @@ class _LibraryFileChooserDialog(file_chooser_base_dialog._BaseFileChooserDialog)
 
     def files_chosen(self, paths: list[str]) -> None:
         if paths:
-            try: # For some reason this fails sometimes (GTK+ bug?)
-                filter_index = self.list_filters().index(
-                    self.filechooser.get_filter())
-                prefs['last filter in library filechooser'] = filter_index
-
-            except Exception:
-                pass
+            # There is nothing to remember while the chooser is showing
+            # everything, which is what it does with no filter set.
+            chosen = self.filechooser.get_filter()
+            filters = self.list_filters()
+            if chosen in filters:
+                prefs['last filter in library filechooser'] = \
+                    filters.index(chosen)
 
             close_library_filechooser_dialog()
             self._library.add_books(paths, None)
@@ -80,7 +80,7 @@ def open_library_filechooser_dialog(
     else:
         _library_filechooser_dialog.present()
 
-def close_library_filechooser_dialog(*args: Any) -> None:
+def close_library_filechooser_dialog(*args: object) -> None:
     """Close the library filechooser dialog."""
     global _library_filechooser_dialog
 

@@ -11,7 +11,7 @@ from mcomix.preferences import prefs
 from mcomix.i18n import _
 from mcomix.dialog import Response
 
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from mcomix.library import main_dialog
@@ -154,7 +154,7 @@ class WatchListDialog(Dialog):
 
         self._changed = True
 
-    def _add_cb(self, button: Gtk.Button, *args: Any) -> None:
+    def _add_cb(self, button: Gtk.Button, *args: object) -> None:
         """ Called when a new watch list entry should be added. """
         # Gtk.FileChooserDialog is deprecated as of GTK 4.10; a
         # Gtk.FileDialog answers in a callback with the folder that was
@@ -179,7 +179,7 @@ class WatchListDialog(Dialog):
 
             self._changed = True
 
-    def _remove_cb(self, button: Gtk.Button, *args: Any) -> None:
+    def _remove_cb(self, button: Gtk.Button, *args: object) -> None:
         """ Called when a watch list entry should be removed. """
         row = self._list.get_selected_row()
         if row is None:
@@ -191,19 +191,19 @@ class WatchListDialog(Dialog):
             self._list.remove_row(row)
 
     def _item_selected_cb(self, selection: Gtk.SelectionModel,
-                          *args: Any) -> None:
+                          *args: object) -> None:
         """ Called when an item is selected. Enables or disables the "Remove"
         button. """
         self._remove_button.set_sensitive(
             bool(self._list.get_selected_positions()))
 
     def _auto_scan_toggled_cb(self, checkbox: Gtk.CheckButton,
-                              *args: Any) -> None:
+                              *args: object) -> None:
         """ Toggles automatic library book scanning. """
         prefs['scan for new books on library startup'] = checkbox.get_active()
 
     def _close_cb(self, dialog: Dialog, response: int,
-                  *args: Any) -> None:
+                  *args: object) -> None:
         """ Trigger scan for new files after watch dialog closes. """
         self.destroy()
         if response == Response.CLOSE and self._changed:

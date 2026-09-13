@@ -13,7 +13,7 @@ from mcomix import widgets
 from mcomix.i18n import _
 
 from collections.abc import Sequence
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from mcomix.library import main_dialog
@@ -157,7 +157,7 @@ class _ControlArea(Gtk.Box):
         else:
             self._dirlabel.set_text('')
 
-    def _filter_books(self, entry: Gtk.Entry, *args: Any) -> None:
+    def _filter_books(self, entry: Gtk.Entry, *args: object) -> None:
         """Display only the books in the current collection whose paths
         contain the string in the Gtk.Entry. The string is not
         case-sensitive.

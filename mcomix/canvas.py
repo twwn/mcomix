@@ -1,7 +1,6 @@
 """canvas.py - The scrolling area the pages are laid out on."""
 
 from collections.abc import Callable
-from typing import Any
 
 from gi.repository import Gdk, GLib, GObject, Graphene, Gtk
 
@@ -30,8 +29,8 @@ class PageCanvas(Gtk.Widget):
 
     def __init__(self) -> None:
         super(PageCanvas, self).__init__()
-        #: Children, as [widget, x, y] in the canvas' own coordinates.
-        self._children: list[list[Any]] = []
+        #: Children, as (widget, x, y) in the canvas' own coordinates.
+        self._children: "list[tuple[Gtk.Widget, int, int]]" = []
         #: The size of the canvas, which is what the pages need rather
         #: than what is on screen.
         self._size = (0, 0)
@@ -81,16 +80,16 @@ class PageCanvas(Gtk.Widget):
 
     def put(self, child: Gtk.Widget, x: int, y: int) -> None:
         """Place <child> on the canvas at (<x>, <y>)."""
-        self._children.append([child, x, y])
+        self._children.append((child, x, y))
         child.set_parent(self)
         self.queue_allocate()
 
     def move(self, child: Gtk.Widget, x: int, y: int) -> None:
         """Move <child>, already on the canvas, to (<x>, <y>)."""
-        for entry in self._children:
-            if entry[0] is child:
-                if (entry[1], entry[2]) != (x, y):
-                    entry[1], entry[2] = x, y
+        for index, (widget, at_x, at_y) in enumerate(self._children):
+            if widget is child:
+                if (at_x, at_y) != (x, y):
+                    self._children[index] = (child, x, y)
                     self.queue_allocate()
                 return
         raise ValueError('%r is not on the canvas' % (child,))

@@ -4,7 +4,7 @@ import os
 import subprocess
 import sys
 from collections.abc import Callable, Iterable, Sequence
-from typing import IO, Any
+from typing import IO
 
 from mcomix import i18n
 
@@ -15,7 +15,7 @@ STDOUT = subprocess.STDOUT
 
 # What subprocess accepts for a standard stream: one of the constants
 # above, an open file, or None to inherit the caller's stream.
-Redirect = int | IO[Any] | None
+type Redirect = int | IO[bytes] | None
 
 
 def _get_creationflags() -> int:

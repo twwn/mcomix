@@ -10,6 +10,8 @@ from . import MComixTest, get_testfile_path, pump, wait_for
 from mcomix import constants
 from mcomix import icons
 from mcomix import main
+from mcomix.dialog import Response
+from mcomix.preferences import prefs
 
 
 class DirectoryWalkTest(MComixTest):
@@ -101,6 +103,61 @@ class DirectoryWalkTest(MComixTest):
         self._open(os.path.join(self.root, 'b'))
         self.handler.open_next_directory()
         self.assertEqual(image, self._opened_file())
+
+
+class RememberedResumeAnswerTest(MComixTest):
+
+    """Opening a book the reader has stopped in before.
+
+    MComix offers to carry on where they left off, and the prompt can be
+    answered once and for all.  A standing "yes" resumes without asking;
+    a standing "no" opens at the front, also without asking.
+    """
+
+    def setUp(self):
+        super(RememberedResumeAnswerTest, self).setUp()
+        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
+                          constants.THUMBNAIL_PATH):
+            os.makedirs(directory, exist_ok=True)
+        self.archive = os.path.join(self.tmp_dir, '01-ZIP-Normal.zip')
+        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'),
+                    self.archive)
+        icons.load_icons()
+        self.window = main.MainWindow()
+        main.set_main_window(self.window)
+        self.handler = self.window.filehandler
+        self.handler.last_read_page.set_enabled(True)
+        self.handler.last_read_page.set_page(self.archive, 3)
+        pump()
+
+    def tearDown(self):
+        self.window.terminate_program()
+        self.window.destroy()
+        main.set_main_window(None)
+        pump()
+        super(RememberedResumeAnswerTest, self).tearDown()
+
+    def _open_and_settle(self):
+        self.handler.open_file(self.archive)
+        wait_for(lambda: self.handler.file_loaded and
+                 self.window.imagehandler.get_number_of_pages() > 0)
+        # The answer, remembered or not, arrives from the main loop.
+        for _round in range(10):
+            pump()
+        return self.window.imagehandler.get_current_page()
+
+    def test_a_standing_yes_opens_the_book_where_it_was_left(self):
+        prefs['stored dialog choices']['resume-from-last-read-page'] = \
+            int(Response.YES)
+        self.assertEqual(3, self._open_and_settle())
+
+    def test_a_standing_no_opens_the_book_at_the_front(self):
+        # Both answers are stored as their response number, and both of
+        # those are negative, so asking whether one is there at all took
+        # "no" for a "yes" and resumed anyway.
+        prefs['stored dialog choices']['resume-from-last-read-page'] = \
+            int(Response.NO)
+        self.assertEqual(1, self._open_and_settle())
 
 
 class BeforeAPageIsChosenTest(MComixTest):

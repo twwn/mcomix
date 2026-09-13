@@ -17,6 +17,7 @@ from gi.repository import Gtk
 from . import MComixTest, pump
 
 from mcomix import constants
+from mcomix import message_dialog
 from mcomix.library import backend
 from mcomix.library import collection_area
 from mcomix.preferences import prefs
@@ -165,6 +166,46 @@ class CollectionAreaTest(MComixTest):
         self.area._list.select_row(self._row_for(self.comics))
         self.area._duplicate_collection(None)
         self.assertEqual(len(self._shown()), before + 1)
+
+    # -- The right-click menu ---------------------------------------------
+
+    def _activate(self, name):
+        """Run one of the popup menu's items the way Gio runs it.
+
+        Gio hands an activate handler both the action and the parameter
+        it was activated with, so a handler that takes only the action
+        raises TypeError - which GObject prints and swallows, leaving
+        the menu item doing nothing at all.
+        """
+        self.area._popup_actions.lookup_action(name).activate(None)
+        pump()
+
+    def test_the_menu_item_removes_the_selected_collection(self):
+        self.area._list.select_row(self._row_for(self.manga))
+        self._activate('remove')
+        self.assertNotIn(self.manga, self._shown())
+
+    def test_the_menu_item_duplicates_the_selected_collection(self):
+        before = len(self._shown())
+        self.area._list.select_row(self._row_for(self.comics))
+        self._activate('duplicate')
+        self.assertEqual(len(self._shown()), before + 1)
+
+    def test_the_menu_item_asks_what_to_rename_the_collection_to(self):
+        self.area._list.select_row(self._row_for(self.manga))
+        before = set(Gtk.Window.list_toplevels())
+        self._activate('rename')
+        opened = [window for window in
+                  set(Gtk.Window.list_toplevels()) - before
+                  if isinstance(window, message_dialog.MessageDialog)]
+        try:
+            self.assertEqual(1, len(opened))
+        finally:
+            # A dialog left standing is answered by whichever test next
+            # goes looking for one.
+            for dialog in opened:
+                dialog.destroy()
+            pump()
 
     # -- Where a drop lands -----------------------------------------------
 

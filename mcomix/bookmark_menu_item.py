@@ -1,7 +1,7 @@
 """bookmark_menu_item.py - A single bookmark item."""
 
 import datetime
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from mcomix import column_list
 from mcomix import i18n
@@ -48,7 +48,7 @@ class _Bookmark:
     def __str__(self) -> str:
         return '%s, (%d / %d)' % (self._name, self._page, self._numpages)
 
-    def load(self, *args: Any) -> None:
+    def load(self, *args: object) -> None:
         """Open the file and page the bookmark represents."""
 
         if self._file_handler is None or self._window is None:

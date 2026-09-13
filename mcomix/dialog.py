@@ -62,7 +62,10 @@ class Dialog(Gtk.Window):
     #: file chooser beside the "save page as" one, say.
     _CSS_CLASS = 'dialog'
 
-    def __init__(self, **kwargs: Any) -> None:
+    # Any, because these go straight on to Gtk.Window's constructor,
+    # which takes a value of the property's own type for each of the
+    # hundred-odd properties a window has.
+    def __init__(self, **kwargs: Any) -> None:  # type: ignore[explicit-any]  # straight on to Gtk.Window's own typed properties
         super(Dialog, self).__init__(**kwargs)
         self.add_css_class(self._CSS_CLASS)
         self._content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL,
@@ -102,10 +105,14 @@ class Dialog(Gtk.Window):
         self._response_buttons[response] = button
         return button
 
-    def add_buttons(self, *args: Any) -> None:
+    def add_buttons(self, *args: "str | int") -> None:
         """Add several buttons, as label and response in turn."""
         for index in range(0, len(args) - 1, 2):
-            self.add_button(args[index], args[index + 1])
+            label, response = args[index], args[index + 1]
+            # The arguments come in pairs, which a variadic cannot say:
+            # to the checker every one of them is a label or a response.
+            assert isinstance(label, str) and isinstance(response, int)
+            self.add_button(label, response)
 
     def add_action_widget(self, widget: Gtk.Widget, response: int) -> None:
         """Put <widget> in the button row, answering with <response>.
@@ -144,13 +151,13 @@ class Dialog(Gtk.Window):
 
     # -- Where the answers come from --------------------------------------
 
-    def _closed(self, *args: Any) -> bool:
+    def _closed(self, *args: object) -> bool:
         self.emit('response', Response.DELETE_EVENT)
         # False: the window goes on closing, which is what a Gtk.Dialog
         # did with its delete event.
         return False
 
-    def _escaped(self, *args: Any) -> bool:
+    def _escaped(self, *args: object) -> bool:
         # DELETE_EVENT, not CANCEL: escape closed a Gtk.Dialog, which
         # answered with the response its delete event did, and that is
         # what MComix' dialogs are written against - the enhancement

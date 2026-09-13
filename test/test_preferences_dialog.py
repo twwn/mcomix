@@ -18,7 +18,9 @@ from . import MComixTest, pump
 from mcomix import constants
 from mcomix import icons
 from mcomix import main
+from mcomix import message_dialog
 from mcomix import preferences_dialog
+from mcomix.dialog import Response
 from mcomix.preferences import prefs
 
 
@@ -174,11 +176,67 @@ class PreferencesDialogTest(MComixTest):
 
     # -- Taking back a "Do not ask again" ----------------------------------
 
+    _DELETE = message_dialog.RememberedDialog.DELETE_OPENED_FILE
+    _REMOVE = message_dialog.RememberedDialog.LIBRARY_REMOVE_BOOK_FROM_DISK
+    _RESUME = message_dialog.RememberedDialog.RESUME_FROM_LAST_READ_PAGE
+
+    def _choosers(self):
+        """What each prompt is answered with, by the prompt.
+
+        The Behaviour tab builds one chooser per entry of
+        message_dialog.REMEMBERED_DIALOGS, in that order.
+        """
+        return dict(zip(message_dialog.REMEMBERED_DIALOGS,
+                        self._open()._remembered_answers))
+
+    def test_every_prompt_that_can_be_answered_for_good_is_listed(self):
+        """A prompt with nowhere to take its answer back can only be
+        cleared along with every other one."""
+        choosers = self._choosers()
+        self.assertEqual(list(message_dialog.REMEMBERED_DIALOGS),
+                         list(choosers))
+        for prompt, chooser in choosers.items():
+            self.assertIsNotNone(chooser.get_parent(),
+                                 '%s is on no page' % prompt)
+
+    def test_a_prompt_that_was_never_answered_asks_every_time(self):
+        for prompt, chooser in self._choosers().items():
+            self.assertIsNone(chooser.get_value(), prompt)
+
+    def test_it_shows_the_answer_that_is_stored(self):
+        prefs['stored dialog choices'][self._DELETE] = int(Response.OK)
+        self.assertEqual(int(Response.OK),
+                         self._choosers()[self._DELETE].get_value())
+
+    def test_one_answer_can_be_taken_back_on_its_own(self):
+        prefs['stored dialog choices'][self._DELETE] = int(Response.OK)
+        prefs['stored dialog choices'][self._REMOVE] = int(Response.YES)
+        self._choosers()[self._DELETE].set_value(None)
+        pump()
+        self.assertEqual({self._REMOVE: int(Response.YES)},
+                         prefs['stored dialog choices'])
+
+    def test_an_answer_can_be_given_here_rather_than_at_the_prompt(self):
+        """Picking one is the "Do not ask again" tick, without waiting
+        for the prompt to come up."""
+        self._choosers()[self._RESUME].set_value(int(Response.NO))
+        pump()
+        self.assertEqual({self._RESUME: int(Response.NO)},
+                         prefs['stored dialog choices'])
+        self.assertTrue(self.dialog.reset_button.get_sensitive())
+
+    def test_clearing_them_all_puts_every_chooser_back_to_asking(self):
+        prefs['stored dialog choices'][self._DELETE] = int(Response.OK)
+        choosers = self._choosers()
+        self.dialog.response(constants.RESPONSE_REVERT_TO_DEFAULT)
+        pump()
+        self.assertIsNone(choosers[self._DELETE].get_value())
+
     def test_the_reset_button_offers_to_clear_the_dialog_choices(self):
         """It is the only way back from a "Do not ask again" tick, and
         the button it lives on says something else on the Shortcuts
         tab."""
-        prefs['stored dialog choices']['delete-opend-file'] = 1
+        prefs['stored dialog choices'][self._DELETE] = int(Response.OK)
         self._open()
         self.assertEqual('Clear _dialog choices',
                          self.dialog.reset_button.get_label())
@@ -189,8 +247,8 @@ class PreferencesDialogTest(MComixTest):
         self.assertFalse(self.dialog.reset_button.get_sensitive())
 
     def test_pressing_it_forgets_the_answers_and_says_so(self):
-        prefs['stored dialog choices']['delete-opend-file'] = 1
-        prefs['stored dialog choices']['library-remove-book-from-disk'] = 1
+        prefs['stored dialog choices'][self._DELETE] = int(Response.OK)
+        prefs['stored dialog choices'][self._REMOVE] = int(Response.YES)
         self._open()
         self.dialog.response(constants.RESPONSE_REVERT_TO_DEFAULT)
         pump()
@@ -200,13 +258,13 @@ class PreferencesDialogTest(MComixTest):
     def test_the_shortcuts_tab_offers_the_keys_instead(self):
         """The same button resets the keyboard shortcuts there, so a
         test of one has to know which tab it is on."""
-        prefs['stored dialog choices']['delete-opend-file'] = 1
+        prefs['stored dialog choices'][self._DELETE] = int(Response.OK)
         self._open()
         shortcuts = self.dialog.notebook.page_num(self.dialog.shortcuts)
         self.dialog.notebook.set_current_page(shortcuts)
         pump()
         self.assertEqual('_Reset keys', self.dialog.reset_button.get_label())
-        self.assertEqual({'delete-opend-file': 1},
+        self.assertEqual({self._DELETE: int(Response.OK)},
                          prefs['stored dialog choices'])
 
 # vim: expandtab:sw=4:ts=4

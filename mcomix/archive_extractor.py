@@ -13,8 +13,7 @@ from mcomix.preferences import prefs
 from mcomix.worker_thread import WorkerThread
 from mcomix.i18n import _
 
-from collections.abc import Callable, Iterable, Sequence
-from typing import Any
+from collections.abc import Iterable, Sequence
 
 
 class Extractor(object):
@@ -46,8 +45,8 @@ class Extractor(object):
         self._contents_listed: bool
         self._extract_started: bool
         self._condition: threading.Condition
-        self._list_thread: "WorkerThread[Any]"
-        self._extract_thread: "WorkerThread[Any]"
+        self._list_thread: "WorkerThread[archive_base.BaseArchive]"
+        self._extract_thread: "WorkerThread[str | list[str]]"
 
     @property
     def _opened_archive(self) -> archive_base.BaseArchive:
@@ -157,16 +156,7 @@ class Extractor(object):
                     max_threads = prefs['max extract threads']
                 else:
                     max_threads = 1
-                # A solid archive is extracted a batch at a time and any
-                # other one file by file, so the worker is handed either a
-                # list of names or a single name, and its order is passed
-                # straight through to whichever of the two takes it.
-                fn: Callable[[Any], None]
-                if self._opened_archive.is_solid():
-                    fn = self._extract_all_files
-                else:
-                    fn = self._extract_file
-                self._extract_thread = WorkerThread(fn,
+                self._extract_thread = WorkerThread(self._extract_order,
                                                     name='extract',
                                                     max_threads=max_threads,
                                                     unique_orders=True)
@@ -205,6 +195,18 @@ class Extractor(object):
             self._extracted.add(name)
             self._condition.notify_all()
         self.file_extracted(self, name)
+
+    def _extract_order(self, order: "str | list[str]") -> None:
+        """Extract what one order names.
+
+        A solid archive is extracted a batch at a time and any other one
+        file at a time, so an order is either a list of names or a
+        single name.
+        """
+        if isinstance(order, list):
+            self._extract_all_files(order)
+        else:
+            self._extract_file(order)
 
     def _extract_all_files(self, files: Sequence[str]) -> None:
 

@@ -1,7 +1,7 @@
 """edit_image_area.py - The area of the editing archive window that displays images."""
 
 import os
-from gi.repository import Gdk, Gio, Gtk
+from gi.repository import Gdk, GdkPixbuf, Gio, Gtk
 
 from mcomix import widgets
 from mcomix import image_tools
@@ -11,7 +11,7 @@ from mcomix import thumbnail_list
 from mcomix import thumbnail_tools
 from mcomix.i18n import _
 
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from mcomix import edit_dialog as edit_dialog_module
@@ -57,7 +57,7 @@ class _ImageArea(Gtk.ScrolledWindow):
 
         self._popup_menu = self._create_popup_menu()
 
-    def _create_popup_menu(self) -> Any:
+    def _create_popup_menu(self) -> Gtk.PopoverMenu:
         """Build the right-click menu for the page list."""
         actions = Gio.SimpleActionGroup()
         remove = Gio.SimpleAction.new('remove', None)
@@ -87,7 +87,7 @@ class _ImageArea(Gtk.ScrolledWindow):
         name = i18n.to_unicode(os.path.basename(path))
         return thumbnail_list.ThumbnailItem(path, tooltip=name)
 
-    def _generate_thumbnail(self, uid: str) -> Any:
+    def _generate_thumbnail(self, uid: str) -> "GdkPixbuf.Pixbuf | None":
         assert isinstance(uid, str)
         path = uid
         try:
@@ -114,7 +114,7 @@ class _ImageArea(Gtk.ScrolledWindow):
         """Return a list with the full paths to all the images, in order."""
         return [item.uid for item in self._grid.each_item()]
 
-    def _remove_pages(self, *args: Any) -> None:
+    def _remove_pages(self, *args: object) -> None:
         """Remove the currently selected pages from the list."""
         self._grid.remove_positions(self._grid.get_selected_positions())
 

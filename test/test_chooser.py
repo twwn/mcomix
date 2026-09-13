@@ -8,8 +8,6 @@ by every one of the twelve callbacks that read it. What those callbacks
 need is the value, so that is what it answers with.
 """
 
-from gi.repository import Gtk
-
 from . import MComixTest
 
 from mcomix import widgets
@@ -39,10 +37,12 @@ class ChooserTest(MComixTest):
         chooser = widgets.Chooser(self.OPTIONS, 99)
         self.assertEqual(chooser.get_selected(), 0)
 
-    def test_with_nothing_to_offer_there_is_no_value(self):
-        chooser = widgets.Chooser(())
-        self.assertIsNone(chooser.get_value())
-        self.assertEqual(chooser.get_selected(), Gtk.INVALID_LIST_POSITION)
+    def test_a_chooser_with_nothing_to_offer_is_refused(self):
+        # A dropdown showing none of its options is a blank box the user
+        # cannot do anything with, and every chooser in MComix is built
+        # from a fixed list.  Refusing the empty one is what lets
+        # get_value() always have an answer.
+        self.assertRaises(ValueError, widgets.Chooser, ())
 
     def test_picking_a_position_answers_with_its_value(self):
         self.chooser.set_selected(2)

@@ -3,6 +3,7 @@
 import os
 import datetime
 
+from collections.abc import Sequence
 from typing import Any, TYPE_CHECKING
 
 from mcomix import archive_tools
@@ -37,7 +38,7 @@ class _LibraryBackend(object):
 
     def __init__(self) -> None:
 
-        def row_factory(cursor: dbapi2.Cursor, row: tuple[Any, ...]) -> Any:
+        def row_factory(cursor: dbapi2.Cursor, row: tuple[Any, ...]) -> Any:  # type: ignore[explicit-any]  # a row holds whatever the query selected
             """Return rows as sequences only when they have more than
             one element.
             """
@@ -80,7 +81,7 @@ class _LibraryBackend(object):
             where id in (select book from Contain
                          where collection in (%s))''' \
             % ', '.join('?' * len(collections))
-        parameters: list[Any] = list(collections)
+        parameters: "list[str | int]" = list(collections)
         if filter_string is not None:
             sql += ' and path like ?'
             parameters.append("%%%s%%" % filter_string)
@@ -504,10 +505,11 @@ class _LibraryBackend(object):
         self._con.execute('''delete from Contain
             where book = ? and collection = ?''', (book, collection))
 
-    def execute(self, *args: Any) -> dbapi2.Cursor:
-        """ Passes C{args} directly to the C{execute} method of the SQL
-        connection. """
-        return self._con.execute(*args)
+    def execute(self, statement: str,
+                parameters: "Sequence[str | int | float | bytes | None]" = ()
+                ) -> dbapi2.Cursor:
+        """Run <statement> on the library's connection."""
+        return self._con.execute(statement, parameters)
 
     def begin_transaction(self) -> None:
         """ Normally, the connection is in auto-commit mode. Calling

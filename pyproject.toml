@@ -120,4 +120,10 @@ untyped_calls_exclude = [
   "pymupdf",
 ]
 
+# Beyond --strict: an explicit Any is a hole in everything above, so
+# each one that is left has to be asked for by name.  The ignore comment
+# on each says why it is there, and warn_unused_ignores above means one
+# that stops being needed becomes an error rather than lingering.
+disallow_any_explicit = true
+
 # Everything --strict turns on is on.

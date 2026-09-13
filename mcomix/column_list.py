@@ -2,6 +2,7 @@
 
 from gi.repository import Gdk, Gio, GLib, GObject, Gtk, Pango
 
+from mcomix import tools
 from mcomix.i18n import _
 
 from collections.abc import Callable, Iterable, Iterator
@@ -63,19 +64,19 @@ class Row(GObject.Object):
         'changed': (GObject.SignalFlags.RUN_LAST, None, ()),
     }
 
-    def __init__(self, **values: Any) -> None:
+    def __init__(self, **values: object) -> None:
         super(Row, self).__init__()
         for name, value in values.items():
             setattr(self, name, value)
 
-    def __getattr__(self, name: str) -> Any:
+    def __getattr__(self, name: str) -> Any:  # type: ignore[explicit-any]  # a row carries whatever it was built with
         # A row carries whatever it was built with, so there is no set
         # of attributes to declare; this says so, to a reader and to
         # mypy alike, and answers as any object does for one that is
         # not there.
         raise AttributeError(name)
 
-    def __setattr__(self, name: str, value: Any) -> None:
+    def __setattr__(self, name: str, value: object) -> None:
         # The write side of __getattr__: a column writes back whatever
         # attribute it was told to show, and none of them are declared.
         super(Row, self).__setattr__(name, value)
@@ -167,7 +168,8 @@ class _EditableCell(Gtk.EditableLabel, _Cell):  # type: ignore[misc]
         self.connect('notify::editing', self._editing)
         self._was_editing = False
 
-    def _editing(self, _widget: Gtk.Widget, _param: Any) -> None:
+    def _editing(self, _widget: Gtk.Widget,
+                 _param: GObject.ParamSpec) -> None:
         editing = self.get_property('editing')
         finished = self._was_editing and not editing
         self._was_editing = editing
@@ -511,7 +513,7 @@ class ColumnListView(Gtk.ColumnView):
     def add_text_column(self, title: str, attr: str,
                         expand: bool = False,
                         text: "Callable[[Row], str] | None" = None,
-                        sort_key: "Callable[[Row], Any] | None" = None,
+                        sort_key: "Callable[[Row], tools.SupportsLessThan] | None" = None,
                         markup: bool = False,
                         width_chars: int = -1,
                         max_width_chars: int = -1) -> Gtk.ColumnViewColumn:
@@ -560,7 +562,7 @@ class ColumnListView(Gtk.ColumnView):
 
     def add_icon_column(self, title: str, attr: str,
                         expand: bool = False,
-                        sort_key: "Callable[[Row], Any] | None" = None) \
+                        sort_key: "Callable[[Row], tools.SupportsLessThan] | None" = None) \
             -> Gtk.ColumnViewColumn:
         """Show <attr> of each row, an icon name, as that icon.
 
@@ -680,10 +682,10 @@ class ColumnListView(Gtk.ColumnView):
         if item is not None:
             chosen(row, cast(Gtk.StringObject, item).get_string())
 
-    def _add_column(self, title: str, cell_type: type,
+    def _add_column(self, title: str, cell_type: type,  # type: ignore[explicit-any]  # each column binds a cell class of its own
                     bind: "Callable[..., None]",
                     expand: bool, attr: str,
-                    sort_key: "Callable[[Row], Any] | None",
+                    sort_key: "Callable[[Row], tools.SupportsLessThan] | None",
                     unbind: "Callable[[Any], None] | None" = None) \
             -> Gtk.ColumnViewColumn:
         factory = Gtk.SignalListItemFactory()
@@ -711,6 +713,9 @@ class ColumnListView(Gtk.ColumnView):
                 child = child.get_child()
             cell = cast(_Cell, child)
             row = self._row_of(item.get_item())
+            # Everything in the model is a Row, whatever the Gio.ListModel
+            # the tree wraps it in is willing to say it might be.
+            assert row is not None
             cell.row = row
             cell.position = item.get_position()
             bind(cell, row)
@@ -1068,7 +1073,7 @@ class ColumnListView(Gtk.ColumnView):
         self.store.remove_all()
 
     @staticmethod
-    def _row_of(item: "GObject.Object | None") -> Any:
+    def _row_of(item: "GObject.Object | None") -> "Row | None":
         """The row <item> stands for.
 
         A Gtk.TreeListModel hands out a Gtk.TreeListRow around each of
@@ -1076,8 +1081,8 @@ class ColumnListView(Gtk.ColumnView):
         it sits; a flat list hands out the row itself.
         """
         if isinstance(item, Gtk.TreeListRow):
-            return item.get_item()
-        return item
+            item = item.get_item()
+        return item if isinstance(item, Row) else None
 
     def each_row(self) -> Iterator[Row]:
         """Every row that is shown, in the order they are shown.
@@ -1090,7 +1095,7 @@ class ColumnListView(Gtk.ColumnView):
 
     def get_row(self, position: int) -> "Row | None":
         """The row shown at <position>."""
-        return cast("Row | None", self._row_of(self.model.get_item(position)))
+        return self._row_of(self.model.get_item(position))
 
     # -- Selection --------------------------------------------------------
 
@@ -1136,8 +1141,13 @@ class ColumnListView(Gtk.ColumnView):
         return picked.row if picked is not None else None
 
 
-def _compare(left: Any, right: Any) -> int:
-    """The -1, 0, 1 a Gtk.CustomSorter answers with."""
-    return int(left > right) - int(left < right)
+def _compare(left: "tools.SupportsLessThan",
+             right: "tools.SupportsLessThan") -> int:
+    """The -1, 0, 1 a Gtk.CustomSorter answers with.
+
+    Only < is asked of the two, which is all a sort key has to offer:
+    Python answers a > b with b.__lt__(a) anyway.
+    """
+    return int(right < left) - int(left < right)
 
 # vim: expandtab:sw=4:ts=4

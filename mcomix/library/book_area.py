@@ -21,14 +21,12 @@ from mcomix.library.pixbuf_cache import get_pixbuf_cache
 from mcomix.i18n import _
 from mcomix.dialog import Response
 
-from collections.abc import Iterable
-from typing import Any, TYPE_CHECKING, cast
+from collections.abc import Callable, Iterable
+from typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
     from mcomix.library import backend_types
     from mcomix.library import main_dialog
-
-_dialog = None
 
 # The "All books" collection is not a real collection stored in the library, but is represented by this ID in the
 # library's TreeModels.
@@ -118,7 +116,7 @@ class _BookArea(Gtk.ScrolledWindow):
         self._book_menu = self._create_popup_menu()
 
     #: The popup's plain entries: action name, label, tooltip, handler.
-    def _menu_entries(self) -> "tuple[tuple[str, str, str, Any], ...]":
+    def _menu_entries(self) -> "tuple[tuple[str, str, str, Callable[..., None]], ...]":  # type: ignore[explicit-any]  # the menu items differ in what their handlers take
         return (
             ('open', _('_Open'),
              _('Opens the selected books for viewing.'),
@@ -144,7 +142,7 @@ class _BookArea(Gtk.ScrolledWindow):
              self._copy_selected),
         )
 
-    def _create_popup_menu(self) -> Any:
+    def _create_popup_menu(self) -> Gtk.PopoverMenu:
         """Build the right-click menu for the book list."""
         for name, label, tooltip, handler in self._menu_entries():
             action = Gio.SimpleAction.new(name, None)
@@ -169,7 +167,7 @@ class _BookArea(Gtk.ScrolledWindow):
             self._popup_actions.add_action(action)
         self.insert_action_group('books', self._popup_actions)
 
-        def radio(menu: Any, entries: "tuple[tuple[str, int], ...]",
+        def radio(menu: Gio.Menu, entries: "tuple[tuple[str, int], ...]",
                   action_name: str) -> None:
             for label, value in entries:
                 item = Gio.MenuItem.new(label, None)
@@ -344,11 +342,11 @@ class _BookArea(Gtk.ScrolledWindow):
             self.stop_update()
         self._library.open_book(books, keep_library_open=keep_library_open)
 
-    def open_selected_book(self, *args: Any) -> None:
+    def open_selected_book(self, *args: object) -> None:
         """Open the currently selected book."""
         self._open_books(False)
 
-    def open_selected_book_noclose(self, *args: Any) -> None:
+    def open_selected_book_noclose(self, *args: object) -> None:
         """Open the currently selected book, keeping the library open."""
         self._open_books(True)
 
@@ -359,7 +357,7 @@ class _BookArea(Gtk.ScrolledWindow):
         key = prefs['lib sort key']
         ascending = prefs['lib sort order'] == constants.SORT_ASCENDING
 
-        def compare(left: _BookItem, right: _BookItem, _data: Any) -> int:
+        def compare(left: _BookItem, right: _BookItem, _data: object) -> int:
             answer = self._compare_books(key, left, right)
             return answer if ascending else -answer
 
@@ -384,13 +382,15 @@ class _BookArea(Gtk.ScrolledWindow):
         return tools.cmp(tools.AlphanumericSortKey(left.path),
                          tools.AlphanumericSortKey(right.path))
 
-    def _sort_key_changed(self, action: Any, value: Any) -> None:
+    def _sort_key_changed(self, action: Gio.SimpleAction,
+                          value: GLib.Variant) -> None:
         """ Called when the field the library sorts on changes. """
         action.set_state(value)
         prefs['lib sort key'] = value.get_int32()
         self.set_sort_order()
 
-    def _sort_order_changed(self, action: Any, value: Any) -> None:
+    def _sort_order_changed(self, action: Gio.SimpleAction,
+                            value: GLib.Variant) -> None:
         """ Called when the direction the library sorts in changes. """
         action.set_state(value)
         prefs['lib sort order'] = value.get_int32()
@@ -406,7 +406,8 @@ class _BookArea(Gtk.ScrolledWindow):
         collection = self._library.collection_area.get_current_collection()
         GLib.idle_add(self.display_covers, collection)
 
-    def _book_size_changed(self, action: Any, value: Any) -> None:
+    def _book_size_changed(self, action: Gio.SimpleAction,
+                           value: GLib.Variant) -> None:
         """ Called when library cover size changes.
 
         The state carries the size in pixels, with 0 standing for the
@@ -496,6 +497,8 @@ class _BookArea(Gtk.ScrolledWindow):
 
         # Composite icon on the lower right corner of the book cover pixbuf.
         book_pixbuf = icons.load_pixbuf('object-select-symbolic', 24)
+        if book_pixbuf is None:
+            return pixbuf
         translation_x = pixbuf.get_width() - book_pixbuf.get_width() - 1
         translation_y = pixbuf.get_height() - book_pixbuf.get_height() - 1
         book_pixbuf.composite(pixbuf, translation_x, translation_y,
@@ -505,7 +508,8 @@ class _BookArea(Gtk.ScrolledWindow):
 
         return pixbuf
 
-    def _book_activated(self, covers: Any, position: int) -> None:
+    def _book_activated(self, covers: thumbnail_list.ThumbnailGridView,
+                        position: int) -> None:
         """Open the book whose cover is shown at <position>."""
         book = self.get_book_at_path(position)
         if book is None:
@@ -515,14 +519,15 @@ class _BookArea(Gtk.ScrolledWindow):
         self.stop_update()
         self._library.open_book([book], keep_library_open=False)
 
-    def _selection_changed(self, selection: Any, position: int, count: int) -> None:
+    def _selection_changed(self, selection: Gtk.MultiSelection,
+                           position: int, count: int) -> None:
         """Update the displayed info in the _ControlArea when a new book
         is selected.
         """
         self._library.control_area.update_info(
             self._covers.get_selected_positions())
 
-    def _remove_books_from_collection(self, *args: Any) -> None:
+    def _remove_books_from_collection(self, *args: object) -> None:
         """Remove the currently selected books from the current collection,
         and thus also from the _BookArea.
         """
@@ -553,7 +558,7 @@ class _BookArea(Gtk.ScrolledWindow):
         self._library.set_status_message(
             message % {'num': len(selected), 'collection': coll_name})
 
-    def _remove_books_from_library(self, *args: Any) -> None:
+    def _remove_books_from_library(self, *args: object) -> None:
         """Remove the currently selected books from the library, and thus
         also from the _BookArea.
         """
@@ -578,7 +583,8 @@ class _BookArea(Gtk.ScrolledWindow):
             len(selected))
         self._library.set_status_message(msg % len(selected))
 
-    def _completely_remove_book(self, request_response: bool = True, *args: Any) -> None:
+    def _completely_remove_book(self, request_response: object = True,
+                                *args: object) -> None:
         """Remove the currently selected books from the library and the
         hard drive.
         """
@@ -594,8 +600,8 @@ class _BookArea(Gtk.ScrolledWindow):
             deletes = choice_dialog.get_widget_for_response(Response.YES)
             if deletes is not None:
                 deletes.add_css_class('destructive-action')
-            choice_dialog.set_should_remember_choice('library-remove-book-from-disk',
-                (Response.YES,))
+            choice_dialog.set_should_remember_choice(
+                message_dialog.RememberedDialog.LIBRARY_REMOVE_BOOK_FROM_DISK)
             choice_dialog.set_text(
                 _('Remove books from the library?'),
                 _('The selected books will be removed from the library and '
@@ -628,7 +634,7 @@ class _BookArea(Gtk.ScrolledWindow):
                 except Exception:
                     log.error(_('! Could not remove file "%s"'), book_path)
 
-    def _copy_selected(self, *args: Any) -> None:
+    def _copy_selected(self, *args: object) -> None:
         """ Copies the currently selected item to clipboard. """
         selected = self._selected_items()
         if len(selected) == 1:
@@ -640,7 +646,8 @@ class _BookArea(Gtk.ScrolledWindow):
             self._library._window.clipboard.copy(item.path,
                                                  self._get_pixbuf(item.uid))
 
-    def _button_press(self, gesture: Any, n_press: int, x: float, y: float) -> None:
+    def _button_press(self, gesture: Gtk.GestureClick, n_press: int,
+                      x: float, y: float) -> None:
         """Handle mouse button presses on the _BookArea."""
         position = self._covers.position_at(x, y)
 
@@ -674,7 +681,8 @@ class _BookArea(Gtk.ScrolledWindow):
 
         widgets.simple_action(self._popup_actions, action).set_enabled(sensitive)
 
-    def _key_press(self, controller: Any, keyval: int, keycode: int,
+    def _key_press(self, controller: Gtk.EventControllerKey,
+                   keyval: int, keycode: int,
                    state: Gdk.ModifierType) -> bool:
         """Handle key presses on the _BookArea."""
         if keyval == Gdk.KEY_Delete:
@@ -687,7 +695,8 @@ class _BookArea(Gtk.ScrolledWindow):
             return Gdk.EVENT_STOP
         return Gdk.EVENT_PROPAGATE
 
-    def _drag_prepare(self, source: Any, x: float, y: float) -> "Gdk.ContentProvider | None":
+    def _drag_prepare(self, source: Gtk.DragSource, x: float,
+                      y: float) -> "Gdk.ContentProvider | None":
         """Offer the books being dragged, as the positions of their covers."""
         positions = self._covers.get_selected_positions()
         if not positions:
@@ -696,7 +705,7 @@ class _BookArea(Gtk.ScrolledWindow):
             '%s:%s' % (constants.LIBRARY_DRAG_BOOKS,
                        ','.join(str(position) for position in positions)))
 
-    def _drag_begin(self, source: Any, drag: Any) -> None:
+    def _drag_begin(self, source: Gtk.DragSource, drag: Gdk.Drag) -> None:
         """Create a cursor image for drag-n-drop from the library.
 
         This method relies on implementation details regarding PIL's
@@ -715,7 +724,8 @@ class _BookArea(Gtk.ScrolledWindow):
             or image_tools.missing_image_icon()
 
         halved = cover.scale_simple(max(0, cover.get_width() // 2),
-            max(0, cover.get_height() // 2), prefs['scaling quality'])
+            max(0, cover.get_height() // 2),
+            image_tools.scaling_quality_preference())
         assert halved is not None, 'the drag cursor could not be scaled'
         cover = image_tools.add_border(halved, 1, 0xFFFFFFFF)
         cover = image_tools.add_border(cover, 1)
@@ -730,7 +740,7 @@ class _BookArea(Gtk.ScrolledWindow):
             assert pointer is not None, 'the drag cursor could not be allocated'
             pointer.fill(0x00000000)
             cover.composite(pointer, 0, 0, cover_width, cover_height, 0, 0,
-            1, 1, prefs['scaling quality'], 255)
+            1, 1, image_tools.scaling_quality_preference(), 255)
             im = Image.new('RGBA', (30, 30), 0x00000000)
             draw = ImageDraw.Draw(im)
             draw.polygon(
@@ -745,13 +755,14 @@ class _BookArea(Gtk.ScrolledWindow):
             circle = image_tools.pil_to_pixbuf(im)
             circle.composite(pointer, max(0, cover_width - 15),
                 max(0, cover_height - 20), 30, 30, max(0, cover_width - 15),
-                max(0, cover_height - 20), 1, 1, prefs['scaling quality'], 255)
+                max(0, cover_height - 20), 1, 1,
+                image_tools.scaling_quality_preference(), 255)
         else:
             pointer = cover
 
         source.set_icon(Gdk.Texture.new_for_pixbuf(pointer), -5, -5)
 
-    def _drag_data_received(self, target: Any, value: Any,
+    def _drag_data_received(self, target: Gtk.DropTarget, value: Gdk.FileList,
                             x: float, y: float) -> bool:
         """Handle files dropped on the book area (i.e. from external
         apps like the file manager).

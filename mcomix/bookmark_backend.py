@@ -223,8 +223,8 @@ class _BookmarksStore:
              _('_No'), Response.NO,
              _('_Cancel'), Response.CANCEL)
         dialog.set_default_response(Response.YES)
-        dialog.set_should_remember_choice('replace-existing-bookmark',
-            (Response.YES, Response.NO))
+        dialog.set_should_remember_choice(
+            message_dialog.RememberedDialog.REPLACE_EXISTING_BOOKMARK)
 
         pages = list(map(str, sorted(map(operator.attrgetter('_page'), old_bookmarks))))
         dialog.set_text(
