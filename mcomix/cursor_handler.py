@@ -126,10 +126,9 @@ class CursorHandler:
             self._timer_id = None
 
     def _get_hidden_cursor(self) -> "Gdk.Cursor | None":
-        # Gdk.CursorType is gone in GTK4; cursors go by the name the
-        # theme knows them under, and 'none' is the blank one.  None comes
-        # back for a name the theme does not know, and leaves the pointer
-        # as it is rather than hiding it.
+        # Cursors go by the name the theme knows them under, and 'none'
+        # is the blank one.  None comes back for a name the theme does
+        # not know, and leaves the pointer as it is rather than hiding it.
         return Gdk.Cursor.new_from_name('none', None)
 
 

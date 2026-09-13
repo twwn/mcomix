@@ -218,8 +218,7 @@ def run() -> None:
 
     apply_layout_direction()
 
-    # Gdk.set_program_class() is gone in GTK4; the program name is what
-    # the class is taken from now, and it is already being set.
+    # The window class is taken from the program name.
     GLib.set_prgname(constants.APPNAME)
 
     from mcomix import main

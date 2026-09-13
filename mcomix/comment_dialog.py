@@ -83,7 +83,7 @@ class _CommentsDialog(Dialog):
             else:
                 # In case it's not ready yet, bump it's
                 # extraction in front of the queue.
-                self._window.filehandler._ask_for_files([path])
+                self._window.filehandler.ask_for_files([path])
             self._comments[path] = num
 
         self._notebook.set_visible(True)
@@ -99,9 +99,6 @@ class _CommentsDialog(Dialog):
         scrolled.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
         widgets.pack(page, scrolled, True, True, 0)
 
-        # The two Gtk.EventBoxes here only carried a background and a
-        # margin, neither of which needs a widget of its own in GTK4.
-
         text = self._window.filehandler.get_comment_text(num)
         if text is None:
             text = _('Could not read %s') % name
@@ -113,9 +110,6 @@ class _CommentsDialog(Dialog):
         widgets.set_border(text_view, 6)
         scrolled.set_child(text_view)
 
-        # The comment used to be framed in the text view's background by
-        # an event box carrying the 'view' style class; the view is the
-        # scrolled window's own child now, and brings that class with it.
         tab_label = Gtk.Label(label=i18n.to_unicode(name))
         self._notebook.insert_page(page, tab_label, -1)
 

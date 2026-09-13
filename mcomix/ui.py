@@ -115,10 +115,11 @@ class Action:
     """One of the window's actions, in the shape the rest of MComix asks
     for it.
 
-    Gtk.Action offered activate(), set_active() and set_sensitive(), and
-    those three are all that is used.  Gio spells them differently - a
-    toggle is set by handing its action a GLib.Variant - so this keeps the
-    callers reading as they did.
+    The callers activate an action, turn a toggle on or off, and make an
+    action sensitive or not.  Gio spells those differently - a toggle is
+    set by handing its action a GLib.Variant, and a member of a radio
+    group is a target on the group's one action - so this keeps the
+    spelling in one place.
     """
 
     def __init__(self, action: Gio.SimpleAction,
@@ -134,9 +135,9 @@ class Action:
         self._action.activate(self._target)
 
     def set_active(self, active: bool) -> None:
-        # Gtk.ToggleAction.set_active() was a no-op when the value did not
-        # change; Gio.SimpleAction.change_state() always announces one, so
-        # only change what has actually changed.
+        # Gio.SimpleAction.change_state() announces a change even to the
+        # value the action already holds, and the callback runs for it,
+        # so only a real change is asked for.
         if bool(active) != self.get_active():
             self._action.change_state(GLib.Variant('b', bool(active)))
 
@@ -182,10 +183,8 @@ class Actions:
     (name, icon name, label, tooltip, and a callback or, for a radio
     entry, its value); everything after the label may be left out.
 
-    Gtk.ActionGroup's tables, which these were, carried an accelerator
-    between the label and the tooltip.  Nothing has read that field
-    since MComix took its accelerators over itself - keybindings.py
-    holds them and the shortcuts editor edits them - so it is gone.
+    There is no accelerator among them: keybindings.py holds those, and
+    the shortcuts editor edits them.
     """
 
     #: The prefix menu items and tool buttons address these actions by.
@@ -269,9 +268,8 @@ class Actions:
                   value: int, on_change: _ToggleCallback) -> None:
         """Add one group of mutually exclusive actions.
 
-        Gtk.RadioAction gave every member its own action carrying a value;
-        one stateful action holding that value says the same thing, with
-        the members as targets on it.
+        One stateful action holds the value the group is set to, and each
+        member is a target on it: the value that member stands for.
         """
         action = Gio.SimpleAction.new_stateful(
             name, GLib.VariantType.new('i'), GLib.Variant('i', value))
@@ -312,8 +310,7 @@ class Actions:
 type _Layout = "Sequence[str | None | tuple[str, _Layout]]"
 
 
-#: The menu bar, as the <menubar> element described it.  None is a
-#: separator, and a pair is a submenu.
+#: The menu bar.  None is a separator, and a pair is a submenu.
 _MENUBAR = (
     ('menu_file', ('open', 'menu_recent', 'library', None,
                    'extract_page', 'refresh_archive', 'properties', None,
@@ -356,7 +353,7 @@ _MENUBAR = (
                                         'keep_transformation')))),
 )
 
-#: The right-click menu, as the <popup> element described it.
+#: The right-click menu.
 _POPUP = (
     ('menu_go_popup', ('next_page', 'previous_page', 'go_to',
                        'first_page', 'last_page', None,
@@ -391,7 +388,7 @@ _POPUP = (
     'close', 'quit',
 )
 
-#: The tool bar, as the <toolbar> element described it.
+#: The tool bar.
 _TOOLBAR = ('previous_archive', 'first_page', 'previous_page', 'go_to',
             'next_page', 'last_page', 'next_archive', None,
             'fullscreen', 'slideshow', 'expander',
@@ -411,8 +408,7 @@ class MainUI:
         #: The idle that will build the menus again, if one is pending.
         self._rebuild_pending: int | None = None
         #: Accelerators that are not MComix' own keybindings hang here.
-        #: Gtk.UIManager provided a Gtk.AccelGroup for this; GTK4 has
-        #: shortcut controllers, which trigger the actions by name.
+        #: A shortcut controller triggers the actions by name.
         self.shortcuts = Gtk.ShortcutController()
         self.shortcuts.set_scope(Gtk.ShortcutScope.GLOBAL)
         window.add_controller(self.shortcuts)
@@ -431,16 +427,16 @@ class MainUI:
             _Entry('copy_page', 'edit-copy', _('_Copy'), _('Copies the current page to clipboard.'),
                    window.clipboard.copy_page),
             _Entry('delete', 'edit-delete', _('_Delete'), _('Deletes the current file or archive from disk.'),
-                   window.delete),
+                   window.file_actions.delete),
             _Entry('delete_page_popup', 'edit-delete', _('_Delete page'),
                    _('Removes the page the menu was opened over from the book. The archive on disk is not changed until it is saved.'),
-                   window.delete_popup_page),
+                   window.file_actions.delete_popup_page),
             _Entry('undo', 'edit-undo', _('_Undo'),
                    _('Takes back the last page removed from the book.'),
-                   window.undo),
+                   window.file_actions.undo),
             _Entry('redo', 'edit-redo', _('_Redo'),
                    _('Removes again the page the last undo brought back.'),
-                   window.redo),
+                   window.file_actions.redo),
             _Entry('next_page', 'go-next-symbolic', _('_Next page'), _('Next page'), _action_lambda(window.flip_page, +1)),
             _Entry('previous_page', 'go-previous-symbolic', _('_Previous page'), _('Previous page'), _action_lambda(window.flip_page, -1)),
             _Entry('first_page', 'go-first-symbolic', _('_First page'), _('First page'), _action_lambda(window.first_page)),
@@ -448,8 +444,8 @@ class MainUI:
             _Entry('go_to', 'go-jump-symbolic', _('_Go to page...'), _('Go to page...'), window.page_select),
             _Entry('refresh_archive', 'view-refresh', _('Re_fresh'), _('Reloads the currently opened files or archive.'),
                    window.filehandler.refresh_file),
-            _Entry('next_archive', 'media-skip-forward-symbolic', _('Next _archive'), _('Next archive'), window.filehandler._open_next_archive),
-            _Entry('previous_archive', 'media-skip-backward-symbolic', _('Previous a_rchive'), _('Previous archive'), window.filehandler._open_previous_archive),
+            _Entry('next_archive', 'media-skip-forward-symbolic', _('Next _archive'), _('Next archive'), window.filehandler.open_next_archive),
+            _Entry('previous_archive', 'media-skip-backward-symbolic', _('Previous a_rchive'), _('Previous archive'), window.filehandler.open_previous_archive),
             _Entry('next_directory', 'edit-redo', _('Next directory'), _('Next directory'), window.filehandler.open_next_directory),
             _Entry('previous_directory', 'edit-undo', _('Previous directory'), _('Previous directory'), window.filehandler.open_previous_directory),
             _Entry('zoom_in', 'zoom-in', _('Zoom _In'), None, window.manual_zoom_in),
@@ -465,9 +461,9 @@ class MainUI:
             _Entry('rotate_270', 'mcomix-rotate-270', _('Rotat_e 90° CCW'), None, window.rotate_270),
             _Entry('flip_horiz', 'mcomix-flip-horizontal', _('Fli_p horizontally'), None, window.flip_horizontally),
             _Entry('flip_vert', 'mcomix-flip-vertical', _('Flip _vertically'), None, window.flip_vertically),
-            _Entry('extract_page', 'document-save-as', _('Save _As'), None, window.extract_page),
+            _Entry('extract_page', 'document-save-as', _('Save _As'), None, window.file_actions.extract_page),
             _Entry('extract_page_popup', 'document-save-as', _('Save _As'), _('Saves the page the menu was opened over.'),
-                   window.extract_popup_page),
+                   window.file_actions.extract_popup_page),
             _Entry('menu_zoom', 'mcomix-zoom', _('_Zoom')),
             _Entry('menu_recent', 'text-x-generic', _('_Recent')),
             _Entry('menu_bookmarks_popup', 'mcomix-add-bookmark', _('_Bookmarks')),
@@ -561,12 +557,12 @@ class MainUI:
         self._openwith = openwith_menu.OpenWithMenu(window)
         self.move_to = move_menu.MoveToMenu(window, self.recent)
 
-        # Gtk.MenuBar is gone; a GTK4 menu bar is a row of popovers.
+        # A GTK4 menu bar is a row of popovers.
         self.menubar = Gtk.PopoverMenuBar.new_from_model(self._build(_MENUBAR))
         # NESTED: a submenu opens as a popover of its own.  A sliding
         # popover menu keeps every page in one stack and is as wide as
         # the widest item on any of them, so the eight short entries of
-        # the top level were laid out to fit "Previous archive" and its
+        # the top level would be laid out to fit "Previous archive" and its
         # accelerator, three pages down.
         self.popup = Gtk.PopoverMenu.new_from_model_full(
             self._build(_POPUP), Gtk.PopoverMenuFlags.NESTED)

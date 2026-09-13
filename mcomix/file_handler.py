@@ -5,7 +5,7 @@ what tells the two apart and hands the image handler a list of image
 files either way.  For loose images that list is ready at once.  An
 archive is unpacked into a temporary directory in the background, so
 the list names files that do not exist yet: file_is_available() says
-whether one has been written out, _wait_on_file() blocks until it has,
+whether one has been written out, wait_on_file() blocks until it has,
 and the file_available callback announces each one as it arrives.
 
 Opening an archive is therefore not over when open_file() returns.  The
@@ -295,7 +295,7 @@ class FileHandler:
                 self._file_provider = None
             self.update_last_read_page()
             if self.archive_type is not None:
-                # Wake whatever is parked in _wait_on_file() before the
+                # Wake whatever is parked in wait_on_file() before the
                 # extractor stops.  The only notify_all() there is fires
                 # when a file finishes extracting, and after this no
                 # file will, so a waiter that is not woken here waits
@@ -591,7 +591,7 @@ class FileHandler:
         would have been read under is not in it any more.
         """
         for path in paths:
-            self._wait_on_file(path)
+            self.wait_on_file(path)
 
     def get_other_files(self) -> dict[str, str]:
         """The archive members that are neither pages nor comments.
@@ -604,7 +604,7 @@ class FileHandler:
         """
         carried = {}
         for path in self._other_files:
-            self._wait_on_file(path)
+            self.wait_on_file(path)
             if os.path.isfile(path):
                 carried[path] = self._name_table[path]
         return carried
@@ -623,14 +623,9 @@ class FileHandler:
         if self.archive_type is not None:
             return self._base_path
         # Otherwise it is the directory the current image sits in, and
-        # there is a current image only once one has been chosen: the
-        # index is None until then, and indexing the list of files with
-        # it raised rather than answering that there is no base yet.
-        image_files = self._window.imagehandler._image_files
-        index = self._window.imagehandler._current_image_index
-        if image_files and index is not None:
-            return os.path.dirname(image_files[index])
-        return None
+        # there is no current image until a page has been chosen.
+        path = self._window.imagehandler.get_path_to_page()
+        return os.path.dirname(path) if path is not None else None
 
     def get_base_filename(self) -> str:
         """Return the filename of the current base (archive filename or
@@ -649,7 +644,7 @@ class FileHandler:
 
         return self._window.imagehandler.get_pretty_current_filename()
 
-    def _open_next_archive(self, *args: object) -> bool:
+    def open_next_archive(self, *args: object) -> bool:
         """Open the archive that comes directly after the currently loaded
         archive in that archive's directory listing, sorted alphabetically.
         Returns True if a new archive was opened, False otherwise.
@@ -671,7 +666,7 @@ class FileHandler:
 
         return False
 
-    def _open_previous_archive(self, *args: object) -> bool:
+    def open_previous_archive(self, *args: object) -> bool:
         """Open the archive that comes directly before the currently loaded
         archive in that archive's directory listing, sorted alphabetically.
         Returns True if a new archive was opened, False otherwise.
@@ -799,9 +794,9 @@ class FileHandler:
         comment <num> has been fully extracted.
         """
         path = self._comment_files[num - 1]
-        self._wait_on_file(path)
+        self.wait_on_file(path)
 
-    def _wait_on_file(self, path: str | None) -> None:
+    def wait_on_file(self, path: str | None) -> None:
         """Block until the file <path> has been extracted, and return.
 
         Returns at once for a loose image, and for an archive member the
@@ -825,7 +820,7 @@ class FileHandler:
             log.error('Waiting on extraction of "%s" failed: %s', path, ex)
             return
 
-    def _ask_for_files(self, files: Sequence[str]) -> None:
+    def ask_for_files(self, files: Sequence[str]) -> None:
         """Ask for <files> to be given priority for extraction.
         """
         if self.archive_type is None:
@@ -900,6 +895,11 @@ class FileHandler:
         if archive_path is None:
             return
         page = self._window.imagehandler.get_current_page()
+        if page == 0:
+            # No page at all: the archive had no pictures in it, or
+            # could not be opened, and either still counts as loaded.
+            # Storing it would file a book nobody read under "Recent".
+            return
         # Do not store first page (first page is default
         # behaviour and would waste space unnecessarily)
         try:

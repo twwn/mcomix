@@ -122,7 +122,7 @@ class EditArchiveDialogTest(MComixTest):
             with self.assertRaises(OSError):
                 self.dialog._load_original_files()
         pump()
-        self.assertIsNone(self.window._main_layout.get_cursor(),
+        self.assertIsNone(self.window.page_area.get_cursor(),
                           'the window was left pointing at a wait cursor')
         self.assertTrue(self.dialog._save_button.get_sensitive())
         self.assertTrue(self.dialog._import_button.get_sensitive())
@@ -130,7 +130,7 @@ class EditArchiveDialogTest(MComixTest):
     def test_a_load_that_finishes_leaves_no_cursor_behind_either(self):
         self.dialog._load_original_files()
         pump()
-        self.assertIsNone(self.window._main_layout.get_cursor())
+        self.assertIsNone(self.window.page_area.get_cursor())
         self.assertTrue(self.dialog._save_button.get_sensitive())
 
     def test_a_save_that_will_not_fit_is_refused_before_it_starts(self):

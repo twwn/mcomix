@@ -49,6 +49,17 @@ class _StubRecent:
         return self.recent_paths
 
 
+class _StubFileActions:
+
+    """Where the move lands, which the window keeps beside itself."""
+
+    def __init__(self):
+        self.moved_to = []
+
+    def move_current_file(self, directory):
+        self.moved_to.append(directory)
+
+
 class _StubWindow(Gtk.Window):
 
     """A real window, so the menu's action group has somewhere to live."""
@@ -57,10 +68,11 @@ class _StubWindow(Gtk.Window):
         super().__init__()
         self.filehandler = _StubFileHandler()
         self.imagehandler = _StubImageHandler()
-        self.moved_to = []
+        self.file_actions = _StubFileActions()
 
-    def move_current_file(self, directory):
-        self.moved_to.append(directory)
+    @property
+    def moved_to(self):
+        return self.file_actions.moved_to
 
 
 class MoveToMenuTest(MComixTest):

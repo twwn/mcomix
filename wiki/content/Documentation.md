@@ -58,7 +58,7 @@ For all key bindings available, please refer to [Keybindings].
 
 ### Opening a book in a window of its own ###
 
-The entries under "File &rarr; Recent" and in the "Bookmarks" menu open in the window they were picked from, which closes the book being read. Clicking one with the middle mouse button starts a second MComix on it instead, and leaves the first one where it is. A bookmark opened this way opens at the page it marks.
+The entries under "File &rarr; Recent" and in the "Bookmarks" menu open in the window they were picked from, which closes the book being read. A bookmark in the book that is already open only turns to its page, so the pages picked out of the book and the changes that can be undone stay as they were; in a folder of images the page is found by its file, wherever the folder has put it since. Clicking one with the middle mouse button starts a second MComix on it instead, and leaves the first one where it is. A bookmark opened this way opens at the page it marks.
 
 The same thing can be asked for from a shell: `mcomix --page 42 book.cbz` opens the book at page 42.
 
@@ -107,7 +107,7 @@ By using the watch list, MComix can keep track of certain directories and automa
 
 ### Recent books ###
 
-With "Store information about recently opened files" set to "Always" in the preferences dialog, every archive opened from within the program is added to a collection called "Recent". From there it can be moved into another collection. Setting it to "Never" clears the history as well as stopping it from being kept.
+With "Store information about recently opened files" set to "Always" in the preferences dialog, every archive opened from within the program is added to a collection called "Recent", unless it has no pages to show. From there it can be moved into another collection. Setting it to "Never" clears the history as well as stopping it from being kept.
 
 Execute external programs
 ---

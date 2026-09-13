@@ -36,8 +36,6 @@ class _ControlArea(Gtk.Box):
 
         self._library = library
 
-        # The frame draws its own border in GTK4, and the Gtk.EventBox
-        # that used to paint a background inside it is gone.
         borderbox = Gtk.Frame()
         borderbox.set_size_request(350, -1)
 
@@ -90,8 +88,6 @@ class _ControlArea(Gtk.Box):
         widgets.pack(vbox, hbox, True, True, 0, end=True)
 
         watchlist_button = Gtk.Button(label=_("_Watch list"), use_underline=True)
-        # A GTK4 button shows whatever child it is given; there is
-        # no image to keep it from hiding.
         watchlist_button.connect('clicked',
                                  lambda *args: WatchListDialog(self._library))
         watchlist_button.set_tooltip_text(

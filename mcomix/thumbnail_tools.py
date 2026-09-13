@@ -185,7 +185,16 @@ class Thumbnailer:
         """ Creates the thumbnail pixbuf for <filepath>, and saves the pixbuf
         to disk if necessary. Returns the created pixbuf, or None, if creation failed. """
 
-        pixbuf, tEXt_data = self._create_thumbnail_pixbuf(filepath)
+        try:
+            pixbuf, tEXt_data = self._create_thumbnail_pixbuf(filepath)
+        except Exception as error:
+            # Whether a file is a picture is decided by its name, so a
+            # damaged one is only found out here.  That is a thumbnail
+            # that failed, which is what None says; raising instead left
+            # a threaded caller waiting for a finish that never came.
+            log.debug('Could not make a thumbnail of "%s": %s',
+                      filepath, error)
+            pixbuf, tEXt_data = None, None
         self.thumbnail_finished(filepath, pixbuf)
 
         if pixbuf and self.store_on_disk and tEXt_data is not None:

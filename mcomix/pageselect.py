@@ -53,8 +53,8 @@ class Pageselector(Dialog):
         self._pages_label.set_xalign(0)
         self._pages_label.set_yalign(0.5)
 
-        # A Gtk.Image draws whatever it is given at an icon size in
-        # GTK4; a picture draws it at its own.
+        # A Gtk.Image draws whatever it is given at an icon size; a
+        # picture draws it at its own.
         self._image_preview = Gtk.Picture()
         self._image_preview.set_size_request(
             prefs['thumbnail size'], prefs['thumbnail size'])
@@ -91,14 +91,14 @@ class Pageselector(Dialog):
         # stop it - not only the buttons.  Anything else leaves a thread
         # that terminate_program() then waits for at exit.  'unrealize',
         # not 'destroy': GTK4 emits the latter when the last reference to
-        # the window goes rather than when it is destroyed, and the
-        # handler is a method of the window, so the closure held one and
-        # nothing ever stopped the thread.  Nothing here hides the
-        # dialog, which is the other thing that unrealizes a window.
+        # the window goes rather than when it is destroyed, and a handler
+        # that is a method of the window holds a reference to it, so
+        # 'destroy' would never come.  Nothing here hides the dialog,
+        # which is the other thing that unrealizes a window.
         self.connect('unrealize', self._stop_thumbnailing)
-        # Gtk.Widget::configure-event is gone; a GTK4 window says how
-        # large it is through its own properties.  Connected last, after
-        # everything the handler reaches has been built.
+        # A window says how large it is through its default size
+        # properties.  Connected last, after everything the handler
+        # reaches has been built.
         self.connect('notify::default-width', self._size_changed_cb)
         self.connect('notify::default-height', self._size_changed_cb)
         self._update_thumbnail(int(self._selector_adjustment.props.value))

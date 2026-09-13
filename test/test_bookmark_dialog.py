@@ -23,10 +23,18 @@ from mcomix.dialog import Response
 from mcomix.preferences import prefs
 
 
+class _StubImageHandler:
+
+    def get_image_files(self):
+        return []
+
+
 class _StubFileHandler:
 
     archive_type = None
-    _base_path = None
+
+    def get_path_to_base(self):
+        return None
 
     def __init__(self):
         self.opened = []
@@ -41,6 +49,7 @@ class _StubWindow(Gtk.Window):
     def __init__(self):
         super().__init__()
         self.filehandler = _StubFileHandler()
+        self.imagehandler = _StubImageHandler()
         self.pages = []
 
     def set_page(self, page):

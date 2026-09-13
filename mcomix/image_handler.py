@@ -1,7 +1,6 @@
 """image_handler.py - Image handler that takes care of cacheing and giving out images."""
 
 import os
-import traceback
 
 from gi.repository import GdkPixbuf
 
@@ -361,6 +360,14 @@ class ImageHandler:
         else:
             return 0
 
+    def get_image_files(self) -> list[str]:
+        """The files of the open book's pages, in page order.
+
+        A copy, so that a caller can change it without changing the
+        book; empty where no book is open.
+        """
+        return list(self._image_files or [])
+
     def get_current_page(self) -> int:
         """Return the current page number (starting from 1), or 0 if no file is loaded."""
         if self._current_image_index is not None:
@@ -517,14 +524,13 @@ class ImageHandler:
         if path is None:
             return None
 
-        try:
-            thumbnailer = thumbnail_tools.Thumbnailer(store_on_disk=create,
-                                                      size=(width, height))
-            return thumbnailer.thumbnail(path)
-        except Exception:
-            log.debug("Failed to create thumbnail for image `%s':\n%s",
-                      path, traceback.format_exc())
-            return image_tools.missing_image_icon()
+        thumbnailer = thumbnail_tools.Thumbnailer(store_on_disk=create,
+                                                  size=(width, height))
+        pixbuf = thumbnailer.thumbnail(path)
+        # None from the thumbnailer is a page that would not load, which
+        # every view of it shows as the missing icon; None from here is
+        # a page not extracted yet, which the callers ask for again.
+        return pixbuf if pixbuf is not None else image_tools.missing_image_icon()
 
     def _wait_on_page(self, page: int | None,
                       check_only: bool = False) -> bool:
@@ -553,7 +559,7 @@ class ImageHandler:
 
         log.debug('Waiting for page %u', index + 1)
         path = self.get_path_to_page(page)
-        self._window.filehandler._wait_on_file(path)
+        self._window.filehandler.wait_on_file(path)
         return True
 
     def _ask_for_pages(self, page: int) -> list[int]:
@@ -597,7 +603,7 @@ class ImageHandler:
                 files.append(image_files[index])
 
         if files:
-            self._window.filehandler._ask_for_files(files)
+            self._window.filehandler.ask_for_files(files)
 
         return page_list
 

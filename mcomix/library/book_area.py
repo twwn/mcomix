@@ -165,8 +165,8 @@ class _BookArea(Gtk.ScrolledWindow):
         title.set_enabled(False)
         self._popup_actions.add_action(title)
 
-        # The three radio groups become one stateful action each, holding
-        # the value the group used to carry on its members.
+        # Each of the three radio groups is one stateful action, whose
+        # state is the value picked in it.
         for name, state, handler in (
                 ('sort-key', prefs['lib sort key'], self._sort_key_changed),
                 ('sort-order', prefs['lib sort order'], self._sort_order_changed),
@@ -492,7 +492,7 @@ class _BookArea(Gtk.ScrolledWindow):
             pixbuf = image_tools.fit_in_rectangle(pixbuf, width, height, scale_up=True)
             self._cache.add(book.path, pixbuf)
 
-        pixbuf = self._library._window.enhancer.enhance(pixbuf)
+        pixbuf = self._library.main_window.enhancer.enhance(pixbuf)
         pixbuf = image_tools.add_border(pixbuf, 1, 0xFFFFFFFF)
 
         # Display indicator of having finished reading the book.
@@ -649,7 +649,7 @@ class _BookArea(Gtk.ScrolledWindow):
             # the cell holds it as a texture.  _get_pixbuf() answers
             # from the cache, so this costs nothing that was not
             # already paid.
-            self._library._window.clipboard.copy(item.path,
+            self._library.main_window.clipboard.copy(item.path,
                                                  self._get_pixbuf(item.uid))
 
     def _middle_click(self, gesture: Gtk.GestureClick, n_press: int,
@@ -716,8 +716,8 @@ class _BookArea(Gtk.ScrolledWindow):
         if keyval == Gdk.KEY_Delete:
             self._remove_books_from_collection()
             return Gdk.EVENT_STOP
-        # Gtk.Widget::popup-menu, which the menu key used to reach, is
-        # not a signal in GTK4.
+        # A GTK4 widget has no popup-menu signal, so the menu key is
+        # heard here.
         if keyval == Gdk.KEY_Menu:
             self._popup_book_menu()
             return Gdk.EVENT_STOP

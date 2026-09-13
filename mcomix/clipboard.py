@@ -24,8 +24,7 @@ class Clipboard:
     """
 
     def __init__(self, window: "main.MainWindow") -> None:
-        # Gtk.Clipboard and Gdk.Atom are both gone in GTK4; a clipboard
-        # belongs to the display and is asked for by name.
+        # A clipboard belongs to the display.
         self._clipboard = widgets.display().get_clipboard()
         self._window = window
 

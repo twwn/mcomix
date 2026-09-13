@@ -397,8 +397,8 @@ class _CollectionArea(Gtk.ScrolledWindow):
         if keyval == Gdk.KEY_Delete:
             self._remove_collection()
             return Gdk.EVENT_STOP
-        # Gtk.Widget::popup-menu, which the menu key used to reach, is
-        # not a signal in GTK4.
+        # A GTK4 widget has no popup-menu signal, so the menu key is
+        # heard here.
         if keyval == Gdk.KEY_Menu:
             self._popup_menu()
             return Gdk.EVENT_STOP

@@ -135,8 +135,6 @@ class Dialog(Gtk.Window):
         """Make the button for <response> the one Enter presses."""
         button = self._response_buttons.get(response)
         if button is not None:
-            # set_can_default() went with Gtk.Widget's own default
-            # handling in GTK4; naming the widget is all there is.
             self.set_default_widget(button)
 
     def set_response_sensitive(self, response: int, sensitive: bool) -> None:

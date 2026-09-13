@@ -455,7 +455,7 @@ class _PreferencesDialog(Dialog):
                 # "Shortcuts" page is active, reset all keys to their default value
                 km = keybindings.keybinding_manager(self._window)
                 km.clear_all()
-                self._window._event_handler.register_key_events()
+                self._window.event_handler.register_key_events()
                 km.save()
                 self.shortcuts.refresh_model()
             else:
@@ -1031,7 +1031,7 @@ class _PreferencesDialog(Dialog):
             self._window.imagehandler.do_cacheing()
 
         elif preference == 'number of key presses before page turn':
-            self._window._event_handler._extra_scroll_events = 0
+            self._window.event_handler.reset_extra_scroll_events()
 
         elif preference in ('fit to size width wide', 'fit to size height wide',
                             'fit to size width other', 'fit to size height other',):

@@ -49,8 +49,8 @@ class _EnhanceImageDialog(Dialog):
         widgets.set_border(vbox, 6)
         self.get_content_area().append(vbox)
 
-        # A Gtk.Image draws whatever it is given at an icon size in
-        # GTK4; a picture draws it at its own.
+        # A Gtk.Image draws whatever it is given at an icon size; a
+        # picture draws it at its own.
         self._hist_image = Gtk.Picture()
         self._hist_image.set_size_request(262, 170)
         widgets.pack(vbox, self._hist_image, True, True, 0)
@@ -172,11 +172,12 @@ class _EnhanceImageDialog(Dialog):
             prefs['sharpness'] = self._enhancer.sharpness
             prefs['auto contrast'] = self._enhancer.autocontrast
             prefs['invert color'] = self._enhancer.invert_color
-            # The menu carries this one as a tick of its own, the only
-            # enhancement that does; leaving it behind is what put the
-            # two out of step.  The colours are already what the
-            # enhancer says, so the tick moves without running the
-            # menu item's own handler.
+            # Ctrl+I toggles this one through an action with a state of
+            # its own, the only enhancement that has one; left behind,
+            # that state would make the next Ctrl+I set the colours to
+            # what they already are.  The colours are already what the
+            # enhancer says, so the state moves without running the
+            # action's own handler.
             self._window.actiongroup.get_action('invert_color').show_active(
                 prefs['invert color'])
 

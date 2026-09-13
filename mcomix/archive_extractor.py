@@ -255,7 +255,7 @@ class Extractor:
         being unpacked - filtering it is what the method is for - and
         the file lands all the same; taking the wake-up away from it
         because the list had moved on would leave every thread in
-        FileHandler._wait_on_file() parked on a page that is on disk.
+        FileHandler.wait_on_file() parked on a page that is on disk.
         """
         with self._condition:
             if name in self._files:

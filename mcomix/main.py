@@ -1,9 +1,7 @@
 """main.py - Main window."""
 
-import errno
 import math
 import os
-import shutil
 import threading
 
 from gi.repository import Gdk, Gtk, GLib
@@ -14,9 +12,8 @@ from mcomix import cursor_handler
 from mcomix import i18n
 from mcomix import enhance_backend
 from mcomix import event
-from mcomix import file_chooser_simple_dialog
+from mcomix import file_actions
 from mcomix import file_handler
-from mcomix import file_mover
 from mcomix import image_handler
 from mcomix import image_tools
 from mcomix import lens
@@ -41,7 +38,6 @@ from mcomix.library import backend, main_dialog
 from mcomix import tools
 from mcomix import box
 from mcomix import layout
-from mcomix import archive_packer
 from mcomix import log
 from mcomix import widgets
 from mcomix.transform import Matrix, Transform
@@ -88,12 +84,9 @@ class MainWindow(Gtk.Window):
         #: go by and dealt with together; only closing the book, or
         #: removing them, empties this.
         self.selected_pages: set[int] = set()
-        #: What the pages were before each change made from this window,
-        #: and what they were before each undo.  Deleting a page from
-        #: the book being read has to be as easy to take back as it was
-        #: to do.
-        self._undone: list[list[str]] = []
-        self._redone: list[list[str]] = []
+        #: Saving, deleting and moving the files of the book, and the
+        #: undo stack they are taken back through.
+        self.file_actions = file_actions.FileActions(self)
         # Remember last scroll destination.
         self._last_scroll_destination: int | None = constants.SCROLL_TO_START
 
@@ -104,20 +97,18 @@ class MainWindow(Gtk.Window):
         #: Where the redraw that is pending was asked to scroll to.
         self._pending_scroll_to: int | None = None
 
-        self._main_layout = canvas.PageCanvas()
-        # Gtk.EventBox was only ever here to give the pages a background
-        # colour of their own; in GTK4 any widget can have one, and
-        # every widget takes input, so the box is gone.  A style provider
-        # is per display rather than per widget now, so the canvas is
-        # named for the rule set_bg_colour() writes to single it out.
-        self._main_layout.set_name(self._BG_CSS_NAME)
+        self.page_area = canvas.PageCanvas()
+        # A style provider applies to the whole display rather than to
+        # one widget, so the page area is named, and the rule
+        # set_bg_colour() writes picks it out by that name.
+        self.page_area.set_name(self._BG_CSS_NAME)
         self._bg_css_provider = Gtk.CssProvider()
         Gtk.StyleContext.add_provider_for_display(
             widgets.display(), self._bg_css_provider,
             Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
-        self._event_handler = event.EventHandler(self)
-        self._vadjust = self._main_layout.get_vadjustment()
-        self._hadjust = self._main_layout.get_hadjustment()
+        self.event_handler = event.EventHandler(self)
+        self._vadjust = self.page_area.get_vadjustment()
+        self._hadjust = self.page_area.get_hadjustment()
         self._scroll = (
             Gtk.Scrollbar.new(Gtk.Orientation.HORIZONTAL, self._hadjust),
             Gtk.Scrollbar.new(Gtk.Orientation.VERTICAL, self._vadjust),
@@ -160,32 +151,26 @@ class MainWindow(Gtk.Window):
         self.set_size_request(300, 300)  # Avoid making the window *too* small
 
         # Hook up keyboard shortcuts
-        self._event_handler.register_key_events()
+        self.event_handler.register_key_events()
 
         for img in self.images:
-            self._main_layout.put(img, 0, 0)
+            self.page_area.put(img, 0, 0)
         self.set_bg_colour(prefs['bg colour'])
 
-        # There were four lines here setting step and page increments on
-        # these adjustments.  They assigned to .step_increment, which lands
-        # on the Python wrapper and never reaches the adjustment; and the
-        # scrolled window recomputes both from the viewport on every size
-        # allocation anyway, so setting them properly does not survive
-        # either.  MComix does its own scrolling regardless.
+        # No step or page increments are set on the adjustments: the page
+        # area sets both from the size of what shows every time it is
+        # allocated, in PageCanvas._configure().
 
         # Three columns - thumbnail sidebar, page area, vertical scrollbar -
         # and six rows, of which the fourth is a spacer the sidebar spans.
-        # Gtk.Table.attach() took the edges a child spans and Gtk.Grid's
-        # takes its corner and size; what Table passed as attach options is
-        # a property of the child in Grid.  SHRINK has no Grid counterpart
-        # and Grid already aligns children to FILL, so only EXPAND carries
-        # over, as hexpand/vexpand.
+        # A child fills its cell already, so all each one needs besides
+        # its place is whether it expands.
         grid = Gtk.Grid()
         for child, column, row, width, height, hexpand, vexpand in (
                 (self.menubar,                            0, 0, 3, 1, False, False),
                 (self.toolbar,                            0, 1, 3, 1, False, False),
                 (self.thumbnailsidebar,                   0, 2, 1, 3, False, True),
-                (self._main_layout,                       1, 2, 1, 1, True,  True),
+                (self.page_area,                          1, 2, 1, 1, True,  True),
                 (self._scroll[constants.PageAxis.HEIGHT], 2, 2, 1, 1, False, False),
                 (self._scroll[constants.PageAxis.WIDTH],  1, 4, 1, 1, False, False),
                 (self.statusbar,                          0, 5, 3, 1, False, False),
@@ -262,12 +247,12 @@ class MainWindow(Gtk.Window):
             self.actiongroup.get_action(action).set_active(
                 preferences.by_name(preference))
 
-        # Inverted colours are not one of those widgets, and the item
-        # started unticked however the preferences had been left: the
-        # enhancer reads the preference itself and inverted the pages
-        # while the menu said it did not.  Only the tick is out of step,
-        # so it is moved rather than toggled - toggling it here would
-        # redraw a window that is still being built.
+        # Inverted colours are not one of those widgets.  The enhancer
+        # reads the preference itself, and Ctrl+I toggles the action's
+        # state, so a state left off would make the first Ctrl+I set the
+        # colours to what they already are.  Only the state is out of
+        # step, so it is moved rather than toggled - toggling it here
+        # would redraw a window that is still being built.
         self.actiongroup.get_action('invert_color').show_active(
             prefs['invert color'])
 
@@ -276,20 +261,19 @@ class MainWindow(Gtk.Window):
 
         self.set_child(grid)
 
-        # GTK4 has no event masks and no *-event signals: a widget takes
-        # what a controller added to it delivers.  The window's key
-        # controller runs in the capture phase, which is where the old
-        # key-press-event handler on the toplevel sat - before the
-        # thumbnail list could make its own use of Up, Down and Space.
-        self._event_handler.register_controllers(self, self._main_layout)
+        # A widget takes what a controller added to it delivers.  The
+        # window's key controller runs in the capture phase, so it hears
+        # a key before the thumbnail list can make its own use of Up,
+        # Down and Space.
+        self.event_handler.register_controllers(self, self.page_area)
 
-        self.connect('notify::is-active', self._event_handler.focus_changed)
+        self.connect('notify::is-active', self.event_handler.focus_changed)
         self.connect('close-request', self.close_program)
         # A window's default size is what it asked for, not what the
         # compositor gave it, so the canvas is what says it has changed.
-        self._main_layout.connect('resized', self._event_handler.resize_event)
-        self.connect('notify::fullscreened', self._event_handler.window_state_event)
-        self.connect('notify::maximized', self._event_handler.window_state_event)
+        self.page_area.connect('resized', self.event_handler.resize_event)
+        self.connect('notify::fullscreened', self.event_handler.window_state_event)
+        self.connect('notify::maximized', self.event_handler.window_state_event)
 
         self.uimanager.set_sensitivities()
         self.restore_window_geometry()
@@ -362,7 +346,7 @@ class MainWindow(Gtk.Window):
         Note: the widget visibility itself is left unchanged."""
         preferences.set_by_name(preference, toggleaction.get_active())
         if preference == 'hide all':
-            self._update_toggles_sensitivity()
+            self.update_toggles_sensitivity()
         # Since the size of the drawing area is dependent
         # on the visible "toggles", redraw the page.
         self.draw_image()
@@ -379,7 +363,7 @@ class MainWindow(Gtk.Window):
             visible &= self.imagehandler.get_number_of_pages() > 0
         return bool(visible)
 
-    def _update_toggles_sensitivity(self) -> None:
+    def update_toggles_sensitivity(self) -> None:
         """Update each "toggle" widget sensitivity."""
         sensitive = True
         if prefs['hide all']:
@@ -549,9 +533,9 @@ class MainWindow(Gtk.Window):
                 self.thumbnailsidebar.change_thumbnail_background_color(
                     bg_colour, dynamic=True)
 
-            self._main_layout.set_content_size(*(self.layout.get_union_box().get_size()))
+            self.page_area.set_content_size(*(self.layout.get_union_box().get_size()))
             for i in range(pixbuf_count):
-                self._main_layout.move(self.images[i],
+                self.page_area.move(self.images[i],
                                        *content_boxes[i].get_position())
 
             for i in range(pixbuf_count):
@@ -647,8 +631,7 @@ class MainWindow(Gtk.Window):
         # All three stand against the pages of the book that is going,
         # and none of them means anything against the next one.
         self.selected_pages = set()
-        self._undone.clear()
-        self._redone.clear()
+        self.file_actions.forget_changes()
         self.lens.file_changed()
         self.clear()
         self.thumbnailsidebar.set_visible(False)
@@ -747,7 +730,8 @@ class MainWindow(Gtk.Window):
         offer to remove pages that could then not be saved would take
         the book apart for nothing.
         """
-        if not self.selected_pages or self.writeable_archive_type() is None:
+        if not self.selected_pages \
+                or self.file_actions.writeable_archive_type() is None:
             then()
             return
         path = self.filehandler.get_path_to_base() or ''
@@ -777,9 +761,9 @@ class MainWindow(Gtk.Window):
     def _leaving_answered(self, response: int,
                           then: "Callable[[], None]") -> None:
         """Remove the pages if that is the answer, then leave the book."""
-        if response == Response.YES and self._remove_pages(
+        if response == Response.YES and self.file_actions.remove_pages(
                 self.selected_pages):
-            self.save_archive()
+            self.file_actions.save_archive()
         then()
 
     def _open_next_book(self) -> None:
@@ -788,7 +772,7 @@ class MainWindow(Gtk.Window):
         if (self.slideshow.is_running() and
             prefs['slideshow can go to next archive']) or \
            prefs['auto open next archive']:
-            next_archive_opened = self.filehandler._open_next_archive()
+            next_archive_opened = self.filehandler.open_next_archive()
 
         # If "Auto open next archive" is disabled, do not go to the next
         # directory if current file was an archive.
@@ -803,7 +787,7 @@ class MainWindow(Gtk.Window):
         if (self.slideshow.is_running() and
                 prefs['slideshow can go to next archive']) or \
                 prefs['auto open next archive']:
-            previous_archive_opened = self.filehandler._open_previous_archive()
+            previous_archive_opened = self.filehandler.open_previous_archive()
 
         # If "Auto open next archive" is disabled, do not go to the previous
         # directory if current file was an archive.
@@ -928,10 +912,11 @@ class MainWindow(Gtk.Window):
     def change_invert_color(self, toggleaction: "ui.Action") -> None:
         """Draw the pages in their own colours or in the opposite ones.
 
-        The menu item's own state is what the preference and the
-        enhancer are set to, rather than the opposite of what the
-        enhancer holds: the enhance dialog sets the same thing, so the
-        two are only ever in step if each follows the tick.
+        The action's own state is what the preference and the enhancer
+        are set to, rather than the opposite of what the enhancer holds:
+        the enhance dialog sets the same thing, so the two are only ever
+        in step if each follows the action.  No menu carries it; Ctrl+I
+        is what toggles it.
         """
         prefs['invert color'] = toggleaction.get_active()
         self.enhancer.invert_color = prefs['invert color']
@@ -1014,7 +999,7 @@ class MainWindow(Gtk.Window):
     def scroll_with_flipping(self, x: float, y: float) -> bool:
         """Returns true if able to scroll without flipping to
         a new page and False otherwise."""
-        return self._event_handler._scroll_with_flipping(x, y)
+        return self.event_handler.scroll_with_flipping(x, y)
 
     def scroll(self, x: float, y: float, bound: str | None = None) -> bool:
         """Scroll <x> px horizontally and <y> px vertically. If <bound> is
@@ -1103,7 +1088,7 @@ class MainWindow(Gtk.Window):
             i.clear()
         self._show_scrollbars([False] * len(self._scroll))
         self.layout = layout.create_dummy_layout()
-        self._main_layout.set_content_size(*self.layout.get_union_box().get_size())
+        self.page_area.set_content_size(*self.layout.get_union_box().get_size())
         self.set_bg_colour(prefs['bg colour'])
 
     def displayed_double(self) -> bool:
@@ -1146,11 +1131,18 @@ class MainWindow(Gtk.Window):
         """Return a 2-tuple with the x and y coordinates of the pointer
         on the main layout area, relative to the layout.
         """
-        x, y = self._main_layout.get_pointer()
-        x += self._hadjust.get_value()
-        y += self._vadjust.get_value()
+        x, y = self.page_area.get_pointer()
+        offset_x, offset_y = self.scroll_offset()
+        return (x + offset_x, y + offset_y)
 
-        return (x, y)
+    def scroll_offset(self) -> tuple[float, float]:
+        """How far the page area is scrolled, across and down.
+
+        The pages are placed on the page area as a whole rather than on
+        the part of it that shows, so this is what turns a point in the
+        widget into a point on the pages.
+        """
+        return (self._hadjust.get_value(), self._vadjust.get_value())
 
     def set_layout_cursor(self, mode: "Gdk.Cursor | None") -> None:
         """Set the cursor on the main layout area to <mode>. You should
@@ -1161,7 +1153,7 @@ class MainWindow(Gtk.Window):
         puts the cursor on the widget it is called on rather than on the
         area the pages are drawn in.
         """
-        self._main_layout.set_cursor(mode)
+        self.page_area.set_cursor(mode)
 
     def update_title(self) -> None:
         """Set the title according to current state."""
@@ -1237,14 +1229,14 @@ class MainWindow(Gtk.Window):
         anywhere before it changes, so this is what the archive editor
         is handed and what it hands back.
         """
-        files = self.imagehandler._image_files or []
+        files = self.imagehandler.get_image_files()
         return [files[number - 1] for number in sorted(self.selected_pages)
                 if 1 <= number <= len(files)]
 
     def select_page_paths(self, paths: "Iterable[str]") -> None:
         """Pick out the pages whose files are <paths>, and no others."""
         wanted = set(paths)
-        files = self.imagehandler._image_files or []
+        files = self.imagehandler.get_image_files()
         self.selected_pages = {number for number, path
                                in enumerate(files, start=1)
                                if path in wanted}
@@ -1262,176 +1254,6 @@ class MainWindow(Gtk.Window):
             else:
                 image.remove_css_class(self._SELECTED_CLASS)
 
-    def delete_page(self, page: "int | None" = None) -> bool:
-        """Take pages out of the book being read, and say whether any went.
-
-        <page>, or every page that is picked out where none is named.
-        The book in the window is what changes; the archive on disk is
-        not written until it is saved, and the last page of a book is
-        not removed, a book with no pages being no book.
-        """
-        if not self._remove_pages({page} if page is not None
-                                  else self.selected_pages):
-            return False
-        self.offer_to_save()
-        return True
-
-    def _remove_pages(self, numbers: "Iterable[int]") -> bool:
-        """Take the pages at <numbers> out, and say whether any went."""
-        listing = list(self.imagehandler._image_files or [])
-        going = {number for number in numbers if 1 <= number <= len(listing)}
-        if not going or len(listing) <= len(going):
-            return False
-        self._undone.append(list(listing))
-        self._redone.clear()
-        # Highest first: removing one moves every page after it up, so
-        # taking them in the other order would take the wrong ones.
-        for number in sorted(going, reverse=True):
-            del listing[number - 1]
-        # What is left picked out has moved up by however many of the
-        # pages that went stood in front of it.
-        self.selected_pages = {
-            number - sum(1 for gone in going if gone < number)
-            for number in self.selected_pages - going}
-        self._show_pages(listing, min(min(going), len(listing)))
-        return True
-
-    def _show_pages(self, listing: list[str], page: int) -> None:
-        """Draw the book as <listing>, standing on <page>."""
-        self.selected_pages = {number for number in self.selected_pages
-                               if number <= len(listing)}
-        self.pages_replaced(listing, page)
-
-    # -- Writing the book back over the archive it came from --------------
-
-    def writeable_archive_type(self) -> "int | None":
-        """The format the open book can be written back over itself as.
-
-        None where it cannot be.  Writing in place keeps the name the
-        file has, so it has to keep the format that name says: a book
-        MComix cannot write - a PDF, or a RAR on a machine without the
-        rar program - has nothing that can be written over it, and a
-        format other than ZIP is only written where the reader has asked
-        for the format to be kept, since otherwise a save would put a
-        ZIP inside a file still called .cbt.
-        """
-        archive_type = self.filehandler.archive_type
-        if archive_type is None or not archive_packer.can_write(archive_type):
-            return None
-        if archive_type in (constants.ZIP, constants.ZIP_EXTERNAL) \
-                or prefs['keep archive format when saving']:
-            return archive_type
-        return None
-
-    def offer_to_save(self) -> None:
-        """Ask whether to write the book back over its own archive.
-
-        Asked after every page removed, until the reader ticks "Do not
-        ask again", which is how every other prompt with a lasting
-        answer works.
-        """
-        archive_type = self.writeable_archive_type()
-        path = self.filehandler.get_path_to_base()
-        if archive_type is None or path is None:
-            return
-        dialog = message_dialog.MessageDialog(
-            self, modal=True, buttons=Gtk.ButtonsType.NONE)
-        dialog.set_should_remember_choice(
-            message_dialog.RememberedDialog.SAVE_EDITED_ARCHIVE)
-        dialog.set_text(
-            _('Write "%s" again now?') % os.path.basename(path),
-            _('The archive on disk will be replaced by the book as it '
-              'stands, without the pages that were removed.'))
-        dialog.add_button(_('_Not now'), Response.NO)
-        dialog.add_button(_('_Save'), Response.YES)
-        # Enter must not overwrite an archive.  A confirmation defaults
-        # to the answer that changes nothing.
-        dialog.set_default_response(Response.NO)
-        dialog.run_async(self._save_answered)
-
-    def _save_answered(self, response: int) -> None:
-        if response == Response.YES:
-            self.save_archive()
-
-    def save_archive(self) -> bool:
-        """Write the open book over the archive it came from.
-
-        Every page is waited for first: one that is not out of the
-        archive yet cannot be written into the new one, and once the old
-        archive has been replaced the name it would have been read under
-        is no longer in it.
-        """
-        archive_type = self.writeable_archive_type()
-        path = self.filehandler.get_path_to_base()
-        if archive_type is None or path is None:
-            return False
-        # Through the cursor handler rather than set_layout_cursor(): the
-        # pointer hides itself after a couple of seconds of not moving,
-        # and a cursor set straight on the window is replaced by the
-        # hidden one part way through a save that takes longer than that.
-        self.cursor_handler.set_busy(True)
-        try:
-            image_files = list(self.imagehandler._image_files or [])
-            comment_files = [self.filehandler.get_comment_name(number)
-                             for number in range(
-                                 1, self.filehandler
-                                 .get_number_of_comments() + 1)]
-            # Both lists, not just the pages: a comment is extracted
-            # like anything else in the archive, and the packer reads
-            # its size before it writes it, so saving before it was out
-            # raised FileNotFoundError and refused the save.
-            self.filehandler.wait_for_files(image_files + comment_files)
-            archive_packer.write_archive(
-                path, image_files, comment_files,
-                carried_files=self.filehandler.get_other_files(),
-                archive_type=archive_type, permissions_from=path)
-        except OSError as error:
-            log.error(_('! Could not save the archive %(archivefile)s: '
-                        '%(error)s'),
-                      {'archivefile': path, 'error': error})
-            dialog = message_dialog.MessageDialog(
-                self, buttons=Gtk.ButtonsType.CLOSE)
-            dialog.set_text(_("The new archive could not be saved!"),
-                            _("The original files have not been removed."))
-            dialog.run_async(lambda response: None)
-            return False
-        finally:
-            # Anything that gets out of the block above, and not only the
-            # OSError it answers, would otherwise leave the whole program
-            # pointing at a wait cursor.
-            self.cursor_handler.set_busy(False)
-        return True
-
-    def undo(self, *args: object) -> bool:
-        """Put the pages back as they were before the last change."""
-        if not self._undone:
-            return False
-        self._redone.append(list(self.imagehandler._image_files or []))
-        # The pages an undo brings back were never picked out, and every
-        # number after them has moved: there is nothing to carry over.
-        self.selected_pages = set()
-        listing = self._undone.pop()
-        self._show_pages(listing, min(self.imagehandler.get_current_page(),
-                                      len(listing)))
-        return True
-
-    def redo(self, *args: object) -> bool:
-        """Make the last undone change again."""
-        if not self._redone:
-            return False
-        self._undone.append(list(self.imagehandler._image_files or []))
-        self.selected_pages = set()
-        listing = self._redone.pop()
-        self._show_pages(listing, min(self.imagehandler.get_current_page(),
-                                      len(listing)))
-        return True
-
-    def can_undo(self) -> bool:
-        return bool(self._undone)
-
-    def can_redo(self) -> bool:
-        return bool(self._redone)
-
     def page_at(self, x: float, y: float) -> "int | None":
         """The number of the page drawn at <x>, <y> on the page area.
 
@@ -1444,8 +1266,9 @@ class MainWindow(Gtk.Window):
         current: int = self.imagehandler.get_current_page()
         if not self.filehandler.file_loaded or not current:
             return None
-        x += self._hadjust.get_value()
-        y += self._vadjust.get_value()
+        offset_x, offset_y = self.scroll_offset()
+        x += offset_x
+        y += offset_y
         # The layout holds one box per page on screen, in the order the
         # pages were handed to it, wherever it decided to put them.
         for offset, content in enumerate(self.layout.get_content_boxes()):
@@ -1455,223 +1278,6 @@ class MainWindow(Gtk.Window):
                 return current + offset
         return None
 
-    def extract_page(self, *args: object) -> None:
-        """Save the pages on screen to disk."""
-        self._save_pages(self.displayed_pages())
-
-    def extract_popup_page(self, *args: object) -> None:
-        """Save the page the right-click menu was opened over.
-
-        In double page mode two pages stand side by side and the menu is
-        opened on one of them; opened on the background around them
-        there is no one page to mean, so both are offered, which is what
-        the menu bar's own Save As does.
-        """
-        page = self.popup_page
-        self._save_pages([page] if page is not None
-                         else self.displayed_pages())
-
-    def delete_popup_page(self, *args: object) -> None:
-        """Take the page the right-click menu was opened over out.
-
-        The one the menu stands on rather than the one picked out: the
-        menu was opened on a page, which says which page is meant as
-        plainly as picking one out does.  Opened on the background there
-        is no one page to mean, and the page picked out, if any, is what
-        is left.
-        """
-        self.delete_page(self.popup_page)
-
-    def _save_pages(self, pages: "Iterable[int]") -> None:
-        """Ask where each of <pages> should go, and put it there.
-
-        A number is appended to the name offered where a file of that
-        name is in the target directory already.
-        """
-        for page in pages:
-            file_path = self.imagehandler.get_path_to_page(page)
-            if not file_path:
-                return
-            file_name = os.path.split(file_path)[-1]
-
-            if self.filehandler.archive_type is not None:
-                # Prepend the archive base name to the filename being displayed
-                archive_name = self.filehandler.get_pretty_current_filename()
-                file_name = (
-                    os.path.splitext(archive_name)[0] + '_' + file_name)
-
-            target_dir = prefs['path of last saved in filechooser']
-            suggest_name = i18n.to_unicode(file_name)
-            attempt = 1
-            while os.path.exists(os.path.join(target_dir, suggest_name)):
-                suggest_name = tools.append_number_to_filename(
-                    file_name, number=attempt)
-                attempt += 1
-
-            # MComix' own chooser, as the archive editor's Save As and
-            # every Open in the program use.  A Gtk.FileDialog asks the
-            # desktop for the chooser instead, which is drawn by the
-            # file chooser portal where one is installed - another
-            # program, which MComix' colour scheme does not reach.
-            save_dialog = file_chooser_simple_dialog.SimpleFileChooserDialog(
-                Gtk.FileChooserAction.SAVE, self, folder=target_dir)
-            save_dialog.set_title(_('Save page as'))
-            save_dialog.set_save_name(suggest_name)
-
-            # Both pages of a double page get a dialog of their own, and
-            # they stand at the same time: each answer needs the page it
-            # was asked about, not whichever one the loop ended on.
-            def saved(paths: list[str], file_path: str = file_path,
-                      dialog: file_chooser_simple_dialog.SimpleFileChooserDialog
-                      = save_dialog) -> None:
-                dialog.destroy()
-                if paths:
-                    self._save_page_to(file_path, paths[0])
-
-            save_dialog.run_async(saved)
-
-    def _save_page_to(self, file_path: str, target: str) -> None:
-        """Copy the page at <file_path> to <target>.
-
-        Where it went is where the next save starts from, which is not
-        the folder the chooser opened in: the user may have walked out
-        of it.
-        """
-        target = i18n.to_unicode(target)
-        try:
-            shutil.copy2(file_path, target)
-        except Exception as e:
-            log.warning(e)
-
-        prefs['path of last saved in filechooser'] = \
-            os.path.dirname(target) \
-            if prefs['store last saved in directory'] \
-            else constants.HOME_DIR
-
-    def delete(self, *args: object) -> None:
-        """Delete the page that is picked out, or else the whole file.
-
-        Delete acts on a selection wherever there is one, which is how
-        every list in the program reads the key; a page is picked out
-        only by Ctrl and a click on it, and it is drawn outlined while
-        it is, so nothing is picked out by accident.  With nothing
-        picked out the key means what it always meant, and asks before
-        it removes the file from disk.
-        """
-        if self.selected_pages:
-            self.delete_page()
-            return
-
-        current_file = self.imagehandler.get_real_path()
-        if current_file is None:
-            # The menu entry is insensitive without a file open.
-            return
-        dialog = message_dialog.MessageDialog(
-                self, modal=True, buttons=Gtk.ButtonsType.NONE)
-        dialog.set_should_remember_choice(
-                message_dialog.RememberedDialog.DELETE_OPENED_FILE)
-        dialog.set_text(
-                _('Delete "%s"?') % os.path.basename(current_file),
-                _('The file will be deleted from your harddisk.'))
-        dialog.add_button(_('_Cancel'), Response.CANCEL)
-        dialog.add_button(_('_Delete'), Response.OK)
-        # Enter must not delete a file.  A confirmation defaults to the
-        # answer that changes nothing, and the one that does not is
-        # drawn as the destructive action it is.
-        dialog.set_default_response(Response.CANCEL)
-        deletes = dialog.get_widget_for_response(Response.OK)
-        if deletes is not None:
-            deletes.add_css_class('destructive-action')
-        dialog.run_async(lambda response: self._delete_answered(response, current_file))
-
-    def _delete_answered(self, result: int, current_file: str) -> None:
-        """Delete <current_file> if the confirmation came back positive."""
-        if result == Response.OK:
-            # Go to next page/archive, and delete current file
-            if self.filehandler.archive_type is not None:
-                self.filehandler.last_read_page.clear_page(current_file)
-
-                next_opened = self.filehandler._open_next_archive()
-                if not next_opened:
-                    next_opened = self.filehandler._open_previous_archive()
-                if not next_opened:
-                    self.filehandler.close_file()
-
-                if os.path.isfile(current_file):
-                    os.unlink(current_file)
-            else:
-                if self.imagehandler.get_number_of_pages() > 1:
-                    # Open the next/previous file
-                    if self.imagehandler.get_current_page() >= self.imagehandler.get_number_of_pages():
-                        self.flip_page(-1)
-                    else:
-                        self.flip_page(+1)
-                    # Unlink the desired file
-                    if os.path.isfile(current_file):
-                        os.unlink(current_file)
-                    # Refresh the directory
-                    self.filehandler.refresh_file()
-                else:
-                    self.filehandler.close_file()
-                    if os.path.isfile(current_file):
-                        os.unlink(current_file)
-
-    def move_current_file(self, directory: str) -> None:
-        """Move the open file, or the archive it is a page of, into
-        <directory>, and go on reading it where it has landed.
-
-        The book is not closed and opened again at its first page: the
-        page being read is the page that comes back, which is what makes
-        this different from moving the file from outside and opening it
-        afresh.  Where the old path is recorded it is brought forward -
-        the library holds one, and so does the store of last read pages.
-        """
-        current_file = self.imagehandler.get_real_path()
-        if current_file is None:
-            # The menu entries are insensitive without a file open.
-            return
-        in_archive = self.filehandler.archive_type is not None
-        page = self.imagehandler.get_current_page()
-        try:
-            target = file_mover.move_file(current_file, directory)
-        except OSError as error:
-            self._move_failed(current_file, directory, error)
-            return
-
-        self.uimanager.move_to.remember(directory)
-        backend.LibraryBackend().update_book_path(current_file, target)
-        # A loose image works out its own page from the file it is
-        # opened on; only an archive has to be told which one to show.
-        self.filehandler.open_file(target, page if in_archive else 0)
-        # Opening the book closed it first, which wrote the page being
-        # read back under the path the file no longer has.
-        self.filehandler.last_read_page.clear_page(current_file)
-
-    def _move_failed(self, current_file: str, directory: str,
-                     error: OSError) -> None:
-        """Say why <current_file> did not move into <directory>.
-
-        Nothing has moved when this is called, so what the message has
-        to say is why, and it says it in the terms the reader can act
-        on: a name that is taken, or a disk without the room.
-        """
-        log.error(_('! Could not move %(file)s to %(directory)s: %(error)s'),
-                  {'file': current_file, 'directory': directory,
-                   'error': error})
-        if error.errno == errno.EEXIST:
-            reason = _('A file of that name is there already.')
-        elif error.errno == errno.ENOSPC:
-            reason = (_('There is not enough room there: the file is %s.')
-                      % tools.format_byte_size(os.path.getsize(current_file)))
-        else:
-            reason = str(error)
-        dialog = message_dialog.MessageDialog(
-            self, buttons=Gtk.ButtonsType.CLOSE)
-        dialog.set_text(_('Could not move "%(file)s" to "%(directory)s"')
-                        % {'file': os.path.basename(current_file),
-                           'directory': directory},
-                        reason)
-        dialog.run_async(lambda response: None)
 
     def show_info_panel(self) -> None:
         """ Shows an OSD displaying information about the current page. """
@@ -1854,8 +1460,8 @@ class MainWindow(Gtk.Window):
             thread.join()
 
 
-#: The loop the program runs in.  Gtk.main() and Gtk.main_quit() are
-#: not in GTK4; the main context they ran was always GLib's.
+#: The loop the program runs in, on GLib's default main context,
+#: which is the one GTK dispatches its events on.
 _main_loop = GLib.MainLoop()
 
 

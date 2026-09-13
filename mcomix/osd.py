@@ -39,7 +39,7 @@ class OnScreenDisplay:
 
         # Determine text to draw
         text = self._wrap_text(text)
-        layout = self._window._main_layout.create_pango_layout(text)
+        layout = self._window.page_area.create_pango_layout(text)
 
         # Set up font information
         font = layout.get_context().get_font_description()
@@ -56,10 +56,11 @@ class OnScreenDisplay:
 
         # Calculate surrounding box
         layout_width, layout_height = layout.get_pixel_size()
+        offset_x, offset_y = self._window.scroll_offset()
         pos_x = max(int(max_width // 2) - int(layout_width // 2) +
-                    int(self._window._hadjust.get_value()), 0)
+                    int(offset_x), 0)
         pos_y = max(int(max_height) - int(layout_height * 1.1) +
-                    int(self._window._vadjust.get_value()), 0)
+                    int(offset_y), 0)
 
         rect = (pos_x - 10, pos_y - 20,
                 layout_width + 20, layout_height + 20)
@@ -104,7 +105,7 @@ class OnScreenDisplay:
         if not self._last_osd_rect:
             return
 
-        self._window._main_layout.set_overlay(self._OVERLAY, None)
+        self._window.page_area.set_overlay(self._OVERLAY, None)
         self._last_osd_rect = None
 
     def _scale_font(self, font: Pango.FontDescription, layout: Pango.Layout,
@@ -152,6 +153,6 @@ class OnScreenDisplay:
             PangoCairo.update_layout(cr, layout)
             PangoCairo.show_layout(cr, layout)
 
-        self._window._main_layout.set_overlay(self._OVERLAY, draw)
+        self._window.page_area.set_overlay(self._OVERLAY, draw)
 
 # vim: expandtab:sw=4:ts=4

@@ -47,10 +47,9 @@ class PageCanvas(Gtk.Widget):
         #: The last size announced through 'resized'.
         self._allocated = (0, 0)
         # A page larger than the window must not be drawn over the rest
-        # of it; the scrolling window Gtk.Layout drew into clipped it.
+        # of it.
         self.set_overflow(Gtk.Overflow.HIDDEN)
-        # Gtk.Layout.get_pointer() came from the same GdkWindow, which
-        # GTK4 does not have; a controller is the way to ask now.
+        # get_pointer() answers with what this controller last reported.
         motion = Gtk.EventControllerMotion()
         motion.connect('motion', self._moved)
         self.add_controller(motion)
@@ -150,8 +149,8 @@ class PageCanvas(Gtk.Widget):
 
     def do_measure(self, orientation: Gtk.Orientation,
                    for_size: int) -> tuple[int, int, int, int]:
-        # Nothing, the way Gtk.Layout asked for nothing: the canvas is
-        # whatever room is left over, and scrolls for the rest.
+        # Nothing: the canvas is whatever room is left over, and scrolls
+        # for the rest.
         return 0, 0, -1, -1
 
     def do_size_allocate(self, width: int, height: int,
@@ -184,9 +183,9 @@ class PageCanvas(Gtk.Widget):
 
     @staticmethod
     def _configure(adjustment: Gtk.Adjustment, viewport: int, content: int) -> None:
-        # Gtk.Layout took the upper bound to be whichever of the canvas
-        # and the window was larger, so that a page smaller than the
-        # window leaves nothing to scroll; scroll() reads it back.
+        # The upper bound is whichever of the content and the viewport
+        # is larger, so that a page smaller than the window leaves
+        # nothing to scroll; MainWindow.scroll() reads it back.
         upper = max(content, viewport)
         value = min(adjustment.get_value(), upper - viewport)
         adjustment.configure(max(0, value), 0, upper,

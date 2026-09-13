@@ -336,8 +336,8 @@ class _KeybindingManager:
         if action is None:
             return
         func, args, kwargs = self._action_to_callback[action]
-        # There is no key-press-event to stop in GTK4; the key
-        # controller in event.py says so by what it answers.
+        # Whether the key goes any further is for the key controller in
+        # event.py to say, by what it answers.
         func(*args, **kwargs)
 
     def save(self) -> None:

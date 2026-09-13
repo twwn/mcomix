@@ -16,6 +16,8 @@ import tempfile
 from . import MComixTest
 
 from mcomix import constants
+from mcomix import preferences
+from mcomix.preferences import prefs
 
 
 class RedirectionTest(MComixTest):
@@ -28,6 +30,20 @@ class RedirectionTest(MComixTest):
             self.assertTrue(path.startswith(self.tmp_dir),
                             '%s is %s, outside the temporary home'
                             % (name, path))
+
+    def test_a_file_chooser_starts_out_in_the_temporary_home(self):
+        """The folders a chooser starts in default to the home
+        directory, which preferences took from constants at import time
+        just as the paths above were, so a chooser with no book open to
+        start from listed the reader's own home."""
+        for key in ('path of last browsed in filechooser',
+                    'path of last saved in filechooser'):
+            self.assertTrue(prefs[key].startswith(self.tmp_dir),
+                            '%s is %s, outside the temporary home'
+                            % (key, prefs[key]))
+            self.assertEqual(preferences._as_read[key], prefs[key],
+                             'resetting %s would be written as a change'
+                             % key)
 
     def test_a_cleanup_still_writes_into_the_temporary_home(self):
         """Cleanups run in the reverse of the order they were added in,

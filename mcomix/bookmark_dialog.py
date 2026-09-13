@@ -48,7 +48,6 @@ class _BookmarksDialog(Dialog):
 
         scrolled = Gtk.ScrolledWindow()
         widgets.set_border(scrolled, 0)
-        # Gtk.ShadowType is gone; the frame comes from the theme.
         scrolled.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
         widgets.pack(self.get_content_area(), scrolled, True, True, 0)
 
@@ -99,9 +98,9 @@ class _BookmarksDialog(Dialog):
         self._store_changed()
 
         # What the store's own docstring promises: a change to it shows
-        # in the menu and in the dialog alike.  Adding a bookmark with
-        # Ctrl+D, or a second window removing one, used to leave the
-        # dialog listing what the store held when it opened.
+        # in the menu and in the dialog alike, so a bookmark added with
+        # Ctrl+D, or removed from a second window, shows here too while
+        # the dialog is open.
         self._bookmarks_store.add_bookmark += self._bookmark_added
         self._bookmarks_store.remove_bookmark += self._bookmark_removed
         self._bookmarks_store.clear_bookmarks += self._bookmarks_cleared

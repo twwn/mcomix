@@ -95,7 +95,7 @@ class _PropertiesDialog(Dialog):
         # in front of the queue.
         path = window.imagehandler.get_path_to_page(1)
         if path is not None:
-            window.filehandler._ask_for_files([path])
+            window.filehandler.ask_for_files([path])
         self._update_page_image(page, 1)
         filename = window.filehandler.get_pretty_current_filename()
         page.set_filename(filename)

@@ -18,8 +18,10 @@ from mcomix import column_list
 from mcomix import constants
 from mcomix import icons
 from mcomix import main
+from mcomix.dialog import Response
 from mcomix.library import collection_area
 from mcomix.library import main_dialog
+from mcomix.library import watchlist
 
 
 class _LibraryWindowTest(MComixTest):
@@ -116,6 +118,74 @@ class LibraryDialogTest(_LibraryWindowTest):
         self.assertLess(
             natural,
             2 * column_list._text_width(collection_area._SIDEBAR_MAX_CHARS))
+
+
+class WatchListScanTest(_LibraryWindowTest):
+
+    """The watch list dialog's "Scan now" reaching the real library.
+
+    The watch list dialog is covered against a stub library that counts
+    the calls, and the library's own scan is covered from the library
+    side; nothing put the two together, so nothing would have noticed
+    the two halves drifting apart - a renamed method, or a scan that no
+    longer reaches the pointer.
+    """
+
+    def _watch_list(self, dialog):
+        watch_list = watchlist.WatchListDialog(dialog)
+        self.addCleanup(watch_list.destroy)
+        pump()
+        return watch_list
+
+    @staticmethod
+    def _cursor_name(dialog):
+        cursor = dialog.get_cursor()
+        return None if cursor is None else cursor.get_name()
+
+    def test_scan_now_scans_the_library_it_was_opened_from(self):
+        dialog = self._open()
+        directory = os.path.join(self.tmp_dir, 'watched')
+        os.makedirs(directory, exist_ok=True)
+        dialog.backend.watchlist.add_directory(directory)
+        watch_list = self._watch_list(dialog)
+
+        watch_list.response(watchlist.WatchListDialog.RESPONSE_SCANNOW)
+        # Read before pumping: an empty directory is walked at once, and
+        # the finish that puts the pointer back is waiting in the idle
+        # queue for the first pump to deliver it.
+        self.assertEqual('wait', self._cursor_name(dialog),
+                         'Scan now did not start a scan of the library')
+        pump()
+        self.assertTrue(watch_list.get_visible(),
+                        'Scan now took the watch list away')
+        self.assertTrue(
+            wait_for(lambda: self._cursor_name(dialog) is None, seconds=20),
+            'the library was left showing the wait pointer')
+
+    def test_closing_an_edited_watch_list_scans_the_library(self):
+        """The edits are written as they are made, so closing owes a
+        scan; Scan now has already covered them, so closing after one
+        does not."""
+        dialog = self._open()
+        directory = os.path.join(self.tmp_dir, 'watched')
+        os.makedirs(directory, exist_ok=True)
+        dialog.backend.watchlist.add_directory(directory)
+        watch_list = self._watch_list(dialog)
+        watch_list._changed = True
+
+        with unittest.mock.patch.object(dialog, 'scan_for_new_files') as scan:
+            watch_list.response(Response.CLOSE)
+            pump()
+        scan.assert_called_once_with()
+
+    def test_closing_an_unedited_watch_list_scans_nothing(self):
+        dialog = self._open()
+        watch_list = self._watch_list(dialog)
+
+        with unittest.mock.patch.object(dialog, 'scan_for_new_files') as scan:
+            watch_list.response(Response.CLOSE)
+            pump()
+        scan.assert_not_called()
 
 
 class LibraryScanCursorTest(_LibraryWindowTest):

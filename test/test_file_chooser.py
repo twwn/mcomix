@@ -91,6 +91,10 @@ class FileChooserTest(MComixTest):
     def test_a_chooser_with_no_parent_takes_the_main_window(self):
         from mcomix import file_chooser_simple_dialog
         dialog = file_chooser_simple_dialog.SimpleFileChooserDialog()
+        # GTK starts loading the folder once the loop turns, and a
+        # chooser destroyed before then reports the cancelled load in
+        # an error dialog of GTK's own, which outlives the chooser.
+        pump()
         try:
             self.assertIs(dialog.get_transient_for(), self.window)
         finally:

@@ -22,9 +22,8 @@ class EventHandler:
     def __init__(self, window: 'main.MainWindow') -> None:
         self._window = window
 
-        # Where the pointer was, in the fractional coordinates a GTK4
-        # gesture reports: these were whole numbers, which is not what
-        # any of the controllers below hand over.
+        # Where the pointer was, in the fractional coordinates the
+        # controllers below report.
         self._last_pointer_pos_x = 0.0
         self._last_pointer_pos_y = 0.0
         self._pressed_pointer_pos_x = 0.0
@@ -116,7 +115,7 @@ class EventHandler:
                 redraw = True
             else:
                 redraw = not self._window.restore_window_geometry()
-            self._window._update_toggles_sensitivity()
+            self._window.update_toggles_sensitivity()
             if redraw:
                 self._window.previous_size = self._window.get_window_size()
                 self._window.draw_image()
@@ -338,19 +337,19 @@ class EventHandler:
 
         manager.register('delete',
                          ['Delete'],
-                         self._window.delete)
+                         self._window.file_actions.delete)
 
         manager.register('undo',
                          ['<Control>z'],
-                         self._window.undo)
+                         self._window.file_actions.undo)
 
         manager.register('redo',
                          ['<Control>y', '<Control><Shift>z'],
-                         self._window.redo)
+                         self._window.file_actions.redo)
 
         manager.register('extract_page',
                          ['<Control><Shift>s'],
-                         self._window.extract_page)
+                         self._window.file_actions.extract_page)
 
         manager.register('refresh_archive',
                          ['<control><shift>R'],
@@ -358,11 +357,11 @@ class EventHandler:
 
         manager.register('next_archive',
                          ['<control><shift>N'],
-                         self._window.filehandler._open_next_archive)
+                         self._window.filehandler.open_next_archive)
 
         manager.register('previous_archive',
                          ['<control><shift>P'],
-                         self._window.filehandler._open_previous_archive)
+                         self._window.filehandler.open_previous_archive)
 
         manager.register('next_directory',
                          ['<control>N'],
@@ -480,13 +479,12 @@ class EventHandler:
         ALL_ACCELS_MASK = (Gdk.ModifierType.CONTROL_MASK | Gdk.ModifierType.SHIFT_MASK |
                            Gdk.ModifierType.ALT_MASK)
 
-        # Gdk.Keymap is gone in GTK4; the display translates a key, and
-        # the controller knows which layout it was typed in.  'consumed'
-        # is the modifiers that were needed to type the key, which are
-        # not part of the accelerator it stands for: on a German layout
-        # an underscore is typed with Shift, so Shift+minus is not
-        # Shift+underscore.  The group and level the translation landed
-        # in are of no interest here.
+        # The display translates a key, and the controller knows which
+        # layout it was typed in.  'consumed' is the modifiers that were
+        # needed to type the key, which are not part of the accelerator
+        # it stands for: on a German layout an underscore is typed with
+        # Shift, so Shift+minus is not Shift+underscore.  The group and
+        # level the translation landed in are of no interest here.
         translated, accel_keyval, _group, _level, consumed = \
             self._window.get_display().translate_key(
                 keycode, state, controller.get_group())
@@ -564,7 +562,7 @@ class EventHandler:
                 else:
                     self._smart_scroll_up(pixels)
             else:
-                self._scroll_with_flipping(0, pixels if down else -pixels)
+                self.scroll_with_flipping(0, pixels if down else -pixels)
 
         elif delta_x:
             # Which way round a sideways turn reads depends on the book.
@@ -589,8 +587,8 @@ class EventHandler:
         if self._window.was_out_of_focus:
             return
 
-        # The coordinates are the page area's own now; GTK4 has no root
-        # window to give them in.  Both the press and the release are
+        # The coordinates are the page area's own, since there is no
+        # root window to give them in.  Both the press and the release are
         # measured against it, and the page area does not move under the
         # pointer while it scrolls, so the comparisons still hold.
         button = gesture.get_current_button()
@@ -705,7 +703,7 @@ class EventHandler:
 
         return True
 
-    def _scroll_with_flipping(self, x: float, y: float) -> bool:
+    def scroll_with_flipping(self, x: float, y: float) -> bool:
         """Handle scrolling with the scroll wheel or the arrow keys, for which
         the pages might be flipped depending on the preferences.  Returns True
         if able to scroll without flipping and False if a new page was flipped
@@ -728,19 +726,19 @@ class EventHandler:
 
     def _scroll_down(self) -> None:
         """ Scrolls down. """
-        self._scroll_with_flipping(0, prefs['number of pixels to scroll per key event'])
+        self.scroll_with_flipping(0, prefs['number of pixels to scroll per key event'])
 
     def _scroll_up(self) -> None:
         """ Scrolls up. """
-        self._scroll_with_flipping(0, -prefs['number of pixels to scroll per key event'])
+        self.scroll_with_flipping(0, -prefs['number of pixels to scroll per key event'])
 
     def _scroll_right(self) -> None:
         """ Scrolls right. """
-        self._scroll_with_flipping(prefs['number of pixels to scroll per key event'], 0)
+        self.scroll_with_flipping(prefs['number of pixels to scroll per key event'], 0)
 
     def _scroll_left(self) -> None:
         """ Scrolls left. """
-        self._scroll_with_flipping(-prefs['number of pixels to scroll per key event'], 0)
+        self.scroll_with_flipping(-prefs['number of pixels to scroll per key event'], 0)
 
     def _smart_scroll_down(self, small_step: int | None = None) -> None:
         """Take one smart scrolling step along the reading order.
@@ -861,6 +859,15 @@ class EventHandler:
 
         self._extra_scroll_events = min(-1, self._extra_scroll_events - 1)
         return False
+
+    def reset_extra_scroll_events(self) -> None:
+        """Forget the scrolls past the edge of the page counted so far.
+
+        They turn the page once there are as many as the preference
+        'number of key presses before page turn' asks for, so a change
+        to that number starts the count again.
+        """
+        self._extra_scroll_events = 0
 
     def _flip_page(self, number_of_pages: int,
                    single_step: bool = False) -> None:

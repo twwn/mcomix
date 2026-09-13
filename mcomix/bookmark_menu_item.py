@@ -51,14 +51,29 @@ class _Bookmark:
         return '%s, (%d / %d)' % (self._name, self._page, self._numpages)
 
     def load(self, *args: object) -> None:
-        """Open the file and page the bookmark represents."""
+        """Open the file and page the bookmark represents.
+
+        Where that book is open already, only the page is turned:
+        opening it again would close it first, and closing a book
+        forgets the pages picked out of it and the changes that could be
+        undone.  A bookmark in a folder of images names the file of its
+        page, so the open folder is recognised by holding that file, and
+        the page is found by it rather than by the number, which the
+        folder may have moved since.  An archive is recognised by its
+        own path.
+        """
 
         if self._file_handler is None or self._window is None:
             raise ValueError('The bookmark has no window to open in.')
-        if self._file_handler._base_path != self._path:
-            self._file_handler.open_file(self._path, self._page)
-        else:
+        if self._file_handler.archive_type is None:
+            files = self._window.imagehandler.get_image_files()
+            if self._path in files:
+                self._window.set_page(files.index(self._path) + 1)
+                return
+        elif self._file_handler.get_path_to_base() == self._path:
             self._window.set_page(self._page)
+            return
+        self._file_handler.open_file(self._path, self._page)
 
     def open_in_new_instance(self) -> None:
         """Open the file and page in an MComix of its own.

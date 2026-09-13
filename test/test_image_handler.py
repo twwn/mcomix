@@ -135,6 +135,17 @@ class VirtualDoublePageTest(MComixTest):
             image_tools.load_pixbuf = real_load
         self.assertEqual(reads, [], 'the broken page was read a second time')
 
+    def test_the_thumbnail_of_a_page_that_will_not_load_is_the_missing_icon(self):
+        """The thumbnail bar and the page selector draw what this
+        answers, and both take None for a page not extracted yet, to be
+        asked for again once it has been."""
+        self._open('portrait-no-exif.png')
+        broken = self.handler.get_path_to_page(1)
+        with open(broken, 'wb') as damaged:
+            damaged.write(b'not an image')
+        self.assertIs(self.handler.get_thumbnail(1, 64, 64),
+                      image_tools.missing_image_icon())
+
     def test_a_page_that_loads_is_the_pixbuf_the_cache_keeps(self):
         self._open('portrait-no-exif.png')
         self.handler._raw_pixbufs.clear()

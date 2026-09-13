@@ -127,17 +127,17 @@ class LastReadPage:
         # the library solely because they were read, so they go with the
         # information about having read them.
         #
-        # This used to require an entry in table "recent" as well, which
-        # let books leak. Closing an archive on page 1 clears that entry
+        # Membership alone decides, not an entry in table "recent" as
+        # well.  Closing an archive on page 1 clears that entry
         # (file_handler) without touching the book or its membership, so
-        # such a book was not collected here - and the statement below
-        # then removed it from "Recent" anyway, leaving a row in "book"
-        # belonging to no collection at all, which nothing ever removes.
+        # such a book would not be collected here, and the statement
+        # below would still remove it from "Recent", leaving a row in
+        # "book" that belongs to no collection and that nothing removes.
         #
-        # Those leaked rows cannot be cleaned up retroactively: a book in
-        # no collection is also what add_book(path, None) creates, which
-        # is how the library adds a book without filing it, so the two
-        # are indistinguishable after the fact.
+        # A database written by an older version may hold rows left
+        # behind that way, and they cannot be cleaned up: a book in no
+        # collection is also what add_book(path, None) creates, which is
+        # how the library adds a book without filing it.
         sql = """SELECT c.book FROM contain c
                  JOIN (SELECT book FROM contain
                        GROUP BY book HAVING COUNT(*) = 1

@@ -26,14 +26,10 @@ class _Page(Gtk.ScrolledWindow):
 
         topbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 12)
         widgets.pack(self._vbox, topbox, True, True, 0)
-        # A Gtk.Image draws what it is given at an icon size in GTK4.
+        # A Gtk.Image draws what it is given at an icon size.
         self._thumb = Gtk.Picture()
         self._thumb.set_size_request(128, 128)
         widgets.pack(topbox, self._thumb, False, False, 0)
-        # A Gtk.Frame draws its own border from the theme in GTK4:
-        # there is no shadow type to pick, and the Gtk.EventBox that
-        # used to sit inside it to paint a background is gone with the
-        # rest of them.  The frame holds the box directly.
         borderbox = Gtk.Frame()
         borderbox.set_size_request(-1, 130)
         widgets.pack(topbox, borderbox, True, True, 0)

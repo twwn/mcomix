@@ -45,7 +45,7 @@ class _LibraryDialog(Gtk.Window):
                  file_handler: "file_handler_module.FileHandler") -> None:
         super().__init__()
 
-        self._window = window
+        self.main_window = window
 
         self.set_default_size(prefs['lib window width'],
                               prefs['lib window height'])
@@ -75,9 +75,6 @@ class _LibraryDialog(Gtk.Window):
         #: normal when the last of them is over, not the first.
         self._scans_running = 0
 
-        # See the note on the same conversion in mcomix/main.py: Gtk.Grid
-        # takes a corner and a size where Gtk.Table took edges, and carries
-        # what were attach options as properties of the child.
         grid = Gtk.Grid()
         for child, column, row, width, height, hexpand, vexpand in (
                 (self.collection_area, 0, 0, 1, 1, False, True),
@@ -114,7 +111,7 @@ class _LibraryDialog(Gtk.Window):
         if not keep_library_open:
             self.set_visible(False)
 
-        self._window.present()
+        self.main_window.present()
 
         if len(paths) > 1:
             self._file_handler.open_file(paths)
@@ -191,8 +188,6 @@ class _LibraryDialog(Gtk.Window):
 
     def close(self, *args: object) -> None:
         """Close the library and do required cleanup tasks."""
-        # Gtk.Window.get_size() is gone; a GTK4 window is a widget
-        # with a width and a height of its own.
         if self.get_width() and self.get_height():
             prefs['lib window width'] = self.get_width()
             prefs['lib window height'] = self.get_height()

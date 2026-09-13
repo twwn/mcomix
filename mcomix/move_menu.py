@@ -168,7 +168,7 @@ class MoveToMenu:
 
     def _move_activated(self, action: Gio.SimpleAction,
                         target: GLib.Variant) -> None:
-        self._window.move_current_file(target.get_string())
+        self._window.file_actions.move_current_file(target.get_string())
 
     def _other_activated(self, *args: object) -> None:
         """Ask for a directory that is on none of the lists."""
@@ -180,7 +180,7 @@ class MoveToMenu:
         def chosen(paths: list[str]) -> None:
             dialog.destroy()
             if paths:
-                self._window.move_current_file(paths[0])
+                self._window.file_actions.move_current_file(paths[0])
 
         dialog.run_async(chosen)
 

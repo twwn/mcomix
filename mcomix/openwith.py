@@ -240,9 +240,9 @@ class OpenWithCommand:
                 _("Archive-related variables can only be used for archives."))
 
         # Both of these answer None where there is nothing open, and
-        # every variable below is built out of one of them, so the answer
-        # used to be a type error out of os.path rather than the
-        # complaint this method raises for everything else it cannot do.
+        # every variable below is built out of one of them, so None is
+        # turned into the complaint this method raises for everything
+        # else it cannot do before it can reach os.path.
         def base_path() -> str:
             answer = window.filehandler.get_path_to_base()
             if answer is None:
@@ -326,7 +326,6 @@ class OpenWithEditor(Dialog):
 
     def __init__(self, window: 'main.MainWindow',
                  openwithmanager: OpenWithManager) -> None:
-        # GTK4's Gtk.Dialog takes properties, not a positional title.
         super().__init__(
             title=_('Edit external commands'), transient_for=window)
         self.set_destroy_with_parent(True)

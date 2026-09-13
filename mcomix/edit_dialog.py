@@ -72,8 +72,6 @@ class _EditArchiveDialog(Dialog):
         self._import_button = self.add_button(_('_Import'), constants.RESPONSE_IMPORT)
 
         widgets.set_border(self, 4)
-        # Gdk.Screen is gone in GTK4; a display has monitors, and a
-        # window asks for a size rather than being given one.
         # As large on this screen as 750x600 was on the ones MComix
         # was written for; the pages inside follow the screen too.
         self.set_default_size(*_fit_on_screen(preview.scaled(750, self),
@@ -125,9 +123,9 @@ class _EditArchiveDialog(Dialog):
             self._image_area.select_paths(self._window.selected_page_paths())
         finally:
             # The cursor belongs to the main window rather than to this
-            # dialog, so anything that got out of the two calls above
-            # used to leave the whole program pointing at a wait cursor
-            # with an editor that could neither save nor import.
+            # dialog: whatever gets out of the two calls above, the
+            # program must not be left pointing at a wait cursor over an
+            # editor that can neither save nor import.
             self._window.cursor_handler.set_busy(False)
             self._save_button.set_sensitive(True)
             self._import_button.set_sensitive(True)

@@ -4,6 +4,7 @@ import os
 import pickle
 import shutil
 import threading
+import zipfile
 from unittest import mock
 
 from . import MComixTest, get_testfile_path, pump, wait_for
@@ -162,6 +163,53 @@ class RememberedResumeAnswerTest(MComixTest):
         self.assertEqual(1, self._open_and_settle())
 
 
+class ABookWithNoPagesTest(MComixTest):
+
+    """Closing an archive that has no pictures in it.
+
+    It opens - the handler counts it as loaded, and says there are no
+    images - but no page is ever shown, so there is no page to remember
+    and no reading to file under "Recent".
+    """
+
+    def setUp(self):
+        super().setUp()
+        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
+                          constants.THUMBNAIL_PATH):
+            os.makedirs(directory, exist_ok=True)
+        self.archive = os.path.join(self.tmp_dir, 'no-pictures.zip')
+        with zipfile.ZipFile(self.archive, 'w') as archive:
+            archive.writestr('readme.txt', 'Nothing to look at.')
+        icons.load_icons()
+        self.window = main.MainWindow()
+        main.set_main_window(self.window)
+        self.handler = self.window.filehandler
+        self.handler.last_read_page.set_enabled(True)
+        pump()
+
+    def tearDown(self):
+        self.window.terminate_program()
+        self.window.destroy()
+        main.set_main_window(None)
+        pump()
+        super().tearDown()
+
+    def test_closing_it_does_not_file_it_as_read(self):
+        self.assertTrue(self.handler.open_file(self.archive))
+        wait_for(lambda: self.handler.file_loaded)
+        pump()
+        self.assertEqual(0, self.window.imagehandler.get_current_page())
+
+        self.handler.close_file()
+        pump()
+
+        self.assertIsNone(self.handler.last_read_page.get_page(self.archive))
+        self.assertIsNone(
+            self.handler.last_read_page.backend.get_book_by_path(
+                self.archive),
+            'a book no page of which was shown went into the library')
+
+
 class BeforeAPageIsChosenTest(MComixTest):
 
     """What the handler answers between being given a book and being told
@@ -298,7 +346,7 @@ class BusyCursorTest(MComixTest):
 
 class CloseWakesWaitersTest(MComixTest):
 
-    """Closing a file wakes whatever is parked in _wait_on_file().
+    """Closing a file wakes whatever is parked in wait_on_file().
 
     That wait parks on the extractor's condition, and the only
     notify_all() the extractor makes fires when a file has finished
@@ -368,7 +416,7 @@ class CloseWakesWaitersTest(MComixTest):
         super().tearDown()
 
     def _wait(self):
-        self.handler._wait_on_file(self.PAGE)
+        self.handler.wait_on_file(self.PAGE)
         self.returned.set()
 
     def _park_the_waiter(self):

@@ -109,13 +109,12 @@ class PageImage(Gtk.Picture):
             width, height = (max(1, int(round(side))) for side in size)
             self._animation = _AnimationPaintable(width, height)
             self._animation.set_texture(image_tools.pixbuf_to_texture(pixbuf))
-            # Gtk.Image.set_from_animation() is gone, and nothing GTK4
-            # ships animates a pixbuf.  The frames are advanced from a
-            # thread of its own rather than from a tick callback: a tick
-            # callback only runs while something is redrawing the
-            # window, and a paintable that damages nothing but itself is
-            # not enough to keep the frame clock going - it ran at one
-            # frame a second.
+            # Nothing GTK4 ships animates a pixbuf.  The frames are
+            # advanced from a thread of their own rather than from a tick
+            # callback: a tick callback only runs while something is
+            # redrawing the window, and a paintable that damages nothing
+            # but itself does not keep the frame clock going, which then
+            # runs at one frame a second.
             self.set_paintable(self._animation)
             self._start(path)
             return

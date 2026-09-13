@@ -132,17 +132,16 @@ class _BaseFileChooserDialog(Dialog):
         # The preview sits beside the list rather than inside it, so the
         # dialog wants more height than width.
         self.filechooser.set_size_request(640, 560)
-        # GTK4 has no set_preview_widget(): the chooser will not hold
-        # anything of ours any more, so the preview goes beside it.
+        # GTK4 has no set_preview_widget(): the chooser holds nothing of
+        # ours, so the preview goes beside it.
         chooser_row = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 10)
         widgets.pack(chooser_row, self.filechooser, True, True, 0)
         widgets.pack(self.get_content_area(), chooser_row, True, True, 0)
         widgets.set_border(self, 4)
         widgets.set_border(self.filechooser, 6)
         self.connect('response', self._response)
-        # GTK4's Gtk.FileChooserWidget has no signals at all, so a
-        # double click no longer reaches file-activated; a click gesture
-        # on the widget is what is left to hear it.
+        # A GTK4 Gtk.FileChooserWidget has no file-activated signal, so a
+        # click gesture on the widget is what hears a double click.
         activate = Gtk.GestureClick()
         activate.set_button(1)
         activate.connect('pressed', self._activated)
@@ -157,13 +156,13 @@ class _BaseFileChooserDialog(Dialog):
         # the middle of the column, rather than filling it.
         preview_box.set_valign(Gtk.Align.CENTER)
         widgets.set_border(preview_box, 6)
-        # A Gtk.Image draws whatever it is given at an icon size in
-        # GTK4; a picture draws it at its own.
+        # A Gtk.Image draws whatever it is given at an icon size; a
+        # picture draws it at its own.
         self._preview_image = Gtk.Picture()
         self._preview_image.set_size_request(self._preview_size,
                                              self._preview_size)
         # A picture scales what it holds to whatever room it is given,
-        # so a thumbnail came out blurred and grew and shrank with the
+        # which blurs a thumbnail and makes it grow and shrink with the
         # dialog.  SCALE_DOWN never draws above the real size, and the
         # alignments keep the box from handing it any more room.
         self._preview_image.set_content_fit(Gtk.ContentFit.SCALE_DOWN)
@@ -192,18 +191,18 @@ class _BaseFileChooserDialog(Dialog):
         preview_box.set_visible(True)
         widgets.pack(chooser_row, preview_box, False, False, 0, end=True)
 
-        # And no update-preview to hear either - a GTK4
-        # Gtk.FileChooserWidget has no signals at all - so ask it what is
+        # And no update-preview signal to hear either, so ask it what is
         # selected every so often.  It is one property read; the timer
         # goes when the dialog does.
         self._previewed: str | None = None
         self._preview_timer: int | None = GLib.timeout_add(200, self._poll_preview)
         # 'unrealize', not 'destroy': GTK4 emits the latter when the last
         # reference to the window goes rather than when it is destroyed,
-        # and the handler is a method of the window, so the closure held
-        # one and the timer went on polling a destroyed chooser every
-        # 200 ms for the rest of the session.  Nothing here hides the
-        # dialog, which is the other thing that unrealizes a window.
+        # and a handler that is a method of the window holds a reference
+        # to it, so 'destroy' would never come and the timer would poll
+        # a closed chooser for the rest of the session.  Nothing here
+        # hides the dialog, which is the other thing that unrealizes a
+        # window.
         self.connect('unrealize', self._stop_previewing)
 
         self.place_buttons(buttons)
@@ -445,12 +444,9 @@ class _BaseFileChooserDialog(Dialog):
         """Add a filter, called <name>, for each mime type in <mimes> and
         each pattern in <patterns> to the filechooser.
         """
-        # Gtk.FileFilter.add_custom() is gone in GTK4, and with it
-        # Gtk.FileFilterInfo and Gtk.FileFilter.filter().  A filter built
-        # from mime types and patterns matches a file that answers any
-        # one of them, which is what the callback said.  What it matched
-        # on is kept here as well, for the walk below that has no chooser
-        # to ask.
+        # A filter built from mime types and patterns matches a file
+        # that answers any one of them.  What it matches on is kept here
+        # as well, for the walk below that has no chooser to ask.
         ffilter = Gtk.FileFilter()
         for mime in mimes:
             ffilter.add_mime_type(mime)
@@ -600,10 +596,10 @@ class _BaseFileChooserDialog(Dialog):
                     % os.path.basename(first_path),
                     _('Replacing it will overwrite its contents.'))
 
-                # Declining leaves this dialog standing, which is what
-                # stopping the response signal used to achieve; the answer
-                # now arrives too late to veto a signal that has been
-                # emitted, so finish the job from the answer instead.
+                # The answer arrives after the response signal has been
+                # emitted, too late to stop it, so the chooser is left
+                # standing and the save is finished from the answer:
+                # declining does nothing more.
                 def overwrite_answered(answer: int) -> None:
                     if answer == Response.OK:
                         self._files_accepted(paths, first_path)
@@ -672,9 +668,7 @@ class _BaseFileChooserDialog(Dialog):
         if self._destroyed:
             return
 
-        # Gtk.FileChooser.get_preview_filename() went with the rest of
-        # the preview API in GTK4; what is being previewed is what the
-        # poll last saw selected.
+        # What is being previewed is what the poll last saw selected.
         if self._previewed and self._previewed == filepath:
 
             if pixbuf is None:

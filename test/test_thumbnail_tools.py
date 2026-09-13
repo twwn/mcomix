@@ -6,10 +6,45 @@ from urllib.request import pathname2url
 import PIL.Image
 import PIL.PngImagePlugin
 
-from . import MComixTest, get_testfile_path
+from . import MComixTest, get_testfile_path, wait_for
 
 from mcomix import portability
 from mcomix import thumbnail_tools
+
+
+class ThumbnailFailureTest(MComixTest):
+
+    """A file named like a picture that will not decode as one.
+
+    Whether a file is a picture is decided by its name, so a damaged
+    page goes all the way to the decoder before anything finds out.
+    """
+
+    def setUp(self):
+        super().setUp()
+        self._thumbnailer = thumbnail_tools.Thumbnailer(store_on_disk=False,
+                                                        size=(128, 128))
+        self._source = os.path.join(self.tmp_dir, 'damaged.png')
+        with open(self._source, 'wb') as damaged:
+            damaged.write(b'not a picture at all')
+
+    def test_a_thumbnail_that_cannot_be_made_is_none(self):
+        """What thumbnail() says it answers when creation fails; the
+        archive editor and the library both test for None."""
+        self.assertIsNone(self._thumbnailer.thumbnail(self._source))
+
+    def test_a_threaded_one_still_says_it_has_finished(self):
+        """The file chooser's preview waits on thumbnail_finished, and
+        the thread used to die before sending it, leaving the preview
+        showing the picture selected before."""
+        finished = []
+        self._thumbnailer.thumbnail_finished += \
+            lambda path, pixbuf: finished.append((path, pixbuf))
+        self.assertIsNone(self._thumbnailer.thumbnail(self._source,
+                                                      threaded=True))
+        self.assertTrue(wait_for(lambda: finished, seconds=10),
+                        'the thread never said it had finished')
+        self.assertEqual(finished, [(self._source, None)])
 
 
 class ThumbnailReuseTest(MComixTest):

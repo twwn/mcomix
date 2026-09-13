@@ -1,17 +1,21 @@
 """ Tests for the bookmarks menu, which is a Gio.Menu model now. """
 
+import datetime
 import os
+import shutil
 import unittest.mock
 
 from gi.repository import Gdk, GLib, Gtk
 
-from . import MComixTest, pump
+from . import MComixTest, get_testfile_path, pump, wait_for
 
 from mcomix import bookmark_backend
 from mcomix import bookmark_menu_item
 from mcomix import constants
 from mcomix import bookmark_dialog
 from mcomix import bookmark_menu
+from mcomix import icons
+from mcomix import main
 from mcomix import message_dialog
 from mcomix import process
 from mcomix import widgets
@@ -37,11 +41,17 @@ class _StubImageHandler:
     def get_number_of_pages(self):
         return 20
 
+    def get_image_files(self):
+        return []
+
 
 class _StubFileHandler:
 
     archive_type = None
-    _base_path = None
+    base_path = None
+
+    def get_path_to_base(self):
+        return self.base_path
 
     def __init__(self):
         self.opened = []
@@ -98,6 +108,8 @@ class BookmarksMenuTest(MComixTest):
         # goes looking for a dialog.
         for dialog in self._dialogs():
             dialog.destroy()
+        if self.menu._dialog is not None:
+            self.menu._dialog.destroy()
         pump()
         super().tearDown()
 
@@ -118,7 +130,8 @@ class BookmarksMenuTest(MComixTest):
         a redraw of nothing that ends with the bar visible - so it came
         back for anyone who had turned it off."""
         self.window.toolbar.set_visible(False)
-        self.window.filehandler._base_path = _StubImageHandler.path
+        self.window.filehandler.archive_type = constants.ZIP
+        self.window.filehandler.base_path = _StubImageHandler.path
         bookmark = bookmark_menu_item._Bookmark(
             self.window, self.window.filehandler, 'book',
             _StubImageHandler.path, 3, 20, None, 0)
@@ -294,5 +307,93 @@ class BookmarksMenuTest(MComixTest):
         self.assertEqual(self.ui.shortcuts,
                          [('<Control>D', 'bookmarks.add'),
                           ('<Control>B', 'bookmarks.edit')])
+
+
+class BookmarkInTheOpenBookTest(MComixTest):
+
+    """Loading a bookmark into a window that has its book open already.
+
+    Opening the book again closes it first, and closing a book forgets
+    the pages picked out of it and the changes that could be undone, so
+    a bookmark into the open book only turns the page.
+    """
+
+    def setUp(self):
+        super().setUp()
+        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
+                          constants.THUMBNAIL_PATH):
+            os.makedirs(directory, exist_ok=True)
+        icons.load_icons()
+        self.window = None
+
+    def tearDown(self):
+        if self.window is not None:
+            self.window.terminate_program()
+            self.window.destroy()
+            main.set_main_window(None)
+        pump()
+        super().tearDown()
+
+    def _open(self, path, pages):
+        self.window = main.MainWindow(open_path=path)
+        main.set_main_window(self.window)
+        self.assertTrue(wait_for(
+            lambda: self.window.imagehandler.get_number_of_pages() == pages,
+            seconds=20))
+
+    def _folder(self):
+        """A folder of three loose images, opened at the first."""
+        folder = os.path.join(self.tmp_dir, 'book')
+        os.makedirs(folder)
+        for number in (1, 2, 3):
+            shutil.copy(get_testfile_path('images', '03-PNG-RGB.png'),
+                        os.path.join(folder, 'page%d.png' % number))
+        self._open(os.path.join(folder, 'page1.png'), 3)
+
+    def _load(self, path, page, archive_type=None):
+        """Load a bookmark of <path> at <page>, and say whether the book
+        was opened again to do it."""
+        bookmark = bookmark_menu_item._Bookmark(
+            self.window, self.window.filehandler, 'book', path, page, 3,
+            archive_type, datetime.datetime.now())
+        with unittest.mock.patch.object(
+                self.window.filehandler, 'open_file',
+                wraps=self.window.filehandler.open_file) as open_file:
+            bookmark.load()
+            pump()
+        return open_file.called
+
+    def test_a_bookmark_in_the_open_folder_only_turns_the_page(self):
+        """A folder's bookmark names the file of its page, and it was
+        compared with the folder itself, so it never matched."""
+        self._folder()
+        self.window.selected_pages = {1}
+        path = self.window.imagehandler.get_path_to_page(3)
+        self.assertFalse(self._load(path, 3), 'the folder was opened again')
+        self.assertEqual(3, self.window.imagehandler.get_current_page())
+        self.assertEqual({1}, self.window.selected_pages)
+
+    def test_the_page_in_a_folder_is_found_by_its_file(self):
+        """The folder may have changed since the bookmark was made, and
+        the file is what the bookmark was made of."""
+        self._folder()
+        path = self.window.imagehandler.get_path_to_page(3)
+        self.assertFalse(self._load(path, 2))
+        self.assertEqual(3, self.window.imagehandler.get_current_page())
+
+    def test_a_bookmark_in_the_open_archive_only_turns_the_page(self):
+        self._open(get_testfile_path('archives', '01-ZIP-Normal.zip'), 4)
+        path = self.window.imagehandler.get_real_path()
+        self.window.selected_pages = {1}
+        self.assertFalse(self._load(path, 3, constants.ZIP),
+                         'the archive was opened again')
+        self.assertEqual(3, self.window.imagehandler.get_current_page())
+        self.assertEqual({1}, self.window.selected_pages)
+
+    def test_a_bookmark_in_another_folder_opens_it(self):
+        self._folder()
+        other = os.path.join(self.tmp_dir, 'other.png')
+        shutil.copy(get_testfile_path('images', 'blue.png'), other)
+        self.assertTrue(self._load(other, 1))
 
 # vim: expandtab:sw=4:ts=4

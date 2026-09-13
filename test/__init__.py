@@ -169,6 +169,9 @@ class MComixTest(unittest.TestCase):
         # closed from addCleanup wrote the reader's own bookmarks and
         # file information into their data directory.
         self.addCleanup(self._restore)
+        # Registered after _restore so that it runs before it, once the
+        # test's own tearDown and cleanups have closed what they opened.
+        self.addCleanup(self._no_window_left_on_screen)
         # Change storage directories.
         home_dir = os.path.join(self.tmp_dir, 'home')
         os.mkdir(home_dir)
@@ -204,9 +207,37 @@ class MComixTest(unittest.TestCase):
         # test starts from.
         prefs.update(copy.deepcopy(default_prefs))
         preferences._as_read = copy.deepcopy(default_prefs)
+        # The folders a file chooser starts in default to the home
+        # directory, which preferences read from constants at import
+        # time as well: a chooser with nothing open to start from would
+        # otherwise list the reader's own home.
+        for key, value in default_prefs.items():
+            if value == self._saved_paths['HOME_DIR']:
+                prefs[key] = preferences._as_read[key] = home_dir
         # Resetting them is not changing them, and a write left over
         # from an earlier test is not this one's to make.
         preferences.cancel_scheduled_write()
+
+    def _no_window_left_on_screen(self):
+        """Fail the test that leaves a window up, rather than a later one.
+
+        A dialog left on screen is found by the next test on the same
+        worker that goes looking for a dialog, which then counts it or
+        answers it, and fails over a window it never opened.  Which
+        test that is depends on how xdist shared the suite out.
+        """
+        if 'gi.repository.Gtk' not in sys.modules:
+            return
+        from gi.repository import Gtk
+        pump()
+        left = [window for window in Gtk.Window.list_toplevels()
+                if window.get_visible()]
+        for window in left:
+            window.destroy()
+        pump()
+        if left:
+            self.fail('left on screen: %s'
+                      % ', '.join(type(window).__name__ for window in left))
 
     def _restore(self):
         # Nothing this test changed is worth writing after it, and the

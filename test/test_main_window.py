@@ -24,6 +24,7 @@ from mcomix import edit_dialog
 from mcomix import file_chooser_simple_dialog as simple_chooser
 from mcomix import icons
 from mcomix import image_tools
+from mcomix import file_actions
 from mcomix import main
 from mcomix import message_dialog
 from mcomix.dialog import Response
@@ -132,7 +133,7 @@ class MainWindowTest(MComixTest):
         # A window's default size is what it asked for rather than what
         # it was given, so watching that missed every resize the
         # compositor made and the pages kept their old scale.
-        canvas = self.window._main_layout
+        canvas = self.window.page_area
         resized = []
         canvas.connect('resized', lambda *args: resized.append(1))
         canvas.allocate(max(1, canvas.get_width() - 120),
@@ -143,7 +144,7 @@ class MainWindowTest(MComixTest):
     def test_being_told_of_a_resize_redraws_the_pages(self):
         drawn = []
         self.window.draw_image = lambda *a, **k: drawn.append(1)
-        self.window._event_handler.resize_event(self.window._main_layout)
+        self.window.event_handler.resize_event(self.window.page_area)
         self.assertTrue(drawn, 'a resize did not redraw the pages')
 
     def test_hiding_a_toggle_widget_goes_through_its_own_set_visible(self):
@@ -243,7 +244,7 @@ class MainWindowTest(MComixTest):
                 handler.get_current_page()) is not None),
             'the first page never arrived')
 
-        self.window.extract_page()
+        self.window.file_actions.extract_page()
         self._pump()
         dialogs = self._save_dialogs()
         self.assertEqual(1, len(dialogs), 'no save dialog was opened')
@@ -278,7 +279,7 @@ class MainWindowTest(MComixTest):
                         copied)
         self.window.filehandler.open_file(copied)
         self._pump()
-        self.window.delete()
+        self.window.file_actions.delete()
         self._pump()
         dialogs = self._message_dialogs()
         self.assertEqual(1, len(dialogs), 'nothing asked before deleting')
@@ -299,11 +300,11 @@ class MainWindowTest(MComixTest):
             self._pump()
         self.assertTrue(os.path.isfile(copied), 'the file was deleted anyway')
 
-    def test_the_menu_item_says_what_the_colours_do(self):
-        """The enhance dialog sets the enhancer directly, so the item
-        and the enhancer can fall out of step; using the item then has
-        to bring them together rather than invert whatever the enhancer
-        happened to hold."""
+    def test_the_action_says_what_the_colours_do(self):
+        """The enhance dialog sets the enhancer directly, so the action
+        and the enhancer can fall out of step; changing the action then
+        has to bring them together rather than invert whatever the
+        enhancer happened to hold."""
         action = self.window.actiongroup.get_action('invert_color')
         self.assertFalse(action.get_active())
         # What ticking "Invert colours" in the enhance dialog does.
@@ -311,7 +312,7 @@ class MainWindowTest(MComixTest):
         action.set_active(True)
         self._pump()
         self.assertTrue(self.window.enhancer.invert_color,
-                        'the menu says inverted and the pages are not')
+                        'the action says inverted and the pages are not')
         self.assertTrue(prefs['invert color'])
         action.set_active(False)
         self._pump()
@@ -322,7 +323,7 @@ class MainWindowTest(MComixTest):
         """change_fullscreen() used to make the item insensitive and rely
         on notify::fullscreened to put it back.  Nothing else re-enables
         it - 'fullscreen' is not one of the toggle actions
-        _update_toggles_sensitivity() walks - so wherever the request is
+        update_toggles_sensitivity() walks - so wherever the request is
         not granted, the item stayed greyed out for the rest of the
         session.  Under a bare X server with no window manager, which is
         what this suite runs on, the property never changes and the
@@ -380,14 +381,14 @@ class MainWindowTest(MComixTest):
                         'the preference the next start reads was not set')
 
     def test_showing_a_toggle_as_on_does_not_run_it(self):
-        """What the start-up sync needs: the tick moves, the colours
+        """What the start-up sync needs: the state moves, the colours
         are left alone because they are already what it says."""
         action = self.window.actiongroup.get_action('invert_color')
         action.show_active(True)
         self._pump()
         self.assertTrue(action.get_active())
         self.assertFalse(self.window.enhancer.invert_color,
-                         'showing the tick inverted the pages as well')
+                         'showing the state inverted the pages as well')
 
     def _save_dialogs(self):
         """Every save chooser this window has standing open.
@@ -423,7 +424,7 @@ class MainWindowTest(MComixTest):
         # What Gtk.FileDialog would have called back with, had the user
         # walked out of the folder it opened in and saved there.
         target = os.path.join(elsewhere, 'page.jpg')
-        self.window._save_page_to(source, target)
+        self.window.file_actions._save_page_to(source, target)
 
         self.assertTrue(os.path.exists(target), 'the page was not written')
         self.assertEqual(prefs['path of last saved in filechooser'],
@@ -444,7 +445,8 @@ class MainWindowTest(MComixTest):
 
     def _quietly(self):
         """Delete a page without the prompt that offers to save."""
-        return unittest.mock.patch.object(self.window, 'offer_to_save')
+        return unittest.mock.patch.object(self.window.file_actions,
+                                          'offer_to_save')
 
     def _ready(self):
         """Wait until the book has been listed, and say what it holds."""
@@ -558,20 +560,20 @@ class MainWindowTest(MComixTest):
         # display: whichever of them the display last gave the focus to,
         # this one is being clicked on purpose.
         self.window.was_out_of_focus = False
-        handler = self.window._event_handler
+        handler = self.window.event_handler
         handler.mouse_press_event(self._Click(1), 1, x, y)
         handler.mouse_release_event(self._Click(1, state), 1, x, y)
         self._pump()
 
     def _wheel(self, delta_x, delta_y, state=0):
-        self.window._event_handler.scroll_wheel_event(
+        self.window.event_handler.scroll_wheel_event(
             self._Scroll(state), delta_x, delta_y)
         self._pump()
 
     def _press(self, button):
         """Press <button> over the top left corner of the page area."""
         self.window.was_out_of_focus = False
-        self.window._event_handler.mouse_press_event(
+        self.window.event_handler.mouse_press_event(
             self._Click(button), 1, 0, 0)
 
     def test_the_back_thumb_button_turns_back_a_page(self):
@@ -608,13 +610,13 @@ class MainWindowTest(MComixTest):
     #: below watch for.  Asserted by name rather than by what the page
     #: does, because whether a page can be scrolled at all depends on the
     #: room the window was allocated, which varies between runs.
-    _WHEEL_TARGETS = ('_scroll_with_flipping', '_smart_scroll_up',
+    _WHEEL_TARGETS = ('scroll_with_flipping', '_smart_scroll_up',
                       '_smart_scroll_down', '_next_page_with_protection',
                       '_previous_page_with_protection')
 
     def _wheel_dispatch(self, delta_x, delta_y, state=0):
         """Return what one wheel turn reached, as (name, args) pairs."""
-        handler = self.window._event_handler
+        handler = self.window.event_handler
         reached = []
         with contextlib.ExitStack() as patches:
             for name in self._WHEEL_TARGETS:
@@ -632,9 +634,9 @@ class MainWindowTest(MComixTest):
     def test_the_wheel_scrolls_the_page_and_turns_it_at_the_end(self):
         prefs['smart scroll'] = False
         pixels = prefs['number of pixels to scroll per mouse wheel event']
-        self.assertEqual([('_scroll_with_flipping', (0, pixels))],
+        self.assertEqual([('scroll_with_flipping', (0, pixels))],
                          self._wheel_dispatch(0, 1))
-        self.assertEqual([('_scroll_with_flipping', (0, -pixels))],
+        self.assertEqual([('scroll_with_flipping', (0, -pixels))],
                          self._wheel_dispatch(0, -1))
 
     def test_the_wheel_scrolls_smartly_when_the_preference_says_so(self):
@@ -661,7 +663,7 @@ class MainWindowTest(MComixTest):
         a positive count goes forward in a book read left to right, and
         back in manga mode, because the reader is asking for the page in a
         direction on screen."""
-        handler = self.window._event_handler
+        handler = self.window.event_handler
         turned = []
         with unittest.mock.patch.object(
                 handler, '_flip_page',
@@ -686,7 +688,7 @@ class MainWindowTest(MComixTest):
         way would jump the book about."""
         prefs['smart scroll'] = False
         pixels = prefs['number of pixels to scroll per mouse wheel event']
-        self.assertEqual([('_scroll_with_flipping', (0, pixels))],
+        self.assertEqual([('scroll_with_flipping', (0, pixels))],
                          self._wheel_dispatch(1, 1))
 
     def test_a_wheel_event_that_reports_no_movement_does_nothing(self):
@@ -731,7 +733,7 @@ class MainWindowTest(MComixTest):
         before = self._ready()
         self.window.select_page(2)
         with self._quietly():
-            self.assertTrue(self.window.delete_page())
+            self.assertTrue(self.window.file_actions.delete_page())
         self._pump()
         self.assertEqual(self._pages(), before[:1] + before[2:])
         self.assertEqual(self.window.selected_pages, set(),
@@ -743,7 +745,7 @@ class MainWindowTest(MComixTest):
         self.window.select_page(1)
         self.window.select_page(3)
         with self._quietly():
-            self.assertTrue(self.window.delete_page())
+            self.assertTrue(self.window.file_actions.delete_page())
         self._pump()
         self.assertEqual(self._pages(), [before[1]] + before[3:])
 
@@ -754,7 +756,7 @@ class MainWindowTest(MComixTest):
         self.window.select_page(1)
         self.window.select_page(3)
         with self._quietly():
-            self.window.delete_page(2)
+            self.window.file_actions.delete_page(2)
         self._pump()
         self.assertEqual(self._pages(), before[:1] + before[2:])
         self.assertEqual(self.window.selected_pages, {1, 2})
@@ -765,33 +767,33 @@ class MainWindowTest(MComixTest):
         before = self._ready()
         self.window.select_page(2)
         with self._quietly():
-            self.window.delete_page()
+            self.window.file_actions.delete_page()
         self._pump()
-        self.assertTrue(self.window.undo())
+        self.assertTrue(self.window.file_actions.undo())
         self._pump()
         self.assertEqual(self._pages(), before)
-        self.assertTrue(self.window.redo())
+        self.assertTrue(self.window.file_actions.redo())
         self._pump()
         self.assertEqual(self._pages(), before[:1] + before[2:])
 
     def test_there_is_nothing_to_take_back_before_a_page_goes(self):
-        self.assertFalse(self.window.can_undo())
-        self.assertFalse(self.window.can_redo())
-        self.assertFalse(self.window.undo())
-        self.assertFalse(self.window.redo())
+        self.assertFalse(self.window.file_actions.can_undo())
+        self.assertFalse(self.window.file_actions.can_redo())
+        self.assertFalse(self.window.file_actions.undo())
+        self.assertFalse(self.window.file_actions.redo())
 
     def test_a_deletion_after_an_undo_leaves_nothing_to_redo(self):
         self._ready()
         with self._quietly():
             self.window.select_page(1)
-            self.window.delete_page()
+            self.window.file_actions.delete_page()
             self._pump()
-            self.window.undo()
+            self.window.file_actions.undo()
             self._pump()
             self.window.select_page(2)
-            self.window.delete_page()
+            self.window.file_actions.delete_page()
         self._pump()
-        self.assertFalse(self.window.can_redo())
+        self.assertFalse(self.window.file_actions.can_redo())
 
     def test_the_last_page_of_a_book_is_not_deleted(self):
         """A book with no pages in it is not a book, and the editor
@@ -802,7 +804,7 @@ class MainWindowTest(MComixTest):
         self.assertEqual(handler.get_number_of_pages(), 1)
         self.window.select_page(1)
         with self._quietly():
-            self.assertFalse(self.window.delete_page())
+            self.assertFalse(self.window.file_actions.delete_page())
         self.assertEqual(handler.get_number_of_pages(), 1)
 
     def test_delete_removes_the_picked_out_page_rather_than_the_file(self):
@@ -811,7 +813,7 @@ class MainWindowTest(MComixTest):
         before = self._ready()
         self.window.select_page(1)
         with self._quietly():
-            self.window.delete()
+            self.window.file_actions.delete()
         self._pump()
         self.assertEqual(self._pages(), before[1:])
         self.assertEqual(self._delete_dialogs(), [],
@@ -832,7 +834,7 @@ class MainWindowTest(MComixTest):
     def test_removing_a_page_asks_whether_to_write_the_archive_again(self):
         self._ready()
         self.window.select_page(2)
-        self.window.delete_page()
+        self.window.file_actions.delete_page()
         self._pump()
         try:
             self.assertEqual(len(self._save_prompts()), 1,
@@ -846,7 +848,7 @@ class MainWindowTest(MComixTest):
         """Enter must not overwrite an archive."""
         self._ready()
         self.window.select_page(2)
-        self.window.delete_page()
+        self.window.file_actions.delete_page()
         self._pump()
         try:
             prompt = self._save_prompts()[0]
@@ -863,10 +865,10 @@ class MainWindowTest(MComixTest):
         self._ready()
         with unittest.mock.patch.object(self.window.filehandler,
                                         'archive_type', constants.LHA):
-            self.assertIsNone(self.window.writeable_archive_type())
-            self.assertFalse(self.window.save_archive())
+            self.assertIsNone(self.window.file_actions.writeable_archive_type())
+            self.assertFalse(self.window.file_actions.save_archive())
             self.window.select_page(2)
-            self.window.delete_page()
+            self.window.file_actions.delete_page()
             self._pump()
         self.assertEqual(self._save_prompts(), [],
                          'it offered to write a format it cannot write')
@@ -878,7 +880,7 @@ class MainWindowTest(MComixTest):
         the point of the fix is that the two used to disagree: a cursor
         set with set_layout_cursor() never reached _current_cursor.
         """
-        cursor = self.window._main_layout.get_cursor()
+        cursor = self.window.page_area.get_cursor()
         return None if cursor is None else cursor.get_name()
 
     def test_a_failed_save_does_not_leave_a_wait_cursor_behind(self):
@@ -892,7 +894,7 @@ class MainWindowTest(MComixTest):
                 archive_packer, 'write_archive',
                 side_effect=RuntimeError('not an OSError')):
             with self.assertRaises(RuntimeError):
-                self.window.save_archive()
+                self.window.file_actions.save_archive()
 
         self.assertIsNone(self._page_area_cursor(),
                           'the wait cursor outlived the save')
@@ -909,7 +911,7 @@ class MainWindowTest(MComixTest):
 
         with unittest.mock.patch.object(archive_packer, 'write_archive',
                                         side_effect=watch):
-            self.assertTrue(self.window.save_archive())
+            self.assertTrue(self.window.file_actions.save_archive())
 
         self.assertEqual([constants.WAIT_CURSOR], busy,
                          'the save ran without saying it was working')
@@ -939,9 +941,9 @@ class MainWindowTest(MComixTest):
         with unittest.mock.patch.object(self.window.filehandler,
                                         'archive_type', constants.TAR):
             prefs['keep archive format when saving'] = False
-            self.assertIsNone(self.window.writeable_archive_type())
+            self.assertIsNone(self.window.file_actions.writeable_archive_type())
             prefs['keep archive format when saving'] = True
-            self.assertEqual(self.window.writeable_archive_type(),
+            self.assertEqual(self.window.file_actions.writeable_archive_type(),
                              constants.TAR)
 
     def test_saving_writes_the_book_over_the_archive_it_came_from(self):
@@ -957,9 +959,9 @@ class MainWindowTest(MComixTest):
 
         self.window.select_page(1)
         with self._quietly():
-            self.window.delete_page()
+            self.window.file_actions.delete_page()
         self._pump()
-        self.assertTrue(self.window.save_archive(), 'the save failed')
+        self.assertTrue(self.window.file_actions.save_archive(), 'the save failed')
 
         with zipfile.ZipFile(source) as written:
             pages = [name for name in written.namelist()
@@ -988,9 +990,9 @@ class MainWindowTest(MComixTest):
         with unittest.mock.patch.object(
                 self.window.filehandler, 'wait_for_files',
                 side_effect=lambda paths: asked.extend(paths)), \
-                unittest.mock.patch.object(main.archive_packer,
+                unittest.mock.patch.object(file_actions.archive_packer,
                                            'write_archive'):
-            self.assertTrue(self.window.save_archive())
+            self.assertTrue(self.window.file_actions.save_archive())
 
         comments = [self.window.filehandler.get_comment_name(number)
                     for number in range(
@@ -1022,7 +1024,7 @@ class MainWindowTest(MComixTest):
                      .get_number_of_pages() > 2, seconds=20),
             'the copied archive never opened')
 
-        self.assertTrue(self.window.save_archive(), 'the save failed')
+        self.assertTrue(self.window.file_actions.save_archive(), 'the save failed')
 
         with zipfile.ZipFile(source) as written:
             self.assertEqual(
@@ -1138,7 +1140,7 @@ class MainWindowTest(MComixTest):
         before = self._ready()
         self.window.popup_page = 2
         with self._quietly():
-            self.window.delete_popup_page()
+            self.window.file_actions.delete_popup_page()
         self._pump()
         self.assertEqual(self._pages(), before[:1] + before[2:])
 
@@ -1166,7 +1168,7 @@ class MainWindowTest(MComixTest):
         self.window.set_page(3)
         self._pump()
 
-        self.window.move_current_file(destination)
+        self.window.file_actions.move_current_file(destination)
         self._pump()
 
         moved = os.path.join(destination, 'Movable.cbz')
@@ -1184,7 +1186,7 @@ class MainWindowTest(MComixTest):
         destination = os.path.join(self.tmp_dir, 'destination')
         os.makedirs(destination)
 
-        self.window.move_current_file(destination)
+        self.window.file_actions.move_current_file(destination)
         self._pump()
 
         self.assertEqual(prefs['recent move destinations'], [destination])
@@ -1196,7 +1198,7 @@ class MainWindowTest(MComixTest):
         library = backend.LibraryBackend()
         self.assertTrue(library.add_book(source))
 
-        self.window.move_current_file(destination)
+        self.window.file_actions.move_current_file(destination)
         self._pump()
 
         self.assertIsNone(library.get_book_by_path(source))
@@ -1210,7 +1212,7 @@ class MainWindowTest(MComixTest):
         with open(os.path.join(destination, 'Movable.cbz'), 'wb') as handle:
             handle.write(b'not the book')
 
-        self.window.move_current_file(destination)
+        self.window.file_actions.move_current_file(destination)
         self._pump()
 
         self.assertTrue(os.path.isfile(source), 'the book moved anyway')
@@ -1245,7 +1247,7 @@ class MainWindowTest(MComixTest):
             'the second page never arrived')
 
         self.window.popup_page = 2
-        self.window.extract_popup_page()
+        self.window.file_actions.extract_popup_page()
         self._pump()
         dialogs = self._save_dialogs()
         self.assertEqual(1, len(dialogs), 'no save dialog was opened')
@@ -1278,8 +1280,7 @@ class MainWindowTest(MComixTest):
             boxes = self.window.layout.get_content_boxes()
             # The pages are placed on the layout as a whole; a click
             # gives its coordinates on the part of it that shows.
-            scrolled_x = self.window._hadjust.get_value()
-            scrolled_y = self.window._vadjust.get_value()
+            scrolled_x, scrolled_y = self.window.scroll_offset()
             for offset, content in enumerate(boxes):
                 left, top = content.get_position()
                 width, height = content.get_size()
@@ -1443,9 +1444,9 @@ class MainWindowTest(MComixTest):
         # is what set_layout_cursor() says.
         cursor = Gdk.Cursor.new_from_name('wait', None)
         self.window.set_layout_cursor(cursor)
-        self.assertIs(cursor, self.window._main_layout.get_cursor())
+        self.assertIs(cursor, self.window.page_area.get_cursor())
         self.window.set_layout_cursor(None)
-        self.assertIsNone(self.window._main_layout.get_cursor())
+        self.assertIsNone(self.window.page_area.get_cursor())
 
     # -- What a pending redraw does with a later scroll --------------------
     #
@@ -1541,8 +1542,8 @@ class RestartTest(MComixTest):
 
 class InvertedColoursAtStartUpTest(MComixTest):
 
-    """The menu item for inverted colours, on a window that starts with
-    the preference already set.
+    """The action Ctrl+I inverts the colours with, on a window that
+    starts with the preference already set.
 
     One main window at a time: building a second inside a live one hangs
     on the worker threads, so this starts its own rather than reusing
@@ -1567,9 +1568,10 @@ class InvertedColoursAtStartUpTest(MComixTest):
         pump()
         super().tearDown()
 
-    def test_the_menu_item_says_the_colours_are_inverted(self):
-        """The enhancer reads the preference, so a window whose item
-        started unticked inverted the pages and said it did not."""
+    def test_the_action_starts_as_inverted_as_the_pages(self):
+        """The enhancer reads the preference, so an action that started
+        off would make the first Ctrl+I set the colours to what they
+        already were."""
         self.assertTrue(self.window.enhancer.invert_color)
         self.assertTrue(self.window.actiongroup.get_action(
             'invert_color').get_active())

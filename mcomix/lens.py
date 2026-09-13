@@ -24,9 +24,10 @@ class MagnifyingLens:
     looking at the cursor position and calculating what image data to put
     in the "lens" cursor.
 
-    Note: The mapping is highly dependent on the exact layout of the main
-    window images, thus this module isn't really independent from the main
-    module as it uses implementation details not in the interface.
+    The mapping follows closely how the main window lays its pages out:
+    it reads the window's layout, the transforms of the pages and how far
+    the page area is scrolled, so a change to how the window places pages
+    has to be carried here as well.
     """
 
     #: What the lens is called among the canvas' overlays.
@@ -34,7 +35,7 @@ class MagnifyingLens:
 
     def __init__(self, window: 'main.MainWindow') -> None:
         self._window = window
-        self._area = self._window._main_layout
+        self._area = self._window.page_area
         motion = Gtk.EventControllerMotion()
         motion.connect('motion', self._motion_event)
         self._area.add_controller(motion)
@@ -123,8 +124,9 @@ class MagnifyingLens:
         lens_y = max(y - height // 2, 0)
 
         max_width, max_height = self._window.get_visible_area_size()
-        max_width += int(self._window._hadjust.get_value())
-        max_height += int(self._window._vadjust.get_value())
+        offset_x, offset_y = self._window.scroll_offset()
+        max_width += int(offset_x)
+        max_height += int(offset_y)
         lens_x = min(lens_x, max_width - width)
         lens_y = min(lens_y, max_height - height)
 
@@ -146,11 +148,11 @@ class MagnifyingLens:
     def _motion_event(self, controller: Gtk.EventControllerMotion,
                       x: float, y: float) -> None:
         """ Called whenever the mouse moves over the image area. """
-        # The lens works in canvas coordinates, which is what the events
-        # on Gtk.Layout's scrolling window carried; a controller reports
-        # where the pointer is in the widget instead.
-        self._point = (int(x + self._window._hadjust.get_value()),
-                       int(y + self._window._vadjust.get_value()))
+        # The lens works in canvas coordinates, and a controller reports
+        # where the pointer is in the widget, so the scroll offset is
+        # added.
+        offset_x, offset_y = self._window.scroll_offset()
+        self._point = (int(x + offset_x), int(y + offset_y))
         if self.enabled:
             self._draw_lens(*self._point)
 
