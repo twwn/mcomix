@@ -25,12 +25,33 @@ if TYPE_CHECKING:
 
 class _BackendObject:
 
-    """Something that reads and writes through the library backend."""
+    """Something that reads and writes through the library backend.
+
+    It fetches the backend rather than being handed one, so that a row
+    read out of the library can go on asking the library questions
+    without anything having to carry it around.
+    """
+
+    #: The backend to use in place of the one LibraryBackend() hands
+    #: out, for a caller that has one to give.  The library's own
+    #: migration is the case that needs it: it runs while
+    #: _LibraryBackend.__init__() is still on the stack, so
+    #: LibraryBackend() would start building a second backend and
+    #: recurse without end.
+    _backend: "_LibraryBackend | None" = None
 
     def get_backend(self) -> '_LibraryBackend':
-        # XXX: Delayed import to avoid circular import
+        if self._backend is not None:
+            return self._backend
+        # Deferred: mcomix.library.backend imports this module, so it
+        # cannot be imported at the top of it.
         from mcomix.library.backend import LibraryBackend
         return LibraryBackend()
+
+    def set_backend(self, backend: '_LibraryBackend') -> None:
+        """Read and write through <backend> rather than through the one
+        LibraryBackend() hands out."""
+        self._backend = backend
 
 
 class _Book(_BackendObject):

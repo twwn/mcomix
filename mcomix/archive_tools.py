@@ -272,7 +272,8 @@ def get_recursive_archive_handler(path: str, destination_dir: str,
     archive = get_archive_handler(path, mimetype=type)
     if archive is None:
         return None
-    # XXX: Deferred import to avoid circular dependency
+    # Deferred: archive_recursive imports this module, so it cannot
+    # be imported at the top of it.
     from mcomix.archive import archive_recursive
     return archive_recursive.RecursiveArchive(archive, destination_dir)
 

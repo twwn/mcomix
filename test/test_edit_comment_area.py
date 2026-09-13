@@ -31,6 +31,12 @@ class _StubDialog:
 
     def __init__(self, paths):
         self.file_handler = _StubHandler(paths)
+        #: What record_change() was told, so that a test can see the
+        #: area asking for a change to be undoable.
+        self.changes = 0
+
+    def record_change(self):
+        self.changes += 1
 
 
 class CommentAreaTest(MComixTest):

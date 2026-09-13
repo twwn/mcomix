@@ -1,6 +1,8 @@
 """edit_dialog.py - The dialog for the archive editing window."""
 
+import errno
 import os
+import shutil
 import tempfile
 from gi.repository import Gdk, Gio, GLib, Gtk
 import re
@@ -11,8 +13,10 @@ from mcomix import archive_packer
 from mcomix import file_chooser_simple_dialog
 from mcomix import image_tools
 from mcomix import log
+from mcomix import column_list
 from mcomix import edit_image_area
 from mcomix import edit_comment_area
+from mcomix import thumbnail_list
 from mcomix import widgets
 from mcomix import constants
 from mcomix import message_dialog
@@ -26,6 +30,34 @@ if TYPE_CHECKING:
     from mcomix import main
 
 _dialog: "_EditArchiveDialog | None" = None
+
+#: Both of the editor's listings at one moment: the pages, and the files
+#: that came with them.  What an undo puts back.
+_EditState = tuple[list[thumbnail_list.ThumbnailItem],
+                   list[column_list.Row]]
+
+
+def _check_room_for(files: list[str], archive_path: str) -> None:
+    """Raise ENOSPC if <files> will not fit beside <archive_path>.
+
+    The new archive is written under a temporary name in the directory
+    the old one is in and renamed over it at the end, so all of it has
+    to fit there at once: an archive being replaced does not give its
+    room up until it has been.  Writing until the disk fills up and
+    unwinding from there works - the packer stops and its half-written
+    archive is removed - but only after minutes of writing, and with the
+    disk full in the meantime.
+
+    What the entries take once they are deflated is not known before
+    they are written, so what they take now stands in for it.  For the
+    pictures a book is made of that is within a per cent; a page in a
+    format that is not compressed already, a BMP say, comes out about
+    30% smaller, so a save is refused with that much room to spare.
+    """
+    needed = sum(os.path.getsize(path) for path in files)
+    free = shutil.disk_usage(os.path.dirname(archive_path) or '.').free
+    if needed > free:
+        raise OSError(errno.ENOSPC, os.strerror(errno.ENOSPC), archive_path)
 
 
 def _fit_on_screen(width: int, height: int) -> tuple[int, int]:
@@ -54,7 +86,12 @@ class _EditArchiveDialog(Dialog):
 
         self.file_handler = window.filehandler
         self._window = window
-        self._imported_files: list[str] = []
+        #: What the two listings were before each change, and what they
+        #: were before each undo.  A snapshot is the entries themselves,
+        #: so nothing a page carries - its thumbnail above all - is made
+        #: again when it comes back.
+        self._undone: list[_EditState] = []
+        self._redone: list[_EditState] = []
 
         self._save_button = self.add_button(_('Save _As'), constants.RESPONSE_SAVE_AS)
 
@@ -69,6 +106,19 @@ class _EditArchiveDialog(Dialog):
                                               preview.scaled(600, self)))
 
         self.connect('response', self._response)
+
+        # Undo and redo are the keyboard's alone: an editor that removes
+        # and reorders pages needs a way back, and the two menus it has
+        # are the right-click menus of the two lists.
+        shortcuts = Gtk.ShortcutController()
+        for accelerator, step in (('<Control>z', self.undo),
+                                  ('<Control>y', self.redo),
+                                  ('<Control><Shift>z', self.redo)):
+            shortcuts.add_shortcut(Gtk.Shortcut.new(
+                Gtk.ShortcutTrigger.parse_string(accelerator),
+                Gtk.CallbackAction.new(
+                    lambda widget, args, step=step: step())))
+        self.add_controller(shortcuts)
 
         self._image_area = edit_image_area._ImageArea(self, window)
         self._comment_area = edit_comment_area._CommentArea(self)
@@ -104,6 +154,25 @@ class _EditArchiveDialog(Dialog):
 
         return False
 
+    def _save_format(self) -> tuple[int, str]:
+        """Which format a save writes, and the extension that goes with it.
+
+        A CBZ, as it always was, unless the reader has asked for the
+        archive to come back in the format it was opened in and that is
+        one MComix can write: a RAR is read with a program that cannot
+        make one, a PDF is not a format a book of pages goes back into,
+        and a 7z needs 7-Zip installed.
+        """
+        archive_type = self.file_handler.archive_type
+        if (prefs['keep archive format when saving']
+                and archive_type is not None
+                and archive_packer.can_write(archive_type)):
+            source = self.file_handler.get_path_to_base() or ''
+            extension = os.path.splitext(source)[1]
+            if extension:
+                return archive_type, extension
+        return constants.ZIP, '.cbz'
+
     def _pack_archive(self, archive_path: str) -> None:
         """Create a new archive with the chosen files."""
         self.set_sensitive(False)
@@ -115,6 +184,10 @@ class _EditArchiveDialog(Dialog):
 
         image_files = self._image_area.get_file_listing()
         comment_files = self._comment_area.get_file_listing()
+        # Neither list shows what the archive held besides its pages and
+        # its comments, and a new archive written without it is not the
+        # archive that was opened: it has lost its metadata.
+        carried_files = self.file_handler.get_other_files()
 
         # Everything below writes to the directory the archive is in -
         # the temporary file, the rename over the old archive, the
@@ -126,14 +199,19 @@ class _EditArchiveDialog(Dialog):
         tmp_path: str | None = None
         saved = False
         try:
+            _check_room_for(image_files + comment_files
+                            + list(carried_files), archive_path)
             fd, tmp_path = tempfile.mkstemp(
                 suffix='.%s' % os.path.basename(archive_path),
                 prefix='tmp.', dir=os.path.dirname(archive_path))
             # Close open tempfile handle (writing is handled by the packer)
             os.close(fd)
 
-            packer = archive_packer.Packer(image_files, comment_files, tmp_path,
-                                           os.path.splitext(os.path.basename(archive_path))[0])
+            packer = archive_packer.Packer(
+                image_files, comment_files, tmp_path,
+                os.path.splitext(os.path.basename(archive_path))[0],
+                carried_files=carried_files,
+                archive_type=self._save_format()[0])
             packer.pack()
 
             if packer.wait():
@@ -181,22 +259,65 @@ class _EditArchiveDialog(Dialog):
             _("The original files have not been removed."))
         dialog.run_async(lambda response: self.set_sensitive(True))
 
+    # -- Taking a change back ---------------------------------------------
+
+    def _state(self) -> "_EditState":
+        """Both listings as they stand."""
+        return (self._image_area.snapshot(), self._comment_area.snapshot())
+
+    def _restore(self, state: "_EditState") -> None:
+        images, comments = state
+        self._image_area.restore(images)
+        self._comment_area.restore(comments)
+
+    def record_change(self) -> None:
+        """Remember both listings, before something changes one of them.
+
+        Called by whatever is about to make the change, so that the
+        state remembered is the one an undo has to put back.  A fresh
+        change is the end of whatever was undone before it: there is no
+        longer a redo to arrive at.
+        """
+        self._undone.append(self._state())
+        self._redone.clear()
+
+    def undo(self) -> bool:
+        """Put the listings back as they were before the last change."""
+        if not self._undone:
+            return False
+        self._redone.append(self._state())
+        self._restore(self._undone.pop())
+        return True
+
+    def redo(self) -> bool:
+        """Make the last undone change again."""
+        if not self._redone:
+            return False
+        self._undone.append(self._state())
+        self._restore(self._redone.pop())
+        return True
+
+    # -- Adding files -----------------------------------------------------
+
     def _import_files(self, paths: list[str]) -> None:
         """Add the chosen <paths> to the archive being edited."""
         exts = '|'.join(prefs['comment extensions'])
         comment_re = re.compile(r'\.(%s)\s*$' % exts, re.I)
 
-        for path in paths:
+        images = [path for path in paths if image_tools.is_image_file(path)]
+        comments = [path for path in paths
+                    if path not in images and os.path.isfile(path)
+                    and comment_re.search(path)]
+        if not images and not comments:
+            return
 
-            if image_tools.is_image_file(path):
-                self._imported_files.append(path)
-                self._image_area.add_extra_image(path)
-
-            elif os.path.isfile(path):
-
-                if comment_re.search(path):
-                    self._imported_files.append(path)
-                    self._comment_area.add_extra_file(path)
+        # One change, however many files were chosen, so that a single
+        # undo takes the whole import back.
+        self.record_change()
+        for path in images:
+            self._image_area.add_extra_image(path)
+        for path in comments:
+            self._comment_area.add_extra_file(path)
 
     def _response(self, dialog: Dialog, response: int) -> None:
 
@@ -205,14 +326,21 @@ class _EditArchiveDialog(Dialog):
             # There is an archive to save under another name whenever
             # this dialog is open at all.
             src_path = self.file_handler.get_path_to_base() or ''
+            archive_type, extension = self._save_format()
 
             chooser = file_chooser_simple_dialog.SimpleFileChooserDialog(
                 Gtk.FileChooserAction.SAVE, self,
                 folder=os.path.dirname(src_path))
 
-            chooser.set_save_name('%s.cbz' % os.path.splitext(
-                os.path.basename(src_path))[0])
-            chooser.set_note(_('Archives are stored as ZIP files.'))
+            chooser.set_save_name('%s%s' % (os.path.splitext(
+                os.path.basename(src_path))[0], extension))
+            # The note says what a save writes whatever was opened.  It
+            # is left off only where the reader has asked for the format
+            # to be kept and it is being kept: there it says nothing
+            # that the name above it does not.
+            if (archive_type != self.file_handler.archive_type
+                    or not prefs['keep archive format when saving']):
+                chooser.set_note(_('Archives are stored as ZIP files.'))
             chooser.add_archive_filters()
 
             def save_as_chosen(paths: list[str]) -> None:
@@ -235,12 +363,7 @@ class _EditArchiveDialog(Dialog):
 
         elif response == Response.APPLY:
 
-            self._window.imagehandler.replace_pages(
-                self._image_area.get_file_listing())
-            self._window.imagehandler.do_cacheing()
-            self._window.thumbnailsidebar.clear()
-            self._window.set_page(1)
-            self._window.thumbnailsidebar.load_thumbnails()
+            self._window.pages_replaced(self._image_area.get_file_listing())
 
         else:
             _close_dialog()

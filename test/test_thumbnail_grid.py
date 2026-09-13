@@ -103,9 +103,34 @@ class ThumbnailGridViewTest(MComixTest):
 
     def test_the_drag_carries_the_position_it_started_from(self):
         cell = next(iter(self.view._each_cell()))
-        cell.position = 3
         provider = self.view._reorder_prepare(None, 0.0, 0.0, cell)
         self.assertIsNotNone(provider)
+
+    def test_a_cell_says_where_it_sits_now_not_where_it_was_bound(self):
+        """GTK does not bind a cell again for entries removed before it,
+        so a position remembered from the last bind was as many places
+        along as there were entries removed - which is where the archive
+        editor's right click and its reordering drag both landed."""
+        self.view.remove_positions([0, 1])
+        self._settle()
+        self.assertEqual(self._order(), ['three', 'four', 'five'])
+        self.assertEqual([cell.position for cell in self.view._each_cell()],
+                         [0, 1, 2])
+
+    def test_a_drop_after_a_removal_lands_on_the_cell_it_was_made_on(self):
+        self.view.remove_positions([0, 1])
+        self._settle()
+        cell = next(iter(self.view._each_cell()))
+        self.assertTrue(self.view._reorder_drop(
+            None, 'application/x-mcomix-thumbnail-position:2',
+            0.0, 0.0, cell))
+        self.assertEqual(self._order(), ['five', 'three', 'four'])
+
+    def test_a_cell_showing_nothing_sits_nowhere(self):
+        cell = next(iter(self.view._each_cell()))
+        self.view.clear()
+        self._settle()
+        self.assertEqual(cell.position, -1)
 
     # -- Selection --------------------------------------------------------
 

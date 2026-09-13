@@ -369,6 +369,14 @@ class MainWindowTest(MComixTest):
                       self._menu_actions(self.window.uimanager.popup
                                          .get_menu_model()))
 
+    def test_the_right_click_menu_offers_the_archive_editor(self):
+        """The editor was on the Edit menu and nowhere else, so a reader
+        with the menu bar hidden - which the right-click menu is there
+        for - had no way to reach it at all."""
+        self.assertIn('win.edit-archive',
+                      self._menu_actions(self.window.uimanager.popup
+                                         .get_menu_model()))
+
     def test_the_right_click_menu_saves_the_page_it_was_opened_over(self):
         """Save As on the menu bar offers both pages of a double page,
         one chooser after the other, because nothing says which of them
@@ -431,6 +439,77 @@ class MainWindowTest(MComixTest):
             self.assertIsNone(self.window.page_at(widest + 100 - scrolled_x,
                                                   -scrolled_y))
         finally:
+            prefs['default double page'] = False
+
+    def test_the_page_count_on_screen_is_how_many_pages_are_shown(self):
+        """displayed_page_count() sizes every caller that asks for what
+        is on screen - the pixbufs to draw, the page numbers in the
+        title, the colour read off the pages - so it has to agree with
+        the page widgets that are really visible."""
+        self.assertTrue(
+            wait_for(lambda:
+                     self.window.imagehandler.get_number_of_pages() > 1),
+            'the archive was never listed')
+
+        def shown():
+            return sum(image.get_visible() for image in self.window.images)
+
+        # The first page of an archive stands alone, as its cover.
+        self.assertFalse(self.window.displayed_double())
+        self.assertEqual(1, self.window.displayed_page_count())
+        self.assertTrue(wait_for(lambda: shown() == 1),
+                        'the cover was never the only page on screen')
+
+        prefs['default double page'] = True
+        try:
+            self.window.set_page(2)
+            self.assertTrue(self.window.displayed_double())
+            self.assertEqual(2, self.window.displayed_page_count())
+            self.assertTrue(wait_for(lambda: shown() == 2),
+                            'the second page was never shown beside the first')
+        finally:
+            prefs['default double page'] = False
+
+        self.window.draw_image()
+        self.assertEqual(1, self.window.displayed_page_count())
+        self.assertTrue(wait_for(lambda: shown() == 1),
+                        'the second page was never taken off screen')
+
+    def test_manga_mode_numbers_a_double_page_in_reading_order(self):
+        """The status bar lists the file names, the sizes and the
+        resolutions of a double page right to left in manga mode.  The
+        page numbers in the same bar, and in the window title, are the
+        same two pages and are listed the same way round."""
+        self.assertTrue(
+            wait_for(lambda:
+                     self.window.imagehandler.get_number_of_pages() > 2),
+            'the archive was never listed')
+        prefs['default double page'] = True
+        try:
+            self.window.set_page(2)
+            self.assertTrue(
+                wait_for(lambda: self.window.imagehandler.
+                         get_path_to_page(3) is not None),
+                'the second page never arrived')
+
+            self.window.is_manga_mode = False
+            self.window._update_page_information()
+            self.assertEqual('2,3 / 4', self.window.statusbar.get_page_number())
+            self.assertIn('[2,3 / 4]', self.window.get_title())
+
+            self.window.is_manga_mode = True
+            self.window._update_page_information()
+            self.assertEqual('3,2 / 4', self.window.statusbar.get_page_number())
+            self.assertIn('[3,2 / 4]', self.window.get_title())
+            self.assertEqual(
+                ', '.join(reversed(
+                    [os.path.basename(self.window.imagehandler
+                                      .get_path_to_page(page))
+                     for page in (2, 3)])),
+                self.window.statusbar._filename,
+                'the file names and the page numbers disagree on the order')
+        finally:
+            self.window.is_manga_mode = False
             prefs['default double page'] = False
 
     @staticmethod

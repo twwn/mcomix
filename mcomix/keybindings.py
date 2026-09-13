@@ -307,27 +307,27 @@ class _KeybindingManager:
         self._binding_to_action = {}
 
     def execute(self, keybinding: Binding) -> None:
-        """ Executes an action that has been registered for the
-        passed keyboard event. If no action is bound to the passed key, this
-        method is a no-op. """
-        if keybinding in self._binding_to_action:
-            action = self._binding_to_action[keybinding]
-            func, args, kwargs = self._action_to_callback[action]
-            # There is no key-press-event to stop in GTK4; the key
-            # controller in event.py says so by what it answers.
-            func(*args, **kwargs)
-            return
+        """Run the action <keybinding> is bound to; a no-op if it is
+        bound to none.
 
-        # Some keys enable additional modifiers (NumLock enables GDK_MOD2_MASK),
-        # which prevent direct lookup simply by being pressed.
-        # XXX: Looking up by key/modifier probably isn't the best implementation,
-        # so limit possible states to begin with?
-        for stored_binding, action in self._binding_to_action.items():
-            stored_keycode, stored_flags = stored_binding
-            if stored_keycode == keybinding[0] and stored_flags & keybinding[1]:
-                func, args, kwargs = self._action_to_callback[action]
-                func(*args, **kwargs)
-                return
+        A plain lookup is all this needs.  <keybinding> only ever
+        carries the three modifiers an accelerator can be written with:
+        the key controller in event.py masks the state the key was
+        pressed with down to Control, Shift and Alt before it gets
+        here, so the locks that would otherwise defeat a lookup - a
+        NumLock that is on raises GDK_MOD2_MASK on every key - are
+        already gone.  A combination carrying a modifier the binding
+        does not ask for is a different accelerator, and reaching this
+        action from it would fire Ctrl+Alt+S at the slideshow bound to
+        Ctrl+S.
+        """
+        action = self._binding_to_action.get(keybinding)
+        if action is None:
+            return
+        func, args, kwargs = self._action_to_callback[action]
+        # There is no key-press-event to stop in GTK4; the key
+        # controller in event.py says so by what it answers.
+        func(*args, **kwargs)
 
     def save(self) -> None:
         """ Stores the keybindings that have been set to disk. """

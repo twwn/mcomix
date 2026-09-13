@@ -100,8 +100,29 @@ class _Cell:
         self.row: Row | None = None
         #: The row's 'changed' handler while this cell is bound.
         self.handler: int | None = None
-        #: The position this cell is showing.
-        self.position = 0
+        #: The list item this cell is the child of, which is what knows
+        #: where it sits.  Set once, when the cell is built: a list item
+        #: keeps its child for as long as it has one.
+        self.list_item: Gtk.ListItem | None = None
+
+    @property
+    def position(self) -> int:
+        """Where this cell sits now, or -1 while it sits nowhere.
+
+        Asked of the list item rather than remembered from the last
+        bind, because GTK keeps a list item's position up to date as the
+        model changes under it and a bind is not repeated for a cell
+        that stays on screen.  A list that rows can be removed from and
+        dragged around alike - the bookmarks, the "open with" commands -
+        would otherwise drop onto whichever row had moved into the place
+        the cell was bound at.
+        """
+        if self.list_item is None:
+            return -1
+        position = self.list_item.get_position()
+        if position == Gtk.INVALID_LIST_POSITION:
+            return -1
+        return position
 
 
 class _TextCell(Gtk.Label, _Cell):
@@ -698,6 +719,7 @@ class ColumnListView(Gtk.ColumnView):
         def on_setup(_factory: Gtk.SignalListItemFactory,
                      item: Gtk.ListItem) -> None:
             cell = cell_type()
+            cell.list_item = item
             self._decorate_cell(cell)
             if expanding:
                 expander = Gtk.TreeExpander()
@@ -718,7 +740,6 @@ class ColumnListView(Gtk.ColumnView):
             # the tree wraps it in is willing to say it might be.
             assert row is not None
             cell.row = row
-            cell.position = item.get_position()
             bind(cell, row)
             if isinstance(cell, (_TextCell, _IconCell, _AccelCell,
                                  _EditableCell)):

@@ -29,9 +29,16 @@ def _get_creationflags() -> int:
 # Cannot spawn processes with PythonW/Win32 unless stdin
 # and stderr are redirected to a pipe/devnull as well.
 def call(args: Sequence[str | bytes], stdin: Redirect = NULL,
-         stdout: Redirect = NULL, stderr: Redirect = NULL) -> bool:
+         stdout: Redirect = NULL, stderr: Redirect = NULL,
+         workdir: str | None = None) -> bool:
+    """Run <args> and say whether it succeeded.
+
+    <workdir> is the directory it runs in, which is what an archiver
+    that names its entries after the files it is given needs: the names
+    are then the ones under that directory.
+    """
     return subprocess.call(args, stdin=stdin, stdout=stdout,
-                           stderr=stderr,
+                           stderr=stderr, cwd=workdir,
                            creationflags=_get_creationflags()) == 0
 
 

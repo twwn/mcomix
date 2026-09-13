@@ -81,10 +81,19 @@ class _CommentArea(Gtk.Box):
         """Return a list with the full paths to all the files, in order."""
         return [row.path for row in self._list.each_row()]
 
+    def snapshot(self) -> list[column_list.Row]:
+        """The rows as they stand, for the dialog's undo."""
+        return list(self._list.each_row())
+
+    def restore(self, rows: list[column_list.Row]) -> None:
+        """Show <rows>, from a snapshot(), and nothing else."""
+        self._list.set_rows(rows)
+
     def _remove_file(self, *args: object) -> None:
         """Remove the currently selected file from the list."""
         row = self._list.get_selected_row()
         if row is not None:
+            self._edit_dialog.record_change()
             self._list.remove_row(row)
 
     def _button_press(self, gesture: Gtk.GestureClick, n_press: int,

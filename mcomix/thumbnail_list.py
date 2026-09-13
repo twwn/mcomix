@@ -63,8 +63,29 @@ class _ThumbnailCell(Gtk.Box):
             self.append(self.label)
         #: The notify::thumbnail handler while this cell is bound.
         self.handler: int | None = None
-        #: The position this cell is showing, for a reordering drag.
-        self.position = 0
+        #: The list item this cell is the child of, which is what knows
+        #: where it sits.  Set once, when the cell is built: a list item
+        #: keeps its child for as long as it has one.
+        self.list_item: Gtk.ListItem | None = None
+
+    @property
+    def position(self) -> int:
+        """Where this cell sits now, or -1 while it sits nowhere.
+
+        Asked of the list item rather than remembered from the last
+        bind, because GTK keeps a list item's position up to date as the
+        model changes under it and a bind is not repeated for a cell
+        that stays on screen.  The archive editor removes pages from the
+        middle of the grid, so a remembered number would name whatever
+        moved into that place: a right click landed on the entry that
+        many places along, and so did a reordering drag.
+        """
+        if self.list_item is None:
+            return -1
+        position = self.list_item.get_position()
+        if position == Gtk.INVALID_LIST_POSITION:
+            return -1
+        return position
 
 
 class _ThumbnailViewBase:
@@ -130,6 +151,7 @@ class _ThumbnailViewBase:
                     list_item: Gtk.ListItem) -> None:
         """Build an empty cell: a label, and the thumbnail itself."""
         cell = _ThumbnailCell(self.CELL_ORIENTATION)
+        cell.list_item = list_item
         self._size_cell(cell)
         self._decorate_cell(cell)
         list_item.set_child(cell)
@@ -146,7 +168,6 @@ class _ThumbnailViewBase:
         """
         cell = cast(_ThumbnailCell, list_item.get_child())
         item = cast(ThumbnailItem, list_item.get_item())
-        cell.position = list_item.get_position()
         cell.label.set_text(item.label)
         cell.set_tooltip_text(item.tooltip or None)
         cell.picture.set_paintable(item.thumbnail)
@@ -391,6 +412,10 @@ class ThumbnailGridView(Gtk.GridView, _ThumbnailViewBase):
         self.selection = Gtk.MultiSelection(model=self.model)
         _ThumbnailViewBase._init_thumbnails(self)
         self._reorderable = False
+        #: Called just before a drag moves an entry, for whoever wants
+        #: to remember the order it was in.  The archive editor does,
+        #: for its undo.
+        self.about_to_reorder: "Callable[[], None] | None" = None
         super().__init__(model=self.selection, factory=self._make_factory())
         self.set_max_columns(64)
 
@@ -453,6 +478,8 @@ class ThumbnailGridView(Gtk.GridView, _ThumbnailViewBase):
         if source == destination or not 0 <= source < count \
                 or not 0 <= destination < count:
             return False
+        if self.about_to_reorder is not None:
+            self.about_to_reorder()
         item = cast(ThumbnailItem, self.store.get_item(source))
         self.store.remove(source)
         self.store.insert(destination, item)

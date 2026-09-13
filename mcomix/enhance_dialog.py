@@ -124,7 +124,9 @@ class _EnhanceImageDialog(Dialog):
         if not self._window.imagehandler.page_is_available():
             self.clear_histogram()
             return
-        # XXX transitional(double page limitation)
+        # The histogram describes the current page alone, even when a
+        # second one is shown beside it: the enhancements it drives are
+        # applied to both, and two histograms would not say which.
         pixbuf = self._window.imagehandler.get_pixbufs(1)[0]
         self.draw_histogram(pixbuf)
 

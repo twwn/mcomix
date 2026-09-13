@@ -40,6 +40,7 @@ class _ImageArea(Gtk.ScrolledWindow):
         self._grid.generate_thumbnail = self._generate_thumbnail
         self._grid.set_thumbnail_size(self._thumbnail_size)
         self._grid.set_reorderable(True)
+        self._grid.about_to_reorder = edit_dialog.record_change
         clicks = Gtk.GestureClick()
         clicks.set_button(3)
         clicks.connect('pressed', self._button_press)
@@ -115,9 +116,26 @@ class _ImageArea(Gtk.ScrolledWindow):
         """Return a list with the full paths to all the images, in order."""
         return [item.uid for item in self._grid.each_item()]
 
+    def snapshot(self) -> list[thumbnail_list.ThumbnailItem]:
+        """The entries as they stand, for the dialog's undo.
+
+        The entries themselves rather than their paths: an entry carries
+        the thumbnail that was made for it, so putting one back does not
+        make it again.
+        """
+        return list(self._grid.each_item())
+
+    def restore(self, items: list[thumbnail_list.ThumbnailItem]) -> None:
+        """Show <items>, from a snapshot(), and nothing else."""
+        self._grid.set_items(items)
+
     def _remove_pages(self, *args: object) -> None:
         """Remove the currently selected pages from the list."""
-        self._grid.remove_positions(self._grid.get_selected_positions())
+        positions = self._grid.get_selected_positions()
+        if not positions:
+            return
+        self._edit_dialog.record_change()
+        self._grid.remove_positions(positions)
 
     def _button_press(self, gesture: Gtk.GestureClick, n_press: int,
                       x: float, y: float) -> None:

@@ -682,9 +682,10 @@ class _BaseFileChooserDialog(Dialog):
                     os.stat(filepath).st_size))
 
     def _current_file(self) -> str | None:
-        # XXX: This method defers the import of main to avoid cyclic imports
-        # during startup.
-
+        """The book that is open, or None if none is."""
+        # Deferred: main reaches this module through
+        # file_chooser_simple_dialog, so it cannot be imported at the
+        # top of it.
         from mcomix import main
         window = main.main_window()
         return None if window is None else window.filehandler.get_path_to_base()

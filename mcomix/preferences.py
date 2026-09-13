@@ -38,6 +38,7 @@ DEFAULT_BG_COLOUR = [5000 / 65535, 5000 / 65535, 5000 / 65535, 1.0]
 Preferences = TypedDict('Preferences', {
     'config format version': int,
     'comment extensions': list[str],
+    'keep archive format when saving': bool,
     'auto load last file': bool,
     'page of last file': int,
     'path to last file': str,
@@ -174,6 +175,7 @@ _NOTHING = object()
 _DEFAULTS: Preferences = {
     'config format version': CONFIG_FORMAT_VERSION,
     'comment extensions': constants.ACCEPTED_COMMENT_EXTENSIONS,
+    'keep archive format when saving': False,
     'auto load last file': False,
     'page of last file': 1,
     'path to last file': '',

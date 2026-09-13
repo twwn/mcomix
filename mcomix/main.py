@@ -128,8 +128,10 @@ class MainWindow(Gtk.Window):
         self.popup = self.uimanager.popup
         self.actiongroup = self.uimanager.actions
 
+        # Exactly two, which is the most a screen ever shows; the
+        # second is hidden whenever a single page is displayed.
         self.images = [page_image.PageImage(),
-                       page_image.PageImage()]  # XXX limited to at most 2 pages
+                       page_image.PageImage()]
 
         # ----------------------------------------------------------------
         # Setup
@@ -421,7 +423,7 @@ class MainWindow(Gtk.Window):
         if self.imagehandler.page_is_available():
             distribution_axis = constants.DISTRIBUTION_AXIS
             alignment_axis = constants.ALIGNMENT_AXIS
-            pixbuf_count = 2 if self.displayed_double() else 1  # XXX limited to at most 2 pages
+            pixbuf_count = self.displayed_page_count()
             pixbuf_list = list(self.imagehandler.get_pixbufs(pixbuf_count))
             do_not_transform = [image_tools.is_animation(x) for x in pixbuf_list]
             size_list = [[pixbuf.get_width(), pixbuf.get_height()]
@@ -599,9 +601,8 @@ class MainWindow(Gtk.Window):
 
         filename = make_status(self.imagehandler.get_page_filename(double=double))
         filesize = make_status(self.imagehandler.get_page_filesize(double=double))
-        self.statusbar.set_page_number(page_number,
-                                       self.imagehandler.get_number_of_pages(),
-                                       2 if double else 1)
+        self.statusbar.set_page_number(self.displayed_pages(),
+                                       self.imagehandler.get_number_of_pages())
         self.statusbar.set_filename(filename)
         self.statusbar.set_root(self.filehandler.get_base_filename())
         self.statusbar.set_filesize(filesize)
@@ -612,7 +613,7 @@ class MainWindow(Gtk.Window):
         """ Called whenever a new page is ready for displaying. """
         # Refresh display when currently opened page becomes available.
         current_page = self.imagehandler.get_current_page()
-        nb_pages = 2 if self.displayed_double() else 1
+        nb_pages = self.displayed_page_count()
         if current_page <= page < (current_page + nb_pages):
             self.draw_image(scroll_to=self._last_scroll_destination)
             self._update_page_information()
@@ -654,6 +655,29 @@ class MainWindow(Gtk.Window):
         """ Called on page change. """
         self.thumbnailsidebar.load_thumbnails()
         self._update_page_information()
+
+    def pages_replaced(self, image_files: list[str]) -> None:
+        """Show the open book with <image_files> as its pages.
+
+        What the archive editor's Apply leaves behind: the listing is a
+        new one, so every page number the window is holding stands
+        against the book that was there before.  set_page() will not do
+        on its own, since it returns early when it is asked for the page
+        that is current already - which page 1 usually is - and the
+        window then went on showing the drawn page, the page count and
+        the thumbnails of the listing that had just been replaced.
+
+        A book every page of which was removed is left drawn as it was:
+        there is no page to move to, and closing the file is not what
+        applying an edit was asked to do.
+        """
+        self.imagehandler.replace_pages(image_files)
+        self.thumbnailsidebar.clear()
+        if not self.imagehandler.get_number_of_pages():
+            return
+        self.imagehandler.set_page(1)
+        self.page_changed()
+        self.new_page()
 
     def set_page(self, num: int, at_bottom: bool = False) -> None:
         """Switch to page <num> of the currently open book.
@@ -936,12 +960,16 @@ class MainWindow(Gtk.Window):
         if bound is not None and self.is_manga_mode:
             bound = {'first': 'second', 'second': 'first'}[bound]
 
+        # Keeping to one page of a double means stopping short of the
+        # other one, so each bound is clamped by the width of the page
+        # widget it is not allowed to reach into, plus the two pixels
+        # the layout leaves between them.
         if bound == 'first':
             hadjust_upper = max(0, hadjust_upper -
-                                self.images[1].get_preferred_size()[1].width - 2)  # XXX transitional(double page limitation)
+                                self.images[1].get_preferred_size()[1].width - 2)
 
         elif bound == 'second':
-            hadjust_lower = self.images[0].get_preferred_size()[1].width + 2  # XXX transitional(double page limitation)
+            hadjust_lower = self.images[0].get_preferred_size()[1].width + 2
 
         new_hadjust = old_hadjust + x
         new_vadjust = old_vadjust + y
@@ -1008,6 +1036,16 @@ class MainWindow(Gtk.Window):
                     not self.imagehandler.get_virtual_double_page() and
                     self.imagehandler.get_current_page() != self.imagehandler.get_number_of_pages())
 
+    def displayed_page_count(self) -> int:
+        """The number of pages on screen: two side by side, or one.
+
+        Two is the most MComix ever shows.  The window holds exactly
+        that many page widgets, and every caller that asks for pixbufs,
+        page numbers or a background colour for what is on screen is
+        sized by this.
+        """
+        return 2 if self.displayed_double() else 1
+
     def get_visible_area_size(self) -> tuple[int, ...]:
         """Return a 2-tuple with the width and height of the visible part
         of the main layout area.
@@ -1049,16 +1087,11 @@ class MainWindow(Gtk.Window):
         self._main_layout.set_cursor(mode)
 
     def update_title(self) -> None:
-        """Set the title acording to current state."""
-        this_screen = 2 if self.displayed_double() else 1  # XXX limited to at most 2 pages
-        # TODO introduce formatter to merge these string ops with the ops for status bar updates
-        title = '['
-        for i in range(this_screen):
-            title += '%d' % (self.imagehandler.get_current_page() + i)
-            if i < this_screen - 1:
-                title += ','
-        title += ' / %d]  %s' % (self.imagehandler.get_number_of_pages(),
-                                 self.imagehandler.get_pretty_current_filename())
+        """Set the title according to current state."""
+        title = '[%s]  %s' % (
+            status.format_page_number(self.displayed_pages(),
+                                      self.imagehandler.get_number_of_pages()),
+            self.imagehandler.get_pretty_current_filename())
         title = i18n.to_unicode(title)
 
         if self.slideshow.is_running():
@@ -1088,7 +1121,7 @@ class MainWindow(Gtk.Window):
 
     def displayed_pages(self) -> "list[int]":
         """The numbers of the pages on screen, in the order they read in."""
-        this_screen = 2 if self.displayed_double() else 1  # XXX limited to at most 2 pages
+        this_screen = self.displayed_page_count()
         current: int = self.imagehandler.get_current_page()
         pages = [current + offset for offset in range(this_screen)]
         return list(reversed(pages)) if self.is_manga_mode else pages

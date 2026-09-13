@@ -377,6 +377,8 @@ _POPUP = (
     None,
     'extract_page_popup',
     None,
+    'edit_archive',
+    None,
     'menu_open_with_popup',
     None,
     'preferences',

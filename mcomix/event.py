@@ -735,7 +735,7 @@ class EventHandler:
 
         # Scroll to the new position
         new_index = self._window.layout.scroll_smartly(max_scroll, backwards, swap_axes)
-        n = 2 if self._window.displayed_double() else 1  # XXX limited to at most 2 pages
+        n = self._window.displayed_page_count()
 
         if new_index == -1:
             self._previous_page_with_protection()

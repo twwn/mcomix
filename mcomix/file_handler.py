@@ -89,6 +89,10 @@ class FileHandler:
         self._stop_waiting = False
         #: List of comment files inside of the currently opened archive.
         self._comment_files: list[str] = []
+        #: The members of the open archive that are neither pages nor
+        #: comments: metadata files, above all, which nothing in MComix
+        #: reads but which the archive is not the same archive without.
+        self._other_files: list[str] = []
         #: Mapping of absolute paths to archive path names.
         self._name_table: dict[str, str] = {}
         #: Archive extractor.
@@ -307,6 +311,7 @@ class FileHandler:
             self._base_path = None
             self._stop_waiting = True
             self._comment_files = []
+            self._other_files = []
             self._name_table.clear()
             self.file_closed()
         # Catch up on UI events, so we don't leave idle callbacks.
@@ -418,10 +423,26 @@ class FileHandler:
         self._comment_files = [os.path.join(tmp_dir, f)
                                for f in comment_files]
 
+        # Whatever is left is carried rather than read: a ComicInfo.xml
+        # the comment extensions do not cover, an OPF, a JSON sidecar.
+        # MComix has nothing to do with any of it, but the archive
+        # editor writes a new archive out of what it was given, so
+        # anything not named here is dropped the moment a book is saved.
+        # The files Finder leaves behind are not part of the book, and
+        # are left out here as they are left out of the pages.
+        accounted = set(archive_images) | set(comment_files)
+        other_files = [name for name in files
+                       if name not in accounted
+                       and not name.endswith('/')
+                       and '__MACOSX' not in
+                       os.path.normpath(name).split(os.sep)]
+        self._other_files = [os.path.join(tmp_dir, f) for f in other_files]
+
         self._name_table = dict(list(zip(image_files, archive_images)))
         self._name_table.update(list(zip(self._comment_files, comment_files)))
+        self._name_table.update(list(zip(self._other_files, other_files)))
 
-        self._extractor.set_files(archive_images + comment_files)
+        self._extractor.set_files(archive_images + comment_files + other_files)
 
         self._archive_opened(image_files)
 
@@ -550,6 +571,22 @@ class FileHandler:
     def get_comment_name(self, num: int) -> str:
         """Return the filename of comment <num>."""
         return self._comment_files[num - 1]
+
+    def get_other_files(self) -> dict[str, str]:
+        """The archive members that are neither pages nor comments.
+
+        Keyed by the path each was extracted to, valued by the name it
+        had in the archive - which is the name it has to go back under,
+        directory and all, for the archive to still hold what it held.
+        Each is waited for, since a file that is not out yet cannot be
+        written into a new archive.
+        """
+        carried = {}
+        for path in self._other_files:
+            self._wait_on_file(path)
+            if os.path.isfile(path):
+                carried[path] = self._name_table[path]
+        return carried
 
     def update_comment_extensions(self) -> None:
         """Update the regular expression used to filter out comments in

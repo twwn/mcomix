@@ -49,6 +49,43 @@ class ColumnListViewTest(MComixTest):
     def _names(self):
         return [row.name for row in self.view.each_row()]
 
+    def _present(self, view):
+        """Put <view> on screen, so that it draws cells to look at."""
+        scroller = Gtk.ScrolledWindow()
+        scroller.set_child(view)
+        window = Gtk.Window()
+        window.set_default_size(400, 300)
+        window.set_child(scroller)
+        window.present()
+        self.addCleanup(window.destroy)
+        for _ in range(20):
+            pump()
+            scroller.allocate(400, 300, -1, None)
+        return window
+
+    def _cell_at(self, position, view=None):
+        """A cell of the row drawn at <position>, whichever column."""
+        for cell in self._drawn_cells(self.view if view is None else view):
+            if cell.position == position:
+                return cell
+        return None
+
+    @staticmethod
+    def _drawn_cells(view):
+        """Every text cell <view> has on screen."""
+        found = []
+
+        def walk(widget):
+            child = widget.get_first_child()
+            while child is not None:
+                if isinstance(child, column_list._TextCell):
+                    found.append(child)
+                walk(child)
+                child = child.get_next_sibling()
+
+        walk(view)
+        return found
+
     def _cells(self):
         """The text of every cell that is on screen, whatever column."""
         found = []
@@ -191,12 +228,12 @@ class ColumnListViewTest(MComixTest):
         view.set_rows(column_list.Row(name=name) for name in self.NAMES)
         view.set_reorderable(True)
         view.sort_by(column, descending=True)
-        pump()
+        self._present(view)
         self.assertEqual([row.name for row in view.each_row()],
                          ['two', 'three', 'one'])
 
-        dropped = column_list._TextCell()
-        dropped.position = 2
+        dropped = self._cell_at(2, view)
+        self.assertIsNotNone(dropped, 'no cell was drawn to drop onto')
         self.assertIsNone(view._reorder_prepare(None, 0.0, 0.0, dropped))
         self.assertFalse(
             view._reorder_drop(None, 'application/x-mcomix-row-position:0',
@@ -216,16 +253,30 @@ class ColumnListViewTest(MComixTest):
         view.set_reorderable(True)
         view.sort_by(column, descending=True)
         view.sort_by(None)
-        pump()
+        self._present(view)
 
-        dropped = column_list._TextCell()
-        dropped.position = 2
+        dropped = self._cell_at(2, view)
+        self.assertIsNotNone(dropped, 'no cell was drawn to drop onto')
         self.assertIsNotNone(view._reorder_prepare(None, 0.0, 0.0, dropped))
         self.assertTrue(
             view._reorder_drop(None, 'application/x-mcomix-row-position:0',
                                0.0, 0.0, dropped))
         self.assertEqual([row.name for row in view.each_row()],
                          ['two', 'three', 'one'])
+
+    def test_a_cell_says_where_it_sits_now_not_where_it_was_bound(self):
+        """GTK does not bind a cell again for rows removed before it, so
+        a position remembered from the last bind named whichever row had
+        moved into that place - and a drop after a removal moved it."""
+        self.view.set_reorderable(True)
+        self.view.remove_row(next(self.view.each_row()))
+        self._settle()
+        self.assertEqual(self._names(), ['two', 'three'])
+        cell = self._cell_at(0)
+        self.assertIsNotNone(cell, 'no cell was drawn where the first row is')
+        self.assertTrue(self.view._reorder_drop(
+            None, 'application/x-mcomix-row-position:1', 0.0, 0.0, cell))
+        self.assertEqual(self._names(), ['three', 'two'])
 
     def test_a_drop_carrying_something_else_is_refused(self):
         self.view.set_reorderable(True)

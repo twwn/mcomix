@@ -269,6 +269,11 @@ class _PreferencesDialog(Dialog):
                                                     'store last saved in directory',
                                                     _('Open the Save As dialog at the directory in which the last file was saved.')))
 
+        page.add_row(self._create_pref_check_button(
+            _('Save an edited archive in the format it was opened in'),
+            'keep archive format when saving',
+            _('Write an edited archive back as a ZIP, a tar, a 7z or a RAR, whichever it was read as. The last two need the 7z and rar programs, which MComix does not install; a format it cannot write is saved as a ZIP.')))
+
         page.new_section(_('Prompts answered for good'))
 
         for dialog_id, prompt in message_dialog.REMEMBERED_DIALOGS.items():
@@ -910,7 +915,7 @@ class _PreferencesDialog(Dialog):
                 self._window.thumbnailsidebar.change_thumbnail_background_color(
                     prefs['thumb bg colour'])
             elif self._window.imagehandler.page_is_available():
-                pixbuf_count = 2 if self._window.displayed_double() else 1  # XXX limited to at most 2 pages
+                pixbuf_count = self._window.displayed_page_count()
                 bg_colour = self._window.imagehandler.get_pixbuf_auto_background(pixbuf_count)
                 self._window.thumbnailsidebar.change_thumbnail_background_color(bg_colour)
 

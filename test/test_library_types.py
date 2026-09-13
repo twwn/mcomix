@@ -1,5 +1,6 @@
 import contextlib
 import unittest
+from unittest import mock
 import tempfile
 import shutil
 import os
@@ -154,6 +155,40 @@ class CollectionTest(unittest.TestCase):
     def test_get_default_collection(self):
         collection = self.library.get_collection_by_id(None)
         self.assertEqual(collection, backend_types.DefaultCollection)
+
+
+class BackendObjectTest(unittest.TestCase):
+
+    """Which backend a row read out of the library talks through."""
+
+    @staticmethod
+    def _book():
+        return backend_types._Book(1, 'name', '/path', 3, 0, 0, '')
+
+    def test_a_row_asks_for_the_one_backend_by_default(self):
+        given = object()
+        with mock.patch.object(backend, 'LibraryBackend', return_value=given):
+            self.assertIs(given, self._book().get_backend())
+
+    def test_a_row_that_was_given_a_backend_talks_through_that_one(self):
+        """The library's migration hands each book the backend that is
+        still opening: it runs from _LibraryBackend.__init__(), so
+        asking LibraryBackend() for one would start building a second
+        and never stop."""
+        book = self._book()
+        given = object()
+        book.set_backend(given)
+        with mock.patch.object(backend, 'LibraryBackend',
+                               side_effect=AssertionError(
+                                   'LibraryBackend() was asked for one')):
+            self.assertIs(given, book.get_backend())
+
+    def test_giving_one_row_a_backend_leaves_the_others_asking(self):
+        book = self._book()
+        book.set_backend(object())
+        other = object()
+        with mock.patch.object(backend, 'LibraryBackend', return_value=other):
+            self.assertIs(other, self._book().get_backend())
 
 
 class WatchListEntryTest(unittest.TestCase):

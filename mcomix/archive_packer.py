@@ -1,12 +1,242 @@
 """archive_packer.py - Archive creation class."""
 
 import os
+import shutil
+import tarfile
+import tempfile
 import zipfile
 import threading
-from collections.abc import Iterator, Sequence
+from collections.abc import Iterator, Mapping, Sequence
 
+from mcomix import constants
 from mcomix import log
+from mcomix import process
 from mcomix.i18n import _
+
+
+class _Writer:
+
+    """One archive being written, whatever format it is in.
+
+    MComix reads a dozen archive formats and writes three, which is
+    what the ones it reads with an external program can be asked to
+    make: a ZIP, a tar, and a 7z where 7-Zip is installed.  A RAR is
+    read with unrar, which cannot create one; a PDF, a MOBI and an LHA
+    are not formats a book of pages is written back into.
+    """
+
+    def __init__(self, archive_path: str) -> None:
+        self._archive_path = archive_path
+
+    def add(self, path: str, name: str) -> None:
+        """Write the file at <path> into the archive as <name>."""
+        raise NotImplementedError
+
+    def close(self) -> None:
+        """Finish the archive."""
+        raise NotImplementedError
+
+    def clean_up(self) -> None:
+        """Drop whatever was left over, finished or not."""
+
+
+class _ZipWriter(_Writer):
+
+    """A ZIP, which is what a CBZ is.
+
+    Everything is deflated, pages included.  Storing them was meant to
+    save the time of compressing a compressed image again, but it also
+    means the archive can only come out larger than the one it was made
+    from: over twenty 1000x1400 JPEG pages the stored copy was 3,265,642
+    bytes against the deflated 3,242,804 and the 3,242,684 of the
+    archive they came out of, so removing a page or two from a long book
+    still left a bigger file than before.  Deflating them costs 54ms
+    against 1.4ms for those twenty pages, on a save that reads and
+    writes the whole book anyway; pages that are not compressed already,
+    BMP and uncompressed TIFF, come out 30% smaller.
+    """
+
+    def __init__(self, archive_path: str) -> None:
+        super().__init__(archive_path)
+        self._zip = zipfile.ZipFile(archive_path, 'w', zipfile.ZIP_DEFLATED)
+
+    def add(self, path: str, name: str) -> None:
+        self._zip.write(path, name)
+
+    def close(self) -> None:
+        self._zip.close()
+
+    def clean_up(self) -> None:
+        self._zip.close()
+
+
+class _TarWriter(_Writer):
+
+    """A tar, compressed however the archive it was made from was.
+
+    tarfile writes gzip, bzip2 and xz itself, so this needs nothing
+    installed; the mode is the one the source archive's own extension
+    asks for, since a .cbt that came back gzipped would no longer be
+    the file it was.
+    """
+
+    def __init__(self, archive_path: str, mode: str = 'w') -> None:
+        super().__init__(archive_path)
+        self._tar = tarfile.open(archive_path, mode)  # type: ignore[call-overload]  # the mode is one of the write modes, which tarfile types as literals
+
+    def add(self, path: str, name: str) -> None:
+        # recursive=False: every entry is named one at a time, and a
+        # directory among them would otherwise bring its whole tree.
+        self._tar.add(path, name, recursive=False)
+
+    def close(self) -> None:
+        self._tar.close()
+
+    def clean_up(self) -> None:
+        self._tar.close()
+
+
+class _StagedWriter(_Writer):
+
+    """An archive written by a program that names entries after files.
+
+    Neither 7z nor rar takes a name to write a file under: each names an
+    entry after the file it was given.  So the entries are laid out
+    under a directory of their own first, and that directory is what the
+    program is pointed at.  They are linked there where the file system
+    allows it, which costs nothing; a copy is what is left when it does
+    not.
+    """
+
+    #: The program, and what to give it besides the archive and the
+    #: directory.  Named by the classes below.
+    PROGRAM = ''
+    SWITCHES: tuple[str, ...] = ()
+
+    def __init__(self, archive_path: str) -> None:
+        super().__init__(archive_path)
+        self._staging = tempfile.mkdtemp(
+            prefix='mcomix-pack.', dir=os.path.dirname(archive_path))
+
+    def add(self, path: str, name: str) -> None:
+        staged = os.path.join(self._staging, name)
+        os.makedirs(os.path.dirname(staged), exist_ok=True)
+        try:
+            os.link(path, staged)
+        except OSError:
+            shutil.copyfile(path, staged)
+
+    def _executable(self) -> "str | None":
+        raise NotImplementedError
+
+    def close(self) -> None:
+        executable = self._executable()
+        if executable is None:
+            raise OSError('%s is not installed' % self.PROGRAM)
+        try:
+            # Both programs add to an archive that is already there
+            # rather than replacing it, and refuse a file that is not
+            # one - which the empty file a caller makes to hold the name
+            # is.
+            if os.path.exists(self._archive_path):
+                os.unlink(self._archive_path)
+            if not process.call([executable, 'a', *self.SWITCHES, '--',
+                                 self._archive_path, '.'],
+                                workdir=self._staging):
+                raise OSError('%s would not write %s'
+                              % (self.PROGRAM, self._archive_path))
+        finally:
+            self.clean_up()
+
+    def clean_up(self) -> None:
+        shutil.rmtree(self._staging, ignore_errors=True)
+
+
+class _SevenZipWriter(_StagedWriter):
+
+    """A 7z, written by the 7z program, which recurses of itself."""
+
+    PROGRAM = '7z'
+    SWITCHES = ('-t7z', '-y')
+
+    def _executable(self) -> "str | None":
+        return szip_executable()
+
+
+class _RarWriter(_StagedWriter):
+
+    """A RAR, written by the rar program.
+
+    -r, because rar takes a directory without descending into it
+    otherwise, and a book whose pages are in one would come out empty.
+    """
+
+    PROGRAM = 'rar'
+    SWITCHES = ('-r', '-y')
+
+    def _executable(self) -> "str | None":
+        return rar_executable()
+
+
+def szip_executable() -> "str | None":
+    """The 7z program, or None where it is not installed."""
+    return process.find_executable(('7z',))
+
+
+def rar_executable() -> "str | None":
+    """The program that writes a RAR, or None where there is none.
+
+    Not the one that reads them: unrar, which is what MComix extracts a
+    RAR with and what a distribution ships, only ever reads.  Making one
+    needs the rar program itself, which is not free software and is
+    installed by hand where it is installed at all - so this is None on
+    most machines, and a RAR is saved as a CBZ there.
+    """
+    return process.find_executable(('rar',))
+
+
+#: How a tar is written back, by the extension it carries.  tarfile
+#: reads an xz tar as any other, so its type says only "a tar"; writing
+#: one back uncompressed under the name it had would leave a file that
+#: is not what it says it is.
+_TAR_MODES = {'.gz': 'w:gz', '.tgz': 'w:gz',
+              '.bz2': 'w:bz2', '.tbz': 'w:bz2', '.tbz2': 'w:bz2',
+              '.xz': 'w:xz', '.txz': 'w:xz', '.lzma': 'w:xz'}
+
+
+def _tar_mode(archive_path: str) -> str:
+    """Which of tarfile's write modes <archive_path> asks for."""
+    return _TAR_MODES.get(os.path.splitext(archive_path)[1].lower(), 'w')
+
+
+def can_write(archive_type: "int | None") -> bool:
+    """Whether a book read as <archive_type> can be written back as one.
+
+    ZIP and tar are written by the standard library and are always
+    there.  A 7z needs the 7z program and a RAR needs rar, neither of
+    which MComix installs - and unrar, which is what a RAR is read
+    with, only ever reads - so those two are offered only on a machine
+    that has them.
+    """
+    if archive_type in (constants.ZIP, constants.ZIP_EXTERNAL,
+                        constants.TAR, constants.GZIP, constants.BZIP2):
+        return True
+    if archive_type == constants.SEVENZIP:
+        return szip_executable() is not None
+    if archive_type == constants.RAR:
+        return rar_executable() is not None
+    return False
+
+
+def make_writer(archive_path: str, archive_type: int) -> _Writer:
+    """The writer that makes an <archive_type> archive at <archive_path>."""
+    if archive_type == constants.SEVENZIP:
+        return _SevenZipWriter(archive_path)
+    if archive_type == constants.RAR:
+        return _RarWriter(archive_path)
+    if archive_type in (constants.TAR, constants.GZIP, constants.BZIP2):
+        return _TarWriter(archive_path, _tar_mode(archive_path))
+    return _ZipWriter(archive_path)
 
 
 class Packer:
@@ -19,8 +249,10 @@ class Packer:
     """
 
     def __init__(self, image_files: Sequence[str], other_files: Sequence[str],
-                 archive_path: str, base_name: str) -> None:
-        """Setup a Packer object to create a ZIP archive at <archive_path>.
+                 archive_path: str, base_name: str,
+                 carried_files: "Mapping[str, str] | None" = None,
+                 archive_type: int = constants.ZIP) -> None:
+        """Setup a Packer object to create an archive at <archive_path>.
         All files pointed to by paths in the sequences <image_files> and
         <other_files> will be included in the archive when packed.
 
@@ -30,12 +262,23 @@ class Packer:
 
         The files in <other_files> will be included as they are,
         assuming their filenames does not clash with other filenames in
-        the archive. All files are placed in the archive root.
+        the archive, and are placed in the archive root.
+
+        <carried_files> maps a path to the name it is written under, and
+        is how the archive being edited hands over what it held besides
+        its pages: a name there keeps whatever directory it was in, the
+        point of carrying a file being that the archive still holds what
+        it held.
+
+        <archive_type> is which format to write, out of the three
+        can_write() answers for; anything else is a ZIP.
         """
         self._image_files = image_files
         self._other_files = other_files
+        self._carried_files = carried_files or {}
         self._archive_path = archive_path
         self._base_name = base_name
+        self._archive_type = archive_type
         self._pack_thread: threading.Thread | None = None
         self._packing_successful = False
 
@@ -55,13 +298,12 @@ class Packer:
 
         return self._packing_successful
 
-    def _files_to_pack(self) -> "Iterator[tuple[str, str, int]]":
-        """Every file to write, as (path, name in the archive, method).
+    def _files_to_pack(self) -> "Iterator[tuple[str, str]]":
+        """Every file to write, as (path, the name it is written under).
 
         The pages come first, numbered so that their names sort the way
         they were given; a file that came with them keeps its own name
-        unless one of the pages has already taken it.  A page is stored
-        rather than deflated, being a compressed image already.
+        unless one of the pages has already taken it.
         """
         digits = len(str(len(self._image_files)))
         taken = set()
@@ -70,27 +312,35 @@ class Packer:
             extension = os.path.splitext(path)[1]
             name = f'{number:0{digits}d} - {self._base_name}{extension}'
             taken.add(name)
-            yield path, name, zipfile.ZIP_STORED
+            yield path, name
 
         for path in self._other_files:
             name = os.path.basename(path)
             while name in taken:
                 name = '_%s' % name
             taken.add(name)
-            yield path, name, zipfile.ZIP_DEFLATED
+            yield path, name
+
+        for path, name in self._carried_files.items():
+            if name in taken:
+                # The editor is showing that file under a name of its
+                # own, and has already written it out.
+                continue
+            taken.add(name)
+            yield path, name
 
     def _thread_pack(self) -> None:
         try:
-            archive = zipfile.ZipFile(self._archive_path, 'w')
+            archive = make_writer(self._archive_path, self._archive_type)
         except Exception:
             log.error(_('! Could not create archive at path "%s"'),
                       self._archive_path)
             return
 
-        with archive:
-            for path, name, compression in self._files_to_pack():
+        try:
+            for path, name in self._files_to_pack():
                 try:
-                    archive.write(path, name, compression)
+                    archive.add(path, name)
                 except Exception:
                     log.error(_('! Could not add file %(sourcefile)s '
                                 'to archive %(archivefile)s, aborting...'),
@@ -98,7 +348,14 @@ class Packer:
                                "archivefile": self._archive_path})
                     break
             else:
+                archive.close()
                 self._packing_successful = True
+        except Exception:
+            log.error(_('! Could not create archive at path "%s"'),
+                      self._archive_path)
+        finally:
+            if not self._packing_successful:
+                archive.clean_up()
 
         if not self._packing_successful:
             # Half an archive is worse than none: the caller renames

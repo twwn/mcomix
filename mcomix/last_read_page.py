@@ -237,11 +237,12 @@ class LastReadPage:
                     # The book exists, move into recent collection
                     self.backend.add_book_to_collection(book.id, recent_collection)
 
-                # Set recent info on retrieved book
-                # XXX: If the book calls get_backend during migrate_database,
-                # the library isn't constructed yet and breaks in an
-                # endless recursion.
-                book.get_backend = lambda: self.backend  # type: ignore[method-assign]
+                # Set recent info on retrieved book.  The library
+                # is still opening - this runs from the upgrade step in
+                # _LibraryBackend.__init__() - so the book is given the
+                # backend rather than left to ask LibraryBackend() for
+                # one, which would start building a second.
+                book.set_backend(self.backend)
                 book.set_last_read_page(page, time_set)
 
             try:

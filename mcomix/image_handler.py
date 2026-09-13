@@ -120,13 +120,14 @@ class ImageHandler:
 
     def get_pixbuf_auto_background(
             self,
-            number_of_bufs: int) -> Sequence[float]:  # XXX at most 2 pages
+            number_of_bufs: int) -> Sequence[float]:
         """ Returns an automatically calculated background color
         for the current page(s).
 
-        The colour the preference names where there is no page to read
-        one off, which is what the background is then painted in
-        anyway.
+        <number_of_bufs> is one or two, the two page counts a screen
+        can show.  The colour the preference names where there is no
+        page to read one off, which is what the background is then
+        painted in anyway.
         """
 
         pixbufs = self.get_pixbufs(number_of_bufs)

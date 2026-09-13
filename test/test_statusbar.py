@@ -46,7 +46,7 @@ class StatusbarTextTest(MComixTest):
         self.assertEqual(self._text(), '')
 
     def test_update_shows_the_fields_the_preference_asks_for(self):
-        self.bar.set_page_number(3, 12, 1)
+        self.bar.set_page_number([3], 12)
         self.bar.set_filename('page-003.jpg')
         self.bar.set_resolution(((800, 600, 1.0, False),))
         self.bar.update()
@@ -56,9 +56,18 @@ class StatusbarTextTest(MComixTest):
         self.assertNotIn('800x600', text,
                          'the resolution field is off but was shown')
 
+    def test_the_page_field_lists_the_pages_in_the_order_it_was_given(self):
+        """The pages on screen are handed over in reading order, which
+        is right to left in manga mode, so the field lists them as they
+        stand rather than sorting them."""
+        self.bar.set_page_number([3, 2], 12)
+        self.assertEqual('3,2 / 12', self.bar.get_page_number())
+        self.bar.set_page_number([2, 3], 12)
+        self.assertEqual('2,3 / 12', self.bar.get_page_number())
+
     def test_update_replaces_a_message_rather_than_stacking_on_it(self):
         self.bar.set_message('an error nobody cleared')
-        self.bar.set_page_number(1, 1, 1)
+        self.bar.set_page_number([1], 1)
         self.bar.set_filename('only.jpg')
         self.bar.update()
         self.assertNotIn('an error nobody cleared', self._text())

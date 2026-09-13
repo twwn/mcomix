@@ -11,6 +11,16 @@ from mcomix.i18n import _
 from collections.abc import Sequence
 
 
+def format_page_number(pages: Sequence[int], total: int) -> str:
+    """"1,2 / 10": the pages on screen out of the whole book.
+
+    <pages> are listed in the order they read in, which is right to
+    left in manga mode, so that they line up with the file names and
+    the resolutions the same screen is described by.
+    """
+    return '%s / %d' % (','.join('%d' % page for page in pages), total)
+
+
 class Statusbar(Gtk.Box):
 
     """The status bar along the bottom of the window.
@@ -69,16 +79,9 @@ class Statusbar(Gtk.Box):
         """
         self.status.set_text(" " * Statusbar.SPACING + message)
 
-    def set_page_number(self, page: int, total: int,
-                        this_screen: int) -> None:
-        """Update the page number."""
-        page_info = ""
-        for i in range(this_screen):
-            page_info += '%d' % (page + i)
-            if i < this_screen - 1:
-                page_info += ','
-        page_info += ' / %d' % total
-        self._page_info = page_info
+    def set_page_number(self, pages: Sequence[int], total: int) -> None:
+        """Update the page number, from the pages on screen."""
+        self._page_info = format_page_number(pages, total)
 
     def get_page_number(self) -> str:
         """Returns the bar's page information."""
