@@ -3,6 +3,8 @@ shown, which every page stepped over is asked about. """
 
 import os
 import shutil
+import threading
+import unittest.mock
 
 from . import MComixTest, get_testfile_path
 
@@ -263,6 +265,40 @@ class VirtualDoublePageTest(MComixTest):
         self.assertEqual(self.handler._image_files, listing[:1])
         self.assertEqual(set(self.handler._raw_pixbufs), set())
         self.assertEqual(self.handler._available_images, {0})
+
+    def test_a_page_read_while_the_pages_are_rewritten_keeps_to_its_file(self):
+        """The caching thread reads a page while the editor deletes one
+        in front of it.
+
+        _get_pixbuf() filed what it read under the number it had been
+        asked for, in whichever cache the handler held by the time the
+        read finished.  After a deletion that number belongs to the page
+        behind, which then showed the page it had replaced.
+        """
+        listing = self._open('portrait-no-exif.png', 'landscape-no-exif.png',
+                             'portrait-no-exif.png')
+        load_pixbuf = image_tools.load_pixbuf
+        reading = threading.Event()
+        rewritten = threading.Event()
+
+        def slow_load(path):
+            reading.set()
+            rewritten.wait(10)
+            return load_pixbuf(path)
+
+        with unittest.mock.patch.object(image_tools, 'load_pixbuf', slow_load):
+            reader = threading.Thread(target=self.handler._get_pixbuf,
+                                      args=(1,))
+            reader.start()
+            self.assertTrue(reading.wait(10))
+            self.handler.replace_pages(listing[1:])
+            rewritten.set()
+            reader.join(10)
+        self.assertFalse(reader.is_alive())
+        # Page 2 is the third file now, which is a portrait.
+        pixbuf = self.handler._get_pixbuf(1)
+        self.assertEqual((pixbuf.get_width(), pixbuf.get_height()),
+                         (210, 297))
 
     def test_a_cached_page_is_measured_from_the_pixbuf(self):
         self._open('portrait-no-exif.png', 'landscape-no-exif.png')

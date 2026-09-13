@@ -11,10 +11,12 @@ something a test can set up.
 
 import os
 import threading
+import unittest.mock
 
 from . import MComixTest, get_testfile_path, wait_for
 
 from mcomix import archive_extractor
+from mcomix import log
 
 
 class _ExtractorTest(MComixTest):
@@ -156,3 +158,55 @@ class LateExtractionTest(_ExtractorTest):
         waiter.join(timeout=20)
 
 # vim: expandtab:sw=4:ts=4
+
+
+class FailedBatchTest(_ExtractorTest):
+
+    """A solid archive whose one pass stops part way through.
+
+    A solid archive is unpacked in one pass, and a pass that raises - a
+    damaged member, a destination that cannot be written - stops there.
+    _extract_file() marks a file it could not unpack as done all the
+    same, so that the window shows a missing page.  The pass marked
+    nothing after the file it stopped at, and a thread waiting for one
+    of those waited for the rest of the session: the main thread, when
+    it turned to such a page or saved the archive.
+    """
+
+    class _StopsAfterOne:
+
+        """The fixture's archive as a solid one, whose pass raises after
+        its first file."""
+
+        def __init__(self, archive):
+            self._archive = archive
+
+        def __getattr__(self, name):
+            return getattr(self._archive, name)
+
+        def is_solid(self):
+            return True
+
+        def iter_extract(self, entries, destination_dir):
+            first = sorted(entries)[0]
+            self._archive.extract(first, destination_dir)
+            yield first
+            raise OSError('the next member is damaged')
+
+    def setUp(self):
+        super().setUp()
+        self.extractor._archive = self._StopsAfterOne(self.extractor._archive)
+
+    def test_the_files_after_the_one_it_stopped_at_are_not_waited_for(self):
+        names = sorted(self.MEMBERS)
+        self.extractor.set_files(names)
+        with unittest.mock.patch.object(log, 'error') as error:
+            self.extractor.extract()
+            self.assertTrue(
+                wait_for(lambda: all(self.extractor.is_ready(name)
+                                     for name in names), seconds=5),
+                'never marked: %s' % [name for name in names
+                                      if not self.extractor.is_ready(name)])
+        error.assert_called()
+        self.assertTrue(os.path.isfile(os.path.join(self.destination, names[0])))
+        self.assertFalse(os.path.exists(os.path.join(self.destination, names[1])))

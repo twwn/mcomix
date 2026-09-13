@@ -1,11 +1,14 @@
 """Tests for the library database schema itself."""
 
+import datetime
 import inspect
 import os
 import re
 import shutil
 import tempfile
+import threading
 import unittest
+import unittest.mock
 
 from sqlite3 import dbapi2
 
@@ -1560,3 +1563,97 @@ class CollectionTreeQueryTest(LibraryDatabaseTest):
             [_('Recent')],
             [name for id, name in root
              if id == constants.COLLECTION_RECENT])
+
+
+class SharedConnectionTest(LibraryDatabaseTest):
+
+    """Threads other than the main one read through the backend's one
+    connection.
+
+    The library's covers are drawn by a pool of worker threads, three by
+    default, and each of them asks its book for the page it was left on;
+    the watch list scan reads the library from a thread of its own.
+    sqlite3 caches prepared statements per connection, and two threads
+    running the same statement at once could step the same prepared one:
+    a cover worker raised "bad parameter or other API misuse", and the
+    cover it was drawing never arrived.
+    """
+
+    THREADS = 4
+    ROUNDS = 1000
+
+    def test_threads_reading_at_once_each_get_their_answer(self):
+        library = backend.LibraryBackend()
+        self.addCleanup(library.close)
+        path = self._archive()
+        self.assertTrue(library.add_book(path))
+        book = library.get_book_by_path(path)
+        book.set_last_read_page(3)
+        wrong = []
+
+        def read():
+            try:
+                for _round in range(self.ROUNDS):
+                    page = book.get_last_read_page()
+                    if page != 3:
+                        wrong.append('page %r' % (page,))
+                    found = library.get_book_by_id(book.id)
+                    if found is None or found.path != path:
+                        wrong.append('book %r' % (found,))
+            except Exception as error:
+                wrong.append('%s: %s' % (type(error).__name__, error))
+
+        threads = [threading.Thread(target=read)
+                   for _thread in range(self.THREADS)]
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join(timeout=30)
+        self.assertFalse(any(thread.is_alive() for thread in threads))
+        self.assertEqual([], wrong[:3], '%d of %d reads went wrong' % (
+            len(wrong), 2 * self.THREADS * self.ROUNDS))
+
+
+class LastReadPageRewriteTest(LibraryDatabaseTest):
+
+    """Where a book was left is never missing while it is written again.
+
+    The cover workers read the page each book was left on while the main
+    thread may be writing one, and the library's lock is taken a
+    statement at a time.  The page was written as a delete and then an
+    insert, so between the two the book had no page, and a cover drawn in
+    that moment carried no tick for a book read to the end.
+    """
+
+    def test_no_statement_leaves_the_book_without_its_page(self):
+        library = backend.LibraryBackend()
+        self.addCleanup(library.close)
+        path = self._archive()
+        self.assertTrue(library.add_book(path))
+        book = library.get_book_by_path(path)
+        book.set_last_read_page(3)
+        seen = []
+        execute = library.execute
+
+        def watched(statement, *args):
+            changed = execute(statement, *args)
+            seen.append(book.get_last_read_page())
+            return changed
+
+        when = datetime.datetime(2026, 9, 13, 5, 0, 0, 123456)
+        with unittest.mock.patch.object(library, 'execute', watched):
+            book.set_last_read_page(4, when)
+        self.assertNotIn(None, seen)
+        self.assertEqual(4, book.get_last_read_page())
+        self.assertEqual(when, book.get_last_read_date())
+
+    def test_no_page_still_removes_it(self):
+        library = backend.LibraryBackend()
+        self.addCleanup(library.close)
+        path = self._archive()
+        self.assertTrue(library.add_book(path))
+        book = library.get_book_by_path(path)
+        book.set_last_read_page(3)
+        book.set_last_read_page(None)
+        self.assertIsNone(book.get_last_read_page())
+        self.assertIsNone(book.get_last_read_date())

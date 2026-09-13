@@ -296,13 +296,22 @@ class Extractor:
                 self._extraction_finished(f)
 
         except Exception as ex:
-            # A file that cannot be unpacked is logged and left out
-            # rather than raised over: the page is missing either way,
-            # and the window handles a missing page, where a thread that
-            # died here would leave whoever is waiting on the condition
-            # waiting for good.
+            # Logged rather than raised over, as _extract_file() does and
+            # for the same reason: the window handles a missing page,
+            # and a thread waiting on the condition does not handle a
+            # file that never lands.  The pass stops at the first file it
+            # cannot unpack, so every file after that one is missing too
+            # and is marked done with it; left unmarked, each of them
+            # kept whoever waited on it parked until the book was closed.
             log.error(_('! Extraction error: %s'), ex)
             log.debug('Traceback:\n%s', traceback.format_exc())
+            if self._extract_thread.must_stop():
+                return
+            with self._condition:
+                missing = [name for name in files
+                           if name not in self._extracted]
+            for name in missing:
+                self._extraction_finished(name)
 
     def _extract_file(self, name: str) -> None:
         """Extract the file named <name> to the destination directory,

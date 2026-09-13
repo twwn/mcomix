@@ -71,11 +71,9 @@ class LastReadPage:
         this is enabled, because the preferences dialog asks it just
         after the preference has been turned off. """
 
-        cursor = self.backend.execute("""SELECT COUNT(*) FROM recent""")
         # The connection's row factory unwraps a one column row, so this
         # is the count itself rather than a row holding it.
-        count = cursor.fetchone()
-        cursor.close()
+        count = self.backend.fetchone("""SELECT COUNT(*) FROM recent""")
 
         return int(count)
 
@@ -144,9 +142,7 @@ class LastReadPage:
                       ) t ON t.book = c.book
                  WHERE c.collection = ?"""
         recent_collection = self._recent_collection_id()
-        cursor = self.backend.execute(sql, (recent_collection,))
-        books = cursor.fetchall()
-        cursor.close()
+        books = self.backend.fetchall(sql, (recent_collection,))
 
         # The connection is in auto-commit mode, so without a transaction
         # around them each of the statements below is committed on its
@@ -156,12 +152,10 @@ class LastReadPage:
         with self.backend.transaction():
             for book in books:
                 self.backend.remove_book(book)
-            cursor = self.backend.execute("""DELETE FROM recent""")
-            cursor.close()
-            cursor = self.backend.execute(
+            self.backend.execute("""DELETE FROM recent""")
+            self.backend.execute(
                 """DELETE FROM contain WHERE collection = ?""",
                 (recent_collection,))
-            cursor.close()
 
     def get_page(self, path: str) -> int | None:
         """ The page to carry on from in the book at <path>, or None

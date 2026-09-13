@@ -1,6 +1,7 @@
 """image_handler.py - Image handler that takes care of cacheing and giving out images."""
 
 import os
+import threading
 
 from gi.repository import GdkPixbuf
 
@@ -60,6 +61,10 @@ class ImageHandler:
         self._wanted_pixbufs: list[int] = []
         #: Pixbuf map from page > Pixbuf
         self._raw_pixbufs: dict[int, GdkPixbuf.Pixbuf] = {}
+        #: Held while replace_pages() swaps the listing and the cache,
+        #: and while _get_pixbuf() files a page it has read, so that a
+        #: page read under one listing is never filed under the next.
+        self._cache_lock = threading.Lock()
 
         self._window.filehandler.file_available += self._file_available
 
@@ -92,13 +97,21 @@ class ImageHandler:
             return pixbuf
 
         self._wait_on_page(index + 1)
+        image_files = self._image_files
         try:
-            pixbuf = image_tools.load_pixbuf((self._image_files or [])[index])
+            pixbuf = image_tools.load_pixbuf((image_files or [])[index])
             tools.garbage_collect()
         except Exception as e:
             log.error('Could not load pixbuf for page %u: %r', index + 1, e)
             pixbuf = image_tools.missing_image_icon()
-        self._raw_pixbufs[index] = pixbuf
+        # The caching thread reads while the archive editor may rewrite
+        # the pages, and after a deletion the number it was asked for
+        # belongs to the page behind: filed there, that page showed the
+        # one it had replaced.  Every listing is a list of its own, so
+        # one that is no longer held means the read is nobody's page.
+        with self._cache_lock:
+            if self._image_files is image_files:
+                self._raw_pixbufs[index] = pixbuf
         return pixbuf
 
     def get_pixbufs(self, number_of_bufs: int) -> list[GdkPixbuf.Pixbuf]:
@@ -323,26 +336,26 @@ class ImageHandler:
 
         Both are replaced rather than emptied and refilled, so that the
         caching thread reading them meets one listing or the other and
-        never a half-built one.
+        never a half-built one, and both under the lock _get_pixbuf()
+        files a page with, so that a page it was reading while this ran
+        is not filed under the new listing.
         """
-        old_files = self._image_files or []
-        # A number past the end of the listing is dropped rather than
-        # looked up.  The caching thread writes into both of these, and
-        # a page taken out of the book while it was reading one leaves
-        # an entry behind for a page the book no longer has: _get_pixbuf
-        # stores the missing-page icon under the number it failed on.
-        available = {old_files[index] for index in self._available_images
-                     if index < len(old_files)}
-        pixbufs = {old_files[index]: pixbuf
-                   for index, pixbuf in self._raw_pixbufs.items()
-                   if index < len(old_files)}
-        self.set_image_files(image_files)
-        self._available_images = {index for index, path
-                                  in enumerate(image_files)
-                                  if path in available}
-        self._raw_pixbufs = {index: pixbufs[path]
-                             for index, path in enumerate(image_files)
-                             if path in pixbufs}
+        with self._cache_lock:
+            old_files = self._image_files or []
+            # A number past the end of the listing is dropped rather than
+            # looked up: there is no file to carry it across by.
+            available = {old_files[index] for index in self._available_images
+                         if index < len(old_files)}
+            pixbufs = {old_files[index]: pixbuf
+                       for index, pixbuf in self._raw_pixbufs.items()
+                       if index < len(old_files)}
+            self.set_image_files(image_files)
+            self._available_images = {index for index, path
+                                      in enumerate(image_files)
+                                      if path in available}
+            self._raw_pixbufs = {index: pixbufs[path]
+                                 for index, path in enumerate(image_files)
+                                 if path in pixbufs}
 
     def _file_available(self, filepaths: Iterable[str]) -> None:
         """ Called by the filehandler when a new file becomes available. """

@@ -82,12 +82,10 @@ class _Book(_BackendObject):
         the answer is then the default collection, which stands for the
         library as a whole.
         """
-        cursor = self.get_backend().execute(
+        rows = self.get_backend().fetchall(
             '''SELECT id, name, supercollection FROM collection
                JOIN contain on contain.collection = collection.id
                WHERE contain.book = ?''', (self.id,))
-        rows = cursor.fetchall()
-        cursor.close()
         if rows:
             return [_Collection(*row) for row in rows]
         else:
@@ -100,12 +98,10 @@ class _Book(_BackendObject):
         it was last closed on page 1, which the file handler clears
         rather than stores.
         """
-        cursor = self.get_backend().execute(
-            '''SELECT page FROM recent WHERE book = ?''', (self.id,))
         # The connection's row factory unwraps a one column row, so this
         # is the page itself rather than a row holding it.
-        row = cursor.fetchone()
-        cursor.close()
+        row = self.get_backend().fetchone(
+            '''SELECT page FROM recent WHERE book = ?''', (self.id,))
         if row is None:
             return None
         return int(row)
@@ -117,10 +113,8 @@ class _Book(_BackendObject):
         The time is stored as text, and comes back through whichever of
         the two formats below it was written in.
         """
-        cursor = self.get_backend().execute(
+        date = self.get_backend().fetchone(
             """SELECT time_set FROM recent WHERE book = ?""", (self.id,))
-        date = cursor.fetchone()
-        cursor.close()
 
         if date:
             try:
@@ -149,23 +143,26 @@ class _Book(_BackendObject):
             # costs the library nothing.
             raise ValueError('Invalid page (must start from 1)')
 
-        # Remove any old recent row for this book
-        cursor = self.get_backend().execute(
-            '''DELETE FROM recent WHERE book = ?''', (self.id,))
-        # If a new page was passed, set it as recently read
-        if page is not None:
-            if not time:
-                time = datetime.datetime.now()
-            # sqlite3's implicit datetime adapter is deprecated since
-            # Python 3.12; write the same text it used to produce, which
-            # is what get_last_read_date() reads back.
-            written = time.isoformat(sep=' ') \
-                if isinstance(time, datetime.datetime) else time
-            cursor.execute('''INSERT INTO recent (book, page, time_set)
-                              VALUES (?, ?, ?)''',
-                           (self.id, page, written))
+        if page is None:
+            self.get_backend().execute(
+                '''DELETE FROM recent WHERE book = ?''', (self.id,))
+            return
 
-        cursor.close()
+        if not time:
+            time = datetime.datetime.now()
+        # sqlite3's implicit datetime adapter is deprecated since
+        # Python 3.12; write the same text it used to produce, which
+        # is what get_last_read_date() reads back.
+        written = time.isoformat(sep=' ') \
+            if isinstance(time, datetime.datetime) else time
+        # One statement, which book being the primary key makes a
+        # replacement of the row that was there.  A delete and then an
+        # insert left the book with no page in between, and the cover
+        # workers read it while this writes it: a cover drawn then had
+        # no tick for a book read to the end.
+        self.get_backend().execute(
+            '''INSERT OR REPLACE INTO recent (book, page, time_set)
+               VALUES (?, ?, ?)''', (self.id, page, written))
 
 
 class _Collection(_BackendObject):
@@ -255,21 +252,17 @@ class _Collection(_BackendObject):
             sql_args += [filter_string, filter_string]
         sql += ' ORDER BY book.id'
 
-        cursor = self.get_backend().execute(sql, sql_args)
-        rows = cursor.fetchall()
-        cursor.close()
+        rows = self.get_backend().fetchall(sql, sql_args)
 
         return [_Book(*cols) for cols in rows]
 
     def get_collections(self) -> list['_Collection']:
         """ Returns a list of all direct subcollections of this instance. """
 
-        cursor = self.get_backend().execute('''SELECT id, name, supercollection
+        result = self.get_backend().fetchall('''SELECT id, name, supercollection
                 FROM collection
                 WHERE supercollection = ?
                 ORDER by name''', [self.id])
-        result = cursor.fetchall()
-        cursor.close()
 
         return [_Collection(*row) for row in result]
 
@@ -284,7 +277,7 @@ class _Collection(_BackendObject):
         at the root and this reads the whole library.
         """
 
-        cursor = self.get_backend().execute(
+        rows = self.get_backend().fetchall(
             '''WITH RECURSIVE subtree(id, name, supercollection) AS (
                    SELECT id, name, supercollection FROM collection
                    WHERE supercollection IS ?
@@ -294,8 +287,6 @@ class _Collection(_BackendObject):
                    FROM collection
                    JOIN subtree ON collection.supercollection = subtree.id)
                SELECT id, name, supercollection FROM subtree''', (self.id,))
-        rows = cursor.fetchall()
-        cursor.close()
 
         return [_Collection(*row) for row in rows]
 
@@ -337,9 +328,7 @@ class _DefaultCollection(_Collection):
             sql += ''' OR book.path LIKE '%' || ? || '%' '''
             sql_args.append(filter_string)
 
-        cursor = self.get_backend().execute(sql, sql_args)
-        rows = cursor.fetchall()
-        cursor.close()
+        rows = self.get_backend().fetchall(sql, sql_args)
 
         return [_Book(*cols) for cols in rows]
 
@@ -357,12 +346,10 @@ class _DefaultCollection(_Collection):
     def get_collections(self) -> list['_Collection']:
         """ Returns a list of all root collections. """
 
-        cursor = self.get_backend().execute('''SELECT id, name, supercollection
+        result = self.get_backend().fetchall('''SELECT id, name, supercollection
                 FROM collection
                 WHERE supercollection IS NULL
                 ORDER by name''')
-        result = cursor.fetchall()
-        cursor.close()
 
         return [_Collection(*row) for row in result]
 
@@ -394,8 +381,7 @@ class _WatchList:
         directory = os.path.normpath(os.path.abspath(path))
         sql = """INSERT OR IGNORE INTO watchlist (path, collection, recursive)
                  VALUES (?, ?, ?)"""
-        cursor = self.backend.execute(sql, [directory, collection.id, recursive])
-        cursor.close()
+        self.backend.execute(sql, [directory, collection.id, recursive])
 
     def get_watchlist(self) -> list['_WatchListEntry']:
         """Every watched directory.
@@ -412,9 +398,8 @@ class _WatchList:
                  FROM watchlist
                  LEFT JOIN collection ON watchlist.collection = collection.id"""
 
-        cursor = self.backend.execute(sql)
-        entries = [self._result_row_to_watchlist_entry(row) for row in cursor.fetchall()]
-        cursor.close()
+        entries = [self._result_row_to_watchlist_entry(row)
+                   for row in self.backend.fetchall(sql)]
 
         return entries
 
@@ -433,9 +418,7 @@ class _WatchList:
                  WHERE watchlist.path = ?"""
 
         directory = os.path.normpath(os.path.abspath(path))
-        cursor = self.backend.execute(sql, (directory, ))
-        result = cursor.fetchone()
-        cursor.close()
+        result = self.backend.fetchone(sql, (directory, ))
 
         if result:
             return self._result_row_to_watchlist_entry(result)
@@ -561,8 +544,7 @@ class _WatchListEntry(_BackendObject):
         """ Removes this entry from the watchlist, deleting its associated
         path from the database. """
         sql = """DELETE FROM watchlist WHERE path = ?"""
-        cursor = self.get_backend().execute(sql, (self.directory,))
-        cursor.close()
+        self.get_backend().execute(sql, (self.directory,))
 
         self.directory = ""
         self.collection = None
@@ -571,18 +553,14 @@ class _WatchListEntry(_BackendObject):
         """ Updates the collection associated with this watchlist entry. """
         if new_collection != self.collection:
             sql = """UPDATE watchlist SET collection = ? WHERE path = ?"""
-            cursor = self.get_backend().execute(sql,
-                                                (new_collection.id, self.directory))
-            cursor.close()
+            self.get_backend().execute(sql, (new_collection.id, self.directory))
             self.collection = new_collection
 
     def set_recursive(self, recursive: bool) -> None:
         """ Enables or disables recursive scanning. """
         if recursive != self.recursive:
             sql = """UPDATE watchlist SET recursive = ? WHERE path = ?"""
-            cursor = self.get_backend().execute(sql,
-                                                (recursive, self.directory))
-            cursor.close()
+            self.get_backend().execute(sql, (recursive, self.directory))
             self.recursive = recursive
 
 

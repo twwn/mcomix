@@ -319,17 +319,17 @@ class CollectionBooksPlanTest(unittest.TestCase):
         """The plan of the statement get_books() actually runs."""
         collection = self.library.get_collection_by_id(500)
         statements = []
-        original = self.library.execute
+        original = self.library.fetchall
 
         def watched(sql, *args):
             statements.append((sql, args[0] if args else ()))
             return original(sql, *args)
 
-        self.library.execute = watched
+        self.library.fetchall = watched
         try:
             collection.get_books(filter_string)
         finally:
-            self.library.execute = original
+            self.library.fetchall = original
         sql, parameters = statements[-1]
         return ' '.join(str(row) for row in self.library._con.execute(
             'explain query plan ' + sql, parameters).fetchall())

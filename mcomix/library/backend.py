@@ -12,6 +12,7 @@ _upgrade_database() brings an older file up to it a version at a time.
 
 import contextlib
 import os
+import threading
 
 from collections.abc import Iterator, Sequence
 from typing import Any, TYPE_CHECKING
@@ -59,6 +60,20 @@ class _LibraryBackend:
         self._con = dbapi2.connect(constants.LIBRARY_DATABASE_PATH,
                                    check_same_thread=False, isolation_level=None)
         self._con.row_factory = row_factory
+        #: Held from running a statement to closing its cursor.  Threads
+        #: other than the main one read the library through this same
+        #: connection - the cover workers ask each book for the page it
+        #: was left on, and the watch list scan reads the paths of the
+        #: books - and sqlite3 caches prepared statements per connection,
+        #: so two threads running one statement at once could step the
+        #: same prepared one between them: that raised "bad parameter or
+        #: other API misuse", or answered None for a row that was there.
+        #: Everything below goes through execute(), fetchone(), fetchall()
+        #: or the transaction methods, which take it.  Only the schema
+        #: code run from here reaches the connection directly, since no
+        #: other thread can hold a backend that LibraryBackend() has not
+        #: handed out yet.
+        self._lock = threading.Lock()
 
         self.watchlist = backend_types._WatchList(self)
 
@@ -94,15 +109,10 @@ class _LibraryBackend:
         """
         if collection is None:
             if filter_string is None:
-                cur = self._con.execute('select %s from Book' % columns)
-            else:
-                cur = self._con.execute(
-                    'select %s from Book where path like ?' % columns,
-                    ("%%%s%%" % filter_string, ))
-
-            books: list[Any] = cur.fetchall()  # type: ignore[explicit-any]  # as above
-            cur.close()
-            return books
+                return self.fetchall('select %s from Book' % columns)
+            return self.fetchall(
+                'select %s from Book where path like ?' % columns,
+                ("%%%s%%" % filter_string, ))
         # One statement over the collection and everything under it,
         # rather than one each with the answers added together, which
         # named a book filed in both a collection and one under it once
@@ -120,8 +130,7 @@ class _LibraryBackend:
         if filter_string is not None:
             sql += ' and path like ?'
             parameters.append("%%%s%%" % filter_string)
-        return self._con.execute(sql + ' order by id',
-                                 parameters).fetchall()
+        return self.fetchall(sql + ' order by id', parameters)
 
     def get_book_by_path(self, path: str) -> backend_types._Book | None:
         """Return the book at <path>, or None if the library has no
@@ -133,11 +142,9 @@ class _LibraryBackend:
 
         path = os.path.abspath(path)
 
-        cur = self.execute('''select id, name, path, pages, format,
-                                     size, added
-                              from book where path = ?''', (path,))
-        book = cur.fetchone()
-        cur.close()
+        book = self.fetchone('''select id, name, path, pages, format,
+                                       size, added
+                                from book where path = ?''', (path,))
 
         if book:
             return backend_types._Book(*book)
@@ -148,11 +155,9 @@ class _LibraryBackend:
         """Return the book with <id>, or None if the library has no
         such book."""
 
-        cur = self.execute('''select id, name, path, pages, format,
-                                     size, added
-                              from book where id = ?''', (id,))
-        book = cur.fetchone()
-        cur.close()
+        book = self.fetchone('''select id, name, path, pages, format,
+                                       size, added
+                                from book where id = ?''', (id,))
 
         if book:
             return backend_types._Book(*book)
@@ -176,10 +181,8 @@ class _LibraryBackend:
         """Return the filesystem path to <book>, or None if <book> isn't
         in the library.
         """
-        cur = self._con.execute('''select path from Book
+        path: str | None = self.fetchone('''select path from Book
             where id = ?''', (book,))
-        path: str | None = cur.fetchone()
-        cur.close()
 
         if path is None:
             log.error(_('! Non-existent book #%i'), book)
@@ -197,14 +200,12 @@ class _LibraryBackend:
         books the scan spent 173.6ms working this out a collection list
         at a time, against 31.3ms here.
         """
-        cur = self._con.execute('''select path from Book
+        paths: list[str] = self.fetchall('''select path from Book
             where id not in (select book from Contain
                              group by book
                              having count(*) = 1
                                 and min(collection) = ?)''',
-                                (constants.COLLECTION_RECENT,))
-        paths: list[str] = cur.fetchall()
-        cur.close()
+                                         (constants.COLLECTION_RECENT,))
         return paths
 
     def get_book_thumbnail(self, path: str) -> "GdkPixbuf.Pixbuf | None":
@@ -235,17 +236,13 @@ class _LibraryBackend:
         what the row holds would put it wherever the letter R falls.
         """
         if collection is None:
-            cur = self._con.execute('''select id from Collection
+            return self.fetchall('''select id from Collection
                 where supercollection isnull
                 order by case when id = ? then ? else name end''',
-                                    (constants.COLLECTION_RECENT, _('Recent')))
-        else:
-            cur = self._con.execute('''select id from Collection
-                where supercollection = ?
-                order by name''', (collection,))
-        collections: list[int] = cur.fetchall()
-        cur.close()
-        return collections
+                                 (constants.COLLECTION_RECENT, _('Recent')))
+        return self.fetchall('''select id from Collection
+            where supercollection = ?
+            order by name''', (collection,))
 
     def get_all_collections_in_collection(self, collection: int) -> list[int]:
         """Return every collection under <collection>, including the
@@ -267,15 +264,12 @@ class _LibraryBackend:
         if collection is None:
             raise ValueError("Collection must not be <None>")
 
-        cur = self._con.execute('''with recursive subtree(id) as (
+        return self.fetchall('''with recursive subtree(id) as (
                 select id from Collection where supercollection = ?
                 union all
                 select Collection.id from Collection
                     join subtree on Collection.supercollection = subtree.id)
             select id from subtree''', (collection,))
-        collections: list[int] = cur.fetchall()
-        cur.close()
-        return collections
 
     def get_collection_tree(self) -> dict[int | None, list[tuple[int, str]]]:
         """Every collection in the library, as the id and name of each
@@ -293,15 +287,14 @@ class _LibraryBackend:
         here.
         """
         recent = (constants.COLLECTION_RECENT, _('Recent'))
-        cur = self._con.execute('''select supercollection, id,
+        rows = self.fetchall('''select supercollection, id,
                 case when id = ? then ? else name end
             from Collection
             order by case when id = ? then ? else name end''',
-                                recent + recent)
+                             recent + recent)
         tree: dict[int | None, list[tuple[int, str]]] = {}
-        for supercollection, id, name in cur:
+        for supercollection, id, name in rows:
             tree.setdefault(supercollection, []).append((id, name))
-        cur.close()
         return tree
 
     def get_all_collections(self) -> list[int]:
@@ -311,12 +304,9 @@ class _LibraryBackend:
         its translated name rather than under the RECENT it is stored
         as.
         """
-        cur = self._con.execute('''select id from Collection
+        return self.fetchall('''select id from Collection
             order by case when id = ? then ? else name end''',
-                                (constants.COLLECTION_RECENT, _('Recent')))
-        collections: list[int] = cur.fetchall()
-        cur.close()
-        return collections
+                             (constants.COLLECTION_RECENT, _('Recent')))
 
     def get_collection_name(self, collection: int | None) -> str | None:
         """Return the name field of the <collection>, or None if the
@@ -326,10 +316,8 @@ class _LibraryBackend:
         "Recent" is stored under the untranslated name RECENT and comes
         back translated, which is what the case expression is for.
         """
-        cur = self._con.execute('''select case when id = ? then ? else name end from Collection
+        name: str | None = self.fetchone('''select case when id = ? then ? else name end from Collection
             where id = ?''', (constants.COLLECTION_RECENT, _('Recent'), collection,))
-        name: str | None = cur.fetchone()
-        cur.close()
         return name
 
     def get_collection_by_name(self, name: str) -> backend_types._Collection | None:
@@ -337,11 +325,9 @@ class _LibraryBackend:
         collection exists. Names are unique, so at most one such collection
         can exist.
         """
-        cur = self._con.execute('''select id, name, supercollection
+        result = self.fetchone('''select id, name, supercollection
             from collection
             where name = ?''', (name,))
-        result = cur.fetchone()
-        cur.close()
         if result:
             return backend_types._Collection(*result)
         else:
@@ -361,11 +347,9 @@ class _LibraryBackend:
         elif id == constants.COLLECTION_RECENT:
             return backend_types._Collection(constants.COLLECTION_RECENT, _('Recent'))
         else:
-            cur = self._con.execute('''select id, name, supercollection
+            result = self.fetchone('''select id, name, supercollection
                 from collection
                 where id = ?''', (id,))
-            result = cur.fetchone()
-            cur.close()
 
             if result:
                 return backend_types._Collection(*result)
@@ -386,10 +370,8 @@ class _LibraryBackend:
 
     def get_supercollection(self, collection: int) -> int | None:
         """Return the supercollection of <collection>."""
-        cur = self._con.execute('''select supercollection from Collection
+        supercollection: int | None = self.fetchone('''select supercollection from Collection
             where id = ?''', (collection,))
-        supercollection: int | None = cur.fetchone()
-        cur.close()
         return supercollection
 
     def add_book(self, path: str, collection: int | None = None) -> bool:
@@ -410,12 +392,11 @@ class _LibraryBackend:
         # The date the book was added comes back with the id, so that a
         # book that is in the library already can be described to the
         # collection listeners without being read a second time.
-        old = self._con.execute('''select id, added from Book
-            where path = ?''', (path,)).fetchone()
+        old = self.fetchone('''select id, added from Book
+            where path = ?''', (path,))
         try:
-            cursor = self._con.cursor()
             if old is not None:
-                cursor.execute('''update Book set
+                self.execute('''update Book set
                     name = ?, pages = ?, format = ?, size = ?
                     where path = ?''', (name, pages, format, size, path))
                 book_id, added = old
@@ -427,16 +408,13 @@ class _LibraryBackend:
                 # a local time in ISO format where the column holds UTC
                 # in sqlite's, so the library sorted a book by "Date
                 # added" against a date no other book had.
-                book_id, added = cursor.execute('''insert into Book
+                book_id, added = self.fetchone('''insert into Book
                     (name, path, pages, format, size)
                     values (?, ?, ?, ?, ?)
-                    returning id, added''',
-                                                (name, path, pages, format, size)).fetchone()
+                    returning id, added''', (name, path, pages, format, size))
                 book = backend_types._Book(book_id, name, path, pages,
                                            format, size, added)
                 self.book_added(book)
-
-            cursor.close()
 
             if collection is not None:
                 self._file_book(book_id, collection, book)
@@ -463,13 +441,10 @@ class _LibraryBackend:
         old_path = os.path.abspath(old_path)
         new_path = os.path.abspath(new_path)
         try:
-            cursor = self._con.execute('''update Book set path = ?, name = ?
-                where path = ?''',
-                                       (new_path, os.path.basename(new_path),
-                                        old_path))
-            moved = cursor.rowcount > 0
-            cursor.close()
-            return moved
+            changed = self.execute('''update Book set path = ?, name = ?
+                where path = ?''', (new_path, os.path.basename(new_path),
+                                    old_path))
+            return changed > 0
         except dbapi2.Error:
             log.error(_('! Could not move book "%s" in the library'), old_path)
             return False
@@ -506,19 +481,13 @@ class _LibraryBackend:
             # The Recent pseudo collection initializes the lowest rowid
             # with -2, meaning that instead of starting from 1,
             # auto-incremental will start from -1. Avoid this.
-            cur = self._con.execute('''select max(id) from collection''')
-            maxid = cur.fetchone()
-            cur.close()
+            maxid = self.fetchone('''select max(id) from collection''')
             if maxid is not None and maxid < 1:
-                cur = self._con.execute('''insert into collection
-                    (id, name) values (?, ?)''', (1, name))
+                collection: int = self.fetchone('''insert into collection
+                    (id, name) values (?, ?) returning id''', (1, name))
             else:
-                cur = self._con.execute('''insert into Collection
-                    (name) values (?)''', (name,))
-            # The rowid of the row just inserted, which for this table is
-            # the id, whether it was chosen above or handed out by sqlite.
-            collection = cur.lastrowid
-            cur.close()
+                collection = self.fetchone('''insert into Collection
+                    (name) values (?) returning id''', (name,))
             return collection
         except dbapi2.Error:
             log.error(_('! Could not add collection "%s"'), name)
@@ -542,7 +511,7 @@ class _LibraryBackend:
         where the row has to be read back to find out what it says.
         """
         try:
-            self._con.execute('''insert into Contain
+            self.execute('''insert into Contain
                 (collection, book) values (?, ?)''', (collection, book))
             if added is None:
                 added = self.get_book_by_id(book)
@@ -561,11 +530,11 @@ class _LibraryBackend:
         <subcollection> in the root if <supercollection> is None.
         """
         if supercollection is None:
-            self._con.execute('''update Collection
+            self.execute('''update Collection
                 set supercollection = NULL
                 where id = ?''', (subcollection,))
         else:
-            self._con.execute('''update Collection
+            self.execute('''update Collection
                 set supercollection = ?
                 where id = ?''', (supercollection, subcollection))
 
@@ -574,7 +543,7 @@ class _LibraryBackend:
         was successful.
         """
         try:
-            self._con.execute('''update Collection set name = ?
+            self.execute('''update Collection set name = ?
                 where id = ?''', (name, collection))
             return True
         except dbapi2.DatabaseError:  # E.g. name taken.
@@ -597,10 +566,9 @@ class _LibraryBackend:
         copy = self.add_collection(copy_name)
         if copy is None:  # Could not create the new.
             return False
-        cur = self._con.execute('''insert or ignore into Contain (collection, book)
+        self.execute('''insert or ignore into Contain (collection, book)
             select ?, book from Contain
             where collection = ?''', (copy, collection))
-        cur.close()
         return True
 
     def clean_collection(self, collection: int | None = None) -> int:
@@ -626,12 +594,12 @@ class _LibraryBackend:
         if path is not None:
             thumbnailer = thumbnail_tools.Thumbnailer(dst_dir=constants.LIBRARY_COVERS_PATH)
             thumbnailer.delete(path)
-        self._con.execute('delete from Book where id = ?', (book,))
-        self._con.execute('delete from Contain where book = ?', (book,))
+        self.execute('delete from Book where id = ?', (book,))
+        self.execute('delete from Contain where book = ?', (book,))
         # A book's id is its sqlite rowid, which is handed out again as
         # soon as the highest row is free, so a page left behind here
         # belongs to whichever book is added next.
-        self._con.execute('delete from Recent where book = ?', (book,))
+        self.execute('delete from Recent where book = ?', (book,))
 
     def remove_collection(self, collection: int) -> None:
         """Remove the <collection> from the library.
@@ -652,28 +620,64 @@ class _LibraryBackend:
         which the rows pointing at it outlive it.
         """
         with self.transaction():
-            self._con.execute('''update watchlist set collection = NULL
+            self.execute('''update watchlist set collection = NULL
                 where collection = ?''', (collection,))
-            self._con.execute('delete from Contain where collection = ?',
-                              (collection,))
-            self._con.execute('''update Collection set supercollection = NULL
+            self.execute('delete from Contain where collection = ?',
+                         (collection,))
+            self.execute('''update Collection set supercollection = NULL
                 where supercollection = ?''', (collection,))
-            self._con.execute('delete from Collection where id = ?',
-                              (collection,))
+            self.execute('delete from Collection where id = ?',
+                         (collection,))
 
     def remove_book_from_collection(self, book: int, collection: int) -> None:
         """Remove <book> from <collection>."""
-        self._con.execute('''delete from Contain
+        self.execute('''delete from Contain
             where book = ? and collection = ?''', (book, collection))
 
     def execute(self, statement: str,
                 parameters: "Sequence[str | int | float | bytes | None]" = ()
-                ) -> dbapi2.Cursor:
-        """Run <statement> on the library's connection.
+                ) -> int:
+        """Run <statement>, and return how many rows it changed.
 
-        The cursor that comes back is the caller's to close.
+        For a statement whose rows nobody reads; fetchone() and
+        fetchall() are for those that answer with some.  All three
+        hold the lock from running the statement to closing its cursor,
+        so that no cursor outlives the call - see __init__().
         """
-        return self._con.execute(statement, parameters)
+        with self._lock:
+            cursor = self._con.execute(statement, parameters)
+            try:
+                return cursor.rowcount
+            finally:
+                cursor.close()
+
+    def fetchone(self, statement: str,  # type: ignore[explicit-any]  # a row holds whatever the query selected
+                 parameters: "Sequence[str | int | float | bytes | None]" = ()
+                 ) -> Any:
+        """Run <statement>, and return the first row it answers with, or
+        None if it answers with none.
+
+        The connection's row factory unwraps a row of one column, so a
+        single column comes back as the value itself.
+        """
+        with self._lock:
+            cursor = self._con.execute(statement, parameters)
+            try:
+                return cursor.fetchone()
+            finally:
+                cursor.close()
+
+    def fetchall(self, statement: str,  # type: ignore[explicit-any]  # as fetchone()
+                 parameters: "Sequence[str | int | float | bytes | None]" = ()
+                 ) -> list[Any]:
+        """Run <statement>, and return every row it answers with, each
+        unwrapped as fetchone() says."""
+        with self._lock:
+            cursor = self._con.execute(statement, parameters)
+            try:
+                return cursor.fetchall()
+            finally:
+                cursor.close()
 
     @contextlib.contextmanager
     def transaction(self) -> Iterator[None]:
@@ -742,13 +746,15 @@ class _LibraryBackend:
         """ Normally, the connection is in auto-commit mode. Calling
         this method will switch to transactional mode, automatically
         starting a transaction when a DML statement is used. """
-        self._con.isolation_level = 'IMMEDIATE'
+        with self._lock:
+            self._con.isolation_level = 'IMMEDIATE'
 
     def end_transaction(self) -> None:
         """ Commits any changes to the database and switches back
         to auto-commit mode. """
-        self._con.commit()
-        self._con.isolation_level = None
+        with self._lock:
+            self._con.commit()
+            self._con.isolation_level = None
 
     def close(self) -> None:
         """Commit changes and close the connection.
@@ -757,8 +763,9 @@ class _LibraryBackend:
         call opens the database again rather than handing out a closed
         connection.
         """
-        self._con.commit()
-        self._con.close()
+        with self._lock:
+            self._con.commit()
+            self._con.close()
 
         global _backend
         _backend = None
