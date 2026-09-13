@@ -16,15 +16,16 @@ class SimpleFileChooserDialog(file_chooser_base_dialog._BaseFileChooserDialog):
     <folder> where one is named.
     """
 
-    def __init__(self, action=Gtk.FileChooserAction.OPEN, parent=None,
-                 folder=None):
+    def __init__(self, action: Gtk.FileChooserAction = Gtk.FileChooserAction.OPEN,
+                 parent: "Gtk.Window | None" = None,
+                 folder: str | None = None) -> None:
         super(SimpleFileChooserDialog, self).__init__(action, parent, folder)
         if action == Gtk.FileChooserAction.OPEN:
             self.filechooser.set_select_multiple(True)
-        self._paths = None
-        self._on_paths = None
+        self._paths: list[str] | None = None
+        self._on_paths: "Callable[[list[str]], None] | None" = None
 
-    def run_async(self, on_paths: Callable[[list], None]) -> None:
+    def run_async(self, on_paths: Callable[[list[str]], None]) -> None:
         """Show the dialog and call <on_paths> with the chosen paths.
 
         The list is empty if the user chose nothing.  Destroying the
@@ -33,11 +34,11 @@ class SimpleFileChooserDialog(file_chooser_base_dialog._BaseFileChooserDialog):
         self._on_paths = on_paths
         self.set_visible(True)
 
-    def get_paths(self):
+    def get_paths(self) -> "list[str] | None":
         """Return the paths that were selected, if any."""
         return self._paths
 
-    def files_chosen(self, paths):
+    def files_chosen(self, paths: list[str]) -> None:
         self._paths = paths
         if self._on_paths is not None:
             on_paths, self._on_paths = self._on_paths, None

@@ -143,3 +143,15 @@ class ProcessTest(MComixTest):
             for fn in reversed(cleanup):
                 fn()
 
+
+    def test_an_argument_the_locale_cannot_encode(self):
+        """ Paths read from the filesystem carry undecodable bytes as
+        surrogate escapes, and those must reach the spawned process
+        unchanged rather than raising while the argument vector is built. """
+        name = 'a\udcffb'
+        with tempfile.TemporaryDirectory(prefix='surrogate.') as tmp_dir:
+            path = os.path.join(tmp_dir, name)
+            proc = process.popen(('/bin/cp', '/dev/null', path))
+            proc.stdout.close()
+            self.assertEqual(0, proc.wait())
+            self.assertEqual([name], os.listdir(tmp_dir))

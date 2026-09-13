@@ -2,10 +2,13 @@
 
 from mcomix import tools
 
+from collections.abc import Sequence
+
 
 class Box(object):
 
-    def __init__(self, size, position=None):
+    def __init__(self, size: Sequence[int],
+                 position: Sequence[int] | None = None) -> None:
         """ A Box is immutable and always axis-aligned.
         Each component of size should be positive (i.e. non-zero).
         Both position and size must have equal number of dimensions.
@@ -23,15 +26,19 @@ class Box(object):
                 str(len(self.position)) + " != " + str(len(self.size)))
 
 
-    def __str__(self):
+    def __str__(self) -> str:
         """ Returns a string representation of this Box. """
         return "{" + str(self.get_position()) + ":" + str(self.get_size()) + "}"
 
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         """ Two Boxes are said to be equal if and only if the number of
         dimensions, the positions and the sizes of the two Boxes are equal,
-        respectively. """
+        respectively. Anything that is not a Box is left to answer for
+        itself, which is what makes a Box comparable to one: reading a
+        position off whatever was passed raised instead. """
+        if not isinstance(other, Box):
+            return NotImplemented
         return (self.get_position() == other.get_position()) and \
             (self.get_size() == other.get_size())
 
@@ -41,33 +48,33 @@ class Box(object):
         return len(self.position)
 
 
-    def get_size(self):
+    def get_size(self) -> tuple[int, ...]:
         """ Returns the size of this Box.
         @return: The size of this Box. """
         return self.size
 
 
-    def get_position(self):
+    def get_position(self) -> tuple[int, ...]:
         """ Returns the position of this Box.
         @return: The position of this Box. """
         return self.position
 
 
-    def set_position(self, position):
+    def set_position(self, position: Sequence[int]) -> 'Box':
         """ Returns a new Box that has the same size as this Box and the
         specified position.
         @return: A new Box as specified above. """
         return Box(self.get_size(), position)
 
 
-    def set_size(self, size):
+    def set_size(self, size: Sequence[int]) -> 'Box':
         """ Returns a new Box that has the same position as this Box and the
         specified size.
         @return: A new Box as specified above. """
         return Box(size, self.get_position())
 
 
-    def distance_point_squared(self, point):
+    def distance_point_squared(self, point: Sequence[int]) -> int:
         """ Returns the square of the Euclidean distance between this Box and a
         point. If the point lies within the Box, this Box is said to have a
         distance of zero. Otherwise, the square of the Euclidean distance
@@ -90,7 +97,7 @@ class Box(object):
         return result
 
 
-    def translate(self, delta):
+    def translate(self, delta: Sequence[int]) -> 'Box':
         """ Returns a new Box that has the same size as this Box and a
         translated position as specified by delta.
         @param delta: The distance to the position of this Box.
@@ -99,7 +106,7 @@ class Box(object):
             tools.vector_add(self.get_position(), delta))
 
 
-    def translate_opposite(self, delta):
+    def translate_opposite(self, delta: Sequence[int]) -> 'Box':
         """ Returns a new Box that has the same size as this Box and a
         oppositely translated position as specified by delta.
         @param delta: The distance to the position of this Box, with opposite
@@ -110,7 +117,8 @@ class Box(object):
 
 
     @staticmethod
-    def closest_boxes(point, boxes, orientation=None):
+    def closest_boxes(point: Sequence[int], boxes: Sequence['Box'],
+                      orientation: Sequence[int] | None = None) -> list[int]:
         """ Returns the indices of the Boxes that are closest to the specified
         point. First, the Euclidean distance between point and the closest point
         of the respective Box is used to determine which of these Boxes are the
@@ -124,7 +132,7 @@ class Box(object):
         -1 (towards smaller values in this dimension when reading). If
         orientation is set to None, it will be ignored.
         @return The indices of the closest Boxes as specified above. """
-        result = []
+        result: list[int] = []
         mindist = -1
         for i in range(len(boxes)):
             # 0 --> keep
@@ -160,7 +168,8 @@ class Box(object):
 
 
     @staticmethod
-    def _compare_distance_to_origin(box1, box2, orientation):
+    def _compare_distance_to_origin(box1: 'Box', box2: 'Box',
+                                    orientation: Sequence[int]) -> int:
         """ Returns an integer that is less than, equal to or greater than zero
         if the distance between box1 and the origin is less than, equal to or
         greater than the distance between box2 and the origin, respectively.
@@ -186,7 +195,7 @@ class Box(object):
         return 0
 
 
-    def get_center(self, orientation):
+    def get_center(self, orientation: Sequence[int]) -> list[int]:
         """ Returns the center of this Box. If the exact value is not equal to
         an integer, the integer that is closer to the origin (as implied by
         orientation) is chosen.
@@ -204,13 +213,14 @@ class Box(object):
 
 
     @staticmethod
-    def _box_to_center_offset_1d(box_size_delta, orientation):
+    def _box_to_center_offset_1d(box_size_delta: int, orientation: int) -> int:
         if orientation == -1:
             box_size_delta += 1
         return box_size_delta >> 1
 
 
-    def current_box_index(self, orientation, boxes):
+    def current_box_index(self, orientation: Sequence[int],
+                          boxes: Sequence['Box']) -> int:
         """ Calculates the index of the Box that is closest to the center of
         this Box.
         @param orientation: The orientation to use.
@@ -221,7 +231,8 @@ class Box(object):
 
 
     @staticmethod
-    def align_center(boxes, axis, fix, orientation):
+    def align_center(boxes: Sequence['Box'], axis: int, fix: int,
+                     orientation: int) -> list['Box']:
         """ Aligns Boxes so that the center of each Box appears on the same
         line.
         @param axis: the axis to center.
@@ -235,7 +246,7 @@ class Box(object):
         if cs % 2 != 0:
             cs +=1
         cp = center_box.get_position()[axis]
-        result = []
+        result: list[Box] = []
         for b in boxes:
             s = b.get_size()
             p = list(b.get_position())
@@ -246,7 +257,8 @@ class Box(object):
 
 
     @staticmethod
-    def distribute(boxes, axis, fix, spacing=0):
+    def distribute(boxes: Sequence['Box'], axis: int, fix: int,
+                   spacing: int = 0) -> list['Box']:
         """ Ensures that the Boxes do not overlap. For this purpose, the Boxes
         are distributed according to the index of the respective Box.
         @param axis: the axis along which the Boxes are distributed.
@@ -255,7 +267,10 @@ class Box(object):
         @return: A new list with new Boxes that are accordingly translated. """
         if len(boxes) == 0:
             return []
-        result = [None] * len(boxes)
+        # Every index is written by one of the two loops below, which
+        # between them cover the whole range; the boxes handed in stand
+        # in until then so that the list holds Boxes throughout.
+        result = list(boxes)
         initialSum = boxes[fix].get_position()[axis]
         partial_sum = initialSum
         for bi in range(fix, len(boxes)):
@@ -276,7 +291,8 @@ class Box(object):
         return result
 
 
-    def wrapper_box(self, viewport_size, orientation):
+    def wrapper_box(self, viewport_size: Sequence[int],
+                    orientation: Sequence[int]) -> 'Box':
         """ Returns a Box that covers the same area that is covered by a
         scrollable viewport showing this Box.
         @param viewport_size: The size of the viewport.
@@ -296,29 +312,32 @@ class Box(object):
 
 
     @staticmethod
-    def bounding_box(boxes):
+    def bounding_box(boxes: Sequence['Box']) -> 'Box':
         """ Returns the union of all specified Boxes (that is, the smallest Box
         that contains all specified Boxes).
         @param boxes: The Boxes to calculate the union from.
         @return: A Box as specified above. """
         if len(boxes) == 0:
             return Box((), ())
-        mins = [None] * len(boxes[0].get_size())
-        maxes = [None] * len(mins)
+        # The first Box is the starting extent rather than a None to
+        # compare against, which is the same answer without a sentinel.
+        first = boxes[0]
+        mins = list(first.get_position())
+        maxes = [p + s for p, s in zip(first.get_position(), first.get_size())]
         for b in boxes:
             s = b.get_size()
             p = b.get_position()
             for i in range(len(mins)):
-                if (mins[i] is None) or (p[i] < mins[i]):
+                if p[i] < mins[i]:
                     mins[i] = p[i]
                 ps = p[i] + s[i]
-                if (maxes[i] is None) or (ps > maxes[i]):
+                if ps > maxes[i]:
                     maxes[i] = ps
         return Box(tools.vector_sub(maxes, mins), mins)
 
 
     @staticmethod
-    def intersect(boxA, boxB):
+    def intersect(boxA: 'Box', boxB: 'Box') -> 'Box':
         """ Returns the intersection of the two specified Boxes (that is, the
         largest Box that is contained by the two specified Boxes).
         @param boxA: The first Box to calculate the intersection from.

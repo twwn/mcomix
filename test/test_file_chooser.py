@@ -12,6 +12,7 @@ from mcomix import constants
 from mcomix import icons
 from mcomix import file_chooser_base_dialog
 from mcomix import main
+from mcomix.dialog import Response
 
 
 class FileChooserTest(MComixTest):
@@ -182,8 +183,8 @@ class FileChooserTest(MComixTest):
         self.dialog.connect('response', lambda _d, r: answered.append(r))
         for button in self.dialog._buttons:
             button.emit('clicked')
-        self.assertIn(Gtk.ResponseType.CANCEL, answered)
-        self.assertIn(Gtk.ResponseType.OK, answered)
+        self.assertIn(Response.CANCEL, answered)
+        self.assertIn(Response.OK, answered)
 
     def test_the_group_filters_come_first(self):
         names = [f.get_name() for f in self.dialog.list_filters()]
@@ -207,7 +208,7 @@ class FileChooserTest(MComixTest):
         path = get_testfile_path('archives', '01-ZIP-Normal.zip')
         self.dialog.filechooser.set_file(Gio.File.new_for_path(path))
         wait_for(lambda: self.dialog.filechooser.get_file() is not None)
-        self.dialog.response(Gtk.ResponseType.OK)
+        self.dialog.response(Response.OK)
         self.assertEqual(chosen, [path])
 
     def test_a_selected_file_is_previewed(self):

@@ -5,14 +5,20 @@ from gi.repository import GLib
 from mcomix.preferences import prefs
 from mcomix.i18n import _
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from mcomix import main
+    from mcomix import ui
+
 class Slideshow(object):
 
     """Slideshow handler that manages starting and stopping of slideshows."""
 
-    def __init__(self, window):
+    def __init__(self, window: "main.MainWindow") -> None:
         self._window = window
         self._running = False
-        self._id = None
+        self._id: int | None = None
 
     def _start(self) -> None:
         if not self._running:
@@ -21,7 +27,7 @@ class Slideshow(object):
             self._window.update_title()
 
     def _stop(self) -> None:
-        if self._running:
+        if self._running and self._id is not None:
             GLib.source_remove(self._id)
             self._running = False
             self._window.update_title()
@@ -35,7 +41,7 @@ class Slideshow(object):
 
         return True
 
-    def toggle(self, action):
+    def toggle(self, action: "ui._Action") -> None:
         """Toggle a slideshow on or off."""
         if action.get_active():
             self._start()
@@ -46,7 +52,7 @@ class Slideshow(object):
             self._window.uimanager.slideshow_button.set_icon_name('media-playback-start')
             self._window.uimanager.slideshow_button.set_tooltip_text( _('Start slideshow') )
 
-    def is_running(self):
+    def is_running(self) -> bool:
         """Return True if a slideshow is currently running."""
         return self._running
 

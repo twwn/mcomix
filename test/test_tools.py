@@ -6,6 +6,41 @@ import unittest
 from mcomix import tools
 
 
+class TestCompileRotations(unittest.TestCase):
+
+    """The one rotation a series of them amounts to."""
+
+    def test_rotations_that_fit_in_a_turn_are_added_up(self) -> None:
+        self.assertEqual(tools.compile_rotations(90, 180), 270)
+        self.assertEqual(tools.compile_rotations(0, 90), 90)
+        self.assertEqual(tools.compile_rotations(90), 90)
+        self.assertEqual(tools.compile_rotations(), 0)
+
+    def test_a_full_turn_and_more_comes_back_into_range(self) -> None:
+        """Each rotation was brought into range on its way in, but the
+        running total was not, so anything adding up to a full turn or
+        more came out as an angle no other caller accepts: four turns of
+        90 degrees left the preference at 360, and 270 with 180 gave 450
+        where angle_to_gdkpixbuf_rotation() raises."""
+        self.assertEqual(tools.compile_rotations(270, 90), 0)
+        self.assertEqual(tools.compile_rotations(270, 180), 90)
+        self.assertEqual(tools.compile_rotations(270, 270), 180)
+        self.assertEqual(tools.compile_rotations(180, 180), 0)
+        self.assertEqual(tools.compile_rotations(90, 90, 90, 90), 0)
+
+    def test_turning_ninety_degrees_four_times_comes_back_to_where_it_began(self) -> None:
+        rotation = 0
+        for _turn in range(4):
+            rotation = tools.compile_rotations(rotation, 90)
+        self.assertEqual(rotation, 0)
+
+    def test_every_answer_is_one_a_rotation_can_be_asked_for(self) -> None:
+        for first in (0, 90, 180, 270):
+            for second in (0, 90, 180, 270):
+                self.assertIn(tools.compile_rotations(first, second),
+                              (0, 90, 180, 270))
+
+
 class TestAlphanumericSort(unittest.TestCase):
     def test_numbers_are_ordered_naturally(self) -> None:
         lst = ['10.jpg', '2.jpg']

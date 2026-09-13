@@ -3,11 +3,12 @@
 import os
 import zipfile
 import threading
+from collections.abc import Sequence
 
 from mcomix import log
 from mcomix.i18n import _
 
-class Packer(object):
+class Packer:
 
     """Packer is a threaded class for packing files into ZIP archives.
 
@@ -16,7 +17,8 @@ class Packer(object):
     task than ZIP archives are (yes, really).
     """
 
-    def __init__(self, image_files, other_files, archive_path, base_name):
+    def __init__(self, image_files: Sequence[str], other_files: Sequence[str],
+                 archive_path: str, base_name: str) -> None:
         """Setup a Packer object to create a ZIP archive at <archive_path>.
         All files pointed to by paths in the sequences <image_files> and
         <other_files> will be included in the archive when packed.
@@ -33,7 +35,7 @@ class Packer(object):
         self._other_files = other_files
         self._archive_path = archive_path
         self._base_name = base_name
-        self._pack_thread = None
+        self._pack_thread: threading.Thread | None = None
         self._packing_successful = False
 
     def pack(self) -> None:
@@ -43,7 +45,7 @@ class Packer(object):
         self._pack_thread.daemon = False
         self._pack_thread.start()
 
-    def wait(self):
+    def wait(self) -> bool:
         """Block until the packer thread has finished. Return True if the
         packer finished its work successfully.
         """

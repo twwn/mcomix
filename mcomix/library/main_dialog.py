@@ -1,12 +1,11 @@
 """library_main_dialog.py - The library dialog window."""
 
 import os
-from gi.repository import Gdk, Gtk
+from gi.repository import Gdk, Gio, Gtk
 
 from mcomix.preferences import prefs
 from mcomix import i18n
 from mcomix import tools
-from mcomix import log
 from mcomix import file_chooser_library_dialog
 from mcomix import status
 from mcomix.library import backend as library_backend
@@ -16,7 +15,15 @@ from mcomix.library import control_area as library_control_area
 from mcomix.library import add_progress_dialog as library_add_progress_dialog
 from mcomix.i18n import _
 
-_dialog = None
+from collections.abc import Sequence
+from typing import Any, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from mcomix import file_handler as file_handler_module
+    from mcomix import main
+    from mcomix.library import backend_types
+
+_dialog: "_LibraryDialog | None" = None
 # The "All books" collection is not a real collection stored in the library,
 # but is represented by this ID in the library's TreeModels.
 _COLLECTION_ALL = -1
@@ -27,7 +34,8 @@ class _LibraryDialog(Gtk.Window):
     library_backend.LibraryBackend when opened.
     """
 
-    def __init__(self, window, file_handler):
+    def __init__(self, window: "main.MainWindow",
+                 file_handler: "file_handler_module.FileHandler") -> None:
         super(_LibraryDialog, self).__init__()
 
         self._window = window
@@ -41,7 +49,7 @@ class _LibraryDialog(Gtk.Window):
         keys.connect('key-pressed', self._key_press_event)
         self.add_controller(keys)
 
-        self.filter_string = None
+        self.filter_string: str | None = None
         self._file_handler = file_handler
         # Gtk.Statusbar is deprecated as of GTK 4.10; the one message this
         # ever shows is a label's worth.
@@ -76,10 +84,14 @@ class _LibraryDialog(Gtk.Window):
         self.set_visible(True)
         self.present()
 
-    def open_book(self, books, keep_library_open=False):
+    def open_book(self, books: Sequence[int],
+                 keep_library_open: bool = False) -> None:
         """Open the book with ID <book>."""
 
-        paths = [ self.backend.get_book_path(book) for book in books ]
+        # get_book_path() answers None for a book that is no longer in
+        # the library, which is nothing to hand the file handler.
+        paths = [path for path in map(self.backend.get_book_path, books)
+                 if path is not None]
 
         if not keep_library_open:
             self.set_visible(False)
@@ -98,12 +110,16 @@ class _LibraryDialog(Gtk.Window):
             self.set_status_message(_("Scanning for new books..."))
             self.backend.watchlist.scan_for_new_files()
 
-    def _new_files_found(self, filelist, watchentry):
+    def _new_files_found(self, filelist: Sequence[str],
+                         watchentry: "backend_types._WatchListEntry") -> None:
         """ Called after the scan for new files finished. """
 
         if len(filelist) > 0:
-            if watchentry.collection.id is not None:
-                collection_name = watchentry.collection.name
+            # A watch list entry that has been removed keeps its
+            # directory but no longer names a collection.
+            collection = watchentry.collection
+            if collection is not None and collection.id is not None:
+                collection_name = collection.name
             else:
                 collection_name = None
 
@@ -122,18 +138,14 @@ class _LibraryDialog(Gtk.Window):
             self.set_status_message(
                 _("No new books found in directory '%s'.") % watchentry.directory)
 
-    def get_status_bar(self):
-        """ Returns the window's status bar. """
-        return self._statusbar
-
-    def set_status_message(self, message):
+    def set_status_message(self, message: str) -> None:
         """Set a specific message on the statusbar, replacing whatever was
         there earlier.
         """
         self._statusbar.set_text(
             ' ' * status.Statusbar.SPACING + '%s' % i18n.to_unicode(message))
 
-    def close(self, *args):
+    def close(self, *args: Any) -> None:
         """Close the library and do required cleanup tasks."""
         # Gtk.Window.get_size() is gone; a GTK4 window is a widget
         # with a width and a height of its own.
@@ -146,7 +158,8 @@ class _LibraryDialog(Gtk.Window):
         file_chooser_library_dialog.close_library_filechooser_dialog()
         _close_dialog()
 
-    def add_books(self, paths, collection_name=None):
+    def add_books(self, paths: Sequence[str],
+                  collection_name: str | None = None) -> None:
         """Add the books at <paths> to the library. If <collection_name>
         is not None, it is the name of a (new or existing) collection the
         books should be put in.
@@ -161,14 +174,18 @@ class _LibraryDialog(Gtk.Window):
                 collection = self.backend.get_collection_by_name(
                     collection_name)
 
-            collection_id = collection.id
+            # add_collection() reports a failure by returning False, and
+            # the books then go into no collection rather than nowhere.
+            collection_id = collection.id if collection is not None else None
 
         library_add_progress_dialog._AddLibraryProgressDialog(self, self._window, paths, collection_id)
 
         if collection_id is not None:
             prefs['last library collection'] = collection_id
 
-    def _key_press_event(self, controller, keyval, keycode, state):
+    def _key_press_event(self, controller: Gtk.EventControllerKey,
+                         keyval: int, keycode: int,
+                         state: Gdk.ModifierType) -> bool:
         """ Handle key press events for closing the library on Escape press. """
 
         if keyval == Gdk.KEY_Escape:
@@ -177,32 +194,20 @@ class _LibraryDialog(Gtk.Window):
         return Gdk.EVENT_PROPAGATE
 
 
-def open_dialog(action, window):
-    """ Shows the library window. If sqlite is not available, this method
-    does nothing and returns False. Otherwise, True is returned. """
+def open_dialog(action: Gio.SimpleAction, window: "main.MainWindow") -> None:
+    """ Shows the library window. """
     global _dialog
 
     if _dialog is None:
-
-        if library_backend.dbapi2 is None:
-            text = _('! You need an sqlite wrapper to use the library.')
-            window.osd.show(text)
-            log.error(text)
-            return False
-
-        else:
-            _dialog = _LibraryDialog(window, window.filehandler)
-
+        _dialog = _LibraryDialog(window, window.filehandler)
     else:
         _dialog.present()
 
     if prefs['scan for new books on library startup']:
         _dialog.scan_for_new_files()
 
-    return True
 
-
-def _close_dialog(*args):
+def _close_dialog(*args: Any) -> None:
     global _dialog
 
     if _dialog is not None:

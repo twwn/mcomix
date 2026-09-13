@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
+import datetime
 import os
+from typing import TYPE_CHECKING
 
 from mcomix import log
 from mcomix import constants
@@ -10,8 +12,12 @@ from mcomix.i18n import _
 # into the library at upgrade.
 from sqlite3 import dbapi2
 
+if TYPE_CHECKING:
+    # Delayed: the library backend imports this module for the migration.
+    from mcomix.library.backend import _LibraryBackend
 
-class LastReadPage(object):
+
+class LastReadPage:
     """ Automatically stores the last page the user read for all book files,
     and restores the page the next time the archive is opened. When the book
     is finished, the page will be cleared.
@@ -21,7 +27,7 @@ class LastReadPage(object):
     if the preference option to store pages automatically is enabled.
     """
 
-    def __init__(self, backend):
+    def __init__(self, backend: '_LibraryBackend') -> None:
         """ Constructor.
         @param backend: Library backend instance.
         """
@@ -30,30 +36,34 @@ class LastReadPage(object):
         #: Library backend.
         self.backend = backend
 
-    def set_enabled(self, enabled):
+    def set_enabled(self, enabled: bool) -> None:
         """ Enables (or disables) all functionality of this module.
         @type enabled: bool
         """
-        if self.backend.enabled:
-            self.enabled = enabled
-        else:
-            self.enabled = False
+        self.enabled = enabled
 
-    def count(self):
+    def _recent_collection_id(self) -> int:
+        """ The id of the "Recent" collection.  Only the default
+        collection, which stands for every book and has no row of its
+        own, carries no id. """
+        collection_id = self.backend.get_recent_collection().id
+        assert collection_id is not None
+        return collection_id
+
+    def count(self) -> int:
         """ Number of stored book/page combinations. This method is
         not affected by setting L{enabled} to false.
         @return: The number of entries stored by this module. """
 
-        if not self.backend.enabled:
-            return 0
-
         cursor = self.backend.execute("""SELECT COUNT(*) FROM recent""")
+        # The connection's row factory unwraps a one column row, so this
+        # is the count itself rather than a row holding it.
         count = cursor.fetchone()
         cursor.close()
 
-        return count
+        return int(count)
 
-    def set_page(self, path, page):
+    def set_page(self, path: str, page: int) -> None:
         """ Sets C{page} as last read page for the book at C{path}.
         @param path: Path to book. Raises ValueError if file doesn't exist.
         @param page: Page number.
@@ -65,19 +75,18 @@ class LastReadPage(object):
         book = self.backend.get_book_by_path(full_path)
 
         if not book:
-            self.backend.add_book(
-                full_path, self.backend.get_recent_collection().id)
+            self.backend.add_book(full_path, self._recent_collection_id())
             book = self.backend.get_book_by_path(full_path)
 
             if not book:
                 raise ValueError("Book doesn't exist")
         else:
             self.backend.add_book_to_collection(
-                book.id, self.backend.get_recent_collection().id)
+                book.id, self._recent_collection_id())
 
         book.set_last_read_page(page)
 
-    def clear_page(self, path):
+    def clear_page(self, path: str) -> None:
         """ Removes stored page for book at C{path}.
         @param path: Path to book.
         """
@@ -94,9 +103,6 @@ class LastReadPage(object):
         """ Removes all stored books from the library's 'Recent' collection,
         and removes all information from the recent table. This method is
         not affected by setting L{enabled} to false. """
-
-        if not self.backend.enabled:
-            return
 
         # Collect books whose only collection is "Recent". Those are in
         # the library solely because they were read, so they go with the
@@ -118,7 +124,7 @@ class LastReadPage(object):
                        GROUP BY book HAVING COUNT(*) = 1
                       ) t ON t.book = c.book
                  WHERE c.collection = ?"""
-        recent_collection = self.backend.get_recent_collection().id
+        recent_collection = self._recent_collection_id()
         cursor = self.backend.execute(sql, (recent_collection,))
         books = cursor.fetchall()
         cursor.close()
@@ -143,7 +149,7 @@ class LastReadPage(object):
             # comes.
             self.backend.end_transaction()
 
-    def get_page(self, path):
+    def get_page(self, path: str) -> int | None:
         """ Gets the last read page for book at C{path}.
 
         @param path: Path to book.
@@ -166,7 +172,7 @@ class LastReadPage(object):
         else:
             return None
 
-    def get_date(self, path):
+    def get_date(self, path: str) -> datetime.datetime | None:
         """ Gets the date at which the page for path was set.
 
         @param path: Path to book.
@@ -182,13 +188,10 @@ class LastReadPage(object):
         else:
             return None
 
-    def migrate_database_to_library(self, recent_collection):
+    def migrate_database_to_library(self, recent_collection: int) -> None:
         """ Moves all information saved in the legacy database
         constants.LASTPAGE_DATABASE_PATH into the library,
         and deleting the old database. """
-
-        if not self.backend.enabled:
-            return
 
         database = self._init_database(constants.LASTPAGE_DATABASE_PATH)
 
@@ -222,7 +225,7 @@ class LastReadPage(object):
                 # XXX: If the book calls get_backend during migrate_database,
                 # the library isn't constructed yet and breaks in an
                 # endless recursion.
-                book.get_backend = lambda: self.backend
+                book.get_backend = lambda: self.backend  # type: ignore[method-assign]
                 book.set_last_read_page(page, time_set)
 
             try:
@@ -232,16 +235,13 @@ class LastReadPage(object):
                           constants.LASTPAGE_DATABASE_PATH)
                 log.info('Error was: %s', error)
 
-    def _init_database(self, dbfile):
+    def _init_database(self, dbfile: str) -> dbapi2.Connection:
         """ Creates or opens new SQLite database at C{dbfile}, and initalizes
         the required table(s).
 
         @param dbfile: Database file name. This file needn't exist.
         @return: Open SQLite database connection.
         """
-        if not dbapi2:
-            return None
-
         db = dbapi2.connect(dbfile, isolation_level=None)
         sql = """CREATE TABLE IF NOT EXISTS lastread (
             path TEXT PRIMARY KEY,

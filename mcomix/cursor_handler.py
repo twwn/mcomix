@@ -4,19 +4,25 @@ from gi.repository import Gdk, GLib
 
 from mcomix import constants
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from mcomix import main
+
 class CursorHandler(object):
 
-    def __init__(self, window):
+    def __init__(self, window: "main.MainWindow") -> None:
         self._window = window
-        self._timer_id = None
+        self._timer_id: int | None = None
         self._auto_hide = False
-        self._current_cursor = constants.NORMAL_CURSOR
+        self._current_cursor: "int | Gdk.Cursor" = constants.NORMAL_CURSOR
 
-    def set_cursor_type(self, cursor):
+    def set_cursor_type(self, cursor: "int | Gdk.Cursor") -> None:
         """Set the cursor to type <cursor>. Supported cursor types are
         available as constants in this module. If <cursor> is not one of the
         cursor constants above, it must be a Gdk.Cursor.
         """
+        mode: "Gdk.Cursor | None"
         if cursor == constants.NORMAL_CURSOR:
             mode = None
         elif cursor == constants.GRAB_CURSOR:
@@ -25,10 +31,14 @@ class CursorHandler(object):
             mode = Gdk.Cursor.new_from_name('wait', None)
         elif cursor == constants.NO_CURSOR:
             mode = self._get_hidden_cursor()
-        else:
+        elif isinstance(cursor, Gdk.Cursor):
             mode = cursor
+        else:
+            # Not one of the constants above and not a cursor either;
+            # the pointer keeps whatever the theme draws it as.
+            mode = None
 
-        self._window.set_cursor(mode)
+        self._window.set_layout_cursor(mode)
 
         self._current_cursor = cursor
 
@@ -65,7 +75,7 @@ class CursorHandler(object):
 
     def _on_timeout(self) -> bool:
         mode = self._get_hidden_cursor()
-        self._window.set_cursor(mode)
+        self._window.set_layout_cursor(mode)
         self._timer_id = None
         return False
 
@@ -78,7 +88,7 @@ class CursorHandler(object):
             GLib.source_remove(self._timer_id)
             self._timer_id = None
 
-    def _get_hidden_cursor(self):
+    def _get_hidden_cursor(self) -> "Gdk.Cursor | None":
         # Gdk.CursorType is gone in GTK4; cursors go by the name the
         # theme knows them under, and 'none' is the blank one.
         return Gdk.Cursor.new_from_name('none', None)

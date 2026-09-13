@@ -5,15 +5,24 @@ from mcomix import constants
 from mcomix import box
 import math
 
+from collections.abc import Sequence
+
 
 class Scrolling(object):
 
     def __init__(self) -> None:
+        #: The last two answers of _bresenham_sums(), each kept beside
+        #: the arguments that produced it.  Declared here and filled in
+        #: by clear_cache(), which is also how they are emptied again.
+        self._cache0: tuple[int, int, bool, list[int]]
+        self._cache1: tuple[int, int, bool, list[int]]
         self.clear_cache()
 
 
-    def scroll_smartly(self, content_box, viewport_box, orientation, max_scroll,
-        axis_map=None):
+    def scroll_smartly(self, content_box: box.Box, viewport_box: box.Box,
+                       orientation: Sequence[int],
+                       max_scroll: Sequence[float],
+                       axis_map: Sequence[int] | None = None) -> list[int]:
         """ Returns a new viewport position when reading forwards using
         the given orientation. If there is no space left to go, the empty
         list is returned. Note that all params are lists of ints (except
@@ -40,9 +49,11 @@ class Scrolling(object):
         viewport_size = viewport_box.get_size()
         # Remap axes
         if axis_map is not None:
-            content_size, viewport_size, viewport_position, orientation, \
-                max_scroll = list(map(lambda v: tools.remap_axes(v, axis_map),
-                [content_size, viewport_size, viewport_position, orientation, max_scroll]))
+            content_size = tuple(tools.remap_axes(content_size, axis_map))
+            viewport_size = tuple(tools.remap_axes(viewport_size, axis_map))
+            viewport_position = tools.remap_axes(viewport_position, axis_map)
+            orientation = tools.remap_axes(orientation, axis_map)
+            max_scroll = tools.remap_axes(max_scroll, axis_map)
 
         result = list(viewport_position)
         carry = True
@@ -139,8 +150,10 @@ class Scrolling(object):
         return tools.vector_add(result, offset)
 
 
-    def scroll_to_predefined(self, content_box, viewport_box, orientation,
-        destination):
+    def scroll_to_predefined(self, content_box: box.Box,
+                             viewport_box: box.Box,
+                             orientation: Sequence[int],
+                             destination: Sequence[int]) -> list[int]:
         """ Returns a new viewport position when scrolling towards a
         predefined destination. Note that all params are lists of integers
         where each index corresponds to one dimension.
@@ -167,7 +180,7 @@ class Scrolling(object):
             if d == 0:
                 continue
             if d < constants.SCROLL_TO_END or d > 1:
-                raise ValueError("invalid destination " + d + " at index "+ i)
+                raise ValueError('invalid destination %d at index %d' % (d, i))
             if d == constants.SCROLL_TO_END:
                 d = o
             if d == constants.SCROLL_TO_START:
@@ -182,7 +195,7 @@ class Scrolling(object):
         return result
 
 
-    def _cached_bs(self, num, denom, half_up):
+    def _cached_bs(self, num: int, denom: int, half_up: bool) -> list[int]:
         """ A simple (and ugly) caching mechanism used to avoid
         recomputations. The current implementation offers a cache with
         only two entries so it's only useful for the two "fastest"
@@ -206,7 +219,7 @@ class Scrolling(object):
 
 
     @staticmethod
-    def _bresenham_sums(num, denom, half_up):
+    def _bresenham_sums(num: int, denom: int, half_up: bool) -> list[int]:
         """ This algorithm is derived from Bresenham's line algorithm in
         order to distribute the remainder of num/denom equally. See
         https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm for details.

@@ -12,7 +12,8 @@ class _PreferenceSection(Gtk.Box):
     and a number of rows which are indented with respect to that header.
     """
 
-    def __init__(self, header, right_column_width):
+    def __init__(self, header: str,
+                 right_column_width: int | None) -> None:
         """Contruct a new section with the header set to the text in
         <header>, and the width request of the (possible) right columns
         set to that of <right_column_width>.
@@ -27,7 +28,7 @@ class _PreferenceSection(Gtk.Box):
         widgets.pack(self, label, False, False, 0)
         widgets.pack(self, self.contentbox, True, True, 0)
 
-    def new_split_vboxes(self):
+    def new_split_vboxes(self) -> tuple[Gtk.Box, Gtk.Box]:
         """Return two new VBoxes that are automatically put in the section
         after the previously added items. The right one has a width request
         equal to the right_column_width value passed to the class contructor,

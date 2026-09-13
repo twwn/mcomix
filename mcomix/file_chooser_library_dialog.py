@@ -1,18 +1,23 @@
 """file_chooser_library_dialog.py - Custom FileChooserDialog implementations."""
 
-from gi.repository import Gtk
 
 from mcomix.preferences import prefs
 from mcomix import file_chooser_base_dialog
 from mcomix.i18n import _
+from mcomix.dialog import Response
 
-_library_filechooser_dialog = None
+from typing import Any, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from mcomix.library import main_dialog
+
+_library_filechooser_dialog: "_LibraryFileChooserDialog | None" = None
 
 class _LibraryFileChooserDialog(file_chooser_base_dialog._BaseFileChooserDialog):
 
     """The filechooser dialog used when adding books to the library."""
 
-    def __init__(self, library):
+    def __init__(self, library: "main_dialog._LibraryDialog") -> None:
         super(_LibraryFileChooserDialog, self).__init__(parent=library)
         self.set_title(_('Add books'))
 
@@ -43,13 +48,13 @@ class _LibraryFileChooserDialog(file_chooser_base_dialog._BaseFileChooserDialog)
         # Buttons that make more sense here than Open.  Gtk.Dialog has
         # no action area to empty in GTK4; place_buttons() puts the row
         # back wherever it went the first time.
-        self.place_buttons((_('_Cancel'), Gtk.ResponseType.CANCEL,
-                            _('_Add'), Gtk.ResponseType.OK))
+        self.place_buttons((_('_Cancel'), Response.CANCEL,
+                            _('_Add'), Response.OK))
 
     def should_open_recursive(self) -> bool:
         return True
 
-    def files_chosen(self, paths):
+    def files_chosen(self, paths: list[str]) -> None:
         if paths:
             try: # For some reason this fails sometimes (GTK+ bug?)
                 filter_index = self.list_filters().index(
@@ -65,7 +70,8 @@ class _LibraryFileChooserDialog(file_chooser_base_dialog._BaseFileChooserDialog)
         else:
             close_library_filechooser_dialog()
 
-def open_library_filechooser_dialog(library):
+def open_library_filechooser_dialog(
+        library: "main_dialog._LibraryDialog") -> None:
     """Open the library filechooser dialog."""
     global _library_filechooser_dialog
 
@@ -74,7 +80,7 @@ def open_library_filechooser_dialog(library):
     else:
         _library_filechooser_dialog.present()
 
-def close_library_filechooser_dialog(*args):
+def close_library_filechooser_dialog(*args: Any) -> None:
     """Close the library filechooser dialog."""
     global _library_filechooser_dialog
 

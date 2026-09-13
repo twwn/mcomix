@@ -8,10 +8,16 @@ from mcomix import callback
 from mcomix import archive_tools
 from mcomix.i18n import _
 
+from collections.abc import Sequence
+from typing import Any, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from mcomix.library.backend import _LibraryBackend
+
 
 class _BackendObject(object):
 
-    def get_backend(self):
+    def get_backend(self) -> '_LibraryBackend':
         # XXX: Delayed import to avoid circular import
         from mcomix.library.backend import LibraryBackend
         return LibraryBackend()
@@ -20,7 +26,8 @@ class _BackendObject(object):
 class _Book(_BackendObject):
     """ Library book instance. """
 
-    def __init__(self, id, name, path, pages, format, size, added):
+    def __init__(self, id: int, name: str, path: str, pages: int,
+                 format: int, size: int, added: str) -> None:
         """ Creates a book instance.
         @param id: Book id
         @param name: Base name of the book
@@ -38,7 +45,7 @@ class _Book(_BackendObject):
         self.size = size
         self.added = added
 
-    def get_collections(self):
+    def get_collections(self) -> list['_Collection']:
         """ Gets a list of collections this book is part of. If it
         belongs to no collections, [DefaultCollection] is returned. """
         cursor = self.get_backend().execute(
@@ -51,19 +58,20 @@ class _Book(_BackendObject):
         else:
             return [DefaultCollection]
 
-    def get_last_read_page(self):
+    def get_last_read_page(self) -> int | None:
         """ Gets the page of this book that was last read when the book was
         closed. Returns C{None} if no such page exists. """
         cursor = self.get_backend().execute(
             '''SELECT page FROM recent WHERE book = ?''', (self.id,))
+        # The connection's row factory unwraps a one column row, so this
+        # is the page itself rather than a row holding it.
         row = cursor.fetchone()
         cursor.close()
-        if row:
-            return row
-        else:
+        if row is None:
             return None
+        return int(row)
 
-    def get_last_read_date(self):
+    def get_last_read_date(self) -> datetime.datetime | None:
         """ Gets the datetime the book was most recently read. Returns
         C{None} if no information was set, or a datetime object otherwise. """
         cursor = self.get_backend().execute(
@@ -80,7 +88,8 @@ class _Book(_BackendObject):
         else:
             return None
 
-    def set_last_read_page(self, page, time=None):
+    def set_last_read_page(self, page: int | None,
+                           time: datetime.datetime | None = None) -> None:
         """ Sets the page that was last read when the book was closed.
         Passing C{None} as argument clears the recent information.
 
@@ -99,14 +108,14 @@ class _Book(_BackendObject):
         if page is not None:
             if not time:
                 time = datetime.datetime.now()
-            if isinstance(time, datetime.datetime):
-                # sqlite3's implicit datetime adapter is deprecated since
-                # Python 3.12; write the same text it used to produce, which
-                # is what get_last_read_date() reads back.
-                time = time.isoformat(sep=' ')
+            # sqlite3's implicit datetime adapter is deprecated since
+            # Python 3.12; write the same text it used to produce, which
+            # is what get_last_read_date() reads back.
+            written = time.isoformat(sep=' ') \
+                if isinstance(time, datetime.datetime) else time
             cursor.execute('''INSERT INTO recent (book, page, time_set)
                               VALUES (?, ?, ?)''',
-                           (self.id, page, time))
+                           (self.id, page, written))
 
         cursor.close()
 
@@ -116,17 +125,20 @@ class _Collection(_BackendObject):
     This class should NOT be instianted directly, but only with methods from
     L{LibraryBackend} instead. """
 
-    def __init__(self, id, name, supercollection=None):
+    def __init__(self, id: int, name: str,
+                 supercollection: 'int | None' = None) -> None:
         """ Creates a collection instance.
         @param id: Collection id
         @param name: Name of the collection
         @param supercollection: Parent collection, or C{None} """
 
-        self.id = id
+        #: The default collection stands for every book and has no row of
+        #: its own, so it carries no id.
+        self.id: int | None = id
         self.name = name
         self.supercollection = supercollection
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, _Collection):
             return self.id == other.id
         elif isinstance(other, int):
@@ -134,7 +146,7 @@ class _Collection(_BackendObject):
         else:
             return False
 
-    def get_books(self, filter_string=None):
+    def get_books(self, filter_string: str | None = None) -> list['_Book']:
         """ Returns all books that are part of this collection,
         including subcollections. """
 
@@ -147,7 +159,7 @@ class _Collection(_BackendObject):
                                      AND contain.collection = ?
                   '''
 
-            sql_args = [collection.id]
+            sql_args: list[Any] = [collection.id]
             if filter_string:
                 sql += ''' WHERE book.name LIKE '%' || ? || '%' '''
                 sql_args.append(filter_string)
@@ -162,7 +174,7 @@ class _Collection(_BackendObject):
 
         return books
 
-    def get_collections(self):
+    def get_collections(self) -> list['_Collection']:
         """ Returns a list of all direct subcollections of this instance. """
 
         cursor = self.get_backend().execute('''SELECT id, name, supercollection
@@ -174,7 +186,7 @@ class _Collection(_BackendObject):
 
         return [ _Collection(*row) for row in result ]
 
-    def get_all_collections(self):
+    def get_all_collections(self) -> list['_Collection']:
         """ Returns all collections that are subcollections of this instance,
         or subcollections of a subcollection of this instance. """
 
@@ -189,7 +201,7 @@ class _Collection(_BackendObject):
 
         return collections
 
-    def add_collection(self, subcollection):
+    def add_collection(self, subcollection: '_Collection') -> None:
         """ Sets C{subcollection} as child of this collection. """
 
         self.get_backend().execute('''UPDATE collection
@@ -208,7 +220,7 @@ class _DefaultCollection(_Collection):
         self.name = _("All books")
         self.supercollection = None
 
-    def get_books(self, filter_string=None):
+    def get_books(self, filter_string: str | None = None) -> list['_Book']:
         """ Returns all books in the library """
         sql = '''SELECT book.id, book.name, book.path, book.pages, book.format,
                         book.size, book.added
@@ -228,7 +240,7 @@ class _DefaultCollection(_Collection):
 
         return [ _Book(*cols) for cols in rows ]
 
-    def add_collection(self, subcollection):
+    def add_collection(self, subcollection: '_Collection') -> None:
         """ Removes C{subcollection} from any supercollections and moves
         it to the root level of the tree. """
 
@@ -239,7 +251,7 @@ class _DefaultCollection(_Collection):
                 WHERE id = ?''', (subcollection.id,))
         subcollection.supercollection = None
 
-    def get_collections(self):
+    def get_collections(self) -> list['_Collection']:
         """ Returns a list of all root collections. """
 
         cursor = self.get_backend().execute('''SELECT id, name, supercollection
@@ -260,10 +272,12 @@ class _WatchList(object):
     been added. This object is part of the library backend, i.e.
     C{library.backend.watchlist}. """
 
-    def __init__(self, backend):
+    def __init__(self, backend: '_LibraryBackend') -> None:
         self.backend = backend
 
-    def add_directory(self, path, collection=DefaultCollection, recursive=False):
+    def add_directory(self, path: str,
+                      collection: '_Collection' = DefaultCollection,
+                      recursive: bool = False) -> None:
         """ Adds a new watched directory. """
 
         directory = os.path.normpath(os.path.abspath(path))
@@ -272,7 +286,7 @@ class _WatchList(object):
         cursor = self.backend.execute(sql, [directory, collection.id, recursive])
         cursor.close()
 
-    def get_watchlist(self):
+    def get_watchlist(self) -> list['_WatchListEntry']:
         """ Returns a list of watched directories.
         @return: List of L{_WatchListEntry} objects. """
 
@@ -289,7 +303,7 @@ class _WatchList(object):
 
         return entries
 
-    def get_watchlist_entry(self, path):
+    def get_watchlist_entry(self, path: str) -> '_WatchListEntry':
         """ Returns a single watchlist entry, specified by C{path} """
         sql = """SELECT watchlist.path,
                         watchlist.recursive,
@@ -325,7 +339,8 @@ class _WatchList(object):
             new_files = entry.get_new_files(existing_books)
             self.new_files_found(new_files, entry)
 
-    def _result_row_to_watchlist_entry(self, row):
+    def _result_row_to_watchlist_entry(
+            self, row: Sequence[Any]) -> '_WatchListEntry':
         """ Converts the result of a SELECT statement to a WatchListEntry. """
         collection_id = row[2]
         if collection_id:
@@ -337,7 +352,8 @@ class _WatchList(object):
 
 
     @callback.Callback
-    def new_files_found(self, paths, watchentry):
+    def new_files_found(self, paths: Sequence[str],
+                        watchentry: '_WatchListEntry') -> None:
         """ Called after scan_for_new_files finishes.
         @param paths: List of filenames for newly added files. This list
                       may be empty if no new files were found during the scan.
@@ -349,12 +365,14 @@ class _WatchList(object):
 class _WatchListEntry(_BackendObject):
     """ A watched directory. """
 
-    def __init__(self, directory, recursive, collection):
+    def __init__(self, directory: str, recursive: bool,
+                 collection: '_Collection') -> None:
         self.directory = os.path.normpath(os.path.abspath(directory))
         self.recursive = bool(recursive)
-        self.collection = collection
+        #: Emptied by remove(), which leaves the entry describing nothing.
+        self.collection: '_Collection | None' = collection
 
-    def get_new_files(self, filelist):
+    def get_new_files(self, filelist: Sequence[str]) -> list[str]:
         """ Returns a list of files that are present in the watched directory,
         but not in the list of files passed in C{filelist}. """
 
@@ -368,17 +386,19 @@ class _WatchListEntry(_BackendObject):
                 for filename in os.listdir(self.directory)
                 if archive_tools.is_archive_file(filename)])
         else:
-            available_files = []
+            # A list of its own rather than the name the branch above
+            # binds to a frozenset: one of the two would have to answer
+            # to append(), and a frozenset does not.
+            found = []
             for dirpath, dirnames, filenames in os.walk(self.directory):
                 for filename in filter(archive_tools.is_archive_file, filenames):
-                    path = os.path.join(dirpath, filename)
-                    available_files.append(path)
+                    found.append(os.path.join(dirpath, filename))
 
-            available_files = frozenset(available_files)
+            available_files = frozenset(found)
 
         return list(available_files.difference(old_files))
 
-    def is_valid(self):
+    def is_valid(self) -> bool:
         """ Check if the watched directory is a valid directory and exists. """
         return os.path.isdir(self.directory)
 
@@ -392,7 +412,7 @@ class _WatchListEntry(_BackendObject):
         self.directory = ""
         self.collection = None
 
-    def set_collection(self, new_collection):
+    def set_collection(self, new_collection: '_Collection') -> None:
         """ Updates the collection associated with this watchlist entry. """
         if new_collection != self.collection:
             sql = """UPDATE watchlist SET collection = ? WHERE path = ?"""
@@ -401,7 +421,7 @@ class _WatchListEntry(_BackendObject):
             cursor.close()
             self.collection = new_collection
 
-    def set_recursive(self, recursive):
+    def set_recursive(self, recursive: bool) -> None:
         """ Enables or disables recursive scanning. """
         if recursive != self.recursive:
             sql = """UPDATE watchlist SET recursive = ? WHERE path = ?"""

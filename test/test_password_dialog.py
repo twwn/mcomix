@@ -12,6 +12,7 @@ from . import MComixTest, get_testfile_path, pump as _pump
 from mcomix import message_dialog
 from mcomix.archive import password as archive_password
 from mcomix.archive import zip as zip_archive
+from mcomix.dialog import Response
 
 
 def pump(rounds=200):
@@ -75,7 +76,7 @@ class PasswordDialogTest(MComixTest):
         self.real_ask_for_password('/nowhere/archive.zip', answers.append)
         prompt = self._wait_for_prompt()
         self._entry_in(prompt).set_text('hunter2')
-        prompt.response(Gtk.ResponseType.OK)
+        prompt.response(Response.OK)
         pump()
         self.assertEqual(answers, ['hunter2'])
         self.assertEqual(visible_prompts(), [])
@@ -85,7 +86,7 @@ class PasswordDialogTest(MComixTest):
         self.real_ask_for_password('/nowhere/archive.zip', answers.append)
         prompt = self._wait_for_prompt()
         self._entry_in(prompt).set_text('hunter2')
-        prompt.response(Gtk.ResponseType.CANCEL)
+        prompt.response(Response.CANCEL)
         pump()
         self.assertEqual(answers, [None])
 
@@ -93,7 +94,7 @@ class PasswordDialogTest(MComixTest):
         answers = []
         self.real_ask_for_password('/nowhere/archive.zip', answers.append)
         prompt = self._wait_for_prompt()
-        prompt.response(Gtk.ResponseType.OK)
+        prompt.response(Response.OK)
         pump()
         self.assertEqual(answers, [None])
 
@@ -117,7 +118,7 @@ class PasswordDialogTest(MComixTest):
 
         prompt = self._wait_for_prompt()
         self._entry_in(prompt).set_text('password')
-        prompt.response(Gtk.ResponseType.OK)
+        prompt.response(Response.OK)
 
         for _ in range(400):
             pump()

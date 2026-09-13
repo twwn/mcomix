@@ -2,14 +2,23 @@
 
 """The library's cover area, and the black it is painted on."""
 
-from gi.repository import Gtk
+from gi.repository import GLib, Gtk
 
 from . import MComixTest, wait_for
 from .test_theme import background_of
 
 from mcomix import constants
+from mcomix import message_dialog
 from mcomix.library import book_area
 from mcomix.preferences import prefs
+
+
+def _children(widget):
+    """Every direct child of <widget>, in order."""
+    child = widget.get_first_child()
+    while child is not None:
+        yield child
+        child = child.get_next_sibling()
 
 
 class _Event(object):
@@ -26,6 +35,13 @@ class _Backend(object):
 
 
 class _Library(object):
+
+    backend = _Backend()
+
+
+class _LibraryWindow(Gtk.Window):
+
+    """A library that is a real window, which a dialog can be transient for."""
 
     backend = _Backend()
 
@@ -151,6 +167,68 @@ class CoverRemovalTest(MComixTest):
     def test_a_position_answers_with_the_book_shown_there(self):
         self.assertEqual(self.area.get_book_at_path(3), 3)
         self.assertIsNone(self.area.get_book_at_path(99))
+
+
+class CoverSizeDialogTest(MComixTest):
+
+    """The dialog behind the library's "Custom" cover size.
+
+    Its scale is packed into the dialog by hand, and the method that
+    holds it went with Gtk.MessageDialog: this one is a Gtk.Window
+    carrying its own content area.
+    """
+
+    class _Action(object):
+
+        """Enough of a Gio.SimpleAction for the handler to set a state."""
+
+        def __init__(self):
+            self.state = None
+
+        def set_state(self, state):
+            self.state = state
+
+    def setUp(self):
+        super(CoverSizeDialogTest, self).setUp()
+        self.library = _LibraryWindow()
+        self.area = book_area._BookArea(self.library)
+        # Redrawing the covers needs a whole library behind it; that a
+        # new size asks for one is what matters here.
+        self.reloaded = []
+        self.area.load_covers = lambda: self.reloaded.append(True)
+        self._before = set(Gtk.Window.list_toplevels())
+
+    def tearDown(self):
+        # A dialog left on screen is answered by whatever looks for one
+        # next.
+        for window in set(Gtk.Window.list_toplevels()) - self._before:
+            window.destroy()
+        self.area.close()
+        self.library.destroy()
+        super(CoverSizeDialogTest, self).tearDown()
+
+    def _opened_dialogs(self):
+        return [window for window in
+                set(Gtk.Window.list_toplevels()) - self._before
+                if isinstance(window, message_dialog.MessageDialog)]
+
+    def test_a_named_size_is_taken_without_asking(self):
+        prefs['library cover size'] = 125
+        self.area._book_size_changed(self._Action(), GLib.Variant('i', 64))
+        self.assertEqual(64, prefs['library cover size'])
+        self.assertEqual([], self._opened_dialogs())
+        self.assertEqual(1, len(self.reloaded))
+
+    def test_a_custom_size_asks_with_a_scale_in_the_dialog(self):
+        # The scale used to be packed into get_message_area(), which
+        # Gtk.MessageDialog had and this dialog never did, so choosing
+        # "Custom" raised AttributeError instead of opening anything.
+        self.area._book_size_changed(self._Action(), GLib.Variant('i', 0))
+
+        dialogs = self._opened_dialogs()
+        self.assertEqual(1, len(dialogs))
+        self.assertEqual(1, sum(1 for child in _children(dialogs[0].get_content_area())
+                                if isinstance(child, Gtk.Scale)))
 
 
 # vim: expandtab:sw=4:ts=4

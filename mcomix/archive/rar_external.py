@@ -2,16 +2,15 @@
 
 """ RAR archive extractor. """
 
+import functools
 import os
 import sys
 import subprocess
+from collections.abc import Iterable, Iterator
 
 from mcomix import log
 from mcomix import process
 from mcomix.archive import archive_base
-
-# Filled on-demand by RarArchive
-_rar_executable = -1
 
 class RarArchive(archive_base.ExternalExecutableArchive):
     """ RAR file extractor using the unrar/rar executable. """
@@ -21,39 +20,43 @@ class RarArchive(archive_base.ExternalExecutableArchive):
     class EncryptedHeader(Exception):
         pass
 
-    def __init__(self, archive):
-        super(RarArchive, self).__init__(archive)
+    def __init__(self, archive: str) -> None:
+        super().__init__(archive)
         self._is_solid = False
-        self._is_encrypted =  False
-        self._contents = []
+        self._is_encrypted = False
+        self._contents: list[tuple[str, int]] = []
+        #: Indicates which part of the file listing has been read.
+        self._state = self.STATE_HEADER
+        #: Current path while listing contents.
+        self._path = ''
 
-    def _get_executable(self):
+    def _get_executable(self) -> str | None:
         return self._find_unrar_executable()
 
-    def _get_password_argument(self):
+    def _get_password_argument(self) -> str:
         if not self._is_encrypted:
             # Add a dummy password anyway, to prevent deadlock on reading for
             # input if we did not correctly detect the archive is encrypted.
             return '-p-'
-        self._get_password()
+        password = self._get_password()
         # Check for invalid empty password, see comment above.
-        if not self._password:
+        if not password:
             return '-p-'
-        return '-p' + self._password
+        return '-p' + password
 
-    def _get_list_arguments(self):
-        args = [self._get_executable(), 'vt']
+    def _get_list_arguments(self) -> list[str]:
+        args = [self._executable, 'vt']
         args.append(self._get_password_argument())
         args.extend(('--', self.archive))
         return args
 
-    def _get_extract_arguments(self):
-        args = [self._get_executable(), 'p', '-inul', '-@']
+    def _get_extract_arguments(self) -> list[str]:
+        args = [self._executable, 'p', '-inul', '-@']
         args.append(self._get_password_argument())
         args.extend(('--', self.archive))
         return args
 
-    def _parse_list_output_line(self, line):
+    def _parse_list_output_line(self, line: str) -> str | None:
         if self._state == self.STATE_HEADER:
             if line.startswith('Details: '):
                 flags = line[9:].split(', ')
@@ -84,10 +87,10 @@ class RarArchive(archive_base.ExternalExecutableArchive):
                     self._is_encrypted = True
         return None
 
-    def is_solid(self):
+    def is_solid(self) -> bool:
         return self._is_solid
 
-    def iter_contents(self):
+    def iter_contents(self) -> Iterator[str]:
         if not self._get_executable():
             return
 
@@ -95,10 +98,8 @@ class RarArchive(archive_base.ExternalExecutableArchive):
         # - the first time without a password
         # - a second time with a password if the header is encrypted
         for retry_count in range(2):
-            #: Indicates which part of the file listing has been read.
             self._state = self.STATE_HEADER
-            #: Current path while listing contents.
-            self._path = None
+            self._path = ''
             proc = subprocess.run(
                 self._get_list_arguments(), stdout=process.PIPE, stderr=process.STDOUT,
                 encoding="utf-8",
@@ -118,7 +119,7 @@ class RarArchive(archive_base.ExternalExecutableArchive):
 
         self.filenames_initialized = True
 
-    def extract(self, filename, destination_dir):
+    def extract(self, filename: str, destination_dir: str) -> None:
         """ Extract <filename> from the archive to <destination_dir>. """
         assert isinstance(filename, str) and \
                 isinstance(destination_dir, str)
@@ -137,7 +138,7 @@ class RarArchive(archive_base.ExternalExecutableArchive):
         finally:
             output.close()
 
-    def iter_extract(self, entries, destination_dir):
+    def iter_extract(self, entries: Iterable[str], destination_dir: str) -> Iterator[str]:
 
         if not self._get_executable():
             return
@@ -146,9 +147,10 @@ class RarArchive(archive_base.ExternalExecutableArchive):
             self.list_contents()
 
         proc = process.popen(self._get_extract_arguments())
+        assert proc.stdout is not None
         try:
-            wanted = dict([(self._original_filename(unicode_name), unicode_name)
-                           for unicode_name in entries])
+            wanted = {self._original_filename(unicode_name): unicode_name
+                      for unicode_name in entries}
 
             for filename, filesize in self._contents:
                 data = proc.stdout.read(filesize)
@@ -170,27 +172,25 @@ class RarArchive(archive_base.ExternalExecutableArchive):
             proc.wait()
 
     @staticmethod
-    def _find_unrar_executable():
+    @functools.cache
+    def _find_unrar_executable() -> str | None:
         """ Tries to start rar/unrar, and returns either 'rar' or 'unrar' if
         one of them was started successfully.
         Returns None if neither could be started. """
-        global _rar_executable
-        if _rar_executable == -1:
-            if 'win32' == sys.platform:
-                def is_not_unrar_free(exe):
-                    return True
-            else:
-                def is_not_unrar_free(exe):
-                    real_exe = exe
-                    while os.path.islink(real_exe):
-                        real_exe = os.readlink(real_exe)
-                    if real_exe.endswith(os.path.sep + 'unrar-free'):
-                        log.warning('RAR executable %s is unrar-free, ignoring', exe)
-                        return False
-                    return True
-            _rar_executable = process.find_executable(('unrar-nonfree', 'unrar', 'rar'),
-                                                      is_valid_candidate=is_not_unrar_free)
-        return _rar_executable
+        if sys.platform == 'win32':
+            def is_not_unrar_free(exe: str) -> bool:
+                return True
+        else:
+            def is_not_unrar_free(exe: str) -> bool:
+                real_exe = exe
+                while os.path.islink(real_exe):
+                    real_exe = os.readlink(real_exe)
+                if real_exe.endswith(os.path.sep + 'unrar-free'):
+                    log.warning('RAR executable %s is unrar-free, ignoring', exe)
+                    return False
+                return True
+        return process.find_executable(('unrar-nonfree', 'unrar', 'rar'),
+                                       is_valid_candidate=is_not_unrar_free)
 
     @staticmethod
     def is_available() -> bool:

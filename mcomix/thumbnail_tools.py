@@ -10,6 +10,7 @@ import mimetypes
 import threading
 import locale
 import PIL.Image as Image
+from collections.abc import Callable, Iterable
 from urllib.request import pathname2url
 from typing import TYPE_CHECKING
 from hashlib import md5
@@ -28,14 +29,17 @@ if TYPE_CHECKING:
     from gi.repository import GdkPixbuf
 
 
-class Thumbnailer(object):
+class Thumbnailer:
     """ The Thumbnailer class is responsible for managing MComix
     internal thumbnail creation. Depending on its settings,
     it either stores thumbnails on disk and retrieves them later,
     or simply creates new thumbnails each time it is called. """
 
-    def __init__(self, dst_dir=constants.THUMBNAIL_PATH, store_on_disk=None,
-                 size=None, force_recreation=False, archive_support=False):
+    def __init__(self, dst_dir: str = constants.THUMBNAIL_PATH,
+                 store_on_disk: bool | None = None,
+                 size: tuple[int, int] | None = None,
+                 force_recreation: bool = False,
+                 archive_support: bool = False) -> None:
         """
         <dst_dir> set the thumbnailer's storage directory.
 
@@ -98,24 +102,26 @@ class Thumbnailer(object):
                 return self._create_thumbnail(filepath)
 
     @callback.Callback
-    def thumbnail_finished(self, filepath, pixbuf):
+    def thumbnail_finished(self, filepath: str,
+                           pixbuf: "GdkPixbuf.Pixbuf | None") -> None:
         """ Called every time a thumbnail has been completed.
         <filepath> is the file that was used as source, <pixbuf> is the
         resulting thumbnail. """
 
         pass
 
-    def delete(self, filepath):
+    def delete(self, filepath: str) -> None:
         """ Deletes the thumbnail for <filepath> (if it exists) """
         thumbpath = self._path_to_thumbpath(filepath)
         if os.path.isfile(thumbpath):
             try:
                 os.remove(thumbpath)
-            except IOError as error:
+            except OSError as error:
                 log.error(_("! Could not remove file \"%s\""), thumbpath)
                 log.error(error)
 
-    def _create_thumbnail_pixbuf(self, filepath):
+    def _create_thumbnail_pixbuf(self, filepath: str) \
+            -> "tuple[GdkPixbuf.Pixbuf | None, dict[str, str] | None]":
         """ Creates a thumbnail pixbuf from <filepath>, and returns it as a
         tuple along with a file metadata dictionary: (pixbuf, tEXt_data) """
 
@@ -124,7 +130,7 @@ class Thumbnailer(object):
         else:
             mime = None
         if mime is not None:
-            cleanup = []
+            cleanup: list[Callable[[], object]] = []
             try:
                 tmpdir = tempfile.mkdtemp(prefix='mcomix_archive_thumb.')
                 cleanup.append(lambda: shutil.rmtree(tmpdir, True))
@@ -146,6 +152,7 @@ class Thumbnailer(object):
                     return None, None
 
                 pixbuf = image_tools.load_pixbuf_size(image_path, self.width, self.height)
+                tEXt_data: dict[str, str] | None
                 if self.store_on_disk:
                     tEXt_data = self._get_text_data(image_path)
                     # Use the archive's mTime instead of the extracted file's mtime
@@ -169,20 +176,20 @@ class Thumbnailer(object):
         else:
             return None, None
 
-    def _create_thumbnail(self, filepath):
+    def _create_thumbnail(self, filepath: str) -> "GdkPixbuf.Pixbuf | None":
         """ Creates the thumbnail pixbuf for <filepath>, and saves the pixbuf
         to disk if necessary. Returns the created pixbuf, or None, if creation failed. """
 
         pixbuf, tEXt_data = self._create_thumbnail_pixbuf(filepath)
         self.thumbnail_finished(filepath, pixbuf)
 
-        if pixbuf and self.store_on_disk:
+        if pixbuf and self.store_on_disk and tEXt_data is not None:
             thumbpath = self._path_to_thumbpath(filepath)
             self._save_thumbnail(pixbuf, thumbpath, tEXt_data)
 
         return pixbuf
 
-    def _get_text_data(self, filepath):
+    def _get_text_data(self, filepath: str) -> dict[str, str]:
         """ Creates a tEXt dictionary for <filepath>. """
         mime = mimetypes.guess_type(filepath)[0] or "unknown/mime"
         uri = portability.uri_prefix() + pathname2url(os.path.normpath(filepath))
@@ -201,7 +208,8 @@ class Thumbnailer(object):
             'tEXt::Software':             'MComix %s' % constants.VERSION
         }
 
-    def _save_thumbnail(self, pixbuf, thumbpath, tEXt_data):
+    def _save_thumbnail(self, pixbuf: "GdkPixbuf.Pixbuf", thumbpath: str,
+                        tEXt_data: dict[str, str]) -> None:
         """ Saves <pixbuf> as <thumbpath>, with additional metadata
         from <tEXt_data>. If <thumbpath> already exists, it is overwritten. """
 
@@ -212,19 +220,15 @@ class Thumbnailer(object):
             if os.path.isfile(thumbpath):
                 os.remove(thumbpath)
 
-            option_keys = []
-            option_values = []
-            for key, value in list(tEXt_data.items()):
-                option_keys.append(key)
-                option_values.append(value)
-            pixbuf.savev(thumbpath, 'png', option_keys, option_values)
+            pixbuf.savev(thumbpath, 'png',
+                         list(tEXt_data), list(tEXt_data.values()))
             os.chmod(thumbpath, 0o600)
 
         except Exception as ex:
             log.warning( _('! Could not save thumbnail "%(thumbpath)s": %(error)s'),
                 { 'thumbpath' : thumbpath, 'error' : ex } )
 
-    def _thumbnail_exists(self, filepath):
+    def _thumbnail_exists(self, filepath: str) -> bool:
         """ Checks if the thumbnail for <filepath> already exists.
         This function will return False if the thumbnail exists
         and it's mTime doesn't match the mTime of <filepath>,
@@ -241,43 +245,44 @@ class Thumbnailer(object):
                 except IOError:
                     return False
 
-                info = img.info
-                stored_mtime = int(float(info['Thumb::MTime']))
+                # A thumbnail written by something other than MComix need
+                # not carry the modification time, and one that does need
+                # not have written a number: either way there is nothing
+                # to compare against, so the thumbnail is made afresh.
+                try:
+                    stored_mtime = int(float(img.info['Thumb::MTime']))
+                except (KeyError, TypeError, ValueError):
+                    return False
                 # The source file might no longer exist
                 file_mtime = os.path.isfile(filepath) and int(os.stat(filepath).st_mtime) or stored_mtime
                 return stored_mtime == file_mtime and \
-                    max(*img.size) == max(self.width, self.height)
+                    max(img.size) == max(self.width, self.height)
             else:
                 return False
         else:
             return False
 
-    def _path_to_thumbpath(self, filepath):
+    def _path_to_thumbpath(self, filepath: str) -> str:
         """ Converts <path> to an URI for the thumbnail in <dst_dir>. """
         uri = portability.uri_prefix() + pathname2url(os.path.normpath(filepath))
         return self._uri_to_thumbpath(uri)
 
-    def _uri_to_thumbpath(self, uri):
+    def _uri_to_thumbpath(self, uri: str) -> str:
         """ Return the full path to the thumbnail for <uri> with <dst_dir>
         being the base thumbnail directory. """
-        uri = uri.encode(locale.getpreferredencoding()) if isinstance(uri, str) else uri
-        md5hash = md5(uri).hexdigest()
-        thumbpath = os.path.join(self.dst_dir, md5hash + '.png')
-        return thumbpath
+        md5hash = md5(uri.encode(locale.getpreferredencoding())).hexdigest()
+        return os.path.join(self.dst_dir, md5hash + '.png')
 
-    def _guess_cover(self, files):
+    def _guess_cover(self, files: Iterable[str]) -> str | None:
         """Return the filename within <files> that is the most likely to be the
         cover of an archive using some simple heuristics.
         """
-        # Ignore MacOSX meta files.
-        files = filter(lambda filename:
-                '__MACOSX' not in os.path.normpath(filename).split(os.sep),
-                files)
-        # Ignore credit files if possible.
-        files = filter(lambda filename:
-                'credit' not in os.path.split(filename)[1].lower(), files)
+        # Ignore MacOSX meta files, and credit files if possible.
+        named = (filename for filename in files
+                 if '__MACOSX' not in os.path.normpath(filename).split(os.sep)
+                 and 'credit' not in os.path.split(filename)[1].lower())
 
-        images = list(filter(image_tools.is_image_file, files))
+        images = [name for name in named if image_tools.is_image_file(name)]
 
         tools.alphanumeric_sort(images)
 

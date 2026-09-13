@@ -2,7 +2,7 @@
 
 import os
 import tempfile
-from gi.repository import Gdk, GLib, Gtk
+from gi.repository import Gdk, Gio, GLib, Gtk
 import re
 
 from mcomix.preferences import prefs
@@ -17,12 +17,18 @@ from mcomix import constants
 from mcomix import message_dialog
 from mcomix import preview
 from mcomix.i18n import _
+from mcomix.dialog import Response
 
-_dialog = None
+from typing import Any, TYPE_CHECKING
 
-def _fit_on_screen(width, height):
+if TYPE_CHECKING:
+    from mcomix import main
+
+_dialog: "_EditArchiveDialog | None" = None
+
+def _fit_on_screen(width: int, height: int) -> tuple[int, int]:
     """Return (<width>, <height>), trimmed to fit on the monitor."""
-    monitors = Gdk.Display.get_default().get_monitors()
+    monitors = widgets.display().get_monitors()
     monitor = monitors.get_item(0) if monitors.get_n_items() else None
     if monitor is None:
         return width, height
@@ -37,17 +43,17 @@ class _EditArchiveDialog(Dialog):
     result can be saved as a ZIP archive.
     """
 
-    def __init__(self, window):
+    def __init__(self, window: "main.MainWindow") -> None:
         super(_EditArchiveDialog, self).__init__(
             title=_('Edit archive'), transient_for=window, modal=True)
-        self.add_buttons(_('_Cancel'), Gtk.ResponseType.CANCEL)
+        self.add_buttons(_('_Cancel'), Response.CANCEL)
 
-        self._accept_changes_button = self.add_button(_('_Apply'), Gtk.ResponseType.APPLY)
+        self._accept_changes_button = self.add_button(_('_Apply'), Response.APPLY)
 
         self.kill = False # Dialog is killed.
         self.file_handler = window.filehandler
         self._window = window
-        self._imported_files = []
+        self._imported_files: list[str] = []
 
         self._save_button = self.add_button(_('Save _As'), constants.RESPONSE_SAVE_AS)
 
@@ -82,23 +88,23 @@ class _EditArchiveDialog(Dialog):
         """
         self._save_button.set_sensitive(False)
         self._import_button.set_sensitive(False)
-        self._window.set_cursor(Gdk.Cursor.new_from_name('wait', None))
+        self._window.set_layout_cursor(Gdk.Cursor.new_from_name('wait', None))
         self._image_area.fetch_images()
 
         if self.kill: # fetch_images() allows pending events to be handled.
             return False
 
         self._comment_area.fetch_comments()
-        self._window.set_cursor(None)
+        self._window.set_layout_cursor(None)
         self._save_button.set_sensitive(True)
         self._import_button.set_sensitive(True)
 
         return False
 
-    def _pack_archive(self, archive_path):
+    def _pack_archive(self, archive_path: str) -> None:
         """Create a new archive with the chosen files."""
         self.set_sensitive(False)
-        self._window.set_cursor(Gdk.Cursor.new_from_name('wait', None))
+        self._window.set_layout_cursor(Gdk.Cursor.new_from_name('wait', None))
 
         context = GLib.MainContext.default()
         while context.pending():
@@ -126,9 +132,11 @@ class _EditArchiveDialog(Dialog):
 
             if packing_success:
                 # Preserve permissions if currently edited files come from an archive
-                if (self._window.filehandler.archive_type is not None and
-                    os.path.exists(self._window.filehandler.get_path_to_base())):
-                    mode = os.stat(self._window.filehandler.get_path_to_base()).st_mode
+                base_path = self._window.filehandler.get_path_to_base()
+                if (self._window.filehandler.archive_type is not None
+                        and base_path is not None
+                        and os.path.exists(base_path)):
+                    mode = os.stat(base_path).st_mode
                 else:
                     mode = os.stat(tmp_path).st_mode
 
@@ -143,16 +151,16 @@ class _EditArchiveDialog(Dialog):
             else:
                 fail = True
         
-        self._window.set_cursor(None)
+        self._window.set_layout_cursor(None)
         if fail:
-            dialog = message_dialog.MessageDialog(self._window, 0, Gtk.MessageType.ERROR,
-                Gtk.ButtonsType.CLOSE)
+            dialog = message_dialog.MessageDialog(
+                self._window, buttons=Gtk.ButtonsType.CLOSE)
             dialog.set_text(
                 _("The new archive could not be saved!"),
                 _("The original files have not been removed."))
             dialog.run_async(lambda response: self.set_sensitive(True))
 
-    def _import_files(self, paths: list) -> None:
+    def _import_files(self, paths: list[str]) -> None:
         """Add the chosen <paths> to the archive being edited."""
         exts = '|'.join(prefs['comment extensions'])
         comment_re = re.compile(r'\.(%s)\s*$' % exts, re.I)
@@ -169,43 +177,44 @@ class _EditArchiveDialog(Dialog):
                     self._imported_files.append( path )
                     self._comment_area.add_extra_file(path)
 
-    def _response(self, dialog, response):
+    def _response(self, dialog: Dialog, response: int) -> None:
 
         if response == constants.RESPONSE_SAVE_AS:
 
-            src_path = self.file_handler.get_path_to_base()
+            # There is an archive to save under another name whenever
+            # this dialog is open at all.
+            src_path = self.file_handler.get_path_to_base() or ''
 
-            dialog = file_chooser_simple_dialog.SimpleFileChooserDialog(
+            chooser = file_chooser_simple_dialog.SimpleFileChooserDialog(
                 Gtk.FileChooserAction.SAVE, self,
                 folder=os.path.dirname(src_path))
 
-            dialog.set_save_name('%s.cbz' % os.path.splitext(
+            chooser.set_save_name('%s.cbz' % os.path.splitext(
                 os.path.basename(src_path))[0])
-            dialog.filechooser.set_extra_widget(Gtk.Label(label=
-                _('Archives are stored as ZIP files.')))
-            dialog.add_archive_filters()
+            chooser.set_note(_('Archives are stored as ZIP files.'))
+            chooser.add_archive_filters()
 
-            def save_as_chosen(paths: list) -> None:
-                dialog.destroy()
+            def save_as_chosen(paths: list[str]) -> None:
+                chooser.destroy()
                 if paths:
                     self._pack_archive(paths[0])
 
-            dialog.run_async(save_as_chosen)
+            chooser.run_async(save_as_chosen)
 
         elif response == constants.RESPONSE_IMPORT:
 
-            dialog = file_chooser_simple_dialog.SimpleFileChooserDialog(parent=self)
-            dialog.add_image_filters()
+            chooser = file_chooser_simple_dialog.SimpleFileChooserDialog(parent=self)
+            chooser.add_image_filters()
 
-            def import_chosen(paths: list) -> None:
-                dialog.destroy()
+            def import_chosen(paths: list[str]) -> None:
+                chooser.destroy()
                 self._import_files(paths)
 
-            dialog.run_async(import_chosen)
+            chooser.run_async(import_chosen)
 
-        elif response == Gtk.ResponseType.APPLY:
+        elif response == Response.APPLY:
 
-            old_image_array = self._window.imagehandler._image_files
+            old_image_array = self._window.imagehandler._image_files or []
 
             new_image_array = self._image_area.get_file_listing()
 
@@ -238,7 +247,7 @@ class _EditArchiveDialog(Dialog):
         self._image_area.cleanup()
         Dialog.destroy(self)
 
-def open_dialog(action, window):
+def open_dialog(action: Gio.SimpleAction, window: "main.MainWindow") -> None:
     global _dialog
 
     if _dialog is None:
@@ -247,7 +256,7 @@ def open_dialog(action, window):
         _dialog.present()
 
 
-def _close_dialog(*args):
+def _close_dialog(*args: Any) -> None:
     global _dialog
 
     if _dialog is not None:

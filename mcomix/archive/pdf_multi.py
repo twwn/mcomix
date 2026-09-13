@@ -19,8 +19,8 @@ class DisabledError(RuntimeError): pass
 
 class UnsupportedFitzVersionError(ImportError):
     def __init__(
-            self, message=None, name=None, path=None,
-            found_version=None):
+            self, message: str | None = None, name: str | None = None,
+            path: str | None = None, found_version: str | None = None) -> None:
         self.found_version = found_version
         self.minimum_version = PYMUPDF_VERSION_REQUIRED
         if message is None:
@@ -71,7 +71,7 @@ try:
         # PyMuPDF only gained its own name in 1.24.3.  Before that it was
         # importable as "fitz" alone, a name it shares with an unrelated
         # package on PyPI.
-        import fitz as pymupdf  # type: ignore[no-redef]
+        import fitz as pymupdf  # type: ignore[no-redef,import-untyped]
 
     pymupdf_version = installed_version(pymupdf)
     if not is_supported_version(pymupdf_version):

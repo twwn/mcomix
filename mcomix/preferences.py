@@ -178,7 +178,7 @@ _write_source = 0
 #: what another one changed while it was running.  Empty until the file
 #: is read, which means an instance that never read one has nothing of
 #: its own to write.
-_as_read: dict = {}
+_as_read: dict[str, Any] = {}
 
 
 def migrate_home_config_path() -> None:
@@ -224,7 +224,7 @@ def _back_up_preferences(version: int) -> None:
         print('! Could not back up the preferences file: %s' % error)
 
 
-def _rgba_from_16bit_colour(colour):
+def _rgba_from_16bit_colour(colour: Any) -> list[float]:
     """Turn a 16-bit RGB triple into the components Gdk.RGBA takes."""
     try:
         red, green, blue = (component / 65535.0 for component in colour[:3])
@@ -234,7 +234,7 @@ def _rgba_from_16bit_colour(colour):
     return [red, green, blue, 1.0]
 
 
-def _migrate_preferences(saved_prefs: dict) -> None:
+def _migrate_preferences(saved_prefs: dict[str, Any]) -> None:
     """Bring <saved_prefs> forward to CONFIG_FORMAT_VERSION, in place.
 
     A file older than the current format is backed up first, once, before
@@ -339,7 +339,7 @@ def cancel_scheduled_write() -> None:
     _write_source = 0
 
 
-def _stored_preferences() -> dict:
+def _stored_preferences() -> dict[str, Any]:
     """Whatever is in the preferences file now, or nothing.
 
     Nothing is also the answer for a file that cannot be read: writing
@@ -362,7 +362,7 @@ def _stored_preferences() -> dict:
     return stored
 
 
-def _changed_here() -> dict:
+def _changed_here() -> dict[str, Any]:
     """The preferences this instance has changed since it read them.
 
     A preference the baseline does not name is not one of them, and the

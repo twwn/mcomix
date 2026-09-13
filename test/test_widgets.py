@@ -74,4 +74,40 @@ class PopupAtTest(MComixTest):
                          Gtk.PositionType.BOTTOM)
         self.assertFalse(self.popover.get_has_arrow())
 
+class EmptyTest(MComixTest):
+
+    """empty(), which is what a box is cleared with in GTK4."""
+
+    def _children(self, box):
+        children, child = [], box.get_first_child()
+        while child is not None:
+            children.append(child)
+            child = child.get_next_sibling()
+        return children
+
+    def test_every_child_comes_out(self):
+        box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
+        for _ in range(4):
+            box.append(Gtk.Label())
+        self.assertEqual(len(self._children(box)), 4)
+        widgets.empty(box)
+        self.assertEqual(self._children(box), [])
+
+    def test_a_box_that_is_already_empty_stays_that_way(self):
+        box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
+        widgets.empty(box)
+        self.assertEqual(self._children(box), [])
+
+    def test_what_comes_out_can_go_somewhere_else(self):
+        """A child that is removed is unparented rather than destroyed."""
+        box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
+        label = Gtk.Label(label='Something')
+        box.append(label)
+        widgets.empty(box)
+        self.assertIsNone(label.get_parent())
+        other = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
+        other.append(label)
+        self.assertEqual(self._children(other), [label])
+
+
 # vim: expandtab:sw=4:ts=4

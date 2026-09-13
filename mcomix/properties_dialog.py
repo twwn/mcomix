@@ -19,19 +19,25 @@ from mcomix import properties_page
 from mcomix import widgets
 from mcomix import tools
 from mcomix.i18n import _
+from mcomix.dialog import Response
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from mcomix import main
 
 class _PropertiesDialog(Dialog):
 
-    def __init__(self, window):
+    def __init__(self, window: "main.MainWindow") -> None:
 
         super(_PropertiesDialog, self).__init__(
             title=_('Properties'), transient_for=window)
-        self.add_buttons(_('_Close'), Gtk.ResponseType.CLOSE)
+        self.add_buttons(_('_Close'), Response.CLOSE)
 
         self._window = window
         self.set_default_size(500, 430)
         self.set_resizable(True)
-        self.set_default_response(Gtk.ResponseType.CLOSE)
+        self.set_default_response(Response.CLOSE)
         notebook = Gtk.Notebook()
         widgets.set_border(self, 4)
         widgets.set_border(notebook, 6)
@@ -55,7 +61,7 @@ class _PropertiesDialog(Dialog):
     def _on_book_change(self) -> None:
         self._update_archive_page()
 
-    def _on_page_available(self, page_number):
+    def _on_page_available(self, page_number: int) -> None:
         if 1 == page_number:
             self._update_page_image(self._archive_page, 1)
         current_page_number = self._window.imagehandler.get_current_page()
@@ -101,7 +107,8 @@ class _PropertiesDialog(Dialog):
             strings.ARCHIVE_DESCRIPTIONS[window.filehandler.archive_type]
         )
         page.set_main_info(main_info)
-        self._update_page_secondary_info(page, path)
+        if path is not None:
+            self._update_page_secondary_info(page, path)
         page.set_visible(True)
 
     def _update_image_page(self) -> None:
@@ -112,24 +119,33 @@ class _PropertiesDialog(Dialog):
             return
         self._update_page_image(page)
         path = window.imagehandler.get_path_to_page()
+        if path is None:
+            # A page that is available has a file behind it; this is
+            # what says so to a reader as well as to the checker.
+            return
         filename = os.path.basename(path)
         page.set_filename(filename)
         width, height = window.imagehandler.get_size()
         main_info = (
             '%dx%d px' % (width, height),
-            window.imagehandler.get_mime_name(),
+            window.imagehandler.get_mime_name() or '',
         )
         page.set_main_info(main_info)
         self._update_page_secondary_info(page, path)
         page.set_visible(True)
 
-    def _update_page_image(self, page, page_number=None):
+    def _update_page_image(self, page: properties_page._Page,
+                           page_number: int | None = None) -> None:
         if not self._window.imagehandler.page_is_available(page_number):
             return
         thumb = self._window.imagehandler.get_thumbnail(page_number, width=128, height=128)
+        if thumb is None:
+            # The page is there but its thumbnail could not be made.
+            return
         page.set_thumbnail(thumb)
 
-    def _update_page_secondary_info(self, page, location):
+    def _update_page_secondary_info(self, page: properties_page._Page,
+                                    location: str) -> None:
         secondary_info = [
             (_('Location'), i18n.to_display_string(i18n.to_unicode(os.path.dirname(location)))),
         ]

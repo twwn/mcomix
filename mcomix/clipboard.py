@@ -1,8 +1,14 @@
 """clipboard.py - Clipboard handler"""
 
-from gi.repository import Gdk
+from gi.repository import Gdk, GdkPixbuf
 
+from mcomix import widgets
 from mcomix import image_tools
+
+from typing import Any, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from mcomix import main
 
 
 class Clipboard(object):
@@ -10,13 +16,13 @@ class Clipboard(object):
     """The Clipboard takes care of all necessary copy-paste functionality
     """
 
-    def __init__(self, window):
+    def __init__(self, window: "main.MainWindow") -> None:
         # Gtk.Clipboard and Gdk.Atom are both gone in GTK4; a clipboard
         # belongs to the display and is asked for by name.
-        self._clipboard = Gdk.Display.get_default().get_clipboard()
+        self._clipboard = widgets.display().get_clipboard()
         self._window = window
 
-    def copy(self, text, pixbuf):
+    def copy(self, text: str, pixbuf: GdkPixbuf.Pixbuf) -> None:
         """ Copies C{text} and C{pixbuf} to clipboard. """
         # A GTK4 clipboard holds one content provider rather than a set
         # of targets set one at a time, so offer both and leave whoever
@@ -27,7 +33,7 @@ class Clipboard(object):
                 image_tools.pixbuf_to_texture(pixbuf)),
         ]))
 
-    def copy_page(self, *args):
+    def copy_page(self, *args: Any) -> None:
         """ Copies the currently opened page and pixbuf to clipboard. """
 
         if self._window.filehandler.file_loaded:
@@ -44,6 +50,8 @@ class Clipboard(object):
                         self._window.is_manga_mode )
 
             path = self._window.imagehandler.get_path_to_page()
-            self.copy(path, pixbuf)
+            # A page that is loaded has a file behind it; there is
+            # nothing to name in the unlikely case that it has not.
+            self.copy(path or '', pixbuf)
 
 # vim: expandtab:sw=4:ts=4

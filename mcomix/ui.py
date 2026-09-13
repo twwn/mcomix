@@ -3,7 +3,8 @@
 
 from gi.repository import Gio, GLib, Gtk
 
-from typing import Any
+from collections.abc import Callable, Sequence
+from typing import Any, TYPE_CHECKING
 
 from mcomix import bookmark_menu
 from mcomix import openwith_menu
@@ -17,6 +18,9 @@ from mcomix import file_chooser_main_dialog
 from mcomix.preferences import prefs
 from mcomix.library import main_dialog as library_main_dialog
 from mcomix.i18n import _
+
+if TYPE_CHECKING:
+    from mcomix import main
 
 def _gio_name(name: str) -> str:
     """The name a Gio action can be registered under.
@@ -44,7 +48,7 @@ class _Action(object):
         self._action = action
         self._target = target
 
-    def detailed(self, prefix: str) -> tuple:
+    def detailed(self, prefix: str) -> tuple[str, Any]:
         """How a menu item or tool button addresses this action."""
         return '%s.%s' % (prefix, self._action.get_name()), self._target
 
@@ -86,30 +90,30 @@ class _Actions(object):
 
     def __init__(self) -> None:
         self.group = Gio.SimpleActionGroup()
-        self._by_name: dict = {}
-        self._labels: dict = {}
-        self._icons: dict = {}
-        self._stateful: set = set()
+        self._by_name: dict[str, _Action] = {}
+        self._labels: dict[str, str] = {}
+        self._icons: dict[str, str | None] = {}
+        self._stateful: set[str] = set()
         #: Tooltips, by label, for the status bar helper.
-        self.tooltips: dict = {}
+        self.tooltips: dict[str, str] = {}
 
-    def get_action(self, name: str) -> Any:
+    def get_action(self, name: str) -> _Action:
         return self._by_name[name]
 
-    def detailed(self, name: str) -> tuple:
+    def detailed(self, name: str) -> tuple[str, Any]:
         return self._by_name[name].detailed(self.PREFIX)
 
     def label(self, name: str) -> str:
         return self._labels[name]
 
-    def icon(self, name: str) -> Any:
+    def icon(self, name: str) -> str | None:
         return self._icons[name]
 
     def is_stateful(self, name: str) -> bool:
         """Whether the action shows as pressed when it is on."""
         return name in self._stateful
 
-    def _remember(self, name: str, entry: tuple, action: Any,
+    def _remember(self, name: str, entry: tuple[Any, ...], action: Any,
                   target: Any = None, stateful: bool = False) -> None:
         self._by_name[name] = _Action(action, target)
         label, tooltip = entry[2], (entry[4] if len(entry) > 4 else None)
@@ -263,13 +267,13 @@ _TOOLBAR = ('previous_archive', 'first_page', 'previous_page', 'go_to',
 
 class MainUI(object):
 
-    def __init__(self, window):
+    def __init__(self, window: "main.MainWindow") -> None:
         self._window = window
         self.actions = self._actions = _Actions()
         #: The accelerator each action currently answers to, by name.
-        self._accelerators: dict = {}
+        self._accelerators: dict[str, str] = {}
         #: The idle that will build the menus again, if one is pending.
-        self._rebuild_pending = None
+        self._rebuild_pending: int | None = None
         #: Accelerators that are not MComix' own keybindings hang here.
         #: Gtk.UIManager provided a Gtk.AccelGroup for this; GTK4 has
         #: shortcut controllers, which trigger the actions by name.
@@ -277,7 +281,8 @@ class MainUI(object):
         self.shortcuts.set_scope(Gtk.ShortcutScope.GLOBAL)
         window.add_controller(self.shortcuts)
 
-        def _action_lambda(fn, *args):
+        def _action_lambda(fn: Callable[..., Any],
+                           *args: Any) -> Callable[..., Any]:
             return lambda *_: fn(*args)
 
         # ----------------------------------------------------------------
@@ -505,13 +510,13 @@ class MainUI(object):
         self.popup.set_menu_model(self._build(_POPUP))
         return GLib.SOURCE_REMOVE
 
-    def add_shortcut(self, accelerator, action):
+    def add_shortcut(self, accelerator: str, action: str) -> None:
         """Make <accelerator> trigger the named <action>."""
         self.shortcuts.add_shortcut(Gtk.Shortcut.new(
             Gtk.ShortcutTrigger.parse_string(accelerator),
             Gtk.NamedAction.new(action)))
 
-    def _dynamic(self, name):
+    def _dynamic(self, name: str) -> "Gio.Menu | None":
         """The model of a submenu that is rebuilt as the program runs."""
         return {'menu_recent': self.recent.model,
                 'menu_open_with': self._openwith.model,
@@ -519,7 +524,7 @@ class MainUI(object):
                 'menu_bookmarks': self.bookmarks.model,
                 'menu_bookmarks_popup': self.bookmarks.model}.get(name)
 
-    def _build(self, layout):
+    def _build(self, layout: Sequence[Any]) -> Gio.Menu:
         """Turn one of the layouts below into a Gio.Menu.
 
         A layout is a sequence of action names, with None where the XML
@@ -556,7 +561,7 @@ class MainUI(object):
             model.append_section(None, section)
         return model
 
-    def _build_toolbar(self):
+    def _build_toolbar(self) -> Gtk.Box:
         """Build the tool bar, which is a row of buttons on the actions.
 
         Gtk.Toolbar and every one of its items is gone in GTK4.  A tool

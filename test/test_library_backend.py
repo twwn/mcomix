@@ -199,3 +199,50 @@ class ClearAllTest(unittest.TestCase):
                             'was added to the library without a collection')
 
 
+
+
+class AddBookToCollectionTest(unittest.TestCase):
+
+    """What the listeners are told when a book is filed."""
+
+    def setUp(self):
+        fp, self.db = tempfile.mkstemp('.db', 'mcomix-test')
+        os.close(fp)
+        self._saved_path = constants.LIBRARY_DATABASE_PATH
+        constants.LIBRARY_DATABASE_PATH = self.db
+        self.backend = backend.LibraryBackend()
+        self.seen = []
+        self.backend.book_added_to_collection += self._book_filed
+
+    def tearDown(self):
+        self.backend.close()
+        constants.LIBRARY_DATABASE_PATH = self._saved_path
+        os.unlink(self.db)
+
+    def _book_filed(self, book, collection):
+        # Record the book itself rather than reading it: a listener that
+        # touches a None book raises, and the callback machinery logs
+        # that failure rather than letting it out.
+        self.seen.append((book, collection))
+
+    def test_a_book_that_exists_is_reported(self):
+        path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        collection = self.backend.add_collection('files')
+        self.assertTrue(self.backend.add_book(path))
+        book = self.backend.get_book_by_path(path)
+        self.seen.clear()
+
+        self.backend.add_book_to_collection(book.id, collection)
+
+        self.assertEqual([(book.id, collection)],
+                         [(seen.id, where) for seen, where in self.seen])
+
+    def test_a_book_id_naming_no_row_is_not_reported(self):
+        # Contain carries no foreign key on book, so an id that names no
+        # row is inserted happily and the lookup that follows finds
+        # nothing.  The listeners used to be handed that nothing.
+        collection = self.backend.add_collection('files')
+
+        self.backend.add_book_to_collection(4711, collection)
+
+        self.assertEqual([], self.seen)

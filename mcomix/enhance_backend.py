@@ -1,11 +1,16 @@
 """enhance_backend.py - Image enhancement handler and dialog (e.g. contrast,
 brightness etc.)
 """
-from gi.repository import GLib
+from gi.repository import GdkPixbuf, GLib
 
 from mcomix.preferences import prefs
 from mcomix import image_tools
 from mcomix.library import main_dialog
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from mcomix import main
 
 class ImageEnhancer(object):
 
@@ -14,7 +19,7 @@ class ImageEnhancer(object):
     can be made using an _EnhanceImageDialog.
     """
 
-    def __init__(self, window):
+    def __init__(self, window: "main.MainWindow") -> None:
         self._window = window
         self.brightness = prefs['brightness']
         self.contrast = prefs['contrast']
@@ -23,7 +28,7 @@ class ImageEnhancer(object):
         self.autocontrast = prefs['auto contrast']
         self.invert_color = prefs['invert color']
 
-    def enhance(self, pixbuf):
+    def enhance(self, pixbuf: GdkPixbuf.Pixbuf) -> GdkPixbuf.Pixbuf:
         """Return an "enhanced" version of <pixbuf>."""
 
         if (self.brightness != 1.0 or self.contrast != 1.0 or

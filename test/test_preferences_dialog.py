@@ -11,7 +11,7 @@ said went out with the wash.
 
 import os
 
-from gi.repository import Gtk
+from gi.repository import Gdk, Gtk
 
 from . import MComixTest, pump
 
@@ -114,6 +114,44 @@ class PreferencesDialogTest(MComixTest):
         for button in (fixed, dynamic, fixed):
             button.set_active(True)
         self.assertEqual(set(prefs) - known, set())
+
+    # -- The colour the fixed button stands beside -------------------------
+
+    def _colour_buttons(self):
+        """The colour buttons of the Background section, in the order
+        they are shown: the page background, then the thumbnails'."""
+        found = []
+
+        def walk(widget):
+            child = widget.get_first_child()
+            while child is not None:
+                if isinstance(child, Gtk.ColorDialogButton):
+                    found.append(child)
+                walk(child)
+                child = child.get_next_sibling()
+
+        walk(self.dialog.notebook.get_nth_page(0))
+        self.assertTrue(found, 'no colour button was built')
+        return found
+
+    def test_picking_a_background_colour_is_remembered(self):
+        """Gtk.ColorButton said 'color-set' once a colour had been
+        picked.  What replaced it says nothing of the kind: the colour
+        arrives as a change to the rgba property, and a button left
+        listening for the old signal would hear nothing at all."""
+        prefs['bg colour'] = [0.0, 0.0, 0.0, 1.0]
+        self._open()
+        self._colour_buttons()[0].set_rgba(Gdk.RGBA(0.25, 0.5, 0.75, 1.0))
+        self.assertEqual([round(value, 2) for value in prefs['bg colour']],
+                         [0.25, 0.5, 0.75, 1.0])
+
+    def test_a_colour_button_comes_up_showing_the_colour_it_stands_for(self):
+        prefs['thumb bg colour'] = [1.0, 0.0, 0.5, 1.0]
+        self._open()
+        rgba = self._colour_buttons()[1].get_rgba()
+        self.assertEqual([round(value, 2) for value in
+                          (rgba.red, rgba.green, rgba.blue, rgba.alpha)],
+                         [1.0, 0.0, 0.5, 1.0])
 
     def test_the_thumbnail_pair_is_the_same_arrangement(self):
         prefs['smart thumb bg'] = False

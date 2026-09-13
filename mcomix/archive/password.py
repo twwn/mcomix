@@ -5,6 +5,7 @@ from gi.repository import Gtk
 from mcomix import message_dialog
 from mcomix import widgets
 from mcomix.i18n import _
+from mcomix.dialog import Response
 
 from collections.abc import Callable
 
@@ -16,13 +17,13 @@ def ask_for_password(archive: str,
     they gave none.  It does not wait for the answer: this runs on the
     main thread, and the nested main loop Gtk.Dialog.run() waited in is
     exactly what let a second password dialog open on top of the first."""
-    dialog = message_dialog.MessageDialog(None, Gtk.DialogFlags.MODAL,
-            Gtk.MessageType.QUESTION, Gtk.ButtonsType.OK_CANCEL)
+    dialog = message_dialog.MessageDialog(
+            None, modal=True, buttons=Gtk.ButtonsType.OK_CANCEL)
     dialog.set_text(
         _("The archive is password-protected:"),
         archive + '\n\n' +
         ("Please enter the password to continue:"))
-    dialog.set_default_response(Gtk.ResponseType.OK)
+    dialog.set_default_response(Response.OK)
     dialog.set_auto_destroy(False)
 
     password_box = Gtk.Entry()
@@ -35,7 +36,7 @@ def ask_for_password(archive: str,
         password = password_box.get_text()
         dialog.destroy()
         on_password(password
-                    if response == Gtk.ResponseType.OK and password
+                    if response == Response.OK and password
                     else None)
 
     dialog.run_async(responded)

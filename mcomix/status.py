@@ -8,7 +8,7 @@ from mcomix import constants
 from mcomix.preferences import prefs
 from mcomix.i18n import _
 
-from typing import Any
+from collections.abc import Sequence
 
 class Statusbar(Gtk.Box):
 
@@ -38,6 +38,11 @@ class Statusbar(Gtk.Box):
         self.append(self.status)
 
         # Create popup menu for enabling/disabling status boxes.
+        #: The action behind each field's tick, by field name.  Kept
+        #: rather than looked up again: Gio.ActionMap.lookup_action()
+        #: answers with the Gio.Action interface, which has no way to
+        #: set a state, and with None for a name that was never added.
+        self._field_toggles: dict[str, Gio.SimpleAction] = {}
         self._fields_menu = self._create_fields_menu()
 
         # Hook mouse release event
@@ -58,13 +63,14 @@ class Statusbar(Gtk.Box):
 
         self._loading = False
 
-    def set_message(self, message):
+    def set_message(self, message: str) -> None:
         """Set a specific message (such as an error message) on the statusbar,
         replacing whatever was there earlier.
         """
         self.status.set_text(" " * Statusbar.SPACING + message)
 
-    def set_page_number(self, page, total, this_screen):
+    def set_page_number(self, page: int, total: int,
+                        this_screen: int) -> None:
         """Update the page number."""
         page_info = ""
         for i in range(this_screen):
@@ -74,11 +80,11 @@ class Statusbar(Gtk.Box):
         page_info += ' / %d' % total
         self._page_info = page_info
 
-    def get_page_number(self):
+    def get_page_number(self) -> str:
         """Returns the bar's page information."""
         return self._page_info
 
-    def set_file_number(self, fileno, total):
+    def set_file_number(self, fileno: int, total: int) -> None:
         """Updates the file number (i.e. number of current file/total
         files loaded)."""
         if total > 0:
@@ -86,11 +92,13 @@ class Statusbar(Gtk.Box):
         else:
             self._file_info = ''
 
-    def get_file_number(self):
+    def get_file_number(self) -> str:
         """ Returns the bar's file information."""
         return self._file_info
 
-    def set_resolution(self, dimensions): # 2D only
+    def set_resolution(
+            self,
+            dimensions: Sequence[Sequence[float]]) -> None:  # 2D only
         """Update the resolution data.
 
         Takes an iterable of tuples, (x, y, scale, distorted), describing the
@@ -107,15 +115,15 @@ class Statusbar(Gtk.Box):
                 resolution += ', '
         self._resolution = resolution
 
-    def set_root(self, root):
+    def set_root(self, root: str) -> None:
         """Set the name of the root (directory or archive)."""
         self._root = i18n.to_display_string(i18n.to_unicode(root))
 
-    def set_filename(self, filename):
+    def set_filename(self, filename: str) -> None:
         """Update the filename."""
         self._filename = i18n.to_display_string(i18n.to_unicode(filename))
 
-    def set_filesize(self, size):
+    def set_filesize(self, size: str | None) -> None:
         """Update the filesize."""
         if size is None:
             size = ""
@@ -128,7 +136,7 @@ class Statusbar(Gtk.Box):
         text = (space + "|" + space).join(self._get_status_text())
         self.status.set_text(space + text)
 
-    def _get_status_text(self):
+    def _get_status_text(self) -> list[str]:
         """ Returns an array of text fields that should be displayed. """
         fields = []
 
@@ -155,7 +163,7 @@ class Statusbar(Gtk.Box):
               ('filename', _('Show filename'), constants.STATUS_FILENAME),
               ('filesize', _('Show filesize'), constants.STATUS_FILESIZE))
 
-    def _create_fields_menu(self) -> Any:
+    def _create_fields_menu(self) -> Gtk.PopoverMenu:
         """Build the right-click menu that picks which fields are shown."""
         self._field_actions = Gio.SimpleActionGroup()
         model = Gio.Menu()
@@ -164,11 +172,13 @@ class Statusbar(Gtk.Box):
                 name, None, GLib.Variant('b', bool(prefs['statusbar fields'] & bit)))
             action.connect('change-state', self.toggle_status_visibility, bit)
             self._field_actions.add_action(action)
+            self._field_toggles[name] = action
             model.append(label, 'statusbar.%s' % name)
         self.insert_action_group('statusbar', self._field_actions)
         return Gtk.PopoverMenu.new_from_model(model)
 
-    def toggle_status_visibility(self, action: Any, value: Any, bit: int) -> None:
+    def toggle_status_visibility(self, action: Gio.SimpleAction,
+                                 value: GLib.Variant, bit: int) -> None:
         """ Called when status entries visibility is to be changed. """
         action.set_state(value)
 
@@ -183,7 +193,8 @@ class Statusbar(Gtk.Box):
 
         self.update()
 
-    def _button_released(self, gesture, n_press, x, y):
+    def _button_released(self, gesture: Gtk.GestureClick, n_press: int,
+                         x: float, y: float) -> None:
         """ Triggered when a mouse button is released to open the context
         menu. """
         if gesture.get_current_button() == 3:
@@ -192,7 +203,7 @@ class Statusbar(Gtk.Box):
     def _update_sensitivity(self) -> None:
         """ Brings the popup's ticks in line with the preferences. """
         for name, label, bit in self.FIELDS:
-            self._field_actions.lookup_action(name).set_state(
+            self._field_toggles[name].set_state(
                 GLib.Variant('b', bool(prefs['statusbar fields'] & bit)))
 
 

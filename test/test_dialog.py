@@ -13,6 +13,8 @@ from gi.repository import Gtk
 from . import MComixTest, pump
 
 from mcomix import dialog
+from mcomix import message_dialog
+from mcomix.dialog import Response
 
 
 class DialogTest(MComixTest):
@@ -45,46 +47,46 @@ class DialogTest(MComixTest):
         self.assertIs(label.get_root(), self.dialog)
 
     def test_a_button_answers_with_the_response_it_was_given(self):
-        button = self.dialog.add_button('_Apply', Gtk.ResponseType.APPLY)
+        button = self.dialog.add_button('_Apply', Response.APPLY)
         button.emit('clicked')
-        self.assertEqual(self.answers, [Gtk.ResponseType.APPLY])
+        self.assertEqual(self.answers, [Response.APPLY])
 
     def test_the_button_for_a_response_can_be_found_again(self):
-        button = self.dialog.add_button('_Close', Gtk.ResponseType.CLOSE)
+        button = self.dialog.add_button('_Close', Response.CLOSE)
         self.assertIs(
-            self.dialog.get_widget_for_response(Gtk.ResponseType.CLOSE),
+            self.dialog.get_widget_for_response(Response.CLOSE),
             button)
         self.assertIsNone(
-            self.dialog.get_widget_for_response(Gtk.ResponseType.OK))
+            self.dialog.get_widget_for_response(Response.OK))
 
     def test_a_button_is_in_the_window_too(self):
-        button = self.dialog.add_button('_OK', Gtk.ResponseType.OK)
+        button = self.dialog.add_button('_OK', Response.OK)
         self.assertIs(button.get_root(), self.dialog)
 
     def test_the_default_response_is_the_default_widget(self):
-        self.dialog.add_button('_Cancel', Gtk.ResponseType.CANCEL)
-        ok = self.dialog.add_button('_OK', Gtk.ResponseType.OK)
-        self.dialog.set_default_response(Gtk.ResponseType.OK)
+        self.dialog.add_button('_Cancel', Response.CANCEL)
+        ok = self.dialog.add_button('_OK', Response.OK)
+        self.dialog.set_default_response(Response.OK)
         self.assertIs(self.dialog.get_default_widget(), ok)
 
     def test_a_default_response_nobody_added_a_button_for_is_ignored(self):
-        self.dialog.set_default_response(Gtk.ResponseType.OK)
+        self.dialog.set_default_response(Response.OK)
         self.assertIsNone(self.dialog.get_default_widget())
 
     def test_a_response_can_be_disabled_and_enabled(self):
-        button = self.dialog.add_button('_OK', Gtk.ResponseType.OK)
-        self.dialog.set_response_sensitive(Gtk.ResponseType.OK, False)
+        button = self.dialog.add_button('_OK', Response.OK)
+        self.dialog.set_response_sensitive(Response.OK, False)
         self.assertFalse(button.get_sensitive())
-        self.dialog.set_response_sensitive(Gtk.ResponseType.OK, True)
+        self.dialog.set_response_sensitive(Response.OK, True)
         self.assertTrue(button.get_sensitive())
 
     def test_answering_it_directly_reaches_whoever_is_listening(self):
-        self.dialog.response(Gtk.ResponseType.YES)
-        self.assertEqual(self.answers, [Gtk.ResponseType.YES])
+        self.dialog.response(Response.YES)
+        self.assertEqual(self.answers, [Response.YES])
 
     def test_closing_the_window_answers_the_dialog(self):
         self.dialog.emit('close-request')
-        self.assertEqual(self.answers, [Gtk.ResponseType.DELETE_EVENT])
+        self.assertEqual(self.answers, [Response.DELETE_EVENT])
 
     def test_a_subclass_may_keep_a_list_of_its_own_buttons(self):
         # The file chooser does, under the name _buttons, which is what
@@ -97,26 +99,26 @@ class DialogTest(MComixTest):
 
         subclass = _WithButtons()
         try:
-            button = subclass.add_button('_OK', Gtk.ResponseType.OK)
-            subclass.set_default_response(Gtk.ResponseType.OK)
+            button = subclass.add_button('_OK', Response.OK)
+            subclass.set_default_response(Response.OK)
             self.assertIs(
-                subclass.get_widget_for_response(Gtk.ResponseType.OK), button)
+                subclass.get_widget_for_response(Response.OK), button)
             self.assertEqual(subclass._buttons, [])
         finally:
             subclass.destroy()
 
     def test_add_buttons_adds_each_label_and_response_in_turn(self):
-        self.dialog.add_buttons('_Cancel', Gtk.ResponseType.CANCEL,
-                                '_OK', Gtk.ResponseType.OK)
-        for response in (Gtk.ResponseType.CANCEL, Gtk.ResponseType.OK):
+        self.dialog.add_buttons('_Cancel', Response.CANCEL,
+                                '_OK', Response.OK)
+        for response in (Response.CANCEL, Response.OK):
             self.assertIsNotNone(
                 self.dialog.get_widget_for_response(response))
 
     def test_a_widget_in_the_button_row_answers_when_it_is_clicked(self):
         button = Gtk.Button(label='Reset')
-        self.dialog.add_action_widget(button, Gtk.ResponseType.REJECT)
+        self.dialog.add_action_widget(button, Response.REJECT)
         button.emit('clicked')
-        self.assertEqual(self.answers, [Gtk.ResponseType.REJECT])
+        self.assertEqual(self.answers, [Response.REJECT])
 
     def test_escape_answers_the_dialog_the_way_closing_it_does(self):
         """Escape closed a Gtk.Dialog, so what it answered with is what
@@ -125,6 +127,80 @@ class DialogTest(MComixTest):
         self.dialog.present()
         pump()
         self.assertTrue(self.dialog._escaped())
-        self.assertEqual(self.answers, [Gtk.ResponseType.DELETE_EVENT])
+        self.assertEqual(self.answers, [Response.DELETE_EVENT])
+
+
+class ResponseTest(MComixTest):
+
+    """The numbers a dialog answers with.
+
+    An answer the user has asked to have remembered is written to the
+    preferences file as its number, so these are a storage format and
+    not only an internal vocabulary.  They were Gtk.ResponseType, which
+    GTK deprecated in 4.20; anyone renumbering them would silently turn
+    every answer already stored into a different one.
+    """
+
+    def test_the_numbers_are_the_ones_already_in_preferences_files(self):
+        self.assertEqual(
+            {member.name: int(member) for member in dialog.Response},
+            {'NONE': -1, 'REJECT': -2, 'ACCEPT': -3, 'DELETE_EVENT': -4,
+             'OK': -5, 'CANCEL': -6, 'CLOSE': -7, 'YES': -8, 'NO': -9,
+             'APPLY': -10, 'HELP': -11})
+
+
+class MessageDialogTest(MComixTest):
+
+    """What the dialog that carries a message is told when it is built.
+
+    A Gtk.DialogFlags bitfield and a Gtk.MessageType used to say; GTK
+    deprecated the first in 4.20, the second picked an icon this dialog
+    has never drawn, and only one bit of the first was ever read.
+    """
+
+    def setUp(self):
+        super(MessageDialogTest, self).setUp()
+        self.parent = Gtk.Window()
+        self.dialogs = []
+
+    def tearDown(self):
+        for built in self.dialogs:
+            built.destroy()
+        self.parent.destroy()
+        pump()
+        super(MessageDialogTest, self).tearDown()
+
+    def _build(self, **kwargs):
+        built = message_dialog.MessageDialog(self.parent, **kwargs)
+        self.dialogs.append(built)
+        return built
+
+    def test_a_dialog_holds_no_input_and_outlives_its_parent_by_default(self):
+        built = self._build()
+        self.assertFalse(built.get_modal())
+        self.assertFalse(built.get_destroy_with_parent())
+
+    def test_a_dialog_asked_to_be_modal_is(self):
+        self.assertTrue(self._build(modal=True).get_modal())
+
+    def test_a_dialog_can_be_told_to_go_when_its_parent_does(self):
+        """The library's cover-size dialog asked for this through the
+        flags and never got it: the one bit that was read was modality,
+        and the rest of the bitfield went nowhere."""
+        self.assertTrue(
+            self._build(destroy_with_parent=True).get_destroy_with_parent())
+
+    def test_the_buttons_asked_for_are_the_buttons_built(self):
+        built = self._build(buttons=Gtk.ButtonsType.YES_NO)
+        self.assertIsNotNone(built.get_widget_for_response(Response.YES))
+        self.assertIsNotNone(built.get_widget_for_response(Response.NO))
+
+    def test_the_shape_it_used_to_be_called_in_is_refused(self):
+        """Everything after the parent is keyword-only, so a call left
+        in the old order raises rather than quietly reading a button set
+        as a bitfield of flags."""
+        with self.assertRaises(TypeError):
+            message_dialog.MessageDialog(self.parent, 0, 0,
+                                         Gtk.ButtonsType.OK)
 
 # vim: expandtab:sw=4:ts=4

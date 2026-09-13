@@ -4,7 +4,7 @@ import io
 import os
 import multiprocessing as mp
 from PIL import Image, ExifTags
-from collections.abc import Generator
+from collections.abc import Iterator
 
 try:
     import pymupdf
@@ -12,7 +12,7 @@ except ImportError:
     # PyMuPDF only gained its own name in 1.24.3.  Before that it was
     # importable as "fitz" alone, a name it shares with an unrelated
     # package on PyPI.
-    import fitz as pymupdf  # type: ignore[no-redef]
+    import fitz as pymupdf  # type: ignore[no-redef,import-untyped]
 
 from mcomix.constants import PDF_RENDER_DPI_DEF
 
@@ -31,7 +31,7 @@ class FitzWorker:
         self.doc = pymupdf.open(filename)
 
     def page_count(self) -> int:
-        return self.doc.page_count
+        return int(self.doc.page_count)
 
     def _image_extension(self, xref: int) -> str:
         """Return the filename extension for extracted page images."""
@@ -108,7 +108,7 @@ class FitzWorker:
         except (AttributeError, RuntimeError, TypeError, ValueError):
             return 'png'
 
-    def iter_contents(self) -> Generator[str, None, None]:
+    def iter_contents(self) -> Iterator[str]:
         for pg in range(self.doc.page_count):
             pagenum = f"page{pg + 1:04}"
             xref = self._extractable_image_xref(pg)

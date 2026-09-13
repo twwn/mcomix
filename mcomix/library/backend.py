@@ -37,7 +37,7 @@ class _LibraryBackend(object):
 
     def __init__(self) -> None:
 
-        def row_factory(cursor, row):
+        def row_factory(cursor: dbapi2.Cursor, row: tuple[Any, ...]) -> Any:
             """Return rows as sequences only when they have more than
             one element.
             """
@@ -45,20 +45,14 @@ class _LibraryBackend(object):
                 return row[0]
             return row
 
-        if dbapi2 is not None:
-            self._con = dbapi2.connect(constants.LIBRARY_DATABASE_PATH,
-                check_same_thread=False, isolation_level=None)
-            self._con.row_factory = row_factory
-            self.enabled = True
+        self._con = dbapi2.connect(constants.LIBRARY_DATABASE_PATH,
+            check_same_thread=False, isolation_level=None)
+        self._con.row_factory = row_factory
 
-            self.watchlist = backend_types._WatchList(self)
+        self.watchlist = backend_types._WatchList(self)
 
-            version = self._library_version()
-            self._upgrade_database(version, _LibraryBackend.DB_VERSION)
-        else:
-            self._con = None
-            self.watchlist = None
-            self.enabled = False
+        version = self._library_version()
+        self._upgrade_database(version, _LibraryBackend.DB_VERSION)
 
     def get_books_in_collection(self, collection: int | None = None, filter_string: str | None = None) -> list[int]:
         """Return a sequence with all the books in <collection>, or *ALL*
@@ -243,9 +237,10 @@ class _LibraryBackend(object):
                                 (COLLECTION_RECENT, _('Recent')))
         return cur.fetchall()
 
-    def get_collection_name(self, collection: int) -> str | None:
+    def get_collection_name(self, collection: int | None) -> str | None:
         """Return the name field of the <collection>, or None if the
-        collection does not exist.
+        collection does not exist.  No collection has None for an id, so
+        that is one of the ways of not existing.
         """
         cur = self._con.execute('''select case when id = ? then ? else name end from Collection
             where id = ?''', (COLLECTION_RECENT, _('Recent'), collection,))
@@ -332,6 +327,8 @@ class _LibraryBackend(object):
                     values (?, ?, ?, ?, ?)''',
                                (name, path, pages, format, size))
                 book_id = cursor.lastrowid
+                # Set by the insert just above.
+                assert book_id is not None
 
                 book = backend_types._Book(book_id, name, path, pages,
                                            format, size, datetime.datetime.now().isoformat())
@@ -390,8 +387,11 @@ class _LibraryBackend(object):
         try:
             self._con.execute('''insert into Contain
                 (collection, book) values (?, ?)''', (collection, book))
-            self.book_added_to_collection(self.get_book_by_id(book),
-                                          collection)
+            added = self.get_book_by_id(book)
+            # Contain has no foreign key on book, so an id that names no
+            # row inserts happily; the listeners take a book, not a hole.
+            if added is not None:
+                self.book_added_to_collection(added, collection)
         except dbapi2.DatabaseError:  # E.g. book already in collection.
             pass
         except dbapi2.Error:
@@ -495,7 +495,7 @@ class _LibraryBackend(object):
         self._con.execute('''delete from Contain
             where book = ? and collection = ?''', (book, collection))
 
-    def execute(self, *args) -> Any:
+    def execute(self, *args: Any) -> dbapi2.Cursor:
         """ Passes C{args} directly to the C{execute} method of the SQL
         connection. """
         return self._con.execute(*args)
@@ -514,9 +514,8 @@ class _LibraryBackend(object):
 
     def close(self) -> None:
         """Commit changes and close cleanly."""
-        if self._con is not None:
-            self._con.commit()
-            self._con.close()
+        self._con.commit()
+        self._con.close()
 
         global _backend
         _backend = None

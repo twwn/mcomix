@@ -3,6 +3,7 @@
 import re
 
 from collections.abc import Sequence
+from typing import Any
 
 import gi
 from gi.repository import Gdk, Gtk
@@ -128,7 +129,7 @@ def follow_theme() -> None:
     apply_colour_scheme()
 
 
-def apply_colour_scheme(scheme: str = None) -> None:
+def apply_colour_scheme(scheme: str | None = None) -> None:
     """Paint MComix as <scheme> says, the preference by default."""
     if scheme is None:
         scheme = prefs['colour scheme']
@@ -176,7 +177,7 @@ def _prefer_dark(scheme: str) -> None:
     settings.set_property('gtk-application-prefer-dark-theme', dark)
 
 
-def _definitions(scheme: str) -> dict:
+def _definitions(scheme: str) -> dict[str, str]:
     """The colours <scheme> states, or none where it states nothing.
 
     Following the system states nothing: whatever the desktop's theme
@@ -193,7 +194,7 @@ def _definitions(scheme: str) -> dict:
     return colours
 
 
-def _adwaita_colours(dark: bool) -> dict:
+def _adwaita_colours(dark: bool) -> dict[str, str]:
     """libadwaita's own light or dark colours, where it is installed."""
     if not _started:
         return {}
@@ -201,16 +202,19 @@ def _adwaita_colours(dark: bool) -> dict:
         from gi.repository import Gio
         stylesheet = Gio.resources_lookup_data(
             _ADWAITA_STYLESHEET, Gio.ResourceLookupFlags.NONE)
-        text = stylesheet.get_data().decode('utf-8')
+        data = stylesheet.get_data()
+        if data is None:
+            return {}
+        text = data.decode('utf-8')
     except Exception as error:
         log.debug('Could not read libadwaita\'s own colours: %s', error)
         return {}
     return _parse_colours(text, dark)
 
 
-def _parse_colours(text: str, dark: bool) -> dict:
+def _parse_colours(text: str, dark: bool) -> dict[str, str]:
     """The surface colours <text> states, light or dark."""
-    colours = {}
+    colours: dict[str, str] = {}
     for line in text.splitlines():
         line = line.strip()
         # Its light colours stand on their own; its dark ones are
@@ -228,7 +232,8 @@ def _parse_colours(text: str, dark: bool) -> dict:
             if name in _SURFACE}
 
 
-def _state_colours(colours: dict, display=None) -> None:
+def _state_colours(colours: dict[str, str],
+                   display: "Gdk.Display | None" = None) -> None:
     """State <colours>, and the rules that read them, or stop stating."""
     global _stated
     if display is None:
@@ -254,8 +259,12 @@ def _state_colours(colours: dict, display=None) -> None:
         display, _stated, Gtk.STYLE_PROVIDER_PRIORITY_USER + 1)
 
 
-def _style_manager():
-    """libadwaita's, where libadwaita is running."""
+def _style_manager() -> Any:
+    """libadwaita's, where libadwaita is running.
+
+    Any, because libadwaita is optional: there is no Adw to name in an
+    annotation on a machine that has none.
+    """
     if not _started:
         return None
     from gi.repository import Adw
@@ -277,7 +286,7 @@ def _start_libadwaita() -> bool:
     return True
 
 
-def follow_palette(display=None) -> None:
+def follow_palette(display: "Gdk.Display | None" = None) -> None:
     """Paint MComix in the colours <display>'s theme defines.
 
     The provider goes on at application priority, below the user's own

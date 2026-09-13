@@ -43,8 +43,8 @@ class RecentFilesMenu(object):
         supported_formats = {}
         supported_formats.update(image_tools.get_supported_formats())
         supported_formats.update(archive_tools.get_supported_formats())
-        self._mime_types = set()
-        self._extensions = set()
+        self._mime_types: set[str] = set()
+        self._extensions: set[str] = set()
         for name in supported_formats:
             mime_types, extensions = supported_formats[name]
             self._mime_types.update(mime_types)

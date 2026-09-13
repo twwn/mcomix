@@ -11,7 +11,7 @@ import threading
 import time
 import warnings
 
-from gi.repository import Gio, Gtk
+from gi.repository import Gdk, Gio, Gtk
 
 from . import MComixTest, get_testfile_path, pump, wait_for
 
@@ -404,7 +404,7 @@ class MainWindowTest(MComixTest):
         pixbuf = image_tools.load_pixbuf(
             get_testfile_path('images', 'animated.gif'))
         image = self.window.images[0]
-        image.set_pixbuf(pixbuf)
+        image.show_pixbuf(pixbuf)
         self.assertIsNotNone(image._worker, 'nothing is decoding the page')
         # Stop the decoder anyway if quitting does wait for it, so that a
         # regression fails this test rather than hanging the whole suite.
@@ -433,5 +433,21 @@ class MainWindowTest(MComixTest):
                      self.window.statusbar, self.window.thumbnailsidebar):
             self.assertIsNotNone(part.get_parent(),
                                  '%r was never packed' % part)
+
+    def test_the_window_answers_gtks_own_question_about_fullscreen(self):
+        # A property of the same name shadowed Gtk.Window.is_fullscreen(),
+        # so calling the method GTK4 provides raised TypeError: the
+        # property had already answered with a bool.
+        self.assertIs(False, self.window.is_fullscreen())
+
+    def test_the_cursor_of_the_page_area_is_set_through_its_own_method(self):
+        # set_cursor() is Gtk.Widget's in GTK4 and puts the cursor on the
+        # widget it is called on; MComix wants it on the page area, which
+        # is what set_layout_cursor() says.
+        cursor = Gdk.Cursor.new_from_name('wait', None)
+        self.window.set_layout_cursor(cursor)
+        self.assertIs(cursor, self.window._main_layout.get_cursor())
+        self.window.set_layout_cursor(None)
+        self.assertIsNone(self.window._main_layout.get_cursor())
 
 # vim: expandtab:sw=4:ts=4

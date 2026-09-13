@@ -1,11 +1,15 @@
-"""filechooser_chooser_base_dialbg.py - Custom FileChooserDialog implementations."""
+"""file_chooser_base_dialog.py - Custom FileChooserDialog implementations."""
 
 import os
 import mimetypes
 import fnmatch
 from gi.repository import Gdk, Gio, GLib, Gtk, Pango
 
-from typing import cast
+from collections.abc import Iterable, Iterator, Sequence
+from typing import Any, TYPE_CHECKING, cast
+
+if TYPE_CHECKING:
+    from gi.repository import GdkPixbuf
 
 from mcomix.preferences import prefs
 from mcomix.dialog import Dialog
@@ -21,6 +25,7 @@ from mcomix import message_dialog
 from mcomix import file_provider
 from mcomix import tools
 from mcomix.i18n import _
+from mcomix.dialog import Response
 
 mimetypes.init()
 
@@ -30,7 +35,7 @@ _PREVIEW_SIZE = 128
 _PREVIEW_LABEL_WIDTH = 18
 
 
-def preview_size(widget):
+def preview_size(widget: Gtk.Widget) -> tuple[int, int]:
     """Return how large a preview should be, and what to render it at.
 
     The size follows the screen, as every other preview in MComix does.
@@ -51,7 +56,7 @@ _COMMON_ARCHIVES = ('ZIP', 'RAR', '7z', 'Tar', 'PDF')
 _COMMON_IMAGES = ('JPEG', 'PNG', 'WEBP', 'GIF', 'AVIF', 'JXL', 'TIFF', 'BMP')
 
 
-def _by_familiarity(names, common):
+def _by_familiarity(names: Iterable[str], common: Sequence[str]) -> list[str]:
     """<names>, with the ones a reader expects first."""
     known = [name for name in common if name in names]
     return known + sorted(name for name in names if name not in known)
@@ -73,22 +78,28 @@ class _BaseFileChooserDialog(Dialog):
     If the dialog was closed or Cancel was pressed, <paths> is the empty list.
     """
 
-    _last_activated_file = None
+    _last_activated_file: str | None = None
 
-    def __init__(self, action=Gtk.FileChooserAction.OPEN, parent=None,
-                 folder=None):
+    #: The name set_save_name() offered, which the chooser will not say
+    #: again: Gtk.FileChooser.get_current_name() is deprecated with the
+    #: rest of the interface.
+    save_name: str | None = None
+
+    def __init__(self, action: Gtk.FileChooserAction = Gtk.FileChooserAction.OPEN,
+                 parent: "Gtk.Window | None" = None,
+                 folder: str | None = None) -> None:
         self._action = action
         self._destroyed = False
 
         if action == Gtk.FileChooserAction.OPEN:
             title = _('Open')
-            buttons = (_('_Cancel'), Gtk.ResponseType.CANCEL,
-                _('_Open'), Gtk.ResponseType.OK)
+            buttons = (_('_Cancel'), Response.CANCEL,
+                _('_Open'), Response.OK)
 
         else:
             title = _('Save')
-            buttons = (_('_Cancel'), Gtk.ResponseType.CANCEL,
-                _('_Save'), Gtk.ResponseType.OK)
+            buttons = (_('_Cancel'), Response.CANCEL,
+                _('_Save'), Response.OK)
 
         if parent is None:
             # This dialog maps itself at the end of construction, so a
@@ -99,7 +110,9 @@ class _BaseFileChooserDialog(Dialog):
         super(_BaseFileChooserDialog, self).__init__(title=title,
                                                      transient_for=parent)
         #: The buttons, wherever they ended up.
-        self._buttons = []
+        self._buttons: list[Gtk.Button] = []
+        #: What set_note() says under the file list, once there is one.
+        self._note: "Gtk.Label | None" = None
         #: Whether the chooser's filter menu has been moved aside.
         self._filter_moved = False
 
@@ -108,9 +121,11 @@ class _BaseFileChooserDialog(Dialog):
         self._search: "Gtk.SearchEntry | None" = None
         self._listing: "Gtk.ColumnView | None" = None
         #: What each filter was built to match, by filter.
-        self._filter_rules = {}
-        #: One-format filters, held back so the groups can come first.
-        self._pending_filters = []
+        self._filter_rules: dict[Gtk.FileFilter,
+                                 tuple[Sequence[str], Sequence[str]]] = {}
+        #: One-format filters, held back so the groups can come first:
+        #: the name, the mime types and the patterns each was built for.
+        self._pending_filters: list[tuple[str, Iterable[str], Sequence[str]]] = []
         self.filechooser = Gtk.FileChooserWidget(action=action)
         # The preview sits beside the list rather than inside it, so the
         # dialog wants more height than width.
@@ -179,8 +194,8 @@ class _BaseFileChooserDialog(Dialog):
         # Gtk.FileChooserWidget has no signals at all - so ask it what is
         # selected every so often.  It is one property read; the timer
         # goes when the dialog does.
-        self._previewed = None
-        self._preview_timer = GLib.timeout_add(200, self._poll_preview)
+        self._previewed: str | None = None
+        self._preview_timer: int | None = GLib.timeout_add(200, self._poll_preview)
         self.connect('destroy', self._stop_previewing)
 
         self.place_buttons(buttons)
@@ -222,7 +237,7 @@ class _BaseFileChooserDialog(Dialog):
 
         self.set_visible(True)
 
-    def _widen_the_places(self, *args) -> None:
+    def _widen_the_places(self, *args: Any) -> None:
         """Give the places on the left room for their own names.
 
         GTK4 puts the sidebar in a Gtk.Paned and opens it at a fixed
@@ -230,7 +245,8 @@ class _BaseFileChooserDialog(Dialog):
         The sidebar knows how wide it would like to be; the pane can be
         opened there instead, and dragged from there afterwards.
         """
-        paned = self._descendant(self.filechooser, Gtk.Paned)
+        paned = cast('Gtk.Paned | None',
+                    self._descendant(self.filechooser, Gtk.Paned))
         if paned is None:
             return
         places = paned.get_start_child()
@@ -243,7 +259,7 @@ class _BaseFileChooserDialog(Dialog):
         if paned.get_position() < _PLACES_WIDTH:
             GLib.idle_add(paned.set_position, _PLACES_WIDTH)
 
-    def place_buttons(self, buttons) -> None:
+    def place_buttons(self, buttons: Sequence[Any]) -> None:
         """Put <buttons> - label, response, label, response - in the row
         the chooser keeps its filter menu in.
 
@@ -261,7 +277,10 @@ class _BaseFileChooserDialog(Dialog):
             parent = button.get_parent()
             if parent is not None:
                 bar = button.get_ancestor(Gtk.ActionBar)
-                (bar or parent).remove(button)
+                if bar is not None:
+                    bar.remove(button)
+                elif isinstance(parent, Gtk.Box):
+                    parent.remove(button)
         self._buttons = []
 
         pairs = list(zip(buttons[::2], buttons[1::2]))
@@ -269,7 +288,7 @@ class _BaseFileChooserDialog(Dialog):
         if bar is None:
             for label, response in pairs:
                 self._buttons.append(self.add_button(label, response))
-            self.set_default_response(Gtk.ResponseType.OK)
+            self.set_default_response(Response.OK)
             return
 
         # pack_end() puts each new child nearer the start of the end
@@ -279,15 +298,15 @@ class _BaseFileChooserDialog(Dialog):
             button.connect('clicked', self._button_clicked, response)
             bar.pack_end(button)
             self._buttons.append(button)
-            if response == Gtk.ResponseType.OK:
+            if response == Response.OK:
                 button.add_css_class('suggested-action')
                 self.set_default_widget(button)
         bar.set_revealed(True)
 
-    def _button_clicked(self, _button, response) -> None:
+    def _button_clicked(self, _button: Gtk.Button, response: int) -> None:
         self.response(response)
 
-    def _filter_action_bar(self):
+    def _filter_action_bar(self) -> "Gtk.ActionBar | None":
         """The chooser's own action bar, with its filter moved aside."""
         menu = self._descendant(self.filechooser, Gtk.DropDown)
         if menu is None:
@@ -308,7 +327,7 @@ class _BaseFileChooserDialog(Dialog):
         return bar
 
     @staticmethod
-    def _descendant(widget, kind):
+    def _descendant(widget: Gtk.Widget, kind: type) -> "Gtk.Widget | None":
         """The first child of <widget> that is a <kind>, at any depth.
 
         Not one inside a popover: what a menu or a dropdown holds hangs
@@ -326,6 +345,21 @@ class _BaseFileChooserDialog(Dialog):
             child = child.get_next_sibling()
         return None
 
+    def set_note(self, text: str) -> None:
+        """Say <text> under the file list.
+
+        Gtk.FileChooser.set_extra_widget() is what said it up to GTK3.
+        GTK4 has no such thing - the call raised AttributeError rather
+        than showing anything - so the note belongs to the dialog around
+        the chooser instead.
+        """
+        if self._note is None:
+            self._note = Gtk.Label()
+            self._note.set_xalign(0)
+            widgets.pack(self.get_content_area(), self._note,
+                         False, False, 6, end=True)
+        self._note.set_text(text)
+
     def _walk_from_search_into_the_list(self) -> None:
         """Let the arrow keys carry on from the search box into the list.
 
@@ -334,8 +368,10 @@ class _BaseFileChooserDialog(Dialog):
         the box, so the only way to a result is the mouse.  Down goes to
         the first one, and up from there comes back to the box.
         """
-        self._search = self._descendant(self.filechooser, Gtk.SearchEntry)
-        self._listing = self._descendant(self.filechooser, Gtk.ColumnView)
+        self._search = cast('Gtk.SearchEntry | None',
+                           self._descendant(self.filechooser, Gtk.SearchEntry))
+        self._listing = cast('Gtk.ColumnView | None',
+                            self._descendant(self.filechooser, Gtk.ColumnView))
         if self._search is None or self._listing is None:
             return
 
@@ -357,7 +393,7 @@ class _BaseFileChooserDialog(Dialog):
             return False
         # A Gtk.SelectionModel is a Gio.ListModel as well, whatever the
         # introspection data says of it.
-        model = cast("Gio.ListModel | None", self._listing.get_model())
+        model = cast("Gio.ListModel[Any] | None", self._listing.get_model())
         if model is None or not model.get_n_items():
             return False
         self._listing.grab_focus()
@@ -380,7 +416,7 @@ class _BaseFileChooserDialog(Dialog):
         self._search.grab_focus()
         return True
 
-    def list_filters(self):
+    def list_filters(self) -> list[Any]:
         """The filters the chooser offers, in the order they were added.
 
         Gtk.FileChooser.list_filters() is get_filters() in GTK4, and it
@@ -389,7 +425,8 @@ class _BaseFileChooserDialog(Dialog):
         model = self.filechooser.get_filters()
         return [model.get_item(index) for index in range(model.get_n_items())]
 
-    def add_filter(self, name, mimes, patterns=()):
+    def add_filter(self, name: str, mimes: Iterable[str],
+                   patterns: Iterable[str] = ()) -> Gtk.FileFilter:
         """Add a filter, called <name>, for each mime type in <mimes> and
         each pattern in <patterns> to the filechooser.
         """
@@ -422,7 +459,9 @@ class _BaseFileChooserDialog(Dialog):
                         image_tools.get_supported_formats(),
                         _COMMON_IMAGES)
 
-    def _add_group(self, everything, one, supported_formats, common) -> None:
+    def _add_group(self, everything: str, one: str,
+                   supported_formats: dict[str, tuple[set[str], set[str]]],
+                   common: Sequence[str]) -> None:
         """Add a filter for all of <supported_formats> and one for each.
 
         The list was in alphabetical order, which put ANI, APM and APNG
@@ -433,7 +472,8 @@ class _BaseFileChooserDialog(Dialog):
         ffilter = Gtk.FileFilter()
         ffilter.set_name(everything)
         self.filechooser.add_filter(ffilter)
-        all_mimes, all_patterns = [], []
+        all_mimes: list[str] = []
+        all_patterns: list[str] = []
         for name in _by_familiarity(supported_formats, common):
             mime_types, extensions = supported_formats[name]
             patterns = ['*.%s' % ext for ext in extensions]
@@ -453,15 +493,18 @@ class _BaseFileChooserDialog(Dialog):
             self.add_filter(name, mimes, patterns)
         self._pending_filters = []
 
-    def _matches(self, ffilter, path, mime_type):
+    def _matches(self, ffilter: "Gtk.FileFilter | None", path: str,
+                 mime_type: str | None) -> bool:
         """Whether <path> passes <ffilter>, by the rules it was built from."""
-        match_patterns, match_mimes = self._filter_rules.get(ffilter, ((), ()))
+        match_patterns, match_mimes = (self._filter_rules.get(ffilter, ((), ()))
+                                       if ffilter is not None else ((), ()))
         if mime_type in match_mimes:
             return True
         return any(fnmatch.fnmatch(path, pattern)
                    for pattern in match_patterns)
 
-    def collect_files_from_subdir(self, path, filter, recursive=False):
+    def collect_files_from_subdir(self, path: str, filter: "Gtk.FileFilter | None",
+                                  recursive: bool = False) -> Iterator[str]:
         """ Finds archives within C{path} that match the
         L{Gtk.FileFilter} passed in C{filter}. """
 
@@ -477,22 +520,24 @@ class _BaseFileChooserDialog(Dialog):
             if not recursive:
                 break
 
-    def set_save_name(self, name):
+    def set_save_name(self, name: str) -> None:
+        """Offer <name> as the name to save under."""
+        self.save_name = name
         self.filechooser.set_current_name(name)
 
     def should_open_recursive(self) -> bool:
         return False
 
-    def _activated(self, gesture, n_press, x, y) -> None:
+    def _activated(self, gesture: Any, n_press: int, x: float, y: float) -> None:
         """Confirm the dialog when a file is double clicked."""
         if n_press == 2 and self.filechooser.get_file() is not None:
-            self._response(self, Gtk.ResponseType.OK)
+            self._response(self, Response.OK)
 
-    def _response(self, widget, response):
+    def _response(self, widget: Any, response: int) -> None:
         """Return a list of the paths of the chosen files, or None if the
         event only changed the current directory.
         """
-        if response == Gtk.ResponseType.OK:
+        if response == Response.OK:
             chosen = widgets.chooser_paths(self.filechooser)
             if not chosen:
                 return
@@ -516,8 +561,8 @@ class _BaseFileChooserDialog(Dialog):
                 not os.path.isdir(first_path) and
                 os.path.exists(first_path)):
 
-                overwrite_dialog = message_dialog.MessageDialog(None, 0,
-                    Gtk.MessageType.QUESTION, Gtk.ButtonsType.OK_CANCEL)
+                overwrite_dialog = message_dialog.MessageDialog(
+                    None, buttons=Gtk.ButtonsType.OK_CANCEL)
                 overwrite_dialog.set_text(
                     _("A file named '%s' already exists. Do you want to replace it?") %
                         os.path.basename(first_path),
@@ -526,9 +571,11 @@ class _BaseFileChooserDialog(Dialog):
                 # stopping the response signal used to achieve; the answer
                 # now arrives too late to veto a signal that has been
                 # emitted, so finish the job from the answer instead.
-                overwrite_dialog.run_async(
-                    lambda answer: answer == Gtk.ResponseType.OK
-                    and self._files_accepted(paths, first_path))
+                def overwrite_answered(answer: int) -> None:
+                    if answer == Response.OK:
+                        self._files_accepted(paths, first_path)
+
+                overwrite_dialog.run_async(overwrite_answered)
                 return
 
             self._files_accepted(paths, first_path)
@@ -536,6 +583,11 @@ class _BaseFileChooserDialog(Dialog):
         else:
             self.files_chosen([])
             self._destroyed = True
+
+    def files_chosen(self, paths: list[str]) -> None:
+        """Called with the paths that were chosen, or with an empty list
+        when the dialog was cancelled.  Subclasses implement it."""
+        raise NotImplementedError('Subclasses must override files_chosen.')
 
     def _files_accepted(self, paths: list[str], first_path: str) -> None:
         """Hand the chosen <paths> on, once nothing is left to confirm."""
@@ -560,12 +612,12 @@ class _BaseFileChooserDialog(Dialog):
             self._update_preview()
         return GLib.SOURCE_CONTINUE
 
-    def _stop_previewing(self, *args) -> None:
+    def _stop_previewing(self, *args: Any) -> None:
         if self._preview_timer is not None:
             GLib.source_remove(self._preview_timer)
             self._preview_timer = None
 
-    def _update_preview(self, *args):
+    def _update_preview(self, *args: Any) -> None:
         path = self._previewed
 
         if path and os.path.isfile(path):
@@ -579,7 +631,8 @@ class _BaseFileChooserDialog(Dialog):
             self._namelabel.set_text('')
             self._sizelabel.set_text('')
 
-    def _preview_thumbnail_finished(self, filepath, pixbuf):
+    def _preview_thumbnail_finished(self, filepath: str,
+                                    pixbuf: "GdkPixbuf.Pixbuf | None") -> None:
         """ Called when the thumbnailer has finished creating
         the thumbnail for <filepath>. """
 
@@ -604,11 +657,12 @@ class _BaseFileChooserDialog(Dialog):
                 self._sizelabel.set_text(tools.format_byte_size(
                     os.stat(filepath).st_size))
 
-    def _current_file(self):
+    def _current_file(self) -> str | None:
         # XXX: This method defers the import of main to avoid cyclic imports
         # during startup.
 
         from mcomix import main
-        return main.main_window().filehandler.get_path_to_base()
+        window = main.main_window()
+        return None if window is None else window.filehandler.get_path_to_base()
 
 # vim: expandtab:sw=4:ts=4

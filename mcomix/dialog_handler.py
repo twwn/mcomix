@@ -9,6 +9,11 @@ from gi.repository import Gio, Gtk
 
 from mcomix.dialog import Dialog
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from mcomix import main
+
 from mcomix import about_dialog
 from mcomix import comment_dialog
 from mcomix import properties_dialog
@@ -25,7 +30,7 @@ _open_dialogs: dict[str, Gtk.Window] = {}
 
 
 def open_dialog(action: Gio.SimpleAction,
-                data: tuple[Gtk.Window, str]) -> None:
+                data: 'tuple[main.MainWindow, str]') -> None:
     """Create and display the given dialog."""
 
     window, name_of_dialog = data

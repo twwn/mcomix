@@ -2,7 +2,6 @@
 
 import os
 import pickle
-from gi.repository import Gtk
 import operator
 import datetime
 import time
@@ -15,10 +14,17 @@ from mcomix import i18n
 from mcomix import message_dialog
 from mcomix import tools
 from mcomix.i18n import _
+from mcomix.dialog import Response
 
 from collections.abc import Callable
+from typing import TYPE_CHECKING
 
-class __BookmarksStore(object):
+if TYPE_CHECKING:
+    from mcomix import file_handler as file_handler_module
+    from mcomix import image_handler as image_handler_module
+    from mcomix import main
+
+class _BookmarksStore:
 
     """The _BookmarksStore is a backend for both the bookmarks menu and dialog.
     Changes in the _BookmarksStore are mirrored in both.
@@ -26,9 +32,11 @@ class __BookmarksStore(object):
 
     def __init__(self) -> None:
         self._initialized = False
-        self._window = None
-        self._file_handler = None
-        self._image_handler = None
+        #: All three are filled in by initialize(), which the main window
+        #: calls once it has built the handlers.
+        self._window: 'main.MainWindow | None' = None
+        self._file_handler: 'file_handler_module.FileHandler | None' = None
+        self._image_handler: 'image_handler_module.ImageHandler | None' = None
 
         bookmarks, mtime = self.load_bookmarks()
 
@@ -37,7 +45,7 @@ class __BookmarksStore(object):
         #: Modification date of bookmarks file
         self._bookmarks_mtime = mtime
 
-    def initialize(self, window):
+    def initialize(self, window: 'main.MainWindow') -> None:
         """ Initializes references to the main window and file/image handlers. """
         if not self._initialized:
             self._window = window
@@ -50,7 +58,9 @@ class __BookmarksStore(object):
                 bookmark._window = window
                 bookmark._file_handler = window.filehandler
 
-    def add_bookmark_by_values(self, name, path, page, numpages, archive_type, date_added):
+    def add_bookmark_by_values(self, name: str, path: str, page: int, numpages: int,
+                               archive_type: int | None,
+                               date_added: datetime.datetime) -> None:
         """Create a bookmark and add it to the list."""
         bookmark = bookmark_menu_item._Bookmark(self._window, self._file_handler,
             i18n.to_display_string(name), path, page, numpages, archive_type, date_added)
@@ -58,21 +68,27 @@ class __BookmarksStore(object):
         self.add_bookmark(bookmark)
 
     @callback.Callback
-    def add_bookmark(self, bookmark):
+    def add_bookmark(self, bookmark: bookmark_menu_item._Bookmark) -> None:
         """Add the <bookmark> to the list."""
         self._bookmarks.append(bookmark)
         self.write_bookmarks_file()
 
     @callback.Callback
-    def remove_bookmark(self, bookmark):
+    def remove_bookmark(self, bookmark: bookmark_menu_item._Bookmark) -> None:
         """Remove the <bookmark> from the list."""
         self._bookmarks.remove(bookmark)
         self.write_bookmarks_file()
 
     def add_current_to_bookmarks(self) -> None:
         """Add the currently viewed page to the list."""
+        if self._image_handler is None or self._file_handler is None:
+            raise ValueError('The bookmarks store has no handlers yet.')
         name = self._image_handler.get_pretty_current_filename()
         path = self._image_handler.get_real_path()
+        if path is None:
+            # The menu entry is insensitive without a file open, so this
+            # is only reached if something bypasses it.
+            return
         page = self._image_handler.get_current_page()
         numpages = self._image_handler.get_number_of_pages()
         archive_type = self._file_handler.archive_type
@@ -100,11 +116,11 @@ class __BookmarksStore(object):
 
         def replace_answered(response: int) -> None:
             # Delete old bookmarks
-            if response == Gtk.ResponseType.YES:
+            if response == Response.YES:
                 for bookmark in same_file_bookmarks:
                     self.remove_bookmark(bookmark)
             # Perform no action
-            elif response not in (Gtk.ResponseType.YES, Gtk.ResponseType.NO):
+            elif response not in (Response.YES, Response.NO):
                 return
             add()
 
@@ -117,7 +133,7 @@ class __BookmarksStore(object):
         while not self.is_empty():
             self.remove_bookmark(self._bookmarks[-1])
 
-    def get_bookmarks(self):
+    def get_bookmarks(self) -> list[bookmark_menu_item._Bookmark]:
         """Return all the bookmarks in the list."""
         if not self.file_was_modified():
             return self._bookmarks
@@ -129,13 +145,13 @@ class __BookmarksStore(object):
         """Return True if the bookmark list is empty."""
         return len(self._bookmarks) == 0
 
-    def load_bookmarks(self):
+    def load_bookmarks(self) -> tuple[list[bookmark_menu_item._Bookmark], int]:
         """ Loads persisted bookmarks from a local file.
         @return: Tuple of (bookmarks, file mtime)
         """
 
         path = constants.BOOKMARK_PICKLE_PATH
-        bookmarks = []
+        bookmarks: list[bookmark_menu_item._Bookmark] = []
         mtime = 0
 
         if os.path.isfile(path):
@@ -166,7 +182,7 @@ class __BookmarksStore(object):
         if os.path.isfile(path):
             try:
                 mtime = int(os.stat(path).st_mtime)
-            except IOError:
+            except OSError:
                 mtime = 0
 
             if mtime > self._bookmarks_mtime:
@@ -181,7 +197,7 @@ class __BookmarksStore(object):
 
         # Merge changes in case file was modified from within other instances
         if self.file_was_modified():
-            new_bookmarks, _ = self.load_bookmarks()
+            new_bookmarks, new_mtime = self.load_bookmarks()
             self._bookmarks = list(set(self._bookmarks + new_bookmarks))
 
         with tools.atomic_write(constants.BOOKMARK_PICKLE_PATH, binary=True) as fd:
@@ -193,20 +209,22 @@ class __BookmarksStore(object):
         self._bookmarks_mtime = int(time.time())
 
 
-    def show_replace_bookmark_dialog(self, old_bookmarks: list, new_page: int,
+    def show_replace_bookmark_dialog(self,
+                                     old_bookmarks: list[bookmark_menu_item._Bookmark],
+                                     new_page: int,
                                      on_response: Callable[[int], None]) -> None:
         """ Present a confirmation dialog to replace old bookmarks.
 
         Calls <on_response> with RESPONSE_YES to replace the bookmarks,
         RESPONSE_NO to create a new one alongside them, and anything else
         to abort creating one at all. """
-        dialog = message_dialog.MessageDialog(self._window, Gtk.DialogFlags.MODAL, Gtk.MessageType.INFO)
-        dialog.add_buttons(_('_Yes'), Gtk.ResponseType.YES,
-             _('_No'), Gtk.ResponseType.NO,
-             _('_Cancel'), Gtk.ResponseType.CANCEL)
-        dialog.set_default_response(Gtk.ResponseType.YES)
+        dialog = message_dialog.MessageDialog(self._window, modal=True)
+        dialog.add_buttons(_('_Yes'), Response.YES,
+             _('_No'), Response.NO,
+             _('_Cancel'), Response.CANCEL)
+        dialog.set_default_response(Response.YES)
         dialog.set_should_remember_choice('replace-existing-bookmark',
-            (Gtk.ResponseType.YES, Gtk.ResponseType.NO))
+            (Response.YES, Response.NO))
 
         pages = list(map(str, sorted(map(operator.attrgetter('_page'), old_bookmarks))))
         dialog.set_text(
@@ -225,6 +243,6 @@ class __BookmarksStore(object):
 
 
 # Singleton instance of the bookmarks store.
-BookmarksStore = __BookmarksStore()
+BookmarksStore = _BookmarksStore()
 
 # vim: expandtab:sw=4:ts=4

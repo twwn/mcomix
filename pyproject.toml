@@ -86,9 +86,34 @@ version = {attr = "mcomix.constants.VERSION"}
 
 [tool.mypy]
 disallow_untyped_defs = true
+disallow_incomplete_defs = true
 disallow_any_unimported = true
+disallow_subclassing_any = true
+disallow_untyped_decorators = true
 no_implicit_optional = true
 check_untyped_defs = true
 warn_return_any = true
-show_error_codes = true
+warn_redundant_casts = true
+warn_unused_configs = true
 warn_unused_ignores = true
+strict_equality = true
+extra_checks = true
+show_error_codes = true
+disallow_untyped_calls = true
+disallow_any_generics = true
+no_implicit_reexport = true
+
+# The calls disallow_untyped_calls still has to let through are all into
+# libraries rather than into MComix: pygobject-stubs annotates neither
+# the Graphene structs nor Pango.FontDescription, and PyMuPDF ships no
+# types at all.  Excluding those three by name keeps the flag on for
+# everything this code base writes itself.
+untyped_calls_exclude = [
+  "gi.repository.Gdk",
+  "gi.repository.Graphene",
+  "gi.repository.Pango",
+  "fitz",
+  "pymupdf",
+]
+
+# Everything --strict turns on is on.

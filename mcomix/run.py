@@ -4,6 +4,8 @@ import os
 import signal
 import sys
 
+from typing import Any
+
 if __name__ == '__main__':
     print('PROGRAM TERMINATED', file=sys.stderr)
     print('Please do not run this script directly! Use the mcomix script or mcomixstarter.py instead.', file=sys.stderr)
@@ -30,7 +32,7 @@ def wait_and_exit() -> None:
         input("Press ENTER to continue...")
     sys.exit(1)
 
-def parse_arguments(argv):
+def parse_arguments(argv: list[str]) -> tuple[argparse.Namespace, list[str]]:
     """ Parse the command line passed in <argv>. Returns a tuple containing
     (options, arguments). Errors parsing the command line are handled in
     this function. """
@@ -189,7 +191,7 @@ def run() -> None:
     from mcomix import icons
     icons.load_icons()
 
-    open_path = None
+    open_path: "str | list[str] | None" = None
     # 0 leaves the choice of page to the file handler: the first one, or
     # the last read page if there is one for this book.
     open_page = 0
@@ -221,7 +223,7 @@ def run() -> None:
         # Add a SIGCHLD handler to reap zombie processes. Signals coalesce,
         # so one delivery can stand for several children having exited;
         # reap until there is nothing left to collect.
-        def on_sigchld(signum, frame):
+        def on_sigchld(signum: int, frame: Any) -> None:
             try:
                 while os.waitpid(-1, os.WNOHANG)[0] != 0:
                     pass

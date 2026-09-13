@@ -9,13 +9,15 @@ from mcomix import keybindings
 from mcomix.i18n import _
 from mcomix import widgets
 
+from collections.abc import Callable
+
 
 class KeybindingEditorWindow(Gtk.ScrolledWindow):
 
     #: How much of the name of an action is always shown, in characters.
     _NAME_WIDTH = 16
 
-    def __init__(self, keymanager):
+    def __init__(self, keymanager: keybindings._KeybindingManager) -> None:
         """ @param keymanager: KeybindingManager instance. """
         super(KeybindingEditorWindow, self).__init__()
         widgets.set_border(self, 5)
@@ -57,7 +59,7 @@ class KeybindingEditorWindow(Gtk.ScrolledWindow):
         return row.action is not None
 
     @staticmethod
-    def _key_of(index):
+    def _key_of(index: int) -> str:
         """The attribute a row keeps its <index>th shortcut under."""
         return 'key%d' % index
 
@@ -77,7 +79,8 @@ class KeybindingEditorWindow(Gtk.ScrolledWindow):
             sections[section_name] = section
             rows.append(section)
 
-        action_rows = self.action_rows = {}
+        action_rows: dict[str, column_list.Row] = {}
+        self.action_rows = action_rows
         # Sort actions by action name
         actions = sorted(list(keybindings.BINDING_INFO.items()),
                 key=lambda item: item[1]['title'])
@@ -94,9 +97,10 @@ class KeybindingEditorWindow(Gtk.ScrolledWindow):
 
         self._list.set_rows(rows)
 
-    def _rebound(self, column):
+    def _rebound(self,
+                 column: int) -> "Callable[[column_list.Row, str | None], None]":
         """Answer a rebinding of the <column>th shortcut of a row."""
-        def rebound(row, accelerator):
+        def rebound(row: column_list.Row, accelerator: str | None) -> None:
             if row.action is None:
                 # A group heading has no shortcut to rebind.
                 return
@@ -107,7 +111,8 @@ class KeybindingEditorWindow(Gtk.ScrolledWindow):
             row.changed()
         return rebound
 
-    def _edit_accel(self, row, column, new_accel) -> None:
+    def _edit_accel(self, row: column_list.Row, column: int,
+                    new_accel: str) -> None:
         """Bind <new_accel> as the <column>th shortcut of <row>."""
         key = self._key_of(column)
         old_accel = getattr(row, key)
@@ -129,7 +134,7 @@ class KeybindingEditorWindow(Gtk.ScrolledWindow):
         if bindings and Gtk.accelerator_name(*bindings[0]) == new_accel:
             self.keymanager.announce_accelerator(row.action, new_accel)
 
-    def _clear_accel(self, row, column) -> None:
+    def _clear_accel(self, row: column_list.Row, column: int) -> None:
         """Unbind the <column>th shortcut of <row>."""
         key = self._key_of(column)
         accel = getattr(row, key)
@@ -144,7 +149,8 @@ class KeybindingEditorWindow(Gtk.ScrolledWindow):
         self.keymanager.announce_accelerator(
             row.action, Gtk.accelerator_name(*bindings[0]) if bindings else '')
 
-    def _take_accel_from(self, row, accelerator, except_column=None) -> None:
+    def _take_accel_from(self, row: column_list.Row, accelerator: str,
+                         except_column: int | None = None) -> None:
         """Clear <accelerator> off <row>, wherever it is shown on it."""
         for index in range(0, self.accel_column_num):
             if index == except_column:

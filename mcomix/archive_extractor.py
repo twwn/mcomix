@@ -7,10 +7,14 @@ import traceback
 
 from mcomix import archive_tools
 from mcomix import callback
+from mcomix.archive import archive_base
 from mcomix import log
 from mcomix.preferences import prefs
 from mcomix.worker_thread import WorkerThread
 from mcomix.i18n import _
+
+from collections.abc import Callable, Iterable, Sequence
+from typing import Any
 
 
 class Extractor(object):
@@ -31,9 +35,34 @@ class Extractor(object):
 
     def __init__(self) -> None:
         self._setupped = False
-        self._archive = None
+        self._archive: archive_base.BaseArchive | None = None
+        # Everything else is filled in by setup(), which raises rather
+        # than leaving any of it half done; nothing here works before
+        # that has been called.
+        self._src: str
+        self._dst: str
+        self._files: list[str]
+        self._extracted: set[str]
+        self._contents_listed: bool
+        self._extract_started: bool
+        self._condition: threading.Condition
+        self._list_thread: "WorkerThread[Any]"
+        self._extract_thread: "WorkerThread[Any]"
 
-    def setup(self, src, dst, type=None):
+    @property
+    def _opened_archive(self) -> archive_base.BaseArchive:
+        """The archive setup() opened, which extracting anything needs.
+
+        setup() raises rather than leaving this unset, so nothing here
+        can be None; saying so beats an attribute error on None for
+        whoever calls an extractor that was never set up.
+        """
+        if self._archive is None:
+            raise ArchiveException('the extractor has not been set up')
+        return self._archive
+
+    def setup(self, src: str, dst: str,
+              type: int | None = None) -> threading.Condition:
         """Setup the extractor with archive <src> and destination dir <dst>.
         Return a threading.Condition related to the is_ready() method, or
         None if the format of <src> isn't supported.
@@ -57,7 +86,7 @@ class Extractor(object):
 
         return self._condition
 
-    def get_files(self):
+    def get_files(self) -> list[str] | None:
         """Return a list of names of all the files the extractor is currently
         set for extracting. After a call to setup() this is by default all
         files found in the archive. The paths in the list are relative to
@@ -65,14 +94,16 @@ class Extractor(object):
         """
         with self._condition:
             if not self._contents_listed:
-                return
+                # The listing thread has not finished yet, so there is no
+                # list to answer with rather than an empty one.
+                return None
             return self._files[:]
 
-    def get_directory(self):
+    def get_directory(self) -> str:
         """Returns the root extraction directory of this extractor."""
         return self._dst
 
-    def set_files(self, files):
+    def set_files(self, files: Iterable[str]) -> None:
         """Set the files that the extractor should extract from the archive in
         the order of extraction. Normally one would get the list of all files
         in the archive using get_files(), then filter and/or permute this
@@ -94,7 +125,7 @@ class Extractor(object):
             if self._extract_started:
                 self.extract()
 
-    def is_ready(self, name):
+    def is_ready(self, name: str) -> bool:
         """Return True if the file <name> in the extractor's file list
         (as set by set_files()) is fully extracted.
         """
@@ -121,12 +152,17 @@ class Extractor(object):
             if not self._contents_listed:
                 return
             if not self._extract_started:
-                if self._archive.support_concurrent_extractions \
-                   and not self._archive.is_solid():
+                if self._opened_archive.support_concurrent_extractions \
+                   and not self._opened_archive.is_solid():
                     max_threads = prefs['max extract threads']
                 else:
                     max_threads = 1
-                if self._archive.is_solid():
+                # A solid archive is extracted a batch at a time and any
+                # other one file by file, so the worker is handed either a
+                # list of names or a single name, and its order is passed
+                # straight through to whichever of the two takes it.
+                fn: Callable[[Any], None]
+                if self._opened_archive.is_solid():
                     fn = self._extract_all_files
                 else:
                     fn = self._extract_file
@@ -137,19 +173,21 @@ class Extractor(object):
                 self._extract_started = True
             else:
                 self._extract_thread.clear_orders()
-            if self._archive.is_solid():
+            if self._opened_archive.is_solid():
                 # Sort files so we don't queue the same batch multiple times.
                 self._extract_thread.append_order(sorted(self._files))
             else:
                 self._extract_thread.extend_orders(self._files)
 
     @callback.Callback
-    def contents_listed(self, extractor, files):
+    def contents_listed(self, extractor: 'Extractor',
+                        files: list[str]) -> None:
         """ Called after the contents of the archive has been listed. """
         pass
 
     @callback.Callback
-    def file_extracted(self, extractor, filename):
+    def file_extracted(self, extractor: 'Extractor',
+                       filename: str) -> None:
         """ Called whenever a new file is extracted and ready. """
         pass
 
@@ -161,14 +199,14 @@ class Extractor(object):
         if self._archive:
             self._archive.close()
 
-    def _extraction_finished(self, name):
+    def _extraction_finished(self, name: str) -> None:
         with self._condition:
             self._files.remove(name)
             self._extracted.add(name)
             self._condition.notify_all()
         self.file_extracted(self, name)
 
-    def _extract_all_files(self, files):
+    def _extract_all_files(self, files: Sequence[str]) -> None:
 
         # With multiple extractions for each pass, some of the files might have
         # already been extracted.
@@ -178,7 +216,7 @@ class Extractor(object):
 
         try:
             # log.debug('Extracting from "%s" to "%s": "%s"', self._src, self._dst, '", "'.join(files))
-            for f in self._archive.iter_extract(files, self._dst):
+            for f in self._opened_archive.iter_extract(files, self._dst):
                 if self._extract_thread.must_stop():
                     return
                 self._extraction_finished(f)
@@ -191,7 +229,7 @@ class Extractor(object):
             log.error(_('! Extraction error: %s'), ex)
             log.debug('Traceback:\n%s', traceback.format_exc())
 
-    def _extract_file(self, name):
+    def _extract_file(self, name: str) -> None:
         """Extract the file named <name> to the destination directory,
         mark the file as "ready", then signal a notify() on the Condition
         returned by setup().
@@ -199,7 +237,7 @@ class Extractor(object):
 
         try:
             # log.debug('Extracting from "%s" to "%s": "%s"', self._src, self._dst, name)
-            self._archive.extract(name, self._dst)
+            self._opened_archive.extract(name, self._dst)
 
         except Exception as ex:
             # Better to ignore any failed extractions (e.g. from a corrupt
@@ -213,7 +251,7 @@ class Extractor(object):
             return
         self._extraction_finished(name)
 
-    def _list_contents(self, archive):
+    def _list_contents(self, archive: archive_base.BaseArchive) -> None:
         files = []
         for f in archive.iter_contents():
             if self._list_thread.must_stop():

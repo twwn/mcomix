@@ -6,7 +6,13 @@ from typing import Any
 
 from mcomix import bookmark_backend
 from mcomix import bookmark_dialog
+from mcomix import widgets
 from mcomix.i18n import _
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from mcomix import bookmark_menu_item
 
 
 class BookmarksMenu(object):
@@ -29,7 +35,7 @@ class BookmarksMenu(object):
         self._window = window
         self._bookmarks_store = bookmark_backend.BookmarksStore
         self._bookmarks_store.initialize(window)
-        self._bookmarks: list = []
+        self._bookmarks: "list[bookmark_menu_item._Bookmark]" = []
 
         self.model = Gio.Menu()
 
@@ -91,6 +97,6 @@ class BookmarksMenu(object):
         represents whether a file is currently loaded in the main program
         or not.
         """
-        self._actions.lookup_action('add').set_enabled(loaded)
+        widgets.simple_action(self._actions, 'add').set_enabled(loaded)
 
 # vim: expandtab:sw=4:ts=4

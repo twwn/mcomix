@@ -4,7 +4,32 @@ from gi.repository import GObject, Gtk
 
 from mcomix import widgets
 
+import enum
 from typing import Any
+
+
+class Response(enum.IntEnum):
+
+    """What a dialog answers with.
+
+    These were Gtk.ResponseType, which GTK deprecated in 4.20 along with
+    the Gtk.Dialog they belonged to.  The numbers are GTK's own and have
+    to stay that way: an answer the user has asked to have remembered is
+    written to the preferences file as its number, so renumbering them
+    would turn every answer already stored into a different one.
+    """
+
+    NONE = -1
+    REJECT = -2
+    ACCEPT = -3
+    DELETE_EVENT = -4
+    OK = -5
+    CANCEL = -6
+    CLOSE = -7
+    YES = -8
+    NO = -9
+    APPLY = -10
+    HELP = -11
 
 
 class Dialog(Gtk.Window):
@@ -120,7 +145,7 @@ class Dialog(Gtk.Window):
     # -- Where the answers come from --------------------------------------
 
     def _closed(self, *args: Any) -> bool:
-        self.emit('response', Gtk.ResponseType.DELETE_EVENT)
+        self.emit('response', Response.DELETE_EVENT)
         # False: the window goes on closing, which is what a Gtk.Dialog
         # did with its delete event.
         return False
@@ -131,7 +156,7 @@ class Dialog(Gtk.Window):
         # what MComix' dialogs are written against - the enhancement
         # dialog answers DELETE_EVENT and OK alike and did not close on
         # escape at all while this said CANCEL.
-        self.emit('response', Gtk.ResponseType.DELETE_EVENT)
+        self.emit('response', Response.DELETE_EVENT)
         return True
 
 # vim: expandtab:sw=4:ts=4

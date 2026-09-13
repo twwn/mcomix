@@ -2,7 +2,8 @@
 
 from gi.repository import Gdk, Gio, Graphene, Gtk
 
-from typing import Any
+from collections.abc import Callable, Iterable
+from typing import Any, cast
 
 
 class Chooser(Gtk.DropDown):
@@ -19,10 +20,16 @@ class Chooser(Gtk.DropDown):
 
     __gtype_name__ = 'MComixChooser'
 
-    def __init__(self, options: Any, chosen: Any = None) -> None:
-        """Offer <options>, pairs of label and value, with <chosen> set."""
+    def __init__(self, options: "Iterable[tuple[str, Any]]",
+                 chosen: Any = None) -> None:
+        """Offer <options>, pairs of label and value, with <chosen> set.
+
+        A value is whatever the preference behind the chooser holds - a
+        number, a string, an enumeration member - so the labels are the
+        only half of a pair with a type of its own.
+        """
         labels = Gtk.StringList()
-        self._values = []
+        self._values: list[Any] = []
         for label, value in options:
             labels.append(label)
             self._values.append(value)
@@ -48,14 +55,15 @@ class Chooser(Gtk.DropDown):
         if value in self._values:
             self.set_selected(self._values.index(value))
 
-    def connect_changed(self, changed: Any) -> None:
+    def connect_changed(self,
+                        changed: 'Callable[["Chooser"], None]') -> None:
         """Call <changed> with this chooser whenever the pick changes."""
         self.connect('notify::selected',
                      lambda widget, _param: changed(widget))
 
 
-def pack(box: Any, child: Any, expand: bool = False, fill: bool = True,
-         padding: int = 0, end: bool = False) -> None:
+def pack(box: Gtk.Box, child: Gtk.Widget, expand: bool = False,
+         fill: bool = True, padding: int = 0, end: bool = False) -> None:
     """Add <child> to <box>, the way Gtk.Box.pack_start/pack_end did.
 
     GTK4 boxes only append and prepend.  What the old arguments said is
@@ -63,9 +71,6 @@ def pack(box: Any, child: Any, expand: bool = False, fill: bool = True,
     vexpand depending on which way the box runs, not filling its share is
     an alignment, and padding is a margin on the two ends that matter.
     """
-    # Gtk.CellLayout - tree view columns, combo boxes - has a pack_start()
-    # of its own that GTK4 keeps; only boxes lost theirs.
-    assert isinstance(box, Gtk.Box), '%r is not a box' % (box,)
     if expand:
         if box.get_orientation() == Gtk.Orientation.HORIZONTAL:
             child.set_hexpand(True)
@@ -86,7 +91,20 @@ def pack(box: Any, child: Any, expand: bool = False, fill: bool = True,
     box.append(child)
 
 
-def set_border(widget: Any, width: int) -> None:
+def empty(box: Gtk.Box) -> None:
+    """Take everything out of <box>.
+
+    Gtk.Container.foreach() is gone in GTK4 and a box has no
+    remove_all(): it hands out its children one at a time, and taking
+    one out is what makes the next one first.
+    """
+    child = box.get_first_child()
+    while child is not None:
+        box.remove(child)
+        child = box.get_first_child()
+
+
+def set_border(widget: Gtk.Widget, width: int) -> None:
     """Put <width> pixels of space around what <widget> holds.
 
     Gtk.Container.set_border_width() is gone in GTK4; the space around a
@@ -96,16 +114,17 @@ def set_border(widget: Any, width: int) -> None:
     a border - the space has to go around what it holds instead.
     """
     if isinstance(widget, Gtk.Window):
-        widget = widget.get_child()
-        if widget is None:
+        held = widget.get_child()
+        if held is None:
             return
+        widget = held
     widget.set_margin_top(width)
     widget.set_margin_bottom(width)
     widget.set_margin_start(width)
     widget.set_margin_end(width)
 
 
-def chooser_paths(chooser: Any) -> list:
+def chooser_paths(chooser: Gtk.FileChooser) -> list[str]:
     """The paths of the files selected in <chooser>.
 
     Gtk.FileChooser.get_filenames() is gone in GTK4; get_files() answers
@@ -114,29 +133,30 @@ def chooser_paths(chooser: Any) -> list:
     files = chooser.get_files()
     paths = []
     for index in range(files.get_n_items()):
-        path = files.get_item(index).get_path()
+        path = cast(Gio.File, files.get_item(index)).get_path()
         if path is not None:
             paths.append(path)
     return paths
 
 
-def chooser_folder(chooser: Any) -> "str | None":
+def chooser_folder(chooser: Gtk.FileChooser) -> "str | None":
     """The path of the folder <chooser> is showing, if it is local."""
     folder = chooser.get_current_folder()
     return folder.get_path() if folder is not None else None
 
 
-def set_chooser_folder(chooser: Any, path: str) -> None:
+def set_chooser_folder(chooser: Gtk.FileChooser, path: str) -> None:
     """Show <path> in <chooser>; GTK4 takes a Gio.File, not a name."""
     chooser.set_current_folder(Gio.File.new_for_path(path))
 
 
-def set_chooser_file(chooser: Any, path: str) -> None:
+def set_chooser_file(chooser: Gtk.FileChooser, path: str) -> None:
     """Select <path> in <chooser>; set_filename() is gone in GTK4."""
     chooser.set_file(Gio.File.new_for_path(path))
 
 
-def popup_at(popover: Any, widget: Any, x: float, y: float) -> None:
+def popup_at(popover: Gtk.Popover, widget: Gtk.Widget,
+             x: float, y: float) -> None:
     """Show <popover> over <widget>, pointing at (<x>, <y>) within it.
 
     A Gtk.Menu was popped up at the pointer with an event; a
@@ -165,5 +185,33 @@ def popup_at(popover: Any, widget: Any, x: float, y: float) -> None:
     popover.set_halign(Gtk.Align.START)
     popover.set_position(Gtk.PositionType.BOTTOM)
     popover.popup()
+
+
+def display() -> Gdk.Display:
+    """The display MComix is running on.
+
+    Gdk.Display.get_default() answers with None before one has been
+    opened, and a clipboard, an icon theme, a monitor and a style
+    provider all belong to a display in GTK4, so every caller here needs
+    a real one rather than a check it cannot carry on from.
+    """
+    opened = Gdk.Display.get_default()
+    if opened is None:
+        raise RuntimeError('MComix is running without a display.')
+    return opened
+
+
+def simple_action(actions: Gio.ActionMap, name: str) -> Gio.SimpleAction:
+    """The action registered as <name> in <actions>.
+
+    Gio.ActionMap.lookup_action() answers with the Gio.Action interface,
+    which can neither be enabled nor given a state, and with None for a
+    name that was never added; every caller wants the Gio.SimpleAction
+    it put there.
+    """
+    action = actions.lookup_action(name)
+    if not isinstance(action, Gio.SimpleAction):
+        raise LookupError('There is no action named %r.' % name)
+    return action
 
 # vim: expandtab:sw=4:ts=4

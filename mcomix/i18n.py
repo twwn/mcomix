@@ -11,7 +11,7 @@ import sys
 try:
     import chardet
 except ImportError:
-    chardet = None
+    chardet = None  # type: ignore[assignment]
 
 from mcomix import preferences
 from mcomix import portability
@@ -20,7 +20,7 @@ from mcomix import log
 
 # Translation instance to enable other modules to use
 # functions other than the global _() if necessary
-_translation = None
+_translation: gettext.NullTranslations | None = None
 
 #: The locale identifier install_gettext() last resolved the interface
 #: language to. Read it through get_language() rather than directly.
@@ -31,7 +31,7 @@ _language = 'C'
 #: introspection binding, so the two that have catalogues are listed here.
 _RTL_LANGUAGES = frozenset(('fa', 'he'))
 
-def to_unicode(string):
+def to_unicode(string: str | bytes) -> str:
     """Convert <string> to unicode. First try the default filesystem
     encoding, and then fall back on some common encodings.
     """
@@ -60,7 +60,7 @@ def to_unicode(string):
 
     return string.decode('utf-8', 'replace')
 
-def to_utf8(string):
+def to_utf8(string: str | bytes) -> bytes:
     """ Helper function that converts unicode objects to UTF-8 encoded
     strings. Non-unicode strings are assumed to be already encoded
     and returned as-is. """
@@ -70,7 +70,7 @@ def to_utf8(string):
     else:
         return string
 
-def install_gettext(force_lang=None):
+def install_gettext(force_lang: str | None = None) -> None:
     """ Initialize gettext with the correct directory that contains
     MComix translations. This has to be done before any calls to gettext.gettext
     have been made to ensure all strings are actually translated. """
@@ -100,7 +100,9 @@ def install_gettext(force_lang=None):
     else:
         # Get the user's current locale
         lang = portability.get_default_locale()
-        lang_identifiers = gettext._expand_lang(lang)
+        # No public equivalent: _expand_lang turns a locale identifier
+        # into the candidates gettext itself would search for.
+        lang_identifiers = gettext._expand_lang(lang)  # type: ignore[attr-defined]
 
     # Make sure GTK uses the correct language.
     os.environ['LANGUAGE'] = lang
@@ -112,18 +114,17 @@ def install_gettext(force_lang=None):
     domain = constants.APPNAME.lower()
 
     # Search for .mo files manually, since gettext doesn't support packaged resources
+    translation: gettext.NullTranslations = gettext.NullTranslations()
     for lang in lang_identifiers:
         resource = os.path.join('messages', lang, 'LC_MESSAGES', '%s.mo' % domain)
         try:
             translation_content = pkgutil.get_data('mcomix', resource)
         except FileNotFoundError:
-            pass
-        else:
-            fp = io.BytesIO(translation_content)
-            translation = gettext.GNUTranslations(fp)
-            break
-    else:
-        translation = gettext.NullTranslations()
+            continue
+        if translation_content is None:
+            continue
+        translation = gettext.GNUTranslations(io.BytesIO(translation_content))
+        break
 
     global _translation
     _translation = translation
@@ -147,7 +148,7 @@ def _(message: str) -> str:
     """Translate the messsage using the current translator."""
     return get_translation().gettext(message)
 
-def to_display_string(string):
+def to_display_string(string: str) -> str:
     """ Converts a string to a valid UTF-8 string at the expense of data accuracy. """
     return string.encode('utf-8', 'surrogateescape').decode('utf-8', 'replace')
 

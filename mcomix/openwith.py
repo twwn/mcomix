@@ -15,6 +15,13 @@ from mcomix import callback
 from mcomix import i18n
 from mcomix.i18n import _
 
+from collections.abc import Callable, Sequence
+from typing import Any, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from mcomix import main
+from mcomix.dialog import Response
+
 
 DEBUGGING_CONTEXT, NO_FILE_CONTEXT, IMAGE_FILE_CONTEXT, ARCHIVE_CONTEXT = -1, 0, 1, 2
 
@@ -28,12 +35,12 @@ class OpenWithManager(object):
         pass
 
     @callback.Callback
-    def set_commands(self, cmds):
+    def set_commands(self, cmds: Sequence['OpenWithCommand']) -> None:
         prefs['openwith commands'] = [(cmd.get_label(), cmd.get_command(),
             cmd.get_cwd(), cmd.is_disabled_for_archives())
             for cmd in cmds]
 
-    def get_commands(self):
+    def get_commands(self) -> list['OpenWithCommand']:
         try:
             return [OpenWithCommand(label, command, cwd, disabled_for_archives)
                     for label, command, cwd, disabled_for_archives
@@ -45,29 +52,30 @@ class OpenWithManager(object):
 
 
 class OpenWithCommand(object):
-    def __init__(self, label, command, cwd, disabled_for_archives):
+    def __init__(self, label: str, command: str, cwd: str,
+                 disabled_for_archives: bool) -> None:
         self.label = label
         self.command = command.strip()
         self.cwd = cwd.strip()
 
         self.disabled_for_archives = bool(disabled_for_archives)
 
-    def get_label(self):
+    def get_label(self) -> str:
         return self.label
 
-    def get_command(self):
+    def get_command(self) -> str:
         return self.command
 
-    def get_cwd(self):
+    def get_cwd(self) -> str:
         return self.cwd
 
-    def is_disabled_for_archives(self):
+    def is_disabled_for_archives(self) -> bool:
         return self.disabled_for_archives
 
     def is_separator(self) -> bool:
         return bool(re.match(r'^-+$', self.get_label().strip()))
 
-    def execute(self, window):
+    def execute(self, window: 'main.MainWindow') -> None:
         """ Spawns a new process with the given executable
         and arguments. """
         if (self.is_disabled_for_archives() and
@@ -96,7 +104,7 @@ class OpenWithCommand(object):
         finally:
             os.chdir(current_dir)
 
-    def is_executable(self, window):
+    def is_executable(self, window: 'main.MainWindow') -> bool:
         """ Check if a name is executable. This name can be either
         a relative path, when the executable is in PATH, or an
         absolute path. """
@@ -113,7 +121,8 @@ class OpenWithCommand(object):
 
         return exe is not None
 
-    def is_valid_workdir(self, window, allow_empty=False):
+    def is_valid_workdir(self, window: 'main.MainWindow',
+                         allow_empty: bool = False) -> bool:
         """ Check if the working directory is valid. """
         cwd = self.get_cwd().strip()
         if not cwd:
@@ -129,7 +138,8 @@ class OpenWithCommand(object):
 
         return False
 
-    def parse(self, window, text='', check_restrictions=True):
+    def parse(self, window: 'main.MainWindow', text: str = '',
+              check_restrictions: bool = True) -> list[str]:
         """ Parses the command string and replaces special characters
         with their respective variable contents. Returns a list of
         arguments.
@@ -147,7 +157,8 @@ class OpenWithCommand(object):
         args = [os.path.expandvars(arg) for arg in args]
         return args
 
-    def _commandline_to_arguments(self, line, window, context_type):
+    def _commandline_to_arguments(self, line: str, window: 'main.MainWindow',
+                                  context_type: int) -> list[str]:
         """ Parse a command line string into a list containing
         the parts to pass to Popen. The following two functions have
         been contributed by Ark <aaku@users.sf.net>. """
@@ -192,7 +203,8 @@ class OpenWithCommand(object):
             result.append(buf)
         return result
 
-    def _expand_variable(self, identifier, window, context_type):
+    def _expand_variable(self, identifier: str, window: 'main.MainWindow',
+                         context_type: int) -> str:
         """ Replaces variables with their respective file
         or archive path. """
 
@@ -207,49 +219,72 @@ class OpenWithCommand(object):
             raise OpenWithException(
                 _("Archive-related variables can only be used for archives."))
 
+        # Both of these answer None where there is nothing open, and
+        # every variable below is built out of one of them, so the answer
+        # used to be a type error out of os.path rather than the
+        # complaint this method raises for everything else it cannot do.
+        def base_path() -> str:
+            answer = window.filehandler.get_path_to_base()
+            if answer is None:
+                raise OpenWithException(
+                    _("File-related variables can only be used for files."))
+            return answer
+
+        def page_path() -> str:
+            answer = window.imagehandler.get_path_to_page()
+            if answer is None:
+                raise OpenWithException(
+                    _("File-related variables can only be used for files."))
+            return answer
+
         if identifier == '/':
             return os.path.sep
         elif identifier == 'a':
             return window.filehandler.get_base_filename()
         elif identifier == 'd':
-            return os.path.basename(os.path.dirname(window.imagehandler.get_path_to_page()))
+            return os.path.basename(os.path.dirname(page_path()))
         elif identifier == 'f':
-            return window.imagehandler.get_page_filename()
+            name = window.imagehandler.get_page_filename()
+            if not isinstance(name, str):
+                raise OpenWithException(
+                    _("File-related variables can only be used for files."))
+            return name
         elif identifier == 'c':
-            return os.path.basename(os.path.dirname(window.filehandler.get_path_to_base()))
+            return os.path.basename(os.path.dirname(base_path()))
         elif identifier == 'b':
             if (context_type & ARCHIVE_CONTEXT):
                 return window.filehandler.get_base_filename() # same as %a
             else:
-                return os.path.basename(os.path.dirname(window.imagehandler.get_path_to_page())) # same as %d
+                return os.path.basename(os.path.dirname(page_path())) # same as %d
         elif identifier == 's':
             if (context_type & ARCHIVE_CONTEXT):
-                return os.path.basename(os.path.dirname(window.filehandler.get_path_to_base())) # same as %c
+                return os.path.basename(os.path.dirname(base_path())) # same as %c
             else:
-                return os.path.basename(os.path.dirname(os.path.dirname(window.imagehandler.get_path_to_page())))
+                return os.path.basename(os.path.dirname(os.path.dirname(page_path())))
         elif identifier == 'A':
-            return window.filehandler.get_path_to_base()
+            return base_path()
         elif identifier == 'D':
-            return os.path.normpath(os.path.dirname(window.imagehandler.get_path_to_page()))
+            return os.path.normpath(os.path.dirname(page_path()))
         elif identifier == 'F':
-            return os.path.normpath(window.imagehandler.get_path_to_page())
+            return os.path.normpath(page_path())
         elif identifier == 'C':
-            return os.path.dirname(window.filehandler.get_path_to_base())
+            return os.path.dirname(base_path())
         elif identifier == 'B':
             if (context_type & ARCHIVE_CONTEXT):
-                return window.filehandler.get_path_to_base() # same as %A
+                return base_path() # same as %A
             else:
-                return os.path.normpath(os.path.dirname(window.imagehandler.get_path_to_page())) # same as %D
+                return os.path.normpath(os.path.dirname(page_path())) # same as %D
         elif identifier == 'S':
             if (context_type & ARCHIVE_CONTEXT):
-                return os.path.dirname(window.filehandler.get_path_to_base()) # same as %C
+                return os.path.dirname(base_path()) # same as %C
             else:
-                return os.path.dirname(os.path.dirname(window.imagehandler.get_path_to_page()))
+                return os.path.dirname(os.path.dirname(page_path()))
         else:
             raise OpenWithException(
                 _("Invalid escape sequence: %%%s") % identifier)
 
-    def _get_context_type(self, window, check_restrictions=True):
+    def _get_context_type(self, window: 'main.MainWindow',
+                          check_restrictions: bool = True) -> int:
         if not check_restrictions:
             return DEBUGGING_CONTEXT # ignore context, reflect variable name
         context = 0
@@ -269,7 +304,8 @@ class OpenWithEditor(Dialog):
     keeps its own internal model once initialized, and will overwrite
     the external model (i.e. preferences) only when properly closed. """
 
-    def __init__(self, window, openwithmanager):
+    def __init__(self, window: 'main.MainWindow',
+                 openwithmanager: OpenWithManager) -> None:
         # GTK4's Gtk.Dialog takes properties, not a positional title.
         super(OpenWithEditor, self).__init__(
             title=_('Edit external commands'), transient_for=window)
@@ -303,8 +339,8 @@ class OpenWithEditor(Dialog):
         self._exec_label.set_xalign(0)
         self._exec_label.set_yalign(0)
         self._set_exec_text('')
-        self._save_button = self.add_button(_('_Save'), Gtk.ResponseType.ACCEPT)
-        self.set_default_response(Gtk.ResponseType.ACCEPT)
+        self._save_button = self.add_button(_('_Save'), Response.ACCEPT)
+        self.set_default_response(Response.ACCEPT)
 
         self._layout()
         self._setup_table()
@@ -323,18 +359,18 @@ class OpenWithEditor(Dialog):
         self._openwith.set_commands(commands)
         self._changed = False
 
-    def get_commands(self):
+    def get_commands(self) -> list[OpenWithCommand]:
         """ Retrieves a list of OpenWithCommand instances from
         the list model. """
         return [self._command_of(row)
                 for row in self._command_list.each_row()]
 
     @staticmethod
-    def _command_of(row):
+    def _command_of(row: Any) -> OpenWithCommand:
         """ The command the fields of <row> describe. """
         return OpenWithCommand(row.label, row.command, row.cwd, row.disabled)
 
-    def get_command(self):
+    def get_command(self) -> OpenWithCommand | None:
         """ Retrieves the selected command object. """
         row = self._command_list.get_selected_row()
         return self._command_of(row) if row is not None else None
@@ -370,17 +406,17 @@ class OpenWithEditor(Dialog):
             self._test_field.set_text(str(e))
             self._set_exec_text('')
 
-    def _add_command(self, button):
+    def _add_command(self, button: Any) -> None:
         """ Add a new empty label-command line to the list. """
         self._add_row(column_list.Row(label=_('Command label'), command='',
                                       cwd='', disabled=False, editable=True))
 
-    def _add_sep_command(self, button):
+    def _add_sep_command(self, button: Any) -> None:
         """ Adds a new separator line. """
         self._add_row(column_list.Row(label='-', command='', cwd='',
                                       disabled=False, editable=False))
 
-    def _add_row(self, row):
+    def _add_row(self, row: Any) -> None:
         """ Put <row> above the selected line, or at the end. """
         selected = self._command_list.get_selected_positions()
         if selected:
@@ -389,22 +425,22 @@ class OpenWithEditor(Dialog):
             self._command_list.append_row(row)
         self._changed = True
 
-    def _remove_command(self, button):
+    def _remove_command(self, button: Any) -> None:
         """ Removes the currently selected command from the list. """
         row = self._command_list.get_selected_row()
         if row is not None:
             self._command_list.remove_row(row)
             self._changed = True
 
-    def _up_command(self, button):
+    def _up_command(self, button: Any) -> None:
         """ Moves the selected command up by one. """
         self._move_command(-1)
 
-    def _down_command(self, button):
+    def _down_command(self, button: Any) -> None:
         """ Moves the selected command down by one. """
         self._move_command(1)
 
-    def _move_command(self, offset):
+    def _move_command(self, offset: int) -> None:
         """ Moves the selected command <offset> lines along the list. """
         selected = self._command_list.get_selected_positions()
         if not selected:
@@ -418,13 +454,13 @@ class OpenWithEditor(Dialog):
                        self._command_list.store.get_n_items() - 1)))
         self._changed = True
 
-    def _run_command(self, button):
+    def _run_command(self, button: Any) -> None:
         """ Executes the selected command in the current context. """
         command = self.get_command()
         if command and not command.is_separator():
             command.execute(self._window)
 
-    def _item_selected(self, *args):
+    def _item_selected(self, *args: Any) -> None:
         """ Enable or disable buttons that depend on an item being selected. """
         selected = bool(self._command_list.get_selected_positions())
         for button in (self._remove_button, self._up_button,
@@ -436,7 +472,7 @@ class OpenWithEditor(Dialog):
         else:
             self._test_field.set_text('')
 
-    def _set_exec_text(self, text):
+    def _set_exec_text(self, text: str) -> None:
         self._exec_label.set_text(text)
 
     def _layout(self) -> None:
@@ -506,9 +542,9 @@ class OpenWithEditor(Dialog):
 
         self._command_list.set_reorderable(True)
 
-    def _rewrote(self, attr):
+    def _rewrote(self, attr: str) -> Callable[[Any, str], None]:
         """ Answer an edit of the <attr> field of a row. """
-        def rewrote(row, new_text):
+        def rewrote(row: Any, new_text: str) -> None:
             # Prevent changing command to separator, and completely
             # removing label
             if attr == 'label' and (not new_text.strip()
@@ -524,28 +560,31 @@ class OpenWithEditor(Dialog):
             self.test_command()
         return rewrote
 
-    def _value_changed(self, row, value):
+    def _value_changed(self, row: Any, value: bool) -> None:
         """ Called when a toggle field is changed """
         row.disabled = value
         self._changed = True
 
-    def _response(self, dialog, response):
-        if response == Gtk.ResponseType.ACCEPT:
+    def _response(self, dialog: Any, response: int) -> None:
+        if response == Response.ACCEPT:
             # The Save button is only enabled if all commands are valid
             self.save()
             self.set_visible(False)
         else:
             if self._changed:
-                confirm_diag = message_dialog.MessageDialog(self, Gtk.DialogFlags.MODAL,
-                    Gtk.MessageType.INFO, Gtk.ButtonsType.YES_NO)
+                confirm_diag = message_dialog.MessageDialog(
+                    self, modal=True, buttons=Gtk.ButtonsType.YES_NO)
                 confirm_diag.set_text(_('Save changes to commands?'),
                     _('You have made changes to the list of external commands that '
                       'have not been saved yet. Press "Yes" to save all changes, '
                       'or "No" to discard them.'))
-                confirm_diag.run_async(
-                    lambda response: response == Gtk.ResponseType.YES and self.save())
+                def confirmed(answer: int) -> None:
+                    if answer == Response.YES:
+                        self.save()
 
-    def _quote_if_necessary(self, arg):
+                confirm_diag.run_async(confirmed)
+
+    def _quote_if_necessary(self, arg: str) -> str:
         """ Quotes a command line argument if necessary. """
         if arg == "":
             return '""'

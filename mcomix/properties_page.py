@@ -1,6 +1,8 @@
 """properties_page.py - A page to put in the properties dialog window."""
 
-from gi.repository import Gtk
+from gi.repository import GdkPixbuf, Gtk
+
+from collections.abc import Sequence
 
 from mcomix import i18n
 from mcomix import image_tools
@@ -35,26 +37,28 @@ class _Page(Gtk.ScrolledWindow):
         borderbox.set_size_request(-1, 130)
         widgets.pack(topbox, borderbox, True, True, 0)
         self._insidebox = borderbox
-        self._mainbox = None
-        self._extrabox = None
+        # The two boxes the page is written into.  They stand for its
+        # whole life and reset() empties them; building another pair for
+        # every book, and taking the old one off the page again, said
+        # the same thing at more cost.
+        self._mainbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 5)
+        widgets.set_border(self._mainbox, 10)
+        self._insidebox.set_child(self._mainbox)
+        self._extrabox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 10)
+        widgets.pack(self._vbox, self._extrabox, False, False, 0)
         self.reset()
 
     def reset(self) -> None:
+        """Take off what the book before this one was described with."""
         self._thumb.set_paintable(None)
-        self._mainbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 5)
-        widgets.set_border(self._mainbox, 10)
-        # Puts out whatever was in the frame before.
-        self._insidebox.set_child(self._mainbox)
-        if self._extrabox is not None:
-            self._vbox.remove(self._extrabox)
-        self._extrabox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 10)
-        widgets.pack(self._vbox, self._extrabox, False, False, 0)
+        widgets.empty(self._mainbox)
+        widgets.empty(self._extrabox)
 
-    def set_thumbnail(self, pixbuf):
+    def set_thumbnail(self, pixbuf: GdkPixbuf.Pixbuf) -> None:
         pixbuf = image_tools.add_border(pixbuf, 1)
         self._thumb.set_paintable(image_tools.pixbuf_to_texture(pixbuf))
 
-    def set_filename(self, filename):
+    def set_filename(self, filename: str) -> None:
         """Set the filename to be displayed to <filename>. Call this before
         set_main_info().
         """
@@ -64,7 +68,7 @@ class _Page(Gtk.ScrolledWindow):
         label.set_selectable(True)
         widgets.pack(self._mainbox, label, False, False, 0)
 
-    def set_main_info(self, info):
+    def set_main_info(self, info: Sequence[str]) -> None:
         """Set the information in the main info box (below the filename) to
         the values in the sequence <info>.
         """
@@ -75,7 +79,7 @@ class _Page(Gtk.ScrolledWindow):
             label.set_selectable(True)
             widgets.pack(self._mainbox, label, False, False, 0, end=True)
 
-    def set_secondary_info(self, info):
+    def set_secondary_info(self, info: Sequence[tuple[str, str]]) -> None:
         """Set the information below the main info box to the values in the
         sequence <info>. Each entry in info should be a tuple (desc, value).
         """

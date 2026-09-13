@@ -1,9 +1,11 @@
 """icons.py - Load MComix specific icons."""
 
-from gi.repository import Gdk, GdkPixbuf, Gtk
+from gi.repository import GdkPixbuf, Gtk
 import os
 
 from typing import Any
+
+from mcomix import widgets
 
 
 
@@ -25,7 +27,7 @@ def icon_theme() -> Any:
     GTK4 has no single default theme: it keeps one per display, so this
     needs a display to have been opened, which rules out module level.
     """
-    return Gtk.IconTheme.get_for_display(Gdk.Display.get_default())
+    return Gtk.IconTheme.get_for_display(widgets.display())
 
 
 def load_icons() -> None:

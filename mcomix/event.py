@@ -9,23 +9,34 @@ from mcomix import widgets
 from mcomix import keybindings
 from mcomix import openwith
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    # main imports this module, so the window it hands over can only be
+    # named while the checker is reading and not while Python is.
+    from mcomix import main
+
 
 class EventHandler(object):
 
-    def __init__(self, window):
+    def __init__(self, window: 'main.MainWindow') -> None:
         self._window = window
 
-        self._last_pointer_pos_x = 0
-        self._last_pointer_pos_y = 0
-        self._pressed_pointer_pos_x = 0
-        self._pressed_pointer_pos_y = 0
+        # Where the pointer was, in the fractional coordinates a GTK4
+        # gesture reports: these were whole numbers, which is not what
+        # any of the controllers below hand over.
+        self._last_pointer_pos_x = 0.0
+        self._last_pointer_pos_y = 0.0
+        self._pressed_pointer_pos_x = 0.0
+        self._pressed_pointer_pos_y = 0.0
 
         #: For scrolling "off the page".
         self._extra_scroll_events = 0
         #: If True, increment _extra_scroll_events before switchting pages
         self._scroll_protection = False
 
-    def register_controllers(self, window, page_area) -> None:
+    def register_controllers(self, window: 'main.MainWindow',
+                             page_area: Gtk.Widget) -> None:
         """Add the controllers input arrives through in GTK4.
 
         There are no event masks and no *-event signals any more: a
@@ -60,7 +71,8 @@ class EventHandler(object):
         drop.connect('drop', self.drag_n_drop_event)
         page_area.add_controller(drop)
 
-    def focus_changed(self, window, _parameter) -> None:
+    def focus_changed(self, window: 'main.MainWindow',
+                      _parameter: object) -> None:
         """Handle the main window gaining or losing the focus.
 
         One handler serves both: the window reports it as the one
@@ -71,7 +83,7 @@ class EventHandler(object):
         else:
             self._window.lost_focus()
 
-    def resize_event(self, *args) -> None:
+    def resize_event(self, *args: object) -> None:
         """Handle the room the pages are drawn in changing size.
 
         The canvas says so only when it really has changed, so there is
@@ -80,8 +92,9 @@ class EventHandler(object):
         self._window.previous_size = self._window.get_window_size()
         self._window.draw_image()
 
-    def window_state_event(self, window, _parameter) -> None:
-        is_fullscreen = self._window.is_fullscreen
+    def window_state_event(self, window: 'main.MainWindow',
+                           _parameter: object) -> None:
+        is_fullscreen = self._window.is_fullscreen()
         if self._window.was_fullscreen != is_fullscreen:
             # Fullscreen state changed.
             self._window.was_fullscreen = is_fullscreen
@@ -440,7 +453,9 @@ class EventHandler(object):
             manager.register('execute_command_%d' % i, ['%d' % i],
                              self._execute_command, args=[i - 1])
 
-    def key_press_event(self, controller, keyval, keycode, state):
+    def key_press_event(self, controller: Gtk.EventControllerKey,
+                        keyval: int, keycode: int,
+                        state: Gdk.ModifierType) -> bool:
         """Handle key press events on the main window."""
 
         # This is set on demand by callback functions
@@ -499,7 +514,8 @@ class EventHandler(object):
         else:
             self._window.actiongroup.get_action('fullscreen').set_active(False)
 
-    def scroll_wheel_event(self, controller, delta_x, delta_y):
+    def scroll_wheel_event(self, controller: Gtk.EventControllerScroll,
+                           delta_x: float, delta_y: float) -> bool:
         """Handle scroll wheel events on the main layout area. The scroll
         wheel flips pages in best fit mode and scrolls the scrollbars
         otherwise.
@@ -552,7 +568,8 @@ class EventHandler(object):
 
         return Gdk.EVENT_STOP
 
-    def mouse_press_event(self, gesture, n_press, x, y):
+    def mouse_press_event(self, gesture: Gtk.GestureClick, n_press: int,
+                          x: float, y: float) -> None:
         """Handle mouse click events on the main layout area."""
 
         if self._window.was_out_of_focus:
@@ -582,12 +599,16 @@ class EventHandler(object):
             # it is answered: two of them are on screen in double page
             # mode, and the pointer has moved to the menu by then.
             self._window.popup_page = self._window.page_at(x, y)
-            widgets.popup_at(self._window.popup, gesture.get_widget(), x, y)
+            # A gesture that fires is on a widget; the window is where
+            # the popup is parented anyway.
+            over = gesture.get_widget() or self._window
+            widgets.popup_at(self._window.popup, over, x, y)
 
         elif button == 4:
             self._window.show_info_panel()
 
-    def mouse_release_event(self, gesture, n_press, x, y):
+    def mouse_release_event(self, gesture: Gtk.GestureClick, n_press: int,
+                            x: float, y: float) -> None:
         """Handle mouse button release events on the main layout area."""
 
         button = gesture.get_current_button()
@@ -618,7 +639,8 @@ class EventHandler(object):
             elif state & Gdk.ModifierType.SHIFT_MASK:
                 self._flip_page(-10)
 
-    def mouse_move_event(self, controller, x, y) -> None:
+    def mouse_move_event(self, controller: Gtk.EventControllerMotion,
+                         x: float, y: float) -> None:
         """Handle mouse pointer movement events."""
 
         # Only the page area brings the cursor back, so it stays hidden
@@ -633,7 +655,9 @@ class EventHandler(object):
             self._last_pointer_pos_x = x
             self._last_pointer_pos_y = y
 
-    def drag_n_drop_event(self, target, value, x, y) -> bool:
+    def drag_n_drop_event(self, target: Gtk.DropTarget,
+                          value: Gdk.FileList, x: float,
+                          y: float) -> bool:
         """Handle a drop of files on the main layout area."""
         # The drag source is inside MComix itself, so we ignore.
         drop = target.get_current_drop()
@@ -656,7 +680,7 @@ class EventHandler(object):
 
         return True
 
-    def _scroll_with_flipping(self, x, y):
+    def _scroll_with_flipping(self, x: float, y: float) -> bool:
         """Handle scrolling with the scroll wheel or the arrow keys, for which
         the pages might be flipped depending on the preferences.  Returns True
         if able to scroll without flipping and False if a new page was flipped
@@ -693,15 +717,16 @@ class EventHandler(object):
         """ Scrolls left. """
         self._scroll_with_flipping(-prefs['number of pixels to scroll per key event'], 0)
 
-    def _smart_scroll_down(self, small_step=None):
+    def _smart_scroll_down(self, small_step: int | None = None) -> None:
         """ Smart scrolling. """
         self._smart_scrolling(small_step, False)
 
-    def _smart_scroll_up(self, small_step=None):
+    def _smart_scroll_up(self, small_step: int | None = None) -> None:
         """ Reversed smart scrolling. """
         self._smart_scrolling(small_step, True)
 
-    def _smart_scrolling(self, small_step, backwards):
+    def _smart_scrolling(self, small_step: int | None,
+                         backwards: bool) -> None:
         # Collect data from the environment
         viewport_size = self._window.get_visible_area_size()
         distance = prefs['smart scroll percentage']
@@ -778,19 +803,20 @@ class EventHandler(object):
             assert False, "Programmer is moron, incorrect assertion."
 
 
-    def _flip_page(self, number_of_pages, single_step=False):
+    def _flip_page(self, number_of_pages: int,
+                   single_step: bool = False) -> None:
         """ Switches a number of pages forwards/backwards. If C{single_step} is True,
         the page count will be advanced by only one page even in double page mode. """
         self._extra_scroll_events = 0
         self._window.flip_page(number_of_pages, single_step=single_step)
 
-    def _left_right_page_progress(self, number_of_pages=1):
+    def _left_right_page_progress(self, number_of_pages: int = 1) -> None:
         """ If number_of_pages is positive, this function advances the specified
         number of pages in manga mode and goes back the same number of pages in
         normal mode. The opposite happens for number_of_pages being negative. """
         self._flip_page(-number_of_pages if self._window.is_manga_mode else number_of_pages)
 
-    def _execute_command(self, cmdindex):
+    def _execute_command(self, cmdindex: int) -> None:
         """ Execute an external command. cmdindex should be an integer from 0 to 9,
         representing the command that should be executed. """
         manager = openwith.OpenWithManager()

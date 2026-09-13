@@ -1,6 +1,9 @@
 """lens.py - Magnifying lens."""
 
 
+from collections.abc import Sequence
+from typing import Any, TYPE_CHECKING
+
 from gi.repository import GdkPixbuf, Graphene, Gtk
 
 from mcomix.preferences import prefs
@@ -9,8 +12,12 @@ from mcomix import constants
 from mcomix import box
 from mcomix import tools
 
+if TYPE_CHECKING:
+    from mcomix import main
+    from mcomix import ui
 
-class MagnifyingLens(object):
+
+class MagnifyingLens:
 
     """The MagnifyingLens creates cursors from the raw pixbufs containing
     the unscaled data for the currently displayed images. It does this by
@@ -25,7 +32,7 @@ class MagnifyingLens(object):
     #: What the lens is called among the canvas' overlays.
     _OVERLAY = 'lens'
 
-    def __init__(self, window):
+    def __init__(self, window: 'main.MainWindow') -> None:
         self._window = window
         self._area = self._window._main_layout
         motion = Gtk.EventControllerMotion()
@@ -35,14 +42,14 @@ class MagnifyingLens(object):
         #: Stores lens state
         self._enabled = False
         #: Stores a tuple of the last mouse coordinates
-        self._point = None
+        self._point: tuple[int, int] | None = None
         #: Stores the last rectangle that was used to render the lens
-        self._last_lens_rect = None
+        self._last_lens_rect: tuple[int, int, int, int] | None = None
 
-    def get_enabled(self):
+    def get_enabled(self) -> bool:
         return self._enabled
 
-    def set_enabled(self, enabled):
+    def set_enabled(self, enabled: bool) -> None:
         self._enabled = enabled
 
         if enabled:
@@ -59,7 +66,7 @@ class MagnifyingLens(object):
 
     enabled = property(get_enabled, set_enabled)
 
-    def _draw_lens(self, x, y):
+    def _draw_lens(self, x: int, y: int) -> None:
         """Calculate what image data to put in the lens and update the cursor
         with it; <x> and <y> are the positions of the cursor within the
         main window layout area.
@@ -86,7 +93,8 @@ class MagnifyingLens(object):
 
         self._last_lens_rect = rectangle
 
-    def _calculate_lens_rect(self, x, y, width, height, border_size):
+    def _calculate_lens_rect(self, x: int, y: int, width: int, height: int,
+                             border_size: int) -> tuple[int, int, int, int]:
         """ Calculates the area where the lens will be drawn on screen. This method takes
         screen space into calculation and moves the rectangle accordingly when the the rectangle
         would otherwise flow over the allocated area. """
@@ -102,7 +110,7 @@ class MagnifyingLens(object):
 
         return lens_x, lens_y, width + 2 * border_size, height + 2 * border_size
 
-    def _clear_lens(self, current_lens_region=None):
+    def _clear_lens(self, current_lens_region: Any = None) -> None:
         """ Takes the lens off the pages again. """
 
         if not self._last_lens_rect:
@@ -111,11 +119,11 @@ class MagnifyingLens(object):
         self._area.set_overlay(self._OVERLAY, None)
         self._last_lens_rect = None
 
-    def toggle(self, action):
+    def toggle(self, action: "ui._Action") -> None:
         """Toggle on or off the lens depending on the state of <action>."""
         self.enabled = action.get_active()
 
-    def _motion_event(self, controller, x, y):
+    def _motion_event(self, controller: Any, x: float, y: float) -> None:
         """ Called whenever the mouse moves over the image area. """
         # The lens works in canvas coordinates, which is what the events
         # on Gtk.Layout's scrolling window carried; a controller reports
@@ -125,7 +133,9 @@ class MagnifyingLens(object):
         if self.enabled:
             self._draw_lens(*self._point)
 
-    def _get_lens_pixbuf(self, x, y, lens_size, border_size, check_offset):
+    def _get_lens_pixbuf(self, x: int, y: int, lens_size: Sequence[int],
+                         border_size: int,
+                         check_offset: Sequence[int]) -> GdkPixbuf.Pixbuf:
         """Get a pixbuf containing the appropiate image data for the lens
         where <x> and <y> are the positions of the cursor.
         """
@@ -138,6 +148,7 @@ class MagnifyingLens(object):
         canvas = GdkPixbuf.Pixbuf.new(colorspace=GdkPixbuf.Colorspace.RGB,
             has_alpha=not opaque, bits_per_sample=8, width=lens_size[0],
             height=lens_size[1]) # 2D only
+        assert canvas is not None, 'the lens could not be allocated'
         canvas.fill(image_tools.convert_rgba_to_rgba8int(self._window.get_bg_colour()))
         for b, source_pixbuf, tf in zip(cb, source_pixbufs, transforms):
             if image_tools.is_animation(source_pixbuf):
@@ -156,14 +167,20 @@ class MagnifyingLens(object):
 
         return image_tools.add_border(canvas, border_size)
 
-    def _draw_lens_pixbuf(self, ref_pos, csize, srcbuf, rotation, flips,
-        lens_size, lens_scale, dstbuf, interpolation, composite_color_args,
-        check_offset):
+    def _draw_lens_pixbuf(self, ref_pos: Sequence[int], csize: Sequence[int],
+                          srcbuf: GdkPixbuf.Pixbuf, rotation: int,
+                          flips: Sequence[bool], lens_size: Sequence[int],
+                          lens_scale: Sequence[float],
+                          dstbuf: GdkPixbuf.Pixbuf,
+                          interpolation: GdkPixbuf.InterpType,
+                          composite_color_args: tuple[int, int, int] | None,
+                          check_offset: Sequence[int]) -> None:
         if tools.volume(csize) == 0:
             return
 
         # Some computations are the same for each axis.
-        def calc_1d(ref_pos, csize, src_pixbuf_size, lens_size, lens_scale):
+        def calc_1d(ref_pos: int, csize: int, src_pixbuf_size: int,
+                    lens_size: int, lens_scale: float) -> tuple[Any, ...]:
             # compute initial scales, sizes and positions
             page_scale = csize / src_pixbuf_size
             source_ref_pos = ref_pos / page_scale
@@ -188,7 +205,10 @@ class MagnifyingLens(object):
         # prepare actual computation
         src_pixbuf_size = [srcbuf.get_width(), srcbuf.get_height()] # 2D only
         transpose = (1, 0) if tools.rotation_swaps_axes(rotation) else (0, 1) # 2D only
-        tp = lambda x: tools.remap_axes(x, transpose)
+        def tp[T](vector: Sequence[T]) -> list[T]:
+            """<vector> with its two axes the way round the rotation put them."""
+            return tools.remap_axes(vector, transpose)
+
         axis_flip = tuple(map(lambda r, f: (rotation in r) ^ f, ((270, 180), (90, 180)), tp(flips))) # 2D only
 
         # calculate size and position data
@@ -219,11 +239,15 @@ class MagnifyingLens(object):
                 # write to temporary buffer
                 tempbuf = GdkPixbuf.Pixbuf.new(srcbuf.get_colorspace(),
                     srcbuf.get_has_alpha(), srcbuf.get_bits_per_sample(), *dest_lens_size)
+                assert tempbuf is not None, 'the lens buffer could not be allocated'
                 temp_lens_box = box.Box.intersect(box.Box(lens_size, position=refpos_tracking),
                     box.Box(mapped_size))
-                srcbuf.scale(tempbuf, 0, 0, *dest_lens_size,
-                    *tools.vector_opposite(temp_lens_box.get_position()),
-                    *applied_source_scale, interpolation) # 2D only
+                temp_x, temp_y = tools.vector_opposite(
+                    temp_lens_box.get_position())
+                srcbuf.scale(tempbuf, 0, 0, dest_lens_size[0], dest_lens_size[1],
+                    temp_x, temp_y,
+                    applied_source_scale[0], applied_source_scale[1],
+                    interpolation) # 2D only
 
                 # apply all necessary transforms to temporary buffer
                 tempbuf = image_tools.rotate_pixbuf(tempbuf, rotation)
@@ -233,36 +257,50 @@ class MagnifyingLens(object):
 
                 # Not sure whether it should be inverse axis remapping instead of
                 # forward, but in 2D, there is no difference anyway.
-                remapped_dest_lens_offset = tp(dest_lens_offset)
-                remapped_dest_lens_size = tp(dest_lens_size)
+                # 2D only, and spelled out rather than starred: the
+                # destination arguments of both calls below are followed
+                # by more of them, which a starred vector cannot express.
+                dest_x, dest_y = tp(dest_lens_offset)
+                dest_width, dest_height = tp(dest_lens_size)
 
                 # copy result from temporary buffer to actual lens buffer
                 if composite_color_args is None:
-                    tempbuf.copy_area(0, 0, *remapped_dest_lens_size, dstbuf,
-                        *remapped_dest_lens_offset) # 2D only
+                    tempbuf.copy_area(0, 0, dest_width, dest_height, dstbuf,
+                        dest_x, dest_y)
                 else:
-                    tempbuf.composite_color(dstbuf, *remapped_dest_lens_offset,
-                        *remapped_dest_lens_size, *remapped_dest_lens_offset, 1, 1,
-                        GdkPixbuf.InterpType.NEAREST, 255,
-                        *tools.vector_add(tp(dest_lens_offset), check_offset),
-                        *composite_color_args) # 2D only
+                    check_x, check_y = tools.vector_add(tp(dest_lens_offset),
+                                                        check_offset)
+                    tempbuf.composite_color(dstbuf, dest_x, dest_y,
+                        dest_width, dest_height, dest_x, dest_y, 1, 1,
+                        GdkPixbuf.InterpType.NEAREST, 255, check_x, check_y,
+                        *composite_color_args)
                 # unref temporary buffer
                 tempbuf = None
             else:
                 # no workaround needed
+                # 2D only, and spelled out rather than starred: the
+                # destination arguments are followed by more of them,
+                # which a starred vector cannot express.
                 if composite_color_args is None:
-                    srcbuf.scale(dstbuf, *dest_lens_offset, *dest_lens_size,
-                        *neg_mapped_lens_pos, *applied_source_scale, interpolation) # 2D only
+                    srcbuf.scale(dstbuf, dest_lens_offset[0], dest_lens_offset[1],
+                        dest_lens_size[0], dest_lens_size[1],
+                        neg_mapped_lens_pos[0], neg_mapped_lens_pos[1],
+                        applied_source_scale[0], applied_source_scale[1],
+                        interpolation)
                 else:
-                    srcbuf.composite_color(dstbuf, *dest_lens_offset, *dest_lens_size,
-                        *neg_mapped_lens_pos, *applied_source_scale, interpolation,
-                        255, *tools.vector_add(dest_lens_offset, check_offset),
-                        *composite_color_args) # 2D only
+                    check_x, check_y = tools.vector_add(dest_lens_offset,
+                                                        check_offset)
+                    srcbuf.composite_color(dstbuf,
+                        dest_lens_offset[0], dest_lens_offset[1],
+                        dest_lens_size[0], dest_lens_size[1],
+                        neg_mapped_lens_pos[0], neg_mapped_lens_pos[1],
+                        applied_source_scale[0], applied_source_scale[1],
+                        interpolation, 255, check_x, check_y,
+                        *composite_color_args)
         else:
             # If we are here, there is either no image to be drawn at all, or it is
             # out of range.
             pass
-        return dstbuf
 
 
 # vim: expandtab:sw=4:ts=4

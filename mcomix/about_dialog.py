@@ -10,9 +10,14 @@ from mcomix import strings
 from mcomix import image_tools
 from mcomix.i18n import _
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from mcomix import main
+
 class _AboutDialog(Gtk.AboutDialog):
 
-    def __init__(self, window):
+    def __init__(self, window: "main.MainWindow") -> None:
         # A GTK4 window is transient for another, not parented to it.
         super(_AboutDialog, self).__init__(transient_for=window)
 
@@ -23,9 +28,10 @@ class _AboutDialog(Gtk.AboutDialog):
         self.set_copyright('Copyright © 2005-2022')
 
         icon_data = pkgutil.get_data('mcomix', 'images/mcomix.png')
-        pixbuf = image_tools.load_pixbuf_data(icon_data)
-        # A GTK4 logo is a paintable, not a pixbuf.
-        self.set_logo(image_tools.pixbuf_to_texture(pixbuf))
+        if icon_data is not None:
+            pixbuf = image_tools.load_pixbuf_data(icon_data)
+            # A GTK4 logo is a paintable, not a pixbuf.
+            self.set_logo(image_tools.pixbuf_to_texture(pixbuf))
 
         comment = \
             _('%s is an image viewer specifically designed to handle comic books.') % \
@@ -54,7 +60,8 @@ class _AboutDialog(Gtk.AboutDialog):
 
         self.set_visible(True)
 
-    def _on_activate_link(self, about_dialog, uri):
+    def _on_activate_link(self, about_dialog: Gtk.AboutDialog,
+                          uri: str) -> bool:
         webbrowser.open(uri)
         return True
 

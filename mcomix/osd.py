@@ -3,10 +3,15 @@
 
 import textwrap
 
-from gi.repository import GLib, Graphene
+from gi.repository import GLib, Graphene, Gtk
 from gi.repository import Pango, PangoCairo
 
 from mcomix import image_tools
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from mcomix import main
 
 
 class OnScreenDisplay(object):
@@ -22,15 +27,15 @@ class OnScreenDisplay(object):
     #: What the OSD is called among the canvas' overlays.
     _OVERLAY = 'osd'
 
-    def __init__(self, window):
+    def __init__(self, window: "main.MainWindow") -> None:
         #: MainWindow
         self._window = window
         #: Stores the last rectangle that was used to render the OSD
-        self._last_osd_rect = None
+        self._last_osd_rect: tuple[int, int, int, int] | None = None
         #: Timeout event ID registered while waiting to hide the OSD
-        self._timeout_event = None
+        self._timeout_event: int | None = None
 
-    def show(self, text):
+    def show(self, text: str) -> None:
         """ Shows the OSD on the lower portion of the image window. """
 
         # Determine text to draw
@@ -39,12 +44,16 @@ class OnScreenDisplay(object):
 
         # Set up font information
         font = layout.get_context().get_font_description()
+        if font is None:
+            # A context that describes no font of its own: there is
+            # still one to scale, it is simply the default.
+            font = Pango.FontDescription()
         font.set_weight(Pango.Weight.BOLD)
         layout.set_alignment(Pango.Alignment.CENTER)
 
         # Scale font to fit within the screen size
         max_width, max_height = self._window.get_visible_area_size()
-        self._scale_font(font, layout, max_width, max_height)
+        self._scale_font(font, layout, max_width)
 
         # Calculate surrounding box
         layout_width, layout_height = layout.get_pixel_size()
@@ -64,15 +73,15 @@ class OnScreenDisplay(object):
         self._timeout_event = GLib.timeout_add_seconds(
             OnScreenDisplay.TIMEOUT, self.clear)
 
-    def clear(self) -> int:
+    def clear(self) -> bool:
         """ Removes the OSD. """
         if self._timeout_event:
             GLib.source_remove(self._timeout_event)
         self._timeout_event = None
         self._clear_osd()
-        return 0 # To unregister gobject timer event
+        return GLib.SOURCE_REMOVE  # The timer that called this is done.
 
-    def _wrap_text(self, text, width=70):
+    def _wrap_text(self, text: str, width: int = 70) -> str:
         """ Wraps the text to be C{width} characters at most. """
         parts = text.split('\n')
         result = []
@@ -94,8 +103,10 @@ class OnScreenDisplay(object):
         self._window._main_layout.set_overlay(self._OVERLAY, None)
         self._last_osd_rect = None
 
-    def _scale_font(self, font, layout, max_width, max_height):
-        """ Scales the font used by C{layout} until max_width/max_height is reached. """
+    def _scale_font(self, font: Pango.FontDescription, layout: Pango.Layout,
+                    max_width: int) -> None:
+        """ Scales the font used by C{layout} up to the largest size the
+        text still fits C{max_width} at. """
 
         SIZE_MIN, SIZE_MAX = 10, 60
         for font_size in range(SIZE_MIN, SIZE_MAX, 5):
@@ -108,13 +119,14 @@ class OnScreenDisplay(object):
                 layout.set_font_description(font)
                 break
 
-    def _draw_osd(self, layout, rect):
+    def _draw_osd(self, layout: Pango.Layout,
+                  rect: tuple[int, int, int, int]) -> None:
         """ Draws the text specified in C{layout} into a box at C{rect}. """
 
         # There is no window to paint into any more, and no damage to
         # work out: the canvas draws the OSD over the pages, and cairo
         # is still what draws it - a snapshot hands one out.
-        def draw(snapshot) -> None:
+        def draw(snapshot: Gtk.Snapshot) -> None:
             bounds = Graphene.Rect()
             bounds.init(*rect)
             cr = snapshot.append_cairo(bounds)

@@ -1,16 +1,23 @@
 """file_chooser_main_dialog.py - Custom FileChooserDialog implementations."""
 
 
+from gi.repository import Gio
+
 from mcomix.preferences import prefs
 from mcomix import file_chooser_base_dialog
 
-_main_filechooser_dialog = None
+from typing import Any, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from mcomix import main
+
+_main_filechooser_dialog: "_MainFileChooserDialog | None" = None
 
 class _MainFileChooserDialog(file_chooser_base_dialog._BaseFileChooserDialog):
 
     """The normal filechooser dialog used with the "Open" menu item."""
 
-    def __init__(self, window):
+    def __init__(self, window: "main.MainWindow") -> None:
         super(_MainFileChooserDialog, self).__init__(parent=window)
         self._window = window
         self.filechooser.set_select_multiple(True)
@@ -30,7 +37,7 @@ class _MainFileChooserDialog(file_chooser_base_dialog._BaseFileChooserDialog):
         except:
             self.filechooser.set_filter(filters[0])
 
-    def files_chosen(self, paths):
+    def files_chosen(self, paths: list[str]) -> None:
         if paths:
             try: # For some reason this fails sometimes (GTK+ bug?)
                 filter_index = self.list_filters().index(
@@ -42,16 +49,14 @@ class _MainFileChooserDialog(file_chooser_base_dialog._BaseFileChooserDialog):
 
             # If more than one file is selected, restrict opening
             # further files to the selection.
-            if len(paths) > 1:
-                files = paths
-            else:
-                files = paths[0]
+            files: "str | list[str]" = paths if len(paths) > 1 else paths[0]
 
             self._window.filehandler.open_file(files)
         else:
             _close_main_filechooser_dialog()
 
-def open_main_filechooser_dialog(action, window):
+def open_main_filechooser_dialog(action: Gio.SimpleAction,
+                                 window: "main.MainWindow") -> None:
     """Open the main filechooser dialog."""
     global _main_filechooser_dialog
     if _main_filechooser_dialog is None:
@@ -60,7 +65,7 @@ def open_main_filechooser_dialog(action, window):
         _main_filechooser_dialog.present()
 
 
-def _close_main_filechooser_dialog(*args):
+def _close_main_filechooser_dialog(*args: Any) -> None:
     """Close the main filechooser dialog."""
     global _main_filechooser_dialog
     if _main_filechooser_dialog is not None:

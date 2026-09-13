@@ -4,12 +4,15 @@ import PIL.Image as Image
 import PIL.ImageDraw as ImageDraw
 import PIL.ImageOps as ImageOps
 
+from gi.repository import GdkPixbuf
+
 from mcomix import image_tools
 
-def draw_histogram(pixbuf, height=170, fill=170, text=True):
+def draw_histogram(pixbuf: GdkPixbuf.Pixbuf, height: int = 170,
+                   fill: int = 170, text: bool = True) -> GdkPixbuf.Pixbuf:
     """Draw a histogram from <pixbuf> and return it as another pixbuf.
 
-    The returned prixbuf will be 262x<height> px.
+    The returned pixbuf will be 262x<height> px.
 
     The value of <fill> determines the colour intensity of the filled graphs,
     valid values are between 0 and 255.

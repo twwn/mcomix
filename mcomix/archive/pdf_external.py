@@ -8,38 +8,103 @@ from mcomix.version_tools import Version
 from mcomix.archive import archive_base
 from mcomix.constants import PDF_RENDER_DPI_DEF, PDF_RENDER_DPI_MAX
 
+import functools
 import math
 import os
 import re
 import subprocess
+from collections.abc import Iterator
+from typing import NamedTuple
 
-_pdf_possible = None
-_mutool_exec = None
-_mudraw_exec = None
-_mudraw_trace_args = None
+
+class _MuPdf(NamedTuple):
+    """ The MuPDF commands _find_mupdf() resolved.  Which executable draws
+    a page, and which arguments make it trace one, depend on the version:
+    mutool grew a draw subcommand in 1.8, and before 1.7 tracing was -x on
+    a separate mudraw. """
+
+    version: Version
+    mutool: list[str]
+    mudraw: list[str]
+    trace_args: list[str]
+
+
+@functools.cache
+def _find_mupdf() -> _MuPdf | None:
+    """ Look for the MuPDF command line tools, and return what they can do,
+    or None if they are not installed. """
+    mutool = process.find_executable(('mutool',))
+    if mutool is None:
+        log.debug('mutool executable not found')
+        log.info('MuPDF not available.')
+        return None
+
+    # Find MuPDF version; assume 1.6 version since
+    # the '-v' switch is only supported from 1.7 onward...
+    version_string = '1.6'
+    proc = process.popen([mutool, '-v'],
+                         stdout=process.NULL,
+                         stderr=process.PIPE)
+    assert proc.stderr is not None
+    try:
+        output = proc.stderr.read()
+        if output.startswith(b'mutool version '):
+            version_string = output[15:].rstrip().decode()
+    finally:
+        proc.stderr.close()
+        proc.wait()
+    version = Version(version_string)
+
+    if version >= Version('1.8'):
+        # Mutool executable with draw support.
+        mupdf = _MuPdf(version, [mutool], [mutool, 'draw'], ['-F', 'trace'])
+    else:
+        # Separate mudraw executable.
+        mudraw = process.find_executable(('mudraw',))
+        if mudraw is None:
+            log.debug('mudraw executable not found')
+            log.info('MuPDF not available.')
+            return None
+        trace_args = ['-F', 'trace'] if version >= Version('1.7') else ['-x']
+        mupdf = _MuPdf(version, [mutool], [mudraw], trace_args)
+
+    log.info('Using MuPDF version: %s', mupdf.version)
+    log.debug('mutool: %s', ' '.join(mupdf.mutool))
+    log.debug('mudraw: %s', ' '.join(mupdf.mudraw))
+    log.debug('mudraw trace arguments: %s', ' '.join(mupdf.trace_args))
+    return mupdf
+
 
 class PdfArchive(archive_base.BaseArchive):
 
-    """ Concurrent calls to extract welcome! """
+    # Concurrent calls to extract welcome!
     support_concurrent_extractions = True
 
     _fill_image_regex = re.compile(r'^\s*<fill_image\b.*\b(matrix|transform)="(?P<matrix>[^"]+)".*\bwidth="(?P<width>\d+)".*\bheight="(?P<height>\d+)".*/>\s*$')
 
-    def __init__(self, archive):
-        super(PdfArchive, self).__init__(archive)
+    @property
+    def _mupdf(self) -> _MuPdf:
+        """ The MuPDF commands, for the code paths reached only once
+        is_available() has answered True. """
+        mupdf = _find_mupdf()
+        if mupdf is None:
+            raise ValueError('MuPDF is not available.')
+        return mupdf
 
-    def iter_contents(self):
-        proc = subprocess.run(_mutool_exec + ['show', '--', self.archive, 'pages'], stdout=subprocess.PIPE, encoding='utf-8')
+    def iter_contents(self) -> Iterator[str]:
+        proc = subprocess.run(self._mupdf.mutool + ['show', '--', self.archive, 'pages'],
+                              stdout=subprocess.PIPE, encoding='utf-8')
         for line in proc.stdout.splitlines():
             if line.startswith('page '):
                 yield line.split()[1] + '.png'
 
-    def extract(self, filename, destination_dir):
+    def extract(self, filename: str, destination_dir: str) -> None:
+        mupdf = self._mupdf
         self._create_directory(destination_dir)
         destination_path = os.path.join(destination_dir, filename)
         page_num = int(filename[0:-4])
         # Try to find optimal DPI.
-        cmd = _mudraw_exec + _mudraw_trace_args + ['--', self.archive, str(page_num)]
+        cmd = mupdf.mudraw + mupdf.trace_args + ['--', self.archive, str(page_num)]
         log.debug('finding optimal DPI for %s: %s', filename, ' '.join(cmd))
         proc = subprocess.run(cmd, stdout=subprocess.PIPE, encoding='utf-8', errors='replace')
         max_size = 0
@@ -62,61 +127,12 @@ class PdfArchive(archive_base.BaseArchive):
                 max_size = size
                 max_dpi = dpi
         # Render...
-        cmd = _mudraw_exec + ['-r', str(max_dpi), '-o', destination_path, '--', self.archive, str(page_num)]
+        cmd = mupdf.mudraw + ['-r', str(max_dpi), '-o', destination_path, '--', self.archive, str(page_num)]
         log.debug('rendering %s: %s', filename, ' '.join(cmd))
         process.call(cmd)
 
     @staticmethod
-    def is_available():
-        global _pdf_possible
-        if _pdf_possible is not None:
-            return _pdf_possible
-        global _mutool_exec, _mudraw_exec, _mudraw_trace_args
-        mutool = process.find_executable(('mutool',))
-        _pdf_possible = False
-        version = None
-        if mutool is None:
-            log.debug('mutool executable not found')
-        else:
-            _mutool_exec = [mutool]
-            # Find MuPDF version; assume 1.6 version since
-            # the '-v' switch is only supported from 1.7 onward...
-            version = '1.6'
-            proc = process.popen([mutool, '-v'],
-                                 stdout=process.NULL,
-                                 stderr=process.PIPE)
-            try:
-                output = proc.stderr.read()
-                if output.startswith(b'mutool version '):
-                    version = output[15:].rstrip().decode()
-            finally:
-                proc.stderr.close()
-                proc.wait()
-            version = Version(version)
-            if version >= Version('1.8'):
-                # Mutool executable with draw support.
-                _mudraw_exec = [mutool, 'draw']
-                _mudraw_trace_args = ['-F', 'trace']
-                _pdf_possible = True
-            else:
-                # Separate mudraw executable.
-                mudraw = process.find_executable(('mudraw',))
-                if mudraw is None:
-                    log.debug('mudraw executable not found')
-                else:
-                    _mudraw_exec = [mudraw]
-                    if version >= Version('1.7'):
-                        _mudraw_trace_args = ['-F', 'trace']
-                    else:
-                        _mudraw_trace_args = ['-x']
-                    _pdf_possible = True
-        if _pdf_possible:
-            log.info('Using MuPDF version: %s', version)
-            log.debug('mutool: %s', ' '.join(_mutool_exec))
-            log.debug('mudraw: %s', ' '.join(_mudraw_exec))
-            log.debug('mudraw trace arguments: %s', ' '.join(_mudraw_trace_args))
-        else:
-            log.info('MuPDF not available.')
-        return _pdf_possible
+    def is_available() -> bool:
+        return _find_mupdf() is not None
 
 # vim: expandtab:sw=4:ts=4

@@ -7,6 +7,7 @@ from mcomix import archive_tools
 from mcomix import log
 
 import os
+from collections.abc import Iterable, Iterator
 
 #: How many archives deep a listing follows an archive within an archive.
 #: Listing extracts every sub-archive it finds, so an archive that holds a
@@ -16,24 +17,25 @@ MAX_NESTING_DEPTH = 10
 
 class RecursiveArchive(archive_base.BaseArchive):
 
-    def __init__(self, archive, destination_dir):
-        super(RecursiveArchive, self).__init__(archive.archive)
+    def __init__(self, archive: archive_base.BaseArchive, destination_dir: str) -> None:
+        super().__init__(archive.archive)
         self._main_archive = archive
         self._destination_dir = destination_dir
-        self._archive_list = []
+        self._archive_list: list[archive_base.BaseArchive] = []
         # Map entry name to its archive+name.
-        self._entry_mapping = {}
+        self._entry_mapping: dict[str, tuple[archive_base.BaseArchive, str]] = {}
         # Map archive to its root.
-        self._archive_root = {}
+        self._archive_root: dict[archive_base.BaseArchive, str | None] = {}
         self._contents_listed = False
-        self._contents = []
+        self._contents: list[str] = []
         # Assume concurrent extractions are not supported.
         self.support_concurrent_extractions = False
 
-    def _iter_contents(self, archive, root=None, depth=0):
+    def _iter_contents(self, archive: archive_base.BaseArchive,
+                       root: str | None = None, depth: int = 0) -> Iterator[str]:
         self._archive_list.append(archive)
         self._archive_root[archive] = root
-        sub_archive_list = []
+        sub_archive_list: list[str] = []
         for f in archive.iter_contents():
             if archive_tools.is_archive_file(f):
                 if depth < MAX_NESTING_DEPTH:
@@ -85,7 +87,7 @@ class RecursiveArchive(archive_base.BaseArchive):
                 break
         self.support_concurrent_extractions = supported
 
-    def iter_contents(self):
+    def iter_contents(self) -> Iterator[str]:
         if self._contents_listed:
             for f in self._contents:
                 yield f
@@ -98,12 +100,12 @@ class RecursiveArchive(archive_base.BaseArchive):
         # We can now check if concurrent extractions are really supported.
         self._check_concurrent_extraction_support()
 
-    def list_contents(self):
+    def list_contents(self) -> list[str]:
         if self._contents_listed:
             return self._contents
-        return [f for f in self.iter_contents()]
+        return list(self.iter_contents())
 
-    def extract(self, filename, destination_dir):
+    def extract(self, filename: str, destination_dir: str) -> None:
         if not self._contents_listed:
             self.list_contents()
         archive, name = self._entry_mapping[filename]
@@ -114,7 +116,7 @@ class RecursiveArchive(archive_base.BaseArchive):
                   archive.archive, destination_dir, filename)
         archive.extract(name, destination_dir)
 
-    def iter_extract(self, entries, destination_dir):
+    def iter_extract(self, entries: Iterable[str], destination_dir: str) -> Iterator[str]:
         if not self._contents_listed:
             self.list_contents()
         # Unfortunately we can't just rely on BaseArchive default
@@ -122,7 +124,7 @@ class RecursiveArchive(archive_base.BaseArchive):
         # we need to call iter_extract (not extract) for each archive ourselves.
         wanted = set(entries)
         for archive in self._archive_list:
-            archive_wanted = {}
+            archive_wanted: dict[str, str] = {}
             for name in wanted:
                 name_archive, name_archive_name = self._entry_mapping[name]
                 if name_archive == archive:

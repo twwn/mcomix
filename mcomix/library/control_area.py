@@ -12,6 +12,12 @@ from mcomix.library.watchlist import WatchListDialog
 from mcomix import widgets
 from mcomix.i18n import _
 
+from collections.abc import Sequence
+from typing import Any, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from mcomix.library import main_dialog
+
 # The "All books" collection is not a real collection stored in the library,
 # but is represented by this ID in the library's TreeModels.
 _COLLECTION_ALL = -1
@@ -23,7 +29,7 @@ class _ControlArea(Gtk.Box):
     information is displayed and controls such as buttons reside.
     """
 
-    def __init__(self, library):
+    def __init__(self, library: "main_dialog._LibraryDialog") -> None:
         super().__init__(orientation=Gtk.Orientation.VERTICAL, spacing=12)
         widgets.set_border(self, 10)
 
@@ -98,26 +104,23 @@ class _ControlArea(Gtk.Box):
         self._open_button.set_sensitive(False)
         widgets.pack(hbox, self._open_button, True, True, 0, end=True)
 
-    def update_info(self, selected):
+    def update_info(self, selected: Sequence[int]) -> None:
         """Update the info box using the currently <selected> books from
         the _BookArea.
         """
 
+        book = None
         if selected:
             book_id = self._library.book_area.get_book_at_path(selected[0])
-            book = self._library.backend.get_book_by_id(book_id)
-        else:
-            book = None
+            if book_id is not None:
+                book = self._library.backend.get_book_by_id(book_id)
 
-        if book:
-            name = book.name
-            dir_path = os.path.dirname(book.path)
-            pages = book.pages
-            size = book.size
-            last_page = book.get_last_read_page()
-            last_date = book.get_last_read_date()
-        else:
-            name = dir_path = pages = size = last_page = last_date = None
+        name = book.name if book else None
+        dir_path = os.path.dirname(book.path) if book else None
+        pages = book.pages if book else None
+        size = book.size if book else None
+        last_page = book.get_last_read_page() if book else None
+        last_date = book.get_last_read_date() if book else None
 
         if len(selected) > 0:
             self._open_button.set_sensitive(True)
@@ -154,7 +157,7 @@ class _ControlArea(Gtk.Box):
         else:
             self._dirlabel.set_text('')
 
-    def _filter_books(self, entry, *args):
+    def _filter_books(self, entry: Gtk.Entry, *args: Any) -> None:
         """Display only the books in the current collection whose paths
         contain the string in the Gtk.Entry. The string is not
         case-sensitive.

@@ -7,24 +7,31 @@ from mcomix import column_list
 from mcomix import widgets
 from mcomix import constants
 from mcomix.i18n import _
+from mcomix.dialog import Response
 
-from typing import Any
+from typing import Any, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from mcomix import bookmark_backend
+    from mcomix import bookmark_menu_item
+    from mcomix import main
 
 class _BookmarksDialog(Dialog):
 
     """_BookmarksDialog lets the user remove or rearrange bookmarks."""
 
-    def __init__(self, window, bookmarks_store):
+    def __init__(self, window: "main.MainWindow",
+                 bookmarks_store: "bookmark_backend._BookmarksStore") -> None:
         super(_BookmarksDialog, self).__init__(
             title=_('Edit Bookmarks'), transient_for=window,
             destroy_with_parent=True)
         self.add_buttons(_('_Remove'), constants.RESPONSE_REMOVE,
-                         _('_Close'), Gtk.ResponseType.CLOSE)
+                         _('_Close'), Response.CLOSE)
 
         self._bookmarks_store = bookmarks_store
 
         self.set_resizable(True)
-        self.set_default_response(Gtk.ResponseType.CLOSE)
+        self.set_default_response(Response.CLOSE)
         # scroll area fill to the edge (TODO window should not really be a dialog)
         widgets.set_border(self, 0)
 
@@ -84,7 +91,7 @@ class _BookmarksDialog(Dialog):
         the moment the Type heading was clicked on a mixed list.  A None
         sorts before every number here.
         """
-        def key(row: column_list.Row) -> tuple:
+        def key(row: column_list.Row) -> tuple[Any, ...]:
             values = []
             for field in fields:
                 value = getattr(row.bookmark, field)
@@ -92,7 +99,8 @@ class _BookmarksDialog(Dialog):
             return tuple(values)
         return key
 
-    def _add_bookmark(self, bookmark):
+    def _add_bookmark(self,
+                      bookmark: "bookmark_menu_item._Bookmark") -> None:
         """Add the <bookmark> to the dialog, newest first."""
         self._list.insert_row(0, bookmark.to_row())
 
@@ -106,7 +114,8 @@ class _BookmarksDialog(Dialog):
             self._list.remove_row(row)
             self._bookmarks_store.remove_bookmark(row.bookmark)
 
-    def _bookmark_activated(self, view, position, *args):
+    def _bookmark_activated(self, view: Gtk.ListView, position: int,
+                            *args: Any) -> None:
         """ Open the activated bookmark. """
 
         row = self._list.get_row(position)
@@ -116,9 +125,9 @@ class _BookmarksDialog(Dialog):
         self._close()
         row.bookmark.load()
 
-    def _response(self, dialog, response):
+    def _response(self, dialog: Dialog, response: int) -> None:
 
-        if response == Gtk.ResponseType.CLOSE:
+        if response == Response.CLOSE:
             self._close()
 
         elif response == constants.RESPONSE_REMOVE:
@@ -127,18 +136,20 @@ class _BookmarksDialog(Dialog):
         else:
             self.destroy()
 
-    def _key_press_event(self, controller, keyval, keycode, state):
+    def _key_press_event(self, controller: Gtk.EventControllerKey,
+                         keyval: int, keycode: int,
+                         state: Gdk.ModifierType) -> bool:
 
         if keyval == Gdk.KEY_Delete:
             self._remove_selected()
             return Gdk.EVENT_STOP
         return Gdk.EVENT_PROPAGATE
 
-    def _close(self, *args):
+    def _close(self, *args: Any) -> None:
         """Close the dialog and update the _BookmarksStore with the new
         ordering."""
 
-        ordering: list = []
+        ordering: "list[bookmark_menu_item._Bookmark]" = []
 
         for row in self._list.each_row():
             ordering.insert(0, row.bookmark)

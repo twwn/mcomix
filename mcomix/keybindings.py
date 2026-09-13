@@ -2,10 +2,10 @@
 
 """ Dynamic hotkey management
 
-This module handles global hotkeys that were previously hardcoded in events.py.
-All menu accelerators are handled using GTK's built-in accelerator map. The map
-doesn't seem to support multiple keybindings for one action, though, so this
-module takes care of the problem.
+This module handles the global hotkeys.  An action can answer to more than
+one of them, which is why the bindings live here rather than on the menu
+items: a menu model item carries a single accelerator, and this module
+tells the menus which one to show.
 
 At runtime, other modules can register a callback for a specific action name.
 This action name has to be registered in BINDING_INFO, or an Exception will be
@@ -26,18 +26,26 @@ Each action_name can have multiple keybindings.
 
 import os
 import shutil
-from gi.repository import Gtk
+from gi.repository import Gdk, Gtk
 import json
 from collections import defaultdict
+from collections.abc import Callable, Mapping, Sequence
+from typing import Any, TYPE_CHECKING
 
 from mcomix import constants
 from mcomix import log
 from mcomix import tools
 from mcomix.i18n import _
 
+if TYPE_CHECKING:
+    from mcomix import main
+
+#: A parsed accelerator: the key, and the modifiers held with it.
+Binding = tuple[int, Gdk.ModifierType]
+
 #: Bindings defined in this dictionary will appear in the configuration dialog.
 #: If 'group' is None, the binding cannot be modified from the preferences dialog.
-BINDING_INFO = {
+BINDING_INFO: dict[str, dict[str, Any]] = {
     # Navigation between pages, archives, directories
     'previous_page' : { 'title' : _('Previous page'), 'group' : _('Navigation') },
     'next_page' : { 'title' : _('Next page'), 'group' : _('Navigation') },
@@ -152,7 +160,7 @@ for i in range(1, 10):
     }
 
 
-def parse_accelerator(accelerator) -> tuple:
+def parse_accelerator(accelerator: str) -> Binding:
     """Return the (key, modifiers) <accelerator> stands for.
 
     Gtk.accelerator_parse() answers with a success flag in front of those
@@ -165,22 +173,30 @@ def parse_accelerator(accelerator) -> tuple:
         # earlier versions are full of it.
         ok, key, modifiers = Gtk.accelerator_parse(
             accelerator.replace('<Mod1>', '<Alt>'))
-    return (key, modifiers) if ok else (0, 0)
+    return (key, modifiers) if ok else (0, Gdk.ModifierType(0))
 
 
-class _KeybindingManager(object):
-    def __init__(self, window):
+class _KeybindingManager:
+    def __init__(self, window: 'main.MainWindow') -> None:
         #: Main window instance
         self._window = window
 
-        self._action_to_callback = {} # action name => (func, args, kwargs)
-        self._action_to_bindings = defaultdict(list) # action name => [ (key code, key modifier), ]
-        self._binding_to_action = {} # (key code, key modifier) => action name
+        #: action name => (func, args, kwargs)
+        self._action_to_callback: dict[str, tuple[Callable[..., Any],
+                                                  Sequence[Any],
+                                                  Mapping[str, Any]]] = {}
+        #: action name => the accelerators that reach it
+        self._action_to_bindings: dict[str, list[Binding]] = defaultdict(list)
+        #: accelerator => action name
+        self._binding_to_action: dict[Binding, str] = {}
 
         self._migrate_from_old_bindings()
         self._initialize()
 
-    def register(self, name, bindings, callback, args=None, kwargs=None):
+    def register(self, name: str, bindings: Sequence[str],
+                 callback: Callable[..., Any],
+                 args: Sequence[Any] | None = None,
+                 kwargs: Mapping[str, Any] | None = None) -> None:
         """ Registers an action for a predefined keybinding name.
         @param name: Action name, defined in L{BINDING_INFO}.
         @param bindings: List of keybinding strings, as understood
@@ -220,7 +236,7 @@ class _KeybindingManager(object):
         self._action_to_callback[name] = (callback, args, kwargs)
 
 
-    def announce_accelerator(self, name, accelerator) -> None:
+    def announce_accelerator(self, name: str, accelerator: str) -> None:
         """Tell the menus which key <name> answers to.
 
         Gtk.AccelMap, which the menu labels used to read this from, is
@@ -230,7 +246,7 @@ class _KeybindingManager(object):
         if uimanager is not None:
             uimanager.set_accelerator(name, accelerator)
 
-    def edit_accel(self, name, new_binding, old_binding):
+    def edit_accel(self, name: str, new_binding: str, old_binding: str) -> str | None:
         """ Changes binding for an action
         @param name: Action name
         @param new_binding: Binding to be assigned to action
@@ -268,7 +284,7 @@ class _KeybindingManager(object):
         self.save()
         return old_action_with_nb
 
-    def clear_accel(self, name, binding):
+    def clear_accel(self, name: str, binding: str) -> None:
         """ Remove binding for an action """
         assert name in BINDING_INFO, "'%s' isn't a valid keyboard action." % name
 
@@ -285,7 +301,7 @@ class _KeybindingManager(object):
         self._action_to_bindings = defaultdict(list)
         self._binding_to_action = {}
 
-    def execute(self, keybinding):
+    def execute(self, keybinding: Binding) -> None:
         """ Executes an action that has been registered for the
         passed keyboard event. If no action is bound to the passed key, this
         method is a no-op. """
@@ -294,7 +310,8 @@ class _KeybindingManager(object):
             func, args, kwargs = self._action_to_callback[action]
             # There is no key-press-event to stop in GTK4; the key
             # controller in event.py says so by what it answers.
-            return func(*args, **kwargs)
+            func(*args, **kwargs)
+            return
 
         # Some keys enable additional modifiers (NumLock enables GDK_MOD2_MASK),
         # which prevent direct lookup simply by being pressed.
@@ -304,18 +321,17 @@ class _KeybindingManager(object):
             stored_keycode, stored_flags = stored_binding
             if stored_keycode == keybinding[0] and stored_flags & keybinding[1]:
                 func, args, kwargs = self._action_to_callback[action]
-                return func(*args, **kwargs)
+                func(*args, **kwargs)
+                return
 
     def save(self) -> None:
         """ Stores the keybindings that have been set to disk. """
         # Collect keybindings for all registered actions
-        action_to_keys = {}
-        for action, bindings in self._action_to_bindings.items():
-            if bindings is not None:
-                action_to_keys[action] = [
-                    Gtk.accelerator_name(keyval, modifiers) for
-                    (keyval, modifiers) in bindings
-                ]
+        action_to_keys = {
+            action: [Gtk.accelerator_name(keyval, modifiers)
+                     for keyval, modifiers in bindings]
+            for action, bindings in self._action_to_bindings.items()
+        }
         with tools.atomic_write(constants.KEYBINDINGS_CONF_PATH) as fp:
             json.dump(action_to_keys, fp, indent=2)
 
@@ -339,7 +355,7 @@ class _KeybindingManager(object):
             else:
                 self._action_to_bindings[action] = []
 
-    def get_bindings_for_action(self, name):
+    def get_bindings_for_action(self, name: str) -> list[Binding]:
         """ Returns a list of (keycode, modifier) for the action C{name}. """
         return self._action_to_bindings[name]
 
@@ -359,10 +375,10 @@ class _KeybindingManager(object):
                 shutil.move(constants.KEYBINDINGS_CONF_PATH,
                         constants.KEYBINDINGS_CONF_PATH + '.delete-me')
 
-_manager = None
+_manager: _KeybindingManager | None = None
 
 
-def keybinding_manager(window):
+def keybinding_manager(window: 'main.MainWindow') -> _KeybindingManager:
     """ Returns a singleton instance of the keybinding manager. """
     global _manager
     if _manager:

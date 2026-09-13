@@ -7,12 +7,37 @@ from mcomix import tools
 from mcomix import box
 from functools import reduce
 from collections.abc import Sequence
+from dataclasses import dataclass
 
 IDENTITY_ZOOM = 1.0
 IDENTITY_ZOOM_LOG = 0
 USER_ZOOM_LOG_SCALE1 = 4.0
 MIN_USER_ZOOM_LOG = -20
 MAX_USER_ZOOM_LOG = 12
+
+
+@dataclass
+class _ScalingData:
+
+    """What is known about one box while the scales are worked out.
+
+    This was a five-element list indexed by number throughout, which
+    said nothing about what any of the five meant.
+    """
+
+    #: The scale this box is to be given.
+    local_scale: float
+    #: The size it would have at the scale every box started with, or
+    #: None for a box that is not being scaled at all.
+    ideal: Sequence[float] | None
+    #: Whether it can still be made one pixel smaller along the axis.
+    can_be_downscaled: bool
+    #: The scale that would make it that much smaller, and what taking
+    #: that step would cost as a relative volume error.  Both are only
+    #: read while can_be_downscaled holds; otherwise they stand at the
+    #: values a box that is never touched carries.
+    forced_scale: float
+    forced_vol_err: float
 
 
 class ZoomModel(object):
@@ -26,7 +51,7 @@ class ZoomModel(object):
         self._fitmode = constants.ZoomMode.MANUAL
         self._scale_up = False
 
-    def set_fit_mode(self, fitmode: int) -> None:
+    def set_fit_mode(self, fitmode: constants.ZoomMode) -> None:
         if fitmode < constants.ZoomMode.BEST or \
            fitmode > constants.ZoomMode.SIZE:
             raise ValueError("No fit mode for id %d." % fitmode)
@@ -50,10 +75,15 @@ class ZoomModel(object):
     def reset_user_zoom(self) -> None:
         self._set_user_zoom_log(IDENTITY_ZOOM_LOG)
 
-    def get_zoomed_size(self, image_sizes: list[Sequence[int]], screen_size: tuple[int, int],
+    def get_zoomed_size(self, image_sizes: Sequence[Sequence[int]],
+                        screen_size: Sequence[int],
                         distribution_axis: constants.PageAxis, do_not_transform: list[bool], prefer_same_size: bool,
                         fit_same_size: bool) -> tuple[list[list[int]], list[bool]]:
         scale_up = self._scale_up
+        # The sizes worked with from here on.  Scaling every page to the
+        # same size first hands back fractional sizes, so these are not
+        # the integer sizes that came in.
+        working_sizes: Sequence[Sequence[float]] = image_sizes
         if prefer_same_size:
             # Preprocessing step: scale all images to the same size
             image_boxes = [box.Box(s) for s in image_sizes]
@@ -68,17 +98,19 @@ class ZoomModel(object):
                 s, pre_limits, distribution_axis))) for s in image_sizes]
             new_image_sizes2 = [new_image_sizes[i] if not do_not_transform[i] else image_sizes[i]
                                 for i in range(len(new_image_sizes))]
-            image_sizes = new_image_sizes2
-        union_size = _union_size(image_sizes, distribution_axis)
+            working_sizes = new_image_sizes2
+        union_size = _union_size(working_sizes, distribution_axis)
         limits = ZoomModel._calc_limits(union_size, screen_size, self._fitmode,
                                         scale_up)
         prefscale = ZoomModel._preferred_scale(union_size, limits, distribution_axis)
-        preferred_scales = tuple([prefscale if not dnt else IDENTITY_ZOOM for dnt in do_not_transform])
+        preferred_scales: list[float] = [
+            prefscale if not dnt else IDENTITY_ZOOM for dnt in do_not_transform]
         prescaled = list(map(lambda size, scale, dnt: tuple(_scale_image_size(size, scale)),
-                         image_sizes, preferred_scales, do_not_transform))
+                         working_sizes, preferred_scales, do_not_transform))
         prescaled_union_size = _union_size(prescaled, distribution_axis)
 
-        def _other_preferences(limits: Sequence[int], distribution_axis: constants.PageAxis) -> bool:
+        def _other_preferences(limits: Sequence[int | None],
+                               distribution_axis: constants.PageAxis) -> bool:
             for i in range(len(limits)):
                 if i == distribution_axis:
                     continue
@@ -86,11 +118,12 @@ class ZoomModel(object):
                     return True
             return False
         other_preferences = _other_preferences(limits, distribution_axis)
-        if limits[distribution_axis] is not None and \
+        distribution_limit = limits[distribution_axis]
+        if distribution_limit is not None and \
             (prescaled_union_size[distribution_axis] > screen_size[distribution_axis]
             or not other_preferences):
-            distributed_scales = ZoomModel._scale_distributed(image_sizes,
-                distribution_axis, limits[distribution_axis], scale_up, do_not_transform)
+            distributed_scales = ZoomModel._scale_distributed(working_sizes,
+                distribution_axis, distribution_limit, scale_up, do_not_transform)
             if other_preferences:
                 preferred_scales = list(map(min, preferred_scales, distributed_scales))
             else:
@@ -101,7 +134,7 @@ class ZoomModel(object):
         res_scales = [preferred_scales[i] * (user_scale if not do_not_transform[i] else IDENTITY_ZOOM)
             for i in range(len(preferred_scales))]
         res = list(map(lambda size, scale: list(_scale_image_size(size, scale)),
-            image_sizes, res_scales))
+            working_sizes, res_scales))
         distorted = [False] * len(res)
         if prefer_same_size and fit_same_size:
             # While the algorithm so far tries hard to keep the aspect ratios of the
@@ -112,24 +145,32 @@ class ZoomModel(object):
             # minimum size (if scale_up is false) or maximum size (if scale_up is true)
             # of all images, given the scaled sizes computed so far.
             op = operator.gt if scale_up else operator.lt
-            exs = [None] * len(limits)
+            exs: list[int | None] = [None] * len(limits)
             for d in range(len(limits)):
                 if d == distribution_axis:
                     continue
-                for i in res:
-                    if exs[d] is None or op(i[d], exs[d]):
-                        exs[d] = i[d]
+                for row in res:
+                    extreme = exs[d]
+                    if extreme is None or op(row[d], extreme):
+                        exs[d] = row[d]
             for d in range(len(limits)):
                 if d == distribution_axis:
+                    continue
+                extreme = exs[d]
+                if extreme is None:
+                    # Nothing was measured along this axis, which is
+                    # only so when there is nothing to measure.
                     continue
                 for i in range(len(res)):
-                    if (res[i][d] != exs[d]) and not do_not_transform[i]:
-                        res[i][d] = exs[d]
+                    if (res[i][d] != extreme) and not do_not_transform[i]:
+                        res[i][d] = extreme
                         distorted[i] = True
         return (res, distorted)
 
     @staticmethod
-    def _preferred_scale(image_size, limits, distribution_axis):
+    def _preferred_scale(image_size: Sequence[float],
+                         limits: Sequence[int | None],
+                         distribution_axis: int) -> float:
         """ Returns scale that makes an image of size image_size respect the
         limits imposed by limits. If no proper value can be determined,
         IDENTITY_ZOOM is returned. """
@@ -148,7 +189,9 @@ class ZoomModel(object):
         return min_scale
 
     @staticmethod
-    def _calc_limits(union_size, screen_size, fitmode, allow_upscaling):
+    def _calc_limits(union_size: Sequence[float], screen_size: Sequence[int],
+                     fitmode: constants.ZoomMode,
+                     allow_upscaling: bool) -> Sequence[int | None]:
         """ Returns a list or a tuple with the i-th element set to int x if
         fitmode limits the size at the i-th axis to x, or None if fitmode has no
         preference for this axis. """
@@ -163,7 +206,7 @@ class ZoomModel(object):
             else:
                 return [int(prefs['fit to size width other']),
                     int(prefs['fit to size height other'])]
-        result = [None] * len(screen_size)
+        result: list[int | None] = [None] * len(screen_size)
         if not manual:
             if fitmode == constants.ZoomMode.WIDTH:
                 axis = constants.PageAxis.WIDTH
@@ -175,8 +218,9 @@ class ZoomModel(object):
         return result
 
     @staticmethod
-    def _scale_distributed(sizes, axis, max_size, allow_upscaling,
-        do_not_transform):
+    def _scale_distributed(sizes: Sequence[Sequence[float]], axis: int,
+                           max_size: int, allow_upscaling: bool,
+                           do_not_transform: Sequence[bool]) -> list[float]:
         """ Calculates scales for a list of boxes that are distributed along a
         given axis (without any gaps). If the resulting scales are applied to
         their respective boxes, their new total size along axis will be as close
@@ -211,7 +255,7 @@ class ZoomModel(object):
         # non-trival case
         # initial guess
         scale = tools.div(max_size - total_dnt_axis_size, total_axis_size - total_dnt_axis_size)
-        scaling_data = [None] * n
+        scaling_data: list[_ScalingData] = []
         total_axis_size = 0
         # This loop collects some data we need for the actual computations later.
         for i in range(n):
@@ -219,8 +263,8 @@ class ZoomModel(object):
             # Shortcut: If the size cannot be changed, accept the original size.
             if do_not_transform[i]:
                 total_axis_size += this_size[axis]
-                scaling_data[i] = [IDENTITY_ZOOM, IDENTITY_ZOOM, False,
-                    IDENTITY_ZOOM, 0.0]
+                scaling_data.append(_ScalingData(
+                    IDENTITY_ZOOM, None, False, IDENTITY_ZOOM, 0.0))
                 continue
             # Initial guess: The current scale works for all tuples.
             ideal = tools.scale(this_size, scale)
@@ -240,10 +284,13 @@ class ZoomModel(object):
                 forced_approx = _scale_image_size(this_size, forced_scale)
                 forced_vol_err = tools.relerr(tools.volume(forced_approx), ideal_vol)
             else:
-                forced_scale = None
-                forced_vol_err = None
-            scaling_data[i] = [local_scale, ideal, can_be_downscaled,
-                forced_scale, forced_vol_err]
+                # Never read while can_be_downscaled is False; the same
+                # standing values a box that is not scaled at all takes.
+                forced_scale = IDENTITY_ZOOM
+                forced_vol_err = 0.0
+            scaling_data.append(_ScalingData(
+                local_scale, ideal, can_be_downscaled,
+                forced_scale, forced_vol_err))
         # Now we need to find at most total_axis_size - max_size occasions to
         # scale down some tuples so the whole thing would fit into max_size. If
         # we are lucky, there will be no gaps at the end (or at least fewer gaps
@@ -253,28 +300,33 @@ class ZoomModel(object):
             # This algorithm needs O(n*n) time. Let's hope that n is small enough.
             dirty=False
             current_index = 0
-            current_min = None
+            current_min: _ScalingData | None = None
             for i in range(n):
                 d = scaling_data[i]
-                if not d[2]:
+                if not d.can_be_downscaled:
                     # Ignore elements that cannot be made any smaller.
                     continue
-                if (current_min is None) or (d[4] < current_min[4]):
+                if (current_min is None) or (d.forced_vol_err
+                                             < current_min.forced_vol_err):
                     # We are searching for the tuple where downscaling results
                     # in the smallest relative volume error (compared to the
                     # respective ideal volume).
                     current_min = d
                     current_index = i
+            if current_min is None:
+                # Nothing left that can be made smaller, so the loop
+                # below would step over every element and change none.
+                break
             for i in range(current_index, n):
                 # We must scale down ALL equal tuples. Otherwise, images that
                 # are of equal size might appear to be of different size
                 # afterwards. The downside of this approach is that it might
                 # introduce more gaps than necessary.
                 d = scaling_data[i]
-                if (not d[2]) or (d[1] != current_min[1]):
+                if (not d.can_be_downscaled) or (d.ideal != current_min.ideal):
                     continue
-                d[0] = d[3]
-                d[2] = False # only once per tuple
+                d.local_scale = d.forced_scale
+                d.can_be_downscaled = False  # only once per tuple
                 total_axis_size -= 1
                 dirty=True
         # Where the loop leaves total_axis_size below max_size, the tuples
@@ -282,19 +334,20 @@ class ZoomModel(object):
         # first, equal boxes in conjunction with each other). That is less
         # useful than shrinking them, slightly more complicated, and it would
         # do nothing at all when every tuple is the same size.
-        return [d[0] for d in scaling_data]
+        return [d.local_scale for d in scaling_data]
 
-def _scale_image_size(size, scale):
+def _scale_image_size(size: Sequence[float], scale: float) -> list[int]:
     return _round_nonempty(tools.scale(size, scale))
 
-def _round_nonempty(t):
+def _round_nonempty(t: Sequence[float]) -> list[int]:
     result = [0] * len(t)
     for i in range(len(t)):
         x = int(round(t[i]))
         result[i] = x if x > 0 else 1
     return result
 
-def _union_size(image_sizes, distribution_axis):
+def _union_size(image_sizes: Sequence[Sequence[float]],
+                distribution_axis: int) -> list[float]:
     if len(image_sizes) == 0:
         return []
     n = len(image_sizes[0])

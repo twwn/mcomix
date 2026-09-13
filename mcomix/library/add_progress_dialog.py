@@ -7,6 +7,14 @@ from mcomix.dialog import Dialog
 from mcomix import labels
 from mcomix import widgets
 from mcomix.i18n import _
+from mcomix.dialog import Response
+
+from collections.abc import Sequence
+from typing import Any, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from mcomix import main
+    from mcomix.library import main_dialog
 
 _dialog = None
 # The "All books" collection is not a real collection stored in the library,
@@ -17,13 +25,15 @@ class _AddLibraryProgressDialog(Dialog):
 
     """Dialog with a ProgressBar that adds books to the library."""
 
-    def __init__(self, library, window, paths, collection):
+    def __init__(self, library: "main_dialog._LibraryDialog",
+                 window: "main.MainWindow", paths: Sequence[str],
+                 collection: int | None) -> None:
         """Adds the books at <paths> to the library, and also to the
         <collection>, unless it is None.
         """
         super(_AddLibraryProgressDialog, self).__init__(
             title=_('Adding books'), transient_for=library, modal=True)
-        self.add_buttons(_('_Stop'), Gtk.ResponseType.CLOSE)
+        self.add_buttons(_('_Stop'), Response.CLOSE)
 
         self._window = window
         self._destroy = False
@@ -31,7 +41,7 @@ class _AddLibraryProgressDialog(Dialog):
         self.set_resizable(False)
         widgets.set_border(self, 4)
         self.connect('response', self._response)
-        self.set_default_response(Gtk.ResponseType.CLOSE)
+        self.set_default_response(Response.CLOSE)
 
         main_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 5)
         widgets.set_border(main_box, 6)
@@ -89,7 +99,7 @@ class _AddLibraryProgressDialog(Dialog):
 
         self._response()
 
-    def _response(self, *args):
+    def _response(self, *args: Any) -> None:
         self._destroy = True
         self.destroy()
 

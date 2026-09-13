@@ -3,8 +3,10 @@
 """ Glue around libunrar.so/unrar.dll to extract RAR files without having to
 resort to calling rar/unrar manually. """
 
+import functools
 import sys, os
 import ctypes, ctypes.util
+from collections.abc import Iterator
 
 from mcomix import constants
 from mcomix.archive import archive_base
@@ -119,16 +121,19 @@ class RarArchive(archive_base.BaseArchive):
         """ Returns True if unrar.dll can be found, False otherwise. """
         return bool(_get_unrar_dll())
 
-    def __init__(self, archive):
+    def __init__(self, archive: str) -> None:
         """ Initialize Unrar.dll. """
-        super(RarArchive, self).__init__(archive)
-        self._unrar = _get_unrar_dll()
-        self._handle = None
-        self._callback_function = None
+        super().__init__(archive)
+        unrar = _get_unrar_dll()
+        if unrar is None:
+            raise UnrarException('libunrar could not be loaded.')
+        self._unrar = unrar
+        self._handle: int | None = None
+        self._callback_function: ctypes._FuncPointer | None = None
         self._is_solid = False
         # Information about the current file will be stored in this structure
         self._headerdata = RarArchive._RARHeaderDataEx()
-        self._current_filename = None
+        self._current_filename: str | None = None
 
         # Set up function prototypes.
         # Mandatory since pointers get truncated on x64 otherwise!
@@ -147,19 +152,18 @@ class RarArchive(archive_base.BaseArchive):
         self._unrar.RARSetCallback.argtypes = \
             [ctypes.c_void_p, UNRARCALLBACK, ctypes.c_long]
 
-    def is_solid(self):
+    def is_solid(self) -> bool:
         return self._is_solid
 
-    def iter_contents(self):
+    def iter_contents(self) -> Iterator[str]:
         """ List archive contents. """
         self._close()
         self._open()
         try:
             while True:
-                self._read_header()
+                filename = self._read_header()
                 if 0 != (0x10 & self._headerdata.Flags):
                     self._is_solid = True
-                filename = self._current_filename
                 yield filename
                 # Skip to the next entry if we're still on the same name
                 # (extract may have been called by iter_extract).
@@ -173,7 +177,7 @@ class RarArchive(archive_base.BaseArchive):
         finally:
             self._close()
 
-    def extract(self, filename, destination_dir):
+    def extract(self, filename: str, destination_dir: str) -> None:
         """ Extract <filename> from the archive to <destination_dir>. """
         if not self._handle:
             self._open()
@@ -224,11 +228,12 @@ class RarArchive(archive_base.BaseArchive):
         self._unrar.RARSetCallback(handle, self._callback_function, 0)
         self._handle = handle
 
-    def _check_errorcode(self, errorcode):
+    def _check_errorcode(self, errorcode: int) -> None:
         if 0 == errorcode:
             # No error.
             return
         self._close()
+        exc: Exception
         if RarArchive._ErrorCode.ERAR_END_ARCHIVE == errorcode:
             # End of archive reached.
             exc = EOFError()
@@ -237,13 +242,15 @@ class RarArchive(archive_base.BaseArchive):
             exc = UnrarException(errormessage)
         raise exc
 
-    def _read_header(self) -> None:
+    def _read_header(self) -> str:
+        """ Read the next entry's header, and return the name it names. """
         self._current_filename = None
         errorcode = self._unrar.RARReadHeaderEx(self._handle, ctypes.byref(self._headerdata))
         self._check_errorcode(errorcode)
-        self._current_filename = self._headerdata.FileNameW
+        self._current_filename = str(self._headerdata.FileNameW)
+        return self._current_filename
 
-    def _process(self, dest=None):
+    def _process(self, dest: ctypes.c_wchar_p | None = None) -> None:
         """ Process current entry: extract or skip it. """
         if dest is None:
             mode = RarArchive._ProcessingMode.RAR_SKIP
@@ -263,29 +270,29 @@ class RarArchive(archive_base.BaseArchive):
             raise UnrarException("Couldn't close archive: %s" % errormessage)
         self._handle = None
 
-    def _unrar_callback(self, msg, userdata, param1, param2):
+    def _unrar_callback(self, msg: int, userdata: int, param1: int, param2: int) -> int:
         """ Called by the unrar library for missing passwords and volumes. """
         if msg == RarArchive._CallbackMessage.UCM_NEEDPASSWORD:
-            self._get_password()
-            if not self._password or len(self._password) == 0:
+            password = self._get_password()
+            if not password:
                 # Abort extraction
                 return -1
-            password = ctypes.create_string_buffer(self._password.encode('utf-8'))
-            copy_size = min(param2, len(password))
-            ctypes.memmove(param1, password, copy_size)
+            byte_buffer = ctypes.create_string_buffer(password.encode('utf-8'))
+            copy_size = min(param2, len(byte_buffer))
+            ctypes.memmove(param1, byte_buffer, copy_size)
             return 1
         elif msg == RarArchive._CallbackMessage.UCM_NEEDPASSWORDW:
-            self._get_password()
-            if not self._password or len(self._password) == 0:
+            password = self._get_password()
+            if not password:
                 # Abort extraction
                 return -1
             # param2 is the size of unrar's buffer in characters, and its
             # wchar_t is 4 bytes wide everywhere but on Windows, so let
             # ctypes pick the native encoding and terminator instead of
             # assuming UTF-16.
-            password = ctypes.create_unicode_buffer(self._password)
-            copy_size = min(param2, len(password)) * ctypes.sizeof(ctypes.c_wchar)
-            ctypes.memmove(param1, password, copy_size)
+            wchar_buffer = ctypes.create_unicode_buffer(password)
+            copy_size = min(param2, len(wchar_buffer)) * ctypes.sizeof(ctypes.c_wchar)
+            ctypes.memmove(param1, wchar_buffer, copy_size)
             return 1
         elif msg in (RarArchive._CallbackMessage.UCM_CHANGEVOLUME,
                      RarArchive._CallbackMessage.UCM_CHANGEVOLUMEW):
@@ -323,69 +330,39 @@ class UnrarException(Exception):
     }
 
     @staticmethod
-    def get_error_message(errorcode):
-        if errorcode in UnrarException._exceptions:
-            return UnrarException._exceptions[errorcode]
-        else:
-            return "Unkown error"
+    def get_error_message(errorcode: int) -> str:
+        return UnrarException._exceptions.get(errorcode, "Unknown error")
 
-# Filled on-demand by _get_unrar_dll
-_unrar_dll = -1
-
-def _get_unrar_dll():
+@functools.cache
+def _get_unrar_dll() -> ctypes.CDLL | None:
     """ Tries to load libunrar and will return a handle of it.
     Returns None if an error occured or the library couldn't be found. """
-    global _unrar_dll
-    if _unrar_dll != -1:
-        return _unrar_dll
 
     # Load UnRAR64.dll on win32
     if sys.platform == 'win32':
-
         UNRAR_DLL = "UnRAR64.dll"
-        # First, search for unrar.dll in PATH
-        unrar_path = ctypes.util.find_library(UNRAR_DLL)
-        if unrar_path:
-            try:
-                return ctypes.windll.LoadLibrary(unrar_path)
-            except WindowsError:
-                pass
-
-        # The file wasn't found in PATH, try MComix' root directory
-        try:
-            return ctypes.windll.LoadLibrary(os.path.join(constants.BASE_PATH, UNRAR_DLL))
-        except WindowsError:
-            pass
-
-        # Last attempt, just use the current directory
-        try:
-            _unrar_dll = ctypes.windll.LoadLibrary(UNRAR_DLL)
-        except WindowsError:
-            _unrar_dll = None
-
-        return _unrar_dll
-
+        # In PATH first, then MComix' root directory, then the current one.
+        candidates = (ctypes.util.find_library(UNRAR_DLL),
+                      os.path.join(constants.BASE_PATH, UNRAR_DLL),
+                      UNRAR_DLL)
+        loader = ctypes.windll
     # Load libunrar.so on UNIX
     else:
         # find_library on UNIX uses various mechanisms to determine the path
         # of a library, so one could assume the library is not installed
         # when find_library fails
-        unrar_path = ctypes.util.find_library("unrar") or \
-            '/usr/lib64/libunrar.so'
+        candidates = (ctypes.util.find_library("unrar") or '/usr/lib64/libunrar.so',
+                      os.path.join(os.getcwd(), "libunrar.so"))
+        loader = ctypes.cdll
 
-        if unrar_path:
-            try:
-                _unrar_dll = ctypes.cdll.LoadLibrary(unrar_path)
-                return _unrar_dll
-            except OSError:
-                pass
-
-        # Last attempt, try the current directory
+    for candidate in candidates:
+        if candidate is None:
+            continue
         try:
-            _unrar_dll = ctypes.cdll.LoadLibrary(os.path.join(os.getcwd(), "libunrar.so"))
+            return loader.LoadLibrary(candidate)
         except OSError:
-            _unrar_dll = None
+            pass
 
-        return _unrar_dll
+    return None
 
 # vim: expandtab:sw=4:ts=4

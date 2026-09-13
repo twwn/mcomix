@@ -11,18 +11,30 @@ import re
 import sys
 import tempfile
 from functools import reduce
-from collections.abc import Iterable, Iterator, Mapping, Sequence
-from typing import Any, IO, TypeVar
+from collections.abc import Collection, Iterable, Iterator, Mapping, Sequence
+from typing import Any, IO, Protocol, TypeVar
 
 Numeric = TypeVar('Numeric', int, float)
+#: Whatever a vector happens to hold, where nothing is done to it.
+T = TypeVar('T')
+
+
+class SupportsLessThan(Protocol):
+    """Anything that can be put in order, which needs only __lt__:
+    Python answers a > b with b.__lt__(a) when a has no __gt__."""
+
+    def __lt__(self, other: Any, /) -> bool: ...
+
+
+Comparable = TypeVar('Comparable', bound=SupportsLessThan)
 
 NUMERIC_REGEXP = re.compile(r"\d+|\D+")  # Split into numerics and characters
 PREFIXED_BYTE_UNITS = ("B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB", "RiB", "QiB")
 
 
-def cmp(a: str, b: str) -> int:
+def cmp(a: Comparable, b: Comparable) -> int:
     """ Forward port of Python2's cmp function """
-    return (a > b) - (a < b)
+    return (b < a) - (a < b)
 
 
 class AlphanumericSortKey:
@@ -35,18 +47,15 @@ class AlphanumericSortKey:
 
     def __lt__(self, other: 'AlphanumericSortKey') -> bool:
         for left, right in itertools.zip_longest(self.filename_parts, other.filename_parts, fillvalue=''):
-            if not isinstance(left, type(right)):
-                left_str = str(left)
-                right_str = str(right)
-                if left_str < right_str:
-                    return True
-                elif left_str > right_str:
-                    return False
+            if isinstance(left, int) and isinstance(right, int):
+                if left != right:
+                    return left < right
             else:
-                if left < right:
-                    return True
-                elif left > right:
-                    return False
+                # A run of digits against a run of letters, and any two
+                # runs of letters, are put in order as text.
+                left_text, right_text = str(left), str(right)
+                if left_text != right_text:
+                    return left_text < right_text
 
         return False
 
@@ -60,7 +69,7 @@ def alphanumeric_sort(filenames: list[str]) -> None:
     filenames.sort(key=AlphanumericSortKey)
 
 
-def bin_search(lst: list, value: Any) -> int:
+def bin_search(lst: list[Any], value: Any) -> int:
     """ Binary search for sorted list C{lst}, looking for C{value}.
     @return: List index on success. On failure, it returns the 1's
     complement of the index where C{value} would be inserted.
@@ -165,7 +174,7 @@ def div(a: Numeric, b: Numeric) -> float:
     return float(a) / float(b)
 
 
-def volume(t: list[int]) -> int:
+def volume(t: Sequence[float]) -> float:
     return reduce(operator.mul, t, 1)
 
 
@@ -173,13 +182,13 @@ def relerr(approx: Numeric, ideal: Numeric) -> float:
     return abs(div(approx - ideal, ideal))
 
 
-def smaller(a: list, b: list) -> list:
+def smaller(a: Sequence[Numeric], b: Sequence[Numeric]) -> list[bool]:
     """ Returns a list with the i-th element set to True if and only if the i-th
     element in a is less than the i-th element in b. """
     return list(map(operator.lt, a, b))
 
 
-def smaller_or_equal(a: list, b: list) -> list:
+def smaller_or_equal(a: Sequence[Numeric], b: Sequence[Numeric]) -> list[bool]:
     """ Returns a list with the i-th element set to True if and only if the i-th
     element in a is less than or equal to the i-th element in b. """
     return list(map(operator.le, a, b))
@@ -189,32 +198,39 @@ def scale(t: Sequence[Numeric], factor: Numeric) -> list[Numeric]:
     return [x * factor for x in t]
 
 
-def vector_sub(a: list[Numeric], b: list[Numeric]) -> list[Numeric]:
+def vector_sub(a: Sequence[Numeric], b: Sequence[Numeric]) -> list[Numeric]:
     """ Subtracts vector b from vector a. """
     return list(map(operator.sub, a, b))
 
 
-def vector_add(a: list[Numeric], b: list[Numeric]) -> list[Numeric]:
+def vector_add(a: Sequence[Numeric], b: Sequence[Numeric]) -> list[Numeric]:
     """ Adds vector a to vector b. """
     return list(map(operator.add, a, b))
 
 
-def vector_opposite(a: list[Numeric]) -> list[Numeric]:
+def vector_opposite(a: Sequence[Numeric]) -> list[Numeric]:
     """ Returns the opposite vector -a. """
     return list(map(operator.neg, a))
 
 
-def remap_axes(vector, order):
+def remap_axes(vector: Sequence[T], order: Sequence[int]) -> list[T]:
     return [vector[i] for i in order]
 
 
-def inverse_axis_map(order):
+def inverse_axis_map(order: Sequence[int]) -> list[int]:
     identity = list(range(len(order)))
     return [identity[order[i]] for i in identity]
 
 
-def compile_rotations(*rotations):
-    return reduce(lambda a, x: a + (x % 360) % 360, rotations, 0)
+def compile_rotations(*rotations: int) -> int:
+    """ Returns the single rotation, in degrees, that <rotations> amount to.
+
+    Each rotation was brought into range on its way in but the running
+    total never was, so any pair adding up to more than a full turn came
+    out as an angle nothing else here accepts: 270 and 180 gave 450
+    rather than 90, which rotation_swaps_axes() reads as no swap and
+    image_tools.angle_to_gdkpixbuf_rotation() refuses outright. """
+    return sum(rotation % 360 for rotation in rotations) % 360
 
 
 def rotation_swaps_axes(rotation: int) -> bool:
@@ -227,7 +243,9 @@ def fixed_strings_regex(strings: Iterable[str]) -> str:
     return r'(%s)' % '|'.join(sorted([re.escape(s) for s in unique_strings]))
 
 
-def formats_to_regex(formats: Mapping) -> re.Pattern:
+def formats_to_regex(
+        formats: "Mapping[str, tuple[Collection[str], Collection[str]]]"
+        ) -> "re.Pattern[str]":
     """ Returns a compiled regular expression that can be used to search for
     file extensions specified in C{formats}. """
     return re.compile(r'\.' + fixed_strings_regex(
@@ -235,7 +253,7 @@ def formats_to_regex(formats: Mapping) -> re.Pattern:
 
 
 @contextlib.contextmanager
-def atomic_write(path: str, binary: bool = False) -> Iterator[IO]:
+def atomic_write(path: str, binary: bool = False) -> "Iterator[IO[Any]]":
     """ Context manager that yields a file object for writing to C{path}.
 
     The data is written to a temporary file in the same directory, which is

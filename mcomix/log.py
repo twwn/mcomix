@@ -26,7 +26,7 @@ if not __logger.handlers:
     __logger.handlers = [__handler]
 
 
-def getLevel():
+def getLevel() -> int:
     return __logger.level
 
 

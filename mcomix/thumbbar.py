@@ -5,11 +5,16 @@ from gi.repository import Gdk, Gio, Gtk
 from mcomix.preferences import prefs
 
 from collections.abc import Sequence
+from typing import TYPE_CHECKING
 from mcomix import image_tools
 from mcomix import preview
 from mcomix import theme
 from mcomix import thumbnail_list
 from mcomix import tools
+
+if TYPE_CHECKING:
+    from gi.repository import GdkPixbuf
+    from mcomix import main
 
 
 class ThumbnailSidebar(Gtk.ScrolledWindow):
@@ -19,7 +24,7 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
     # Thumbnail border width in pixels.
     _BORDER_SIZE = 1
 
-    def __init__(self, window):
+    def __init__(self, window: "main.MainWindow") -> None:
         super(ThumbnailSidebar, self).__init__()
 
         self._window = window
@@ -129,7 +134,7 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
             color, image_tools.text_color_for_background_color(color))
 
     @property
-    def _thumbnail_size(self):
+    def _thumbnail_size(self) -> int:
         """The size a thumbnail is drawn at on this screen.
 
         The preference was chosen for the screens MComix was written
@@ -139,7 +144,7 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
         return preview.scaled(prefs['thumbnail size'], self)
 
     @property
-    def _pixbuf_size(self):
+    def _pixbuf_size(self) -> int:
         # Don't forget the extra pixels for the border!
         return self._thumbnail_size + 2 * self._BORDER_SIZE
 
@@ -163,7 +168,7 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
         # Update current image selection in the thumb bar.
         self._set_selected_row(self._currently_selected_row)
 
-    def _generate_thumbnail(self, uid):
+    def _generate_thumbnail(self, uid: int) -> "GdkPixbuf.Pixbuf | None":
         """ Generate the pixbuf for C{uid} at demand. """
         assert isinstance(uid, int)
         page = uid
@@ -176,7 +181,7 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
 
         return pixbuf
 
-    def _set_selected_row(self, row, scroll=True):
+    def _set_selected_row(self, row: int, scroll: bool = True) -> None:
         """Set currently selected row.
         If <scroll> is True, the list is automatically
         scrolled to ensure the selected row is visible.
@@ -184,16 +189,17 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
         self._currently_selected_row = row
         self._list.select_row(row, scroll=self._loaded and scroll)
 
-    def _get_selected_row(self):
+    def _get_selected_row(self) -> int:
         """Return the index of the currently selected row."""
         return self._list.get_selected_row()
 
-    def _row_activated(self, view, position):
+    def _row_activated(self, view: Gtk.ListView, position: int) -> None:
         """Handle events due to changed thumbnail selection."""
         self._set_selected_row(position, scroll=False)
         self._window.set_page(position + 1)
 
-    def _mouse_press_event(self, gesture, n_press, x, y) -> None:
+    def _mouse_press_event(self, gesture: Gtk.GestureClick, n_press: int,
+                           x: float, y: float) -> None:
         if self._window.was_out_of_focus:
             # if the window was out of focus and the user clicks on
             # the thumbbar then do not select that page because they
@@ -201,7 +207,8 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
             # to give mcomix focus again
             gesture.set_state(Gtk.EventSequenceState.CLAIMED)
 
-    def _drag_prepare(self, source, x, y):
+    def _drag_prepare(self, source: Gtk.DragSource, x: float,
+                      y: float) -> "Gdk.ContentProvider | None":
         """Offer the file behind the thumbnail being dragged, so that it
         can be copied (e.g. to a file manager).
         """
@@ -213,7 +220,7 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
         # there is no URI left to spell out by hand.
         return Gdk.ContentProvider.new_for_value(Gio.File.new_for_path(path))
 
-    def _drag_begin(self, source, drag) -> None:
+    def _drag_begin(self, source: Gtk.DragSource, drag: Gdk.Drag) -> None:
         """Set the hotspot for the cursor at the top left corner of the
         thumbnail (so that we might actually see where we are dropping!).
         """
@@ -231,7 +238,7 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
             return
         self._set_selected_row(row)
 
-    def _on_page_available(self, page):
+    def _on_page_available(self, page: int) -> None:
         """ Called whenever a new page is ready for display. """
         if self.get_visible():
             self._list.refresh()

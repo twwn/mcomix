@@ -4,6 +4,7 @@
 
 import os
 import zipfile
+from collections.abc import Iterator
 
 from mcomix import log
 from mcomix import i18n
@@ -11,7 +12,7 @@ from mcomix.archive import archive_base
 from mcomix.i18n import _
 
 
-def is_py_supported_zipfile(path):
+def is_py_supported_zipfile(path: str) -> bool:
     """Check if a given zipfile has all internal files stored with Python supported compression
     """
     with zipfile.ZipFile(path, 'r') as zip_file:
@@ -21,20 +22,18 @@ def is_py_supported_zipfile(path):
     return True
 
 class ZipArchive(archive_base.NonUnicodeArchive):
-    def __init__(self, archive):
-        super(ZipArchive, self).__init__(archive)
+    def __init__(self, archive: str) -> None:
+        super().__init__(archive)
         self.zip = zipfile.ZipFile(archive, 'r')
-        self._password = None
 
-    def iter_contents(self):
+    def iter_contents(self) -> Iterator[str]:
         if self._has_encryption():
-            self._get_password()
-            self.zip.setpassword(i18n.to_utf8(self._password))
+            self.zip.setpassword(i18n.to_utf8(self._get_password()))
 
         for filename in self.zip.namelist():
             yield self._unicode_filename(filename)
 
-    def extract(self, filename, destination_dir):
+    def extract(self, filename: str, destination_dir: str) -> None:
         original_filename = self._original_filename(filename)
         # Read before creating the destination, so a member that cannot be
         # read does not leave an empty file behind.

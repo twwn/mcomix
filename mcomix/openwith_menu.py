@@ -5,6 +5,7 @@ from gi.repository import Gio, GLib
 from typing import Any
 
 from mcomix import openwith
+from mcomix import widgets
 from mcomix.i18n import _
 
 # Reference to the OpenWith command manager
@@ -28,7 +29,7 @@ class OpenWithMenu(object):
         """ Constructor. """
         self._window = window
         self._openwith_manager = _openwith_manager
-        self._commands: list = []
+        self._commands: "list[openwith.OpenWithCommand]" = []
 
         self.model = Gio.Menu()
 
@@ -77,7 +78,7 @@ class OpenWithMenu(object):
 
     def _set_sensitivity(self, *args: Any) -> None:
         """ Enables or disables the commands depending on files being loaded. """
-        self._actions.lookup_action('run').set_enabled(
+        widgets.simple_action(self._actions, 'run').set_enabled(
             self._window.filehandler.file_loaded)
 
     def _run_command(self, action: Any, target: Any) -> None:
@@ -88,7 +89,7 @@ class OpenWithMenu(object):
                                  command.is_disabled_for_archives()
                                  ).execute(self._window)
 
-    def _edit_commands(self, *args):
+    def _edit_commands(self, *args: Any) -> None:
         """ When clicked, opens the command editor to set up the menu. Make
         sure the dialog isn't opened more than once. """
         global _openwith_edit_diag
@@ -100,10 +101,11 @@ class OpenWithMenu(object):
         _openwith_edit_diag.set_visible(True)
         _openwith_edit_diag.present()
 
-    def _dialog_closed(self, *args):
+    def _dialog_closed(self, *args: Any) -> None:
         """ Watch for the dialog getting closed and unset the local instance. """
         global _openwith_edit_diag
-        _openwith_edit_diag.destroy()
+        if _openwith_edit_diag is not None:
+            _openwith_edit_diag.destroy()
         _openwith_edit_diag = None
 
 # vim: expandtab:sw=4:ts=4

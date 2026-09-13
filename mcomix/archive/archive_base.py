@@ -6,6 +6,8 @@ extraction and adding new archive formats. """
 import os
 import errno
 import threading
+from collections.abc import Callable, Iterable, Iterator
+from typing import IO
 
 from mcomix import portability
 from mcomix import i18n
@@ -14,19 +16,19 @@ from mcomix import callback
 from mcomix.archive import password as archive_password
 
 
-class BaseArchive(object):
+class BaseArchive:
     """ Base archive interface. All filenames passed from and into archives
     are expected to be Unicode objects. Archive files are converted to
     Unicode with some guess-work. """
 
-    """ True if concurrent calls to extract is supported. """
+    # True if concurrent calls to extract is supported.
     support_concurrent_extractions = False
 
-    def __init__(self, archive):
+    def __init__(self, archive: str) -> None:
         assert isinstance(archive, str), "File should be an Unicode string."
 
         self.archive = archive
-        self._password = None
+        self._password: str | None = None
         self._event = threading.Event()
         if self.support_concurrent_extractions:
             # When multiple concurrent extractions are supported,
@@ -34,21 +36,21 @@ class BaseArchive(object):
             self._lock = threading.Lock()
             self._waiting_for_password = False
 
-    def iter_contents(self):
+    def iter_contents(self) -> Iterator[str]:
         """ Generator for listing the archive contents.
         """
         return
         yield
 
-    def list_contents(self):
+    def list_contents(self) -> list[str]:
         """ Returns a list of unicode filenames relative to the archive root.
         These names do not necessarily exist in the actual archive since they
         need to saveable on the local filesystems, so some characters might
         need to be replaced. """
 
-        return [f for f in self.iter_contents()]
+        return list(self.iter_contents())
 
-    def extract(self, filename, destination_dir):
+    def extract(self, filename: str, destination_dir: str) -> None:
         """ Extracts the file specified by <filename>. This filename must
         be obtained by calling list_contents(). The file is saved to
         <destination_dir>. """
@@ -56,7 +58,7 @@ class BaseArchive(object):
         assert isinstance(filename, str) and \
             isinstance(destination_dir, str)
 
-    def iter_extract(self, entries, destination_dir):
+    def iter_extract(self, entries: Iterable[str], destination_dir: str) -> Iterator[str]:
         """ Generator to extract <entries> from archive to <destination_dir>. """
         wanted = set(entries)
         for filename in self.iter_contents():
@@ -73,12 +75,18 @@ class BaseArchive(object):
 
         pass
 
+    @staticmethod
+    def is_available() -> bool:
+        """ Whether this archiver can be used.  Handlers that need an
+        external program or an optional module override this. """
+        return True
+
     def is_solid(self) -> bool:
         """ Returns True if the archive is solid and extraction should be done
         in one pass. """
         return False
 
-    def _replace_invalid_filesystem_chars(self, filename):
+    def _replace_invalid_filesystem_chars(self, filename: str) -> str:
         """ Replaces characters in <filename> that cannot be saved to the disk
         with underscore and returns the cleaned-up name. """
 
@@ -100,7 +108,7 @@ class BaseArchive(object):
         return os.sep.join(part for part in normalized.split(os.sep)
                            if part not in ('', os.curdir, os.pardir))
 
-    def _create_directory(self, directory):
+    def _create_directory(self, directory: str) -> None:
         """ Recursively create a directory if it doesn't exist yet. """
         if os.path.exists(directory):
             return
@@ -111,7 +119,7 @@ class BaseArchive(object):
             if e.errno != errno.EEXIST:
                 raise e
 
-    def _create_file(self, dst_path):
+    def _create_file(self, dst_path: str) -> IO[bytes]:
         """ Open <dst_path> for writing, making sure base directory exists. """
         dst_dir = os.path.dirname(dst_path)
         # Create directory if it doesn't exist
@@ -135,7 +143,9 @@ class BaseArchive(object):
 
         archive_password.ask_for_password(self.archive, got_password)
 
-    def _get_password(self) -> None:
+    def _get_password(self) -> str:
+        """ Returns the password for this archive, asking for it once if it
+        has not been asked for yet.  Blocks until the dialog is answered. """
         ask_for_password = self._password is None
         # Don't trigger concurrent password dialogs.
         if ask_for_password and self.support_concurrent_extractions:
@@ -147,18 +157,23 @@ class BaseArchive(object):
         if ask_for_password:
             self._password_required()
         self._event.wait()
+        # got_password() sets the event only after assigning the password,
+        # so by here it is a string, empty if the user gave none.
+        assert self._password is not None
+        return self._password
 
 class NonUnicodeArchive(BaseArchive):
     """ Base class for archives that manage a conversion of byte member names ->
     Unicode member names internally. Required for formats that do not provide
     wide character member names. """
 
-    def __init__(self, archive):
-        super(NonUnicodeArchive, self).__init__(archive)
+    def __init__(self, archive: str) -> None:
+        super().__init__(archive)
         # Maps Unicode names to regular names as expected by the original archive format
-        self.unicode_mapping = {}
+        self.unicode_mapping: dict[str, str] = {}
 
-    def _unicode_filename(self, filename, conversion_func=i18n.to_unicode):
+    def _unicode_filename(self, filename: str,
+                          conversion_func: Callable[[str], str] = i18n.to_unicode) -> str:
         """ Instead of returning archive members directly, map each filename through
         this function first to convert them to Unicode. """
 
@@ -167,12 +182,10 @@ class NonUnicodeArchive(BaseArchive):
         self.unicode_mapping[safe_name] = filename
         return safe_name
 
-    def _original_filename(self, filename):
-        """ Map Unicode filename back to original archive name. """
-        if filename in self.unicode_mapping:
-            return self.unicode_mapping[filename]
-        else:
-            return i18n.to_utf8(filename)
+    def _original_filename(self, filename: str) -> str:
+        """ Map Unicode filename back to original archive name.  Names that
+        were never listed have no mapping, and stand for themselves. """
+        return self.unicode_mapping.get(filename, filename)
 
 class ExternalExecutableArchive(NonUnicodeArchive):
     """ For archives that are extracted by spawning an external
@@ -182,12 +195,22 @@ class ExternalExecutableArchive(NonUnicodeArchive):
     # concurrent calls are supported.
     support_concurrent_extractions = True
 
-    def __init__(self, archive):
-        super(ExternalExecutableArchive, self).__init__(archive)
+    def __init__(self, archive: str) -> None:
+        super().__init__(archive)
         # Flag to determine if list_contents() has been called
         # This builds the Unicode mapping and is likely required
         # for extracting filenames that have been internally mapped.
         self.filenames_initialized = False
+
+    @property
+    def _executable(self) -> str:
+        """ The executable, for the code paths that have already found
+        _get_executable() answers.  Raising here names the invariant
+        rather than letting None into an argument vector. """
+        executable = self._get_executable()
+        if not executable:
+            raise ValueError('%s has no executable to run.' % type(self).__name__)
+        return executable
 
     def _get_executable(self) -> str | None:
         """ Returns the executable's name or path. Return None if no executable
@@ -204,25 +227,26 @@ class ExternalExecutableArchive(NonUnicodeArchive):
         to extract a file to STDOUT. """
         raise NotImplementedError("Subclasses must override _get_extract_arguments.")
 
-    def _parse_list_output_line(self, line):
+    def _parse_list_output_line(self, line: str) -> str | None:
         """ Parses the output of the external executable's list command
         and return either a file path relative to the archive's root,
         or None if the current line doesn't contain any file references. """
 
         return line
 
-    def iter_contents(self):
+    def iter_contents(self) -> Iterator[str]:
         if not self._get_executable():
             return
 
-        proc = process.popen([self._get_executable()] +
+        proc = process.popen([self._executable] +
                              self._get_list_arguments() +
                              [self.archive])
+        assert proc.stdout is not None
         try:
-            for line in proc.stdout:
+            for raw_line in proc.stdout:
                 # The listing is read as bytes, as the encoding the external
                 # tool uses for member names is not known in advance.
-                line = i18n.to_unicode(line).rstrip('\r\n')
+                line = i18n.to_unicode(raw_line).rstrip('\r\n')
                 filename = self._parse_list_output_line(line)
                 if filename is not None:
                     yield self._unicode_filename(filename)
@@ -232,7 +256,7 @@ class ExternalExecutableArchive(NonUnicodeArchive):
 
         self.filenames_initialized = True
 
-    def extract(self, filename, destination_dir):
+    def extract(self, filename: str, destination_dir: str) -> None:
         """ Extract <filename> from the archive to <destination_dir>. """
         assert isinstance(filename, str) and \
                 isinstance(destination_dir, str)
@@ -245,7 +269,7 @@ class ExternalExecutableArchive(NonUnicodeArchive):
 
         output = self._create_file(os.path.join(destination_dir, filename))
         try:
-            process.call([self._get_executable()] +
+            process.call([self._executable] +
                          self._get_extract_arguments() +
                          [self.archive, self._original_filename(filename)],
                          stdout=output)

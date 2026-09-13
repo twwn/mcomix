@@ -1,5 +1,8 @@
 """canvas.py - The scrolling area the pages are laid out on."""
 
+from collections.abc import Callable
+from typing import Any
+
 from gi.repository import Gdk, GLib, GObject, Graphene, Gtk
 
 
@@ -28,12 +31,12 @@ class PageCanvas(Gtk.Widget):
     def __init__(self) -> None:
         super(PageCanvas, self).__init__()
         #: Children, as [widget, x, y] in the canvas' own coordinates.
-        self._children = []
+        self._children: list[list[Any]] = []
         #: The size of the canvas, which is what the pages need rather
         #: than what is on screen.
         self._size = (0, 0)
         #: What draws over the pages, by name.
-        self._overlays = {}
+        self._overlays: dict[str, Callable[[Gtk.Snapshot], None]] = {}
         self._hadjustment = Gtk.Adjustment()
         self._vadjustment = Gtk.Adjustment()
         for adjustment in (self._hadjustment, self._vadjustment):
@@ -41,7 +44,7 @@ class PageCanvas(Gtk.Widget):
         #: Set while size_allocate() is configuring the adjustments, so
         #: that the value they emit does not ask for another allocation.
         self._allocating = False
-        self._pointer = (0, 0)
+        self._pointer: tuple[float, float] = (0.0, 0.0)
         #: The last size announced through 'resized'.
         self._allocated = (0, 0)
         # A page larger than the window must not be drawn over the rest
@@ -102,7 +105,8 @@ class PageCanvas(Gtk.Widget):
                 return
         raise ValueError('%r is not on the canvas' % (child,))
 
-    def set_overlay(self, name: str, draw) -> None:
+    def set_overlay(self, name: str,
+                    draw: "Callable[[Gtk.Snapshot], None] | None") -> None:
         """Draw over the pages with <draw>, or take an overlay away.
 
         <draw> is called with a Gtk.Snapshot, in canvas coordinates -
@@ -117,7 +121,7 @@ class PageCanvas(Gtk.Widget):
             self._overlays[name] = draw
         self.queue_draw()
 
-    def do_snapshot(self, snapshot) -> None:
+    def do_snapshot(self, snapshot: Gtk.Snapshot) -> None:
         # The pages themselves, as any widget draws its children.
         Gtk.Widget.do_snapshot(self, snapshot)
         if not self._overlays:
@@ -134,19 +138,22 @@ class PageCanvas(Gtk.Widget):
         """Return where the pointer last was, in canvas coordinates."""
         return self._pointer
 
-    def _moved(self, _controller, x, y) -> None:
+    def _moved(self, _controller: Gtk.EventControllerMotion, x: float,
+               y: float) -> None:
         self._pointer = (x, y)
 
-    def _scrolled(self, _adjustment) -> None:
+    def _scrolled(self, _adjustment: Gtk.Adjustment) -> None:
         if not self._allocating:
             self.queue_allocate()
 
-    def do_measure(self, orientation, for_size):
+    def do_measure(self, orientation: Gtk.Orientation,
+                   for_size: int) -> tuple[int, int, int, int]:
         # Nothing, the way Gtk.Layout asked for nothing: the canvas is
         # whatever room is left over, and scrolls for the rest.
         return 0, 0, -1, -1
 
-    def do_size_allocate(self, width, height, baseline) -> None:
+    def do_size_allocate(self, width: int, height: int,
+                         baseline: int) -> None:
         if (width, height) != self._allocated:
             self._allocated = (width, height)
             # Not from inside the allocation itself: whoever listens is
@@ -188,6 +195,8 @@ class PageCanvas(Gtk.Widget):
         for child, _x, _y in self._children:
             child.unparent()
         self._children = []
-        Gtk.Widget.do_dispose(self)
+        # Gtk.Widget.do_dispose is put there by PyGObject for a widget
+        # that overrides it, so the stubs do not describe it.
+        Gtk.Widget.do_dispose(self)  # type: ignore[attr-defined]
 
 # vim: expandtab:sw=4:ts=4

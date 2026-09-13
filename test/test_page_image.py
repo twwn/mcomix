@@ -37,7 +37,7 @@ class PageImageTest(MComixTest):
 
     def test_a_page_is_drawn_at_its_own_size(self):
         pixbuf = image_tools.load_pixbuf(get_image_path('blue.png'))
-        self.image.set_pixbuf(pixbuf)
+        self.image.show_pixbuf(pixbuf)
         paintable = self.image.get_paintable()
         self.assertEqual((paintable.get_intrinsic_width(),
                           paintable.get_intrinsic_height()), (100, 100))
@@ -59,7 +59,7 @@ class PageImageTest(MComixTest):
     def test_an_animated_page_advances_on_its_own(self):
         animation = image_tools.load_pixbuf(get_image_path('animated.gif'))
         self.assertTrue(image_tools.is_animation(animation))
-        self.image.set_pixbuf(animation)
+        self.image.show_pixbuf(animation)
         paintable = self.image.get_paintable()
         self.assertIsNotNone(paintable)
         # The paintable stays; only what it draws changes, so that a
@@ -78,7 +78,7 @@ class PageImageTest(MComixTest):
         # drawn at the full size of the picture and uploaded whole,
         # however small the window.
         animation = image_tools.load_pixbuf(get_image_path('animated.gif'))
-        self.image.set_pixbuf(animation, (64, 48))
+        self.image.show_pixbuf(animation, (64, 48))
         paintable = self.image.get_paintable()
         self.assertEqual((paintable.get_intrinsic_width(),
                           paintable.get_intrinsic_height()), (64, 48))
@@ -97,7 +97,7 @@ class PageImageTest(MComixTest):
 
     def test_a_page_with_no_size_is_left_alone(self):
         pixbuf = image_tools.load_pixbuf(get_image_path('blue.png'))
-        self.image.set_pixbuf(pixbuf)
+        self.image.show_pixbuf(pixbuf)
         paintable = self.image.get_paintable()
         self.assertEqual((paintable.get_intrinsic_width(),
                           paintable.get_intrinsic_height()), (100, 100))
@@ -109,21 +109,21 @@ class PageImageTest(MComixTest):
         # it - seconds, on a slow first frame.
         animation = image_tools.load_pixbuf(get_image_path('animated.gif'))
         self.assertTrue(image_tools.is_animation(animation))
-        self.image.set_pixbuf(animation)
+        self.image.show_pixbuf(animation)
         self.assertIsNotNone(self.image._worker,
                              'nothing is decoding the next frame')
 
     def test_one_picture_waits_for_nothing(self):
         still = image_tools.load_pixbuf(get_image_path('blue.png'))
         self.assertFalse(image_tools.is_animation(still))
-        self.image.set_pixbuf(still)
+        self.image.show_pixbuf(still)
         self.assertIsNone(self.image._worker,
                           'a single picture left a thread running')
 
     def test_a_still_page_stops_the_animation_before_it(self):
         animation = image_tools.load_pixbuf(get_image_path('animated.gif'))
-        self.image.set_pixbuf(animation)
-        self.image.set_pixbuf(image_tools.load_pixbuf(get_image_path('blue.png')))
+        self.image.show_pixbuf(animation)
+        self.image.show_pixbuf(image_tools.load_pixbuf(get_image_path('blue.png')))
         still = self.image.get_paintable()
         wait_for(lambda: self.image.get_paintable() is not still,
                        seconds=2)
@@ -132,7 +132,7 @@ class PageImageTest(MComixTest):
 
     def test_clearing_a_page_stops_the_animation(self):
         animation = image_tools.load_pixbuf(get_image_path('animated.gif'))
-        self.image.set_pixbuf(animation)
+        self.image.show_pixbuf(animation)
         self.image.clear()
         self.assertIsNone(self.image.get_paintable())
         wait_for(lambda: self.image.get_paintable() is not None,
@@ -154,7 +154,7 @@ class PageImageTest(MComixTest):
         try:
             animated = image_tools.load_pixbuf(
                 get_image_path('animated.gif'))
-            self.image.set_pixbuf(animated)
+            self.image.show_pixbuf(animated)
             drawn = []
             self.image.get_paintable().connect(
                 'invalidate-contents', lambda *args: drawn.append(1))

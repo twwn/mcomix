@@ -1,6 +1,6 @@
 """animation.py - The frames of an animated page, one at a time."""
 
-from gi.repository import GdkPixbuf, Gio, GLib
+from gi.repository import Gdk, GdkPixbuf, Gio, GLib
 
 from PIL import Image
 
@@ -30,7 +30,7 @@ class Frames(object):
     #: Whether a frame can be decoded before the moment it is due.
     ahead = False
 
-    def next(self):
+    def next(self) -> tuple[Gdk.Texture, int]:
         """Return the next (texture, milliseconds it is shown for).
 
         A delay of zero or less means the animation has run out and
@@ -58,14 +58,14 @@ class _PillowFrames(Frames):
 
     ahead = True
 
-    def __init__(self, path):
+    def __init__(self, path: str) -> None:
         self._image = Image.open(path)
         self._frames = getattr(self._image, 'n_frames', 1)
         if self._frames < 2:
             raise ValueError('%s holds a single picture' % path)
         self._index = -1
 
-    def next(self):
+    def next(self) -> tuple[Gdk.Texture, int]:
         self._index = (self._index + 1) % self._frames
         self._image.seek(self._index)
         # Seeking only says which frame is wanted; a WebP fills in how
@@ -100,7 +100,7 @@ class _GlycinFrames(Frames):
     def _load(self) -> Any:
         return self._Gly.Loader.new(self._file).load()
 
-    def next(self):
+    def next(self) -> tuple[Gdk.Texture, int]:
         try:
             frame = self._image.next_frame()
         except GLib.Error:
@@ -128,18 +128,23 @@ class _PixbufFrames(Frames):
 
     def __init__(self, path: str) -> None:
         animation = GdkPixbuf.PixbufAnimation.new_from_file(path)
+        if animation is None:
+            raise ValueError('%s holds no animation' % path)
         self._iterator = animation.get_iter(None)
         self._started = False
 
-    def next(self):
+    def next(self) -> tuple[Gdk.Texture, int]:
         if self._started:
             self._iterator.advance(None)
         self._started = True
         # The iterator hands out one pixbuf and paints the next frame
         # over it, so the texture gets a copy of its own rather than a
         # window onto whatever is being decoded next.
-        pixbuf = self._iterator.get_pixbuf().copy()
-        return image_tools.pixbuf_to_texture(pixbuf), \
+        pixbuf = self._iterator.get_pixbuf()
+        frame = pixbuf.copy() if pixbuf is not None else None
+        if frame is None:
+            raise ValueError('the animation has no frame to draw')
+        return image_tools.pixbuf_to_texture(frame), \
             self._iterator.get_delay_time()
 
 

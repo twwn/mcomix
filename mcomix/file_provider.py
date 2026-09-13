@@ -14,7 +14,9 @@ from mcomix import i18n
 from mcomix import log
 from mcomix.i18n import _
 
-def get_file_provider(filelist):
+from collections.abc import Callable, Sequence
+
+def get_file_provider(filelist: Sequence[str]) -> 'FileProvider | None':
     """ Initialize a FileProvider with the files in <filelist>.
     If len(filelist) is 1, a OrderedFileProvider will be constructed, which
     will simply open all files in the passed directory.
@@ -23,6 +25,7 @@ def get_file_provider(filelist):
     If len(filelist) is zero, FileProvider will look at the last file opened,
     if "Auto Open last file" is set. Otherwise, no provider is constructed. """
 
+    provider: FileProvider | None
     if len(filelist) > 0:
         if len(filelist) == 1:
             if os.path.exists(filelist[0]):
@@ -48,13 +51,13 @@ class FileProvider(object):
     # Constants for determining which files to list.
     IMAGES, ARCHIVES = 1, 2
 
-    def set_directory(self, file_or_directory):
+    def set_directory(self, file_or_directory: str) -> None:
         pass
 
-    def get_directory(self):
+    def get_directory(self) -> str:
         return os.path.abspath(os.getcwd())
 
-    def list_files(self, mode=IMAGES):
+    def list_files(self, mode: int = IMAGES) -> list[str]:
         return []
 
     def next_directory(self) -> bool:
@@ -64,7 +67,7 @@ class FileProvider(object):
         return False
 
     @staticmethod
-    def sort_files(files):
+    def sort_files(files: list[str]) -> None:
         """ Sorts a list of C{files} depending on the current preferences.
         The list is sorted in-place. """
         if preferences.prefs['sort by'] == constants.SORT_NAME:
@@ -88,14 +91,14 @@ class OrderedFileProvider(FileProvider):
     """ This provider will list all files in the same directory as the
         one passed to the constructor. """
 
-    def __init__(self, file_or_directory):
+    def __init__(self, file_or_directory: str) -> None:
         """ Initializes the file listing. If <file_or_directory> is a file,
             directory will be used as base path. If it is a directory, that
             will be used as base file. """
 
         self.set_directory(file_or_directory)
 
-    def set_directory(self, file_or_directory):
+    def set_directory(self, file_or_directory: str) -> None:
         """ Sets the base directory. """
 
         if os.path.isdir(file_or_directory):
@@ -108,13 +111,14 @@ class OrderedFileProvider(FileProvider):
 
         self.base_dir = os.path.abspath(dir)
 
-    def get_directory(self):
+    def get_directory(self) -> str:
         return self.base_dir
 
-    def list_files(self, mode=FileProvider.IMAGES):
+    def list_files(self, mode: int = FileProvider.IMAGES) -> list[str]:
         """ Lists all files in the current directory.
             Returns a list of absolute paths, already sorted. """
 
+        should_accept: Callable[[str], bool]
         if mode == FileProvider.IMAGES:
             should_accept = image_tools.is_image_file
         elif mode == FileProvider.ARCHIVES:
@@ -137,21 +141,21 @@ class OrderedFileProvider(FileProvider):
             log.warning('! ' + _('Could not open %s: Permission denied.'), self.base_dir)
             return []
 
-    def next_directory(self):
+    def next_directory(self) -> bool:
         """ Switches to the next sibling directory. Next call to
             list_file() returns files in the new directory.
             Returns True if the directory was changed, otherwise False. """
 
         return self.__switch_directory(1)
 
-    def previous_directory(self):
+    def previous_directory(self) -> bool:
         """ Switches to the previous sibling directory. Next call to
             list_file() returns files in the new directory.
             Returns True if the directory was changed, otherwise False. """
 
         return self.__switch_directory(-1)
 
-    def __switch_directory(self, offset):
+    def __switch_directory(self, offset: int) -> bool:
         """ Switches to the sibling directory <offset> places away, and
             returns True if there was one. """
 
@@ -167,7 +171,7 @@ class OrderedFileProvider(FileProvider):
             return True
         return False
 
-    def __get_sibling_directories(self, dir):
+    def __get_sibling_directories(self, dir: str) -> list[str]:
         """ Returns a list of all sibling directories of <dir>,
             already sorted. """
 
@@ -183,7 +187,7 @@ class OrderedFileProvider(FileProvider):
 class PreDefinedFileProvider(FileProvider):
     """ Returns only a list of files as passed to the constructor. """
 
-    def __init__(self, files):
+    def __init__(self, files: Sequence[str]) -> None:
         """ <files> is a list of files that should be shown. The list is filtered
             to contain either only images, or only archives, depending on what the first
             file is, since FileHandler will probably have problems of archives and images
@@ -202,12 +206,12 @@ class PreDefinedFileProvider(FileProvider):
                 self.__files.append(os.path.abspath(file))
 
 
-    def list_files(self, mode=FileProvider.IMAGES):
+    def list_files(self, mode: int = FileProvider.IMAGES) -> list[str]:
         """ Returns the files as passed to the constructor. """
 
         return self.__files
 
-    def __get_file_filter(self, files):
+    def __get_file_filter(self, files: Sequence[str]) -> Callable[[str], bool]:
         """ Determines what kind of files should be filtered in the given list
         of <files>. Returns either a filter accepting only images, or only archives,
         depending on what type of file is found first in the list. """

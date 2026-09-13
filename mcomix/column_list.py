@@ -75,6 +75,11 @@ class Row(GObject.Object):
         # not there.
         raise AttributeError(name)
 
+    def __setattr__(self, name: str, value: Any) -> None:
+        # The write side of __getattr__: a column writes back whatever
+        # attribute it was told to show, and none of them are declared.
+        super(Row, self).__setattr__(name, value)
+
     def changed(self) -> None:
         """Redraw this row: something it shows is not what it was."""
         self.emit('changed')
@@ -139,7 +144,10 @@ class _ChoiceCell(Gtk.DropDown, _Cell):
         self.set_model(Gtk.StringList())
 
 
-class _EditableCell(Gtk.EditableLabel, _Cell):
+# pygobject-stubs declares install_properties() on GObject.Object and
+# on Gtk.Editable with signatures that do not match, so any class
+# implementing the interface is reported.
+class _EditableCell(Gtk.EditableLabel, _Cell):  # type: ignore[misc]
 
     """A cell whose text the user can rewrite in place.
 
@@ -307,7 +315,7 @@ class _ClampLayout(Gtk.LayoutManager):
         self._width = width
 
     def do_measure(self, widget: Gtk.Widget, orientation: Gtk.Orientation,
-                   for_size: int) -> tuple:
+                   for_size: int) -> tuple[int, int, int, int]:
         child = widget.get_first_child()
         if child is None:
             return 0, 0, -1, -1
@@ -446,7 +454,7 @@ class ColumnListView(Gtk.ColumnView):
         #: What the view shows: the rows in the order the headings put
         #: them in, which is the order they were added until one is
         #: clicked.
-        self.model: Gio.ListModel = self._sorted
+        self.model: "Gio.ListModel[Row]" = self._sorted
         self.selection: "Gtk.MultiSelection | Gtk.SingleSelection"
         if multiple:
             self.selection = Gtk.MultiSelection(model=self.model)
@@ -466,7 +474,7 @@ class ColumnListView(Gtk.ColumnView):
         self._search_at = 0
 
     @staticmethod
-    def _children_of(row: Row) -> "Gio.ListStore | None":
+    def _children_of(row: Row) -> "Gio.ListStore[Row] | None":
         """The rows under <row>, if it has any."""
         children = getattr(row, 'children', None)
         if not children:
@@ -659,7 +667,8 @@ class ColumnListView(Gtk.ColumnView):
         if item is not None:
             chosen(row, cast(Gtk.StringObject, item).get_string())
 
-    def _add_column(self, title: str, cell_type: type, bind: Callable,
+    def _add_column(self, title: str, cell_type: type,
+                    bind: "Callable[..., None]",
                     expand: bool, attr: str,
                     sort_key: "Callable[[Row], Any] | None",
                     unbind: "Callable[[Any], None] | None" = None) \
@@ -864,7 +873,7 @@ class ColumnListView(Gtk.ColumnView):
 
     def expanded_rows(self) -> list[Row]:
         """Every row that is expanded right now."""
-        expanded = []
+        expanded: list[Row] = []
         for position in range(self.model.get_n_items()):
             item = self.model.get_item(position)
             if isinstance(item, Gtk.TreeListRow) and item.get_expanded():

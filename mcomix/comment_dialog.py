@@ -7,17 +7,24 @@ from mcomix.dialog import Dialog
 from mcomix import i18n
 from mcomix import widgets
 from mcomix.i18n import _
+from mcomix.dialog import Response
+
+from collections.abc import Sequence
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from mcomix import main
 
 
 class _CommentsDialog(Dialog):
 
-    def __init__(self, window):
+    def __init__(self, window: "main.MainWindow") -> None:
         super(_CommentsDialog, self).__init__(
             title=_('Comments'), transient_for=window)
-        self.add_buttons(_('_Close'), Gtk.ResponseType.CLOSE)
+        self.add_buttons(_('_Close'), Response.CLOSE)
 
         self.set_resizable(True)
-        self.set_default_response(Gtk.ResponseType.CLOSE)
+        self.set_default_response(Response.CLOSE)
         self.set_default_size(600, 550)
         widgets.set_border(self, 4)
 
@@ -33,9 +40,17 @@ class _CommentsDialog(Dialog):
 
         self._tag = tag
         self._tag_table = tag_table
-        self._notebook = None
         self._window = window
-        self._comments = []
+        #: The comment each extracted file holds, by path.
+        self._comments: dict[str, int] = {}
+
+        # One notebook for the life of the dialog, emptied and filled in
+        # again whenever the book changes: taking it off the dialog and
+        # packing another in its place said the same thing at more cost.
+        self._notebook = Gtk.Notebook()
+        self._notebook.set_scrollable(True)
+        widgets.set_border(self._notebook, 6)
+        widgets.pack(self.get_content_area(), self._notebook, True, True, 0)
 
         self._window.filehandler.file_available += self._on_file_available
         self._window.filehandler.file_opened += self._update_comments
@@ -43,7 +58,7 @@ class _CommentsDialog(Dialog):
         self._update_comments()
         self.set_visible(True)
 
-    def _on_file_available(self, path_list):
+    def _on_file_available(self, path_list: Sequence[str]) -> None:
         for path in path_list:
             if path in self._comments:
                 self._add_comment(path, self._comments[path])
@@ -51,17 +66,9 @@ class _CommentsDialog(Dialog):
 
     def _update_comments(self) -> None:
 
-        if self._notebook is not None:
-            # Gtk.Widget.destroy() is for windows only in GTK4; a child
-            # goes by being taken out of what holds it.
-            self.get_content_area().remove(self._notebook)
-            self._notebook = None
-
-        notebook = Gtk.Notebook()
-        notebook.set_scrollable(True)
-        widgets.set_border(notebook, 6)
-        widgets.pack(self.get_content_area(), notebook, True, True, 0)
-        self._notebook = notebook
+        # Out with the comments of the book before this one.
+        while self._notebook.get_n_pages():
+            self._notebook.remove_page(-1)
         self._comments = {}
 
         for num in range(1, self._window.filehandler.get_number_of_comments() + 1):
@@ -76,7 +83,7 @@ class _CommentsDialog(Dialog):
 
         self._notebook.set_visible(True)
 
-    def _add_comment(self, path, num):
+    def _add_comment(self, path: str, num: int) -> None:
 
         name = os.path.basename(path)
 

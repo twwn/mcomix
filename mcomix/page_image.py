@@ -3,14 +3,19 @@
 import threading
 import time
 
-from gi.repository import Gdk, GLib, GObject, Gtk
+from gi.repository import Gdk, GdkPixbuf, GLib, GObject, Gtk
+
+from collections.abc import Sequence
 
 from mcomix import animation
 from mcomix import image_tools
 from mcomix import log
 
 
-class _AnimationPaintable(GObject.GObject, Gdk.Paintable):
+# pygobject-stubs declares props on GObject.Object and on the
+# interface base with signatures that do not match, so any class
+# implementing a GTK interface is reported.
+class _AnimationPaintable(GObject.GObject, Gdk.Paintable):  # type: ignore[misc]
 
     """One frame of an animation at a time, at a size that never moves.
 
@@ -27,13 +32,13 @@ class _AnimationPaintable(GObject.GObject, Gdk.Paintable):
         super(_AnimationPaintable, self).__init__()
         self._width = width
         self._height = height
-        self._texture = None
+        self._texture: Gdk.Texture | None = None
 
-    def set_texture(self, texture) -> None:
+    def set_texture(self, texture: Gdk.Texture) -> None:
         self._texture = texture
         self.invalidate_contents()
 
-    def get_texture(self):
+    def get_texture(self) -> Gdk.Texture | None:
         return self._texture
 
     def do_get_intrinsic_width(self) -> int:
@@ -46,7 +51,8 @@ class _AnimationPaintable(GObject.GObject, Gdk.Paintable):
         # Every frame is the same size; only what is drawn changes.
         return Gdk.PaintableFlags.SIZE
 
-    def do_snapshot(self, snapshot, width, height) -> None:
+    def do_snapshot(self, snapshot: Gtk.Snapshot, width: float,
+                    height: float) -> None:
         if self._texture is not None:
             # The frame arrives at the size it was decoded at and is
             # drawn at the size the page was laid out at.  Letting the
@@ -73,18 +79,24 @@ class PageImage(Gtk.Picture):
         # it, rather than shrunk to whatever room happens to be left.
         self.set_can_shrink(False)
         #: Told to stop, and the thread it is told to.
-        self._stopping = None
-        self._worker = None
+        self._stopping: threading.Event | None = None
+        self._worker: threading.Thread | None = None
         #: What draws the frames, while there are frames to draw.
-        self._animation = None
+        self._animation: _AnimationPaintable | None = None
 
-    def set_pixbuf(self, pixbuf, size=None) -> None:
+    def show_pixbuf(self, pixbuf: GdkPixbuf.Pixbuf,
+                    size: Sequence[float] | None = None) -> None:
         """Show <pixbuf>, which may be an animation.
 
         <size> is what the page has been laid out at.  A still page
         arrives already scaled to it; an animation cannot be, since only
         one of its frames exists at a time, so the paintable takes the
         size and every frame is drawn into it.
+
+        Not set_pixbuf(): that is a Gtk.Picture method, deprecated in GTK
+        4.12, and overriding it with a second argument left the widget
+        answering to a name of the base class's with a signature the base
+        class does not have.
         """
         self._stop()
         path = image_tools.animation_path(pixbuf)
@@ -122,7 +134,7 @@ class PageImage(Gtk.Picture):
             self._worker = None
         self._animation = None
 
-    def _start(self, path) -> None:
+    def _start(self, path: str) -> None:
         """Decode the frames somewhere other than the main thread.
 
         Decoding one frame of a page-sized animation costs more than the
@@ -140,7 +152,9 @@ class PageImage(Gtk.Picture):
         self._worker.daemon = True
         self._worker.start()
 
-    def _decode(self, frames, paintable, stopping) -> None:
+    def _decode(self, frames: animation.Frames,
+                paintable: _AnimationPaintable,
+                stopping: threading.Event) -> None:
         """Hand <paintable> a frame at a time until asked to stop."""
         due = time.monotonic()
         while not stopping.is_set():
@@ -170,11 +184,13 @@ class PageImage(Gtk.Picture):
                       due + max(animation.MINIMUM_DELAY, delay) / 1000.0)
 
     @staticmethod
-    def _wait(stopping, due) -> bool:
+    def _wait(stopping: threading.Event, due: float) -> bool:
         """Wait until <due>.  True if the animation was stopped instead."""
         return stopping.wait(max(0.0, due - time.monotonic()))
 
-    def _show_frame(self, paintable, texture, stopping) -> bool:
+    def _show_frame(self, paintable: _AnimationPaintable,
+                    texture: Gdk.Texture,
+                    stopping: threading.Event) -> bool:
         """Put a decoded frame on screen, if it is still wanted."""
         if not stopping.is_set() and paintable is self._animation:
             paintable.set_texture(texture)

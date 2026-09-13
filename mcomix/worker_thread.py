@@ -3,14 +3,22 @@
 
 import threading
 import traceback
+from collections.abc import Callable, Iterable
+from types import TracebackType
+from typing import Any, Generic, TypeVar
 
 from mcomix import log
 from mcomix.i18n import _
 
-class WorkerThread(object):
+#: A work order.  Each pool carries orders of one kind, whatever the
+#: function that processes them takes.
+Order = TypeVar('Order')
 
-    def __init__(self, process_order, name=None, max_threads=1,
-                 sort_orders=False, unique_orders=False):
+class WorkerThread(Generic[Order]):
+
+    def __init__(self, process_order: Callable[[Order], object],
+                 name: str | None = None, max_threads: int = 1,
+                 sort_orders: bool = False, unique_orders: bool = False) -> None:
         """Create a new pool of worker threads.
 
         Optional <name> will be added to spawned thread names.
@@ -25,21 +33,22 @@ class WorkerThread(object):
         self._sort_orders = sort_orders
         self._unique_orders = unique_orders
         self._stop = False
-        self._threads = []
+        self._threads: list[threading.Thread] = []
         # Queue of orders waiting for processing.
-        self._orders_queue = []
-        if self._unique_orders:
-            # Track orders.
-            self._orders_set = set()
+        self._orders_queue: list[Order] = []
+        # Track orders, when they have to be unique.
+        self._orders_set: set[Any] = set()
         self._condition = threading.Condition()
 
-    def __enter__(self):
+    def __enter__(self) -> bool:
         return self._condition.__enter__()
 
-    def __exit__(self, exc_type, exc_value, traceback):
-        return self._condition.__exit__(exc_type, exc_value, traceback)
+    def __exit__(self, exc_type: type[BaseException] | None,
+                 exc_value: BaseException | None,
+                 traceback: TracebackType | None) -> None:
+        self._condition.__exit__(exc_type, exc_value, traceback)
 
-    def _start(self, nb_threads=1):
+    def _start(self, nb_threads: int = 1) -> None:
         for n in range(nb_threads):
             if len(self._threads) == self._max_threads:
                 break
@@ -50,13 +59,13 @@ class WorkerThread(object):
             thread.start()
             self._threads.append(thread)
 
-    def _order_uid(self, order):
+    def _order_uid(self, order: Order) -> Any:
         if isinstance(order, tuple) or isinstance(order, list):
             return order[0]
         return order
 
     def _run(self) -> None:
-        order_uid = None
+        order_uid: Any = None
         while True:
             with self._condition:
                 if order_uid is not None:
@@ -75,7 +84,7 @@ class WorkerThread(object):
                           { 'function' : self._process_order, 'error' : e })
                 log.debug('Traceback:\n%s', traceback.format_exc())
 
-    def must_stop(self):
+    def must_stop(self) -> bool:
         """Return true if we've been asked to stop processing.
 
         Can be used by the processing function to check if it must abort early.
@@ -93,7 +102,7 @@ class WorkerThread(object):
                     self._orders_set.remove(order_uid)
             self._orders_queue = []
 
-    def append_order(self, order):
+    def append_order(self, order: Order) -> None:
         """Append work order to the thread orders queue."""
         with self._condition:
             if self._unique_orders:
@@ -108,9 +117,10 @@ class WorkerThread(object):
             self._condition.notify_all()
             self._start()
 
-    def extend_orders(self, orders_list):
+    def extend_orders(self, orders_list: Iterable[Order]) -> None:
         """Append work orders to the thread orders queue."""
         with self._condition:
+            orders_list = list(orders_list)
             if self._unique_orders:
                 nb_added = 0
                 for order in orders_list:

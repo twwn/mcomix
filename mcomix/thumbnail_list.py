@@ -92,8 +92,8 @@ class _ThumbnailViewBase(object):
     #: selection they want.  <store> holds the entries; <model> is what
     #: the view shows, which is the store itself unless something sorts
     #: it; <selection> wraps <model>.
-    store: Gio.ListStore
-    model: Gio.ListModel
+    store: "Gio.ListStore[ThumbnailItem]"
+    model: "Gio.ListModel[ThumbnailItem]"
     selection: Gtk.SelectionModel
 
     def _init_thumbnails(self) -> None:
@@ -213,12 +213,12 @@ class _ThumbnailViewBase(object):
             self._size_cell(cell)
 
     def set_background(self, colour: Sequence[float],
-                       text_colour: Sequence[float]) -> None:
+                       text_colour: Gdk.RGBA) -> None:
         """Paint the view on <colour>, with its labels in <text_colour>.
 
-        Both are sequences of red, green, blue and alpha between 0 and
-        1.  This was two properties of two cell renderers; a view built
-        from widgets says it in CSS instead.
+        <colour> is a sequence of red, green, blue and alpha between 0
+        and 1.  This was two properties of two cell renderers; a view
+        built from widgets says it in CSS instead.
         """
         widget = cast(Gtk.Widget, self)
         provider = self._colour_provider
@@ -233,7 +233,7 @@ class _ThumbnailViewBase(object):
             ' { background: %(background)s; color: %(text)s; }'
             % {'name': self.CSS_CLASS,
                'background': Gdk.RGBA(*colour).to_string(),
-               'text': Gdk.RGBA(*text_colour).to_string()})
+               'text': text_colour.to_string()})
 
     # -- The entries themselves -------------------------------------------
 
@@ -325,6 +325,10 @@ class ThumbnailListView(Gtk.ListView, _ThumbnailViewBase):
 
     CELL_ORIENTATION = Gtk.Orientation.HORIZONTAL
     CSS_CLASS = 'mcomix-thumbnail-list'
+
+    #: One row at a time, and the sidebar follows the page rather than
+    #: leading it, so nothing may be selected.
+    selection: Gtk.SingleSelection
 
     def __init__(self) -> None:
         self.store = Gio.ListStore.new(ThumbnailItem)

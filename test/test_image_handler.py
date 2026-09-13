@@ -180,4 +180,37 @@ class NoPageYetTest(MComixTest):
                          [0.25, 0.5, 0.75, 1.0])
 
 
+
+class BeforeAPageIsChosenTest(MComixTest):
+
+    """What the handler answers between being given a book and being
+    told which page of it is showing.
+
+    set_image_files() and set_page() are two separate calls, so there is
+    a moment where the handler knows the files but not the page.
+    """
+
+    def setUp(self):
+        super(BeforeAPageIsChosenTest, self).setUp()
+        self.handler = image_handler.ImageHandler(_StubWindow())
+        self.handler.set_image_files(['/nowhere/one.jpg', '/nowhere/two.jpg'])
+
+    def test_there_is_no_path_to_a_page_that_was_never_chosen(self):
+        """The index of the current page is None until set_page() runs,
+        and it was compared against the length of the file list, which
+        raised rather than answering that there is no page."""
+        self.assertIsNone(self.handler.get_path_to_page())
+
+    def test_the_page_asked_for_by_number_is_still_answered(self):
+        self.assertEqual(self.handler.get_path_to_page(1), '/nowhere/one.jpg')
+        self.assertEqual(self.handler.get_path_to_page(2), '/nowhere/two.jpg')
+        self.assertIsNone(self.handler.get_path_to_page(3))
+
+    def test_the_book_still_knows_how_long_it_is(self):
+        self.assertEqual(self.handler.get_number_of_pages(), 2)
+        self.assertEqual(self.handler.get_current_page(), 0)
+
+    def test_nothing_is_waited_on_for_a_page_that_was_never_chosen(self):
+        self.assertFalse(self.handler._wait_on_page(None, check_only=True))
+
 # vim: expandtab:sw=4:ts=4

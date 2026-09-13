@@ -9,6 +9,13 @@ from mcomix.preferences import prefs
 from mcomix.worker_thread import WorkerThread
 from mcomix import callback
 from mcomix.i18n import _
+from mcomix.dialog import Response
+
+from typing import Any, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from gi.repository import GdkPixbuf
+    from mcomix import main
 
 
 class Pageselector(Dialog):
@@ -16,14 +23,14 @@ class Pageselector(Dialog):
     """The Pageselector takes care of the popup page selector
     """
 
-    def __init__(self, window):
+    def __init__(self, window: "main.MainWindow") -> None:
         self._window = window
         super(Pageselector, self).__init__(
             title=_('Go to page...'), transient_for=window,
             modal=True, destroy_with_parent=True)
-        self.add_buttons(_('_Go'), Gtk.ResponseType.OK,
-                         _('_Cancel'), Gtk.ResponseType.CANCEL,)
-        self.set_default_response(Gtk.ResponseType.OK)
+        self.add_buttons(_('_Go'), Response.OK,
+                         _('_Cancel'), Response.CANCEL,)
+        self.set_default_response(Response.OK)
         self.connect('response', self._response)
         self.set_resizable(True)
 
@@ -92,13 +99,13 @@ class Pageselector(Dialog):
         self._update_thumbnail(int(self._selector_adjustment.props.value))
         self._window.imagehandler.page_available += self._page_available
 
-    def _cb_value_changed(self, *args):
+    def _cb_value_changed(self, *args: Any) -> None:
         """ Called whenever the spinbox value changes. Updates the preview thumbnail. """
         page = int(self._selector_adjustment.props.value)
         if page != self._thumbnail_page:
             self._update_thumbnail(page)
 
-    def _size_changed_cb(self, *args):
+    def _size_changed_cb(self, *args: Any) -> None:
         # Window cannot be scaled down unless the size request is reset
         self.set_size_request(-1, -1)
         # Store dialog size
@@ -107,7 +114,8 @@ class Pageselector(Dialog):
 
         self._update_thumbnail(int(self._selector_adjustment.props.value))
 
-    def _page_text_changed(self, control, *args):
+    def _page_text_changed(self, control: Gtk.SpinButton,
+                           *args: Any) -> None:
         """ Called when the page selector has been changed. Used to instantly update
             the preview thumbnail when entering page numbers by hand. """
         if control.get_text().isdigit():
@@ -115,17 +123,18 @@ class Pageselector(Dialog):
             if page > 0 and page <= self._number_of_pages:
                 control.set_value(page)
 
-    def _stop_thumbnailing(self, *args) -> None:
+    def _stop_thumbnailing(self, *args: Any) -> None:
         self._thread.stop()
 
-    def _response(self, widget, event, *args):
-        if event == Gtk.ResponseType.OK:
+    def _response(self, widget: Gtk.Widget, event: int,
+                  *args: Any) -> None:
+        if event == Response.OK:
             self._window.set_page(int(self._selector_adjustment.props.value))
 
         self._window.imagehandler.page_available -= self._page_available
         self.destroy()
 
-    def _update_thumbnail(self, page):
+    def _update_thumbnail(self, page: int) -> None:
         """ Trigger a thumbnail update. """
         width = self._image_preview.get_width()
         height = self._image_preview.get_height()
@@ -133,9 +142,10 @@ class Pageselector(Dialog):
         self._thread.clear_orders()
         self._thread.append_order((page, width, height))
 
-    def _generate_thumbnail(self, params):
+    def _generate_thumbnail(self, params: tuple[int, int, int]) -> None:
         """ Generate the preview thumbnail for the page selector.
-        A transparent image will be used if the page is not yet available. """
+        A page that is not available yet has no thumbnail, and the
+        preview is then left empty. """
         page, width, height = params
 
         pixbuf = self._window.imagehandler.get_thumbnail(page,
@@ -143,13 +153,17 @@ class Pageselector(Dialog):
         self._thumbnail_finished(page, pixbuf)
 
     @callback.Callback
-    def _thumbnail_finished(self, page, pixbuf):
+    def _thumbnail_finished(self, page: int,
+                            pixbuf: "GdkPixbuf.Pixbuf | None") -> None:
         # Don't bother if we changed page in the meantime.
         if page == self._thumbnail_page:
+            # get_thumbnail() answers None for a page that has not been
+            # extracted yet, which is nothing to make a texture of.
             self._image_preview.set_paintable(
-                image_tools.pixbuf_to_texture(pixbuf))
+                image_tools.pixbuf_to_texture(pixbuf)
+                if pixbuf is not None else None)
 
-    def _page_available(self, page):
+    def _page_available(self, page: int) -> None:
         if page == int(self._selector_adjustment.props.value):
             self._update_thumbnail(page)
 
