@@ -6,6 +6,7 @@ from gi.repository import GLib, Gtk
 
 from mcomix.dialog import Dialog
 from mcomix import widgets
+from mcomix import preferences
 from mcomix.preferences import prefs
 from mcomix.i18n import _
 
@@ -133,6 +134,9 @@ class MessageDialog(Dialog):
         def responded(dialog: Any, response: int) -> None:
             if self.should_remember_choice() and int(response) in self.choices:
                 prefs['stored dialog choices'][self.dialog_id] = int(response)
+                # The preference is the dictionary, which is the same
+                # dictionary it was: only the answer in it is new.
+                preferences.changed()
             if self.auto_destroy:
                 self.destroy()
             on_response(response)

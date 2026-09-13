@@ -82,7 +82,13 @@ class ImageHandler(object):
         """Returns number_of_bufs pixbufs for the image(s) that should be
         currently displayed. This method might fetch images from disk, so make
         sure that number_of_bufs is as small as possible.
+
+        None of them before a page has been set: there is no page to
+        show yet, which is not the same thing as a page that will not
+        load.
         """
+        if self._current_image_index is None:
+            return []
         result = []
         for i in range(number_of_bufs):
             result.append(self._get_pixbuf(self._current_image_index + i))
@@ -90,11 +96,18 @@ class ImageHandler(object):
 
     def get_pixbuf_auto_background(self, number_of_bufs): # XXX limited to at most 2 pages
         """ Returns an automatically calculated background color
-        for the current page(s). """
+        for the current page(s).
+
+        The colour the preference names where there is no page to read
+        one off, which is what the background is then painted in
+        anyway.
+        """
 
         pixbufs = self.get_pixbufs(number_of_bufs)
 
-        if len(pixbufs) == 1:
+        if not pixbufs:
+            return prefs['bg colour']
+        elif len(pixbufs) == 1:
             pixbufs[0] = self._window.enhancer.enhance(pixbufs[0])
             auto_bg = image_tools.get_most_common_edge_colour(pixbufs[0])
         elif len(pixbufs) == 2:

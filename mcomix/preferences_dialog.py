@@ -44,7 +44,7 @@ class _PreferencesDialog(Dialog):
     """
 
     #: How wide the dialog opens.  The Shortcuts tab is what needs it:
-    #: its list comes to 836 pixels, and the dialog's own borders and
+    #: its list comes to 780 pixels, and the dialog's own borders and
     #: the notebook's take 32 of whatever the dialog is given.
     _DEFAULT_WIDTH = 900
 
@@ -123,7 +123,6 @@ class _PreferencesDialog(Dialog):
 
         fixed_bg_button, dynamic_bg_button = self._create_binary_pref_radio_buttons(
             _('Use this colour as background:'),
-            'color box bg',
             _('Always use this selected colour as the background colour.'),
             _('Use dynamic background colour'),
             'smart bg',
@@ -135,7 +134,6 @@ class _PreferencesDialog(Dialog):
 
         thumb_fixed_bg_button, thumb_dynamic_bg_button = self._create_binary_pref_radio_buttons(
             _('Use this colour as the thumbnail background:'),
-            'color box thumb bg',
             _('Always use this selected colour as the thumbnail background colour.'),
             _('Use dynamic background colour'),
             'smart thumb bg',
@@ -763,20 +761,36 @@ class _PreferencesDialog(Dialog):
         return button
 
 
-    def _create_binary_pref_radio_buttons(self, label1, prefkey1, tooltip_text1,
-        label2, prefkey2, tooltip_text2):
-        # Gtk.RadioButton is gone in GTK4: a check button that has
-        # been put in a group with another is a radio button.
+    def _create_binary_pref_radio_buttons(self, label1, tooltip_text1,
+        label2, prefkey, tooltip_text2):
+        """Two buttons for the two states of <prefkey>, off then on.
+
+        One preference, not two: the pair used to have one key each,
+        which is two answers to a question that has one, and the key
+        the first button was given is not a preference at all - nothing
+        reads it, and reading the preferences file drops what it does
+        not know, so what the button said was thrown away on the way
+        out.
+
+        Gtk.RadioButton is gone in GTK4: a check button that has been
+        put in a group with another is a radio button.  Neither of them
+        is active until one is set, where the first Gtk.RadioButton of a
+        group was active to begin with, so both are set from the
+        preference here - without which the pair came up showing
+        neither of its two answers.
+        """
         button1 = Gtk.CheckButton(label=label1)
-        button1.connect('toggled', self._check_button_cb, prefkey1)
         if tooltip_text1:
             button1.set_tooltip_text(tooltip_text1)
         button2 = Gtk.CheckButton(label=label2)
         button2.set_group(button1)
-        button2.connect('toggled', self._check_button_cb, prefkey2)
         if tooltip_text2:
             button2.set_tooltip_text(tooltip_text2)
-        button2.set_active(prefs[prefkey2])
+        button1.set_active(not prefs[prefkey])
+        button2.set_active(prefs[prefkey])
+        # Only the one the preference is about: a group announces both
+        # the button that was turned on and the one that was turned off.
+        button2.connect('toggled', self._check_button_cb, prefkey)
         return button1, button2
 
 
@@ -791,43 +805,25 @@ class _PreferencesDialog(Dialog):
 
         prefs[preference] = button.get_active()
 
-        if preference == 'color box bg' and button.get_active():
+        if preference == 'smart bg':
 
-            if not prefs['smart bg'] or not self._window.filehandler.file_loaded:
+            if prefs['smart bg']:
+                # draw_image() will set the main background to the
+                # colour it reads off the page.
+                self._window.draw_image()
+            else:
                 self._window.set_bg_colour(prefs['bg colour'])
 
-        elif preference == 'smart bg' and button.get_active():
+        elif preference == 'smart thumb bg':
 
-            # if the color is no longer using the smart background then return it to the chosen color
-            if not prefs[preference]:
-                self._window.set_bg_colour(prefs['bg colour'])
-            else:
-                # draw_image() will set the main background to the smart background
-                self._window.draw_image()
-
-        elif preference == 'color box thumb bg' and button.get_active():
-
-            if prefs[preference]:
-                prefs['smart thumb bg'] = False
-                prefs['thumbnail bg uses main colour'] = False
-
-                self._window.thumbnailsidebar.change_thumbnail_background_color(prefs['thumb bg colour'])
-            else:
-                self._window.draw_image()
-
-        elif preference == 'smart thumb bg' and button.get_active():
-
-            if prefs[preference]:
-                prefs['color box thumb bg'] = False
-                prefs['thumbnail bg uses main colour'] = False
-
-                if self._window.imagehandler.page_is_available():
-                    pixbuf_count = 2 if self._window.displayed_double() else 1 # XXX limited to at most 2 pages
-                    bg_colour = self._window.imagehandler.get_pixbuf_auto_background(pixbuf_count)
-                    self._window.thumbnailsidebar.change_thumbnail_background_color(bg_colour)
-
-            else:
-                self._window.draw_image()
+            prefs['thumbnail bg uses main colour'] = False
+            if not prefs['smart thumb bg']:
+                self._window.thumbnailsidebar.change_thumbnail_background_color(
+                    prefs['thumb bg colour'])
+            elif self._window.imagehandler.page_is_available():
+                pixbuf_count = 2 if self._window.displayed_double() else 1 # XXX limited to at most 2 pages
+                bg_colour = self._window.imagehandler.get_pixbuf_auto_background(pixbuf_count)
+                self._window.thumbnailsidebar.change_thumbnail_background_color(bg_colour)
 
         elif preference in ('checkered bg for transparent images',
           'no double page for wide images', 'auto rotate from exif'):

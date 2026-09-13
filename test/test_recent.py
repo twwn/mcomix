@@ -8,7 +8,7 @@ import time
 
 from gi.repository import GLib, Gtk
 
-from . import MComixTest, pump
+from . import MComixTest, pump, session_tmp_dir
 
 from mcomix import recent
 
@@ -29,33 +29,52 @@ class _StubWindow(Gtk.Window):
 
 class RecentFilesMenuTest(MComixTest):
 
-    def setUp(self):
-        super(RecentFilesMenuTest, self).setUp()
+    #: The settings and the manager belong to the process, not to a
+    #: test.  Gtk.Settings is the one every widget reads, and a
+    #: Gtk.RecentManager stays subscribed to it: one built under a
+    #: setting is still answering changes to it after the test that
+    #: built it is over, from memory Python has since reclaimed, which
+    #: takes the process down when the next test sets the setting again.
+    #: So both are set up once, and each test only empties the list.
+    settings = None
+    manager = None
+
+    @classmethod
+    def setUpClass(cls):
         # Gtk.RecentManager keeps nothing at all when the desktop has
         # turned file history off - and answers add_full() with True
         # either way - or when it says to keep it for no days, which
         # empties the list on the next reload.  A bare X server has no
         # settings daemon to say otherwise and defaults to both, so say
         # it here: these tests are about MComix' menu, not GTK's gate.
-        self.settings = Gtk.Settings.get_default()
-        self.saved_settings = {
-            name: self.settings.get_property(name)
+        cls.settings = Gtk.Settings.get_default()
+        cls.saved_settings = {
+            name: cls.settings.get_property(name)
             for name in ('gtk-recent-files-enabled',
                          'gtk-recent-files-max-age')}
-        self.settings.set_property('gtk-recent-files-enabled', True)
-        self.settings.set_property('gtk-recent-files-max-age', 30)
+        cls.settings.set_property('gtk-recent-files-enabled', True)
+        cls.settings.set_property('gtk-recent-files-max-age', 30)
         # Never the default manager: that one writes to the real
-        # recently-used list in the user's home directory.
-        self.storage = os.path.join(self.tmp_dir, 'recently-used.xbel')
-        self.manager = Gtk.RecentManager(filename=self.storage)
+        # recently-used list in the user's home directory.  Nor a
+        # directory of a single test's, which is removed when it passes
+        # while the manager goes on writing to it.
+        cls.storage = os.path.join(session_tmp_dir(), 'recently-used.xbel')
+        cls.manager = Gtk.RecentManager(filename=cls.storage)
+
+    @classmethod
+    def tearDownClass(cls):
+        for name, value in cls.saved_settings.items():
+            cls.settings.set_property(name, value)
+
+    def setUp(self):
+        super(RecentFilesMenuTest, self).setUp()
+        self.manager.purge_items()
         self.real_get_default = Gtk.RecentManager.get_default
         Gtk.RecentManager.get_default = staticmethod(lambda: self.manager)
         self.window = _StubWindow()
 
     def tearDown(self):
         Gtk.RecentManager.get_default = self.real_get_default
-        for name, value in self.saved_settings.items():
-            self.settings.set_property(name, value)
         super(RecentFilesMenuTest, self).tearDown()
 
     def _add(self, name, mime_type='application/zip'):

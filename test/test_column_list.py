@@ -281,16 +281,15 @@ class ColumnListViewTest(MComixTest):
             walk(view)
             self.assertTrue(cells, 'the column drew no cell')
             cell = cells[0]
-            # The shortcut is drawn as the keyboard names it, which is
-            # what a Gtk.CellRendererAccel drew.
-            self.assertEqual(
-                cell.label.get_text(),
-                Gtk.accelerator_get_label(*Gtk.accelerator_parse('<Control>a')[1:]))
+            self.assertEqual(cell.label.props.accelerator, '<Control>a')
+            # An action nothing is bound to shows nothing, not the hint
+            # a cell puts up while it waits for a combination.
+            self.assertEqual(cell.label.props.disabled_text, '')
             # Nothing is taken until the cell has been clicked.
             self.assertFalse(
                 cell._pressed(None, Gdk.KEY_b, 0, Gdk.ModifierType.CONTROL_MASK))
             cell.emit('clicked')
-            self.assertEqual(cell.label.get_text(),
+            self.assertEqual(cell.label.props.disabled_text,
                              column_list._ASK_FOR_ONE_HINT)
             self.assertTrue(
                 cell._pressed(None, Gdk.KEY_b, 0, Gdk.ModifierType.CONTROL_MASK))
@@ -343,7 +342,7 @@ class ColumnListViewTest(MComixTest):
             self.assertEqual(len(cells), 2, 'the column drew the wrong cells')
             self.assertTrue(cells[0].get_visible())
             self.assertFalse(cells[0].get_sensitive())
-            self.assertEqual(cells[0].label.get_text(), '')
+            self.assertEqual(cells[0].label.props.accelerator, '')
             self.assertTrue(cells[1].get_sensitive())
         finally:
             window.destroy()
@@ -353,10 +352,9 @@ class ColumnListViewTest(MComixTest):
         """A Gtk.ColumnView asks the cells that are on screen how wide
         the column should be, where a Gtk.TreeView asked the whole
         model, so a cell that measured what it holds made the column a
-        different width every time the list was scrolled - and a column
-        of Gtk.ShortcutLabels, which cannot be drawn narrower than the
-        key caps they hold, took that width out of the column beside
-        it."""
+        different width every time the list was scrolled - and a
+        Gtk.ShortcutLabel, which cannot be drawn narrower than the key
+        caps it holds, took that width out of the column beside it."""
         window = Gtk.Window()
         box = Gtk.Box()
         window.set_child(box)
@@ -373,6 +371,97 @@ class ColumnListViewTest(MComixTest):
             self.assertEqual(
                 empty.measure(Gtk.Orientation.HORIZONTAL, -1)[1],
                 long.measure(Gtk.Orientation.HORIZONTAL, -1)[1])
+            # What does not fit is cut off, and spelled out instead.
+            self.assertIsNone(empty.get_tooltip_text())
+            self.assertEqual(
+                long.get_tooltip_text(),
+                Gtk.accelerator_get_label(
+                    *Gtk.accelerator_parse('<Control><Shift>Page_Up')[1:]))
+        finally:
+            window.destroy()
+            pump()
+
+    @staticmethod
+    def _caps(label):
+        """What each key cap of a shortcut label says."""
+        said = []
+        child = label.get_first_child()
+        while child is not None:
+            if isinstance(child, Gtk.Label) \
+                    and 'keycap' in child.get_css_classes():
+                said.append(child.get_text())
+            child = child.get_next_sibling()
+        return said
+
+    def test_a_key_with_a_sign_on_it_is_drawn_as_that_sign(self):
+        """A Gtk.ShortcutLabel spells out Page Up, Backspace and Tab,
+        which are the longest things in a column of shortcuts."""
+        cell = column_list._AccelCell()
+        for accelerator, sign in (('Page_Up', '\u21de'),
+                                  ('BackSpace', '\u232b'),
+                                  ('Tab', '\u21e5'),
+                                  ('<Control><Shift>Home', '\u21f1')):
+            cell.accelerator = accelerator
+            cell._show()
+            self.assertEqual(self._caps(cell.label)[-1], sign)
+
+    def test_the_caps_are_not_joined_up_with_plusses(self):
+        """Keys drawn as keys read as keys held down together, and the
+        plusses are a third of the width of a short shortcut."""
+        cell = column_list._AccelCell()
+        cell.accelerator = '<Control><Shift>Page_Up'
+        cell._show()
+        joined = []
+        child = cell.label.get_first_child()
+        while child is not None:
+            if isinstance(child, Gtk.Label) \
+                    and 'dim-label' in child.get_css_classes():
+                joined.append(child.get_visible())
+            child = child.get_next_sibling()
+        self.assertTrue(joined, 'the label drew no joiners to drop')
+        self.assertFalse(any(joined))
+
+    def test_the_modifiers_keep_the_names_the_desktop_gives_them(self):
+        cell = column_list._AccelCell()
+        cell.accelerator = '<Control><Shift>Page_Up'
+        cell._show()
+        caps = self._caps(cell.label)
+        self.assertEqual(len(caps), 3)
+        self.assertEqual(
+            caps[:2],
+            [Gtk.accelerator_get_label(0, Gdk.ModifierType.SHIFT_MASK),
+             Gtk.accelerator_get_label(0, Gdk.ModifierType.CONTROL_MASK)])
+
+    def test_a_key_of_the_numeric_keypad_is_still_spelled_out(self):
+        """Which is what tells it from the key of the same name."""
+        cell = column_list._AccelCell()
+        cell.accelerator = 'KP_Page_Up'
+        cell._show()
+        self.assertNotEqual(self._caps(cell.label)[-1], '\u21de')
+
+    def test_an_accelerator_is_drawn_at_the_size_its_caps_come_to(self):
+        """The cell asks for one width whatever it holds; the shortcut
+        in it is drawn at its own, rather than stretched to fill the
+        cell out."""
+        window = Gtk.Window()
+        box = Gtk.Box()
+        window.set_child(box)
+        window.present()
+        try:
+            pump()
+            cell = column_list._AccelCell()
+            cell.accelerator = '<Control>a'
+            cell._show()
+            box.append(cell)
+            pump()
+            wanted = cell.label.measure(Gtk.Orientation.HORIZONTAL, -1)[1]
+            self.assertTrue(wanted, 'the shortcut was not drawn at all')
+            # More room than the caps need, as a wide column would give.
+            cell.allocate(wanted * 3,
+                          cell.measure(Gtk.Orientation.VERTICAL, -1)[1],
+                          -1, None)
+            pump()
+            self.assertEqual(cell.label.get_width(), wanted)
         finally:
             window.destroy()
             pump()

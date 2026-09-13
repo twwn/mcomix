@@ -14,6 +14,8 @@ from gi.repository import Gio, Gtk
 from . import MComixTest, get_testfile_path, pump, wait_for
 
 from mcomix import constants
+from mcomix import dialog as dialog_module
+from mcomix import file_chooser_simple_dialog as simple_chooser
 from mcomix import icons
 from mcomix import main
 from mcomix.preferences import prefs
@@ -211,14 +213,11 @@ class MainWindowTest(MComixTest):
                          (self.window.get_width(), self.window.get_height()))
 
     def test_saving_a_page_opens_a_chooser(self):
-        """extract_page() built its dialog the GTK3 way.
+        """It is MComix' own chooser, so it follows MComix' theme.
 
-        Gtk.FileChooserDialog took a title, a parent and buttons as
-        positional arguments; GTK4 takes properties, so the call raised
-        a TypeError and "Save page as" opened nothing at all.  It is a
-        Gtk.FileDialog now, which is not a widget at all - so what the
-        chooser it puts up is asking for is where the name and the
-        folder can be read back.
+        A Gtk.FileDialog asks the desktop for a chooser, which is drawn
+        by the file chooser portal where one is installed - another
+        program, which nothing MComix states about its colours reaches.
 
         What the user picks is left out: the answer comes back through
         a callback that only the real chooser can fire.
@@ -236,22 +235,34 @@ class MainWindowTest(MComixTest):
 
         self.window.extract_page()
         self._pump()
-        dialogs = [window for window in Gtk.Window.list_toplevels()
-                   if isinstance(window, Gtk.FileChooserDialog)]
+        dialogs = self._save_dialogs()
         self.assertEqual(1, len(dialogs), 'no save dialog was opened')
         dialog = dialogs[0]
         try:
+            self.assertIsInstance(dialog, dialog_module.Dialog,
+                                  'the chooser is not one MComix paints')
             with warnings.catch_warnings():
-                # The chooser Gtk.FileDialog puts up is one GTK builds
-                # for itself; reading it back is the deprecated call.
+                # Gtk.FileChooserWidget is what MComix' own chooser is
+                # built around, and reading it back is deprecated with
+                # the rest of the interface.
                 warnings.simplefilter('ignore', DeprecationWarning)
-                self.assertEqual(dialog.get_current_name(),
+                self.assertEqual(dialog.filechooser.get_current_name(),
                                  '01-ZIP-Normal_01-JPG-Indexed.jpg')
-                folder = dialog.get_current_folder()
+                folder = dialog.filechooser.get_current_folder()
             self.assertEqual(folder.get_path(), target_dir)
         finally:
             dialog.destroy()
             self._pump()
+
+    def _save_dialogs(self):
+        """Every save chooser this window has standing open.
+
+        Whose it is matters: the suite is sharded, and a chooser
+        another test left on screen is a toplevel like any other.
+        """
+        return [window for window in Gtk.Window.list_toplevels()
+                if isinstance(window, simple_chooser.SimpleFileChooserDialog)
+                and window.get_transient_for() is self.window]
 
     def test_where_a_saved_page_went_is_remembered(self):
         """The folder for the next save is the one the page went into.
@@ -307,13 +318,12 @@ class MainWindowTest(MComixTest):
         self.window.popup_page = 2
         self.window.extract_popup_page()
         self._pump()
-        dialogs = [window for window in Gtk.Window.list_toplevels()
-                   if isinstance(window, Gtk.FileChooserDialog)]
+        dialogs = self._save_dialogs()
         self.assertEqual(1, len(dialogs), 'no save dialog was opened')
         try:
             with warnings.catch_warnings():
                 warnings.simplefilter('ignore', DeprecationWarning)
-                self.assertEqual(dialogs[0].get_current_name(),
+                self.assertEqual(dialogs[0].filechooser.get_current_name(),
                                  '01-ZIP-Normal_02-JPG-RGB.jpg')
         finally:
             dialogs[0].destroy()

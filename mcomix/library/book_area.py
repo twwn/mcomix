@@ -68,30 +68,30 @@ class _BookArea(Gtk.ScrolledWindow):
         # takes; the rest of what the sorters compare rides along on the
         # item.  This was a six column Gtk.ListStore whose column
         # numbers had to agree with the SORT_ constants.
-        self._iconview = thumbnail_list.ThumbnailGridView()
-        self._iconview.generate_thumbnail = self._get_pixbuf
+        self._covers = thumbnail_list.ThumbnailGridView()
+        self._covers.generate_thumbnail = self._get_pixbuf
         self.set_thumbnail_size()
         self.set_sort_order()
-        self._iconview.connect('activate', self._book_activated)
-        self._iconview.selection.connect('selection-changed',
+        self._covers.connect('activate', self._book_activated)
+        self._covers.selection.connect('selection-changed',
                                          self._selection_changed)
         clicks = Gtk.GestureClick()
         clicks.set_button(3)
         clicks.connect('pressed', self._button_press)
-        self._iconview.add_controller(clicks)
+        self._covers.add_controller(clicks)
 
         keys = Gtk.EventControllerKey()
         keys.connect('key-pressed', self._key_press)
-        self._iconview.add_controller(keys)
+        self._covers.add_controller(keys)
         # Covers are shown on black, whatever base colour the theme has.
         # A style provider belongs to a display rather than to a widget,
         # so the view carries a class for the rule to single it out.
-        self._iconview.add_css_class(self._BLACK_CSS_CLASS)
+        self._covers.add_css_class(self._BLACK_CSS_CLASS)
         self._black_background = Gtk.CssProvider()
         self._black_background.load_from_string(
             '.%s { background-color: black; }' % self._BLACK_CSS_CLASS)
         Gtk.StyleContext.add_provider_for_display(
-            self._iconview.get_display(), self._black_background,
+            self._covers.get_display(), self._black_background,
             Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
         # Books drag out to the collection area, and files drop in from
         # a file manager.  GTK4 has neither a model drag source nor a
@@ -101,12 +101,12 @@ class _BookArea(Gtk.ScrolledWindow):
         drag.set_actions(Gdk.DragAction.MOVE)
         drag.connect('prepare', self._drag_prepare)
         drag.connect('drag-begin', self._drag_begin)
-        self._iconview.add_controller(drag)
+        self._covers.add_controller(drag)
 
         drop = Gtk.DropTarget.new(Gdk.FileList, Gdk.DragAction.COPY)
         drop.connect('drop', self._drag_data_received)
-        self._iconview.add_controller(drop)
-        self.set_child(self._iconview)
+        self._covers.add_controller(drop)
+        self.set_child(self._covers)
 
         self._popup_actions = Gio.SimpleActionGroup()
         self._book_menu = self._create_popup_menu()
@@ -230,8 +230,8 @@ class _BookArea(Gtk.ScrolledWindow):
 
         # Unselect first, or closing with several books selected sends a
         # selection-changed for each one that goes.
-        self._iconview.unselect_all()
-        self._iconview.clear()
+        self._covers.unselect_all()
+        self._covers.clear()
 
     def display_covers(self, collection_id):
         """Display the books in <collection_id> in the IconView."""
@@ -242,17 +242,17 @@ class _BookArea(Gtk.ScrolledWindow):
 
         collection = self._library.backend.get_collection_by_id(collection_id)
         books = collection.get_books(self._library.filter_string)
-        self._iconview.set_items(_BookItem(book) for book in books)
+        self._covers.set_items(_BookItem(book) for book in books)
 
     def stop_update(self) -> None:
         """Signal that the updating of book covers should stop."""
-        self._iconview.stop_update()
+        self._covers.stop_update()
 
     def add_books(self, books):
-        """ Adds new book covers to the icon view.
+        """ Adds new book covers to the grid.
         @param books: List of L{_Book} instances. """
         for book in books:
-            self._iconview.append_item(_BookItem(book))
+            self._covers.append_item(_BookItem(book))
 
     def _new_book_added(self, book, collection):
         """ Callback function for L{LibraryBackend.book_added}. """
@@ -277,7 +277,7 @@ class _BookArea(Gtk.ScrolledWindow):
         if not book:
             return False
 
-        for item in self._iconview.each_item():
+        for item in self._covers.each_item():
             if item.uid == book.id:
                 return True
 
@@ -285,28 +285,28 @@ class _BookArea(Gtk.ScrolledWindow):
 
     def remove_book_at_path(self, position):
         """Remove the book shown at <position> from the _BookArea."""
-        item = self._iconview.get_item(position)
+        item = self._covers.get_item(position)
         if item is None:
             return
-        self._iconview.remove_items([item])
+        self._covers.remove_items([item])
         self._cache.invalidate(item.path)
 
     def get_book_at_path(self, position):
         """Return the book ID of the cover shown at <position>."""
-        item = self._iconview.get_item(position)
+        item = self._covers.get_item(position)
         return None if item is None else item.uid
 
     def remove_books(self, book_ids):
         """Remove the books with <book_ids> from the _BookArea."""
         wanted = set(book_ids)
-        items = [item for item in self._iconview.each_item()
+        items = [item for item in self._covers.each_item()
                  if item.uid in wanted]
-        self._iconview.remove_items(items)
+        self._covers.remove_items(items)
         for item in items:
             self._cache.invalidate(item.path)
 
     def _open_books(self, keep_library_open):
-        books = [item.uid for item in self._iconview.get_selected_items()]
+        books = [item.uid for item in self._covers.get_selected_items()]
         if not books:
             return
         if not keep_library_open:
@@ -334,7 +334,7 @@ class _BookArea(Gtk.ScrolledWindow):
             answer = self._compare_books(key, left, right)
             return answer if ascending else -answer
 
-        self._iconview.set_sorter(Gtk.CustomSorter.new(compare))
+        self._covers.set_sorter(Gtk.CustomSorter.new(compare))
 
     @staticmethod
     def _compare_books(key, left, right):
@@ -369,7 +369,7 @@ class _BookArea(Gtk.ScrolledWindow):
 
     def set_thumbnail_size(self) -> None:
         """Draw the covers at the size the preference asks for."""
-        self._iconview.set_thumbnail_size(*self._pixbuf_size())
+        self._covers.set_thumbnail_size(*self._pixbuf_size())
 
     def load_covers(self) -> None:
         self._cache.invalidate_all()
@@ -472,7 +472,7 @@ class _BookArea(Gtk.ScrolledWindow):
 
         return pixbuf
 
-    def _book_activated(self, iconview, position):
+    def _book_activated(self, covers, position):
         """Open the book whose cover is shown at <position>."""
         book = self.get_book_at_path(position)
         if book is None:
@@ -487,7 +487,7 @@ class _BookArea(Gtk.ScrolledWindow):
         is selected.
         """
         self._library.control_area.update_info(
-            self._iconview.get_selected_positions())
+            self._covers.get_selected_positions())
 
     def _remove_books_from_collection(self, *args):
         """Remove the currently selected books from the current collection,
@@ -496,12 +496,12 @@ class _BookArea(Gtk.ScrolledWindow):
         collection = self._library.collection_area.get_current_collection()
         if collection == _COLLECTION_ALL:
             return
-        selected = self._iconview.get_selected_items()
+        selected = self._covers.get_selected_items()
         self._library.backend.begin_transaction()
         for item in selected:
             self._library.backend.remove_book_from_collection(item.uid,
                                                               collection)
-        self._iconview.remove_items(selected)
+        self._covers.remove_items(selected)
         for item in selected:
             self._cache.invalidate(item.path)
         self._library.backend.end_transaction()
@@ -519,13 +519,13 @@ class _BookArea(Gtk.ScrolledWindow):
         also from the _BookArea.
         """
 
-        selected = self._iconview.get_selected_items()
+        selected = self._covers.get_selected_items()
         self._library.backend.begin_transaction()
 
         for item in selected:
             self._library.backend.remove_book(item.uid)
 
-        self._iconview.remove_items(selected)
+        self._covers.remove_items(selected)
         for item in selected:
             self._cache.invalidate(item.path)
 
@@ -566,7 +566,7 @@ class _BookArea(Gtk.ScrolledWindow):
 
             # The paths have to be read before the books go: removing
             # them from the library takes their rows with them.
-            paths = [item.path for item in self._iconview.get_selected_items()]
+            paths = [item.path for item in self._covers.get_selected_items()]
 
             # Remove books from library
             self._remove_books_from_library()
@@ -583,7 +583,7 @@ class _BookArea(Gtk.ScrolledWindow):
 
     def _copy_selected(self, *args):
         """ Copies the currently selected item to clipboard. """
-        selected = self._iconview.get_selected_items()
+        selected = self._covers.get_selected_items()
         if len(selected) == 1:
             item = selected[0]
             # The cover as a pixbuf, which is what the clipboard takes;
@@ -595,18 +595,18 @@ class _BookArea(Gtk.ScrolledWindow):
 
     def _button_press(self, gesture, n_press, x, y) -> None:
         """Handle mouse button presses on the _BookArea."""
-        position = self._iconview.position_at(x, y)
+        position = self._covers.position_at(x, y)
 
         if position >= 0 \
-                and position not in self._iconview.get_selected_positions():
-            self._iconview.select_only(position)
+                and position not in self._covers.get_selected_positions():
+            self._covers.select_only(position)
 
         self._popup_book_menu()
 
     def _popup_book_menu(self) -> None:
         """ Shows the book panel popup menu. """
 
-        selected = self._iconview.get_selected_items()
+        selected = self._covers.get_selected_items()
         books_selected = len(selected) > 0
         collection = self._library.collection_area.get_current_collection()
         is_collection_all = collection == _COLLECTION_ALL
@@ -641,7 +641,7 @@ class _BookArea(Gtk.ScrolledWindow):
 
     def _drag_prepare(self, source, x, y):
         """Offer the books being dragged, as the positions of their covers."""
-        positions = self._iconview.get_selected_positions()
+        positions = self._covers.get_selected_positions()
         if not positions:
             return None
         return Gdk.ContentProvider.new_for_value(
@@ -657,7 +657,7 @@ class _BookArea(Gtk.ScrolledWindow):
         produce bad looking output (e.g. non-centered text).
 
         """
-        selected = self._iconview.get_selected_items()
+        selected = self._covers.get_selected_items()
         if not selected:
             return
         num_books = len(selected)

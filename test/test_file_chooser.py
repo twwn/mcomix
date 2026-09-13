@@ -4,7 +4,7 @@
 
 import os
 
-from gi.repository import Gio, Gtk
+from gi.repository import Gdk, Gio, Gtk
 
 from . import MComixTest, get_testfile_path, pump, wait_for
 
@@ -38,6 +38,45 @@ class FileChooserTest(MComixTest):
         main.set_main_window(None)
         pump()
         super(FileChooserTest, self).tearDown()
+
+    # -- Walking from the search box into what it found -------------------
+
+    def test_the_search_box_and_the_list_of_files_are_both_found(self):
+        """Both are GTK's own, inside the Gtk.FileChooserWidget, and the
+        filter dropdown has a search box and a list of its own that are
+        not them."""
+        self.assertIsInstance(self.dialog._search, Gtk.SearchEntry)
+        self.assertIsInstance(self.dialog._listing, Gtk.ColumnView)
+        self.assertIsNone(self.dialog._search.get_ancestor(Gtk.Popover))
+        self.assertIsNone(self.dialog._listing.get_ancestor(Gtk.Popover))
+
+    def test_down_from_the_search_box_takes_the_first_file_it_found(self):
+        """The arrows used to stay in the box, so the only way to a
+        result was the mouse."""
+        wait_for(lambda: self.dialog._listing.get_model().get_n_items())
+        self.assertTrue(self.dialog._into_the_list(Gdk.KEY_Down))
+        selected = self.dialog._listing.get_model().get_selection()
+        self.assertFalse(selected.is_empty())
+        self.assertEqual(selected.get_minimum(), 0)
+
+    def test_down_does_nothing_where_nothing_was_found(self):
+        self.dialog._listing.set_model(None)
+        self.assertFalse(self.dialog._into_the_list(Gdk.KEY_Down))
+
+    def test_only_the_down_arrow_leaves_the_search_box(self):
+        wait_for(lambda: self.dialog._listing.get_model().get_n_items())
+        self.assertFalse(self.dialog._into_the_list(Gdk.KEY_Right))
+
+    def test_up_off_the_top_of_the_list_goes_back_to_the_search_box(self):
+        wait_for(lambda: self.dialog._listing.get_model().get_n_items())
+        self.dialog._listing.get_model().select_item(0, True)
+        self.assertTrue(self.dialog._back_to_the_search(Gdk.KEY_Up))
+
+    def test_up_anywhere_else_in_the_list_is_the_row_above(self):
+        """Which is what the list does with it itself."""
+        wait_for(lambda: self.dialog._listing.get_model().get_n_items() > 1)
+        self.dialog._listing.get_model().select_item(1, True)
+        self.assertFalse(self.dialog._back_to_the_search(Gdk.KEY_Up))
 
     def test_the_dialog_border_is_not_a_transparent_strip(self):
         # Margins on a toplevel fall outside what it paints.

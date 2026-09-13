@@ -45,6 +45,7 @@ gi.require_version('GdkPixbuf', '2.0')
 # now, before a test can point the environment somewhere shorter-lived.
 
 import atexit
+import copy
 import shutil
 import tempfile
 
@@ -124,6 +125,7 @@ def wait_for(predicate, seconds=5):
 import unittest
 
 from mcomix import constants
+from mcomix import preferences
 from mcomix.preferences import prefs
 
 default_prefs = {}
@@ -181,11 +183,20 @@ class MComixTest(unittest.TestCase):
         constants.BOOKMARK_PICKLE_PATH = os.path.join(constants.DATA_DIR, 'bookmarks.pickle')
         constants.FILEINFO_PICKLE_PATH = os.path.join(constants.DATA_DIR, 'file.pickle')
         constants.PREFERENCE_PICKLE_PATH = os.path.join(constants.CONFIG_DIR, 'preferences.pickle')
-        # Reset preferences to default.
+        # Reset preferences to default, and with them the baseline a
+        # write is measured against: a test starts as an instance that
+        # has just read a file holding exactly the defaults.
         prefs.clear()
         prefs.update(default_prefs)
+        preferences._as_read = copy.deepcopy(default_prefs)
+        # Resetting them is not changing them, and a write left over
+        # from an earlier test is not this one's to make.
+        preferences.cancel_scheduled_write()
 
     def tearDown(self):
+        # Nothing this test changed is worth writing after it, and the
+        # directory it would be written into is about to be gone.
+        preferences.cancel_scheduled_write()
         # Restore the global state setUp() changed. Leaving tempfile.tempdir
         # pointing into the temporary directory removed below would break
         # every later test that creates a temporary file of its own.
@@ -222,6 +233,16 @@ class MComixTest(unittest.TestCase):
         problems = list(getattr(result, 'failures', ())) + \
             list(getattr(result, 'errors', ()))
         return any(test.id() == self.id() for test, _traceback in problems)
+
+def session_tmp_dir():
+    """A temporary directory that lasts as long as the test run.
+
+    For what a test cannot take with it: a GObject that keeps writing to
+    a file after the test that made it has passed, and whose own
+    directory is removed the moment it does.
+    """
+    return _SESSION_TMPDIR
+
 
 # Helper to get path to testsuite sample files.
 

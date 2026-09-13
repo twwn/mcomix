@@ -3,7 +3,7 @@ import os
 import pickle
 import stat
 
-from . import MComixTest
+from . import MComixTest, default_prefs, wait_for
 
 from mcomix import constants
 from mcomix import preferences
@@ -142,13 +142,79 @@ class MigratePreferencesTest(MComixTest):
 
 class WritePreferencesFileTest(MComixTest):
 
-    def test_round_trips_through_the_file(self) -> None:
+    def setUp(self) -> None:
+        super().setUp()
         os.makedirs(constants.CONFIG_DIR, exist_ok=True)
+
+    def test_round_trips_through_the_file(self) -> None:
         prefs['lens size'] = 222
         preferences.write_preferences_file()
         prefs['lens size'] = 1
         preferences.read_preferences_file()
         self.assertEqual(prefs['lens size'], 222)
+
+    def test_what_another_instance_changed_meanwhile_is_kept(self) -> None:
+        """Every MComix window is a process of its own, each holding all
+        of the preferences as they stood when it started.  One that wrote
+        all of them back would undo everything another window changed
+        while it was running, which reads as settings that do not stick.
+        """
+        prefs['lens size'] = 111
+        prefs['thumbnail size'] = 80
+        preferences.write_preferences_file()
+        preferences.read_preferences_file()
+
+        # This instance changes one preference; another changes a
+        # different one and quits first.
+        prefs['lens size'] = 222
+        with open(constants.PREFERENCE_PATH, 'r') as config_file:
+            elsewhere = json.load(config_file)
+        elsewhere['thumbnail size'] = 250
+        with open(constants.PREFERENCE_PATH, 'w') as config_file:
+            json.dump(elsewhere, config_file)
+
+        preferences.write_preferences_file()
+        with open(constants.PREFERENCE_PATH, 'r') as config_file:
+            stored = json.load(config_file)
+        self.assertEqual(stored['lens size'], 222)
+        self.assertEqual(stored['thumbnail size'], 250)
+
+    def test_a_file_that_cannot_be_read_is_written_over(self) -> None:
+        """There is nothing to merge with, and this instance's own
+        preferences are a better answer than none."""
+        with open(constants.PREFERENCE_PATH, 'w') as config_file:
+            config_file.write('this is not json')
+        prefs['lens size'] = 333
+        preferences.write_preferences_file()
+        with open(constants.PREFERENCE_PATH, 'r') as config_file:
+            self.assertEqual(json.load(config_file)['lens size'], 333)
+
+    def test_an_instance_that_read_nothing_writes_nothing(self) -> None:
+        """Nothing in this module makes the file be read before it is
+        written, and MComix is not the only thing that imports it: a
+        script that builds a window and closes it again writes the
+        preferences too.  With no baseline to compare against, every
+        default counts as a change, and the whole default dictionary
+        goes over a file full of the user's own answers.
+        """
+        stored = {'lens size': 250, 'stretch': True, 'colour scheme': 'black'}
+        with open(constants.PREFERENCE_PATH, 'w') as config_file:
+            json.dump(stored, config_file)
+        # The state the module is in before read_preferences_file() runs.
+        preferences._as_read = {}
+        preferences.write_preferences_file()
+        with open(constants.PREFERENCE_PATH, 'r') as config_file:
+            written = json.load(config_file)
+        del written[preferences._FORMAT_VERSION_KEY]
+        self.assertEqual(written, stored)
+
+    def test_the_file_says_which_format_it_is_in(self) -> None:
+        prefs['lens size'] = 1
+        preferences.write_preferences_file()
+        with open(constants.PREFERENCE_PATH, 'r') as config_file:
+            stored = json.load(config_file)
+        self.assertEqual(stored['config format version'],
+                         preferences.CONFIG_FORMAT_VERSION)
 
 
 class IsolationTest(MComixTest):
@@ -161,5 +227,62 @@ class IsolationTest(MComixTest):
             self.assertTrue(path.startswith(self.tmp_dir),
                             '%s points outside the test directory: %s'
                             % (name, path))
+
+
+class WriteOnChangeTest(MComixTest):
+
+    """A preference is written when it changes, not only at quit.
+
+    Everything but a clean quit used to lose the lot: a crash, a kill, a
+    session ending under the window.
+    """
+
+    def setUp(self) -> None:
+        super().setUp()
+        os.makedirs(constants.CONFIG_DIR, exist_ok=True)
+        # Waiting out the coalescing delay would only be waiting for GLib.
+        self.delay = preferences._WRITE_DELAY_MS
+        preferences._WRITE_DELAY_MS = 10
+
+    def tearDown(self) -> None:
+        preferences._WRITE_DELAY_MS = self.delay
+        super().tearDown()
+
+    def _written(self) -> dict:
+        wait_for(lambda: os.path.isfile(constants.PREFERENCE_PATH))
+        with open(constants.PREFERENCE_PATH, 'r') as config_file:
+            return json.load(config_file)
+
+    def test_changing_one_writes_it(self) -> None:
+        prefs['lens size'] = 234
+        self.assertEqual(self._written().get('lens size'), 234)
+
+    def test_changing_one_back_leaves_it_out(self) -> None:
+        """What is written is what differs from what was read, and the
+        scheduled write asks that when it runs rather than when it was
+        scheduled."""
+        prefs['lens size'] = 234
+        prefs['lens size'] = default_prefs['lens size']
+        self.assertNotIn('lens size', self._written())
+
+    def test_writing_the_same_value_again_schedules_nothing(self) -> None:
+        prefs['lens size'] = prefs['lens size']
+        self.assertFalse(preferences._write_source)
+
+    def test_a_change_inside_a_preference_is_written_when_it_says_so(self) -> None:
+        """The mapping cannot see a dictionary of its own being changed;
+        whoever changes one says so."""
+        prefs['stored dialog choices']['resume-from-last-read-page'] = -8
+        self.assertFalse(preferences._write_source)
+        preferences.changed()
+        self.assertEqual(self._written().get('stored dialog choices'),
+                         {'resume-from-last-read-page': -8})
+
+    def test_reading_the_file_is_not_changing_it(self) -> None:
+        with open(constants.PREFERENCE_PATH, 'w') as config_file:
+            json.dump({'lens size': 250}, config_file)
+        preferences.read_preferences_file()
+        self.assertFalse(preferences._write_source)
+
 
 # vim: expandtab:sw=4:ts=4

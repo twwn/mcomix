@@ -12,11 +12,24 @@ from typing import Any, cast
 _ASK_FOR_ONE_HINT = _('New accelerator...')
 
 #: How wide an accelerator cell asks to be, in characters.  A shortcut
-#: is usually far shorter than this - three quarters of the ones MComix
-#: binds by default fit - and a list of them is several columns wide, so
-#: the few long ones are ellipsized rather than allowed to take the room
-#: the column naming the action needs.
+#: is usually far shorter than this - 79 of the 98 MComix binds by
+#: default fit, measured in a German locale, which is a wordier one than
+#: most - and a list of them is several columns wide, so the long ones
+#: are cut off, with a tooltip, rather than allowed to take the room the
+#: column naming the action needs.  The ones that do not fit are mostly
+#: the numeric keypad's, which are spelled out to tell them from the
+#: keys of the same name.
 _ACCEL_WIDTH_CHARS = 12
+
+
+def _text_width(characters: int) -> int:
+    """How wide <characters> of text come out, in pixels.
+
+    Whatever a fixed width is set to has to follow the font the desktop
+    is drawn in, so it is measured rather than stated.
+    """
+    return Gtk.Label(width_chars=characters).measure(
+        Gtk.Orientation.HORIZONTAL, -1)[1]
 
 
 def accelerator_label(accelerator: str) -> str:
@@ -153,17 +166,104 @@ class _EditableCell(Gtk.EditableLabel, _Cell):
             self.edited(self.row, self.get_text())
 
 
+#: Keys drawn as the sign a keyboard prints on them rather than by
+#: name.  A Gtk.ShortcutLabel does this for the arrows, space and
+#: return, and spells the rest out; what it spells out is the longest
+#: thing in a column of shortcuts.  The numeric keypad's own keys are
+#: left spelled out, because that is what tells them from these.
+_KEY_SYMBOLS = {
+    'Page_Up': '\u21de', 'Page_Down': '\u21df',
+    'BackSpace': '\u232b', 'Delete': '\u2326', 'Insert': '\u2380',
+    'Tab': '\u21e5', 'ISO_Left_Tab': '\u21e4', 'Escape': '\u238b',
+    'Home': '\u21f1', 'End': '\u21f2',
+}
+
+
+def _draw_caps(label: Gtk.ShortcutLabel, accelerator: str) -> None:
+    """Redraw what <label> made of <accelerator>.
+
+    Two things: the key is drawn as the sign printed on it where it has
+    one, and the plusses the label puts between the caps are dropped -
+    keys drawn as keys are read as keys held together, and the plusses
+    are a third of the width of a short shortcut.
+
+    The key is the last cap the label drew; the caps before it are the
+    modifiers, which keep their names.  Which cap is which is worked out
+    from the order they are drawn in rather than from what they say,
+    because what they say is in the desktop's language.
+    """
+    caps, joiners = [], []
+    child = label.get_first_child()
+    while child is not None:
+        if isinstance(child, Gtk.Label):
+            if 'keycap' in child.get_css_classes():
+                caps.append(child)
+            elif 'dim-label' in child.get_css_classes():
+                joiners.append(child)
+        child = child.get_next_sibling()
+    if not caps:
+        # Nothing is bound, and what stands there is the disabled text.
+        return
+    for joiner in joiners:
+        joiner.set_visible(False)
+    parsed, keyval, _modifiers = Gtk.accelerator_parse(accelerator)
+    if not parsed:
+        return
+    symbol = _KEY_SYMBOLS.get(Gdk.keyval_name(keyval) or '')
+    if symbol is not None:
+        caps[-1].set_text(symbol)
+
+
+class _ClampLayout(Gtk.LayoutManager):
+
+    """Lays out one child at a width of its own, in a fixed width.
+
+    A Gtk.ColumnView asks the cells that are on screen how wide their
+    column should be, where the Gtk.TreeView it replaced asked the whole
+    model, so a cell that answers with what it holds makes the column a
+    different width every time the list is scrolled.  This answers with
+    the same width whatever it holds, and lets the child overflow it -
+    the widget clips what does not fit.
+    """
+
+    __gtype_name__ = 'MComixClampLayout'
+
+    def __init__(self, width: int) -> None:
+        super(_ClampLayout, self).__init__()
+        self._width = width
+
+    def do_measure(self, widget: Gtk.Widget, orientation: Gtk.Orientation,
+                   for_size: int) -> tuple:
+        child = widget.get_first_child()
+        if child is None:
+            return 0, 0, -1, -1
+        if orientation == Gtk.Orientation.HORIZONTAL:
+            return self._width, self._width, -1, -1
+        return child.measure(orientation, for_size)
+
+    def do_allocate(self, widget: Gtk.Widget, _width: int, height: int,
+                    baseline: int) -> None:
+        child = widget.get_first_child()
+        if child is None:
+            return
+        # Its own width, whether that is less than the room it was given
+        # - it is drawn at its own size, not stretched to fill - or more,
+        # which is what the clipping answers for.
+        wanted = child.measure(Gtk.Orientation.HORIZONTAL, -1)[1]
+        child.allocate(wanted, height, baseline, None)
+
+
 class _AccelCell(Gtk.Button, _Cell):
 
     """A cell showing a keyboard shortcut, which a click rebinds.
 
     This is what a Gtk.CellRendererAccel was: click it and the next
     combination pressed becomes the shortcut, backspace clears it and
-    escape leaves it alone.  It draws the shortcut as the renderer drew
-    it, as the text the keyboard calls it by, rather than as the key
-    caps a Gtk.ShortcutLabel makes of it: a shortcut label is as wide as
-    its caps and cannot be drawn any narrower, so a column of them takes
-    the width it wants out of whatever else the list shows.
+    escape leaves it alone.  The shortcut is drawn as the key caps a
+    Gtk.ShortcutLabel makes of it, which is as wide as they come to and
+    cannot be drawn any narrower, so the label is held in a fixed width
+    and what does not fit is cut off - with the shortcut spelled out in
+    a tooltip where that happens.
     """
 
     __gtype_name__ = 'MComixColumnAccelCell'
@@ -172,18 +272,17 @@ class _AccelCell(Gtk.Button, _Cell):
         super(_AccelCell, self).__init__()
         self._init_cell()
         self.set_has_frame(False)
-        # An action nothing is bound to shows nothing; the hint stands
-        # there only while the cell is waiting for a combination to be
-        # pressed.
-        # Both, so the cell asks for the same width whatever it holds:
-        # a Gtk.ColumnView sizes a column from the cells that are on
-        # screen, so a column that measured its contents would be a
-        # different width every time the list was scrolled.
-        self.label = Gtk.Label(xalign=0.0,
-                               ellipsize=Pango.EllipsizeMode.END,
-                               width_chars=_ACCEL_WIDTH_CHARS,
-                               max_width_chars=_ACCEL_WIDTH_CHARS)
-        self.set_child(self.label)
+        # A shortcut label draws its disabled text where it has no
+        # accelerator, which is what an action nothing is bound to
+        # shows: nothing.  The hint goes there only while the cell is
+        # waiting for a combination to be pressed.
+        self.label = Gtk.ShortcutLabel(disabled_text='')
+        self._room = _text_width(_ACCEL_WIDTH_CHARS)
+        clamp = Gtk.Box()
+        clamp.set_layout_manager(_ClampLayout(self._room))
+        clamp.set_overflow(Gtk.Overflow.HIDDEN)
+        clamp.append(self.label)
+        self.set_child(clamp)
         #: Whether the next key pressed is the new shortcut.
         self.capturing = False
         self.connect('clicked', self._clicked)
@@ -195,7 +294,11 @@ class _AccelCell(Gtk.Button, _Cell):
 
     def _clicked(self, _button: Gtk.Button) -> None:
         self.capturing = True
-        self.label.set_text(_ASK_FOR_ONE_HINT)
+        # The property, not set_accelerator(): the two accessors are
+        # deprecated where the property they stand for is not.
+        self.label.props.disabled_text = _ASK_FOR_ONE_HINT
+        self.label.props.accelerator = ''
+        self.set_tooltip_text(None)
 
     def _pressed(self, controller: Gtk.EventControllerKey, keyval: int,
                  keycode: int, state: Gdk.ModifierType) -> bool:
@@ -220,7 +323,14 @@ class _AccelCell(Gtk.Button, _Cell):
 
     def _show(self) -> None:
         """Draw the shortcut the row carries."""
-        self.label.set_text(accelerator_label(self.accelerator))
+        self.label.props.disabled_text = ''
+        self.label.props.accelerator = self.accelerator
+        _draw_caps(self.label, self.accelerator)
+        # Only where the caps do not fit: a tooltip on every shortcut in
+        # a list of them would be in the way rather than of any help.
+        wanted = self.label.measure(Gtk.Orientation.HORIZONTAL, -1)[1]
+        self.set_tooltip_text(accelerator_label(self.accelerator)
+                              if wanted > self._room else None)
 
     #: What the row says the shortcut is; filled in when it is bound.
     accelerator = ''

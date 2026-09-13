@@ -32,6 +32,10 @@ class KeybindingEditorWindow(Gtk.ScrolledWindow):
         # The actions of a group sit under a row naming it, which is
         # what a Gtk.TreeStore held and a Gtk.TreeListModel holds now.
         self._list = column_list.ColumnListView(tree=True)
+        # A line between the columns: five of them side by side, four
+        # holding shortcuts that look much alike, are hard to read down
+        # without one.
+        self._list.add_css_class('column-separators')
         # The names are what the list is read by, so the column keeps
         # room for them: everything past what the shortcuts take is
         # theirs, and where there is not enough the list scrolls

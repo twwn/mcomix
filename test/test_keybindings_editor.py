@@ -78,6 +78,12 @@ class KeybindingEditorTest(MComixTest):
     #: width the dialog is given, measured on GTK 4.22.
     _DIALOG_CHROME = 32
 
+    def test_the_columns_are_ruled_off_from_one_another(self):
+        """Four columns of shortcuts beside the names they belong to are
+        hard to read down without a line between them."""
+        self.assertIn('column-separators',
+                      self.editor._list.get_css_classes())
+
     # -- What it lists ----------------------------------------------------
 
     def test_only_the_groups_are_shown_until_one_is_opened(self):

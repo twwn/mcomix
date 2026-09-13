@@ -1,11 +1,13 @@
 """ preferences.py - Contains the preferences and the functions to read and
 write them.  """
 
+import copy
 import json
 import os
 import pickle
 import shutil
 import sys
+from typing import Any
 
 from mcomix import constants
 from mcomix import tools
@@ -25,8 +27,41 @@ _FORMAT_VERSION_KEY = 'config format version'
 #: divides out of the 16-bit 5000 it was stored as before version 1.
 DEFAULT_BG_COLOUR = [5000 / 65535, 5000 / 65535, 5000 / 65535, 1.0]
 
+class _Preferences(dict[str, Any]):
+
+    """The preferences, which see themselves written out when they change.
+
+    MComix wrote them at quit and only then, so anything that ended a
+    window another way - a crash, a kill, a session ending underneath it
+    - lost every setting made since it opened.  Changing one now
+    schedules the write instead, and quitting is only the last of them.
+    """
+
+    def __setitem__(self, key: str, value: Any) -> None:
+        was = self.get(key, _NOTHING)
+        super().__setitem__(key, value)
+        if value != was:
+            changed()
+
+    def __delitem__(self, key: str) -> None:
+        super().__delitem__(key)
+        changed()
+
+    def update(self, *args: Any, **keywords: Any) -> None:
+        super().update(*args, **keywords)
+        changed()
+
+    def clear(self) -> None:
+        super().clear()
+        changed()
+
+
+#: Stands for a preference that is not there, where None is a value some
+#: of them really hold.
+_NOTHING = object()
+
 # All the preferences are stored here.
-prefs = {
+prefs = _Preferences({
     _FORMAT_VERSION_KEY: CONFIG_FORMAT_VERSION,
     'comment extensions': constants.ACCEPTED_COMMENT_EXTENSIONS,
     'auto load last file': False,
@@ -125,7 +160,25 @@ prefs = {
     'animation mode': constants.ANIMATION_NORMAL,
     'double page autoresize': constants.DOUBLE_PAGE_AUTORESIZE_SIZE,
     'space between two pages': 2,
-}
+})
+
+#: How long a change waits for the ones after it before the file is
+#: written.  Long enough that dragging a slider writes once rather than
+#: once a pixel, short enough that nothing anybody remembers doing is
+#: still unwritten when a window goes away without being closed.
+_WRITE_DELAY_MS = 2000
+
+#: The GLib source the next write is waiting on, or 0.
+_write_source = 0
+
+#: The preferences as they stood when the file was last read.  What this
+#: instance has changed is what differs from these, and that is all it
+#: writes: MComix runs one process per window, each holding a copy of
+#: every preference, so an instance that wrote the lot would put back
+#: what another one changed while it was running.  Empty until the file
+#: is read, which means an instance that never read one has nothing of
+#: its own to write.
+_as_read: dict = {}
 
 
 def migrate_home_config_path() -> None:
@@ -239,15 +292,105 @@ def read_preferences_file() -> None:
             if key in prefs:
                 prefs[key] = saved_prefs[key]
 
+    global _as_read
+    _as_read = copy.deepcopy(dict(prefs))
+    # Reading is not changing, whatever the assignments above look like.
+    cancel_scheduled_write()
+
+
+def changed() -> None:
+    """Note that a preference has changed, and see it written out.
+
+    The mapping calls this itself when it is assigned to.  Code that
+    reaches inside a preference and changes what is in there - a list,
+    or the dictionary of remembered dialog answers - has to say so, the
+    mapping being none the wiser.
+
+    The write waits, so that a run of changes costs one of them, and
+    happens on the main loop: without one running there is nothing to
+    write it, and quitting writes them all anyway.
+    """
+    global _write_source
+    if _write_source:
+        return
+    from gi.repository import GLib
+    _write_source = GLib.timeout_add(_WRITE_DELAY_MS, _write_now)
+
+
+def _write_now() -> bool:
+    """Write the preferences the delay above was counting down for."""
+    global _write_source
+    _write_source = 0
+    write_preferences_file()
+    return False  # GLib.SOURCE_REMOVE
+
+
+def cancel_scheduled_write() -> None:
+    """Drop a write that has not happened yet.
+
+    What it would have written is either already on disk or no longer
+    this instance's to write.
+    """
+    global _write_source
+    if not _write_source:
+        return
+    from gi.repository import GLib
+    GLib.source_remove(_write_source)
+    _write_source = 0
+
+
+def _stored_preferences() -> dict:
+    """Whatever is in the preferences file now, or nothing.
+
+    Nothing is also the answer for a file that cannot be read: writing
+    this instance's own preferences over it is then the best that can be
+    done, and is what MComix always did.
+
+    What comes back is brought forward to the current format, because it
+    is what the preferences are about to be written into: a value this
+    instance never touched would otherwise be left in the file in a
+    format the file then claims not to be in.
+    """
+    try:
+        with open(constants.PREFERENCE_PATH, 'r') as config_file:
+            stored = json.load(config_file)
+    except (OSError, ValueError):
+        return {}
+    if not isinstance(stored, dict):
+        return {}
+    _migrate_preferences(stored)
+    return stored
+
+
+def _changed_here() -> dict:
+    """The preferences this instance has changed since it read them.
+
+    A preference the baseline does not name is not one of them, and the
+    baseline names every preference there is once the file has been read.
+    Before that it is empty, and an instance that has read nothing has
+    changed nothing: counting the whole default dictionary as changed
+    there would put the defaults over a file full of the user's answers.
+    """
+    return {key: value for key, value in prefs.items()
+            if key in _as_read and value != _as_read[key]}
+
+
 def write_preferences_file() -> None:
-    """Write preference data to disk."""
-    # TODO: it might be better to save only those options that were (ever)
-    # explicitly changed by the used, leaving everything else as default
-    # and available (if really needed) to change of defaults on upgrade.
-    # XXX: constants.VERSION? It's *preferable* to not complicate the YAML
-    # file by adding a `{'version': constants.VERSION, 'prefs': config}`
-    # dict or a list.  Adding an extra init line sounds bad too.
+    """Write preference data to disk.
+
+    Only what this instance changed is written over what the file holds,
+    because it is not the only MComix there is: every window is a process
+    of its own, each with the preferences as they stood when it started,
+    and one that wrote all of them would undo every change another
+    window had made in the meantime - which reads as settings that do
+    not stick.
+    """
+    cancel_scheduled_write()
+    stored = _stored_preferences()
+    stored.update(_changed_here())
+    # Whoever wrote the file last says what format it is in.
+    stored[_FORMAT_VERSION_KEY] = CONFIG_FORMAT_VERSION
     with tools.atomic_write(constants.PREFERENCE_PATH) as config_file:
-        json.dump(prefs, config_file, indent=2)
+        json.dump(stored, config_file, indent=2)
 
 # vim: expandtab:sw=4:ts=4

@@ -3,7 +3,9 @@
 import os
 import mimetypes
 import fnmatch
-from gi.repository import GLib, Gtk, Pango
+from gi.repository import Gdk, Gio, GLib, Gtk, Pango
+
+from typing import cast
 
 from mcomix.preferences import prefs
 from mcomix.dialog import Dialog
@@ -63,7 +65,8 @@ class _BaseFileChooserDialog(Dialog):
     or Gtk.FileChooserAction.SAVE).
 
     This is a base class for the _MainFileChooserDialog, the
-    _LibraryFileChooserDialog and the SimpleFileChooserDialog.
+    _LibraryFileChooserDialog and the SimpleFileChooserDialog.  It opens
+    in <folder>, or wherever the last thing that was opened came from.
 
     Subclasses should implement a method files_chosen(paths) that will be
     called once the filechooser has done its job and selected some files.
@@ -72,7 +75,8 @@ class _BaseFileChooserDialog(Dialog):
 
     _last_activated_file = None
 
-    def __init__(self, action=Gtk.FileChooserAction.OPEN, parent=None):
+    def __init__(self, action=Gtk.FileChooserAction.OPEN, parent=None,
+                 folder=None):
         self._action = action
         self._destroyed = False
 
@@ -99,6 +103,10 @@ class _BaseFileChooserDialog(Dialog):
         #: Whether the chooser's filter menu has been moved aside.
         self._filter_moved = False
 
+        #: The search box and the list of files, where the arrow keys
+        #: are made to lead from one into the other.
+        self._search: "Gtk.SearchEntry | None" = None
+        self._listing: "Gtk.ColumnView | None" = None
         #: What each filter was built to match, by filter.
         self._filter_rules = {}
         #: One-format filters, held back so the groups can come first.
@@ -122,6 +130,8 @@ class _BaseFileChooserDialog(Dialog):
         activate.set_button(1)
         activate.connect('pressed', self._activated)
         self.filechooser.add_controller(activate)
+
+        self._walk_from_search_into_the_list()
 
         self._preview_size, self._preview_pixels = preview_size(self)
         preview_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 10)
@@ -184,8 +194,14 @@ class _BaseFileChooserDialog(Dialog):
             current_file = self._current_file()
             last_file = self.__class__._last_activated_file
 
+            # Where the caller said, if it said.  It has to be settled
+            # here rather than afterwards: the chooser loads whatever
+            # folder it was given asynchronously, and a folder set once
+            # that is under way is lost when the load finishes.
+            if folder is not None:
+                widgets.set_chooser_folder(self.filechooser, folder)
             # If a file is currently open, use its path
-            if current_file and os.path.exists(current_file):
+            elif current_file and os.path.exists(current_file):
                 widgets.set_chooser_folder(self.filechooser,
                                            os.path.dirname(current_file))
             # If no file is open, use the last stored file
@@ -293,16 +309,76 @@ class _BaseFileChooserDialog(Dialog):
 
     @staticmethod
     def _descendant(widget, kind):
-        """The first child of <widget> that is a <kind>, at any depth."""
+        """The first child of <widget> that is a <kind>, at any depth.
+
+        Not one inside a popover: what a menu or a dropdown holds hangs
+        off the widget rather than standing in it, and the chooser has a
+        search box and a list of its own inside the filter dropdown.
+        """
         child = widget.get_first_child()
         while child is not None:
             if isinstance(child, kind):
                 return child
-            found = _BaseFileChooserDialog._descendant(child, kind)
-            if found is not None:
-                return found
+            if not isinstance(child, Gtk.Popover):
+                found = _BaseFileChooserDialog._descendant(child, kind)
+                if found is not None:
+                    return found
             child = child.get_next_sibling()
         return None
+
+    def _walk_from_search_into_the_list(self) -> None:
+        """Let the arrow keys carry on from the search box into the list.
+
+        Typing in a Gtk.FileChooserWidget searches, and what it finds is
+        listed under the box being typed into - but the arrows stay in
+        the box, so the only way to a result is the mouse.  Down goes to
+        the first one, and up from there comes back to the box.
+        """
+        self._search = self._descendant(self.filechooser, Gtk.SearchEntry)
+        self._listing = self._descendant(self.filechooser, Gtk.ColumnView)
+        if self._search is None or self._listing is None:
+            return
+
+        for widget, pressed in ((self._search, self._into_the_list),
+                                (self._listing, self._back_to_the_search)):
+            keys = Gtk.EventControllerKey()
+            # Before the widget's own handling, which would otherwise
+            # take the arrow key for itself.
+            keys.set_propagation_phase(Gtk.PropagationPhase.CAPTURE)
+            keys.connect('key-pressed',
+                         lambda _c, keyval, _code, _state, answer=pressed:
+                         answer(keyval))
+            widget.add_controller(keys)
+
+    def _into_the_list(self, keyval: int) -> bool:
+        """Down out of the search box: the first thing it found."""
+        if self._listing is None or keyval not in (Gdk.KEY_Down,
+                                                   Gdk.KEY_KP_Down):
+            return False
+        # A Gtk.SelectionModel is a Gio.ListModel as well, whatever the
+        # introspection data says of it.
+        model = cast("Gio.ListModel | None", self._listing.get_model())
+        if model is None or not model.get_n_items():
+            return False
+        self._listing.grab_focus()
+        cast(Gtk.SelectionModel, model).select_item(0, True)
+        return True
+
+    def _back_to_the_search(self, keyval: int) -> bool:
+        """Up off the top of the list: back to the search box."""
+        if self._search is None or self._listing is None \
+                or keyval not in (Gdk.KEY_Up, Gdk.KEY_KP_Up):
+            return False
+        model = self._listing.get_model()
+        if model is None:
+            return False
+        # Only off the top: anywhere else up is the row above, which is
+        # what the list does with it itself.
+        selected = model.get_selection()
+        if selected.is_empty() or selected.get_minimum() != 0:
+            return False
+        self._search.grab_focus()
+        return True
 
     def list_filters(self):
         """The filters the chooser offers, in the order they were added.
@@ -403,9 +479,6 @@ class _BaseFileChooserDialog(Dialog):
 
     def set_save_name(self, name):
         self.filechooser.set_current_name(name)
-
-    def set_current_directory(self, path):
-        widgets.set_chooser_folder(self.filechooser, path)
 
     def should_open_recursive(self) -> bool:
         return False

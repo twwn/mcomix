@@ -173,12 +173,12 @@ class _EditArchiveDialog(Dialog):
 
         if response == constants.RESPONSE_SAVE_AS:
 
-            dialog = file_chooser_simple_dialog.SimpleFileChooserDialog(
-                Gtk.FileChooserAction.SAVE, self)
-
             src_path = self.file_handler.get_path_to_base()
 
-            dialog.set_current_directory(os.path.dirname(src_path))
+            dialog = file_chooser_simple_dialog.SimpleFileChooserDialog(
+                Gtk.FileChooserAction.SAVE, self,
+                folder=os.path.dirname(src_path))
+
             dialog.set_save_name('%s.cbz' % os.path.splitext(
                 os.path.basename(src_path))[0])
             dialog.filechooser.set_extra_widget(Gtk.Label(label=

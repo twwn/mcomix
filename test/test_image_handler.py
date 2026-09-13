@@ -152,4 +152,32 @@ class CacheWindowTest(MComixTest):
         self.assertEqual(self._wanted(7, False, 10), [9, 8])
 
 
+class NoPageYetTest(MComixTest):
+
+    """What the handler answers before a page has been set.
+
+    Nothing asks it that early on the way through the program, so this
+    is about the answers being answers rather than exceptions.
+    """
+
+    def setUp(self):
+        super(NoPageYetTest, self).setUp()
+        self.handler = image_handler.ImageHandler(_StubWindow())
+
+    def tearDown(self):
+        self.handler.cleanup()
+        super(NoPageYetTest, self).tearDown()
+
+    def test_there_are_no_pages_to_show(self):
+        self.assertEqual(self.handler.get_pixbufs(1), [])
+        self.assertEqual(self.handler.get_pixbufs(2), [])
+
+    def test_the_background_is_the_one_the_preference_names(self):
+        """It used to raise: the index of the current page is None, and
+        the page after it was worked out by adding one to that."""
+        prefs['bg colour'] = [0.25, 0.5, 0.75, 1.0]
+        self.assertEqual(self.handler.get_pixbuf_auto_background(1),
+                         [0.25, 0.5, 0.75, 1.0])
+
+
 # vim: expandtab:sw=4:ts=4

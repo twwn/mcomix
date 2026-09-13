@@ -5,7 +5,7 @@ import os
 import shutil
 import threading
 
-from gi.repository import Gdk, Gio, Gtk, GLib
+from gi.repository import Gdk, Gtk, GLib
 
 from mcomix import canvas
 from mcomix import constants
@@ -13,6 +13,7 @@ from mcomix import cursor_handler
 from mcomix import i18n
 from mcomix import enhance_backend
 from mcomix import event
+from mcomix import file_chooser_simple_dialog
 from mcomix import file_handler
 from mcomix import image_handler
 from mcomix import image_tools
@@ -1034,31 +1035,26 @@ class MainWindow(Gtk.Window):
                     file_name, number=attempt)
                 attempt += 1
 
-            # Gtk.FileChooserDialog is deprecated as of GTK 4.10.  A
-            # Gtk.FileDialog is not a widget: it is asked to save, and
-            # answers in a callback with the file that was picked, or
-            # raises if the user dismissed it.
-            save_dialog = Gtk.FileDialog(title=_('Save page as'),
-                                         modal=True,
-                                         initial_name=suggest_name)
-            save_dialog.set_initial_folder(Gio.File.new_for_path(target_dir))
+            # MComix' own chooser, as the archive editor's Save As and
+            # every Open in the program use.  A Gtk.FileDialog asks the
+            # desktop for the chooser instead, which is drawn by the
+            # file chooser portal where one is installed - another
+            # program, which MComix' colour scheme does not reach.
+            save_dialog = file_chooser_simple_dialog.SimpleFileChooserDialog(
+                Gtk.FileChooserAction.SAVE, self, folder=target_dir)
+            save_dialog.set_title(_('Save page as'))
+            save_dialog.set_save_name(suggest_name)
 
             # Both pages of a double page get a dialog of their own, and
             # they stand at the same time: each answer needs the page it
             # was asked about, not whichever one the loop ended on.
-            def save_responded(dialog: Gtk.FileDialog, result: Gio.AsyncResult,
-                               file_path: str = file_path) -> None:
-                try:
-                    chosen = dialog.save_finish(result)
-                except GLib.Error:
-                    # The only thing a save chooser fails with is the
-                    # user closing it, which is not worth logging.
-                    return
-                target = chosen.get_path() if chosen else None
-                if target:
-                    self._save_page_to(file_path, target)
+            def saved(paths: list, file_path: str = file_path,
+                      dialog: Any = save_dialog) -> None:
+                dialog.destroy()
+                if paths:
+                    self._save_page_to(file_path, paths[0])
 
-            save_dialog.save(self, None, save_responded)
+            save_dialog.run_async(saved)
 
     def _save_page_to(self, file_path: str, target: str) -> None:
         """Copy the page at <file_path> to <target>.

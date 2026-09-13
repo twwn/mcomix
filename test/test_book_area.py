@@ -55,11 +55,11 @@ class BlackBackgroundTest(MComixTest):
 
     def test_the_covers_are_painted_on_black(self):
         self.window.present()
-        wait_for(lambda: self.area._iconview.get_width() > 0)
-        self.assertEqual('rgb(0,0,0)', background_of(self.area._iconview))
+        wait_for(lambda: self.area._covers.get_width() > 0)
+        self.assertEqual('rgb(0,0,0)', background_of(self.area._covers))
 
     def test_the_view_carries_the_class_the_rule_is_written_against(self):
-        self.assertTrue(self.area._iconview.has_css_class(
+        self.assertTrue(self.area._covers.has_css_class(
             book_area._BookArea._BLACK_CSS_CLASS))
 
 
@@ -93,10 +93,10 @@ class CoverOrderTest(MComixTest):
         prefs['lib sort order'] = (constants.SORT_ASCENDING if ascending
                                    else constants.SORT_DESCENDING)
         area = book_area._BookArea(_Library())
-        area._iconview.set_items(
+        area._covers.set_items(
             book_area._BookItem(book) for book in self.BOOKS)
         area.set_sort_order()
-        order = [item.uid for item in area._iconview.each_item()]
+        order = [item.uid for item in area._covers.each_item()]
         area.close()
         return order
 
@@ -129,7 +129,7 @@ class CoverRemovalTest(MComixTest):
     def setUp(self):
         super(CoverRemovalTest, self).setUp()
         self.area = book_area._BookArea(_Library())
-        self.area._iconview.set_items(
+        self.area._covers.set_items(
             book_area._BookItem(_Book(index, '/books/%d.cbz' % index))
             for index in range(5))
 
@@ -138,7 +138,7 @@ class CoverRemovalTest(MComixTest):
         super(CoverRemovalTest, self).tearDown()
 
     def _ids(self):
-        return [item.uid for item in self.area._iconview.each_item()]
+        return [item.uid for item in self.area._covers.each_item()]
 
     def test_removing_several_books_removes_those_and_no_others(self):
         self.area.remove_books([0, 2, 4])
