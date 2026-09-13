@@ -14,6 +14,8 @@ The window has a menu bar and a toolbar at the top, the page thumbnails on the l
 
 The arrow keys scroll the page, and PageDown and PageUp turn it. "Move to", in the page's right-click menu, moves the file that is open, or the archive the page is in, to another folder.
 
+"File &rarr; Properties" describes the page being read and the archive it is in. Where the archive carries a ComicInfo.xml, the archive's page also names the series, the issue number, the title and the writer given there.
+
 ### Fit modes ###
 
 Mode | Key | What it does

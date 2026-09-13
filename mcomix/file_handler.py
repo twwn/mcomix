@@ -613,6 +613,21 @@ class FileHandler:
                 carried[path] = self._name_table[path]
         return carried
 
+    def get_member_names(self) -> dict[str, str]:
+        """Every archive member that is not a page - the comments and
+        the files carried along with them - keyed by the path it is
+        extracted to and valued by its name in the archive.
+
+        Nothing is waited for.  This is for a caller on the main thread
+        that only needs to know what is there: whether a member is out
+        yet is for file_is_available() to say, and ask_for_files() moves
+        it to the front of the queue.  The comments are in it because
+        the default comment extensions take in .xml, which is where a
+        ComicInfo.xml usually ends up.
+        """
+        return {path: self._name_table[path]
+                for path in self._comment_files + self._other_files}
+
     def update_comment_extensions(self) -> None:
         """Update the regular expression used to filter out comments in
         archives by their filename.

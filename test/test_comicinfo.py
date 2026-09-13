@@ -149,4 +149,51 @@ class CarriedTest(MComixTest):
             comicinfo.carried({'/tmp/b': 'meta/ComicInfo.xml',
                                '/tmp/a': 'ComicInfo.xml'}))
 
+
+
+class DescribeTest(MComixTest):
+
+    """What describe() reads out of a ComicInfo.xml for the reader."""
+
+    def _describe(self, document):
+        path = os.path.join(self.tmp_dir, 'ComicInfo.xml')
+        with open(path, 'wb') as handle:
+            handle.write(document if isinstance(document, bytes)
+                         else document.encode('utf-8'))
+        return comicinfo.describe(path)
+
+    def test_the_fields_come_in_the_order_a_reader_looks_for_them(self):
+        self.assertEqual(
+            [('Series', 'Night Watch'), ('Number', '3'),
+             ('Title', 'The Long Night'), ('Writer', 'A. Writer')],
+            self._describe('<ComicInfo><Writer>A. Writer</Writer>'
+                           '<Title>The Long Night</Title><Number>3</Number>'
+                           '<Series>Night Watch</Series></ComicInfo>'))
+
+    def test_a_field_that_is_missing_or_blank_is_left_out(self):
+        self.assertEqual(
+            [('Series', 'Night Watch')],
+            self._describe('<ComicInfo><Series> Night Watch </Series>'
+                           '<Title>   </Title></ComicInfo>'))
+
+    def test_the_page_list_is_not_something_to_describe(self):
+        self.assertEqual([], self._describe(comicinfo.for_pages(
+            [get_testfile_path('images', '01-JPG-Indexed.jpg')])))
+
+    def test_a_file_that_is_not_xml_describes_nothing(self):
+        self.assertEqual([], self._describe('<ComicInfo><Series>Broken'))
+
+    def test_a_document_that_is_not_a_comicinfo_describes_nothing(self):
+        self.assertEqual([], self._describe('<Book><Series>Other</Series></Book>'))
+
+    def test_a_file_that_cannot_be_read_describes_nothing(self):
+        self.assertEqual([], comicinfo.describe(
+            os.path.join(self.tmp_dir, 'missing.xml')))
+
+    def test_a_file_too_large_to_be_metadata_is_not_read(self):
+        padding = b'<!--' + b'x' * comicinfo.LARGEST + b'-->'
+        self.assertEqual([], self._describe(
+            b'<ComicInfo><Series>Night Watch</Series>' + padding
+            + b'</ComicInfo>'))
+
 # vim: expandtab:sw=4:ts=4

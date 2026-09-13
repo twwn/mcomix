@@ -6,6 +6,7 @@ an archive to describe.
 """
 
 import os
+import zipfile
 from unittest import mock
 
 from gi.repository import Gtk
@@ -129,3 +130,63 @@ class PropertiesDialogTest(MComixTest):
         self.assertEqual(self._tabs(), ['Archive', 'Image'])
 
 # vim: expandtab:sw=4:ts=4
+
+    # -- What the archive's ComicInfo.xml says ----------------------------
+
+    def _book(self, comicinfo=None):
+        """Two of the test pages zipped up, with <comicinfo> as the
+        archive's ComicInfo.xml where one is given."""
+        path = os.path.join(self.tmp_dir, 'Described.cbz')
+        with zipfile.ZipFile(path, 'w') as book:
+            for name in ('01-JPG-Indexed.jpg', '02-JPG-RGB.jpg'):
+                book.write(get_testfile_path('images', name), name)
+            if comicinfo is not None:
+                book.writestr('ComicInfo.xml', comicinfo)
+        return path
+
+    @staticmethod
+    def _texts(widget):
+        """Every label's text under <widget>, depth first."""
+        texts = []
+        child = widget.get_first_child()
+        while child is not None:
+            if isinstance(child, Gtk.Label):
+                texts.append(child.get_text())
+            texts.extend(PropertiesDialogTest._texts(child))
+            child = child.get_next_sibling()
+        return texts
+
+    def test_the_archive_page_says_what_its_comicinfo_says(self):
+        dialog = self._open(self._book(
+            '<?xml version="1.0" encoding="utf-8"?>'
+            '<ComicInfo><Title>The Long Night</Title>'
+            '<Series>Night Watch</Series><Number>3</Number>'
+            '<Writer>A. Writer</Writer></ComicInfo>'))
+        page = dialog._archive_page
+        self.assertTrue(
+            wait_for(lambda: 'Night Watch' in self._texts(page), seconds=10),
+            'the series never appeared: %r' % self._texts(page))
+        texts = self._texts(page)
+        for label, value in (('Series:', 'Night Watch'), ('Number:', '3'),
+                             ('Title:', 'The Long Night'),
+                             ('Writer:', 'A. Writer')):
+            self.assertIn(label, texts)
+            self.assertIn(value, texts)
+        # What the file on disk is still follows what the comic is.
+        self.assertIn('Location:', texts)
+
+    def test_an_archive_without_comicinfo_names_no_series(self):
+        dialog = self._open(self._book())
+        page = dialog._archive_page
+        self.assertTrue(wait_for(lambda: 'Location:' in self._texts(page),
+                                 seconds=10))
+        pump()
+        self.assertNotIn('Series:', self._texts(page))
+
+    def test_a_comicinfo_that_does_not_parse_leaves_the_page_as_it_was(self):
+        dialog = self._open(self._book('<ComicInfo><Series>Broken'))
+        page = dialog._archive_page
+        self.assertTrue(wait_for(lambda: 'Location:' in self._texts(page),
+                                 seconds=10))
+        wait_for(lambda: False, seconds=0.5)
+        self.assertNotIn('Series:', self._texts(page))
