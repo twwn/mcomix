@@ -10,11 +10,12 @@ its own buttons out. These pin the shape all of them shared.
 
 from gi.repository import Gtk
 
-from . import MComixTest, pump
+from . import MComixTest, pump, wait_for
 
 from mcomix import dialog
 from mcomix import message_dialog
 from mcomix.dialog import Response
+from mcomix.preferences import prefs
 
 
 class DialogTest(MComixTest):
@@ -194,6 +195,61 @@ class MessageDialogTest(MComixTest):
         built = self._build(buttons=Gtk.ButtonsType.YES_NO)
         self.assertIsNotNone(built.get_widget_for_response(Response.YES))
         self.assertIsNotNone(built.get_widget_for_response(Response.NO))
+
+    # -- Answers the reader asked not to be asked for again ---------------
+
+    def _remembering(self, dialog_id='a-dialog'):
+        """A dialog offering to remember an OK, as the ones that delete
+        something do."""
+        built = self._build(buttons=Gtk.ButtonsType.OK_CANCEL)
+        built.set_should_remember_choice(dialog_id, (Response.OK,))
+        return built
+
+    def test_an_answer_that_was_remembered_is_given_without_asking(self):
+        prefs['stored dialog choices']['a-dialog'] = int(Response.OK)
+        built = self._remembering()
+        answers = []
+        built.run_async(answers.append)
+        self.assertFalse(built.get_visible(), 'it asked anyway')
+        self.assertTrue(wait_for(lambda: answers), 'it never answered')
+        self.assertEqual([int(Response.OK)], answers)
+
+    def test_clearing_the_choices_makes_it_ask_again(self):
+        """Emptying the dictionary is what the preferences dialog's
+        "Clear dialog choices" does, and it is the only way back."""
+        prefs['stored dialog choices']['a-dialog'] = int(Response.OK)
+        prefs['stored dialog choices'] = {}
+        built = self._remembering()
+        built.run_async(lambda response: None)
+        pump()
+        self.assertTrue(built.get_visible(),
+                        'it answered out of a choice that was cleared')
+
+    def test_only_the_answers_it_was_told_to_remember_are_kept(self):
+        """The tick is offered beside every button, and a Cancel that
+        was remembered would be a dialog that can never say yes again."""
+        built = self._remembering()
+        built.run_async(lambda response: None)
+        built.remember_checkbox.set_active(True)
+        built.response(Response.CANCEL)
+        pump()
+        self.assertEqual({}, prefs['stored dialog choices'])
+
+    def test_the_answer_it_was_told_to_remember_is_kept(self):
+        built = self._remembering()
+        built.run_async(lambda response: None)
+        built.remember_checkbox.set_active(True)
+        built.response(Response.OK)
+        pump()
+        self.assertEqual({'a-dialog': int(Response.OK)},
+                         prefs['stored dialog choices'])
+
+    def test_nothing_is_remembered_without_the_tick(self):
+        built = self._remembering()
+        built.run_async(lambda response: None)
+        built.response(Response.OK)
+        pump()
+        self.assertEqual({}, prefs['stored dialog choices'])
 
     def test_the_shape_it_used_to_be_called_in_is_refused(self):
         """Everything after the parent is keyword-only, so a call left

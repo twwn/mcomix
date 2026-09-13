@@ -172,4 +172,41 @@ class PreferencesDialogTest(MComixTest):
                  == 'Use this colour as the thumbnail background:']
         self.assertTrue(fixed and fixed[0].get_active())
 
+    # -- Taking back a "Do not ask again" ----------------------------------
+
+    def test_the_reset_button_offers_to_clear_the_dialog_choices(self):
+        """It is the only way back from a "Do not ask again" tick, and
+        the button it lives on says something else on the Shortcuts
+        tab."""
+        prefs['stored dialog choices']['delete-opend-file'] = 1
+        self._open()
+        self.assertEqual('Clear _dialog choices',
+                         self.dialog.reset_button.get_label())
+        self.assertTrue(self.dialog.reset_button.get_sensitive())
+
+    def test_with_nothing_remembered_there_is_nothing_to_clear(self):
+        self._open()
+        self.assertFalse(self.dialog.reset_button.get_sensitive())
+
+    def test_pressing_it_forgets_the_answers_and_says_so(self):
+        prefs['stored dialog choices']['delete-opend-file'] = 1
+        prefs['stored dialog choices']['library-remove-book-from-disk'] = 1
+        self._open()
+        self.dialog.response(constants.RESPONSE_REVERT_TO_DEFAULT)
+        pump()
+        self.assertEqual({}, prefs['stored dialog choices'])
+        self.assertFalse(self.dialog.reset_button.get_sensitive())
+
+    def test_the_shortcuts_tab_offers_the_keys_instead(self):
+        """The same button resets the keyboard shortcuts there, so a
+        test of one has to know which tab it is on."""
+        prefs['stored dialog choices']['delete-opend-file'] = 1
+        self._open()
+        shortcuts = self.dialog.notebook.page_num(self.dialog.shortcuts)
+        self.dialog.notebook.set_current_page(shortcuts)
+        pump()
+        self.assertEqual('_Reset keys', self.dialog.reset_button.get_label())
+        self.assertEqual({'delete-opend-file': 1},
+                         prefs['stored dialog choices'])
+
 # vim: expandtab:sw=4:ts=4

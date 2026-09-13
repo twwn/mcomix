@@ -33,7 +33,7 @@ class _LibraryBackend(object):
 
     #: Current version of the library database structure.
     # See method _upgrade_database() for changes between versions.
-    DB_VERSION = 8
+    DB_VERSION = 9
 
     def __init__(self) -> None:
 
@@ -67,20 +67,25 @@ class _LibraryBackend(object):
                     where path like ?''', ("%%%s%%" % filter_string, ))
 
             return cur.fetchall()
-        else:
-            books = []
-            subcollections = self.get_all_collections_in_collection(collection)
-            for coll in [collection] + subcollections:
-                if filter_string is None:
-                    cur = self._con.execute('''select id from Book
-                        where id in (select book from Contain where collection = ?)
-                        ''', (coll,))
-                else:
-                    cur = self._con.execute('''select id from Book
-                        where id in (select book from Contain where collection = ?)
-                        and path like ?''', (coll, "%%%s%%" % filter_string))
-                books.extend(cur.fetchall())
-            return books
+        # One statement over the collection and everything under it,
+        # rather than one each with the answers added together, which
+        # named a book filed in both a collection and one under it once
+        # for each.  clean_collection() survived that - its second
+        # removal finds no path and does nothing - at the cost of
+        # looking the book up again, and any other caller would act on
+        # it twice.
+        collections = [collection] + \
+            self.get_all_collections_in_collection(collection)
+        sql = '''select id from Book
+            where id in (select book from Contain
+                         where collection in (%s))''' \
+            % ', '.join('?' * len(collections))
+        parameters: list[Any] = list(collections)
+        if filter_string is not None:
+            sql += ' and path like ?'
+            parameters.append("%%%s%%" % filter_string)
+        return self._con.execute(sql + ' order by id',
+                                 parameters).fetchall()
 
     def get_book_by_path(self, path: str) -> backend_types._Book | None:
         """ Retrieves a book from the library, specified by C{path}.
@@ -479,6 +484,10 @@ class _LibraryBackend(object):
             thumbnailer.delete(path)
         self._con.execute('delete from Book where id = ?', (book,))
         self._con.execute('delete from Contain where book = ?', (book,))
+        # A book's id is its sqlite rowid, which is handed out again as
+        # soon as the highest row is free, so a page left behind here
+        # belongs to whichever book is added next.
+        self._con.execute('delete from Recent where book = ?', (book,))
 
     def remove_collection(self, collection: int) -> None:
         """Remove the <collection> (sans books) from the library."""
@@ -641,6 +650,20 @@ class _LibraryBackend(object):
                 # _create_index_contain_book().
                 self._create_index_contain_book()
 
+            if 8 in upgrades:
+                # remove_book() used to leave the removed book's row in
+                # recent behind, and a book's id is its sqlite rowid,
+                # which is handed out again as soon as the highest row
+                # is free: those rows belong to whichever book was added
+                # next.  Nothing tells them apart from a live one after
+                # the fact, so every recent row naming a book that is
+                # gone goes.  This is a repair rather than a schema
+                # change - a database written before it is readable by
+                # an MComix that has it, and the other way round - and
+                # it costs 1.5ms over 20,000 recent rows.
+                self._con.execute('''delete from recent
+                    where book not in (select id from book)''')
+
             self._con.execute('''update info set value = ? where key = 'version' ''',
                               (str(_LibraryBackend.DB_VERSION),))
 
@@ -702,7 +725,7 @@ class _LibraryBackend(object):
             values (?, ?)''', (COLLECTION_RECENT, 'RECENT'))
 
 
-_backend = None
+_backend: "_LibraryBackend | None" = None
 
 
 def LibraryBackend() -> _LibraryBackend:

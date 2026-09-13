@@ -5,7 +5,7 @@ import os
 import shutil
 import tempfile
 
-from gi.repository import GdkPixbuf
+from gi.repository import Gdk, GdkPixbuf
 
 from collections import namedtuple
 from PIL import Image, ImageDraw
@@ -648,4 +648,74 @@ class ImageToolsTest(MComixTest):
                 self.assertImagesEqual(result, expected, msg=msg)
 
 
+
+
+
+class PixbufToTextureTest(MComixTest):
+
+    """Gdk.Texture.new_for_pixbuf() is deprecated as of GTK 4.20, so the
+    texture is built out of the pixbuf's own memory format instead."""
+
+    def _drawn(self, has_alpha):
+        """A small pixbuf with a different colour in each quarter."""
+        channels = 4 if has_alpha else 3
+        pixbuf = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, has_alpha,
+                                      8, 6, 4)
+        pixbuf.fill(0x102030ff)
+        pixbuf.new_subpixbuf(0, 0, 3, 2).fill(0xff8000ff)
+        pixbuf.new_subpixbuf(3, 2, 3, 2).fill(0x0080ffff)
+        self.assertEqual(pixbuf.get_n_channels(), channels)
+        return pixbuf
+
+    def _downloaded(self, texture):
+        """The texture's pixels, as RGBA rows with no padding.
+
+        Gdk.Texture.download() writes Cairo's premultiplied BGRA, and a
+        downloader is what asks for a format of one's own.
+        """
+        downloader = Gdk.TextureDownloader.new(texture)
+        downloader.set_format(Gdk.MemoryFormat.R8G8B8A8)
+        data, stride = downloader.download_bytes()
+        pixels = data.get_data()
+        width = texture.get_width() * 4
+        return b''.join(pixels[y * stride:y * stride + width]
+                        for y in range(texture.get_height()))
+
+    def _expected(self, pixbuf):
+        """The same pixels, read off the pixbuf a row at a time.
+
+        A pixbuf's rows are padded out to a rowstride that is wider than
+        the pixels in them, so a texture built with the wrong stride
+        comes out sheared rather than merely wrong.
+        """
+        pixels = pixbuf.get_pixels()
+        stride = pixbuf.get_rowstride()
+        channels = pixbuf.get_n_channels()
+        rows = []
+        for y in range(pixbuf.get_height()):
+            row = pixels[y * stride:y * stride + pixbuf.get_width() * channels]
+            if channels == 3:
+                row = b''.join(row[x:x + 3] + b'\xff'
+                               for x in range(0, len(row), 3))
+            rows.append(row)
+        return b''.join(rows)
+
+    def test_a_texture_holds_the_pixels_the_pixbuf_held(self):
+        for has_alpha in (True, False):
+            with self.subTest(has_alpha=has_alpha):
+                pixbuf = self._drawn(has_alpha)
+                texture = image_tools.pixbuf_to_texture(pixbuf)
+                self.assertEqual(texture.get_width(), pixbuf.get_width())
+                self.assertEqual(texture.get_height(), pixbuf.get_height())
+                self.assertEqual(self._downloaded(texture),
+                                 self._expected(pixbuf))
+
+    def test_the_texture_keeps_what_it_was_given(self):
+        """It used to be handed the pixbuf's own pixels, so painting
+        over the pixbuf painted over the texture."""
+        pixbuf = self._drawn(True)
+        texture = image_tools.pixbuf_to_texture(pixbuf)
+        before = self._downloaded(texture)
+        pixbuf.fill(0x000000ff)
+        self.assertEqual(self._downloaded(texture), before)
 

@@ -138,10 +138,10 @@ class _PixbufFrames(Frames):
             self._iterator.advance(None)
         self._started = True
         # The iterator hands out one pixbuf and paints the next frame
-        # over it, so the texture gets a copy of its own rather than a
-        # window onto whatever is being decoded next.
-        pixbuf = self._iterator.get_pixbuf()
-        frame = pixbuf.copy() if pixbuf is not None else None
+        # over it.  Copying it here was how the texture got pixels of
+        # its own; pixbuf_to_texture() copies them itself now, so a
+        # second copy of every frame would buy nothing.
+        frame = self._iterator.get_pixbuf()
         if frame is None:
             raise ValueError('the animation has no frame to draw')
         return image_tools.pixbuf_to_texture(frame), \

@@ -108,7 +108,7 @@ _BLACKENED = (
 #: takes its styling with it.
 _provider = None
 #: The provider that states a scheme's colours, while one is stated.
-_stated = None
+_stated: "Gtk.CssProvider | None" = None
 #: Whether libadwaita is running, which decides who answers for the
 #: light and the dark.
 _started = False

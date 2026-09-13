@@ -219,6 +219,23 @@ class WritePreferencesFileTest(MComixTest):
 
 class IsolationTest(MComixTest):
 
+    def test_reaching_inside_a_preference_leaves_the_defaults_alone(self) -> None:
+        """The preferences are restored from a dictionary captured when
+        the suite was imported, and a preference that holds a container
+        has to be restored as a copy of it: a test that reaches inside
+        one - the dictionary of remembered dialog answers, say - would
+        otherwise change what every later test starts from."""
+        prefs['stored dialog choices']['some-dialog'] = 1
+        self.assertEqual({}, default_prefs['stored dialog choices'])
+
+    def test_a_preference_holding_a_list_is_restored_as_a_copy(self) -> None:
+        """This one is a constant as well, so writing through it would
+        change what MComix considers a comment file for the rest of the
+        run."""
+        prefs['comment extensions'].append('leaked')
+        self.assertNotIn('leaked', default_prefs['comment extensions'])
+        self.assertNotIn('leaked', constants.ACCEPTED_COMMENT_EXTENSIONS)
+
     def test_configuration_paths_point_into_the_test_directory(self) -> None:
         # A test writing to the developer's own configuration would be a
         # good deal worse than a failing test.

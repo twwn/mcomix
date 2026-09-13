@@ -124,8 +124,19 @@ class CacheWindowTest(MComixTest):
 
     def _wanted(self, cache_pages, double_page, page):
         prefs['default double page'] = double_page
-        self.handler._cache_pages = cache_pages
+        prefs['max pages to cache'] = cache_pages
         return self.handler._ask_for_pages(page)
+
+    def test_the_budget_follows_the_preference_while_a_book_is_open(self):
+        """The preferences dialog writes the new value and asks the
+        handler to cache again in the same breath, so the handler has to
+        read the preference then rather than when it was built."""
+        prefs['default double page'] = False
+        prefs['max pages to cache'] = 0
+        self.assertEqual(self.handler._ask_for_pages(5), [4])
+        prefs['max pages to cache'] = 7
+        self.assertEqual(self.handler._ask_for_pages(5),
+                         [4, 5, 3, 6, 7, 8, 9])
 
     def test_no_cacheing_asks_for_the_current_page(self):
         self.assertEqual(self._wanted(0, False, 5), [4])

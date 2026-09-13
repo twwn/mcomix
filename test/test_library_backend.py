@@ -101,6 +101,29 @@ class CleanCollectionTransactionTest(unittest.TestCase):
         constants.LIBRARY_DATABASE_PATH = self._saved_path
         os.unlink(self.db)
 
+    def test_a_book_in_a_collection_and_one_under_it_is_named_once(self):
+        """The books were collected one collection at a time and the
+        lists added together, so a book filed in both came back twice.
+        The sweep survives that - the second removal finds no path and
+        does nothing - but it looks the book up all over again, and any
+        other caller would act on it twice."""
+        connection = self.library._con
+        connection.execute(
+            "insert into collection (id, name) values (2, 'Under')")
+        connection.execute(
+            'update collection set supercollection = 1 where id = 2')
+        # Every book is in collection 1 already; put the first in the
+        # one under it as well.
+        first = connection.execute(
+            'select min(book) from contain where collection = 1').fetchone()
+        connection.execute(
+            'insert into contain (collection, book) values (2, ?)', (first,))
+
+        books = self.library.get_books_in_collection(1)
+
+        self.assertEqual(8, len(books))
+        self.assertEqual(8, len(set(books)))
+
     def test_the_whole_sweep_is_one_transaction(self):
         inside = []
         original = self.library.remove_book
@@ -246,3 +269,87 @@ class AddBookToCollectionTest(unittest.TestCase):
         self.backend.add_book_to_collection(4711, collection)
 
         self.assertEqual([], self.seen)
+
+
+class RemovedBookTest(unittest.TestCase):
+
+    """remove_book() left the page the book was read to behind.
+
+    The recent table is keyed by book id, and a book's id is its sqlite
+    rowid, which is handed out again once the highest row is deleted.  A
+    row left over from a removed book therefore belonged to whichever
+    book was added next.
+    """
+
+    def setUp(self):
+        fp, self.db = tempfile.mkstemp('.db', 'mcomix-test')
+        os.close(fp)
+        self._saved_path = constants.LIBRARY_DATABASE_PATH
+        constants.LIBRARY_DATABASE_PATH = self.db
+        self.library = backend.LibraryBackend()
+
+    def tearDown(self):
+        self.library.close()
+        constants.LIBRARY_DATABASE_PATH = self._saved_path
+        os.unlink(self.db)
+
+    def _add_book(self, name):
+        """A row in book, without an archive to read it out of."""
+        cursor = self.library._con.execute(
+            '''insert into book (name, path, pages, format, size)
+            values (?, ?, ?, ?, ?)''',
+            (name, '/does/not/exist/%s.cbz' % name, 20, 1, 1))
+        return cursor.lastrowid
+
+    def _recent_rows(self):
+        return self.library._con.execute(
+            'select book, page from recent order by book').fetchall()
+
+    def test_removing_a_book_forgets_the_page_it_was_read_to(self):
+        book = self._add_book('read')
+        self.library.get_book_by_id(book).set_last_read_page(7)
+        self.assertEqual([(book, 7)], self._recent_rows())
+
+        self.library.remove_book(book)
+
+        self.assertEqual([], self._recent_rows(),
+                         'the removed book kept its page')
+
+    def test_the_next_book_added_does_not_inherit_that_page(self):
+        removed = self._add_book('read')
+        self.library.get_book_by_id(removed).set_last_read_page(7)
+        self.library.remove_book(removed)
+
+        # sqlite hands out the highest rowid again once it is free, so
+        # the next book is the removed one's id all over again.
+        added = self._add_book('fresh')
+        self.assertEqual(removed, added,
+                         'sqlite did not reuse the id, so nothing is proved')
+        self.assertIsNone(
+            self.library.get_book_by_id(added).get_last_read_page(),
+            'a newly added book opened where another one was left off')
+
+    def test_a_database_written_before_the_fix_is_swept_on_open(self):
+        """Rows an older MComix left behind still name the next book
+        added, so the version upgrade clears them out."""
+        book = self._add_book('read')
+        self.library.get_book_by_id(book).set_last_read_page(7)
+        # A second book first, so that it keeps an id of its own: the
+        # removed book's id is free, and set_last_read_page() would
+        # otherwise write over the very row under test.
+        kept = self._add_book('kept')
+        self.library.get_book_by_id(kept).set_last_read_page(3)
+        self.assertNotEqual(book, kept)
+        # What remove_book() used to leave: the book gone, its page not.
+        self.library._con.execute('delete from book where id = ?', (book,))
+        self.library._con.execute(
+            "update info set value = '8' where key = 'version'")
+        self.library.close()
+
+        self.library = backend.LibraryBackend()
+
+        self.assertEqual([(kept, 3)], self._recent_rows(),
+                         'the sweep took the wrong rows, or none')
+        version = self.library._con.execute(
+            "select value from info where key = 'version'").fetchone()
+        self.assertEqual(int(version), backend._LibraryBackend.DB_VERSION)

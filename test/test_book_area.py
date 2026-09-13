@@ -2,6 +2,8 @@
 
 """The library's cover area, and the black it is painted on."""
 
+import sqlite3
+
 from gi.repository import GLib, Gtk
 
 from . import MComixTest, wait_for
@@ -9,6 +11,7 @@ from .test_theme import background_of
 
 from mcomix import constants
 from mcomix import message_dialog
+from mcomix.dialog import Response
 from mcomix.library import book_area
 from mcomix.preferences import prefs
 
@@ -230,5 +233,136 @@ class CoverSizeDialogTest(MComixTest):
         self.assertEqual(1, sum(1 for child in _children(dialogs[0].get_content_area())
                                 if isinstance(child, Gtk.Scale)))
 
+
+
+class _RecordingBackend(_Backend):
+
+    """A backend that counts the transaction it is put into."""
+
+    def __init__(self, refuse=False):
+        self.begun = 0
+        self.ended = 0
+        self.removed = []
+        self._refuse = refuse
+
+    def begin_transaction(self):
+        self.begun += 1
+
+    def end_transaction(self):
+        self.ended += 1
+
+    def remove_book(self, uid):
+        if self._refuse:
+            raise sqlite3.OperationalError('database is locked')
+        self.removed.append(uid)
+
+    def remove_book_from_collection(self, uid, collection):
+        if self._refuse:
+            raise sqlite3.OperationalError('database is locked')
+        self.removed.append((uid, collection))
+
+    def get_collection_name(self, collection):
+        return 'Collection'
+
+
+class _RecordingLibrary(object):
+
+    def __init__(self, refuse=False):
+        self.backend = _RecordingBackend(refuse)
+        self.messages = []
+        self.collection_area = self
+
+    def set_status_message(self, message):
+        self.messages.append(message)
+
+    def get_current_collection(self):
+        return 7
+
+
+class DeleteFromDiskTest(MComixTest):
+
+    """The confirmation that deletes books from the disk."""
+
+    def setUp(self):
+        super(DeleteFromDiskTest, self).setUp()
+        self.library = _LibraryWindow()
+        self.area = book_area._BookArea(self.library)
+        self.area._covers.set_items(
+            [book_area._BookItem(_Book(1, '/books/1.cbz'))])
+        self.area._covers.selection.select_all()
+
+    def tearDown(self):
+        for dialog in self._dialogs():
+            dialog.destroy()
+        self.library.destroy()
+        self.area.close()
+        super(DeleteFromDiskTest, self).tearDown()
+
+    def _dialogs(self):
+        return [window for window in Gtk.Window.list_toplevels()
+                if isinstance(window, message_dialog.MessageDialog)
+                and window.get_transient_for() is self.library]
+
+    def test_it_defaults_to_the_answer_that_deletes_nothing(self):
+        """The books go from the disk as well as from the library, so
+        Enter must not be what does it."""
+        self.area._completely_remove_book()
+        dialogs = self._dialogs()
+        self.assertEqual(1, len(dialogs), 'nothing asked before deleting')
+        dialog = dialogs[0]
+        keeps = dialog.get_widget_for_response(Response.NO)
+        deletes = dialog.get_widget_for_response(Response.YES)
+        self.assertIsNotNone(keeps, 'the dialog offers no way out')
+        self.assertIs(dialog.get_default_widget(), keeps,
+                      'Enter would delete the books')
+        self.assertTrue(deletes.has_css_class('destructive-action'),
+                        'the deleting button is drawn as an ordinary one')
+
+
+class RemovalTransactionTest(MComixTest):
+
+    """The library stops committing if a removal leaves the transaction open.
+
+    begin_transaction() puts the connection into IMMEDIATE mode and only
+    end_transaction() takes it out again, so a statement that raises
+    between the two - a locked database, most plausibly, since the main
+    window holds the library open as well - left every later write
+    waiting for a commit that never came, and held a write lock on the
+    file meanwhile.
+    """
+
+    def _area(self, refuse):
+        library = _RecordingLibrary(refuse)
+        area = book_area._BookArea(library)
+        area._covers.set_items(
+            book_area._BookItem(_Book(index, '/books/%d.cbz' % index))
+            for index in range(3))
+        area._covers.selection.select_all()
+        self.addCleanup(area.close)
+        return area, library
+
+    def test_removing_from_the_library_ends_the_transaction(self):
+        area, library = self._area(refuse=False)
+        area._remove_books_from_library()
+        self.assertEqual((1, 1), (library.backend.begun, library.backend.ended))
+
+    def test_a_removal_that_raises_ends_it_too(self):
+        area, library = self._area(refuse=True)
+        with self.assertRaises(sqlite3.OperationalError):
+            area._remove_books_from_library()
+        self.assertEqual(1, library.backend.ended,
+                         'the connection was left in transactional mode')
+
+    def test_removing_from_a_collection_ends_the_transaction(self):
+        area, library = self._area(refuse=False)
+        area._remove_books_from_collection()
+        self.assertEqual((1, 1), (library.backend.begun, library.backend.ended))
+
+    def test_a_collection_removal_that_raises_ends_it_too(self):
+        area, library = self._area(refuse=True)
+        with self.assertRaises(sqlite3.OperationalError):
+            area._remove_books_from_collection()
+        self.assertEqual(1, library.backend.ended,
+                         'the connection was left in transactional mode')
 
 # vim: expandtab:sw=4:ts=4

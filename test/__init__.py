@@ -128,8 +128,10 @@ from mcomix import constants
 from mcomix import preferences
 from mcomix.preferences import prefs
 
-default_prefs = {}
-default_prefs.update(prefs)
+#: The preferences as MComix defines them, kept aside so that every test
+#: can start from them.  Deep, because several of them hold a container -
+#: and one of those containers is a constant of MComix' own.
+default_prefs = copy.deepcopy(dict(prefs))
 
 class MComixTest(unittest.TestCase):
 
@@ -187,7 +189,10 @@ class MComixTest(unittest.TestCase):
         # write is measured against: a test starts as an instance that
         # has just read a file holding exactly the defaults.
         prefs.clear()
-        prefs.update(default_prefs)
+        # A copy, so that a test reaching inside a preference that holds
+        # a container changes its own copy rather than what every later
+        # test starts from.
+        prefs.update(copy.deepcopy(default_prefs))
         preferences._as_read = copy.deepcopy(default_prefs)
         # Resetting them is not changing them, and a write left over
         # from an earlier test is not this one's to make.

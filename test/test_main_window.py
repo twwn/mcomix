@@ -7,6 +7,7 @@ real window, which is where a whole class of start-up regressions hides.
 """
 
 import os
+import shutil
 import threading
 import time
 import warnings
@@ -21,6 +22,7 @@ from mcomix import file_chooser_simple_dialog as simple_chooser
 from mcomix import icons
 from mcomix import image_tools
 from mcomix import main
+from mcomix import message_dialog
 from mcomix.preferences import prefs
 
 
@@ -257,6 +259,70 @@ class MainWindowTest(MComixTest):
             dialog.destroy()
             self._pump()
 
+    def _message_dialogs(self):
+        """Every message dialog this window has standing open."""
+        return [window for window in Gtk.Window.list_toplevels()
+                if isinstance(window, message_dialog.MessageDialog)
+                and window.get_transient_for() is self.window]
+
+    def test_deleting_a_file_asks_before_it_does_and_defaults_to_cancel(self):
+        """The dialog deletes a file from the disk, so Enter must answer
+        it with the button that does nothing."""
+        copied = os.path.join(self.tmp_dir, 'delete-me.zip')
+        shutil.copyfile(get_testfile_path('archives', '01-ZIP-Normal.zip'),
+                        copied)
+        self.window.filehandler.open_file(copied)
+        self._pump()
+        self.window.delete()
+        self._pump()
+        dialogs = self._message_dialogs()
+        self.assertEqual(1, len(dialogs), 'nothing asked before deleting')
+        dialog = dialogs[0]
+        try:
+            cancel = dialog.get_widget_for_response(dialog_module.Response.CANCEL)
+            deletes = dialog.get_widget_for_response(dialog_module.Response.OK)
+            self.assertIsNotNone(cancel, 'the dialog offers no way out')
+            self.assertIs(dialog.get_default_widget(), cancel,
+                          'Enter would delete the file')
+            self.assertTrue(deletes.has_css_class('destructive-action'),
+                            'the deleting button is drawn as an ordinary one')
+        finally:
+            # Never answered: answering it would delete the copy, and a
+            # dialog left standing is answered by the next test that
+            # goes looking for one.
+            dialog.destroy()
+            self._pump()
+        self.assertTrue(os.path.isfile(copied), 'the file was deleted anyway')
+
+    def test_the_menu_item_says_what_the_colours_do(self):
+        """The enhance dialog sets the enhancer directly, so the item
+        and the enhancer can fall out of step; using the item then has
+        to bring them together rather than invert whatever the enhancer
+        happened to hold."""
+        action = self.window.actiongroup.get_action('invert_color')
+        self.assertFalse(action.get_active())
+        # What ticking "Invert colours" in the enhance dialog does.
+        self.window.enhancer.invert_color = True
+        action.set_active(True)
+        self._pump()
+        self.assertTrue(self.window.enhancer.invert_color,
+                        'the menu says inverted and the pages are not')
+        self.assertTrue(prefs['invert color'])
+        action.set_active(False)
+        self._pump()
+        self.assertFalse(self.window.enhancer.invert_color)
+        self.assertFalse(prefs['invert color'])
+
+    def test_showing_a_toggle_as_on_does_not_run_it(self):
+        """What the start-up sync needs: the tick moves, the colours
+        are left alone because they are already what it says."""
+        action = self.window.actiongroup.get_action('invert_color')
+        action.show_active(True)
+        self._pump()
+        self.assertTrue(action.get_active())
+        self.assertFalse(self.window.enhancer.invert_color,
+                         'showing the tick inverted the pages as well')
+
     def _save_dialogs(self):
         """Every save chooser this window has standing open.
 
@@ -491,5 +557,41 @@ class MainWindowTest(MComixTest):
         self._pump()
         self.assertEqual(1, len(scrolls))
 
+
+
+class InvertedColoursAtStartUpTest(MComixTest):
+
+    """The menu item for inverted colours, on a window that starts with
+    the preference already set.
+
+    One main window at a time: building a second inside a live one hangs
+    on the worker threads, so this starts its own rather than reusing
+    MainWindowTest's.
+    """
+
+    def setUp(self):
+        super(InvertedColoursAtStartUpTest, self).setUp()
+        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
+                          constants.THUMBNAIL_PATH):
+            os.makedirs(directory, exist_ok=True)
+        icons.load_icons()
+        prefs['invert color'] = True
+        self.window = main.MainWindow()
+        main.set_main_window(self.window)
+        pump()
+
+    def tearDown(self):
+        self.window.terminate_program()
+        self.window.destroy()
+        main.set_main_window(None)
+        pump()
+        super(InvertedColoursAtStartUpTest, self).tearDown()
+
+    def test_the_menu_item_says_the_colours_are_inverted(self):
+        """The enhancer reads the preference, so a window whose item
+        started unticked inverted the pages and said it did not."""
+        self.assertTrue(self.window.enhancer.invert_color)
+        self.assertTrue(self.window.actiongroup.get_action(
+            'invert_color').get_active())
 
 # vim: expandtab:sw=4:ts=4

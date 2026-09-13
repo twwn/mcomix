@@ -170,6 +170,13 @@ class _EnhanceImageDialog(Dialog):
             prefs['sharpness'] = self._enhancer.sharpness
             prefs['auto contrast'] = self._enhancer.autocontrast
             prefs['invert color'] = self._enhancer.invert_color
+            # The menu carries this one as a tick of its own, the only
+            # enhancement that does; leaving it behind is what put the
+            # two out of step.  The colours are already what the
+            # enhancer says, so the tick moves without running the
+            # menu item's own handler.
+            self._window.actiongroup.get_action('invert_color').show_active(
+                prefs['invert color'])
 
         elif response == Response.REJECT:
             self._block = True

@@ -10,6 +10,7 @@ from mcomix.dialog import Dialog
 from mcomix import archive_packer
 from mcomix import file_chooser_simple_dialog
 from mcomix import image_tools
+from mcomix import log
 from mcomix import edit_image_area
 from mcomix import edit_comment_area
 from mcomix import widgets
@@ -50,7 +51,6 @@ class _EditArchiveDialog(Dialog):
 
         self._accept_changes_button = self.add_button(_('_Apply'), Response.APPLY)
 
-        self.kill = False # Dialog is killed.
         self.file_handler = window.filehandler
         self._window = window
         self._imported_files: list[str] = []
@@ -89,15 +89,17 @@ class _EditArchiveDialog(Dialog):
         self._save_button.set_sensitive(False)
         self._import_button.set_sensitive(False)
         self._window.set_layout_cursor(Gdk.Cursor.new_from_name('wait', None))
-        self._image_area.fetch_images()
-
-        if self.kill: # fetch_images() allows pending events to be handled.
-            return False
-
-        self._comment_area.fetch_comments()
-        self._window.set_layout_cursor(None)
-        self._save_button.set_sensitive(True)
-        self._import_button.set_sensitive(True)
+        try:
+            self._image_area.fetch_images()
+            self._comment_area.fetch_comments()
+        finally:
+            # The cursor belongs to the main window rather than to this
+            # dialog, so anything that got out of the two calls above
+            # used to leave the whole program pointing at a wait cursor
+            # with an editor that could neither save nor import.
+            self._window.set_layout_cursor(None)
+            self._save_button.set_sensitive(True)
+            self._import_button.set_sensitive(True)
 
         return False
 
@@ -113,24 +115,27 @@ class _EditArchiveDialog(Dialog):
         image_files = self._image_area.get_file_listing()
         comment_files = self._comment_area.get_file_listing()
 
+        # Everything below writes to the directory the archive is in -
+        # the temporary file, the rename over the old archive, the
+        # permissions on the new one - and any of it can fail.  Only the
+        # first step used to be guarded, so a failure at any of the
+        # others escaped into the signal handler that called this, and
+        # left the dialog insensitive under a wait cursor for the rest
+        # of the session.
+        tmp_path: str | None = None
+        saved = False
         try:
             fd, tmp_path = tempfile.mkstemp(
                 suffix='.%s' % os.path.basename(archive_path),
                 prefix='tmp.', dir=os.path.dirname(archive_path))
             # Close open tempfile handle (writing is handled by the packer)
             os.close(fd)
-            fail = False
 
-        except:
-            fail = True
-
-        if not fail:
             packer = archive_packer.Packer(image_files, comment_files, tmp_path,
                 os.path.splitext(os.path.basename(archive_path))[0])
             packer.pack()
-            packing_success = packer.wait()
 
-            if packing_success:
+            if packer.wait():
                 # Preserve permissions if currently edited files come from an archive
                 base_path = self._window.filehandler.get_path_to_base()
                 if (self._window.filehandler.archive_type is not None
@@ -146,19 +151,32 @@ class _EditArchiveDialog(Dialog):
 
                 os.rename(tmp_path, archive_path)
                 os.chmod(archive_path, mode)
+                saved = True
 
-                _close_dialog()
-            else:
-                fail = True
-        
-        self._window.set_layout_cursor(None)
-        if fail:
-            dialog = message_dialog.MessageDialog(
-                self._window, buttons=Gtk.ButtonsType.CLOSE)
-            dialog.set_text(
-                _("The new archive could not be saved!"),
-                _("The original files have not been removed."))
-            dialog.run_async(lambda response: self.set_sensitive(True))
+        except OSError as error:
+            log.error('! Could not save the archive %s: %s',
+                      archive_path, error)
+        finally:
+            self._window.set_layout_cursor(None)
+
+        if saved:
+            _close_dialog()
+            return
+
+        # A half-written archive under a temporary name is of no use to
+        # anyone, and the packer only removes its own on a write error.
+        if tmp_path is not None and os.path.exists(tmp_path):
+            try:
+                os.unlink(tmp_path)
+            except OSError as error:
+                log.error('! Could not remove %s: %s', tmp_path, error)
+
+        dialog = message_dialog.MessageDialog(
+            self._window, buttons=Gtk.ButtonsType.CLOSE)
+        dialog.set_text(
+            _("The new archive could not be saved!"),
+            _("The original files have not been removed."))
+        dialog.run_async(lambda response: self.set_sensitive(True))
 
     def _import_files(self, paths: list[str]) -> None:
         """Add the chosen <paths> to the archive being edited."""
@@ -241,7 +259,6 @@ class _EditArchiveDialog(Dialog):
 
         else:
             _close_dialog()
-            self.kill = True
 
     def destroy(self) -> None:
         self._image_area.cleanup()

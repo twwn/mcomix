@@ -70,6 +70,31 @@ class CollectionTest(unittest.TestCase):
         # ZIP shouldn't be included
         self.assertEqual(len(test_col.get_books('zip')), 0)
 
+    def test_a_book_in_a_collection_and_its_subcollection_is_listed_once(self):
+        """The books were collected one collection at a time and the
+        lists added together, so a book filed in both a collection and
+        one under it came back twice - and the library drew two covers
+        for it."""
+        test_col = self.library.get_collection_by_name("Test")
+        sub_col = self.library.get_collection_by_name("Subtest")
+        rar = self.library.get_book_by_path(
+            os.path.join(get_testfile_path('archives'), '03-RAR-Normal.rar'))
+        self.library.add_book_to_collection(rar.id, sub_col.id)
+
+        books = test_col.get_books()
+
+        self.assertEqual(len(books), 2)
+        self.assertEqual(len(set(book.id for book in books)), 2)
+
+    def test_a_filter_still_only_reaches_this_collection(self):
+        """The collection used to be named in the join and the filter in
+        the WHERE clause; with both in the WHERE clause an unparenthesised
+        OR would hand back every book in the library whose path matched."""
+        test_col = self.library.get_collection_by_name("Test")
+        self.assertEqual([book.name for book in test_col.get_books('rar')],
+                         ['03-RAR-Normal.rar'])
+        self.assertEqual(test_col.get_books('zip'), [])
+
     def test_get_book_with_attribs(self):
         books = backend_types.DefaultCollection.get_books('zip')
 
@@ -159,5 +184,87 @@ class WatchListEntryTest(unittest.TestCase):
         self.assertEqual(new_files, others)
 
         shutil.rmtree(tmpdir)
+
+
+class CollectionBooksPlanTest(unittest.TestCase):
+
+    """The books of a collection are found without sorting them twice.
+
+    Collecting them with a join and a DISTINCT costs a temporary B-tree
+    for the DISTINCT and another for the ordering, whatever the size of
+    the library; the membership test needs neither.  Asserted as the
+    query plan rather than as a duration, which is not reproducible.
+
+    Whether the planner also scans book depends on how many collections
+    are named at once and is not reproducible at a size the suite can
+    afford: at 40,000 books across six collections the join scans it and
+    the subquery does not, and with one collection neither does at any
+    size.  The temporary B-trees are the part that holds everywhere.
+    """
+
+    #: Enough rows that sqlite's planner has something to choose
+    #: between; on a four-row table every plan costs the same.
+    BOOKS = 2000
+
+    def setUp(self):
+        fp, self.db = tempfile.mkstemp('.db', 'mcomix-test')
+        os.close(fp)
+        self._saved_path = constants.LIBRARY_DATABASE_PATH
+        constants.LIBRARY_DATABASE_PATH = self.db
+        self.library = backend.LibraryBackend()
+        connection = self.library._con
+        connection.execute('begin')
+        connection.execute(
+            "insert into collection (id, name) values (500, 'Plans')")
+        for index in range(1, self.BOOKS + 1):
+            connection.execute(
+                '''insert into book (id, name, path, pages, format, size)
+                values (?, ?, ?, 1, 1, 1)''',
+                (index, 'b%d.cbz' % index, '/does/not/exist/%d.cbz' % index))
+        for index in range(1, 6):
+            connection.execute(
+                'insert into contain (collection, book) values (500, ?)',
+                (index,))
+        connection.execute('commit')
+        connection.execute('analyze')
+
+    def tearDown(self):
+        self.library.close()
+        constants.LIBRARY_DATABASE_PATH = self._saved_path
+        os.unlink(self.db)
+
+    def _plan_of_get_books(self, filter_string=None):
+        """The plan of the statement get_books() actually runs."""
+        collection = self.library.get_collection_by_id(500)
+        statements = []
+        original = self.library.execute
+
+        def watched(sql, *args):
+            statements.append((sql, args[0] if args else ()))
+            return original(sql, *args)
+
+        self.library.execute = watched
+        try:
+            collection.get_books(filter_string)
+        finally:
+            self.library.execute = original
+        sql, parameters = statements[-1]
+        return ' '.join(str(row) for row in self.library._con.execute(
+            'explain query plan ' + sql, parameters).fetchall())
+
+    def test_a_collection_is_read_without_a_temporary_b_tree(self):
+        plan = self._plan_of_get_books()
+        self.assertNotIn('TEMP B-TREE', plan,
+                         'get_books() sorts the books itself: %s' % plan)
+        self.assertIn('SEARCH book', plan,
+                      'get_books() no longer searches by id: %s' % plan)
+
+    def test_a_filtered_collection_is_read_the_same_way(self):
+        # The filter is a LIKE with a leading wildcard, which no index
+        # serves - but it applies to the books the collection holds,
+        # not to the library.
+        plan = self._plan_of_get_books('999')
+        self.assertNotIn('TEMP B-TREE', plan,
+                         'a filtered get_books() sorts them itself: %s' % plan)
 
 # vim: expandtab:sw=4:ts=4

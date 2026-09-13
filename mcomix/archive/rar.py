@@ -342,9 +342,12 @@ def _get_unrar_dll() -> ctypes.CDLL | None:
     if sys.platform == 'win32':
         UNRAR_DLL = "UnRAR64.dll"
         # In PATH first, then MComix' root directory, then the current one.
-        candidates = (ctypes.util.find_library(UNRAR_DLL),
-                      os.path.join(constants.BASE_PATH, UNRAR_DLL),
-                      UNRAR_DLL)
+        # find_library answers None when it finds nothing, which is not
+        # a candidate.
+        candidates = tuple(name for name in
+                           (ctypes.util.find_library(UNRAR_DLL),
+                            os.path.join(constants.BASE_PATH, UNRAR_DLL),
+                            UNRAR_DLL) if name)
         loader = ctypes.windll
     # Load libunrar.so on UNIX
     else:
@@ -356,8 +359,6 @@ def _get_unrar_dll() -> ctypes.CDLL | None:
         loader = ctypes.cdll
 
     for candidate in candidates:
-        if candidate is None:
-            continue
         try:
             return loader.LoadLibrary(candidate)
         except OSError:

@@ -11,13 +11,18 @@ from mcomix import thumbnail_list
 from mcomix import thumbnail_tools
 from mcomix.i18n import _
 
-from typing import Any
+from typing import Any, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from mcomix import edit_dialog as edit_dialog_module
+    from mcomix import main
 
 class _ImageArea(Gtk.ScrolledWindow):
 
     """The area used for displaying and handling image files."""
 
-    def __init__(self, edit_dialog: Any, window: Any) -> None:
+    def __init__(self, edit_dialog: "edit_dialog_module._EditArchiveDialog",
+                 window: "main.MainWindow") -> None:
         super(_ImageArea, self).__init__()
 
         self._window = window
@@ -69,7 +74,12 @@ class _ImageArea(Gtk.ScrolledWindow):
         items = []
         for page in range(1, self._window.imagehandler.get_number_of_pages() + 1):
             path = self._window.imagehandler.get_path_to_page(page)
-            items.append(self._item_for(path))
+            # The page count is read once and the paths one at a time,
+            # so a book that is closed in between - which empties the
+            # list both of them answer from - leaves pages with no path
+            # at all.  There is nothing to show for one of those.
+            if path is not None:
+                items.append(self._item_for(path))
         self._grid.set_items(items)
 
     @staticmethod

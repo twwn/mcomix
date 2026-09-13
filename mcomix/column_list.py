@@ -453,8 +453,11 @@ class ColumnListView(Gtk.ColumnView):
             if tree else self.store)
         #: What the view shows: the rows in the order the headings put
         #: them in, which is the order they were added until one is
-        #: clicked.
-        self.model: "Gio.ListModel[Row]" = self._sorted
+        #: clicked.  A tree hands out Gtk.TreeListRows wrapping the rows
+        #: rather than the rows themselves, which is what _row_of()
+        #: unwraps and what the walks below look for.
+        self.model: "Gio.ListModel[Row] | Gio.ListModel[Gtk.TreeListRow]" = \
+            self._sorted
         self.selection: "Gtk.MultiSelection | Gtk.SingleSelection"
         if multiple:
             self.selection = Gtk.MultiSelection(model=self.model)

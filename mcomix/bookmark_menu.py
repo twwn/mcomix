@@ -13,6 +13,8 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from mcomix import bookmark_menu_item
+    from mcomix import main
+    from mcomix import ui as ui_module
 
 
 class BookmarksMenu(object):
@@ -31,7 +33,8 @@ class BookmarksMenu(object):
     FIXED = (('add', _('Add _Bookmark'), '<Control>D'),
              ('edit', _('_Edit Bookmarks...'), '<Control>B'))
 
-    def __init__(self, ui: Any, window: Any) -> None:
+    def __init__(self, ui: "ui_module.MainUI",
+                 window: "main.MainWindow") -> None:
         self._window = window
         self._bookmarks_store = bookmark_backend.BookmarksStore
         self._bookmarks_store.initialize(window)
@@ -81,7 +84,8 @@ class BookmarksMenu(object):
                 listed.append_item(entry)
             self.model.append_section(None, listed)
 
-    def _open_activated(self, action: Any, target: Any) -> None:
+    def _open_activated(self, action: Gio.SimpleAction,
+                        target: GLib.Variant) -> None:
         self._bookmarks[target.get_int32()].load()
 
     def _add_activated(self, *args: Any) -> None:

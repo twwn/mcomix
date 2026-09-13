@@ -366,7 +366,7 @@ class OpenWithEditor(Dialog):
                 for row in self._command_list.each_row()]
 
     @staticmethod
-    def _command_of(row: Any) -> OpenWithCommand:
+    def _command_of(row: column_list.Row) -> OpenWithCommand:
         """ The command the fields of <row> describe. """
         return OpenWithCommand(row.label, row.command, row.cwd, row.disabled)
 
@@ -406,17 +406,17 @@ class OpenWithEditor(Dialog):
             self._test_field.set_text(str(e))
             self._set_exec_text('')
 
-    def _add_command(self, button: Any) -> None:
+    def _add_command(self, button: Gtk.Button) -> None:
         """ Add a new empty label-command line to the list. """
         self._add_row(column_list.Row(label=_('Command label'), command='',
                                       cwd='', disabled=False, editable=True))
 
-    def _add_sep_command(self, button: Any) -> None:
+    def _add_sep_command(self, button: Gtk.Button) -> None:
         """ Adds a new separator line. """
         self._add_row(column_list.Row(label='-', command='', cwd='',
                                       disabled=False, editable=False))
 
-    def _add_row(self, row: Any) -> None:
+    def _add_row(self, row: column_list.Row) -> None:
         """ Put <row> above the selected line, or at the end. """
         selected = self._command_list.get_selected_positions()
         if selected:
@@ -425,18 +425,18 @@ class OpenWithEditor(Dialog):
             self._command_list.append_row(row)
         self._changed = True
 
-    def _remove_command(self, button: Any) -> None:
+    def _remove_command(self, button: Gtk.Button) -> None:
         """ Removes the currently selected command from the list. """
         row = self._command_list.get_selected_row()
         if row is not None:
             self._command_list.remove_row(row)
             self._changed = True
 
-    def _up_command(self, button: Any) -> None:
+    def _up_command(self, button: Gtk.Button) -> None:
         """ Moves the selected command up by one. """
         self._move_command(-1)
 
-    def _down_command(self, button: Any) -> None:
+    def _down_command(self, button: Gtk.Button) -> None:
         """ Moves the selected command down by one. """
         self._move_command(1)
 
@@ -454,7 +454,7 @@ class OpenWithEditor(Dialog):
                        self._command_list.store.get_n_items() - 1)))
         self._changed = True
 
-    def _run_command(self, button: Any) -> None:
+    def _run_command(self, button: Gtk.Button) -> None:
         """ Executes the selected command in the current context. """
         command = self.get_command()
         if command and not command.is_separator():
@@ -542,9 +542,9 @@ class OpenWithEditor(Dialog):
 
         self._command_list.set_reorderable(True)
 
-    def _rewrote(self, attr: str) -> Callable[[Any, str], None]:
+    def _rewrote(self, attr: str) -> "Callable[[column_list.Row, str], None]":
         """ Answer an edit of the <attr> field of a row. """
-        def rewrote(row: Any, new_text: str) -> None:
+        def rewrote(row: column_list.Row, new_text: str) -> None:
             # Prevent changing command to separator, and completely
             # removing label
             if attr == 'label' and (not new_text.strip()
@@ -560,12 +560,12 @@ class OpenWithEditor(Dialog):
             self.test_command()
         return rewrote
 
-    def _value_changed(self, row: Any, value: bool) -> None:
+    def _value_changed(self, row: column_list.Row, value: bool) -> None:
         """ Called when a toggle field is changed """
         row.disabled = value
         self._changed = True
 
-    def _response(self, dialog: Any, response: int) -> None:
+    def _response(self, dialog: "OpenWithEditor", response: int) -> None:
         if response == Response.ACCEPT:
             # The Save button is only enabled if all commands are valid
             self.save()

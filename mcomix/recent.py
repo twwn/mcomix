@@ -4,7 +4,11 @@ import urllib.request, urllib.parse, urllib.error
 from gi.repository import Gio, GLib, GObject, Gtk
 import os
 
-from typing import Any
+from typing import Any, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from mcomix import main
+    from mcomix import ui as ui_module
 
 from mcomix import preferences
 from mcomix import portability
@@ -36,7 +40,8 @@ class RecentFilesMenu(object):
     #: How many entries to show, which is what Gtk.RecentChooserMenu did.
     _LIMIT = 10
 
-    def __init__(self, ui: Any, window: Any) -> None:
+    def __init__(self, ui: "ui_module.MainUI",
+                 window: "main.MainWindow") -> None:
         self._window = window
         self._manager = Gtk.RecentManager.get_default()
 
@@ -65,7 +70,7 @@ class RecentFilesMenu(object):
     def _changed(self, *args: Any) -> None:
         self._rebuild()
 
-    def _is_supported(self, info: Any) -> bool:
+    def _is_supported(self, info: Gtk.RecentInfo) -> bool:
         """Whether <info> names a file MComix knows how to open.
 
         Gtk.RecentFilter matched an item if either its mime type or its
@@ -76,7 +81,7 @@ class RecentFilesMenu(object):
         return os.path.splitext(info.get_uri())[1].lower() in self._extensions
 
     @staticmethod
-    def _modified(info: Any) -> int:
+    def _modified(info: Gtk.RecentInfo) -> int:
         """When <info> was last modified, as a number that sorts.
 
         Gtk.RecentInfo.get_modified() answers with a GLib.DateTime, and
@@ -111,7 +116,8 @@ class RecentFilesMenu(object):
                               '%s.nothing' % self.ACTION_PREFIX)
 
 
-    def _open_activated(self, action: Any, target: Any) -> None:
+    def _open_activated(self, action: Gio.SimpleAction,
+                        target: GLib.Variant) -> None:
         self._load(target.get_string())
 
     def _load(self, uri: str) -> None:

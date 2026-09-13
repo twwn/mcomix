@@ -131,8 +131,8 @@ class LastReadPage:
 
         # The connection is in auto-commit mode, so without a transaction
         # around them each of the statements below is committed on its
-        # own, two per book removed.  The other bulk removal, _BookArea's
-        # "remove from library", wraps its loop for the same reason.
+        # own, three per book removed.  _BookArea's two bulk removals
+        # wrap their loops for the same reason.
         self.backend.begin_transaction()
         try:
             for book in books:

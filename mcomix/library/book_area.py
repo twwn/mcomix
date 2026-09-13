@@ -531,14 +531,19 @@ class _BookArea(Gtk.ScrolledWindow):
             # There is no one collection to take the books out of.
             return
         selected = self._selected_items()
+        # The connection stays in transactional mode until it is told
+        # otherwise, so a failure anywhere in here would leave every
+        # later write waiting for a commit that never comes.
         self._library.backend.begin_transaction()
-        for item in selected:
-            self._library.backend.remove_book_from_collection(item.uid,
-                                                              collection)
-        self._covers.remove_items(selected)
-        for item in selected:
-            self._cache.invalidate(item.path)
-        self._library.backend.end_transaction()
+        try:
+            for item in selected:
+                self._library.backend.remove_book_from_collection(item.uid,
+                                                                  collection)
+            self._covers.remove_items(selected)
+            for item in selected:
+                self._cache.invalidate(item.path)
+        finally:
+            self._library.backend.end_transaction()
 
         coll_name = self._library.backend.get_collection_name(collection)
         message = i18n.get_translation().ngettext(
@@ -554,16 +559,18 @@ class _BookArea(Gtk.ScrolledWindow):
         """
 
         selected = self._selected_items()
+        # As above: the mode has to be put back whatever happens, or the
+        # library stops committing anything for the rest of the session.
         self._library.backend.begin_transaction()
+        try:
+            for item in selected:
+                self._library.backend.remove_book(item.uid)
 
-        for item in selected:
-            self._library.backend.remove_book(item.uid)
-
-        self._covers.remove_items(selected)
-        for item in selected:
-            self._cache.invalidate(item.path)
-
-        self._library.backend.end_transaction()
+            self._covers.remove_items(selected)
+            for item in selected:
+                self._cache.invalidate(item.path)
+        finally:
+            self._library.backend.end_transaction()
 
         msg = i18n.get_translation().ngettext(
             'Removed %d book from the library.',
@@ -580,7 +587,13 @@ class _BookArea(Gtk.ScrolledWindow):
 
             choice_dialog = message_dialog.MessageDialog(
                 self._library, buttons=Gtk.ButtonsType.YES_NO)
-            choice_dialog.set_default_response(Response.YES)
+            # These books are deleted from the disk, so Enter must not
+            # be what does it; the button that does is drawn as the
+            # destructive action it is.
+            choice_dialog.set_default_response(Response.NO)
+            deletes = choice_dialog.get_widget_for_response(Response.YES)
+            if deletes is not None:
+                deletes.add_css_class('destructive-action')
             choice_dialog.set_should_remember_choice('library-remove-book-from-disk',
                 (Response.YES,))
             choice_dialog.set_text(

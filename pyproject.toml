@@ -97,6 +97,10 @@ warn_redundant_casts = true
 warn_unused_configs = true
 warn_unused_ignores = true
 strict_equality = true
+# A guard the checker can prove will never run is either a lie about a
+# type or code that has outlived what it guarded against; both are worth
+# hearing about.  It found six of each when it went on.
+warn_unreachable = true
 extra_checks = true
 show_error_codes = true
 disallow_untyped_calls = true

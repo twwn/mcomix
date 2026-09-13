@@ -439,13 +439,28 @@ def glycin() -> tuple[Any, Any]:
 def pixbuf_to_texture(pixbuf: GdkPixbuf.Pixbuf) -> Gdk.Texture:
     """Return <pixbuf> as the Gdk.Texture GTK4 draws from.
 
-    The texture keeps <pixbuf> rather than a copy of its pixels, so hand
-    it one that nothing is going to paint over afterwards.  Copying the
-    pixels out through Python instead - get_pixels() copies once and
-    GLib.Bytes.new() again - cost a millisecond on a page-sized picture,
-    for nothing.
+    Gdk.Texture.new_for_pixbuf() is what this was, deprecated in GTK
+    4.20 along with everything else that speaks in pixbufs; GTK's
+    4-to-5 migration guide says the APIs "accepting or returning
+    GdkPixbufs are being replaced by equivalent APIs using GdkTexture".
+    The texture is built the way that call built it, out of the pixel
+    format the pixbuf holds - always eight bits a sample, with or
+    without alpha - and its rowstride, so a row that is padded out is
+    still read correctly.
+
+    read_pixel_bytes() copies the pixels, where the deprecated call
+    handed the texture a reference to the pixbuf's own.  On a
+    1600x2400 page that is 0.54ms against 0.002ms, measured; a page
+    turn scales a pixbuf that size first, which costs 30.75ms, so the
+    copy is under two per cent of one step the turn already takes.
+    The texture therefore owns what it draws, and the caller may paint
+    over the pixbuf afterwards.
     """
-    return Gdk.Texture.new_for_pixbuf(pixbuf)
+    memory_format = (Gdk.MemoryFormat.R8G8B8A8 if pixbuf.get_has_alpha()
+                     else Gdk.MemoryFormat.R8G8B8)
+    return Gdk.MemoryTexture.new(pixbuf.get_width(), pixbuf.get_height(),
+                                 memory_format, pixbuf.read_pixel_bytes(),
+                                 pixbuf.get_rowstride())
 
 def pil_to_texture(im: Image.Image) -> Gdk.Texture:
     """Return the PIL image <im> as the Gdk.Texture GTK4 draws from."""

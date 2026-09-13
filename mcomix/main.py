@@ -253,6 +253,15 @@ class MainWindow(Gtk.Window):
         for preference, action, widget_list in self._toggle_list:
             self.actiongroup.get_action(action).set_active(prefs[preference])
 
+        # Inverted colours are not one of those widgets, and the item
+        # started unticked however the preferences had been left: the
+        # enhancer reads the preference itself and inverted the pages
+        # while the menu said it did not.  Only the tick is out of step,
+        # so it is moved rather than toggled - toggling it here would
+        # redraw a window that is still being built.
+        self.actiongroup.get_action('invert_color').show_active(
+            prefs['invert color'])
+
         self.actiongroup.get_action('menu_autorotate_width').set_sensitive(False)
         self.actiongroup.get_action('menu_autorotate_height').set_sensitive(False)
 
@@ -750,8 +759,13 @@ class MainWindow(Gtk.Window):
         # as we'll be receiving a window state
         # change or resize event.
 
-    def change_invert_color(self, toggleaction: Any) -> None:
-        prefs['invert color'] = not self.enhancer.invert_color
+    def change_invert_color(self, toggleaction: "ui._Action") -> None:
+        # The menu item's own state is what to follow.  Reading the
+        # enhancer and inverting that was the same answer only while the
+        # menu was the one thing that ever changed it; the enhance
+        # dialog sets it as well, and after that the tick and the
+        # colours were opposites.
+        prefs['invert color'] = toggleaction.get_active()
         self.enhancer.invert_color = prefs['invert color']
         self.enhancer.signal_update()
 
@@ -818,8 +832,6 @@ class MainWindow(Gtk.Window):
 
     def is_scrollable(self) -> bool:
         """ Returns True if the current images do not fit into the viewport. """
-        if self.layout is None:
-            return False
         return not all(tools.smaller_or_equal(self.layout.get_union_box().get_size(),
             self.get_visible_area_size()))
 
@@ -1049,10 +1061,10 @@ class MainWindow(Gtk.Window):
                 file_name = (
                     os.path.splitext(archive_name)[0] + '_' + file_name)
 
-            target_dir = prefs['path of last saved in filechooser'] + os.sep
+            target_dir = prefs['path of last saved in filechooser']
             suggest_name = i18n.to_unicode(file_name)
             attempt = 1
-            while os.path.exists(target_dir + suggest_name):
+            while os.path.exists(os.path.join(target_dir, suggest_name)):
                 suggest_name = tools.append_number_to_filename(
                     file_name, number=attempt)
                 attempt += 1
@@ -1112,7 +1124,13 @@ class MainWindow(Gtk.Window):
                 _('The file will be deleted from your harddisk.'))
         dialog.add_button(_('_Cancel'), Response.CANCEL)
         dialog.add_button(_('_Delete'), Response.OK)
-        dialog.set_default_response(Response.OK)
+        # Enter must not delete a file.  A confirmation defaults to the
+        # answer that changes nothing, and the one that does not is
+        # drawn as the destructive action it is.
+        dialog.set_default_response(Response.CANCEL)
+        deletes = dialog.get_widget_for_response(Response.OK)
+        if deletes is not None:
+            deletes.add_css_class('destructive-action')
         dialog.run_async(lambda response: self._delete_answered(response, current_file))
 
     def _delete_answered(self, result: int, current_file: str) -> None:

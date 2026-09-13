@@ -4,7 +4,7 @@
 from gi.repository import Gio, GLib, Gtk
 
 from collections.abc import Callable, Sequence
-from typing import Any, TYPE_CHECKING
+from typing import Any, NamedTuple, TYPE_CHECKING
 
 from mcomix import bookmark_menu
 from mcomix import openwith_menu
@@ -33,6 +33,44 @@ def _gio_name(name: str) -> str:
     return name.replace('_', '-')
 
 
+class _Entry(NamedTuple):
+
+    """One row of an action table.
+
+    The tables are written out as plain tuples, three or five long, so
+    the fields are named here rather than read out by index.  The
+    tooltip and the callback are what the short rows leave off: a menu
+    that only opens a submenu has nothing to explain and nothing to do.
+    """
+
+    #: The name MComix knows the action by, which is also what the
+    #: keybindings and the menu layouts refer to.
+    name: str
+    #: The icon a tool button draws, if this action has one.
+    icon: str | None
+    #: What a menu item is labelled.  Only the tool bar's expander, which
+    #: is a spacer rather than anything to click, has none.
+    label: str | None
+    #: What the status bar says about it while the pointer is over it.
+    tooltip: str | None = None
+    #: What running it does.  It is called with the action, and with the
+    #: user data as well where add() was given any.
+    callback: "Callable[..., Any] | None" = None
+
+
+class _Choice(NamedTuple):
+
+    """One row of a radio table, which is an _Entry whose last field is
+    the value that member stands for rather than a callback: the group
+    has one callback of its own."""
+
+    name: str
+    icon: str | None
+    label: str | None
+    tooltip: str | None = None
+    value: int = 0
+
+
 class _Action(object):
 
     """One of the window's actions, in the shape the rest of MComix asks
@@ -44,32 +82,53 @@ class _Action(object):
     callers reading as they did.
     """
 
-    def __init__(self, action: Any, target: Any = None) -> None:
+    def __init__(self, action: Gio.SimpleAction,
+                 target: "GLib.Variant | None" = None) -> None:
         self._action = action
         self._target = target
 
-    def detailed(self, prefix: str) -> tuple[str, Any]:
+    def detailed(self, prefix: str) -> "tuple[str, GLib.Variant | None]":
         """How a menu item or tool button addresses this action."""
         return '%s.%s' % (prefix, self._action.get_name()), self._target
 
     def activate(self, *args: Any) -> None:
         self._action.activate(self._target)
 
-    def set_active(self, active: Any) -> None:
+    def set_active(self, active: bool) -> None:
         # Gtk.ToggleAction.set_active() was a no-op when the value did not
         # change; Gio.SimpleAction.change_state() always announces one, so
         # only change what has actually changed.
         if bool(active) != self.get_active():
             self._action.change_state(GLib.Variant('b', bool(active)))
 
+    def show_active(self, active: bool) -> None:
+        """Draw this toggle as on or off without running what it does.
+
+        set_active() asks the action to change, which is how a menu item
+        that has been clicked is answered.  This is for a state that is
+        already true - the preference it stands for has been read
+        somewhere else - where only the tick beside the item is out of
+        step: Gio.SimpleAction.set_state() moves it without the
+        change-state the callback hangs off.
+        """
+        self._action.set_state(GLib.Variant('b', bool(active)))
+
     def get_active(self) -> bool:
-        return bool(self._action.get_state().get_boolean())
+        state = self._action.get_state()
+        # Only a toggle is asked whether it is on, and a toggle is
+        # stateful; a plain action would answer with no state at all.
+        assert state is not None
+        return bool(state.get_boolean())
 
     def get_current_value(self) -> int:
         """The value the radio group this belongs to currently holds."""
-        return int(self._action.get_state().get_int32())
+        state = self._action.get_state()
+        # As above: only a member of a radio group is asked this, and
+        # the group's action holds the value as its state.
+        assert state is not None
+        return int(state.get_int32())
 
-    def set_sensitive(self, sensitive: Any) -> None:
+    def set_sensitive(self, sensitive: bool) -> None:
         self._action.set_enabled(bool(sensitive))
 
     def get_sensitive(self) -> bool:
@@ -80,9 +139,14 @@ class _Actions(object):
 
     """The window's actions, under the names the rest of MComix uses.
 
-    The tables handed to add(), add_toggle() and add_radio() are the ones
-    Gtk.ActionGroup took: (name, icon name, label, accelerator, tooltip,
-    and a callback or, for a radio entry, its value).
+    The tables handed to add(), add_toggle() and add_radio() are
+    (name, icon name, label, tooltip, and a callback or, for a radio
+    entry, its value); everything after the label may be left out.
+
+    Gtk.ActionGroup's tables, which these were, carried an accelerator
+    between the label and the tooltip.  Nothing has read that field
+    since MComix took its accelerators over itself - keybindings.py
+    holds them and the shortcuts editor edits them - so it is gone.
     """
 
     #: The prefix menu items and tool buttons address these actions by.
@@ -100,7 +164,7 @@ class _Actions(object):
     def get_action(self, name: str) -> _Action:
         return self._by_name[name]
 
-    def detailed(self, name: str) -> tuple[str, Any]:
+    def detailed(self, name: str) -> "tuple[str, GLib.Variant | None]":
         return self._by_name[name].detailed(self.PREFIX)
 
     def label(self, name: str) -> str:
@@ -113,39 +177,46 @@ class _Actions(object):
         """Whether the action shows as pressed when it is on."""
         return name in self._stateful
 
-    def _remember(self, name: str, entry: tuple[Any, ...], action: Any,
-                  target: Any = None, stateful: bool = False) -> None:
-        self._by_name[name] = _Action(action, target)
-        label, tooltip = entry[2], (entry[4] if len(entry) > 4 else None)
-        self._labels[name] = label
-        self._icons[name] = entry[1]
+    def _remember(self, entry: "_Entry | _Choice", action: Gio.SimpleAction,
+                  target: "GLib.Variant | None" = None,
+                  stateful: bool = False) -> None:
+        self._by_name[entry.name] = _Action(action, target)
+        # The tool bar's expander is the one entry with no label, being
+        # a spacer rather than anything to click, and the tool bar skips
+        # it before it asks for one.
+        self._labels[entry.name] = entry.label or ''
+        self._icons[entry.name] = entry.icon
         if stateful:
-            self._stateful.add(name)
-        if label and tooltip:
-            self.tooltips[label] = tooltip
+            self._stateful.add(entry.name)
+        if entry.label and entry.tooltip:
+            self.tooltips[entry.label] = entry.tooltip
 
-    def add(self, entries: Any, user_data: Any = None) -> None:
+    def add(self, entries: Sequence[tuple[Any, ...]],
+            user_data: Any = None) -> None:
         """Add plain actions."""
-        for entry in entries:
-            action = Gio.SimpleAction.new(_gio_name(entry[0]), None)
-            callback = entry[5] if len(entry) > 5 else None
-            if callback is not None:
-                action.connect('activate', self._activated, callback, user_data)
+        for row in entries:
+            entry = _Entry(*row)
+            action = Gio.SimpleAction.new(_gio_name(entry.name), None)
+            if entry.callback is not None:
+                action.connect('activate', self._activated,
+                               entry.callback, user_data)
             self.group.add_action(action)
-            self._remember(entry[0], entry, action)
+            self._remember(entry, action)
 
-    def add_toggle(self, entries: Any) -> None:
+    def add_toggle(self, entries: Sequence[tuple[Any, ...]]) -> None:
         """Add actions that are on or off."""
-        for entry in entries:
+        for row in entries:
+            entry = _Entry(*row)
             action = Gio.SimpleAction.new_stateful(
-                _gio_name(entry[0]), None, GLib.Variant('b', False))
-            callback = entry[5] if len(entry) > 5 else None
-            action.connect('change-state', self._toggled, entry[0], callback)
+                _gio_name(entry.name), None, GLib.Variant('b', False))
+            action.connect('change-state', self._toggled,
+                           entry.name, entry.callback)
             self.group.add_action(action)
-            self._remember(entry[0], entry, action, stateful=True)
+            self._remember(entry, action, stateful=True)
 
-    def add_radio(self, name: str, entries: Any, value: int,
-                  on_change: Any) -> None:
+    def add_radio(self, name: str, entries: Sequence[tuple[Any, ...]],
+                  value: int,
+                  on_change: "Callable[[_Action], None]") -> None:
         """Add one group of mutually exclusive actions.
 
         Gtk.RadioAction gave every member its own action carrying a value;
@@ -156,25 +227,29 @@ class _Actions(object):
             name, GLib.VariantType.new('i'), GLib.Variant('i', value))
         action.connect('change-state', self._radio_changed, name, on_change)
         self.group.add_action(action)
-        for entry in entries:
-            self._remember(entry[0], entry, action,
-                           GLib.Variant('i', entry[5]), stateful=True)
+        for row in entries:
+            choice = _Choice(*row)
+            self._remember(choice, action,
+                           GLib.Variant('i', choice.value), stateful=True)
 
-    def _activated(self, action: Any, parameter: Any, callback: Any,
-                   user_data: Any) -> None:
+    def _activated(self, action: Gio.SimpleAction,
+                   parameter: "GLib.Variant | None",
+                   callback: Callable[..., Any], user_data: Any) -> None:
         if user_data is None:
             callback(action)
         else:
             callback(action, user_data)
 
-    def _toggled(self, action: Any, value: Any, name: str,
-                 callback: Any) -> None:
+    def _toggled(self, action: Gio.SimpleAction, value: GLib.Variant,
+                 name: str,
+                 callback: "Callable[[_Action], None] | None") -> None:
         action.set_state(value)
         if callback is not None:
             callback(self._by_name[name])
 
-    def _radio_changed(self, action: Any, value: Any, name: str,
-                       on_change: Any) -> None:
+    def _radio_changed(self, action: Gio.SimpleAction, value: GLib.Variant,
+                       name: str,
+                       on_change: "Callable[[_Action], None] | None") -> None:
         action.set_state(value)
         if on_change is not None:
             on_change(_Action(action))
@@ -289,62 +364,36 @@ class MainUI(object):
         # Create actions for the menus.
         # ----------------------------------------------------------------
         self._actions.add([
-            ('copy_page', 'edit-copy', _('_Copy'),
-                None, _('Copies the current page to clipboard.'),
+            ('copy_page', 'edit-copy', _('_Copy'), _('Copies the current page to clipboard.'),
                 window.clipboard.copy_page),
-            ('delete', 'edit-delete', _('_Delete'),
-                None, _('Deletes the current file or archive from disk.'),
+            ('delete', 'edit-delete', _('_Delete'), _('Deletes the current file or archive from disk.'),
                 window.delete),
-            ('next_page', 'go-next-symbolic', _('_Next page'),
-             None, _('Next page'), _action_lambda(window.flip_page, +1)),
-            ('previous_page', 'go-previous-symbolic', _('_Previous page'),
-             None, _('Previous page'), _action_lambda(window.flip_page, -1)),
-            ('first_page', 'go-first-symbolic', _('_First page'),
-             None, _('First page'), _action_lambda(window.first_page)),
-            ('last_page', 'go-last-symbolic', _('_Last page'),
-             None, _('Last page'), _action_lambda(window.last_page)),
-            ('go_to', 'go-jump-symbolic', _('_Go to page...'),
-                None, _('Go to page...'), window.page_select),
-            ('refresh_archive', 'view-refresh', _('Re_fresh'),
-                None, _('Reloads the currently opened files or archive.'),
+            ('next_page', 'go-next-symbolic', _('_Next page'), _('Next page'), _action_lambda(window.flip_page, +1)),
+            ('previous_page', 'go-previous-symbolic', _('_Previous page'), _('Previous page'), _action_lambda(window.flip_page, -1)),
+            ('first_page', 'go-first-symbolic', _('_First page'), _('First page'), _action_lambda(window.first_page)),
+            ('last_page', 'go-last-symbolic', _('_Last page'), _('Last page'), _action_lambda(window.last_page)),
+            ('go_to', 'go-jump-symbolic', _('_Go to page...'), _('Go to page...'), window.page_select),
+            ('refresh_archive', 'view-refresh', _('Re_fresh'), _('Reloads the currently opened files or archive.'),
                 window.filehandler.refresh_file),
-            ('next_archive', 'media-skip-forward-symbolic', _('Next _archive'),
-                None, _('Next archive'), window.filehandler._open_next_archive),
-            ('previous_archive', 'media-skip-backward-symbolic', _('Previous a_rchive'),
-                None, _('Previous archive'), window.filehandler._open_previous_archive),
-            ('next_directory', 'edit-redo', _('Next directory'),
-                None, _('Next directory'), window.filehandler.open_next_directory),
-            ('previous_directory', 'edit-undo', _('Previous directory'),
-                None, _('Previous directory'), window.filehandler.open_previous_directory),
-            ('zoom_in', 'zoom-in', _('Zoom _In'),
-                None, None, window.manual_zoom_in),
-            ('zoom_out', 'zoom-out', _('Zoom _Out'),
-                None, None, window.manual_zoom_out),
-            ('zoom_original', 'zoom-original', _('_Normal Size'),
-                None, None, window.manual_zoom_original),
-            ('minimize', 'view-restore', _('Mi_nimize'),
-                None, None, window.minimize),
-            ('close', 'window-close', _('_Close'),
-                None, _('Closes all opened files.'), _action_lambda(window.filehandler.close_file)),
-            ('quit', 'application-exit', _('_Quit'),
-                None, None, window.close_program),
-            ('save_and_quit', 'application-exit', _('_Save and quit'),
-                None, _('Quits and restores the currently opened file next time the program starts.'),
+            ('next_archive', 'media-skip-forward-symbolic', _('Next _archive'), _('Next archive'), window.filehandler._open_next_archive),
+            ('previous_archive', 'media-skip-backward-symbolic', _('Previous a_rchive'), _('Previous archive'), window.filehandler._open_previous_archive),
+            ('next_directory', 'edit-redo', _('Next directory'), _('Next directory'), window.filehandler.open_next_directory),
+            ('previous_directory', 'edit-undo', _('Previous directory'), _('Previous directory'), window.filehandler.open_previous_directory),
+            ('zoom_in', 'zoom-in', _('Zoom _In'), None, window.manual_zoom_in),
+            ('zoom_out', 'zoom-out', _('Zoom _Out'), None, window.manual_zoom_out),
+            ('zoom_original', 'zoom-original', _('_Normal Size'), None, window.manual_zoom_original),
+            ('minimize', 'view-restore', _('Mi_nimize'), None, window.minimize),
+            ('close', 'window-close', _('_Close'), _('Closes all opened files.'), _action_lambda(window.filehandler.close_file)),
+            ('quit', 'application-exit', _('_Quit'), None, window.close_program),
+            ('save_and_quit', 'application-exit', _('_Save and quit'), _('Quits and restores the currently opened file next time the program starts.'),
                 window.save_and_terminate_program),
-            ('rotate_90', 'mcomix-rotate-90', _('_Rotate 90° CW'),
-                None, None, window.rotate_90),
-            ('rotate_180','mcomix-rotate-180', _('Rotate _180°'),
-                None, None, window.rotate_180),
-            ('rotate_270', 'mcomix-rotate-270', _('Rotat_e 90° CCW'),
-                None, None, window.rotate_270),
-            ('flip_horiz', 'mcomix-flip-horizontal', _('Fli_p horizontally'),
-                None, None, window.flip_horizontally),
-            ('flip_vert', 'mcomix-flip-vertical', _('Flip _vertically'),
-                None, None, window.flip_vertically),
-            ('extract_page', 'document-save-as', _('Save _As'),
-                None, None, window.extract_page),
-            ('extract_page_popup', 'document-save-as', _('Save _As'),
-                None, _('Saves the page the menu was opened over.'),
+            ('rotate_90', 'mcomix-rotate-90', _('_Rotate 90° CW'), None, window.rotate_90),
+            ('rotate_180','mcomix-rotate-180', _('Rotate _180°'), None, window.rotate_180),
+            ('rotate_270', 'mcomix-rotate-270', _('Rotat_e 90° CCW'), None, window.rotate_270),
+            ('flip_horiz', 'mcomix-flip-horizontal', _('Fli_p horizontally'), None, window.flip_horizontally),
+            ('flip_vert', 'mcomix-flip-vertical', _('Flip _vertically'), None, window.flip_vertically),
+            ('extract_page', 'document-save-as', _('Save _As'), None, window.extract_page),
+            ('extract_page_popup', 'document-save-as', _('Save _As'), _('Saves the page the menu was opened over.'),
                 window.extract_popup_page),
             ('menu_zoom', 'mcomix-zoom', _('_Zoom')),
             ('menu_recent', 'text-x-generic', _('_Recent')),
@@ -352,8 +401,8 @@ class MainUI(object):
             ('menu_bookmarks', None, _('_Bookmarks')),
             ('menu_toolbars', None, _('T_oolbars')),
             ('menu_edit', None, _('_Edit')),
-            ('menu_open_with', 'document-open', _('Open _with'), ''),
-            ('menu_open_with_popup', 'document-open', _('Open _with'), ''),
+            ('menu_open_with', 'document-open', _('Open _with')),
+            ('menu_open_with_popup', 'document-open', _('Open _with')),
             ('menu_file', None, _('_File')),
             ('menu_view', None, _('_View')),
             ('menu_view_popup', 'mcomix-image', _('_View')),
@@ -364,100 +413,67 @@ class MainUI(object):
             ('menu_autorotate', None, _('_Auto-rotate image')),
             ('menu_autorotate_width', None, _('...when width exceeds height')),
             ('menu_autorotate_height', None, _('...when height exceeds width')),
-            ('expander', None, None, None, None, None)])
+            ('expander', None, None, None, None)])
 
         self._actions.add_toggle([
-            ('fullscreen', 'view-fullscreen-symbolic', _('_Fullscreen'),
-                None, _('Fullscreen mode'), window.change_fullscreen),
-            ('double_page', 'view-dual-symbolic', _('_Double page mode'),
-                None, _('Double page mode'), window.change_double_page),
-            ('toolbar', None, _('_Toolbar'),
-                None, None, window.change_toolbar_visibility),
-            ('menubar', None, _('_Menubar'),
-                None, None, window.change_menubar_visibility),
-            ('statusbar', None, _('St_atusbar'),
-                None, None, window.change_statusbar_visibility),
-            ('scrollbar', None, _('S_crollbars'),
-                None, None, window.change_scrollbar_visibility),
-            ('thumbnails', None, _('Th_umbnails'),
-                None, None, window.change_thumbnails_visibility),
-            ('hide_all', None, _('H_ide all'),
-                None, None, window.change_hide_all),
-            ('manga_mode', 'view-mirror-symbolic', _('_Manga mode'),
-                None, _('Manga mode'), window.change_manga_mode),
-            ('invert_scroll', 'edit-undo', _('Invert smart scroll'),
-                None, _('Invert smart scrolling direction.'), window.change_invert_scroll),
-            ('keep_transformation', None, _('_Keep transformation'),
-                None, _('Keeps the currently selected transformation for the next pages.'),
+            ('fullscreen', 'view-fullscreen-symbolic', _('_Fullscreen'), _('Fullscreen mode'), window.change_fullscreen),
+            ('double_page', 'view-dual-symbolic', _('_Double page mode'), _('Double page mode'), window.change_double_page),
+            ('toolbar', None, _('_Toolbar'), None, window.change_toolbar_visibility),
+            ('menubar', None, _('_Menubar'), None, window.change_menubar_visibility),
+            ('statusbar', None, _('St_atusbar'), None, window.change_statusbar_visibility),
+            ('scrollbar', None, _('S_crollbars'), None, window.change_scrollbar_visibility),
+            ('thumbnails', None, _('Th_umbnails'), None, window.change_thumbnails_visibility),
+            ('hide_all', None, _('H_ide all'), None, window.change_hide_all),
+            ('manga_mode', 'view-mirror-symbolic', _('_Manga mode'), _('Manga mode'), window.change_manga_mode),
+            ('invert_scroll', 'edit-undo', _('Invert smart scroll'), _('Invert smart scrolling direction.'), window.change_invert_scroll),
+            ('keep_transformation', None, _('_Keep transformation'), _('Keeps the currently selected transformation for the next pages.'),
                 window.change_keep_transformation),
-            ('slideshow', 'media-playback-start-symbolic', _('Start _slideshow'),
-                None, _('Start slideshow'), window.slideshow.toggle),
-            ('lens', 'edit-find-symbolic', _('Magnifying _lens'),
-                None, _('Magnifying lens'), window.lens.toggle),
-            ('stretch', None, _('Stretch small images'),
-                None, _('Stretch images to fit to the screen, depending on zoom mode.'),
+            ('slideshow', 'media-playback-start-symbolic', _('Start _slideshow'), _('Start slideshow'), window.slideshow.toggle),
+            ('lens', 'edit-find-symbolic', _('Magnifying _lens'), _('Magnifying lens'), window.lens.toggle),
+            ('stretch', None, _('Stretch small images'), _('Stretch images to fit to the screen, depending on zoom mode.'),
                 window.change_stretch),
-            ('invert_color', None, _('_Invert image colors'),
-                None, _('Invert image colors'), window.change_invert_color)])
+            ('invert_color', None, _('_Invert image colors'), _('Invert image colors'), window.change_invert_color)])
 
         # Note: Don't change the default value for the radio buttons unless
         # also fixing the code for setting the correct one on start-up in main.py.
         self._actions.add_radio('zoom-mode', [
-            ('best_fit_mode', 'zoom-fit-best-symbolic', _('_Best fit mode'),
-                None, _('Best fit mode'), constants.ZoomMode.BEST),
-            ('fit_width_mode', 'mcomix-fit-width-symbolic', _('Fit _width mode'),
-                None, _('Fit width mode'), constants.ZoomMode.WIDTH),
-            ('fit_height_mode', 'mcomix-fit-height-symbolic', _('Fit _height mode'),
-                None, _('Fit height mode'), constants.ZoomMode.HEIGHT),
-            ('fit_size_mode', 'mcomix-fit-size-symbolic', _('Fit _size mode'),
-                None, _('Fit to size mode'), constants.ZoomMode.SIZE),
-            ('fit_manual_mode', 'mcomix-fit-manual-symbolic', _('M_anual zoom mode'),
-                None, _('Manual zoom mode'), constants.ZoomMode.MANUAL)],
+            ('best_fit_mode', 'zoom-fit-best-symbolic', _('_Best fit mode'), _('Best fit mode'), constants.ZoomMode.BEST),
+            ('fit_width_mode', 'mcomix-fit-width-symbolic', _('Fit _width mode'), _('Fit width mode'), constants.ZoomMode.WIDTH),
+            ('fit_height_mode', 'mcomix-fit-height-symbolic', _('Fit _height mode'), _('Fit height mode'), constants.ZoomMode.HEIGHT),
+            ('fit_size_mode', 'mcomix-fit-size-symbolic', _('Fit _size mode'), _('Fit to size mode'), constants.ZoomMode.SIZE),
+            ('fit_manual_mode', 'mcomix-fit-manual-symbolic', _('M_anual zoom mode'), _('Manual zoom mode'), constants.ZoomMode.MANUAL)],
             3, window.change_zoom_mode)
 
         # Automatically rotate image if width>height or height>width
         self._actions.add_radio('autorotation', [
-            ('no_autorotation', None, _('Never'),
-             None, None, constants.AUTOROTATE_NEVER),
-            ('rotate_90_width', 'mcomix-rotate-90', _('_Rotate 90° CW'),
-             None, None, constants.AUTOROTATE_WIDTH_90),
-            ('rotate_270_width', 'mcomix-rotate-270', _('Rotat_e 90° CCW'),
-             None, None, constants.AUTOROTATE_WIDTH_270),
-            ('rotate_90_height', 'mcomix-rotate-90', _('_Rotate 90° CW'),
-             None, None, constants.AUTOROTATE_HEIGHT_90),
-            ('rotate_270_height', 'mcomix-rotate-270', _('Rotat_e 90° CCW'),
-             None, None, constants.AUTOROTATE_HEIGHT_270)],
+            ('no_autorotation', None, _('Never'), None, constants.AUTOROTATE_NEVER),
+            ('rotate_90_width', 'mcomix-rotate-90', _('_Rotate 90° CW'), None, constants.AUTOROTATE_WIDTH_90),
+            ('rotate_270_width', 'mcomix-rotate-270', _('Rotat_e 90° CCW'), None, constants.AUTOROTATE_WIDTH_270),
+            ('rotate_90_height', 'mcomix-rotate-90', _('_Rotate 90° CW'), None, constants.AUTOROTATE_HEIGHT_90),
+            ('rotate_270_height', 'mcomix-rotate-270', _('Rotat_e 90° CCW'), None, constants.AUTOROTATE_HEIGHT_270)],
             prefs['auto rotate depending on size'], window.change_autorotation)
 
         self._actions.add([
-            ('about', 'help-about', _('_About'),
-             None, None, dialog_handler.open_dialog)], (window, 'about-dialog'))
+            ('about', 'help-about', _('_About'), None, dialog_handler.open_dialog)], (window, 'about-dialog'))
 
         self._actions.add([
-            ('comments', 'mcomix-comments', _('Co_mments...'),
-             None, None, dialog_handler.open_dialog)], (window, 'comments-dialog'))
+            ('comments', 'mcomix-comments', _('Co_mments...'), None, dialog_handler.open_dialog)], (window, 'comments-dialog'))
 
         self._actions.add([
-            ('properties', 'document-properties', _('Proper_ties'),
-            None, None, dialog_handler.open_dialog)], (window,'properties-dialog'))
+            ('properties', 'document-properties', _('Proper_ties'), None, dialog_handler.open_dialog)], (window,'properties-dialog'))
 
         self._actions.add([
-            ('preferences', 'preferences-system', _('Pr_eferences'),
-                None, None, preferences_dialog.open_dialog)], window)
+            ('preferences', 'preferences-system', _('Pr_eferences'), None, preferences_dialog.open_dialog)], window)
 
         # Some actions added separately since they need extra arguments.
         self._actions.add([
-            ('edit_archive', 'document-edit-symbolic', _('_Edit archive...'),
-                None, _('Opens the archive editor.'),
+            ('edit_archive', 'document-edit-symbolic', _('_Edit archive...'), _('Opens the archive editor.'),
                 edit_dialog.open_dialog),
-            ('open', 'document-open', _('_Open...'),
-                None, None, file_chooser_main_dialog.open_main_filechooser_dialog),
-            ('enhance_image', 'mcomix-enhance-image', _('En_hance image...'),
-                None, None, enhance_dialog.open_dialog)], window)
+            ('open', 'document-open', _('_Open...'), None, file_chooser_main_dialog.open_main_filechooser_dialog),
+            ('enhance_image', 'mcomix-enhance-image', _('En_hance image...'), None, enhance_dialog.open_dialog)], window)
 
         self._actions.add([
-            ('library', 'mcomix-library', _('_Library...'),
-                None, None, library_main_dialog.open_dialog)], window)
+            ('library', 'mcomix-library', _('_Library...'), None, library_main_dialog.open_dialog)], window)
 
         self._window.insert_action_group(_Actions.PREFIX, self._actions.group)
 

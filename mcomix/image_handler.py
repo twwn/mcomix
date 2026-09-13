@@ -16,7 +16,7 @@ from mcomix import log
 from mcomix.worker_thread import WorkerThread
 
 from collections.abc import Iterable, Sequence
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
     # main imports this module, so the window it is handed can only be
@@ -59,10 +59,19 @@ class ImageHandler(object):
         self._wanted_pixbufs: list[int] = []
         #: Pixbuf map from page > Pixbuf
         self._raw_pixbufs: dict[int, GdkPixbuf.Pixbuf] = {}
-        #: How many pages to keep in cache
-        self._cache_pages = prefs['max pages to cache']
 
         self._window.filehandler.file_available += self._file_available
+
+    @property
+    def _cache_pages(self) -> int:
+        """How many pages to keep in cache, as the preferences say now.
+
+        This was read once, when the handler was built, so changing the
+        preference did nothing at all until the book was closed - even
+        though the preferences dialog writes the new value and asks the
+        handler to cache again in the same breath.
+        """
+        return cast(int, prefs['max pages to cache'])
 
     def _get_pixbuf(self, index: int) -> GdkPixbuf.Pixbuf:
         """Return the pixbuf indexed by <index> from cache.
@@ -245,7 +254,6 @@ class ImageHandler(object):
         self._current_image_index = None
         self._available_images.clear()
         self._raw_pixbufs.clear()
-        self._cache_pages = prefs['max pages to cache']
 
     def page_is_available(self, page: int | None = None) -> bool:
         """ Returns True if <page> is available and calls to get_pixbufs

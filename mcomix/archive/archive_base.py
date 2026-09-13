@@ -37,10 +37,10 @@ class BaseArchive:
             self._waiting_for_password = False
 
     def iter_contents(self) -> Iterator[str]:
-        """ Generator for listing the archive contents.
+        """ Lists the archive contents.  A base archive holds nothing;
+        every handler overrides this with a generator of its own.
         """
-        return
-        yield
+        return iter(())
 
     def list_contents(self) -> list[str]:
         """ Returns a list of unicode filenames relative to the archive root.

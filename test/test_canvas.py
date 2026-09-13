@@ -1,9 +1,10 @@
 # coding: utf-8
 
-from gi.repository import Gdk, GdkPixbuf, Gtk
+from gi.repository import GdkPixbuf, Gtk
 
 from . import MComixTest, pump
 
+from mcomix import image_tools
 from mcomix.canvas import PageCanvas
 
 
@@ -18,7 +19,7 @@ class PageCanvasTest(MComixTest):
     def setUp(self):
         super(PageCanvasTest, self).setUp()
         self.canvas = PageCanvas()
-        texture = Gdk.Texture.new_for_pixbuf(
+        texture = image_tools.pixbuf_to_texture(
             GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, False, 8, 300, 400))
         self.children = []
         for _ in range(2):
