@@ -13,6 +13,8 @@ from importlib import metadata
 from unittest import mock
 
 import mcomix
+from PIL import features
+
 from mcomix.archive import pdf_multi
 from mcomix.preferences import prefs
 
@@ -147,15 +149,18 @@ class RequiredVersionTest(unittest.TestCase):
             self.assertIs(pdf_multi.DisabledFitzArchive, pdf_multi.load_handler())
 
 
-def _make_pdf(path, text_page=False, rotation=0):
-    """Write a two page PDF: a page holding nothing but a full page JPEG,
-    turned by <rotation> degrees, and, if <text_page> is set, a page of
-    text."""
+def _make_pdf(path, text_page=False, rotation=0, image_format='JPEG'):
+    """Write a two page PDF: a page holding nothing but a full page image
+    in <image_format>, turned by <rotation> degrees, and, if <text_page> is
+    set, a page of text.  The image is noise, and a JPEG is saved at a
+    quality no default picks, so that compressing it again changes it."""
     import pymupdf
     from PIL import Image
 
     image = io.BytesIO()
-    Image.new('RGB', (200, 300), (16, 32, 64)).save(image, format='JPEG')
+    options = {'quality': 95} if image_format == 'JPEG' else {}
+    Image.effect_noise((200, 300), 64).convert('RGB').save(
+        image, format=image_format, **options)
     document = pymupdf.open()
     page = document.new_page(width=200, height=300)
     page.insert_image(page.rect, stream=image.getvalue())
@@ -214,6 +219,112 @@ class FitzWorkerTest(MComixTest):
 
     def test_page_count(self):
         self.assertEqual(self._worker(text_page=True).page_count(), 2)
+
+    def _extract_first(self, **kwargs):
+        """The first page's name, the file extracted for it, and the image
+        the PDF holds for it."""
+        worker = self._worker(**kwargs)
+        name = next(iter(worker.iter_contents()))
+        worker.extract_file(name, self.directory)
+        xref = int(os.path.splitext(name)[0].split('_mcmxref')[1])
+        embedded = worker.doc.extract_image(xref)['image']
+        return name, os.path.join(self.directory, name), embedded
+
+    def test_a_turned_jpeg_page_keeps_its_compressed_picture(self):
+        """Saving the page again through Pillow to add its orientation
+        compressed the picture again, at Pillow's default quality; only
+        the Exif segment changes now."""
+        from mcomix import image_tools
+        name, path, embedded = self._extract_first(rotation=90)
+        self.assertTrue(name.endswith('.jpeg'), name)
+        with open(path, 'rb') as fp:
+            extracted = fp.read()
+        self.assertEqual(embedded[embedded.index(b'\xff\xda'):],
+                         extracted[extracted.index(b'\xff\xda'):])
+        self.assertEqual(90, image_tools.get_implied_rotation_from_file(path))
+
+    @unittest.skipUnless(features.check('jpg_2000'), 'Pillow reads no JPEG 2000')
+    def test_a_turned_jpeg_2000_page_becomes_a_png_that_keeps_its_turn(self):
+        """Pillow writes no Exif into JPEG 2000, so the orientation saved
+        into such a page was lost and the page was shown unturned."""
+        from PIL import Image
+        from mcomix import image_tools
+        name, path, _embedded = self._extract_first(
+            rotation=90, image_format='JPEG2000')
+        self.assertTrue(name.endswith('.png'), name)
+        with Image.open(path) as page:
+            self.assertEqual(('PNG', (200, 300)), (page.format, page.size))
+        self.assertEqual(90, image_tools.get_implied_rotation_from_file(path))
+
+    @unittest.skipUnless(features.check('jpg_2000'), 'Pillow reads no JPEG 2000')
+    def test_an_unturned_jpeg_2000_page_is_handed_over_as_it_is(self):
+        name, path, embedded = self._extract_first(image_format='JPEG2000')
+        self.assertTrue(name.endswith('.jpx'), name)
+        with open(path, 'rb') as fp:
+            self.assertEqual(embedded, fp.read())
+
+    @unittest.skipUnless(features.check('jpg_2000'), 'Pillow reads no JPEG 2000')
+    def test_a_turned_page_pillow_cannot_read_is_rendered_turned(self):
+        """As a JBIG2 image cannot be: the page is drawn as the PDF
+        shows it, turned, with no orientation left for the display."""
+        from PIL import Image, UnidentifiedImageError
+        from mcomix import image_tools
+        from mcomix.archive.native_pdf import child
+        worker = self._worker(rotation=90, image_format='JPEG2000')
+        name = next(iter(worker.iter_contents()))
+        with mock.patch.object(child.Image, 'open',
+                               side_effect=UnidentifiedImageError('JBIG2')):
+            worker.extract_file(name, self.directory)
+        path = os.path.join(self.directory, name)
+        with Image.open(path) as page:
+            width, height = page.size
+        self.assertGreater(width, height)
+        self.assertEqual(0, image_tools.get_implied_rotation_from_file(path))
+
+
+@unittest.skipUnless(pdf_multi.PdfMultiArchive is not pdf_multi.DisabledFitzArchive,
+                     'native PDF handler is not available')
+class JpegOrientationTest(unittest.TestCase):
+
+    """An orientation written into a JPEG without compressing it again."""
+
+    def _jpeg(self, **options):
+        from PIL import Image
+        data = io.BytesIO()
+        Image.effect_noise((40, 30), 64).convert('RGB').save(
+            data, format='JPEG', **options)
+        return data.getvalue()
+
+    def test_the_picture_is_copied_and_the_orientation_set(self):
+        from PIL import Image, ExifTags
+        from mcomix.archive.native_pdf.child import jpeg_with_orientation
+        source = self._jpeg()
+        turned = jpeg_with_orientation(source, 6)
+        self.assertEqual(source[source.index(b'\xff\xda'):],
+                         turned[turned.index(b'\xff\xda'):])
+        with Image.open(io.BytesIO(turned)) as image:
+            self.assertEqual(6, image.getexif()[ExifTags.Base.Orientation])
+        # The JFIF segment Pillow writes has to stay the first.
+        self.assertEqual(b'\xff\xe0', turned[2:4])
+
+    def test_an_existing_exif_is_kept_and_its_orientation_replaced(self):
+        from PIL import Image, ExifTags
+        from mcomix.archive.native_pdf.child import jpeg_with_orientation
+        exif = Image.Exif()
+        exif[ExifTags.Base.Software] = 'scanner'
+        exif[ExifTags.Base.Orientation] = 1
+        turned = jpeg_with_orientation(self._jpeg(exif=exif.tobytes()), 8)
+        self.assertEqual(1, turned.count(b'Exif\x00\x00'))
+        with Image.open(io.BytesIO(turned)) as image:
+            written = image.getexif()
+        self.assertEqual((8, 'scanner'), (written[ExifTags.Base.Orientation],
+                                          written[ExifTags.Base.Software]))
+
+    def test_other_data_is_refused(self):
+        from mcomix.archive.native_pdf.child import jpeg_with_orientation
+        for data in (b'\x89PNG\r\n\x1a\n', b'\xff\xd8\xff\xe0\x00'):
+            with self.subTest(data=data), self.assertRaises(ValueError):
+                jpeg_with_orientation(data, 6)
 
 
 @unittest.skipUnless(pdf_multi.PdfMultiArchive is not pdf_multi.DisabledFitzArchive,
