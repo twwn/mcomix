@@ -17,8 +17,6 @@ class Pageselector(Gtk.Dialog):
 
     def __init__(self, window):
         self._window = window
-        # GTK4's Gtk.Dialog takes properties, not the title, parent
-        # and flags GTK3 let it be constructed from.
         super(Pageselector, self).__init__(
             title=_('Go to page...'), transient_for=window,
             modal=True, destroy_with_parent=True)

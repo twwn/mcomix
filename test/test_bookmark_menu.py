@@ -9,6 +9,7 @@ from gi.repository import GLib, Gtk
 from . import MComixTest, pump
 
 from mcomix import bookmark_backend
+from mcomix import bookmark_menu_item
 from mcomix import constants
 from mcomix import bookmark_menu
 
@@ -53,6 +54,7 @@ class _StubWindow(Gtk.Window):
         self.filehandler = _StubFileHandler()
         self.imagehandler = _StubImageHandler()
         self.pages = []
+        self.toolbar = Gtk.Box()
 
     def set_page(self, page):
         self.pages.append(page)
@@ -90,6 +92,21 @@ class BookmarksMenuTest(MComixTest):
                 window.destroy()
         pump()
         super(BookmarksMenuTest, self).tearDown()
+
+    def test_a_bookmark_in_the_open_file_leaves_the_tool_bar_alone(self):
+        """Loading a bookmark that is already the open file only turns the
+        page. It used to hide and immediately show the tool bar, which is
+        a redraw of nothing that ends with the bar visible - so it came
+        back for anyone who had turned it off."""
+        self.window.toolbar.set_visible(False)
+        self.window.filehandler._base_path = _StubImageHandler.path
+        bookmark = bookmark_menu_item._Bookmark(
+            self.window, self.window.filehandler, 'book',
+            _StubImageHandler.path, 3, 20, None, 0)
+        bookmark.load()
+        self.assertEqual([3], self.window.pages, 'the page was not turned')
+        self.assertFalse(self.window.toolbar.get_visible(),
+                         'a hidden tool bar came back')
 
     def _sections(self):
         sections = []

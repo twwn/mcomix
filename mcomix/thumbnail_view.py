@@ -161,9 +161,6 @@ class ThumbnailIconView(Gtk.IconView, ThumbnailViewBase):
 
         self._follow_visible_range()
 
-    def get_visible_range(self):
-        return Gtk.IconView.get_visible_range(self)
-
 class ThumbnailTreeView(Gtk.TreeView, ThumbnailViewBase):
     def __init__(self, model, uid_column, pixbuf_column, status_column):
         assert 0 != (model.get_flags() & Gtk.TreeModelFlags.ITERS_PERSIST)
@@ -171,8 +168,5 @@ class ThumbnailTreeView(Gtk.TreeView, ThumbnailViewBase):
         ThumbnailViewBase.__init__(self, uid_column, pixbuf_column, status_column)
 
         self._follow_visible_range()
-
-    def get_visible_range(self):
-        return Gtk.TreeView.get_visible_range(self)
 
 # vim: expandtab:sw=4:ts=4

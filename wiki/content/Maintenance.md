@@ -22,7 +22,11 @@ xgettext -LPython -omcomix.pot -pmcomix/messages/ -cTRANSLATORS \
 
 for pofile in mcomix/messages/*/LC_MESSAGES/*.po
 do
-	# Merge message files with master template, no fuzzy matching (-N)
+	# Merge message files with master template.  msgmerge matches a
+	# changed string against the old one it most resembles and marks
+	# the result fuzzy, which is a translator's starting point rather
+	# than a translation: msgfmt leaves fuzzy entries out unless it is
+	# asked for them, so nothing uncertain reaches a release.
 	msgmerge -U --backup=none ${pofile} mcomix/messages/mcomix.pot
 	# Compile translation, add "-f" to include fuzzy strings
 	#msgfmt ${pofile} -o ${pofile%.*}.mo

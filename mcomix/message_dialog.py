@@ -69,7 +69,7 @@ class MessageDialog(Gtk.MessageDialog):
         @param dialog_id: Unique identifier for the dialog (a string).
         @param choices: List of response IDs that should be remembered
         """
-        self.remember_checkbox.show()
+        self.remember_checkbox.set_visible(True)
         self.dialog_id = dialog_id
         self.choices = [int(choice) for choice in choices]
 

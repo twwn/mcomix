@@ -107,16 +107,15 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
             self._thumbnail_page_treeviewcolumn.set_fixed_width(w)
         self._thumbnail_page_treeviewcolumn.set_visible(visible)
 
-    def get_width(self):
-        """Return the width in pixels of the ThumbnailSidebar."""
-        return self.get_preferred_size()[1].width
-
     def set_visible(self, visible: bool) -> None:
         """Show or hide the ThumbnailSidebar.
 
-        Gtk.Widget.show() and hide() are deprecated in GTK4, and this is
-        the one call everything goes through now, so what hung off those
-        two hangs off this.
+        Every change of the sidebar's visibility goes through here, so
+        what has to happen either side of one hangs off this.  Note that
+        Gtk.Widget.show() and hide() would not: they reach the same C
+        function this overrides without passing through the override,
+        leaving the widget visible or not but the thumbnail thread as it
+        was.  They are deprecated in GTK4 anyway.
         """
         if visible:
             self.load_thumbnails()

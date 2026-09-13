@@ -11,8 +11,6 @@ from mcomix.i18n import _
 class _CommentsDialog(Gtk.Dialog):
 
     def __init__(self, window):
-        # GTK4's Gtk.Dialog takes properties, not the title, parent
-        # and flags GTK3 let it be constructed from.
         super(_CommentsDialog, self).__init__(
             title=_('Comments'), transient_for=window)
         self.add_buttons(_('_Close'), Gtk.ResponseType.CLOSE)

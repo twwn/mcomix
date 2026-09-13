@@ -14,8 +14,6 @@ class _BookmarksDialog(Gtk.Dialog):
     _SORT_TYPE, _SORT_NAME, _SORT_PAGE, _SORT_ADDED = 100, 101, 102, 103
 
     def __init__(self, window, bookmarks_store):
-        # GTK4's Gtk.Dialog takes properties, not the title, parent
-        # and flags GTK3 let it be constructed from.
         super(_BookmarksDialog, self).__init__(
             title=_('Edit Bookmarks'), transient_for=window,
             destroy_with_parent=True)

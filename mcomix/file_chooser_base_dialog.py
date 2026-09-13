@@ -21,8 +21,7 @@ from mcomix.i18n import _
 
 mimetypes.init()
 
-#: How large a preview is on a screen that has nothing to say about it -
-#: the size the GTK3 dialog used.
+#: How large a preview is on a screen that has nothing to say about it.
 _PREVIEW_SIZE = 128
 #: How wide the name and size under a preview are allowed to be.
 _PREVIEW_LABEL_WIDTH = 18
@@ -86,8 +85,6 @@ class _BaseFileChooserDialog(Gtk.Dialog):
             buttons = (_('_Cancel'), Gtk.ResponseType.CANCEL,
                 _('_Save'), Gtk.ResponseType.OK)
 
-        # GTK4's Gtk.Dialog takes properties, not the title, parent
-        # and flags GTK3 let it be constructed from.
         super(_BaseFileChooserDialog, self).__init__(title=title)
         #: The buttons, wherever they ended up.
         self._buttons = []
@@ -99,8 +96,7 @@ class _BaseFileChooserDialog(Gtk.Dialog):
         #: One-format filters, held back so the groups can come first.
         self._pending_filters = []
         self.filechooser = Gtk.FileChooserWidget(action=action)
-        # Wide and short was what GTK3 needed to fit its own layout;
-        # with the preview beside the list rather than inside it, the
+        # The preview sits beside the list rather than inside it, so the
         # dialog wants more height than width.
         self.filechooser.set_size_request(640, 560)
         # GTK4 has no set_preview_widget(): the chooser will not hold

@@ -26,8 +26,6 @@ class WatchListDialog(Gtk.Dialog):
         """ Dialog constructor.
         @param library: Dialog parent window, should be library window.
         """
-        # GTK4's Gtk.Dialog takes properties, not the title, parent
-        # and flags GTK3 let it be constructed from.
         super(WatchListDialog, self).__init__(
             title=_("Library watch list"), transient_for=library,
             destroy_with_parent=True, modal=True)

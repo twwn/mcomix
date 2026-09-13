@@ -48,9 +48,6 @@ class _Bookmark(object):
         else:
             self._window.set_page(self._page)
 
-            self._window.toolbar.hide()
-            self._window.toolbar.show()
-
     def same_path(self, path):
         """Return True if the bookmark is for the file <path>."""
         return path == self._path

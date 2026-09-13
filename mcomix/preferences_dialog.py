@@ -42,8 +42,6 @@ class _PreferencesDialog(Gtk.Dialog):
     """
 
     def __init__(self, window):
-        # GTK4's Gtk.Dialog takes properties, not the title, parent
-        # and flags GTK3 let it be constructed from.
         super(_PreferencesDialog, self).__init__(
             title=_('Preferences'), transient_for=window)
 

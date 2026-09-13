@@ -126,6 +126,67 @@ class MainWindowTest(MComixTest):
         self.window._event_handler.resize_event(self.window._main_layout)
         self.assertTrue(drawn, 'a resize did not redraw the pages')
 
+    def test_hiding_a_toggle_widget_goes_through_its_own_set_visible(self):
+        """Gtk.Widget.show() and hide() reach the same C function that
+        Gtk.Widget.set_visible() does, but without passing through a
+        Python override of it. ThumbnailSidebar has such an override, and
+        that is where the thumbnail thread is started and stopped, so a
+        sidebar hidden with hide() went on updating."""
+        sidebar = self.window.thumbnailsidebar
+        # _should_toggle_be_visible() holds the sidebar back until the
+        # archive has pages, and that happens on a worker thread. Without
+        # waiting for it the sidebar never appears, and then hiding it is
+        # not a change of visibility at all - which passes for the wrong
+        # reason before the fix and fails for the wrong reason after it.
+        self.assertTrue(
+            wait_for(lambda: self.window.filehandler.file_loaded
+                     and self.window.imagehandler.get_number_of_pages() > 0),
+            'the test archive never finished loading')
+        prefs['show thumbnails'] = True
+        self.window._update_toggles_visibility()
+        self._pump()
+        self.assertTrue(sidebar.get_visible(), 'the sidebar never appeared')
+
+        seen = []
+        original = type(sidebar).set_visible
+        type(sidebar).set_visible = lambda widget, visible: (
+            seen.append(visible), original(widget, visible))[1]
+        try:
+            prefs['show thumbnails'] = False
+            self.window._update_toggles_visibility()
+            self._pump()
+        finally:
+            type(sidebar).set_visible = original
+        self.assertEqual([False], seen,
+                         'the sidebar was hidden behind its own back')
+        self.assertFalse(sidebar.get_visible())
+
+    def test_minimizing_the_window_does_not_raise(self):
+        """The View menu and a keybinding both reach MainWindow.minimize().
+
+        It called self.iconify(), which is what GTK3 named this; GTK4
+        renamed it to minimize() and MainWindow.minimize() shadows that,
+        so the working call was hidden behind a broken one.
+        """
+        self.assertFalse(hasattr(Gtk.Window, 'iconify'),
+                         'GTK grew iconify() back; this test is stale')
+        # A Gio action hands its callback the action and the parameter.
+        self.window.minimize(None, None)
+        self._pump()
+
+    def test_quitting_keeps_the_hide_all_preference(self):
+        """Nothing unsets 'hide all' on the way out.
+
+        terminate_program() used to clear it when a hide_all_forced flag
+        was set, which is how entering fullscreen once forced the
+        preference on. Nothing forces it since the toggle rework, so the
+        preference is the user's alone and has to survive a quit.
+        """
+        prefs['hide all'] = True
+        self.window.terminate_program()
+        self.assertTrue(prefs['hide all'],
+                        "quitting turned the user's 'hide all' off")
+
     def test_the_window_holds_the_expected_parts(self):
         for part in (self.window.menubar, self.window.toolbar,
                      self.window.statusbar, self.window.thumbnailsidebar):

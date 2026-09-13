@@ -79,11 +79,10 @@ class RecentFilesMenu(object):
     def _modified(info: Any) -> int:
         """When <info> was last modified, as a number that sorts.
 
-        GTK3 hands back a time_t and GTK4 a GLib.DateTime.
+        Gtk.RecentInfo.get_modified() answers with a GLib.DateTime, and
+        seconds since the epoch is what the sort wants.
         """
         modified = info.get_modified()
-        if isinstance(modified, int):
-            return modified
         return modified.to_unix() if modified is not None else 0
 
     def _rebuild(self) -> None:

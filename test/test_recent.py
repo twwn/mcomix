@@ -6,7 +6,7 @@ now that the chooser widget that used to do it is going away. """
 import os
 import time
 
-from gi.repository import Gtk
+from gi.repository import GLib, Gtk
 
 from . import MComixTest, pump
 
@@ -109,6 +109,16 @@ class RecentFilesMenuTest(MComixTest):
         self._add('newer.cbz')
         menu = recent.RecentFilesMenu(None, self.window)
         self.assertEqual(self._labels(menu)[:2], ['newer.cbz', 'older.cbz'])
+
+    def test_a_modification_time_is_a_datetime(self):
+        """_modified() used to carry a branch for an int, which is what
+        GTK3's Gtk.RecentInfo.get_modified() answered with. GTK4 answers
+        with a GLib.DateTime, so that branch could never be taken."""
+        self._add('book.cbz')
+        info = self.manager.get_items()[0]
+        self.assertIsInstance(info.get_modified(), GLib.DateTime)
+        self.assertEqual(info.get_modified().to_unix(),
+                         recent.RecentFilesMenu._modified(info))
 
     def test_activating_an_entry_opens_it(self):
         path = self._add('book.cbz')

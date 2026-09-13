@@ -153,9 +153,8 @@ for i in range(1, 10):
 def parse_accelerator(accelerator) -> tuple:
     """Return the (key, modifiers) <accelerator> stands for.
 
-    Gtk.accelerator_parse() puts a success flag in front of those two in
-    GTK4.  One that does not parse comes back as (0, 0), which is what
-    GTK3 answered for one as well.
+    Gtk.accelerator_parse() answers with a success flag in front of those
+    two, and one that does not parse comes back as (0, 0).
     """
     ok, key, modifiers = Gtk.accelerator_parse(accelerator)
     if not ok and '<Mod1>' in accelerator:

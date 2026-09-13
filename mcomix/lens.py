@@ -64,8 +64,7 @@ class MagnifyingLens(object):
         with it; <x> and <y> are the positions of the cursor within the
         main window layout area.
         """
-        # A Gtk.Picture with nothing in it has nothing to magnify;
-        # Gtk.ImageType, which said so up to GTK3, is gone.
+        # A Gtk.Picture with nothing in it has nothing to magnify.
         if self._window.images[0].get_paintable() is None:
             return
 

@@ -67,7 +67,69 @@ class ContainIndexTest(unittest.TestCase):
         self.assertNotIn('SCAN', plan,
                          msg='upgrade left contain unindexed: %s' % plan)
         self.assertEqual(int(version), backend._LibraryBackend.DB_VERSION)
-# vim: expandtab:sw=4:ts=4
+
+
+class CleanCollectionTransactionTest(unittest.TestCase):
+
+    """clean_collection() sweeps in one transaction, not thousands.
+
+    The connection is opened in auto-commit mode, so without one each of
+    the two deletes remove_book() runs commits by itself. Asserted as the
+    transaction the removals happen inside rather than as a duration,
+    which is not reproducible.
+    """
+
+    def setUp(self):
+        fp, self.db = tempfile.mkstemp('.db', 'mcomix-test')
+        os.close(fp)
+        self._saved_path = constants.LIBRARY_DATABASE_PATH
+        constants.LIBRARY_DATABASE_PATH = self.db
+        self.library = backend.LibraryBackend()
+        self.library.begin_transaction()
+        for index in range(8):
+            cursor = self.library._con.execute(
+                '''insert into book (name, path, pages, format, size)
+                values (?, ?, ?, ?, ?)''',
+                ('b%d' % index, '/does/not/exist/%d.cbz' % index, 1, 1, 1))
+            self.library._con.execute(
+                'insert or ignore into contain (collection, book) values (?, ?)',
+                (1, cursor.lastrowid))
+        self.library.end_transaction()
+
+    def tearDown(self):
+        self.library.close()
+        constants.LIBRARY_DATABASE_PATH = self._saved_path
+        os.unlink(self.db)
+
+    def test_the_whole_sweep_is_one_transaction(self):
+        inside = []
+        original = self.library.remove_book
+
+        def watched(book):
+            # After the deletes, not before: sqlite3 holds the BEGIN back
+            # until a statement actually needs it, so the first removal
+            # has not opened one yet when it is entered.
+            original(book)
+            inside.append(self.library._con.in_transaction)
+
+        self.library.remove_book = watched
+        removed = self.library.clean_collection(1)
+        self.assertEqual(8, removed, 'the sweep removed the wrong books')
+        self.assertTrue(inside, 'nothing was removed, so nothing was measured')
+        self.assertTrue(all(inside),
+                        'removals committed one at a time: %r' % inside)
+        self.assertFalse(self.library._con.in_transaction,
+                         'the sweep left a transaction open')
+
+    def test_a_caller_may_hold_the_transaction_itself(self):
+        # collection_area does not, but the helpers do not nest, so the
+        # sweep has to leave an outer one alone rather than commit it.
+        self.library.begin_transaction()
+        self.library.clean_collection(1)
+        self.assertTrue(self.library._con.in_transaction,
+                        'the sweep committed a transaction it did not open')
+        self.library.end_transaction()
+
 
 class ClearAllTest(unittest.TestCase):
 

@@ -37,7 +37,6 @@ class EventHandler(object):
         keys = Gtk.EventControllerKey()
         keys.set_propagation_phase(Gtk.PropagationPhase.CAPTURE)
         keys.connect('key-pressed', self.key_press_event)
-        keys.connect('key-released', self.key_release_event)
         window.add_controller(keys)
 
         clicks = Gtk.GestureClick()
@@ -64,7 +63,8 @@ class EventHandler(object):
     def focus_changed(self, window, _parameter) -> None:
         """Handle the main window gaining or losing the focus.
 
-        GTK3 had a signal for each; GTK4 has the one property.
+        One handler serves both: the window reports it as the one
+        is-active property rather than a signal per direction.
         """
         if window.get_property('is-active'):
             self._window.gained_focus()
@@ -477,13 +477,6 @@ class EventHandler(object):
 
             manager.execute((accel_keyval, state & ~consumed & ALL_ACCELS_MASK))
 
-        # ---------------------------------------------------------------
-        # Register CTRL for scrolling only one page instead of two
-        # pages in double page mode. This is mainly for mouse scrolling.
-        # ---------------------------------------------------------------
-        if keyval in (Gdk.KEY_Control_L, Gdk.KEY_Control_R):
-            self._window.imagehandler.force_single_step = True
-
         # ----------------------------------------------------------------
         # We kill the signals here for the Up, Down, Space and Enter keys,
         # or they will start fiddling with the thumbnail selector (bad).
@@ -498,15 +491,6 @@ class EventHandler(object):
             return Gdk.EVENT_STOP
 
         return Gdk.EVENT_PROPAGATE
-
-    def key_release_event(self, controller, keyval, keycode, state) -> None:
-        """ Handle release of keys for the main window. """
-
-        # ---------------------------------------------------------------
-        # Unregister CTRL for scrolling only one page in double page mode
-        # ---------------------------------------------------------------
-        if keyval in (Gdk.KEY_Control_L, Gdk.KEY_Control_R):
-            self._window.imagehandler.force_single_step = False
 
     def escape_event(self) -> None:
         """ Determines the behavior of the ESC key. """
@@ -633,9 +617,9 @@ class EventHandler(object):
     def mouse_move_event(self, controller, x, y) -> None:
         """Handle mouse pointer movement events."""
 
-        # Up to GTK3 this came from a hook on the whole event stream, so
-        # that the cursor reappeared even while a modal dialog was up.
-        # GTK4 has no such hook; the page area is where it matters.
+        # Only the page area brings the cursor back, so it stays hidden
+        # while a modal dialog is up.  There is no hook on the whole
+        # event stream to do better with.
         self._window.cursor_handler.refresh()
 
         if controller.get_current_event_state() & Gdk.ModifierType.BUTTON1_MASK:

@@ -551,7 +551,7 @@ class OpenWithEditor(Gtk.Dialog):
         if response == Gtk.ResponseType.ACCEPT:
             # The Save button is only enabled if all commands are valid
             self.save()
-            self.hide()
+            self.set_visible(False)
         else:
             if self._changed:
                 confirm_diag = message_dialog.MessageDialog(self, Gtk.DialogFlags.MODAL,

@@ -450,11 +450,24 @@ class _LibraryBackend(object):
         is None, all collections are cleaned. Returns the number of deleted books. """
         book_ids = self.get_books_in_collection(collection)
         deleted = 0
-        for id in book_ids:
-            path = self.get_book_path(id)
-            if path and not os.path.isfile(path):
-                self.remove_book(id)
-                deleted += 1
+        # The connection is in auto-commit mode, so each of the two
+        # deletes remove_book() runs would be a transaction of its own.
+        # A sweep of a real library is thousands of them; take the lot as
+        # one, unless a caller has opened a transaction already.
+        nested = self._con.isolation_level is not None
+        if not nested:
+            self.begin_transaction()
+        try:
+            for id in book_ids:
+                path = self.get_book_path(id)
+                if path and not os.path.isfile(path):
+                    self.remove_book(id)
+                    deleted += 1
+        finally:
+            # Commit either way: what was removed before an error stays
+            # removed, which is what auto-commit did.
+            if not nested:
+                self.end_transaction()
 
         return deleted
 

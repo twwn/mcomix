@@ -67,8 +67,6 @@ class MainWindow(Gtk.Window):
         self.is_manga_mode = False
         self.previous_size = (None, None)
         self.was_out_of_focus = False
-        #: Used to remember if changing to fullscreen enabled 'Hide all'
-        self.hide_all_forced = False
         # Remember last scroll destination.
         self._last_scroll_destination = constants.SCROLL_TO_START
 
@@ -306,11 +304,6 @@ class MainWindow(Gtk.Window):
     def lost_focus(self, *args):
         self.was_out_of_focus = True
 
-        # If the user presses CTRL for a keyboard shortcut, e.g. to
-        # open the library, key_release_event isn't fired and force_single_step
-        # isn't properly unset.
-        self.imagehandler.force_single_step = False
-
     def draw_image(self, scroll_to=None):
         """Draw the current pages and update the titlebar and statusbar.
         """
@@ -360,7 +353,7 @@ class MainWindow(Gtk.Window):
             for widget in widget_list:
                 # No change in visibility?
                 if should_be_visible != widget.get_visible():
-                    (widget.show if should_be_visible else widget.hide)()
+                    widget.set_visible(should_be_visible)
 
     def _draw_image(self, scroll_to):
 
@@ -563,7 +556,7 @@ class MainWindow(Gtk.Window):
 
     def _on_file_closed(self) -> None:
         self.clear()
-        self.thumbnailsidebar.hide()
+        self.thumbnailsidebar.set_visible(False)
         self.thumbnailsidebar.clear()
         self.uimanager.set_sensitivities()
 
@@ -797,10 +790,7 @@ class MainWindow(Gtk.Window):
 
         limit = self._should_toggle_be_visible('show scrollbar')
         for i in range(len(self._scroll)):
-            if limit and request[i]:
-                self._scroll[i].show()
-            else:
-                self._scroll[i].hide()
+            self._scroll[i].set_visible(bool(limit and request[i]))
 
     def is_scrollable(self) -> bool:
         """ Returns True if the current images do not fit into the viewport. """
@@ -1090,8 +1080,12 @@ class MainWindow(Gtk.Window):
             self.osd.show(text)
 
     def minimize(self, *args):
-        """ Minimizes the MComix window. """
-        self.iconify()
+        """ Minimizes the MComix window.
+
+        The extra arguments are the ones a Gio action hands its callback;
+        Gtk.Window.minimize() takes none.
+        """
+        super(MainWindow, self).minimize()
 
     def write_config_files(self) -> None:
 
@@ -1167,9 +1161,6 @@ class MainWindow(Gtk.Window):
         else:
             prefs['path to last file'] = ''
             prefs['page of last file'] = 1
-
-        if prefs['hide all'] and self.hide_all_forced and self.fullscreen:
-            prefs['hide all'] = False
 
         self.write_config_files()
 

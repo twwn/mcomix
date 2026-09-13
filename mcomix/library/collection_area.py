@@ -350,7 +350,6 @@ class _CollectionArea(Gtk.ScrolledWindow):
             collection = None
 
         self._popup_collection_menu(collection)
-        return True
 
     def _popup_collection_menu(self, collection):
         """ Show the library collection popup. Depending on the

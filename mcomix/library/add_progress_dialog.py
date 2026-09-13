@@ -20,8 +20,6 @@ class _AddLibraryProgressDialog(Gtk.Dialog):
         """Adds the books at <paths> to the library, and also to the
         <collection>, unless it is None.
         """
-        # GTK4's Gtk.Dialog takes properties, not the title, parent
-        # and flags GTK3 let it be constructed from.
         super(_AddLibraryProgressDialog, self).__init__(
             title=_('Adding books'), transient_for=library, modal=True)
         self.add_buttons(_('_Stop'), Gtk.ResponseType.CLOSE)
