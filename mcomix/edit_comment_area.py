@@ -2,6 +2,7 @@
 
 import os
 from gi.repository import Gio, Gdk, Gtk
+from mcomix import widgets
 from mcomix import tools
 from mcomix.i18n import _
 
@@ -18,20 +19,26 @@ class _CommentArea(Gtk.Box):
 
         scrolled = Gtk.ScrolledWindow()
         scrolled.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
-        self.pack_start(scrolled, True, True, 0)
+        widgets.pack(self, scrolled, True, True, 0)
 
         info = Gtk.Label(label=_('Please note that the only files that are automatically added to this list are those files in archives that MComix recognizes as comments.'))
         info.set_xalign(0.5)
         info.set_yalign(0.5)
-        info.set_line_wrap(True)
-        self.pack_start(info, False, False, 10)
+        # Gtk.Label.set_line_wrap() is set_wrap() in GTK4.
+        info.set_wrap(True)
+        widgets.pack(self, info, False, False, 10)
 
         # The ListStore layout is (basename, size, full path).
         self._liststore = Gtk.ListStore(str, str, str)
-        self._treeview = Gtk.TreeView(self._liststore)
-        self._treeview.set_rules_hint(True)
-        self._treeview.connect('button_press_event', self._button_press)
-        self._treeview.connect('key_press_event', self._key_press)
+        self._treeview = Gtk.TreeView(model=self._liststore)
+        clicks = Gtk.GestureClick()
+        clicks.set_button(3)
+        clicks.connect('pressed', self._button_press)
+        self._treeview.add_controller(clicks)
+
+        keys = Gtk.EventControllerKey()
+        keys.connect('key-pressed', self._key_press)
+        self._treeview.add_controller(keys)
 
         cellrenderer = Gtk.CellRendererText()
         column = Gtk.TreeViewColumn(_('Name'), cellrenderer, text=0)
@@ -40,7 +47,7 @@ class _CommentArea(Gtk.Box):
 
         column = Gtk.TreeViewColumn(_('Size'), cellrenderer, text=1)
         self._treeview.append_column(column)
-        scrolled.add(self._treeview)
+        scrolled.set_child(self._treeview)
 
         self._popup_menu = self._create_popup_menu()
 
@@ -54,9 +61,7 @@ class _CommentArea(Gtk.Box):
 
         model = Gio.Menu()
         model.append(_('Remove from archive'), 'commentarea.remove')
-        menu = Gtk.Menu.new_from_model(model)
-        menu.attach_to_widget(self, None)
-        return menu
+        return Gtk.PopoverMenu.new_from_model(model)
 
     def fetch_comments(self) -> None:
         """Load all comments in the archive."""
@@ -89,22 +94,18 @@ class _CommentArea(Gtk.Box):
         if iterator is not None:
             self._liststore.remove(iterator)
 
-    def _button_press(self, treeview, event):
+    def _button_press(self, gesture, n_press, x, y) -> None:
         """Handle mouse button presses on the area."""
-        path = treeview.get_path_at_pos(int(event.x), int(event.y))
-
-        if path is None:
+        if self._treeview.get_path_at_pos(int(x), int(y)) is None:
             return
 
-        path = path[0]
+        widgets.popup_at(self._popup_menu, self._treeview, x, y)
 
-        if event.button == 3:
-            self._popup_menu.popup(None, None, None, None,
-                                   event.button, event.time)
-
-    def _key_press(self, iconview, event):
+    def _key_press(self, controller, keyval, keycode, state):
         """Handle key presses on the area."""
-        if event.keyval == Gdk.KEY_Delete:
+        if keyval == Gdk.KEY_Delete:
             self._remove_file()
+            return Gdk.EVENT_STOP
+        return Gdk.EVENT_PROPAGATE
 
 # vim: expandtab:sw=4:ts=4

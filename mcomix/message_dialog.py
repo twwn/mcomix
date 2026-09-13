@@ -4,6 +4,7 @@
 
 from gi.repository import GLib, Gtk
 
+from mcomix import widgets
 from mcomix.preferences import prefs
 from mcomix.i18n import _
 
@@ -24,7 +25,12 @@ class MessageDialog(Gtk.MessageDialog):
             # Fix "mapped without a transient parent" Gtk warning.
             from mcomix import main
             parent = main.main_window()
-        super(MessageDialog, self).__init__(parent=parent, flags=flags, type=type, buttons=buttons)
+        # GTK4 has no "flags" property: what MComix passes through it is
+        # modality, and the parent and type are named differently too.
+        super(MessageDialog, self).__init__(
+            transient_for=parent,
+            modal=bool(flags & Gtk.DialogFlags.MODAL),
+            message_type=type, buttons=buttons)
 
         #: Unique dialog identifier (for storing 'Do not ask again')
         self.dialog_id = None
@@ -33,10 +39,10 @@ class MessageDialog(Gtk.MessageDialog):
         #: Automatically destroy dialog after run?
         self.auto_destroy = True
 
-        self.remember_checkbox = Gtk.CheckButton(_('Do not ask again.'))
-        self.remember_checkbox.set_no_show_all(True)
+        self.remember_checkbox = Gtk.CheckButton(label=_('Do not ask again.'))
+        self.remember_checkbox.set_visible(False)
         self.remember_checkbox.set_can_focus(False)
-        self.get_message_area().pack_end(self.remember_checkbox, True, True, 6)
+        widgets.pack(self.get_message_area(), self.remember_checkbox, True, True, 6, end=True)
 
     def set_text(self, primary, secondary=None):
         """ Formats the dialog's text fields.
@@ -47,7 +53,10 @@ class MessageDialog(Gtk.MessageDialog):
             self.set_markup('<span weight="bold" size="larger">' +
                 primary + '</span>')
         if secondary:
-            self.format_secondary_markup(secondary)
+            # format_secondary_markup() is gone in GTK4; the two
+            # properties it set are still there.
+            self.set_property('secondary-use-markup', True)
+            self.set_property('secondary-text', secondary)
 
     def should_remember_choice(self):
         """ Returns True when the dialog choice should be remembered. """
@@ -98,7 +107,7 @@ class MessageDialog(Gtk.MessageDialog):
             on_response(response)
 
         self.connect('response', responded)
-        self.show_all()
+        self.set_visible(True)
         # Prevent checkbox from grabbing focus by only enabling it after show
         self.remember_checkbox.set_can_focus(True)
 

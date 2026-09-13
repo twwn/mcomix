@@ -48,6 +48,4 @@ class ImageEnhancer(object):
         if main_dialog._dialog is not None:
             main_dialog._dialog.book_area.load_covers()
 
-        self._window.update_icon(False)
-
 # vim: expandtab:sw=4:ts=4

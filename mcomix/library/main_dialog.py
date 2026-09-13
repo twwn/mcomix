@@ -28,14 +28,18 @@ class _LibraryDialog(Gtk.Window):
     """
 
     def __init__(self, window, file_handler):
-        super(_LibraryDialog, self).__init__(Gtk.WindowType.TOPLEVEL)
+        super(_LibraryDialog, self).__init__()
 
         self._window = window
 
-        self.resize(prefs['lib window width'], prefs['lib window height'])
+        self.set_default_size(prefs['lib window width'],
+                              prefs['lib window height'])
         self.set_title(_('Library'))
-        self.connect('delete_event', self.close)
-        self.connect('key-press-event', self._key_press_event)
+        self.connect('close-request', self.close)
+
+        keys = Gtk.EventControllerKey()
+        keys.connect('key-pressed', self._key_press_event)
+        self.add_controller(keys)
 
         self.filter_string = None
         self._file_handler = file_handler
@@ -65,8 +69,8 @@ class _LibraryDialog(Gtk.Window):
             self._statusbar.set_vexpand(False)
             grid.attach(self._statusbar, 0, 2, 2, 1)
 
-        self.add(grid)
-        self.show_all()
+        self.set_child(grid)
+        self.set_visible(True)
         self.present()
 
     def open_book(self, books, keep_library_open=False):
@@ -129,7 +133,11 @@ class _LibraryDialog(Gtk.Window):
 
     def close(self, *args):
         """Close the library and do required cleanup tasks."""
-        prefs['lib window width'], prefs['lib window height'] = self.get_size()
+        # Gtk.Window.get_size() is gone; a GTK4 window is a widget
+        # with a width and a height of its own.
+        if self.get_width() and self.get_height():
+            prefs['lib window width'] = self.get_width()
+            prefs['lib window height'] = self.get_height()
         self.backend.watchlist.new_files_found -= self._new_files_found
         self.book_area.stop_update()
         self.book_area.close()
@@ -158,11 +166,13 @@ class _LibraryDialog(Gtk.Window):
         if collection_id is not None:
             prefs['last library collection'] = collection_id
 
-    def _key_press_event(self, widget, event, *args):
+    def _key_press_event(self, controller, keyval, keycode, state):
         """ Handle key press events for closing the library on Escape press. """
 
-        if event.keyval == Gdk.KEY_Escape:
-            self.hide()
+        if keyval == Gdk.KEY_Escape:
+            self.set_visible(False)
+            return Gdk.EVENT_STOP
+        return Gdk.EVENT_PROPAGATE
 
 
 def open_dialog(action, window):

@@ -11,11 +11,22 @@ from mcomix import file_chooser_simple_dialog
 from mcomix import image_tools
 from mcomix import edit_image_area
 from mcomix import edit_comment_area
+from mcomix import widgets
 from mcomix import constants
 from mcomix import message_dialog
 from mcomix.i18n import _
 
 _dialog = None
+
+def _fit_on_screen(width, height):
+    """Return (<width>, <height>), trimmed to fit on the monitor."""
+    monitors = Gdk.Display.get_default().get_monitors()
+    monitor = monitors.get_item(0) if monitors.get_n_items() else None
+    if monitor is None:
+        return width, height
+    geometry = monitor.get_geometry()
+    return (min(geometry.width - 50, width), min(geometry.height - 50, height))
+
 
 class _EditArchiveDialog(Gtk.Dialog):
 
@@ -25,8 +36,11 @@ class _EditArchiveDialog(Gtk.Dialog):
     """
 
     def __init__(self, window):
-        super(_EditArchiveDialog, self).__init__(_('Edit archive'), window, Gtk.DialogFlags.MODAL,
-            (_('_Cancel'), Gtk.ResponseType.CANCEL))
+        # GTK4's Gtk.Dialog takes properties, not the title, parent
+        # and flags GTK3 let it be constructed from.
+        super(_EditArchiveDialog, self).__init__(
+            title=_('Edit archive'), transient_for=window, modal=True)
+        self.add_buttons(_('_Cancel'), Gtk.ResponseType.CANCEL)
 
         self._accept_changes_button = self.add_button(_('_Apply'), Gtk.ResponseType.APPLY)
 
@@ -39,9 +53,10 @@ class _EditArchiveDialog(Gtk.Dialog):
 
         self._import_button = self.add_button(_('_Import'), constants.RESPONSE_IMPORT)
 
-        self.set_border_width(4)
-        self.resize(min(Gdk.Screen.get_default().get_width() - 50, 750),
-            min(Gdk.Screen.get_default().get_height() - 50, 600))
+        widgets.set_border(self, 4)
+        # Gdk.Screen is gone in GTK4; a display has monitors, and a
+        # window asks for a size rather than being given one.
+        self.set_default_size(*_fit_on_screen(750, 600))
 
         self.connect('response', self._response)
 
@@ -49,12 +64,12 @@ class _EditArchiveDialog(Gtk.Dialog):
         self._comment_area = edit_comment_area._CommentArea(self)
 
         notebook = Gtk.Notebook()
-        notebook.set_border_width(6)
+        widgets.set_border(notebook, 6)
         notebook.append_page(self._image_area, Gtk.Label(label=_('Images')))
         notebook.append_page(self._comment_area, Gtk.Label(label=_('Comment files')))
-        self.vbox.pack_start(notebook, True, True, 0)
+        widgets.pack(self.get_content_area(), notebook, True, True, 0)
 
-        self.show_all()
+        self.set_visible(True)
 
         GLib.idle_add(self._load_original_files)
 
@@ -64,7 +79,7 @@ class _EditArchiveDialog(Gtk.Dialog):
         """
         self._save_button.set_sensitive(False)
         self._import_button.set_sensitive(False)
-        self._window.set_cursor(Gdk.Cursor.new(Gdk.CursorType.WATCH))
+        self._window.set_cursor(Gdk.Cursor.new_from_name('wait', None))
         self._image_area.fetch_images()
 
         if self.kill: # fetch_images() allows pending events to be handled.
@@ -80,10 +95,11 @@ class _EditArchiveDialog(Gtk.Dialog):
     def _pack_archive(self, archive_path):
         """Create a new archive with the chosen files."""
         self.set_sensitive(False)
-        self._window.set_cursor(Gdk.Cursor.new(Gdk.CursorType.WATCH))
+        self._window.set_cursor(Gdk.Cursor.new_from_name('wait', None))
 
-        while Gtk.events_pending():
-            Gtk.main_iteration_do(False)
+        context = GLib.MainContext.default()
+        while context.pending():
+            context.iteration(False)
 
         image_files = self._image_area.get_file_listing()
         comment_files = self._comment_area.get_file_listing()

@@ -28,9 +28,36 @@ if os.environ.get('DISPLAY'):
 import gi
 
 gi.require_version('PangoCairo', '1.0')
-gi.require_version('Gtk', '3.0')
-gi.require_version('Gdk', '3.0')
+gi.require_version('Gtk', '4.0')
+gi.require_version('Gdk', '4.0')
 gi.require_version('GdkPixbuf', '2.0')
+
+# Pin the temporary directory GLib hands out.
+
+# GLib caches the answer to g_get_tmp_dir() the first time anything asks
+# and never looks at the environment again.  GTK4 decodes images through
+# glycin, which unpacks into a file there, so whichever directory is
+# current when the first image is decoded is the one every later decode
+# uses.  MComixTest gives each test a temporary directory of its own and
+# removes it afterwards, which left the second test onwards decoding into
+# a deleted directory: every gdk-pixbuf load failed and quietly fell back
+# to PIL.  Give GLib a directory that outlives any single test, and pin it
+# now, before a test can point the environment somewhere shorter-lived.
+
+import atexit
+import shutil
+import tempfile
+
+_TMP_ROOT = os.path.join(os.path.dirname(__file__), 'tmp')
+os.makedirs(_TMP_ROOT, exist_ok=True)
+_SESSION_TMPDIR = tempfile.mkdtemp(dir=_TMP_ROOT, prefix='session.')
+os.environ['TMPDIR'] = os.environ['TEMP'] = os.environ['TMP'] = _SESSION_TMPDIR
+tempfile.tempdir = _SESSION_TMPDIR
+atexit.register(shutil.rmtree, _SESSION_TMPDIR, True)
+
+from gi.repository import GLib
+
+assert GLib.get_tmp_dir() == _SESSION_TMPDIR, GLib.get_tmp_dir()
 
 # Configure locale.
 
@@ -52,13 +79,48 @@ from mcomix import log
 
 log.setLevel('DEBUG')
 
+def pump(rounds=4000):
+    """Let the main loop run through whatever is pending.
+
+    GTK4 has no Gtk.events_pending()/Gtk.main_iteration_do(); the main
+    context they stood for is still there.
+    """
+    from gi.repository import GLib
+    context = GLib.MainContext.default()
+    turns = 0
+    while context.pending() and turns < rounds:
+        context.iteration(False)
+        turns += 1
+
+
+def wait_for(predicate, seconds=5):
+    """Run the main loop until <predicate> holds, or time runs out.
+
+    Draining what is pending is not enough to see a GTK4 widget laid
+    out or drawn: both happen when the frame clock next ticks, which
+    takes time rather than turns of the loop.
+    """
+    import time
+    from gi.repository import GLib
+    context = GLib.MainContext.default()
+    # So that iteration() always has something to come back from.
+    heartbeat = GLib.timeout_add(10, lambda: GLib.SOURCE_CONTINUE)
+    try:
+        deadline = time.monotonic() + seconds
+        while time.monotonic() < deadline:
+            if predicate():
+                return True
+            context.iteration(True)
+        return predicate()
+    finally:
+        GLib.source_remove(heartbeat)
+
+
 # Use a custom testcase class:
 # - isolate tests: do not use or modify the user current
 #   configuration for MComix (preferences, library, ...)
 # - make sure MComix state is reset before each test
 
-import shutil
-import tempfile
 import unittest
 
 from mcomix import constants
@@ -83,13 +145,11 @@ class MComixTest(unittest.TestCase):
                         'FILEINFO_PICKLE_PATH', 'PREFERENCE_PICKLE_PATH')
 
     def setUp(self):
-        base_tmpdir = os.path.join(os.path.dirname(__file__), 'tmp')
-        os.makedirs(base_tmpdir, exist_ok=True)
         name = '.'.join((
             self.__module__.split('.')[-1],
             self.__class__.__name__,
             self._testMethodName))
-        self.tmp_dir = tempfile.mkdtemp(dir=base_tmpdir, prefix='%s.' % name)
+        self.tmp_dir = tempfile.mkdtemp(dir=_TMP_ROOT, prefix='%s.' % name)
         self._saved_environ = {var: os.environ.get(var)
                                for var in self.OVERRIDDEN_ENVIRONMENT}
         self._saved_tempdir = tempfile.tempdir

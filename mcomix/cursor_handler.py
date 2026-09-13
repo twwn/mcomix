@@ -20,9 +20,9 @@ class CursorHandler(object):
         if cursor == constants.NORMAL_CURSOR:
             mode = None
         elif cursor == constants.GRAB_CURSOR:
-            mode = Gdk.Cursor.new(Gdk.CursorType.FLEUR)
+            mode = Gdk.Cursor.new_from_name('move', None)
         elif cursor == constants.WAIT_CURSOR:
-            mode = Gdk.Cursor.new(Gdk.CursorType.WATCH)
+            mode = Gdk.Cursor.new_from_name('wait', None)
         elif cursor == constants.NO_CURSOR:
             mode = self._get_hidden_cursor()
         else:
@@ -79,7 +79,9 @@ class CursorHandler(object):
             self._timer_id = None
 
     def _get_hidden_cursor(self):
-        return Gdk.Cursor.new(Gdk.CursorType.BLANK_CURSOR)
+        # Gdk.CursorType is gone in GTK4; cursors go by the name the
+        # theme knows them under, and 'none' is the blank one.
+        return Gdk.Cursor.new_from_name('none', None)
 
 
 # vim: expandtab:sw=4:ts=4

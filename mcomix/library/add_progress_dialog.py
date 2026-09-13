@@ -1,9 +1,10 @@
 """library_add_progress_dialog.py - Progress bar for the library."""
 
-from gi.repository import Gtk
+from gi.repository import GLib, Gtk
 from gi.repository import Pango
 
 from mcomix import labels
+from mcomix import widgets
 from mcomix.i18n import _
 
 _dialog = None
@@ -19,40 +20,43 @@ class _AddLibraryProgressDialog(Gtk.Dialog):
         """Adds the books at <paths> to the library, and also to the
         <collection>, unless it is None.
         """
-        super(_AddLibraryProgressDialog, self).__init__(_('Adding books'), library,
-            Gtk.DialogFlags.MODAL, (_('_Stop'), Gtk.ResponseType.CLOSE))
+        # GTK4's Gtk.Dialog takes properties, not the title, parent
+        # and flags GTK3 let it be constructed from.
+        super(_AddLibraryProgressDialog, self).__init__(
+            title=_('Adding books'), transient_for=library, modal=True)
+        self.add_buttons(_('_Stop'), Gtk.ResponseType.CLOSE)
 
         self._window = window
         self._destroy = False
         self.set_size_request(400, -1)
         self.set_resizable(False)
-        self.set_border_width(4)
+        widgets.set_border(self, 4)
         self.connect('response', self._response)
         self.set_default_response(Gtk.ResponseType.CLOSE)
 
         main_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 5)
-        main_box.set_border_width(6)
-        self.vbox.pack_start(main_box, False, False, 0)
+        widgets.set_border(main_box, 6)
+        widgets.pack(self.get_content_area(), main_box, False, False, 0)
         hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 10)
-        main_box.pack_start(hbox, False, False, 5)
+        widgets.pack(main_box, hbox, False, False, 5)
         left_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 5)
         left_box.set_homogeneous(True)
         right_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 5)
         right_box.set_homogeneous(True)
-        hbox.pack_start(left_box, False, False, 0)
-        hbox.pack_start(right_box, False, False, 0)
+        widgets.pack(hbox, left_box, False, False, 0)
+        widgets.pack(hbox, right_box, False, False, 0)
 
         label = labels.BoldLabel(_('Added books:'))
         label.set_xalign(1.0)
         label.set_yalign(1.0)
-        left_box.pack_start(label, True, True, 0)
+        widgets.pack(left_box, label, True, True, 0)
         number_label = Gtk.Label(label='0')
         number_label.set_xalign(0)
         number_label.set_yalign(1.0)
-        right_box.pack_start(number_label, True, True, 0)
+        widgets.pack(right_box, number_label, True, True, 0)
 
         bar = Gtk.ProgressBar()
-        main_box.pack_start(bar, False, False, 0)
+        widgets.pack(main_box, bar, False, False, 0)
 
         added_label = labels.ItalicLabel()
         added_label.set_xalign(0)
@@ -60,8 +64,8 @@ class _AddLibraryProgressDialog(Gtk.Dialog):
         added_label.set_width_chars(64)
         added_label.set_max_width_chars(64)
         added_label.set_ellipsize(Pango.EllipsizeMode.MIDDLE)
-        main_box.pack_start(added_label, False, False, 0)
-        self.show_all()
+        widgets.pack(main_box, added_label, False, False, 0)
+        self.set_visible(True)
 
         total_paths_int = len(paths)
         total_paths_float = float(len(paths))
@@ -77,8 +81,9 @@ class _AddLibraryProgressDialog(Gtk.Dialog):
             added_label.set_text(_("Adding '%s'...") % path)
             bar.set_fraction(total_added / total_paths_float)
 
-            while Gtk.events_pending():
-                Gtk.main_iteration_do(False)
+            context = GLib.MainContext.default()
+            while context.pending():
+                context.iteration(False)
 
             if self._destroy:
                 return

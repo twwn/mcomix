@@ -5,6 +5,7 @@ from gi.repository import Gtk
 from mcomix import i18n
 from mcomix import image_tools
 from mcomix import labels
+from mcomix import widgets
 
 class _Page(Gtk.ScrolledWindow):
 
@@ -15,44 +16,43 @@ class _Page(Gtk.ScrolledWindow):
     def __init__(self) -> None:
         super(_Page, self).__init__()
         self.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
-        self.set_border_width(12)
+        widgets.set_border(self, 12)
 
         self._vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 12)
-        self.add(self._vbox)
+        self.set_child(self._vbox)
 
         topbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 12)
-        self._vbox.pack_start(topbox, True, True, 0)
-        self._thumb = Gtk.Image()
+        widgets.pack(self._vbox, topbox, True, True, 0)
+        # A Gtk.Image draws what it is given at an icon size in GTK4.
+        self._thumb = Gtk.Picture()
         self._thumb.set_size_request(128, 128)
-        topbox.pack_start(self._thumb, False, False, 0)
+        widgets.pack(topbox, self._thumb, False, False, 0)
+        # A Gtk.Frame draws its own border from the theme in GTK4:
+        # there is no shadow type to pick, and the Gtk.EventBox that
+        # used to sit inside it to paint a background is gone with the
+        # rest of them.  The frame holds the box directly.
         borderbox = Gtk.Frame()
-        borderbox.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
         borderbox.set_size_request(-1, 130)
-        topbox.pack_start(borderbox, True, True, 0)
-        insidebox = Gtk.EventBox()
-        insidebox.set_border_width(1)
-        insidebox.set_state(Gtk.StateType.ACTIVE)
-        borderbox.add(insidebox)
-        self._insidebox = insidebox
+        widgets.pack(topbox, borderbox, True, True, 0)
+        self._insidebox = borderbox
         self._mainbox = None
         self._extrabox = None
         self.reset()
 
     def reset(self) -> None:
-        self._thumb.clear()
-        if self._mainbox is not None:
-            self._mainbox.destroy()
+        self._thumb.set_paintable(None)
         self._mainbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 5)
-        self._mainbox.set_border_width(10)
-        self._insidebox.add(self._mainbox)
+        widgets.set_border(self._mainbox, 10)
+        # Puts out whatever was in the frame before.
+        self._insidebox.set_child(self._mainbox)
         if self._extrabox is not None:
-            self._extrabox.destroy()
+            self._vbox.remove(self._extrabox)
         self._extrabox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 10)
-        self._vbox.pack_start(self._extrabox, False, False, 0)
+        widgets.pack(self._vbox, self._extrabox, False, False, 0)
 
     def set_thumbnail(self, pixbuf):
         pixbuf = image_tools.add_border(pixbuf, 1)
-        self._thumb.set_from_pixbuf(pixbuf)
+        self._thumb.set_paintable(image_tools.pixbuf_to_texture(pixbuf))
 
     def set_filename(self, filename):
         """Set the filename to be displayed to <filename>. Call this before
@@ -62,7 +62,7 @@ class _Page(Gtk.ScrolledWindow):
         label.set_xalign(0)
         label.set_yalign(0.5)
         label.set_selectable(True)
-        self._mainbox.pack_start(label, False, False, 0)
+        widgets.pack(self._mainbox, label, False, False, 0)
 
     def set_main_info(self, info):
         """Set the information in the main info box (below the filename) to
@@ -73,7 +73,7 @@ class _Page(Gtk.ScrolledWindow):
             label.set_xalign(0)
             label.set_yalign(0.5)
             label.set_selectable(True)
-            self._mainbox.pack_end(label, False, False, 0)
+            widgets.pack(self._mainbox, label, False, False, 0, end=True)
 
     def set_secondary_info(self, info):
         """Set the information below the main info box to the values in the
@@ -83,17 +83,17 @@ class _Page(Gtk.ScrolledWindow):
         left_box.set_homogeneous(True)
         right_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 8)
         right_box.set_homogeneous(True)
-        self._extrabox.pack_start(left_box, False, False, 0)
-        self._extrabox.pack_start(right_box, False, False, 0)
+        widgets.pack(self._extrabox, left_box, False, False, 0)
+        widgets.pack(self._extrabox, right_box, False, False, 0)
         for desc, value in info:
             desc_label = labels.BoldLabel('%s:' % desc)
             desc_label.set_xalign(1.0)
             desc_label.set_yalign(1.0)
-            left_box.pack_start(desc_label, True, True, 0)
+            widgets.pack(left_box, desc_label, True, True, 0)
             value_label = Gtk.Label(label=value)
             value_label.set_xalign(0)
             value_label.set_yalign(1.0)
             value_label.set_selectable(True)
-            right_box.pack_start(value_label, True, True, 0)
+            widgets.pack(right_box, value_label, True, True, 0)
 
 # vim: expandtab:sw=4:ts=4

@@ -7,7 +7,7 @@ import threading
 
 from gi.repository import Gtk
 
-from . import MComixTest, get_testfile_path
+from . import MComixTest, get_testfile_path, pump as _pump
 
 from mcomix.archive import password as archive_password
 from mcomix.archive import zip as zip_archive
@@ -15,10 +15,7 @@ from mcomix.archive import zip as zip_archive
 
 def pump(rounds=200):
     """Let the main loop run through whatever is pending."""
-    turns = 0
-    while Gtk.events_pending() and turns < rounds:
-        Gtk.main_iteration_do(False)
-        turns += 1
+    _pump(rounds)
 
 
 def visible_prompts():
@@ -50,13 +47,16 @@ class PasswordDialogTest(MComixTest):
         self.fail('no password prompt appeared')
 
     def _entry_in(self, widget):
+        """Find the password entry. GTK4 has no Gtk.Container to ask for
+        a list of children; every widget walks its own."""
         if isinstance(widget, Gtk.Entry):
             return widget
-        if isinstance(widget, Gtk.Container):
-            for child in widget.get_children():
-                found = self._entry_in(child)
-                if found is not None:
-                    return found
+        child = widget.get_first_child()
+        while child is not None:
+            found = self._entry_in(child)
+            if found is not None:
+                return found
+            child = child.get_next_sibling()
         return None
 
     def test_asking_does_not_wait_for_the_answer(self):

@@ -26,6 +26,8 @@ class ThumbnailViewBase(object):
 
         #: Ignore updates when this flag is True.
         self._updates_stopped = True
+        #: The adjustment updates are currently being followed on.
+        self._adjustment = None
         #: Worker thread
         self._thread = WorkerThread(self._pixbuf_worker,
                                     name='thumbview',
@@ -45,10 +47,31 @@ class ThumbnailViewBase(object):
         self._updates_stopped = True
         self._thread.stop()
 
+    def _follow_visible_range(self) -> None:
+        """Ask for the thumbnails on screen whenever they may have changed.
+
+        Gtk.Widget::draw was what said so up to GTK3, and GTK4 has no
+        such signal - a widget is asked for a render node instead, which
+        is no place to start worker threads from.  Scrolling and
+        resizing both reach the vertical adjustment, which is where the
+        visible range is read from in the first place.
+        """
+        self.connect('map', self.draw_thumbnails_on_screen)
+        self.connect('notify::vadjustment', self._vadjustment_set)
+        self._vadjustment_set()
+
+    def _vadjustment_set(self, *args) -> None:
+        adjustment = self.get_vadjustment()
+        if adjustment is None or adjustment is self._adjustment:
+            return
+        self._adjustment = adjustment
+        # 'changed' covers the view being resized, 'value-changed'
+        # covers it being scrolled.
+        adjustment.connect('changed', self.draw_thumbnails_on_screen)
+        adjustment.connect('value-changed', self.draw_thumbnails_on_screen)
+
     def draw_thumbnails_on_screen(self, *args):
-        """ Prepares valid thumbnails for currently displayed icons.
-        This method is supposed to be called from the expose-event
-        callback function. """
+        """ Prepares valid thumbnails for currently displayed icons. """
 
         visible = self.get_visible_range()
         if not visible:
@@ -105,12 +128,11 @@ class ThumbnailViewBase(object):
 class ThumbnailIconView(Gtk.IconView, ThumbnailViewBase):
     def __init__(self, model, uid_column, pixbuf_column, status_column):
         assert 0 != (model.get_flags() & Gtk.TreeModelFlags.ITERS_PERSIST)
-        super(ThumbnailIconView, self).__init__(model)
+        super(ThumbnailIconView, self).__init__(model=model)
         ThumbnailViewBase.__init__(self, uid_column, pixbuf_column, status_column)
         self.set_pixbuf_column(pixbuf_column)
 
-        # Connect events
-        self.connect('draw', self.draw_thumbnails_on_screen)
+        self._follow_visible_range()
 
     def get_visible_range(self):
         return Gtk.IconView.get_visible_range(self)
@@ -118,11 +140,10 @@ class ThumbnailIconView(Gtk.IconView, ThumbnailViewBase):
 class ThumbnailTreeView(Gtk.TreeView, ThumbnailViewBase):
     def __init__(self, model, uid_column, pixbuf_column, status_column):
         assert 0 != (model.get_flags() & Gtk.TreeModelFlags.ITERS_PERSIST)
-        super(ThumbnailTreeView, self).__init__(model)
+        super(ThumbnailTreeView, self).__init__(model=model)
         ThumbnailViewBase.__init__(self, uid_column, pixbuf_column, status_column)
 
-        # Connect events
-        self.connect('draw', self.draw_thumbnails_on_screen)
+        self._follow_visible_range()
 
     def get_visible_range(self):
         return Gtk.TreeView.get_visible_range(self)

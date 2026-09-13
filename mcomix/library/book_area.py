@@ -1,7 +1,6 @@
 """library_book_area.py - The window of the library that displays the covers of books."""
 
 import os
-import urllib.request, urllib.parse, urllib.error
 from gi.repository import Gdk, GdkPixbuf, Gio, GLib, GObject, Gtk
 import PIL.Image as Image
 import PIL.ImageDraw as ImageDraw
@@ -12,9 +11,8 @@ from mcomix import file_chooser_library_dialog
 from mcomix import image_tools
 from mcomix import constants
 from mcomix import icons
-from mcomix import portability
+from mcomix import widgets
 from mcomix import i18n
-from mcomix import status
 from mcomix import log
 from mcomix import message_dialog
 from mcomix import tools
@@ -70,36 +68,39 @@ class _BookArea(Gtk.ScrolledWindow):
         self._iconview.generate_thumbnail = self._get_pixbuf
         self._iconview.connect('item_activated', self._book_activated)
         self._iconview.connect('selection_changed', self._selection_changed)
-        self._iconview.connect_after('drag_begin', self._drag_begin)
-        self._iconview.connect('drag_data_get', self._drag_data_get)
-        self._iconview.connect('drag_data_received', self._drag_data_received)
-        self._iconview.connect('button_press_event', self._button_press)
-        self._iconview.connect('key_press_event', self._key_press)
-        self._iconview.connect('popup_menu', self._popup_menu)
+        clicks = Gtk.GestureClick()
+        clicks.set_button(3)
+        clicks.connect('pressed', self._button_press)
+        self._iconview.add_controller(clicks)
+
+        keys = Gtk.EventControllerKey()
+        keys.connect('key-pressed', self._key_press)
+        self._iconview.add_controller(keys)
         # Covers are shown on black, whatever base colour the theme has.
         self._black_background = Gtk.CssProvider()
         self._black_background.load_from_data(b'* { background-color: black; }')
         self._iconview.get_style_context().add_provider(
             self._black_background, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
-        self._iconview.enable_model_drag_source(
-            Gdk.ModifierType.BUTTON1_MASK,
-            [Gtk.TargetEntry.new('text/plain', Gtk.TargetFlags.SAME_APP,
-                                 constants.LIBRARY_DRAG_EXTERNAL_ID)],
-            Gdk.DragAction.MOVE)
-        self._iconview.drag_dest_set(
-            Gtk.DestDefaults.ALL,
-            [Gtk.TargetEntry.new('text/uri-list', 0,
-                                 constants.LIBRARY_DRAG_EXTERNAL_ID)],
-            Gdk.DragAction.COPY | Gdk.DragAction.MOVE)
+        # Books drag out to the collection area, and files drop in from
+        # a file manager.  GTK4 has neither a model drag source nor a
+        # model drag destination; controllers do both, and a drop target
+        # answers for one type - so the files come to one of their own.
+        drag = Gtk.DragSource()
+        drag.set_actions(Gdk.DragAction.MOVE)
+        drag.connect('prepare', self._drag_prepare)
+        drag.connect('drag-begin', self._drag_begin)
+        self._iconview.add_controller(drag)
+
+        drop = Gtk.DropTarget.new(Gdk.FileList, Gdk.DragAction.COPY)
+        drop.connect('drop', self._drag_data_received)
+        self._iconview.add_controller(drop)
         self._iconview.set_selection_mode(Gtk.SelectionMode.MULTIPLE)
-        self.add(self._iconview)
+        self.set_child(self._iconview)
 
         self._iconview.set_margin(0)
         self._iconview.set_row_spacing(0)
         self._iconview.set_column_spacing(0)
 
-        self._tooltipstatus = status.TooltipStatusHelper(
-            statusbar=self._library.get_status_bar())
         self._popup_actions = Gio.SimpleActionGroup()
         self._book_menu = self._create_popup_menu()
 
@@ -132,12 +133,10 @@ class _BookArea(Gtk.ScrolledWindow):
 
     def _create_popup_menu(self) -> Any:
         """Build the right-click menu for the book list."""
-        tooltips = {}
         for name, label, tooltip, handler in self._menu_entries():
             action = Gio.SimpleAction.new(name, None)
             action.connect('activate', handler)
             self._popup_actions.add_action(action)
-            tooltips[label] = tooltip
 
         # An item bound to an action that is never enabled, which is what
         # the heading was before.
@@ -206,10 +205,7 @@ class _BookArea(Gtk.ScrolledWindow):
         submenus.append_submenu(_('Cover si_ze'), size_menu)
         model.append_section(None, submenus)
 
-        menu = Gtk.Menu.new_from_model(model)
-        menu.attach_to_widget(self, None)
-        menu.show_all()
-        self._tooltipstatus.attach_to_menu(menu, tooltips)
+        menu = Gtk.PopoverMenu.new_from_model(model)
         return menu
 
     @staticmethod
@@ -406,9 +402,10 @@ class _BookArea(Gtk.ScrolledWindow):
             dialog.set_text(_('Set library cover size'))
 
             # Add adjustment scale
-            adjustment = Gtk.Adjustment(prefs['library cover size'], 20,
+            adjustment = Gtk.Adjustment.new(prefs['library cover size'], 20,
                     constants.MAX_LIBRARY_COVER_SIZE, 10, 25, 0)
-            cover_size_scale = Gtk.HScale(adjustment)
+            cover_size_scale = Gtk.Scale.new(Gtk.Orientation.HORIZONTAL,
+                                             adjustment)
             cover_size_scale.set_size_request(200, -1)
             cover_size_scale.set_digits(0)
             cover_size_scale.set_draw_value(True)
@@ -418,7 +415,7 @@ class _BookArea(Gtk.ScrolledWindow):
                     constants.SIZE_TINY):
                 cover_size_scale.add_mark(mark, Gtk.PositionType.TOP, None)
 
-            dialog.get_message_area().pack_end(cover_size_scale, True, True, 0)
+            widgets.pack(dialog.get_message_area(), cover_size_scale, True, True, 0, end=True)
 
             def size_chosen(response: int) -> None:
                 # The dialog was told not to destroy itself, so that the
@@ -451,9 +448,9 @@ class _BookArea(Gtk.ScrolledWindow):
         if pixbuf is None:
             width, height = self._pixbuf_size(border_size=0)
             try:
-                pixbuf = self._library.backend.get_book_thumbnail(book.path) or image_tools.MISSING_IMAGE_ICON
+                pixbuf = self._library.backend.get_book_thumbnail(book.path) or image_tools.missing_image_icon()
             except Exception:
-                pixbuf = image_tools.MISSING_IMAGE_ICON
+                pixbuf = image_tools.missing_image_icon()
             pixbuf = image_tools.fit_in_rectangle(pixbuf, width, height, scale_up=True)
             self._cache.add(book.path, pixbuf)
 
@@ -614,16 +611,16 @@ class _BookArea(Gtk.ScrolledWindow):
 
             self._library._window.clipboard.copy(path, pixbuf)
 
-    def _button_press(self, iconview, event):
+    def _button_press(self, gesture, n_press, x, y) -> None:
         """Handle mouse button presses on the _BookArea."""
-        path = iconview.get_path_at_pos(int(event.x), int(event.y))
+        iconview = self._iconview
+        path = iconview.get_path_at_pos(int(x), int(y))
 
-        if event.button == 3:
-            if path and not iconview.path_is_selected(path):
-                iconview.unselect_all()
-                iconview.select_path(path)
+        if path and not iconview.path_is_selected(path):
+            iconview.unselect_all()
+            iconview.select_path(path)
 
-            self._popup_book_menu()
+        self._popup_book_menu()
 
     def _popup_book_menu(self) -> None:
         """ Shows the book panel popup menu. """
@@ -642,25 +639,35 @@ class _BookArea(Gtk.ScrolledWindow):
                             books_selected and not is_collection_all)
         self._set_sensitive('copy-to-clipboard', len(selected) == 1)
 
-        self._book_menu.popup(None, None, None, None, 3,
-                              Gtk.get_current_event_time())
+        widgets.popup_at(self._book_menu, self, 0, 0)
 
     def _set_sensitive(self, action, sensitive):
         """ Enables the popup menu action <action> based on <sensitive>. """
 
         self._popup_actions.lookup_action(action).set_enabled(sensitive)
 
-    def _key_press(self, iconview, event):
+    def _key_press(self, controller, keyval, keycode, state):
         """Handle key presses on the _BookArea."""
-        if event.keyval == Gdk.KEY_Delete:
+        if keyval == Gdk.KEY_Delete:
             self._remove_books_from_collection()
+            return Gdk.EVENT_STOP
+        # Gtk.Widget::popup-menu, which the menu key used to reach, is
+        # not a signal in GTK4.
+        if keyval == Gdk.KEY_Menu:
+            self._popup_book_menu()
+            return Gdk.EVENT_STOP
+        return Gdk.EVENT_PROPAGATE
 
-    def _popup_menu(self, iconview):
-        """ Called when the menu key is pressed to open the popup menu. """
-        self._popup_book_menu()
-        return True
+    def _drag_prepare(self, source, x, y):
+        """Offer the books being dragged, as the paths of their icons."""
+        paths = self._iconview.get_selected_items()
+        if not paths:
+            return None
+        return Gdk.ContentProvider.new_for_value(
+            '%s:%s' % (constants.LIBRARY_DRAG_BOOKS,
+                       ','.join(path.to_string() for path in paths)))
 
-    def _drag_begin(self, iconview, context):
+    def _drag_begin(self, source, drag):
         """Create a cursor image for drag-n-drop from the library.
 
         This method relies on implementation details regarding PIL's
@@ -668,17 +675,15 @@ class _BookArea(Gtk.ScrolledWindow):
         If those are changed in a future release of PIL, this method might
         produce bad looking output (e.g. non-centered text).
 
-        It's also used with connect_after() to overwrite the cursor
-        automatically created when using enable_model_drag_source(), so in
-        essence it's a hack, but at least it works.
         """
+        iconview = self._iconview
         icon_path = iconview.get_cursor()[1]
         num_books = len(iconview.get_selected_items())
         book = self.get_book_at_path(icon_path)
 
         cover: GdkPixbuf.Pixbuf = self._library.backend.get_book_cover(book)
         if cover is None:
-            cover = image_tools.MISSING_IMAGE_ICON
+            cover = image_tools.missing_image_icon()
 
         cover = cover.scale_simple(max(0, cover.get_width() // 2),
             max(0, cover.get_height() // 2), prefs['scaling quality'])
@@ -713,31 +718,26 @@ class _BookArea(Gtk.ScrolledWindow):
         else:
             pointer = cover
 
-        Gtk.drag_set_icon_pixbuf(context, pointer, -5, -5)
+        source.set_icon(Gdk.Texture.new_for_pixbuf(pointer), -5, -5)
 
-    def _drag_data_get(self, iconview: thumbnail_view.ThumbnailIconView, context: Gdk.DragContext,
-                       selection: Gtk.SelectionData, info: int, time: int) -> None:
-        """Fill the SelectionData with (iconview) paths for the dragged books
-        formatted as a string with each path separated by a comma.
+    def _drag_data_received(self, target, value, x, y) -> bool:
+        """Handle files dropped on the book area (i.e. from external
+        apps like the file manager).
         """
-        paths = iconview.get_selected_items()
-        text = ','.join(path.to_string() for path in paths)
-        selection.set_text(text, len(text))
-
-    def _drag_data_received(self, widget, context, x, y, data, *args):
-        """Handle drag-n-drop events ending on the book area (i.e. from
-        external apps like the file manager).
-        """
-        uris = data.get_uris()
-        if not uris:
-            return
-
-        uris = [ portability.normalize_uri(uri) for uri in uris ]
-        paths = [ urllib.request.url2pathname(uri).decode('utf-8') for uri in uris ]
+        # A Gdk.FileList carries the files themselves.  What stood here
+        # unquoted URIs by hand and then called .decode('utf-8') on the
+        # str that came back, which has raised AttributeError ever since
+        # the move to Python 3.
+        paths = [path for path in
+                 (dropped.get_path() for dropped in value.get_files())
+                 if path is not None]
+        if not paths:
+            return False
 
         collection = self._library.collection_area.get_current_collection()
         collection_name = self._library.backend.get_collection_name(collection)
         self._library.add_books(paths, collection_name)
+        return True
 
 
 # vim: expandtab:sw=4:ts=4

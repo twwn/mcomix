@@ -1,7 +1,7 @@
 """lens.py - Magnifying lens."""
 
 
-from gi.repository import Gdk, GdkPixbuf, Gtk
+from gi.repository import GdkPixbuf, Graphene, Gtk
 
 from mcomix.preferences import prefs
 from mcomix import image_tools
@@ -22,10 +22,15 @@ class MagnifyingLens(object):
     module as it uses implementation details not in the interface.
     """
 
+    #: What the lens is called among the canvas' overlays.
+    _OVERLAY = 'lens'
+
     def __init__(self, window):
         self._window = window
         self._area = self._window._main_layout
-        self._area.connect('motion-notify-event', self._motion_event)
+        motion = Gtk.EventControllerMotion()
+        motion.connect('motion', self._motion_event)
+        self._area.add_controller(motion)
 
         #: Stores lens state
         self._enabled = False
@@ -59,34 +64,26 @@ class MagnifyingLens(object):
         with it; <x> and <y> are the positions of the cursor within the
         main window layout area.
         """
-        if self._window.images[0].get_storage_type() not in (Gtk.ImageType.PIXBUF,
-            Gtk.ImageType.ANIMATION):
+        # A Gtk.Picture with nothing in it has nothing to magnify;
+        # Gtk.ImageType, which said so up to GTK3, is gone.
+        if self._window.images[0].get_paintable() is None:
             return
 
         lens_size = (prefs['lens size'],) * 2 # 2D only
         border_size = 1
         rectangle = self._calculate_lens_rect(x, y, *lens_size, border_size)
 
-        draw_region = Gdk.Rectangle()
-        draw_region.x, draw_region.y, draw_region.width, draw_region.height = rectangle
-        if self._last_lens_rect:
-            last_region = Gdk.Rectangle()
-            last_region.x, last_region.y, last_region.width, last_region.height = self._last_lens_rect
-            draw_region = Gdk.rectangle_union(draw_region, last_region)
-
         pixbuf = self._get_lens_pixbuf(x, y, lens_size, border_size,
             (x - rectangle[0], y - rectangle[1]))
-        window = self._window._main_layout.get_bin_window()
-        window.begin_paint_rect(draw_region)
 
-        self._clear_lens()
-
-        cr = window.cairo_create()
-        surface = Gdk.cairo_surface_create_from_pixbuf(pixbuf, 0, window)
-        cr.set_source_surface(surface, rectangle[0], rectangle[1])
-        cr.paint()
-
-        window.end_paint()
+        # There is no window to paint into any more: the canvas draws the
+        # lens over the pages, and works out for itself what that damages.
+        texture = image_tools.pixbuf_to_texture(pixbuf)
+        bounds = Graphene.Rect()
+        bounds.init(*rectangle)
+        self._area.set_overlay(
+            self._OVERLAY,
+            lambda snapshot: snapshot.append_texture(texture, bounds))
 
         self._last_lens_rect = rectangle
 
@@ -107,25 +104,25 @@ class MagnifyingLens(object):
         return lens_x, lens_y, width + 2 * border_size, height + 2 * border_size
 
     def _clear_lens(self, current_lens_region=None):
-        """ Invalidates the area that was damaged by the last call to draw_lens. """
+        """ Takes the lens off the pages again. """
 
         if not self._last_lens_rect:
             return
 
-        window = self._window._main_layout.get_bin_window()
-        crect = Gdk.Rectangle()
-        crect.x, crect.y, crect.width, crect.height = self._last_lens_rect
-        window.invalidate_rect(crect, True)
-        window.process_updates(True)
+        self._area.set_overlay(self._OVERLAY, None)
         self._last_lens_rect = None
 
     def toggle(self, action):
         """Toggle on or off the lens depending on the state of <action>."""
         self.enabled = action.get_active()
 
-    def _motion_event(self, widget, event):
+    def _motion_event(self, controller, x, y):
         """ Called whenever the mouse moves over the image area. """
-        self._point = (int(event.x), int(event.y))
+        # The lens works in canvas coordinates, which is what the events
+        # on Gtk.Layout's scrolling window carried; a controller reports
+        # where the pointer is in the widget instead.
+        self._point = (int(x + self._window._hadjust.get_value()),
+                       int(y + self._window._vadjust.get_value()))
         if self.enabled:
             self._draw_lens(*self._point)
 

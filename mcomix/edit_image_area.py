@@ -3,6 +3,7 @@
 import os
 from gi.repository import Gdk, GdkPixbuf, Gio, Gtk
 
+from mcomix import widgets
 from mcomix import image_tools
 from mcomix import i18n
 from mcomix import thumbnail_tools
@@ -35,10 +36,15 @@ class _ImageArea(Gtk.ScrolledWindow):
         self._iconview.set_tooltip_column(1)
         self._iconview.set_reorderable(True)
         self._iconview.set_selection_mode(Gtk.SelectionMode.MULTIPLE)
-        self._iconview.connect('button_press_event', self._button_press)
-        self._iconview.connect('key_press_event', self._key_press)
-        self._iconview.connect_after('drag_begin', self._drag_begin)
-        self.add(self._iconview)
+        clicks = Gtk.GestureClick()
+        clicks.set_button(3)
+        clicks.connect('pressed', self._button_press)
+        self._iconview.add_controller(clicks)
+
+        keys = Gtk.EventControllerKey()
+        keys.connect('key-pressed', self._key_press)
+        self._iconview.add_controller(keys)
+        self.set_child(self._iconview)
 
         self._thumbnail_size = 128
         self._thumbnailer = thumbnail_tools.Thumbnailer(store_on_disk=False,
@@ -66,9 +72,7 @@ class _ImageArea(Gtk.ScrolledWindow):
 
         model = Gio.Menu()
         model.append(_('Remove from archive'), 'imagearea.remove')
-        menu = Gtk.Menu.new_from_model(model)
-        menu.attach_to_widget(self, None)
-        return menu
+        return Gtk.PopoverMenu.new_from_model(model)
 
     def fetch_images(self) -> None:
         """Load all the images in the archive or directory."""
@@ -89,7 +93,7 @@ class _ImageArea(Gtk.ScrolledWindow):
             pass
         pixbuf = self._thumbnailer.thumbnail(path)
         if pixbuf is None:
-            pixbuf = image_tools.MISSING_IMAGE_ICON
+            pixbuf = image_tools.missing_image_icon()
         return pixbuf
 
     def add_extra_image(self, path):
@@ -108,39 +112,31 @@ class _ImageArea(Gtk.ScrolledWindow):
             iterator = self._liststore.get_iter(path)
             self._liststore.remove(iterator)
 
-    def _button_press(self, iconview, event):
+    def _button_press(self, gesture, n_press, x, y) -> None:
         """Handle mouse button presses on the thumbnail area."""
-        path = iconview.get_path_at_pos(int(event.x), int(event.y))
+        iconview = self._iconview
+        path = iconview.get_path_at_pos(int(x), int(y))
 
         if path is None:
             return
 
-        if event.button == 3:
+        if not iconview.path_is_selected(path):
+            iconview.unselect_all()
+            iconview.select_path(path)
 
-            if not iconview.path_is_selected(path):
-                iconview.unselect_all()
-                iconview.select_path(path)
+        widgets.popup_at(self._popup_menu, iconview, x, y)
 
-            self._popup_menu.popup(None, None, None, None,
-                                   event.button, event.time)
-
-    def _key_press(self, iconview, event):
+    def _key_press(self, controller, keyval, keycode, state):
         """Handle key presses on the thumbnail area."""
-        if event.keyval == Gdk.KEY_Delete:
+        if keyval == Gdk.KEY_Delete:
             self._remove_pages()
+            return Gdk.EVENT_STOP
+        return Gdk.EVENT_PROPAGATE
 
-    def _drag_begin(self, iconview, context):
-        """We hook up on drag_begin events so that we can set the hotspot
-        for the cursor at the top left corner of the thumbnail (so that we
-        might actually see where we are dropping!).
-        """
-        # Gtk.IconView.get_cursor() returns (found, path, cell), and its
-        # drag icon method is named differently from Gtk.TreeView's.
-        path = iconview.get_cursor()[1]
-        surface = iconview.create_drag_icon(path)
-        width, height = surface.get_width(), surface.get_height()
-        pixbuf = Gdk.pixbuf_get_from_surface(surface, 0, 0, width, height)
-        Gtk.drag_set_icon_pixbuf(context, pixbuf, -5, -5)
+    # The pages are reordered by dragging, which Gtk.IconView does for
+    # itself.  A drag_begin hook used to move the drag icon's hotspot to
+    # its top left corner; GTK4 gives no such signal on the widget, and
+    # the icon it draws for a reorder is its own.
 
     def cleanup(self) -> None:
         self._iconview.stop_update()

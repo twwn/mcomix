@@ -3,6 +3,7 @@
 from gi.repository import Gtk
 
 from mcomix import message_dialog
+from mcomix import widgets
 from mcomix.i18n import _
 
 from collections.abc import Callable
@@ -27,7 +28,7 @@ def ask_for_password(archive: str,
     password_box = Gtk.Entry()
     password_box.set_visibility(False)
     password_box.set_activates_default(True)
-    dialog.get_content_area().pack_end(password_box, True, True, 0)
+    widgets.pack(dialog.get_content_area(), password_box, True, True, 0, end=True)
     dialog.set_focus(password_box)
 
     def responded(response: int) -> None:

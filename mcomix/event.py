@@ -1,12 +1,11 @@
 """event.py - Event handling (keyboard, mouse, etc.) for the main window.
 """
 
-import urllib.request, urllib.parse, urllib.error
 from gi.repository import Gdk, Gtk
 
 from mcomix.preferences import prefs
 from mcomix import constants
-from mcomix import portability
+from mcomix import widgets
 from mcomix import keybindings
 from mcomix import openwith
 
@@ -26,14 +25,60 @@ class EventHandler(object):
         #: If True, increment _extra_scroll_events before switchting pages
         self._scroll_protection = False
 
-    def resize_event(self, widget, event):
-        """Handle events from resizing and moving the main window."""
-        size = (event.width, event.height)
+    def register_controllers(self, window, page_area) -> None:
+        """Add the controllers input arrives through in GTK4.
+
+        There are no event masks and no *-event signals any more: a
+        widget gets what the controllers added to it deliver.  The keys
+        are taken in the capture phase, which is where the toplevel's
+        key-press-event handler used to sit - ahead of the thumbnail
+        list, which would otherwise make its own use of Up and Space.
+        """
+        keys = Gtk.EventControllerKey()
+        keys.set_propagation_phase(Gtk.PropagationPhase.CAPTURE)
+        keys.connect('key-pressed', self.key_press_event)
+        keys.connect('key-released', self.key_release_event)
+        window.add_controller(keys)
+
+        clicks = Gtk.GestureClick()
+        # Every button, as the button masks asked for.
+        clicks.set_button(0)
+        clicks.connect('pressed', self.mouse_press_event)
+        clicks.connect('released', self.mouse_release_event)
+        page_area.add_controller(clicks)
+
+        motion = Gtk.EventControllerMotion()
+        motion.connect('motion', self.mouse_move_event)
+        page_area.add_controller(motion)
+
+        scroll = Gtk.EventControllerScroll()
+        scroll.set_flags(Gtk.EventControllerScrollFlags.BOTH_AXES |
+                         Gtk.EventControllerScrollFlags.DISCRETE)
+        scroll.connect('scroll', self.scroll_wheel_event)
+        page_area.add_controller(scroll)
+
+        drop = Gtk.DropTarget.new(Gdk.FileList, Gdk.DragAction.COPY)
+        drop.connect('drop', self.drag_n_drop_event)
+        page_area.add_controller(drop)
+
+    def focus_changed(self, window, _parameter) -> None:
+        """Handle the main window gaining or losing the focus.
+
+        GTK3 had a signal for each; GTK4 has the one property.
+        """
+        if window.get_property('is-active'):
+            self._window.gained_focus()
+        else:
+            self._window.lost_focus()
+
+    def resize_event(self, window, _parameter) -> None:
+        """Handle the main window being resized."""
+        size = self._window.get_size()
         if size != self._window.previous_size:
             self._window.previous_size = size
             self._window.draw_image()
 
-    def window_state_event(self, widget, event: Gdk.EventWindowState):
+    def window_state_event(self, window, _parameter) -> None:
         is_fullscreen = self._window.is_fullscreen
         if self._window.was_fullscreen != is_fullscreen:
             # Fullscreen state changed.
@@ -72,17 +117,17 @@ class EventHandler(object):
             ['<Ctrl>Page_Down', '<Ctrl>KP_Page_Down'],
             self._flip_page, kwargs={'number_of_pages': 1, 'single_step': True})
         manager.register('previous_page_dynamic',
-            ['<Mod1>Left'],
+            ['<Alt>Left'],
             self._left_right_page_progress, kwargs={'number_of_pages': -1})
         manager.register('next_page_dynamic',
-            ['<Mod1>Right'],
+            ['<Alt>Right'],
             self._left_right_page_progress, kwargs={'number_of_pages': 1})
 
         manager.register('previous_page_ff',
-            ['<Shift>Page_Up', '<Shift>KP_Page_Up', '<Shift>BackSpace', '<Shift><Mod1>Left'],
+            ['<Shift>Page_Up', '<Shift>KP_Page_Up', '<Shift>BackSpace', '<Shift><Alt>Left'],
             self._flip_page, kwargs={'number_of_pages': -10})
         manager.register('next_page_ff',
-            ['<Shift>Page_Down', '<Shift>KP_Page_Down', '<Shift><Mod1>Right'],
+            ['<Shift>Page_Down', '<Shift>KP_Page_Down', '<Shift><Alt>Right'],
             self._flip_page, kwargs={'number_of_pages': 10})
 
 
@@ -393,7 +438,7 @@ class EventHandler(object):
             manager.register('execute_command_%d' % i, ['%d' % i],
                              self._execute_command, args=[i - 1])
 
-    def key_press_event(self, widget, event, *args):
+    def key_press_event(self, controller, keyval, keycode, state):
         """Handle key press events on the main window."""
 
         # This is set on demand by callback functions
@@ -404,59 +449,61 @@ class EventHandler(object):
         # Some keys can only be pressed with certain modifiers that
         # are irrelevant to the actual hotkey. Find out and ignore them.
         ALL_ACCELS_MASK = (Gdk.ModifierType.CONTROL_MASK | Gdk.ModifierType.SHIFT_MASK |
-                           Gdk.ModifierType.MOD1_MASK)
+                           Gdk.ModifierType.ALT_MASK)
 
-        keymap = Gdk.Keymap.get_default()
-        code = keymap.translate_keyboard_state(
-                event.hardware_keycode, event.get_state(), event.group)
+        # Gdk.Keymap is gone in GTK4; the display translates a key, and
+        # the controller knows which layout it was typed in.
+        code = self._window.get_display().translate_key(
+                keycode, state, controller.get_group())
 
         if code[0]:
-            keyval = code[1]
+            accel_keyval = code[1]
             # 'consumed' is the modifier that was necessary to type the key
             consumed = code[4]
 
-            if event.get_state() & Gdk.ModifierType.SHIFT_MASK:
+            if state & Gdk.ModifierType.SHIFT_MASK:
                 # If the resulting key is upper case (i.e. SHIFT + key),
                 # convert it to lower case and remove SHIFT from the consumed flags
                 # to match how keys are registered (<Shift> + lowercase)
-                if keyval != Gdk.keyval_to_lower(keyval):
-                    keyval = Gdk.keyval_to_lower(keyval)
+                if accel_keyval != Gdk.keyval_to_lower(accel_keyval):
+                    accel_keyval = Gdk.keyval_to_lower(accel_keyval)
                     consumed &= ~Gdk.ModifierType.SHIFT_MASK
                 # If lower/upper case conversion with SHIFT is not applicable to the key pressed,
                 # i.e. Space and other special keys, remove SHIFT from the consumed mask.
-                if Gdk.keyval_to_upper(keyval) == Gdk.keyval_to_lower(keyval):
+                if Gdk.keyval_to_upper(accel_keyval) == Gdk.keyval_to_lower(accel_keyval):
                     consumed &= ~Gdk.ModifierType.SHIFT_MASK
 
-            manager.execute((keyval, event.get_state() & ~consumed & ALL_ACCELS_MASK))
+            manager.execute((accel_keyval, state & ~consumed & ALL_ACCELS_MASK))
 
         # ---------------------------------------------------------------
         # Register CTRL for scrolling only one page instead of two
         # pages in double page mode. This is mainly for mouse scrolling.
         # ---------------------------------------------------------------
-        if event.keyval in (Gdk.KEY_Control_L, Gdk.KEY_Control_R):
+        if keyval in (Gdk.KEY_Control_L, Gdk.KEY_Control_R):
             self._window.imagehandler.force_single_step = True
 
         # ----------------------------------------------------------------
         # We kill the signals here for the Up, Down, Space and Enter keys,
         # or they will start fiddling with the thumbnail selector (bad).
         # ----------------------------------------------------------------
-        if (event.keyval in (Gdk.KEY_Up, Gdk.KEY_Down,
+        if (keyval in (Gdk.KEY_Up, Gdk.KEY_Down,
           Gdk.KEY_space, Gdk.KEY_KP_Enter, Gdk.KEY_KP_Up,
           Gdk.KEY_KP_Down, Gdk.KEY_KP_Home, Gdk.KEY_KP_End,
           Gdk.KEY_KP_Page_Up, Gdk.KEY_KP_Page_Down) or
-          (event.keyval == Gdk.KEY_Return and not
-          'GDK_MOD1_MASK' in event.get_state().value_names)):
+          (keyval == Gdk.KEY_Return and
+           not state & Gdk.ModifierType.ALT_MASK)):
 
-            self._window.emit_stop_by_name('key_press_event')
-            return True
+            return Gdk.EVENT_STOP
 
-    def key_release_event(self, widget, event, *args):
+        return Gdk.EVENT_PROPAGATE
+
+    def key_release_event(self, controller, keyval, keycode, state) -> None:
         """ Handle release of keys for the main window. """
 
         # ---------------------------------------------------------------
         # Unregister CTRL for scrolling only one page in double page mode
         # ---------------------------------------------------------------
-        if event.keyval in (Gdk.KEY_Control_L, Gdk.KEY_Control_R):
+        if keyval in (Gdk.KEY_Control_L, Gdk.KEY_Control_R):
             self._window.imagehandler.force_single_step = False
 
     def escape_event(self) -> None:
@@ -466,32 +513,31 @@ class EventHandler(object):
         else:
             self._window.actiongroup.get_action('fullscreen').set_active(False)
 
-    def scroll_wheel_event(self, widget, event, *args):
+    def scroll_wheel_event(self, controller, delta_x, delta_y):
         """Handle scroll wheel events on the main layout area. The scroll
         wheel flips pages in best fit mode and scrolls the scrollbars
         otherwise.
         """
-        if event.get_state() & Gdk.ModifierType.BUTTON2_MASK:
-            return
+        # A scroll controller reports how far, not which way: GTK4 has
+        # no scroll direction to ask for.
+        state = controller.get_current_event_state()
+        if state & Gdk.ModifierType.BUTTON2_MASK:
+            return Gdk.EVENT_PROPAGATE
 
-        has_direction, direction = event.get_scroll_direction()
-        if not has_direction:
-            direction = None
-            has_delta, delta_x, delta_y = event.get_scroll_deltas()
-            if has_delta:
-                if delta_y < 0:
-                    direction = Gdk.ScrollDirection.UP
-                elif delta_y > 0:
-                    direction = Gdk.ScrollDirection.DOWN
-                elif delta_x < 0:
-                    direction = Gdk.ScrollDirection.LEFT
-                elif delta_x > 0:
-                    direction = Gdk.ScrollDirection.RIGHT
+        direction = None
+        if delta_y < 0:
+            direction = Gdk.ScrollDirection.UP
+        elif delta_y > 0:
+            direction = Gdk.ScrollDirection.DOWN
+        elif delta_x < 0:
+            direction = Gdk.ScrollDirection.LEFT
+        elif delta_x > 0:
+            direction = Gdk.ScrollDirection.RIGHT
 
         self._scroll_protection = True
 
         if direction == Gdk.ScrollDirection.UP:
-            if event.get_state() & Gdk.ModifierType.CONTROL_MASK:
+            if state & Gdk.ModifierType.CONTROL_MASK:
                 self._window.manual_zoom_in()
             elif prefs['smart scroll']:
                 self._smart_scroll_up(prefs['number of pixels to scroll per mouse wheel event'])
@@ -499,7 +545,7 @@ class EventHandler(object):
                 self._scroll_with_flipping(0, -prefs['number of pixels to scroll per mouse wheel event'])
 
         elif direction == Gdk.ScrollDirection.DOWN:
-            if event.get_state() & Gdk.ModifierType.CONTROL_MASK:
+            if state & Gdk.ModifierType.CONTROL_MASK:
                 self._window.manual_zoom_out()
             elif prefs['smart scroll']:
                 self._smart_scroll_down(prefs['number of pixels to scroll per mouse wheel event'])
@@ -518,43 +564,54 @@ class EventHandler(object):
             else:
                 self._window.flip_page(+1)
 
-    def mouse_press_event(self, widget, event):
+        return Gdk.EVENT_STOP
+
+    def mouse_press_event(self, gesture, n_press, x, y):
         """Handle mouse click events on the main layout area."""
 
         if self._window.was_out_of_focus:
             return
 
-        if event.button == 1:
-            self._pressed_pointer_pos_x = event.x_root
-            self._pressed_pointer_pos_y = event.y_root
-            self._last_pointer_pos_x = event.x_root
-            self._last_pointer_pos_y = event.y_root
+        # The coordinates are the page area's own now; GTK4 has no root
+        # window to give them in.  Both the press and the release are
+        # measured against it, and the page area does not move under the
+        # pointer while it scrolls, so the comparisons still hold.
+        button = gesture.get_current_button()
+        state = gesture.get_current_event_state()
 
-        elif event.button == 2:
+        if button == 1:
+            self._pressed_pointer_pos_x = x
+            self._pressed_pointer_pos_y = y
+            self._last_pointer_pos_x = x
+            self._last_pointer_pos_y = y
+
+        elif button == 2:
             self._window.actiongroup.get_action('lens').set_active(True)
 
-        elif (event.button == 3 and
-              not event.get_state() & Gdk.ModifierType.MOD1_MASK and
-              not event.get_state() & Gdk.ModifierType.SHIFT_MASK):
+        elif (button == 3 and
+              not state & Gdk.ModifierType.ALT_MASK and
+              not state & Gdk.ModifierType.SHIFT_MASK):
             self._window.cursor_handler.set_cursor_type(constants.NORMAL_CURSOR)
-            self._window.popup.popup(None, None, None, None,
-                                     event.button, event.time)
+            widgets.popup_at(self._window.popup, gesture.get_widget(), x, y)
 
-        elif event.button == 4:
+        elif button == 4:
             self._window.show_info_panel()
 
-    def mouse_release_event(self, widget, event):
+    def mouse_release_event(self, gesture, n_press, x, y):
         """Handle mouse button release events on the main layout area."""
+
+        button = gesture.get_current_button()
+        state = gesture.get_current_event_state()
 
         self._window.cursor_handler.set_cursor_type(constants.NORMAL_CURSOR)
 
-        if (event.button == 1):
+        if (button == 1):
 
-            if event.x_root == self._pressed_pointer_pos_x and \
-                event.y_root == self._pressed_pointer_pos_y and \
+            if x == self._pressed_pointer_pos_x and \
+                y == self._pressed_pointer_pos_y and \
                 not self._window.was_out_of_focus:
 
-                if event.get_state() & Gdk.ModifierType.SHIFT_MASK:
+                if state & Gdk.ModifierType.SHIFT_MASK:
                     self._flip_page(10)
                 else:
                     self._flip_page(1)
@@ -562,71 +619,52 @@ class EventHandler(object):
             else:
                 self._window.was_out_of_focus = False
 
-        elif event.button == 2:
+        elif button == 2:
             self._window.actiongroup.get_action('lens').set_active(False)
 
-        elif event.button == 3:
-            if event.get_state() & Gdk.ModifierType.MOD1_MASK:
+        elif button == 3:
+            if state & Gdk.ModifierType.ALT_MASK:
                 self._flip_page(-1)
-            elif event.get_state() & Gdk.ModifierType.SHIFT_MASK:
+            elif state & Gdk.ModifierType.SHIFT_MASK:
                 self._flip_page(-10)
 
-    def mouse_move_event(self, widget, event):
+    def mouse_move_event(self, controller, x, y) -> None:
         """Handle mouse pointer movement events."""
 
-        event = _get_latest_event_of_same_type(event)
+        # Up to GTK3 this came from a hook on the whole event stream, so
+        # that the cursor reappeared even while a modal dialog was up.
+        # GTK4 has no such hook; the page area is where it matters.
+        self._window.cursor_handler.refresh()
 
-        if 'GDK_BUTTON1_MASK' in event.get_state().value_names:
+        if controller.get_current_event_state() & Gdk.ModifierType.BUTTON1_MASK:
             self._window.cursor_handler.set_cursor_type(constants.GRAB_CURSOR)
-            scrolled = self._window.scroll(self._last_pointer_pos_x - event.x_root,
-                                           self._last_pointer_pos_y - event.y_root)
+            self._window.scroll(self._last_pointer_pos_x - x,
+                                self._last_pointer_pos_y - y)
+            self._last_pointer_pos_x = x
+            self._last_pointer_pos_y = y
 
-            # Cursor wrapping stuff. See:
-            # https://sourceforge.net/tracker/?func=detail&aid=2988441&group_id=146377&atid=764987
-            if prefs['wrap mouse scroll'] and scrolled:
-                # FIXME: Problems with multi-screen setups
-                screen = self._window.get_screen()
-                warp_x0 = warp_y0 = 0
-                warp_x1 = screen.get_width()
-                warp_y1 = screen.get_height()
-
-                new_x = _valwarp(event.x_root, warp_x1, minval=warp_x0)
-                new_y = _valwarp(event.y_root, warp_y1, minval=warp_y0)
-                if (new_x != event.x_root) or (new_y != event.y_root):
-                    display = screen.get_display()
-                    display.warp_pointer(screen, int(new_x), int(new_y))
-                    ## This might be (or might not be) necessary to avoid
-                    ## doing one warp multiple times.
-                    event = _get_latest_event_of_same_type(event)
-
-                self._last_pointer_pos_x = new_x
-                self._last_pointer_pos_y = new_y
-            else:
-                self._last_pointer_pos_x = event.x_root
-                self._last_pointer_pos_y = event.y_root
-            self._drag_timer = event.time
-
-    def drag_n_drop_event(self, widget, context, x, y, selection, drag_id,
-      eventtime):
-        """Handle drag-n-drop events on the main layout area."""
+    def drag_n_drop_event(self, target, value, x, y) -> bool:
+        """Handle a drop of files on the main layout area."""
         # The drag source is inside MComix itself, so we ignore.
+        drop = target.get_current_drop()
+        if drop is not None and drop.get_drag() is not None:
+            return False
 
-        if (Gtk.drag_get_source_widget(context) is not None):
-            return
+        # A Gdk.FileList carries the files themselves, so there are no
+        # URIs left to unquote and turn back into paths by hand.
+        paths = [path for path in
+                 (dropped.get_path() for dropped in value.get_files())
+                 if path is not None]
 
-        uris = selection.get_uris()
-
-        if not uris:
-            return
-
-        # Normalize URIs
-        uris = [portability.normalize_uri(uri) for uri in uris]
-        paths = [urllib.request.url2pathname(uri) for uri in uris]
+        if not paths:
+            return False
 
         if len(paths) > 1:
             self._window.filehandler.open_file(paths)
         else:
             self._window.filehandler.open_file(paths[0])
+
+        return True
 
     def _scroll_with_flipping(self, x, y):
         """Handle scrolling with the scroll wheel or the arrow keys, for which
@@ -769,43 +807,6 @@ class EventHandler(object):
         commands = [cmd for cmd in manager.get_commands() if not cmd.is_separator()]
         if len(commands) > cmdindex:
             commands[cmdindex].execute(self._window)
-
-
-def _get_latest_event_of_same_type(event):
-    """Return the latest event in the event queue that is of the same type
-    as <event>, or <event> itself if no such events are in the queue. All
-    events of that type will be removed from the event queue.
-    """
-    return event
-    events = []
-
-    while Gdk.events_pending():
-        queued_event = Gdk.event_get()
-
-        if queued_event is not None:
-
-            if queued_event.type == event.type:
-                event = queued_event
-            else:
-                events.append(queued_event)
-
-    for queued_event in events:
-        queued_event.put()
-
-    return event
-
-
-def _valwarp(cur, maxval, minval=0, tolerance=3, extra=2):
-    """ Helper function for warping the cursor around the screen when it
-      comes within `tolerance` to a border (and `extra` more to avoid
-      jumping back and forth).  """
-    if cur < minval + tolerance:
-        overmove = minval + tolerance - cur
-        return maxval - tolerance - overmove - extra
-    if (maxval - cur) < tolerance:
-        overmove = tolerance - (maxval - cur)
-        return minval + tolerance + overmove + extra
-    return cur
 
 
 # vim: expandtab:sw=4:ts=4

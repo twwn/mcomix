@@ -7,10 +7,10 @@ import threading
 
 from gi.repository import Gdk, Gtk, GLib
 
+from mcomix import canvas
 from mcomix import constants
 from mcomix import cursor_handler
 from mcomix import i18n
-from mcomix import icons
 from mcomix import enhance_backend
 from mcomix import event
 from mcomix import file_handler
@@ -26,6 +26,7 @@ from mcomix import thumbbar
 from mcomix import clipboard
 from mcomix import pageselect
 from mcomix import osd
+from mcomix import page_image
 from mcomix import keybindings
 from mcomix import zoom
 from mcomix import bookmark_backend
@@ -49,10 +50,13 @@ class MainWindow(Gtk.Window):
     program when closed.
     """
 
+    #: What set_bg_colour()'s style rule matches the page area by.
+    _BG_CSS_NAME = 'mcomix-page-area'
+
     def __init__(self, fullscreen=False, is_slideshow=False,
             show_library=False, manga_mode=False, double_page=False,
             zoom_mode=None, open_path=None, open_page=0):
-        super(MainWindow, self).__init__(Gtk.WindowType.TOPLEVEL)
+        super(MainWindow, self).__init__()
 
         # ----------------------------------------------------------------
         # Attributes
@@ -72,18 +76,17 @@ class MainWindow(Gtk.Window):
         self._spacing = prefs['space between two pages']
         self._waiting_for_redraw = False
 
-        # XXX transitional(kept for osd.py)
-        self._image_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 2)
-
-        self._main_layout = Gtk.Layout()
-        # Wrap main layout into an event box so
-        # we  can change its background color.
-        self._event_box = Gtk.EventBox()
-        #: Carries the background colour set by set_bg_colour().
+        self._main_layout = canvas.PageCanvas()
+        # Gtk.EventBox was only ever here to give the pages a background
+        # colour of their own; in GTK4 any widget can have one, and
+        # every widget takes input, so the box is gone.  A style provider
+        # is per display rather than per widget now, so the canvas is
+        # named for the rule set_bg_colour() writes to single it out.
+        self._main_layout.set_name(self._BG_CSS_NAME)
         self._bg_css_provider = Gtk.CssProvider()
-        self._event_box.get_style_context().add_provider(
-            self._bg_css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
-        self._event_box.add(self._main_layout)
+        Gtk.StyleContext.add_provider_for_display(
+            Gdk.Display.get_default(), self._bg_css_provider,
+            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
         self._event_handler = event.EventHandler(self)
         self._vadjust = self._main_layout.get_vadjustment()
         self._hadjust = self._main_layout.get_hadjustment()
@@ -113,22 +116,21 @@ class MainWindow(Gtk.Window):
         self.popup = self.uimanager.popup
         self.actiongroup = self.uimanager.actions
 
-        self.images = [Gtk.Image(), Gtk.Image()] # XXX limited to at most 2 pages
+        self.images = [page_image.PageImage(),
+                       page_image.PageImage()] # XXX limited to at most 2 pages
 
         # ----------------------------------------------------------------
         # Setup
         # ----------------------------------------------------------------
         self.set_title(constants.APPNAME)
+        # A GTK4 window has no icon of its own to set, from a pixbuf or
+        # otherwise: it is named, and the desktop finds it in the icon
+        # theme.  'mcomix' is what mcomix.desktop names as well.
+        Gtk.Window.set_default_icon_name('mcomix')
         self.set_size_request(300, 300)  # Avoid making the window *too* small
 
         # Hook up keyboard shortcuts
         self._event_handler.register_key_events()
-
-        # This is a hack to get the focus away from the toolbar so that
-        # we don't activate it with space or some other key (alternative?)
-        self.toolbar.set_focus_child(self.uimanager.toolbar_expander)
-        self.toolbar.set_style(Gtk.ToolbarStyle.ICONS)
-        self.toolbar.set_icon_size(Gtk.IconSize.LARGE_TOOLBAR)
 
         for img in self.images:
             self._main_layout.put(img, 0, 0)
@@ -153,7 +155,7 @@ class MainWindow(Gtk.Window):
                 (self.menubar,                            0, 0, 3, 1, False, False),
                 (self.toolbar,                            0, 1, 3, 1, False, False),
                 (self.thumbnailsidebar,                   0, 2, 1, 3, False, True),
-                (self._event_box,                         1, 2, 1, 1, True,  True),
+                (self._main_layout,                       1, 2, 1, 1, True,  True),
                 (self._scroll[constants.PageAxis.HEIGHT], 2, 2, 1, 1, False, False),
                 (self._scroll[constants.PageAxis.WIDTH],  1, 4, 1, 1, False, False),
                 (self.statusbar,                          0, 5, 3, 1, False, False),
@@ -228,7 +230,7 @@ class MainWindow(Gtk.Window):
         # Start with all "toggle" widgets hidden to avoid ugly transitions.
         for preference, action, widget_list in self._toggle_list:
             for widget in widget_list:
-                widget.hide()
+                widget.set_visible(False)
 
         toggleaction = self.actiongroup.get_action('hide_all')
         toggleaction.set_active(prefs['hide all'])
@@ -240,45 +242,25 @@ class MainWindow(Gtk.Window):
         self.actiongroup.get_action('menu_autorotate_width').set_sensitive(False)
         self.actiongroup.get_action('menu_autorotate_height').set_sensitive(False)
 
-        self.add(grid)
-        grid.show()
-        self._event_box.show_all()
+        self.set_child(grid)
 
-        self._main_layout.set_events(Gdk.EventMask.BUTTON1_MOTION_MASK |
-                                     Gdk.EventMask.BUTTON2_MOTION_MASK |
-                                     Gdk.EventMask.BUTTON_PRESS_MASK |
-                                     Gdk.EventMask.BUTTON_RELEASE_MASK |
-                                     Gdk.EventMask.POINTER_MOTION_MASK)
+        # GTK4 has no event masks and no *-event signals: a widget takes
+        # what a controller added to it delivers.  The window's key
+        # controller runs in the capture phase, which is where the old
+        # key-press-event handler on the toplevel sat - before the
+        # thumbnail list could make its own use of Up, Down and Space.
+        self._event_handler.register_controllers(self, self._main_layout)
 
-        self._main_layout.drag_dest_set(Gtk.DestDefaults.ALL,
-                                        [Gtk.TargetEntry.new('text/uri-list', 0, 0)],
-                                        Gdk.DragAction.COPY |
-                                        Gdk.DragAction.MOVE)
-
-        self.connect('focus-in-event', self.gained_focus)
-        self.connect('focus-out-event', self.lost_focus)
-        self.connect('delete_event', self.close_program)
-        self.connect('key_press_event', self._event_handler.key_press_event)
-        self.connect('key_release_event', self._event_handler.key_release_event)
-        self.connect('configure_event', self._event_handler.resize_event)
-        self.connect('window-state-event', self._event_handler.window_state_event)
-
-        self._main_layout.connect('button_release_event',
-            self._event_handler.mouse_release_event)
-        self._main_layout.connect('scroll_event',
-            self._event_handler.scroll_wheel_event)
-        self._main_layout.connect('button_press_event',
-            self._event_handler.mouse_press_event)
-        self._main_layout.connect('motion_notify_event',
-            self._event_handler.mouse_move_event)
-        self._main_layout.connect('drag_data_received',
-            self._event_handler.drag_n_drop_event)
+        self.connect('notify::is-active', self._event_handler.focus_changed)
+        self.connect('close-request', self.close_program)
+        self.connect('notify::default-width', self._event_handler.resize_event)
+        self.connect('notify::default-height', self._event_handler.resize_event)
+        self.connect('notify::fullscreened', self._event_handler.window_state_event)
+        self.connect('notify::maximized', self._event_handler.window_state_event)
 
         self.uimanager.set_sensitivities()
-        # Restore twice, before and after show(), to make sure it works...
         self.restore_window_geometry()
-        self.show()
-        self.restore_window_geometry()
+        self.present()
 
         if prefs['default fullscreen'] or fullscreen:
             toggleaction = self.actiongroup.get_action('fullscreen')
@@ -305,13 +287,6 @@ class MainWindow(Gtk.Window):
             self.actiongroup.get_action('library').activate()
 
         self.cursor_handler.auto_hide_on()
-        # Make sure we receive *all* mouse motion events,
-        # even if a modal dialog is being shown.
-        def _on_event(event):
-            if Gdk.EventType.MOTION_NOTIFY == event.type:
-                self.cursor_handler.refresh()
-            Gtk.main_do_event(event)
-        Gdk.event_handler_set(_on_event)
 
     def gained_focus(self, *args):
         def _delayed_unset_out_of_focus(_):
@@ -477,7 +452,7 @@ class MainWindow(Gtk.Window):
                 pixbuf_list[i] = self.enhancer.enhance(pixbuf_list[i])
 
             for i in range(pixbuf_count):
-                image_tools.set_from_pixbuf(self.images[i], pixbuf_list[i])
+                self.images[i].set_pixbuf(pixbuf_list[i])
 
             scales = tuple(map(lambda x, y: math.sqrt(tools.div(
                 tools.volume(x), tools.volume(y))), scaled_sizes, size_list))
@@ -498,17 +473,15 @@ class MainWindow(Gtk.Window):
             if smartthumbbg:
                 self.thumbnailsidebar.change_thumbnail_background_color(bg_colour)
 
-            self._main_layout.get_bin_window().freeze_updates()
-
             self._main_layout.set_size(*(self.layout.get_union_box().get_size()))
             for i in range(pixbuf_count):
                 self._main_layout.move(self.images[i],
                     *content_boxes[i].get_position())
 
             for i in range(pixbuf_count):
-                self.images[i].show()
+                self.images[i].set_visible(True)
             for i in range(pixbuf_count, len(self.images)):
-                self.images[i].hide()
+                self.images[i].set_visible(False)
 
             # Reset orientation so scrolling behaviour is sane.
             if self.is_manga_mode:
@@ -526,7 +499,6 @@ class MainWindow(Gtk.Window):
                     index = None
                 self.scroll_to_predefined(destination, index)
 
-            self._main_layout.get_bin_window().thaw_updates()
         else:
             # Save scroll destination for when the page becomes available.
             self._last_scroll_destination = scroll_to
@@ -534,7 +506,7 @@ class MainWindow(Gtk.Window):
             # hide all images to clear any old pixbufs.
             # XXX How about calling self._clear_main_area?
             for i in range(len(self.images)):
-                self.images[i].hide()
+                self.images[i].set_visible(False)
             self._show_scrollbars([False] * len(self._scroll))
 
         self._waiting_for_redraw = False
@@ -568,15 +540,6 @@ class MainWindow(Gtk.Window):
         self.statusbar.update()
         self.update_title()
 
-    def update_icon(self, default=False):
-        if (self.filehandler.archive_type is not None
-            and prefs['archive thumbnail as icon']):
-            pixbuf = self.imagehandler.get_thumbnail(1, 48, 48)
-            pixbuf = self.enhancer.enhance(pixbuf)
-            self.set_icon(pixbuf)
-        elif (default):
-            self.set_icon_list(icons.mcomix_icons())
-
     def _page_available(self, page):
         """ Called whenever a new page is ready for displaying. """
         # Refresh display when currently opened page becomes available.
@@ -585,10 +548,6 @@ class MainWindow(Gtk.Window):
         if current_page <= page < (current_page + nb_pages):
             self.draw_image(scroll_to=self._last_scroll_destination)
             self._update_page_information()
-
-        # Use first page as application icon when opening archives.
-        if page == 1:
-            self.update_icon(False)
 
     def _on_file_opened(self) -> None:
         self.uimanager.set_sensitivities()
@@ -601,7 +560,6 @@ class MainWindow(Gtk.Window):
         self.thumbnailsidebar.hide()
         self.thumbnailsidebar.clear()
         self.uimanager.set_sensitivities()
-        self.set_icon_list(icons.mcomix_icons())
 
     def new_page(self, at_bottom=False):
         """Draw a *new* page correctly (as opposed to redrawing the same
@@ -753,8 +711,8 @@ class MainWindow(Gtk.Window):
 
     @property
     def is_fullscreen(self) -> bool:
-        window_state = self.get_window().get_state()
-        return 0 != (window_state & Gdk.WindowState.FULLSCREEN)
+        # Gdk.WindowState is gone; the window says so itself in GTK4.
+        return self.get_property('fullscreened')
 
     def change_fullscreen(self, toggleaction):
         # Disable action until transition if complete.
@@ -873,10 +831,10 @@ class MainWindow(Gtk.Window):
 
         if bound == 'first':
             hadjust_upper = max(0, hadjust_upper -
-                self.images[1].size_request().width - 2) # XXX transitional(double page limitation)
+                self.images[1].get_preferred_size()[1].width - 2) # XXX transitional(double page limitation)
 
         elif bound == 'second':
-            hadjust_lower = self.images[0].size_request().width + 2 # XXX transitional(double page limitation)
+            hadjust_lower = self.images[0].get_preferred_size()[1].width + 2 # XXX transitional(double page limitation)
 
         new_hadjust = old_hadjust + x
         new_vadjust = old_vadjust + y
@@ -889,8 +847,6 @@ class MainWindow(Gtk.Window):
 
         self._vadjust.set_value(new_vadjust)
         self._hadjust.set_value(new_hadjust)
-        self._scroll[0].queue_resize_no_redraw()
-        self._scroll[1].queue_resize_no_redraw()
 
         return old_vadjust != new_vadjust or old_hadjust != new_hadjust
 
@@ -902,8 +858,6 @@ class MainWindow(Gtk.Window):
         viewport_position = self.layout.get_viewport_box().get_position()
         self._hadjust.set_value(viewport_position[0]) # 2D only
         self._vadjust.set_value(viewport_position[1]) # 2D only
-        self._scroll[0].queue_resize_no_redraw()
-        self._scroll[1].queue_resize_no_redraw()
 
     def update_layout_position(self) -> None:
         self.layout.set_viewport_position(
@@ -917,7 +871,7 @@ class MainWindow(Gtk.Window):
 
     def _clear_main_area(self) -> None:
         for i in self.images:
-            i.hide()
+            i.set_visible(False)
         for i in self.images:
             i.clear()
         self._show_scrollbars([False] * len(self._scroll))
@@ -942,7 +896,7 @@ class MainWindow(Gtk.Window):
             for widget in widget_list:
                 if widget.get_visible():
                     axis = self._toggle_axis[widget]
-                    requisition = widget.size_request()
+                    requisition = widget.get_preferred_size()[1]
                     if constants.PageAxis.WIDTH == axis:
                         size = requisition.width
                     elif constants.PageAxis.HEIGHT == axis:
@@ -966,7 +920,7 @@ class MainWindow(Gtk.Window):
         probably use the cursor_handler instead of using this method
         directly.
         """
-        self._main_layout.get_bin_window().set_cursor(mode)
+        self._main_layout.set_cursor(mode)
 
     def update_title(self) -> None:
         """Set the title acording to current state."""
@@ -991,8 +945,9 @@ class MainWindow(Gtk.Window):
         components: red, green, blue and alpha, each between 0 and 1.
         """
         colour = list(colour[:4])
-        self._bg_css_provider.load_from_data(
-            ('* { background-color: %s; }' % Gdk.RGBA(*colour).to_string()).encode())
+        self._bg_css_provider.load_from_string(
+            '#%s { background-color: %s; }'
+            % (self._BG_CSS_NAME, Gdk.RGBA(*colour).to_string()))
         if prefs['thumbnail bg uses main colour']:
             self.thumbnailsidebar.change_thumbnail_background_color(prefs['bg colour'])
         self._bg_colour = colour
@@ -1055,7 +1010,7 @@ class MainWindow(Gtk.Window):
                 save_dialog.destroy()
 
             save_dialog.connect('response', save_responded)
-            save_dialog.show_all()
+            save_dialog.set_visible(True)
 
     def delete(self, *args):
         """ The currently opened file/archive will be deleted after showing
@@ -1146,30 +1101,40 @@ class MainWindow(Gtk.Window):
 
         self.terminate_program()
 
+    def get_size(self) -> tuple[int, int]:
+        """Return the size of the window.
+
+        Gtk.Window.get_size() is not in GTK4.  A window that is on screen
+        knows its size as its own allocation; before that, the only size
+        there is is the one it asked for.
+        """
+        width, height = self.get_width(), self.get_height()
+        if width and height:
+            return (width, height)
+        return tuple(self.get_default_size())
+
     def get_window_geometry(self):
-        return self.get_position() + self.get_size()
+        return self.get_size()
 
     def save_window_geometry(self) -> None:
-        x, y, width, height = self.get_window_geometry()
-        prefs['window x'] = x
-        prefs['window y'] = y
+        width, height = self.get_window_geometry()
         prefs['window width'] = width
         prefs['window height'] = height
         prefs['window maximized'] = self.is_maximized()
 
     def restore_window_geometry(self) -> bool:
-        if self.get_window_geometry() == (prefs['window x'],
-                                          prefs['window y'],
-                                          prefs['window width'],
+        # Where the window is is no longer the program's to say: GTK4
+        # has no way to place a window, so only its size is remembered.
+        if self.get_window_geometry() == (prefs['window width'],
                                           prefs['window height']) \
            and self.is_maximized() == prefs['window maximized']:
             return False
 
-        self.move(prefs['window x'], prefs['window y'])
         if prefs['window maximized']:
             self.maximize()
         else:
-            self.resize(prefs['window width'], prefs['window height'])
+            self.set_default_size(prefs['window width'],
+                                  prefs['window height'])
         return True
 
     def update_space(self) -> None:
@@ -1184,10 +1149,10 @@ class MainWindow(Gtk.Window):
     def terminate_program(self) -> None:
         """Run clean-up tasks and exit the program."""
 
-        self.hide()
+        self.set_visible(False)
 
-        if Gtk.main_level() > 0:
-            Gtk.main_quit()
+        if _main_loop.is_running():
+            _main_loop.quit()
 
         if prefs['auto load last file'] and self.filehandler.file_loaded:
             prefs['path to last file'] = self.imagehandler.get_real_path()
@@ -1212,6 +1177,16 @@ class MainWindow(Gtk.Window):
             if thread is not threading.current_thread() and not isinstance(thread, threading._DummyThread):
                 log.debug('Waiting for thread %s to finish before exit', thread)
                 thread.join()
+
+#: The loop the program runs in.  Gtk.main() and Gtk.main_quit() are
+#: not in GTK4; the main context they ran was always GLib's.
+_main_loop = GLib.MainLoop()
+
+
+def main_loop() -> GLib.MainLoop:
+    """Return the loop the program runs in."""
+    return _main_loop
+
 
 #: Main window instance
 __main_window = None

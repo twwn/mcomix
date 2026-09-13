@@ -23,7 +23,8 @@ class _AboutDialog(Gtk.AboutDialog):
 
         icon_data = pkgutil.get_data('mcomix', 'images/mcomix.png')
         pixbuf = image_tools.load_pixbuf_data(icon_data)
-        self.set_logo(pixbuf)
+        # A GTK4 logo is a paintable, not a pixbuf.
+        self.set_logo(image_tools.pixbuf_to_texture(pixbuf))
 
         comment = \
             _('%s is an image viewer specifically designed to handle comic books.') % \
@@ -50,7 +51,7 @@ class _AboutDialog(Gtk.AboutDialog):
 
         self.connect('activate-link', self._on_activate_link)
 
-        self.show_all()
+        self.set_visible(True)
 
     def _on_activate_link(self, about_dialog, uri):
         webbrowser.open(uri)

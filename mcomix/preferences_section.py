@@ -3,6 +3,7 @@
 from gi.repository import Gtk
 
 from mcomix import labels
+from mcomix import widgets
 
 class _PreferenceSection(Gtk.Box):
 
@@ -23,8 +24,8 @@ class _PreferenceSection(Gtk.Box):
         label = labels.BoldLabel(header)
         label.set_xalign(0)
         label.set_yalign(0.5)
-        self.pack_start(label, False, False, 0)
-        self.pack_start(self.contentbox, True, True, 0)
+        widgets.pack(self, label, False, False, 0)
+        widgets.pack(self, self.contentbox, True, True, 0)
 
     def new_split_vboxes(self):
         """Return two new VBoxes that are automatically put in the section
@@ -40,9 +41,9 @@ class _PreferenceSection(Gtk.Box):
             right_box.set_size_request(self._right_column_width, -1)
 
         hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 12)
-        hbox.pack_start(left_box, True, True, 0)
-        hbox.pack_start(right_box, False, False, 0)
-        self.contentbox.pack_start(hbox, True, True, 0)
+        widgets.pack(hbox, left_box, True, True, 0)
+        widgets.pack(hbox, right_box, False, False, 0)
+        widgets.pack(self.contentbox, hbox, True, True, 0)
         return left_box, right_box
 
 # vim: expandtab:sw=4:ts=4

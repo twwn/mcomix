@@ -8,7 +8,7 @@ import time
 
 from gi.repository import Gtk
 
-from . import MComixTest
+from . import MComixTest, pump
 
 from mcomix import recent
 
@@ -125,8 +125,7 @@ class RecentFilesMenuTest(MComixTest):
         # so give the signal a bounded while to arrive.
         deadline = time.monotonic() + 5
         while time.monotonic() < deadline and self._labels(menu) != ['book.cbz']:
-            while Gtk.events_pending():
-                Gtk.main_iteration_do(False)
+            pump()
             time.sleep(0.02)
         self.assertEqual(self._labels(menu), ['book.cbz'])
 

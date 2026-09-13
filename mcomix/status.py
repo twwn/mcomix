@@ -1,15 +1,24 @@
 """status.py - Statusbar for main window."""
 
-from gi.repository import Gdk, Gio, GLib, Gtk
+from gi.repository import Gio, GLib, Gtk
 
 from mcomix import i18n
+from mcomix import widgets
 from mcomix import constants
 from mcomix.preferences import prefs
 from mcomix.i18n import _
 
 from typing import Any
 
-class Statusbar(Gtk.EventBox):
+class Statusbar(Gtk.Box):
+
+    """The status bar along the bottom of the window.
+
+    It was a Gtk.EventBox, which existed so that a widget without a window
+    of its own could receive button events.  GTK4 has no such thing:
+    every widget can take events, through a controller.
+    """
+
 
     SPACING = 5
 
@@ -20,15 +29,16 @@ class Statusbar(Gtk.EventBox):
 
         # Status text, page number, file number, resolution, path, filename, filesize
         self.status = Gtk.Statusbar()
-        self.add(self.status)
+        self.append(self.status)
 
         # Create popup menu for enabling/disabling status boxes.
-        self.tooltipstatus = TooltipStatusHelper(statusbar=self.status)
         self._fields_menu = self._create_fields_menu()
 
         # Hook mouse release event
-        self.connect('button-release-event', self._button_released)
-        self.set_events(Gdk.EventMask.BUTTON_PRESS_MASK|Gdk.EventMask.BUTTON_RELEASE_MASK)
+        clicks = Gtk.GestureClick()
+        clicks.set_button(0)
+        clicks.connect('released', self._button_released)
+        self.add_controller(clicks)
 
         # Default status information
         self._page_info = ''
@@ -38,7 +48,7 @@ class Statusbar(Gtk.EventBox):
         self._filename = ''
         self._filesize = ''
         self._update_sensitivity()
-        self.show_all()
+        self.set_visible(True)
 
         self._loading = False
 
@@ -162,9 +172,7 @@ class Statusbar(Gtk.EventBox):
             self._field_actions.add_action(action)
             model.append(label, 'statusbar.%s' % name)
         self.insert_action_group('statusbar', self._field_actions)
-        menu = Gtk.Menu.new_from_model(model)
-        menu.attach_to_widget(self, None)
-        return menu
+        return Gtk.PopoverMenu.new_from_model(model)
 
     def toggle_status_visibility(self, action: Any, value: Any, bit: int) -> None:
         """ Called when status entries visibility is to be changed. """
@@ -181,12 +189,11 @@ class Statusbar(Gtk.EventBox):
 
         self.update()
 
-    def _button_released(self, widget, event, *args):
+    def _button_released(self, gesture, n_press, x, y):
         """ Triggered when a mouse button is released to open the context
         menu. """
-        if event.button == 3:
-            self._fields_menu.popup(None, None, None, None,
-                                    event.button, event.time)
+        if gesture.get_current_button() == 3:
+            widgets.popup_at(self._fields_menu, self, x, y)
 
     def _update_sensitivity(self) -> None:
         """ Brings the popup's ticks in line with the preferences. """
@@ -194,41 +201,5 @@ class Statusbar(Gtk.EventBox):
             self._field_actions.lookup_action(name).set_state(
                 GLib.Variant('b', bool(prefs['statusbar fields'] & bit)))
 
-
-class TooltipStatusHelper(object):
-    """ Provides statusbar tooltips when selecting menu items. """
-
-    def __init__(self, statusbar: Any = None) -> None:
-        self._statusbar = statusbar
-
-    def attach_to_menu(self, menu: Any, tooltips: dict) -> None:
-        """ Show the <tooltips> for a menu built from a Gio.Menu model.
-
-        A UI manager announced every proxy widget it built, along with the
-        action behind it.  A menu model announces nothing, and the items
-        it produces keep their action to themselves - Gtk.Actionable
-        reports None for them - so <tooltips> is keyed by the item's label
-        instead, which is the only thing the two ends share.
-
-        Note that GTK4 has no place to hang this at all: menus are
-        popovers of buttons there, with no select and deselect to listen
-        for.
-        """
-        for item in menu.get_children():
-            if not isinstance(item, Gtk.MenuItem):
-                continue
-            submenu = item.get_submenu()
-            if submenu is not None:
-                self.attach_to_menu(submenu, tooltips)
-            tooltip = tooltips.get(item.get_label())
-            if tooltip:
-                item.connect('select', self._on_item_select, tooltip)
-                item.connect('deselect', self._on_item_deselect)
-
-    def _on_item_select(self, menuitem, tooltip):
-        self._statusbar.push(0, " " * Statusbar.SPACING + tooltip)
-
-    def _on_item_deselect(self, menuitem):
-        self._statusbar.pop(0)
 
 # vim: expandtab:sw=4:ts=4

@@ -20,15 +20,21 @@ class StatusbarFieldsMenuTest(MComixTest):
                                      constants.STATUS_FILENAME)
         self.bar = status.Statusbar()
         self.window = Gtk.Window()
-        self.window.add(self.bar)
+        self.window.set_child(self.bar)
 
     def tearDown(self):
         self.window.destroy()
         super(StatusbarFieldsMenuTest, self).tearDown()
 
     def _ticks(self):
-        return {item.get_label(): item.get_active()
-                for item in self.bar._fields_menu.get_children()}
+        """What each entry would show, read from the action behind it.
+
+        A Gtk.PopoverMenu keeps no list of items to walk; the state that
+        decides the tick is on the action either way.
+        """
+        return {label: self.bar._field_actions.lookup_action(
+                    name).get_state().get_boolean()
+                for name, label, bit in status.Statusbar.FIELDS}
 
     def _set(self, name, ticked):
         self.bar._field_actions.lookup_action(name).change_state(

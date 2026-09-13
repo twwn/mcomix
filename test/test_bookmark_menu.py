@@ -6,7 +6,7 @@ import os
 
 from gi.repository import GLib, Gtk
 
-from . import MComixTest
+from . import MComixTest, pump
 
 from mcomix import bookmark_backend
 from mcomix import constants
@@ -60,11 +60,13 @@ class _StubWindow(Gtk.Window):
 
 class _StubUI(object):
 
-    def __init__(self):
-        self._accel_group = Gtk.AccelGroup()
+    """Stands in for MainUI, which is where accelerators are registered."""
 
-    def get_accel_group(self):
-        return self._accel_group
+    def __init__(self):
+        self.shortcuts = []
+
+    def add_shortcut(self, accelerator, action):
+        self.shortcuts.append((accelerator, action))
 
 
 class BookmarksMenuTest(MComixTest):
@@ -75,7 +77,6 @@ class BookmarksMenuTest(MComixTest):
         os.makedirs(constants.DATA_DIR, exist_ok=True)
         self.window = _StubWindow()
         self.ui = _StubUI()
-        self.window.add_accel_group(self.ui.get_accel_group())
         self.store = bookmark_backend.BookmarksStore
         self.store._initialized = False
         self.store._bookmarks = []
@@ -87,8 +88,7 @@ class BookmarksMenuTest(MComixTest):
         for window in Gtk.Window.list_toplevels():
             if isinstance(window, Gtk.MessageDialog) and window.get_visible():
                 window.destroy()
-        while Gtk.events_pending():
-            Gtk.main_iteration_do(False)
+        pump()
         super(BookmarksMenuTest, self).tearDown()
 
     def _sections(self):
@@ -135,13 +135,11 @@ class BookmarksMenuTest(MComixTest):
         self.menu.set_sensitive(True)
         self.assertTrue(add.get_enabled())
 
-    def test_the_accelerators_reach_their_actions(self):
-        fired = []
-        self.menu._add_activated = lambda *args: fired.append('add')
-        self.menu._actions.lookup_action('add').connect(
-            'activate', lambda *args: fired.append('add'))
-        key, modifier = Gtk.accelerator_parse('<Control>D')
-        self.assertTrue(Gtk.accel_groups_activate(self.window, key, modifier))
-        self.assertIn('add', fired)
+    def test_the_accelerators_name_their_actions(self):
+        # They are registered against the action rather than the menu item,
+        # because the items are rebuilt whenever a bookmark changes.
+        self.assertEqual(self.ui.shortcuts,
+                         [('<Control>D', 'bookmarks.add'),
+                          ('<Control>B', 'bookmarks.edit')])
 
 # vim: expandtab:sw=4:ts=4

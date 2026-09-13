@@ -7,6 +7,7 @@ from gi.repository import Gdk, GdkPixbuf, Gtk, GObject
 
 from mcomix.preferences import prefs
 from mcomix import preferences_page
+from mcomix import widgets
 from mcomix import constants
 from mcomix import message_dialog
 from mcomix import keybindings
@@ -22,7 +23,10 @@ class _PreferencesDialog(Gtk.Dialog):
     """
 
     def __init__(self, window):
-        super(_PreferencesDialog, self).__init__(_('Preferences'), window)
+        # GTK4's Gtk.Dialog takes properties, not the title, parent
+        # and flags GTK3 let it be constructed from.
+        super(_PreferencesDialog, self).__init__(
+            title=_('Preferences'), transient_for=window)
 
         # Button text is set later depending on active tab
         self.reset_button = self.add_button('', constants.RESPONSE_REVERT_TO_DEFAULT)
@@ -35,9 +39,9 @@ class _PreferencesDialog(Gtk.Dialog):
         self.connect('response', self._response)
 
         notebook = self.notebook = Gtk.Notebook()
-        self.vbox.pack_start(notebook, True, True, 0)
-        self.set_border_width(4)
-        notebook.set_border_width(6)
+        widgets.pack(self.get_content_area(), notebook, True, True, 0)
+        widgets.set_border(self, 4)
+        widgets.set_border(notebook, 6)
 
         page_inits = (
             (_('Appearance'), self._init_appearance_tab),
@@ -54,7 +58,7 @@ class _PreferencesDialog(Gtk.Dialog):
             container.set_propagate_natural_height(True)
             container.set_overlay_scrolling(False)
             page = page_init()
-            container.add(page)
+            container.set_child(page)
             notebook.append_page(container, Gtk.Label(label=title))
 
         # Shortcuts is already a ScrolledWindow
@@ -66,7 +70,7 @@ class _PreferencesDialog(Gtk.Dialog):
         # Update the Reset button's tooltip
         self._tab_page_changed(notebook, None, 0)
 
-        self.show_all()
+        self.set_visible(True)
 
     def _init_appearance_tab(self):
         # ----------------------------------------------------------------
@@ -111,11 +115,6 @@ class _PreferencesDialog(Gtk.Dialog):
         page.add_row(self._create_pref_check_button(
             _('Show page numbers on thumbnails'),
             'show page numbers on thumbnails', None))
-
-        page.add_row(self._create_pref_check_button(
-            _('Use archive thumbnail as application icon'),
-            'archive thumbnail as icon',
-            _('By enabling this setting, the first page of a book will be used as application icon instead of the standard icon.')))
 
         page.add_row(Gtk.Label(label=_('Thumbnail size (in pixels):')),
             self._create_pref_spinner('thumbnail size',
@@ -170,13 +169,6 @@ class _PreferencesDialog(Gtk.Dialog):
             'open first file in prev directory',
             _('Automatically open the first file of the previous directory when navigating to it, instead of opening the last file of the previous directory.')))
 
-        page.add_row(self._create_pref_check_button(
-            _('Wrap the mouse pointer around the screen edges'),
-            'wrap mouse scroll',
-            _('When dragging a page with the mouse, warp the pointer back to '
-              'the opposite edge of the screen once it leaves it, so that '
-              'large pages can be scrolled without lifting the mouse.')))
-
         page.add_row(Gtk.Label(label=_('Number of pixels to scroll per arrow key press:')),
             self._create_pref_spinner('number of pixels to scroll per key event',
             1, 1, 500, 1, 3, 0,
@@ -209,7 +201,7 @@ class _PreferencesDialog(Gtk.Dialog):
         page.add_row(Gtk.Label(label=_('Show only one page where appropriate:')),
             self._create_doublepage_as_one_control())
 
-        page.add_row(Gtk.Label(_('Page auto-resizing:')),
+        page.add_row(Gtk.Label(label=_('Page auto-resizing:')),
             self._create_double_page_autoresize_control())
 
         page.add_row(Gtk.Label(label=_('Space between two pages (in pixels):')),
@@ -351,7 +343,7 @@ class _PreferencesDialog(Gtk.Dialog):
 
         page.new_section(_('Animated images'))
 
-        page.add_row(Gtk.Label(_('Animation mode:')),
+        page.add_row(Gtk.Label(label=_('Animation mode:')),
             self._create_animation_mode_combobox())
 
         return page
@@ -516,8 +508,8 @@ class _PreferencesDialog(Gtk.Dialog):
                 self._sort_order_changed_cb)
 
         box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
-        box.pack_start(sortkey_box, True, True, 0)
-        box.pack_start(sortorder_box, True, True, 0)
+        widgets.pack(box, sortkey_box, True, True, 0)
+        widgets.pack(box, sortorder_box, True, True, 0)
 
         label = _("Files will be opened and displayed according to the sort order "
               "specified here. This option does not affect ordering within archives.")
@@ -564,8 +556,8 @@ class _PreferencesDialog(Gtk.Dialog):
                 self._sort_archive_order_changed_cb)
 
         box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
-        box.pack_start(sortkey_box, True, True, 0)
-        box.pack_start(sortorder_box, True, True, 0)
+        widgets.pack(box, sortkey_box, True, True, 0)
+        widgets.pack(box, sortorder_box, True, True, 0)
 
         label = _("Files within archives will be sorted according to the order specified here. "
                   "Natural order will sort numbered files based on their natural order, "
@@ -740,14 +732,17 @@ class _PreferencesDialog(Gtk.Dialog):
         entry.set_size_request(200, -1)
         entry.set_text(', '.join(prefs['comment extensions']))
         entry.connect('activate', self._entry_cb)
-        entry.connect('focus_out_event', self._entry_cb)
+        # There is no focus-out-event in GTK4; a focus controller says so.
+        focus = Gtk.EventControllerFocus()
+        focus.connect('leave', lambda _controller: self._entry_cb(entry))
+        entry.add_controller(focus)
         entry.set_tooltip_text(
             _('Treat all files found within archives, that have one of these file endings, as comments.'))
         return entry
 
 
     def _create_pref_check_button(self, label, prefkey, tooltip_text):
-        button = Gtk.CheckButton(label)
+        button = Gtk.CheckButton(label=label)
         button.set_active(prefs[prefkey])
         button.connect('toggled', self._check_button_cb, prefkey)
         if tooltip_text:
@@ -757,11 +752,14 @@ class _PreferencesDialog(Gtk.Dialog):
 
     def _create_binary_pref_radio_buttons(self, label1, prefkey1, tooltip_text1,
         label2, prefkey2, tooltip_text2):
-        button1 = Gtk.RadioButton(label=label1)
+        # Gtk.RadioButton is gone in GTK4: a check button that has
+        # been put in a group with another is a radio button.
+        button1 = Gtk.CheckButton(label=label1)
         button1.connect('toggled', self._check_button_cb, prefkey1)
         if tooltip_text1:
             button1.set_tooltip_text(tooltip_text1)
-        button2 = Gtk.RadioButton(group=button1, label=label2)
+        button2 = Gtk.CheckButton(label=label2)
+        button2.set_group(button1)
         button2.connect('toggled', self._check_button_cb, prefkey2)
         if tooltip_text2:
             button2.set_tooltip_text(tooltip_text2)
@@ -829,9 +827,6 @@ class _PreferencesDialog(Gtk.Dialog):
         elif preference == 'show page numbers on thumbnails':
             self._window.thumbnailsidebar.toggle_page_numbers_visible()
 
-        elif preference == 'archive thumbnail as icon':
-            self._window.update_icon(True)
-
     def _color_button_cb(self, colorbutton, preference):
         """Callback for the background colour selection button."""
 
@@ -856,7 +851,8 @@ class _PreferencesDialog(Gtk.Dialog):
     def _create_pref_spinner(self, prefkey, scale, lower, upper, step_incr,
         page_incr, digits, tooltip_text):
         value = prefs[prefkey] / scale
-        adjustment = Gtk.Adjustment(value, lower, upper, step_incr, page_incr)
+        adjustment = Gtk.Adjustment.new(value, lower, upper, step_incr,
+                                        page_incr, 0.0)
         spinner = Gtk.SpinButton.new(adjustment, 0.0, digits)
         spinner.set_size_request(80, -1)
         spinner.connect('value_changed', self._spinner_cb, prefkey)
@@ -902,7 +898,7 @@ class _PreferencesDialog(Gtk.Dialog):
             self._window.update_space()
 
 
-    def _entry_cb(self, entry, event=None):
+    def _entry_cb(self, entry, *args):
         """Callback for entry-type preferences."""
         text = entry.get_text()
         extensions = [e.strip() for e in text.split(',')]

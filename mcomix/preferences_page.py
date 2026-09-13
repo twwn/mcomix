@@ -3,6 +3,7 @@
 from gi.repository import Gtk
 
 from mcomix import preferences_section
+from mcomix import widgets
 
 
 class _PreferencePage(Gtk.Box):
@@ -17,7 +18,7 @@ class _PreferencePage(Gtk.Box):
         width request <right_column_width>.
         """
         super().__init__(orientation=Gtk.Orientation.VERTICAL, spacing=12)
-        self.set_border_width(12)
+        widgets.set_border(self, 12)
         self._right_column_width = right_column_width
         self._section = None
 
@@ -26,7 +27,7 @@ class _PreferencePage(Gtk.Box):
         <header>.
         """
         self._section = preferences_section._PreferenceSection(header, self._right_column_width)
-        self.pack_start(self._section, False, False, 0)
+        widgets.pack(self, self._section, False, False, 0)
 
     def add_row(self, left_item, right_item=None):
         """Add a row to the page (in the latest section), containing one
@@ -38,10 +39,10 @@ class _PreferencePage(Gtk.Box):
             left_item.set_yalign(0.5)
 
         if right_item is None:
-            self._section.contentbox.pack_start(left_item, True, True, 0)
+            widgets.pack(self._section.contentbox, left_item, True, True, 0)
         else:
             left_box, right_box = self._section.new_split_vboxes()
-            left_box.pack_start(left_item, True, True, 0)
-            right_box.pack_start(right_item, True, True, 0)
+            widgets.pack(left_box, left_item, True, True, 0)
+            widgets.pack(right_box, right_item, True, True, 0)
 
 # vim: expandtab:sw=4:ts=4

@@ -105,10 +105,10 @@ def setup_dependencies() -> None:
         from gi import require_version
 
         require_version('PangoCairo', '1.0')
-        require_version('Gtk', '3.0')
-        require_version('Gdk', '3.0')
+        require_version('Gtk', '4.0')
+        require_version('Gdk', '4.0')
 
-        from gi.repository import Gdk, GLib, Gtk  # noqa
+        from gi.repository import GLib, Gtk  # noqa
 
         # Older GLib requires initialization before using threads
         if GLib.check_version(2, 32, 0) is not None:
@@ -162,7 +162,7 @@ def run() -> None:
 
     setup_dependencies()
 
-    from gi.repository import Gdk, GLib, Gtk
+    from gi.repository import GLib, Gtk
 
     if not os.path.exists(constants.DATA_DIR):
         os.makedirs(constants.DATA_DIR, 0o700)
@@ -192,13 +192,16 @@ def run() -> None:
     if preferences.prefs['language'] in ('he', 'fa'):
         Gtk.widget_set_default_direction(Gtk.TextDirection.RTL)
 
-    Gdk.set_program_class(constants.APPNAME)
+    # Gdk.set_program_class() is gone in GTK4; the program name is what
+    # the class is taken from now, and it is already being set.
     GLib.set_prgname(constants.APPNAME)
 
     settings = Gtk.Settings.get_default()
     if settings:
-        # Enable icons for menu items.
-        settings.props.gtk_menu_images = True
+        # There was a gtk-menu-images here, turning on the icons that
+        # menu items used to be able to carry.  GTK4 has neither the
+        # setting nor the icons: a menu is built from a model, and a
+        # model item is a label and an action.
 
         # Prefer dark theme if system theme mode is set to dark
         if portability.is_system_ui_dark_themed() == constants.SystemThemeLightness.DARK:
@@ -227,7 +230,7 @@ def run() -> None:
     for sig in (signal.SIGINT, signal.SIGTERM):
         signal.signal(sig, lambda signum, stack: GLib.idle_add(window.terminate_program))
     try:
-        Gtk.main()
+        main.main_loop().run()
     except KeyboardInterrupt: # Will not always work because of threading.
         window.terminate_program()
 

@@ -1,8 +1,6 @@
 """thumbbar.py - Thumbnail sidebar for main window."""
 
-import urllib.request, urllib.parse, urllib.error
-from gi.repository import Gdk, GdkPixbuf, Gtk
-import cairo
+from gi.repository import Gdk, GdkPixbuf, Gio, Gtk
 
 from mcomix.preferences import prefs
 from mcomix import image_tools
@@ -48,16 +46,22 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
         self._treeview.generate_thumbnail = self._generate_thumbnail
         self._treeview.set_activate_on_single_click(True)
 
-        self._treeview.connect_after('drag_begin', self._drag_begin)
-        self._treeview.connect('drag_data_get', self._drag_data_get)
         self._treeview.connect('row-activated', self._row_activated_event)
-        self._treeview.connect('button_press_event', self._mouse_press_event)
 
+        # Dragging an image out to a file manager.  GTK4 has neither a
+        # model drag source nor drag_data_get: a drag source controller
+        # asks for the content when the drag starts.
+        drag = Gtk.DragSource()
+        drag.set_actions(Gdk.DragAction.COPY)
+        drag.connect('prepare', self._drag_prepare)
+        drag.connect('drag-begin', self._drag_begin)
+        self._treeview.add_controller(drag)
 
-        # enable drag and dropping of images from thumbnail bar to some file
-        # manager
-        self._treeview.enable_model_drag_source(Gdk.ModifierType.BUTTON1_MASK,
-            [('text/uri-list', 0, 0)], Gdk.DragAction.COPY)
+        clicks = Gtk.GestureClick()
+        clicks.set_button(0)
+        clicks.set_propagation_phase(Gtk.PropagationPhase.CAPTURE)
+        clicks.connect('pressed', self._mouse_press_event)
+        self._treeview.add_controller(clicks)
 
         # Page column
         self._thumbnail_page_treeviewcolumn = Gtk.TreeViewColumn(None)
@@ -82,9 +86,9 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
         self._treeview.set_fixed_height_mode(True)
         self._treeview.set_can_focus(False)
 
-        self.add(self._treeview)
+        self.set_child(self._treeview)
         self.change_thumbnail_background_color(prefs['thumb bg colour'])
-        self.show_all()
+        self.set_visible(True)
 
         self._window.page_changed += self._on_page_change
         self._window.imagehandler.page_available += self._on_page_available
@@ -103,17 +107,20 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
 
     def get_width(self):
         """Return the width in pixels of the ThumbnailSidebar."""
-        return self.size_request().width
+        return self.get_preferred_size()[1].width
 
-    def show(self, *args):
-        """Show the ThumbnailSidebar."""
-        self.load_thumbnails()
-        super(ThumbnailSidebar, self).show()
+    def set_visible(self, visible: bool) -> None:
+        """Show or hide the ThumbnailSidebar.
 
-    def hide(self) -> None:
-        """Hide the ThumbnailSidebar."""
-        super(ThumbnailSidebar, self).hide()
-        self._treeview.stop_update()
+        Gtk.Widget.show() and hide() are deprecated in GTK4, and this is
+        the one call everything goes through now, so what hung off those
+        two hangs off this.
+        """
+        if visible:
+            self.load_thumbnails()
+        super(ThumbnailSidebar, self).set_visible(visible)
+        if not visible:
+            self._treeview.stop_update()
 
     def clear(self) -> None:
         """Clear the ThumbnailSidebar of any loaded thumbnails."""
@@ -214,39 +221,36 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
         self._set_selected_row(selected_row, scroll=False)
         self._window.set_page(selected_row + 1)
 
-    def _mouse_press_event(self, widget, event):
+    def _mouse_press_event(self, gesture, n_press, x, y) -> None:
         if self._window.was_out_of_focus:
             # if the window was out of focus and the user clicks on
             # the thumbbar then do not select that page because they
             # more than likely have many pages open and are simply trying
             # to give mcomix focus again
-            return True
-        return False
+            gesture.set_state(Gtk.EventSequenceState.CLAIMED)
 
-    def _drag_data_get(self, treeview, context, selection, *args):
-        """Put the URI of the selected file into the SelectionData, so that
-        the file can be copied (e.g. to a file manager).
+    def _drag_prepare(self, source, x, y):
+        """Offer the file behind the thumbnail being dragged, so that it
+        can be copied (e.g. to a file manager).
         """
-
         selected = self._get_selected_row()
         path = self._window.imagehandler.get_path_to_page(selected + 1)
-        uri = 'file://localhost' + urllib.request.pathname2url(path)
-        selection.set_uris([uri])
+        if path is None:
+            return None
+        # A Gio.File is what the other end reads a text/uri-list from;
+        # there is no URI left to spell out by hand.
+        return Gdk.ContentProvider.new_for_value(Gio.File.new_for_path(path))
 
-    def _drag_begin(self, treeview, context):
-        """We hook up on drag_begin events so that we can set the hotspot
-        for the cursor at the top left corner of the thumbnail (so that we
-        might actually see where we are dropping!).
+    def _drag_begin(self, source, drag) -> None:
+        """Set the hotspot for the cursor at the top left corner of the
+        thumbnail (so that we might actually see where we are dropping!).
         """
-        path = treeview.get_cursor()[0]
-        surface = treeview.create_row_drag_icon(path)
-        # Because of course a cairo.Win32Surface does not have
-        # get_width/get_height, that would be to easy...
-        cr = cairo.Context(surface)
-        x1, y1, x2, y2 = cr.clip_extents()
-        width, height = x2 - x1, y2 - y1
-        pixbuf = Gdk.pixbuf_get_from_surface(surface, 0, 0, width, height)
-        Gtk.drag_set_icon_pixbuf(context, pixbuf, -5, -5)
+        path = self._treeview.get_cursor()[0]
+        if path is None:
+            return
+        # create_row_drag_icon() answers with a paintable in GTK4, which
+        # is what a drag icon is; there is no surface to measure.
+        source.set_icon(self._treeview.create_row_drag_icon(path), -5, -5)
 
     def _get_empty_thumbnail(self):
         """ Create an empty filler pixmap. """

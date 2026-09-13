@@ -1,6 +1,6 @@
 """bookmark_menu.py - Bookmarks menu."""
 
-from gi.repository import Gio, GLib, Gtk
+from gi.repository import Gio, GLib
 
 from typing import Any
 
@@ -13,9 +13,8 @@ class BookmarksMenu(object):
 
     """The bookmarks menu: two fixed entries, and one per bookmark.
 
-    What it keeps is a Gio.Menu model, with the widget built from it by
-    Gtk.Menu.new_from_model, which follows the model by itself.  Opening a
-    bookmark goes through one action carrying its position as a target,
+    What it keeps is a Gio.Menu model, which the menu bar takes.  Opening
+    a bookmark goes through one action carrying its position as a target,
     under a prefix of its own.
     """
 
@@ -33,7 +32,6 @@ class BookmarksMenu(object):
         self._bookmarks: list = []
 
         self.model = Gio.Menu()
-        self.menu = Gtk.Menu.new_from_model(self.model)
 
         self._actions = Gio.SimpleActionGroup()
         for name, label, accelerator in self.FIXED:
@@ -45,27 +43,16 @@ class BookmarksMenu(object):
         self._actions.add_action(open_action)
         window.insert_action_group(self.ACTION_PREFIX, self._actions)
 
-        # The accelerators hang off the accel group rather than the menu
-        # items: the items are rebuilt whenever a bookmark is added or
-        # removed, and an accelerator set on one would go with it.
-        accel_group = ui.get_accel_group()
+        # The accelerators name the actions rather than hanging off the
+        # menu items: the items are rebuilt whenever a bookmark is added
+        # or removed, and an accelerator set on one would go with it.
         for name, label, accelerator in self.FIXED:
-            key, modifier = Gtk.accelerator_parse(accelerator)
-            accel_group.connect(key, modifier, Gtk.AccelFlags.VISIBLE,
-                                self._accelerator_for(name))
+            ui.add_shortcut(accelerator, '%s.%s' % (self.ACTION_PREFIX, name))
 
         self._rebuild()
         self._bookmarks_store.add_bookmark += lambda bookmark: self._rebuild()
         self._bookmarks_store.remove_bookmark += lambda bookmark: self._rebuild()
 
-        self.menu.show_all()
-
-    def _accelerator_for(self, name: str) -> Any:
-        """A closure that activates the action <name>."""
-        def activated(*args: Any) -> bool:
-            self._actions.lookup_action(name).activate(None)
-            return True
-        return activated
 
     def _rebuild(self) -> None:
         """Put the fixed entries and the current bookmarks in the model."""

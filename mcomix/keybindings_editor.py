@@ -6,6 +6,7 @@ from gi.repository import Gtk
 
 from mcomix import keybindings
 from mcomix.i18n import _
+from mcomix import widgets
 
 
 class KeybindingEditorWindow(Gtk.ScrolledWindow):
@@ -13,7 +14,7 @@ class KeybindingEditorWindow(Gtk.ScrolledWindow):
     def __init__(self, keymanager):
         """ @param keymanager: KeybindingManager instance. """
         super(KeybindingEditorWindow, self).__init__()
-        self.set_border_width(5)
+        widgets.set_border(self, 5)
         self.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.ALWAYS)
 
         self.keymanager = keymanager
@@ -31,7 +32,7 @@ class KeybindingEditorWindow(Gtk.ScrolledWindow):
         treestore = self.treestore = Gtk.TreeStore(*model)
         self.refresh_model()
 
-        treeview = Gtk.TreeView(treestore)
+        treeview = Gtk.TreeView(model=treestore)
 
         tvcol1 = Gtk.TreeViewColumn(_("Name"))
         treeview.append_column(tvcol1)
@@ -52,7 +53,7 @@ class KeybindingEditorWindow(Gtk.ScrolledWindow):
         # Allow sorting on the column
         tvcol1.set_sort_column_id(0)
 
-        self.add(treeview)
+        self.set_child(treeview)
 
     def refresh_model(self) -> None:
         """ Initializes the model from data provided by the keybinding
@@ -111,12 +112,20 @@ class KeybindingEditorWindow(Gtk.ScrolledWindow):
                     if self.treestore.get(titer, idx + 3)[0] == new_accel:
                         self.treestore.set_value(titer, idx + 3, "")
 
-            # updating gtk accelerator for label in menu
+            # updating the accelerator shown against the action in the menu
             if self.keymanager.get_bindings_for_action(action_name)[0] == (accel_key, accel_mods):
-                Gtk.AccelMap.change_entry('<Actions>/mcomix-main/%s' % action_name,
-                        accel_key, accel_mods, True)
+                self._show_accelerator(action_name, accel_key, accel_mods)
 
         return on_accel_edited
+
+    def _show_accelerator(self, action_name, key, mods) -> None:
+        """Show <key>+<mods> against <action_name> in the menus.
+
+        Gtk.AccelMap, which the labels used to read this from, is not in
+        GTK4; a menu model item carries its accelerator itself.
+        """
+        self.keymanager.announce_accelerator(
+            action_name, Gtk.accelerator_name(key, mods) if key else '')
 
     def get_on_accel_cleared(self, column):
         def on_accel_cleared(renderer, path, *args):
@@ -127,12 +136,12 @@ class KeybindingEditorWindow(Gtk.ScrolledWindow):
             if accel != "":
                 self.keymanager.clear_accel(action_name, accel)
 
-                # updating gtk accelerator for label in menu
-                if len(self.keymanager.get_bindings_for_action(action_name)) == 0:
-                    Gtk.AccelMap.change_entry('<Actions>/mcomix-main/%s' % action_name, 0, 0, True)
+                # updating the accelerator shown against the action in the menu
+                bindings = self.keymanager.get_bindings_for_action(action_name)
+                if len(bindings) == 0:
+                    self._show_accelerator(action_name, 0, 0)
                 else:
-                    key, mods  = self.keymanager.get_bindings_for_action(action_name)[0]
-                    Gtk.AccelMap.change_entry('<Actions>/mcomix-main/%s' % action_name, key, mods, True)
+                    self._show_accelerator(action_name, *bindings[0])
 
             self.treestore.set_value(iter, col, "")
         return on_accel_cleared

@@ -23,9 +23,23 @@ log.info('PIL version: %s [%s]', PIL_VERSION[0], PIL_VERSION[1])
 # Fallback pixbuf for missing images.
 MISSING_IMAGE_ICON = None
 
-# 24 pixels is what Gtk.IconSize.LARGE_TOOLBAR stood for.
-MISSING_IMAGE_ICON = Gtk.IconTheme.get_default().load_icon('image-missing', 24, 0)
-assert MISSING_IMAGE_ICON
+#: Fallback pixbuf for images that cannot be loaded.  Filled in by
+#: missing_image_icon() rather than here: GTK4 looks icon themes up per
+#: display, and there is no display yet when this module is imported.
+MISSING_IMAGE_ICON = None
+
+#: 24 pixels is what Gtk.IconSize.LARGE_TOOLBAR stood for.
+_MISSING_IMAGE_SIZE = 24
+
+
+def missing_image_icon():
+    """The pixbuf shown in place of an image that would not load."""
+    global MISSING_IMAGE_ICON
+    if MISSING_IMAGE_ICON is None:
+        from mcomix import icons
+        MISSING_IMAGE_ICON = icons.load_pixbuf('image-missing',
+                                               _MISSING_IMAGE_SIZE)
+    return MISSING_IMAGE_ICON
 
 #: Colours are Gdk.RGBA components throughout: four floats between 0 and 1.
 RGBA_BLACK = Gdk.RGBA(0.0, 0.0, 0.0, 1.0)
@@ -320,11 +334,17 @@ def static_image(pixbuf):
         return pixbuf.get_static_image()
     return pixbuf
 
-def set_from_pixbuf(image, pixbuf):
-    if is_animation(pixbuf):
-        return image.set_from_animation(pixbuf)
+def pixbuf_to_texture(pixbuf: GdkPixbuf.Pixbuf) -> Gdk.Texture:
+    """Return <pixbuf> as the Gdk.Texture GTK4 draws from."""
+    if pixbuf.get_has_alpha():
+        memory_format = Gdk.MemoryFormat.R8G8B8A8
     else:
-        return image.set_from_pixbuf(pixbuf)
+        memory_format = Gdk.MemoryFormat.R8G8B8
+    return Gdk.MemoryTexture.new(pixbuf.get_width(), pixbuf.get_height(),
+                                 memory_format,
+                                 GLib.Bytes.new(pixbuf.get_pixels()),
+                                 pixbuf.get_rowstride())
+
 
 #: The providers load_pixbuf() tries, in order.
 _PIXBUF_PROVIDERS = (constants.IMAGEIO_GDKPIXBUF, constants.IMAGEIO_PIL)

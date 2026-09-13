@@ -15,6 +15,7 @@ from mcomix import i18n
 from mcomix import log
 from mcomix import strings
 from mcomix import properties_page
+from mcomix import widgets
 from mcomix import tools
 from mcomix.i18n import _
 
@@ -22,17 +23,20 @@ class _PropertiesDialog(Gtk.Dialog):
 
     def __init__(self, window):
 
-        super(_PropertiesDialog, self).__init__(_('Properties'), window, 0,
-            (_('_Close'), Gtk.ResponseType.CLOSE))
+        # GTK4's Gtk.Dialog takes properties, not the title, parent
+        # and flags GTK3 let it be constructed from.
+        super(_PropertiesDialog, self).__init__(
+            title=_('Properties'), transient_for=window)
+        self.add_buttons(_('_Close'), Gtk.ResponseType.CLOSE)
 
         self._window = window
-        self.resize(500, 430)
+        self.set_default_size(500, 430)
         self.set_resizable(True)
         self.set_default_response(Gtk.ResponseType.CLOSE)
         notebook = Gtk.Notebook()
-        self.set_border_width(4)
-        notebook.set_border_width(6)
-        self.vbox.pack_start(notebook, True, True, 0)
+        widgets.set_border(self, 4)
+        widgets.set_border(notebook, 6)
+        widgets.pack(self.get_content_area(), notebook, True, True, 0)
 
         self._archive_page = properties_page._Page()
         notebook.append_page(self._archive_page, Gtk.Label(label=_('Archive')))
@@ -44,7 +48,7 @@ class _PropertiesDialog(Gtk.Dialog):
         self._window.filehandler.file_closed += self._on_book_change
         self._window.imagehandler.page_available += self._on_page_available
 
-        self.show_all()
+        self.set_visible(True)
 
     def _on_page_change(self) -> None:
         self._update_image_page()
@@ -83,7 +87,7 @@ class _PropertiesDialog(Gtk.Dialog):
         )
         page.set_main_info(main_info)
         self._update_page_secondary_info(page, path)
-        page.show_all()
+        page.set_visible(True)
 
     def _update_image_page(self) -> None:
         page = self._image_page
@@ -102,7 +106,7 @@ class _PropertiesDialog(Gtk.Dialog):
         )
         page.set_main_info(main_info)
         self._update_page_secondary_info(page, path)
-        page.show_all()
+        page.set_visible(True)
 
     def _update_page_image(self, page, page_number=None):
         if not self._window.imagehandler.page_is_available(page_number):

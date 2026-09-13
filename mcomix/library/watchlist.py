@@ -5,6 +5,7 @@ from gi.repository import Gtk, GLib
 from gi.repository import GObject
 
 from mcomix.library import backend_types
+from mcomix import widgets
 from mcomix.preferences import prefs
 from mcomix.i18n import _
 
@@ -25,10 +26,13 @@ class WatchListDialog(Gtk.Dialog):
         """ Dialog constructor.
         @param library: Dialog parent window, should be library window.
         """
-        super(WatchListDialog, self).__init__(_("Library watch list"),
-            library, Gtk.DialogFlags.DESTROY_WITH_PARENT | Gtk.DialogFlags.MODAL,
-            (_('_Scan now'), WatchListDialog.RESPONSE_SCANNOW,
-             _('_Close'), Gtk.ResponseType.CLOSE))
+        # GTK4's Gtk.Dialog takes properties, not the title, parent
+        # and flags GTK3 let it be constructed from.
+        super(WatchListDialog, self).__init__(
+            title=_("Library watch list"), transient_for=library,
+            destroy_with_parent=True, modal=True)
+        self.add_buttons(_('_Scan now'), WatchListDialog.RESPONSE_SCANNOW,
+                         _('_Close'), Gtk.ResponseType.CLOSE)
 
         #: Stores a reference to the library
         self.library = library
@@ -75,26 +79,26 @@ class WatchListDialog(Gtk.Dialog):
         remove_button.connect('clicked', self._remove_cb)
 
         button_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
-        button_box.pack_start(add_button, False, False, 0)
-        button_box.pack_start(remove_button, False, False, 2)
+        widgets.pack(button_box, add_button, False, False, 0)
+        widgets.pack(button_box, remove_button, False, False, 2)
 
         main_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
         scroll_window = Gtk.ScrolledWindow()
         scroll_window.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
-        scroll_window.add(self._treeview)
-        main_box.pack_start(scroll_window, True, True, 2)
-        main_box.pack_end(button_box, False, False, 0)
-        self.vbox.pack_start(main_box, True, True, 0)
+        scroll_window.set_child(self._treeview)
+        widgets.pack(main_box, scroll_window, True, True, 2)
+        widgets.pack(main_box, button_box, False, False, 0, end=True)
+        widgets.pack(self.get_content_area(), main_box, True, True, 0)
 
         auto_checkbox = Gtk.CheckButton(
             _('Automatically scan for new books when library is _opened'), use_underline=True)
         auto_checkbox.set_active(prefs['scan for new books on library startup'])
         auto_checkbox.connect('toggled', self._auto_scan_toggled_cb)
-        self.vbox.pack_end(auto_checkbox, False, False, 5)
+        widgets.pack(self.get_content_area(), auto_checkbox, False, False, 5, end=True)
 
-        self.resize(475, 350)
+        self.set_default_size(475, 350)
         self.connect('response', self._close_cb)
-        self.show_all()
+        self.set_visible(True)
 
     def get_selected_watchlist_entry(self):
         """ Returns the selected watchlist entry, or C{None} if no
@@ -185,7 +189,7 @@ class WatchListDialog(Gtk.Dialog):
         filechooser.add_buttons(_('_Cancel'), Gtk.ResponseType.REJECT,
                                 _('_OK'), Gtk.ResponseType.ACCEPT)
         filechooser.connect('response', self._directory_chosen)
-        filechooser.show_all()
+        filechooser.set_visible(True)
 
     def _directory_chosen(self, filechooser: Any, result: int) -> None:
         """ Add the directory the file chooser came back with. """

@@ -3,6 +3,7 @@
 from gi.repository import Gtk
 from . import histogram
 
+from mcomix import widgets
 from mcomix.preferences import prefs
 from mcomix import image_tools
 from mcomix.i18n import _
@@ -16,7 +17,10 @@ class _EnhanceImageDialog(Gtk.Dialog):
     """
 
     def __init__(self, window):
-        super(_EnhanceImageDialog, self).__init__(_('Enhance image'), window, 0)
+        # GTK4's Gtk.Dialog takes properties, not the title, parent
+        # and flags GTK3 let it be constructed from.
+        super(_EnhanceImageDialog, self).__init__(
+            title=_('Enhance image'), transient_for=window)
 
         self._window = window
 
@@ -36,37 +40,39 @@ class _EnhanceImageDialog(Gtk.Dialog):
         self._block = False
 
         vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 10)
-        self.set_border_width(4)
-        vbox.set_border_width(6)
-        self.vbox.add(vbox)
+        widgets.set_border(self, 4)
+        widgets.set_border(vbox, 6)
+        self.get_content_area().append(vbox)
 
-        self._hist_image = Gtk.Image()
+        # A Gtk.Image draws whatever it is given at an icon size in
+        # GTK4; a picture draws it at its own.
+        self._hist_image = Gtk.Picture()
         self._hist_image.set_size_request(262, 170)
-        vbox.pack_start(self._hist_image, True, True, 0)
-        vbox.pack_start(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL), True, True, 0)
+        widgets.pack(vbox, self._hist_image, True, True, 0)
+        widgets.pack(vbox, Gtk.Separator.new(Gtk.Orientation.HORIZONTAL), True, True, 0)
 
         hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 4)
-        vbox.pack_start(hbox, False, False, 2)
+        widgets.pack(vbox, hbox, False, False, 2)
         vbox_left = Gtk.Box.new(Gtk.Orientation.VERTICAL, 4)
         vbox_right = Gtk.Box.new(Gtk.Orientation.VERTICAL, 4)
-        hbox.pack_start(vbox_left, False, False, 2)
-        hbox.pack_start(vbox_right, True, True, 2)
+        widgets.pack(hbox, vbox_left, False, False, 2)
+        widgets.pack(hbox, vbox_right, True, True, 2)
 
         def _create_scale(label_text):
             label = Gtk.Label(label=label_text)
             label.set_xalign(1)
             label.set_yalign(0.5)
             label.set_use_underline(True)
-            vbox_left.pack_start(label, True, False, 2)
-            adj = Gtk.Adjustment(0.0, -1.0, 1.0, 0.01, 0.1)
-            scale = Gtk.HScale.new(adj)
+            widgets.pack(vbox_left, label, True, False, 2)
+            adj = Gtk.Adjustment.new(0.0, -1.0, 1.0, 0.01, 0.1, 0.0)
+            scale = Gtk.Scale.new(Gtk.Orientation.HORIZONTAL, adj)
             scale.set_digits(2)
             scale.set_value_pos(Gtk.PositionType.RIGHT)
             scale.connect('value-changed', self._change_values)
             # FIXME
             # scale.set_update_policy(Gtk.UPDATE_DELAYED)
             label.set_mnemonic_widget(scale)
-            vbox_right.pack_start(scale, True, False, 2)
+            widgets.pack(vbox_right, scale, True, False, 2)
             return scale
 
         self._brightness_scale = _create_scale(_('_Brightness:'))
@@ -74,20 +80,20 @@ class _EnhanceImageDialog(Gtk.Dialog):
         self._saturation_scale = _create_scale(_('S_aturation:'))
         self._sharpness_scale = _create_scale(_('S_harpness:'))
 
-        vbox.pack_start(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL), True, True, 0)
+        widgets.pack(vbox, Gtk.Separator.new(Gtk.Orientation.HORIZONTAL), True, True, 0)
 
         self._autocontrast_button = \
             Gtk.CheckButton.new_with_mnemonic(_('_Automatically adjust contrast'))
         self._autocontrast_button.set_tooltip_text(
             _('Automatically adjust contrast (both lightness and darkness), separately for each colour band.'))
-        vbox.pack_start(self._autocontrast_button, False, False, 2)
+        widgets.pack(vbox, self._autocontrast_button, False, False, 2)
         self._autocontrast_button.connect('toggled', self._change_values)
 
         self._invert_color_button = \
             Gtk.CheckButton.new_with_mnemonic(_('_Invert image colors'))
         self._invert_color_button.set_tooltip_text(
             _('Invert (negate) image colors.'))
-        vbox.pack_start(self._invert_color_button, False, False, 2)
+        widgets.pack(vbox, self._invert_color_button, False, False, 2)
         self._invert_color_button.connect('toggled', self._change_values)
 
         self._block = True
@@ -106,7 +112,7 @@ class _EnhanceImageDialog(Gtk.Dialog):
         self._window.page_changed += self._on_page_change
         self._on_page_change()
 
-        self.show_all()
+        self.set_visible(True)
 
     def _on_book_close(self) -> None:
         self.clear_histogram()
@@ -128,11 +134,12 @@ class _EnhanceImageDialog(Gtk.Dialog):
         """Draw a histogram representing <pixbuf> in the dialog."""
         pixbuf = image_tools.static_image(pixbuf)
         histogram_pixbuf = histogram.draw_histogram(pixbuf, text=False)
-        self._hist_image.set_from_pixbuf(histogram_pixbuf)
+        self._hist_image.set_paintable(
+            image_tools.pixbuf_to_texture(histogram_pixbuf))
 
     def clear_histogram(self) -> None:
         """Clear the histogram in the dialog."""
-        self._hist_image.clear()
+        self._hist_image.set_paintable(None)
 
     def _change_values(self, *args):
         if self._block:

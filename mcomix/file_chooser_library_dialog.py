@@ -23,7 +23,7 @@ class _LibraryFileChooserDialog(file_chooser_base_dialog._BaseFileChooserDialog)
         self.add_archive_filters()
 
         # Remove 'All files' filter from base class
-        filters = self.filechooser.list_filters()
+        filters = self.list_filters()
         self.filechooser.remove_filter(filters[0])
         self.filechooser.set_filter(filters[1])
 
@@ -54,7 +54,7 @@ class _LibraryFileChooserDialog(file_chooser_base_dialog._BaseFileChooserDialog)
     def files_chosen(self, paths):
         if paths:
             try: # For some reason this fails sometimes (GTK+ bug?)
-                filter_index = self.filechooser.list_filters().index(
+                filter_index = self.list_filters().index(
                     self.filechooser.get_filter())
                 prefs['last filter in library filechooser'] = filter_index
 

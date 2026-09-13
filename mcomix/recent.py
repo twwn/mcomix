@@ -24,11 +24,9 @@ class RecentFilesMenu(object):
     not deprecated and still holds the list, so the menu is put together
     here from what the manager reports.
 
-    What is kept up to date is a Gio.Menu model, from which the widget is
-    built; the model is what the menu bar will take once it stops being a
-    tree of widgets.  Opening an entry goes through one action carrying
-    the file's URI, under its own prefix so this menu does not have to
-    wait for the rest of the application's actions.
+    What is kept up to date is a Gio.Menu model, which is what the menu
+    bar takes.  Opening an entry goes through one action carrying the
+    file's URI, under its own prefix.
     """
 
     #: Where this menu's action lives, as menu items address it.
@@ -53,9 +51,6 @@ class RecentFilesMenu(object):
             self._extensions.update('.%s' % ext.lower() for ext in extensions)
 
         self.model = Gio.Menu()
-        #: The widget the menu bar still wants.  Gtk.Menu.new_from_model
-        #: keeps it following the model, so it is built once.
-        self.menu = Gtk.Menu.new_from_model(self.model)
         self._actions = Gio.SimpleActionGroup()
         open_action = Gio.SimpleAction.new(self.OPEN_ACTION,
                                            GLib.VariantType.new('s'))
@@ -116,7 +111,6 @@ class RecentFilesMenu(object):
             self.model.append(_('No entries found'),
                               '%s.nothing' % self.ACTION_PREFIX)
 
-        self.menu.show_all()
 
     def _open_activated(self, action: Any, target: Any) -> None:
         self._load(target.get_string())

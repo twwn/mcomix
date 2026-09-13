@@ -9,6 +9,7 @@ from gi.repository import Pango
 from mcomix import i18n
 from mcomix import labels
 from mcomix.library.watchlist import WatchListDialog
+from mcomix import widgets
 from mcomix.i18n import _
 
 # The "All books" collection is not a real collection stored in the library,
@@ -24,84 +25,78 @@ class _ControlArea(Gtk.Box):
 
     def __init__(self, library):
         super().__init__(orientation=Gtk.Orientation.VERTICAL, spacing=12)
-        self.set_border_width(10)
+        widgets.set_border(self, 10)
 
         self._library = library
 
+        # The frame draws its own border in GTK4, and the Gtk.EventBox
+        # that used to paint a background inside it is gone.
         borderbox = Gtk.Frame()
-        borderbox.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
         borderbox.set_size_request(350, -1)
 
-        insidebox = Gtk.EventBox()
-        insidebox.set_border_width(1)
-        insidebox.set_state(Gtk.StateType.ACTIVE)
-
         infobox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 5)
-        infobox.set_border_width(10)
-        self.pack_start(borderbox, True, True, 0)
-        borderbox.add(insidebox)
-        insidebox.add(infobox)
+        widgets.set_border(infobox, 10)
+        widgets.pack(self, borderbox, True, True, 0)
+        borderbox.set_child(infobox)
 
         self._namelabel = labels.BoldLabel()
         self._namelabel.set_xalign(0)
         self._namelabel.set_yalign(0.5)
         self._namelabel.set_selectable(True)
         self._namelabel.set_ellipsize(Pango.EllipsizeMode.MIDDLE)
-        infobox.pack_start(self._namelabel, False, False, 0)
+        widgets.pack(infobox, self._namelabel, False, False, 0)
 
         self._filelabel = Gtk.Label()
         self._filelabel.set_ellipsize(Pango.EllipsizeMode.MIDDLE)
         self._filelabel.set_xalign(0)
         self._filelabel.set_yalign(0.5)
-        infobox.pack_start(self._filelabel, False, False, 0)
+        widgets.pack(infobox, self._filelabel, False, False, 0)
 
         self._dirlabel = Gtk.Label()
         self._dirlabel.set_ellipsize(Pango.EllipsizeMode.MIDDLE)
         self._dirlabel.set_xalign(0)
         self._dirlabel.set_yalign(0.5)
         self._dirlabel.set_selectable(True)
-        infobox.pack_start(self._dirlabel, False, False, 0)
+        widgets.pack(infobox, self._dirlabel, False, False, 0)
 
         vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 10)
         vbox.set_size_request(350, -1)
-        self.pack_start(vbox, False, False, 0)
+        widgets.pack(self, vbox, False, False, 0)
 
         # First line of controls, containing the search box
         hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
-        vbox.pack_start(hbox, True, True, 0)
+        widgets.pack(vbox, hbox, True, True, 0)
 
         label = Gtk.Label(label=_('_Search:'))
         label.set_use_underline(True)
-        hbox.pack_start(label, False, False, 0)
+        widgets.pack(hbox, label, False, False, 0)
         search_entry = Gtk.Entry()
         search_entry.connect('activate', self._filter_books)
         search_entry.set_tooltip_text(
             _('Display only those books that have the specified text string '
               'in their full path. The search is not case sensitive.'))
-        hbox.pack_start(search_entry, True, True, 6)
+        widgets.pack(hbox, search_entry, True, True, 6)
         label.set_mnemonic_widget(search_entry)
 
         # Last line of controls, containing buttons like 'Open'
         hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 10)
-        vbox.pack_end(hbox, True, True, 0)
+        widgets.pack(vbox, hbox, True, True, 0, end=True)
 
         watchlist_button = Gtk.Button(label=_("_Watch list"), use_underline=True)
-        watchlist_button.set_always_show_image(True)
-        watchlist_button.set_image_position(Gtk.PositionType.LEFT)
+        # A GTK4 button shows whatever child it is given; there is
+        # no image to keep it from hiding.
         watchlist_button.connect('clicked',
             lambda *args: WatchListDialog(self._library))
         watchlist_button.set_tooltip_text(
             _('Open the watchlist management dialog.'))
-        hbox.pack_start(watchlist_button, True, True, 0)
+        widgets.pack(hbox, watchlist_button, True, True, 0)
 
         self._open_button = Gtk.Button(label=_("_Open list"), use_underline=True)
-        self._open_button.set_always_show_image(True)
-        self._open_button.set_image_position(Gtk.PositionType.LEFT)
         self._open_button.connect('clicked',
             self._library.book_area.open_selected_book)
         self._open_button.set_tooltip_text(_('Open the selected book.'))
         self._open_button.set_sensitive(False)
-        hbox.pack_end(self._open_button, True, True, 0)
+        widgets.pack(hbox, self._open_button, True, True, 0, end=True)
 
     def update_info(self, selected):
         """Update the info box using the currently <selected> books from

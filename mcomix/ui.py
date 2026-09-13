@@ -13,7 +13,6 @@ from mcomix import preferences_dialog
 from mcomix import recent
 from mcomix import dialog_handler
 from mcomix import constants
-from mcomix import status
 from mcomix import file_chooser_main_dialog
 from mcomix.preferences import prefs
 from mcomix.library import main_dialog as library_main_dialog
@@ -260,47 +259,21 @@ _TOOLBAR = ('previous_archive', 'first_page', 'previous_page', 'go_to',
             'lens')
 
 
-#: Where MComix' keybinding manager records the key for an action, and
-#: where a menu item's accelerator label reads it back from.
-ACCEL_PATH = '<Actions>/mcomix-main/%s'
-
-
-def _apply_accel_paths(shell, order):
-    """Give the items of <shell> the accelerator paths of <order>.
-
-    A menu built from a model has no idea which action produced which
-    item, and Gtk.Actionable reports nothing for them, so the names are
-    collected while the model is built and the two are walked together.
-    An accelerator path is what makes an item's label follow the
-    keybinding as the user changes it, which is what Gtk.Action set up
-    before.
-    """
-    items = [item for item in shell.get_children()]
-    if len(items) != len(order):
-        # Something is out of step; better no accelerators than wrong ones.
-        return
-    for item, entry in zip(items, order):
-        if entry is None:
-            continue
-        name, nested = entry if isinstance(entry, tuple) else (entry, None)
-        item.set_accel_path(ACCEL_PATH % name)
-        if nested is not None:
-            submenu = item.get_submenu()
-            if submenu is not None:
-                _apply_accel_paths(submenu, nested)
-
-
 class MainUI(object):
 
     def __init__(self, window):
         self._window = window
-        self._tooltipstatus = status.TooltipStatusHelper(
-            statusbar=window.statusbar)
         self.actions = self._actions = _Actions()
-        #: Accelerators that are not MComix' own keybindings hang here;
-        #: Gtk.UIManager used to provide it.
-        self.accel_group = Gtk.AccelGroup()
-        window.add_accel_group(self.accel_group)
+        #: The accelerator each action currently answers to, by name.
+        self._accelerators: dict = {}
+        #: The idle that will build the menus again, if one is pending.
+        self._rebuild_pending = None
+        #: Accelerators that are not MComix' own keybindings hang here.
+        #: Gtk.UIManager provided a Gtk.AccelGroup for this; GTK4 has
+        #: shortcut controllers, which trigger the actions by name.
+        self.shortcuts = Gtk.ShortcutController()
+        self.shortcuts.set_scope(Gtk.ShortcutScope.GLOBAL)
+        window.add_controller(self.shortcuts)
 
         def _action_lambda(fn, *args):
             return lambda *_: fn(*args)
@@ -477,9 +450,6 @@ class MainUI(object):
             ('library', 'mcomix-library', _('_Library...'),
                 None, None, library_main_dialog.open_dialog)], window)
 
-        # fix some gtk magic: removing unreqired accelerators
-        Gtk.AccelMap.change_entry('<Actions>/mcomix-main/%s' % 'close', 0, 0, True)
-
         self._window.insert_action_group(_Actions.PREFIX, self._actions.group)
 
         # The three menus whose contents change while the program runs
@@ -490,22 +460,41 @@ class MainUI(object):
         self.recentPopup = self.recent
         self._openwith = openwith_menu.OpenWithMenu(window)
 
-        menubar_order: list = []
-        popup_order: list = []
-        self.menubar = Gtk.MenuBar.new_from_model(self._build(_MENUBAR, menubar_order))
-        self.popup = Gtk.Menu.new_from_model(self._build(_POPUP, popup_order))
-        self.popup.attach_to_widget(window, None)
+        # Gtk.MenuBar is gone; a GTK4 menu bar is a row of popovers.
+        self.menubar = Gtk.PopoverMenuBar.new_from_model(self._build(_MENUBAR))
+        self.popup = Gtk.PopoverMenu.new_from_model(self._build(_POPUP))
+        self.popup.set_parent(window)
         self.toolbar = self._build_toolbar()
 
-        for menu, order in ((self.menubar, menubar_order),
-                            (self.popup, popup_order)):
-            menu.show_all()
-            self._tooltipstatus.attach_to_menu(menu, self._actions.tooltips)
-            _apply_accel_paths(menu, order)
+        for menu in (self.menubar, self.popup):
+            menu.set_visible(True)
 
-    def get_accel_group(self):
-        """The window's accelerator group."""
-        return self.accel_group
+    def set_accelerator(self, name: str, accelerator: str) -> None:
+        """Show <accelerator> against <name>'s items in the menus.
+
+        Gtk.AccelMap is gone in GTK4, and with it the accelerator paths
+        that kept a menu item's label in step with the keybinding.  A
+        GTK4 menu takes the accelerator as an attribute of the model
+        item, so the models are built again when one changes - once, from
+        an idle, however many bindings are registered at a time.
+        """
+        if self._accelerators.get(name) == accelerator:
+            return
+        self._accelerators[name] = accelerator
+        if self._rebuild_pending is None:
+            self._rebuild_pending = GLib.idle_add(self._rebuild_menus)
+
+    def _rebuild_menus(self) -> bool:
+        self._rebuild_pending = None
+        self.menubar.set_menu_model(self._build(_MENUBAR))
+        self.popup.set_menu_model(self._build(_POPUP))
+        return GLib.SOURCE_REMOVE
+
+    def add_shortcut(self, accelerator, action):
+        """Make <accelerator> trigger the named <action>."""
+        self.shortcuts.add_shortcut(Gtk.Shortcut.new(
+            Gtk.ShortcutTrigger.parse_string(accelerator),
+            Gtk.NamedAction.new(action)))
 
     def _dynamic(self, name):
         """The model of a submenu that is rebuilt as the program runs."""
@@ -515,89 +504,83 @@ class MainUI(object):
                 'menu_bookmarks': self.bookmarks.model,
                 'menu_bookmarks_popup': self.bookmarks.model}.get(name)
 
-    def _build(self, layout, order):
+    def _build(self, layout):
         """Turn one of the layouts below into a Gio.Menu.
 
         A layout is a sequence of action names, with None where the XML
         this replaces had a separator - a menu model says that by starting
         a new section - and a (name, sub-layout) pair for a submenu.
-
-        <order> is filled with the action names in the order the items
-        come out, so that accelerator paths can be put back on them; a
-        separator between sections counts as one position, and a submenu
-        contributes a nested list.
         """
         model = Gio.Menu()
         section = Gio.Menu()
-        pending: list = []
         for item in layout:
             if item is None:
                 if section.get_n_items():
                     model.append_section(None, section)
-                    order.extend(pending)
-                    order.append(None)
                 section = Gio.Menu()
-                pending = []
                 continue
             if isinstance(item, tuple):
                 name, contents = item
-                nested: list = []
                 section.append_submenu(self._actions.label(name),
-                                       self._build(contents, nested))
-                pending.append((name, nested))
+                                       self._build(contents))
                 continue
             dynamic = self._dynamic(item)
             if dynamic is not None:
-                # Built and rebuilt elsewhere; nothing to hang a path on.
+                # Built and rebuilt elsewhere.
                 section.append_submenu(self._actions.label(item), dynamic)
-                pending.append((item, None))
                 continue
             entry = Gio.MenuItem.new(self._actions.label(item), None)
             detailed, target = self._actions.detailed(item)
             entry.set_action_and_target_value(detailed, target)
+            accelerator = self._accelerators.get(item)
+            if accelerator:
+                entry.set_attribute_value('accel',
+                                          GLib.Variant('s', accelerator))
             section.append_item(entry)
-            pending.append(item)
         if section.get_n_items():
             model.append_section(None, section)
-            order.extend(pending)
         return model
 
     def _build_toolbar(self):
-        """Build the tool bar, which is a row of buttons on the actions."""
-        toolbar = Gtk.Toolbar()
+        """Build the tool bar, which is a row of buttons on the actions.
+
+        Gtk.Toolbar and every one of its items is gone in GTK4.  A tool
+        bar there is a box of ordinary buttons carrying the 'toolbar'
+        style class, which is what gives them the flat look.
+        """
+        toolbar = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        toolbar.add_css_class('toolbar')
         for name in _TOOLBAR:
             if name is None:
-                toolbar.insert(Gtk.SeparatorToolItem(), -1)
+                toolbar.append(Gtk.Separator.new(Gtk.Orientation.VERTICAL))
                 continue
             if name == 'expander':
-                # Takes up the slack, and takes the focus that would
-                # otherwise land on one of the buttons.
-                self.toolbar_expander = Gtk.ToolItem()
-                self.toolbar_expander.set_expand(True)
-                self.toolbar_expander.set_sensitive(False)
-                toolbar.insert(self.toolbar_expander, -1)
+                # Takes up the slack between the two groups of buttons.
+                self.toolbar_expander = Gtk.Box()
+                self.toolbar_expander.set_hexpand(True)
+                toolbar.append(self.toolbar_expander)
                 continue
             detailed, target = self._actions.detailed(name)
             stateful = self._actions.is_stateful(name)
-            button = Gtk.ToggleToolButton() if stateful else Gtk.ToolButton()
-            button.set_label(self._actions.label(name))
-            button.set_icon_name(self._actions.icon(name))
+            button = Gtk.ToggleButton() if stateful else Gtk.Button()
+            icon = Gtk.Image.new_from_icon_name(self._actions.icon(name))
+            # Gtk.IconSize.LARGE_TOOLBAR by another name.
+            icon.set_icon_size(Gtk.IconSize.LARGE)
+            button.set_child(icon)
+            button.set_has_frame(False)
+            # Keep the focus out of the tool bar, or space and the arrow
+            # keys would work it instead of turning pages.
+            button.set_can_focus(False)
+            button.set_focus_on_click(False)
             tooltip = self._actions.tooltips.get(self._actions.label(name))
             if tooltip:
                 button.set_tooltip_text(tooltip)
             if target is not None:
                 button.set_action_target_value(target)
             button.set_action_name(detailed)
-            toolbar.insert(button, -1)
+            toolbar.append(button)
             if name == 'slideshow':
                 self.slideshow_button = button
-        toolbar.set_style(Gtk.ToolbarStyle.ICONS)
-        toolbar.set_icon_size(Gtk.IconSize.LARGE_TOOLBAR)
-        # The buttons have to be shown here.  Gtk.UIManager did it for the
-        # tool bar it built; the window only ever shows and hides the bar
-        # itself, following the "show toolbar" preference, so buttons that
-        # were never shown leave it collapsed to a few pixels.
-        toolbar.show_all()
         return toolbar
 
     def set_sensitivities(self) -> None:

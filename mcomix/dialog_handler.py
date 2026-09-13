@@ -3,6 +3,8 @@
    information and then exit with no added functionality inbetween.
 """
 
+from gi.repository import Gtk
+
 from mcomix import about_dialog
 from mcomix import comment_dialog
 from mcomix import properties_dialog
@@ -23,12 +25,20 @@ def open_dialog(action, data):
     # and connect the _close_dialog action to the dialog window
     if _dialog[0] is None:
         dialog_windows[ name_of_dialog ][0] = _dialog[1](window)
-        dialog_windows[ name_of_dialog ][0].connect('response', _close_dialog, name_of_dialog)
+        created = dialog_windows[ name_of_dialog ][0]
+        # Gtk.AboutDialog is a plain Gtk.Window in GTK4 rather than a
+        # Gtk.Dialog, so there is no response to wait for; every one of
+        # these closes for good either way.
+        if isinstance(created, Gtk.Dialog):
+            created.connect('response', _close_dialog, name_of_dialog)
+        else:
+            created.connect('close-request', _close_dialog, name_of_dialog)
     else:
         # if the dialog window already exists bring it to the forefront of the screen
         _dialog[0].present()
 
-def _close_dialog(action, exit_response, name_of_dialog):
+def _close_dialog(action, *args):
+    name_of_dialog = args[-1]
 
     _dialog = dialog_windows[ name_of_dialog ]
 

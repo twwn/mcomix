@@ -3,12 +3,13 @@
 import os
 import mimetypes
 import fnmatch
-from gi.repository import Gtk, Pango
+from gi.repository import GLib, Gtk, Pango
 
 from mcomix.preferences import prefs
 from mcomix import image_tools
 from mcomix import archive_tools
 from mcomix import labels
+from mcomix import widgets
 from mcomix import constants
 from mcomix import log
 from mcomix import thumbnail_tools
@@ -50,38 +51,60 @@ class _BaseFileChooserDialog(Gtk.Dialog):
             buttons = (_('_Cancel'), Gtk.ResponseType.CANCEL,
                 _('_Save'), Gtk.ResponseType.OK)
 
-        super(_BaseFileChooserDialog, self).__init__(title, None, 0, buttons)
+        # GTK4's Gtk.Dialog takes properties, not the title, parent
+        # and flags GTK3 let it be constructed from.
+        super(_BaseFileChooserDialog, self).__init__(title=title)
+        self.add_buttons(*buttons)
         self.set_default_response(Gtk.ResponseType.OK)
 
+        #: What each filter was built to match, by filter.
+        self._filter_rules = {}
         self.filechooser = Gtk.FileChooserWidget(action=action)
         self.filechooser.set_size_request(680, 420)
-        self.vbox.pack_start(self.filechooser, True, True, 0)
-        self.set_border_width(4)
-        self.filechooser.set_border_width(6)
+        # GTK4 has no set_preview_widget(): the chooser will not hold
+        # anything of ours any more, so the preview goes beside it.
+        chooser_row = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 10)
+        widgets.pack(chooser_row, self.filechooser, True, True, 0)
+        widgets.pack(self.get_content_area(), chooser_row, True, True, 0)
+        widgets.set_border(self, 4)
+        widgets.set_border(self.filechooser, 6)
         self.connect('response', self._response)
-        self.filechooser.connect('file_activated', self._response,
-            Gtk.ResponseType.OK)
+        # GTK4's Gtk.FileChooserWidget has no signals at all, so a
+        # double click no longer reaches file-activated; a click gesture
+        # on the widget is what is left to hear it.
+        activate = Gtk.GestureClick()
+        activate.set_button(1)
+        activate.connect('pressed', self._activated)
+        self.filechooser.add_controller(activate)
 
         preview_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 10)
         preview_box.set_size_request(130, 0)
-        self._preview_image = Gtk.Image()
+        # A Gtk.Image draws whatever it is given at an icon size in
+        # GTK4; a picture draws it at its own.
+        self._preview_image = Gtk.Picture()
         self._preview_image.set_size_request(130, 130)
-        preview_box.pack_start(self._preview_image, False, False, 0)
-        self.filechooser.set_preview_widget(preview_box)
+        widgets.pack(preview_box, self._preview_image, False, False, 0)
 
         pango_scale_small = (1 / 1.2)
 
         self._namelabel = labels.FormattedLabel(weight=Pango.Weight.BOLD,
             scale=pango_scale_small)
         self._namelabel.set_ellipsize(Pango.EllipsizeMode.MIDDLE)
-        preview_box.pack_start(self._namelabel, False, False, 0)
+        widgets.pack(preview_box, self._namelabel, False, False, 0)
 
         self._sizelabel = labels.FormattedLabel(scale=pango_scale_small)
         self._sizelabel.set_ellipsize(Pango.EllipsizeMode.MIDDLE)
-        preview_box.pack_start(self._sizelabel, False, False, 0)
-        self.filechooser.set_use_preview_label(False)
-        preview_box.show_all()
-        self.filechooser.connect('update-preview', self._update_preview)
+        widgets.pack(preview_box, self._sizelabel, False, False, 0)
+        preview_box.set_visible(True)
+        widgets.pack(chooser_row, preview_box, False, False, 0, end=True)
+
+        # And no update-preview to hear either - a GTK4
+        # Gtk.FileChooserWidget has no signals at all - so ask it what is
+        # selected every so often.  It is one property read; the timer
+        # goes when the dialog does.
+        self._previewed = None
+        self._preview_timer = GLib.timeout_add(200, self._poll_preview)
+        self.connect('destroy', self._stop_previewing)
 
         self._all_files_filter = self.add_filter( _('All files'), [], ['*'])
 
@@ -107,16 +130,33 @@ class _BaseFileChooserDialog(Gtk.Dialog):
         except Exception as ex: # E.g. broken prefs values.
             log.debug(ex)
 
-        self.show_all()
+        self.set_visible(True)
+
+    def list_filters(self):
+        """The filters the chooser offers, in the order they were added.
+
+        Gtk.FileChooser.list_filters() is get_filters() in GTK4, and it
+        answers with a Gio.ListModel rather than a list.
+        """
+        model = self.filechooser.get_filters()
+        return [model.get_item(index) for index in range(model.get_n_items())]
 
     def add_filter(self, name, mimes, patterns=()):
         """Add a filter, called <name>, for each mime type in <mimes> and
         each pattern in <patterns> to the filechooser.
         """
+        # Gtk.FileFilter.add_custom() is gone in GTK4, and with it
+        # Gtk.FileFilterInfo and Gtk.FileFilter.filter().  A filter built
+        # from mime types and patterns matches a file that answers any
+        # one of them, which is what the callback said.  What it matched
+        # on is kept here as well, for the walk below that has no chooser
+        # to ask.
         ffilter = Gtk.FileFilter()
-        ffilter.add_custom(
-                Gtk.FileFilterFlags.FILENAME | Gtk.FileFilterFlags.MIME_TYPE,
-                self._filter, (patterns, mimes))
+        for mime in mimes:
+            ffilter.add_mime_type(mime)
+        for pattern in patterns:
+            ffilter.add_pattern(pattern)
+        self._filter_rules[ffilter] = (tuple(patterns), tuple(mimes))
 
         ffilter.set_name(name)
         self.filechooser.add_filter(ffilter)
@@ -128,15 +168,19 @@ class _BaseFileChooserDialog(Gtk.Dialog):
         ffilter = Gtk.FileFilter()
         ffilter.set_name(_('All archives'))
         self.filechooser.add_filter(ffilter)
+        all_mimes, all_patterns = [], []
         supported_formats = archive_tools.get_supported_formats()
         for name in sorted(supported_formats):
             mime_types, extensions = supported_formats[name]
             patterns = ['*.%s' % ext for ext in extensions]
             self.add_filter(_('%s archives') % name, mime_types, patterns)
+            all_mimes.extend(mime_types)
+            all_patterns.extend(patterns)
             for mime in mime_types:
                 ffilter.add_mime_type(mime)
             for pat in patterns:
                 ffilter.add_pattern(pat)
+        self._filter_rules[ffilter] = (tuple(all_patterns), tuple(all_mimes))
 
     def add_image_filters(self) -> None:
         """Add images filters to the filechooser.
@@ -144,28 +188,27 @@ class _BaseFileChooserDialog(Gtk.Dialog):
         ffilter = Gtk.FileFilter()
         ffilter.set_name(_('All images'))
         self.filechooser.add_filter(ffilter)
+        all_mimes, all_patterns = [], []
         supported_formats = image_tools.get_supported_formats()
         for name in sorted(supported_formats):
             mime_types, extensions = supported_formats[name]
             patterns = ['*.%s' % ext for ext in extensions]
             self.add_filter(_('%s images') % name, mime_types, patterns)
+            all_mimes.extend(mime_types)
+            all_patterns.extend(patterns)
             for mime in mime_types:
                 ffilter.add_mime_type(mime)
             for pat in patterns:
                 ffilter.add_pattern(pat)
+        self._filter_rules[ffilter] = (tuple(all_patterns), tuple(all_mimes))
 
-    def _filter(self, filter_info, data):
-        """ Callback function used to determine if a file
-        should be filtered or not. C{data} is a tuple containing
-        (patterns, mimes) that should pass the test. Returns True
-        if the file passed in C{filter_info} should be displayed. """
-
-        match_patterns, match_mimes = data
-
-        matches_mime = bool([match_mime for match_mime in match_mimes if match_mime == filter_info.mime_type])
-        matches_pattern = bool([match_pattern for match_pattern in match_patterns if fnmatch.fnmatch(filter_info.filename, match_pattern)])
-
-        return matches_mime or matches_pattern
+    def _matches(self, ffilter, path, mime_type):
+        """Whether <path> passes <ffilter>, by the rules it was built from."""
+        match_patterns, match_mimes = self._filter_rules.get(ffilter, ((), ()))
+        if mime_type in match_mimes:
+            return True
+        return any(fnmatch.fnmatch(path, pattern)
+                   for pattern in match_patterns)
 
     def collect_files_from_subdir(self, path, filter, recursive=False):
         """ Finds archives within C{path} that match the
@@ -175,12 +218,9 @@ class _BaseFileChooserDialog(Gtk.Dialog):
             for file in files:
                 full_path = os.path.join(root, file)
                 mimetype = mimetypes.guess_type(full_path)[0] or 'application/octet-stream'
-                filter_info = Gtk.FileFilterInfo()
-                filter_info.contains = Gtk.FileFilterFlags.FILENAME | Gtk.FileFilterFlags.MIME_TYPE
-                filter_info.filename = full_path
-                filter_info.mime_type = mimetype
 
-                if (filter == self._all_files_filter or filter.filter(filter_info)):
+                if (filter == self._all_files_filter
+                        or self._matches(filter, full_path, mimetype)):
                     yield full_path
 
             if not recursive:
@@ -194,6 +234,11 @@ class _BaseFileChooserDialog(Gtk.Dialog):
 
     def should_open_recursive(self) -> bool:
         return False
+
+    def _activated(self, gesture, n_press, x, y) -> None:
+        """Confirm the dialog when a file is double clicked."""
+        if n_press == 2 and self.filechooser.get_file() is not None:
+            self._response(self, Gtk.ResponseType.OK)
 
     def _response(self, widget, response):
         """Return a list of the paths of the chosen files, or None if the
@@ -257,11 +302,22 @@ class _BaseFileChooserDialog(Gtk.Dialog):
         self.files_chosen(paths)
         self._destroyed = True
 
+    def _poll_preview(self) -> bool:
+        """Notice a change of selection, which nothing announces."""
+        selected = self.filechooser.get_file()
+        path = selected.get_path() if selected is not None else None
+        if path != self._previewed:
+            self._previewed = path
+            self._update_preview()
+        return GLib.SOURCE_CONTINUE
+
+    def _stop_previewing(self, *args) -> None:
+        if self._preview_timer is not None:
+            GLib.source_remove(self._preview_timer)
+            self._preview_timer = None
+
     def _update_preview(self, *args):
-        if self.filechooser.get_preview_filename():
-            path = self.filechooser.get_preview_filename()
-        else:
-            path = None
+        path = self._previewed
 
         if path and os.path.isfile(path):
             thumbnailer = thumbnail_tools.Thumbnailer(size=(128, 128),
@@ -269,7 +325,7 @@ class _BaseFileChooserDialog(Gtk.Dialog):
             thumbnailer.thumbnail_finished += self._preview_thumbnail_finished
             thumbnailer.thumbnail(path, threaded=True)
         else:
-            self._preview_image.clear()
+            self._preview_image.set_paintable(None)
             self._namelabel.set_text('')
             self._sizelabel.set_text('')
 
@@ -284,13 +340,14 @@ class _BaseFileChooserDialog(Gtk.Dialog):
         if current_path and current_path == filepath:
 
             if pixbuf is None:
-                self._preview_image.clear()
+                self._preview_image.set_paintable(None)
                 self._namelabel.set_text('')
                 self._sizelabel.set_text('')
 
             else:
                 pixbuf = image_tools.add_border(pixbuf, 1)
-                self._preview_image.set_from_pixbuf(pixbuf)
+                self._preview_image.set_paintable(
+                    image_tools.pixbuf_to_texture(pixbuf))
                 self._namelabel.set_text(os.path.basename(filepath))
                 self._sizelabel.set_text(tools.format_byte_size(
                     os.stat(filepath).st_size))

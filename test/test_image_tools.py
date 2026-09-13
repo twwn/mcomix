@@ -2,6 +2,7 @@
 
 import binascii
 import os
+import shutil
 import tempfile
 
 from gi.repository import GdkPixbuf
@@ -194,6 +195,21 @@ class ImageToolsTest(MComixTest):
             diff_lines.append(line)
         if len(diff_lines) > 0:
             fail('content', '\n%s\n', '\n'.join(diff_lines))
+
+    def test_temporary_directory_outlives_a_test(self):
+        # GTK4 decodes at a size through glycin, which unpacks into the
+        # directory GLib pinned the first time anything asked it for one;
+        # GLib caches that answer and never reads the environment again.
+        # Point the environment at a directory that is already gone, the
+        # way tearDown() leaves the one setUp() made, and the decode still
+        # has to work - otherwise every sized load from the second test
+        # onwards fails and load_pixbuf_size() quietly answers from PIL.
+        gone = tempfile.mkdtemp()
+        shutil.rmtree(gone)
+        os.environ['TMPDIR'] = os.environ['TEMP'] = os.environ['TMP'] = gone
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
+            get_image_path('blue.png'), 50, 50)
+        self.assertEqual((pixbuf.get_width(), pixbuf.get_height()), (50, 50))
 
     def test_load_pixbuf_basic(self):
         for image in _TEST_IMAGES:

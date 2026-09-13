@@ -4,19 +4,23 @@ import os
 from gi.repository import Gtk
 
 from mcomix import i18n
+from mcomix import widgets
 from mcomix.i18n import _
 
 
 class _CommentsDialog(Gtk.Dialog):
 
     def __init__(self, window):
-        super(_CommentsDialog, self).__init__(_('Comments'), window, 0,
-            (_('_Close'), Gtk.ResponseType.CLOSE))
+        # GTK4's Gtk.Dialog takes properties, not the title, parent
+        # and flags GTK3 let it be constructed from.
+        super(_CommentsDialog, self).__init__(
+            title=_('Comments'), transient_for=window)
+        self.add_buttons(_('_Close'), Gtk.ResponseType.CLOSE)
 
         self.set_resizable(True)
         self.set_default_response(Gtk.ResponseType.CLOSE)
         self.set_default_size(600, 550)
-        self.set_border_width(4)
+        widgets.set_border(self, 4)
 
         tag = Gtk.TextTag()
         tag.set_property('editable', False)
@@ -38,24 +42,26 @@ class _CommentsDialog(Gtk.Dialog):
         self._window.filehandler.file_opened += self._update_comments
         self._window.filehandler.file_closed += self._update_comments
         self._update_comments()
-        self.show_all()
+        self.set_visible(True)
 
     def _on_file_available(self, path_list):
         for path in path_list:
             if path in self._comments:
                 self._add_comment(path, self._comments[path])
-        self._notebook.show_all()
+        self._notebook.set_visible(True)
 
     def _update_comments(self) -> None:
 
         if self._notebook is not None:
-            self._notebook.destroy()
+            # Gtk.Widget.destroy() is for windows only in GTK4; a child
+            # goes by being taken out of what holds it.
+            self.get_content_area().remove(self._notebook)
             self._notebook = None
 
         notebook = Gtk.Notebook()
         notebook.set_scrollable(True)
-        notebook.set_border_width(6)
-        self.vbox.pack_start(notebook, True, True, 0)
+        widgets.set_border(notebook, 6)
+        widgets.pack(self.get_content_area(), notebook, True, True, 0)
         self._notebook = notebook
         self._comments = {}
 
@@ -69,25 +75,21 @@ class _CommentsDialog(Gtk.Dialog):
                 self._window.filehandler._ask_for_files([path])
             self._comments[path] = num
 
-        self._notebook.show_all()
+        self._notebook.set_visible(True)
 
     def _add_comment(self, path, num):
 
         name = os.path.basename(path)
 
         page = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
-        page.set_border_width(8)
+        widgets.set_border(page, 8)
 
         scrolled = Gtk.ScrolledWindow()
         scrolled.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
-        page.pack_start(scrolled, True, True, 0)
+        widgets.pack(page, scrolled, True, True, 0)
 
-        outbox = Gtk.EventBox()
-        scrolled.add(outbox)
-
-        inbox = Gtk.EventBox()
-        inbox.set_border_width(6)
-        outbox.add(inbox)
+        # The two Gtk.EventBoxes here only carried a background and a
+        # margin, neither of which needs a widget of its own in GTK4.
 
         text = self._window.filehandler.get_comment_text(num)
         if text is None:
@@ -97,14 +99,12 @@ class _CommentsDialog(Gtk.Dialog):
         text_buffer.set_text(i18n.to_unicode(text))
         text_buffer.apply_tag(self._tag, *text_buffer.get_bounds())
         text_view = Gtk.TextView(buffer=text_buffer)
-        inbox.add(text_view)
+        widgets.set_border(text_view, 6)
+        scrolled.set_child(text_view)
 
-        # Frame the comment in the text view's own background colour.  The
-        # view was asked for its "paragraph background", which nothing sets
-        # unless a tag does, so modify_bg() was handed None and undid
-        # nothing at all.  The view style class is what carries that
-        # colour, and taking it from the theme keeps it right afterwards.
-        outbox.get_style_context().add_class('view')
+        # The comment used to be framed in the text view's background by
+        # an event box carrying the 'view' style class; the view is the
+        # scrolled window's own child now, and brings that class with it.
         tab_label = Gtk.Label(label=i18n.to_unicode(name))
         self._notebook.insert_page(page, tab_label, -1)
 

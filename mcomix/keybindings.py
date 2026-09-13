@@ -150,6 +150,23 @@ for i in range(1, 10):
     }
 
 
+def parse_accelerator(accelerator) -> tuple:
+    """Return the (key, modifiers) <accelerator> stands for.
+
+    Gtk.accelerator_parse() puts a success flag in front of those two in
+    GTK4.  One that does not parse comes back as (0, 0), which is what
+    GTK3 answered for one as well.
+    """
+    ok, key, modifiers = Gtk.accelerator_parse(accelerator)
+    if not ok and '<Mod1>' in accelerator:
+        # GTK4 dropped <Mod1> for the Alt key it always stood for, and
+        # will not parse it at all; keybindings.conf files written by
+        # earlier versions are full of it.
+        ok, key, modifiers = Gtk.accelerator_parse(
+            accelerator.replace('<Mod1>', '<Alt>'))
+    return (key, modifiers) if ok else (0, 0)
+
+
 class _KeybindingManager(object):
     def __init__(self, window):
         #: Main window instance
@@ -182,7 +199,7 @@ class _KeybindingManager(object):
         # Load stored keybindings, or fall back to passed arguments
         keycodes = self._action_to_bindings[name]
         if keycodes == []:
-            keycodes = [tuple(Gtk.accelerator_parse(binding)) for binding in bindings]
+            keycodes = [parse_accelerator(binding) for binding in bindings]
 
         for keycode in keycodes:
             if keycode in self._binding_to_action:
@@ -194,13 +211,23 @@ class _KeybindingManager(object):
                 self._binding_to_action[keycode] = name
                 self._action_to_bindings[name].append(keycode)
 
-        # Add gtk accelerator for labels in menu
+        # Show the key against the action in the menus.
         if len(self._action_to_bindings[name]) > 0:
             key, mod = self._action_to_bindings[name][0]
-            Gtk.AccelMap.change_entry('<Actions>/mcomix-main/%s' % name, key, mod, True)
+            self.announce_accelerator(name, Gtk.accelerator_name(key, mod))
 
         self._action_to_callback[name] = (callback, args, kwargs)
 
+
+    def announce_accelerator(self, name, accelerator) -> None:
+        """Tell the menus which key <name> answers to.
+
+        Gtk.AccelMap, which the menu labels used to read this from, is
+        not in GTK4; a menu model item carries its accelerator itself.
+        """
+        uimanager = getattr(self._window, 'uimanager', None)
+        if uimanager is not None:
+            uimanager.set_accelerator(name, accelerator)
 
     def edit_accel(self, name, new_binding, old_binding):
         """ Changes binding for an action
@@ -213,7 +240,7 @@ class _KeybindingManager(object):
         """
         assert name in BINDING_INFO, "'%s' isn't a valid keyboard action." % name
 
-        nb = tuple(Gtk.accelerator_parse(new_binding))
+        nb = parse_accelerator(new_binding)
         old_action_with_nb = self._binding_to_action.get(nb)
         if old_action_with_nb is not None:
             # The new key is already bound to an action, erase the action
@@ -222,7 +249,7 @@ class _KeybindingManager(object):
 
         if old_binding and name != old_action_with_nb:
             # The action already had a key that is now being replaced
-            ob = tuple(Gtk.accelerator_parse(old_binding))
+            ob = parse_accelerator(old_binding)
             self._binding_to_action[nb] = name
 
             # Remove action bound to the key.
@@ -244,7 +271,7 @@ class _KeybindingManager(object):
         """ Remove binding for an action """
         assert name in BINDING_INFO, "'%s' isn't a valid keyboard action." % name
 
-        ob = tuple(Gtk.accelerator_parse(binding))
+        ob = parse_accelerator(binding)
         self._action_to_bindings[name].remove(ob)
         self._binding_to_action.pop(ob)
 
@@ -264,7 +291,8 @@ class _KeybindingManager(object):
         if keybinding in self._binding_to_action:
             action = self._binding_to_action[keybinding]
             func, args, kwargs = self._action_to_callback[action]
-            self._window.emit_stop_by_name('key_press_event')
+            # There is no key-press-event to stop in GTK4; the key
+            # controller in event.py says so by what it answers.
             return func(*args, **kwargs)
 
         # Some keys enable additional modifiers (NumLock enables GDK_MOD2_MASK),
@@ -275,7 +303,6 @@ class _KeybindingManager(object):
             stored_keycode, stored_flags = stored_binding
             if stored_keycode == keybinding[0] and stored_flags & keybinding[1]:
                 func, args, kwargs = self._action_to_callback[action]
-                self._window.emit_stop_by_name('key_press_event')
                 return func(*args, **kwargs)
 
     def save(self) -> None:
@@ -303,7 +330,7 @@ class _KeybindingManager(object):
         for action in BINDING_INFO.keys():
             if action in stored_action_bindings:
                 bindings = [
-                    tuple(Gtk.accelerator_parse(keyname))
+                    parse_accelerator(keyname)
                     for keyname in stored_action_bindings[action] ]
                 self._action_to_bindings[action] = bindings
                 for binding in bindings:

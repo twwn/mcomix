@@ -59,7 +59,12 @@ ANIMATION_DISABLED, ANIMATION_NORMAL = list(range(2))
 
 ZIP, RAR, TAR, GZIP, BZIP2, XZ, PDF, SEVENZIP, LHA, ZIP_EXTERNAL, MOBI = list(range(11))
 NORMAL_CURSOR, GRAB_CURSOR, WAIT_CURSOR, NO_CURSOR = list(range(4))
-LIBRARY_DRAG_EXTERNAL_ID, LIBRARY_DRAG_BOOK_ID, LIBRARY_DRAG_COLLECTION_ID = list(range(3))
+#: What a drag within the library carries, as the first part of the
+#: text it hands over.  GTK4 has no drag target names to tell one kind
+#: from another by; a drop target answers for one type, so the two say
+#: which they are instead.
+LIBRARY_DRAG_BOOKS = 'books'
+LIBRARY_DRAG_COLLECTION = 'collection'
 AUTOROTATE_NEVER, AUTOROTATE_WIDTH_90, AUTOROTATE_WIDTH_270, \
     AUTOROTATE_HEIGHT_90, AUTOROTATE_HEIGHT_270 = list(range(5))
 

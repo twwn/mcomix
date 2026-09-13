@@ -17,7 +17,7 @@ class _MainFileChooserDialog(file_chooser_base_dialog._BaseFileChooserDialog):
         self.filechooser.set_select_multiple(True)
         self.add_archive_filters()
         self.add_image_filters()
-        filters = self.filechooser.list_filters()
+        filters = self.list_filters()
         try:
             # When setting this to the first filter ("All files"), this
             # fails on some GTK+ versions and sets the filter to "blank".
@@ -33,7 +33,7 @@ class _MainFileChooserDialog(file_chooser_base_dialog._BaseFileChooserDialog):
     def files_chosen(self, paths):
         if paths:
             try: # For some reason this fails sometimes (GTK+ bug?)
-                filter_index = self.filechooser.list_filters().index(
+                filter_index = self.list_filters().index(
                     self.filechooser.get_filter())
                 prefs['last filter in main filechooser'] = filter_index
             except:

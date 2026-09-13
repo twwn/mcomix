@@ -1,6 +1,6 @@
 """ openwith_menu.py - Menu shell for the Open with... menu. """
 
-from gi.repository import Gio, GLib, Gtk
+from gi.repository import Gio, GLib
 
 from typing import Any
 
@@ -16,10 +16,9 @@ class OpenWithMenu(object):
 
     """The "Open with" submenu, listing the commands the user has set up.
 
-    What it keeps is a Gio.Menu model, with the widget built from it by
-    Gtk.Menu.new_from_model, which follows the model by itself.  Running a
-    command goes through one action carrying the command's position as its
-    target, under a prefix of its own.
+    What it keeps is a Gio.Menu model, which the menu bar takes.  Running
+    a command goes through one action carrying the command's position as
+    its target, under a prefix of its own.
     """
 
     #: Where this menu's actions live, as menu items address them.
@@ -32,7 +31,6 @@ class OpenWithMenu(object):
         self._commands: list = []
 
         self.model = Gio.Menu()
-        self.menu = Gtk.Menu.new_from_model(self.model)
 
         self._actions = Gio.SimpleActionGroup()
         run = Gio.SimpleAction.new('run', GLib.VariantType.new('i'))
@@ -49,7 +47,6 @@ class OpenWithMenu(object):
         self._window.filehandler.file_closed += self._set_sensitivity
         self._openwith_manager.set_commands += self._construct_menu
 
-        self.menu.show_all()
 
     def _construct_menu(self, *args: Any) -> None:
         """ Build the menu entries from scratch. """
@@ -100,7 +97,7 @@ class OpenWithMenu(object):
                     self._openwith_manager)
             _openwith_edit_diag.connect_after('response', self._dialog_closed)
 
-        _openwith_edit_diag.show_all()
+        _openwith_edit_diag.set_visible(True)
         _openwith_edit_diag.present()
 
     def _dialog_closed(self, *args):

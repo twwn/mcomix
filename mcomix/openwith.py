@@ -4,6 +4,7 @@ import os
 import re
 from gi.repository import Gtk, GLib, GObject
 
+from mcomix import widgets
 from mcomix.preferences import prefs
 from mcomix import message_dialog
 from mcomix import process
@@ -266,7 +267,9 @@ class OpenWithEditor(Gtk.Dialog):
     the external model (i.e. preferences) only when properly closed. """
 
     def __init__(self, window, openwithmanager):
-        super(OpenWithEditor, self).__init__(_('Edit external commands'), parent=window)
+        # GTK4's Gtk.Dialog takes properties, not a positional title.
+        super(OpenWithEditor, self).__init__(
+            title=_('Edit external commands'), transient_for=window)
         self.set_destroy_with_parent(True)
         self._window = window
         self._openwith = openwithmanager
@@ -307,7 +310,7 @@ class OpenWithEditor(Gtk.Dialog):
         self._window.filehandler.file_opened += self.test_command
         self._window.filehandler.file_closed += self.test_command
 
-        self.resize(600, 400)
+        self.set_default_size(600, 400)
 
     def save(self) -> None:
         """ Serializes the tree model into a list of OpenWithCommands
@@ -448,31 +451,31 @@ class OpenWithEditor(Gtk.Dialog):
         # All these boxes basically are just for adding a 4px border
         vbox = self.get_content_area()
         hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
-        vbox.pack_start(hbox, True, True, 4)
+        widgets.pack(vbox, hbox, True, True, 4)
         content = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
         content.set_spacing(6)
-        hbox.pack_start(content, True, True, 4)
+        widgets.pack(hbox, content, True, True, 4)
 
         scroll_window = Gtk.ScrolledWindow()
         scroll_window.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
-        scroll_window.add(self._command_tree)
-        content.pack_start(scroll_window, True, True, 0)
+        scroll_window.set_child(self._command_tree)
+        widgets.pack(content, scroll_window, True, True, 0)
 
         buttonbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
-        buttonbox.pack_start(self._add_button, False, False, 0)
-        buttonbox.pack_start(self._add_sep_button, False, False, 0)
-        buttonbox.pack_start(self._remove_button, False, False, 0)
-        buttonbox.pack_start(self._up_button, False, False, 0)
-        buttonbox.pack_start(self._down_button, False, False, 0)
-        content.pack_start(buttonbox, False, False, 0)
+        widgets.pack(buttonbox, self._add_button, False, False, 0)
+        widgets.pack(buttonbox, self._add_sep_button, False, False, 0)
+        widgets.pack(buttonbox, self._remove_button, False, False, 0)
+        widgets.pack(buttonbox, self._up_button, False, False, 0)
+        widgets.pack(buttonbox, self._down_button, False, False, 0)
+        widgets.pack(content, buttonbox, False, False, 0)
 
         preview_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
-        preview_box.pack_start(Gtk.Label(_('Preview:')), False, False, 0)
-        preview_box.pack_start(self._test_field, True, True, 4)
-        preview_box.pack_start(self._run_button, False, False, 0)
-        content.pack_start(preview_box, False, False, 0)
+        widgets.pack(preview_box, Gtk.Label(label=_('Preview:')), False, False, 0)
+        widgets.pack(preview_box, self._test_field, True, True, 4)
+        widgets.pack(preview_box, self._run_button, False, False, 0)
+        widgets.pack(content, preview_box, False, False, 0)
 
-        content.pack_start(self._exec_label, False, False, 0)
+        widgets.pack(content, self._exec_label, False, False, 0)
 
         linklabel = Gtk.Label()
         linklabel.set_markup(_('Please refer to the <a href="%s">external command documentation</a> '
@@ -480,7 +483,7 @@ class OpenWithEditor(Gtk.Dialog):
                 'https://sourceforge.net/p/mcomix/wiki/External_Commands')
         linklabel.set_xalign(0)
         linklabel.set_yalign(0)
-        content.pack_start(linklabel, False, False, 4)
+        widgets.pack(content, linklabel, False, False, 4)
 
     def _setup_table(self) -> None:
         """ Initializes the TreeView with settings and data. """

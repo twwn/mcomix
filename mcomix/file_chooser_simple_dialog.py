@@ -28,7 +28,7 @@ class SimpleFileChooserDialog(file_chooser_base_dialog._BaseFileChooserDialog):
         dialog afterwards is left to <on_paths>.
         """
         self._on_paths = on_paths
-        self.show_all()
+        self.set_visible(True)
 
     def get_paths(self):
         """Return the paths that were selected, if any."""

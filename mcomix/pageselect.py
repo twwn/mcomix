@@ -2,6 +2,8 @@
 
 from gi.repository import Gtk
 
+from mcomix import image_tools
+from mcomix import widgets
 from mcomix.preferences import prefs
 from mcomix.worker_thread import WorkerThread
 from mcomix import callback
@@ -15,8 +17,11 @@ class Pageselector(Gtk.Dialog):
 
     def __init__(self, window):
         self._window = window
-        super(Pageselector, self).__init__("Go to page...", window,
-                                     Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT)
+        # GTK4's Gtk.Dialog takes properties, not the title, parent
+        # and flags GTK3 let it be constructed from.
+        super(Pageselector, self).__init__(
+            title=_('Go to page...'), transient_for=window,
+            modal=True, destroy_with_parent=True)
         self.add_buttons(_('_Go'), Gtk.ResponseType.OK,
                          _('_Cancel'), Gtk.ResponseType.CANCEL,)
         self.set_default_response(Gtk.ResponseType.OK)
@@ -29,7 +34,8 @@ class Pageselector(Gtk.Dialog):
                               lower=1,upper=self._number_of_pages,
                               step_increment=1, page_increment=1)
 
-        self._page_selector = Gtk.VScale.new(self._selector_adjustment)
+        self._page_selector = Gtk.Scale.new(Gtk.Orientation.VERTICAL,
+                                            self._selector_adjustment)
         self._page_selector.set_draw_value(False)
         self._page_selector.set_digits( 0 )
 
@@ -41,29 +47,30 @@ class Pageselector(Gtk.Dialog):
         self._pages_label.set_xalign(0)
         self._pages_label.set_yalign(0.5)
 
-        self._image_preview = Gtk.Image()
+        # A Gtk.Image draws whatever it is given at an icon size in
+        # GTK4; a picture draws it at its own.
+        self._image_preview = Gtk.Picture()
         self._image_preview.set_size_request(
             prefs['thumbnail size'], prefs['thumbnail size'])
 
-        self.connect('configure-event', self._size_changed_cb)
         self.set_size_request(prefs['pageselector width'],
                 prefs['pageselector height'])
 
         # Group preview image and page selector next to each other
         preview_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
-        preview_box.set_border_width(5)
+        widgets.set_border(preview_box, 5)
         preview_box.set_spacing(5)
-        preview_box.pack_start(self._image_preview, True, True, 0)
-        preview_box.pack_end(self._page_selector, False, False, 0)
+        widgets.pack(preview_box, self._image_preview, True, True, 0)
+        widgets.pack(preview_box, self._page_selector, False, False, 0, end=True)
         # Below them, group selection spinner and current page label
         selection_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
-        selection_box.set_border_width(5)
-        selection_box.pack_start(self._page_spinner, True, True, 0)
-        selection_box.pack_end(self._pages_label, False, False, 0)
+        widgets.set_border(selection_box, 5)
+        widgets.pack(selection_box, self._page_spinner, True, True, 0)
+        widgets.pack(selection_box, self._pages_label, False, False, 0, end=True)
 
-        self.get_content_area().pack_start(preview_box, True, True, 0)
-        self.get_content_area().pack_end(selection_box, False, False, 0)
-        self.show_all()
+        widgets.pack(self.get_content_area(), preview_box, True, True, 0)
+        widgets.pack(self.get_content_area(), selection_box, False, False, 0, end=True)
+        self.set_visible(True)
 
         self._selector_adjustment.connect('value-changed', self._cb_value_changed)
 
@@ -74,6 +81,15 @@ class Pageselector(Gtk.Dialog):
         # Currently displayed thumbnail page.
         self._thumbnail_page = 0
         self._thread = WorkerThread(self._generate_thumbnail, name='preview')
+        # The worker is not a daemon, so whatever ends this dialog has to
+        # stop it - not only the buttons.  Anything else leaves a thread
+        # that terminate_program() then waits for at exit.
+        self.connect('destroy', self._stop_thumbnailing)
+        # Gtk.Widget::configure-event is gone; a GTK4 window says how
+        # large it is through its own properties.  Connected last, after
+        # everything the handler reaches has been built.
+        self.connect('notify::default-width', self._size_changed_cb)
+        self.connect('notify::default-height', self._size_changed_cb)
         self._update_thumbnail(int(self._selector_adjustment.props.value))
         self._window.imagehandler.page_available += self._page_available
 
@@ -87,8 +103,8 @@ class Pageselector(Gtk.Dialog):
         # Window cannot be scaled down unless the size request is reset
         self.set_size_request(-1, -1)
         # Store dialog size
-        prefs['pageselector width'] = self.get_allocation().width
-        prefs['pageselector height'] = self.get_allocation().height
+        prefs['pageselector width'] = self.get_width() or prefs['pageselector width']
+        prefs['pageselector height'] = self.get_height() or prefs['pageselector height']
 
         self._update_thumbnail(int(self._selector_adjustment.props.value))
 
@@ -100,18 +116,20 @@ class Pageselector(Gtk.Dialog):
             if page > 0 and page <= self._number_of_pages:
                 control.set_value(page)
 
+    def _stop_thumbnailing(self, *args) -> None:
+        self._thread.stop()
+
     def _response(self, widget, event, *args):
         if event == Gtk.ResponseType.OK:
             self._window.set_page(int(self._selector_adjustment.props.value))
 
         self._window.imagehandler.page_available -= self._page_available
-        self._thread.stop()
         self.destroy()
 
     def _update_thumbnail(self, page):
         """ Trigger a thumbnail update. """
-        width = self._image_preview.get_allocation().width
-        height = self._image_preview.get_allocation().height
+        width = self._image_preview.get_width()
+        height = self._image_preview.get_height()
         self._thumbnail_page = page
         self._thread.clear_orders()
         self._thread.append_order((page, width, height))
@@ -129,7 +147,8 @@ class Pageselector(Gtk.Dialog):
     def _thumbnail_finished(self, page, pixbuf):
         # Don't bother if we changed page in the meantime.
         if page == self._thumbnail_page:
-            self._image_preview.set_from_pixbuf(pixbuf)
+            self._image_preview.set_paintable(
+                image_tools.pixbuf_to_texture(pixbuf))
 
     def _page_available(self, page):
         if page == int(self._selector_adjustment.props.value):

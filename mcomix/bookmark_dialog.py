@@ -2,6 +2,7 @@
 
 from gi.repository import Gdk, GdkPixbuf, Gtk, GObject
 
+from mcomix import widgets
 from mcomix import constants
 from mcomix import tools
 from mcomix.i18n import _
@@ -13,22 +14,26 @@ class _BookmarksDialog(Gtk.Dialog):
     _SORT_TYPE, _SORT_NAME, _SORT_PAGE, _SORT_ADDED = 100, 101, 102, 103
 
     def __init__(self, window, bookmarks_store):
-        super(_BookmarksDialog, self).__init__(_('Edit Bookmarks'), window, Gtk.DialogFlags.DESTROY_WITH_PARENT,
-            (_('_Remove'), constants.RESPONSE_REMOVE,
-             _('_Close'), Gtk.ResponseType.CLOSE))
+        # GTK4's Gtk.Dialog takes properties, not the title, parent
+        # and flags GTK3 let it be constructed from.
+        super(_BookmarksDialog, self).__init__(
+            title=_('Edit Bookmarks'), transient_for=window,
+            destroy_with_parent=True)
+        self.add_buttons(_('_Remove'), constants.RESPONSE_REMOVE,
+                         _('_Close'), Gtk.ResponseType.CLOSE)
 
         self._bookmarks_store = bookmarks_store
 
         self.set_resizable(True)
         self.set_default_response(Gtk.ResponseType.CLOSE)
         # scroll area fill to the edge (TODO window should not really be a dialog)
-        self.set_border_width(0)
+        widgets.set_border(self, 0)
 
         scrolled = Gtk.ScrolledWindow()
-        scrolled.set_border_width(0)
-        scrolled.set_shadow_type(Gtk.ShadowType.IN)
+        widgets.set_border(scrolled, 0)
+        # Gtk.ShadowType is gone; the frame comes from the theme.
         scrolled.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
-        self.vbox.pack_start(scrolled, True, True, 0)
+        widgets.pack(self.get_content_area(), scrolled, True, True, 0)
 
         # The last column holds the bookmark itself.  It used to be a
         # Gtk.ImageMenuItem, and so had a GType of its own; a plain Python
@@ -36,8 +41,7 @@ class _BookmarksDialog(Gtk.Dialog):
         self._liststore = Gtk.ListStore(GdkPixbuf.Pixbuf, GObject.TYPE_STRING,
             GObject.TYPE_STRING, GObject.TYPE_STRING, GObject.TYPE_STRING, object)
 
-        self._treeview = Gtk.TreeView(self._liststore)
-        self._treeview.set_rules_hint(True)
+        self._treeview = Gtk.TreeView(model=self._liststore)
         self._treeview.set_reorderable(True)
         # search by typing first few letters of name
         self._treeview.set_search_column(1)
@@ -45,7 +49,7 @@ class _BookmarksDialog(Gtk.Dialog):
         self._treeview.set_headers_clickable(True)
         self._selection = self._treeview.get_selection()
 
-        scrolled.add(self._treeview)
+        scrolled.set_child(self._treeview)
 
         cellrenderer_text = Gtk.CellRendererText()
         cellrenderer_pbuf = Gtk.CellRendererPixbuf()
@@ -94,18 +98,20 @@ class _BookmarksDialog(Gtk.Dialog):
         # FIXME Hide extra columns. Needs UI controls to enable these.
         self._path_col.set_visible(False)
 
-        self.resize(600, 450)
+        self.set_default_size(600, 450)
 
         self.connect('response', self._response)
-        self.connect('delete_event', self._close)
+        self.connect('close-request', self._close)
 
-        self._treeview.connect('key_press_event', self._key_press_event)
+        keys = Gtk.EventControllerKey()
+        keys.connect('key-pressed', self._key_press_event)
+        self._treeview.add_controller(keys)
         self._treeview.connect('row_activated', self._bookmark_activated)
 
         for bookmark in self._bookmarks_store.get_bookmarks():
             self._add_bookmark(bookmark)
 
-        self.show_all()
+        self.set_visible(True)
 
     def _add_bookmark(self, bookmark):
         """Add the <bookmark> to the dialog."""
@@ -166,10 +172,12 @@ class _BookmarksDialog(Gtk.Dialog):
         else:
             self.destroy()
 
-    def _key_press_event(self, dialog, event, *args):
+    def _key_press_event(self, controller, keyval, keycode, state):
 
-        if event.keyval == Gdk.KEY_Delete:
+        if keyval == Gdk.KEY_Delete:
             self._remove_selected()
+            return Gdk.EVENT_STOP
+        return Gdk.EVENT_PROPAGATE
 
     def _close(self, *args):
         """Close the dialog and update the _BookmarksStore with the new

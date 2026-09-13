@@ -5,9 +5,9 @@ from gi.repository import Gdk, Gio, GLib, Gtk
 from typing import TYPE_CHECKING
 
 from mcomix.preferences import prefs
+from mcomix import widgets
 from mcomix import constants
 from mcomix import i18n
-from mcomix import status
 from mcomix import file_chooser_library_dialog
 from mcomix import message_dialog
 from mcomix.i18n import _
@@ -37,27 +37,39 @@ class _CollectionArea(Gtk.ScrolledWindow):
         self._treestore = Gtk.TreeStore.new([str, int])  # (Name, ID) of collections.
         self._treeview = Gtk.TreeView.new_with_model(self._treestore)
         self._treeview.connect('cursor_changed', self._collection_selected)
-        self._treeview.connect('drag_data_received', self._drag_data_received)
-        self._treeview.connect('drag_motion', self._drag_motion)
-        self._treeview.connect_after('drag_begin', self._drag_begin)
-        self._treeview.connect('button_press_event', self._button_press)
-        self._treeview.connect('key_press_event', self._key_press)
-        self._treeview.connect('popup_menu', self._popup_menu)
+        clicks = Gtk.GestureClick()
+        clicks.set_button(3)
+        clicks.connect('pressed', self._button_press)
+        self._treeview.add_controller(clicks)
+
+        keys = Gtk.EventControllerKey()
+        keys.connect('key-pressed', self._key_press)
+        self._treeview.add_controller(keys)
         self._treeview.connect('row_activated', self._expand_or_collapse_row)
         self._treeview.set_headers_visible(False)
-        self._treeview.set_rules_hint(True)
-        self._set_acceptable_drop(True)
-        self._treeview.enable_model_drag_source(Gdk.ModifierType.BUTTON1_MASK,
-            [('collection', Gtk.TargetFlags.SAME_WIDGET, constants.LIBRARY_DRAG_COLLECTION_ID)],
-            Gdk.DragAction.MOVE)
+        # Books and collections are both dragged as text saying which
+        # they are: GTK4 has no target names to tell them apart by, and a
+        # drop target answers for one type.  Preloading is what makes the
+        # dragged text readable while it is still only being hovered,
+        # which is when the drop has to be accepted or refused.
+        self._acceptable_drop = True
+        self._drop_target = Gtk.DropTarget.new(str, Gdk.DragAction.MOVE)
+        self._drop_target.set_preload(True)
+        self._drop_target.connect('motion', self._drag_motion)
+        self._drop_target.connect('drop', self._drag_data_received)
+        self._treeview.add_controller(self._drop_target)
+
+        drag = Gtk.DragSource()
+        drag.set_actions(Gdk.DragAction.MOVE)
+        drag.connect('prepare', self._drag_prepare)
+        drag.connect('drag-begin', self._drag_begin)
+        self._treeview.add_controller(drag)
 
         cellrenderer = Gtk.CellRendererText()
         column = Gtk.TreeViewColumn(None, cellrenderer, markup=0)
         self._treeview.append_column(column)
-        self.add(self._treeview)
+        self.set_child(self._treeview)
 
-        self._tooltipstatus = status.TooltipStatusHelper(
-            statusbar=self._library.get_status_bar())
         self._popup_actions = Gio.SimpleActionGroup()
         self._collection_menu = self._create_popup_menu()
 
@@ -83,12 +95,10 @@ class _CollectionArea(Gtk.ScrolledWindow):
             ('remove', _('_Remove'),
              _('Deletes the selected collection.'), self._remove_collection),
         )
-        tooltips = {}
         for name, label, tooltip, handler in entries:
             action = Gio.SimpleAction.new(name, None)
             action.connect('activate', handler)
             self._popup_actions.add_action(action)
-            tooltips[label] = tooltip
 
         # The heading is an item bound to an action that is never enabled,
         # which is what it was before.  A labelled Gio.Menu section would
@@ -115,10 +125,7 @@ class _CollectionArea(Gtk.ScrolledWindow):
             removing.append(label, 'collections.%s' % name)
         model.append_section(None, removing)
 
-        menu = Gtk.Menu.new_from_model(model)
-        menu.attach_to_widget(self, None)
-        menu.show_all()
-        self._tooltipstatus.attach_to_menu(menu, tooltips)
+        menu = Gtk.PopoverMenu.new_from_model(model)
         return menu
 
     def get_current_collection(self):
@@ -183,12 +190,12 @@ class _CollectionArea(Gtk.ScrolledWindow):
 
         # To get nice line-ups with the padding.
         box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
-        add_dialog.vbox.pack_start(box, True, True, 0)
+        widgets.pack(add_dialog.get_content_area(), box, True, True, 0)
 
         entry = Gtk.Entry()
         entry.set_activates_default(True)
-        box.pack_start(entry, True, True, 6)
-        box.show_all()
+        widgets.pack(box, entry, True, True, 6)
+        box.set_visible(True)
 
         add_dialog.run_async(lambda response: self._add_answered(
             response, entry.get_text(), add_dialog))
@@ -284,13 +291,13 @@ class _CollectionArea(Gtk.ScrolledWindow):
 
         # To get nice line-ups with the padding.
         box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
-        rename_dialog.vbox.pack_start(box, True, True, 0)
+        widgets.pack(rename_dialog.get_content_area(), box, True, True, 0)
 
         entry = Gtk.Entry()
         entry.set_text(old_name)
         entry.set_activates_default(True)
-        box.pack_start(entry, True, True, 6)
-        box.show_all()
+        widgets.pack(box, entry, True, True, 6)
+        box.set_visible(True)
 
         rename_dialog.run_async(lambda response: self._rename_answered(
             response, collection, entry.get_text(), rename_dialog))
@@ -319,24 +326,23 @@ class _CollectionArea(Gtk.ScrolledWindow):
             self._library.set_status_message(
                 _('Could not duplicate collection.'))
 
-    def _button_press(self, treeview, event):
+    def _button_press(self, gesture, n_press, x, y) -> None:
         """Handle mouse button presses on the _CollectionArea."""
 
-        if event.button == 3:
-            row = treeview.get_path_at_pos(int(event.x), int(event.y))
-            if row:
-                path, column, x, y = row
-                collection = self._get_collection_at_path(path)
-            else:
-                collection = None
+        row = self._treeview.get_path_at_pos(int(x), int(y))
+        if row:
+            path, _column, _cell_x, _cell_y = row
+            collection = self._get_collection_at_path(path)
+        else:
+            collection = None
 
-            self._popup_collection_menu(collection)
+        self._popup_collection_menu(collection)
 
-    def _popup_menu(self, treeview):
+    def _popup_menu(self) -> None:
         """ Called to open the control's popup menu via
         keyboard controls. """
 
-        model, iter = treeview.get_selection().get_selected()
+        model, iter = self._treeview.get_selection().get_selected()
         if iter is not None:
             book_path = model.get_path(iter)[0]
             collection = self._get_collection_at_path(book_path)
@@ -360,13 +366,19 @@ class _CollectionArea(Gtk.ScrolledWindow):
             self._popup_actions.lookup_action(name).set_enabled(
                 collection is not None)
 
-        self._collection_menu.popup(None, None, None, None, 3,
-                                    Gtk.get_current_event_time())
+        widgets.popup_at(self._collection_menu, self, 0, 0)
 
-    def _key_press(self, treeview, event):
+    def _key_press(self, controller, keyval, keycode, state):
         """Handle key presses on the _CollectionArea."""
-        if event.keyval == Gdk.KEY_Delete:
+        if keyval == Gdk.KEY_Delete:
             self._remove_collection()
+            return Gdk.EVENT_STOP
+        # Gtk.Widget::popup-menu, which the menu key used to reach, is
+        # not a signal in GTK4.
+        if keyval == Gdk.KEY_Menu:
+            self._popup_menu()
+            return Gdk.EVENT_STOP
+        return Gdk.EVENT_PROPAGATE
 
     def _expand_or_collapse_row(self, treeview, path, column):
         """Expand or collapse the activated row."""
@@ -375,11 +387,12 @@ class _CollectionArea(Gtk.ScrolledWindow):
         else:
             treeview.expand_to_path(path)
 
-    def _drag_data_received(self, treeview: Gtk.TreeView, context: Gdk.DragContext, x: int, y: int,
-                            selection: Gtk.SelectionData, drag_id: int, eventtime: int) -> None:
+    def _drag_data_received(self, target, value, x: int, y: int) -> bool:
         """Move books dragged from the _BookArea to the target collection,
         or move some collection into another collection.
         """
+        treeview = self._treeview
+        kind, _separator, payload = value.partition(':')
         self._library.set_status_message('')
         drop_row = treeview.get_dest_row_at_pos(x, y)
         if drop_row is None:  # Drop "after" the last row.
@@ -389,15 +402,15 @@ class _CollectionArea(Gtk.ScrolledWindow):
             dest_path, pos = drop_row
         src_collection = self.get_current_collection()
         dest_collection = self._get_collection_at_path(dest_path)
-        if drag_id == constants.LIBRARY_DRAG_COLLECTION_ID:
+        if kind == constants.LIBRARY_DRAG_COLLECTION:
             if pos in (Gtk.TreeViewDropPosition.BEFORE, Gtk.TreeViewDropPosition.AFTER):
                 dest_collection = self._library.backend.get_supercollection(
                     dest_collection)
             self._library.backend.add_collection_to_collection(
                 src_collection, dest_collection)
             self.display_collections()
-        elif drag_id == constants.LIBRARY_DRAG_BOOK_ID:
-            for path_str in selection.get_text().split(','): # IconView path
+        elif kind == constants.LIBRARY_DRAG_BOOKS:
+            for path_str in payload.split(','): # IconView path
                 book = self._library.book_area.get_book_at_path(int(path_str))
                 self._library.backend.add_book_to_collection(book,
                     dest_collection)
@@ -405,8 +418,19 @@ class _CollectionArea(Gtk.ScrolledWindow):
                     self._library.backend.remove_book_from_collection(book,
                         src_collection)
                     self._library.book_area.remove_book_at_path(int(path_str))
+        else:
+            return False
+        return True
 
-    def _drag_motion(self, treeview: Gtk.TreeView, context: Gdk.DragContext, x: int, y: int, time: int) -> None:
+    def _drag_prepare(self, source, x, y):
+        """Offer the collection being dragged."""
+        collection = self.get_current_collection()
+        if collection is None:
+            return None
+        return Gdk.ContentProvider.new_for_value(
+            '%s:%d' % (constants.LIBRARY_DRAG_COLLECTION, collection))
+
+    def _drag_motion(self, target, x: int, y: int):
         """Set the library statusbar text when hovering a drag-n-drop over
         a collection (either books or from the collection area itself).
         Also set the TreeView to accept drops only when we are hovering over
@@ -415,10 +439,15 @@ class _CollectionArea(Gtk.ScrolledWindow):
         This isn't pretty, but the details of treeviews and drag-n-drops
         are not pretty to begin with.
         """
+        treeview = self._treeview
+        value = target.get_value()
+        if not isinstance(value, str):
+            # Not read yet, or not ours at all.
+            return 0
+        kind, _separator, _payload = value.partition(':')
         drop_row = treeview.get_dest_row_at_pos(x, y)
         src_collection = self.get_current_collection()
-        # Why isn't the drag ID passed along with drag-motion events?
-        if Gtk.drag_get_source_widget(context) is self._treeview:  # Moving collection.
+        if kind == constants.LIBRARY_DRAG_COLLECTION:  # Moving collection.
             model, src_iter = treeview.get_selection().get_selected()
             if drop_row is None:  # Drop "after" the last row.
                 dest_path, pos = (len(model) - 1,), Gtk.TreeViewDropPosition.AFTER
@@ -428,7 +457,7 @@ class _CollectionArea(Gtk.ScrolledWindow):
             if model.is_ancestor(src_iter, dest_iter):  # No cycles!
                 self._set_acceptable_drop(False)
                 self._library.set_status_message('')
-                return
+                return 0
             dest_collection = self._get_collection_at_path(dest_path)
             if pos in (Gtk.TreeViewDropPosition.BEFORE, Gtk.TreeViewDropPosition.AFTER):
                 dest_collection = self._library.backend.get_supercollection(
@@ -438,7 +467,7 @@ class _CollectionArea(Gtk.ScrolledWindow):
                 src_collection == dest_collection):
                 self._set_acceptable_drop(False)
                 self._library.set_status_message('')
-                return
+                return 0
             src_name = self._library.backend.get_collection_name(
                 src_collection)
             if dest_collection is None:
@@ -452,17 +481,17 @@ class _CollectionArea(Gtk.ScrolledWindow):
             if drop_row is None:
                 self._set_acceptable_drop(False)
                 self._library.set_status_message('')
-                return
+                return 0
             dest_path, pos = drop_row
             if pos in (Gtk.TreeViewDropPosition.BEFORE, Gtk.TreeViewDropPosition.AFTER):
                 self._set_acceptable_drop(False)
                 self._library.set_status_message('')
-                return
+                return 0
             dest_collection = self._get_collection_at_path(dest_path)
             if src_collection == dest_collection or dest_collection == _COLLECTION_ALL:
                 self._set_acceptable_drop(False)
                 self._library.set_status_message('')
-                return
+                return 0
             dest_name = self._library.backend.get_collection_name(
                 dest_collection)
             if src_collection == _COLLECTION_ALL:
@@ -475,31 +504,25 @@ class _CollectionArea(Gtk.ScrolledWindow):
                     'destination collection': dest_name})
         self._set_acceptable_drop(True)
         self._library.set_status_message(message)
-        Gdk.drag_status(context, Gdk.DragAction.MOVE, time)
-        return
+        # What a GTK4 drop target says by answering, rather than by
+        # calling Gdk.drag_status() as it went.
+        return Gdk.DragAction.MOVE
 
     def _set_acceptable_drop(self, acceptable: bool) -> None:
-        """Set the TreeView to accept drops if <acceptable> is True."""
-        if acceptable:
-            self._treeview.enable_model_drag_dest(
-                [Gtk.TargetEntry.new('text/plain', Gtk.TargetFlags.SAME_APP, constants.LIBRARY_DRAG_BOOK_ID),
-                 Gtk.TargetEntry.new('collection', Gtk.TargetFlags.SAME_WIDGET, constants.LIBRARY_DRAG_COLLECTION_ID)],
-                 Gdk.DragAction.MOVE)
-        else:
-            self._treeview.enable_model_drag_dest([], Gdk.DragAction.MOVE)
+        """Note whether a drop here would be accepted."""
+        self._acceptable_drop = acceptable
 
-    def _drag_begin(self, treeview: Gtk.TreeView, context: Gdk.DragContext) -> None:
+    def _drag_begin(self, source, drag) -> None:
         """Create a cursor image for drag-n-drop of collections. We use the
         default one (i.e. the row with text), but put the hotspot in the
         top left corner so that one can actually see where one is dropping,
         which unfortunately isn't the default case.
         """
-        path = treeview.get_cursor()[0]
-        surface = treeview.create_row_drag_icon(path)
-        image_surface = surface.map_to_image(None)
-        width, height = image_surface.get_width(), image_surface.get_height()
-        pixbuf = Gdk.pixbuf_get_from_surface(image_surface, 0, 0, width, height)
-        surface.unmap_image(image_surface)
-        Gtk.drag_set_icon_pixbuf(context, pixbuf, -5, -5)
+        path = self._treeview.get_cursor()[0]
+        if path is None:
+            return
+        # create_row_drag_icon() answers with a paintable in GTK4, which
+        # is what a drag icon is; there is no surface to copy out of.
+        source.set_icon(self._treeview.create_row_drag_icon(path), -5, -5)
 
 # vim: expandtab:sw=4:ts=4

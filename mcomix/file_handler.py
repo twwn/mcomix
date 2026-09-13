@@ -7,7 +7,7 @@ import tempfile
 import threading
 import re
 import pickle
-from gi.repository import Gtk, GLib
+from gi.repository import GLib, Gtk
 
 from mcomix.preferences import prefs
 from mcomix import archive_extractor
@@ -228,8 +228,9 @@ class FileHandler(object):
             self._name_table.clear()
             self.file_closed()
         # Catch up on UI events, so we don't leave idle callbacks.
-        while Gtk.events_pending():
-            Gtk.main_iteration_do(False)
+        context = GLib.MainContext.default()
+        while context.pending():
+            context.iteration(False)
         tools.garbage_collect()
         if self._tmp_dir is not None:
             self.thread_delete(self._tmp_dir)

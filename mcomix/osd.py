@@ -3,7 +3,7 @@
 
 import textwrap
 
-from gi.repository import Gdk, GLib
+from gi.repository import GLib, Graphene
 from gi.repository import Pango, PangoCairo
 
 from mcomix import image_tools
@@ -19,6 +19,9 @@ class OnScreenDisplay(object):
 
     TIMEOUT = 3
 
+    #: What the OSD is called among the canvas' overlays.
+    _OVERLAY = 'osd'
+
     def __init__(self, window):
         #: MainWindow
         self._window = window
@@ -32,7 +35,7 @@ class OnScreenDisplay(object):
 
         # Determine text to draw
         text = self._wrap_text(text)
-        layout = self._window._image_box.create_pango_layout(text)
+        layout = self._window._main_layout.create_pango_layout(text)
 
         # Set up font information
         font = layout.get_context().get_font_description()
@@ -83,16 +86,12 @@ class OnScreenDisplay(object):
         return "\n".join(result)
 
     def _clear_osd(self) -> None:
-        """ Clear the last OSD region. """
+        """ Take the OSD off the pages again. """
 
         if not self._last_osd_rect:
             return
 
-        window = self._window._main_layout.get_bin_window()
-        gdk_rect = Gdk.Rectangle()
-        gdk_rect.x, gdk_rect.y, gdk_rect.width, gdk_rect.height = self._last_osd_rect
-        window.invalidate_rect(gdk_rect, True)
-        window.process_updates(True)
+        self._window._main_layout.set_overlay(self._OVERLAY, None)
         self._last_osd_rect = None
 
     def _scale_font(self, font, layout, max_width, max_height):
@@ -112,36 +111,25 @@ class OnScreenDisplay(object):
     def _draw_osd(self, layout, rect):
         """ Draws the text specified in C{layout} into a box at C{rect}. """
 
-        draw_region = Gdk.Rectangle()
-        draw_region.x, draw_region.y, draw_region.width, draw_region.height = rect
-        if self._last_osd_rect:
-            last_region = Gdk.Rectangle()
-            last_region.x, last_region.y, last_region.width, last_region.height = self._last_osd_rect
-            draw_region = Gdk.rectangle_union(draw_region, last_region)
+        # There is no window to paint into any more, and no damage to
+        # work out: the canvas draws the OSD over the pages, and cairo
+        # is still what draws it - a snapshot hands one out.
+        def draw(snapshot) -> None:
+            bounds = Graphene.Rect()
+            bounds.init(*rect)
+            cr = snapshot.append_cairo(bounds)
+            black = image_tools.RGBA_BLACK
+            cr.set_source_rgb(black.red, black.green, black.blue)
+            cr.rectangle(*rect)
+            cr.fill()
+            extents = layout.get_extents()[0]
+            white = image_tools.RGBA_WHITE
+            cr.set_source_rgb(white.red, white.green, white.blue)
+            cr.translate(rect[0] + extents.x / Pango.SCALE,
+                         rect[1] + extents.y / Pango.SCALE)
+            PangoCairo.update_layout(cr, layout)
+            PangoCairo.show_layout(cr, layout)
 
-        gdk_rect = Gdk.Rectangle()
-        gdk_rect.x = draw_region.x
-        gdk_rect.y = draw_region.y
-        gdk_rect.width = draw_region.width
-        gdk_rect.height = draw_region.height
-        window = self._window._main_layout.get_bin_window()
-        window.begin_paint_rect(gdk_rect)
-
-        self._clear_osd()
-
-        cr = window.cairo_create()
-        black = image_tools.RGBA_BLACK
-        cr.set_source_rgb(black.red, black.green, black.blue)
-        cr.rectangle(*rect)
-        cr.fill()
-        extents = layout.get_extents()[0]
-        white = image_tools.RGBA_WHITE
-        cr.set_source_rgb(white.red, white.green, white.blue)
-        cr.translate(rect[0] + extents.x / Pango.SCALE,
-                     rect[1] + extents.y / Pango.SCALE)
-        PangoCairo.update_layout(cr, layout)
-        PangoCairo.show_layout(cr, layout)
-
-        window.end_paint()
+        self._window._main_layout.set_overlay(self._OVERLAY, draw)
 
 # vim: expandtab:sw=4:ts=4

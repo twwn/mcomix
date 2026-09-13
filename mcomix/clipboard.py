@@ -1,6 +1,6 @@
 """clipboard.py - Clipboard handler"""
 
-from gi.repository import Gdk, Gtk
+from gi.repository import Gdk
 
 from mcomix import image_tools
 
@@ -11,13 +11,21 @@ class Clipboard(object):
     """
 
     def __init__(self, window):
-        self._clipboard = Gtk.Clipboard.get(Gdk.Atom.intern("CLIPBOARD", False))
+        # Gtk.Clipboard and Gdk.Atom are both gone in GTK4; a clipboard
+        # belongs to the display and is asked for by name.
+        self._clipboard = Gdk.Display.get_default().get_clipboard()
         self._window = window
 
     def copy(self, text, pixbuf):
         """ Copies C{text} and C{pixbuf} to clipboard. """
-        self._clipboard.set_text(text, len(text))
-        self._clipboard.set_image(pixbuf)
+        # A GTK4 clipboard holds one content provider rather than a set
+        # of targets set one at a time, so offer both and leave whoever
+        # pastes to take the one it understands.
+        self._clipboard.set_content(Gdk.ContentProvider.new_union([
+            Gdk.ContentProvider.new_for_value(text),
+            Gdk.ContentProvider.new_for_value(
+                image_tools.pixbuf_to_texture(image_tools.static_image(pixbuf))),
+        ]))
 
     def copy_page(self, *args):
         """ Copies the currently opened page and pixbuf to clipboard. """
