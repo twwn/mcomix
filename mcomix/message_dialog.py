@@ -1,9 +1,10 @@
-""" Simple extension of Gtk.MessageDialog for consistent formating. Also
+""" A dialog that asks a question, with consistent formatting. Also
     supports remembering the dialog result.
 """
 
 from gi.repository import GLib, Gtk
 
+from mcomix.dialog import Dialog
 from mcomix import widgets
 from mcomix.preferences import prefs
 from mcomix.i18n import _
@@ -11,8 +12,23 @@ from mcomix.i18n import _
 from collections.abc import Callable
 from typing import Any
 
+#: What each Gtk.ButtonsType asks for, as label and response. There is
+#: no Gtk.MessageDialog to build them any more, and Gtk.AlertDialog -
+#: which is what GTK offers instead - has no room for the "do not ask
+#: again" checkbox below.
+_BUTTONS = {
+    Gtk.ButtonsType.NONE: (),
+    Gtk.ButtonsType.OK: ((_('_OK'), Gtk.ResponseType.OK),),
+    Gtk.ButtonsType.CLOSE: ((_('_Close'), Gtk.ResponseType.CLOSE),),
+    Gtk.ButtonsType.CANCEL: ((_('_Cancel'), Gtk.ResponseType.CANCEL),),
+    Gtk.ButtonsType.YES_NO: ((_('_No'), Gtk.ResponseType.NO),
+                             (_('_Yes'), Gtk.ResponseType.YES)),
+    Gtk.ButtonsType.OK_CANCEL: ((_('_Cancel'), Gtk.ResponseType.CANCEL),
+                                (_('_OK'), Gtk.ResponseType.OK)),
+}
 
-class MessageDialog(Gtk.MessageDialog):
+
+class MessageDialog(Dialog):
 
     def __init__(self, parent=None, flags=0, type=0, buttons=0):
         """ Creates a dialog window.
@@ -25,12 +41,28 @@ class MessageDialog(Gtk.MessageDialog):
             # Fix "mapped without a transient parent" Gtk warning.
             from mcomix import main
             parent = main.main_window()
-        # GTK4 has no "flags" property: what MComix passes through it is
-        # modality, and the parent and type are named differently too.
+        # What MComix passes through the old "flags" argument is
+        # modality; the icon the type used to pick is not drawn any
+        # more, and nothing read it.
         super(MessageDialog, self).__init__(
             transient_for=parent,
-            modal=bool(flags & Gtk.DialogFlags.MODAL),
-            message_type=type, buttons=buttons)
+            modal=bool(flags & Gtk.DialogFlags.MODAL))
+        widgets.set_border(self, 12)
+
+        self._primary = Gtk.Label()
+        self._primary.set_xalign(0)
+        self._primary.set_wrap(True)
+        self._primary.add_css_class('title-4')
+        self._secondary = Gtk.Label()
+        self._secondary.set_xalign(0)
+        self._secondary.set_wrap(True)
+        self._secondary.set_visible(False)
+        area = self.get_content_area()
+        area.append(self._primary)
+        area.append(self._secondary)
+
+        for label, response in _BUTTONS.get(buttons, ()):
+            self.add_button(label, response)
 
         #: Unique dialog identifier (for storing 'Do not ask again')
         self.dialog_id = None
@@ -42,7 +74,7 @@ class MessageDialog(Gtk.MessageDialog):
         self.remember_checkbox = Gtk.CheckButton(label=_('Do not ask again.'))
         self.remember_checkbox.set_visible(False)
         self.remember_checkbox.set_can_focus(False)
-        widgets.pack(self.get_message_area(), self.remember_checkbox, True, True, 6, end=True)
+        area.append(self.remember_checkbox)
 
     def set_text(self, primary, secondary=None):
         """ Formats the dialog's text fields.
@@ -50,15 +82,12 @@ class MessageDialog(Gtk.MessageDialog):
         @param secondary: Descriptive text.
         """
         if primary:
-            # Bold and a size larger, which is what GTK3 needed spelling
-            # out: GTK4 gives the primary text of a message dialog that
-            # styling itself, so saying it again made it larger still.
-            self.set_property('text', primary)
+            self._primary.set_text(primary)
         if secondary:
-            # format_secondary_markup() is gone in GTK4; the two
-            # properties it set are still there.
-            self.set_property('secondary-use-markup', True)
-            self.set_property('secondary-text', secondary)
+            # The secondary text is markup, which is what
+            # secondary-use-markup used to say.
+            self._secondary.set_markup(secondary)
+            self._secondary.set_visible(True)
 
     def should_remember_choice(self):
         """ Returns True when the dialog choice should be remembered. """

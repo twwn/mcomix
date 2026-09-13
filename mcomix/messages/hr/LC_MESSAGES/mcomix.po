@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: comix 4.0.1\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-08-30 18:43+0200\n"
+"POT-Creation-Date: 2026-08-31 15:30+0200\n"
 "PO-Revision-Date: 2008-12-13 18:00+0100\n"
 "Last-Translator: Adrian C. <anrxc@sysphere.org>\n"
 "Language-Team: Croatian\n"
@@ -69,22 +69,23 @@ msgstr ""
 msgid "! Could not parse bookmarks file %s"
 msgstr ""
 
-#: mcomix/bookmark_backend.py:204
+#: mcomix/bookmark_backend.py:204 mcomix/message_dialog.py:25
 msgid "_Yes"
 msgstr "_Da"
 
 #
 # File: src/ui.py, line: 69
-#: mcomix/bookmark_backend.py:205
+#: mcomix/bookmark_backend.py:205 mcomix/message_dialog.py:24
 msgid "_No"
 msgstr "_Ne"
 
 #
 # File: src/preferences.py, line: 230
-#: mcomix/bookmark_backend.py:206 mcomix/edit_dialog.py:42
-#: mcomix/file_chooser_base_dialog.py:80 mcomix/file_chooser_base_dialog.py:85
-#: mcomix/file_chooser_library_dialog.py:47 mcomix/main.py:984
-#: mcomix/main.py:1022 mcomix/pageselect.py:24 mcomix/library/watchlist.py:188
+#: mcomix/bookmark_backend.py:206 mcomix/edit_dialog.py:43
+#: mcomix/file_chooser_base_dialog.py:81 mcomix/file_chooser_base_dialog.py:86
+#: mcomix/file_chooser_library_dialog.py:46 mcomix/main.py:1042
+#: mcomix/message_dialog.py:23 mcomix/message_dialog.py:26
+#: mcomix/pageselect.py:25
 #, fuzzy
 msgid "_Cancel"
 msgstr "Međuspremnik"
@@ -110,38 +111,39 @@ msgid ""
 "bookmarks."
 msgstr ""
 
-#: mcomix/bookmark_dialog.py:18
+#: mcomix/bookmark_dialog.py:19
 msgid "Edit Bookmarks"
 msgstr ""
 
-#: mcomix/bookmark_dialog.py:20 mcomix/openwith.py:284
-#: mcomix/library/collection_area.py:95 mcomix/library/watchlist.py:75
+#: mcomix/bookmark_dialog.py:21 mcomix/openwith.py:285
+#: mcomix/library/collection_area.py:95 mcomix/library/watchlist.py:50
 msgid "_Remove"
 msgstr ""
 
 #
 # File: src/ui.py, line: 48
-#: mcomix/bookmark_dialog.py:21 mcomix/comment_dialog.py:16
-#: mcomix/preferences_dialog.py:51 mcomix/properties_dialog.py:28
-#: mcomix/ui.py:320 mcomix/library/watchlist.py:33
+#: mcomix/bookmark_dialog.py:22 mcomix/comment_dialog.py:17
+#: mcomix/message_dialog.py:22 mcomix/preferences_dialog.py:52
+#: mcomix/properties_dialog.py:29 mcomix/ui.py:320
+#: mcomix/library/watchlist.py:27
 msgid "_Close"
 msgstr "_Zatvori"
 
-#: mcomix/bookmark_dialog.py:55
+#: mcomix/bookmark_dialog.py:44
 msgid "Type"
 msgstr ""
 
 #
 # File: src/bookmark.py, line: 255
 # File: src/edit.py, line: 267
-#: mcomix/bookmark_dialog.py:56 mcomix/edit_comment_area.py:44
-#: mcomix/keybindings_editor.py:37
+#: mcomix/bookmark_dialog.py:47 mcomix/edit_comment_area.py:35
+#: mcomix/keybindings_editor.py:32
 msgid "Name"
 msgstr "Ime"
 
 #
 # File: src/bookmark.py, line: 256
-#: mcomix/bookmark_dialog.py:57 mcomix/main.py:1077
+#: mcomix/bookmark_dialog.py:50 mcomix/main.py:1097
 #: mcomix/library/control_area.py:137
 msgid "Page"
 msgstr "Stranica"
@@ -149,12 +151,11 @@ msgstr "Stranica"
 #
 # File: src/properties.py, line: 124
 # File: src/properties.py, line: 159
-#: mcomix/bookmark_dialog.py:58 mcomix/properties_dialog.py:117
+#: mcomix/bookmark_dialog.py:53 mcomix/properties_dialog.py:118
 msgid "Location"
 msgstr "Lokacija"
 
-#. TRANSLATORS: "Added" as in "Date Added"
-#: mcomix/bookmark_dialog.py:60
+#: mcomix/bookmark_dialog.py:56
 msgid "Added"
 msgstr ""
 
@@ -171,23 +172,27 @@ msgstr ""
 msgid "! Callback %(function)r failed: %(error)s"
 msgstr ""
 
+#: mcomix/column_list.py:12
+msgid "New accelerator..."
+msgstr ""
+
 #
 # File: src/comment.py, line: 16
 # File: src/preferences.py, line: 288
-#: mcomix/comment_dialog.py:15 mcomix/preferences_dialog.py:360
+#: mcomix/comment_dialog.py:16 mcomix/preferences_dialog.py:361
 msgid "Comments"
 msgstr "Komentari"
 
 #
 # File: src/comment.py, line: 53
-#: mcomix/comment_dialog.py:94
+#: mcomix/comment_dialog.py:95
 #, python-format
 msgid "Could not read %s"
 msgstr "Neuspješno čitanje %s"
 
 #
 # File: src/edit.py, line: 255
-#: mcomix/edit_comment_area.py:24
+#: mcomix/edit_comment_area.py:25
 #, fuzzy
 msgid ""
 "Please note that the only files that are automatically added to this list "
@@ -198,135 +203,135 @@ msgstr ""
 
 #
 # File: src/edit.py, line: 270
-#: mcomix/edit_comment_area.py:48 mcomix/properties_dialog.py:130
+#: mcomix/edit_comment_area.py:36 mcomix/properties_dialog.py:131
 msgid "Size"
 msgstr "Veličina"
 
 #
 # File: src/edit.py, line: 168
 # File: src/edit.py, line: 285
-#: mcomix/edit_comment_area.py:63 mcomix/edit_image_area.py:78
+#: mcomix/edit_comment_area.py:58 mcomix/edit_image_area.py:64
 msgid "Remove from archive"
 msgstr "Ukloni iz arhive"
 
 #
 # File: src/edit.py, line: 28
-#: mcomix/edit_dialog.py:41 mcomix/keybindings.py:138
+#: mcomix/edit_dialog.py:42 mcomix/keybindings.py:138
 msgid "Edit archive"
 msgstr "Uredi arhivu"
 
-#: mcomix/edit_dialog.py:44
+#: mcomix/edit_dialog.py:45
 msgid "_Apply"
 msgstr "_Primijeni"
 
-#: mcomix/edit_dialog.py:51 mcomix/ui.py:337
+#: mcomix/edit_dialog.py:52 mcomix/ui.py:337
 msgid "Save _As"
 msgstr ""
 
-#: mcomix/edit_dialog.py:53
+#: mcomix/edit_dialog.py:54
 msgid "_Import"
 msgstr ""
 
 #
 # File: src/edit.py, line: 50
-#: mcomix/edit_dialog.py:70
+#: mcomix/edit_dialog.py:71
 msgid "Images"
 msgstr "Slike"
 
 #
 # File: src/comment.py, line: 16
 # File: src/preferences.py, line: 288
-#: mcomix/edit_dialog.py:71
+#: mcomix/edit_dialog.py:72
 #, fuzzy
 msgid "Comment files"
 msgstr "Komentari"
 
 #
 # File: src/edit.py, line: 99
-#: mcomix/edit_dialog.py:150
+#: mcomix/edit_dialog.py:151
 msgid "The new archive could not be saved!"
 msgstr "Neuspješna pohrana nove arhive!"
 
 #
 # File: src/edit.py, line: 101
-#: mcomix/edit_dialog.py:151
+#: mcomix/edit_dialog.py:152
 msgid "The original files have not been removed."
 msgstr "Izvorne datoteke nisu obrisane."
 
 #
 # File: src/edit.py, line: 115
-#: mcomix/edit_dialog.py:184
+#: mcomix/edit_dialog.py:185
 msgid "Archives are stored as ZIP files."
 msgstr "Arhive se spremaju kao ZIP datoteke."
 
 #
 # File: src/enhance.py, line: 51
-#: mcomix/enhance_dialog.py:21 mcomix/keybindings.py:140
+#: mcomix/enhance_dialog.py:22 mcomix/keybindings.py:140
 msgid "Enhance image"
 msgstr "Poboljšaj sliku"
 
-#: mcomix/enhance_dialog.py:25
+#: mcomix/enhance_dialog.py:26
 msgid "_Revert"
 msgstr "_Vrati"
 
-#: mcomix/enhance_dialog.py:26
+#: mcomix/enhance_dialog.py:27
 msgid "Reset to defaults."
 msgstr ""
 
 #
 # File: src/filechooser.py, line: 39
-#: mcomix/enhance_dialog.py:28 mcomix/file_chooser_base_dialog.py:86
-#: mcomix/openwith.py:302
+#: mcomix/enhance_dialog.py:29 mcomix/file_chooser_base_dialog.py:87
+#: mcomix/openwith.py:303
 msgid "_Save"
 msgstr "_Spremi"
 
-#: mcomix/enhance_dialog.py:29
+#: mcomix/enhance_dialog.py:30
 msgid "Save the selected values as default for future files."
 msgstr ""
 
-#: mcomix/enhance_dialog.py:31 mcomix/main.py:983
-#: mcomix/library/watchlist.py:189
+#: mcomix/enhance_dialog.py:32 mcomix/message_dialog.py:21
+#: mcomix/message_dialog.py:27
 msgid "_OK"
 msgstr "_U redu"
 
 #
 # File: src/enhance.py, line: 79
-#: mcomix/enhance_dialog.py:76
+#: mcomix/enhance_dialog.py:77
 #, fuzzy
 msgid "_Brightness:"
 msgstr "Svjetlina"
 
 #
 # File: src/enhance.py, line: 90
-#: mcomix/enhance_dialog.py:77
+#: mcomix/enhance_dialog.py:78
 #, fuzzy
 msgid "_Contrast:"
 msgstr "Kontrast"
 
 #
 # File: src/enhance.py, line: 101
-#: mcomix/enhance_dialog.py:78
+#: mcomix/enhance_dialog.py:79
 #, fuzzy
 msgid "S_aturation:"
 msgstr "Zasićenje"
 
 #
 # File: src/enhance.py, line: 112
-#: mcomix/enhance_dialog.py:79
+#: mcomix/enhance_dialog.py:80
 #, fuzzy
 msgid "S_harpness:"
 msgstr "Oštrina"
 
 #
 # File: src/enhance.py, line: 126
-#: mcomix/enhance_dialog.py:84
+#: mcomix/enhance_dialog.py:85
 #, fuzzy
 msgid "_Automatically adjust contrast"
 msgstr "Automatski prilagodi kontrast."
 
 #
 # File: src/enhance.py, line: 128
-#: mcomix/enhance_dialog.py:86
+#: mcomix/enhance_dialog.py:87
 msgid ""
 "Automatically adjust contrast (both lightness and darkness), separately for "
 "each colour band."
@@ -334,47 +339,47 @@ msgstr ""
 "Automatski prilagodi kontrast (osvjetljenje i crninu), posebno za svaki skup "
 "boja."
 
-#: mcomix/enhance_dialog.py:91 mcomix/ui.py:390
+#: mcomix/enhance_dialog.py:92 mcomix/ui.py:390
 msgid "_Invert image colors"
 msgstr ""
 
-#: mcomix/enhance_dialog.py:93
+#: mcomix/enhance_dialog.py:94
 msgid "Invert (negate) image colors."
 msgstr ""
 
 #
 # File: src/filechooser.py, line: 35
 # File: src/library.py, line: 489
-#: mcomix/file_chooser_base_dialog.py:79 mcomix/keybindings.py:139
+#: mcomix/file_chooser_base_dialog.py:80 mcomix/keybindings.py:139
 msgid "Open"
 msgstr "Otvori"
 
-#: mcomix/file_chooser_base_dialog.py:81 mcomix/library/book_area.py:119
+#: mcomix/file_chooser_base_dialog.py:82 mcomix/library/book_area.py:117
 msgid "_Open"
 msgstr ""
 
 #
 # File: src/filechooser.py, line: 39
-#: mcomix/file_chooser_base_dialog.py:84
+#: mcomix/file_chooser_base_dialog.py:85
 msgid "Save"
 msgstr "Spremi"
 
 #
 # File: src/filechooser.py, line: 75
-#: mcomix/file_chooser_base_dialog.py:173
+#: mcomix/file_chooser_base_dialog.py:181
 msgid "All files"
 msgstr "Sve datoteke"
 
 #
 # File: src/filechooser.py, line: 78
-#: mcomix/file_chooser_base_dialog.py:331
+#: mcomix/file_chooser_base_dialog.py:339
 #, fuzzy
 msgid "All archives"
 msgstr "Sve arhive"
 
 #
 # File: src/filechooser.py, line: 82
-#: mcomix/file_chooser_base_dialog.py:331
+#: mcomix/file_chooser_base_dialog.py:339
 #, fuzzy, python-format
 msgid "%s archives"
 msgstr "%s arhive"
@@ -382,39 +387,39 @@ msgstr "%s arhive"
 #
 # File: src/filechooser.py, line: 171
 # File: src/filechooser.py, line: 249
-#: mcomix/file_chooser_base_dialog.py:337
+#: mcomix/file_chooser_base_dialog.py:345
 msgid "All images"
 msgstr "Sve slike"
 
 #
 # File: src/filechooser.py, line: 171
 # File: src/filechooser.py, line: 249
-#: mcomix/file_chooser_base_dialog.py:337
+#: mcomix/file_chooser_base_dialog.py:345
 #, fuzzy, python-format
 msgid "%s images"
 msgstr "%s slike"
 
 #
 # File: src/filechooser.py, line: 125
-#: mcomix/file_chooser_base_dialog.py:441
+#: mcomix/file_chooser_base_dialog.py:449
 #, python-format
 msgid "A file named '%s' already exists. Do you want to replace it?"
 msgstr "Datoteka imena '%s' već postoji. Želite je zamijeniti?"
 
 #
 # File: src/filechooser.py, line: 128
-#: mcomix/file_chooser_base_dialog.py:443
+#: mcomix/file_chooser_base_dialog.py:451
 msgid "Replacing it will overwrite its contents."
 msgstr "Zamjenom će sadržaj biti prepisan."
 
 #
 # File: src/library.py, line: 789
-#: mcomix/file_chooser_library_dialog.py:18
+#: mcomix/file_chooser_library_dialog.py:17
 msgid "Add books"
 msgstr "Dodaj knjige"
 
-#: mcomix/file_chooser_library_dialog.py:48 mcomix/openwith.py:280
-#: mcomix/library/watchlist.py:73
+#: mcomix/file_chooser_library_dialog.py:47 mcomix/openwith.py:281
+#: mcomix/library/watchlist.py:48
 msgid "_Add"
 msgstr ""
 
@@ -468,7 +473,7 @@ msgstr ""
 msgid "Unknown filetype"
 msgstr "Nepoznat tip datoteke"
 
-#: mcomix/keybindings_editor.py:44
+#: mcomix/keybindings_editor.py:36
 #, python-format
 msgid "Key %d"
 msgstr ""
@@ -584,7 +589,7 @@ msgstr ""
 #: mcomix/keybindings.py:69 mcomix/keybindings.py:70 mcomix/keybindings.py:71
 #: mcomix/keybindings.py:73 mcomix/keybindings.py:74 mcomix/keybindings.py:75
 #: mcomix/keybindings.py:76 mcomix/keybindings.py:78 mcomix/keybindings.py:79
-#: mcomix/preferences_dialog.py:159
+#: mcomix/preferences_dialog.py:160
 msgid "Scroll"
 msgstr "Pomicanje"
 
@@ -729,7 +734,7 @@ msgstr ""
 #
 # File: src/preferences.py, line: 177
 # File: src/ui.py, line: 296
-#: mcomix/keybindings.py:99 mcomix/preferences_dialog.py:215 mcomix/ui.py:363
+#: mcomix/keybindings.py:99 mcomix/preferences_dialog.py:216 mcomix/ui.py:363
 msgid "Double page mode"
 msgstr "Prikaz dvostrukih stranica"
 
@@ -809,7 +814,7 @@ msgstr ""
 #: mcomix/keybindings.py:118 mcomix/keybindings.py:119
 #: mcomix/keybindings.py:120 mcomix/keybindings.py:121
 #: mcomix/keybindings.py:122 mcomix/keybindings.py:123
-#: mcomix/keybindings.py:124 mcomix/preferences_dialog.py:99
+#: mcomix/keybindings.py:124 mcomix/preferences_dialog.py:100
 msgid "User interface"
 msgstr ""
 
@@ -823,7 +828,7 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 271
-#: mcomix/keybindings.py:117 mcomix/preferences_dialog.py:253
+#: mcomix/keybindings.py:117 mcomix/preferences_dialog.py:254
 msgid "Fullscreen"
 msgstr "Cijeli zaslon"
 
@@ -851,7 +856,7 @@ msgstr "Kli_zači"
 
 #
 # File: src/preferences.py, line: 109
-#: mcomix/keybindings.py:122 mcomix/preferences_dialog.py:124
+#: mcomix/keybindings.py:122 mcomix/preferences_dialog.py:125
 msgid "Thumbnails"
 msgstr "Sličice"
 
@@ -927,13 +932,13 @@ msgstr "Arhiva"
 
 #
 # File: src/properties.py, line: 89
-#: mcomix/keybindings.py:135 mcomix/properties_dialog.py:27
+#: mcomix/keybindings.py:135 mcomix/properties_dialog.py:28
 msgid "Properties"
 msgstr "Svojstva"
 
 #
 # File: src/preferences.py, line: 78
-#: mcomix/keybindings.py:136 mcomix/preferences_dialog.py:47
+#: mcomix/keybindings.py:136 mcomix/preferences_dialog.py:48
 msgid "Preferences"
 msgstr "Postavke"
 
@@ -969,35 +974,35 @@ msgid "Couldn't load keybindings: %s"
 msgstr ""
 
 #: mcomix/last_read_page.py:231 mcomix/thumbnail_tools.py:115
-#: mcomix/library/book_area.py:612
+#: mcomix/library/book_area.py:582
 #, python-format
 msgid "! Could not remove file \"%s\""
 msgstr ""
 
 #
 # File: src/main.py, line: 666
-#: mcomix/main.py:935
+#: mcomix/main.py:936
 msgid "SLIDESHOW"
 msgstr "PREZENTACIJA"
 
-#: mcomix/main.py:981
+#: mcomix/main.py:991
 msgid "Save page as"
 msgstr ""
 
-#: mcomix/main.py:1020
+#: mcomix/main.py:1040
 #, python-format
 msgid "Delete \"%s\"?"
 msgstr ""
 
-#: mcomix/main.py:1021
+#: mcomix/main.py:1041
 msgid "The file will be deleted from your harddisk."
 msgstr ""
 
-#: mcomix/main.py:1023 mcomix/ui.py:288
+#: mcomix/main.py:1043 mcomix/ui.py:288
 msgid "_Delete"
 msgstr ""
 
-#: mcomix/message_dialog.py:42
+#: mcomix/message_dialog.py:74
 msgid "Do not ask again."
 msgstr ""
 
@@ -1008,81 +1013,81 @@ msgstr ""
 msgid "_Edit commands"
 msgstr "Uredi oznake"
 
-#: mcomix/openwith.py:72
+#: mcomix/openwith.py:73
 #, python-format
 msgid "'%s' is disabled for archives."
 msgstr ""
 
-#: mcomix/openwith.py:90
+#: mcomix/openwith.py:91
 #, python-format
 msgid "Could not run command %(cmdlabel)s: %(exception)s"
 msgstr ""
 
-#: mcomix/openwith.py:138
+#: mcomix/openwith.py:139
 msgid "Command line is empty."
 msgstr ""
 
-#: mcomix/openwith.py:181
+#: mcomix/openwith.py:182
 msgid "Incomplete escape sequence. For a literal '%', use '%%'."
 msgstr ""
 
-#: mcomix/openwith.py:185
+#: mcomix/openwith.py:186
 msgid "Incomplete quote sequence. For a literal '\"', use '%\"'."
 msgstr ""
 
 #
 # File: src/edit.py, line: 115
-#: mcomix/openwith.py:201
+#: mcomix/openwith.py:202
 #, fuzzy
 msgid "File-related variables can only be used for files."
 msgstr "Arhive se spremaju kao ZIP datoteke."
 
 #
 # File: src/edit.py, line: 115
-#: mcomix/openwith.py:205
+#: mcomix/openwith.py:206
 #, fuzzy
 msgid "Archive-related variables can only be used for archives."
 msgstr "Arhive se spremaju kao ZIP datoteke."
 
-#: mcomix/openwith.py:247
+#: mcomix/openwith.py:248
 #, python-format
 msgid "Invalid escape sequence: %%%s"
 msgstr ""
 
-#: mcomix/openwith.py:272
+#: mcomix/openwith.py:273
 msgid "Edit external commands"
 msgstr ""
 
-#: mcomix/openwith.py:282
+#: mcomix/openwith.py:283
 msgid "Add _separator"
 msgstr ""
 
-#: mcomix/openwith.py:287
+#: mcomix/openwith.py:288
 msgid "_Up"
 msgstr "_Gore"
 
-#: mcomix/openwith.py:290
+#: mcomix/openwith.py:291
 msgid "_Down"
 msgstr "_Dolje"
 
 #
 # File: src/comment.py, line: 16
 # File: src/preferences.py, line: 288
-#: mcomix/openwith.py:293
+#: mcomix/openwith.py:294
 #, fuzzy
 msgid "Run _command"
 msgstr "Komentari"
 
-#: mcomix/openwith.py:357
+#: mcomix/openwith.py:358
 msgid "This is a separator pseudo-command."
 msgstr ""
 
-#: mcomix/openwith.py:368
+#: mcomix/openwith.py:369
 #, python-format
 msgid "\"%s\" does not have a valid working directory."
 msgstr ""
 
-#: mcomix/openwith.py:371
+#: mcomix/openwith.py:372
 #, python-format
 msgid "\"%s\" does not appear to have a valid executable."
 msgstr ""
@@ -1090,115 +1095,115 @@ msgstr ""
 #
 # File: src/comment.py, line: 16
 # File: src/preferences.py, line: 288
-#: mcomix/openwith.py:380
+#: mcomix/openwith.py:381
 #, fuzzy
 msgid "Command label"
 msgstr "Komentari"
 
 #
 # File: src/ui.py, line: 36
-#: mcomix/openwith.py:473
+#: mcomix/openwith.py:474
 #, fuzzy
 msgid "Preview:"
 msgstr "_Prethodna stranica"
 
-#: mcomix/openwith.py:481
+#: mcomix/openwith.py:482
 #, python-format
 msgid ""
 "Please refer to the <a href=\"%s\">external command documentation</a> for a "
 "list of usable variables and other hints."
 msgstr ""
 
-#: mcomix/openwith.py:490
+#: mcomix/openwith.py:491
 msgid "Label"
 msgstr ""
 
 #
 # File: src/comment.py, line: 16
 # File: src/preferences.py, line: 288
-#: mcomix/openwith.py:490
+#: mcomix/openwith.py:491
 #, fuzzy
 msgid "Command"
 msgstr "Komentari"
 
 #
 # File: src/thumbremover.py, line: 58
-#: mcomix/openwith.py:490
+#: mcomix/openwith.py:491
 #, fuzzy
 msgid "Working directory"
 msgstr "Direktorij sa sličicama"
 
 #
 # File: src/filechooser.py, line: 86
-#: mcomix/openwith.py:504
+#: mcomix/openwith.py:505
 #, fuzzy
 msgid "Disabled in archives"
 msgstr "Tar arhive"
 
-#: mcomix/openwith.py:559
+#: mcomix/openwith.py:560
 msgid "Save changes to commands?"
 msgstr ""
 
-#: mcomix/openwith.py:560
+#: mcomix/openwith.py:561
 msgid ""
 "You have made changes to the list of external commands that have not been "
 "saved yet. Press \"Yes\" to save all changes, or \"No\" to discard them."
 msgstr ""
 
-#: mcomix/pageselect.py:21 mcomix/ui.py:300
+#: mcomix/pageselect.py:22 mcomix/ui.py:300
 msgid "Go to page..."
 msgstr ""
 
 #
 # File: src/ui.py, line: 69
-#: mcomix/pageselect.py:23 mcomix/ui.py:350 mcomix/ui.py:351
+#: mcomix/pageselect.py:24 mcomix/ui.py:350 mcomix/ui.py:351
 msgid "_Go"
 msgstr "_Idi na"
 
-#: mcomix/pageselect.py:44
+#: mcomix/pageselect.py:45
 #, python-format
 msgid " of %s"
 msgstr ""
 
 #
 # File: src/preferences.py, line: 161
-#: mcomix/preferences_dialog.py:65
+#: mcomix/preferences_dialog.py:66
 msgid "Appearance"
 msgstr "Izgled"
 
 #
 # File: src/preferences.py, line: 237
-#: mcomix/preferences_dialog.py:66
+#: mcomix/preferences_dialog.py:67
 msgid "Behaviour"
 msgstr "Ponašanje"
 
 #
 # File: src/preferences.py, line: 297
-#: mcomix/preferences_dialog.py:67
+#: mcomix/preferences_dialog.py:68
 msgid "Display"
 msgstr "Prikaz"
 
-#: mcomix/preferences_dialog.py:68
+#: mcomix/preferences_dialog.py:69
 msgid "Advanced"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:85
+#: mcomix/preferences_dialog.py:86
 msgid "Shortcuts"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:101
+#: mcomix/preferences_dialog.py:102
 msgid "Language (needs restart):"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:104
+#: mcomix/preferences_dialog.py:105
 msgid "Theme:"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:108
+#: mcomix/preferences_dialog.py:109
 msgid "Escape key closes program"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:109
+#: mcomix/preferences_dialog.py:110
 msgid ""
 "When active, the ESC key closes the program, instead of only disabling "
 "fullscreen mode."
@@ -1206,53 +1211,53 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 93
-#: mcomix/preferences_dialog.py:112
+#: mcomix/preferences_dialog.py:113
 msgid "Background"
 msgstr "Pozadina"
 
 #
 # File: src/preferences.py, line: 95
-#: mcomix/preferences_dialog.py:115
+#: mcomix/preferences_dialog.py:116
 #, fuzzy
 msgid "Use this colour as background:"
 msgstr "Koristi ovu boju kao pozadinu"
 
 #
 # File: src/preferences.py, line: 97
-#: mcomix/preferences_dialog.py:117
+#: mcomix/preferences_dialog.py:118
 msgid "Always use this selected colour as the background colour."
 msgstr "Uvijek koristi označenu boju kao boju pozadine."
 
 #
 # File: src/preferences.py, line: 102
-#: mcomix/preferences_dialog.py:118 mcomix/preferences_dialog.py:130
+#: mcomix/preferences_dialog.py:119 mcomix/preferences_dialog.py:131
 #, fuzzy
 msgid "Use dynamic background colour"
 msgstr "Koristi dinamičnu boju pozadine."
 
 #
 # File: src/preferences.py, line: 106
-#: mcomix/preferences_dialog.py:120
+#: mcomix/preferences_dialog.py:121
 msgid "Automatically pick a background colour that fits the viewed image."
 msgstr "Automatski izaberi boju pozadine koja se slaže sa prikazanom slikom."
 
 #
 # File: src/preferences.py, line: 95
-#: mcomix/preferences_dialog.py:127
+#: mcomix/preferences_dialog.py:128
 #, fuzzy
 msgid "Use this colour as the thumbnail background:"
 msgstr "Koristi ovu boju kao pozadinu"
 
 #
 # File: src/preferences.py, line: 97
-#: mcomix/preferences_dialog.py:129
+#: mcomix/preferences_dialog.py:130
 #, fuzzy
 msgid "Always use this selected colour as the thumbnail background colour."
 msgstr "Uvijek koristi označenu boju kao boju pozadine."
 
 #
 # File: src/preferences.py, line: 106
-#: mcomix/preferences_dialog.py:132
+#: mcomix/preferences_dialog.py:133
 #, fuzzy
 msgid ""
 "Automatically use the colour that fits the viewed image for the thumbnail "
@@ -1261,34 +1266,34 @@ msgstr "Automatski izaberi boju pozadine koja se slaže sa prikazanom slikom."
 
 #
 # File: src/preferences.py, line: 117
-#: mcomix/preferences_dialog.py:137
+#: mcomix/preferences_dialog.py:138
 #, fuzzy
 msgid "Show page numbers on thumbnails"
 msgstr "Prikazuj broj stranice na sličicama."
 
 #
 # File: src/preferences.py, line: 110
-#: mcomix/preferences_dialog.py:140
+#: mcomix/preferences_dialog.py:141
 #, fuzzy
 msgid "Thumbnail size (in pixels):"
 msgstr "Veličina sličica (u pikselima)"
 
 #
 # File: src/preferences.py, line: 151
-#: mcomix/preferences_dialog.py:144
+#: mcomix/preferences_dialog.py:145
 msgid "Transparency"
 msgstr "Transparentnost"
 
 #
 # File: src/preferences.py, line: 153
-#: mcomix/preferences_dialog.py:147
+#: mcomix/preferences_dialog.py:148
 #, fuzzy
 msgid "Use checkered background for transparent images"
 msgstr "Koristi kvadratnu pozadinu za transparentne slike."
 
 #
 # File: src/preferences.py, line: 159
-#: mcomix/preferences_dialog.py:149
+#: mcomix/preferences_dialog.py:150
 msgid ""
 "Use a grey checkered background for transparent images. If this preference "
 "is unset, the background is plain white instead."
@@ -1298,14 +1303,14 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 169
-#: mcomix/preferences_dialog.py:162
+#: mcomix/preferences_dialog.py:163
 #, fuzzy
 msgid "Use smart scrolling"
 msgstr "Koristi pametno pomicanje space tipkom."
 
 #
 # File: src/preferences.py, line: 174
-#: mcomix/preferences_dialog.py:164
+#: mcomix/preferences_dialog.py:165
 #, fuzzy
 msgid ""
 "With this preference set, the space key and mouse wheel do not only scroll "
@@ -1317,12 +1322,12 @@ msgstr ""
 "uključenom također pomiče bočno i tako pokušava pratiti prirodni red čitanja "
 "stripa."
 
-#: mcomix/preferences_dialog.py:169
+#: mcomix/preferences_dialog.py:170
 #, fuzzy
 msgid "Flip pages when scrolling off the edges of the page"
 msgstr "Okreni stranicu kod pomicanja preko ruba stranice."
 
-#: mcomix/preferences_dialog.py:171
+#: mcomix/preferences_dialog.py:172
 #, fuzzy
 msgid ""
 "Flip pages when scrolling \"off the page\" with the scroll wheel or with the "
@@ -1335,14 +1340,14 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 198
-#: mcomix/preferences_dialog.py:174
+#: mcomix/preferences_dialog.py:175
 #, fuzzy
 msgid "Automatically open the next archive"
 msgstr "Automatski otvori sljedeću arhivu."
 
 #
 # File: src/preferences.py, line: 203
-#: mcomix/preferences_dialog.py:176
+#: mcomix/preferences_dialog.py:177
 msgid ""
 "Automatically open the next archive in the directory when flipping past the "
 "last page, or the previous archive when flipping past the first page."
@@ -1352,25 +1357,25 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 198
-#: mcomix/preferences_dialog.py:179
+#: mcomix/preferences_dialog.py:180
 #, fuzzy
 msgid "Automatically open next directory"
 msgstr "Automatski otvori sljedeću arhivu."
 
-#: mcomix/preferences_dialog.py:181
+#: mcomix/preferences_dialog.py:182
 msgid ""
 "Automatically open the first file in the next sibling directory when "
 "flipping past the last page of the last file in a directory, or the previous "
 "directory when flipping past the first page of the first file."
 msgstr ""
 
-#: mcomix/preferences_dialog.py:184
+#: mcomix/preferences_dialog.py:185
 msgid "Open first file when navigating to previous archive"
 msgstr ""
 
 #
 # File: src/preferences.py, line: 203
-#: mcomix/preferences_dialog.py:186
+#: mcomix/preferences_dialog.py:187
 #, fuzzy
 msgid ""
 "Automatically open the first file of the previous archive when navigating to "
@@ -1379,13 +1384,13 @@ msgstr ""
 "Automatski otvori sljedeću arhivu u direktoriju kod okretanja zadnje "
 "stranice, ili prošlu arhivu kod okretanja prve stranice."
 
-#: mcomix/preferences_dialog.py:189
+#: mcomix/preferences_dialog.py:190
 msgid "Open first file when navigating to previous directory"
 msgstr ""
 
 #
 # File: src/preferences.py, line: 203
-#: mcomix/preferences_dialog.py:191
+#: mcomix/preferences_dialog.py:192
 #, fuzzy
 msgid ""
 "Automatically open the first file of the previous directory when navigating "
@@ -1394,37 +1399,37 @@ msgstr ""
 "Automatski otvori sljedeću arhivu u direktoriju kod okretanja zadnje "
 "stranice, ili prošlu arhivu kod okretanja prve stranice."
 
-#: mcomix/preferences_dialog.py:193
+#: mcomix/preferences_dialog.py:194
 msgid "Number of pixels to scroll per arrow key press:"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:196
+#: mcomix/preferences_dialog.py:197
 msgid "Set the number of pixels to scroll on a page when using the arrow keys."
 msgstr ""
 
-#: mcomix/preferences_dialog.py:198
+#: mcomix/preferences_dialog.py:199
 msgid "Number of pixels to scroll per mouse wheel turn:"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:201
+#: mcomix/preferences_dialog.py:202
 msgid "Set the number of pixels to scroll on a page when using a mouse wheel."
 msgstr ""
 
-#: mcomix/preferences_dialog.py:203
+#: mcomix/preferences_dialog.py:204
 msgid "Fraction of page to scroll per space key press (in percent):"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:207
+#: mcomix/preferences_dialog.py:208
 msgid ""
 "Sets the percentage by which the page will be scrolled down or up when the "
 "space key is pressed."
 msgstr ""
 
-#: mcomix/preferences_dialog.py:210
+#: mcomix/preferences_dialog.py:211
 msgid "Number of \"steps\" to take before flipping the page:"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:213
+#: mcomix/preferences_dialog.py:214
 msgid ""
 "Set the number of \"steps\" needed to flip to the next or previous page.  "
 "Less steps will allow for very fast page turning but you might find yourself "
@@ -1433,51 +1438,51 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 179
-#: mcomix/preferences_dialog.py:218
+#: mcomix/preferences_dialog.py:219
 #, fuzzy
 msgid "Flip two pages in double page mode"
 msgstr "Okreni dvije stranice kod prikaza dvostrukih stranica."
 
 #
 # File: src/preferences.py, line: 184
-#: mcomix/preferences_dialog.py:220
+#: mcomix/preferences_dialog.py:221
 msgid ""
 "Flip two pages, instead of one, each time we flip pages in double page mode."
 msgstr ""
 "Okreni dvije stranice, umjesto jedne, svaki put kad okrenemo stranicu kod "
 "prikaza dvostrukih stranica."
 
-#: mcomix/preferences_dialog.py:222
+#: mcomix/preferences_dialog.py:223
 msgid "Show only one page where appropriate:"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:225
+#: mcomix/preferences_dialog.py:226
 msgid "Page auto-resizing:"
 msgstr ""
 
 #
 # File: src/preferences.py, line: 280
-#: mcomix/preferences_dialog.py:228
+#: mcomix/preferences_dialog.py:229
 #, fuzzy
 msgid "Space between two pages (in pixels):"
 msgstr "Zadrška prezentacije (u sekundama)"
 
 #
 # File: src/preferences.py, line: 196
-#: mcomix/preferences_dialog.py:232
+#: mcomix/preferences_dialog.py:233
 msgid "Files"
 msgstr "Datoteke"
 
 #
 # File: src/preferences.py, line: 206
-#: mcomix/preferences_dialog.py:235
+#: mcomix/preferences_dialog.py:236
 #, fuzzy
 msgid "Automatically open the last viewed file on startup"
 msgstr "Kod pokretanja automatski otvori zadnje prikazanu stranicu."
 
 #
 # File: src/preferences.py, line: 211
-#: mcomix/preferences_dialog.py:237
+#: mcomix/preferences_dialog.py:238
 #, fuzzy
 msgid ""
 "Automatically open, on startup, the file that was open when MComix was last "
@@ -1488,25 +1493,25 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 214
-#: mcomix/preferences_dialog.py:239
+#: mcomix/preferences_dialog.py:240
 #, fuzzy
 msgid "Store information about recently opened files:"
 msgstr "Spremaj informacije o nedavno otvorenim datotekama."
 
-#: mcomix/preferences_dialog.py:242
+#: mcomix/preferences_dialog.py:243
 msgid "Save As opens at the last directory saved into"
 msgstr ""
 
 #
 # File: src/preferences.py, line: 250
-#: mcomix/preferences_dialog.py:256
+#: mcomix/preferences_dialog.py:257
 #, fuzzy
 msgid "Use fullscreen by default"
 msgstr "Koristi cijeli zaslon kao predefinirani način."
 
 #
 # File: src/preferences.py, line: 273
-#: mcomix/preferences_dialog.py:260
+#: mcomix/preferences_dialog.py:261
 #, fuzzy
 msgid "Automatically hide all toolbars in fullscreen"
 msgstr "Automatski sakri sve alatne trake kod prikaza preko cijelog zaslona."
@@ -1514,14 +1519,14 @@ msgstr "Automatski sakri sve alatne trake kod prikaza preko cijelog zaslona."
 #
 # File: src/preferences.py, line: 263
 # File: src/ui.py, line: 290
-#: mcomix/preferences_dialog.py:263 mcomix/ui.py:403
+#: mcomix/preferences_dialog.py:264 mcomix/ui.py:403
 #, fuzzy
 msgid "Fit to size mode"
 msgstr "Prilagodi širini"
 
 #
 # File: src/ui.py, line: 103
-#: mcomix/preferences_dialog.py:265
+#: mcomix/preferences_dialog.py:266
 #, fuzzy
 msgid "Fixed width for wide pages:"
 msgstr "Pri_lagodi širini"
@@ -1529,46 +1534,46 @@ msgstr "Pri_lagodi širini"
 #
 # File: src/preferences.py, line: 264
 # File: src/ui.py, line: 292
-#: mcomix/preferences_dialog.py:269
+#: mcomix/preferences_dialog.py:270
 #, fuzzy
 msgid "Fixed height for wide pages:"
 msgstr "Prilagodi visini"
 
 #
 # File: src/ui.py, line: 103
-#: mcomix/preferences_dialog.py:273
+#: mcomix/preferences_dialog.py:274
 #, fuzzy
 msgid "Fixed width for other pages:"
 msgstr "Pri_lagodi širini"
 
 #
 # File: src/ui.py, line: 103
-#: mcomix/preferences_dialog.py:277
+#: mcomix/preferences_dialog.py:278
 #, fuzzy
 msgid "Fixed height for other pages:"
 msgstr "Pri_lagodi širini"
 
 #
 # File: src/preferences.py, line: 279
-#: mcomix/preferences_dialog.py:281
+#: mcomix/preferences_dialog.py:282
 msgid "Slideshow"
 msgstr "Prezentacija"
 
 #
 # File: src/preferences.py, line: 280
-#: mcomix/preferences_dialog.py:283
+#: mcomix/preferences_dialog.py:284
 #, fuzzy
 msgid "Slideshow delay (in seconds):"
 msgstr "Zadrška prezentacije (u sekundama)"
 
 #
 # File: src/preferences.py, line: 280
-#: mcomix/preferences_dialog.py:287
+#: mcomix/preferences_dialog.py:288
 #, fuzzy
 msgid "Slideshow step (in pixels):"
 msgstr "Zadrška prezentacije (u sekundama)"
 
-#: mcomix/preferences_dialog.py:290
+#: mcomix/preferences_dialog.py:291
 msgid ""
 "Specify the number of pixels to scroll while in slideshow mode. A positive "
 "value will scroll forward, a negative value will scroll backwards, and a "
@@ -1577,25 +1582,25 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 198
-#: mcomix/preferences_dialog.py:293
+#: mcomix/preferences_dialog.py:294
 #, fuzzy
 msgid "During a slideshow automatically open the next archive"
 msgstr "Automatski otvori sljedeću arhivu."
 
-#: mcomix/preferences_dialog.py:295
+#: mcomix/preferences_dialog.py:296
 msgid ""
 "While in slideshow mode allow the next archive to automatically be opened."
 msgstr ""
 
-#: mcomix/preferences_dialog.py:297
+#: mcomix/preferences_dialog.py:298
 msgid "Rotation"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:300
+#: mcomix/preferences_dialog.py:301
 msgid "Automatically rotate images according to their metadata"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:302
+#: mcomix/preferences_dialog.py:303
 msgid ""
 "Automatically rotate images when an orientation is specified in the image "
 "metadata, such as in an Exif tag."
@@ -1603,54 +1608,54 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 143
-#: mcomix/preferences_dialog.py:304
+#: mcomix/preferences_dialog.py:305
 #, fuzzy
 msgid "Image quality"
 msgstr "Skaliranje slike"
 
 #
 # File: src/ui.py, line: 297
-#: mcomix/preferences_dialog.py:306
+#: mcomix/preferences_dialog.py:307
 #, fuzzy
 msgid "Scaling mode"
 msgstr "Manga prikaz"
 
-#: mcomix/preferences_dialog.py:318
+#: mcomix/preferences_dialog.py:319
 msgid "File order"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:320
+#: mcomix/preferences_dialog.py:321
 msgid "Sort files and directories by:"
 msgstr ""
 
 #
 # File: src/filechooser.py, line: 86
-#: mcomix/preferences_dialog.py:323
+#: mcomix/preferences_dialog.py:324
 #, fuzzy
 msgid "Sort archives by:"
 msgstr "Tar arhive"
 
-#: mcomix/preferences_dialog.py:326
+#: mcomix/preferences_dialog.py:327
 msgid "Extraction and cache"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:328
+#: mcomix/preferences_dialog.py:329
 msgid "Maximum number of concurrent extraction threads:"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:331
+#: mcomix/preferences_dialog.py:332
 msgid ""
 "Set the maximum number of concurrent threads for formats that support it."
 msgstr ""
 
 #
 # File: src/thumbremover.py, line: 65
-#: mcomix/preferences_dialog.py:333
+#: mcomix/preferences_dialog.py:334
 #, fuzzy
 msgid "Maximum number of concurrent thumbnail threads:"
 msgstr "Ukupni broj sličica"
 
-#: mcomix/preferences_dialog.py:336
+#: mcomix/preferences_dialog.py:337
 msgid ""
 "Set the maximum number of concurrent threads used to generate thumbnails. "
 "Takes effect the next time MComix is started."
@@ -1658,14 +1663,14 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 222
-#: mcomix/preferences_dialog.py:339
+#: mcomix/preferences_dialog.py:340
 #, fuzzy
 msgid "Store thumbnails for opened files"
 msgstr "Spremaj sličice za otvorene datoteke."
 
 #
 # File: src/preferences.py, line: 227
-#: mcomix/preferences_dialog.py:341
+#: mcomix/preferences_dialog.py:342
 msgid ""
 "Store thumbnails for opened files according to the freedesktop.org "
 "specification. These thumbnails are shared by many other applications, such "
@@ -1675,11 +1680,11 @@ msgstr ""
 "Ove sličice se dijele između mnogo aplikacija, kao npr. većine upravitelja "
 "datotekama."
 
-#: mcomix/preferences_dialog.py:343
+#: mcomix/preferences_dialog.py:344
 msgid "Maximum number of pages to store in the cache:"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:346
+#: mcomix/preferences_dialog.py:347
 msgid ""
 "Set the max number of pages to cache. A value of -1 will cache the entire "
 "archive."
@@ -1687,20 +1692,20 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 124
-#: mcomix/preferences_dialog.py:348
+#: mcomix/preferences_dialog.py:349
 msgid "Magnifying Lens"
 msgstr "Povećalo"
 
 #
 # File: src/preferences.py, line: 125
-#: mcomix/preferences_dialog.py:350
+#: mcomix/preferences_dialog.py:351
 #, fuzzy
 msgid "Magnifying lens size (in pixels):"
 msgstr "Veličina povećala (u pikselima)"
 
 #
 # File: src/preferences.py, line: 131
-#: mcomix/preferences_dialog.py:353
+#: mcomix/preferences_dialog.py:354
 msgid ""
 "Set the size of the magnifying lens. It is a square with a side of this many "
 "pixels."
@@ -1710,98 +1715,98 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 133
-#: mcomix/preferences_dialog.py:355
+#: mcomix/preferences_dialog.py:356
 #, fuzzy
 msgid "Magnification factor:"
 msgstr "Faktor uvećanja"
 
 #
 # File: src/preferences.py, line: 140
-#: mcomix/preferences_dialog.py:358
+#: mcomix/preferences_dialog.py:359
 msgid "Set the magnification factor of the magnifying lens."
 msgstr "Postavi faktor uvećanja povećala."
 
 #
 # File: src/preferences.py, line: 289
-#: mcomix/preferences_dialog.py:362
+#: mcomix/preferences_dialog.py:363
 #, fuzzy
 msgid "Comment extensions:"
 msgstr "Ekstenzije komentara"
 
 #
 # File: src/enhance.py, line: 51
-#: mcomix/preferences_dialog.py:365
+#: mcomix/preferences_dialog.py:366
 #, fuzzy
 msgid "Animated images"
 msgstr "Poboljšaj sliku"
 
-#: mcomix/preferences_dialog.py:367
+#: mcomix/preferences_dialog.py:368
 msgid "Animation mode:"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:386
+#: mcomix/preferences_dialog.py:387
 msgid "_Reset keys"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:388
+#: mcomix/preferences_dialog.py:389
 msgid "Resets all keyboard shortcuts to their default values."
 msgstr ""
 
-#: mcomix/preferences_dialog.py:391
+#: mcomix/preferences_dialog.py:392
 msgid "Clear _dialog choices"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:393
+#: mcomix/preferences_dialog.py:394
 msgid ""
 "Clears all dialog choices that you have previously chosen not to be asked "
 "again."
 msgstr ""
 
-#: mcomix/preferences_dialog.py:421
+#: mcomix/preferences_dialog.py:422
 msgid "Auto-detect (Default)"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:455
+#: mcomix/preferences_dialog.py:456
 msgid "Follow the system"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:456
+#: mcomix/preferences_dialog.py:457
 msgid "Light"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:457
+#: mcomix/preferences_dialog.py:458
 msgid "Dark"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:458
+#: mcomix/preferences_dialog.py:459
 msgid "Pitch black"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:464
+#: mcomix/preferences_dialog.py:465
 msgid ""
 "How MComix itself is painted, whatever the desktop asks for. Pitch black is "
 "the dark theme with black backgrounds, which a screen that lights its pixels "
 "one by one shows as no light at all."
 msgstr ""
 
-#: mcomix/preferences_dialog.py:490 mcomix/preferences_dialog.py:637
-#: mcomix/preferences_dialog.py:712 mcomix/ui.py:410
+#: mcomix/preferences_dialog.py:489 mcomix/preferences_dialog.py:624
+#: mcomix/preferences_dialog.py:693 mcomix/ui.py:410
 msgid "Never"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:491
+#: mcomix/preferences_dialog.py:490
 msgid "Only for title pages"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:492
+#: mcomix/preferences_dialog.py:491
 msgid "Only for wide images"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:493 mcomix/preferences_dialog.py:638
+#: mcomix/preferences_dialog.py:492 mcomix/preferences_dialog.py:625
 msgid "Always"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:500
+#: mcomix/preferences_dialog.py:499
 msgid ""
 "When showing the first page of an archive, or an image's width exceeds its "
 "height, only a single page will be displayed."
@@ -1809,14 +1814,14 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 78
-#: mcomix/preferences_dialog.py:516
+#: mcomix/preferences_dialog.py:513
 #, fuzzy
 msgid "Prefer same scale"
 msgstr "Postavke"
 
 #
 # File: src/preferences.py, line: 78
-#: mcomix/preferences_dialog.py:517
+#: mcomix/preferences_dialog.py:514
 #, fuzzy
 msgid "Prefer same size"
 msgstr "Postavke"
@@ -1824,64 +1829,64 @@ msgstr "Postavke"
 #
 # File: src/preferences.py, line: 263
 # File: src/ui.py, line: 290
-#: mcomix/preferences_dialog.py:518
+#: mcomix/preferences_dialog.py:515
 #, fuzzy
 msgid "Fit to same size"
 msgstr "Prilagodi širini"
 
-#: mcomix/preferences_dialog.py:525
+#: mcomix/preferences_dialog.py:522
 msgid "Maintain relative size or fit to same size."
 msgstr ""
 
-#: mcomix/preferences_dialog.py:540 mcomix/preferences_dialog.py:587
+#: mcomix/preferences_dialog.py:535 mcomix/preferences_dialog.py:578
 msgid "No sorting"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:541
+#: mcomix/preferences_dialog.py:536
 msgid "File name"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:542
+#: mcomix/preferences_dialog.py:537
 msgid "File name (GLib)"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:543 mcomix/library/book_area.py:191
+#: mcomix/preferences_dialog.py:538 mcomix/library/book_area.py:189
 msgid "File size"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:544
+#: mcomix/preferences_dialog.py:539
 msgid "Last modified"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:550 mcomix/preferences_dialog.py:596
-#: mcomix/library/book_area.py:195
+#: mcomix/preferences_dialog.py:545 mcomix/preferences_dialog.py:587
+#: mcomix/library/book_area.py:193
 msgid "Ascending"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:551 mcomix/preferences_dialog.py:597
-#: mcomix/library/book_area.py:196
+#: mcomix/preferences_dialog.py:546 mcomix/preferences_dialog.py:588
+#: mcomix/library/book_area.py:194
 msgid "Descending"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:559
+#: mcomix/preferences_dialog.py:554
 msgid ""
 "Files will be opened and displayed according to the sort order specified "
 "here. This option does not affect ordering within archives."
 msgstr ""
 
-#: mcomix/preferences_dialog.py:588
+#: mcomix/preferences_dialog.py:579
 msgid "Natural order"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:589
+#: mcomix/preferences_dialog.py:580
 msgid "Literal order"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:590
+#: mcomix/preferences_dialog.py:581
 msgid "GLib order"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:605
+#: mcomix/preferences_dialog.py:596
 msgid ""
 "Files within archives will be sorted according to the order specified here. "
 "Natural order will sort numbered files based on their natural order, i.e. 1, "
@@ -1892,7 +1897,7 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 219
-#: mcomix/preferences_dialog.py:650
+#: mcomix/preferences_dialog.py:637
 #, fuzzy
 msgid ""
 "Add information about all files opened from within MComix to the shared "
@@ -1903,46 +1908,46 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 214
-#: mcomix/preferences_dialog.py:673
+#: mcomix/preferences_dialog.py:656
 #, fuzzy
 msgid "Delete information about recently opened files?"
 msgstr "Spremaj informacije o nedavno otvorenim datotekama."
 
-#: mcomix/preferences_dialog.py:674
+#: mcomix/preferences_dialog.py:657
 msgid ""
 "This will remove all entries from the \"Recent\" menu, and clear information "
 "about last read pages."
 msgstr ""
 
-#: mcomix/preferences_dialog.py:686
+#: mcomix/preferences_dialog.py:669
 msgid "Normal (fast)"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:687
+#: mcomix/preferences_dialog.py:670
 msgid "Bilinear"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:688
+#: mcomix/preferences_dialog.py:671
 msgid "Hyperbolic (slow)"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:694
+#: mcomix/preferences_dialog.py:677
 msgid ""
 "Changes how images are scaled. Slower algorithms result in higher quality "
 "resizing, but longer page loading times."
 msgstr ""
 
-#: mcomix/preferences_dialog.py:713 mcomix/library/book_area.py:203
+#: mcomix/preferences_dialog.py:694 mcomix/library/book_area.py:201
 msgid "Normal"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:719
+#: mcomix/preferences_dialog.py:700
 msgid "Controls how animated images should be displayed."
 msgstr ""
 
 #
 # File: src/preferences.py, line: 295
-#: mcomix/preferences_dialog.py:783
+#: mcomix/preferences_dialog.py:744
 msgid ""
 "Treat all files found within archives, that have one of these file endings, "
 "as comments."
@@ -1952,27 +1957,27 @@ msgstr ""
 
 #
 # File: src/properties.py, line: 135
-#: mcomix/properties_dialog.py:40
+#: mcomix/properties_dialog.py:41
 msgid "Archive"
 msgstr "Arhiva"
 
 #
 # File: src/properties.py, line: 169
-#: mcomix/properties_dialog.py:42
+#: mcomix/properties_dialog.py:43
 msgid "Image"
 msgstr "Slika"
 
 #
 # File: src/library.py, line: 832
 # File: src/properties.py, line: 113
-#: mcomix/properties_dialog.py:81 mcomix/library/control_area.py:139
+#: mcomix/properties_dialog.py:82 mcomix/library/control_area.py:139
 #, python-format
 msgid "%d pages"
 msgstr "%d stranica"
 
 #
 # File: src/properties.py, line: 114
-#: mcomix/properties_dialog.py:82
+#: mcomix/properties_dialog.py:83
 #, python-format
 msgid "%d comments"
 msgstr "%d komentara"
@@ -1980,28 +1985,28 @@ msgstr "%d komentara"
 #
 # File: src/properties.py, line: 126
 # File: src/properties.py, line: 160
-#: mcomix/properties_dialog.py:131
+#: mcomix/properties_dialog.py:132
 msgid "Accessed"
 msgstr "Pristupljeno"
 
 #
 # File: src/properties.py, line: 128
 # File: src/properties.py, line: 162
-#: mcomix/properties_dialog.py:133
+#: mcomix/properties_dialog.py:134
 msgid "Modified"
 msgstr "Mijenjano"
 
 #
 # File: src/properties.py, line: 130
 # File: src/properties.py, line: 164
-#: mcomix/properties_dialog.py:135
+#: mcomix/properties_dialog.py:136
 msgid "Permissions"
 msgstr "Dozvole"
 
 #
 # File: src/properties.py, line: 131
 # File: src/properties.py, line: 165
-#: mcomix/properties_dialog.py:136
+#: mcomix/properties_dialog.py:137
 msgid "Owner"
 msgstr "Vlasnik"
 
@@ -2122,27 +2127,27 @@ msgstr ""
 msgid "Stop slideshow"
 msgstr "Prezentacija"
 
-#: mcomix/status.py:157
+#: mcomix/status.py:151
 msgid "Show page numbers"
 msgstr ""
 
-#: mcomix/status.py:158
+#: mcomix/status.py:152
 msgid "Show file numbers"
 msgstr ""
 
-#: mcomix/status.py:159
+#: mcomix/status.py:153
 msgid "Show resolution"
 msgstr ""
 
-#: mcomix/status.py:160
+#: mcomix/status.py:154
 msgid "Show path"
 msgstr ""
 
-#: mcomix/status.py:161
+#: mcomix/status.py:155
 msgid "Show filename"
 msgstr ""
 
-#: mcomix/status.py:162
+#: mcomix/status.py:156
 msgid "Show filesize"
 msgstr ""
 
@@ -2385,7 +2390,7 @@ msgstr ""
 #
 # File: src/librarybackend.py, line: 272
 # File: src/librarybackend.py, line: 274
-#: mcomix/ui.py:285 mcomix/library/book_area.py:138
+#: mcomix/ui.py:285 mcomix/library/book_area.py:136
 #, fuzzy
 msgid "_Copy"
 msgstr "(Kopiranje)"
@@ -2765,24 +2770,24 @@ msgstr ""
 
 #
 # File: src/library.py, line: 910
-#: mcomix/library/add_progress_dialog.py:24
+#: mcomix/library/add_progress_dialog.py:25
 msgid "Adding books"
 msgstr "Dodajem knjige"
 
-#: mcomix/library/add_progress_dialog.py:25
+#: mcomix/library/add_progress_dialog.py:26
 msgid "_Stop"
 msgstr "_Zaustavi"
 
 #
 # File: src/library.py, line: 930
-#: mcomix/library/add_progress_dialog.py:47
+#: mcomix/library/add_progress_dialog.py:48
 #, fuzzy
 msgid "Added books:"
 msgstr "Dodane knjige"
 
 #
 # File: src/library.py, line: 952
-#: mcomix/library/add_progress_dialog.py:79
+#: mcomix/library/add_progress_dialog.py:80
 #, python-format
 msgid "Adding '%s'..."
 msgstr "Dodajem '%s'..."
@@ -2844,110 +2849,110 @@ msgstr ""
 msgid "All books"
 msgstr "Sve knjige"
 
-#: mcomix/library/book_area.py:120
+#: mcomix/library/book_area.py:118
 msgid "Opens the selected books for viewing."
 msgstr ""
 
-#: mcomix/library/book_area.py:122
+#: mcomix/library/book_area.py:120
 msgid "Open _without closing library"
 msgstr ""
 
-#: mcomix/library/book_area.py:123
+#: mcomix/library/book_area.py:121
 msgid "Opens the selected books, but keeps the library window open."
 msgstr ""
 
-#: mcomix/library/book_area.py:125 mcomix/library/collection_area.py:81
+#: mcomix/library/book_area.py:123 mcomix/library/collection_area.py:81
 msgid "_Add..."
 msgstr ""
 
 #
 # File: src/library.py, line: 793
-#: mcomix/library/book_area.py:126 mcomix/library/collection_area.py:82
+#: mcomix/library/book_area.py:124 mcomix/library/collection_area.py:82
 msgid "Add more books to the library."
 msgstr "Dodaj još knjiga u biblioteku."
 
-#: mcomix/library/book_area.py:129
+#: mcomix/library/book_area.py:127
 msgid "Remove from this _collection"
 msgstr ""
 
-#: mcomix/library/book_area.py:130
+#: mcomix/library/book_area.py:128
 msgid "Removes the selected books from the current collection."
 msgstr ""
 
-#: mcomix/library/book_area.py:132
+#: mcomix/library/book_area.py:130
 msgid "Remove from the _library"
 msgstr ""
 
-#: mcomix/library/book_area.py:133
+#: mcomix/library/book_area.py:131
 msgid "Completely removes the selected books from the library."
 msgstr ""
 
-#: mcomix/library/book_area.py:135
+#: mcomix/library/book_area.py:133
 msgid "_Remove and delete from disk"
 msgstr ""
 
-#: mcomix/library/book_area.py:136
+#: mcomix/library/book_area.py:134
 msgid "Deletes the selected books from disk."
 msgstr ""
 
 #
 # File: src/library.py, line: 806
-#: mcomix/library/book_area.py:139
+#: mcomix/library/book_area.py:137
 #, fuzzy
 msgid "Copies the selected book's path to clipboard."
 msgstr "Otvori označenu knjigu."
 
-#: mcomix/library/book_area.py:177
+#: mcomix/library/book_area.py:175
 msgid "Library books"
 msgstr ""
 
-#: mcomix/library/book_area.py:189
+#: mcomix/library/book_area.py:187
 msgid "Book name"
 msgstr ""
 
-#: mcomix/library/book_area.py:190
+#: mcomix/library/book_area.py:188
 msgid "Full path"
 msgstr ""
 
-#: mcomix/library/book_area.py:192
+#: mcomix/library/book_area.py:190
 msgid "Date added"
 msgstr ""
 
-#: mcomix/library/book_area.py:201
+#: mcomix/library/book_area.py:199
 msgid "Huge"
 msgstr ""
 
-#: mcomix/library/book_area.py:202
+#: mcomix/library/book_area.py:200
 msgid "Large"
 msgstr ""
 
-#: mcomix/library/book_area.py:204
+#: mcomix/library/book_area.py:202
 msgid "Small"
 msgstr ""
 
-#: mcomix/library/book_area.py:205
+#: mcomix/library/book_area.py:203
 msgid "Tiny"
 msgstr ""
 
-#: mcomix/library/book_area.py:209
+#: mcomix/library/book_area.py:207
 msgid "Custom..."
 msgstr ""
 
-#: mcomix/library/book_area.py:213
+#: mcomix/library/book_area.py:211
 msgid "_Sort"
 msgstr ""
 
-#: mcomix/library/book_area.py:214
+#: mcomix/library/book_area.py:212
 msgid "Cover si_ze"
 msgstr ""
 
-#: mcomix/library/book_area.py:412
+#: mcomix/library/book_area.py:394
 msgid "Set library cover size"
 msgstr ""
 
 #
 # File: src/library.py, line: 588
-#: mcomix/library/book_area.py:542
+#: mcomix/library/book_area.py:511
 #, fuzzy, python-format
 msgid "Removed %(num)d book from '%(collection)s'."
 msgid_plural "Removed %(num)d books from '%(collection)s'."
@@ -2955,7 +2960,7 @@ msgstr[0] "Obrisano %(num)d knjiga iz '%(collection)s'."
 msgstr[1] "Obrisano %(num)d knjiga iz '%(collection)s'."
 msgstr[2] "Obrisano %(num)d knjiga iz '%(collection)s'."
 
-#: mcomix/library/book_area.py:564 mcomix/library/collection_area.py:228
+#: mcomix/library/book_area.py:535 mcomix/library/collection_area.py:228
 #, python-format
 msgid "Removed %d book from the library."
 msgid_plural "Removed %d books from the library."
@@ -2965,13 +2970,13 @@ msgstr[2] ""
 
 #
 # File: src/library.py, line: 597
-#: mcomix/library/book_area.py:582
+#: mcomix/library/book_area.py:553
 msgid "Remove books from the library?"
 msgstr "Obrisati knjige iz biblioteke?"
 
 #
 # File: src/library.py, line: 599
-#: mcomix/library/book_area.py:583
+#: mcomix/library/book_area.py:554
 #, fuzzy
 msgid ""
 "The selected books will be removed from the library and permanently deleted. "
@@ -3075,13 +3080,13 @@ msgstr "Nemoguće udvostručiti kolekciju."
 
 #
 # File: src/library.py, line: 382
-#: mcomix/library/collection_area.py:473
+#: mcomix/library/collection_area.py:482
 msgid "Root"
 msgstr "Korijen"
 
 #
 # File: src/library.py, line: 386
-#: mcomix/library/collection_area.py:477
+#: mcomix/library/collection_area.py:486
 #, python-format
 msgid ""
 "Put the collection '%(subcollection)s' in the collection "
@@ -3090,14 +3095,14 @@ msgstr "Stavi kolekciju '%(subcollection)s' u kolekciju '%(supercollection)s'."
 
 #
 # File: src/library.py, line: 407
-#: mcomix/library/collection_area.py:497
+#: mcomix/library/collection_area.py:506
 #, python-format
 msgid "Add books to '%s'."
 msgstr "Dodaj knjige u '%s'."
 
 #
 # File: src/library.py, line: 411
-#: mcomix/library/collection_area.py:501
+#: mcomix/library/collection_area.py:510
 #, python-format
 msgid ""
 "Move books from '%(source collection)s' to '%(destination collection)s'."
@@ -3147,57 +3152,57 @@ msgstr "Otvori označenu knjigu."
 msgid "Finished reading on %(date)s, %(time)s"
 msgstr ""
 
-#: mcomix/library/main_dialog.py:95
+#: mcomix/library/main_dialog.py:98
 msgid "Scanning for new books..."
 msgstr ""
 
-#: mcomix/library/main_dialog.py:110
+#: mcomix/library/main_dialog.py:113
 #, python-format
 msgid "Added new book '%(bookname)s' from directory '%(directory)s'."
 msgstr ""
 
 #
 # File: src/library.py, line: 588
-#: mcomix/library/main_dialog.py:113
+#: mcomix/library/main_dialog.py:116
 #, fuzzy, python-format
 msgid "Added %(count)d new books from directory '%(directory)s'."
 msgstr "Obrisano %(num)d knjiga iz '%(collection)s'."
 
-#: mcomix/library/main_dialog.py:120
+#: mcomix/library/main_dialog.py:123
 #, python-format
 msgid "No new books found in directory '%s'."
 msgstr ""
 
-#: mcomix/library/main_dialog.py:186
+#: mcomix/library/main_dialog.py:188
 msgid "! You need an sqlite wrapper to use the library."
 msgstr ""
 
-#: mcomix/library/watchlist.py:30
+#: mcomix/library/watchlist.py:24
 msgid "Library watch list"
 msgstr ""
 
-#: mcomix/library/watchlist.py:32
+#: mcomix/library/watchlist.py:26
 msgid "_Scan now"
 msgstr ""
 
-#: mcomix/library/watchlist.py:48
+#: mcomix/library/watchlist.py:38
 msgid "Directory"
 msgstr ""
 
 #
 # File: src/library.py, line: 862
-#: mcomix/library/watchlist.py:60
+#: mcomix/library/watchlist.py:39
 #, fuzzy
 msgid "Collection"
 msgstr "Nova kolekcija"
 
-#: mcomix/library/watchlist.py:68
+#: mcomix/library/watchlist.py:43
 msgid "With subdirectories"
 msgstr ""
 
 #
 # File: src/filechooser.py, line: 195
-#: mcomix/library/watchlist.py:92
+#: mcomix/library/watchlist.py:67
 #, fuzzy
 msgid "Automatically scan for new books when library is _opened"
 msgstr "Automatski pridodaj knjige ovoj zbirci"

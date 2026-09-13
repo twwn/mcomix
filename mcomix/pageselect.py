@@ -2,6 +2,7 @@
 
 from gi.repository import Gtk
 
+from mcomix.dialog import Dialog
 from mcomix import image_tools
 from mcomix import widgets
 from mcomix.preferences import prefs
@@ -10,7 +11,7 @@ from mcomix import callback
 from mcomix.i18n import _
 
 
-class Pageselector(Gtk.Dialog):
+class Pageselector(Dialog):
 
     """The Pageselector takes care of the popup page selector
     """

@@ -1,9 +1,12 @@
 """ openwith.py - Logic and storage for Open with... commands. """
+import operator
 import sys
 import os
 import re
-from gi.repository import Gtk, GLib, GObject
+from gi.repository import Gtk
 
+from mcomix.dialog import Dialog
+from mcomix import column_list
 from mcomix import widgets
 from mcomix.preferences import prefs
 from mcomix import message_dialog
@@ -261,7 +264,7 @@ class OpenWithCommand(object):
         return context
 
 
-class OpenWithEditor(Gtk.Dialog):
+class OpenWithEditor(Dialog):
     """ The editor for changing and creating external commands. This window
     keeps its own internal model once initialized, and will overwrite
     the external model (i.e. preferences) only when properly closed. """
@@ -275,8 +278,9 @@ class OpenWithEditor(Gtk.Dialog):
         self._openwith = openwithmanager
         self._changed = False
 
-        self._command_tree = Gtk.TreeView()
-        self._command_tree.get_selection().connect('changed', self._item_selected)
+        self._command_list = column_list.ColumnListView()
+        self._command_list.selection.connect('selection-changed',
+                                             self._item_selected)
         self._add_button = Gtk.Button.new_with_mnemonic(_('_Add'))
         self._add_button.connect('clicked', self._add_command)
         self._add_sep_button = Gtk.Button.new_with_mnemonic(_('Add _separator'))
@@ -322,27 +326,18 @@ class OpenWithEditor(Gtk.Dialog):
     def get_commands(self):
         """ Retrieves a list of OpenWithCommand instances from
         the list model. """
-        model = self._command_tree.get_model()
-        iter = model.get_iter_first()
-        commands = []
-        while iter:
-            label, command, cwd, disabled_for_archives = model.get(iter, 0, 1, 2, 3)
-            commands.append(OpenWithCommand(label, command, cwd, disabled_for_archives))
-            iter = model.iter_next(iter)
-        return commands
+        return [self._command_of(row)
+                for row in self._command_list.each_row()]
+
+    @staticmethod
+    def _command_of(row):
+        """ The command the fields of <row> describe. """
+        return OpenWithCommand(row.label, row.command, row.cwd, row.disabled)
 
     def get_command(self):
         """ Retrieves the selected command object. """
-        selection = self._command_tree.get_selection()
-        if not selection:
-            return None
-
-        model, iter = self._command_tree.get_selection().get_selected()
-        if (iter and model.iter_is_valid(iter)):
-            command = OpenWithCommand(*model.get(iter, 0, 1, 2, 3))
-            return command
-        else:
-            return None
+        row = self._command_list.get_selected_row()
+        return self._command_of(row) if row is not None else None
 
     def test_command(self) -> None:
         """ Parses the currently selected command and displays the output in the
@@ -377,54 +372,51 @@ class OpenWithEditor(Gtk.Dialog):
 
     def _add_command(self, button):
         """ Add a new empty label-command line to the list. """
-        row = (_('Command label'), '', '', False, True)
-        selection = self._command_tree.get_selection()
-        if selection and selection.get_selected()[1]:
-            model, iter = selection.get_selected()
-            model.insert_before(iter, row)
-        else:
-            self._command_tree.get_model().append(row)
-        self._changed = True
+        self._add_row(column_list.Row(label=_('Command label'), command='',
+                                      cwd='', disabled=False, editable=True))
 
     def _add_sep_command(self, button):
         """ Adds a new separator line. """
-        row = ('-', '', '', False, False)
-        selection = self._command_tree.get_selection()
-        if selection and selection.get_selected()[1]:
-            model, iter = selection.get_selected()
-            model.insert_before(iter, row)
+        self._add_row(column_list.Row(label='-', command='', cwd='',
+                                      disabled=False, editable=False))
+
+    def _add_row(self, row):
+        """ Put <row> above the selected line, or at the end. """
+        selected = self._command_list.get_selected_positions()
+        if selected:
+            self._command_list.insert_row(selected[0], row)
         else:
-            self._command_tree.get_model().append(row)
+            self._command_list.append_row(row)
         self._changed = True
 
     def _remove_command(self, button):
         """ Removes the currently selected command from the list. """
-        model, iter = self._command_tree.get_selection().get_selected()
-        if (iter and model.iter_is_valid(iter)):
-            model.remove(iter)
+        row = self._command_list.get_selected_row()
+        if row is not None:
+            self._command_list.remove_row(row)
             self._changed = True
 
     def _up_command(self, button):
         """ Moves the selected command up by one. """
-        model, iter = self._command_tree.get_selection().get_selected()
-        if (iter and model.iter_is_valid(iter)):
-            path = model.get_path(iter)[0]
-
-            if path >= 1:
-                up = model.get_iter(path - 1)
-                model.swap(iter, up)
-            self._changed = True
+        self._move_command(-1)
 
     def _down_command(self, button):
         """ Moves the selected command down by one. """
-        model, iter = self._command_tree.get_selection().get_selected()
-        if (iter and model.iter_is_valid(iter)):
-            path = model.get_path(iter)[0]
+        self._move_command(1)
 
-            if path < len(self.get_commands()) - 1:
-                down = model.get_iter(path + 1)
-                model.swap(iter, down)
-            self._changed = True
+    def _move_command(self, offset):
+        """ Moves the selected command <offset> lines along the list. """
+        selected = self._command_list.get_selected_positions()
+        if not selected:
+            return
+        position = selected[0]
+        self._command_list.move_row(position, position + offset)
+        # Following the line that moved, the way the selection did when
+        # a Gtk.TreeView swapped two of its rows.
+        self._command_list.select_only(
+            max(0, min(position + offset,
+                       self._command_list.store.get_n_items() - 1)))
+        self._changed = True
 
     def _run_command(self, button):
         """ Executes the selected command in the current context. """
@@ -432,13 +424,14 @@ class OpenWithEditor(Gtk.Dialog):
         if command and not command.is_separator():
             command.execute(self._window)
 
-    def _item_selected(self, selection):
+    def _item_selected(self, *args):
         """ Enable or disable buttons that depend on an item being selected. """
+        selected = bool(self._command_list.get_selected_positions())
         for button in (self._remove_button, self._up_button,
                 self._down_button):
-            button.set_sensitive(selection.count_selected_rows() > 0)
+            button.set_sensitive(selected)
 
-        if selection.count_selected_rows() > 0:
+        if selected:
             self.test_command()
         else:
             self._test_field.set_text('')
@@ -458,7 +451,7 @@ class OpenWithEditor(Gtk.Dialog):
 
         scroll_window = Gtk.ScrolledWindow()
         scroll_window.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
-        scroll_window.set_child(self._command_tree)
+        scroll_window.set_child(self._command_list)
         widgets.pack(content, scroll_window, True, True, 0)
 
         buttonbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
@@ -486,66 +479,55 @@ class OpenWithEditor(Gtk.Dialog):
         widgets.pack(content, linklabel, False, False, 4)
 
     def _setup_table(self) -> None:
-        """ Initializes the TreeView with settings and data. """
-        for i, label in enumerate((_('Label'), _('Command'), _('Working directory'))):
-            renderer = Gtk.CellRendererText()
-            renderer.connect('edited', self._text_changed, i)
-            column = Gtk.TreeViewColumn(label, renderer)
-            column.set_property('resizable', True)
-            column.set_attributes(renderer, text=i, editable=4)
-            if (i == 1):
-                column.set_expand(True)  # Command column should scale automatically
-            self._command_tree.append_column(column)
+        """ Initializes the list with settings and data. """
+        # A separator has nothing to fill in, which is what a row's
+        # 'editable' says: the three text cells and the checkbox all
+        # read it.
+        editable = operator.attrgetter('editable')
+        for attr, label in (('label', _('Label')),
+                            ('command', _('Command')),
+                            ('cwd', _('Working directory'))):
+            self._command_list.add_editable_column(
+                label, attr, self._rewrote(attr), editable=editable,
+                expand=attr == 'command')
 
         # The 'Disabled in archives' field is shown as toggle button
-        renderer = Gtk.CellRendererToggle()
-        renderer.connect('toggled', self._value_changed,
-                len(self._command_tree.get_columns()))
-        column = Gtk.TreeViewColumn(_('Disabled in archives'), renderer)
-        column.set_attributes(renderer, active=len(self._command_tree.get_columns()),
-                activatable=4)
-        self._command_tree.append_column(column)
+        self._command_list.add_toggle_column(
+            _('Disabled in archives'), 'disabled', self._value_changed,
+            activatable=editable)
 
-        # Label, command, working dir, disabled for archives, line is editable
-        model = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_STRING, GObject.TYPE_STRING,
-                GObject.TYPE_BOOLEAN, GObject.TYPE_BOOLEAN)
-        for command in self._openwith.get_commands():
-            model.append((command.get_label(), command.get_command(), command.get_cwd(),
-                command.is_disabled_for_archives(), not command.is_separator()))
-        self._command_tree.set_model(model)
+        self._command_list.set_rows(
+            column_list.Row(label=command.get_label(),
+                            command=command.get_command(),
+                            cwd=command.get_cwd(),
+                            disabled=command.is_disabled_for_archives(),
+                            editable=not command.is_separator())
+            for command in self._openwith.get_commands())
 
-        self._command_tree.set_headers_visible(True)
-        self._command_tree.set_reorderable(True)
+        self._command_list.set_reorderable(True)
 
-    def _text_changed(self, renderer, path, new_text, column):
-        """ Called when the user edits a field in the table. """
-        # Prevent changing command to separator, and completely removing label
-        if column == 0 and (not new_text.strip() or re.match(r'^-+$', new_text)):
-            return
+    def _rewrote(self, attr):
+        """ Answer an edit of the <attr> field of a row. """
+        def rewrote(row, new_text):
+            # Prevent changing command to separator, and completely
+            # removing label
+            if attr == 'label' and (not new_text.strip()
+                                    or re.match(r'^-+$', new_text)):
+                # Put back what the row still says, which is what the
+                # cell was showing before the edit.
+                row.changed()
+                return
 
-        model = self._command_tree.get_model()
-        iter = model.get_iter(path)
-        # Editing the model in the cellrenderercallback stops the editing
-        # operation, causing GTK warnings. Delay until callback is finished.
-        def delayed_set_value() -> None:
-            old_value = model.get_value(iter, column)
-            model.set_value(iter, column, new_text)
-            self._changed = old_value != new_text
+            if getattr(row, attr) != new_text:
+                setattr(row, attr, new_text)
+                self._changed = True
             self.test_command()
-        GLib.idle_add(delayed_set_value)
+        return rewrote
 
-    def _value_changed(self, renderer, path, column):
+    def _value_changed(self, row, value):
         """ Called when a toggle field is changed """
-        model = self._command_tree.get_model()
-        iter = model.get_iter(path)
-        # Editing the model in the cellrenderercallback stops the editing
-        # operation, causing GTK warnings. Delay until callback is finished.
-        def delayed_set_value() -> None:
-            value = not renderer.get_active()
-            model.set_value(iter, column, value)
-            self._changed = True
-
-        GLib.idle_add(delayed_set_value)
+        row.disabled = value
+        self._changed = True
 
     def _response(self, dialog, response):
         if response == Gtk.ResponseType.ACCEPT:

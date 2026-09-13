@@ -1,6 +1,6 @@
 """status.py - Statusbar for main window."""
 
-from gi.repository import Gio, GLib, Gtk
+from gi.repository import Gio, GLib, Gtk, Pango
 
 from mcomix import i18n
 from mcomix import widgets
@@ -28,7 +28,13 @@ class Statusbar(Gtk.Box):
         self._loading = True
 
         # Status text, page number, file number, resolution, path, filename, filesize
-        self.status = Gtk.Statusbar()
+        # Gtk.Statusbar is deprecated as of GTK 4.10, and its message stack
+        # was never used here: every write popped context 0 and pushed the
+        # whole line back. A label says the same thing.
+        self.status = Gtk.Label()
+        self.status.set_xalign(0)
+        self.status.set_hexpand(True)
+        self.status.set_ellipsize(Pango.EllipsizeMode.END)
         self.append(self.status)
 
         # Create popup menu for enabling/disabling status boxes.
@@ -56,8 +62,7 @@ class Statusbar(Gtk.Box):
         """Set a specific message (such as an error message) on the statusbar,
         replacing whatever was there earlier.
         """
-        self.status.pop(0)
-        self.status.push(0, " " * Statusbar.SPACING + message)
+        self.status.set_text(" " * Statusbar.SPACING + message)
 
     def set_page_number(self, page, total, this_screen):
         """Update the page number."""
@@ -121,18 +126,7 @@ class Statusbar(Gtk.Box):
 
         space = " " * Statusbar.SPACING
         text = (space + "|" + space).join(self._get_status_text())
-        self.status.pop(0)
-        self.status.push(0, space + text)
-
-    def push(self, context_id, message):
-        """ Compatibility with Gtk.Statusbar. """
-        assert context_id >= 0
-        self.status.push(context_id + 1, message)
-
-    def pop(self, context_id):
-        """ Compatibility with Gtk.Statusbar. """
-        assert context_id >= 0
-        self.status.pop(context_id + 1)
+        self.status.set_text(space + text)
 
     def _get_status_text(self):
         """ Returns an array of text fields that should be displayed. """

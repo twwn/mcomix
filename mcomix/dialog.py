@@ -1,0 +1,123 @@
+"""dialog.py - The window MComix' dialogs are built out of."""
+
+from gi.repository import GObject, Gtk
+
+from mcomix import widgets
+
+from typing import Any
+
+
+class Dialog(Gtk.Window):
+
+    """A window with a content area and a row of buttons under it.
+
+    This is what Gtk.Dialog was, which GTK deprecated in 4.10 without
+    replacing: Gtk.AlertDialog answers for a message and two buttons,
+    and everything else is meant to be an ordinary window that lays its
+    own buttons out.  MComix has a dozen dialogs that are neither, so
+    the shape they all shared lives here instead - the same
+    add_button(), get_content_area(), response() and 'response' signal,
+    over a Gtk.Window.
+
+    A dialog is answered exactly once, whether by a button, by the
+    escape key or by the window being closed.
+    """
+
+    __gtype_name__ = 'MComixDialog'
+
+    __gsignals__ = {
+        'response': (GObject.SignalFlags.RUN_LAST, None, (int,)),
+    }
+
+    def __init__(self, **kwargs: Any) -> None:
+        super(Dialog, self).__init__(**kwargs)
+        self._content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL,
+                                spacing=6)
+        self._content.set_vexpand(True)
+        self._button_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL,
+                                   spacing=6)
+        self._button_row.set_halign(Gtk.Align.END)
+        #: The button for each response.  Not _buttons: the file
+        #: chooser keeps a list of its own under that name, and a base
+        #: class has no business squatting on a plain one.
+        self._response_buttons: dict[int, Gtk.Button] = {}
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        widgets.pack(box, self._content, True, True, 0)
+        widgets.pack(box, self._button_row, False, False, 0)
+        super(Dialog, self).set_child(box)
+        # Closing the window answers the dialog, the way a Gtk.Dialog's
+        # delete event did, so that whoever is waiting hears about it.
+        self.connect('close-request', self._closed)
+        escape = Gtk.ShortcutController()
+        escape.add_shortcut(Gtk.Shortcut.new(
+            Gtk.ShortcutTrigger.parse_string('Escape'),
+            Gtk.CallbackAction.new(self._escaped)))
+        self.add_controller(escape)
+
+    # -- What Gtk.Dialog offered ------------------------------------------
+
+    def get_content_area(self) -> Gtk.Box:
+        """The box a dialog puts what it is about into."""
+        return self._content
+
+    def add_button(self, label: str, response: int) -> Gtk.Button:
+        """Add a button answering with <response>, and return it."""
+        button = Gtk.Button.new_with_mnemonic(label)
+        button.connect('clicked', lambda _button: self.response(response))
+        self._button_row.append(button)
+        self._response_buttons[response] = button
+        return button
+
+    def add_buttons(self, *args: Any) -> None:
+        """Add several buttons, as label and response in turn."""
+        for index in range(0, len(args) - 1, 2):
+            self.add_button(args[index], args[index + 1])
+
+    def add_action_widget(self, widget: Gtk.Widget, response: int) -> None:
+        """Put <widget> in the button row, answering with <response>.
+
+        Whatever it is, it answers when it is activated: a Gtk.Button
+        when it is clicked, anything else through its 'activate' signal,
+        which is what Gtk.Dialog did with it.
+        """
+        if isinstance(widget, Gtk.Button):
+            widget.connect('clicked', lambda _w: self.response(response))
+        else:
+            widget.connect('activate', lambda _w: self.response(response))
+        self._button_row.append(widget)
+
+    def get_widget_for_response(self, response: int) -> "Gtk.Button | None":
+        """The button that answers with <response>, if there is one."""
+        return self._response_buttons.get(response)
+
+    def set_default_response(self, response: int) -> None:
+        """Make the button for <response> the one Enter presses."""
+        button = self._response_buttons.get(response)
+        if button is not None:
+            # set_can_default() went with Gtk.Widget's own default
+            # handling in GTK4; naming the widget is all there is.
+            self.set_default_widget(button)
+
+    def set_response_sensitive(self, response: int, sensitive: bool) -> None:
+        """Enable or disable the button for <response>."""
+        button = self._response_buttons.get(response)
+        if button is not None:
+            button.set_sensitive(sensitive)
+
+    def response(self, response: int) -> None:
+        """Answer the dialog with <response>."""
+        self.emit('response', response)
+
+    # -- Where the answers come from --------------------------------------
+
+    def _closed(self, *args: Any) -> bool:
+        self.emit('response', Gtk.ResponseType.DELETE_EVENT)
+        # False: the window goes on closing, which is what a Gtk.Dialog
+        # did with its delete event.
+        return False
+
+    def _escaped(self, *args: Any) -> bool:
+        self.emit('response', Gtk.ResponseType.CANCEL)
+        return True
+
+# vim: expandtab:sw=4:ts=4

@@ -7,7 +7,9 @@ from gi.repository import Gtk
 from . import MComixTest, wait_for
 from .test_theme import background_of
 
+from mcomix import constants
 from mcomix.library import book_area
+from mcomix.preferences import prefs
 
 
 class _Event(object):
@@ -59,6 +61,96 @@ class BlackBackgroundTest(MComixTest):
     def test_the_view_carries_the_class_the_rule_is_written_against(self):
         self.assertTrue(self.area._iconview.has_css_class(
             book_area._BookArea._BLACK_CSS_CLASS))
+
+
+class _Book(object):
+
+    """Enough of a library book for a cover to be made from it."""
+
+    def __init__(self, id, path, size=0, added='2000-01-01'):
+        self.id = id
+        self.path = path
+        self.size = size
+        self.added = added
+
+
+class CoverOrderTest(MComixTest):
+
+    """What order the covers are shown in.
+
+    The view was a Gtk.IconView over a six column Gtk.ListStore, which
+    sorted itself by a column number - which is why the SORT_ constants
+    had to match the column layout. A Gtk.Sorter is handed the two items
+    instead, so the two are no longer tied together.
+    """
+
+    BOOKS = (_Book(1, '/b/zeta.cbz', size=30, added='2003'),
+             _Book(2, '/a/alpha.cbz', size=10, added='2001'),
+             _Book(3, '/c/mid.cbz', size=20, added='2002'))
+
+    def _order(self, key, ascending=True):
+        prefs['lib sort key'] = key
+        prefs['lib sort order'] = (constants.SORT_ASCENDING if ascending
+                                   else constants.SORT_DESCENDING)
+        area = book_area._BookArea(_Library())
+        area._iconview.set_items(
+            book_area._BookItem(book) for book in self.BOOKS)
+        area.set_sort_order()
+        order = [item.uid for item in area._iconview.each_item()]
+        area.close()
+        return order
+
+    def test_by_book_name_ignores_the_directory(self):
+        self.assertEqual(self._order(constants.SORT_NAME), [2, 3, 1])
+
+    def test_by_full_path_does_not(self):
+        self.assertEqual(self._order(constants.SORT_PATH), [2, 1, 3])
+
+    def test_by_size(self):
+        self.assertEqual(self._order(constants.SORT_SIZE), [2, 3, 1])
+
+    def test_by_date_added(self):
+        self.assertEqual(self._order(constants.SORT_LAST_MODIFIED), [2, 3, 1])
+
+    def test_descending_is_the_other_way_round(self):
+        self.assertEqual(self._order(constants.SORT_SIZE, ascending=False),
+                         [1, 3, 2])
+
+
+class CoverRemovalTest(MComixTest):
+
+    """Removing covers by book id rather than one position at a time.
+
+    Taking one cover out moves every one after it, so removing several
+    by position - which is what the collection area's drop handler did -
+    took the wrong books.
+    """
+
+    def setUp(self):
+        super(CoverRemovalTest, self).setUp()
+        self.area = book_area._BookArea(_Library())
+        self.area._iconview.set_items(
+            book_area._BookItem(_Book(index, '/books/%d.cbz' % index))
+            for index in range(5))
+
+    def tearDown(self):
+        self.area.close()
+        super(CoverRemovalTest, self).tearDown()
+
+    def _ids(self):
+        return [item.uid for item in self.area._iconview.each_item()]
+
+    def test_removing_several_books_removes_those_and_no_others(self):
+        self.area.remove_books([0, 2, 4])
+        self.assertEqual(self._ids(), [1, 3])
+
+    def test_removing_a_book_that_is_not_shown_is_ignored(self):
+        self.area.remove_books([99])
+        self.assertEqual(self._ids(), [0, 1, 2, 3, 4])
+
+    def test_a_position_answers_with_the_book_shown_there(self):
+        self.assertEqual(self.area.get_book_at_path(3), 3)
+        self.assertIsNone(self.area.get_book_at_path(99))
 
 
 # vim: expandtab:sw=4:ts=4

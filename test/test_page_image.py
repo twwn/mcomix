@@ -42,18 +42,17 @@ class PageImageTest(MComixTest):
     def test_a_page_keeps_the_pixels_it_was_given(self):
         pixbuf = image_tools.load_pixbuf(get_image_path('blue.png'))
         texture = image_tools.pixbuf_to_texture(pixbuf)
-        self.assertPixbufsEqual(Gdk.pixbuf_get_from_texture(texture), pixbuf)
+        self.assertTextureMatches(texture, pixbuf)
 
     def test_a_transparent_page_keeps_its_alpha(self):
         pixbuf = image_tools.load_pixbuf(
             get_image_path('pattern-transparent-rgba.png'))
         self.assertTrue(pixbuf.get_has_alpha())
         texture = image_tools.pixbuf_to_texture(pixbuf)
-        self.assertPixbufsEqual(Gdk.pixbuf_get_from_texture(texture), pixbuf)
+        self.assertTextureMatches(texture, pixbuf)
 
     def test_an_animated_page_advances_on_its_own(self):
-        animation = GdkPixbuf.PixbufAnimation.new_from_file(
-            get_image_path('animated.gif'))
+        animation = image_tools.load_pixbuf(get_image_path('animated.gif'))
         self.assertTrue(image_tools.is_animation(animation))
         self.image.set_pixbuf(animation)
         paintable = self.image.get_paintable()
@@ -73,8 +72,7 @@ class PageImageTest(MComixTest):
         # Animations skipped the fit and zoom modes, so every frame was
         # drawn at the full size of the picture and uploaded whole,
         # however small the window.
-        animation = GdkPixbuf.PixbufAnimation.new_from_file(
-            get_image_path('animated.gif'))
+        animation = image_tools.load_pixbuf(get_image_path('animated.gif'))
         self.image.set_pixbuf(animation, (64, 48))
         paintable = self.image.get_paintable()
         self.assertEqual((paintable.get_intrinsic_width(),
@@ -104,24 +102,21 @@ class PageImageTest(MComixTest):
         # more frames" a finished animation does, and taking it at its
         # word left the page standing still until something else redrew
         # it - seconds, on a slow first frame.
-        animation = GdkPixbuf.PixbufAnimation.new_from_file(
-            get_image_path('animated.gif'))
-        self.assertFalse(animation.is_static_image())
+        animation = image_tools.load_pixbuf(get_image_path('animated.gif'))
+        self.assertTrue(image_tools.is_animation(animation))
         self.image.set_pixbuf(animation)
         self.assertIsNotNone(self.image._worker,
                              'nothing is decoding the next frame')
 
     def test_one_picture_waits_for_nothing(self):
-        still = GdkPixbuf.PixbufAnimation.new_from_file(
-            get_image_path('blue.png'))
-        self.assertTrue(still.is_static_image())
+        still = image_tools.load_pixbuf(get_image_path('blue.png'))
+        self.assertFalse(image_tools.is_animation(still))
         self.image.set_pixbuf(still)
         self.assertIsNone(self.image._worker,
                           'a single picture left a thread running')
 
     def test_a_still_page_stops_the_animation_before_it(self):
-        animation = GdkPixbuf.PixbufAnimation.new_from_file(
-            get_image_path('animated.gif'))
+        animation = image_tools.load_pixbuf(get_image_path('animated.gif'))
         self.image.set_pixbuf(animation)
         self.image.set_pixbuf(image_tools.load_pixbuf(get_image_path('blue.png')))
         still = self.image.get_paintable()
@@ -131,8 +126,7 @@ class PageImageTest(MComixTest):
                       'the page went on animating after it had been replaced')
 
     def test_clearing_a_page_stops_the_animation(self):
-        animation = GdkPixbuf.PixbufAnimation.new_from_file(
-            get_image_path('animated.gif'))
+        animation = image_tools.load_pixbuf(get_image_path('animated.gif'))
         self.image.set_pixbuf(animation)
         self.image.clear()
         self.assertIsNone(self.image.get_paintable())
@@ -153,7 +147,7 @@ class PageImageTest(MComixTest):
         original = animation.frames
         animation.frames = lambda *args: frames
         try:
-            animated = GdkPixbuf.PixbufAnimation.new_from_file(
+            animated = image_tools.load_pixbuf(
                 get_image_path('animated.gif'))
             self.image.set_pixbuf(animated)
             drawn = []
@@ -169,11 +163,38 @@ class PageImageTest(MComixTest):
             len(drawn), 25,
             'the page paid for decoding each frame on top of showing it')
 
-    def assertPixbufsEqual(self, one, two):
-        self.assertEqual((one.get_width(), one.get_height()),
-                         (two.get_width(), two.get_height()))
-        self.assertEqual(one.get_has_alpha(), two.get_has_alpha())
-        self.assertEqual(one.get_pixels(), two.get_pixels())
+    def assertTextureMatches(self, texture, pixbuf):
+        """<texture> holds the pixels of <pixbuf>.
+
+        Gdk.pixbuf_get_from_texture(), which read them back as a pixbuf
+        of their own, is deprecated as of GTK 4.10.  A
+        Gdk.TextureDownloader is what reads a texture out now, and it is
+        asked for the format to read it in - straight RGBA rather than
+        the premultiplied BGRA that download() has always answered with.
+        """
+        self.assertEqual((texture.get_width(), texture.get_height()),
+                         (pixbuf.get_width(), pixbuf.get_height()))
+        downloader = Gdk.TextureDownloader.new(texture)
+        downloader.set_format(Gdk.MemoryFormat.R8G8B8A8)
+        data, stride = downloader.download_bytes()
+        self.assertEqual(data.get_data(), self._as_rgba(pixbuf, stride))
+
+    @staticmethod
+    def _as_rgba(pixbuf, stride):
+        """<pixbuf> as the rows of RGBA a texture downloads as."""
+        pixels = pixbuf.get_pixels()
+        channels = pixbuf.get_n_channels()
+        rowstride = pixbuf.get_rowstride()
+        out = bytearray()
+        for y in range(pixbuf.get_height()):
+            row = y * rowstride
+            for x in range(pixbuf.get_width()):
+                offset = row + x * channels
+                out.extend(pixels[offset:offset + 3])
+                out.append(pixels[offset + 3] if channels == 4 else 255)
+            # Whatever the downloader pads each row out to.
+            out.extend(b'\x00' * (stride - pixbuf.get_width() * 4))
+        return bytes(out)
 
 class _SlowFrames(animation.Frames):
 

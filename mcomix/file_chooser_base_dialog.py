@@ -6,6 +6,7 @@ import fnmatch
 from gi.repository import GLib, Gtk, Pango
 
 from mcomix.preferences import prefs
+from mcomix.dialog import Dialog
 from mcomix import image_tools
 from mcomix import archive_tools
 from mcomix import labels
@@ -54,7 +55,7 @@ def _by_familiarity(names, common):
     return known + sorted(name for name in names if name not in known)
 
 
-class _BaseFileChooserDialog(Gtk.Dialog):
+class _BaseFileChooserDialog(Dialog):
 
     """We roll our own FileChooserDialog because the one in GTK seems
     buggy with the preview widget. The <action> argument dictates what type

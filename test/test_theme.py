@@ -18,11 +18,16 @@ from mcomix.preferences import prefs
 
 
 def background_of(window):
-    """The colour <window> is actually painted in."""
-    wait_for(lambda: False, seconds=0.2)
+    """The colour <window> is actually painted in.
+
+    Waiting on the window's own size rather than for a fixed interval:
+    the frame clock may not have run within one under load, and a window
+    that has not been allocated snapshots to nothing at all, which read
+    as the palette not having been applied.
+    """
+    wait_for(lambda: window.get_width() > 0 and window.get_height() > 0,
+             seconds=5)
     paintable = Gtk.WidgetPaintable.new(window)
-    snapshot = Gtk.Snapshot()
-    paintable.snapshot(snapshot, window.get_width(), window.get_height())
     widest = []
 
     def walk(node):
@@ -42,7 +47,14 @@ def background_of(window):
             except TypeError:
                 pass
 
-    walk(snapshot.to_node())
+    for _ in range(20):
+        widest.clear()
+        snapshot = Gtk.Snapshot()
+        paintable.snapshot(snapshot, window.get_width(), window.get_height())
+        walk(snapshot.to_node())
+        if widest:
+            break
+        wait_for(lambda: False, seconds=0.05)
     return max(widest)[1] if widest else None
 
 

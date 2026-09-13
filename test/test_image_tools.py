@@ -150,7 +150,6 @@ class ImageToolsTest(MComixTest):
                 'diff': diff_fmt % args,
             })
         def info(im):
-            im = image_tools.static_image(im)
             if isinstance(im, GdkPixbuf.Pixbuf):
                 width, stride = im.get_width(), im.get_rowstride()
                 line_size = width * im.get_n_channels()

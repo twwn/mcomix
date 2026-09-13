@@ -5,6 +5,7 @@ from gi.repository import Gdk, Gio, GLib, Gtk
 from typing import TYPE_CHECKING
 
 from mcomix.preferences import prefs
+from mcomix import column_list
 from mcomix import widgets
 from mcomix import constants
 from mcomix import i18n
@@ -34,19 +35,24 @@ class _CollectionArea(Gtk.ScrolledWindow):
         self._library = library
         self.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
 
-        self._treestore = Gtk.TreeStore.new([str, int])  # (Name, ID) of collections.
-        self._treeview = Gtk.TreeView.new_with_model(self._treestore)
-        self._treeview.connect('cursor_changed', self._collection_selected)
+        # A row carries the name as it is drawn and the collection id
+        # behind it; the collections under a collection are its own
+        # children, which is what a Gtk.TreeStore held.
+        self._list = column_list.ColumnListView(tree=True)
+        self._list.add_text_column('', 'name', expand=True, markup=True)
+        self._list.set_show_column_separators(False)
+        self._list.selection.connect('selection-changed',
+                                     self._collection_selected)
         clicks = Gtk.GestureClick()
         clicks.set_button(3)
         clicks.connect('pressed', self._button_press)
-        self._treeview.add_controller(clicks)
+        self._list.add_controller(clicks)
 
         keys = Gtk.EventControllerKey()
         keys.connect('key-pressed', self._key_press)
-        self._treeview.add_controller(keys)
-        self._treeview.connect('row_activated', self._expand_or_collapse_row)
-        self._treeview.set_headers_visible(False)
+        self._list.add_controller(keys)
+        self._list.connect('activate', self._expand_or_collapse_row)
+        self._list.set_headers_visible(False)
         # Books and collections are both dragged as text saying which
         # they are: GTK4 has no target names to tell them apart by, and a
         # drop target answers for one type.  Preloading is what makes the
@@ -57,18 +63,15 @@ class _CollectionArea(Gtk.ScrolledWindow):
         self._drop_target.set_preload(True)
         self._drop_target.connect('motion', self._drag_motion)
         self._drop_target.connect('drop', self._drag_data_received)
-        self._treeview.add_controller(self._drop_target)
+        self._list.add_controller(self._drop_target)
 
         drag = Gtk.DragSource()
         drag.set_actions(Gdk.DragAction.MOVE)
         drag.connect('prepare', self._drag_prepare)
         drag.connect('drag-begin', self._drag_begin)
-        self._treeview.add_controller(drag)
+        self._list.add_controller(drag)
 
-        cellrenderer = Gtk.CellRendererText()
-        column = Gtk.TreeViewColumn(None, cellrenderer, markup=0)
-        self._treeview.append_column(column)
-        self.set_child(self._treeview)
+        self.set_child(self._list)
 
         self._popup_actions = Gio.SimpleActionGroup()
         self._collection_menu = self._create_popup_menu()
@@ -132,11 +135,8 @@ class _CollectionArea(Gtk.ScrolledWindow):
         """Return the collection ID for the currently selected collection,
         or None if no collection is selected.
         """
-        treepath, focuspath = self._treeview.get_cursor()
-        if treepath is not None:
-            return self._get_collection_at_path(treepath)
-        else:
-            return None
+        row = self._list.get_selected_row()
+        return row.collection if row is not None else None
 
     def display_collections(self) -> None:
         """Display the library collections by redrawing them from the
@@ -146,35 +146,38 @@ class _CollectionArea(Gtk.ScrolledWindow):
         corresponding new row also expanded after the call.
         """
 
-        def _recursive_add(parent_iter, supercoll):
+        def _rows_under(supercoll):
+            rows = []
             for coll in self._library.backend.get_collections_in_collection(
               supercoll):
                 name = self._library.backend.get_collection_name(coll)
-                child_iter = self._treestore.append(parent_iter,
-                    [xmlescape(name), coll])
-                _recursive_add(child_iter, coll)
+                rows.append(column_list.Row(name=xmlescape(name),
+                                            collection=coll,
+                                            children=_rows_under(coll)))
+            return rows
 
-        def _expand_and_select(treestore, path, iterator):
-            collection = treestore.get_value(iterator, 1)
-            if collection == prefs['last library collection']:
+        expanded_collections = [row.collection
+                                for row in self._list.expanded_rows()]
+        rows = [column_list.Row(
+            name='<b>%s</b>' % xmlescape(_('All books')),
+            collection=_COLLECTION_ALL, children=[])]
+        rows.extend(_rows_under(None))
+        self._list.set_rows(rows)
+
+        def _each_row(rows):
+            for row in rows:
+                yield row
+                yield from _each_row(row.children)
+
+        for row in list(_each_row(rows)):
+            if row.collection == prefs['last library collection']:
                 # Reset to trigger update of book area.
                 prefs['last library collection'] = None
-                self._treeview.expand_to_path(path)
-                self._treeview.set_cursor(path)
-            elif collection in expanded_collections:
-                self._treeview.expand_to_path(path)
-
-        def _expanded_rows_accumulator(treeview, path):
-            collection = self._get_collection_at_path(path)
-            expanded_collections.append(collection)
-
-        expanded_collections = []
-        self._treeview.map_expanded_rows(_expanded_rows_accumulator)
-        self._treestore.clear()
-        self._treestore.append(None, ['<b>%s</b>' % xmlescape(_('All books')),
-            _COLLECTION_ALL])
-        _recursive_add(None, None)
-        self._treestore.foreach(_expand_and_select)
+                self._list.expand_to(row)
+                self._list.select_row(row)
+            elif row.collection in expanded_collections:
+                self._list.expand_to(row)
+                self._list.toggle_expanded(row)
 
     def add_collection(self, *args):
         """Add a new collection to the library, through a dialog."""
@@ -234,14 +237,7 @@ class _CollectionArea(Gtk.ScrolledWindow):
             collection = self._library.collection_area.get_current_collection()
             GLib.idle_add(self._library.book_area.display_covers, collection)
 
-    def _get_collection_at_path(self, path):
-        """Return the collection ID of the collection at the (TreeView)
-        <path>.
-        """
-        iterator = self._treestore.get_iter(path)
-        return self._treestore.get_value(iterator, 1)
-
-    def _collection_selected(self, treeview):
+    def _collection_selected(self, *args):
         """Change the viewed collection (in the _BookArea) to the
         currently selected one in the sidebar, if it has been changed.
         """
@@ -329,27 +325,15 @@ class _CollectionArea(Gtk.ScrolledWindow):
     def _button_press(self, gesture, n_press, x, y) -> None:
         """Handle mouse button presses on the _CollectionArea."""
 
-        row = self._treeview.get_path_at_pos(int(x), int(y))
-        if row:
-            path, _column, _cell_x, _cell_y = row
-            collection = self._get_collection_at_path(path)
-        else:
-            collection = None
-
-        self._popup_collection_menu(collection)
+        row = self._list.row_at(x, y)
+        self._popup_collection_menu(row.collection if row is not None
+                                    else None)
 
     def _popup_menu(self) -> None:
         """ Called to open the control's popup menu via
         keyboard controls. """
 
-        model, iter = self._treeview.get_selection().get_selected()
-        if iter is not None:
-            book_path = model.get_path(iter)[0]
-            collection = self._get_collection_at_path(book_path)
-        else:
-            collection = None
-
-        self._popup_collection_menu(collection)
+        self._popup_collection_menu(self.get_current_collection())
 
     def _popup_collection_menu(self, collection):
         """ Show the library collection popup. Depending on the
@@ -379,47 +363,67 @@ class _CollectionArea(Gtk.ScrolledWindow):
             return Gdk.EVENT_STOP
         return Gdk.EVENT_PROPAGATE
 
-    def _expand_or_collapse_row(self, treeview, path, column):
+    def _expand_or_collapse_row(self, view, position):
         """Expand or collapse the activated row."""
-        if treeview.row_expanded(path):
-            treeview.collapse_row(path)
-        else:
-            treeview.expand_to_path(path)
+        row = self._list.get_row(position)
+        if row is not None:
+            self._list.toggle_expanded(row)
 
     def _drag_data_received(self, target, value, x: int, y: int) -> bool:
         """Move books dragged from the _BookArea to the target collection,
         or move some collection into another collection.
         """
-        treeview = self._treeview
         kind, _separator, payload = value.partition(':')
         self._library.set_status_message('')
-        drop_row = treeview.get_dest_row_at_pos(x, y)
-        if drop_row is None:  # Drop "after" the last row.
-            dest_path, pos = ((len(self._treestore) - 1,),
-                Gtk.TreeViewDropPosition.AFTER)
-        else:
-            dest_path, pos = drop_row
+        drop = self._drop_row_at(x, y)
+        if drop is None:
+            return False
+        dest_row, pos = drop
         src_collection = self.get_current_collection()
-        dest_collection = self._get_collection_at_path(dest_path)
+        dest_collection = dest_row.collection
         if kind == constants.LIBRARY_DRAG_COLLECTION:
-            if pos in (Gtk.TreeViewDropPosition.BEFORE, Gtk.TreeViewDropPosition.AFTER):
+            if pos != self._list.DROP_INTO:
                 dest_collection = self._library.backend.get_supercollection(
                     dest_collection)
             self._library.backend.add_collection_to_collection(
                 src_collection, dest_collection)
             self.display_collections()
         elif kind == constants.LIBRARY_DRAG_BOOKS:
-            for path_str in payload.split(','): # IconView path
-                book = self._library.book_area.get_book_at_path(int(path_str))
+            # The positions are read before any book is removed: taking
+            # one out moves every cover after it, so removing them one
+            # at a time by position took the wrong books.
+            positions = [int(position) for position in payload.split(',')]
+            books = [self._library.book_area.get_book_at_path(position)
+                     for position in positions]
+            for book in books:
+                if book is None:
+                    continue
                 self._library.backend.add_book_to_collection(book,
                     dest_collection)
                 if src_collection != _COLLECTION_ALL:
                     self._library.backend.remove_book_from_collection(book,
                         src_collection)
-                    self._library.book_area.remove_book_at_path(int(path_str))
+            if src_collection != _COLLECTION_ALL:
+                self._library.book_area.remove_books(
+                    [book for book in books if book is not None])
         else:
             return False
         return True
+
+    def _drop_row_at(self, x, y):
+        """The row a drop at (<x>, <y>) lands on, and where on it.
+
+        A Gtk.TreeView answered with the last row and "after" it for a
+        drop below every row, which is what a drop on empty space
+        below the tree means.
+        """
+        drop = self._list.drop_at(x, y)
+        if drop is not None:
+            return drop
+        rows = list(self._list.each_row())
+        if not rows:
+            return None
+        return rows[-1], self._list.DROP_AFTER
 
     def _drag_prepare(self, source, x, y):
         """Offer the collection being dragged."""
@@ -438,27 +442,27 @@ class _CollectionArea(Gtk.ScrolledWindow):
         This isn't pretty, but the details of treeviews and drag-n-drops
         are not pretty to begin with.
         """
-        treeview = self._treeview
         value = target.get_value()
         if not isinstance(value, str):
             # Not read yet, or not ours at all.
             return 0
         kind, _separator, _payload = value.partition(':')
-        drop_row = treeview.get_dest_row_at_pos(x, y)
+        drop = self._drop_row_at(x, y)
         src_collection = self.get_current_collection()
         if kind == constants.LIBRARY_DRAG_COLLECTION:  # Moving collection.
-            model, src_iter = treeview.get_selection().get_selected()
-            if drop_row is None:  # Drop "after" the last row.
-                dest_path, pos = (len(model) - 1,), Gtk.TreeViewDropPosition.AFTER
-            else:
-                dest_path, pos = drop_row
-            dest_iter = model.get_iter(dest_path)
-            if model.is_ancestor(src_iter, dest_iter):  # No cycles!
+            if drop is None:
                 self._set_acceptable_drop(False)
                 self._library.set_status_message('')
                 return 0
-            dest_collection = self._get_collection_at_path(dest_path)
-            if pos in (Gtk.TreeViewDropPosition.BEFORE, Gtk.TreeViewDropPosition.AFTER):
+            dest_row, pos = drop
+            src_row = self._list.get_selected_row()
+            if src_row is not None and self._list.is_above(src_row, dest_row):
+                # No cycles!
+                self._set_acceptable_drop(False)
+                self._library.set_status_message('')
+                return 0
+            dest_collection = dest_row.collection
+            if pos != self._list.DROP_INTO:
                 dest_collection = self._library.backend.get_supercollection(
                     dest_collection)
             if (_COLLECTION_ALL in (src_collection, dest_collection) or
@@ -477,16 +481,13 @@ class _CollectionArea(Gtk.ScrolledWindow):
             message = (_("Put the collection '%(subcollection)s' in the collection '%(supercollection)s'.") %
                        {'subcollection': src_name, 'supercollection': dest_name})
         else:  # Moving book(s).
-            if drop_row is None:
+            if drop is None or drop[1] != self._list.DROP_INTO:
+                # Books go in a collection, not between two of them.
                 self._set_acceptable_drop(False)
                 self._library.set_status_message('')
                 return 0
-            dest_path, pos = drop_row
-            if pos in (Gtk.TreeViewDropPosition.BEFORE, Gtk.TreeViewDropPosition.AFTER):
-                self._set_acceptable_drop(False)
-                self._library.set_status_message('')
-                return 0
-            dest_collection = self._get_collection_at_path(dest_path)
+            dest_row, pos = drop
+            dest_collection = dest_row.collection
             if src_collection == dest_collection or dest_collection == _COLLECTION_ALL:
                 self._set_acceptable_drop(False)
                 self._library.set_status_message('')
@@ -517,11 +518,13 @@ class _CollectionArea(Gtk.ScrolledWindow):
         top left corner so that one can actually see where one is dropping,
         which unfortunately isn't the default case.
         """
-        path = self._treeview.get_cursor()[0]
-        if path is None:
+        row = self._list.get_selected_row()
+        if row is None:
             return
-        # create_row_drag_icon() answers with a paintable in GTK4, which
-        # is what a drag icon is; there is no surface to copy out of.
-        source.set_icon(self._treeview.create_row_drag_icon(path), -5, -5)
+        # A picture of the row as it is drawn, which is what
+        # create_row_drag_icon() answered with.
+        paintable = self._list.row_paintable(row)
+        if paintable is not None:
+            source.set_icon(paintable, -5, -5)
 
 # vim: expandtab:sw=4:ts=4

@@ -87,13 +87,15 @@ class PageImage(Gtk.Picture):
         size and every frame is drawn into it.
         """
         self._stop()
-        if image_tools.is_animation(pixbuf):
-            frame = pixbuf.get_static_image()
+        path = image_tools.animation_path(pixbuf)
+        if path is not None:
+            # <pixbuf> is the first frame; the rest are read from the
+            # file it came out of.
             if size is None:
-                size = (frame.get_width(), frame.get_height())
+                size = (pixbuf.get_width(), pixbuf.get_height())
             width, height = (max(1, int(round(side))) for side in size)
             self._animation = _AnimationPaintable(width, height)
-            self._animation.set_texture(image_tools.pixbuf_to_texture(frame))
+            self._animation.set_texture(image_tools.pixbuf_to_texture(pixbuf))
             # Gtk.Image.set_from_animation() is gone, and nothing GTK4
             # ships animates a pixbuf.  The frames are advanced from a
             # thread of its own rather than from a tick callback: a tick
@@ -102,8 +104,7 @@ class PageImage(Gtk.Picture):
             # not enough to keep the frame clock going - it ran at one
             # frame a second.
             self.set_paintable(self._animation)
-            if not pixbuf.is_static_image():
-                self._start(pixbuf)
+            self._start(path)
             return
         self.set_paintable(image_tools.pixbuf_to_texture(pixbuf))
 
@@ -121,7 +122,7 @@ class PageImage(Gtk.Picture):
             self._worker = None
         self._animation = None
 
-    def _start(self, pixbuf) -> None:
+    def _start(self, path) -> None:
         """Decode the frames somewhere other than the main thread.
 
         Decoding one frame of a page-sized animation costs more than the
@@ -130,7 +131,7 @@ class PageImage(Gtk.Picture):
         do.  A thread of its own decodes and the main thread is left
         with nothing but handing the finished texture to the paintable.
         """
-        frames = animation.frames(pixbuf, getattr(pixbuf, 'path', None))
+        frames = animation.frames(path)
         self._stopping = threading.Event()
         self._worker = threading.Thread(target=self._decode,
                                         args=(frames, self._animation,

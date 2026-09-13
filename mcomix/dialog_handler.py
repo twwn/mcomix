@@ -7,6 +7,8 @@ from typing import Any
 
 from gi.repository import Gio, Gtk
 
+from mcomix.dialog import Dialog
+
 from mcomix import about_dialog
 from mcomix import comment_dialog
 from mcomix import properties_dialog
@@ -37,10 +39,10 @@ def open_dialog(action: Gio.SimpleAction,
 
     dialog = _DIALOG_CLASSES[name_of_dialog](window)
     _open_dialogs[name_of_dialog] = dialog
-    # Gtk.AboutDialog is a plain Gtk.Window in GTK4 rather than a
-    # Gtk.Dialog, so there is no response to wait for; every one of
-    # these closes for good either way.
-    if isinstance(dialog, Gtk.Dialog):
+    # Gtk.AboutDialog is a plain Gtk.Window rather than one of MComix'
+    # dialogs, so there is no response to wait for; every one of these
+    # closes for good either way.
+    if isinstance(dialog, Dialog):
         dialog.connect('response', _close_dialog, name_of_dialog)
     else:
         dialog.connect('close-request', _close_dialog, name_of_dialog)

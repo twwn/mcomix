@@ -1,9 +1,13 @@
 """animation.py - The frames of an animated page, one at a time."""
 
+from gi.repository import GdkPixbuf, Gio, GLib
+
 from PIL import Image
 
 from mcomix import image_tools
 from mcomix import log
+
+from typing import Any
 
 
 #: However short a frame says it is, no faster than this.
@@ -71,17 +75,59 @@ class _PillowFrames(Frames):
         return texture, self._image.info.get('duration') or DEFAULT_DELAY
 
 
+class _GlycinFrames(Frames):
+
+    """Frames decoded by glycin, which is what gdk-pixbuf hands to.
+
+    GdkPixbuf.PixbufAnimation and its iterator, which this replaces, are
+    deprecated as of GTK 4.10 with nothing in their place.  glycin is
+    the decoder underneath them, and it hands out a Gdk.Texture rather
+    than a pixbuf to convert, so nothing is copied on the way.
+
+    Unlike the iterator, which could only be asked for the frame that
+    belongs on screen at this instant, this is a sequence: the next
+    frame can be decoded while the current one is still up.  It runs out
+    at the end of the file, and starts again where the animation loops.
+    """
+
+    ahead = True
+
+    def __init__(self, path: str) -> None:
+        self._Gly, self._GlyGtk4 = image_tools.glycin()
+        self._file = Gio.File.new_for_path(path)
+        self._image = self._load()
+
+    def _load(self) -> Any:
+        return self._Gly.Loader.new(self._file).load()
+
+    def next(self):
+        try:
+            frame = self._image.next_frame()
+        except GLib.Error:
+            # There are no more; a page that moves goes round again,
+            # which is what the iterator did on its own.
+            self._image = self._load()
+            frame = self._image.next_frame()
+        # glycin counts a frame in microseconds.
+        return self._GlyGtk4.frame_get_texture(frame), frame.get_delay() // 1000
+
+
 class _PixbufFrames(Frames):
 
     """Frames from gdk-pixbuf's own iterator.
 
+    The last resort: GdkPixbuf.PixbufAnimation is deprecated as of GTK
+    4.10, and this is here for a tree that has no glycin - Windows,
+    where GTK ships gdk-pixbuf's loaders and nothing else - and a file
+    Pillow will not open.
+
     The one thing it can be asked for is the frame that belongs on
     screen at this instant, so a frame cannot be decoded ahead of time
-    and a slow decode silently drops the frames it ran past.  Whatever
-    Pillow will not open is still better shown late than not at all.
+    and a slow decode silently drops the frames it ran past.
     """
 
-    def __init__(self, animation):
+    def __init__(self, path: str) -> None:
+        animation = GdkPixbuf.PixbufAnimation.new_from_file(path)
         self._iterator = animation.get_iter(None)
         self._started = False
 
@@ -97,14 +143,20 @@ class _PixbufFrames(Frames):
             self._iterator.get_delay_time()
 
 
-def frames(animation, path=None):
-    """Return the Frames of <animation>, which was loaded from <path>."""
-    if path is not None:
+#: The decoders frames() tries, in order.
+_DECODERS = (_PillowFrames, _GlycinFrames, _PixbufFrames)
+
+
+def frames(path: str) -> Frames:
+    """Return the Frames of the animation in <path>."""
+    last_error = None
+    for decoder in _DECODERS:
         try:
-            return _PillowFrames(path)
+            return decoder(path)
         except Exception as error:
-            log.debug('Pillow will not animate %s (%s), '
-                      'falling back on gdk-pixbuf', path, error)
-    return _PixbufFrames(animation)
+            last_error = error
+            log.debug('%s will not animate %s (%s)',
+                      decoder.__name__, path, error)
+    raise last_error or ValueError('%s holds no animation' % path)
 
 # vim: expandtab:sw=4:ts=4

@@ -43,7 +43,10 @@ class _LibraryDialog(Gtk.Window):
 
         self.filter_string = None
         self._file_handler = file_handler
-        self._statusbar = Gtk.Statusbar()
+        # Gtk.Statusbar is deprecated as of GTK 4.10; the one message this
+        # ever shows is a label's worth.
+        self._statusbar = Gtk.Label()
+        self._statusbar.set_xalign(0)
         self.backend = library_backend.LibraryBackend()
         self.book_area = library_book_area._BookArea(self)
         self.control_area = library_control_area._ControlArea(self)
@@ -127,8 +130,7 @@ class _LibraryDialog(Gtk.Window):
         """Set a specific message on the statusbar, replacing whatever was
         there earlier.
         """
-        self._statusbar.pop(0)
-        self._statusbar.push(0,
+        self._statusbar.set_text(
             ' ' * status.Statusbar.SPACING + '%s' % i18n.to_unicode(message))
 
     def close(self, *args):

@@ -3,12 +3,13 @@
 import os
 from gi.repository import Gtk
 
+from mcomix.dialog import Dialog
 from mcomix import i18n
 from mcomix import widgets
 from mcomix.i18n import _
 
 
-class _CommentsDialog(Gtk.Dialog):
+class _CommentsDialog(Dialog):
 
     def __init__(self, window):
         super(_CommentsDialog, self).__init__(

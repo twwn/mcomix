@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
-""" Configuration tree view for the preferences dialog to edit keybindings. """
+""" Configuration list for the preferences dialog to edit keybindings. """
 
 from gi.repository import Gtk
 
+from mcomix import column_list
 from mcomix import keybindings
 from mcomix.i18n import _
 from mcomix import widgets
@@ -25,127 +26,116 @@ class KeybindingEditorWindow(Gtk.ScrolledWindow):
         ])
         accel_column_num = self.accel_column_num = max([3, accel_column_num])
 
-        # Human name, action name, true value, shortcut 1, shortcut 2, ...
-        model = [str, str, 'gboolean']
-        model.extend( [str, ] * accel_column_num)
+        # The actions of a group sit under a row naming it, which is
+        # what a Gtk.TreeStore held and a Gtk.TreeListModel holds now.
+        self._list = column_list.ColumnListView(tree=True)
+        self._name_col = self._list.add_text_column(_("Name"), 'title',
+                                                    expand=True)
+        for index in range(0, self.accel_column_num):
+            self._list.add_accel_column(
+                _("Key %d") % (index + 1), self._key_of(index),
+                self._rebound(index))
 
-        treestore = self.treestore = Gtk.TreeStore(*model)
         self.refresh_model()
+        self._list.expand_all()
 
-        treeview = Gtk.TreeView(model=treestore)
+        self.set_child(self._list)
 
-        tvcol1 = Gtk.TreeViewColumn(_("Name"))
-        treeview.append_column(tvcol1)
-        cell1 = Gtk.CellRendererText()
-        tvcol1.pack_start(cell1, True)
-        tvcol1.set_attributes(cell1, text=0, editable=2)
-
-        for idx in range(0, self.accel_column_num):
-            tvc = Gtk.TreeViewColumn(_("Key %d") % (idx +1))
-            treeview.append_column(tvc)
-            accel_cell = Gtk.CellRendererAccel()
-            accel_cell.connect("accel-edited", self.get_on_accel_edited(idx))
-            accel_cell.connect("accel-cleared", self.get_on_accel_cleared(idx))
-            tvc.pack_start(accel_cell, True)
-            tvc.add_attribute(accel_cell, "text", 3 + idx)
-            tvc.add_attribute(accel_cell, "editable", 2)
-
-        # Allow sorting on the column
-        tvcol1.set_sort_column_id(0)
-
-        self.set_child(treeview)
+    @staticmethod
+    def _key_of(index):
+        """The attribute a row keeps its <index>th shortcut under."""
+        return 'key%d' % index
 
     def refresh_model(self) -> None:
         """ Initializes the model from data provided by the keybinding
         manager. """
-        self.treestore.clear()
         section_order = list(set(d['group']
              for d in list(keybindings.BINDING_INFO.values())))
         section_order.sort()
-        section_parent_map = {}
+        sections = {}
+        rows = []
         for section_name in section_order:
-            row = [section_name, None, False]
-            row.extend( [None,] * self.accel_column_num)
-            section_parent_map[section_name] =  self.treestore.append(
-                None, row
-            )
+            # A group heading is a row with no action behind it, which
+            # is what its empty accelerators and its name say.
+            section = column_list.Row(title=section_name, action=None,
+                                      children=[])
+            sections[section_name] = section
+            rows.append(section)
 
-        action_treeiter_map = self.action_treeiter_map = {}
+        action_rows = self.action_rows = {}
         # Sort actions by action name
         actions = sorted(list(keybindings.BINDING_INFO.items()),
                 key=lambda item: item[1]['title'])
         for action_name, action_data in actions:
-            title = action_data['title']
-            group_name = action_data['group']
             old_bindings = self.keymanager.get_bindings_for_action(action_name)
-            acc_list =  ["", ] * self.accel_column_num
-            for idx in range(0, self.accel_column_num):
-                if len(old_bindings) > idx:
-                    acc_list[idx] = Gtk.accelerator_name(*old_bindings[idx])
+            row = column_list.Row(title=action_data['title'],
+                                  action=action_name)
+            for index in range(0, self.accel_column_num):
+                setattr(row, self._key_of(index),
+                        Gtk.accelerator_name(*old_bindings[index])
+                        if len(old_bindings) > index else '')
+            sections[action_data['group']].children.append(row)
+            action_rows[action_name] = row
 
-            row = [title, action_name, True]
-            row.extend(acc_list)
-            treeiter = self.treestore.append(
-                section_parent_map[group_name],
-                row
-            )
-            action_treeiter_map[action_name] = treeiter
+        self._list.set_rows(rows)
 
-    def get_on_accel_edited(self, column):
-        def on_accel_edited(renderer, path, accel_key, accel_mods, hardware_keycode):
-            iter = self.treestore.get_iter(path)
-            col = column + 3  # accel cells start from 3 position
-            old_accel = self.treestore.get(iter, col)[0]
-            new_accel = Gtk.accelerator_name(accel_key, accel_mods)
-            self.treestore.set_value(iter, col, new_accel)
-            action_name = self.treestore.get_value(iter, 1)
-            affected_action = self.keymanager.edit_accel(action_name, new_accel, old_accel)
+    def _rebound(self, column):
+        """Answer a rebinding of the <column>th shortcut of a row."""
+        def rebound(row, accelerator):
+            if row.action is None:
+                # A group heading has no shortcut to rebind.
+                return
+            if accelerator is None:
+                self._clear_accel(row, column)
+            else:
+                self._edit_accel(row, column, accelerator)
+            row.changed()
+        return rebound
 
-            # Find affected row and cell
-            if affected_action == action_name:
-                for idx in range(0, self.accel_column_num):
-                    if idx != column and self.treestore.get(iter, idx + 3)[0] == new_accel:
-                        self.treestore.set_value(iter, idx + 3, "")
-            elif affected_action is not None:
-                titer = self.action_treeiter_map[affected_action]
-                for idx in range(0, self.accel_column_num):
-                    if self.treestore.get(titer, idx + 3)[0] == new_accel:
-                        self.treestore.set_value(titer, idx + 3, "")
+    def _edit_accel(self, row, column, new_accel) -> None:
+        """Bind <new_accel> as the <column>th shortcut of <row>."""
+        key = self._key_of(column)
+        old_accel = getattr(row, key)
+        setattr(row, key, new_accel)
+        affected_action = self.keymanager.edit_accel(row.action, new_accel,
+                                                     old_accel)
 
-            # updating the accelerator shown against the action in the menu
-            if self.keymanager.get_bindings_for_action(action_name)[0] == (accel_key, accel_mods):
-                self._show_accelerator(action_name, accel_key, accel_mods)
+        # A shortcut answers to one action only, so wherever it was
+        # before, it is not there any more.
+        if affected_action == row.action:
+            self._take_accel_from(row, new_accel, except_column=column)
+        elif affected_action is not None:
+            affected = self.action_rows[affected_action]
+            self._take_accel_from(affected, new_accel)
+            affected.changed()
 
-        return on_accel_edited
+        # updating the accelerator shown against the action in the menu
+        bindings = self.keymanager.get_bindings_for_action(row.action)
+        if bindings and Gtk.accelerator_name(*bindings[0]) == new_accel:
+            self.keymanager.announce_accelerator(row.action, new_accel)
 
-    def _show_accelerator(self, action_name, key, mods) -> None:
-        """Show <key>+<mods> against <action_name> in the menus.
+    def _clear_accel(self, row, column) -> None:
+        """Unbind the <column>th shortcut of <row>."""
+        key = self._key_of(column)
+        accel = getattr(row, key)
+        setattr(row, key, '')
+        if not accel:
+            return
 
-        Gtk.AccelMap, which the labels used to read this from, is not in
-        GTK4; a menu model item carries its accelerator itself.
-        """
+        self.keymanager.clear_accel(row.action, accel)
+
+        # updating the accelerator shown against the action in the menu
+        bindings = self.keymanager.get_bindings_for_action(row.action)
         self.keymanager.announce_accelerator(
-            action_name, Gtk.accelerator_name(key, mods) if key else '')
+            row.action, Gtk.accelerator_name(*bindings[0]) if bindings else '')
 
-    def get_on_accel_cleared(self, column):
-        def on_accel_cleared(renderer, path, *args):
-            iter = self.treestore.get_iter(path)
-            col = column + 3
-            accel = self.treestore.get(iter, col)[0]
-            action_name = self.treestore.get_value(iter, 1)
-            if accel != "":
-                self.keymanager.clear_accel(action_name, accel)
-
-                # updating the accelerator shown against the action in the menu
-                bindings = self.keymanager.get_bindings_for_action(action_name)
-                if len(bindings) == 0:
-                    self._show_accelerator(action_name, 0, 0)
-                else:
-                    self._show_accelerator(action_name, *bindings[0])
-
-            self.treestore.set_value(iter, col, "")
-        return on_accel_cleared
-
-
+    def _take_accel_from(self, row, accelerator, except_column=None) -> None:
+        """Clear <accelerator> off <row>, wherever it is shown on it."""
+        for index in range(0, self.accel_column_num):
+            if index == except_column:
+                continue
+            key = self._key_of(index)
+            if getattr(row, key) == accelerator:
+                setattr(row, key, '')
 
 # vim: expandtab:sw=4:ts=4

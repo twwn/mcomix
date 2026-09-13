@@ -5,7 +5,7 @@ import os
 import shutil
 import threading
 
-from gi.repository import Gdk, Gtk, GLib
+from gi.repository import Gdk, Gio, Gtk, GLib
 
 from mcomix import canvas
 from mcomix import constants
@@ -29,7 +29,6 @@ from mcomix import pageselect
 from mcomix import osd
 from mcomix import page_image
 from mcomix import keybindings
-from mcomix import widgets
 from mcomix import zoom
 from mcomix import bookmark_backend
 from mcomix import message_dialog
@@ -43,7 +42,6 @@ from mcomix.transform import Matrix, Transform
 from mcomix.i18n import _
 
 from collections.abc import Sequence
-from typing import Any
 
 
 
@@ -986,41 +984,49 @@ class MainWindow(Gtk.Window):
                     file_name, number=attempt)
                 attempt += 1
 
-            # GTK4 takes the title, the parent and the buttons the way
-            # every other window does: as properties, and by adding them.
-            save_dialog = Gtk.FileChooserDialog(
-                title=_('Save page as'), transient_for=self,
-                action=Gtk.FileChooserAction.SAVE)
-            save_dialog.add_buttons(_('_OK'), Gtk.ResponseType.ACCEPT,
-                                    _('_Cancel'), Gtk.ResponseType.REJECT)
-            save_dialog.set_create_folders(True)
-            save_dialog.set_current_name(suggest_name)
-            widgets.set_chooser_folder(save_dialog, target_dir)
+            # Gtk.FileChooserDialog is deprecated as of GTK 4.10.  A
+            # Gtk.FileDialog is not a widget: it is asked to save, and
+            # answers in a callback with the file that was picked, or
+            # raises if the user dismissed it.
+            save_dialog = Gtk.FileDialog(title=_('Save page as'),
+                                         modal=True,
+                                         initial_name=suggest_name)
+            save_dialog.set_initial_folder(Gio.File.new_for_path(target_dir))
 
             # Both pages of a double page get a dialog of their own, and
             # they stand at the same time: each answer needs the page it
             # was asked about, not whichever one the loop ended on.
-            def save_responded(dialog: Any, response: int,
+            def save_responded(dialog: Gtk.FileDialog, result: Gio.AsyncResult,
                                file_path: str = file_path) -> None:
-                if response == Gtk.ResponseType.ACCEPT:
-                    chosen = dialog.get_file()
-                    target = chosen.get_path() if chosen else None
-                    if target:
-                        target = i18n.to_unicode(target)
-                        try:
-                            shutil.copy2(file_path, target)
-                        except Exception as e:
-                            log.warning(e)
+                try:
+                    chosen = dialog.save_finish(result)
+                except GLib.Error:
+                    # The only thing a save chooser fails with is the
+                    # user closing it, which is not worth logging.
+                    return
+                target = chosen.get_path() if chosen else None
+                if target:
+                    self._save_page_to(file_path, target)
 
-                    prefs['path of last saved in filechooser'] = \
-                        widgets.chooser_folder(dialog) \
-                        if prefs['store last saved in directory'] \
-                        else constants.HOME_DIR
+            save_dialog.save(self, None, save_responded)
 
-                dialog.destroy()
+    def _save_page_to(self, file_path: str, target: str) -> None:
+        """Copy the page at <file_path> to <target>.
 
-            save_dialog.connect('response', save_responded)
-            save_dialog.set_visible(True)
+        Where it went is where the next save starts from, which is not
+        the folder the chooser opened in: the user may have walked out
+        of it.
+        """
+        target = i18n.to_unicode(target)
+        try:
+            shutil.copy2(file_path, target)
+        except Exception as e:
+            log.warning(e)
+
+        prefs['path of last saved in filechooser'] = \
+            os.path.dirname(target) \
+            if prefs['store last saved in directory'] \
+            else constants.HOME_DIR
 
     def delete(self, *args):
         """ The currently opened file/archive will be deleted after showing

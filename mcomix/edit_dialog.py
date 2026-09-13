@@ -6,6 +6,7 @@ from gi.repository import Gdk, GLib, Gtk
 import re
 
 from mcomix.preferences import prefs
+from mcomix.dialog import Dialog
 from mcomix import archive_packer
 from mcomix import file_chooser_simple_dialog
 from mcomix import image_tools
@@ -29,7 +30,7 @@ def _fit_on_screen(width, height):
     return (min(geometry.width - 50, width), min(geometry.height - 50, height))
 
 
-class _EditArchiveDialog(Gtk.Dialog):
+class _EditArchiveDialog(Dialog):
 
     """The _EditArchiveDialog lets users edit archives (or directories) by
     reordering images and removing and adding images or comment files. The
@@ -206,14 +207,7 @@ class _EditArchiveDialog(Gtk.Dialog):
 
             old_image_array = self._window.imagehandler._image_files
 
-            treeiter = self._image_area._liststore.get_iter_first()
-
-            new_image_array = []
-
-            while treeiter is not None:
-                path = self._image_area._liststore.get_value(treeiter, 2)
-                new_image_array.append(path)
-                treeiter = self._image_area._liststore.iter_next(treeiter)
+            new_image_array = self._image_area.get_file_listing()
 
             new_positions = []
 
@@ -242,7 +236,7 @@ class _EditArchiveDialog(Gtk.Dialog):
 
     def destroy(self) -> None:
         self._image_area.cleanup()
-        Gtk.Dialog.destroy(self)
+        Dialog.destroy(self)
 
 def open_dialog(action, window):
     global _dialog

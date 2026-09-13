@@ -2,6 +2,7 @@
 
 import os
 from gi.repository import Gio, Gdk, Gtk
+from mcomix import column_list
 from mcomix import widgets
 from mcomix import tools
 from mcomix.i18n import _
@@ -13,7 +14,7 @@ class _CommentArea(Gtk.Box):
 
     """The area used for displaying and handling non-image files."""
 
-    def __init__(self, edit_dialog):
+    def __init__(self, edit_dialog: Any) -> None:
         super().__init__(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         self._edit_dialog = edit_dialog
 
@@ -28,26 +29,20 @@ class _CommentArea(Gtk.Box):
         info.set_wrap(True)
         widgets.pack(self, info, False, False, 10)
 
-        # The ListStore layout is (basename, size, full path).
-        self._liststore = Gtk.ListStore(str, str, str)
-        self._treeview = Gtk.TreeView(model=self._liststore)
+        # A row carries the basename, the size as it is written out,
+        # and the full path the archive is built from.
+        self._list = column_list.ColumnListView()
+        self._list.add_text_column(_('Name'), 'name', expand=True)
+        self._list.add_text_column(_('Size'), 'size')
         clicks = Gtk.GestureClick()
         clicks.set_button(3)
         clicks.connect('pressed', self._button_press)
-        self._treeview.add_controller(clicks)
+        self._list.add_controller(clicks)
 
         keys = Gtk.EventControllerKey()
         keys.connect('key-pressed', self._key_press)
-        self._treeview.add_controller(keys)
-
-        cellrenderer = Gtk.CellRendererText()
-        column = Gtk.TreeViewColumn(_('Name'), cellrenderer, text=0)
-        column.set_expand(True)
-        self._treeview.append_column(column)
-
-        column = Gtk.TreeViewColumn(_('Size'), cellrenderer, text=1)
-        self._treeview.append_column(column)
-        scrolled.set_child(self._treeview)
+        self._list.add_controller(keys)
+        scrolled.set_child(self._list)
 
         self._popup_menu = self._create_popup_menu()
 
@@ -69,39 +64,36 @@ class _CommentArea(Gtk.Box):
         for num in range(1,
           self._edit_dialog.file_handler.get_number_of_comments() + 1):
 
-            path = self._edit_dialog.file_handler.get_comment_name(num)
-            size = tools.format_byte_size(os.stat(path).st_size)
-            self._liststore.append([os.path.basename(path), size, path])
+            self.add_extra_file(
+                self._edit_dialog.file_handler.get_comment_name(num))
 
-    def add_extra_file(self, path):
+    def add_extra_file(self, path: str) -> None:
         """Add an extra imported file (at <path>) to the list."""
-        size = tools.format_byte_size(os.stat(path).st_size)
-        self._liststore.append([os.path.basename(path), size, path])
+        self._list.append_row(column_list.Row(
+            name=os.path.basename(path),
+            size=tools.format_byte_size(os.stat(path).st_size),
+            path=path))
 
-    def get_file_listing(self):
+    def get_file_listing(self) -> list[str]:
         """Return a list with the full paths to all the files, in order."""
-        file_list = []
+        return [row.path for row in self._list.each_row()]
 
-        for row in self._liststore:
-            file_list.append(row[2])
-
-        return file_list
-
-    def _remove_file(self, *args):
+    def _remove_file(self, *args: Any) -> None:
         """Remove the currently selected file from the list."""
-        iterator = self._treeview.get_selection().get_selected()[1]
+        row = self._list.get_selected_row()
+        if row is not None:
+            self._list.remove_row(row)
 
-        if iterator is not None:
-            self._liststore.remove(iterator)
-
-    def _button_press(self, gesture, n_press, x, y) -> None:
+    def _button_press(self, gesture: Gtk.GestureClick, n_press: int,
+                      x: float, y: float) -> None:
         """Handle mouse button presses on the area."""
-        if self._treeview.get_path_at_pos(int(x), int(y)) is None:
+        if self._list.row_at(x, y) is None:
             return
 
-        widgets.popup_at(self._popup_menu, self._treeview, x, y)
+        widgets.popup_at(self._popup_menu, self._list, x, y)
 
-    def _key_press(self, controller, keyval, keycode, state):
+    def _key_press(self, controller: Gtk.EventControllerKey, keyval: int,
+                   keycode: int, state: Gdk.ModifierType) -> bool:
         """Handle key presses on the area."""
         if keyval == Gdk.KEY_Delete:
             self._remove_file()

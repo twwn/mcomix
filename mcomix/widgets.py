@@ -5,6 +5,55 @@ from gi.repository import Gdk, Gio, Gtk
 from typing import Any
 
 
+class Chooser(Gtk.DropDown):
+
+    """One of a fixed set of values, picked from a dropdown.
+
+    This is what a Gtk.ComboBox over a two-column Gtk.ListStore was,
+    both of which GTK deprecated in 4.10 along with the
+    Gtk.CellRendererText that drew the labels.  The store held the label
+    in one column and the value in another, and every caller had to walk
+    a Gtk.TreeIter to read the value back; the labels are a
+    Gtk.StringList here and the values a plain Python list beside it.
+    """
+
+    __gtype_name__ = 'MComixChooser'
+
+    def __init__(self, options: Any, chosen: Any = None) -> None:
+        """Offer <options>, pairs of label and value, with <chosen> set."""
+        labels = Gtk.StringList()
+        self._values = []
+        for label, value in options:
+            labels.append(label)
+            self._values.append(value)
+        super(Chooser, self).__init__(model=labels)
+        self.set_value(chosen)
+
+    def get_value(self) -> Any:
+        """The value that is picked, or None if there are no options."""
+        position = self.get_selected()
+        if position == Gtk.INVALID_LIST_POSITION:
+            return None
+        return self._values[position]
+
+    def set_value(self, value: Any) -> None:
+        """Pick <value>.
+
+        A Gtk.DropDown always shows one of its options, where a
+        Gtk.ComboBox could show none of them, so a value that is not on
+        offer leaves the first option showing rather than an empty box -
+        and the preference it came from is left alone until the user
+        picks something.
+        """
+        if value in self._values:
+            self.set_selected(self._values.index(value))
+
+    def connect_changed(self, changed: Any) -> None:
+        """Call <changed> with this chooser whenever the pick changes."""
+        self.connect('notify::selected',
+                     lambda widget, _param: changed(widget))
+
+
 def pack(box: Any, child: Any, expand: bool = False, fill: bool = True,
          padding: int = 0, end: bool = False) -> None:
     """Add <child> to <box>, the way Gtk.Box.pack_start/pack_end did.

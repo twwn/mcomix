@@ -3,6 +3,7 @@
 from gi.repository import Gtk
 from . import histogram
 
+from mcomix.dialog import Dialog
 from mcomix import widgets
 from mcomix.preferences import prefs
 from mcomix import image_tools
@@ -10,7 +11,7 @@ from mcomix.i18n import _
 
 _dialog = None
 
-class _EnhanceImageDialog(Gtk.Dialog):
+class _EnhanceImageDialog(Dialog):
 
     """A Gtk.Dialog which allows modification of the values belonging to
     an ImageEnhancer.
@@ -130,7 +131,6 @@ class _EnhanceImageDialog(Gtk.Dialog):
 
     def draw_histogram(self, pixbuf):
         """Draw a histogram representing <pixbuf> in the dialog."""
-        pixbuf = image_tools.static_image(pixbuf)
         histogram_pixbuf = histogram.draw_histogram(pixbuf, text=False)
         self._hist_image.set_paintable(
             image_tools.pixbuf_to_texture(histogram_pixbuf))

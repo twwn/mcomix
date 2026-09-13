@@ -11,6 +11,7 @@ except ImportError:
     # Running on non-Unix machine.
     _has_pwd = False
 
+from mcomix.dialog import Dialog
 from mcomix import i18n
 from mcomix import log
 from mcomix import strings
@@ -19,7 +20,7 @@ from mcomix import widgets
 from mcomix import tools
 from mcomix.i18n import _
 
-class _PropertiesDialog(Gtk.Dialog):
+class _PropertiesDialog(Dialog):
 
     def __init__(self, window):
 

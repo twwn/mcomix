@@ -24,7 +24,7 @@ class Clipboard(object):
         self._clipboard.set_content(Gdk.ContentProvider.new_union([
             Gdk.ContentProvider.new_for_value(text),
             Gdk.ContentProvider.new_for_value(
-                image_tools.pixbuf_to_texture(image_tools.static_image(pixbuf))),
+                image_tools.pixbuf_to_texture(pixbuf)),
         ]))
 
     def copy_page(self, *args):

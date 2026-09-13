@@ -3,9 +3,10 @@
 """preferences_dialog.py - Preferences dialog."""
 
 import operator
-from gi.repository import Gdk, GdkPixbuf, Gtk, GObject
+from gi.repository import Gdk, GdkPixbuf, Gtk
 
 from mcomix.preferences import prefs
+from mcomix.dialog import Dialog
 from mcomix import preferences_page
 from mcomix import widgets
 from mcomix import constants
@@ -36,7 +37,7 @@ def _sort_row(first, second):
     return row
 
 
-class _PreferencesDialog(Gtk.Dialog):
+class _PreferencesDialog(Dialog):
 
     """The preferences dialog where most (but not all) settings that are
     saved between sessions are presented to the user.
@@ -470,24 +471,17 @@ class _PreferencesDialog(Gtk.Dialog):
 
     def _colour_scheme_changed_cb(self, combobox, *args):
         """ Called whenever MComix is told to paint itself differently. """
-        model_index = combobox.get_active()
-        if model_index > -1:
-            iter = combobox.get_model().iter_nth_child(None, model_index)
-            prefs['colour scheme'] = combobox.get_model().get_value(iter, 1)
-            theme.apply_colour_scheme()
-            # The page and the thumbnails follow the scheme as well, and
-            # they are painted from a colour rather than from a style.
-            self._window.set_bg_colour(prefs['bg colour'])
-            self._window.thumbnailsidebar.change_thumbnail_background_color(
-                prefs['thumb bg colour'])
+        prefs['colour scheme'] = combobox.get_value()
+        theme.apply_colour_scheme()
+        # The page and the thumbnails follow the scheme as well, and
+        # they are painted from a colour rather than from a style.
+        self._window.set_bg_colour(prefs['bg colour'])
+        self._window.thumbnailsidebar.change_thumbnail_background_color(
+            prefs['thumb bg colour'])
 
     def _language_changed_cb(self, combobox, *args):
         """ Called whenever the language was changed. """
-        model_index = combobox.get_active()
-        if model_index > -1:
-            iter = combobox.get_model().iter_nth_child(None, model_index)
-            text, lang_code = combobox.get_model().get(iter, 0, 1)
-            prefs['language'] = lang_code
+        prefs['language'] = combobox.get_value()
 
     def _create_doublepage_as_one_control(self):
         """ Creates the ComboBox control for selecting virtual double page options. """
@@ -509,11 +503,9 @@ class _PreferencesDialog(Gtk.Dialog):
 
     def _double_page_changed_cb(self, combobox, *args):
         """ Called when a new option was selected for the virtual double page option. """
-        iter = combobox.get_active_iter()
-        if combobox.get_model().iter_is_valid(iter):
-            value = combobox.get_model().get_value(iter, 1)
-            prefs['virtual double page for fitting images'] = value
-            self._window.draw_image()
+        value = combobox.get_value()
+        prefs['virtual double page for fitting images'] = value
+        self._window.draw_image()
 
     def _create_double_page_autoresize_control(self):
         """ Creates the ComboBox control for selecting double page autoresize options. """
@@ -533,11 +525,9 @@ class _PreferencesDialog(Gtk.Dialog):
 
     def _double_page_autoresize_changed_cb(self, combobox, *args):
         """ Called when a new option was selected for the double page autoresize option. """
-        iter = combobox.get_active_iter()
-        if combobox.get_model().iter_is_valid(iter):
-            value = combobox.get_model().get_value(iter, 1)
-            prefs['double page autoresize'] = value
-            self._window.draw_image()
+        value = combobox.get_value()
+        prefs['double page autoresize'] = value
+        self._window.draw_image()
 
     def _create_sort_by_control(self):
         """ Creates the ComboBox control for selecting file sort by options. """
@@ -570,21 +560,17 @@ class _PreferencesDialog(Gtk.Dialog):
 
     def _sort_by_changed_cb(self, combobox, *args):
         """ Called when a new option was selected for the virtual double page option. """
-        iter = combobox.get_active_iter()
-        if combobox.get_model().iter_is_valid(iter):
-            value = combobox.get_model().get_value(iter, 1)
-            prefs['sort by'] = value
+        value = combobox.get_value()
+        prefs['sort by'] = value
 
-            self._window.filehandler.refresh_file()
+        self._window.filehandler.refresh_file()
 
     def _sort_order_changed_cb(self, combobox, *args):
         """ Called when sort order changes (ascending or descending) """
-        iter = combobox.get_active_iter()
-        if combobox.get_model().iter_is_valid(iter):
-            value = combobox.get_model().get_value(iter, 1)
-            prefs['sort order'] = value
+        value = combobox.get_value()
+        prefs['sort order'] = value
 
-            self._window.filehandler.refresh_file()
+        self._window.filehandler.refresh_file()
 
     def _create_archive_sort_by_control(self):
         """ Creates the ComboBox control for selecting archive sort by options. """
@@ -620,21 +606,17 @@ class _PreferencesDialog(Gtk.Dialog):
 
     def _sort_archive_by_changed_cb(self, combobox, *args):
         """ Called when a new option was selected for the virtual double page option. """
-        iter = combobox.get_active_iter()
-        if combobox.get_model().iter_is_valid(iter):
-            value = combobox.get_model().get_value(iter, 1)
-            prefs['sort archive by'] = value
+        value = combobox.get_value()
+        prefs['sort archive by'] = value
 
-            self._window.filehandler.refresh_file()
+        self._window.filehandler.refresh_file()
 
     def _sort_archive_order_changed_cb(self, combobox, *args):
         """ Called when sort order changes (ascending or descending) """
-        iter = combobox.get_active_iter()
-        if combobox.get_model().iter_is_valid(iter):
-            value = combobox.get_model().get_value(iter, 1)
-            prefs['sort archive order'] = value
+        value = combobox.get_value()
+        prefs['sort archive order'] = value
 
-            self._window.filehandler.refresh_file()
+        self._window.filehandler.refresh_file()
 
     def _create_store_recent_combobox(self):
         """ Creates the combobox for "Store recently opened files". """
@@ -657,11 +639,7 @@ class _PreferencesDialog(Gtk.Dialog):
 
     def _store_recent_changed_cb(self, combobox, *args):
         """ Called when option "Store recently opened files" was changed. """
-        iter = combobox.get_active_iter()
-        if not combobox.get_model().iter_is_valid(iter):
-            return
-
-        value = combobox.get_model().get_value(iter, 1)
+        value = combobox.get_value()
         last_value = prefs['store recent file info']
         prefs['store recent file info'] = value
         self._window.filehandler.last_read_page.set_enabled(value)
@@ -702,14 +680,12 @@ class _PreferencesDialog(Gtk.Dialog):
 
     def _scaling_quality_changed_cb(self, combobox, *args):
         """ Called whan image scaling quality changes. """
-        iter = combobox.get_active_iter()
-        if combobox.get_model().iter_is_valid(iter):
-            value = combobox.get_model().get_value(iter, 1)
-            last_value = prefs['scaling quality']
-            prefs['scaling quality'] = value
+        value = combobox.get_value()
+        last_value = prefs['scaling quality']
+        prefs['scaling quality'] = value
 
-            if value != last_value:
-                self._window.draw_image()
+        if value != last_value:
+            self._window.draw_image()
 
     def _create_animation_mode_combobox(self):
         """ Creates combo box for animation mode """
@@ -727,50 +703,30 @@ class _PreferencesDialog(Gtk.Dialog):
 
     def _animation_mode_changed_cb(self, combobox, *args):
         """ Called whenever animation mode has been changed. """
-        iter = combobox.get_active_iter()
-        if combobox.get_model().iter_is_valid(iter):
-            value = combobox.get_model().get_value(iter, 1)
-            last_value = prefs['animation mode']
-            prefs['animation mode'] = value
+        value = combobox.get_value()
+        last_value = prefs['animation mode']
+        prefs['animation mode'] = value
 
-            if value != last_value:
-                self._window.filehandler.refresh_file()
+        if value != last_value:
+            self._window.filehandler.refresh_file()
 
     def _create_combobox(self, options, selected_value, change_callback):
-        """ Creates a new dropdown combobox and populates it with the items
+        """ Creates a new dropdown and populates it with the items
         passed in C{options}.
 
         @param options: List of tuples: (Option display text, option value)
         @param selected_value: One of the values passed in C{options} that will
             be pre-selected when the control is created.
-        @param change_callback: Function that will be called when the 'changed'
-            event is triggered.
-        @returns Gtk.ComboBox
+        @param change_callback: Function that will be called when a
+            different option is picked.
+        @returns widgets.Chooser
         """
         assert options and len(options[0]) == 2, "Invalid format for options."
 
-        # Use the first list item to determine typing of model fields.
-        # First field is textual description, second field is value.
-        model = Gtk.ListStore(GObject.TYPE_STRING, type(options[0][1]))
-        for text, value in options:
-            model.append((text, value))
-
-        box = Gtk.ComboBox(model=model)
-        renderer = Gtk.CellRendererText()
-        box.pack_start(renderer, True)
-        box.add_attribute(renderer, "text", 0)
-
-        # Set active box option
-        iter = model.get_iter_first()
-        while iter:
-            if model.get_value(iter, 1) == selected_value:
-                box.set_active_iter(iter)
-                break
-            else:
-                iter = model.iter_next(iter)
+        box = widgets.Chooser(options, selected_value)
 
         if change_callback:
-            box.connect('changed', change_callback)
+            box.connect_changed(change_callback)
 
         return box
 

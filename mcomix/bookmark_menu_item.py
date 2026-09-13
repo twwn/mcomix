@@ -1,10 +1,7 @@
 """bookmark_menu_item.py - A signle bookmark item."""
 
+from mcomix import column_list
 from mcomix import i18n
-from mcomix import icons
-
-#: The pixel size Gtk.IconSize.MENU stands for.
-_MENU_ICON_SIZE = 16
 
 
 class _Bookmark(object):
@@ -57,15 +54,14 @@ class _Bookmark(object):
         return page == self._page
 
     def to_row(self):
-        """Return a tuple corresponding to one row in the _BookmarkDialog's
-        ListStore.
-        """
-        pixbuf = icons.load_pixbuf(self.get_icon_name(), _MENU_ICON_SIZE)
-        page = '%d / %d' % (self._page, self._numpages)
-        date = self._date_added.strftime("%x %X")
-
-        return (pixbuf, self._name, page, i18n.to_display_string(self._path),
-            date, self)
+        """Return the row the bookmarks dialog shows this bookmark as."""
+        return column_list.Row(
+            icon=self.get_icon_name(),
+            name=self._name,
+            page='%d / %d' % (self._page, self._numpages),
+            path=i18n.to_display_string(self._path),
+            added=self._date_added.strftime("%x %X"),
+            bookmark=self)
 
     def pack(self):
         """Return a tuple suitable for pickling. The bookmark can be fully

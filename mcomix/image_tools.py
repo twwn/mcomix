@@ -14,6 +14,8 @@ from mcomix import log
 from mcomix import tools
 from mcomix.i18n import _
 
+from typing import Any
+
 PIL_VERSION = ('Pillow', PIL.__version__)
 
 # Unfortunately gdk_pixbuf_version is not exported, so show the GTK+ version instead.
@@ -240,7 +242,6 @@ def get_most_common_edge_colour(pixbufs, edge=2):
     def get_edge_pixbuf(pixbuf, side, edge):
         """ Returns a pixbuf corresponding to the side passed in <side>.
         Valid sides are 'left', 'right', 'top', 'bottom'. """
-        pixbuf = static_image(pixbuf)
         width = pixbuf.get_width()
         height = pixbuf.get_height()
         edge = min(edge, width, height)
@@ -325,14 +326,81 @@ def pixbuf_to_pil(pixbuf):
     im = Image.frombuffer(mode, dimensions, pixels, 'raw', mode, stride, 1)
     return im
 
-def is_animation(pixbuf):
-    return isinstance(pixbuf, GdkPixbuf.PixbufAnimation)
+#: What load_pixbuf() writes the file a moving page came from under.
+ANIMATION_PATH = 'animation_path'
 
-def static_image(pixbuf):
-    """ Returns a non-animated version of the specified pixbuf. """
-    if is_animation(pixbuf):
-        return pixbuf.get_static_image()
-    return pixbuf
+def is_animation(pixbuf: Any) -> bool:
+    """Whether <pixbuf> is the still frame of a page that moves.
+
+    GdkPixbuf.PixbufAnimation was an object of its own, and being one
+    was the answer; GTK deprecated the whole of it in 4.10 with nothing
+    in its place.  A moving page is the ordinary pixbuf of its first
+    frame now, carrying the file the rest of them are read from.
+    """
+    return getattr(pixbuf, ANIMATION_PATH, None) is not None
+
+def animation_path(pixbuf: Any) -> "str | None":
+    """The file the frames of <pixbuf> are read from, if it moves."""
+    return getattr(pixbuf, ANIMATION_PATH, None)
+
+def file_animates(path: str) -> bool:
+    """Whether <path> holds more than one frame.
+
+    Pillow answers from the header, which costs a few microseconds and
+    is what MComix decodes animations with anyway.  What Pillow will not
+    open at all is asked of glycin, which is the decoder gdk-pixbuf
+    itself hands its loaders to.
+    """
+    try:
+        with Image.open(path) as im:
+            return bool(getattr(im, 'is_animated', False))
+    except Exception:
+        pass
+    return _glycin_animates(path)
+
+def _glycin_animates(path: str) -> bool:
+    """Whether glycin reads more than one frame out of <path>.
+
+    A still image gives its one frame a delay of zero; an animated one
+    says how long the frame lasts.  glycin ships with GTK on Linux and
+    not at all on Windows, so a tree without it falls back on the
+    deprecated GdkPixbuf.PixbufAnimation rather than losing the answer.
+    """
+    try:
+        from gi.repository import Gio
+        Gly = glycin()[0]
+    except Exception:
+        return _pixbuf_animates(path)
+    try:
+        image = Gly.Loader.new(Gio.File.new_for_path(path)).load()
+        return image.next_frame().get_delay() > 0
+    except Exception as error:
+        log.debug('glycin will not read %s (%s)', path, error)
+        return False
+
+def _pixbuf_animates(path: str) -> bool:
+    """Whether gdk-pixbuf reads more than one frame out of <path>.
+
+    The last resort, for a tree with no glycin and a file Pillow will
+    not open.  GdkPixbuf.PixbufAnimation is deprecated as of GTK 4.10.
+    """
+    try:
+        return not GdkPixbuf.PixbufAnimation.new_from_file(
+            path).is_static_image()
+    except GLib.GError:
+        return False
+
+def glycin() -> tuple:
+    """The glycin modules, or raise if this tree has none.
+
+    glycin ships with GTK on Linux, where it is what gdk-pixbuf hands
+    its loaders to; the Windows build of GTK has none of it.
+    """
+    import gi
+    gi.require_version('Gly', '2')
+    gi.require_version('GlyGtk4', '2')
+    from gi.repository import Gly, GlyGtk4
+    return Gly, GlyGtk4
 
 def pixbuf_to_texture(pixbuf: GdkPixbuf.Pixbuf) -> Gdk.Texture:
     """Return <pixbuf> as the Gdk.Texture GTK4 draws from.
@@ -374,25 +442,7 @@ def load_pixbuf(path):
         try:
             # TODO use dynamic dispatch instead of "if" chain
             if provider == constants.IMAGEIO_GDKPIXBUF:
-                if prefs['animation mode'] != constants.ANIMATION_DISABLED:
-                    try:
-                        pixbuf = GdkPixbuf.PixbufAnimation.new_from_file(path)
-                        if pixbuf.is_static_image():
-                            pixbuf = pixbuf.get_static_image()
-                        else:
-                            # Whoever draws the frames needs the file
-                            # back: gdk-pixbuf decodes them one at a
-                            # time in a process of its own, far too
-                            # slowly to keep up with a page that is
-                            # really a video.  See mcomix.animation.
-                            setattr(pixbuf, 'path', path)
-                    except GLib.GError:
-                        # NOTE: Broken JPEGs sometimes result in this exception.
-                        # However, one may be able to load them using
-                        # Gdk.pixbuf_new_from_file, so we need to continue.
-                        pass
-                if pixbuf is None:
-                    pixbuf = GdkPixbuf.Pixbuf.new_from_file(path)
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file(path)
             elif provider == constants.IMAGEIO_PIL:
                 # TODO When using PIL, whether or how animations work is
                 # currently undefined.
@@ -411,6 +461,11 @@ def load_pixbuf(path):
     if pixbuf is None:
         # raising necessary because caller expects pixbuf to be not None
         raise last_error or TypeError()
+    if prefs['animation mode'] != constants.ANIMATION_DISABLED \
+            and file_animates(path):
+        # Whoever draws the frames needs the file back: what was loaded
+        # here is the first of them.  See mcomix.animation.
+        setattr(pixbuf, ANIMATION_PATH, path)
     return pixbuf
 
 def load_pixbuf_size(path, width, height):
@@ -575,7 +630,6 @@ def get_implied_rotation(pixbuf):
     by a camera that is held sideways might store this fact in its Exif data,
     and the pixbuf loader will set the orientation option correspondingly.
     """
-    pixbuf = static_image(pixbuf)
     orientation = getattr(pixbuf, 'orientation', None)
     if orientation is None:
         orientation = pixbuf.get_option('orientation')

@@ -3,6 +3,7 @@
 from gi.repository import GLib, Gtk
 from gi.repository import Pango
 
+from mcomix.dialog import Dialog
 from mcomix import labels
 from mcomix import widgets
 from mcomix.i18n import _
@@ -12,7 +13,7 @@ _dialog = None
 # but is represented by this ID in the library's TreeModels.
 _COLLECTION_ALL = -1
 
-class _AddLibraryProgressDialog(Gtk.Dialog):
+class _AddLibraryProgressDialog(Dialog):
 
     """Dialog with a ProgressBar that adds books to the library."""
 

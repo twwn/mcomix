@@ -1,14 +1,14 @@
 """edit_image_area.py - The area of the editing archive window that displays images."""
 
 import os
-from gi.repository import Gdk, GdkPixbuf, Gio, Gtk
+from gi.repository import Gdk, Gio, Gtk
 
 from mcomix import widgets
 from mcomix import image_tools
 from mcomix import preview
 from mcomix import i18n
+from mcomix import thumbnail_list
 from mcomix import thumbnail_tools
-from mcomix import thumbnail_view
 from mcomix.i18n import _
 
 from typing import Any
@@ -17,50 +17,36 @@ class _ImageArea(Gtk.ScrolledWindow):
 
     """The area used for displaying and handling image files."""
 
-    def __init__(self, edit_dialog, window):
+    def __init__(self, edit_dialog: Any, window: Any) -> None:
         super(_ImageArea, self).__init__()
 
         self._window = window
         self._edit_dialog = edit_dialog
         self.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
 
-        # The ListStore layout is (thumbnail, basename, full path, thumbnail status).
-        # Basename is used as image tooltip.
-        self._liststore = Gtk.ListStore(GdkPixbuf.Pixbuf, str, str, bool)
-        self._iconview = thumbnail_view.ThumbnailIconView(
-            self._liststore,
-            2, # UID
-            0, # pixbuf
-            3, # status
-        )
-        self._iconview.generate_thumbnail = self._generate_thumbnail
-        self._iconview.set_tooltip_column(1)
-        self._iconview.set_reorderable(True)
-        self._iconview.set_selection_mode(Gtk.SelectionMode.MULTIPLE)
-        clicks = Gtk.GestureClick()
-        clicks.set_button(3)
-        clicks.connect('pressed', self._button_press)
-        self._iconview.add_controller(clicks)
-
-        keys = Gtk.EventControllerKey()
-        keys.connect('key-pressed', self._key_press)
-        self._iconview.add_controller(keys)
-        self.set_child(self._iconview)
-
         # As every other preview in MComix, as large as this screen
         # wants it.
         self._thumbnail_size = preview.scaled(128, self)
-        preview.draw_cells_at(self._iconview, self._thumbnail_size)
+
+        # An entry's uid is the full path to its image, which is what
+        # the thumbnailer takes; its tooltip is the basename.
+        self._grid = thumbnail_list.ThumbnailGridView()
+        self._grid.generate_thumbnail = self._generate_thumbnail
+        self._grid.set_thumbnail_size(self._thumbnail_size)
+        self._grid.set_reorderable(True)
+        clicks = Gtk.GestureClick()
+        clicks.set_button(3)
+        clicks.connect('pressed', self._button_press)
+        self._grid.add_controller(clicks)
+
+        keys = Gtk.EventControllerKey()
+        keys.connect('key-pressed', self._key_press)
+        self._grid.add_controller(keys)
+        self.set_child(self._grid)
+
         self._thumbnailer = thumbnail_tools.Thumbnailer(store_on_disk=False,
                                                         size=(self._thumbnail_size,
                                                               self._thumbnail_size))
-
-        self._filler = GdkPixbuf.Pixbuf.new(colorspace=GdkPixbuf.Colorspace.RGB,
-                                            has_alpha=True, bits_per_sample=8,
-                                            width=self._thumbnail_size,
-                                            height=self._thumbnail_size)
-        # Make the pixbuf transparent.
-        self._filler.fill(0)
 
         self._window.imagehandler.page_available += self._on_page_available
 
@@ -80,13 +66,18 @@ class _ImageArea(Gtk.ScrolledWindow):
 
     def fetch_images(self) -> None:
         """Load all the images in the archive or directory."""
+        items = []
         for page in range(1, self._window.imagehandler.get_number_of_pages() + 1):
             path = self._window.imagehandler.get_path_to_page(page)
-            encoded_path = i18n.to_unicode(os.path.basename(path))
-            encoded_path = encoded_path.replace('&', '&amp;')
-            self._liststore.append([self._filler, encoded_path, path, False])
+            items.append(self._item_for(path))
+        self._grid.set_items(items)
 
-    def _generate_thumbnail(self, uid):
+    @staticmethod
+    def _item_for(path: str) -> thumbnail_list.ThumbnailItem:
+        name = i18n.to_unicode(os.path.basename(path))
+        return thumbnail_list.ThumbnailItem(path, tooltip=name)
+
+    def _generate_thumbnail(self, uid: str) -> Any:
         assert isinstance(uid, str)
         path = uid
         try:
@@ -105,53 +96,47 @@ class _ImageArea(Gtk.ScrolledWindow):
                 self._thumbnail_size, self._thumbnail_size, scale_up=True)
         return pixbuf
 
-    def add_extra_image(self, path):
+    def add_extra_image(self, path: str) -> None:
         """Add an imported image (at <path>) to the end of the image list."""
-        self._liststore.append([self._filler, os.path.basename(path), path, False])
+        self._grid.append_item(self._item_for(path))
 
-    def get_file_listing(self):
+    def get_file_listing(self) -> list[str]:
         """Return a list with the full paths to all the images, in order."""
-        return [row[2] for row in self._liststore]
+        return [item.uid for item in self._grid.each_item()]
 
-    def _remove_pages(self, *args):
+    def _remove_pages(self, *args: Any) -> None:
         """Remove the currently selected pages from the list."""
-        paths = self._iconview.get_selected_items()
+        self._grid.remove_positions(self._grid.get_selected_positions())
 
-        for path in paths:
-            iterator = self._liststore.get_iter(path)
-            self._liststore.remove(iterator)
-
-    def _button_press(self, gesture, n_press, x, y) -> None:
+    def _button_press(self, gesture: Gtk.GestureClick, n_press: int,
+                      x: float, y: float) -> None:
         """Handle mouse button presses on the thumbnail area."""
-        iconview = self._iconview
-        path = iconview.get_path_at_pos(int(x), int(y))
-
-        if path is None:
+        position = self._grid.position_at(x, y)
+        if position < 0:
             return
 
-        if not iconview.path_is_selected(path):
-            iconview.unselect_all()
-            iconview.select_path(path)
+        if position not in self._grid.get_selected_positions():
+            self._grid.select_only(position)
 
-        widgets.popup_at(self._popup_menu, iconview, x, y)
+        widgets.popup_at(self._popup_menu, self._grid, x, y)
 
-    def _key_press(self, controller, keyval, keycode, state):
+    def _key_press(self, controller: Gtk.EventControllerKey, keyval: int,
+                   keycode: int, state: Gdk.ModifierType) -> bool:
         """Handle key presses on the thumbnail area."""
         if keyval == Gdk.KEY_Delete:
             self._remove_pages()
             return Gdk.EVENT_STOP
         return Gdk.EVENT_PROPAGATE
 
-    # The pages are reordered by dragging, which Gtk.IconView does for
-    # itself.  A drag_begin hook used to move the drag icon's hotspot to
-    # its top left corner; GTK4 gives no such signal on the widget, and
-    # the icon it draws for a reorder is its own.
+    # The pages are reordered by dragging. Gtk.IconView did that for
+    # itself; a Gtk.GridView does not, so every cell carries a drag
+    # source and a drop target of its own. See ThumbnailGridView.
 
     def cleanup(self) -> None:
-        self._iconview.stop_update()
+        self._grid.stop_update()
 
-    def _on_page_available(self, page):
+    def _on_page_available(self, page: int) -> None:
         """ Called whenever a new page is ready for display. """
-        self._iconview.draw_thumbnails_on_screen()
+        self._grid.refresh()
 
 # vim: expandtab:sw=4:ts=4

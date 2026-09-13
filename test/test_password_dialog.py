@@ -9,6 +9,7 @@ from gi.repository import Gtk
 
 from . import MComixTest, get_testfile_path, pump as _pump
 
+from mcomix import message_dialog
 from mcomix.archive import password as archive_password
 from mcomix.archive import zip as zip_archive
 
@@ -21,7 +22,8 @@ def pump(rounds=200):
 def visible_prompts():
     """Every password prompt currently on screen."""
     return [window for window in Gtk.Window.list_toplevels()
-            if isinstance(window, Gtk.MessageDialog) and window.get_visible()]
+            if isinstance(window, message_dialog.MessageDialog)
+            and window.get_visible()]
 
 
 class PasswordDialogTest(MComixTest):

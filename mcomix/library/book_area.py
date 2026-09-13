@@ -1,12 +1,12 @@
 """library_book_area.py - The window of the library that displays the covers of books."""
 
 import os
-from gi.repository import Gdk, GdkPixbuf, Gio, GLib, GObject, Gtk
+from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk
 import PIL.Image as Image
 import PIL.ImageDraw as ImageDraw
 
 from mcomix.preferences import prefs
-from mcomix import thumbnail_view
+from mcomix import thumbnail_list
 from mcomix import file_chooser_library_dialog
 from mcomix import image_tools
 from mcomix import constants
@@ -27,6 +27,19 @@ _dialog = None
 # The "All books" collection is not a real collection stored in the library, but is represented by this ID in the
 # library's TreeModels.
 _COLLECTION_ALL = -1
+
+
+class _BookItem(thumbnail_list.ThumbnailItem):
+
+    """One cover in the view, and what the sorters compare."""
+
+    __gtype_name__ = 'MComixLibraryBookItem'
+
+    def __init__(self, book: Any) -> None:
+        super(_BookItem, self).__init__(book.id)
+        self.path = book.path
+        self.size = book.size
+        self.added = book.added
 
 
 class _BookArea(Gtk.ScrolledWindow):
@@ -51,27 +64,17 @@ class _BookArea(Gtk.ScrolledWindow):
 
         self.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
 
-        # Store Cover, book ID, book path, book size, date added to library,
-        # is thumbnail loaded?
-
-        # The SORT_ constants must correspond to the correct column here,
-        # i.e. SORT_SIZE must be 3, since 3 is the size column in the ListStore.
-        self._liststore = Gtk.ListStore(GdkPixbuf.Pixbuf,
-                GObject.TYPE_INT, GObject.TYPE_STRING, GObject.TYPE_INT64,
-                GObject.TYPE_STRING, GObject.TYPE_BOOLEAN)
-        self._liststore.set_sort_func(constants.SORT_NAME, self._sort_by_name, None)
-        self._liststore.set_sort_func(constants.SORT_PATH, self._sort_by_path, None)
-        self.set_sort_order()
-        self._liststore.connect('row-inserted', self._icon_added)
-        self._iconview = thumbnail_view.ThumbnailIconView(
-            self._liststore,
-            1, # UID
-            0, # pixbuf
-            5, # status
-        )
+        # A cover's uid is the book id, which is what _get_pixbuf()
+        # takes; the rest of what the sorters compare rides along on the
+        # item.  This was a six column Gtk.ListStore whose column
+        # numbers had to agree with the SORT_ constants.
+        self._iconview = thumbnail_list.ThumbnailGridView()
         self._iconview.generate_thumbnail = self._get_pixbuf
-        self._iconview.connect('item_activated', self._book_activated)
-        self._iconview.connect('selection_changed', self._selection_changed)
+        self.set_thumbnail_size()
+        self.set_sort_order()
+        self._iconview.connect('activate', self._book_activated)
+        self._iconview.selection.connect('selection-changed',
+                                         self._selection_changed)
         clicks = Gtk.GestureClick()
         clicks.set_button(3)
         clicks.connect('pressed', self._button_press)
@@ -103,12 +106,7 @@ class _BookArea(Gtk.ScrolledWindow):
         drop = Gtk.DropTarget.new(Gdk.FileList, Gdk.DragAction.COPY)
         drop.connect('drop', self._drag_data_received)
         self._iconview.add_controller(drop)
-        self._iconview.set_selection_mode(Gtk.SelectionMode.MULTIPLE)
         self.set_child(self._iconview)
-
-        self._iconview.set_margin(0)
-        self._iconview.set_row_spacing(0)
-        self._iconview.set_column_spacing(0)
 
         self._popup_actions = Gio.SimpleActionGroup()
         self._book_menu = self._create_popup_menu()
@@ -230,12 +228,10 @@ class _BookArea(Gtk.ScrolledWindow):
 
         self.stop_update()
 
-        # We must unselect all or we will trigger selection_changed events
-        # when closing with multiple books selected.
+        # Unselect first, or closing with several books selected sends a
+        # selection-changed for each one that goes.
         self._iconview.unselect_all()
-        # We must (for some reason) explicitly clear the ListStore in
-        # order to not leak memory.
-        self._liststore.clear()
+        self._iconview.clear()
 
     def display_covers(self, collection_id):
         """Display the books in <collection_id> in the IconView."""
@@ -244,17 +240,9 @@ class _BookArea(Gtk.ScrolledWindow):
         if adjustment:
             adjustment.set_value(0)
 
-        self.stop_update()
-        # Temporarily detach model to speed up updates
-        self._iconview.set_model(None)
-        self._liststore.clear()
-
         collection = self._library.backend.get_collection_by_id(collection_id)
         books = collection.get_books(self._library.filter_string)
-        self.add_books(books)
-
-        # Re-attach model here
-        GLib.idle_add(self._iconview.set_model, self._liststore)
+        self._iconview.set_items(_BookItem(book) for book in books)
 
     def stop_update(self) -> None:
         """Signal that the updating of book covers should stop."""
@@ -263,15 +251,8 @@ class _BookArea(Gtk.ScrolledWindow):
     def add_books(self, books):
         """ Adds new book covers to the icon view.
         @param books: List of L{_Book} instances. """
-        filler = self._get_empty_thumbnail()
-
         for book in books:
-            # Fill the liststore with a filler pixbuf.
-            self._liststore.append([filler, book.id,
-                                    book.path,
-                                    book.size, book.added, False])
-
-        self._iconview.draw_thumbnails_on_screen()
+            self._iconview.append_item(_BookItem(book))
 
     def _new_book_added(self, book, collection):
         """ Callback function for L{LibraryBackend.book_added}. """
@@ -296,55 +277,83 @@ class _BookArea(Gtk.ScrolledWindow):
         if not book:
             return False
 
-        for row in self._liststore:
-            if row[1] == book.id:
+        for item in self._iconview.each_item():
+            if item.uid == book.id:
                 return True
 
         return False
 
-    def remove_book_at_path(self, path):
-        """Remove the book at <path> from the ListStore (and thus from
-        the _BookArea).
-        """
-        iterator = self._liststore.get_iter(path)
-        filepath = self._liststore.get_value(iterator, 2)
-        self._liststore.remove(iterator)
-        self._cache.invalidate(filepath)
+    def remove_book_at_path(self, position):
+        """Remove the book shown at <position> from the _BookArea."""
+        item = self._iconview.get_item(position)
+        if item is None:
+            return
+        self._iconview.remove_items([item])
+        self._cache.invalidate(item.path)
 
-    def get_book_at_path(self, path):
-        """Return the book ID corresponding to the IconView <path>."""
-        iterator = self._liststore.get_iter(path)
-        return self._liststore.get_value(iterator, 1)
+    def get_book_at_path(self, position):
+        """Return the book ID of the cover shown at <position>."""
+        item = self._iconview.get_item(position)
+        return None if item is None else item.uid
 
-    def get_book_path(self, book):
-        """Return the <path> to the book from the ListStore.
-        """
-        return self._liststore.get_iter(book)
+    def remove_books(self, book_ids):
+        """Remove the books with <book_ids> from the _BookArea."""
+        wanted = set(book_ids)
+        items = [item for item in self._iconview.each_item()
+                 if item.uid in wanted]
+        self._iconview.remove_items(items)
+        for item in items:
+            self._cache.invalidate(item.path)
+
+    def _open_books(self, keep_library_open):
+        books = [item.uid for item in self._iconview.get_selected_items()]
+        if not books:
+            return
+        if not keep_library_open:
+            # Necessary to prevent a deadlock at exit when trying to
+            # "join" the worker thread.
+            self.stop_update()
+        self._library.open_book(books, keep_library_open=keep_library_open)
 
     def open_selected_book(self, *args):
         """Open the currently selected book."""
-        selected = self._iconview.get_selected_items()
-        if not selected:
-            return
-        self._book_activated(self._iconview, selected, False)
+        self._open_books(False)
 
     def open_selected_book_noclose(self, *args):
         """Open the currently selected book, keeping the library open."""
-        selected = self._iconview.get_selected_items()
-        if not selected:
-            return
-        self._book_activated(self._iconview, selected, True)
+        self._open_books(True)
 
     def set_sort_order(self) -> None:
-        """ Orders the list store based on the key passed in C{sort_key}.
+        """ Orders the covers by the key in C{lib sort key}.
         Should be one of the C{SORT_} constants from L{constants}.
         """
-        if prefs['lib sort order'] == constants.SORT_ASCENDING:
-            sortorder = Gtk.SortType.ASCENDING
-        else:
-            sortorder = Gtk.SortType.DESCENDING
+        key = prefs['lib sort key']
+        ascending = prefs['lib sort order'] == constants.SORT_ASCENDING
 
-        self._liststore.set_sort_column_id(prefs['lib sort key'], sortorder)
+        def compare(left, right, _data):
+            answer = self._compare_books(key, left, right)
+            return answer if ascending else -answer
+
+        self._iconview.set_sorter(Gtk.CustomSorter.new(compare))
+
+    @staticmethod
+    def _compare_books(key, left, right):
+        """Order two covers by <key>, one of the SORT_ constants.
+
+        A Gtk.ListStore sorted itself by a column number, which is why
+        the SORT_ constants used to have to match the column layout. A
+        Gtk.Sorter is handed the two items instead.
+        """
+        if key == constants.SORT_NAME:
+            return tools.cmp(
+                tools.AlphanumericSortKey(os.path.basename(left.path).lower()),
+                tools.AlphanumericSortKey(os.path.basename(right.path).lower()))
+        if key == constants.SORT_SIZE:
+            return tools.cmp(left.size, right.size)
+        if key == constants.SORT_LAST_MODIFIED:
+            return tools.cmp(left.added, right.added)
+        return tools.cmp(tools.AlphanumericSortKey(left.path),
+                         tools.AlphanumericSortKey(right.path))
 
     def _sort_key_changed(self, action: Any, value: Any) -> None:
         """ Called when the field the library sorts on changes. """
@@ -358,40 +367,13 @@ class _BookArea(Gtk.ScrolledWindow):
         prefs['lib sort order'] = value.get_int32()
         self.set_sort_order()
 
-    def _sort_by_name(self, treemodel, iter1, iter2, user_data):
-        """ Compares two books based on their file name without the
-        path component. """
-        path1 = self._liststore.get_value(iter1, 2)
-        path2 = self._liststore.get_value(iter2, 2)
-
-        # Catch None values from liststore
-        if path1 is None:
-            return 1
-        elif path2 is None:
-            return -1
-
-        name1 = os.path.split(path1)[1].lower()
-        name2 = os.path.split(path2)[1].lower()
-
-        return tools.cmp(tools.AlphanumericSortKey(name1), tools.AlphanumericSortKey(name2))
-
-    def _sort_by_path(self, treemodel, iter1, iter2, user_data):
-        """ Compares two books based on their full path, in natural order. """
-        path1 = self._liststore.get_value(iter1, 2)
-        path2 = self._liststore.get_value(iter2, 2)
-        return tools.cmp(tools.AlphanumericSortKey(path1), tools.AlphanumericSortKey(path2))
-
-    def _icon_added(self, model, path, iter, *args):
-        """ Justifies the alignment of all cell renderers when new data is
-        added to the model. """
-        width, height = self._pixbuf_size()
-        preview.draw_cells_at(self._iconview, max(width, height))
-        for cell in self._iconview.get_cells():
-            cell.set_fixed_size(width, height)
-            cell.set_alignment(0.5, 0.5)
+    def set_thumbnail_size(self) -> None:
+        """Draw the covers at the size the preference asks for."""
+        self._iconview.set_thumbnail_size(*self._pixbuf_size())
 
     def load_covers(self) -> None:
         self._cache.invalidate_all()
+        self.set_thumbnail_size()
         collection = self._library.collection_area.get_current_collection()
         GLib.idle_add(self.display_covers, collection)
 
@@ -490,37 +472,22 @@ class _BookArea(Gtk.ScrolledWindow):
 
         return pixbuf
 
-    def _get_empty_thumbnail(self):
-        """ Create an empty filler pixmap. """
-        width, height = self._pixbuf_size()
-        pixbuf = GdkPixbuf.Pixbuf.new(colorspace=GdkPixbuf.Colorspace.RGB,
-                                      has_alpha=True,
-                                      bits_per_sample=8,
-                                      width=width, height=height)
+    def _book_activated(self, iconview, position):
+        """Open the book whose cover is shown at <position>."""
+        book = self.get_book_at_path(position)
+        if book is None:
+            return
+        # Necessary to prevent a deadlock at exit when trying to "join"
+        # the worker thread.
+        self.stop_update()
+        self._library.open_book([book], keep_library_open=False)
 
-        # Make the pixbuf transparent.
-        pixbuf.fill(0)
-
-        return pixbuf
-
-    def _book_activated(self, iconview, paths, keep_library_open=False):
-        """Open the book at the (liststore) <path>."""
-        if not isinstance(paths, list):
-            paths = [ paths ]
-
-        if not keep_library_open:
-            # Necessary to prevent a deadlock at exit when trying to "join" the
-            # worker thread.
-            self.stop_update()
-        books = [ self.get_book_at_path(path) for path in paths ]
-        self._library.open_book(books, keep_library_open=keep_library_open)
-
-    def _selection_changed(self, iconview):
+    def _selection_changed(self, selection, position, count):
         """Update the displayed info in the _ControlArea when a new book
         is selected.
         """
-        selected = iconview.get_selected_items()
-        self._library.control_area.update_info(selected)
+        self._library.control_area.update_info(
+            self._iconview.get_selected_positions())
 
     def _remove_books_from_collection(self, *args):
         """Remove the currently selected books from the current collection,
@@ -531,10 +498,12 @@ class _BookArea(Gtk.ScrolledWindow):
             return
         selected = self._iconview.get_selected_items()
         self._library.backend.begin_transaction()
-        for path in selected:
-            book = self.get_book_at_path(path)
-            self._library.backend.remove_book_from_collection(book, collection)
-            self.remove_book_at_path(path)
+        for item in selected:
+            self._library.backend.remove_book_from_collection(item.uid,
+                                                              collection)
+        self._iconview.remove_items(selected)
+        for item in selected:
+            self._cache.invalidate(item.path)
         self._library.backend.end_transaction()
 
         coll_name = self._library.backend.get_collection_name(collection)
@@ -553,10 +522,12 @@ class _BookArea(Gtk.ScrolledWindow):
         selected = self._iconview.get_selected_items()
         self._library.backend.begin_transaction()
 
-        for path in selected:
-            book = self.get_book_at_path(path)
-            self._library.backend.remove_book(book)
-            self.remove_book_at_path(path)
+        for item in selected:
+            self._library.backend.remove_book(item.uid)
+
+        self._iconview.remove_items(selected)
+        for item in selected:
+            self._cache.invalidate(item.path)
 
         self._library.backend.end_transaction()
 
@@ -593,10 +564,9 @@ class _BookArea(Gtk.ScrolledWindow):
         # the user has told us they definitely want to delete the book
         if response == Gtk.ResponseType.YES:
 
-            # get the array of currently selected books in the book window
-            selected_books = self._iconview.get_selected_items()
-            book_ids = [ self.get_book_at_path(book) for book in selected_books ]
-            paths = [ self._library.backend.get_book_path(book_id) for book_id in book_ids ]
+            # The paths have to be read before the books go: removing
+            # them from the library takes their rows with them.
+            paths = [item.path for item in self._iconview.get_selected_items()]
 
             # Remove books from library
             self._remove_books_from_library()
@@ -613,23 +583,23 @@ class _BookArea(Gtk.ScrolledWindow):
 
     def _copy_selected(self, *args):
         """ Copies the currently selected item to clipboard. """
-        paths = self._iconview.get_selected_items()
-        if len(paths) == 1:
-            model = self._iconview.get_model()
-            iter = model.get_iter(paths[0])
-            path = model.get_value(iter, 2).decode('utf-8')
-            pixbuf = model.get_value(iter, 0)
-
-            self._library._window.clipboard.copy(path, pixbuf)
+        selected = self._iconview.get_selected_items()
+        if len(selected) == 1:
+            item = selected[0]
+            # The cover as a pixbuf, which is what the clipboard takes;
+            # the cell holds it as a texture.  _get_pixbuf() answers
+            # from the cache, so this costs nothing that was not
+            # already paid.
+            self._library._window.clipboard.copy(item.path,
+                                                 self._get_pixbuf(item.uid))
 
     def _button_press(self, gesture, n_press, x, y) -> None:
         """Handle mouse button presses on the _BookArea."""
-        iconview = self._iconview
-        path = iconview.get_path_at_pos(int(x), int(y))
+        position = self._iconview.position_at(x, y)
 
-        if path and not iconview.path_is_selected(path):
-            iconview.unselect_all()
-            iconview.select_path(path)
+        if position >= 0 \
+                and position not in self._iconview.get_selected_positions():
+            self._iconview.select_only(position)
 
         self._popup_book_menu()
 
@@ -670,13 +640,13 @@ class _BookArea(Gtk.ScrolledWindow):
         return Gdk.EVENT_PROPAGATE
 
     def _drag_prepare(self, source, x, y):
-        """Offer the books being dragged, as the paths of their icons."""
-        paths = self._iconview.get_selected_items()
-        if not paths:
+        """Offer the books being dragged, as the positions of their covers."""
+        positions = self._iconview.get_selected_positions()
+        if not positions:
             return None
         return Gdk.ContentProvider.new_for_value(
             '%s:%s' % (constants.LIBRARY_DRAG_BOOKS,
-                       ','.join(path.to_string() for path in paths)))
+                       ','.join(str(position) for position in positions)))
 
     def _drag_begin(self, source, drag):
         """Create a cursor image for drag-n-drop from the library.
@@ -687,10 +657,11 @@ class _BookArea(Gtk.ScrolledWindow):
         produce bad looking output (e.g. non-centered text).
 
         """
-        iconview = self._iconview
-        icon_path = iconview.get_cursor()[1]
-        num_books = len(iconview.get_selected_items())
-        book = self.get_book_at_path(icon_path)
+        selected = self._iconview.get_selected_items()
+        if not selected:
+            return
+        num_books = len(selected)
+        book = selected[0].uid
 
         cover: GdkPixbuf.Pixbuf = self._library.backend.get_book_cover(book)
         if cover is None:

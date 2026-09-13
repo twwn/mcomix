@@ -1,9 +1,5 @@
 """preview.py - How large a preview of a page should be drawn."""
 
-import itertools
-
-from gi.repository import Gtk
-
 from typing import Any
 
 #: The size a preview had on the screens MComix was written for, and the
@@ -37,40 +33,3 @@ def screen_factor(widget: Any) -> float:
 def scaled(size: int, widget: Any) -> int:
     """<size>, as large as this screen wants a preview to be."""
     return int(round(size * screen_factor(widget)))
-
-
-#: The classes draw_cells_at() hands out, one per view it is asked to
-#: style.
-_cell_classes = ('mcomix-preview-cells-%d' % number
-                 for number in itertools.count())
-
-
-def draw_cells_at(view: Any, size: int) -> None:
-    """Let <view>'s cells draw their pictures <size> pixels tall.
-
-    GTK4 draws whatever a Gtk.CellRendererPixbuf holds as an icon.  The
-    picture's own dimensions still decide how much room the cell is
-    given, so a page thumbnail was measured at its full size and then
-    drawn as an eleven by sixteen pixel speck in the middle of it.  The
-    drawing is capped at the icon size the style asks for, and nothing
-    but CSS says what that is.
-    """
-    if getattr(view, '_preview_cell_size', None) == size:
-        return
-    provider = getattr(view, '_preview_cell_provider', None)
-    if provider is None:
-        provider = Gtk.CssProvider()
-        view._preview_cell_provider = provider
-        # A style provider belongs to a display rather than to a widget,
-        # so every view styled here carries a class of its own for its
-        # rule to single it out.  Views ask for different sizes, and one
-        # of them is the library's, which is already wearing a class for
-        # its background.
-        view._preview_cell_class = next(_cell_classes)
-        view.add_css_class(view._preview_cell_class)
-        Gtk.StyleContext.add_provider_for_display(
-            view.get_display(), provider,
-            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
-    provider.load_from_string('.%s { -gtk-icon-size: %dpx; }'
-                              % (view._preview_cell_class, size))
-    view._preview_cell_size = size

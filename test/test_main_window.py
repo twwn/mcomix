@@ -7,6 +7,7 @@ real window, which is where a whole class of start-up regressions hides.
 """
 
 import os
+import warnings
 
 from gi.repository import Gtk
 
@@ -214,10 +215,13 @@ class MainWindowTest(MComixTest):
 
         Gtk.FileChooserDialog took a title, a parent and buttons as
         positional arguments; GTK4 takes properties, so the call raised
-        a TypeError and "Save page as" opened nothing at all.
+        a TypeError and "Save page as" opened nothing at all.  It is a
+        Gtk.FileDialog now, which is not a widget at all - so what the
+        chooser it puts up is asking for is where the name and the
+        folder can be read back.
 
-        What the user picks is left out: GtkFileChooserDialog answers a
-        response of its own making only, and drops one the test emits.
+        What the user picks is left out: the answer comes back through
+        a callback that only the real chooser can fire.
         """
         target_dir = os.path.join(constants.DATA_DIR, 'saved')
         os.makedirs(target_dir, exist_ok=True)
@@ -237,15 +241,47 @@ class MainWindowTest(MComixTest):
         self.assertEqual(1, len(dialogs), 'no save dialog was opened')
         dialog = dialogs[0]
         try:
-            self.assertIs(dialog.get_transient_for(), self.window)
-            self.assertEqual(dialog.get_current_name(),
-                             '01-ZIP-Normal_01-JPG-Indexed.jpg')
-            self.assertIsNotNone(
-                dialog.get_widget_for_response(Gtk.ResponseType.ACCEPT),
-                'the dialog got no button to confirm with')
+            with warnings.catch_warnings():
+                # The chooser Gtk.FileDialog puts up is one GTK builds
+                # for itself; reading it back is the deprecated call.
+                warnings.simplefilter('ignore', DeprecationWarning)
+                self.assertEqual(dialog.get_current_name(),
+                                 '01-ZIP-Normal_01-JPG-Indexed.jpg')
+                folder = dialog.get_current_folder()
+            self.assertEqual(folder.get_path(), target_dir)
         finally:
             dialog.destroy()
             self._pump()
+
+    def test_where_a_saved_page_went_is_remembered(self):
+        """The folder for the next save is the one the page went into.
+
+        It used to be read off the chooser widget, which a
+        Gtk.FileDialog has none of, and which answered None whenever the
+        pick was not a local folder - putting None in the preference.
+        """
+        target_dir = os.path.join(constants.DATA_DIR, 'saved')
+        os.makedirs(target_dir, exist_ok=True)
+        elsewhere = os.path.join(constants.DATA_DIR, 'saved-elsewhere')
+        os.makedirs(elsewhere, exist_ok=True)
+        prefs['path of last saved in filechooser'] = target_dir
+        prefs['store last saved in directory'] = True
+
+        handler = self.window.imagehandler
+        self.assertTrue(
+            wait_for(lambda: os.path.exists(
+                handler.get_path_to_page(handler.get_current_page()) or '')),
+            'the first page was never extracted')
+        source = handler.get_path_to_page(handler.get_current_page())
+
+        # What Gtk.FileDialog would have called back with, had the user
+        # walked out of the folder it opened in and saved there.
+        target = os.path.join(elsewhere, 'page.jpg')
+        self.window._save_page_to(source, target)
+
+        self.assertTrue(os.path.exists(target), 'the page was not written')
+        self.assertEqual(prefs['path of last saved in filechooser'],
+                         elsewhere)
 
     def test_the_window_holds_the_expected_parts(self):
         for part in (self.window.menubar, self.window.toolbar,
