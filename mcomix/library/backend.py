@@ -182,7 +182,7 @@ class _LibraryBackend:
         cur.close()
 
         if path is None:
-            log.error(_('! Non-existant book #%i'), book)
+            log.error(_('! Non-existent book #%i'), book)
 
         return path
 

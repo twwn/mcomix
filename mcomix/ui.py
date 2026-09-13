@@ -485,7 +485,7 @@ class MainUI:
             _Entry('invert_scroll', 'edit-undo', _('Invert smart scroll'), _('Invert smart scrolling direction.'), window.change_invert_scroll),
             _Entry('keep_transformation', None, _('_Keep transformation'), _('Keeps the currently selected transformation for the next pages.'),
                    window.change_keep_transformation),
-            _Entry('slideshow', 'media-playback-start-symbolic', _('Start _slideshow'), _('Start slideshow'), window.slideshow.toggle),
+            _Entry('slideshow', 'media-playback-start-symbolic', _('Start slid_eshow'), _('Start slideshow'), window.slideshow.toggle),
             _Entry('lens', 'edit-find-symbolic', _('Magnifying _lens'), _('Magnifying lens'), window.lens.toggle),
             _Entry('stretch', None, _('Stretch small images'), _('Stretch images to fit to the screen, depending on zoom mode.'),
                    window.change_stretch),
@@ -511,7 +511,7 @@ class MainUI:
             prefs['auto rotate depending on size'], window.change_autorotation)
 
         self._actions.add_with_data([
-            _Entry('about', 'help-about', _('_About'), None, dialog_handler.open_dialog)], (window, 'about-dialog'))
+            _Entry('about', 'help-about', _('A_bout'), None, dialog_handler.open_dialog)], (window, 'about-dialog'))
 
         self._actions.add_with_data([
             _Entry('comments', 'mcomix-comments', _('Co_mments...'), None, dialog_handler.open_dialog)], (window, 'comments-dialog'))
@@ -520,14 +520,14 @@ class MainUI:
             _Entry('properties', 'document-properties', _('Proper_ties'), None, dialog_handler.open_dialog)], (window, 'properties-dialog'))
 
         self._actions.add_with_data([
-            _Entry('preferences', 'preferences-system', _('Pr_eferences'), None, preferences_dialog.open_dialog)], window)
+            _Entry('preferences', 'preferences-system', _('_Preferences'), None, preferences_dialog.open_dialog)], window)
 
         # Some actions added separately since they need extra arguments.
         self._actions.add_with_data([
             _Entry('edit_archive', 'document-edit-symbolic', _('_Edit archive...'), _('Opens the archive editor.'),
                    edit_dialog.open_dialog),
             _Entry('open', 'document-open', _('_Open...'), None, file_chooser_main_dialog.open_main_filechooser_dialog),
-            _Entry('enhance_image', 'mcomix-enhance-image', _('En_hance image...'), None, enhance_dialog.open_dialog)], window)
+            _Entry('enhance_image', 'mcomix-enhance-image', _('Enha_nce image...'), None, enhance_dialog.open_dialog)], window)
 
         self._actions.add_with_data([
             _Entry('library', 'mcomix-library', _('_Library...'), None, library_main_dialog.open_dialog)], window)

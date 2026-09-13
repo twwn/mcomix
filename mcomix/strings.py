@@ -44,7 +44,7 @@ TRANSLATORS = (
             ('Benoît H.', _('French translation')),
             ('Joseph M. Sleiman', _('French translation')),
             ('Frédéric Chateaux', _('French translation')),
-            ('Kamil Leduchowski', _('Polish translatin')),
+            ('Kamil Leduchowski', _('Polish translation')),
             ('Darek Jakoniuk', _('Polish translation')),
             ('Paul Chatzidimitriou', _('Greek translation')),
             ('Carles Escrig Royo', _('Catalan translation')),

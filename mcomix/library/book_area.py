@@ -132,7 +132,7 @@ class _BookArea(Gtk.ScrolledWindow):
              _('Add more books to the library.'),
              lambda *args: file_chooser_library_dialog.open_library_filechooser_dialog(
                  self._library)),
-            ('remove-from-collection', _('Remove from this _collection'),
+            ('remove-from-collection', _('Remove _from this collection'),
              _('Removes the selected books from the current collection.'),
              self._remove_books_from_collection),
             ('remove-from-library', _('Remove from the _library'),

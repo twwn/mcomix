@@ -115,26 +115,23 @@ msgstr ""
 "beeinflussen."
 
 #: mcomix/bookmark_backend.py:285
-#, fuzzy
 msgid "Clear all bookmarks?"
-msgstr "Lesezeichen bearbeiten"
+msgstr "Alle Lesezeichen löschen?"
 
 #: mcomix/bookmark_backend.py:286
-#, fuzzy
 msgid ""
 "All stored bookmarks will be removed. Are you sure that you want to continue?"
 msgstr ""
-"Die ausgewählten Bücher werden aus der Bibliothek entfernt und die "
-"Originaldatei wird gelöscht. Sind Sie sicher, dass Sie fortfahren möchten?"
+"Alle gespeicherten Lesezeichen werden entfernt. Sind Sie sicher, dass Sie "
+"fortfahren möchten?"
 
 #: mcomix/bookmark_dialog.py:29
 msgid "Edit Bookmarks"
 msgstr "Lesezeichen bearbeiten"
 
 #: mcomix/bookmark_dialog.py:31 mcomix/bookmark_menu.py:37
-#, fuzzy
 msgid "_Clear bookmarks..."
-msgstr "Lesezeichen _bearbeiten..."
+msgstr "Alle Lesezeichen _entfernen..."
 
 #: mcomix/bookmark_dialog.py:32 mcomix/openwith.py:343
 #: mcomix/library/collection_area.py:120 mcomix/library/watchlist.py:56
@@ -146,7 +143,7 @@ msgstr "_Entfernen"
 #: mcomix/properties_dialog.py:34 mcomix/ui.py:443
 #: mcomix/library/watchlist.py:33
 msgid "_Close"
-msgstr "S_chließen"
+msgstr "Schl_ießen"
 
 #: mcomix/bookmark_dialog.py:59
 msgid "Type"
@@ -185,7 +182,7 @@ msgstr "! Callback-Funktion %(function)r fehlgeschlagen: %(error)s"
 
 #: mcomix/column_list.py:14
 msgid "New accelerator..."
-msgstr ""
+msgstr "Neues Tastenkürzel..."
 
 #: mcomix/comment_dialog.py:22 mcomix/preferences_dialog.py:388
 msgid "Comments"
@@ -237,14 +234,14 @@ msgid "Comment files"
 msgstr "Kommentare"
 
 #: mcomix/edit_dialog.py:157
-#, fuzzy, python-format
+#, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
-msgstr "! Konnte Archiv \"%s\" nicht erstellen"
+msgstr "! Konnte das Archiv %(archivefile)s nicht speichern: %(error)s"
 
 #: mcomix/edit_dialog.py:173
-#, fuzzy, python-format
+#, python-format
 msgid "! Could not remove %(file)s: %(error)s"
-msgstr "! Konnte %s nicht entfernen"
+msgstr "! Konnte %(file)s nicht entfernen: %(error)s"
 
 #: mcomix/edit_dialog.py:179
 msgid "The new archive could not be saved!"
@@ -409,7 +406,8 @@ msgstr ""
 #, python-format
 msgid ""
 "! Corrupt file \"%s\", deleting it; the last file read will not be reopened."
-msgstr "! Beschädigte Datei \"%s\", wird gelöscht; die zuletzt gelesene Datei wird "
+msgstr ""
+"! Beschädigte Datei \"%s\", wird gelöscht; die zuletzt gelesene Datei wird "
 "nicht wieder geöffnet."
 
 #: mcomix/file_provider.py:131
@@ -824,48 +822,41 @@ msgstr "_Löschen"
 
 #: mcomix/message_dialog.py:69
 msgid "Opening a book that was left part-read:"
-msgstr ""
+msgstr "Beim Öffnen eines teilweise gelesenen Buches:"
 
 #: mcomix/message_dialog.py:70
-#, fuzzy
 msgid "Continue from the last read page"
-msgstr "Auf Seite %d weiterlesen?"
+msgstr "Auf der zuletzt gelesenen Seite weiterlesen"
 
 #: mcomix/message_dialog.py:71
 msgid "Start at the first page"
-msgstr ""
+msgstr "Auf der ersten Seite beginnen"
 
 #: mcomix/message_dialog.py:73
-#, fuzzy
 msgid "Deleting the opened file:"
-msgstr "Schließt alle offenen Dateien."
+msgstr "Beim Löschen der geöffneten Datei:"
 
 #: mcomix/message_dialog.py:74
-#, fuzzy
 msgid "Delete it"
 msgstr "Löschen"
 
 #: mcomix/message_dialog.py:76
 msgid "Bookmarking a page that is bookmarked already:"
-msgstr ""
+msgstr "Beim Setzen eines Lesezeichens auf einer Seite, die bereits eines hat:"
 
 #: mcomix/message_dialog.py:77
-#, fuzzy
 msgid "Replace the existing bookmark"
-msgstr "Existierendes Lesezeichen auf Seite %s ersetzen?"
+msgstr "Bestehendes Lesezeichen ersetzen"
 
 #: mcomix/message_dialog.py:78
-#, fuzzy
 msgid "Keep both bookmarks"
-msgstr "Lesezeichen bearbeiten"
+msgstr "Beide Lesezeichen behalten"
 
 #: mcomix/message_dialog.py:80
-#, fuzzy
 msgid "Deleting books that are removed from the library:"
-msgstr "Bücher aus der Bibliothek entfernen?"
+msgstr "Beim Löschen von Büchern, die aus der Bibliothek entfernt werden:"
 
 #: mcomix/message_dialog.py:81
-#, fuzzy
 msgid "Delete them"
 msgstr "Löschen"
 
@@ -993,9 +984,9 @@ msgstr ""
 "speichern, und \"Nein\", um sie zu verwerfen."
 
 #: mcomix/page_image.py:170
-#, fuzzy, python-format
+#, python-format
 msgid "! Could not draw the next frame: %s"
-msgstr "Name konnte nicht zu »%s« geändert werden."
+msgstr "! Konnte das nächste Einzelbild nicht zeichnen: %s"
 
 #: mcomix/pageselect.py:29 mcomix/ui.py:432
 msgid "Go to page..."
@@ -1294,10 +1285,12 @@ msgstr ""
 msgid ""
 "Open the Save As dialog at the directory in which the last file was saved."
 msgstr ""
+"Öffnet den Dialog »Speichern unter« in dem Verzeichnis, in das zuletzt "
+"gespeichert wurde."
 
 #: mcomix/preferences_dialog.py:266
 msgid "Prompts answered for good"
-msgstr ""
+msgstr "Dauerhaft beantwortete Nachfragen"
 
 #: mcomix/preferences_dialog.py:284
 msgid "Use fullscreen by default"
@@ -1505,13 +1498,15 @@ msgstr ""
 
 #: mcomix/preferences_dialog.py:458
 msgid "Ask every time"
-msgstr ""
+msgstr "Jedes Mal nachfragen"
 
 #: mcomix/preferences_dialog.py:463
 msgid ""
 "What MComix answers this prompt with instead of asking. This is what the "
 "prompt's \"Do not ask again\" box sets."
 msgstr ""
+"Womit MComix diese Nachfrage beantwortet, statt zu fragen. Das ist es, was "
+"das Kästchen »Nicht noch einmal fragen« der Nachfrage setzt."
 
 #: mcomix/preferences_dialog.py:485
 msgid "Auto-detect (Default)"
@@ -1743,7 +1738,7 @@ msgstr "Eigentümer"
 
 #: mcomix/recent.py:115
 msgid "No entries found"
-msgstr ""
+msgstr "Keine Einträge gefunden"
 
 #: mcomix/run.py:42
 msgid "[OPTION...] [PATH]"
@@ -1967,11 +1962,7 @@ msgstr "Holländische Übersetzung"
 msgid "French translation"
 msgstr "Französische Übersetzung"
 
-#: mcomix/strings.py:47
-msgid "Polish translatin"
-msgstr "Polnische Übersetzung"
-
-#: mcomix/strings.py:48
+#: mcomix/strings.py:47 mcomix/strings.py:48
 msgid "Polish translation"
 msgstr "Polnische Übersetzung"
 
@@ -2054,7 +2045,7 @@ msgstr "! Konnte Vorschaubild \"%(thumbpath)s\" nicht speichern: %(error)s"
 
 #: mcomix/ui.py:424 mcomix/library/book_area.py:140
 msgid "_Copy"
-msgstr "Kopieren"
+msgstr "Ko_pieren"
 
 #: mcomix/ui.py:424
 msgid "Copies the current page to clipboard."
@@ -2157,7 +2148,7 @@ msgstr "_Vertikal spiegeln"
 
 #: mcomix/ui.py:453
 msgid "Saves the page the menu was opened over."
-msgstr ""
+msgstr "Speichert die Seite, über der das Menü geöffnet wurde."
 
 #: mcomix/ui.py:455
 msgid "_Zoom"
@@ -2181,7 +2172,7 @@ msgstr "Bea_rbeiten"
 
 #: mcomix/ui.py:461 mcomix/ui.py:462
 msgid "Open _with"
-msgstr "Ö_ffnen mit"
+msgstr "_Öffnen mit"
 
 #: mcomix/ui.py:463
 msgid "_File"
@@ -2197,7 +2188,7 @@ msgstr "_Werkzeuge"
 
 #: mcomix/ui.py:469
 msgid "_Transform image"
-msgstr "Bild ändern"
+msgstr "_Bild ändern"
 
 #: mcomix/ui.py:470
 msgid "_Auto-rotate image"
@@ -2265,8 +2256,8 @@ msgstr ""
 "Behält die derzeit ausgewählten Transformationen für die nächsten Seiten bei."
 
 #: mcomix/ui.py:488
-msgid "Start _slideshow"
-msgstr "Diaschau _starten"
+msgid "Start slid_eshow"
+msgstr "D_iaschau starten"
 
 #: mcomix/ui.py:489
 msgid "Magnifying _lens"
@@ -2300,7 +2291,7 @@ msgid "M_anual zoom mode"
 msgstr "M_anueller Vergrößerungsmodus"
 
 #: mcomix/ui.py:514
-msgid "_About"
+msgid "A_bout"
 msgstr "_Über"
 
 #: mcomix/ui.py:517
@@ -2312,8 +2303,8 @@ msgid "Proper_ties"
 msgstr "Eigenschaf_ten"
 
 #: mcomix/ui.py:523
-msgid "Pr_eferences"
-msgstr "Einstell_ungen"
+msgid "_Preferences"
+msgstr "_Einstellungen"
 
 #: mcomix/ui.py:527
 msgid "_Edit archive..."
@@ -2328,7 +2319,7 @@ msgid "_Open..."
 msgstr "Ö_ffnen ..."
 
 #: mcomix/ui.py:530
-msgid "En_hance image..."
+msgid "Enha_nce image..."
 msgstr "Bild aufbesser_n..."
 
 #: mcomix/ui.py:533
@@ -2346,9 +2337,8 @@ msgid "The archive is password-protected:"
 msgstr "Das Archiv ist passwortgeschützt:"
 
 #: mcomix/archive/password.py:25
-#, fuzzy
 msgid "Please enter the password to continue:"
-msgstr "Bitte geben Sie einen Namen für die neue Sammlung ein."
+msgstr "Bitte geben Sie das Passwort ein, um fortzufahren:"
 
 #: mcomix/archive/sevenzip_external.py:188
 #, python-format
@@ -2387,7 +2377,7 @@ msgstr "Füge »%s« hinzu ..."
 
 #: mcomix/library/backend.py:133 mcomix/library/backend.py:146
 #, python-format
-msgid "! Non-existant book #%i"
+msgid "! Non-existent book #%i"
 msgstr "! Nicht vorhandenes Buch #%i"
 
 #: mcomix/library/backend.py:164
@@ -2458,8 +2448,8 @@ msgid "Add more books to the library."
 msgstr "Weitere Bücher zu der Bibliothek hinzufügen."
 
 #: mcomix/library/book_area.py:131
-msgid "Remove from this _collection"
-msgstr "Aus _Sammlung entfernen"
+msgid "Remove _from this collection"
+msgstr "Aus Sa_mmlung entfernen"
 
 #: mcomix/library/book_area.py:132
 msgid "Removes the selected books from the current collection."
@@ -2588,7 +2578,7 @@ msgid "_Clean up"
 msgstr "_Säubern"
 
 #: mcomix/library/collection_area.py:118
-msgid "Removes no longer existant books from the collection."
+msgid "Removes no longer existent books from the collection."
 msgstr "Entfernt Bücher aus der Bibliothek, die nicht mehr existieren."
 
 #: mcomix/library/collection_area.py:121
