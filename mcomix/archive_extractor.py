@@ -1,4 +1,20 @@
-"""archive_extractor.py - Archive extraction class."""
+"""archive_extractor.py - Getting the pages of an archive onto disk.
+
+MComix reads pages as files, so an archive has to be unpacked before
+anything can be drawn.  The Extractor here does that in the background:
+setup() opens the archive and starts a thread listing what is in it,
+set_files() says which of those to unpack and in what order, and
+extract() starts the threads that write them out one at a time.  Each
+file that lands is announced twice over - through the file_extracted
+callback, and by a notify on the Condition setup() hands back, which is
+what lets a thread needing one particular page park until it is there
+rather than poll for it.
+
+The order matters because a reader is waiting on the page in front of
+them: the file handler moves what is wanted to the head of the list as
+the pages turn, so a book of two hundred pages opens on page one
+without unpacking the other hundred and ninety-nine first.
+"""
 
 
 import os
@@ -18,18 +34,18 @@ from collections.abc import Iterable, Sequence
 
 class Extractor:
 
-    """Extractor is a threaded class for extracting different archive formats.
+    """One archive being unpacked, and the threads doing it.
 
-    The Extractor can be loaded with paths to archives and a path to a
-    destination directory. Once an archive has been set and its contents
-    listed, it is possible to filter out the files to be extracted and set the
-    order in which they should be extracted.  The extraction can then be
-    started in a new thread in which files are extracted one by one, and a
-    signal is sent on a condition after each extraction, so that it is possible
-    for other threads to wait on specific files to be ready.
+    An extractor is used for one archive: setup() takes the archive and
+    the directory to unpack it into, and close() ends it.  Between
+    those, set_files() and extract() can be called as often as the
+    reader turns pages - each call re-queues what is left in the new
+    order.
 
-    Note: Support for gzip/bzip2 compressed tar archives is limited, see
-    set_files() for more info.
+    Two of its methods are callbacks rather than work: contents_listed()
+    and file_extracted() do nothing themselves and exist to be listened
+    to, which mcomix.callback arranges to happen on the main thread
+    whichever thread announced it.
     """
 
     def __init__(self) -> None:
@@ -62,9 +78,17 @@ class Extractor:
 
     def setup(self, src: str, dst: str,
               type: int | None = None) -> threading.Condition:
-        """Setup the extractor with archive <src> and destination dir <dst>.
-        Return a threading.Condition related to the is_ready() method, or
-        None if the format of <src> isn't supported.
+        """Open the archive <src> and unpack it into <dst> from now on.
+
+        Returns the Condition that is notified after each file lands, so
+        that a caller can wait on one becoming ready; is_ready() is what
+        such a wait tests.  <type> names the format where the caller
+        already knows it, and is worked out from the file otherwise.
+
+        Raises ArchiveException where the format is not one MComix
+        reads, rather than answering with a half-set-up extractor.
+        Listing the archive starts here, in a thread of its own, and
+        contents_listed() says when it is done.
         """
         self._src = src
         self._dst = dst
@@ -108,11 +132,16 @@ class Extractor:
         in the archive using get_files(), then filter and/or permute this
         list before sending it back using set_files().
 
-        Note: Random access on gzip or bzip2 compressed tar archives is
-        no good idea. These formats are supported *only* for backwards
-        compability. They are fine formats for some purposes, but should
-        not be used for scanned comic books. So, we cheat and ignore the
-        ordering applied with this method on such archives.
+        Files already unpacked are dropped from the list; a file being
+        unpacked at this moment is not, so it is not begun again.  The
+        order is only a request: a solid archive is unpacked in one pass
+        in the order it is stored in, extract() below saying why, so
+        what this sets for one of those is which files are wanted and
+        not which comes first.
+
+        Nothing happens for an archive that has not been listed yet,
+        there being no list to filter.  The file handler sets the files
+        again from contents_listed().
         """
         with self._condition:
             if not self._contents_listed:
@@ -143,9 +172,21 @@ class Extractor:
             self._setupped = False
 
     def extract(self) -> None:
-        """Start extracting the files in the file list one by one using a
-        new thread. Every time a new file is extracted a notify() will be
-        signalled on the Condition that was returned by setup().
+        """Start unpacking the files set_files() named, and return.
+
+        Every file that lands notifies the Condition setup() returned
+        and announces itself through file_extracted().  Calling this
+        again while it is running drops the orders that have not been
+        started and queues what is left over, which is how a page turn
+        moves the page being waited for to the front.
+
+        How many threads do the work is the archive's to say.  As many
+        as the "max extract threads" preference allows where the format
+        can be read by several at once, so that one slow page does not
+        hold up the ones behind it; a single thread for a solid archive,
+        where reaching a member means decompressing everything before it
+        and the whole batch is cheaper in one pass than any one member
+        is on its own.
         """
         with self._condition:
             if not self._contents_listed:
@@ -164,7 +205,11 @@ class Extractor:
             else:
                 self._extract_thread.clear_orders()
             if self._opened_archive.is_solid():
-                # Sort files so we don't queue the same batch multiple times.
+                # One order for the batch, sorted: the worker thread
+                # tells two orders apart by their first element, so the
+                # same set of files has to come out under the same name
+                # however the reader's page turns ordered it, or the
+                # batch would be queued again beside the one running.
                 self._extract_thread.append_order(sorted(self._files))
             else:
                 self._extract_thread.extend_orders(self._files)
@@ -172,26 +217,49 @@ class Extractor:
     @callback.Callback
     def contents_listed(self, extractor: 'Extractor',
                         files: list[str]) -> None:
-        """ Called after the contents of the archive has been listed. """
+        """Announce that the archive has been listed, with its files.
+
+        A callback with no body of its own: whoever wants to know binds
+        to it, and mcomix.callback runs them on the main thread.
+        """
         pass
 
     @callback.Callback
     def file_extracted(self, extractor: 'Extractor',
                        filename: str) -> None:
-        """ Called whenever a new file is extracted and ready. """
+        """Announce that <filename> is now on disk and can be read.
+
+        The other half of the pair with contents_listed(): a listener
+        that only wants to be told, rather than to wait, binds here
+        instead of parking on the Condition.
+        """
         pass
 
     def close(self) -> None:
-        """Close any open file objects, need only be called manually if the
-        extract() method isn't called.
+        """Stop the threads and close the archive.
+
+        Always called, whether anything was unpacked or not: this is
+        what releases the handle the archive is open on, and stop()
+        alone does not.  The files already unpacked are left where they
+        are, their directory being the caller's to remove.
         """
         self.stop()
         if self._archive:
             self._archive.close()
 
     def _extraction_finished(self, name: str) -> None:
+        """Mark <name> as unpacked and wake everything waiting for it.
+
+        A name that is no longer pending is still marked and still
+        announced.  set_files() may narrow the list while a file is
+        being unpacked - filtering it is what the method is for - and
+        the file lands all the same; taking the wake-up away from it
+        because the list had moved on would leave every thread in
+        FileHandler._wait_on_file() parked on a page that is on disk.
+        """
         with self._condition:
-            self._files.remove(name)
+            if name in self._files:
+                self._files.remove(name)
             self._extracted.add(name)
             self._condition.notify_all()
         self.file_extracted(self, name)
@@ -209,25 +277,30 @@ class Extractor:
             self._extract_file(order)
 
     def _extract_all_files(self, files: Sequence[str]) -> None:
+        """Unpack <files> in one pass, which is what a solid archive wants.
 
-        # With multiple extractions for each pass, some of the files might have
-        # already been extracted.
+        The ones already on disk are dropped first: a batch queued
+        before the last one finished can name files that have landed
+        since, and unpacking a page twice would take it out of the
+        pending list twice.  What is left is sorted, for the same reason
+        the caller sorts - so that one set of files is one order.
+        """
         with self._condition:
             files = list(set(files) - self._extracted)
             files.sort()
 
         try:
-            # log.debug('Extracting from "%s" to "%s": "%s"', self._src, self._dst, '", "'.join(files))
             for f in self._opened_archive.iter_extract(files, self._dst):
                 if self._extract_thread.must_stop():
                     return
                 self._extraction_finished(f)
 
         except Exception as ex:
-            # Better to ignore any failed extractions (e.g. from a corrupt
-            # archive) than to crash here and leave the main thread in a
-            # possible infinite block. Damaged or missing files *should* be
-            # handled gracefully by the main program anyway.
+            # A file that cannot be unpacked is logged and left out
+            # rather than raised over: the page is missing either way,
+            # and the window handles a missing page, where a thread that
+            # died here would leave whoever is waiting on the condition
+            # waiting for good.
             log.error(_('! Extraction error: %s'), ex)
             log.debug('Traceback:\n%s', traceback.format_exc())
 
@@ -238,14 +311,14 @@ class Extractor:
         """
 
         try:
-            # log.debug('Extracting from "%s" to "%s": "%s"', self._src, self._dst, name)
             self._opened_archive.extract(name, self._dst)
 
         except Exception as ex:
-            # Better to ignore any failed extractions (e.g. from a corrupt
-            # archive) than to crash here and leave the main thread in a
-            # possible infinite block. Damaged or missing files *should* be
-            # handled gracefully by the main program anyway.
+            # A file that cannot be unpacked is logged and left out
+            # rather than raised over: the page is missing either way,
+            # and the window handles a missing page, where a thread that
+            # died here would leave whoever is waiting on the condition
+            # waiting for good.
             log.error(_('! Extraction error: %s'), ex)
             log.debug('Traceback:\n%s', traceback.format_exc())
 
@@ -254,6 +327,13 @@ class Extractor:
         self._extraction_finished(name)
 
     def _list_contents(self, archive: archive_base.BaseArchive) -> None:
+        """Read what is in <archive>, in the listing thread.
+
+        Nothing is set until the whole listing is in hand, so a caller
+        that asks get_files() part way through is told there is no list
+        yet rather than handed half of one.  A listing that was stopped
+        sets nothing at all.
+        """
         files = []
         for f in archive.iter_contents():
             if self._list_thread.must_stop():

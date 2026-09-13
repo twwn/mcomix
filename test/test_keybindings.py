@@ -243,17 +243,34 @@ class DocumentedMouseBindingsTest(MComixTest):
     wrong about GTK.
     """
 
-    #: The page's name for each button the handlers act on.
-    SPELLINGS = {1: 'LeftMouse', 2: 'MiddleMouse', 3: 'RightMouse'}
+    #: The page's name for each button the handlers act on.  The thumb
+    #: buttons are named for what a mouse prints on them, which is how a
+    #: reader knows them; nothing prints a number on a mouse button.
+    SPELLINGS = {1: 'LeftMouse', 2: 'MiddleMouse', 3: 'RightMouse',
+                 8: 'BackMouse', 9: 'ForwardMouse'}
 
-    def _documented_buttons(self):
-        """Every Mouse<number> the keybindings page names."""
+    #: Any word with Mouse in it, which is how the page names both the
+    #: buttons and the wheel.
+    MOUSE_WORD = re.compile(r'\b\w*Mouse\w*\b')
+
+    #: The wheel among those: GDK reports it as a scroll rather than as
+    #: a button, so it is no business of the click handlers.
+    WHEEL_WORD = re.compile(r'\bMouseWheel\w*\b')
+
+    def _named_on_the_page(self):
+        """Every button name wiki/content/Keybindings.md uses."""
         page = os.path.join(os.path.dirname(os.path.dirname(
             os.path.abspath(mcomix.event.__file__))),
             'wiki', 'content', 'Keybindings.md')
         with open(page, encoding='utf-8') as fp:
-            return {int(number) for number in
-                    re.findall(r'\bMouse(\d+)\b', fp.read())}
+            return set(self.MOUSE_WORD.findall(
+                self.WHEEL_WORD.sub('', fp.read())))
+
+    def _documented_buttons(self):
+        """Every button the keybindings page names, by number."""
+        by_name = {name: button for button, name in self.SPELLINGS.items()}
+        return {by_name[name] for name in self._named_on_the_page()
+                if name in by_name}
 
     def _handled_buttons(self):
         """Every button the click handlers in event.py branch on."""
@@ -280,6 +297,13 @@ class DocumentedMouseBindingsTest(MComixTest):
         self.assertEqual(set(), self._documented_buttons()
                          - self._handled_buttons())
 
+    def test_the_page_names_every_button_under_a_name_spellings_knows(self):
+        """A button documented under a name nothing here recognises is a
+        binding the comparison above quietly skips, which is how "Mouse4"
+        stayed on the page while it could not fire."""
+        self.assertEqual(set(), self._named_on_the_page()
+                         - set(self.SPELLINGS.values()))
+
     def test_the_handlers_act_on_no_button_gdk_reports_as_a_scroll(self):
         """Buttons 4 and 5 are the wheel on X11 and arrive as scroll
         events: a branch on either of them in a click handler is dead."""
@@ -288,7 +312,7 @@ class DocumentedMouseBindingsTest(MComixTest):
     def test_the_buttons_the_handlers_do_act_on_are_the_expected_ones(self):
         """So that a branch added or lost shows up here rather than only
         in whichever of the two assertions above happens to cover it."""
-        self.assertEqual({1, 2, 3}, self._handled_buttons())
+        self.assertEqual({1, 2, 3, 8, 9}, self._handled_buttons())
 
 
 class DocumentedKeyBindingsTest(MComixTest):

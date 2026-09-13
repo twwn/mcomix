@@ -327,4 +327,108 @@ class MnemonicTest(MComixTest):
                         taken[key] = label
 
 
+class DialogMnemonicTest(MComixTest):
+
+    """No two labels a dialog shows at once answer to the same Alt key.
+
+    MnemonicTest above covers the menus, where one level of one menu is a
+    scope.  A dialog is different: its buttons and its field labels are all
+    on screen together, so they are one scope, and GTK answers a key two of
+    them share by moving the highlight between them instead of activating
+    either.
+
+    The scopes below are written out rather than collected from the
+    modules, because a module is not a scope.  message_dialog.py holds five
+    button labels and Gtk.ButtonsType shows one set of them at a time;
+    file_chooser_base_dialog.py has a Cancel/Open pair and a Cancel/Save
+    pair, never both; and the preferences dialog has one button whose label
+    switches with the tab.  Grouping by module reports all of those as
+    clashes and none of them is one.
+    """
+
+    #: Every set of labels a reader can see at one time, by what to call it
+    #: in a failure.
+    SCOPES = {
+        'bookmark dialog': ('C_lear bookmarks...', '_Remove', '_Close'),
+        'archive editor': ('_Cancel', 'A_pply', 'Save _As', '_Import'),
+        'enhance dialog': ('_Revert', '_Save', '_OK', '_Brightness:',
+                           '_Contrast:', 'Sat_uration:', 'S_harpness:',
+                           '_Automatically adjust contrast',
+                           '_Invert image colors'),
+        'file chooser, opening': ('_Cancel', '_Open'),
+        'file chooser, saving': ('_Cancel', '_Save'),
+        'library file chooser': ('_Cancel', '_Add'),
+        'library control area': ('_Search:', '_Watch list', '_Open list'),
+        'watch list': ('_Scan now', '_Close', '_Add', '_Remove',
+                       'Automatically scan for new books when library is'
+                       ' _opened'),
+        'preferences, shortcuts tab': ('_Close', '_Reset keys'),
+        'preferences, other tabs': ('_Close', 'Clear _dialog choices'),
+        'message dialog, yes/no': ('_No', '_Yes'),
+        'message dialog, ok/cancel': ('_Cancel', '_OK'),
+        'bookmark menu': ('Add _Bookmark', '_Edit Bookmarks...',
+                          'C_lear bookmarks...'),
+    }
+
+    @classmethod
+    def _clashing_scopes(cls, translate):
+        """The scopes in which <translate> puts two labels on one key."""
+        clashing = {}
+        for scope, msgids in cls.SCOPES.items():
+            taken = {}
+            for msgid in msgids:
+                label = translate(msgid)
+                key = MnemonicTest._mnemonic(label)
+                if key is None:
+                    continue
+                if key in taken:
+                    clashing.setdefault(scope, []).append(
+                        (key, taken[key], label))
+                else:
+                    taken[key] = label
+        return clashing
+
+    def test_every_label_a_scope_names_is_in_the_template(self):
+        """A label renamed in the source would otherwise drop out of its
+        scope silently, and the scope would go on being checked with one
+        label fewer."""
+        template = set(read_msgids(TEMPLATE_PATH))
+        missing = sorted({msgid for msgids in self.SCOPES.values()
+                          for msgid in msgids} - template)
+        self.assertEqual([], missing)
+
+    def test_every_label_a_scope_names_carries_a_mnemonic(self):
+        without = sorted({msgid for msgids in self.SCOPES.values()
+                          for msgid in msgids
+                          if MnemonicTest._mnemonic(msgid) is None})
+        self.assertEqual([], without)
+
+    def test_no_dialog_has_two_labels_on_one_key_in_english(self):
+        """The English labels are the program's own, so none of this is a
+        translator's to decide: Clear bookmarks shared Alt+C with Close,
+        Apply shared Alt+A with Save As, and Saturation shared it with
+        Automatically adjust contrast."""
+        self.assertEqual({}, self._clashing_scopes(lambda msgid: msgid))
+
+    def test_no_dialog_has_two_labels_on_one_key_in_any_translation(self):
+        """Seventy-one of these were left when the test was written, in
+        twenty-two languages, and they were recorded in a list of known
+        clashes rather than fixed: which letter a translated label should
+        answer to instead has to be a letter that language's wording
+        actually contains, so it is a translator's decision and not a
+        script's.  They have all been made, and a new one is a failure
+        rather than something to add to a list."""
+        found = {}
+        for language in sorted(
+                os.path.basename(os.path.dirname(os.path.dirname(path)))
+                for path in glob.glob(os.path.join(
+                    MESSAGES_PATH, '*', 'LC_MESSAGES', 'mcomix.mo'))):
+            catalogue = gettext.translation(
+                'mcomix', MESSAGES_PATH, languages=[language])
+            for scope, clashes in self._clashing_scopes(
+                    catalogue.gettext).items():
+                found[(language, scope)] = clashes
+        self.assertEqual({}, found, 'a dialog has two labels on one key')
+
+
 # vim: expandtab:sw=4:ts=4

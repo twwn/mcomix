@@ -68,6 +68,12 @@ class _LibraryDialog(Gtk.Window):
         self.collection_area = library_collection_area._CollectionArea(self)
 
         self.backend.watchlist.new_files_found += self._new_files_found
+        self.backend.watchlist.scan_finished += self._scan_finished
+        #: How many scans are walking the watch list right now.  The
+        #: watch list dialog can start one while the one the library
+        #: opened with is still running, and the pointer goes back to
+        #: normal when the last of them is over, not the first.
+        self._scans_running = 0
 
         # See the note on the same conversion in mcomix/main.py: Gtk.Grid
         # takes a corner and a size where Gtk.Table took edges, and carries
@@ -120,7 +126,33 @@ class _LibraryDialog(Gtk.Window):
 
         if self.backend.watchlist.get_watchlist():
             self.set_status_message(_("Scanning for new books..."))
+            self._scans_running += 1
+            self.set_busy(True)
             self.backend.watchlist.scan_for_new_files()
+
+    def _scan_finished(self) -> None:
+        """Bound to the watch list's scan_finished: a walk is over.
+
+        Whether it found anything is _new_files_found()'s business; this
+        is only about the pointer, which has been saying the library is
+        working since the scan started and may not stop while a second
+        scan is still going.
+        """
+        self._scans_running = max(0, self._scans_running - 1)
+        if not self._scans_running:
+            self.set_busy(False)
+
+    def set_busy(self, busy: bool) -> None:
+        """Show the wait pointer over the library window, or stop.
+
+        The main window has a cursor handler, but it draws on the page
+        area of that window, which a reader looking at the library is
+        not looking at.  A pointer over this window is this window's to
+        set, and it goes back to inheriting whatever the widget under it
+        asks for rather than to a cursor of its own.
+        """
+        self.set_cursor(Gdk.Cursor.new_from_name('wait', None)
+                        if busy else None)
 
     def _new_files_found(self, filelist: Sequence[str],
                          watchentry: "backend_types._WatchListEntry") -> None:
@@ -165,6 +197,7 @@ class _LibraryDialog(Gtk.Window):
             prefs['lib window width'] = self.get_width()
             prefs['lib window height'] = self.get_height()
         self.backend.watchlist.new_files_found -= self._new_files_found
+        self.backend.watchlist.scan_finished -= self._scan_finished
         self.book_area.stop_update()
         self.book_area.close()
         file_chooser_library_dialog.close_library_filechooser_dialog()

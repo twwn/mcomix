@@ -101,16 +101,20 @@ class OpenWithMenu:
         if not _openwith_edit_diag:
             _openwith_edit_diag = openwith.OpenWithEditor(self._window,
                                                           self._openwith_manager)
-            _openwith_edit_diag.connect_after('response', self._dialog_closed)
+            _openwith_edit_diag.editor_closed += self._dialog_closed
 
         _openwith_edit_diag.set_visible(True)
         _openwith_edit_diag.present()
 
     def _dialog_closed(self, *args: object) -> None:
-        """ Watch for the dialog getting closed and unset the local instance. """
+        """Forget the editor once it has taken itself down.
+
+        This used to be bound to the editor's 'response' and destroy it,
+        which took the window away before an editor with unsaved changes
+        had finished asking about them.  The editor closes itself now
+        and says when it has.
+        """
         global _openwith_edit_diag
-        if _openwith_edit_diag is not None:
-            _openwith_edit_diag.destroy()
         _openwith_edit_diag = None
 
 # vim: expandtab:sw=4:ts=4

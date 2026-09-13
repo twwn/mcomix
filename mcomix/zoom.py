@@ -243,9 +243,22 @@ class ZoomModel:
     def _calc_limits(union_size: Sequence[float], screen_size: Sequence[int],
                      fitmode: constants.ZoomMode,
                      allow_upscaling: bool) -> Sequence[int | None]:
-        """ Returns a list or a tuple with the i-th element set to int x if
-        fitmode limits the size at the i-th axis to x, or None if fitmode has no
-        preference for this axis. """
+        """The size <fitmode> allows on each axis, or None where it allows any.
+
+        <union_size> is the room the pages take standing side by side,
+        and <screen_size> the room there is for them.
+
+        BEST is bounded by the screen on both axes and WIDTH and HEIGHT
+        on the one they name, which leaves the other free to grow as far
+        as the aspect ratio takes it.  SIZE is the only mode that ignores
+        the window: it answers with the four "fit to size" preferences,
+        one pair for pages that are wider than they are tall and another
+        for the rest, so that a spread and a single page can be given
+        different sizes.  MANUAL names no limit at all - the reader's own
+        zoom is the whole of the answer - except that a book which
+        already fits on screen and is allowed to be enlarged is fitted to
+        it, so that "stretch small images" has something to stretch to.
+        """
         manual = fitmode == constants.ZoomMode.MANUAL
         if fitmode == constants.ZoomMode.BEST or \
                 (manual and allow_upscaling and all(tools.smaller(union_size, screen_size))):

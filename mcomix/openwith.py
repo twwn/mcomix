@@ -366,6 +366,9 @@ class OpenWithEditor(Dialog):
         self._setup_table()
 
         self.connect('response', self._response)
+        # After the base class's own handler, which turns the close into
+        # a response; this one only stops the window going with it.
+        self.connect('close-request', self._refuse_to_close)
         self._window.page_changed += self.test_command
         self._window.filehandler.file_opened += self.test_command
         self._window.filehandler.file_closed += self.test_command
@@ -586,24 +589,64 @@ class OpenWithEditor(Dialog):
         self._changed = True
 
     def _response(self, dialog: "OpenWithEditor", response: int) -> None:
+        """Answer the editor: Save saves, anything else offers to.
+
+        Every way out ends in close_editor(), and the editor is still on
+        screen while the question about unsaved changes is asked.  The
+        menu used to destroy it the moment any answer came, which meant
+        the reader was asked whether to save a list that had already
+        gone: the prompt stood over the window it belonged to, and the
+        window was not there any more.
+        """
         if response == Response.ACCEPT:
             # The Save button is only enabled if all commands are valid
             self.save()
-            self.set_visible(False)
+            self.close_editor()
+        elif self._changed:
+            confirm_diag = message_dialog.MessageDialog(
+                self, modal=True, buttons=Gtk.ButtonsType.YES_NO)
+            confirm_diag.set_text(_('Save changes to commands?'),
+                                  _('You have made changes to the list of external commands that '
+                                    'have not been saved yet. Press "Yes" to save all changes, '
+                                    'or "No" to discard them.'))
+
+            def confirmed(answer: int) -> None:
+                if answer == Response.YES:
+                    self.save()
+                self.close_editor()
+
+            confirm_diag.run_async(confirmed)
         else:
-            if self._changed:
-                confirm_diag = message_dialog.MessageDialog(
-                    self, modal=True, buttons=Gtk.ButtonsType.YES_NO)
-                confirm_diag.set_text(_('Save changes to commands?'),
-                                      _('You have made changes to the list of external commands that '
-                                        'have not been saved yet. Press "Yes" to save all changes, '
-                                        'or "No" to discard them.'))
+            self.close_editor()
 
-                def confirmed(answer: int) -> None:
-                    if answer == Response.YES:
-                        self.save()
+    def close_editor(self) -> None:
+        """Take the editor down, and say so.
 
-                confirm_diag.run_async(confirmed)
+        The editor closes itself rather than leaving that to whoever
+        opened it, because only it knows when the question about unsaved
+        changes has been answered.
+        """
+        self.destroy()
+        self.editor_closed()
+
+    @callback.Callback
+    def editor_closed(self) -> None:
+        """Announce that the editor has gone, once it has.
+
+        Whoever opened it keeps the one instance there is meant to be,
+        and needs to forget it when it goes.
+        """
+        pass
+
+    def _refuse_to_close(self, *args: object) -> bool:
+        """Never let the window manager take the editor down.
+
+        The base class has already turned the close into a response by
+        the time this runs, and _response() above closes the editor when
+        it is ready to - which for an editor with unsaved changes is
+        after the reader has answered, not before.
+        """
+        return True
 
     def _quote_if_necessary(self, arg: str) -> str:
         """ Quotes a command line argument if necessary. """

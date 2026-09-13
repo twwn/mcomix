@@ -10,6 +10,7 @@ import tarfile
 import unittest
 import unittest.mock
 import zipfile
+import xml.etree.ElementTree as ElementTree
 
 from . import MComixTest, get_testfile_path
 
@@ -244,6 +245,131 @@ class WriterTest(MComixTest):
         with unittest.mock.patch.object(archive_packer, 'rar_executable',
                                         lambda: None):
             self.assertFalse(archive_packer.can_write(constants.RAR))
+
+
+class WriteArchiveTest(MComixTest):
+
+    """write_archive(), and the ComicInfo.xml it puts in every archive.
+
+    A book saved without one is a ZIP of pictures to every other reader,
+    so one goes in; one the archive already carried is kept as it is
+    unless a page added or removed has made its count wrong.
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.pages = [get_testfile_path('images', name)
+                      for name in ('01-JPG-Indexed.jpg', '02-JPG-RGB.jpg',
+                                   '03-PNG-RGB.png')]
+        self.directory = os.path.join(self.tmp_dir, 'books')
+        os.makedirs(self.directory)
+        self.archive = os.path.join(self.directory, 'packed.cbz')
+
+    def _write(self, pages=None, carried_files=None):
+        archive_packer.write_archive(
+            self.archive, self.pages if pages is None else pages, [],
+            carried_files=carried_files)
+
+    def _carried(self, body, name='ComicInfo.xml'):
+        """An existing ComicInfo.xml, as the file handler hands one over."""
+        path = os.path.join(self.tmp_dir, 'carried.xml')
+        with open(path, 'wb') as fp:
+            fp.write(body)
+        return {path: name}
+
+    def _read(self, name='ComicInfo.xml'):
+        with zipfile.ZipFile(self.archive) as packed:
+            return packed.read(name)
+
+    def _names(self):
+        with zipfile.ZipFile(self.archive) as packed:
+            return packed.namelist()
+
+    def test_an_archive_written_from_nothing_carries_a_comicinfo(self):
+        self._write()
+        self.assertIn('ComicInfo.xml', self._names())
+        root = ElementTree.fromstring(self._read())
+        self.assertEqual('3', root.findtext('PageCount'))
+
+    def test_a_tar_carries_one_as_well_as_a_zip_does(self):
+        """ComicInfo.xml is what a comic archive carries, whatever the
+        container is: a CBT and a CB7 are read by the same programs a
+        CBZ is, and the file goes in before the format is chosen."""
+        self.archive = os.path.join(self.directory, 'packed.cbt')
+        archive_packer.write_archive(self.archive, self.pages, [],
+                                     archive_type=constants.TAR)
+        with tarfile.open(self.archive) as written:
+            self.assertIn('ComicInfo.xml', written.getnames())
+            body = written.extractfile('ComicInfo.xml').read()
+        self.assertEqual('3',
+                         ElementTree.fromstring(body).findtext('PageCount'))
+
+    def test_the_comicinfo_counts_the_pages_that_were_written(self):
+        self._write(pages=self.pages[:2])
+        root = ElementTree.fromstring(self._read())
+        self.assertEqual('2', root.findtext('PageCount'))
+        self.assertEqual(2, len(root.find('Pages').findall('Page')))
+
+    def test_one_that_still_counts_the_pages_is_carried_untouched(self):
+        body = (b'<ComicInfo><Series>S</Series>'
+                b'<PageCount>3</PageCount></ComicInfo>')
+        self._write(carried_files=self._carried(body))
+        self.assertEqual(body, self._read())
+
+    def test_one_a_deletion_has_invalidated_is_written_again(self):
+        self._write(pages=self.pages[:2], carried_files=self._carried(
+            b'<ComicInfo><Series>S</Series>'
+            b'<PageCount>3</PageCount></ComicInfo>'))
+        root = ElementTree.fromstring(self._read())
+        self.assertEqual('2', root.findtext('PageCount'))
+        self.assertEqual('S', root.findtext('Series'),
+                         'the rewrite dropped what it does not describe')
+
+    def test_a_rewritten_one_stays_where_the_archive_kept_it(self):
+        """Carrying a file means carrying it where it was; a copy at the
+        root would be a second ComicInfo.xml rather than the same one."""
+        self._write(pages=self.pages[:1], carried_files=self._carried(
+            b'<ComicInfo><PageCount>3</PageCount></ComicInfo>',
+            name='meta/ComicInfo.xml'))
+        self.assertEqual(['meta/ComicInfo.xml'],
+                         [name for name in self._names()
+                          if name.endswith('ComicInfo.xml')])
+        root = ElementTree.fromstring(self._read('meta/ComicInfo.xml'))
+        self.assertEqual('1', root.findtext('PageCount'))
+
+    def test_one_that_cannot_be_read_is_written_again(self):
+        """Carried but unreadable is not the same as absent."""
+        self._write(carried_files={'/no/such/ComicInfo.xml': 'ComicInfo.xml'})
+        root = ElementTree.fromstring(self._read())
+        self.assertEqual('3', root.findtext('PageCount'))
+
+    def test_one_handed_over_as_a_comment_is_written_again_too(self):
+        """The default comment extensions take in .xml, so a book's
+        ComicInfo.xml usually comes as a comment rather than as a carried
+        file.  The comment was packed under that name and the rewrite
+        skipped as a name already taken, so a book that had lost a page
+        kept a count that still named it."""
+        comment = os.path.join(self.tmp_dir, 'ComicInfo.xml')
+        with open(comment, 'wb') as fp:
+            fp.write(b'<ComicInfo><Series>S</Series>'
+                     b'<PageCount>3</PageCount></ComicInfo>')
+        archive_packer.write_archive(self.archive, self.pages[:2], [comment])
+        self.assertEqual(['ComicInfo.xml'],
+                         [name for name in self._names()
+                          if name.lower().endswith('comicinfo.xml')])
+        root = ElementTree.fromstring(self._read())
+        self.assertEqual('2', root.findtext('PageCount'))
+        self.assertEqual('S', root.findtext('Series'),
+                         'the rewrite dropped what it does not describe')
+
+    def test_nothing_is_left_beside_the_archive_that_was_written(self):
+        self._write()
+        self.assertEqual(['packed.cbz'], os.listdir(self.directory))
+
+    def test_nothing_is_left_beside_an_archive_that_failed(self):
+        with self.assertRaises(OSError):
+            self._write(pages=self.pages + ['/no/such/page.jpg'])
+        self.assertEqual([], os.listdir(self.directory))
 
 
 # vim: expandtab:sw=4:ts=4

@@ -226,6 +226,12 @@ class FiniteLayout:  # 2D only
         return self.orientation
 
     def set_orientation(self, orientation: Sequence[int]) -> None:
+        """Set which way each axis runs, 1 forwards and -1 backwards.
+
+        Manga mode is the reason there is one: it runs the distribution
+        axis backwards, so that the first page is the rightmost.  Nothing
+        is laid out again here - the caller does that.
+        """
         self.orientation = orientation
 
     def _reset(self, content_sizes: Sequence[Sequence[int]],
@@ -233,6 +239,22 @@ class FiniteLayout:  # 2D only
                viewport_size: Sequence[int], orientation: Sequence[int],
                spacing: int, wrap_individually: bool,
                distribution_axis: int, alignment_axis: int) -> None:
+        """Lay the pages out afresh and work out what can be scrolled.
+
+        One Box per page, of the sizes in <content_sizes>, centred against
+        each other along <alignment_axis> and set side by side along
+        <distribution_axis> with <spacing> between them.  Each then gets a
+        wrapper Box saying how far the viewport may move over it: one
+        wrapper per page where <wrap_individually> holds, so that scrolling
+        stops at each page in turn, and otherwise a single wrapper round
+        the lot.  <content_distorted> says which pages were scaled without
+        keeping their ratio, which is what decides whether a page is
+        allowed to be scrolled at all.
+
+        Everything here is in the layout's own coordinates, with the union
+        of the pages at the origin; set_viewport_position() is what moves
+        the window's view over them afterwards.
+        """
         # The Boxes are laid out left to right and reversed afterwards
         # for an axis that runs the other way, rather than the
         # distribution being taught to run backwards.

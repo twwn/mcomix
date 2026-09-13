@@ -447,7 +447,8 @@ class _WatchList:
 
         The scan runs in a thread of its own and this returns at once.
         Each watched directory is reported through new_files_found()
-        when it has been walked.
+        when it has been walked, and scan_finished() says when the last
+        of them has been.
         """
         thread = threading.Thread(target=self._scan_for_new_files_thread)
         thread.name += '-scan_for_new_files'
@@ -455,14 +456,19 @@ class _WatchList:
 
     def _scan_for_new_files_thread(self) -> None:
         """The body of the scan thread."""
-        # A book that is in no collection but "Recent" is in the library
-        # only because it was read once, so it still counts as new: the
-        # scan will add it to the collection the directory is watched
-        # for.
-        existing_books = self.backend.get_paths_of_books_outside_recent()
-        for entry in self.get_watchlist():
-            new_files = entry.get_new_files(existing_books)
-            self.new_files_found(new_files, entry)
+        try:
+            # A book that is in no collection but "Recent" is in the
+            # library only because it was read once, so it still counts
+            # as new: the scan will add it to the collection the
+            # directory is watched for.
+            existing_books = self.backend.get_paths_of_books_outside_recent()
+            for entry in self.get_watchlist():
+                new_files = entry.get_new_files(existing_books)
+                self.new_files_found(new_files, entry)
+        finally:
+            # Whatever went wrong walking a directory, the scan is over
+            # and whoever is showing that it is running has to be told.
+            self.scan_finished()
 
     def _result_row_to_watchlist_entry(  # type: ignore[explicit-any]  # a row holds whatever the query selected
             self, row: Sequence[Any]) -> '_WatchListEntry':
@@ -491,6 +497,18 @@ class _WatchList:
         point of the call is the listeners the Callback decorator runs
         afterwards, in the main thread rather than in the scan thread
         this is called from.
+        """
+        pass
+
+    @callback.Callback
+    def scan_finished(self) -> None:
+        """Called when the last watched directory has been walked.
+
+        The listeners run in the main thread, after those of every
+        new_files_found() the scan made: both are handed to the main
+        thread through the same idle queue, which keeps them in the
+        order they were called in.  The body does nothing, for the same
+        reason new_files_found()'s does.
         """
         pass
 

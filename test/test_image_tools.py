@@ -12,6 +12,7 @@ from difflib import unified_diff
 
 from . import MComixTest, get_testfile_path
 
+from mcomix import constants
 from mcomix import image_tools
 from mcomix import preferences
 from mcomix.preferences import prefs
@@ -748,3 +749,96 @@ class PixbufToTextureTest(MComixTest):
         before = self._downloaded(texture)
         pixbuf.fill(0x000000ff)
         self.assertEqual(self._downloaded(texture), before)
+
+
+class CombinePixbufsTest(MComixTest):
+
+    """Two pages copied into the one image a spread makes.
+
+    Only the clipboard asks for this, and it asks with the pages at the
+    size they came in at rather than the size they are shown at, so two
+    scans of different heights are the usual case rather than a corner.
+    It also asks along whichever axis the view distributes the pages on,
+    which a quarter turn of the view changes from the width to the
+    height.
+    """
+
+    def _solid(self, width, height, colour, has_alpha=False):
+        pixbuf = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, has_alpha,
+                                      8, width, height)
+        pixbuf.fill(colour)
+        return pixbuf
+
+    def _pixel(self, pixbuf, x, y):
+        channels = pixbuf.get_n_channels()
+        offset = y * pixbuf.get_rowstride() + x * channels
+        return tuple(pixbuf.get_pixels()[offset:offset + channels])
+
+    #: Opaque red and opaque green, as Pixbuf.fill() takes them.
+    RED = 0xFF0000FF
+    GREEN = 0x00FF00FF
+
+    def test_the_first_page_goes_on_the_left(self):
+        combined = image_tools.combine_pixbufs(
+            self._solid(4, 6, self.RED), self._solid(4, 6, self.GREEN))
+        self.assertEqual((8, 6),
+                         (combined.get_width(), combined.get_height()))
+        self.assertEqual((255, 0, 0), self._pixel(combined, 1, 1))
+        self.assertEqual((0, 255, 0), self._pixel(combined, 5, 1))
+
+    def test_the_first_page_goes_on_top_along_the_height(self):
+        """A view turned by a quarter turn stacks the two pages, and asks
+        for them stacked the same way."""
+        combined = image_tools.combine_pixbufs(
+            self._solid(6, 4, self.RED), self._solid(6, 4, self.GREEN),
+            constants.PageAxis.HEIGHT)
+        self.assertEqual((6, 8),
+                         (combined.get_width(), combined.get_height()))
+        self.assertEqual((255, 0, 0), self._pixel(combined, 1, 1))
+        self.assertEqual((0, 255, 0), self._pixel(combined, 1, 5))
+
+    def test_what_neither_page_covers_is_filled(self):
+        """The result is as tall as the taller page, so the shorter one's
+        column has pixels below it that no copy_area() writes.
+        GdkPixbuf.Pixbuf.new() does not clear the buffer it allocates, so
+        what was there was undefined - black on this machine, but not
+        promised to be anything."""
+        combined = image_tools.combine_pixbufs(
+            self._solid(4, 3, self.RED), self._solid(4, 6, self.GREEN))
+        self.assertEqual((8, 6),
+                         (combined.get_width(), combined.get_height()))
+        self.assertEqual((255, 0, 0), self._pixel(combined, 1, 1),
+                         'the short page is not where it should be')
+        self.assertEqual((255, 255, 255), self._pixel(combined, 1, 5),
+                         'the gap below the short page was left undefined')
+
+    def test_what_neither_page_covers_is_filled_when_stacked(self):
+        """The same gap, on the axis the pages are not distributed on."""
+        combined = image_tools.combine_pixbufs(
+            self._solid(3, 4, self.RED), self._solid(6, 4, self.GREEN),
+            constants.PageAxis.HEIGHT)
+        self.assertEqual((6, 8),
+                         (combined.get_width(), combined.get_height()))
+        self.assertEqual((255, 0, 0), self._pixel(combined, 1, 1),
+                         'the narrow page is not where it should be')
+        self.assertEqual((255, 255, 255), self._pixel(combined, 5, 1),
+                         'the gap beside the narrow page was left undefined')
+
+    def test_the_gap_is_transparent_where_there_is_an_alpha_channel(self):
+        """A page with transparency in it is copied onto a pixbuf that has
+        somewhere to put it, and then the gap can be transparent rather
+        than a colour the pages never had."""
+        combined = image_tools.combine_pixbufs(
+            self._solid(4, 3, self.RED, has_alpha=True),
+            self._solid(4, 6, self.GREEN, has_alpha=True))
+        self.assertTrue(combined.get_has_alpha())
+        self.assertEqual((255, 255, 255, 0), self._pixel(combined, 1, 5))
+
+    def test_one_page_with_an_alpha_channel_is_enough_to_keep_it(self):
+        combined = image_tools.combine_pixbufs(
+            self._solid(4, 6, self.RED, has_alpha=True),
+            self._solid(4, 6, self.GREEN))
+        self.assertTrue(combined.get_has_alpha(),
+                        'the transparency of the first page was dropped')
+
+# vim: expandtab:sw=4:ts=4

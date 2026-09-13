@@ -14,7 +14,7 @@ Open file | CTRL+O
 Open library | CTRL+L
 Close file | CTRL+W
 Next page | PageDown, KeyPadPageDown, LeftMouse
-Previous page | PageUp, KeyPadPageUp, Backspace
+Previous page | PageUp, KeyPadPageUp, Backspace, BackMouse
 Page to the right | ALT+Right, MouseWheelRight
 Page to the left | ALT+Left, MouseWheelLeft
 Forward ten pages | SHIFT+PageDown, SHIFT+KeyPadPageDown, SHIFT+ALT+Right, SHIFT+LeftMouse
@@ -45,9 +45,11 @@ Smart scroll up | SHIFT+Space, MouseWheelUp
 Inverse direction of smart scrolling | X
 Scroll to left, right, bottom, top | KeyPad1 to KeyPad9
 Show magnifying lens | L, MiddleMouse
-Show OSD panel | TAB
+Show OSD panel | TAB, ForwardMouse
 
 Smart scrolling is what the wheel does only while "Use smart scrolling" is on in the preferences; otherwise the wheel scrolls by a fixed number of pixels and turns the page where there is nothing left to scroll.
+
+`BackMouse` and `ForwardMouse` are the two thumb buttons a mouse that has them marks "back" and "forward". A book has no history to move through, so back is the previous page; forward is left for the OSD panel, because the next page is already on the left mouse button.
 
 The view
 ---

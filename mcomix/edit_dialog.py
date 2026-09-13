@@ -1,7 +1,7 @@
 """edit_dialog.py - The dialog for the archive editing window."""
 
 import os
-from gi.repository import Gdk, Gio, GLib, Gtk
+from gi.repository import Gio, GLib, Gtk
 import re
 
 from mcomix.preferences import prefs
@@ -56,7 +56,7 @@ class _EditArchiveDialog(Dialog):
             title=_('Edit archive'), transient_for=window, modal=True)
         self.add_buttons(_('_Cancel'), Response.CANCEL)
 
-        self._accept_changes_button = self.add_button(_('_Apply'), Response.APPLY)
+        self._accept_changes_button = self.add_button(_('A_pply'), Response.APPLY)
 
         self.file_handler = window.filehandler
         self._window = window
@@ -114,7 +114,7 @@ class _EditArchiveDialog(Dialog):
         """
         self._save_button.set_sensitive(False)
         self._import_button.set_sensitive(False)
-        self._window.set_layout_cursor(Gdk.Cursor.new_from_name('wait', None))
+        self._window.cursor_handler.set_busy(True)
         try:
             self._image_area.fetch_images()
             self._comment_area.fetch_comments()
@@ -128,7 +128,7 @@ class _EditArchiveDialog(Dialog):
             # dialog, so anything that got out of the two calls above
             # used to leave the whole program pointing at a wait cursor
             # with an editor that could neither save nor import.
-            self._window.set_layout_cursor(None)
+            self._window.cursor_handler.set_busy(False)
             self._save_button.set_sensitive(True)
             self._import_button.set_sensitive(True)
 
@@ -156,7 +156,7 @@ class _EditArchiveDialog(Dialog):
     def _pack_archive(self, archive_path: str) -> None:
         """Write the chosen files out as an archive at <archive_path>."""
         self.set_sensitive(False)
-        self._window.set_layout_cursor(Gdk.Cursor.new_from_name('wait', None))
+        self._window.cursor_handler.set_busy(True)
 
         context = GLib.MainContext.default()
         while context.pending():
@@ -189,7 +189,7 @@ class _EditArchiveDialog(Dialog):
                         '%(error)s'),
                       {'archivefile': archive_path, 'error': error})
         finally:
-            self._window.set_layout_cursor(None)
+            self._window.cursor_handler.set_busy(False)
 
         if saved:
             _close_dialog()

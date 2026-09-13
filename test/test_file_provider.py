@@ -163,4 +163,26 @@ class PreDefinedFileProviderTest(MComixTest):
         for path in provider.list_files(PreDefinedFileProvider.IMAGES):
             self.assertNotIn(archives, path)
 
+    def test_the_directory_is_the_one_the_files_are_in(self) -> None:
+        """It answered with the working directory, which is where
+        MComix was started rather than where the book is."""
+        images = get_testfile_path('images')
+        provider = PreDefinedFileProvider(
+            [os.path.join(images, 'red.png')])
+        self.assertEqual(images, provider.get_directory())
+
+    def test_an_archive_alone_names_its_own_directory(self) -> None:
+        archives = get_testfile_path('archives')
+        provider = PreDefinedFileProvider(
+            [os.path.join(archives, '01-ZIP-Normal.zip')])
+        self.assertEqual(archives, provider.get_directory())
+
+    def test_a_list_with_nothing_to_show_keeps_the_fallback(self) -> None:
+        """There is no file to take a directory from."""
+        provider = PreDefinedFileProvider(
+            [os.path.join(self.tmp_dir, 'not-a-book.txt')])
+        self.assertEqual([], provider.list_files())
+        self.assertEqual(os.path.abspath(os.getcwd()),
+                         provider.get_directory())
+
 # vim: expandtab:sw=4:ts=4

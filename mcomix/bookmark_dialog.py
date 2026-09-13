@@ -29,7 +29,7 @@ class _BookmarksDialog(Dialog):
         super().__init__(
             title=_('Edit Bookmarks'), transient_for=window,
             destroy_with_parent=True)
-        self.add_buttons(_('_Clear bookmarks...'), constants.RESPONSE_CLEAR,
+        self.add_buttons(_('C_lear bookmarks...'), constants.RESPONSE_CLEAR,
                          _('_Remove'), constants.RESPONSE_REMOVE,
                          _('_Close'), Response.CLOSE)
         clears = self.get_widget_for_response(constants.RESPONSE_CLEAR)

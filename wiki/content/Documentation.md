@@ -61,6 +61,27 @@ Preferences
 
 To customize MComix, you can press the "F12" key to open the preferences dialog. All options are documented on the [Preferences] page.
 
+Editing and saving books
+---
+
+"Edit &rarr; Edit archive..." opens the archive editor on the book that is open, which may be an archive or a directory of images. It has two tabs: "Images" lists the pages as thumbnails, and "Comment files" lists the text files that came with them. Pages are put in another order by dragging them, "Remove from archive" in either list's right-click menu takes out what is selected, and "Import" adds images from elsewhere on disk. Ctrl+Z takes the last change back and Ctrl+Y, or Ctrl+Shift+Z, puts it back again; both work whichever of the two lists has the focus.
+
+"Apply" hands the edited page list to the main window without writing anything to disk, so the book can be read in its new order before it is saved anywhere. "Save As" writes the pages and the comment files out as a new archive. "Cancel" leaves both the book and the archive as they were.
+
+Pages can also be taken out without opening the editor: "Delete page" in the page's right-click menu removes the page the menu was opened over, and "Edit &rarr; Undo" puts it back. The archive on disk is not touched until it is written, and MComix offers to write it after each removal; the offer stops being made once "Do not ask again" is ticked in it, and can be asked for again under "Prompts answered for good" in the preferences dialog.
+
+### The format a save is written in ###
+
+Archives are written as ZIP files whatever they were read as, a ZIP of pictures being what every reader of comics understands. With "Save an edited archive in the format it was opened in" set in the preferences dialog, a book is written back in the format it came in wherever MComix can write that format: ZIP and tar always, 7z on a machine that has the `7z` program and RAR on one that has `rar`. Neither of those two is installed by MComix, and `unrar`, which is what a RAR is read with, only ever reads. A PDF is never written back.
+
+Writing a book back over its own file needs that preference as well, since the file keeps the name it has and the name has to keep saying what the file is. Without it, only a book that was already a ZIP can be written over itself, and the rest can be written only to a new file with "Save As".
+
+### ComicInfo.xml ###
+
+Every archive MComix saves comes out carrying a ComicInfo.xml, whatever format it was written in: a CBZ, a CBT, a CB7 and a CBR are read by the same programs, and the file goes in before the format is chosen. That is the metadata file at the root of a comic archive, and the one thing readers of them agree on: it says how many pages the book has and how large each page is, which is what lets another reader lay the book out before it has decoded a single image.
+
+Two fields are written, PageCount and Pages. The rest of the format describes the comic rather than the file - the series, the writer, the year the issue came out - which is not something MComix knows and not something it should guess at. An archive that came with a ComicInfo.xml keeps every field that file had: it is carried through as it stands, and rewritten only where a page added or removed has made its page count untrue. Nothing MComix shows is read out of it; what the pages are and what order they go in is the archive's own business.
+
 The book library
 ---
 
@@ -76,7 +97,7 @@ Right-clicking the book view offers "Open", "Open without closing library" and "
 
 ### Library watch list ###
 
-By using the watch list, MComix can keep track of certain directories and automatically add new books to the library when they are added to those directories. Every time the library is opened, new directories will be scanned, and books that aren't part of the library yet will be added.
+By using the watch list, MComix can keep track of certain directories and automatically add new books to the library when they are added to those directories. The list is opened from the library's own window, and each directory in it names the collection new books go into and whether the directories under it are walked as well. "Scan now" searches the watched directories at once and leaves the list open; closing the list searches them too, if anything in it was edited. With "Automatically scan for new books when library is opened" ticked, the same search runs every time the library is opened.
 
 ### Recent books ###
 

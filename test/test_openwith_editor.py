@@ -1,9 +1,9 @@
 """The editor for the "Open with" commands.
 
-It was a Gtk.TreeView over a five-column Gtk.ListStore: three
-Gtk.CellRendererTexts the user could type in, a Gtk.CellRendererToggle,
-and a fifth column saying whether the line was a separator, which the
-other four read to decide whether they could be edited at all.
+Three columns the user can type in, a checkbox, and a row that is a
+separator and can be filled in nowhere. The other half of it is how the
+editor closes: it owns that itself, because it is the only thing that
+knows whether the question about unsaved changes has been answered.
 """
 
 from gi.repository import Gtk
@@ -12,6 +12,7 @@ from . import MComixTest, pump
 
 from mcomix import callback
 from mcomix import openwith
+from mcomix.dialog import Response
 from mcomix.preferences import prefs
 
 
@@ -53,9 +54,17 @@ class OpenWithEditorTest(MComixTest):
         self.window = _StubWindow()
         self.manager = openwith.OpenWithManager()
         self.editor = openwith.OpenWithEditor(self.window, self.manager)
+        # Shown, as the menu shows it: whether the editor is still on
+        # screen is half of what the closing tests below look at.
+        self.editor.set_visible(True)
         pump()
 
     def tearDown(self):
+        # Before the editor, so that a prompt of the editor's that a
+        # test left standing does not outlive this case and get
+        # answered by the next test that goes looking for a dialog.
+        for prompt in self._prompts():
+            prompt.destroy()
         self.editor.destroy()
         self.window.destroy()
         pump()
@@ -186,5 +195,85 @@ class OpenWithEditorTest(MComixTest):
                          [('-', '', '', False), ('Shell', 'sh -c ls', '/tmp',
                                                  True)])
         self.assertFalse(self.editor._changed)
+
+    # -- How it closes ----------------------------------------------------
+
+    def _prompts(self):
+        """Every window that is up besides the editor and its parent."""
+        return [window for window in Gtk.Window.list_toplevels()
+                if window.get_visible() and window is not self.editor
+                and window is not self.window]
+
+    def _change_a_command(self):
+        row = self.editor._command_list.get_row(0)
+        self.editor._rewrote('command')(row, 'kate %F')
+        self.assertTrue(self.editor._changed)
+
+    def test_the_save_button_saves_and_closes(self):
+        self._change_a_command()
+        self.editor.response(Response.ACCEPT)
+        pump()
+        self.assertEqual([], self._prompts())
+        self.assertFalse(self.editor.get_visible())
+        self.assertEqual(prefs['openwith commands'][0][1], 'kate %F')
+
+    def test_closing_an_unchanged_editor_asks_nothing(self):
+        self.editor.response(Response.DELETE_EVENT)
+        pump()
+        self.assertEqual([], self._prompts())
+        self.assertFalse(self.editor.get_visible())
+
+    def test_the_editor_stays_up_while_it_asks_about_changes(self):
+        """It was destroyed the moment the response came, so the reader
+        was asked whether to save a list that had already gone."""
+        self._change_a_command()
+        self.editor.response(Response.DELETE_EVENT)
+        pump()
+        prompts = self._prompts()
+        self.assertEqual(1, len(prompts))
+        self.assertTrue(self.editor.get_visible(),
+                        'the editor went before the question was answered')
+        # Answered, so that it is not left for the next test to find.
+        prompts[0].response(Response.NO)
+        pump()
+
+    def test_answering_yes_saves_and_then_closes(self):
+        self._change_a_command()
+        self.editor.response(Response.DELETE_EVENT)
+        pump()
+        self._prompts()[0].response(Response.YES)
+        pump()
+        self.assertEqual(prefs['openwith commands'][0][1], 'kate %F')
+        self.assertFalse(self.editor.get_visible())
+
+    def test_answering_no_closes_without_saving(self):
+        self._change_a_command()
+        self.editor.response(Response.DELETE_EVENT)
+        pump()
+        self._prompts()[0].response(Response.NO)
+        pump()
+        self.assertEqual(prefs['openwith commands'][0][1], 'gedit %F')
+        self.assertFalse(self.editor.get_visible())
+
+    def test_the_window_manager_cannot_take_it_away_either(self):
+        """close-request is turned into a response by the base class,
+        and the editor answers that; the window itself must not go with
+        it while there is still a question standing."""
+        self._change_a_command()
+        self.editor.emit('close-request')
+        pump()
+        self.assertEqual(1, len(self._prompts()))
+        self.assertTrue(self.editor.get_visible())
+        self._prompts()[0].response(Response.NO)
+        pump()
+        self.assertFalse(self.editor.get_visible())
+
+    def test_it_announces_that_it_has_closed(self):
+        """What the menu forgets its one instance on."""
+        closed = []
+        self.editor.editor_closed += lambda: closed.append(True)
+        self.editor.response(Response.DELETE_EVENT)
+        pump()
+        self.assertEqual([True], closed)
 
 # vim: expandtab:sw=4:ts=4

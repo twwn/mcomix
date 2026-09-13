@@ -196,6 +196,10 @@ class FileHandler:
                 self.file_opened()
                 return False
             self.file_loading = True
+            # The extractor is listing the archive on a thread of its own
+            # and nothing is on screen until it answers, which on a large
+            # archive is long enough to look like nothing happened.
+            self._window.cursor_handler.set_busy(True)
         else:
             self._open_image_files()
             self._archive_opened(self.filelist)
@@ -206,6 +210,7 @@ class FileHandler:
         """ Called once the archive has been opened and its contents listed.
         """
 
+        self._window.cursor_handler.set_busy(False)
         self._window.imagehandler._base_path = self._base_path
         self._window.imagehandler.set_image_files(image_files)
         self.file_opened()
@@ -313,6 +318,11 @@ class FileHandler:
             self._comment_files = []
             self._other_files = []
             self._name_table.clear()
+            # A listing that was still running will not reach
+            # _archive_opened(), since _listed_contents() gives up on a
+            # file_loading that has been cleared: the wait cursor has to go
+            # from here or it would stay for the rest of the session.
+            self._window.cursor_handler.set_busy(False)
             self.file_closed()
         # Catch up on UI events, so we don't leave idle callbacks.
         context = GLib.MainContext.default()

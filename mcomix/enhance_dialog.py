@@ -80,7 +80,7 @@ class _EnhanceImageDialog(Dialog):
 
         self._brightness_scale = _create_scale(_('_Brightness:'))
         self._contrast_scale = _create_scale(_('_Contrast:'))
-        self._saturation_scale = _create_scale(_('S_aturation:'))
+        self._saturation_scale = _create_scale(_('Sat_uration:'))
         self._sharpness_scale = _create_scale(_('S_harpness:'))
 
         widgets.pack(vbox, Gtk.Separator.new(Gtk.Orientation.HORIZONTAL), True, True, 0)

@@ -9,6 +9,7 @@ import zipfile
 import threading
 from collections.abc import Iterable, Iterator, Mapping, Sequence
 
+from mcomix import comicinfo
 from mcomix import constants
 from mcomix import log
 from mcomix import process
@@ -38,6 +39,50 @@ def check_room_for(files: "Iterable[str]", archive_path: str) -> None:
         raise OSError(errno.ENOSPC, os.strerror(errno.ENOSPC), archive_path)
 
 
+def _add_comic_info(image_files: Sequence[str],
+                    carried_files: "dict[str, str]",
+                    directory: str) -> "str | None":
+    """Put the ComicInfo.xml an archive of <image_files> wants into
+    <carried_files>, and answer with the path it was written to.
+
+    None where there is nothing to write, which is the usual case for a
+    book saved with its pages untouched: the file it already carries
+    still counts them, and is carried on as it is.
+
+    <carried_files> is changed in place, and the file that was there is
+    replaced rather than added beside: both would go into the archive
+    under the one name, and only one of them can.  That name is the one
+    the archive had it under, so that a book whose metadata sat
+    somewhere other than the root keeps it there.
+
+    The temporary file goes beside the archive, where the archive's own
+    temporary file goes, and the caller removes it.
+    """
+    was_carried = comicinfo.carried(carried_files)
+    existing = None
+    if was_carried is not None:
+        try:
+            with open(was_carried[0], 'rb') as fp:
+                existing = fp.read()
+        except OSError:
+            # Carried but unreadable, which is not the same as absent:
+            # a file whose contents cannot be read is one to write again.
+            existing = b''
+    document = comicinfo.for_pages(image_files, existing)
+    if document is None:
+        return None
+    fd, path = tempfile.mkstemp(suffix='.%s' % comicinfo.NAME,
+                                prefix='tmp.', dir=directory)
+    with os.fdopen(fd, 'wb') as fp:
+        fp.write(document)
+    if was_carried is None:
+        carried_files[path] = comicinfo.NAME
+    else:
+        del carried_files[was_carried[0]]
+        carried_files[path] = was_carried[1]
+    return path
+
+
 def write_archive(archive_path: str, image_files: Sequence[str],
                   comment_files: Sequence[str],
                   carried_files: "Mapping[str, str] | None" = None,
@@ -52,14 +97,34 @@ def write_archive(archive_path: str, image_files: Sequence[str],
     file that is there, is the file the new archive takes its mode from,
     so that replacing an archive does not change who may read it.
 
+    A ComicInfo.xml goes in as well, so that what MComix writes is a
+    comic archive to every other reader and not merely a ZIP of
+    pictures.  See mcomix.comicinfo for what goes in it.
+
     Raises OSError if anything on the way fails, having left nothing
     behind: everything here writes to the directory the archive is in -
     the temporary file, the rename, the permissions - and any of it can.
     """
-    carried_files = carried_files or {}
+    carried_files = dict(carried_files or {})
+    comment_files = list(comment_files)
+    # The default comment extensions take in .xml, so a book's
+    # ComicInfo.xml usually comes as a comment.  Left there it would be
+    # packed under that name before the rewrite, which the packer then
+    # skips as a name already taken, and a book that lost a page would
+    # keep a count that still names it.  So it is carried instead, under
+    # the name a comment is packed under.
+    if comicinfo.carried(carried_files) is None:
+        comment = comicinfo.carried(
+            {path: os.path.basename(path) for path in comment_files})
+        if comment is not None:
+            comment_files.remove(comment[0])
+            carried_files[comment[0]] = comment[1]
     tmp_path = None
+    comic_info_path = None
     written = False
     try:
+        comic_info_path = _add_comic_info(image_files, carried_files,
+                                          os.path.dirname(archive_path))
         check_room_for(list(image_files) + list(comment_files)
                        + list(carried_files), archive_path)
         fd, tmp_path = tempfile.mkstemp(
@@ -91,12 +156,16 @@ def write_archive(archive_path: str, image_files: Sequence[str],
     finally:
         # A half-written archive under a temporary name is of no use to
         # anyone, and the packer only removes its own on a write error.
-        if not written and tmp_path is not None and os.path.exists(tmp_path):
+        # The ComicInfo.xml goes either way: it has been packed by then,
+        # or the archive it was written for was never finished.
+        for leftover in (tmp_path if not written else None, comic_info_path):
+            if leftover is None or not os.path.exists(leftover):
+                continue
             try:
-                os.unlink(tmp_path)
+                os.unlink(leftover)
             except OSError as error:
                 log.error(_('! Could not remove %(file)s: %(error)s'),
-                          {'file': tmp_path, 'error': error})
+                          {'file': leftover, 'error': error})
 
 
 class _Writer:
@@ -326,11 +395,16 @@ def make_writer(archive_path: str, archive_type: int) -> _Writer:
 
 class Packer:
 
-    """Packer is a threaded class for packing files into ZIP archives.
+    """One archive being written, on a thread of its own.
 
-    It would be straight-forward to add support for more archive types,
-    but basically all other types are less well fitted for this particular
-    task than ZIP archives are (yes, really).
+    pack() starts the writing and returns; wait() blocks until it is done
+    and says whether it worked.  write_archive() is the caller, and it
+    waits, so the thread is not left running - it is deliberately not a
+    daemon, since a half-written archive is worse than a slow exit.
+
+    Which formats can be written is make_writer()'s business rather than
+    this class': ZIP, tar, and 7z or RAR where those programs are
+    installed.
     """
 
     def __init__(self, image_files: Sequence[str], other_files: Sequence[str],

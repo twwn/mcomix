@@ -25,7 +25,6 @@ def ask_for_password(archive: str,
         archive + '\n\n' +
         _("Please enter the password to continue:"))
     dialog.set_default_response(Response.OK)
-    dialog.set_auto_destroy(False)
 
     password_box = Gtk.Entry()
     password_box.set_visibility(False)
@@ -39,9 +38,11 @@ def ask_for_password(archive: str,
         An empty box counts as no password, as does cancelling: both
         leave the archive unreadable, and the handlers tell the two
         apart no better than the reader would.
+
+        The box outlives the dialog, which run_async() has already taken
+        down by the time this runs.
         """
         password = password_box.get_text()
-        dialog.destroy()
         on_password(password
                     if response == Response.OK and password
                     else None)

@@ -34,7 +34,7 @@ class BookmarksMenu:
     #: to be a keystroke away from.
     FIXED = (('add', _('Add _Bookmark'), '<Control>D'),
              ('edit', _('_Edit Bookmarks...'), '<Control>B'),
-             ('clear', _('_Clear bookmarks...'), None))
+             ('clear', _('C_lear bookmarks...'), None))
 
     def __init__(self, ui: "ui_module.MainUI",
                  window: "main.MainWindow") -> None:

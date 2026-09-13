@@ -1,9 +1,10 @@
 """The library's watch list dialog.
 
-It was a Gtk.TreeView with a text column, a Gtk.CellRendererCombo and a
-Gtk.CellRendererToggle over a three-column Gtk.ListStore. The pieces
-that mattered are the two editable ones, which write straight to the
-database, and the Remove button that follows the selection.
+The pieces that matter are the two editable columns, which write
+straight to the database, the Remove button that follows the selection,
+and the two answers the dialog gives: Scan now, which scans and stays
+open, and everything else, which closes it and scans if anything was
+edited.
 """
 
 import os
@@ -13,6 +14,7 @@ from gi.repository import Gtk
 from . import MComixTest, pump
 
 from mcomix import constants
+from mcomix.dialog import Response
 from mcomix.library import backend
 from mcomix.library import watchlist
 
@@ -127,5 +129,54 @@ class WatchListDialogTest(MComixTest):
     def test_no_selection_means_no_entry(self):
         self.dialog._list.unselect_all()
         self.assertIsNone(self.dialog.get_selected_watchlist_entry())
+
+    # -- What the buttons answer with -------------------------------------
+
+    def test_scan_now_scans_without_closing_the_dialog(self):
+        self.dialog.response(watchlist.WatchListDialog.RESPONSE_SCANNOW)
+        pump()
+        self.assertEqual(self.library.scans, 1)
+        self.assertTrue(self.dialog.get_visible(),
+                        'Scan now took the watch list away')
+
+    def test_scan_now_covers_the_edits_made_so_far(self):
+        """The scan it starts is the one closing would have owed."""
+        self.dialog._recursive_changed_cb(self.dialog._list.get_row(0), True)
+        self.dialog.response(watchlist.WatchListDialog.RESPONSE_SCANNOW)
+        self.dialog.response(Response.CLOSE)
+        pump()
+        self.assertEqual(self.library.scans, 1)
+
+    def test_closing_an_unchanged_watch_list_scans_nothing(self):
+        self.dialog.response(Response.CLOSE)
+        pump()
+        self.assertEqual(self.library.scans, 0)
+
+    def test_closing_a_changed_watch_list_scans(self):
+        self.dialog._recursive_changed_cb(self.dialog._list.get_row(0), True)
+        self.dialog.response(Response.CLOSE)
+        pump()
+        self.assertEqual(self.library.scans, 1)
+
+    def test_escaping_a_changed_watch_list_scans_as_well(self):
+        """The edits are in the database either way it was closed."""
+        self.dialog._recursive_changed_cb(self.dialog._list.get_row(0), True)
+        self.dialog.response(Response.DELETE_EVENT)
+        pump()
+        self.assertEqual(self.library.scans, 1)
+
+    def test_scan_now_is_offered_while_a_directory_is_watched(self):
+        self.assertTrue(self.dialog.get_widget_for_response(
+            watchlist.WatchListDialog.RESPONSE_SCANNOW).get_sensitive())
+
+    def test_scan_now_is_off_once_the_last_directory_is_removed(self):
+        for position in (1, 0):
+            self.dialog._list.select_only(position)
+            self.dialog._remove_cb(None)
+        self.assertEqual(self._directories(), [])
+        self.assertFalse(
+            self.dialog.get_widget_for_response(
+                watchlist.WatchListDialog.RESPONSE_SCANNOW).get_sensitive(),
+            'Scan now was offered over an empty watch list')
 
 # vim: expandtab:sw=4:ts=4

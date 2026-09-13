@@ -582,8 +582,8 @@ class EventHandler:
         Only the buttons a click gesture can be handed reach this: GDK
         turns X11 buttons 4 and 5 into scroll events and never reports
         them as presses, so scroll_wheel_event() is where the wheel is
-        answered.  A mouse with thumb buttons reports those as 8 and 9,
-        which do arrive here and which MComix binds nothing to.
+        answered.  The thumb buttons a mouse marks "back" and "forward"
+        arrive here as 8 and 9.
         """
 
         if self._window.was_out_of_focus:
@@ -617,6 +617,15 @@ class EventHandler:
             # the popup is parented anyway.
             over = gesture.get_widget() or self._window
             widgets.popup_at(self._window.popup, over, x, y)
+
+        elif button == 8:
+            # The thumb button marked "back".  A book has no history to
+            # go back through, so the page before this one is what going
+            # back means in one.
+            self._flip_page(-1)
+
+        elif button == 9:
+            self._window.show_info_panel()
 
     def mouse_release_event(self, gesture: Gtk.GestureClick, n_press: int,
                             x: float, y: float) -> None:
@@ -734,37 +743,60 @@ class EventHandler:
         self._scroll_with_flipping(-prefs['number of pixels to scroll per key event'], 0)
 
     def _smart_scroll_down(self, small_step: int | None = None) -> None:
-        """ Smart scrolling. """
+        """Take one smart scrolling step along the reading order.
+
+        <small_step> is how far to move in pixels, which the wheel gives;
+        the keyboard gives none and gets a fraction of the page instead.
+        """
         self._smart_scrolling(small_step, False)
 
     def _smart_scroll_up(self, small_step: int | None = None) -> None:
-        """ Reversed smart scrolling. """
+        """Take one smart scrolling step back against the reading order."""
         self._smart_scrolling(small_step, True)
 
     def _smart_scrolling(self, small_step: int | None,
                          backwards: bool) -> None:
-        # Collect data from the environment
+        """Move one step through the page the way a comic is read.
+
+        Sideways until the page runs out that way, then down and back to
+        the near edge, rather than straight down - so that a page too wide
+        for the window is read a column at a time.
+
+        <small_step> caps the step in pixels and is what the wheel asks
+        for; without one the cap is a fraction of the visible area, which
+        is what "smart scroll percentage" holds - a fraction rather than
+        the percentage its name says, since the preferences dialog shows
+        percent and divides by a hundred on the way in.  The cap is given
+        per axis, so there is one for each of the two the layout has.
+
+        Which axis is stepped along first is what "invert smart scroll"
+        turns round: sideways-then-down against down-then-sideways.
+
+        scroll_smartly() answers with the page the viewport ended up on,
+        or with an index outside the layout where there was nothing left
+        to scroll to - and then the page is turned rather than redrawn,
+        through the protection so that reaching the bottom does not run
+        straight on into the next page.
+        """
         viewport_size = self._window.get_visible_area_size()
-        distance = prefs['smart scroll percentage']
         if small_step is None:
-            max_scroll = [distance * viewport_size[0],
-                          distance * viewport_size[1]]  # 2D only
+            fraction = prefs['smart scroll percentage']
+            max_scroll = [fraction * viewport_size[0],
+                          fraction * viewport_size[1]]
         else:
-            max_scroll = [small_step] * 2  # 2D only
-        swap_axes = constants.SWAPPED_AXES if prefs['invert smart scroll'] \
+            max_scroll = [small_step] * len(viewport_size)
+        axis_map = constants.SWAPPED_AXES if prefs['invert smart scroll'] \
             else constants.NORMAL_AXES
         self._window.update_layout_position()
 
-        # Scroll to the new position
-        new_index = self._window.layout.scroll_smartly(max_scroll, backwards, swap_axes)
-        n = self._window.displayed_page_count()
+        new_index = self._window.layout.scroll_smartly(
+            max_scroll, backwards, axis_map)
 
         if new_index == -1:
             self._previous_page_with_protection()
-        elif new_index == n:
+        elif new_index == self._window.displayed_page_count():
             self._next_page_with_protection()
         else:
-            # Update actual viewport
             self._window.update_viewport_position()
 
     def _next_page_with_protection(self) -> bool:

@@ -17,8 +17,10 @@ from gi.repository import Gdk, Gio, Gtk
 
 from . import MComixTest, get_testfile_path, pump, wait_for
 
+from mcomix import archive_packer
 from mcomix import constants
 from mcomix import dialog as dialog_module
+from mcomix import edit_dialog
 from mcomix import file_chooser_simple_dialog as simple_chooser
 from mcomix import icons
 from mcomix import image_tools
@@ -549,6 +551,32 @@ class MainWindowTest(MComixTest):
             self._Scroll(state), delta_x, delta_y)
         self._pump()
 
+    def _press(self, button):
+        """Press <button> over the top left corner of the page area."""
+        self.window.was_out_of_focus = False
+        self.window._event_handler.mouse_press_event(
+            self._Click(button), 1, 0, 0)
+
+    def test_the_back_thumb_button_turns_back_a_page(self):
+        """Button 8 is the one a mouse marks "back", and the page before
+        this one is the only back a book has."""
+        self._ready()
+        self.window.set_page(3)
+        self._pump()
+        self._press(8)
+        self._pump()
+        self.assertEqual(2, self.window.imagehandler.get_current_page())
+
+    def test_the_forward_thumb_button_shows_the_osd_panel(self):
+        """Button 9 carries what the keybindings page documented on
+        button 4 for years, which GDK never reported as a press."""
+        self._ready()
+        self.window.osd.clear()
+        self._press(9)
+        self.assertIsNotNone(self.window.osd._last_osd_rect,
+                             'the OSD panel was not put on the page')
+        self.window.osd.clear()
+
     def test_a_sideways_wheel_turn_obeys_the_flip_with_wheel_preference(self):
         """Every other wheel direction stops turning pages when the
         preference is off, and sideways has to as well."""
@@ -826,6 +854,67 @@ class MainWindowTest(MComixTest):
         self.assertEqual(self._save_prompts(), [],
                          'it offered to write a format it cannot write')
 
+    def _page_area_cursor(self):
+        """The name of the cursor drawn over the page area, or None.
+
+        Read off the widget rather than off the cursor handler, because
+        the point of the fix is that the two used to disagree: a cursor
+        set with set_layout_cursor() never reached _current_cursor.
+        """
+        cursor = self.window._main_layout.get_cursor()
+        return None if cursor is None else cursor.get_name()
+
+    def test_a_failed_save_does_not_leave_a_wait_cursor_behind(self):
+        """save_archive() answers OSError and nothing else, so anything
+        else that gets out of the write used to leave the whole program
+        pointing at a wait cursor with no way back."""
+        self._ready()
+        self.assertIsNone(self._page_area_cursor(),
+                          'the page area started out with a cursor set')
+        with unittest.mock.patch.object(
+                archive_packer, 'write_archive',
+                side_effect=RuntimeError('not an OSError')):
+            with self.assertRaises(RuntimeError):
+                self.window.save_archive()
+
+        self.assertIsNone(self._page_area_cursor(),
+                          'the wait cursor outlived the save')
+
+    def test_a_save_shows_the_wait_cursor_while_it_runs(self):
+        """And through the cursor handler, so that the pointer does not
+        hide itself part way through - see HandSetCursorTest."""
+        self._ready()
+        handler = self.window.cursor_handler
+        busy = []
+
+        def watch(*args, **kwargs):
+            busy.append(handler._current_cursor)
+
+        with unittest.mock.patch.object(archive_packer, 'write_archive',
+                                        side_effect=watch):
+            self.assertTrue(self.window.save_archive())
+
+        self.assertEqual([constants.WAIT_CURSOR], busy,
+                         'the save ran without saying it was working')
+        self.assertIsNone(self._page_area_cursor(),
+                          'the wait cursor outlived the save')
+
+    def test_nothing_outside_the_cursor_handler_sets_the_cursor(self):
+        """set_layout_cursor() asks callers to go through the handler, and
+        the reason is HandSetCursorTest: a cursor set behind its back is
+        replaced by the hidden one when the hide timer runs out.  Four call
+        sites in edit_dialog.py and three in main.py did it anyway."""
+        direct = []
+        for module in (main, edit_dialog):
+            with open(module.__file__) as fp:
+                for number, line in enumerate(fp, 1):
+                    if ('set_layout_cursor(' in line
+                            and 'def set_layout_cursor' not in line
+                            and not line.lstrip().startswith('#')):
+                        direct.append('%s:%d' % (
+                            os.path.basename(module.__file__), number))
+        self.assertEqual([], direct)
+
     def test_a_format_other_than_zip_needs_the_preference(self):
         """A save that kept the name and changed the format would put a
         ZIP inside a file still called .cbt."""
@@ -853,18 +942,16 @@ class MainWindowTest(MComixTest):
         with self._quietly():
             self.window.delete_page()
         self._pump()
-        print('DEBUG archive_type=%r base=%r can_write=%r pref=%r' % (
-            self.window.filehandler.archive_type,
-            self.window.filehandler.get_path_to_base(),
-            self.window.writeable_archive_type(),
-            prefs['keep archive format when saving']))
         self.assertTrue(self.window.save_archive(), 'the save failed')
 
         with zipfile.ZipFile(source) as written:
             pages = [name for name in written.namelist()
-                     if not name.endswith('.txt')]
+                     if image_tools.is_image_file(name)]
         self.assertEqual(len(pages), before - 1,
                          'the archive on disk still holds the page')
+        with zipfile.ZipFile(source) as written:
+            self.assertIn('ComicInfo.xml', written.namelist(),
+                          'the book was saved as a plain ZIP of pictures')
         self.assertEqual(os.stat(source).st_mode, mode,
                          'the archive came back with different permissions')
 
@@ -1020,7 +1107,7 @@ class MainWindowTest(MComixTest):
                          before - 2)
         with zipfile.ZipFile(source) as written:
             pages = [name for name in written.namelist()
-                     if not name.endswith('.txt')]
+                     if image_tools.is_image_file(name)]
         self.assertEqual(len(pages), before - 2,
                          'the archive on disk still holds the pages')
         self.assertEqual(opened, [True], 'it did not go on to the next book')

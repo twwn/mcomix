@@ -1,5 +1,11 @@
-""" file_provider.py - Handles listing files for the current directory and
-    switching to the next/previous directory. """
+"""file_provider.py - Which files make up the book that is open.
+
+The file handler asks a provider for the files to read and gets back a
+sorted list of absolute paths, of one kind at a time: the pictures or
+the archives.  Which provider it holds depends on what MComix was asked
+to open - a directory to walk through, or a set of files chosen on
+purpose - and get_file_provider() picks one.
+"""
 
 import os
 from gi.repository import GLib
@@ -47,14 +53,19 @@ def _every_file(path: str) -> bool:
 
 
 def get_file_provider(filelist: Sequence[str]) -> 'FileProvider | None':
-    """ Initialize a FileProvider with the files in <filelist>.
-    If len(filelist) is 1, a OrderedFileProvider will be constructed, which
-    will simply open all files in the passed directory.
-    If len(filelist) is greater 1, a PreDefinedFileProvider will be created,
-    which will only ever list the files that were passed into it.
-    If len(filelist) is zero, FileProvider will look at the last file opened,
-    if the "auto load last file" preference is set and that file is still
-    there. Otherwise, no provider is constructed. """
+    """The provider that lists what <filelist> asks to have opened.
+
+    One name is a book opened out of its directory, so the directory is
+    listed and the neighbouring ones can be walked to: an
+    OrderedFileProvider.  Several names are a set chosen on purpose, and
+    a PreDefinedFileProvider lists those and nothing else.  No names at
+    all is a start with no arguments, which reopens the last file where
+    the "auto load last file" preference asks for it and that file is
+    still there.
+
+    None where there is nothing to list: a single name that is not
+    there, or an empty list with nothing to reopen.
+    """
 
     provider: FileProvider | None
     if filelist:
@@ -77,24 +88,57 @@ def get_file_provider(filelist: Sequence[str]) -> 'FileProvider | None':
 
 
 class FileProvider:
-    """ Base class for various file listing strategies. """
+    """Where the file handler gets the list of files to open from.
 
-    # Constants for determining which files to list.
+    Two of them: one lists a directory and can walk to the one beside
+    it, the other only ever hands back the files it was given.  The
+    methods here are what the file handler calls on either, and they are
+    written as a provider that has nothing to offer rather than as
+    abstract methods, so that a subclass only has to answer the
+    questions it has an answer to - a list of files that were named on
+    the command line has no directory to step out of, and says so by
+    leaving next_directory() and previous_directory() alone.
+    """
+
+    #: The kinds of file a caller can ask to have listed.  The file
+    #: handler opens an archive and a loose picture in quite different
+    #: ways, so it asks for one kind at a time; a mode that is neither
+    #: means everything, whatever it holds.
     IMAGES, ARCHIVES = 1, 2
 
     def set_directory(self, file_or_directory: str) -> None:
+        """Point the provider at <file_or_directory>.
+
+        A file names the directory it is in.  Nothing to do for a
+        provider that lists a fixed set of files.
+        """
         pass
 
     def get_directory(self) -> str:
+        """The directory the files being listed come from.
+
+        The working directory for a provider that is not reading one,
+        which is what the file handler shows and what a file chooser
+        opens on.
+        """
         return os.path.abspath(os.getcwd())
 
     def list_files(self, mode: int = IMAGES) -> list[str]:
+        """The absolute paths of the files of the kind <mode> asks for.
+
+        Sorted the way sort_files() sorts them, which is the order the
+        book is read in.
+        """
         return []
 
     def next_directory(self) -> bool:
+        """Move to the directory after this one, and say whether there
+        was one.  The next list_files() lists the new directory."""
         return False
 
     def previous_directory(self) -> bool:
+        """Move to the directory before this one, and say whether there
+        was one.  The next list_files() lists the new directory."""
         return False
 
     @staticmethod
@@ -123,18 +167,24 @@ class FileProvider:
 
 
 class OrderedFileProvider(FileProvider):
-    """ This provider will list all files in the same directory as the
-        one passed to the constructor. """
+    """Every file in one directory, and the directories beside it.
+
+    This is what opening a book does: the rest of the directory is the
+    rest of the series, so the reader can walk out of one volume and
+    into the next without going back to a file chooser.
+    """
 
     def __init__(self, file_or_directory: str) -> None:
-        """ Initializes the file listing. If <file_or_directory> is a file,
-            directory will be used as base path. If it is a directory, that
-            will be used as base file. """
+        """List the directory <file_or_directory> is in, or is.
+
+        A path that is neither raises ValueError, which is what opening
+        a file that has been deleted since it was last read comes to.
+        """
 
         self.set_directory(file_or_directory)
 
     def set_directory(self, file_or_directory: str) -> None:
-        """ Sets the base directory. """
+        """List <file_or_directory> from now on, or the directory it is in."""
 
         if os.path.isdir(file_or_directory):
             dir = file_or_directory
@@ -147,11 +197,16 @@ class OrderedFileProvider(FileProvider):
         self.base_dir = os.path.abspath(dir)
 
     def get_directory(self) -> str:
+        """The directory being listed."""
         return self.base_dir
 
     def list_files(self, mode: int = FileProvider.IMAGES) -> list[str]:
-        """ Lists all files in the current directory.
-            Returns a list of absolute paths, already sorted. """
+        """The files of the kind <mode> asks for, as sorted absolute paths.
+
+        Empty where the directory cannot be read, which is reported and
+        then treated as a directory holding nothing: the reader is left
+        where they were rather than with a book that half opened.
+        """
 
         should_accept: Callable[[str], bool]
         if mode == FileProvider.IMAGES:
@@ -175,22 +230,23 @@ class OrderedFileProvider(FileProvider):
         return files
 
     def next_directory(self) -> bool:
-        """ Switches to the next sibling directory. Next call to
-            list_file() returns files in the new directory.
-            Returns True if the directory was changed, otherwise False. """
+        """Move to the next directory beside this one, if there is one."""
 
         return self.__switch_directory(1)
 
     def previous_directory(self) -> bool:
-        """ Switches to the previous sibling directory. Next call to
-            list_file() returns files in the new directory.
-            Returns True if the directory was changed, otherwise False. """
+        """Move to the directory before this one, if there is one."""
 
         return self.__switch_directory(-1)
 
     def __switch_directory(self, offset: int) -> bool:
-        """ Switches to the sibling directory <offset> places away, and
-            returns True if there was one. """
+        """Move <offset> places along the siblings, and say whether there
+        was a directory that far away.
+
+        The siblings are sorted the way the directory listing is, so one
+        place along is the next volume of a series.  Nothing moves and
+        False comes back at either end of the parent directory.
+        """
 
         directories = self.__get_sibling_directories(self.base_dir)
         try:
@@ -205,9 +261,12 @@ class OrderedFileProvider(FileProvider):
         return False
 
     def __get_sibling_directories(self, dir: str) -> list[str]:
-        """ Returns a list of all sibling directories of <dir>,
-            already sorted. Empty if the parent cannot be read, which
-            leaves the caller where it was. """
+        """Every directory in <dir>'s parent, <dir> itself included, sorted.
+
+        Empty where the parent cannot be read, which leaves the caller
+        where it was: a directory that is not among its own siblings has
+        nowhere to step to.
+        """
 
         parent_dir = os.path.dirname(dir)
         try:
@@ -255,6 +314,25 @@ class PreDefinedFileProvider(FileProvider):
                 self.__files[FileProvider.IMAGES].append(os.path.abspath(file))
             elif archive_tools.is_archive_file(file):
                 self.__files[FileProvider.ARCHIVES].append(os.path.abspath(file))
+
+    def get_directory(self) -> str:
+        """The directory the first of the listed files sits in.
+
+        A list can name files in several directories, so there is no one
+        directory it came from; the first is the one an ordered provider
+        over the same book would have answered with.  The base class
+        falls back on the working directory, which for a book named on
+        the command line has nothing to do with where the book is, and
+        the file handler writes that answer into its base path.
+
+        Where nothing was listed - a command line of paths that are
+        neither pictures nor archives - the base class's answer stands,
+        there being no file to take a directory from.
+        """
+        for listed in self.__files.values():
+            if listed:
+                return os.path.dirname(listed[0])
+        return super().get_directory()
 
     def list_files(self, mode: int = FileProvider.IMAGES) -> list[str]:
         """The files of the kind <mode> asks for.

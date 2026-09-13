@@ -140,8 +140,6 @@ class MessageDialog(Dialog):
         self.dialog_id: "RememberedDialog | None" = None
         #: List of response IDs that should be remembered
         self.choices: list[int] = []
-        #: Automatically destroy dialog after run?
-        self.auto_destroy = True
 
         self.remember_checkbox = Gtk.CheckButton(label=_('Do not ask again.'))
         self.remember_checkbox.set_visible(False)
@@ -182,11 +180,6 @@ class MessageDialog(Dialog):
         self.choices = [response for _label, response
                         in REMEMBERED_DIALOGS[dialog_id].answers]
 
-    def set_auto_destroy(self, auto_destroy: bool) -> None:
-        """ Determines if the dialog should automatically destroy itself
-        once it has been answered. """
-        self.auto_destroy = auto_destroy
-
     def run_async(self, on_response: Callable[[int], None]) -> None:
         """ Makes the dialog visible and hands its result to <on_response>.
 
@@ -198,6 +191,16 @@ class MessageDialog(Dialog):
         <on_response> is always called from the main loop, never before
         this method returns, whether the answer comes from the user or
         from a choice remembered earlier.
+
+        The dialog is destroyed before <on_response> runs, and that is
+        the order the callers need: several of them go on to close the
+        book or open the next one, and closing turns the main loop over
+        to drain the idle queue, which would paint a dialog that had
+        been answered and not yet taken down.  A widget the dialog
+        carried is still readable afterwards - destroying a window
+        neither unparents its children nor finalises them while Python
+        holds a reference - so a caller that has to read what was typed
+        reads it in the callback like any other.
         """
         if self.dialog_id in prefs['stored dialog choices']:
             remembered = prefs['stored dialog choices'][self.dialog_id]
@@ -217,8 +220,7 @@ class MessageDialog(Dialog):
                 # The preference is the dictionary, which is the same
                 # dictionary it was: only the answer in it is new.
                 preferences.changed()
-            if self.auto_destroy:
-                self.destroy()
+            self.destroy()
             on_response(response)
 
         self.connect('response', responded)

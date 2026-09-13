@@ -28,15 +28,21 @@ having to play around with relative path names.
            pacman -Sy \
                mingw-w64-x86_64-gtk4 \
                mingw-w64-x86_64-libadwaita \
+               mingw-w64-x86_64-libjxl \
                mingw-w64-x86_64-python \
                mingw-w64-x86_64-python-gobject \
                mingw-w64-x86_64-python-pillow \
-               mingw-w64-x86_64-python-pymupdf \
-               mingw-w64-x86_64-libjxl
+               mingw-w64-x86_64-python-pip \
+               mingw-w64-x86_64-python-pymupdf
 
        libadwaita is the only one of these MComix runs without: it is
        what reads the colour names a GTK4 theme states, and the build
        that ships without it follows only what plain GTK4 can be told.
+       libjxl is the loader for the JPEG XL files the open dialog offers
+       to filter for; pip is what step 2 installs pyinstaller with.
+
+       wiki/content/Maintenance.md lists the same packages, and a test
+       holds the two lists to each other.
 
     2. In the same shell, install pyinstaller with pip:
 

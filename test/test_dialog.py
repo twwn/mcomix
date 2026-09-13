@@ -12,6 +12,7 @@ from . import MComixTest, pump, wait_for
 
 from mcomix import dialog
 from mcomix import message_dialog
+from mcomix import widgets
 from mcomix.dialog import Response
 from mcomix.preferences import prefs
 
@@ -265,5 +266,49 @@ class MessageDialogTest(MComixTest):
         with self.assertRaises(TypeError):
             message_dialog.MessageDialog(self.parent, 0, 0,
                                          Gtk.ButtonsType.OK)
+
+    # -- When it is taken down ---------------------------------------------
+
+    def test_the_dialog_is_gone_before_the_answer_is_delivered(self):
+        """The order the callers need: more than one of them closes the
+        book or opens the next, and closing turns the main loop over,
+        which would paint a dialog that had been answered and not yet
+        taken down."""
+        built = self._build(buttons=Gtk.ButtonsType.OK_CANCEL)
+        standing = []
+        built.run_async(lambda response: standing.append(built.get_visible()))
+        built.response(Response.OK)
+        pump()
+        self.assertEqual([False], standing)
+
+    def test_a_widget_it_carried_can_still_be_read_in_the_answer(self):
+        """Which is what lets the callers that ask for something typed
+        read it in the callback like any other: destroying a window
+        neither unparents its children nor finalises them while there is
+        still a reference to them."""
+        built = self._build(buttons=Gtk.ButtonsType.OK_CANCEL)
+        entry = Gtk.Entry()
+        widgets.pack(built.get_content_area(), entry, True, True, 0)
+        typed = []
+        built.run_async(lambda response: typed.append(entry.get_text()))
+        entry.set_text('a password')
+        built.response(Response.OK)
+        pump()
+        self.assertEqual(['a password'], typed)
+
+    def test_an_adjustment_it_carried_can_be_read_as_well(self):
+        """The library's cover size dialog reads one of these, which is
+        a plain object the caller holds rather than a widget at all."""
+        built = self._build(buttons=Gtk.ButtonsType.OK)
+        adjustment = Gtk.Adjustment.new(80, 20, 500, 10, 25, 0)
+        widgets.pack(built.get_content_area(),
+                     Gtk.Scale.new(Gtk.Orientation.HORIZONTAL, adjustment),
+                     True, True, 0)
+        chosen = []
+        built.run_async(lambda response: chosen.append(adjustment.get_value()))
+        adjustment.set_value(120)
+        built.response(Response.OK)
+        pump()
+        self.assertEqual([120.0], chosen)
 
 # vim: expandtab:sw=4:ts=4

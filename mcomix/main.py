@@ -1364,7 +1364,11 @@ class MainWindow(Gtk.Window):
         path = self.filehandler.get_path_to_base()
         if archive_type is None or path is None:
             return False
-        self.set_layout_cursor(Gdk.Cursor.new_from_name('wait', None))
+        # Through the cursor handler rather than set_layout_cursor(): the
+        # pointer hides itself after a couple of seconds of not moving,
+        # and a cursor set straight on the window is replaced by the
+        # hidden one part way through a save that takes longer than that.
+        self.cursor_handler.set_busy(True)
         try:
             image_files = list(self.imagehandler._image_files or [])
             comment_files = [self.filehandler.get_comment_name(number)
@@ -1384,14 +1388,17 @@ class MainWindow(Gtk.Window):
             log.error(_('! Could not save the archive %(archivefile)s: '
                         '%(error)s'),
                       {'archivefile': path, 'error': error})
-            self.set_layout_cursor(None)
             dialog = message_dialog.MessageDialog(
                 self, buttons=Gtk.ButtonsType.CLOSE)
             dialog.set_text(_("The new archive could not be saved!"),
                             _("The original files have not been removed."))
             dialog.run_async(lambda response: None)
             return False
-        self.set_layout_cursor(None)
+        finally:
+            # Anything that gets out of the block above, and not only the
+            # OSError it answers, would otherwise leave the whole program
+            # pointing at a wait cursor.
+            self.cursor_handler.set_busy(False)
         return True
 
     def undo(self, *args: object) -> bool:

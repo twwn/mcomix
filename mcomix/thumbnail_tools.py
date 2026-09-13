@@ -17,9 +17,8 @@ import shutil
 import tempfile
 import mimetypes
 import threading
-import locale
 import PIL.Image as Image
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Mapping
 from urllib.request import pathname2url
 from typing import TYPE_CHECKING
 from hashlib import md5
@@ -94,21 +93,18 @@ class Thumbnailer:
             self.width = prefs['thumbnail size']
             self.height = prefs['thumbnail size']
 
-        if self._thumbnail_exists(filepath):
-            thumbpath = self._path_to_thumbpath(filepath)
-            pixbuf = image_tools.load_pixbuf(thumbpath)
+        pixbuf = self._stored_thumbnail(filepath)
+        if pixbuf is not None:
             self.thumbnail_finished(filepath, pixbuf)
             return pixbuf
 
-        else:
-            if threaded:
-                thread = threading.Thread(target=self._create_thumbnail, args=(filepath,))
-                thread.name += '-thumbnailer'
-                thread.daemon = True
-                thread.start()
-                return None
-            else:
-                return self._create_thumbnail(filepath)
+        if threaded:
+            thread = threading.Thread(target=self._create_thumbnail, args=(filepath,))
+            thread.name += '-thumbnailer'
+            thread.daemon = True
+            thread.start()
+            return None
+        return self._create_thumbnail(filepath)
 
     @callback.Callback
     def thumbnail_finished(self, filepath: str,
@@ -237,39 +233,83 @@ class Thumbnailer:
             log.warning(_('! Could not save thumbnail "%(thumbpath)s": %(error)s'),
                         {'thumbpath': thumbpath, 'error': ex})
 
-    def _thumbnail_exists(self, filepath: str) -> bool:
-        """ Checks if the thumbnail for <filepath> already exists.
-        This function will return False if the thumbnail exists
-        and it's mTime doesn't match the mTime of <filepath>,
-        it's size is different from the one specified in the thumbnailer,
-        or if <force_recreation> is True. """
+    def _stored_thumbnail(self, filepath: str) -> "GdkPixbuf.Pixbuf | None":
+        """The thumbnail already on disk for <filepath>, if it can be used.
 
-        if not self.force_recreation:
-            thumbpath = self._path_to_thumbpath(filepath)
+        None where there is none, where the source has been modified
+        since it was made, where it was made for a different thumbnail
+        size, where it cannot be decoded, or where <force_recreation>
+        asks for a new one regardless.
 
-            if os.path.isfile(thumbpath):
-                # Check the thumbnail's stored mTime
-                try:
-                    img = Image.open(thumbpath)
-                except IOError:
-                    return False
+        The picture is made out of the same PIL image the checks read, so
+        that a thumbnail which is going to be used is opened once rather
+        than twice.  Loading it a second time through
+        image_tools.load_pixbuf() was almost all of what a cover cost:
+        0.39ms against the 0.17ms the one open takes.
+        """
 
-                # A thumbnail written by something other than MComix need
-                # not carry the modification time, and one that does need
-                # not have written a number: either way there is nothing
-                # to compare against, so the thumbnail is made afresh.
-                try:
-                    stored_mtime = int(float(img.info['Thumb::MTime']))
-                except (KeyError, TypeError, ValueError):
-                    return False
-                # The source file might no longer exist
-                file_mtime = os.path.isfile(filepath) and int(os.stat(filepath).st_mtime) or stored_mtime
-                return stored_mtime == file_mtime and \
-                    max(img.size) == max(self.width, self.height)
-            else:
-                return False
-        else:
+        if self.force_recreation:
+            return None
+        thumbpath = self._path_to_thumbpath(filepath)
+        if not os.path.isfile(thumbpath):
+            return None
+
+        try:
+            with Image.open(thumbpath) as img:
+                if not (self._source_is_unchanged(filepath, img.info)
+                        and self._is_current_size(img.size, img.info)):
+                    return None
+                return image_tools.pil_to_pixbuf(img, keep_orientation=True)
+        except OSError:
+            # Not an image, not readable, or broken off partway through
+            # being written: there is nothing to reuse, and one that
+            # cannot be decoded is one to make again rather than one to
+            # raise over.
+            return None
+
+    def _source_is_unchanged(
+            self, filepath: str,
+            info: "Mapping[str | tuple[int, int], object]") -> bool:
+        """Whether a thumbnail holding <info> still describes <filepath>."""
+        # A thumbnail written by something other than MComix need not
+        # carry the modification time, and one that does need not have
+        # written a number: either way there is nothing to compare
+        # against, so the thumbnail is made afresh.
+        try:
+            stored_mtime = int(float(str(info['Thumb::MTime'])))
+        except (KeyError, TypeError, ValueError):
             return False
+        if not os.path.isfile(filepath):
+            # A source that is no longer there cannot be compared
+            # against, and its thumbnail is the only thing left that
+            # describes it, so it is kept rather than thrown away.
+            return True
+        # int, because st_mtime is a float and the stored one is not.
+        return stored_mtime == int(os.stat(filepath).st_mtime)
+
+    def _is_current_size(self, stored: tuple[int, int],
+                         info: "Mapping[str | tuple[int, int], object]"
+                         ) -> bool:
+        """Whether a thumbnail of <stored> size was made for this size.
+
+        load_pixbuf_size() scales a picture to fit inside the box and
+        never scales it up, so a cover smaller than the box is stored at
+        its own size.  Comparing that against the box made every such
+        thumbnail look stale and written again on every single look, which
+        for a library of small covers is a cache that only costs writes.
+        The source's own dimensions are in the tEXt chunks this writes, so
+        the size to expect is the box or the source, whichever is smaller.
+        """
+        if max(stored) == max(self.width, self.height):
+            return True
+        try:
+            source = (int(str(info['Thumb::Image::Width'])),
+                      int(str(info['Thumb::Image::Height'])))
+        except (KeyError, TypeError, ValueError):
+            # Written by something that does not record them, so there is
+            # no way to tell a small source from a stale thumbnail.
+            return False
+        return stored == source and max(source) <= max(self.width, self.height)
 
     def _path_to_thumbpath(self, filepath: str) -> str:
         """Return the path of the thumbnail for <filepath> in <dst_dir>.
@@ -282,9 +322,16 @@ class Thumbnailer:
         return self._uri_to_thumbpath(uri)
 
     def _uri_to_thumbpath(self, uri: str) -> str:
-        """ Return the full path to the thumbnail for <uri> with <dst_dir>
-        being the base thumbnail directory. """
-        md5hash = md5(uri.encode(locale.getpreferredencoding())).hexdigest()
+        """Return the path of the thumbnail for <uri> under <dst_dir>.
+
+        UTF-8 because the specification says so, and because the name has
+        to be the one every other application works out for the same file.
+        Nothing turns on the choice today - pathname2url() percent-encodes
+        anything outside ASCII, so the URI is ASCII whatever the file is
+        called - but the encoding the machine happens to prefer is no part
+        of the answer.
+        """
+        md5hash = md5(uri.encode('utf-8')).hexdigest()
         return os.path.join(self.dst_dir, md5hash + '.png')
 
     def _guess_cover(self, files: Iterable[str]) -> str | None:

@@ -6,7 +6,8 @@ as well.  Both of those are edited in place and write straight to the
 watchlist table, and the Remove button follows the selection.  The
 checkbox below them is the "scan on startup" preference, and Scan now
 starts by hand the same search that preference runs when the library
-opens - as does closing the dialog after a change.
+opens, without closing the dialog - as does closing it after a change.
+It is offered only while there is a directory to scan.
 """
 
 import os
@@ -83,11 +84,12 @@ class WatchListDialog(Dialog):
         widgets.pack(self.get_content_area(), auto_checkbox, False, False, 5, end=True)
 
         # After the Remove button, which the selection turns on and off
-        # as soon as there are rows to select.
+        # as soon as there are rows to select, and after the Scan now
+        # button that _fill_model() turns on and off with the list.
         self._fill_model()
 
         self.set_default_size(475, 350)
-        self.connect('response', self._close_cb)
+        self.connect('response', self._response_cb)
         self.set_visible(True)
 
     def get_selected_watchlist_entry(
@@ -110,6 +112,17 @@ class WatchListDialog(Dialog):
                                            else entry.collection.id),
                             recursive=entry.recursive)
             for entry in self.library.backend.watchlist.get_watchlist())
+        self._update_scan_button()
+
+    def _update_scan_button(self) -> None:
+        """Offer Scan now only while there is a directory to scan.
+
+        A scan of an empty watch list walks nothing and reports nothing,
+        so the button pressed over an empty list looks broken; a
+        disabled one says there is nothing to scan for.
+        """
+        self.set_response_sensitive(WatchListDialog.RESPONSE_SCANNOW,
+                                    self._list.store.get_n_items() > 0)
 
     def _collection_names(self) -> list[str]:
         """ The name of every collection a directory can be watched into. """
@@ -195,6 +208,7 @@ class WatchListDialog(Dialog):
         if entry:
             entry.remove()
             self._list.remove_row(row)
+            self._update_scan_button()
 
     def _item_selected_cb(self, selection: Gtk.SelectionModel,
                           *args: object) -> None:
@@ -208,13 +222,25 @@ class WatchListDialog(Dialog):
         """ Toggles automatic library book scanning. """
         prefs['scan for new books on library startup'] = checkbox.get_active()
 
-    def _close_cb(self, dialog: Dialog, response: int,
-                  *args: object) -> None:
-        """ Trigger scan for new files after watch dialog closes. """
-        self.destroy()
-        if response == Response.CLOSE and self._changed:
+    def _response_cb(self, dialog: Dialog, response: int,
+                     *args: object) -> None:
+        """Scan now scans and stays open; anything else closes.
+
+        Scan now used to close the dialog as well, which took the list
+        away from a reader who had pressed it to see what the directory
+        they had just added held.  The scan it starts covers every edit
+        made so far, so the dialog no longer owes one when it closes.
+
+        Closing counts whichever way it was done: the edits are written
+        to the database as they are made, so escape and the window's own
+        close button leave exactly as much to scan for as Close does.
+        """
+        if response == WatchListDialog.RESPONSE_SCANNOW:
+            self._changed = False
             self.library.scan_for_new_files()
-        elif response == WatchListDialog.RESPONSE_SCANNOW:
+            return
+        self.destroy()
+        if self._changed:
             self.library.scan_for_new_files()
 
 

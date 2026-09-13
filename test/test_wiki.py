@@ -11,9 +11,14 @@ sides, so an option or a tab added to the program has to be written down.
 import ast
 import glob as glob_module
 import os
+import re
 import tomllib
 import unittest
 
+from mcomix import comicinfo
+from mcomix import edit_comment_area
+from mcomix import edit_dialog
+from mcomix import edit_image_area
 from mcomix import preferences
 from mcomix import preferences_dialog
 from mcomix import ui
@@ -190,9 +195,20 @@ class DocumentationPageTest(unittest.TestCase):
         'number of pixels to scroll per slideshow event',
     )
 
-    #: The View menu items the page tells the reader to use.
+    #: The menu items the page tells the reader to use, all of which
+    #: ui.py builds: the View menu's, and the two that edit a book.
     QUOTED_MENU_ITEMS = ('Toolbar', 'Menubar', 'Statusbar', 'Scrollbars',
-                         'Hide all', 'Stretch small images')
+                         'Hide all', 'Stretch small images',
+                         'Edit archive', 'Delete page', 'Undo')
+
+    #: The archive editor's own labels, which live in the editor rather
+    #: than in the menus, against the module each is built in.
+    QUOTED_EDITOR_LABELS = {
+        edit_dialog: ('Apply', 'Save As', 'Cancel', 'Import',
+                      'Images', 'Comment files'),
+        edit_image_area: ('Remove from archive',),
+        edit_comment_area: ('Remove from archive',),
+    }
 
     def setUp(self):
         self.page = read_page(self.PAGE)
@@ -223,6 +239,43 @@ class DocumentationPageTest(unittest.TestCase):
         missing = [item for item in self.QUOTED_MENU_ITEMS
                    if item.lower() not in self.page.lower()]
         self.assertEqual([], missing)
+
+    def test_the_editor_has_the_labels_the_page_names(self):
+        """The section on the archive editor quotes the buttons and the
+        right-click item by name; a renamed button would leave the only
+        instructions a reader has pointing at nothing."""
+        for module, labels in self.QUOTED_EDITOR_LABELS.items():
+            with open(module.__file__) as fp:
+                source = fp.read().replace('_', '')
+            for label in labels:
+                with self.subTest(module=module.__name__, label=label):
+                    self.assertIn(label.replace('_', ''), source)
+
+    def test_the_page_names_those_labels(self):
+        missing = [label
+                   for labels in self.QUOTED_EDITOR_LABELS.values()
+                   for label in labels
+                   if label.lower() not in self.page.lower()]
+        self.assertEqual([], missing)
+
+    def test_the_page_names_the_metadata_file_and_its_two_fields(self):
+        """MComix writes PageCount and Pages into every archive it
+        saves, and nothing else about the comic."""
+        self.assertIn(comicinfo.NAME, self.page)
+        with open(comicinfo.__file__) as fp:
+            source = fp.read()
+        for field in ('PageCount', 'Pages'):
+            with self.subTest(field=field):
+                self.assertIn("'%s'" % field, source)
+                self.assertIn(field, self.page)
+
+    def test_the_page_quotes_the_preference_that_keeps_the_format(self):
+        """Which format a save is written in is the preference's to
+        decide, so the page has to name it as the dialog does."""
+        label = 'Save an edited archive in the format it was opened in'
+        with open(preferences_dialog.__file__) as fp:
+            self.assertIn(label, fp.read())
+        self.assertIn(label, self.page)
 
 
 class HomePageTest(unittest.TestCase):
@@ -377,6 +430,26 @@ class MaintenancePageTest(unittest.TestCase):
                 if 'from mcomix.i18n import _' in source:
                     missed.append(os.path.relpath(path, self.root))
         self.assertEqual([], sorted(missed))
+
+    def test_the_msys2_packages_are_the_ones_the_build_script_names(self):
+        """The list a maintainer installs from is on this page, and the
+        list the build script documents is in win32/build_pyinstaller.py.
+        They had drifted apart: the page asked for python3-pillow,
+        python3 and python3-gobject, which MSYS2 renamed years ago, and
+        for mingw-w64-x86_64-mypy, which nothing in the build runs.
+        """
+        script = os.path.join(self.root, 'win32', 'build_pyinstaller.py')
+        with open(script) as fp:
+            source = fp.read()
+        pattern = r'mingw-w64-x86_64-[\w-]+'
+        self.assertEqual(sorted(set(re.findall(pattern, source))),
+                         sorted(set(re.findall(pattern, self.page))))
+
+    def test_the_msys2_list_is_not_empty(self):
+        """So that a rewritten build script cannot turn the comparison
+        above into one between two empty sets."""
+        self.assertGreater(
+            len(set(re.findall(r'mingw-w64-x86_64-[\w-]+', self.page))), 5)
 
     def test_the_page_no_longer_asks_for_ujson(self):
         """setuptools>=77 is the build backend and reads pyproject.toml

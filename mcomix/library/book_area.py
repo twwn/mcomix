@@ -427,7 +427,6 @@ class _BookArea(Gtk.ScrolledWindow):
             dialog = message_dialog.MessageDialog(
                 self._library, buttons=Gtk.ButtonsType.OK,
                 destroy_with_parent=True)
-            dialog.set_auto_destroy(False)
             dialog.set_text(_('Set library cover size'))
 
             # Add adjustment scale
@@ -447,11 +446,11 @@ class _BookArea(Gtk.ScrolledWindow):
             widgets.pack(dialog.get_content_area(), cover_size_scale, True, True, 0, end=True)
 
             def size_chosen(response: int) -> None:
-                # The dialog was told not to destroy itself, so that the
-                # scale can still be read once the answer is in.
+                # The adjustment is not the scale: it is a plain object
+                # the closure holds, and reading it owes nothing to the
+                # dialog run_async() has already taken down.
                 if response == Response.OK:
                     prefs['library cover size'] = int(adjustment.get_value())
-                dialog.destroy()
                 if prefs['library cover size'] != old_size:
                     self.load_covers()
 

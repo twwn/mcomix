@@ -54,20 +54,35 @@ RGBA_BLACK = Gdk.RGBA(0.0, 0.0, 0.0, 1.0)
 RGBA_WHITE = Gdk.RGBA(1.0, 1.0, 1.0, 1.0)
 
 
+#: Which gdk-pixbuf rotation each quarter turn, clockwise in degrees, is.
+_ROTATIONS = {
+    0: GdkPixbuf.PixbufRotation.NONE,
+    90: GdkPixbuf.PixbufRotation.CLOCKWISE,
+    180: GdkPixbuf.PixbufRotation.UPSIDEDOWN,
+    270: GdkPixbuf.PixbufRotation.COUNTERCLOCKWISE,
+}
+
+
 def axis_to_gdkpixbuf_flip_horizontal(i: int) -> bool:
-    return (True, False)[i]
+    """Whether flipping along axis <i> is a horizontal flip.
+
+    <i> is a constants.PageAxis, and flipping a page along its width is
+    what gdk-pixbuf calls flipping it horizontally.
+    """
+    return i == constants.PageAxis.WIDTH
 
 
 def angle_to_gdkpixbuf_rotation(deg: int) -> GdkPixbuf.PixbufRotation:
-    if deg == 0:
-        return GdkPixbuf.PixbufRotation.NONE
-    elif deg == 90:
-        return GdkPixbuf.PixbufRotation.CLOCKWISE
-    elif deg == 180:
-        return GdkPixbuf.PixbufRotation.UPSIDEDOWN
-    elif deg == 270:
-        return GdkPixbuf.PixbufRotation.COUNTERCLOCKWISE
-    raise ValueError("illegal angle: " + str(deg))
+    """Return the rotation gdk-pixbuf knows <deg> clockwise degrees by.
+
+    Only the three quarter turns and no rotation at all: gdk-pixbuf
+    rotates a pixbuf by moving pixels about and has nothing to offer for
+    an angle that would have to interpolate.
+    """
+    try:
+        return _ROTATIONS[deg]
+    except KeyError:
+        raise ValueError('illegal angle: %s' % deg) from None
 
 
 def _allocated(pixbuf: GdkPixbuf.Pixbuf | None) -> GdkPixbuf.Pixbuf:
@@ -84,12 +99,18 @@ def _allocated(pixbuf: GdkPixbuf.Pixbuf | None) -> GdkPixbuf.Pixbuf:
 
 
 def rotate_pixbuf(src: GdkPixbuf.Pixbuf, rotation: int) -> GdkPixbuf.Pixbuf:
+    """Return <src> turned <rotation> degrees clockwise.
+
+    <src> itself where there is nothing to turn, since a rotation of none
+    would otherwise cost a copy of every page that is not rotated.
+    """
     if rotation == 0:
         return src
     return _allocated(src.rotate_simple(angle_to_gdkpixbuf_rotation(rotation)))
 
 
 def flip_pixbuf(src: GdkPixbuf.Pixbuf, axis: int) -> GdkPixbuf.Pixbuf:
+    """Return <src> mirrored along <axis>, a constants.PageAxis."""
     return _allocated(
         src.flip(horizontal=axis_to_gdkpixbuf_flip_horizontal(axis)))
 
@@ -123,6 +144,13 @@ def get_fitting_size(source_size: Sequence[int], target_size: Sequence[int],
 
 def fit_pixbuf_to_rectangle(src: GdkPixbuf.Pixbuf, rect: Sequence[int],
                             rotation: int) -> GdkPixbuf.Pixbuf:
+    """Return <src> turned <rotation> degrees and scaled to fill <rect>.
+
+    Filling rather than fitting: the caller has already worked out the
+    size it wants, from the aspect ratio among other things, so this is
+    asked for exactly the rectangle it computed and neither keeps the
+    ratio nor stops at the original size.
+    """
     return fit_in_rectangle(src, rect[0], rect[1],
                             rotation=rotation,
                             keep_ratio=False,
@@ -570,7 +598,14 @@ def _first_provider_that_loads(
 
 
 def load_pixbuf(path: str) -> GdkPixbuf.Pixbuf:
-    """ Loads a pixbuf from a given image file. """
+    """The whole picture at <path>, at the size it was stored at.
+
+    gdk-pixbuf first and PIL after it, since between them they read more
+    than either does alone; the last error is raised where neither could
+    read the file.  A picture that animates carries the path it came
+    from, because only its first frame is here and whoever draws the
+    rest needs the file back.
+    """
     # Asking get_image_info() which provider to prefer costs another pass
     # over the file - as much again as decoding it, where gdk-pixbuf's
     # loaders run sandboxed - and cannot change the outcome.  It puts PIL
@@ -593,8 +628,15 @@ def load_pixbuf(path: str) -> GdkPixbuf.Pixbuf:
 
 
 def load_pixbuf_size(path: str, width: int, height: int) -> GdkPixbuf.Pixbuf:
-    """ Loads a pixbuf from a given image file and scale it to fit
-    inside (width, height). """
+    """The picture at <path>, scaled to fit inside (<width>, <height>).
+
+    Fitted rather than filled: the aspect ratio is kept, and a picture
+    smaller than the box is left at its own size.  Both loaders are
+    asked to do the scaling as they decode, which is what makes this
+    cheaper than loading the whole picture and scaling it afterwards,
+    and the result is fitted again at the end because neither of them
+    promises the exact size asked for.
+    """
     # A box with a zero side asks gdk-pixbuf for a scale it refuses -
     # "assertion 'width > 0 || width == -1' failed" - and then makes PIL
     # divide by it, so what came back was a ZeroDivisionError rather than
@@ -646,7 +688,13 @@ def load_pixbuf_size(path: str, width: int, height: int) -> GdkPixbuf.Pixbuf:
 
 
 def load_pixbuf_data(imgdata: bytes) -> GdkPixbuf.Pixbuf:
-    """ Loads a pixbuf from the data passed in <imgdata>. """
+    """The picture <imgdata> holds, for one that was never a file.
+
+    The same two loaders in the same order as load_pixbuf(), fed from
+    memory: an archive hands its pages over as bytes rather than
+    unpacking them.  Nothing here looks for an animation, since there is
+    no file for its later frames to be read out of.
+    """
     def by_gdk_pixbuf() -> "GdkPixbuf.Pixbuf | None":
         loader = GdkPixbuf.PixbufLoader()
         loader.write(imgdata)
@@ -805,47 +853,54 @@ def get_size_rotation(width: int, height: int) -> int:
     return 0
 
 
-def combine_pixbufs(pixbuf1: GdkPixbuf.Pixbuf, pixbuf2: GdkPixbuf.Pixbuf,
-                    are_in_manga_mode: bool) -> GdkPixbuf.Pixbuf:
-    if are_in_manga_mode:
-        r_source_pixbuf = pixbuf1
-        l_source_pixbuf = pixbuf2
-    else:
-        l_source_pixbuf = pixbuf1
-        r_source_pixbuf = pixbuf2
+def combine_pixbufs(first: GdkPixbuf.Pixbuf, second: GdkPixbuf.Pixbuf,
+                    axis: int = constants.DISTRIBUTION_AXIS
+                    ) -> GdkPixbuf.Pixbuf:
+    """Return <first> and <second> joined into one pixbuf along <axis>.
 
-    has_alpha = False
+    <axis> is a constants.PageAxis, the one the two are distributed on:
+    along the width they end up side by side with <first> on the left,
+    and along the height stacked with <first> on top.  The caller settles
+    which page is which, because that is a question about the view rather
+    than about the pages - a manga reads right to left, and turning the
+    view moves the pages about with it.
 
-    if l_source_pixbuf.get_property('has-alpha') or \
-       r_source_pixbuf.get_property('has-alpha'):
-        has_alpha = True
+    The result is as long as the two together along <axis> and as long as
+    the longer of them along the other axis, so where they differ - which
+    is the usual case for scanned pages - part of the shorter one's band
+    is covered by neither.  Those pixels are filled before anything is
+    copied in, because GdkPixbuf.Pixbuf.new() does not clear the buffer
+    it allocates and leaves what is in them undefined: transparent where
+    either page has an alpha channel to be transparent in, and otherwise
+    white, which is what MComix shows through a transparent page as well.
+    """
+    other_axis = (constants.PageAxis.HEIGHT
+                  if axis == constants.PageAxis.WIDTH
+                  else constants.PageAxis.WIDTH)
+    sizes = [[pixbuf.get_width(), pixbuf.get_height()]
+             for pixbuf in (first, second)]
+    combined_size = [0, 0]
+    combined_size[axis] = sizes[0][axis] + sizes[1][axis]
+    combined_size[other_axis] = max(sizes[0][other_axis], sizes[1][other_axis])
 
-    bits_per_sample = 8
+    has_alpha = first.get_has_alpha() or second.get_has_alpha()
+    combined = _allocated(GdkPixbuf.Pixbuf.new(
+        colorspace=GdkPixbuf.Colorspace.RGB, has_alpha=has_alpha,
+        bits_per_sample=8,
+        width=combined_size[constants.PageAxis.WIDTH],
+        height=combined_size[constants.PageAxis.HEIGHT]))
+    combined.fill(convert_rgba_to_rgba8int((1.0, 1.0, 1.0,
+                                            0.0 if has_alpha else 1.0)))
 
-    l_source_pixbuf_width = l_source_pixbuf.get_property('width')
-    r_source_pixbuf_width = r_source_pixbuf.get_property('width')
+    offset = [0, 0]
+    for pixbuf, size in zip((first, second), sizes):
+        pixbuf.copy_area(0, 0, size[constants.PageAxis.WIDTH],
+                         size[constants.PageAxis.HEIGHT], combined,
+                         offset[constants.PageAxis.WIDTH],
+                         offset[constants.PageAxis.HEIGHT])
+        offset[axis] += size[axis]
 
-    l_source_pixbuf_height = l_source_pixbuf.get_property('height')
-    r_source_pixbuf_height = r_source_pixbuf.get_property('height')
-
-    new_width = l_source_pixbuf_width + r_source_pixbuf_width
-
-    new_height = max(l_source_pixbuf_height, r_source_pixbuf_height)
-
-    new_pix_buf = _allocated(GdkPixbuf.Pixbuf.new(colorspace=GdkPixbuf.Colorspace.RGB,
-                                                  has_alpha=has_alpha,
-                                                  bits_per_sample=bits_per_sample,
-                                                  width=new_width, height=new_height))
-
-    l_source_pixbuf.copy_area(0, 0, l_source_pixbuf_width,
-                              l_source_pixbuf_height,
-                              new_pix_buf, 0, 0)
-
-    r_source_pixbuf.copy_area(0, 0, r_source_pixbuf_width,
-                              r_source_pixbuf_height,
-                              new_pix_buf, l_source_pixbuf_width, 0)
-
-    return new_pix_buf
+    return combined
 
 
 def is_image_file(path: str) -> bool:

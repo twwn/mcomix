@@ -142,7 +142,7 @@ class BookmarksMenuTest(MComixTest):
     def test_the_fixed_entries_are_always_there(self):
         self.assertEqual(self._sections(),
                          [['Add _Bookmark', '_Edit Bookmarks...',
-                           '_Clear bookmarks...']])
+                           'C_lear bookmarks...']])
 
     def _clear_action(self):
         return widgets.simple_action(self.menu._actions, 'clear')
@@ -202,7 +202,7 @@ class BookmarksMenuTest(MComixTest):
         self.assertEqual(self.store.get_bookmarks(), [])
         self.assertEqual(self._sections(),
                          [['Add _Bookmark', '_Edit Bookmarks...',
-                           '_Clear bookmarks...']],
+                           'C_lear bookmarks...']],
                          'the menu still lists bookmarks that are gone')
         self.assertFalse(self._clear_action().get_enabled())
 

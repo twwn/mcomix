@@ -159,6 +159,16 @@ class MComixTest(unittest.TestCase):
         self._saved_tempdir = tempfile.tempdir
         self._saved_paths = {name: getattr(constants, name)
                              for name in self.REDIRECTED_PATHS}
+        # Put all of that back from a cleanup rather than from
+        # tearDown(), because cleanups run in the reverse of the order
+        # they were registered in: whatever the test itself registers -
+        # closing a window it opened, and with it the writes
+        # terminate_program() makes - then runs while the paths below
+        # still point into the temporary home.  Undoing the redirection
+        # in tearDown() put the real paths back first, and a window
+        # closed from addCleanup wrote the reader's own bookmarks and
+        # file information into their data directory.
+        self.addCleanup(self._restore)
         # Change storage directories.
         home_dir = os.path.join(self.tmp_dir, 'home')
         os.mkdir(home_dir)
@@ -198,7 +208,7 @@ class MComixTest(unittest.TestCase):
         # from an earlier test is not this one's to make.
         preferences.cancel_scheduled_write()
 
-    def tearDown(self):
+    def _restore(self):
         # Nothing this test changed is worth writing after it, and the
         # directory it would be written into is about to be gone.
         preferences.cancel_scheduled_write()

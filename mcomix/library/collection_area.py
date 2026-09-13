@@ -216,7 +216,6 @@ class _CollectionArea(Gtk.ScrolledWindow):
         """Add a new collection to the library, through a dialog."""
         add_dialog = message_dialog.MessageDialog(
             self._library, buttons=Gtk.ButtonsType.OK_CANCEL)
-        add_dialog.set_auto_destroy(False)
         add_dialog.set_default_response(Response.OK)
         add_dialog.set_text(
             _('Add new collection?'),
@@ -232,13 +231,13 @@ class _CollectionArea(Gtk.ScrolledWindow):
         widgets.pack(box, entry, True, True, 6)
         box.set_visible(True)
 
-        add_dialog.run_async(lambda response: self._add_answered(
-            response, entry.get_text(), add_dialog))
+        # The entry outlives the dialog, which run_async() takes down
+        # before it answers.
+        add_dialog.run_async(
+            lambda response: self._add_answered(response, entry.get_text()))
 
-    def _add_answered(self, response: int, name: str,
-                      add_dialog: message_dialog.MessageDialog) -> None:
+    def _add_answered(self, response: int, name: str) -> None:
         """Create the collection the add dialog asked about."""
-        add_dialog.destroy()
         if response == Response.OK and name:
             collection = self._library.backend.add_collection(name)
             if collection is not None:
@@ -311,7 +310,6 @@ class _CollectionArea(Gtk.ScrolledWindow):
         old_name = self._collection_name(collection)
         rename_dialog = message_dialog.MessageDialog(
             self._library, buttons=Gtk.ButtonsType.OK_CANCEL)
-        rename_dialog.set_auto_destroy(False)
         rename_dialog.set_text(
             _('Rename collection?'),
             _('Please enter a new name for the selected collection.')
@@ -328,13 +326,13 @@ class _CollectionArea(Gtk.ScrolledWindow):
         widgets.pack(box, entry, True, True, 6)
         box.set_visible(True)
 
+        # As in add_collection() above: the entry outlives the dialog.
         rename_dialog.run_async(lambda response: self._rename_answered(
-            response, collection, entry.get_text(), rename_dialog))
+            response, collection, entry.get_text()))
 
-    def _rename_answered(self, response: int, collection: int, new_name: str,
-                         rename_dialog: message_dialog.MessageDialog) -> None:
+    def _rename_answered(self, response: int, collection: int,
+                         new_name: str) -> None:
         """Rename the collection the rename dialog asked about."""
-        rename_dialog.destroy()
         if response == Response.OK and new_name:
             if self._library.backend.rename_collection(collection, new_name):
                 self.display_collections()

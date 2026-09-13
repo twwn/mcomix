@@ -227,6 +227,75 @@ class BeforeAPageIsChosenTest(MComixTest):
 # vim: expandtab:sw=4:ts=4
 
 
+class BusyCursorTest(MComixTest):
+
+    """Whether the wait cursor covers the stretch it is meant to.
+
+    open_file() points the extractor at the archive and returns at once;
+    nothing is on screen until the listing thread answers, which on a large
+    archive is long enough to look like nothing happened.
+    """
+
+    class _StubCursorHandler:
+
+        def __init__(self):
+            self.calls = []
+
+        def set_busy(self, busy):
+            self.calls.append(busy)
+
+        def set_cursor_type(self, cursor):
+            pass
+
+    def setUp(self):
+        super().setUp()
+        os.makedirs(constants.DATA_DIR, exist_ok=True)
+        self.cursor = self._StubCursorHandler()
+
+    def _handler(self):
+        """A file handler over a window that answers anything.
+
+        The two attributes given real values are the ones that leave the
+        program: write_fileinfo() pickles the path and the page number, and
+        a MagicMock cannot be pickled.
+        """
+        window = mock.MagicMock()
+        window.cursor_handler = self.cursor
+        window.imagehandler.get_real_path.return_value = '/book/page.png'
+        window.imagehandler.get_current_page.return_value = 1
+        return file_handler.FileHandler(window)
+
+    def test_listing_an_archive_sets_the_wait_cursor(self):
+        handler = self._handler()
+        handler.open_file(get_testfile_path('archives', '01-ZIP-Normal.zip'))
+        try:
+            self.assertIn(True, self.cursor.calls,
+                          'nothing said the program was working')
+        finally:
+            handler._close(close_provider=True)
+
+    def test_a_directory_of_images_sets_no_wait_cursor(self):
+        """Listing a directory is not threaded, so there is no wait to
+        report and the pointer must not flicker."""
+        handler = self._handler()
+        handler.open_file(get_testfile_path('images', 'blue.png'))
+        try:
+            self.assertNotIn(True, self.cursor.calls)
+        finally:
+            handler._close(close_provider=True)
+
+    def test_closing_while_a_listing_runs_clears_the_wait_cursor(self):
+        """_listed_contents() gives up on a file_loading that has been
+        cleared, so _archive_opened() is never reached and _close() is the
+        only place left to clear it."""
+        handler = self._handler()
+        handler.open_file(get_testfile_path('archives', '01-ZIP-Normal.zip'))
+        self.cursor.calls.clear()
+        handler._close(close_provider=True)
+        self.assertIn(False, self.cursor.calls,
+                      'the wait cursor would have stayed for the session')
+
+
 class CloseWakesWaitersTest(MComixTest):
 
     """Closing a file wakes whatever is parked in _wait_on_file().
@@ -246,10 +315,23 @@ class CloseWakesWaitersTest(MComixTest):
         def cleanup(self):
             pass
 
+    class _StubCursorHandler:
+
+        """_close() clears the wait cursor the archive listing set, so the
+        stub window has to have one to clear."""
+
+        def __init__(self):
+            self.busy = None
+
+        def set_busy(self, busy):
+            self.busy = busy
+
     class _StubWindow:
 
         def __init__(self):
             self.imagehandler = CloseWakesWaitersTest._StubImageHandler()
+            self.cursor_handler = \
+                CloseWakesWaitersTest._StubCursorHandler()
 
     PAGE = '/book/page.png'
 
