@@ -75,26 +75,29 @@ class ImageHandler:
 
     def _get_pixbuf(self, index: int) -> GdkPixbuf.Pixbuf:
         """Return the pixbuf indexed by <index> from cache.
-        Pixbufs not found in cache are fetched from disk first.
+
+        A page not in the cache is waited for and read from disk, and
+        whatever comes of that is what the cache holds from then on: a
+        page that will not load answers with the missing-image icon
+        rather than being tried again on every page turn.
+
+        The cache is read with one dict.get() rather than a test and a
+        lookup, because this runs on the caching thread as well as on
+        the main one, and do_cacheing() empties the cache from the main
+        thread while it does.
         """
-        pixbuf = image_tools.missing_image_icon()
+        pixbuf = self._raw_pixbufs.get(index)
+        if pixbuf is not None:
+            return pixbuf
 
-        if index not in self._raw_pixbufs:
-            self._wait_on_page(index + 1)
-
-            try:
-                pixbuf = image_tools.load_pixbuf((self._image_files or [])[index])
-                self._raw_pixbufs[index] = pixbuf
-                tools.garbage_collect()
-            except Exception as e:
-                self._raw_pixbufs[index] = image_tools.missing_image_icon()
-                log.error('Could not load pixbuf for page %u: %r', index + 1, e)
-        else:
-            try:
-                pixbuf = self._raw_pixbufs[index]
-            except Exception:
-                pass
-
+        self._wait_on_page(index + 1)
+        try:
+            pixbuf = image_tools.load_pixbuf((self._image_files or [])[index])
+            tools.garbage_collect()
+        except Exception as e:
+            log.error('Could not load pixbuf for page %u: %r', index + 1, e)
+            pixbuf = image_tools.missing_image_icon()
+        self._raw_pixbufs[index] = pixbuf
         return pixbuf
 
     def get_pixbufs(self, number_of_bufs: int) -> list[GdkPixbuf.Pixbuf]:
@@ -149,8 +152,8 @@ class ImageHandler:
         """Make sure that the correct pixbufs are stored in cache. These
         are (in the current implementation) the current image(s), and
         if cacheing is enabled, also the one or two pixbufs before and
-        after the current page. All other pixbufs are deleted and garbage
-        collected directly in order to save memory.
+        after the current page. All other pixbufs are dropped, so that a
+        book being read holds no more of itself than that.
         """
         if not self._window.filehandler.file_loaded:
             return
@@ -167,13 +170,16 @@ class ImageHandler:
         self._wanted_pixbufs = wanted_pixbufs
         # Start caching available images not already in cache.
         wanted_pixbufs = [index for index in wanted_pixbufs
-                          if index in self._available_images and not index in self._raw_pixbufs]
-        orders = [(priority, index) for priority, index in enumerate(wanted_pixbufs)]
-        if len(orders) > 0:
+                          if index in self._available_images
+                          and index not in self._raw_pixbufs]
+        # The order they are wanted in is the order to read them in.
+        orders = list(enumerate(wanted_pixbufs))
+        if orders:
             self._thread.extend_orders(orders)
 
     def _cache_pixbuf(self, wanted: tuple[int, int]) -> None:
-        priority, index = wanted
+        """Read one page into the cache, on the caching thread."""
+        _priority, index = wanted
         log.debug('Caching page %u', index + 1)
         self._get_pixbuf(index)
 
@@ -303,6 +309,35 @@ class ImageHandler:
         # scan the whole list again for every single file that shows up.
         self._image_file_index = {path: index
                                   for index, path in enumerate(image_files)}
+
+    def replace_pages(self, image_files: list[str]) -> None:
+        """Rewrite the pages of the book that is already open as <image_files>.
+
+        What the archive editor does when pages are reordered, deleted
+        or added.  Everything the handler holds about a page - whether
+        it has been extracted, and the pixbuf read for it - is keyed by
+        position, and the editor is free to move a file to another
+        position or drop it altogether.  So both are carried across by
+        path: a page that moved is neither decoded again nor waited for
+        again, one that is gone takes what was read of it with it, and
+        no page inherits the answers given for the file that used to
+        hold its number.
+
+        Both are replaced rather than emptied and refilled, so that the
+        caching thread reading them meets one listing or the other and
+        never a half-built one.
+        """
+        old_files = self._image_files or []
+        available = {old_files[index] for index in self._available_images}
+        pixbufs = {old_files[index]: pixbuf
+                   for index, pixbuf in self._raw_pixbufs.items()}
+        self.set_image_files(image_files)
+        self._available_images = {index for index, path
+                                  in enumerate(image_files)
+                                  if path in available}
+        self._raw_pixbufs = {index: pixbufs[path]
+                             for index, path in enumerate(image_files)
+                             if path in pixbufs}
 
     def _file_available(self, filepaths: Iterable[str]) -> None:
         """ Called by the filehandler when a new file becomes available. """

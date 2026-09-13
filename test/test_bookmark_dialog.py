@@ -17,6 +17,7 @@ from mcomix import bookmark_backend
 from mcomix import bookmark_dialog
 from mcomix import bookmark_menu_item
 from mcomix import constants
+from mcomix.dialog import Response
 from mcomix.preferences import prefs
 
 
@@ -112,6 +113,50 @@ class BookmarksDialogTest(MComixTest):
         self.assertEqual(self._names(), ['gamma', 'alpha'])
 
     # -- Opening ----------------------------------------------------------
+
+    def _dialogs(self):
+        """The prompts the dialog has put on screen."""
+        from mcomix import message_dialog
+        return [window for window in Gtk.Window.list_toplevels()
+                if isinstance(window, message_dialog.MessageDialog)
+                and window.get_visible()]
+
+    def test_clearing_asks_before_it_removes_anything(self):
+        self.dialog.response(constants.RESPONSE_CLEAR)
+        pump()
+        self.assertEqual(len(self._dialogs()), 1, 'nothing was asked')
+        self.assertEqual(self._names(), ['gamma', 'beta', 'alpha'])
+
+    def test_clearing_empties_the_list_and_the_store(self):
+        """The rows have to go with the store: _close() writes back
+        whatever is left in the list, so a cleared store under a full
+        list would be refilled from it on the way out."""
+        self.dialog.response(constants.RESPONSE_CLEAR)
+        pump()
+        self._dialogs()[0].response(Response.YES)
+        pump()
+        self.assertEqual(self._names(), [])
+        self.assertEqual(self.store.get_bookmarks(), [])
+
+        self.dialog._close()
+        self.assertEqual(self.store.get_bookmarks(), [],
+                         'closing put the cleared bookmarks back')
+
+    def test_answering_no_keeps_them(self):
+        self.dialog.response(constants.RESPONSE_CLEAR)
+        pump()
+        self._dialogs()[0].response(Response.NO)
+        pump()
+        self.assertEqual(self._names(), ['gamma', 'beta', 'alpha'])
+        self.assertEqual(len(self.store.get_bookmarks()), 3)
+
+    def test_the_clear_button_follows_whether_there_is_anything_to_clear(self):
+        self.assertTrue(self.dialog._clear_button.get_sensitive())
+        self.dialog.response(constants.RESPONSE_CLEAR)
+        pump()
+        self._dialogs()[0].response(Response.YES)
+        pump()
+        self.assertFalse(self.dialog._clear_button.get_sensitive())
 
     def test_activating_a_bookmark_opens_it(self):
         self.dialog._bookmark_activated(self.dialog._list, 1)

@@ -27,11 +27,16 @@ having to play around with relative path names.
 
            pacman -Sy \
                mingw-w64-x86_64-gtk4 \
+               mingw-w64-x86_64-libadwaita \
                mingw-w64-x86_64-python \
                mingw-w64-x86_64-python-gobject \
                mingw-w64-x86_64-python-pillow \
                mingw-w64-x86_64-python-pymupdf \
                mingw-w64-x86_64-libjxl
+
+       libadwaita is the only one of these MComix runs without: it is
+       what reads the colour names a GTK4 theme states, and the build
+       that ships without it follows only what plain GTK4 can be told.
 
     2. In the same shell, install pyinstaller with pip:
 
@@ -138,8 +143,8 @@ def copy_other_files() -> None:
         win32_newline('../mcomix-other/mutool/COPYING.txt', 'dist/MComix/licenses/mupdf/COPYING.txt')
 
     licenses_basedir = '/mingw64/share/licenses'
-    components = ('cairo', 'fontconfig', 'freetype', 'gdk-pixbuf2', 'glib2', 'gtk4', 'pango',
-                  'python-cairo', 'python-Pillow')
+    components = ('cairo', 'fontconfig', 'freetype', 'gdk-pixbuf2', 'glib2', 'gtk4',
+                  'libadwaita', 'pango', 'python-cairo', 'python-Pillow')
     if os.path.isdir(licenses_basedir):
         for entry in components:
             path = os.path.join(licenses_basedir, entry)

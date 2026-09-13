@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: comix 4.0.1\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-05 18:43+0200\n"
+"POT-Creation-Date: 2026-09-06 09:37+0200\n"
 "PO-Revision-Date: 2008-12-13 18:00+0100\n"
 "Last-Translator: Adrian C. <anrxc@sysphere.org>\n"
 "Language-Team: Croatian\n"
@@ -64,32 +64,32 @@ msgstr ""
 msgid "! Could not read %s"
 msgstr ""
 
-#: mcomix/bookmark_backend.py:174
+#: mcomix/bookmark_backend.py:184
 #, python-format
 msgid "! Could not parse bookmarks file %s"
 msgstr ""
 
-#: mcomix/bookmark_backend.py:222 mcomix/message_dialog.py:28
+#: mcomix/bookmark_backend.py:247 mcomix/message_dialog.py:28
 msgid "_Yes"
 msgstr "_Da"
 
 #
 # File: src/ui.py, line: 69
-#: mcomix/bookmark_backend.py:223 mcomix/message_dialog.py:27
+#: mcomix/bookmark_backend.py:248 mcomix/message_dialog.py:27
 msgid "_No"
 msgstr "_Ne"
 
 #
 # File: src/preferences.py, line: 230
-#: mcomix/bookmark_backend.py:224 mcomix/edit_dialog.py:50
+#: mcomix/bookmark_backend.py:249 mcomix/edit_dialog.py:50
 #: mcomix/file_chooser_base_dialog.py:96 mcomix/file_chooser_base_dialog.py:101
-#: mcomix/file_chooser_library_dialog.py:51 mcomix/main.py:1139
+#: mcomix/file_chooser_library_dialog.py:51 mcomix/main.py:1223
 #: mcomix/message_dialog.py:26 mcomix/message_dialog.py:29
 #: mcomix/pageselect.py:32
 msgid "_Cancel"
 msgstr "_Odustani"
 
-#: mcomix/bookmark_backend.py:232
+#: mcomix/bookmark_backend.py:257
 #, python-format
 msgid "Replace existing bookmark on page %s?"
 msgid_plural "Replace existing bookmarks on pages %s?"
@@ -97,52 +97,72 @@ msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
 
-#: mcomix/bookmark_backend.py:237
+#: mcomix/bookmark_backend.py:262
 #, python-format
 msgid ""
 "The current book already contains marked pages. Do you want to replace them "
 "with a new bookmark on page %d?"
 msgstr ""
 
-#: mcomix/bookmark_backend.py:240
+#: mcomix/bookmark_backend.py:265
 msgid ""
 "Selecting \"No\" will create a new bookmark without affecting the other "
 "bookmarks."
 msgstr ""
 
+#
+# File: src/bookmark.py, line: 31
+#: mcomix/bookmark_backend.py:285
+#, fuzzy
+msgid "Clear all bookmarks?"
+msgstr "_Očisti oznake..."
+
+#
+# File: src/bookmark.py, line: 79
+#: mcomix/bookmark_backend.py:286
+msgid ""
+"All stored bookmarks will be removed. Are you sure that you want to continue?"
+msgstr "Sve spremljene oznake će biti uklonjene. Sigurno želite nastaviti?"
+
 #: mcomix/bookmark_dialog.py:29
 msgid "Edit Bookmarks"
 msgstr ""
 
-#: mcomix/bookmark_dialog.py:31 mcomix/openwith.py:322
+#
+# File: src/bookmark.py, line: 31
+#: mcomix/bookmark_dialog.py:31 mcomix/bookmark_menu.py:37
+msgid "_Clear bookmarks..."
+msgstr "_Očisti oznake..."
+
+#: mcomix/bookmark_dialog.py:32 mcomix/openwith.py:343
 #: mcomix/library/collection_area.py:120 mcomix/library/watchlist.py:56
 msgid "_Remove"
 msgstr "_Ukloni"
 
 #
 # File: src/ui.py, line: 48
-#: mcomix/bookmark_dialog.py:32 mcomix/comment_dialog.py:23
+#: mcomix/bookmark_dialog.py:33 mcomix/comment_dialog.py:23
 #: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:64
 #: mcomix/properties_dialog.py:34 mcomix/ui.py:443
 #: mcomix/library/watchlist.py:33
 msgid "_Close"
 msgstr "_Zatvori"
 
-#: mcomix/bookmark_dialog.py:54
+#: mcomix/bookmark_dialog.py:59
 msgid "Type"
 msgstr "Vrsta"
 
 #
 # File: src/bookmark.py, line: 255
 # File: src/edit.py, line: 267
-#: mcomix/bookmark_dialog.py:57 mcomix/edit_comment_area.py:38
+#: mcomix/bookmark_dialog.py:62 mcomix/edit_comment_area.py:38
 #: mcomix/keybindings_editor.py:44
 msgid "Name"
 msgstr "Ime"
 
 #
 # File: src/bookmark.py, line: 256
-#: mcomix/bookmark_dialog.py:60 mcomix/main.py:1200
+#: mcomix/bookmark_dialog.py:65 mcomix/main.py:1284
 #: mcomix/library/control_area.py:140
 msgid "Page"
 msgstr "Stranica"
@@ -150,19 +170,19 @@ msgstr "Stranica"
 #
 # File: src/properties.py, line: 124
 # File: src/properties.py, line: 159
-#: mcomix/bookmark_dialog.py:63 mcomix/properties_dialog.py:149
+#: mcomix/bookmark_dialog.py:68 mcomix/properties_dialog.py:149
 msgid "Location"
 msgstr "Lokacija"
 
-#: mcomix/bookmark_dialog.py:66
+#: mcomix/bookmark_dialog.py:71
 msgid "Added"
 msgstr ""
 
-#: mcomix/bookmark_menu.py:32
+#: mcomix/bookmark_menu.py:35
 msgid "Add _Bookmark"
 msgstr ""
 
-#: mcomix/bookmark_menu.py:33
+#: mcomix/bookmark_menu.py:36
 msgid "_Edit Bookmarks..."
 msgstr ""
 
@@ -294,7 +314,7 @@ msgstr ""
 #
 # File: src/filechooser.py, line: 39
 #: mcomix/enhance_dialog.py:34 mcomix/file_chooser_base_dialog.py:102
-#: mcomix/openwith.py:340
+#: mcomix/openwith.py:361
 msgid "_Save"
 msgstr "_Spremi"
 
@@ -430,7 +450,7 @@ msgstr "Zamjenom će sadržaj biti prepisan."
 msgid "Add books"
 msgstr "Dodaj knjige"
 
-#: mcomix/file_chooser_library_dialog.py:52 mcomix/openwith.py:318
+#: mcomix/file_chooser_library_dialog.py:52 mcomix/openwith.py:339
 #: mcomix/library/watchlist.py:54
 msgid "_Add"
 msgstr "_Dodaj"
@@ -451,7 +471,8 @@ msgstr "Nemoguće otvoriti %s: Datoteka ne postoji."
 
 #
 # File: src/filehandler.py, line: 217
-#: mcomix/file_handler.py:331 mcomix/file_provider.py:140
+#: mcomix/file_handler.py:331 mcomix/file_provider.py:153
+#: mcomix/file_provider.py:202
 #, python-format
 msgid "Could not open %s: Permission denied."
 msgstr "Nemoguće otvoriti %s: Pristup odbijen."
@@ -474,14 +495,14 @@ msgstr ""
 msgid "! Corrupt preferences file \"%s\", deleting..."
 msgstr ""
 
-#: mcomix/file_provider.py:109
+#: mcomix/file_provider.py:131
 #, python-format
 msgid "Invalid path: '%s'"
 msgstr ""
 
 #
 # File: src/filehandler.py, line: 411
-#: mcomix/image_tools.py:876
+#: mcomix/image_tools.py:875
 msgid "Unknown filetype"
 msgstr "Nepoznat tip datoteke"
 
@@ -965,7 +986,7 @@ msgstr ""
 #
 # File: src/comment.py, line: 16
 # File: src/preferences.py, line: 288
-#: mcomix/keybindings.py:157 mcomix/openwith.py:522
+#: mcomix/keybindings.py:157 mcomix/openwith.py:543
 #, fuzzy
 msgid "Command"
 msgstr "Komentari"
@@ -995,24 +1016,24 @@ msgstr ""
 
 #
 # File: src/main.py, line: 666
-#: mcomix/main.py:988
+#: mcomix/main.py:1072
 msgid "SLIDESHOW"
 msgstr "PREZENTACIJA"
 
-#: mcomix/main.py:1091
+#: mcomix/main.py:1175
 msgid "Save page as"
 msgstr ""
 
-#: mcomix/main.py:1137
+#: mcomix/main.py:1221
 #, python-format
 msgid "Delete \"%s\"?"
 msgstr ""
 
-#: mcomix/main.py:1138
+#: mcomix/main.py:1222
 msgid "The file will be deleted from your harddisk."
 msgstr ""
 
-#: mcomix/main.py:1140 mcomix/ui.py:426
+#: mcomix/main.py:1224 mcomix/ui.py:426
 msgid "_Delete"
 msgstr "_Obriši"
 
@@ -1092,68 +1113,68 @@ msgstr ""
 msgid "Command line is empty."
 msgstr ""
 
-#: mcomix/openwith.py:193
+#: mcomix/openwith.py:214
 msgid "Incomplete escape sequence. For a literal '%', use '%%'."
 msgstr ""
 
-#: mcomix/openwith.py:197
+#: mcomix/openwith.py:218
 msgid "Incomplete quote sequence. For a literal '\"', use '%\"'."
 msgstr ""
 
 #
 # File: src/edit.py, line: 115
-#: mcomix/openwith.py:214 mcomix/openwith.py:228 mcomix/openwith.py:235
-#: mcomix/openwith.py:248
+#: mcomix/openwith.py:235 mcomix/openwith.py:249 mcomix/openwith.py:256
+#: mcomix/openwith.py:269
 #, fuzzy
 msgid "File-related variables can only be used for files."
 msgstr "Arhive se spremaju kao ZIP datoteke."
 
 #
 # File: src/edit.py, line: 115
-#: mcomix/openwith.py:218
+#: mcomix/openwith.py:239
 #, fuzzy
 msgid "Archive-related variables can only be used for archives."
 msgstr "Arhive se spremaju kao ZIP datoteke."
 
-#: mcomix/openwith.py:282
+#: mcomix/openwith.py:303
 #, python-format
 msgid "Invalid escape sequence: %%%s"
 msgstr ""
 
-#: mcomix/openwith.py:309
+#: mcomix/openwith.py:330
 msgid "Edit external commands"
 msgstr ""
 
-#: mcomix/openwith.py:320
+#: mcomix/openwith.py:341
 msgid "Add _separator"
 msgstr ""
 
-#: mcomix/openwith.py:325
+#: mcomix/openwith.py:346
 msgid "_Up"
 msgstr "_Gore"
 
-#: mcomix/openwith.py:328
+#: mcomix/openwith.py:349
 msgid "_Down"
 msgstr "_Dolje"
 
 #
 # File: src/comment.py, line: 16
 # File: src/preferences.py, line: 288
-#: mcomix/openwith.py:331
+#: mcomix/openwith.py:352
 #, fuzzy
 msgid "Run _command"
 msgstr "Komentari"
 
-#: mcomix/openwith.py:386
+#: mcomix/openwith.py:407
 msgid "This is a separator pseudo-command."
 msgstr ""
 
-#: mcomix/openwith.py:397
+#: mcomix/openwith.py:418
 #, python-format
 msgid "\"%s\" does not have a valid working directory."
 msgstr ""
 
-#: mcomix/openwith.py:400
+#: mcomix/openwith.py:421
 #, python-format
 msgid "\"%s\" does not appear to have a valid executable."
 msgstr ""
@@ -1161,48 +1182,48 @@ msgstr ""
 #
 # File: src/comment.py, line: 16
 # File: src/preferences.py, line: 288
-#: mcomix/openwith.py:409
+#: mcomix/openwith.py:430
 #, fuzzy
 msgid "Command label"
 msgstr "Komentari"
 
 #
 # File: src/ui.py, line: 36
-#: mcomix/openwith.py:500
+#: mcomix/openwith.py:521
 #, fuzzy
 msgid "Preview:"
 msgstr "_Prethodna stranica"
 
-#: mcomix/openwith.py:508
+#: mcomix/openwith.py:529
 #, python-format
 msgid ""
 "Please refer to the <a href=\"%s\">external command documentation</a> for a "
 "list of usable variables and other hints."
 msgstr ""
 
-#: mcomix/openwith.py:521
+#: mcomix/openwith.py:542
 msgid "Label"
 msgstr "Naslov"
 
 #
 # File: src/thumbremover.py, line: 58
-#: mcomix/openwith.py:523
+#: mcomix/openwith.py:544
 #, fuzzy
 msgid "Working directory"
 msgstr "Direktorij sa sličicama"
 
 #
 # File: src/filechooser.py, line: 86
-#: mcomix/openwith.py:530
+#: mcomix/openwith.py:551
 #, fuzzy
 msgid "Disabled in archives"
 msgstr "Tar arhive"
 
-#: mcomix/openwith.py:575
+#: mcomix/openwith.py:596
 msgid "Save changes to commands?"
 msgstr ""
 
-#: mcomix/openwith.py:576
+#: mcomix/openwith.py:597
 msgid ""
 "You have made changes to the list of external commands that have not been "
 "saved yet. Press \"Yes\" to save all changes, or \"No\" to discard them."
@@ -2838,23 +2859,23 @@ msgstr "_Biblioteka..."
 msgid "! Worker thread processing %(function)r failed: %(error)s"
 msgstr ""
 
-#: mcomix/archive/password.py:21
+#: mcomix/archive/password.py:23
 msgid "The archive is password-protected:"
 msgstr ""
 
 #
 # File: src/library.py, line: 856
-#: mcomix/archive/password.py:23
+#: mcomix/archive/password.py:25
 #, fuzzy
 msgid "Please enter the password to continue:"
 msgstr "Unesite ime za novu kolekciju."
 
-#: mcomix/archive/sevenzip_external.py:150
+#: mcomix/archive/sevenzip_external.py:188
 #, python-format
 msgid "Extraction of %(archivefile)s might have failed: %(error)s"
 msgstr ""
 
-#: mcomix/archive/zip.py:44
+#: mcomix/archive/zip.py:53
 #, python-format
 msgid ""
 "%(filename)s's extracted size is %(actual_size)d bytes, but should be "
@@ -3633,18 +3654,6 @@ msgstr "Automatski pridodaj knjige ovoj zbirci"
 # File: src/bookmark.py, line: 29
 #~ msgid "_Edit bookmarks..."
 #~ msgstr "_Uredi oznake..."
-
-#
-# File: src/bookmark.py, line: 31
-#~ msgid "_Clear bookmarks..."
-#~ msgstr "_Očisti oznake..."
-
-#
-# File: src/bookmark.py, line: 79
-#~ msgid ""
-#~ "All stored bookmarks will be removed. Are you sure that you want to "
-#~ "continue?"
-#~ msgstr "Sve spremljene oznake će biti uklonjene. Sigurno želite nastaviti?"
 
 #
 # File: src/deprecated.py, line: 16

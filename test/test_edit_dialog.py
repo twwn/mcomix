@@ -18,6 +18,7 @@ from mcomix import file_chooser_simple_dialog
 from mcomix import icons
 from mcomix import main
 from mcomix import message_dialog
+from mcomix.dialog import Response
 
 
 class EditArchiveDialogTest(MComixTest):
@@ -137,6 +138,33 @@ class EditArchiveDialogTest(MComixTest):
             for dialog in self._packing_dialogs():
                 dialog.destroy()
             pump()
+
+    # -- Applying the edited listing --------------------------------------
+
+    def test_applying_shows_the_page_that_is_first_in_the_new_order(self):
+        """The pixbufs the handler is holding stand against the page
+        numbers of the listing that was there before, so a book whose
+        pages have been reordered must not be drawn from them."""
+        self.dialog._load_original_files()
+        pump()
+        listing = list(self.dialog._image_area.get_file_listing())
+        self.assertGreater(len(listing), 1, 'the fixture has too few pages')
+        handler = self.window.imagehandler
+        # Every page of this archive is the same one-pixel picture, so
+        # the pixbuf read for the old page 1 can only be told from a
+        # fresh one by identity - which is the whole question here.
+        stale = handler._get_pixbuf(0)
+
+        reordered = list(reversed(listing))
+        self.dialog._image_area.get_file_listing = lambda: reordered
+        self.dialog._response(self.dialog, Response.APPLY)
+        pump()
+
+        self.assertEqual(handler._image_files, reordered)
+        self.assertEqual(handler.get_current_page(), 1)
+        self.assertIsNot(handler._get_pixbuf(0), stale,
+                         'page 1 was drawn from the pixbuf read for the '
+                         'page that used to be first')
 
     def test_save_as_opens_a_chooser_saying_what_it_writes(self):
         self.dialog._response(self.dialog, constants.RESPONSE_SAVE_AS)

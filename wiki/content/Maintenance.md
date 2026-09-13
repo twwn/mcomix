@@ -60,7 +60,7 @@ python3 -m build -s
 
 This will create `mcomix-version.tar.gz` in the `dist` subfolder, ready for uploading. Note that the command should not be run on a Windows machine, to avoid files in the archive having executable permission bits set. Building the Windows packages is a bit more difficult and requires:
 
-1. A MSYS2 installation with the following packages: `mingw-w64-x86_64-python3-pillow`, `mingw-w64-x86_64-gtk4`, `mingw-w64-x86_64-python3`, `mingw-w64-x86_64-python3-gobject`, `mingw-w64-x86_64-python3-pip`, `mingw-w64-x86_64-python-ujson`, `mingw-w64-x86_64-mypy`, `mingw-w64-x86_64-python-pymupdf`, `mingw-w64-x86_64-libjxl`.
+1. A MSYS2 installation with the following packages: `mingw-w64-x86_64-python3-pillow`, `mingw-w64-x86_64-gtk4`, `mingw-w64-x86_64-libadwaita`, `mingw-w64-x86_64-python3`, `mingw-w64-x86_64-python3-gobject`, `mingw-w64-x86_64-python3-pip`, `mingw-w64-x86_64-python-ujson`, `mingw-w64-x86_64-mypy`, `mingw-w64-x86_64-python-pymupdf`, `mingw-w64-x86_64-libjxl`.
 2. Make sure to update to the latest version of these packages before starting the release with `pacman -Syuu`.
 3. The Python 3 package `pyinstaller` is automatically installed when development dependencies have been installed, but it shoulld be updated to the latest version with `pip-review --auto --local`
 4. The installer script expects optional archive extractors in the directory `../mcomix-other`,  relative to MComix' root directory.  At this time, those are:

@@ -1,5 +1,6 @@
 """image_tools.py - Various image manipulations."""
 
+import functools
 import operator
 from gi.repository import GLib, GdkPixbuf, Gdk, Gtk
 import PIL
@@ -23,31 +24,29 @@ PIL_VERSION = ('Pillow', PIL.__version__)
 log.info(f'GDK version: {GdkPixbuf.PIXBUF_VERSION}, GTK+: {Gtk.get_major_version()}.{Gtk.get_minor_version()}, GLib: {GLib.MAJOR_VERSION}.{GLib.MINOR_VERSION}')
 log.info('PIL version: %s [%s]', PIL_VERSION[0], PIL_VERSION[1])
 
-#: Fallback pixbuf for images that cannot be loaded.  Filled in by
-#: missing_image_icon() rather than here: GTK4 looks icon themes up per
-#: display, and there is no display yet when this module is imported.
-MISSING_IMAGE_ICON: GdkPixbuf.Pixbuf | None = None
-
 #: 24 pixels is what Gtk.IconSize.LARGE_TOOLBAR stood for.
 _MISSING_IMAGE_SIZE = 24
 
 
+@functools.cache
 def missing_image_icon() -> GdkPixbuf.Pixbuf:
-    """The pixbuf shown in place of an image that would not load."""
-    global MISSING_IMAGE_ICON
-    if MISSING_IMAGE_ICON is None:
-        from mcomix import icons
-        # A theme that keeps its icons in a GResource has no file to
-        # load one from, and a blank square is still something to draw.
-        MISSING_IMAGE_ICON = (
-            icons.load_pixbuf('image-missing', _MISSING_IMAGE_SIZE)
+    """The pixbuf shown in place of an image that would not load.
+
+    It is built on the first call rather than at import: GTK4 looks
+    icon themes up per display, and there is no display yet while this
+    module is being imported.
+    """
+    from mcomix import icons
+    # A theme that keeps its icons in a GResource has no file to load
+    # one from, and a blank square is still something to draw.
+    icon = (icons.load_pixbuf('image-missing', _MISSING_IMAGE_SIZE)
             or GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, True, 8,
                                     _MISSING_IMAGE_SIZE,
                                     _MISSING_IMAGE_SIZE))
-        # Pixbuf.new() answers with nothing only when the allocation
-        # fails, and a square this small will not be what runs out.
-        assert MISSING_IMAGE_ICON is not None
-    return MISSING_IMAGE_ICON
+    # Pixbuf.new() answers with nothing only when the allocation fails,
+    # and a square this small will not be what runs out.
+    assert icon is not None
+    return icon
 
 #: Colours are Gdk.RGBA components throughout: four floats between 0 and 1.
 RGBA_BLACK = Gdk.RGBA(0.0, 0.0, 0.0, 1.0)
@@ -881,76 +880,77 @@ def get_image_info(path: str) -> tuple[str, tuple[int, int], tuple[int, ...]]:
         providers = (constants.IMAGEIO_GDKPIXBUF, constants.IMAGEIO_PIL)
     return (image_format, image_dimensions, providers)
 
+@functools.cache
 def get_supported_formats() -> dict[str, tuple[set[str], set[str]]]:
-    global _SUPPORTED_IMAGE_FORMATS
-    if _SUPPORTED_IMAGE_FORMATS is None:
+    """The image formats a loader is installed for.
 
-        # Step 1: Collect PIL formats
-        # Make sure all supported formats are registered.
-        Image.init()
-        # Not all PIL formats register a mime type,
-        # fill in the blanks ourselves.
-        supported_formats_pil: dict[str, tuple[list[str], list[str]]] = {
-            'BMP': (['image/bmp', 'image/x-bmp', 'image/x-MS-bmp'], []),
-            'ICO': (['image/x-icon', 'image/x-ico', 'image/x-win-bitmap'], []),
-            'PCX': (['image/x-pcx'], []),
-            'PPM': (['image/x-portable-pixmap'], []),
-            'TGA': (['image/x-tga'], []),
-        }
-        for name, mime in list(Image.MIME.items()):
-            mime_types, extensions = supported_formats_pil.get(name, ([], []))
-            supported_formats_pil[name] = mime_types + [mime], extensions
-        for ext, name in list(Image.EXTENSION.items()):
-            assert '.' == ext[0]
-            mime_types, extensions = supported_formats_pil.get(name, ([], []))
-            supported_formats_pil[name] = mime_types, extensions + [ext[1:]]
-        # Remove formats with no mime type or extension.
-        for name in list(supported_formats_pil.keys()):
-            mime_types, extensions = supported_formats_pil[name]
-            if not mime_types or not extensions:
-                del supported_formats_pil[name]
-        # Remove archives/videos formats.
-        for name in (
-            'MPEG',
-            'PDF',
-        ):
-            if name in supported_formats_pil:
-                del supported_formats_pil[name]
+    A mapping of a format's name to its mime types and its extensions.
+    """
 
-        # Step 2: Collect GDK Pixbuf formats
-        supported_formats_gdk: dict[str, tuple[list[str], list[str]]] = {}
-        for format in GdkPixbuf.Pixbuf.get_formats():
-            format_name = format.get_name()
-            gdk_mime_types = format.get_mime_types()
-            gdk_extensions = format.get_extensions()
-            # A format that will not say what it is called, what it
-            # serves or what it is filed under describes nothing.
-            if (format_name is None or gdk_mime_types is None
-                    or gdk_extensions is None):
-                continue
-            name = format_name.upper()
-            if name in supported_formats_gdk:
-                # The list of supported formats can sometimes contain duplicated entries
-                continue
+    # Step 1: Collect PIL formats
+    # Make sure all supported formats are registered.
+    Image.init()
+    # Not all PIL formats register a mime type,
+    # fill in the blanks ourselves.
+    supported_formats_pil: dict[str, tuple[list[str], list[str]]] = {
+        'BMP': (['image/bmp', 'image/x-bmp', 'image/x-MS-bmp'], []),
+        'ICO': (['image/x-icon', 'image/x-ico', 'image/x-win-bitmap'], []),
+        'PCX': (['image/x-pcx'], []),
+        'PPM': (['image/x-portable-pixmap'], []),
+        'TGA': (['image/x-tga'], []),
+    }
+    for name, mime in list(Image.MIME.items()):
+        mime_types, extensions = supported_formats_pil.get(name, ([], []))
+        supported_formats_pil[name] = mime_types + [mime], extensions
+    for ext, name in list(Image.EXTENSION.items()):
+        assert '.' == ext[0]
+        mime_types, extensions = supported_formats_pil.get(name, ([], []))
+        supported_formats_pil[name] = mime_types, extensions + [ext[1:]]
+    # Remove formats with no mime type or extension.
+    for name in list(supported_formats_pil.keys()):
+        mime_types, extensions = supported_formats_pil[name]
+        if not mime_types or not extensions:
+            del supported_formats_pil[name]
+    # Remove archives/videos formats.
+    for name in (
+        'MPEG',
+        'PDF',
+    ):
+        if name in supported_formats_pil:
+            del supported_formats_pil[name]
 
-            supported_formats_gdk[name] = (gdk_mime_types, gdk_extensions)
+    # Step 2: Collect GDK Pixbuf formats
+    supported_formats_gdk: dict[str, tuple[list[str], list[str]]] = {}
+    for format in GdkPixbuf.Pixbuf.get_formats():
+        format_name = format.get_name()
+        gdk_mime_types = format.get_mime_types()
+        gdk_extensions = format.get_extensions()
+        # A format that will not say what it is called, what it
+        # serves or what it is filed under describes nothing.
+        if (format_name is None or gdk_mime_types is None
+                or gdk_extensions is None):
+            continue
+        name = format_name.upper()
+        if name in supported_formats_gdk:
+            # The list of supported formats can sometimes contain duplicated entries
+            continue
 
-        # Step 3: merge format collections
-        supported_formats: dict[str, tuple[set[str], set[str]]] = {}
-        for provider in (supported_formats_gdk, supported_formats_pil):
-            for name in list(provider.keys()):
-                mime_types, extentions = provider[name]
-                new_name = name.upper()
-                new_mime_types, new_extensions = supported_formats.get( \
-                    new_name, (set(), set()))
-                new_mime_types.update([x.lower() for x in mime_types])
-                new_extensions.update([x.lower() for x in extentions])
-                supported_formats[new_name] = (new_mime_types, new_extensions)
+        supported_formats_gdk[name] = (gdk_mime_types, gdk_extensions)
 
-        _SUPPORTED_IMAGE_FORMATS = supported_formats
-    return _SUPPORTED_IMAGE_FORMATS
+    # Step 3: merge format collections
+    supported_formats: dict[str, tuple[set[str], set[str]]] = {}
+    for provider in (supported_formats_gdk, supported_formats_pil):
+        for name in list(provider.keys()):
+            mime_types, extentions = provider[name]
+            new_name = name.upper()
+            new_mime_types, new_extensions = supported_formats.get( \
+                new_name, (set(), set()))
+            new_mime_types.update([x.lower() for x in mime_types])
+            new_extensions.update([x.lower() for x in extentions])
+            supported_formats[new_name] = (new_mime_types, new_extensions)
 
-_SUPPORTED_IMAGE_FORMATS: dict[str, tuple[set[str], set[str]]] | None = None
+    return supported_formats
+
 # Set supported image extensions regexp from list of supported formats.
 # Only used internally.
 _SUPPORTED_IMAGE_REGEX = tools.formats_to_regex(get_supported_formats())

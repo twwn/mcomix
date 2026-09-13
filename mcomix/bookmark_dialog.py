@@ -28,8 +28,13 @@ class _BookmarksDialog(Dialog):
         super().__init__(
             title=_('Edit Bookmarks'), transient_for=window,
             destroy_with_parent=True)
-        self.add_buttons(_('_Remove'), constants.RESPONSE_REMOVE,
+        self.add_buttons(_('_Clear bookmarks...'), constants.RESPONSE_CLEAR,
+                         _('_Remove'), constants.RESPONSE_REMOVE,
                          _('_Close'), Response.CLOSE)
+        clears = self.get_widget_for_response(constants.RESPONSE_CLEAR)
+        assert clears is not None
+        clears.add_css_class('destructive-action')
+        self._clear_button = clears
 
         self._bookmarks_store = bookmarks_store
 
@@ -84,6 +89,8 @@ class _BookmarksDialog(Dialog):
 
         for bookmark in self._bookmarks_store.get_bookmarks():
             self._add_bookmark(bookmark)
+        self._clear_button.set_sensitive(
+            not self._bookmarks_store.is_empty())
 
         self.set_visible(True)
 
@@ -132,6 +139,22 @@ class _BookmarksDialog(Dialog):
         if row is not None:
             self._list.remove_row(row)
             self._bookmarks_store.remove_bookmark(row.bookmark)
+            self._clear_button.set_sensitive(
+                not self._bookmarks_store.is_empty())
+
+    def _clear_all(self) -> None:
+        """Remove every bookmark, once the reader has confirmed it."""
+        self._bookmarks_store.show_clear_bookmarks_dialog(self._clear_answered)
+
+    def _clear_answered(self, response: int) -> None:
+        if response != Response.YES:
+            return
+        # The rows go first: _close() writes back whatever is left in
+        # the list, so a cleared store under a full list would be
+        # refilled from it on the way out.
+        self._list.clear()
+        self._bookmarks_store.clear_bookmarks()
+        self._clear_button.set_sensitive(False)
 
     def _bookmark_activated(self, view: Gtk.ListView, position: int,
                             *args: object) -> None:
@@ -151,6 +174,9 @@ class _BookmarksDialog(Dialog):
 
         elif response == constants.RESPONSE_REMOVE:
             self._remove_selected()
+
+        elif response == constants.RESPONSE_CLEAR:
+            self._clear_all()
 
         else:
             self.destroy()

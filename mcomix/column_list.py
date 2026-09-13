@@ -849,8 +849,30 @@ class ColumnListView(Gtk.ColumnView):
         target.connect('drop', self._reorder_drop, cell)
         cast(Gtk.Widget, cell).add_controller(target)
 
-    def _reorder_prepare(self, source: Gtk.DragSource, x: float, y: float,
-                         cell: _Cell) -> Gdk.ContentProvider:
+    def _rows_are_the_store(self) -> bool:
+        """Whether what is drawn is the store, row for row.
+
+        The position a cell carries is the one the view draws it at,
+        and a drag is a move in the store: the two are the same number
+        only while nothing stands between them.  A heading that is
+        sorting puts the rows in an order of its own, and a tree draws
+        the rows under a row alongside the ones the store holds, so
+        under either a drop would move whichever row happened to sit at
+        that number.  A Gtk.TreeView answered this by refusing to
+        reorder a sorted model at all, which is what refusing the drag
+        does here.
+        """
+        if self._tree:
+            return False
+        sorter = self.get_sorter()
+        return not isinstance(sorter, Gtk.ColumnViewSorter) \
+            or sorter.get_primary_sort_column() is None
+
+    def _reorder_prepare(self, source: "Gtk.DragSource | None", x: float,
+                         y: float, cell: _Cell) -> "Gdk.ContentProvider | None":
+        # Nothing to carry is how a Gtk.DragSource is told not to start.
+        if not self._rows_are_the_store():
+            return None
         return Gdk.ContentProvider.new_for_value(
             '%s:%d' % (self._REORDER_TYPE, cell.position))
 
@@ -859,6 +881,8 @@ class ColumnListView(Gtk.ColumnView):
         prefix = self._REORDER_TYPE + ':'
         if not isinstance(value, str) or not value.startswith(prefix):
             return False
+        if not self._rows_are_the_store():
+            return False
         try:
             source_position = int(value[len(prefix):])
         except ValueError:
@@ -866,7 +890,11 @@ class ColumnListView(Gtk.ColumnView):
         return self.move_row(source_position, cell.position)
 
     def move_row(self, source: int, destination: int) -> bool:
-        """Move the row at <source> so that it sits at <destination>."""
+        """Move the row at <source> so that it sits at <destination>.
+
+        Both are positions in the store, which are the positions the
+        rows are drawn at only while nothing is sorting them.
+        """
         count = self.store.get_n_items()
         if source == destination or not 0 <= source < count \
                 or not 0 <= destination < count:

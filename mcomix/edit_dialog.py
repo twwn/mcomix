@@ -234,26 +234,8 @@ class _EditArchiveDialog(Dialog):
 
         elif response == Response.APPLY:
 
-            old_image_array = self._window.imagehandler._image_files or []
-
-            new_image_array = self._image_area.get_file_listing()
-
-            new_positions = []
-
-            end_index = len(old_image_array) - 1
-
-            for image_path in old_image_array:
-
-                try:
-                    new_position = new_image_array.index( image_path )
-                    new_positions.append(new_position)
-                except ValueError:
-                    # the path was not found in the new array so that means it was deleted
-                    new_positions.append(end_index)
-                    end_index -= 1
-
-            self._window.imagehandler.set_image_files(new_image_array)
-            self._window.imagehandler._raw_pixbufs = {}
+            self._window.imagehandler.replace_pages(
+                self._image_area.get_file_listing())
             self._window.imagehandler.do_cacheing()
             self._window.thumbnailsidebar.clear()
             self._window.set_page(1)

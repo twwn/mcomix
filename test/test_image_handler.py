@@ -9,6 +9,7 @@ from . import MComixTest, get_testfile_path
 from mcomix import callback
 from mcomix import constants
 from mcomix import image_handler
+from mcomix import image_tools
 from mcomix.preferences import prefs
 
 
@@ -44,17 +45,24 @@ class VirtualDoublePageTest(MComixTest):
         self.handler.cleanup()
         super().tearDown()
 
-    def _open(self, *names):
-        """Make a book out of the named test images, and go to its first page."""
+    def _make_book(self, *names):
+        """Make a book out of the named test images, with none of them
+        extracted yet, and return its list of paths."""
         paths = []
         for number, name in enumerate(names, 1):
             path = os.path.join(self.tmp_dir, '%02d-%s' % (number, name))
             shutil.copyfile(get_testfile_path('images', name), path)
             paths.append(path)
         self.handler.set_image_files(paths)
+        return paths
+
+    def _open(self, *names):
+        """Make a book out of the named test images, and go to its first page."""
+        paths = self._make_book(*names)
         for page in range(1, len(paths) + 1):
             self.handler.page_available(page)
         self.handler.set_page(1)
+        return paths
 
     def test_a_wide_page_is_shown_on_its_own(self):
         self._open('portrait-no-exif.png', 'landscape-no-exif.png',
@@ -94,6 +102,134 @@ class VirtualDoublePageTest(MComixTest):
         for page in range(1, 6):
             self.handler.get_virtual_double_page(page)
         self.assertEqual(self.handler._raw_pixbufs, {})
+
+    def test_a_page_that_will_not_load_answers_with_the_missing_icon(self):
+        """A book holds whatever files it was pointed at, and one of them
+        may be truncated, or not an image at all.  Nothing above this
+        expects an exception, so the page shows the missing-image icon."""
+        self._open('portrait-no-exif.png')
+        broken = self.handler.get_path_to_page(1)
+        with open(broken, 'wb') as damaged:
+            damaged.write(b'not an image')
+        self.handler._raw_pixbufs.clear()
+        self.assertIs(self.handler._get_pixbuf(0),
+                      image_tools.missing_image_icon())
+
+    def test_a_page_that_would_not_load_is_not_read_again(self):
+        """Its answer is cached like any other, so a page turn back and
+        forth over a broken page does not retry the decode each time."""
+        self._open('portrait-no-exif.png')
+        broken = self.handler.get_path_to_page(1)
+        with open(broken, 'wb') as damaged:
+            damaged.write(b'not an image')
+        self.handler._raw_pixbufs.clear()
+        self.handler._get_pixbuf(0)
+        self.assertEqual(list(self.handler._raw_pixbufs), [0])
+
+        reads = []
+        real_load = image_tools.load_pixbuf
+        image_tools.load_pixbuf = lambda path: reads.append(path) or real_load(path)
+        try:
+            self.handler._get_pixbuf(0)
+        finally:
+            image_tools.load_pixbuf = real_load
+        self.assertEqual(reads, [], 'the broken page was read a second time')
+
+    def test_a_page_that_loads_is_the_pixbuf_the_cache_keeps(self):
+        self._open('portrait-no-exif.png')
+        self.handler._raw_pixbufs.clear()
+        pixbuf = self.handler._get_pixbuf(0)
+        self.assertIsNot(pixbuf, image_tools.missing_image_icon())
+        self.assertIs(self.handler._raw_pixbufs[0], pixbuf)
+        self.assertIs(self.handler._get_pixbuf(0), pixbuf)
+
+    def test_a_page_dropped_from_the_cache_mid_read_is_still_read(self):
+        """_get_pixbuf() runs on the caching thread as well as on the
+        main one, and WorkerThread._run() calls it outside its lock, so
+        do_cacheing() can delete the entry the caching thread is in the
+        middle of reading.  The page it is looking at is a good one; it
+        has to come back, not come back as the missing-image icon."""
+        self._open('portrait-no-exif.png')
+
+        class _VanishingCache(dict):
+            """The entry is gone by the time it is read for.
+
+            What a concurrent do_cacheing() does, made to happen every
+            time rather than once in a long while.
+            """
+
+            def __contains__(self, key):
+                return True
+
+            def __getitem__(self, key):
+                raise KeyError(key)
+
+            def get(self, key, default=None):
+                return default
+
+        self.handler._raw_pixbufs = _VanishingCache()
+        pixbuf = self.handler._get_pixbuf(0)
+        self.assertIsNot(pixbuf, image_tools.missing_image_icon(),
+                         'a good page came back as the missing-image icon')
+        self.assertEqual((pixbuf.get_width(), pixbuf.get_height()),
+                         (210, 297))
+
+    def test_a_page_that_moved_does_not_show_what_was_read_for_its_old_number(self):
+        """A pixbuf is held by position in the list of image files, so
+        the moment that list is rewritten it would otherwise stand
+        against whatever page now sits at that number."""
+        listing = self._open('portrait-no-exif.png', 'landscape-no-exif.png')
+        self.handler._get_pixbuf(0)
+        self.assertEqual(list(self.handler._raw_pixbufs), [0])
+
+        self.handler.replace_pages(list(reversed(listing)))
+        self.assertEqual(self.handler._image_files, list(reversed(listing)))
+        # What page 1 shows is the file that is page 1 now.
+        self.assertEqual(
+            (self.handler._get_pixbuf(0).get_width(),
+             self.handler._get_pixbuf(0).get_height()),
+            (297, 210))
+
+    def test_a_page_that_moved_keeps_the_pixbuf_that_was_read_for_it(self):
+        """The pixbuf belongs to the file, not to the number, so the
+        page that changed places is not decoded a second time."""
+        listing = self._open('portrait-no-exif.png', 'landscape-no-exif.png')
+        portrait = self.handler._get_pixbuf(0)
+
+        self.handler.replace_pages(list(reversed(listing)))
+        self.assertIs(self.handler._raw_pixbufs.get(1), portrait)
+
+    def test_replacing_the_pages_with_the_same_listing_changes_nothing(self):
+        """do_cacheing() reads the set of extracted pages to know which
+        ones it may fetch ahead: emptying it would stop the reading-ahead
+        for the rest of the session."""
+        self._open('portrait-no-exif.png', 'landscape-no-exif.png')
+        available = set(self.handler._available_images)
+        self.assertTrue(available)
+        self.handler.replace_pages(list(self.handler._image_files))
+        self.assertEqual(self.handler._available_images, available)
+
+    def test_reordering_the_pages_carries_over_what_has_been_extracted(self):
+        """An archive is still being unpacked while the editor is open,
+        so which pages are out of it is a partial answer that has to
+        follow its files to their new numbers."""
+        listing = self._make_book('portrait-no-exif.png', 'landscape-no-exif.png')
+        self.handler.page_available(1)
+
+        self.handler.replace_pages(list(reversed(listing)))
+        self.assertFalse(self.handler.page_is_available(1),
+                         'a page nothing had extracted was called available')
+        self.assertTrue(self.handler.page_is_available(2),
+                        'a page that had been extracted was called missing')
+
+    def test_dropping_a_page_drops_what_had_been_extracted_of_it(self):
+        """Availability left behind by a deleted page names a number the
+        book no longer has, and marks its successor ready to read."""
+        listing = self._make_book('portrait-no-exif.png', 'landscape-no-exif.png')
+        self.handler.page_available(1)
+
+        self.handler.replace_pages(listing[1:])
+        self.assertEqual(self.handler._available_images, set())
 
     def test_a_cached_page_is_measured_from_the_pixbuf(self):
         self._open('portrait-no-exif.png', 'landscape-no-exif.png')

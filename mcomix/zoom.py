@@ -1,4 +1,17 @@
-""" Handles zoom and fit of images in the main display area. """
+"""zoom.py - How large the pages of the current view are drawn.
+
+Two things decide that, and they multiply.  The fit mode turns the room
+on screen into a limit on one axis, both, or neither, and the pages are
+scaled to respect whichever limits it names; the reader's own zoom then
+scales that result again.  A page marked do_not_transform - an animation,
+which is drawn frame by frame at whatever size the layout hands it -
+takes neither and is left at its own size.
+
+Pages are laid out side by side along one axis, the distribution axis,
+which is the one they share the room on: their sizes add up along it
+where they are compared along every other.  That is what makes the
+distribution axis a case of its own throughout this module.
+"""
 
 import operator
 from mcomix import constants
@@ -9,9 +22,16 @@ from functools import reduce
 from collections.abc import Sequence
 from dataclasses import dataclass
 
+#: The scale that leaves a page at the size it came in at.
 IDENTITY_ZOOM = 1.0
+#: The reader's zoom level standing at that scale.
 IDENTITY_ZOOM_LOG = 0
+#: How many steps of the reader's zoom double the size of a page.  The
+#: level is kept as a count of steps rather than as a scale so that
+#: zooming out and back in again lands exactly where it started.
 USER_ZOOM_LOG_SCALE1 = 4.0
+#: How far the reader may zoom: down to a thirty-second of the fitted
+#: size, up to eight times it.
 MIN_USER_ZOOM_LOG = -20
 MAX_USER_ZOOM_LOG = 12
 
@@ -49,6 +69,8 @@ class ZoomModel:
         #: Image fit mode. Determines the base zoom level for an image by
         #: calculating its maximum size.
         self._fitmode = constants.ZoomMode.MANUAL
+        #: Whether a page smaller than the room it has is enlarged to
+        #: fill it, or left at the size it came in at.
         self._scale_up = False
 
     def set_fit_mode(self, fitmode: int) -> None:
@@ -62,27 +84,66 @@ class ZoomModel:
         self._fitmode = constants.ZoomMode(fitmode)
 
     def get_scale_up(self) -> bool:
+        """Whether a page smaller than the room it has is enlarged."""
         return self._scale_up
 
     def set_scale_up(self, scale_up: bool) -> None:
+        """Enlarge a page to fill the room it has, or leave it be."""
         self._scale_up = scale_up
 
     def _set_user_zoom_log(self, zoom_log: int) -> None:
+        """Put the reader's zoom at <zoom_log>, as far as it will go."""
         self._user_zoom_log = min(max(zoom_log, MIN_USER_ZOOM_LOG), MAX_USER_ZOOM_LOG)
 
     def zoom_in(self) -> None:
+        """Take the pages one step larger."""
         self._set_user_zoom_log(self._user_zoom_log + 1)
 
     def zoom_out(self) -> None:
+        """Take the pages one step smaller."""
         self._set_user_zoom_log(self._user_zoom_log - 1)
 
     def reset_user_zoom(self) -> None:
+        """Draw the pages at the size the fit mode alone asks for."""
         self._set_user_zoom_log(IDENTITY_ZOOM_LOG)
 
     def get_zoomed_size(self, image_sizes: Sequence[Sequence[int]],
                         screen_size: Sequence[int],
                         distribution_axis: constants.PageAxis, do_not_transform: list[bool], prefer_same_size: bool,
                         fit_same_size: bool) -> tuple[list[list[int]], list[bool]]:
+        """How large to draw each of <image_sizes>, and which came out distorted.
+
+        <screen_size> is the room the pages have between them, and
+        <distribution_axis> is the axis they are laid out along, so that
+        their sizes add up along it and are compared along every other.
+        An entry of <do_not_transform> marks a page that must be handed
+        back at the size it came in at, whatever the rest of this works
+        out.
+
+        The work goes in this order.  Where <prefer_same_size> is asked
+        for, the pages are first scaled to one another - up to the box
+        that holds them all if enlarging is allowed, down to the box
+        they all cover if it is not - and everything after that is done
+        on those sizes rather than the ones that came in.  The fit mode
+        then names a limit on each axis, or none, and the pages are
+        scaled by as much as the limits away from the distribution axis
+        allow.  Where the distribution axis has a limit of its own, and
+        the pages either overflow the screen along it or have no other
+        limit to answer to, the scales that make their total along it
+        come out as close to that limit as it can be are worked out per
+        page and taken instead, or taken as the smaller of the two where
+        another axis also has a say.  What is left is multiplied by the
+        reader's own zoom and rounded to whole pixels.
+
+        Keeping every page's aspect ratio and making them all the same
+        size are not always both possible, and <fit_same_size> says
+        which of the two to give up: with it, each axis but the
+        distribution one is forced to the largest size any page came out
+        at when enlarging is allowed and the smallest when it is not.
+        The second list returned marks the pages that were stretched to
+        get there; without <fit_same_size> nothing is, and it is all
+        False.
+        """
         scale_up = self._scale_up
         # The sizes worked with from here on.  Scaling every page to the
         # same size first hands back fractional sizes, so these are not
@@ -115,6 +176,7 @@ class ZoomModel:
 
         def _other_preferences(limits: Sequence[int | None],
                                distribution_axis: constants.PageAxis) -> bool:
+            """Whether any axis but the distribution one has a limit."""
             for i in range(len(limits)):
                 if i == distribution_axis:
                     continue
@@ -341,9 +403,15 @@ class ZoomModel:
         return [d.local_scale for d in scaling_data]
 
 def _scale_image_size(size: Sequence[float], scale: float) -> list[int]:
+    """The whole-pixel size <size> comes to at <scale>."""
     return _round_nonempty(tools.scale(size, scale))
 
 def _round_nonempty(t: Sequence[float]) -> list[int]:
+    """<t> rounded to whole numbers, none of them below one.
+
+    A page scaled far enough down rounds to nothing on one axis or
+    both, and a page of no width is a page that cannot be seen at all.
+    """
     result = [0] * len(t)
     for i in range(len(t)):
         x = int(round(t[i]))
@@ -352,6 +420,12 @@ def _round_nonempty(t: Sequence[float]) -> list[int]:
 
 def _union_size(image_sizes: Sequence[Sequence[float]],
                 distribution_axis: int) -> list[float]:
+    """The size <image_sizes> come to standing side by side.
+
+    They are laid out along <distribution_axis> without gaps, so their
+    sizes add up along it; along every other axis the room they need is
+    the largest of them.
+    """
     if len(image_sizes) == 0:
         return []
     n = len(image_sizes[0])

@@ -6,6 +6,8 @@ import operator
 import datetime
 import time
 
+from gi.repository import Gtk
+
 from mcomix import constants
 from mcomix import log
 from mcomix import bookmark_menu_item
@@ -127,11 +129,19 @@ class _BookmarksStore:
         self.show_replace_bookmark_dialog(same_file_bookmarks, page,
                                           replace_answered)
 
+    @callback.Callback
     def clear_bookmarks(self) -> None:
-        """Remove all bookmarks from the list."""
+        """Remove every bookmark, this instance's and the file's.
 
-        while not self.is_empty():
-            self.remove_bookmark(self._bookmarks[-1])
+        One write and one notification, rather than one of each per
+        bookmark: removing them one at a time re-pickled and fsynced the
+        whole store for every bookmark, and rebuilt the menu as many
+        times.  The write does not merge, either - what the reader was
+        told is that all stored bookmarks will be removed, so a bookmark
+        another instance has added since is one of them.
+        """
+        self._bookmarks = []
+        self.write_bookmarks_file(merge=False)
 
     def get_bookmarks(self) -> list[bookmark_menu_item._Bookmark]:
         """Return all the bookmarks in the list."""
@@ -192,13 +202,28 @@ class _BookmarksStore:
         else:
             return True
 
-    def write_bookmarks_file(self) -> None:
-        """Store relevant bookmark info in the mcomix directory."""
+    def write_bookmarks_file(self, merge: bool = True) -> None:
+        """Store relevant bookmark info in the mcomix directory.
 
-        # Merge changes in case file was modified from within other instances
-        if self.file_was_modified():
-            new_bookmarks, new_mtime = self.load_bookmarks()
-            self._bookmarks = list(set(self._bookmarks + new_bookmarks))
+        @param merge: Whether to take in what another instance has
+                      written since the file was last read.  True for
+                      every change to one bookmark; False only for
+                      clear_bookmarks(), which is meant to empty the
+                      file rather than to leave the other instance's
+                      bookmarks standing in it.
+        """
+
+        # Another instance may have written the file since it was last
+        # read, so merge what is in it back in before overwriting it.
+        # dict.fromkeys() rather than a set: two bookmarks are the same
+        # when they mark the same page of the same file, but the order of
+        # the list is the order the menu and the dialog show, so it has
+        # to survive the merge.  Ours keep their places and the other
+        # instance's newcomers follow, in the order it wrote them.
+        if merge and self.file_was_modified():
+            new_bookmarks, _mtime = self.load_bookmarks()
+            self._bookmarks = list(dict.fromkeys(self._bookmarks +
+                                                 new_bookmarks))
 
         with tools.atomic_write(constants.BOOKMARK_PICKLE_PATH, binary=True) as fd:
             pickle.dump(constants.VERSION, fd, pickle.HIGHEST_PROTOCOL)
@@ -238,6 +263,28 @@ class _BookmarksStore:
               'Do you want to replace them with a new bookmark on page %d?') % new_page +
               '\n\n' +
             _('Selecting "No" will create a new bookmark without affecting the other bookmarks.'))
+
+        dialog.run_async(on_response)
+
+    def show_clear_bookmarks_dialog(self,
+                                    on_response: Callable[[int], None]) -> None:
+        """Ask whether to remove every bookmark.
+
+        Calls <on_response> with Response.YES to go ahead.  The prompt
+        offers no "Do not ask again": this is the one bookmark action
+        that cannot be undone one step at a time. """
+        dialog = message_dialog.MessageDialog(self._window, modal=True,
+                                              buttons=Gtk.ButtonsType.YES_NO)
+        # Every bookmark goes, so Enter must not be what does it, and the
+        # button that does is drawn as the destructive action it is.
+        dialog.set_default_response(Response.NO)
+        clears = dialog.get_widget_for_response(Response.YES)
+        if clears is not None:
+            clears.add_css_class('destructive-action')
+        dialog.set_text(
+            _('Clear all bookmarks?'),
+            _('All stored bookmarks will be removed. Are you sure that '
+              'you want to continue?'))
 
         dialog.run_async(on_response)
 

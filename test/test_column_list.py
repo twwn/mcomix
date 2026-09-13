@@ -177,6 +177,56 @@ class ColumnListViewTest(MComixTest):
         self.assertFalse(self.view.move_row(0, len(self.NAMES)))
         self.assertEqual(self._names(), list(self.NAMES))
 
+    def test_a_drag_is_refused_while_a_heading_is_sorting(self):
+        """A drag moves a row in the store, which is not what is shown.
+
+        The positions a cell carries are the ones the view draws it at;
+        a heading that is sorting puts the rows in an order of its own,
+        so those are not the store's any more and a drop would move
+        whichever row happened to sit at that number.
+        """
+        view = column_list.ColumnListView()
+        column = view.add_text_column('Name', 'name',
+                                      sort_key=lambda row: row.name)
+        view.set_rows(column_list.Row(name=name) for name in self.NAMES)
+        view.set_reorderable(True)
+        view.sort_by(column, descending=True)
+        pump()
+        self.assertEqual([row.name for row in view.each_row()],
+                         ['two', 'three', 'one'])
+
+        dropped = column_list._TextCell()
+        dropped.position = 2
+        self.assertIsNone(view._reorder_prepare(None, 0.0, 0.0, dropped))
+        self.assertFalse(
+            view._reorder_drop(None, 'application/x-mcomix-row-position:0',
+                               0.0, 0.0, dropped))
+        self.assertEqual([row.name for row in view.each_row()],
+                         ['two', 'three', 'one'])
+        view.sort_by(None)
+        pump()
+        self.assertEqual([row.name for row in view.each_row()],
+                         list(self.NAMES))
+
+    def test_a_drag_is_allowed_again_once_nothing_is_sorting(self):
+        view = column_list.ColumnListView()
+        column = view.add_text_column('Name', 'name',
+                                      sort_key=lambda row: row.name)
+        view.set_rows(column_list.Row(name=name) for name in self.NAMES)
+        view.set_reorderable(True)
+        view.sort_by(column, descending=True)
+        view.sort_by(None)
+        pump()
+
+        dropped = column_list._TextCell()
+        dropped.position = 2
+        self.assertIsNotNone(view._reorder_prepare(None, 0.0, 0.0, dropped))
+        self.assertTrue(
+            view._reorder_drop(None, 'application/x-mcomix-row-position:0',
+                               0.0, 0.0, dropped))
+        self.assertEqual([row.name for row in view.each_row()],
+                         ['two', 'three', 'one'])
+
     def test_a_drop_carrying_something_else_is_refused(self):
         self.view.set_reorderable(True)
         cells = []

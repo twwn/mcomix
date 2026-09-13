@@ -7,6 +7,7 @@ from mcomix import bookmark_backend
 from mcomix import bookmark_dialog
 from mcomix import widgets
 from mcomix.i18n import _
+from mcomix.dialog import Response
 
 from typing import TYPE_CHECKING
 
@@ -28,9 +29,12 @@ class BookmarksMenu:
     #: Where this menu's actions live, as menu items address them.
     ACTION_PREFIX = 'bookmarks'
 
-    #: The two permanent entries, and the keys that reach them.
+    #: The permanent entries, and the keys that reach them.  Clearing
+    #: gets none: it throws away every bookmark, so it is not something
+    #: to be a keystroke away from.
     FIXED = (('add', _('Add _Bookmark'), '<Control>D'),
-             ('edit', _('_Edit Bookmarks...'), '<Control>B'))
+             ('edit', _('_Edit Bookmarks...'), '<Control>B'),
+             ('clear', _('_Clear bookmarks...'), None))
 
     def __init__(self, ui: "ui_module.MainUI",
                  window: "main.MainWindow") -> None:
@@ -55,11 +59,13 @@ class BookmarksMenu:
         # menu items: the items are rebuilt whenever a bookmark is added
         # or removed, and an accelerator set on one would go with it.
         for name, label, accelerator in self.FIXED:
-            ui.add_shortcut(accelerator, '%s.%s' % (self.ACTION_PREFIX, name))
+            if accelerator is not None:
+                ui.add_shortcut(accelerator, '%s.%s' % (self.ACTION_PREFIX, name))
 
         self._rebuild()
         self._bookmarks_store.add_bookmark += lambda bookmark: self._rebuild()
         self._bookmarks_store.remove_bookmark += lambda bookmark: self._rebuild()
+        self._bookmarks_store.clear_bookmarks += self._rebuild
 
 
     def _rebuild(self) -> None:
@@ -70,9 +76,15 @@ class BookmarksMenu:
         fixed = Gio.Menu()
         for name, label, accelerator in self.FIXED:
             entry = Gio.MenuItem.new(label, '%s.%s' % (self.ACTION_PREFIX, name))
-            entry.set_attribute_value('accel', GLib.Variant('s', accelerator))
+            if accelerator is not None:
+                entry.set_attribute_value('accel', GLib.Variant('s', accelerator))
             fixed.append_item(entry)
         self.model.append_section(None, fixed)
+
+        # There is nothing to clear from an empty list, and the entry
+        # says so rather than asking a question with only one answer.
+        widgets.simple_action(self._actions, 'clear').set_enabled(
+            bool(self._bookmarks))
 
         if self._bookmarks:
             listed = Gio.Menu()
@@ -94,6 +106,14 @@ class BookmarksMenu:
     def _edit_activated(self, *args: object) -> None:
         """Open the bookmarks dialog."""
         bookmark_dialog._BookmarksDialog(self._window, self._bookmarks_store)
+
+    def _clear_activated(self, *args: object) -> None:
+        """Remove every bookmark, once the reader has confirmed it."""
+        self._bookmarks_store.show_clear_bookmarks_dialog(self._clear_answered)
+
+    def _clear_answered(self, response: int) -> None:
+        if response == Response.YES:
+            self._bookmarks_store.clear_bookmarks()
 
     def set_sensitive(self, loaded: bool) -> None:
         """Set the sensitivities of menu items as appropriate if <loaded>

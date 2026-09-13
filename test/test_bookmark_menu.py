@@ -10,6 +10,9 @@ from mcomix import bookmark_backend
 from mcomix import bookmark_menu_item
 from mcomix import constants
 from mcomix import bookmark_menu
+from mcomix import message_dialog
+from mcomix import widgets
+from mcomix.dialog import Response
 
 
 class _StubImageHandler:
@@ -85,11 +88,21 @@ class BookmarksMenuTest(MComixTest):
     def tearDown(self):
         # Anything left on screen would be answered by the next test that
         # goes looking for a dialog.
-        for window in Gtk.Window.list_toplevels():
-            if isinstance(window, Gtk.MessageDialog) and window.get_visible():
-                window.destroy()
+        for dialog in self._dialogs():
+            dialog.destroy()
         pump()
         super().tearDown()
+
+    def _dialogs(self):
+        """The prompts this menu has put on screen.
+
+        They are message_dialog.MessageDialog, which is a Gtk.Window of
+        its own making: there has been no Gtk.MessageDialog to look for
+        since the dialogs were ported.
+        """
+        return [window for window in Gtk.Window.list_toplevels()
+                if isinstance(window, message_dialog.MessageDialog)
+                and window.get_visible()]
 
     def test_a_bookmark_in_the_open_file_leaves_the_tool_bar_alone(self):
         """Loading a bookmark that is already the open file only turns the
@@ -125,7 +138,61 @@ class BookmarksMenuTest(MComixTest):
 
     def test_the_fixed_entries_are_always_there(self):
         self.assertEqual(self._sections(),
-                         [['Add _Bookmark', '_Edit Bookmarks...']])
+                         [['Add _Bookmark', '_Edit Bookmarks...',
+                           '_Clear bookmarks...']])
+
+    def _clear_action(self):
+        return widgets.simple_action(self.menu._actions, 'clear')
+
+    def test_clearing_is_offered_only_when_there_is_something_to_clear(self):
+        self.assertFalse(self._clear_action().get_enabled(),
+                         'an empty list offered to be cleared')
+        self._bookmark(3)
+        self.assertTrue(self._clear_action().get_enabled(),
+                        'a list with a bookmark in it did not')
+
+    def test_clearing_asks_before_it_removes_anything(self):
+        """It throws away every bookmark at once and there is no undo."""
+        self._bookmark(3)
+        self.menu._clear_activated()
+        pump()
+        self.assertEqual(len(self._dialogs()), 1, 'nothing was asked')
+        self.assertEqual(len(self.store.get_bookmarks()), 1,
+                         'the bookmarks went before the question was answered')
+
+    def test_enter_is_not_what_clears_them(self):
+        self._bookmark(3)
+        self.menu._clear_activated()
+        pump()
+        dialog = self._dialogs()[0]
+        keeps = dialog.get_widget_for_response(Response.NO)
+        clears = dialog.get_widget_for_response(Response.YES)
+        self.assertIs(dialog.get_default_widget(), keeps,
+                      'Enter would clear the bookmarks')
+        self.assertTrue(clears.has_css_class('destructive-action'),
+                        'the clearing button is drawn as an ordinary one')
+
+    def test_answering_no_keeps_them(self):
+        self._bookmark(3)
+        self.menu._clear_activated()
+        pump()
+        self._dialogs()[0].response(Response.NO)
+        pump()
+        self.assertEqual(len(self.store.get_bookmarks()), 1)
+
+    def test_answering_yes_removes_them_all(self):
+        self._bookmark(3, '/tmp/one.cbz')
+        self._bookmark(4, '/tmp/two.cbz')
+        self.menu._clear_activated()
+        pump()
+        self._dialogs()[0].response(Response.YES)
+        pump()
+        self.assertEqual(self.store.get_bookmarks(), [])
+        self.assertEqual(self._sections(),
+                         [['Add _Bookmark', '_Edit Bookmarks...',
+                           '_Clear bookmarks...']],
+                         'the menu still lists bookmarks that are gone')
+        self.assertFalse(self._clear_action().get_enabled())
 
     def test_a_bookmark_is_listed_after_them(self):
         self._bookmark(3)
