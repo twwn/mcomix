@@ -26,10 +26,11 @@ For a list of packages and libraries needed to run MComix, please refer to
 Thanks to everyone who have contributed translations, suggestions, bug
 reports, fixes and donations!
 
-Icons with a filename starting with "gimp" are taken from The GIMP, and
-icons with a filename starting with "tango" are taken from the Tango Desktop
-Project. Most other icons are made by Victor Castillejo, creator of the
-GNOME-Colors icon theme.
+The rotation, flip, thumbnail and transformation icons are taken from The
+GIMP, and the bookmark, archive, image and image enhancement icons from the
+Tango Desktop Project. Most other icons are made by Victor Castillejo, creator
+of the GNOME-Colors icon theme. The symbolic icons for the fit modes were
+drawn for MComix after GNOME's Adwaita icons.
 
 ## Contact
 

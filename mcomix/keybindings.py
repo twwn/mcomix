@@ -382,6 +382,10 @@ class _KeybindingManager:
         try:
             with open(constants.KEYBINDINGS_CONF_PATH, "r") as fp:
                 stored_action_bindings = json.load(fp)
+        except FileNotFoundError:
+            # A profile that has never saved a key, whose actions all
+            # take their defaults: nothing to report.
+            stored_action_bindings = {}
         except Exception as e:
             log.error(_("Couldn't load keybindings: %s"), e)
             stored_action_bindings = {}

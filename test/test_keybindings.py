@@ -102,6 +102,18 @@ class StoredKeybindingsTest(MComixTest):
     def _press(self, manager, accelerator):
         manager.execute(keybindings.parse_accelerator(accelerator))
 
+    def test_a_first_start_without_the_file_logs_no_error(self):
+        """A new profile has no keybindings.conf, and every first start
+        logged "Couldn't load keybindings: [Errno 2] No such file or
+        directory" as an error, about a file nothing had been asked to
+        write yet."""
+        self.assertFalse(os.path.exists(constants.KEYBINDINGS_CONF_PATH))
+        with self.assertNoLogs('mcomix', level='ERROR'):
+            manager = keybindings._KeybindingManager(_StubWindow())
+        manager.register('slideshow', ['<Control>S'], lambda: None)
+        self.assertEqual([keybindings.parse_accelerator('<Control>S')],
+                         manager.get_bindings_for_action('slideshow'))
+
     def test_a_shortcut_this_gtk_cannot_read_falls_back_to_the_default(self):
         """A stored accelerator that does not parse used to be kept as
         the (0, 0) parse_accelerator() answers with.  That is a binding
