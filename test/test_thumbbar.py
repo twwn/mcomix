@@ -117,6 +117,39 @@ class ThumbnailSidebarTest(MComixTest):
         self.sidebar.toggle_page_numbers_visible()
         self.assertTrue(self.sidebar._list._labels_visible)
 
+    def test_a_sidebar_shown_after_the_file_makes_its_thumbnails(self):
+        """Hiding the sidebar stops it making thumbnails, and showing it
+        again has to start it.
+
+        The rows are set while it is hidden - a page change does that -
+        so load_thumbnails() has nothing left to do and never cleared
+        the flag, and hiding does not unbind the cells that were on
+        screen, so nothing ever asked for their thumbnails again. The
+        sidebar stayed empty until the next archive was opened.
+
+        The preference is what the redraw reads to decide whether the
+        sidebar is shown, which is how the user reaches this.
+        """
+        self.sidebar.load_thumbnails()
+        wait_for(lambda: any(item.thumbnail is not None
+                             for item in self._items()), seconds=20)
+
+        prefs['show thumbnails'] = False
+        self.window.draw_image()
+        pump()
+        self.assertFalse(self.sidebar.get_visible())
+        for item in self._items():
+            item.thumbnail = None
+
+        prefs['show thumbnails'] = True
+        self.window.draw_image()
+        pump()
+        wait_for(lambda: any(item.thumbnail is not None
+                             for item in self._items()), seconds=20)
+        self.assertTrue(
+            [item for item in self._items() if item.thumbnail is not None],
+            'the sidebar made no thumbnails after being shown again')
+
     def test_resizing_reloads_at_the_new_size(self):
         self.sidebar.load_thumbnails()
         prefs['thumbnail size'] = prefs['thumbnail size'] * 2

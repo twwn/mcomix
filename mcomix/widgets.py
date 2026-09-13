@@ -1,6 +1,6 @@
 """widgets.py - Small helpers for widgets whose API changed in GTK4."""
 
-from gi.repository import Gdk, Gio, Gtk
+from gi.repository import Gdk, Gio, Graphene, Gtk
 
 from typing import Any
 
@@ -140,15 +140,30 @@ def popup_at(popover: Any, widget: Any, x: float, y: float) -> None:
     """Show <popover> over <widget>, pointing at (<x>, <y>) within it.
 
     A Gtk.Menu was popped up at the pointer with an event; a
-    Gtk.PopoverMenu is parented to a widget and pointed at a rectangle in
-    its coordinates.
+    Gtk.PopoverMenu is parented to a widget and pointed at a rectangle
+    in *that* widget's coordinates, which is not always <widget> - the
+    main window's popup is parented to the window and pointed at by the
+    layout area inside it - so the point is translated.
+
+    A popover is centred over what it points at and put above it, which
+    is right for a bubble and wrong for a menu: it opened with the
+    pointer in the middle of it.  START and BOTTOM put its corner where
+    the pointer is, which is where a menu goes.
     """
-    if popover.get_parent() is None:
-        popover.set_parent(widget)
+    parent = popover.get_parent()
+    if parent is None:
+        parent = widget
+        popover.set_parent(parent)
+    if widget is not parent:
+        found, point = widget.compute_point(parent, Graphene.Point().init(x, y))
+        if found:
+            x, y = point.x, point.y
     area = Gdk.Rectangle()
     area.x, area.y, area.width, area.height = int(x), int(y), 1, 1
     popover.set_pointing_to(area)
     popover.set_has_arrow(False)
+    popover.set_halign(Gtk.Align.START)
+    popover.set_position(Gtk.PositionType.BOTTOM)
     popover.popup()
 
 # vim: expandtab:sw=4:ts=4

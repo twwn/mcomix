@@ -37,8 +37,8 @@ class _PropertiesDialog(Dialog):
         widgets.set_border(notebook, 6)
         widgets.pack(self.get_content_area(), notebook, True, True, 0)
 
+        self._notebook = notebook
         self._archive_page = properties_page._Page()
-        notebook.append_page(self._archive_page, Gtk.Label(label=_('Archive')))
         self._image_page = properties_page._Page()
         notebook.append_page(self._image_page, Gtk.Label(label=_('Image')))
         self._update_archive_page()
@@ -62,11 +62,27 @@ class _PropertiesDialog(Dialog):
         if current_page_number == page_number:
             self._update_image_page()
 
+    def _offer_archive_page(self, offer: bool) -> None:
+        """Show or hide the Archive tab, and the tabs with it.
+
+        A loose image is in no archive, so the page stood empty; with
+        only the Image page left there is nothing to choose between, so
+        the tabs go as well and the dialog is what it is about.
+        """
+        shown = self._notebook.page_num(self._archive_page)
+        if offer and shown == -1:
+            self._notebook.insert_page(self._archive_page,
+                                       Gtk.Label(label=_('Archive')), 0)
+        elif not offer and shown != -1:
+            self._notebook.remove_page(shown)
+        self._notebook.set_show_tabs(self._notebook.get_n_pages() > 1)
+
     def _update_archive_page(self) -> None:
         self._update_image_page()
         page = self._archive_page
         page.reset()
         window = self._window
+        self._offer_archive_page(window.filehandler.archive_type is not None)
         if window.filehandler.archive_type is None:
             return
         # In case it's not ready yet, bump the cover extraction

@@ -41,7 +41,8 @@ from mcomix import log
 from mcomix.transform import Matrix, Transform
 from mcomix.i18n import _
 
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
+from typing import Any
 
 
 
@@ -67,6 +68,10 @@ class MainWindow(Gtk.Window):
         self.is_manga_mode = False
         self.previous_size = (None, None)
         self.was_out_of_focus = False
+        #: The page the right-click menu was opened over, which is what
+        #: the menu's own Save As saves; None where it was opened on the
+        #: background around the pages.
+        self.popup_page: int | None = None
         # Remember last scroll destination.
         self._last_scroll_destination = constants.SCROLL_TO_START
 
@@ -957,15 +962,60 @@ class MainWindow(Gtk.Window):
     def get_bg_colour(self):
         return self._bg_colour
 
-    def extract_page(self, *args):
-        """Save the currently displayed images to disk, appending a number if a
-        file with an identical name was already found in the target directory.
-        """
+    def displayed_pages(self) -> "list[int]":
+        """The numbers of the pages on screen, in the order they read in."""
         this_screen = 2 if self.displayed_double() else 1 # XXX limited to at most 2 pages
-        for i in reversed(range(this_screen)) if self.is_manga_mode \
-        else range(this_screen):
-            file_path = self.imagehandler.get_path_to_page(
-                self.imagehandler.get_current_page() + i)
+        current: int = self.imagehandler.get_current_page()
+        pages = [current + offset for offset in range(this_screen)]
+        return list(reversed(pages)) if self.is_manga_mode else pages
+
+    def page_at(self, x: float, y: float) -> "int | None":
+        """The number of the page drawn at <x>, <y> on the page area.
+
+        The coordinates are the page area's own, as a click on it gives
+        them, and the pages are placed on it as a whole rather than on
+        the part of it that shows, so the scroll position is added
+        before they are compared.  None where no page is drawn there:
+        the background around them, or no file open.
+        """
+        current: int = self.imagehandler.get_current_page()
+        if not self.filehandler.file_loaded or not current:
+            return None
+        x += self._hadjust.get_value()
+        y += self._vadjust.get_value()
+        # The layout holds one box per page on screen, in the order the
+        # pages were handed to it, wherever it decided to put them.
+        for offset, content in enumerate(self.layout.get_content_boxes()):
+            left, top = content.get_position()
+            width, height = content.get_size()
+            if left <= x < left + width and top <= y < top + height:
+                return current + offset
+        return None
+
+    def extract_page(self, *args: Any) -> None:
+        """Save the pages on screen to disk."""
+        self._save_pages(self.displayed_pages())
+
+    def extract_popup_page(self, *args: Any) -> None:
+        """Save the page the right-click menu was opened over.
+
+        In double page mode two pages stand side by side and the menu is
+        opened on one of them; opened on the background around them
+        there is no one page to mean, so both are offered, which is what
+        the menu bar's own Save As does.
+        """
+        page = self.popup_page
+        self._save_pages([page] if page is not None
+                         else self.displayed_pages())
+
+    def _save_pages(self, pages: "Iterable[int]") -> None:
+        """Ask where each of <pages> should go, and put it there.
+
+        A number is appended to the name offered where a file of that
+        name is in the target directory already.
+        """
+        for page in pages:
+            file_path = self.imagehandler.get_path_to_page(page)
             if not file_path:
                 return
             file_name = os.path.split(file_path)[-1]

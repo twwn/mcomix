@@ -578,6 +578,10 @@ class EventHandler(object):
               not state & Gdk.ModifierType.ALT_MASK and
               not state & Gdk.ModifierType.SHIFT_MASK):
             self._window.cursor_handler.set_cursor_type(constants.NORMAL_CURSOR)
+            # Which page the menu stands on is worth knowing by the time
+            # it is answered: two of them are on screen in double page
+            # mode, and the pointer has moved to the menu by then.
+            self._window.popup_page = self._window.page_at(x, y)
             widgets.popup_at(self._window.popup, gesture.get_widget(), x, y)
 
         elif button == 4:

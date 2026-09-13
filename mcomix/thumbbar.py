@@ -86,6 +86,14 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
         """
         if visible:
             self.load_thumbnails()
+            # Before the rows come on screen, not after: the sidebar
+            # is loaded while it is hidden - a page change does it - so
+            # a stopped view would turn away every thumbnail its cells
+            # ask for as they bind.  refresh() rather than only clearing
+            # the flag, because hiding the sidebar does not unbind the
+            # cells that were on screen: those are asked again here, or
+            # nothing would ever ask for them.
+            self._list.refresh()
         super(ThumbnailSidebar, self).set_visible(visible)
         if not visible:
             self._list.stop_update()

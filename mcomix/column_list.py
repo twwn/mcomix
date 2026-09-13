@@ -11,6 +11,23 @@ from typing import Any, cast
 #: What an accelerator cell says while it is waiting for one.
 _ASK_FOR_ONE_HINT = _('New accelerator...')
 
+#: How wide an accelerator cell asks to be, in characters.  A shortcut
+#: is usually far shorter than this - three quarters of the ones MComix
+#: binds by default fit - and a list of them is several columns wide, so
+#: the few long ones are ellipsized rather than allowed to take the room
+#: the column naming the action needs.
+_ACCEL_WIDTH_CHARS = 12
+
+
+def accelerator_label(accelerator: str) -> str:
+    """What the keyboard calls <accelerator>, or '' where there is none."""
+    if not accelerator:
+        return ''
+    parsed, keyval, modifiers = Gtk.accelerator_parse(accelerator)
+    if not parsed:
+        return ''
+    return Gtk.accelerator_get_label(keyval, modifiers)
+
 
 class Row(GObject.Object):
 
@@ -142,7 +159,11 @@ class _AccelCell(Gtk.Button, _Cell):
 
     This is what a Gtk.CellRendererAccel was: click it and the next
     combination pressed becomes the shortcut, backspace clears it and
-    escape leaves it alone.
+    escape leaves it alone.  It draws the shortcut as the renderer drew
+    it, as the text the keyboard calls it by, rather than as the key
+    caps a Gtk.ShortcutLabel makes of it: a shortcut label is as wide as
+    its caps and cannot be drawn any narrower, so a column of them takes
+    the width it wants out of whatever else the list shows.
     """
 
     __gtype_name__ = 'MComixColumnAccelCell'
@@ -151,7 +172,17 @@ class _AccelCell(Gtk.Button, _Cell):
         super(_AccelCell, self).__init__()
         self._init_cell()
         self.set_has_frame(False)
-        self.label = Gtk.ShortcutLabel(disabled_text=_ASK_FOR_ONE_HINT)
+        # An action nothing is bound to shows nothing; the hint stands
+        # there only while the cell is waiting for a combination to be
+        # pressed.
+        # Both, so the cell asks for the same width whatever it holds:
+        # a Gtk.ColumnView sizes a column from the cells that are on
+        # screen, so a column that measured its contents would be a
+        # different width every time the list was scrolled.
+        self.label = Gtk.Label(xalign=0.0,
+                               ellipsize=Pango.EllipsizeMode.END,
+                               width_chars=_ACCEL_WIDTH_CHARS,
+                               max_width_chars=_ACCEL_WIDTH_CHARS)
         self.set_child(self.label)
         #: Whether the next key pressed is the new shortcut.
         self.capturing = False
@@ -164,9 +195,7 @@ class _AccelCell(Gtk.Button, _Cell):
 
     def _clicked(self, _button: Gtk.Button) -> None:
         self.capturing = True
-        # The property, not set_accelerator(): the two accessors are
-        # deprecated where the property they stand for is not.
-        self.label.props.accelerator = ''
+        self.label.set_text(_ASK_FOR_ONE_HINT)
 
     def _pressed(self, controller: Gtk.EventControllerKey, keyval: int,
                  keycode: int, state: Gdk.ModifierType) -> bool:
@@ -191,7 +220,7 @@ class _AccelCell(Gtk.Button, _Cell):
 
     def _show(self) -> None:
         """Draw the shortcut the row carries."""
-        self.label.props.accelerator = self.accelerator
+        self.label.set_text(accelerator_label(self.accelerator))
 
     #: What the row says the shortcut is; filled in when it is bound.
     accelerator = ''
@@ -280,19 +309,24 @@ class ColumnListView(Gtk.ColumnView):
                         expand: bool = False,
                         text: "Callable[[Row], str] | None" = None,
                         sort_key: "Callable[[Row], Any] | None" = None,
-                        markup: bool = False) -> Gtk.ColumnViewColumn:
+                        markup: bool = False,
+                        width_chars: int = -1) -> Gtk.ColumnViewColumn:
         """Show <attr> of each row as text under the heading <title>.
 
         <text> reads the text off the row itself where it is not the
         attribute as it stands - a collection's name for the id the row
         carries, say.  <sort_key> makes the heading one that sorts, and
         <markup> says the text is Pango markup rather than plain.
+        <width_chars> is how narrow the column may be squeezed before
+        the list scrolls sideways instead, which a column of names worth
+        reading wants and one that only has to fit its heading does not.
         """
         if text is None:
             def text(row: Row, attr: str = attr) -> str:
                 return str(getattr(row, attr, ''))
 
         def bind(cell: _TextCell, row: Row) -> None:
+            cell.set_width_chars(width_chars)
             if markup:
                 cell.set_markup(text(row))
             else:
@@ -369,19 +403,28 @@ class ColumnListView(Gtk.ColumnView):
 
     def add_accel_column(self, title: str, attr: str,
                          rebind: "Callable[[Row, str | None], None]",
+                         bindable: "Callable[[Row], bool] | None" = None,
                          expand: bool = False) -> Gtk.ColumnViewColumn:
         """Show <attr> of each row as a keyboard shortcut to rebind.
 
         <rebind> is told the row and the accelerator that was pressed,
         or None where it was cleared; writing it to the row is its
         business, as it was the business of whoever answered a
-        Gtk.CellRendererAccel.
+        Gtk.CellRendererAccel.  <bindable> says which rows have a
+        shortcut at all - a heading standing over other rows does not.
         """
         def bind(cell: _AccelCell, row: Row) -> None:
             cell.capturing = False
             cell.rebind = rebind
-            cell.accelerator = str(getattr(row, attr, '') or '')
+            # A heading has no shortcut, so its cell stands empty and
+            # cannot be pressed.  It is not hidden: a hidden cell asks
+            # for no width, and the column would then be a different
+            # width whenever headings were all that was on screen.
+            takes_one = bindable(row) if bindable is not None else True
+            cell.accelerator = str(getattr(row, attr, '') or '') \
+                if takes_one else ''
             cell._show()
+            cell.set_sensitive(takes_one)
 
         return self._add_column(title, _AccelCell, bind, expand, attr, None)
 

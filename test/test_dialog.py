@@ -30,6 +30,15 @@ class DialogTest(MComixTest):
         pump()
         super(DialogTest, self).tearDown()
 
+    def test_it_is_painted_as_a_dialog_rather_than_as_a_window(self):
+        """A Gtk.Dialog carried the dialog style class, and a theme -
+        MComix' own included - paints window.dialog in a different
+        colour from a plain window. Without it every dialog MComix
+        builds stood out beside the ones GTK builds."""
+        self.assertIn('dialog', self.dialog.get_css_classes())
+        self.assertIn('dialog', Gtk.Dialog().get_css_classes(),
+                      'a Gtk.Dialog no longer carries it either')
+
     def test_what_goes_in_the_content_area_is_in_the_window(self):
         label = Gtk.Label(label='hello')
         self.dialog.get_content_area().append(label)
@@ -109,10 +118,13 @@ class DialogTest(MComixTest):
         button.emit('clicked')
         self.assertEqual(self.answers, [Gtk.ResponseType.REJECT])
 
-    def test_escape_answers_the_dialog(self):
+    def test_escape_answers_the_dialog_the_way_closing_it_does(self):
+        """Escape closed a Gtk.Dialog, so what it answered with is what
+        its delete event answered with. Anything written against that -
+        the enhancement dialog is - hears nothing from a CANCEL."""
         self.dialog.present()
         pump()
         self.assertTrue(self.dialog._escaped())
-        self.assertEqual(self.answers, [Gtk.ResponseType.CANCEL])
+        self.assertEqual(self.answers, [Gtk.ResponseType.DELETE_EVENT])
 
 # vim: expandtab:sw=4:ts=4

@@ -12,6 +12,9 @@ from mcomix import widgets
 
 class KeybindingEditorWindow(Gtk.ScrolledWindow):
 
+    #: How much of the name of an action is always shown, in characters.
+    _NAME_WIDTH = 20
+
     def __init__(self, keymanager):
         """ @param keymanager: KeybindingManager instance. """
         super(KeybindingEditorWindow, self).__init__()
@@ -29,17 +32,25 @@ class KeybindingEditorWindow(Gtk.ScrolledWindow):
         # The actions of a group sit under a row naming it, which is
         # what a Gtk.TreeStore held and a Gtk.TreeListModel holds now.
         self._list = column_list.ColumnListView(tree=True)
-        self._name_col = self._list.add_text_column(_("Name"), 'title',
-                                                    expand=True)
+        # The names are what the list is read by, so the column keeps
+        # room for them: everything past what the shortcuts take is
+        # theirs, and where there is not enough the list scrolls
+        # sideways rather than cutting them down to nothing.
+        self._name_col = self._list.add_text_column(
+            _("Name"), 'title', expand=True, width_chars=self._NAME_WIDTH)
         for index in range(0, self.accel_column_num):
             self._list.add_accel_column(
                 _("Key %d") % (index + 1), self._key_of(index),
-                self._rebound(index))
+                self._rebound(index), bindable=self._takes_a_shortcut)
 
         self.refresh_model()
-        self._list.expand_all()
 
         self.set_child(self._list)
+
+    @staticmethod
+    def _takes_a_shortcut(row: column_list.Row) -> bool:
+        """Whether <row> stands for an action rather than a group."""
+        return row.action is not None
 
     @staticmethod
     def _key_of(index):

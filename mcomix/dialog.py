@@ -29,8 +29,17 @@ class Dialog(Gtk.Window):
         'response': (GObject.SignalFlags.RUN_LAST, None, (int,)),
     }
 
+    #: What a Gtk.Dialog carried, and what a theme paints a dialog by:
+    #: MComix' own stylesheet gives window.dialog the desktop's
+    #: @dialog_bg_color, which is not the @window_bg_color a plain
+    #: window gets, so without this every dialog MComix built was
+    #: painted in a different colour from the ones GTK builds - its own
+    #: file chooser beside the "save page as" one, say.
+    _CSS_CLASS = 'dialog'
+
     def __init__(self, **kwargs: Any) -> None:
         super(Dialog, self).__init__(**kwargs)
+        self.add_css_class(self._CSS_CLASS)
         self._content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL,
                                 spacing=6)
         self._content.set_vexpand(True)
@@ -117,7 +126,12 @@ class Dialog(Gtk.Window):
         return False
 
     def _escaped(self, *args: Any) -> bool:
-        self.emit('response', Gtk.ResponseType.CANCEL)
+        # DELETE_EVENT, not CANCEL: escape closed a Gtk.Dialog, which
+        # answered with the response its delete event did, and that is
+        # what MComix' dialogs are written against - the enhancement
+        # dialog answers DELETE_EVENT and OK alike and did not close on
+        # escape at all while this said CANCEL.
+        self.emit('response', Gtk.ResponseType.DELETE_EVENT)
         return True
 
 # vim: expandtab:sw=4:ts=4

@@ -43,6 +43,11 @@ class _PreferencesDialog(Dialog):
     saved between sessions are presented to the user.
     """
 
+    #: How wide the dialog opens.  The Shortcuts tab is what needs it:
+    #: its list comes to 836 pixels, and the dialog's own borders and
+    #: the notebook's take 32 of whatever the dialog is given.
+    _DEFAULT_WIDTH = 900
+
     def __init__(self, window):
         super(_PreferencesDialog, self).__init__(
             title=_('Preferences'), transient_for=window)
@@ -53,6 +58,10 @@ class _PreferencesDialog(Dialog):
 
         self._window = window
         self.set_resizable(True)
+        # Wide enough for the Shortcuts tab, which is a name and four
+        # shortcut columns beside it and needs more room than any of
+        # the others; the height is whatever the tabs come to.
+        self.set_default_size(self._DEFAULT_WIDTH, -1)
         self.set_default_response(Gtk.ResponseType.CLOSE)
 
         self.connect('response', self._response)

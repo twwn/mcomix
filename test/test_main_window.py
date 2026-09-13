@@ -9,7 +9,7 @@ real window, which is where a whole class of start-up regressions hides.
 import os
 import warnings
 
-from gi.repository import Gtk
+from gi.repository import Gio, Gtk
 
 from . import MComixTest, get_testfile_path, pump, wait_for
 
@@ -282,6 +282,105 @@ class MainWindowTest(MComixTest):
         self.assertTrue(os.path.exists(target), 'the page was not written')
         self.assertEqual(prefs['path of last saved in filechooser'],
                          elsewhere)
+
+    def test_the_right_click_menu_offers_to_save_a_page(self):
+        """It offered every other thing the File menu does, but not the
+        one that needs a page picked out - which is the one only it can
+        do, since it is opened on the page it means."""
+        self.assertIn('win.extract-page-popup',
+                      self._menu_actions(self.window.uimanager.popup
+                                         .get_menu_model()))
+
+    def test_the_right_click_menu_saves_the_page_it_was_opened_over(self):
+        """Save As on the menu bar offers both pages of a double page,
+        one chooser after the other, because nothing says which of them
+        is meant.  The right-click menu was opened on one of them."""
+        target_dir = os.path.join(constants.DATA_DIR, 'saved')
+        os.makedirs(target_dir, exist_ok=True)
+        prefs['path of last saved in filechooser'] = target_dir
+
+        handler = self.window.imagehandler
+        self.assertTrue(
+            wait_for(lambda: handler.get_path_to_page(2) is not None),
+            'the second page never arrived')
+
+        self.window.popup_page = 2
+        self.window.extract_popup_page()
+        self._pump()
+        dialogs = [window for window in Gtk.Window.list_toplevels()
+                   if isinstance(window, Gtk.FileChooserDialog)]
+        self.assertEqual(1, len(dialogs), 'no save dialog was opened')
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore', DeprecationWarning)
+                self.assertEqual(dialogs[0].get_current_name(),
+                                 '01-ZIP-Normal_02-JPG-RGB.jpg')
+        finally:
+            dialogs[0].destroy()
+            self._pump()
+
+    def test_which_page_a_click_landed_on_is_answered_by_where_it_was(self):
+        """Two pages stand side by side in double page mode, and only
+        where the click was says which of them the menu is about."""
+        prefs['default double page'] = True
+        try:
+            # The archive is listed on a worker thread, and set_page()
+            # clamps to the pages counted so far.
+            self.assertTrue(
+                wait_for(lambda:
+                         self.window.imagehandler.get_number_of_pages() > 1),
+                'the archive was never listed')
+            # The first page of an archive stands alone, as its cover.
+            self.window.set_page(2)
+            self.assertTrue(
+                wait_for(lambda: len(self.window.layout.get_content_boxes())
+                         == 2),
+                'the second page was never laid out')
+            boxes = self.window.layout.get_content_boxes()
+            # The pages are placed on the layout as a whole; a click
+            # gives its coordinates on the part of it that shows.
+            scrolled_x = self.window._hadjust.get_value()
+            scrolled_y = self.window._vadjust.get_value()
+            for offset, content in enumerate(boxes):
+                left, top = content.get_position()
+                width, height = content.get_size()
+                self.assertEqual(
+                    self.window.page_at(left + width / 2 - scrolled_x,
+                                        top + height / 2 - scrolled_y),
+                    2 + offset)
+            # The background around the pages is no page at all.
+            widest = max(box.get_position()[0] + box.get_size()[0]
+                         for box in boxes)
+            self.assertIsNone(self.window.page_at(widest + 100 - scrolled_x,
+                                                  -scrolled_y))
+        finally:
+            prefs['default double page'] = False
+
+    @staticmethod
+    def _menu_actions(model):
+        """Every action the menu <model> and its submenus address."""
+        actions = []
+        for index in range(model.get_n_items()):
+            action = model.get_item_attribute_value(
+                index, Gio.MENU_ATTRIBUTE_ACTION, None)
+            if action is not None:
+                actions.append(action.get_string())
+            for link in (Gio.MENU_LINK_SECTION, Gio.MENU_LINK_SUBMENU):
+                child = model.get_item_link(index, link)
+                if child is not None:
+                    actions.extend(
+                        MainWindowTest._menu_actions(child))
+        return actions
+
+    def test_the_popup_menu_opens_its_submenus_as_menus_of_their_own(self):
+        """A sliding Gtk.PopoverMenu keeps every submenu page in one
+        stack and is as wide as the widest item on any of them, so the
+        eight short entries of the top level were laid out to fit
+        "Previous archive" and its accelerator, three pages down: 292
+        pixels where its own entries want 162.
+        """
+        self.assertEqual(self.window.uimanager.popup.props.flags,
+                         Gtk.PopoverMenuFlags.NESTED)
 
     def test_the_window_holds_the_expected_parts(self):
         for part in (self.window.menubar, self.window.toolbar,

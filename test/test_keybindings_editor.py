@@ -18,6 +18,7 @@ from . import MComixTest, pump
 from mcomix import constants
 from mcomix import keybindings
 from mcomix import keybindings_editor
+from mcomix import preferences_dialog
 
 
 class _StubUIManager(object):
@@ -59,14 +60,40 @@ class KeybindingEditorTest(MComixTest):
     def _shown(self):
         return [row.title for row in self.editor._list.each_row()]
 
+    # -- How wide it comes out --------------------------------------------
+
+    def test_the_list_fits_the_width_the_preferences_dialog_opens_at(self):
+        """The Shortcuts tab is the widest thing in the dialog - a name
+        and four shortcuts beside it - so it is what the dialog's width
+        is chosen for.  Where it does not fit, the columns are squeezed
+        down to their minimum and the names are ellipsized away to
+        nothing before the list will scroll sideways.
+        """
+        wanted = self.editor._list.measure(Gtk.Orientation.HORIZONTAL, -1)[0]
+        room = (preferences_dialog._PreferencesDialog._DEFAULT_WIDTH
+                - self._DIALOG_CHROME)
+        self.assertLessEqual(wanted, room)
+
+    #: What the dialog's own borders and the notebook's take out of the
+    #: width the dialog is given, measured on GTK 4.22.
+    _DIALOG_CHROME = 32
+
     # -- What it lists ----------------------------------------------------
 
-    def test_the_groups_come_before_the_actions_under_them(self):
-        shown = self._shown()
+    def test_only_the_groups_are_shown_until_one_is_opened(self):
+        """A Gtk.TreeView showed a tree collapsed, and this one is a
+        list of eleven groups rather than of two hundred actions."""
         groups = sorted(set(info['group']
                             for info in keybindings.BINDING_INFO.values()))
-        self.assertEqual(shown[0], groups[0])
-        self.assertIn(keybindings.BINDING_INFO[self.ACTION]['title'], shown)
+        self.assertEqual(self._shown(), groups)
+
+    def test_the_actions_of_a_group_are_under_it(self):
+        group = keybindings.BINDING_INFO[self.ACTION]['group']
+        self.editor._list.expand_to(self._row(self.ACTION))
+        shown = self._shown()
+        title = keybindings.BINDING_INFO[self.ACTION]['title']
+        self.assertIn(title, shown)
+        self.assertLess(shown.index(group), shown.index(title))
 
     def test_a_group_heading_stands_for_no_action(self):
         heading = self.editor._list.get_row(0)

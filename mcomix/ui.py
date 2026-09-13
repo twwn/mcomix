@@ -242,6 +242,8 @@ _POPUP = (
     None,
     'open', 'menu_recent', 'library',
     None,
+    'extract_page_popup',
+    None,
     'menu_open_with_popup',
     None,
     'preferences',
@@ -336,6 +338,9 @@ class MainUI(object):
                 None, None, window.flip_vertically),
             ('extract_page', 'document-save-as', _('Save _As'),
                 None, None, window.extract_page),
+            ('extract_page_popup', 'document-save-as', _('Save _As'),
+                None, _('Saves the page the menu was opened over.'),
+                window.extract_popup_page),
             ('menu_zoom', 'mcomix-zoom', _('_Zoom')),
             ('menu_recent', 'text-x-generic', _('_Recent')),
             ('menu_bookmarks_popup', 'mcomix-add-bookmark', _('_Bookmarks')),
@@ -461,7 +466,13 @@ class MainUI(object):
 
         # Gtk.MenuBar is gone; a GTK4 menu bar is a row of popovers.
         self.menubar = Gtk.PopoverMenuBar.new_from_model(self._build(_MENUBAR))
-        self.popup = Gtk.PopoverMenu.new_from_model(self._build(_POPUP))
+        # NESTED: a submenu opens as a popover of its own.  A sliding
+        # popover menu keeps every page in one stack and is as wide as
+        # the widest item on any of them, so the eight short entries of
+        # the top level were laid out to fit "Previous archive" and its
+        # accelerator, three pages down.
+        self.popup = Gtk.PopoverMenu.new_from_model_full(
+            self._build(_POPUP), Gtk.PopoverMenuFlags.NESTED)
         self.popup.set_parent(window)
         self.toolbar = self._build_toolbar()
 
@@ -592,6 +603,7 @@ class MainUI(object):
         general = ('properties',
                    'edit_archive',
                    'extract_page',
+                   'extract_page_popup',
                    'save_and_quit',
                    'close',
                    'delete',

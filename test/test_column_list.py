@@ -281,11 +281,17 @@ class ColumnListViewTest(MComixTest):
             walk(view)
             self.assertTrue(cells, 'the column drew no cell')
             cell = cells[0]
-            self.assertEqual(cell.label.props.accelerator, '<Control>a')
+            # The shortcut is drawn as the keyboard names it, which is
+            # what a Gtk.CellRendererAccel drew.
+            self.assertEqual(
+                cell.label.get_text(),
+                Gtk.accelerator_get_label(*Gtk.accelerator_parse('<Control>a')[1:]))
             # Nothing is taken until the cell has been clicked.
             self.assertFalse(
                 cell._pressed(None, Gdk.KEY_b, 0, Gdk.ModifierType.CONTROL_MASK))
             cell.emit('clicked')
+            self.assertEqual(cell.label.get_text(),
+                             column_list._ASK_FOR_ONE_HINT)
             self.assertTrue(
                 cell._pressed(None, Gdk.KEY_b, 0, Gdk.ModifierType.CONTROL_MASK))
             self.assertEqual(rebound, [(row, '<Control>b')])
@@ -298,6 +304,75 @@ class ColumnListViewTest(MComixTest):
             self.assertTrue(cell._pressed(None, Gdk.KEY_Escape, 0,
                                           Gdk.ModifierType(0)))
             self.assertEqual(len(rebound), 2)
+        finally:
+            window.destroy()
+            pump()
+
+    def test_a_row_that_takes_no_shortcut_holds_the_column_open_anyway(self):
+        """A group heading stands over the actions under it and has no
+        shortcut of its own, so its cell is empty and cannot be pressed.
+
+        It is not hidden, though: a Gtk.ColumnView sizes a column from
+        the cells that are on screen, and a hidden cell asks for no
+        width, so a list showing only headings drew its shortcut
+        columns too narrow even for their own headings.
+        """
+        view = column_list.ColumnListView()
+        view.add_accel_column('Key', 'key', lambda row, accel: None,
+                              bindable=lambda row: row.key is not None)
+        view.set_rows([column_list.Row(key=None),
+                       column_list.Row(key='<Control>a')])
+        window = Gtk.Window()
+        window.set_child(view)
+        window.present()
+        try:
+            for _ in range(20):
+                pump()
+                view.allocate(400, 300, -1, None)
+            cells = []
+
+            def walk(widget):
+                child = widget.get_first_child()
+                while child is not None:
+                    if isinstance(child, column_list._AccelCell):
+                        cells.append(child)
+                    walk(child)
+                    child = child.get_next_sibling()
+
+            walk(view)
+            self.assertEqual(len(cells), 2, 'the column drew the wrong cells')
+            self.assertTrue(cells[0].get_visible())
+            self.assertFalse(cells[0].get_sensitive())
+            self.assertEqual(cells[0].label.get_text(), '')
+            self.assertTrue(cells[1].get_sensitive())
+        finally:
+            window.destroy()
+            pump()
+
+    def test_an_accelerator_cell_is_the_same_width_whatever_it_shows(self):
+        """A Gtk.ColumnView asks the cells that are on screen how wide
+        the column should be, where a Gtk.TreeView asked the whole
+        model, so a cell that measured what it holds made the column a
+        different width every time the list was scrolled - and a column
+        of Gtk.ShortcutLabels, which cannot be drawn narrower than the
+        key caps they hold, took that width out of the column beside
+        it."""
+        window = Gtk.Window()
+        box = Gtk.Box()
+        window.set_child(box)
+        window.present()
+        try:
+            pump()
+            empty = column_list._AccelCell()
+            long = column_list._AccelCell()
+            long.accelerator = '<Control><Shift>Page_Up'
+            long._show()
+            for cell in (empty, long):
+                box.append(cell)
+            pump()
+            self.assertEqual(
+                empty.measure(Gtk.Orientation.HORIZONTAL, -1)[1],
+                long.measure(Gtk.Orientation.HORIZONTAL, -1)[1])
         finally:
             window.destroy()
             pump()
