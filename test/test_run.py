@@ -1,12 +1,49 @@
 """What the program does before it has a window to say it in."""
 
+import os
+import re
+import tomllib
 import unittest.mock
 
 import gi
+# PIL.Image compares PIL.__version__ with its extension's version when it
+# is first imported, so it has to be in before the tests patch that.
+import PIL.Image
 
 from . import MComixTest
 
 from mcomix import run
+
+PYPROJECT = os.path.join(os.path.dirname(os.path.dirname(
+    os.path.abspath(run.__file__))), 'pyproject.toml')
+
+
+class RequiredPillowTest(MComixTest):
+
+    """run.py let MComix start with Pillow 9.1.0 while pyproject.toml
+    required 10.1.0, so a distribution packaging MComix outside pip could
+    ship a Pillow no test had been run against."""
+
+    @unittest.skipUnless(os.path.isfile(PYPROJECT),
+                         'not running from a source tree')
+    def test_pyproject_declares_the_same_minimum(self):
+        with open(PYPROJECT, 'rb') as fp:
+            dependencies = tomllib.load(fp)['project']['dependencies']
+        declared = [match.group(1) for match in
+                    (re.fullmatch(r'Pillow\s*>=\s*(\S+)', dependency)
+                     for dependency in dependencies) if match]
+        self.assertEqual([run.PIL_VERSION_REQUIRED], declared)
+
+    def test_an_older_pillow_exits_with_a_message(self):
+        with unittest.mock.patch.object(PIL, '__version__', '10.0.1'), \
+                self.assertRaises(SystemExit) as caught:
+            run.setup_dependencies()
+        self.assertEqual(1, caught.exception.code)
+
+    def test_the_required_pillow_starts(self):
+        with unittest.mock.patch.object(PIL, '__version__',
+                                        run.PIL_VERSION_REQUIRED):
+            run.setup_dependencies()
 
 
 class DependencyCheckTest(MComixTest):

@@ -20,8 +20,9 @@ from mcomix import (
 )
 from mcomix.version_tools import Version
 
-#: Lowest Pillow release providing the API MComix uses (Image.Transpose).
-PIL_VERSION_REQUIRED = '9.1.0'
+#: Lowest Pillow release MComix starts with: the one pyproject.toml requires
+#: and the suite is run against, which test_run.py checks agree.
+PIL_VERSION_REQUIRED = '10.1.0'
 
 
 def wait_and_exit() -> None:
