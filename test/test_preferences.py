@@ -265,6 +265,31 @@ class WritePreferencesFileTest(MComixTest):
         self.assertEqual(stored['lens size'], 222)
         self.assertEqual(stored['thumbnail size'], 250)
 
+    def test_a_second_write_does_not_put_back_what_the_first_wrote(self) -> None:
+        """What this instance has changed is measured against the file as
+        it was read, and the baseline stayed there after a write.  So
+        every later write carried every change this instance had ever
+        made, and put each back over whatever another window had set
+        since - a lens size changed an hour ago undid one changed a
+        minute ago."""
+        prefs['lens size'] = 222
+        preferences.write_preferences_file()
+
+        # Another window changes the same preference afterwards.
+        with open(constants.PREFERENCE_PATH, 'r') as config_file:
+            elsewhere = json.load(config_file)
+        elsewhere['lens size'] = 333
+        with open(constants.PREFERENCE_PATH, 'w') as config_file:
+            json.dump(elsewhere, config_file)
+
+        # This one changes something else, and writes again.
+        prefs['thumbnail size'] = 120
+        preferences.write_preferences_file()
+        with open(constants.PREFERENCE_PATH, 'r') as config_file:
+            stored = json.load(config_file)
+        self.assertEqual(stored['thumbnail size'], 120)
+        self.assertEqual(stored['lens size'], 333)
+
     def test_a_file_that_cannot_be_read_is_written_over(self) -> None:
         """There is nothing to merge with, and this instance's own
         preferences are a better answer than none."""

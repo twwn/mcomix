@@ -3,7 +3,7 @@ not the one that can show it. """
 
 import threading
 
-from gi.repository import Gtk
+from gi.repository import GLib, Gtk
 
 from . import MComixTest, get_testfile_path, pump as _pump
 
@@ -111,6 +111,44 @@ class PasswordDialogTest(MComixTest):
         self.real_ask_for_password('/nowhere/<b>Bold</b>.cbz', [].append)
         prompt = self._wait_for_prompt()
         self.assertIn('<b>Bold</b>.cbz', prompt._secondary.get_text())
+
+    def test_an_encrypted_archive_listed_on_the_main_thread_does_not_hang(self):
+        """The library adds books on the main thread, between turns of the
+        main loop, so listing an encrypted archive there asks for its
+        password there.  The prompt does not wait for its answer, and
+        _get_password() waiting on its event stopped the only loop that
+        could deliver one: MComix froze with the prompt on screen."""
+        archive = zip_archive.ZipArchive(
+            get_testfile_path('archives', 'Encrypted.zip'))
+        self.addCleanup(archive.close)
+        answered = []
+
+        def answer():
+            prompts = visible_prompts()
+            if not prompts:
+                return GLib.SOURCE_CONTINUE
+            self._entry_in(prompts[0]).set_text('password')
+            prompts[0].response(Response.OK)
+            answered.append(True)
+            return GLib.SOURCE_REMOVE
+
+        source = GLib.timeout_add(50, answer)
+        self.addCleanup(lambda: answered or GLib.source_remove(source))
+
+        # Fail rather than hang the suite: without the main loop turning,
+        # nothing else would ever set the event.
+        def give_up():
+            if not archive._event.is_set():
+                archive._password = ''
+                archive._event.set()
+        watchdog = threading.Timer(10, give_up)
+        watchdog.start()
+        self.addCleanup(watchdog.cancel)
+
+        names = archive.list_contents()
+        self.assertTrue(answered, 'the prompt was never answered')
+        self.assertEqual(sorted(names),
+                         ['arg.jpeg', 'bar.jpg', 'foo.JPG', 'meh.png'])
 
     def test_an_encrypted_archive_is_listed_once_the_password_is_given(self):
         """The whole path: a worker thread asks, the main thread shows the

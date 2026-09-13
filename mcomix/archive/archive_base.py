@@ -154,6 +154,16 @@ class BaseArchive:
                     self._waiting_for_password = True
         if ask_for_password:
             self._password_required()
+        if threading.current_thread() is threading.main_thread():
+            # The prompt is answered by the main loop, and this is the
+            # thread that runs it: the library lists an archive it adds
+            # here, between turns of the loop.  Waiting on the event
+            # stopped the only loop that could set it, and MComix froze
+            # with the prompt on screen, so turn the loop until then.
+            from gi.repository import GLib
+            context = GLib.MainContext.default()
+            while not self._event.is_set():
+                context.iteration(True)
         self._event.wait()
         # got_password() sets the event only after assigning the password,
         # so by here it is a string, empty if the user gave none.

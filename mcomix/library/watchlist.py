@@ -135,6 +135,10 @@ class WatchListDialog(Dialog):
 
     def _collection_id_for(self, name: str) -> int:
         """ The id of the collection called <name>, -1 for the default. """
+        # First, because a reader's own collection can have the default
+        # one's name, and the list offers the default first.
+        if name == backend_types.DefaultCollection.name:
+            return -1
         for id in self.library.backend.get_all_collections():
             if self.library.backend.get_collection_name(id) == name:
                 return id

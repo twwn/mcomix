@@ -361,7 +361,8 @@ class _CollectionArea(Gtk.ScrolledWindow):
 
         row = self._list.row_at(x, y)
         self._popup_collection_menu(row.collection if row is not None
-                                    else None)
+                                    else None,
+                                    gesture.get_widget() or self._list, x, y)
 
     def _popup_menu(self) -> None:
         """ Called to open the control's popup menu via
@@ -369,7 +370,9 @@ class _CollectionArea(Gtk.ScrolledWindow):
 
         self._popup_collection_menu(self.get_current_collection())
 
-    def _popup_collection_menu(self, collection: int | None) -> None:
+    def _popup_collection_menu(self, collection: int | None,
+                               over: "Gtk.Widget | None" = None,
+                               x: float = 0, y: float = 0) -> None:
         """ Shows the collection popup over <collection>, with the
         items that suit it enabled.  Renaming, duplicating and removing
         want a collection of the user's own, so they are off over the
@@ -388,7 +391,9 @@ class _CollectionArea(Gtk.ScrolledWindow):
             widgets.simple_action(self._popup_actions, name).set_enabled(
                 collection is not None)
 
-        widgets.popup_at(self._collection_menu, self, 0, 0)
+        # Where the click was, or the corner of the sidebar for the menu
+        # key, which has no position.
+        widgets.popup_at(self._collection_menu, over or self, x, y)
 
     def _key_press(self, controller: Gtk.EventControllerKey,
                    keyval: int, keycode: int,

@@ -462,6 +462,9 @@ class _BookArea(Gtk.ScrolledWindow):
                 # dialog run_async() has already taken down.
                 if response == Response.OK:
                     prefs['library cover size'] = int(adjustment.get_value())
+                # "Custom..." was ticked when it was picked, before this
+                # was answered; the menu says what the size came to.
+                action.set_state(GLib.Variant('i', self._current_cover_size()))
                 if prefs['library cover size'] != old_size:
                     self.load_covers()
 
@@ -688,10 +691,13 @@ class _BookArea(Gtk.ScrolledWindow):
                 and position not in self._covers.get_selected_positions():
             self._covers.select_only(position)
 
-        self._popup_book_menu()
+        self._popup_book_menu(gesture.get_widget() or self._covers, x, y)
 
-    def _popup_book_menu(self) -> None:
-        """ Shows the book panel popup menu. """
+    def _popup_book_menu(self, over: "Gtk.Widget | None" = None,
+                         x: float = 0, y: float = 0) -> None:
+        """ Shows the book panel popup menu, pointing at (<x>, <y>) in
+        <over>: where a click was made, or the corner of the panel for the
+        menu key, which has no position. """
 
         selected = self._selected_items()
         books_selected = bool(selected)
@@ -707,7 +713,7 @@ class _BookArea(Gtk.ScrolledWindow):
                             books_selected and not is_collection_all)
         self._set_sensitive('copy-to-clipboard', len(selected) == 1)
 
-        widgets.popup_at(self._book_menu, self, 0, 0)
+        widgets.popup_at(self._book_menu, over or self, x, y)
 
     def _set_sensitive(self, action: str, sensitive: bool) -> None:
         """ Enables the popup menu action <action> based on <sensitive>. """

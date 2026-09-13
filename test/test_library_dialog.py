@@ -10,7 +10,7 @@ backend made unreachable.
 import os
 import unittest.mock
 
-from gi.repository import Gtk
+from gi.repository import GLib, Gtk
 
 from . import MComixTest, get_testfile_path, pump, wait_for
 
@@ -18,12 +18,14 @@ from mcomix import column_list
 from mcomix import constants
 from mcomix import icons
 from mcomix import main
+from mcomix import message_dialog
 from mcomix.dialog import Response
 from mcomix.library import book_area
 from mcomix.library import collection_area
 from mcomix.library import main_dialog
 from mcomix.library import watchlist
 from mcomix.preferences import prefs
+from mcomix import widgets
 
 
 class _LibraryWindowTest(MComixTest):
@@ -305,5 +307,57 @@ class LibraryScanCursorTest(_LibraryWindowTest):
             wait_for(lambda: self._cursor_name(dialog) is None, seconds=20),
             'the library was left showing the wait pointer')
 
+
+class LibraryMenuPositionTest(_LibraryWindowTest):
+
+    """A right click opens the library's two menus where it was made, as
+    every other menu in MComix opens.  Both were pointed at the corner of
+    their list, whichever row or cover had been clicked."""
+
+    def _right_click(self, area, widget, x, y):
+        """Where <area>'s menu is pointed after a click at (<x>, <y>) on
+        <widget>, the widget its click gesture is attached to."""
+        gesture = unittest.mock.Mock()
+        gesture.get_widget.return_value = widget
+        with unittest.mock.patch.object(widgets, 'popup_at') as popup:
+            area._button_press(gesture, 1, x, y)
+        popup.assert_called_once()
+        _popover, over, at_x, at_y = popup.call_args.args
+        return over, at_x, at_y
+
+    def test_the_cover_menu_opens_at_the_click(self):
+        area = self._open().book_area
+        self.assertEqual((area._covers, 120.0, 45.0),
+                         self._right_click(area, area._covers, 120.0, 45.0))
+
+    def test_the_collection_menu_opens_at_the_click(self):
+        area = self._open().collection_area
+        self.assertEqual((area._list, 30.0, 60.0),
+                         self._right_click(area, area._list, 30.0, 60.0))
+
+
+class CustomCoverSizeTest(_LibraryWindowTest):
+
+    def _prompts(self):
+        return [window for window in Gtk.Window.list_toplevels()
+                if isinstance(window, message_dialog.MessageDialog)
+                and window.get_visible()]
+
+    def test_cancelling_the_custom_size_leaves_the_size_that_was_ticked(self):
+        """Picking "Custom..." ticked it before the size dialog had been
+        answered, and cancelling that dialog left it ticked over a size
+        that had not changed."""
+        prefs['library cover size'] = constants.SIZE_NORMAL
+        action = self._open().book_area._popup_actions.lookup_action(
+            'cover-size')
+        self.assertEqual(constants.SIZE_NORMAL, action.get_state().get_int32())
+        action.change_state(GLib.Variant('i', 0))
+        pump()
+        prompts = self._prompts()
+        self.assertEqual(1, len(prompts))
+        prompts[0].response(Response.CANCEL)
+        pump()
+        self.assertEqual(constants.SIZE_NORMAL, prefs['library cover size'])
+        self.assertEqual(constants.SIZE_NORMAL, action.get_state().get_int32())
 
 # vim: expandtab:sw=4:ts=4

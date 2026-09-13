@@ -193,6 +193,10 @@ class FileHandler:
             except Exception as ex:
                 self._window.statusbar.set_message(str(ex))
                 self._window.osd.show(str(ex))
+                # No archive is open, and nothing may take one for open:
+                # _close() would wait on the condition it never got, and
+                # raise, for this book and every one opened after it.
+                self.archive_type = None
                 self.file_opened()
                 return False
             self.file_loading = True

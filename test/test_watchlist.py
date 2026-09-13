@@ -83,6 +83,19 @@ class WatchListDialogTest(MComixTest):
         self.assertEqual(row.collection_id, self.collection)
         self.assertTrue(self.dialog._changed)
 
+    def test_the_default_collection_wins_over_one_that_shares_its_name(self):
+        """The list offers collections by name, and a reader can call a
+        collection of their own "All books".  Picking the default entry
+        then filed the directory's books into that collection instead,
+        where the dialog before GTK4 kept the id of what was picked."""
+        self.backend.add_collection('All books')
+        row = self.dialog._list.get_row(0)
+        self.dialog._collection_chosen(row, 'Shelf')
+        self.dialog._collection_chosen(row, 'All books')
+        entry = self.backend.watchlist.get_watchlist_entry(row.directory)
+        self.assertIsNone(entry.collection.id)
+        self.assertEqual(row.collection_id, -1)
+
     def test_choosing_the_collection_it_already_has_changes_nothing(self):
         row = self.dialog._list.get_row(0)
         self.dialog._collection_chosen(row, 'All books')

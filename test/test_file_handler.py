@@ -108,6 +108,45 @@ class DirectoryWalkTest(MComixTest):
         self.assertEqual(image, self._opened_file())
 
 
+class AnArchiveThatWillNotOpenTest(MComixTest):
+
+    """An archive the extractor refuses - a format with no handler
+    installed, most often - is reported and left, and the window goes on
+    working."""
+
+    def setUp(self):
+        super().setUp()
+        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
+                          constants.THUMBNAIL_PATH):
+            os.makedirs(directory, exist_ok=True)
+        icons.load_icons()
+        self.window = main.MainWindow()
+        main.set_main_window(self.window)
+        self.handler = self.window.filehandler
+        pump()
+
+    def tearDown(self):
+        self.window.terminate_program()
+        self.window.destroy()
+        main.set_main_window(None)
+        pump()
+        super().tearDown()
+
+    def test_closing_it_and_opening_another_still_work(self):
+        """The failure left the handler marked as holding an archive with
+        no condition to wait on, so the next close raised ValueError: no
+        other book would open after it, and quitting raised before the
+        library was closed and the threads were joined."""
+        path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        with mock.patch.object(self.handler._extractor, 'setup',
+                               side_effect=Exception('no handler')):
+            self.assertFalse(self.handler.open_file(path))
+        self.handler.close_file()
+        self.assertTrue(self.handler.open_file(path))
+        self.assertTrue(wait_for(
+            lambda: self.window.imagehandler.get_number_of_pages() > 0))
+
+
 class RememberedResumeAnswerTest(MComixTest):
 
     """Opening a book the reader has stopped in before.

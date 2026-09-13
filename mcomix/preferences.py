@@ -566,5 +566,12 @@ def write_preferences_file() -> None:
     stored[_FORMAT_VERSION_KEY] = CONFIG_FORMAT_VERSION
     with tools.atomic_write(constants.PREFERENCE_PATH) as config_file:
         json.dump(stored, config_file, indent=2)
+    # What was just written is this instance's baseline from now on.
+    # Left at what was read, every later write carried every change ever
+    # made here, over whatever another window had set since.  An instance
+    # that has read nothing keeps its empty baseline, and writes nothing.
+    global _as_read
+    if _as_read:
+        _as_read = copy.deepcopy(dict(prefs))
 
 # vim: expandtab:sw=4:ts=4
