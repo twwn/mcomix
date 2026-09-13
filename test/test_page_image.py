@@ -124,7 +124,7 @@ class PageImageTest(MComixTest):
         self.image.show_pixbuf(image_tools.load_pixbuf(get_image_path('blue.png')))
         still = self.image.get_paintable()
         wait_for(lambda: self.image.get_paintable() is not still,
-                       seconds=2)
+                 seconds=2)
         self.assertIs(self.image.get_paintable(), still,
                       'the page went on animating after it had been replaced')
 
@@ -134,7 +134,7 @@ class PageImageTest(MComixTest):
         self.image.clear()
         self.assertIsNone(self.image.get_paintable())
         wait_for(lambda: self.image.get_paintable() is not None,
-                       seconds=2)
+                 seconds=2)
         self.assertIsNone(self.image.get_paintable(),
                           'the page went on animating after it was cleared')
 
@@ -198,6 +198,7 @@ class PageImageTest(MComixTest):
             # Whatever the downloader pads each row out to.
             out.extend(b'\x00' * (stride - pixbuf.get_width() * 4))
         return bytes(out)
+
 
 class _SlowFrames(animation.Frames):
 

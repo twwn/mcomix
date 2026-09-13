@@ -1,7 +1,7 @@
-''' MobiPocket handling (extract pictures) for MComix.
+"""MobiPocket handling (extract pictures) for MComix.
 
-    Based on code from mobiunpack by Charles M. Hannum et al.
-'''
+Based on code from mobiunpack by Charles M. Hannum et al.
+"""
 
 import os
 import re
@@ -14,8 +14,10 @@ from gi.repository import Gio
 from mcomix import image_tools
 from mcomix.archive import archive_base
 
+
 class UnpackException(Exception):
     """The file is not a MobiPocket book this handler can read."""
+
 
 class Sectionizer:
 
@@ -35,7 +37,7 @@ class Sectionizer:
         sections = self.f.read(self.num_sections*8)
         self.sections = struct.unpack_from('>%dL' % (self.num_sections*2), sections, 0)[::2] + (0x7fffffff, )
 
-    def loadSection(self, section: int, limit: int = 0x7fffffff) -> bytes:
+    def load_section(self, section: int, limit: int = 0x7fffffff) -> bytes:
         """The bytes of record <section>, at most <limit> of them.
 
         The index holds one more offset than there are records, so the
@@ -47,6 +49,7 @@ class Sectionizer:
         if limit > after - before:
             limit = after - before
         return self.f.read(limit)
+
 
 class MobiArchive(archive_base.NonUnicodeArchive):
 
@@ -64,7 +67,7 @@ class MobiArchive(archive_base.NonUnicodeArchive):
             self.sect = Sectionizer(self.file)
             if self.sect.ident != b'BOOKMOBI':
                 raise UnpackException('invalid file format')
-            self.header = self.sect.loadSection(0)
+            self.header = self.sect.load_section(0)
             self.crypto_type, = struct.unpack_from('>H', self.header, 0xC)
             if self.crypto_type != 0:
                 raise UnpackException('file is encrypted')
@@ -85,30 +88,30 @@ class MobiArchive(archive_base.NonUnicodeArchive):
             self.file = None
 
     def iter_contents(self) -> Iterator[str]:
-        ''' List archive contents. '''
+        """List archive contents."""
         supported_mimes: dict[str, str] = {}
-        for mimes,exts in image_tools.get_supported_formats().values():
+        for mimes, exts in image_tools.get_supported_formats().values():
             ext = next(iter(exts))
             for mime in mimes:
                 supported_mimes[mime] = ext
         for i in range(self.firstimg, self.sect.num_sections):
-            magic = self.sect.loadSection(i, 10)
+            magic = self.sect.load_section(i, 10)
             mime, uncertain = Gio.content_type_guess(data=magic)
             mime = mime.lower()
             if mime in supported_mimes:
                 ext = supported_mimes[mime]
-                yield "image%05d.%s" % (1+i-self.firstimg, ext)
+                yield "image%05d.%s" % (1 + i - self.firstimg, ext)
 
     def extract(self, filename: str, destination_dir: str) -> None:
-        ''' Extract <filename> from the archive to <destination_dir>. '''
+        """Extract <filename> from the archive to <destination_dir>."""
         destination_path = os.path.join(destination_dir, filename)
         fnparts = re.split(r'^image([0-9]*)\.', filename)
         if len(fnparts) == 3:
-            i = int(fnparts[1])-1+self.firstimg
-            data = self.sect.loadSection(i)
+            i = int(fnparts[1]) - 1 + self.firstimg
+            data = self.sect.load_section(i)
             with self._create_file(destination_path) as new:
                 new.write(data)
 
     def close(self) -> None:
-        ''' Close the archive handle '''
+        """Close the archive handle."""
         self._close()

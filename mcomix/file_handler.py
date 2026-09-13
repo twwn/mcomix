@@ -314,7 +314,7 @@ class FileHandler:
             # and open all files in its directory.
             assert isinstance(path, str)
             if self._file_provider is None or not keep_fileprovider:
-                self._file_provider = file_provider.get_file_provider([ path ])
+                self._file_provider = file_provider.get_file_provider([path])
 
             return path
 
@@ -345,8 +345,8 @@ class FileHandler:
         self._base_path = path
         try:
             self._condition = self._extractor.setup(self._base_path,
-                                                self._tmp_dir,
-                                                self.archive_type)
+                                                    self._tmp_dir,
+                                                    self.archive_type)
         except Exception:
             self._condition = None
             raise
@@ -359,20 +359,20 @@ class FileHandler:
         self.file_loading = False
 
         archive_images = [image for image in files
-            if image_tools.is_image_file(image)
-            # Remove MacOS meta files from image list
-            and not '__MACOSX' in os.path.normpath(image).split(os.sep)]
+                          if image_tools.is_image_file(image)
+                          # Remove MacOS meta files from image list
+                          and '__MACOSX' not in os.path.normpath(image).split(os.sep)]
 
         self._sort_archive_images(archive_images)
         # An archive is being listed, so it was extracted somewhere.
         tmp_dir = self._tmp_dir or ''
-        image_files = [ os.path.join(tmp_dir, f)
-                        for f in archive_images ]
+        image_files = [os.path.join(tmp_dir, f)
+                       for f in archive_images]
 
         comment_files = list(filter(self._comment_re.search, files))
         tools.alphanumeric_sort(comment_files)
-        self._comment_files = [ os.path.join(tmp_dir, f)
-                                for f in comment_files ]
+        self._comment_files = [os.path.join(tmp_dir, f)
+                               for f in comment_files]
 
         self._name_table = dict(list(zip(image_files, archive_images)))
         self._name_table.update(list(zip(self._comment_files, comment_files)))
@@ -447,9 +447,9 @@ class FileHandler:
         dialog.set_text(
             (_('Continue reading from page %d?') % last_read_page),
             _('You stopped reading here on %(date)s, %(time)s. '
-            'If you choose "Yes", reading will resume on page %(page)d. Otherwise, '
-            'the first page will be loaded.') % {'date': read_date.date().strftime("%x"),
-                'time': read_date.time().strftime("%X"), 'page': last_read_page})
+              'If you choose "Yes", reading will resume on page %(page)d. Otherwise, '
+              'the first page will be loaded.') % {'date': read_date.date().strftime("%x"),
+                                                   'time': read_date.time().strftime("%X"), 'page': last_read_page})
         dialog.run_async(lambda response: on_answer(response == Response.YES))
 
     def _open_image_files(self, filelist: list[str],
@@ -639,7 +639,7 @@ class FileHandler:
             path = self._file_provider.get_directory()
 
         self.open_file(path, (
-            prefs['open first file in prev archive'] or \
+            prefs['open first file in prev archive'] or
             prefs['open first file in prev directory'])-1,
                        keep_fileprovider=True)
         # See open_next_directory().
@@ -691,9 +691,15 @@ class FileHandler:
         self._wait_on_file(path)
 
     def _wait_on_file(self, path: str | None) -> None:
-        """Block the running (main) thread if the file <path> is from an
-        archive and has not yet been extracted. Return when the file is
-        ready.
+        """Block until the file <path> has been extracted, and return.
+
+        Returns at once for a loose image, and for an archive member the
+        extractor has already written out.  Otherwise it waits on the
+        condition the extractor signals, so it blocks whichever thread
+        called it: the main one when a page is turned to a file that is
+        not out yet, and the image handler's caching thread when it
+        reads ahead.  _stop_waiting, which closing the file sets, is the
+        other way out of the wait.
         """
         if self.archive_type is None or path is None:
             return
@@ -742,7 +748,7 @@ class FileHandler:
         if self.file_loaded:
             path = self._window.imagehandler.get_real_path()
             page_index = self._window.imagehandler.get_current_page() - 1
-            current_file_info = [ path, page_index ]
+            current_file_info = [path, page_index]
 
             with tools.atomic_write(constants.FILEINFO_PICKLE_PATH, binary=True) as config:
                 pickle.dump(current_file_info, config, pickle.HIGHEST_PROTOCOL)
@@ -768,7 +774,7 @@ class FileHandler:
 
             except Exception as ex:
                 log.error(_('! Corrupt preferences file "%s", deleting...'),
-                        constants.FILEINFO_PICKLE_PATH )
+                          constants.FILEINFO_PICKLE_PATH)
                 log.info('Error was: %s', ex)
                 if config is not None:
                     config.close()

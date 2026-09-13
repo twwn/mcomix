@@ -72,6 +72,7 @@ class PopupAtTest(MComixTest):
                          Gtk.PositionType.BOTTOM)
         self.assertFalse(self.popover.get_has_arrow())
 
+
 class EmptyTest(MComixTest):
 
     """empty(), which is what a box is cleared with in GTK4."""

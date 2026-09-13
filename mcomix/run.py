@@ -23,6 +23,7 @@ from mcomix.version_tools import Version
 #: Lowest Pillow release providing the API MComix uses (Image.Transpose).
 PIL_VERSION_REQUIRED = '9.1.0'
 
+
 def wait_and_exit() -> None:
     """ Wait for the user pressing ENTER before closing. This should help
     the user find possibly missing dependencies when starting, since the
@@ -31,6 +32,7 @@ def wait_and_exit() -> None:
         print()
         input("Press ENTER to continue...")
     sys.exit(1)
+
 
 def parse_arguments(argv: list[str]) -> tuple[argparse.Namespace, list[str]]:
     """ Parse the command line passed in <argv>. Returns a tuple containing
@@ -43,44 +45,44 @@ def parse_arguments(argv: list[str]) -> tuple[argparse.Namespace, list[str]]:
             description=_('View images and comic book archives.'),
             add_help=False)
     parser.add_argument('--help', action='help',
-            help=_('Show this help and exit.'))
+                        help=_('Show this help and exit.'))
     parser.add_argument('-s', '--slideshow', dest='slideshow', action='store_true',
-            help=_('Start the application in slideshow mode.'))
+                        help=_('Start the application in slideshow mode.'))
     parser.add_argument('-l', '--library', dest='library', action='store_true',
-            help=_('Show the library on startup.'))
+                        help=_('Show the library on startup.'))
     parser.add_argument('-v', '--version', action='version',
-            version='%s %s' % (constants.APPNAME, constants.VERSION),
-            help=_('Show the version number and exit.'))
+                        version='%s %s' % (constants.APPNAME, constants.VERSION),
+                        help=_('Show the version number and exit.'))
     parser.add_argument('--lang', dest='language_code',
-            help=_('Temporarily override the interface language.'))
+                        help=_('Temporarily override the interface language.'))
 
     viewmodes = parser.add_argument_group(_('View modes'))
     viewmodes.add_argument('-f', '--fullscreen', dest='fullscreen', action='store_true',
-            help=_('Start the application in fullscreen mode.'))
+                           help=_('Start the application in fullscreen mode.'))
     viewmodes.add_argument('-m', '--manga', dest='manga', action='store_true',
-            help=_('Start the application in manga mode.'))
+                           help=_('Start the application in manga mode.'))
     viewmodes.add_argument('-d', '--double-page', dest='doublepage', action='store_true',
-            help=_('Start the application in double page mode.'))
+                           help=_('Start the application in double page mode.'))
 
     fitmodes = parser.add_argument_group(_('Zoom modes'))
     fitmodes.add_argument('-b', '--zoom-best', dest='zoommode', action='store_const',
-            const=constants.ZoomMode.BEST,
-            help=_('Start the application with zoom set to best fit mode.'))
+                          const=constants.ZoomMode.BEST,
+                          help=_('Start the application with zoom set to best fit mode.'))
     fitmodes.add_argument('-w', '--zoom-width', dest='zoommode', action='store_const',
-            const=constants.ZoomMode.WIDTH,
-            help=_('Start the application with zoom set to fit width.'))
+                          const=constants.ZoomMode.WIDTH,
+                          help=_('Start the application with zoom set to fit width.'))
     fitmodes.add_argument('-h', '--zoom-height', dest='zoommode', action='store_const',
-            const=constants.ZoomMode.HEIGHT,
-            help=_('Start the application with zoom set to fit height.'))
+                          const=constants.ZoomMode.HEIGHT,
+                          help=_('Start the application with zoom set to fit height.'))
 
     debugopts = parser.add_argument_group(_('Debug options'))
     debugopts.add_argument('-W', dest='loglevel', default='warn',
-            choices=('all', 'debug', 'info', 'warn', 'error'),
-            metavar='[ all | debug | info | warn | error ]',
-            help=_('Sets the desired output log level.'))
+                           choices=('all', 'debug', 'info', 'warn', 'error'),
+                           metavar='[ all | debug | info | warn | error ]',
+                           help=_('Sets the desired output log level.'))
     # This supresses an error when MComix is used with cProfile
     debugopts.add_argument('-o', dest='output', default='',
-            help=argparse.SUPPRESS)
+                           help=argparse.SUPPRESS)
 
     # The usage line above already names it; keep it out of --help.
     parser.add_argument('paths', nargs='*', help=argparse.SUPPRESS)
@@ -97,6 +99,7 @@ def parse_arguments(argv: list[str]) -> tuple[argparse.Namespace, list[str]]:
     }[opts.loglevel]
 
     return opts, opts.paths
+
 
 def setup_dependencies() -> None:
     """Check for the PyGObject and PIL dependencies."""
@@ -201,8 +204,8 @@ def run() -> None:
         open_path = args
 
     elif preferences.prefs['auto load last file'] \
-        and preferences.prefs['path to last file'] \
-        and os.path.isfile(preferences.prefs['path to last file']):
+            and preferences.prefs['path to last file'] \
+            and os.path.isfile(preferences.prefs['path to last file']):
         open_path = preferences.prefs['path to last file']
         open_page = preferences.prefs['page of last file']
 
@@ -213,13 +216,13 @@ def run() -> None:
     GLib.set_prgname(constants.APPNAME)
 
     from mcomix import main
-    window = main.MainWindow(fullscreen = opts.fullscreen, is_slideshow = opts.slideshow,
-            show_library = opts.library, manga_mode = opts.manga,
-            double_page = opts.doublepage, zoom_mode = opts.zoommode,
-            open_path = open_path, open_page = open_page)
+    window = main.MainWindow(fullscreen=opts.fullscreen, is_slideshow=opts.slideshow,
+                             show_library=opts.library, manga_mode=opts.manga,
+                             double_page=opts.doublepage, zoom_mode=opts.zoommode,
+                             open_path=open_path, open_page=open_page)
     main.set_main_window(window)
 
-    if 'win32' != sys.platform:
+    if sys.platform != 'win32':
         # Add a SIGCHLD handler to reap zombie processes. Signals coalesce,
         # so one delivery can stand for several children having exited;
         # reap until there is nothing left to collect.
@@ -236,7 +239,7 @@ def run() -> None:
         signal.signal(sig, lambda signum, stack: GLib.idle_add(window.terminate_program))
     try:
         main.main_loop().run()
-    except KeyboardInterrupt: # Will not always work because of threading.
+    except KeyboardInterrupt:  # Will not always work because of threading.
         window.terminate_program()
 
 # vim: expandtab:sw=4:ts=4

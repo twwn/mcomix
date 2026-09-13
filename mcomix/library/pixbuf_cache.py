@@ -9,6 +9,7 @@ from gi.repository import GdkPixbuf
 
 __all__ = ["get_pixbuf_cache"]
 
+
 class _PixbufCache:
 
     """ Pixbuf cache for the library window. Instead of loading book covers

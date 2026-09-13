@@ -23,6 +23,7 @@ if TYPE_CHECKING:
     # named while the checker is reading and not while Python is.
     from mcomix import main
 
+
 class ImageHandler:
 
     """The FileHandler keeps track of images, pages, caches and reads files.
@@ -53,7 +54,8 @@ class ImageHandler:
         self._image_file_index: dict[str, int] = {}
         #: Index of current page, or None before one has been chosen
         self._current_image_index: int | None = None
-        #: Set of images reading for decoding (i.e. already extracted)
+        #: Indexes of the pages whose file is out of the archive and can
+        #: therefore be decoded
         self._available_images: set[int] = set()
         #: List of pixbufs we want to cache
         self._wanted_pixbufs: list[int] = []
@@ -201,13 +203,13 @@ class ImageHandler:
             page = self.get_current_page()
 
         if (page == 1 and
-            prefs['virtual double page for fitting images'] & constants.SHOW_DOUBLE_AS_ONE_TITLE and
-            self._window.filehandler.archive_type is not None):
+                prefs['virtual double page for fitting images'] & constants.SHOW_DOUBLE_AS_ONE_TITLE and
+                self._window.filehandler.archive_type is not None):
             return True
 
         if (not prefs['default double page'] or
-            not prefs['virtual double page for fitting images'] & constants.SHOW_DOUBLE_AS_ONE_WIDE or
-            page == self.get_number_of_pages()):
+                not prefs['virtual double page for fitting images'] & constants.SHOW_DOUBLE_AS_ONE_WIDE or
+                page == self.get_number_of_pages()):
             return False
 
         for page in (page, page + 1):
@@ -270,18 +272,14 @@ class ImageHandler:
             if not current_page:
                 # Current 'book' has no page.
                 return False
-            index_list = [ current_page - 1 ]
+            indexes = [current_page - 1]
             if self._window.displayed_double() and \
                     current_page < self.get_number_of_pages():
-                index_list.append(current_page)
+                indexes.append(current_page)
         else:
-            index_list = [ page - 1 ]
+            indexes = [page - 1]
 
-        for index in index_list:
-            if not index in self._available_images:
-                return False
-
-        return True
+        return all(index in self._available_images for index in indexes)
 
     @callback.Callback
     def page_available(self, page: int) -> None:
@@ -524,8 +522,12 @@ class ImageHandler:
 
     def _wait_on_page(self, page: int | None,
                       check_only: bool = False) -> bool:
-        """Block the running (main) thread until the file corresponding to
-        image <page> has been fully extracted.
+        """Block until the file behind <page> has been fully extracted.
+
+        Whichever thread calls it is the one that blocks: the main one
+        while a page is being shown, and the caching thread while it
+        reads ahead through _get_pixbuf().  Returns True once the page
+        is there, and False if there is no page to wait for.
 
         If <check_only> is True, only check (and return status), don't wait.
         """
@@ -556,7 +558,7 @@ class ImageHandler:
             page_width = 2
         else:
             page_width = 1
-        if 0 == self._cache_pages:
+        if self._cache_pages == 0:
             # Only ask for current page.
             num_pages = page_width
         elif -1 == self._cache_pages:

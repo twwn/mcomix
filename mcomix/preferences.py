@@ -199,8 +199,8 @@ _DEFAULTS: Preferences = {
     'default manga mode': False,
     'lens magnification': 2,
     'lens size': 200,
-    'virtual double page for fitting images': constants.SHOW_DOUBLE_AS_ONE_TITLE | \
-                                              constants.SHOW_DOUBLE_AS_ONE_WIDE,
+    'virtual double page for fitting images': (constants.SHOW_DOUBLE_AS_ONE_TITLE
+                                               | constants.SHOW_DOUBLE_AS_ONE_WIDE),
     'double step in double page mode': True,
     'show page numbers on thumbnails': True,
     'thumbnail size': 80,
@@ -255,8 +255,9 @@ _DEFAULTS: Preferences = {
     'lib sort key': constants.SORT_PATH,
     'lib sort order': constants.SORT_ASCENDING,
     'language': 'auto',
-    'statusbar fields': constants.STATUS_PAGE | constants.STATUS_RESOLUTION | \
-                        constants.STATUS_PATH | constants.STATUS_FILENAME | constants.STATUS_FILESIZE,
+    'statusbar fields': (constants.STATUS_PAGE | constants.STATUS_RESOLUTION
+                         | constants.STATUS_PATH | constants.STATUS_FILENAME
+                         | constants.STATUS_FILESIZE),
     'max threads': 3,
     'max extract threads': 1,
     'scaling quality': 2,  # GdkPixbuf.InterpType.BILINEAR
@@ -304,6 +305,7 @@ def set_by_name(name: str, value: Any) -> None:  # type: ignore[explicit-any]  #
     if name not in _DEFAULTS:
         raise KeyError('%r is not a preference' % name)
     cast("dict[str, object]", prefs)[name] = value
+
 
 #: How long a change waits for the ones after it before the file is
 #: written.  Long enough that dragging a slider writes once rather than

@@ -246,9 +246,9 @@ class _CollectionArea(Gtk.ScrolledWindow):
                 message = _("Could not add a new collection called '%s'.") % (
                     name)
                 if (self._library.backend.get_collection_by_name(name)
-                  is not None):
+                        is not None):
                     message = '%s %s' % (message,
-                        _('A collection by that name already exists.'))
+                                         _('A collection by that name already exists.'))
                 self._library.set_status_message(message)
 
     def clean_collection(self, collection: int | None) -> None:
@@ -274,7 +274,7 @@ class _CollectionArea(Gtk.ScrolledWindow):
         """
         collection = self.get_current_collection()
         if (collection is None or
-          collection == prefs['last library collection']):
+                collection == prefs['last library collection']):
             return
         prefs['last library collection'] = collection
         GLib.idle_add(self._library.book_area.display_covers, collection)
@@ -338,9 +338,9 @@ class _CollectionArea(Gtk.ScrolledWindow):
             else:
                 message = _("Could not change the name to '%s'.") % new_name
                 if (self._library.backend.get_collection_by_name(new_name)
-                  is not None):
+                        is not None):
                     message = '%s %s' % (message,
-                        _('A collection by that name already exists.'))
+                                         _('A collection by that name already exists.'))
                 self._library.set_status_message(message)
 
     def _duplicate_collection(self, *args: object) -> None:
@@ -444,7 +444,7 @@ class _CollectionArea(Gtk.ScrolledWindow):
                 if book is None:
                     continue
                 self._library.backend.add_book_to_collection(book,
-                    dest_collection)
+                                                             dest_collection)
                 if move_from is not None:
                     self._library.backend.remove_book_from_collection(
                         book, move_from)
@@ -513,8 +513,8 @@ class _CollectionArea(Gtk.ScrolledWindow):
                 dest_collection = self._library.backend.get_supercollection(
                     dest_collection)
             if (_COLLECTION_ALL in (src_collection, dest_collection) or
-                _COLLECTION_RECENT in (src_collection, dest_collection) or
-                src_collection == dest_collection):
+                    _COLLECTION_RECENT in (src_collection, dest_collection) or
+                    src_collection == dest_collection):
                 self._set_acceptable_drop(False)
                 self._library.set_status_message('')
                 return _NO_DRAG_ACTION
@@ -543,8 +543,8 @@ class _CollectionArea(Gtk.ScrolledWindow):
             else:
                 src_name = self._collection_name(src_collection)
                 message = (_("Move books from '%(source collection)s' to '%(destination collection)s'.") %
-                    {'source collection': src_name,
-                    'destination collection': dest_name})
+                           {'source collection': src_name,
+                            'destination collection': dest_name})
         self._set_acceptable_drop(True)
         self._library.set_status_message(message)
         # What a GTK4 drop target says by answering, rather than by

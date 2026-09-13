@@ -21,6 +21,7 @@ _dialog = None
 # but is represented by this ID in the library's TreeModels.
 _COLLECTION_ALL = -1
 
+
 class _AddLibraryProgressDialog(Dialog):
 
     """Dialog with a ProgressBar that adds books to the library."""

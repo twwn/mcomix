@@ -406,8 +406,6 @@ class WriteOnChangeTest(MComixTest):
         self.assertFalse(preferences._write_source)
 
 
-
-
 class EveryPreferenceIsUsedTest(MComixTest):
 
     """A preference nothing reads is a control that does nothing.

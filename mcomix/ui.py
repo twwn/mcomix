@@ -22,6 +22,7 @@ from mcomix.i18n import _
 if TYPE_CHECKING:
     from mcomix import main
 
+
 def _gio_name(name: str) -> str:
     """The name a Gio action can be registered under.
 
@@ -45,7 +46,7 @@ type _DataCallback[D] = Callable[[Gio.SimpleAction, D], object]
 
 #: What a toggle's or a radio group's callback is handed: the action in
 #: MComix' own shape, which is what get_active() is asked of.
-type _ToggleCallback = Callable[["_Action"], object]
+type _ToggleCallback = Callable[["Action"], object]
 
 
 class _Described(Protocol):
@@ -107,7 +108,7 @@ class _Choice(NamedTuple):
     value: int = 0
 
 
-class _Action:
+class Action:
 
     """One of the window's actions, in the shape the rest of MComix asks
     for it.
@@ -171,7 +172,7 @@ class _Action:
         return bool(self._action.get_enabled())
 
 
-class _Actions:
+class Actions:
 
     """The window's actions, under the names the rest of MComix uses.
 
@@ -190,14 +191,14 @@ class _Actions:
 
     def __init__(self) -> None:
         self.group = Gio.SimpleActionGroup()
-        self._by_name: dict[str, _Action] = {}
+        self._by_name: dict[str, Action] = {}
         self._labels: dict[str, str] = {}
         self._icons: dict[str, str | None] = {}
         self._stateful: set[str] = set()
         #: Tooltips, by label, for the status bar helper.
         self.tooltips: dict[str, str] = {}
 
-    def get_action(self, name: str) -> _Action:
+    def get_action(self, name: str) -> Action:
         return self._by_name[name]
 
     def detailed(self, name: str) -> "tuple[str, GLib.Variant | None]":
@@ -216,7 +217,7 @@ class _Actions:
     def _remember(self, entry: _Described, action: Gio.SimpleAction,
                   target: "GLib.Variant | None" = None,
                   stateful: bool = False) -> None:
-        self._by_name[entry.name] = _Action(action, target)
+        self._by_name[entry.name] = Action(action, target)
         # The tool bar's expander is the one entry with no label, being
         # a spacer rather than anything to click, and the tool bar skips
         # it before it asks for one.
@@ -301,8 +302,7 @@ class _Actions:
                        on_change: "_ToggleCallback | None") -> None:
         action.set_state(value)
         if on_change is not None:
-            on_change(_Action(action))
-
+            on_change(Action(action))
 
 
 #: A menu layout: the names of the actions its items run, None where a
@@ -398,7 +398,7 @@ class MainUI:
 
     def __init__(self, window: "main.MainWindow") -> None:
         self._window = window
-        self.actions = self._actions = _Actions()
+        self.actions = self._actions = Actions()
         #: The accelerator each action currently answers to, by name.
         self._accelerators: dict[str, str] = {}
         #: The idle that will build the menus again, if one is pending.
@@ -422,16 +422,16 @@ class MainUI:
         # ----------------------------------------------------------------
         self._actions.add([
             _Entry('copy_page', 'edit-copy', _('_Copy'), _('Copies the current page to clipboard.'),
-                window.clipboard.copy_page),
+                   window.clipboard.copy_page),
             _Entry('delete', 'edit-delete', _('_Delete'), _('Deletes the current file or archive from disk.'),
-                window.delete),
+                   window.delete),
             _Entry('next_page', 'go-next-symbolic', _('_Next page'), _('Next page'), _action_lambda(window.flip_page, +1)),
             _Entry('previous_page', 'go-previous-symbolic', _('_Previous page'), _('Previous page'), _action_lambda(window.flip_page, -1)),
             _Entry('first_page', 'go-first-symbolic', _('_First page'), _('First page'), _action_lambda(window.first_page)),
             _Entry('last_page', 'go-last-symbolic', _('_Last page'), _('Last page'), _action_lambda(window.last_page)),
             _Entry('go_to', 'go-jump-symbolic', _('_Go to page...'), _('Go to page...'), window.page_select),
             _Entry('refresh_archive', 'view-refresh', _('Re_fresh'), _('Reloads the currently opened files or archive.'),
-                window.filehandler.refresh_file),
+                   window.filehandler.refresh_file),
             _Entry('next_archive', 'media-skip-forward-symbolic', _('Next _archive'), _('Next archive'), window.filehandler._open_next_archive),
             _Entry('previous_archive', 'media-skip-backward-symbolic', _('Previous a_rchive'), _('Previous archive'), window.filehandler._open_previous_archive),
             _Entry('next_directory', 'edit-redo', _('Next directory'), _('Next directory'), window.filehandler.open_next_directory),
@@ -443,15 +443,15 @@ class MainUI:
             _Entry('close', 'window-close', _('_Close'), _('Closes all opened files.'), _action_lambda(window.filehandler.close_file)),
             _Entry('quit', 'application-exit', _('_Quit'), None, window.close_program),
             _Entry('save_and_quit', 'application-exit', _('_Save and quit'), _('Quits and restores the currently opened file next time the program starts.'),
-                window.save_and_terminate_program),
+                   window.save_and_terminate_program),
             _Entry('rotate_90', 'mcomix-rotate-90', _('_Rotate 90° CW'), None, window.rotate_90),
-            _Entry('rotate_180','mcomix-rotate-180', _('Rotate _180°'), None, window.rotate_180),
+            _Entry('rotate_180', 'mcomix-rotate-180', _('Rotate _180°'), None, window.rotate_180),
             _Entry('rotate_270', 'mcomix-rotate-270', _('Rotat_e 90° CCW'), None, window.rotate_270),
             _Entry('flip_horiz', 'mcomix-flip-horizontal', _('Fli_p horizontally'), None, window.flip_horizontally),
             _Entry('flip_vert', 'mcomix-flip-vertical', _('Flip _vertically'), None, window.flip_vertically),
             _Entry('extract_page', 'document-save-as', _('Save _As'), None, window.extract_page),
             _Entry('extract_page_popup', 'document-save-as', _('Save _As'), _('Saves the page the menu was opened over.'),
-                window.extract_popup_page),
+                   window.extract_popup_page),
             _Entry('menu_zoom', 'mcomix-zoom', _('_Zoom')),
             _Entry('menu_recent', 'text-x-generic', _('_Recent')),
             _Entry('menu_bookmarks_popup', 'mcomix-add-bookmark', _('_Bookmarks')),
@@ -484,11 +484,11 @@ class MainUI:
             _Entry('manga_mode', 'view-mirror-symbolic', _('_Manga mode'), _('Manga mode'), window.change_manga_mode),
             _Entry('invert_scroll', 'edit-undo', _('Invert smart scroll'), _('Invert smart scrolling direction.'), window.change_invert_scroll),
             _Entry('keep_transformation', None, _('_Keep transformation'), _('Keeps the currently selected transformation for the next pages.'),
-                window.change_keep_transformation),
+                   window.change_keep_transformation),
             _Entry('slideshow', 'media-playback-start-symbolic', _('Start _slideshow'), _('Start slideshow'), window.slideshow.toggle),
             _Entry('lens', 'edit-find-symbolic', _('Magnifying _lens'), _('Magnifying lens'), window.lens.toggle),
             _Entry('stretch', None, _('Stretch small images'), _('Stretch images to fit to the screen, depending on zoom mode.'),
-                window.change_stretch),
+                   window.change_stretch),
             _Entry('invert_color', None, _('_Invert image colors'), _('Invert image colors'), window.change_invert_color)])
 
         # Note: Don't change the default value for the radio buttons unless
@@ -517,7 +517,7 @@ class MainUI:
             _Entry('comments', 'mcomix-comments', _('Co_mments...'), None, dialog_handler.open_dialog)], (window, 'comments-dialog'))
 
         self._actions.add_with_data([
-            _Entry('properties', 'document-properties', _('Proper_ties'), None, dialog_handler.open_dialog)], (window,'properties-dialog'))
+            _Entry('properties', 'document-properties', _('Proper_ties'), None, dialog_handler.open_dialog)], (window, 'properties-dialog'))
 
         self._actions.add_with_data([
             _Entry('preferences', 'preferences-system', _('Pr_eferences'), None, preferences_dialog.open_dialog)], window)
@@ -525,14 +525,14 @@ class MainUI:
         # Some actions added separately since they need extra arguments.
         self._actions.add_with_data([
             _Entry('edit_archive', 'document-edit-symbolic', _('_Edit archive...'), _('Opens the archive editor.'),
-                edit_dialog.open_dialog),
+                   edit_dialog.open_dialog),
             _Entry('open', 'document-open', _('_Open...'), None, file_chooser_main_dialog.open_main_filechooser_dialog),
             _Entry('enhance_image', 'mcomix-enhance-image', _('En_hance image...'), None, enhance_dialog.open_dialog)], window)
 
         self._actions.add_with_data([
             _Entry('library', 'mcomix-library', _('_Library...'), None, library_main_dialog.open_dialog)], window)
 
-        self._window.insert_action_group(_Actions.PREFIX, self._actions.group)
+        self._window.insert_action_group(Actions.PREFIX, self._actions.group)
 
         # The three menus whose contents change while the program runs
         # keep models of their own, spliced into the layouts below.

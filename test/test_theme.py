@@ -229,6 +229,7 @@ class PaletteTest(MComixTest):
         theme.follow_palette()
         self.assertIs(theme._provider, provider)
 
+
 class PitchBlackBackgroundTest(MComixTest):
 
     """What pitch black does to a background that follows the picture.

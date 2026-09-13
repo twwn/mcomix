@@ -92,14 +92,14 @@ class _ControlArea(Gtk.Box):
         # A GTK4 button shows whatever child it is given; there is
         # no image to keep it from hiding.
         watchlist_button.connect('clicked',
-            lambda *args: WatchListDialog(self._library))
+                                 lambda *args: WatchListDialog(self._library))
         watchlist_button.set_tooltip_text(
             _('Open the watchlist management dialog.'))
         widgets.pack(hbox, watchlist_button, True, True, 0)
 
         self._open_button = Gtk.Button(label=_("_Open list"), use_underline=True)
         self._open_button.connect('clicked',
-            self._library.book_area.open_selected_book)
+                                  self._library.book_area.open_selected_book)
         self._open_button.set_tooltip_text(_('Open the selected book.'))
         self._open_button.set_sensitive(False)
         widgets.pack(hbox, self._open_button, True, True, 0, end=True)
@@ -145,10 +145,10 @@ class _ControlArea(Gtk.Box):
             infotext.append('%.1f MiB' % (size / 1048576.0))
 
         if (pages is not None and last_page is not None and
-            last_date is not None and last_page == pages):
+                last_date is not None and last_page == pages):
             infotext.append(_('Finished reading on %(date)s, %(time)s') % {
                 'date': last_date.strftime('%x'),
-                'time': last_date.strftime('%X') })
+                'time': last_date.strftime('%X')})
 
         self._filelabel.set_text(', '.join(infotext))
 

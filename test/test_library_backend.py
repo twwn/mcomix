@@ -220,8 +220,6 @@ class ClearAllTest(unittest.TestCase):
                             'was added to the library without a collection')
 
 
-
-
 class AddBookToCollectionTest(unittest.TestCase):
 
     """What the listeners are told when a book is filed."""

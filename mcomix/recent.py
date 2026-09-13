@@ -1,6 +1,8 @@
 """recent.py - Recent files handler."""
 
-import urllib.request, urllib.parse, urllib.error
+import urllib.request
+import urllib.parse
+import urllib.error
 from gi.repository import Gio, GLib, GObject, Gtk
 import os
 
@@ -35,7 +37,7 @@ class RecentFilesMenu:
 
     #: Where this menu's action lives, as menu items address it.
     ACTION_PREFIX = 'recent'
-    OPEN_ACTION = 'open' 
+    OPEN_ACTION = 'open'
 
     #: How many entries to show, which is what Gtk.RecentChooserMenu did.
     _LIMIT = 10
@@ -114,7 +116,6 @@ class RecentFilesMenu:
                 self._actions.add_action(empty)
             self.model.append(_('No entries found'),
                               '%s.nothing' % self.ACTION_PREFIX)
-
 
     def _open_activated(self, action: Gio.SimpleAction,
                         target: GLib.Variant) -> None:

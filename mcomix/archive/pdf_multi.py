@@ -16,6 +16,7 @@ PYMUPDF_VERSION_REQUIRED = "1.23.5"
 class DisabledError(RuntimeError):
     """The native handler was switched off in the environment."""
 
+
 class UnsupportedFitzVersionError(ImportError):
 
     """PyMuPDF is installed, but too old to drive the native handler."""

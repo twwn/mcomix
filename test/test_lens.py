@@ -105,6 +105,7 @@ class LensDrawingTest(MComixTest):
                          '85eff384d89e0c05e862d13d9e4dadcf',
                          digest.hexdigest())
 
+
 class LensCursorTest(MComixTest):
 
     """Whether the pointer is hidden while the lens is on.

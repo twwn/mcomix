@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 
 _library_filechooser_dialog: "_LibraryFileChooserDialog | None" = None
 
+
 class _LibraryFileChooserDialog(file_chooser_base_dialog._BaseFileChooserDialog):
 
     """The filechooser dialog used when adding books to the library."""
@@ -70,6 +71,7 @@ class _LibraryFileChooserDialog(file_chooser_base_dialog._BaseFileChooserDialog)
         else:
             close_library_filechooser_dialog()
 
+
 def open_library_filechooser_dialog(
         library: "main_dialog._LibraryDialog") -> None:
     """Open the library filechooser dialog."""
@@ -79,6 +81,7 @@ def open_library_filechooser_dialog(
         _library_filechooser_dialog = _LibraryFileChooserDialog(library)
     else:
         _library_filechooser_dialog.present()
+
 
 def close_library_filechooser_dialog(*args: object) -> None:
     """Close the library filechooser dialog."""

@@ -10,7 +10,7 @@ from mcomix import tools
 from mcomix import box
 
 
-class FiniteLayout: # 2D only
+class FiniteLayout:  # 2D only
 
     @staticmethod
     def create_finite_layout(
@@ -23,7 +23,7 @@ class FiniteLayout: # 2D only
             ) -> 'FiniteLayout':
         viewport_size: Sequence[int] = ()  # dummy
         expand_area = False
-        scrollbar_requests = [False] * 2 # 2D only
+        scrollbar_requests = [False] * 2  # 2D only
         # Visible area size is recomputed depending on scrollbar visibility
         while True:
             scrollbar_update(scrollbar_requests)
@@ -39,16 +39,15 @@ class FiniteLayout: # 2D only
             zoom_dummy_size[distribution_axis] = dasize
             scaled_sizes_distorted = sizes_update(zoom_dummy_size)
             result = FiniteLayout(scaled_sizes_distorted[0], scaled_sizes_distorted[1],
-                viewport_size, orientation, spacing, expand_area, distribution_axis,
-                alignment_axis)
+                                  viewport_size, orientation, spacing, expand_area, distribution_axis,
+                                  alignment_axis)
             union_scaled_size = result.get_union_box().get_size()
             scrollbar_requests = list(map(operator.or_, scrollbar_requests,
-                tools.smaller(viewport_size, union_scaled_size)))
+                                          tools.smaller(viewport_size, union_scaled_size)))
             if len([_f for _f in scrollbar_requests if _f]) > 1 and not expand_area:
                 expand_area = True
-                viewport_size = () # start anew
+                viewport_size = ()  # start anew
         return result
-
 
     def __init__(self, content_sizes: Sequence[Sequence[int]],
                  content_distorted: Sequence[bool],
@@ -80,15 +79,13 @@ class FiniteLayout: # 2D only
         self.dirty_current_index: bool
         self.wrap_individually = wrap_individually
         self._reset(content_sizes, content_distorted, viewport_size, orientation,
-            spacing, wrap_individually, distribution_axis, alignment_axis)
-
+                    spacing, wrap_individually, distribution_axis, alignment_axis)
 
     def set_viewport_position(self, viewport_position: Sequence[int]) -> None:
         """ Moves the viewport to the specified position.
         @param viewport_position: The new viewport position. """
         self.viewport_box = self.viewport_box.set_position(viewport_position)
         self.dirty_current_index = True
-
 
     def scroll_smartly(self, max_scroll: Sequence[float], backwards: bool,
                        axis_map: Sequence[int] | None,
@@ -114,7 +111,7 @@ class FiniteLayout: # 2D only
         o = tools.vector_opposite(self.orientation) if backwards \
             else self.orientation
         new_pos = self.scroller.scroll_smartly(self.wrapper_boxes[wrapper_index],
-            self.viewport_box, o, max_scroll, axis_map)
+                                               self.viewport_box, o, max_scroll, axis_map)
         if new_pos == []:
             if self.wrap_individually:
                 index += -1 if backwards else 1
@@ -127,7 +124,6 @@ class FiniteLayout: # 2D only
                 return index
         self.set_viewport_position(new_pos)
         return index
-
 
     def scroll_to_predefined(self, destination: Sequence[int],
                              index: int | None = None) -> None:
@@ -156,12 +152,10 @@ class FiniteLayout: # 2D only
         self.set_viewport_position(self.scroller.scroll_to_predefined(
             current_box, self.viewport_box, self.orientation, destination))
 
-
     def get_content_boxes(self) -> list[box.Box]:
         """ Returns the Boxes as they are arranged in this layout.
         @return: The Boxes as they are arranged in this layout. """
         return self.content_boxes
-
 
     def get_content_distorted(self) -> Sequence[bool]:
         """ Returns Booleans indicating whether the corresponding content
@@ -170,18 +164,15 @@ class FiniteLayout: # 2D only
         Box is stretched irrespective of aspect ratio. """
         return self.content_distorted
 
-
     def get_wrapper_boxes(self) -> list[box.Box]:
         """ Returns the wrapper Boxes as they are arranged in this layout.
         @return: The wrapper Boxes as they are arranged in this layout. """
         return self.wrapper_boxes
 
-
     def get_union_box(self) -> box.Box:
         """ Returns the union Box for this layout.
         @return: The union Box for this layout. """
         return self.union_box
-
 
     def get_current_index(self) -> int:
         """ Returns the index of the Box that is said to be the current Box.
@@ -192,22 +183,18 @@ class FiniteLayout: # 2D only
             self.dirty_current_index = False
         return self.current_index
 
-
     def get_viewport_box(self) -> box.Box:
         """ Returns the current viewport Box.
         @return: The current viewport Box. """
         return self.viewport_box
-
 
     def get_orientation(self) -> Sequence[int]:
         """ Returns the orientation for this layout.
         @return: The orientation for this layout. """
         return self.orientation
 
-
     def set_orientation(self, orientation: Sequence[int]) -> None:
         self.orientation = orientation
-
 
     def _reset(self, content_sizes: Sequence[Sequence[int]],
                content_distorted: Sequence[bool],
@@ -220,22 +207,20 @@ class FiniteLayout: # 2D only
         temp_cb_list = list(map(box.Box, content_sizes))
         # align to center
         temp_cb_list = box.Box.align_center(temp_cb_list, alignment_axis, 0,
-            orientation[alignment_axis])
+                                            orientation[alignment_axis])
         # distribute
         temp_cb_list = box.Box.distribute(temp_cb_list, distribution_axis, 0,
-            spacing)
+                                          spacing)
         if wrap_individually:
             temp_wb_list, temp_bb = FiniteLayout._wrap_individually(temp_cb_list,
-                viewport_size, orientation)
+                                                                    viewport_size, orientation)
         else:
             temp_wb_list, temp_bb = FiniteLayout._wrap_union(temp_cb_list,
-                viewport_size, orientation)
+                                                             viewport_size, orientation)
         # move to global origin
         bbp = temp_bb.get_position()
-        for i in range(len(temp_cb_list)):
-            temp_cb_list[i] = temp_cb_list[i].translate_opposite(bbp)
-        for i in range(len(temp_wb_list)):
-            temp_wb_list[i] = temp_wb_list[i].translate_opposite(bbp)
+        temp_cb_list = [b.translate_opposite(bbp) for b in temp_cb_list]
+        temp_wb_list = [b.translate_opposite(bbp) for b in temp_wb_list]
         temp_bb = temp_bb.translate_opposite(bbp)
         # reverse order again, if necessary
         if orientation[distribution_axis] == -1:
@@ -250,7 +235,6 @@ class FiniteLayout: # 2D only
         self.orientation = orientation
         self.dirty_current_index = True
 
-
     @staticmethod
     def _wrap_individually(
             temp_cb_list: list[box.Box], viewport_size: Sequence[int],
@@ -261,7 +245,6 @@ class FiniteLayout: # 2D only
         # calculate bounding Box
         temp_bb = box.Box.bounding_box(temp_wb_list)
         return (temp_wb_list, temp_bb)
-
 
     @staticmethod
     def _wrap_union(

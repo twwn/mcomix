@@ -16,6 +16,7 @@ _openwith_manager = openwith.OpenWithManager()
 # Reference to the edit dialog (to keep only one instance)
 _openwith_edit_diag = None
 
+
 class OpenWithMenu:
 
     """The "Open with" submenu, listing the commands the user has set up.
@@ -50,7 +51,6 @@ class OpenWithMenu:
         self._window.filehandler.file_opened += self._set_sensitivity
         self._window.filehandler.file_closed += self._set_sensitivity
         self._openwith_manager.set_commands += self._construct_menu
-
 
     def _construct_menu(self, *args: object) -> None:
         """ Build the menu entries from scratch. """
@@ -99,7 +99,7 @@ class OpenWithMenu:
         global _openwith_edit_diag
         if not _openwith_edit_diag:
             _openwith_edit_diag = openwith.OpenWithEditor(self._window,
-                    self._openwith_manager)
+                                                          self._openwith_manager)
             _openwith_edit_diag.connect_after('response', self._dialog_closed)
 
         _openwith_edit_diag.set_visible(True)

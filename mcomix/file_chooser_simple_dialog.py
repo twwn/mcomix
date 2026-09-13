@@ -6,6 +6,7 @@ from mcomix import file_chooser_base_dialog
 
 from collections.abc import Callable
 
+
 class SimpleFileChooserDialog(file_chooser_base_dialog._BaseFileChooserDialog):
 
     """A simple filechooser dialog that hands the paths it collected to a

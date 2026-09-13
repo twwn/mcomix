@@ -26,6 +26,7 @@ if TYPE_CHECKING:
     from mcomix import image_handler as image_handler_module
     from mcomix import main
 
+
 class _BookmarksStore:
 
     """The _BookmarksStore is a backend for both the bookmarks menu and dialog.
@@ -65,7 +66,7 @@ class _BookmarksStore:
                                date_added: datetime.datetime) -> None:
         """Create a bookmark and add it to the list."""
         bookmark = bookmark_menu_item._Bookmark(self._window, self._file_handler,
-            i18n.to_display_string(name), path, page, numpages, archive_type, date_added)
+                                                i18n.to_display_string(name), path, page, numpages, archive_type, date_added)
 
         self.add_bookmark(bookmark)
 
@@ -80,6 +81,41 @@ class _BookmarksStore:
         """Remove the <bookmark> from the list."""
         self._bookmarks.remove(bookmark)
         self.write_bookmarks_file()
+
+    @callback.Callback
+    def set_bookmark_order(self,
+                           order: list[bookmark_menu_item._Bookmark]) -> None:
+        """Put the stored bookmarks into <order>.
+
+        A bookmark in <order> that is no longer stored is dropped from
+        it, and one that is stored but not in <order> keeps its place
+        after the rest, so that a dialog writing back the order it was
+        showing can neither bring back a bookmark another window has
+        removed - which raised a ValueError out of remove_bookmark()
+        while this was a loop of remove and add - nor lose one added
+        since it opened.
+
+        What is kept is the stored bookmark rather than the one handed
+        in: the two are equal when they mark the same page of the same
+        file, which leaves the name, the page count and the date free
+        to differ.
+        """
+        unplaced = {bookmark: bookmark for bookmark in self._bookmarks}
+        ordered = []
+        for bookmark in order:
+            stored = unplaced.pop(bookmark, None)
+            if stored is not None:
+                ordered.append(stored)
+        ordered.extend(bookmark for bookmark in self._bookmarks
+                       if bookmark in unplaced)
+
+        # One write for the whole order, and none at all for an order
+        # that is already the stored one: this was a remove and an add
+        # per bookmark, and each of those re-pickled and fsynced the
+        # whole file and rebuilt the bookmarks menu.
+        if ordered != self._bookmarks:
+            self._bookmarks = ordered
+            self.write_bookmarks_file()
 
     def add_current_to_bookmarks(self) -> None:
         """Add the currently viewed page to the list."""
@@ -108,7 +144,7 @@ class _BookmarksStore:
 
         def add() -> None:
             self.add_bookmark_by_values(name, path, page, numpages,
-                archive_type, date_added)
+                                        archive_type, date_added)
 
         # If the same file was already bookmarked, ask to replace
         # the existing bookmarks before deleting them.
@@ -177,7 +213,7 @@ class _BookmarksStore:
                         pack = pack + (datetime.datetime.now(),)
 
                     bookmark = bookmark_menu_item._Bookmark(self._window,
-                            self._file_handler, *pack)
+                                                            self._file_handler, *pack)
                     bookmarks.append(bookmark)
 
             except Exception:
@@ -186,21 +222,23 @@ class _BookmarksStore:
         return bookmarks, mtime
 
     def file_was_modified(self) -> bool:
-        """ Checks the bookmark store's mtime to see if it has been modified
-        since it was last read. """
-        path = constants.BOOKMARK_PICKLE_PATH
-        if os.path.isfile(path):
-            try:
-                mtime = int(os.stat(path).st_mtime)
-            except OSError:
-                mtime = 0
+        """Whether the store's file has been written since it was read.
 
-            if mtime > self._bookmarks_mtime:
-                return True
-            else:
-                return False
-        else:
-            return True
+        A file that is not there has not been written by anyone, so the
+        answer is no.  It used to be yes, which made get_bookmarks()
+        re-read nothing over the bookmarks it was holding: deleting the
+        file under a running MComix emptied its list, and the next
+        bookmark added wrote that empty list back over what the reader
+        had.
+        """
+        path = constants.BOOKMARK_PICKLE_PATH
+        if not os.path.isfile(path):
+            return False
+        try:
+            mtime = int(os.stat(path).st_mtime)
+        except OSError:
+            mtime = 0
+        return mtime > self._bookmarks_mtime
 
     def write_bookmarks_file(self, merge: bool = True) -> None:
         """Store relevant bookmark info in the mcomix directory.
@@ -233,7 +271,6 @@ class _BookmarksStore:
 
         self._bookmarks_mtime = int(time.time())
 
-
     def show_replace_bookmark_dialog(self,
                                      old_bookmarks: list[bookmark_menu_item._Bookmark],
                                      new_page: int,
@@ -245,8 +282,8 @@ class _BookmarksStore:
         to abort creating one at all. """
         dialog = message_dialog.MessageDialog(self._window, modal=True)
         dialog.add_buttons(_('_Yes'), Response.YES,
-             _('_No'), Response.NO,
-             _('_Cancel'), Response.CANCEL)
+                           _('_No'), Response.NO,
+                           _('_Cancel'), Response.CANCEL)
         dialog.set_default_response(Response.YES)
         dialog.set_should_remember_choice(
             message_dialog.RememberedDialog.REPLACE_EXISTING_BOOKMARK)
@@ -260,8 +297,8 @@ class _BookmarksStore:
             ) % ", ".join(pages),
 
             _('The current book already contains marked pages. '
-              'Do you want to replace them with a new bookmark on page %d?') % new_page +
-              '\n\n' +
+              'Do you want to replace them with a new bookmark on page %d?')
+            % new_page + '\n\n' +
             _('Selecting "No" will create a new bookmark without affecting the other bookmarks.'))
 
         dialog.run_async(on_response)

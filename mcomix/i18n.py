@@ -31,6 +31,7 @@ _language = 'C'
 #: introspection binding, so the two that have catalogues are listed here.
 _RTL_LANGUAGES = frozenset(('fa', 'he'))
 
+
 def to_unicode(string: str | bytes) -> str:
     """Convert <string> to unicode. First try the default filesystem
     encoding, and then fall back on some common encodings.
@@ -41,15 +42,15 @@ def to_unicode(string: str | bytes) -> str:
     # Try chardet heuristic
     if chardet:
         probable_encoding = chardet.detect(string)['encoding'] or \
-            locale.getpreferredencoding() # Fallback if chardet detection fails
+            locale.getpreferredencoding()  # Fallback if chardet detection fails
     else:
         probable_encoding = locale.getpreferredencoding()
 
     for encoding in (
-        probable_encoding,
-        sys.getfilesystemencoding(),
-        'utf-8',
-        'latin-1'):
+            probable_encoding,
+            sys.getfilesystemencoding(),
+            'utf-8',
+            'latin-1'):
 
         try:
             ustring = str(string, encoding)
@@ -60,6 +61,7 @@ def to_unicode(string: str | bytes) -> str:
 
     return string.decode('utf-8', 'replace')
 
+
 def to_utf8(string: str | bytes) -> bytes:
     """ Helper function that converts unicode objects to UTF-8 encoded
     strings. Non-unicode strings are assumed to be already encoded
@@ -69,6 +71,7 @@ def to_utf8(string: str | bytes) -> bytes:
         return string.encode('utf-8')
     else:
         return string
+
 
 def install_gettext(force_lang: str | None = None) -> None:
     """ Initialize gettext with the correct directory that contains
@@ -96,7 +99,7 @@ def install_gettext(force_lang: str | None = None) -> None:
         lang_identifiers = [lang]
     elif preferences.prefs['language'] != 'auto':
         lang = preferences.prefs['language']
-        lang_identifiers = [ lang ]
+        lang_identifiers = [lang]
     else:
         # Get the user's current locale
         lang = portability.get_default_locale()
@@ -129,24 +132,29 @@ def install_gettext(force_lang: str | None = None) -> None:
     global _translation
     _translation = translation
 
+
 def get_language() -> str:
     """Returns the locale identifier of the language the interface is being
     displayed in. This is the preference, the --language argument or the
     user's locale, whichever install_gettext() settled on."""
     return _language
 
+
 def is_rtl_language() -> bool:
     """Returns whether the interface language is written right to left."""
     return re.split(r'[-_.@]', _language, maxsplit=1)[0] in _RTL_LANGUAGES
+
 
 def get_translation() -> gettext.NullTranslations:
     """Returns the loaded translation instance.
     (gettext.GNUTranslations is a subclass of NullTranslations.)"""
     return _translation or gettext.NullTranslations()
 
+
 def _(message: str) -> str:
     """Translate the messsage using the current translator."""
     return get_translation().gettext(message)
+
 
 def to_display_string(string: str) -> str:
     """ Converts a string to a valid UTF-8 string at the expense of data accuracy. """

@@ -60,12 +60,12 @@ class BaseArchive:
         """ Generator to extract <entries> from archive to <destination_dir>. """
         wanted = set(entries)
         for filename in self.iter_contents():
-            if not filename in wanted:
+            if filename not in wanted:
                 continue
             self.extract(filename, destination_dir)
             yield filename
             wanted.remove(filename)
-            if 0 == len(wanted):
+            if not wanted:
                 break
 
     def close(self) -> None:
@@ -160,6 +160,7 @@ class BaseArchive:
         assert self._password is not None
         return self._password
 
+
 class NonUnicodeArchive(BaseArchive):
     """ Base class for archives that manage a conversion of byte member names ->
     Unicode member names internally. Required for formats that do not provide
@@ -184,6 +185,7 @@ class NonUnicodeArchive(BaseArchive):
         """ Map Unicode filename back to original archive name.  Names that
         were never listed have no mapping, and stand for themselves. """
         return self.unicode_mapping.get(filename, filename)
+
 
 class ExternalExecutableArchive(NonUnicodeArchive):
     """ For archives that are extracted by spawning an external
@@ -256,8 +258,8 @@ class ExternalExecutableArchive(NonUnicodeArchive):
 
     def extract(self, filename: str, destination_dir: str) -> None:
         """ Extract <filename> from the archive to <destination_dir>. """
-        assert isinstance(filename, str) and \
-                isinstance(destination_dir, str)
+        assert isinstance(filename, str) \
+            and isinstance(destination_dir, str)
 
         if not self._get_executable():
             return

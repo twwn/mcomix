@@ -37,16 +37,16 @@ class Pageselector(Dialog):
         self._number_of_pages = self._window.imagehandler.get_number_of_pages()
 
         self._selector_adjustment = Gtk.Adjustment(value=self._window.imagehandler.get_current_page(),
-                              lower=1,upper=self._number_of_pages,
-                              step_increment=1, page_increment=1)
+                                                   lower=1, upper=self._number_of_pages,
+                                                   step_increment=1, page_increment=1)
 
         self._page_selector = Gtk.Scale.new(Gtk.Orientation.VERTICAL,
                                             self._selector_adjustment)
         self._page_selector.set_draw_value(False)
-        self._page_selector.set_digits( 0 )
+        self._page_selector.set_digits(0)
 
         self._page_spinner = Gtk.SpinButton.new(self._selector_adjustment, 0.0, 0)
-        self._page_spinner.connect( 'changed', self._page_text_changed )
+        self._page_spinner.connect('changed', self._page_text_changed)
         self._page_spinner.set_activates_default(True)
         self._page_spinner.set_numeric(True)
         self._pages_label = Gtk.Label(label=_(' of %s') % self._number_of_pages)
@@ -60,7 +60,7 @@ class Pageselector(Dialog):
             prefs['thumbnail size'], prefs['thumbnail size'])
 
         self.set_size_request(prefs['pageselector width'],
-                prefs['pageselector height'])
+                              prefs['pageselector height'])
 
         # Group preview image and page selector next to each other
         preview_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
@@ -89,8 +89,13 @@ class Pageselector(Dialog):
         self._thread = WorkerThread(self._generate_thumbnail, name='preview')
         # The worker is not a daemon, so whatever ends this dialog has to
         # stop it - not only the buttons.  Anything else leaves a thread
-        # that terminate_program() then waits for at exit.
-        self.connect('destroy', self._stop_thumbnailing)
+        # that terminate_program() then waits for at exit.  'unrealize',
+        # not 'destroy': GTK4 emits the latter when the last reference to
+        # the window goes rather than when it is destroyed, and the
+        # handler is a method of the window, so the closure held one and
+        # nothing ever stopped the thread.  Nothing here hides the
+        # dialog, which is the other thing that unrealizes a window.
+        self.connect('unrealize', self._stop_thumbnailing)
         # Gtk.Widget::configure-event is gone; a GTK4 window says how
         # large it is through its own properties.  Connected last, after
         # everything the handler reaches has been built.
@@ -149,7 +154,7 @@ class Pageselector(Dialog):
         page, width, height = params
 
         pixbuf = self._window.imagehandler.get_thumbnail(page,
-            width=width, height=height, nowait=True)
+                                                         width=width, height=height, nowait=True)
         self._thumbnail_finished(page, pixbuf)
 
     @callback.Callback

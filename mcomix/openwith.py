@@ -26,7 +26,8 @@ from mcomix.dialog import Response
 DEBUGGING_CONTEXT, NO_FILE_CONTEXT, IMAGE_FILE_CONTEXT, ARCHIVE_CONTEXT = -1, 0, 1, 2
 
 
-class OpenWithException(Exception): pass
+class OpenWithException(Exception):
+    pass
 
 
 class OpenWithManager:
@@ -37,8 +38,8 @@ class OpenWithManager:
     @callback.Callback
     def set_commands(self, cmds: Sequence['OpenWithCommand']) -> None:
         prefs['openwith commands'] = [(cmd.get_label(), cmd.get_command(),
-            cmd.get_cwd(), cmd.is_disabled_for_archives())
-            for cmd in cmds]
+                                       cmd.get_cwd(), cmd.is_disabled_for_archives())
+                                      for cmd in cmds]
 
     def get_commands(self) -> list['OpenWithCommand']:
         # Early versions stored a label and a command and nothing else,
@@ -77,7 +78,7 @@ class OpenWithCommand:
         """ Spawns a new process with the given executable
         and arguments. """
         if (self.is_disabled_for_archives() and
-            window.filehandler.archive_type is not None):
+                window.filehandler.archive_type is not None):
             window.osd.show(_("'%s' is disabled for archives.") % self.get_label())
             return
 
@@ -149,7 +150,7 @@ class OpenWithCommand:
             raise OpenWithException(_('Command line is empty.'))
 
         return self._commandline_to_arguments(text, window,
-            self._get_context_type(window, check_restrictions))
+                                              self._get_context_type(window, check_restrictions))
 
     def _commandline_to_arguments(self, line: str, window: 'main.MainWindow',
                                   context_type: int) -> list[str]:
@@ -272,12 +273,12 @@ class OpenWithCommand:
             return os.path.basename(os.path.dirname(base_path()))
         elif identifier == 'b':
             if (context_type & ARCHIVE_CONTEXT):
-                return window.filehandler.get_base_filename() # same as %a
+                return window.filehandler.get_base_filename()  # same as %a
             else:
-                return os.path.basename(os.path.dirname(page_path())) # same as %d
+                return os.path.basename(os.path.dirname(page_path()))  # same as %d
         elif identifier == 's':
             if (context_type & ARCHIVE_CONTEXT):
-                return os.path.basename(os.path.dirname(base_path())) # same as %c
+                return os.path.basename(os.path.dirname(base_path()))  # same as %c
             else:
                 return os.path.basename(os.path.dirname(os.path.dirname(page_path())))
         elif identifier == 'A':
@@ -290,12 +291,12 @@ class OpenWithCommand:
             return os.path.dirname(base_path())
         elif identifier == 'B':
             if (context_type & ARCHIVE_CONTEXT):
-                return base_path() # same as %A
+                return base_path()  # same as %A
             else:
-                return os.path.normpath(os.path.dirname(page_path())) # same as %D
+                return os.path.normpath(os.path.dirname(page_path()))  # same as %D
         elif identifier == 'S':
             if (context_type & ARCHIVE_CONTEXT):
-                return os.path.dirname(base_path()) # same as %C
+                return os.path.dirname(base_path())  # same as %C
             else:
                 return os.path.dirname(os.path.dirname(page_path()))
         else:
@@ -305,16 +306,16 @@ class OpenWithCommand:
     def _get_context_type(self, window: 'main.MainWindow',
                           check_restrictions: bool = True) -> int:
         if not check_restrictions:
-            return DEBUGGING_CONTEXT # ignore context, reflect variable name
+            return DEBUGGING_CONTEXT  # ignore context, reflect variable name
         context = 0
         if not window.filehandler.file_loaded:
-            context = NO_FILE_CONTEXT # no file loaded
+            context = NO_FILE_CONTEXT  # no file loaded
         elif window.filehandler.archive_type is not None:
-            context = IMAGE_FILE_CONTEXT|ARCHIVE_CONTEXT # archive loaded
+            context = IMAGE_FILE_CONTEXT | ARCHIVE_CONTEXT  # archive loaded
         else:
-            context = IMAGE_FILE_CONTEXT # image loaded (no archive)
+            context = IMAGE_FILE_CONTEXT  # image loaded (no archive)
         if not window.imagehandler.get_current_page():
-            context &= ~IMAGE_FILE_CONTEXT # empty archive
+            context &= ~IMAGE_FILE_CONTEXT  # empty archive
         return context
 
 
@@ -483,7 +484,7 @@ class OpenWithEditor(Dialog):
         """ Enable or disable buttons that depend on an item being selected. """
         selected = bool(self._command_list.get_selected_positions())
         for button in (self._remove_button, self._up_button,
-                self._down_button):
+                       self._down_button):
             button.set_sensitive(selected)
 
         if selected:
@@ -527,8 +528,8 @@ class OpenWithEditor(Dialog):
 
         linklabel = Gtk.Label()
         linklabel.set_markup(_('Please refer to the <a href="%s">external command documentation</a> '
-            'for a list of usable variables and other hints.') % \
-                'https://sourceforge.net/p/mcomix/wiki/External_Commands')
+                               'for a list of usable variables and other hints.') %
+                             'https://sourceforge.net/p/mcomix/wiki/External_Commands')
         linklabel.set_xalign(0)
         linklabel.set_yalign(0)
         widgets.pack(content, linklabel, False, False, 4)
@@ -594,9 +595,10 @@ class OpenWithEditor(Dialog):
                 confirm_diag = message_dialog.MessageDialog(
                     self, modal=True, buttons=Gtk.ButtonsType.YES_NO)
                 confirm_diag.set_text(_('Save changes to commands?'),
-                    _('You have made changes to the list of external commands that '
-                      'have not been saved yet. Press "Yes" to save all changes, '
-                      'or "No" to discard them.'))
+                                      _('You have made changes to the list of external commands that '
+                                        'have not been saved yet. Press "Yes" to save all changes, '
+                                        'or "No" to discard them.'))
+
                 def confirmed(answer: int) -> None:
                     if answer == Response.YES:
                         self.save()

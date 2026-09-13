@@ -19,6 +19,7 @@ from collections.abc import Callable, Sequence
 # deleted in between.  One that has gone sorts as if it were empty and
 # ancient, losing its place, rather than taking the whole listing with it.
 
+
 def _modification_time(filename: str) -> float:
     """ Returns the time <filename> was last modified, or 0 if it
     cannot be read. """
@@ -28,6 +29,7 @@ def _modification_time(filename: str) -> float:
     except OSError:
         return 0.0
 
+
 def _file_size(filename: str) -> int:
     """ Returns the size of <filename> in bytes, or 0 if it cannot be
     read. """
@@ -36,6 +38,13 @@ def _file_size(filename: str) -> int:
         return os.path.getsize(filename)
     except OSError:
         return 0
+
+
+def _every_file(path: str) -> bool:
+    """Accept whatever the directory holds, which is what a mode that
+    asks for neither images nor archives means."""
+    return True
+
 
 def get_file_provider(filelist: Sequence[str]) -> 'FileProvider | None':
     """ Initialize a FileProvider with the files in <filelist>.
@@ -56,15 +65,15 @@ def get_file_provider(filelist: Sequence[str]) -> 'FileProvider | None':
         else:
             provider = PreDefinedFileProvider(filelist)
 
-
     elif (preferences.prefs['auto load last file']
-        and os.path.isfile(preferences.prefs['path to last file'])):
+          and os.path.isfile(preferences.prefs['path to last file'])):
         provider = OrderedFileProvider(preferences.prefs['path to last file'])
 
     else:
         provider = None
 
     return provider
+
 
 class FileProvider:
     """ Base class for various file listing strategies. """
@@ -145,7 +154,7 @@ class OrderedFileProvider(FileProvider):
         elif mode == FileProvider.ARCHIVES:
             should_accept = archive_tools.is_archive_file
         else:
-            should_accept = lambda file: True
+            should_accept = _every_file
 
         try:
             entries = os.listdir(self.base_dir)
@@ -153,9 +162,9 @@ class OrderedFileProvider(FileProvider):
             log.warning('! ' + _('Could not open %s: Permission denied.'), self.base_dir)
             return []
 
-        files = [ path for path in
-                  ( os.path.join(self.base_dir, entry) for entry in entries )
-                  if should_accept(path) ]
+        files = [path for path in
+                 (os.path.join(self.base_dir, entry) for entry in entries)
+                 if should_accept(path)]
         FileProvider.sort_files(files)
 
         return files
@@ -202,9 +211,9 @@ class OrderedFileProvider(FileProvider):
             log.warning('! ' + _('Could not open %s: Permission denied.'), parent_dir)
             return []
 
-        directories = [ path for path in
-                ( os.path.join(parent_dir, entry) for entry in entries )
-                if os.path.isdir(path) ]
+        directories = [path for path in
+                       (os.path.join(parent_dir, entry) for entry in entries)
+                       if os.path.isdir(path)]
 
         tools.alphanumeric_sort(directories)
         return directories

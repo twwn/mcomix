@@ -94,12 +94,12 @@ class _BaseFileChooserDialog(Dialog):
         if action == Gtk.FileChooserAction.OPEN:
             title = _('Open')
             buttons = (_('_Cancel'), Response.CANCEL,
-                _('_Open'), Response.OK)
+                       _('_Open'), Response.OK)
 
         else:
             title = _('Save')
             buttons = (_('_Cancel'), Response.CANCEL,
-                _('_Save'), Response.OK)
+                       _('_Save'), Response.OK)
 
         if parent is None:
             # This dialog maps itself at the end of construction, so a
@@ -158,7 +158,7 @@ class _BaseFileChooserDialog(Dialog):
         # GTK4; a picture draws it at its own.
         self._preview_image = Gtk.Picture()
         self._preview_image.set_size_request(self._preview_size,
-                                            self._preview_size)
+                                             self._preview_size)
         # A picture scales what it holds to whatever room it is given,
         # so a thumbnail came out blurred and grew and shrank with the
         # dialog.  SCALE_DOWN never draws above the real size, and the
@@ -171,7 +171,7 @@ class _BaseFileChooserDialog(Dialog):
         pango_scale_small = (1 / 1.2)
 
         self._namelabel = labels.FormattedLabel(weight=Pango.Weight.BOLD,
-            scale=pango_scale_small)
+                                                scale=pango_scale_small)
         self._namelabel.set_ellipsize(Pango.EllipsizeMode.MIDDLE)
         widgets.pack(preview_box, self._namelabel, False, False, 0)
 
@@ -195,14 +195,20 @@ class _BaseFileChooserDialog(Dialog):
         # goes when the dialog does.
         self._previewed: str | None = None
         self._preview_timer: int | None = GLib.timeout_add(200, self._poll_preview)
-        self.connect('destroy', self._stop_previewing)
+        # 'unrealize', not 'destroy': GTK4 emits the latter when the last
+        # reference to the window goes rather than when it is destroyed,
+        # and the handler is a method of the window, so the closure held
+        # one and the timer went on polling a destroyed chooser every
+        # 200 ms for the rest of the session.  Nothing here hides the
+        # dialog, which is the other thing that unrealizes a window.
+        self.connect('unrealize', self._stop_previewing)
 
         self.place_buttons(buttons)
         # Only once the pane has been laid out; a position set before
         # that is forgotten.
         self.connect('map', self._widen_the_places)
 
-        self._all_files_filter = self.add_filter( _('All files'), [], ['*'])
+        self._all_files_filter = self.add_filter(_('All files'), [], ['*'])
 
         try:
             current_file = self._current_file()
@@ -231,7 +237,7 @@ class _BaseFileChooserDialog(Dialog):
                     widgets.set_chooser_folder(self.filechooser,
                                                constants.HOME_DIR)
 
-        except Exception as ex: # E.g. broken prefs values.
+        except Exception as ex:  # E.g. broken prefs values.
             log.debug(ex)
 
         self.set_visible(True)
@@ -245,7 +251,7 @@ class _BaseFileChooserDialog(Dialog):
         opened there instead, and dragged from there afterwards.
         """
         paned = cast('Gtk.Paned | None',
-                    self._descendant(self.filechooser, Gtk.Paned))
+                     self._descendant(self.filechooser, Gtk.Paned))
         if paned is None:
             return
         places = paned.get_start_child()
@@ -372,9 +378,9 @@ class _BaseFileChooserDialog(Dialog):
         the first one, and up from there comes back to the box.
         """
         self._search = cast('Gtk.SearchEntry | None',
-                           self._descendant(self.filechooser, Gtk.SearchEntry))
+                            self._descendant(self.filechooser, Gtk.SearchEntry))
         self._listing = cast('Gtk.ColumnView | None',
-                            self._descendant(self.filechooser, Gtk.ColumnView))
+                             self._descendant(self.filechooser, Gtk.ColumnView))
         if self._search is None or self._listing is None:
             return
 
@@ -397,7 +403,7 @@ class _BaseFileChooserDialog(Dialog):
         # A Gtk.SelectionModel is a Gio.ListModel as well, whatever the
         # introspection data says of it.
         model = cast("Gio.ListModel[GObject.Object] | None",
-                    self._listing.get_model())
+                     self._listing.get_model())
         if model is None or not model.get_n_items():
             return False
         self._listing.grab_focus()
@@ -551,11 +557,11 @@ class _BaseFileChooserDialog(Dialog):
 
             # Collect files, if necessary also from subdirectories
             filter = self.filechooser.get_filter()
-            paths = [ ]
+            paths = []
             for path in chosen:
                 if os.path.isdir(path):
                     subdir_files = list(self.collect_files_from_subdir(path, filter,
-                        self.should_open_recursive()))
+                                                                       self.should_open_recursive()))
                     file_provider.FileProvider.sort_files(subdir_files)
                     paths.extend(subdir_files)
                 else:
@@ -565,15 +571,16 @@ class _BaseFileChooserDialog(Dialog):
             # work on our custom dialog, so we use a simple alternative.
             first_path = chosen[0]
             if (self._action == Gtk.FileChooserAction.SAVE and
-                not os.path.isdir(first_path) and
-                os.path.exists(first_path)):
+                    not os.path.isdir(first_path) and
+                    os.path.exists(first_path)):
 
                 overwrite_dialog = message_dialog.MessageDialog(
                     None, buttons=Gtk.ButtonsType.OK_CANCEL)
                 overwrite_dialog.set_text(
-                    _("A file named '%s' already exists. Do you want to replace it?") %
-                        os.path.basename(first_path),
+                    _("A file named '%s' already exists. Do you want to replace it?")
+                    % os.path.basename(first_path),
                     _('Replacing it will overwrite its contents.'))
+
                 # Declining leaves this dialog standing, which is what
                 # stopping the response signal used to achieve; the answer
                 # now arrives too late to veto a signal that has been

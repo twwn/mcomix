@@ -41,6 +41,27 @@ class TestCompileRotations(unittest.TestCase):
                               (0, 90, 180, 270))
 
 
+class TestAxisMaps(unittest.TestCase):
+
+    """remap_axes() and the order that undoes it."""
+
+    def test_the_inverse_undoes_the_remapping(self) -> None:
+        """MComix only ever swaps two axes, and a swap is its own
+        inverse, so this went unnoticed: inverse_axis_map() returned the
+        order it was given rather than the one that reverses it."""
+        for order in ((0, 1), (1, 0), (0, 2, 1), (1, 2, 0), (2, 0, 1),
+                      (3, 0, 1, 2)):
+            vector = list('abcd'[:len(order)])
+            remapped = tools.remap_axes(vector, order)
+            self.assertEqual(
+                tools.remap_axes(remapped, tools.inverse_axis_map(order)),
+                vector, 'order %r did not come back' % (order,))
+
+    def test_the_inverse_of_a_swap_is_the_swap(self) -> None:
+        self.assertEqual(tools.inverse_axis_map((0, 1)), [0, 1])
+        self.assertEqual(tools.inverse_axis_map((1, 0)), [1, 0])
+
+
 class TestAlphanumericSort(unittest.TestCase):
     def test_numbers_are_ordered_naturally(self) -> None:
         lst = ['10.jpg', '2.jpg']

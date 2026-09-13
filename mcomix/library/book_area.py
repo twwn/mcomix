@@ -78,7 +78,7 @@ class _BookArea(Gtk.ScrolledWindow):
         self.set_sort_order()
         self._covers.connect('activate', self._book_activated)
         self._covers.selection.connect('selection-changed',
-                                         self._selection_changed)
+                                       self._selection_changed)
         clicks = Gtk.GestureClick()
         clicks.set_button(3)
         clicks.connect('pressed', self._button_press)
@@ -271,7 +271,7 @@ class _BookArea(Gtk.ScrolledWindow):
             collection = _COLLECTION_ALL
 
         if (collection == self._library.collection_area.get_current_collection() or
-            self._library.collection_area.get_current_collection() == _COLLECTION_ALL):
+                self._library.collection_area.get_current_collection() == _COLLECTION_ALL):
             # Make sure not to show a book twice when COLLECTION_ALL is selected
             # and the book is added to another collection, triggering this event.
             if self.is_book_displayed(book):
@@ -426,7 +426,7 @@ class _BookArea(Gtk.ScrolledWindow):
 
             # Add adjustment scale
             adjustment = Gtk.Adjustment.new(prefs['library cover size'], 20,
-                    constants.MAX_LIBRARY_COVER_SIZE, 10, 25, 0)
+                                            constants.MAX_LIBRARY_COVER_SIZE, 10, 25, 0)
             cover_size_scale = Gtk.Scale.new(Gtk.Orientation.HORIZONTAL,
                                              adjustment)
             cover_size_scale.set_size_request(200, -1)
@@ -434,8 +434,8 @@ class _BookArea(Gtk.ScrolledWindow):
             cover_size_scale.set_draw_value(True)
             cover_size_scale.set_value_pos(Gtk.PositionType.LEFT)
             for mark in (constants.SIZE_HUGE, constants.SIZE_LARGE,
-                    constants.SIZE_NORMAL, constants.SIZE_SMALL,
-                    constants.SIZE_TINY):
+                         constants.SIZE_NORMAL, constants.SIZE_SMALL,
+                         constants.SIZE_TINY):
                 cover_size_scale.add_mark(mark, Gtk.PositionType.TOP, None)
 
             widgets.pack(dialog.get_content_area(), cover_size_scale, True, True, 0, end=True)
@@ -481,7 +481,7 @@ class _BookArea(Gtk.ScrolledWindow):
             pixbuf = image_tools.fit_in_rectangle(pixbuf, width, height, scale_up=True)
             self._cache.add(book.path, pixbuf)
 
-        pixbuf = self._library._window.enhancer.enhance(pixbuf);
+        pixbuf = self._library._window.enhancer.enhance(pixbuf)
         pixbuf = image_tools.add_border(pixbuf, 1, 0xFFFFFFFF)
 
         # Display indicator of having finished reading the book.
@@ -724,8 +724,8 @@ class _BookArea(Gtk.ScrolledWindow):
             or image_tools.missing_image_icon()
 
         halved = cover.scale_simple(max(0, cover.get_width() // 2),
-            max(0, cover.get_height() // 2),
-            image_tools.scaling_quality_preference())
+                                    max(0, cover.get_height() // 2),
+                                    image_tools.scaling_quality_preference())
         assert halved is not None, 'the drag cursor could not be scaled'
         cover = image_tools.add_border(halved, 1, 0xFFFFFFFF)
         cover = image_tools.add_border(cover, 1)
@@ -740,7 +740,7 @@ class _BookArea(Gtk.ScrolledWindow):
             assert pointer is not None, 'the drag cursor could not be allocated'
             pointer.fill(0x00000000)
             cover.composite(pointer, 0, 0, cover_width, cover_height, 0, 0,
-            1, 1, image_tools.scaling_quality_preference(), 255)
+                            1, 1, image_tools.scaling_quality_preference(), 255)
             im = Image.new('RGBA', (30, 30), 0x00000000)
             draw = ImageDraw.Draw(im)
             draw.polygon(
@@ -751,12 +751,12 @@ class _BookArea(Gtk.ScrolledWindow):
                 fill=(128, 0, 0), outline=(255, 255, 255))
             text = str(num_books)
             draw.text((15 - (6 * len(text) // 2), 9), text,
-                fill=(255, 255, 255))
+                      fill=(255, 255, 255))
             circle = image_tools.pil_to_pixbuf(im)
             circle.composite(pointer, max(0, cover_width - 15),
-                max(0, cover_height - 20), 30, 30, max(0, cover_width - 15),
-                max(0, cover_height - 20), 1, 1,
-                image_tools.scaling_quality_preference(), 255)
+                             max(0, cover_height - 20), 30, 30, max(0, cover_width - 15),
+                             max(0, cover_height - 20), 1, 1,
+                             image_tools.scaling_quality_preference(), 255)
         else:
             pointer = cover
 

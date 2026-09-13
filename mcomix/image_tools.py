@@ -48,6 +48,7 @@ def missing_image_icon() -> GdkPixbuf.Pixbuf:
     assert icon is not None
     return icon
 
+
 #: Colours are Gdk.RGBA components throughout: four floats between 0 and 1.
 RGBA_BLACK = Gdk.RGBA(0.0, 0.0, 0.0, 1.0)
 RGBA_WHITE = Gdk.RGBA(1.0, 1.0, 1.0, 1.0)
@@ -55,6 +56,7 @@ RGBA_WHITE = Gdk.RGBA(1.0, 1.0, 1.0, 1.0)
 
 def axis_to_gdkpixbuf_flip_horizontal(i: int) -> bool:
     return (True, False)[i]
+
 
 def angle_to_gdkpixbuf_rotation(deg: int) -> GdkPixbuf.PixbufRotation:
     if deg == 0:
@@ -66,6 +68,7 @@ def angle_to_gdkpixbuf_rotation(deg: int) -> GdkPixbuf.PixbufRotation:
     elif deg == 270:
         return GdkPixbuf.PixbufRotation.COUNTERCLOCKWISE
     raise ValueError("illegal angle: " + str(deg))
+
 
 def _allocated(pixbuf: GdkPixbuf.Pixbuf | None) -> GdkPixbuf.Pixbuf:
     """<pixbuf>, or a clear error where gdk-pixbuf answered with nothing.
@@ -79,14 +82,17 @@ def _allocated(pixbuf: GdkPixbuf.Pixbuf | None) -> GdkPixbuf.Pixbuf:
         raise MemoryError('gdk-pixbuf could not allocate the pixels')
     return pixbuf
 
+
 def rotate_pixbuf(src: GdkPixbuf.Pixbuf, rotation: int) -> GdkPixbuf.Pixbuf:
     if rotation == 0:
         return src
     return _allocated(src.rotate_simple(angle_to_gdkpixbuf_rotation(rotation)))
 
+
 def flip_pixbuf(src: GdkPixbuf.Pixbuf, axis: int) -> GdkPixbuf.Pixbuf:
     return _allocated(
         src.flip(horizontal=axis_to_gdkpixbuf_flip_horizontal(axis)))
+
 
 def get_fitting_size(source_size: Sequence[int], target_size: Sequence[int],
                      keep_ratio: bool = True,
@@ -114,12 +120,14 @@ def get_fitting_size(source_size: Sequence[int], target_size: Sequence[int],
                 width = int(max(src_width * height / src_height, 1))
     return (width, height)
 
+
 def fit_pixbuf_to_rectangle(src: GdkPixbuf.Pixbuf, rect: Sequence[int],
                             rotation: int) -> GdkPixbuf.Pixbuf:
     return fit_in_rectangle(src, rect[0], rect[1],
                             rotation=rotation,
                             keep_ratio=False,
                             scale_up=True)
+
 
 def fit_in_rectangle(src: GdkPixbuf.Pixbuf, width: int, height: int,
                      keep_ratio: bool = True, scale_up: bool = False,
@@ -169,7 +177,7 @@ def fit_in_rectangle(src: GdkPixbuf.Pixbuf, width: int, height: int,
 
     if src.get_has_alpha():
         composite_color_args = get_composite_color_args(0
-            if prefs['checkered bg for transparent images'] else 1)
+                                                        if prefs['checkered bg for transparent images'] else 1)
         if width == src_width and height == src_height:
             # Using anything other than nearest interpolation will result in a
             # modified image if no resizing takes place (even if it's opaque).
@@ -190,11 +198,11 @@ def add_border(pixbuf: GdkPixbuf.Pixbuf, thickness: int,
     <colour> added.
     """
     canvas = _allocated(GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, True, 8,
-        pixbuf.get_width() + thickness * 2,
-        pixbuf.get_height() + thickness * 2))
+                                             pixbuf.get_width() + thickness * 2,
+                                             pixbuf.get_height() + thickness * 2))
     canvas.fill(colour)
     pixbuf.copy_area(0, 0, pixbuf.get_width(), pixbuf.get_height(),
-        canvas, thickness, thickness)
+                     canvas, thickness, thickness)
     return canvas
 
 
@@ -262,7 +270,7 @@ def get_most_common_edge_colour(pixbufs: GdkPixbuf.Pixbuf | Sequence[GdkPixbuf.P
                     color_count_in_prominent_group = color_count_in_group
 
                 group = rounded
-                colors_in_group = [ (count, color) ]
+                colors_in_group = [(count, color)]
                 color_count_in_group = count
 
         # Cleanup if only one edge color group was found
@@ -289,7 +297,7 @@ def get_most_common_edge_colour(pixbufs: GdkPixbuf.Pixbuf | Sequence[GdkPixbuf.P
             assert False, 'Invalid edge side'
 
         subpix = _allocated(GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB,
-                pixbuf.get_has_alpha(), 8, sub_width, sub_height))
+                                                 pixbuf.get_has_alpha(), 8, sub_width, sub_height))
         if side == 'left':
             pixbuf.copy_area(0, 0, edge, height, subpix, 0, 0)
         elif side == 'right':
@@ -328,6 +336,7 @@ def get_most_common_edge_colour(pixbufs: GdkPixbuf.Pixbuf | Sequence[GdkPixbuf.P
     most_used = group_colors(ungrouped_colors)[:3]
     return [component / 255.0 for component in most_used] + [1.0]
 
+
 def pil_to_pixbuf(im: Image.Image,
                   keep_orientation: bool = False) -> GdkPixbuf.Pixbuf:
     """Return a pixbuf created from the PIL <im>."""
@@ -358,6 +367,7 @@ def pil_to_pixbuf(im: Image.Image,
             setattr(pixbuf, 'orientation', str(orientation))
     return pixbuf
 
+
 def pixbuf_to_pil(pixbuf: GdkPixbuf.Pixbuf) -> Image.Image:
     """Return a PIL image created from <pixbuf>."""
     dimensions = pixbuf.get_width(), pixbuf.get_height()
@@ -366,6 +376,7 @@ def pixbuf_to_pil(pixbuf: GdkPixbuf.Pixbuf) -> Image.Image:
     mode = 'RGBA' if pixbuf.get_has_alpha() else 'RGB'
     im = Image.frombuffer(mode, dimensions, pixels, 'raw', mode, stride, 1)
     return im
+
 
 def scaling_quality_preference() -> GdkPixbuf.InterpType:
     """How the scaling quality preference says pages should be scaled.
@@ -376,8 +387,10 @@ def scaling_quality_preference() -> GdkPixbuf.InterpType:
     """
     return GdkPixbuf.InterpType(prefs['scaling quality'])
 
+
 #: What load_pixbuf() writes the file a moving page came from under.
 ANIMATION_PATH = 'animation_path'
+
 
 def is_animation(pixbuf: GdkPixbuf.Pixbuf) -> bool:
     """Whether <pixbuf> is the still frame of a page that moves.
@@ -389,9 +402,11 @@ def is_animation(pixbuf: GdkPixbuf.Pixbuf) -> bool:
     """
     return getattr(pixbuf, ANIMATION_PATH, None) is not None
 
+
 def animation_path(pixbuf: GdkPixbuf.Pixbuf) -> "str | None":
     """The file the frames of <pixbuf> are read from, if it moves."""
     return getattr(pixbuf, ANIMATION_PATH, None)
+
 
 def file_animates(path: str) -> bool:
     """Whether <path> holds more than one frame.
@@ -407,6 +422,7 @@ def file_animates(path: str) -> bool:
     except Exception:
         pass
     return _glycin_animates(path)
+
 
 def _glycin_animates(path: str) -> bool:
     """Whether glycin reads more than one frame out of <path>.
@@ -428,6 +444,7 @@ def _glycin_animates(path: str) -> bool:
         log.debug('glycin will not read %s (%s)', path, error)
         return False
 
+
 def _pixbuf_animates(path: str) -> bool:
     """Whether gdk-pixbuf reads more than one frame out of <path>.
 
@@ -440,6 +457,7 @@ def _pixbuf_animates(path: str) -> bool:
         return False
     return animation is not None and not animation.is_static_image()
 
+
 def glycin() -> tuple[Any, Any]:  # type: ignore[explicit-any]  # glycin is optional, so there is no Gly to name
     """The glycin modules, or raise if this tree has none.
 
@@ -451,6 +469,7 @@ def glycin() -> tuple[Any, Any]:  # type: ignore[explicit-any]  # glycin is opti
     gi.require_version('GlyGtk4', '2')
     from gi.repository import Gly, GlyGtk4
     return Gly, GlyGtk4
+
 
 def pixbuf_to_texture(pixbuf: GdkPixbuf.Pixbuf) -> Gdk.Texture:
     """Return <pixbuf> as the Gdk.Texture GTK4 draws from.
@@ -478,6 +497,7 @@ def pixbuf_to_texture(pixbuf: GdkPixbuf.Pixbuf) -> Gdk.Texture:
                                  memory_format, pixbuf.read_pixel_bytes(),
                                  pixbuf.get_rowstride())
 
+
 def pil_to_texture(im: Image.Image) -> Gdk.Texture:
     """Return the PIL image <im> as the Gdk.Texture GTK4 draws from."""
     if im.mode not in ('RGB', 'RGBA'):
@@ -493,6 +513,7 @@ def pil_to_texture(im: Image.Image) -> Gdk.Texture:
 
 #: The providers load_pixbuf() tries, in order.
 _PIXBUF_PROVIDERS = (constants.IMAGEIO_GDKPIXBUF, constants.IMAGEIO_PIL)
+
 
 def load_pixbuf(path: str) -> GdkPixbuf.Pixbuf:
     """ Loads a pixbuf from a given image file. """
@@ -533,6 +554,7 @@ def load_pixbuf(path: str) -> GdkPixbuf.Pixbuf:
         setattr(pixbuf, ANIMATION_PATH, path)
     return pixbuf
 
+
 def load_pixbuf_size(path: str, width: int, height: int) -> GdkPixbuf.Pixbuf:
     """ Loads a pixbuf from a given image file and scale it to fit
     inside (width, height). """
@@ -546,9 +568,9 @@ def load_pixbuf_size(path: str, width: int, height: int) -> GdkPixbuf.Pixbuf:
     # given its size yet.  Ask for the one pixel that fit_in_rectangle()
     # would have clamped it to anyway; a negative side still means
     # "unbounded" there, so leave those alone.
-    if 0 == width:
+    if width == 0:
         width = 1
-    if 0 == height:
+    if height == 0:
         height = 1
     # Only the format and the dimensions are wanted here, and asking
     # get_image_info() for them means a gdk-pixbuf header query, which
@@ -566,7 +588,7 @@ def load_pixbuf_size(path: str, width: int, height: int) -> GdkPixbuf.Pixbuf:
                     pixbuf = GdkPixbuf.Pixbuf.new_from_file(path)
                 # Work around GdkPixbuf bug: https://bugzilla.gnome.org/show_bug.cgi?id=735422
                 # (currently https://gitlab.gnome.org/GNOME/gdk-pixbuf/issues/45)
-                elif 'GIF' == image_format:
+                elif image_format == 'GIF':
                     pixbuf = GdkPixbuf.Pixbuf.new_from_file(path)
                 else:
                     # Don't upscale if smaller than target dimensions!
@@ -592,6 +614,7 @@ def load_pixbuf_size(path: str, width: int, height: int) -> GdkPixbuf.Pixbuf:
         # raising necessary because caller expects pixbuf to be not None
         raise last_error or TypeError()
     return fit_in_rectangle(pixbuf, width, height, scaling_quality=GdkPixbuf.InterpType.BILINEAR)
+
 
 def load_pixbuf_data(imgdata: bytes) -> GdkPixbuf.Pixbuf:
     """ Loads a pixbuf from the data passed in <imgdata>. """
@@ -628,6 +651,7 @@ def load_pixbuf_data(imgdata: bytes) -> GdkPixbuf.Pixbuf:
         raise last_error or TypeError()
     return pixbuf
 
+
 def enhance(pixbuf: GdkPixbuf.Pixbuf, brightness: float = 1.0,
             contrast: float = 1.0, saturation: float = 1.0,
             sharpness: float = 1.0, autocontrast: bool = False,
@@ -653,6 +677,7 @@ def enhance(pixbuf: GdkPixbuf.Pixbuf, brightness: float = 1.0,
         im = ImageOps.invert(im)
     return pil_to_pixbuf(im)
 
+
 def _get_png_implied_rotation(
         pixbuf_or_image: GdkPixbuf.Pixbuf | Image.Image) -> str | None:
     """Same as <get_implied_rotation> for PNG files.
@@ -668,7 +693,7 @@ def _get_png_implied_rotation(
     if raw_exif is None:
         return None
     exif_lines = raw_exif.split('\n')
-    if len(exif_lines) < 4 or 'exif' != exif_lines[1]:
+    if len(exif_lines) < 4 or exif_lines[1] != 'exif':
         # Not valid Exif data.
         return None
     size = int(exif_lines[2])
@@ -685,13 +710,16 @@ def _get_png_implied_rotation(
     raw_orientation = exif.get(_EXIF_ORIENTATION_TAG, None)
     return None if raw_orientation is None else str(raw_orientation)
 
+
 #: Exif orientation tag, and the rotation each of its values implies.
 _EXIF_ORIENTATION_TAG = 274
 _IMPLIED_ROTATION = {'3': 180, '6': 90, '8': 270}
 
+
 def _implied_rotation(orientation: object) -> int:
     """Return the rotation in degrees implied by an Exif <orientation>."""
     return _IMPLIED_ROTATION.get(str(orientation), 0)
+
 
 def get_implied_rotation(pixbuf: GdkPixbuf.Pixbuf) -> int:
     """Return the implied rotation in degrees: 0, 90, 180, or 270.
@@ -709,6 +737,7 @@ def get_implied_rotation(pixbuf: GdkPixbuf.Pixbuf) -> int:
         orientation = _get_png_implied_rotation(pixbuf)
     return _implied_rotation(orientation)
 
+
 def get_implied_rotation_from_file(path: str) -> int:
     """Same as <get_implied_rotation>, for an image that has not been loaded.
 
@@ -722,6 +751,7 @@ def get_implied_rotation_from_file(path: str) -> int:
     except Exception:
         return 0
     return _implied_rotation(orientation)
+
 
 def get_image_header(path: str) -> tuple[str, tuple[int, int]]:
     """Return the (format, (width, height)) of the image at <path>
@@ -742,6 +772,7 @@ def get_image_header(path: str) -> tuple[str, tuple[int, int]]:
     image_format, image_dimensions, _providers = get_image_info(path)
     return image_format, image_dimensions
 
+
 def get_image_size(path: str) -> tuple[int, int]:
     """Return the (width, height) of the image at <path> without decoding it."""
     return get_image_header(path)[1]
@@ -758,12 +789,13 @@ def get_size_rotation(width: int, height: int) -> int:
                 return 90
             elif arp == constants.AUTOROTATE_HEIGHT_270:
                 return 270
-        else: # width > height
+        else:  # width > height
             if arp == constants.AUTOROTATE_WIDTH_90:
                 return 90
             elif arp == constants.AUTOROTATE_WIDTH_270:
                 return 270
     return 0
+
 
 def combine_pixbufs(pixbuf1: GdkPixbuf.Pixbuf, pixbuf2: GdkPixbuf.Pixbuf,
                     are_in_manga_mode: bool) -> GdkPixbuf.Pixbuf:
@@ -776,36 +808,37 @@ def combine_pixbufs(pixbuf1: GdkPixbuf.Pixbuf, pixbuf2: GdkPixbuf.Pixbuf,
 
     has_alpha = False
 
-    if l_source_pixbuf.get_property( 'has-alpha' ) or \
-       r_source_pixbuf.get_property( 'has-alpha' ):
+    if l_source_pixbuf.get_property('has-alpha') or \
+       r_source_pixbuf.get_property('has-alpha'):
         has_alpha = True
 
     bits_per_sample = 8
 
-    l_source_pixbuf_width = l_source_pixbuf.get_property( 'width' )
-    r_source_pixbuf_width = r_source_pixbuf.get_property( 'width' )
+    l_source_pixbuf_width = l_source_pixbuf.get_property('width')
+    r_source_pixbuf_width = r_source_pixbuf.get_property('width')
 
-    l_source_pixbuf_height = l_source_pixbuf.get_property( 'height' )
-    r_source_pixbuf_height = r_source_pixbuf.get_property( 'height' )
+    l_source_pixbuf_height = l_source_pixbuf.get_property('height')
+    r_source_pixbuf_height = r_source_pixbuf.get_property('height')
 
     new_width = l_source_pixbuf_width + r_source_pixbuf_width
 
-    new_height = max( l_source_pixbuf_height, r_source_pixbuf_height )
+    new_height = max(l_source_pixbuf_height, r_source_pixbuf_height)
 
     new_pix_buf = _allocated(GdkPixbuf.Pixbuf.new(colorspace=GdkPixbuf.Colorspace.RGB,
-                                       has_alpha=has_alpha,
-                                       bits_per_sample=bits_per_sample,
-                                       width=new_width, height=new_height))
+                                                  has_alpha=has_alpha,
+                                                  bits_per_sample=bits_per_sample,
+                                                  width=new_width, height=new_height))
 
-    l_source_pixbuf.copy_area( 0, 0, l_source_pixbuf_width,
-                                     l_source_pixbuf_height,
-                                     new_pix_buf, 0, 0 )
+    l_source_pixbuf.copy_area(0, 0, l_source_pixbuf_width,
+                              l_source_pixbuf_height,
+                              new_pix_buf, 0, 0)
 
-    r_source_pixbuf.copy_area( 0, 0, r_source_pixbuf_width,
-                                     r_source_pixbuf_height,
-                                     new_pix_buf, l_source_pixbuf_width, 0 )
+    r_source_pixbuf.copy_area(0, 0, r_source_pixbuf_width,
+                              r_source_pixbuf_height,
+                              new_pix_buf, l_source_pixbuf_width, 0)
 
     return new_pix_buf
+
 
 def is_image_file(path: str) -> bool:
     """Return True if <path> ends in an extension MComix can read.
@@ -814,6 +847,7 @@ def is_image_file(path: str) -> bool:
     get_supported_formats() is what settles which extensions those are.
     """
     return _SUPPORTED_IMAGE_REGEX.search(path) is not None
+
 
 def convert_rgba_to_rgba8int(colour: Sequence[float]) -> int:
     """Return <colour> as the packed integer GdkPixbuf.Pixbuf.fill() takes.
@@ -827,16 +861,20 @@ def convert_rgba_to_rgba8int(colour: Sequence[float]) -> int:
     alpha = component(colour[3]) if len(colour) > 3 else 255
     return (red << 24) | (green << 16) | (blue << 8) | alpha
 
+
 def rgb_to_y_601(colour: Sequence[float]) -> float:
     """Return the luma of <colour>, given as Gdk.RGBA components."""
     return colour[0] * 0.299 + colour[1] * 0.587 + colour[2] * 0.114
+
 
 def text_color_for_background_color(bgcolour: Sequence[float]) -> Gdk.RGBA:
     """Return the text colour that reads best on <bgcolour>."""
     return RGBA_BLACK if rgb_to_y_601(bgcolour) >= 0.5 else RGBA_WHITE
 
+
 def get_composite_color_args(variant: int) -> tuple[int, int, int]:
     return ((8, 0x777777, 0x999999), (1024, 0xFFFFFF, 0xFFFFFF))[variant]
+
 
 def get_image_info(path: str) -> tuple[str, tuple[int, int], tuple[int, ...]]:
     """Return information about and select preferred providers for loading
@@ -880,6 +918,7 @@ def get_image_info(path: str) -> tuple[str, tuple[int, int], tuple[int, ...]]:
         providers = (constants.IMAGEIO_GDKPIXBUF, constants.IMAGEIO_PIL)
     return (image_format, image_dimensions, providers)
 
+
 @functools.cache
 def get_supported_formats() -> dict[str, tuple[set[str], set[str]]]:
     """The image formats a loader is installed for.
@@ -903,7 +942,7 @@ def get_supported_formats() -> dict[str, tuple[set[str], set[str]]]:
         mime_types, extensions = supported_formats_pil.get(name, ([], []))
         supported_formats_pil[name] = mime_types + [mime], extensions
     for ext, name in list(Image.EXTENSION.items()):
-        assert '.' == ext[0]
+        assert ext[0] == '.'
         mime_types, extensions = supported_formats_pil.get(name, ([], []))
         supported_formats_pil[name] = mime_types, extensions + [ext[1:]]
     # Remove formats with no mime type or extension.
@@ -943,13 +982,14 @@ def get_supported_formats() -> dict[str, tuple[set[str], set[str]]]:
         for name in list(provider.keys()):
             mime_types, extentions = provider[name]
             new_name = name.upper()
-            new_mime_types, new_extensions = supported_formats.get( \
+            new_mime_types, new_extensions = supported_formats.get(
                 new_name, (set(), set()))
             new_mime_types.update([x.lower() for x in mime_types])
             new_extensions.update([x.lower() for x in extentions])
             supported_formats[new_name] = (new_mime_types, new_extensions)
 
     return supported_formats
+
 
 # Set supported image extensions regexp from list of supported formats.
 # Only used internally.

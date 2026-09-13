@@ -8,6 +8,7 @@ from gi.repository import GdkPixbuf
 
 from mcomix import image_tools
 
+
 def draw_histogram(pixbuf: GdkPixbuf.Pixbuf, height: int = 170,
                    fill: int = 170, text: bool = True) -> GdkPixbuf.Pixbuf:
     """Draw a histogram from <pixbuf> and return it as another pixbuf.

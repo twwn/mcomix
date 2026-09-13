@@ -103,7 +103,7 @@ class SevenZipArchive(archive_base.ExternalExecutableArchive):
                         re.IGNORECASE):
                 self._is_encrypted = True
                 raise self.EncryptedHeader()
-            if 'Solid = +' == line:
+            if line == 'Solid = +':
                 self._is_solid = True
 
         if self._state == self.STATE_LISTING:
@@ -114,7 +114,7 @@ class SevenZipArchive(archive_base.ExternalExecutableArchive):
                 filesize = int(line[7:])
                 if filesize > 0:
                     self._contents.append((self._path, filesize))
-            elif 'Encrypted = +' == line:
+            elif line == 'Encrypted = +':
                 self._is_encrypted = True
 
         return None
@@ -149,7 +149,7 @@ class SevenZipArchive(archive_base.ExternalExecutableArchive):
                     if filename is not None:
                         yield filename
             except self.EncryptedHeader:
-                if 0 == retry_count:
+                if retry_count == 0:
                     continue
             break
 
@@ -221,7 +221,7 @@ class SevenZipArchive(archive_base.ExternalExecutableArchive):
                 new.close()
                 yield filename
                 wanted.remove(filename)
-                if 0 == len(wanted):
+                if not wanted:
                     break
 
         finally:
@@ -274,7 +274,7 @@ class TarArchive(SevenZipArchive):
             self._parse_list_output_line(line.rstrip(os.linesep))
         if self._contents:
             # The archive should not contain more than 1 member.
-            assert 1 == len(self._contents)
+            assert len(self._contents) == 1
             yield self._unicode_filename(self._path)
         self.filenames_initialized = True
 

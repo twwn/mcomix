@@ -6,7 +6,6 @@ import os
 from mcomix import widgets
 
 
-
 def icon_search_path() -> str:
     """Return the directory holding MComix' own icons.
 

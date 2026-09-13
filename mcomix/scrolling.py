@@ -18,7 +18,6 @@ class Scrolling:
         self._cache1: tuple[int, int, bool, list[int]]
         self.clear_cache()
 
-
     def scroll_smartly(self, content_box: box.Box, viewport_box: box.Box,
                        orientation: Sequence[int],
                        max_scroll: Sequence[float],
@@ -58,41 +57,39 @@ class Scrolling:
         result = list(viewport_position)
         carry = True
         reset_all_axes = False
-        for i in range(len(content_size)):
-            invisible_size = content_size[i] - viewport_size[i]
-            o = orientation[i]
+        for i, (content, viewport, position, o) in enumerate(
+                zip(content_size, viewport_size, viewport_position,
+                    orientation)):
+            invisible_size = content - viewport
             # Find a nice starting point
             if o == 1:
-                if viewport_position[i] < 0:
+                if position < 0:
                     result[i] = 0
                     carry = False
-                    if viewport_position[i] <= -viewport_size[i]:
+                    if position <= -viewport:
                         reset_all_axes = True
                         break
-            else: # o == -1
-                if viewport_position[i] > invisible_size:
+            else:  # o == -1
+                if position > invisible_size:
                     result[i] = invisible_size
                     carry = False
-                    if viewport_position[i] > content_size[i]:
+                    if position > content:
                         reset_all_axes = True
                         break
         if reset_all_axes:
             # We don't see anything at all because we are somewhere way before
             # the content box. Let's go to it.
-            for i in range(len(content_size)):
-                invisible_size = content_size[i] - viewport_size[i]
-                o = orientation[i]
-                if o == 1:
-                    result[i] = 0
-                else: # o == -1
-                    result[i] = invisible_size
+            for i, (content, viewport, o) in enumerate(
+                    zip(content_size, viewport_size, orientation)):
+                result[i] = 0 if o == 1 else content - viewport
 
         # This code is somewhat similar to a simple ripple-carry adder.
         if carry:
-            for i in range(len(content_size)):
-                invisible_size = content_size[i] - viewport_size[i]
-                o = orientation[i]
-                ms = min(max_scroll[i], invisible_size)
+            for i, (content, viewport, position, o, axis_max_scroll) in \
+                    enumerate(zip(content_size, viewport_size,
+                                  viewport_position, orientation, max_scroll)):
+                invisible_size = content - viewport
+                ms = min(axis_max_scroll, invisible_size)
                 # Let's calculate the grid we want to snap to.
                 if ms != 0:
                     steps_to_take = int(math.ceil(float(invisible_size) / ms))
@@ -116,7 +113,7 @@ class Scrolling:
                 positions = self._cached_bs(invisible_size, steps_to_take, o == -1)
 
                 # Where are we now (according to the grid)?
-                index = tools.bin_search(positions, viewport_position[i])
+                index = tools.bin_search(positions, position)
 
                 if index < 0:
                     # We're somewhere between two valid grid points, so
@@ -149,7 +146,6 @@ class Scrolling:
 
         return tools.vector_add(result, offset)
 
-
     def scroll_to_predefined(self, content_box: box.Box,
                              viewport_box: box.Box,
                              orientation: Sequence[int],
@@ -174,9 +170,9 @@ class Scrolling:
         content_size = content_box.get_size()
         viewport_size = viewport_box.get_size()
         result = list(viewport_box.get_position())
-        for i in range(len(content_size)):
-            o = orientation[i]
-            d = destination[i]
+        for i, (content, viewport, start, o, d) in enumerate(
+                zip(content_size, viewport_size, content_position,
+                    orientation, destination)):
             if d == 0:
                 continue
             if d < constants.SCROLL_TO_END or d > 1:
@@ -185,15 +181,12 @@ class Scrolling:
                 d = o
             if d == constants.SCROLL_TO_START:
                 d = -o
-            c = content_size[i]
-            v = viewport_size[i]
-            invisible_size = c - v
-            result[i] = content_position[i] + (box.Box._box_to_center_offset_1d(
+            invisible_size = content - viewport
+            result[i] = start + (box.Box._box_to_center_offset_1d(
                 invisible_size, o) if d == constants.SCROLL_TO_CENTER
                 else invisible_size if d == 1
-                else 0) # if d == -1
+                else 0)  # if d == -1
         return result
-
 
     def _cached_bs(self, num: int, denom: int, half_up: bool) -> list[int]:
         """ A simple (and ugly) caching mechanism used to avoid
@@ -201,22 +194,20 @@ class Scrolling:
         only two entries so it's only useful for the two "fastest"
         dimensions. """
         if (self._cache0[0] != num or
-            self._cache0[1] != denom or
-            self._cache0[2] != half_up):
+                self._cache0[1] != denom or
+                self._cache0[2] != half_up):
             self._cache0, self._cache1 = self._cache1, self._cache0
         if (self._cache0[0] != num or
-            self._cache0[1] != denom or
-            self._cache0[2] != half_up):
+                self._cache0[1] != denom or
+                self._cache0[2] != half_up):
             self._cache0 = (num, denom, half_up,
-                Scrolling._bresenham_sums(num, denom, half_up))
+                            Scrolling._bresenham_sums(num, denom, half_up))
         return self._cache0[3]
-
 
     def clear_cache(self) -> None:
         """ Clears all caches that are used internally. """
         self._cache0 = (0, 0, False, [])
         self._cache1 = (0, 0, False, [])
-
 
     @staticmethod
     def _bresenham_sums(num: int, denom: int, half_up: bool) -> list[int]:

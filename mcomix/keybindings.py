@@ -46,107 +46,107 @@ Binding = tuple[int, Gdk.ModifierType]
 #: shortcuts editor files it under.
 BINDING_INFO: "dict[str, dict[str, str]]" = {
     # Navigation between pages, archives, directories
-    'previous_page' : { 'title' : _('Previous page'), 'group' : _('Navigation') },
-    'next_page' : { 'title' : _('Next page'), 'group' : _('Navigation') },
-    'previous_page_ff' : { 'title': _('Back 10 pages'), 'group': _('Navigation') },
-    'next_page_ff' : { 'title': _('Forward 10 pages'), 'group': _('Navigation') },
-    'previous_page_dynamic' : { 'title': _('Page to the left'), 'group': _('Navigation') },
-    'next_page_dynamic' : { 'title': _('Page to the right'), 'group': _('Navigation') },
-    'previous_page_singlestep': { 'title': _('Previous single page'), 'group': _('Navigation') },
-    'next_page_singlestep': { 'title': _('Next single page'), 'group': _('Navigation') },
+    'previous_page': {'title': _('Previous page'), 'group': _('Navigation')},
+    'next_page': {'title': _('Next page'), 'group': _('Navigation')},
+    'previous_page_ff': {'title': _('Back 10 pages'), 'group': _('Navigation')},
+    'next_page_ff': {'title': _('Forward 10 pages'), 'group': _('Navigation')},
+    'previous_page_dynamic': {'title': _('Page to the left'), 'group': _('Navigation')},
+    'next_page_dynamic': {'title': _('Page to the right'), 'group': _('Navigation')},
+    'previous_page_singlestep': {'title': _('Previous single page'), 'group': _('Navigation')},
+    'next_page_singlestep': {'title': _('Next single page'), 'group': _('Navigation')},
 
-    'first_page' : { 'title': _('First page'), 'group': _('Navigation') },
-    'last_page' : { 'title': _('Last page'), 'group': _('Navigation') },
-    'go_to' : { 'title': _('Go to page'), 'group': _('Navigation') },
+    'first_page': {'title': _('First page'), 'group': _('Navigation')},
+    'last_page': {'title': _('Last page'), 'group': _('Navigation')},
+    'go_to': {'title': _('Go to page'), 'group': _('Navigation')},
 
-    'next_archive' : { 'title': _('Next archive'), 'group': _('Navigation') },
-    'previous_archive' : { 'title': _('Previous archive'), 'group': _('Navigation') },
-    'next_directory' : { 'title': _('Next directory'), 'group': _('Navigation') },
-    'previous_directory' : { 'title': _('Previous directory'), 'group': _('Navigation') },
+    'next_archive': {'title': _('Next archive'), 'group': _('Navigation')},
+    'previous_archive': {'title': _('Previous archive'), 'group': _('Navigation')},
+    'next_directory': {'title': _('Next directory'), 'group': _('Navigation')},
+    'previous_directory': {'title': _('Previous directory'), 'group': _('Navigation')},
 
     # Scrolling
-    'scroll_left_bottom' : { 'title' : _('Align bottom left'), 'group' : _('Scroll')},
-    'scroll_middle_bottom' : { 'title' : _('Align bottom center'), 'group' : _('Scroll')},
-    'scroll_right_bottom' : { 'title' : _('Align bottom right'), 'group' : _('Scroll')},
+    'scroll_left_bottom': {'title': _('Align bottom left'), 'group': _('Scroll')},
+    'scroll_middle_bottom': {'title': _('Align bottom center'), 'group': _('Scroll')},
+    'scroll_right_bottom': {'title': _('Align bottom right'), 'group': _('Scroll')},
 
-    'scroll_left_middle' : { 'title' : _('Align middle left'), 'group' : _('Scroll')},
-    'scroll_middle' : { 'title' : _('Align center'), 'group' : _('Scroll')},
-    'scroll_right_middle' : { 'title' : _('Align middle right'), 'group' : _('Scroll')},
+    'scroll_left_middle': {'title': _('Align middle left'), 'group': _('Scroll')},
+    'scroll_middle': {'title': _('Align center'), 'group': _('Scroll')},
+    'scroll_right_middle': {'title': _('Align middle right'), 'group': _('Scroll')},
 
-    'scroll_left_top' : { 'title' : _('Align top left'), 'group' : _('Scroll')},
-    'scroll_middle_top' : { 'title' : _('Align top center'), 'group' : _('Scroll')},
-    'scroll_right_top' : { 'title' : _('Align top right'), 'group' : _('Scroll')},
+    'scroll_left_top': {'title': _('Align top left'), 'group': _('Scroll')},
+    'scroll_middle_top': {'title': _('Align top center'), 'group': _('Scroll')},
+    'scroll_right_top': {'title': _('Align top right'), 'group': _('Scroll')},
 
-    'scroll_down' : { 'title' : _('Scroll down'), 'group' : _('Scroll') },
-    'scroll_up' : { 'title' : _('Scroll up'), 'group' : _('Scroll') },
-    'scroll_right' : { 'title' : _('Scroll right'), 'group' : _('Scroll') },
-    'scroll_left' : { 'title' : _('Scroll left'), 'group' : _('Scroll') },
+    'scroll_down': {'title': _('Scroll down'), 'group': _('Scroll')},
+    'scroll_up': {'title': _('Scroll up'), 'group': _('Scroll')},
+    'scroll_right': {'title': _('Scroll right'), 'group': _('Scroll')},
+    'scroll_left': {'title': _('Scroll left'), 'group': _('Scroll')},
 
-    'smart_scroll_up' : { 'title' : _('Smart scroll up'), 'group' : _('Scroll') },
-    'smart_scroll_down' : { 'title' : _('Smart scroll down'), 'group' : _('Scroll') },
+    'smart_scroll_up': {'title': _('Smart scroll up'), 'group': _('Scroll')},
+    'smart_scroll_down': {'title': _('Smart scroll down'), 'group': _('Scroll')},
 
     # View
-    'zoom_in' : { 'title' : _('Zoom in'), 'group' : _('Zoom')},
-    'zoom_out' : { 'title' : _('Zoom out'), 'group' : _('Zoom')},
-    'zoom_original' : { 'title' : _('Normal size'), 'group' : _('Zoom')},
+    'zoom_in': {'title': _('Zoom in'), 'group': _('Zoom')},
+    'zoom_out': {'title': _('Zoom out'), 'group': _('Zoom')},
+    'zoom_original': {'title': _('Normal size'), 'group': _('Zoom')},
 
-    'keep_transformation' : { 'title': _('Keep transformation'), 'group': _('Transformation') },
-    'rotate_90' : { 'title': _('Rotate 90° CW'), 'group': _('Transformation') },
-    'rotate_180' : { 'title': _('Rotate 180°'), 'group': _('Transformation') },
-    'rotate_270' : { 'title': _('Rotate 90° CCW'), 'group': _('Transformation') },
-    'flip_horiz' : { 'title': _('Flip horizontally'), 'group': _('Transformation') },
-    'flip_vert' : { 'title': _('Flip vertically'), 'group': _('Transformation') },
-    'no_autorotation' : { 'title': _('Never autorotate'), 'group': _('Transformation') },
+    'keep_transformation': {'title': _('Keep transformation'), 'group': _('Transformation')},
+    'rotate_90': {'title': _('Rotate 90° CW'), 'group': _('Transformation')},
+    'rotate_180': {'title': _('Rotate 180°'), 'group': _('Transformation')},
+    'rotate_270': {'title': _('Rotate 90° CCW'), 'group': _('Transformation')},
+    'flip_horiz': {'title': _('Flip horizontally'), 'group': _('Transformation')},
+    'flip_vert': {'title': _('Flip vertically'), 'group': _('Transformation')},
+    'no_autorotation': {'title': _('Never autorotate'), 'group': _('Transformation')},
 
-    'rotate_90_width' : { 'title': _('Rotate 90° CW'), 'group': _('Autorotate by width') },
-    'rotate_270_width' : { 'title': _('Rotate 90° CCW'), 'group': _('Autorotate by width') },
-    'rotate_90_height' : { 'title': _('Rotate 90° CW'), 'group': _('Autorotate by height') },
-    'rotate_270_height' : { 'title': _('Rotate 90° CCW'), 'group': _('Autorotate by height') },
+    'rotate_90_width': {'title': _('Rotate 90° CW'), 'group': _('Autorotate by width')},
+    'rotate_270_width': {'title': _('Rotate 90° CCW'), 'group': _('Autorotate by width')},
+    'rotate_90_height': {'title': _('Rotate 90° CW'), 'group': _('Autorotate by height')},
+    'rotate_270_height': {'title': _('Rotate 90° CCW'), 'group': _('Autorotate by height')},
 
-    'double_page' : { 'title': _('Double page mode'), 'group': _('View mode') },
-    'manga_mode' : { 'title': _('Manga mode'), 'group': _('View mode') },
-    'invert_scroll' : { 'title': _('Invert smart scroll'), 'group': _('View mode') },
+    'double_page': {'title': _('Double page mode'), 'group': _('View mode')},
+    'manga_mode': {'title': _('Manga mode'), 'group': _('View mode')},
+    'invert_scroll': {'title': _('Invert smart scroll'), 'group': _('View mode')},
 
-    'lens' : { 'title': _('Magnifying lens'), 'group': _('View mode') },
-    'stretch' : { 'title': _('Stretch small images'), 'group': _('View mode') },
+    'lens': {'title': _('Magnifying lens'), 'group': _('View mode')},
+    'stretch': {'title': _('Stretch small images'), 'group': _('View mode')},
 
-    'best_fit_mode' : { 'title': _('Best fit mode'), 'group': _('View mode') },
-    'fit_width_mode' : { 'title': _('Fit width mode'), 'group': _('View mode') },
-    'fit_height_mode' : { 'title': _('Fit height mode'), 'group': _('View mode') },
-    'fit_size_mode' : { 'title': _('Fit size mode'), 'group': _('View mode') },
-    'fit_manual_mode' : { 'title': _('Manual zoom mode'), 'group': _('View mode') },
+    'best_fit_mode': {'title': _('Best fit mode'), 'group': _('View mode')},
+    'fit_width_mode': {'title': _('Fit width mode'), 'group': _('View mode')},
+    'fit_height_mode': {'title': _('Fit height mode'), 'group': _('View mode')},
+    'fit_size_mode': {'title': _('Fit size mode'), 'group': _('View mode')},
+    'fit_manual_mode': {'title': _('Manual zoom mode'), 'group': _('View mode')},
 
     # General UI
-    'exit_fullscreen' : { 'title' : _('Leave fullscreen'), 'group' : _('User interface')},
+    'exit_fullscreen': {'title': _('Leave fullscreen'), 'group': _('User interface')},
 
-    'osd_panel' : { 'title' : _('OSD panel'), 'group' : _('User interface') },
-    'minimize' : { 'title' : _('Minimize'), 'group' : _('User interface') },
-    'fullscreen' : { 'title': _('Fullscreen'), 'group': _('User interface') },
-    'toolbar' : { 'title': _('Toolbar'), 'group': _('User interface') },
-    'menubar' : { 'title': _('Menubar'), 'group': _('User interface') },
-    'statusbar' : { 'title': _('Statusbar'), 'group': _('User interface') },
-    'scrollbar' : { 'title': _('Scrollbars'), 'group': _('User interface') },
-    'thumbnails' : { 'title': _('Thumbnails'), 'group': _('User interface') },
-    'hide_all' : { 'title': _('Hide all'), 'group': _('User interface') },
-    'slideshow' : { 'title': _('Start slideshow'), 'group': _('User interface') },
+    'osd_panel': {'title': _('OSD panel'), 'group': _('User interface')},
+    'minimize': {'title': _('Minimize'), 'group': _('User interface')},
+    'fullscreen': {'title': _('Fullscreen'), 'group': _('User interface')},
+    'toolbar': {'title': _('Toolbar'), 'group': _('User interface')},
+    'menubar': {'title': _('Menubar'), 'group': _('User interface')},
+    'statusbar': {'title': _('Statusbar'), 'group': _('User interface')},
+    'scrollbar': {'title': _('Scrollbars'), 'group': _('User interface')},
+    'thumbnails': {'title': _('Thumbnails'), 'group': _('User interface')},
+    'hide_all': {'title': _('Hide all'), 'group': _('User interface')},
+    'slideshow': {'title': _('Start slideshow'), 'group': _('User interface')},
 
     # File operations
-    'delete' : { 'title' : _('Delete'), 'group' : _('File') },
-    'refresh_archive' : { 'title': _('Refresh'), 'group': _('File') },
-    'close' : { 'title': _('Close'), 'group': _('File') },
-    'quit' : { 'title': _('Quit'), 'group': _('File') },
-    'save_and_quit' : { 'title': _('Save and quit'), 'group': _('File') },
-    'extract_page' : { 'title': _('Save As'), 'group': _('File') },
+    'delete': {'title': _('Delete'), 'group': _('File')},
+    'refresh_archive': {'title': _('Refresh'), 'group': _('File')},
+    'close': {'title': _('Close'), 'group': _('File')},
+    'quit': {'title': _('Quit'), 'group': _('File')},
+    'save_and_quit': {'title': _('Save and quit'), 'group': _('File')},
+    'extract_page': {'title': _('Save As'), 'group': _('File')},
 
-    'comments' : { 'title': _('Archive comments'), 'group': _('File') },
-    'properties' : { 'title': _('Properties'), 'group': _('File') },
-    'preferences' : { 'title': _('Preferences'), 'group': _('File') },
+    'comments': {'title': _('Archive comments'), 'group': _('File')},
+    'properties': {'title': _('Properties'), 'group': _('File')},
+    'preferences': {'title': _('Preferences'), 'group': _('File')},
 
-    'edit_archive' : { 'title': _('Edit archive'), 'group': _('File') },
-    'open' : { 'title': _('Open'), 'group': _('File') },
-    'enhance_image' : { 'title': _('Enhance image'), 'group': _('File') },
-    'library' : { 'title': _('Library'), 'group': _('File') },
-    'invert_color' : { 'title': _('Invert image colors'), 'group': _('File') },
+    'edit_archive': {'title': _('Edit archive'), 'group': _('File')},
+    'open': {'title': _('Open'), 'group': _('File')},
+    'enhance_image': {'title': _('Enhance image'), 'group': _('File')},
+    'library': {'title': _('Library'), 'group': _('File')},
+    'invert_color': {'title': _('Invert image colors'), 'group': _('File')},
 }
 
 # Generate 9 entries for executing command 1 to 9
@@ -154,8 +154,8 @@ for i in range(1, 10):
     BINDING_INFO['execute_command_%d' % i] = {
             # The group says what kind of command it is, so the title
             # only has to tell one from another.
-            'title' : _('Command') + ' %d' % i,
-            'group' : _('External commands')
+            'title': _('Command') + ' %d' % i,
+            'group': _('External commands')
     }
 
 
@@ -221,7 +221,7 @@ class _KeybindingManager:
             if keycode in self._binding_to_action:
                 if self._binding_to_action[keycode] != name:
                     log.warning(_('Keybinding for "%(action)s" overrides hotkey for another action.'),
-                            {"action": name})
+                                {"action": name})
                     log.warning('Binding %s overrides %r', keycode, self._binding_to_action[keycode])
             else:
                 self._binding_to_action[keycode] = name
@@ -233,7 +233,6 @@ class _KeybindingManager:
             self.announce_accelerator(name, Gtk.accelerator_name(key, mod))
 
         self._action_to_callback[name] = (callback, args, kwargs)
-
 
     def announce_accelerator(self, name: str, accelerator: str) -> None:
         """Tell the menus which key <name> answers to.
@@ -347,7 +346,7 @@ class _KeybindingManager:
             if action in stored_action_bindings:
                 bindings = [
                     parse_accelerator(keyname)
-                    for keyname in stored_action_bindings[action] ]
+                    for keyname in stored_action_bindings[action]]
                 self._action_to_bindings[action] = bindings
                 for binding in bindings:
                     self._binding_to_action[binding] = action
@@ -370,9 +369,10 @@ class _KeybindingManager:
                 shutil.move(gtkrc, gtkrc + '.delete-me')
 
             if os.path.isfile(constants.KEYBINDINGS_CONF_PATH) and \
-                not os.path.isfile(constants.KEYBINDINGS_CONF_PATH + '.delete-me'):
+                    not os.path.isfile(constants.KEYBINDINGS_CONF_PATH + '.delete-me'):
                 shutil.move(constants.KEYBINDINGS_CONF_PATH,
-                        constants.KEYBINDINGS_CONF_PATH + '.delete-me')
+                            constants.KEYBINDINGS_CONF_PATH + '.delete-me')
+
 
 _manager: _KeybindingManager | None = None
 

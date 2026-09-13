@@ -21,46 +21,46 @@ _IMAGE_MODES = (
     # Can be
     # saved    GDK     PIL
     # to PNG?  mode    mode
-    ( True  , 'RGB'  , '1'     ), # (1-bit pixels, black and white, stored with one pixel per byte)
-    ( True  , 'RGB'  , 'L'     ), # (8-bit pixels, black and white)
-    ( True  , 'RGBA' , 'LA'    ), # (8-bit pixels, black and white with alpha)
-    ( True  , 'RGBA' , 'P'     ), # (8-bit pixels, mapped to any other mode using a color palette)
-    ( True  , 'RGB'  , 'RGB'   ), # (3x8-bit pixels, true color)
-    ( True  , 'RGBA' , 'RGBA'  ), # (4x8-bit pixels, true color with transparency mask)
-    ( False , 'RGB'  , 'RGBX'  ), # (4x8-bit pixels, true color with padding)
-    ( False , 'RGB'  , 'CMYK'  ), # (4x8-bit pixels, color separation)
-    ( False , 'RGB'  , 'YCbCr' ), # (3x8-bit pixels, color video format)
-    ( False , 'RGB'  , 'HSV'   ), # (3x8-bit pixels, Hue, Saturation, Value color space)
-    ( False , 'RGB'  , 'I'     ), # (32-bit signed integer pixels)
-    ( False , 'RGB'  , 'F'     ), # (32-bit floating point pixels)
+    (True, 'RGB', '1'),  # (1-bit pixels, black and white, stored with one pixel per byte)
+    (True, 'RGB', 'L'),  # (8-bit pixels, black and white)
+    (True, 'RGBA', 'LA'),  # (8-bit pixels, black and white with alpha)
+    (True, 'RGBA', 'P'),  # (8-bit pixels, mapped to any other mode using a color palette)
+    (True, 'RGB', 'RGB'),  # (3x8-bit pixels, true color)
+    (True, 'RGBA', 'RGBA'),  # (4x8-bit pixels, true color with transparency mask)
+    (False, 'RGB', 'RGBX'),  # (4x8-bit pixels, true color with padding)
+    (False, 'RGB', 'CMYK'),  # (4x8-bit pixels, color separation)
+    (False, 'RGB', 'YCbCr'),  # (3x8-bit pixels, color video format)
+    (False, 'RGB', 'HSV'),  # (3x8-bit pixels, Hue, Saturation, Value color space)
+    (False, 'RGB', 'I'),  # (32-bit signed integer pixels)
+    (False, 'RGB', 'F'),  # (32-bit floating point pixels)
 )
 
 _TestImage = namedtuple('TestImage', 'name format size mode has_alpha rotation')
 
 _TEST_IMAGES = (
-    _TestImage('01-JPG-Indexed.jpg'             , 'JPEG', (  1,   1), 'L'   , False, 0  ),
-    _TestImage('02-JPG-RGB.jpg'                 , 'JPEG', (  1,   1), 'RGB' , False, 0  ),
-    _TestImage('03-PNG-RGB.png'                 , 'PNG' , (  1,   1), 'RGB' , False, 0  ),
-    _TestImage('04-PNG-Indexed.png'             , 'PNG' , (  1,   1), 'P'   , False, 0  ),
-    _TestImage('05-PNG-RGBA.png'                , 'PNG' , (  1,   1), 'RGBA', True , 0  ),
-    _TestImage('animated.gif'                   , 'GIF' , (210, 210), 'RGBA', True , 0  ),
-    _TestImage('blue.png'                       , 'PNG' , (100, 100), 'RGB' , False, 0  ),
-    _TestImage('checkerboard.png'               , 'PNG' , (128, 128), 'RGBA', True , 0  ),
-    _TestImage('landscape-exif-270-rotation.jpg', 'JPEG', (210, 297), 'L'   , False, 270),
-    _TestImage('landscape-exif-270-rotation.png', 'PNG' , (210, 297), 'LA'  , True , 270),
-    _TestImage('landscape-no-exif.jpg'          , 'JPEG', (297, 210), 'L'   , False, 0  ),
-    _TestImage('landscape-no-exif.png'          , 'PNG' , (297, 210), 'LA'  , True , 0  ),
-    _TestImage('pattern.jpg'                    , 'JPEG', (200, 100), 'RGB' , False, 0  ),
-    _TestImage('pattern-opaque-rgba.png'        , 'PNG' , (200, 100), 'RGBA', True , 0  ),
-    _TestImage('pattern-opaque-rgb.png'         , 'PNG' , (200, 100), 'RGB' , False, 0  ),
-    _TestImage('pattern-transparent-rgba.png'   , 'PNG' , (200, 100), 'RGBA', True , 0  ),
-    _TestImage('portrait-exif-180-rotation.jpg' , 'JPEG', (210, 297), 'L'   , False, 180),
-    _TestImage('portrait-exif-180-rotation.png' , 'PNG' , (210, 297), 'LA'  , True , 180),
-    _TestImage('portrait-no-exif.jpg'           , 'JPEG', (210, 297), 'L'   , False, 0  ),
-    _TestImage('portrait-no-exif.png'           , 'PNG' , (210, 297), 'LA'  , True , 0  ),
-    _TestImage('red.png'                        , 'PNG' , (100, 100), 'RGB' , False, 0  ),
-    _TestImage('transparent.png'                , 'PNG' , (200, 150), 'RGBA', True , 0  ),
-    _TestImage('transparent-indexed.png'        , 'PNG' , (200, 150), 'P'   , True , 0  ),
+    _TestImage('01-JPG-Indexed.jpg', 'JPEG', (1,   1), 'L', False, 0),
+    _TestImage('02-JPG-RGB.jpg', 'JPEG', (1,   1), 'RGB', False, 0),
+    _TestImage('03-PNG-RGB.png', 'PNG', (1,   1), 'RGB', False, 0),
+    _TestImage('04-PNG-Indexed.png', 'PNG', (1,   1), 'P', False, 0),
+    _TestImage('05-PNG-RGBA.png', 'PNG', (1,   1), 'RGBA', True, 0),
+    _TestImage('animated.gif', 'GIF', (210, 210), 'RGBA', True, 0),
+    _TestImage('blue.png', 'PNG', (100, 100), 'RGB', False, 0),
+    _TestImage('checkerboard.png', 'PNG', (128, 128), 'RGBA', True, 0),
+    _TestImage('landscape-exif-270-rotation.jpg', 'JPEG', (210, 297), 'L', False, 270),
+    _TestImage('landscape-exif-270-rotation.png', 'PNG', (210, 297), 'LA', True, 270),
+    _TestImage('landscape-no-exif.jpg', 'JPEG', (297, 210), 'L', False, 0),
+    _TestImage('landscape-no-exif.png', 'PNG', (297, 210), 'LA', True, 0),
+    _TestImage('pattern.jpg', 'JPEG', (200, 100), 'RGB', False, 0),
+    _TestImage('pattern-opaque-rgba.png', 'PNG', (200, 100), 'RGBA', True, 0),
+    _TestImage('pattern-opaque-rgb.png', 'PNG', (200, 100), 'RGB', False, 0),
+    _TestImage('pattern-transparent-rgba.png', 'PNG', (200, 100), 'RGBA', True, 0),
+    _TestImage('portrait-exif-180-rotation.jpg', 'JPEG', (210, 297), 'L', False, 180),
+    _TestImage('portrait-exif-180-rotation.png', 'PNG', (210, 297), 'LA', True, 180),
+    _TestImage('portrait-no-exif.jpg', 'JPEG', (210, 297), 'L', False, 0),
+    _TestImage('portrait-no-exif.png', 'PNG', (210, 297), 'LA', True, 0),
+    _TestImage('red.png', 'PNG', (100, 100), 'RGB', False, 0),
+    _TestImage('transparent.png', 'PNG', (200, 150), 'RGBA', True, 0),
+    _TestImage('transparent-indexed.png', 'PNG', (200, 150), 'P', True, 0),
 )
 
 _TEST_IMAGE_BY_NAME = dict([(im.name, im) for im in _TEST_IMAGES])
@@ -83,8 +83,10 @@ _ROTATED_TEST_IMAGES = (
 def get_test_image(name):
     return _TEST_IMAGE_BY_NAME[name]
 
+
 def get_image_path(basename):
     return get_testfile_path('images', basename)
+
 
 def new_pixbuf(size, with_alpha, fill_colour):
     pixbuf = GdkPixbuf.Pixbuf.new(colorspace=GdkPixbuf.Colorspace.RGB,
@@ -92,6 +94,7 @@ def new_pixbuf(size, with_alpha, fill_colour):
                                   width=size[0], height=size[1])
     pixbuf.fill(fill_colour)
     return pixbuf
+
 
 # Example output:
 #
@@ -109,7 +112,10 @@ def xhexdump(data, group_size=4):
     io = BytesIO(data)
     chunk_size = group_size * 8
     prev_addr, prev_hex = (0, '')
-    format_line = lambda addr, hex: '%07x: %s' % (addr, hex)
+
+    def format_line(addr, hex):
+        return '%07x: %s' % (addr, hex)
+
     while True:
         chunk = io.read(chunk_size)
         if not chunk:
@@ -131,8 +137,10 @@ def xhexdump(data, group_size=4):
     if size != prev_addr:
         yield '%07x' % size
 
+
 def hexdump(data, group_size=4):
     return [line for line in xhexdump(data, group_size=group_size)]
+
 
 class ImageToolsTest(MComixTest):
 
@@ -147,6 +155,7 @@ class ImageToolsTest(MComixTest):
                 'diff_type': diff_type,
                 'diff': diff_fmt % args,
             })
+
         def info(im):
             if isinstance(im, GdkPixbuf.Pixbuf):
                 width, stride = im.get_width(), im.get_rowstride()
@@ -646,9 +655,6 @@ class ImageToolsTest(MComixTest):
                 self.assertImagesEqual(result, expected, msg=msg)
 
 
-
-
-
 class PixbufToTextureTest(MComixTest):
 
     """Gdk.Texture.new_for_pixbuf() is deprecated as of GTK 4.20, so the
@@ -716,4 +722,3 @@ class PixbufToTextureTest(MComixTest):
         before = self._downloaded(texture)
         pixbuf.fill(0x000000ff)
         self.assertEqual(self._downloaded(texture), before)
-

@@ -9,6 +9,7 @@ from mcomix.dialog import Response
 
 from collections.abc import Callable
 
+
 def ask_for_password(archive: str,
                      on_password: Callable[[str | None], None]) -> None:
     """ Opens an input dialog to ask for the password to <archive>.

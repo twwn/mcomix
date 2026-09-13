@@ -95,12 +95,12 @@ class MagnifyingLens:
         if self._window.images[0].get_paintable() is None:
             return
 
-        lens_size = (prefs['lens size'],) * 2 # 2D only
+        lens_size = (prefs['lens size'],) * 2  # 2D only
         border_size = 1
         rectangle = self._calculate_lens_rect(x, y, *lens_size, border_size)
 
         pixbuf = self._get_lens_pixbuf(x, y, lens_size, border_size,
-            (x - rectangle[0], y - rectangle[1]))
+                                       (x - rectangle[0], y - rectangle[1]))
 
         # There is no window to paint into any more: the canvas draws the
         # lens over the pages, and works out for itself what that damages.
@@ -139,7 +139,7 @@ class MagnifyingLens:
         self._area.set_overlay(self._OVERLAY, None)
         self._last_lens_rect = None
 
-    def toggle(self, action: "ui._Action") -> None:
+    def toggle(self, action: "ui.Action") -> None:
         """Toggle on or off the lens depending on the state of <action>."""
         self.enabled = action.get_active()
 
@@ -163,12 +163,12 @@ class MagnifyingLens:
         cb = self._window.layout.get_content_boxes()
         source_pixbufs = self._window.imagehandler.get_pixbufs(len(cb))
         transforms = self._window.transforms
-        lens_scale = (prefs['lens magnification'],) * 2 # 2D only
+        lens_scale = (prefs['lens magnification'],) * 2  # 2D only
         opaque = prefs['checkered bg for transparent images'] or not any(
             map(GdkPixbuf.Pixbuf.get_has_alpha, source_pixbufs))
         canvas = GdkPixbuf.Pixbuf.new(colorspace=GdkPixbuf.Colorspace.RGB,
-            has_alpha=not opaque, bits_per_sample=8, width=lens_size[0],
-            height=lens_size[1]) # 2D only
+                                      has_alpha=not opaque, bits_per_sample=8, width=lens_size[0],
+                                      height=lens_size[1])  # 2D only
         assert canvas is not None, 'the lens could not be allocated'
         canvas.fill(image_tools.convert_rgba_to_rgba8int(self._window.get_bg_colour()))
         for b, source_pixbuf, tf in zip(cb, source_pixbufs, transforms):
@@ -183,11 +183,11 @@ class MagnifyingLens:
             composite_color_args = image_tools.get_composite_color_args(0) if \
                 source_pixbuf.get_has_alpha() and opaque else None
             self._draw_lens_pixbuf((x - cpos[0], y - cpos[1]), b.get_size(),
-                source_pixbuf, rotation, flips,
-                lens_size, lens_scale, canvas,
-                image_tools.scaling_quality_preference(),
-                composite_color_args, (x - border_size - check_offset[0],
-                y - border_size - check_offset[1])) # 2D only
+                                   source_pixbuf, rotation, flips,
+                                   lens_size, lens_scale, canvas,
+                                   image_tools.scaling_quality_preference(),
+                                   composite_color_args, (x - border_size - check_offset[0],
+                                                          y - border_size - check_offset[1]))  # 2D only
 
         canvas = self._window.enhancer.enhance(canvas)
 
@@ -229,19 +229,20 @@ class MagnifyingLens:
                 dest_lens_size, mapped_size, mapped_ref_pos_int, lens_size_2q, lens_size_2r
 
         # prepare actual computation
-        src_pixbuf_size = [srcbuf.get_width(), srcbuf.get_height()] # 2D only
-        transpose = (1, 0) if tools.rotation_swaps_axes(rotation) else (0, 1) # 2D only
+        src_pixbuf_size = [srcbuf.get_width(), srcbuf.get_height()]  # 2D only
+        transpose = (1, 0) if tools.rotation_swaps_axes(rotation) else (0, 1)  # 2D only
+
         def tp[T](vector: Sequence[T]) -> list[T]:
             """<vector> with its two axes the way round the rotation put them."""
             return tools.remap_axes(vector, transpose)
 
-        axis_flip = tuple(map(lambda r, f: (rotation in r) ^ f, ((270, 180), (90, 180)), tp(flips))) # 2D only
+        axis_flip = tuple(map(lambda r, f: (rotation in r) ^ f, ((270, 180), (90, 180)), tp(flips)))  # 2D only
 
         # calculate size and position data
         applied_source_scale, neg_mapped_lens_pos, dest_lens_offset, dest_lens_size, \
             mapped_size, mapped_ref_pos_int, lens_size_2q, lens_size_2r = \
             [list(x) for x in zip(*(map(calc_1d, tp(ref_pos), tp(csize),
-            src_pixbuf_size, tp(lens_size), tp(lens_scale))))]
+                                        src_pixbuf_size, tp(lens_size), tp(lens_scale))))]
 
         if min(dest_lens_size) > 0:
             # Using GdkPixbuf.Pixbuf.scale here so we do not need to worry about
@@ -264,16 +265,16 @@ class MagnifyingLens:
 
                 # write to temporary buffer
                 tempbuf = GdkPixbuf.Pixbuf.new(srcbuf.get_colorspace(),
-                    srcbuf.get_has_alpha(), srcbuf.get_bits_per_sample(), *dest_lens_size)
+                                               srcbuf.get_has_alpha(), srcbuf.get_bits_per_sample(), *dest_lens_size)
                 assert tempbuf is not None, 'the lens buffer could not be allocated'
                 temp_lens_box = box.Box.intersect(box.Box(lens_size, position=refpos_tracking),
-                    box.Box(mapped_size))
+                                                  box.Box(mapped_size))
                 temp_x, temp_y = tools.vector_opposite(
                     temp_lens_box.get_position())
                 srcbuf.scale(tempbuf, 0, 0, dest_lens_size[0], dest_lens_size[1],
-                    temp_x, temp_y,
-                    applied_source_scale[0], applied_source_scale[1],
-                    interpolation) # 2D only
+                             temp_x, temp_y,
+                             applied_source_scale[0], applied_source_scale[1],
+                             interpolation)  # 2D only
 
                 # apply all necessary transforms to temporary buffer
                 tempbuf = image_tools.rotate_pixbuf(tempbuf, rotation)
@@ -292,14 +293,14 @@ class MagnifyingLens:
                 # copy result from temporary buffer to actual lens buffer
                 if composite_color_args is None:
                     tempbuf.copy_area(0, 0, dest_width, dest_height, dstbuf,
-                        dest_x, dest_y)
+                                      dest_x, dest_y)
                 else:
                     check_x, check_y = tools.vector_add(tp(dest_lens_offset),
                                                         check_offset)
                     tempbuf.composite_color(dstbuf, dest_x, dest_y,
-                        dest_width, dest_height, dest_x, dest_y, 1, 1,
-                        GdkPixbuf.InterpType.NEAREST, 255, check_x, check_y,
-                        *composite_color_args)
+                                            dest_width, dest_height, dest_x, dest_y, 1, 1,
+                                            GdkPixbuf.InterpType.NEAREST, 255, check_x, check_y,
+                                            *composite_color_args)
                 # unref temporary buffer
                 tempbuf = None
             else:
@@ -309,20 +310,20 @@ class MagnifyingLens:
                 # which a starred vector cannot express.
                 if composite_color_args is None:
                     srcbuf.scale(dstbuf, dest_lens_offset[0], dest_lens_offset[1],
-                        dest_lens_size[0], dest_lens_size[1],
-                        neg_mapped_lens_pos[0], neg_mapped_lens_pos[1],
-                        applied_source_scale[0], applied_source_scale[1],
-                        interpolation)
+                                 dest_lens_size[0], dest_lens_size[1],
+                                 neg_mapped_lens_pos[0], neg_mapped_lens_pos[1],
+                                 applied_source_scale[0], applied_source_scale[1],
+                                 interpolation)
                 else:
                     check_x, check_y = tools.vector_add(dest_lens_offset,
                                                         check_offset)
                     srcbuf.composite_color(dstbuf,
-                        dest_lens_offset[0], dest_lens_offset[1],
-                        dest_lens_size[0], dest_lens_size[1],
-                        neg_mapped_lens_pos[0], neg_mapped_lens_pos[1],
-                        applied_source_scale[0], applied_source_scale[1],
-                        interpolation, 255, check_x, check_y,
-                        *composite_color_args)
+                                           dest_lens_offset[0], dest_lens_offset[1],
+                                           dest_lens_size[0], dest_lens_size[1],
+                                           neg_mapped_lens_pos[0], neg_mapped_lens_pos[1],
+                                           applied_source_scale[0], applied_source_scale[1],
+                                           interpolation, 255, check_x, check_y,
+                                           *composite_color_args)
         else:
             # If we are here, there is either no image to be drawn at all, or it is
             # out of range.

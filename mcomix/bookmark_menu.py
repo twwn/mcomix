@@ -42,6 +42,8 @@ class BookmarksMenu:
         self._bookmarks_store = bookmark_backend.BookmarksStore
         self._bookmarks_store.initialize(window)
         self._bookmarks: "list[bookmark_menu_item._Bookmark]" = []
+        #: The bookmarks dialog, for as long as one is open.
+        self._dialog: "bookmark_dialog._BookmarksDialog | None" = None
 
         self.model = Gio.Menu()
 
@@ -66,7 +68,7 @@ class BookmarksMenu:
         self._bookmarks_store.add_bookmark += lambda bookmark: self._rebuild()
         self._bookmarks_store.remove_bookmark += lambda bookmark: self._rebuild()
         self._bookmarks_store.clear_bookmarks += self._rebuild
-
+        self._bookmarks_store.set_bookmark_order += lambda order: self._rebuild()
 
     def _rebuild(self) -> None:
         """Put the fixed entries and the current bookmarks in the model."""
@@ -104,8 +106,28 @@ class BookmarksMenu:
         self._bookmarks_store.add_current_to_bookmarks()
 
     def _edit_activated(self, *args: object) -> None:
-        """Open the bookmarks dialog."""
-        bookmark_dialog._BookmarksDialog(self._window, self._bookmarks_store)
+        """Open the bookmarks dialog, or raise the one already open.
+
+        One at a time, as dialog_handler keeps the dialogs it opens.
+        Each dialog lists the bookmarks as the store held them when it
+        opened and writes that order back when it closes, so a second
+        one is a second copy of a list that is already being edited:
+        whichever was closed last decided the order, and a bookmark the
+        other had removed was gone from a list still showing it.
+        """
+        if self._dialog is not None:
+            self._dialog.present()
+            return
+        self._dialog = bookmark_dialog._BookmarksDialog(
+            self._window, self._bookmarks_store)
+        # 'unrealize' rather than 'destroy', which GTK4 emits when the
+        # last reference to the window goes and not when it is
+        # destroyed.
+        self._dialog.connect('unrealize', self._edit_closed)
+
+    def _edit_closed(self, *args: object) -> None:
+        """Forget the dialog, so that the next Edit opens a new one."""
+        self._dialog = None
 
     def _clear_activated(self, *args: object) -> None:
         """Remove every bookmark, once the reader has confirmed it."""

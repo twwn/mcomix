@@ -28,6 +28,7 @@ _dialog: "_LibraryDialog | None" = None
 # but is represented by this ID in the library's TreeModels.
 _COLLECTION_ALL = -1
 
+
 class _LibraryDialog(Gtk.Window):
 
     """The library window. Automatically creates and uses a new
@@ -85,7 +86,7 @@ class _LibraryDialog(Gtk.Window):
         self.present()
 
     def open_book(self, books: Sequence[int],
-                 keep_library_open: bool = False) -> None:
+                  keep_library_open: bool = False) -> None:
         """Open the book with ID <book>."""
 
         # get_book_path() answers None for a book that is no longer in
@@ -127,13 +128,13 @@ class _LibraryDialog(Gtk.Window):
 
             if len(filelist) == 1:
                 message = _("Added new book '%(bookname)s' "
-                    "from directory '%(directory)s'.")
+                            "from directory '%(directory)s'.")
             else:
                 message = _("Added %(count)d new books "
-                    "from directory '%(directory)s'.")
+                            "from directory '%(directory)s'.")
 
             self.set_status_message(message % {'directory': watchentry.directory,
-                'count': len(filelist), 'bookname': os.path.basename(filelist[0])})
+                                               'count': len(filelist), 'bookname': os.path.basename(filelist[0])})
         else:
             self.set_status_message(
                 _("No new books found in directory '%s'.") % watchentry.directory)
@@ -169,7 +170,7 @@ class _LibraryDialog(Gtk.Window):
         else:
             collection = self.backend.get_collection_by_name(collection_name)
 
-            if collection is None: # Collection by that name doesn't exist.
+            if collection is None:  # Collection by that name doesn't exist.
                 self.backend.add_collection(collection_name)
                 collection = self.backend.get_collection_by_name(
                     collection_name)

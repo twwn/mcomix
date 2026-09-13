@@ -6,6 +6,7 @@ import re
 from mcomix import process
 from mcomix.archive import archive_base
 
+
 class LhaArchive(archive_base.ExternalExecutableArchive):
     """ LHA file extractor using the lha executable. """
 

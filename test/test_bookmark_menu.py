@@ -9,6 +9,7 @@ from . import MComixTest, pump
 from mcomix import bookmark_backend
 from mcomix import bookmark_menu_item
 from mcomix import constants
+from mcomix import bookmark_dialog
 from mcomix import bookmark_menu
 from mcomix import message_dialog
 from mcomix import widgets
@@ -204,6 +205,35 @@ class BookmarksMenuTest(MComixTest):
         self.assertEqual(len(self._sections()[1]), 1)
         self._bookmark(7, '/tmp/two.cbz')
         self.assertEqual(len(self._sections()[1]), 2)
+
+    def test_editing_twice_raises_the_dialog_that_is_open(self):
+        """Each dialog holds the list as the store had it when it
+        opened and writes that order back on the way out, so two of them
+        are two copies of a list being edited."""
+        self.menu._edit_activated()
+        pump()
+        first = self.menu._dialog
+        self.assertIsNotNone(first)
+        self.menu._edit_activated()
+        pump()
+        self.assertIs(self.menu._dialog, first)
+        self.assertEqual(
+            len([window for window in Gtk.Window.list_toplevels()
+                 if isinstance(window, bookmark_dialog._BookmarksDialog)]), 1)
+
+    def test_closing_the_dialog_lets_the_next_edit_open_another(self):
+        self.menu._edit_activated()
+        pump()
+        first = self.menu._dialog
+        first._close()
+        pump()
+        self.assertIsNone(self.menu._dialog)
+        self.menu._edit_activated()
+        pump()
+        self.assertIsNotNone(self.menu._dialog)
+        self.assertIsNot(self.menu._dialog, first)
+        self.menu._dialog._close()
+        pump()
 
     def test_opening_a_bookmark_loads_it(self):
         self._bookmark(3)

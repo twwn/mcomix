@@ -47,7 +47,7 @@ class _LibraryBackend:
             return row
 
         self._con = dbapi2.connect(constants.LIBRARY_DATABASE_PATH,
-            check_same_thread=False, isolation_level=None)
+                                   check_same_thread=False, isolation_level=None)
         self._con.row_factory = row_factory
 
         self.watchlist = backend_types._WatchList(self)
@@ -161,7 +161,8 @@ class _LibraryBackend:
                                                         constants.MAX_LIBRARY_COVER_SIZE))
         thumb = thumbnailer.thumbnail(path)
 
-        if thumb is None: log.warning(_('! Could not get cover for book "%s"'), path)
+        if thumb is None:
+            log.warning(_('! Could not get cover for book "%s"'), path)
         return thumb
 
     def get_book_name(self, book: int) -> str | None:

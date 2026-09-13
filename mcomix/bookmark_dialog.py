@@ -19,6 +19,7 @@ if TYPE_CHECKING:
     from mcomix import bookmark_menu_item
     from mcomix import main
 
+
 class _BookmarksDialog(Dialog):
 
     """_BookmarksDialog lets the user remove or rearrange bookmarks."""
@@ -79,18 +80,23 @@ class _BookmarksDialog(Dialog):
 
         self.set_default_size(600, 450)
 
+        # Only 'response': Dialog turns the window's close button into
+        # one of those, so connecting to 'close-request' as well ran
+        # the closing twice over, once through each.
         self.connect('response', self._response)
-        self.connect('close-request', self._close)
 
         keys = Gtk.EventControllerKey()
         keys.connect('key-pressed', self._key_press_event)
         self._list.add_controller(keys)
         self._list.connect('activate', self._bookmark_activated)
+        self._list.selection.connect('selection-changed',
+                                     self._selection_changed)
 
         for bookmark in self._bookmarks_store.get_bookmarks():
             self._add_bookmark(bookmark)
         self._clear_button.set_sensitive(
             not self._bookmarks_store.is_empty())
+        self._selection_changed()
 
         self.set_visible(True)
 
@@ -130,17 +136,39 @@ class _BookmarksDialog(Dialog):
         """Add the <bookmark> to the dialog, newest first."""
         self._list.insert_row(0, bookmark.to_row())
 
+    def _selection_changed(self, *args: object) -> None:
+        """Only a bookmark that is selected can be removed.
+
+        A Gtk.SingleSelection starts with nothing selected here, so the
+        button starts insensitive rather than being one that does
+        nothing when it is pressed - which is what the "open with"
+        editor's own Remove does.
+        """
+        self.set_response_sensitive(constants.RESPONSE_REMOVE,
+                                    self._list.get_selected_row() is not None)
+
     def _remove_selected(self) -> None:
-        """Remove the currently selected bookmark from the dialog and from
-        the store."""
+        """Remove the selected bookmark from the dialog and the store.
+
+        Whatever takes its place is selected next, or the row above it
+        if it was the last, so that Delete works down a run of
+        bookmarks: a Gtk.SingleSelection leaves nothing selected when
+        what was selected goes, where a Gtk.TreeView moved the
+        selection on.
+        """
 
         row = self._list.get_selected_row()
 
         if row is not None:
+            position = self._list.get_selected_positions()[0]
             self._list.remove_row(row)
             self._bookmarks_store.remove_bookmark(row.bookmark)
+            left = self._list.store.get_n_items()
+            if left:
+                self._list.select_only(min(position, left - 1))
             self._clear_button.set_sensitive(
                 not self._bookmarks_store.is_empty())
+            self._selection_changed()
 
     def _clear_all(self) -> None:
         """Remove every bookmark, once the reader has confirmed it."""
@@ -155,6 +183,7 @@ class _BookmarksDialog(Dialog):
         self._list.clear()
         self._bookmarks_store.clear_bookmarks()
         self._clear_button.set_sensitive(False)
+        self._selection_changed()
 
     def _bookmark_activated(self, view: Gtk.ListView, position: int,
                             *args: object) -> None:
@@ -169,17 +198,17 @@ class _BookmarksDialog(Dialog):
 
     def _response(self, dialog: Dialog, response: int) -> None:
 
-        if response == Response.CLOSE:
-            self._close()
-
-        elif response == constants.RESPONSE_REMOVE:
+        if response == constants.RESPONSE_REMOVE:
             self._remove_selected()
 
         elif response == constants.RESPONSE_CLEAR:
             self._clear_all()
 
         else:
-            self.destroy()
+            # Close, escape and the window's close button all mean the
+            # same thing here, and now do the same thing: escape threw
+            # away a reordering that either of the others kept.
+            self._close()
 
     def _key_press_event(self, controller: Gtk.EventControllerKey,
                          keyval: int, keycode: int,
@@ -191,18 +220,19 @@ class _BookmarksDialog(Dialog):
         return Gdk.EVENT_PROPAGATE
 
     def _close(self, *args: object) -> None:
-        """Close the dialog and update the _BookmarksStore with the new
-        ordering."""
+        """Close the dialog, leaving the store in the order it holds.
 
-        ordering: "list[bookmark_menu_item._Bookmark]" = []
-
-        for row in self._list.each_row():
-            ordering.insert(0, row.bookmark)
-
-        for bookmark in ordering:
-            self._bookmarks_store.remove_bookmark(bookmark)
-            self._bookmarks_store.add_bookmark(bookmark)
-
+        The order the list holds, not the one it is drawing: a heading
+        that is sorting draws an order of its own, and writing that
+        back made looking at the bookmarks by date reorder them for
+        good.  It is the held order a reordering drag moves a row in,
+        which is why the drag is refused while a heading sorts.  The
+        list shows the newest bookmark first and the store keeps it
+        last, so the one is the other reversed.
+        """
+        ordering = [row.bookmark for row in self._list.each_stored_row()]
+        ordering.reverse()
+        self._bookmarks_store.set_bookmark_order(ordering)
         self.destroy()
 
 

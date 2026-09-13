@@ -65,7 +65,7 @@ class _CommentArea(Gtk.Box):
         """Load all comments in the archive."""
 
         for num in range(1,
-          self._edit_dialog.file_handler.get_number_of_comments() + 1):
+                         self._edit_dialog.file_handler.get_number_of_comments() + 1):
 
             self.add_extra_file(
                 self._edit_dialog.file_handler.get_comment_name(num))

@@ -49,10 +49,7 @@ class Matrix:
     def __eq__(self, other: object) -> bool:
         """Test equality: self == other."""
         if isinstance(other, Matrix):
-            return len(self.m) == len(other.m) and all([
-                self.m[i] == other.m[i]
-                for i in range(len(self.m))
-            ])
+            return self.m == other.m
         return NotImplemented
 
     def __ne__(self, other: object) -> bool:
@@ -164,7 +161,8 @@ class Transform(Matrix):
         """Get the predefined Matrix for a supported rotation."""
         if abs(deg) not in (0, 90, 180, 270):
             raise ValueError("illegal rotation angle: " + str(deg))
-        if deg < 0: deg = 360 + deg
+        if deg < 0:
+            deg = 360 + deg
         if deg == 90:
             return cls.ROT90
         if deg == 180:

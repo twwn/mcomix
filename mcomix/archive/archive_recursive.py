@@ -13,6 +13,7 @@ from collections.abc import Iterable, Iterator
 #: until the disk it is written to fills up.
 MAX_NESTING_DEPTH = 10
 
+
 class RecursiveArchive(archive_base.BaseArchive):
 
     """An archive and the archives inside it, as one flat listing.
@@ -81,8 +82,7 @@ class RecursiveArchive(archive_base.BaseArchive):
             sub_archive_ext = os.path.splitext(f)[1].lower()[1:]
             sub_archive_path = os.path.join(
                 self._destination_dir, 'sub-archives',
-                '%04u.%s' % (len(self._archive_list), sub_archive_ext
-            ))
+                '%04u.%s' % (len(self._archive_list), sub_archive_ext))
             self._create_directory(os.path.dirname(sub_archive_path))
             os.rename(os.path.join(destination_dir, f), sub_archive_path)
             # And open it and list its contents.
@@ -166,7 +166,7 @@ class RecursiveArchive(archive_base.BaseArchive):
                 name_archive, name_archive_name = self._entry_mapping[name]
                 if name_archive == archive:
                     archive_wanted[name_archive_name] = name
-            if 0 == len(archive_wanted):
+            if not archive_wanted:
                 continue
             root = self._archive_root[archive]
             archive_destination_dir = destination_dir
@@ -179,7 +179,7 @@ class RecursiveArchive(archive_base.BaseArchive):
             for f in archive.iter_extract(wanted_names, archive_destination_dir):
                 yield archive_wanted[f]
             wanted -= set(archive_wanted.values())
-            if 0 == len(wanted):
+            if not wanted:
                 break
 
     def is_solid(self) -> bool:
@@ -205,4 +205,3 @@ class RecursiveArchive(archive_base.BaseArchive):
             archives.append(self._main_archive)
         for archive in archives:
             archive.close()
-

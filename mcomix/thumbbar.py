@@ -152,8 +152,8 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
         """Load the thumbnails, if it is appropriate to do so."""
 
         if (not self._window.filehandler.file_loaded or
-            self._window.imagehandler.get_number_of_pages() == 0 or
-            self._loaded):
+                self._window.imagehandler.get_number_of_pages() == 0 or
+                self._loaded):
             return
 
         self.toggle_page_numbers_visible()
@@ -176,7 +176,7 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
         pixbuf = self._window.imagehandler.get_thumbnail(page, size, size,
                                                          nowait=True)
         if pixbuf is not None:
-            pixbuf = self._window.enhancer.enhance(pixbuf);
+            pixbuf = self._window.enhancer.enhance(pixbuf)
             pixbuf = image_tools.add_border(pixbuf, self._BORDER_SIZE)
 
         return pixbuf

@@ -8,6 +8,7 @@ the order back on close, and the headings that sort.
 
 import datetime
 import os
+from unittest import mock
 
 from gi.repository import Gdk, GLib, Gtk
 
@@ -17,6 +18,7 @@ from mcomix import bookmark_backend
 from mcomix import bookmark_dialog
 from mcomix import bookmark_menu_item
 from mcomix import constants
+from mcomix import tools
 from mcomix.dialog import Response
 from mcomix.preferences import prefs
 
@@ -100,6 +102,49 @@ class BookmarksDialogTest(MComixTest):
         self.assertEqual([mark._name for mark in self.store.get_bookmarks()],
                          ['alpha', 'beta'])
 
+    def test_removing_selects_whatever_takes_its_place(self):
+        """Delete has to work down a run of bookmarks.  A
+        Gtk.SingleSelection leaves nothing selected when what was
+        selected goes, where a Gtk.TreeView moved the selection on, so
+        the second Delete found nothing to remove."""
+        self.dialog._list.select_only(0)
+        self.dialog._remove_selected()
+        self.assertEqual(self.dialog._list.get_selected_row().name, 'beta')
+        self.dialog._remove_selected()
+        self.assertEqual(self._names(), ['alpha'])
+
+    def test_removing_the_last_one_selects_the_one_above_it(self):
+        self.dialog._list.select_only(2)
+        self.dialog._remove_selected()
+        self.assertEqual(self.dialog._list.get_selected_row().name, 'beta')
+
+    def test_removing_the_only_one_leaves_nothing_selected(self):
+        for _each in range(3):
+            self.dialog._list.select_only(0)
+            self.dialog._remove_selected()
+        self.assertEqual(self._names(), [])
+        self.assertIsNone(self.dialog._list.get_selected_row())
+
+    # -- The buttons ------------------------------------------------------
+
+    def _remove_button(self):
+        return self.dialog.get_widget_for_response(constants.RESPONSE_REMOVE)
+
+    def test_remove_is_insensitive_until_something_is_selected(self):
+        """It answered a press with nothing at all, where the "open
+        with" editor's Remove is insensitive until a row is picked."""
+        self.assertFalse(self._remove_button().get_sensitive())
+        self.dialog._list.select_only(1)
+        self.assertTrue(self._remove_button().get_sensitive())
+
+    def test_remove_goes_insensitive_again_when_the_list_empties(self):
+        self.dialog._list.select_only(0)
+        self.dialog.response(constants.RESPONSE_CLEAR)
+        pump()
+        self._dialogs()[0].response(Response.YES)
+        pump()
+        self.assertFalse(self._remove_button().get_sensitive())
+
     def test_removing_with_nothing_selected_removes_nothing(self):
         self.dialog._list.unselect_all()
         self.dialog._remove_selected()
@@ -169,7 +214,23 @@ class BookmarksDialogTest(MComixTest):
 
     # -- The order the store keeps ----------------------------------------
 
-    def test_closing_writes_the_shown_order_back_to_the_store(self):
+    def _stored(self):
+        return [mark._name for mark in self.store.get_bookmarks()]
+
+    def _writes(self, action):
+        """How many times <action> writes the bookmarks file."""
+        written = []
+        real = tools.atomic_write
+
+        def counted(*args, **kwargs):
+            written.append(args[0])
+            return real(*args, **kwargs)
+
+        with mock.patch.object(tools, 'atomic_write', counted):
+            action()
+        return len(written)
+
+    def test_closing_writes_the_order_it_holds_back_to_the_store(self):
         """Dragging a bookmark somewhere else is what the dialog is for.
 
         The store keeps them oldest first and the dialog shows them
@@ -179,8 +240,73 @@ class BookmarksDialogTest(MComixTest):
         self.assertTrue(self.dialog._list.move_row(0, 2))
         self.assertEqual(self._names(), ['beta', 'alpha', 'gamma'])
         self.dialog._close()
-        self.assertEqual([mark._name for mark in self.store.get_bookmarks()],
-                         ['gamma', 'alpha', 'beta'])
+        self.assertEqual(self._stored(), ['gamma', 'alpha', 'beta'])
+
+    def test_sorting_by_a_heading_and_closing_leaves_the_order_alone(self):
+        """A heading sorts the view, and the view is not the order.
+
+        Sorting by a heading to look at the bookmarks by date and then
+        closing wrote the sorted order back over the stored one, which
+        nothing could undo.  A drag is refused while a heading sorts
+        for the same reason: the order belongs to the list, not to what
+        it happens to be drawing.
+        """
+        self.dialog._list.sort_by(self.dialog._name_col)
+        self.assertEqual(self._names(), ['alpha', 'beta', 'gamma'])
+        self.dialog._close()
+        self.assertEqual(self._stored(), ['alpha', 'beta', 'gamma'])
+
+    def test_escape_keeps_a_reordering_like_the_close_button(self):
+        """Escape threw the reordering away; the close button kept it."""
+        self.assertTrue(self.dialog._list.move_row(0, 2))
+        self.dialog._escaped()
+        pump()
+        self.assertEqual(self._stored(), ['gamma', 'alpha', 'beta'])
+
+    def test_the_window_being_closed_keeps_it_too(self):
+        self.assertTrue(self.dialog._list.move_row(0, 2))
+        self.dialog.close()
+        pump()
+        self.assertEqual(self._stored(), ['gamma', 'alpha', 'beta'])
+
+    def test_closing_an_order_that_did_not_change_writes_nothing(self):
+        """It was a remove and an add of every bookmark in turn, each
+        re-pickling and fsyncing the whole file and rebuilding the
+        bookmarks menu: opening the dialog and closing it again cost
+        six writes for three bookmarks."""
+        self.assertEqual(self._writes(self.dialog._close), 0)
+
+    def test_a_reordering_is_one_write_however_many_bookmarks(self):
+        self.assertTrue(self.dialog._list.move_row(0, 2))
+        self.assertEqual(self._writes(self.dialog._close), 1)
+
+    def test_closing_does_not_bring_back_a_bookmark_removed_elsewhere(self):
+        """A second dialog over the same store held a list of its own.
+
+        Closing it removed and re-added every bookmark in that list,
+        and remove_bookmark() raises a ValueError for a bookmark the
+        store no longer holds, so closing the older of two dialogs
+        after the newer had removed something aborted half way through
+        and left the dialog standing.
+        """
+        another = bookmark_dialog._BookmarksDialog(self.window, self.store)
+        pump()
+        self.dialog._list.select_only(0)
+        self.dialog._remove_selected()
+        self.dialog._close()
+        another._close()
+        self.assertEqual(self._stored(), ['alpha', 'beta'])
+
+    def test_closing_keeps_a_bookmark_added_since_it_opened(self):
+        """The dialog lists what the store held when it opened.
+
+        One added since is not in that list, and re-adding the listed
+        ones one at a time moved it to the front of the store rather
+        than leaving it where it was put.
+        """
+        self.store.add_bookmark(self._bookmark('delta', 4))
+        self.dialog._close()
+        self.assertEqual(self._stored(), ['alpha', 'beta', 'gamma', 'delta'])
 
     # -- The headings that sort -------------------------------------------
 

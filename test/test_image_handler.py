@@ -238,6 +238,7 @@ class VirtualDoublePageTest(MComixTest):
         self.handler._get_pixbuf(1)
         self.assertEqual(self.handler._get_displayed_size(2), uncached)
 
+
 class CacheWindowTest(MComixTest):
 
     """The set of pages C{_ask_for_pages} picks must always contain the page
@@ -323,7 +324,6 @@ class NoPageYetTest(MComixTest):
         prefs['bg colour'] = [0.25, 0.5, 0.75, 1.0]
         self.assertEqual(self.handler.get_pixbuf_auto_background(1),
                          [0.25, 0.5, 0.75, 1.0])
-
 
 
 class BeforeAPageIsChosenTest(MComixTest):

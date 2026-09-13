@@ -264,6 +264,7 @@ class Extractor:
             self._contents_listed = True
         self.contents_listed(self, files)
 
+
 class ArchiveException(Exception):
     """ Indicate error during extraction operations. """
     pass

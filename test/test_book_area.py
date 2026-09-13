@@ -232,7 +232,6 @@ class CoverSizeDialogTest(MComixTest):
                                 if isinstance(child, Gtk.Scale)))
 
 
-
 class _RecordingBackend(_Backend):
 
     """A backend that counts the transaction it is put into."""

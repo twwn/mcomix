@@ -2,8 +2,10 @@
 resort to calling rar/unrar manually. """
 
 import functools
-import sys, os
-import ctypes, ctypes.util
+import sys
+import os
+import ctypes
+import ctypes.util
 from collections.abc import Iterator
 
 from mcomix import constants
@@ -12,10 +14,11 @@ from mcomix import log
 
 if sys.platform == 'win32':
     UNRARCALLBACK = ctypes.WINFUNCTYPE(ctypes.c_longlong, ctypes.c_uint,
-        ctypes.c_longlong, ctypes.c_longlong, ctypes.c_longlong)
+                                       ctypes.c_longlong, ctypes.c_longlong, ctypes.c_longlong)
 else:
     UNRARCALLBACK = ctypes.CFUNCTYPE(ctypes.c_longlong, ctypes.c_uint,
-        ctypes.c_longlong, ctypes.c_longlong, ctypes.c_longlong)
+                                     ctypes.c_longlong, ctypes.c_longlong, ctypes.c_longlong)
+
 
 class RarArchive(archive_base.BaseArchive):
     """ Wrapper class for libunrar. All string values passed to this class must be unicode objects.
@@ -26,28 +29,28 @@ class RarArchive(archive_base.BaseArchive):
 
     class _OpenMode:
         """ Rar open mode """
-        RAR_OM_LIST    = 0
+        RAR_OM_LIST = 0
         RAR_OM_EXTRACT = 1
 
     class _ProcessingMode:
         """ Rar file processing mode """
-        RAR_SKIP       = 0
-        RAR_EXTRACT    = 2
+        RAR_SKIP = 0
+        RAR_EXTRACT = 2
 
     class _CallbackMessage:
         """ Messages passed to the unrar callback function """
-        UCM_CHANGEVOLUME  = 0
-        UCM_PROCESSDATA   = 1
-        UCM_NEEDPASSWORD  = 2
+        UCM_CHANGEVOLUME = 0
+        UCM_PROCESSDATA = 1
+        UCM_NEEDPASSWORD = 2
         UCM_CHANGEVOLUMEW = 3
         UCM_NEEDPASSWORDW = 4
-        UCM_PROCESSDATAW  = 5
+        UCM_PROCESSDATAW = 5
 
     class _VolumeMode:
         """ Reason a UCM_CHANGEVOLUME message was sent """
         # The next volume is missing, and unrar is asking for it. Answering
         # anything but -1 makes it retry the very same volume, forever.
-        RAR_VOL_ASK    = 0
+        RAR_VOL_ASK = 0
         # The next volume is about to be opened, this is just a notification.
         RAR_VOL_NOTIFY = 1
 
@@ -74,17 +77,17 @@ class RarArchive(archive_base.BaseArchive):
         # for packed structures, but wants that spelled out from 3.14 on.
         _layout_ = 'ms'
         _fields_ = [("ArcName", ctypes.c_char_p),
-                      ("ArcNameW", ctypes.c_wchar_p),
-                      ("OpenMode", ctypes.c_uint),
-                      ("OpenResult", ctypes.c_uint),
-                      ("CmtBuf", ctypes.c_char_p),
-                      ("CmtBufSize", ctypes.c_uint),
-                      ("CmtSize", ctypes.c_uint),
-                      ("CmtState", ctypes.c_uint),
-                      ("Flags", ctypes.c_uint),
-                      ("Callback", UNRARCALLBACK),
-                      ("UserData", ctypes.c_long),
-                      ("Reserved", ctypes.c_uint * 28)]
+                    ("ArcNameW", ctypes.c_wchar_p),
+                    ("OpenMode", ctypes.c_uint),
+                    ("OpenResult", ctypes.c_uint),
+                    ("CmtBuf", ctypes.c_char_p),
+                    ("CmtBufSize", ctypes.c_uint),
+                    ("CmtSize", ctypes.c_uint),
+                    ("CmtState", ctypes.c_uint),
+                    ("Flags", ctypes.c_uint),
+                    ("Callback", UNRARCALLBACK),
+                    ("UserData", ctypes.c_long),
+                    ("Reserved", ctypes.c_uint * 28)]
 
     class _RARHeaderDataEx(ctypes.Structure):
         """ Archive file structure. Used by DLL calls. """
@@ -93,26 +96,25 @@ class RarArchive(archive_base.BaseArchive):
         # for packed structures, but wants that spelled out from 3.14 on.
         _layout_ = 'ms'
         _fields_ = [("ArcName", ctypes.c_char * 1024),
-                      ("ArcNameW", ctypes.c_wchar * 1024),
-                      ("FileName", ctypes.c_char * 1024),
-                      ("FileNameW", ctypes.c_wchar * 1024),
-                      ("Flags", ctypes.c_uint),
-                      ("PackSize", ctypes.c_uint),
-                      ("PackSizeHigh", ctypes.c_uint),
-                      ("UnpSize", ctypes.c_uint),
-                      ("UnpSizeHigh", ctypes.c_uint),
-                      ("HostOS", ctypes.c_uint),
-                      ("FileCRC", ctypes.c_uint),
-                      ("FileTime", ctypes.c_uint),
-                      ("UnpVer", ctypes.c_uint),
-                      ("Method", ctypes.c_uint),
-                      ("FileAttr", ctypes.c_uint),
-                      ("CmtBuf", ctypes.c_char_p),
-                      ("CmtBufSize", ctypes.c_uint),
-                      ("CmtSize", ctypes.c_uint),
-                      ("CmtState", ctypes.c_uint),
-                      ("Reserved", ctypes.c_uint * 1024)]
-
+                    ("ArcNameW", ctypes.c_wchar * 1024),
+                    ("FileName", ctypes.c_char * 1024),
+                    ("FileNameW", ctypes.c_wchar * 1024),
+                    ("Flags", ctypes.c_uint),
+                    ("PackSize", ctypes.c_uint),
+                    ("PackSizeHigh", ctypes.c_uint),
+                    ("UnpSize", ctypes.c_uint),
+                    ("UnpSizeHigh", ctypes.c_uint),
+                    ("HostOS", ctypes.c_uint),
+                    ("FileCRC", ctypes.c_uint),
+                    ("FileTime", ctypes.c_uint),
+                    ("UnpVer", ctypes.c_uint),
+                    ("Method", ctypes.c_uint),
+                    ("FileAttr", ctypes.c_uint),
+                    ("CmtBuf", ctypes.c_char_p),
+                    ("CmtBufSize", ctypes.c_uint),
+                    ("CmtSize", ctypes.c_uint),
+                    ("CmtState", ctypes.c_uint),
+                    ("Reserved", ctypes.c_uint * 1024)]
 
     @staticmethod
     def is_available() -> bool:
@@ -165,7 +167,7 @@ class RarArchive(archive_base.BaseArchive):
         try:
             while True:
                 filename = self._read_header()
-                if 0 != (0x10 & self._headerdata.Flags):
+                if self._headerdata.Flags & 0x10:
                     self._is_solid = True
                 yield filename
                 # Skip to the next entry if we're still on the same name
@@ -239,7 +241,7 @@ class RarArchive(archive_base.BaseArchive):
         expect.  Anything else closes the archive before raising, since
         the handle is not to be used after a failure.
         """
-        if 0 == errorcode:
+        if errorcode == 0:
             return
         self._close()
         exc: Exception
@@ -319,12 +321,13 @@ class RarArchive(archive_base.BaseArchive):
             # Continue operation
             return 0
 
+
 class UnrarException(Exception):
     """ Exception class for RarArchive. """
 
     _exceptions = {
         RarArchive._ErrorCode.ERAR_END_ARCHIVE: "End of archive",
-        RarArchive._ErrorCode.ERAR_NO_MEMORY:" Not enough memory to initialize data structures",
+        RarArchive._ErrorCode.ERAR_NO_MEMORY: " Not enough memory to initialize data structures",
         RarArchive._ErrorCode.ERAR_BAD_DATA: "Bad data, CRC mismatch",
         RarArchive._ErrorCode.ERAR_BAD_ARCHIVE: "Volume is not valid RAR archive",
         RarArchive._ErrorCode.ERAR_UNKNOWN_FORMAT: "Unknown archive format",
@@ -346,6 +349,7 @@ class UnrarException(Exception):
         front of the reader, so they are not translated.
         """
         return UnrarException._exceptions.get(errorcode, "Unknown error")
+
 
 @functools.cache
 def _get_unrar_dll() -> ctypes.CDLL | None:

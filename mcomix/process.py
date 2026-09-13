@@ -25,13 +25,14 @@ def _get_creationflags() -> int:
     else:
         return 0
 
+
 # Cannot spawn processes with PythonW/Win32 unless stdin
 # and stderr are redirected to a pipe/devnull as well.
 def call(args: Sequence[str | bytes], stdin: Redirect = NULL,
          stdout: Redirect = NULL, stderr: Redirect = NULL) -> bool:
-    return 0 == subprocess.call(args, stdin=stdin,
-                                stdout=stdout, stderr=stderr,
-                                creationflags=_get_creationflags())
+    return subprocess.call(args, stdin=stdin, stdout=stdout,
+                           stderr=stderr,
+                           creationflags=_get_creationflags()) == 0
 
 
 def popen(args: Sequence[str | bytes], stdin: Redirect = NULL,
@@ -136,34 +137,35 @@ if sys.platform == 'win32':
 
         class StartupInfo(ctypes.Structure):
             _fields_ = [("cb", DWORD),
-                ("lpReserved", LPTSTR),
-                ("lpDesktop", LPTSTR),
-                ("lpTitle", LPTSTR),
-                ("dwX", DWORD),
-                ("dwY", DWORD),
-                ("dwXSize", DWORD),
-                ("dwYSize", DWORD),
-                ("dwXCountChars", DWORD),
-                ("dwYCountChars", DWORD),
-                ("dwFillAttribute", DWORD),
-                ("dwFlags", DWORD),
-                ("wShowWindow", WORD),
-                ("cbReserved2", WORD),
-                ("lpReserved2", LPBYTE),
-                ("hStdInput", HANDLE),
-                ("hStdOutput", HANDLE),
-                ("hStdError", HANDLE)]
+                        ("lpReserved", LPTSTR),
+                        ("lpDesktop", LPTSTR),
+                        ("lpTitle", LPTSTR),
+                        ("dwX", DWORD),
+                        ("dwY", DWORD),
+                        ("dwXSize", DWORD),
+                        ("dwYSize", DWORD),
+                        ("dwXCountChars", DWORD),
+                        ("dwYCountChars", DWORD),
+                        ("dwFillAttribute", DWORD),
+                        ("dwFlags", DWORD),
+                        ("wShowWindow", WORD),
+                        ("cbReserved2", WORD),
+                        ("lpReserved2", LPBYTE),
+                        ("hStdInput", HANDLE),
+                        ("hStdOutput", HANDLE),
+                        ("hStdError", HANDLE)]
+
         class ProcessInformation(ctypes.Structure):
             _fields_ = [("hProcess", HANDLE),
-                ("hThread", HANDLE),
-                ("dwProcessId", DWORD),
-                ("dwThreadId", DWORD)]
+                        ("hThread", HANDLE),
+                        ("dwProcessId", DWORD),
+                        ("dwThreadId", DWORD)]
 
         LPSTRARTUPINFO = ctypes.POINTER(StartupInfo)
         LPROCESS_INFORMATION = ctypes.POINTER(ProcessInformation)
         ctypes.windll.kernel32.CreateProcessW.argtypes = [LPTSTR, LPTSTR,
-            ctypes.c_void_p, ctypes.c_void_p, ctypes.c_bool, DWORD,
-            ctypes.c_void_p, LPTSTR, LPSTRARTUPINFO, LPROCESS_INFORMATION]
+                                                          ctypes.c_void_p, ctypes.c_void_p, ctypes.c_bool, DWORD,
+                                                          ctypes.c_void_p, LPTSTR, LPSTRARTUPINFO, LPROCESS_INFORMATION]
         ctypes.windll.kernel32.CreateProcessW.restype = ctypes.c_bool
 
         # Convert list of arguments into a single string
@@ -181,8 +183,8 @@ if sys.platform == 'win32':
 
         # Spawn new process
         success = ctypes.windll.kernel32.CreateProcessW(exe, buffer,
-                None, None, False, 0, None, None, ctypes.byref(startupinfo),
-                ctypes.byref(processinfo))
+                                                        None, None, False, 0, None, None, ctypes.byref(startupinfo),
+                                                        ctypes.byref(processinfo))
 
         if success:
             ctypes.windll.kernel32.CloseHandle(processinfo.hProcess)
@@ -190,7 +192,7 @@ if sys.platform == 'win32':
             return int(processinfo.dwProcessId)
         else:
             raise ctypes.WinError(ctypes.GetLastError(),
-                    i18n.to_unicode(ctypes.FormatError()))
+                                  i18n.to_unicode(ctypes.FormatError()))
 
 
 # vim: expandtab:sw=4:ts=4

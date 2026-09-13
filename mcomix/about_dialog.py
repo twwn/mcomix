@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from mcomix import main
 
+
 class _AboutDialog(Gtk.AboutDialog):
 
     def __init__(self, window: "main.MainWindow") -> None:
@@ -46,13 +47,13 @@ class _AboutDialog(Gtk.AboutDialog):
         self.set_wrap_license(True)
         self.set_license(license)
 
-        authors = [ '%s: %s' % (name, description) for name, description in strings.AUTHORS ]
+        authors = ['%s: %s' % (name, description) for name, description in strings.AUTHORS]
         self.set_authors(authors)
 
-        translators = [ '%s: %s' % (name, description) for name, description in strings.TRANSLATORS ]
+        translators = ['%s: %s' % (name, description) for name, description in strings.TRANSLATORS]
         self.set_translator_credits("\n".join(translators))
 
-        artists = [ '%s: %s' % (name, description) for name, description in strings.ARTISTS ]
+        artists = ['%s: %s' % (name, description) for name, description in strings.ARTISTS]
         self.set_artists(artists)
 
         self.connect('activate-link', self._on_activate_link)

@@ -17,6 +17,7 @@ if TYPE_CHECKING:
 
 _dialog: "_EnhanceImageDialog | None" = None
 
+
 class _EnhanceImageDialog(Dialog):
 
     """A Gtk.Dialog which allows modification of the values belonging to
@@ -197,6 +198,7 @@ def open_dialog(action: Gio.SimpleAction, window: "main.MainWindow") -> None:
         _dialog = _EnhanceImageDialog(window)
     else:
         _dialog.present()
+
 
 def _close_dialog(*args: object) -> None:
     """Destroy the image enhancement dialog."""

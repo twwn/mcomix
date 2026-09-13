@@ -13,7 +13,6 @@ where they are compared along every other.  That is what makes the
 distribution axis a case of its own throughout this module.
 """
 
-import operator
 from mcomix import constants
 from mcomix.preferences import prefs
 from mcomix import tools
@@ -159,37 +158,31 @@ class ZoomModel:
             else:
                 # Scale down to intersection.
                 pre_limits = reduce(box.Box.intersect, image_boxes, image_boxes[0]).get_size()
-            new_image_sizes = [tuple(tools.scale(s, ZoomModel._preferred_scale(
-                s, pre_limits, distribution_axis))) for s in image_sizes]
-            new_image_sizes2 = [new_image_sizes[i] if not do_not_transform[i] else image_sizes[i]
-                                for i in range(len(new_image_sizes))]
-            working_sizes = new_image_sizes2
+            working_sizes = [
+                size if fixed
+                else tuple(tools.scale(size, ZoomModel._preferred_scale(
+                    size, pre_limits, distribution_axis)))
+                for size, fixed in zip(image_sizes, do_not_transform)]
         union_size = _union_size(working_sizes, distribution_axis)
         limits = ZoomModel._calc_limits(union_size, screen_size, self._fitmode,
                                         scale_up)
         prefscale = ZoomModel._preferred_scale(union_size, limits, distribution_axis)
         preferred_scales: list[float] = [
             prefscale if not dnt else IDENTITY_ZOOM for dnt in do_not_transform]
-        prescaled = list(map(lambda size, scale, dnt: tuple(_scale_image_size(size, scale)),
-                         working_sizes, preferred_scales, do_not_transform))
+        prescaled = [tuple(_scale_image_size(size, scale))
+                     for size, scale in zip(working_sizes, preferred_scales)]
         prescaled_union_size = _union_size(prescaled, distribution_axis)
 
-        def _other_preferences(limits: Sequence[int | None],
-                               distribution_axis: constants.PageAxis) -> bool:
-            """Whether any axis but the distribution one has a limit."""
-            for i in range(len(limits)):
-                if i == distribution_axis:
-                    continue
-                if limits[i] is not None:
-                    return True
-            return False
-        other_preferences = _other_preferences(limits, distribution_axis)
+        # Whether any axis but the distribution one has a limit.
+        other_preferences = any(limit is not None
+                                for axis, limit in enumerate(limits)
+                                if axis != distribution_axis)
         distribution_limit = limits[distribution_axis]
         if distribution_limit is not None and \
             (prescaled_union_size[distribution_axis] > screen_size[distribution_axis]
-            or not other_preferences):
+             or not other_preferences):
             distributed_scales = ZoomModel._scale_distributed(working_sizes,
-                distribution_axis, distribution_limit, scale_up, do_not_transform)
+                                                              distribution_axis, distribution_limit, scale_up, do_not_transform)
             if other_preferences:
                 preferred_scales = list(map(min, preferred_scales, distributed_scales))
             else:
@@ -197,10 +190,11 @@ class ZoomModel:
         if not scale_up:
             preferred_scales = [min(x, IDENTITY_ZOOM) for x in preferred_scales]
         user_scale = 2 ** (self._user_zoom_log / USER_ZOOM_LOG_SCALE1)
-        res_scales = [preferred_scales[i] * (user_scale if not do_not_transform[i] else IDENTITY_ZOOM)
-            for i in range(len(preferred_scales))]
-        res = list(map(lambda size, scale: list(_scale_image_size(size, scale)),
-            working_sizes, res_scales))
+        res_scales = [scale * (IDENTITY_ZOOM if fixed else user_scale)
+                      for scale, fixed in zip(preferred_scales,
+                                              do_not_transform)]
+        res = [_scale_image_size(size, scale)
+               for size, scale in zip(working_sizes, res_scales)]
         distorted = [False] * len(res)
         if prefer_same_size and fit_same_size:
             # While the algorithm so far tries hard to keep the aspect ratios of the
@@ -210,27 +204,21 @@ class ZoomModel:
             # Simple approach: For each dimension, we fit each image to either the
             # minimum size (if scale_up is false) or maximum size (if scale_up is true)
             # of all images, given the scaled sizes computed so far.
-            op = operator.gt if scale_up else operator.lt
-            exs: list[int | None] = [None] * len(limits)
-            for d in range(len(limits)):
-                if d == distribution_axis:
-                    continue
-                for row in res:
-                    extreme = exs[d]
-                    if extreme is None or op(row[d], extreme):
-                        exs[d] = row[d]
-            for d in range(len(limits)):
-                if d == distribution_axis:
-                    continue
-                extreme = exs[d]
+            # The extreme is None for the distribution axis, which is
+            # not forced, and when there is nothing to measure.
+            furthest = max if scale_up else min
+            extremes: list[int | None] = [
+                None if axis == distribution_axis or not res
+                else furthest(row[axis] for row in res)
+                for axis in range(len(limits))]
+            for axis, extreme in enumerate(extremes):
                 if extreme is None:
-                    # Nothing was measured along this axis, which is
-                    # only so when there is nothing to measure.
                     continue
-                for i in range(len(res)):
-                    if (res[i][d] != extreme) and not do_not_transform[i]:
-                        res[i][d] = extreme
-                        distorted[i] = True
+                for index, (row, fixed) in enumerate(zip(res,
+                                                         do_not_transform)):
+                    if row[axis] != extreme and not fixed:
+                        row[axis] = extreme
+                        distorted[index] = True
         return (res, distorted)
 
     @staticmethod
@@ -240,19 +228,10 @@ class ZoomModel:
         """ Returns scale that makes an image of size image_size respect the
         limits imposed by limits. If no proper value can be determined,
         IDENTITY_ZOOM is returned. """
-        min_scale = None
-        for i in range(len(limits)):
-            if i == distribution_axis:
-                continue
-            l = limits[i]
-            if l is None:
-                continue
-            s = tools.div(l, image_size[i])
-            if min_scale is None or s < min_scale:
-                min_scale = s
-        if min_scale is None:
-            min_scale = IDENTITY_ZOOM
-        return min_scale
+        scales = [tools.div(limit, image_size[axis])
+                  for axis, limit in enumerate(limits)
+                  if axis != distribution_axis and limit is not None]
+        return min(scales) if scales else IDENTITY_ZOOM
 
     @staticmethod
     def _calc_limits(union_size: Sequence[float], screen_size: Sequence[int],
@@ -263,15 +242,15 @@ class ZoomModel:
         preference for this axis. """
         manual = fitmode == constants.ZoomMode.MANUAL
         if fitmode == constants.ZoomMode.BEST or \
-            (manual and allow_upscaling and all(tools.smaller(union_size, screen_size))):
+                (manual and allow_upscaling and all(tools.smaller(union_size, screen_size))):
             return screen_size
         if fitmode == constants.ZoomMode.SIZE:
             if union_size[constants.PageAxis.WIDTH] > union_size[constants.PageAxis.HEIGHT]:
                 return [int(prefs['fit to size width wide']),
-                    int(prefs['fit to size height wide'])]
+                        int(prefs['fit to size height wide'])]
             else:
                 return [int(prefs['fit to size width other']),
-                    int(prefs['fit to size height other'])]
+                        int(prefs['fit to size height other'])]
         result: list[int | None] = [None] * len(screen_size)
         if not manual:
             if fitmode == constants.ZoomMode.WIDTH:
@@ -314,7 +293,7 @@ class ZoomModel:
         total_axis_size = sum([s[axis] for s in sizes])
         total_dnt_axis_size = sum([s[axis] for s, dnt in zip(sizes, do_not_transform) if dnt])
         if ((total_axis_size <= max_size) and not allow_upscaling) or \
-            (total_axis_size == total_dnt_axis_size):
+                (total_axis_size == total_dnt_axis_size):
             # identity
             return [IDENTITY_ZOOM] * n
 
@@ -361,10 +340,11 @@ class ZoomModel:
         # scale down some tuples so the whole thing would fit into max_size. If
         # we are lucky, there will be no gaps at the end (or at least fewer gaps
         # than we would have if we always rounded down).
-        dirty=True # This flag prevents infinite loops if nothing can be made any smaller.
+        # Prevents an infinite loop when nothing can be made any smaller.
+        dirty = True
         while dirty and (total_axis_size > max_size):
             # This algorithm needs O(n*n) time. Let's hope that n is small enough.
-            dirty=False
+            dirty = False
             current_index = 0
             current_min: _ScalingData | None = None
             for i in range(n):
@@ -394,7 +374,7 @@ class ZoomModel:
                 d.local_scale = d.forced_scale
                 d.can_be_downscaled = False  # only once per tuple
                 total_axis_size -= 1
-                dirty=True
+                dirty = True
         # Where the loop leaves total_axis_size below max_size, the tuples
         # could be upscaled the same way (smallest relative volume error
         # first, equal boxes in conjunction with each other). That is less
@@ -402,9 +382,11 @@ class ZoomModel:
         # do nothing at all when every tuple is the same size.
         return [d.local_scale for d in scaling_data]
 
+
 def _scale_image_size(size: Sequence[float], scale: float) -> list[int]:
     """The whole-pixel size <size> comes to at <scale>."""
     return _round_nonempty(tools.scale(size, scale))
+
 
 def _round_nonempty(t: Sequence[float]) -> list[int]:
     """<t> rounded to whole numbers, none of them below one.
@@ -412,11 +394,8 @@ def _round_nonempty(t: Sequence[float]) -> list[int]:
     A page scaled far enough down rounds to nothing on one axis or
     both, and a page of no width is a page that cannot be seen at all.
     """
-    result = [0] * len(t)
-    for i in range(len(t)):
-        x = int(round(t[i]))
-        result[i] = x if x > 0 else 1
-    return result
+    return [max(int(round(value)), 1) for value in t]
+
 
 def _union_size(image_sizes: Sequence[Sequence[float]],
                 distribution_axis: int) -> list[float]:

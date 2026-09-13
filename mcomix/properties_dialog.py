@@ -26,6 +26,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from mcomix import main
 
+
 class _PropertiesDialog(Dialog):
 
     def __init__(self, window: "main.MainWindow") -> None:
@@ -61,7 +62,7 @@ class _PropertiesDialog(Dialog):
         self._update_archive_page()
 
     def _on_page_available(self, page_number: int) -> None:
-        if 1 == page_number:
+        if page_number == 1:
             self._update_page_image(self._archive_page, 1)
         current_page_number = self._window.imagehandler.get_current_page()
         if current_page_number == page_number:
@@ -101,8 +102,8 @@ class _PropertiesDialog(Dialog):
         path = window.filehandler.get_path_to_base()
         main_info = (
             _('%d pages') % window.imagehandler.get_number_of_pages(),
-            _('%d comments') %
-                window.filehandler.get_number_of_comments(),
+            _('%d comments')
+            % window.filehandler.get_number_of_comments(),
             strings.ARCHIVE_DESCRIPTIONS[window.filehandler.archive_type]
         )
         page.set_main_info(main_info)
@@ -161,9 +162,9 @@ class _PropertiesDialog(Dialog):
         secondary_info.extend((
             (_('Size'), tools.format_byte_size(stats.st_size)),
             (_('Accessed'), time.strftime('%Y-%m-%d, %H:%M:%S',
-            time.localtime(stats.st_atime))),
+                                          time.localtime(stats.st_atime))),
             (_('Modified'), time.strftime('%Y-%m-%d, %H:%M:%S',
-            time.localtime(stats.st_mtime))),
+                                          time.localtime(stats.st_mtime))),
             (_('Permissions'), oct(stat.S_IMODE(stats.st_mode))),
             (_('Owner'), uid)
         ))

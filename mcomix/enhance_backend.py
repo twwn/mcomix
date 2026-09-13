@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from mcomix import main
 
+
 class ImageEnhancer:
 
     """The ImageEnhancer keeps track of the "enhancement" values and performs
@@ -32,12 +33,12 @@ class ImageEnhancer:
         """Return an "enhanced" version of <pixbuf>."""
 
         if (self.brightness != 1.0 or self.contrast != 1.0 or
-          self.saturation != 1.0 or self.sharpness != 1.0 or
-          self.autocontrast or self.invert_color):
+                self.saturation != 1.0 or self.sharpness != 1.0 or
+                self.autocontrast or self.invert_color):
 
             return image_tools.enhance(pixbuf, self.brightness, self.contrast,
-                self.saturation, self.sharpness, self.autocontrast,
-                self.invert_color)
+                                       self.saturation, self.sharpness, self.autocontrast,
+                                       self.invert_color)
 
         return pixbuf
 

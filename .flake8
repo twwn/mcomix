@@ -1,2 +1,15 @@
 [flake8]
-ignore = E501
+# extend-ignore, not ignore: ignore replaces the default list rather
+# than adding to it, which turned on W503 and W504 - "line break before"
+# and "line break after a binary operator", which contradict each other
+# and cannot both be satisfied - along with the four continuation-line
+# and whitespace warnings pycodestyle leaves off by default.
+extend-ignore = E501
+
+# The test package sets the environment that every import after it reads
+# - the GDK backend, the temporary directory GLib caches on first use,
+# and the config and data directories mcomix.constants resolves at import
+# time - so its imports cannot come first, and each of them is explained
+# where it stands.
+per-file-ignores =
+    test/__init__.py:E402

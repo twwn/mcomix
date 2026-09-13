@@ -81,7 +81,7 @@ class _Bookmark:
         re-created using the values in the tuple.
         """
         return (self._name, self._path, self._page, self._numpages,
-            self._archive_type, self._date_added)
+                self._archive_type, self._date_added)
 
     def __eq__(self, other: object) -> bool:
         """ Equality comparison for Bookmark items. """

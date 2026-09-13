@@ -78,6 +78,7 @@ from mcomix import log
 
 log.setLevel('DEBUG')
 
+
 def pump(rounds=4000):
     """Let the main loop run through whatever is pending.
 
@@ -130,6 +131,7 @@ from mcomix.preferences import prefs
 #: can start from them.  Deep, because several of them hold a container -
 #: and one of those containers is a constant of MComix' own.
 default_prefs = copy.deepcopy(dict(prefs))
+
 
 class MComixTest(unittest.TestCase):
 
@@ -237,6 +239,7 @@ class MComixTest(unittest.TestCase):
             list(getattr(result, 'errors', ()))
         return any(test.id() == self.id() for test, _traceback in problems)
 
+
 def session_tmp_dir():
     """A temporary directory that lasts as long as the test run.
 
@@ -251,4 +254,3 @@ def session_tmp_dir():
 
 def get_testfile_path(*components):
     return str(os.path.join(os.path.dirname(__file__), 'files', *components))
-

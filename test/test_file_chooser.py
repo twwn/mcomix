@@ -11,6 +11,7 @@ from mcomix import icons
 from mcomix import file_chooser_base_dialog
 from mcomix import main
 from mcomix.dialog import Response
+from mcomix.preferences import prefs
 
 
 class FileChooserTest(MComixTest):
@@ -184,6 +185,22 @@ class FileChooserTest(MComixTest):
         self.assertIn(Response.CANCEL, answered)
         self.assertIn(Response.OK, answered)
 
+    def test_a_remembered_filter_that_is_gone_falls_back_to_all_files(self):
+        """The preference is an index into a list built afresh from
+        what MComix can open, so one written by a build with more
+        formats in it names nothing here.  What this pins is that the
+        index is caught: GTK selects the first filter of its own accord,
+        so the fallback shows only by the dialog opening at all."""
+        from mcomix import file_chooser_main_dialog
+        prefs['last filter in main filechooser'] = 999
+        self._module._close_main_filechooser_dialog()
+        pump()
+        file_chooser_main_dialog.open_main_filechooser_dialog(None, self.window)
+        pump()
+        dialog = file_chooser_main_dialog._main_filechooser_dialog
+        self.assertEqual(dialog.filechooser.get_filter().get_name(),
+                         'All files')
+
     def test_the_group_filters_come_first(self):
         names = [f.get_name() for f in self.dialog.list_filters()]
         self.assertEqual(names[:3], ['All files', 'All archives',
@@ -197,6 +214,20 @@ class FileChooserTest(MComixTest):
                                ('PNG images', 'BMP images')):
             self.assertLess(names.index(earlier), names.index(later),
                             '%s should come before %s' % (earlier, later))
+
+    def test_closing_the_chooser_stops_the_preview_poll(self):
+        """Nothing announces a change of selection, so the preview is
+        polled every 200 ms.  The timer was dropped from the window's
+        'destroy' signal, which GTK4 emits when the last reference to
+        the window goes rather than when it is destroyed - and the
+        handler is a method of the window, so the closure held a
+        reference and the poll went on reading a destroyed chooser for
+        the rest of the session."""
+        self.assertIsNotNone(self.dialog._preview_timer)
+        self._module._close_main_filechooser_dialog()
+        pump()
+        self.assertIsNone(self.dialog._preview_timer,
+                          'the preview poll is still running')
 
     def test_choosing_a_file_hands_it_on(self):
         # get_filenames() is not in GTK4, and it was what the response

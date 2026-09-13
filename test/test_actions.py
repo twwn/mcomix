@@ -16,7 +16,7 @@ class ActionTableTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self.actions = ui._Actions()
+        self.actions = ui.Actions()
         self.ran = []
 
     def test_a_plain_action_is_run_with_the_action_that_ran(self):

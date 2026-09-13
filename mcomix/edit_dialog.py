@@ -27,6 +27,7 @@ if TYPE_CHECKING:
 
 _dialog: "_EditArchiveDialog | None" = None
 
+
 def _fit_on_screen(width: int, height: int) -> tuple[int, int]:
     """Return (<width>, <height>), trimmed to fit on the monitor."""
     monitors = widgets.display().get_monitors()
@@ -132,7 +133,7 @@ class _EditArchiveDialog(Dialog):
             os.close(fd)
 
             packer = archive_packer.Packer(image_files, comment_files, tmp_path,
-                os.path.splitext(os.path.basename(archive_path))[0])
+                                           os.path.splitext(os.path.basename(archive_path))[0])
             packer.pack()
 
             if packer.wait():
@@ -188,13 +189,13 @@ class _EditArchiveDialog(Dialog):
         for path in paths:
 
             if image_tools.is_image_file(path):
-                self._imported_files.append( path )
+                self._imported_files.append(path)
                 self._image_area.add_extra_image(path)
 
             elif os.path.isfile(path):
 
-                if comment_re.search( path ):
-                    self._imported_files.append( path )
+                if comment_re.search(path):
+                    self._imported_files.append(path)
                     self._comment_area.add_extra_file(path)
 
     def _response(self, dialog: Dialog, response: int) -> None:
@@ -247,6 +248,7 @@ class _EditArchiveDialog(Dialog):
     def destroy(self) -> None:
         self._image_area.cleanup()
         Dialog.destroy(self)
+
 
 def open_dialog(action: Gio.SimpleAction, window: "main.MainWindow") -> None:
     global _dialog

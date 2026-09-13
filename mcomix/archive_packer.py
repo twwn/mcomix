@@ -8,6 +8,7 @@ from collections.abc import Iterator, Sequence
 from mcomix import log
 from mcomix.i18n import _
 
+
 class Packer:
 
     """Packer is a threaded class for packing files into ZIP archives.
@@ -93,8 +94,8 @@ class Packer:
                 except Exception:
                     log.error(_('! Could not add file %(sourcefile)s '
                                 'to archive %(archivefile)s, aborting...'),
-                              { "sourcefile" : path,
-                                "archivefile" : self._archive_path})
+                              {"sourcefile": path,
+                               "archivefile": self._archive_path})
                     break
             else:
                 self._packing_successful = True

@@ -65,7 +65,7 @@ class KeybindingEditorWindow(Gtk.ScrolledWindow):
         """ Initializes the model from data provided by the keybinding
         manager. """
         section_order = list(set(d['group']
-             for d in list(keybindings.BINDING_INFO.values())))
+                                 for d in list(keybindings.BINDING_INFO.values())))
         section_order.sort()
         sections = {}
         rows = []
@@ -81,7 +81,7 @@ class KeybindingEditorWindow(Gtk.ScrolledWindow):
         self.action_rows = action_rows
         # Sort actions by action name
         actions = sorted(list(keybindings.BINDING_INFO.items()),
-                key=lambda item: item[1]['title'])
+                         key=lambda item: item[1]['title'])
         for action_name, action_data in actions:
             old_bindings = self.keymanager.get_bindings_for_action(action_name)
             row = column_list.Row(title=action_data['title'],

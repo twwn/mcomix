@@ -64,6 +64,17 @@ class MergeTest(MComixTest):
 
         self.assertEqual(len(self.store._bookmarks), 7)
 
+    def test_a_file_that_is_not_there_has_not_been_modified(self):
+        """get_bookmarks() re-reads the file whenever it says yes, so a
+        yes here emptied the list over bookmarks nothing had written out
+        yet - and the next bookmark added wrote that empty list back."""
+        self.store._bookmarks = [self._bookmark(1)]
+        self.assertFalse(os.path.exists(constants.BOOKMARK_PICKLE_PATH))
+
+        self.assertFalse(self.store.file_was_modified())
+        self.assertEqual([bookmark._page
+                          for bookmark in self.store.get_bookmarks()], [1])
+
     def test_clearing_writes_the_store_once(self):
         """Removing them one at a time re-pickled and fsynced the whole
         store for every bookmark."""

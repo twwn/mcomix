@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 
 _main_filechooser_dialog: "_MainFileChooserDialog | None" = None
 
+
 class _MainFileChooserDialog(file_chooser_base_dialog._BaseFileChooserDialog):
 
     """The normal filechooser dialog used with the "Open" menu item."""
@@ -26,15 +27,13 @@ class _MainFileChooserDialog(file_chooser_base_dialog._BaseFileChooserDialog):
         self.add_pending_filters()
         filters = self.list_filters()
         try:
-            # When setting this to the first filter ("All files"), this
-            # fails on some GTK+ versions and sets the filter to "blank".
-            # The effect is the same though (i.e. display all files), and
-            # there is no solution that I know of, so we'll have to live
-            # with it. It only happens the second time a dialog is created
-            # though, which is very strange.
+            # The remembered filter is an index into the list, and the
+            # list is built afresh from what MComix can open: an index
+            # written by a build with more formats in it names nothing
+            # here, and the first filter, "All files", stands in.
             self.filechooser.set_filter(filters[
                 prefs['last filter in main filechooser']])
-        except:
+        except IndexError:
             self.filechooser.set_filter(filters[0])
 
     def files_chosen(self, paths: list[str]) -> None:
@@ -54,6 +53,7 @@ class _MainFileChooserDialog(file_chooser_base_dialog._BaseFileChooserDialog):
             self._window.filehandler.open_file(files)
         else:
             _close_main_filechooser_dialog()
+
 
 def open_main_filechooser_dialog(action: Gio.SimpleAction,
                                  window: "main.MainWindow") -> None:

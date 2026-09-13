@@ -235,6 +235,7 @@ def _keypad_symbol(name: str, spelled: str) -> "str | None":
     mark = _KEYPAD_MARK.search(spelled)
     return None if mark is None else symbol + mark.group(0)
 
+
 #: The sign printed on the shift key.  The other modifiers are printed
 #: as words - Ctrl, Alt - and are left as the label spells them out;
 #: this one has a sign, and is the one worth drawing as one, being the
@@ -1120,6 +1121,19 @@ class ColumnListView(Gtk.ColumnView):
         """
         for position in range(self.model.get_n_items()):
             yield cast(Row, self._row_of(self.model.get_item(position)))
+
+    def each_stored_row(self) -> Iterator[Row]:
+        """Every row the list holds, in the order it holds them.
+
+        each_row() walks what is drawn, which a heading that is sorting
+        puts in an order of its own; this walks the rows themselves.
+        That is the order a reordering drag moves a row in - which is
+        why a drag is refused while a heading sorts - and so the one a
+        caller that keeps an order of its own means.  With a tree, the
+        rows under a row are its own and not among these.
+        """
+        for position in range(self.store.get_n_items()):
+            yield cast(Row, self.store.get_item(position))
 
     def get_row(self, position: int) -> "Row | None":
         """The row shown at <position>."""

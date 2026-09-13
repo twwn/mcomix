@@ -80,7 +80,7 @@ class CallbackList[T, **P, R]:
                     callback(*args, **kwargs)
                 except Exception as e:
                     log.error(_('! Callback %(function)r failed: %(error)s'),
-                              { 'function' : callback, 'error' : e })
+                              {'function': callback, 'error': e})
                     log.debug('Traceback:\n%s', traceback.format_exc())
 
     def __callback_deleted(self, obj_ref: "weakref.ref[object]") -> None:
@@ -107,6 +107,7 @@ class CallbackList[T, **P, R]:
                     getattr(func, '__func__', func))
         else:
             return (None, func)
+
 
 class Callback[T, **P, R]:
     """ Decorator class for using the CallbackList helper. """

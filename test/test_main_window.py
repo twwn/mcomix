@@ -556,7 +556,6 @@ class MainWindowTest(MComixTest):
         self.assertEqual(1, len(scrolls))
 
 
-
 class InvertedColoursAtStartUpTest(MComixTest):
 
     """The menu item for inverted colours, on a window that starts with

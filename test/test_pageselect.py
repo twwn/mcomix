@@ -15,6 +15,7 @@ from mcomix import constants
 from mcomix import icons
 from mcomix import main
 from mcomix import pageselect
+from mcomix.dialog import Response
 
 
 class PageselectTest(MComixTest):
@@ -64,6 +65,20 @@ class PageselectTest(MComixTest):
         self.dialog._thumbnail_page = 1
         self.dialog._thumbnail_finished(1, pixbuf)
         self.assertIsNotNone(self.dialog._image_preview.get_paintable())
+
+    def test_closing_the_selector_stops_the_worker(self):
+        """The worker is not a daemon, so a dialog that leaves it
+        running leaves terminate_program() waiting for it at exit.  It
+        was stopped from the window's 'destroy' signal, which GTK4 emits
+        when the last reference to the window goes rather than when it
+        is destroyed - and the handler is a method of the window, so the
+        closure held a reference and the signal never came."""
+        self.dialog._update_thumbnail(1)
+        wait_for(lambda: self.dialog._thread._threads, seconds=20)
+        self.dialog.response(Response.CANCEL)
+        pump()
+        self.assertEqual(self.dialog._thread._threads, [],
+                         'the preview worker is still running')
 
     def test_a_thumbnail_for_a_page_left_behind_is_dropped(self):
         """The preview is asked for again on every change, and an answer

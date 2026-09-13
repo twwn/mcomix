@@ -19,6 +19,7 @@ _COMPRESSION_MODES: tuple[tuple[bytes, ReadMode], ...] = (
     (b']\x00\x00\x80\x00', 'r:xz'),
 )
 
+
 def open_mode(magic: bytes) -> ReadMode:
     """Return the mode tarfile is to open a file beginning with <magic> in.
 
@@ -33,10 +34,12 @@ def open_mode(magic: bytes) -> ReadMode:
             return mode
     return 'r:'
 
+
 def read_magic(path: str) -> bytes:
     """Return the bytes at the head of <path> that name its compression."""
     with open(path, 'rb') as fd:
         return fd.read(5)
+
 
 class TarArchive(archive_base.NonUnicodeArchive):
 

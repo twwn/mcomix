@@ -6,17 +6,17 @@ from mcomix.constants import ZIP, RAR, TAR, GZIP, BZIP2, XZ, PDF, SEVENZIP, LHA,
 from mcomix.i18n import _
 
 ARCHIVE_DESCRIPTIONS = {
-                        ZIP         : _('ZIP archive'),
-                        RAR         : _('RAR archive'),
-                        TAR         : _('Tar archive'),
-                        GZIP        : _('Gzip compressed tar archive'),
-                        BZIP2       : _('Bzip2 compressed tar archive'),
-                        XZ          : _('XZ compressed tar archive'),
-                        PDF         : _('PDF document'),
-                        SEVENZIP    : _('7z archive'),
-                        LHA         : _('LHA archive'),
+                        ZIP: _('ZIP archive'),
+                        RAR: _('RAR archive'),
+                        TAR: _('Tar archive'),
+                        GZIP: _('Gzip compressed tar archive'),
+                        BZIP2: _('Bzip2 compressed tar archive'),
+                        XZ: _('XZ compressed tar archive'),
+                        PDF: _('PDF document'),
+                        SEVENZIP: _('7z archive'),
+                        LHA: _('LHA archive'),
                         ZIP_EXTERNAL: _('ZIP archive'),
-                        MOBI        : _('MobiPocket ebook'),
+                        MOBI: _('MobiPocket ebook'),
                        }
 
 AUTHORS = (

@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from mcomix import edit_dialog as edit_dialog_module
     from mcomix import main
 
+
 class _ImageArea(Gtk.ScrolledWindow):
 
     """The area used for displaying and handling image files."""

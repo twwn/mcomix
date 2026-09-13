@@ -9,6 +9,7 @@ from mcomix import image_tools
 from mcomix import labels
 from mcomix import widgets
 
+
 class _Page(Gtk.ScrolledWindow):
 
     """A page to put in the Gtk.Notebook. Contains info about a file (an

@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from mcomix import main
     from mcomix import ui
 
+
 class Slideshow:
 
     """Slideshow handler that manages starting and stopping of slideshows."""
@@ -41,16 +42,16 @@ class Slideshow:
 
         return True
 
-    def toggle(self, action: "ui._Action") -> None:
+    def toggle(self, action: "ui.Action") -> None:
         """Toggle a slideshow on or off."""
         if action.get_active():
             self._start()
             self._window.uimanager.slideshow_button.set_icon_name('media-playback-stop')
-            self._window.uimanager.slideshow_button.set_tooltip_text( _('Stop slideshow')  )
+            self._window.uimanager.slideshow_button.set_tooltip_text(_('Stop slideshow'))
         else:
             self._stop()
             self._window.uimanager.slideshow_button.set_icon_name('media-playback-start')
-            self._window.uimanager.slideshow_button.set_tooltip_text( _('Start slideshow') )
+            self._window.uimanager.slideshow_button.set_tooltip_text(_('Start slideshow'))
 
     def is_running(self) -> bool:
         """Return True if a slideshow is currently running."""

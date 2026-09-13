@@ -10,6 +10,7 @@ from mcomix.i18n import _
 
 from collections.abc import Sequence
 
+
 class Statusbar(Gtk.Box):
 
     """The status bar along the bottom of the window.
@@ -18,7 +19,6 @@ class Statusbar(Gtk.Box):
     of its own could receive button events.  GTK4 has no such thing:
     every widget can take events, through a controller.
     """
-
 
     SPACING = 5
 
@@ -76,7 +76,7 @@ class Statusbar(Gtk.Box):
         for i in range(this_screen):
             page_info += '%d' % (page + i)
             if i < this_screen - 1:
-                page_info +=','
+                page_info += ','
         page_info += ' / %d' % total
         self._page_info = page_info
 
@@ -106,14 +106,10 @@ class Statusbar(Gtk.Box):
         scale and whether scaling was done irrespective of aspect ratio,
         resulting in a distorted image.
         """
-        resolution = ""
-        for i in range(len(dimensions)):
-            d = dimensions[i]
-            resolution += '%dx%d (%.1f%%%s)' % (d[0], d[1], d[2] * 100.0,
-                "*" if d[3] else "")
-            if i < len(dimensions) - 1:
-                resolution += ', '
-        self._resolution = resolution
+        self._resolution = ', '.join(
+            '%dx%d (%.1f%%%s)' % (width, height, scale * 100.0,
+                                  '*' if distorted else '')
+            for width, height, scale, distorted in dimensions)
 
     def set_root(self, root: str) -> None:
         """Set the name of the root (directory or archive)."""

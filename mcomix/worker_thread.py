@@ -14,6 +14,7 @@ from mcomix.i18n import _
 #: function that processes them takes.
 Order = TypeVar('Order')
 
+
 class WorkerThread(Generic[Order]):
 
     def __init__(self, process_order: Callable[[Order], object],
@@ -70,7 +71,7 @@ class WorkerThread(Generic[Order]):
             with self._condition:
                 if order_uid is not None:
                     self._orders_set.remove(order_uid)
-                while not self._stop and 0 == len(self._orders_queue):
+                while not self._stop and not self._orders_queue:
                     self._condition.wait()
                 if self._stop:
                     return
@@ -81,7 +82,7 @@ class WorkerThread(Generic[Order]):
                 self._process_order(order)
             except Exception as e:
                 log.error(_('! Worker thread processing %(function)r failed: %(error)s'),
-                          { 'function' : self._process_order, 'error' : e })
+                          {'function': self._process_order, 'error': e})
                 log.debug('Traceback:\n%s', traceback.format_exc())
 
     def must_stop(self) -> bool:
@@ -134,7 +135,7 @@ class WorkerThread(Generic[Order]):
             else:
                 self._orders_queue.extend(orders_list)
                 nb_added = len(orders_list)
-            if 0 == nb_added:
+            if nb_added == 0:
                 return
             if self._sort_orders:
                 self._orders_queue.sort()

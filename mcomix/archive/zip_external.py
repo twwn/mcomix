@@ -7,6 +7,7 @@ from mcomix import i18n
 from mcomix import process
 from mcomix.archive import archive_base
 
+
 class ZipArchive(archive_base.ExternalExecutableArchive):
     """ ZIP file extractor using unzip executable. """
 

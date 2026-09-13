@@ -19,6 +19,7 @@ def is_py_supported_zipfile(path: str) -> bool:
                 return False
     return True
 
+
 class ZipArchive(archive_base.NonUnicodeArchive):
 
     """A ZIP file read through the standard library."""
@@ -51,12 +52,10 @@ class ZipArchive(archive_base.NonUnicodeArchive):
         zipinfo = self.zip.getinfo(original_filename)
         if len(content) != zipinfo.file_size:
             log.warning(_('%(filename)s\'s extracted size is %(actual_size)d bytes,'
-                ' but should be %(expected_size)d bytes.'
-                ' The archive might be corrupt or in an unsupported format.'),
-                { 'filename' : filename, 'actual_size' : len(content),
-                  'expected_size' : zipinfo.file_size })
-
-
+                          ' but should be %(expected_size)d bytes.'
+                          ' The archive might be corrupt or in an unsupported format.'),
+                        {'filename': filename, 'actual_size': len(content),
+                         'expected_size': zipinfo.file_size})
 
     def close(self) -> None:
         """Close the ZIP file."""
@@ -66,7 +65,7 @@ class ZipArchive(archive_base.NonUnicodeArchive):
         """ Checks all files in the archive for encryption.
         Returns True if at least one encrypted file was found. """
         for zipinfo in self.zip.infolist():
-            if zipinfo.flag_bits & 0x1: # File is encrypted
+            if zipinfo.flag_bits & 0x1:  # File is encrypted
                 return True
 
         return False

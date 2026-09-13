@@ -121,10 +121,10 @@ class _PreferencesDialog(Dialog):
         page.new_section(_('User interface'))
 
         page.add_row(Gtk.Label(label=_('Language (needs restart):')),
-            self._create_language_control())
+                     self._create_language_control())
 
         page.add_row(Gtk.Label(label=_('Theme:')),
-            self._create_theme_control())
+                     self._create_theme_control())
 
         page.add_row(self._create_pref_check_button(
             _('Escape key closes program'), 'escape quits',
@@ -158,8 +158,9 @@ class _PreferencesDialog(Dialog):
             'show page numbers on thumbnails', None))
 
         page.add_row(Gtk.Label(label=_('Thumbnail size (in pixels):')),
-            self._create_pref_spinner('thumbnail size',
-            1, 20, 500, 1, 10, 0, None))
+                     self._create_pref_spinner(
+                         'thumbnail size',
+                         1, 20, 500, 1, 10, 0, None))
 
         page.new_section(_('Transparency'))
 
@@ -211,26 +212,30 @@ class _PreferencesDialog(Dialog):
             _('Automatically open the first file of the previous directory when navigating to it, instead of opening the last file of the previous directory.')))
 
         page.add_row(Gtk.Label(label=_('Number of pixels to scroll per arrow key press:')),
-            self._create_pref_spinner('number of pixels to scroll per key event',
-            1, 1, 500, 1, 3, 0,
-            _('Set the number of pixels to scroll on a page when using the arrow keys.')))
+                     self._create_pref_spinner(
+                         'number of pixels to scroll per key event',
+                         1, 1, 500, 1, 3, 0,
+                         _('Set the number of pixels to scroll on a page when using the arrow keys.')))
 
         page.add_row(Gtk.Label(label=_('Number of pixels to scroll per mouse wheel turn:')),
-            self._create_pref_spinner('number of pixels to scroll per mouse wheel event',
-            1, 1, 500, 1, 3, 0,
-            _('Set the number of pixels to scroll on a page when using a mouse wheel.')))
+                     self._create_pref_spinner(
+                         'number of pixels to scroll per mouse wheel event',
+                         1, 1, 500, 1, 3, 0,
+                         _('Set the number of pixels to scroll on a page when using a mouse wheel.')))
 
         page.add_row(Gtk.Label(label=_('Fraction of page to scroll '
-            'per space key press (in percent):')),
-            self._create_pref_spinner('smart scroll percentage',
-            0.01, 1, 100, 1, 5, 0,
-            _('Sets the percentage by which the page '
-            'will be scrolled down or up when the space key is pressed.')))
+                                       'per space key press (in percent):')),
+                     self._create_pref_spinner(
+                         'smart scroll percentage',
+                         0.01, 1, 100, 1, 5, 0,
+                         _('Sets the percentage by which the page '
+                           'will be scrolled down or up when the space key is pressed.')))
 
         page.add_row(Gtk.Label(label=_('Number of "steps" to take before flipping the page:')),
-            self._create_pref_spinner('number of key presses before page turn',
-            1, 1, 100, 1, 3, 0,
-            _('Set the number of "steps" needed to flip to the next or previous page.  Less steps will allow for very fast page turning but you might find yourself accidentally turning pages.')))
+                     self._create_pref_spinner(
+                         'number of key presses before page turn',
+                         1, 1, 100, 1, 3, 0,
+                         _('Set the number of "steps" needed to flip to the next or previous page.  Less steps will allow for very fast page turning but you might find yourself accidentally turning pages.')))
 
         page.new_section(_('Double page mode'))
 
@@ -240,14 +245,15 @@ class _PreferencesDialog(Dialog):
             _('Flip two pages, instead of one, each time we flip pages in double page mode.')))
 
         page.add_row(Gtk.Label(label=_('Show only one page where appropriate:')),
-            self._create_doublepage_as_one_control())
+                     self._create_doublepage_as_one_control())
 
         page.add_row(Gtk.Label(label=_('Page auto-resizing:')),
-            self._create_double_page_autoresize_control())
+                     self._create_double_page_autoresize_control())
 
         page.add_row(Gtk.Label(label=_('Space between two pages (in pixels):')),
-            self._create_pref_spinner('space between two pages',
-            1, 0, 2, 1, 2, 0, None))
+                     self._create_pref_spinner(
+                         'space between two pages',
+                         1, 0, 2, 1, 2, 0, None))
 
         page.new_section(_('Files'))
 
@@ -257,11 +263,11 @@ class _PreferencesDialog(Dialog):
             _('Automatically open, on startup, the file that was open when MComix was last closed.')))
 
         page.add_row(Gtk.Label(label=_('Store information about recently opened files:')),
-            self._create_store_recent_combobox())
+                     self._create_store_recent_combobox())
 
         page.add_row(self._create_pref_check_button(_('Save As opens at the last directory saved into'),
-            'store last saved in directory',
-            _('Open the Save As dialog at the directory in which the last file was saved.')))
+                                                    'store last saved in directory',
+                                                    _('Open the Save As dialog at the directory in which the last file was saved.')))
 
         page.new_section(_('Prompts answered for good'))
 
@@ -291,31 +297,37 @@ class _PreferencesDialog(Dialog):
         page.new_section(_('Fit to size mode'))
 
         page.add_row(Gtk.Label(label=_('Fixed width for wide pages:')),
-            self._create_pref_spinner('fit to size width wide',
-            1, 10, constants.RENDER_SIZE_LIMIT, 10, 50, 0, None))
+                     self._create_pref_spinner(
+                         'fit to size width wide',
+                         1, 10, constants.RENDER_SIZE_LIMIT, 10, 50, 0, None))
 
         page.add_row(Gtk.Label(label=_('Fixed height for wide pages:')),
-            self._create_pref_spinner('fit to size height wide',
-            1, 10, constants.RENDER_SIZE_LIMIT, 10, 50, 0, None))
+                     self._create_pref_spinner(
+                         'fit to size height wide',
+                         1, 10, constants.RENDER_SIZE_LIMIT, 10, 50, 0, None))
 
         page.add_row(Gtk.Label(label=_('Fixed width for other pages:')),
-            self._create_pref_spinner('fit to size width other',
-            1, 10, constants.RENDER_SIZE_LIMIT, 10, 50, 0, None))
+                     self._create_pref_spinner(
+                         'fit to size width other',
+                         1, 10, constants.RENDER_SIZE_LIMIT, 10, 50, 0, None))
 
         page.add_row(Gtk.Label(label=_('Fixed height for other pages:')),
-            self._create_pref_spinner('fit to size height other',
-            1, 10, constants.RENDER_SIZE_LIMIT, 10, 50, 0, None))
+                     self._create_pref_spinner(
+                         'fit to size height other',
+                         1, 10, constants.RENDER_SIZE_LIMIT, 10, 50, 0, None))
 
         page.new_section(_('Slideshow'))
 
         page.add_row(Gtk.Label(label=_('Slideshow delay (in seconds):')),
-            self._create_pref_spinner('slideshow delay',
-            1000.0, 0.01, 3600.0, 0.1, 1, 2, None))
+                     self._create_pref_spinner(
+                         'slideshow delay',
+                         1000.0, 0.01, 3600.0, 0.1, 1, 2, None))
 
         page.add_row(Gtk.Label(label=_('Slideshow step (in pixels):')),
-            self._create_pref_spinner('number of pixels to scroll per slideshow event',
-            1, -500, 500, 1, 1, 0,
-            _('Specify the number of pixels to scroll while in slideshow mode. A positive value will scroll forward, a negative value will scroll backwards, and a value of 0 will cause the slideshow to always flip to a new page.')))
+                     self._create_pref_spinner(
+                         'number of pixels to scroll per slideshow event',
+                         1, -500, 500, 1, 1, 0,
+                         _('Specify the number of pixels to scroll while in slideshow mode. A positive value will scroll forward, a negative value will scroll backwards, and a value of 0 will cause the slideshow to always flip to a new page.')))
 
         page.add_row(self._create_pref_check_button(
             _('During a slideshow automatically open the next archive'),
@@ -332,7 +344,7 @@ class _PreferencesDialog(Dialog):
         page.new_section(_('Image quality'))
 
         page.add_row(Gtk.Label(label=_('Scaling mode')),
-            self._create_scaling_quality_combobox())
+                     self._create_scaling_quality_combobox())
 
         return page
 
@@ -346,22 +358,24 @@ class _PreferencesDialog(Dialog):
         page.new_section(_('File order'))
 
         page.add_row(Gtk.Label(label=_('Sort files and directories by:')),
-            self._create_sort_by_control())
+                     self._create_sort_by_control())
 
         page.add_row(Gtk.Label(label=_('Sort archives by:')),
-            self._create_archive_sort_by_control())
+                     self._create_archive_sort_by_control())
 
         page.new_section(_('Extraction and cache'))
 
         page.add_row(Gtk.Label(label=_('Maximum number of concurrent extraction threads:')),
-            self._create_pref_spinner('max extract threads',
-            1, 1, 16, 1, 4, 0,
-            _('Set the maximum number of concurrent threads for formats that support it.')))
+                     self._create_pref_spinner(
+                         'max extract threads',
+                         1, 1, 16, 1, 4, 0,
+                         _('Set the maximum number of concurrent threads for formats that support it.')))
 
         page.add_row(Gtk.Label(label=_('Maximum number of concurrent thumbnail threads:')),
-            self._create_pref_spinner('max threads',
-            1, 1, 16, 1, 4, 0,
-            _('Set the maximum number of concurrent threads used to generate thumbnails. Takes effect the next time MComix is started.')))
+                     self._create_pref_spinner(
+                         'max threads',
+                         1, 1, 16, 1, 4, 0,
+                         _('Set the maximum number of concurrent threads used to generate thumbnails. Takes effect the next time MComix is started.')))
 
         page.add_row(self._create_pref_check_button(
             _('Store thumbnails for opened files'),
@@ -369,31 +383,34 @@ class _PreferencesDialog(Dialog):
             _('Store thumbnails for opened files according to the freedesktop.org specification. These thumbnails are shared by many other applications, such as most file managers.')))
 
         page.add_row(Gtk.Label(label=_('Maximum number of pages to store in the cache:')),
-            self._create_pref_spinner('max pages to cache',
-            1, -1, 500, 1, 3, 0,
-            _('Set the max number of pages to cache. A value of -1 will cache the entire archive.')))
+                     self._create_pref_spinner(
+                         'max pages to cache',
+                         1, -1, 500, 1, 3, 0,
+                         _('Set the max number of pages to cache. A value of -1 will cache the entire archive.')))
 
         page.new_section(_('Magnifying Lens'))
 
         page.add_row(Gtk.Label(label=_('Magnifying lens size (in pixels):')),
-            self._create_pref_spinner('lens size',
-            1, 50, 400, 1, 10, 0,
-            _('Set the size of the magnifying lens. It is a square with a side of this many pixels.')))
+                     self._create_pref_spinner(
+                         'lens size',
+                         1, 50, 400, 1, 10, 0,
+                         _('Set the size of the magnifying lens. It is a square with a side of this many pixels.')))
 
         page.add_row(Gtk.Label(label=_('Magnification factor:')),
-            self._create_pref_spinner('lens magnification',
-            1, 1.1, 10.0, 0.1, 1.0, 1,
-            _('Set the magnification factor of the magnifying lens.')))
+                     self._create_pref_spinner(
+                         'lens magnification',
+                         1, 1.1, 10.0, 0.1, 1.0, 1,
+                         _('Set the magnification factor of the magnifying lens.')))
 
         page.new_section(_('Comments'))
 
         page.add_row(Gtk.Label(label=_('Comment extensions:')),
-            self._create_extensions_entry())
+                     self._create_extensions_entry())
 
         page.new_section(_('Animated images'))
 
         page.add_row(Gtk.Label(label=_('Animation mode:')),
-            self._create_animation_mode_combobox())
+                     self._create_animation_mode_combobox())
 
         return page
 
@@ -510,7 +527,7 @@ class _PreferencesDialog(Dialog):
         languages.sort(key=operator.itemgetter(0))
 
         box = self._create_combobox(languages, prefs['language'],
-                self._language_changed_cb)
+                                    self._language_changed_cb)
 
         return box
 
@@ -522,7 +539,7 @@ class _PreferencesDialog(Dialog):
                  (_('Pitch black'), theme.BLACK))
 
         box = self._create_combobox(items, prefs['colour scheme'],
-                self._colour_scheme_changed_cb)
+                                    self._colour_scheme_changed_cb)
 
         box.set_tooltip_text(
             _('How MComix itself is painted, whatever the desktop asks for. '
@@ -557,8 +574,8 @@ class _PreferencesDialog(Dialog):
                 (_('Always'), constants.SHOW_DOUBLE_AS_ONE_TITLE | constants.SHOW_DOUBLE_AS_ONE_WIDE))
 
         box = self._create_combobox(items,
-                prefs['virtual double page for fitting images'],
-                self._double_page_changed_cb)
+                                    prefs['virtual double page for fitting images'],
+                                    self._double_page_changed_cb)
 
         box.set_tooltip_text(
             _("When showing the first page of an archive, or an image's width "
@@ -581,8 +598,8 @@ class _PreferencesDialog(Dialog):
                 (_('Fit to same size'), constants.DOUBLE_PAGE_AUTORESIZE_FIT_SIZE))
 
         box = self._create_combobox(items,
-                prefs['double page autoresize'],
-                self._double_page_autoresize_changed_cb)
+                                    prefs['double page autoresize'],
+                                    self._double_page_autoresize_changed_cb)
 
         box.set_tooltip_text(
             _("Maintain relative size or fit to same size."))
@@ -606,20 +623,20 @@ class _PreferencesDialog(Dialog):
                 (_('Last modified'), constants.SORT_LAST_MODIFIED))
 
         sortkey_box = self._create_combobox(sortkey_items, prefs['sort by'],
-            self._sort_by_changed_cb)
+                                            self._sort_by_changed_cb)
 
         sortorder_items = (
                 (_('Ascending'), constants.SORT_ASCENDING),
                 (_('Descending'), constants.SORT_DESCENDING))
 
         sortorder_box = self._create_combobox(sortorder_items,
-                prefs['sort order'],
-                self._sort_order_changed_cb)
+                                              prefs['sort order'],
+                                              self._sort_order_changed_cb)
 
         box = _sort_row(sortkey_box, sortorder_box)
 
         label = _("Files will be opened and displayed according to the sort order "
-              "specified here. This option does not affect ordering within archives.")
+                  "specified here. This option does not affect ordering within archives.")
         sortkey_box.set_tooltip_text(label)
         sortorder_box.set_tooltip_text(label)
 
@@ -650,15 +667,15 @@ class _PreferencesDialog(Dialog):
                 (_('GLib order'), constants.SORT_NAME_GLIB))
 
         sortkey_box = self._create_combobox(sortkey_items, prefs['sort archive by'],
-            self._sort_archive_by_changed_cb)
+                                            self._sort_archive_by_changed_cb)
 
         sortorder_items = (
                 (_('Ascending'), constants.SORT_ASCENDING),
                 (_('Descending'), constants.SORT_DESCENDING))
 
         sortorder_box = self._create_combobox(sortorder_items,
-                prefs['sort archive order'],
-                self._sort_archive_order_changed_cb)
+                                              prefs['sort archive order'],
+                                              self._sort_archive_order_changed_cb)
 
         box = _sort_row(sortkey_box, sortorder_box)
 
@@ -728,6 +745,7 @@ class _PreferencesDialog(Dialog):
                 _('Delete information about recently opened files?'),
                 _('This will remove all entries from the "Recent" menu,'
                   ' and clear information about last read pages.'))
+
             def responded(response: int) -> None:
                 if response == Response.YES:
                     self._window.uimanager.recent.remove_all()
@@ -808,7 +826,6 @@ class _PreferencesDialog(Dialog):
 
         return box
 
-
     def _create_extensions_entry(self) -> Gtk.Entry:
         entry = Gtk.Entry()
         entry.set_size_request(200, -1)
@@ -822,7 +839,6 @@ class _PreferencesDialog(Dialog):
             _('Treat all files found within archives, that have one of these file endings, as comments.'))
         return entry
 
-
     def _create_pref_check_button(self, label: str, prefkey: str,
                                   tooltip_text: str | None) -> Gtk.CheckButton:
         button = Gtk.CheckButton(label=label)
@@ -831,7 +847,6 @@ class _PreferencesDialog(Dialog):
         if tooltip_text:
             button.set_tooltip_text(tooltip_text)
         return button
-
 
     def _create_binary_pref_radio_buttons(
             self, label1: str, tooltip_text1: str | None, label2: str,
@@ -867,7 +882,6 @@ class _PreferencesDialog(Dialog):
         button2.connect('toggled', self._check_button_cb, prefkey)
         return button1, button2
 
-
     def _create_color_button(self, prefkey: str) -> Gtk.ColorDialogButton:
         # Gtk.ColorButton, which GTK deprecated in 4.10, opened a colour
         # chooser of its own and said 'color-set' once one was picked.
@@ -878,7 +892,6 @@ class _PreferencesDialog(Dialog):
         button.set_rgba(Gdk.RGBA(*preferences.by_name(prefkey)))
         button.connect('notify::rgba', self._color_button_cb, prefkey)
         return button
-
 
     def _check_button_cb(self, button: Gtk.CheckButton, preference: str) -> None:
         """Callback for all checkbutton-type preferences."""
@@ -901,16 +914,16 @@ class _PreferencesDialog(Dialog):
                 self._window.thumbnailsidebar.change_thumbnail_background_color(
                     prefs['thumb bg colour'])
             elif self._window.imagehandler.page_is_available():
-                pixbuf_count = 2 if self._window.displayed_double() else 1 # XXX limited to at most 2 pages
+                pixbuf_count = 2 if self._window.displayed_double() else 1  # XXX limited to at most 2 pages
                 bg_colour = self._window.imagehandler.get_pixbuf_auto_background(pixbuf_count)
                 self._window.thumbnailsidebar.change_thumbnail_background_color(bg_colour)
 
         elif preference in ('checkered bg for transparent images',
-          'no double page for wide images', 'auto rotate from exif'):
+                            'no double page for wide images', 'auto rotate from exif'):
             self._window.draw_image()
 
         elif (preference == 'hide all in fullscreen' and
-            self._window.is_fullscreen()):
+              self._window.is_fullscreen()):
             self._window.draw_image()
 
         elif preference == 'show page numbers on thumbnails':
@@ -937,7 +950,6 @@ class _PreferencesDialog(Dialog):
                 self._window.thumbnailsidebar.change_thumbnail_background_color(
                     prefs['thumb bg colour'])
 
-
     def _create_pref_spinner(self, prefkey: str, scale: float,
                              lower: float, upper: float, step_incr: float,
                              page_incr: float, digits: int,
@@ -956,7 +968,6 @@ class _PreferencesDialog(Dialog):
         if tooltip_text:
             spinner.set_tooltip_text(tooltip_text)
         return spinner
-
 
     def _spinner_cb(self, spinbutton: Gtk.SpinButton, preference: str) -> None:
         """Callback for spinner-type preferences."""
@@ -988,12 +999,11 @@ class _PreferencesDialog(Dialog):
             self._window._event_handler._extra_scroll_events = 0
 
         elif preference in ('fit to size width wide', 'fit to size height wide',
-            'fit to size width other', 'fit to size height other',):
+                            'fit to size width other', 'fit to size height other',):
             self._window.change_zoom_mode()
 
         elif preference == 'space between two pages':
             self._window.update_space()
-
 
     def _entry_cb(self, entry: Gtk.Entry, *args: object) -> None:
         """Callback for entry-type preferences."""
@@ -1001,6 +1011,7 @@ class _PreferencesDialog(Dialog):
         extensions = [e.strip() for e in text.split(',')]
         prefs['comment extensions'] = [e for e in extensions if e]
         self._window.filehandler.update_comment_extensions()
+
 
 def open_dialog(action: Gio.SimpleAction, window: "main.MainWindow") -> None:
     """Create and display the preference dialog."""
@@ -1013,6 +1024,7 @@ def open_dialog(action: Gio.SimpleAction, window: "main.MainWindow") -> None:
     else:
         # if the dialog window already exists bring it to the forefront of the screen
         _dialog.present()
+
 
 def _close_dialog() -> None:
 

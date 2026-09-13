@@ -10,6 +10,7 @@ from mcomix import log
 from mcomix import process
 from mcomix.archive import archive_base
 
+
 class RarArchive(archive_base.ExternalExecutableArchive):
     """ RAR file extractor using the unrar/rar executable. """
 
@@ -148,7 +149,7 @@ class RarArchive(archive_base.ExternalExecutableArchive):
                     if filename is not None:
                         yield self._unicode_filename(filename)
             except self.EncryptedHeader:
-                if 0 == retry_count:
+                if retry_count == 0:
                     continue
             break
 
@@ -156,8 +157,8 @@ class RarArchive(archive_base.ExternalExecutableArchive):
 
     def extract(self, filename: str, destination_dir: str) -> None:
         """ Extract <filename> from the archive to <destination_dir>. """
-        assert isinstance(filename, str) and \
-                isinstance(destination_dir, str)
+        assert isinstance(filename, str) \
+            and isinstance(destination_dir, str)
 
         if not self._get_executable():
             return
@@ -207,7 +208,7 @@ class RarArchive(archive_base.ExternalExecutableArchive):
                 new.close()
                 yield unicode_name
                 del wanted[filename]
-                if 0 == len(wanted):
+                if not wanted:
                     break
 
         finally:
