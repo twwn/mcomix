@@ -1,12 +1,11 @@
 """library_collection_area.py - Comic book library window that displays the collections."""
 
 from xml.sax.saxutils import escape as xmlescape
-from gi.repository import Gdk, GLib, Gtk
+from gi.repository import Gdk, Gio, GLib, Gtk
 from typing import TYPE_CHECKING
 
 from mcomix.preferences import prefs
 from mcomix import constants
-from mcomix import icons
 from mcomix import i18n
 from mcomix import status
 from mcomix import file_chooser_library_dialog
@@ -57,51 +56,70 @@ class _CollectionArea(Gtk.ScrolledWindow):
         self._treeview.append_column(column)
         self.add(self._treeview)
 
-        self._ui_manager = Gtk.UIManager()
-        self._tooltipstatus = status.TooltipStatusHelper(self._ui_manager,
-            self._library.get_status_bar())
-        ui_description = """
-        <ui>
-            <popup name="library collections">
-                <menuitem action="_title" />
-                <separator />
-                <menuitem action="add" />
-                <separator />
-                <menuitem action="new" />
-                <menuitem action="rename" />
-                <menuitem action="duplicate" />
-                <separator />
-                <menuitem action="cleanup" />
-                <menuitem action="remove" />
-            </popup>
-        </ui>
-        """
-        self._ui_manager.add_ui_from_string(ui_description)
-        actiongroup = Gtk.ActionGroup('mcomix-library-collection-area')
-        icons.add_actions(actiongroup, [
-            ('_title', None, _("Library collections"), None, None,
-                lambda *args: False),
-            ('add', 'list-add', _('_Add...'), None,
-                _('Add more books to the library.'),
-                lambda *args: file_chooser_library_dialog.open_library_filechooser_dialog(self._library)),
-            ('new', 'document-new', _('New'), None,
-                _('Add a new empty collection.'),
-                self.add_collection),
-            ('rename', 'document-edit-symbolic', _('Re_name'), None,
-                _('Renames the selected collection.'),
-                self._rename_collection),
-            ('duplicate', 'edit-copy', _('_Duplicate'), None,
-                _('Creates a duplicate of the selected collection.'),
-                self._duplicate_collection),
-            ('cleanup', 'edit-clear', _('_Clean up'), None,
-                _('Removes no longer existant books from the collection.'),
-                self._clean_collection),
-            ('remove', 'list-remove', _('_Remove'), None,
-                _('Deletes the selected collection.'),
-                self._remove_collection)])
-        self._ui_manager.insert_action_group(actiongroup, 0)
+        self._tooltipstatus = status.TooltipStatusHelper(
+            statusbar=self._library.get_status_bar())
+        self._popup_actions = Gio.SimpleActionGroup()
+        self._collection_menu = self._create_popup_menu()
 
         self.display_collections()
+
+    def _create_popup_menu(self) -> Any:
+        """Build the right-click menu for the collection list."""
+        entries = (
+            ('add', _('_Add...'),
+             _('Add more books to the library.'),
+             lambda *args: file_chooser_library_dialog.open_library_filechooser_dialog(
+                 self._library)),
+            ('new', _('New'),
+             _('Add a new empty collection.'), self.add_collection),
+            ('rename', _('Re_name'),
+             _('Renames the selected collection.'), self._rename_collection),
+            ('duplicate', _('_Duplicate'),
+             _('Creates a duplicate of the selected collection.'),
+             self._duplicate_collection),
+            ('cleanup', _('_Clean up'),
+             _('Removes no longer existant books from the collection.'),
+             self._clean_collection),
+            ('remove', _('_Remove'),
+             _('Deletes the selected collection.'), self._remove_collection),
+        )
+        tooltips = {}
+        for name, label, tooltip, handler in entries:
+            action = Gio.SimpleAction.new(name, None)
+            action.connect('activate', handler)
+            self._popup_actions.add_action(action)
+            tooltips[label] = tooltip
+
+        # The heading is an item bound to an action that is never enabled,
+        # which is what it was before.  A labelled Gio.Menu section would
+        # say the same thing, but Gtk.Menu draws such a section as a bare
+        # separator and throws the label away.
+        title = Gio.SimpleAction.new('title', None)
+        title.set_enabled(False)
+        self._popup_actions.add_action(title)
+        self.insert_action_group('collections', self._popup_actions)
+
+        model = Gio.Menu()
+        heading = Gio.Menu()
+        heading.append(_('Library collections'), 'collections.title')
+        model.append_section(None, heading)
+        adding = Gio.Menu()
+        adding.append(entries[0][1], 'collections.add')
+        model.append_section(None, adding)
+        creating = Gio.Menu()
+        for name, label, tooltip, handler in entries[1:4]:
+            creating.append(label, 'collections.%s' % name)
+        model.append_section(None, creating)
+        removing = Gio.Menu()
+        for name, label, tooltip, handler in entries[4:]:
+            removing.append(label, 'collections.%s' % name)
+        model.append_section(None, removing)
+
+        menu = Gtk.Menu.new_from_model(model)
+        menu.attach_to_widget(self, None)
+        menu.show_all()
+        self._tooltipstatus.attach_to_menu(menu, tooltips)
+        return menu
 
     def get_current_collection(self):
         """Return the collection ID for the currently selected collection,
@@ -113,7 +131,7 @@ class _CollectionArea(Gtk.ScrolledWindow):
         else:
             return None
 
-    def display_collections(self):
+    def display_collections(self) -> None:
         """Display the library collections by redrawing them from the
         backend data. Should be called on startup or when the collections
         hierarchy has been changed (e.g. after moving, adding, renaming).
@@ -334,18 +352,16 @@ class _CollectionArea(Gtk.ScrolledWindow):
 
         is_collection_all = collection in (_COLLECTION_ALL, _COLLECTION_RECENT)
 
-        for path in ('rename', 'duplicate', 'remove'):
-            control = self._ui_manager.get_action(
-                    '/library collections/' + path)
-            control.set_sensitive(collection is not None and
-                    not is_collection_all)
+        for name in ('rename', 'duplicate', 'remove'):
+            self._popup_actions.lookup_action(name).set_enabled(
+                collection is not None and not is_collection_all)
 
-        self._ui_manager.get_action('/library collections/add').set_sensitive(collection is not None)
-        self._ui_manager.get_action('/library collections/cleanup').set_sensitive(collection is not None)
-        self._ui_manager.get_action('/library collections/_title').set_sensitive(False)
+        for name in ('add', 'cleanup'):
+            self._popup_actions.lookup_action(name).set_enabled(
+                collection is not None)
 
-        menu = self._ui_manager.get_widget('/library collections')
-        menu.popup(None, None, None, None, 3, Gtk.get_current_event_time())
+        self._collection_menu.popup(None, None, None, None, 3,
+                                    Gtk.get_current_event_time())
 
     def _key_press(self, treeview, event):
         """Handle key presses on the _CollectionArea."""

@@ -90,7 +90,7 @@ class LastReadPage(object):
         if book:
             book.set_last_read_page(None)
 
-    def clear_all(self):
+    def clear_all(self) -> None:
         """ Removes all stored books from the library's 'Recent' collection,
         and removes all information from the recent table. This method is
         not affected by setting L{enabled} to false. """

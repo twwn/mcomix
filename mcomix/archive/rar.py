@@ -115,7 +115,7 @@ class RarArchive(archive_base.BaseArchive):
 
 
     @staticmethod
-    def is_available():
+    def is_available() -> bool:
         """ Returns True if unrar.dll can be found, False otherwise. """
         return bool(_get_unrar_dll())
 
@@ -205,11 +205,11 @@ class RarArchive(archive_base.BaseArchive):
         # to the next archive file. This will improve extraction speed for sequential file reads.
         # After all files have been extracted, close() should be called to free the handler resources.
 
-    def close(self):
+    def close(self) -> None:
         """ Close the archive handle """
         self._close()
 
-    def _open(self):
+    def _open(self) -> None:
         """ Open rar handle for extraction. """
         self._callback_function = UNRARCALLBACK(self._unrar_callback)
         archivedata = RarArchive._RAROpenArchiveDataEx(ArcNameW=self.archive,
@@ -237,7 +237,7 @@ class RarArchive(archive_base.BaseArchive):
             exc = UnrarException(errormessage)
         raise exc
 
-    def _read_header(self):
+    def _read_header(self) -> None:
         self._current_filename = None
         errorcode = self._unrar.RARReadHeaderEx(self._handle, ctypes.byref(self._headerdata))
         self._check_errorcode(errorcode)
@@ -253,7 +253,7 @@ class RarArchive(archive_base.BaseArchive):
         self._current_filename = None
         self._check_errorcode(errorcode)
 
-    def _close(self):
+    def _close(self) -> None:
         """ Close the rar handle previously obtained by open. """
         if self._handle is None:
             return

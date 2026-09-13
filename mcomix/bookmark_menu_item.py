@@ -1,6 +1,5 @@
 """bookmark_menu_item.py - A signle bookmark item."""
 
-from gi.repository import Gtk
 from mcomix import i18n
 from mcomix import icons
 
@@ -8,10 +7,14 @@ from mcomix import icons
 _MENU_ICON_SIZE = 16
 
 
-class _Bookmark(Gtk.ImageMenuItem):
+class _Bookmark(object):
 
-    """_Bookmark represents one bookmark. It extends the Gtk.ImageMenuItem
-    and is thus put directly in the bookmarks menu.
+    """_Bookmark represents one bookmark.
+
+    It used to be the menu item as well, extending Gtk.ImageMenuItem so it
+    could be put straight into the bookmarks menu.  A menu model holds
+    entries rather than widgets, so this is just the bookmark now and the
+    menu makes its own entry out of it.
     """
 
     def __init__(self, window, file_handler, name, path, page, numpages, archive_type, date_added):
@@ -25,21 +28,19 @@ class _Bookmark(Gtk.ImageMenuItem):
         self._file_handler = file_handler
         self._date_added = date_added
 
-        super(_Bookmark, self).__init__(str(self), False)
+    def get_label(self) -> str:
+        """The text the menu shows for this bookmark."""
+        return str(self)
 
-        if self._archive_type is not None:
-            im = Gtk.Image.new_from_icon_name('mcomix-archive', Gtk.IconSize.MENU)
-
-        else:
-            im = Gtk.Image.new_from_icon_name('mcomix-image', Gtk.IconSize.MENU)
-
-        self.set_image(im)
-        self.connect('activate', self._load)
+    def get_icon_name(self) -> str:
+        """The icon that goes with it: an archive, or a loose image."""
+        return ('mcomix-archive' if self._archive_type is not None
+                else 'mcomix-image')
 
     def __str__(self):
         return '%s, (%d / %d)' % (self._name, self._page, self._numpages)
 
-    def _load(self, *args):
+    def load(self, *args):
         """Open the file and page the bookmark represents."""
 
         if self._file_handler._base_path != self._path:
@@ -62,8 +63,7 @@ class _Bookmark(Gtk.ImageMenuItem):
         """Return a tuple corresponding to one row in the _BookmarkDialog's
         ListStore.
         """
-        pixbuf = icons.load_pixbuf(self.get_image().get_icon_name()[0],
-                                   _MENU_ICON_SIZE)
+        pixbuf = icons.load_pixbuf(self.get_icon_name(), _MENU_ICON_SIZE)
         page = '%d / %d' % (self._page, self._numpages)
         date = self._date_added.strftime("%x %X")
 
@@ -76,20 +76,6 @@ class _Bookmark(Gtk.ImageMenuItem):
         """
         return (self._name, self._path, self._page, self._numpages,
             self._archive_type, self._date_added)
-
-    def clone(self):
-        """ Creates a copy of the provided Bookmark menu item. This is necessary
-        since one bookmark item cannot be anchored in more than one menu. There are,
-        however, at least two: The main menu and the popup menu. """
-        return _Bookmark(
-            self._window,
-            self._file_handler,
-            self._name,
-            self._path,
-            self._page,
-            self._numpages,
-            self._archive_type,
-            self._date_added)
 
     def __eq__(self, other):
         """ Equality comparison for Bookmark items. """

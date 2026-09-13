@@ -46,7 +46,7 @@ class _CommentsDialog(Gtk.Dialog):
                 self._add_comment(path, self._comments[path])
         self._notebook.show_all()
 
-    def _update_comments(self):
+    def _update_comments(self) -> None:
 
         if self._notebook is not None:
             self._notebook.destroy()

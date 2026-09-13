@@ -27,7 +27,7 @@ class Pageselector(Gtk.Dialog):
 
         self._selector_adjustment = Gtk.Adjustment(value=self._window.imagehandler.get_current_page(),
                               lower=1,upper=self._number_of_pages,
-                              step_incr=1, page_incr=1 )
+                              step_increment=1, page_increment=1)
 
         self._page_selector = Gtk.VScale.new(self._selector_adjustment)
         self._page_selector.set_draw_value(False)

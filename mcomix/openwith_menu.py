@@ -1,8 +1,9 @@
 """ openwith_menu.py - Menu shell for the Open with... menu. """
 
-from gi.repository import Gtk
+from gi.repository import Gio, GLib, Gtk
 
-from mcomix import icons
+from typing import Any
+
 from mcomix import openwith
 from mcomix.i18n import _
 
@@ -11,23 +12,36 @@ _openwith_manager = openwith.OpenWithManager()
 # Reference to the edit dialog (to keep only one instance)
 _openwith_edit_diag = None
 
-class OpenWithMenu(Gtk.Menu):
-    def __init__(self, ui, window):
-        """ Constructor. """
-        super(OpenWithMenu, self).__init__()
+class OpenWithMenu(object):
 
+    """The "Open with" submenu, listing the commands the user has set up.
+
+    What it keeps is a Gio.Menu model, with the widget built from it by
+    Gtk.Menu.new_from_model, which follows the model by itself.  Running a
+    command goes through one action carrying the command's position as its
+    target, under a prefix of its own.
+    """
+
+    #: Where this menu's actions live, as menu items address them.
+    ACTION_PREFIX = 'openwith'
+
+    def __init__(self, window: Any) -> None:
+        """ Constructor. """
         self._window = window
         self._openwith_manager = _openwith_manager
+        self._commands: list = []
 
-        actiongroup = Gtk.ActionGroup('mcomix-openwith')
-        icons.add_actions(actiongroup, [
-            ('edit_commands', 'document-edit-symbolic', _('_Edit commands'),
-             None, None, self._edit_commands)])
+        self.model = Gio.Menu()
+        self.menu = Gtk.Menu.new_from_model(self.model)
 
-        action = actiongroup.get_action('edit_commands')
-        action.set_accel_group(ui.get_accel_group())
-        self.edit_button = action.create_menu_item()
-        self.append(self.edit_button)
+        self._actions = Gio.SimpleActionGroup()
+        run = Gio.SimpleAction.new('run', GLib.VariantType.new('i'))
+        run.connect('activate', self._run_command)
+        self._actions.add_action(run)
+        edit = Gio.SimpleAction.new('edit', None)
+        edit.connect('activate', self._edit_commands)
+        self._actions.add_action(edit)
+        window.insert_action_group(self.ACTION_PREFIX, self._actions)
 
         self._construct_menu()
 
@@ -35,46 +49,47 @@ class OpenWithMenu(Gtk.Menu):
         self._window.filehandler.file_closed += self._set_sensitivity
         self._openwith_manager.set_commands += self._construct_menu
 
-        self.show_all()
+        self.menu.show_all()
 
-    def _construct_menu(self, *args):
+    def _construct_menu(self, *args: Any) -> None:
         """ Build the menu entries from scratch. """
-        for item in self.get_children():
-            if item != self.edit_button:
-                self.remove(item)
+        self._commands = self._openwith_manager.get_commands()
+        self.model.remove_all()
 
-        commandlist = self._openwith_manager.get_commands()
+        # A separator in the command list starts a new section, which is
+        # how a menu model spells the same thing.
+        section = Gio.Menu()
+        for position, command in enumerate(self._commands):
+            if command.is_separator():
+                if section.get_n_items():
+                    self.model.append_section(None, section)
+                section = Gio.Menu()
+                continue
+            entry = Gio.MenuItem.new(command.get_label(), None)
+            entry.set_action_and_target_value('%s.run' % self.ACTION_PREFIX,
+                                              GLib.Variant('i', position))
+            section.append_item(entry)
+        if section.get_n_items():
+            self.model.append_section(None, section)
 
-        if len(commandlist) > 0:
-            separator = Gtk.SeparatorMenuItem()
-            separator.show()
-            self.prepend(separator)
-
-        for command in reversed(commandlist):
-            if not command.is_separator():
-                menuitem = Gtk.MenuItem(command.get_label())
-                menuitem.connect('activate', self._commandmenu_clicked,
-                        command.get_command(), command.get_label(),
-                        command.get_cwd(), command.is_disabled_for_archives())
-            else:
-                menuitem = Gtk.SeparatorMenuItem()
-
-            menuitem.show()
-            self.prepend(menuitem)
+        editing = Gio.Menu()
+        editing.append(_('_Edit commands'), '%s.edit' % self.ACTION_PREFIX)
+        self.model.append_section(None, editing)
 
         self._set_sensitivity()
 
-    def _set_sensitivity(self):
-        """ Enables or disables menu items depending on files being loaded. """
-        sensitive = self._window.filehandler.file_loaded
-        for item in self.get_children():
-            if item != self.edit_button:
-                item.set_sensitive(sensitive)
+    def _set_sensitivity(self, *args: Any) -> None:
+        """ Enables or disables the commands depending on files being loaded. """
+        self._actions.lookup_action('run').set_enabled(
+            self._window.filehandler.file_loaded)
 
-    def _commandmenu_clicked(self, menuitem, cmd, label, cwd, disabled_in_archives):
-        """ Execute the command associated with the clicked menu. """
-        command = openwith.OpenWithCommand(label, cmd, cwd, disabled_in_archives)
-        command.execute(self._window)
+    def _run_command(self, action: Any, target: Any) -> None:
+        """ Execute the command the activated entry stands for. """
+        command = self._commands[target.get_int32()]
+        openwith.OpenWithCommand(command.get_label(), command.get_command(),
+                                 command.get_cwd(),
+                                 command.is_disabled_for_archives()
+                                 ).execute(self._window)
 
     def _edit_commands(self, *args):
         """ When clicked, opens the command editor to set up the menu. Make

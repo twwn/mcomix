@@ -1,86 +1,109 @@
 """bookmark_menu.py - Bookmarks menu."""
 
-from gi.repository import Gtk
+from gi.repository import Gio, GLib, Gtk
+
+from typing import Any
 
 from mcomix import bookmark_backend
 from mcomix import bookmark_dialog
 from mcomix.i18n import _
 
-class BookmarksMenu(Gtk.Menu):
 
-    """BookmarksMenu extends Gtk.Menu with convenience methods relating to
-    bookmarks. It contains fixed items for adding bookmarks etc. as well
-    as dynamic items corresponding to the current bookmarks.
+class BookmarksMenu(object):
+
+    """The bookmarks menu: two fixed entries, and one per bookmark.
+
+    What it keeps is a Gio.Menu model, with the widget built from it by
+    Gtk.Menu.new_from_model, which follows the model by itself.  Opening a
+    bookmark goes through one action carrying its position as a target,
+    under a prefix of its own.
     """
 
-    def __init__(self, ui, window):
-        super(BookmarksMenu, self).__init__()
+    #: Where this menu's actions live, as menu items address them.
+    ACTION_PREFIX = 'bookmarks'
 
+    #: The two permanent entries, and the keys that reach them.
+    FIXED = (('add', _('Add _Bookmark'), '<Control>D'),
+             ('edit', _('_Edit Bookmarks...'), '<Control>B'))
+
+    def __init__(self, ui: Any, window: Any) -> None:
         self._window = window
         self._bookmarks_store = bookmark_backend.BookmarksStore
         self._bookmarks_store.initialize(window)
+        self._bookmarks: list = []
 
-        self._actiongroup = Gtk.ActionGroup('mcomix-bookmarks')
-        self._actiongroup.add_actions([
-            ('add_bookmark', 'mcomix-add-bookmark', _('Add _Bookmark'),
-                '<Control>D', None, self._add_current_to_bookmarks),
-            ('edit_bookmarks', None, _('_Edit Bookmarks...'),
-                '<Control>B', None, self._edit_bookmarks)])
-        
-        action = self._actiongroup.get_action('add_bookmark')
-        action.set_accel_group(ui.get_accel_group())
-        self.add_button = action.create_menu_item()
-        self.append(self.add_button)
+        self.model = Gio.Menu()
+        self.menu = Gtk.Menu.new_from_model(self.model)
 
-        action = self._actiongroup.get_action('edit_bookmarks')
-        action.set_accel_group(ui.get_accel_group())
-        self.edit_button = action.create_menu_item()
-        self.append(self.edit_button)
+        self._actions = Gio.SimpleActionGroup()
+        for name, label, accelerator in self.FIXED:
+            action = Gio.SimpleAction.new(name, None)
+            action.connect('activate', getattr(self, '_%s_activated' % name))
+            self._actions.add_action(action)
+        open_action = Gio.SimpleAction.new('open', GLib.VariantType.new('i'))
+        open_action.connect('activate', self._open_activated)
+        self._actions.add_action(open_action)
+        window.insert_action_group(self.ACTION_PREFIX, self._actions)
 
-        # Re-create the bookmarks menu if one was added/removed
-        self._create_bookmark_menuitems()
-        self._bookmarks_store.add_bookmark += lambda bookmark: self._create_bookmark_menuitems()
-        self._bookmarks_store.remove_bookmark += lambda bookmark: self._create_bookmark_menuitems()
+        # The accelerators hang off the accel group rather than the menu
+        # items: the items are rebuilt whenever a bookmark is added or
+        # removed, and an accelerator set on one would go with it.
+        accel_group = ui.get_accel_group()
+        for name, label, accelerator in self.FIXED:
+            key, modifier = Gtk.accelerator_parse(accelerator)
+            accel_group.connect(key, modifier, Gtk.AccelFlags.VISIBLE,
+                                self._accelerator_for(name))
 
-        self.show_all()
+        self._rebuild()
+        self._bookmarks_store.add_bookmark += lambda bookmark: self._rebuild()
+        self._bookmarks_store.remove_bookmark += lambda bookmark: self._rebuild()
 
-    def _create_bookmark_menuitems(self):
-        # Delete all old menu entries
-        for item in self.get_children():
-            if item not in (self.add_button, self.edit_button):
-                self.remove(item)
+        self.menu.show_all()
 
-        bookmarks = self._bookmarks_store.get_bookmarks()
+    def _accelerator_for(self, name: str) -> Any:
+        """A closure that activates the action <name>."""
+        def activated(*args: Any) -> bool:
+            self._actions.lookup_action(name).activate(None)
+            return True
+        return activated
 
-        # Add separator
-        if bookmarks:
-            separator = Gtk.SeparatorMenuItem()
-            separator.show()
-            self.append(separator)
+    def _rebuild(self) -> None:
+        """Put the fixed entries and the current bookmarks in the model."""
+        self._bookmarks = self._bookmarks_store.get_bookmarks()
+        self.model.remove_all()
 
-        # Add new bookmarks
-        for bookmark in bookmarks:
-            self.add_bookmark(bookmark)
+        fixed = Gio.Menu()
+        for name, label, accelerator in self.FIXED:
+            entry = Gio.MenuItem.new(label, '%s.%s' % (self.ACTION_PREFIX, name))
+            entry.set_attribute_value('accel', GLib.Variant('s', accelerator))
+            fixed.append_item(entry)
+        self.model.append_section(None, fixed)
 
-    def add_bookmark(self, bookmark):
-        """Add <bookmark> to the menu."""
-        bookmark = bookmark.clone()
-        bookmark.show()
-        self.insert(bookmark, 3)
+        if self._bookmarks:
+            listed = Gio.Menu()
+            for position, bookmark in enumerate(self._bookmarks):
+                entry = Gio.MenuItem.new(bookmark.get_label(), None)
+                entry.set_action_and_target_value(
+                    '%s.open' % self.ACTION_PREFIX, GLib.Variant('i', position))
+                listed.append_item(entry)
+            self.model.append_section(None, listed)
 
-    def _add_current_to_bookmarks(self, *args):
+    def _open_activated(self, action: Any, target: Any) -> None:
+        self._bookmarks[target.get_int32()].load()
+
+    def _add_activated(self, *args: Any) -> None:
         """Add the current page to the bookmarks list."""
         self._bookmarks_store.add_current_to_bookmarks()
 
-    def _edit_bookmarks(self, *args):
+    def _edit_activated(self, *args: Any) -> None:
         """Open the bookmarks dialog."""
         bookmark_dialog._BookmarksDialog(self._window, self._bookmarks_store)
 
-    def set_sensitive(self, loaded):
+    def set_sensitive(self, loaded: bool) -> None:
         """Set the sensitivities of menu items as appropriate if <loaded>
         represents whether a file is currently loaded in the main program
         or not.
         """
-        self._actiongroup.get_action('add_bookmark').set_sensitive(loaded)
+        self._actions.lookup_action('add').set_enabled(loaded)
 
 # vim: expandtab:sw=4:ts=4

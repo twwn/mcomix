@@ -57,10 +57,10 @@ class FileProvider(object):
     def list_files(self, mode=IMAGES):
         return []
 
-    def next_directory(self):
+    def next_directory(self) -> bool:
         return False
 
-    def previous_directory(self):
+    def previous_directory(self) -> bool:
         return False
 
     @staticmethod

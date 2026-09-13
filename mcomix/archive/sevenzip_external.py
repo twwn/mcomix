@@ -196,7 +196,7 @@ class SevenZipArchive(archive_base.ExternalExecutableArchive):
         return _7z_executable
 
     @staticmethod
-    def is_available():
+    def is_available() -> bool:
         return bool(SevenZipArchive._find_7z_executable())
 
 

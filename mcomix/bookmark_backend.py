@@ -24,7 +24,7 @@ class __BookmarksStore(object):
     Changes in the _BookmarksStore are mirrored in both.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._initialized = False
         self._window = None
         self._file_handler = None
@@ -69,7 +69,7 @@ class __BookmarksStore(object):
         self._bookmarks.remove(bookmark)
         self.write_bookmarks_file()
 
-    def add_current_to_bookmarks(self):
+    def add_current_to_bookmarks(self) -> None:
         """Add the currently viewed page to the list."""
         name = self._image_handler.get_pretty_current_filename()
         path = self._image_handler.get_real_path()
@@ -111,7 +111,7 @@ class __BookmarksStore(object):
         self.show_replace_bookmark_dialog(same_file_bookmarks, page,
                                           replace_answered)
 
-    def clear_bookmarks(self):
+    def clear_bookmarks(self) -> None:
         """Remove all bookmarks from the list."""
 
         while not self.is_empty():
@@ -125,7 +125,7 @@ class __BookmarksStore(object):
             self._bookmarks, self._bookmarks_mtime = self.load_bookmarks()
             return self._bookmarks
 
-    def is_empty(self):
+    def is_empty(self) -> bool:
         """Return True if the bookmark list is empty."""
         return len(self._bookmarks) == 0
 
@@ -159,7 +159,7 @@ class __BookmarksStore(object):
 
         return bookmarks, mtime
 
-    def file_was_modified(self):
+    def file_was_modified(self) -> bool:
         """ Checks the bookmark store's mtime to see if it has been modified
         since it was last read. """
         path = constants.BOOKMARK_PICKLE_PATH
@@ -176,7 +176,7 @@ class __BookmarksStore(object):
         else:
             return True
 
-    def write_bookmarks_file(self):
+    def write_bookmarks_file(self) -> None:
         """Store relevant bookmark info in the mcomix directory."""
 
         # Merge changes in case file was modified from within other instances

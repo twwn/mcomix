@@ -242,7 +242,7 @@ def read_preferences_file() -> None:
             if key in prefs:
                 prefs[key] = saved_prefs[key]
 
-def write_preferences_file():
+def write_preferences_file() -> None:
     """Write preference data to disk."""
     # TODO: it might be better to save only those options that were (ever)
     # explicitly changed by the used, leaving everything else as default

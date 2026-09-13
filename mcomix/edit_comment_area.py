@@ -1,10 +1,11 @@
 """edit_comment_area.py - The area in the editing window that displays comments."""
 
 import os
-from gi.repository import Gdk, Gtk
-from mcomix import icons
+from gi.repository import Gio, Gdk, Gtk
 from mcomix import tools
 from mcomix.i18n import _
+
+from typing import Any
 
 
 class _CommentArea(Gtk.Box):
@@ -41,24 +42,23 @@ class _CommentArea(Gtk.Box):
         self._treeview.append_column(column)
         scrolled.add(self._treeview)
 
-        self._ui_manager = Gtk.UIManager()
+        self._popup_menu = self._create_popup_menu()
 
-        ui_description = """
-        <ui>
-            <popup name="Popup">
-                <menuitem action="remove" />
-            </popup>
-        </ui>
-        """
+    def _create_popup_menu(self) -> Any:
+        """Build the right-click menu for the comment list."""
+        actions = Gio.SimpleActionGroup()
+        remove = Gio.SimpleAction.new('remove', None)
+        remove.connect('activate', self._remove_file)
+        actions.add_action(remove)
+        self.insert_action_group('commentarea', actions)
 
-        self._ui_manager.add_ui_from_string(ui_description)
-        actiongroup = Gtk.ActionGroup('mcomix-edit-archive-comment-area')
-        icons.add_actions(actiongroup, [
-            ('remove', 'list-remove', _('Remove from archive'), None, None,
-                self._remove_file)])
-        self._ui_manager.insert_action_group(actiongroup, 0)
+        model = Gio.Menu()
+        model.append(_('Remove from archive'), 'commentarea.remove')
+        menu = Gtk.Menu.new_from_model(model)
+        menu.attach_to_widget(self, None)
+        return menu
 
-    def fetch_comments(self):
+    def fetch_comments(self) -> None:
         """Load all comments in the archive."""
 
         for num in range(1,
@@ -99,8 +99,8 @@ class _CommentArea(Gtk.Box):
         path = path[0]
 
         if event.button == 3:
-            self._ui_manager.get_widget('/Popup').popup(None, None, None, None,
-                                                        event.button, event.time)
+            self._popup_menu.popup(None, None, None, None,
+                                   event.button, event.time)
 
     def _key_press(self, iconview, event):
         """Handle key presses on the area."""

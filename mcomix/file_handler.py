@@ -193,19 +193,19 @@ class FileHandler(object):
                     self._ask_goto_last_read_page(
                         self._current_file, last_image_index + 1, resume)
 
-        self._window.uimanager.recent.add(self._current_file)
+        self._window.uimanager.recent.add_path(self._current_file)
 
     @callback.Callback
-    def file_opened(self):
+    def file_opened(self) -> None:
         """ Called when a new set of files has successfully been opened. """
         self.file_loaded = True
 
     @callback.Callback
-    def file_closed(self):
+    def file_closed(self) -> None:
         """ Called when the current file has been closed. """
         pass
 
-    def close_file(self):
+    def close_file(self) -> None:
         """Close the currently opened file and its provider. """
         self._close(close_provider=True)
 
@@ -414,7 +414,7 @@ class FileHandler(object):
             current_index = 0
         return current_index + 1, len(file_list)
 
-    def get_number_of_comments(self):
+    def get_number_of_comments(self) -> int:
         """Return the number of comments in the current archive."""
         return len(self._comment_files)
 
@@ -434,7 +434,7 @@ class FileHandler(object):
         """Return the filename of comment <num>."""
         return self._comment_files[num - 1]
 
-    def update_comment_extensions(self):
+    def update_comment_extensions(self) -> None:
         """Update the regular expression used to filter out comments in
         archives by their filename.
         """
@@ -647,7 +647,7 @@ class FileHandler(object):
         del_thread.daemon = False
         del_thread.start()
 
-    def write_fileinfo_file(self):
+    def write_fileinfo_file(self) -> None:
         """Write current open file information."""
 
         if self.file_loaded:
@@ -682,7 +682,7 @@ class FileHandler(object):
 
         return fileinfo
 
-    def update_last_read_page(self):
+    def update_last_read_page(self) -> None:
         """ Stores the currently viewed page. """
         if self.archive_type is None or not self.file_loaded:
             return

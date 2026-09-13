@@ -52,7 +52,7 @@ class MobiArchive(archive_base.NonUnicodeArchive):
             f.close()
             raise
 
-    def _close(self):
+    def _close(self) -> None:
         if self.file is not None:
             self.file.close()
             self.file = None
@@ -83,6 +83,6 @@ class MobiArchive(archive_base.NonUnicodeArchive):
                 new.write(data)
         return destination_path
 
-    def close(self):
+    def close(self) -> None:
         ''' Close the archive handle '''
         self._close()

@@ -1,14 +1,15 @@
 """edit_image_area.py - The area of the editing archive window that displays images."""
 
 import os
-from gi.repository import Gdk, GdkPixbuf, Gtk
+from gi.repository import Gdk, GdkPixbuf, Gio, Gtk
 
-from mcomix import icons
 from mcomix import image_tools
 from mcomix import i18n
 from mcomix import thumbnail_tools
 from mcomix import thumbnail_view
 from mcomix.i18n import _
+
+from typing import Any
 
 class _ImageArea(Gtk.ScrolledWindow):
 
@@ -53,24 +54,23 @@ class _ImageArea(Gtk.ScrolledWindow):
 
         self._window.imagehandler.page_available += self._on_page_available
 
-        self._ui_manager = Gtk.UIManager()
-        ui_description = """
-        <ui>
-            <popup name="Popup">
-                <menuitem action="remove" />
-            </popup>
-        </ui>
-        """
+        self._popup_menu = self._create_popup_menu()
 
-        self._ui_manager.add_ui_from_string(ui_description)
+    def _create_popup_menu(self) -> Any:
+        """Build the right-click menu for the page list."""
+        actions = Gio.SimpleActionGroup()
+        remove = Gio.SimpleAction.new('remove', None)
+        remove.connect('activate', self._remove_pages)
+        actions.add_action(remove)
+        self.insert_action_group('imagearea', actions)
 
-        actiongroup = Gtk.ActionGroup('mcomix-edit-archive-image-area')
-        icons.add_actions(actiongroup, [
-            ('remove', 'list-remove', _('Remove from archive'), None, None,
-                self._remove_pages)])
-        self._ui_manager.insert_action_group(actiongroup, 0)
+        model = Gio.Menu()
+        model.append(_('Remove from archive'), 'imagearea.remove')
+        menu = Gtk.Menu.new_from_model(model)
+        menu.attach_to_widget(self, None)
+        return menu
 
-    def fetch_images(self):
+    def fetch_images(self) -> None:
         """Load all the images in the archive or directory."""
         for page in range(1, self._window.imagehandler.get_number_of_pages() + 1):
             path = self._window.imagehandler.get_path_to_page(page)
@@ -121,8 +121,8 @@ class _ImageArea(Gtk.ScrolledWindow):
                 iconview.unselect_all()
                 iconview.select_path(path)
 
-            self._ui_manager.get_widget('/Popup').popup(None, None, None, None,
-                                                        event.button, event.time)
+            self._popup_menu.popup(None, None, None, None,
+                                   event.button, event.time)
 
     def _key_press(self, iconview, event):
         """Handle key presses on the thumbnail area."""
@@ -142,7 +142,7 @@ class _ImageArea(Gtk.ScrolledWindow):
         pixbuf = Gdk.pixbuf_get_from_surface(surface, 0, 0, width, height)
         Gtk.drag_set_icon_pixbuf(context, pixbuf, -5, -5)
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         self._iconview.stop_update()
 
     def _on_page_available(self, page):

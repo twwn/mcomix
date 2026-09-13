@@ -61,7 +61,7 @@ class OnScreenDisplay(object):
         self._timeout_event = GLib.timeout_add_seconds(
             OnScreenDisplay.TIMEOUT, self.clear)
 
-    def clear(self):
+    def clear(self) -> int:
         """ Removes the OSD. """
         if self._timeout_event:
             GLib.source_remove(self._timeout_event)
@@ -82,7 +82,7 @@ class OnScreenDisplay(object):
 
         return "\n".join(result)
 
-    def _clear_osd(self):
+    def _clear_osd(self) -> None:
         """ Clear the last OSD region. """
 
         if not self._last_osd_rect:

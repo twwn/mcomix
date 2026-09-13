@@ -23,7 +23,7 @@ def _fix_args(args):
             fixed_args.append(arg)
     return fixed_args
 
-def _get_creationflags():
+def _get_creationflags() -> int:
     if 'win32' == sys.platform:
         # Do not create a console window.
         return 0x08000000

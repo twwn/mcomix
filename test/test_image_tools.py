@@ -393,6 +393,24 @@ class ImageToolsTest(MComixTest):
     def test_get_implied_rotation_from_file_invalid(self):
         self.assertEqual(image_tools.get_implied_rotation_from_file(os.devnull), 0)
 
+    def test_get_image_header(self):
+        # load_pixbuf_size() takes the format and the dimensions from here
+        # rather than from get_image_info(), so the two have to agree.
+        for image in _TEST_IMAGES:
+            path = get_image_path(image.name)
+            expected_format, expected_dimensions, _providers = \
+                image_tools.get_image_info(path)
+            self.assertEqual(image_tools.get_image_header(path),
+                             (expected_format, expected_dimensions),
+                             msg='get_image_header("%s") disagrees with '
+                                 'get_image_info()' % image.name)
+
+    def test_get_image_header_invalid(self):
+        # Nothing identifies it, so the answer has to be the one
+        # load_pixbuf_size() reads as "let the loader raise".
+        self.assertEqual(image_tools.get_image_header(os.devnull),
+                         ('Unknown filetype', (0, 0)))
+
     def test_get_image_size(self):
         for image in _TEST_IMAGES:
             self.assertEqual(image_tools.get_image_size(get_image_path(image.name)),

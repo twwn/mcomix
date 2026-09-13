@@ -54,7 +54,7 @@ class KeybindingEditorWindow(Gtk.ScrolledWindow):
 
         self.add(treeview)
 
-    def refresh_model(self):
+    def refresh_model(self) -> None:
         """ Initializes the model from data provided by the keybinding
         manager. """
         self.treestore.clear()

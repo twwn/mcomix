@@ -65,7 +65,7 @@ class RecursiveArchive(archive_base.BaseArchive):
             for name in self._iter_contents(sub_archive, sub_root):
                 yield name
 
-    def _check_concurrent_extraction_support(self):
+    def _check_concurrent_extraction_support(self) -> None:
         supported = True
         # We need all archives to support concurrent extractions.
         for archive in self._archive_list:
@@ -132,7 +132,7 @@ class RecursiveArchive(archive_base.BaseArchive):
             if 0 == len(wanted):
                 break
 
-    def is_solid(self):
+    def is_solid(self) -> bool:
         if not self._contents_listed:
             self.list_contents()
         # We're solid if at least one archive is solid.
@@ -141,7 +141,7 @@ class RecursiveArchive(archive_base.BaseArchive):
                 return True
         return False
 
-    def close(self):
+    def close(self) -> None:
         archives = list(self._archive_list)
         # The main archive only joins the list once listing has started, so
         # closing an archive that was opened but never listed needs this.

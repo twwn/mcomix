@@ -122,7 +122,7 @@ class _LibraryBackend(object):
         else:
             return None
 
-    def get_book_cover(self, book: int) -> str | None:
+    def get_book_cover(self, book: int) -> "GdkPixbuf.Pixbuf | None":
         """Return a pixbuf with a thumbnail of the cover of <book>, or
         None if the cover can not be fetched.
         """

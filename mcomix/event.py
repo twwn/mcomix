@@ -52,7 +52,7 @@ class EventHandler(object):
                 self._window.draw_image()
 
 
-    def register_key_events(self):
+    def register_key_events(self) -> None:
         """ Registers keyboard events and their default binings, and hooks
         them up with their respective callback functions. """
 
@@ -459,7 +459,7 @@ class EventHandler(object):
         if event.keyval in (Gdk.KEY_Control_L, Gdk.KEY_Control_R):
             self._window.imagehandler.force_single_step = False
 
-    def escape_event(self):
+    def escape_event(self) -> None:
         """ Determines the behavior of the ESC key. """
         if prefs['escape quits']:
             self._window.close_program()
@@ -649,19 +649,19 @@ class EventHandler(object):
 
         return not page_flipped
 
-    def _scroll_down(self):
+    def _scroll_down(self) -> None:
         """ Scrolls down. """
         self._scroll_with_flipping(0, prefs['number of pixels to scroll per key event'])
 
-    def _scroll_up(self):
+    def _scroll_up(self) -> None:
         """ Scrolls up. """
         self._scroll_with_flipping(0, -prefs['number of pixels to scroll per key event'])
 
-    def _scroll_right(self):
+    def _scroll_right(self) -> None:
         """ Scrolls right. """
         self._scroll_with_flipping(prefs['number of pixels to scroll per key event'], 0)
 
-    def _scroll_left(self):
+    def _scroll_left(self) -> None:
         """ Scrolls left. """
         self._scroll_with_flipping(-prefs['number of pixels to scroll per key event'], 0)
 
@@ -699,7 +699,7 @@ class EventHandler(object):
             self._window.update_viewport_position()
 
 
-    def _next_page_with_protection(self):
+    def _next_page_with_protection(self) -> bool:
         """ Advances to the next page. If L{_scroll_protection} is enabled,
         this method will only advance if enough scrolling attempts have been made.
 
@@ -724,7 +724,7 @@ class EventHandler(object):
             # This path should not be reached.
             assert False, "Programmer is moron, incorrect assertion."
 
-    def _previous_page_with_protection(self):
+    def _previous_page_with_protection(self) -> bool:
         """ Goes back to the previous page. If L{_scroll_protection} is enabled,
         this method will only go back if enough scrolling attempts have been made.
 

@@ -122,7 +122,7 @@ class _BaseFileChooserDialog(Gtk.Dialog):
         self.filechooser.add_filter(ffilter)
         return ffilter
 
-    def add_archive_filters(self):
+    def add_archive_filters(self) -> None:
         """Add archive filters to the filechooser.
         """
         ffilter = Gtk.FileFilter()
@@ -138,7 +138,7 @@ class _BaseFileChooserDialog(Gtk.Dialog):
             for pat in patterns:
                 ffilter.add_pattern(pat)
 
-    def add_image_filters(self):
+    def add_image_filters(self) -> None:
         """Add images filters to the filechooser.
         """
         ffilter = Gtk.FileFilter()
@@ -192,7 +192,7 @@ class _BaseFileChooserDialog(Gtk.Dialog):
     def set_current_directory(self, path):
         self.filechooser.set_current_folder(path)
 
-    def should_open_recursive(self):
+    def should_open_recursive(self) -> bool:
         return False
 
     def _response(self, widget, response):

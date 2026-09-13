@@ -3,7 +3,6 @@
 from gi.repository import Gdk, GdkPixbuf, Gtk, GObject
 
 from mcomix import constants
-from mcomix import bookmark_menu_item
 from mcomix import tools
 from mcomix.i18n import _
 
@@ -31,8 +30,11 @@ class _BookmarksDialog(Gtk.Dialog):
         scrolled.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
         self.vbox.pack_start(scrolled, True, True, 0)
 
+        # The last column holds the bookmark itself.  It used to be a
+        # Gtk.ImageMenuItem, and so had a GType of its own; a plain Python
+        # object goes in a TYPE_PYOBJECT column, which is what "object" is.
         self._liststore = Gtk.ListStore(GdkPixbuf.Pixbuf, GObject.TYPE_STRING,
-            GObject.TYPE_STRING, GObject.TYPE_STRING, GObject.TYPE_STRING, bookmark_menu_item._Bookmark)
+            GObject.TYPE_STRING, GObject.TYPE_STRING, GObject.TYPE_STRING, object)
 
         self._treeview = Gtk.TreeView(self._liststore)
         self._treeview.set_rules_hint(True)
@@ -109,7 +111,7 @@ class _BookmarksDialog(Gtk.Dialog):
         """Add the <bookmark> to the dialog."""
         self._liststore.prepend(bookmark.to_row())
 
-    def _remove_selected(self):
+    def _remove_selected(self) -> None:
         """Remove the currently selected bookmark from the dialog and from
         the store."""
 
@@ -128,7 +130,7 @@ class _BookmarksDialog(Gtk.Dialog):
         bookmark = treeview.get_model().get_value(iter, 5)
 
         self._close()
-        bookmark._load()
+        bookmark.load()
 
     def _sort_model(self, treemodel, iter1, iter2, user_data):
         """ Custom sort function to sort to model entries based on the

@@ -8,7 +8,7 @@ import math
 
 class Scrolling(object):
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.clear_cache()
 
 
@@ -199,7 +199,7 @@ class Scrolling(object):
         return self._cache0[3]
 
 
-    def clear_cache(self):
+    def clear_cache(self) -> None:
         """ Clears all caches that are used internally. """
         self._cache0 = (0, 0, False, [])
         self._cache1 = (0, 0, False, [])

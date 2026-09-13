@@ -250,7 +250,7 @@ class _KeybindingManager(object):
 
         self.save()
 
-    def clear_all(self):
+    def clear_all(self) -> None:
         """ Removes all keybindings. The changes are only persisted if
         save() is called afterwards. """
         self._action_to_callback = {}
@@ -278,7 +278,7 @@ class _KeybindingManager(object):
                 self._window.emit_stop_by_name('key_press_event')
                 return func(*args, **kwargs)
 
-    def save(self):
+    def save(self) -> None:
         """ Stores the keybindings that have been set to disk. """
         # Collect keybindings for all registered actions
         action_to_keys = {}
@@ -291,7 +291,7 @@ class _KeybindingManager(object):
         with tools.atomic_write(constants.KEYBINDINGS_CONF_PATH) as fp:
             json.dump(action_to_keys, fp, indent=2)
 
-    def _initialize(self):
+    def _initialize(self) -> None:
         """ Restore keybindings from disk. """
         try:
             with open(constants.KEYBINDINGS_CONF_PATH, "r") as fp:
@@ -315,7 +315,7 @@ class _KeybindingManager(object):
         """ Returns a list of (keycode, modifier) for the action C{name}. """
         return self._action_to_bindings[name]
 
-    def _migrate_from_old_bindings(self):
+    def _migrate_from_old_bindings(self) -> None:
         """ This method deals with upgrading from MComix 1.0 and older to
         MComix 1.01, which integrated all UI hotkeys into this class. Simply
         remove old files and start from default values. """

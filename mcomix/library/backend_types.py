@@ -202,7 +202,7 @@ class _DefaultCollection(_Collection):
     """ Represents the default collection that books belong to if
     no explicit collection was specified. """
 
-    def __init__(self):
+    def __init__(self) -> None:
 
         self.id = None
         self.name = _("All books")
@@ -308,7 +308,7 @@ class _WatchList(object):
         else:
             raise ValueError("Watchlist entry doesn't exist")
 
-    def scan_for_new_files(self):
+    def scan_for_new_files(self) -> None:
         """ Begins scanning for new files in the watched directories.
         When the scan finishes, L{new_files_found} will be called
         asynchronously. """
@@ -316,7 +316,7 @@ class _WatchList(object):
         thread.name += '-scan_for_new_files'
         thread.start()
 
-    def _scan_for_new_files_thread(self):
+    def _scan_for_new_files_thread(self) -> None:
         """ Executes the actual scanning operation in a new thread. """
         existing_books = [book.path for book in DefaultCollection.get_books()
                           # Also add book if it was only found in Recent collection
@@ -382,7 +382,7 @@ class _WatchListEntry(_BackendObject):
         """ Check if the watched directory is a valid directory and exists. """
         return os.path.isdir(self.directory)
 
-    def remove(self):
+    def remove(self) -> None:
         """ Removes this entry from the watchlist, deleting its associated
         path from the database. """
         sql = """DELETE FROM watchlist WHERE path = ?"""

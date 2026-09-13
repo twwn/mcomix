@@ -58,7 +58,7 @@ class _EditArchiveDialog(Gtk.Dialog):
 
         GLib.idle_add(self._load_original_files)
 
-    def _load_original_files(self):
+    def _load_original_files(self) -> bool:
         """Load the original files from the archive or directory into
         the edit dialog.
         """
@@ -222,7 +222,7 @@ class _EditArchiveDialog(Gtk.Dialog):
             _close_dialog()
             self.kill = True
 
-    def destroy(self):
+    def destroy(self) -> None:
         self._image_area.cleanup()
         Gtk.Dialog.destroy(self)
 

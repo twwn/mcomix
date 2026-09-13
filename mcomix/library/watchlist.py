@@ -178,10 +178,12 @@ class WatchListDialog(Gtk.Dialog):
 
     def _add_cb(self, button, *args):
         """ Called when a new watch list entry should be added. """
-        filechooser = Gtk.FileChooserDialog(parent=self,
-            action=Gtk.FileChooserAction.SELECT_FOLDER,
-            buttons=(_('_Cancel'), Gtk.ResponseType.REJECT,
-                     _('_OK'), Gtk.ResponseType.ACCEPT))
+        filechooser = Gtk.FileChooserDialog(
+            parent=self, action=Gtk.FileChooserAction.SELECT_FOLDER)
+        # PyGObject accepts these as a "buttons" constructor keyword, but
+        # that is a GTK3-era convenience of its own; add them explicitly.
+        filechooser.add_buttons(_('_Cancel'), Gtk.ResponseType.REJECT,
+                                _('_OK'), Gtk.ResponseType.ACCEPT)
         filechooser.connect('response', self._directory_chosen)
         filechooser.show_all()
 

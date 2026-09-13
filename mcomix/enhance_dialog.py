@@ -108,10 +108,10 @@ class _EnhanceImageDialog(Gtk.Dialog):
 
         self.show_all()
 
-    def _on_book_close(self):
+    def _on_book_close(self) -> None:
         self.clear_histogram()
 
-    def _on_page_change(self):
+    def _on_page_change(self) -> None:
         if not self._window.imagehandler.page_is_available():
             self.clear_histogram()
             return
@@ -130,7 +130,7 @@ class _EnhanceImageDialog(Gtk.Dialog):
         histogram_pixbuf = histogram.draw_histogram(pixbuf, text=False)
         self._hist_image.set_from_pixbuf(histogram_pixbuf)
 
-    def clear_histogram(self):
+    def clear_histogram(self) -> None:
         """Clear the histogram in the dialog."""
         self._hist_image.clear()
 

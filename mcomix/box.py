@@ -36,7 +36,7 @@ class Box(object):
             (self.get_size() == other.get_size())
 
 
-    def __len__(self):
+    def __len__(self) -> int:
         """ Returns the number of dimensions of this Box. """
         return len(self.position)
 

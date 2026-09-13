@@ -1,17 +1,19 @@
 """status.py - Statusbar for main window."""
 
-from gi.repository import Gdk, Gtk
+from gi.repository import Gdk, Gio, GLib, Gtk
 
 from mcomix import i18n
 from mcomix import constants
 from mcomix.preferences import prefs
 from mcomix.i18n import _
 
+from typing import Any
+
 class Statusbar(Gtk.EventBox):
 
     SPACING = 5
 
-    def __init__(self):
+    def __init__(self) -> None:
         super(Statusbar, self).__init__()
 
         self._loading = True
@@ -21,37 +23,8 @@ class Statusbar(Gtk.EventBox):
         self.add(self.status)
 
         # Create popup menu for enabling/disabling status boxes.
-        self.ui_manager = Gtk.UIManager()
-        self.tooltipstatus = TooltipStatusHelper(self.ui_manager, self.status)
-        ui_description = """
-        <ui>
-            <popup name="Statusbar">
-                <menuitem action="pagenumber" />
-                <menuitem action="filenumber" />
-                <menuitem action="resolution" />
-                <menuitem action="rootpath" />
-                <menuitem action="filename" />
-                <menuitem action="filesize" />
-            </popup>
-        </ui>
-        """
-        self.ui_manager.add_ui_from_string(ui_description)
-
-        actiongroup = Gtk.ActionGroup('mcomix-statusbar')
-        actiongroup.add_toggle_actions([
-            ('pagenumber', None, _('Show page numbers'), None, None,
-                self.toggle_status_visibility),
-            ('filenumber', None, _('Show file numbers'), None, None,
-                self.toggle_status_visibility),
-            ('resolution', None, _('Show resolution'), None, None,
-                self.toggle_status_visibility),
-            ('rootpath', None, _('Show path'), None, None,
-                self.toggle_status_visibility),
-            ('filename', None, _('Show filename'), None, None,
-                self.toggle_status_visibility),
-            ('filesize', None, _('Show filesize'), None, None,
-                self.toggle_status_visibility)])
-        self.ui_manager.insert_action_group(actiongroup, 0)
+        self.tooltipstatus = TooltipStatusHelper(statusbar=self.status)
+        self._fields_menu = self._create_fields_menu()
 
         # Hook mouse release event
         self.connect('button-release-event', self._button_released)
@@ -133,7 +106,7 @@ class Statusbar(Gtk.EventBox):
             size = ""
         self._filesize = size
 
-    def update(self):
+    def update(self) -> None:
         """Set the statusbar to display the current state."""
 
         space = " " * Statusbar.SPACING
@@ -170,86 +143,87 @@ class Statusbar(Gtk.EventBox):
 
         return fields
 
-    def toggle_status_visibility(self, action, *args):
+    #: The fields the popup offers, and the bit each one stands for.
+    FIELDS = (('pagenumber', _('Show page numbers'), constants.STATUS_PAGE),
+              ('filenumber', _('Show file numbers'), constants.STATUS_FILENUMBER),
+              ('resolution', _('Show resolution'), constants.STATUS_RESOLUTION),
+              ('rootpath', _('Show path'), constants.STATUS_PATH),
+              ('filename', _('Show filename'), constants.STATUS_FILENAME),
+              ('filesize', _('Show filesize'), constants.STATUS_FILESIZE))
+
+    def _create_fields_menu(self) -> Any:
+        """Build the right-click menu that picks which fields are shown."""
+        self._field_actions = Gio.SimpleActionGroup()
+        model = Gio.Menu()
+        for name, label, bit in self.FIELDS:
+            action = Gio.SimpleAction.new_stateful(
+                name, None, GLib.Variant('b', bool(prefs['statusbar fields'] & bit)))
+            action.connect('change-state', self.toggle_status_visibility, bit)
+            self._field_actions.add_action(action)
+            model.append(label, 'statusbar.%s' % name)
+        self.insert_action_group('statusbar', self._field_actions)
+        menu = Gtk.Menu.new_from_model(model)
+        menu.attach_to_widget(self, None)
+        return menu
+
+    def toggle_status_visibility(self, action: Any, value: Any, bit: int) -> None:
         """ Called when status entries visibility is to be changed. """
+        action.set_state(value)
 
         # Ignore events as long as control is still loading.
         if self._loading:
             return
 
-        actionname = action.get_name()
-        if actionname == 'pagenumber':
-            bit = constants.STATUS_PAGE
-        elif actionname == 'resolution':
-            bit = constants.STATUS_RESOLUTION
-        elif actionname == 'rootpath':
-            bit = constants.STATUS_PATH
-        elif actionname == 'filename':
-            bit = constants.STATUS_FILENAME
-        elif actionname == 'filenumber':
-            bit = constants.STATUS_FILENUMBER
-        elif actionname == 'filesize':
-            bit = constants.STATUS_FILESIZE
-
-        if action.get_active():
+        if value.get_boolean():
             prefs['statusbar fields'] |= bit
         else:
             prefs['statusbar fields'] &= ~bit
 
         self.update()
-        self._update_sensitivity()
 
     def _button_released(self, widget, event, *args):
         """ Triggered when a mouse button is released to open the context
         menu. """
         if event.button == 3:
-            self.ui_manager.get_widget('/Statusbar').popup(None, None, None, None,
-                                                           event.button, event.time)
+            self._fields_menu.popup(None, None, None, None,
+                                    event.button, event.time)
 
-    def _update_sensitivity(self):
-        """ Updates the action menu's sensitivity based on user preferences. """
-
-        page_visible = prefs['statusbar fields'] & constants.STATUS_PAGE
-        fileno_visible = prefs['statusbar fields'] & constants.STATUS_FILENUMBER
-        resolution_visible = prefs['statusbar fields'] & constants.STATUS_RESOLUTION
-        path_visible = prefs['statusbar fields'] & constants.STATUS_PATH
-        filename_visible = prefs['statusbar fields'] & constants.STATUS_FILENAME
-        filesize_visible = prefs['statusbar fields'] & constants.STATUS_FILESIZE
-
-        for name, visible in (('pagenumber', page_visible),
-                ('filenumber', fileno_visible),
-                ('resolution', resolution_visible),
-                ('rootpath', path_visible),
-                ('filename', filename_visible),
-                ('filesize', filesize_visible)):
-            action = self.ui_manager.get_action('/Statusbar/' + name)
-            action.set_active(visible)
+    def _update_sensitivity(self) -> None:
+        """ Brings the popup's ticks in line with the preferences. """
+        for name, label, bit in self.FIELDS:
+            self._field_actions.lookup_action(name).set_state(
+                GLib.Variant('b', bool(prefs['statusbar fields'] & bit)))
 
 
 class TooltipStatusHelper(object):
-    """ Attaches to a L{Gtk.UIManager} to provide statusbar tooltips when
-    selecting menu items. """
+    """ Provides statusbar tooltips when selecting menu items. """
 
-    def __init__(self, uimanager, statusbar):
+    def __init__(self, statusbar: Any = None) -> None:
         self._statusbar = statusbar
 
-        uimanager.connect('connect-proxy', self._on_connect_proxy)
-        uimanager.connect('disconnect-proxy', self._on_disconnect_proxy)
+    def attach_to_menu(self, menu: Any, tooltips: dict) -> None:
+        """ Show the <tooltips> for a menu built from a Gio.Menu model.
 
-    def _on_connect_proxy(self, uimgr, action, widget):
-        """ Connects the widget's selection handlers to the status bar update.
+        A UI manager announced every proxy widget it built, along with the
+        action behind it.  A menu model announces nothing, and the items
+        it produces keep their action to themselves - Gtk.Actionable
+        reports None for them - so <tooltips> is keyed by the item's label
+        instead, which is the only thing the two ends share.
+
+        Note that GTK4 has no place to hang this at all: menus are
+        popovers of buttons there, with no select and deselect to listen
+        for.
         """
-        tooltip = action.get_property('tooltip')
-        if isinstance(widget, Gtk.MenuItem) and tooltip:
-            cid = widget.connect('select', self._on_item_select, tooltip)
-            cid2 = widget.connect('deselect', self._on_item_deselect)
-            setattr(widget, 'app::connect-ids', (cid, cid2))
-
-    def _on_disconnect_proxy(self, uimgr, action, widget):
-        """ Disconnects the widget's selection handlers. """
-        cids = getattr(widget, 'app::connect-ids', ())
-        for cid in cids:
-            widget.disconnect(cid)
+        for item in menu.get_children():
+            if not isinstance(item, Gtk.MenuItem):
+                continue
+            submenu = item.get_submenu()
+            if submenu is not None:
+                self.attach_to_menu(submenu, tooltips)
+            tooltip = tooltips.get(item.get_label())
+            if tooltip:
+                item.connect('select', self._on_item_select, tooltip)
+                item.connect('deselect', self._on_item_deselect)
 
     def _on_item_select(self, menuitem, tooltip):
         self._statusbar.push(0, " " * Statusbar.SPACING + tooltip)

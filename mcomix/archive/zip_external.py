@@ -31,7 +31,7 @@ class ZipArchive(archive_base.ExternalExecutableArchive):
         return _zip_executable
 
     @staticmethod
-    def is_available():
+    def is_available() -> bool:
         return bool(ZipArchive._find_unzip_executable())
 
     def _unicode_filename(self, filename, conversion_func=i18n.to_unicode):

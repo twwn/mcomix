@@ -46,10 +46,10 @@ class _PropertiesDialog(Gtk.Dialog):
 
         self.show_all()
 
-    def _on_page_change(self):
+    def _on_page_change(self) -> None:
         self._update_image_page()
 
-    def _on_book_change(self):
+    def _on_book_change(self) -> None:
         self._update_archive_page()
 
     def _on_page_available(self, page_number):
@@ -59,7 +59,7 @@ class _PropertiesDialog(Gtk.Dialog):
         if current_page_number == page_number:
             self._update_image_page()
 
-    def _update_archive_page(self):
+    def _update_archive_page(self) -> None:
         self._update_image_page()
         page = self._archive_page
         page.reset()
@@ -85,7 +85,7 @@ class _PropertiesDialog(Gtk.Dialog):
         self._update_page_secondary_info(page, path)
         page.show_all()
 
-    def _update_image_page(self):
+    def _update_image_page(self) -> None:
         page = self._image_page
         page.reset()
         window = self._window

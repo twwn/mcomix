@@ -39,7 +39,7 @@ class CursorHandler(object):
             else:
                 self._kill_timer()
 
-    def auto_hide_on(self):
+    def auto_hide_on(self) -> None:
         """Signal that the cursor should auto-hide from now on (e.g. that
         we are entering fullscreen).
         """
@@ -48,7 +48,7 @@ class CursorHandler(object):
         if self._current_cursor == constants.NORMAL_CURSOR:
             self._set_hide_timer()
 
-    def auto_hide_off(self):
+    def auto_hide_off(self) -> None:
         """Signal that the cursor should *not* auto-hide from now on."""
         self._auto_hide = False
         self._kill_timer()
@@ -56,24 +56,24 @@ class CursorHandler(object):
         if self._current_cursor == constants.NORMAL_CURSOR:
             self.set_cursor_type(constants.NORMAL_CURSOR)
 
-    def refresh(self):
+    def refresh(self) -> None:
         """Refresh the current cursor (i.e. display it and set a new timer in
         fullscreen). Used when we move the cursor.
         """
         if self._auto_hide:
             self.set_cursor_type(self._current_cursor)
 
-    def _on_timeout(self):
+    def _on_timeout(self) -> bool:
         mode = self._get_hidden_cursor()
         self._window.set_cursor(mode)
         self._timer_id = None
         return False
 
-    def _set_hide_timer(self):
+    def _set_hide_timer(self) -> None:
         self._kill_timer()
         self._timer_id = GLib.timeout_add(2000, self._on_timeout)
 
-    def _kill_timer(self):
+    def _kill_timer(self) -> None:
         if self._timer_id is not None:
             GLib.source_remove(self._timer_id)
             self._timer_id = None

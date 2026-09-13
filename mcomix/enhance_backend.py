@@ -36,7 +36,7 @@ class ImageEnhancer(object):
 
         return pixbuf
 
-    def signal_update(self):
+    def signal_update(self) -> None:
         """Signal to the main window that a change in the enhancement
         values has been made.
         """

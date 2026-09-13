@@ -921,7 +921,7 @@ def open_dialog(action, window):
         # if the dialog window already exists bring it to the forefront of the screen
         _dialog.present()
 
-def _close_dialog():
+def _close_dialog() -> None:
 
     global _dialog
 

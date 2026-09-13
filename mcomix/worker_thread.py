@@ -55,7 +55,7 @@ class WorkerThread(object):
             return order[0]
         return order
 
-    def _run(self):
+    def _run(self) -> None:
         order_uid = None
         while True:
             with self._condition:
@@ -82,7 +82,7 @@ class WorkerThread(object):
         """
         return self._stop
 
-    def clear_orders(self):
+    def clear_orders(self) -> None:
         """Clear the current orders queue."""
         with self._condition:
             if self._unique_orders:
@@ -131,7 +131,7 @@ class WorkerThread(object):
             self._condition.notify_all()
             self._start(nb_threads=nb_added)
 
-    def stop(self):
+    def stop(self) -> None:
         """Stop the worker threads and flush the orders queue."""
         self._stop = True
         with self._condition:

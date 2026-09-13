@@ -84,7 +84,7 @@ class _LibraryDialog(Gtk.Window):
         elif len(paths) == 1:
             self._file_handler.open_file(paths[0])
 
-    def scan_for_new_files(self):
+    def scan_for_new_files(self) -> None:
         """ Start scanning for new files from the watch list. """
 
         if len(self.backend.watchlist.get_watchlist()) > 0:

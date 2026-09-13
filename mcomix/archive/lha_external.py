@@ -48,7 +48,7 @@ class LhaArchive(archive_base.ExternalExecutableArchive):
         return _lha_executable
 
     @staticmethod
-    def is_available():
+    def is_available() -> bool:
         return bool(LhaArchive._find_lha_executable())
 
 

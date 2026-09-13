@@ -48,7 +48,7 @@ class _LibraryFileChooserDialog(file_chooser_base_dialog._BaseFileChooserDialog)
         self.add_button(_('_Add'), Gtk.ResponseType.OK)
         self.set_default_response(Gtk.ResponseType.OK)
 
-    def should_open_recursive(self):
+    def should_open_recursive(self) -> bool:
         return True
 
     def files_chosen(self, paths):

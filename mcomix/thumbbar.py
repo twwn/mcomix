@@ -27,8 +27,9 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
         self._currently_selected_row = 0
 
         self.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.ALWAYS)
-        self.get_vadjustment().step_increment = 15
-        self.get_vadjustment().page_increment = 1
+        # Setting step and page increments here has no effect: the
+        # scrolled window recomputes both from the viewport size whenever
+        # it is allocated.  See the note in main.py.
         # Disable stupid overlay scrollbars...
         if hasattr(self.props, 'overlay_scrolling'):
             self.props.overlay_scrolling = False
@@ -88,7 +89,7 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
         self._window.page_changed += self._on_page_change
         self._window.imagehandler.page_available += self._on_page_available
 
-    def toggle_page_numbers_visible(self):
+    def toggle_page_numbers_visible(self) -> None:
         """ Enables or disables page numbers on the thumbnail bar. """
 
         visible = prefs['show page numbers on thumbnails']
@@ -109,12 +110,12 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
         self.load_thumbnails()
         super(ThumbnailSidebar, self).show()
 
-    def hide(self):
+    def hide(self) -> None:
         """Hide the ThumbnailSidebar."""
         super(ThumbnailSidebar, self).hide()
         self._treeview.stop_update()
 
-    def clear(self):
+    def clear(self) -> None:
         """Clear the ThumbnailSidebar of any loaded thumbnails."""
 
         self._loaded = False
@@ -122,7 +123,7 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
         self._thumbnail_liststore.clear()
         self._currently_selected_page = 0
 
-    def resize(self):
+    def resize(self) -> None:
         """Reload the thumbnails with the size specified by in the
         preferences.
         """
@@ -150,7 +151,7 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
         # Don't forget the extra pixels for the border!
         return prefs['thumbnail size'] + 2 * self._BORDER_SIZE
 
-    def load_thumbnails(self):
+    def load_thumbnails(self) -> None:
         """Load the thumbnails, if it is appropriate to do so."""
 
         if (not self._window.filehandler.file_loaded or
@@ -260,7 +261,7 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
 
         return pixbuf
 
-    def _on_page_change(self):
+    def _on_page_change(self) -> None:
         row = self._window.imagehandler.get_current_page() - 1
         if row == self._currently_selected_row:
             return

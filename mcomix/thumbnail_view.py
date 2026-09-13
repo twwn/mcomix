@@ -36,11 +36,11 @@ class ThumbnailViewBase(object):
         """ This function must return the thumbnail for C{uid}. """
         raise NotImplementedError()
 
-    def get_visible_range(self):
+    def get_visible_range(self) -> None:
         """ See L{Gtk.IconView.get_visible_range}. """
         raise NotImplementedError()
 
-    def stop_update(self):
+    def stop_update(self) -> None:
         """ Stops generation of pixbufs. """
         self._updates_stopped = True
         self._thread.stop()

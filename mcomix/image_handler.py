@@ -110,7 +110,7 @@ class ImageHandler(object):
 
         return auto_bg
 
-    def do_cacheing(self):
+    def do_cacheing(self) -> None:
         """Make sure that the correct pixbufs are stored in cache. These
         are (in the current implementation) the current image(s), and
         if cacheing is enabled, also the one or two pixbufs before and
@@ -208,7 +208,7 @@ class ImageHandler(object):
             return self._window.filehandler.get_path_to_base()
         return self.get_path_to_page()
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         """Run clean-up tasks. Should be called prior to exit."""
 
         self._thread.stop()
@@ -276,7 +276,7 @@ class ImageHandler(object):
         for index in indexes:
             self.page_available(index + 1)
 
-    def get_number_of_pages(self):
+    def get_number_of_pages(self) -> int:
         """Return the number of pages in the current archive/directory."""
         if self._image_files is not None:
             return len(self._image_files)

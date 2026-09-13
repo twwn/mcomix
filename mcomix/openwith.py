@@ -19,7 +19,7 @@ class OpenWithException(Exception): pass
 
 
 class OpenWithManager(object):
-    def __init__(self):
+    def __init__(self) -> None:
         """ Constructor. """
         pass
 
@@ -60,7 +60,7 @@ class OpenWithCommand(object):
     def is_disabled_for_archives(self):
         return self.disabled_for_archives
 
-    def is_separator(self):
+    def is_separator(self) -> bool:
         return bool(re.match(r'^-+$', self.get_label().strip()))
 
     def execute(self, window):
@@ -309,7 +309,7 @@ class OpenWithEditor(Gtk.Dialog):
 
         self.resize(600, 400)
 
-    def save(self):
+    def save(self) -> None:
         """ Serializes the tree model into a list of OpenWithCommands
         and passes these back to the Manager object for persistance. """
         commands = self.get_commands()
@@ -341,7 +341,7 @@ class OpenWithEditor(Gtk.Dialog):
         else:
             return None
 
-    def test_command(self):
+    def test_command(self) -> None:
         """ Parses the currently selected command and displays the output in the
         text box next to the button. """
         command = self.get_command()
@@ -443,7 +443,7 @@ class OpenWithEditor(Gtk.Dialog):
     def _set_exec_text(self, text):
         self._exec_label.set_text(text)
 
-    def _layout(self):
+    def _layout(self) -> None:
         """ Create and lay out UI components. """
         # All these boxes basically are just for adding a 4px border
         vbox = self.get_content_area()
@@ -482,7 +482,7 @@ class OpenWithEditor(Gtk.Dialog):
         linklabel.set_yalign(0)
         content.pack_start(linklabel, False, False, 4)
 
-    def _setup_table(self):
+    def _setup_table(self) -> None:
         """ Initializes the TreeView with settings and data. """
         for i, label in enumerate((_('Label'), _('Command'), _('Working directory'))):
             renderer = Gtk.CellRendererText()
@@ -524,7 +524,7 @@ class OpenWithEditor(Gtk.Dialog):
         iter = model.get_iter(path)
         # Editing the model in the cellrenderercallback stops the editing
         # operation, causing GTK warnings. Delay until callback is finished.
-        def delayed_set_value():
+        def delayed_set_value() -> None:
             old_value = model.get_value(iter, column)
             model.set_value(iter, column, new_text)
             self._changed = old_value != new_text
@@ -537,7 +537,7 @@ class OpenWithEditor(Gtk.Dialog):
         iter = model.get_iter(path)
         # Editing the model in the cellrenderercallback stops the editing
         # operation, causing GTK warnings. Delay until callback is finished.
-        def delayed_set_value():
+        def delayed_set_value() -> None:
             value = not renderer.get_active()
             model.set_value(iter, column, value)
             self._changed = True

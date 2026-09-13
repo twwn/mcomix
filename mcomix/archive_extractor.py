@@ -29,7 +29,7 @@ class Extractor(object):
     set_files() for more info.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._setupped = False
         self._archive = None
 
@@ -101,7 +101,7 @@ class Extractor(object):
         with self._condition:
             return name in self._extracted
 
-    def stop(self):
+    def stop(self) -> None:
         """Signal the extractor to stop extracting and kill the extracting
         thread. Blocks until the extracting thread has terminated.
         """
@@ -112,7 +112,7 @@ class Extractor(object):
                 self._extract_started = False
             self._setupped = False
 
-    def extract(self):
+    def extract(self) -> None:
         """Start extracting the files in the file list one by one using a
         new thread. Every time a new file is extracted a notify() will be
         signalled on the Condition that was returned by setup().
@@ -153,7 +153,7 @@ class Extractor(object):
         """ Called whenever a new file is extracted and ready. """
         pass
 
-    def close(self):
+    def close(self) -> None:
         """Close any open file objects, need only be called manually if the
         extract() method isn't called.
         """

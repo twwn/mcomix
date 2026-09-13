@@ -15,7 +15,7 @@ class TarArchive(archive_base.NonUnicodeArchive):
         self._contents = []
         self.tar = None
 
-    def is_solid(self):
+    def is_solid(self) -> bool:
         return True
 
     def iter_contents(self):
@@ -54,7 +54,7 @@ class TarArchive(archive_base.NonUnicodeArchive):
             self.list_contents()
         yield from super(TarArchive, self).iter_extract(entries, destination_dir)
 
-    def close(self):
+    def close(self) -> None:
         if self.tar is not None:
             self.tar.close()
             self.tar = None

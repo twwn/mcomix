@@ -193,7 +193,7 @@ class RarArchive(archive_base.ExternalExecutableArchive):
         return _rar_executable
 
     @staticmethod
-    def is_available():
+    def is_available() -> bool:
         return bool(RarArchive._find_unrar_executable())
 
 # vim: expandtab:sw=4:ts=4

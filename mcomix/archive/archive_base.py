@@ -68,12 +68,12 @@ class BaseArchive(object):
             if 0 == len(wanted):
                 break
 
-    def close(self):
+    def close(self) -> None:
         """ Closes the archive and releases held resources. """
 
         pass
 
-    def is_solid(self):
+    def is_solid(self) -> bool:
         """ Returns True if the archive is solid and extraction should be done
         in one pass. """
         return False
@@ -119,7 +119,7 @@ class BaseArchive(object):
         return open(dst_path, 'wb')
 
     @callback.Callback
-    def _password_required(self):
+    def _password_required(self) -> None:
         """ Asks the user for a password and sets <self._password>.
         If <self._password> is None, no password has been requested yet.
         If an empty string is set, assume that the user did not provide
@@ -135,7 +135,7 @@ class BaseArchive(object):
 
         archive_password.ask_for_password(self.archive, got_password)
 
-    def _get_password(self):
+    def _get_password(self) -> None:
         ask_for_password = self._password is None
         # Don't trigger concurrent password dialogs.
         if ask_for_password and self.support_concurrent_extractions:
@@ -189,17 +189,17 @@ class ExternalExecutableArchive(NonUnicodeArchive):
         # for extracting filenames that have been internally mapped.
         self.filenames_initialized = False
 
-    def _get_executable(self):
+    def _get_executable(self) -> None:
         """ Returns the executable's name or path. Return None if no executable
         was found on the system. """
         raise NotImplementedError("Subclasses must override _get_executable.")
 
-    def _get_list_arguments(self):
+    def _get_list_arguments(self) -> None:
         """ Returns an array of arguments required for the executable
         to produce a list of archive members. """
         raise NotImplementedError("Subclasses must override _get_list_arguments.")
 
-    def _get_extract_arguments(self):
+    def _get_extract_arguments(self) -> None:
         """ Returns an array of arguments required for the executable
         to extract a file to STDOUT. """
         raise NotImplementedError("Subclasses must override _get_extract_arguments.")

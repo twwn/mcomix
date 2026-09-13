@@ -320,29 +320,6 @@ def static_image(pixbuf):
         return pixbuf.get_static_image()
     return pixbuf
 
-def unwrap_image(image):
-    """ Returns an object that contains the image data based on
-    Gtk.Image.get_storage_type or None if image is None or image.get_storage_type
-    returns Gtk.ImageType.EMPTY. """
-    if image is None:
-        return None
-    t = image.get_storage_type()
-    if t == Gtk.ImageType.EMPTY:
-        return None
-    if t == Gtk.ImageType.PIXBUF:
-        return image.get_pixbuf()
-    if t == Gtk.ImageType.ANIMATION:
-        return image.get_animation()
-    if t == Gtk.ImageType.PIXMAP:
-        return image.get_pixmap()
-    if t == Gtk.ImageType.IMAGE:
-        return image.get_image()
-    if t == Gtk.ImageType.STOCK:
-        return image.get_stock()
-    if t == Gtk.ImageType.ICON_SET:
-        return image.get_icon_set()
-    raise ValueError()
-
 def set_from_pixbuf(image, pixbuf):
     if is_animation(pixbuf):
         return image.set_from_animation(pixbuf)
@@ -403,8 +380,13 @@ def load_pixbuf_size(path, width, height):
     # TODO similar to load_pixbuf, should be merged using callbacks etc.
     pixbuf = None
     last_error = None
-    image_format, image_dimensions, providers = get_image_info(path)
-    for provider in providers:
+    # Only the format and the dimensions are wanted here, and asking
+    # get_image_info() for them means a gdk-pixbuf header query, which
+    # costs as much again as the decode below where its loaders run
+    # sandboxed.  The provider order it also returns cannot change the
+    # outcome, for the reason load_pixbuf() gives.
+    image_format, image_dimensions = get_image_header(path)
+    for provider in _PIXBUF_PROVIDERS:
         try:
             # TODO use dynamic dispatch instead of "if" chain
             if provider == constants.IMAGEIO_GDKPIXBUF:
@@ -566,8 +548,9 @@ def get_implied_rotation_from_file(path: str) -> int:
         return 0
     return _implied_rotation(orientation)
 
-def get_image_size(path: str) -> tuple[int, int]:
-    """Return the (width, height) of the image at <path> without decoding it.
+def get_image_header(path: str) -> tuple[str, tuple[int, int]]:
+    """Return the (format, (width, height)) of the image at <path>
+    without decoding it.
 
     get_image_info() answers this as well, but by way of gdk-pixbuf, whose
     header query costs as much as decoding the whole image where its
@@ -577,10 +560,16 @@ def get_image_size(path: str) -> tuple[int, int]:
     """
     try:
         with Image.open(path) as image:
-            return image.size
+            if image.format is not None:
+                return image.format, image.size
     except Exception:
-        width, height = get_image_info(path)[1]
-        return width, height
+        pass
+    image_format, image_dimensions, _providers = get_image_info(path)
+    return image_format, image_dimensions
+
+def get_image_size(path: str) -> tuple[int, int]:
+    """Return the (width, height) of the image at <path> without decoding it."""
+    return get_image_header(path)[1]
 
 
 def get_size_rotation(width, height):

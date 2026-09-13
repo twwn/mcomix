@@ -36,7 +36,7 @@ class Packer(object):
         self._pack_thread = None
         self._packing_successful = False
 
-    def pack(self):
+    def pack(self) -> None:
         """Pack all the files in the file lists into the archive."""
         self._pack_thread = threading.Thread(target=self._thread_pack)
         self._pack_thread.name += '-pack'
@@ -52,7 +52,7 @@ class Packer(object):
 
         return self._packing_successful
 
-    def _thread_pack(self):
+    def _thread_pack(self) -> None:
         try:
             zfile = zipfile.ZipFile(self._archive_path, 'w')
         except Exception:

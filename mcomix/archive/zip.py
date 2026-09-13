@@ -52,10 +52,10 @@ class ZipArchive(archive_base.NonUnicodeArchive):
 
 
 
-    def close(self):
+    def close(self) -> None:
         self.zip.close()
 
-    def _has_encryption(self):
+    def _has_encryption(self) -> bool:
         """ Checks all files in the archive for encryption.
         Returns True if at least one encrypted file was found. """
         for zipinfo in self.zip.infolist():

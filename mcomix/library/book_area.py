@@ -2,7 +2,7 @@
 
 import os
 import urllib.request, urllib.parse, urllib.error
-from gi.repository import Gdk, GdkPixbuf, GLib, Gtk, GObject
+from gi.repository import Gdk, GdkPixbuf, Gio, GLib, GObject, Gtk
 import PIL.Image as Image
 import PIL.ImageDraw as ImageDraw
 
@@ -20,6 +20,8 @@ from mcomix import message_dialog
 from mcomix import tools
 from mcomix.library.pixbuf_cache import get_pixbuf_cache
 from mcomix.i18n import _
+
+from typing import Any
 
 _dialog = None
 
@@ -96,123 +98,129 @@ class _BookArea(Gtk.ScrolledWindow):
         self._iconview.set_row_spacing(0)
         self._iconview.set_column_spacing(0)
 
-        self._ui_manager = Gtk.UIManager()
-        self._tooltipstatus = status.TooltipStatusHelper(self._ui_manager,
-            self._library.get_status_bar())
+        self._tooltipstatus = status.TooltipStatusHelper(
+            statusbar=self._library.get_status_bar())
+        self._popup_actions = Gio.SimpleActionGroup()
+        self._book_menu = self._create_popup_menu()
 
-        ui_description = """
-        <ui>
-            <popup name="library books">
-                <menuitem action="_title" />
-                <separator />
-                <menuitem action="open" />
-                <menuitem action="open keep library" />
-                <separator />
-                <menuitem action="add" />
-                <separator />
-                <menuitem action="remove from collection" />
-                <menuitem action="remove from library" />
-                <menuitem action="completely remove" />
-                <separator />
-                <menuitem action="copy to clipboard" />
-                <separator />
-                <menu action="sort">
-                    <menuitem action="by name" />
-                    <menuitem action="by path" />
-                    <menuitem action="by size" />
-                    <menuitem action="by date added" />
-                    <separator />
-                    <menuitem action="ascending" />
-                    <menuitem action="descending" />
-                </menu>
-                <menu action="cover size">
-                    <menuitem action="huge" />
-                    <menuitem action="large" />
-                    <menuitem action="normal" />
-                    <menuitem action="small" />
-                    <menuitem action="tiny" />
-                    <separator />
-                    <menuitem action="custom" />
-                </menu>
-            </popup>
-        </ui>
-        """
+    #: The popup's plain entries: action name, label, tooltip, handler.
+    def _menu_entries(self) -> tuple:
+        return (
+            ('open', _('_Open'),
+             _('Opens the selected books for viewing.'),
+             self.open_selected_book),
+            ('open-keep-library', _('Open _without closing library'),
+             _('Opens the selected books, but keeps the library window open.'),
+             self.open_selected_book_noclose),
+            ('add', _('_Add...'),
+             _('Add more books to the library.'),
+             lambda *args: file_chooser_library_dialog.open_library_filechooser_dialog(
+                 self._library)),
+            ('remove-from-collection', _('Remove from this _collection'),
+             _('Removes the selected books from the current collection.'),
+             self._remove_books_from_collection),
+            ('remove-from-library', _('Remove from the _library'),
+             _('Completely removes the selected books from the library.'),
+             self._remove_books_from_library),
+            ('completely-remove', _('_Remove and delete from disk'),
+             _('Deletes the selected books from disk.'),
+             self._completely_remove_book),
+            ('copy-to-clipboard', _('_Copy'),
+             _("Copies the selected book's path to clipboard."),
+             self._copy_selected),
+        )
 
-        self._ui_manager.add_ui_from_string(ui_description)
-        actiongroup = Gtk.ActionGroup('mcomix-library-book-area')
-        # General book actions
-        icons.add_actions(actiongroup, [
-            ('_title', None, _('Library books'), None, None,
-                None),
-            ('open', 'document-open', _('_Open'), None,
-                _('Opens the selected books for viewing.'),
-                self.open_selected_book),
-            ('open keep library', 'document-open',
-                _('Open _without closing library'), None,
-                _('Opens the selected books, but keeps the library window open.'),
-                self.open_selected_book_noclose),
-            ('add', 'list-add', _('_Add...'), '<Ctrl><Shift>a',
-                _('Add more books to the library.'),
-                lambda *args: file_chooser_library_dialog.open_library_filechooser_dialog(self._library)),
-            ('remove from collection', 'list-remove',
-                _('Remove from this _collection'), None,
-                _('Removes the selected books from the current collection.'),
-                self._remove_books_from_collection),
-            ('remove from library', 'list-remove',
-                _('Remove from the _library'), None,
-                _('Completely removes the selected books from the library.'),
-                self._remove_books_from_library),
-            ('completely remove', 'edit-delete',
-                _('_Remove and delete from disk'), None,
-                _('Deletes the selected books from disk.'),
-                self._completely_remove_book),
-            ('copy to clipboard', 'edit-copy',
-                _('_Copy'), None,
-                _('Copies the selected book\'s path to clipboard.'),
-                self._copy_selected),
-            ('sort', None, _('_Sort'), None,
-                _('Changes the sort order of the library.'), None),
-            ('cover size', None, _('Cover si_ze'), None,
-                _('Changes the book cover size.'), None)
-       ])
-        # Sorting the view
-        icons.add_radio_actions(actiongroup, [
-            ('by name', None, _('Book name'), None, None, constants.SORT_NAME),
-            ('by path', None, _('Full path'), None, None, constants.SORT_PATH),
-            ('by size', None, _('File size'), None, None, constants.SORT_SIZE),
-            ('by date added', None, _('Date added'), None, None, constants.SORT_LAST_MODIFIED)],
-            prefs['lib sort key'], self._sort_changed)
-        icons.add_radio_actions(actiongroup, [
-            ('ascending', 'view-sort-ascending', _('Ascending'), None, None,
-                constants.SORT_ASCENDING),
-            ('descending', 'view-sort-descending', _('Descending'), None, None,
-                constants.SORT_DESCENDING)],
-            prefs['lib sort order'], self._sort_changed)
+    def _create_popup_menu(self) -> Any:
+        """Build the right-click menu for the book list."""
+        tooltips = {}
+        for name, label, tooltip, handler in self._menu_entries():
+            action = Gio.SimpleAction.new(name, None)
+            action.connect('activate', handler)
+            self._popup_actions.add_action(action)
+            tooltips[label] = tooltip
 
-        # Library cover size
-        icons.add_radio_actions(actiongroup, [
-            ('huge', None, _('Huge') + '  (%dpx)' % constants.SIZE_HUGE,
-                None, None, constants.SIZE_HUGE),
-            ('large', None, _('Large') + '  (%dpx)' % constants.SIZE_LARGE,
-                None, None, constants.SIZE_LARGE),
-            ('normal', None, _('Normal') + '  (%dpx)' % constants.SIZE_NORMAL,
-                None, None, constants.SIZE_NORMAL),
-            ('small', None, _('Small') + '  (%dpx)' % constants.SIZE_SMALL,
-                None, None, constants.SIZE_SMALL),
-            ('tiny', None, _('Tiny') + '  (%dpx)' % constants.SIZE_TINY,
-                None, None, constants.SIZE_TINY),
-            ('custom', None, _('Custom...'), None, None, 0)],
-            prefs['library cover size']
-                if prefs['library cover size'] in (constants.SIZE_HUGE,
-                    constants.SIZE_LARGE, constants.SIZE_NORMAL,
-                    constants.SIZE_SMALL, constants.SIZE_TINY)
-                else 0,
-            self._book_size_changed)
+        # An item bound to an action that is never enabled, which is what
+        # the heading was before.
+        title = Gio.SimpleAction.new('title', None)
+        title.set_enabled(False)
+        self._popup_actions.add_action(title)
 
-        self._ui_manager.insert_action_group(actiongroup, 0)
-        library.add_accel_group(self._ui_manager.get_accel_group())
+        # The three radio groups become one stateful action each, holding
+        # the value the group used to carry on its members.
+        for name, state, handler in (
+                ('sort-key', prefs['lib sort key'], self._sort_key_changed),
+                ('sort-order', prefs['lib sort order'], self._sort_order_changed),
+                ('cover-size', self._current_cover_size(), self._book_size_changed)):
+            action = Gio.SimpleAction.new_stateful(
+                name, GLib.VariantType.new('i'), GLib.Variant('i', state))
+            action.connect('change-state', handler)
+            self._popup_actions.add_action(action)
+        self.insert_action_group('books', self._popup_actions)
 
-    def close(self):
+        def radio(menu: Any, entries: tuple, action_name: str) -> None:
+            for label, value in entries:
+                item = Gio.MenuItem.new(label, None)
+                item.set_action_and_target_value('books.' + action_name,
+                                                 GLib.Variant('i', value))
+                menu.append_item(item)
+
+        model = Gio.Menu()
+        heading = Gio.Menu()
+        heading.append(_('Library books'), 'books.title')
+        model.append_section(None, heading)
+
+        entries = self._menu_entries()
+        for group in (entries[0:2], entries[2:3], entries[3:6], entries[6:7]):
+            section = Gio.Menu()
+            for name, label, tooltip, handler in group:
+                section.append(label, 'books.' + name)
+            model.append_section(None, section)
+
+        sort_menu = Gio.Menu()
+        by = Gio.Menu()
+        radio(by, ((_('Book name'), constants.SORT_NAME),
+                   (_('Full path'), constants.SORT_PATH),
+                   (_('File size'), constants.SORT_SIZE),
+                   (_('Date added'), constants.SORT_LAST_MODIFIED)), 'sort-key')
+        sort_menu.append_section(None, by)
+        order = Gio.Menu()
+        radio(order, ((_('Ascending'), constants.SORT_ASCENDING),
+                      (_('Descending'), constants.SORT_DESCENDING)), 'sort-order')
+        sort_menu.append_section(None, order)
+
+        size_menu = Gio.Menu()
+        sizes = Gio.Menu()
+        radio(sizes, ((_('Huge') + '  (%dpx)' % constants.SIZE_HUGE, constants.SIZE_HUGE),
+                      (_('Large') + '  (%dpx)' % constants.SIZE_LARGE, constants.SIZE_LARGE),
+                      (_('Normal') + '  (%dpx)' % constants.SIZE_NORMAL, constants.SIZE_NORMAL),
+                      (_('Small') + '  (%dpx)' % constants.SIZE_SMALL, constants.SIZE_SMALL),
+                      (_('Tiny') + '  (%dpx)' % constants.SIZE_TINY, constants.SIZE_TINY)),
+              'cover-size')
+        size_menu.append_section(None, sizes)
+        custom = Gio.Menu()
+        radio(custom, ((_('Custom...'), 0),), 'cover-size')
+        size_menu.append_section(None, custom)
+
+        submenus = Gio.Menu()
+        submenus.append_submenu(_('_Sort'), sort_menu)
+        submenus.append_submenu(_('Cover si_ze'), size_menu)
+        model.append_section(None, submenus)
+
+        menu = Gtk.Menu.new_from_model(model)
+        menu.attach_to_widget(self, None)
+        menu.show_all()
+        self._tooltipstatus.attach_to_menu(menu, tooltips)
+        return menu
+
+    @staticmethod
+    def _current_cover_size() -> int:
+        """The cover size as the menu states it: 0 stands for "custom"."""
+        size = prefs['library cover size']
+        return size if size in (constants.SIZE_HUGE, constants.SIZE_LARGE,
+                                constants.SIZE_NORMAL, constants.SIZE_SMALL,
+                                constants.SIZE_TINY) else 0
+
+    def close(self) -> None:
         """Run clean-up tasks for the _BookArea prior to closing."""
 
         self.stop_update()
@@ -243,7 +251,7 @@ class _BookArea(Gtk.ScrolledWindow):
         # Re-attach model here
         GLib.idle_add(self._iconview.set_model, self._liststore)
 
-    def stop_update(self):
+    def stop_update(self) -> None:
         """Signal that the updating of book covers should stop."""
         self._iconview.stop_update()
 
@@ -322,7 +330,7 @@ class _BookArea(Gtk.ScrolledWindow):
             return
         self._book_activated(self._iconview, selected, True)
 
-    def set_sort_order(self):
+    def set_sort_order(self) -> None:
         """ Orders the list store based on the key passed in C{sort_key}.
         Should be one of the C{SORT_} constants from L{constants}.
         """
@@ -333,23 +341,16 @@ class _BookArea(Gtk.ScrolledWindow):
 
         self._liststore.set_sort_column_id(prefs['lib sort key'], sortorder)
 
-    def _sort_changed(self, old, current):
-        """ Called whenever the sorting options changed. """
-        name = current.get_name()
-        if name == 'by name':
-            prefs['lib sort key'] = constants.SORT_NAME
-        elif name == 'by path':
-            prefs['lib sort key'] = constants.SORT_PATH
-        elif name == 'by size':
-            prefs['lib sort key'] = constants.SORT_SIZE
-        elif name == 'by date added':
-            prefs['lib sort key'] = constants.SORT_LAST_MODIFIED
+    def _sort_key_changed(self, action: Any, value: Any) -> None:
+        """ Called when the field the library sorts on changes. """
+        action.set_state(value)
+        prefs['lib sort key'] = value.get_int32()
+        self.set_sort_order()
 
-        if name == 'ascending':
-            prefs['lib sort order'] = constants.SORT_ASCENDING
-        elif name == 'descending':
-            prefs['lib sort order'] = constants.SORT_DESCENDING
-
+    def _sort_order_changed(self, action: Any, value: Any) -> None:
+        """ Called when the direction the library sorts in changes. """
+        action.set_state(value)
+        prefs['lib sort order'] = value.get_int32()
         self.set_sort_order()
 
     def _sort_by_name(self, treemodel, iter1, iter2, user_data):
@@ -383,26 +384,22 @@ class _BookArea(Gtk.ScrolledWindow):
             cell.set_fixed_size(width, height)
             cell.set_alignment(0.5, 0.5)
 
-    def load_covers(self):
+    def load_covers(self) -> None:
         self._cache.invalidate_all()
         collection = self._library.collection_area.get_current_collection()
         GLib.idle_add(self.display_covers, collection)
 
-    def _book_size_changed(self, old, current):
-        """ Called when library cover size changes. """
+    def _book_size_changed(self, action: Any, value: Any) -> None:
+        """ Called when library cover size changes.
+
+        The state carries the size in pixels, with 0 standing for the
+        custom size the dialog below asks for. """
+        action.set_state(value)
         old_size = prefs['library cover size']
-        name = current.get_name()
-        if name == 'huge':
-            prefs['library cover size'] = constants.SIZE_HUGE
-        elif name == 'large':
-            prefs['library cover size'] = constants.SIZE_LARGE
-        elif name == 'normal':
-            prefs['library cover size'] = constants.SIZE_NORMAL
-        elif name == 'small':
-            prefs['library cover size'] = constants.SIZE_SMALL
-        elif name == 'tiny':
-            prefs['library cover size'] = constants.SIZE_TINY
-        elif name == 'custom':
+        chosen = value.get_int32()
+        if chosen:
+            prefs['library cover size'] = chosen
+        else:
             dialog = message_dialog.MessageDialog(self._library, Gtk.DialogFlags.DESTROY_WITH_PARENT,
                 Gtk.MessageType.INFO, buttons=Gtk.ButtonsType.OK)
             dialog.set_auto_destroy(False)
@@ -628,7 +625,7 @@ class _BookArea(Gtk.ScrolledWindow):
 
             self._popup_book_menu()
 
-    def _popup_book_menu(self):
+    def _popup_book_menu(self) -> None:
         """ Shows the book panel popup menu. """
 
         selected = self._iconview.get_selected_items()
@@ -636,22 +633,22 @@ class _BookArea(Gtk.ScrolledWindow):
         collection = self._library.collection_area.get_current_collection()
         is_collection_all = collection == _COLLECTION_ALL
 
-        for action in ('open', 'open keep library', 'remove from library', 'completely remove'):
+        for action in ('open', 'open-keep-library', 'remove-from-library',
+                       'completely-remove'):
             self._set_sensitive(action, books_selected)
 
-        self._set_sensitive('_title', False)
         self._set_sensitive('add', collection is not None)
-        self._set_sensitive('remove from collection', books_selected and not is_collection_all)
-        self._set_sensitive('copy to clipboard', len(selected) == 1)
+        self._set_sensitive('remove-from-collection',
+                            books_selected and not is_collection_all)
+        self._set_sensitive('copy-to-clipboard', len(selected) == 1)
 
-        menu = self._ui_manager.get_widget('/library books')
-        menu.popup(None, None, None, None, 3, Gtk.get_current_event_time())
+        self._book_menu.popup(None, None, None, None, 3,
+                              Gtk.get_current_event_time())
 
     def _set_sensitive(self, action, sensitive):
         """ Enables the popup menu action <action> based on <sensitive>. """
 
-        control = self._ui_manager.get_action('/library books/' + action)
-        control.set_sensitive(sensitive)
+        self._popup_actions.lookup_action(action).set_enabled(sensitive)
 
     def _key_press(self, iconview, event):
         """Handle key presses on the _BookArea."""

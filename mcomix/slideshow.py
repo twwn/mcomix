@@ -14,19 +14,19 @@ class Slideshow(object):
         self._running = False
         self._id = None
 
-    def _start(self):
+    def _start(self) -> None:
         if not self._running:
             self._id = GLib.timeout_add(prefs['slideshow delay'], self._next)
             self._running = True
             self._window.update_title()
 
-    def _stop(self):
+    def _stop(self) -> None:
         if self._running:
             GLib.source_remove(self._id)
             self._running = False
             self._window.update_title()
 
-    def _next(self):
+    def _next(self) -> bool:
         if prefs['number of pixels to scroll per slideshow event'] != 0:
 
             self._window.scroll_with_flipping(0, prefs['number of pixels to scroll per slideshow event'])
@@ -39,18 +39,18 @@ class Slideshow(object):
         """Toggle a slideshow on or off."""
         if action.get_active():
             self._start()
-            self._window.uimanager.get_widget('/Tool/slideshow').set_icon_name( 'media-playback-stop' )
-            self._window.uimanager.get_widget('/Tool/slideshow').set_tooltip_text( _('Stop slideshow')  )
+            self._window.uimanager.slideshow_button.set_icon_name('media-playback-stop')
+            self._window.uimanager.slideshow_button.set_tooltip_text( _('Stop slideshow')  )
         else:
             self._stop()
-            self._window.uimanager.get_widget('/Tool/slideshow').set_icon_name( 'media-playback-start' )
-            self._window.uimanager.get_widget('/Tool/slideshow').set_tooltip_text( _('Start slideshow') )
+            self._window.uimanager.slideshow_button.set_icon_name('media-playback-start')
+            self._window.uimanager.slideshow_button.set_tooltip_text( _('Start slideshow') )
 
     def is_running(self):
         """Return True if a slideshow is currently running."""
         return self._running
 
-    def update_delay(self):
+    def update_delay(self) -> None:
         """Update the delay time a started slideshow is using."""
         if self.is_running():
             self._stop()

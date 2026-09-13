@@ -48,7 +48,7 @@ class _PixbufCache(object):
         with self._lock:
             self._cache.pop(id, None)
 
-    def invalidate_all(self):
+    def invalidate_all(self) -> None:
         """ Invalidates all cached objects. """
         with self._lock:
             self._cache.clear()

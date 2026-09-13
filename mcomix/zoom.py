@@ -52,7 +52,7 @@ class ZoomModel(object):
 
     def get_zoomed_size(self, image_sizes: list[Sequence[int]], screen_size: tuple[int, int],
                         distribution_axis: constants.PageAxis, do_not_transform: list[bool], prefer_same_size: bool,
-                        fit_same_size: bool) -> tuple[int, int]:
+                        fit_same_size: bool) -> tuple[list[list[int]], list[bool]]:
         scale_up = self._scale_up
         if prefer_same_size:
             # Preprocessing step: scale all images to the same size

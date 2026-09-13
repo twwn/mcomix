@@ -108,10 +108,10 @@ class MainWindow(Gtk.Window):
         self.osd = osd.OnScreenDisplay(self)
         self.zoom = zoom.ZoomModel()
         self.uimanager = ui.MainUI(self)
-        self.menubar = self.uimanager.get_widget('/Menu')
-        self.toolbar = self.uimanager.get_widget('/Tool')
-        self.popup = self.uimanager.get_widget('/Popup')
-        self.actiongroup = self.uimanager.get_action_groups()[0]
+        self.menubar = self.uimanager.menubar
+        self.toolbar = self.uimanager.toolbar
+        self.popup = self.uimanager.popup
+        self.actiongroup = self.uimanager.actions
 
         self.images = [Gtk.Image(), Gtk.Image()] # XXX limited to at most 2 pages
 
@@ -126,8 +126,7 @@ class MainWindow(Gtk.Window):
 
         # This is a hack to get the focus away from the toolbar so that
         # we don't activate it with space or some other key (alternative?)
-        self.toolbar.set_focus_child(
-            self.uimanager.get_widget('/Tool/expander'))
+        self.toolbar.set_focus_child(self.uimanager.toolbar_expander)
         self.toolbar.set_style(Gtk.ToolbarStyle.ICONS)
         self.toolbar.set_icon_size(Gtk.IconSize.LARGE_TOOLBAR)
 
@@ -135,10 +134,12 @@ class MainWindow(Gtk.Window):
             self._main_layout.put(img, 0, 0)
         self.set_bg_colour(prefs['bg colour'])
 
-        self._vadjust.step_increment = 15
-        self._vadjust.page_increment = 1
-        self._hadjust.step_increment = 15
-        self._hadjust.page_increment = 1
+        # There were four lines here setting step and page increments on
+        # these adjustments.  They assigned to .step_increment, which lands
+        # on the Python wrapper and never reaches the adjustment; and the
+        # scrolled window recomputes both from the viewport on every size
+        # allocation anyway, so setting them properly does not survive
+        # either.  MComix does its own scrolling regardless.
 
         # Three columns - thumbnail sidebar, page area, vertical scrollbar -
         # and six rows, of which the fourth is a spacer the sidebar spans.
@@ -365,7 +366,7 @@ class MainWindow(Gtk.Window):
             visible &= self.imagehandler.get_number_of_pages() > 0
         return visible
 
-    def _update_toggles_sensitivity(self):
+    def _update_toggles_sensitivity(self) -> None:
         ''' Update each "toggle" widget sensitivity. '''
         sensitive = True
         if prefs['hide all']:
@@ -375,7 +376,7 @@ class MainWindow(Gtk.Window):
         for preference, action, widget_list in self._toggle_list:
             self.actiongroup.get_action(action).set_sensitive(sensitive)
 
-    def _update_toggles_visibility(self):
+    def _update_toggles_visibility(self) -> None:
         ''' Update each "toggle" widget visibility. '''
         for preference, action, widget_list in self._toggle_list:
             should_be_visible = self._should_toggle_be_visible(preference)
@@ -589,13 +590,13 @@ class MainWindow(Gtk.Window):
         if page == 1:
             self.update_icon(False)
 
-    def _on_file_opened(self):
+    def _on_file_opened(self) -> None:
         self.uimanager.set_sensitivities()
         number, count = self.filehandler.get_file_number()
         self.statusbar.set_file_number(number, count)
         self.statusbar.update()
 
-    def _on_file_closed(self):
+    def _on_file_closed(self) -> None:
         self.clear()
         self.thumbnailsidebar.hide()
         self.thumbnailsidebar.clear()
@@ -619,7 +620,7 @@ class MainWindow(Gtk.Window):
         self.draw_image(scroll_to=scroll_to)
 
     @callback.Callback
-    def page_changed(self):
+    def page_changed(self) -> None:
         """ Called on page change. """
         self.thumbnailsidebar.load_thumbnails()
         self._update_page_information()
@@ -639,7 +640,7 @@ class MainWindow(Gtk.Window):
         self.new_page(at_bottom=at_bottom)
         self.slideshow.update_delay()
 
-    def next_book(self):
+    def next_book(self) -> None:
         archive_open = self.filehandler.archive_type is not None
         next_archive_opened = False
         if (self.slideshow.is_running() and \
@@ -654,7 +655,7 @@ class MainWindow(Gtk.Window):
            (not archive_open or prefs['auto open next archive']):
             self.filehandler.open_next_directory()
 
-    def previous_book(self):
+    def previous_book(self) -> None:
         archive_open = self.filehandler.archive_type is not None
         previous_archive_opened = False
         if (self.slideshow.is_running() and \
@@ -703,12 +704,12 @@ class MainWindow(Gtk.Window):
         if new_page != current_page:
             self.set_page(new_page, at_bottom=(-1 == step))
 
-    def first_page(self):
+    def first_page(self) -> None:
         number_of_pages = self.imagehandler.get_number_of_pages()
         if number_of_pages:
             self.set_page(1)
 
-    def last_page(self):
+    def last_page(self) -> None:
         number_of_pages = self.imagehandler.get_number_of_pages()
         if number_of_pages:
             self.set_page(number_of_pages)
@@ -751,7 +752,7 @@ class MainWindow(Gtk.Window):
         prefs['invert smart scroll'] = toggleaction.get_active()
 
     @property
-    def is_fullscreen(self):
+    def is_fullscreen(self) -> bool:
         window_state = self.get_window().get_state()
         return 0 != (window_state & Gdk.WindowState.FULLSCREEN)
 
@@ -837,7 +838,7 @@ class MainWindow(Gtk.Window):
             else:
                 self._scroll[i].hide()
 
-    def is_scrollable(self):
+    def is_scrollable(self) -> bool:
         """ Returns True if the current images do not fit into the viewport. """
         if self.layout is None:
             return False
@@ -897,24 +898,24 @@ class MainWindow(Gtk.Window):
         self.layout.scroll_to_predefined(destination, index)
         self.update_viewport_position()
 
-    def update_viewport_position(self):
+    def update_viewport_position(self) -> None:
         viewport_position = self.layout.get_viewport_box().get_position()
         self._hadjust.set_value(viewport_position[0]) # 2D only
         self._vadjust.set_value(viewport_position[1]) # 2D only
         self._scroll[0].queue_resize_no_redraw()
         self._scroll[1].queue_resize_no_redraw()
 
-    def update_layout_position(self):
+    def update_layout_position(self) -> None:
         self.layout.set_viewport_position(
             (int(round(self._hadjust.get_value())), int(round(self._vadjust.get_value()))))
 
-    def clear(self):
+    def clear(self) -> None:
         """Clear the currently displayed data (i.e. "close" the file)."""
         self.set_title(constants.APPNAME)
         self.statusbar.set_message('')
         self.draw_image()
 
-    def _clear_main_area(self):
+    def _clear_main_area(self) -> None:
         for i in self.images:
             i.hide()
         for i in self.images:
@@ -967,7 +968,7 @@ class MainWindow(Gtk.Window):
         """
         self._main_layout.get_bin_window().set_cursor(mode)
 
-    def update_title(self):
+    def update_title(self) -> None:
         """Set the title acording to current state."""
         this_screen = 2 if self.displayed_double() else 1 # XXX limited to at most 2 pages
         # TODO introduce formatter to merge these string ops with the ops for status bar updates
@@ -1104,7 +1105,7 @@ class MainWindow(Gtk.Window):
                     if os.path.isfile(current_file):
                         os.unlink(current_file)
 
-    def show_info_panel(self):
+    def show_info_panel(self) -> None:
         """ Shows an OSD displaying information about the current page. """
 
         if not self.filehandler.file_loaded:
@@ -1131,7 +1132,7 @@ class MainWindow(Gtk.Window):
         """ Minimizes the MComix window. """
         self.iconify()
 
-    def write_config_files(self):
+    def write_config_files(self) -> None:
 
         self.filehandler.write_fileinfo_file()
         preferences.write_preferences_file()
@@ -1156,7 +1157,7 @@ class MainWindow(Gtk.Window):
         prefs['window height'] = height
         prefs['window maximized'] = self.is_maximized()
 
-    def restore_window_geometry(self):
+    def restore_window_geometry(self) -> bool:
         if self.get_window_geometry() == (prefs['window x'],
                                           prefs['window y'],
                                           prefs['window width'],
@@ -1171,7 +1172,7 @@ class MainWindow(Gtk.Window):
             self.resize(prefs['window width'], prefs['window height'])
         return True
 
-    def update_space(self):
+    def update_space(self) -> None:
         self._spacing = prefs['space between two pages']
         self.draw_image()
 
@@ -1180,7 +1181,7 @@ class MainWindow(Gtk.Window):
             self.save_window_geometry()
         self.terminate_program()
 
-    def terminate_program(self):
+    def terminate_program(self) -> None:
         """Run clean-up tasks and exit the program."""
 
         self.hide()

@@ -12,7 +12,7 @@ class _Page(Gtk.ScrolledWindow):
     image or an archive.)
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super(_Page, self).__init__()
         self.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
         self.set_border_width(12)
@@ -38,7 +38,7 @@ class _Page(Gtk.ScrolledWindow):
         self._extrabox = None
         self.reset()
 
-    def reset(self):
+    def reset(self) -> None:
         self._thumb.clear()
         if self._mainbox is not None:
             self._mainbox.destroy()

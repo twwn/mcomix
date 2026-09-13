@@ -1,7 +1,9 @@
 """ui.py - UI definitions for main window.
 """
 
-from gi.repository import Gtk
+from gi.repository import Gio, GLib, Gtk
+
+from typing import Any
 
 from mcomix import bookmark_menu
 from mcomix import openwith_menu
@@ -11,32 +13,302 @@ from mcomix import preferences_dialog
 from mcomix import recent
 from mcomix import dialog_handler
 from mcomix import constants
-from mcomix import icons
 from mcomix import status
 from mcomix import file_chooser_main_dialog
 from mcomix.preferences import prefs
 from mcomix.library import main_dialog as library_main_dialog
 from mcomix.i18n import _
 
-class MainUI(Gtk.UIManager):
+def _gio_name(name: str) -> str:
+    """The name a Gio action can be registered under.
+
+    Gio action names take alphanumerics, hyphens and dots, and MComix'
+    names are full of underscores, so those become hyphens.  Nothing
+    outside this module needs to know: actions are asked for by the names
+    MComix has always used.
+    """
+    return name.replace('_', '-')
+
+
+class _Action(object):
+
+    """One of the window's actions, in the shape the rest of MComix asks
+    for it.
+
+    Gtk.Action offered activate(), set_active() and set_sensitive(), and
+    those three are all that is used.  Gio spells them differently - a
+    toggle is set by handing its action a GLib.Variant - so this keeps the
+    callers reading as they did.
+    """
+
+    def __init__(self, action: Any, target: Any = None) -> None:
+        self._action = action
+        self._target = target
+
+    def detailed(self, prefix: str) -> tuple:
+        """How a menu item or tool button addresses this action."""
+        return '%s.%s' % (prefix, self._action.get_name()), self._target
+
+    def activate(self, *args: Any) -> None:
+        self._action.activate(self._target)
+
+    def set_active(self, active: Any) -> None:
+        # Gtk.ToggleAction.set_active() was a no-op when the value did not
+        # change; Gio.SimpleAction.change_state() always announces one, so
+        # only change what has actually changed.
+        if bool(active) != self.get_active():
+            self._action.change_state(GLib.Variant('b', bool(active)))
+
+    def get_active(self) -> bool:
+        return bool(self._action.get_state().get_boolean())
+
+    def get_current_value(self) -> int:
+        """The value the radio group this belongs to currently holds."""
+        return int(self._action.get_state().get_int32())
+
+    def set_sensitive(self, sensitive: Any) -> None:
+        self._action.set_enabled(bool(sensitive))
+
+    def get_sensitive(self) -> bool:
+        return bool(self._action.get_enabled())
+
+
+class _Actions(object):
+
+    """The window's actions, under the names the rest of MComix uses.
+
+    The tables handed to add(), add_toggle() and add_radio() are the ones
+    Gtk.ActionGroup took: (name, icon name, label, accelerator, tooltip,
+    and a callback or, for a radio entry, its value).
+    """
+
+    #: The prefix menu items and tool buttons address these actions by.
+    PREFIX = 'win'
+
+    def __init__(self) -> None:
+        self.group = Gio.SimpleActionGroup()
+        self._by_name: dict = {}
+        self._labels: dict = {}
+        self._icons: dict = {}
+        self._stateful: set = set()
+        #: Tooltips, by label, for the status bar helper.
+        self.tooltips: dict = {}
+
+    def get_action(self, name: str) -> Any:
+        return self._by_name[name]
+
+    def detailed(self, name: str) -> tuple:
+        return self._by_name[name].detailed(self.PREFIX)
+
+    def label(self, name: str) -> str:
+        return self._labels[name]
+
+    def icon(self, name: str) -> Any:
+        return self._icons[name]
+
+    def is_stateful(self, name: str) -> bool:
+        """Whether the action shows as pressed when it is on."""
+        return name in self._stateful
+
+    def _remember(self, name: str, entry: tuple, action: Any,
+                  target: Any = None, stateful: bool = False) -> None:
+        self._by_name[name] = _Action(action, target)
+        label, tooltip = entry[2], (entry[4] if len(entry) > 4 else None)
+        self._labels[name] = label
+        self._icons[name] = entry[1]
+        if stateful:
+            self._stateful.add(name)
+        if label and tooltip:
+            self.tooltips[label] = tooltip
+
+    def add(self, entries: Any, user_data: Any = None) -> None:
+        """Add plain actions."""
+        for entry in entries:
+            action = Gio.SimpleAction.new(_gio_name(entry[0]), None)
+            callback = entry[5] if len(entry) > 5 else None
+            if callback is not None:
+                action.connect('activate', self._activated, callback, user_data)
+            self.group.add_action(action)
+            self._remember(entry[0], entry, action)
+
+    def add_toggle(self, entries: Any) -> None:
+        """Add actions that are on or off."""
+        for entry in entries:
+            action = Gio.SimpleAction.new_stateful(
+                _gio_name(entry[0]), None, GLib.Variant('b', False))
+            callback = entry[5] if len(entry) > 5 else None
+            action.connect('change-state', self._toggled, entry[0], callback)
+            self.group.add_action(action)
+            self._remember(entry[0], entry, action, stateful=True)
+
+    def add_radio(self, name: str, entries: Any, value: int,
+                  on_change: Any) -> None:
+        """Add one group of mutually exclusive actions.
+
+        Gtk.RadioAction gave every member its own action carrying a value;
+        one stateful action holding that value says the same thing, with
+        the members as targets on it.
+        """
+        action = Gio.SimpleAction.new_stateful(
+            name, GLib.VariantType.new('i'), GLib.Variant('i', value))
+        action.connect('change-state', self._radio_changed, name, on_change)
+        self.group.add_action(action)
+        for entry in entries:
+            self._remember(entry[0], entry, action,
+                           GLib.Variant('i', entry[5]), stateful=True)
+
+    def _activated(self, action: Any, parameter: Any, callback: Any,
+                   user_data: Any) -> None:
+        if user_data is None:
+            callback(action)
+        else:
+            callback(action, user_data)
+
+    def _toggled(self, action: Any, value: Any, name: str,
+                 callback: Any) -> None:
+        action.set_state(value)
+        if callback is not None:
+            callback(self._by_name[name])
+
+    def _radio_changed(self, action: Any, value: Any, name: str,
+                       on_change: Any) -> None:
+        action.set_state(value)
+        if on_change is not None:
+            on_change(_Action(action))
+
+
+
+#: The menu bar, as the <menubar> element described it.  None is a
+#: separator, and a pair is a submenu.
+_MENUBAR = (
+    ('menu_file', ('open', 'menu_recent', 'library', None,
+                   'extract_page', 'refresh_archive', 'properties', None,
+                   'menu_open_with', None,
+                   'delete', None,
+                   'minimize', 'close', 'save_and_quit', 'quit')),
+    ('menu_edit', ('copy_page', None,
+                   'edit_archive', 'comments', None,
+                   'preferences')),
+    ('menu_view', ('fullscreen', 'double_page', 'manga_mode', None,
+                   'best_fit_mode', 'fit_width_mode', 'fit_height_mode',
+                   'fit_size_mode', 'fit_manual_mode', None,
+                   'slideshow', None,
+                   'stretch', 'invert_scroll', 'lens',
+                   ('menu_zoom', ('zoom_in', 'zoom_out', 'zoom_original')),
+                   None,
+                   ('menu_toolbars', ('menubar', 'toolbar', 'statusbar',
+                                      'scrollbar', 'thumbnails', None,
+                                      'hide_all')))),
+    ('menu_go', ('next_page', 'previous_page', 'go_to',
+                 'first_page', 'last_page', None,
+                 'next_archive', 'previous_archive', None,
+                 'next_directory', 'previous_directory')),
+    'menu_bookmarks',
+    ('menu_tools', ('enhance_image',
+                    ('menu_transform', ('rotate_90', 'rotate_270',
+                                        'rotate_180', None,
+                                        ('menu_autorotate',
+                                         ('no_autorotation', None,
+                                          'menu_autorotate_height', None,
+                                          'rotate_90_height',
+                                          'rotate_270_height', None,
+                                          'menu_autorotate_width', None,
+                                          'rotate_90_width',
+                                          'rotate_270_width')),
+                                        None,
+                                        'flip_horiz', 'flip_vert', None,
+                                        'keep_transformation')))),
+    ('menu_help', ('about',)),
+)
+
+#: The right-click menu, as the <popup> element described it.
+_POPUP = (
+    ('menu_go_popup', ('next_page', 'previous_page', 'go_to',
+                       'first_page', 'last_page', None,
+                       'next_archive', 'previous_archive', None,
+                       'next_directory', 'previous_directory')),
+    ('menu_view_popup', ('fullscreen', 'double_page', 'manga_mode', None,
+                         'best_fit_mode', 'fit_width_mode', 'fit_height_mode',
+                         'fit_size_mode', 'fit_manual_mode', None,
+                         'slideshow', None,
+                         'enhance_image', None,
+                         'stretch', 'invert_scroll', 'lens',
+                         ('menu_zoom', ('zoom_in', 'zoom_out',
+                                        'zoom_original')),
+                         None,
+                         ('menu_toolbars', ('menubar', 'toolbar', 'statusbar',
+                                            'scrollbar', 'thumbnails', None,
+                                            'hide_all')))),
+    'menu_bookmarks_popup',
+    None,
+    'open', 'menu_recent', 'library',
+    None,
+    'menu_open_with_popup',
+    None,
+    'preferences',
+    None,
+    'close', 'quit',
+)
+
+#: The tool bar, as the <toolbar> element described it.
+_TOOLBAR = ('previous_archive', 'first_page', 'previous_page', 'go_to',
+            'next_page', 'last_page', 'next_archive', None,
+            'fullscreen', 'slideshow', 'expander',
+            'best_fit_mode', 'fit_width_mode', 'fit_height_mode',
+            'fit_size_mode', 'fit_manual_mode', None,
+            'double_page', 'manga_mode', None,
+            'lens')
+
+
+#: Where MComix' keybinding manager records the key for an action, and
+#: where a menu item's accelerator label reads it back from.
+ACCEL_PATH = '<Actions>/mcomix-main/%s'
+
+
+def _apply_accel_paths(shell, order):
+    """Give the items of <shell> the accelerator paths of <order>.
+
+    A menu built from a model has no idea which action produced which
+    item, and Gtk.Actionable reports nothing for them, so the names are
+    collected while the model is built and the two are walked together.
+    An accelerator path is what makes an item's label follow the
+    keybinding as the user changes it, which is what Gtk.Action set up
+    before.
+    """
+    items = [item for item in shell.get_children()]
+    if len(items) != len(order):
+        # Something is out of step; better no accelerators than wrong ones.
+        return
+    for item, entry in zip(items, order):
+        if entry is None:
+            continue
+        name, nested = entry if isinstance(entry, tuple) else (entry, None)
+        item.set_accel_path(ACCEL_PATH % name)
+        if nested is not None:
+            submenu = item.get_submenu()
+            if submenu is not None:
+                _apply_accel_paths(submenu, nested)
+
+
+class MainUI(object):
 
     def __init__(self, window):
-        super(MainUI, self).__init__()
-
         self._window = window
-        self._tooltipstatus = status.TooltipStatusHelper(self, window.statusbar)
+        self._tooltipstatus = status.TooltipStatusHelper(
+            statusbar=window.statusbar)
+        self.actions = self._actions = _Actions()
+        #: Accelerators that are not MComix' own keybindings hang here;
+        #: Gtk.UIManager used to provide it.
+        self.accel_group = Gtk.AccelGroup()
+        window.add_accel_group(self.accel_group)
 
         def _action_lambda(fn, *args):
             return lambda *_: fn(*args)
 
-        # Gtk.ActionGroup's entry tuples take a stock id where these tables
-        # carry an icon name; see _add_actions() below.
-
         # ----------------------------------------------------------------
         # Create actions for the menus.
         # ----------------------------------------------------------------
-        self._actiongroup = Gtk.ActionGroup('mcomix-main')
-        icons.add_actions(self._actiongroup, [
+        self._actions.add([
             ('copy_page', 'edit-copy', _('_Copy'),
                 None, _('Copies the current page to clipboard.'),
                 window.clipboard.copy_page),
@@ -112,7 +384,7 @@ class MainUI(Gtk.UIManager):
             ('menu_autorotate_height', None, _('...when height exceeds width')),
             ('expander', None, None, None, None, None)])
 
-        icons.add_toggle_actions(self._actiongroup, [
+        self._actions.add_toggle([
             ('fullscreen', 'view-fullscreen', _('_Fullscreen'),
                 None, _('Fullscreen mode'), window.change_fullscreen),
             ('double_page', 'mcomix-double-page', _('_Double page mode'),
@@ -148,7 +420,7 @@ class MainUI(Gtk.UIManager):
 
         # Note: Don't change the default value for the radio buttons unless
         # also fixing the code for setting the correct one on start-up in main.py.
-        icons.add_radio_actions(self._actiongroup, [
+        self._actions.add_radio('zoom-mode', [
             ('best_fit_mode', 'mcomix-fitbest', _('_Best fit mode'),
                 None, _('Best fit mode'), constants.ZoomMode.BEST),
             ('fit_width_mode', 'mcomix-fitwidth', _('Fit _width mode'),
@@ -162,7 +434,7 @@ class MainUI(Gtk.UIManager):
             3, window.change_zoom_mode)
 
         # Automatically rotate image if width>height or height>width
-        icons.add_radio_actions(self._actiongroup, [
+        self._actions.add_radio('autorotation', [
             ('no_autorotation', None, _('Never'),
              None, None, constants.AUTOROTATE_NEVER),
             ('rotate_90_width', 'mcomix-rotate-90', _('_Rotate 90 degrees CW'),
@@ -175,24 +447,24 @@ class MainUI(Gtk.UIManager):
              None, None, constants.AUTOROTATE_HEIGHT_270)],
             prefs['auto rotate depending on size'], window.change_autorotation)
 
-        icons.add_actions(self._actiongroup, [
+        self._actions.add([
             ('about', 'help-about', _('_About'),
              None, None, dialog_handler.open_dialog)], (window, 'about-dialog'))
 
-        icons.add_actions(self._actiongroup, [
+        self._actions.add([
             ('comments', 'mcomix-comments', _('Co_mments...'),
              None, None, dialog_handler.open_dialog)], (window, 'comments-dialog'))
 
-        icons.add_actions(self._actiongroup, [
+        self._actions.add([
             ('properties', 'document-properties', _('Proper_ties'),
             None, None, dialog_handler.open_dialog)], (window,'properties-dialog'))
 
-        icons.add_actions(self._actiongroup, [
+        self._actions.add([
             ('preferences', 'preferences-system', _('Pr_eferences'),
                 None, None, preferences_dialog.open_dialog)], window)
 
         # Some actions added separately since they need extra arguments.
-        icons.add_actions(self._actiongroup, [
+        self._actions.add([
             ('edit_archive', 'document-edit-symbolic', _('_Edit archive...'),
                 None, _('Opens the archive editor.'),
                 edit_dialog.open_dialog),
@@ -201,243 +473,129 @@ class MainUI(Gtk.UIManager):
             ('enhance_image', 'mcomix-enhance-image', _('En_hance image...'),
                 None, None, enhance_dialog.open_dialog)], window)
 
-        icons.add_actions(self._actiongroup, [
+        self._actions.add([
             ('library', 'mcomix-library', _('_Library...'),
                 None, None, library_main_dialog.open_dialog)], window)
 
         # fix some gtk magic: removing unreqired accelerators
         Gtk.AccelMap.change_entry('<Actions>/mcomix-main/%s' % 'close', 0, 0, True)
 
-        ui_description = """
-        <ui>
-            <toolbar name="Tool">
-                <toolitem action="previous_archive" />
-                <toolitem action="first_page" />
-                <toolitem action="previous_page" />
-                <toolitem action="go_to" />
-                <toolitem action="next_page" />
-                <toolitem action="last_page" />
-                <toolitem action="next_archive" />
-                <separator />
-                <toolitem action="fullscreen" />
-                <toolitem action="slideshow" />
-                <toolitem action="expander" />
-                <toolitem action="best_fit_mode" />
-                <toolitem action="fit_width_mode" />
-                <toolitem action="fit_height_mode" />
-                <toolitem action="fit_size_mode" />
-                <toolitem action="fit_manual_mode" />
-                <separator />
-                <toolitem action="double_page" />
-                <toolitem action="manga_mode" />
-                <separator />
-                <toolitem action="lens" />
-            </toolbar>
+        self._window.insert_action_group(_Actions.PREFIX, self._actions.group)
 
-            <menubar name="Menu">
-                <menu action="menu_file">
-                    <menuitem action="open" />
-                    <menu action="menu_recent" />
-                    <menuitem action="library" />
-                    <separator />
-                    <menuitem action="extract_page" />
-                    <menuitem action="refresh_archive" />
-                    <menuitem action="properties" />
-                    <separator />
-                    <menu action="menu_open_with"></menu>
-                    <separator />
-                    <menuitem action="delete" />
-                    <separator />
-                    <menuitem action="minimize" />
-                    <menuitem action="close" />
-                    <menuitem action="save_and_quit" />
-                    <menuitem action="quit" />
-                </menu>
-                <menu action="menu_edit">
-                    <menuitem action="copy_page" />
-                    <separator />
-                    <menuitem action="edit_archive" />
-                    <menuitem action="comments" />
-                    <separator />
-                    <menuitem action="preferences" />
-                </menu>
-                <menu action="menu_view">
-                    <menuitem action="fullscreen" />
-                    <menuitem action="double_page" />
-                    <menuitem action="manga_mode" />
-                    <separator />
-                    <menuitem action="best_fit_mode" />
-                    <menuitem action="fit_width_mode" />
-                    <menuitem action="fit_height_mode" />
-                    <menuitem action="fit_size_mode" />
-                    <menuitem action="fit_manual_mode" />
-                    <separator />
-                    <menuitem action="slideshow" />
-                    <separator />
-                    <menuitem action="stretch" />
-                    <menuitem action="invert_scroll" />
-                    <menuitem action="lens" />
-                    <menu action="menu_zoom">
-                        <menuitem action="zoom_in" />
-                        <menuitem action="zoom_out" />
-                        <menuitem action="zoom_original" />
-                    </menu>
-                    <separator />
-                    <menu action="menu_toolbars">
-                        <menuitem action="menubar" />
-                        <menuitem action="toolbar" />
-                        <menuitem action="statusbar" />
-                        <menuitem action="scrollbar" />
-                        <menuitem action="thumbnails" />
-                        <separator />
-                        <menuitem action="hide_all" />
-                    </menu>
-                </menu>
-                <menu action="menu_go">
-                    <menuitem action="next_page" />
-                    <menuitem action="previous_page" />
-                    <menuitem action="go_to" />
-                    <menuitem action="first_page" />
-                    <menuitem action="last_page" />
-                    <separator />
-                    <menuitem action="next_archive" />
-                    <menuitem action="previous_archive" />
-                    <separator />
-                    <menuitem action="next_directory" />
-                    <menuitem action="previous_directory" />
-                </menu>
-                <menu action="menu_bookmarks">
-                </menu>
-                <menu action="menu_tools">
-                    <menuitem action="enhance_image" />
-                    <menu action="menu_transform">
-                        <menuitem action="rotate_90" />
-                        <menuitem action="rotate_270" />
-                        <menuitem action="rotate_180" />
-                        <separator />
-                        <menu action="menu_autorotate">
-                            <menuitem action="no_autorotation" />
-                            <separator />
-                            <menuitem action="menu_autorotate_height" />
-                            <separator />
-                            <menuitem action="rotate_90_height" />
-                            <menuitem action="rotate_270_height" />
-                            <separator />
-                            <menuitem action="menu_autorotate_width" />
-                            <separator />
-                            <menuitem action="rotate_90_width" />
-                            <menuitem action="rotate_270_width" />
-                        </menu>
-                        <separator />
-                        <menuitem action="flip_horiz" />
-                        <menuitem action="flip_vert" />
-                        <separator />
-                        <menuitem action="keep_transformation" />
-                    </menu>
-                </menu>
-                <menu action="menu_help">
-                    <menuitem action="about" />
-                </menu>
-            </menubar>
-
-            <popup name="Popup">
-                <menu action="menu_go_popup">
-                    <menuitem action="next_page" />
-                    <menuitem action="previous_page" />
-                    <menuitem action="go_to" />
-                    <menuitem action="first_page" />
-                    <menuitem action="last_page" />
-                    <separator />
-                    <menuitem action="next_archive" />
-                    <menuitem action="previous_archive" />
-                    <separator />
-                    <menuitem action="next_directory" />
-                    <menuitem action="previous_directory" />
-                </menu>
-                <menu action="menu_view_popup">
-                    <menuitem action="fullscreen" />
-                    <menuitem action="double_page" />
-                    <menuitem action="manga_mode" />
-                    <separator />
-                    <menuitem action="best_fit_mode" />
-                    <menuitem action="fit_width_mode" />
-                    <menuitem action="fit_height_mode" />
-                    <menuitem action="fit_size_mode" />
-                    <menuitem action="fit_manual_mode" />
-                    <separator />
-                    <menuitem action="slideshow" />
-                    <separator />
-                    <menuitem action="enhance_image" />
-                    <separator />
-                    <menuitem action="stretch" />
-                    <menuitem action="invert_scroll" />
-                    <menuitem action="lens" />
-                    <menu action="menu_zoom">
-                        <menuitem action="zoom_in" />
-                        <menuitem action="zoom_out" />
-                        <menuitem action="zoom_original" />
-                    </menu>
-                    <separator />
-                    <menu action="menu_toolbars">
-                        <menuitem action="menubar" />
-                        <menuitem action="toolbar" />
-                        <menuitem action="statusbar" />
-                        <menuitem action="scrollbar" />
-                        <menuitem action="thumbnails" />
-                        <separator />
-                        <menuitem action="hide_all" />
-                    </menu>
-                </menu>
-                <menu action="menu_bookmarks_popup">
-                </menu>
-                <separator />
-                <menuitem action="open" />
-                <menu action="menu_recent" />
-                <menuitem action="library" />
-                <separator />
-                <menu action="menu_open_with_popup"></menu>
-                <separator />
-                <menuitem action="preferences" />
-                <separator />
-                <menuitem action="close" />
-                <menuitem action="quit" />
-            </popup>
-        </ui>
-        """
-
-        self.add_ui_from_string(ui_description)
-        self.insert_action_group(self._actiongroup, 0)
-
+        # The three menus whose contents change while the program runs
+        # keep models of their own, spliced into the layouts below.
         self.bookmarks = bookmark_menu.BookmarksMenu(self, window)
-        self.get_widget('/Menu/menu_bookmarks').set_submenu(self.bookmarks)
-        self.get_widget('/Menu/menu_bookmarks').show()
-
-        self.bookmarks_popup = bookmark_menu.BookmarksMenu(self, window)
-        self.get_widget('/Popup/menu_bookmarks_popup').set_submenu(self.bookmarks_popup)
-        self.get_widget('/Popup/menu_bookmarks_popup').show()
-
+        self.bookmarks_popup = self.bookmarks
         self.recent = recent.RecentFilesMenu(self, window)
-        self.get_widget('/Menu/menu_file/menu_recent').set_submenu(self.recent)
-        self.get_widget('/Menu/menu_file/menu_recent').show()
+        self.recentPopup = self.recent
+        self._openwith = openwith_menu.OpenWithMenu(window)
 
-        self.recentPopup = recent.RecentFilesMenu(self, window)
-        self.get_widget('/Popup/menu_recent').set_submenu(self.recentPopup)
-        self.get_widget('/Popup/menu_recent').show()
+        menubar_order: list = []
+        popup_order: list = []
+        self.menubar = Gtk.MenuBar.new_from_model(self._build(_MENUBAR, menubar_order))
+        self.popup = Gtk.Menu.new_from_model(self._build(_POPUP, popup_order))
+        self.popup.attach_to_widget(window, None)
+        self.toolbar = self._build_toolbar()
 
-        openwith = openwith_menu.OpenWithMenu(self, window)
-        self.get_widget('/Menu/menu_file/menu_open_with').set_submenu(openwith)
-        self.get_widget('/Menu/menu_file/menu_open_with').show()
-        openwith = openwith_menu.OpenWithMenu(self, window)
-        self.get_widget('/Popup/menu_open_with_popup').set_submenu(openwith)
-        self.get_widget('/Popup/menu_open_with_popup').show()
+        for menu, order in ((self.menubar, menubar_order),
+                            (self.popup, popup_order)):
+            menu.show_all()
+            self._tooltipstatus.attach_to_menu(menu, self._actions.tooltips)
+            _apply_accel_paths(menu, order)
 
-        window.add_accel_group(self.get_accel_group())
+    def get_accel_group(self):
+        """The window's accelerator group."""
+        return self.accel_group
 
-        # Is there no built-in way to do this?
-        self.get_widget('/Tool/expander').set_expand(True)
-        self.get_widget('/Tool/expander').set_sensitive(False)
+    def _dynamic(self, name):
+        """The model of a submenu that is rebuilt as the program runs."""
+        return {'menu_recent': self.recent.model,
+                'menu_open_with': self._openwith.model,
+                'menu_open_with_popup': self._openwith.model,
+                'menu_bookmarks': self.bookmarks.model,
+                'menu_bookmarks_popup': self.bookmarks.model}.get(name)
 
-    def set_sensitivities(self):
+    def _build(self, layout, order):
+        """Turn one of the layouts below into a Gio.Menu.
+
+        A layout is a sequence of action names, with None where the XML
+        this replaces had a separator - a menu model says that by starting
+        a new section - and a (name, sub-layout) pair for a submenu.
+
+        <order> is filled with the action names in the order the items
+        come out, so that accelerator paths can be put back on them; a
+        separator between sections counts as one position, and a submenu
+        contributes a nested list.
+        """
+        model = Gio.Menu()
+        section = Gio.Menu()
+        pending: list = []
+        for item in layout:
+            if item is None:
+                if section.get_n_items():
+                    model.append_section(None, section)
+                    order.extend(pending)
+                    order.append(None)
+                section = Gio.Menu()
+                pending = []
+                continue
+            if isinstance(item, tuple):
+                name, contents = item
+                nested: list = []
+                section.append_submenu(self._actions.label(name),
+                                       self._build(contents, nested))
+                pending.append((name, nested))
+                continue
+            dynamic = self._dynamic(item)
+            if dynamic is not None:
+                # Built and rebuilt elsewhere; nothing to hang a path on.
+                section.append_submenu(self._actions.label(item), dynamic)
+                pending.append((item, None))
+                continue
+            entry = Gio.MenuItem.new(self._actions.label(item), None)
+            detailed, target = self._actions.detailed(item)
+            entry.set_action_and_target_value(detailed, target)
+            section.append_item(entry)
+            pending.append(item)
+        if section.get_n_items():
+            model.append_section(None, section)
+            order.extend(pending)
+        return model
+
+    def _build_toolbar(self):
+        """Build the tool bar, which is a row of buttons on the actions."""
+        toolbar = Gtk.Toolbar()
+        for name in _TOOLBAR:
+            if name is None:
+                toolbar.insert(Gtk.SeparatorToolItem(), -1)
+                continue
+            if name == 'expander':
+                # Takes up the slack, and takes the focus that would
+                # otherwise land on one of the buttons.
+                self.toolbar_expander = Gtk.ToolItem()
+                self.toolbar_expander.set_expand(True)
+                self.toolbar_expander.set_sensitive(False)
+                toolbar.insert(self.toolbar_expander, -1)
+                continue
+            detailed, target = self._actions.detailed(name)
+            stateful = self._actions.is_stateful(name)
+            button = Gtk.ToggleToolButton() if stateful else Gtk.ToolButton()
+            button.set_label(self._actions.label(name))
+            button.set_icon_name(self._actions.icon(name))
+            tooltip = self._actions.tooltips.get(self._actions.label(name))
+            if tooltip:
+                button.set_tooltip_text(tooltip)
+            if target is not None:
+                button.set_action_target_value(target)
+            button.set_action_name(detailed)
+            toolbar.insert(button, -1)
+            if name == 'slideshow':
+                self.slideshow_button = button
+        toolbar.set_style(Gtk.ToolbarStyle.ICONS)
+        toolbar.set_icon_size(Gtk.IconSize.LARGE_TOOLBAR)
+        return toolbar
+
+    def set_sensitivities(self) -> None:
         """Sets the main UI's widget's sensitivities appropriately."""
         general = ('properties',
                    'edit_archive',
@@ -477,12 +635,11 @@ class MainUI(Gtk.UIManager):
                 comment_sensitive = True
 
         for name in general:
-            self._actiongroup.get_action(name).set_sensitive(general_sensitive)
+            self._actions.get_action(name).set_sensitive(general_sensitive)
 
         for name in comment:
-            self._actiongroup.get_action(name).set_sensitive(comment_sensitive)
+            self._actions.get_action(name).set_sensitive(comment_sensitive)
 
         self.bookmarks.set_sensitive(general_sensitive)
-        self.bookmarks_popup.set_sensitive(general_sensitive)
 
 # vim: expandtab:sw=4:ts=4

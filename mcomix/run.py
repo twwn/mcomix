@@ -22,7 +22,7 @@ from mcomix.version_tools import Version
 #: Lowest Pillow release providing the API MComix uses (Image.Transpose).
 PIL_VERSION_REQUIRED = '9.1.0'
 
-def wait_and_exit():
+def wait_and_exit() -> None:
     """ Wait for the user pressing ENTER before closing. This should help
     the user find possibly missing dependencies when starting, since the
     Python window will not close down immediately after the error. """
@@ -97,7 +97,7 @@ def parse_arguments(argv):
 
     return opts, opts.paths
 
-def setup_dependencies():
+def setup_dependencies() -> None:
     """Check for PyGTK and PIL dependencies."""
     from mcomix.i18n import _
 
@@ -138,7 +138,7 @@ def setup_dependencies():
         wait_and_exit()
 
 
-def run():
+def run() -> None:
     """Run the program."""
 
     # Load configuration and setup localisation.
