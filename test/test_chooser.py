@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """The dropdown the preferences dialog picks its options from.
 
 It was a Gtk.ComboBox over a two-column Gtk.ListStore: the label in one
@@ -18,7 +16,7 @@ class ChooserTest(MComixTest):
     OPTIONS = (('Never', 0), ('Sometimes', 1), ('Always', 2))
 
     def setUp(self):
-        super(ChooserTest, self).setUp()
+        super().setUp()
         self.chooser = widgets.Chooser(self.OPTIONS, 1)
 
     def test_the_labels_are_the_ones_that_were_offered(self):

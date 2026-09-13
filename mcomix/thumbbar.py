@@ -25,7 +25,7 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
     _BORDER_SIZE = 1
 
     def __init__(self, window: "main.MainWindow") -> None:
-        super(ThumbnailSidebar, self).__init__()
+        super().__init__()
 
         self._window = window
         #: Thumbnail load status
@@ -99,7 +99,7 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
             # cells that were on screen: those are asked again here, or
             # nothing would ever ask for them.
             self._list.refresh()
-        super(ThumbnailSidebar, self).set_visible(visible)
+        super().set_visible(visible)
         if not visible:
             self._list.stop_update()
 

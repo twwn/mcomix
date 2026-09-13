@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """The archive editor, and the Save As chooser it opens.
 
 The note under the file list was a Gtk.FileChooser extra widget, which
@@ -25,7 +23,7 @@ from mcomix import message_dialog
 class EditArchiveDialogTest(MComixTest):
 
     def setUp(self):
-        super(EditArchiveDialogTest, self).setUp()
+        super().setUp()
         for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
                           constants.THUMBNAIL_PATH):
             os.makedirs(directory, exist_ok=True)
@@ -49,7 +47,7 @@ class EditArchiveDialogTest(MComixTest):
         self.window.destroy()
         main.set_main_window(None)
         pump()
-        super(EditArchiveDialogTest, self).tearDown()
+        super().tearDown()
 
     def _chooser(self):
         for window in Gtk.Window.list_toplevels():

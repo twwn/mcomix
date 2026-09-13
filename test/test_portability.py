@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """ The parts of portability.py that differ between desktops. """
 
 import os
@@ -13,7 +11,7 @@ from mcomix import constants
 from mcomix import portability
 
 
-class _Answer(object):
+class _Answer:
 
     """Stands in for what a Gio.DBusConnection call answers with."""
 
@@ -24,7 +22,7 @@ class _Answer(object):
         return (self._value,)
 
 
-class _Connection(object):
+class _Connection:
 
     def __init__(self, answers):
         #: What call_sync() answers, by method name; a GLib.Error to raise.

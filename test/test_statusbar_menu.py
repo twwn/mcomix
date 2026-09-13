@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """ Tests for the status bar's right-click menu, which picks the fields
 it shows. """
 
@@ -15,7 +13,7 @@ from mcomix.preferences import prefs
 class StatusbarFieldsMenuTest(MComixTest):
 
     def setUp(self):
-        super(StatusbarFieldsMenuTest, self).setUp()
+        super().setUp()
         prefs['statusbar fields'] = (constants.STATUS_PAGE |
                                      constants.STATUS_FILENAME)
         self.bar = status.Statusbar()
@@ -24,7 +22,7 @@ class StatusbarFieldsMenuTest(MComixTest):
 
     def tearDown(self):
         self.window.destroy()
-        super(StatusbarFieldsMenuTest, self).tearDown()
+        super().tearDown()
 
     def _ticks(self):
         """What each entry would show, read from the action behind it.

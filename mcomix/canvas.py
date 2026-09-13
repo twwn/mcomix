@@ -28,7 +28,7 @@ class PageCanvas(Gtk.Widget):
     }
 
     def __init__(self) -> None:
-        super(PageCanvas, self).__init__()
+        super().__init__()
         #: Children, as (widget, x, y) in the canvas' own coordinates.
         self._children: "list[tuple[Gtk.Widget, int, int]]" = []
         #: The size of the canvas, which is what the pages need rather

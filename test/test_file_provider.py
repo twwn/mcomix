@@ -1,12 +1,27 @@
 import os
 import shutil
 import tempfile
+from unittest import mock
 
 from . import MComixTest, get_testfile_path
 
 from mcomix import constants
-from mcomix.file_provider import OrderedFileProvider, PreDefinedFileProvider
+from mcomix.file_provider import FileProvider, OrderedFileProvider, PreDefinedFileProvider
 from mcomix.preferences import prefs
+
+
+def _stat_failing_on(doomed: str):
+    """Returns an os.stat that raises for <doomed> and works otherwise,
+    standing in for a file deleted after the directory was listed."""
+
+    real_stat = os.stat
+
+    def stat(path, *args, **kwargs):
+        if path == doomed:
+            raise FileNotFoundError(2, 'No such file or directory', path)
+        return real_stat(path, *args, **kwargs)
+
+    return stat
 
 
 class OrderedFileProviderTest(MComixTest):
@@ -61,6 +76,30 @@ class OrderedFileProviderTest(MComixTest):
         self.assertIn(os.path.join(directory, '01-ZIP-Normal.zip'), archives)
         self.assertEqual(images, [])
 
+    def test_a_deleted_file_does_not_empty_the_listing(self) -> None:
+        """Sorting by size stats every name, so a file deleted between the
+        listing and the sort used to be reported as a permissions problem
+        and take every other file in the directory down with it."""
+        directory = get_testfile_path('images')
+        provider = OrderedFileProvider(directory)
+        prefs['sort by'] = constants.SORT_NAME
+        expected = provider.list_files()
+        prefs['sort by'] = constants.SORT_SIZE
+        with mock.patch('os.stat', _stat_failing_on(expected[0])):
+            listed = provider.list_files()
+        self.assertEqual(sorted(listed), sorted(expected))
+
+    def test_an_unreadable_parent_leaves_the_directory_alone(self) -> None:
+        """Walking to a sibling directory lists the parent, which the
+        user may not be allowed to read; that used to raise out of the
+        menu action."""
+        provider = self._provider('b')
+        with mock.patch('os.listdir', side_effect=PermissionError(
+                13, 'Permission denied', self.root)):
+            self.assertFalse(provider.next_directory())
+            self.assertFalse(provider.previous_directory())
+        self.assertEqual(os.path.basename(provider.get_directory()), 'b')
+
     def test_sort_order_is_reversed_for_descending(self) -> None:
         directory = get_testfile_path('images')
         provider = OrderedFileProvider(directory)
@@ -71,12 +110,57 @@ class OrderedFileProviderTest(MComixTest):
         self.assertEqual(provider.list_files(), list(reversed(ascending)))
 
 
+class SortFilesTest(MComixTest):
+
+    """FileProvider.sort_files() is called on its own by the file chooser,
+    which has no guard of its own to fall back on."""
+
+    def test_sorting_survives_a_deleted_file(self) -> None:
+        directory = get_testfile_path('images')
+        files = [os.path.join(directory, name) for name in os.listdir(directory)]
+        doomed = files[0]
+        expected = set(files)
+        prefs['sort by'] = constants.SORT_LAST_MODIFIED
+        with mock.patch('os.stat', _stat_failing_on(doomed)):
+            FileProvider.sort_files(files)
+        self.assertEqual(set(files), expected)
+
+
 class PreDefinedFileProviderTest(MComixTest):
 
-    def test_keeps_only_files_of_the_first_kind(self) -> None:
+    """The provider for a list of files, as the command line hands one
+    over.  The file handler shows one kind of file at a time, so each
+    kind is listed on its own; what it must never get is a listing with
+    both in it."""
+
+    def test_each_kind_is_listed_under_its_own_mode(self) -> None:
         archive = get_testfile_path('archives', '01-ZIP-Normal.zip')
         image = get_testfile_path('images', 'red.png')
         provider = PreDefinedFileProvider([archive, image])
-        self.assertEqual(provider.list_files(), [archive])
+        self.assertEqual([image],
+                         provider.list_files(PreDefinedFileProvider.IMAGES))
+        self.assertEqual([archive],
+                         provider.list_files(PreDefinedFileProvider.ARCHIVES))
+
+    def test_a_directory_gives_up_its_archives_as_well(self) -> None:
+        """A directory in the list was listed for images alone, so the
+        archives in it were in no listing at all: asking the provider
+        for archives answered with the images."""
+        archives = get_testfile_path('archives')
+        images = get_testfile_path('images')
+        provider = PreDefinedFileProvider([archives, images])
+        self.assertIn(os.path.join(archives, '01-ZIP-Normal.zip'),
+                      provider.list_files(PreDefinedFileProvider.ARCHIVES))
+        self.assertIn(os.path.join(images, 'red.png'),
+                      provider.list_files(PreDefinedFileProvider.IMAGES))
+
+    def test_neither_listing_holds_the_other_kind(self) -> None:
+        archives = get_testfile_path('archives')
+        images = get_testfile_path('images')
+        provider = PreDefinedFileProvider([archives, images])
+        for path in provider.list_files(PreDefinedFileProvider.ARCHIVES):
+            self.assertNotIn(images, path)
+        for path in provider.list_files(PreDefinedFileProvider.IMAGES):
+            self.assertNotIn(archives, path)
 
 # vim: expandtab:sw=4:ts=4

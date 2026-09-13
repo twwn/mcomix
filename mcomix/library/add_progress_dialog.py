@@ -31,7 +31,7 @@ class _AddLibraryProgressDialog(Dialog):
         """Adds the books at <paths> to the library, and also to the
         <collection>, unless it is None.
         """
-        super(_AddLibraryProgressDialog, self).__init__(
+        super().__init__(
             title=_('Adding books'), transient_for=library, modal=True)
         self.add_buttons(_('_Stop'), Response.CLOSE)
 

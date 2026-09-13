@@ -1,5 +1,3 @@
-# coding: utf-8
-
 import time
 
 from gi.repository import Gdk, GdkPixbuf, Gtk
@@ -18,7 +16,7 @@ def get_image_path(basename):
 class PageImageTest(MComixTest):
 
     def setUp(self):
-        super(PageImageTest, self).setUp()
+        super().setUp()
         self.image = PageImage()
         self.window = Gtk.Window()
         self.window.set_child(self.image)
@@ -33,7 +31,7 @@ class PageImageTest(MComixTest):
         self.image.clear()
         self.window.destroy()
         pump()
-        super(PageImageTest, self).tearDown()
+        super().tearDown()
 
     def test_a_page_is_drawn_at_its_own_size(self):
         pixbuf = image_tools.load_pixbuf(get_image_path('blue.png'))

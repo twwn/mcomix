@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """ Tests for the native (PyMuPDF) PDF handler. """
 
 import io
@@ -91,7 +89,7 @@ def _make_pdf(path, text_page=False):
 class FitzWorkerTest(MComixTest):
 
     def setUp(self):
-        super(FitzWorkerTest, self).setUp()
+        super().setUp()
         self.directory = tempfile.mkdtemp(dir=os.environ['TMPDIR'])
         self.pdf = os.path.join(self.directory, 'test.pdf')
 

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """ Dynamic hotkey management
 
 This module handles the global hotkeys.  An action can answer to more than

@@ -1,5 +1,3 @@
-# coding: utf-8
-
 import hashlib
 import locale
 import os
@@ -34,12 +32,12 @@ _REAL_ASK_FOR_PASSWORD = archive_password.ask_for_password
 class UnsupportedFormat(Exception):
 
     def __init__(self, format):
-        super(UnsupportedFormat, self).__init__('unsuported %s format' % format)
+        super().__init__('unsuported %s format' % format)
 
 class UnsupportedOption(Exception):
 
     def __init__(self, format, option):
-        super(UnsupportedOption, self).__init__('unsuported option for %s format: %s' % (format, option))
+        super().__init__('unsuported option for %s format: %s' % (format, option))
 
 def make_archive(outfile, contents, format='zip', solid=False, password=None, header_encryption=False):
     if os.path.exists(outfile):
@@ -145,7 +143,7 @@ def md5(path):
     hash.update(open(path, 'rb').read())
     return hash.hexdigest()
 
-class ArchiveFormatTest(object):
+class ArchiveFormatTest:
 
     skip = None
     handler = None
@@ -195,14 +193,14 @@ class ArchiveFormatTest(object):
                      header_encryption=cls.header_encryption)
 
     def setUp(self):
-        super(ArchiveFormatTest, self).setUp()
+        super().setUp()
         self.dest_dir = tempfile.mkdtemp(prefix='extract.')
         self.archive = None
 
     def tearDown(self):
         if self.archive is not None:
             self.archive.close()
-        super(ArchiveFormatTest, self).tearDown()
+        super().tearDown()
 
     def test_init_not_unicode(self):
         self.assertRaises(AssertionError, self.handler, b'test')

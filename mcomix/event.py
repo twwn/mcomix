@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from mcomix import main
 
 
-class EventHandler(object):
+class EventHandler:
 
     def __init__(self, window: 'main.MainWindow') -> None:
         self._window = window

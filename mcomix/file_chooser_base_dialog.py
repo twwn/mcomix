@@ -107,8 +107,7 @@ class _BaseFileChooserDialog(Dialog):
             # about the dialog it mapped without one.
             from mcomix import main
             parent = main.main_window()
-        super(_BaseFileChooserDialog, self).__init__(title=title,
-                                                     transient_for=parent)
+        super().__init__(title=title, transient_for=parent)
         #: The buttons, wherever they ended up.
         self._buttons: list[Gtk.Button] = []
         #: What set_note() says under the file list, once there is one.

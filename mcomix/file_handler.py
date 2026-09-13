@@ -35,7 +35,7 @@ from mcomix.dialog import Response
 from collections.abc import Callable
 
 
-class FileHandler(object):
+class FileHandler:
 
     """The FileHandler keeps track of the actual files/archives opened.
 

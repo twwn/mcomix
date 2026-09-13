@@ -13,7 +13,13 @@ from .child import FitzWorker
 
 
 class GeneratorProxy(BaseProxy):
-    """Proxy type for generator objects."""
+    """Proxy type for generator objects.
+
+    A manager hands back a proxy rather than a value, and the default
+    proxy has no way to step a generator: what crosses the process
+    boundary here is a __next__ call at a time, so a listing arrives
+    page by page rather than all at once at the end.
+    """
 
     _exposed_ = ['__next__']
 
@@ -37,20 +43,28 @@ class WorkerProxy(BaseProxy):
 
     @classmethod
     def _open(cls, filename: str) -> None:
+        """Remember which document the calls below are about.
+
+        The worker process holds this for as long as it lives, so the
+        document is named once rather than with every call.
+        """
         cls.filename = filename
 
     @classmethod
     def _count_pages(cls) -> int:
+        """How many pages the document has."""
         w = FitzWorker(cls.filename)
         return w.page_count()
 
     @classmethod
     def _list_pages(cls) -> Iterator[str]:
+        """A name for every page, as a generator the parent steps."""
         w = FitzWorker(cls.filename)
         return w.iter_contents()
 
     @classmethod
     def _extract_pages(cls, entries: Iterable[str], save_path: str) -> Iterator[str]:
+        """Write each of <entries> into <save_path>, naming it as it lands."""
         w = FitzWorker(cls.filename)
         for e in entries:
             w.extract_file(e, save_path)

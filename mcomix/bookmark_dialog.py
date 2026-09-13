@@ -25,7 +25,7 @@ class _BookmarksDialog(Dialog):
 
     def __init__(self, window: "main.MainWindow",
                  bookmarks_store: "bookmark_backend._BookmarksStore") -> None:
-        super(_BookmarksDialog, self).__init__(
+        super().__init__(
             title=_('Edit Bookmarks'), transient_for=window,
             destroy_with_parent=True)
         self.add_buttons(_('_Remove'), constants.RESPONSE_REMOVE,

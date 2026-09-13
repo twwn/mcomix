@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from mcomix import main
     from mcomix import ui
 
-class Slideshow(object):
+class Slideshow:
 
     """Slideshow handler that manages starting and stopping of slideshows."""
 

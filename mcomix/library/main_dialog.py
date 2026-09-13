@@ -36,7 +36,7 @@ class _LibraryDialog(Gtk.Window):
 
     def __init__(self, window: "main.MainWindow",
                  file_handler: "file_handler_module.FileHandler") -> None:
-        super(_LibraryDialog, self).__init__()
+        super().__init__()
 
         self._window = window
 

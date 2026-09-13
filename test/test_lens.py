@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """ The magnifying lens, which draws a scaled patch of the page.
 
 The lens was the last part of the viewer with no tests at all, and its
@@ -39,7 +37,7 @@ class LensDrawingTest(MComixTest):
     LENS_SIZE = (64, 64)
 
     def setUp(self):
-        super(LensDrawingTest, self).setUp()
+        super().setUp()
         self.lens = MagnifyingLens.__new__(MagnifyingLens)
 
     def _drawn(self, rotation, flips, has_alpha):
@@ -117,7 +115,7 @@ class LensCursorTest(MComixTest):
     """
 
     def setUp(self):
-        super(LensCursorTest, self).setUp()
+        super().setUp()
         for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
                           constants.THUMBNAIL_PATH):
             os.makedirs(directory, exist_ok=True)
@@ -131,7 +129,7 @@ class LensCursorTest(MComixTest):
         self.window.destroy()
         main.set_main_window(None)
         pump()
-        super(LensCursorTest, self).tearDown()
+        super().tearDown()
 
     def _open_a_file(self):
         self.window.filehandler.open_file(

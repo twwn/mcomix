@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """ Glue around libunrar.so/unrar.dll to extract RAR files without having to
 resort to calling rar/unrar manually. """
 
@@ -26,17 +24,17 @@ class RarArchive(archive_base.BaseArchive):
     # Nope! Not a good idea...
     support_concurrent_extractions = False
 
-    class _OpenMode(object):
+    class _OpenMode:
         """ Rar open mode """
         RAR_OM_LIST    = 0
         RAR_OM_EXTRACT = 1
 
-    class _ProcessingMode(object):
+    class _ProcessingMode:
         """ Rar file processing mode """
         RAR_SKIP       = 0
         RAR_EXTRACT    = 2
 
-    class _CallbackMessage(object):
+    class _CallbackMessage:
         """ Messages passed to the unrar callback function """
         UCM_CHANGEVOLUME  = 0
         UCM_PROCESSDATA   = 1
@@ -45,7 +43,7 @@ class RarArchive(archive_base.BaseArchive):
         UCM_NEEDPASSWORDW = 4
         UCM_PROCESSDATAW  = 5
 
-    class _VolumeMode(object):
+    class _VolumeMode:
         """ Reason a UCM_CHANGEVOLUME message was sent """
         # The next volume is missing, and unrar is asking for it. Answering
         # anything but -1 makes it retry the very same volume, forever.
@@ -53,7 +51,7 @@ class RarArchive(archive_base.BaseArchive):
         # The next volume is about to be opened, this is just a notification.
         RAR_VOL_NOTIFY = 1
 
-    class _ErrorCode(object):
+    class _ErrorCode:
         """ Rar error codes """
         ERAR_END_ARCHIVE = 10
         ERAR_NO_MEMORY = 11
@@ -153,6 +151,11 @@ class RarArchive(archive_base.BaseArchive):
             [ctypes.c_void_p, UNRARCALLBACK, ctypes.c_long]
 
     def is_solid(self) -> bool:
+        """Whether the archive was packed as one stream.
+
+        Only known once it has been listed; each entry's header says so,
+        and one solid entry makes the archive solid.
+        """
         return self._is_solid
 
     def iter_contents(self) -> Iterator[str]:
@@ -229,8 +232,14 @@ class RarArchive(archive_base.BaseArchive):
         self._handle = handle
 
     def _check_errorcode(self, errorcode: int) -> None:
+        """Turn a libunrar return code into an exception, or into nothing.
+
+        The end of the archive is a code like any other to libunrar, and
+        comes back here as EOFError, which the loops that read entries
+        expect.  Anything else closes the archive before raising, since
+        the handle is not to be used after a failure.
+        """
         if 0 == errorcode:
-            # No error.
             return
         self._close()
         exc: Exception
@@ -331,6 +340,11 @@ class UnrarException(Exception):
 
     @staticmethod
     def get_error_message(errorcode: int) -> str:
+        """What libunrar's <errorcode> means, in English.
+
+        These go into exception messages and into the log rather than in
+        front of the reader, so they are not translated.
+        """
         return UnrarException._exceptions.get(errorcode, "Unknown error")
 
 @functools.cache

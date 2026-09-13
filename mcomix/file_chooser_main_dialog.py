@@ -18,7 +18,7 @@ class _MainFileChooserDialog(file_chooser_base_dialog._BaseFileChooserDialog):
     """The normal filechooser dialog used with the "Open" menu item."""
 
     def __init__(self, window: "main.MainWindow") -> None:
-        super(_MainFileChooserDialog, self).__init__(parent=window)
+        super().__init__(parent=window)
         self._window = window
         self.filechooser.set_select_multiple(True)
         self.add_archive_filters()

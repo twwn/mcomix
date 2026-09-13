@@ -24,8 +24,7 @@ class _EnhanceImageDialog(Dialog):
     """
 
     def __init__(self, window: "main.MainWindow") -> None:
-        super(_EnhanceImageDialog, self).__init__(
-            title=_('Enhance image'), transient_for=window)
+        super().__init__(title=_('Enhance image'), transient_for=window)
 
         self._window = window
 

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """The library's sidebar, which lists the collections.
 
 It was a Gtk.TreeView over a Gtk.TreeStore of (name, id) rows. Dragging
@@ -23,13 +21,13 @@ from mcomix.library import collection_area
 from mcomix.preferences import prefs
 
 
-class _Event(object):
+class _Event:
 
     def __iadd__(self, handler):
         return self
 
 
-class _BookArea(object):
+class _BookArea:
 
     def __init__(self):
         self.displayed = []
@@ -48,7 +46,7 @@ class _BookArea(object):
 class _Library(Gtk.Window):
 
     def __init__(self, library_backend):
-        super(_Library, self).__init__()
+        super().__init__()
         self.backend = library_backend
         self.book_area = _BookArea()
         self.messages = []
@@ -60,7 +58,7 @@ class _Library(Gtk.Window):
 class CollectionAreaTest(MComixTest):
 
     def setUp(self):
-        super(CollectionAreaTest, self).setUp()
+        super().setUp()
         os.makedirs(constants.DATA_DIR, exist_ok=True)
         self.backend = backend.LibraryBackend()
         self.backend.book_added_to_collection = _Event()
@@ -84,7 +82,7 @@ class CollectionAreaTest(MComixTest):
         self.library.destroy()
         pump()
         self.backend.close()
-        super(CollectionAreaTest, self).tearDown()
+        super().tearDown()
 
     def _settle(self):
         for _ in range(20):
@@ -259,7 +257,7 @@ class CollectionAreaTest(MComixTest):
         return (10.0, bounds.origin.y + 1.0)
 
 
-class _StubDrop(object):
+class _StubDrop:
 
     """Stands in for the Gtk.DropTarget a motion handler is told about."""
 

@@ -45,7 +45,7 @@ class _EditArchiveDialog(Dialog):
     """
 
     def __init__(self, window: "main.MainWindow") -> None:
-        super(_EditArchiveDialog, self).__init__(
+        super().__init__(
             title=_('Edit archive'), transient_for=window, modal=True)
         self.add_buttons(_('_Cancel'), Response.CANCEL)
 
@@ -154,8 +154,9 @@ class _EditArchiveDialog(Dialog):
                 saved = True
 
         except OSError as error:
-            log.error('! Could not save the archive %s: %s',
-                      archive_path, error)
+            log.error(_('! Could not save the archive %(archivefile)s: '
+                        '%(error)s'),
+                      {'archivefile': archive_path, 'error': error})
         finally:
             self._window.set_layout_cursor(None)
 
@@ -169,7 +170,8 @@ class _EditArchiveDialog(Dialog):
             try:
                 os.unlink(tmp_path)
             except OSError as error:
-                log.error('! Could not remove %s: %s', tmp_path, error)
+                log.error(_('! Could not remove %(file)s: %(error)s'),
+                          {'file': tmp_path, 'error': error})
 
         dialog = message_dialog.MessageDialog(
             self._window, buttons=Gtk.ButtonsType.CLOSE)

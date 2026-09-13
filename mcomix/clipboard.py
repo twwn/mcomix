@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from mcomix import main
 
 
-class Clipboard(object):
+class Clipboard:
 
     """The Clipboard takes care of all necessary copy-paste functionality
     """

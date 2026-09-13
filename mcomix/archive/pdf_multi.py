@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """Shim module to conditionally load the FitzArchive class."""
 
 import os
@@ -15,9 +13,13 @@ from mcomix.version_tools import Version
 PYMUPDF_VERSION_REQUIRED = "1.23.5"
 
 
-class DisabledError(RuntimeError): pass
+class DisabledError(RuntimeError):
+    """The native handler was switched off in the environment."""
 
 class UnsupportedFitzVersionError(ImportError):
+
+    """PyMuPDF is installed, but too old to drive the native handler."""
+
     def __init__(
             self, message: str | None = None, name: str | None = None,
             path: str | None = None, found_version: str | None = None) -> None:

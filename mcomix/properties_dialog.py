@@ -30,8 +30,7 @@ class _PropertiesDialog(Dialog):
 
     def __init__(self, window: "main.MainWindow") -> None:
 
-        super(_PropertiesDialog, self).__init__(
-            title=_('Properties'), transient_for=window)
+        super().__init__(title=_('Properties'), transient_for=window)
         self.add_buttons(_('_Close'), Response.CLOSE)
 
         self._window = window

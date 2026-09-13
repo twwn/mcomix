@@ -66,7 +66,7 @@ class Dialog(Gtk.Window):
     # which takes a value of the property's own type for each of the
     # hundred-odd properties a window has.
     def __init__(self, **kwargs: Any) -> None:  # type: ignore[explicit-any]  # straight on to Gtk.Window's own typed properties
-        super(Dialog, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.add_css_class(self._CSS_CLASS)
         self._content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL,
                                 spacing=6)
@@ -81,7 +81,7 @@ class Dialog(Gtk.Window):
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         widgets.pack(box, self._content, True, True, 0)
         widgets.pack(box, self._button_row, False, False, 0)
-        super(Dialog, self).set_child(box)
+        super().set_child(box)
         # Closing the window answers the dialog, the way a Gtk.Dialog's
         # delete event did, so that whoever is waiting hears about it.
         self.connect('close-request', self._closed)

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """The Comments dialog, which shows the text files an archive carries.
 
 One notebook stands for the life of the dialog and is emptied and
@@ -21,7 +19,7 @@ from mcomix import main
 class CommentsDialogTest(MComixTest):
 
     def setUp(self):
-        super(CommentsDialogTest, self).setUp()
+        super().setUp()
         for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
                           constants.THUMBNAIL_PATH):
             os.makedirs(directory, exist_ok=True)
@@ -37,7 +35,7 @@ class CommentsDialogTest(MComixTest):
             self.window.destroy()
             main.set_main_window(None)
         pump()
-        super(CommentsDialogTest, self).tearDown()
+        super().tearDown()
 
     def _archive_with_comments(self, name, *comments):
         """An archive of one page carrying <comments>, as (name, text)."""

@@ -16,7 +16,7 @@ from mcomix.i18n import _
 from collections.abc import Iterable, Sequence
 
 
-class Extractor(object):
+class Extractor:
 
     """Extractor is a threaded class for extracting different archive formats.
 

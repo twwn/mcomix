@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """The page selector, which previews the page it would go to.
 
 The preview is made on a worker thread and comes back through a
@@ -22,7 +20,7 @@ from mcomix import pageselect
 class PageselectTest(MComixTest):
 
     def setUp(self):
-        super(PageselectTest, self).setUp()
+        super().setUp()
         for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
                           constants.THUMBNAIL_PATH):
             os.makedirs(directory, exist_ok=True)
@@ -44,7 +42,7 @@ class PageselectTest(MComixTest):
         self.window.destroy()
         main.set_main_window(None)
         pump()
-        super(PageselectTest, self).tearDown()
+        super().tearDown()
 
     def test_the_selector_covers_every_page(self):
         adjustment = self.dialog._selector_adjustment

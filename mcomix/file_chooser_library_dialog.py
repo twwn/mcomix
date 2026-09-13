@@ -18,7 +18,7 @@ class _LibraryFileChooserDialog(file_chooser_base_dialog._BaseFileChooserDialog)
     """The filechooser dialog used when adding books to the library."""
 
     def __init__(self, library: "main_dialog._LibraryDialog") -> None:
-        super(_LibraryFileChooserDialog, self).__init__(parent=library)
+        super().__init__(parent=library)
         self.set_title(_('Add books'))
 
         self._library = library

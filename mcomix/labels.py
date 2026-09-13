@@ -17,7 +17,7 @@ class FormattedLabel(Gtk.Label):
 
     def __init__(self, text: str = '', weight: Pango.Weight = Pango.Weight.NORMAL,
                  style: Pango.Style = Pango.Style.NORMAL, scale: float = 1.0) -> None:
-        super(FormattedLabel, self).__init__()
+        super().__init__()
         self._weight = weight
         self._style = style
         self._scale = scale
@@ -37,14 +37,14 @@ class BoldLabel(FormattedLabel):
     """A FormattedLabel that is always bold and otherwise normal."""
 
     def __init__(self, text: str = '') -> None:
-        super(BoldLabel, self).__init__(text=text, weight=Pango.Weight.BOLD)
+        super().__init__(text=text, weight=Pango.Weight.BOLD)
 
 
 class ItalicLabel(FormattedLabel):
     """A FormattedLabel that is always italic and otherwise normal."""
 
     def __init__(self, text: str = '') -> None:
-        super(ItalicLabel, self).__init__(text=text, style=Pango.Style.ITALIC)
+        super().__init__(text=text, style=Pango.Style.ITALIC)
 
 
 # vim: expandtab:sw=4:ts=4

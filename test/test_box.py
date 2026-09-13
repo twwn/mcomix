@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """Hyperrectangles, which the page layout is worked out in."""
 
 from . import MComixTest

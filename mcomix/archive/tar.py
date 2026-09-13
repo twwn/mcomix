@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """ Unicode-aware wrapper for tarfile.TarFile. """
 
 import os
@@ -41,6 +39,9 @@ def read_magic(path: str) -> bytes:
         return fd.read(5)
 
 class TarArchive(archive_base.NonUnicodeArchive):
+
+    """A tarball, compressed or not, read through tarfile."""
+
     def __init__(self, archive: str) -> None:
         super().__init__(archive)
         # Track if archive contents have been listed at least one time: this
@@ -58,14 +59,23 @@ class TarArchive(archive_base.NonUnicodeArchive):
         return self.tar
 
     def is_solid(self) -> bool:
+        """Always true: a tar is a stream, read from the front.
+
+        Reaching one member means reading everything before it, so the
+        pages are worth extracting in one pass however few are wanted.
+        """
         return True
 
     def iter_contents(self) -> Iterator[str]:
+        """Yield the name of every member, walking the tarball once.
+
+        The walk starts by opening the file again, because a tarball is
+        read forwards and the previous listing left it at the end.
+        """
         if self._contents_listed:
             for name in self._contents:
                 yield name
             return
-        # Make sure we start back at the beginning of the tar.
         self.tar = tarfile.open(self.archive, open_mode(read_magic(self.archive)))
         self._contents = []
         while True:
@@ -78,9 +88,16 @@ class TarArchive(archive_base.NonUnicodeArchive):
         self._contents_listed = True
 
     def list_contents(self) -> list[str]:
+        """Every member's name, from a fresh walk of the tarball."""
         return list(self.iter_contents())
 
     def extract(self, filename: str, destination_dir: str) -> None:
+        """Write member <filename> into <destination_dir>.
+
+        Listing is what opens the tarball and maps the names back to
+        what they are called inside it, so a caller that extracts
+        without listing first is listed for.
+        """
         if not self._contents_listed:
             self.list_contents()
         file_object = self._opened_tar.extractfile(self._original_filename(filename))
@@ -92,11 +109,13 @@ class TarArchive(archive_base.NonUnicodeArchive):
                 new.write(file_object.read())
 
     def iter_extract(self, entries: Iterable[str], destination_dir: str) -> Iterator[str]:
+        """Extract <entries> to <destination_dir>, yielding as each lands."""
         if not self._contents_listed:
             self.list_contents()
         yield from super().iter_extract(entries, destination_dir)
 
     def close(self) -> None:
+        """Close the tarball, if it was ever opened."""
         if self.tar is not None:
             self.tar.close()
             self.tar = None

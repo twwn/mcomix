@@ -1,5 +1,4 @@
 """ osd.py - Onscreen display showing currently opened file. """
-# -*- coding: utf-8 -*-
 
 import textwrap
 
@@ -14,7 +13,7 @@ if TYPE_CHECKING:
     from mcomix import main
 
 
-class OnScreenDisplay(object):
+class OnScreenDisplay:
 
     """ The OSD shows information such as currently opened file, archive and
     page in a black box drawn on the bottom end of the screen.

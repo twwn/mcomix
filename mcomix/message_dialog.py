@@ -107,7 +107,7 @@ class MessageDialog(Dialog):
             # Fix "mapped without a transient parent" Gtk warning.
             from mcomix import main
             parent = main.main_window()
-        super(MessageDialog, self).__init__(
+        super().__init__(
             transient_for=parent, modal=modal,
             destroy_with_parent=destroy_with_parent)
         widgets.set_border(self, 12)
@@ -141,16 +141,22 @@ class MessageDialog(Dialog):
 
     def set_text(self, primary: str | None,
                  secondary: str | None = None) -> None:
-        """ Formats the dialog's text fields.
-        @param primary: Main text.
-        @param secondary: Descriptive text.
+        """ Say what the dialog is about, in one or two lines.
+
+        @param primary: What is being asked or reported, in bold.
+        @param secondary: What that means, under it, in ordinary type.
+
+        Both are shown as they are given; neither is markup.
         """
         if primary:
             self._primary.set_text(primary)
         if secondary:
-            # The secondary text is markup, which is what
-            # secondary-use-markup used to say.
-            self._secondary.set_markup(secondary)
+            # Plain text, not Pango markup: what goes on this line is a
+            # sentence and sometimes a file name, and a name holding an
+            # ampersand or an angle bracket is neither an entity nor a
+            # tag.  Markup that fails to parse leaves the label empty,
+            # so the whole line would be lost rather than the character.
+            self._secondary.set_text(secondary)
             self._secondary.set_visible(True)
 
     def should_remember_choice(self) -> bool:

@@ -16,7 +16,7 @@ class _Page(Gtk.ScrolledWindow):
     """
 
     def __init__(self) -> None:
-        super(_Page, self).__init__()
+        super().__init__()
         self.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
         widgets.set_border(self, 12)
 

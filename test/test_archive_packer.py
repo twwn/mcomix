@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """Packing the pages of an edited archive into a new one.
 
 The pages are renamed so that their names sort the way the editor put
@@ -18,7 +16,7 @@ from mcomix import archive_packer
 class PackerTest(MComixTest):
 
     def setUp(self):
-        super(PackerTest, self).setUp()
+        super().setUp()
         self.pages = [get_testfile_path('images', name)
                       for name in ('01-JPG-Indexed.jpg', '02-JPG-RGB.jpg',
                                    '03-PNG-RGB.png')]

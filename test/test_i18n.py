@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """Which language the interface is in, and which way it is laid out."""
 
 import glob
@@ -50,7 +48,7 @@ class LanguageTest(MComixTest):
     """install_gettext() resolves a language from one of three sources."""
 
     def setUp(self):
-        super(LanguageTest, self).setUp()
+        super().setUp()
         self._saved = (i18n._language, i18n._translation,
                        os.environ.get('LANGUAGE'))
         self._saved_locale = portability.get_default_locale
@@ -62,7 +60,7 @@ class LanguageTest(MComixTest):
             os.environ.pop('LANGUAGE', None)
         else:
             os.environ['LANGUAGE'] = language
-        super(LanguageTest, self).tearDown()
+        super().tearDown()
 
     def test_forced_language_wins(self):
         i18n.install_gettext('he')
@@ -115,14 +113,14 @@ class LayoutDirectionTest(MComixTest):
     """The interface is laid out the way its language reads."""
 
     def setUp(self):
-        super(LayoutDirectionTest, self).setUp()
+        super().setUp()
         self._saved_direction = Gtk.Widget.get_default_direction()
         self._saved_language = i18n._language
 
     def tearDown(self):
         Gtk.Widget.set_default_direction(self._saved_direction)
         i18n._language = self._saved_language
-        super(LayoutDirectionTest, self).tearDown()
+        super().tearDown()
 
     def test_a_right_to_left_language_turns_the_interface_around(self):
         Gtk.Widget.set_default_direction(Gtk.TextDirection.LTR)

@@ -23,7 +23,7 @@ class Statusbar(Gtk.Box):
     SPACING = 5
 
     def __init__(self) -> None:
-        super(Statusbar, self).__init__()
+        super().__init__()
 
         self._loading = True
 

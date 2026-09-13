@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """The Properties dialog, which is about the archive and the page.
 
 A loose image is in no archive, so there was nothing on the Archive
@@ -22,7 +20,7 @@ from mcomix import properties_dialog
 class PropertiesDialogTest(MComixTest):
 
     def setUp(self):
-        super(PropertiesDialogTest, self).setUp()
+        super().setUp()
         for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
                           constants.THUMBNAIL_PATH):
             os.makedirs(directory, exist_ok=True)
@@ -33,7 +31,7 @@ class PropertiesDialogTest(MComixTest):
             if window.get_visible():
                 window.destroy()
         pump()
-        super(PropertiesDialogTest, self).tearDown()
+        super().tearDown()
 
     def _open(self, path):
         self.window = main.MainWindow(open_path=path)

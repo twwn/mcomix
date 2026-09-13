@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+"""The prompt that asks for an encrypted archive's password."""
 
 from gi.repository import Gtk
 
@@ -22,7 +22,7 @@ def ask_for_password(archive: str,
     dialog.set_text(
         _("The archive is password-protected:"),
         archive + '\n\n' +
-        ("Please enter the password to continue:"))
+        _("Please enter the password to continue:"))
     dialog.set_default_response(Response.OK)
     dialog.set_auto_destroy(False)
 
@@ -33,6 +33,12 @@ def ask_for_password(archive: str,
     dialog.set_focus(password_box)
 
     def responded(response: int) -> None:
+        """Hand the caller what was typed, or None if it cannot be used.
+
+        An empty box counts as no password, as does cancelling: both
+        leave the archive unreadable, and the handlers tell the two
+        apart no better than the reader would.
+        """
         password = password_box.get_text()
         dialog.destroy()
         on_password(password

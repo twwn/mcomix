@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """ Tests for the "Open with" menu, which is a Gio.Menu model now. """
 
 from gi.repository import GLib, Gtk
@@ -11,7 +9,7 @@ from mcomix import openwith_menu
 from mcomix.preferences import prefs
 
 
-class _StubFileHandler(object):
+class _StubFileHandler:
 
     file_loaded = False
 
@@ -29,14 +27,14 @@ class _StubWindow(Gtk.Window):
     """A real window, so the menu's action group has somewhere to live."""
 
     def __init__(self):
-        super(_StubWindow, self).__init__()
+        super().__init__()
         self.filehandler = _StubFileHandler()
 
 
 class OpenWithMenuTest(MComixTest):
 
     def setUp(self):
-        super(OpenWithMenuTest, self).setUp()
+        super().setUp()
         self.window = _StubWindow()
         self.executed = []
         self.real_execute = openwith_menu.openwith.OpenWithCommand.execute
@@ -45,7 +43,7 @@ class OpenWithMenuTest(MComixTest):
 
     def tearDown(self):
         openwith_menu.openwith.OpenWithCommand.execute = self.real_execute
-        super(OpenWithMenuTest, self).tearDown()
+        super().tearDown()
 
     def _menu(self, commands):
         prefs['openwith commands'] = commands

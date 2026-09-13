@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """The keyboard shortcut editor in the preferences dialog.
 
 It was a Gtk.TreeStore of groups and the actions under them, drawn by a
@@ -21,7 +19,7 @@ from mcomix import keybindings_editor
 from mcomix import preferences_dialog
 
 
-class _StubUIManager(object):
+class _StubUIManager:
 
     def __init__(self):
         self.announced = []
@@ -30,7 +28,7 @@ class _StubUIManager(object):
         self.announced.append((name, accelerator))
 
 
-class _StubWindow(object):
+class _StubWindow:
 
     def __init__(self):
         self.uimanager = _StubUIManager()
@@ -42,7 +40,7 @@ class KeybindingEditorTest(MComixTest):
     OTHER = 'previous_page'
 
     def setUp(self):
-        super(KeybindingEditorTest, self).setUp()
+        super().setUp()
         os.makedirs(constants.CONFIG_DIR, exist_ok=True)
         self.window = _StubWindow()
         self.manager = keybindings._KeybindingManager(self.window)

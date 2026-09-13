@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """The list of comment files in the archive editor.
 
 It was a Gtk.TreeView over a Gtk.ListStore of three columns, the third
@@ -17,7 +15,7 @@ from . import MComixTest, pump
 from mcomix import edit_comment_area
 
 
-class _StubHandler(object):
+class _StubHandler:
 
     def __init__(self, paths):
         self._paths = paths
@@ -29,7 +27,7 @@ class _StubHandler(object):
         return self._paths[number - 1]
 
 
-class _StubDialog(object):
+class _StubDialog:
 
     def __init__(self, paths):
         self.file_handler = _StubHandler(paths)
@@ -38,7 +36,7 @@ class _StubDialog(object):
 class CommentAreaTest(MComixTest):
 
     def setUp(self):
-        super(CommentAreaTest, self).setUp()
+        super().setUp()
         self.paths = []
         for name in ('one.txt', 'two.txt', 'three.txt'):
             path = os.path.join(self.tmp_dir, name)
@@ -57,7 +55,7 @@ class CommentAreaTest(MComixTest):
         # next.
         self.window.destroy()
         pump()
-        super(CommentAreaTest, self).tearDown()
+        super().tearDown()
 
     def test_fetching_the_comments_lists_every_one_of_them(self):
         self.area.fetch_comments()

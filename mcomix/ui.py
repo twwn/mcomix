@@ -107,7 +107,7 @@ class _Choice(NamedTuple):
     value: int = 0
 
 
-class _Action(object):
+class _Action:
 
     """One of the window's actions, in the shape the rest of MComix asks
     for it.
@@ -171,7 +171,7 @@ class _Action(object):
         return bool(self._action.get_enabled())
 
 
-class _Actions(object):
+class _Actions:
 
     """The window's actions, under the names the rest of MComix uses.
 
@@ -394,7 +394,7 @@ _TOOLBAR = ('previous_archive', 'first_page', 'previous_page', 'go_to',
             'lens')
 
 
-class MainUI(object):
+class MainUI:
 
     def __init__(self, window: "main.MainWindow") -> None:
         self._window = window

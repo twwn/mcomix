@@ -1,5 +1,3 @@
-# coding: utf-8
-
 from gi.repository import GdkPixbuf, Gtk
 
 from . import MComixTest, pump
@@ -17,7 +15,7 @@ class PageCanvasTest(MComixTest):
     CONTENT = (5000, 4000)
 
     def setUp(self):
-        super(PageCanvasTest, self).setUp()
+        super().setUp()
         self.canvas = PageCanvas()
         texture = image_tools.pixbuf_to_texture(
             GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, False, 8, 300, 400))
@@ -35,7 +33,7 @@ class PageCanvasTest(MComixTest):
     def tearDown(self):
         self.window.destroy()
         pump()
-        super(PageCanvasTest, self).tearDown()
+        super().tearDown()
 
     def _settle(self):
         # A queued allocation is run from the frame clock, so give it

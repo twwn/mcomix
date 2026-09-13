@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from mcomix.library.backend import _LibraryBackend
 
 
-class _BackendObject(object):
+class _BackendObject:
 
     def get_backend(self) -> '_LibraryBackend':
         # XXX: Delayed import to avoid circular import
@@ -287,7 +287,7 @@ class _DefaultCollection(_Collection):
 DefaultCollection = _DefaultCollection()
 
 
-class _WatchList(object):
+class _WatchList:
     """ Scans watched directories and updates the database when new books have
     been added. This object is part of the library backend, i.e.
     C{library.backend.watchlist}. """

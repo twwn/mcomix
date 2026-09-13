@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """The dialog that lists the bookmarks.
 
 It was a Gtk.TreeView over a Gtk.ListStore whose sixth column held the
@@ -22,7 +20,7 @@ from mcomix import constants
 from mcomix.preferences import prefs
 
 
-class _StubFileHandler(object):
+class _StubFileHandler:
 
     archive_type = None
     _base_path = None
@@ -38,7 +36,7 @@ class _StubFileHandler(object):
 class _StubWindow(Gtk.Window):
 
     def __init__(self):
-        super(_StubWindow, self).__init__()
+        super().__init__()
         self.filehandler = _StubFileHandler()
         self.pages = []
 
@@ -49,7 +47,7 @@ class _StubWindow(Gtk.Window):
 class BookmarksDialogTest(MComixTest):
 
     def setUp(self):
-        super(BookmarksDialogTest, self).setUp()
+        super().setUp()
         os.makedirs(constants.DATA_DIR, exist_ok=True)
         self.window = _StubWindow()
         self.store = bookmark_backend.BookmarksStore
@@ -65,7 +63,7 @@ class BookmarksDialogTest(MComixTest):
             if window.get_visible():
                 window.destroy()
         pump()
-        super(BookmarksDialogTest, self).tearDown()
+        super().tearDown()
 
     def _bookmark(self, name, page, archive_type=None):
         return bookmark_menu_item._Bookmark(

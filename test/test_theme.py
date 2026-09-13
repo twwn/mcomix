@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """Following the colours a desktop theme states.
 
 A GTK4 theme states its colours as the names libadwaita reads.  Plain
@@ -63,7 +61,7 @@ class PaletteTest(MComixTest):
     _COLOUR = 'rgb(1,2,3)'
 
     def setUp(self):
-        super(PaletteTest, self).setUp()
+        super().setUp()
         self.display = Gdk.Display.get_default()
         self.user = None
         self._drop_palette()
@@ -76,7 +74,7 @@ class PaletteTest(MComixTest):
             Gtk.StyleContext.remove_provider_for_display(self.display,
                                                          self.user)
         self._drop_palette()
-        super(PaletteTest, self).tearDown()
+        super().tearDown()
 
     def _drop_stated(self):
         theme.apply_colour_scheme(theme.SYSTEM)

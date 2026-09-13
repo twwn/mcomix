@@ -23,7 +23,7 @@ class _ImageArea(Gtk.ScrolledWindow):
 
     def __init__(self, edit_dialog: "edit_dialog_module._EditArchiveDialog",
                  window: "main.MainWindow") -> None:
-        super(_ImageArea, self).__init__()
+        super().__init__()
 
         self._window = window
         self._edit_dialog = edit_dialog

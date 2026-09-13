@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """ Class for transparently handling an archive containing sub-archives. """
 
 from mcomix.archive import archive_base
@@ -17,6 +15,16 @@ MAX_NESTING_DEPTH = 10
 
 class RecursiveArchive(archive_base.BaseArchive):
 
+    """An archive and the archives inside it, as one flat listing.
+
+    Every entry is named by the path it takes through the nesting - the
+    name of the archive it was found in, then the name inside that - so
+    a caller that only ever sees these names needs to know nothing about
+    where the nesting ends.  Sub-archives are extracted to
+    <destination_dir> as they are found, since an archive has to be a
+    file on disk before a handler can open it.
+    """
+
     def __init__(self, archive: archive_base.BaseArchive, destination_dir: str) -> None:
         super().__init__(archive.archive)
         self._main_archive = archive
@@ -33,6 +41,17 @@ class RecursiveArchive(archive_base.BaseArchive):
 
     def _iter_contents(self, archive: archive_base.BaseArchive,
                        root: str | None = None, depth: int = 0) -> Iterator[str]:
+        """Yield every entry of <archive> and of the archives within it.
+
+        <root> is the name this archive is reached under, which every
+        name it holds is prefixed with, and <depth> is how many archives
+        deep it already is.
+
+        The entries of one archive are listed before any of its
+        sub-archives are opened, because extracting from an archive
+        while its own listing is still being read is what several of the
+        handlers cannot do.
+        """
         self._archive_list.append(archive)
         self._archive_root[archive] = root
         sub_archive_list: list[str] = []
@@ -79,6 +98,12 @@ class RecursiveArchive(archive_base.BaseArchive):
                 yield name
 
     def _check_concurrent_extraction_support(self) -> None:
+        """Settle whether extractions may run side by side.
+
+        Only once every archive in the nesting is known, and only if all
+        of them allow it: the answer for the whole is the answer of the
+        least capable part.
+        """
         supported = True
         # We need all archives to support concurrent extractions.
         for archive in self._archive_list:
@@ -88,6 +113,7 @@ class RecursiveArchive(archive_base.BaseArchive):
         self.support_concurrent_extractions = supported
 
     def iter_contents(self) -> Iterator[str]:
+        """Yield every entry, listing the nesting on the first call."""
         if self._contents_listed:
             for f in self._contents:
                 yield f
@@ -101,11 +127,17 @@ class RecursiveArchive(archive_base.BaseArchive):
         self._check_concurrent_extraction_support()
 
     def list_contents(self) -> list[str]:
+        """Every entry, from the listing already taken if there is one."""
         if self._contents_listed:
             return self._contents
         return list(self.iter_contents())
 
     def extract(self, filename: str, destination_dir: str) -> None:
+        """Extract <filename> from whichever archive holds it.
+
+        The listing is what says which one that is, so a caller that
+        extracts without listing first is listed for.
+        """
         if not self._contents_listed:
             self.list_contents()
         archive, name = self._entry_mapping[filename]
@@ -117,11 +149,16 @@ class RecursiveArchive(archive_base.BaseArchive):
         archive.extract(name, destination_dir)
 
     def iter_extract(self, entries: Iterable[str], destination_dir: str) -> Iterator[str]:
+        """Extract <entries>, one archive at a time, yielding as they land.
+
+        The inherited version would extract them one file at a time,
+        which costs a solid archive a pass over itself for every entry
+        asked of it.  Grouping the entries by the archive they came from
+        and handing each group to that archive's own iter_extract() is
+        one pass per archive instead.
+        """
         if not self._contents_listed:
             self.list_contents()
-        # Unfortunately we can't just rely on BaseArchive default
-        # implementation if solid archives are to be correctly supported:
-        # we need to call iter_extract (not extract) for each archive ourselves.
         wanted = set(entries)
         for archive in self._archive_list:
             archive_wanted: dict[str, str] = {}
@@ -146,15 +183,21 @@ class RecursiveArchive(archive_base.BaseArchive):
                 break
 
     def is_solid(self) -> bool:
+        """Whether any archive in the nesting is solid.
+
+        One solid archive anywhere makes the whole thing worth
+        extracting in one pass, since that archive would otherwise be
+        walked once per entry.
+        """
         if not self._contents_listed:
             self.list_contents()
-        # We're solid if at least one archive is solid.
         for archive in self._archive_list:
             if archive.is_solid():
                 return True
         return False
 
     def close(self) -> None:
+        """Close every archive in the nesting."""
         archives = list(self._archive_list)
         # The main archive only joins the list once listing has started, so
         # closing an archive that was opened but never listed needs this.

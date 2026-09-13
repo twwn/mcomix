@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-05 18:19+0200\n"
+"POT-Creation-Date: 2026-09-05 18:43+0200\n"
 "PO-Revision-Date: 2018-05-10 22:46+0900\n"
 "Last-Translator: Minho Jeung <jeungmh@gmail.com>\n"
 "Language-Team: \n"
@@ -14,21 +14,21 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Poedit 2.0.4\n"
 
-#: mcomix/about_dialog.py:37
+#: mcomix/about_dialog.py:36
 #, python-format
 msgid "%s is an image viewer specifically designed to handle comic books."
 msgstr "%s는 만화책 전문 이미지 뷰어입니다."
 
-#: mcomix/about_dialog.py:39
+#: mcomix/about_dialog.py:38
 msgid "It reads ZIP, RAR and tar archives, as well as plain image files."
 msgstr "ZIP, RAR, tar 압축파일 등과 일반 이미지 파일을 읽습니다."
 
-#: mcomix/about_dialog.py:43
+#: mcomix/about_dialog.py:42
 #, python-format
 msgid "%s is licensed under the terms of the GNU General Public License."
 msgstr "%s는 GNU General Public License를 따릅니다."
 
-#: mcomix/about_dialog.py:45
+#: mcomix/about_dialog.py:44
 #, python-format
 msgid "A copy of this license can be obtained from %s"
 msgstr "라이센스의 전문은 %s 에서 볼 수 있습니다"
@@ -112,9 +112,9 @@ msgstr "책갈피 편집"
 msgid "_Remove"
 msgstr "제거(_R)"
 
-#: mcomix/bookmark_dialog.py:32 mcomix/comment_dialog.py:24
-#: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:67
-#: mcomix/properties_dialog.py:35 mcomix/ui.py:443
+#: mcomix/bookmark_dialog.py:32 mcomix/comment_dialog.py:23
+#: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:64
+#: mcomix/properties_dialog.py:34 mcomix/ui.py:443
 #: mcomix/library/watchlist.py:33
 msgid "_Close"
 msgstr "닫기(_C)"
@@ -124,7 +124,7 @@ msgid "Type"
 msgstr "유형"
 
 #: mcomix/bookmark_dialog.py:57 mcomix/edit_comment_area.py:38
-#: mcomix/keybindings_editor.py:46
+#: mcomix/keybindings_editor.py:44
 msgid "Name"
 msgstr "이름"
 
@@ -133,7 +133,7 @@ msgstr "이름"
 msgid "Page"
 msgstr "페이지"
 
-#: mcomix/bookmark_dialog.py:63 mcomix/properties_dialog.py:150
+#: mcomix/bookmark_dialog.py:63 mcomix/properties_dialog.py:149
 msgid "Location"
 msgstr "위치"
 
@@ -149,7 +149,7 @@ msgstr "책갈피 추가(_B)"
 msgid "_Edit Bookmarks..."
 msgstr "책갈피 편집...(_E)"
 
-#: mcomix/callback.py:84
+#: mcomix/callback.py:82
 #, python-format
 msgid "! Callback %(function)r failed: %(error)s"
 msgstr "! 콜백 %(function)r 실패: %(error)s"
@@ -158,11 +158,11 @@ msgstr "! 콜백 %(function)r 실패: %(error)s"
 msgid "New accelerator..."
 msgstr ""
 
-#: mcomix/comment_dialog.py:23 mcomix/preferences_dialog.py:390
+#: mcomix/comment_dialog.py:22 mcomix/preferences_dialog.py:388
 msgid "Comments"
 msgstr "주석"
 
-#: mcomix/comment_dialog.py:102
+#: mcomix/comment_dialog.py:101
 #, python-format
 msgid "Could not read %s"
 msgstr "%s을(를) 읽을 수 없습니다"
@@ -175,7 +175,7 @@ msgstr ""
 "참고: 압축파일 내 MComix가 주석으로 인식한 파일만 \n"
 "이 목록에 자동으로 추가합니다."
 
-#: mcomix/edit_comment_area.py:39 mcomix/properties_dialog.py:163
+#: mcomix/edit_comment_area.py:39 mcomix/properties_dialog.py:162
 msgid "Size"
 msgstr "크기"
 
@@ -183,7 +183,7 @@ msgstr "크기"
 msgid "Remove from archive"
 msgstr "압축파일에서 제거"
 
-#: mcomix/edit_dialog.py:49 mcomix/keybindings.py:147
+#: mcomix/edit_dialog.py:49 mcomix/keybindings.py:145
 msgid "Edit archive"
 msgstr "압축파일 편집"
 
@@ -207,80 +207,90 @@ msgstr "이미지"
 msgid "Comment files"
 msgstr "주석 파일"
 
-#: mcomix/edit_dialog.py:177
+#: mcomix/edit_dialog.py:157
+#, fuzzy, python-format
+msgid "! Could not save the archive %(archivefile)s: %(error)s"
+msgstr "! 다음 경로에 압축파일을 생성할 수 없습니다: \"%s\""
+
+#: mcomix/edit_dialog.py:173
+#, fuzzy, python-format
+msgid "! Could not remove %(file)s: %(error)s"
+msgstr "! 다음 파일을 제거할 수 없습니다: \"%s\""
+
+#: mcomix/edit_dialog.py:179
 msgid "The new archive could not be saved!"
 msgstr "새 압축파일을 저장할 수 없습니다!"
 
-#: mcomix/edit_dialog.py:178
+#: mcomix/edit_dialog.py:180
 msgid "The original files have not been removed."
 msgstr "원본 파일이 제거되지 않았습니다."
 
-#: mcomix/edit_dialog.py:212
+#: mcomix/edit_dialog.py:214
 msgid "Archives are stored as ZIP files."
 msgstr "ZIP 압축파일로 저장되어 있습니다."
 
-#: mcomix/enhance_dialog.py:28 mcomix/keybindings.py:149
+#: mcomix/enhance_dialog.py:27 mcomix/keybindings.py:147
 msgid "Enhance image"
 msgstr "이미지 보정"
 
-#: mcomix/enhance_dialog.py:32
+#: mcomix/enhance_dialog.py:31
 msgid "_Revert"
 msgstr "되돌리기(_R)"
 
-#: mcomix/enhance_dialog.py:33
+#: mcomix/enhance_dialog.py:32
 msgid "Reset to defaults."
 msgstr "기본값으로 리셋."
 
-#: mcomix/enhance_dialog.py:35 mcomix/file_chooser_base_dialog.py:102
+#: mcomix/enhance_dialog.py:34 mcomix/file_chooser_base_dialog.py:102
 #: mcomix/openwith.py:340
 msgid "_Save"
 msgstr "저장(_S)"
 
-#: mcomix/enhance_dialog.py:36
+#: mcomix/enhance_dialog.py:35
 msgid "Save the selected values as default for future files."
 msgstr "앞으로를 위해 선택한 값을 기본값으로 저장."
 
-#: mcomix/enhance_dialog.py:38 mcomix/message_dialog.py:24
+#: mcomix/enhance_dialog.py:37 mcomix/message_dialog.py:24
 #: mcomix/message_dialog.py:30
 msgid "_OK"
 msgstr "확인(_O)"
 
-#: mcomix/enhance_dialog.py:81
+#: mcomix/enhance_dialog.py:80
 msgid "_Brightness:"
 msgstr "명도:"
 
-#: mcomix/enhance_dialog.py:82
+#: mcomix/enhance_dialog.py:81
 msgid "_Contrast:"
 msgstr "대비:"
 
-#: mcomix/enhance_dialog.py:83
+#: mcomix/enhance_dialog.py:82
 msgid "S_aturation:"
 msgstr "채도:"
 
-#: mcomix/enhance_dialog.py:84
+#: mcomix/enhance_dialog.py:83
 msgid "S_harpness:"
 msgstr "선명도:"
 
-#: mcomix/enhance_dialog.py:89
+#: mcomix/enhance_dialog.py:88
 msgid "_Automatically adjust contrast"
 msgstr "자동으로 명암 조정(_A)"
 
-#: mcomix/enhance_dialog.py:91
+#: mcomix/enhance_dialog.py:90
 msgid ""
 "Automatically adjust contrast (both lightness and darkness), separately for "
 "each colour band."
 msgstr "각 색 대역마다 따로 자동으로 명암 대비를 조정합니다."
 
-#: mcomix/enhance_dialog.py:96 mcomix/ui.py:492
+#: mcomix/enhance_dialog.py:95 mcomix/ui.py:492
 #, fuzzy
 msgid "_Invert image colors"
 msgstr "스마트 스크롤 방향 뒤집기"
 
-#: mcomix/enhance_dialog.py:98
+#: mcomix/enhance_dialog.py:97
 msgid "Invert (negate) image colors."
 msgstr ""
 
-#: mcomix/file_chooser_base_dialog.py:95 mcomix/keybindings.py:148
+#: mcomix/file_chooser_base_dialog.py:95 mcomix/keybindings.py:146
 msgid "Open"
 msgstr "열기"
 
@@ -292,34 +302,34 @@ msgstr "열기(_O)"
 msgid "Save"
 msgstr "저장"
 
-#: mcomix/file_chooser_base_dialog.py:206
+#: mcomix/file_chooser_base_dialog.py:205
 msgid "All files"
 msgstr "모든 파일"
 
-#: mcomix/file_chooser_base_dialog.py:459
+#: mcomix/file_chooser_base_dialog.py:458
 msgid "All archives"
 msgstr "모든 압축파일"
 
-#: mcomix/file_chooser_base_dialog.py:459
+#: mcomix/file_chooser_base_dialog.py:458
 #, python-format
 msgid "%s archives"
 msgstr "%s archives"
 
-#: mcomix/file_chooser_base_dialog.py:465
+#: mcomix/file_chooser_base_dialog.py:464
 msgid "All images"
 msgstr "모든 이미지"
 
-#: mcomix/file_chooser_base_dialog.py:465
+#: mcomix/file_chooser_base_dialog.py:464
 #, python-format
 msgid "%s images"
 msgstr "%s images"
 
-#: mcomix/file_chooser_base_dialog.py:575
+#: mcomix/file_chooser_base_dialog.py:574
 #, python-format
 msgid "A file named '%s' already exists. Do you want to replace it?"
 msgstr "'%s' 파일이 이미 있습니다. 덮어씌우시겠습니까?"
 
-#: mcomix/file_chooser_base_dialog.py:577
+#: mcomix/file_chooser_base_dialog.py:576
 msgid "Replacing it will overwrite its contents."
 msgstr "내용을 덮어씁니다."
 
@@ -342,7 +352,7 @@ msgstr "다음 디렉토리에 파일이 없습니다: '%s'"
 msgid "Could not open %s: No such file."
 msgstr "%s을(를) 열 수 없습니다.: 파일이 존재하지 않습니다."
 
-#: mcomix/file_handler.py:331 mcomix/file_provider.py:141
+#: mcomix/file_handler.py:331 mcomix/file_provider.py:140
 #, python-format
 msgid "Could not open %s: Permission denied."
 msgstr "%s을(를) 열 수 없습니다.: 접근 권한이 거부되었습니다."
@@ -368,7 +378,7 @@ msgstr ""
 msgid "! Corrupt preferences file \"%s\", deleting..."
 msgstr "! 환경설정 파일 \"%s\"이(가) 손상되었습니다. 삭제하는중..."
 
-#: mcomix/file_provider.py:110
+#: mcomix/file_provider.py:109
 #, python-format
 msgid "Invalid path: '%s'"
 msgstr "유효하지 않은 경로: '%s'"
@@ -377,381 +387,381 @@ msgstr "유효하지 않은 경로: '%s'"
 msgid "Unknown filetype"
 msgstr "알 수 없는 파일 형식"
 
-#: mcomix/keybindings_editor.py:49
+#: mcomix/keybindings_editor.py:47
 #, python-format
 msgid "Key %d"
 msgstr "키 %d"
 
-#: mcomix/keybindings.py:51 mcomix/ui.py:429
+#: mcomix/keybindings.py:49 mcomix/ui.py:429
 msgid "Previous page"
 msgstr "이전 페이지"
 
-#: mcomix/keybindings.py:51 mcomix/keybindings.py:52 mcomix/keybindings.py:53
-#: mcomix/keybindings.py:54 mcomix/keybindings.py:55 mcomix/keybindings.py:56
-#: mcomix/keybindings.py:57 mcomix/keybindings.py:58 mcomix/keybindings.py:60
-#: mcomix/keybindings.py:61 mcomix/keybindings.py:62 mcomix/keybindings.py:64
-#: mcomix/keybindings.py:65 mcomix/keybindings.py:66 mcomix/keybindings.py:67
+#: mcomix/keybindings.py:49 mcomix/keybindings.py:50 mcomix/keybindings.py:51
+#: mcomix/keybindings.py:52 mcomix/keybindings.py:53 mcomix/keybindings.py:54
+#: mcomix/keybindings.py:55 mcomix/keybindings.py:56 mcomix/keybindings.py:58
+#: mcomix/keybindings.py:59 mcomix/keybindings.py:60 mcomix/keybindings.py:62
+#: mcomix/keybindings.py:63 mcomix/keybindings.py:64 mcomix/keybindings.py:65
 msgid "Navigation"
 msgstr "내비게이션"
 
-#: mcomix/keybindings.py:52 mcomix/ui.py:428
+#: mcomix/keybindings.py:50 mcomix/ui.py:428
 msgid "Next page"
 msgstr "다음 페이지"
 
-#: mcomix/keybindings.py:53
+#: mcomix/keybindings.py:51
 msgid "Back 10 pages"
 msgstr "10 페이지 이전으로"
 
-#: mcomix/keybindings.py:54
+#: mcomix/keybindings.py:52
 msgid "Forward 10 pages"
 msgstr "10 페이지 다음으로"
 
-#: mcomix/keybindings.py:55
+#: mcomix/keybindings.py:53
 msgid "Page to the left"
 msgstr "이전 페이지 (계속해서)"
 
-#: mcomix/keybindings.py:56
+#: mcomix/keybindings.py:54
 msgid "Page to the right"
 msgstr "다음 페이지 (계속해서)"
 
-#: mcomix/keybindings.py:57
+#: mcomix/keybindings.py:55
 msgid "Previous single page"
 msgstr "이전 페이지 (한장씩)"
 
-#: mcomix/keybindings.py:58
+#: mcomix/keybindings.py:56
 msgid "Next single page"
 msgstr "다음 페이지(한장씩)"
 
-#: mcomix/keybindings.py:60 mcomix/ui.py:430
+#: mcomix/keybindings.py:58 mcomix/ui.py:430
 msgid "First page"
 msgstr "처음 페이지"
 
-#: mcomix/keybindings.py:61 mcomix/ui.py:431
+#: mcomix/keybindings.py:59 mcomix/ui.py:431
 msgid "Last page"
 msgstr "마지막 페이지"
 
-#: mcomix/keybindings.py:62
+#: mcomix/keybindings.py:60
 msgid "Go to page"
 msgstr "특정 페이지 바로가기"
 
-#: mcomix/keybindings.py:64 mcomix/ui.py:435
+#: mcomix/keybindings.py:62 mcomix/ui.py:435
 msgid "Next archive"
 msgstr "다음 압축파일"
 
-#: mcomix/keybindings.py:65 mcomix/ui.py:436
+#: mcomix/keybindings.py:63 mcomix/ui.py:436
 msgid "Previous archive"
 msgstr "이전 압축파일"
 
-#: mcomix/keybindings.py:66 mcomix/ui.py:437
+#: mcomix/keybindings.py:64 mcomix/ui.py:437
 msgid "Next directory"
 msgstr "다음 디렉토리"
 
-#: mcomix/keybindings.py:67 mcomix/ui.py:438
+#: mcomix/keybindings.py:65 mcomix/ui.py:438
 msgid "Previous directory"
 msgstr "이전 디렉토리"
 
-#: mcomix/keybindings.py:70
+#: mcomix/keybindings.py:68
 msgid "Align bottom left"
 msgstr "왼쪽 아래로 스크롤"
 
-#: mcomix/keybindings.py:70 mcomix/keybindings.py:71 mcomix/keybindings.py:72
-#: mcomix/keybindings.py:74 mcomix/keybindings.py:75 mcomix/keybindings.py:76
-#: mcomix/keybindings.py:78 mcomix/keybindings.py:79 mcomix/keybindings.py:80
-#: mcomix/keybindings.py:82 mcomix/keybindings.py:83 mcomix/keybindings.py:84
-#: mcomix/keybindings.py:85 mcomix/keybindings.py:87 mcomix/keybindings.py:88
-#: mcomix/preferences_dialog.py:182
+#: mcomix/keybindings.py:68 mcomix/keybindings.py:69 mcomix/keybindings.py:70
+#: mcomix/keybindings.py:72 mcomix/keybindings.py:73 mcomix/keybindings.py:74
+#: mcomix/keybindings.py:76 mcomix/keybindings.py:77 mcomix/keybindings.py:78
+#: mcomix/keybindings.py:80 mcomix/keybindings.py:81 mcomix/keybindings.py:82
+#: mcomix/keybindings.py:83 mcomix/keybindings.py:85 mcomix/keybindings.py:86
+#: mcomix/preferences_dialog.py:179
 msgid "Scroll"
 msgstr "스크롤"
 
-#: mcomix/keybindings.py:71
+#: mcomix/keybindings.py:69
 msgid "Align bottom center"
 msgstr "가운데 아래로 스크롤"
 
-#: mcomix/keybindings.py:72
+#: mcomix/keybindings.py:70
 msgid "Align bottom right"
 msgstr "오른쪽 아래로 스크롤"
 
-#: mcomix/keybindings.py:74
+#: mcomix/keybindings.py:72
 msgid "Align middle left"
 msgstr "왼쪽 가운데로 스크롤"
 
-#: mcomix/keybindings.py:75
+#: mcomix/keybindings.py:73
 msgid "Align center"
 msgstr "가운데로 스크롤"
 
-#: mcomix/keybindings.py:76
+#: mcomix/keybindings.py:74
 msgid "Align middle right"
 msgstr "오른쪽 가운데로 스크롤"
 
-#: mcomix/keybindings.py:78
+#: mcomix/keybindings.py:76
 msgid "Align top left"
 msgstr "왼쪽 위로 스크롤"
 
-#: mcomix/keybindings.py:79
+#: mcomix/keybindings.py:77
 msgid "Align top center"
 msgstr "가운데 위로 스크롤"
 
-#: mcomix/keybindings.py:80
+#: mcomix/keybindings.py:78
 msgid "Align top right"
 msgstr "오른쪽 위로 스크롤"
 
-#: mcomix/keybindings.py:82
+#: mcomix/keybindings.py:80
 msgid "Scroll down"
 msgstr "아래로 스크롤"
 
-#: mcomix/keybindings.py:83
+#: mcomix/keybindings.py:81
 msgid "Scroll up"
 msgstr "위로 스크롤"
 
-#: mcomix/keybindings.py:84
+#: mcomix/keybindings.py:82
 msgid "Scroll right"
 msgstr "오른쪽으로 스크롤"
 
-#: mcomix/keybindings.py:85
+#: mcomix/keybindings.py:83
 msgid "Scroll left"
 msgstr "왼쪽으로 스크롤"
 
-#: mcomix/keybindings.py:87
+#: mcomix/keybindings.py:85
 msgid "Smart scroll up"
 msgstr "위로 스마트 스크롤"
 
-#: mcomix/keybindings.py:88
+#: mcomix/keybindings.py:86
 msgid "Smart scroll down"
 msgstr "아래로 스마트 스크롤"
 
-#: mcomix/keybindings.py:91
+#: mcomix/keybindings.py:89
 msgid "Zoom in"
 msgstr "확대"
 
-#: mcomix/keybindings.py:91 mcomix/keybindings.py:92 mcomix/keybindings.py:93
+#: mcomix/keybindings.py:89 mcomix/keybindings.py:90 mcomix/keybindings.py:91
 msgid "Zoom"
 msgstr "확대/축소"
 
-#: mcomix/keybindings.py:92
+#: mcomix/keybindings.py:90
 msgid "Zoom out"
 msgstr "축소"
 
-#: mcomix/keybindings.py:93
+#: mcomix/keybindings.py:91
 msgid "Normal size"
 msgstr "원래 크기"
 
-#: mcomix/keybindings.py:95
+#: mcomix/keybindings.py:93
 msgid "Keep transformation"
 msgstr "회전 상태 유지"
 
-#: mcomix/keybindings.py:95 mcomix/keybindings.py:96 mcomix/keybindings.py:97
-#: mcomix/keybindings.py:98 mcomix/keybindings.py:99 mcomix/keybindings.py:100
-#: mcomix/keybindings.py:101
+#: mcomix/keybindings.py:93 mcomix/keybindings.py:94 mcomix/keybindings.py:95
+#: mcomix/keybindings.py:96 mcomix/keybindings.py:97 mcomix/keybindings.py:98
+#: mcomix/keybindings.py:99
 msgid "Transformation"
 msgstr "이미지 변형"
 
-#: mcomix/keybindings.py:96 mcomix/keybindings.py:103 mcomix/keybindings.py:105
+#: mcomix/keybindings.py:94 mcomix/keybindings.py:101 mcomix/keybindings.py:103
 msgid "Rotate 90° CW"
 msgstr "시계방향 90도 회전"
 
-#: mcomix/keybindings.py:97
+#: mcomix/keybindings.py:95
 msgid "Rotate 180°"
 msgstr "180도 회전"
 
-#: mcomix/keybindings.py:98 mcomix/keybindings.py:104 mcomix/keybindings.py:106
+#: mcomix/keybindings.py:96 mcomix/keybindings.py:102 mcomix/keybindings.py:104
 msgid "Rotate 90° CCW"
 msgstr "반시계방향 90도 회전"
 
-#: mcomix/keybindings.py:99
+#: mcomix/keybindings.py:97
 msgid "Flip horizontally"
 msgstr "좌우 뒤집기"
 
-#: mcomix/keybindings.py:100
+#: mcomix/keybindings.py:98
 msgid "Flip vertically"
 msgstr "상하 뒤집기"
 
-#: mcomix/keybindings.py:101
+#: mcomix/keybindings.py:99
 msgid "Never autorotate"
 msgstr "자동 회전 하지 않음"
 
-#: mcomix/keybindings.py:103 mcomix/keybindings.py:104
+#: mcomix/keybindings.py:101 mcomix/keybindings.py:102
 msgid "Autorotate by width"
 msgstr "가로 길이에 따라 자동 회전"
 
-#: mcomix/keybindings.py:105 mcomix/keybindings.py:106
+#: mcomix/keybindings.py:103 mcomix/keybindings.py:104
 msgid "Autorotate by height"
 msgstr "세로 길이에 따라 자동 회전"
 
-#: mcomix/keybindings.py:108 mcomix/preferences_dialog.py:238 mcomix/ui.py:477
+#: mcomix/keybindings.py:106 mcomix/preferences_dialog.py:235 mcomix/ui.py:477
 msgid "Double page mode"
 msgstr "단면/양면 보기"
 
-#: mcomix/keybindings.py:108 mcomix/keybindings.py:109
-#: mcomix/keybindings.py:110 mcomix/keybindings.py:112
-#: mcomix/keybindings.py:113 mcomix/keybindings.py:115
+#: mcomix/keybindings.py:106 mcomix/keybindings.py:107
+#: mcomix/keybindings.py:108 mcomix/keybindings.py:110
+#: mcomix/keybindings.py:111 mcomix/keybindings.py:113
+#: mcomix/keybindings.py:114 mcomix/keybindings.py:115
 #: mcomix/keybindings.py:116 mcomix/keybindings.py:117
-#: mcomix/keybindings.py:118 mcomix/keybindings.py:119
 msgid "View mode"
 msgstr "보기 모드"
 
-#: mcomix/keybindings.py:109 mcomix/ui.py:484
+#: mcomix/keybindings.py:107 mcomix/ui.py:484
 msgid "Manga mode"
 msgstr "일본만화 페이지순 보기"
 
-#: mcomix/keybindings.py:110 mcomix/ui.py:485
+#: mcomix/keybindings.py:108 mcomix/ui.py:485
 msgid "Invert smart scroll"
 msgstr "스마트 스크롤 방향 뒤집기"
 
-#: mcomix/keybindings.py:112 mcomix/ui.py:489
+#: mcomix/keybindings.py:110 mcomix/ui.py:489
 msgid "Magnifying lens"
 msgstr "돋보기"
 
-#: mcomix/keybindings.py:113 mcomix/ui.py:490
+#: mcomix/keybindings.py:111 mcomix/ui.py:490
 msgid "Stretch small images"
 msgstr "작은 이미지 늘려서 표시"
 
-#: mcomix/keybindings.py:115 mcomix/ui.py:497
+#: mcomix/keybindings.py:113 mcomix/ui.py:497
 msgid "Best fit mode"
 msgstr "최적 맞춤"
 
-#: mcomix/keybindings.py:116 mcomix/ui.py:498
+#: mcomix/keybindings.py:114 mcomix/ui.py:498
 msgid "Fit width mode"
 msgstr "가로길이 맞춤"
 
-#: mcomix/keybindings.py:117 mcomix/ui.py:499
+#: mcomix/keybindings.py:115 mcomix/ui.py:499
 msgid "Fit height mode"
 msgstr "세로길이 맞춤"
 
-#: mcomix/keybindings.py:118
+#: mcomix/keybindings.py:116
 msgid "Fit size mode"
 msgstr "원본 크기 보기"
 
-#: mcomix/keybindings.py:119 mcomix/ui.py:501
+#: mcomix/keybindings.py:117 mcomix/ui.py:501
 msgid "Manual zoom mode"
 msgstr "수동 확대/축소 조절"
 
-#: mcomix/keybindings.py:122
+#: mcomix/keybindings.py:120
 msgid "Leave fullscreen"
 msgstr "전체화면에서 나가기"
 
-#: mcomix/keybindings.py:122 mcomix/keybindings.py:124
+#: mcomix/keybindings.py:120 mcomix/keybindings.py:122
+#: mcomix/keybindings.py:123 mcomix/keybindings.py:124
 #: mcomix/keybindings.py:125 mcomix/keybindings.py:126
 #: mcomix/keybindings.py:127 mcomix/keybindings.py:128
 #: mcomix/keybindings.py:129 mcomix/keybindings.py:130
-#: mcomix/keybindings.py:131 mcomix/keybindings.py:132
-#: mcomix/keybindings.py:133 mcomix/preferences_dialog.py:124
+#: mcomix/keybindings.py:131 mcomix/preferences_dialog.py:121
 msgid "User interface"
 msgstr "사용자 인터페이스"
 
-#: mcomix/keybindings.py:124
+#: mcomix/keybindings.py:122
 msgid "OSD panel"
 msgstr "OSD 패널 보이기"
 
-#: mcomix/keybindings.py:125
+#: mcomix/keybindings.py:123
 msgid "Minimize"
 msgstr "최소화"
 
-#: mcomix/keybindings.py:126 mcomix/preferences_dialog.py:283
+#: mcomix/keybindings.py:124 mcomix/preferences_dialog.py:281
 msgid "Fullscreen"
 msgstr "전체화면"
 
-#: mcomix/keybindings.py:127
+#: mcomix/keybindings.py:125
 msgid "Toolbar"
 msgstr "도구(T)"
 
-#: mcomix/keybindings.py:128
+#: mcomix/keybindings.py:126
 msgid "Menubar"
 msgstr "메뉴바(M)"
 
-#: mcomix/keybindings.py:129
+#: mcomix/keybindings.py:127
 msgid "Statusbar"
 msgstr "상태바(A)"
 
-#: mcomix/keybindings.py:130
+#: mcomix/keybindings.py:128
 msgid "Scrollbars"
 msgstr "스크롤바(C)"
 
-#: mcomix/keybindings.py:131 mcomix/preferences_dialog.py:148
+#: mcomix/keybindings.py:129 mcomix/preferences_dialog.py:145
 msgid "Thumbnails"
 msgstr "썸네일(미리보기)"
 
-#: mcomix/keybindings.py:132
+#: mcomix/keybindings.py:130
 msgid "Hide all"
 msgstr "모두 숨김(I)"
 
-#: mcomix/keybindings.py:133 mcomix/slideshow.py:53 mcomix/ui.py:488
+#: mcomix/keybindings.py:131 mcomix/slideshow.py:53 mcomix/ui.py:488
 msgid "Start slideshow"
 msgstr "슬라이드쇼 시작"
 
-#: mcomix/keybindings.py:136
+#: mcomix/keybindings.py:134
 msgid "Delete"
 msgstr "삭제"
 
+#: mcomix/keybindings.py:134 mcomix/keybindings.py:135
 #: mcomix/keybindings.py:136 mcomix/keybindings.py:137
 #: mcomix/keybindings.py:138 mcomix/keybindings.py:139
-#: mcomix/keybindings.py:140 mcomix/keybindings.py:141
-#: mcomix/keybindings.py:143 mcomix/keybindings.py:144
-#: mcomix/keybindings.py:145 mcomix/keybindings.py:147
+#: mcomix/keybindings.py:141 mcomix/keybindings.py:142
+#: mcomix/keybindings.py:143 mcomix/keybindings.py:145
+#: mcomix/keybindings.py:146 mcomix/keybindings.py:147
 #: mcomix/keybindings.py:148 mcomix/keybindings.py:149
-#: mcomix/keybindings.py:150 mcomix/keybindings.py:151
 msgid "File"
 msgstr "파일"
 
-#: mcomix/keybindings.py:137
+#: mcomix/keybindings.py:135
 msgid "Refresh"
 msgstr "새로 고침"
 
-#: mcomix/keybindings.py:138
+#: mcomix/keybindings.py:136
 msgid "Close"
 msgstr "닫기"
 
-#: mcomix/keybindings.py:139
+#: mcomix/keybindings.py:137
 msgid "Quit"
 msgstr "종료"
 
-#: mcomix/keybindings.py:140
+#: mcomix/keybindings.py:138
 msgid "Save and quit"
 msgstr "저장하고 종료"
 
-#: mcomix/keybindings.py:141
+#: mcomix/keybindings.py:139
 msgid "Save As"
 msgstr "다른 이름으로 저장"
 
-#: mcomix/keybindings.py:143
+#: mcomix/keybindings.py:141
 msgid "Archive comments"
 msgstr "압축파일 주석"
 
-#: mcomix/keybindings.py:144 mcomix/properties_dialog.py:34
+#: mcomix/keybindings.py:142 mcomix/properties_dialog.py:33
 msgid "Properties"
 msgstr "등록정보"
 
-#: mcomix/keybindings.py:145 mcomix/preferences_dialog.py:63
+#: mcomix/keybindings.py:143 mcomix/preferences_dialog.py:60
 msgid "Preferences"
 msgstr "환경설정"
 
-#: mcomix/keybindings.py:150 mcomix/library/main_dialog.py:45
+#: mcomix/keybindings.py:148 mcomix/library/main_dialog.py:45
 msgid "Library"
 msgstr "라이브러리"
 
-#: mcomix/keybindings.py:151 mcomix/ui.py:492
+#: mcomix/keybindings.py:149 mcomix/ui.py:492
 #, fuzzy
 msgid "Invert image colors"
 msgstr "스마트 스크롤 방향 뒤집기"
 
-#: mcomix/keybindings.py:159 mcomix/openwith.py:522
+#: mcomix/keybindings.py:157 mcomix/openwith.py:522
 msgid "Command"
 msgstr "명령어"
 
-#: mcomix/keybindings.py:160
+#: mcomix/keybindings.py:158
 msgid "External commands"
 msgstr "외부 명령"
 
-#: mcomix/keybindings.py:225
+#: mcomix/keybindings.py:223
 #, python-format
 msgid "Keybinding for \"%(action)s\" overrides hotkey for another action."
 msgstr "\"%(action)s\"에 할당한 키는 다른 동작의 단축키보다 우선 동작합니다."
 
-#: mcomix/keybindings.py:345
+#: mcomix/keybindings.py:343
 #, python-format
 msgid "Couldn't load keybindings: %s"
 msgstr "키 설정을 불러오지 못했습니다.: %s"
 
-#: mcomix/last_read_page.py:234 mcomix/thumbnail_tools.py:120
+#: mcomix/last_read_page.py:232 mcomix/thumbnail_tools.py:120
 #: mcomix/library/book_area.py:635
 #, python-format
 msgid "! Could not remove file \"%s\""
@@ -944,6 +954,11 @@ msgstr ""
 "편집한 외부 명령어 목록이 저장되지 않았습니다. \"예\" 를 누르면 저장하고 \"아"
 "니오\" 를 누르면 버립니다."
 
+#: mcomix/page_image.py:170
+#, fuzzy, python-format
+msgid "! Could not draw the next frame: %s"
+msgstr "이름을 변경하지 못했습니다. '%s'."
+
 #: mcomix/pageselect.py:29 mcomix/ui.py:432
 msgid "Go to page..."
 msgstr "페이지 바로가기..."
@@ -957,39 +972,39 @@ msgstr "바로가기(_G)"
 msgid " of %s"
 msgstr " %s 의"
 
-#: mcomix/preferences_dialog.py:90
+#: mcomix/preferences_dialog.py:87
 msgid "Appearance"
 msgstr "보기"
 
-#: mcomix/preferences_dialog.py:91
+#: mcomix/preferences_dialog.py:88
 msgid "Behaviour"
 msgstr "일반"
 
-#: mcomix/preferences_dialog.py:92
+#: mcomix/preferences_dialog.py:89
 msgid "Display"
 msgstr "표시"
 
-#: mcomix/preferences_dialog.py:93
+#: mcomix/preferences_dialog.py:90
 msgid "Advanced"
 msgstr "고급"
 
-#: mcomix/preferences_dialog.py:110
+#: mcomix/preferences_dialog.py:107
 msgid "Shortcuts"
 msgstr "바로가기"
 
-#: mcomix/preferences_dialog.py:126
+#: mcomix/preferences_dialog.py:123
 msgid "Language (needs restart):"
 msgstr "언어(재시작 필요):"
 
-#: mcomix/preferences_dialog.py:129
+#: mcomix/preferences_dialog.py:126
 msgid "Theme:"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:133
+#: mcomix/preferences_dialog.py:130
 msgid "Escape key closes program"
 msgstr "ESC 키로 프로그램 종료"
 
-#: mcomix/preferences_dialog.py:134
+#: mcomix/preferences_dialog.py:131
 msgid ""
 "When active, the ESC key closes the program, instead of only disabling "
 "fullscreen mode."
@@ -997,58 +1012,58 @@ msgstr ""
 "체크할 경우 ESC 키를 누르면 프로그램을 종료합니다. \n"
 "체크 해제 시는 풀스크린 모드 종료 기능입니다."
 
-#: mcomix/preferences_dialog.py:137
+#: mcomix/preferences_dialog.py:134
 msgid "Background"
 msgstr "배경색"
 
-#: mcomix/preferences_dialog.py:140
+#: mcomix/preferences_dialog.py:137
 msgid "Use this colour as background:"
 msgstr "배경색:"
 
-#: mcomix/preferences_dialog.py:141
+#: mcomix/preferences_dialog.py:138
 msgid "Always use this selected colour as the background colour."
 msgstr "이 색을 항상 배경색으로 사용합니다."
 
-#: mcomix/preferences_dialog.py:142 mcomix/preferences_dialog.py:153
+#: mcomix/preferences_dialog.py:139 mcomix/preferences_dialog.py:150
 msgid "Use dynamic background colour"
 msgstr "배경색을 자동으로 선택"
 
-#: mcomix/preferences_dialog.py:144
+#: mcomix/preferences_dialog.py:141
 msgid "Automatically pick a background colour that fits the viewed image."
 msgstr "자동으로 이미지에 맞는 배경색을 선택."
 
-#: mcomix/preferences_dialog.py:151
+#: mcomix/preferences_dialog.py:148
 #, fuzzy
 msgid "Use this colour as the thumbnail background:"
 msgstr "배경색:"
 
-#: mcomix/preferences_dialog.py:152
+#: mcomix/preferences_dialog.py:149
 msgid "Always use this selected colour as the thumbnail background colour."
 msgstr "이 색을 항상 미리보기 배경색으로 사용합니다."
 
-#: mcomix/preferences_dialog.py:155
+#: mcomix/preferences_dialog.py:152
 msgid ""
 "Automatically use the colour that fits the viewed image for the thumbnail "
 "background."
 msgstr "자동으로 미리보기에 맞는 배경색을 선택."
 
-#: mcomix/preferences_dialog.py:160
+#: mcomix/preferences_dialog.py:157
 msgid "Show page numbers on thumbnails"
 msgstr "미리보기 페이지 번호 보기"
 
-#: mcomix/preferences_dialog.py:163
+#: mcomix/preferences_dialog.py:160
 msgid "Thumbnail size (in pixels):"
 msgstr "미리보기 크기(픽셀)"
 
-#: mcomix/preferences_dialog.py:167
+#: mcomix/preferences_dialog.py:164
 msgid "Transparency"
 msgstr "투명도"
 
-#: mcomix/preferences_dialog.py:170
+#: mcomix/preferences_dialog.py:167
 msgid "Use checkered background for transparent images"
 msgstr "투명한 이미지에 체크무늬 이미지를 사용"
 
-#: mcomix/preferences_dialog.py:172
+#: mcomix/preferences_dialog.py:169
 msgid ""
 "Use a grey checkered background for transparent images. If this preference "
 "is unset, the background is plain white instead."
@@ -1056,11 +1071,11 @@ msgstr ""
 "투명한 이미지에 회색 체크무늬 이미지를 배경으로 사용합니다. \n"
 "설정되지 않을 경우 흰색을 배경으로 사용합니다."
 
-#: mcomix/preferences_dialog.py:185
+#: mcomix/preferences_dialog.py:182
 msgid "Use smart scrolling"
 msgstr "스마트 스크롤링 사용"
 
-#: mcomix/preferences_dialog.py:187
+#: mcomix/preferences_dialog.py:184
 msgid ""
 "With this preference set, the space key and mouse wheel do not only scroll "
 "down or up, but also sideways and so try to follow the natural reading order "
@@ -1070,22 +1085,22 @@ msgstr ""
 "이미지의 옆면도 스크롤해 보여줍니다.\n"
 "이미지 가로길이가 화면보다 클 경우에만 동작합니다."
 
-#: mcomix/preferences_dialog.py:192
+#: mcomix/preferences_dialog.py:189
 msgid "Flip pages when scrolling off the edges of the page"
 msgstr "페이지의 가장자리에서 스크롤 할 때 페이지 넘기기"
 
-#: mcomix/preferences_dialog.py:194
+#: mcomix/preferences_dialog.py:191
 msgid ""
 "Flip pages when scrolling \"off the page\" with the scroll wheel or with the "
 "arrow keys. It takes n consecutive \"steps\" with the scroll wheel or the "
 "arrow keys for the pages to be flipped."
 msgstr "마우스 스크롤이나 방향키를 이용해서 페이지를 전환할 수 있습니다."
 
-#: mcomix/preferences_dialog.py:197
+#: mcomix/preferences_dialog.py:194
 msgid "Automatically open the next archive"
 msgstr "자동으로 다음 압축파일 열기"
 
-#: mcomix/preferences_dialog.py:199
+#: mcomix/preferences_dialog.py:196
 msgid ""
 "Automatically open the next archive in the directory when flipping past the "
 "last page, or the previous archive when flipping past the first page."
@@ -1094,11 +1109,11 @@ msgstr ""
 "이전/다음 압축파일을 불러옵니다.\n"
 "같은 디렉토리 안에만 적용됩니다."
 
-#: mcomix/preferences_dialog.py:202
+#: mcomix/preferences_dialog.py:199
 msgid "Automatically open next directory"
 msgstr "자동으로 다음 디렉토리 열기"
 
-#: mcomix/preferences_dialog.py:204
+#: mcomix/preferences_dialog.py:201
 msgid ""
 "Automatically open the first file in the next sibling directory when "
 "flipping past the last page of the last file in a directory, or the previous "
@@ -1108,11 +1123,11 @@ msgstr ""
 "이전/다음 압축파일을 불러옵니다.\n"
 "형제 디렉토리에 적용됩니다."
 
-#: mcomix/preferences_dialog.py:207
+#: mcomix/preferences_dialog.py:204
 msgid "Open first file when navigating to previous archive"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:209
+#: mcomix/preferences_dialog.py:206
 #, fuzzy
 msgid ""
 "Automatically open the first file of the previous archive when navigating to "
@@ -1122,11 +1137,11 @@ msgstr ""
 "이전/다음 압축파일을 불러옵니다.\n"
 "같은 디렉토리 안에만 적용됩니다."
 
-#: mcomix/preferences_dialog.py:212
+#: mcomix/preferences_dialog.py:209
 msgid "Open first file when navigating to previous directory"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:214
+#: mcomix/preferences_dialog.py:211
 #, fuzzy
 msgid ""
 "Automatically open the first file of the previous directory when navigating "
@@ -1136,43 +1151,43 @@ msgstr ""
 "이전/다음 압축파일을 불러옵니다.\n"
 "형제 디렉토리에 적용됩니다."
 
-#: mcomix/preferences_dialog.py:216
+#: mcomix/preferences_dialog.py:213
 msgid "Number of pixels to scroll per arrow key press:"
 msgstr "화살표키로 스크롤 할 픽셀 수:"
 
-#: mcomix/preferences_dialog.py:219
+#: mcomix/preferences_dialog.py:216
 msgid "Set the number of pixels to scroll on a page when using the arrow keys."
 msgstr ""
 "화살표키를 사용할 때 페이지에서 스크롤 할 픽셀 수를 설정하세요.\n"
 "'마우스휠이나 키보드 방향키로 페이지 넘기기' 옵션이 꺼져 있고,\n"
 "원래 크기로 보기 혹은 수동 줌 조절일 경우에만 동작합니다."
 
-#: mcomix/preferences_dialog.py:221
+#: mcomix/preferences_dialog.py:218
 msgid "Number of pixels to scroll per mouse wheel turn:"
 msgstr "마우스휠로 스크롤 할 픽셀 수:"
 
-#: mcomix/preferences_dialog.py:224
+#: mcomix/preferences_dialog.py:221
 msgid "Set the number of pixels to scroll on a page when using a mouse wheel."
 msgstr ""
 "마우스휠을 사용할 때 페이지에서 스크롤 할 픽셀 수를 설정하세요. \n"
 "'마우스휠이나 키보드 방향키로 페이지 넘기기' 옵션이 꺼져 있고,'\n"
 "원래 크기로 보기 혹은 수동 줌 조절일 경우에만 동작합니다."
 
-#: mcomix/preferences_dialog.py:226
+#: mcomix/preferences_dialog.py:223
 msgid "Fraction of page to scroll per space key press (in percent):"
 msgstr "스페이스 키로 스크롤 할 부분 (퍼센트)"
 
-#: mcomix/preferences_dialog.py:230
+#: mcomix/preferences_dialog.py:227
 msgid ""
 "Sets the percentage by which the page will be scrolled down or up when the "
 "space key is pressed."
 msgstr "스페이스 키를 눌렀을 때 스크롤 될 정도를 설정합니다."
 
-#: mcomix/preferences_dialog.py:233
+#: mcomix/preferences_dialog.py:230
 msgid "Number of \"steps\" to take before flipping the page:"
 msgstr "페이지 넘김 민감도:"
 
-#: mcomix/preferences_dialog.py:236
+#: mcomix/preferences_dialog.py:233
 msgid ""
 "Set the number of \"steps\" needed to flip to the next or previous page.  "
 "Less steps will allow for very fast page turning but you might find yourself "
@@ -1182,99 +1197,104 @@ msgstr ""
 "낮은 값을 설정할 경우 페이지가 \n"
 "예기치 않게 전환될 수도 있습니다."
 
-#: mcomix/preferences_dialog.py:241
+#: mcomix/preferences_dialog.py:238
 msgid "Flip two pages in double page mode"
 msgstr "양면 보기 모드일때 페이지를 2장씩 넘기기"
 
-#: mcomix/preferences_dialog.py:243
+#: mcomix/preferences_dialog.py:240
 msgid ""
 "Flip two pages, instead of one, each time we flip pages in double page mode."
 msgstr "양면 보기 모드일 경우 페이지를 한 번에 2장씩 넘깁니다."
 
-#: mcomix/preferences_dialog.py:245
+#: mcomix/preferences_dialog.py:242
 msgid "Show only one page where appropriate:"
 msgstr "양면 보기 모드에서 융통성 있게 1페이지만 보기:"
 
-#: mcomix/preferences_dialog.py:248
+#: mcomix/preferences_dialog.py:245
 msgid "Page auto-resizing:"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:251
+#: mcomix/preferences_dialog.py:248
 #, fuzzy
 msgid "Space between two pages (in pixels):"
 msgstr "슬라이드쇼 단계(픽셀)"
 
-#: mcomix/preferences_dialog.py:255
+#: mcomix/preferences_dialog.py:252
 msgid "Files"
 msgstr "파일"
 
-#: mcomix/preferences_dialog.py:258
+#: mcomix/preferences_dialog.py:255
 msgid "Automatically open the last viewed file on startup"
 msgstr "프로그램 시작 시 마지막에 열었던 파일을 자동으로 열기"
 
-#: mcomix/preferences_dialog.py:260
+#: mcomix/preferences_dialog.py:257
 msgid ""
 "Automatically open, on startup, the file that was open when MComix was last "
 "closed."
 msgstr "MComix로 열었던 마지막 파일을 자동으로 열어봅니다."
 
-#: mcomix/preferences_dialog.py:262
+#: mcomix/preferences_dialog.py:259
 msgid "Store information about recently opened files:"
 msgstr "최근 파일 정보 표시:"
 
-#: mcomix/preferences_dialog.py:265
+#: mcomix/preferences_dialog.py:262
 msgid "Save As opens at the last directory saved into"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:268
+#: mcomix/preferences_dialog.py:264
+msgid ""
+"Open the Save As dialog at the directory in which the last file was saved."
+msgstr ""
+
+#: mcomix/preferences_dialog.py:266
 msgid "Prompts answered for good"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:286
+#: mcomix/preferences_dialog.py:284
 msgid "Use fullscreen by default"
 msgstr "전체화면을 기본으로 사용"
 
-#: mcomix/preferences_dialog.py:290
+#: mcomix/preferences_dialog.py:288
 msgid "Automatically hide all toolbars in fullscreen"
 msgstr "전체화면 상태에서 도구모음 숨김"
 
-#: mcomix/preferences_dialog.py:293 mcomix/ui.py:500
+#: mcomix/preferences_dialog.py:291 mcomix/ui.py:500
 msgid "Fit to size mode"
 msgstr "원본 크기 보기"
 
-#: mcomix/preferences_dialog.py:295
+#: mcomix/preferences_dialog.py:293
 #, fuzzy
 msgid "Fixed width for wide pages:"
 msgstr "가로길이:"
 
-#: mcomix/preferences_dialog.py:299
+#: mcomix/preferences_dialog.py:297
 #, fuzzy
 msgid "Fixed height for wide pages:"
 msgstr "세로길이 맞춤"
 
-#: mcomix/preferences_dialog.py:303
+#: mcomix/preferences_dialog.py:301
 #, fuzzy
 msgid "Fixed width for other pages:"
 msgstr "가로길이:"
 
-#: mcomix/preferences_dialog.py:307
+#: mcomix/preferences_dialog.py:305
 #, fuzzy
 msgid "Fixed height for other pages:"
 msgstr "가로길이:"
 
-#: mcomix/preferences_dialog.py:311
+#: mcomix/preferences_dialog.py:309
 msgid "Slideshow"
 msgstr "슬라이드쇼"
 
-#: mcomix/preferences_dialog.py:313
+#: mcomix/preferences_dialog.py:311
 msgid "Slideshow delay (in seconds):"
 msgstr "슬라이드쇼 지연시간(초)"
 
-#: mcomix/preferences_dialog.py:317
+#: mcomix/preferences_dialog.py:315
 msgid "Slideshow step (in pixels):"
 msgstr "슬라이드쇼 단계(픽셀)"
 
-#: mcomix/preferences_dialog.py:320
+#: mcomix/preferences_dialog.py:318
 msgid ""
 "Specify the number of pixels to scroll while in slideshow mode. A positive "
 "value will scroll forward, a negative value will scroll backwards, and a "
@@ -1284,24 +1304,24 @@ msgstr ""
 "양수값은 앞으로, 음수값은 뒤로 스크롤합니다. \n"
 "0은 항상 새 페이지로 넘깁니다."
 
-#: mcomix/preferences_dialog.py:323
+#: mcomix/preferences_dialog.py:321
 msgid "During a slideshow automatically open the next archive"
 msgstr "슬라이드쇼 중 자동으로 다음 압축파일 열기"
 
-#: mcomix/preferences_dialog.py:325
+#: mcomix/preferences_dialog.py:323
 msgid ""
 "While in slideshow mode allow the next archive to automatically be opened."
 msgstr "슬라이드 쇼 모드일때 다음 압축파일을 자동으로 엽니다."
 
-#: mcomix/preferences_dialog.py:327
+#: mcomix/preferences_dialog.py:325
 msgid "Rotation"
 msgstr "이미지 회전"
 
-#: mcomix/preferences_dialog.py:330
+#: mcomix/preferences_dialog.py:328
 msgid "Automatically rotate images according to their metadata"
 msgstr "이미지를 메타데이터에 따라 자동으로 회전"
 
-#: mcomix/preferences_dialog.py:332
+#: mcomix/preferences_dialog.py:330
 msgid ""
 "Automatically rotate images when an orientation is specified in the image "
 "metadata, such as in an Exif tag."
@@ -1309,56 +1329,56 @@ msgstr ""
 "이미지를 Exif 태그 등 메타데이터에 따라 \n"
 "자동으로 회전시킵니다."
 
-#: mcomix/preferences_dialog.py:334
+#: mcomix/preferences_dialog.py:332
 msgid "Image quality"
 msgstr "이미지 품질"
 
-#: mcomix/preferences_dialog.py:336
+#: mcomix/preferences_dialog.py:334
 msgid "Scaling mode"
 msgstr "스케일링 모드"
 
-#: mcomix/preferences_dialog.py:348
+#: mcomix/preferences_dialog.py:346
 msgid "File order"
 msgstr "파일 순서"
 
-#: mcomix/preferences_dialog.py:350
+#: mcomix/preferences_dialog.py:348
 msgid "Sort files and directories by:"
 msgstr "파일과 디렉토리를 다음에 따라 정렬:"
 
-#: mcomix/preferences_dialog.py:353
+#: mcomix/preferences_dialog.py:351
 msgid "Sort archives by:"
 msgstr "압축파일 정렬방식:"
 
-#: mcomix/preferences_dialog.py:356
+#: mcomix/preferences_dialog.py:354
 msgid "Extraction and cache"
 msgstr "압축 해제와 캐시"
 
-#: mcomix/preferences_dialog.py:358
+#: mcomix/preferences_dialog.py:356
 msgid "Maximum number of concurrent extraction threads:"
 msgstr "압축 해제 시 사용할 최대 스레드 수:"
 
-#: mcomix/preferences_dialog.py:361
+#: mcomix/preferences_dialog.py:359
 msgid ""
 "Set the maximum number of concurrent threads for formats that support it."
 msgstr "이미지 포맷 시 사용할 최대 스레드 수를 설정하세요."
 
-#: mcomix/preferences_dialog.py:363
+#: mcomix/preferences_dialog.py:361
 #, fuzzy
 msgid "Maximum number of concurrent thumbnail threads:"
 msgstr "압축 해제 시 사용할 최대 스레드 수:"
 
-#: mcomix/preferences_dialog.py:366
+#: mcomix/preferences_dialog.py:364
 #, fuzzy
 msgid ""
 "Set the maximum number of concurrent threads used to generate thumbnails. "
 "Takes effect the next time MComix is started."
 msgstr "이미지 포맷 시 사용할 최대 스레드 수를 설정하세요."
 
-#: mcomix/preferences_dialog.py:369
+#: mcomix/preferences_dialog.py:367
 msgid "Store thumbnails for opened files"
 msgstr "열어본 파일의 미리보기를 보관"
 
-#: mcomix/preferences_dialog.py:371
+#: mcomix/preferences_dialog.py:369
 msgid ""
 "Store thumbnails for opened files according to the freedesktop.org "
 "specification. These thumbnails are shared by many other applications, such "
@@ -1367,123 +1387,123 @@ msgstr ""
 "열었던 파일의 썸네일(미리보기)을 freedesktop.org 사양에 따라 \n"
 "보관합니다. 이 썸네일은 파일 매니저 등 여러 프로그램과 공유됩니다."
 
-#: mcomix/preferences_dialog.py:373
+#: mcomix/preferences_dialog.py:371
 msgid "Maximum number of pages to store in the cache:"
 msgstr "캐시에 저장할 최대 페이지 수:"
 
-#: mcomix/preferences_dialog.py:376
+#: mcomix/preferences_dialog.py:374
 msgid ""
 "Set the max number of pages to cache. A value of -1 will cache the entire "
 "archive."
 msgstr "캐시할 페이지 수 지정. -1로 설정하면 압축파일 전체를 캐시합니다."
 
-#: mcomix/preferences_dialog.py:378
+#: mcomix/preferences_dialog.py:376
 msgid "Magnifying Lens"
 msgstr "돋보기"
 
-#: mcomix/preferences_dialog.py:380
+#: mcomix/preferences_dialog.py:378
 msgid "Magnifying lens size (in pixels):"
 msgstr "돋보기 크기(픽셀)"
 
-#: mcomix/preferences_dialog.py:383
+#: mcomix/preferences_dialog.py:381
 msgid ""
 "Set the size of the magnifying lens. It is a square with a side of this many "
 "pixels."
 msgstr "돋보기의 크기를 설정합니다."
 
-#: mcomix/preferences_dialog.py:385
+#: mcomix/preferences_dialog.py:383
 msgid "Magnification factor:"
 msgstr "배율:"
 
-#: mcomix/preferences_dialog.py:388
+#: mcomix/preferences_dialog.py:386
 msgid "Set the magnification factor of the magnifying lens."
 msgstr "돋보기의 배율을 설정합니다."
 
-#: mcomix/preferences_dialog.py:392
+#: mcomix/preferences_dialog.py:390
 msgid "Comment extensions:"
 msgstr "주석 확장자:"
 
-#: mcomix/preferences_dialog.py:395
+#: mcomix/preferences_dialog.py:393
 msgid "Animated images"
 msgstr "애니메이션 이미지"
 
-#: mcomix/preferences_dialog.py:397
+#: mcomix/preferences_dialog.py:395
 msgid "Animation mode:"
 msgstr "애니메이션 모드:"
 
-#: mcomix/preferences_dialog.py:418
+#: mcomix/preferences_dialog.py:416
 msgid "_Reset keys"
 msgstr "키 리셋(_R)"
 
-#: mcomix/preferences_dialog.py:420
+#: mcomix/preferences_dialog.py:418
 msgid "Resets all keyboard shortcuts to their default values."
 msgstr "모든 키보드 단축키를 기본값으로 리셋."
 
-#: mcomix/preferences_dialog.py:423
+#: mcomix/preferences_dialog.py:421
 msgid "Clear _dialog choices"
 msgstr "변경 취소"
 
-#: mcomix/preferences_dialog.py:425
+#: mcomix/preferences_dialog.py:423
 msgid ""
 "Clears all dialog choices that you have previously chosen not to be asked "
 "again."
 msgstr "다이얼로그에서 선택한 것을 모두 취소합니다. 다시 묻지 않습니다."
 
-#: mcomix/preferences_dialog.py:460
+#: mcomix/preferences_dialog.py:458
 msgid "Ask every time"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:465
+#: mcomix/preferences_dialog.py:463
 msgid ""
 "What MComix answers this prompt with instead of asking. This is what the "
 "prompt's \"Do not ask again\" box sets."
 msgstr ""
 
-#: mcomix/preferences_dialog.py:487
+#: mcomix/preferences_dialog.py:485
 msgid "Auto-detect (Default)"
 msgstr "자동 감지(디폴트)"
 
-#: mcomix/preferences_dialog.py:521
+#: mcomix/preferences_dialog.py:519
 msgid "Follow the system"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:522
+#: mcomix/preferences_dialog.py:520
 msgid "Light"
 msgstr "밝게"
 
-#: mcomix/preferences_dialog.py:523
+#: mcomix/preferences_dialog.py:521
 msgid "Dark"
 msgstr "어둡게"
 
-#: mcomix/preferences_dialog.py:524
+#: mcomix/preferences_dialog.py:522
 msgid "Pitch black"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:530
+#: mcomix/preferences_dialog.py:528
 msgid ""
 "How MComix itself is painted, whatever the desktop asks for. Pitch black is "
 "the dark theme with black backgrounds, which a screen that lights its pixels "
 "one by one shows as no light at all."
 msgstr ""
 
-#: mcomix/preferences_dialog.py:556 mcomix/preferences_dialog.py:697
-#: mcomix/preferences_dialog.py:768 mcomix/ui.py:506
+#: mcomix/preferences_dialog.py:554 mcomix/preferences_dialog.py:695
+#: mcomix/preferences_dialog.py:766 mcomix/ui.py:506
 msgid "Never"
 msgstr "하지 않음"
 
-#: mcomix/preferences_dialog.py:557
+#: mcomix/preferences_dialog.py:555
 msgid "Only for title pages"
 msgstr "타이틀 페이지만"
 
-#: mcomix/preferences_dialog.py:558
+#: mcomix/preferences_dialog.py:556
 msgid "Only for wide images"
 msgstr "가로길이가 넓은 이미지만"
 
-#: mcomix/preferences_dialog.py:559 mcomix/preferences_dialog.py:698
+#: mcomix/preferences_dialog.py:557 mcomix/preferences_dialog.py:696
 msgid "Always"
 msgstr "항상"
 
-#: mcomix/preferences_dialog.py:566
+#: mcomix/preferences_dialog.py:564
 msgid ""
 "When showing the first page of an archive, or an image's width exceeds its "
 "height, only a single page will be displayed."
@@ -1495,57 +1515,57 @@ msgstr ""
 "세로길이보다 긴 이미지만 한 페이지로 출력합니다. \n"
 "항상 한 페이지만 출력하는 옵션이 아닙니다."
 
-#: mcomix/preferences_dialog.py:581
+#: mcomix/preferences_dialog.py:579
 #, fuzzy
 msgid "Prefer same scale"
 msgstr "환경설정"
 
-#: mcomix/preferences_dialog.py:582
+#: mcomix/preferences_dialog.py:580
 #, fuzzy
 msgid "Prefer same size"
 msgstr "환경설정"
 
-#: mcomix/preferences_dialog.py:583
+#: mcomix/preferences_dialog.py:581
 #, fuzzy
 msgid "Fit to same size"
 msgstr "원본 크기 보기"
 
-#: mcomix/preferences_dialog.py:590
+#: mcomix/preferences_dialog.py:588
 msgid "Maintain relative size or fit to same size."
 msgstr ""
 
-#: mcomix/preferences_dialog.py:604 mcomix/preferences_dialog.py:649
+#: mcomix/preferences_dialog.py:602 mcomix/preferences_dialog.py:647
 msgid "No sorting"
 msgstr "정렬하지 않음"
 
-#: mcomix/preferences_dialog.py:605
+#: mcomix/preferences_dialog.py:603
 msgid "File name"
 msgstr "파일명"
 
-#: mcomix/preferences_dialog.py:606
+#: mcomix/preferences_dialog.py:604
 #, fuzzy
 msgid "File name (GLib)"
 msgstr "파일명"
 
-#: mcomix/preferences_dialog.py:607 mcomix/library/book_area.py:194
+#: mcomix/preferences_dialog.py:605 mcomix/library/book_area.py:194
 msgid "File size"
 msgstr "파일 크기"
 
-#: mcomix/preferences_dialog.py:608
+#: mcomix/preferences_dialog.py:606
 msgid "Last modified"
 msgstr "수정한 날짜"
 
-#: mcomix/preferences_dialog.py:614 mcomix/preferences_dialog.py:658
+#: mcomix/preferences_dialog.py:612 mcomix/preferences_dialog.py:656
 #: mcomix/library/book_area.py:198
 msgid "Ascending"
 msgstr "오름차순"
 
-#: mcomix/preferences_dialog.py:615 mcomix/preferences_dialog.py:659
+#: mcomix/preferences_dialog.py:613 mcomix/preferences_dialog.py:657
 #: mcomix/library/book_area.py:199
 msgid "Descending"
 msgstr "내림차순"
 
-#: mcomix/preferences_dialog.py:623
+#: mcomix/preferences_dialog.py:621
 msgid ""
 "Files will be opened and displayed according to the sort order specified "
 "here. This option does not affect ordering within archives."
@@ -1553,20 +1573,20 @@ msgstr ""
 "파일은 여기서 지정한 순서로 열립니다. \n"
 "이 옵션은 압축 파일 자체의 순서에는 영향을 주지 않습니다."
 
-#: mcomix/preferences_dialog.py:650
+#: mcomix/preferences_dialog.py:648
 msgid "Natural order"
 msgstr "자연 순서"
 
-#: mcomix/preferences_dialog.py:651
+#: mcomix/preferences_dialog.py:649
 msgid "Literal order"
 msgstr "기본 순서"
 
-#: mcomix/preferences_dialog.py:652
+#: mcomix/preferences_dialog.py:650
 #, fuzzy
 msgid "GLib order"
 msgstr "파일 순서"
 
-#: mcomix/preferences_dialog.py:667
+#: mcomix/preferences_dialog.py:665
 #, fuzzy
 msgid ""
 "Files within archives will be sorted according to the order specified here. "
@@ -1579,17 +1599,17 @@ msgstr ""
 "자연 순서는 1, 2, 3, 23 순으로,\n"
 "기본 순서는 1, 2, 23, 3 순으로 정렬됩니다."
 
-#: mcomix/preferences_dialog.py:710
+#: mcomix/preferences_dialog.py:708
 msgid ""
 "Add information about all files opened from within MComix to the shared "
 "recent files list."
 msgstr "메뉴의 [파일 - 최근 파일]에 MComix로 열었던 파일 정보를 추가합니다."
 
-#: mcomix/preferences_dialog.py:730
+#: mcomix/preferences_dialog.py:728
 msgid "Delete information about recently opened files?"
 msgstr "최근 연 파일 정보를 삭제하시겠습니까?"
 
-#: mcomix/preferences_dialog.py:731
+#: mcomix/preferences_dialog.py:729
 msgid ""
 "This will remove all entries from the \"Recent\" menu, and clear information "
 "about last read pages."
@@ -1597,19 +1617,19 @@ msgstr ""
 "\"최근 파일\" 메뉴의 모든 항목을 제거합니다. 그리고 이전에 읽은 페이지 정보"
 "를 지웁니다."
 
-#: mcomix/preferences_dialog.py:743
+#: mcomix/preferences_dialog.py:741
 msgid "Normal (fast)"
 msgstr "노멀(빠름)"
 
-#: mcomix/preferences_dialog.py:744
+#: mcomix/preferences_dialog.py:742
 msgid "Bilinear"
 msgstr "바이리니어"
 
-#: mcomix/preferences_dialog.py:745
+#: mcomix/preferences_dialog.py:743
 msgid "Hyperbolic (slow)"
 msgstr "하이퍼볼릭(느림)"
 
-#: mcomix/preferences_dialog.py:751
+#: mcomix/preferences_dialog.py:749
 msgid ""
 "Changes how images are scaled. Slower algorithms result in higher quality "
 "resizing, but longer page loading times."
@@ -1617,51 +1637,51 @@ msgstr ""
 "이미지 확대 방법을 변경합니다. \n"
 "느린 알고리즘은 좋은 이미지 품질을 보장하지만 시간이 오래 걸립니다."
 
-#: mcomix/preferences_dialog.py:769 mcomix/library/book_area.py:206
+#: mcomix/preferences_dialog.py:767 mcomix/library/book_area.py:206
 msgid "Normal"
 msgstr "노멀"
 
-#: mcomix/preferences_dialog.py:775
+#: mcomix/preferences_dialog.py:773
 msgid "Controls how animated images should be displayed."
 msgstr "애니메이션 이미지가 어떻게 출력될지 결정합니다."
 
-#: mcomix/preferences_dialog.py:824
+#: mcomix/preferences_dialog.py:822
 msgid ""
 "Treat all files found within archives, that have one of these file endings, "
 "as comments."
 msgstr "목록중에 이와 같은 확장자 형식을 가진 파일을 주석으로 인식합니다."
 
-#: mcomix/properties_dialog.py:49
+#: mcomix/properties_dialog.py:48
 msgid "Image"
 msgstr "이미지"
 
-#: mcomix/properties_dialog.py:81
+#: mcomix/properties_dialog.py:80
 msgid "Archive"
 msgstr "압축파일"
 
-#: mcomix/properties_dialog.py:104 mcomix/library/control_area.py:142
+#: mcomix/properties_dialog.py:103 mcomix/library/control_area.py:142
 #, python-format
 msgid "%d pages"
 msgstr "%d 페이지"
 
-#: mcomix/properties_dialog.py:105
+#: mcomix/properties_dialog.py:104
 #, python-format
 msgid "%d comments"
 msgstr "%d 주석"
 
-#: mcomix/properties_dialog.py:164
+#: mcomix/properties_dialog.py:163
 msgid "Accessed"
 msgstr "마지막 접근"
 
-#: mcomix/properties_dialog.py:166
+#: mcomix/properties_dialog.py:165
 msgid "Modified"
 msgstr "마지막 수정"
 
-#: mcomix/properties_dialog.py:168
+#: mcomix/properties_dialog.py:167
 msgid "Permissions"
 msgstr "권한"
 
-#: mcomix/properties_dialog.py:169
+#: mcomix/properties_dialog.py:168
 msgid "Owner"
 msgstr "소유자"
 
@@ -1807,166 +1827,166 @@ msgstr "파일명 보기"
 msgid "Show filesize"
 msgstr "파일용량 보기"
 
-#: mcomix/strings.py:10 mcomix/strings.py:19
+#: mcomix/strings.py:9 mcomix/strings.py:18
 msgid "ZIP archive"
 msgstr "ZIP 압축파일"
 
-#: mcomix/strings.py:11
+#: mcomix/strings.py:10
 msgid "RAR archive"
 msgstr "RAR 압축파일"
 
-#: mcomix/strings.py:12
+#: mcomix/strings.py:11
 msgid "Tar archive"
 msgstr "Tar압축파일"
 
-#: mcomix/strings.py:13
+#: mcomix/strings.py:12
 msgid "Gzip compressed tar archive"
 msgstr "Gzip으로 된 Tar압축파일"
 
-#: mcomix/strings.py:14
+#: mcomix/strings.py:13
 msgid "Bzip2 compressed tar archive"
 msgstr "Bzip2으로 된 Tar압축파일"
 
-#: mcomix/strings.py:15
+#: mcomix/strings.py:14
 msgid "XZ compressed tar archive"
 msgstr "XZ으로 된 Tar압축파일"
 
-#: mcomix/strings.py:16
+#: mcomix/strings.py:15
 msgid "PDF document"
 msgstr "PDF 문서"
 
-#: mcomix/strings.py:17
+#: mcomix/strings.py:16
 msgid "7z archive"
 msgstr "7z 압축파일"
 
-#: mcomix/strings.py:18
+#: mcomix/strings.py:17
 msgid "LHA archive"
 msgstr "LHA 압축파일"
 
-#: mcomix/strings.py:20
+#: mcomix/strings.py:19
 msgid "MobiPocket ebook"
 msgstr ""
 
-#: mcomix/strings.py:24
+#: mcomix/strings.py:23
 msgid "Original vision/developer of Comix"
 msgstr "오리지널 버전/Comix 개발자"
 
-#: mcomix/strings.py:25 mcomix/strings.py:26 mcomix/strings.py:27
-#: mcomix/strings.py:28
+#: mcomix/strings.py:24 mcomix/strings.py:25 mcomix/strings.py:26
+#: mcomix/strings.py:27
 msgid "MComix developer"
 msgstr "MComix 개발자"
 
-#: mcomix/strings.py:31 mcomix/strings.py:32 mcomix/strings.py:33
-#: mcomix/strings.py:34
+#: mcomix/strings.py:30 mcomix/strings.py:31 mcomix/strings.py:32
+#: mcomix/strings.py:33
 msgid "Simplified Chinese translation"
 msgstr "간체 중국어 번역"
 
-#: mcomix/strings.py:35 mcomix/strings.py:36
+#: mcomix/strings.py:34 mcomix/strings.py:35
 msgid "Spanish translation"
 msgstr "스페인어 번역"
 
-#: mcomix/strings.py:37
+#: mcomix/strings.py:36
 msgid "Brazilian Portuguese translation"
 msgstr "포르투갈어(브라질) 번역"
 
-#: mcomix/strings.py:38
+#: mcomix/strings.py:37
 msgid "German translation and Nautilus thumbnailer"
 msgstr "독일어 번역, Nautilus의 미리보기 기능 제작"
 
-#: mcomix/strings.py:39
+#: mcomix/strings.py:38
 msgid "German translation"
 msgstr "독일어 번역"
 
-#: mcomix/strings.py:40 mcomix/strings.py:41 mcomix/strings.py:42
+#: mcomix/strings.py:39 mcomix/strings.py:40 mcomix/strings.py:41
 msgid "Italian translation"
 msgstr "이탈리아어 번역"
 
-#: mcomix/strings.py:43
+#: mcomix/strings.py:42
 msgid "Dutch translation"
 msgstr "네덜란드어 번역"
 
-#: mcomix/strings.py:44 mcomix/strings.py:45 mcomix/strings.py:46
-#: mcomix/strings.py:47
+#: mcomix/strings.py:43 mcomix/strings.py:44 mcomix/strings.py:45
+#: mcomix/strings.py:46
 msgid "French translation"
 msgstr "프랑스어 번역"
 
-#: mcomix/strings.py:48
+#: mcomix/strings.py:47
 msgid "Polish translatin"
 msgstr "폴란드어 번역"
 
-#: mcomix/strings.py:49
+#: mcomix/strings.py:48
 msgid "Polish translation"
 msgstr "폴란드어 번역"
 
-#: mcomix/strings.py:50
+#: mcomix/strings.py:49
 msgid "Greek translation"
 msgstr "그리스어 번역"
 
-#: mcomix/strings.py:51
+#: mcomix/strings.py:50
 msgid "Catalan translation"
 msgstr "카탈로니아어 번역"
 
-#: mcomix/strings.py:52 mcomix/strings.py:53
+#: mcomix/strings.py:51 mcomix/strings.py:52
 msgid "Traditional Chinese translation"
 msgstr "정체 중국어 번역"
 
-#: mcomix/strings.py:54 mcomix/strings.py:55 mcomix/strings.py:56
+#: mcomix/strings.py:53 mcomix/strings.py:54 mcomix/strings.py:55
 msgid "Japanese translation"
 msgstr "일본어 번역"
 
-#: mcomix/strings.py:57
+#: mcomix/strings.py:56
 msgid "Hungarian translation"
 msgstr "헝가리어 번역"
 
-#: mcomix/strings.py:58 mcomix/strings.py:59
+#: mcomix/strings.py:57 mcomix/strings.py:58
 msgid "Russian translation"
 msgstr "러시아어 번역"
 
-#: mcomix/strings.py:60
+#: mcomix/strings.py:59
 msgid "Croatian translation"
 msgstr "크로아티아어 번역"
 
-#: mcomix/strings.py:61 mcomix/strings.py:62 mcomix/strings.py:63
+#: mcomix/strings.py:60 mcomix/strings.py:61 mcomix/strings.py:62
 msgid "Korean translation"
 msgstr "한국어 번역"
 
-#: mcomix/strings.py:64
+#: mcomix/strings.py:63
 msgid "Persian translation"
 msgstr "페르시아어 번역"
 
-#: mcomix/strings.py:65
+#: mcomix/strings.py:64
 msgid "Indonesian translation"
 msgstr "인도네시아어 번역"
 
-#: mcomix/strings.py:66
+#: mcomix/strings.py:65
 msgid "Czech translation"
 msgstr "체코어 번역"
 
-#: mcomix/strings.py:67
+#: mcomix/strings.py:66
 msgid "Ukrainian translation"
 msgstr "우크라이나어 번역"
 
-#: mcomix/strings.py:68
+#: mcomix/strings.py:67
 msgid "Galician translation"
 msgstr "갈리시아어 번역"
 
-#: mcomix/strings.py:69 mcomix/strings.py:70
+#: mcomix/strings.py:68 mcomix/strings.py:69
 msgid "Swedish translation"
 msgstr "스웨덴어 번역"
 
-#: mcomix/strings.py:71
+#: mcomix/strings.py:70
 msgid "Hebrew translation"
 msgstr "히브리어 번역"
 
-#: mcomix/strings.py:72
+#: mcomix/strings.py:71
 msgid "Lithuanian translation"
 msgstr "리투아니아어 번역"
 
-#: mcomix/strings.py:75
+#: mcomix/strings.py:74
 msgid "Icon design"
 msgstr "아이콘 디자인"
 
-#: mcomix/strings.py:76
+#: mcomix/strings.py:75
 msgid "Vector icon"
 msgstr ""
 
@@ -2257,16 +2277,21 @@ msgstr "라이브러리(_L)"
 msgid "! Worker thread processing %(function)r failed: %(error)s"
 msgstr "! 콜백 %(function)r 실패: %(error)s"
 
-#: mcomix/archive/password.py:23
+#: mcomix/archive/password.py:21
 msgid "The archive is password-protected:"
 msgstr "이 압축 파일은 암호로 보호되어 있습니다:"
 
-#: mcomix/archive/sevenzip_external.py:152
+#: mcomix/archive/password.py:23
+#, fuzzy
+msgid "Please enter the password to continue:"
+msgstr "새 모음집의 이름을 입력해주세요."
+
+#: mcomix/archive/sevenzip_external.py:150
 #, python-format
 msgid "Extraction of %(archivefile)s might have failed: %(error)s"
 msgstr ""
 
-#: mcomix/archive/zip.py:46
+#: mcomix/archive/zip.py:44
 #, python-format
 msgid ""
 "%(filename)s's extracted size is %(actual_size)d bytes, but should be "

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """The translation template against the strings the source actually marks.
 
 A msgid that never reaches mcomix.pot cannot be translated, in any

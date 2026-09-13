@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """about_dialog.py - About dialog."""
 
 from gi.repository import Gtk
@@ -19,7 +18,7 @@ class _AboutDialog(Gtk.AboutDialog):
 
     def __init__(self, window: "main.MainWindow") -> None:
         # A GTK4 window is transient for another, not parented to it.
-        super(_AboutDialog, self).__init__(transient_for=window)
+        super().__init__(transient_for=window)
 
         self.set_name(constants.APPNAME)
         self.set_program_name(constants.APPNAME)

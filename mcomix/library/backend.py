@@ -26,7 +26,7 @@ if TYPE_CHECKING:
 COLLECTION_RECENT = -2
 
 
-class _LibraryBackend(object):
+class _LibraryBackend:
 
     """The LibraryBackend handles the storing and retrieval of library
     data to and from disk.

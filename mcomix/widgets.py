@@ -35,7 +35,7 @@ class Chooser[V](Gtk.DropDown):
             self._values.append(value)
         if not self._values:
             raise ValueError('a chooser must have something to choose from')
-        super(Chooser, self).__init__(model=labels)
+        super().__init__(model=labels)
         self.set_value(chosen)
 
     def get_value(self) -> V:

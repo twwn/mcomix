@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """ Walking from one directory to the next, and back again. """
 
 import os
@@ -20,7 +18,7 @@ class DirectoryWalkTest(MComixTest):
     an archive, images, or nothing worth opening. """
 
     def setUp(self):
-        super(DirectoryWalkTest, self).setUp()
+        super().setUp()
         for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
                           constants.THUMBNAIL_PATH):
             os.makedirs(directory, exist_ok=True)
@@ -41,7 +39,7 @@ class DirectoryWalkTest(MComixTest):
         self.window.destroy()
         main.set_main_window(None)
         pump()
-        super(DirectoryWalkTest, self).tearDown()
+        super().tearDown()
 
     def _put_archive(self, directory):
         """ Copies the test archive into <directory>, and returns its path. """
@@ -115,7 +113,7 @@ class RememberedResumeAnswerTest(MComixTest):
     """
 
     def setUp(self):
-        super(RememberedResumeAnswerTest, self).setUp()
+        super().setUp()
         for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
                           constants.THUMBNAIL_PATH):
             os.makedirs(directory, exist_ok=True)
@@ -135,7 +133,7 @@ class RememberedResumeAnswerTest(MComixTest):
         self.window.destroy()
         main.set_main_window(None)
         pump()
-        super(RememberedResumeAnswerTest, self).tearDown()
+        super().tearDown()
 
     def _open_and_settle(self):
         self.handler.open_file(self.archive)
@@ -170,7 +168,7 @@ class BeforeAPageIsChosenTest(MComixTest):
     """
 
     def setUp(self):
-        super(BeforeAPageIsChosenTest, self).setUp()
+        super().setUp()
         for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
                           constants.THUMBNAIL_PATH):
             os.makedirs(directory, exist_ok=True)
@@ -184,7 +182,7 @@ class BeforeAPageIsChosenTest(MComixTest):
         self.window.destroy()
         main.set_main_window(None)
         pump()
-        super(BeforeAPageIsChosenTest, self).tearDown()
+        super().tearDown()
 
     def test_there_is_no_base_path_before_a_page_is_chosen(self):
         """Outside an archive the base is the directory the current image

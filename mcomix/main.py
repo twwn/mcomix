@@ -313,19 +313,24 @@ class MainWindow(Gtk.Window):
         self.cursor_handler.auto_hide_on()
 
     def gained_focus(self, *args: object) -> None:
+        """Note that the window has the focus again.
+
+        A click into a window that had lost the focus arrives as the
+        focus first and the button afterwards, and that click is meant
+        to raise the window rather than to turn a page.  So the flag the
+        button handler reads is not cleared here but from the idle
+        queue, which is to say after that button has been dealt with.
+        """
         def _delayed_unset_out_of_focus(_: None) -> bool:
             self.was_out_of_focus = False
             return False
 
         if self.was_out_of_focus:
-            # Since clicking into an unfocused window triggers the
-            # focus event first, then the mouse event, the mouse event
-            # can no longer detect that it should be skipped. Thus, delay
-            # unsetting was_out_of_focus.
             GLib.idle_add(_delayed_unset_out_of_focus, None,
                           priority=GLib.PRIORITY_DEFAULT_IDLE)
 
     def lost_focus(self, *args: object) -> None:
+        """Note that the window no longer has the focus."""
         self.was_out_of_focus = True
 
     def draw_image(self, scroll_to: int | None = None) -> None:
@@ -386,7 +391,31 @@ class MainWindow(Gtk.Window):
                     widget.set_visible(should_be_visible)
 
     def _draw_image(self) -> bool:
+        """Put the current page or pages on screen.
 
+        Runs from the idle queue, once, however many redraws
+        draw_image() was asked for in the meantime.
+
+        In order: the toolbars and the sidebar are shown or hidden,
+        since what is visible decides how much room the pages have; the
+        pages are fetched and turned; a layout is built for them at the
+        size the zoom mode asks for; each page is scaled, flipped and
+        enhanced into that layout; and the statusbar, the background
+        colour and the scroll position follow.
+
+        Three rotations compose into the one each page is drawn under:
+        what a page's own Exif tag asks for, what the shape of the pages
+        side by side asks for, and what the reader has turned the book
+        to by hand.  A rotation that swaps width for height swaps the
+        axes the layout is built along with it, which is why the axes
+        are variables here rather than the constants they start as.
+
+        An animation is left out of all of that - it is drawn frame by
+        frame at a size the layout gives, and there is no one frame to
+        transform - which is what do_not_transform marks.
+
+        Returns False, so the idle source does not run again.
+        """
         scroll_to = self._pending_scroll_to
         self._pending_scroll_to = None
 
@@ -538,9 +567,10 @@ class MainWindow(Gtk.Window):
         else:
             # Save scroll destination for when the page becomes available.
             self._last_scroll_destination = scroll_to
-            # If the pixbuf for the current page(s) isn't available,
-            # hide all images to clear any old pixbufs.
-            # XXX How about calling self._clear_main_area?
+            # The pages are hidden rather than cleared, and this stops
+            # short of _clear_main_area(), which would also throw the
+            # layout away and reset the background colour: this page is
+            # on its way, not gone.
             for i in range(len(self.images)):
                 self.images[i].set_visible(False)
             self._show_scrollbars([False] * len(self._scroll))
@@ -595,6 +625,7 @@ class MainWindow(Gtk.Window):
             self._update_page_information()
 
     def _on_file_opened(self) -> None:
+        """Follow a book being opened: menus, lens and statusbar."""
         self.lens.file_changed()
         self.uimanager.set_sensitivities()
         number, count = self.filehandler.get_file_number()
@@ -602,6 +633,7 @@ class MainWindow(Gtk.Window):
         self.statusbar.update()
 
     def _on_file_closed(self) -> None:
+        """Follow a book being closed: empty the window and the sidebar."""
         self.lens.file_changed()
         self.clear()
         self.thumbnailsidebar.set_visible(False)
@@ -646,6 +678,14 @@ class MainWindow(Gtk.Window):
         self.slideshow.update_delay()
 
     def next_book(self) -> None:
+        """Open whatever follows the book being read, if anything should.
+
+        Two preferences say what that is, and a running slideshow may
+        stand in for the first: the next archive, and failing that the
+        next directory.  A reader who has turned off "auto open next
+        archive" is not taken out of an archive into the next directory
+        either, since that would be the same jump by another route.
+        """
         archive_open = self.filehandler.archive_type is not None
         next_archive_opened = False
         if (self.slideshow.is_running() and \
@@ -661,6 +701,8 @@ class MainWindow(Gtk.Window):
             self.filehandler.open_next_directory()
 
     def previous_book(self) -> None:
+        """Open whatever comes before the book being read, if anything
+        should.  The preferences are read as next_book() reads them."""
         archive_open = self.filehandler.archive_type is not None
         previous_archive_opened = False
         if (self.slideshow.is_running() and \
@@ -676,7 +718,15 @@ class MainWindow(Gtk.Window):
             self.filehandler.open_previous_directory()
 
     def flip_page(self, step: int, single_step: bool = False) -> None:
+        """Turn <step> pages, and open the next or previous book at the ends.
 
+        In double page mode a turn of one page moves two, unless
+        <single_step> says otherwise or the pages either side of the
+        turn cannot be shown as a pair.  Stepping past the last page
+        opens the next book and stepping back from the first opens the
+        previous one; a step that would land outside the book for any
+        other reason stops at its end.
+        """
         if not self.filehandler.file_loaded:
             return
 
@@ -743,21 +793,36 @@ class MainWindow(Gtk.Window):
         self.draw_image()
 
     def change_double_page(self, toggleaction: "ui._Action") -> None:
+        """Show one page at a time or two, and redraw either way."""
         prefs['default double page'] = toggleaction.get_active()
         self._update_page_information()
         self.draw_image()
 
     def change_manga_mode(self, toggleaction: "ui._Action") -> None:
+        """Read right to left or left to right.
+
+        Which way round a double page goes, and which way the arrow keys
+        turn, both follow from this.
+        """
         prefs['default manga mode'] = toggleaction.get_active()
         self.is_manga_mode = toggleaction.get_active()
         self._update_page_information()
         self.draw_image()
 
     def change_invert_scroll(self, toggleaction: "ui._Action") -> None:
+        """Set which way smart scrolling walks a page.  Nothing is
+        redrawn: the setting is read the next time one is scrolled."""
         prefs['invert smart scroll'] = toggleaction.get_active()
 
     def change_fullscreen(self, toggleaction: "ui._Action") -> None:
-        # Disable action until transition if complete.
+        """Fill the screen, or go back to a window.
+
+        The size the window had is saved on the way in, since that is
+        the size it goes back to, and the menu item is insensitive until
+        the window state event says the change has happened - a second
+        toggle in between would ask for the state that is already on its
+        way.  Nothing is redrawn here: the resize does that.
+        """
         toggleaction.set_sensitive(False)
         if toggleaction.get_active():
             if self.previous_size != (None, None):
@@ -765,22 +830,27 @@ class MainWindow(Gtk.Window):
             self.fullscreen()
         else:
             self.unfullscreen()
-        # No need to call draw_image explicitely,
-        # as we'll be receiving a window state
-        # change or resize event.
 
     def change_invert_color(self, toggleaction: "ui._Action") -> None:
-        # The menu item's own state is what to follow.  Reading the
-        # enhancer and inverting that was the same answer only while the
-        # menu was the one thing that ever changed it; the enhance
-        # dialog sets it as well, and after that the tick and the
-        # colours were opposites.
+        """Draw the pages in their own colours or in the opposite ones.
+
+        The menu item's own state is what the preference and the
+        enhancer are set to, rather than the opposite of what the
+        enhancer holds: the enhance dialog sets the same thing, so the
+        two are only ever in step if each follows the tick.
+        """
         prefs['invert color'] = toggleaction.get_active()
         self.enhancer.invert_color = prefs['invert color']
         self.enhancer.signal_update()
 
     def change_zoom_mode(self, radioaction: "ui._Action | None" = None,
                          *args: object) -> None:
+        """Fit pages by width, by height, to the window, or not at all.
+
+        Called with no action to put the zoom back to what the
+        preference says, which is what a book being opened wants; any
+        zooming the reader had done by hand is dropped either way.
+        """
         if radioaction:
             prefs['zoom mode'] = radioaction.get_current_value()
         self.zoom.set_fit_mode(prefs['zoom mode'])
@@ -896,15 +966,23 @@ class MainWindow(Gtk.Window):
 
     def scroll_to_predefined(self, destination: Sequence[int],
                              index: int | None = None) -> None:
+        """Scroll to a named place - a corner, an edge, the middle - of
+        the page at <index>, or of the whole layout if there is none."""
         self.layout.scroll_to_predefined(destination, index)
         self.update_viewport_position()
 
     def update_viewport_position(self) -> None:
+        """Move the scrollbars to where the layout says the view is."""
         viewport_position = self.layout.get_viewport_box().get_position()
         self._hadjust.set_value(viewport_position[0]) # 2D only
         self._vadjust.set_value(viewport_position[1]) # 2D only
 
     def update_layout_position(self) -> None:
+        """Tell the layout where the scrollbars have been moved to.
+
+        The opposite direction from update_viewport_position(), and what
+        the scrollbars' own handlers call.
+        """
         self.layout.set_viewport_position(
             (int(round(self._hadjust.get_value())), int(round(self._vadjust.get_value()))))
 
@@ -915,6 +993,12 @@ class MainWindow(Gtk.Window):
         self.draw_image()
 
     def _clear_main_area(self) -> None:
+        """Leave an empty window: no pages, no scrollbars, plain colour.
+
+        The layout is replaced by a dummy one rather than dropped, so
+        that everything which asks the layout for a size goes on working
+        with no book open.
+        """
         for i in self.images:
             i.set_visible(False)
         for i in self.images:
@@ -1208,10 +1292,10 @@ class MainWindow(Gtk.Window):
         The extra arguments are the ones a Gio action hands its callback;
         Gtk.Window.minimize() takes none.
         """
-        super(MainWindow, self).minimize()
+        super().minimize()
 
     def write_config_files(self) -> None:
-
+        """Write out everything that is kept between sessions."""
         self.filehandler.write_fileinfo_file()
         preferences.write_preferences_file()
         bookmark_backend.BookmarksStore.write_bookmarks_file()
@@ -1220,6 +1304,11 @@ class MainWindow(Gtk.Window):
         keybindings.keybinding_manager(self).save()
 
     def save_and_terminate_program(self, *args: object) -> None:
+        """Quit, and open this book at this page next time.
+
+        The preference is what the next start reads to tell a quit that
+        meant to be resumed from one that did not.
+        """
         prefs['previous quit was quit and save'] = True
 
         self.terminate_program()
@@ -1239,14 +1328,19 @@ class MainWindow(Gtk.Window):
         return (default_width, default_height)
 
     def save_window_geometry(self) -> None:
+        """Remember how large the window is, for the next start."""
         width, height = self.get_window_size()
         prefs['window width'] = width
         prefs['window height'] = height
         prefs['window maximized'] = self.is_maximized()
 
     def restore_window_geometry(self) -> bool:
-        # Where the window is is no longer the program's to say: GTK4
-        # has no way to place a window, so only its size is remembered.
+        """Give the window the size it had, and say whether that changed it.
+
+        Where the window is is not the program's to say: GTK4 has no way
+        to place one, so only the size and whether it was maximised are
+        remembered.
+        """
         if self.get_window_size() == (prefs['window width'],
                                       prefs['window height']) \
            and self.is_maximized() == prefs['window maximized']:
@@ -1260,10 +1354,12 @@ class MainWindow(Gtk.Window):
         return True
 
     def update_space(self) -> None:
+        """Take the gap between two pages from the preferences and redraw."""
         self._spacing = prefs['space between two pages']
         self.draw_image()
 
     def close_program(self, *args: object) -> None:
+        """Quit, keeping the window size unless it is a fullscreen one."""
         if not self.is_fullscreen():
             self.save_window_geometry()
         self.terminate_program()
@@ -1329,6 +1425,7 @@ def main_window() -> 'MainWindow | None':
 
 
 def set_main_window(window: 'MainWindow') -> None:
+    """Name <window> as the one main_window() answers with."""
     global __main_window
     __main_window = window
 

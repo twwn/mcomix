@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """The thumbnail sidebar, which makes its thumbnails as they come on screen.
 
 It was a Gtk.TreeView of cell renderers, all deprecated in GTK 4.10, and
@@ -23,7 +21,7 @@ from mcomix.preferences import prefs
 class ThumbnailSidebarTest(MComixTest):
 
     def setUp(self):
-        super(ThumbnailSidebarTest, self).setUp()
+        super().setUp()
         for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
                           constants.THUMBNAIL_PATH):
             os.makedirs(directory, exist_ok=True)
@@ -48,7 +46,7 @@ class ThumbnailSidebarTest(MComixTest):
         self.window.destroy()
         main.set_main_window(None)
         pump(2000)
-        super(ThumbnailSidebarTest, self).tearDown()
+        super().tearDown()
 
     def _pages(self):
         return self.window.imagehandler.get_number_of_pages()

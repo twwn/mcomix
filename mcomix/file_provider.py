@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """ file_provider.py - Handles listing files for the current directory and
     switching to the next/previous directory. """
 
@@ -10,11 +9,33 @@ from mcomix import archive_tools
 from mcomix import tools
 from mcomix import constants
 from mcomix import preferences
-from mcomix import i18n
 from mcomix import log
 from mcomix.i18n import _
 
 from collections.abc import Callable, Sequence
+
+# Listing a directory and sorting what it held are two steps, and sorting
+# by size or by date has to stat every name to do it, so a file can be
+# deleted in between.  One that has gone sorts as if it were empty and
+# ancient, losing its place, rather than taking the whole listing with it.
+
+def _modification_time(filename: str) -> float:
+    """ Returns the time <filename> was last modified, or 0 if it
+    cannot be read. """
+
+    try:
+        return os.path.getmtime(filename)
+    except OSError:
+        return 0.0
+
+def _file_size(filename: str) -> int:
+    """ Returns the size of <filename> in bytes, or 0 if it cannot be
+    read. """
+
+    try:
+        return os.path.getsize(filename)
+    except OSError:
+        return 0
 
 def get_file_provider(filelist: Sequence[str]) -> 'FileProvider | None':
     """ Initialize a FileProvider with the files in <filelist>.
@@ -45,7 +66,7 @@ def get_file_provider(filelist: Sequence[str]) -> 'FileProvider | None':
 
     return provider
 
-class FileProvider(object):
+class FileProvider:
     """ Base class for various file listing strategies. """
 
     # Constants for determining which files to list.
@@ -76,10 +97,10 @@ class FileProvider(object):
             files.sort(key=lambda filename: GLib.utf8_collate_key_for_filename(os.path.basename(filename), -1))
         elif preferences.prefs['sort by'] == constants.SORT_LAST_MODIFIED:
             # Most recently modified file first
-            files.sort(key=lambda filename: os.path.getmtime(filename)*-1)
+            files.sort(key=lambda filename: -_modification_time(filename))
         elif preferences.prefs['sort by'] == constants.SORT_SIZE:
             # Smallest file first
-            files.sort(key=lambda filename: os.stat(filename).st_size)
+            files.sort(key=_file_size)
         # else: don't sort at all: use OS ordering.
 
         # Default is ascending.
@@ -127,19 +148,17 @@ class OrderedFileProvider(FileProvider):
             should_accept = lambda file: True
 
         try:
-            files = [ os.path.join(self.base_dir, filename) for filename in
-                      # Explicitly convert all files to Unicode, even when
-                      # os.listdir returns a mixture of byte/unicode strings.
-                      # (MComix bug #3424405)
-                      [ i18n.to_unicode(fn) for fn in os.listdir(self.base_dir) ]
-                      if should_accept(os.path.join(self.base_dir, filename)) ]
-
-            FileProvider.sort_files(files)
-
-            return files
+            entries = os.listdir(self.base_dir)
         except OSError:
             log.warning('! ' + _('Could not open %s: Permission denied.'), self.base_dir)
             return []
+
+        files = [ path for path in
+                  ( os.path.join(self.base_dir, entry) for entry in entries )
+                  if should_accept(path) ]
+        FileProvider.sort_files(files)
+
+        return files
 
     def next_directory(self) -> bool:
         """ Switches to the next sibling directory. Next call to
@@ -173,58 +192,65 @@ class OrderedFileProvider(FileProvider):
 
     def __get_sibling_directories(self, dir: str) -> list[str]:
         """ Returns a list of all sibling directories of <dir>,
-            already sorted. """
+            already sorted. Empty if the parent cannot be read, which
+            leaves the caller where it was. """
 
         parent_dir = os.path.dirname(dir)
-        directories = [ os.path.join(parent_dir, directory)
-                for directory in os.listdir(parent_dir)
-                if os.path.isdir(os.path.join(parent_dir, directory)) ]
+        try:
+            entries = os.listdir(parent_dir)
+        except OSError:
+            log.warning('! ' + _('Could not open %s: Permission denied.'), parent_dir)
+            return []
+
+        directories = [ path for path in
+                ( os.path.join(parent_dir, entry) for entry in entries )
+                if os.path.isdir(path) ]
 
         tools.alphanumeric_sort(directories)
         return directories
 
 
 class PreDefinedFileProvider(FileProvider):
-    """ Returns only a list of files as passed to the constructor. """
+
+    """Only the files it was given, with the two kinds kept apart.
+
+    A list can name files of both kinds, and a directory named in it can
+    hold both by itself, so each kind is listed under its own mode
+    rather than the whole list being reduced to whichever kind happened
+    to come first.  The file handler asks for one kind at a time and
+    would not know what to do with a listing that mixed them.
+    """
 
     def __init__(self, files: Sequence[str]) -> None:
-        """ <files> is a list of files that should be shown. The list is filtered
-            to contain either only images, or only archives, depending on what the first
-            file is, since FileHandler will probably have problems of archives and images
-            are mixed in a file list. """
+        """Take the files to show from <files>.
 
-        should_accept = self.__get_file_filter(files)
-
-        self.__files = [ ]
+        A directory named there is listed for both kinds, since which of
+        them is wanted is not known until list_files() asks.
+        """
+        self.__files: dict[int, list[str]] = {
+            FileProvider.IMAGES: [],
+            FileProvider.ARCHIVES: [],
+        }
 
         for file in files:
             if os.path.isdir(file):
                 provider = OrderedFileProvider(file)
-                self.__files.extend(provider.list_files())
-
-            elif should_accept(file):
-                self.__files.append(os.path.abspath(file))
-
+                for mode, listed in self.__files.items():
+                    listed.extend(provider.list_files(mode))
+            elif image_tools.is_image_file(file):
+                self.__files[FileProvider.IMAGES].append(os.path.abspath(file))
+            elif archive_tools.is_archive_file(file):
+                self.__files[FileProvider.ARCHIVES].append(os.path.abspath(file))
 
     def list_files(self, mode: int = FileProvider.IMAGES) -> list[str]:
-        """ Returns the files as passed to the constructor. """
+        """The files of the kind <mode> asks for.
 
-        return self.__files
-
-    def __get_file_filter(self, files: Sequence[str]) -> Callable[[str], bool]:
-        """ Determines what kind of files should be filtered in the given list
-        of <files>. Returns either a filter accepting only images, or only archives,
-        depending on what type of file is found first in the list. """
-
-        for file in files:
-            if os.path.isfile(file):
-                if image_tools.is_image_file(file):
-                    return image_tools.is_image_file
-                if archive_tools.is_archive_file(file):
-                    return archive_tools.is_archive_file
-
-        # Default filter only accepts images.
-        return image_tools.is_image_file
+        A mode that is neither of the two lists everything, which is
+        what the ordered provider does with one.
+        """
+        if mode in self.__files:
+            return self.__files[mode]
+        return [path for listed in self.__files.values() for path in listed]
 
 
 # vim: expandtab:sw=4:ts=4

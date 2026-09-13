@@ -29,7 +29,7 @@ DEBUGGING_CONTEXT, NO_FILE_CONTEXT, IMAGE_FILE_CONTEXT, ARCHIVE_CONTEXT = -1, 0,
 class OpenWithException(Exception): pass
 
 
-class OpenWithManager(object):
+class OpenWithManager:
     def __init__(self) -> None:
         """ Constructor. """
         pass
@@ -49,7 +49,7 @@ class OpenWithManager(object):
                 for stored in prefs['openwith commands']]
 
 
-class OpenWithCommand(object):
+class OpenWithCommand:
     def __init__(self, label: str, command: str, cwd: str,
                  disabled_for_archives: bool) -> None:
         self.label = label
@@ -148,35 +148,56 @@ class OpenWithCommand(object):
         if not text.strip():
             raise OpenWithException(_('Command line is empty.'))
 
-        args = self._commandline_to_arguments(text, window,
+        return self._commandline_to_arguments(text, window,
             self._get_context_type(window, check_restrictions))
-        # Environment variables must be expanded after MComix variables,
-        # as win32 will eat %% and replace it with %.
-        args = [os.path.expandvars(arg) for arg in args]
-        return args
 
     def _commandline_to_arguments(self, line: str, window: 'main.MainWindow',
                                   context_type: int) -> list[str]:
-        """ Parse a command line string into a list containing
-        the parts to pass to Popen. The following two functions have
-        been contributed by Ark <aaku@users.sf.net>. """
+        """ Split <line> into the arguments to pass to Popen.
+
+        Spaces separate arguments unless they stand inside a pair of
+        quotes; "%" begins a variable, which _expand_variable() puts a
+        file name in place of, and "%%" and \'%"\' are a per cent sign
+        and a quotation mark of their own.
+
+        The environment\'s own variables are expanded in what the reader
+        typed, and only there: a file name that reads as one is a file
+        name.  So the two are kept apart as the line is walked, <typed>
+        holding the characters that came from the command line and <buf>
+        what the argument has come to so far.
+
+        The parser was contributed by Ark <aaku@users.sf.net>.
+        """
         result = []
+        typed = ""
         buf = ""
         quote = False
         escape = False
         inarg = False
+
+        def expanded() -> str:
+            """What has been typed since the last expansion, expanded."""
+            nonlocal typed
+            text = os.path.expandvars(typed)
+            typed = ""
+            return text
+
         for c in line:
             if escape:
+                buf += expanded()
                 if c == '%' or c == '"':
+                    # Kept out of the expansion above: win32 writes the
+                    # environment\'s variables between per cent signs, so
+                    # a doubled one would be read as the start of a name.
                     buf += c
                 else:
                     buf += self._expand_variable(c, window, context_type)
                 escape = False
             elif c == ' ' or c == '\t':
                 if quote:
-                    buf += c
+                    typed += c
                 elif inarg:
-                    result.append(buf)
+                    result.append(buf + expanded())
                     buf = ""
                     inarg = False
             else:
@@ -185,7 +206,7 @@ class OpenWithCommand(object):
                 elif c == '%':
                     escape = True
                 else:
-                    buf += c
+                    typed += c
                 inarg = True
 
         if escape:
@@ -198,7 +219,7 @@ class OpenWithCommand(object):
                   "For a literal '\"', use '%\"'."))
 
         if inarg:
-            result.append(buf)
+            result.append(buf + expanded())
         return result
 
     def _expand_variable(self, identifier: str, window: 'main.MainWindow',
@@ -305,7 +326,7 @@ class OpenWithEditor(Dialog):
     def __init__(self, window: 'main.MainWindow',
                  openwithmanager: OpenWithManager) -> None:
         # GTK4's Gtk.Dialog takes properties, not a positional title.
-        super(OpenWithEditor, self).__init__(
+        super().__init__(
             title=_('Edit external commands'), transient_for=window)
         self.set_destroy_with_parent(True)
         self._window = window

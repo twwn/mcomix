@@ -40,7 +40,7 @@ class _ScalingData:
     forced_vol_err: float
 
 
-class ZoomModel(object):
+class ZoomModel:
     """ Handles zoom and fit modes. """
 
     def __init__(self) -> None:

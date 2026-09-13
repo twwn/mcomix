@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """What the program does before it has a window to say it in."""
 
 import unittest.mock

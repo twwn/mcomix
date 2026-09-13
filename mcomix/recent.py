@@ -18,7 +18,7 @@ from mcomix import log
 from mcomix.i18n import _
 
 
-class RecentFilesMenu(object):
+class RecentFilesMenu:
 
     """The "Recent" submenu, built from the recently-used file list GTK
     keeps for every application.

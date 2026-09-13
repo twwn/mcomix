@@ -5,7 +5,7 @@ from mcomix import tools
 from collections.abc import Sequence
 
 
-class Box(object):
+class Box:
 
     def __init__(self, size: Sequence[int],
                  position: Sequence[int] | None = None) -> None:

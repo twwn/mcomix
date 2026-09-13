@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """The window MComix' dialogs are built out of.
 
 Gtk.Dialog is deprecated as of GTK 4.10 and has no replacement for what
@@ -21,7 +19,7 @@ from mcomix.preferences import prefs
 class DialogTest(MComixTest):
 
     def setUp(self):
-        super(DialogTest, self).setUp()
+        super().setUp()
         self.dialog = dialog.Dialog(title='Test')
         self.answers = []
         self.dialog.connect('response', lambda _d, r: self.answers.append(r))
@@ -31,7 +29,7 @@ class DialogTest(MComixTest):
         # next.
         self.dialog.destroy()
         pump()
-        super(DialogTest, self).tearDown()
+        super().tearDown()
 
     def test_it_is_painted_as_a_dialog_rather_than_as_a_window(self):
         """A Gtk.Dialog carried the dialog style class, and a theme -
@@ -95,7 +93,7 @@ class DialogTest(MComixTest):
         # emptied the moment the subclass ran its constructor.
         class _WithButtons(dialog.Dialog):
             def __init__(self):
-                super(_WithButtons, self).__init__()
+                super().__init__()
                 self._buttons = []
 
         subclass = _WithButtons()
@@ -160,7 +158,7 @@ class MessageDialogTest(MComixTest):
     """
 
     def setUp(self):
-        super(MessageDialogTest, self).setUp()
+        super().setUp()
         self.parent = Gtk.Window()
         self.dialogs = []
 
@@ -169,7 +167,7 @@ class MessageDialogTest(MComixTest):
             built.destroy()
         self.parent.destroy()
         pump()
-        super(MessageDialogTest, self).tearDown()
+        super().tearDown()
 
     def _build(self, **kwargs):
         built = message_dialog.MessageDialog(self.parent, **kwargs)

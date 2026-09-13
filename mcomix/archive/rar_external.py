@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """ RAR archive extractor. """
 
 import functools
@@ -15,10 +13,17 @@ from mcomix.archive import archive_base
 class RarArchive(archive_base.ExternalExecutableArchive):
     """ RAR file extractor using the unrar/rar executable. """
 
+    #: Which part of a listing the parser is in: the block describing
+    #: the archive, then the entries themselves.
     STATE_HEADER, STATE_LISTING = 1, 2
 
     class EncryptedHeader(Exception):
-        pass
+        """The listing itself is encrypted, so it needs a password.
+
+        Raised out of the parser to abandon a listing that has only
+        produced a header, and caught by iter_contents(), which starts
+        again with the password the reader is asked for.
+        """
 
     def __init__(self, archive: str) -> None:
         super().__init__(archive)
@@ -34,29 +39,53 @@ class RarArchive(archive_base.ExternalExecutableArchive):
         return self._find_unrar_executable()
 
     def _get_password_argument(self) -> str:
+        """The -p switch to pass unrar.
+
+        Every invocation carries one, encrypted archive or not: without
+        it, unrar meeting an archive it does want a password for stops
+        to read one from a terminal that is not there, and nothing ever
+        comes back.  "-p-" says explicitly that there is none.
+        """
         if not self._is_encrypted:
-            # Add a dummy password anyway, to prevent deadlock on reading for
-            # input if we did not correctly detect the archive is encrypted.
             return '-p-'
         password = self._get_password()
-        # Check for invalid empty password, see comment above.
         if not password:
             return '-p-'
         return '-p' + password
 
     def _get_list_arguments(self) -> list[str]:
+        """The command that lists the archive.
+
+        "vt" is the verbose technical listing, which names each entry on
+        a line of its own rather than in columns that a long name would
+        run over.
+        """
         args = [self._executable, 'vt']
         args.append(self._get_password_argument())
         args.extend(('--', self.archive))
         return args
 
     def _get_extract_arguments(self) -> list[str]:
+        """The command that writes the archive's files to standard output.
+
+        "p" prints rather than unpacking to disk, "-inul" silences the
+        progress lines that would otherwise be mixed into that output,
+        and "-@" stops unrar from reading a file list from its input.
+        """
         args = [self._executable, 'p', '-inul', '-@']
         args.append(self._get_password_argument())
         args.extend(('--', self.archive))
         return args
 
     def _parse_list_output_line(self, line: str) -> str | None:
+        """Take one line of the listing, returning a name if it named one.
+
+        The technical listing gives each entry several lines - Name,
+        Size, Flags - so a name is returned as it is read and the lines
+        under it are recorded against it.  Only entries with a size are
+        kept for iter_extract(): a directory has none, and nothing is
+        printed for it later.
+        """
         if self._state == self.STATE_HEADER:
             if line.startswith('Details: '):
                 flags = line[9:].split(', ')
@@ -88,15 +117,24 @@ class RarArchive(archive_base.ExternalExecutableArchive):
         return None
 
     def is_solid(self) -> bool:
+        """Whether the archive was packed as one stream.
+
+        Only known once it has been listed; the header says so.
+        """
         return self._is_solid
 
     def iter_contents(self) -> Iterator[str]:
+        """Yield the name of every file in the archive.
+
+        An archive with an encrypted header cannot be listed at all
+        without the password, and there is no way to know that before
+        trying: the first attempt is made without one, and the parser
+        raises EncryptedHeader if the header says it needs one, which
+        starts the second and last attempt.
+        """
         if not self._get_executable():
             return
 
-        # We'll try at most 2 times:
-        # - the first time without a password
-        # - a second time with a password if the header is encrypted
         for retry_count in range(2):
             self._state = self.STATE_HEADER
             self._path = ''
@@ -110,11 +148,8 @@ class RarArchive(archive_base.ExternalExecutableArchive):
                     if filename is not None:
                         yield self._unicode_filename(filename)
             except self.EncryptedHeader:
-                # The header is encrypted, try again
-                # if it was our first attempt.
                 if 0 == retry_count:
                     continue
-            # Last and/or successful attempt.
             break
 
         self.filenames_initialized = True
@@ -139,7 +174,15 @@ class RarArchive(archive_base.ExternalExecutableArchive):
             output.close()
 
     def iter_extract(self, entries: Iterable[str], destination_dir: str) -> Iterator[str]:
+        """Extract <entries> to <destination_dir>, yielding as each lands.
 
+        One unrar run prints the whole archive to a pipe, in the order
+        the listing gave, and the sizes recorded while listing say where
+        each file ends.  That is what makes this worth having over the
+        inherited one file at a time: a solid archive is unpacked once
+        rather than once per file.  Unwanted files are still read, since
+        the only way past a file in the stream is through it.
+        """
         if not self._get_executable():
             return
 

@@ -19,7 +19,7 @@ MINIMUM_DELAY = 10
 DEFAULT_DELAY = 100
 
 
-class Frames(object):
+class Frames:
 
     """The frames of one animation, in order, for ever.
 

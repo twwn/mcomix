@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """ Logging module for MComix. Provides a logger 'mcomix' with a few
 pre-configured settings. Functions in this module are redirected to
 this default logger. """

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """ LHA archive extractor. """
 
 import functools
@@ -27,9 +25,11 @@ class LhaArchive(archive_base.ExternalExecutableArchive):
         return ['lq2']
 
     def _get_extract_arguments(self) -> list[str]:
+        """The command letter that writes a member to standard output."""
         return ['pq2']
 
     def _parse_list_output_line(self, line: str) -> str | None:
+        """The name in one listing line, or None if it named nothing."""
         match = self._LIST_LINE_RE.match(line)
         if match:
             return match.group(1)

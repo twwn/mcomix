@@ -19,8 +19,7 @@ if TYPE_CHECKING:
 class _CommentsDialog(Dialog):
 
     def __init__(self, window: "main.MainWindow") -> None:
-        super(_CommentsDialog, self).__init__(
-            title=_('Comments'), transient_for=window)
+        super().__init__(title=_('Comments'), transient_for=window)
         self.add_buttons(_('_Close'), Response.CLOSE)
 
         self.set_resizable(True)

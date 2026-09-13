@@ -65,7 +65,7 @@ class Row(GObject.Object):
     }
 
     def __init__(self, **values: object) -> None:
-        super(Row, self).__init__()
+        super().__init__()
         for name, value in values.items():
             setattr(self, name, value)
 
@@ -79,14 +79,14 @@ class Row(GObject.Object):
     def __setattr__(self, name: str, value: object) -> None:
         # The write side of __getattr__: a column writes back whatever
         # attribute it was told to show, and none of them are declared.
-        super(Row, self).__setattr__(name, value)
+        super().__setattr__(name, value)
 
     def changed(self) -> None:
         """Redraw this row: something it shows is not what it was."""
         self.emit('changed')
 
 
-class _Cell(object):
+class _Cell:
 
     """What every cell of a ColumnListView remembers.
 
@@ -109,7 +109,7 @@ class _TextCell(Gtk.Label, _Cell):
     __gtype_name__ = 'MComixColumnTextCell'
 
     def __init__(self) -> None:
-        super(_TextCell, self).__init__()
+        super().__init__()
         self._init_cell()
         self.set_xalign(0.0)
         self.set_ellipsize(Pango.EllipsizeMode.END)
@@ -120,7 +120,7 @@ class _IconCell(Gtk.Image, _Cell):
     __gtype_name__ = 'MComixColumnIconCell'
 
     def __init__(self) -> None:
-        super(_IconCell, self).__init__()
+        super().__init__()
         self._init_cell()
         self.set_halign(Gtk.Align.CENTER)
 
@@ -130,7 +130,7 @@ class _ToggleCell(Gtk.CheckButton, _Cell):
     __gtype_name__ = 'MComixColumnToggleCell'
 
     def __init__(self) -> None:
-        super(_ToggleCell, self).__init__()
+        super().__init__()
         self._init_cell()
         self.set_halign(Gtk.Align.CENTER)
 
@@ -140,7 +140,7 @@ class _ChoiceCell(Gtk.DropDown, _Cell):
     __gtype_name__ = 'MComixColumnChoiceCell'
 
     def __init__(self) -> None:
-        super(_ChoiceCell, self).__init__()
+        super().__init__()
         self._init_cell()
         self.set_model(Gtk.StringList())
 
@@ -161,7 +161,7 @@ class _EditableCell(Gtk.EditableLabel, _Cell):  # type: ignore[misc]
     __gtype_name__ = 'MComixColumnEditableCell'
 
     def __init__(self) -> None:
-        super(_EditableCell, self).__init__()
+        super().__init__()
         self._init_cell()
         #: Told the row and the text it was given.
         self.edited: "Callable[[Row, str], None] | None" = None
@@ -313,7 +313,7 @@ class _ClampLayout(Gtk.LayoutManager):
     __gtype_name__ = 'MComixClampLayout'
 
     def __init__(self, width: int) -> None:
-        super(_ClampLayout, self).__init__()
+        super().__init__()
         self._width = width
 
     def do_measure(self, widget: Gtk.Widget, orientation: Gtk.Orientation,
@@ -355,7 +355,7 @@ class _AccelCell(Gtk.Button, _Cell):
     __gtype_name__ = 'MComixColumnAccelCell'
 
     def __init__(self) -> None:
-        super(_AccelCell, self).__init__()
+        super().__init__()
         self._init_cell()
         self.set_has_frame(False)
         # A shortcut label draws its disabled text where it has no
@@ -470,7 +470,7 @@ class ColumnListView(Gtk.ColumnView):
             # empty until something was clicked.
             self.selection.set_autoselect(False)
             self.selection.set_can_unselect(True)
-        super(ColumnListView, self).__init__(model=self.selection)
+        super().__init__(model=self.selection)
         self._sorted.set_sorter(self.get_sorter())
         self._reorderable = False
         #: Every column, by the attribute it shows, in the order added.

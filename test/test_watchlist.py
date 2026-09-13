@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """The library's watch list dialog.
 
 It was a Gtk.TreeView with a text column, a Gtk.CellRendererCombo and a
@@ -22,7 +20,7 @@ from mcomix.library import watchlist
 class _StubLibrary(Gtk.Window):
 
     def __init__(self, library_backend):
-        super(_StubLibrary, self).__init__()
+        super().__init__()
         self.backend = library_backend
         self.scans = 0
 
@@ -33,7 +31,7 @@ class _StubLibrary(Gtk.Window):
 class WatchListDialogTest(MComixTest):
 
     def setUp(self):
-        super(WatchListDialogTest, self).setUp()
+        super().setUp()
         os.makedirs(constants.DATA_DIR, exist_ok=True)
         self.backend = backend.LibraryBackend()
         self.watched = []
@@ -53,7 +51,7 @@ class WatchListDialogTest(MComixTest):
                 window.destroy()
         pump()
         self.backend.close()
-        super(WatchListDialogTest, self).tearDown()
+        super().tearDown()
 
     def _directories(self):
         return sorted(row.directory for row in self.dialog._list.each_row())

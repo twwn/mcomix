@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """The preferences dialog, and the state its controls come up in.
 
 A pair of radio buttons stands for one either/or preference. Two of them
@@ -27,7 +25,7 @@ from mcomix.preferences import prefs
 class PreferencesDialogTest(MComixTest):
 
     def setUp(self):
-        super(PreferencesDialogTest, self).setUp()
+        super().setUp()
         for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
                           constants.THUMBNAIL_PATH):
             os.makedirs(directory, exist_ok=True)
@@ -43,7 +41,7 @@ class PreferencesDialogTest(MComixTest):
         self.window.destroy()
         main.set_main_window(None)
         pump()
-        super(PreferencesDialogTest, self).tearDown()
+        super().tearDown()
 
     dialog = None
 

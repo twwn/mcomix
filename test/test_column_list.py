@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """The rows-and-columns list behind MComix' several list dialogs.
 
 This is what a Gtk.TreeView over a Gtk.ListStore was. What the store
@@ -21,7 +19,7 @@ class ColumnListViewTest(MComixTest):
     NAMES = ('one', 'two', 'three')
 
     def setUp(self):
-        super(ColumnListViewTest, self).setUp()
+        super().setUp()
         self.view = column_list.ColumnListView()
         self.view.add_text_column('Name', 'name', expand=True)
         self.view.add_text_column('Size', 'size')
@@ -41,7 +39,7 @@ class ColumnListViewTest(MComixTest):
         # next.
         self.window.destroy()
         pump()
-        super(ColumnListViewTest, self).tearDown()
+        super().tearDown()
 
     def _settle(self):
         for _ in range(20):

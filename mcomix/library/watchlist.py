@@ -26,7 +26,7 @@ class WatchListDialog(Dialog):
         """ Dialog constructor.
         @param library: Dialog parent window, should be library window.
         """
-        super(WatchListDialog, self).__init__(
+        super().__init__(
             title=_("Library watch list"), transient_for=library,
             destroy_with_parent=True, modal=True)
         self.add_buttons(_('_Scan now'), WatchListDialog.RESPONSE_SCANNOW,

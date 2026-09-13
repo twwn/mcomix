@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """What the status bar puts on screen.
 
 The bar used to hold a Gtk.Statusbar, deprecated as of GTK 4.10, whose
@@ -19,7 +17,7 @@ from mcomix.preferences import prefs
 class StatusbarTextTest(MComixTest):
 
     def setUp(self):
-        super(StatusbarTextTest, self).setUp()
+        super().setUp()
         prefs['statusbar fields'] = (constants.STATUS_PAGE |
                                      constants.STATUS_FILENAME)
         self.bar = status.Statusbar()
@@ -28,7 +26,7 @@ class StatusbarTextTest(MComixTest):
 
     def tearDown(self):
         self.window.destroy()
-        super(StatusbarTextTest, self).tearDown()
+        super().tearDown()
 
     def _text(self):
         return self.bar.status.get_text().strip()

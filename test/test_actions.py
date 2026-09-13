@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """What an action table's callback is handed when its action runs.
 
 Gio hands an activate handler both the action and the parameter it was
@@ -17,7 +15,7 @@ from mcomix import ui
 class ActionTableTest(MComixTest):
 
     def setUp(self):
-        super(ActionTableTest, self).setUp()
+        super().setUp()
         self.actions = ui._Actions()
         self.ran = []
 

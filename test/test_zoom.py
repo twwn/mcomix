@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """What the zoom model computes, which nothing else in the suite reaches."""
 
 from . import MComixTest

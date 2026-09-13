@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """Tests for the library database schema itself."""
 
 import os

@@ -1,5 +1,3 @@
-# coding: utf-8
-
 """The frames of a page that moves.
 
 GdkPixbuf.PixbufAnimation, which used to be both the answer to "does
@@ -74,7 +72,7 @@ class GlycinFramesTest(MComixTest):
     """
 
     def setUp(self):
-        super(GlycinFramesTest, self).setUp()
+        super().setUp()
         try:
             image_tools.glycin()
         except Exception as error:

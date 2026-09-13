@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """Moving the viewport over the page."""
 
 from . import MComixTest
@@ -12,7 +10,7 @@ from mcomix.scrolling import Scrolling
 class ScrollingTest(MComixTest):
 
     def setUp(self):
-        super(ScrollingTest, self).setUp()
+        super().setUp()
         self.scrolling = Scrolling()
 
     def test_an_invalid_destination_is_reported_as_one(self):

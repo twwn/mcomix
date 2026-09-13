@@ -25,7 +25,7 @@ class Pageselector(Dialog):
 
     def __init__(self, window: "main.MainWindow") -> None:
         self._window = window
-        super(Pageselector, self).__init__(
+        super().__init__(
             title=_('Go to page...'), transient_for=window,
             modal=True, destroy_with_parent=True)
         self.add_buttons(_('_Go'), Response.OK,

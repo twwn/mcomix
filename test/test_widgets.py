@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """The helpers for widgets whose API changed in GTK4.
 
 popup_at() is the one with something to get wrong: a Gtk.Menu was
@@ -18,7 +16,7 @@ from mcomix import widgets
 class PopupAtTest(MComixTest):
 
     def setUp(self):
-        super(PopupAtTest, self).setUp()
+        super().setUp()
         model = Gio.Menu()
         model.append('Something', 'app.something')
         self.popover = Gtk.PopoverMenu.new_from_model(model)
@@ -37,7 +35,7 @@ class PopupAtTest(MComixTest):
         self.popover.popdown()
         self.window.destroy()
         pump()
-        super(PopupAtTest, self).tearDown()
+        super().tearDown()
 
     def _settle(self):
         for _ in range(20):

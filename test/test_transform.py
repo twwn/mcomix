@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """The 2x2 matrices the viewer turns and flips pages with.
 
 Nothing covered transform.py at all, and the one thing it is for -

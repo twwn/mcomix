@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """The library's cover area, and the black it is painted on."""
 
 import sqlite3
@@ -24,7 +22,7 @@ def _children(widget):
         child = child.get_next_sibling()
 
 
-class _Event(object):
+class _Event:
 
     """Stands in for the observable the backend exposes."""
 
@@ -32,12 +30,12 @@ class _Event(object):
         return self
 
 
-class _Backend(object):
+class _Backend:
 
     book_added_to_collection = _Event()
 
 
-class _Library(object):
+class _Library:
 
     backend = _Backend()
 
@@ -60,7 +58,7 @@ class BlackBackgroundTest(MComixTest):
     """
 
     def setUp(self):
-        super(BlackBackgroundTest, self).setUp()
+        super().setUp()
         self.area = book_area._BookArea(_Library())
         self.window = Gtk.Window()
         self.window.set_default_size(200, 200)
@@ -70,7 +68,7 @@ class BlackBackgroundTest(MComixTest):
         # A window left on screen is answered by whatever looks for one
         # next.
         self.window.destroy()
-        super(BlackBackgroundTest, self).tearDown()
+        super().tearDown()
 
     def test_the_covers_are_painted_on_black(self):
         self.window.present()
@@ -82,7 +80,7 @@ class BlackBackgroundTest(MComixTest):
             book_area._BookArea._BLACK_CSS_CLASS))
 
 
-class _Book(object):
+class _Book:
 
     """Enough of a library book for a cover to be made from it."""
 
@@ -146,7 +144,7 @@ class CoverRemovalTest(MComixTest):
     """
 
     def setUp(self):
-        super(CoverRemovalTest, self).setUp()
+        super().setUp()
         self.area = book_area._BookArea(_Library())
         self.area._covers.set_items(
             book_area._BookItem(_Book(index, '/books/%d.cbz' % index))
@@ -154,7 +152,7 @@ class CoverRemovalTest(MComixTest):
 
     def tearDown(self):
         self.area.close()
-        super(CoverRemovalTest, self).tearDown()
+        super().tearDown()
 
     def _ids(self):
         return [item.uid for item in self.area._covers.each_item()]
@@ -181,7 +179,7 @@ class CoverSizeDialogTest(MComixTest):
     carrying its own content area.
     """
 
-    class _Action(object):
+    class _Action:
 
         """Enough of a Gio.SimpleAction for the handler to set a state."""
 
@@ -192,7 +190,7 @@ class CoverSizeDialogTest(MComixTest):
             self.state = state
 
     def setUp(self):
-        super(CoverSizeDialogTest, self).setUp()
+        super().setUp()
         self.library = _LibraryWindow()
         self.area = book_area._BookArea(self.library)
         # Redrawing the covers needs a whole library behind it; that a
@@ -208,7 +206,7 @@ class CoverSizeDialogTest(MComixTest):
             window.destroy()
         self.area.close()
         self.library.destroy()
-        super(CoverSizeDialogTest, self).tearDown()
+        super().tearDown()
 
     def _opened_dialogs(self):
         return [window for window in
@@ -265,7 +263,7 @@ class _RecordingBackend(_Backend):
         return 'Collection'
 
 
-class _RecordingLibrary(object):
+class _RecordingLibrary:
 
     def __init__(self, refuse=False):
         self.backend = _RecordingBackend(refuse)
@@ -284,7 +282,7 @@ class DeleteFromDiskTest(MComixTest):
     """The confirmation that deletes books from the disk."""
 
     def setUp(self):
-        super(DeleteFromDiskTest, self).setUp()
+        super().setUp()
         self.library = _LibraryWindow()
         self.area = book_area._BookArea(self.library)
         self.area._covers.set_items(
@@ -296,7 +294,7 @@ class DeleteFromDiskTest(MComixTest):
             dialog.destroy()
         self.library.destroy()
         self.area.close()
-        super(DeleteFromDiskTest, self).tearDown()
+        super().tearDown()
 
     def _dialogs(self):
         return [window for window in Gtk.Window.list_toplevels()

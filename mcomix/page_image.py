@@ -10,6 +10,7 @@ from collections.abc import Sequence
 from mcomix import animation
 from mcomix import image_tools
 from mcomix import log
+from mcomix.i18n import _
 
 
 # pygobject-stubs declares props on GObject.Object and on the
@@ -29,7 +30,7 @@ class _AnimationPaintable(GObject.GObject, Gdk.Paintable):  # type: ignore[misc]
     __gtype_name__ = 'MComixAnimationPaintable'
 
     def __init__(self, width: int, height: int) -> None:
-        super(_AnimationPaintable, self).__init__()
+        super().__init__()
         self._width = width
         self._height = height
         self._texture: Gdk.Texture | None = None
@@ -74,7 +75,7 @@ class PageImage(Gtk.Picture):
     __gtype_name__ = 'MComixPageImage'
 
     def __init__(self) -> None:
-        super(PageImage, self).__init__()
+        super().__init__()
         # A page is drawn at its own size, on a canvas that scrolls over
         # it, rather than shrunk to whatever room happens to be left.
         self.set_can_shrink(False)
@@ -166,7 +167,7 @@ class PageImage(Gtk.Picture):
             try:
                 texture, delay = frames.next()
             except Exception as error:
-                log.error('! Could not draw the next frame: %s', error)
+                log.error(_('! Could not draw the next frame: %s'), error)
                 return
             if delay <= 0:
                 # The end of an animation that does not go round again.

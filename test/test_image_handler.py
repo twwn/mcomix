@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """ Tests for the parts of the image handler that decide how a page is
 shown, which every page stepped over is asked about. """
 
@@ -14,7 +12,7 @@ from mcomix import image_handler
 from mcomix.preferences import prefs
 
 
-class _StubFileHandler(object):
+class _StubFileHandler:
 
     archive_type = None
     file_loaded = False
@@ -24,7 +22,7 @@ class _StubFileHandler(object):
         pass
 
 
-class _StubWindow(object):
+class _StubWindow:
 
     def __init__(self):
         self.filehandler = _StubFileHandler()
@@ -36,7 +34,7 @@ class _StubWindow(object):
 class VirtualDoublePageTest(MComixTest):
 
     def setUp(self):
-        super(VirtualDoublePageTest, self).setUp()
+        super().setUp()
         prefs['max pages to cache'] = 4
         prefs['default double page'] = True
         prefs['virtual double page for fitting images'] = constants.SHOW_DOUBLE_AS_ONE_WIDE
@@ -44,7 +42,7 @@ class VirtualDoublePageTest(MComixTest):
 
     def tearDown(self):
         self.handler.cleanup()
-        super(VirtualDoublePageTest, self).tearDown()
+        super().tearDown()
 
     def _open(self, *names):
         """Make a book out of the named test images, and go to its first page."""
@@ -112,7 +110,7 @@ class CacheWindowTest(MComixTest):
     shown."""
 
     def setUp(self):
-        super(CacheWindowTest, self).setUp()
+        super().setUp()
         self.handler = image_handler.ImageHandler(_StubWindow())
         self.handler.set_image_files(['%02d.png' % n for n in range(1, 11)])
         for page in range(1, 11):
@@ -120,7 +118,7 @@ class CacheWindowTest(MComixTest):
 
     def tearDown(self):
         self.handler.cleanup()
-        super(CacheWindowTest, self).tearDown()
+        super().tearDown()
 
     def _wanted(self, cache_pages, double_page, page):
         prefs['default double page'] = double_page
@@ -172,12 +170,12 @@ class NoPageYetTest(MComixTest):
     """
 
     def setUp(self):
-        super(NoPageYetTest, self).setUp()
+        super().setUp()
         self.handler = image_handler.ImageHandler(_StubWindow())
 
     def tearDown(self):
         self.handler.cleanup()
-        super(NoPageYetTest, self).tearDown()
+        super().tearDown()
 
     def test_there_are_no_pages_to_show(self):
         self.assertEqual(self.handler.get_pixbufs(1), [])
@@ -202,7 +200,7 @@ class BeforeAPageIsChosenTest(MComixTest):
     """
 
     def setUp(self):
-        super(BeforeAPageIsChosenTest, self).setUp()
+        super().setUp()
         self.handler = image_handler.ImageHandler(_StubWindow())
         self.handler.set_image_files(['/nowhere/one.jpg', '/nowhere/two.jpg'])
 

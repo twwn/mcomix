@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """ Unicode-aware wrapper for zipfile.ZipFile. """
 
 import os
@@ -22,11 +20,19 @@ def is_py_supported_zipfile(path: str) -> bool:
     return True
 
 class ZipArchive(archive_base.NonUnicodeArchive):
+
+    """A ZIP file read through the standard library."""
+
     def __init__(self, archive: str) -> None:
         super().__init__(archive)
         self.zip = zipfile.ZipFile(archive, 'r')
 
     def iter_contents(self) -> Iterator[str]:
+        """Yield the name of every member.
+
+        The password is asked for here rather than at the first read, so
+        that a reader who declines is not asked again per page.
+        """
         if self._has_encryption():
             self.zip.setpassword(i18n.to_utf8(self._get_password()))
 
@@ -34,6 +40,7 @@ class ZipArchive(archive_base.NonUnicodeArchive):
             yield self._unicode_filename(filename)
 
     def extract(self, filename: str, destination_dir: str) -> None:
+        """Write member <filename> into <destination_dir>."""
         original_filename = self._original_filename(filename)
         # Read before creating the destination, so a member that cannot be
         # read does not leave an empty file behind.
@@ -52,6 +59,7 @@ class ZipArchive(archive_base.NonUnicodeArchive):
 
 
     def close(self) -> None:
+        """Close the ZIP file."""
         self.zip.close()
 
     def _has_encryption(self) -> bool:

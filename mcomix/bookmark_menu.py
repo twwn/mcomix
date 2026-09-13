@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from mcomix import ui as ui_module
 
 
-class BookmarksMenu(object):
+class BookmarksMenu:
 
     """The bookmarks menu: two fixed entries, and one per bookmark.
 

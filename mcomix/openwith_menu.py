@@ -16,7 +16,7 @@ _openwith_manager = openwith.OpenWithManager()
 # Reference to the edit dialog (to keep only one instance)
 _openwith_edit_diag = None
 
-class OpenWithMenu(object):
+class OpenWithMenu:
 
     """The "Open with" submenu, listing the commands the user has set up.
 

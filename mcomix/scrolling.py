@@ -8,7 +8,7 @@ import math
 from collections.abc import Sequence
 
 
-class Scrolling(object):
+class Scrolling:
 
     def __init__(self) -> None:
         #: The last two answers of _bresenham_sums(), each kept beside

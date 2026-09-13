@@ -19,7 +19,7 @@ class SimpleFileChooserDialog(file_chooser_base_dialog._BaseFileChooserDialog):
     def __init__(self, action: Gtk.FileChooserAction = Gtk.FileChooserAction.OPEN,
                  parent: "Gtk.Window | None" = None,
                  folder: str | None = None) -> None:
-        super(SimpleFileChooserDialog, self).__init__(action, parent, folder)
+        super().__init__(action, parent, folder)
         if action == Gtk.FileChooserAction.OPEN:
             self.filechooser.set_select_multiple(True)
         self._paths: list[str] | None = None

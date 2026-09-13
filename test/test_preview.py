@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """ How large a preview of a page is drawn. """
 
 from gi.repository import Gtk

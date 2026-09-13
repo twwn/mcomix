@@ -23,7 +23,7 @@ if TYPE_CHECKING:
     # named while the checker is reading and not while Python is.
     from mcomix import main
 
-class ImageHandler(object):
+class ImageHandler:
 
     """The FileHandler keeps track of images, pages, caches and reads files.
 

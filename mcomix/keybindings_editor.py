@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """ Configuration list for the preferences dialog to edit keybindings. """
 
 from gi.repository import Gtk
@@ -19,7 +17,7 @@ class KeybindingEditorWindow(Gtk.ScrolledWindow):
 
     def __init__(self, keymanager: keybindings._KeybindingManager) -> None:
         """ @param keymanager: KeybindingManager instance. """
-        super(KeybindingEditorWindow, self).__init__()
+        super().__init__()
         widgets.set_border(self, 5)
         self.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.ALWAYS)
 

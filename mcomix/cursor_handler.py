@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from mcomix import main
 
-class CursorHandler(object):
+class CursorHandler:
 
     def __init__(self, window: "main.MainWindow") -> None:
         self._window = window

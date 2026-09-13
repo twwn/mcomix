@@ -10,7 +10,7 @@ from mcomix import tools
 from mcomix import box
 
 
-class FiniteLayout(object): # 2D only
+class FiniteLayout: # 2D only
 
     @staticmethod
     def create_finite_layout(

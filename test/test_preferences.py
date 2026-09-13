@@ -1,3 +1,5 @@
+import ast
+import glob
 import json
 import os
 import pickle
@@ -9,6 +11,45 @@ from mcomix import constants
 from mcomix import preferences
 from mcomix.preferences import prefs
 from mcomix.preferences import _FORMAT_VERSION_KEY
+
+
+def _sources():
+    """Every module of MComix, as a path."""
+    found = []
+    for pattern in ('mcomix/*.py', 'mcomix/archive/*.py',
+                    'mcomix/archive/native_pdf/*.py', 'mcomix/library/*.py'):
+        found.extend(sorted(glob.glob(os.path.join(constants.BASE_PATH, pattern))))
+    return found
+
+
+def _table_keys(tree):
+    """The keys of the two tables in preferences.py that name every
+    preference: the TypedDict describing them and the defaults.
+
+    They are what the test asks about, so a name that appears only there
+    is a name nothing uses.
+    """
+    keys = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Dict):
+            for key in node.keys:
+                if isinstance(key, ast.Constant) and isinstance(key.value, str):
+                    keys.add(id(key))
+    return keys
+
+
+def _named_in_the_source():
+    """Every string the source of MComix holds, bar the two tables."""
+    named = {}
+    for path in _sources():
+        tree = ast.parse(open(path).read())
+        skip = _table_keys(tree) if os.path.basename(path) == 'preferences.py' else set()
+        for node in ast.walk(tree):
+            if (isinstance(node, ast.Constant) and isinstance(node.value, str)
+                    and id(node) not in skip):
+                named.setdefault(node.value, []).append(
+                    '%s:%d' % (os.path.relpath(path, constants.BASE_PATH), node.lineno))
+    return named
 
 
 class ReadPreferencesFileTest(MComixTest):
@@ -364,5 +405,64 @@ class WriteOnChangeTest(MComixTest):
         preferences.read_preferences_file()
         self.assertFalse(preferences._write_source)
 
+
+
+
+class EveryPreferenceIsUsedTest(MComixTest):
+
+    """A preference nothing reads is a control that does nothing.
+
+    That has happened here: a pair of radio buttons was given a
+    preference each, and the one the first button was given was read by
+    nothing at all, so whatever it was set to went out with the wash.
+    Both directions are checked - every preference is named somewhere,
+    and every name a control is given is a preference.
+    """
+
+    #: Where a control is handed the name of the preference it stands
+    #: for, and which of its arguments that name is.  Nothing else can
+    #: check these: they are strings at run time, where a mistake in
+    #: prefs['...'] is an error the type checker reports.
+    _CONTROLS = (
+        ('_create_pref_check_button', 1),
+        ('_create_binary_pref_radio_buttons', 3),
+        ('_create_color_button', 0),
+        ('_create_pref_spinner', 0),
+        ('_update_toggle_preference', 0),
+        ('_should_toggle_be_visible', 0),
+        ('by_name', 0),
+        ('set_by_name', 0),
+    )
+
+    def test_every_preference_is_named_somewhere(self):
+        named = _named_in_the_source()
+        unused = sorted(key for key in preferences._DEFAULTS if key not in named)
+        self.assertEqual([], unused,
+                         'preferences that nothing outside the tables names')
+
+    def test_a_control_is_never_given_a_name_that_is_not_a_preference(self):
+        wanted = dict(self._CONTROLS)
+        found = {}
+        for path in _sources():
+            tree = ast.parse(open(path).read())
+            for node in ast.walk(tree):
+                if not isinstance(node, ast.Call):
+                    continue
+                name = getattr(node.func, 'attr', None) or getattr(node.func, 'id', None)
+                if name not in wanted:
+                    continue
+                index = wanted[name]
+                if len(node.args) <= index:
+                    continue
+                argument = node.args[index]
+                if isinstance(argument, ast.Constant) and isinstance(argument.value, str):
+                    found.setdefault(argument.value, []).append(
+                        '%s:%d' % (os.path.relpath(path, constants.BASE_PATH),
+                                   node.lineno))
+        self.assertTrue(found, 'no control named a preference; have they been renamed?')
+        for key, where in sorted(found.items()):
+            self.assertIn(key, preferences._DEFAULTS,
+                          '%s is named at %s and is not a preference'
+                          % (key, ', '.join(where)))
 
 # vim: expandtab:sw=4:ts=4

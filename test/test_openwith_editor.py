@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """The editor for the "Open with" commands.
 
 It was a Gtk.TreeView over a five-column Gtk.ListStore: three
@@ -17,7 +15,7 @@ from mcomix import openwith
 from mcomix.preferences import prefs
 
 
-class _StubFileHandler(object):
+class _StubFileHandler:
 
     file_loaded = False
 
@@ -33,7 +31,7 @@ class _StubFileHandler(object):
 class _StubWindow(Gtk.Window):
 
     def __init__(self):
-        super(_StubWindow, self).__init__()
+        super().__init__()
         self.filehandler = _StubFileHandler()
 
     @callback.Callback
@@ -50,7 +48,7 @@ class OpenWithEditorTest(MComixTest):
     ]
 
     def setUp(self):
-        super(OpenWithEditorTest, self).setUp()
+        super().setUp()
         prefs['openwith commands'] = list(self.COMMANDS)
         self.window = _StubWindow()
         self.manager = openwith.OpenWithManager()
@@ -61,7 +59,7 @@ class OpenWithEditorTest(MComixTest):
         self.editor.destroy()
         self.window.destroy()
         pump()
-        super(OpenWithEditorTest, self).tearDown()
+        super().tearDown()
 
     def _labels(self):
         return [row.label for row in self.editor._command_list.each_row()]

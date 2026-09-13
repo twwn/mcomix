@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """ Tests for the Recent menu, which is assembled from Gtk.RecentManager
 now that the chooser widget that used to do it is going away. """
 
@@ -18,7 +16,7 @@ class _StubWindow(Gtk.Window):
     """A real window, so the menu's action group has somewhere to live."""
 
     def __init__(self):
-        super(_StubWindow, self).__init__()
+        super().__init__()
         self.opened = []
         self.filehandler = self
 
@@ -67,7 +65,7 @@ class RecentFilesMenuTest(MComixTest):
             cls.settings.set_property(name, value)
 
     def setUp(self):
-        super(RecentFilesMenuTest, self).setUp()
+        super().setUp()
         self.manager.purge_items()
         self.real_get_default = Gtk.RecentManager.get_default
         Gtk.RecentManager.get_default = staticmethod(lambda: self.manager)
@@ -75,7 +73,7 @@ class RecentFilesMenuTest(MComixTest):
 
     def tearDown(self):
         Gtk.RecentManager.get_default = self.real_get_default
-        super(RecentFilesMenuTest, self).tearDown()
+        super().tearDown()
 
     def _add(self, name, mime_type='application/zip'):
         """Put a file into the recent list, newest last."""

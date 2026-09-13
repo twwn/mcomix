@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """ A window that actually starts, with its parts where they belong.
 
 Most of the suite exercises pieces in isolation; nothing else builds the
@@ -29,7 +27,7 @@ from mcomix.preferences import prefs
 class MainWindowTest(MComixTest):
 
     def setUp(self):
-        super(MainWindowTest, self).setUp()
+        super().setUp()
         for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
                           constants.THUMBNAIL_PATH):
             os.makedirs(directory, exist_ok=True)
@@ -51,7 +49,7 @@ class MainWindowTest(MComixTest):
         self.window.destroy()
         main.set_main_window(None)
         self._pump()
-        super(MainWindowTest, self).tearDown()
+        super().tearDown()
 
     def _pump(self, rounds=2000):
         pump(rounds)
@@ -570,7 +568,7 @@ class InvertedColoursAtStartUpTest(MComixTest):
     """
 
     def setUp(self):
-        super(InvertedColoursAtStartUpTest, self).setUp()
+        super().setUp()
         for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
                           constants.THUMBNAIL_PATH):
             os.makedirs(directory, exist_ok=True)
@@ -585,7 +583,7 @@ class InvertedColoursAtStartUpTest(MComixTest):
         self.window.destroy()
         main.set_main_window(None)
         pump()
-        super(InvertedColoursAtStartUpTest, self).tearDown()
+        super().tearDown()
 
     def test_the_menu_item_says_the_colours_are_inverted(self):
         """The enhancer reads the preference, so a window whose item

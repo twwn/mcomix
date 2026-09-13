@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """Multiprocessing PDF handler."""
 
 import multiprocessing as mp
@@ -36,6 +34,7 @@ class FitzArchive(archive_base.BaseArchive):
 
     @property
     def mgr(self) -> FitzProcessWrangler:
+        """The worker for this thread, started on first use."""
         if not hasattr(self, '_mgr'):
             return self._open_doc()
         return self._mgr

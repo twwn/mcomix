@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """Opening the dialogs that only show something and close again.
 
 dialog_handler keeps one of each at a time, so a second request brings
@@ -18,7 +16,7 @@ class OneAtATimeTest(MComixTest):
     NAME = 'about-dialog'
 
     def setUp(self):
-        super(OneAtATimeTest, self).setUp()
+        super().setUp()
         self.window = Gtk.Window()
 
     def tearDown(self):
@@ -29,7 +27,7 @@ class OneAtATimeTest(MComixTest):
             dialog_handler._close_dialog(None, name)
         self.window.destroy()
         pump()
-        super(OneAtATimeTest, self).tearDown()
+        super().tearDown()
 
     def _open(self):
         dialog_handler.open_dialog(None, (self.window, self.NAME))

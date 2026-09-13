@@ -1,5 +1,4 @@
 """ pixbuf_cache.py - Caches book covers for the library display."""
-# -*- coding: utf-8 -*-
 
 
 import functools
@@ -10,7 +9,7 @@ from gi.repository import GdkPixbuf
 
 __all__ = ["get_pixbuf_cache"]
 
-class _PixbufCache(object):
+class _PixbufCache:
 
     """ Pixbuf cache for the library window. Instead of loading book covers
     from disk again after switching collection or using filtering, this class

@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from mcomix import main
 
-class ImageEnhancer(object):
+class ImageEnhancer:
 
     """The ImageEnhancer keeps track of the "enhancement" values and performs
     these enhancements on pixbufs. Changes to the ImageEnhancer's values

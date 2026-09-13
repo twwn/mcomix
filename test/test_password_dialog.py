@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """ Tests for the password prompt, which is asked for by a thread that is
 not the one that can show it. """
 
@@ -30,7 +28,7 @@ def visible_prompts():
 class PasswordDialogTest(MComixTest):
 
     def setUp(self):
-        super(PasswordDialogTest, self).setUp()
+        super().setUp()
         # test_archives.py replaces this for its own runs; make sure the
         # real dialog is what gets exercised here whatever the test order.
         self.real_ask_for_password = archive_password.ask_for_password
@@ -39,7 +37,7 @@ class PasswordDialogTest(MComixTest):
         for prompt in visible_prompts():
             prompt.destroy()
         pump()
-        super(PasswordDialogTest, self).tearDown()
+        super().tearDown()
 
     def _wait_for_prompt(self, rounds=400):
         for _ in range(rounds):
@@ -97,6 +95,22 @@ class PasswordDialogTest(MComixTest):
         prompt.response(Response.OK)
         pump()
         self.assertEqual(answers, [None])
+
+    def test_an_archive_name_with_an_ampersand_is_shown(self):
+        """The prompt names the archive on its second line.  That line
+        used to be set as Pango markup, and an ampersand starts an
+        entity there, so the line failed to parse and the label was left
+        empty: no path, and no instruction under it either."""
+        self.real_ask_for_password('/nowhere/Tom & Jerry.cbz', [].append)
+        prompt = self._wait_for_prompt()
+        self.assertIn('Tom & Jerry.cbz', prompt._secondary.get_text())
+
+    def test_an_archive_name_that_reads_as_markup_is_shown_as_it_is(self):
+        """A name is a name, so angle brackets in one are two characters
+        of the name rather than a tag around the rest of it."""
+        self.real_ask_for_password('/nowhere/<b>Bold</b>.cbz', [].append)
+        prompt = self._wait_for_prompt()
+        self.assertIn('<b>Bold</b>.cbz', prompt._secondary.get_text())
 
     def test_an_encrypted_archive_is_listed_once_the_password_is_given(self):
         """The whole path: a worker thread asks, the main thread shows the

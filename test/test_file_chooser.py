@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """ The file chooser dialog, which GTK4 leaves MComix to assemble. """
 
 import os
@@ -18,7 +16,7 @@ from mcomix.dialog import Response
 class FileChooserTest(MComixTest):
 
     def setUp(self):
-        super(FileChooserTest, self).setUp()
+        super().setUp()
         for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
                           constants.THUMBNAIL_PATH):
             os.makedirs(directory, exist_ok=True)
@@ -38,7 +36,7 @@ class FileChooserTest(MComixTest):
         self.window.destroy()
         main.set_main_window(None)
         pump()
-        super(FileChooserTest, self).tearDown()
+        super().tearDown()
 
     # -- Walking from the search box into what it found -------------------
 

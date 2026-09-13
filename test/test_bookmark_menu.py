@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """ Tests for the bookmarks menu, which is a Gio.Menu model now. """
 
 import os
@@ -14,7 +12,7 @@ from mcomix import constants
 from mcomix import bookmark_menu
 
 
-class _StubImageHandler(object):
+class _StubImageHandler:
 
     page = 3
     path = '/tmp/book.cbz'
@@ -32,7 +30,7 @@ class _StubImageHandler(object):
         return 20
 
 
-class _StubFileHandler(object):
+class _StubFileHandler:
 
     archive_type = None
     _base_path = None
@@ -50,7 +48,7 @@ class _StubWindow(Gtk.Window):
     """A real window, so the menu's action group has somewhere to live."""
 
     def __init__(self):
-        super(_StubWindow, self).__init__()
+        super().__init__()
         self.filehandler = _StubFileHandler()
         self.imagehandler = _StubImageHandler()
         self.pages = []
@@ -60,7 +58,7 @@ class _StubWindow(Gtk.Window):
         self.pages.append(page)
 
 
-class _StubUI(object):
+class _StubUI:
 
     """Stands in for MainUI, which is where accelerators are registered."""
 
@@ -74,7 +72,7 @@ class _StubUI(object):
 class BookmarksMenuTest(MComixTest):
 
     def setUp(self):
-        super(BookmarksMenuTest, self).setUp()
+        super().setUp()
         # The store writes its pickle here as soon as a bookmark is added.
         os.makedirs(constants.DATA_DIR, exist_ok=True)
         self.window = _StubWindow()
@@ -91,7 +89,7 @@ class BookmarksMenuTest(MComixTest):
             if isinstance(window, Gtk.MessageDialog) and window.get_visible():
                 window.destroy()
         pump()
-        super(BookmarksMenuTest, self).tearDown()
+        super().tearDown()
 
     def test_a_bookmark_in_the_open_file_leaves_the_tool_bar_alone(self):
         """Loading a bookmark that is already the open file only turns the

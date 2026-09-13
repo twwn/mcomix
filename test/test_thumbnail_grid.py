@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """The grid widget behind the archive editor and the library.
 
 This is what a Gtk.IconView was. Two of the things that view did for
@@ -21,7 +19,7 @@ class ThumbnailGridViewTest(MComixTest):
     NAMES = ('one', 'two', 'three', 'four', 'five')
 
     def setUp(self):
-        super(ThumbnailGridViewTest, self).setUp()
+        super().setUp()
         self.asked = []
         self.view = thumbnail_list.ThumbnailGridView()
         self.view.generate_thumbnail = self._generate
@@ -44,7 +42,7 @@ class ThumbnailGridViewTest(MComixTest):
         # next.
         self.window.destroy()
         pump()
-        super(ThumbnailGridViewTest, self).tearDown()
+        super().tearDown()
 
     def _generate(self, uid):
         self.asked.append(uid)

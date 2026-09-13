@@ -22,6 +22,15 @@ XREF_DELIMITER = '_mcmxref'
 
 
 class FitzWorker:
+
+    """A PDF open in this process, which is one MComix did not start in.
+
+    PyMuPDF is a C library with global state, and a page that cannot be
+    parsed can take the interpreter down with it, so the whole of it is
+    kept out of the process drawing the window: this class is what runs
+    on the other side of the manager.
+    """
+
     def __init__(self, filename: str | None, log_level: int | None = None) -> None:
         self._extension: str | None = None
         self._complex_doc = False
@@ -31,6 +40,7 @@ class FitzWorker:
         self.doc = pymupdf.open(filename)
 
     def page_count(self) -> int:
+        """How many pages the document has."""
         return int(self.doc.page_count)
 
     def _image_extension(self, xref: int) -> str:
@@ -109,6 +119,14 @@ class FitzWorker:
             return 'png'
 
     def iter_contents(self) -> Iterator[str]:
+        """Yield a name per page, saying how that page will be produced.
+
+        A page whose image can be handed over as it is carries the
+        image's xref in its name, and keeps that image's file type; a
+        page that has to be rendered is named as a PNG.  The name is
+        what extract_file() reads back, so the decision is made once,
+        here, rather than again at extraction.
+        """
         for pg in range(self.doc.page_count):
             pagenum = f"page{pg + 1:04}"
             xref = self._extractable_image_xref(pg)
@@ -156,6 +174,11 @@ class FitzWorker:
         del page
 
     def extract_file(self, filename: str, dest: str) -> None:
+        """Produce the page <filename> names, under <dest>.
+
+        Which of the two ways is used is what iter_contents() decided
+        when it made the name up.
+        """
         outpath = os.path.join(dest, filename)
         # Page and xref numbers are zero padded to four digits, but may well
         # need more than that, so parse them by delimiter instead of by width.

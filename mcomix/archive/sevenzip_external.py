@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """ 7z archive extractor. """
 
 import functools
@@ -18,10 +16,18 @@ from mcomix.i18n import _
 class SevenZipArchive(archive_base.ExternalExecutableArchive):
     """ 7z file extractor using the 7z executable. """
 
+    #: Which part of a listing the parser is in: the block describing the
+    #: archive, the entries between the two rows of dashes, and whatever
+    #: 7z prints after them.
     STATE_HEADER, STATE_LISTING, STATE_FOOTER = 1, 2, 3
 
     class EncryptedHeader(Exception):
-        pass
+        """The listing itself is encrypted, so it needs a password.
+
+        Raised out of the parser to abandon a listing that never reached
+        the entries, and caught by iter_contents(), which starts again
+        with the password the reader is asked for.
+        """
 
     def __init__(self, archive: str) -> None:
         super().__init__(archive)
@@ -37,20 +43,39 @@ class SevenZipArchive(archive_base.ExternalExecutableArchive):
         return SevenZipArchive._find_7z_executable()
 
     def _get_password_argument(self) -> str:
+        """The -p switch to pass 7z.
+
+        Every invocation carries one, encrypted archive or not: without
+        it, 7z meeting an archive it does want a password for stops to
+        read one from a terminal that is not there, and nothing ever
+        comes back.  A bare "-p" says the password is empty.
+        """
         if self._is_encrypted:
             return '-p' + self._get_password()
         else:
-            # Add an empty password anyway, to prevent deadlock on reading for
-            # input if we did not correctly detect the archive is encrypted.
             return '-p'
 
     def _get_list_arguments(self) -> list[str]:
+        """The command that lists the archive.
+
+        "-slt" asks for the technical listing, which gives each entry
+        several "Key = value" lines rather than a row of columns a long
+        name would run over, and "-sccUTF-8" fixes the encoding of that
+        output rather than leaving it to the console's code page.
+        """
         args = [self._executable, 'l', '-slt', '-sccUTF-8']
         args.append(self._get_password_argument())
         args.extend(('--', self.archive))
         return args
 
     def _get_extract_arguments(self, list_file: str | None = None) -> list[str]:
+        """The command that writes the archive's files to standard output.
+
+        "-so" is what sends them there instead of to disk.  <list_file>
+        names a file holding the entries to extract, which is how a name
+        reaches 7z without the shell or 7z itself reading it as a switch
+        or a wildcard.
+        """
         args = [self._executable, 'x', '-so', '-sccUTF-8']
         if list_file is not None:
             args.append('-i@' + list_file)
@@ -95,15 +120,24 @@ class SevenZipArchive(archive_base.ExternalExecutableArchive):
         return None
 
     def is_solid(self) -> bool:
+        """Whether the archive was packed as one stream.
+
+        Only known once it has been listed; the header says so.
+        """
         return self._is_solid
 
     def iter_contents(self) -> Iterator[str]:
+        """Yield the name of every file in the archive.
+
+        An archive with an encrypted header cannot be listed at all
+        without the password, and there is no way to know that before
+        trying: the first attempt is made without one, and the parser
+        raises EncryptedHeader when 7z answers that it cannot open the
+        archive, which starts the second and last attempt.
+        """
         if not self._get_executable():
             return
 
-        # We'll try at most 2 times:
-        # - the first time without a password
-        # - a second time with a password if the header is encrypted
         for retry_count in range(2):
             self._state = self.STATE_HEADER
             self._path = ''
@@ -115,17 +149,19 @@ class SevenZipArchive(archive_base.ExternalExecutableArchive):
                     if filename is not None:
                         yield filename
             except self.EncryptedHeader:
-                # The header is encrypted, try again
-                # if it was our first attempt.
                 if 0 == retry_count:
                     continue
-            # Last and/or successful attempt.
             break
 
         self.filenames_initialized = True
 
     def extract(self, filename: str, destination_dir: str) -> None:
-        """ Extract <filename> from the archive to <destination_dir>. """
+        """ Extract <filename> from the archive to <destination_dir>.
+
+        The name goes to 7z in a file of its own rather than on the
+        command line, which is what -i@ takes; a name is written and the
+        file removed again around the one run that reads it.
+        """
         assert isinstance(filename, str) and \
                isinstance(destination_dir, str)
 
@@ -157,7 +193,15 @@ class SevenZipArchive(archive_base.ExternalExecutableArchive):
             os.unlink(tmplistfile.name)
 
     def iter_extract(self, entries: Iterable[str], destination_dir: str) -> Iterator[str]:
+        """Extract <entries> to <destination_dir>, yielding as each lands.
 
+        One 7z run prints the whole archive to a pipe, in the order the
+        listing gave, and the sizes recorded while listing say where
+        each file ends.  That is what makes this worth having over the
+        inherited one file at a time: a solid archive is unpacked once
+        rather than once per file.  Unwanted files are still read, since
+        the only way past a file in the stream is through it.
+        """
         if not self._get_executable():
             return
 
@@ -198,11 +242,14 @@ class SevenZipArchive(archive_base.ExternalExecutableArchive):
 
 class TarArchive(SevenZipArchive):
 
-    '''Special class for handling tar archives.
+    """A tarball inside a compressed file, unpacked one layer at a time.
 
-       Needed because for XZ archives, the technical listing
-       does not contain the archive member name...
-    '''
+    7z sees a .tar.xz as one compressed member, and for xz its technical
+    listing does not name that member at all.  So the name is made up -
+    "archive.tar", which MComix recognises as an archive - and the
+    tarball it stands for is opened by the tar handler afterwards, the
+    same way any archive inside an archive is.
+    """
 
     def __init__(self, archive: str) -> None:
         super().__init__(archive)
@@ -215,11 +262,10 @@ class TarArchive(SevenZipArchive):
         return super()._get_extract_arguments()
 
     def iter_contents(self) -> Iterator[str]:
+        """Yield the one made-up name this archive holds."""
         if not self._get_executable():
             return
         self._state = self.STATE_HEADER
-        # We make up a name that's guaranteed to be
-        # recognized as an archive by MComix.
         self._path = 'archive.tar'
         proc = subprocess.run(self._get_list_arguments(),
                               stdout=subprocess.PIPE, stderr=process.STDOUT,

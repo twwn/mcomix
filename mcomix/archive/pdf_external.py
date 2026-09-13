@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """ PDF handler. """
 
 from mcomix import log
@@ -77,6 +75,14 @@ def _find_mupdf() -> _MuPdf | None:
 
 class PdfArchive(archive_base.BaseArchive):
 
+    """The pages of a PDF, rendered one at a time by MuPDF's tools.
+
+    Every page is a PNG named after its number, so the pages sort the
+    way they are numbered.  Nothing is unpacked in advance: a page is
+    rendered when it is asked for, by a mutool run of its own, which is
+    why several may be in flight at once.
+    """
+
     # Concurrent calls to extract welcome!
     support_concurrent_extractions = True
 
@@ -92,6 +98,7 @@ class PdfArchive(archive_base.BaseArchive):
         return mupdf
 
     def iter_contents(self) -> Iterator[str]:
+        """Yield a name per page, which is all a PDF has to list."""
         proc = subprocess.run(self._mupdf.mutool + ['show', '--', self.archive, 'pages'],
                               stdout=subprocess.PIPE, encoding='utf-8')
         for line in proc.stdout.splitlines():
@@ -99,6 +106,16 @@ class PdfArchive(archive_base.BaseArchive):
                 yield line.split()[1] + '.png'
 
     def extract(self, filename: str, destination_dir: str) -> None:
+        """Render the page <filename> stands for into <destination_dir>.
+
+        A PDF page has no resolution of its own, so one is chosen: the
+        page is traced first, which reports every image it draws and the
+        matrix it is drawn under, and the resolution that would render
+        the largest of those images at its own pixel size is the one
+        used.  A page of scanned paper is then rendered at the scan's
+        own resolution rather than at a default that would blur it or
+        one that would waste memory, bounded by PDF_RENDER_DPI_MAX.
+        """
         mupdf = self._mupdf
         self._create_directory(destination_dir)
         destination_path = os.path.join(destination_dir, filename)
@@ -133,6 +150,7 @@ class PdfArchive(archive_base.BaseArchive):
 
     @staticmethod
     def is_available() -> bool:
+        """Whether the MuPDF command line tools are installed."""
         return _find_mupdf() is not None
 
 # vim: expandtab:sw=4:ts=4

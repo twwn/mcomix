@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """The library window itself, which nothing else covered.
 
 open_dialog() keeps one window: opening the library again brings the
@@ -27,7 +25,7 @@ from mcomix.library import main_dialog
 class LibraryDialogTest(MComixTest):
 
     def setUp(self):
-        super(LibraryDialogTest, self).setUp()
+        super().setUp()
         for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
                           constants.THUMBNAIL_PATH):
             os.makedirs(directory, exist_ok=True)
@@ -47,7 +45,7 @@ class LibraryDialogTest(MComixTest):
         self.window.destroy()
         main.set_main_window(None)
         pump()
-        super(LibraryDialogTest, self).tearDown()
+        super().tearDown()
 
     def _open(self):
         main_dialog.open_dialog(None, self.window)

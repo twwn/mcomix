@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: comix 3.6.4\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-05 18:19+0200\n"
+"POT-Creation-Date: 2026-09-05 18:43+0200\n"
 "PO-Revision-Date: 2008-05-21 12:40+0330\n"
 "Last-Translator: Meelad Zakaria <meelad@farsiweb.info>\n"
 "Language-Team: Persian \n"
@@ -17,23 +17,23 @@ msgstr ""
 "Generated-By: pygettext.py 1.5\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: mcomix/about_dialog.py:37
+#: mcomix/about_dialog.py:36
 #, python-format
 msgid "%s is an image viewer specifically designed to handle comic books."
 msgstr ""
 
 #
 # File: src/about.py, line: 57
-#: mcomix/about_dialog.py:39
+#: mcomix/about_dialog.py:38
 msgid "It reads ZIP, RAR and tar archives, as well as plain image files."
 msgstr ""
 
-#: mcomix/about_dialog.py:43
+#: mcomix/about_dialog.py:42
 #, python-format
 msgid "%s is licensed under the terms of the GNU General Public License."
 msgstr ""
 
-#: mcomix/about_dialog.py:45
+#: mcomix/about_dialog.py:44
 #, python-format
 msgid "A copy of this license can be obtained from %s"
 msgstr ""
@@ -117,9 +117,9 @@ msgstr "_برداشتن"
 
 #
 # File: src/ui.py, line: 48
-#: mcomix/bookmark_dialog.py:32 mcomix/comment_dialog.py:24
-#: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:67
-#: mcomix/properties_dialog.py:35 mcomix/ui.py:443
+#: mcomix/bookmark_dialog.py:32 mcomix/comment_dialog.py:23
+#: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:64
+#: mcomix/properties_dialog.py:34 mcomix/ui.py:443
 #: mcomix/library/watchlist.py:33
 msgid "_Close"
 msgstr "ب_ستن"
@@ -132,7 +132,7 @@ msgstr "نوع"
 # File: src/bookmark.py, line: 255
 # File: src/edit.py, line: 267
 #: mcomix/bookmark_dialog.py:57 mcomix/edit_comment_area.py:38
-#: mcomix/keybindings_editor.py:46
+#: mcomix/keybindings_editor.py:44
 msgid "Name"
 msgstr "نام"
 
@@ -146,7 +146,7 @@ msgstr "صفحه"
 #
 # File: src/properties.py, line: 124
 # File: src/properties.py, line: 159
-#: mcomix/bookmark_dialog.py:63 mcomix/properties_dialog.py:150
+#: mcomix/bookmark_dialog.py:63 mcomix/properties_dialog.py:149
 msgid "Location"
 msgstr "مکان"
 
@@ -162,7 +162,7 @@ msgstr ""
 msgid "_Edit Bookmarks..."
 msgstr ""
 
-#: mcomix/callback.py:84
+#: mcomix/callback.py:82
 #, python-format
 msgid "! Callback %(function)r failed: %(error)s"
 msgstr ""
@@ -174,13 +174,13 @@ msgstr ""
 #
 # File: src/comment.py, line: 16
 # File: src/preferences.py, line: 288
-#: mcomix/comment_dialog.py:23 mcomix/preferences_dialog.py:390
+#: mcomix/comment_dialog.py:22 mcomix/preferences_dialog.py:388
 msgid "Comments"
 msgstr "توضیحات"
 
 #
 # File: src/comment.py, line: 53
-#: mcomix/comment_dialog.py:102
+#: mcomix/comment_dialog.py:101
 #, python-format
 msgid "Could not read %s"
 msgstr ""
@@ -193,7 +193,7 @@ msgstr ""
 
 #
 # File: src/edit.py, line: 270
-#: mcomix/edit_comment_area.py:39 mcomix/properties_dialog.py:163
+#: mcomix/edit_comment_area.py:39 mcomix/properties_dialog.py:162
 msgid "Size"
 msgstr "اندازه"
 
@@ -206,7 +206,7 @@ msgstr ""
 
 #
 # File: src/edit.py, line: 28
-#: mcomix/edit_dialog.py:49 mcomix/keybindings.py:147
+#: mcomix/edit_dialog.py:49 mcomix/keybindings.py:145
 msgid "Edit archive"
 msgstr ""
 
@@ -235,104 +235,116 @@ msgid "Comment files"
 msgstr "پروندهٔ توضیح"
 
 #
+#: mcomix/edit_dialog.py:157
+#, fuzzy, python-format
+msgid "! Could not save the archive %(archivefile)s: %(error)s"
+msgstr "قابل ایجاد نیست"
+
+#
+#: mcomix/edit_dialog.py:173
+#, fuzzy, python-format
+msgid "! Could not remove %(file)s: %(error)s"
+msgstr "قابل ایجاد نیست"
+
+#
 # File: src/edit.py, line: 99
-#: mcomix/edit_dialog.py:177
+#: mcomix/edit_dialog.py:179
 msgid "The new archive could not be saved!"
 msgstr ""
 
 #
 # File: src/edit.py, line: 101
-#: mcomix/edit_dialog.py:178
+#: mcomix/edit_dialog.py:180
 msgid "The original files have not been removed."
 msgstr ""
 
 #
 # File: src/edit.py, line: 115
-#: mcomix/edit_dialog.py:212
+#: mcomix/edit_dialog.py:214
 msgid "Archives are stored as ZIP files."
 msgstr ""
 
 #
 # File: src/enhance.py, line: 51
-#: mcomix/enhance_dialog.py:28 mcomix/keybindings.py:149
+#: mcomix/enhance_dialog.py:27 mcomix/keybindings.py:147
 msgid "Enhance image"
 msgstr ""
 
-#: mcomix/enhance_dialog.py:32
+#: mcomix/enhance_dialog.py:31
 msgid "_Revert"
 msgstr "باز_گشت"
 
-#: mcomix/enhance_dialog.py:33
+#: mcomix/enhance_dialog.py:32
 msgid "Reset to defaults."
 msgstr ""
 
-#: mcomix/enhance_dialog.py:35 mcomix/file_chooser_base_dialog.py:102
+#: mcomix/enhance_dialog.py:34 mcomix/file_chooser_base_dialog.py:102
 #: mcomix/openwith.py:340
 msgid "_Save"
 msgstr "_ذخیره"
 
-#: mcomix/enhance_dialog.py:36
+#: mcomix/enhance_dialog.py:35
 msgid "Save the selected values as default for future files."
 msgstr ""
 
-#: mcomix/enhance_dialog.py:38 mcomix/message_dialog.py:24
+#: mcomix/enhance_dialog.py:37 mcomix/message_dialog.py:24
 #: mcomix/message_dialog.py:30
 msgid "_OK"
 msgstr "_تأیید"
 
 #
 # File: src/enhance.py, line: 79
-#: mcomix/enhance_dialog.py:81
+#: mcomix/enhance_dialog.py:80
 #, fuzzy
 msgid "_Brightness:"
 msgstr "روشنی"
 
 #
 # File: src/enhance.py, line: 90
-#: mcomix/enhance_dialog.py:82
+#: mcomix/enhance_dialog.py:81
 #, fuzzy
 msgid "_Contrast:"
 msgstr "کنتراست"
 
 #
 # File: src/enhance.py, line: 101
-#: mcomix/enhance_dialog.py:83
+#: mcomix/enhance_dialog.py:82
 msgid "S_aturation:"
 msgstr "_غلظت:"
 
 #
 # File: src/enhance.py, line: 112
-#: mcomix/enhance_dialog.py:84
+#: mcomix/enhance_dialog.py:83
 #, fuzzy
 msgid "S_harpness:"
 msgstr "وضوح"
 
 #
-#: mcomix/enhance_dialog.py:89
+#: mcomix/enhance_dialog.py:88
 #, fuzzy
 msgid "_Automatically adjust contrast"
 msgstr "کنتراست به صورت خودکار تنظیم شود"
 
 #
 # File: src/enhance.py, line: 128
-#: mcomix/enhance_dialog.py:91
+#: mcomix/enhance_dialog.py:90
 msgid ""
 "Automatically adjust contrast (both lightness and darkness), separately for "
 "each colour band."
 msgstr ""
 
-#: mcomix/enhance_dialog.py:96 mcomix/ui.py:492
+#: mcomix/enhance_dialog.py:95 mcomix/ui.py:492
 msgid "_Invert image colors"
 msgstr ""
 
-#: mcomix/enhance_dialog.py:98
+#: mcomix/enhance_dialog.py:97
 msgid "Invert (negate) image colors."
 msgstr ""
 
 #
 # File: src/filechooser.py, line: 35
 # File: src/library.py, line: 489
-#: mcomix/file_chooser_base_dialog.py:95 mcomix/keybindings.py:148
+#: mcomix/file_chooser_base_dialog.py:95 mcomix/keybindings.py:146
 msgid "Open"
 msgstr "باز کردن"
 
@@ -348,18 +360,18 @@ msgstr ""
 
 #
 # File: src/filechooser.py, line: 75
-#: mcomix/file_chooser_base_dialog.py:206
+#: mcomix/file_chooser_base_dialog.py:205
 msgid "All files"
 msgstr "همهٔ پرونده‌ها"
 
 #
-#: mcomix/file_chooser_base_dialog.py:459
+#: mcomix/file_chooser_base_dialog.py:458
 #, fuzzy
 msgid "All archives"
 msgstr "بایگانی‌ها"
 
 #
-#: mcomix/file_chooser_base_dialog.py:459
+#: mcomix/file_chooser_base_dialog.py:458
 #, fuzzy, python-format
 msgid "%s archives"
 msgstr "بایگانی‌ها"
@@ -367,28 +379,28 @@ msgstr "بایگانی‌ها"
 #
 # File: src/filechooser.py, line: 171
 # File: src/filechooser.py, line: 249
-#: mcomix/file_chooser_base_dialog.py:465
+#: mcomix/file_chooser_base_dialog.py:464
 msgid "All images"
 msgstr "همهٔ تصاویر"
 
 #
 # File: src/filechooser.py, line: 171
 # File: src/filechooser.py, line: 249
-#: mcomix/file_chooser_base_dialog.py:465
+#: mcomix/file_chooser_base_dialog.py:464
 #, fuzzy, python-format
 msgid "%s images"
 msgstr "همهٔ تصاویر"
 
 #
 # File: src/filechooser.py, line: 125
-#: mcomix/file_chooser_base_dialog.py:575
+#: mcomix/file_chooser_base_dialog.py:574
 #, python-format
 msgid "A file named '%s' already exists. Do you want to replace it?"
 msgstr ""
 
 #
 # File: src/filechooser.py, line: 128
-#: mcomix/file_chooser_base_dialog.py:577
+#: mcomix/file_chooser_base_dialog.py:576
 msgid "Replacing it will overwrite its contents."
 msgstr ""
 
@@ -417,7 +429,7 @@ msgstr ""
 
 #
 # File: src/filehandler.py, line: 217
-#: mcomix/file_handler.py:331 mcomix/file_provider.py:141
+#: mcomix/file_handler.py:331 mcomix/file_provider.py:140
 #, python-format
 msgid "Could not open %s: Permission denied."
 msgstr ""
@@ -440,7 +452,7 @@ msgstr ""
 msgid "! Corrupt preferences file \"%s\", deleting..."
 msgstr ""
 
-#: mcomix/file_provider.py:110
+#: mcomix/file_provider.py:109
 #, python-format
 msgid "Invalid path: '%s'"
 msgstr ""
@@ -451,260 +463,260 @@ msgstr ""
 msgid "Unknown filetype"
 msgstr ""
 
-#: mcomix/keybindings_editor.py:49
+#: mcomix/keybindings_editor.py:47
 #, python-format
 msgid "Key %d"
 msgstr ""
 
 #
 # File: src/ui.py, line: 284
-#: mcomix/keybindings.py:51 mcomix/ui.py:429
+#: mcomix/keybindings.py:49 mcomix/ui.py:429
 msgid "Previous page"
 msgstr "صفحهٔ قبل"
 
-#: mcomix/keybindings.py:51 mcomix/keybindings.py:52 mcomix/keybindings.py:53
-#: mcomix/keybindings.py:54 mcomix/keybindings.py:55 mcomix/keybindings.py:56
-#: mcomix/keybindings.py:57 mcomix/keybindings.py:58 mcomix/keybindings.py:60
-#: mcomix/keybindings.py:61 mcomix/keybindings.py:62 mcomix/keybindings.py:64
-#: mcomix/keybindings.py:65 mcomix/keybindings.py:66 mcomix/keybindings.py:67
+#: mcomix/keybindings.py:49 mcomix/keybindings.py:50 mcomix/keybindings.py:51
+#: mcomix/keybindings.py:52 mcomix/keybindings.py:53 mcomix/keybindings.py:54
+#: mcomix/keybindings.py:55 mcomix/keybindings.py:56 mcomix/keybindings.py:58
+#: mcomix/keybindings.py:59 mcomix/keybindings.py:60 mcomix/keybindings.py:62
+#: mcomix/keybindings.py:63 mcomix/keybindings.py:64 mcomix/keybindings.py:65
 msgid "Navigation"
 msgstr ""
 
 #
 # File: src/ui.py, line: 285
-#: mcomix/keybindings.py:52 mcomix/ui.py:428
+#: mcomix/keybindings.py:50 mcomix/ui.py:428
 msgid "Next page"
 msgstr "صفحهٔ بعد"
 
 #
-#: mcomix/keybindings.py:53
+#: mcomix/keybindings.py:51
 #, fuzzy
 msgid "Back 10 pages"
 msgstr "استخراج صفحه"
 
-#: mcomix/keybindings.py:54
+#: mcomix/keybindings.py:52
 msgid "Forward 10 pages"
 msgstr ""
 
 #
 # File: src/ui.py, line: 284
-#: mcomix/keybindings.py:55
+#: mcomix/keybindings.py:53
 #, fuzzy
 msgid "Page to the left"
 msgstr "صفحهٔ قبل"
 
 #
 # File: src/ui.py, line: 285
-#: mcomix/keybindings.py:56
+#: mcomix/keybindings.py:54
 #, fuzzy
 msgid "Page to the right"
 msgstr "صفحهٔ بعد"
 
 #
 # File: src/ui.py, line: 284
-#: mcomix/keybindings.py:57
+#: mcomix/keybindings.py:55
 #, fuzzy
 msgid "Previous single page"
 msgstr "صفحهٔ قبل"
 
 #
 # File: src/ui.py, line: 285
-#: mcomix/keybindings.py:58
+#: mcomix/keybindings.py:56
 #, fuzzy
 msgid "Next single page"
 msgstr "صفحهٔ بعد"
 
 #
 # File: src/ui.py, line: 282
-#: mcomix/keybindings.py:60 mcomix/ui.py:430
+#: mcomix/keybindings.py:58 mcomix/ui.py:430
 msgid "First page"
 msgstr "صفحهٔ اول"
 
 #
 # File: src/ui.py, line: 286
-#: mcomix/keybindings.py:61 mcomix/ui.py:431
+#: mcomix/keybindings.py:59 mcomix/ui.py:431
 msgid "Last page"
 msgstr "آخرین صفحه"
 
 #
-#: mcomix/keybindings.py:62
+#: mcomix/keybindings.py:60
 msgid "Go to page"
 msgstr "رفتن به صفحهٔ"
 
 #
-#: mcomix/keybindings.py:64 mcomix/ui.py:435
+#: mcomix/keybindings.py:62 mcomix/ui.py:435
 #, fuzzy
 msgid "Next archive"
 msgstr "بایگانی tar"
 
 #
 # File: src/ui.py, line: 284
-#: mcomix/keybindings.py:65 mcomix/ui.py:436
+#: mcomix/keybindings.py:63 mcomix/ui.py:436
 #, fuzzy
 msgid "Previous archive"
 msgstr "صفحهٔ قبل"
 
-#: mcomix/keybindings.py:66 mcomix/ui.py:437
+#: mcomix/keybindings.py:64 mcomix/ui.py:437
 msgid "Next directory"
 msgstr ""
 
-#: mcomix/keybindings.py:67 mcomix/ui.py:438
+#: mcomix/keybindings.py:65 mcomix/ui.py:438
 msgid "Previous directory"
 msgstr ""
 
-#: mcomix/keybindings.py:70
+#: mcomix/keybindings.py:68
 msgid "Align bottom left"
 msgstr ""
 
 #
 # File: src/preferences.py, line: 167
-#: mcomix/keybindings.py:70 mcomix/keybindings.py:71 mcomix/keybindings.py:72
-#: mcomix/keybindings.py:74 mcomix/keybindings.py:75 mcomix/keybindings.py:76
-#: mcomix/keybindings.py:78 mcomix/keybindings.py:79 mcomix/keybindings.py:80
-#: mcomix/keybindings.py:82 mcomix/keybindings.py:83 mcomix/keybindings.py:84
-#: mcomix/keybindings.py:85 mcomix/keybindings.py:87 mcomix/keybindings.py:88
-#: mcomix/preferences_dialog.py:182
+#: mcomix/keybindings.py:68 mcomix/keybindings.py:69 mcomix/keybindings.py:70
+#: mcomix/keybindings.py:72 mcomix/keybindings.py:73 mcomix/keybindings.py:74
+#: mcomix/keybindings.py:76 mcomix/keybindings.py:77 mcomix/keybindings.py:78
+#: mcomix/keybindings.py:80 mcomix/keybindings.py:81 mcomix/keybindings.py:82
+#: mcomix/keybindings.py:83 mcomix/keybindings.py:85 mcomix/keybindings.py:86
+#: mcomix/preferences_dialog.py:179
 msgid "Scroll"
 msgstr "لغزش"
 
-#: mcomix/keybindings.py:71
+#: mcomix/keybindings.py:69
 msgid "Align bottom center"
 msgstr ""
 
-#: mcomix/keybindings.py:72
+#: mcomix/keybindings.py:70
 msgid "Align bottom right"
 msgstr ""
 
-#: mcomix/keybindings.py:74
+#: mcomix/keybindings.py:72
 msgid "Align middle left"
 msgstr ""
 
-#: mcomix/keybindings.py:75
+#: mcomix/keybindings.py:73
 msgid "Align center"
 msgstr ""
 
-#: mcomix/keybindings.py:76
+#: mcomix/keybindings.py:74
 msgid "Align middle right"
 msgstr ""
 
-#: mcomix/keybindings.py:78
+#: mcomix/keybindings.py:76
 msgid "Align top left"
 msgstr ""
 
-#: mcomix/keybindings.py:79
+#: mcomix/keybindings.py:77
 msgid "Align top center"
 msgstr ""
 
-#: mcomix/keybindings.py:80
+#: mcomix/keybindings.py:78
 msgid "Align top right"
 msgstr ""
 
-#: mcomix/keybindings.py:82
+#: mcomix/keybindings.py:80
 msgid "Scroll down"
 msgstr ""
 
-#: mcomix/keybindings.py:83
+#: mcomix/keybindings.py:81
 msgid "Scroll up"
 msgstr ""
 
-#: mcomix/keybindings.py:84
+#: mcomix/keybindings.py:82
 msgid "Scroll right"
 msgstr ""
 
-#: mcomix/keybindings.py:85
+#: mcomix/keybindings.py:83
 msgid "Scroll left"
 msgstr ""
 
-#: mcomix/keybindings.py:87
+#: mcomix/keybindings.py:85
 msgid "Smart scroll up"
 msgstr ""
 
-#: mcomix/keybindings.py:88
+#: mcomix/keybindings.py:86
 msgid "Smart scroll down"
 msgstr ""
 
-#: mcomix/keybindings.py:91
+#: mcomix/keybindings.py:89
 msgid "Zoom in"
 msgstr ""
 
 #
 # File: src/ui.py, line: 42
-#: mcomix/keybindings.py:91 mcomix/keybindings.py:92 mcomix/keybindings.py:93
+#: mcomix/keybindings.py:89 mcomix/keybindings.py:90 mcomix/keybindings.py:91
 #, fuzzy
 msgid "Zoom"
 msgstr "_زوم به جلو"
 
-#: mcomix/keybindings.py:92
+#: mcomix/keybindings.py:90
 msgid "Zoom out"
 msgstr ""
 
-#: mcomix/keybindings.py:93
+#: mcomix/keybindings.py:91
 msgid "Normal size"
 msgstr ""
 
 #
 # File: src/ui.py, line: 93
-#: mcomix/keybindings.py:95
+#: mcomix/keybindings.py:93
 #, fuzzy
 msgid "Keep transformation"
 msgstr "_نگهداشتن تغییر شکل‌ها"
 
 #
 # File: src/ui.py, line: 93
-#: mcomix/keybindings.py:95 mcomix/keybindings.py:96 mcomix/keybindings.py:97
-#: mcomix/keybindings.py:98 mcomix/keybindings.py:99 mcomix/keybindings.py:100
-#: mcomix/keybindings.py:101
+#: mcomix/keybindings.py:93 mcomix/keybindings.py:94 mcomix/keybindings.py:95
+#: mcomix/keybindings.py:96 mcomix/keybindings.py:97 mcomix/keybindings.py:98
+#: mcomix/keybindings.py:99
 #, fuzzy
 msgid "Transformation"
 msgstr "_نگهداشتن تغییر شکل‌ها"
 
 #
 # File: src/ui.py, line: 52
-#: mcomix/keybindings.py:96 mcomix/keybindings.py:103 mcomix/keybindings.py:105
+#: mcomix/keybindings.py:94 mcomix/keybindings.py:101 mcomix/keybindings.py:103
 #, fuzzy
 msgid "Rotate 90° CW"
 msgstr "_چرخاندن ۹۰ درجه‌ای در جهت ساعت"
 
 #
 # File: src/ui.py, line: 54
-#: mcomix/keybindings.py:97
+#: mcomix/keybindings.py:95
 #, fuzzy
 msgid "Rotate 180°"
 msgstr "چرخاندن ۱۸۰ در_جه‌ای"
 
 #
 # File: src/ui.py, line: 56
-#: mcomix/keybindings.py:98 mcomix/keybindings.py:104 mcomix/keybindings.py:106
+#: mcomix/keybindings.py:96 mcomix/keybindings.py:102 mcomix/keybindings.py:104
 #, fuzzy
 msgid "Rotate 90° CCW"
 msgstr "چرخان_دن ۹۰ درجه‌ای در خلاف جهت ساعت"
 
 #
 # File: src/ui.py, line: 58
-#: mcomix/keybindings.py:99
+#: mcomix/keybindings.py:97
 #, fuzzy
 msgid "Flip horizontally"
 msgstr "_پشت و رو کردن افقی"
 
 #
 # File: src/ui.py, line: 60
-#: mcomix/keybindings.py:100
+#: mcomix/keybindings.py:98
 #, fuzzy
 msgid "Flip vertically"
 msgstr "پشت و رو کردن _عمودی"
 
-#: mcomix/keybindings.py:101
+#: mcomix/keybindings.py:99
 msgid "Never autorotate"
 msgstr ""
 
 #
-#: mcomix/keybindings.py:103 mcomix/keybindings.py:104
+#: mcomix/keybindings.py:101 mcomix/keybindings.py:102
 #, fuzzy
 msgid "Autorotate by width"
 msgstr "است_خراج تصویر..."
 
 #
-#: mcomix/keybindings.py:105 mcomix/keybindings.py:106
+#: mcomix/keybindings.py:103 mcomix/keybindings.py:104
 #, fuzzy
 msgid "Autorotate by height"
 msgstr "است_خراج تصویر..."
@@ -712,67 +724,67 @@ msgstr "است_خراج تصویر..."
 #
 # File: src/preferences.py, line: 177
 # File: src/ui.py, line: 296
-#: mcomix/keybindings.py:108 mcomix/preferences_dialog.py:238 mcomix/ui.py:477
+#: mcomix/keybindings.py:106 mcomix/preferences_dialog.py:235 mcomix/ui.py:477
 msgid "Double page mode"
 msgstr "حالت دو صفحه‌ای"
 
 #
 # File: src/preferences.py, line: 263
 # File: src/ui.py, line: 290
-#: mcomix/keybindings.py:108 mcomix/keybindings.py:109
-#: mcomix/keybindings.py:110 mcomix/keybindings.py:112
-#: mcomix/keybindings.py:113 mcomix/keybindings.py:115
+#: mcomix/keybindings.py:106 mcomix/keybindings.py:107
+#: mcomix/keybindings.py:108 mcomix/keybindings.py:110
+#: mcomix/keybindings.py:111 mcomix/keybindings.py:113
+#: mcomix/keybindings.py:114 mcomix/keybindings.py:115
 #: mcomix/keybindings.py:116 mcomix/keybindings.py:117
-#: mcomix/keybindings.py:118 mcomix/keybindings.py:119
 #, fuzzy
 msgid "View mode"
 msgstr "حالت منطبق با عرض صفحه"
 
 #
 # File: src/ui.py, line: 297
-#: mcomix/keybindings.py:109 mcomix/ui.py:484
+#: mcomix/keybindings.py:107 mcomix/ui.py:484
 msgid "Manga mode"
 msgstr "حالت ژاپنی"
 
-#: mcomix/keybindings.py:110 mcomix/ui.py:485
+#: mcomix/keybindings.py:108 mcomix/ui.py:485
 msgid "Invert smart scroll"
 msgstr ""
 
 #
 # File: src/ui.py, line: 298
-#: mcomix/keybindings.py:112 mcomix/ui.py:489
+#: mcomix/keybindings.py:110 mcomix/ui.py:489
 msgid "Magnifying lens"
 msgstr "عدسی بزرگ‌نما"
 
 #
-#: mcomix/keybindings.py:113 mcomix/ui.py:490
+#: mcomix/keybindings.py:111 mcomix/ui.py:490
 msgid "Stretch small images"
 msgstr "تصاویر کوچک به اندازهٔ کادر نمایش داده شوند"
 
 #
 # File: src/preferences.py, line: 262
 # File: src/ui.py, line: 288
-#: mcomix/keybindings.py:115 mcomix/ui.py:497
+#: mcomix/keybindings.py:113 mcomix/ui.py:497
 msgid "Best fit mode"
 msgstr ""
 
 #
 # File: src/preferences.py, line: 263
 # File: src/ui.py, line: 290
-#: mcomix/keybindings.py:116 mcomix/ui.py:498
+#: mcomix/keybindings.py:114 mcomix/ui.py:498
 msgid "Fit width mode"
 msgstr "حالت منطبق با عرض صفحه"
 
 #
 # File: src/preferences.py, line: 264
 # File: src/ui.py, line: 292
-#: mcomix/keybindings.py:117 mcomix/ui.py:499
+#: mcomix/keybindings.py:115 mcomix/ui.py:499
 msgid "Fit height mode"
 msgstr "حالت منطبق با ارتفاع صفحه"
 
 #
 # File: src/ui.py, line: 103
-#: mcomix/keybindings.py:118
+#: mcomix/keybindings.py:116
 #, fuzzy
 msgid "Fit size mode"
 msgstr "حالت منطبق با عر_ض صفحه"
@@ -780,174 +792,174 @@ msgstr "حالت منطبق با عر_ض صفحه"
 #
 # File: src/preferences.py, line: 265
 # File: src/ui.py, line: 294
-#: mcomix/keybindings.py:119 mcomix/ui.py:501
+#: mcomix/keybindings.py:117 mcomix/ui.py:501
 msgid "Manual zoom mode"
 msgstr "حالت زوم دستی"
 
-#: mcomix/keybindings.py:122
+#: mcomix/keybindings.py:120
 msgid "Leave fullscreen"
 msgstr ""
 
-#: mcomix/keybindings.py:122 mcomix/keybindings.py:124
+#: mcomix/keybindings.py:120 mcomix/keybindings.py:122
+#: mcomix/keybindings.py:123 mcomix/keybindings.py:124
 #: mcomix/keybindings.py:125 mcomix/keybindings.py:126
 #: mcomix/keybindings.py:127 mcomix/keybindings.py:128
 #: mcomix/keybindings.py:129 mcomix/keybindings.py:130
-#: mcomix/keybindings.py:131 mcomix/keybindings.py:132
-#: mcomix/keybindings.py:133 mcomix/preferences_dialog.py:124
+#: mcomix/keybindings.py:131 mcomix/preferences_dialog.py:121
 msgid "User interface"
 msgstr ""
 
-#: mcomix/keybindings.py:124
+#: mcomix/keybindings.py:122
 msgid "OSD panel"
 msgstr ""
 
-#: mcomix/keybindings.py:125
+#: mcomix/keybindings.py:123
 msgid "Minimize"
 msgstr "حداقل کردن"
 
 #
 # File: src/preferences.py, line: 271
-#: mcomix/keybindings.py:126 mcomix/preferences_dialog.py:283
+#: mcomix/keybindings.py:124 mcomix/preferences_dialog.py:281
 msgid "Fullscreen"
 msgstr ""
 
-#: mcomix/keybindings.py:127
+#: mcomix/keybindings.py:125
 msgid "Toolbar"
 msgstr "نوار ابزار"
 
-#: mcomix/keybindings.py:128
+#: mcomix/keybindings.py:126
 msgid "Menubar"
 msgstr "نوار منو"
 
 #
 # File: src/ui.py, line: 83
-#: mcomix/keybindings.py:129
+#: mcomix/keybindings.py:127
 #, fuzzy
 msgid "Statusbar"
 msgstr "نوار وضعیت"
 
 #
 # File: src/ui.py, line: 85
-#: mcomix/keybindings.py:130
+#: mcomix/keybindings.py:128
 #, fuzzy
 msgid "Scrollbars"
 msgstr "نوارهای لغزش"
 
 #
 # File: src/preferences.py, line: 109
-#: mcomix/keybindings.py:131 mcomix/preferences_dialog.py:148
+#: mcomix/keybindings.py:129 mcomix/preferences_dialog.py:145
 msgid "Thumbnails"
 msgstr "مسطوره‌ها"
 
 #
 # File: src/ui.py, line: 89
-#: mcomix/keybindings.py:132
+#: mcomix/keybindings.py:130
 #, fuzzy
 msgid "Hide all"
 msgstr "مخفی کردن همه"
 
 #
 # File: src/preferences.py, line: 279
-#: mcomix/keybindings.py:133 mcomix/slideshow.py:53 mcomix/ui.py:488
+#: mcomix/keybindings.py:131 mcomix/slideshow.py:53 mcomix/ui.py:488
 #, fuzzy
 msgid "Start slideshow"
 msgstr "نمایش اسلایدی"
 
-#: mcomix/keybindings.py:136
+#: mcomix/keybindings.py:134
 msgid "Delete"
 msgstr "حذف"
 
 #
 # File: src/ui.py, line: 67
+#: mcomix/keybindings.py:134 mcomix/keybindings.py:135
 #: mcomix/keybindings.py:136 mcomix/keybindings.py:137
 #: mcomix/keybindings.py:138 mcomix/keybindings.py:139
-#: mcomix/keybindings.py:140 mcomix/keybindings.py:141
-#: mcomix/keybindings.py:143 mcomix/keybindings.py:144
-#: mcomix/keybindings.py:145 mcomix/keybindings.py:147
+#: mcomix/keybindings.py:141 mcomix/keybindings.py:142
+#: mcomix/keybindings.py:143 mcomix/keybindings.py:145
+#: mcomix/keybindings.py:146 mcomix/keybindings.py:147
 #: mcomix/keybindings.py:148 mcomix/keybindings.py:149
-#: mcomix/keybindings.py:150 mcomix/keybindings.py:151
 msgid "File"
 msgstr "پرونده"
 
 #
-#: mcomix/keybindings.py:137
+#: mcomix/keybindings.py:135
 #, fuzzy
 msgid "Refresh"
 msgstr "_پرونده‌های اخیر"
 
 #
 # File: src/ui.py, line: 48
-#: mcomix/keybindings.py:138
+#: mcomix/keybindings.py:136
 msgid "Close"
 msgstr "بستن"
 
 #
 # File: src/ui.py, line: 50
-#: mcomix/keybindings.py:139
+#: mcomix/keybindings.py:137
 #, fuzzy
 msgid "Quit"
 msgstr "_خروج"
 
-#: mcomix/keybindings.py:140
+#: mcomix/keybindings.py:138
 msgid "Save and quit"
 msgstr ""
 
-#: mcomix/keybindings.py:141
+#: mcomix/keybindings.py:139
 msgid "Save As"
 msgstr ""
 
 #
-#: mcomix/keybindings.py:143
+#: mcomix/keybindings.py:141
 #, fuzzy
 msgid "Archive comments"
 msgstr "نمایش _توضیحات"
 
 #
 # File: src/properties.py, line: 89
-#: mcomix/keybindings.py:144 mcomix/properties_dialog.py:34
+#: mcomix/keybindings.py:142 mcomix/properties_dialog.py:33
 msgid "Properties"
 msgstr "ویژگی‌ها"
 
 #
 # File: src/preferences.py, line: 78
-#: mcomix/keybindings.py:145 mcomix/preferences_dialog.py:63
+#: mcomix/keybindings.py:143 mcomix/preferences_dialog.py:60
 msgid "Preferences"
 msgstr "ترجیحات"
 
 #
 # File: src/library.py, line: 38
-#: mcomix/keybindings.py:150 mcomix/library/main_dialog.py:45
+#: mcomix/keybindings.py:148 mcomix/library/main_dialog.py:45
 msgid "Library"
 msgstr "کتاب‌خانه"
 
-#: mcomix/keybindings.py:151 mcomix/ui.py:492
+#: mcomix/keybindings.py:149 mcomix/ui.py:492
 msgid "Invert image colors"
 msgstr ""
 
 #
-#: mcomix/keybindings.py:159 mcomix/openwith.py:522
+#: mcomix/keybindings.py:157 mcomix/openwith.py:522
 #, fuzzy
 msgid "Command"
 msgstr "توضیح"
 
 #
 # File: src/bookmark.py, line: 229
-#: mcomix/keybindings.py:160
+#: mcomix/keybindings.py:158
 #, fuzzy
 msgid "External commands"
 msgstr "ویرایش نشانک‌ها"
 
-#: mcomix/keybindings.py:225
+#: mcomix/keybindings.py:223
 #, python-format
 msgid "Keybinding for \"%(action)s\" overrides hotkey for another action."
 msgstr ""
 
-#: mcomix/keybindings.py:345
+#: mcomix/keybindings.py:343
 #, python-format
 msgid "Couldn't load keybindings: %s"
 msgstr ""
 
-#: mcomix/last_read_page.py:234 mcomix/thumbnail_tools.py:120
+#: mcomix/last_read_page.py:232 mcomix/thumbnail_tools.py:120
 #: mcomix/library/book_area.py:635
 #, python-format
 msgid "! Could not remove file \"%s\""
@@ -1152,6 +1164,12 @@ msgid ""
 msgstr ""
 
 #
+#: mcomix/page_image.py:170
+#, fuzzy, python-format
+msgid "! Could not draw the next frame: %s"
+msgstr "قابل ایجاد نیست"
+
+#
 #: mcomix/pageselect.py:29 mcomix/ui.py:432
 msgid "Go to page..."
 msgstr "رفتن به صفحهٔ..."
@@ -1169,43 +1187,43 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 161
-#: mcomix/preferences_dialog.py:90
+#: mcomix/preferences_dialog.py:87
 msgid "Appearance"
 msgstr ""
 
 #
 # File: src/preferences.py, line: 237
-#: mcomix/preferences_dialog.py:91
+#: mcomix/preferences_dialog.py:88
 msgid "Behaviour"
 msgstr "رفتار"
 
 #
 # File: src/preferences.py, line: 297
-#: mcomix/preferences_dialog.py:92
+#: mcomix/preferences_dialog.py:89
 msgid "Display"
 msgstr "نمایش"
 
-#: mcomix/preferences_dialog.py:93
+#: mcomix/preferences_dialog.py:90
 msgid "Advanced"
 msgstr "پیشرفته"
 
-#: mcomix/preferences_dialog.py:110
+#: mcomix/preferences_dialog.py:107
 msgid "Shortcuts"
 msgstr "میان‌برها"
 
-#: mcomix/preferences_dialog.py:126
+#: mcomix/preferences_dialog.py:123
 msgid "Language (needs restart):"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:129
+#: mcomix/preferences_dialog.py:126
 msgid "Theme:"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:133
+#: mcomix/preferences_dialog.py:130
 msgid "Escape key closes program"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:134
+#: mcomix/preferences_dialog.py:131
 msgid ""
 "When active, the ESC key closes the program, instead of only disabling "
 "fullscreen mode."
@@ -1213,46 +1231,46 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 93
-#: mcomix/preferences_dialog.py:137
+#: mcomix/preferences_dialog.py:134
 msgid "Background"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:140
+#: mcomix/preferences_dialog.py:137
 msgid "Use this colour as background:"
 msgstr ""
 
 #
 # File: src/preferences.py, line: 97
-#: mcomix/preferences_dialog.py:141
+#: mcomix/preferences_dialog.py:138
 msgid "Always use this selected colour as the background colour."
 msgstr ""
 
 #
-#: mcomix/preferences_dialog.py:142 mcomix/preferences_dialog.py:153
+#: mcomix/preferences_dialog.py:139 mcomix/preferences_dialog.py:150
 #, fuzzy
 msgid "Use dynamic background colour"
 msgstr "رنگ پس‌زمینه"
 
 #
 # File: src/preferences.py, line: 106
-#: mcomix/preferences_dialog.py:144
+#: mcomix/preferences_dialog.py:141
 msgid "Automatically pick a background colour that fits the viewed image."
 msgstr ""
 
 #
-#: mcomix/preferences_dialog.py:151
+#: mcomix/preferences_dialog.py:148
 #, fuzzy
 msgid "Use this colour as the thumbnail background:"
 msgstr "همیشه نوار لغزش مسطوره‌ها مخفی شود."
 
 #
-#: mcomix/preferences_dialog.py:152
+#: mcomix/preferences_dialog.py:149
 #, fuzzy
 msgid "Always use this selected colour as the thumbnail background colour."
 msgstr "همیشه نوار لغزش مسطوره‌ها مخفی شود."
 
 #
-#: mcomix/preferences_dialog.py:155
+#: mcomix/preferences_dialog.py:152
 #, fuzzy
 msgid ""
 "Automatically use the colour that fits the viewed image for the thumbnail "
@@ -1260,42 +1278,42 @@ msgid ""
 msgstr "هنگام آغاز به کار کامیکس، آخرین صفحهٔ دیده‌شده به طور خودکار باز شود."
 
 #
-#: mcomix/preferences_dialog.py:160
+#: mcomix/preferences_dialog.py:157
 #, fuzzy
 msgid "Show page numbers on thumbnails"
 msgstr "شمارهٔ صفحه روی مسطوره‌ها نشان داده شود"
 
 #
-#: mcomix/preferences_dialog.py:163
+#: mcomix/preferences_dialog.py:160
 #, fuzzy
 msgid "Thumbnail size (in pixels):"
 msgstr "اندازهٔ مسطوره‌ها (نقطه):"
 
 #
 # File: src/preferences.py, line: 151
-#: mcomix/preferences_dialog.py:167
+#: mcomix/preferences_dialog.py:164
 msgid "Transparency"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:170
+#: mcomix/preferences_dialog.py:167
 msgid "Use checkered background for transparent images"
 msgstr ""
 
 #
 # File: src/preferences.py, line: 159
-#: mcomix/preferences_dialog.py:172
+#: mcomix/preferences_dialog.py:169
 msgid ""
 "Use a grey checkered background for transparent images. If this preference "
 "is unset, the background is plain white instead."
 msgstr ""
 
 #
-#: mcomix/preferences_dialog.py:185
+#: mcomix/preferences_dialog.py:182
 #, fuzzy
 msgid "Use smart scrolling"
 msgstr "مقدار لغزش کلید فاصله:"
 
-#: mcomix/preferences_dialog.py:187
+#: mcomix/preferences_dialog.py:184
 msgid ""
 "With this preference set, the space key and mouse wheel do not only scroll "
 "down or up, but also sideways and so try to follow the natural reading order "
@@ -1303,13 +1321,13 @@ msgid ""
 msgstr ""
 
 #
-#: mcomix/preferences_dialog.py:192
+#: mcomix/preferences_dialog.py:189
 #, fuzzy
 msgid "Flip pages when scrolling off the edges of the page"
 msgstr "هنگام لغزش وقتی به بالا یا پایین صفحه رسید، به صفحهٔ قبل یا بعد برود"
 
 #
-#: mcomix/preferences_dialog.py:194
+#: mcomix/preferences_dialog.py:191
 #, fuzzy
 msgid ""
 "Flip pages when scrolling \"off the page\" with the scroll wheel or with the "
@@ -1320,82 +1338,82 @@ msgstr ""
 "به صفحهٔ بعد یا قبل برود، حتی وقتی که در حالت منطبق با صفحهٔ نمایش نیستید. سه "
 "«مرحله» با چرخ لغزش یا کلیدهای جابه‌جایی لازم است تا  این حرکت فعال شود."
 
-#: mcomix/preferences_dialog.py:197
+#: mcomix/preferences_dialog.py:194
 msgid "Automatically open the next archive"
 msgstr ""
 
 #
 # File: src/preferences.py, line: 203
-#: mcomix/preferences_dialog.py:199
+#: mcomix/preferences_dialog.py:196
 msgid ""
 "Automatically open the next archive in the directory when flipping past the "
 "last page, or the previous archive when flipping past the first page."
 msgstr ""
 
 #
-#: mcomix/preferences_dialog.py:202
+#: mcomix/preferences_dialog.py:199
 #, fuzzy
 msgid "Automatically open next directory"
 msgstr "کنتراست به صورت خودکار تنظیم شود"
 
-#: mcomix/preferences_dialog.py:204
+#: mcomix/preferences_dialog.py:201
 msgid ""
 "Automatically open the first file in the next sibling directory when "
 "flipping past the last page of the last file in a directory, or the previous "
 "directory when flipping past the first page of the first file."
 msgstr ""
 
-#: mcomix/preferences_dialog.py:207
+#: mcomix/preferences_dialog.py:204
 msgid "Open first file when navigating to previous archive"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:209
+#: mcomix/preferences_dialog.py:206
 msgid ""
 "Automatically open the first file of the previous archive when navigating to "
 "it, instead of opening the last file of the previous archive."
 msgstr ""
 
-#: mcomix/preferences_dialog.py:212
+#: mcomix/preferences_dialog.py:209
 msgid "Open first file when navigating to previous directory"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:214
+#: mcomix/preferences_dialog.py:211
 msgid ""
 "Automatically open the first file of the previous directory when navigating "
 "to it, instead of opening the last file of the previous directory."
 msgstr ""
 
-#: mcomix/preferences_dialog.py:216
+#: mcomix/preferences_dialog.py:213
 msgid "Number of pixels to scroll per arrow key press:"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:219
+#: mcomix/preferences_dialog.py:216
 msgid "Set the number of pixels to scroll on a page when using the arrow keys."
 msgstr ""
 
-#: mcomix/preferences_dialog.py:221
+#: mcomix/preferences_dialog.py:218
 msgid "Number of pixels to scroll per mouse wheel turn:"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:224
+#: mcomix/preferences_dialog.py:221
 msgid "Set the number of pixels to scroll on a page when using a mouse wheel."
 msgstr ""
 
-#: mcomix/preferences_dialog.py:226
+#: mcomix/preferences_dialog.py:223
 msgid "Fraction of page to scroll per space key press (in percent):"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:230
+#: mcomix/preferences_dialog.py:227
 msgid ""
 "Sets the percentage by which the page will be scrolled down or up when the "
 "space key is pressed."
 msgstr ""
 
-#: mcomix/preferences_dialog.py:233
+#: mcomix/preferences_dialog.py:230
 msgid "Number of \"steps\" to take before flipping the page:"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:236
+#: mcomix/preferences_dialog.py:233
 msgid ""
 "Set the number of \"steps\" needed to flip to the next or previous page.  "
 "Less steps will allow for very fast page turning but you might find yourself "
@@ -1403,46 +1421,46 @@ msgid ""
 msgstr ""
 
 #
-#: mcomix/preferences_dialog.py:241
+#: mcomix/preferences_dialog.py:238
 #, fuzzy
 msgid "Flip two pages in double page mode"
 msgstr "در حالت دو صفحه‌ای از تغییر اندازهٔ هوشمند استفاده شود"
 
 #
 # File: src/preferences.py, line: 184
-#: mcomix/preferences_dialog.py:243
+#: mcomix/preferences_dialog.py:240
 msgid ""
 "Flip two pages, instead of one, each time we flip pages in double page mode."
 msgstr ""
 
-#: mcomix/preferences_dialog.py:245
+#: mcomix/preferences_dialog.py:242
 msgid "Show only one page where appropriate:"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:248
+#: mcomix/preferences_dialog.py:245
 msgid "Page auto-resizing:"
 msgstr ""
 
 #
-#: mcomix/preferences_dialog.py:251
+#: mcomix/preferences_dialog.py:248
 #, fuzzy
 msgid "Space between two pages (in pixels):"
 msgstr "تأخیر نمایش اسلایدی:"
 
 #
 # File: src/preferences.py, line: 196
-#: mcomix/preferences_dialog.py:255
+#: mcomix/preferences_dialog.py:252
 msgid "Files"
 msgstr "پرونده‌ها"
 
 #
-#: mcomix/preferences_dialog.py:258
+#: mcomix/preferences_dialog.py:255
 #, fuzzy
 msgid "Automatically open the last viewed file on startup"
 msgstr "هنگام آغاز برنامه آخرین پروندهٔ دیده‌شده باز شود"
 
 #
-#: mcomix/preferences_dialog.py:260
+#: mcomix/preferences_dialog.py:257
 #, fuzzy
 msgid ""
 "Automatically open, on startup, the file that was open when MComix was last "
@@ -1450,29 +1468,34 @@ msgid ""
 msgstr "هنگام آغاز به کار کامیکس، آخرین صفحهٔ دیده‌شده به طور خودکار باز شود."
 
 #
-#: mcomix/preferences_dialog.py:262
+#: mcomix/preferences_dialog.py:259
 #, fuzzy
 msgid "Store information about recently opened files:"
 msgstr "پرونده‌های به‌تازگی بازشده ذخیره شوند"
 
 #
-#: mcomix/preferences_dialog.py:265
+#: mcomix/preferences_dialog.py:262
 #, fuzzy
 msgid "Save As opens at the last directory saved into"
 msgstr "محاورهٔ «باز کردن» همیشه به آخرین شاخهٔ بازشده برود"
 
-#: mcomix/preferences_dialog.py:268
+#: mcomix/preferences_dialog.py:264
+msgid ""
+"Open the Save As dialog at the directory in which the last file was saved."
+msgstr ""
+
+#: mcomix/preferences_dialog.py:266
 msgid "Prompts answered for good"
 msgstr ""
 
 #
-#: mcomix/preferences_dialog.py:286
+#: mcomix/preferences_dialog.py:284
 #, fuzzy
 msgid "Use fullscreen by default"
 msgstr "حالت تمام‌صفحه به صورت پیش‌فرض"
 
 #
-#: mcomix/preferences_dialog.py:290
+#: mcomix/preferences_dialog.py:288
 #, fuzzy
 msgid "Automatically hide all toolbars in fullscreen"
 msgstr ""
@@ -1480,14 +1503,14 @@ msgstr ""
 "مسطوره‌ها مخفی شوند."
 
 #
-#: mcomix/preferences_dialog.py:293 mcomix/ui.py:500
+#: mcomix/preferences_dialog.py:291 mcomix/ui.py:500
 #, fuzzy
 msgid "Fit to size mode"
 msgstr "حالت منطبق با صفحهٔ نمایش"
 
 #
 # File: src/ui.py, line: 103
-#: mcomix/preferences_dialog.py:295
+#: mcomix/preferences_dialog.py:293
 #, fuzzy
 msgid "Fixed width for wide pages:"
 msgstr "حالت منطبق با عر_ض صفحه"
@@ -1495,143 +1518,143 @@ msgstr "حالت منطبق با عر_ض صفحه"
 #
 # File: src/preferences.py, line: 264
 # File: src/ui.py, line: 292
-#: mcomix/preferences_dialog.py:299
+#: mcomix/preferences_dialog.py:297
 #, fuzzy
 msgid "Fixed height for wide pages:"
 msgstr "حالت منطبق با ارتفاع صفحه"
 
 #
 # File: src/ui.py, line: 103
-#: mcomix/preferences_dialog.py:303
+#: mcomix/preferences_dialog.py:301
 #, fuzzy
 msgid "Fixed width for other pages:"
 msgstr "حالت منطبق با عر_ض صفحه"
 
 #
 # File: src/ui.py, line: 103
-#: mcomix/preferences_dialog.py:307
+#: mcomix/preferences_dialog.py:305
 #, fuzzy
 msgid "Fixed height for other pages:"
 msgstr "حالت منطبق با عر_ض صفحه"
 
 #
 # File: src/preferences.py, line: 279
-#: mcomix/preferences_dialog.py:311
+#: mcomix/preferences_dialog.py:309
 msgid "Slideshow"
 msgstr "نمایش اسلایدی"
 
 #
-#: mcomix/preferences_dialog.py:313
+#: mcomix/preferences_dialog.py:311
 #, fuzzy
 msgid "Slideshow delay (in seconds):"
 msgstr "تأخیر نمایش اسلایدی:"
 
 #
-#: mcomix/preferences_dialog.py:317
+#: mcomix/preferences_dialog.py:315
 #, fuzzy
 msgid "Slideshow step (in pixels):"
 msgstr "تأخیر نمایش اسلایدی:"
 
-#: mcomix/preferences_dialog.py:320
+#: mcomix/preferences_dialog.py:318
 msgid ""
 "Specify the number of pixels to scroll while in slideshow mode. A positive "
 "value will scroll forward, a negative value will scroll backwards, and a "
 "value of 0 will cause the slideshow to always flip to a new page."
 msgstr ""
 
-#: mcomix/preferences_dialog.py:323
+#: mcomix/preferences_dialog.py:321
 msgid "During a slideshow automatically open the next archive"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:325
+#: mcomix/preferences_dialog.py:323
 msgid ""
 "While in slideshow mode allow the next archive to automatically be opened."
 msgstr ""
 
-#: mcomix/preferences_dialog.py:327
+#: mcomix/preferences_dialog.py:325
 msgid "Rotation"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:330
+#: mcomix/preferences_dialog.py:328
 msgid "Automatically rotate images according to their metadata"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:332
+#: mcomix/preferences_dialog.py:330
 msgid ""
 "Automatically rotate images when an orientation is specified in the image "
 "metadata, such as in an Exif tag."
 msgstr ""
 
 #
-#: mcomix/preferences_dialog.py:334
+#: mcomix/preferences_dialog.py:332
 #, fuzzy
 msgid "Image quality"
 msgstr "کیفیت تغییر اندازه"
 
 #
-#: mcomix/preferences_dialog.py:336
+#: mcomix/preferences_dialog.py:334
 #, fuzzy
 msgid "Scaling mode"
 msgstr "تغییر اندازه"
 
-#: mcomix/preferences_dialog.py:348
+#: mcomix/preferences_dialog.py:346
 msgid "File order"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:350
+#: mcomix/preferences_dialog.py:348
 msgid "Sort files and directories by:"
 msgstr ""
 
 #
 # File: src/archive.py, line: 302
-#: mcomix/preferences_dialog.py:353
+#: mcomix/preferences_dialog.py:351
 #, fuzzy
 msgid "Sort archives by:"
 msgstr "بایگانی tar"
 
-#: mcomix/preferences_dialog.py:356
+#: mcomix/preferences_dialog.py:354
 msgid "Extraction and cache"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:358
+#: mcomix/preferences_dialog.py:356
 msgid "Maximum number of concurrent extraction threads:"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:361
+#: mcomix/preferences_dialog.py:359
 msgid ""
 "Set the maximum number of concurrent threads for formats that support it."
 msgstr ""
 
-#: mcomix/preferences_dialog.py:363
+#: mcomix/preferences_dialog.py:361
 msgid "Maximum number of concurrent thumbnail threads:"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:366
+#: mcomix/preferences_dialog.py:364
 msgid ""
 "Set the maximum number of concurrent threads used to generate thumbnails. "
 "Takes effect the next time MComix is started."
 msgstr ""
 
 #
-#: mcomix/preferences_dialog.py:369
+#: mcomix/preferences_dialog.py:367
 #, fuzzy
 msgid "Store thumbnails for opened files"
 msgstr "پرونده‌های به‌تازگی بازشده ذخیره شوند"
 
 #
 # File: src/preferences.py, line: 227
-#: mcomix/preferences_dialog.py:371
+#: mcomix/preferences_dialog.py:369
 msgid ""
 "Store thumbnails for opened files according to the freedesktop.org "
 "specification. These thumbnails are shared by many other applications, such "
 "as most file managers."
 msgstr ""
 
-#: mcomix/preferences_dialog.py:373
+#: mcomix/preferences_dialog.py:371
 msgid "Maximum number of pages to store in the cache:"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:376
+#: mcomix/preferences_dialog.py:374
 msgid ""
 "Set the max number of pages to cache. A value of -1 will cache the entire "
 "archive."
@@ -1639,38 +1662,38 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 124
-#: mcomix/preferences_dialog.py:378
+#: mcomix/preferences_dialog.py:376
 msgid "Magnifying Lens"
 msgstr ""
 
 #
 # File: src/ui.py, line: 298
-#: mcomix/preferences_dialog.py:380
+#: mcomix/preferences_dialog.py:378
 #, fuzzy
 msgid "Magnifying lens size (in pixels):"
 msgstr "عدسی بزرگ‌نما"
 
 #
 # File: src/preferences.py, line: 131
-#: mcomix/preferences_dialog.py:383
+#: mcomix/preferences_dialog.py:381
 msgid ""
 "Set the size of the magnifying lens. It is a square with a side of this many "
 "pixels."
 msgstr ""
 
 #
-#: mcomix/preferences_dialog.py:385
+#: mcomix/preferences_dialog.py:383
 msgid "Magnification factor:"
 msgstr "ضریب بزرگ‌نمایی:"
 
 #
 # File: src/preferences.py, line: 140
-#: mcomix/preferences_dialog.py:388
+#: mcomix/preferences_dialog.py:386
 msgid "Set the magnification factor of the magnifying lens."
 msgstr ""
 
 #
-#: mcomix/preferences_dialog.py:392
+#: mcomix/preferences_dialog.py:390
 #, fuzzy
 msgid "Comment extensions:"
 msgstr "پروندهٔ توضیح"
@@ -1678,88 +1701,88 @@ msgstr "پروندهٔ توضیح"
 #
 # File: src/filechooser.py, line: 171
 # File: src/filechooser.py, line: 249
-#: mcomix/preferences_dialog.py:395
+#: mcomix/preferences_dialog.py:393
 #, fuzzy
 msgid "Animated images"
 msgstr "همهٔ تصاویر"
 
-#: mcomix/preferences_dialog.py:397
+#: mcomix/preferences_dialog.py:395
 msgid "Animation mode:"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:418
+#: mcomix/preferences_dialog.py:416
 msgid "_Reset keys"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:420
+#: mcomix/preferences_dialog.py:418
 msgid "Resets all keyboard shortcuts to their default values."
 msgstr ""
 
-#: mcomix/preferences_dialog.py:423
+#: mcomix/preferences_dialog.py:421
 msgid "Clear _dialog choices"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:425
+#: mcomix/preferences_dialog.py:423
 msgid ""
 "Clears all dialog choices that you have previously chosen not to be asked "
 "again."
 msgstr ""
 
-#: mcomix/preferences_dialog.py:460
+#: mcomix/preferences_dialog.py:458
 msgid "Ask every time"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:465
+#: mcomix/preferences_dialog.py:463
 msgid ""
 "What MComix answers this prompt with instead of asking. This is what the "
 "prompt's \"Do not ask again\" box sets."
 msgstr ""
 
-#: mcomix/preferences_dialog.py:487
+#: mcomix/preferences_dialog.py:485
 msgid "Auto-detect (Default)"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:521
+#: mcomix/preferences_dialog.py:519
 msgid "Follow the system"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:522
+#: mcomix/preferences_dialog.py:520
 msgid "Light"
 msgstr "روشن"
 
-#: mcomix/preferences_dialog.py:523
+#: mcomix/preferences_dialog.py:521
 msgid "Dark"
 msgstr "تیره"
 
-#: mcomix/preferences_dialog.py:524
+#: mcomix/preferences_dialog.py:522
 msgid "Pitch black"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:530
+#: mcomix/preferences_dialog.py:528
 msgid ""
 "How MComix itself is painted, whatever the desktop asks for. Pitch black is "
 "the dark theme with black backgrounds, which a screen that lights its pixels "
 "one by one shows as no light at all."
 msgstr ""
 
-#: mcomix/preferences_dialog.py:556 mcomix/preferences_dialog.py:697
-#: mcomix/preferences_dialog.py:768 mcomix/ui.py:506
+#: mcomix/preferences_dialog.py:554 mcomix/preferences_dialog.py:695
+#: mcomix/preferences_dialog.py:766 mcomix/ui.py:506
 msgid "Never"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:557
+#: mcomix/preferences_dialog.py:555
 msgid "Only for title pages"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:558
+#: mcomix/preferences_dialog.py:556
 msgid "Only for wide images"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:559 mcomix/preferences_dialog.py:698
+#: mcomix/preferences_dialog.py:557 mcomix/preferences_dialog.py:696
 msgid "Always"
 msgstr "همیشه"
 
-#: mcomix/preferences_dialog.py:566
+#: mcomix/preferences_dialog.py:564
 msgid ""
 "When showing the first page of an archive, or an image's width exceeds its "
 "height, only a single page will be displayed."
@@ -1767,77 +1790,77 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 78
-#: mcomix/preferences_dialog.py:581
+#: mcomix/preferences_dialog.py:579
 #, fuzzy
 msgid "Prefer same scale"
 msgstr "ترجیحات"
 
 #
 # File: src/preferences.py, line: 78
-#: mcomix/preferences_dialog.py:582
+#: mcomix/preferences_dialog.py:580
 #, fuzzy
 msgid "Prefer same size"
 msgstr "ترجیحات"
 
 #
-#: mcomix/preferences_dialog.py:583
+#: mcomix/preferences_dialog.py:581
 #, fuzzy
 msgid "Fit to same size"
 msgstr "حالت منطبق با صفحهٔ نمایش"
 
-#: mcomix/preferences_dialog.py:590
+#: mcomix/preferences_dialog.py:588
 msgid "Maintain relative size or fit to same size."
 msgstr ""
 
-#: mcomix/preferences_dialog.py:604 mcomix/preferences_dialog.py:649
+#: mcomix/preferences_dialog.py:602 mcomix/preferences_dialog.py:647
 msgid "No sorting"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:605
+#: mcomix/preferences_dialog.py:603
 msgid "File name"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:606
+#: mcomix/preferences_dialog.py:604
 msgid "File name (GLib)"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:607 mcomix/library/book_area.py:194
+#: mcomix/preferences_dialog.py:605 mcomix/library/book_area.py:194
 msgid "File size"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:608
+#: mcomix/preferences_dialog.py:606
 msgid "Last modified"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:614 mcomix/preferences_dialog.py:658
+#: mcomix/preferences_dialog.py:612 mcomix/preferences_dialog.py:656
 #: mcomix/library/book_area.py:198
 msgid "Ascending"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:615 mcomix/preferences_dialog.py:659
+#: mcomix/preferences_dialog.py:613 mcomix/preferences_dialog.py:657
 #: mcomix/library/book_area.py:199
 msgid "Descending"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:623
+#: mcomix/preferences_dialog.py:621
 msgid ""
 "Files will be opened and displayed according to the sort order specified "
 "here. This option does not affect ordering within archives."
 msgstr ""
 
-#: mcomix/preferences_dialog.py:650
+#: mcomix/preferences_dialog.py:648
 msgid "Natural order"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:651
+#: mcomix/preferences_dialog.py:649
 msgid "Literal order"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:652
+#: mcomix/preferences_dialog.py:650
 msgid "GLib order"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:667
+#: mcomix/preferences_dialog.py:665
 msgid ""
 "Files within archives will be sorted according to the order specified here. "
 "Natural order will sort numbered files based on their natural order, i.e. 1, "
@@ -1846,56 +1869,56 @@ msgid ""
 "many other GTK applications."
 msgstr ""
 
-#: mcomix/preferences_dialog.py:710
+#: mcomix/preferences_dialog.py:708
 msgid ""
 "Add information about all files opened from within MComix to the shared "
 "recent files list."
 msgstr ""
 
 #
-#: mcomix/preferences_dialog.py:730
+#: mcomix/preferences_dialog.py:728
 #, fuzzy
 msgid "Delete information about recently opened files?"
 msgstr "پرونده‌های به‌تازگی بازشده ذخیره شوند"
 
-#: mcomix/preferences_dialog.py:731
+#: mcomix/preferences_dialog.py:729
 msgid ""
 "This will remove all entries from the \"Recent\" menu, and clear information "
 "about last read pages."
 msgstr ""
 
 #
-#: mcomix/preferences_dialog.py:743
+#: mcomix/preferences_dialog.py:741
 #, fuzzy
 msgid "Normal (fast)"
 msgstr "اندازهٔ _طبیعی"
 
 #
-#: mcomix/preferences_dialog.py:744
+#: mcomix/preferences_dialog.py:742
 msgid "Bilinear"
 msgstr "دوخطی"
 
-#: mcomix/preferences_dialog.py:745
+#: mcomix/preferences_dialog.py:743
 msgid "Hyperbolic (slow)"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:751
+#: mcomix/preferences_dialog.py:749
 msgid ""
 "Changes how images are scaled. Slower algorithms result in higher quality "
 "resizing, but longer page loading times."
 msgstr ""
 
-#: mcomix/preferences_dialog.py:769 mcomix/library/book_area.py:206
+#: mcomix/preferences_dialog.py:767 mcomix/library/book_area.py:206
 msgid "Normal"
 msgstr ""
 
-#: mcomix/preferences_dialog.py:775
+#: mcomix/preferences_dialog.py:773
 msgid "Controls how animated images should be displayed."
 msgstr ""
 
 #
 # File: src/preferences.py, line: 295
-#: mcomix/preferences_dialog.py:824
+#: mcomix/preferences_dialog.py:822
 msgid ""
 "Treat all files found within archives, that have one of these file endings, "
 "as comments."
@@ -1903,27 +1926,27 @@ msgstr ""
 
 #
 # File: src/properties.py, line: 169
-#: mcomix/properties_dialog.py:49
+#: mcomix/properties_dialog.py:48
 msgid "Image"
 msgstr "تصویر"
 
 #
 # File: src/properties.py, line: 135
-#: mcomix/properties_dialog.py:81
+#: mcomix/properties_dialog.py:80
 msgid "Archive"
 msgstr "بایگانی"
 
 #
 # File: src/library.py, line: 832
 # File: src/properties.py, line: 113
-#: mcomix/properties_dialog.py:104 mcomix/library/control_area.py:142
+#: mcomix/properties_dialog.py:103 mcomix/library/control_area.py:142
 #, python-format
 msgid "%d pages"
 msgstr ""
 
 #
 # File: src/properties.py, line: 114
-#: mcomix/properties_dialog.py:105
+#: mcomix/properties_dialog.py:104
 #, python-format
 msgid "%d comments"
 msgstr ""
@@ -1931,28 +1954,28 @@ msgstr ""
 #
 # File: src/properties.py, line: 126
 # File: src/properties.py, line: 160
-#: mcomix/properties_dialog.py:164
+#: mcomix/properties_dialog.py:163
 msgid "Accessed"
 msgstr "آخرین دسترسی"
 
 #
 # File: src/properties.py, line: 128
 # File: src/properties.py, line: 162
-#: mcomix/properties_dialog.py:166
+#: mcomix/properties_dialog.py:165
 msgid "Modified"
 msgstr "آخرین تغییر"
 
 #
 # File: src/properties.py, line: 130
 # File: src/properties.py, line: 164
-#: mcomix/properties_dialog.py:168
+#: mcomix/properties_dialog.py:167
 msgid "Permissions"
 msgstr "اجازه‌ها"
 
 #
 # File: src/properties.py, line: 131
 # File: src/properties.py, line: 165
-#: mcomix/properties_dialog.py:169
+#: mcomix/properties_dialog.py:168
 msgid "Owner"
 msgstr "مالک"
 
@@ -2099,232 +2122,232 @@ msgstr ""
 
 #
 # File: src/archive.py, line: 301
-#: mcomix/strings.py:10 mcomix/strings.py:19
+#: mcomix/strings.py:9 mcomix/strings.py:18
 msgid "ZIP archive"
 msgstr "بایگانی ZIP"
 
 #
 # File: src/archive.py, line: 305
-#: mcomix/strings.py:11
+#: mcomix/strings.py:10
 msgid "RAR archive"
 msgstr "بایگانی RAR"
 
 #
 # File: src/archive.py, line: 302
-#: mcomix/strings.py:12
+#: mcomix/strings.py:11
 msgid "Tar archive"
 msgstr "بایگانی tar"
 
 #
 # File: src/archive.py, line: 303
-#: mcomix/strings.py:13
+#: mcomix/strings.py:12
 msgid "Gzip compressed tar archive"
 msgstr "بایگانی tar فشرده‌شده به صورت gzip"
 
 #
 # File: src/archive.py, line: 304
-#: mcomix/strings.py:14
+#: mcomix/strings.py:13
 msgid "Bzip2 compressed tar archive"
 msgstr "بایگانی tar فشرده‌شده به صورت bzip2"
 
 #
 # File: src/archive.py, line: 303
-#: mcomix/strings.py:15
+#: mcomix/strings.py:14
 #, fuzzy
 msgid "XZ compressed tar archive"
 msgstr "بایگانی tar فشرده‌شده به صورت gzip"
 
-#: mcomix/strings.py:16
+#: mcomix/strings.py:15
 msgid "PDF document"
 msgstr ""
 
-#: mcomix/strings.py:17
+#: mcomix/strings.py:16
 msgid "7z archive"
 msgstr ""
 
-#: mcomix/strings.py:18
+#: mcomix/strings.py:17
 msgid "LHA archive"
 msgstr ""
 
-#: mcomix/strings.py:20
+#: mcomix/strings.py:19
 msgid "MobiPocket ebook"
 msgstr ""
 
-#: mcomix/strings.py:24
+#: mcomix/strings.py:23
 msgid "Original vision/developer of Comix"
 msgstr ""
 
-#: mcomix/strings.py:25 mcomix/strings.py:26 mcomix/strings.py:27
-#: mcomix/strings.py:28
+#: mcomix/strings.py:24 mcomix/strings.py:25 mcomix/strings.py:26
+#: mcomix/strings.py:27
 msgid "MComix developer"
 msgstr ""
 
 #
 # File: src/about.py, line: 77
-#: mcomix/strings.py:31 mcomix/strings.py:32 mcomix/strings.py:33
-#: mcomix/strings.py:34
+#: mcomix/strings.py:30 mcomix/strings.py:31 mcomix/strings.py:32
+#: mcomix/strings.py:33
 msgid "Simplified Chinese translation"
 msgstr "ترجمهٔ چینی ساده‌شده"
 
 #
 # File: src/about.py, line: 78
-#: mcomix/strings.py:35 mcomix/strings.py:36
+#: mcomix/strings.py:34 mcomix/strings.py:35
 msgid "Spanish translation"
 msgstr "ترجمهٔ اسپانیایی"
 
 #
 # File: src/about.py, line: 79
-#: mcomix/strings.py:37
+#: mcomix/strings.py:36
 msgid "Brazilian Portuguese translation"
 msgstr "ترجمهٔ پرتغالی برزیلی"
 
 #
 # File: src/about.py, line: 81
-#: mcomix/strings.py:38
+#: mcomix/strings.py:37
 msgid "German translation and Nautilus thumbnailer"
 msgstr "ترجمهٔ آلمانی و مسطوره‌ساز ناتیلوس"
 
 #
 # File: src/about.py, line: 86
-#: mcomix/strings.py:39
+#: mcomix/strings.py:38
 #, fuzzy
 msgid "German translation"
 msgstr "ترجمهٔ یونانی"
 
 #
 # File: src/about.py, line: 82
-#: mcomix/strings.py:40 mcomix/strings.py:41 mcomix/strings.py:42
+#: mcomix/strings.py:39 mcomix/strings.py:40 mcomix/strings.py:41
 msgid "Italian translation"
 msgstr "ترجمهٔ ایتالیایی"
 
 #
 # File: src/about.py, line: 83
-#: mcomix/strings.py:43
+#: mcomix/strings.py:42
 msgid "Dutch translation"
 msgstr "ترجمهٔ هلندی"
 
 #
 # File: src/about.py, line: 84
-#: mcomix/strings.py:44 mcomix/strings.py:45 mcomix/strings.py:46
-#: mcomix/strings.py:47
+#: mcomix/strings.py:43 mcomix/strings.py:44 mcomix/strings.py:45
+#: mcomix/strings.py:46
 msgid "French translation"
 msgstr "ترجمهٔ فرانسوی"
 
 #
 # File: src/about.py, line: 85
-#: mcomix/strings.py:48
+#: mcomix/strings.py:47
 #, fuzzy
 msgid "Polish translatin"
 msgstr "ترجمهٔ لهستانی"
 
 #
 # File: src/about.py, line: 85
-#: mcomix/strings.py:49
+#: mcomix/strings.py:48
 msgid "Polish translation"
 msgstr "ترجمهٔ لهستانی"
 
 #
 # File: src/about.py, line: 86
-#: mcomix/strings.py:50
+#: mcomix/strings.py:49
 msgid "Greek translation"
 msgstr "ترجمهٔ یونانی"
 
 #
 # File: src/about.py, line: 87
-#: mcomix/strings.py:51
+#: mcomix/strings.py:50
 msgid "Catalan translation"
 msgstr "ترجمهٔ کاتالانی"
 
 #
 # File: src/about.py, line: 88
-#: mcomix/strings.py:52 mcomix/strings.py:53
+#: mcomix/strings.py:51 mcomix/strings.py:52
 msgid "Traditional Chinese translation"
 msgstr "ترجمهٔ چینی سنتی"
 
 #
 # File: src/about.py, line: 89
-#: mcomix/strings.py:54 mcomix/strings.py:55 mcomix/strings.py:56
+#: mcomix/strings.py:53 mcomix/strings.py:54 mcomix/strings.py:55
 msgid "Japanese translation"
 msgstr "ترجمهٔ ژاپنی"
 
 #
 # File: src/about.py, line: 90
-#: mcomix/strings.py:57
+#: mcomix/strings.py:56
 msgid "Hungarian translation"
 msgstr "ترجمهٔ مجاری"
 
 #
 # File: src/about.py, line: 91
-#: mcomix/strings.py:58 mcomix/strings.py:59
+#: mcomix/strings.py:57 mcomix/strings.py:58
 msgid "Russian translation"
 msgstr "ترجمهٔ روسی"
 
 #
 # File: src/about.py, line: 92
-#: mcomix/strings.py:60
+#: mcomix/strings.py:59
 msgid "Croatian translation"
 msgstr "ترجمهٔ کرواتی"
 
 #
 # File: src/about.py, line: 93
-#: mcomix/strings.py:61 mcomix/strings.py:62 mcomix/strings.py:63
+#: mcomix/strings.py:60 mcomix/strings.py:61 mcomix/strings.py:62
 msgid "Korean translation"
 msgstr ""
 
 #
 # File: src/about.py, line: 94
-#: mcomix/strings.py:64
+#: mcomix/strings.py:63
 msgid "Persian translation"
 msgstr ""
 
 #
 # File: src/about.py, line: 95
-#: mcomix/strings.py:65
+#: mcomix/strings.py:64
 msgid "Indonesian translation"
 msgstr ""
 
 #
 # File: src/about.py, line: 96
-#: mcomix/strings.py:66
+#: mcomix/strings.py:65
 msgid "Czech translation"
 msgstr "ترجمهٔ چکی"
 
-#: mcomix/strings.py:67
+#: mcomix/strings.py:66
 msgid "Ukrainian translation"
 msgstr ""
 
 #
 # File: src/about.py, line: 82
-#: mcomix/strings.py:68
+#: mcomix/strings.py:67
 #, fuzzy
 msgid "Galician translation"
 msgstr "ترجمهٔ ایتالیایی"
 
-#: mcomix/strings.py:69 mcomix/strings.py:70
+#: mcomix/strings.py:68 mcomix/strings.py:69
 msgid "Swedish translation"
 msgstr ""
 
 #
 # File: src/about.py, line: 86
-#: mcomix/strings.py:71
+#: mcomix/strings.py:70
 #, fuzzy
 msgid "Hebrew translation"
 msgstr "ترجمهٔ یونانی"
 
 #
 # File: src/about.py, line: 82
-#: mcomix/strings.py:72
+#: mcomix/strings.py:71
 #, fuzzy
 msgid "Lithuanian translation"
 msgstr "ترجمهٔ ایتالیایی"
 
 #
 # File: src/about.py, line: 97
-#: mcomix/strings.py:75
+#: mcomix/strings.py:74
 msgid "Icon design"
 msgstr ""
 
-#: mcomix/strings.py:76
+#: mcomix/strings.py:75
 msgid "Vector icon"
 msgstr ""
 
@@ -2697,16 +2720,20 @@ msgstr ""
 msgid "! Worker thread processing %(function)r failed: %(error)s"
 msgstr ""
 
-#: mcomix/archive/password.py:23
+#: mcomix/archive/password.py:21
 msgid "The archive is password-protected:"
 msgstr ""
 
-#: mcomix/archive/sevenzip_external.py:152
+#: mcomix/archive/password.py:23
+msgid "Please enter the password to continue:"
+msgstr ""
+
+#: mcomix/archive/sevenzip_external.py:150
 #, python-format
 msgid "Extraction of %(archivefile)s might have failed: %(error)s"
 msgstr ""
 
-#: mcomix/archive/zip.py:46
+#: mcomix/archive/zip.py:44
 #, python-format
 msgid ""
 "%(filename)s's extracted size is %(actual_size)d bytes, but should be "
@@ -3253,11 +3280,6 @@ msgstr ""
 
 #
 #, fuzzy
-#~ msgid "! Could not create archive at "
-#~ msgstr "قابل ایجاد نیست"
-
-#
-#, fuzzy
 #~ msgid "! Could not add file "
 #~ msgstr "قابل حذف نیست"
 
@@ -3270,11 +3292,6 @@ msgstr ""
 # File: src/bookmark.py, line: 29
 #~ msgid "_Edit bookmarks..."
 #~ msgstr "_ویرایش نشانک‌ها..."
-
-#
-#, fuzzy
-#~ msgid "! Could not remove"
-#~ msgstr "قابل ایجاد نیست"
 
 #
 #, fuzzy

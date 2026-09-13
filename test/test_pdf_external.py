@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """ Tests for the external (mutool/mudraw) PDF handler. """
 
 import os

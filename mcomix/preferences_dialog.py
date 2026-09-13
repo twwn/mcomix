@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """preferences_dialog.py - Preferences dialog."""
 
 import operator
@@ -59,8 +57,7 @@ class _PreferencesDialog(Dialog):
     _DEFAULT_WIDTH = 900
 
     def __init__(self, window: "main.MainWindow") -> None:
-        super().__init__(
-            title=_('Preferences'), transient_for=window)
+        super().__init__(title=_('Preferences'), transient_for=window)
 
         # Button text is set later depending on active tab
         self.reset_button = self.add_button('', constants.RESPONSE_REVERT_TO_DEFAULT)
@@ -263,7 +260,8 @@ class _PreferencesDialog(Dialog):
             self._create_store_recent_combobox())
 
         page.add_row(self._create_pref_check_button(_('Save As opens at the last directory saved into'),
-            'store last saved in directory', 'Open the Save As dialog at the directory in which the last file was saved.'))
+            'store last saved in directory',
+            _('Open the Save As dialog at the directory in which the last file was saved.')))
 
         page.new_section(_('Prompts answered for good'))
 

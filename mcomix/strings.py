@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """ strings.py - Constant strings that need internationalization.
     This file should only be imported after gettext has been correctly initialized
     and installed in the global namespace. """

@@ -26,7 +26,7 @@ class ThumbnailItem(GObject.Object):
     thumbnail = GObject.Property(type=Gdk.Texture)
 
     def __init__(self, uid: Any, label: str = '', tooltip: str = '') -> None:  # type: ignore[explicit-any]  # the view does not care what a uid is
-        super(ThumbnailItem, self).__init__()
+        super().__init__()
         self.uid = uid
         #: What the view writes beside or under the thumbnail.
         self.label = label
@@ -47,7 +47,7 @@ class _ThumbnailCell(Gtk.Box):
     __gtype_name__ = 'MComixThumbnailCell'
 
     def __init__(self, orientation: Gtk.Orientation) -> None:
-        super(_ThumbnailCell, self).__init__(orientation=orientation)
+        super().__init__(orientation=orientation)
         self.label = Gtk.Label()
         self.label.set_ellipsize(Pango.EllipsizeMode.END)
         self.picture = Gtk.Picture()
@@ -67,7 +67,7 @@ class _ThumbnailCell(Gtk.Box):
         self.position = 0
 
 
-class _ThumbnailViewBase(object):
+class _ThumbnailViewBase:
 
     """What a thumbnail view is made of, whatever shape it has.
 
@@ -339,8 +339,7 @@ class ThumbnailListView(Gtk.ListView, _ThumbnailViewBase):
         self.selection.set_autoselect(False)
         self.selection.set_can_unselect(True)
         _ThumbnailViewBase._init_thumbnails(self)
-        super(ThumbnailListView, self).__init__(
-            model=self.selection, factory=self._make_factory())
+        super().__init__(model=self.selection, factory=self._make_factory())
 
     def set_pages(self, uids: Iterable[int]) -> None:
         """Show one row per page number in <uids>."""
@@ -392,8 +391,7 @@ class ThumbnailGridView(Gtk.GridView, _ThumbnailViewBase):
         self.selection = Gtk.MultiSelection(model=self.model)
         _ThumbnailViewBase._init_thumbnails(self)
         self._reorderable = False
-        super(ThumbnailGridView, self).__init__(
-            model=self.selection, factory=self._make_factory())
+        super().__init__(model=self.selection, factory=self._make_factory())
         self.set_max_columns(64)
 
     def set_sorter(self, sorter: "Gtk.Sorter | None") -> None:

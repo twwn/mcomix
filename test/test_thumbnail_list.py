@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """The list widget behind the thumbnail sidebar.
 
 A row says for itself when it is bound, which is what replaced asking a
@@ -26,7 +24,7 @@ class ThumbnailListViewTest(MComixTest):
     ROWS = 200
 
     def setUp(self):
-        super(ThumbnailListViewTest, self).setUp()
+        super().setUp()
         self.asked = []
         self.view = thumbnail_list.ThumbnailListView()
         self.view.generate_thumbnail = self._generate
@@ -45,7 +43,7 @@ class ThumbnailListViewTest(MComixTest):
         # next.
         self.window.destroy()
         pump()
-        super(ThumbnailListViewTest, self).tearDown()
+        super().tearDown()
 
     def _generate(self, uid):
         self.asked.append(uid)
