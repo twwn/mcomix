@@ -20,7 +20,7 @@ class _AddLibraryProgressDialog(Gtk.Dialog):
         <collection>, unless it is None.
         """
         super(_AddLibraryProgressDialog, self).__init__(_('Adding books'), library,
-            Gtk.DialogFlags.MODAL, (Gtk.STOCK_STOP, Gtk.ResponseType.CLOSE))
+            Gtk.DialogFlags.MODAL, (_('_Stop'), Gtk.ResponseType.CLOSE))
 
         self._window = window
         self._destroy = False

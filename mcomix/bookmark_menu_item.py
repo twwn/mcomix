@@ -2,6 +2,11 @@
 
 from gi.repository import Gtk
 from mcomix import i18n
+from mcomix import icons
+
+#: The pixel size Gtk.IconSize.MENU stands for.
+_MENU_ICON_SIZE = 16
+
 
 class _Bookmark(Gtk.ImageMenuItem):
 
@@ -23,10 +28,10 @@ class _Bookmark(Gtk.ImageMenuItem):
         super(_Bookmark, self).__init__(str(self), False)
 
         if self._archive_type is not None:
-            im = Gtk.Image.new_from_stock('mcomix-archive', Gtk.IconSize.MENU)
+            im = Gtk.Image.new_from_icon_name('mcomix-archive', Gtk.IconSize.MENU)
 
         else:
-            im = Gtk.Image.new_from_stock('mcomix-image', Gtk.IconSize.MENU)
+            im = Gtk.Image.new_from_icon_name('mcomix-image', Gtk.IconSize.MENU)
 
         self.set_image(im)
         self.connect('activate', self._load)
@@ -57,8 +62,8 @@ class _Bookmark(Gtk.ImageMenuItem):
         """Return a tuple corresponding to one row in the _BookmarkDialog's
         ListStore.
         """
-        stock = self.get_image().get_stock()
-        pixbuf = self.render_icon(*stock)
+        pixbuf = icons.load_pixbuf(self.get_image().get_icon_name()[0],
+                                   _MENU_ICON_SIZE)
         page = '%d / %d' % (self._page, self._numpages)
         date = self._date_added.strftime("%x %X")
 

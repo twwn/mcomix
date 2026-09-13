@@ -23,6 +23,8 @@ from mcomix import message_dialog
 from mcomix.library import backend
 from mcomix.i18n import _
 
+from collections.abc import Callable
+
 
 class FileHandler(object):
 
@@ -172,13 +174,24 @@ class FileHandler(object):
 
             self._window.set_page(current_image_index + 1)
 
-            if self.archive_type is not None:
+            if self.archive_type is None:
+                self.write_fileinfo_file()
+            else:
                 self._extractor.extract()
-                if last_image_index != current_image_index and \
-                   self._ask_goto_last_read_page(self._current_file, last_image_index + 1):
-                    self._window.set_page(last_image_index + 1)
+                if last_image_index == current_image_index:
+                    self.write_fileinfo_file()
+                else:
+                    def resume(goto_last_read_page: bool) -> None:
+                        """Finish opening once the prompt has been answered.
 
-            self.write_fileinfo_file()
+                        The file info records the current page, so it is
+                        written when the answer has settled which that is."""
+                        if goto_last_read_page:
+                            self._window.set_page(last_image_index + 1)
+                        self.write_fileinfo_file()
+
+                    self._ask_goto_last_read_page(
+                        self._current_file, last_image_index + 1, resume)
 
         self._window.uimanager.recent.add(self._current_file)
 
@@ -348,10 +361,14 @@ class FileHandler(object):
 
         return min(max(0, current_image_index), num_of_pages - 1)
 
-    def _ask_goto_last_read_page(self, path, last_read_page):
-        """ If the user read an archive previously, ask to continue from
-        that time, or from page 1. This method returns a page index, that is,
-        index + 1. """
+    def _ask_goto_last_read_page(self, path: str, last_read_page: int,
+                                 on_answer: Callable[[bool], None]) -> None:
+        """ If the user read an archive previously, ask whether to continue
+        from where they stopped, or from page 1.
+
+        Calls <on_answer> with True to resume.  The answer arrives later,
+        so anything that depends on which page is current has to wait for
+        it rather than follow this call. """
 
         read_date = self.last_read_page.get_date(path)
 
@@ -366,9 +383,7 @@ class FileHandler(object):
             'If you choose "Yes", reading will resume on page %(page)d. Otherwise, '
             'the first page will be loaded.') % {'date': read_date.date().strftime("%x"),
                 'time': read_date.time().strftime("%X"), 'page': last_read_page})
-        result = dialog.run()
-
-        return result == Gtk.ResponseType.YES
+        dialog.run_async(lambda response: on_answer(response == Gtk.ResponseType.YES))
 
     def _open_image_files(self, filelist, image_path):
         """ Opens all files passed in C{filelist}.

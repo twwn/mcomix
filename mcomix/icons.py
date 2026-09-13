@@ -1,11 +1,13 @@
 """icons.py - Load MComix specific icons."""
 
 from gi.repository import Gtk
+import os
 import pkgutil
 
+from collections.abc import Sequence
+from typing import Any
+
 from mcomix import image_tools
-from mcomix import log
-from mcomix.i18n import _
 
 
 def mcomix_icons():
@@ -22,44 +24,61 @@ def mcomix_icons():
     return pixbufs
 
 
-def load_icons() -> None:
-    _icons = (('gimp-flip-horizontal.png',   'mcomix-flip-horizontal'),
-              ('gimp-flip-vertical.png',     'mcomix-flip-vertical'),
-              ('gimp-rotate-180.png',        'mcomix-rotate-180'),
-              ('gimp-rotate-270.png',        'mcomix-rotate-270'),
-              ('gimp-rotate-90.png',         'mcomix-rotate-90'),
-              ('gimp-thumbnails.png',        'mcomix-thumbnails'),
-              ('gimp-transform.png',         'mcomix-transform'),
-              ('tango-enhance-image.png',    'mcomix-enhance-image'),
-              ('tango-add-bookmark.png',     'mcomix-add-bookmark'),
-              ('tango-archive.png',          'mcomix-archive'),
-              ('tango-image.png',            'mcomix-image'),
-              ('library.png',                'mcomix-library'),
-              ('comments.png',               'mcomix-comments'),
-              ('zoom.png',                   'mcomix-zoom'),
-              ('magnifyingglass.png',        'mcomix-lens'),
-              ('double-page.png',            'mcomix-double-page'),
-              ('manga.png',                  'mcomix-manga'),
-              ('fitbest.png',                'mcomix-fitbest'),
-              ('fitwidth.png',               'mcomix-fitwidth'),
-              ('fitheight.png',              'mcomix-fitheight'),
-              ('fitmanual.png',              'mcomix-fitmanual'),
-              ('fitsize.png',                'mcomix-fitsize'))
+def icon_search_path() -> str:
+    """Return the directory holding MComix' own icons.
 
-    # Load window title icons.
-    pixbufs = mcomix_icons()
-    Gtk.Window.set_default_icon_list(pixbufs)
-    # Load application icons.
-    factory = Gtk.IconFactory()
-    for filename, stockid in _icons:
-        try:
-            icon_data = pkgutil.get_data('mcomix', 'images/%s' % filename)
-            pixbuf = image_tools.load_pixbuf_data(icon_data)
-            iconset = Gtk.IconSet(pixbuf)
-            factory.add(stockid, iconset)
-        except Exception:
-            log.warning(_('! Could not load icon "%s"'), filename)
-    factory.add_default()
+    They are laid out as an icon theme - hicolor/<size>/actions/<name>.png -
+    so that the icon theme can find them by name, the way it finds every
+    other icon.  Gtk.IconFactory, which used to register them as stock
+    items, is gone in GTK4.
+    """
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                        'images', 'icons')
+
+
+def load_icons() -> None:
+    """Set the window icon and make MComix' own icons available by name."""
+    Gtk.Window.set_default_icon_list(mcomix_icons())
+    Gtk.IconTheme.get_default().append_search_path(icon_search_path())
+
+
+def load_pixbuf(name: str, size: int) -> Any:
+    """Return the icon <name> from the icon theme, at <size> pixels."""
+    return Gtk.IconTheme.get_default().load_icon(name, size, 0)
+
+
+def _add(actiongroup: Any, method: str,
+         entries: Sequence[Sequence[Any]], args: Sequence[Any]) -> None:
+    """Add <entries> to <actiongroup> through the named add_*_actions method.
+
+    Those methods take a stock id in the entry's second field, where the
+    tables that call this carry an icon name.  Stock items are gone in
+    GTK4, and a Gtk.Action falls back to its icon name only when it has no
+    stock id, so hand the name to the action separately.
+    """
+    getattr(actiongroup, method)(
+        [(entry[0], None) + tuple(entry[2:]) for entry in entries], *args)
+    for entry in entries:
+        if entry[1] is not None:
+            actiongroup.get_action(entry[0]).set_icon_name(entry[1])
+
+
+def add_actions(actiongroup: Any, entries: Sequence[Sequence[Any]],
+                *args: Any) -> None:
+    """Add action <entries> carrying icon names to <actiongroup>."""
+    _add(actiongroup, 'add_actions', entries, args)
+
+
+def add_toggle_actions(actiongroup: Any, entries: Sequence[Sequence[Any]],
+                       *args: Any) -> None:
+    """Add toggle action <entries> carrying icon names to <actiongroup>."""
+    _add(actiongroup, 'add_toggle_actions', entries, args)
+
+
+def add_radio_actions(actiongroup: Any, entries: Sequence[Sequence[Any]],
+                      *args: Any) -> None:
+    """Add radio action <entries> carrying icon names to <actiongroup>."""
+    _add(actiongroup, 'add_radio_actions', entries, args)
 
 
 # vim: expandtab:sw=4:ts=4

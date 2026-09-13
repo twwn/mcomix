@@ -123,14 +123,17 @@ class BaseArchive(object):
         """ Asks the user for a password and sets <self._password>.
         If <self._password> is None, no password has been requested yet.
         If an empty string is set, assume that the user did not provide
-        a password. """
+        a password.
 
-        password = archive_password.ask_for_password(self.archive)
-        if password is None:
-            password = ""
+        The dialog is not waited for here.  This runs on the main thread,
+        by way of the Callback decorator, while the thread that wanted the
+        password waits on <self._event> in _get_password(). """
 
-        self._password = password
-        self._event.set()
+        def got_password(password: str | None) -> None:
+            self._password = password if password is not None else ""
+            self._event.set()
+
+        archive_password.ask_for_password(self.archive, got_password)
 
     def _get_password(self):
         ask_for_password = self._password is None

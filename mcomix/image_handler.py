@@ -479,12 +479,18 @@ class ImageHandler(object):
             num_pages = min(10, self.get_number_of_pages())
         else:
             num_pages = self._cache_pages
+        # However small the budget, it has to cover what is on screen: this
+        # list doubles as the set of pixbufs worth keeping, so leaving the
+        # current page out of it throws that page away as it is being shown.
+        num_pages = max(num_pages, page_width)
 
-        page_list = [page - 1 - page_width + n for n in range(num_pages)]
+        # Look back only as far as the budget reaches past the current page.
+        lead = min(page_width, num_pages - page_width)
+        page_list = [page - 1 - lead + n for n in range(num_pages)]
 
         # Current and next page first, followed by previous page.
-        previous_page = page_list[0:page_width]
-        del page_list[0:page_width]
+        previous_page = page_list[0:lead]
+        del page_list[0:lead]
         page_list[2*page_width:2*page_width] = previous_page
         page_list = [index for index in page_list
                      if index >= 0 and index < len(self._image_files)]

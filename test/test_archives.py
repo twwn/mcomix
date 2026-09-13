@@ -25,6 +25,10 @@ from mcomix.archive import (
 # Aliased: the plain name is used as a loop and parameter name below.
 from mcomix.archive import password as archive_password
 
+#: The real password prompt, which the tests below stand in for and put
+#: back afterwards.
+_REAL_ASK_FOR_PASSWORD = archive_password.ask_for_password
+
 
 class UnsupportedFormat(Exception):
 
@@ -152,10 +156,16 @@ class ArchiveFormatTest(object):
     archive = None
 
     @classmethod
-    def _ask_password(cls, archive):
-        if cls.password:
-            return cls.password
-        raise Exception('asked for password on unprotected archive!')
+    def _ask_password(cls, archive, on_password):
+        # Stands in for the dialog, which hands the password to a callback
+        # rather than returning it; the extracting thread waits either way.
+        if not cls.password:
+            raise Exception('asked for password on unprotected archive!')
+        on_password(cls.password)
+
+    @classmethod
+    def tearDownClass(cls):
+        archive_password.ask_for_password = _REAL_ASK_FOR_PASSWORD
 
     @classmethod
     def setUpClass(cls):
@@ -167,6 +177,8 @@ class ArchiveFormatTest(object):
             for name, archive_name, filename
             in cls.contents
         ])
+        # Put back by tearDownClass: this is a module level function, so
+        # leaving it replaced would follow every later test.
         archive_password.ask_for_password = cls._ask_password
         if os.path.exists(cls.archive_path):
             return

@@ -1,6 +1,6 @@
 """slideshow.py - Slideshow handler."""
 
-from gi.repository import Gtk, GLib
+from gi.repository import GLib
 
 from mcomix.preferences import prefs
 from mcomix.i18n import _
@@ -39,11 +39,11 @@ class Slideshow(object):
         """Toggle a slideshow on or off."""
         if action.get_active():
             self._start()
-            self._window.uimanager.get_widget('/Tool/slideshow').set_stock_id( Gtk.STOCK_MEDIA_STOP )
+            self._window.uimanager.get_widget('/Tool/slideshow').set_icon_name( 'media-playback-stop' )
             self._window.uimanager.get_widget('/Tool/slideshow').set_tooltip_text( _('Stop slideshow')  )
         else:
             self._stop()
-            self._window.uimanager.get_widget('/Tool/slideshow').set_stock_id( Gtk.STOCK_MEDIA_PLAY )
+            self._window.uimanager.get_widget('/Tool/slideshow').set_icon_name( 'media-playback-start' )
             self._window.uimanager.get_widget('/Tool/slideshow').set_tooltip_text( _('Start slideshow') )
 
     def is_running(self):

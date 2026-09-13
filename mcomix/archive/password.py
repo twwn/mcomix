@@ -5,9 +5,16 @@ from gi.repository import Gtk
 from mcomix import message_dialog
 from mcomix.i18n import _
 
-def ask_for_password(archive):
-    """ Openes an input dialog to ask for a password. Returns either
-    an Unicode string (the password), or None."""
+from collections.abc import Callable
+
+def ask_for_password(archive: str,
+                     on_password: Callable[[str | None], None]) -> None:
+    """ Opens an input dialog to ask for the password to <archive>.
+
+    Calls <on_password> with the password the user typed, or with None if
+    they gave none.  It does not wait for the answer: this runs on the
+    main thread, and the nested main loop Gtk.Dialog.run() waited in is
+    exactly what let a second password dialog open on top of the first."""
     dialog = message_dialog.MessageDialog(None, Gtk.DialogFlags.MODAL,
             Gtk.MessageType.QUESTION, Gtk.ButtonsType.OK_CANCEL)
     dialog.set_text(
@@ -23,13 +30,13 @@ def ask_for_password(archive):
     dialog.get_content_area().pack_end(password_box, True, True, 0)
     dialog.set_focus(password_box)
 
-    result = dialog.run()
-    password = password_box.get_text()
-    dialog.destroy()
+    def responded(response: int) -> None:
+        password = password_box.get_text()
+        dialog.destroy()
+        on_password(password
+                    if response == Gtk.ResponseType.OK and password
+                    else None)
 
-    if result == Gtk.ResponseType.OK and password:
-        return password
-    else:
-        return None
+    dialog.run_async(responded)
 
 # vim: expandtab:sw=4:ts=4

@@ -274,17 +274,17 @@ class OpenWithEditor(Gtk.Dialog):
 
         self._command_tree = Gtk.TreeView()
         self._command_tree.get_selection().connect('changed', self._item_selected)
-        self._add_button = Gtk.Button(stock=Gtk.STOCK_ADD)
+        self._add_button = Gtk.Button.new_with_mnemonic(_('_Add'))
         self._add_button.connect('clicked', self._add_command)
         self._add_sep_button = Gtk.Button.new_with_mnemonic(_('Add _separator'))
         self._add_sep_button.connect('clicked', self._add_sep_command)
-        self._remove_button = Gtk.Button(stock=Gtk.STOCK_REMOVE)
+        self._remove_button = Gtk.Button.new_with_mnemonic(_('_Remove'))
         self._remove_button.connect('clicked', self._remove_command)
         self._remove_button.set_sensitive(False)
-        self._up_button = Gtk.Button(stock=Gtk.STOCK_GO_UP)
+        self._up_button = Gtk.Button.new_with_mnemonic(_('_Up'))
         self._up_button.connect('clicked', self._up_command)
         self._up_button.set_sensitive(False)
-        self._down_button = Gtk.Button(stock=Gtk.STOCK_GO_DOWN)
+        self._down_button = Gtk.Button.new_with_mnemonic(_('_Down'))
         self._down_button.connect('clicked', self._down_command)
         self._down_button.set_sensitive(False)
         self._run_button = Gtk.Button.new_with_mnemonic(_('Run _command'))
@@ -296,7 +296,7 @@ class OpenWithEditor(Gtk.Dialog):
         self._exec_label.set_xalign(0)
         self._exec_label.set_yalign(0)
         self._set_exec_text('')
-        self._save_button = self.add_button(Gtk.STOCK_SAVE, Gtk.ResponseType.ACCEPT)
+        self._save_button = self.add_button(_('_Save'), Gtk.ResponseType.ACCEPT)
         self.set_default_response(Gtk.ResponseType.ACCEPT)
 
         self._layout()
@@ -557,10 +557,8 @@ class OpenWithEditor(Gtk.Dialog):
                     _('You have made changes to the list of external commands that '
                       'have not been saved yet. Press "Yes" to save all changes, '
                       'or "No" to discard them.'))
-                response = confirm_diag.run()
-
-                if response == Gtk.ResponseType.YES:
-                    self.save()
+                confirm_diag.run_async(
+                    lambda response: response == Gtk.ResponseType.YES and self.save())
 
     def _quote_if_necessary(self, arg):
         """ Quotes a command line argument if necessary. """

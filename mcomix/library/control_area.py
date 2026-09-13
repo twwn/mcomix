@@ -87,7 +87,6 @@ class _ControlArea(Gtk.Box):
 
         watchlist_button = Gtk.Button(label=_("_Watch list"), use_underline=True)
         watchlist_button.set_always_show_image(True)
-        watchlist_button.set_image(Gtk.Image.new_from_stock(Gtk.STOCK_FIND, Gtk.IconSize.BUTTON))
         watchlist_button.set_image_position(Gtk.PositionType.LEFT)
         watchlist_button.connect('clicked',
             lambda *args: WatchListDialog(self._library))
@@ -97,7 +96,6 @@ class _ControlArea(Gtk.Box):
 
         self._open_button = Gtk.Button(label=_("_Open list"), use_underline=True)
         self._open_button.set_always_show_image(True)
-        self._open_button.set_image(Gtk.Image.new_from_stock(Gtk.STOCK_OPEN, Gtk.IconSize.BUTTON))
         self._open_button.set_image_position(Gtk.PositionType.LEFT)
         self._open_button.connect('clicked',
             self._library.book_area.open_selected_book)

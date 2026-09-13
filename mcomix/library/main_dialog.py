@@ -47,18 +47,25 @@ class _LibraryDialog(Gtk.Window):
 
         self.backend.watchlist.new_files_found += self._new_files_found
 
-        table = Gtk.Table(2, 2, False)
-        table.attach(self.collection_area, 0, 1, 0, 1, Gtk.AttachOptions.FILL,
-            Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL)
-        table.attach(self.book_area, 1, 2, 0, 1, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL,
-            Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL)
-        table.attach(self.control_area, 0, 2, 1, 2, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL,
-            Gtk.AttachOptions.FILL)
+        # See the note on the same conversion in mcomix/main.py: Gtk.Grid
+        # takes a corner and a size where Gtk.Table took edges, and carries
+        # what were attach options as properties of the child.
+        grid = Gtk.Grid()
+        for child, column, row, width, height, hexpand, vexpand in (
+                (self.collection_area, 0, 0, 1, 1, False, True),
+                (self.book_area,       1, 0, 1, 1, True,  True),
+                (self.control_area,    0, 1, 2, 1, True,  False),
+        ):
+            child.set_hexpand(hexpand)
+            child.set_vexpand(vexpand)
+            grid.attach(child, column, row, width, height)
 
         if prefs['show statusbar']:
-            table.attach(self._statusbar, 0, 2, 2, 3, Gtk.AttachOptions.FILL, Gtk.AttachOptions.FILL)
+            self._statusbar.set_hexpand(False)
+            self._statusbar.set_vexpand(False)
+            grid.attach(self._statusbar, 0, 2, 2, 1)
 
-        self.add(table)
+        self.add(grid)
         self.show_all()
         self.present()
 

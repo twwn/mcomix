@@ -2,10 +2,13 @@
     supports remembering the dialog result.
 """
 
-from gi.repository import Gtk
+from gi.repository import GLib, Gtk
 
 from mcomix.preferences import prefs
 from mcomix.i18n import _
+
+from collections.abc import Callable
+from typing import Any
 
 
 class MessageDialog(Gtk.MessageDialog):
@@ -61,28 +64,43 @@ class MessageDialog(Gtk.MessageDialog):
 
     def set_auto_destroy(self, auto_destroy):
         """ Determines if the dialog should automatically destroy itself
-        after run(). """
+        once it has been answered. """
         self.auto_destroy = auto_destroy
 
-    def run(self):
-        """ Makes the dialog visible and waits for a result. Also destroys
-        the dialog after the result has been returned. """
+    def run_async(self, on_response: Callable[[int], None]) -> None:
+        """ Makes the dialog visible and hands its result to <on_response>.
 
+        This is what Gtk.Dialog.run() used to do, minus the waiting: run()
+        is gone in GTK4, and the nested main loop it waited in kept the
+        idle queue turning, so anything queued behind the dialog - another
+        dialog, say - ran before this one had been answered.
+
+        <on_response> is always called from the main loop, never before
+        this method returns, whether the answer comes from the user or
+        from a choice remembered earlier.
+        """
         if self.dialog_id in prefs['stored dialog choices']:
+            remembered = prefs['stored dialog choices'][self.dialog_id]
             self.destroy()
-            return prefs['stored dialog choices'][self.dialog_id]
-        else:
-            self.show_all()
-            # Prevent checkbox from grabbing focus by only enabling it after show
-            self.remember_checkbox.set_can_focus(True)
-            result = super(MessageDialog, self).run()
 
-            if (self.should_remember_choice() and int(result) in self.choices):
-                prefs['stored dialog choices'][self.dialog_id] = int(result)
+            def deliver_remembered() -> bool:
+                on_response(remembered)
+                return False
 
+            GLib.idle_add(deliver_remembered)
+            return
+
+        def responded(dialog: Any, response: int) -> None:
+            if self.should_remember_choice() and int(response) in self.choices:
+                prefs['stored dialog choices'][self.dialog_id] = int(response)
             if self.auto_destroy:
                 self.destroy()
-            return result
+            on_response(response)
+
+        self.connect('response', responded)
+        self.show_all()
+        # Prevent checkbox from grabbing focus by only enabling it after show
+        self.remember_checkbox.set_can_focus(True)
 
 
 # vim: expandtab:sw=4:ts=4

@@ -8,6 +8,8 @@ from mcomix.library import backend_types
 from mcomix.preferences import prefs
 from mcomix.i18n import _
 
+from typing import Any
+
 
 COL_DIRECTORY = 0
 COL_COLLECTION = 0
@@ -26,7 +28,7 @@ class WatchListDialog(Gtk.Dialog):
         super(WatchListDialog, self).__init__(_("Library watch list"),
             library, Gtk.DialogFlags.DESTROY_WITH_PARENT | Gtk.DialogFlags.MODAL,
             (_('_Scan now'), WatchListDialog.RESPONSE_SCANNOW,
-             Gtk.STOCK_CLOSE, Gtk.ResponseType.CLOSE))
+             _('_Close'), Gtk.ResponseType.CLOSE))
 
         #: Stores a reference to the library
         self.library = library
@@ -66,9 +68,9 @@ class WatchListDialog(Gtk.Dialog):
         recursive_column.add_attribute(recursive_renderer, 'active', COL_RECURSIVE)
         self._treeview.append_column(recursive_column)
 
-        add_button = Gtk.Button(_("_Add"), Gtk.STOCK_ADD, use_underline=True)
+        add_button = Gtk.Button.new_with_mnemonic(_('_Add'))
         add_button.connect('clicked', self._add_cb)
-        self._remove_button = remove_button = Gtk.Button(_("_Remove"), Gtk.STOCK_REMOVE, use_underline=True)
+        self._remove_button = remove_button = Gtk.Button.new_with_mnemonic(_('_Remove'))
         remove_button.set_sensitive(False)
         remove_button.connect('clicked', self._remove_cb)
 
@@ -178,13 +180,14 @@ class WatchListDialog(Gtk.Dialog):
         """ Called when a new watch list entry should be added. """
         filechooser = Gtk.FileChooserDialog(parent=self,
             action=Gtk.FileChooserAction.SELECT_FOLDER,
-            buttons=(Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT,
-                     Gtk.STOCK_OK, Gtk.ResponseType.ACCEPT))
-        result = filechooser.run()
-        if filechooser.get_filename() is not None:
-            directory = filechooser.get_filename()
-        else:
-            directory = ""
+            buttons=(_('_Cancel'), Gtk.ResponseType.REJECT,
+                     _('_OK'), Gtk.ResponseType.ACCEPT))
+        filechooser.connect('response', self._directory_chosen)
+        filechooser.show_all()
+
+    def _directory_chosen(self, filechooser: Any, result: int) -> None:
+        """ Add the directory the file chooser came back with. """
+        directory = filechooser.get_filename() or ""
         filechooser.destroy()
 
         if result == Gtk.ResponseType.ACCEPT \

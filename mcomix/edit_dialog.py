@@ -26,20 +26,18 @@ class _EditArchiveDialog(Gtk.Dialog):
 
     def __init__(self, window):
         super(_EditArchiveDialog, self).__init__(_('Edit archive'), window, Gtk.DialogFlags.MODAL,
-            (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL))
+            (_('_Cancel'), Gtk.ResponseType.CANCEL))
 
-        self._accept_changes_button = self.add_button(Gtk.STOCK_APPLY, Gtk.ResponseType.APPLY)
+        self._accept_changes_button = self.add_button(_('_Apply'), Gtk.ResponseType.APPLY)
 
         self.kill = False # Dialog is killed.
         self.file_handler = window.filehandler
         self._window = window
         self._imported_files = []
 
-        self._save_button = self.add_button(Gtk.STOCK_SAVE_AS, constants.RESPONSE_SAVE_AS)
+        self._save_button = self.add_button(_('Save _As'), constants.RESPONSE_SAVE_AS)
 
         self._import_button = self.add_button(_('_Import'), constants.RESPONSE_IMPORT)
-        self._import_button.set_image(Gtk.Image.new_from_stock(Gtk.STOCK_ADD,
-            Gtk.IconSize.BUTTON))
 
         self.set_border_width(4)
         self.resize(min(Gdk.Screen.get_default().get_width() - 50, 750),
@@ -133,9 +131,24 @@ class _EditArchiveDialog(Gtk.Dialog):
             dialog.set_text(
                 _("The new archive could not be saved!"),
                 _("The original files have not been removed."))
-            dialog.run()
+            dialog.run_async(lambda response: self.set_sensitive(True))
 
-            self.set_sensitive(True)
+    def _import_files(self, paths: list) -> None:
+        """Add the chosen <paths> to the archive being edited."""
+        exts = '|'.join(prefs['comment extensions'])
+        comment_re = re.compile(r'\.(%s)\s*$' % exts, re.I)
+
+        for path in paths:
+
+            if image_tools.is_image_file(path):
+                self._imported_files.append( path )
+                self._image_area.add_extra_image(path)
+
+            elif os.path.isfile(path):
+
+                if comment_re.search( path ):
+                    self._imported_files.append( path )
+                    self._comment_area.add_extra_file(path)
 
     def _response(self, dialog, response):
 
@@ -152,36 +165,24 @@ class _EditArchiveDialog(Gtk.Dialog):
             dialog.filechooser.set_extra_widget(Gtk.Label(label=
                 _('Archives are stored as ZIP files.')))
             dialog.add_archive_filters()
-            dialog.run()
 
-            paths = dialog.get_paths()
-            dialog.destroy()
+            def save_as_chosen(paths: list) -> None:
+                dialog.destroy()
+                if paths:
+                    self._pack_archive(paths[0])
 
-            if paths:
-                self._pack_archive(paths[0])
+            dialog.run_async(save_as_chosen)
 
         elif response == constants.RESPONSE_IMPORT:
 
             dialog = file_chooser_simple_dialog.SimpleFileChooserDialog()
             dialog.add_image_filters()
-            dialog.run()
-            paths = dialog.get_paths()
-            dialog.destroy()
 
-            exts = '|'.join(prefs['comment extensions'])
-            comment_re = re.compile(r'\.(%s)\s*$' % exts, re.I)
+            def import_chosen(paths: list) -> None:
+                dialog.destroy()
+                self._import_files(paths)
 
-            for path in paths:
-
-                if image_tools.is_image_file(path):
-                    self._imported_files.append( path )
-                    self._image_area.add_extra_image(path)
-
-                elif os.path.isfile(path):
-
-                    if comment_re.search( path ):
-                        self._imported_files.append( path )
-                        self._comment_area.add_extra_file(path)
+            dialog.run_async(import_chosen)
 
         elif response == Gtk.ResponseType.APPLY:
 

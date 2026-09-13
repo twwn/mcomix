@@ -42,13 +42,13 @@ class _BaseFileChooserDialog(Gtk.Dialog):
 
         if action == Gtk.FileChooserAction.OPEN:
             title = _('Open')
-            buttons = (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
-                Gtk.STOCK_OPEN, Gtk.ResponseType.OK)
+            buttons = (_('_Cancel'), Gtk.ResponseType.CANCEL,
+                _('_Open'), Gtk.ResponseType.OK)
 
         else:
             title = _('Save')
-            buttons = (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
-                Gtk.STOCK_SAVE, Gtk.ResponseType.OK)
+            buttons = (_('_Cancel'), Gtk.ResponseType.CANCEL,
+                _('_Save'), Gtk.ResponseType.OK)
 
         super(_BaseFileChooserDialog, self).__init__(title, None, 0, buttons)
         self.set_default_response(Gtk.ResponseType.OK)
@@ -228,26 +228,33 @@ class _BaseFileChooserDialog(Gtk.Dialog):
                     _("A file named '%s' already exists. Do you want to replace it?") %
                         os.path.basename(first_path),
                     _('Replacing it will overwrite its contents.'))
-                response = overwrite_dialog.run()
+                # Declining leaves this dialog standing, which is what
+                # stopping the response signal used to achieve; the answer
+                # now arrives too late to veto a signal that has been
+                # emitted, so finish the job from the answer instead.
+                overwrite_dialog.run_async(
+                    lambda answer: answer == Gtk.ResponseType.OK
+                    and self._files_accepted(paths, first_path))
+                return
 
-                if response != Gtk.ResponseType.OK:
-                    self.emit_stop_by_name('response')
-                    return
-
-            # Do not store path if the user chose not to keep a file history
-            if prefs['store recent file info']:
-                prefs['path of last browsed in filechooser'] = \
-                    self.filechooser.get_current_folder()
-            else:
-                prefs['path of last browsed in filechooser'] = \
-                    constants.HOME_DIR
-
-            self.__class__._last_activated_file = first_path
-            self.files_chosen(paths)
+            self._files_accepted(paths, first_path)
 
         else:
             self.files_chosen([])
+            self._destroyed = True
 
+    def _files_accepted(self, paths: list[str], first_path: str) -> None:
+        """Hand the chosen <paths> on, once nothing is left to confirm."""
+        # Do not store path if the user chose not to keep a file history
+        if prefs['store recent file info']:
+            prefs['path of last browsed in filechooser'] = \
+                self.filechooser.get_current_folder()
+        else:
+            prefs['path of last browsed in filechooser'] = \
+                constants.HOME_DIR
+
+        self.__class__._last_activated_file = first_path
+        self.files_chosen(paths)
         self._destroyed = True
 
     def _update_preview(self, *args):

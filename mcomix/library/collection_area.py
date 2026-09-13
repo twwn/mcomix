@@ -6,11 +6,14 @@ from typing import TYPE_CHECKING
 
 from mcomix.preferences import prefs
 from mcomix import constants
+from mcomix import icons
 from mcomix import i18n
 from mcomix import status
 from mcomix import file_chooser_library_dialog
 from mcomix import message_dialog
 from mcomix.i18n import _
+
+from typing import Any
 if TYPE_CHECKING:
     from mcomix.library.main_dialog import _LibraryDialog
 
@@ -75,25 +78,25 @@ class _CollectionArea(Gtk.ScrolledWindow):
         """
         self._ui_manager.add_ui_from_string(ui_description)
         actiongroup = Gtk.ActionGroup('mcomix-library-collection-area')
-        actiongroup.add_actions([
+        icons.add_actions(actiongroup, [
             ('_title', None, _("Library collections"), None, None,
                 lambda *args: False),
-            ('add', Gtk.STOCK_ADD, _('_Add...'), None,
+            ('add', 'list-add', _('_Add...'), None,
                 _('Add more books to the library.'),
                 lambda *args: file_chooser_library_dialog.open_library_filechooser_dialog(self._library)),
-            ('new', Gtk.STOCK_NEW, _('New'), None,
+            ('new', 'document-new', _('New'), None,
                 _('Add a new empty collection.'),
                 self.add_collection),
-            ('rename', Gtk.STOCK_EDIT, _('Re_name'), None,
+            ('rename', 'document-edit-symbolic', _('Re_name'), None,
                 _('Renames the selected collection.'),
                 self._rename_collection),
-            ('duplicate', Gtk.STOCK_COPY, _('_Duplicate'), None,
+            ('duplicate', 'edit-copy', _('_Duplicate'), None,
                 _('Creates a duplicate of the selected collection.'),
                 self._duplicate_collection),
-            ('cleanup', Gtk.STOCK_CLEAR, _('_Clean up'), None,
+            ('cleanup', 'edit-clear', _('_Clean up'), None,
                 _('Removes no longer existant books from the collection.'),
                 self._clean_collection),
-            ('remove', Gtk.STOCK_REMOVE, _('_Remove'), None,
+            ('remove', 'list-remove', _('_Remove'), None,
                 _('Deletes the selected collection.'),
                 self._remove_collection)])
         self._ui_manager.insert_action_group(actiongroup, 0)
@@ -169,8 +172,11 @@ class _CollectionArea(Gtk.ScrolledWindow):
         box.pack_start(entry, True, True, 6)
         box.show_all()
 
-        response = add_dialog.run()
-        name = entry.get_text()
+        add_dialog.run_async(lambda response: self._add_answered(
+            response, entry.get_text(), add_dialog))
+
+    def _add_answered(self, response: int, name: str, add_dialog: Any) -> None:
+        """Create the collection the add dialog asked about."""
         add_dialog.destroy()
         if response == Gtk.ResponseType.OK and name:
             if self._library.backend.add_collection(name):
@@ -268,8 +274,12 @@ class _CollectionArea(Gtk.ScrolledWindow):
         box.pack_start(entry, True, True, 6)
         box.show_all()
 
-        response = rename_dialog.run()
-        new_name = entry.get_text()
+        rename_dialog.run_async(lambda response: self._rename_answered(
+            response, collection, entry.get_text(), rename_dialog))
+
+    def _rename_answered(self, response: int, collection: Any, new_name: str,
+                         rename_dialog: Any) -> None:
+        """Rename the collection the rename dialog asked about."""
         rename_dialog.destroy()
         if response == Gtk.ResponseType.OK and new_name:
             if self._library.backend.rename_collection(collection, new_name):

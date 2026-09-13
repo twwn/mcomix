@@ -39,6 +39,8 @@ from mcomix import log
 from mcomix.transform import Matrix, Transform
 from mcomix.i18n import _
 
+from typing import Any
+
 
 
 class MainWindow(Gtk.Window):
@@ -77,6 +79,10 @@ class MainWindow(Gtk.Window):
         # Wrap main layout into an event box so
         # we  can change its background color.
         self._event_box = Gtk.EventBox()
+        #: Carries the background colour set by set_bg_colour().
+        self._bg_css_provider = Gtk.CssProvider()
+        self._event_box.get_style_context().add_provider(
+            self._bg_css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
         self._event_box.add(self._main_layout)
         self._event_handler = event.EventHandler(self)
         self._vadjust = self._main_layout.get_vadjustment()
@@ -134,22 +140,26 @@ class MainWindow(Gtk.Window):
         self._hadjust.step_increment = 15
         self._hadjust.page_increment = 1
 
-        table = Gtk.Table(2, 2, False)
-        table.attach(self.thumbnailsidebar, 0, 1, 2, 5, Gtk.AttachOptions.FILL,
-            Gtk.AttachOptions.FILL|Gtk.AttachOptions.EXPAND, 0, 0)
-
-        table.attach(self._event_box, 1, 2, 2, 3, Gtk.AttachOptions.FILL|Gtk.AttachOptions.EXPAND,
-            Gtk.AttachOptions.FILL|Gtk.AttachOptions.EXPAND, 0, 0)
-        table.attach(self._scroll[constants.PageAxis.HEIGHT], 2, 3, 2, 3, Gtk.AttachOptions.FILL|Gtk.AttachOptions.SHRINK,
-            Gtk.AttachOptions.FILL|Gtk.AttachOptions.SHRINK, 0, 0)
-        table.attach(self._scroll[constants.PageAxis.WIDTH], 1, 2, 4, 5, Gtk.AttachOptions.FILL|Gtk.AttachOptions.SHRINK,
-            Gtk.AttachOptions.FILL, 0, 0)
-        table.attach(self.menubar, 0, 3, 0, 1, Gtk.AttachOptions.FILL|Gtk.AttachOptions.SHRINK,
-            Gtk.AttachOptions.FILL, 0, 0)
-        table.attach(self.toolbar, 0, 3, 1, 2, Gtk.AttachOptions.FILL|Gtk.AttachOptions.SHRINK,
-            Gtk.AttachOptions.FILL, 0, 0)
-        table.attach(self.statusbar, 0, 3, 5, 6, Gtk.AttachOptions.FILL|Gtk.AttachOptions.SHRINK,
-            Gtk.AttachOptions.FILL, 0, 0)
+        # Three columns - thumbnail sidebar, page area, vertical scrollbar -
+        # and six rows, of which the fourth is a spacer the sidebar spans.
+        # Gtk.Table.attach() took the edges a child spans and Gtk.Grid's
+        # takes its corner and size; what Table passed as attach options is
+        # a property of the child in Grid.  SHRINK has no Grid counterpart
+        # and Grid already aligns children to FILL, so only EXPAND carries
+        # over, as hexpand/vexpand.
+        grid = Gtk.Grid()
+        for child, column, row, width, height, hexpand, vexpand in (
+                (self.menubar,                            0, 0, 3, 1, False, False),
+                (self.toolbar,                            0, 1, 3, 1, False, False),
+                (self.thumbnailsidebar,                   0, 2, 1, 3, False, True),
+                (self._event_box,                         1, 2, 1, 1, True,  True),
+                (self._scroll[constants.PageAxis.HEIGHT], 2, 2, 1, 1, False, False),
+                (self._scroll[constants.PageAxis.WIDTH],  1, 4, 1, 1, False, False),
+                (self.statusbar,                          0, 5, 3, 1, False, False),
+        ):
+            child.set_hexpand(hexpand)
+            child.set_vexpand(vexpand)
+            grid.attach(child, column, row, width, height)
 
         if prefs['default double page'] or double_page:
             self.actiongroup.get_action('double_page').activate()
@@ -229,8 +239,8 @@ class MainWindow(Gtk.Window):
         self.actiongroup.get_action('menu_autorotate_width').set_sensitive(False)
         self.actiongroup.get_action('menu_autorotate_height').set_sensitive(False)
 
-        self.add(table)
-        table.show()
+        self.add(grid)
+        grid.show()
         self._event_box.show_all()
 
         self._main_layout.set_events(Gdk.EventMask.BUTTON1_MOTION_MASK |
@@ -976,13 +986,14 @@ class MainWindow(Gtk.Window):
         self.set_title(i18n.to_display_string(title))
 
     def set_bg_colour(self, colour):
-        """Set the background colour to <colour>. Colour is a sequence in the
-        format (r, g, b). Values are 16-bit.
+        """Set the background colour to <colour>, a sequence of Gdk.RGBA
+        components: red, green, blue and alpha, each between 0 and 1.
         """
-        colour = colour[:3]
-        self._event_box.modify_bg(Gtk.StateType.NORMAL, Gdk.Color(*colour))
+        colour = list(colour[:4])
+        self._bg_css_provider.load_from_data(
+            ('* { background-color: %s; }' % Gdk.RGBA(*colour).to_string()).encode())
         if prefs['thumbnail bg uses main colour']:
-            self.thumbnailsidebar.change_thumbnail_background_color(prefs['bg colour'][:3])
+            self.thumbnailsidebar.change_thumbnail_background_color(prefs['bg colour'])
         self._bg_colour = colour
 
     def get_bg_colour(self):
@@ -1017,29 +1028,33 @@ class MainWindow(Gtk.Window):
 
             save_dialog = Gtk.FileChooserDialog(_('Save page as'), self,
                 Gtk.FileChooserAction.SAVE,
-                (Gtk.STOCK_OK, Gtk.ResponseType.ACCEPT,
-                Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT)
+                (_('_OK'), Gtk.ResponseType.ACCEPT,
+                _('_Cancel'), Gtk.ResponseType.REJECT)
             )
             save_dialog.set_do_overwrite_confirmation(True)
             save_dialog.set_create_folders(True)
             save_dialog.set_current_name(suggest_name)
             save_dialog.set_current_folder(target_dir)
 
-            if save_dialog.run() == Gtk.ResponseType.ACCEPT:
-                target = save_dialog.get_filename()
-                if target:
-                    target = i18n.to_unicode(target)
-                    try:
-                        shutil.copy2(file_path, target)
-                    except Exception as e:
-                        log.warning(e)
+            def save_responded(dialog: Any, response: int) -> None:
+                if response == Gtk.ResponseType.ACCEPT:
+                    target = save_dialog.get_filename()
+                    if target:
+                        target = i18n.to_unicode(target)
+                        try:
+                            shutil.copy2(file_path, target)
+                        except Exception as e:
+                            log.warning(e)
 
-                prefs['path of last saved in filechooser'] = \
-                    save_dialog.get_current_folder() \
-                    if prefs['store last saved in directory'] \
-                    else constants.HOME_DIR
+                    prefs['path of last saved in filechooser'] = \
+                        save_dialog.get_current_folder() \
+                        if prefs['store last saved in directory'] \
+                        else constants.HOME_DIR
 
-            save_dialog.destroy()
+                save_dialog.destroy()
+
+            save_dialog.connect('response', save_responded)
+            save_dialog.show_all()
 
     def delete(self, *args):
         """ The currently opened file/archive will be deleted after showing
@@ -1052,11 +1067,13 @@ class MainWindow(Gtk.Window):
         dialog.set_text(
                 _('Delete "%s"?') % os.path.basename(current_file),
                 _('The file will be deleted from your harddisk.'))
-        dialog.add_button(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL)
-        dialog.add_button(Gtk.STOCK_DELETE, Gtk.ResponseType.OK)
+        dialog.add_button(_('_Cancel'), Gtk.ResponseType.CANCEL)
+        dialog.add_button(_('_Delete'), Gtk.ResponseType.OK)
         dialog.set_default_response(Gtk.ResponseType.OK)
-        result = dialog.run()
+        dialog.run_async(lambda response: self._delete_answered(response, current_file))
 
+    def _delete_answered(self, result: int, current_file: str) -> None:
+        """Delete <current_file> if the confirmation came back positive."""
         if result == Gtk.ResponseType.OK:
             # Go to next page/archive, and delete current file
             if self.filehandler.archive_type is not None:

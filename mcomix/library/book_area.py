@@ -11,6 +11,7 @@ from mcomix import thumbnail_view
 from mcomix import file_chooser_library_dialog
 from mcomix import image_tools
 from mcomix import constants
+from mcomix import icons
 from mcomix import portability
 from mcomix import i18n
 from mcomix import status
@@ -73,7 +74,11 @@ class _BookArea(Gtk.ScrolledWindow):
         self._iconview.connect('button_press_event', self._button_press)
         self._iconview.connect('key_press_event', self._key_press)
         self._iconview.connect('popup_menu', self._popup_menu)
-        self._iconview.modify_base(Gtk.StateType.NORMAL, image_tools.GTK_GDK_COLOR_BLACK)
+        # Covers are shown on black, whatever base colour the theme has.
+        self._black_background = Gtk.CssProvider()
+        self._black_background.load_from_data(b'* { background-color: black; }')
+        self._iconview.get_style_context().add_provider(
+            self._black_background, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
         self._iconview.enable_model_drag_source(
             Gdk.ModifierType.BUTTON1_MASK,
             [Gtk.TargetEntry.new('text/plain', Gtk.TargetFlags.SAME_APP,
@@ -136,32 +141,32 @@ class _BookArea(Gtk.ScrolledWindow):
         self._ui_manager.add_ui_from_string(ui_description)
         actiongroup = Gtk.ActionGroup('mcomix-library-book-area')
         # General book actions
-        actiongroup.add_actions([
+        icons.add_actions(actiongroup, [
             ('_title', None, _('Library books'), None, None,
                 None),
-            ('open', Gtk.STOCK_OPEN, _('_Open'), None,
+            ('open', 'document-open', _('_Open'), None,
                 _('Opens the selected books for viewing.'),
                 self.open_selected_book),
-            ('open keep library', Gtk.STOCK_OPEN,
+            ('open keep library', 'document-open',
                 _('Open _without closing library'), None,
                 _('Opens the selected books, but keeps the library window open.'),
                 self.open_selected_book_noclose),
-            ('add', Gtk.STOCK_ADD, _('_Add...'), '<Ctrl><Shift>a',
+            ('add', 'list-add', _('_Add...'), '<Ctrl><Shift>a',
                 _('Add more books to the library.'),
                 lambda *args: file_chooser_library_dialog.open_library_filechooser_dialog(self._library)),
-            ('remove from collection', Gtk.STOCK_REMOVE,
+            ('remove from collection', 'list-remove',
                 _('Remove from this _collection'), None,
                 _('Removes the selected books from the current collection.'),
                 self._remove_books_from_collection),
-            ('remove from library', Gtk.STOCK_REMOVE,
+            ('remove from library', 'list-remove',
                 _('Remove from the _library'), None,
                 _('Completely removes the selected books from the library.'),
                 self._remove_books_from_library),
-            ('completely remove', Gtk.STOCK_DELETE,
+            ('completely remove', 'edit-delete',
                 _('_Remove and delete from disk'), None,
                 _('Deletes the selected books from disk.'),
                 self._completely_remove_book),
-            ('copy to clipboard', Gtk.STOCK_COPY,
+            ('copy to clipboard', 'edit-copy',
                 _('_Copy'), None,
                 _('Copies the selected book\'s path to clipboard.'),
                 self._copy_selected),
@@ -171,21 +176,21 @@ class _BookArea(Gtk.ScrolledWindow):
                 _('Changes the book cover size.'), None)
        ])
         # Sorting the view
-        actiongroup.add_radio_actions([
+        icons.add_radio_actions(actiongroup, [
             ('by name', None, _('Book name'), None, None, constants.SORT_NAME),
             ('by path', None, _('Full path'), None, None, constants.SORT_PATH),
             ('by size', None, _('File size'), None, None, constants.SORT_SIZE),
             ('by date added', None, _('Date added'), None, None, constants.SORT_LAST_MODIFIED)],
             prefs['lib sort key'], self._sort_changed)
-        actiongroup.add_radio_actions([
-            ('ascending', Gtk.STOCK_SORT_ASCENDING, _('Ascending'), None, None,
+        icons.add_radio_actions(actiongroup, [
+            ('ascending', 'view-sort-ascending', _('Ascending'), None, None,
                 constants.SORT_ASCENDING),
-            ('descending', Gtk.STOCK_SORT_DESCENDING, _('Descending'), None, None,
+            ('descending', 'view-sort-descending', _('Descending'), None, None,
                 constants.SORT_DESCENDING)],
             prefs['lib sort order'], self._sort_changed)
 
         # Library cover size
-        actiongroup.add_radio_actions([
+        icons.add_radio_actions(actiongroup, [
             ('huge', None, _('Huge') + '  (%dpx)' % constants.SIZE_HUGE,
                 None, None, constants.SIZE_HUGE),
             ('large', None, _('Large') + '  (%dpx)' % constants.SIZE_LARGE,
@@ -417,12 +422,18 @@ class _BookArea(Gtk.ScrolledWindow):
                 cover_size_scale.add_mark(mark, Gtk.PositionType.TOP, None)
 
             dialog.get_message_area().pack_end(cover_size_scale, True, True, 0)
-            response = dialog.run()
-            size = int(adjustment.get_value())
-            dialog.destroy()
 
-            if response == Gtk.ResponseType.OK:
-                prefs['library cover size'] = size
+            def size_chosen(response: int) -> None:
+                # The dialog was told not to destroy itself, so that the
+                # scale can still be read once the answer is in.
+                if response == Gtk.ResponseType.OK:
+                    prefs['library cover size'] = int(adjustment.get_value())
+                dialog.destroy()
+                if prefs['library cover size'] != old_size:
+                    self.load_covers()
+
+            dialog.run_async(size_chosen)
+            return
 
         if prefs['library cover size'] != old_size:
             self.load_covers()
@@ -464,7 +475,7 @@ class _BookArea(Gtk.ScrolledWindow):
             return pixbuf
 
         # Composite icon on the lower right corner of the book cover pixbuf.
-        book_pixbuf = self.render_icon(Gtk.STOCK_APPLY, Gtk.IconSize.LARGE_TOOLBAR)
+        book_pixbuf = icons.load_pixbuf('object-select-symbolic', 24)
         translation_x = pixbuf.get_width() - book_pixbuf.get_width() - 1
         translation_y = pixbuf.get_height() - book_pixbuf.get_height() - 1
         book_pixbuf.composite(pixbuf, translation_x, translation_y,
@@ -567,10 +578,15 @@ class _BookArea(Gtk.ScrolledWindow):
                 _('The selected books will be removed from the library and '
                   'permanently deleted. Are you sure that you want to continue?')
             )
-            response = choice_dialog.run()
+            choice_dialog.run_async(self._remove_answered)
+            return
 
-        # if no request is needed or the user has told us they definitely want to delete the book
-        if not request_response or (request_response and response == Gtk.ResponseType.YES):
+        self._remove_answered(Gtk.ResponseType.YES)
+
+    def _remove_answered(self, response: int) -> None:
+        """Delete the selected books once the confirmation has come back."""
+        # the user has told us they definitely want to delete the book
+        if response == Gtk.ResponseType.YES:
 
             # get the array of currently selected books in the book window
             selected_books = self._iconview.get_selected_items()

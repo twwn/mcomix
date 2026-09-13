@@ -11,6 +11,7 @@ from mcomix import preferences_dialog
 from mcomix import recent
 from mcomix import dialog_handler
 from mcomix import constants
+from mcomix import icons
 from mcomix import status
 from mcomix import file_chooser_main_dialog
 from mcomix.preferences import prefs
@@ -28,51 +29,54 @@ class MainUI(Gtk.UIManager):
         def _action_lambda(fn, *args):
             return lambda *_: fn(*args)
 
+        # Gtk.ActionGroup's entry tuples take a stock id where these tables
+        # carry an icon name; see _add_actions() below.
+
         # ----------------------------------------------------------------
         # Create actions for the menus.
         # ----------------------------------------------------------------
         self._actiongroup = Gtk.ActionGroup('mcomix-main')
-        self._actiongroup.add_actions([
-            ('copy_page', Gtk.STOCK_COPY, _('_Copy'),
+        icons.add_actions(self._actiongroup, [
+            ('copy_page', 'edit-copy', _('_Copy'),
                 None, _('Copies the current page to clipboard.'),
                 window.clipboard.copy_page),
-            ('delete', Gtk.STOCK_DELETE, _('_Delete'),
+            ('delete', 'edit-delete', _('_Delete'),
                 None, _('Deletes the current file or archive from disk.'),
                 window.delete),
-            ('next_page', Gtk.STOCK_GO_FORWARD, _('_Next page'),
+            ('next_page', 'go-next', _('_Next page'),
              None, _('Next page'), _action_lambda(window.flip_page, +1)),
-            ('previous_page', Gtk.STOCK_GO_BACK, _('_Previous page'),
+            ('previous_page', 'go-previous', _('_Previous page'),
              None, _('Previous page'), _action_lambda(window.flip_page, -1)),
-            ('first_page', Gtk.STOCK_GOTO_FIRST, _('_First page'),
+            ('first_page', 'go-first', _('_First page'),
              None, _('First page'), _action_lambda(window.first_page)),
-            ('last_page', Gtk.STOCK_GOTO_LAST, _('_Last page'),
+            ('last_page', 'go-last', _('_Last page'),
              None, _('Last page'), _action_lambda(window.last_page)),
-            ('go_to', Gtk.STOCK_JUMP_TO, _('_Go to page...'),
+            ('go_to', 'go-jump', _('_Go to page...'),
                 None, _('Go to page...'), window.page_select),
-            ('refresh_archive', Gtk.STOCK_REFRESH, _('Re_fresh'),
+            ('refresh_archive', 'view-refresh', _('Re_fresh'),
                 None, _('Reloads the currently opened files or archive.'),
                 window.filehandler.refresh_file),
-            ('next_archive', Gtk.STOCK_MEDIA_NEXT, _('Next _archive'),
+            ('next_archive', 'media-skip-forward', _('Next _archive'),
                 None, _('Next archive'), window.filehandler._open_next_archive),
-            ('previous_archive', Gtk.STOCK_MEDIA_PREVIOUS, _('Previous a_rchive'),
+            ('previous_archive', 'media-skip-backward', _('Previous a_rchive'),
                 None, _('Previous archive'), window.filehandler._open_previous_archive),
-            ('next_directory', Gtk.STOCK_REDO, _('Next directory'),
+            ('next_directory', 'edit-redo', _('Next directory'),
                 None, _('Next directory'), window.filehandler.open_next_directory),
-            ('previous_directory', Gtk.STOCK_UNDO, _('Previous directory'),
+            ('previous_directory', 'edit-undo', _('Previous directory'),
                 None, _('Previous directory'), window.filehandler.open_previous_directory),
-            ('zoom_in', Gtk.STOCK_ZOOM_IN, _('Zoom _In'),
+            ('zoom_in', 'zoom-in', _('Zoom _In'),
                 None, None, window.manual_zoom_in),
-            ('zoom_out', Gtk.STOCK_ZOOM_OUT, _('Zoom _Out'),
+            ('zoom_out', 'zoom-out', _('Zoom _Out'),
                 None, None, window.manual_zoom_out),
-            ('zoom_original', Gtk.STOCK_ZOOM_100, _('_Normal Size'),
+            ('zoom_original', 'zoom-original', _('_Normal Size'),
                 None, None, window.manual_zoom_original),
-            ('minimize', Gtk.STOCK_LEAVE_FULLSCREEN, _('Mi_nimize'),
+            ('minimize', 'view-restore', _('Mi_nimize'),
                 None, None, window.minimize),
-            ('close', Gtk.STOCK_CLOSE, _('_Close'),
+            ('close', 'window-close', _('_Close'),
                 None, _('Closes all opened files.'), _action_lambda(window.filehandler.close_file)),
-            ('quit', Gtk.STOCK_QUIT, _('_Quit'),
+            ('quit', 'application-exit', _('_Quit'),
                 None, None, window.close_program),
-            ('save_and_quit', Gtk.STOCK_QUIT, _('_Save and quit'),
+            ('save_and_quit', 'application-exit', _('_Save and quit'),
                 None, _('Quits and restores the currently opened file next time the program starts.'),
                 window.save_and_terminate_program),
             ('rotate_90', 'mcomix-rotate-90', _('_Rotate 90 degrees CW'),
@@ -85,21 +89,21 @@ class MainUI(Gtk.UIManager):
                 None, None, window.flip_horizontally),
             ('flip_vert', 'mcomix-flip-vertical', _('Flip _vertically'),
                 None, None, window.flip_vertically),
-            ('extract_page', Gtk.STOCK_SAVE_AS, _('Save _As'),
+            ('extract_page', 'document-save-as', _('Save _As'),
                 None, None, window.extract_page),
             ('menu_zoom', 'mcomix-zoom', _('_Zoom')),
-            ('menu_recent', Gtk.STOCK_FILE, _('_Recent')),
-            ('menu_bookmarks_popup', 'comix-add-bookmark', _('_Bookmarks')),
+            ('menu_recent', 'text-x-generic', _('_Recent')),
+            ('menu_bookmarks_popup', 'mcomix-add-bookmark', _('_Bookmarks')),
             ('menu_bookmarks', None, _('_Bookmarks')),
             ('menu_toolbars', None, _('T_oolbars')),
             ('menu_edit', None, _('_Edit')),
-            ('menu_open_with', Gtk.STOCK_OPEN, _('Open _with'), ''),
-            ('menu_open_with_popup', Gtk.STOCK_OPEN, _('Open _with'), ''),
+            ('menu_open_with', 'document-open', _('Open _with'), ''),
+            ('menu_open_with_popup', 'document-open', _('Open _with'), ''),
             ('menu_file', None, _('_File')),
             ('menu_view', None, _('_View')),
-            ('menu_view_popup', 'comix-image', _('_View')),
+            ('menu_view_popup', 'mcomix-image', _('_View')),
             ('menu_go', None, _('_Go')),
-            ('menu_go_popup', Gtk.STOCK_GO_FORWARD, _('_Go')),
+            ('menu_go_popup', 'go-next', _('_Go')),
             ('menu_tools', None, _('_Tools')),
             ('menu_help', None, _('_Help')),
             ('menu_transform', 'mcomix-transform', _('_Transform image')),
@@ -108,8 +112,8 @@ class MainUI(Gtk.UIManager):
             ('menu_autorotate_height', None, _('...when height exceeds width')),
             ('expander', None, None, None, None, None)])
 
-        self._actiongroup.add_toggle_actions([
-            ('fullscreen', Gtk.STOCK_FULLSCREEN, _('_Fullscreen'),
+        icons.add_toggle_actions(self._actiongroup, [
+            ('fullscreen', 'view-fullscreen', _('_Fullscreen'),
                 None, _('Fullscreen mode'), window.change_fullscreen),
             ('double_page', 'mcomix-double-page', _('_Double page mode'),
                 None, _('Double page mode'), window.change_double_page),
@@ -127,12 +131,12 @@ class MainUI(Gtk.UIManager):
                 None, None, window.change_hide_all),
             ('manga_mode', 'mcomix-manga', _('_Manga mode'),
                 None, _('Manga mode'), window.change_manga_mode),
-            ('invert_scroll', Gtk.STOCK_UNDO, _('Invert smart scroll'),
+            ('invert_scroll', 'edit-undo', _('Invert smart scroll'),
                 None, _('Invert smart scrolling direction.'), window.change_invert_scroll),
             ('keep_transformation', None, _('_Keep transformation'),
                 None, _('Keeps the currently selected transformation for the next pages.'),
                 window.change_keep_transformation),
-            ('slideshow', Gtk.STOCK_MEDIA_PLAY, _('Start _slideshow'),
+            ('slideshow', 'media-playback-start', _('Start _slideshow'),
                 None, _('Start slideshow'), window.slideshow.toggle),
             ('lens', 'mcomix-lens', _('Magnifying _lens'),
                 None, _('Magnifying lens'), window.lens.toggle),
@@ -144,7 +148,7 @@ class MainUI(Gtk.UIManager):
 
         # Note: Don't change the default value for the radio buttons unless
         # also fixing the code for setting the correct one on start-up in main.py.
-        self._actiongroup.add_radio_actions([
+        icons.add_radio_actions(self._actiongroup, [
             ('best_fit_mode', 'mcomix-fitbest', _('_Best fit mode'),
                 None, _('Best fit mode'), constants.ZoomMode.BEST),
             ('fit_width_mode', 'mcomix-fitwidth', _('Fit _width mode'),
@@ -158,7 +162,7 @@ class MainUI(Gtk.UIManager):
             3, window.change_zoom_mode)
 
         # Automatically rotate image if width>height or height>width
-        self._actiongroup.add_radio_actions([
+        icons.add_radio_actions(self._actiongroup, [
             ('no_autorotation', None, _('Never'),
              None, None, constants.AUTOROTATE_NEVER),
             ('rotate_90_width', 'mcomix-rotate-90', _('_Rotate 90 degrees CW'),
@@ -171,33 +175,33 @@ class MainUI(Gtk.UIManager):
              None, None, constants.AUTOROTATE_HEIGHT_270)],
             prefs['auto rotate depending on size'], window.change_autorotation)
 
-        self._actiongroup.add_actions([
-            ('about', Gtk.STOCK_ABOUT, _('_About'),
+        icons.add_actions(self._actiongroup, [
+            ('about', 'help-about', _('_About'),
              None, None, dialog_handler.open_dialog)], (window, 'about-dialog'))
 
-        self._actiongroup.add_actions([
+        icons.add_actions(self._actiongroup, [
             ('comments', 'mcomix-comments', _('Co_mments...'),
              None, None, dialog_handler.open_dialog)], (window, 'comments-dialog'))
 
-        self._actiongroup.add_actions([
-            ('properties', Gtk.STOCK_PROPERTIES, _('Proper_ties'),
+        icons.add_actions(self._actiongroup, [
+            ('properties', 'document-properties', _('Proper_ties'),
             None, None, dialog_handler.open_dialog)], (window,'properties-dialog'))
 
-        self._actiongroup.add_actions([
-            ('preferences', Gtk.STOCK_PREFERENCES, _('Pr_eferences'),
+        icons.add_actions(self._actiongroup, [
+            ('preferences', 'preferences-system', _('Pr_eferences'),
                 None, None, preferences_dialog.open_dialog)], window)
 
         # Some actions added separately since they need extra arguments.
-        self._actiongroup.add_actions([
-            ('edit_archive', Gtk.STOCK_EDIT, _('_Edit archive...'),
+        icons.add_actions(self._actiongroup, [
+            ('edit_archive', 'document-edit-symbolic', _('_Edit archive...'),
                 None, _('Opens the archive editor.'),
                 edit_dialog.open_dialog),
-            ('open', Gtk.STOCK_OPEN, _('_Open...'),
+            ('open', 'document-open', _('_Open...'),
                 None, None, file_chooser_main_dialog.open_main_filechooser_dialog),
             ('enhance_image', 'mcomix-enhance-image', _('En_hance image...'),
                 None, None, enhance_dialog.open_dialog)], window)
 
-        self._actiongroup.add_actions([
+        icons.add_actions(self._actiongroup, [
             ('library', 'mcomix-library', _('_Library...'),
                 None, None, library_main_dialog.open_dialog)], window)
 

@@ -130,11 +130,13 @@ class OnScreenDisplay(object):
         self._clear_osd()
 
         cr = window.cairo_create()
-        cr.set_source_rgb(*image_tools.GTK_GDK_COLOR_BLACK.to_floats())
+        black = image_tools.RGBA_BLACK
+        cr.set_source_rgb(black.red, black.green, black.blue)
         cr.rectangle(*rect)
         cr.fill()
         extents = layout.get_extents()[0]
-        cr.set_source_rgb(*image_tools.GTK_GDK_COLOR_WHITE.to_floats())
+        white = image_tools.RGBA_WHITE
+        cr.set_source_rgb(white.red, white.green, white.blue)
         cr.translate(rect[0] + extents.x / Pango.SCALE,
                      rect[1] + extents.y / Pango.SCALE)
         PangoCairo.update_layout(cr, layout)

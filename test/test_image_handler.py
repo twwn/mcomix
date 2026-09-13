@@ -104,4 +104,52 @@ class VirtualDoublePageTest(MComixTest):
         self.handler._get_pixbuf(1)
         self.assertEqual(self.handler._get_displayed_size(2), uncached)
 
+class CacheWindowTest(MComixTest):
+
+    """The set of pages C{_ask_for_pages} picks must always contain the page
+    that is on screen: it doubles as the list of pixbufs worth keeping, so a
+    window that misses the current page throws it away as soon as it is
+    shown."""
+
+    def setUp(self):
+        super(CacheWindowTest, self).setUp()
+        self.handler = image_handler.ImageHandler(_StubWindow())
+        self.handler.set_image_files(['%02d.png' % n for n in range(1, 11)])
+        for page in range(1, 11):
+            self.handler.page_available(page)
+
+    def tearDown(self):
+        self.handler.cleanup()
+        super(CacheWindowTest, self).tearDown()
+
+    def _wanted(self, cache_pages, double_page, page):
+        prefs['default double page'] = double_page
+        self.handler._cache_pages = cache_pages
+        return self.handler._ask_for_pages(page)
+
+    def test_no_cacheing_asks_for_the_current_page(self):
+        self.assertEqual(self._wanted(0, False, 5), [4])
+
+    def test_no_cacheing_asks_for_both_pages_of_a_spread(self):
+        self.assertEqual(sorted(self._wanted(0, True, 5)), [4, 5])
+
+    def test_a_budget_too_small_to_look_back_spends_it_on_the_current_page(self):
+        for cache_pages in (1, 2, 3):
+            self.assertIn(4, self._wanted(cache_pages, False, 5))
+        for cache_pages in (1, 2, 3, 4):
+            self.assertIn(4, self._wanted(cache_pages, True, 5))
+            self.assertIn(5, self._wanted(cache_pages, True, 5))
+
+    def test_the_default_budget_still_spans_the_page_before_and_after(self):
+        self.assertEqual(self._wanted(7, False, 5), [4, 5, 3, 6, 7, 8, 9])
+
+    def test_a_book_shorter_than_a_spread_still_asks_for_its_one_page(self):
+        self.handler.set_image_files(['01.png'])
+        self.assertEqual(self._wanted(-1, True, 1), [0])
+
+    def test_the_window_is_clipped_to_the_book(self):
+        self.assertEqual(self._wanted(7, False, 1), [0, 1, 2, 3, 4, 5])
+        self.assertEqual(self._wanted(7, False, 10), [9, 8])
+
+
 # vim: expandtab:sw=4:ts=4

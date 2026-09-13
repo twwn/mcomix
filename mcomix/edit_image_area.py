@@ -3,6 +3,7 @@
 import os
 from gi.repository import Gdk, GdkPixbuf, Gtk
 
+from mcomix import icons
 from mcomix import image_tools
 from mcomix import i18n
 from mcomix import thumbnail_tools
@@ -64,8 +65,8 @@ class _ImageArea(Gtk.ScrolledWindow):
         self._ui_manager.add_ui_from_string(ui_description)
 
         actiongroup = Gtk.ActionGroup('mcomix-edit-archive-image-area')
-        actiongroup.add_actions([
-            ('remove', Gtk.STOCK_REMOVE, _('Remove from archive'), None, None,
+        icons.add_actions(actiongroup, [
+            ('remove', 'list-remove', _('Remove from archive'), None, None,
                 self._remove_pages)])
         self._ui_manager.insert_action_group(actiongroup, 0)
 

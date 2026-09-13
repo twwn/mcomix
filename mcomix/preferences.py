@@ -10,8 +10,24 @@ import sys
 from mcomix import constants
 from mcomix import tools
 
+#: Bumped whenever a stored preference changes format, so that a file
+#: written by an older MComix can be brought forward on the next start.
+#: History:
+#:   1: background colours are Gdk.RGBA components - four floats between
+#:      0 and 1 - where they used to be three 16-bit integers.
+CONFIG_FORMAT_VERSION = 1
+
+#: The key the version above is stored under.  It lives among the
+#: preferences rather than wrapping them, so the file stays a flat mapping.
+_FORMAT_VERSION_KEY = 'config format version'
+
+#: MComix' traditional background: a near-black grey.  Written the way it
+#: divides out of the 16-bit 5000 it was stored as before version 1.
+DEFAULT_BG_COLOUR = [5000 / 65535, 5000 / 65535, 5000 / 65535, 1.0]
+
 # All the preferences are stored here.
 prefs = {
+    _FORMAT_VERSION_KEY: CONFIG_FORMAT_VERSION,
     'comment extensions': constants.ACCEPTED_COMMENT_EXTENSIONS,
     'auto load last file': False,
     'page of last file': 1,
@@ -25,8 +41,8 @@ prefs = {
     'sort order': constants.SORT_ASCENDING,
     'sort archive by': constants.SORT_NAME,  # Files in archives
     'sort archive order': constants.SORT_ASCENDING,
-    'bg colour': [5000, 5000, 5000],
-    'thumb bg colour': [5000, 5000, 5000],
+    'bg colour': list(DEFAULT_BG_COLOUR),
+    'thumb bg colour': list(DEFAULT_BG_COLOUR),
     'smart bg': False,
     'smart thumb bg': False,
     'thumbnail bg uses main colour': False,
@@ -137,6 +153,57 @@ def _move_corrupt_file_aside(path: str, error: BaseException) -> None:
         print('! Could not move it: %s' % rename_error)
 
 
+def _back_up_preferences(version: int) -> None:
+    """Keep the preferences file as it stands before it is migrated.
+
+    The copy is named after the format it holds, so that it collides
+    neither with a backup the user made themselves nor with the backup of
+    a later migration, and is never overwritten: if one is already there
+    it is from an earlier run and is the more original of the two.
+    """
+    if not os.path.isfile(constants.PREFERENCE_PATH):
+        return
+    backup = '%s.v%d' % (constants.PREFERENCE_PATH, version)
+    if os.path.exists(backup):
+        return
+    try:
+        shutil.copyfile(constants.PREFERENCE_PATH, backup)
+        # Gettext might not be installed yet at this point.
+        print('! Preferences upgraded, keeping the previous file as "%s".' % backup)
+    except OSError as error:
+        print('! Could not back up the preferences file: %s' % error)
+
+
+def _rgba_from_16bit_colour(colour):
+    """Turn a 16-bit RGB triple into the components Gdk.RGBA takes."""
+    try:
+        red, green, blue = (component / 65535.0 for component in colour[:3])
+    except (TypeError, ValueError):
+        # Not a colour at all; the default is a better guess than a crash.
+        return list(DEFAULT_BG_COLOUR)
+    return [red, green, blue, 1.0]
+
+
+def _migrate_preferences(saved_prefs: dict) -> None:
+    """Bring <saved_prefs> forward to CONFIG_FORMAT_VERSION, in place.
+
+    A file older than the current format is backed up first, once, before
+    anything in it is rewritten.
+    """
+    version = saved_prefs.get(_FORMAT_VERSION_KEY, 0)
+    if version >= CONFIG_FORMAT_VERSION:
+        return
+
+    _back_up_preferences(version)
+
+    if version < 1:
+        for key in ('bg colour', 'thumb bg colour'):
+            if key in saved_prefs:
+                saved_prefs[key] = _rgba_from_16bit_colour(saved_prefs[key])
+
+    saved_prefs[_FORMAT_VERSION_KEY] = CONFIG_FORMAT_VERSION
+
+
 def read_preferences_file() -> None:
     """Read preferences data from disk."""
 
@@ -170,6 +237,7 @@ def read_preferences_file() -> None:
                    constants.PREFERENCE_PICKLE_PATH))
 
     if saved_prefs:
+        _migrate_preferences(saved_prefs)
         for key in saved_prefs:
             if key in prefs:
                 prefs[key] = saved_prefs[key]

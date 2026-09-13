@@ -15,8 +15,8 @@ class _BookmarksDialog(Gtk.Dialog):
 
     def __init__(self, window, bookmarks_store):
         super(_BookmarksDialog, self).__init__(_('Edit Bookmarks'), window, Gtk.DialogFlags.DESTROY_WITH_PARENT,
-            (Gtk.STOCK_REMOVE, constants.RESPONSE_REMOVE,
-             Gtk.STOCK_CLOSE, Gtk.ResponseType.CLOSE))
+            (_('_Remove'), constants.RESPONSE_REMOVE,
+             _('_Close'), Gtk.ResponseType.CLOSE))
 
         self._bookmarks_store = bookmarks_store
 

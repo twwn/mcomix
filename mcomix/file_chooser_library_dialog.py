@@ -44,8 +44,8 @@ class _LibraryFileChooserDialog(file_chooser_base_dialog._BaseFileChooserDialog)
         for widget in self.get_action_area().get_children():
             self.get_action_area().remove(widget)
 
-        self.add_button(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL)
-        self.add_button(Gtk.STOCK_ADD, Gtk.ResponseType.OK)
+        self.add_button(_('_Cancel'), Gtk.ResponseType.CANCEL)
+        self.add_button(_('_Add'), Gtk.ResponseType.OK)
         self.set_default_response(Gtk.ResponseType.OK)
 
     def should_open_recursive(self):

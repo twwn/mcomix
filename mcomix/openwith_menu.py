@@ -2,6 +2,7 @@
 
 from gi.repository import Gtk
 
+from mcomix import icons
 from mcomix import openwith
 from mcomix.i18n import _
 
@@ -19,8 +20,8 @@ class OpenWithMenu(Gtk.Menu):
         self._openwith_manager = _openwith_manager
 
         actiongroup = Gtk.ActionGroup('mcomix-openwith')
-        actiongroup.add_actions([
-            ('edit_commands', Gtk.STOCK_EDIT, _('_Edit commands'),
+        icons.add_actions(actiongroup, [
+            ('edit_commands', 'document-edit-symbolic', _('_Edit commands'),
              None, None, self._edit_commands)])
 
         action = actiongroup.get_action('edit_commands')

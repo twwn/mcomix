@@ -11,7 +11,7 @@ class _CommentsDialog(Gtk.Dialog):
 
     def __init__(self, window):
         super(_CommentsDialog, self).__init__(_('Comments'), window, 0,
-            (Gtk.STOCK_CLOSE, Gtk.ResponseType.CLOSE))
+            (_('_Close'), Gtk.ResponseType.CLOSE))
 
         self.set_resizable(True)
         self.set_default_response(Gtk.ResponseType.CLOSE)
@@ -99,8 +99,12 @@ class _CommentsDialog(Gtk.Dialog):
         text_view = Gtk.TextView(buffer=text_buffer)
         inbox.add(text_view)
 
-        bg_color = text_view.get_default_attributes().pg_bg_color
-        outbox.modify_bg(Gtk.StateType.NORMAL, bg_color)
+        # Frame the comment in the text view's own background colour.  The
+        # view was asked for its "paragraph background", which nothing sets
+        # unless a tag does, so modify_bg() was handed None and undid
+        # nothing at all.  The view style class is what carries that
+        # colour, and taking it from the theme keeps it right afterwards.
+        outbox.get_style_context().add_class('view')
         tab_label = Gtk.Label(label=i18n.to_unicode(name))
         self._notebook.insert_page(page, tab_label, -1)
 

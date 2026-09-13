@@ -2,6 +2,7 @@
 
 import os
 from gi.repository import Gdk, Gtk
+from mcomix import icons
 from mcomix import tools
 from mcomix.i18n import _
 
@@ -52,8 +53,8 @@ class _CommentArea(Gtk.Box):
 
         self._ui_manager.add_ui_from_string(ui_description)
         actiongroup = Gtk.ActionGroup('mcomix-edit-archive-comment-area')
-        actiongroup.add_actions([
-            ('remove', Gtk.STOCK_REMOVE, _('Remove from archive'), None, None,
+        icons.add_actions(actiongroup, [
+            ('remove', 'list-remove', _('Remove from archive'), None, None,
                 self._remove_file)])
         self._ui_manager.insert_action_group(actiongroup, 0)
 

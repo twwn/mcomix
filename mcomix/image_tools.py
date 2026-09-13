@@ -23,14 +23,13 @@ log.info('PIL version: %s [%s]', PIL_VERSION[0], PIL_VERSION[1])
 # Fallback pixbuf for missing images.
 MISSING_IMAGE_ICON = None
 
-_missing_icon_dialog = Gtk.Dialog()
-_missing_icon_pixbuf = _missing_icon_dialog.render_icon(
-        Gtk.STOCK_MISSING_IMAGE, Gtk.IconSize.LARGE_TOOLBAR)
-MISSING_IMAGE_ICON = _missing_icon_pixbuf
+# 24 pixels is what Gtk.IconSize.LARGE_TOOLBAR stood for.
+MISSING_IMAGE_ICON = Gtk.IconTheme.get_default().load_icon('image-missing', 24, 0)
 assert MISSING_IMAGE_ICON
 
-GTK_GDK_COLOR_BLACK = Gdk.color_parse('black')
-GTK_GDK_COLOR_WHITE = Gdk.color_parse('white')
+#: Colours are Gdk.RGBA components throughout: four floats between 0 and 1.
+RGBA_BLACK = Gdk.RGBA(0.0, 0.0, 0.0, 1.0)
+RGBA_WHITE = Gdk.RGBA(1.0, 1.0, 1.0, 1.0)
 
 
 def axis_to_gdkpixbuf_flip_horizontal(i):
@@ -158,8 +157,8 @@ def add_border(pixbuf, thickness, colour=0x000000FF):
 
 def get_most_common_edge_colour(pixbufs, edge=2):
     """Return the most commonly occurring pixel value along the four edges
-    of <pixbuf>. The return value is a sequence, (r, g, b), with 16 bit
-    values. If <pixbuf> is a tuple, the edges will be computed from
+    of <pixbuf>. The return value is a sequence of Gdk.RGBA components,
+    (r, g, b, a). If <pixbuf> is a tuple, the edges will be computed from
     both the left and the right image.
 
     Note: This could be done more cleanly with subpixbuf(), but that
@@ -253,7 +252,7 @@ def get_most_common_edge_colour(pixbufs, edge=2):
         return subpix
 
     if not pixbufs:
-        return (0, 0, 0)
+        return [0.0, 0.0, 0.0, 1.0]
 
     if not isinstance(pixbufs, (tuple, list)):
         left_edge = get_edge_pixbuf(pixbufs, 'left', edge)
@@ -272,7 +271,7 @@ def get_most_common_edge_colour(pixbufs, edge=2):
     # Sum up colors from all edges
     ungrouped_colors.sort(key=operator.itemgetter(1))
     most_used = group_colors(ungrouped_colors)[:3]
-    return [color * 257 for color in most_used]
+    return [component / 255.0 for component in most_used] + [1.0]
 
 def pil_to_pixbuf(im, keep_orientation=False):
     """Return a pixbuf created from the PIL <im>."""
@@ -651,15 +650,13 @@ def is_image_file(path):
 def convert_rgb16list_to_rgba8int(c):
     return 0x000000FF | (c[0] >> 8 << 24) | (c[1] >> 8 << 16) | (c[2] >> 8 << 8)
 
-def rgb_to_y_601(color):
-    return color[0] * 0.299 + color[1] * 0.587 + color[2] * 0.114
+def rgb_to_y_601(colour):
+    """Return the luma of <colour>, given as Gdk.RGBA components."""
+    return colour[0] * 0.299 + colour[1] * 0.587 + colour[2] * 0.114
 
-def text_color_for_background_color(bgcolor):
-    return GTK_GDK_COLOR_BLACK if rgb_to_y_601(bgcolor) >= \
-        65535.0 / 2.0 else GTK_GDK_COLOR_WHITE
-
-def color_to_floats_rgba(color, alpha=1.0):
-    return [c / 65535.0 for c in color[:3]] + [alpha]
+def text_color_for_background_color(bgcolour):
+    """Return the text colour that reads best on <bgcolour>."""
+    return RGBA_BLACK if rgb_to_y_601(bgcolour) >= 0.5 else RGBA_WHITE
 
 def get_composite_color_args(variant):
     return ((8, 0x777777, 0x999999), (1024, 0xFFFFFF, 0xFFFFFF))[variant]

@@ -7,7 +7,6 @@ from gi.repository import Gdk, GdkPixbuf, Gtk, GObject
 
 from mcomix.preferences import prefs
 from mcomix import preferences_page
-from mcomix import image_tools
 from mcomix import constants
 from mcomix import message_dialog
 from mcomix import keybindings
@@ -27,7 +26,7 @@ class _PreferencesDialog(Gtk.Dialog):
 
         # Button text is set later depending on active tab
         self.reset_button = self.add_button('', constants.RESPONSE_REVERT_TO_DEFAULT)
-        self.add_button(Gtk.STOCK_CLOSE, Gtk.ResponseType.CLOSE)
+        self.add_button(_('_Close'), Gtk.ResponseType.CLOSE)
 
         self._window = window
         self.set_resizable(True)
@@ -639,11 +638,12 @@ class _PreferencesDialog(Gtk.Dialog):
                 _('Delete information about recently opened files?'),
                 _('This will remove all entries from the "Recent" menu,'
                   ' and clear information about last read pages.'))
-            response = dialog.run()
+            def responded(response: int) -> None:
+                if response == Gtk.ResponseType.YES:
+                    self._window.uimanager.recent.remove_all()
+                    self._window.filehandler.last_read_page.clear_all()
 
-            if response == Gtk.ResponseType.YES:
-                self._window.uimanager.recent.remove_all()
-                self._window.filehandler.last_read_page.clear_all()
+            dialog.run_async(responded)
 
     def _create_scaling_quality_combobox(self):
         """ Creates combo box for image scaling quality """
@@ -770,8 +770,7 @@ class _PreferencesDialog(Gtk.Dialog):
 
 
     def _create_color_button(self, prefkey):
-        rgba = image_tools.color_to_floats_rgba(prefs[prefkey])
-        button = Gtk.ColorButton.new_with_rgba(Gdk.RGBA(*rgba))
+        button = Gtk.ColorButton.new_with_rgba(Gdk.RGBA(*prefs[prefkey]))
         button.connect('color_set', self._color_button_cb, prefkey)
         return button
 
@@ -836,20 +835,22 @@ class _PreferencesDialog(Gtk.Dialog):
     def _color_button_cb(self, colorbutton, preference):
         """Callback for the background colour selection button."""
 
-        colour = colorbutton.get_color()
+        colour = colorbutton.get_rgba()
+        chosen = [colour.red, colour.green, colour.blue, colour.alpha]
 
         if preference == 'bg colour':
-            prefs['bg colour'] = colour.red, colour.green, colour.blue
+            prefs['bg colour'] = chosen
 
             if not prefs['smart bg'] or not self._window.filehandler.file_loaded:
                 self._window.set_bg_colour(prefs['bg colour'])
 
         elif preference == 'thumb bg colour':
 
-            prefs['thumb bg colour'] = colour.red, colour.green, colour.blue
+            prefs['thumb bg colour'] = chosen
 
             if not prefs['smart thumb bg'] or not self._window.filehandler.file_loaded:
-                self._window.thumbnailsidebar.change_thumbnail_background_color( prefs['thumb bg colour'] )
+                self._window.thumbnailsidebar.change_thumbnail_background_color(
+                    prefs['thumb bg colour'])
 
 
     def _create_pref_spinner(self, prefkey, scale, lower, upper, step_incr,

@@ -20,13 +20,13 @@ class _EnhanceImageDialog(Gtk.Dialog):
 
         self._window = window
 
-        reset = Gtk.Button(stock=Gtk.STOCK_REVERT_TO_SAVED)
+        reset = Gtk.Button.new_with_mnemonic(_('_Revert'))
         reset.set_tooltip_text(_('Reset to defaults.'))
         self.add_action_widget(reset, Gtk.ResponseType.REJECT)
-        save = Gtk.Button(stock=Gtk.STOCK_SAVE)
+        save = Gtk.Button.new_with_mnemonic(_('_Save'))
         save.set_tooltip_text(_('Save the selected values as default for future files.'))
         self.add_action_widget(save, Gtk.ResponseType.APPLY)
-        self.add_button(Gtk.STOCK_OK, Gtk.ResponseType.OK)
+        self.add_button(_('_OK'), Gtk.ResponseType.OK)
 
         self.set_resizable(False)
         self.connect('response', self._response)

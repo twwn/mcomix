@@ -16,6 +16,8 @@ from mcomix import message_dialog
 from mcomix import tools
 from mcomix.i18n import _
 
+from collections.abc import Callable
+
 class __BookmarksStore(object):
 
     """The _BookmarksStore is a backend for both the bookmarks menu and dialog.
@@ -86,11 +88,17 @@ class __BookmarksStore(object):
                 else:
                     same_file_bookmarks.append(bookmark)
 
+        def add() -> None:
+            self.add_bookmark_by_values(name, path, page, numpages,
+                archive_type, date_added)
+
         # If the same file was already bookmarked, ask to replace
         # the existing bookmarks before deleting them.
-        if len(same_file_bookmarks) > 0:
-            response = self.show_replace_bookmark_dialog(same_file_bookmarks, page)
+        if not same_file_bookmarks:
+            add()
+            return
 
+        def replace_answered(response: int) -> None:
             # Delete old bookmarks
             if response == Gtk.ResponseType.YES:
                 for bookmark in same_file_bookmarks:
@@ -98,9 +106,10 @@ class __BookmarksStore(object):
             # Perform no action
             elif response not in (Gtk.ResponseType.YES, Gtk.ResponseType.NO):
                 return
+            add()
 
-        self.add_bookmark_by_values(name, path, page, numpages,
-            archive_type, date_added)
+        self.show_replace_bookmark_dialog(same_file_bookmarks, page,
+                                          replace_answered)
 
     def clear_bookmarks(self):
         """Remove all bookmarks from the list."""
@@ -184,15 +193,17 @@ class __BookmarksStore(object):
         self._bookmarks_mtime = int(time.time())
 
 
-    def show_replace_bookmark_dialog(self, old_bookmarks, new_page):
+    def show_replace_bookmark_dialog(self, old_bookmarks: list, new_page: int,
+                                     on_response: Callable[[int], None]) -> None:
         """ Present a confirmation dialog to replace old bookmarks.
-        @return RESPONSE_YES to create replace bookmarks,
-            RESPONSE_NO to create a new bookmark, RESPONSE_CANCEL to abort creating
-            a new bookmark. """
+
+        Calls <on_response> with RESPONSE_YES to replace the bookmarks,
+        RESPONSE_NO to create a new one alongside them, and anything else
+        to abort creating one at all. """
         dialog = message_dialog.MessageDialog(self._window, Gtk.DialogFlags.MODAL, Gtk.MessageType.INFO)
-        dialog.add_buttons(Gtk.STOCK_YES, Gtk.ResponseType.YES,
-             Gtk.STOCK_NO, Gtk.ResponseType.NO,
-             Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL)
+        dialog.add_buttons(_('_Yes'), Gtk.ResponseType.YES,
+             _('_No'), Gtk.ResponseType.NO,
+             _('_Cancel'), Gtk.ResponseType.CANCEL)
         dialog.set_default_response(Gtk.ResponseType.YES)
         dialog.set_should_remember_choice('replace-existing-bookmark',
             (Gtk.ResponseType.YES, Gtk.ResponseType.NO))
@@ -210,7 +221,7 @@ class __BookmarksStore(object):
               '\n\n' +
             _('Selecting "No" will create a new bookmark without affecting the other bookmarks.'))
 
-        return dialog.run()
+        dialog.run_async(on_response)
 
 
 # Singleton instance of the bookmarks store.

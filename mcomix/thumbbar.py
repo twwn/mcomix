@@ -139,12 +139,11 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
 
     def set_thumbnail_background(self, color):
 
-        rgba = Gdk.RGBA(*image_tools.color_to_floats_rgba(color))
+        rgba = Gdk.RGBA(*color)
         self._pixbuf_cellrenderer.set_property('cell-background-rgba', rgba)
         self._text_cellrenderer.set_property('background-rgba', rgba)
-        fg_color = image_tools.text_color_for_background_color(color)
-        fg_rgba = Gdk.RGBA(*(fg_color.to_floats() + (1.0,)))
-        self._text_cellrenderer.set_property('foreground-rgba', fg_rgba)
+        self._text_cellrenderer.set_property(
+            'foreground-rgba', image_tools.text_color_for_background_color(color))
 
     @property
     def _pixbuf_size(self):
