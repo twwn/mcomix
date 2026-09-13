@@ -157,11 +157,17 @@ for i in range(1, 10):
     }
 
 
+#: What parse_accelerator() answers with for an accelerator Gtk will not
+#: read.  No key press produces it, so it is not a binding, and it must
+#: not be stored as one: see _initialize().
+UNREADABLE: Binding = (0, Gdk.ModifierType(0))
+
+
 def parse_accelerator(accelerator: str) -> Binding:
     """Return the (key, modifiers) <accelerator> stands for.
 
     Gtk.accelerator_parse() answers with a success flag in front of those
-    two, and one that does not parse comes back as (0, 0).
+    two, and one that does not parse comes back as UNREADABLE.
     """
     ok, key, modifiers = Gtk.accelerator_parse(accelerator)
     if not ok and '<Mod1>' in accelerator:
@@ -170,7 +176,7 @@ def parse_accelerator(accelerator: str) -> Binding:
         # earlier versions are full of it.
         ok, key, modifiers = Gtk.accelerator_parse(
             accelerator.replace('<Mod1>', '<Alt>'))
-    return (key, modifiers) if ok else (0, Gdk.ModifierType(0))
+    return (key, modifiers) if ok else UNREADABLE
 
 
 class _KeybindingManager:
@@ -214,10 +220,13 @@ class _KeybindingManager:
         if kwargs is None:
             kwargs = {}
 
-        # Load stored keybindings, or fall back to passed arguments
-        keycodes = self._action_to_bindings[name]
-        if keycodes == []:
-            keycodes = [parse_accelerator(binding) for binding in bindings]
+        # The accelerators the reader stored, or <bindings> where they
+        # stored none for this action.  _initialize() has claimed the
+        # stored ones already, so the loop below has only the defaults
+        # left to take; the copy keeps it off the list it appends to
+        # should that ever stop being true.
+        keycodes = list(self._action_to_bindings[name]) or \
+            [parse_accelerator(binding) for binding in bindings]
 
         for keycode in keycodes:
             if keycode in self._binding_to_action:
@@ -343,7 +352,33 @@ class _KeybindingManager:
             json.dump(action_to_keys, fp, indent=2)
 
     def _initialize(self) -> None:
-        """ Restore keybindings from disk. """
+        """Restore the keybindings stored in keybindings.conf.
+
+        Two kinds of entry are dropped rather than stored as bindings,
+        both of which an action is better off without: keeping either
+        leaves it with a key that cannot be pressed while filling its
+        list, which is what register() reads to decide whether to fall
+        back to the action's defaults.
+
+        An accelerator Gtk will not parse comes back as UNREADABLE, and
+        every one of them in the file is that same value, so two bad
+        entries read as two actions asking for one key.  Saving one
+        writes Gtk.accelerator_name(0, 0), the empty string, over the
+        spelling the reader wrote, so a typo cannot be corrected by hand
+        after the first save either.
+
+        An accelerator another action has already taken is dropped
+        because only one action can answer a key press - execute() looks
+        it up in _binding_to_action, which holds one name - and the
+        other action would go on showing it in its menu label and its
+        editor row.  Two stored spellings can be one accelerator: an
+        earlier MComix wrote the Alt key as <Mod1>, which parse_
+        accelerator() still reads, beside an <Alt> written by this one.
+        The action listed first in BINDING_INFO keeps the key, matching
+        register(), where of two actions asking for the same one the
+        first keeps it.
+        """
+
         try:
             with open(constants.KEYBINDINGS_CONF_PATH, "r") as fp:
                 stored_action_bindings = json.load(fp)
@@ -352,15 +387,21 @@ class _KeybindingManager:
             stored_action_bindings = {}
 
         for action in BINDING_INFO:
-            if action in stored_action_bindings:
-                bindings = [
-                    parse_accelerator(keyname)
-                    for keyname in stored_action_bindings[action]]
-                self._action_to_bindings[action] = bindings
-                for binding in bindings:
-                    self._binding_to_action[binding] = action
-            else:
-                self._action_to_bindings[action] = []
+            bindings = []
+            for keyname in stored_action_bindings.get(action, ()):
+                binding = parse_accelerator(keyname)
+                if binding == UNREADABLE:
+                    log.warning('Ignoring the stored shortcut %r for %r: '
+                                'Gtk cannot read it', keyname, action)
+                    continue
+                if binding in self._binding_to_action:
+                    log.warning('Ignoring the stored shortcut %r for %r: '
+                                '%r has it', keyname, action,
+                                self._binding_to_action[binding])
+                    continue
+                self._binding_to_action[binding] = action
+                bindings.append(binding)
+            self._action_to_bindings[action] = bindings
 
     def get_bindings_for_action(self, name: str) -> list[Binding]:
         """ Returns the accelerators bound to the action <name>, as

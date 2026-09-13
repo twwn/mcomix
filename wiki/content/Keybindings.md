@@ -53,7 +53,7 @@ Stretch small images | Y
 Zoom in | Plus, Equal
 Zoom out | Minus
 Reset zoom | CTRL+0, KeyPad0
-Show OSD panel | TAB, Mouse4
+Show OSD panel | TAB
 Show magnifying lens | L, MiddleMouse
 Add bookmark | CTRL+D
 Edit bookmarks | CTRL+B

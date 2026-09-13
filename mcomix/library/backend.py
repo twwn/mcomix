@@ -634,14 +634,32 @@ class _LibraryBackend:
         self._con.execute('delete from Recent where book = ?', (book,))
 
     def remove_collection(self, collection: int) -> None:
-        """Remove the <collection> (sans books) from the library."""
-        self._con.execute('''update watchlist set collection = NULL
-            where collection = ?''', (collection,))
-        self._con.execute('delete from Collection where id = ?', (collection,))
-        self._con.execute('delete from Contain where collection = ?',
-                          (collection,))
-        self._con.execute('''update Collection set supercollection = NULL
-            where supercollection = ?''', (collection,))
+        """Remove the <collection> from the library.
+
+        The books in it are not removed, only their membership of it, and
+        a collection under it is moved to the root rather than going with
+        its parent - so nothing a reader has added to the library is lost
+        by removing a shelf it was on.
+
+        All of it is one transaction.  A collection's id is its sqlite
+        rowid, which is handed out again as soon as the highest row is
+        free, so an interrupted removal that had deleted the Collection
+        row but not yet cleared the rows naming it would give the next
+        collection created the deleted one's books and children - the
+        same hazard the version 8 upgrade step repairs for books.  The
+        references go first for the same reason: the row that names the
+        collection is the last thing to go, so there is no moment at
+        which the rows pointing at it outlive it.
+        """
+        with self.transaction():
+            self._con.execute('''update watchlist set collection = NULL
+                where collection = ?''', (collection,))
+            self._con.execute('delete from Contain where collection = ?',
+                              (collection,))
+            self._con.execute('''update Collection set supercollection = NULL
+                where supercollection = ?''', (collection,))
+            self._con.execute('delete from Collection where id = ?',
+                              (collection,))
 
     def remove_book_from_collection(self, book: int, collection: int) -> None:
         """Remove <book> from <collection>."""
@@ -681,6 +699,44 @@ class _LibraryBackend:
             yield
         finally:
             self.end_transaction()
+
+    @contextlib.contextmanager
+    def _migration(self) -> Iterator[None]:
+        """Run one upgrade step as an all-or-nothing transaction.
+
+        The steps that rebuild a table rename the original aside, create
+        the new one, copy the rows across and drop the original.  In
+        auto-commit mode each of those four commits by itself, so an
+        upgrade that stops after the rename leaves a database with no
+        book table and a book_old holding every row - and
+        _library_version() reads a missing book table as a database that
+        is not there yet, answers -1, and has _create_tables() write an
+        empty schema over the top.  The library then opens and reports no
+        books at all, every one of them still in book_old where nothing
+        will ever look again.
+
+        transaction() is deliberately not this, on two counts.  It
+        commits whether the block raised or not, because a bulk write
+        that stops half way has written what it wrote, which is what
+        auto-commit would have done, whereas a schema that stops half way
+        is not usable.  And it opens the transaction by setting
+        isolation_level, which the sqlite3 module acts on only for
+        insert, update, delete and replace: an alter, create or drop runs
+        outside the transaction it looks as though it is in, and survives
+        the rollback.  Every statement here is one of those, so the BEGIN
+        is issued by hand.
+
+        This does not nest, and does not need to - the upgrade runs from
+        __init__(), on a connection no caller has yet seen.
+        """
+        self._con.execute('begin immediate')
+        try:
+            yield
+        except BaseException:
+            self._con.rollback()
+            raise
+        else:
+            self._con.commit()
 
     def begin_transaction(self) -> None:
         """ Normally, the connection is in auto-commit mode. Calling
@@ -730,7 +786,9 @@ class _LibraryBackend:
         Comix, before the version was recorded, and answers 0.  An info
         table with no version row is a file this cannot place, and
         answers -1 as well, which has the tables created over it - every
-        create is "if not exists", so what is there survives.
+        create is "if not exists", so whichever tables are there
+        survive, and the version row is written to the current version
+        whether or not one was already held.
         """
 
         # Check if Comix' tables exist
@@ -755,13 +813,24 @@ class _LibraryBackend:
             return 0
 
     def _create_tables(self) -> None:
-        """ Creates all required tables in the database. """
-        self._create_table_book()
-        self._create_table_collection()
-        self._create_table_contain()
-        self._create_table_info()
-        self._create_table_watchlist()
-        self._create_table_recent()
+        """Create the tables a library needs, as one transaction.
+
+        All six or none of them, because the info table is written in the
+        middle of the list and is what says the database is complete.  A
+        creation that stopped after it left book, collection, contain and
+        info behind, which _library_version() reads as a finished version
+        9 database - so _upgrade_database() found nothing to do, and the
+        library opened every time thereafter with no watchlist and no
+        recent table, raising "no such table: watchlist" out of the watch
+        list on each attempt and never repairing itself.
+        """
+        with self._migration():
+            self._create_table_book()
+            self._create_table_collection()
+            self._create_table_contain()
+            self._create_table_info()
+            self._create_table_watchlist()
+            self._create_table_recent()
 
     def _upgrade_database(self, from_version: int, to_version: int) -> None:
         """Bring the database from <from_version> up to <to_version>.
@@ -770,8 +839,13 @@ class _LibraryBackend:
         so they are applied in order and a file of any age arrives at
         the current one.  A <from_version> of -1 is a database that is
         not there yet, and is created at the current version instead of
-        being upgraded.  The version is written last, so an upgrade that
-        fails part way is attempted again next time.
+        being upgraded.
+
+        The version is written last, so an upgrade that stops part way is
+        attempted again next time; every step is safe to run twice, which
+        is what makes that work.  A step that rebuilds a table is one
+        transaction on its own, so a stop inside one leaves the table it
+        was rebuilding alone rather than half rebuilt - see _migration().
         """
 
         if from_version == -1:
@@ -795,45 +869,61 @@ class _LibraryBackend:
 
             if 2 in upgrades:
                 # Changed 'added' field in 'book' from date to datetime.
-                self._con.execute('''alter table book rename to book_old''')
-                self._create_table_book()
-                self._con.execute('''insert into book
-                    (id, name, path, pages, format, size, added)
-                    select id, name, path, pages, format, size, datetime(added)
-                    from book_old''')
-                self._con.execute('''drop table book_old''')
+                with self._migration():
+                    self._con.execute('''alter table book rename to book_old''')
+                    self._create_table_book()
+                    self._con.execute('''insert into book
+                        (id, name, path, pages, format, size, added)
+                        select id, name, path, pages, format, size, datetime(added)
+                        from book_old''')
+                    self._con.execute('''drop table book_old''')
 
             if 3 in upgrades:
                 # Added field 'recursive' to table 'watchlist'
-                self._con.execute('''alter table watchlist rename to watchlist_old''')
-                self._create_table_watchlist()
-                self._con.execute('''insert into watchlist
-                    (path, collection, recursive)
-                    select path, collection, 0 from watchlist_old''')
-                self._con.execute('''drop table watchlist_old''')
+                with self._migration():
+                    self._con.execute('''alter table watchlist rename to watchlist_old''')
+                    self._create_table_watchlist()
+                    self._con.execute('''insert into watchlist
+                        (path, collection, recursive)
+                        select path, collection, 0 from watchlist_old''')
+                    self._con.execute('''drop table watchlist_old''')
 
             if 4 in upgrades:
                 # Added table 'recent' to store recently viewed book information and
-                # create a collection (-2, Recent)
+                # create a collection (-2, Recent).
+                #
+                # Not a _migration(): the migration deletes the legacy
+                # lastreadpage.db when it has carried its rows over, and
+                # no rollback brings a deleted file back, so a stopped
+                # upgrade would lose the pages that were already moved
+                # along with the file they came from.  Committing as it
+                # goes is safe instead, because the step can be run
+                # again: _init_database() recreates the legacy file when
+                # it is not there, and the second run finds it empty and
+                # moves nothing.
                 self._create_table_recent()
                 lastread = last_read_page.LastReadPage(self)
                 lastread.migrate_database_to_library(constants.COLLECTION_RECENT)
 
             if 5 in upgrades:
-                # Changed all 'string' columns into 'text' columns
-                self._con.execute('''alter table book rename to book_old''')
-                self._create_table_book()
-                self._con.execute('''insert into book
-                    (id, name, path, pages, format, size, added)
-                    select id, name, path, pages, format, size, added from book_old''')
-                self._con.execute('''drop table book_old''')
+                # Changed all 'string' columns into 'text' columns.  Both
+                # rebuilds are one step and so one transaction: a
+                # database holding the new book table and the old
+                # collection one is a shape no step is written against.
+                with self._migration():
+                    self._con.execute('''alter table book rename to book_old''')
+                    self._create_table_book()
+                    self._con.execute('''insert into book
+                        (id, name, path, pages, format, size, added)
+                        select id, name, path, pages, format, size, added from book_old''')
+                    self._con.execute('''drop table book_old''')
 
-                self._con.execute('''alter table collection rename to collection_old''')
-                self._create_table_collection()
-                self._con.execute('''insert into collection
-                    (id, name, supercollection)
-                    select id, name, supercollection from collection_old''')
-                self._con.execute('''drop table collection_old''')
+                    self._con.execute('''alter table collection rename to collection_old''')
+                    self._create_table_collection()
+                    self._con.execute('''insert into collection
+                        (id, name, supercollection)
+                        select id, name, supercollection from collection_old''')
+                    self._con.execute('''drop table collection_old''')
 
             if 6 in upgrades:
                 # Non-localized name for Recent collection
@@ -901,7 +991,14 @@ class _LibraryBackend:
         self._con.execute('''create table if not exists info (
             key text primary key,
             value text)''')
-        self._con.execute('''insert into info
+        # "or replace", because the table may already hold a version
+        # row: a file whose info table outlived the tables it describes
+        # is placed at -1 and has the whole schema created over it, and a
+        # plain insert raised IntegrityError there and left the library
+        # unopenable.  The current version is the right answer in that
+        # case - the tables that were missing have just been created at
+        # it - and it is what the row holds on every other path here.
+        self._con.execute('''insert or replace into info
             (key, value) values ('version', ?)''',
                           (str(_LibraryBackend.DB_VERSION),))
 

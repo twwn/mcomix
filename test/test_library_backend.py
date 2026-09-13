@@ -1,8 +1,13 @@
 """Tests for the library database schema itself."""
 
+import inspect
 import os
+import re
+import shutil
 import tempfile
 import unittest
+
+from sqlite3 import dbapi2
 
 from . import get_testfile_path
 
@@ -13,7 +18,184 @@ from mcomix.library import backend
 from mcomix.library import backend_types
 
 
-class ContainIndexTest(unittest.TestCase):
+class LibraryDatabaseTest(unittest.TestCase):
+
+    """A LibraryBackend over a library of its own.
+
+    Every path the backend can reach is repointed, not only the
+    database: remove_book() deletes the book's cover out of
+    LIBRARY_COVERS_PATH, and the upgrade to version 4 reads
+    LASTPAGE_DATABASE_PATH and then unlinks it, so a test left on the
+    real constants would take files out of the reader's own library.
+    constants resolves all of them at import time, which is why setting
+    the environment is not enough - see MComixTest in test/__init__.py,
+    which does the same for the tests that need a window as well.
+    """
+
+    #: The constants pointed into the temporary library, and what each
+    #: is called inside it.  DATA_DIR is the directory itself.
+    REDIRECTED_PATHS = {
+        'DATA_DIR': None,
+        'LIBRARY_DATABASE_PATH': 'library.db',
+        'LASTPAGE_DATABASE_PATH': 'lastreadpage.db',
+        'LIBRARY_COVERS_PATH': 'library_covers',
+        'THUMBNAIL_PATH': 'thumbnails',
+    }
+
+    def setUp(self):
+        self.tmp_dir = tempfile.mkdtemp(prefix='mcomix-test-library.')
+        self._saved_paths = {name: getattr(constants, name)
+                             for name in self.REDIRECTED_PATHS}
+        for name, leaf in self.REDIRECTED_PATHS.items():
+            setattr(constants, name, self.tmp_dir if leaf is None
+                    else os.path.join(self.tmp_dir, leaf))
+        #: The database the backend under test will open.
+        self.db = constants.LIBRARY_DATABASE_PATH
+
+    def _archive(self):
+        """A path that is really there, which the version 4 step
+        requires of a book it is asked to carry over from the legacy
+        database."""
+        return get_testfile_path('archives', '01-ZIP-Normal.zip')
+
+    def _write_database(self, version):
+        """Write a library as the MComix that used <version> wrote it.
+
+        Over an empty directory: every test here walks every version,
+        one subtest each, and a subtest that fails still leaves its
+        files behind.
+        """
+        for path in (self.db, constants.LASTPAGE_DATABASE_PATH):
+            if os.path.exists(path):
+                os.unlink(path)
+        # Version 6 turned every "string" column into a "text" one, and
+        # version 3 turned book.added from a date into a datetime.
+        column = 'text' if version >= 6 else 'string'
+        added = 'datetime default current_timestamp' if version >= 3 \
+            else 'date default current_date'
+        connection = dbapi2.connect(self.db, isolation_level=None)
+        connection.execute(
+            'create table book ('
+            ' id integer primary key,'
+            ' name {column},'
+            ' path {column} unique,'
+            ' pages integer,'
+            ' format integer,'
+            ' size integer,'
+            ' added {added})'.format(column=column, added=added))
+        connection.execute(
+            'create table collection ('
+            ' id integer primary key,'
+            ' name {column} unique,'
+            ' supercollection integer)'.format(column=column))
+        connection.execute(
+            'create table contain ('
+            ' collection integer not null,'
+            ' book integer not null,'
+            ' primary key (collection, book))')
+        # Version 8 added the index on contain (book).
+        if version >= 8:
+            connection.execute('create index contain_book on contain (book)')
+        # Version 1 added the info table the version itself lives in;
+        # before that there was nothing to read a version from.
+        if version >= 1:
+            connection.execute(
+                'create table info ('
+                ' key {column} primary key,'
+                ' value {column})'.format(column=column))
+            connection.execute(
+                "insert into info (key, value) values ('version', ?)",
+                (str(version),))
+        # Version 2 added the watch list, version 4 its recursive flag.
+        if version >= 2:
+            recursive = ', recursive boolean not null' if version >= 4 else ''
+            connection.execute(
+                'create table watchlist ('
+                ' path {column} primary key,'
+                ' collection integer references collection (id)'
+                ' on delete set null{recursive})'.format(
+                    column=column, recursive=recursive))
+        # Version 5 added the recent table and the collection that goes
+        # with it; version 7 stopped translating that collection's name.
+        if version >= 5:
+            connection.execute(
+                'create table recent ('
+                ' book integer primary key,'
+                ' page integer,'
+                ' time_set datetime)')
+            connection.execute(
+                'insert into collection (id, name) values (?, ?)',
+                (constants.COLLECTION_RECENT,
+                 'RECENT' if version >= 7 else 'Recent'))
+        # One book on one shelf, and one watched directory, so that the
+        # steps which rebuild a table have rows to carry across.
+        connection.execute(
+            "insert into collection (id, name) values (1, 'Shelf')")
+        connection.execute(
+            'insert into book (id, name, path, pages, format, size)'
+            " values (1, 'a.cbz', '/books/a.cbz', 20, 1, 1)")
+        connection.execute(
+            'insert into contain (collection, book) values (1, 1)')
+        if version >= 4:
+            connection.execute(
+                'insert into watchlist (path, collection, recursive)'
+                " values ('/watched', 1, 1)")
+        elif version >= 2:
+            connection.execute(
+                'insert into watchlist (path, collection)'
+                " values ('/watched', 1)")
+        connection.close()
+        # What version 5 moved into the library: a page read, held in a
+        # database of its own beside it.  Its path has to name a file
+        # that is there, or the step drops the row as gone away.
+        if version < 5:
+            legacy = dbapi2.connect(constants.LASTPAGE_DATABASE_PATH,
+                                    isolation_level=None)
+            legacy.execute(
+                'create table lastread ('
+                ' path text primary key, page integer, time_set datetime)')
+            legacy.execute(
+                'insert into lastread (path, page, time_set)'
+                " values (?, 7, '2020-01-01 00:00:00')", (self._archive(),))
+            legacy.close()
+
+    @staticmethod
+    def _plan(connection, statement, parameters):
+        return ' '.join(str(row) for row in connection.execute(
+            'explain query plan ' + statement, parameters).fetchall())
+
+    def tearDown(self):
+        for name, path in self._saved_paths.items():
+            setattr(constants, name, path)
+        # The backend is a singleton, and a test that left one open
+        # would hand it to the next one - pointed at a database that is
+        # about to be removed.
+        backend._backend = None
+        shutil.rmtree(self.tmp_dir, ignore_errors=True)
+
+
+class RedirectedPathsTest(LibraryDatabaseTest):
+
+    """What keeps the tests in this file off the reader's own library."""
+
+    def test_every_path_is_inside_the_temporary_library(self):
+        for name in self.REDIRECTED_PATHS:
+            path = getattr(constants, name)
+            self.assertTrue(path.startswith(self.tmp_dir),
+                            '%s points at %s' % (name, path))
+
+    def test_every_path_the_library_reads_is_one_of_them(self):
+        """A path constant the backend reaches that the base class does
+        not repoint would be resolved against the reader's own home."""
+        reached = set()
+        for module in (backend, last_read_page):
+            reached.update(re.findall(r'constants\.([A-Z_]+(?:PATH|DIR))',
+                                      inspect.getsource(module)))
+        self.assertTrue(reached, 'the source was not searched')
+        self.assertEqual(reached - set(self.REDIRECTED_PATHS), set())
+
+
+class ContainIndexTest(LibraryDatabaseTest):
 
     """remove_book() deletes from contain by book alone.
 
@@ -24,19 +206,10 @@ class ContainIndexTest(unittest.TestCase):
     """
 
     def setUp(self):
-        fp, self.db = tempfile.mkstemp('.db', 'mcomix-test')
-        os.close(fp)
-        self._saved_path = constants.LIBRARY_DATABASE_PATH
-        constants.LIBRARY_DATABASE_PATH = self.db
+        super().setUp()
 
     def tearDown(self):
-        constants.LIBRARY_DATABASE_PATH = self._saved_path
-        os.unlink(self.db)
-
-    @staticmethod
-    def _plan(connection, statement, parameters):
-        return ' '.join(str(row) for row in connection.execute(
-            'explain query plan ' + statement, parameters).fetchall())
+        super().tearDown()
 
     def test_removal_by_book_does_not_scan(self):
         library = backend.LibraryBackend()
@@ -69,7 +242,357 @@ class ContainIndexTest(unittest.TestCase):
         self.assertEqual(int(version), backend._LibraryBackend.DB_VERSION)
 
 
-class CleanCollectionTransactionTest(unittest.TestCase):
+class UpgradeFromEveryVersionTest(LibraryDatabaseTest):
+
+    """A library written by any MComix that ever wrote one still opens.
+
+    _upgrade_database() applies one step per version in order, and each
+    step is written against the schema the step before it left, so the
+    only way to know a step still works is to hand it a database of the
+    shape it expects.  The suite reached versions 7 and 8 - the two
+    steps that are repairs rather than schema changes - and none of the
+    five below them, which are the ones that rebuild tables and copy
+    rows across.
+    """
+
+    def _upgraded(self, version):
+        """Write a library of <version> and open it, which upgrades it."""
+        self._write_database(version)
+        return backend.LibraryBackend()
+
+    def _done(self, library):
+        """Let go of <library>, so that the next subtest opens its own."""
+        library.close()
+
+    def _versions(self, lowest=0):
+        """Every version an upgrade can start from, lowest first."""
+        return range(lowest, backend._LibraryBackend.DB_VERSION)
+
+    def test_every_version_reaches_the_current_one(self):
+        for version in self._versions():
+            with self.subTest(version=version):
+                library = self._upgraded(version)
+                held = library._con.execute(
+                    "select value from info where key = 'version'").fetchone()
+                self.assertEqual(int(held),
+                                 backend._LibraryBackend.DB_VERSION)
+                self._done(library)
+
+    def test_the_book_and_its_shelf_survive_every_version(self):
+        for version in self._versions():
+            with self.subTest(version=version):
+                library = self._upgraded(version)
+                book = library.get_book_by_path('/books/a.cbz')
+                self.assertIsNotNone(book, 'the book was lost')
+                self.assertEqual(book.pages, 20)
+                self.assertEqual(library.get_books_in_collection(1),
+                                 [book.id])
+                self._done(library)
+
+    def test_every_version_ends_with_the_whole_schema(self):
+        for version in self._versions():
+            with self.subTest(version=version):
+                library = self._upgraded(version)
+                for table in ('book', 'collection', 'contain', 'info',
+                              'watchlist', 'recent'):
+                    self.assertTrue(library._table_exists(table),
+                                    '%s is missing' % table)
+                plan = self._plan(library._con,
+                                  'delete from Contain where book = ?', (1,))
+                self.assertNotIn('SCAN', plan, msg=plan)
+                self.assertEqual(
+                    library._con.execute(
+                        'select name from collection where id = ?',
+                        (constants.COLLECTION_RECENT,)).fetchone(),
+                    'RECENT')
+                self._done(library)
+
+    def test_a_watched_directory_survives_every_version_that_had_one(self):
+        for version in self._versions(2):
+            with self.subTest(version=version):
+                library = self._upgraded(version)
+                watched = library._con.execute(
+                    'select path, collection, recursive from watchlist'
+                ).fetchall()
+                # The version 4 step cannot know whether a directory
+                # written before the flag existed was meant to recurse,
+                # so it says no; from 4 on the stored flag is kept.
+                self.assertEqual(watched,
+                                 [('/watched', 1, 1 if version >= 4 else 0)])
+                self._done(library)
+
+    def test_the_page_a_book_was_read_to_is_carried_into_the_library(self):
+        """Version 4 moved the legacy lastreadpage.db into the library,
+        filing each of its books in Recent, and deleted it."""
+        for version in self._versions():
+            with self.subTest(version=version):
+                library = self._upgraded(version)
+                book = library.get_book_by_path(self._archive())
+                if version >= 5:
+                    self.assertIsNone(
+                        book, 'a version past the migration ran it anyway')
+                    self._done(library)
+                    continue
+                self.assertIsNotNone(book, 'the read book was not carried')
+                self.assertEqual(book.get_last_read_page(), 7)
+                self.assertIn(book.id, library.get_books_in_collection(
+                    constants.COLLECTION_RECENT))
+                self._done(library)
+                self.assertFalse(
+                    os.path.exists(constants.LASTPAGE_DATABASE_PATH),
+                    'the legacy database was left behind')
+
+
+class InterruptedUpgradeTest(LibraryDatabaseTest):
+
+    """An upgrade that stops part way through a table rebuild.
+
+    Three of the nine steps rename a table aside, create the new one,
+    copy the rows across and drop the original.  The connection is opened
+    in auto-commit mode, so without a transaction the rename commits on
+    its own - and _library_version() reads a database with no book table
+    as one that is not there at all, answers -1, and has _create_tables()
+    write an empty schema over the top.  The library then opens with no
+    books in it and every one of them left in book_old, which nothing
+    will ever read again.
+    """
+
+    class Interrupted(Exception):
+        """Stands in for the process dying mid-upgrade."""
+
+    def _interrupt(self, method):
+        """Have <method> of the backend raise instead of running.
+
+        Returns the callable that puts it back, for a test that goes on to
+        open the library a second time; it is registered as a cleanup as
+        well, so a test that does not need that can ignore it.
+        """
+        original = getattr(backend._LibraryBackend, method)
+
+        def raising(_self, *args, **kwargs):
+            raise self.Interrupted(method)
+
+        def restore():
+            setattr(backend._LibraryBackend, method, original)
+
+        setattr(backend._LibraryBackend, method, raising)
+        self.addCleanup(restore)
+        return restore
+
+    def _query(self, statement):
+        """Run <statement> against the database file directly, on a
+        connection of its own: the backend never finished opening.
+        """
+        connection = dbapi2.connect(self.db, isolation_level=None)
+        try:
+            return [row[0] for row in connection.execute(statement)]
+        finally:
+            connection.close()
+
+    def _tables(self):
+        return set(self._query(
+            "select name from sqlite_master where type = 'table'"))
+
+    def _books(self):
+        return self._query('select name from book')
+
+    def test_a_rebuild_that_stops_leaves_the_table_it_was_rebuilding(self):
+        """Version 2 rebuilds book, so the step is entered with the
+        reader's books in it: they have to still be there afterwards, and
+        under the name the next attempt will look for."""
+        self._write_database(2)
+        self._interrupt('_create_table_book')
+
+        with self.assertRaises(self.Interrupted):
+            backend.LibraryBackend()
+
+        self.assertIn('book', self._tables(),
+                      'the book table was renamed away and not put back')
+        self.assertNotIn('book_old', self._tables(),
+                         'the rename outlived the step that made it')
+        self.assertEqual(['a.cbz'], self._books())
+
+    def test_the_upgrade_is_attempted_again_and_completes(self):
+        """The version row is written last, so a stopped upgrade leaves
+        the old version behind and the next open runs the steps again.
+        That is only any use if the step left the table alone."""
+        self._write_database(2)
+        restore = self._interrupt('_create_table_book')
+        with self.assertRaises(self.Interrupted):
+            backend.LibraryBackend()
+        backend._backend = None
+
+        # The process starts again, with nothing raising this time.
+        restore()
+        library = backend.LibraryBackend()
+        try:
+            self.assertEqual(backend._LibraryBackend.DB_VERSION,
+                             library._library_version())
+            # The book the database was written with, and the one the
+            # version 4 step carries over from the legacy lastreadpage.db
+            # once it is reached - which the interrupted attempt never
+            # was.
+            self.assertEqual(['a.cbz', os.path.basename(self._archive())],
+                             self._books())
+        finally:
+            library.close()
+
+    def test_the_watchlist_rebuild_is_covered_too(self):
+        """Version 3 rebuilds watchlist the same way."""
+        self._write_database(3)
+        self._interrupt('_create_table_watchlist')
+
+        with self.assertRaises(self.Interrupted):
+            backend.LibraryBackend()
+
+        self.assertIn('watchlist', self._tables())
+        self.assertNotIn('watchlist_old', self._tables())
+
+    def test_the_second_half_of_a_two_table_step_cannot_be_lost(self):
+        """Version 5 rebuilds book and then collection.  Stopping between
+        the two used to leave a database holding the new book table and
+        the old collection one, which is a shape no step is written
+        against - and the retry would rebuild book a second time."""
+        self._write_database(5)
+        self._interrupt('_create_table_collection')
+
+        with self.assertRaises(self.Interrupted):
+            backend.LibraryBackend()
+
+        tables = self._tables()
+        self.assertIn('book', tables)
+        self.assertIn('collection', tables)
+        self.assertNotIn('book_old', tables,
+                         'the first rebuild of the step was committed alone')
+        self.assertNotIn('collection_old', tables)
+        self.assertEqual(['a.cbz'], self._books())
+
+    def test_a_rollback_leaves_no_transaction_open(self):
+        """The upgrade runs from __init__(), so a connection left in a
+        transaction would be handed to the caller that way and hold the
+        database locked."""
+        self._write_database(2)
+        self._interrupt('_create_table_book')
+        opened = []
+
+        original = backend._LibraryBackend._library_version
+
+        def remember(instance):
+            opened.append(instance)
+            return original(instance)
+
+        backend._LibraryBackend._library_version = remember
+        self.addCleanup(setattr, backend._LibraryBackend,
+                        '_library_version', original)
+        with self.assertRaises(self.Interrupted):
+            backend.LibraryBackend()
+
+        self.assertTrue(opened, 'the backend never opened its connection')
+        self.assertFalse(opened[0]._con.in_transaction,
+                         'the rollback left a transaction open')
+
+
+class InterruptedCreationTest(LibraryDatabaseTest):
+
+    """A brand-new library whose creation stops part way through.
+
+    _create_tables() writes six tables, and the info table carrying the
+    version row is the fourth of them.  Without a transaction each create
+    committed by itself, so a creation that stopped after info left
+    book, collection, contain and info behind - which _library_version()
+    reads as a finished database at the current version.
+    _upgrade_database() then had nothing to do, and the library opened
+    that way every time afterwards, with no watchlist and no recent table
+    and no path back.
+    """
+
+    class Interrupted(Exception):
+        """Stands in for the process dying mid-creation."""
+
+    def _interrupt(self, method):
+        """Have <method> of the backend raise instead of running, and
+        return the callable that puts it back."""
+        original = getattr(backend._LibraryBackend, method)
+
+        def raising(_self, *args, **kwargs):
+            raise self.Interrupted(method)
+
+        def restore():
+            setattr(backend._LibraryBackend, method, original)
+
+        setattr(backend._LibraryBackend, method, raising)
+        self.addCleanup(restore)
+        return restore
+
+    #: Every table a finished library holds.
+    TABLES = ('book', 'collection', 'contain', 'info', 'watchlist', 'recent')
+
+    def _tables(self):
+        connection = dbapi2.connect(self.db, isolation_level=None)
+        try:
+            return {row[0] for row in connection.execute(
+                "select name from sqlite_master where type = 'table'")}
+        finally:
+            connection.close()
+
+    def test_a_creation_that_stops_after_the_info_table_leaves_nothing(self):
+        """Nothing rather than a database that says it is finished: the
+        next open has to find a file it can tell is not there yet."""
+        restore = self._interrupt('_create_table_watchlist')
+        with self.assertRaises(self.Interrupted):
+            backend.LibraryBackend()
+
+        self.assertEqual(set(), self._tables())
+        restore()
+        backend._backend = None
+
+        library = backend.LibraryBackend()
+        try:
+            for table in self.TABLES:
+                self.assertTrue(library._table_exists(table),
+                                '%s was not created on the second attempt'
+                                % table)
+        finally:
+            library.close()
+
+    def test_the_watch_list_works_after_a_stopped_creation(self):
+        """What the half-created database broke.  The watch list is read
+        whenever the library scans for new books, so this was not a
+        corner the reader could avoid."""
+        restore = self._interrupt('_create_table_watchlist')
+        with self.assertRaises(self.Interrupted):
+            backend.LibraryBackend()
+        restore()
+        backend._backend = None
+
+        library = backend.LibraryBackend()
+        try:
+            self.assertEqual([], library.watchlist.get_watchlist())
+            self.assertEqual([], library.get_paths_of_books_outside_recent())
+        finally:
+            library.close()
+
+    def test_a_creation_that_stops_before_the_info_table_leaves_nothing(self):
+        """The half that was self-healing before is covered as well, so
+        that the transaction cannot be narrowed to the tables after
+        info."""
+        restore = self._interrupt('_create_table_contain')
+        with self.assertRaises(self.Interrupted):
+            backend.LibraryBackend()
+
+        self.assertEqual(set(), self._tables())
+        restore()
+        backend._backend = None
+
+        library = backend.LibraryBackend()
+        try:
+            for table in self.TABLES:
+                self.assertTrue(library._table_exists(table))
+        finally:
+            library.close()
+
+
+class CleanCollectionTransactionTest(LibraryDatabaseTest):
 
     """clean_collection() sweeps in one transaction, not thousands.
 
@@ -80,10 +603,7 @@ class CleanCollectionTransactionTest(unittest.TestCase):
     """
 
     def setUp(self):
-        fp, self.db = tempfile.mkstemp('.db', 'mcomix-test')
-        os.close(fp)
-        self._saved_path = constants.LIBRARY_DATABASE_PATH
-        constants.LIBRARY_DATABASE_PATH = self.db
+        super().setUp()
         self.library = backend.LibraryBackend()
         self.library.begin_transaction()
         for index in range(8):
@@ -98,8 +618,7 @@ class CleanCollectionTransactionTest(unittest.TestCase):
 
     def tearDown(self):
         self.library.close()
-        constants.LIBRARY_DATABASE_PATH = self._saved_path
-        os.unlink(self.db)
+        super().tearDown()
 
     def test_a_book_in_a_collection_and_one_under_it_is_named_once(self):
         """The books were collected one collection at a time and the
@@ -154,7 +673,126 @@ class CleanCollectionTransactionTest(unittest.TestCase):
         self.library.end_transaction()
 
 
-class BooksOutsideRecentTest(unittest.TestCase):
+class RemoveCollectionTest(LibraryDatabaseTest):
+
+    """Removing a shelf touches four tables, and must do so atomically.
+
+    The connection is opened in auto-commit mode, so without a
+    transaction each of the four statements commits by itself.  A
+    collection's id is its sqlite rowid and is handed out again as soon
+    as the highest row is free, so a removal stopped between them leaves
+    rows naming an id the next collection created will be given.
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.library = backend.LibraryBackend()
+        with self.library.transaction():
+            self.parent = self.library.add_collection('Parent')
+            self.child = self.library.add_collection('Child')
+            self.library.add_collection_to_collection(self.child, self.parent)
+            self.other = self.library.add_collection('Other')
+            cursor = self.library._con.execute(
+                '''insert into book (name, path, pages, format, size)
+                values ('b', '/does/not/exist.cbz', 1, 1, 1)''')
+            self.book = cursor.lastrowid
+            cursor.close()
+            self.library.add_book_to_collection(self.book, self.parent)
+            self.library.add_book_to_collection(self.book, self.other)
+            self.library._con.execute(
+                '''insert into watchlist (path, collection, recursive)
+                values ('/watched', ?, 0)''', (self.parent,))
+
+    def tearDown(self):
+        self.library.close()
+        super().tearDown()
+
+    def _traced(self, collection):
+        """Return every statement remove_collection() issues, the
+        implicit BEGIN and the COMMIT included."""
+        seen = []
+        self.library._con.set_trace_callback(seen.append)
+        try:
+            self.library.remove_collection(collection)
+        finally:
+            self.library._con.set_trace_callback(None)
+        return seen
+
+    def test_the_whole_removal_is_one_transaction(self):
+        seen = self._traced(self.parent)
+        begins = [statement for statement in seen
+                  if statement.startswith('BEGIN')]
+        commits = [statement for statement in seen if statement == 'COMMIT']
+        self.assertEqual(1, len(begins),
+                         'not one transaction: %r' % seen)
+        self.assertEqual(1, len(commits),
+                         'not one transaction: %r' % seen)
+        self.assertEqual('BEGIN', seen[0][:5], 'writes before the BEGIN')
+        self.assertEqual('COMMIT', seen[-1], 'writes after the COMMIT')
+        self.assertFalse(self.library._con.in_transaction,
+                         'the removal left a transaction open')
+
+    def test_the_row_naming_the_collection_goes_last(self):
+        """Every row that points at the collection is cleared before the
+        collection itself, so that a database interrupted at any
+        statement never holds a reference to an id that is free."""
+        seen = self._traced(self.parent)
+        writes = [statement.split()[0].lower() + ' ' +
+                  ('collection' if ' Collection ' in statement
+                   or 'from Collection' in statement else 'other')
+                  for statement in seen
+                  if statement.split()[0].lower() in ('insert', 'update',
+                                                      'delete')]
+        self.assertEqual('delete collection', writes[-1],
+                         'the collection row was not deleted last: %r' % seen)
+
+    def test_a_caller_may_hold_the_transaction_itself(self):
+        """The helpers do not nest, so a removal inside a caller's
+        transaction must leave it open rather than commit it."""
+        self.library.begin_transaction()
+        self.library.remove_collection(self.other)
+        self.assertTrue(self.library._con.in_transaction,
+                        'the removal committed a transaction it did not open')
+        self.library.end_transaction()
+
+    def test_nothing_is_left_naming_the_removed_collection(self):
+        self.library.remove_collection(self.parent)
+        self.assertEqual(
+            [], self.library._con.execute(
+                'select book from contain where collection = ?',
+                (self.parent,)).fetchall())
+        self.assertEqual(
+            [], self.library._con.execute(
+                'select id from collection where supercollection = ?',
+                (self.parent,)).fetchall())
+        self.assertEqual(
+            [], self.library._con.execute(
+                'select path from watchlist where collection = ?',
+                (self.parent,)).fetchall())
+        self.assertEqual(
+            [], self.library._con.execute(
+                'select name from collection where id = ?',
+                (self.parent,)).fetchall())
+
+    def test_the_books_and_the_collection_under_it_survive(self):
+        self.library.remove_collection(self.parent)
+        self.assertEqual(
+            self.book, self.library._con.execute(
+                'select id from book').fetchone(),
+            'the book went with the collection it was filed in')
+        self.assertEqual(
+            [self.book], self.library._con.execute(
+                'select book from contain where collection = ?',
+                (self.other,)).fetchall(),
+            'the book lost a collection it was still in')
+        self.assertIsNone(
+            self.library._con.execute(
+                'select supercollection from collection where id = ?',
+                (self.child,)).fetchone(),
+            'the collection under it was not moved to the root')
+
+
+class BooksOutsideRecentTest(LibraryDatabaseTest):
 
     """Which books the watch list scan counts as already in the library.
 
@@ -166,17 +804,13 @@ class BooksOutsideRecentTest(unittest.TestCase):
     """
 
     def setUp(self):
-        fp, self.db = tempfile.mkstemp('.db', 'mcomix-test')
-        os.close(fp)
-        self._saved_path = constants.LIBRARY_DATABASE_PATH
-        constants.LIBRARY_DATABASE_PATH = self.db
+        super().setUp()
         self.library = backend.LibraryBackend()
         self.shelf = self.library.add_collection('Shelf')
 
     def tearDown(self):
         self.library.close()
-        constants.LIBRARY_DATABASE_PATH = self._saved_path
-        os.unlink(self.db)
+        super().tearDown()
 
     def _add_book(self, name, collections):
         cursor = self.library._con.execute(
@@ -205,15 +839,12 @@ class BooksOutsideRecentTest(unittest.TestCase):
             'book that is filed somewhere else does not')
 
 
-class BookPathsInCollectionTest(unittest.TestCase):
+class BookPathsInCollectionTest(LibraryDatabaseTest):
 
     """The ids and paths of a collection's books in one statement."""
 
     def setUp(self):
-        fp, self.db = tempfile.mkstemp('.db', 'mcomix-test')
-        os.close(fp)
-        self._saved_path = constants.LIBRARY_DATABASE_PATH
-        constants.LIBRARY_DATABASE_PATH = self.db
+        super().setUp()
         self.library = backend.LibraryBackend()
         self.shelf = self.library.add_collection('Shelf')
         self.other = self.library.add_collection('Other')
@@ -231,8 +862,7 @@ class BookPathsInCollectionTest(unittest.TestCase):
 
     def tearDown(self):
         self.library.close()
-        constants.LIBRARY_DATABASE_PATH = self._saved_path
-        os.unlink(self.db)
+        super().tearDown()
 
     def test_it_names_the_same_books_as_the_id_query(self):
         for collection in (None, self.shelf, self.other):
@@ -249,21 +879,17 @@ class BookPathsInCollectionTest(unittest.TestCase):
              self.library.get_book_paths_in_collection(self.shelf)])
 
 
-class TransactionTest(unittest.TestCase):
+class TransactionTest(LibraryDatabaseTest):
 
     """The context manager that makes a loop of writes one transaction."""
 
     def setUp(self):
-        fp, self.db = tempfile.mkstemp('.db', 'mcomix-test')
-        os.close(fp)
-        self._saved_path = constants.LIBRARY_DATABASE_PATH
-        constants.LIBRARY_DATABASE_PATH = self.db
+        super().setUp()
         self.library = backend.LibraryBackend()
 
     def tearDown(self):
         self.library.close()
-        constants.LIBRARY_DATABASE_PATH = self._saved_path
-        os.unlink(self.db)
+        super().tearDown()
 
     def test_the_block_runs_in_a_transaction(self):
         self.assertIsNone(self.library._con.isolation_level)
@@ -292,7 +918,7 @@ class TransactionTest(unittest.TestCase):
         self.assertIsNotNone(self.library.get_collection_by_name('Shelf'))
 
 
-class TableExistsTest(unittest.TestCase):
+class TableExistsTest(LibraryDatabaseTest):
 
     """_table_exists() decides whether the file has a schema at all.
 
@@ -302,16 +928,12 @@ class TableExistsTest(unittest.TestCase):
     """
 
     def setUp(self):
-        fp, self.db = tempfile.mkstemp('.db', 'mcomix-test')
-        os.close(fp)
-        self._saved_path = constants.LIBRARY_DATABASE_PATH
-        constants.LIBRARY_DATABASE_PATH = self.db
+        super().setUp()
         self.library = backend.LibraryBackend()
 
     def tearDown(self):
         self.library.close()
-        constants.LIBRARY_DATABASE_PATH = self._saved_path
-        os.unlink(self.db)
+        super().tearDown()
 
     def test_a_table_that_is_there(self):
         for table in ('book', 'collection', 'contain', 'info',
@@ -327,23 +949,19 @@ class TableExistsTest(unittest.TestCase):
                         'the book table did not survive the question')
 
 
-class ClearAllTest(unittest.TestCase):
+class ClearAllTest(LibraryDatabaseTest):
 
     """What LastReadPage.clear_all() may and may not remove."""
 
     def setUp(self):
-        fp, self.db = tempfile.mkstemp('.db', 'mcomix-test')
-        os.close(fp)
-        self._saved_path = constants.LIBRARY_DATABASE_PATH
-        constants.LIBRARY_DATABASE_PATH = self.db
+        super().setUp()
         self.backend = backend.LibraryBackend()
         self.lastread = last_read_page.LastReadPage(self.backend)
         self.lastread.set_enabled(True)
 
     def tearDown(self):
         self.backend.close()
-        constants.LIBRARY_DATABASE_PATH = self._saved_path
-        os.unlink(self.db)
+        super().tearDown()
 
     @staticmethod
     def _archive(name):
@@ -395,23 +1013,19 @@ class ClearAllTest(unittest.TestCase):
                             'was added to the library without a collection')
 
 
-class AddBookToCollectionTest(unittest.TestCase):
+class AddBookToCollectionTest(LibraryDatabaseTest):
 
     """What the listeners are told when a book is filed."""
 
     def setUp(self):
-        fp, self.db = tempfile.mkstemp('.db', 'mcomix-test')
-        os.close(fp)
-        self._saved_path = constants.LIBRARY_DATABASE_PATH
-        constants.LIBRARY_DATABASE_PATH = self.db
+        super().setUp()
         self.backend = backend.LibraryBackend()
         self.seen = []
         self.backend.book_added_to_collection += self._book_filed
 
     def tearDown(self):
         self.backend.close()
-        constants.LIBRARY_DATABASE_PATH = self._saved_path
-        os.unlink(self.db)
+        super().tearDown()
 
     def _book_filed(self, book, collection):
         # Record the book itself rather than reading it: a listener that
@@ -442,7 +1056,7 @@ class AddBookToCollectionTest(unittest.TestCase):
         self.assertEqual([], self.seen)
 
 
-class MovedBookTest(unittest.TestCase):
+class MovedBookTest(LibraryDatabaseTest):
 
     """A book that MComix has moved keeps its row, and its row keeps up.
 
@@ -454,10 +1068,7 @@ class MovedBookTest(unittest.TestCase):
     """
 
     def setUp(self):
-        fp, self.db = tempfile.mkstemp('.db', 'mcomix-test')
-        os.close(fp)
-        self._saved_path = constants.LIBRARY_DATABASE_PATH
-        constants.LIBRARY_DATABASE_PATH = self.db
+        super().setUp()
         self.backend = backend.LibraryBackend()
         self.path = get_testfile_path('archives', '01-ZIP-Normal.zip')
         self.assertTrue(self.backend.add_book(self.path))
@@ -465,8 +1076,7 @@ class MovedBookTest(unittest.TestCase):
 
     def tearDown(self):
         self.backend.close()
-        constants.LIBRARY_DATABASE_PATH = self._saved_path
-        os.unlink(self.db)
+        super().tearDown()
 
     def test_the_row_follows_the_file(self):
         moved = os.path.join(os.path.dirname(self.path), 'elsewhere.zip')
@@ -507,7 +1117,7 @@ class MovedBookTest(unittest.TestCase):
                             self.book.id)
 
 
-class RemovedBookTest(unittest.TestCase):
+class RemovedBookTest(LibraryDatabaseTest):
 
     """remove_book() left the page the book was read to behind.
 
@@ -518,16 +1128,12 @@ class RemovedBookTest(unittest.TestCase):
     """
 
     def setUp(self):
-        fp, self.db = tempfile.mkstemp('.db', 'mcomix-test')
-        os.close(fp)
-        self._saved_path = constants.LIBRARY_DATABASE_PATH
-        constants.LIBRARY_DATABASE_PATH = self.db
+        super().setUp()
         self.library = backend.LibraryBackend()
 
     def tearDown(self):
         self.library.close()
-        constants.LIBRARY_DATABASE_PATH = self._saved_path
-        os.unlink(self.db)
+        super().tearDown()
 
     def _add_book(self, name):
         """A row in book, without an archive to read it out of."""
@@ -591,7 +1197,63 @@ class RemovedBookTest(unittest.TestCase):
         self.assertEqual(int(version), backend._LibraryBackend.DB_VERSION)
 
 
-class MissingBookTest(unittest.TestCase):
+class HalfWrittenDatabaseTest(LibraryDatabaseTest):
+
+    """A file that holds an info table but not the tables it describes.
+
+    _upgrade_database() renames a table, creates the new one and copies
+    the rows across, and it writes the version last so that an upgrade
+    which stops part way is attempted again.  Stopping between the
+    rename and the create leaves a file whose book table is gone while
+    its info table still names a version, and there is no reason the
+    disk cannot fill or the power cannot go while a table is being
+    rebuilt.
+    """
+
+    def setUp(self):
+        super().setUp()
+        connection = dbapi2.connect(self.db, isolation_level=None)
+        # Everything a version 5 upgrade leaves behind when it stops
+        # after renaming book out of the way.
+        connection.execute("""create table info (
+            key text primary key, value text)""")
+        connection.execute(
+            "insert into info (key, value) values ('version', '5')")
+        connection.execute("""create table collection (
+            id integer primary key, name text unique,
+            supercollection integer)""")
+        connection.execute("""create table contain (
+            collection integer not null, book integer not null,
+            primary key (collection, book))""")
+        connection.close()
+
+    def tearDown(self):
+        super().tearDown()
+
+    def test_the_library_opens_over_it(self):
+        """The version row is already there, so writing the current one
+        used to raise IntegrityError out of the constructor and the
+        library could not be opened at all."""
+        library = backend.LibraryBackend()
+        try:
+            version = library._con.execute(
+                "select value from info where key = 'version'").fetchone()
+        finally:
+            library.close()
+        self.assertEqual(int(version), backend._LibraryBackend.DB_VERSION)
+
+    def test_the_tables_that_were_missing_are_created(self):
+        library = backend.LibraryBackend()
+        try:
+            for table in ('book', 'collection', 'contain', 'info',
+                          'watchlist', 'recent'):
+                self.assertTrue(library._table_exists(table),
+                                '%s was not created' % table)
+        finally:
+            library.close()
+
+
+class MissingBookTest(LibraryDatabaseTest):
 
     """What the accessors answer for a book id that names no row.
 
@@ -603,16 +1265,12 @@ class MissingBookTest(unittest.TestCase):
     """
 
     def setUp(self):
-        fp, self.db = tempfile.mkstemp('.db', 'mcomix-test')
-        os.close(fp)
-        self._saved_path = constants.LIBRARY_DATABASE_PATH
-        constants.LIBRARY_DATABASE_PATH = self.db
+        super().setUp()
         self.library = backend.LibraryBackend()
 
     def tearDown(self):
         self.library.close()
-        constants.LIBRARY_DATABASE_PATH = self._saved_path
-        os.unlink(self.db)
+        super().tearDown()
 
     def test_the_path_of_a_book_that_is_not_there_is_none(self):
         self.assertIsNone(self.library.get_book_path(4711))
@@ -629,7 +1287,7 @@ class MissingBookTest(unittest.TestCase):
         self.assertIsNone(self.library.get_book_cover(4711))
 
 
-class AddCollectionTest(unittest.TestCase):
+class AddCollectionTest(LibraryDatabaseTest):
 
     """What add_collection() answers with.
 
@@ -641,16 +1299,12 @@ class AddCollectionTest(unittest.TestCase):
     """
 
     def setUp(self):
-        fp, self.db = tempfile.mkstemp('.db', 'mcomix-test')
-        os.close(fp)
-        self._saved_path = constants.LIBRARY_DATABASE_PATH
-        constants.LIBRARY_DATABASE_PATH = self.db
+        super().setUp()
         self.library = backend.LibraryBackend()
 
     def tearDown(self):
         self.library.close()
-        constants.LIBRARY_DATABASE_PATH = self._saved_path
-        os.unlink(self.db)
+        super().tearDown()
 
     def test_the_id_of_the_collection_added_is_returned(self):
         collection = self.library.add_collection('Shelf')
@@ -674,7 +1328,7 @@ class AddCollectionTest(unittest.TestCase):
         self.assertIsNone(self.library.add_collection('Shelf'))
 
 
-class DuplicateCollectionTest(unittest.TestCase):
+class DuplicateCollectionTest(LibraryDatabaseTest):
 
     """What happens when the copy cannot be created.
 
@@ -690,10 +1344,7 @@ class DuplicateCollectionTest(unittest.TestCase):
     """
 
     def setUp(self):
-        fp, self.db = tempfile.mkstemp('.db', 'mcomix-test')
-        os.close(fp)
-        self._saved_path = constants.LIBRARY_DATABASE_PATH
-        constants.LIBRARY_DATABASE_PATH = self.db
+        super().setUp()
         self.library = backend.LibraryBackend()
         self.collection = self.library.add_collection('Shelf')
         self.library._con.execute(
@@ -706,8 +1357,7 @@ class DuplicateCollectionTest(unittest.TestCase):
 
     def tearDown(self):
         self.library.close()
-        constants.LIBRARY_DATABASE_PATH = self._saved_path
-        os.unlink(self.db)
+        super().tearDown()
 
     def test_the_copy_holds_the_same_books(self):
         self.assertTrue(self.library.duplicate_collection(self.collection))
@@ -724,7 +1374,7 @@ class DuplicateCollectionTest(unittest.TestCase):
                          'reported success')
 
 
-class CollectionTreeTest(unittest.TestCase):
+class CollectionTreeTest(LibraryDatabaseTest):
 
     """Both walks over the collection tree ask the database once.
 
@@ -735,10 +1385,7 @@ class CollectionTreeTest(unittest.TestCase):
     """
 
     def setUp(self):
-        fp, self.db = tempfile.mkstemp('.db', 'mcomix-test')
-        os.close(fp)
-        self._saved_path = constants.LIBRARY_DATABASE_PATH
-        constants.LIBRARY_DATABASE_PATH = self.db
+        super().setUp()
         self.library = backend.LibraryBackend()
         # Three levels branching two, so that a walk of the subtree
         # reaches 14 collections over depths a single query cannot be
@@ -759,9 +1406,7 @@ class CollectionTreeTest(unittest.TestCase):
 
     def tearDown(self):
         self.library.close()
-        backend._backend = None
-        constants.LIBRARY_DATABASE_PATH = self._saved_path
-        os.unlink(self.db)
+        super().tearDown()
 
     def _counted(self, call):
         """Run <call> and return what it answered with the statements it
@@ -801,7 +1446,7 @@ class CollectionTreeTest(unittest.TestCase):
         self.assertEqual(1, len(statements), statements)
 
 
-class AddBookStatementTest(unittest.TestCase):
+class AddBookStatementTest(LibraryDatabaseTest):
 
     """add_book() describes to the listeners the book it just built.
 
@@ -811,10 +1456,7 @@ class AddBookStatementTest(unittest.TestCase):
     """
 
     def setUp(self):
-        fp, self.db = tempfile.mkstemp('.db', 'mcomix-test')
-        os.close(fp)
-        self._saved_path = constants.LIBRARY_DATABASE_PATH
-        constants.LIBRARY_DATABASE_PATH = self.db
+        super().setUp()
         self.backend = backend.LibraryBackend()
         self.collection = self.backend.add_collection('files')
         self.path = get_testfile_path('archives', '01-ZIP-Normal.zip')
@@ -824,9 +1466,7 @@ class AddBookStatementTest(unittest.TestCase):
 
     def tearDown(self):
         self.backend.close()
-        backend._backend = None
-        constants.LIBRARY_DATABASE_PATH = self._saved_path
-        os.unlink(self.db)
+        super().tearDown()
 
     def _book_filed(self, book, collection):
         self.seen.append((book, collection))
@@ -889,15 +1529,12 @@ class AddBookStatementTest(unittest.TestCase):
                          [added.added for added in self.reported])
 
 
-class CollectionTreeQueryTest(unittest.TestCase):
+class CollectionTreeQueryTest(LibraryDatabaseTest):
 
     """get_collection_tree() answers with the whole hierarchy at once."""
 
     def setUp(self):
-        fp, self.db = tempfile.mkstemp('.db', 'mcomix-test')
-        os.close(fp)
-        self._saved_path = constants.LIBRARY_DATABASE_PATH
-        constants.LIBRARY_DATABASE_PATH = self.db
+        super().setUp()
         self.library = backend.LibraryBackend()
         self.comics = self.library.add_collection('Comics')
         self.manga = self.library.add_collection('Manga')
@@ -906,9 +1543,7 @@ class CollectionTreeQueryTest(unittest.TestCase):
 
     def tearDown(self):
         self.library.close()
-        backend._backend = None
-        constants.LIBRARY_DATABASE_PATH = self._saved_path
-        os.unlink(self.db)
+        super().tearDown()
 
     def test_the_collections_are_grouped_by_the_one_above_them(self):
         self.assertEqual(

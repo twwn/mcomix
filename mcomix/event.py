@@ -32,7 +32,7 @@ class EventHandler:
 
         #: For scrolling "off the page".
         self._extra_scroll_events = 0
-        #: If True, increment _extra_scroll_events before switchting pages
+        #: If True, increment _extra_scroll_events before switching pages
         self._scroll_protection = False
 
     def register_controllers(self, window: 'main.MainWindow',
@@ -94,17 +94,27 @@ class EventHandler:
 
     def window_state_event(self, window: 'main.MainWindow',
                            _parameter: object) -> None:
+        """Handle the window having filled the screen, or stopped.
+
+        Both notify::fullscreened and notify::maximized arrive here, and
+        whichever of the two the compositor sends first does the work:
+        everything below turns on the fullscreen state, which the other
+        notification then finds already dealt with.  A maximize on its own
+        reaches this and does nothing, since the size change is the
+        canvas' to report through resize_event().
+
+        Which toggle widgets are usable depends on the fullscreen state,
+        through the "hide all in fullscreen" preference, so they are asked
+        again here.  Going back to a window redraws only where the size it
+        is given is the size it already had, because otherwise the resize
+        that follows does it.
+        """
         is_fullscreen = self._window.is_fullscreen()
         if self._window.was_fullscreen != is_fullscreen:
-            # Fullscreen state changed.
             self._window.was_fullscreen = is_fullscreen
-            # Re-enable control, now that transition is complete.
-            toggleaction = self._window.actiongroup.get_action('fullscreen')
-            toggleaction.set_sensitive(True)
             if is_fullscreen:
                 redraw = True
             else:
-                # Only redraw if we don't need to restore geometry.
                 redraw = not self._window.restore_window_geometry()
             self._window._update_toggles_sensitivity()
             if redraw:
@@ -471,15 +481,17 @@ class EventHandler:
                            Gdk.ModifierType.ALT_MASK)
 
         # Gdk.Keymap is gone in GTK4; the display translates a key, and
-        # the controller knows which layout it was typed in.
-        code = self._window.get_display().translate_key(
+        # the controller knows which layout it was typed in.  'consumed'
+        # is the modifiers that were needed to type the key, which are
+        # not part of the accelerator it stands for: on a German layout
+        # an underscore is typed with Shift, so Shift+minus is not
+        # Shift+underscore.  The group and level the translation landed
+        # in are of no interest here.
+        translated, accel_keyval, _group, _level, consumed = \
+            self._window.get_display().translate_key(
                 keycode, state, controller.get_group())
 
-        if code[0]:
-            accel_keyval = code[1]
-            # 'consumed' is the modifier that was necessary to type the key
-            consumed = code[4]
-
+        if translated:
             if state & Gdk.ModifierType.SHIFT_MASK:
                 # If the resulting key is upper case (i.e. SHIFT + key),
                 # convert it to lower case and remove SHIFT from the consumed flags
@@ -518,52 +530,45 @@ class EventHandler:
 
     def scroll_wheel_event(self, controller: Gtk.EventControllerScroll,
                            delta_x: float, delta_y: float) -> bool:
-        """Handle scroll wheel events on the main layout area. The scroll
-        wheel flips pages in best fit mode and scrolls the scrollbars
-        otherwise.
+        """Handle a turn of the scroll wheel over the page area.
+
+        A scroll controller says how far and along which axis, not which
+        way: there is no Gdk.ScrollDirection to ask it for, and the sign
+        of the delta is what carries the direction.  Down the page scrolls
+        and turns the page where there is nothing left to scroll;
+        sideways turns a page outright, since nothing scrolls horizontally
+        past the end of one.  A wheel that reports both axes at once is
+        taken as the vertical one, because reading a diagonal nudge as a
+        page turn would jump the book about.
+
+        The middle button is the magnifying lens, and the wheel belongs to
+        whatever is under it while the lens is up.
         """
-        # A scroll controller reports how far, not which way: GTK4 has
-        # no scroll direction to ask for.
         state = controller.get_current_event_state()
         if state & Gdk.ModifierType.BUTTON2_MASK:
             return Gdk.EVENT_PROPAGATE
 
-        direction = None
-        if delta_y < 0:
-            direction = Gdk.ScrollDirection.UP
-        elif delta_y > 0:
-            direction = Gdk.ScrollDirection.DOWN
-        elif delta_x < 0:
-            direction = Gdk.ScrollDirection.LEFT
-        elif delta_x > 0:
-            direction = Gdk.ScrollDirection.RIGHT
-
         self._scroll_protection = True
+        pixels = prefs['number of pixels to scroll per mouse wheel event']
 
-        if direction == Gdk.ScrollDirection.UP:
+        if delta_y:
+            down = delta_y > 0
             if state & Gdk.ModifierType.CONTROL_MASK:
-                self._window.manual_zoom_in()
+                if down:
+                    self._window.manual_zoom_out()
+                else:
+                    self._window.manual_zoom_in()
             elif prefs['smart scroll']:
-                self._smart_scroll_up(prefs['number of pixels to scroll per mouse wheel event'])
+                if down:
+                    self._smart_scroll_down(pixels)
+                else:
+                    self._smart_scroll_up(pixels)
             else:
-                self._scroll_with_flipping(0, -prefs['number of pixels to scroll per mouse wheel event'])
+                self._scroll_with_flipping(0, pixels if down else -pixels)
 
-        elif direction == Gdk.ScrollDirection.DOWN:
-            if state & Gdk.ModifierType.CONTROL_MASK:
-                self._window.manual_zoom_out()
-            elif prefs['smart scroll']:
-                self._smart_scroll_down(prefs['number of pixels to scroll per mouse wheel event'])
-            else:
-                self._scroll_with_flipping(0, prefs['number of pixels to scroll per mouse wheel event'])
-
-        elif direction in (Gdk.ScrollDirection.RIGHT,
-                           Gdk.ScrollDirection.LEFT):
-            # Sideways is a page either way, since nothing scrolls
-            # horizontally past the end of a page.  Which way round
-            # depends on how the book reads.
-            forwards = (direction == Gdk.ScrollDirection.RIGHT) \
-                != self._window.is_manga_mode
-            if forwards:
+        elif delta_x:
+            # Which way round a sideways turn reads depends on the book.
+            if (delta_x > 0) != self._window.is_manga_mode:
                 self._next_page_with_protection()
             else:
                 self._previous_page_with_protection()
@@ -572,7 +577,14 @@ class EventHandler:
 
     def mouse_press_event(self, gesture: Gtk.GestureClick, n_press: int,
                           x: float, y: float) -> None:
-        """Handle mouse click events on the main layout area."""
+        """Handle a mouse button going down over the page area.
+
+        Only the buttons a click gesture can be handed reach this: GDK
+        turns X11 buttons 4 and 5 into scroll events and never reports
+        them as presses, so scroll_wheel_event() is where the wheel is
+        answered.  A mouse with thumb buttons reports those as 8 and 9,
+        which do arrive here and which MComix binds nothing to.
+        """
 
         if self._window.was_out_of_focus:
             return
@@ -605,9 +617,6 @@ class EventHandler:
             # the popup is parented anyway.
             over = gesture.get_widget() or self._window
             widgets.popup_at(self._window.popup, over, x, y)
-
-        elif button == 4:
-            self._window.show_info_panel()
 
     def mouse_release_event(self, gesture: Gtk.GestureClick, n_press: int,
                             x: float, y: float) -> None:

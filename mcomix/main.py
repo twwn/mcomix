@@ -911,13 +911,12 @@ class MainWindow(Gtk.Window):
     def change_fullscreen(self, toggleaction: "ui.Action") -> None:
         """Fill the screen, or go back to a window.
 
-        The size the window had is saved on the way in, since that is
-        the size it goes back to, and the menu item is insensitive until
-        the window state event says the change has happened - a second
-        toggle in between would ask for the state that is already on its
-        way.  Nothing is redrawn here: the resize does that.
+        The size the window had is saved on the way in, since that is the
+        size it goes back to; save_window_geometry() is what makes sure a
+        second toggle arriving before the first has taken effect does not
+        record the screen instead.  Nothing is redrawn here: the resize
+        does that.
         """
-        toggleaction.set_sensitive(False)
         if toggleaction.get_active():
             if self.previous_size != (None, None):
                 self.save_window_geometry()
@@ -1731,7 +1730,18 @@ class MainWindow(Gtk.Window):
         return (default_width, default_height)
 
     def save_window_geometry(self) -> None:
-        """Remember how large the window is, for the next start."""
+        """Remember how large the window is, for the next start.
+
+        A window that is filling the screen is not saved: this size is
+        what the next start is given and what leaving fullscreen goes
+        back to, so recording the screen would make fullscreen permanent.
+        Both callers can reach this with a fullscreen window - quitting
+        out of fullscreen, and a fullscreen toggle arriving before the
+        one before it has taken effect - so the guard is here rather than
+        at each of them.
+        """
+        if self.is_fullscreen():
+            return
         width, height = self.get_window_size()
         prefs['window width'] = width
         prefs['window height'] = height
@@ -1763,8 +1773,7 @@ class MainWindow(Gtk.Window):
 
     def close_program(self, *args: object) -> None:
         """Quit, keeping the window size unless it is a fullscreen one."""
-        if not self.is_fullscreen():
-            self.save_window_geometry()
+        self.save_window_geometry()
         self.terminate_program()
 
     def terminate_program(self) -> None:

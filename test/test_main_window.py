@@ -4,6 +4,7 @@ Most of the suite exercises pieces in isolation; nothing else builds the
 real window, which is where a whole class of start-up regressions hides.
 """
 
+import contextlib
 import os
 import shutil
 import threading
@@ -315,6 +316,50 @@ class MainWindowTest(MComixTest):
         self.assertFalse(self.window.enhancer.invert_color)
         self.assertFalse(prefs['invert color'])
 
+    def test_asking_for_fullscreen_leaves_the_menu_item_usable(self):
+        """change_fullscreen() used to make the item insensitive and rely
+        on notify::fullscreened to put it back.  Nothing else re-enables
+        it - 'fullscreen' is not one of the toggle actions
+        _update_toggles_sensitivity() walks - so wherever the request is
+        not granted, the item stayed greyed out for the rest of the
+        session.  Under a bare X server with no window manager, which is
+        what this suite runs on, the property never changes and the
+        notification never arrives at all."""
+        action = self.window.actiongroup.get_action('fullscreen')
+        self.assertTrue(action.get_sensitive(),
+                        'the item was not usable to begin with')
+
+        action.set_active(True)
+        self._pump()
+
+        self.assertTrue(action.get_sensitive(),
+                        'asking for fullscreen greyed the item out for good')
+
+    def test_the_size_to_go_back_to_is_never_a_fullscreen_one(self):
+        """The saved size is what the window is given at the next start
+        and what leaving fullscreen restores, so recording the screen it
+        was filling would make fullscreen permanent.  close_program()
+        knew that and asked; save_window_geometry() now knows it itself,
+        for every caller."""
+        # A size no window can really be, so that the assertion cannot
+        # pass by happening to match the window this test was given.
+        prefs['window width'] = -1
+        prefs['window height'] = -1
+        with unittest.mock.patch.object(type(self.window), 'is_fullscreen',
+                                        return_value=True):
+            self.window.save_window_geometry()
+
+        self.assertEqual((-1, -1),
+                         (prefs['window width'], prefs['window height']))
+
+    def test_the_size_is_saved_when_the_window_is_not_fullscreen(self):
+        prefs['window width'] = -1
+        prefs['window height'] = -1
+        self.window.save_window_geometry()
+
+        self.assertEqual(self.window.get_window_size(),
+                         (prefs['window width'], prefs['window height']))
+
     def test_showing_a_toggle_as_on_does_not_run_it(self):
         """What the start-up sync needs: the tick moves, the colours
         are left alone because they are already what it says."""
@@ -513,6 +558,84 @@ class MainWindowTest(MComixTest):
         self.assertEqual(self.window.imagehandler.get_current_page(), 1)
         self._wheel(-1, 0)
         self.assertEqual(self.window.imagehandler.get_current_page(), 1)
+
+    #: What scroll_wheel_event() can dispatch to, and so what the tests
+    #: below watch for.  Asserted by name rather than by what the page
+    #: does, because whether a page can be scrolled at all depends on the
+    #: room the window was allocated, which varies between runs.
+    _WHEEL_TARGETS = ('_scroll_with_flipping', '_smart_scroll_up',
+                      '_smart_scroll_down', '_next_page_with_protection',
+                      '_previous_page_with_protection')
+
+    def _wheel_dispatch(self, delta_x, delta_y, state=0):
+        """Return what one wheel turn reached, as (name, args) pairs."""
+        handler = self.window._event_handler
+        reached = []
+        with contextlib.ExitStack() as patches:
+            for name in self._WHEEL_TARGETS:
+                patches.enter_context(unittest.mock.patch.object(
+                    handler, name,
+                    side_effect=lambda *args, _name=name: reached.append(
+                        (_name, args)) or False))
+            for name in ('manual_zoom_in', 'manual_zoom_out'):
+                patches.enter_context(unittest.mock.patch.object(
+                    self.window, name,
+                    side_effect=lambda _name=name: reached.append((_name, ()))))
+            handler.scroll_wheel_event(self._Scroll(state), delta_x, delta_y)
+        return reached
+
+    def test_the_wheel_scrolls_the_page_and_turns_it_at_the_end(self):
+        prefs['smart scroll'] = False
+        pixels = prefs['number of pixels to scroll per mouse wheel event']
+        self.assertEqual([('_scroll_with_flipping', (0, pixels))],
+                         self._wheel_dispatch(0, 1))
+        self.assertEqual([('_scroll_with_flipping', (0, -pixels))],
+                         self._wheel_dispatch(0, -1))
+
+    def test_the_wheel_scrolls_smartly_when_the_preference_says_so(self):
+        prefs['smart scroll'] = True
+        pixels = prefs['number of pixels to scroll per mouse wheel event']
+        self.assertEqual([('_smart_scroll_down', (pixels,))],
+                         self._wheel_dispatch(0, 1))
+        self.assertEqual([('_smart_scroll_up', (pixels,))],
+                         self._wheel_dispatch(0, -1))
+
+    def test_control_and_the_wheel_zooms_rather_than_scrolling(self):
+        for smart in (False, True):
+            prefs['smart scroll'] = smart
+            self.assertEqual(
+                [('manual_zoom_out', ())],
+                self._wheel_dispatch(0, 1, Gdk.ModifierType.CONTROL_MASK))
+            self.assertEqual(
+                [('manual_zoom_in', ())],
+                self._wheel_dispatch(0, -1, Gdk.ModifierType.CONTROL_MASK))
+
+    def test_a_sideways_turn_is_a_page_either_way(self):
+        """Nothing scrolls horizontally past the end of a page, so
+        sideways never scrolls; which way round it reads depends on the
+        book."""
+        for manga, rightwards in ((False, '_next_page_with_protection'),
+                                  (True, '_previous_page_with_protection')):
+            self.window.is_manga_mode = manga
+            self.assertEqual([(rightwards, ())], self._wheel_dispatch(1, 0))
+
+    def test_a_diagonal_turn_is_read_as_a_vertical_one(self):
+        """A wheel reporting both axes at once is the vertical one:
+        sideways turns a page outright, so reading a diagonal nudge that
+        way would jump the book about."""
+        prefs['smart scroll'] = False
+        pixels = prefs['number of pixels to scroll per mouse wheel event']
+        self.assertEqual([('_scroll_with_flipping', (0, pixels))],
+                         self._wheel_dispatch(1, 1))
+
+    def test_a_wheel_event_that_reports_no_movement_does_nothing(self):
+        self.assertEqual([], self._wheel_dispatch(0, 0))
+
+    def test_the_wheel_is_left_alone_while_the_lens_is_held(self):
+        """The middle button shows the magnifying lens, and the wheel
+        belongs to whatever is under it then."""
+        self.assertEqual(
+            [], self._wheel_dispatch(0, 1, Gdk.ModifierType.BUTTON2_MASK))
 
     def test_a_sideways_wheel_turn_reads_the_other_way_in_manga_mode(self):
         self._ready()
