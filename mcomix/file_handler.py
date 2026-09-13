@@ -182,9 +182,6 @@ class FileHandler:
         self._current_file = os.path.abspath(path)
         self._stop_waiting = False
 
-        image_files: list[str] = []
-        current_image_index = 0
-
         # Actually open the file(s)/archive passed in path.
         if self.archive_type is not None:
             try:
@@ -196,9 +193,8 @@ class FileHandler:
                 return False
             self.file_loading = True
         else:
-            image_files, current_image_index = \
-                self._open_image_files(self.filelist, self._current_file)
-            self._archive_opened(image_files)
+            self._open_image_files()
+            self._archive_opened(self.filelist)
 
         return True
 
@@ -290,6 +286,18 @@ class FileHandler:
                 self._file_provider = None
             self.update_last_read_page()
             if self.archive_type is not None:
+                # Wake whatever is parked in _wait_on_file() before the
+                # extractor stops.  The only notify_all() there is fires
+                # when a file finishes extracting, and after this no
+                # file will, so a waiter that is not woken here waits
+                # for good - on a condition the next archive replaces.
+                # The flag is set under the lock as well, or a waiter
+                # that has just tested it and not yet parked would miss
+                # the wake-up.  cleanup() below joins the caching
+                # thread, which is one of the two that park there.
+                with self._archive_condition:
+                    self._stop_waiting = True
+                    self._archive_condition.notify_all()
                 self._extractor.close()
             self._window.imagehandler.cleanup()
             self.file_loaded = False
@@ -329,11 +337,11 @@ class FileHandler:
         a single name that is neither a file nor a directory.
         """
 
-        if isinstance(path, list) and len(path) == 0:
+        if isinstance(path, list) and not path:
             # This is a programming error and does not need translation.
             assert False, "Tried to open an empty list of files."
 
-        elif isinstance(path, list) and len(path) > 0:
+        elif isinstance(path, list) and path:
             # A list of files was passed - open only these files.
             if self._file_provider is None or not keep_fileprovider:
                 self._file_provider = file_provider.get_file_provider(path)
@@ -499,24 +507,17 @@ class FileHandler:
                                                    'time': read_date.time().strftime("%X"), 'page': last_read_page})
         dialog.run_async(lambda response: on_answer(response == Response.YES))
 
-    def _open_image_files(self, filelist: list[str],
-                          image_path: str) -> tuple[list[str], int]:
-        """Return <filelist> and where <image_path> sits in it.
+    def _open_image_files(self) -> None:
+        """Note the directory the loose image files sit in.
 
-        Nothing is opened here, since loose image files are already
-        there; the work is noting the directory they are in as the base
-        path.  An <image_path> that is not among them answers with the
-        first file instead.
+        The counterpart of _open_archive() for a book that is a
+        directory of images, which needs no opening: they are already
+        there, and what the rest of the handler wants is the base path.
+        Which of them to show is worked out by _archive_opened(), the
+        same way for both kinds of book.
         """
 
         self._base_path = self._opened_provider.get_directory()
-
-        if image_path in filelist:
-            current_image_index = filelist.index(image_path)
-        else:
-            current_image_index = 0
-
-        return filelist, current_image_index
 
     def get_file_number(self) -> tuple[int, int]:
         if self.archive_type is None:
@@ -652,7 +653,7 @@ class FileHandler:
 
         files = self._file_provider.list_files(listmode)
         self._close()
-        if len(files) > 0:
+        if files:
             path = files[0]
         else:
             path = self._file_provider.get_directory()
@@ -680,7 +681,7 @@ class FileHandler:
 
         files = self._file_provider.list_files(listmode)
         self._close()
-        if len(files) > 0:
+        if files:
             path = files[prefs['open first file in prev directory']-1]
         else:
             path = self._file_provider.get_directory()
@@ -816,20 +817,14 @@ class FileHandler:
         fileinfo = None
 
         if os.path.isfile(constants.FILEINFO_PICKLE_PATH):
-            config = None
             try:
-                config = open(constants.FILEINFO_PICKLE_PATH, 'rb')
-
-                fileinfo = pickle.load(config)
-
-                config.close()
-
+                with open(constants.FILEINFO_PICKLE_PATH, 'rb') as config:
+                    fileinfo = pickle.load(config)
             except Exception as ex:
-                log.error(_('! Corrupt preferences file "%s", deleting...'),
+                log.error(_('! Corrupt file "%s", deleting it; the last file '
+                            'read will not be reopened.'),
                           constants.FILEINFO_PICKLE_PATH)
                 log.info('Error was: %s', ex)
-                if config is not None:
-                    config.close()
                 os.remove(constants.FILEINFO_PICKLE_PATH)
 
         if not (isinstance(fileinfo, (list, tuple)) and len(fileinfo) == 2

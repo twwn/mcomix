@@ -129,6 +129,9 @@ class PageCanvas(Gtk.Widget):
         snapshot.translate(Graphene.Point().init(
             -float(self._hadjustment.get_value()),
             -float(self._vadjustment.get_value())))
+        # A copy: an overlay's own drawing function may take itself
+        # off the canvas, and removing one while iterating the dict it
+        # is in raises.
         for draw in list(self._overlays.values()):
             draw(snapshot)
         snapshot.restore()

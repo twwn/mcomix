@@ -1,4 +1,11 @@
-"""library_main_dialog.py - The library dialog window."""
+"""main_dialog.py - The library window itself.
+
+The window that holds the other three areas of the library - the
+collection tree, the grid of covers and the control strip - in a grid,
+and owns the backend they all read through.  It is also what adds books
+to the library, through the progress dialog, and what opens one in the
+main window.
+"""
 
 import os
 from gi.repository import Gdk, Gio, Gtk
@@ -28,8 +35,10 @@ _dialog: "_LibraryDialog | None" = None
 
 class _LibraryDialog(Gtk.Window):
 
-    """The library window. Automatically creates and uses a new
-    library_backend.LibraryBackend when opened.
+    """The library window, and the backend the areas in it read through.
+
+    Opening one opens the library database: LibraryBackend() hands out
+    the one connection there is, and close() closes it again.
     """
 
     def __init__(self, window: "main.MainWindow",
@@ -84,7 +93,12 @@ class _LibraryDialog(Gtk.Window):
 
     def open_book(self, books: Sequence[int],
                   keep_library_open: bool = False) -> None:
-        """Open the book with ID <book>."""
+        """Open the books whose ids are in <books>, in the main window.
+
+        More than one is opened as a book of its own pages, in the order
+        given.  The library window hides itself unless
+        <keep_library_open> says otherwise.
+        """
 
         # get_book_path() answers None for a book that is no longer in
         # the library, which is nothing to hand the file handler.
@@ -104,7 +118,7 @@ class _LibraryDialog(Gtk.Window):
     def scan_for_new_files(self) -> None:
         """ Start scanning for new files from the watch list. """
 
-        if len(self.backend.watchlist.get_watchlist()) > 0:
+        if self.backend.watchlist.get_watchlist():
             self.set_status_message(_("Scanning for new books..."))
             self.backend.watchlist.scan_for_new_files()
 
@@ -112,7 +126,7 @@ class _LibraryDialog(Gtk.Window):
                          watchentry: "backend_types._WatchListEntry") -> None:
         """ Called after the scan for new files finished. """
 
-        if len(filelist) > 0:
+        if filelist:
             # A watch list entry that has been removed keeps its
             # directory but no longer names a collection.
             collection = watchentry.collection
@@ -167,16 +181,15 @@ class _LibraryDialog(Gtk.Window):
         else:
             collection = self.backend.get_collection_by_name(collection_name)
 
-            if collection is None:  # Collection by that name doesn't exist.
-                self.backend.add_collection(collection_name)
-                collection = self.backend.get_collection_by_name(
-                    collection_name)
+            if collection is not None:
+                collection_id = collection.id
+            else:
+                # Collection by that name doesn't exist.  add_collection()
+                # answers None if it could not add one either, and the
+                # books then go into no collection rather than nowhere.
+                collection_id = self.backend.add_collection(collection_name)
 
-            # add_collection() reports a failure by returning False, and
-            # the books then go into no collection rather than nowhere.
-            collection_id = collection.id if collection is not None else None
-
-        library_add_progress_dialog._AddLibraryProgressDialog(self, self._window, paths, collection_id)
+        library_add_progress_dialog._AddLibraryProgressDialog(self, paths, collection_id)
 
         if collection_id is not None:
             prefs['last library collection'] = collection_id

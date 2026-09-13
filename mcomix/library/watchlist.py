@@ -1,4 +1,13 @@
-""" Library watch list dialog. """
+"""watchlist.py - The dialog for the directories the library watches.
+
+A list of the watched directories, one row each, with the collection
+what turns up there is filed in and whether subdirectories are walked
+as well.  Both of those are edited in place and write straight to the
+watchlist table, and the Remove button follows the selection.  The
+checkbox below them is the "scan on startup" preference, and Scan now
+starts by hand the same search that preference runs when the library
+opens - as does closing the dialog after a change.
+"""
 
 import os
 from gi.repository import Gio, Gtk, GLib

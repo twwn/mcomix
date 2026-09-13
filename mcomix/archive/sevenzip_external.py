@@ -84,9 +84,16 @@ class SevenZipArchive(archive_base.ExternalExecutableArchive):
         return args
 
     def _parse_list_output_line(self, line: str) -> str | None:
-        """ Start parsing after the first delimiter (bunch of - characters),
-        and end when delimiters appear again. Format:
-        Date <space> Time <space> Attr <space> Size <space> Compressed <space> Name"""
+        """Read one line of 7z's listing, and return a name or None.
+
+        The listing is asked for with -slt, so an entry is several
+        "Key = value" lines rather than a row of columns; the name comes
+        back on the "Path = " line and the size, which decides whether
+        the entry is a file or a directory, on the "Size = " line after
+        it.  A run of dashes separates the header from the entries and
+        the entries from the footer, which is what the parser's three
+        states are.
+        """
 
         if line.startswith('----------'):
             if self._state == self.STATE_HEADER:
@@ -184,7 +191,7 @@ class SevenZipArchive(archive_base.ExternalExecutableArchive):
                     stdout=output, stderr=subprocess.PIPE,
                     creationflags=process._get_creationflags())
 
-                if len(proc.stderr) > 0:
+                if proc.stderr:
                     log.error(_("Extraction of %(archivefile)s might have failed: %(error)s"),
                               {'archivefile': filename, 'error': proc.stderr.decode('utf-8')})
             finally:

@@ -189,7 +189,7 @@ class _BookmarksStore:
 
     def is_empty(self) -> bool:
         """Return True if the bookmark list is empty."""
-        return len(self._bookmarks) == 0
+        return not self._bookmarks
 
     def load_bookmarks(self) -> tuple[list[bookmark_menu_item._Bookmark], int]:
         """Read the stored bookmarks, and return them with the file's mtime.
@@ -283,8 +283,8 @@ class _BookmarksStore:
                                      on_response: Callable[[int], None]) -> None:
         """ Present a confirmation dialog to replace old bookmarks.
 
-        Calls <on_response> with RESPONSE_YES to replace the bookmarks,
-        RESPONSE_NO to create a new one alongside them, and anything else
+        Calls <on_response> with Response.YES to replace the bookmarks,
+        Response.NO to create a new one alongside them, and anything else
         to abort creating one at all. """
         dialog = message_dialog.MessageDialog(self._window, modal=True)
         dialog.add_buttons(_('_Yes'), Response.YES,

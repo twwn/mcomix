@@ -438,7 +438,7 @@ class _PreferencesDialog(Dialog):
             self.reset_button.set_label(_('Clear _dialog choices'))
             self.reset_button.set_tooltip_text(
                 _('Clears all dialog choices that you have previously chosen not to be asked again.'))
-            self.reset_button.set_sensitive(len(prefs['stored dialog choices']) > 0)
+            self.reset_button.set_sensitive(bool(prefs['stored dialog choices']))
 
     def _response(self, dialog: Dialog, response: int) -> None:
         if response == Response.CLOSE:

@@ -151,9 +151,9 @@ class LastReadPage:
         # The connection is in auto-commit mode, so without a transaction
         # around them each of the statements below is committed on its
         # own, three per book removed.  _BookArea's two bulk removals
-        # wrap their loops for the same reason.
-        self.backend.begin_transaction()
-        try:
+        # and the library's bulk add wrap their loops for the same
+        # reason.
+        with self.backend.transaction():
             for book in books:
                 self.backend.remove_book(book)
             cursor = self.backend.execute("""DELETE FROM recent""")
@@ -162,11 +162,6 @@ class LastReadPage:
                 """DELETE FROM contain WHERE collection = ?""",
                 (recent_collection,))
             cursor.close()
-        finally:
-            # Leaving the connection in transactional mode would make
-            # every later write wait for an explicit commit that never
-            # comes.
-            self.backend.end_transaction()
 
     def get_page(self, path: str) -> int | None:
         """ The page to carry on from in the book at <path>, or None

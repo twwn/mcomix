@@ -30,11 +30,11 @@ class KeybindingEditorWindow(Gtk.ScrolledWindow):
 
         self.keymanager = keymanager
 
-        accel_column_num = max([
+        accel_column_num = max(
             len(self.keymanager.get_bindings_for_action(action))
-            for action in list(keybindings.BINDING_INFO.keys())
-        ])
-        accel_column_num = self.accel_column_num = max([3, accel_column_num])
+            for action in keybindings.BINDING_INFO
+        )
+        accel_column_num = self.accel_column_num = max(3, accel_column_num)
 
         # The actions of a group sit under a row naming it, which is
         # what a Gtk.TreeStore held and a Gtk.TreeListModel holds now.
@@ -72,7 +72,7 @@ class KeybindingEditorWindow(Gtk.ScrolledWindow):
         """ Initializes the model from data provided by the keybinding
         manager. """
         section_order = list(set(d['group']
-                                 for d in list(keybindings.BINDING_INFO.values())))
+                                 for d in keybindings.BINDING_INFO.values()))
         section_order.sort()
         sections = {}
         rows = []

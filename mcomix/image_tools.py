@@ -136,7 +136,9 @@ def fit_in_rectangle(src: GdkPixbuf.Pixbuf, width: int, height: int,
                      ) -> GdkPixbuf.Pixbuf:
     """Scale (and return) a pixbuf so that it fits in a rectangle with
     dimensions <width> x <height>. A negative <width> or <height>
-    means an unbounded dimension - both cannot be negative.
+    means an unbounded dimension; both at once is a rectangle with no
+    size to fit in, and raises ValueError. A side of zero is one pixel,
+    which is the smallest rectangle there is rather than an error.
 
     If <rotation> is 90, 180 or 270 we rotate <src> first so that the
     rotated pixbuf is fitted in the rectangle.
@@ -155,11 +157,17 @@ def fit_in_rectangle(src: GdkPixbuf.Pixbuf, width: int, height: int,
     # Normalize the angle, so callers can pass e.g. -90 or 450 as well.
     rotation %= 360
 
+    if width < 0 and height < 0:
+        # Unbounded in both directions is not a rectangle.  It used to
+        # bound the width and leave the height, which max() below then
+        # turned into one pixel: a page scaled to a line, quietly.
+        raise ValueError('width and height cannot both be unbounded')
+
     # "Unbounded" really means "bounded to RENDER_SIZE_LIMIT" - for simplicity.
     # MComix would probably choke on larger images anyway.
     if width < 0:
         width = constants.RENDER_SIZE_LIMIT
-    elif height < 0:
+    if height < 0:
         height = constants.RENDER_SIZE_LIMIT
     width = max(width, 1)
     height = max(height, 1)
@@ -786,8 +794,7 @@ def get_image_header(path: str) -> tuple[str, tuple[int, int]]:
                 return image.format, image.size
     except Exception:
         pass
-    image_format, image_dimensions, _providers = get_image_info(path)
-    return image_format, image_dimensions
+    return get_image_info(path)
 
 
 def get_image_size(path: str) -> tuple[int, int]:
@@ -899,25 +906,23 @@ def get_composite_color_args(variant: int) -> tuple[int, int, int]:
     return ((8, 0x777777, 0x999999), (1024, 0xFFFFFF, 0xFFFFFF))[variant]
 
 
-def get_image_info(path: str) -> tuple[str, tuple[int, int], tuple[int, ...]]:
-    """The format and size of the image at <path>, and how to load it.
+def get_image_info(path: str) -> tuple[str, tuple[int, int]]:
+    """The format and size of the image at <path>, as gdk-pixbuf sees it.
 
-    The answer is (format, (width, height), providers).  gdk-pixbuf is
-    asked first, and PIL only about a file gdk-pixbuf cannot name;
-    whichever of the two recognised the file comes first in providers.
-    A file neither of them knows is an "Unknown filetype" of (0, 0),
-    with both providers offered anyway, so that a loader raises about
-    it rather than the caller having to invent an error.
+    The answer is (format, (width, height)).  gdk-pixbuf is asked first,
+    and PIL only about a file gdk-pixbuf cannot name; a file neither of
+    them knows is an "Unknown filetype" of (0, 0), which the loaders
+    read as "try anyway", so that one of them raises about the file
+    rather than the caller having to invent an error.
 
-    Nothing reads the provider order any more - the loaders in this
-    module try gdk-pixbuf and then PIL whatever it says - and asking
-    here costs a gdk-pixbuf header query, which is as expensive as
-    decoding the image where its loaders run sandboxed.  For the format
-    and the size alone, call get_image_header().
+    Asking gdk-pixbuf costs a header query, which is as expensive as
+    decoding the image where its loaders run sandboxed.  Every caller
+    but get_image_header() has been moved off this for that reason, and
+    a new one wants get_image_header() too: it reads the same answer
+    with PIL and falls back here only for a file PIL cannot identify.
     """
     image_format: str | None = None
     image_dimensions: tuple[int, int] | None = None
-    providers: tuple[int, ...] = ()
     try:
         gdk_image_info = GdkPixbuf.Pixbuf.get_file_info(path)
     except Exception:
@@ -930,15 +935,11 @@ def get_image_info(path: str) -> tuple[str, tuple[int, int], tuple[int, ...]]:
     if gdk_image_info is not None and gdk_name is not None:
         image_format = gdk_name.upper()
         image_dimensions = gdk_image_info[1], gdk_image_info[2]
-        # Prefer loading via GDK/Pixbuf if Gdk.pixbuf_get_file_info appears
-        # to be able to handle this path.
-        providers = (constants.IMAGEIO_GDKPIXBUF, constants.IMAGEIO_PIL)
     else:
         try:
             im = Image.open(path)
             image_format = im.format
             image_dimensions = im.size
-            providers = (constants.IMAGEIO_PIL, constants.IMAGEIO_GDKPIXBUF)
         except IOError:
             # If the file cannot be found, or the image
             # cannot be opened and identified.
@@ -946,11 +947,7 @@ def get_image_info(path: str) -> tuple[str, tuple[int, int], tuple[int, ...]]:
     if image_format is None or image_dimensions is None:
         image_format = _('Unknown filetype')
         image_dimensions = (0, 0)
-        # Nothing could identify the file, but let the loaders try anyway,
-        # so that they raise a meaningful error rather than the caller
-        # having to make one up.
-        providers = (constants.IMAGEIO_GDKPIXBUF, constants.IMAGEIO_PIL)
-    return (image_format, image_dimensions, providers)
+    return (image_format, image_dimensions)
 
 
 @functools.cache
@@ -972,18 +969,18 @@ def get_supported_formats() -> dict[str, tuple[set[str], set[str]]]:
         'PPM': (['image/x-portable-pixmap'], []),
         'TGA': (['image/x-tga'], []),
     }
-    for name, mime in list(Image.MIME.items()):
+    for name, mime in Image.MIME.items():
         mime_types, extensions = supported_formats_pil.get(name, ([], []))
         supported_formats_pil[name] = mime_types + [mime], extensions
-    for ext, name in list(Image.EXTENSION.items()):
+    for ext, name in Image.EXTENSION.items():
         assert ext[0] == '.'
         mime_types, extensions = supported_formats_pil.get(name, ([], []))
         supported_formats_pil[name] = mime_types, extensions + [ext[1:]]
     # Remove formats with no mime type or extension.
-    for name in list(supported_formats_pil.keys()):
-        mime_types, extensions = supported_formats_pil[name]
-        if not mime_types or not extensions:
-            del supported_formats_pil[name]
+    supported_formats_pil = {
+        name: (mime_types, extensions)
+        for name, (mime_types, extensions) in supported_formats_pil.items()
+        if mime_types and extensions}
     # Remove archives/videos formats.
     for name in (
         'MPEG',
@@ -1013,13 +1010,12 @@ def get_supported_formats() -> dict[str, tuple[set[str], set[str]]]:
     # Step 3: merge format collections
     supported_formats: dict[str, tuple[set[str], set[str]]] = {}
     for provider in (supported_formats_gdk, supported_formats_pil):
-        for name in list(provider.keys()):
-            mime_types, extentions = provider[name]
+        for name, (mime_types, extensions) in provider.items():
             new_name = name.upper()
             new_mime_types, new_extensions = supported_formats.get(
                 new_name, (set(), set()))
-            new_mime_types.update([x.lower() for x in mime_types])
-            new_extensions.update([x.lower() for x in extentions])
+            new_mime_types.update(x.lower() for x in mime_types)
+            new_extensions.update(x.lower() for x in extensions)
             supported_formats[new_name] = (new_mime_types, new_extensions)
 
     return supported_formats

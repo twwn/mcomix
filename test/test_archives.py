@@ -175,11 +175,10 @@ class ArchiveFormatTest:
         if cls.skip is not None:
             raise unittest.SkipTest(cls.skip)
         cls.archive_path = '%s.%s' % (get_testfile_path('archives', cls.archive), cls.format)
-        cls.archive_contents = dict([
-            (archive_name, filename)
-            for name, archive_name, filename
-            in cls.contents
-        ])
+        cls.archive_contents = {
+            archive_name: filename
+            for name, archive_name, filename in cls.contents
+        }
         # Put back by tearDownClass: this is a module level function, so
         # leaving it replaced would follow every later test.
         archive_password.ask_for_password = cls._ask_password
@@ -505,11 +504,9 @@ class RecursiveArchiveFormatRedAndBluesTest(RecursiveArchiveFormatTest):
             skip = 'archive is missing: %s' % cls.archive_path
         if skip is not None:
             raise unittest.SkipTest(skip)
-        cls.archive_contents = dict([
-            (archive_name.replace('/', os.sep),
-             get_testfile_path(filename))
-            for archive_name, filename in
-            cls.contents])
+        cls.archive_contents = {
+            archive_name.replace('/', os.sep): get_testfile_path(filename)
+            for archive_name, filename in cls.contents}
 
 
 class RecursiveArchiveFormatTarRedAndBluesTest(RecursiveArchiveFormatRedAndBluesTest, MComixTest):

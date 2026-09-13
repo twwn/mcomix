@@ -195,14 +195,6 @@ class MainWindow(Gtk.Window):
         else:
             zoom_action = zoom_actions[constants.ZoomMode(prefs['zoom mode'])]
 
-        if zoom_action == 'fit_manual_mode':
-            # This little ugly hack is to get the activate call on
-            # 'fit_manual_mode' to actually create an event (and callback).
-            # Since manual mode is the default selected radio button action
-            # it won't send an event if we activate it when it is already
-            # the selected one.
-            self.actiongroup.get_action('best_fit_mode').activate()
-
         self.actiongroup.get_action(zoom_action).activate()
 
         if prefs['stretch']:

@@ -73,7 +73,7 @@ class FitzWorker:
             return None
         page = self.doc[page_num]
         images = page.get_images()
-        if len(images) != 1 or len(page.get_text()) > 0:
+        if len(images) != 1 or page.get_text():
             self._complex_doc = True
             self.log.debug("PDF page %d, must render page", page_num + 1)
             return None

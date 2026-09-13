@@ -1,4 +1,12 @@
-"""library_collection_area.py - Comic book library window that displays the collections."""
+"""collection_area.py - The tree of collections in the library window.
+
+The collections of the library as a tree under a bold "All books" row,
+with the popup menu that adds, renames, duplicates, cleans and removes
+one.  Selecting a row is what tells the book area which collection to
+show.  It is also a drop target twice over: for books dragged from the
+book area, and for another collection dragged onto the one it is to sit
+under.
+"""
 
 from xml.sax.saxutils import escape as xmlescape
 from gi.repository import Gdk, Gio, GLib, Gtk
@@ -75,7 +83,6 @@ class _CollectionArea(Gtk.ScrolledWindow):
         # drop target answers for one type.  Preloading is what makes the
         # dragged text readable while it is still only being hovered,
         # which is when the drop has to be accepted or refused.
-        self._acceptable_drop = True
         self._drop_target = Gtk.DropTarget.new(str, Gdk.DragAction.MOVE)
         self._drop_target.set_preload(True)
         self._drop_target.connect('motion', self._drag_motion)
@@ -172,14 +179,15 @@ class _CollectionArea(Gtk.ScrolledWindow):
         corresponding new row also expanded after the call.
         """
 
+        # The whole hierarchy in one statement: the tree is walked here
+        # rather than by a query for the collections under every row and
+        # another for each of their names.
+        tree = self._library.backend.get_collection_tree()
+
         def _rows_under(supercoll: int | None) -> list[column_list.Row]:
-            rows = []
-            for coll in self._library.backend.get_collections_in_collection(
-              supercoll):
-                rows.append(column_list.Row(name=xmlescape(self._collection_name(coll)),
-                                            collection=coll,
-                                            children=_rows_under(coll)))
-            return rows
+            return [column_list.Row(name=xmlescape(name), collection=coll,
+                                    children=_rows_under(coll))
+                    for coll, name in tree.get(supercoll, ())]
 
         expanded_collections = [row.collection
                                 for row in self._list.expanded_rows()]
@@ -232,10 +240,9 @@ class _CollectionArea(Gtk.ScrolledWindow):
         """Create the collection the add dialog asked about."""
         add_dialog.destroy()
         if response == Response.OK and name:
-            collection = (self._library.backend.get_collection_by_name(name)
-                          if self._library.backend.add_collection(name) else None)
+            collection = self._library.backend.add_collection(name)
             if collection is not None:
-                prefs['last library collection'] = collection.id
+                prefs['last library collection'] = collection
                 self._library.collection_area.display_collections()
             else:
                 message = _("Could not add a new collection called '%s'.") % (
@@ -457,11 +464,13 @@ class _CollectionArea(Gtk.ScrolledWindow):
         return True
 
     def _drop_row_at(self, x: float, y: float) -> "tuple[column_list.Row, int] | None":
-        """The row a drop at (<x>, <y>) lands on, and where on it.
+        """The row a drop at (<x>, <y>) lands on, and where on it, or
+        None where the list has no rows at all.
 
-        A Gtk.TreeView answered with the last row and "after" it for a
-        drop below every row, which is what a drop on empty space
-        below the tree means.
+        The list itself answers for a point that is on a row.  A point
+        below every row is the empty space under the tree, which counts
+        as after the last row, so that a collection dragged there is put
+        at the root rather than nowhere.
         """
         drop = self._list.drop_at(x, y)
         if drop is not None:
@@ -482,13 +491,15 @@ class _CollectionArea(Gtk.ScrolledWindow):
 
     def _drag_motion(self, target: Gtk.DropTarget, x: float,
                      y: float) -> Gdk.DragAction:
-        """Set the library statusbar text when hovering a drag-n-drop over
-        a collection (either books or from the collection area itself).
-        Also set the TreeView to accept drops only when we are hovering over
-        a valid drop position for the current drop type.
+        """What dropping what is being dragged at (<x>, <y>) would do.
 
-        This isn't pretty, but the details of treeviews and drag-n-drops
-        are not pretty to begin with.
+        Books dragged from the book area and a collection dragged from
+        here are both hovered over this list, and each has its own rules
+        about where it may land: a collection goes into another one or
+        beside it, books only into one.  Where the drop would do
+        something, the library's status bar is told what, and the answer
+        is the action GTK is to show the cursor for; where it would not,
+        the message is cleared and the answer is no action at all.
         """
         value = target.get_value()
         if not isinstance(value, str):
@@ -499,16 +510,12 @@ class _CollectionArea(Gtk.ScrolledWindow):
         src_collection = self.get_current_collection()
         if kind == constants.LIBRARY_DRAG_COLLECTION:  # Moving collection.
             if drop is None:
-                self._set_acceptable_drop(False)
-                self._library.set_status_message('')
-                return _NO_DRAG_ACTION
+                return self._refuse_drop()
             dest_row, pos = drop
             src_row = self._list.get_selected_row()
             if src_row is not None and self._list.is_above(src_row, dest_row):
                 # No cycles!
-                self._set_acceptable_drop(False)
-                self._library.set_status_message('')
-                return _NO_DRAG_ACTION
+                return self._refuse_drop()
             dest_collection = dest_row.collection
             if pos != self._list.DROP_INTO:
                 dest_collection = self._library.backend.get_supercollection(
@@ -516,9 +523,7 @@ class _CollectionArea(Gtk.ScrolledWindow):
             if (constants.COLLECTION_ALL in (src_collection, dest_collection) or
                     constants.COLLECTION_RECENT in (src_collection, dest_collection) or
                     src_collection == dest_collection):
-                self._set_acceptable_drop(False)
-                self._library.set_status_message('')
-                return _NO_DRAG_ACTION
+                return self._refuse_drop()
             src_name = self._collection_name(src_collection)
             if dest_collection is None:
                 dest_name = _('Root')
@@ -529,15 +534,11 @@ class _CollectionArea(Gtk.ScrolledWindow):
         else:  # Moving book(s).
             if drop is None or drop[1] != self._list.DROP_INTO:
                 # Books go in a collection, not between two of them.
-                self._set_acceptable_drop(False)
-                self._library.set_status_message('')
-                return _NO_DRAG_ACTION
+                return self._refuse_drop()
             dest_row, pos = drop
             dest_collection = dest_row.collection
             if src_collection == dest_collection or dest_collection == constants.COLLECTION_ALL:
-                self._set_acceptable_drop(False)
-                self._library.set_status_message('')
-                return _NO_DRAG_ACTION
+                return self._refuse_drop()
             dest_name = self._collection_name(dest_collection)
             if src_collection == constants.COLLECTION_ALL:
                 message = _("Add books to '%s'.") % dest_name
@@ -546,27 +547,27 @@ class _CollectionArea(Gtk.ScrolledWindow):
                 message = (_("Move books from '%(source collection)s' to '%(destination collection)s'.") %
                            {'source collection': src_name,
                             'destination collection': dest_name})
-        self._set_acceptable_drop(True)
         self._library.set_status_message(message)
-        # What a GTK4 drop target says by answering, rather than by
-        # calling Gdk.drag_status() as it went.
         return Gdk.DragAction.MOVE
 
-    def _set_acceptable_drop(self, acceptable: bool) -> None:
-        """Note whether a drop here would be accepted."""
-        self._acceptable_drop = acceptable
+    def _refuse_drop(self) -> Gdk.DragAction:
+        """Take no drop where the pointer is, and clear the status
+        message an acceptable position further back had set."""
+        self._library.set_status_message('')
+        return _NO_DRAG_ACTION
 
     def _drag_begin(self, source: Gtk.DragSource, drag: Gdk.Drag) -> None:
-        """Create a cursor image for drag-n-drop of collections. We use the
-        default one (i.e. the row with text), but put the hotspot in the
-        top left corner so that one can actually see where one is dropping,
-        which unfortunately isn't the default case.
+        """Drag the selected collection under a picture of its own row.
+
+        The hotspot is put a little above and to the left of the
+        picture rather than inside it, so that the row the pointer is
+        over stays visible while the drag is in the air; it is the row
+        under the pointer, not the picture, that says where the drop
+        would land.
         """
         row = self._list.get_selected_row()
         if row is None:
             return
-        # A picture of the row as it is drawn, which is what
-        # create_row_drag_icon() answered with.
         paintable = self._list.row_paintable(row)
         if paintable is not None:
             source.set_icon(paintable, -5, -5)

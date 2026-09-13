@@ -111,15 +111,15 @@ class OnScreenDisplay:
                     max_width: int) -> None:
         """Set the font of <layout> to the largest size the text fits at.
 
-        Sizes are tried from 10 points to 60 in steps of five, and the
-        first one wider than <max_width> ends the search with the size
-        before it put back.  A size can only be tried by laying the
-        text out at it, so <font> and <layout> are both left holding
+        Sizes are tried from 10 points to 60 inclusive in steps of five,
+        and the first one wider than <max_width> ends the search with
+        the size before it put back.  A size can only be tried by laying
+        the text out at it, so <font> and <layout> are both left holding
         the answer.
         """
 
         SIZE_MIN, SIZE_MAX = 10, 60
-        for font_size in range(SIZE_MIN, SIZE_MAX, 5):
+        for font_size in range(SIZE_MIN, SIZE_MAX + 1, 5):
             old_size = font.get_size()
             font.set_size(font_size * Pango.SCALE)
             layout.set_font_description(font)

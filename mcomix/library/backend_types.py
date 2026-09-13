@@ -14,7 +14,6 @@ import datetime
 
 from mcomix import callback
 from mcomix import archive_tools
-from mcomix import constants
 from mcomix.i18n import _
 
 from collections.abc import Sequence
@@ -184,6 +183,15 @@ class _Collection(_BackendObject):
         else:
             return False
 
+    def __hash__(self) -> int:
+        """The hash of the id, so that a collection and the bare id it
+        compares equal to also land in the same bucket.
+
+        Defining __eq__ without this would leave the class unhashable,
+        which is not what a row of a table wants to be.
+        """
+        return hash(self.id)
+
     def get_books(self, filter_string: str | None = None) -> list['_Book']:
         """ Returns all books that are part of this collection,
         including subcollections.
@@ -245,19 +253,30 @@ class _Collection(_BackendObject):
         return [_Collection(*row) for row in result]
 
     def get_all_collections(self) -> list['_Collection']:
-        """ Returns all collections that are subcollections of this instance,
-        or subcollections of a subcollection of this instance. """
+        """Every collection under this one, at any depth, in no
+        particular order.
 
-        to_search = [self]
-        collections = []
-        # This assumes that the library is built like a tree, so no circular references.
-        while len(to_search) > 0:
-            collection = to_search.pop()
-            subcollections = collection.get_collections()
-            collections.extend(subcollections)
-            to_search.extend(subcollections)
+        Walked by the database rather than here, which is one statement
+        instead of one for every node of the subtree.  The anchor of the
+        recursion matches on IS rather than on =, so that the
+        DefaultCollection, whose id is None, starts from the collections
+        at the root and this reads the whole library.
+        """
 
-        return collections
+        cursor = self.get_backend().execute(
+            '''WITH RECURSIVE subtree(id, name, supercollection) AS (
+                   SELECT id, name, supercollection FROM collection
+                   WHERE supercollection IS ?
+                 UNION ALL
+                   SELECT collection.id, collection.name,
+                          collection.supercollection
+                   FROM collection
+                   JOIN subtree ON collection.supercollection = subtree.id)
+               SELECT id, name, supercollection FROM subtree''', (self.id,))
+        rows = cursor.fetchall()
+        cursor.close()
+
+        return [_Collection(*row) for row in rows]
 
     def add_collection(self, subcollection: '_Collection') -> None:
         """Make <subcollection> a child of this collection."""
@@ -392,7 +411,8 @@ class _WatchList:
                  LEFT JOIN collection ON watchlist.collection = collection.id
                  WHERE watchlist.path = ?"""
 
-        cursor = self.backend.execute(sql, (os.path.normpath(path), ))
+        directory = os.path.normpath(os.path.abspath(path))
+        cursor = self.backend.execute(sql, (directory, ))
         result = cursor.fetchone()
         cursor.close()
 
@@ -418,9 +438,7 @@ class _WatchList:
         # only because it was read once, so it still counts as new: the
         # scan will add it to the collection the directory is watched
         # for.
-        existing_books = [book.path for book in DefaultCollection.get_books()
-                          if book.get_collections()
-                          != [constants.COLLECTION_RECENT]]
+        existing_books = self.backend.get_paths_of_books_outside_recent()
         for entry in self.get_watchlist():
             new_files = entry.get_new_files(existing_books)
             self.new_files_found(new_files, entry)
@@ -477,12 +495,12 @@ class _WatchListEntry(_BackendObject):
         if not self.is_valid():
             return []
 
-        old_files = frozenset([os.path.abspath(path) for path in filelist])
+        old_files = frozenset(os.path.abspath(path) for path in filelist)
 
         if not self.recursive:
-            available_files = frozenset([os.path.join(self.directory, filename)
-                                         for filename in os.listdir(self.directory)
-                                         if archive_tools.is_archive_file(filename)])
+            available_files = frozenset(os.path.join(self.directory, filename)
+                                        for filename in os.listdir(self.directory)
+                                        if archive_tools.is_archive_file(filename))
         else:
             # A list of its own rather than the name the branch above
             # binds to a frozenset: one of the two would have to answer

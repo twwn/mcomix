@@ -1,11 +1,15 @@
 """ Walking from one directory to the next, and back again. """
 
 import os
+import pickle
 import shutil
+import threading
+from unittest import mock
 
 from . import MComixTest, get_testfile_path, pump, wait_for
 
 from mcomix import constants
+from mcomix import file_handler
 from mcomix import icons
 from mcomix import main
 from mcomix.dialog import Response
@@ -221,3 +225,161 @@ class BeforeAPageIsChosenTest(MComixTest):
                          '/nowhere')
 
 # vim: expandtab:sw=4:ts=4
+
+
+class CloseWakesWaitersTest(MComixTest):
+
+    """Closing a file wakes whatever is parked in _wait_on_file().
+
+    That wait parks on the extractor's condition, and the only
+    notify_all() the extractor makes fires when a file has finished
+    extracting.  Closing stops the extractor, so no file will finish
+    after it: a waiter closing does not wake is never woken, on a
+    condition the next archive opened replaces.  It matters because
+    _close() goes on to call ImageHandler.cleanup(), which joins the
+    caching thread - one of the two threads that park there - so a
+    waiter left parked hangs the main thread inside close_file().
+    """
+
+    class _StubImageHandler:
+
+        def cleanup(self):
+            pass
+
+    class _StubWindow:
+
+        def __init__(self):
+            self.imagehandler = CloseWakesWaitersTest._StubImageHandler()
+
+    PAGE = '/book/page.png'
+
+    def setUp(self):
+        super().setUp()
+        os.makedirs(constants.DATA_DIR, exist_ok=True)
+        self.handler = file_handler.FileHandler(self._StubWindow())
+        # An open archive with one member that is never extracted.  The
+        # real extractor answers is_ready() out of a set setup() fills
+        # in, and setting it up would need an archive to extract.
+        self.handler.file_loaded = True
+        self.handler.archive_type = constants.ZIP
+        self.handler._condition = threading.Condition()
+        self.handler._name_table = {self.PAGE: 'page.png'}
+        self.asked = threading.Event()
+
+        def is_ready(name):
+            self.asked.set()
+            return False
+
+        self.handler._extractor.is_ready = is_ready
+        self.returned = threading.Event()
+        self.waiter = threading.Thread(target=self._wait, name='test-waiter')
+        self.waiter.daemon = True
+
+    def tearDown(self):
+        # Wake the waiter whatever the test found, so that a failure
+        # leaves no thread parked on the condition.
+        with self.handler._archive_condition:
+            self.handler._stop_waiting = True
+            self.handler._archive_condition.notify_all()
+        self.waiter.join(timeout=5)
+        self.handler.last_read_page.backend.close()
+        super().tearDown()
+
+    def _wait(self):
+        self.handler._wait_on_file(self.PAGE)
+        self.returned.set()
+
+    def _park_the_waiter(self):
+        """Start the waiting thread and return once it is parked.
+
+        is_ready() is called with the condition held, and the wait that
+        follows is what releases it, so a caller that then takes the
+        lock cannot get it until the thread is parked.
+        """
+        self.waiter.start()
+        self.assertTrue(self.asked.wait(timeout=5),
+                        'the waiting thread never asked about the file')
+
+    def test_closing_the_file_wakes_a_parked_waiter(self):
+        self._park_the_waiter()
+
+        self.handler.close_file()
+
+        self.assertTrue(self.returned.wait(timeout=5),
+                        'the thread waiting on an extraction was still '
+                        'parked after the file was closed')
+
+    def test_a_waiter_is_not_woken_while_the_file_is_open(self):
+        self._park_the_waiter()
+
+        self.assertFalse(self.returned.wait(timeout=0.2),
+                         'the wait ended without the file being extracted '
+                         'or closed')
+
+
+class FileInfoTest(MComixTest):
+
+    """The file and page "Save and quit" leaves behind for the next start.
+
+    read_fileinfo_file() has to answer for whatever is in that file,
+    which is a pickle no other program writes but which any of them can
+    truncate: nothing about it is trusted, and one that cannot be read
+    is removed rather than left to fail the same way at every start.
+    """
+
+    def setUp(self):
+        super().setUp()
+        os.makedirs(constants.DATA_DIR, exist_ok=True)
+        # read_fileinfo_file() reads the pickle and nothing else, so a
+        # handler without a window is all it needs.
+        self.handler = file_handler.FileHandler(None)
+
+    def tearDown(self):
+        # Building a handler opens the library backend, which is a
+        # singleton: left behind, it hands every later test a connection
+        # to a database in a temporary directory that is about to be
+        # removed.
+        self.handler.last_read_page.backend.close()
+        super().tearDown()
+
+    def _write(self, content):
+        with open(constants.FILEINFO_PICKLE_PATH, 'wb') as pickle_file:
+            pickle_file.write(content)
+
+    def test_the_file_and_page_come_back(self):
+        self._write(pickle.dumps(['/books/a.zip', 41]))
+
+        self.assertEqual(('/books/a.zip', 41),
+                         self.handler.read_fileinfo_file())
+
+    def test_no_file_is_no_answer(self):
+        self.assertIsNone(self.handler.read_fileinfo_file())
+
+    def test_a_pair_of_the_wrong_types_is_refused(self):
+        self._write(pickle.dumps([41, '/books/a.zip']))
+
+        self.assertIsNone(self.handler.read_fileinfo_file())
+        self.assertTrue(os.path.isfile(constants.FILEINFO_PICKLE_PATH),
+                        'a readable file was deleted for holding the wrong '
+                        'pair')
+
+    def test_a_file_that_cannot_be_read_is_deleted(self):
+        self._write(b'not a pickle at all')
+
+        self.assertIsNone(self.handler.read_fileinfo_file())
+        self.assertFalse(os.path.isfile(constants.FILEINFO_PICKLE_PATH),
+                         'a file that could not be unpickled was left to '
+                         'fail again at the next start')
+
+    def test_the_message_about_a_corrupt_file_names_that_file(self):
+        """It used to call it the preferences file, which is a different
+        file that this code does not touch."""
+        self._write(b'not a pickle at all')
+        messages = []
+        with mock.patch.object(file_handler.log, 'error',
+                               lambda text, *args: messages.append(text % args)):
+            self.handler.read_fileinfo_file()
+
+        self.assertEqual(1, len(messages), messages)
+        self.assertIn(constants.FILEINFO_PICKLE_PATH, messages[0])
+        self.assertNotIn('preferences', messages[0])

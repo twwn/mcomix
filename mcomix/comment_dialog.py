@@ -1,4 +1,10 @@
-"""comment.py - Comments dialog."""
+"""comment_dialog.py - The comment files an archive carries.
+
+One window, which follows whichever book is open: the files in the
+archive whose extensions matched the comment extensions preference,
+each on a page of a notebook, in a text view of its own.  A comment
+still being extracted has its page added when the file turns up.
+"""
 
 import os
 from gi.repository import Gtk

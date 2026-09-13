@@ -1,8 +1,10 @@
 """The library's cover area, and the black it is painted on."""
 
+import contextlib
 import sqlite3
+import warnings
 
-from gi.repository import GLib, Gtk
+from gi.repository import Gdk, GLib, Gtk
 
 from . import MComixTest, wait_for
 from .test_theme import background_of
@@ -234,13 +236,26 @@ class CoverSizeDialogTest(MComixTest):
 
 class _RecordingBackend(_Backend):
 
-    """A backend that counts the transaction it is put into."""
+    """A backend that counts the transaction it is put into.
+
+    transaction() is _LibraryBackend.transaction() with the connection
+    left out: a caller that leaves the block, however it leaves it, ends
+    the transaction it opened.
+    """
 
     def __init__(self, refuse=False):
         self.begun = 0
         self.ended = 0
         self.removed = []
         self._refuse = refuse
+
+    @contextlib.contextmanager
+    def transaction(self):
+        self.begin_transaction()
+        try:
+            yield
+        finally:
+            self.end_transaction()
 
     def begin_transaction(self):
         self.begun += 1
@@ -325,7 +340,9 @@ class RemovalTransactionTest(MComixTest):
     between the two - a locked database, most plausibly, since the main
     window holds the library open as well - left every later write
     waiting for a commit that never came, and held a write lock on the
-    file meanwhile.
+    file meanwhile.  What these check is that the removals reach the
+    backend through something that ends the transaction whatever
+    happens, which is _LibraryBackend.transaction().
     """
 
     def _area(self, refuse):
@@ -361,5 +378,73 @@ class RemovalTransactionTest(MComixTest):
             area._remove_books_from_collection()
         self.assertEqual(1, library.backend.ended,
                          'the connection was left in transactional mode')
+
+
+class _CoverlessBackend(_Backend):
+
+    """A backend with no covers, so the drag icon is the missing-image
+    placeholder rather than a thumbnail read off disk."""
+
+    def get_book_cover(self, book):
+        return None
+
+
+class _CoverlessLibrary:
+
+    def __init__(self):
+        self.backend = _CoverlessBackend()
+
+
+class DragIconTest(MComixTest):
+
+    """The icon the pointer carries while books are dragged.
+
+    Nothing else in the suite runs _drag_begin(), which is why the
+    deprecation census - which only sees what the suite executes - did
+    not notice that this was the last caller of
+    Gdk.Texture.new_for_pixbuf(), deprecated in GTK 4.20.
+    """
+
+    def _area(self, books):
+        area = book_area._BookArea(_CoverlessLibrary())
+        area._covers.set_items(
+            book_area._BookItem(_Book(index, '/books/%d.cbz' % index))
+            for index in range(books))
+        area._covers.selection.select_all()
+        self.addCleanup(area.close)
+        return area
+
+    def _icon_for(self, books):
+        """What _drag_begin() hands to Gtk.DragSource.set_icon().
+
+        Gtk.DragSource has a set_icon() and no get_icon(), so the call
+        is recorded rather than read back.
+        """
+        area = self._area(books)
+        source = Gtk.DragSource()
+        icons = []
+        source.set_icon = lambda paintable, x, y: icons.append(paintable)
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter('always')
+            area._drag_begin(source, None)
+        deprecations = [str(w.message) for w in caught
+                        if issubclass(w.category, DeprecationWarning)]
+        self.assertEqual([], deprecations,
+                         'building the drag icon called a deprecated API')
+        return icons
+
+    def test_one_book_has_an_icon(self):
+        icons = self._icon_for(1)
+        self.assertEqual(1, len(icons))
+        self.assertIsInstance(icons[0], Gdk.Texture)
+
+    def test_several_books_have_an_icon_with_the_count_on_it(self):
+        # The branch that composites the number badge onto the cover.
+        icons = self._icon_for(3)
+        self.assertEqual(1, len(icons))
+        self.assertIsInstance(icons[0], Gdk.Texture)
+
+    def test_nothing_selected_sets_no_icon(self):
+        self.assertEqual([], self._icon_for(0))
 
 # vim: expandtab:sw=4:ts=4

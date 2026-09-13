@@ -1,3 +1,4 @@
+import contextlib
 import unittest
 import tempfile
 import shutil
@@ -187,6 +188,51 @@ class WatchListEntryTest(unittest.TestCase):
         shutil.rmtree(tmpdir)
 
 
+class WatchListTest(unittest.TestCase):
+
+    """Looking a watched directory up by the path the caller happens to
+    have.
+
+    add_directory() stores normpath(abspath(path)), so a lookup that
+    only normalises matches nothing for a path that is relative - the
+    watch list dialog's own entries are absolute, but nothing in the
+    signature says a caller's has to be.
+    """
+
+    def setUp(self):
+        fp, self.db = tempfile.mkstemp('.db', 'mcomix-test')
+        os.close(fp)
+        self._saved_path = constants.LIBRARY_DATABASE_PATH
+        constants.LIBRARY_DATABASE_PATH = self.db
+        self.library = backend.LibraryBackend()
+        # realpath so that chdir() below lands on the name that was
+        # stored: getcwd() reports a directory with its symlinks
+        # resolved, and abspath() does not resolve any.
+        self.tmpdir = os.path.realpath(tempfile.mkdtemp(prefix='library_types.'))
+        self.watched = os.path.join(self.tmpdir, 'comics')
+        os.makedirs(self.watched)
+        self.library.watchlist.add_directory(self.watched)
+
+    def tearDown(self):
+        self.library.close()
+        constants.LIBRARY_DATABASE_PATH = self._saved_path
+        os.unlink(self.db)
+        shutil.rmtree(self.tmpdir)
+
+    def test_an_absolute_path_finds_the_entry(self):
+        entry = self.library.watchlist.get_watchlist_entry(self.watched)
+        self.assertEqual(self.watched, entry.directory)
+
+    def test_a_relative_path_finds_the_entry(self):
+        with contextlib.chdir(self.tmpdir):
+            entry = self.library.watchlist.get_watchlist_entry('comics')
+        self.assertEqual(self.watched, entry.directory)
+
+    def test_a_directory_that_is_not_watched_is_an_error(self):
+        with self.assertRaises(ValueError):
+            self.library.watchlist.get_watchlist_entry(self.tmpdir)
+
+
 class CollectionBooksPlanTest(unittest.TestCase):
 
     """The books of a collection are found without sorting them twice.
@@ -269,3 +315,30 @@ class CollectionBooksPlanTest(unittest.TestCase):
                          'a filtered get_books() sorts them itself: %s' % plan)
 
 # vim: expandtab:sw=4:ts=4
+
+
+class CollectionHashTest(unittest.TestCase):
+
+    """A collection is hashable, and hashes as the id it equals.
+
+    _Collection defines __eq__, which removes the inherited __hash__
+    unless the class puts one back.
+    """
+
+    def test_a_collection_can_go_in_a_set(self):
+        collection = backend_types._Collection(3, 'Shelf')
+        self.assertIn(collection, {collection})
+
+    def test_two_collections_with_one_id_are_one_key(self):
+        self.assertEqual(1, len({backend_types._Collection(3, 'Shelf'),
+                                 backend_types._Collection(3, 'Shelf')}))
+
+    def test_a_collection_hashes_as_its_id(self):
+        # __eq__ answers True for the bare id as well, so a dictionary
+        # keyed by either finds the other.
+        collection = backend_types._Collection(3, 'Shelf')
+        self.assertEqual({collection: 'x'}[3], 'x')
+
+    def test_the_default_collection_is_hashable(self):
+        self.assertEqual(hash(None),
+                         hash(backend_types.DefaultCollection))

@@ -54,7 +54,7 @@ class _PreferencePage(Gtk.Box):
         if right_item is None:
             widgets.pack(section.contentbox, left_item, True, True, 0)
         else:
-            left_box, right_box = section.new_split_vboxes()
+            left_box, right_box = section.new_split_boxes()
             widgets.pack(left_box, left_item, True, True, 0)
             widgets.pack(right_box, right_item, True, True, 0)
 

@@ -1,5 +1,10 @@
-"""library_control_area.py - The window in the library that contains buttons
-and displays info."""
+"""control_area.py - The strip along the bottom of the library window.
+
+What the current selection is - its name, its directory, how far it has
+been read and how large it is - beside the button that opens it and the
+one that shows the watch list, and the entry that filters the covers
+shown down to the books a substring occurs in.
+"""
 
 import os
 from gi.repository import Gtk
@@ -118,10 +123,7 @@ class _ControlArea(Gtk.Box):
         last_page = book.get_last_read_page() if book else None
         last_date = book.get_last_read_date() if book else None
 
-        if len(selected) > 0:
-            self._open_button.set_sensitive(True)
-        else:
-            self._open_button.set_sensitive(False)
+        self._open_button.set_sensitive(bool(selected))
 
         if name is not None:
             self._namelabel.set_text(i18n.to_unicode(name))

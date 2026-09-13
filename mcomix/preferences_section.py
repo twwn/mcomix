@@ -15,7 +15,7 @@ class _PreferenceSection(Gtk.Box):
 
     def __init__(self, header: str,
                  right_column_width: int | None) -> None:
-        """Contruct a new section with the header set to the text in
+        """Construct a new section with the header set to the text in
         <header>, and the width request of the (possible) right columns
         set to that of <right_column_width>.
         """
@@ -29,12 +29,13 @@ class _PreferenceSection(Gtk.Box):
         widgets.pack(self, label, False, False, 0)
         widgets.pack(self, self.contentbox, True, True, 0)
 
-    def new_split_vboxes(self) -> tuple[Gtk.Box, Gtk.Box]:
-        """Return two new VBoxes that are automatically put in the section
-        after the previously added items. The right one has a width request
-        equal to the right_column_width value passed to the class contructor,
-        in order to make it easy for  all "right column items" in a page to
-        line up nicely.
+    def new_split_boxes(self) -> tuple[Gtk.Box, Gtk.Box]:
+        """Return the two vertical boxes of a new row, left and right,
+        put in the section after the items added so far.
+
+        The right one has the width request the section was constructed
+        with, which is what lines the "right column items" of a page up
+        with one another.
         """
         left_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 6)
         right_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 6)

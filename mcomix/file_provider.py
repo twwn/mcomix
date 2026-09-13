@@ -53,10 +53,11 @@ def get_file_provider(filelist: Sequence[str]) -> 'FileProvider | None':
     If len(filelist) is greater 1, a PreDefinedFileProvider will be created,
     which will only ever list the files that were passed into it.
     If len(filelist) is zero, FileProvider will look at the last file opened,
-    if "Auto Open last file" is set. Otherwise, no provider is constructed. """
+    if the "auto load last file" preference is set and that file is still
+    there. Otherwise, no provider is constructed. """
 
     provider: FileProvider | None
-    if len(filelist) > 0:
+    if filelist:
         if len(filelist) == 1:
             if os.path.exists(filelist[0]):
                 provider = OrderedFileProvider(filelist[0])

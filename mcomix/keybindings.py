@@ -228,7 +228,7 @@ class _KeybindingManager:
                 self._action_to_bindings[name].append(keycode)
 
         # Show the key against the action in the menus.
-        if len(self._action_to_bindings[name]) > 0:
+        if self._action_to_bindings[name]:
             key, mod = self._action_to_bindings[name][0]
             self.announce_accelerator(name, Gtk.accelerator_name(key, mod))
 
@@ -349,7 +349,7 @@ class _KeybindingManager:
             log.error(_("Couldn't load keybindings: %s"), e)
             stored_action_bindings = {}
 
-        for action in BINDING_INFO.keys():
+        for action in BINDING_INFO:
             if action in stored_action_bindings:
                 bindings = [
                     parse_accelerator(keyname)

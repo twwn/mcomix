@@ -256,7 +256,6 @@ class EventHandler:
         manager.register('zoom_out',
                          ['minus', 'KP_Subtract'],
                          self._window.actiongroup.get_action('zoom_out').activate)
-        # Zoom out is already defined as GTK menu hotkey
         manager.register('zoom_original',
                          ['<Control>0', 'KP_0'],
                          self._window.actiongroup.get_action('zoom_original').activate)
@@ -781,13 +780,11 @@ class EventHandler:
             self._flip_page(1)
             return True
 
-        elif (self._scroll_protection):
-            self._extra_scroll_events = max(1, self._extra_scroll_events + 1)
-            return False
-
-        else:
-            # This path should not be reached.
-            assert False, "Programmer is moron, incorrect assertion."
+        # The protection is armed - the branch above is taken when it is
+        # not - so this is an overshoot to be counted rather than turned
+        # on.
+        self._extra_scroll_events = max(1, self._extra_scroll_events + 1)
+        return False
 
     def _previous_page_with_protection(self) -> bool:
         """Go back a page, unless the reader should scroll on first.
@@ -808,13 +805,8 @@ class EventHandler:
             self._flip_page(-1)
             return True
 
-        elif (self._scroll_protection):
-            self._extra_scroll_events = min(-1, self._extra_scroll_events - 1)
-            return False
-
-        else:
-            # This path should not be reached.
-            assert False, "Programmer is moron, incorrect assertion."
+        self._extra_scroll_events = min(-1, self._extra_scroll_events - 1)
+        return False
 
     def _flip_page(self, number_of_pages: int,
                    single_step: bool = False) -> None:

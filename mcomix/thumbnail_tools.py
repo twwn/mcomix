@@ -1,5 +1,14 @@
-"""thumbnail.py - Thumbnail module for MComix implementing (most of) the
-freedesktop.org "standard" at http://jens.triq.net/thumbnail-spec/
+"""thumbnail_tools.py - The thumbnails of pages, books and archives.
+
+Most of the freedesktop.org thumbnail specification: a thumbnail is a
+PNG named after a hash of the source file's URI, kept in the "normal"
+directory of the thumbnail cache, with the URI it was made from and
+that file's size and modification time written into its tEXt chunks, so
+that one left behind by an edited file can be told from a current one.
+
+A Thumbnailer can be pointed at a directory of its own instead, which is
+what the library does for its covers, and can be told to make a
+thumbnail without storing it at all.
 """
 
 import os
@@ -197,7 +206,7 @@ class Thumbnailer:
         # MTime could be floating point number, so convert to long first to have a fixed point number
         mtime = str(int(stat.st_mtime))
         size = str(stat.st_size)
-        format, (width, height), providers = image_tools.get_image_info(filepath)
+        width, height = image_tools.get_image_size(filepath)
         return {
             'tEXt::Thumb::URI':           uri,
             'tEXt::Thumb::MTime':         mtime,
@@ -263,7 +272,12 @@ class Thumbnailer:
             return False
 
     def _path_to_thumbpath(self, filepath: str) -> str:
-        """ Converts <path> to an URI for the thumbnail in <dst_dir>. """
+        """Return the path of the thumbnail for <filepath> in <dst_dir>.
+
+        The name is a hash of the file's URI, which is what the
+        freedesktop specification asks for, so the URI is built here and
+        _uri_to_thumbpath() turns it into the name.
+        """
         uri = portability.uri_prefix() + pathname2url(os.path.normpath(filepath))
         return self._uri_to_thumbpath(uri)
 

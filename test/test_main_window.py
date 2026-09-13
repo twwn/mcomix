@@ -591,4 +591,54 @@ class InvertedColoursAtStartUpTest(MComixTest):
         self.assertTrue(self.window.actiongroup.get_action(
             'invert_color').get_active())
 
+
+class ZoomModeAtStartUpTest(MComixTest):
+
+    """Which zoom modes a window passes through as it starts.
+
+    Gtk.RadioAction only announced a change that changed something, so
+    starting in manual mode - the value the radio group was built with -
+    needed another mode activated first to make the callback run. The
+    modes are one Gio.SimpleAction now, and activating it emits
+    change-state whatever its current value is, so the detour is not
+    needed; it ran change_zoom_mode() for a mode the reader had not
+    asked for, wrote that mode into the preference and redrew.
+    """
+
+    def setUp(self):
+        super().setUp()
+        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
+                          constants.THUMBNAIL_PATH):
+            os.makedirs(directory, exist_ok=True)
+        icons.load_icons()
+        prefs['zoom mode'] = constants.ZoomMode.MANUAL
+        self.seen = []
+        original = main.MainWindow.change_zoom_mode
+
+        def change_zoom_mode(window, radioaction=None, *args):
+            original(window, radioaction, *args)
+            self.seen.append(prefs['zoom mode'])
+
+        main.MainWindow.change_zoom_mode = change_zoom_mode
+        self.addCleanup(setattr, main.MainWindow, 'change_zoom_mode',
+                        original)
+        self.window = main.MainWindow()
+        main.set_main_window(self.window)
+        pump()
+
+    def tearDown(self):
+        self.window.terminate_program()
+        self.window.destroy()
+        main.set_main_window(None)
+        pump()
+        super().tearDown()
+
+    def test_manual_mode_is_reached_without_passing_through_another(self):
+        self.assertEqual([constants.ZoomMode.MANUAL], self.seen,
+                         'starting in manual mode changed the zoom mode '
+                         'more than once')
+
+    def test_the_preference_is_the_mode_it_started_in(self):
+        self.assertEqual(constants.ZoomMode.MANUAL, prefs['zoom mode'])
+
 # vim: expandtab:sw=4:ts=4

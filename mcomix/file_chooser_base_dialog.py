@@ -552,8 +552,13 @@ class _BaseFileChooserDialog(Dialog):
             self._response(self, Response.OK)
 
     def _response(self, widget: Gtk.Widget, response: int) -> None:
-        """Return a list of the paths of the chosen files, or None if the
-        event only changed the current directory.
+        """Work out what was chosen and hand it to files_chosen().
+
+        A directory among the chosen paths is walked for the files it
+        holds, so what goes out is always files.  Anything but OK is an
+        empty list, and a Save that would overwrite goes through a
+        confirmation first, so files_chosen() may be called from the
+        answer to that rather than from here.
         """
         if response == Response.OK:
             chosen = widgets.chooser_paths(self.filechooser)
@@ -572,8 +577,8 @@ class _BaseFileChooserDialog(Dialog):
                 else:
                     paths.append(path)
 
-            # FileChooser.set_do_overwrite_confirmation() doesn't seem to
-            # work on our custom dialog, so we use a simple alternative.
+            # GTK4 has no Gtk.FileChooser.set_do_overwrite_confirmation(),
+            # so the confirmation is ours to ask for.
             first_path = chosen[0]
             if (self._action == Gtk.FileChooserAction.SAVE and
                     not os.path.isdir(first_path) and

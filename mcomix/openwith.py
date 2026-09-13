@@ -108,7 +108,7 @@ class OpenWithCommand:
         a relative path, when the executable is in PATH, or an
         absolute path. """
         args = self.parse(window)
-        if len(args) == 0:
+        if not args:
             return False
 
         if self.is_valid_workdir(window):
@@ -373,8 +373,8 @@ class OpenWithEditor(Dialog):
         self.set_default_size(600, 400)
 
     def save(self) -> None:
-        """ Serializes the tree model into a list of OpenWithCommands
-        and passes these back to the Manager object for persistance. """
+        """Hand the commands in the list back to the manager, which
+        writes them out."""
         commands = self.get_commands()
         self._openwith.set_commands(commands)
         self._changed = False

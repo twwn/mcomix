@@ -1,11 +1,12 @@
 """The library's sidebar, which lists the collections.
 
-It was a Gtk.TreeView over a Gtk.TreeStore of (name, id) rows. Dragging
-is what most of it is about: a collection dropped on another goes into
+Dragging is what most of these tests are about, because it is where the
+sidebar has rules of its own: a collection dropped on another goes into
 it, a collection dropped between two goes beside them, and books
-dropped on a collection are moved into it - none of which a Gtk.TreeView
-answered for by itself either, but which it did give a
-Gtk.TreeViewDropPosition for.
+dropped on a collection are moved into it, while a drop that would make
+a cycle or that lands between two collections is refused.  The drag
+handlers are called directly, with a stub standing in for the
+Gtk.DropTarget, since a real drag needs a pointer no test has.
 """
 
 import os
@@ -62,11 +63,11 @@ class CollectionAreaTest(MComixTest):
         os.makedirs(constants.DATA_DIR, exist_ok=True)
         self.backend = backend.LibraryBackend()
         self.backend.book_added_to_collection = _Event()
-        for name in ('Comics', 'Manga', 'Inner'):
-            self.assertTrue(self.backend.add_collection(name))
-        self.comics = self.backend.get_collection_by_name('Comics').id
-        self.manga = self.backend.get_collection_by_name('Manga').id
-        self.inner = self.backend.get_collection_by_name('Inner').id
+        self.comics, self.manga, self.inner = (
+            self.backend.add_collection(name)
+            for name in ('Comics', 'Manga', 'Inner'))
+        for collection in (self.comics, self.manga, self.inner):
+            self.assertIsNotNone(collection)
         self.backend.add_collection_to_collection(self.inner, self.comics)
         self.library = _Library(self.backend)
         self.library.collection_area = self.area = \
@@ -126,6 +127,19 @@ class CollectionAreaTest(MComixTest):
                     return found
             return None
         return walk(list(self.area._list.store))
+
+    def test_the_tree_is_drawn_from_one_statement(self):
+        # It used to ask for the collections under every row it found
+        # and then for the name of each of those, so redrawing the
+        # sidebar cost two statements per collection.
+        statements = []
+        self.backend._con.set_trace_callback(statements.append)
+        try:
+            self.area.display_collections()
+        finally:
+            self.backend._con.set_trace_callback(None)
+
+        self.assertEqual(1, len(statements), statements)
 
     def test_the_name_is_drawn_as_markup(self):
         row = self._row_for(constants.COLLECTION_ALL)
@@ -225,16 +239,14 @@ class CollectionAreaTest(MComixTest):
         library has no way back out of."""
         self.area._list.select_row(self._row_for(self.comics))
         x, y = self._middle_of(self.comics)
-        self.area._drag_motion(_StubDrop('%s:%d' % (
-            constants.LIBRARY_DRAG_COLLECTION, self.comics)), x, y)
-        self.assertFalse(self.area._acceptable_drop)
+        self.assertEqual(0, self.area._drag_motion(_StubDrop('%s:%d' % (
+            constants.LIBRARY_DRAG_COLLECTION, self.comics)), x, y))
 
     def test_books_are_not_dropped_between_two_collections(self):
         x, y = self._edge_of(self.comics)
         self.assertEqual(
             0, self.area._drag_motion(_StubDrop('%s:0' % (
                 constants.LIBRARY_DRAG_BOOKS,)), x, y))
-        self.assertFalse(self.area._acceptable_drop)
 
     def test_a_drag_of_something_else_is_left_alone(self):
         self.assertEqual(0, self.area._drag_motion(_StubDrop(None), 0.0, 0.0))

@@ -87,9 +87,11 @@ def bin_search(lst: "list[Comparable]", value: Comparable) -> int:
 
 
 def get_home_directory() -> str:
-    """On UNIX-like systems, this method will return the path of the home
-    directory, e.g. /home/username. On Windows, it will return an MComix
-    sub-directory of <Documents and Settings/Username>.
+    """The directory MComix treats as the user's own.
+
+    The home directory itself on UNIX-like systems, e.g. /home/username.
+    On Windows it is an MComix directory inside the user's profile,
+    since Windows has no convention of dotfiles in the profile root.
     """
     if sys.platform == 'win32':
         return os.path.join(os.path.expanduser('~'), 'MComix')
@@ -255,7 +257,7 @@ def rotation_swaps_axes(rotation: int) -> bool:
 def fixed_strings_regex(strings: Iterable[str]) -> str:
     # introduces a matching group
     unique_strings = set(strings)
-    return r'(%s)' % '|'.join(sorted([re.escape(s) for s in unique_strings]))
+    return r'(%s)' % '|'.join(sorted(re.escape(s) for s in unique_strings))
 
 
 def formats_to_regex(

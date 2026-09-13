@@ -1,4 +1,12 @@
-"""library_book_area.py - The window of the library that displays the covers of books."""
+"""book_area.py - The grid of book covers in the library window.
+
+A Gtk.GridView of thumbnails, one per book in the collection that is
+selected, filled by display_covers() and sorted by whichever of the
+book's columns the sort preferences name.  The covers themselves are
+drawn by a thumbnailing thread and arrive one at a time; the grid also
+carries the popup menu that acts on a selection, and the drag source
+that hands books to the collection tree.
+"""
 
 import os
 from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk
@@ -536,17 +544,15 @@ class _BookArea(Gtk.ScrolledWindow):
         selected = self._selected_items()
         # The connection stays in transactional mode until it is told
         # otherwise, so a failure anywhere in here would leave every
-        # later write waiting for a commit that never comes.
-        self._library.backend.begin_transaction()
-        try:
+        # later write waiting for a commit that never comes; the context
+        # manager commits on the way out either way.
+        with self._library.backend.transaction():
             for item in selected:
                 self._library.backend.remove_book_from_collection(item.uid,
                                                                   collection)
             self._covers.remove_items(selected)
             for item in selected:
                 self._cache.invalidate(item.path)
-        finally:
-            self._library.backend.end_transaction()
 
         coll_name = self._library.backend.get_collection_name(collection)
         message = i18n.get_translation().ngettext(
@@ -564,16 +570,13 @@ class _BookArea(Gtk.ScrolledWindow):
         selected = self._selected_items()
         # As above: the mode has to be put back whatever happens, or the
         # library stops committing anything for the rest of the session.
-        self._library.backend.begin_transaction()
-        try:
+        with self._library.backend.transaction():
             for item in selected:
                 self._library.backend.remove_book(item.uid)
 
             self._covers.remove_items(selected)
             for item in selected:
                 self._cache.invalidate(item.path)
-        finally:
-            self._library.backend.end_transaction()
 
         msg = i18n.get_translation().ngettext(
             'Removed %d book from the library.',
@@ -659,7 +662,7 @@ class _BookArea(Gtk.ScrolledWindow):
         """ Shows the book panel popup menu. """
 
         selected = self._selected_items()
-        books_selected = len(selected) > 0
+        books_selected = bool(selected)
         collection = self._library.collection_area.get_current_collection()
         is_collection_all = collection == constants.COLLECTION_ALL
 
@@ -758,7 +761,7 @@ class _BookArea(Gtk.ScrolledWindow):
         else:
             pointer = cover
 
-        source.set_icon(Gdk.Texture.new_for_pixbuf(pointer), -5, -5)
+        source.set_icon(image_tools.pixbuf_to_texture(pointer), -5, -5)
 
     def _drag_data_received(self, target: Gtk.DropTarget, value: Gdk.FileList,
                             x: float, y: float) -> bool:

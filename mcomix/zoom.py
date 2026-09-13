@@ -306,8 +306,8 @@ class ZoomModel:
             # In this case, only one solution or only an approximation is available.
             # if n > max_size, the result won't fit into max_size.
             return [IDENTITY_ZOOM if dnt else tools.div(1, s[axis]) for s, dnt in zip(sizes, do_not_transform)]
-        total_axis_size = sum([s[axis] for s in sizes])
-        total_dnt_axis_size = sum([s[axis] for s, dnt in zip(sizes, do_not_transform) if dnt])
+        total_axis_size = sum(s[axis] for s in sizes)
+        total_dnt_axis_size = sum(s[axis] for s, dnt in zip(sizes, do_not_transform) if dnt)
         if ((total_axis_size <= max_size) and not allow_upscaling) or \
                 (total_axis_size == total_dnt_axis_size):
             # identity
@@ -421,11 +421,11 @@ def _union_size(image_sizes: Sequence[Sequence[float]],
     sizes add up along it; along every other axis the room they need is
     the largest of them.
     """
-    if len(image_sizes) == 0:
+    if not image_sizes:
         return []
     n = len(image_sizes[0])
     union_size = [reduce(max, [x[i] for x in image_sizes]) for i in range(n)]
-    union_size[distribution_axis] = sum([x[distribution_axis] for x in image_sizes])
+    union_size[distribution_axis] = sum(x[distribution_axis] for x in image_sizes)
     return union_size
 
 # vim: expandtab:sw=4:ts=4

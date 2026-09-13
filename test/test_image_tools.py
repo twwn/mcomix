@@ -63,7 +63,7 @@ _TEST_IMAGES = (
     _TestImage('transparent-indexed.png', 'PNG', (200, 150), 'P', True, 0),
 )
 
-_TEST_IMAGE_BY_NAME = dict([(im.name, im) for im in _TEST_IMAGES])
+_TEST_IMAGE_BY_NAME = {im.name: im for im in _TEST_IMAGES}
 
 #: The test images carrying Exif rotation, and their unrotated counterparts.
 _ROTATED_TEST_IMAGES = (
@@ -199,7 +199,7 @@ class ImageToolsTest(MComixTest):
                 diff_lines.append('[...] diff truncated, change max_diff to increase limit.')
                 break
             diff_lines.append(line)
-        if len(diff_lines) > 0:
+        if diff_lines:
             fail('content', '\n%s\n', '\n'.join(diff_lines))
 
     def test_temporary_directory_outlives_a_test(self):
@@ -416,7 +416,7 @@ class ImageToolsTest(MComixTest):
         # TODO: test keep_orientation
 
     def _check_image_info(self, path, expected, description):
-        image_format, dimensions, _providers = image_tools.get_image_info(path)
+        image_format, dimensions = image_tools.get_image_info(path)
         result = (image_format,) + tuple(dimensions)
         msg = (
             'get_image_info(%s) failed; '
@@ -463,10 +463,8 @@ class ImageToolsTest(MComixTest):
         # rather than from get_image_info(), so the two have to agree.
         for image in _TEST_IMAGES:
             path = get_image_path(image.name)
-            expected_format, expected_dimensions, _providers = \
-                image_tools.get_image_info(path)
             self.assertEqual(image_tools.get_image_header(path),
-                             (expected_format, expected_dimensions),
+                             image_tools.get_image_info(path),
                              msg='get_image_header("%s") disagrees with '
                                  'get_image_info()' % image.name)
 
@@ -484,6 +482,34 @@ class ImageToolsTest(MComixTest):
 
     def test_get_image_size_invalid(self):
         self.assertEqual(image_tools.get_image_size(os.devnull), (0, 0))
+
+    def test_fit_in_rectangle_one_unbounded_dimension(self):
+        # A negative side means "as large as it likes in this
+        # direction", bounded only by RENDER_SIZE_LIMIT, so the other
+        # side is what decides the scale.
+        pixbuf = new_pixbuf((200, 400), False, 0)
+        for width, height, expected in ((-1, 100, (50, 100)),
+                                        (100, -1, (100, 200))):
+            result = image_tools.fit_in_rectangle(pixbuf, width, height)
+            self.assertEqual((result.get_width(), result.get_height()),
+                             expected,
+                             msg='fit_in_rectangle(200x400 => %dx%d) failed'
+                                 % (width, height))
+
+    def test_fit_in_rectangle_both_dimensions_unbounded(self):
+        # There is no rectangle to fit in.  This used to bound the width
+        # and leave the height negative, which the clamp below turned
+        # into one pixel: a 200x400 page came back 1 pixel high.
+        pixbuf = new_pixbuf((200, 400), False, 0)
+        self.assertRaises(ValueError,
+                          image_tools.fit_in_rectangle, pixbuf, -1, -1)
+
+    def test_fit_in_rectangle_a_side_of_zero_is_one_pixel(self):
+        # load_pixbuf_size() relies on this: it clamps a zero side to one
+        # itself, saying that fit_in_rectangle() would have anyway.
+        pixbuf = new_pixbuf((200, 400), False, 0)
+        result = image_tools.fit_in_rectangle(pixbuf, 0, 0)
+        self.assertEqual((result.get_width(), result.get_height()), (1, 1))
 
     def test_fit_in_rectangle_dimensions(self):
         # Test dimensions handling.

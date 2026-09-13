@@ -1,4 +1,15 @@
-""" pixbuf_cache.py - Caches book covers for the library display."""
+"""pixbuf_cache.py - The book covers the library has already drawn.
+
+One cache for the whole program, handed out by get_pixbuf_cache().
+Drawing a cover means reading a thumbnail off disk or making one from
+the book, so switching collection or typing in the filter entry would
+otherwise redraw covers that were on screen a moment ago.
+
+What it holds is the finished cover, scaled to the size the library is
+drawing at, keyed by the book's path.  That is why _BookArea.
+load_covers() empties it when the cover size preference changes: the
+entries are still the right books at the wrong size.
+"""
 
 
 import functools
