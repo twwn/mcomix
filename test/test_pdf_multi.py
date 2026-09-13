@@ -14,6 +14,7 @@ from unittest import mock
 
 import mcomix
 from mcomix.archive import pdf_multi
+from mcomix.preferences import prefs
 
 from . import MComixTest
 
@@ -121,9 +122,10 @@ class RequiredVersionTest(unittest.TestCase):
             self.assertIs(pdf_multi.DisabledFitzArchive, pdf_multi.load_handler())
 
 
-def _make_pdf(path, text_page=False):
+def _make_pdf(path, text_page=False, rotation=0):
     """Write a two page PDF: a page holding nothing but a full page JPEG,
-    and, if <text_page> is set, a page of text."""
+    turned by <rotation> degrees, and, if <text_page> is set, a page of
+    text."""
     import pymupdf
     from PIL import Image
 
@@ -132,6 +134,8 @@ def _make_pdf(path, text_page=False):
     document = pymupdf.open()
     page = document.new_page(width=200, height=300)
     page.insert_image(page.rect, stream=image.getvalue())
+    if rotation:
+        page.set_rotation(rotation)
     if text_page:
         document.new_page(width=200, height=300).insert_text((20, 20), 'text')
     document.save(path)
@@ -196,8 +200,26 @@ class FitzArchiveTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self.pdf = os.path.join(self.tmp_dir, 'book.pdf')
-        _make_pdf(self.pdf)
+        self.pdf = os.path.join(self.tmp_dir, 'turned.pdf')
+        _make_pdf(self.pdf, rotation=90)
+        self.destination = os.path.join(self.tmp_dir, 'pages')
+
+    def _extracted(self):
+        """The size of the first page as the worker extracts it, and the
+        rotation its metadata asks the display for."""
+        from PIL import Image
+        from mcomix import image_tools
+        archive = pdf_multi.PdfMultiArchive(self.pdf)
+        try:
+            name = next(iter(archive.iter_contents()))
+            archive.extract(name, self.destination)
+        finally:
+            # Left running, the manager's process outlives the test.
+            archive._mgr.mgr.shutdown()
+            archive.close()
+        path = os.path.join(self.destination, name)
+        with Image.open(path) as page:
+            return page.size, image_tools.get_implied_rotation_from_file(path)
 
     def test_the_page_count_is_a_number(self):
         """A call through the manager answers with a proxy for the result,
@@ -207,10 +229,22 @@ class FitzArchiveTest(MComixTest):
         try:
             count = archive.mgr.page_count()
         finally:
-            # Left running, the manager's process outlives the test.
             archive._mgr.mgr.shutdown()
             archive.close()
         self.assertIsInstance(count, int)
         self.assertEqual(1, count)
+
+    def test_a_turned_page_keeps_its_pixels_and_names_its_turn(self):
+        """The worker records the page's rotation as Exif orientation
+        rather than turning its pixels, and the display turns it as it
+        does any image, while "auto rotate from exif" is set."""
+        self.assertEqual(((200, 300), 90), self._extracted())
+
+    def test_the_page_comes_out_the_same_whatever_the_preference(self):
+        """A worker started by forkserver or spawn - the defaults on Python
+        3.14 and on Windows - reads the preferences afresh and would see
+        their defaults, so nothing it writes may depend on them."""
+        prefs['auto rotate from exif'] = False
+        self.assertEqual(((200, 300), 90), self._extracted())
 
 # vim: expandtab:sw=4:ts=4
