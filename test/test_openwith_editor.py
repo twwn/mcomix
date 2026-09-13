@@ -6,6 +6,8 @@ editor closes: it owns that itself, because it is the only thing that
 knows whether the question about unsaved changes has been answered.
 """
 
+from unittest import mock
+
 from gi.repository import Gtk
 
 from . import MComixTest, pump
@@ -69,6 +71,24 @@ class OpenWithEditorTest(MComixTest):
         self.window.destroy()
         pump()
         super().tearDown()
+
+    def test_a_closed_editor_stops_testing_its_command(self):
+        """A closed editor was destroyed but stayed listening, and parsed
+        its selected command again for every page turned and every book
+        opened for the rest of the session."""
+        with mock.patch.object(openwith.OpenWithEditor, 'get_command',
+                               return_value=None) as asked:
+            self.window.page_changed()
+            self.assertEqual(1, asked.call_count,
+                             'an open editor did not test its command')
+            asked.reset_mock()
+
+            self.editor.close_editor()
+            pump()
+            self.window.page_changed()
+            self.window.filehandler.file_opened()
+            self.window.filehandler.file_closed()
+        asked.assert_not_called()
 
     def _labels(self):
         return [row.label for row in self.editor._command_list.each_row()]

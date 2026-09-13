@@ -242,6 +242,11 @@ class _BookArea(Gtk.ScrolledWindow):
         """Run clean-up tasks for the _BookArea prior to closing."""
 
         self.stop_update()
+        # The backend outlives the library window, and holds the area
+        # only weakly - but a closed area is not collected, and one left
+        # listening would put a cover in its grid for every book filed
+        # from then on.
+        self._library.backend.book_added_to_collection -= self._new_book_added
 
         # Unselect first, or closing with several books selected sends a
         # selection-changed for each one that goes.

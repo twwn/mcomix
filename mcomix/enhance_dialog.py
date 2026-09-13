@@ -113,9 +113,25 @@ class _EnhanceImageDialog(Dialog):
         self._window.imagehandler.page_available += self._on_page_available
         self._window.filehandler.file_closed += self._on_book_close
         self._window.page_changed += self._on_page_change
+        # 'unrealize' rather than 'destroy', which GTK4 emits when the
+        # last reference to the window goes: the handlers connected to
+        # the widgets in it hold one, so it would never come.
+        self.connect('unrealize', self._stop_following)
         self._on_page_change()
 
         self.set_visible(True)
+
+    def _stop_following(self, *args: object) -> None:
+        """Stop hearing about the book, which a closed dialog shows nothing of.
+
+        The callbacks hold the dialog only weakly, but a destroyed dialog
+        is not collected, and one left listening would go on drawing a
+        histogram for every page turned, once for each time it had been
+        opened.
+        """
+        self._window.imagehandler.page_available -= self._on_page_available
+        self._window.filehandler.file_closed -= self._on_book_close
+        self._window.page_changed -= self._on_page_change
 
     def _on_book_close(self) -> None:
         self.clear_histogram()

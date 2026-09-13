@@ -208,6 +208,18 @@ class MigratePreferencesTest(MComixTest):
         self.assertEqual(len(prefs['bg colour']), 4)
         self.assertAlmostEqual(prefs['bg colour'][0], 5000 / 65535)
 
+    def test_a_colour_an_older_mcomix_wrote_back_unchanged_is_kept(self) -> None:
+        """MComix 3.2 reads a file this one has migrated, drops the
+        format version it does not know, and writes the RGBA components
+        back as they were.  Taken for 16-bit ones on the way up again,
+        they were divided a second time, and the background turned
+        black.  A 16-bit component was always a whole number."""
+        self._write({'bg colour': [0.5, 0.25, 0.125, 1.0],
+                     'thumb bg colour': [1.0, 0.0, 0.5, 1.0]})
+        preferences.read_preferences_file()
+        self.assertEqual(prefs['bg colour'], [0.5, 0.25, 0.125, 1.0])
+        self.assertEqual(prefs['thumb bg colour'], [1.0, 0.0, 0.5, 1.0])
+
     def test_a_colour_that_is_not_one_falls_back_to_the_default(self) -> None:
         self._write({'bg colour': 'not a colour'})
         preferences.read_preferences_file()

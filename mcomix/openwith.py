@@ -371,8 +371,26 @@ class OpenWithEditor(Dialog):
         self._window.page_changed += self.test_command
         self._window.filehandler.file_opened += self.test_command
         self._window.filehandler.file_closed += self.test_command
+        # 'unrealize' rather than 'destroy', which GTK4 emits when the
+        # last reference to the window goes: the handlers connected to
+        # the widgets in it hold one, so it would never come.  Closing
+        # the main window takes the editor with it without going
+        # through close_editor(), and unrealizes it all the same.
+        self.connect('unrealize', self._stop_following)
 
         self.set_default_size(600, 400)
+
+    def _stop_following(self, *args: object) -> None:
+        """Stop testing the selected command against the page shown.
+
+        The callbacks hold the editor only weakly, but a destroyed
+        editor is not collected, and one left listening would go on
+        parsing its selected command for every page turned and every
+        book opened, once for each time it had been opened.
+        """
+        self._window.page_changed -= self.test_command
+        self._window.filehandler.file_opened -= self.test_command
+        self._window.filehandler.file_closed -= self.test_command
 
     def save(self) -> None:
         """Hand the commands in the list back to the manager, which

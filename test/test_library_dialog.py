@@ -19,9 +19,11 @@ from mcomix import constants
 from mcomix import icons
 from mcomix import main
 from mcomix.dialog import Response
+from mcomix.library import book_area
 from mcomix.library import collection_area
 from mcomix.library import main_dialog
 from mcomix.library import watchlist
+from mcomix.preferences import prefs
 
 
 class _LibraryWindowTest(MComixTest):
@@ -92,6 +94,29 @@ class LibraryDialogTest(_LibraryWindowTest):
         pump()
         self.assertIsNone(main_dialog._dialog)
         self.assertIsNot(self._open(), first)
+
+    def test_a_closed_library_is_not_told_about_books_filed_later(self):
+        """The cover view stayed subscribed to the backend, which outlives
+        the window, and put a cover in its grid for every book filed
+        after the library had closed - once for each time it had been
+        opened."""
+        prefs['last library collection'] = constants.COLLECTION_ALL
+        dialog = self._open()
+        self.assertEqual(constants.COLLECTION_ALL,
+                         dialog.collection_area.get_current_collection())
+        backend = dialog.backend
+        path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        backend.add_book(path)
+        book = backend.get_book_by_path(path)
+        dialog.close()
+        pump()
+
+        with unittest.mock.patch.object(book_area._BookArea,
+                                        'add_books') as added:
+            # A book filed in no collection counts as one in "All books".
+            backend.book_added_to_collection(book, None)
+            pump()
+        added.assert_not_called()
 
     def _sidebar_width(self, dialog):
         """What the collection sidebar asks for, at least and at most."""

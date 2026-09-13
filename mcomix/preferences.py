@@ -382,6 +382,12 @@ def _rgba_from_16bit_colour(colour: object) -> list[float]:
     """
     if not isinstance(colour, Sequence) or len(colour) < 3:
         return list(DEFAULT_BG_COLOUR)
+    # Already RGBA: MComix 3.2 writes a migrated file back without the
+    # format version it does not know, and a 16-bit component was always
+    # a whole number, never a float.
+    if all(isinstance(component, float) and 0.0 <= component <= 1.0
+           for component in colour[:4]):
+        return list(colour[:3]) + [colour[3] if len(colour) > 3 else 1.0]
     components = []
     for component in colour[:3]:
         if not isinstance(component, (int, float)):

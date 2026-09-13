@@ -6,6 +6,7 @@ an archive to describe.
 """
 
 import os
+from unittest import mock
 
 from gi.repository import Gtk
 
@@ -48,6 +49,26 @@ class PropertiesDialogTest(MComixTest):
         self.window.destroy()
         main.set_main_window(None)
         pump()
+
+    def test_a_closed_dialog_does_not_read_the_pages_turned_to(self):
+        """A destroyed dialog stayed listening, and read every page turned
+        to - its file, its size, its thumbnail - for the rest of the
+        session."""
+        self._open(get_testfile_path('archives', '01-ZIP-Normal.zip'))
+        with mock.patch.object(properties_dialog._PropertiesDialog,
+                               '_update_image_page') as updated:
+            self.window.flip_page(+1)
+            wait_for(self.window.imagehandler.page_is_available)
+            pump()
+            self.assertTrue(updated.called, 'an open dialog did not follow')
+            updated.reset_mock()
+
+            self.dialog.destroy()
+            pump()
+            self.window.flip_page(+1)
+            wait_for(self.window.imagehandler.page_is_available)
+            pump()
+        updated.assert_not_called()
 
     def _tabs(self):
         notebook = self.dialog._notebook

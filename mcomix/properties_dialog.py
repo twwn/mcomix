@@ -52,8 +52,25 @@ class _PropertiesDialog(Dialog):
         self._window.filehandler.file_opened += self._on_book_change
         self._window.filehandler.file_closed += self._on_book_change
         self._window.imagehandler.page_available += self._on_page_available
+        # 'unrealize' rather than 'destroy', which GTK4 emits when the
+        # last reference to the window goes: the handlers connected to
+        # the widgets in it hold one, so it would never come.
+        self.connect('unrealize', self._stop_following)
 
         self.set_visible(True)
+
+    def _stop_following(self, *args: object) -> None:
+        """Stop hearing about the book, which a closed dialog shows nothing of.
+
+        The callbacks hold the dialog only weakly, but a destroyed dialog
+        is not collected, and one left listening would go on reading
+        every page turned and every book opened, once for each time it
+        had been opened.
+        """
+        self._window.page_changed -= self._on_page_change
+        self._window.filehandler.file_opened -= self._on_book_change
+        self._window.filehandler.file_closed -= self._on_book_change
+        self._window.imagehandler.page_available -= self._on_page_available
 
     def _on_page_change(self) -> None:
         self._update_image_page()

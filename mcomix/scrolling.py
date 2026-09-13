@@ -135,8 +135,9 @@ class Scrolling:
                             continue
                     break
                 # Reading towards the smaller values rounds the other
-                # way, so that the two directions land on the same
-                # grid points.
+                # way, which makes its grid the mirror image of the one
+                # read towards the larger values: back from the far end
+                # takes the steps that forwards from the start does.
                 positions = self._cached_bresenham_sums(
                     invisible_size, steps_to_take, direction == -1)
 
@@ -243,9 +244,13 @@ class Scrolling:
         https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm.
 
         <half_up> rounds a step that falls exactly between two pixels
-        upwards instead of downwards, which is what makes reading
-        towards the smaller values land on the same grid as reading
-        towards the larger.
+        upwards instead of downwards, which makes the grid the mirror
+        image of the one without it: reading towards the smaller values
+        from the far end steps the way reading towards the larger values
+        does from the start.  The two are not the same points - 101
+        pixels in two steps are [0, 50, 101] one way and [0, 51, 101]
+        the other - so a step back after a step on can stop a pixel
+        short of where the step on began.
         """
         if num < 0:
             raise ValueError("num < 0")

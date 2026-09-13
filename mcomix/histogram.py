@@ -6,7 +6,13 @@ import PIL.ImageOps as ImageOps
 
 from gi.repository import GdkPixbuf
 
+from typing import cast
+
 from mcomix import image_tools
+
+
+#: One pixel of an RGB image, as its pixel access hands it over.
+type Rgb = tuple[int, int, int]
 
 
 def draw_histogram(pixbuf: GdkPixbuf.Pixbuf, height: int = 170,
@@ -28,34 +34,37 @@ def draw_histogram(pixbuf: GdkPixbuf.Pixbuf, height: int = 170,
     r = [int(hist_data[n] * y_scale) for n in range(256)]
     g = [int(hist_data[n] * y_scale) for n in range(256, 512)]
     b = [int(hist_data[n] * y_scale) for n in range(512, 768)]
-    im_data = im.getdata()
+    pixels = im.load()
+    # An image made in memory is loaded already, so there is always
+    # something to reach its pixels through.
+    assert pixels is not None
     # Draw the filling colours
     for x in range(256):
         for y in range(1, max(r[x], g[x], b[x]) + 1):
             r_px = y <= r[x] and fill or 0
             g_px = y <= g[x] and fill or 0
             b_px = y <= b[x] and fill or 0
-            im_data.putpixel((x + 1, height - 5 - y), (r_px, g_px, b_px))
+            pixels[x + 1, height - 5 - y] = (r_px, g_px, b_px)
     # Draw the outlines
     for x in range(1, 256):
         for y in list(range(r[x-1] + 1, r[x] + 1)) + [r[x]] * (r[x] != 0):
-            r_px, g_px, b_px = im_data.getpixel((x + 1, height - 5 - y))
-            im_data.putpixel((x + 1, height - 5 - y), (255, g_px, b_px))
+            r_px, g_px, b_px = cast(Rgb, pixels[x + 1, height - 5 - y])
+            pixels[x + 1, height - 5 - y] = (255, g_px, b_px)
         for y in range(r[x] + 1, r[x-1] + 1):
-            r_px, g_px, b_px = im_data.getpixel((x, height - 5 - y))
-            im_data.putpixel((x, height - 5 - y), (255, g_px, b_px))
+            r_px, g_px, b_px = cast(Rgb, pixels[x, height - 5 - y])
+            pixels[x, height - 5 - y] = (255, g_px, b_px)
         for y in list(range(g[x-1] + 1, g[x] + 1)) + [g[x]] * (g[x] != 0):
-            r_px, g_px, b_px = im_data.getpixel((x + 1, height - 5 - y))
-            im_data.putpixel((x + 1, height - 5 - y), (r_px, 255, b_px))
+            r_px, g_px, b_px = cast(Rgb, pixels[x + 1, height - 5 - y])
+            pixels[x + 1, height - 5 - y] = (r_px, 255, b_px)
         for y in range(g[x] + 1, g[x-1] + 1):
-            r_px, g_px, b_px = im_data.getpixel((x, height - 5 - y))
-            im_data.putpixel((x, height - 5 - y), (r_px, 255, b_px))
+            r_px, g_px, b_px = cast(Rgb, pixels[x, height - 5 - y])
+            pixels[x, height - 5 - y] = (r_px, 255, b_px)
         for y in list(range(b[x-1] + 1, b[x] + 1)) + [b[x]] * (b[x] != 0):
-            r_px, g_px, b_px = im_data.getpixel((x + 1, height - 5 - y))
-            im_data.putpixel((x + 1, height - 5 - y), (r_px, g_px, 255))
+            r_px, g_px, b_px = cast(Rgb, pixels[x + 1, height - 5 - y])
+            pixels[x + 1, height - 5 - y] = (r_px, g_px, 255)
         for y in range(b[x] + 1, b[x-1] + 1):
-            r_px, g_px, b_px = im_data.getpixel((x, height - 5 - y))
-            im_data.putpixel((x, height - 5 - y), (r_px, g_px, 255))
+            r_px, g_px, b_px = cast(Rgb, pixels[x, height - 5 - y])
+            pixels[x, height - 5 - y] = (r_px, g_px, 255)
     if text:
         maxstr = 'max: ' + str(maximum)
         draw = ImageDraw.Draw(im)

@@ -60,8 +60,24 @@ class _CommentsDialog(Dialog):
         self._window.filehandler.file_available += self._on_file_available
         self._window.filehandler.file_opened += self._update_comments
         self._window.filehandler.file_closed += self._update_comments
+        # 'unrealize' rather than 'destroy', which GTK4 emits when the
+        # last reference to the window goes: the handlers connected to
+        # the widgets in it hold one, so it would never come.
+        self.connect('unrealize', self._stop_following)
         self._update_comments()
         self.set_visible(True)
+
+    def _stop_following(self, *args: object) -> None:
+        """Stop hearing about the book, which a closed dialog shows nothing of.
+
+        The callbacks hold the dialog only weakly, but a destroyed dialog
+        is not collected, and one left listening would go on reading the
+        comments of every book opened, once for each time it had been
+        opened.
+        """
+        self._window.filehandler.file_available -= self._on_file_available
+        self._window.filehandler.file_opened -= self._update_comments
+        self._window.filehandler.file_closed -= self._update_comments
 
     def _on_file_available(self, path_list: Sequence[str]) -> None:
         for path in path_list:

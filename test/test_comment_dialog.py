@@ -7,6 +7,7 @@ dialog and replaced by another.
 
 import os
 import zipfile
+from unittest import mock
 
 from . import MComixTest, get_testfile_path, pump, wait_for
 
@@ -88,5 +89,27 @@ class CommentsDialogTest(MComixTest):
         wait_for(lambda: len(self._tabs()) == 1, seconds=20)
         self.assertEqual(self._tabs(), ['late.txt'])
 
+
+    def test_a_closed_dialog_does_not_read_the_comments_of_the_next_book(self):
+        """A destroyed dialog stayed listening, and put a tab together for
+        every comment of every book opened after it."""
+        self._open(self._archive_with_comments(
+            'first.zip', ('one.txt', 'first')))
+        self.dialog = comment_dialog._CommentsDialog(self.window)
+        wait_for(lambda: len(self._tabs()) == 1, seconds=20)
+        self.dialog.destroy()
+        self.dialog = None
+        pump()
+
+        with mock.patch.object(comment_dialog._CommentsDialog,
+                               '_add_comment') as added:
+            self._open(self._archive_with_comments(
+                'second.zip', ('two.txt', 'second')))
+            handler = self.window.filehandler
+            wait_for(lambda: handler.get_number_of_comments() == 1 and
+                     handler.file_is_available(handler.get_comment_name(1)),
+                     seconds=20)
+            pump()
+        added.assert_not_called()
 
 # vim: expandtab:sw=4:ts=4
