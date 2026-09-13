@@ -49,9 +49,28 @@ def missing_image_icon() -> GdkPixbuf.Pixbuf:
     return icon
 
 
+def rgba(red: float, green: float, blue: float,
+         alpha: float = 1.0) -> Gdk.RGBA:
+    """The Gdk.RGBA of the components given, each between 0 and 1.
+
+    Gdk.RGBA(red, green, blue, alpha) reads as the same thing, and is
+    what PyGObject 3.56 builds.  But the floor MComix declares is 3.46,
+    and PyGObject 3.46.0, 3.48.2 and 3.50.0 hand arguments to a boxed
+    type's constructor to nothing, with a DeprecationWarning, so every
+    colour built that way came out as transparent black.  Setting the
+    fields one by one means the same on all of them.
+    """
+    colour = Gdk.RGBA()
+    colour.red = red
+    colour.green = green
+    colour.blue = blue
+    colour.alpha = alpha
+    return colour
+
+
 #: Colours are Gdk.RGBA components throughout: four floats between 0 and 1.
-RGBA_BLACK = Gdk.RGBA(0.0, 0.0, 0.0, 1.0)
-RGBA_WHITE = Gdk.RGBA(1.0, 1.0, 1.0, 1.0)
+RGBA_BLACK = rgba(0.0, 0.0, 0.0, 1.0)
+RGBA_WHITE = rgba(1.0, 1.0, 1.0, 1.0)
 
 
 #: Which gdk-pixbuf rotation each quarter turn, clockwise in degrees, is.

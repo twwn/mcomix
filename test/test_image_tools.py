@@ -2,6 +2,7 @@ import binascii
 import os
 import shutil
 import tempfile
+import unittest
 
 from gi.repository import Gdk, GdkPixbuf
 
@@ -840,5 +841,24 @@ class CombinePixbufsTest(MComixTest):
             self._solid(4, 6, self.GREEN))
         self.assertTrue(combined.get_has_alpha(),
                         'the transparency of the first page was dropped')
+
+class RgbaTest(unittest.TestCase):
+
+    """Colours built with rgba() carry the components they were given."""
+
+    def test_the_colour_constants_are_black_and_white(self):
+        # Built as Gdk.RGBA(0.0, 0.0, 0.0, 1.0), both were transparent
+        # black on PyGObject 3.50 and earlier, which ignores the arguments.
+        self.assertEqual('rgb(0,0,0)', image_tools.RGBA_BLACK.to_string())
+        self.assertEqual('rgb(255,255,255)', image_tools.RGBA_WHITE.to_string())
+
+    def test_every_component_is_the_one_given(self):
+        colour = image_tools.rgba(0.25, 0.5, 0.75, 0.5)
+        self.assertEqual([0.25, 0.5, 0.75, 0.5],
+                         [colour.red, colour.green, colour.blue, colour.alpha])
+
+    def test_a_colour_is_opaque_unless_said_otherwise(self):
+        self.assertEqual(1.0, image_tools.rgba(0.1, 0.2, 0.3).alpha)
+
 
 # vim: expandtab:sw=4:ts=4

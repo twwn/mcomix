@@ -7,6 +7,9 @@ that brought this up - applied as written, and the dialog came out grey
 with a pitch-black sidebar in it.
 """
 
+import unittest
+
+import gi
 from gi.repository import Gdk, Gsk, Gtk
 
 from . import MComixTest, wait_for
@@ -23,6 +26,14 @@ def background_of(window):
     that has not been allocated snapshots to nothing at all, which read
     as the palette not having been applied.
     """
+    if gi.version_info < (3, 48):
+        # A render node is a fundamental type, and PyGObject hands those
+        # to Python only from 3.48 on: 3.46 raises "No means to translate
+        # argument or return value for 'GskColorNode'".  MComix itself
+        # never reads a render node, so only this way of looking at what
+        # was painted is out of reach there.
+        raise unittest.SkipTest('PyGObject %s cannot read render nodes'
+                                % gi.__version__)
     wait_for(lambda: window.get_width() > 0 and window.get_height() > 0,
              seconds=5)
     paintable = Gtk.WidgetPaintable.new(window)

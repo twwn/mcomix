@@ -253,7 +253,7 @@ class _ThumbnailViewBase:
             '.%(name)s, .%(name)s > child, .%(name)s > row'
             ' { background: %(background)s; color: %(text)s; }'
             % {'name': self.CSS_CLASS,
-               'background': Gdk.RGBA(*colour).to_string(),
+               'background': image_tools.rgba(*colour).to_string(),
                'text': text_colour.to_string()})
 
     # -- The entries themselves -------------------------------------------

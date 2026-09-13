@@ -4,7 +4,7 @@ import operator
 from collections.abc import Callable, Sequence
 from typing import TYPE_CHECKING
 
-from gi.repository import Gdk, GdkPixbuf, Gio, GObject, Gtk
+from gi.repository import GdkPixbuf, Gio, GObject, Gtk
 
 from mcomix import preferences
 from mcomix.preferences import prefs
@@ -12,6 +12,7 @@ from mcomix.dialog import Dialog
 from mcomix import preferences_page
 from mcomix import widgets
 from mcomix import constants
+from mcomix import image_tools
 from mcomix import message_dialog
 from mcomix import keybindings
 from mcomix import keybindings_editor
@@ -924,7 +925,7 @@ class _PreferencesDialog(Dialog):
         # that comes back arrives as a change to the rgba property, so
         # the button is given its own colour before anything listens.
         button = Gtk.ColorDialogButton(dialog=Gtk.ColorDialog())
-        button.set_rgba(Gdk.RGBA(*preferences.by_name(prefkey)))
+        button.set_rgba(image_tools.rgba(*preferences.by_name(prefkey)))
         button.connect('notify::rgba', self._color_button_cb, prefkey)
         return button
 

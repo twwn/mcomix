@@ -10,7 +10,7 @@ said went out with the wash.
 import os
 import unittest.mock
 
-from gi.repository import Gdk, Gtk
+from gi.repository import Gtk
 
 from . import MComixTest, pump
 
@@ -20,6 +20,7 @@ from mcomix import icons
 from mcomix import main
 from mcomix import message_dialog
 from mcomix import preferences_dialog
+from mcomix import image_tools
 from mcomix.dialog import Response
 from mcomix.preferences import prefs
 
@@ -143,7 +144,7 @@ class PreferencesDialogTest(MComixTest):
         listening for the old signal would hear nothing at all."""
         prefs['bg colour'] = [0.0, 0.0, 0.0, 1.0]
         self._open()
-        self._colour_buttons()[0].set_rgba(Gdk.RGBA(0.25, 0.5, 0.75, 1.0))
+        self._colour_buttons()[0].set_rgba(image_tools.rgba(0.25, 0.5, 0.75, 1.0))
         self.assertEqual([round(value, 2) for value in prefs['bg colour']],
                          [0.25, 0.5, 0.75, 1.0])
 
