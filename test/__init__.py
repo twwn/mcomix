@@ -8,6 +8,16 @@ mcomix_path = os.environ.get('MCOMIXPATH', None)
 if mcomix_path is not None:
     sys.path.insert(0, mcomix_path)
 
+# Make sure the GTK version MComix targets is selected before any module
+# pulls in gi.repository; mcomix.run does this for the application itself.
+
+import gi
+
+gi.require_version('PangoCairo', '1.0')
+gi.require_version('Gtk', '3.0')
+gi.require_version('Gdk', '3.0')
+gi.require_version('GdkPixbuf', '2.0')
+
 # Configure locale.
 
 import locale
@@ -44,15 +54,21 @@ default_prefs.update(prefs)
 
 class MComixTest(unittest.TestCase):
 
+    #: Global state setUp() overwrites and tearDown() has to put back.
+    OVERRIDDEN_ENVIRONMENT = ('HOME', 'XDG_DATA_HOME', 'XDG_CONFIG_HOME',
+                              'TMPDIR', 'TEMP', 'TMP')
+
     def setUp(self):
-        base_tmpdir = os.path.join('test', 'tmp')
-        if not os.path.exists(base_tmpdir):
-            os.mkdir(base_tmpdir)
+        base_tmpdir = os.path.join(os.path.dirname(__file__), 'tmp')
+        os.makedirs(base_tmpdir, exist_ok=True)
         name = '.'.join((
             self.__module__.split('.')[-1],
             self.__class__.__name__,
             self._testMethodName))
         self.tmp_dir = tempfile.mkdtemp(dir=base_tmpdir, prefix='%s.' % name)
+        self._saved_environ = {var: os.environ.get(var)
+                               for var in self.OVERRIDDEN_ENVIRONMENT}
+        self._saved_tempdir = tempfile.tempdir
         # Change storage directories.
         home_dir = os.path.join(self.tmp_dir, 'home')
         os.mkdir(home_dir)
@@ -70,27 +86,40 @@ class MComixTest(unittest.TestCase):
         prefs.update(default_prefs)
 
     def tearDown(self):
-        name = '.'.join((
-            self.__module__.split('.')[-1],
-            self.__class__.__name__,
-            self._testMethodName))
-        failed = False
-        if hasattr(self._resultForDoCleanups, '_excinfo'):
-            # When running under py.test2
-            exclist = self._resultForDoCleanups._excinfo
-            if exclist is not None:
-                for exc in exclist:
-                    if 'XFailed' != exc.typename:
-                        failed = True
-                        break
-        if hasattr(self._resultForDoCleanups, 'failures'):
-            # When running under nosetest2
-            for failure, traceback in self._resultForDoCleanups.failures:
-                if failure.id() == self.id():
-                    failed = True
-                    break
-        if not failed:
+        # Restore the global state setUp() changed. Leaving tempfile.tempdir
+        # pointing into the temporary directory removed below would break
+        # every later test that creates a temporary file of its own.
+        for var, value in self._saved_environ.items():
+            if value is None:
+                os.environ.pop(var, None)
+            else:
+                os.environ[var] = value
+        tempfile.tempdir = self._saved_tempdir
+        # Leave the temporary directory behind for post-mortem analysis
+        # when the test did not pass.
+        if not self._test_failed():
             shutil.rmtree(self.tmp_dir)
+
+    def _test_failed(self):
+        """Return True if the running test has already failed.
+
+        There is no public API for this. Python 3.11 dropped the
+        _resultForDoCleanups attribute this used to be read from, so go
+        through the (private) outcome object instead where available.
+        """
+        result = getattr(getattr(self, '_outcome', None), 'result', None)
+        if result is None:
+            result = getattr(self, '_resultForDoCleanups', None)
+
+        if hasattr(result, '_excinfo'):
+            # When running under pytest.
+            return any(exc.typename != 'XFailed'
+                       for exc in result._excinfo or ())
+
+        # When running under plain unittest.
+        problems = list(getattr(result, 'failures', ())) + \
+            list(getattr(result, 'errors', ()))
+        return any(test.id() == self.id() for test, _traceback in problems)
 
 # Helper to get path to testsuite sample files.
 

@@ -22,8 +22,8 @@ class CallbackList(object):
         callbacks are run. Code within the function and the callback is
         always executed in the main thread. """
 
-        if threading.currentThread().name == 'MainThread':
-            if self.__object:
+        if threading.current_thread() is threading.main_thread():
+            if self.__object is not None:
                 # Assume that the Callback object is bound to a class method.
                 result = self.__function(self.__object, *args, **kwargs)
             else:
@@ -59,7 +59,7 @@ class CallbackList(object):
         This will be called by GLib.idle_add, with <params> being a tuple
         of (args, kwargs). """
 
-        result = self(*params[0], **params[1])
+        self(*params[0], **params[1])
 
         # Remove this function from the idle queue
         return 0
@@ -71,14 +71,11 @@ class CallbackList(object):
             if obj_ref is None:
                 # Callback is a normal function
                 callback = func
-            elif obj_ref() is not None:
-                # Callback is a bound method.
-                # Recreate it by binding the function to the object.
-                callback = func.__get__(obj_ref())
             else:
-                # Callback is a bound method, object
-                # no longer exists.
-                callback = None
+                # Callback is a bound method. Recreate it by binding the
+                # function to the object, unless that no longer exists.
+                obj = obj_ref()
+                callback = None if obj is None else func.__get__(obj)
 
             if callback:
                 try:
@@ -99,8 +96,9 @@ class CallbackList(object):
         being the object <func> is bound to. This is required since
         weak references do not work on bound methods. """
 
-        if hasattr(func, "im_self") and getattr(func, "im_self") is not None:
-            return (weakref.ref(func.__self__, self.__callback_deleted), func.__func__)
+        obj = getattr(func, '__self__', None)
+        if obj is not None:
+            return (weakref.ref(obj, self.__callback_deleted), func.__func__)
         else:
             return (None, func)
 

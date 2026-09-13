@@ -8,7 +8,7 @@ from typing import Type
 from mcomix import log
 from mcomix.archive.archive_base import BaseArchive, DisabledArchive
 
-from mcomix.version_tools import LegacyVersion
+from mcomix.version_tools import Version
 
 FITZ_VERSION_REQUIRED = "1.19.2"
 
@@ -50,8 +50,8 @@ try:
     except ImportError:
         import fitz_old as fitz
 
-    fitz_version = LegacyVersion(fitz.VersionFitz)
-    required_version = LegacyVersion(FITZ_VERSION_REQUIRED)
+    fitz_version = Version(fitz.VersionFitz)
+    required_version = Version(FITZ_VERSION_REQUIRED)
 
     if fitz_version < required_version:
         raise UnsupportedFitzVersionError(found_version=fitz.VersionFitz)

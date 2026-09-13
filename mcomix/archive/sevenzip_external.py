@@ -225,13 +225,11 @@ class TarArchive(SevenZipArchive):
         # We make up a name that's guaranteed to be
         # recognized as an archive by MComix.
         self._path = 'archive.tar'
-        proc = process.popen(self._get_list_arguments(), stderr=process.STDOUT)
-        try:
-            for line in proc.stdout:
-                self._parse_list_output_line(line.rstrip(os.linesep))
-        finally:
-            proc.stdout.close()
-            proc.wait()
+        proc = subprocess.run(self._get_list_arguments(),
+                              stdout=subprocess.PIPE, stderr=process.STDOUT,
+                              encoding='utf-8')
+        for line in proc.stdout.splitlines():
+            self._parse_list_output_line(line.rstrip(os.linesep))
         if self._contents:
             # The archive should not contain more than 1 member.
             assert 1 == len(self._contents)

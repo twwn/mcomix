@@ -39,6 +39,8 @@ class ImageHandler(object):
         self._base_path = None
         #: List of image file names, either from extraction or directory
         self._image_files = None
+        #: Map of image file name to its index in C{_image_files}
+        self._image_file_index = {}
         #: Index of current page
         self._current_image_index = None
         #: Set of images reading for decoding (i.e. already extracted)
@@ -193,12 +195,9 @@ class ImageHandler(object):
     def cleanup(self):
         """Run clean-up tasks. Should be called prior to exit."""
 
-        self.first_wanted = 0
-        self.last_wanted = 1
-
         self._thread.stop()
         self._base_path = None
-        self._image_files = []
+        self.set_image_files([])
         self._current_image_index = None
         self._available_images.clear()
         self._raw_pixbufs.clear()
@@ -244,16 +243,22 @@ class ImageHandler(object):
         if priority is not None:
             self._thread.append_order((priority, index))
 
+    def set_image_files(self, image_files):
+        """Set the list of image files making up the current book."""
+        self._image_files = image_files
+        # Lookup table for _file_available(), which would otherwise have to
+        # scan the whole list again for every single file that shows up.
+        self._image_file_index = {path: index
+                                  for index, path in enumerate(image_files)}
+
     def _file_available(self, filepaths):
         """ Called by the filehandler when a new file becomes available. """
-        # Find the page that corresponds to <filepath>
-        if not self._image_files:
-            return
-
-        available = sorted(filepaths)
-        for i, imgpath in enumerate(self._image_files):
-            if tools.bin_search(available, imgpath) >= 0:
-                self.page_available(i + 1)
+        # Find the pages that correspond to <filepaths>, in page order.
+        indexes = sorted(index for index in
+                         map(self._image_file_index.get, filepaths)
+                         if index is not None)
+        for index in indexes:
+            self.page_available(index + 1)
 
     def get_number_of_pages(self):
         """Return the number of pages in the current archive/directory."""
@@ -437,7 +442,7 @@ class ImageHandler(object):
             # Asked for check only...
             return False
 
-        log.debug('Waiting for page %u', page)
+        log.debug('Waiting for page %u', index + 1)
         path = self.get_path_to_page(page)
         self._window.filehandler._wait_on_file(path)
         return True

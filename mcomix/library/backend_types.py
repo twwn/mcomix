@@ -99,6 +99,11 @@ class _Book(_BackendObject):
         if page is not None:
             if not time:
                 time = datetime.datetime.now()
+            if isinstance(time, datetime.datetime):
+                # sqlite3's implicit datetime adapter is deprecated since
+                # Python 3.12; write the same text it used to produce, which
+                # is what get_last_read_date() reads back.
+                time = time.isoformat(sep=' ')
             cursor.execute('''INSERT INTO recent (book, page, time_set)
                               VALUES (?, ?, ?)''',
                            (self.id, page, time))

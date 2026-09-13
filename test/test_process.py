@@ -1,6 +1,5 @@
 
 import os
-import shutil
 import stat
 import sys
 import tempfile
@@ -9,19 +8,6 @@ from . import MComixTest
 
 from mcomix import process
 
-
-if 'win32' == sys.platform:
-
-    def _is_valid_exe(name):
-        return (name.endswith('.exe') and
-                os.path.isabs(name) and
-                os.path.isfile(exe))
-
-else:
-    def _is_valid_exe(name):
-        return (os.path.isabs(name) and
-                os.path.isfile(name) and
-                os.access(exe, os.R_OK|os.X_OK))
 
 def _create_file(path, rights='r'):
     mode = 0
@@ -48,8 +34,7 @@ class ProcessTest(MComixTest):
     def test_find_executable(self):
         cleanup = []
         try:
-            root_dir = tempfile.mkdtemp(dir='test', prefix='tmp.path.')
-            # cleanup.append(lambda: shutil.rmtree(root_dir))
+            root_dir = tempfile.mkdtemp(prefix='path.')
 
             if 'win32' == sys.platform:
                 orig_exe_dir = process._exe_dir

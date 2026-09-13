@@ -4,7 +4,7 @@
 
 from mcomix import log
 from mcomix import process
-from mcomix.version_tools import LegacyVersion
+from mcomix.version_tools import Version
 from mcomix.archive import archive_base
 from mcomix.constants import PDF_RENDER_DPI_DEF, PDF_RENDER_DPI_MAX
 
@@ -92,8 +92,8 @@ class PdfArchive(archive_base.BaseArchive):
             finally:
                 proc.stderr.close()
                 proc.wait()
-            version = LegacyVersion(version)
-            if version >= LegacyVersion('1.8'):
+            version = Version(version)
+            if version >= Version('1.8'):
                 # Mutool executable with draw support.
                 _mudraw_exec = [mutool, 'draw']
                 _mudraw_trace_args = ['-F', 'trace']
@@ -105,7 +105,7 @@ class PdfArchive(archive_base.BaseArchive):
                     log.debug('mudraw executable not found')
                 else:
                     _mudraw_exec = [mudraw]
-                    if version >= LegacyVersion('1.7'):
+                    if version >= Version('1.7'):
                         _mudraw_trace_args = ['-F', 'trace']
                     else:
                         _mudraw_trace_args = ['-x']

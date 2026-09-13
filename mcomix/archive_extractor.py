@@ -110,7 +110,7 @@ class Extractor(object):
             if self._extract_started:
                 self._extract_thread.stop()
                 self._extract_started = False
-            self.setupped = False
+            self._setupped = False
 
     def extract(self):
         """Start extracting the files in the file list one by one using a
@@ -165,7 +165,7 @@ class Extractor(object):
         with self._condition:
             self._files.remove(name)
             self._extracted.add(name)
-            self._condition.notifyAll()
+            self._condition.notify_all()
         self.file_extracted(self, name)
 
     def _extract_all_files(self, files):

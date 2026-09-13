@@ -210,7 +210,7 @@ class _EditArchiveDialog(Gtk.Dialog):
                     new_positions.append(end_index)
                     end_index -= 1
 
-            self._window.imagehandler._image_files = new_image_array
+            self._window.imagehandler.set_image_files(new_image_array)
             self._window.imagehandler._raw_pixbufs = {}
             self._window.imagehandler.do_cacheing()
             self._window.thumbnailsidebar.clear()

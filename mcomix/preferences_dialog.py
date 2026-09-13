@@ -171,6 +171,13 @@ class _PreferencesDialog(Gtk.Dialog):
             'open first file in prev directory',
             _('Automatically open the first file of the previous directory when navigating to it, instead of opening the last file of the previous directory.')))
 
+        page.add_row(self._create_pref_check_button(
+            _('Wrap the mouse pointer around the screen edges'),
+            'wrap mouse scroll',
+            _('When dragging a page with the mouse, warp the pointer back to '
+              'the opposite edge of the screen once it leaves it, so that '
+              'large pages can be scrolled without lifting the mouse.')))
+
         page.add_row(Gtk.Label(label=_('Number of pixels to scroll per arrow key press:')),
             self._create_pref_spinner('number of pixels to scroll per key event',
             1, 1, 500, 1, 3, 0,
@@ -310,6 +317,11 @@ class _PreferencesDialog(Gtk.Dialog):
             self._create_pref_spinner('max extract threads',
             1, 1, 16, 1, 4, 0,
             _('Set the maximum number of concurrent threads for formats that support it.')))
+
+        page.add_row(Gtk.Label(label=_('Maximum number of concurrent thumbnail threads:')),
+            self._create_pref_spinner('max threads',
+            1, 1, 16, 1, 4, 0,
+            _('Set the maximum number of concurrent threads used to generate thumbnails. Takes effect the next time MComix is started.')))
 
         page.add_row(self._create_pref_check_button(
             _('Store thumbnails for opened files'),
@@ -856,51 +868,36 @@ class _PreferencesDialog(Gtk.Dialog):
         """Callback for spinner-type preferences."""
         value = spinbutton.get_value()
 
-        if preference == 'lens size':
-            prefs[preference] = int(value)
-
-        elif preference == 'lens magnification':
+        # Most preferences are plain pixel/item counts; only those stored in
+        # another unit than the spinner displays need converting.
+        if preference == 'lens magnification':
             prefs[preference] = value
-
         elif preference == 'slideshow delay':
             prefs[preference] = int(round(value * 1000))
-            self._window.slideshow.update_delay()
-
-        elif preference == 'number of pixels to scroll per slideshow event':
-            prefs[preference] = int(value)
-
-        elif preference == 'number of pixels to scroll per key event':
-            prefs[preference] = int(value)
-
-        elif preference == 'number of pixels to scroll per mouse wheel event':
-            prefs[preference] = int(value)
-
         elif preference == 'smart scroll percentage':
             prefs[preference] = value / 100.0
+        else:
+            prefs[preference] = int(value)
+
+        # Preferences that take more than storing the new value.
+        if preference == 'slideshow delay':
+            self._window.slideshow.update_delay()
 
         elif preference == 'thumbnail size':
-            prefs[preference] = int(value)
             self._window.thumbnailsidebar.resize()
             self._window.draw_image()
 
         elif preference == 'max pages to cache':
-            prefs[preference] = int(value)
             self._window.imagehandler.do_cacheing()
 
         elif preference == 'number of key presses before page turn':
-            prefs['number of key presses before page turn'] = int(value)
             self._window._event_handler._extra_scroll_events = 0
 
         elif preference in ('fit to size width wide', 'fit to size height wide',
             'fit to size width other', 'fit to size height other',):
-            prefs[preference] = int(value)
             self._window.change_zoom_mode()
 
-        elif preference == 'max extract threads':
-            prefs[preference] = int(value)
-
         elif preference == 'space between two pages':
-            prefs[preference] = int(value)
             self._window.update_space()
 
 

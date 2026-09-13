@@ -1,8 +1,8 @@
 
+import argparse
 import os
-import sys
-import optparse
 import signal
+import sys
 
 if __name__ == '__main__':
     print('PROGRAM TERMINATED', file=sys.stderr)
@@ -27,78 +27,71 @@ def wait_and_exit():
         input("Press ENTER to continue...")
     sys.exit(1)
 
-def print_version(opt, value, parser, *args, **kwargs):
-    """Print the version number and exit."""
-    print(constants.APPNAME + ' ' + constants.VERSION)
-    sys.exit(0)
-
 def parse_arguments(argv):
     """ Parse the command line passed in <argv>. Returns a tuple containing
     (options, arguments). Errors parsing the command line are handled in
     this function. """
     from mcomix.i18n import _
 
-    parser = optparse.OptionParser(
-            usage="%%prog %s" % _('[OPTION...] [PATH]'),
+    parser = argparse.ArgumentParser(
+            usage='%%(prog)s %s' % _('[OPTION...] [PATH]'),
             description=_('View images and comic book archives.'),
-            add_help_option=False)
-    parser.add_option('--help', action='help',
+            add_help=False)
+    parser.add_argument('--help', action='help',
             help=_('Show this help and exit.'))
-    parser.add_option('-s', '--slideshow', dest='slideshow', action='store_true',
+    parser.add_argument('-s', '--slideshow', dest='slideshow', action='store_true',
             help=_('Start the application in slideshow mode.'))
-    parser.add_option('-l', '--library', dest='library', action='store_true',
+    parser.add_argument('-l', '--library', dest='library', action='store_true',
             help=_('Show the library on startup.'))
-    parser.add_option('-v', '--version', action='callback', callback=print_version,
+    parser.add_argument('-v', '--version', action='version',
+            version='%s %s' % (constants.APPNAME, constants.VERSION),
             help=_('Show the version number and exit.'))
-    parser.add_option('--lang', dest='language_code', action='store',
+    parser.add_argument('--lang', dest='language_code',
             help=_('Temporarily override the interface language.'))
 
-    viewmodes = optparse.OptionGroup(parser, _('View modes'))
-    viewmodes.add_option('-f', '--fullscreen', dest='fullscreen', action='store_true',
+    viewmodes = parser.add_argument_group(_('View modes'))
+    viewmodes.add_argument('-f', '--fullscreen', dest='fullscreen', action='store_true',
             help=_('Start the application in fullscreen mode.'))
-    viewmodes.add_option('-m', '--manga', dest='manga', action='store_true',
+    viewmodes.add_argument('-m', '--manga', dest='manga', action='store_true',
             help=_('Start the application in manga mode.'))
-    viewmodes.add_option('-d', '--double-page', dest='doublepage', action='store_true',
+    viewmodes.add_argument('-d', '--double-page', dest='doublepage', action='store_true',
             help=_('Start the application in double page mode.'))
-    parser.add_option_group(viewmodes)
 
-    fitmodes = optparse.OptionGroup(parser, _('Zoom modes'))
-    fitmodes.add_option('-b', '--zoom-best', dest='zoommode', action='store_const',
+    fitmodes = parser.add_argument_group(_('Zoom modes'))
+    fitmodes.add_argument('-b', '--zoom-best', dest='zoommode', action='store_const',
             const=constants.ZoomMode.BEST,
             help=_('Start the application with zoom set to best fit mode.'))
-    fitmodes.add_option('-w', '--zoom-width', dest='zoommode', action='store_const',
+    fitmodes.add_argument('-w', '--zoom-width', dest='zoommode', action='store_const',
             const=constants.ZoomMode.WIDTH,
             help=_('Start the application with zoom set to fit width.'))
-    fitmodes.add_option('-h', '--zoom-height', dest='zoommode', action='store_const',
+    fitmodes.add_argument('-h', '--zoom-height', dest='zoommode', action='store_const',
             const=constants.ZoomMode.HEIGHT,
             help=_('Start the application with zoom set to fit height.'))
-    parser.add_option_group(fitmodes)
 
-    debugopts = optparse.OptionGroup(parser, _('Debug options'))
-    debugopts.add_option('-W', dest='loglevel', action='store',
-            choices=('all', 'debug', 'info', 'warn', 'error'), default='warn',
+    debugopts = parser.add_argument_group(_('Debug options'))
+    debugopts.add_argument('-W', dest='loglevel', default='warn',
+            choices=('all', 'debug', 'info', 'warn', 'error'),
             metavar='[ all | debug | info | warn | error ]',
             help=_('Sets the desired output log level.'))
     # This supresses an error when MComix is used with cProfile
-    debugopts.add_option('-o', dest='output', action='store',
-            default='', help=optparse.SUPPRESS_HELP)
-    parser.add_option_group(debugopts)
+    debugopts.add_argument('-o', dest='output', default='',
+            help=argparse.SUPPRESS)
 
-    opts, args = parser.parse_args(argv)
+    parser.add_argument('paths', nargs='*', metavar=_('PATH'),
+            help=argparse.SUPPRESS)
+
+    opts = parser.parse_args(argv)
 
     # Fix up log level to use constants from log.
-    if opts.loglevel == 'all':
-        opts.loglevel = log.DEBUG
-    if opts.loglevel == 'debug':
-        opts.loglevel = log.DEBUG
-    if opts.loglevel == 'info':
-        opts.loglevel = log.INFO
-    elif opts.loglevel == 'warn':
-        opts.loglevel = log.WARNING
-    elif opts.loglevel == 'error':
-        opts.loglevel = log.ERROR
+    opts.loglevel = {
+        'all': log.DEBUG,
+        'debug': log.DEBUG,
+        'info': log.INFO,
+        'warn': log.WARNING,
+        'error': log.ERROR,
+    }[opts.loglevel]
 
-    return opts, args
+    return opts, opts.paths
 
 def setup_dependencies():
     """Check for PyGTK and PIL dependencies."""
@@ -181,7 +174,9 @@ def run():
     icons.load_icons()
 
     open_path = None
-    open_page = 1
+    # 0 leaves the choice of page to the file handler: the first one, or
+    # the last read page if there is one for this book.
+    open_page = 0
     if len(args) == 1:
         open_path = args[0]
     elif len(args) > 1:

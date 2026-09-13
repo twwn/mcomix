@@ -93,8 +93,12 @@ class BaseArchive(object):
         # Make sure the filename does not contain portions that might
         # traverse directories, i.e. do not allow absolute paths
         # and paths containing ../
-        normalized = os.path.normpath(new_name)
-        return normalized.lstrip('..' + os.sep).lstrip(os.sep)
+        # Note that str.lstrip() cannot be used to drop the leading "../"
+        # and separators here, as it strips a set of characters rather than
+        # a prefix, and would eat the leading dot of names like ".foo.jpg".
+        normalized = os.path.splitdrive(os.path.normpath(new_name))[1]
+        return os.sep.join(part for part in normalized.split(os.sep)
+                           if part not in ('', os.curdir, os.pardir))
 
     def _create_directory(self, directory):
         """ Recursively create a directory if it doesn't exist yet. """
@@ -213,7 +217,10 @@ class ExternalExecutableArchive(NonUnicodeArchive):
                              [self.archive])
         try:
             for line in proc.stdout:
-                filename = self._parse_list_output_line(line.rstrip(os.linesep))
+                # The listing is read as bytes, as the encoding the external
+                # tool uses for member names is not known in advance.
+                line = i18n.to_unicode(line).rstrip('\r\n')
+                filename = self._parse_list_output_line(line)
                 if filename is not None:
                     yield self._unicode_filename(filename)
         finally:

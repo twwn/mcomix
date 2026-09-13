@@ -31,12 +31,6 @@ icons with a filename starting with "tango" are taken from the Tango Desktop
 Project. Most other icons are made by Victor Castillejo, creator of the
 GNOME-Colors icon theme.
 
-The directory mcomix/_vendor/packaging/ contains portions of
-'packaging' version 21.0, (c) Donald Stufft and individual contributors.
-The packaging code is made available under the terms of either the
-Apache 2.0 license or BSD 2-clause license (user's choice).
-See mcomix/_vendor/packaging-21.0.dist-info/LICENSE for details.
-
 ## Contact
 
 Please use the [issue tracker](https://sourceforge.net/p/mcomix/_list/tickets) to get in touch with the MComix developers.

@@ -91,7 +91,7 @@ class Thumbnailer(object):
             if threaded:
                 thread = threading.Thread(target=self._create_thumbnail, args=(filepath,))
                 thread.name += '-thumbnailer'
-                thread.setDaemon(True)
+                thread.daemon = True
                 thread.start()
                 return None
             else:

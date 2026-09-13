@@ -273,8 +273,12 @@ class RarArchive(archive_base.BaseArchive):
             if not self._password or len(self._password) == 0:
                 # Abort extraction
                 return -1
-            password = ctypes.create_string_buffer(self._password.encode('utf-16le'))
-            copy_size = min(param2, len(password))
+            # param2 is the size of unrar's buffer in characters, and its
+            # wchar_t is 4 bytes wide everywhere but on Windows, so let
+            # ctypes pick the native encoding and terminator instead of
+            # assuming UTF-16.
+            password = ctypes.create_unicode_buffer(self._password)
+            copy_size = min(param2, len(password)) * ctypes.sizeof(ctypes.c_wchar)
             ctypes.memmove(param1, password, copy_size)
             return 1
         elif msg in (RarArchive._CallbackMessage.UCM_CHANGEVOLUME,

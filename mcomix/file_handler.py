@@ -84,10 +84,9 @@ class FileHandler(object):
     def open_file(self, path, start_page=0, keep_fileprovider=False):
         """Open the file pointed to by <path>.
 
-        If <start_page> is not set we set the current
-        page to 1 (first page), if it is set we set the current page to the
-        value of <start_page>. If <start_page> is non-positive it means the
-        last image.
+        If <start_page> is 0 we show the first page, or the last read page
+        if one was stored for this book. If it is positive we show that page,
+        and if it is negative we show the last image.
 
         Return True if the file is successfully loaded.
         """
@@ -139,7 +138,7 @@ class FileHandler(object):
         """
 
         self._window.imagehandler._base_path = self._base_path
-        self._window.imagehandler._image_files = image_files
+        self._window.imagehandler.set_image_files(image_files)
         self.file_opened()
 
         if not image_files:
@@ -293,7 +292,6 @@ class FileHandler(object):
             return
         self.file_loading = False
 
-        files = self._extractor.get_files()
         archive_images = [image for image in files
             if image_tools.is_image_file(image)
             # Remove MacOS meta files from image list
@@ -632,7 +630,7 @@ class FileHandler(object):
         """
         del_thread = threading.Thread(target=shutil.rmtree, args=(path, True))
         del_thread.name += '-delete'
-        del_thread.setDaemon(False)
+        del_thread.daemon = False
         del_thread.start()
 
     def write_fileinfo_file(self):

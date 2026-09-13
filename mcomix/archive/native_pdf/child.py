@@ -128,18 +128,14 @@ class FitzWorker:
                 del img
         except (AttributeError, TypeError):
             pass
-        finally:
-            return extension
+        return extension
 
     def _get_image_xref(self, page_num: int) -> int:
         try:
             image_info = self.doc.get_page_images(page_num)
-            xref = int(image_info[0][0])
-            return xref
+            return int(image_info[0][0])
         except (TypeError, IndexError):
             return -1
-        finally:
-            image_info = None
 
     def iter_contents(self) -> Generator[str, None, None]:
         for pg in range(self.doc.page_count):
@@ -193,11 +189,11 @@ class FitzWorker:
 
     def extract_file(self, filename: str, dest: str) -> None:
         outpath = os.path.join(dest, filename)
-        if XREF_DELIMITER in filename:
-            pginfo, ref = filename.split(XREF_DELIMITER)
-            page = int(pginfo[-4:]) - 1
-            xref = int(ref[:4])
-            self.extract_xref(page, xref, outpath)
-        elif filename.startswith('page'):
-            pg_num = int(filename[4:8]) - 1
-            self.render_page(pg_num, outpath)
+        # Page and xref numbers are zero padded to four digits, but may well
+        # need more than that, so parse them by delimiter instead of by width.
+        name = os.path.splitext(filename)[0]
+        if XREF_DELIMITER in name:
+            pginfo, ref = name.split(XREF_DELIMITER)
+            self.extract_xref(int(pginfo[4:]) - 1, int(ref), outpath)
+        elif name.startswith('page'):
+            self.render_page(int(name[4:]) - 1, outpath)

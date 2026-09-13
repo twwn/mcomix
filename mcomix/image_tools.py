@@ -6,7 +6,7 @@ import PIL
 from PIL import Image
 from PIL import ImageEnhance
 from PIL import ImageOps
-from io import StringIO
+from io import BytesIO
 
 from mcomix.preferences import prefs
 from mcomix import constants
@@ -100,6 +100,9 @@ def fit_in_rectangle(src, width, height, keep_ratio=True, scale_up=False, rotati
 
     If <src> has an alpha channel it gets a checkboard background.
     """
+    # Normalize the angle, so callers can pass e.g. -90 or 450 as well.
+    rotation %= 360
+
     # "Unbounded" really means "bounded to RENDER_SIZE_LIMIT" - for simplicity.
     # MComix would probably choke on larger images anyway.
     if width < 0:
@@ -229,18 +232,23 @@ def get_most_common_edge_colour(pixbufs, edge=2):
         height = pixbuf.get_height()
         edge = min(edge, width, height)
 
+        if side in ('left', 'right'):
+            sub_width, sub_height = edge, height
+        elif side in ('top', 'bottom'):
+            sub_width, sub_height = width, edge
+        else:
+            assert False, 'Invalid edge side'
+
         subpix = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB,
-                pixbuf.get_has_alpha(), 8, edge, height)
+                pixbuf.get_has_alpha(), 8, sub_width, sub_height)
         if side == 'left':
             pixbuf.copy_area(0, 0, edge, height, subpix, 0, 0)
         elif side == 'right':
             pixbuf.copy_area(width - edge, 0, edge, height, subpix, 0, 0)
         elif side == 'top':
             pixbuf.copy_area(0, 0, width, edge, subpix, 0, 0)
-        elif side == 'bottom':
-            pixbuf.copy_area(0, height - edge, width, edge, subpix, 0, 0)
         else:
-            assert False, 'Invalid edge side'
+            pixbuf.copy_area(0, height - edge, width, edge, subpix, 0, 0)
 
         return subpix
 
@@ -425,7 +433,7 @@ def load_pixbuf_size(path, width, height):
     if pixbuf is None:
         # raising necessary because caller expects pixbuf to be not None
         raise last_error or TypeError()
-    return fit_in_rectangle(pixbuf, width, height, GdkPixbuf.InterpType.BILINEAR)
+    return fit_in_rectangle(pixbuf, width, height, scaling_quality=GdkPixbuf.InterpType.BILINEAR)
 
 def load_pixbuf_data(imgdata):
     """ Loads a pixbuf from the data passed in <imgdata>. """
@@ -441,7 +449,7 @@ def load_pixbuf_data(imgdata):
                 loader.close()
                 pixbuf = loader.get_pixbuf()
             elif provider == constants.IMAGEIO_PIL:
-                pixbuf = pil_to_pixbuf(Image.open(StringIO(imgdata)), keep_orientation=True)
+                pixbuf = pil_to_pixbuf(Image.open(BytesIO(imgdata)), keep_orientation=True)
             else:
                 raise TypeError()
         except Exception as e:
@@ -649,6 +657,10 @@ def get_image_info(path):
     if image_format is None:
         image_format = _('Unknown filetype')
         image_dimensions = (0, 0)
+        # Nothing could identify the file, but let the loaders try anyway,
+        # so that they raise a meaningful error rather than the caller
+        # having to make one up.
+        providers = (constants.IMAGEIO_GDKPIXBUF, constants.IMAGEIO_PIL)
     return (image_format, image_dimensions, providers)
 
 def get_supported_formats():

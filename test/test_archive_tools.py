@@ -15,7 +15,9 @@ _EXTENSION_TO_MIME_TYPES = {
     'tar'    : constants.TAR,
     'tar.gz' : constants.GZIP,
     'tar.bz2': constants.BZIP2,
-    'tar.xz' : constants.XZ,
+    # Python's tarfile module reads xz compressed tarballs itself, so these
+    # are handled as plain tar rather than handed to the 7z executable.
+    'tar.xz' : constants.TAR,
     'pdf'    : constants.PDF,
     '7z'     : constants.SEVENZIP,
     'lha'    : constants.LHA,

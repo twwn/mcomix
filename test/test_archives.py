@@ -23,7 +23,8 @@ from mcomix.archive import (
     zip,
     zip_external,
 )
-import mcomix
+# Aliased: the plain name is used as a loop and parameter name below.
+from mcomix.archive import password as archive_password
 
 
 class UnsupportedFormat(Exception):
@@ -167,7 +168,7 @@ class ArchiveFormatTest(object):
             for name, archive_name, filename
             in cls.contents
         ])
-        mcomix.archive.ask_for_password = cls._ask_password
+        archive_password.ask_for_password = cls._ask_password
         if os.path.exists(cls.archive_path):
             return
         if 'win32' == sys.platform:
@@ -192,7 +193,7 @@ class ArchiveFormatTest(object):
         super(ArchiveFormatTest, self).tearDown()
 
     def test_init_not_unicode(self):
-        self.assertRaises(AssertionError, self.handler, 'test')
+        self.assertRaises(AssertionError, self.handler, b'test')
 
     def test_archive(self):
         self.archive = self.handler(self.archive_path)
@@ -201,14 +202,14 @@ class ArchiveFormatTest(object):
     def test_list_contents(self):
         self.archive = self.handler(self.archive_path)
         contents = self.archive.list_contents()
-        self.assertItemsEqual(contents, list(self.archive_contents.keys()))
+        self.assertCountEqual(contents, list(self.archive_contents.keys()))
 
     def test_iter_contents(self):
         self.archive = self.handler(self.archive_path)
         contents = []
         for name in self.archive.iter_contents():
             contents.append(name)
-        self.assertItemsEqual(contents, list(self.archive_contents.keys()))
+        self.assertCountEqual(contents, list(self.archive_contents.keys()))
 
     def test_is_solid(self):
         self.archive = self.handler(self.archive_path)
@@ -223,7 +224,7 @@ class ArchiveFormatTest(object):
     def test_extract(self):
         self.archive = self.handler(self.archive_path)
         contents = self.archive.list_contents()
-        self.assertItemsEqual(contents, list(self.archive_contents.keys()))
+        self.assertCountEqual(contents, list(self.archive_contents.keys()))
         # Use out-of-order extraction to try to trip implementation.
         for name in reversed(contents):
             self.archive.extract(name, self.dest_dir)
@@ -236,7 +237,7 @@ class ArchiveFormatTest(object):
     def test_iter_extract(self):
         self.archive = self.handler(self.archive_path)
         contents = self.archive.list_contents()
-        self.assertItemsEqual(contents, list(self.archive_contents.keys()))
+        self.assertCountEqual(contents, list(self.archive_contents.keys()))
         extracted = []
         for name in self.archive.iter_extract(reversed(contents), self.dest_dir):
             extracted.append(name)
@@ -538,14 +539,30 @@ if 'win32' == sys.platform:
         ('RarExternalSolidUnicode', 'test_extract'      ),
     ])
 
+def _expect_failure(klass, attr):
+    """ Mark the C{attr} test of C{klass} as an expected failure.
+
+    unittest.expectedFailure() flags the function object handed to it and
+    returns it unchanged, so marking a method inherited from
+    ArchiveFormatTest would mark it for every other archive format class
+    as well. Wrap it in a fresh function first. """
+
+    method = getattr(klass, attr)
+
+    def expected_to_fail(self, *args, **kwargs):
+        return method(self, *args, **kwargs)
+
+    expected_to_fail.__name__ = attr
+    expected_to_fail.__doc__ = method.__doc__
+    setattr(klass, attr, unittest.expectedFailure(expected_to_fail))
+
+
 # Expected failures.
 for test, attr in xfail_list:
     for name in (
         'ArchiveFormat%sTest' % test,
         'RecursiveArchiveFormat%sTest' % test,
     ):
-        if not name in globals():
-            continue
-        klass = globals()[name]
-        setattr(klass, attr, unittest.expectedFailure(getattr(klass, attr)))
+        if name in globals():
+            _expect_failure(globals()[name], attr)
 

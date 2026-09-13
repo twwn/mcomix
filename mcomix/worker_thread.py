@@ -46,7 +46,7 @@ class WorkerThread(object):
             thread = threading.Thread(target=self._run)
             if self._name is not None:
                 thread.name += '-' + self._name
-            thread.setDaemon(False)
+            thread.daemon = False
             thread.start()
             self._threads.append(thread)
 
@@ -105,7 +105,7 @@ class WorkerThread(object):
             self._orders_queue.append(order)
             if self._sort_orders:
                 self._orders_queue.sort()
-            self._condition.notifyAll()
+            self._condition.notify_all()
             self._start()
 
     def extend_orders(self, orders_list):
@@ -128,14 +128,14 @@ class WorkerThread(object):
                 return
             if self._sort_orders:
                 self._orders_queue.sort()
-            self._condition.notifyAll()
+            self._condition.notify_all()
             self._start(nb_threads=nb_added)
 
     def stop(self):
         """Stop the worker threads and flush the orders queue."""
         self._stop = True
         with self._condition:
-            self._condition.notifyAll()
+            self._condition.notify_all()
         for thread in self._threads:
             thread.join()
         self._threads = []

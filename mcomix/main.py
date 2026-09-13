@@ -1,12 +1,11 @@
 """main.py - Main window."""
 
-import sys
 import math
 import os
 import shutil
 import threading
 
-from gi.repository import GObject, Gdk, Gtk, GLib
+from gi.repository import Gdk, Gtk, GLib
 
 from mcomix import constants
 from mcomix import cursor_handler
@@ -49,9 +48,9 @@ class MainWindow(Gtk.Window):
     program when closed.
     """
 
-    def __init__(self, fullscreen=False, is_slideshow=slideshow,
+    def __init__(self, fullscreen=False, is_slideshow=False,
             show_library=False, manga_mode=False, double_page=False,
-            zoom_mode=None, open_path=None, open_page=1):
+            zoom_mode=None, open_path=None, open_page=0):
         super(MainWindow, self).__init__(Gtk.WindowType.TOPLEVEL)
 
         # ----------------------------------------------------------------
@@ -287,7 +286,7 @@ class MainWindow(Gtk.Window):
         prefs['previous quit was quit and save'] = False
 
         if open_path is not None:
-            self.filehandler.open_file(open_path)
+            self.filehandler.open_file(open_path, open_page)
 
         if is_slideshow:
             self.actiongroup.get_action('slideshow').activate()
@@ -1186,7 +1185,7 @@ class MainWindow(Gtk.Window):
 
         # This hack is to avoid Python issue #1856.
         for thread in threading.enumerate():
-            if thread is not threading.currentThread() and not isinstance(thread, threading._DummyThread):
+            if thread is not threading.current_thread() and not isinstance(thread, threading._DummyThread):
                 log.debug('Waiting for thread %s to finish before exit', thread)
                 thread.join()
 

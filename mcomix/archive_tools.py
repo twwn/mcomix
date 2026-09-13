@@ -43,8 +43,10 @@ _HANDLERS = {
     constants.BZIP2: (
         tar.TarArchive,
     ),
+    # Only reached for xz/lzma compressed tarballs that the tarfile module
+    # does not recognize; it reads the usual ones itself, and those are
+    # reported as constants.TAR by archive_mime_type().
     constants.XZ: (
-        # No LZMA support in Python 2 tarfile module.
         sevenzip_external.TarArchive,
     ),
     constants.RAR: (
