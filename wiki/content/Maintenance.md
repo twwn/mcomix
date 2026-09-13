@@ -1,7 +1,7 @@
 Maintenance
 ===========
 
-This page contains information on how to various maintenance tasks related to MComix building and distribution.
+This page describes the maintenance tasks involved in building and distributing MComix.
 
 Translation files
 -----------------
@@ -60,10 +60,10 @@ python3 -m build -s
 
 This will create `mcomix-version.tar.gz` in the `dist` subfolder, ready for uploading. Note that the command should not be run on a Windows machine, to avoid files in the archive having executable permission bits set. Building the Windows packages is a bit more difficult and requires:
 
-1. A MSYS2 installation with the following packages: `mingw-w64-x86_64-python3-pillow`, `mingw-w64-x86_64-gtk4`, `mingw-w64-x86_64-libadwaita`, `mingw-w64-x86_64-python3`, `mingw-w64-x86_64-python3-gobject`, `mingw-w64-x86_64-python3-pip`, `mingw-w64-x86_64-python-ujson`, `mingw-w64-x86_64-mypy`, `mingw-w64-x86_64-python-pymupdf`, `mingw-w64-x86_64-libjxl`.
+1. A MSYS2 installation with the following packages: `mingw-w64-x86_64-python3-pillow`, `mingw-w64-x86_64-gtk4`, `mingw-w64-x86_64-libadwaita`, `mingw-w64-x86_64-python3`, `mingw-w64-x86_64-python3-gobject`, `mingw-w64-x86_64-python3-pip`, `mingw-w64-x86_64-mypy`, `mingw-w64-x86_64-python-pymupdf`, `mingw-w64-x86_64-libjxl`.
 2. Make sure to update to the latest version of these packages before starting the release with `pacman -Syuu`.
-3. The Python 3 package `pyinstaller` is automatically installed when development dependencies have been installed, but it shoulld be updated to the latest version with `pip-review --auto --local`
-4. The installer script expects optional archive extractors in the directory `../mcomix-other`,  relative to MComix' root directory.  At this time, those are:
+3. The Python 3 package `pyinstaller` is automatically installed when development dependencies have been installed, but it should be updated to the latest version with `pip-review --auto --local`
+4. The installer script expects optional archive extractors in the directory `../mcomix-other`, relative to MComix' root directory.  At this time, those are:
 4.1. `../mcomix-other/7z/7z.exe`, `../mcomix-other/7z/License.txt` (from [7-zip](https://www.7-zip.org/download.html))
 4.2. `../mcomix-other/mutool/COPYING.txt`, `../mcomix-other/mutool/mutool.exe` (from [mupdf](https://mupdf.com/releases/index.html))
 4.3. `../mcomix-other/unrar/license.txt`, `../mcomix-other/unrar/UnRAR64.dll` (from [WinRar](https://www.rarlab.com/rar_add.htm))
@@ -106,7 +106,7 @@ Pushing requires an API key from a Chocolatey account with rights to the `mcomix
 Uploading a new release
 -----------------------
 
-The procedure is fairly straight-forward. First, switch to the list of files on MComix' project page, then create a new folder corresponding the the version to be released, e.g. `MComix 1.3.0`. Open the folder, click on the "Add file" button, and upload the previously created archive files (`mcomix-version.tar.gz`, `mcomix-win64-version.zip` and `mcomix-win64-version,msi`). When uploading has finished, the now uploaded files should be selected as default files for people visiting the MComix project page. To do this, click on the (i) icon to the right of each file.
+The procedure is fairly straight-forward. First, switch to the list of files on MComix' project page, then create a new folder corresponding to the version to be released, e.g. `MComix 1.3.0`. Open the folder, click on the "Add file" button, and upload the previously created archive files (`mcomix-version.tar.gz`, `mcomix-win64-version.zip` and `mcomix-win64-version.msi`). When uploading has finished, the now uploaded files should be selected as default files for people visiting the MComix project page. To do this, click on the (i) icon to the right of each file.
 
 1. Mark the MSI installer as default file for Windows.
 2. Mark the tar.gz archive as default file for everything else.

@@ -52,16 +52,14 @@ MComix is also available in the Extras bucket of the [Scoop package manager](htt
     > scoop install extras/mcomix
 
 ### Manual installation
-Simply install the MSI package. The installation requires administrator access. If such access is not available on the machine you plan to use MComix on, you can fall back extracting `mcomix-win64-<version>.zip` anywhere on your harddisk, and run `MComix.exe` from there.
+Simply install the MSI package. The installation requires administrator access. If such access is not available on the machine you plan to use MComix on, you can fall back to extracting `mcomix-win64-<version>.zip` anywhere on your harddisk, and run `MComix.exe` from there.
 
 The uninstaller leaves user data, such as the configuration and library contents, on your disk. To completely remove these files, manually delete the folder `%APPDATA%/MComix`.
 
 # Running MComix from source
-Since MComix has heavy dependencies on non-Python binary packages that are tendious to install, running it from source is somewhat difficult. At the very least, you will need PyGObject, which has a very good [Getting Started guide](https://pygobject.readthedocs.io/en/latest/getting_started.html) for various operating systems. MComix requires *GTK 4*, which is the version that guide installs, so its package manager calls can be followed as they are written.
+Since MComix has heavy dependencies on non-Python binary packages that are tedious to install, running it from source is somewhat difficult. At the very least, you will need PyGObject, which has a very good [Getting Started guide](https://pygobject.readthedocs.io/en/latest/getting_started.html) for various operating systems. MComix requires *GTK 4*, which is the version that guide installs, so its package manager calls can be followed as they are written.
 
-_Windows/MSYS2 note_: Due to a bug in Setuptools, the ujson package, which is needed to process pyproject.toml projects, cannot be built on MSYS2. Please install the `mingw-w64-x86_64-python-ujson` package from Pacman.
-
-With PyGObject installed, you can now create a virtual environment for MComix. Virtual environments used in Python to separate dependencies of various Python applications from each other, in order to avoid depdency conflicts between system and application packages. Virtual environments can be created in a variety of ways using different packages, but the most simple is probably using the `venv` package, which is often bundled with Python.
+With PyGObject installed, you can now create a virtual environment for MComix. Virtual environments are used in Python to separate the dependencies of various Python applications from each other, in order to avoid dependency conflicts between system and application packages. Virtual environments can be created in a variety of ways using different packages, but the most simple is probably using the `venv` package, which is often bundled with Python.
 
     :::bash
     ~ $ python3 -m venv --system-site-packages mcomix-venv
@@ -79,7 +77,7 @@ With the virtual environment activated, extract the MComix source tarball and in
 
 Pip now installs all required dependencies as well as the `mcomix` executable. When the virtual environment is active, calling `mcomix` will now run the program. You can also run `mcomix-venv/bin/mcomix` directly without activating the virtual environment.
 
-If you want additional file format support for MComix, install the optional depdency `fileformats`:
+If you want additional file format support for MComix, install the optional dependency `fileformats`:
 
     :::bash
     (mcomix-venv) mcomix-<versionnr> $ python -m pip install .[fileformats]
@@ -95,4 +93,4 @@ You can mostly follow the regular instructions above. Instead of using a source 
     :::bash
     (mcomix-venv) mcomix $ python -m pip install -e .[dev]
 
-The `dev` optional depdency installs tools for static code analysis, Python language server and other useful tools.
+The `dev` optional dependency installs tools for static code analysis, Python language server and other useful tools.

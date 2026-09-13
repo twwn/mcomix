@@ -18,7 +18,7 @@ In the default configuration, MComix' user interface will look somewhat similar 
 
 [[img src="mcomix-mainwindow.png" alt="MComix' main window"]]
 
-This configuration is normally acceptable for general image viewing purposes. For reading comics, you will likely want a more uncluttered interface. This can be archived either by pressing the "F" key to enter fullscreen mode, or by hiding various UI elements by disabling them with "View &rarr; Toolbars". The "I" key also hides all user interface elements. Normally, you will also want to switch from "Best fit" mode to "Fit to width" mode by pressing the "W" key. This way, images will only be scaled down to fit the screen width, not both width and height.
+This configuration is normally acceptable for general image viewing purposes. For reading comics, you will likely want a more uncluttered interface. This can be achieved either by pressing the "F" key to enter fullscreen mode, or by turning off what you do not want in the "View" menu, which carries one item each for the toolbar, the menubar, the statusbar, the scrollbars and the thumbnails. "Hide all" in the same menu, or the "I" key, puts all of them away at once. Normally, you will also want to switch from "Best fit" mode to "Fit to width" mode by pressing the "W" key. This way, images will only be scaled down to fit the screen width, not both width and height.
 
 Paging and scrolling from one image to the next works similarly to most other image viewers. The arrow keys scroll the page, while PageDown and PageUp will switch to the next and previous pages.
 
@@ -30,7 +30,7 @@ MComix has several automatic fit modes that scale down images by certain criteri
 - Fit to width - Images are scaled down to fit the screen width. If an image is higher than the screen, it can be scrolled up and down.
 - Fit to height - Images are scaled down to fit the screen height. If an image is wider than the screen,
 it can be scrolled left and right.
-- Fit to size - Resize images to either a certain height or a certain width. Size in pixel and width or height can be set up in the preferences dialog. In the default configuration, this mode resizes an image to 1200px in height.
+- Fit to size - Resize images to a fixed size in pixels, set in the preferences dialog. A wide page and a page that is not wide are given sizes of their own, since a double-page spread wants a different shape from a single page; the defaults are 3790x960 for a wide page and 1450x1800 for the rest.
 - Manual zoom mode - No scaling is performed on the image.
 
 Normally, no mode will increase an image's size by scaling it up. If such behavior is desired, "View &rarr; Stretch small images" enables scaling in both directions, up and down.
@@ -68,11 +68,11 @@ MComix also has a library for organizing and keeping track of comic books. While
 
 [[img src="mcomix-library.png" alt="Library window"]]
 
-The left side shows a list of collections, while the right side shows all books within the selected collection. The collection "All books" is special, as it automatically contains all books in every single collection. Collections can be nested by dragging and dropping one collection into any other collection. When a collection is selected, books will be shown from the collection itself and from any children collections.
+The left side shows a list of collections, while the right side shows all books within the selected collection. The collection "All books" is special, as it automatically contains all books in every single collection. Collections can be nested by dragging one onto the collection it is to sit under, and books can be filed by dragging them from the book view onto a collection. When a collection is selected, books will be shown from the collection itself and from any children collections.
 
-A new collection can be added by right-clicking into the collection list and choosing "New". Books can be added by right-clicking on any collection and clicking "Add". The following dialog allows the user to either create a new collection for the selected books, or to place them in the currently selected collection.
+Right-clicking the collection list offers "New" for an empty collection, "Add..." to put books into the one clicked, and, for the collection clicked, "Rename", "Duplicate", "Clean up" - which drops the books whose files have gone away - and "Remove". Removing a collection removes the shelf and not the books on it: they stay in the library, and a collection filed under the one removed is moved to the top level rather than going with it.
 
-Right-clicking into the book view allows for adding and removing books, opening of the selected books, and customizing the library view by choosing thumbnail size and sort order.
+Right-clicking the book view offers "Open", "Open without closing library" and "Add...", three ways to take books out - "Remove from this collection", "Remove from the library" and "Remove and delete from disk", which is the only one that touches the files - and "Copy", which puts the books on the clipboard. The same menu sets how the view is sorted, by book name, full path, file size or date added, ascending or descending, and how large the covers are drawn.
 
 ### Library watch list ###
 
@@ -80,7 +80,7 @@ By using the watch list, MComix can keep track of certain directories and automa
 
 ### Recent books ###
 
-When "Store information about recently opened files" is enabled in MComix' preferences window, all archives that are opened from within the program will automatically be added to a collection called "Recent". From here, they can be moved to other collections if desired.
+With "Store information about recently opened files" set to "Always" in the preferences dialog, every archive opened from within the program is added to a collection called "Recent". From there it can be moved into another collection. Setting it to "Never" clears the history as well as stopping it from being kept.
 
 Execute external programs
 ---

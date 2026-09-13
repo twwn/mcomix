@@ -290,4 +290,175 @@ class DocumentedMouseBindingsTest(MComixTest):
         in whichever of the two assertions above happens to cover it."""
         self.assertEqual({1, 2, 3}, self._handled_buttons())
 
+
+class DocumentedKeyBindingsTest(MComixTest):
+
+    """Whether wiki/content/Keybindings.md names the keys MComix binds.
+
+    The page is the only list of the bindings a reader ever sees, and
+    nothing checked it: it said the first page was on "Pos1", which is the
+    German name for Home, it put the single-step page turns on CTRL+SHIFT
+    when they are on CTRL, and it left out the keypad key of every pair
+    that has one.  Compared by parsing both sides into (keyval, modifiers)
+    rather than by spelling, so the page can go on writing KeyPadHome for
+    what Gtk calls KP_Home.
+    """
+
+    #: Each row of the page whose keys can be compared one for one with
+    #: an action in BINDING_INFO.  A mouse binding inside a row is
+    #: skipped - DocumentedMouseBindingsTest covers those - and a row
+    #: standing for several actions is left out of the table entirely,
+    #: which is why "Scroll to left, right, bottom, top" and the two
+    #: rows naming a whole-page turn beside a ten-page one are absent.
+    ROWS = {
+        'Open file': 'open',
+        'Open library': 'library',
+        'Close file': 'close',
+        'Previous page': 'previous_page',
+        'Page to the right': 'next_page_dynamic',
+        'Page to the left': 'previous_page_dynamic',
+        'Back ten pages': 'previous_page_ff',
+        'Forward only one page (in double page mode)': 'next_page_singlestep',
+        'Go back only one page (in double page mode)':
+            'previous_page_singlestep',
+        'First page': 'first_page',
+        'Last page': 'last_page',
+        'Go to page': 'go_to',
+        'Next archive': 'next_archive',
+        'Previous archive': 'previous_archive',
+        'Next directory': 'next_directory',
+        'Previous directory': 'previous_directory',
+        'Scroll down': 'scroll_down',
+        'Scroll up': 'scroll_up',
+        'Scroll left': 'scroll_left',
+        'Scroll right': 'scroll_right',
+        'Inverse direction of smart scrolling': 'invert_scroll',
+        'Show OSD panel': 'osd_panel',
+        'Toggle fullscreen mode': 'fullscreen',
+        'Leave fullscreen mode': 'exit_fullscreen',
+        'Toggle double page mode': 'double_page',
+        'Toggle manga mode': 'manga_mode',
+        'Toggle slideshow mode': 'slideshow',
+        'Best fit mode': 'best_fit_mode',
+        'Fit to width mode': 'fit_width_mode',
+        'Fit to height mode': 'fit_height_mode',
+        'Fixed size mode': 'fit_size_mode',
+        'Manual zoom mode': 'fit_manual_mode',
+        'Stretch small images': 'stretch',
+        'Zoom in': 'zoom_in',
+        'Zoom out': 'zoom_out',
+        'Reset zoom': 'zoom_original',
+        'Rotate 90 degrees clockwise': 'rotate_90',
+        'Rotate 90 degrees anticlockwise': 'rotate_270',
+        'Keep transformation between pages': 'keep_transformation',
+        'Invert image colours': 'invert_color',
+        'Show/hide menubar': 'menubar',
+        'Show/hide thumbnails': 'thumbnails',
+        'Hide/show all UI elements': 'hide_all',
+        'Preferences': 'preferences',
+        'Archive comments': 'comments',
+        'Properties': 'properties',
+        'Enhance image': 'enhance_image',
+        'Save currently opened image': 'extract_page',
+        'Reload currently opened directory or archive': 'refresh_archive',
+        'Delete the page or the file': 'delete',
+        'Undo': 'undo',
+        'Redo': 'redo',
+        'Minimize window': 'minimize',
+        'Quit program': 'quit',
+        'Save and quit': 'save_and_quit',
+    }
+
+    #: How the page writes each modifier.
+    MODIFIERS = {'CTRL+': '<Control>', 'SHIFT+': '<Shift>', 'ALT+': '<Alt>'}
+
+    #: How the page spells a key Gtk calls something else.  Gtk's names
+    #: for the printable keys are lower case and, unlike a letter, do not
+    #: parse in any other case.  Looked up as a whole name rather than
+    #: replaced as a substring, because Space is inside BackSpace.
+    KEY_NAMES = {
+        'PageDown': 'Page_Down',
+        'PageUp': 'Page_Up',
+        'Backspace': 'BackSpace',
+        'TAB': 'Tab',
+        'Plus': 'plus',
+        'Minus': 'minus',
+        'Equal': 'equal',
+        'Space': 'space',
+    }
+
+    #: What the page puts in front of a keypad key's name.
+    KEYPAD = 'KeyPad'
+
+    def _page(self):
+        path = os.path.join(os.path.dirname(os.path.dirname(
+            os.path.abspath(mcomix.event.__file__))),
+            'wiki', 'content', 'Keybindings.md')
+        with open(path, encoding='utf-8') as fp:
+            return fp.read()
+
+    def _documented(self):
+        """Return {row label: {binding, ...}} for the rows in ROWS."""
+        documented = {}
+        for line in self._page().splitlines():
+            label, _, bindings = line.partition(' | ')
+            if label not in self.ROWS:
+                continue
+            documented[label] = {
+                keybindings.parse_accelerator(self._translate(key))
+                for key in map(str.strip, bindings.split(','))
+                if 'Mouse' not in key}
+        return documented
+
+    def _translate(self, key):
+        """Turn the page's spelling of <key> into Gtk's."""
+        for theirs, ours in self.MODIFIERS.items():
+            key = key.replace(theirs, ours)
+        # Whatever follows the last modifier is the key's own name.
+        modifiers, bracket, name = key.rpartition('>')
+        keypad = name.startswith(self.KEYPAD)
+        if keypad:
+            name = name[len(self.KEYPAD):]
+        name = self.KEY_NAMES.get(name, name)
+        return modifiers + bracket + ('KP_' + name if keypad else name)
+
+    def _registered(self):
+        """Return {action: {binding, ...}} from event.py's defaults."""
+        source = os.path.join(os.path.dirname(mcomix.event.__file__),
+                              'event.py')
+        with open(source) as fp:
+            tree = ast.parse(fp.read())
+        return {
+            call.args[0].value: {keybindings.parse_accelerator(element.value)
+                                 for element in call.args[1].elts}
+            for call in ast.walk(tree)
+            if isinstance(call, ast.Call)
+            and isinstance(call.func, ast.Attribute)
+            and call.func.attr == 'register' and len(call.args) >= 2
+            and isinstance(call.args[0], ast.Constant)
+            and isinstance(call.args[1], ast.List)
+            and all(isinstance(element, ast.Constant)
+                    for element in call.args[1].elts)}
+
+    def test_every_row_this_test_names_is_on_the_page(self):
+        """So that renaming a row silently drops it out of the comparison
+        rather than being checked against nothing."""
+        self.assertEqual(set(self.ROWS), set(self._documented()))
+
+    def test_no_documented_key_is_one_gtk_cannot_read(self):
+        """A spelling neither the page nor SPELLINGS accounts for parses
+        as UNREADABLE, which would otherwise quietly compare equal to
+        another unreadable one."""
+        unreadable = {label for label, bindings in self._documented().items()
+                      if keybindings.UNREADABLE in bindings}
+        self.assertEqual(set(), unreadable)
+
+    def test_the_page_names_the_keys_the_actions_are_bound_to(self):
+        registered = self._registered()
+        documented = self._documented()
+        wrong = {label: (documented[label], registered[action])
+                 for label, action in self.ROWS.items()
+                 if documented[label] != registered[action]}
+        self.assertEqual({}, wrong)
+
 # vim: expandtab:sw=4:ts=4

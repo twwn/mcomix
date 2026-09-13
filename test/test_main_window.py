@@ -610,6 +610,22 @@ class MainWindowTest(MComixTest):
                 [('manual_zoom_in', ())],
                 self._wheel_dispatch(0, -1, Gdk.ModifierType.CONTROL_MASK))
 
+    def test_a_turn_towards_the_right_follows_how_the_book_reads(self):
+        """_left_right_page_progress() is what the ALT and arrow bindings
+        reach, and its docstring used to say the opposite of what it does:
+        a positive count goes forward in a book read left to right, and
+        back in manga mode, because the reader is asking for the page in a
+        direction on screen."""
+        handler = self.window._event_handler
+        turned = []
+        with unittest.mock.patch.object(
+                handler, '_flip_page',
+                side_effect=lambda pages, **kwargs: turned.append(pages)):
+            for manga in (False, True):
+                self.window.is_manga_mode = manga
+                handler._left_right_page_progress(1)
+        self.assertEqual([1, -1], turned)
+
     def test_a_sideways_turn_is_a_page_either_way(self):
         """Nothing scrolls horizontally past the end of a page, so
         sideways never scrolls; which way round it reads depends on the

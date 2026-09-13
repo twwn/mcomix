@@ -4,7 +4,7 @@ External commands
 Overview
 ---
 
-Sometimes, MComix might not provide enough functionality for certain needs - for example, it does not display animated GIF files. Or, you might just want to open a file manager at the location of the currently opened images to perform some move operations.
+Sometimes, MComix might not provide enough functionality for certain needs - you might want to retouch a page in an image editor, or to open a file manager at the location of the currently opened images to perform some move operations.
 
 MComix provides for such cases by allowing the user to define a list of external commands that can be executed at will. The relevant menu can be accessed via "File&rarr;Open with". Initially, this submenu will be empty. New commands can be added with the "Edit commands" menu item. After one or more commands have been specified, they can be executed either via menu entry, or by pressing the 1 to 9 keys. Those activate the first to ninth command, respectively.
 

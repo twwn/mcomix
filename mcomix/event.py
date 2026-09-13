@@ -844,10 +844,17 @@ class EventHandler:
         self._window.flip_page(number_of_pages, single_step=single_step)
 
     def _left_right_page_progress(self, number_of_pages: int = 1) -> None:
-        """ If number_of_pages is positive, this function advances the specified
-        number of pages in manga mode and goes back the same number of pages in
-        normal mode. The opposite happens for number_of_pages being negative. """
-        self._flip_page(-number_of_pages if self._window.is_manga_mode else number_of_pages)
+        """Turn <number_of_pages> towards the right of the book.
+
+        A book read left to right has its next page on the right, so a
+        positive <number_of_pages> goes forward; in manga mode the book
+        reads the other way and the same number goes back.  This is what
+        the ALT and arrow bindings want, and what a sideways turn of the
+        wheel wants: the reader asks for the page in a direction on
+        screen rather than for the next or previous one.
+        """
+        self._flip_page(-number_of_pages if self._window.is_manga_mode
+                        else number_of_pages)
 
     def _execute_command(self, cmdindex: int) -> None:
         """ Execute an external command. cmdindex should be an integer from 0 to 9,
