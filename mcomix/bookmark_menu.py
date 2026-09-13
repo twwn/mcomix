@@ -29,16 +29,18 @@ class BookmarksMenu:
     #: Where this menu's actions live, as menu items address them.
     ACTION_PREFIX = 'bookmarks'
 
-    #: The permanent entries, and the keys that reach them.  Clearing
+    #: The permanent entries, and the keybinding actions whose keys reach
+    #: them, which the Shortcuts tab can change like any other.  Clearing
     #: gets none: it throws away every bookmark, so it is not something
     #: to be a keystroke away from.
-    FIXED = (('add', _('Add _Bookmark'), '<Control>D'),
-             ('edit', _('_Edit Bookmarks...'), '<Control>B'),
+    FIXED = (('add', _('Add _Bookmark'), 'add_bookmark'),
+             ('edit', _('_Edit Bookmarks...'), 'edit_bookmarks'),
              ('clear', _('C_lear bookmarks...'), None))
 
     def __init__(self, ui: "ui_module.MainUI",
                  window: "main.MainWindow") -> None:
         self._window = window
+        self._ui = ui
         self._bookmarks_store = bookmark_backend.BookmarksStore
         self._bookmarks_store.initialize(window)
         self._bookmarks: "list[bookmark_menu_item._Bookmark]" = []
@@ -48,7 +50,7 @@ class BookmarksMenu:
         self.model = Gio.Menu()
 
         self._actions = Gio.SimpleActionGroup()
-        for name, label, accelerator in self.FIXED:
+        for name, _label, _binding in self.FIXED:
             action = Gio.SimpleAction.new(name, None)
             action.connect('activate', getattr(self, '_%s_activated' % name))
             self._actions.add_action(action)
@@ -56,13 +58,6 @@ class BookmarksMenu:
         open_action.connect('activate', self._open_activated)
         self._actions.add_action(open_action)
         window.insert_action_group(self.ACTION_PREFIX, self._actions)
-
-        # The accelerators name the actions rather than hanging off the
-        # menu items: the items are rebuilt whenever a bookmark is added
-        # or removed, and an accelerator set on one would go with it.
-        for name, label, accelerator in self.FIXED:
-            if accelerator is not None:
-                ui.add_shortcut(accelerator, '%s.%s' % (self.ACTION_PREFIX, name))
 
         self._rebuild()
         self._bookmarks_store.add_bookmark += lambda bookmark: self._rebuild()
@@ -76,9 +71,12 @@ class BookmarksMenu:
         self.model.remove_all()
 
         fixed = Gio.Menu()
-        for name, label, accelerator in self.FIXED:
+        for name, label, binding in self.FIXED:
             entry = Gio.MenuItem.new(label, '%s.%s' % (self.ACTION_PREFIX, name))
-            if accelerator is not None:
+            # The key belongs to the keybinding manager, where the reader
+            # may have changed it; the menu only shows it.
+            accelerator = self._ui.accelerator(binding) if binding else None
+            if accelerator:
                 entry.set_attribute_value('accel', GLib.Variant('s', accelerator))
             fixed.append_item(entry)
         self.model.append_section(None, fixed)
@@ -105,6 +103,19 @@ class BookmarksMenu:
             bookmark.open_in_new_instance()
         else:
             bookmark.load()
+
+    def activate(self, name: str) -> None:
+        """Run the fixed entry <name>, as the key bound to it does.
+
+        The keybinding manager calls this.  Gio does not run a disabled
+        action, so an entry set_sensitive() has disabled stays inert here
+        as it does in the menu.
+        """
+        self._actions.activate_action(name, None)
+
+    def refresh(self) -> None:
+        """Show the keys the fixed entries answer to now."""
+        self._rebuild()
 
     def _add_activated(self, *args: object) -> None:
         """Add the current page to the bookmarks list."""

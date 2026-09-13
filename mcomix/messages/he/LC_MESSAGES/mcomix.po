@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: mcomix 0.99\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-13 15:26+0200\n"
+"POT-Creation-Date: 2026-09-13 15:48+0200\n"
 "PO-Revision-Date: 2013-01-07 22:51+0200\n"
 "Last-Translator: Isratine Citizen <genghiskhan@gmx.ca>\n"
 "Language-Team: Hebrew <eliz@gnu.org>\n"
@@ -136,7 +136,7 @@ msgstr "כל הסימניות השמורות יוסרו. האם עדיין בר�
 msgid "Edit Bookmarks"
 msgstr "עריכת סמניות"
 
-#: mcomix/bookmark_dialog.py:32 mcomix/bookmark_menu.py:37
+#: mcomix/bookmark_dialog.py:32 mcomix/bookmark_menu.py:38
 msgid "C_lear bookmarks..."
 msgstr "_נקה סימניות..."
 
@@ -174,11 +174,11 @@ msgstr "מיקום"
 msgid "Added"
 msgstr "תאריך הוספה"
 
-#: mcomix/bookmark_menu.py:35
+#: mcomix/bookmark_menu.py:36
 msgid "Add _Bookmark"
 msgstr "הוסף _סימניה"
 
-#: mcomix/bookmark_menu.py:36
+#: mcomix/bookmark_menu.py:37
 msgid "_Edit Bookmarks..."
 msgstr "_ערוך סימניות..."
 
@@ -859,20 +859,32 @@ msgstr "ספרייה"
 msgid "Invert image colors"
 msgstr "היפוך צבעי התמונה"
 
-#: mcomix/keybindings.py:155 mcomix/openwith.py:564
+#: mcomix/keybindings.py:150
+msgid "Add bookmark"
+msgstr "הוסף סימניה"
+
+#: mcomix/keybindings.py:150 mcomix/keybindings.py:151
+msgid "Bookmarks"
+msgstr "סימניות"
+
+#: mcomix/keybindings.py:151
+msgid "Edit bookmarks"
+msgstr "עריכת סמניות"
+
+#: mcomix/keybindings.py:159 mcomix/openwith.py:564
 msgid "Command"
 msgstr "פקודה"
 
-#: mcomix/keybindings.py:156
+#: mcomix/keybindings.py:160
 msgid "External commands"
 msgstr "פקודות חיצוניות"
 
-#: mcomix/keybindings.py:234
+#: mcomix/keybindings.py:238
 #, python-format
 msgid "Keybinding for \"%(action)s\" overrides hotkey for another action."
 msgstr "צירוף המקשים עבור \"%(action)s\" דורס את הקיצור של פעולה אחרת."
 
-#: mcomix/keybindings.py:390
+#: mcomix/keybindings.py:394
 #, python-format
 msgid "Couldn't load keybindings: %s"
 msgstr "לא ניתן לטעון את צירופי המקשים: %s"

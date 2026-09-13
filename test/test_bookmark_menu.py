@@ -78,13 +78,15 @@ class _StubWindow(Gtk.Window):
 
 class _StubUI:
 
-    """Stands in for MainUI, which is where accelerators are registered."""
+    """Stands in for MainUI, which tells the menu the key each keybinding
+    action answers to."""
 
     def __init__(self):
-        self.shortcuts = []
+        self.accelerators = {'add_bookmark': '<Control>D',
+                             'edit_bookmarks': '<Control>B'}
 
-    def add_shortcut(self, accelerator, action):
-        self.shortcuts.append((accelerator, action))
+    def accelerator(self, name):
+        return self.accelerators.get(name)
 
 
 class BookmarksMenuTest(MComixTest):
@@ -301,12 +303,38 @@ class BookmarksMenuTest(MComixTest):
         self.menu.set_sensitive(True)
         self.assertTrue(add.get_enabled())
 
-    def test_the_accelerators_name_their_actions(self):
-        # They are registered against the action rather than the menu item,
-        # because the items are rebuilt whenever a bookmark changes.
-        self.assertEqual(self.ui.shortcuts,
-                         [('<Control>D', 'bookmarks.add'),
-                          ('<Control>B', 'bookmarks.edit')])
+    def _accelerators(self):
+        """The key each fixed entry shows, or None."""
+        link = self.menu.model.get_item_link(0, 'section')
+        values = [link.get_item_attribute_value(index, 'accel')
+                  for index in range(link.get_n_items())]
+        return [None if value is None else value.get_string()
+                for value in values]
+
+    def test_the_fixed_entries_show_the_keys_they_answer_to(self):
+        """The keys belong to the keybinding manager, so that the
+        Shortcuts tab can change them; the menu shows what it is told."""
+        self.assertEqual(['<Control>D', '<Control>B', None],
+                         self._accelerators())
+
+    def test_a_changed_key_shows_once_the_menu_is_refreshed(self):
+        self.ui.accelerators['add_bookmark'] = '<Alt>a'
+        self.menu.refresh()
+        self.assertEqual(['<Alt>a', '<Control>B', None],
+                         self._accelerators())
+
+    def test_the_key_adds_a_bookmark_while_a_book_is_open(self):
+        self.menu.set_sensitive(True)
+        self.menu.activate('add')
+        self.assertEqual([3], [bookmark._page
+                               for bookmark in self.store.get_bookmarks()])
+
+    def test_the_key_adds_nothing_while_no_book_is_open(self):
+        """set_sensitive() disables adding with no book open, and the key
+        has to leave it alone as the menu item does."""
+        self.menu.set_sensitive(False)
+        self.menu.activate('add')
+        self.assertEqual([], self.store.get_bookmarks())
 
 
 class BookmarkInTheOpenBookTest(MComixTest):

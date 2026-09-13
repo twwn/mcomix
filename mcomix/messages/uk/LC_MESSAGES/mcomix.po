@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-13 15:26+0200\n"
+"POT-Creation-Date: 2026-09-13 15:48+0200\n"
 "PO-Revision-Date: 2009-05-04 23:52+0300\n"
 "Last-Translator: Oleksandr Zaiats <ai@eth0.net.ua>\n"
 "Language-Team: \n"
@@ -129,7 +129,7 @@ msgstr ""
 msgid "Edit Bookmarks"
 msgstr "Редагування закладок"
 
-#: mcomix/bookmark_dialog.py:32 mcomix/bookmark_menu.py:37
+#: mcomix/bookmark_dialog.py:32 mcomix/bookmark_menu.py:38
 msgid "C_lear bookmarks..."
 msgstr "_Видалити закладки…"
 
@@ -167,11 +167,11 @@ msgstr "Розташування"
 msgid "Added"
 msgstr "Додано"
 
-#: mcomix/bookmark_menu.py:35
+#: mcomix/bookmark_menu.py:36
 msgid "Add _Bookmark"
 msgstr "Додати _закладку"
 
-#: mcomix/bookmark_menu.py:36
+#: mcomix/bookmark_menu.py:37
 msgid "_Edit Bookmarks..."
 msgstr "_Редагувати закладки..."
 
@@ -844,20 +844,32 @@ msgstr "Бібліотека"
 msgid "Invert image colors"
 msgstr "Інвертування кольорів зображення"
 
-#: mcomix/keybindings.py:155 mcomix/openwith.py:564
+#: mcomix/keybindings.py:150
+msgid "Add bookmark"
+msgstr "Додати закладку"
+
+#: mcomix/keybindings.py:150 mcomix/keybindings.py:151
+msgid "Bookmarks"
+msgstr "Закладки"
+
+#: mcomix/keybindings.py:151
+msgid "Edit bookmarks"
+msgstr "Редагування закладок"
+
+#: mcomix/keybindings.py:159 mcomix/openwith.py:564
 msgid "Command"
 msgstr "Команда"
 
-#: mcomix/keybindings.py:156
+#: mcomix/keybindings.py:160
 msgid "External commands"
 msgstr "Зовнішні команди"
 
-#: mcomix/keybindings.py:234
+#: mcomix/keybindings.py:238
 #, python-format
 msgid "Keybinding for \"%(action)s\" overrides hotkey for another action."
 msgstr "Сполучення клавіш для «%(action)s» перекриває сполучення іншої дії."
 
-#: mcomix/keybindings.py:390
+#: mcomix/keybindings.py:394
 #, python-format
 msgid "Couldn't load keybindings: %s"
 msgstr "Не вдалося завантажити сполучення клавіш: %s"
@@ -3113,9 +3125,6 @@ msgstr "Автоматично шукати нові книжки при _від
 #, fuzzy
 #~ msgid "! Could not add file "
 #~ msgstr "Не можу прочитати %s"
-
-#~ msgid "_Add bookmark"
-#~ msgstr "_Додати закладку"
 
 #~ msgid "_Edit bookmarks..."
 #~ msgstr "_Редагувати закладки…"

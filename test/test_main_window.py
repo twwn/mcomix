@@ -18,12 +18,14 @@ from gi.repository import Gdk, Gio, Gtk
 from . import MComixTest, get_testfile_path, pump, wait_for
 
 from mcomix import archive_packer
+from mcomix import bookmark_backend
 from mcomix import constants
 from mcomix import dialog as dialog_module
 from mcomix import edit_dialog
 from mcomix import file_chooser_simple_dialog as simple_chooser
 from mcomix import icons
 from mcomix import image_tools
+from mcomix import keybindings
 from mcomix import file_actions
 from mcomix import main
 from mcomix import message_dialog
@@ -42,6 +44,10 @@ class MainWindowTest(MComixTest):
         prefs['show toolbar'] = True
         prefs['show menubar'] = True
         icons.load_icons()
+        # The keybinding manager is one for the process and tells the
+        # menus of the window it was built with; without this, that is
+        # the window of whichever test built one first on this worker.
+        keybindings._manager = None
         self.window = main.MainWindow(
             open_path=get_testfile_path('archives', '01-ZIP-Normal.zip'))
         main.set_main_window(self.window)
@@ -70,6 +76,29 @@ class MainWindowTest(MComixTest):
             children.append(child)
             child = child.get_next_sibling()
         return children
+
+    def test_the_bookmark_key_is_the_keybinding_managers(self):
+        """CTRL+D was a Gtk.Shortcut of the bookmarks menu's own, which the
+        Shortcuts tab did not list and could not change.  It is now an
+        action of the keybinding manager, and the menu shows its key."""
+        wait_for(lambda: self.window.filehandler.file_loaded, seconds=10)
+        # The store is one for the process and keeps the first window it
+        # was given, which on a shared worker is another test's.
+        store = bookmark_backend.BookmarksStore
+        store._initialized = False
+        store._bookmarks = []
+        store.initialize(self.window)
+        manager = keybindings.keybinding_manager(self.window)
+        manager.execute(keybindings.parse_accelerator('<Control>d'))
+        self.assertEqual(1, len(store.get_bookmarks()))
+        self._pump()
+        fixed = self.window.uimanager.bookmarks.model.get_item_link(
+            0, 'section')
+        accelerator = fixed.get_item_attribute_value(0, 'accel')
+        self.assertIsNotNone(accelerator, 'the menu shows no key')
+        self.assertEqual(keybindings.parse_accelerator('<Control>d'),
+                         keybindings.parse_accelerator(
+                             accelerator.get_string()))
 
     def test_pitch_black_paints_the_page_area_black(self):
         # Whatever colour the preference holds, or the picture suggests.

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 2.0.0\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-13 15:26+0200\n"
+"POT-Creation-Date: 2026-09-13 15:48+0200\n"
 "PO-Revision-Date: 2024-01-21 19:55+0100\n"
 "Last-Translator: Moritz Brunner <oddegamra@gmx.org>\n"
 "Language-Team: \n"
@@ -138,7 +138,7 @@ msgstr ""
 msgid "Edit Bookmarks"
 msgstr "Lesezeichen bearbeiten"
 
-#: mcomix/bookmark_dialog.py:32 mcomix/bookmark_menu.py:37
+#: mcomix/bookmark_dialog.py:32 mcomix/bookmark_menu.py:38
 msgid "C_lear bookmarks..."
 msgstr "Alle Lese_zeichen entfernen..."
 
@@ -176,11 +176,11 @@ msgstr "Ort"
 msgid "Added"
 msgstr "Hinzugefügt"
 
-#: mcomix/bookmark_menu.py:35
+#: mcomix/bookmark_menu.py:36
 msgid "Add _Bookmark"
 msgstr "_Lesezeichen hinzufügen"
 
-#: mcomix/bookmark_menu.py:36
+#: mcomix/bookmark_menu.py:37
 msgid "_Edit Bookmarks..."
 msgstr "Lesezeichen _bearbeiten..."
 
@@ -856,20 +856,32 @@ msgstr "Bibliothek"
 msgid "Invert image colors"
 msgstr "Farben invertieren"
 
-#: mcomix/keybindings.py:155 mcomix/openwith.py:564
+#: mcomix/keybindings.py:150
+msgid "Add bookmark"
+msgstr "Lesezeichen hinzufügen"
+
+#: mcomix/keybindings.py:150 mcomix/keybindings.py:151
+msgid "Bookmarks"
+msgstr "Lesezeichen"
+
+#: mcomix/keybindings.py:151
+msgid "Edit bookmarks"
+msgstr "Lesezeichen bearbeiten"
+
+#: mcomix/keybindings.py:159 mcomix/openwith.py:564
 msgid "Command"
 msgstr "Befehl"
 
-#: mcomix/keybindings.py:156
+#: mcomix/keybindings.py:160
 msgid "External commands"
 msgstr "Externe Programme"
 
-#: mcomix/keybindings.py:234
+#: mcomix/keybindings.py:238
 #, python-format
 msgid "Keybinding for \"%(action)s\" overrides hotkey for another action."
 msgstr "Taste für \"%(action)s\" überschreibt andere Aktion mit selber Taste."
 
-#: mcomix/keybindings.py:390
+#: mcomix/keybindings.py:394
 #, python-format
 msgid "Couldn't load keybindings: %s"
 msgstr "Konnte Tastaturbelegung nicht laden: %s"

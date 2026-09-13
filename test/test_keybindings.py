@@ -400,6 +400,8 @@ class DocumentedKeyBindingsTest(MComixTest):
         'Delete the page or the file': 'delete',
         'Undo': 'undo',
         'Redo': 'redo',
+        'Add bookmark': 'add_bookmark',
+        'Edit bookmarks': 'edit_bookmarks',
         'Minimize window': 'minimize',
         'Quit program': 'quit',
         'Save and quit': 'save_and_quit',

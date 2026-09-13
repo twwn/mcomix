@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-13 15:26+0200\n"
+"POT-Creation-Date: 2026-09-13 15:48+0200\n"
 "PO-Revision-Date: 2006-09-27 10:18+0200\n"
 "Last-Translator: Paul Chatzidimitriou <paulmedic555@gmail.com>\n"
 "Language-Team: \n"
@@ -140,7 +140,7 @@ msgstr "Επεξεργασία σελιδοδεικτών"
 
 #
 # File: src/bookmark.py, line: 29
-#: mcomix/bookmark_dialog.py:32 mcomix/bookmark_menu.py:37
+#: mcomix/bookmark_dialog.py:32 mcomix/bookmark_menu.py:38
 msgid "C_lear bookmarks..."
 msgstr "Εκκα_θάριση σελιδοδεικτών..."
 
@@ -188,11 +188,11 @@ msgstr "Τοποθεσία"
 msgid "Added"
 msgstr "Προστέθηκε"
 
-#: mcomix/bookmark_menu.py:35
+#: mcomix/bookmark_menu.py:36
 msgid "Add _Bookmark"
 msgstr "Προσθήκη _σελιδοδείκτη"
 
-#: mcomix/bookmark_menu.py:36
+#: mcomix/bookmark_menu.py:37
 msgid "_Edit Bookmarks..."
 msgstr "_Επεξεργασία σελιδοδεικτών..."
 
@@ -1021,23 +1021,39 @@ msgid "Invert image colors"
 msgstr "Αντιστροφή χρωμάτων εικόνας"
 
 #
-#: mcomix/keybindings.py:155 mcomix/openwith.py:564
+# File: src/bookmark.py, line: 27
+#: mcomix/keybindings.py:150
+msgid "Add bookmark"
+msgstr "Προσθήκη σελιδοδείκτη"
+
+#
+# File: src/ui.py, line: 64
+#: mcomix/keybindings.py:150 mcomix/keybindings.py:151
+msgid "Bookmarks"
+msgstr "Σελιδοδείκτες"
+
+#: mcomix/keybindings.py:151
+msgid "Edit bookmarks"
+msgstr "Επεξεργασία σελιδοδεικτών"
+
+#
+#: mcomix/keybindings.py:159 mcomix/openwith.py:564
 msgid "Command"
 msgstr "Εντολή"
 
 #
 # File: src/bookmark.py, line: 229
-#: mcomix/keybindings.py:156
+#: mcomix/keybindings.py:160
 msgid "External commands"
 msgstr "Εξωτερικές εντολές"
 
-#: mcomix/keybindings.py:234
+#: mcomix/keybindings.py:238
 #, python-format
 msgid "Keybinding for \"%(action)s\" overrides hotkey for another action."
 msgstr ""
 "Η συντόμευση για «%(action)s» υπερισχύει της συντόμευσης άλλης ενέργειας."
 
-#: mcomix/keybindings.py:390
+#: mcomix/keybindings.py:394
 #, python-format
 msgid "Couldn't load keybindings: %s"
 msgstr "Δεν ήταν δυνατή η φόρτωση των συντομεύσεων: %s"
@@ -3539,11 +3555,6 @@ msgstr "Αυτόματη αναζήτηση νέων βιβλίων κατά τ�
 #, fuzzy
 #~ msgid "! Could not add file "
 #~ msgstr "Δεν μπορεί να διαγραφεί"
-
-#
-# File: src/bookmark.py, line: 27
-#~ msgid "_Add bookmark"
-#~ msgstr "_Προσθήκη σελιδοδείκτη"
 
 #
 #, fuzzy

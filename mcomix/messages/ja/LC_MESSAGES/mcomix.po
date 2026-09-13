@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 1.00-SVN\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-13 15:26+0200\n"
+"POT-Creation-Date: 2026-09-13 15:48+0200\n"
 "PO-Revision-Date: 2012-08-16 13:10+0900\n"
 "Last-Translator: Toshiharu Kudoh <toshi.kd2@gmail.com>\n"
 "Language-Team: Japanese\n"
@@ -132,7 +132,7 @@ msgstr "保存されている全てのブックマークが削除されます。
 msgid "Edit Bookmarks"
 msgstr "ブックマークの編集"
 
-#: mcomix/bookmark_dialog.py:32 mcomix/bookmark_menu.py:37
+#: mcomix/bookmark_dialog.py:32 mcomix/bookmark_menu.py:38
 msgid "C_lear bookmarks..."
 msgstr "ブックマークの消去(_L)..."
 
@@ -170,11 +170,11 @@ msgstr "位置"
 msgid "Added"
 msgstr "追加日"
 
-#: mcomix/bookmark_menu.py:35
+#: mcomix/bookmark_menu.py:36
 msgid "Add _Bookmark"
 msgstr "ブックマークに追加(_B)"
 
-#: mcomix/bookmark_menu.py:36
+#: mcomix/bookmark_menu.py:37
 msgid "_Edit Bookmarks..."
 msgstr "ブックマークの編集(_E)..."
 
@@ -845,22 +845,34 @@ msgstr "ライブラリー"
 msgid "Invert image colors"
 msgstr "画像の色を反転"
 
-#: mcomix/keybindings.py:155 mcomix/openwith.py:564
+#: mcomix/keybindings.py:150
+msgid "Add bookmark"
+msgstr "ブックマークに追加"
+
+#: mcomix/keybindings.py:150 mcomix/keybindings.py:151
+msgid "Bookmarks"
+msgstr "ブックマーク"
+
+#: mcomix/keybindings.py:151
+msgid "Edit bookmarks"
+msgstr "ブックマークの編集"
+
+#: mcomix/keybindings.py:159 mcomix/openwith.py:564
 msgid "Command"
 msgstr "コマンド"
 
-#: mcomix/keybindings.py:156
+#: mcomix/keybindings.py:160
 msgid "External commands"
 msgstr "外部コマンド"
 
-#: mcomix/keybindings.py:234
+#: mcomix/keybindings.py:238
 #, python-format
 msgid "Keybinding for \"%(action)s\" overrides hotkey for another action."
 msgstr ""
 "\"%(action)s\" のキーバインディングは他のアクションのホットキーをオーバーライ"
 "ドします。"
 
-#: mcomix/keybindings.py:390
+#: mcomix/keybindings.py:394
 #, python-format
 msgid "Couldn't load keybindings: %s"
 msgstr "! キーバインディング \"%s\" を読めませんでした"

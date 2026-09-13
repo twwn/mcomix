@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: comix 4.0.1\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-13 15:26+0200\n"
+"POT-Creation-Date: 2026-09-13 15:48+0200\n"
 "PO-Revision-Date: 2008-12-13 18:00+0100\n"
 "Last-Translator: Adrian C. <anrxc@sysphere.org>\n"
 "Language-Team: Croatian\n"
@@ -144,7 +144,7 @@ msgstr "Uređivanje oznaka"
 
 #
 # File: src/bookmark.py, line: 31
-#: mcomix/bookmark_dialog.py:32 mcomix/bookmark_menu.py:37
+#: mcomix/bookmark_dialog.py:32 mcomix/bookmark_menu.py:38
 msgid "C_lear bookmarks..."
 msgstr "_Očisti oznake..."
 
@@ -192,11 +192,11 @@ msgstr "Lokacija"
 msgid "Added"
 msgstr "Dodano"
 
-#: mcomix/bookmark_menu.py:35
+#: mcomix/bookmark_menu.py:36
 msgid "Add _Bookmark"
 msgstr "Dodaj o_znaku"
 
-#: mcomix/bookmark_menu.py:36
+#: mcomix/bookmark_menu.py:37
 msgid "_Edit Bookmarks..."
 msgstr "_Uredi oznake..."
 
@@ -1040,24 +1040,40 @@ msgid "Invert image colors"
 msgstr "Invertiranje boja slike"
 
 #
+# File: src/bookmark.py, line: 27
+#: mcomix/keybindings.py:150
+msgid "Add bookmark"
+msgstr "Dodaj oznaku"
+
+#
+# File: src/ui.py, line: 64
+#: mcomix/keybindings.py:150 mcomix/keybindings.py:151
+msgid "Bookmarks"
+msgstr "Oznake"
+
+#: mcomix/keybindings.py:151
+msgid "Edit bookmarks"
+msgstr "Uređivanje oznaka"
+
+#
 # File: src/comment.py, line: 16
 # File: src/preferences.py, line: 288
-#: mcomix/keybindings.py:155 mcomix/openwith.py:564
+#: mcomix/keybindings.py:159 mcomix/openwith.py:564
 msgid "Command"
 msgstr "Naredba"
 
 #
 # File: src/bookmark.py, line: 229
-#: mcomix/keybindings.py:156
+#: mcomix/keybindings.py:160
 msgid "External commands"
 msgstr "Vanjske naredbe"
 
-#: mcomix/keybindings.py:234
+#: mcomix/keybindings.py:238
 #, python-format
 msgid "Keybinding for \"%(action)s\" overrides hotkey for another action."
 msgstr "Prečac za „%(action)s” nadjačava prečac druge radnje."
 
-#: mcomix/keybindings.py:390
+#: mcomix/keybindings.py:394
 #, python-format
 msgid "Couldn't load keybindings: %s"
 msgstr "Nije moguće učitati prečace: %s"
@@ -3798,11 +3814,6 @@ msgstr "Automatski traži nove knjige pri _otvaranju biblioteke"
 #, fuzzy
 #~ msgid "! Could not add file "
 #~ msgstr "Neuspješno čitanje %s"
-
-#
-# File: src/bookmark.py, line: 27
-#~ msgid "_Add bookmark"
-#~ msgstr "_Dodaj oznaku"
 
 #
 # File: src/bookmark.py, line: 29

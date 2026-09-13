@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Comix 4.0.3\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-13 15:26+0200\n"
+"POT-Creation-Date: 2026-09-13 15:48+0200\n"
 "PO-Revision-Date: 2009-01-26 19:34+0100\n"
 "Last-Translator: Ernő Drabik <drerno@gmail.com>\n"
 "Language-Team: \n"
@@ -125,7 +125,7 @@ msgstr ""
 msgid "Edit Bookmarks"
 msgstr "Könyvjelzők szerkesztése"
 
-#: mcomix/bookmark_dialog.py:32 mcomix/bookmark_menu.py:37
+#: mcomix/bookmark_dialog.py:32 mcomix/bookmark_menu.py:38
 msgid "C_lear bookmarks..."
 msgstr "Könyvjelzők _törlése..."
 
@@ -163,11 +163,11 @@ msgstr "Hely"
 msgid "Added"
 msgstr "Hozzáadva"
 
-#: mcomix/bookmark_menu.py:35
+#: mcomix/bookmark_menu.py:36
 msgid "Add _Bookmark"
 msgstr "Könyv_jelző hozzáadása"
 
-#: mcomix/bookmark_menu.py:36
+#: mcomix/bookmark_menu.py:37
 msgid "_Edit Bookmarks..."
 msgstr "Könyvjelzők s_zerkesztése..."
 
@@ -843,22 +843,34 @@ msgstr "Könyvtár"
 msgid "Invert image colors"
 msgstr "A kép színeinek invertálása"
 
-#: mcomix/keybindings.py:155 mcomix/openwith.py:564
+#: mcomix/keybindings.py:150
+msgid "Add bookmark"
+msgstr "Könyvjelző hozzáadása"
+
+#: mcomix/keybindings.py:150 mcomix/keybindings.py:151
+msgid "Bookmarks"
+msgstr "Könyvjelzők"
+
+#: mcomix/keybindings.py:151
+msgid "Edit bookmarks"
+msgstr "Könyvjelzők szerkesztése"
+
+#: mcomix/keybindings.py:159 mcomix/openwith.py:564
 msgid "Command"
 msgstr "Parancs"
 
-#: mcomix/keybindings.py:156
+#: mcomix/keybindings.py:160
 msgid "External commands"
 msgstr "Külső parancsok"
 
-#: mcomix/keybindings.py:234
+#: mcomix/keybindings.py:238
 #, python-format
 msgid "Keybinding for \"%(action)s\" overrides hotkey for another action."
 msgstr ""
 "A(z) „%(action)s” gyorsbillentyűje felülírja egy másik művelet "
 "gyorsbillentyűjét."
 
-#: mcomix/keybindings.py:390
+#: mcomix/keybindings.py:394
 #, python-format
 msgid "Couldn't load keybindings: %s"
 msgstr "Nem sikerült betölteni a gyorsbillentyűket: %s"
@@ -3133,9 +3145,6 @@ msgstr "Új könyvek automatikus keresése a könyvtár _megnyitásakor"
 #, fuzzy
 #~ msgid "! Could not add file "
 #~ msgstr "Nem olvasható a(z) %s"
-
-#~ msgid "_Add bookmark"
-#~ msgstr "Könyvjelző hozzá_adása"
 
 #~ msgid "_Edit bookmarks..."
 #~ msgstr "Könyvjelzők sz_erkesztése..."

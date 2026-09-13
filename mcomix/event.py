@@ -399,6 +399,15 @@ class EventHandler:
                          ['<Control>L'],
                          self._window.actiongroup.get_action('library').activate)
 
+        # The bookmarks menu keeps actions of its own rather than in
+        # actiongroup, since its items are rebuilt with every bookmark.
+        manager.register('add_bookmark',
+                         ['<Control>D'],
+                         self._window.uimanager.bookmarks.activate, args=['add'])
+        manager.register('edit_bookmarks',
+                         ['<Control>B'],
+                         self._window.uimanager.bookmarks.activate, args=['edit'])
+
         manager.register('invert_color',
                          ['<Control>I'],
                          self._window.actiongroup.get_action('invert_color').activate)

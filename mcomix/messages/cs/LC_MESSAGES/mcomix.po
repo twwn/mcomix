@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-13 15:26+0200\n"
+"POT-Creation-Date: 2026-09-13 15:48+0200\n"
 "PO-Revision-Date: 2009-01-25 21:54+0100\n"
 "Last-Translator: Jan Nekvasil <jan.nekvasil@gmail.com>\n"
 "Language-Team: \n"
@@ -145,7 +145,7 @@ msgstr "Úprava záložek"
 
 #
 # File: src/bookmark.py, line: 31
-#: mcomix/bookmark_dialog.py:32 mcomix/bookmark_menu.py:37
+#: mcomix/bookmark_dialog.py:32 mcomix/bookmark_menu.py:38
 msgid "C_lear bookmarks..."
 msgstr "_Vymazat záložky…"
 
@@ -193,11 +193,11 @@ msgstr "Umístění"
 msgid "Added"
 msgstr "Přidáno"
 
-#: mcomix/bookmark_menu.py:35
+#: mcomix/bookmark_menu.py:36
 msgid "Add _Bookmark"
 msgstr "Přidat _záložku"
 
-#: mcomix/bookmark_menu.py:36
+#: mcomix/bookmark_menu.py:37
 msgid "_Edit Bookmarks..."
 msgstr "_Upravit záložky..."
 
@@ -1041,24 +1041,40 @@ msgid "Invert image colors"
 msgstr "Inverze barev obrázku"
 
 #
+# File: src/bookmark.py, line: 27
+#: mcomix/keybindings.py:150
+msgid "Add bookmark"
+msgstr "Přidat záložku"
+
+#
+# File: src/ui.py, line: 64
+#: mcomix/keybindings.py:150 mcomix/keybindings.py:151
+msgid "Bookmarks"
+msgstr "Záložky"
+
+#: mcomix/keybindings.py:151
+msgid "Edit bookmarks"
+msgstr "Úprava záložek"
+
+#
 # File: src/comment.py, line: 16
 # File: src/preferences.py, line: 288
-#: mcomix/keybindings.py:155 mcomix/openwith.py:564
+#: mcomix/keybindings.py:159 mcomix/openwith.py:564
 msgid "Command"
 msgstr "Příkaz"
 
 #
 # File: src/bookmark.py, line: 229
-#: mcomix/keybindings.py:156
+#: mcomix/keybindings.py:160
 msgid "External commands"
 msgstr "Externí příkazy"
 
-#: mcomix/keybindings.py:234
+#: mcomix/keybindings.py:238
 #, python-format
 msgid "Keybinding for \"%(action)s\" overrides hotkey for another action."
 msgstr "Zkratka pro „%(action)s“ přebíjí zkratku jiné akce."
 
-#: mcomix/keybindings.py:390
+#: mcomix/keybindings.py:394
 #, python-format
 msgid "Couldn't load keybindings: %s"
 msgstr "Nepodařilo se načíst klávesové zkratky: %s"
@@ -3789,11 +3805,6 @@ msgstr "Automaticky hledat nové knihy při _otevření knihovny"
 #, fuzzy
 #~ msgid "! Could not add file "
 #~ msgstr "%s nelze načíst"
-
-#
-# File: src/bookmark.py, line: 27
-#~ msgid "_Add bookmark"
-#~ msgstr "_Přidat záložku"
 
 #
 # File: src/bookmark.py, line: 29

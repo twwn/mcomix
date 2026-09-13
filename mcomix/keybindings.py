@@ -145,6 +145,10 @@ BINDING_INFO: "dict[str, dict[str, str]]" = {
     'enhance_image': {'title': _('Enhance image'), 'group': _('File')},
     'library': {'title': _('Library'), 'group': _('File')},
     'invert_color': {'title': _('Invert image colors'), 'group': _('File')},
+
+    # Bookmarks
+    'add_bookmark': {'title': _('Add bookmark'), 'group': _('Bookmarks')},
+    'edit_bookmarks': {'title': _('Edit bookmarks'), 'group': _('Bookmarks')},
 }
 
 # Generate 9 entries for executing command 1 to 9

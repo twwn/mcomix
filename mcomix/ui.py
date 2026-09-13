@@ -598,10 +598,17 @@ class MainUI:
         if self._rebuild_pending is None:
             self._rebuild_pending = GLib.idle_add(self._rebuild_menus)
 
+    def accelerator(self, name: str) -> str | None:
+        """The accelerator the menus show for the keybinding action
+        <name>, if it has one."""
+        return self._accelerators.get(name)
+
     def _rebuild_menus(self) -> bool:
         self._rebuild_pending = None
         self.menubar.set_menu_model(self._build(_MENUBAR))
         self.popup.set_menu_model(self._build(_POPUP))
+        # The bookmarks menu builds its fixed entries itself.
+        self.bookmarks.refresh()
         # A new model is a new set of popovers below the two roots.
         widgets.watch_menu_clicks(self.menubar)
         widgets.watch_menu_clicks(self.popup)

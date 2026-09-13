@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix zh_TW\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-13 15:26+0200\n"
+"POT-Creation-Date: 2026-09-13 15:48+0200\n"
 "PO-Revision-Date: 2013-07-05 21:37+0800\n"
 "Last-Translator: Wayne Su <mstarmstar@hotmail.com>\n"
 "Language-Team: \n"
@@ -131,7 +131,7 @@ msgstr "所有保存的書籤都會被移除，你確定要這樣做嗎？"
 msgid "Edit Bookmarks"
 msgstr "編輯書籤"
 
-#: mcomix/bookmark_dialog.py:32 mcomix/bookmark_menu.py:37
+#: mcomix/bookmark_dialog.py:32 mcomix/bookmark_menu.py:38
 msgid "C_lear bookmarks..."
 msgstr "清除書籤...(_L)"
 
@@ -169,11 +169,11 @@ msgstr "位置"
 msgid "Added"
 msgstr "新增時間"
 
-#: mcomix/bookmark_menu.py:35
+#: mcomix/bookmark_menu.py:36
 msgid "Add _Bookmark"
 msgstr "新增書籤(_B)"
 
-#: mcomix/bookmark_menu.py:36
+#: mcomix/bookmark_menu.py:37
 msgid "_Edit Bookmarks..."
 msgstr "編輯書籤(_E)..."
 
@@ -839,20 +839,32 @@ msgstr "書庫"
 msgid "Invert image colors"
 msgstr "反轉圖片色彩"
 
-#: mcomix/keybindings.py:155 mcomix/openwith.py:564
+#: mcomix/keybindings.py:150
+msgid "Add bookmark"
+msgstr "新增書籤"
+
+#: mcomix/keybindings.py:150 mcomix/keybindings.py:151
+msgid "Bookmarks"
+msgstr "書籤"
+
+#: mcomix/keybindings.py:151
+msgid "Edit bookmarks"
+msgstr "編輯書籤"
+
+#: mcomix/keybindings.py:159 mcomix/openwith.py:564
 msgid "Command"
 msgstr "指令"
 
-#: mcomix/keybindings.py:156
+#: mcomix/keybindings.py:160
 msgid "External commands"
 msgstr "外部指令"
 
-#: mcomix/keybindings.py:234
+#: mcomix/keybindings.py:238
 #, python-format
 msgid "Keybinding for \"%(action)s\" overrides hotkey for another action."
 msgstr "以「%(action)s」功能的快速鍵替換掉原有功能。"
 
-#: mcomix/keybindings.py:390
+#: mcomix/keybindings.py:394
 #, python-format
 msgid "Couldn't load keybindings: %s"
 msgstr "無法載入快速鍵設定：%s"
@@ -3076,9 +3088,6 @@ msgstr "書庫開啟時自動搜尋新書(_O)"
 
 #~ msgid "! Could not add file "
 #~ msgstr "！ 無法新增檔案"
-
-#~ msgid "_Add bookmark"
-#~ msgstr "加入書籤(_A)"
 
 #~ msgid "_Edit bookmarks..."
 #~ msgstr "編輯書籤...(_E)"

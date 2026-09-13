@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 0.90.4\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-13 15:26+0200\n"
+"POT-Creation-Date: 2026-09-13 15:48+0200\n"
 "PO-Revision-Date: 2018-02-24 08:43+0100\n"
 "Last-Translator: Jonatan Nyberg <jonatan@autistici.org>\n"
 "Language-Team: Swedish <LL@li.org>\n"
@@ -152,7 +152,7 @@ msgstr "Redigera bokmärken"
 
 #
 # File: src/bookmark.py, line: 77
-#: mcomix/bookmark_dialog.py:32 mcomix/bookmark_menu.py:37
+#: mcomix/bookmark_dialog.py:32 mcomix/bookmark_menu.py:38
 msgid "C_lear bookmarks..."
 msgstr "Tö_m alla bokmärken..."
 
@@ -200,11 +200,11 @@ msgstr "Plats"
 msgid "Added"
 msgstr "Tillagd"
 
-#: mcomix/bookmark_menu.py:35
+#: mcomix/bookmark_menu.py:36
 msgid "Add _Bookmark"
 msgstr "Lägg till _bokmärke"
 
-#: mcomix/bookmark_menu.py:36
+#: mcomix/bookmark_menu.py:37
 msgid "_Edit Bookmarks..."
 msgstr "_Redigera bokmärken..."
 
@@ -1052,26 +1052,42 @@ msgid "Invert image colors"
 msgstr "Invertera bildfärger"
 
 #
+# File: src/bookmark.py, line: 27
+#: mcomix/keybindings.py:150
+msgid "Add bookmark"
+msgstr "Lägg till bokmärke"
+
+#
+# File: src/ui.py, line: 64
+#: mcomix/keybindings.py:150 mcomix/keybindings.py:151
+msgid "Bookmarks"
+msgstr "Bokmärken"
+
+#: mcomix/keybindings.py:151
+msgid "Edit bookmarks"
+msgstr "Redigera bokmärken"
+
+#
 # File: src/comment.py, line: 16
 # File: src/preferences.py, line: 288
-#: mcomix/keybindings.py:155 mcomix/openwith.py:564
+#: mcomix/keybindings.py:159 mcomix/openwith.py:564
 msgid "Command"
 msgstr "Kommando"
 
 #
 # File: src/bookmark.py, line: 229
-#: mcomix/keybindings.py:156
+#: mcomix/keybindings.py:160
 msgid "External commands"
 msgstr "Externa kommandon"
 
-#: mcomix/keybindings.py:234
+#: mcomix/keybindings.py:238
 #, python-format
 msgid "Keybinding for \"%(action)s\" overrides hotkey for another action."
 msgstr ""
 "Tangentbindning för \"%(action)s\" åsidosätter snabbtangent för en annan "
 "åtgärd."
 
-#: mcomix/keybindings.py:390
+#: mcomix/keybindings.py:394
 #, python-format
 msgid "Couldn't load keybindings: %s"
 msgstr "Det gick inte att läsa tangentbindningar: %s"
@@ -3838,11 +3854,6 @@ msgstr "Skanna automatiskt efter nya böcker när biblioteket _öppnas"
 # File: src/about.py, line: 106
 #~ msgid "Credits"
 #~ msgstr "Tack"
-
-#
-# File: src/bookmark.py, line: 27
-#~ msgid "_Add bookmark"
-#~ msgstr "_Lägg till bokmärke"
 
 #
 # File: src/bookmark.py, line: 29

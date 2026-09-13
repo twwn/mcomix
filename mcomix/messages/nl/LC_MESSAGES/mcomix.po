@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-13 15:26+0200\n"
+"POT-Creation-Date: 2026-09-13 15:48+0200\n"
 "PO-Revision-Date: 2006-10-15 21:30+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -138,7 +138,7 @@ msgstr "Bladwijzers bewerken"
 
 #
 # File: src/bookmark.py, line: 29
-#: mcomix/bookmark_dialog.py:32 mcomix/bookmark_menu.py:37
+#: mcomix/bookmark_dialog.py:32 mcomix/bookmark_menu.py:38
 msgid "C_lear bookmarks..."
 msgstr "Bladwij_zers wissen..."
 
@@ -186,11 +186,11 @@ msgstr "Locatie"
 msgid "Added"
 msgstr "Toegevoegd"
 
-#: mcomix/bookmark_menu.py:35
+#: mcomix/bookmark_menu.py:36
 msgid "Add _Bookmark"
 msgstr "_Bladwijzer toevoegen"
 
-#: mcomix/bookmark_menu.py:36
+#: mcomix/bookmark_menu.py:37
 msgid "_Edit Bookmarks..."
 msgstr "Bladwijzers be_werken..."
 
@@ -1018,23 +1018,39 @@ msgid "Invert image colors"
 msgstr "Afbeeldingskleuren omkeren"
 
 #
-#: mcomix/keybindings.py:155 mcomix/openwith.py:564
+# File: src/bookmark.py, line: 27
+#: mcomix/keybindings.py:150
+msgid "Add bookmark"
+msgstr "Bladwijzer toevoegen"
+
+#
+# File: src/ui.py, line: 64
+#: mcomix/keybindings.py:150 mcomix/keybindings.py:151
+msgid "Bookmarks"
+msgstr "Bladwijzers"
+
+#: mcomix/keybindings.py:151
+msgid "Edit bookmarks"
+msgstr "Bladwijzers bewerken"
+
+#
+#: mcomix/keybindings.py:159 mcomix/openwith.py:564
 msgid "Command"
 msgstr "Opdracht"
 
 #
 # File: src/bookmark.py, line: 229
-#: mcomix/keybindings.py:156
+#: mcomix/keybindings.py:160
 msgid "External commands"
 msgstr "Externe opdrachten"
 
-#: mcomix/keybindings.py:234
+#: mcomix/keybindings.py:238
 #, python-format
 msgid "Keybinding for \"%(action)s\" overrides hotkey for another action."
 msgstr ""
 "De sneltoets voor \"%(action)s\" overschrijft die van een andere actie."
 
-#: mcomix/keybindings.py:390
+#: mcomix/keybindings.py:394
 #, python-format
 msgid "Couldn't load keybindings: %s"
 msgstr "Kon de sneltoetsen niet laden: %s"
@@ -3537,11 +3553,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "! Could not add file "
 #~ msgstr "Kon niet verwijderen"
-
-#
-# File: src/bookmark.py, line: 27
-#~ msgid "_Add bookmark"
-#~ msgstr "_Voeg bladwijzer toe"
 
 #
 #, fuzzy

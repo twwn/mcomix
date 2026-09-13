@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-13 15:26+0200\n"
+"POT-Creation-Date: 2026-09-13 15:48+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Marcelo Góes <vanquirius@gentoo.org>\n"
 "Language-Team: \n"
@@ -128,7 +128,7 @@ msgstr ""
 msgid "Edit Bookmarks"
 msgstr "Editar favoritos"
 
-#: mcomix/bookmark_dialog.py:32 mcomix/bookmark_menu.py:37
+#: mcomix/bookmark_dialog.py:32 mcomix/bookmark_menu.py:38
 msgid "C_lear bookmarks..."
 msgstr "_Limpar favoritos..."
 
@@ -166,11 +166,11 @@ msgstr "Local"
 msgid "Added"
 msgstr "Adicionado"
 
-#: mcomix/bookmark_menu.py:35
+#: mcomix/bookmark_menu.py:36
 msgid "Add _Bookmark"
 msgstr "Adicionar _favorito"
 
-#: mcomix/bookmark_menu.py:36
+#: mcomix/bookmark_menu.py:37
 msgid "_Edit Bookmarks..."
 msgstr "_Editar favoritos..."
 
@@ -844,20 +844,32 @@ msgstr "Biblioteca"
 msgid "Invert image colors"
 msgstr "Inversão das cores da imagem"
 
-#: mcomix/keybindings.py:155 mcomix/openwith.py:564
+#: mcomix/keybindings.py:150
+msgid "Add bookmark"
+msgstr "Adicionar favorito"
+
+#: mcomix/keybindings.py:150 mcomix/keybindings.py:151
+msgid "Bookmarks"
+msgstr "Favoritos"
+
+#: mcomix/keybindings.py:151
+msgid "Edit bookmarks"
+msgstr "Editar favoritos"
+
+#: mcomix/keybindings.py:159 mcomix/openwith.py:564
 msgid "Command"
 msgstr "Comando"
 
-#: mcomix/keybindings.py:156
+#: mcomix/keybindings.py:160
 msgid "External commands"
 msgstr "Comandos externos"
 
-#: mcomix/keybindings.py:234
+#: mcomix/keybindings.py:238
 #, python-format
 msgid "Keybinding for \"%(action)s\" overrides hotkey for another action."
 msgstr "O atalho de \"%(action)s\" sobrepõe o de outra ação."
 
-#: mcomix/keybindings.py:390
+#: mcomix/keybindings.py:394
 #, python-format
 msgid "Couldn't load keybindings: %s"
 msgstr "Não foi possível carregar os atalhos: %s"
@@ -3120,9 +3132,6 @@ msgstr "_Procurar novos livros automaticamente ao abrir a biblioteca"
 #, fuzzy
 #~ msgid "! Could not add file "
 #~ msgstr "Não foi possível ler %s"
-
-#~ msgid "_Add bookmark"
-#~ msgstr "_Adicionar favorito"
 
 #~ msgid "_Edit bookmarks..."
 #~ msgstr "_Editar favoritos..."
