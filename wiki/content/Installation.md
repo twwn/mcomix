@@ -39,7 +39,7 @@ Everything else is optional. Programs are looked for on the `PATH`.
 Package or program | What it adds
 -------------------|-------------
 [libadwaita](https://gnome.pages.gitlab.gnome.org/libadwaita/) | MComix follows the desktop's GTK 4 theme throughout. Without it, it follows as much of the theme as plain GTK 4 can.
-[PyMuPDF](https://pypi.org/project/PyMuPDF/) 1.23.5 or newer, or `mutool` from [MuPDF](https://mupdf.com/) | PDF files.
+[PyMuPDF](https://pypi.org/project/PyMuPDF/) 1.24.7 or newer, or `mutool` from [MuPDF](https://mupdf.com/) | PDF files.
 The [UnRAR library](https://www.rarlab.com/rar_add.htm) (`libunrar.so` or `UnRAR64.dll`), or the `unrar` or `rar` program | RAR files. `unrar-free` is not used.
 `7z` | 7z files; ZIP, LHA, xz and lzma files that Python cannot read itself; and RAR files, as a last resort.
 `lha` | LHA files, where there is no `7z`.

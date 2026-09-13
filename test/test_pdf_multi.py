@@ -1,12 +1,16 @@
 """ Tests for the native (PyMuPDF) PDF handler. """
 
+import builtins
 import io
 import os
 import re
+import sys
 import tempfile
 import tomllib
 import types
 import unittest
+from importlib import metadata
+from unittest import mock
 
 import mcomix
 from mcomix.archive import pdf_multi
@@ -51,20 +55,70 @@ class RequiredVersionTest(unittest.TestCase):
         self.assertFalse(pdf_multi.is_supported_version('1.19.2'))
         self.assertFalse(pdf_multi.is_supported_version('0.9'))
 
+    def test_the_releases_that_crash_after_gtk_are_rejected(self):
+        # PyMuPDF 1.23.5, 1.24.0 and 1.24.5 took the process down when
+        # their extension was loaded after GTK 4; 1.24.7 was the first
+        # that did not.
+        self.assertFalse(pdf_multi.is_supported_version('1.23.5'))
+        self.assertFalse(pdf_multi.is_supported_version('1.24.5'))
+        self.assertTrue(pdf_multi.is_supported_version('1.24.7'))
+
     def test_installed_version_reports_the_binding_version(self):
         module = types.SimpleNamespace(__version__='1.23.26',
                                        VersionBind='1.23.26',
                                        VersionFitz='1.23.10')
-        self.assertEqual(pdf_multi.installed_version(module), '1.23.26')
+        self.assertEqual(pdf_multi.module_version(module), '1.23.26')
 
     def test_installed_version_falls_back_to_VersionBind(self):
         # __version__ only exists from PyMuPDF 1.23 onward.
         module = types.SimpleNamespace(VersionBind='1.19.2', VersionFitz='1.19.0')
-        self.assertEqual(pdf_multi.installed_version(module), '1.19.2')
+        self.assertEqual(pdf_multi.module_version(module), '1.19.2')
 
     def test_installed_version_of_an_unrecognizable_module(self):
         self.assertFalse(pdf_multi.is_supported_version(
-            pdf_multi.installed_version(types.SimpleNamespace())))
+            pdf_multi.module_version(types.SimpleNamespace())))
+
+    def _imports_during(self, call):
+        """The names imported while <call> runs, and what it returned."""
+        imported = []
+        real_import = builtins.__import__
+
+        def recording_import(name, *args, **kwargs):
+            imported.append(name)
+            return real_import(name, *args, **kwargs)
+
+        with mock.patch('builtins.__import__', recording_import):
+            result = call()
+        return imported, result
+
+    def test_the_version_is_read_without_loading_pymupdf(self):
+        """PyMuPDF up to 1.24.5 crashes the process when its extension is
+        loaded after GTK 4, which MComix always has loaded by then: the
+        version has to be known before anything is imported."""
+        with mock.patch('importlib.metadata.version', return_value='1.24.10'):
+            imported, version = self._imports_during(pdf_multi.installed_version)
+        self.assertEqual('1.24.10', version)
+        self.assertFalse({'pymupdf', 'fitz'} & set(imported), imported)
+
+    def test_a_release_too_old_is_never_loaded(self):
+        with mock.patch('importlib.metadata.version', return_value='1.23.5'):
+            imported, handler = self._imports_during(pdf_multi.load_handler)
+        self.assertIs(pdf_multi.DisabledFitzArchive, handler)
+        self.assertFalse({'pymupdf', 'fitz'} & set(imported), imported)
+
+    def test_a_pymupdf_without_metadata_is_asked_for_its_version(self):
+        module = types.SimpleNamespace(__version__='1.24.10')
+        with mock.patch('importlib.metadata.version',
+                        side_effect=metadata.PackageNotFoundError('PyMuPDF')), \
+                mock.patch.dict(sys.modules, {'pymupdf': module}):
+            self.assertEqual('1.24.10', pdf_multi.installed_version())
+
+    def test_no_pymupdf_at_all_has_no_version(self):
+        with mock.patch('importlib.metadata.version',
+                        side_effect=metadata.PackageNotFoundError('PyMuPDF')), \
+                mock.patch.dict(sys.modules, {'pymupdf': None, 'fitz': None}):
+            self.assertIsNone(pdf_multi.installed_version())
+            self.assertIs(pdf_multi.DisabledFitzArchive, pdf_multi.load_handler())
 
 
 def _make_pdf(path, text_page=False):
