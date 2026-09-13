@@ -1234,11 +1234,21 @@ class MainWindow(Gtk.Window):
             main_dialog._dialog.close()
         backend.LibraryBackend().close()
 
-        # This hack is to avoid Python issue #1856.
+        # Wait for the threads that are still doing work which has to
+        # finish - extracting, packing, deleting - before the process
+        # goes.  A daemon thread is by definition one that nothing waits
+        # for, and the page animation's decoder is one of those: it runs
+        # until the page it draws is replaced or cleared, which quitting
+        # does not do, so joining it never came back at all.  Joining
+        # every thread was a guard against Python issue #1856, a crash
+        # when a daemon thread ran on into interpreter shutdown; that was
+        # fixed in Python 3.9, well below the 3.12 this needs.  A dummy
+        # thread is daemonic too, so this covers those as well.
         for thread in threading.enumerate():
-            if thread is not threading.current_thread() and not isinstance(thread, threading._DummyThread):
-                log.debug('Waiting for thread %s to finish before exit', thread)
-                thread.join()
+            if thread is threading.current_thread() or thread.daemon:
+                continue
+            log.debug('Waiting for thread %s to finish before exit', thread)
+            thread.join()
 
 #: The loop the program runs in.  Gtk.main() and Gtk.main_quit() are
 #: not in GTK4; the main context they ran was always GLib's.

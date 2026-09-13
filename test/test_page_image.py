@@ -26,6 +26,11 @@ class PageImageTest(MComixTest):
         pump()
 
     def tearDown(self):
+        # An animation is decoded in a thread of its own which runs until
+        # the page is replaced or cleared, and destroying the window is
+        # neither: a test that leaves one animating leaves its thread
+        # decoding for the rest of the suite.
+        self.image.clear()
         self.window.destroy()
         pump()
         super(PageImageTest, self).tearDown()

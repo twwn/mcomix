@@ -8,6 +8,7 @@ import shutil
 import sys
 import tempfile
 import unittest
+import zipfile
 
 from . import MComixTest, get_testfile_path
 
@@ -281,6 +282,70 @@ class RecursiveArchiveCloseTest(MComixTest):
         recursive.list_contents()
         recursive.close()
         self.assertIsNone(recursive._main_archive.zip.fp)
+
+
+class TarCompressionTest(MComixTest):
+
+    #: What every SolidFlat archive holds, whatever it is compressed with.
+    CONTENTS = ['arg.jpeg', 'bar.jpg', 'foo.JPG', 'meh.png']
+
+    def test_lists_a_tarball_of_each_compression(self):
+
+        # The handler names the decompressor the magic asks for rather than
+        # letting tarfile try each in turn, so each of these is read by a
+        # different branch of that choice.
+        for extension in ('tar', 'tar.gz', 'tar.bz2', 'tar.xz'):
+            path = get_testfile_path('archives', 'SolidFlat.%s' % extension)
+            archive = tar.TarArchive(path)
+            try:
+                self.assertEqual(sorted(archive.list_contents()),
+                                 self.CONTENTS, extension)
+            finally:
+                archive.close()
+
+
+class RecursiveArchiveNestingTest(MComixTest):
+
+    def _nested_zip(self, depth):
+        """Return a zip holding one image, wrapped in <depth> more zips."""
+
+        path = os.path.join(self.tmp_dir, 'nested-000.zip')
+        with zipfile.ZipFile(path, 'w') as archive:
+            archive.write(get_testfile_path('images', 'blue.png'), 'blue.png')
+        for level in range(1, depth + 1):
+            outer = os.path.join(self.tmp_dir, 'nested-%03u.zip' % level)
+            with zipfile.ZipFile(outer, 'w') as archive:
+                archive.write(path, 'inner.zip')
+            path = outer
+        return path
+
+    def _list_nested(self, depth):
+        destination_dir = os.path.join(self.tmp_dir, 'dest')
+        os.mkdir(destination_dir)
+        recursive = archive_recursive.RecursiveArchive(
+            zip.ZipArchive(self._nested_zip(depth)), destination_dir)
+        try:
+            return recursive.list_contents(), len(recursive._archive_list)
+        finally:
+            recursive.close()
+
+    def test_follows_an_archive_within_an_archive(self):
+
+        contents, opened = self._list_nested(1)
+        self.assertEqual(contents, [os.path.join('inner.zip', 'blue.png')])
+        self.assertEqual(opened, 2)
+
+    def test_stops_following_at_the_nesting_limit(self):
+
+        # An archive that holds a copy of itself would be followed for as
+        # long as there is disk to extract it to.
+        depth = archive_recursive.MAX_NESTING_DEPTH + 2
+        contents, opened = self._list_nested(depth)
+        self.assertEqual(opened, archive_recursive.MAX_NESTING_DEPTH + 1)
+        # The archive the listing stopped at is named like any other entry
+        # that holds no image, and nothing below it was extracted.
+        self.assertEqual(len(contents), 1)
+        self.assertTrue(contents[0].endswith('inner.zip'), contents)
 
 
 class RecursiveArchiveFormatTest(ArchiveFormatTest):

@@ -1,5 +1,6 @@
 
 import os
+import tarfile
 
 from . import MComixTest, get_testfile_path
 
@@ -56,3 +57,18 @@ class ArchiveToolsTest(MComixTest):
            )
            self.assertEqual(archive_type, expected_type, msg=msg)
 
+    def test_empty_tar_is_a_tar(self):
+
+        path = os.path.join(self.tmp_dir, 'empty.tar')
+        tarfile.open(path, 'w:').close()
+        self.assertEqual(archive_tools.archive_mime_type(path), constants.TAR)
+
+    def test_zero_filled_file_is_not_an_archive(self):
+
+        # A run of zero bytes is a well-formed empty archive as far as
+        # tarfile is concerned, and reading one as a tar used to hand the
+        # whole file to every decompressor tarfile knows before saying so.
+        path = os.path.join(self.tmp_dir, 'broken.zip')
+        with open(path, 'wb') as broken:
+            broken.write(b'\0' * (tarfile.RECORDSIZE * 8))
+        self.assertIsNone(archive_tools.archive_mime_type(path))

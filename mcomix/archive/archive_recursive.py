@@ -8,6 +8,12 @@ from mcomix import log
 
 import os
 
+#: How many archives deep a listing follows an archive within an archive.
+#: Listing extracts every sub-archive it finds, so an archive that holds a
+#: copy of itself - which a well made one can - would otherwise be followed
+#: until the disk it is written to fills up.
+MAX_NESTING_DEPTH = 10
+
 class RecursiveArchive(archive_base.BaseArchive):
 
     def __init__(self, archive, destination_dir):
@@ -24,17 +30,22 @@ class RecursiveArchive(archive_base.BaseArchive):
         # Assume concurrent extractions are not supported.
         self.support_concurrent_extractions = False
 
-    def _iter_contents(self, archive, root=None):
+    def _iter_contents(self, archive, root=None, depth=0):
         self._archive_list.append(archive)
         self._archive_root[archive] = root
         sub_archive_list = []
         for f in archive.iter_contents():
             if archive_tools.is_archive_file(f):
-                # We found a sub-archive, don't try to extract it now, as we
-                # must finish listing the containing archive contents before
-                # any extraction can be done.
-                sub_archive_list.append(f)
-                continue
+                if depth < MAX_NESTING_DEPTH:
+                    # We found a sub-archive, don't try to extract it now, as we
+                    # must finish listing the containing archive contents before
+                    # any extraction can be done.
+                    sub_archive_list.append(f)
+                    continue
+                # Too deep to follow: the entry is still listed, as any
+                # other one that holds no image would be.
+                log.warning('Not opening %s: more than %u archives deep',
+                            f, MAX_NESTING_DEPTH)
             name = f
             if root is not None:
                 name = os.path.join(root, name)
@@ -62,7 +73,7 @@ class RecursiveArchive(archive_base.BaseArchive):
             sub_root = f
             if root is not None:
                 sub_root = os.path.join(root, sub_root)
-            for name in self._iter_contents(sub_archive, sub_root):
+            for name in self._iter_contents(sub_archive, sub_root, depth + 1):
                 yield name
 
     def _check_concurrent_extraction_support(self) -> None:

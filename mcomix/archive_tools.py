@@ -150,19 +150,9 @@ def archive_mime_type(path):
                 fd.seek(60)
                 magic2 = fd.read(8)
 
-            try:
-                istarfile = tarfile.is_tarfile(path)
-            except IOError:
-                # Tarfile raises an error when accessing certain network shares
-                istarfile = False
-
-            if istarfile and os.path.getsize(path) > 0:
-                if magic.startswith(b'BZh'):
-                    return constants.BZIP2
-                elif magic.startswith(b'\037\213'):
-                    return constants.GZIP
-                else:
-                    return constants.TAR
+            mode = tar.open_mode(magic)
+            if _is_tarfile(path, mode):
+                return _TAR_MODE_TYPES[mode]
 
             if magic[0:4] == b'Rar!':
                 return constants.RAR
@@ -187,6 +177,31 @@ def archive_mime_type(path):
         log.warning(_('! Could not read %s'), path)
 
     return None
+
+#: What a tar opened in each of tar.open_mode()'s modes is reported as.
+#: An xz or lzma compressed tarball is read by tarfile like any other tar,
+#: so constants.XZ is left for the ones it cannot read.
+_TAR_MODE_TYPES = {
+    'r:bz2': constants.BZIP2,
+    'r:gz' : constants.GZIP,
+    'r:xz' : constants.TAR,
+    'r:'   : constants.TAR,
+}
+
+def _is_tarfile(path, mode):
+    """Return True if <path> is a tar archive that opens in <mode>."""
+    try:
+        with tarfile.open(path, mode) as archive:
+            if archive.next() is not None:
+                return True
+            # An archive naming no entry at all is a run of zero bytes, which
+            # is what a file that is merely broken is full of as well.  Tar
+            # writes an empty archive as a single record and stops, so a file
+            # longer than that which decodes to nothing is not one.
+            return os.path.getsize(path) <= tarfile.RECORDSIZE
+    except (tarfile.TarError, EOFError, IOError):
+        # Tarfile raises an error when accessing certain network shares.
+        return False
 
 def get_archive_info(path):
     """Return a tuple (mime, num_pages, size) with info about the archive

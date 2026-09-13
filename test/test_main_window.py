@@ -7,6 +7,8 @@ real window, which is where a whole class of start-up regressions hides.
 """
 
 import os
+import threading
+import time
 import warnings
 
 from gi.repository import Gio, Gtk
@@ -17,6 +19,7 @@ from mcomix import constants
 from mcomix import dialog as dialog_module
 from mcomix import file_chooser_simple_dialog as simple_chooser
 from mcomix import icons
+from mcomix import image_tools
 from mcomix import main
 from mcomix.preferences import prefs
 
@@ -391,6 +394,39 @@ class MainWindowTest(MComixTest):
         """
         self.assertEqual(self.window.uimanager.popup.props.flags,
                          Gtk.PopoverMenuFlags.NESTED)
+
+    def test_quitting_does_not_wait_for_the_page_that_is_animating(self):
+        """An animated page is decoded by a daemon thread which runs
+        until the page it draws is replaced or cleared.  Quitting waited
+        for every live thread, and it clears no page, so an MComix
+        showing an animation never got as far as leaving.
+        """
+        pixbuf = image_tools.load_pixbuf(
+            get_testfile_path('images', 'animated.gif'))
+        image = self.window.images[0]
+        image.set_pixbuf(pixbuf)
+        self.assertIsNotNone(image._worker, 'nothing is decoding the page')
+        # Stop the decoder anyway if quitting does wait for it, so that a
+        # regression fails this test rather than hanging the whole suite.
+        # Setting the event is what asks the thread to go, and it is the
+        # one part of the widget another thread may touch.
+        watchdog = threading.Timer(10.0, image._stopping.set)
+        # And nothing waits for the watchdog itself, which is a thread
+        # like any other and would be the next thing quitting waits for.
+        watchdog.daemon = True
+        watchdog.start()
+        started = time.monotonic()
+        try:
+            self.window.terminate_program()
+        finally:
+            watchdog.cancel()
+        waited = time.monotonic() - started
+        # Leave nothing decoding behind: a thread that outlives its test
+        # goes on drawing frames for the rest of the run, and is joined
+        # by whatever quits next.
+        image.clear()
+        self.assertLess(waited, 5.0,
+                        'quitting waited for the animation to end')
 
     def test_the_window_holds_the_expected_parts(self):
         for part in (self.window.menubar, self.window.toolbar,
