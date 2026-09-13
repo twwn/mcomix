@@ -1,3 +1,67 @@
+# MComix 4.0.0
+## Release date: 2026-09-13
+
+### Features
+
+- MComix runs on GTK 4 and follows the desktop's light or dark theme,
+  fully where libadwaita is installed. A Theme preference picks light,
+  dark, or pitch black for OLED screens.
+- Pages can be taken out while reading, with "Delete page" or by picking
+  them out with Ctrl and a click; a removal can be undone.
+- The archive editor can undo and redo, and can write a book back in the
+  format it was opened in. Saved archives carry a ComicInfo.xml and keep
+  every file the original held.
+- The right-click menu saves the page under the pointer and moves the
+  open file to another folder.
+- Properties names the series, issue number, title and writer an
+  archive's ComicInfo.xml gives.
+- A middle click opens a recent file, a bookmark or a library cover in a
+  new window, and the mouse's thumb buttons turn back a page and show the
+  OSD panel.
+- Picking a language offers to restart MComix in it, and each "Do not ask
+  again" answer can be taken back on its own.
+- The keys that add and edit bookmarks can be changed in the Shortcuts
+  tab, as every other key can.
+- Preferences are saved as they change, without undoing another window's.
+- Double page mode can leave up to 100 pixels between the pages, where
+  it allowed 2.
+- The library shows its progress while scanning, and is much faster when
+  large.
+- All 24 translations are complete, and usable from the keyboard.
+
+### Bug fixes
+
+- Among the long-standing ones: the bookmarks menu was shuffled after
+  another window saved; a new page cache size applied only after closing
+  the book; MComix instances quitting at once could truncate each
+  other's preferences and keybindings; one bad line in keybindings.conf
+  silenced a shortcut; an interrupted library upgrade could leave the
+  library unopenable or empty; next and previous directory crashed at
+  the root of the file system; PDF pages past 9999 opened the wrong
+  page; encrypted RAR files could not be opened through the UnRAR
+  library; a multi-volume RAR with a volume missing kept the UnRAR
+  library retrying forever; the library lost covers and "finished" marks
+  when its threads used the database at once; a solid archive that
+  failed part way never showed the rest of its pages; the About dialog
+  named three of the seven formats MComix reads; a turned JPEG page of a
+  PDF was compressed again; on Windows and with Python 3.14, PDF pages
+  were turned upright with auto rotation turned off.
+
+### Removed
+
+- GTK 3 support, the "Use archive thumbnail as application icon" option,
+  and restoring the window's position, which GTK 4 does not allow.
+
+### Requirements
+
+- Python 3.12, GTK 4, PyGObject 3.46, pycairo 1.25 and Pillow 10.1, or
+  newer. libadwaita, chardet and PyMuPDF 1.24.7 or newer are optional.
+- Upgrading from 3.x: the library is upgraded in place, and MComix 3.2
+  still opens it. The preferences are converted, and the old file is kept
+  as `preferences.conf.v0`; copy it back before returning to 3.2, which
+  otherwise shows a black background. Keybindings and bookmarks carry
+  over unchanged.
+
 # MComix 3.2.0
 ## Release date: 2026-08-20
 
