@@ -36,7 +36,7 @@ class _AboutDialog(Gtk.AboutDialog):
         comment = \
             _('%s is an image viewer specifically designed to handle comic books.') % \
             constants.APPNAME + ' ' + \
-            _('It reads ZIP, RAR and tar archives, as well as plain image files.')
+            _('It reads ZIP, RAR, 7z, tar and LHA archives, PDF and AZW3 files, as well as plain image files.')
         self.set_comments(comment)
 
         license = \

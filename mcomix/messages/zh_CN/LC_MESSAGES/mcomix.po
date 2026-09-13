@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Comix 4.0.1\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-13 13:49+0200\n"
+"POT-Creation-Date: 2026-09-13 15:26+0200\n"
 "PO-Revision-Date: 2009-01-28 13:36+0800\n"
 "Last-Translator: Xie Yanbo <xieyanbo@gmail.com>\n"
 "Language-Team: Xie Yanbo <xieyanbo@gmail.com>\n"
@@ -28,9 +28,11 @@ msgid "%s is an image viewer specifically designed to handle comic books."
 msgstr "%s 是专门设计适用于漫画阅读的看图程序"
 
 #: mcomix/about_dialog.py:39
-msgid "It reads ZIP, RAR and tar archives, as well as plain image files."
+msgid ""
+"It reads ZIP, RAR, 7z, tar and LHA archives, PDF and AZW3 files, as well as "
+"plain image files."
 msgstr ""
-"它可以像读取普通图片文件一样读取ZIP、RAR以及tar等文件包，以及普通的图片文件。"
+"它可以读取ZIP、RAR、7z、tar和LHA文件包、PDF和AZW3文件，以及普通的图片文件。"
 
 #: mcomix/about_dialog.py:43
 #, python-format
@@ -144,7 +146,7 @@ msgid "_Remove"
 msgstr "删除(_R)"
 
 #: mcomix/bookmark_dialog.py:34 mcomix/comment_dialog.py:29
-#: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:65
+#: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:66
 #: mcomix/properties_dialog.py:37 mcomix/ui.py:455
 #: mcomix/library/watchlist.py:40
 msgid "_Close"
@@ -189,7 +191,7 @@ msgstr "！ 调用 %(function)r 失败：%(error)s"
 msgid "New accelerator..."
 msgstr "新快捷键..."
 
-#: mcomix/comment_dialog.py:28 mcomix/preferences_dialog.py:411
+#: mcomix/comment_dialog.py:28 mcomix/preferences_dialog.py:412
 msgid "Comments"
 msgstr "注释"
 
@@ -472,7 +474,7 @@ msgstr "！ 文件 %s 损坏，正在删除；上次阅读的文件将不会重�
 msgid "Invalid path: '%s'"
 msgstr "无效路径：%s"
 
-#: mcomix/image_tools.py:987
+#: mcomix/image_tools.py:1006
 msgid "Unknown filetype"
 msgstr "未知的文件格式"
 
@@ -558,7 +560,7 @@ msgstr "滚动至底部左侧"
 #: mcomix/keybindings.py:72 mcomix/keybindings.py:73 mcomix/keybindings.py:74
 #: mcomix/keybindings.py:76 mcomix/keybindings.py:77 mcomix/keybindings.py:78
 #: mcomix/keybindings.py:79 mcomix/keybindings.py:81 mcomix/keybindings.py:82
-#: mcomix/preferences_dialog.py:181
+#: mcomix/preferences_dialog.py:182
 msgid "Scroll"
 msgstr "滚动"
 
@@ -676,7 +678,7 @@ msgstr "根据宽度自动旋转"
 msgid "Autorotate by height"
 msgstr "根据高度自动旋转"
 
-#: mcomix/keybindings.py:102 mcomix/preferences_dialog.py:241 mcomix/ui.py:491
+#: mcomix/keybindings.py:102 mcomix/preferences_dialog.py:242 mcomix/ui.py:491
 msgid "Double page mode"
 msgstr "双页模式"
 
@@ -733,7 +735,7 @@ msgstr "退出全屏模式"
 #: mcomix/keybindings.py:121 mcomix/keybindings.py:122
 #: mcomix/keybindings.py:123 mcomix/keybindings.py:124
 #: mcomix/keybindings.py:125 mcomix/keybindings.py:126
-#: mcomix/keybindings.py:127 mcomix/preferences_dialog.py:122
+#: mcomix/keybindings.py:127 mcomix/preferences_dialog.py:123
 msgid "User interface"
 msgstr "用户界面"
 
@@ -745,7 +747,7 @@ msgstr "显示嵌入消息面板"
 msgid "Minimize"
 msgstr "最小化"
 
-#: mcomix/keybindings.py:120 mcomix/preferences_dialog.py:293
+#: mcomix/keybindings.py:120 mcomix/preferences_dialog.py:294
 msgid "Fullscreen"
 msgstr "全屏"
 
@@ -765,7 +767,7 @@ msgstr "状态栏(A)"
 msgid "Scrollbars"
 msgstr "滚动条(C)"
 
-#: mcomix/keybindings.py:125 mcomix/preferences_dialog.py:146
+#: mcomix/keybindings.py:125 mcomix/preferences_dialog.py:147
 msgid "Thumbnails"
 msgstr "缩略图"
 
@@ -831,7 +833,7 @@ msgstr "文件包注释"
 msgid "Properties"
 msgstr "属性"
 
-#: mcomix/keybindings.py:141 mcomix/preferences_dialog.py:61
+#: mcomix/keybindings.py:141 mcomix/preferences_dialog.py:62
 msgid "Preferences"
 msgstr "首选项"
 
@@ -1112,106 +1114,106 @@ msgstr "跳转(_G)"
 msgid " of %s"
 msgstr " / %s"
 
-#: mcomix/preferences_dialog.py:88
+#: mcomix/preferences_dialog.py:89
 msgid "Appearance"
 msgstr "外观"
 
-#: mcomix/preferences_dialog.py:89
+#: mcomix/preferences_dialog.py:90
 msgid "Behaviour"
 msgstr "行为"
 
-#: mcomix/preferences_dialog.py:90
+#: mcomix/preferences_dialog.py:91
 msgid "Display"
 msgstr "显示"
 
-#: mcomix/preferences_dialog.py:91
+#: mcomix/preferences_dialog.py:92
 msgid "Advanced"
 msgstr "高级"
 
-#: mcomix/preferences_dialog.py:108
+#: mcomix/preferences_dialog.py:109
 msgid "Shortcuts"
 msgstr "快捷键"
 
-#: mcomix/preferences_dialog.py:124
+#: mcomix/preferences_dialog.py:125
 msgid "Language (needs restart):"
 msgstr "语言 (需重启程序)："
 
-#: mcomix/preferences_dialog.py:127
+#: mcomix/preferences_dialog.py:128
 msgid "Theme:"
 msgstr "主题："
 
-#: mcomix/preferences_dialog.py:131
+#: mcomix/preferences_dialog.py:132
 msgid "Escape key closes program"
 msgstr "退出键关闭程序"
 
-#: mcomix/preferences_dialog.py:132
+#: mcomix/preferences_dialog.py:133
 msgid ""
 "When active, the ESC key closes the program, instead of only disabling "
 "fullscreen mode."
 msgstr "开启后退出键关闭程序，而不仅仅是退出全屏模式。"
 
-#: mcomix/preferences_dialog.py:135
+#: mcomix/preferences_dialog.py:136
 msgid "Background"
 msgstr "背景"
 
-#: mcomix/preferences_dialog.py:138
+#: mcomix/preferences_dialog.py:139
 msgid "Use this colour as background:"
 msgstr "使用该颜色作为背景："
 
-#: mcomix/preferences_dialog.py:139
+#: mcomix/preferences_dialog.py:140
 msgid "Always use this selected colour as the background colour."
 msgstr "总是使用选中的该颜色作为背景色。"
 
-#: mcomix/preferences_dialog.py:140 mcomix/preferences_dialog.py:151
+#: mcomix/preferences_dialog.py:141 mcomix/preferences_dialog.py:152
 msgid "Use dynamic background colour"
 msgstr "使用动态背景色"
 
-#: mcomix/preferences_dialog.py:142
+#: mcomix/preferences_dialog.py:143
 msgid "Automatically pick a background colour that fits the viewed image."
 msgstr "自动选中适合观看中图片的背景色。"
 
-#: mcomix/preferences_dialog.py:149
+#: mcomix/preferences_dialog.py:150
 msgid "Use this colour as the thumbnail background:"
 msgstr "使用该颜色作为缩略图背景色："
 
-#: mcomix/preferences_dialog.py:150
+#: mcomix/preferences_dialog.py:151
 msgid "Always use this selected colour as the thumbnail background colour."
 msgstr "总是使用选中的该颜色作为缩略图背景色。"
 
-#: mcomix/preferences_dialog.py:153
+#: mcomix/preferences_dialog.py:154
 msgid ""
 "Automatically use the colour that fits the viewed image for the thumbnail "
 "background."
 msgstr "自动使用与所查看图像相配的颜色作为缩略图背景。"
 
-#: mcomix/preferences_dialog.py:158
+#: mcomix/preferences_dialog.py:159
 msgid "Show page numbers on thumbnails"
 msgstr "在缩略图上显示页码"
 
-#: mcomix/preferences_dialog.py:161
+#: mcomix/preferences_dialog.py:162
 msgid "Thumbnail size (in pixels):"
 msgstr "缩略图大小 (像素)："
 
-#: mcomix/preferences_dialog.py:166
+#: mcomix/preferences_dialog.py:167
 msgid "Transparency"
 msgstr "透明度"
 
-#: mcomix/preferences_dialog.py:169
+#: mcomix/preferences_dialog.py:170
 msgid "Use checkered background for transparent images"
 msgstr "使用棋盘格图像做透明图片的背景"
 
-#: mcomix/preferences_dialog.py:171
+#: mcomix/preferences_dialog.py:172
 msgid ""
 "Use a grey checkered background for transparent images. If this preference "
 "is unset, the background is plain white instead."
 msgstr ""
 "使用灰色跳棋格图案作为透明图像的背景。如果不设置该选项，则使用纯白背景。"
 
-#: mcomix/preferences_dialog.py:184
+#: mcomix/preferences_dialog.py:185
 msgid "Use smart scrolling"
 msgstr "使用智能滚动"
 
-#: mcomix/preferences_dialog.py:186
+#: mcomix/preferences_dialog.py:187
 msgid ""
 "With this preference set, the space key and mouse wheel do not only scroll "
 "down or up, but also sideways and so try to follow the natural reading order "
@@ -1220,11 +1222,11 @@ msgstr ""
 "设置该选项后，空格键和鼠标滚轮不仅可以向上滚动或向下滚动，同时可以向两侧滚"
 "动，以配合一般的漫画书阅读顺序。"
 
-#: mcomix/preferences_dialog.py:191
+#: mcomix/preferences_dialog.py:192
 msgid "Flip pages when scrolling off the edges of the page"
 msgstr "当滚动出页面边界时翻页"
 
-#: mcomix/preferences_dialog.py:193
+#: mcomix/preferences_dialog.py:194
 msgid ""
 "Flip pages when scrolling \"off the page\" with the scroll wheel or with the "
 "arrow keys. It takes n consecutive \"steps\" with the scroll wheel or the "
@@ -1233,11 +1235,11 @@ msgstr ""
 "当使用鼠标滚轮或者键盘方向键滚动出页面时翻页。在翻页之前，需要连续滚动滚轮或"
 "者按方向键数次。"
 
-#: mcomix/preferences_dialog.py:196
+#: mcomix/preferences_dialog.py:197
 msgid "Automatically open the next archive"
 msgstr "自动打开下一个文件包"
 
-#: mcomix/preferences_dialog.py:198
+#: mcomix/preferences_dialog.py:199
 msgid ""
 "Automatically open the next archive in the directory when flipping past the "
 "last page, or the previous archive when flipping past the first page."
@@ -1245,11 +1247,11 @@ msgstr ""
 "当翻过最后一页时，自动打开当前目录的下一个文件包；或翻过第一页时，自动打开上"
 "一个文件包。"
 
-#: mcomix/preferences_dialog.py:201
+#: mcomix/preferences_dialog.py:202
 msgid "Automatically open next directory"
 msgstr "自动打开下一个目录"
 
-#: mcomix/preferences_dialog.py:203
+#: mcomix/preferences_dialog.py:204
 msgid ""
 "Automatically open the first file in the next sibling directory when "
 "flipping past the last page of the last file in a directory, or the previous "
@@ -1258,57 +1260,57 @@ msgstr ""
 "当翻过所在目录下最后一个文件的最后一页时自动打开下一目录的第一个文件当翻过所"
 "在目录下第一个文件的第一页时自动打开上移目录。"
 
-#: mcomix/preferences_dialog.py:206
+#: mcomix/preferences_dialog.py:207
 msgid "Open first file when navigating to previous archive"
 msgstr "打开上一个文件包的时候，打开第一个文件"
 
-#: mcomix/preferences_dialog.py:208
+#: mcomix/preferences_dialog.py:209
 msgid ""
 "Automatically open the first file of the previous archive when navigating to "
 "it, instead of opening the last file of the previous archive."
 msgstr "转到上一个文件包时自动打开它的第一个文件，而不是最后一个文件。"
 
-#: mcomix/preferences_dialog.py:211
+#: mcomix/preferences_dialog.py:212
 msgid "Open first file when navigating to previous directory"
 msgstr "打开上一个目录的时候，打开第一个文件"
 
-#: mcomix/preferences_dialog.py:213
+#: mcomix/preferences_dialog.py:214
 msgid ""
 "Automatically open the first file of the previous directory when navigating "
 "to it, instead of opening the last file of the previous directory."
 msgstr "转到上一个目录时自动打开它的第一个文件，而不是最后一个文件。"
 
-#: mcomix/preferences_dialog.py:215
+#: mcomix/preferences_dialog.py:216
 msgid "Number of pixels to scroll per arrow key press:"
 msgstr "方向键按动时滚动的像素："
 
-#: mcomix/preferences_dialog.py:219
+#: mcomix/preferences_dialog.py:220
 msgid "Set the number of pixels to scroll on a page when using the arrow keys."
 msgstr "设置使用方向键滚动时在页面上的滚动像素。"
 
-#: mcomix/preferences_dialog.py:221
+#: mcomix/preferences_dialog.py:222
 msgid "Number of pixels to scroll per mouse wheel turn:"
 msgstr "鼠标滚轮滚动的像素："
 
-#: mcomix/preferences_dialog.py:225
+#: mcomix/preferences_dialog.py:226
 msgid "Set the number of pixels to scroll on a page when using a mouse wheel."
 msgstr "设置使用鼠标滚轮滚动时在页面上的滚动像素。"
 
-#: mcomix/preferences_dialog.py:227
+#: mcomix/preferences_dialog.py:228
 msgid "Fraction of page to scroll per space key press (in percent):"
 msgstr "空格键按动时页面滚动的百分比："
 
-#: mcomix/preferences_dialog.py:232
+#: mcomix/preferences_dialog.py:233
 msgid ""
 "Sets the percentage by which the page will be scrolled down or up when the "
 "space key is pressed."
 msgstr "设置使用空格键时页面滚动的百分比。"
 
-#: mcomix/preferences_dialog.py:235
+#: mcomix/preferences_dialog.py:236
 msgid "Number of \"steps\" to take before flipping the page:"
 msgstr "滚动超出页面时，需要再滚动几次才翻页："
 
-#: mcomix/preferences_dialog.py:239
+#: mcomix/preferences_dialog.py:240
 msgid ""
 "Set the number of \"steps\" needed to flip to the next or previous page.  "
 "Less steps will allow for very fast page turning but you might find yourself "
@@ -1317,60 +1319,60 @@ msgstr ""
 "设置需要再滚动几次才下翻一页或上翻一页，次数少可以快速翻页，不过容易引起意外"
 "翻页。"
 
-#: mcomix/preferences_dialog.py:244
+#: mcomix/preferences_dialog.py:245
 msgid "Flip two pages in double page mode"
 msgstr "双页模式时一次翻两页"
 
 #
-#: mcomix/preferences_dialog.py:246
+#: mcomix/preferences_dialog.py:247
 msgid ""
 "Flip two pages, instead of one, each time we flip pages in double page mode."
 msgstr "在双页模式时，每次翻两页，而不是一页。"
 
-#: mcomix/preferences_dialog.py:248
+#: mcomix/preferences_dialog.py:249
 msgid "Show only one page where appropriate:"
 msgstr "在特殊情况下只显示一页："
 
-#: mcomix/preferences_dialog.py:251
+#: mcomix/preferences_dialog.py:252
 msgid "Page auto-resizing:"
 msgstr "页面自动缩放"
 
-#: mcomix/preferences_dialog.py:254
+#: mcomix/preferences_dialog.py:255
 msgid "Space between two pages (in pixels):"
 msgstr "两页之间的间距（像素）："
 
-#: mcomix/preferences_dialog.py:259
+#: mcomix/preferences_dialog.py:260
 msgid "Files"
 msgstr "文件"
 
-#: mcomix/preferences_dialog.py:262
+#: mcomix/preferences_dialog.py:263
 msgid "Automatically open the last viewed file on startup"
 msgstr "启动时，自动打开最后查看过的文件"
 
-#: mcomix/preferences_dialog.py:264
+#: mcomix/preferences_dialog.py:265
 msgid ""
 "Automatically open, on startup, the file that was open when MComix was last "
 "closed."
 msgstr "启动时自动打开上次 MComix 关闭时正在查看的文件。"
 
-#: mcomix/preferences_dialog.py:266
+#: mcomix/preferences_dialog.py:267
 msgid "Store information about recently opened files:"
 msgstr "保存最近打开的文件的信息："
 
-#: mcomix/preferences_dialog.py:269
+#: mcomix/preferences_dialog.py:270
 msgid "Save As opens at the last directory saved into"
 msgstr "“另存为”总是打开上次保存的目录"
 
-#: mcomix/preferences_dialog.py:271
+#: mcomix/preferences_dialog.py:272
 msgid ""
 "Open the Save As dialog at the directory in which the last file was saved."
 msgstr "在上次保存文件所在的目录中打开“另存为”对话框。"
 
-#: mcomix/preferences_dialog.py:274
+#: mcomix/preferences_dialog.py:275
 msgid "Save an edited archive in the format it was opened in"
 msgstr "以打开时的格式保存已编辑的压缩包"
 
-#: mcomix/preferences_dialog.py:276
+#: mcomix/preferences_dialog.py:277
 msgid ""
 "Write an edited archive back as a ZIP, a tar, a 7z or a RAR, whichever it "
 "was read as. The last two need the 7z and rar programs, which MComix does "
@@ -1379,51 +1381,51 @@ msgstr ""
 "按读取时的格式将已编辑的压缩包写回为 ZIP、tar、7z 或 RAR。后两者需要 7z 和 "
 "rar 程序，而 MComix 不会安装它们；无法写入的格式将保存为 ZIP。"
 
-#: mcomix/preferences_dialog.py:278
+#: mcomix/preferences_dialog.py:279
 msgid "Prompts answered for good"
 msgstr "已一劳永逸回答的提问"
 
-#: mcomix/preferences_dialog.py:296
+#: mcomix/preferences_dialog.py:297
 msgid "Use fullscreen by default"
 msgstr "默认使用全屏模式"
 
-#: mcomix/preferences_dialog.py:300
+#: mcomix/preferences_dialog.py:301
 msgid "Automatically hide all toolbars in fullscreen"
 msgstr "全屏时自动隐藏所有工具条"
 
-#: mcomix/preferences_dialog.py:303 mcomix/ui.py:514
+#: mcomix/preferences_dialog.py:304 mcomix/ui.py:514
 msgid "Fit to size mode"
 msgstr "适应大小模式"
 
-#: mcomix/preferences_dialog.py:305
+#: mcomix/preferences_dialog.py:306
 msgid "Fixed width for wide pages:"
 msgstr "宽页面的固定宽度："
 
-#: mcomix/preferences_dialog.py:310
+#: mcomix/preferences_dialog.py:311
 msgid "Fixed height for wide pages:"
 msgstr "宽页面的固定高度："
 
-#: mcomix/preferences_dialog.py:315
+#: mcomix/preferences_dialog.py:316
 msgid "Fixed width for other pages:"
 msgstr "其他页面的固定宽度："
 
-#: mcomix/preferences_dialog.py:320
+#: mcomix/preferences_dialog.py:321
 msgid "Fixed height for other pages:"
 msgstr "其他页面的固定高度："
 
-#: mcomix/preferences_dialog.py:325
+#: mcomix/preferences_dialog.py:326
 msgid "Slideshow"
 msgstr "幻灯片放映"
 
-#: mcomix/preferences_dialog.py:327
+#: mcomix/preferences_dialog.py:328
 msgid "Slideshow delay (in seconds):"
 msgstr "幻灯片延迟 (秒)："
 
-#: mcomix/preferences_dialog.py:332
+#: mcomix/preferences_dialog.py:333
 msgid "Slideshow step (in pixels):"
 msgstr "幻灯片移动量 (像素)："
 
-#: mcomix/preferences_dialog.py:336
+#: mcomix/preferences_dialog.py:337
 msgid ""
 "Specify the number of pixels to scroll while in slideshow mode. A positive "
 "value will scroll forward, a negative value will scroll backwards, and a "
@@ -1432,77 +1434,77 @@ msgstr ""
 "设置幻灯片模式下滚动的像素值。正数值向前滚动，负数值向后滚动，0则总是翻到新的"
 "一页。"
 
-#: mcomix/preferences_dialog.py:339
+#: mcomix/preferences_dialog.py:340
 msgid "During a slideshow automatically open the next archive"
 msgstr "幻灯片模式下自动打开下一个文件包"
 
-#: mcomix/preferences_dialog.py:341
+#: mcomix/preferences_dialog.py:342
 msgid ""
 "While in slideshow mode allow the next archive to automatically be opened."
 msgstr "幻灯片模式下允许自动打开下一个文件包。"
 
-#: mcomix/preferences_dialog.py:343
+#: mcomix/preferences_dialog.py:344
 msgid "Rotation"
 msgstr "旋转"
 
-#: mcomix/preferences_dialog.py:346
+#: mcomix/preferences_dialog.py:347
 msgid "Automatically rotate images according to their metadata"
 msgstr "按照元数据描述自动旋转图像"
 
-#: mcomix/preferences_dialog.py:348
+#: mcomix/preferences_dialog.py:349
 msgid ""
 "Automatically rotate images when an orientation is specified in the image "
 "metadata, such as in an Exif tag."
 msgstr "如果图像文件中包含Exif等元数据，依照元数据的描述自动旋转图像。"
 
-#: mcomix/preferences_dialog.py:350
+#: mcomix/preferences_dialog.py:351
 msgid "Image quality"
 msgstr "图像质量"
 
-#: mcomix/preferences_dialog.py:352
+#: mcomix/preferences_dialog.py:353
 msgid "Scaling mode"
 msgstr "缩放模式"
 
-#: mcomix/preferences_dialog.py:364
+#: mcomix/preferences_dialog.py:365
 msgid "File order"
 msgstr "文件顺序"
 
-#: mcomix/preferences_dialog.py:366
+#: mcomix/preferences_dialog.py:367
 msgid "Sort files and directories by:"
 msgstr "文件和目录排序依据："
 
-#: mcomix/preferences_dialog.py:369
+#: mcomix/preferences_dialog.py:370
 msgid "Sort archives by:"
 msgstr "文件包排序依据："
 
-#: mcomix/preferences_dialog.py:372
+#: mcomix/preferences_dialog.py:373
 msgid "Extraction and cache"
 msgstr "解压缩和缓存"
 
-#: mcomix/preferences_dialog.py:374
+#: mcomix/preferences_dialog.py:375
 msgid "Maximum number of concurrent extraction threads:"
 msgstr "并发解压缩使用的最大线程数："
 
-#: mcomix/preferences_dialog.py:378
+#: mcomix/preferences_dialog.py:379
 msgid ""
 "Set the maximum number of concurrent threads for formats that support it."
 msgstr "设置支持并发的格式所使用的最大线程数。"
 
-#: mcomix/preferences_dialog.py:380
+#: mcomix/preferences_dialog.py:381
 msgid "Maximum number of concurrent thumbnail threads:"
 msgstr "生成缩略图使用的最大线程数："
 
-#: mcomix/preferences_dialog.py:384
+#: mcomix/preferences_dialog.py:385
 msgid ""
 "Set the maximum number of concurrent threads used to generate thumbnails. "
 "Takes effect the next time MComix is started."
 msgstr "设置生成缩略图所使用的最大并发线程数。下次启动 MComix 时生效。"
 
-#: mcomix/preferences_dialog.py:387
+#: mcomix/preferences_dialog.py:388
 msgid "Store thumbnails for opened files"
 msgstr "存储已经打开过的文件的缩略图"
 
-#: mcomix/preferences_dialog.py:389
+#: mcomix/preferences_dialog.py:390
 msgid ""
 "Store thumbnails for opened files according to the freedesktop.org "
 "specification. These thumbnails are shared by many other applications, such "
@@ -1511,102 +1513,102 @@ msgstr ""
 "按照 freedesktop.org 规范，保存已经打开过的文件的缩略图。这些缩略图会与其他程"
 "序（例如大多数文件管理器）共享使用。"
 
-#: mcomix/preferences_dialog.py:391
+#: mcomix/preferences_dialog.py:392
 msgid "Maximum number of pages to store in the cache:"
 msgstr "缓存中存储的最大页面数："
 
-#: mcomix/preferences_dialog.py:395
+#: mcomix/preferences_dialog.py:396
 msgid ""
 "Set the max number of pages to cache. A value of -1 will cache the entire "
 "archive."
 msgstr "设置要缓存的页面数最大值，-1将缓存整个文件包。"
 
-#: mcomix/preferences_dialog.py:397
+#: mcomix/preferences_dialog.py:398
 msgid "Magnifying Lens"
 msgstr "放大镜"
 
-#: mcomix/preferences_dialog.py:399
+#: mcomix/preferences_dialog.py:400
 msgid "Magnifying lens size (in pixels):"
 msgstr "放大镜大小 (像素)："
 
-#: mcomix/preferences_dialog.py:403
+#: mcomix/preferences_dialog.py:404
 msgid ""
 "Set the size of the magnifying lens. It is a square with a side of this many "
 "pixels."
 msgstr "设置放大镜的大小。将显示为指定像素数边长的正方形。"
 
-#: mcomix/preferences_dialog.py:405
+#: mcomix/preferences_dialog.py:406
 msgid "Magnification factor:"
 msgstr "放大倍数："
 
-#: mcomix/preferences_dialog.py:409
+#: mcomix/preferences_dialog.py:410
 msgid "Set the magnification factor of the magnifying lens."
 msgstr "设置放大镜的放大倍数。"
 
-#: mcomix/preferences_dialog.py:413
+#: mcomix/preferences_dialog.py:414
 msgid "Comment extensions:"
 msgstr "注释后缀："
 
 #
 # File: src/enhance.py, line: 51
-#: mcomix/preferences_dialog.py:416
+#: mcomix/preferences_dialog.py:417
 msgid "Animated images"
 msgstr "动图"
 
-#: mcomix/preferences_dialog.py:418
+#: mcomix/preferences_dialog.py:419
 msgid "Animation mode:"
 msgstr "动图模式："
 
-#: mcomix/preferences_dialog.py:439
+#: mcomix/preferences_dialog.py:440
 msgid "_Reset keys"
 msgstr "重置快捷键(_A)"
 
-#: mcomix/preferences_dialog.py:441
+#: mcomix/preferences_dialog.py:442
 msgid "Resets all keyboard shortcuts to their default values."
 msgstr "重置所有快捷键为默认值。"
 
-#: mcomix/preferences_dialog.py:444
+#: mcomix/preferences_dialog.py:445
 msgid "Clear _dialog choices"
 msgstr "清除对话框选项(_D)"
 
-#: mcomix/preferences_dialog.py:446
+#: mcomix/preferences_dialog.py:447
 msgid ""
 "Clears all dialog choices that you have previously chosen not to be asked "
 "again."
 msgstr "清除所有之前设置的对话框选项，不再询问。"
 
-#: mcomix/preferences_dialog.py:481
+#: mcomix/preferences_dialog.py:482
 msgid "Ask every time"
 msgstr "每次都询问"
 
-#: mcomix/preferences_dialog.py:486
+#: mcomix/preferences_dialog.py:487
 msgid ""
 "What MComix answers this prompt with instead of asking. This is what the "
 "prompt's \"Do not ask again\" box sets."
 msgstr ""
 "MComix 用来代替询问的回答。这正是提问上的“不再询问”复选框所设置的内容。"
 
-#: mcomix/preferences_dialog.py:508
+#: mcomix/preferences_dialog.py:509
 msgid "Auto-detect (Default)"
 msgstr "自动侦测(默认)"
 
-#: mcomix/preferences_dialog.py:549
+#: mcomix/preferences_dialog.py:550
 msgid "Follow the system"
 msgstr "跟随系统"
 
-#: mcomix/preferences_dialog.py:550
+#: mcomix/preferences_dialog.py:551
 msgid "Light"
 msgstr "亮色"
 
-#: mcomix/preferences_dialog.py:551
+#: mcomix/preferences_dialog.py:552
 msgid "Dark"
 msgstr "暗色"
 
-#: mcomix/preferences_dialog.py:552
+#: mcomix/preferences_dialog.py:553
 msgid "Pitch black"
 msgstr "纯黑"
 
-#: mcomix/preferences_dialog.py:558
+#: mcomix/preferences_dialog.py:559
 msgid ""
 "How MComix itself is painted, whatever the desktop asks for. Pitch black is "
 "the dark theme with black backgrounds, which a screen that lights its pixels "
@@ -1615,11 +1617,11 @@ msgstr ""
 "MComix 自身的绘制方式，无论桌面环境如何要求。纯黑是背景为黑色的暗色主题，逐个"
 "点亮像素的屏幕显示它时完全不发光。"
 
-#: mcomix/preferences_dialog.py:595
+#: mcomix/preferences_dialog.py:596
 msgid "Restart MComix in the language you picked?"
 msgstr "以所选语言重新启动 MComix？"
 
-#: mcomix/preferences_dialog.py:596
+#: mcomix/preferences_dialog.py:597
 msgid ""
 "MComix is translated as it starts, so most of the interface stays in the "
 "language it started in until it is started again. The book being read, its "
@@ -1628,94 +1630,94 @@ msgstr ""
 "MComix 在启动时载入翻译，因此在重新启动之前，界面的大部分仍保持启动时的语言。"
 "正在阅读的书籍、所在页面和窗口大小都会保留。"
 
-#: mcomix/preferences_dialog.py:610 mcomix/preferences_dialog.py:751
-#: mcomix/preferences_dialog.py:823 mcomix/ui.py:520
+#: mcomix/preferences_dialog.py:611 mcomix/preferences_dialog.py:752
+#: mcomix/preferences_dialog.py:824 mcomix/ui.py:520
 msgid "Never"
 msgstr "从不"
 
-#: mcomix/preferences_dialog.py:611
+#: mcomix/preferences_dialog.py:612
 msgid "Only for title pages"
 msgstr "仅限第一页"
 
-#: mcomix/preferences_dialog.py:612
+#: mcomix/preferences_dialog.py:613
 msgid "Only for wide images"
 msgstr "仅限较宽的图片"
 
-#: mcomix/preferences_dialog.py:613 mcomix/preferences_dialog.py:752
+#: mcomix/preferences_dialog.py:614 mcomix/preferences_dialog.py:753
 msgid "Always"
 msgstr "总是"
 
-#: mcomix/preferences_dialog.py:620
+#: mcomix/preferences_dialog.py:621
 msgid ""
 "When showing the first page of an archive, or an image's width exceeds its "
 "height, only a single page will be displayed."
 msgstr "当是文件包的第一页或图片较宽时只显示一页。"
 
-#: mcomix/preferences_dialog.py:635
+#: mcomix/preferences_dialog.py:636
 msgid "Prefer same scale"
 msgstr "比例优先"
 
-#: mcomix/preferences_dialog.py:636
+#: mcomix/preferences_dialog.py:637
 msgid "Prefer same size"
 msgstr "尺寸优先"
 
-#: mcomix/preferences_dialog.py:637
+#: mcomix/preferences_dialog.py:638
 msgid "Fit to same size"
 msgstr "适应至同样大小"
 
-#: mcomix/preferences_dialog.py:644
+#: mcomix/preferences_dialog.py:645
 msgid "Maintain relative size or fit to same size."
 msgstr "保持相对大小，或缩放到相同大小。"
 
-#: mcomix/preferences_dialog.py:658 mcomix/preferences_dialog.py:703
+#: mcomix/preferences_dialog.py:659 mcomix/preferences_dialog.py:704
 msgid "No sorting"
 msgstr "不排序"
 
-#: mcomix/preferences_dialog.py:659
+#: mcomix/preferences_dialog.py:660
 msgid "File name"
 msgstr "文件名"
 
-#: mcomix/preferences_dialog.py:660
+#: mcomix/preferences_dialog.py:661
 msgid "File name (GLib)"
 msgstr "文件名（GLib）"
 
-#: mcomix/preferences_dialog.py:661 mcomix/library/book_area.py:204
+#: mcomix/preferences_dialog.py:662 mcomix/library/book_area.py:204
 msgid "File size"
 msgstr "文件大小"
 
-#: mcomix/preferences_dialog.py:662
+#: mcomix/preferences_dialog.py:663
 msgid "Last modified"
 msgstr "最后修改时间"
 
-#: mcomix/preferences_dialog.py:668 mcomix/preferences_dialog.py:712
+#: mcomix/preferences_dialog.py:669 mcomix/preferences_dialog.py:713
 #: mcomix/library/book_area.py:208
 msgid "Ascending"
 msgstr "递增"
 
-#: mcomix/preferences_dialog.py:669 mcomix/preferences_dialog.py:713
+#: mcomix/preferences_dialog.py:670 mcomix/preferences_dialog.py:714
 #: mcomix/library/book_area.py:209
 msgid "Descending"
 msgstr "递减"
 
-#: mcomix/preferences_dialog.py:677
+#: mcomix/preferences_dialog.py:678
 msgid ""
 "Files will be opened and displayed according to the sort order specified "
 "here. This option does not affect ordering within archives."
 msgstr "文件将按指定的排序打开和显示，但不影响文件包内部原来的文件顺序。"
 
-#: mcomix/preferences_dialog.py:704
+#: mcomix/preferences_dialog.py:705
 msgid "Natural order"
 msgstr "自然数顺序"
 
-#: mcomix/preferences_dialog.py:705
+#: mcomix/preferences_dialog.py:706
 msgid "Literal order"
 msgstr "字符串顺序"
 
-#: mcomix/preferences_dialog.py:706
+#: mcomix/preferences_dialog.py:707
 msgid "GLib order"
 msgstr "GLib 顺序"
 
-#: mcomix/preferences_dialog.py:721
+#: mcomix/preferences_dialog.py:722
 msgid ""
 "Files within archives will be sorted according to the order specified here. "
 "Natural order will sort numbered files based on their natural order, i.e. 1, "
@@ -1727,49 +1729,49 @@ msgstr ""
 "件，即 1、2、……、10；字面顺序使用标准 C 排序，即 1、2、34、5。GLib 顺序使用 "
 "GLib/GTK 生成的排序键排列文件，许多其他 GTK 程序也使用它。"
 
-#: mcomix/preferences_dialog.py:764
+#: mcomix/preferences_dialog.py:765
 msgid ""
 "Add information about all files opened from within MComix to the shared "
 "recent files list."
 msgstr "把所有 MComix 打开过的文件信息添加到最近文件列表中。"
 
-#: mcomix/preferences_dialog.py:784
+#: mcomix/preferences_dialog.py:785
 msgid "Delete information about recently opened files?"
 msgstr "删除最近打开的文件的信息？"
 
-#: mcomix/preferences_dialog.py:785
+#: mcomix/preferences_dialog.py:786
 msgid ""
 "This will remove all entries from the \"Recent\" menu, and clear information "
 "about last read pages."
 msgstr "这将删除所有“最近打开的文件”目录下记录，并清除相应的最后阅读页信息。"
 
-#: mcomix/preferences_dialog.py:798
+#: mcomix/preferences_dialog.py:799
 msgid "Normal (fast)"
 msgstr "正常 (快)"
 
-#: mcomix/preferences_dialog.py:799
+#: mcomix/preferences_dialog.py:800
 msgid "Bilinear"
 msgstr "双线性"
 
-#: mcomix/preferences_dialog.py:800
+#: mcomix/preferences_dialog.py:801
 msgid "Hyperbolic (slow)"
 msgstr "双曲线 (慢)"
 
-#: mcomix/preferences_dialog.py:806
+#: mcomix/preferences_dialog.py:807
 msgid ""
 "Changes how images are scaled. Slower algorithms result in higher quality "
 "resizing, but longer page loading times."
 msgstr "图片缩放设置：较慢的算法带来更高质量的图片缩放但更长的加载时间。"
 
-#: mcomix/preferences_dialog.py:824 mcomix/library/book_area.py:216
+#: mcomix/preferences_dialog.py:825 mcomix/library/book_area.py:216
 msgid "Normal"
 msgstr "正常"
 
-#: mcomix/preferences_dialog.py:830
+#: mcomix/preferences_dialog.py:831
 msgid "Controls how animated images should be displayed."
 msgstr "控制动图如何显示。"
 
-#: mcomix/preferences_dialog.py:874
+#: mcomix/preferences_dialog.py:875
 msgid ""
 "Treat all files found within archives, that have one of these file endings, "
 "as comments."
@@ -1831,113 +1833,113 @@ msgstr "拥有者"
 msgid "No entries found"
 msgstr "未找到条目"
 
-#: mcomix/run.py:44
+#: mcomix/run.py:45
 msgid "[OPTION...] [PATH]"
 msgstr "[选项...] [路径]"
 
-#: mcomix/run.py:45
+#: mcomix/run.py:46
 msgid "View images and comic book archives."
 msgstr "查看图片和漫画文件包。"
 
-#: mcomix/run.py:48
+#: mcomix/run.py:49
 msgid "Show this help and exit."
 msgstr "显示该帮助后退出。"
 
-#: mcomix/run.py:50
+#: mcomix/run.py:51
 msgid "Start the application in slideshow mode."
 msgstr "启动程序后进入幻灯片模式。"
 
-#: mcomix/run.py:52
+#: mcomix/run.py:53
 msgid "Show the library on startup."
 msgstr "启动后显示收藏库。"
 
-#: mcomix/run.py:55
+#: mcomix/run.py:56
 msgid "Show the version number and exit."
 msgstr "显示版本号后退出。"
 
-#: mcomix/run.py:57
+#: mcomix/run.py:58
 msgid "Temporarily override the interface language."
 msgstr "临时覆盖界面语言。"
 
-#: mcomix/run.py:59
+#: mcomix/run.py:60
 msgid "Open the file at the given page."
 msgstr "在指定页打开文件。"
 
-#: mcomix/run.py:61
+#: mcomix/run.py:62
 msgid "View modes"
 msgstr "查看模式"
 
-#: mcomix/run.py:63
+#: mcomix/run.py:64
 msgid "Start the application in fullscreen mode."
 msgstr "启动程序后进入全屏模式。"
 
-#: mcomix/run.py:65
+#: mcomix/run.py:66
 msgid "Start the application in manga mode."
 msgstr "启动程序后进入漫画模式。"
 
-#: mcomix/run.py:67
+#: mcomix/run.py:68
 msgid "Start the application in double page mode."
 msgstr "启动程序后进入双页显示模式。"
 
-#: mcomix/run.py:69
+#: mcomix/run.py:70
 msgid "Zoom modes"
 msgstr "缩放模式"
 
-#: mcomix/run.py:72
+#: mcomix/run.py:73
 msgid "Start the application with zoom set to best fit mode."
 msgstr "启动程序后进入最佳适应模式。"
 
-#: mcomix/run.py:75
+#: mcomix/run.py:76
 msgid "Start the application with zoom set to fit width."
 msgstr "启动程序后进入适合宽度模式。"
 
-#: mcomix/run.py:78
+#: mcomix/run.py:79
 msgid "Start the application with zoom set to fit height."
 msgstr "启动程序后进入适合高度模式。"
 
-#: mcomix/run.py:80
+#: mcomix/run.py:81
 msgid "Debug options"
 msgstr "调试选项"
 
-#: mcomix/run.py:84
+#: mcomix/run.py:85
 msgid "Sets the desired output log level."
 msgstr "设置输出日志等级。"
 
-#: mcomix/run.py:122
+#: mcomix/run.py:123
 msgid ""
 "You do not have the required versions of GTK 4.0 and PyGObject installed."
 msgstr "您没有安装所需要的 GTK 4.0 和 PyGObject 版本。"
 
-#: mcomix/run.py:126
+#: mcomix/run.py:127
 msgid "No version of GObject was found on your system."
 msgstr "在您的系统上找不到任何版本的 PyGObject。"
 
-#: mcomix/run.py:127
+#: mcomix/run.py:128
 msgid "This error might be caused by missing GTK+ libraries."
 msgstr "该错误可能由缺失 GTK+ 库引起。"
 
-#: mcomix/run.py:134
+#: mcomix/run.py:135
 msgid ""
 "You don't have the required version of the Python Imaging Library Fork "
 "(Pillow) installed."
 msgstr "您没有安装所需的 Pillow 库版本"
 
-#: mcomix/run.py:135
+#: mcomix/run.py:136
 #, python-format
 msgid "Installed Pillow version is: %s"
 msgstr "安装的 Pillow 版本为：%s"
 
-#: mcomix/run.py:136
+#: mcomix/run.py:137
 #, python-format
 msgid "Required Pillow version is: %s or higher"
 msgstr "所需 Pillow 版本为：%s 或更新版"
 
-#: mcomix/run.py:140
+#: mcomix/run.py:141
 #, python-format
 msgid "Python Imaging Library Fork (Pillow) %s or higher is required."
 msgstr "需要 Python Imaging Library Fork (Pillow) %s 版或更新版。"
 
-#: mcomix/run.py:141
+#: mcomix/run.py:142
 msgid "No version of the Python Imaging Library was found on your system."
 msgstr "在您的系统上找不到任何版本的 Python Imaging Library。"
 
