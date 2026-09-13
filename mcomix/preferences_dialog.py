@@ -16,6 +16,25 @@ from mcomix.i18n import _
 
 _dialog = None
 
+#: How many characters wide every spinner on a page is.
+_SPINNER_WIDTH = 7
+
+
+def _sort_row(first, second):
+    """A row of two boxes, ending where the page ends.
+
+    They used to take whatever room the row had, so a row whose first
+    box held shorter words ended short of the one above it.  Keeping
+    them to their own width and hanging the row from the right lines the
+    two up.
+    """
+    row = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+    row.set_halign(Gtk.Align.END)
+    widgets.pack(row, first, False, False, 0)
+    widgets.pack(row, second, False, False, 0)
+    return row
+
+
 class _PreferencesDialog(Gtk.Dialog):
 
     """The preferences dialog where most (but not all) settings that are
@@ -507,9 +526,7 @@ class _PreferencesDialog(Gtk.Dialog):
                 prefs['sort order'],
                 self._sort_order_changed_cb)
 
-        box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
-        widgets.pack(box, sortkey_box, True, True, 0)
-        widgets.pack(box, sortorder_box, True, True, 0)
+        box = _sort_row(sortkey_box, sortorder_box)
 
         label = _("Files will be opened and displayed according to the sort order "
               "specified here. This option does not affect ordering within archives.")
@@ -555,9 +572,7 @@ class _PreferencesDialog(Gtk.Dialog):
                 prefs['sort archive order'],
                 self._sort_archive_order_changed_cb)
 
-        box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
-        widgets.pack(box, sortkey_box, True, True, 0)
-        widgets.pack(box, sortorder_box, True, True, 0)
+        box = _sort_row(sortkey_box, sortorder_box)
 
         label = _("Files within archives will be sorted according to the order specified here. "
                   "Natural order will sort numbered files based on their natural order, "
@@ -855,6 +870,11 @@ class _PreferencesDialog(Gtk.Dialog):
                                         page_incr, 0.0)
         spinner = Gtk.SpinButton.new(adjustment, 0.0, digits)
         spinner.set_size_request(80, -1)
+        # Every spinner the same width.  GTK4 sizes one to the widest
+        # number it can hold, so the slideshow delay - two decimals of
+        # up to 3600 - came out wider than the rest of the page.
+        spinner.set_width_chars(_SPINNER_WIDTH)
+        spinner.set_max_width_chars(_SPINNER_WIDTH)
         spinner.connect('value_changed', self._spinner_cb, prefkey)
         if tooltip_text:
             spinner.set_tooltip_text(tooltip_text)

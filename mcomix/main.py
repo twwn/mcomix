@@ -28,6 +28,7 @@ from mcomix import pageselect
 from mcomix import osd
 from mcomix import page_image
 from mcomix import keybindings
+from mcomix import widgets
 from mcomix import zoom
 from mcomix import bookmark_backend
 from mcomix import message_dialog
@@ -253,8 +254,9 @@ class MainWindow(Gtk.Window):
 
         self.connect('notify::is-active', self._event_handler.focus_changed)
         self.connect('close-request', self.close_program)
-        self.connect('notify::default-width', self._event_handler.resize_event)
-        self.connect('notify::default-height', self._event_handler.resize_event)
+        # A window's default size is what it asked for, not what the
+        # compositor gave it, so the canvas is what says it has changed.
+        self._main_layout.connect('resized', self._event_handler.resize_event)
         self.connect('notify::fullscreened', self._event_handler.window_state_event)
         self.connect('notify::maximized', self._event_handler.window_state_event)
 
@@ -987,14 +989,14 @@ class MainWindow(Gtk.Window):
                 (_('_OK'), Gtk.ResponseType.ACCEPT,
                 _('_Cancel'), Gtk.ResponseType.REJECT)
             )
-            save_dialog.set_do_overwrite_confirmation(True)
             save_dialog.set_create_folders(True)
             save_dialog.set_current_name(suggest_name)
-            save_dialog.set_current_folder(target_dir)
+            widgets.set_chooser_folder(save_dialog, target_dir)
 
             def save_responded(dialog: Any, response: int) -> None:
                 if response == Gtk.ResponseType.ACCEPT:
-                    target = save_dialog.get_filename()
+                    chosen = save_dialog.get_file()
+                    target = chosen.get_path() if chosen else None
                     if target:
                         target = i18n.to_unicode(target)
                         try:
@@ -1003,7 +1005,7 @@ class MainWindow(Gtk.Window):
                             log.warning(e)
 
                     prefs['path of last saved in filechooser'] = \
-                        save_dialog.get_current_folder() \
+                        widgets.chooser_folder(save_dialog) \
                         if prefs['store last saved in directory'] \
                         else constants.HOME_DIR
 

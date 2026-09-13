@@ -184,6 +184,7 @@ _MENUBAR = (
                    'extract_page', 'refresh_archive', 'properties', None,
                    'menu_open_with', None,
                    'delete', None,
+                   'about', None,
                    'minimize', 'close', 'save_and_quit', 'quit')),
     ('menu_edit', ('copy_page', None,
                    'edit_archive', 'comments', None,
@@ -217,7 +218,6 @@ _MENUBAR = (
                                         None,
                                         'flip_horiz', 'flip_vert', None,
                                         'keep_transformation')))),
-    ('menu_help', ('about',)),
 )
 
 #: The right-click menu, as the <popup> element described it.
@@ -288,22 +288,22 @@ class MainUI(object):
             ('delete', 'edit-delete', _('_Delete'),
                 None, _('Deletes the current file or archive from disk.'),
                 window.delete),
-            ('next_page', 'go-next', _('_Next page'),
+            ('next_page', 'go-next-symbolic', _('_Next page'),
              None, _('Next page'), _action_lambda(window.flip_page, +1)),
-            ('previous_page', 'go-previous', _('_Previous page'),
+            ('previous_page', 'go-previous-symbolic', _('_Previous page'),
              None, _('Previous page'), _action_lambda(window.flip_page, -1)),
-            ('first_page', 'go-first', _('_First page'),
+            ('first_page', 'go-first-symbolic', _('_First page'),
              None, _('First page'), _action_lambda(window.first_page)),
-            ('last_page', 'go-last', _('_Last page'),
+            ('last_page', 'go-last-symbolic', _('_Last page'),
              None, _('Last page'), _action_lambda(window.last_page)),
-            ('go_to', 'go-jump', _('_Go to page...'),
+            ('go_to', 'go-jump-symbolic', _('_Go to page...'),
                 None, _('Go to page...'), window.page_select),
             ('refresh_archive', 'view-refresh', _('Re_fresh'),
                 None, _('Reloads the currently opened files or archive.'),
                 window.filehandler.refresh_file),
-            ('next_archive', 'media-skip-forward', _('Next _archive'),
+            ('next_archive', 'media-skip-forward-symbolic', _('Next _archive'),
                 None, _('Next archive'), window.filehandler._open_next_archive),
-            ('previous_archive', 'media-skip-backward', _('Previous a_rchive'),
+            ('previous_archive', 'media-skip-backward-symbolic', _('Previous a_rchive'),
                 None, _('Previous archive'), window.filehandler._open_previous_archive),
             ('next_directory', 'edit-redo', _('Next directory'),
                 None, _('Next directory'), window.filehandler.open_next_directory),
@@ -350,7 +350,6 @@ class MainUI(object):
             ('menu_go', None, _('_Go')),
             ('menu_go_popup', 'go-next', _('_Go')),
             ('menu_tools', None, _('_Tools')),
-            ('menu_help', None, _('_Help')),
             ('menu_transform', 'mcomix-transform', _('_Transform image')),
             ('menu_autorotate', None, _('_Auto-rotate image')),
             ('menu_autorotate_width', None, _('...when width exceeds height')),
@@ -358,9 +357,9 @@ class MainUI(object):
             ('expander', None, None, None, None, None)])
 
         self._actions.add_toggle([
-            ('fullscreen', 'view-fullscreen', _('_Fullscreen'),
+            ('fullscreen', 'view-fullscreen-symbolic', _('_Fullscreen'),
                 None, _('Fullscreen mode'), window.change_fullscreen),
-            ('double_page', 'mcomix-double-page', _('_Double page mode'),
+            ('double_page', 'view-dual-symbolic', _('_Double page mode'),
                 None, _('Double page mode'), window.change_double_page),
             ('toolbar', None, _('_Toolbar'),
                 None, None, window.change_toolbar_visibility),
@@ -374,16 +373,16 @@ class MainUI(object):
                 None, None, window.change_thumbnails_visibility),
             ('hide_all', None, _('H_ide all'),
                 None, None, window.change_hide_all),
-            ('manga_mode', 'mcomix-manga', _('_Manga mode'),
+            ('manga_mode', 'view-mirror-symbolic', _('_Manga mode'),
                 None, _('Manga mode'), window.change_manga_mode),
             ('invert_scroll', 'edit-undo', _('Invert smart scroll'),
                 None, _('Invert smart scrolling direction.'), window.change_invert_scroll),
             ('keep_transformation', None, _('_Keep transformation'),
                 None, _('Keeps the currently selected transformation for the next pages.'),
                 window.change_keep_transformation),
-            ('slideshow', 'media-playback-start', _('Start _slideshow'),
+            ('slideshow', 'media-playback-start-symbolic', _('Start _slideshow'),
                 None, _('Start slideshow'), window.slideshow.toggle),
-            ('lens', 'mcomix-lens', _('Magnifying _lens'),
+            ('lens', 'edit-find-symbolic', _('Magnifying _lens'),
                 None, _('Magnifying lens'), window.lens.toggle),
             ('stretch', None, _('Stretch small images'),
                 None, _('Stretch images to fit to the screen, depending on zoom mode.'),
@@ -394,15 +393,15 @@ class MainUI(object):
         # Note: Don't change the default value for the radio buttons unless
         # also fixing the code for setting the correct one on start-up in main.py.
         self._actions.add_radio('zoom-mode', [
-            ('best_fit_mode', 'mcomix-fitbest', _('_Best fit mode'),
+            ('best_fit_mode', 'zoom-fit-best-symbolic', _('_Best fit mode'),
                 None, _('Best fit mode'), constants.ZoomMode.BEST),
-            ('fit_width_mode', 'mcomix-fitwidth', _('Fit _width mode'),
+            ('fit_width_mode', 'mcomix-fit-width-symbolic', _('Fit _width mode'),
                 None, _('Fit width mode'), constants.ZoomMode.WIDTH),
-            ('fit_height_mode', 'mcomix-fitheight', _('Fit _height mode'),
+            ('fit_height_mode', 'mcomix-fit-height-symbolic', _('Fit _height mode'),
                 None, _('Fit height mode'), constants.ZoomMode.HEIGHT),
-            ('fit_size_mode', 'mcomix-fitsize', _('Fit _size mode'),
+            ('fit_size_mode', 'mcomix-fit-size-symbolic', _('Fit _size mode'),
                 None, _('Fit to size mode'), constants.ZoomMode.SIZE),
-            ('fit_manual_mode', 'mcomix-fitmanual', _('M_anual zoom mode'),
+            ('fit_manual_mode', 'mcomix-fit-manual-symbolic', _('M_anual zoom mode'),
                 None, _('Manual zoom mode'), constants.ZoomMode.MANUAL)],
             3, window.change_zoom_mode)
 
@@ -466,8 +465,13 @@ class MainUI(object):
         self.popup.set_parent(window)
         self.toolbar = self._build_toolbar()
 
-        for menu in (self.menubar, self.popup):
-            menu.set_visible(True)
+        # Only the menu bar, which is a widget in the window like any
+        # other.  The popup is a Gtk.PopoverMenu, and a popover that is
+        # visible is *open*: it takes an input grab, and on Wayland it is
+        # an xdg_popup the compositor has to be asked for, which GTK
+        # waits on while the window maps.  It is shown by popup_at() when
+        # there is a place to point it at.
+        self.menubar.set_visible(True)
 
     def set_accelerator(self, name: str, accelerator: str) -> None:
         """Show <accelerator> against <name>'s items in the menus.

@@ -12,6 +12,7 @@ from mcomix import labels
 from mcomix import widgets
 from mcomix import constants
 from mcomix import log
+from mcomix import preview
 from mcomix import thumbnail_tools
 from mcomix import message_dialog
 from mcomix import file_provider
@@ -19,6 +20,40 @@ from mcomix import tools
 from mcomix.i18n import _
 
 mimetypes.init()
+
+#: How large a preview is on a screen that has nothing to say about it -
+#: the size the GTK3 dialog used.
+_PREVIEW_SIZE = 128
+#: How wide the name and size under a preview are allowed to be.
+_PREVIEW_LABEL_WIDTH = 18
+
+
+def preview_size(widget):
+    """Return how large a preview should be, and what to render it at.
+
+    The size follows the screen, as every other preview in MComix does.
+    What it is rendered at follows the scale factor as well: a picture
+    drawn from more pixels than it is given is sharp, where one drawn
+    from fewer is not.
+    """
+    size = preview.scaled(_PREVIEW_SIZE, widget)
+    return size, size * max(1, widget.get_scale_factor())
+
+
+#: How wide the places on the left are opened, which GTK4 leaves at
+#: 140 - enough for "Zuletzt v..." but not for "Zuletzt verwendet".
+_PLACES_WIDTH = 220
+
+#: The formats a comic reader is asked for, before the rest.
+_COMMON_ARCHIVES = ('ZIP', 'RAR', '7z', 'Tar', 'PDF')
+_COMMON_IMAGES = ('JPEG', 'PNG', 'WEBP', 'GIF', 'AVIF', 'JXL', 'TIFF', 'BMP')
+
+
+def _by_familiarity(names, common):
+    """<names>, with the ones a reader expects first."""
+    known = [name for name in common if name in names]
+    return known + sorted(name for name in names if name not in known)
+
 
 class _BaseFileChooserDialog(Gtk.Dialog):
 
@@ -54,13 +89,20 @@ class _BaseFileChooserDialog(Gtk.Dialog):
         # GTK4's Gtk.Dialog takes properties, not the title, parent
         # and flags GTK3 let it be constructed from.
         super(_BaseFileChooserDialog, self).__init__(title=title)
-        self.add_buttons(*buttons)
-        self.set_default_response(Gtk.ResponseType.OK)
+        #: The buttons, wherever they ended up.
+        self._buttons = []
+        #: Whether the chooser's filter menu has been moved aside.
+        self._filter_moved = False
 
         #: What each filter was built to match, by filter.
         self._filter_rules = {}
+        #: One-format filters, held back so the groups can come first.
+        self._pending_filters = []
         self.filechooser = Gtk.FileChooserWidget(action=action)
-        self.filechooser.set_size_request(680, 420)
+        # Wide and short was what GTK3 needed to fit its own layout;
+        # with the preview beside the list rather than inside it, the
+        # dialog wants more height than width.
+        self.filechooser.set_size_request(640, 560)
         # GTK4 has no set_preview_widget(): the chooser will not hold
         # anything of ours any more, so the preview goes beside it.
         chooser_row = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 10)
@@ -77,12 +119,25 @@ class _BaseFileChooserDialog(Gtk.Dialog):
         activate.connect('pressed', self._activated)
         self.filechooser.add_controller(activate)
 
+        self._preview_size, self._preview_pixels = preview_size(self)
         preview_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 10)
-        preview_box.set_size_request(130, 0)
+        preview_box.set_size_request(self._preview_size + 22, -1)
+        # The preview and what it says about the file sit together in
+        # the middle of the column, rather than filling it.
+        preview_box.set_valign(Gtk.Align.CENTER)
+        widgets.set_border(preview_box, 6)
         # A Gtk.Image draws whatever it is given at an icon size in
         # GTK4; a picture draws it at its own.
         self._preview_image = Gtk.Picture()
-        self._preview_image.set_size_request(130, 130)
+        self._preview_image.set_size_request(self._preview_size,
+                                            self._preview_size)
+        # A picture scales what it holds to whatever room it is given,
+        # so a thumbnail came out blurred and grew and shrank with the
+        # dialog.  SCALE_DOWN never draws above the real size, and the
+        # alignments keep the box from handing it any more room.
+        self._preview_image.set_content_fit(Gtk.ContentFit.SCALE_DOWN)
+        self._preview_image.set_halign(Gtk.Align.CENTER)
+        self._preview_image.set_valign(Gtk.Align.CENTER)
         widgets.pack(preview_box, self._preview_image, False, False, 0)
 
         pango_scale_small = (1 / 1.2)
@@ -95,6 +150,14 @@ class _BaseFileChooserDialog(Gtk.Dialog):
         self._sizelabel = labels.FormattedLabel(scale=pango_scale_small)
         self._sizelabel.set_ellipsize(Pango.EllipsizeMode.MIDDLE)
         widgets.pack(preview_box, self._sizelabel, False, False, 0)
+
+        # An ellipsized label still asks for room enough for all of its
+        # text, so the column - and with it the file list beside it -
+        # moved every time the name under the preview changed.  Holding
+        # the labels to a width stops that.
+        for label in (self._namelabel, self._sizelabel):
+            label.set_max_width_chars(_PREVIEW_LABEL_WIDTH)
+            label.set_width_chars(_PREVIEW_LABEL_WIDTH)
         preview_box.set_visible(True)
         widgets.pack(chooser_row, preview_box, False, False, 0, end=True)
 
@@ -106,6 +169,11 @@ class _BaseFileChooserDialog(Gtk.Dialog):
         self._preview_timer = GLib.timeout_add(200, self._poll_preview)
         self.connect('destroy', self._stop_previewing)
 
+        self.place_buttons(buttons)
+        # Only once the pane has been laid out; a position set before
+        # that is forgotten.
+        self.connect('map', self._widen_the_places)
+
         self._all_files_filter = self.add_filter( _('All files'), [], ['*'])
 
         try:
@@ -114,23 +182,123 @@ class _BaseFileChooserDialog(Gtk.Dialog):
 
             # If a file is currently open, use its path
             if current_file and os.path.exists(current_file):
-                self.filechooser.set_current_folder(os.path.dirname(current_file))
+                widgets.set_chooser_folder(self.filechooser,
+                                           os.path.dirname(current_file))
             # If no file is open, use the last stored file
             elif (last_file and os.path.exists(last_file)):
-                self.filechooser.set_filename(last_file)
+                widgets.set_chooser_file(self.filechooser, last_file)
             # If no file was stored yet, fall back to preferences
             elif os.path.isdir(prefs['path of last browsed in filechooser']):
                 if prefs['store recent file info']:
-                    self.filechooser.set_current_folder(
+                    widgets.set_chooser_folder(
+                        self.filechooser,
                         prefs['path of last browsed in filechooser'])
                 else:
-                    self.filechooser.set_current_folder(
-                        constants.HOME_DIR)
+                    widgets.set_chooser_folder(self.filechooser,
+                                               constants.HOME_DIR)
 
         except Exception as ex: # E.g. broken prefs values.
             log.debug(ex)
 
         self.set_visible(True)
+
+    def _widen_the_places(self, *args) -> None:
+        """Give the places on the left room for their own names.
+
+        GTK4 puts the sidebar in a Gtk.Paned and opens it at a fixed
+        position, which cuts "Zuletzt verwendet" down to "Zuletzt v...".
+        The sidebar knows how wide it would like to be; the pane can be
+        opened there instead, and dragged from there afterwards.
+        """
+        paned = self._descendant(self.filechooser, Gtk.Paned)
+        if paned is None:
+            return
+        places = paned.get_start_child()
+        if places is None:
+            return
+        # Neither the sidebar nor the names in it say how wide they
+        # would like to be - both ellipsize, so both ask for what they
+        # can be squeezed to - so open the pane wide enough for a name
+        # instead, and leave it draggable from there.
+        if paned.get_position() < _PLACES_WIDTH:
+            GLib.idle_add(paned.set_position, _PLACES_WIDTH)
+
+    def place_buttons(self, buttons) -> None:
+        """Put <buttons> - label, response, label, response - in the row
+        the chooser keeps its filter menu in.
+
+        GTK4's Gtk.FileChooserWidget holds that menu in a Gtk.ActionBar
+        of its own and a Gtk.Dialog holds its buttons in another, so the
+        two came out on separate rows, one above the other.  That bar is
+        an ordinary Gtk.ActionBar, so the buttons can join it and the
+        filter can move to its other end, which is where a file dialog
+        has always put the two.
+
+        Nothing in the API promises that bar is there, so if it cannot
+        be found the buttons go back in the dialog's own row.
+        """
+        for button in self._buttons:
+            parent = button.get_parent()
+            if parent is not None:
+                bar = button.get_ancestor(Gtk.ActionBar)
+                (bar or parent).remove(button)
+        self._buttons = []
+
+        pairs = list(zip(buttons[::2], buttons[1::2]))
+        bar = self._filter_action_bar()
+        if bar is None:
+            for label, response in pairs:
+                self._buttons.append(self.add_button(label, response))
+            self.set_default_response(Gtk.ResponseType.OK)
+            return
+
+        # pack_end() puts each new child nearer the start of the end
+        # group, so the last one named ends up furthest left.
+        for label, response in reversed(pairs):
+            button = Gtk.Button(label=label, use_underline=True)
+            button.connect('clicked', self._button_clicked, response)
+            bar.pack_end(button)
+            self._buttons.append(button)
+            if response == Gtk.ResponseType.OK:
+                button.add_css_class('suggested-action')
+                self.set_default_widget(button)
+        bar.set_revealed(True)
+
+    def _button_clicked(self, _button, response) -> None:
+        self.response(response)
+
+    def _filter_action_bar(self):
+        """The chooser's own action bar, with its filter moved aside."""
+        menu = self._descendant(self.filechooser, Gtk.DropDown)
+        if menu is None:
+            return None
+        bar = menu.get_ancestor(Gtk.ActionBar)
+        packed = menu.get_parent()
+        if bar is None or packed is None:
+            return None
+        if not self._filter_moved:
+            # The filter is packed at the end, where the buttons belong;
+            # move it to the other one, once.
+            try:
+                bar.remove(packed)
+                bar.pack_start(packed)
+            except Exception:
+                return None
+            self._filter_moved = True
+        return bar
+
+    @staticmethod
+    def _descendant(widget, kind):
+        """The first child of <widget> that is a <kind>, at any depth."""
+        child = widget.get_first_child()
+        while child is not None:
+            if isinstance(child, kind):
+                return child
+            found = _BaseFileChooserDialog._descendant(child, kind)
+            if found is not None:
+                return found
+            child = child.get_next_sibling()
+        return None
 
     def list_filters(self):
         """The filters the chooser offers, in the order they were added.
@@ -163,17 +331,33 @@ class _BaseFileChooserDialog(Gtk.Dialog):
         return ffilter
 
     def add_archive_filters(self) -> None:
-        """Add archive filters to the filechooser.
+        """Offer the archive formats, everything before one format."""
+        self._add_group(_('All archives'), _('%s archives'),
+                        archive_tools.get_supported_formats(),
+                        _COMMON_ARCHIVES)
+
+    def add_image_filters(self) -> None:
+        """Offer the image formats, everything before one format."""
+        self._add_group(_('All images'), _('%s images'),
+                        image_tools.get_supported_formats(),
+                        _COMMON_IMAGES)
+
+    def _add_group(self, everything, one, supported_formats, common) -> None:
+        """Add a filter for all of <supported_formats> and one for each.
+
+        The list was in alphabetical order, which put ANI, APM and APNG
+        ahead of JPEG and PNG - true, and no use to anyone looking for a
+        comic.  The formats a reader actually opens come first now, in
+        the order below, and the rest follow alphabetically after them.
         """
         ffilter = Gtk.FileFilter()
-        ffilter.set_name(_('All archives'))
+        ffilter.set_name(everything)
         self.filechooser.add_filter(ffilter)
         all_mimes, all_patterns = [], []
-        supported_formats = archive_tools.get_supported_formats()
-        for name in sorted(supported_formats):
+        for name in _by_familiarity(supported_formats, common):
             mime_types, extensions = supported_formats[name]
             patterns = ['*.%s' % ext for ext in extensions]
-            self.add_filter(_('%s archives') % name, mime_types, patterns)
+            self._pending_filters.append((one % name, mime_types, patterns))
             all_mimes.extend(mime_types)
             all_patterns.extend(patterns)
             for mime in mime_types:
@@ -182,25 +366,12 @@ class _BaseFileChooserDialog(Gtk.Dialog):
                 ffilter.add_pattern(pat)
         self._filter_rules[ffilter] = (tuple(all_patterns), tuple(all_mimes))
 
-    def add_image_filters(self) -> None:
-        """Add images filters to the filechooser.
-        """
-        ffilter = Gtk.FileFilter()
-        ffilter.set_name(_('All images'))
-        self.filechooser.add_filter(ffilter)
-        all_mimes, all_patterns = [], []
-        supported_formats = image_tools.get_supported_formats()
-        for name in sorted(supported_formats):
-            mime_types, extensions = supported_formats[name]
-            patterns = ['*.%s' % ext for ext in extensions]
-            self.add_filter(_('%s images') % name, mime_types, patterns)
-            all_mimes.extend(mime_types)
-            all_patterns.extend(patterns)
-            for mime in mime_types:
-                ffilter.add_mime_type(mime)
-            for pat in patterns:
-                ffilter.add_pattern(pat)
-        self._filter_rules[ffilter] = (tuple(all_patterns), tuple(all_mimes))
+    def add_pending_filters(self) -> None:
+        """Add the one-format filters held back while the groups were
+        being offered, so that every "All ..." comes first."""
+        for name, mimes, patterns in self._pending_filters:
+            self.add_filter(name, mimes, patterns)
+        self._pending_filters = []
 
     def _matches(self, ffilter, path, mime_type):
         """Whether <path> passes <ffilter>, by the rules it was built from."""
@@ -230,7 +401,7 @@ class _BaseFileChooserDialog(Gtk.Dialog):
         self.filechooser.set_current_name(name)
 
     def set_current_directory(self, path):
-        self.filechooser.set_current_folder(path)
+        widgets.set_chooser_folder(self.filechooser, path)
 
     def should_open_recursive(self) -> bool:
         return False
@@ -245,13 +416,14 @@ class _BaseFileChooserDialog(Gtk.Dialog):
         event only changed the current directory.
         """
         if response == Gtk.ResponseType.OK:
-            if not self.filechooser.get_filenames():
+            chosen = widgets.chooser_paths(self.filechooser)
+            if not chosen:
                 return
 
             # Collect files, if necessary also from subdirectories
             filter = self.filechooser.get_filter()
             paths = [ ]
-            for path in self.filechooser.get_filenames():
+            for path in chosen:
                 if os.path.isdir(path):
                     subdir_files = list(self.collect_files_from_subdir(path, filter,
                         self.should_open_recursive()))
@@ -262,7 +434,7 @@ class _BaseFileChooserDialog(Gtk.Dialog):
 
             # FileChooser.set_do_overwrite_confirmation() doesn't seem to
             # work on our custom dialog, so we use a simple alternative.
-            first_path = self.filechooser.get_filenames()[0]
+            first_path = chosen[0]
             if (self._action == Gtk.FileChooserAction.SAVE and
                 not os.path.isdir(first_path) and
                 os.path.exists(first_path)):
@@ -293,7 +465,7 @@ class _BaseFileChooserDialog(Gtk.Dialog):
         # Do not store path if the user chose not to keep a file history
         if prefs['store recent file info']:
             prefs['path of last browsed in filechooser'] = \
-                self.filechooser.get_current_folder()
+                widgets.chooser_folder(self.filechooser)
         else:
             prefs['path of last browsed in filechooser'] = \
                 constants.HOME_DIR
@@ -320,8 +492,9 @@ class _BaseFileChooserDialog(Gtk.Dialog):
         path = self._previewed
 
         if path and os.path.isfile(path):
-            thumbnailer = thumbnail_tools.Thumbnailer(size=(128, 128),
-                                                      archive_support=True)
+            thumbnailer = thumbnail_tools.Thumbnailer(
+                size=(self._preview_pixels, self._preview_pixels),
+                archive_support=True)
             thumbnailer.thumbnail_finished += self._preview_thumbnail_finished
             thumbnailer.thumbnail(path, threaded=True)
         else:
@@ -336,8 +509,10 @@ class _BaseFileChooserDialog(Gtk.Dialog):
         if self._destroyed:
             return
 
-        current_path = self.filechooser.get_preview_filename()
-        if current_path and current_path == filepath:
+        # Gtk.FileChooser.get_preview_filename() went with the rest of
+        # the preview API in GTK4; what is being previewed is what the
+        # poll last saw selected.
+        if self._previewed and self._previewed == filepath:
 
             if pixbuf is None:
                 self._preview_image.set_paintable(None)

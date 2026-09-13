@@ -6,6 +6,12 @@ from mcomix.preferences import prefs
 from mcomix.worker_thread import WorkerThread
 
 
+#: How long to wait before asking a view that has not been laid out
+#: what is on screen, and how many times to ask.
+_RETRY_DELAY = 50
+_RETRIES = 40
+
+
 class ThumbnailViewBase(object):
     """ This class provides shared functionality for Gtk.TreeView and
     Gtk.IconView. Instantiating this class directly is *impossible*,
@@ -28,6 +34,9 @@ class ThumbnailViewBase(object):
         self._updates_stopped = True
         #: The adjustment updates are currently being followed on.
         self._adjustment = None
+        #: A pending "ask again", and how many are left to make.
+        self._retry = None
+        self._retries_left = _RETRIES
         #: Worker thread
         self._thread = WorkerThread(self._pixbuf_worker,
                                     name='thumbview',
@@ -60,6 +69,18 @@ class ThumbnailViewBase(object):
         self.connect('notify::vadjustment', self._vadjustment_set)
         self._vadjustment_set()
 
+    def _retry_visible_range(self) -> None:
+        """Ask again once the view has had a chance to lay itself out."""
+        if self._retry is not None or not self._retries_left:
+            return
+        self._retries_left -= 1
+        self._retry = GLib.timeout_add(_RETRY_DELAY, self._retry_now)
+
+    def _retry_now(self) -> bool:
+        self._retry = None
+        self.draw_thumbnails_on_screen()
+        return GLib.SOURCE_REMOVE
+
     def _vadjustment_set(self, *args) -> None:
         adjustment = self.get_vadjustment()
         if adjustment is None or adjustment is self._adjustment:
@@ -75,7 +96,12 @@ class ThumbnailViewBase(object):
 
         visible = self.get_visible_range()
         if not visible:
-            # No valid paths available
+            # Nothing has been laid out yet, so there is nothing to ask
+            # about.  Neither being mapped nor the adjustment settling
+            # is late enough for an icon view - it answers None to both -
+            # and if nobody asks again the thumbnails are never made at
+            # all, leaving a page of empty cells.  Ask again shortly.
+            self._retry_visible_range()
             return
 
         pixbufs_needed = []
@@ -89,6 +115,7 @@ class ThumbnailViewBase(object):
         model = self.get_model()
         # Filter invalid paths.
         required = [path for path in required if 0 <= path < len(model)]
+        self._retries_left = _RETRIES
         with self._thread:
             # Flush current pixmap generation orders.
             self._thread.clear_orders()

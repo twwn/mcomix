@@ -42,7 +42,7 @@ class WatchListDialog(Gtk.Dialog):
         self.set_default_response(Gtk.ResponseType.CLOSE)
 
         # Initialize treeview control showing existing watch directories
-        self._treeview = Gtk.TreeView(self._create_model())
+        self._treeview = Gtk.TreeView(model=self._create_model())
         self._treeview.set_headers_visible(True)
         self._treeview.get_selection().connect('changed', self._item_selected_cb)
 
@@ -91,7 +91,8 @@ class WatchListDialog(Gtk.Dialog):
         widgets.pack(self.get_content_area(), main_box, True, True, 0)
 
         auto_checkbox = Gtk.CheckButton(
-            _('Automatically scan for new books when library is _opened'), use_underline=True)
+            label=_('Automatically scan for new books when library is _opened'),
+            use_underline=True)
         auto_checkbox.set_active(prefs['scan for new books on library startup'])
         auto_checkbox.connect('toggled', self._auto_scan_toggled_cb)
         widgets.pack(self.get_content_area(), auto_checkbox, False, False, 5, end=True)
@@ -183,7 +184,7 @@ class WatchListDialog(Gtk.Dialog):
     def _add_cb(self, button, *args):
         """ Called when a new watch list entry should be added. """
         filechooser = Gtk.FileChooserDialog(
-            parent=self, action=Gtk.FileChooserAction.SELECT_FOLDER)
+            transient_for=self, action=Gtk.FileChooserAction.SELECT_FOLDER)
         # PyGObject accepts these as a "buttons" constructor keyword, but
         # that is a GTK3-era convenience of its own; add them explicitly.
         filechooser.add_buttons(_('_Cancel'), Gtk.ResponseType.REJECT,
@@ -193,7 +194,8 @@ class WatchListDialog(Gtk.Dialog):
 
     def _directory_chosen(self, filechooser: Any, result: int) -> None:
         """ Add the directory the file chooser came back with. """
-        directory = filechooser.get_filename() or ""
+        chosen = filechooser.get_file()
+        directory = (chosen.get_path() if chosen is not None else None) or ""
         filechooser.destroy()
 
         if result == Gtk.ResponseType.ACCEPT \

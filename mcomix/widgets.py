@@ -1,6 +1,6 @@
 """widgets.py - Small helpers for widgets whose API changed in GTK4."""
 
-from gi.repository import Gdk, Gtk
+from gi.repository import Gdk, Gio, Gtk
 
 from typing import Any
 
@@ -38,15 +38,53 @@ def pack(box: Any, child: Any, expand: bool = False, fill: bool = True,
 
 
 def set_border(widget: Any, width: int) -> None:
-    """Put <width> pixels of margin around <widget>.
+    """Put <width> pixels of space around what <widget> holds.
 
     Gtk.Container.set_border_width() is gone in GTK4; the space around a
-    widget is the widget's own margin there.
+    widget is the widget's own margin there.  A window is the exception:
+    its margins fall outside the part of its surface that it paints, so
+    they come out as a transparent strip along the edges rather than as
+    a border - the space has to go around what it holds instead.
     """
+    if isinstance(widget, Gtk.Window):
+        widget = widget.get_child()
+        if widget is None:
+            return
     widget.set_margin_top(width)
     widget.set_margin_bottom(width)
     widget.set_margin_start(width)
     widget.set_margin_end(width)
+
+
+def chooser_paths(chooser: Any) -> list:
+    """The paths of the files selected in <chooser>.
+
+    Gtk.FileChooser.get_filenames() is gone in GTK4; get_files() answers
+    with a Gio.ListModel of Gio.Files instead.
+    """
+    files = chooser.get_files()
+    paths = []
+    for index in range(files.get_n_items()):
+        path = files.get_item(index).get_path()
+        if path is not None:
+            paths.append(path)
+    return paths
+
+
+def chooser_folder(chooser: Any) -> "str | None":
+    """The path of the folder <chooser> is showing, if it is local."""
+    folder = chooser.get_current_folder()
+    return folder.get_path() if folder is not None else None
+
+
+def set_chooser_folder(chooser: Any, path: str) -> None:
+    """Show <path> in <chooser>; GTK4 takes a Gio.File, not a name."""
+    chooser.set_current_folder(Gio.File.new_for_path(path))
+
+
+def set_chooser_file(chooser: Any, path: str) -> None:
+    """Select <path> in <chooser>; set_filename() is gone in GTK4."""
+    chooser.set_file(Gio.File.new_for_path(path))
 
 
 def popup_at(popover: Any, widget: Any, x: float, y: float) -> None:

@@ -50,8 +50,10 @@ class MessageDialog(Gtk.MessageDialog):
         @param secondary: Descriptive text.
         """
         if primary:
-            self.set_markup('<span weight="bold" size="larger">' +
-                primary + '</span>')
+            # Bold and a size larger, which is what GTK3 needed spelling
+            # out: GTK4 gives the primary text of a message dialog that
+            # styling itself, so saying it again made it larger still.
+            self.set_property('text', primary)
         if secondary:
             # format_secondary_markup() is gone in GTK4; the two
             # properties it set are still there.

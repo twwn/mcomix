@@ -21,6 +21,7 @@ class _LibraryFileChooserDialog(file_chooser_base_dialog._BaseFileChooserDialog)
 
         self.filechooser.set_select_multiple(True)
         self.add_archive_filters()
+        self.add_pending_filters()
 
         # Remove 'All files' filter from base class
         filters = self.list_filters()
@@ -40,13 +41,11 @@ class _LibraryFileChooserDialog(file_chooser_base_dialog._BaseFileChooserDialog)
         except Exception:
             self.filechooser.set_filter(filters[0])
 
-        # Remove default buttons and add buttons that make more sense
-        for widget in self.get_action_area().get_children():
-            self.get_action_area().remove(widget)
-
-        self.add_button(_('_Cancel'), Gtk.ResponseType.CANCEL)
-        self.add_button(_('_Add'), Gtk.ResponseType.OK)
-        self.set_default_response(Gtk.ResponseType.OK)
+        # Buttons that make more sense here than Open.  Gtk.Dialog has
+        # no action area to empty in GTK4; place_buttons() puts the row
+        # back wherever it went the first time.
+        self.place_buttons((_('_Cancel'), Gtk.ResponseType.CANCEL,
+                            _('_Add'), Gtk.ResponseType.OK))
 
     def should_open_recursive(self) -> bool:
         return True

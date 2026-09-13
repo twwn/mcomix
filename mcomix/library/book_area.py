@@ -10,6 +10,7 @@ from mcomix import thumbnail_view
 from mcomix import file_chooser_library_dialog
 from mcomix import image_tools
 from mcomix import constants
+from mcomix import preview
 from mcomix import icons
 from mcomix import widgets
 from mcomix import i18n
@@ -435,8 +436,9 @@ class _BookArea(Gtk.ScrolledWindow):
     def _pixbuf_size(self, border_size=_BORDER_SIZE):
         # Don't forget the extra pixels for the border!
         # The ratio (0.67) is just above the normal aspect ratio for books.
-        return (int(0.67 * prefs['library cover size']) + 2 * border_size,
-                prefs['library cover size'] + 2 * border_size)
+        size = preview.scaled(prefs['library cover size'], self)
+        return (int(0.67 * size) + 2 * border_size,
+                size + 2 * border_size)
 
     def _get_pixbuf(self, uid):
         """ Get or create the thumbnail for the selected book <uid>. """

@@ -13,7 +13,8 @@ from mcomix.i18n import _
 class _AboutDialog(Gtk.AboutDialog):
 
     def __init__(self, window):
-        super(_AboutDialog, self).__init__(parent=window)
+        # A GTK4 window is transient for another, not parented to it.
+        super(_AboutDialog, self).__init__(transient_for=window)
 
         self.set_name(constants.APPNAME)
         self.set_program_name(constants.APPNAME)

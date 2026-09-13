@@ -4,6 +4,7 @@ from gi.repository import Gdk, GdkPixbuf, Gio, Gtk
 
 from mcomix.preferences import prefs
 from mcomix import image_tools
+from mcomix import preview
 from mcomix import tools
 from mcomix import thumbnail_view
 
@@ -154,9 +155,19 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
             'foreground-rgba', image_tools.text_color_for_background_color(color))
 
     @property
+    def _thumbnail_size(self):
+        """The size a thumbnail is drawn at on this screen.
+
+        The preference was chosen for the screens MComix was written
+        for, and is small on a tall one; every preview in MComix follows
+        the screen the same way.
+        """
+        return preview.scaled(prefs['thumbnail size'], self)
+
+    @property
     def _pixbuf_size(self):
         # Don't forget the extra pixels for the border!
-        return prefs['thumbnail size'] + 2 * self._BORDER_SIZE
+        return self._thumbnail_size + 2 * self._BORDER_SIZE
 
     def load_thumbnails(self) -> None:
         """Load the thumbnails, if it is appropriate to do so."""
@@ -189,8 +200,9 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
         """ Generate the pixbuf for C{path} at demand. """
         assert isinstance(uid, int)
         page = uid
-        pixbuf = self._window.imagehandler.get_thumbnail(page,
-                prefs['thumbnail size'], prefs['thumbnail size'], nowait=True)
+        size = self._thumbnail_size
+        pixbuf = self._window.imagehandler.get_thumbnail(page, size, size,
+                                                         nowait=True)
         if pixbuf is not None:
             pixbuf = self._window.enhancer.enhance(pixbuf);
             pixbuf = image_tools.add_border(pixbuf, self._BORDER_SIZE)

@@ -14,6 +14,7 @@ from mcomix import edit_comment_area
 from mcomix import widgets
 from mcomix import constants
 from mcomix import message_dialog
+from mcomix import preview
 from mcomix.i18n import _
 
 _dialog = None
@@ -56,7 +57,10 @@ class _EditArchiveDialog(Gtk.Dialog):
         widgets.set_border(self, 4)
         # Gdk.Screen is gone in GTK4; a display has monitors, and a
         # window asks for a size rather than being given one.
-        self.set_default_size(*_fit_on_screen(750, 600))
+        # As large on this screen as 750x600 was on the ones MComix
+        # was written for; the pages inside follow the screen too.
+        self.set_default_size(*_fit_on_screen(preview.scaled(750, self),
+                                              preview.scaled(600, self)))
 
         self.connect('response', self._response)
 

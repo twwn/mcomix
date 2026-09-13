@@ -71,12 +71,14 @@ class EventHandler(object):
         else:
             self._window.lost_focus()
 
-    def resize_event(self, window, _parameter) -> None:
-        """Handle the main window being resized."""
-        size = self._window.get_size()
-        if size != self._window.previous_size:
-            self._window.previous_size = size
-            self._window.draw_image()
+    def resize_event(self, *args) -> None:
+        """Handle the room the pages are drawn in changing size.
+
+        The canvas says so only when it really has changed, so there is
+        nothing left to compare against here.
+        """
+        self._window.previous_size = self._window.get_size()
+        self._window.draw_image()
 
     def window_state_event(self, window, _parameter) -> None:
         is_fullscreen = self._window.is_fullscreen

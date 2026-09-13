@@ -5,6 +5,7 @@ from gi.repository import Gdk, GdkPixbuf, Gio, Gtk
 
 from mcomix import widgets
 from mcomix import image_tools
+from mcomix import preview
 from mcomix import i18n
 from mcomix import thumbnail_tools
 from mcomix import thumbnail_view
@@ -46,7 +47,9 @@ class _ImageArea(Gtk.ScrolledWindow):
         self._iconview.add_controller(keys)
         self.set_child(self._iconview)
 
-        self._thumbnail_size = 128
+        # As every other preview in MComix, as large as this screen
+        # wants it.
+        self._thumbnail_size = preview.scaled(128, self)
         self._thumbnailer = thumbnail_tools.Thumbnailer(store_on_disk=False,
                                                         size=(self._thumbnail_size,
                                                               self._thumbnail_size))
@@ -93,7 +96,12 @@ class _ImageArea(Gtk.ScrolledWindow):
             pass
         pixbuf = self._thumbnailer.thumbnail(path)
         if pixbuf is None:
-            pixbuf = image_tools.missing_image_icon()
+            # The icon that stands in for a page that would not load is
+            # 24 pixels square; on its own in a cell many times that it
+            # looks like the page came out tiny rather than missing.
+            pixbuf = image_tools.fit_in_rectangle(
+                image_tools.missing_image_icon(),
+                self._thumbnail_size, self._thumbnail_size, scale_up=True)
         return pixbuf
 
     def add_extra_image(self, path):

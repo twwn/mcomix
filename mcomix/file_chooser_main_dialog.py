@@ -17,6 +17,7 @@ class _MainFileChooserDialog(file_chooser_base_dialog._BaseFileChooserDialog):
         self.filechooser.set_select_multiple(True)
         self.add_archive_filters()
         self.add_image_filters()
+        self.add_pending_filters()
         filters = self.list_filters()
         try:
             # When setting this to the first filter ("All files"), this

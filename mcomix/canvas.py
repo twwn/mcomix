@@ -1,6 +1,6 @@
 """canvas.py - The scrolling area the pages are laid out on."""
 
-from gi.repository import Gdk, Graphene, Gtk
+from gi.repository import Gdk, GLib, GObject, Graphene, Gtk
 
 
 class PageCanvas(Gtk.Widget):
@@ -16,6 +16,14 @@ class PageCanvas(Gtk.Widget):
     """
 
     __gtype_name__ = 'MComixPageCanvas'
+
+    __gsignals__ = {
+        # The room the pages have to be drawn in has changed.  GTK4 has
+        # no size-allocate signal to watch, and a window's default size
+        # is what it asked for rather than what it was given, so the
+        # canvas says so itself.
+        'resized': (GObject.SignalFlags.RUN_FIRST, None, ()),
+    }
 
     def __init__(self) -> None:
         super(PageCanvas, self).__init__()
@@ -34,6 +42,8 @@ class PageCanvas(Gtk.Widget):
         #: that the value they emit does not ask for another allocation.
         self._allocating = False
         self._pointer = (0, 0)
+        #: The last size announced through 'resized'.
+        self._allocated = (0, 0)
         # A page larger than the window must not be drawn over the rest
         # of it; the scrolling window Gtk.Layout drew into clipped it.
         self.set_overflow(Gtk.Overflow.HIDDEN)
@@ -131,6 +141,11 @@ class PageCanvas(Gtk.Widget):
         return 0, 0, -1, -1
 
     def do_size_allocate(self, width, height, baseline) -> None:
+        if (width, height) != self._allocated:
+            self._allocated = (width, height)
+            # Not from inside the allocation itself: whoever listens is
+            # going to want to lay the pages out again.
+            GLib.idle_add(self._announce_resize)
         self._allocating = True
         try:
             self._configure(self._hadjustment, width, self._size[0])
@@ -147,6 +162,10 @@ class PageCanvas(Gtk.Widget):
             allocation.width = request.width
             allocation.height = request.height
             child.size_allocate(allocation, baseline)
+
+    def _announce_resize(self) -> bool:
+        self.emit('resized')
+        return GLib.SOURCE_REMOVE
 
     @staticmethod
     def _configure(adjustment: Gtk.Adjustment, viewport: int, content: int) -> None:
