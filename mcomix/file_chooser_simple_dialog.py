@@ -11,11 +11,12 @@ class SimpleFileChooserDialog(file_chooser_base_dialog._BaseFileChooserDialog):
     """A simple filechooser dialog that hands the paths it collected to a
     callback. The <action> dictates what type of filechooser dialog we want
     (i.e. save or open). If the type is an open-dialog, we use multiple
-    selection by default.
+    selection by default.  It is transient for <parent>, the window it was
+    opened from, or for the main window if none is given.
     """
 
-    def __init__(self, action=Gtk.FileChooserAction.OPEN):
-        super(SimpleFileChooserDialog, self).__init__(action)
+    def __init__(self, action=Gtk.FileChooserAction.OPEN, parent=None):
+        super(SimpleFileChooserDialog, self).__init__(action, parent)
         if action == Gtk.FileChooserAction.OPEN:
             self.filechooser.set_select_multiple(True)
         self._paths = None

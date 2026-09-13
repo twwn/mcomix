@@ -47,8 +47,13 @@ class ThumbnailViewBase(object):
         """ This function must return the thumbnail for C{uid}. """
         raise NotImplementedError()
 
-    def get_visible_range(self) -> None:
-        """ See L{Gtk.IconView.get_visible_range}. """
+    def get_visible_range(self) -> "tuple[Gtk.TreePath, Gtk.TreePath] | None":
+        """ See L{Gtk.IconView.get_visible_range}.
+
+        The view classes provide this; the pair is the first and the last
+        row on screen, and it is None while nothing has been laid out.
+        PyGObject drops the success flag the C function returns, so what
+        arrives here is the two paths alone rather than a triple. """
         raise NotImplementedError()
 
     def stop_update(self) -> None:

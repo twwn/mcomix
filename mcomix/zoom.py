@@ -165,14 +165,13 @@ class ZoomModel(object):
                     int(prefs['fit to size height other'])]
         result = [None] * len(screen_size)
         if not manual:
-            fixed_size = None
             if fitmode == constants.ZoomMode.WIDTH:
                 axis = constants.PageAxis.WIDTH
             elif fitmode == constants.ZoomMode.HEIGHT:
                 axis = constants.PageAxis.HEIGHT
             else:
                 assert False, 'Cannot map fitmode to axis'
-            result[axis] = fixed_size if fixed_size is not None else screen_size[axis]
+            result[axis] = screen_size[axis]
         return result
 
     @staticmethod
@@ -278,13 +277,11 @@ class ZoomModel(object):
                 d[2] = False # only once per tuple
                 total_axis_size -= 1
                 dirty=True
-        else:
-            # If we are here and total_axis_size < max_size, we could try to
-            # upscale some tuples similarly to the other loop (i.e. smallest
-            # relative volume error first, equal boxes in conjunction with each
-            # other). However, this is not as useful as the other loop, slightly
-            # more complicated and it won't do anything if all tuples are equal.
-            pass
+        # Where the loop leaves total_axis_size below max_size, the tuples
+        # could be upscaled the same way (smallest relative volume error
+        # first, equal boxes in conjunction with each other). That is less
+        # useful than shrinking them, slightly more complicated, and it would
+        # do nothing at all when every tuple is the same size.
         return [d[0] for d in scaling_data]
 
 def _scale_image_size(size, scale):

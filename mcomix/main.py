@@ -22,6 +22,7 @@ from mcomix.preferences import prefs
 from mcomix import ui
 from mcomix import slideshow
 from mcomix import status
+from mcomix import theme
 from mcomix import thumbbar
 from mcomix import clipboard
 from mcomix import pageselect
@@ -41,6 +42,7 @@ from mcomix import log
 from mcomix.transform import Matrix, Transform
 from mcomix.i18n import _
 
+from collections.abc import Sequence
 from typing import Any
 
 
@@ -468,11 +470,12 @@ class MainWindow(Gtk.Window):
             if smartbg or smartthumbbg:
                 bg_colour = self.imagehandler.get_pixbuf_auto_background(pixbuf_count)
             if smartbg:
-                self.set_bg_colour(bg_colour)
+                self.set_bg_colour(bg_colour, dynamic=True)
             if smartthumbbg:
-                self.thumbnailsidebar.change_thumbnail_background_color(bg_colour)
+                self.thumbnailsidebar.change_thumbnail_background_color(
+                    bg_colour, dynamic=True)
 
-            self._main_layout.set_size(*(self.layout.get_union_box().get_size()))
+            self._main_layout.set_content_size(*(self.layout.get_union_box().get_size()))
             for i in range(pixbuf_count):
                 self._main_layout.move(self.images[i],
                     *content_boxes[i].get_position())
@@ -872,7 +875,7 @@ class MainWindow(Gtk.Window):
             i.clear()
         self._show_scrollbars([False] * len(self._scroll))
         self.layout = layout.create_dummy_layout()
-        self._main_layout.set_size(*self.layout.get_union_box().get_size())
+        self._main_layout.set_content_size(*self.layout.get_union_box().get_size())
         self.set_bg_colour(prefs['bg colour'])
 
     def displayed_double(self):
@@ -886,7 +889,7 @@ class MainWindow(Gtk.Window):
         """Return a 2-tuple with the width and height of the visible part
         of the main layout area.
         """
-        dimensions = list(self.get_size())
+        dimensions = list(self.get_window_size())
 
         for preference, action, widget_list in self._toggle_list:
             for widget in widget_list:
@@ -936,11 +939,16 @@ class MainWindow(Gtk.Window):
 
         self.set_title(i18n.to_display_string(title))
 
-    def set_bg_colour(self, colour):
+    def set_bg_colour(self, colour: Sequence[float],
+                      dynamic: bool = False) -> None:
         """Set the background colour to <colour>, a sequence of Gdk.RGBA
         components: red, green, blue and alpha, each between 0 and 1.
+
+        <dynamic> says the colour was read off the page rather than
+        taken from the preference, which is what keeps the pitch black
+        scheme from overruling it.
         """
-        colour = list(colour[:4])
+        colour = list(theme.background(colour, dynamic)[:4])
         self._bg_css_provider.load_from_string(
             '#%s { background-color: %s; }'
             % (self._BG_CSS_NAME, Gdk.RGBA(*colour).to_string()))
@@ -978,18 +986,24 @@ class MainWindow(Gtk.Window):
                     file_name, number=attempt)
                 attempt += 1
 
-            save_dialog = Gtk.FileChooserDialog(_('Save page as'), self,
-                Gtk.FileChooserAction.SAVE,
-                (_('_OK'), Gtk.ResponseType.ACCEPT,
-                _('_Cancel'), Gtk.ResponseType.REJECT)
-            )
+            # GTK4 takes the title, the parent and the buttons the way
+            # every other window does: as properties, and by adding them.
+            save_dialog = Gtk.FileChooserDialog(
+                title=_('Save page as'), transient_for=self,
+                action=Gtk.FileChooserAction.SAVE)
+            save_dialog.add_buttons(_('_OK'), Gtk.ResponseType.ACCEPT,
+                                    _('_Cancel'), Gtk.ResponseType.REJECT)
             save_dialog.set_create_folders(True)
             save_dialog.set_current_name(suggest_name)
             widgets.set_chooser_folder(save_dialog, target_dir)
 
-            def save_responded(dialog: Any, response: int) -> None:
+            # Both pages of a double page get a dialog of their own, and
+            # they stand at the same time: each answer needs the page it
+            # was asked about, not whichever one the loop ended on.
+            def save_responded(dialog: Any, response: int,
+                               file_path: str = file_path) -> None:
                 if response == Gtk.ResponseType.ACCEPT:
-                    chosen = save_dialog.get_file()
+                    chosen = dialog.get_file()
                     target = chosen.get_path() if chosen else None
                     if target:
                         target = i18n.to_unicode(target)
@@ -999,11 +1013,11 @@ class MainWindow(Gtk.Window):
                             log.warning(e)
 
                     prefs['path of last saved in filechooser'] = \
-                        widgets.chooser_folder(save_dialog) \
+                        widgets.chooser_folder(dialog) \
                         if prefs['store last saved in directory'] \
                         else constants.HOME_DIR
 
-                save_dialog.destroy()
+                dialog.destroy()
 
             save_dialog.connect('response', save_responded)
             save_dialog.set_visible(True)
@@ -1101,23 +1115,22 @@ class MainWindow(Gtk.Window):
 
         self.terminate_program()
 
-    def get_size(self) -> tuple[int, int]:
+    def get_window_size(self) -> tuple[int, int]:
         """Return the size of the window.
 
         Gtk.Window.get_size() is not in GTK4.  A window that is on screen
         knows its size as its own allocation; before that, the only size
-        there is is the one it asked for.
+        there is is the one it asked for.  Not get_size() either, which
+        Gtk.Widget defines as one number for one orientation.
         """
         width, height = self.get_width(), self.get_height()
         if width and height:
             return (width, height)
-        return tuple(self.get_default_size())
-
-    def get_window_geometry(self):
-        return self.get_size()
+        default_width, default_height = self.get_default_size()
+        return (default_width, default_height)
 
     def save_window_geometry(self) -> None:
-        width, height = self.get_window_geometry()
+        width, height = self.get_window_size()
         prefs['window width'] = width
         prefs['window height'] = height
         prefs['window maximized'] = self.is_maximized()
@@ -1125,8 +1138,8 @@ class MainWindow(Gtk.Window):
     def restore_window_geometry(self) -> bool:
         # Where the window is is no longer the program's to say: GTK4
         # has no way to place a window, so only its size is remembered.
-        if self.get_window_geometry() == (prefs['window width'],
-                                          prefs['window height']) \
+        if self.get_window_size() == (prefs['window width'],
+                                      prefs['window height']) \
            and self.is_maximized() == prefs['window maximized']:
             return False
 

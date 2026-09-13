@@ -71,7 +71,7 @@ class _BaseFileChooserDialog(Gtk.Dialog):
 
     _last_activated_file = None
 
-    def __init__(self, action=Gtk.FileChooserAction.OPEN):
+    def __init__(self, action=Gtk.FileChooserAction.OPEN, parent=None):
         self._action = action
         self._destroyed = False
 
@@ -85,7 +85,14 @@ class _BaseFileChooserDialog(Gtk.Dialog):
             buttons = (_('_Cancel'), Gtk.ResponseType.CANCEL,
                 _('_Save'), Gtk.ResponseType.OK)
 
-        super(_BaseFileChooserDialog, self).__init__(title=title)
+        if parent is None:
+            # This dialog maps itself at the end of construction, so a
+            # transient parent set afterwards comes too late: GTK warns
+            # about the dialog it mapped without one.
+            from mcomix import main
+            parent = main.main_window()
+        super(_BaseFileChooserDialog, self).__init__(title=title,
+                                                     transient_for=parent)
         #: The buttons, wherever they ended up.
         self._buttons = []
         #: Whether the chooser's filter menu has been moved aside.

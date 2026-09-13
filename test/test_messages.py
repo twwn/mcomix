@@ -8,6 +8,7 @@ string is gone wastes a translator's attention. Both drift in silently,
 because nothing about a stale template shows up when the program runs.
 """
 
+import gettext
 import glob
 import os
 import shutil
@@ -43,6 +44,14 @@ def read_msgids(path):
     return msgids
 
 
+def read_catalogue(path):
+    """What a compiled catalogue translates, without its header."""
+    with open(path, 'rb') as catalogue:
+        translations = dict(gettext.GNUTranslations(catalogue)._catalog)
+    translations.pop('', None)
+    return translations
+
+
 @unittest.skipIf(shutil.which('xgettext') is None, 'xgettext is not installed')
 class TemplateTest(MComixTest):
 
@@ -75,6 +84,28 @@ class TemplateTest(MComixTest):
         self.assertEqual(set(), stale,
                          'strings in mcomix.pot the source no longer marks; '
                          'regenerate it as wiki/content/Maintenance.md says')
+
+    @unittest.skipIf(shutil.which('msgfmt') is None, 'msgfmt is not installed')
+    def test_every_catalogue_is_compiled(self):
+        """The .mo beside each .po says what the .po says.
+
+        gettext reads the .mo and nothing reads the .po, so a
+        translation that was never compiled is not a translation: it is
+        a file saying what the program would have said if anyone had
+        run msgfmt. The header is left out of the comparison, being
+        stamped with the time it was compiled at."""
+        for path in sorted(glob.glob(
+                os.path.join(MESSAGES_PATH, '*', 'LC_MESSAGES', 'mcomix.po'))):
+            name = os.path.relpath(path, constants.BASE_PATH)
+            compiled = path[:-len('.po')] + '.mo'
+            self.assertTrue(os.path.isfile(compiled),
+                            '%s was never compiled' % name)
+            fresh = os.path.join(self.tmp_dir, 'fresh.mo')
+            subprocess.run(['msgfmt', path, '-o', fresh],
+                           check=True, capture_output=True)
+            self.assertEqual(read_catalogue(fresh), read_catalogue(compiled),
+                             '%s is out of step with its catalogue; compile '
+                             'it as wiki/content/Maintenance.md says' % name)
 
     def test_every_catalogue_covers_the_template(self):
         template = read_msgids(TEMPLATE_PATH)

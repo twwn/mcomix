@@ -12,6 +12,7 @@ from mcomix import constants
 from mcomix import message_dialog
 from mcomix import keybindings
 from mcomix import keybindings_editor
+from mcomix import theme
 from mcomix.i18n import _
 
 _dialog = None
@@ -99,6 +100,9 @@ class _PreferencesDialog(Gtk.Dialog):
 
         page.add_row(Gtk.Label(label=_('Language (needs restart):')),
             self._create_language_control())
+
+        page.add_row(Gtk.Label(label=_('Theme:')),
+            self._create_theme_control())
 
         page.add_row(self._create_pref_check_button(
             _('Escape key closes program'), 'escape quits',
@@ -445,6 +449,37 @@ class _PreferencesDialog(Gtk.Dialog):
                 self._language_changed_cb)
 
         return box
+
+    def _create_theme_control(self):
+        """ Creates the ComboBox control for selecting how MComix is painted. """
+        items = ((_('Follow the system'), theme.SYSTEM),
+                 (_('Light'), theme.LIGHT),
+                 (_('Dark'), theme.DARK),
+                 (_('Pitch black'), theme.BLACK))
+
+        box = self._create_combobox(items, prefs['colour scheme'],
+                self._colour_scheme_changed_cb)
+
+        box.set_tooltip_text(
+            _('How MComix itself is painted, whatever the desktop asks for. '
+              'Pitch black is the dark theme with black backgrounds, which a '
+              'screen that lights its pixels one by one shows as no light at '
+              'all.'))
+
+        return box
+
+    def _colour_scheme_changed_cb(self, combobox, *args):
+        """ Called whenever MComix is told to paint itself differently. """
+        model_index = combobox.get_active()
+        if model_index > -1:
+            iter = combobox.get_model().iter_nth_child(None, model_index)
+            prefs['colour scheme'] = combobox.get_model().get_value(iter, 1)
+            theme.apply_colour_scheme()
+            # The page and the thumbnails follow the scheme as well, and
+            # they are painted from a colour rather than from a style.
+            self._window.set_bg_colour(prefs['bg colour'])
+            self._window.thumbnailsidebar.change_thumbnail_background_color(
+                prefs['thumb bg colour'])
 
     def _language_changed_cb(self, combobox, *args):
         """ Called whenever the language was changed. """

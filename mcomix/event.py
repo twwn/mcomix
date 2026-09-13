@@ -77,7 +77,7 @@ class EventHandler(object):
         The canvas says so only when it really has changed, so there is
         nothing left to compare against here.
         """
-        self._window.previous_size = self._window.get_size()
+        self._window.previous_size = self._window.get_window_size()
         self._window.draw_image()
 
     def window_state_event(self, window, _parameter) -> None:
@@ -95,7 +95,7 @@ class EventHandler(object):
                 redraw = not self._window.restore_window_geometry()
             self._window._update_toggles_sensitivity()
             if redraw:
-                self._window.previous_size = self._window.get_size()
+                self._window.previous_size = self._window.get_window_size()
                 self._window.draw_image()
 
 

@@ -189,17 +189,17 @@ class ExternalExecutableArchive(NonUnicodeArchive):
         # for extracting filenames that have been internally mapped.
         self.filenames_initialized = False
 
-    def _get_executable(self) -> None:
+    def _get_executable(self) -> str | None:
         """ Returns the executable's name or path. Return None if no executable
         was found on the system. """
         raise NotImplementedError("Subclasses must override _get_executable.")
 
-    def _get_list_arguments(self) -> None:
+    def _get_list_arguments(self) -> list[str]:
         """ Returns an array of arguments required for the executable
         to produce a list of archive members. """
         raise NotImplementedError("Subclasses must override _get_list_arguments.")
 
-    def _get_extract_arguments(self) -> None:
+    def _get_extract_arguments(self) -> list[str]:
         """ Returns an array of arguments required for the executable
         to extract a file to STDOUT. """
         raise NotImplementedError("Subclasses must override _get_extract_arguments.")

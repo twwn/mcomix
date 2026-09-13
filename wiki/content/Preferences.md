@@ -10,6 +10,7 @@ Appearance tab
 
 Option | Explanation
 -------|------------
+Theme | How MComix itself is painted, whatever colour scheme the desktop asks for. "Follow the system" takes the desktop's answer; "Light" and "Dark" pick one side of whatever theme is in use; "Pitch black" is the dark theme with black backgrounds, which a screen that lights its pixels one by one shows as no light at all. Where [libadwaita](https://gnome.pages.gitlab.gnome.org/libadwaita/) is installed, this is the same choice every other GTK 4 application offers.
 Use static or dynamic background color | The color that will be used as background in the main image window. If "Dynamic background color" is selected, the background color will be computed from the edge colors of the currently displayed page. Comic pages with white border will result in a white background, for example.
 Use static or dynamic thumbnail background color | Same as above, except for the thumbnail sidebar.
 Show page numbers on thumbnails | If this option is enabled, page numbers will be shown next to each thumbnail on the thumbnail sidebar.

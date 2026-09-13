@@ -57,6 +57,13 @@ class MainWindowTest(MComixTest):
             child = child.get_next_sibling()
         return children
 
+    def test_pitch_black_paints_the_page_area_black(self):
+        # Whatever colour the preference holds, or the picture suggests.
+        from mcomix import theme
+        prefs['colour scheme'] = theme.BLACK
+        self.window.set_bg_colour([0.5, 0.5, 0.5, 1.0])
+        self.assertEqual(self.window.get_bg_colour(), [0.0, 0.0, 0.0, 1.0])
+
     def test_the_tool_bar_has_its_buttons(self):
         buttons = [item for item in self._children(self.window.toolbar)
                    if isinstance(item, Gtk.Button)]
@@ -186,6 +193,59 @@ class MainWindowTest(MComixTest):
         self.window.terminate_program()
         self.assertTrue(prefs['hide all'],
                         "quitting turned the user's 'hide all' off")
+
+    def test_the_window_does_not_shadow_the_widget_size_accessor(self):
+        """get_size() on the window is Gtk.Widget's, not MComix' own.
+
+        Gtk.Widget.get_size() takes an orientation and answers with the
+        allocation along it. MComix' accessor takes nothing and answers
+        with a pair, so while it was called get_size() as well the GTK
+        one was unreachable on the window.
+        """
+        self.assertEqual(self.window.get_size(Gtk.Orientation.HORIZONTAL),
+                         self.window.get_width())
+        self.assertEqual(self.window.get_size(Gtk.Orientation.VERTICAL),
+                         self.window.get_height())
+        self.assertEqual(self.window.get_window_size(),
+                         (self.window.get_width(), self.window.get_height()))
+
+    def test_saving_a_page_opens_a_chooser(self):
+        """extract_page() built its dialog the GTK3 way.
+
+        Gtk.FileChooserDialog took a title, a parent and buttons as
+        positional arguments; GTK4 takes properties, so the call raised
+        a TypeError and "Save page as" opened nothing at all.
+
+        What the user picks is left out: GtkFileChooserDialog answers a
+        response of its own making only, and drops one the test emits.
+        """
+        target_dir = os.path.join(constants.DATA_DIR, 'saved')
+        os.makedirs(target_dir, exist_ok=True)
+        prefs['path of last saved in filechooser'] = target_dir
+
+        # There is nothing to save until the page has been extracted.
+        handler = self.window.imagehandler
+        self.assertTrue(
+            wait_for(lambda: handler.get_path_to_page(
+                handler.get_current_page()) is not None),
+            'the first page never arrived')
+
+        self.window.extract_page()
+        self._pump()
+        dialogs = [window for window in Gtk.Window.list_toplevels()
+                   if isinstance(window, Gtk.FileChooserDialog)]
+        self.assertEqual(1, len(dialogs), 'no save dialog was opened')
+        dialog = dialogs[0]
+        try:
+            self.assertIs(dialog.get_transient_for(), self.window)
+            self.assertEqual(dialog.get_current_name(),
+                             '01-ZIP-Normal_01-JPG-Indexed.jpg')
+            self.assertIsNotNone(
+                dialog.get_widget_for_response(Gtk.ResponseType.ACCEPT),
+                'the dialog got no button to confirm with')
+        finally:
+            dialog.destroy()
+            self._pump()
 
     def test_the_window_holds_the_expected_parts(self):
         for part in (self.window.menubar, self.window.toolbar,

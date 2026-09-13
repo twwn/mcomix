@@ -59,11 +59,17 @@ class PageCanvas(Gtk.Widget):
     def get_vadjustment(self) -> Gtk.Adjustment:
         return self._vadjustment
 
-    def get_size(self) -> tuple[int, int]:
-        """Return the size of the canvas, not of what is on screen."""
+    def get_content_size(self) -> tuple[int, int]:
+        """Return the size of the canvas, not of what is on screen.
+
+        Not get_size(): Gtk.Widget has one of its own, which takes an
+        orientation and answers with the allocation along it, so a
+        canvas holding a 5000 pixel wide page would have said 5000 here
+        and its own width there.
+        """
         return self._size
 
-    def set_size(self, width: int, height: int) -> None:
+    def set_content_size(self, width: int, height: int) -> None:
         """Set the size of the canvas, i.e. the range to scroll over."""
         if (width, height) == self._size:
             return

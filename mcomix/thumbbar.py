@@ -3,8 +3,11 @@
 from gi.repository import Gdk, GdkPixbuf, Gio, Gtk
 
 from mcomix.preferences import prefs
+
+from collections.abc import Sequence
 from mcomix import image_tools
 from mcomix import preview
+from mcomix import theme
 from mcomix import tools
 from mcomix import thumbnail_view
 
@@ -140,15 +143,18 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
         preview.draw_cells_at(self._treeview, self._pixbuf_size)
         self.load_thumbnails()
 
-    def change_thumbnail_background_color(self, colour):
+    def change_thumbnail_background_color(
+            self, colour: Sequence[float], dynamic: bool = False) -> None:
         """ Changes the background color of the thumbnail bar. """
 
-        self.set_thumbnail_background(colour)
+        self.set_thumbnail_background(colour, dynamic)
         # Force a redraw of the widget.
         self._treeview.queue_draw()
 
-    def set_thumbnail_background(self, color):
+    def set_thumbnail_background(self, color: Sequence[float],
+                                 dynamic: bool = False) -> None:
 
+        color = theme.background(color, dynamic)
         rgba = Gdk.RGBA(*color)
         self._pixbuf_cellrenderer.set_property('cell-background-rgba', rgba)
         self._text_cellrenderer.set_property('background-rgba', rgba)

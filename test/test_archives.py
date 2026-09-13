@@ -579,6 +579,42 @@ if 'win32' == sys.platform:
         ('RarExternalSolidUnicode', 'test_extract'      ),
     ])
 
+class ExternalExecutableContractTest(MComixTest):
+
+    """The base class builds a command line out of what these return.
+
+    iter_contents() and extract() spell it as
+    [executable] + arguments + [archive], so the arguments have to
+    arrive as a list: a bare string would be concatenated character by
+    character, and anything else raises TypeError. The base class
+    declared all three of the methods that produce them as returning
+    None, which said neither.
+    """
+
+    HANDLERS = (lha_external.LhaArchive, rar_external.RarArchive,
+                sevenzip_external.SevenZipArchive, zip_external.ZipArchive)
+
+    def _handler(self, klass):
+        # Nothing here reads the archive; it only has to be a path.
+        return klass(get_testfile_path('archives', '01-ZIP-Normal.zip'))
+
+    def test_an_executable_is_named_or_reported_missing(self):
+        for klass in self.HANDLERS:
+            executable = self._handler(klass)._get_executable()
+            self.assertTrue(executable is None or isinstance(executable, str),
+                            '%s named %r as its executable'
+                            % (klass.__name__, executable))
+
+    def test_the_arguments_are_lists_a_command_can_be_built_from(self):
+        for klass in self.HANDLERS:
+            handler = self._handler(klass)
+            for name in ('_get_list_arguments', '_get_extract_arguments'):
+                arguments = getattr(handler, name)()
+                self.assertIsInstance(
+                    arguments, list,
+                    '%s.%s() returned %r' % (klass.__name__, name, arguments))
+
+
 def _expect_failure(klass, attr):
     """ Mark the C{attr} test of C{klass} as an expected failure.
 

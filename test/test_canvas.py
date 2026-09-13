@@ -79,18 +79,32 @@ class PageCanvasTest(MComixTest):
     def test_the_canvas_asks_for_no_room_of_its_own(self):
         # Gtk.Layout requested nothing, so that the window is sized by
         # what is around the pages rather than by the pages.
-        self.canvas.set_size(*self.CONTENT)
+        self.canvas.set_content_size(*self.CONTENT)
         self.assertEqual(self.canvas.measure(Gtk.Orientation.HORIZONTAL, -1)[:2],
                          (0, 0))
         self.assertEqual(self.canvas.measure(Gtk.Orientation.VERTICAL, -1)[:2],
                          (0, 0))
 
     def test_the_size_is_what_was_set(self):
-        self.canvas.set_size(*self.CONTENT)
-        self.assertEqual(self.canvas.get_size(), self.CONTENT)
+        self.canvas.set_content_size(*self.CONTENT)
+        self.assertEqual(self.canvas.get_content_size(), self.CONTENT)
+
+    def test_the_canvas_does_not_shadow_the_widget_size_accessor(self):
+        # Gtk.Widget.get_size() answers with the allocation along one
+        # orientation. The canvas' own accessor answers with the extent
+        # that is scrolled over, which is a different number of a
+        # different shape, so it may not be called get_size() too.
+        self.canvas.set_content_size(*self.CONTENT)
+        self._settle()
+        self.assertEqual(self.canvas.get_size(Gtk.Orientation.HORIZONTAL),
+                         self.canvas.get_width())
+        self.assertEqual(self.canvas.get_size(Gtk.Orientation.VERTICAL),
+                         self.canvas.get_height())
+        self.assertNotEqual(self.canvas.get_content_size(),
+                            (self.canvas.get_width(), self.canvas.get_height()))
 
     def test_the_adjustments_range_over_the_canvas(self):
-        self.canvas.set_size(*self.CONTENT)
+        self.canvas.set_content_size(*self.CONTENT)
         self._settle()
         for adjustment, content, viewport in (
                 (self.canvas.get_hadjustment(), self.CONTENT[0],
@@ -102,14 +116,14 @@ class PageCanvasTest(MComixTest):
             self.assertEqual(adjustment.get_page_size(), viewport)
 
     def test_a_canvas_smaller_than_the_window_has_nothing_to_scroll(self):
-        self.canvas.set_size(1, 1)
+        self.canvas.set_content_size(1, 1)
         self._settle()
         adjustment = self.canvas.get_hadjustment()
         self.assertEqual(adjustment.get_upper(), self.canvas.get_width())
         self.assertEqual(adjustment.get_page_size(), self.canvas.get_width())
 
     def test_scrolling_moves_the_children(self):
-        self.canvas.set_size(*self.CONTENT)
+        self.canvas.set_content_size(*self.CONTENT)
         self.canvas.put(self.children[0], 200, 300)
         self._settle()
         self.canvas.get_hadjustment().set_value(150)
@@ -118,7 +132,7 @@ class PageCanvasTest(MComixTest):
         self.assertEqual(self._position(self.children[0]), (50, 220))
 
     def test_scrolling_stops_at_the_edge(self):
-        self.canvas.set_size(*self.CONTENT)
+        self.canvas.set_content_size(*self.CONTENT)
         self._settle()
         adjustment = self.canvas.get_hadjustment()
         adjustment.set_value(self.CONTENT[0] * 2)

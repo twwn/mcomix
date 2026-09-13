@@ -44,6 +44,20 @@ class FileChooserTest(MComixTest):
         self.assertEqual(self.dialog.get_margin_top(), 0)
         self.assertEqual(self.dialog.get_margin_end(), 0)
 
+    def test_the_dialog_has_a_transient_parent(self):
+        # It shows itself as it is built, so a parent set by the caller
+        # afterwards arrived after the mapping GTK warns about.
+        self.assertIs(self.dialog.get_transient_for(), self.window)
+
+    def test_a_chooser_with_no_parent_takes_the_main_window(self):
+        from mcomix import file_chooser_simple_dialog
+        dialog = file_chooser_simple_dialog.SimpleFileChooserDialog()
+        try:
+            self.assertIs(dialog.get_transient_for(), self.window)
+        finally:
+            dialog.destroy()
+            pump()
+
     def test_the_preview_keeps_one_size(self):
         # It scaled whatever it was given to whatever room it had, so a
         # thumbnail came out blurred and moved with the dialog.

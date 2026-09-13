@@ -40,6 +40,10 @@ fileformats = [
 dev = [
   # For running tests
   "pytest",
+  # The suite is safe to shard and takes about a third as long with -n 8;
+  # it is not in test/pytest.ini's addopts, because a serial run is what a
+  # failure has to be reproduced under before it counts.
+  "pytest-xdist",
   # For building Windows package
   "pyinstaller; os_name == 'nt'",
   # For creating source package

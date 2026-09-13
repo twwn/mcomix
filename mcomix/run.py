@@ -14,7 +14,6 @@ if __name__ == '__main__':
 from mcomix import (
     constants,
     log,
-    portability,
     preferences,
 )
 from mcomix.version_tools import Version
@@ -174,7 +173,7 @@ def run() -> None:
 
     setup_dependencies()
 
-    from gi.repository import GLib, Gtk
+    from gi.repository import GLib
 
     if not os.path.exists(constants.DATA_DIR):
         os.makedirs(constants.DATA_DIR, 0o700)
@@ -182,11 +181,13 @@ def run() -> None:
     if not os.path.exists(constants.CONFIG_DIR):
         os.makedirs(constants.CONFIG_DIR, 0o700)
 
+    # Before any widget is built: libadwaita restyles what already
+    # exists, but only what it was started before.
+    from mcomix import theme
+    theme.follow_theme()
+
     from mcomix import icons
     icons.load_icons()
-
-    from mcomix import theme
-    theme.follow_palette()
 
     open_path = None
     # 0 leaves the choice of page to the file handler: the first one, or
@@ -208,17 +209,6 @@ def run() -> None:
     # Gdk.set_program_class() is gone in GTK4; the program name is what
     # the class is taken from now, and it is already being set.
     GLib.set_prgname(constants.APPNAME)
-
-    settings = Gtk.Settings.get_default()
-    if settings:
-        # There was a gtk-menu-images here, turning on the icons that
-        # menu items used to be able to carry.  GTK4 has neither the
-        # setting nor the icons: a menu is built from a model, and a
-        # model item is a label and an action.
-
-        # Prefer dark theme if system theme mode is set to dark
-        if portability.is_system_ui_dark_themed() == constants.SystemThemeLightness.DARK:
-            settings.set_property('gtk-application-prefer-dark-theme', True)
 
     from mcomix import main
     window = main.MainWindow(fullscreen = opts.fullscreen, is_slideshow = opts.slideshow,

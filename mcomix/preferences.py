@@ -59,6 +59,7 @@ prefs = {
     'double step in double page mode': True,
     'show page numbers on thumbnails': True,
     'thumbnail size': 80,
+    'colour scheme': 'system',
     'create thumbnails': True,
     'number of pixels to scroll per key event': 50,
     'number of pixels to scroll per mouse wheel event': 50,
