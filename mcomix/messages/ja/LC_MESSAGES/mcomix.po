@@ -2704,6 +2704,100 @@ msgstr ""
 "編集した書庫を、読み込んだ形式に応じて ZIP、tar、7z、RAR のいずれかで書き戻します。後の 2 つには 7z と rar "
 "のプログラムが必要ですが、MComix はそれらをインストールしません。書き出せない形式は ZIP として保存されます。"
 
+#: mcomix/ui.py:433
+msgid "_Delete page"
+msgstr "ページを削除(_D)"
+
+#: mcomix/ui.py:434
+msgid ""
+"Removes the page the menu was opened over from the book. The archive on "
+"disk is not changed until it is saved."
+msgstr "メニューを開いたページを本から取り除きます。ディスク上の書庫は保存するまで変更されません。"
+
+#: mcomix/ui.py:436
+msgid "_Undo"
+msgstr "元に戻す(_U)"
+
+#: mcomix/ui.py:437
+msgid "Takes back the last page removed from the book."
+msgstr "本から最後に取り除いたページを戻します。"
+
+#: mcomix/ui.py:439
+msgid "_Redo"
+msgstr "やり直す(_R)"
+
+#: mcomix/ui.py:440
+msgid "Removes again the page the last undo brought back."
+msgstr "直前の取り消しで戻したページを、もう一度取り除きます。"
+
+#: mcomix/keybindings.py:131
+msgid "Undo"
+msgstr "元に戻す"
+
+#: mcomix/keybindings.py:132
+msgid "Redo"
+msgstr "やり直す"
+
+#: mcomix/keybindings.py:131
+msgid "Edit"
+msgstr "編集"
+
+#: mcomix/main.py:1244
+#, python-format
+msgid "Write \"%s\" again now?"
+msgstr "「%s」を今すぐ書き直しますか？"
+
+#: mcomix/main.py:1245
+msgid ""
+"The archive on disk will be replaced by the book as it stands, without "
+"the pages that were removed."
+msgstr "ディスク上の書庫が、取り除いたページを除いた現在の本で置き換えられます。"
+
+#: mcomix/main.py:1247
+msgid "_Not now"
+msgstr "今はしない(_N)"
+
+#: mcomix/message_dialog.py:84
+msgid "Removing a page from the book being read:"
+msgstr "読んでいる本からページを取り除いたとき:"
+
+#: mcomix/message_dialog.py:85
+msgid "Write the archive again at once"
+msgstr "すぐに書庫を書き直す"
+
+#: mcomix/message_dialog.py:86
+msgid "Leave the archive as it is"
+msgstr "書庫をそのままにする"
+
+#: mcomix/main.py:756
+#, python-format
+msgid "Remove the page picked out of \"%s\"?"
+msgid_plural "Remove the pages picked out of \"%s\"?"
+msgstr[0] "選んだページを「%s」から取り除きますか？"
+
+#: mcomix/main.py:760
+msgid ""
+"They are taken out of the archive on disk, which is written again at "
+"once. Leaving the book without removing them forgets which pages they "
+"were."
+msgstr "ディスク上の書庫から取り除かれ、書庫はすぐに書き直されます。取り除かずに本を離れると、どのページだったかは忘れられます。"
+
+#: mcomix/main.py:763
+msgid "_Keep them"
+msgstr "残す(_K)"
+
+#: mcomix/message_dialog.py:89
+msgid "Leaving a book with pages still picked out:"
+msgstr "ページを選んだまま本を離れたとき:"
+
+#: mcomix/message_dialog.py:90
+msgid "Remove them and write the archive"
+msgstr "取り除いて書庫を書き直す"
+
+#: mcomix/message_dialog.py:91
+msgid "Leave the book as it is"
+msgstr "本をそのままにする"
+
 #~ msgid "Search"
 #~ msgstr "検索"
 

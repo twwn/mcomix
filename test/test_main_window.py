@@ -7,7 +7,9 @@ real window, which is where a whole class of start-up regressions hides.
 import os
 import shutil
 import threading
+import zipfile
 import time
+import unittest.mock
 import warnings
 
 from gi.repository import Gdk, Gio, Gtk
@@ -21,6 +23,7 @@ from mcomix import icons
 from mcomix import image_tools
 from mcomix import main
 from mcomix import message_dialog
+from mcomix.dialog import Response
 from mcomix.preferences import prefs
 
 
@@ -368,6 +371,434 @@ class MainWindowTest(MComixTest):
         self.assertIn('win.extract-page-popup',
                       self._menu_actions(self.window.uimanager.popup
                                          .get_menu_model()))
+
+    # -- Picking a page out, and deleting it ------------------------------
+
+    def _pages(self):
+        return list(self.window.imagehandler._image_files or [])
+
+    def _quietly(self):
+        """Delete a page without the prompt that offers to save."""
+        return unittest.mock.patch.object(self.window, 'offer_to_save')
+
+    def _ready(self):
+        """Wait until the book has been listed, and say what it holds."""
+        self.assertTrue(
+            wait_for(lambda: self.window.imagehandler
+                     .get_number_of_pages() > 2, seconds=20),
+            'the fixture archive never listed its pages')
+        return self._pages()
+
+    def _selected_images(self):
+        """The page widgets drawn with the picked-out outline."""
+        return [index for index, image in enumerate(self.window.images)
+                if image.has_css_class(self.window._SELECTED_CLASS)]
+
+    def test_no_page_is_picked_out_to_begin_with(self):
+        self.assertEqual(self.window.selected_pages, set())
+        self.assertEqual(self._selected_images(), [])
+
+    def test_picking_a_page_out_outlines_the_widget_showing_it(self):
+        self._ready()
+        self.window.select_page(1)
+        self.assertEqual(self.window.selected_pages, {1})
+        self.assertEqual(self._selected_images(), [0])
+
+    def test_picking_out_the_page_already_picked_out_puts_it_back(self):
+        """The way out of a selection made by mistake."""
+        self._ready()
+        self.window.select_page(1)
+        self.window.select_page(1)
+        self.assertEqual(self.window.selected_pages, set())
+        self.assertEqual(self._selected_images(), [])
+
+    def test_a_page_that_is_not_there_is_not_picked_out(self):
+        self.window.select_page(999)
+        self.assertEqual(self.window.selected_pages, set())
+
+    def test_more_than_one_page_can_be_picked_out(self):
+        """The point of picking pages out while reading is to gather
+        them up and deal with them together at the end."""
+        self._ready()
+        self.window.select_page(1)
+        self.window.select_page(3)
+        self.assertEqual(self.window.selected_pages, {1, 3})
+
+    def test_turning_the_page_keeps_the_pages_picked_out(self):
+        """Pages are picked out as they go by and dealt with at the end
+        of the book, so a page turn cannot be what forgets them."""
+        self._ready()
+        self.window.select_page(1)
+        self.window.set_page(2)
+        self._pump()
+        self.assertEqual(self.window.selected_pages, {1})
+        self.assertEqual(self._selected_images(), [],
+                         'a page not on screen was outlined')
+        self.window.set_page(1)
+        self._pump()
+        self.assertEqual(self._selected_images(), [0],
+                         'the page came back without its outline')
+
+    def test_closing_the_book_puts_every_picked_out_page_back(self):
+        self._ready()
+        self.window.select_page(1)
+        self.window.filehandler.close_file()
+        self._pump()
+        self.assertEqual(self.window.selected_pages, set())
+
+    class _Click:
+
+        """What a Gtk.GestureClick tells a handler about a click.
+
+        The two handlers ask a gesture for the button and the modifiers
+        and nothing else, and a Gdk.Event cannot be built from Python to
+        give a real one.
+        """
+
+        def __init__(self, button, state=0):
+            self._button = button
+            self._state = state
+
+        def get_current_button(self):
+            return self._button
+
+        def get_current_event_state(self):
+            return self._state
+
+        def get_widget(self):
+            return None
+
+    def _click(self, state=0):
+        """Click the middle of the first page, and say where that was."""
+        boxes = self.window.layout.get_content_boxes()
+        self.assertTrue(boxes, 'no page was laid out to click on')
+        (left, top), (wide, high) = boxes[0].get_position(), boxes[0].get_size()
+        x, y = left + wide / 2, top + high / 2
+        # A click into a window that had lost the focus raises it rather
+        # than reaching the page, and every test window shares one
+        # display: whichever of them the display last gave the focus to,
+        # this one is being clicked on purpose.
+        self.window.was_out_of_focus = False
+        handler = self.window._event_handler
+        handler.mouse_press_event(self._Click(1), 1, x, y)
+        handler.mouse_release_event(self._Click(1, state), 1, x, y)
+        self._pump()
+
+    def test_a_plain_click_turns_the_page_as_it_always_did(self):
+        self._ready()
+        self._click()
+        self.assertEqual(self.window.imagehandler.get_current_page(), 2)
+        self.assertEqual(self.window.selected_pages, set())
+
+    def test_control_and_a_click_picks_the_page_out_instead(self):
+        """A plain click is how a book is read, so it cannot be the
+        gesture that stops on a page as well."""
+        self._ready()
+        self._click(Gdk.ModifierType.CONTROL_MASK)
+        self.assertEqual(self.window.selected_pages, {1})
+        self.assertEqual(self.window.imagehandler.get_current_page(), 1,
+                         'the page was turned as well as picked out')
+        self.assertEqual(self._selected_images(), [0])
+
+    def test_control_and_a_click_on_the_page_again_puts_it_back(self):
+        self._ready()
+        self._click(Gdk.ModifierType.CONTROL_MASK)
+        self._click(Gdk.ModifierType.CONTROL_MASK)
+        self.assertEqual(self.window.selected_pages, set())
+
+    def test_deleting_a_page_takes_it_out_of_the_book(self):
+        before = self._ready()
+        self.window.select_page(2)
+        with self._quietly():
+            self.assertTrue(self.window.delete_page())
+        self._pump()
+        self.assertEqual(self._pages(), before[:1] + before[2:])
+        self.assertEqual(self.window.selected_pages, set(),
+                         'the page that is gone was left picked out')
+
+    def test_deleting_takes_out_every_page_that_is_picked_out(self):
+        before = self._ready()
+        self.assertGreater(len(before), 3, 'the fixture has too few pages')
+        self.window.select_page(1)
+        self.window.select_page(3)
+        with self._quietly():
+            self.assertTrue(self.window.delete_page())
+        self._pump()
+        self.assertEqual(self._pages(), [before[1]] + before[3:])
+
+    def test_the_pages_still_picked_out_move_up_with_the_book(self):
+        """Removing a page moves every page after it up, and a number
+        remembered against the old listing would name another page."""
+        before = self._ready()
+        self.window.select_page(1)
+        self.window.select_page(3)
+        with self._quietly():
+            self.window.delete_page(2)
+        self._pump()
+        self.assertEqual(self._pages(), before[:1] + before[2:])
+        self.assertEqual(self.window.selected_pages, {1, 2})
+        self.assertEqual(self.window.selected_page_paths(),
+                         [before[0], before[2]])
+
+    def test_deleting_a_page_can_be_taken_back(self):
+        before = self._ready()
+        self.window.select_page(2)
+        with self._quietly():
+            self.window.delete_page()
+        self._pump()
+        self.assertTrue(self.window.undo())
+        self._pump()
+        self.assertEqual(self._pages(), before)
+        self.assertTrue(self.window.redo())
+        self._pump()
+        self.assertEqual(self._pages(), before[:1] + before[2:])
+
+    def test_there_is_nothing_to_take_back_before_a_page_goes(self):
+        self.assertFalse(self.window.can_undo())
+        self.assertFalse(self.window.can_redo())
+        self.assertFalse(self.window.undo())
+        self.assertFalse(self.window.redo())
+
+    def test_a_deletion_after_an_undo_leaves_nothing_to_redo(self):
+        self._ready()
+        with self._quietly():
+            self.window.select_page(1)
+            self.window.delete_page()
+            self._pump()
+            self.window.undo()
+            self._pump()
+            self.window.select_page(2)
+            self.window.delete_page()
+        self._pump()
+        self.assertFalse(self.window.can_redo())
+
+    def test_the_last_page_of_a_book_is_not_deleted(self):
+        """A book with no pages in it is not a book, and the editor
+        leaves one standing too."""
+        handler = self.window.imagehandler
+        self.window.pages_replaced(self._ready()[:1])
+        self._pump()
+        self.assertEqual(handler.get_number_of_pages(), 1)
+        self.window.select_page(1)
+        with self._quietly():
+            self.assertFalse(self.window.delete_page())
+        self.assertEqual(handler.get_number_of_pages(), 1)
+
+    def test_delete_removes_the_picked_out_page_rather_than_the_file(self):
+        """Delete acts on a selection wherever there is one; with
+        nothing picked out it still asks to remove the file."""
+        before = self._ready()
+        self.window.select_page(1)
+        with self._quietly():
+            self.window.delete()
+        self._pump()
+        self.assertEqual(self._pages(), before[1:])
+        self.assertEqual(self._delete_dialogs(), [],
+                         'it asked about the file as well')
+
+    def _delete_dialogs(self):
+        return [window for window in Gtk.Window.list_toplevels()
+                if isinstance(window, message_dialog.MessageDialog)
+                and window.get_transient_for() is self.window]
+
+    # -- Writing the book back over its archive ---------------------------
+
+    def _save_prompts(self):
+        return [window for window in self._delete_dialogs()
+                if window.dialog_id == message_dialog.RememberedDialog
+                .SAVE_EDITED_ARCHIVE]
+
+    def test_removing_a_page_asks_whether_to_write_the_archive_again(self):
+        self._ready()
+        self.window.select_page(2)
+        self.window.delete_page()
+        self._pump()
+        try:
+            self.assertEqual(len(self._save_prompts()), 1,
+                             'nothing offered to save the archive')
+        finally:
+            for dialog in self._save_prompts():
+                dialog.destroy()
+            self._pump()
+
+    def test_the_prompt_defaults_to_leaving_the_archive_alone(self):
+        """Enter must not overwrite an archive."""
+        self._ready()
+        self.window.select_page(2)
+        self.window.delete_page()
+        self._pump()
+        try:
+            prompt = self._save_prompts()[0]
+            self.assertIs(prompt.get_default_widget(),
+                          prompt.get_widget_for_response(Response.NO))
+        finally:
+            for dialog in self._save_prompts():
+                dialog.destroy()
+            self._pump()
+
+    def test_a_book_in_a_format_that_cannot_be_written_is_not_offered(self):
+        """Writing in place keeps the name the file has, so it has to
+        keep the format that name says."""
+        self._ready()
+        with unittest.mock.patch.object(self.window.filehandler,
+                                        'archive_type', constants.LHA):
+            self.assertIsNone(self.window.writeable_archive_type())
+            self.assertFalse(self.window.save_archive())
+            self.window.select_page(2)
+            self.window.delete_page()
+            self._pump()
+        self.assertEqual(self._save_prompts(), [],
+                         'it offered to write a format it cannot write')
+
+    def test_a_format_other_than_zip_needs_the_preference(self):
+        """A save that kept the name and changed the format would put a
+        ZIP inside a file still called .cbt."""
+        self._ready()
+        with unittest.mock.patch.object(self.window.filehandler,
+                                        'archive_type', constants.TAR):
+            prefs['keep archive format when saving'] = False
+            self.assertIsNone(self.window.writeable_archive_type())
+            prefs['keep archive format when saving'] = True
+            self.assertEqual(self.window.writeable_archive_type(),
+                             constants.TAR)
+
+    def test_saving_writes_the_book_over_the_archive_it_came_from(self):
+        source = os.path.join(self.tmp_dir, 'Book.cbz')
+        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), source)
+        self.window.filehandler.open_file(source)
+        self.assertTrue(
+            wait_for(lambda: self.window.imagehandler
+                     .get_number_of_pages() > 2, seconds=20),
+            'the copied archive never listed its pages')
+        before = self.window.imagehandler.get_number_of_pages()
+        mode = os.stat(source).st_mode
+
+        self.window.select_page(1)
+        with self._quietly():
+            self.window.delete_page()
+        self._pump()
+        self.assertTrue(self.window.save_archive(), 'the save failed')
+
+        with zipfile.ZipFile(source) as written:
+            pages = [name for name in written.namelist()
+                     if not name.endswith('.txt')]
+        self.assertEqual(len(pages), before - 1,
+                         'the archive on disk still holds the page')
+        self.assertEqual(os.stat(source).st_mode, mode,
+                         'the archive came back with different permissions')
+
+    # -- Leaving a book with pages still picked out -----------------------
+
+    def _leaving_prompts(self):
+        return [window for window in self._delete_dialogs()
+                if window.dialog_id == message_dialog.RememberedDialog
+                .REMOVE_PICKED_OUT_PAGES]
+
+    def _close_prompts(self):
+        for dialog in self._delete_prompts_open():
+            dialog.destroy()
+        self._pump()
+
+    def _delete_prompts_open(self):
+        return self._leaving_prompts() + self._save_prompts()
+
+    def test_leaving_a_book_offers_to_remove_the_pages_picked_out(self):
+        """Pages are picked out as a book goes by so that they can be
+        dealt with together, and the end of the book is where that is."""
+        self._ready()
+        self.window.select_page(1)
+        opened = []
+        self.window._leaving_book(lambda: opened.append(True))
+        self._pump()
+        try:
+            self.assertEqual(len(self._leaving_prompts()), 1,
+                             'nothing offered to remove the pages')
+            self.assertEqual(opened, [],
+                             'it went on to the next book before answering')
+        finally:
+            self._close_prompts()
+
+    def test_leaving_with_nothing_picked_out_asks_nothing(self):
+        self._ready()
+        opened = []
+        self.window._leaving_book(lambda: opened.append(True))
+        self._pump()
+        self.assertEqual(self._leaving_prompts(), [])
+        self.assertEqual(opened, [True], 'it did not go on to the next book')
+
+    def test_leaving_a_book_that_cannot_be_written_asks_nothing(self):
+        """An offer to remove pages that could then not be saved would
+        take the book apart for nothing."""
+        self._ready()
+        self.window.select_page(1)
+        opened = []
+        with unittest.mock.patch.object(self.window.filehandler,
+                                        'archive_type', constants.LHA):
+            self.window._leaving_book(lambda: opened.append(True))
+            self._pump()
+        self.assertEqual(self._leaving_prompts(), [])
+        self.assertEqual(opened, [True])
+
+    def test_the_leaving_prompt_defaults_to_keeping_the_pages(self):
+        """Enter must not take pages out of an archive."""
+        self._ready()
+        self.window.select_page(1)
+        self.window._leaving_book(lambda: None)
+        self._pump()
+        try:
+            prompt = self._leaving_prompts()[0]
+            self.assertIs(prompt.get_default_widget(),
+                          prompt.get_widget_for_response(Response.NO))
+        finally:
+            self._close_prompts()
+
+    def test_keeping_them_leaves_the_book_as_it_was(self):
+        before = self._ready()
+        self.window.select_page(1)
+        opened = []
+        self.window._leaving_answered(Response.NO, lambda: opened.append(True))
+        self._pump()
+        self.assertEqual(self._pages(), before)
+        self.assertEqual(opened, [True])
+
+    def test_removing_them_takes_them_out_and_writes_the_archive(self):
+        source = os.path.join(self.tmp_dir, 'Book.cbz')
+        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), source)
+        self.window.filehandler.open_file(source)
+        self.assertTrue(
+            wait_for(lambda: self.window.imagehandler
+                     .get_number_of_pages() > 2, seconds=20),
+            'the copied archive never listed its pages')
+        before = self.window.imagehandler.get_number_of_pages()
+
+        self.window.select_page(1)
+        self.window.select_page(2)
+        opened = []
+        self.window._leaving_answered(Response.YES,
+                                      lambda: opened.append(True))
+        self._pump()
+
+        self.assertEqual(self.window.imagehandler.get_number_of_pages(),
+                         before - 2)
+        with zipfile.ZipFile(source) as written:
+            pages = [name for name in written.namelist()
+                     if not name.endswith('.txt')]
+        self.assertEqual(len(pages), before - 2,
+                         'the archive on disk still holds the pages')
+        self.assertEqual(opened, [True], 'it did not go on to the next book')
+
+    def test_the_right_click_menu_offers_to_delete_a_page(self):
+        self.assertIn('win.delete-page-popup',
+                      self._menu_actions(self.window.uimanager.popup
+                                         .get_menu_model()))
+
+    def test_the_right_click_menu_deletes_the_page_it_was_opened_over(self):
+        before = self._ready()
+        self.window.popup_page = 2
+        with self._quietly():
+            self.window.delete_popup_page()
+        self._pump()
+        self.assertEqual(self._pages(), before[:1] + before[2:])
 
     def test_the_right_click_menu_offers_the_archive_editor(self):
         """The editor was on the Edit menu and nowhere else, so a reader

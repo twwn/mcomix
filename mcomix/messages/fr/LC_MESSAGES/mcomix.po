@@ -2744,6 +2744,108 @@ msgstr ""
 "que MComix n'installe pas ; un format qu'il ne peut pas écrire est "
 "enregistré en ZIP."
 
+#: mcomix/ui.py:433
+msgid "_Delete page"
+msgstr "_Supprimer la page"
+
+#: mcomix/ui.py:434
+msgid ""
+"Removes the page the menu was opened over from the book. The archive on "
+"disk is not changed until it is saved."
+msgstr ""
+"Retire du livre la page sur laquelle le menu a été ouvert. L'archive sur "
+"le disque n'est pas modifiée tant qu'elle n'est pas enregistrée."
+
+#: mcomix/ui.py:436
+msgid "_Undo"
+msgstr "Ann_uler"
+
+#: mcomix/ui.py:437
+msgid "Takes back the last page removed from the book."
+msgstr "Récupère la dernière page retirée du livre."
+
+#: mcomix/ui.py:439
+msgid "_Redo"
+msgstr "_Rétablir"
+
+#: mcomix/ui.py:440
+msgid "Removes again the page the last undo brought back."
+msgstr "Retire de nouveau la page que la dernière annulation avait récupérée."
+
+#: mcomix/keybindings.py:131
+msgid "Undo"
+msgstr "Annuler"
+
+#: mcomix/keybindings.py:132
+msgid "Redo"
+msgstr "Rétablir"
+
+#: mcomix/keybindings.py:131
+msgid "Edit"
+msgstr "Édition"
+
+#: mcomix/main.py:1244
+#, python-format
+msgid "Write \"%s\" again now?"
+msgstr "Réécrire « %s » maintenant ?"
+
+#: mcomix/main.py:1245
+msgid ""
+"The archive on disk will be replaced by the book as it stands, without "
+"the pages that were removed."
+msgstr ""
+"L'archive sur le disque sera remplacée par le livre tel qu'il est, sans "
+"les pages retirées."
+
+#: mcomix/main.py:1247
+msgid "_Not now"
+msgstr "Pas _maintenant"
+
+#: mcomix/message_dialog.py:84
+msgid "Removing a page from the book being read:"
+msgstr "Lors du retrait d'une page du livre en cours de lecture :"
+
+#: mcomix/message_dialog.py:85
+msgid "Write the archive again at once"
+msgstr "Réécrire l'archive aussitôt"
+
+#: mcomix/message_dialog.py:86
+msgid "Leave the archive as it is"
+msgstr "Laisser l'archive telle quelle"
+
+#: mcomix/main.py:756
+#, python-format
+msgid "Remove the page picked out of \"%s\"?"
+msgid_plural "Remove the pages picked out of \"%s\"?"
+msgstr[0] "Retirer la page sélectionnée de « %s » ?"
+msgstr[1] "Retirer les pages sélectionnées de « %s » ?"
+
+#: mcomix/main.py:760
+msgid ""
+"They are taken out of the archive on disk, which is written again at "
+"once. Leaving the book without removing them forgets which pages they "
+"were."
+msgstr ""
+"Elles sont retirées de l'archive sur le disque, qui est réécrite "
+"aussitôt. Quitter le livre sans les retirer fait oublier de quelles pages "
+"il s'agissait."
+
+#: mcomix/main.py:763
+msgid "_Keep them"
+msgstr "Les _garder"
+
+#: mcomix/message_dialog.py:89
+msgid "Leaving a book with pages still picked out:"
+msgstr "En quittant un livre dont des pages sont encore sélectionnées :"
+
+#: mcomix/message_dialog.py:90
+msgid "Remove them and write the archive"
+msgstr "Les retirer et écrire l'archive"
+
+#: mcomix/message_dialog.py:91
+msgid "Leave the book as it is"
+msgstr "Laisser le livre tel quel"
+
 #~ msgid "Search"
 #~ msgstr "Rechercher"
 

@@ -38,13 +38,14 @@ from mcomix.library import backend, main_dialog
 from mcomix import tools
 from mcomix import box
 from mcomix import layout
+from mcomix import archive_packer
 from mcomix import log
 from mcomix import widgets
 from mcomix.transform import Matrix, Transform
 from mcomix.i18n import _
 from mcomix.dialog import Response
 
-from collections.abc import Iterable, Sequence
+from collections.abc import Callable, Iterable, Sequence
 
 
 class MainWindow(Gtk.Window):
@@ -78,6 +79,18 @@ class MainWindow(Gtk.Window):
         #: the menu's own Save As saves; None where it was opened on the
         #: background around the pages.
         self.popup_page: int | None = None
+        #: The pages a reader has picked out with Ctrl and a click,
+        #: which are the ones Delete removes.  They stay picked out
+        #: while the book is read, so that pages can be marked as they
+        #: go by and dealt with together; only closing the book, or
+        #: removing them, empties this.
+        self.selected_pages: set[int] = set()
+        #: What the pages were before each change made from this window,
+        #: and what they were before each undo.  Deleting a page from
+        #: the book being read has to be as easy to take back as it was
+        #: to do.
+        self._undone: list[list[str]] = []
+        self._redone: list[list[str]] = []
         # Remember last scroll destination.
         self._last_scroll_destination: int | None = constants.SCROLL_TO_START
 
@@ -628,6 +641,11 @@ class MainWindow(Gtk.Window):
 
     def _on_file_closed(self) -> None:
         """Follow a book being closed: empty the window and the sidebar."""
+        # All three stand against the pages of the book that is going,
+        # and none of them means anything against the next one.
+        self.selected_pages = set()
+        self._undone.clear()
+        self._redone.clear()
         self.lens.file_changed()
         self.clear()
         self.thumbnailsidebar.set_visible(False)
@@ -653,19 +671,23 @@ class MainWindow(Gtk.Window):
     @callback.Callback
     def page_changed(self) -> None:
         """ Called on page change. """
+        # The pages picked out stay picked out through a page turn; it
+        # is which of them are on screen that has changed.
+        self._draw_selection()
         self.thumbnailsidebar.load_thumbnails()
         self._update_page_information()
 
-    def pages_replaced(self, image_files: list[str]) -> None:
-        """Show the open book with <image_files> as its pages.
+    def pages_replaced(self, image_files: list[str], page: int = 1) -> None:
+        """Show the open book with <image_files> as its pages, at <page>.
 
-        What the archive editor's Apply leaves behind: the listing is a
-        new one, so every page number the window is holding stands
-        against the book that was there before.  set_page() will not do
-        on its own, since it returns early when it is asked for the page
-        that is current already - which page 1 usually is - and the
-        window then went on showing the drawn page, the page count and
-        the thumbnails of the listing that had just been replaced.
+        What the archive editor's Apply leaves behind, and what deleting
+        a page from the window does: the listing is a new one, so every
+        page number the window is holding stands against the book that
+        was there before.  set_page() will not do on its own, since it
+        returns early when it is asked for the page that is current
+        already - which page 1 usually is - and the window then went on
+        showing the drawn page, the page count and the thumbnails of the
+        listing that had just been replaced.
 
         A book every page of which was removed is left drawn as it was:
         there is no page to move to, and closing the file is not what
@@ -673,11 +695,13 @@ class MainWindow(Gtk.Window):
         """
         self.imagehandler.replace_pages(image_files)
         self.thumbnailsidebar.clear()
-        if not self.imagehandler.get_number_of_pages():
+        count = self.imagehandler.get_number_of_pages()
+        if not count:
             return
-        self.imagehandler.set_page(1)
+        self.imagehandler.set_page(min(max(page, 1), count))
         self.page_changed()
         self.new_page()
+        self._draw_selection()
 
     def set_page(self, num: int, at_bottom: bool = False) -> None:
         """Switch to page <num> of the currently open book.
@@ -703,6 +727,59 @@ class MainWindow(Gtk.Window):
         archive" is not taken out of an archive into the next directory
         either, since that would be the same jump by another route.
         """
+        self._leaving_book(self._open_next_book)
+
+    def previous_book(self) -> None:
+        """Open whatever comes before the book being read, if anything
+        should.  The preferences are read as next_book() reads them."""
+        self._leaving_book(self._open_previous_book)
+
+    def _leaving_book(self, then: "Callable[[], None]") -> None:
+        """Offer to remove the pages picked out, and then run <then>.
+
+        Pages are picked out as a book goes by so that they can be dealt
+        with together, and the end of the book is where that is.  There
+        is nothing to ask where none are picked out, or where the
+        archive is not one MComix could write the answer into: an
+        offer to remove pages that could then not be saved would take
+        the book apart for nothing.
+        """
+        if not self.selected_pages or self.writeable_archive_type() is None:
+            then()
+            return
+        path = self.filehandler.get_path_to_base() or ''
+        dialog = message_dialog.MessageDialog(
+            self, modal=True, buttons=Gtk.ButtonsType.NONE)
+        dialog.set_should_remember_choice(
+            message_dialog.RememberedDialog.REMOVE_PICKED_OUT_PAGES)
+        dialog.set_text(
+            i18n.get_translation().ngettext(
+                'Remove the page picked out of "%s"?',
+                'Remove the pages picked out of "%s"?',
+                len(self.selected_pages)) % os.path.basename(path),
+            _('They are taken out of the archive on disk, which is '
+              'written again at once. Leaving the book without removing '
+              'them forgets which pages they were.'))
+        dialog.add_button(_('_Keep them'), Response.NO)
+        dialog.add_button(_('_Remove'), Response.YES)
+        # Enter must not take pages out of an archive.  A confirmation
+        # defaults to the answer that changes nothing.
+        dialog.set_default_response(Response.NO)
+        removes = dialog.get_widget_for_response(Response.YES)
+        if removes is not None:
+            removes.add_css_class('destructive-action')
+        dialog.run_async(lambda response: self._leaving_answered(response,
+                                                                 then))
+
+    def _leaving_answered(self, response: int,
+                          then: "Callable[[], None]") -> None:
+        """Remove the pages if that is the answer, then leave the book."""
+        if response == Response.YES and self._remove_pages(
+                self.selected_pages):
+            self.save_archive()
+        then()
+
+    def _open_next_book(self) -> None:
         archive_open = self.filehandler.archive_type is not None
         next_archive_opened = False
         if (self.slideshow.is_running() and
@@ -717,9 +794,7 @@ class MainWindow(Gtk.Window):
            (not archive_open or prefs['auto open next archive']):
             self.filehandler.open_next_directory()
 
-    def previous_book(self) -> None:
-        """Open whatever comes before the book being read, if anything
-        should.  The preferences are read as next_book() reads them."""
+    def _open_previous_book(self) -> None:
         archive_open = self.filehandler.archive_type is not None
         previous_archive_opened = False
         if (self.slideshow.is_running() and
@@ -1126,6 +1201,224 @@ class MainWindow(Gtk.Window):
         pages = [current + offset for offset in range(this_screen)]
         return list(reversed(pages)) if self.is_manga_mode else pages
 
+    #: The CSS class that draws the outline round a picked-out page.
+    _SELECTED_CLASS = 'mcomix-selected-page'
+
+    def select_page(self, page: "int | None") -> None:
+        """Pick <page> out, or put it back if it is picked out already.
+
+        Toggling rather than setting is the way out of a page picked out
+        by mistake, and more than one page can be picked out at a time:
+        the point of picking them out while reading is to gather them up
+        and deal with them at the end.  None picks out nothing, and
+        leaves what is picked out alone.
+        """
+        if page is None or not 1 <= page <= \
+                self.imagehandler.get_number_of_pages():
+            return
+        self.selected_pages ^= {page}
+        self._draw_selection()
+        self.uimanager.set_sensitivities()
+
+    def clear_selection(self) -> None:
+        """Put every picked-out page back."""
+        if not self.selected_pages:
+            return
+        self.selected_pages = set()
+        self._draw_selection()
+        self.uimanager.set_sensitivities()
+
+    def selected_page_paths(self) -> list[str]:
+        """The file of each picked-out page, in page order.
+
+        A path outlives the number a page is at, which a deletion
+        anywhere before it changes, so this is what the archive editor
+        is handed and what it hands back.
+        """
+        files = self.imagehandler._image_files or []
+        return [files[number - 1] for number in sorted(self.selected_pages)
+                if 1 <= number <= len(files)]
+
+    def select_page_paths(self, paths: "Iterable[str]") -> None:
+        """Pick out the pages whose files are <paths>, and no others."""
+        wanted = set(paths)
+        files = self.imagehandler._image_files or []
+        self.selected_pages = {number for number, path
+                               in enumerate(files, start=1)
+                               if path in wanted}
+        self._draw_selection()
+        self.uimanager.set_sensitivities()
+
+    def _draw_selection(self) -> None:
+        """Outline whichever page widgets are showing picked-out pages."""
+        current = self.imagehandler.get_current_page()
+        for offset, image in enumerate(self.images):
+            selected = (offset < self.displayed_page_count()
+                        and current + offset in self.selected_pages)
+            if selected:
+                image.add_css_class(self._SELECTED_CLASS)
+            else:
+                image.remove_css_class(self._SELECTED_CLASS)
+
+    def delete_page(self, page: "int | None" = None) -> bool:
+        """Take pages out of the book being read, and say whether any went.
+
+        <page>, or every page that is picked out where none is named.
+        The book in the window is what changes; the archive on disk is
+        not written until it is saved, and the last page of a book is
+        not removed, a book with no pages being no book.
+        """
+        if not self._remove_pages({page} if page is not None
+                                  else self.selected_pages):
+            return False
+        self.offer_to_save()
+        return True
+
+    def _remove_pages(self, numbers: "Iterable[int]") -> bool:
+        """Take the pages at <numbers> out, and say whether any went."""
+        listing = list(self.imagehandler._image_files or [])
+        going = {number for number in numbers if 1 <= number <= len(listing)}
+        if not going or len(listing) <= len(going):
+            return False
+        self._undone.append(list(listing))
+        self._redone.clear()
+        # Highest first: removing one moves every page after it up, so
+        # taking them in the other order would take the wrong ones.
+        for number in sorted(going, reverse=True):
+            del listing[number - 1]
+        # What is left picked out has moved up by however many of the
+        # pages that went stood in front of it.
+        self.selected_pages = {
+            number - sum(1 for gone in going if gone < number)
+            for number in self.selected_pages - going}
+        self._show_pages(listing, min(min(going), len(listing)))
+        return True
+
+    def _show_pages(self, listing: list[str], page: int) -> None:
+        """Draw the book as <listing>, standing on <page>."""
+        self.selected_pages = {number for number in self.selected_pages
+                               if number <= len(listing)}
+        self.pages_replaced(listing, page)
+
+    # -- Writing the book back over the archive it came from --------------
+
+    def writeable_archive_type(self) -> "int | None":
+        """The format the open book can be written back over itself as.
+
+        None where it cannot be.  Writing in place keeps the name the
+        file has, so it has to keep the format that name says: a book
+        MComix cannot write - a PDF, or a RAR on a machine without the
+        rar program - has nothing that can be written over it, and a
+        format other than ZIP is only written where the reader has asked
+        for the format to be kept, since otherwise a save would put a
+        ZIP inside a file still called .cbt.
+        """
+        archive_type = self.filehandler.archive_type
+        if archive_type is None or not archive_packer.can_write(archive_type):
+            return None
+        if archive_type in (constants.ZIP, constants.ZIP_EXTERNAL) \
+                or prefs['keep archive format when saving']:
+            return archive_type
+        return None
+
+    def offer_to_save(self) -> None:
+        """Ask whether to write the book back over its own archive.
+
+        Asked after every page removed, until the reader ticks "Do not
+        ask again", which is how every other prompt with a lasting
+        answer works.
+        """
+        archive_type = self.writeable_archive_type()
+        path = self.filehandler.get_path_to_base()
+        if archive_type is None or path is None:
+            return
+        dialog = message_dialog.MessageDialog(
+            self, modal=True, buttons=Gtk.ButtonsType.NONE)
+        dialog.set_should_remember_choice(
+            message_dialog.RememberedDialog.SAVE_EDITED_ARCHIVE)
+        dialog.set_text(
+            _('Write "%s" again now?') % os.path.basename(path),
+            _('The archive on disk will be replaced by the book as it '
+              'stands, without the pages that were removed.'))
+        dialog.add_button(_('_Not now'), Response.NO)
+        dialog.add_button(_('_Save'), Response.YES)
+        # Enter must not overwrite an archive.  A confirmation defaults
+        # to the answer that changes nothing.
+        dialog.set_default_response(Response.NO)
+        dialog.run_async(self._save_answered)
+
+    def _save_answered(self, response: int) -> None:
+        if response == Response.YES:
+            self.save_archive()
+
+    def save_archive(self) -> bool:
+        """Write the open book over the archive it came from.
+
+        Every page is waited for first: one that is not out of the
+        archive yet cannot be written into the new one, and once the old
+        archive has been replaced the name it would have been read under
+        is no longer in it.
+        """
+        archive_type = self.writeable_archive_type()
+        path = self.filehandler.get_path_to_base()
+        if archive_type is None or path is None:
+            return False
+        self.set_layout_cursor(Gdk.Cursor.new_from_name('wait', None))
+        try:
+            image_files = list(self.imagehandler._image_files or [])
+            self.filehandler.wait_for_files(image_files)
+            comment_files = [self.filehandler.get_comment_name(number)
+                             for number in range(
+                                 1, self.filehandler
+                                 .get_number_of_comments() + 1)]
+            archive_packer.write_archive(
+                path, image_files, comment_files,
+                carried_files=self.filehandler.get_other_files(),
+                archive_type=archive_type, permissions_from=path)
+        except OSError as error:
+            log.error(_('! Could not save the archive %(archivefile)s: '
+                        '%(error)s'),
+                      {'archivefile': path, 'error': error})
+            self.set_layout_cursor(None)
+            dialog = message_dialog.MessageDialog(
+                self, buttons=Gtk.ButtonsType.CLOSE)
+            dialog.set_text(_("The new archive could not be saved!"),
+                            _("The original files have not been removed."))
+            dialog.run_async(lambda response: None)
+            return False
+        self.set_layout_cursor(None)
+        return True
+
+    def undo(self, *args: object) -> bool:
+        """Put the pages back as they were before the last change."""
+        if not self._undone:
+            return False
+        self._redone.append(list(self.imagehandler._image_files or []))
+        # The pages an undo brings back were never picked out, and every
+        # number after them has moved: there is nothing to carry over.
+        self.selected_pages = set()
+        listing = self._undone.pop()
+        self._show_pages(listing, min(self.imagehandler.get_current_page(),
+                                      len(listing)))
+        return True
+
+    def redo(self, *args: object) -> bool:
+        """Make the last undone change again."""
+        if not self._redone:
+            return False
+        self._undone.append(list(self.imagehandler._image_files or []))
+        self.selected_pages = set()
+        listing = self._redone.pop()
+        self._show_pages(listing, min(self.imagehandler.get_current_page(),
+                                      len(listing)))
+        return True
+
+    def can_undo(self) -> bool:
+        return bool(self._undone)
+
+    def can_redo(self) -> bool:
+        return bool(self._redone)
+
     def page_at(self, x: float, y: float) -> "int | None":
         """The number of the page drawn at <x>, <y> on the page area.
 
@@ -1164,6 +1457,17 @@ class MainWindow(Gtk.Window):
         page = self.popup_page
         self._save_pages([page] if page is not None
                          else self.displayed_pages())
+
+    def delete_popup_page(self, *args: object) -> None:
+        """Take the page the right-click menu was opened over out.
+
+        The one the menu stands on rather than the one picked out: the
+        menu was opened on a page, which says which page is meant as
+        plainly as picking one out does.  Opened on the background there
+        is no one page to mean, and the page picked out, if any, is what
+        is left.
+        """
+        self.delete_page(self.popup_page)
 
     def _save_pages(self, pages: "Iterable[int]") -> None:
         """Ask where each of <pages> should go, and put it there.
@@ -1232,8 +1536,18 @@ class MainWindow(Gtk.Window):
             else constants.HOME_DIR
 
     def delete(self, *args: object) -> None:
-        """ The currently opened file/archive will be deleted after showing
-        a confirmation dialog. """
+        """Delete the page that is picked out, or else the whole file.
+
+        Delete acts on a selection wherever there is one, which is how
+        every list in the program reads the key; a page is picked out
+        only by Ctrl and a click on it, and it is drawn outlined while
+        it is, so nothing is picked out by accident.  With nothing
+        picked out the key means what it always meant, and asks before
+        it removes the file from disk.
+        """
+        if self.selected_pages:
+            self.delete_page()
+            return
 
         current_file = self.imagehandler.get_real_path()
         if current_file is None:

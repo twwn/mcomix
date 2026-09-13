@@ -502,6 +502,12 @@ class ThumbnailGridView(Gtk.GridView, _ThumbnailViewBase):
         """Make <position> the one selected entry."""
         self.selection.select_item(position, True)
 
+    def select_positions(self, positions: Iterable[int]) -> None:
+        """Select <positions> and nothing else."""
+        self.selection.unselect_all()
+        for position in positions:
+            self.selection.select_item(position, False)
+
     def unselect_all(self) -> None:
         self.selection.unselect_all()
 

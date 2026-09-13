@@ -380,6 +380,43 @@ class EditArchiveDialogTest(MComixTest):
         self._press('<Control>z')
         self.assertEqual(area.get_file_listing(), before)
 
+    # -- The pages picked out in the window --------------------------------
+
+    def test_the_editor_opens_with_the_windows_pages_picked_out(self):
+        """The pages the reader picked out are the ones the editor was
+        opened to do something about."""
+        self.window.select_page(2)
+        self.dialog._load_original_files()
+        pump()
+        listing = self.dialog._image_area.get_file_listing()
+        self.assertEqual(self.dialog._image_area.selected_paths(),
+                         [listing[1]])
+
+    def test_closing_the_editor_picks_its_pages_out_in_the_window(self):
+        self.dialog._load_original_files()
+        pump()
+        listing = list(self.dialog._image_area.get_file_listing())
+        self.assertGreater(len(listing), 2, 'the fixture has too few pages')
+        self.dialog._image_area._grid.select_positions([0, 2])
+        self.dialog.destroy()
+        pump()
+        self.assertEqual(self.window.selected_pages, {1, 3})
+
+    def test_applying_keeps_the_editors_pages_picked_out(self):
+        """The listing is a new one, so the numbers are new too: what
+        was picked out is carried over by its file rather than by where
+        it stood."""
+        self.dialog._load_original_files()
+        pump()
+        listing = list(self.dialog._image_area.get_file_listing())
+        self.assertGreater(len(listing), 2, 'the fixture has too few pages')
+        self.dialog._image_area._grid.select_positions([2])
+        reordered = list(reversed(listing))
+        self.dialog._image_area.get_file_listing = lambda: reordered
+        self.dialog._response(self.dialog, Response.APPLY)
+        pump()
+        self.assertEqual(self.window.selected_page_paths(), [listing[2]])
+
     # -- Which format a save writes ---------------------------------------
 
     def test_a_save_is_a_cbz_unless_the_reader_asks_otherwise(self):

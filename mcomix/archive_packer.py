@@ -1,17 +1,102 @@
 """archive_packer.py - Archive creation class."""
 
+import errno
 import os
 import shutil
 import tarfile
 import tempfile
 import zipfile
 import threading
-from collections.abc import Iterator, Mapping, Sequence
+from collections.abc import Iterable, Iterator, Mapping, Sequence
 
 from mcomix import constants
 from mcomix import log
 from mcomix import process
 from mcomix.i18n import _
+
+
+def check_room_for(files: "Iterable[str]", archive_path: str) -> None:
+    """Raise ENOSPC if <files> will not fit beside <archive_path>.
+
+    The new archive is written under a temporary name in the directory
+    the old one is in and renamed over it at the end, so all of it has
+    to fit there at once: an archive being replaced does not give its
+    room up until it has been.  Writing until the disk fills up and
+    unwinding from there works - the packer stops and its half-written
+    archive is removed - but only after minutes of writing, and with the
+    disk full in the meantime.
+
+    What the entries take once they are deflated is not known before
+    they are written, so what they take now stands in for it.  For the
+    pictures a book is made of that is within a per cent; a page in a
+    format that is not compressed already, a BMP say, comes out about
+    30% smaller, so a save is refused with that much room to spare.
+    """
+    needed = sum(os.path.getsize(path) for path in files)
+    free = shutil.disk_usage(os.path.dirname(archive_path) or '.').free
+    if needed > free:
+        raise OSError(errno.ENOSPC, os.strerror(errno.ENOSPC), archive_path)
+
+
+def write_archive(archive_path: str, image_files: Sequence[str],
+                  comment_files: Sequence[str],
+                  carried_files: "Mapping[str, str] | None" = None,
+                  archive_type: int = constants.ZIP,
+                  permissions_from: "str | None" = None) -> None:
+    """Write an archive of those files at <archive_path>.
+
+    Whatever is at that path already is replaced, and only once the new
+    archive is whole: it is written under a temporary name in the same
+    directory and renamed over the old one, which is also why the room
+    for it is asked for first.  <permissions_from>, where it names a
+    file that is there, is the file the new archive takes its mode from,
+    so that replacing an archive does not change who may read it.
+
+    Raises OSError if anything on the way fails, having left nothing
+    behind: everything here writes to the directory the archive is in -
+    the temporary file, the rename, the permissions - and any of it can.
+    """
+    carried_files = carried_files or {}
+    tmp_path = None
+    written = False
+    try:
+        check_room_for(list(image_files) + list(comment_files)
+                       + list(carried_files), archive_path)
+        fd, tmp_path = tempfile.mkstemp(
+            suffix='.%s' % os.path.basename(archive_path),
+            prefix='tmp.', dir=os.path.dirname(archive_path))
+        # Close the open handle; the writing is the packer's.
+        os.close(fd)
+
+        packer = Packer(image_files, comment_files, tmp_path,
+                        os.path.splitext(os.path.basename(archive_path))[0],
+                        carried_files=carried_files,
+                        archive_type=archive_type)
+        packer.pack()
+        if not packer.wait():
+            raise OSError('the archive could not be packed')
+
+        if permissions_from is not None and os.path.exists(permissions_from):
+            mode = os.stat(permissions_from).st_mode
+        else:
+            mode = os.stat(tmp_path).st_mode
+
+        # Removed first: a rename over a file that is there fails on
+        # Win32.
+        if os.path.exists(archive_path):
+            os.unlink(archive_path)
+        os.rename(tmp_path, archive_path)
+        os.chmod(archive_path, mode)
+        written = True
+    finally:
+        # A half-written archive under a temporary name is of no use to
+        # anyone, and the packer only removes its own on a write error.
+        if not written and tmp_path is not None and os.path.exists(tmp_path):
+            try:
+                os.unlink(tmp_path)
+            except OSError as error:
+                log.error(_('! Could not remove %(file)s: %(error)s'),
+                          {'file': tmp_path, 'error': error})
 
 
 class _Writer:

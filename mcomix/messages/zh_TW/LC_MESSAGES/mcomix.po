@@ -2635,6 +2635,100 @@ msgstr ""
 "依讀取時的格式將已編輯的壓縮檔寫回為 ZIP、tar、7z 或 RAR。後兩者需要 7z 與 rar 程式，而 MComix "
 "不會安裝它們；無法寫入的格式將儲存為 ZIP。"
 
+#: mcomix/ui.py:433
+msgid "_Delete page"
+msgstr "刪除頁面(_D)"
+
+#: mcomix/ui.py:434
+msgid ""
+"Removes the page the menu was opened over from the book. The archive on "
+"disk is not changed until it is saved."
+msgstr "從書中移除開啟選單時所在的頁面。磁碟上的壓縮檔在儲存前不會改變。"
+
+#: mcomix/ui.py:436
+msgid "_Undo"
+msgstr "復原(_U)"
+
+#: mcomix/ui.py:437
+msgid "Takes back the last page removed from the book."
+msgstr "取回最後一次從書中移除的頁面。"
+
+#: mcomix/ui.py:439
+msgid "_Redo"
+msgstr "重做(_R)"
+
+#: mcomix/ui.py:440
+msgid "Removes again the page the last undo brought back."
+msgstr "再次移除上一次復原所取回的頁面。"
+
+#: mcomix/keybindings.py:131
+msgid "Undo"
+msgstr "復原"
+
+#: mcomix/keybindings.py:132
+msgid "Redo"
+msgstr "重做"
+
+#: mcomix/keybindings.py:131
+msgid "Edit"
+msgstr "編輯"
+
+#: mcomix/main.py:1244
+#, python-format
+msgid "Write \"%s\" again now?"
+msgstr "現在重新寫入「%s」嗎？"
+
+#: mcomix/main.py:1245
+msgid ""
+"The archive on disk will be replaced by the book as it stands, without "
+"the pages that were removed."
+msgstr "磁碟上的壓縮檔將被替換為目前的書，其中不含已移除的頁面。"
+
+#: mcomix/main.py:1247
+msgid "_Not now"
+msgstr "暫不(_N)"
+
+#: mcomix/message_dialog.py:84
+msgid "Removing a page from the book being read:"
+msgstr "從正在閱讀的書中移除頁面時："
+
+#: mcomix/message_dialog.py:85
+msgid "Write the archive again at once"
+msgstr "立即重新寫入壓縮檔"
+
+#: mcomix/message_dialog.py:86
+msgid "Leave the archive as it is"
+msgstr "保持壓縮檔不變"
+
+#: mcomix/main.py:756
+#, python-format
+msgid "Remove the page picked out of \"%s\"?"
+msgid_plural "Remove the pages picked out of \"%s\"?"
+msgstr[0] "從「%s」中移除選取的頁面嗎？"
+
+#: mcomix/main.py:760
+msgid ""
+"They are taken out of the archive on disk, which is written again at "
+"once. Leaving the book without removing them forgets which pages they "
+"were."
+msgstr "它們會從磁碟上的壓縮檔中取出，壓縮檔隨即重新寫入。不移除就離開這本書，將忘記那是哪些頁面。"
+
+#: mcomix/main.py:763
+msgid "_Keep them"
+msgstr "保留(_K)"
+
+#: mcomix/message_dialog.py:89
+msgid "Leaving a book with pages still picked out:"
+msgstr "在仍有選取頁面時離開一本書："
+
+#: mcomix/message_dialog.py:90
+msgid "Remove them and write the archive"
+msgstr "移除它們並寫入壓縮檔"
+
+#: mcomix/message_dialog.py:91
+msgid "Leave the book as it is"
+msgstr "保持這本書不變"
+
 #~ msgid "Search"
 #~ msgstr "搜尋"
 

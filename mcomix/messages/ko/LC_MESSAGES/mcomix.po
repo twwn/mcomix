@@ -2670,6 +2670,100 @@ msgstr ""
 "편집한 압축 파일을 읽어 들인 형식에 따라 ZIP, tar, 7z 또는 RAR로 다시 씁니다. 뒤의 두 가지는 7z 및 rar "
 "프로그램이 필요하며 MComix는 이를 설치하지 않습니다. 쓸 수 없는 형식은 ZIP으로 저장됩니다."
 
+#: mcomix/ui.py:433
+msgid "_Delete page"
+msgstr "쪽 삭제(_D)"
+
+#: mcomix/ui.py:434
+msgid ""
+"Removes the page the menu was opened over from the book. The archive on "
+"disk is not changed until it is saved."
+msgstr "메뉴를 연 쪽을 책에서 제거합니다. 디스크의 압축 파일은 저장하기 전까지 바뀌지 않습니다."
+
+#: mcomix/ui.py:436
+msgid "_Undo"
+msgstr "실행 취소(_U)"
+
+#: mcomix/ui.py:437
+msgid "Takes back the last page removed from the book."
+msgstr "책에서 마지막으로 제거한 쪽을 되돌립니다."
+
+#: mcomix/ui.py:439
+msgid "_Redo"
+msgstr "다시 실행(_R)"
+
+#: mcomix/ui.py:440
+msgid "Removes again the page the last undo brought back."
+msgstr "마지막 실행 취소가 되돌린 쪽을 다시 제거합니다."
+
+#: mcomix/keybindings.py:131
+msgid "Undo"
+msgstr "실행 취소"
+
+#: mcomix/keybindings.py:132
+msgid "Redo"
+msgstr "다시 실행"
+
+#: mcomix/keybindings.py:131
+msgid "Edit"
+msgstr "편집"
+
+#: mcomix/main.py:1244
+#, python-format
+msgid "Write \"%s\" again now?"
+msgstr "\"%s\"을(를) 지금 다시 쓸까요?"
+
+#: mcomix/main.py:1245
+msgid ""
+"The archive on disk will be replaced by the book as it stands, without "
+"the pages that were removed."
+msgstr "디스크의 압축 파일이 제거한 쪽을 뺀 현재 상태의 책으로 바뀝니다."
+
+#: mcomix/main.py:1247
+msgid "_Not now"
+msgstr "지금은 안 함(_N)"
+
+#: mcomix/message_dialog.py:84
+msgid "Removing a page from the book being read:"
+msgstr "읽고 있는 책에서 쪽을 제거할 때:"
+
+#: mcomix/message_dialog.py:85
+msgid "Write the archive again at once"
+msgstr "압축 파일을 즉시 다시 쓰기"
+
+#: mcomix/message_dialog.py:86
+msgid "Leave the archive as it is"
+msgstr "압축 파일을 그대로 두기"
+
+#: mcomix/main.py:756
+#, python-format
+msgid "Remove the page picked out of \"%s\"?"
+msgid_plural "Remove the pages picked out of \"%s\"?"
+msgstr[0] "선택한 쪽을 \"%s\"에서 제거할까요?"
+
+#: mcomix/main.py:760
+msgid ""
+"They are taken out of the archive on disk, which is written again at "
+"once. Leaving the book without removing them forgets which pages they "
+"were."
+msgstr "디스크의 압축 파일에서 빠지고 압축 파일은 즉시 다시 쓰입니다. 제거하지 않고 책을 떠나면 어느 쪽이었는지 잊힙니다."
+
+#: mcomix/main.py:763
+msgid "_Keep them"
+msgstr "유지(_K)"
+
+#: mcomix/message_dialog.py:89
+msgid "Leaving a book with pages still picked out:"
+msgstr "쪽을 선택한 채 책을 떠날 때:"
+
+#: mcomix/message_dialog.py:90
+msgid "Remove them and write the archive"
+msgstr "제거하고 압축 파일 쓰기"
+
+#: mcomix/message_dialog.py:91
+msgid "Leave the book as it is"
+msgstr "책을 그대로 두기"
+
 #~ msgid "Search"
 #~ msgstr "검색"
 

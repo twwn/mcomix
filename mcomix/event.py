@@ -330,6 +330,14 @@ class EventHandler:
                          ['Delete'],
                          self._window.delete)
 
+        manager.register('undo',
+                         ['<Control>z'],
+                         self._window.undo)
+
+        manager.register('redo',
+                         ['<Control>y', '<Control><Shift>z'],
+                         self._window.redo)
+
         manager.register('extract_page',
                          ['<Control><Shift>s'],
                          self._window.extract_page)
@@ -616,7 +624,12 @@ class EventHandler:
                     y == self._pressed_pointer_pos_y and \
                     not self._window.was_out_of_focus:
 
-                if state & Gdk.ModifierType.SHIFT_MASK:
+                if state & Gdk.ModifierType.CONTROL_MASK:
+                    # Picking a page out rather than turning it: a plain
+                    # click is how a book is read, and it cannot be the
+                    # gesture that stops on a page as well.
+                    self._window.select_page(self._window.page_at(x, y))
+                elif state & Gdk.ModifierType.SHIFT_MASK:
                     self._flip_page(10)
                 else:
                     self._flip_page(1)

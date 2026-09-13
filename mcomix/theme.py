@@ -55,6 +55,19 @@ notebook > stack, .toolbar, actionbar > revealer > box {
     color: @window_fg_color;
 }
 
+/* The page a reader has picked out to delete.  An outline rather than a
+   border, which would take room and move the page it is drawn around,
+   and offset inwards, since a page is drawn to the edge of the box it
+   was laid out in and an outline outside that would be off screen. */
+picture.mcomix-selected-page {
+    /* Stated twice: a theme that does not define an accent colour -
+       GTK has only defined one since 4.14 - leaves the second
+       declaration unparsed, and the first one stands. */
+    outline: 4px solid rgb(53, 132, 228);
+    outline: 4px solid @accent_bg_color;
+    outline-offset: -4px;
+}
+
 .sidebar, .navigation-sidebar {
     background-color: @sidebar_bg_color;
     color: @sidebar_fg_color;

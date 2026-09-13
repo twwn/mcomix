@@ -11,6 +11,7 @@ from mcomix import thumbnail_list
 from mcomix import thumbnail_tools
 from mcomix.i18n import _
 
+from collections.abc import Iterable
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -115,6 +116,17 @@ class _ImageArea(Gtk.ScrolledWindow):
     def get_file_listing(self) -> list[str]:
         """Return a list with the full paths to all the images, in order."""
         return [item.uid for item in self._grid.each_item()]
+
+    def selected_paths(self) -> list[str]:
+        """The file of every page picked out here, in the order shown."""
+        return [item.uid for item in self._grid.get_selected_items()]
+
+    def select_paths(self, paths: "Iterable[str]") -> None:
+        """Pick out the pages whose files are <paths>, and no others."""
+        wanted = set(paths)
+        self._grid.select_positions(
+            position for position, item in enumerate(self._grid.each_item())
+            if item.uid in wanted)
 
     def snapshot(self) -> list[thumbnail_list.ThumbnailItem]:
         """The entries as they stand, for the dialog's undo.

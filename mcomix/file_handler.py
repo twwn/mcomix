@@ -45,7 +45,7 @@ from mcomix import message_dialog
 from mcomix.library import backend
 from mcomix.i18n import _
 
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -571,6 +571,17 @@ class FileHandler:
     def get_comment_name(self, num: int) -> str:
         """Return the filename of comment <num>."""
         return self._comment_files[num - 1]
+
+    def wait_for_files(self, paths: "Iterable[str]") -> None:
+        """Block until every one of <paths> is out of the archive.
+
+        What writing the open archive back over itself needs: a page
+        that has not been extracted yet cannot be written into the new
+        archive, and once the old one has been replaced the name it
+        would have been read under is not in it any more.
+        """
+        for path in paths:
+            self._wait_on_file(path)
 
     def get_other_files(self) -> dict[str, str]:
         """The archive members that are neither pages nor comments.

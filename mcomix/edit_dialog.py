@@ -1,9 +1,6 @@
 """edit_dialog.py - The dialog for the archive editing window."""
 
-import errno
 import os
-import shutil
-import tempfile
 from gi.repository import Gdk, Gio, GLib, Gtk
 import re
 
@@ -35,29 +32,6 @@ _dialog: "_EditArchiveDialog | None" = None
 #: that came with them.  What an undo puts back.
 _EditState = tuple[list[thumbnail_list.ThumbnailItem],
                    list[column_list.Row]]
-
-
-def _check_room_for(files: list[str], archive_path: str) -> None:
-    """Raise ENOSPC if <files> will not fit beside <archive_path>.
-
-    The new archive is written under a temporary name in the directory
-    the old one is in and renamed over it at the end, so all of it has
-    to fit there at once: an archive being replaced does not give its
-    room up until it has been.  Writing until the disk fills up and
-    unwinding from there works - the packer stops and its half-written
-    archive is removed - but only after minutes of writing, and with the
-    disk full in the meantime.
-
-    What the entries take once they are deflated is not known before
-    they are written, so what they take now stands in for it.  For the
-    pictures a book is made of that is within a per cent; a page in a
-    format that is not compressed already, a BMP say, comes out about
-    30% smaller, so a save is refused with that much room to spare.
-    """
-    needed = sum(os.path.getsize(path) for path in files)
-    free = shutil.disk_usage(os.path.dirname(archive_path) or '.').free
-    if needed > free:
-        raise OSError(errno.ENOSPC, os.strerror(errno.ENOSPC), archive_path)
 
 
 def _fit_on_screen(width: int, height: int) -> tuple[int, int]:
@@ -143,6 +117,11 @@ class _EditArchiveDialog(Dialog):
         try:
             self._image_area.fetch_images()
             self._comment_area.fetch_comments()
+            # The pages the reader picked out in the window are the ones
+            # the editor was opened to do something about, so they are
+            # picked out here too; what is picked out when it closes
+            # goes back the same way.
+            self._image_area.select_paths(self._window.selected_page_paths())
         finally:
             # The cursor belongs to the main window rather than to this
             # dialog, so anything that got out of the two calls above
@@ -174,7 +153,7 @@ class _EditArchiveDialog(Dialog):
         return constants.ZIP, '.cbz'
 
     def _pack_archive(self, archive_path: str) -> None:
-        """Create a new archive with the chosen files."""
+        """Write the chosen files out as an archive at <archive_path>."""
         self.set_sensitive(False)
         self._window.set_layout_cursor(Gdk.Cursor.new_from_name('wait', None))
 
@@ -182,56 +161,21 @@ class _EditArchiveDialog(Dialog):
         while context.pending():
             context.iteration(False)
 
-        image_files = self._image_area.get_file_listing()
-        comment_files = self._comment_area.get_file_listing()
-        # Neither list shows what the archive held besides its pages and
-        # its comments, and a new archive written without it is not the
-        # archive that was opened: it has lost its metadata.
-        carried_files = self.file_handler.get_other_files()
-
-        # Everything below writes to the directory the archive is in -
-        # the temporary file, the rename over the old archive, the
-        # permissions on the new one - and any of it can fail.  Only the
-        # first step used to be guarded, so a failure at any of the
-        # others escaped into the signal handler that called this, and
-        # left the dialog insensitive under a wait cursor for the rest
-        # of the session.
-        tmp_path: str | None = None
+        # Neither list the editor shows holds what the archive had
+        # besides its pages and its comments, and a new archive written
+        # without that is not the archive that was opened: it has lost
+        # its metadata.
         saved = False
         try:
-            _check_room_for(image_files + comment_files
-                            + list(carried_files), archive_path)
-            fd, tmp_path = tempfile.mkstemp(
-                suffix='.%s' % os.path.basename(archive_path),
-                prefix='tmp.', dir=os.path.dirname(archive_path))
-            # Close open tempfile handle (writing is handled by the packer)
-            os.close(fd)
-
-            packer = archive_packer.Packer(
-                image_files, comment_files, tmp_path,
-                os.path.splitext(os.path.basename(archive_path))[0],
-                carried_files=carried_files,
-                archive_type=self._save_format()[0])
-            packer.pack()
-
-            if packer.wait():
-                # Preserve permissions if currently edited files come from an archive
-                base_path = self._window.filehandler.get_path_to_base()
-                if (self._window.filehandler.archive_type is not None
-                        and base_path is not None
-                        and os.path.exists(base_path)):
-                    mode = os.stat(base_path).st_mode
-                else:
-                    mode = os.stat(tmp_path).st_mode
-
-                # Remove existing file (Win32 fails on rename otherwise)
-                if os.path.exists(archive_path):
-                    os.unlink(archive_path)
-
-                os.rename(tmp_path, archive_path)
-                os.chmod(archive_path, mode)
-                saved = True
-
+            archive_packer.write_archive(
+                archive_path,
+                self._image_area.get_file_listing(),
+                self._comment_area.get_file_listing(),
+                carried_files=self.file_handler.get_other_files(),
+                archive_type=self._save_format()[0],
+                permissions_from=self.file_handler.get_path_to_base()
+                if self.file_handler.archive_type is not None else None)
+            saved = True
         except OSError as error:
             log.error(_('! Could not save the archive %(archivefile)s: '
                         '%(error)s'),
@@ -242,15 +186,6 @@ class _EditArchiveDialog(Dialog):
         if saved:
             _close_dialog()
             return
-
-        # A half-written archive under a temporary name is of no use to
-        # anyone, and the packer only removes its own on a write error.
-        if tmp_path is not None and os.path.exists(tmp_path):
-            try:
-                os.unlink(tmp_path)
-            except OSError as error:
-                log.error(_('! Could not remove %(file)s: %(error)s'),
-                          {'file': tmp_path, 'error': error})
 
         dialog = message_dialog.MessageDialog(
             self._window, buttons=Gtk.ButtonsType.CLOSE)
@@ -363,12 +298,19 @@ class _EditArchiveDialog(Dialog):
 
         elif response == Response.APPLY:
 
+            picked_out = self._image_area.selected_paths()
             self._window.pages_replaced(self._image_area.get_file_listing())
+            self._window.select_page_paths(picked_out)
 
         else:
             _close_dialog()
 
     def destroy(self) -> None:
+        # What is picked out here is picked out in the window when the
+        # editor closes, whether the listing was applied or not: a
+        # selection is not a change to the book, and carrying it back is
+        # what lets the two be used together.
+        self._window.select_page_paths(self._image_area.selected_paths())
         self._image_area.cleanup()
         Dialog.destroy(self)
 
