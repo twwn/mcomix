@@ -4,30 +4,30 @@ External commands
 Overview
 ---
 
-Sometimes, MComix might not provide enough functionality for certain needs - you might want to retouch a page in an image editor, or to open a file manager at the location of the currently opened images to perform some move operations.
-
-MComix provides for such cases by allowing the user to define a list of external commands that can be executed at will. The relevant menu can be accessed via "File&rarr;Open with". Initially, this submenu will be empty. New commands can be added with the "Edit commands" menu item. After one or more commands have been specified, they can be executed either via menu entry, or by pressing the 1 to 9 keys. Those activate the first to ninth command, respectively.
+MComix can run programs of your choosing on the file that is open: an image editor to retouch a page, a file manager at the book's location, or a script of your own. They are listed under "File &rarr; Open with", which also has "Edit commands" to set them up. The number keys 1 to 9 run the first nine commands in the list.
 
 Add and edit commands
 ---
 
-The edit window first displays a list of all commands, and a few buttons to edit those commands. 
-
 [[img src="mcomix-external-commands.png" alt="Edit external commands"]]
 
-Each command consists of four parts:
+"Add" puts a new command in the list, and "Add separator" a line that divides the menu; "Remove", "Up" and "Down" act on the selected row, which can also be dragged to another place. Each command has four fields:
 
-- *Label*: The name the command will be listed as in the menu.
-- *Command*: The executable that is to be run, followed by zero or more arguments, all separated by spaces. If an argument contains spaces, wrap it in quotation marks. The command can contain certain variables, as listed under *Variables* further down. 
-- *Working directory*: The command will be executed in this directory. Only one directory is allowed. If the directory contains spaces, wrap it with quotation marks.
-- *Disabled in archives*: If this box is ticked, the command will not be run when an archive is currently opened. This helps prevent accidentally working on temporary files that will be deleted as soon as the archive is closed.
+- *Label*: the name the command has in the menu.
+- *Command*: the program to run, followed by its arguments, separated by spaces. An argument that contains spaces goes in quotation marks. The variables below stand for the file that is open, and environment variables such as `$HOME` are expanded as well.
+- *Working directory*: the directory the command runs in, written the same way. Leave it empty to run the command where MComix was started.
+- *Disabled in archives*: the command does not run while an archive is open, which keeps it from working on the temporary files MComix deletes when the archive is closed.
+
+"Preview" shows the selected command as it would run on the page that is open, and says so where the program or the working directory cannot be found; "Run command" runs it. "Save" keeps the list; closing the editor with changes that are not saved asks whether to keep them.
 
 Variables
 ---
 
-The following variables can be inserted into the command and working directory fields. When a command is run, these variables will be substituted with their respective special meaning.
+When a command runs, each variable in its command and working directory is replaced by the path or name it stands for.
 
 #### Image-related variables
+
+With an archive open, these name the temporary files MComix has unpacked the pages to.
 
 Variable | Meaning | Example
 ---------|---------|--------
@@ -36,11 +36,9 @@ Variable | Meaning | Example
 %D | Absolute path to the directory containing the currently opened image file | /home/user/Downloads
 %d | Name of the directory containing the currently opened image file | Downloads
 
-These variables will expand to temporary filenames and directories when used in conjunction with archives.
-
 #### Archive-related variables
 
-These variables are only valid if an archive is opened when the command is executed.
+These can only be used while an archive is open.
 
 Variable | Meaning | Example
 ---------|---------|--------
@@ -51,7 +49,7 @@ Variable | Meaning | Example
 
 #### Container-related variables
 
-These variables expand differently depending on whether an archive or a directory is opened when the command is executed. (Think of it as B as in "book" and S as in "shelf".)
+These stand for the archive where one is open, and for the directory of images otherwise. B is for "book", and S for "shelf".
 
 Variable | Meaning | Directory Example | Archive Example
 ---------|---------|-------------------|----------------
@@ -62,10 +60,8 @@ Variable | Meaning | Directory Example | Archive Example
 
 #### Miscellaneous variables
 
-Use these variables to insert special meta characters that MComix uses for variable substitution.
-
 Variable | Meaning | Example
 ---------|---------|--------
-%/ | Inserts a backslash or slash, depending on operating system. Windows users will see a backslash, others a forward slash. | /
-%" | Insert a literal quote | "
-%% | Insert a literal percent character | %
+%/ | The directory separator: a backslash on Windows, a slash elsewhere | /
+%" | A literal quotation mark | "
+%% | A literal per cent sign | %

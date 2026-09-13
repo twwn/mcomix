@@ -3,113 +3,98 @@ Documentation
 
 [TOC]
 
-Please note that this site is an ongoing effort to create a somewhat usable user manual for MComix.
-
-Installation
----
-
-Instructions for installing MComix can be found on the [Installation] page.
-
+This is the user manual for MComix. The [Installation] page covers installing it, and [Preferences], [Keybindings] and [External_Commands] have pages of their own.
 
 The main window
 ---
 
-In the default configuration, MComix' user interface will look somewhat similar to the following screenshot. The main areas of interest are the tool- and menubar, the thumbnail sidebar on the left, and the display port in the center.
-
 [[img src="mcomix-mainwindow.png" alt="MComix' main window"]]
 
-This configuration is normally acceptable for general image viewing purposes. For reading comics, you will likely want a more uncluttered interface. This can be achieved either by pressing the "F" key to enter fullscreen mode, or by turning off what you do not want in the "View" menu, which carries one item each for the toolbar, the menubar, the statusbar, the scrollbars and the thumbnails. "Hide all" in the same menu, or the "I" key, puts all of them away at once. Normally, you will also want to switch from "Best fit" mode to "Fit to width" mode by pressing the "W" key. This way, images will only be scaled down to fit the screen width, not both width and height.
+The window has a menu bar and a toolbar at the top, the page thumbnails on the left, the page in the middle and a status bar at the bottom. "View &rarr; Toolbars" turns the menubar, the toolbar, the statusbar, the scrollbars and the thumbnails on and off, and "Hide all" in the same menu, or the I key, puts all of them away at once. Fullscreen mode, the F key, hides them too while "Automatically hide all toolbars in fullscreen" is set in the preferences.
 
-Paging and scrolling from one image to the next works similarly to most other image viewers. The arrow keys scroll the page, while PageDown and PageUp will switch to the next and previous pages.
+The arrow keys scroll the page, and PageDown and PageUp turn it. "Move to", in the page's right-click menu, moves the file that is open, or the archive the page is in, to another folder.
 
 ### Fit modes ###
 
-MComix has several automatic fit modes that scale down images by certain criteria. Those are:
+Mode | Key | What it does
+-----|-----|-------------
+Best fit | B | Scales a page down to fit within the window.
+Fit to width | W | Scales a page down to the width of the window. A taller page scrolls up and down, which suits reading comics.
+Fit to height | H | Scales a page down to the height of the window. A wider page scrolls sideways.
+Fit to size | S | Scales pages to the sizes set in the preferences, one for a wide page, such as a double-page spread, and one for the rest. They are 3790x960 and 1450x1800 by default.
+Manual zoom | A | No scaling is performed on the page.
 
-- Best fit - Images are scaled down to fit within the window.
-- Fit to width - Images are scaled down to fit the screen width. If an image is higher than the screen, it can be scrolled up and down.
-- Fit to height - Images are scaled down to fit the screen height. If an image is wider than the screen,
-it can be scrolled left and right.
-- Fit to size - Resize images to a fixed size in pixels, set in the preferences dialog. A wide page and a page that is not wide are given sizes of their own, since a double-page spread wants a different shape from a single page; the defaults are 3790x960 for a wide page and 1450x1800 for the rest.
-- Manual zoom mode - No scaling is performed on the image.
-
-Normally, no mode will increase an image's size by scaling it up. If such behavior is desired, "View &rarr; Stretch small images" enables scaling in both directions, up and down.
+No mode scales a small page up unless "View &rarr; Stretch small images" is on.
 
 ### Double page mode and manga mode ###
 
-Normally, MComix will only show one image at a time. For reading comics, especially on widescreen monitors, it can be desirable to display two images at once next to each other. This way, reading comics becomes more natural and double-page spreads can be viewed without having to edit the image files. Double-page mode is toggled by pressing "D". Unless set up otherwise, the first page of an archive or directory will always be displayed alone (representing the book cover). Pages with width exceeding height will also be displayed alone.
+Double page mode, the D key, shows two pages side by side, so that a double-page spread reads as one. The first page of a book, which is its cover, and any page wider than it is tall are shown on their own unless the preferences say otherwise. Pages turn two at a time; CTRL with PageDown or PageUp turns one.
 
-When changing pages in double-page mode, MComix will automatically forward or backward two pages at once. To forward only one page, hold the CTRL key while switching pages.
-
-By default, MComix will arrange pages left-to-right, and also scroll in this direction. For manga, MComix has a special "Manga mode" activated by pressing "M". This mode lays out pages right-to-left, and changes scrolling accordingly.
+Manga mode, the M key, lays pages out and scrolls from right to left.
 
 ### Slideshow mode ###
 
-MComix can automatically scroll and switch pages by activating slideshow mode, using CTRL+S. Conceptually, this works the same way as pressing the "Down" arrow key repeatedly with a certain interval between each keypress. The delay and amount of pixels scrolled can be customized in the preferences dialog.
+CTRL+S starts a slideshow, which works like pressing the Down arrow key at intervals. By default it scrolls down 50 pixels every three seconds; a delay of 0.05 seconds with a step of 1 pixel scrolls smoothly instead. Both are set in the preferences.
 
-By default, MComix will scroll down 50 pixels every three seconds. For a smoother experience, the following settings might be worth a try:
+### Enhancing the image ###
 
-- Slideshow delay: 0.05 seconds
-- Slideshow step: 1 px
+"Tools &rarr; Enhance image...", the E key, sets the brightness, contrast, saturation and sharpness of the pages with sliders, beside a histogram of the page being read. "Automatically adjust contrast" adjusts the contrast of each colour band to the page, and "Invert image colors", also CTRL+I, turns the colours to their negative. A change shows at once on the pages, the thumbnails, the magnifying lens and the library's covers, and lasts until MComix is closed, whichever book is open.
 
-### Keybindings ###
+"Save" keeps the values as the ones MComix starts with, "Revert" goes back to those, and "OK" closes the dialog with the values as they are.
 
-For all key bindings available, please refer to [Keybindings].
+### Rotating and flipping pages ###
 
-### Opening a book in a window of its own ###
+"Tools &rarr; Transform image" turns the page 90 degrees clockwise, the R key, or anticlockwise, SHIFT+R, or 180 degrees, and flips it horizontally or vertically. In double page mode both pages turn together. The next page is shown upright and unflipped again, unless "Keep transformation", the K key, is on: then every page gets the same rotation and flips, also after MComix is started again.
 
-The entries under "File &rarr; Recent" and in the "Bookmarks" menu open in the window they were picked from, which closes the book being read. A bookmark in the book that is already open only turns to its page, so the pages picked out of the book and the changes that can be undone stay as they were; in a folder of images the page is found by its file, wherever the folder has put it since. Clicking one with the middle mouse button starts a second MComix on it instead, and leaves the first one where it is. A bookmark opened this way opens at the page it marks.
+"Auto-rotate image", in the same submenu, turns every page that is taller than it is wide, or every page that is wider than it is tall, 90 degrees one way or the other, until it is set back to "Never". It goes by what is shown, so that two pages side by side count as one wide page, and it adds to a rotation given by hand. Images whose metadata, such as an Exif tag, says which way up they belong are turned that way while "Automatically rotate images according to their metadata" is set in the preferences.
 
-The same thing can be asked for from a shell: `mcomix --page 42 book.cbz` opens the book at page 42.
+### Opening a book in another window ###
 
-Preferences
----
+Picking an entry under "File &rarr; Recent" or in the "Bookmarks" menu closes the book being read and opens the one picked. A bookmark in the book that is already open only turns to its page, so that the pages picked out and the changes that can be undone stay as they are; in a directory of images, the page is found by its file, wherever sorting has put it. Clicking an entry with the middle mouse button starts a second MComix on it instead, at the page a bookmark marks.
 
-To customize MComix, you can press the "F12" key to open the preferences dialog. All options are documented on the [Preferences] page.
+From a shell, `mcomix --page 42 book.cbz` opens a book at page 42.
 
 Editing and saving books
 ---
 
-"Edit &rarr; Edit archive..." opens the archive editor on the book that is open, which may be an archive or a directory of images. It has two tabs: "Images" lists the pages as thumbnails, and "Comment files" lists the text files that came with them. Pages are put in another order by dragging them, "Remove from archive" in either list's right-click menu takes out what is selected, and "Import" adds images from elsewhere on disk. Ctrl+Z takes the last change back and Ctrl+Y, or Ctrl+Shift+Z, puts it back again; both work whichever of the two lists has the focus.
+"Edit &rarr; Edit archive..." opens the archive editor on the book, which may be an archive or a directory of images. Its "Images" tab shows the pages as thumbnails, which can be dragged into another order, and its "Comment files" tab lists the text files that came with them. "Remove from archive", in the right-click menu of either list, takes out what is selected, and "Import" adds images from elsewhere on disk. CTRL+Z undoes a change, and CTRL+Y or CTRL+SHIFT+Z redoes it.
 
-"Apply" hands the edited page list to the main window without writing anything to disk, so the book can be read in its new order before it is saved anywhere. "Save As" writes the pages and the comment files out as a new archive. "Cancel" leaves both the book and the archive as they were.
+"Apply" hands the edited page list to the main window without writing anything to disk, so that the book can be read in its new order before it is saved. "Save As" writes the pages and the comment files out as a new archive. "Cancel" leaves the book and the archive as they were.
 
-Pages can also be taken out without opening the editor: "Delete page" in the page's right-click menu removes the page the menu was opened over, and "Edit &rarr; Undo" puts it back. The archive on disk is not touched until it is written, and MComix offers to write it after each removal; the offer stops being made once "Do not ask again" is ticked in it, and can be asked for again under "Prompts answered for good" in the preferences dialog.
+Pages can also be taken out in the main window. "Delete page", in the page's right-click menu, removes the page the menu was opened over, and "Edit &rarr; Undo" puts it back. CTRL and a click picks a page out, which is drawn outlined, and another such click puts it back; Delete then removes every page picked out, and the archive editor opens with them selected. The archive on disk is not touched until it is written. MComix offers to write it after a removal, and when a book with pages still picked out is left; either offer can be answered for good, and taken back under "Prompts answered for good" in the preferences.
 
 ### The format a save is written in ###
 
-Archives are written as ZIP files whatever they were read as, a ZIP of pictures being what every reader of comics understands. With "Save an edited archive in the format it was opened in" set in the preferences dialog, a book is written back in the format it came in wherever MComix can write that format: ZIP and tar always, 7z on a machine that has the `7z` program and RAR on one that has `rar`. Neither of those two is installed by MComix, and `unrar`, which is what a RAR is read with, only ever reads. A PDF is never written back.
+Archives are saved as ZIP files, whatever they were read as. With "Save an edited archive in the format it was opened in" set in the preferences, a book is written back in its own format where MComix can write that: ZIP and tar always, 7z where the `7z` program is installed, and RAR where `rar` is. `unrar`, which reads RAR files, cannot write them, and a PDF is never written back.
 
-Writing a book back over its own file needs that preference as well, since the file keeps the name it has and the name has to keep saying what the file is. Without it, only a book that was already a ZIP can be written over itself, and the rest can be written only to a new file with "Save As".
+The same preference is needed to write a book back over its own file, since the file keeps its name and the name has to go on saying what the file is. Without it, only a ZIP can be written over itself, and anything else is saved to a new file with "Save As".
 
 ### ComicInfo.xml ###
 
-Every archive MComix saves comes out carrying a ComicInfo.xml, whatever format it was written in: a CBZ, a CBT, a CB7 and a CBR are read by the same programs, and the file goes in before the format is chosen. That is the metadata file at the root of a comic archive, and the one thing readers of them agree on: it says how many pages the book has and how large each page is, which is what lets another reader lay the book out before it has decoded a single image.
-
-Two fields are written, PageCount and Pages. The rest of the format describes the comic rather than the file - the series, the writer, the year the issue came out - which is not something MComix knows and not something it should guess at. An archive that came with a ComicInfo.xml keeps every field that file had: it is carried through as it stands, and rewritten only where a page added or removed has made its page count untrue. Nothing MComix shows is read out of it; what the pages are and what order they go in is the archive's own business.
+Every archive MComix saves carries a ComicInfo.xml, the metadata file at the root of a comic archive that readers of them agree on. MComix writes two of its fields, PageCount and Pages, which give the number of pages and the size of each, so that another reader can lay the book out before decoding it. An archive that came with a ComicInfo.xml keeps every other field in it. MComix does not read the file itself.
 
 The book library
 ---
 
-MComix also has a library for organizing and keeping track of comic books. While it in no way is meant to replace a full-featured file manager, being able to categorize books into collections and showing a list of all book covers should normally be enough to allow the user quick access to his favorite books. The library only adds archives, not directories. So, a "book" in this context refers to a single archive of any format MComix can open.
+The library, CTRL+L, files books in collections and shows their covers. A book is an archive in any format MComix opens; a directory cannot be added.
 
 [[img src="mcomix-library.png" alt="Library window"]]
 
-The left side shows a list of collections, while the right side shows all books within the selected collection. The collection "All books" is special, as it automatically contains all books in every single collection. Collections can be nested by dragging one onto the collection it is to sit under, and books can be filed by dragging them from the book view onto a collection. When a collection is selected, books will be shown from the collection itself and from any children collections.
+The collections are on the left, and the books of the one selected on the right, including those in the collections under it. "All books" holds every book in the library. Drag a collection onto another to file it there, and drag books onto a collection to add them to it. The search field shows only the books whose name or path contains what is typed.
 
-Right-clicking the collection list offers "New" for an empty collection, "Add..." to put books into the one clicked, and, for the collection clicked, "Rename", "Duplicate", "Clean up" - which drops the books whose files have gone away - and "Remove". Removing a collection removes the shelf and not the books on it: they stay in the library, and a collection filed under the one removed is moved to the top level rather than going with it.
+Right-clicking a collection offers "New", "Add...", "Rename", "Duplicate", "Clean up", which drops the books whose files are gone, and "Remove". Removing a collection keeps its books in the library, and moves the collections under it to the top level.
 
-Right-clicking the book view offers "Open", "Open without closing library" and "Add...", three ways to take books out - "Remove from this collection", "Remove from the library" and "Remove and delete from disk", which is the only one that touches the files - and "Copy", which puts the books on the clipboard. The same menu sets how the view is sorted, by book name, full path, file size or date added, ascending or descending, and how large the covers are drawn. Clicking a cover with the middle mouse button starts a second MComix on that book, leaving the library and the book being read where they are.
+Right-clicking the books offers "Open", "Open without closing library", "Add...", three ways to take them out - "Remove from this collection", "Remove from the library" and "Remove and delete from disk", the only one that touches the files - and "Copy", which puts the books on the clipboard. Its "Sort" and "Cover size" submenus set the order, by book name, full path, file size or date added, and how large the covers are drawn. Clicking a cover with the middle mouse button starts a second MComix on that book.
 
 ### Library watch list ###
 
-By using the watch list, MComix can keep track of certain directories and automatically add new books to the library when they are added to those directories. The list is opened from the library's own window, and each directory in it names the collection new books go into and whether the directories under it are walked as well. "Scan now" searches the watched directories at once and leaves the list open; closing the list searches them too, if anything in it was edited. With "Automatically scan for new books when library is opened" ticked, the same search runs every time the library is opened.
+The watch list, opened from the library window, names directories to look in for new books, each with the collection its books go into and whether the directories under it are searched as well. "Scan now" searches them at once, and closing the list searches them if it was edited. With "Automatically scan for new books when library is opened" ticked, the search runs whenever the library is opened.
 
 ### Recent books ###
 
-With "Store information about recently opened files" set to "Always" in the preferences dialog, every archive opened from within the program is added to a collection called "Recent", unless it has no pages to show. From there it can be moved into another collection. Setting it to "Never" clears the history as well as stopping it from being kept.
+While "Store information about recently opened files" is set to "Always", every archive with pages that is opened in MComix joins the "Recent" collection, which remembers the page it was left at. Setting it to "Never" stops that, and offers to clear what is kept.
 
 Execute external programs
 ---
 
-MComix can run a list of user-defined commands on the currently opened file/directory/archive. This might include external image viewers, file management tools or custom shell scripts. Please see [External_Commands] for more information.
+"File &rarr; Open with" runs programs of your choosing on the file that is open. The [External_Commands] page describes how to set them up.

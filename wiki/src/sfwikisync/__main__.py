@@ -4,16 +4,22 @@ import argparse
 import enum
 import glob
 import logging
+import os
 import pathlib
 import sys
 
+from . import github
 from .wikiclient import WikiClient
 from .wikipage import WikiPage
+
+#: The environment variable the bearer token is read from.
+TOKEN_VARIABLE = "SFWIKISYNC_BEARER_TOKEN"
 
 
 class Operations(enum.Enum):
     pull = 0
     push = 1
+    github = 2
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -24,7 +30,12 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument("-p", "--project", required=True)
     parser.add_argument("-w", "--wikiname", default="wiki")
     parser.add_argument("-d", "--contentdir", default="content")
-    parser.add_argument("-b", "--bearertoken")
+    parser.add_argument("-o", "--outdir", default="github")
+    # A token given on the command line lands in the shell's history and in
+    # the process list, so the environment is the better place for it.
+    parser.add_argument(
+        "-b", "--bearertoken", default=os.environ.get(TOKEN_VARIABLE)
+    )
     parser.add_argument(
         "operation", choices=[enumvalue.name for enumvalue in Operations]
     )
@@ -32,7 +43,8 @@ def parse_arguments() -> argparse.Namespace:
 
     if args.operation == Operations.push.name and not args.bearertoken:
         parser.error(
-            f"The {Operations.push.name} operation requires authentication with --bearertoken"
+            f"The {Operations.push.name} operation requires authentication: "
+            f"set {TOKEN_VARIABLE}, or pass --bearertoken"
         )
 
     return args
@@ -53,14 +65,16 @@ def pull(client: WikiClient, contentdir: str) -> None:
             logging.info(f"Downloaded '{pagename}'")
 
         page_path = basedir / page.filename()
-        with open(page_path, "w") as fp:
-            fp.write(page.text)
+        # The API keeps page text with Windows line endings, which the files
+        # in the repository do not have; push puts them back.
+        with open(page_path, "w", encoding="utf-8", newline="\n") as fp:
+            fp.write(page.text.replace("\r\n", "\n"))
 
 
 def read_page_text(path: pathlib.Path) -> str:
     """Reads the content of the given path, converting line endings to Windows endings if needed (since
-    the SF API seems to store page text with Windows line endings."""
-    with open(path, "r") as fp:
+    the SF API keeps page text with Windows line endings)."""
+    with open(path, "r", encoding="utf-8") as fp:
         page_text = fp.read()
         if "\r\n" not in page_text and "\n" in page_text:
             page_text = page_text.replace("\n", "\r\n")
@@ -87,11 +101,44 @@ def push(client: WikiClient, contentdir: str) -> None:
             logging.info(f"No change to '{page_title}'")
 
 
+def convert_to_github(project: str, contentdir: str, outdir: str) -> bool:
+    """Converts all markdown files in the content directory to GitHub Markdown, and writes them into
+    the output directory. Existing files are overwritten without confirmation. Returns False, having
+    written nothing, if a page is out of the shapes wiki/Readme.md permits."""
+    pages = {
+        path.stem: path.read_text(encoding="utf-8")
+        for path in sorted(pathlib.Path(contentdir).glob("*.md"))
+    }
+    try:
+        converted = github.convert(pages, project)
+    except github.ConversionError as error:
+        logging.error(error)
+        return False
+
+    basedir = pathlib.Path(outdir)
+    basedir.mkdir(parents=True, exist_ok=True)
+    for name, text in converted.items():
+        (basedir / f"{name}.md").write_text(text, encoding="utf-8")
+        logging.info(f"Converted '{name}'")
+    # The attachments are not part of a page's text, so they are not fetched.
+    for image in github.images(pages):
+        logging.info(
+            f"Copy '{image.filename}', attached to '{image.page}', into {basedir / github.IMAGE_DIR}"
+        )
+    return True
+
+
 def main() -> int:
     logging.basicConfig(
         format="%(asctime)s %(levelname)s: %(message)s", level=logging.INFO
     )
     program_args = parse_arguments()
+    if program_args.operation == Operations.github.name:
+        converted = convert_to_github(
+            program_args.project, program_args.contentdir, program_args.outdir
+        )
+        return 0 if converted else 1
+
     client = WikiClient(
         program_args.project, program_args.wikiname, program_args.bearertoken
     )

@@ -1,96 +1,83 @@
-# Installation instructions
+# Installation
 
 [TOC]
 
-## Installation on Linux
-MComix is available in most major distributions' packaging systems, and should be installed using the distribution's system mechanism if possible. If your distribution only ships an ancient version of MComix, you might opt to install it as Flatpak instead.
+## Linux
 
-### Ubuntu / Debian
-Ubuntu has packaged an up-to-date version of MComix starting with Ubuntu 23.04 (Lunar). The same holds true for Debian 12 (Bookworm).
+Most distributions package MComix. Install it with the distribution's own package manager where that version is current, and from Flathub where it is not.
 
-    :::bash
-    ~ $ sudo apt install mcomix
+Distribution | Command
+-------------|--------
+Debian 12 or later, Ubuntu 23.04 or later | `sudo apt install mcomix`
+openSUSE Leap 15.4 or later | `sudo zypper install mcomix`
+Arch Linux, from the AUR | `yay -S mcomix`
+Any, with [Flatpak](https://flatpak.org/setup/) | `flatpak install flathub net.sourceforge.mcomix`
 
-### openSUSE
-openSUSE users can download a current MComix version starting from openSUSE 15.4 (Leap)
+## Windows
 
-    :::bash
-    ~ $ sudo zypper install mcomix
+Package manager | Command
+----------------|--------
+[WinGet](https://learn.microsoft.com/en-us/windows/package-manager/winget/) | `winget install mcomix`
+[Chocolatey](https://chocolatey.org/install) | `choco install -y mcomix`
+[Scoop](https://scoop.sh/), Extras bucket | `scoop bucket add extras`, then `scoop install extras/mcomix`
 
-### Arch Linux
-The Arch Linux User Repository (AUR) usually has the most current version of MComix.
+Without a package manager, run the MSI installer, which needs administrator rights. Where those are not available, extract `mcomix-win64-<version>.zip` anywhere and run `MComix.exe` from there. Both carry everything MComix needs.
 
-    :::bash
-    ~ $ yay -S mcomix
+Uninstalling leaves the preferences, the library and the bookmarks in `%APPDATA%\MComix`. Delete that folder to remove them as well.
 
-### Flathub
+<a name="dependencies"></a>
+## Dependencies
 
-If your distribution supports the installation of [Flatpaks](https://flatpak.org/setup/), you can download and install MComix from Flathub:
+Running MComix from source requires:
 
-    :::bash
-    ~ $ flatpak install flathub net.sourceforge.mcomix
+- [Python 3.12](https://www.python.org/) or newer;
+- [GTK 4](https://www.gtk.org/), [PyGObject](https://pygobject.readthedocs.io/) 3.46.0 or newer and [pycairo](https://github.com/pygobject/pycairo) 1.25.0 or newer;
+- [Pillow](https://pypi.org/project/Pillow/) 10.1.0 or newer.
 
-## Installation on Windows
+Everything else is optional. Programs are looked for on the `PATH`.
 
-### Winget
-Starting with version 3.0.0, MComix is available from the [WinGet package manager](https://learn.microsoft.com/en-us/windows/package-manager/winget/).
+Package or program | What it adds
+-------------------|-------------
+[libadwaita](https://gnome.pages.gitlab.gnome.org/libadwaita/) | MComix follows the desktop's GTK 4 theme throughout. Without it, it follows as much of the theme as plain GTK 4 can.
+[PyMuPDF](https://pypi.org/project/PyMuPDF/) 1.23.5 or newer, or `mutool` from [MuPDF](https://mupdf.com/) | PDF files.
+The [UnRAR library](https://www.rarlab.com/rar_add.htm) (`libunrar.so` or `UnRAR64.dll`), or the `unrar` or `rar` program | RAR files. `unrar-free` is not used.
+`7z` | 7z files; ZIP, LHA, xz and lzma files that Python cannot read itself; and RAR files, as a last resort.
+`lha` | LHA files, where there is no `7z`.
+`unzip` | ZIP files that Python cannot read itself, where there is no `7z`.
+[chardet](https://pypi.org/project/chardet/) | Guesses the encoding of file names and comment files that are not UTF-8.
 
-    :::powershell
-    PS > winget install mcomix
+## Running from source
 
-### Chocolatey
-Users of the [Chocolatey package manager](https://chocolatey.org/install) can download the `mcomix` package, which takes care of installation and upgrading MComix.
+Install GTK 4 and PyGObject first, as PyGObject's [Getting Started guide](https://pygobject.readthedocs.io/en/latest/getting_started.html) describes. Then create a [virtual environment](https://docs.python.org/3/library/venv.html) and install MComix into it from the source archive:
 
-    :::powershell
-    PS > choco install -y mcomix
+~~~~~~
+:::bash
+python3 -m venv --system-site-packages mcomix-venv
+tar -xzf mcomix-<version>.tar.gz
+cd mcomix-<version>
+../mcomix-venv/bin/python -m pip install .
+~~~~~~
 
-### Scoop
-MComix is also available in the Extras bucket of the [Scoop package manager](https://scoop.sh/). Follow the following steps in a console:
+`--system-site-packages` lets the environment use the PyGObject installed above; without it, pip tries to build PyGObject from source. Install `'.[fileformats]'` instead of `.` to add PyMuPDF and chardet. MComix is then run as `mcomix-venv/bin/mcomix`.
 
-    :::bash
-    > scoop bucket add extras
-    > scoop install extras/mcomix
+On Linux, the `share` folder of the source archive holds the desktop file, the icons, the MIME types, the AppStream metadata and the manual page, laid out as they belong under `/usr/local/share`. Copy them there for desktop integration; pip neither installs nor removes them.
 
-### Manual installation
-Simply install the MSI package. The installation requires administrator access. If such access is not available on the machine you plan to use MComix on, you can fall back to extracting `mcomix-win64-<version>.zip` anywhere on your harddisk, and run `MComix.exe` from there.
+To uninstall, delete the virtual environment. The preferences are kept in `~/.config/mcomix`, and the library and the bookmarks in `~/.local/share/mcomix`.
 
-The uninstaller leaves user data, such as the configuration and library contents, on your disk. To completely remove these files, manually delete the folder `%APPDATA%/MComix`.
+## Developing MComix
 
-# Running MComix from source
-Since MComix has heavy dependencies on non-Python binary packages that are tedious to install, running it from source is somewhat difficult. At the very least, you will need PyGObject, which has a very good [Getting Started guide](https://pygobject.readthedocs.io/en/latest/getting_started.html) for various operating systems. MComix requires *GTK 4*, which is the version that guide installs, so its package manager calls can be followed as they are written.
+Clone the repository, and install it in editable mode with the development tools, so that changes to the source take effect the next time MComix starts:
 
-With PyGObject installed, you can now create a virtual environment for MComix. Virtual environments are used in Python to separate the dependencies of various Python applications from each other, in order to avoid dependency conflicts between system and application packages. Virtual environments can be created in a variety of ways using different packages, but the most simple is probably using the `venv` package, which is often bundled with Python.
+~~~~~~
+:::bash
+git clone https://git.code.sf.net/p/mcomix/git mcomix
+cd mcomix
+../mcomix-venv/bin/python -m pip install -e '.[dev]'
+~~~~~~
 
-    :::bash
-    ~ $ python3 -m venv --system-site-packages mcomix-venv
-    ~ $ source mcomix-venv/bin/activate
-    (mcomix-venv) ~ $
+The test suite opens windows, so run it under `xvfb-run`:
 
-Using the `--system-site-packages` switch is important to give the environment access to system packages. Without it, you will be missing the pre-built PyGObject library, and Python will attempt to build it from source, which will likely fail unless you installed a lot of additional dependencies. When the virtual environment has been activated by sourcing the activation script, all calls to `python`, `pip` and similar Python tools will now refer to your virtual environment instead of the system environment. This means that you can easily install packages even without elevated rights, and uninstall them quickly by deleting the virtual environment directory. Instead of first activating the virtual environment in the shell, it is also possible to call `mcomix-venv/bin/python` directly.
-
-With the virtual environment activated, extract the MComix source tarball and install the package using the `pip` standard module:
-
-    :::bash
-    (mcomix-venv) ~ $ tar -xzf mcomix-<versionnr>.tar.gz
-    (mcomix-venv) ~ $ cd mcomix-<versionnr>
-    (mcomix-venv) mcomix-<versionnr> $ python -m pip install .
-
-Pip now installs all required dependencies as well as the `mcomix` executable. When the virtual environment is active, calling `mcomix` will now run the program. You can also run `mcomix-venv/bin/mcomix` directly without activating the virtual environment.
-
-If you want additional file format support for MComix, install the optional dependency `fileformats`:
-
-    :::bash
-    (mcomix-venv) mcomix-<versionnr> $ python -m pip install .[fileformats]
-
-On Linux, you may want to copy additional application meta files to `/usr/local/share/` for better desktop integration. All files are stored in the `share` folder in the MComix source archive, with paths already matching their expected destination in `/usr/local/share`. Please note that these files cannot be automatically uninstalled when copied by hand.
-
-The extracted MComix directory can now be safely deleted. To uninstall MComix, simply delete the virtual environment folder, and MComix' settings directory. It can be found in your user directory, usually `~/.config/mcomix` on Linux and `%APPDATA%/MComix` on Windows.
-
-# Developing MComix
-
-You can mostly follow the regular instructions above. Instead of using a source tarball, check out the repository from SourceForge with Git. Then, in the repository folder, install an editable package of MComix by passing the `-e` switch to `pip install`. This will still download all dependencies, but instead of copying a read-only package to your virtual environment, the package will be linked to the repository source code. This way, you can modify the source code, and changes will appear immediately after restarting MComix.
-
-    :::bash
-    (mcomix-venv) mcomix $ python -m pip install -e .[dev]
-
-The `dev` optional dependency installs tools for static code analysis, Python language server and other useful tools.
+~~~~~~
+:::bash
+xvfb-run -a ../mcomix-venv/bin/python -m pytest test/ -n 8
+~~~~~~

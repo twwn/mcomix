@@ -19,7 +19,7 @@ operating system package manager.
 ## Dependencies
 
 For a list of packages and libraries needed to run MComix, please refer to
-[our documentation](https://sourceforge.net/p/mcomix/wiki/Home/#Dependencies).
+[our documentation](https://sourceforge.net/p/mcomix/wiki/Installation/#dependencies).
 
 ## Credits
 

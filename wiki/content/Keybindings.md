@@ -1,9 +1,9 @@
 Keybindings
 ===
 
-Most menu items carry a hotkey, which is shown beside the menu label. Some functions have no menu entry of their own, and some answer to keys the menus do not mention. The tables below list what every function is bound to when MComix is installed; all of it can be changed, as the last section describes.
+Menu items show their key beside their label. The tables below list every binding MComix starts with, including those of functions with no menu item. All keys except the two bookmark ones can be changed, as the last section describes.
 
-Keys are written the way a keyboard names them. `KeyPad` is the numeric keypad, so `KeyPadHome` is the Home key on the keypad rather than the one above the arrows.
+Keys are written as a keyboard names them. `KeyPad` is the numeric keypad, so `KeyPadHome` is the Home key on the keypad. `BackMouse` and `ForwardMouse` are the thumb buttons a mouse marks "back" and "forward".
 
 Opening files and moving from page to page
 ---
@@ -14,11 +14,11 @@ Open file | CTRL+O
 Open library | CTRL+L
 Close file | CTRL+W
 Next page | PageDown, KeyPadPageDown, LeftMouse
-Previous page | PageUp, KeyPadPageUp, Backspace, BackMouse
+Previous page | PageUp, KeyPadPageUp, Backspace, BackMouse, ALT+RightMouse
 Page to the right | ALT+Right, MouseWheelRight
 Page to the left | ALT+Left, MouseWheelLeft
 Forward ten pages | SHIFT+PageDown, SHIFT+KeyPadPageDown, SHIFT+ALT+Right, SHIFT+LeftMouse
-Back ten pages | SHIFT+PageUp, SHIFT+KeyPadPageUp, SHIFT+Backspace, SHIFT+ALT+Left
+Back ten pages | SHIFT+PageUp, SHIFT+KeyPadPageUp, SHIFT+Backspace, SHIFT+ALT+Left, SHIFT+RightMouse
 Forward only one page (in double page mode) | CTRL+PageDown, CTRL+KeyPadPageDown
 Go back only one page (in double page mode) | CTRL+PageUp, CTRL+KeyPadPageUp, CTRL+Backspace
 First page | Home, KeyPadHome
@@ -29,7 +29,7 @@ Previous archive | SHIFT+CTRL+P
 Next directory | CTRL+N
 Previous directory | CTRL+P
 
-In manga mode a book reads right to left, so the page to the right is the previous one and the page to the left is the next. The sideways wheel and ALT with the arrow keys follow the book that way round; PageDown and PageUp do not, and always go forward and back.
+In manga mode the page to the right is the previous one, and the page to the left the next. PageDown and PageUp always go forward and back.
 
 Reading and scrolling
 ---
@@ -40,16 +40,15 @@ Scroll down | Down, KeyPadDown
 Scroll up | Up, KeyPadUp
 Scroll left | Left, KeyPadLeft
 Scroll right | Right, KeyPadRight
+Scroll by dragging the page | LeftMouse
 Smart scroll down | Space, MouseWheelDown
 Smart scroll up | SHIFT+Space, MouseWheelUp
 Inverse direction of smart scrolling | X
-Scroll to left, right, bottom, top | KeyPad1 to KeyPad9
+Align the page to a corner, an edge or the centre | KeyPad1 to KeyPad9, as the keys lie
 Show magnifying lens | L, MiddleMouse
 Show OSD panel | TAB, ForwardMouse
 
-Smart scrolling is what the wheel does only while "Use smart scrolling" is on in the preferences; otherwise the wheel scrolls by a fixed number of pixels and turns the page where there is nothing left to scroll.
-
-`BackMouse` and `ForwardMouse` are the two thumb buttons a mouse that has them marks "back" and "forward". A book has no history to move through, so back is the previous page; forward is left for the OSD panel, because the next page is already on the left mouse button.
+The wheel scrolls smartly only while "Use smart scrolling" is on in the preferences, and by a fixed number of pixels otherwise.
 
 The view
 ---
@@ -67,8 +66,8 @@ Fit to height mode | H
 Fixed size mode | S
 Manual zoom mode | A
 Stretch small images | Y
-Zoom in | Plus, KeyPadAdd, Equal
-Zoom out | Minus, KeyPadSubtract
+Zoom in | Plus, KeyPadAdd, Equal, CTRL+MouseWheelUp
+Zoom out | Minus, KeyPadSubtract, CTRL+MouseWheelDown
 Reset zoom | CTRL+0, KeyPad0
 Rotate 90 degrees clockwise | R
 Rotate 90 degrees anticlockwise | SHIFT+R
@@ -78,7 +77,7 @@ Show/hide menubar | CTRL+M
 Show/hide thumbnails | F9
 Hide/show all UI elements | I
 
-Escape leaves fullscreen mode unless "Escape key closes program" is on in the preferences, in which case it quits instead. Rotating by 180 degrees, flipping the page, turning autorotation off and showing or hiding the toolbar, the statusbar and the scrollbars have no key of their own until one is given to them.
+Escape quits instead where "Escape key closes program" is on in the preferences.
 
 Other functions
 ---
@@ -91,21 +90,25 @@ Properties | ALT+Return
 Enhance image | E
 Save currently opened image | CTRL+SHIFT+S
 Reload currently opened directory or archive | CTRL+SHIFT+R
+Pick a page out, or put it back | CTRL+LeftMouse
 Delete the page or the file | Delete
 Undo | CTRL+Z
 Redo | CTRL+Y, CTRL+SHIFT+Z
 Add bookmark | CTRL+D
 Edit bookmarks | CTRL+B
+Open the page's menu | RightMouse
 Minimize window | N
 Quit program | CTRL+Q
 Save and quit | CTRL+SHIFT+Q
 Execute first, second, ... external command (see [External_Commands]) | 1 to 9
 
-Editing an archive has no key of its own until one is given to it.
+Delete takes the pages picked out with CTRL+LeftMouse out of the book; with none picked out, it asks before deleting the file from disk.
+
+These functions have no key until one is given to them: Rotate 180°, Flip horizontally, Flip vertically, Never autorotate, the two rotations under "Autorotate by width" and the two under "Autorotate by height", Toolbar, Statusbar, Scrollbars and Edit archive.
 
 Customizing hotkeys
-===================
+---
 
-Every binding above can be changed in the Shortcuts tab of the preferences dialog, which lists each function with the keys it answers to. Click a key to change it, then press the combination you want; an accelerator that already reaches another function is taken off that one, which the dialog says. An action can answer to more than one combination, so a function can be given a second key without losing the first.
+The Shortcuts tab of the preferences dialog lists every function by group, with a column for each of its keys. Click a key and press the combination you want; Backspace or Delete clears it, and Escape leaves it as it was. A combination reaches one function only, so giving it to one takes it off any other.
 
-The bindings are kept in `keybindings.conf` in MComix' configuration directory, as JSON. It is written when the program closes, so do not edit it while MComix is running.
+The bindings are kept as JSON in `keybindings.conf`, in MComix' configuration directory. MComix writes that file whenever a binding is changed and again when it closes, so edit it by hand only while MComix is not running.
