@@ -81,7 +81,7 @@ class FitzManager(BaseManager):
 
     if TYPE_CHECKING:
         def open(self, filename: str) -> None: ...
-        def page_count(self) -> int: ...
+        def page_count(self) -> BaseProxy: ...
         def iter_contents(self) -> Iterator[str]: ...
         def extract_pages(self, entries: Iterable[str],
                           save_path: str) -> Iterator[str]: ...
@@ -109,8 +109,13 @@ class FitzProcessWrangler(threading.local):
             self.log.setLevel(log_level)
 
     def page_count(self) -> int:
-        """Get the number of pages in the PDF."""
-        return self.mgr.page_count()
+        """Get the number of pages in the PDF.
+
+        A registered call answers with a proxy for its result rather than
+        the result, which is fetched from it here: FitzArchive logged the
+        proxy with %d, which raised once debug logging was on.
+        """
+        return cast(int, self.mgr.page_count()._getvalue())
 
     def iter_contents(self) -> Iterator[str]:
         """Return an iterator over all the page filenames in the PDF."""

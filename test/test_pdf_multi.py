@@ -186,4 +186,31 @@ class FitzWorkerTest(MComixTest):
     def test_page_count(self):
         self.assertEqual(self._worker(text_page=True).page_count(), 2)
 
+
+@unittest.skipUnless(pdf_multi.PdfMultiArchive is not pdf_multi.DisabledFitzArchive,
+                     'native PDF handler is not available')
+class FitzArchiveTest(MComixTest):
+
+    """The handler as MComix uses it: the document open in a worker
+    process of its own, reached through a multiprocessing manager."""
+
+    def setUp(self):
+        super().setUp()
+        self.pdf = os.path.join(self.tmp_dir, 'book.pdf')
+        _make_pdf(self.pdf)
+
+    def test_the_page_count_is_a_number(self):
+        """A call through the manager answers with a proxy for the result,
+        not the result: FitzArchive logged "PDF contains %d pages" with
+        the proxy, which raised as soon as debug logging was on."""
+        archive = pdf_multi.PdfMultiArchive(self.pdf)
+        try:
+            count = archive.mgr.page_count()
+        finally:
+            # Left running, the manager's process outlives the test.
+            archive._mgr.mgr.shutdown()
+            archive.close()
+        self.assertIsInstance(count, int)
+        self.assertEqual(1, count)
+
 # vim: expandtab:sw=4:ts=4
