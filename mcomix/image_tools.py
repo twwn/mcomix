@@ -350,12 +350,19 @@ def set_from_pixbuf(image, pixbuf):
     else:
         return image.set_from_pixbuf(pixbuf)
 
+#: The providers load_pixbuf() tries, in order.
+_PIXBUF_PROVIDERS = (constants.IMAGEIO_GDKPIXBUF, constants.IMAGEIO_PIL)
+
 def load_pixbuf(path):
     """ Loads a pixbuf from a given image file. """
     pixbuf = None
     last_error = None
-    providers = get_image_info(path)[2]
-    for provider in providers:
+    # Asking get_image_info() which provider to prefer costs another pass
+    # over the file - as much again as decoding it, where gdk-pixbuf's
+    # loaders run sandboxed - and cannot change the outcome.  It puts PIL
+    # first for exactly the files gdk-pixbuf could not identify, which are
+    # the files gdk-pixbuf goes on to fail to load, handing them to PIL.
+    for provider in _PIXBUF_PROVIDERS:
         try:
             # TODO use dynamic dispatch instead of "if" chain
             if provider == constants.IMAGEIO_GDKPIXBUF:
@@ -521,6 +528,14 @@ def _get_png_implied_rotation(pixbuf_or_image):
         orientation = str(orientation)
     return orientation
 
+#: Exif orientation tag, and the rotation each of its values implies.
+_EXIF_ORIENTATION_TAG = 274
+_IMPLIED_ROTATION = {'3': 180, '6': 90, '8': 270}
+
+def _implied_rotation(orientation: object) -> int:
+    """Return the rotation in degrees implied by an Exif <orientation>."""
+    return _IMPLIED_ROTATION.get(str(orientation), 0)
+
 def get_implied_rotation(pixbuf):
     """Return the implied rotation in degrees: 0, 90, 180, or 270.
 
@@ -536,13 +551,37 @@ def get_implied_rotation(pixbuf):
     if orientation is None:
         # Maybe it's a PNG? Try alternative method.
         orientation = _get_png_implied_rotation(pixbuf)
-    if orientation == '3':
-        return 180
-    elif orientation == '6':
-        return 90
-    elif orientation == '8':
-        return 270
-    return 0
+    return _implied_rotation(orientation)
+
+def get_implied_rotation_from_file(path: str) -> int:
+    """Same as <get_implied_rotation>, for an image that has not been loaded.
+
+    Only the image's header is read; the image itself is not decoded.
+    """
+    try:
+        with Image.open(path) as image:
+            orientation = image.getexif().get(_EXIF_ORIENTATION_TAG)
+            if orientation is None:
+                orientation = _get_png_implied_rotation(image)
+    except Exception:
+        return 0
+    return _implied_rotation(orientation)
+
+def get_image_size(path: str) -> tuple[int, int]:
+    """Return the (width, height) of the image at <path> without decoding it.
+
+    get_image_info() answers this as well, but by way of gdk-pixbuf, whose
+    header query costs as much as decoding the whole image where its
+    loaders run sandboxed.  This gets asked about pages that are only
+    being passed over, so read the header with PIL, and keep gdk-pixbuf
+    for the files PIL cannot identify.
+    """
+    try:
+        with Image.open(path) as image:
+            return image.size
+    except Exception:
+        width, height = get_image_info(path)[1]
+        return width, height
 
 
 def get_size_rotation(width, height):

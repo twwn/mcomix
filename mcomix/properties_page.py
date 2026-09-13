@@ -59,7 +59,8 @@ class _Page(Gtk.ScrolledWindow):
         set_main_info().
         """
         label = labels.BoldLabel(i18n.to_display_string(i18n.to_unicode(filename)))
-        label.set_alignment(0, 0.5)
+        label.set_xalign(0)
+        label.set_yalign(0.5)
         label.set_selectable(True)
         self._mainbox.pack_start(label, False, False, 0)
 
@@ -69,7 +70,8 @@ class _Page(Gtk.ScrolledWindow):
         """
         for text in info:
             label = Gtk.Label(label=text)
-            label.set_alignment(0, 0.5)
+            label.set_xalign(0)
+            label.set_yalign(0.5)
             label.set_selectable(True)
             self._mainbox.pack_end(label, False, False, 0)
 
@@ -85,10 +87,12 @@ class _Page(Gtk.ScrolledWindow):
         self._extrabox.pack_start(right_box, False, False, 0)
         for desc, value in info:
             desc_label = labels.BoldLabel('%s:' % desc)
-            desc_label.set_alignment(1.0, 1.0)
+            desc_label.set_xalign(1.0)
+            desc_label.set_yalign(1.0)
             left_box.pack_start(desc_label, True, True, 0)
             value_label = Gtk.Label(label=value)
-            value_label.set_alignment(0, 1.0)
+            value_label.set_xalign(0)
+            value_label.set_yalign(1.0)
             value_label.set_selectable(True)
             right_box.pack_start(value_label, True, True, 0)
 

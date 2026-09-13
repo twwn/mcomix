@@ -437,13 +437,14 @@ class _BookArea(Gtk.ScrolledWindow):
         """ Get or create the thumbnail for the selected book <uid>. """
         assert isinstance(uid, int)
         book = self._library.backend.get_book_by_id(uid)
-        if self._cache.exists(book.path):
-            pixbuf = self._cache.get(book.path)
-        else:
+        # One lookup rather than exists() plus get(): another worker thread
+        # may evict the entry in between, and get() would then return None.
+        pixbuf = self._cache.get(book.path)
+        if pixbuf is None:
             width, height = self._pixbuf_size(border_size=0)
             try:
                 pixbuf = self._library.backend.get_book_thumbnail(book.path) or image_tools.MISSING_IMAGE_ICON
-            except:
+            except Exception:
                 pixbuf = image_tools.MISSING_IMAGE_ICON
             pixbuf = image_tools.fit_in_rectangle(pixbuf, width, height, scale_up=True)
             self._cache.add(book.path, pixbuf)

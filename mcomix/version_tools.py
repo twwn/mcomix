@@ -10,7 +10,7 @@ unexpected version string.
 
 import functools
 import re
-from typing import Any, List, Tuple
+from typing import Any
 
 __all__ = ["Version"]
 
@@ -27,9 +27,9 @@ _DEV, _PRE_RELEASE, _OTHER, _RELEASE, _NUMBER = range(5)
 _SEPARATORS = '.-_+ '
 
 
-def _sort_key(version: str) -> Tuple[Any, ...]:
+def _sort_key(version: str) -> tuple[Any, ...]:
     """Return a tuple ordering C{version} against other versions."""
-    key: List[Tuple[int, Any]] = []
+    key: list[tuple[int, Any]] = []
     for token in _COMPONENT_RE.split(version.strip().lower()):
         token = token.strip(_SEPARATORS)
         if not token:

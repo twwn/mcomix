@@ -130,12 +130,11 @@ class __BookmarksStore(object):
         mtime = 0
 
         if os.path.isfile(path):
-            fd = None
             try:
                 mtime = int(os.stat(path).st_mtime)
-                fd = open(path, 'rb')
-                version = pickle.load(fd)
-                packs = pickle.load(fd)
+                with open(path, 'rb') as fd:
+                    pickle.load(fd)  # Version record, no longer used.
+                    packs = pickle.load(fd)
 
                 for pack in packs:
                     # Handle old bookmarks without date_added attribute
@@ -148,12 +147,6 @@ class __BookmarksStore(object):
 
             except Exception:
                 log.error(_('! Could not parse bookmarks file %s'), path)
-            finally:
-                try:
-                    if fd:
-                        fd.close()
-                except IOError:
-                    pass
 
         return bookmarks, mtime
 

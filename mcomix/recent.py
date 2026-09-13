@@ -5,7 +5,6 @@ from gi.repository import Gtk, GLib, GObject
 import sys
 
 from mcomix import preferences
-from mcomix import i18n
 from mcomix import portability
 from mcomix import archive_tools
 from mcomix import image_tools

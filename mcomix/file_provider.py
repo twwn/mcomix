@@ -3,7 +3,6 @@
     switching to the next/previous directory. """
 
 import os
-import re
 from gi.repository import GLib
 
 from mcomix import image_tools
@@ -143,27 +142,30 @@ class OrderedFileProvider(FileProvider):
             list_file() returns files in the new directory.
             Returns True if the directory was changed, otherwise False. """
 
-        directories = self.__get_sibling_directories(self.base_dir)
-        current_index = directories.index(self.base_dir)
-        if current_index < len(directories) - 1:
-            self.base_dir = directories[current_index + 1]
-            return True
-        else:
-            return False
-
+        return self.__switch_directory(1)
 
     def previous_directory(self):
         """ Switches to the previous sibling directory. Next call to
             list_file() returns files in the new directory.
             Returns True if the directory was changed, otherwise False. """
 
+        return self.__switch_directory(-1)
+
+    def __switch_directory(self, offset):
+        """ Switches to the sibling directory <offset> places away, and
+            returns True if there was one. """
+
         directories = self.__get_sibling_directories(self.base_dir)
-        current_index = directories.index(self.base_dir)
-        if current_index > 0:
-            self.base_dir = directories[current_index - 1]
-            return True
-        else:
+        try:
+            index = directories.index(self.base_dir) + offset
+        except ValueError:
+            # The directory is not among its own siblings: it is the root of
+            # the file system, or it was removed while it was open.
             return False
+        if 0 <= index < len(directories):
+            self.base_dir = directories[index]
+            return True
+        return False
 
     def __get_sibling_directories(self, dir):
         """ Returns a list of all sibling directories of <dir>,

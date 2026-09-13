@@ -125,6 +125,18 @@ def migrate_home_config_path() -> None:
             shutil.move(old_config_dir, constants.CONFIG_DIR)
 
 
+def _move_corrupt_file_aside(path: str, error: BaseException) -> None:
+    """ Rename an unreadable configuration file, so a fresh one can be
+    written in its place. """
+    # Gettext might not be installed yet at this point.
+    corrupt_name = "%s.broken" % path
+    print('! Corrupt preferences file (%s), moving to "%s".' % (error, corrupt_name))
+    try:
+        os.replace(path, corrupt_name)
+    except OSError as rename_error:
+        print('! Could not move it: %s' % rename_error)
+
+
 def read_preferences_file() -> None:
     """Read preferences data from disk."""
 
@@ -134,31 +146,21 @@ def read_preferences_file() -> None:
 
     if os.path.isfile(constants.PREFERENCE_PATH):
         try:
-            config_file = open(constants.PREFERENCE_PATH, 'r')
-            saved_prefs = json.load(config_file)
-            config_file.close()
-        except:
-            # Gettext might not be installed yet at this point.
-            corrupt_name = "%s.broken" % constants.PREFERENCE_PATH
-            print(('! Corrupt preferences file, moving to "%s".' %
-                   corrupt_name))
-            if os.path.isfile(corrupt_name):
-                os.unlink(corrupt_name)
-
-            try:
-                # File cannot be moved without closing it first
-                config_file.close()
-            except:
-                pass
-
-            os.rename(constants.PREFERENCE_PATH, corrupt_name)
+            with open(constants.PREFERENCE_PATH, 'r') as config_file:
+                saved_prefs = json.load(config_file)
+        except ValueError as error:
+            # Unparsable: json raises JSONDecodeError, and a file in some
+            # other encoding raises UnicodeDecodeError. Both are ValueErrors.
+            _move_corrupt_file_aside(constants.PREFERENCE_PATH, error)
+        except OSError as error:
+            # Readable again next time, most likely; leave the file alone.
+            print('! Could not read preferences file: %s' % error)
 
     elif os.path.isfile(constants.PREFERENCE_PICKLE_PATH):
         try:
-            config_file = open(constants.PREFERENCE_PICKLE_PATH, 'rb')
-            version = pickle.load(config_file)
-            saved_prefs = pickle.load(config_file)
-            config_file.close()
+            with open(constants.PREFERENCE_PICKLE_PATH, 'rb') as config_file:
+                pickle.load(config_file)  # Version record, no longer used.
+                saved_prefs = pickle.load(config_file)
 
             # Remove legacy format preferences file
             os.unlink(constants.PREFERENCE_PICKLE_PATH)

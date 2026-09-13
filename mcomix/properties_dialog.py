@@ -12,6 +12,7 @@ except ImportError:
     _has_pwd = False
 
 from mcomix import i18n
+from mcomix import log
 from mcomix import strings
 from mcomix import properties_page
 from mcomix import tools
@@ -115,7 +116,8 @@ class _PropertiesDialog(Gtk.Dialog):
         ]
         try:
             stats = os.stat(location)
-        except OSError as e:
+        except OSError as error:
+            log.debug('Could not stat "%s": %s', location, error)
             page.set_secondary_info(secondary_info)
             return
         if _has_pwd:

@@ -156,7 +156,7 @@ class ImageHandler(object):
         be displayed has a width that exceeds its height), or if currently
         on the first page.
         """
-        if page == None:
+        if page is None:
             page = self.get_current_page()
 
         if (page == 1 and
@@ -172,16 +172,32 @@ class ImageHandler(object):
         for page in (page, page + 1):
             if not self.page_is_available(page):
                 return False
-            pixbuf = self._get_pixbuf(page - 1)
-            width, height = pixbuf.get_width(), pixbuf.get_height()
-            if prefs['auto rotate from exif']:
-                rotation = image_tools.get_implied_rotation(pixbuf)
-                if tools.rotation_swaps_axes(rotation):
-                    width, height = height, width
+            width, height = self._get_displayed_size(page)
             if width > height:
                 return True
 
         return False
+
+    def _get_displayed_size(self, page: int) -> tuple[int, int]:
+        """Return the (width, height) <page> will be displayed at.
+
+        Reads the image's header rather than decoding it, unless it happens
+        to be in the cache already.  Every page stepped over is asked this,
+        so decoding each one of them made holding a page key down crawl.
+        """
+        pixbuf = self._raw_pixbufs.get(page - 1)
+        if pixbuf is not None:
+            width, height = pixbuf.get_width(), pixbuf.get_height()
+            rotation = (image_tools.get_implied_rotation(pixbuf)
+                        if prefs['auto rotate from exif'] else 0)
+        else:
+            path = self.get_path_to_page(page)
+            width, height = image_tools.get_image_size(path)
+            rotation = (image_tools.get_implied_rotation_from_file(path)
+                        if prefs['auto rotate from exif'] else 0)
+        if tools.rotation_swaps_axes(rotation):
+            width, height = height, width
+        return width, height
 
     def get_real_path(self):
         """Return the "real" path to the currently viewed file, i.e. the
@@ -298,13 +314,13 @@ class ImageHandler(object):
             page = self.get_current_page()
 
         first_path = self.get_path_to_page(page)
-        if first_path == None:
+        if first_path is None:
             return None
 
         if double:
             second_path = self.get_path_to_page(page + 1)
 
-            if second_path != None:
+            if second_path is not None:
                 first = os.path.basename(first_path)
                 second = os.path.basename(second_path)
             else:
@@ -329,12 +345,12 @@ class ImageHandler(object):
             page = self.get_current_page()
 
         first_path = self.get_path_to_page(page)
-        if first_path == None:
+        if first_path is None:
             return returnvalue_on_error
 
         if double:
             second_path = self.get_path_to_page(page + 1)
-            if second_path != None:
+            if second_path is not None:
                 try:
                     first = tools.format_byte_size(os.stat(first_path).st_size)
                 except OSError:
@@ -413,7 +429,7 @@ class ImageHandler(object):
             return None
         path = self.get_path_to_page(page)
 
-        if path == None:
+        if path is None:
             return None
 
         try:

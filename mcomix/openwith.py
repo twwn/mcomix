@@ -77,14 +77,13 @@ class OpenWithCommand(object):
                 workdir = self.parse(window, text=self.get_cwd())[0]
                 os.chdir(workdir)
 
-            # Redirect process output to null here?
-            # FIXME: Close process when finished to avoid zombie process
+            # The command runs on its own from here; on Unix the SIGCHLD
+            # handler installed in run.py collects it once it exits.
             args = self.parse(window)
             if sys.platform == 'win32':
-                proc = process.Win32Popen(args)
+                process.Win32Popen(args)
             else:
-                proc = process.popen(args, stdout=process.NULL)
-            del proc
+                process.popen(args, stdout=process.NULL)
 
         except Exception as e:
             text = _("Could not run command %(cmdlabel)s: %(exception)s") % \
@@ -294,7 +293,8 @@ class OpenWithEditor(Gtk.Dialog):
         self._test_field = Gtk.Entry()
         self._test_field.set_property('editable', False)
         self._exec_label = Gtk.Label()
-        self._exec_label.set_alignment(0, 0)
+        self._exec_label.set_xalign(0)
+        self._exec_label.set_yalign(0)
         self._set_exec_text('')
         self._save_button = self.add_button(Gtk.STOCK_SAVE, Gtk.ResponseType.ACCEPT)
         self.set_default_response(Gtk.ResponseType.ACCEPT)
@@ -478,7 +478,8 @@ class OpenWithEditor(Gtk.Dialog):
         linklabel.set_markup(_('Please refer to the <a href="%s">external command documentation</a> '
             'for a list of usable variables and other hints.') % \
                 'https://sourceforge.net/p/mcomix/wiki/External_Commands')
-        linklabel.set_alignment(0, 0)
+        linklabel.set_xalign(0)
+        linklabel.set_yalign(0)
         content.pack_start(linklabel, False, False, 4)
 
     def _setup_table(self):

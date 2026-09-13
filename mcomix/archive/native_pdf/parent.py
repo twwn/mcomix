@@ -7,7 +7,7 @@ from mcomix.archive import archive_base
 from mcomix.archive.native_pdf.manager import FitzProcessWrangler
 from mcomix.log import getLevel
 
-from typing import Generator, List
+from collections.abc import Generator
 
 
 class FitzArchive(archive_base.BaseArchive):
@@ -57,7 +57,7 @@ class FitzArchive(archive_base.BaseArchive):
             return True
         return False
 
-    def iter_extract(self, entries: List[str], destination_dir: str) -> Generator[str, None, None]:
+    def iter_extract(self, entries: list[str], destination_dir: str) -> Generator[str, None, None]:
         """Return a generator of extracted filepaths."""
         self._create_directory(destination_dir)
         return self.mgr.extract_pages(entries, destination_dir)

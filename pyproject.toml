@@ -3,8 +3,11 @@ name = "mcomix"
 dynamic = ["version"]
 description = "GTK comic book viewer"
 readme = {file = "README.md", content-type = "text/markdown"}
-requires-python = ">=3.7"
-license = {file = "COPYING"}
+requires-python = ">=3.12"
+# SPDX expression, matching the "or (at your option) any later version"
+# grant in the source headers and share/metainfo/mcomix.metainfo.xml.
+license = "GPL-2.0-or-later"
+license-files = ["COPYING"]
 authors = [{name = "Pontus Ekberg"}]
 maintainers = [{name = "The MComix Team"}]
 keywords = ["comix", "comics", "manga", "images", "reader", "image viewer", "cbr", "cbz"]
@@ -12,23 +15,27 @@ classifiers = [
   "Development Status :: 6 - Mature",
   "Environment :: X11 Applications :: GTK",
   "Intended Audience :: End Users/Desktop",
-  "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
   "Operating System :: Microsoft :: Windows",
   "Operating System :: POSIX :: Linux",
   "Operating System :: POSIX :: BSD",
   "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
   "Topic :: Multimedia :: Graphics :: Viewers"
 ]
 dependencies = [
-  "PyGObject>=3.36.0",
-  "pycairo>=1.16.0",
-  "Pillow>=6.0.0",
+  # Lower bounds are the first releases supporting the minimum Python above.
+  "PyGObject>=3.46.0",
+  "pycairo>=1.25.0",
+  "Pillow>=10.1.0",
 ]
 
 [project.optional-dependencies]
 fileformats = [
   "chardet",
-  "PyMuPDF>=1.19.2"
+  # Keep in step with PYMUPDF_VERSION_REQUIRED in mcomix/archive/pdf_multi.py,
+  # which is what actually decides whether the native PDF handler loads;
+  # test/test_pdf_multi.py checks that the two agree.
+  "PyMuPDF>=1.23.5"
 ]
 dev = [
   # For running tests
@@ -59,7 +66,8 @@ Changelog = "https://sourceforge.net/p/mcomix/news/"
 mcomix = "mcomix.__main__:main"
 
 [build-system]
-requires = ["setuptools>=61.0.0", "wheel"]
+# 77.0.0 is the first release accepting an SPDX expression in project.license.
+requires = ["setuptools>=77.0.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]

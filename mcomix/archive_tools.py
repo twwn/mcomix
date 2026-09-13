@@ -145,11 +145,10 @@ def archive_mime_type(path):
                 else:
                     return constants.ZIP_EXTERNAL
 
-            fd = open(path, 'rb')
-            magic = fd.read(5)
-            fd.seek(60)
-            magic2 = fd.read(8)
-            fd.close()
+            with open(path, 'rb') as fd:
+                magic = fd.read(5)
+                fd.seek(60)
+                magic2 = fd.read(8)
 
             try:
                 istarfile = tarfile.is_tarfile(path)

@@ -38,7 +38,8 @@ class Pageselector(Gtk.Dialog):
         self._page_spinner.set_activates_default(True)
         self._page_spinner.set_numeric(True)
         self._pages_label = Gtk.Label(label=_(' of %s') % self._number_of_pages)
-        self._pages_label.set_alignment(0, 0.5)
+        self._pages_label.set_xalign(0)
+        self._pages_label.set_yalign(0.5)
 
         self._image_preview = Gtk.Image()
         self._image_preview.set_size_request(

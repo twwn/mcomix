@@ -109,7 +109,7 @@ class _BaseFileChooserDialog(Gtk.Dialog):
 
         self.show_all()
 
-    def add_filter(self, name, mimes, patterns=[]):
+    def add_filter(self, name, mimes, patterns=()):
         """Add a filter, called <name>, for each mime type in <mimes> and
         each pattern in <patterns> to the filechooser.
         """

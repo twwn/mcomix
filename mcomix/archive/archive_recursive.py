@@ -122,10 +122,11 @@ class RecursiveArchive(archive_base.BaseArchive):
             archive_destination_dir = destination_dir
             if root is not None:
                 archive_destination_dir = os.path.join(destination_dir, root)
+            wanted_names = list(archive_wanted)
             log.debug('extracting from %s to %s: %s',
                       archive.archive, archive_destination_dir,
-                      ' '.join(list(archive_wanted.keys())))
-            for f in archive.iter_extract(list(archive_wanted.keys()), archive_destination_dir):
+                      ' '.join(wanted_names))
+            for f in archive.iter_extract(wanted_names, archive_destination_dir):
                 yield archive_wanted[f]
             wanted -= set(archive_wanted.values())
             if 0 == len(wanted):
@@ -141,6 +142,11 @@ class RecursiveArchive(archive_base.BaseArchive):
         return False
 
     def close(self):
-        for archive in self._archive_list:
+        archives = list(self._archive_list)
+        # The main archive only joins the list once listing has started, so
+        # closing an archive that was opened but never listed needs this.
+        if self._main_archive not in archives:
+            archives.append(self._main_archive)
+        for archive in archives:
             archive.close()
 

@@ -39,7 +39,6 @@ from mcomix import log
 from mcomix.transform import Matrix, Transform
 from mcomix.i18n import _
 
-from typing import List
 
 
 class MainWindow(Gtk.Window):
@@ -67,7 +66,7 @@ class MainWindow(Gtk.Window):
         self._last_scroll_destination = constants.SCROLL_TO_START
 
         self.layout = layout.create_dummy_layout()
-        self.transforms: List[Matrix] = []
+        self.transforms: list[Matrix] = []
         self._spacing = prefs['space between two pages']
         self._waiting_for_redraw = False
 
@@ -278,7 +277,7 @@ class MainWindow(Gtk.Window):
         if prefs['previous quit was quit and save']:
             fileinfo = self.filehandler.read_fileinfo_file()
 
-            if fileinfo != None:
+            if fileinfo is not None:
 
                 open_path = fileinfo[0]
                 open_page = fileinfo[1] + 1
@@ -616,7 +615,14 @@ class MainWindow(Gtk.Window):
         self._update_page_information()
 
     def set_page(self, num, at_bottom=False):
-        if num == self.imagehandler.get_current_page():
+        """Switch to page <num> of the currently open book.
+
+        A bookmark, or the archive editor after pages were removed, can name
+        a page that no longer exists, so <num> is clamped to what the book
+        actually has rather than taken at face value.
+        """
+        num = min(max(num, 1), self.imagehandler.get_number_of_pages())
+        if num < 1 or num == self.imagehandler.get_current_page():
             return
         self.imagehandler.set_page(num)
         self.page_changed()

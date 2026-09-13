@@ -3,9 +3,6 @@
 # Allow class name in annotations while still defining class
 from __future__ import annotations
 
-import sys
-from typing import Optional, Tuple
-
 
 class Matrix:
     """Simple linear transformations represented as a 2x2 matrix.
@@ -17,7 +14,7 @@ class Matrix:
 
     def __init__(self, m1: float, m2: float, m3: float, m4: float) -> None:
         """Initialize a row-major transformation matrix."""
-        self.m: Tuple[float, float, float, float] = (m1, m2, m3, m4)
+        self.m: tuple[float, float, float, float] = (m1, m2, m3, m4)
 
     def __str__(self) -> str:
         return str(self.m)
@@ -83,7 +80,7 @@ class Matrix:
         """The matrix result of rotating self by 'deg' degrees."""
         return self + Transform.from_rotation(deg)
 
-    def scaled(self, s0: float, s1: Optional[float] = None) -> Matrix:
+    def scaled(self, s0: float, s1: float | None = None) -> Matrix:
         """The matrix result of scaling self by the provided factor(s).
 
         t.scale(s) will scale both dimensions by s.
@@ -110,7 +107,7 @@ class Matrix:
         """The matrix result of flipping self vertically."""
         return self.flipped(y=True)
 
-    def to_image_transforms(self) -> Tuple[Tuple[float, float], int, Tuple[bool, bool]]:
+    def to_image_transforms(self) -> tuple[tuple[float, float], int, tuple[bool, bool]]:
         """ Decomposes the transform to a sequence of hints to basic transform
         instructions typically found in image processing libraries. The sequence
         will refer to the positive scaling factors to be applied for each axis
@@ -120,9 +117,9 @@ class Matrix:
         factors for the corresponding axes, r is one of (0, 90, 180, 270),
         referring to the clockwise rotation to be applied, and f is a sequence
         of bools where True refers to the corresponding axis to be flipped. """
-        s: Tuple[float, float] = (abs(self.m[0] + self.m[1]), abs(self.m[2] + self.m[3]))
+        s: tuple[float, float] = (abs(self.m[0] + self.m[1]), abs(self.m[2] + self.m[3]))
         r: int = 90 if self.swaps_axes() else 0
-        f: Tuple[bool, bool] = (
+        f: tuple[bool, bool] = (
             self.swaps_axes() ^ (self.m[0] < 0 or self.m[1] < 0),
             (self.m[2] < 0 or self.m[3] < 0)
         )
@@ -188,7 +185,7 @@ class Transform(Matrix):
     @classmethod
     def from_image_transforms(
             cls,
-            t: Tuple[Tuple[float, float], int, Tuple[bool, bool]]
+            t: tuple[tuple[float, float], int, tuple[bool, bool]]
     ) -> Matrix:
         """Create a Matrix transform from a set of image transforms."""
         s, r, f = t[0:3]

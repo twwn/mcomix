@@ -6,7 +6,7 @@ import threading
 import multiprocessing as mp
 from multiprocessing.managers import BaseManager, BaseProxy
 
-from typing import Optional, Generator
+from collections.abc import Generator
 
 from .child import FitzWorker
 
@@ -30,7 +30,7 @@ class WorkerProxy(BaseProxy):
     the registered methods of the Manager.
     """
 
-    filename: Optional[str] = None
+    filename: str | None = None
 
     @classmethod
     def _open(cls, filename):

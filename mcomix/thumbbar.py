@@ -1,13 +1,12 @@
 """thumbbar.py - Thumbnail sidebar for main window."""
 
 import urllib.request, urllib.parse, urllib.error
-from gi.repository import GObject, Gdk, GdkPixbuf, Gtk
+from gi.repository import Gdk, GdkPixbuf, Gtk
 import cairo
 
 from mcomix.preferences import prefs
 from mcomix import image_tools
 from mcomix import tools
-from mcomix import constants
 from mcomix import thumbnail_view
 
 

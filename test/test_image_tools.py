@@ -65,6 +65,20 @@ _TEST_IMAGES = (
 
 _TEST_IMAGE_BY_NAME = dict([(im.name, im) for im in _TEST_IMAGES])
 
+#: The test images carrying Exif rotation, and their unrotated counterparts.
+_ROTATED_TEST_IMAGES = (
+    # JPEG.
+    'landscape-exif-270-rotation.jpg',
+    'landscape-no-exif.jpg',
+    'portrait-exif-180-rotation.jpg',
+    'portrait-no-exif.jpg',
+    # PNG.
+    'landscape-exif-270-rotation.png',
+    'landscape-no-exif.png',
+    'portrait-exif-180-rotation.png',
+    'portrait-no-exif.png',
+)
+
 
 def get_test_image(name):
     return _TEST_IMAGE_BY_NAME[name]
@@ -193,6 +207,15 @@ class ImageToolsTest(MComixTest):
             )
             self.assertImagesEqual(pixbuf, im, msg=msg,
                                    compare_content=image.format != 'JPEG')
+
+    def test_load_pixbuf_falls_back_to_pil(self):
+        # load_pixbuf() no longer asks which loader to prefer, so a format
+        # gdk-pixbuf has no loader for has to come back from PIL by way of
+        # gdk-pixbuf failing on it first.
+        path = os.path.join(self.tmp_dir, 'image.pcx')
+        Image.new('RGB', (17, 11), (10, 20, 30)).save(path, 'PCX')
+        pixbuf = image_tools.load_pixbuf(path)
+        self.assertEqual((pixbuf.get_width(), pixbuf.get_height()), (17, 11))
 
     def test_load_pixbuf_modes(self):
         tmp_file = tempfile.NamedTemporaryFile(prefix='image.',
@@ -348,24 +371,36 @@ class ImageToolsTest(MComixTest):
                                'invalid image')
 
     def test_get_implied_rotation(self):
-        for name in (
-            # JPEG.
-            'landscape-exif-270-rotation.jpg',
-            'landscape-no-exif.jpg',
-            'portrait-exif-180-rotation.jpg',
-            'portrait-no-exif.jpg',
-            # PNG.
-            'landscape-exif-270-rotation.png',
-            'landscape-no-exif.png',
-            'portrait-exif-180-rotation.png',
-            'portrait-no-exif.png',
-        ):
+        for name in _ROTATED_TEST_IMAGES:
             image = get_test_image(name)
             pixbuf = image_tools.load_pixbuf(get_image_path(name))
             rotation = image_tools.get_implied_rotation(pixbuf)
             self.assertEqual(rotation, image.rotation,
                              msg='get_implied_rotation(%s) failed: %u instead of %u'
                              % (image, rotation, image.rotation))
+
+    def test_get_implied_rotation_from_file(self):
+        # Reading the header has to agree with decoding the image; the
+        # virtual double page check relies on it instead of loading a
+        # pixbuf for every page it is asked about.
+        for name in _ROTATED_TEST_IMAGES:
+            image = get_test_image(name)
+            rotation = image_tools.get_implied_rotation_from_file(get_image_path(name))
+            self.assertEqual(rotation, image.rotation,
+                             msg='get_implied_rotation_from_file(%s) failed: %u instead of %u'
+                             % (image, rotation, image.rotation))
+
+    def test_get_implied_rotation_from_file_invalid(self):
+        self.assertEqual(image_tools.get_implied_rotation_from_file(os.devnull), 0)
+
+    def test_get_image_size(self):
+        for image in _TEST_IMAGES:
+            self.assertEqual(image_tools.get_image_size(get_image_path(image.name)),
+                             image.size,
+                             msg='get_image_size("%s") failed' % image.name)
+
+    def test_get_image_size_invalid(self):
+        self.assertEqual(image_tools.get_image_size(os.devnull), (0, 0))
 
     def test_fit_in_rectangle_dimensions(self):
         # Test dimensions handling.

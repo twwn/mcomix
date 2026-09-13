@@ -52,7 +52,7 @@ class KeybindingEditorWindow(Gtk.ScrolledWindow):
         # Allow sorting on the column
         tvcol1.set_sort_column_id(0)
 
-        self.add_with_viewport(treeview)
+        self.add(treeview)
 
     def refresh_model(self):
         """ Initializes the model from data provided by the keybinding

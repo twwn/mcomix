@@ -3,7 +3,7 @@
 import os
 import datetime
 
-from typing import Any, List, Optional, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
 from mcomix import archive_tools
 from mcomix import constants
@@ -60,7 +60,7 @@ class _LibraryBackend(object):
             self.watchlist = None
             self.enabled = False
 
-    def get_books_in_collection(self, collection: Optional[int] = None, filter_string: Optional[str] = None) -> List[int]:
+    def get_books_in_collection(self, collection: int | None = None, filter_string: str | None = None) -> list[int]:
         """Return a sequence with all the books in <collection>, or *ALL*
         books if <collection> is None. If <filter_string> is not None, we
         only return books where the <filter_string> occurs in the path.
@@ -88,7 +88,7 @@ class _LibraryBackend(object):
                 books.extend(cur.fetchall())
             return books
 
-    def get_book_by_path(self, path: str) -> Optional[backend_types._Book]:
+    def get_book_by_path(self, path: str) -> backend_types._Book | None:
         """ Retrieves a book from the library, specified by C{path}.
         If the book doesn't exist, None is returned. Otherwise, a
         L{backend_types._Book} instance is returned. """
@@ -106,7 +106,7 @@ class _LibraryBackend(object):
         else:
             return None
 
-    def get_book_by_id(self, id: int) -> Optional[backend_types._Book]:
+    def get_book_by_id(self, id: int) -> backend_types._Book | None:
         """ Retrieves a book from the library, specified by C{id}.
         If the book doesn't exist, C{None} is returned. Otherwise, a
         L{backend_types._Book} instance is returned. """
@@ -122,7 +122,7 @@ class _LibraryBackend(object):
         else:
             return None
 
-    def get_book_cover(self, book: int) -> Optional[str]:
+    def get_book_cover(self, book: int) -> str | None:
         """Return a pixbuf with a thumbnail of the cover of <book>, or
         None if the cover can not be fetched.
         """
@@ -135,12 +135,12 @@ class _LibraryBackend(object):
 
         return self.get_book_thumbnail(path)
 
-    def get_book_path(self, book: int) -> Optional[str]:
+    def get_book_path(self, book: int) -> str | None:
         """Return the filesystem path to <book>, or None if <book> isn't
         in the library.
         """
         try:
-            path: Optional[str] = self._con.execute('''select path from Book
+            path: str | None = self._con.execute('''select path from Book
                 where id = ?''', (book,)).fetchone()
         except Exception:
             log.error(_('! Non-existant book #%i'), book)
@@ -148,7 +148,7 @@ class _LibraryBackend(object):
 
         return path
 
-    def get_book_thumbnail(self, path: str) -> Optional["GdkPixbuf.Pixbuf"]:
+    def get_book_thumbnail(self, path: str) -> "GdkPixbuf.Pixbuf | None":
         """ Returns a pixbuf with a thumbnail of the cover of the book at <path>,
         or None, if no thumbnail could be generated. """
 
@@ -164,43 +164,43 @@ class _LibraryBackend(object):
         if thumb is None: log.warning(_('! Could not get cover for book "%s"'), path)
         return thumb
 
-    def get_book_name(self, book: int) -> Optional[str]:
+    def get_book_name(self, book: int) -> str | None:
         """Return the name of <book>, or None if <book> isn't in the
         library.
         """
         cur = self._con.execute('''select name from Book
             where id = ?''', (book,))
-        name: Optional[str] = cur.fetchone()
+        name: str | None = cur.fetchone()
         return name
 
-    def get_book_pages(self, book: int) -> Optional[int]:
+    def get_book_pages(self, book: int) -> int | None:
         """Return the number of pages in <book>, or None if <book> isn't
         in the library.
         """
         cur = self._con.execute('''select pages from Book
             where id = ?''', (book,))
-        pages: Optional[int] = cur.fetchone()
+        pages: int | None = cur.fetchone()
         return pages
 
-    def get_book_format(self, book: int) -> Optional[str]:
+    def get_book_format(self, book: int) -> str | None:
         """Return the archive format of <book>, or None if <book> isn't
         in the library.
         """
         cur = self._con.execute('''select format from Book
             where id = ?''', (book,))
-        format: Optional[str] = cur.fetchone()
+        format: str | None = cur.fetchone()
         return format
 
-    def get_book_size(self, book: int) -> Optional[int]:
+    def get_book_size(self, book: int) -> int | None:
         """Return the size of <book> in bytes, or None if <book> isn't
         in the library.
         """
         cur = self._con.execute('''select size from Book
             where id = ?''', (book,))
-        size: Optional[int] = cur.fetchone()
+        size: int | None = cur.fetchone()
         return size
 
-    def get_collections_in_collection(self, collection: Optional[int] = None) -> List[int]:
+    def get_collections_in_collection(self, collection: int | None = None) -> list[int]:
         """Return a sequence with all the subcollections in <collection>,
         or all top-level collections if <collection> is None.
         """
@@ -215,7 +215,7 @@ class _LibraryBackend(object):
                 order by name''', (collection,))
         return cur.fetchall()
 
-    def get_all_collections_in_collection(self, collection: int) -> List[int]:
+    def get_all_collections_in_collection(self, collection: int) -> list[int]:
         """ Returns a sequence of <all> subcollections in <collection>,
         that is, even subcollections that are again a subcollection of one
         of the previous subcollections. """
@@ -234,7 +234,7 @@ class _LibraryBackend(object):
 
         return collections
 
-    def get_all_collections(self) -> List[int]:
+    def get_all_collections(self) -> list[int]:
         """Return a sequence with all collections (flattened hierarchy).
         The sequence is sorted alphabetically by collection name.
         """
@@ -243,16 +243,16 @@ class _LibraryBackend(object):
                                 (COLLECTION_RECENT, _('Recent')))
         return cur.fetchall()
 
-    def get_collection_name(self, collection: int) -> Optional[str]:
+    def get_collection_name(self, collection: int) -> str | None:
         """Return the name field of the <collection>, or None if the
         collection does not exist.
         """
         cur = self._con.execute('''select case when id = ? then ? else name end from Collection
             where id = ?''', (COLLECTION_RECENT, _('Recent'), collection,))
-        name: Optional[str] = cur.fetchone()
+        name: str | None = cur.fetchone()
         return name
 
-    def get_collection_by_name(self, name: str) -> Optional[backend_types._Collection]:
+    def get_collection_by_name(self, name: str) -> backend_types._Collection | None:
         """Return the collection called <name>, or None if no such
         collection exists. Names are unique, so at most one such collection
         can exist.
@@ -267,7 +267,7 @@ class _LibraryBackend(object):
         else:
             return None
 
-    def get_collection_by_id(self, id: int) -> Optional[backend_types._Collection]:
+    def get_collection_by_id(self, id: int) -> backend_types._Collection | None:
         """ Returns the collection with ID C{id}.
         @param id: Integer value. May be C{-1} or C{None} for default collection.
         @return: L{_Collection} if found, None otherwise.
@@ -295,14 +295,14 @@ class _LibraryBackend(object):
         assert collection is not None
         return collection
 
-    def get_supercollection(self, collection: int) -> Optional[int]:
+    def get_supercollection(self, collection: int) -> int | None:
         """Return the supercollection of <collection>."""
         cur = self._con.execute('''select supercollection from Collection
             where id = ?''', (collection,))
-        supercollection: Optional[int] = cur.fetchone()
+        supercollection: int | None = cur.fetchone()
         return supercollection
 
-    def add_book(self, path: str, collection: Optional[int] = None) -> bool:
+    def add_book(self, path: str, collection: int | None = None) -> bool:
         """Add the archive at <path> to the library. If <collection> is
         not None, it is the collection that the books should be put in.
         Return True if the book was successfully added (or was already
@@ -398,7 +398,7 @@ class _LibraryBackend(object):
             log.error(_('! Could not add book %(book)s to collection %(collection)s'),
                       {"book": book, "collection": collection})
 
-    def add_collection_to_collection(self, subcollection: int, supercollection: Optional[int]) -> None:
+    def add_collection_to_collection(self, subcollection: int, supercollection: int | None) -> None:
         """Put <subcollection> into <supercollection>, or put
         <subcollection> in the root if <supercollection> is None.
         """
@@ -445,7 +445,7 @@ class _LibraryBackend(object):
             where collection = ?''', (copy_collection, collection))
         return True
 
-    def clean_collection(self, collection: Optional[int] = None) -> int:
+    def clean_collection(self, collection: int | None = None) -> int:
         """ Removes files from <collection> that no longer exist. If <collection>
         is None, all collections are cleaned. Returns the number of deleted books. """
         book_ids = self.get_books_in_collection(collection)

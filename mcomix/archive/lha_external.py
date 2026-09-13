@@ -16,14 +16,23 @@ class LhaArchive(archive_base.ExternalExecutableArchive):
     def _get_executable(self):
         return LhaArchive._find_lha_executable()
 
+    #: A listing line looks like
+    #: "-rw-------  1000/1000  332 100.0% Apr 12  2015 arg.jpeg":
+    #: permissions, owner, size, ratio, a three part timestamp, then the name,
+    #: which may itself contain spaces.
+    _LIST_LINE_RE = re.compile(
+        r'^\S+\s+\S+\s+\d+\s+[\d.]+%\s+\S+\s+\d+\s+\S+\s+(.+)$')
+
     def _get_list_arguments(self):
-        return ['l', '-g', '-q2']
+        # The command letter and its options have to be a single argument,
+        # and quiet level 2 drops the header and footer lines.
+        return ['lq2']
 
     def _get_extract_arguments(self):
-        return ['p', '-q2']
+        return ['pq2']
 
     def _parse_list_output_line(self, line):
-        match = re.search(r'\[generic\]\s+\d+\s+\S+?\s+\w+\s+\d+\s+\d+\s+(.+)$', line)
+        match = self._LIST_LINE_RE.match(line)
         if match:
             return match.group(1)
         else:

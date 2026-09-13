@@ -1,6 +1,5 @@
 """lens.py - Magnifying lens."""
 
-import math
 
 from gi.repository import Gdk, GdkPixbuf, Gtk
 

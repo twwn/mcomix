@@ -19,7 +19,8 @@ class _CommentArea(Gtk.Box):
         self.pack_start(scrolled, True, True, 0)
 
         info = Gtk.Label(label=_('Please note that the only files that are automatically added to this list are those files in archives that MComix recognizes as comments.'))
-        info.set_alignment(0.5, 0.5)
+        info.set_xalign(0.5)
+        info.set_yalign(0.5)
         info.set_line_wrap(True)
         self.pack_start(info, False, False, 10)
 

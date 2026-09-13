@@ -70,6 +70,9 @@ class RarArchive(archive_base.BaseArchive):
     class _RAROpenArchiveDataEx(ctypes.Structure):
         """ Archive header structure. Used by DLL calls. """
         _pack_ = 1
+        # unrar.dll is built with MSVC; ctypes used its layout by default
+        # for packed structures, but wants that spelled out from 3.14 on.
+        _layout_ = 'ms'
         _fields_ = [("ArcName", ctypes.c_char_p),
                       ("ArcNameW", ctypes.c_wchar_p),
                       ("OpenMode", ctypes.c_uint),
@@ -86,6 +89,9 @@ class RarArchive(archive_base.BaseArchive):
     class _RARHeaderDataEx(ctypes.Structure):
         """ Archive file structure. Used by DLL calls. """
         _pack_ = 1
+        # unrar.dll is built with MSVC; ctypes used its layout by default
+        # for packed structures, but wants that spelled out from 3.14 on.
+        _layout_ = 'ms'
         _fields_ = [("ArcName", ctypes.c_char * 1024),
                       ("ArcNameW", ctypes.c_wchar * 1024),
                       ("FileName", ctypes.c_char * 1024),

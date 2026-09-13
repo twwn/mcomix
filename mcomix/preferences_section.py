@@ -21,7 +21,8 @@ class _PreferenceSection(Gtk.Box):
         self.contentbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 6)
         self.contentbox.set_margin_start(9)
         label = labels.BoldLabel(header)
-        label.set_alignment(0, 0.5)
+        label.set_xalign(0)
+        label.set_yalign(0.5)
         self.pack_start(label, False, False, 0)
         self.pack_start(self.contentbox, True, True, 0)
 

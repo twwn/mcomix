@@ -4,7 +4,6 @@
 
 import os
 import zipfile
-from contextlib import closing
 
 from mcomix import log
 from mcomix import i18n
@@ -15,8 +14,7 @@ from mcomix.i18n import _
 def is_py_supported_zipfile(path):
     """Check if a given zipfile has all internal files stored with Python supported compression
     """
-    # Use contextlib's closing for 2.5 compatibility
-    with closing(zipfile.ZipFile(path, 'r')) as zip_file:
+    with zipfile.ZipFile(path, 'r') as zip_file:
         for file_info in zip_file.infolist():
             if file_info.compress_type not in (zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED):
                 return False
@@ -26,13 +24,10 @@ class ZipArchive(archive_base.NonUnicodeArchive):
     def __init__(self, archive):
         super(ZipArchive, self).__init__(archive)
         self.zip = zipfile.ZipFile(archive, 'r')
-
-        # Encryption is supported starting with Python 2.6
-        self._encryption_supported = hasattr(self.zip, "setpassword")
         self._password = None
 
     def iter_contents(self):
-        if self._encryption_supported and self._has_encryption():
+        if self._has_encryption():
             self._get_password()
             self.zip.setpassword(i18n.to_utf8(self._password))
 
@@ -40,12 +35,14 @@ class ZipArchive(archive_base.NonUnicodeArchive):
             yield self._unicode_filename(filename)
 
     def extract(self, filename, destination_dir):
-        new = self._create_file(os.path.join(destination_dir, filename))
-        content = self.zip.read(self._original_filename(filename))
-        new.write(content)
-        new.close()
+        original_filename = self._original_filename(filename)
+        # Read before creating the destination, so a member that cannot be
+        # read does not leave an empty file behind.
+        content = self.zip.read(original_filename)
+        with self._create_file(os.path.join(destination_dir, filename)) as new:
+            new.write(content)
 
-        zipinfo = self.zip.getinfo(self._original_filename(filename))
+        zipinfo = self.zip.getinfo(original_filename)
         if len(content) != zipinfo.file_size:
             log.warning(_('%(filename)s\'s extracted size is %(actual_size)d bytes,'
                 ' but should be %(expected_size)d bytes.'

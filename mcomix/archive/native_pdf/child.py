@@ -4,12 +4,15 @@ import io
 import os
 import multiprocessing as mp
 from PIL import Image, ExifTags
-from typing import Generator, Optional
+from collections.abc import Generator
 
 try:
-    import fitz
+    import pymupdf
 except ImportError:
-    import fitz_old as fitz
+    # PyMuPDF only gained its own name in 1.24.3.  Before that it was
+    # importable as "fitz" alone, a name it shares with an unrelated
+    # package on PyPI.
+    import fitz as pymupdf  # type: ignore[no-redef]
 
 from mcomix.constants import PDF_RENDER_DPI_DEF
 
@@ -19,134 +22,100 @@ XREF_DELIMITER = '_mcmxref'
 
 
 class FitzWorker:
-    def __init__(self, filename: Optional[str], log_level: Optional[int] = None) -> None:
-        self._extension: Optional[str] = None
+    def __init__(self, filename: str | None, log_level: int | None = None) -> None:
+        self._extension: str | None = None
         self._complex_doc = False
         self.log = mp.get_logger()
         if log_level is not None:
             self.log.setLevel(log_level)
-        self.doc = fitz.open(filename)
+        self.doc = pymupdf.open(filename)
 
     def page_count(self) -> int:
         return self.doc.page_count
 
-    def _image_extension(self, page_num: int) -> str:
-        """Return the filename extension for the page image."""
+    def _image_extension(self, xref: int) -> str:
+        """Return the filename extension for extracted page images."""
         if self._extension is None:
-            self._extension = self._check_image_type(page_num)
+            self._extension = self._check_image_type(xref)
         return self._extension
 
-    def _extract_as_image(self, page_num: int) -> bool:
-        """Check whether the page can be extracted via image export."""
-        if self._complex_doc:
-            return False
-        if not self._must_render_page(page_num) and self._can_extract_image(page_num):
-            return True
-        return False
+    def _extractable_image_xref(self, page_num: int) -> int | None:
+        """Return the xref of the image to extract for <page_num>, or None
+        if the page has to be rendered to a pixmap instead.
 
-    def _must_render_page(self, page_num: int) -> bool:
-        """Determine if a page has any forced-render markers.
-
-        Rendering to pixmap must be forced if any of these apply:
+        Rendering has to be forced if any of these apply:
             - The page has any text content
             - The page has any drawing content
             - The page contains 0, or more than 1, embedded image
+            - The single embedded image does not cover the whole page
+
+        Only the first of those makes the whole document complex: a page
+        carrying text or drawings marks the document as one to be rendered
+        throughout, whereas a page whose image happens not to be full-page
+        says nothing about its neighbours.
+
+        The page is loaded, and its image list taken, exactly once.  For a
+        document of scanned pages this runs for every page in it, so the
+        repeated loads and lookups this replaces made up the bulk of the
+        cost of listing one.
         """
+        if self._complex_doc:
+            return None
         page = self.doc[page_num]
-        if len(page.get_images()) != 1 or len(page.get_text()) > 0:
+        images = page.get_images()
+        if len(images) != 1 or len(page.get_text()) > 0:
             self._complex_doc = True
-            result = True
             self.log.debug("PDF page %d, must render page", page_num + 1)
-        else:
-            result = False
-            self.log.debug("PDF page %d, rendering not forced", page_num + 1)
-        del page
-        return result
+            return None
+        self.log.debug("PDF page %d, rendering not forced", page_num + 1)
 
-    def _can_extract_image(self, page_num: int) -> bool:
-        """Determine if a page has an extractable image.
-
-        Makes a closer examination than _must_render_page(),
-        by checking whether the page contains a single, full-page
-        image, then actually extracting the first such image
-        encountered to determine the filetype (extension).
-
-        (Subsequent embedded images are assumed to have the same
-        type as the first full-page image encountered. This may
-        be somewhat fragile, but it's a huge performance boost.)
-        """
-        page = self.doc[page_num]
+        # The image list says what the page carries, not what it shows, so
+        # take a closer look at the single image's placement before
+        # deciding that extracting it can stand in for rendering the page.
         image_info = page.get_image_info()
         if len(image_info) != 1:
             self.log.debug(
                 "PDF page %d, cannot extract. Image count = %d",
                 page_num + 1, len(image_info))
-            return False
-        info = image_info[0]
-        img_rect = fitz.Rect(info.get('bbox', (0, 0, 0, 0))).irect
-        page_rect = fitz.Rect(page.mediabox).irect
+            return None
+        img_rect = pymupdf.Rect(image_info[0].get('bbox', (0, 0, 0, 0))).irect
+        page_rect = pymupdf.Rect(page.mediabox).irect
         page_area = page_rect.get_area()
-        area_diff = abs(page_area - img_rect.get_area())
-        is_full_page: bool = area_diff < 0.05 * page_area
-        if is_full_page:
-            self.log.debug('PDF page %d: can extract fullpage image', page_num + 1)
-        else:
+        if abs(page_area - img_rect.get_area()) >= 0.05 * page_area:
             self.log.debug(
                 'PDF page %d, cannot extract image: %s',
                 page_num + 1, f"img_rect={img_rect}, page_rect={page_rect}")
-        del page
-        del image_info
-        return is_full_page
+            return None
+        self.log.debug('PDF page %d: can extract fullpage image', page_num + 1)
+        return int(images[0][0])
 
-    def _check_image_type(self, page_num: int) -> str:
-        """Examine the page's embedded image for its file type.
+    def _check_image_type(self, xref: int) -> str:
+        """Examine an embedded image for its file type.
 
-        The extension is determined heuristically by probing only the
-        first page of the document for an embedded image, then using
-        its type.
+        The extension is determined heuristically, by probing the first
+        image the document turns out to be able to extract and assuming
+        that _all_ extractable images have the same type.  This may be a
+        fragile assumption, but it is a huge performance boost.
 
-        If the first page does have a single embedded image, it's
-        assumed that _all_ pages contain an image of the same type.
-        This may be a fragile assumption.
-
-        If the probe fails, 'png' is used as a fallback, as that's the
-        type rendered page pixmaps will be saved with.
+        Ask extract_image, which is what will do the extracting, rather
+        than profiling the raw stream: it reports the type it would hand
+        back, and reports "png" of its own accord for the exotic types it
+        converts.  If it cannot say, 'png' is used as a fallback, as
+        that's the type rendered page pixmaps are saved with.
         """
-        extension = 'png'
         try:
-            xref = self._get_image_xref(page_num)
-            img = fitz.image_profile(
-                self.doc.xref_stream_raw(xref))
-            # If image_profile returns an empty dict, the image type is
-            # "exotic" and not supported for direct extraction.
-            # That doesn't mean that the images can't be extracted.
-            # Document.extract_image will automatically convert to PNG,
-            # when we call it to extract the xref. It'll be slower than
-            # extraction without converting, but still very fast.
-            if img:
-                extension = img.get('ext', 'png')
-                del img
-        except (AttributeError, TypeError):
-            pass
-        return extension
-
-    def _get_image_xref(self, page_num: int) -> int:
-        try:
-            image_info = self.doc.get_page_images(page_num)
-            return int(image_info[0][0])
-        except (TypeError, IndexError):
-            return -1
+            return str(self.doc.extract_image(xref).get('ext', 'png'))
+        except (AttributeError, RuntimeError, TypeError, ValueError):
+            return 'png'
 
     def iter_contents(self) -> Generator[str, None, None]:
         for pg in range(self.doc.page_count):
             pagenum = f"page{pg + 1:04}"
-            if self._extract_as_image(pg):
-                xref = self._get_image_xref(pg)
-                ext = self._image_extension(pg)
-                filename = f"{pagenum}{XREF_DELIMITER}{xref:04}.{ext}"
+            xref = self._extractable_image_xref(pg)
+            if xref is None:
+                yield f"{pagenum}.png"
             else:
-                filename = f"{pagenum}.png"
-            yield filename
+                yield f"{pagenum}{XREF_DELIMITER}{xref:04}.{self._image_extension(xref)}"
 
     def extract_xref(self, page: int, xref: int, path: str) -> None:
         """Save the embedded PDF image for a given xref. The page is indexed starting with zero."""
@@ -155,7 +124,6 @@ class FitzWorker:
             return
         os.makedirs(os.path.dirname(path), exist_ok=True)
         img_bytes = img.get("image", b"")
-        del img
 
         # The extract_image method always returns the unrotated version of the image,
         # unaffected by any page modifications of rotation.

@@ -15,7 +15,6 @@ from mcomix import process
 from mcomix.archive import (
     archive_recursive,
     lha_external,
-    pdf_external,
     rar,
     rar_external,
     sevenzip_external,
@@ -251,6 +250,27 @@ class ArchiveFormatTest(object):
         self.assertEqual(extracted, contents)
 
 
+class RecursiveArchiveCloseTest(MComixTest):
+
+    def test_closes_an_archive_that_was_never_listed(self) -> None:
+        # RecursiveArchive only learns about the main archive once listing
+        # starts, so closing before that used to leave its handle open.
+        path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        recursive = archive_recursive.RecursiveArchive(
+            zip.ZipArchive(path), tempfile.mkdtemp())
+        main_archive = recursive._main_archive
+        recursive.close()
+        self.assertIsNone(main_archive.zip.fp)
+
+    def test_closes_every_archive_after_listing(self) -> None:
+        path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        recursive = archive_recursive.RecursiveArchive(
+            zip.ZipArchive(path), tempfile.mkdtemp())
+        recursive.list_contents()
+        recursive.close()
+        self.assertIsNone(recursive._main_archive.zip.fp)
+
+
 class RecursiveArchiveFormatTest(ArchiveFormatTest):
 
     base_handler = None
@@ -272,6 +292,7 @@ for name, handler, is_available, format, not_solid, solid, password, header_encr
     ('rar (dll)'        , rar.RarArchive                   , rar.RarArchive.is_available()                   , 'rar'    , True , True , True , True  ),
     ('zip'              , zip.ZipArchive                   , True                                            , 'zip'    , True , False, True , False ),
     ('zip (external)'   , zip_external.ZipArchive          , zip_external.ZipArchive.is_available()          , 'zip'    , True , False, True , False ),
+    ('lha (external)'   , lha_external.LhaArchive          , lha_external.LhaArchive.is_available()          , 'lha'    , True , False, False, False ),
 ):
     base_class_name = 'ArchiveFormat'
     base_class_name += ''.join([part.capitalize() for part in re.sub(r'[^\w]+', ' ', name).split()])
@@ -492,6 +513,13 @@ xfail_list = [
     # No password support when using some external tools.
     ('ZipExternalEncrypted'             , 'test_extract'      ),
     ('ZipExternalEncrypted'             , 'test_iter_extract' ),
+    # Lhasa, which is what 'lha' is on current distributions, prints a
+    # question mark for every byte of a member name it cannot represent,
+    # so non-ASCII names cannot be listed, let alone extracted.
+    ('LhaExternalUnicode'               , 'test_extract'      ),
+    ('LhaExternalUnicode'               , 'test_iter_extract' ),
+    ('LhaExternalUnicode'               , 'test_iter_contents'),
+    ('LhaExternalUnicode'               , 'test_list_contents'),
 ]
 
 if 'win32' == sys.platform:

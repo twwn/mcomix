@@ -34,7 +34,8 @@ class _PreferencePage(Gtk.Box):
         aligned properly.
         """
         if isinstance(left_item, Gtk.Label):
-            left_item.set_alignment(0, 0.5)
+            left_item.set_xalign(0)
+            left_item.set_yalign(0.5)
 
         if right_item is None:
             self._section.contentbox.pack_start(left_item, True, True, 0)

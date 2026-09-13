@@ -47,6 +47,7 @@ import shutil
 import tempfile
 import unittest
 
+from mcomix import constants
 from mcomix.preferences import prefs
 
 default_prefs = {}
@@ -57,6 +58,15 @@ class MComixTest(unittest.TestCase):
     #: Global state setUp() overwrites and tearDown() has to put back.
     OVERRIDDEN_ENVIRONMENT = ('HOME', 'XDG_DATA_HOME', 'XDG_CONFIG_HOME',
                               'TMPDIR', 'TEMP', 'TMP')
+
+    #: constants resolves these once, at import time, so setting the
+    #: environment above is not enough to keep tests off the real
+    #: configuration - they have to be repointed as well.
+    REDIRECTED_PATHS = ('HOME_DIR', 'CONFIG_DIR', 'DATA_DIR', 'THUMBNAIL_PATH',
+                        'LIBRARY_DATABASE_PATH', 'LASTPAGE_DATABASE_PATH',
+                        'LIBRARY_COVERS_PATH', 'PREFERENCE_PATH',
+                        'KEYBINDINGS_CONF_PATH', 'BOOKMARK_PICKLE_PATH',
+                        'FILEINFO_PICKLE_PATH', 'PREFERENCE_PICKLE_PATH')
 
     def setUp(self):
         base_tmpdir = os.path.join(os.path.dirname(__file__), 'tmp')
@@ -69,6 +79,8 @@ class MComixTest(unittest.TestCase):
         self._saved_environ = {var: os.environ.get(var)
                                for var in self.OVERRIDDEN_ENVIRONMENT}
         self._saved_tempdir = tempfile.tempdir
+        self._saved_paths = {name: getattr(constants, name)
+                             for name in self.REDIRECTED_PATHS}
         # Change storage directories.
         home_dir = os.path.join(self.tmp_dir, 'home')
         os.mkdir(home_dir)
@@ -81,6 +93,20 @@ class MComixTest(unittest.TestCase):
         os.environ['TMPDIR'] = os.environ['TEMP'] = os.environ['TMP'] = temp_dir
         # Make sure tempfile module uses the correct directory.
         tempfile.tempdir = temp_dir
+        # Point the paths constants resolved at import time into the
+        # temporary home as well.
+        constants.HOME_DIR = home_dir
+        constants.CONFIG_DIR = os.path.join(home_dir, 'config', 'mcomix')
+        constants.DATA_DIR = os.path.join(home_dir, 'data', 'mcomix')
+        constants.THUMBNAIL_PATH = os.path.join(home_dir, 'cache', 'thumbnails', 'normal')
+        constants.LIBRARY_DATABASE_PATH = os.path.join(constants.DATA_DIR, 'library.db')
+        constants.LASTPAGE_DATABASE_PATH = os.path.join(constants.DATA_DIR, 'lastreadpage.db')
+        constants.LIBRARY_COVERS_PATH = os.path.join(constants.DATA_DIR, 'library_covers')
+        constants.PREFERENCE_PATH = os.path.join(constants.CONFIG_DIR, 'preferences.conf')
+        constants.KEYBINDINGS_CONF_PATH = os.path.join(constants.CONFIG_DIR, 'keybindings.conf')
+        constants.BOOKMARK_PICKLE_PATH = os.path.join(constants.DATA_DIR, 'bookmarks.pickle')
+        constants.FILEINFO_PICKLE_PATH = os.path.join(constants.DATA_DIR, 'file.pickle')
+        constants.PREFERENCE_PICKLE_PATH = os.path.join(constants.CONFIG_DIR, 'preferences.pickle')
         # Reset preferences to default.
         prefs.clear()
         prefs.update(default_prefs)
@@ -95,6 +121,8 @@ class MComixTest(unittest.TestCase):
             else:
                 os.environ[var] = value
         tempfile.tempdir = self._saved_tempdir
+        for name, value in self._saved_paths.items():
+            setattr(constants, name, value)
         # Leave the temporary directory behind for post-mortem analysis
         # when the test did not pass.
         if not self._test_failed():

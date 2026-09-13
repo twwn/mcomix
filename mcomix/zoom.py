@@ -6,7 +6,7 @@ from mcomix.preferences import prefs
 from mcomix import tools
 from mcomix import box
 from functools import reduce
-from typing import List, Tuple, Sequence
+from collections.abc import Sequence
 
 IDENTITY_ZOOM = 1.0
 IDENTITY_ZOOM_LOG = 0
@@ -50,9 +50,9 @@ class ZoomModel(object):
     def reset_user_zoom(self) -> None:
         self._set_user_zoom_log(IDENTITY_ZOOM_LOG)
 
-    def get_zoomed_size(self, image_sizes: List[Sequence[int]], screen_size: Tuple[int, int],
-                        distribution_axis: constants.PageAxis, do_not_transform: List[bool], prefer_same_size: bool,
-                        fit_same_size: bool) -> Tuple[int, int]:
+    def get_zoomed_size(self, image_sizes: list[Sequence[int]], screen_size: tuple[int, int],
+                        distribution_axis: constants.PageAxis, do_not_transform: list[bool], prefer_same_size: bool,
+                        fit_same_size: bool) -> tuple[int, int]:
         scale_up = self._scale_up
         if prefer_same_size:
             # Preprocessing step: scale all images to the same size

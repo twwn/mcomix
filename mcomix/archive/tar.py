@@ -41,17 +41,18 @@ class TarArchive(archive_base.NonUnicodeArchive):
     def extract(self, filename, destination_dir):
         if not self._contents_listed:
             self.list_contents()
-        new = self._create_file(os.path.join(destination_dir, filename))
         file_object = self.tar.extractfile(self._original_filename(filename))
-        new.write(file_object.read())
-        file_object.close()
-        new.close()
+        if file_object is None:
+            # A directory or a link: there is no content to write.
+            return
+        with file_object:
+            with self._create_file(os.path.join(destination_dir, filename)) as new:
+                new.write(file_object.read())
 
     def iter_extract(self, entries, destination_dir):
         if not self._contents_listed:
             self.list_contents()
-        for f in super(TarArchive, self).iter_extract(entries, destination_dir):
-            yield f
+        yield from super(TarArchive, self).iter_extract(entries, destination_dir)
 
     def close(self):
         if self.tar is not None:

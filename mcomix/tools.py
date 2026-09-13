@@ -11,8 +11,8 @@ import re
 import sys
 import tempfile
 from functools import reduce
-from typing import (Any, IO, Iterable, Iterator, List, Mapping, Sequence,
-                    Tuple, TypeVar, Union)
+from collections.abc import Iterable, Iterator, Mapping, Sequence
+from typing import Any, IO, TypeVar
 
 Numeric = TypeVar('Numeric', int, float)
 
@@ -28,7 +28,7 @@ def cmp(a: str, b: str) -> int:
 class AlphanumericSortKey:
     """ Compares two strings by their natural order (i.e. 1 before 10) """
     def __init__(self, filename: str) -> None:
-        self.filename_parts: List[Union[int, str]] = [
+        self.filename_parts: list[int | str] = [
             int(part) if part.isdigit() else part
             for part in NUMERIC_REGEXP.findall(filename.lower())
         ]
@@ -51,7 +51,7 @@ class AlphanumericSortKey:
         return False
 
 
-def alphanumeric_sort(filenames: List[str]) -> None:
+def alphanumeric_sort(filenames: list[str]) -> None:
     """Do an in-place alphanumeric sort of the strings in <filenames>,
     such that for an example "1.jpg", "2.jpg", "10.jpg" is a sorted
     ordering.
@@ -60,7 +60,7 @@ def alphanumeric_sort(filenames: List[str]) -> None:
     filenames.sort(key=AlphanumericSortKey)
 
 
-def bin_search(lst: List, value: Any) -> int:
+def bin_search(lst: list, value: Any) -> int:
     """ Binary search for sorted list C{lst}, looking for C{value}.
     @return: List index on success. On failure, it returns the 1's
     complement of the index where C{value} would be inserted.
@@ -138,7 +138,7 @@ def number_of_digits(n: int) -> int:
     return int(math.log10(abs(n))) + 1
 
 
-def decompose_byte_size_exponent(n: float) -> Tuple[float, int]:
+def decompose_byte_size_exponent(n: float) -> tuple[float, int]:
     e = 0
     while n > 1024.0:
         n /= 1024.0
@@ -165,7 +165,7 @@ def div(a: Numeric, b: Numeric) -> float:
     return float(a) / float(b)
 
 
-def volume(t: List[int]) -> int:
+def volume(t: list[int]) -> int:
     return reduce(operator.mul, t, 1)
 
 
@@ -173,33 +173,33 @@ def relerr(approx: Numeric, ideal: Numeric) -> float:
     return abs(div(approx - ideal, ideal))
 
 
-def smaller(a: List, b: List) -> List:
+def smaller(a: list, b: list) -> list:
     """ Returns a list with the i-th element set to True if and only if the i-th
     element in a is less than the i-th element in b. """
     return list(map(operator.lt, a, b))
 
 
-def smaller_or_equal(a: List, b: List) -> List:
+def smaller_or_equal(a: list, b: list) -> list:
     """ Returns a list with the i-th element set to True if and only if the i-th
     element in a is less than or equal to the i-th element in b. """
     return list(map(operator.le, a, b))
 
 
-def scale(t: Sequence[Numeric], factor: Numeric) -> List[Numeric]:
+def scale(t: Sequence[Numeric], factor: Numeric) -> list[Numeric]:
     return [x * factor for x in t]
 
 
-def vector_sub(a: List[Numeric], b: List[Numeric]) -> List[Numeric]:
+def vector_sub(a: list[Numeric], b: list[Numeric]) -> list[Numeric]:
     """ Subtracts vector b from vector a. """
     return list(map(operator.sub, a, b))
 
 
-def vector_add(a: List[Numeric], b: List[Numeric]) -> List[Numeric]:
+def vector_add(a: list[Numeric], b: list[Numeric]) -> list[Numeric]:
     """ Adds vector a to vector b. """
     return list(map(operator.add, a, b))
 
 
-def vector_opposite(a: List[Numeric]) -> List[Numeric]:
+def vector_opposite(a: list[Numeric]) -> list[Numeric]:
     """ Returns the opposite vector -a. """
     return list(map(operator.neg, a))
 

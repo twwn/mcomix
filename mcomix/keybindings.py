@@ -162,7 +162,7 @@ class _KeybindingManager(object):
         self._migrate_from_old_bindings()
         self._initialize()
 
-    def register(self, name, bindings, callback, args=[], kwargs={}):
+    def register(self, name, bindings, callback, args=None, kwargs=None):
         """ Registers an action for a predefined keybinding name.
         @param name: Action name, defined in L{BINDING_INFO}.
         @param bindings: List of keybinding strings, as understood
@@ -174,13 +174,18 @@ class _KeybindingManager(object):
         """
         assert name in BINDING_INFO, "'%s' isn't a valid keyboard action." % name
 
+        if args is None:
+            args = []
+        if kwargs is None:
+            kwargs = {}
+
         # Load stored keybindings, or fall back to passed arguments
         keycodes = self._action_to_bindings[name]
         if keycodes == []:
             keycodes = [tuple(Gtk.accelerator_parse(binding)) for binding in bindings]
 
         for keycode in keycodes:
-            if keycode in list(self._binding_to_action.keys()):
+            if keycode in self._binding_to_action:
                 if self._binding_to_action[keycode] != name:
                     log.warning(_('Keybinding for "%(action)s" overrides hotkey for another action.'),
                             {"action": name})
@@ -289,9 +294,8 @@ class _KeybindingManager(object):
     def _initialize(self):
         """ Restore keybindings from disk. """
         try:
-            fp = open(constants.KEYBINDINGS_CONF_PATH, "r")
-            stored_action_bindings = json.load(fp)
-            fp.close()
+            with open(constants.KEYBINDINGS_CONF_PATH, "r") as fp:
+                stored_action_bindings = json.load(fp)
         except Exception as e:
             log.error(_("Couldn't load keybindings: %s"), e)
             stored_action_bindings = {}

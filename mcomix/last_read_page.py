@@ -199,9 +199,10 @@ class LastReadPage(object):
 
             try:
                 os.unlink(constants.LASTPAGE_DATABASE_PATH)
-            except IOError as e:
+            except OSError as error:
                 log.error(_('! Could not remove file "%s"'),
                           constants.LASTPAGE_DATABASE_PATH)
+                log.info('Error was: %s', error)
 
     def _init_database(self, dbfile):
         """ Creates or opens new SQLite database at C{dbfile}, and initalizes

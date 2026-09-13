@@ -11,7 +11,7 @@ import threading
 import locale
 import PIL.Image as Image
 from urllib.request import pathname2url
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 from hashlib import md5
 
 from mcomix.preferences import prefs
@@ -68,7 +68,7 @@ class Thumbnailer(object):
         self.force_recreation = force_recreation
         self.archive_support = archive_support
 
-    def thumbnail(self, filepath: str, threaded: bool = False) -> Optional["GdkPixbuf.Pixbuf"]:
+    def thumbnail(self, filepath: str, threaded: bool = False) -> "GdkPixbuf.Pixbuf | None":
         """ Returns a thumbnail pixbuf for <filepath>, transparently handling
         both normal image files and archives. If a thumbnail file already exists,
         it is re-used. Otherwise, a new thumbnail is created from <filepath>.

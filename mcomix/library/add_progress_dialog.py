@@ -43,17 +43,20 @@ class _AddLibraryProgressDialog(Gtk.Dialog):
         hbox.pack_start(right_box, False, False, 0)
 
         label = labels.BoldLabel(_('Added books:'))
-        label.set_alignment(1.0, 1.0)
+        label.set_xalign(1.0)
+        label.set_yalign(1.0)
         left_box.pack_start(label, True, True, 0)
         number_label = Gtk.Label(label='0')
-        number_label.set_alignment(0, 1.0)
+        number_label.set_xalign(0)
+        number_label.set_yalign(1.0)
         right_box.pack_start(number_label, True, True, 0)
 
         bar = Gtk.ProgressBar()
         main_box.pack_start(bar, False, False, 0)
 
         added_label = labels.ItalicLabel()
-        added_label.set_alignment(0, 0.5)
+        added_label.set_xalign(0)
+        added_label.set_yalign(0.5)
         added_label.set_width_chars(64)
         added_label.set_max_width_chars(64)
         added_label.set_ellipsize(Pango.EllipsizeMode.MIDDLE)

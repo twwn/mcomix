@@ -3,7 +3,6 @@
 
 import enum
 import os
-import sys
 
 from mcomix import tools
 

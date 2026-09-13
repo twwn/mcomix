@@ -7,7 +7,6 @@ from mcomix import image_tools
 from mcomix import i18n
 from mcomix import thumbnail_tools
 from mcomix import thumbnail_view
-from mcomix.preferences import prefs
 from mcomix.i18n import _
 
 class _ImageArea(Gtk.ScrolledWindow):
@@ -134,8 +133,10 @@ class _ImageArea(Gtk.ScrolledWindow):
         for the cursor at the top left corner of the thumbnail (so that we
         might actually see where we are dropping!).
         """
-        path = iconview.get_cursor()[0]
-        surface = treeview.create_row_drag_icon(path)
+        # Gtk.IconView.get_cursor() returns (found, path, cell), and its
+        # drag icon method is named differently from Gtk.TreeView's.
+        path = iconview.get_cursor()[1]
+        surface = iconview.create_drag_icon(path)
         width, height = surface.get_width(), surface.get_height()
         pixbuf = Gdk.pixbuf_get_from_surface(surface, 0, 0, width, height)
         Gtk.drag_set_icon_pixbuf(context, pixbuf, -5, -5)

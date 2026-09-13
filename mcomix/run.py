@@ -17,6 +17,10 @@ from mcomix import (
     portability,
     preferences,
 )
+from mcomix.version_tools import Version
+
+#: Lowest Pillow release providing the API MComix uses (Image.Transpose).
+PIL_VERSION_REQUIRED = '9.1.0'
 
 def wait_and_exit():
     """ Wait for the user pressing ENTER before closing. This should help
@@ -120,20 +124,16 @@ def setup_dependencies():
         wait_and_exit()
 
     try:
-        import PIL.Image
+        import PIL.Image  # noqa: F401
 
-        try:
-            pil_major_version = int(PIL.__version__[0:PIL.__version__.index('.')])
-        except (ValueError, IndexError):
-            pil_major_version = 0
-        if pil_major_version < 6:
+        if Version(PIL.__version__) < Version(PIL_VERSION_REQUIRED):
             log.error(_("You don't have the required version of the Python Imaging Library Fork (Pillow) installed."))
             log.error(_('Installed Pillow version is: %s') % PIL.__version__)
-            log.error(_('Required Pillow version is: 6.0.0 or higher'))
+            log.error(_('Required Pillow version is: %s or higher') % PIL_VERSION_REQUIRED)
             wait_and_exit()
 
     except ImportError:
-        log.error(_('Python Imaging Library Fork (Pillow) 6.0.0 or higher is required.'))
+        log.error(_('Python Imaging Library Fork (Pillow) %s or higher is required.') % PIL_VERSION_REQUIRED)
         log.error(_('No version of the Python Imaging Library was found on your system.'))
         wait_and_exit()
 
@@ -212,11 +212,15 @@ def run():
     main.set_main_window(window)
 
     if 'win32' != sys.platform:
-        # Add a SIGCHLD handler to reap zombie processes.
+        # Add a SIGCHLD handler to reap zombie processes. Signals coalesce,
+        # so one delivery can stand for several children having exited;
+        # reap until there is nothing left to collect.
         def on_sigchld(signum, frame):
             try:
-                os.waitpid(-1, os.WNOHANG)
+                while os.waitpid(-1, os.WNOHANG)[0] != 0:
+                    pass
             except OSError:
+                # No children left to wait for.
                 pass
         signal.signal(signal.SIGCHLD, on_sigchld)
 
