@@ -77,8 +77,8 @@ def parse_arguments(argv):
     debugopts.add_argument('-o', dest='output', default='',
             help=argparse.SUPPRESS)
 
-    parser.add_argument('paths', nargs='*', metavar=_('PATH'),
-            help=argparse.SUPPRESS)
+    # The usage line above already names it; keep it out of --help.
+    parser.add_argument('paths', nargs='*', help=argparse.SUPPRESS)
 
     opts = parser.parse_args(argv)
 
