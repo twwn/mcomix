@@ -11,7 +11,7 @@ the order back on close, and the headings that sort.
 import datetime
 import os
 
-from gi.repository import Gdk, Gtk
+from gi.repository import Gdk, GLib, Gtk
 
 from . import MComixTest, pump
 
@@ -19,6 +19,7 @@ from mcomix import bookmark_backend
 from mcomix import bookmark_dialog
 from mcomix import bookmark_menu_item
 from mcomix import constants
+from mcomix.preferences import prefs
 
 
 class _StubFileHandler(object):
@@ -164,5 +165,59 @@ class BookmarksDialogTest(MComixTest):
         self.dialog._list.sort_by(self.dialog._name_col)
         self.dialog._list.sort_by(None)
         self.assertEqual(self._names(), ['gamma', 'beta', 'alpha'])
+
+    # -- The columns the headings' menu offers -----------------------------
+
+    def _toggle(self, attr):
+        """Pick the column showing <attr> out of the headings' menu."""
+        self.dialog._list.activate_action('columns.%s' % attr, None)
+        pump()
+
+    def test_location_starts_out_hidden_and_the_rest_are_drawn(self):
+        self.assertEqual(['path'], self.dialog._list.hidden_columns())
+        self.assertFalse(self.dialog._path_col.get_visible())
+        self.assertTrue(self.dialog._name_col.get_visible())
+
+    def test_the_menu_offers_every_column_from_every_heading(self):
+        titles = [self.dialog._list.get_columns().get_item(index).get_title()
+                  for index in
+                  range(self.dialog._list.get_columns().get_n_items())]
+        menu = self.dialog._icon_col.get_header_menu()
+        self.assertIsNotNone(menu)
+        labels = [menu.get_item_attribute_value(index, 'label',
+                                                GLib.VariantType('s')).get_string()
+                  for index in range(menu.get_n_items())]
+        self.assertEqual(titles, labels)
+        for column in (self.dialog._name_col, self.dialog._path_col):
+            self.assertIs(menu, column.get_header_menu())
+
+    def test_asking_for_location_draws_it(self):
+        self._toggle('path')
+        self.assertTrue(self.dialog._path_col.get_visible())
+        self.assertEqual([], self.dialog._list.hidden_columns())
+
+    def test_what_the_menu_was_told_outlives_the_dialog(self):
+        self._toggle('path')
+        self._toggle('added')
+        self.assertEqual(['added'], prefs['hidden bookmark columns'])
+        another = bookmark_dialog._BookmarksDialog(self.window, self.store)
+        pump()
+        try:
+            self.assertEqual(['added'], another._list.hidden_columns())
+            self.assertTrue(another._path_col.get_visible())
+        finally:
+            another.destroy()
+
+    def test_the_last_column_left_cannot_be_hidden_as_well(self):
+        # The menu hangs off the headings, and a list with no columns
+        # has none: hiding the last would take away the way back.
+        for attr in ('icon', 'page', 'added'):
+            self._toggle(attr)
+        self.assertEqual(['name'], [attr for attr in ('icon', 'name', 'page',
+                                                      'path', 'added')
+                                    if attr not in
+                                    self.dialog._list.hidden_columns()])
+        self._toggle('name')
+        self.assertTrue(self.dialog._name_col.get_visible())
 
 # vim: expandtab:sw=4:ts=4

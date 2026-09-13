@@ -3,6 +3,7 @@
 from gi.repository import Gdk, Gtk
 
 from mcomix.dialog import Dialog
+from mcomix.preferences import prefs
 from mcomix import column_list
 from mcomix import widgets
 from mcomix import constants
@@ -62,8 +63,12 @@ class _BookmarksDialog(Dialog):
         self._date_add_col = self._list.add_text_column(
             _('Added'), 'added', sort_key=self._sort_key('_date_added'))
 
-        # FIXME Hide extra columns. Needs UI controls to enable these.
-        self._path_col.set_visible(False)
+        # Right-clicking any heading offers the rest; Location starts
+        # out hidden because there is rarely room for it beside the
+        # others, not because it is not worth having.
+        self._list.offer_column_chooser(
+            hidden=prefs['hidden bookmark columns'],
+            changed=self._remember_columns)
 
         self.set_default_size(600, 450)
 
@@ -79,6 +84,15 @@ class _BookmarksDialog(Dialog):
             self._add_bookmark(bookmark)
 
         self.set_visible(True)
+
+    @staticmethod
+    def _remember_columns(hidden: list[str]) -> None:
+        """Keep the chosen columns for the next dialog.
+
+        The window is built again every time it is opened, so what the
+        headings' menu was told has to outlive it.
+        """
+        prefs['hidden bookmark columns'] = hidden
 
     @staticmethod
     def _sort_key(*fields: str) -> "Any":

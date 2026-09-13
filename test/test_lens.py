@@ -8,12 +8,16 @@ it draws is a cursor, so nothing raises when it draws the wrong thing.
 """
 
 import hashlib
+import os
 
 from gi.repository import GdkPixbuf
 
-from . import MComixTest, get_testfile_path
+from . import MComixTest, get_testfile_path, pump, wait_for
 
+from mcomix import constants
+from mcomix import icons
 from mcomix import image_tools
+from mcomix import main
 from mcomix.lens import MagnifyingLens
 
 
@@ -102,5 +106,70 @@ class LensDrawingTest(MComixTest):
         self.assertEqual('322586bbb8b2ef4fec95b6c694f4765c'
                          '85eff384d89e0c05e862d13d9e4dadcf',
                          digest.hexdigest())
+
+class LensCursorTest(MComixTest):
+
+    """Whether the pointer is hidden while the lens is on.
+
+    The lens draws a cursor, so it hides the real one; with no file
+    open it draws nothing, and hiding the pointer over an empty window
+    leaves it invisible with nothing to show for it.
+    """
+
+    def setUp(self):
+        super(LensCursorTest, self).setUp()
+        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
+                          constants.THUMBNAIL_PATH):
+            os.makedirs(directory, exist_ok=True)
+        icons.load_icons()
+        self.window = main.MainWindow()
+        main.set_main_window(self.window)
+        pump()
+
+    def tearDown(self):
+        self.window.terminate_program()
+        self.window.destroy()
+        main.set_main_window(None)
+        pump()
+        super(LensCursorTest, self).tearDown()
+
+    def _open_a_file(self):
+        self.window.filehandler.open_file(
+            get_testfile_path('archives', '01-ZIP-Normal.zip'))
+        wait_for(lambda: self.window.imagehandler.get_number_of_pages() > 0,
+                 seconds=20)
+        pump()
+
+    @property
+    def _cursor(self):
+        return self.window.cursor_handler._current_cursor
+
+    def test_switching_the_lens_on_with_no_file_leaves_the_cursor(self):
+        self.window.lens.enabled = True
+        self.assertEqual(constants.NORMAL_CURSOR, self._cursor)
+
+    def test_opening_a_file_with_the_lens_on_hides_the_cursor(self):
+        self.window.lens.enabled = True
+        self._open_a_file()
+        self.assertEqual(constants.NO_CURSOR, self._cursor)
+
+    def test_switching_it_on_over_a_file_hides_the_cursor(self):
+        self._open_a_file()
+        self.window.lens.enabled = True
+        self.assertEqual(constants.NO_CURSOR, self._cursor)
+
+    def test_closing_the_file_under_the_lens_puts_the_cursor_back(self):
+        self._open_a_file()
+        self.window.lens.enabled = True
+        self.window.filehandler.close_file()
+        pump()
+        self.assertEqual(constants.NORMAL_CURSOR, self._cursor)
+
+    def test_switching_it_off_puts_the_cursor_back(self):
+        self._open_a_file()
+        self.window.lens.enabled = True
+        self.window.lens.enabled = False
+        self.assertEqual(constants.NORMAL_CURSOR, self._cursor)
+
 
 # vim: expandtab:sw=4:ts=4

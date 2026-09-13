@@ -468,6 +468,12 @@ class ColumnListView(Gtk.ColumnView):
         super(ColumnListView, self).__init__(model=self.selection)
         self._sorted.set_sorter(self.get_sorter())
         self._reorderable = False
+        #: Every column, by the attribute it shows, in the order added.
+        self._columns: list[tuple[str, Gtk.ColumnViewColumn]] = []
+        #: The chooser's actions, once a caller has asked for one.
+        self._chooser_actions: Gio.SimpleActionGroup | None = None
+        #: Who to tell when the chosen columns change.
+        self._columns_changed: "Callable[[list[str]], None] | None" = None
         self._search_attribute: str | None = None
         self._search_controller: Gtk.EventControllerKey | None = None
         self._search_typed_so_far = ''
@@ -504,7 +510,8 @@ class ColumnListView(Gtk.ColumnView):
                         text: "Callable[[Row], str] | None" = None,
                         sort_key: "Callable[[Row], Any] | None" = None,
                         markup: bool = False,
-                        width_chars: int = -1) -> Gtk.ColumnViewColumn:
+                        width_chars: int = -1,
+                        max_width_chars: int = -1) -> Gtk.ColumnViewColumn:
         """Show <attr> of each row as text under the heading <title>.
 
         <text> reads the text off the row itself where it is not the
@@ -514,6 +521,8 @@ class ColumnListView(Gtk.ColumnView):
         <width_chars> is how narrow the column may be squeezed before
         the list scrolls sideways instead, which a column of names worth
         reading wants and one that only has to fit its heading does not.
+        <max_width_chars> is how wide it asks to be drawn at most, which
+        bounds what one long entry can take from the columns beside it.
         """
         if text is None:
             def text(row: Row, attr: str = attr) -> str:
@@ -521,6 +530,7 @@ class ColumnListView(Gtk.ColumnView):
 
         def bind(cell: _TextCell, row: Row) -> None:
             cell.set_width_chars(width_chars)
+            cell.set_max_width_chars(max_width_chars)
             if markup:
                 cell.set_markup(text(row))
             else:
@@ -733,7 +743,76 @@ class ColumnListView(Gtk.ColumnView):
                 lambda left, right, _data:
                 _compare(sort_key(left), sort_key(right))))
         self.append_column(column)
+        self._columns.append((attr, column))
         return column
+
+    # -- Choosing which columns are drawn ----------------------------------
+
+    #: The prefix the chooser's actions answer under.
+    _CHOOSER_PREFIX = 'columns'
+
+    def offer_column_chooser(
+            self, hidden: Iterable[str] = (),
+            changed: "Callable[[list[str]], None] | None" = None) -> None:
+        """Let every heading offer a menu turning the columns on and off.
+
+        A Gtk.TreeView had no such menu either, which is why the columns
+        MComix did not have the room for were built and then hidden with
+        no way to ask for them.
+
+        <hidden> names the columns that start out hidden, by the
+        attribute each of them shows; <changed> is handed the names of
+        the hidden ones whenever that changes, so that a caller can
+        remember them.  Call this once, after the last column is added.
+        """
+        self._columns_changed = changed
+        actions = Gio.SimpleActionGroup()
+        menu = Gio.Menu()
+
+        for attr, column in self._columns:
+            visible = attr not in hidden
+            column.set_visible(visible)
+            action = Gio.SimpleAction.new_stateful(
+                attr, None, GLib.Variant.new_boolean(visible))
+            action.connect('change-state', self._column_chosen, column)
+            actions.add_action(action)
+            menu.append(column.get_title() or attr,
+                        '%s.%s' % (self._CHOOSER_PREFIX, attr))
+
+        self._chooser_actions = actions
+        self.insert_action_group(self._CHOOSER_PREFIX, actions)
+        for _attr, column in self._columns:
+            column.set_header_menu(menu)
+        self._update_chooser()
+
+    def _column_chosen(self, action: Gio.SimpleAction, state: GLib.Variant,
+                       column: Gtk.ColumnViewColumn) -> None:
+        column.set_visible(state.get_boolean())
+        action.set_state(state)
+        self._update_chooser()
+        if self._columns_changed is not None:
+            self._columns_changed(self.hidden_columns())
+
+    def _update_chooser(self) -> None:
+        """Keep the last column that is left from being hidden too.
+
+        The menu hangs off the headings, and a list with no columns has
+        none: hiding the last one would take away the way back.
+        """
+        if self._chooser_actions is None:
+            return
+        showing = [attr for attr, column in self._columns
+                   if column.get_visible()]
+        for attr, _column in self._columns:
+            action = self._chooser_actions.lookup_action(attr)
+            if action is not None:
+                cast(Gio.SimpleAction, action).set_enabled(
+                    showing != [attr])
+
+    def hidden_columns(self) -> list[str]:
+        """The columns that are not drawn, by the attribute each shows."""
+        return [attr for attr, column in self._columns
+                if not column.get_visible()]
 
     # -- Reordering by dragging -------------------------------------------
 

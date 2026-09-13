@@ -117,7 +117,16 @@ class Matrix:
         factors for the corresponding axes, r is one of (0, 90, 180, 270),
         referring to the clockwise rotation to be applied, and f is a sequence
         of bools where True refers to the corresponding axis to be flipped. """
-        s: tuple[float, float] = (abs(self.m[0] + self.m[1]), abs(self.m[2] + self.m[3]))
+        # The scales belong to the axes as they were before the
+        # rotation, since that is the order the sequence puts them in
+        # and the order from_image_transforms() rebuilds them in.  Read
+        # straight off the rows, they came out the other way round for
+        # every transform that swaps the axes.
+        if self.swaps_axes():
+            s: tuple[float, float] = (abs(self.m[2] + self.m[3]),
+                                      abs(self.m[0] + self.m[1]))
+        else:
+            s = (abs(self.m[0] + self.m[1]), abs(self.m[2] + self.m[3]))
         r: int = 90 if self.swaps_axes() else 0
         f: tuple[bool, bool] = (
             self.swaps_axes() ^ (self.m[0] < 0 or self.m[1] < 0),

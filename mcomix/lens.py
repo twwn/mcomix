@@ -53,9 +53,31 @@ class MagnifyingLens:
         self._enabled = enabled
 
         if enabled:
-            # FIXME: If no file is currently loaded, the cursor will still be hidden.
-            self._window.cursor_handler.set_cursor_type(constants.NO_CURSOR)
             self._window.osd.clear()
+
+        self._follow_state()
+
+    enabled = property(get_enabled, set_enabled)
+
+    def file_changed(self) -> None:
+        """Follow a file being opened or closed.
+
+        The lens can be switched on with no file open, and was left on
+        when one was closed; either way it hides the cursor over pages
+        that are not there.
+        """
+        if self._enabled:
+            self._follow_state()
+
+    def _follow_state(self) -> None:
+        """Take the cursor and the lens to where the state says.
+
+        The cursor goes only while the lens has something to draw over:
+        hiding it over an empty window leaves the pointer invisible with
+        nothing to show for it.
+        """
+        if self._enabled and self._window.filehandler.file_loaded:
+            self._window.cursor_handler.set_cursor_type(constants.NO_CURSOR)
 
             if self._point:
                 self._draw_lens(*self._point)
@@ -63,8 +85,6 @@ class MagnifyingLens:
             self._window.cursor_handler.set_cursor_type(constants.NORMAL_CURSOR)
             self._clear_lens()
             self._last_lens_rect = None
-
-    enabled = property(get_enabled, set_enabled)
 
     def _draw_lens(self, x: int, y: int) -> None:
         """Calculate what image data to put in the lens and update the cursor
@@ -154,7 +174,11 @@ class MagnifyingLens:
             if image_tools.is_animation(source_pixbuf):
                 continue
             cpos = b.get_position()
-            _scale, rotation, flips = tf.to_image_transforms() # FIXME use scale as soon as it is correctly included
+            # The scale is decomposed too, and dropped: the transform
+            # carries the turn and the flips a page was drawn with, not
+            # the size it was fitted to.  That is the content box's, and
+            # _draw_lens_pixbuf() works it out from there.
+            _scale, rotation, flips = tf.to_image_transforms()
             composite_color_args = image_tools.get_composite_color_args(0) if \
                 source_pixbuf.get_has_alpha() and opaque else None
             self._draw_lens_pixbuf((x - cpos[0], y - cpos[1]), b.get_size(),

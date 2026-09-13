@@ -84,7 +84,24 @@ Afterwards, switch back to a regular Windows console and build the MSI installer
 python win32/build_msi.py
 ~~~~~~~
 
-You will be notified if problems occured while the installer is building. The finished installer will be placed in the `dist` directory.
+You will be notified if problems occured while the installer is building. The finished installer will be placed in the `dist` directory, and its SHA-256 is written to `win32/tools/checksum.sha256`, which is printed as well.
+
+
+Building the Chocolatey package
+-------------------------------
+
+The Chocolatey package does not carry MComix itself; it downloads the MSI installer from SourceForge and checks it against the checksum `win32/build_msi.py` wrote. The installer therefore has to be uploaded first, under the name and version the package expects, and the checksum file has to be the one written for that same build - it is deliberately not kept in Git, since it describes one build of one version.
+
+With the [Chocolatey CLI](https://chocolatey.org/install) installed, navigate to MComix' root folder and execute:
+
+~~~~~~~
+:::bash
+choco pack win32/mcomix.nuspec --version <version> --out dist
+choco push dist/mcomix.<version>.nupkg --source https://push.chocolatey.org/
+~~~~~~~
+
+Pushing requires an API key from a Chocolatey account with rights to the `mcomix` package, set once with `choco apikey`. Packages are moderated, so the new version appears on the site some time after it is pushed.
+
 
 Uploading a new release
 -----------------------

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import enum
+import hashlib
 import os
 import pathlib
 import re
@@ -16,6 +17,12 @@ from mcomix.constants import VERSION
 INDENT_ONELEVEL = "  "
 
 MAX_ID_LENGTH = 72
+
+# Where chocolateyinstall.ps1 reads the checksum of the installer it
+# downloads.  It lives beside that script so that it ships in the
+# package, and is written here rather than kept in the source tree: it
+# describes one build of one version, and is wrong for every other.
+CHECKSUM_PATH = pathlib.Path("win32/tools/checksum.sha256")
 
 
 class IdType(enum.Enum):
@@ -210,9 +217,9 @@ def compile_msi(
     input_files: list[pathlib.PurePath],
     temp_dir: pathlib.PurePath,
     output_dir: pathlib.PurePath,
-) -> None:
+) -> pathlib.PurePath:
     """Run WiX v3 tooling to compile and link the input files into a MSI file placed
-    in the output directory."""
+    in the output directory, and answer where it was placed."""
     candle = shutil.which("candle.exe")
     light = shutil.which("light.exe")
     if not candle or not light:
@@ -249,6 +256,19 @@ def compile_msi(
         + ["-ext", "WixUIExtension", "-spdb", "-o", str(msi_path)]
     )
     subprocess.run(cmd, check=True)
+    return msi_path
+
+
+def write_checksum(msi_path: pathlib.PurePath) -> str:
+    """Record the SHA-256 of the built installer for the choco package."""
+    digest = hashlib.sha256()
+    with open(msi_path, "rb") as fp:
+        for block in iter(lambda: fp.read(1 << 20), b""):
+            digest.update(block)
+    checksum = digest.hexdigest()
+    CHECKSUM_PATH.parent.mkdir(parents=True, exist_ok=True)
+    CHECKSUM_PATH.write_text(checksum + "\n")
+    return checksum
 
 
 def main() -> None:
@@ -273,11 +293,15 @@ def main() -> None:
         fp.write(autogen_fragment_wix_content)
 
     # Generate MSI
-    compile_msi(
+    msi_path = compile_msi(
         [spec_path, autogen_path],
         tmpdir,
         pathlib.PurePath("dist/"),
     )
+
+    checksum = write_checksum(msi_path)
+    print(f"{msi_path}: sha256 {checksum}")
+    print(f"Written to {CHECKSUM_PATH} for the chocolatey package.")
 
 
 if __name__ == "__main__":

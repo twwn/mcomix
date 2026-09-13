@@ -450,4 +450,46 @@ class MainWindowTest(MComixTest):
         self.window.set_layout_cursor(None)
         self.assertIsNone(self.window._main_layout.get_cursor())
 
+    # -- What a pending redraw does with a later scroll --------------------
+    #
+    # draw_image() coalesces redraws onto one idle callback.  It used to
+    # drop the whole call, scroll destination and all, so a page turn
+    # landing on the redraw some toggled widget had scheduled opened
+    # wherever the page before it had been left.
+
+    def _watch_scrolls(self):
+        """Collect what _draw_image() asks the layout to scroll to."""
+        wait_for(lambda: self.window.imagehandler.page_is_available(),
+                 seconds=20)
+        scrolls = []
+        self.window.scroll_to_predefined = (
+            lambda destination, index=None:
+            scrolls.append((tuple(destination), index)))
+        return scrolls
+
+    def test_a_pending_redraw_does_not_swallow_a_scroll_destination(self):
+        scrolls = self._watch_scrolls()
+        self.window.draw_image()
+        self.window.draw_image(scroll_to=constants.SCROLL_TO_END)
+        self._pump()
+        self.assertEqual([((constants.SCROLL_TO_END,) * 2,
+                           constants.LAST_INDEX)], scrolls)
+
+    def test_the_last_scroll_destination_asked_for_is_the_one_used(self):
+        scrolls = self._watch_scrolls()
+        self.window.draw_image(scroll_to=constants.SCROLL_TO_END)
+        self.window.draw_image(scroll_to=constants.SCROLL_TO_START)
+        self._pump()
+        self.assertEqual([((constants.SCROLL_TO_START,) * 2,
+                           constants.FIRST_INDEX)], scrolls)
+
+    def test_a_scroll_destination_is_not_used_again_by_the_next_redraw(self):
+        scrolls = self._watch_scrolls()
+        self.window.draw_image(scroll_to=constants.SCROLL_TO_END)
+        self._pump()
+        self.window.draw_image()
+        self._pump()
+        self.assertEqual(1, len(scrolls))
+
+
 # vim: expandtab:sw=4:ts=4

@@ -15,10 +15,12 @@ from gi.repository import Gtk
 
 from . import MComixTest, get_testfile_path, pump, wait_for
 
+from mcomix import column_list
 from mcomix import constants
 from mcomix import icons
 from mcomix import main
 from mcomix.library import backend
+from mcomix.library import collection_area
 from mcomix.library import main_dialog
 
 
@@ -81,6 +83,32 @@ class LibraryDialogTest(MComixTest):
         pump()
         self.assertIsNone(main_dialog._dialog)
         self.assertIsNot(self._open(), first)
+
+    def _sidebar_width(self, dialog):
+        """What the collection sidebar asks for, at least and at most."""
+        return dialog.collection_area.measure(Gtk.Orientation.HORIZONTAL, -1)
+
+    def test_the_sidebar_asks_for_room_to_draw_a_collection_name(self):
+        # A Gtk.ScrolledWindow asks for its child's minimum width, and an
+        # ellipsized label will shrink to a single character: the sidebar
+        # came out 39 pixels wide, drawing every collection as "...".
+        dialog = self._open()
+        minimum = self._sidebar_width(dialog).minimum
+        self.assertGreaterEqual(
+            minimum, column_list._text_width(collection_area._SIDEBAR_MIN_CHARS))
+
+    def test_one_long_collection_name_does_not_widen_the_sidebar(self):
+        dialog = self._open()
+        dialog.backend.add_collection('A collection whose name goes on and '
+                                      'on and on for a very long time indeed')
+        dialog.collection_area.display_collections()
+        pump()
+        natural = self._sidebar_width(dialog).natural
+        # The name is far wider than the cap; what the sidebar asks for
+        # is the cap plus whatever the expander and the padding take.
+        self.assertLess(
+            natural,
+            2 * column_list._text_width(collection_area._SIDEBAR_MAX_CHARS))
 
 
 # vim: expandtab:sw=4:ts=4

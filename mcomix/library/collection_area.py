@@ -28,6 +28,14 @@ _COLLECTION_RECENT = -2
 #: What a drop handler answers with when it will not take the drop.
 _NO_DRAG_ACTION = Gdk.DragAction(0)
 
+#: How wide the sidebar asks to be, in characters of whatever font the
+#: desktop is drawn in.  The lower bound is about what "All books" and
+#: "Recent" need; the upper one keeps one long collection name from
+#: taking the room the books are drawn in, the library window being 500
+#: pixels wide by default and the control area under it wanting 350.
+_SIDEBAR_MIN_CHARS = 14
+_SIDEBAR_MAX_CHARS = 28
+
 
 class _CollectionArea(Gtk.ScrolledWindow):
 
@@ -39,12 +47,23 @@ class _CollectionArea(Gtk.ScrolledWindow):
         super().__init__()
         self._library = library
         self.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        # A Gtk.ScrolledWindow asks for its child's *minimum* width, and
+        # an ellipsized label is willing to shrink to a single character:
+        # the sidebar came out 39 pixels wide, drawing every collection
+        # as "...".  A Gtk.TreeView asked for the width its columns
+        # wanted, so ask for the natural width here too; the column below
+        # is what bounds it, since min-content-width and
+        # max-content-width are both ignored while nothing may scroll
+        # sideways.
+        self.set_propagate_natural_width(True)
 
         # A row carries the name as it is drawn and the collection id
         # behind it; the collections under a collection are its own
         # children, which is what a Gtk.TreeStore held.
         self._list = column_list.ColumnListView(tree=True)
-        self._list.add_text_column('', 'name', expand=True, markup=True)
+        self._list.add_text_column('', 'name', expand=True, markup=True,
+                                   width_chars=_SIDEBAR_MIN_CHARS,
+                                   max_width_chars=_SIDEBAR_MAX_CHARS)
         self._list.set_show_column_separators(False)
         self._list.selection.connect('selection-changed',
                                      self._collection_selected)

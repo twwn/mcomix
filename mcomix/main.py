@@ -87,6 +87,8 @@ class MainWindow(Gtk.Window):
         self.transforms: list[Matrix] = []
         self._spacing = prefs['space between two pages']
         self._waiting_for_redraw = False
+        #: Where the redraw that is pending was asked to scroll to.
+        self._pending_scroll_to: int | None = None
 
         self._main_layout = canvas.PageCanvas()
         # Gtk.EventBox was only ever here to give the pages a background
@@ -320,10 +322,15 @@ class MainWindow(Gtk.Window):
     def draw_image(self, scroll_to: int | None = None) -> None:
         """Draw the current pages and update the titlebar and statusbar.
         """
-        # FIXME: what if scroll_to is different?
+        # A redraw that is already pending will do, but where it was
+        # asked to scroll to must not go with the call that is dropped:
+        # a page turn landing on the redraw a toggled statusbar
+        # scheduled would open wherever the page before it was left.
+        if scroll_to is not None:
+            self._pending_scroll_to = scroll_to
         if not self._waiting_for_redraw:  # Don't stack up redraws.
             self._waiting_for_redraw = True
-            GLib.idle_add(self._draw_image, scroll_to,
+            GLib.idle_add(self._draw_image,
                              priority=GLib.PRIORITY_HIGH_IDLE)
 
     def _update_toggle_preference(self, preference: str, toggleaction: Any) -> None:
@@ -368,7 +375,10 @@ class MainWindow(Gtk.Window):
                 if should_be_visible != widget.get_visible():
                     widget.set_visible(should_be_visible)
 
-    def _draw_image(self, scroll_to: int | None) -> bool:
+    def _draw_image(self) -> bool:
+
+        scroll_to = self._pending_scroll_to
+        self._pending_scroll_to = None
 
         self._update_toggles_visibility()
 
@@ -449,7 +459,11 @@ class MainWindow(Gtk.Window):
                     continue
                 pixbuf_list[i] = image_tools.fit_pixbuf_to_rectangle(
                     pixbuf_list[i], scaled_sizes[i], rotation_list[i])
-                self.transforms[i] += Transform.from_rotation(rotation_list[i]) # FIXME also include scales
+                # The turn only.  fit_pixbuf_to_rectangle() also scaled
+                # the page to the content box, which the lens - the one
+                # reader of these - takes from the box itself rather
+                # than from here.
+                self.transforms[i] += Transform.from_rotation(rotation_list[i])
 
             for i in range(pixbuf_count):
                 if do_not_transform[i]:
@@ -562,12 +576,14 @@ class MainWindow(Gtk.Window):
             self._update_page_information()
 
     def _on_file_opened(self) -> None:
+        self.lens.file_changed()
         self.uimanager.set_sensitivities()
         number, count = self.filehandler.get_file_number()
         self.statusbar.set_file_number(number, count)
         self.statusbar.update()
 
     def _on_file_closed(self) -> None:
+        self.lens.file_changed()
         self.clear()
         self.thumbnailsidebar.set_visible(False)
         self.thumbnailsidebar.clear()

@@ -157,6 +157,10 @@ prefs = _Preferences({
     'fit to size height other': 1800,
     'scan for new books on library startup': True,
     'openwith commands': [],  # (label, command) pairs
+    # Which bookmark columns the headings' menu has been asked to hide,
+    # by the attribute each of them shows.  Location is the one there is
+    # rarely room for beside the others.
+    'hidden bookmark columns': ['path'],
     'animation mode': constants.ANIMATION_NORMAL,
     'double page autoresize': constants.DOUBLE_PAGE_AUTORESIZE_SIZE,
     'space between two pages': 2,
