@@ -442,6 +442,71 @@ class AddBookToCollectionTest(unittest.TestCase):
         self.assertEqual([], self.seen)
 
 
+class MovedBookTest(unittest.TestCase):
+
+    """A book that MComix has moved keeps its row, and its row keeps up.
+
+    The library stores a book by its path, so a move that left the row
+    alone would point it at a file that is not there any more - and
+    everything that hangs off the row's id, the thumbnail, the
+    collections it is in and the page it was read to, would be lost with
+    it.
+    """
+
+    def setUp(self):
+        fp, self.db = tempfile.mkstemp('.db', 'mcomix-test')
+        os.close(fp)
+        self._saved_path = constants.LIBRARY_DATABASE_PATH
+        constants.LIBRARY_DATABASE_PATH = self.db
+        self.backend = backend.LibraryBackend()
+        self.path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        self.assertTrue(self.backend.add_book(self.path))
+        self.book = self.backend.get_book_by_path(self.path)
+
+    def tearDown(self):
+        self.backend.close()
+        constants.LIBRARY_DATABASE_PATH = self._saved_path
+        os.unlink(self.db)
+
+    def test_the_row_follows_the_file(self):
+        moved = os.path.join(os.path.dirname(self.path), 'elsewhere.zip')
+
+        self.assertTrue(self.backend.update_book_path(self.path, moved))
+
+        self.assertIsNone(self.backend.get_book_by_path(self.path))
+        self.assertEqual(self.backend.get_book_by_path(moved).id,
+                         self.book.id)
+
+    def test_the_book_is_renamed_with_its_file(self):
+        moved = os.path.join(os.path.dirname(self.path), 'elsewhere.zip')
+
+        self.backend.update_book_path(self.path, moved)
+
+        self.assertEqual(self.backend.get_book_by_path(moved).name,
+                         'elsewhere.zip')
+
+    def test_a_book_that_is_not_in_the_library_moves_nothing(self):
+        self.assertFalse(self.backend.update_book_path('/nowhere/book.zip',
+                                                       '/elsewhere/book.zip'))
+        self.assertIsNotNone(self.backend.get_book_by_path(self.path))
+
+    def test_a_path_another_row_holds_is_not_taken_from_it(self):
+        """The path column is unique.
+
+        A row already standing where the file has landed is stale - no
+        file was there, or the move would have been refused - but it is
+        not this book's to throw away, so the update is refused instead.
+        """
+        other = get_testfile_path('archives', '02-TAR-Normal.tar')
+        self.assertTrue(self.backend.add_book(other))
+
+        self.assertFalse(self.backend.update_book_path(self.path, other))
+
+        self.assertIsNotNone(self.backend.get_book_by_path(self.path))
+        self.assertNotEqual(self.backend.get_book_by_path(other).id,
+                            self.book.id)
+
+
 class RemovedBookTest(unittest.TestCase):
 
     """remove_book() left the page the book was read to behind.

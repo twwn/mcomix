@@ -1,6 +1,7 @@
 """bookmark_menu_item.py - A single bookmark item."""
 
 import datetime
+import os
 from typing import TYPE_CHECKING
 
 from mcomix import column_list
@@ -57,6 +58,10 @@ class _Bookmark:
             self._file_handler.open_file(self._path, self._page)
         else:
             self._window.set_page(self._page)
+
+    def get_directory(self) -> str:
+        """The directory the bookmarked file is in."""
+        return os.path.dirname(self._path)
 
     def same_path(self, path: str) -> bool:
         """Return True if the bookmark is for the file <path>."""

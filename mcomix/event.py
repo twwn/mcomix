@@ -556,17 +556,17 @@ class EventHandler:
             else:
                 self._scroll_with_flipping(0, prefs['number of pixels to scroll per mouse wheel event'])
 
-        elif direction == Gdk.ScrollDirection.RIGHT:
-            if not self._window.is_manga_mode:
-                self._window.flip_page(+1)
+        elif direction in (Gdk.ScrollDirection.RIGHT,
+                           Gdk.ScrollDirection.LEFT):
+            # Sideways is a page either way, since nothing scrolls
+            # horizontally past the end of a page.  Which way round
+            # depends on how the book reads.
+            forwards = (direction == Gdk.ScrollDirection.RIGHT) \
+                != self._window.is_manga_mode
+            if forwards:
+                self._next_page_with_protection()
             else:
                 self._previous_page_with_protection()
-
-        elif direction == Gdk.ScrollDirection.LEFT:
-            if not self._window.is_manga_mode:
-                self._previous_page_with_protection()
-            else:
-                self._window.flip_page(+1)
 
         return Gdk.EVENT_STOP
 

@@ -127,6 +127,15 @@ class RecentFilesMenuTest(MComixTest):
         menu = recent.RecentFilesMenu(None, self.window)
         self.assertEqual(self._labels(menu)[:2], ['newer.cbz', 'older.cbz'])
 
+    def test_an_underscore_in_a_file_name_is_not_eaten(self):
+        """GTK builds a menu model's items with use-underline set, so a
+        name shown as it stands loses an underscore to the mnemonic it
+        is read as.  Gtk.RecentChooserMenu, and the Gtk.MenuItem the
+        menu was made of before the port, showed it."""
+        self._add('two_words.cbz')
+        menu = recent.RecentFilesMenu(None, self.window)
+        self.assertEqual(self._labels(menu), ['two__words.cbz'])
+
     def test_a_modification_time_is_a_datetime(self):
         """_modified() used to carry a branch for an int, which is what
         GTK3's Gtk.RecentInfo.get_modified() answered with. GTK4 answers

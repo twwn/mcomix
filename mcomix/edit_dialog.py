@@ -81,9 +81,10 @@ class _EditArchiveDialog(Dialog):
 
         self.connect('response', self._response)
 
-        # Undo and redo are the keyboard's alone: an editor that removes
-        # and reorders pages needs a way back, and the two menus it has
-        # are the right-click menus of the two lists.
+        # An editor that removes and reorders pages needs a way back.
+        # The keys are registered here, on the dialog, so that they work
+        # whichever of its two lists has the focus; both lists name them
+        # in their right-click menus, which is all the menu there is.
         shortcuts = Gtk.ShortcutController()
         for accelerator, step in (('<Control>z', self.undo),
                                   ('<Control>y', self.redo),
@@ -165,12 +166,19 @@ class _EditArchiveDialog(Dialog):
         # besides its pages and its comments, and a new archive written
         # without that is not the archive that was opened: it has lost
         # its metadata.
+        images = self._image_area.get_file_listing()
+        comments = self._comment_area.get_file_listing()
+        # The packer reads each file's size before it writes it, so a
+        # page or a comment still inside the archive it came from would
+        # raise FileNotFoundError and lose the save.
+        self.file_handler.wait_for_files(images + comments)
+
         saved = False
         try:
             archive_packer.write_archive(
                 archive_path,
-                self._image_area.get_file_listing(),
-                self._comment_area.get_file_listing(),
+                images,
+                comments,
                 carried_files=self.file_handler.get_other_files(),
                 archive_type=self._save_format()[0],
                 permissions_from=self.file_handler.get_path_to_base()

@@ -24,6 +24,7 @@ from mcomix import image_tools
 from mcomix import main
 from mcomix import message_dialog
 from mcomix.dialog import Response
+from mcomix.library import backend
 from mcomix.preferences import prefs
 
 
@@ -468,6 +469,20 @@ class MainWindowTest(MComixTest):
         def get_widget(self):
             return None
 
+    class _Scroll:
+
+        """What a Gtk.EventControllerScroll tells a handler about a scroll.
+
+        The handler asks the controller for the modifiers and nothing
+        else; the deltas arrive as arguments.
+        """
+
+        def __init__(self, state=0):
+            self._state = state
+
+        def get_current_event_state(self):
+            return self._state
+
     def _click(self, state=0):
         """Click the middle of the first page, and say where that was."""
         boxes = self.window.layout.get_content_boxes()
@@ -483,6 +498,28 @@ class MainWindowTest(MComixTest):
         handler.mouse_press_event(self._Click(1), 1, x, y)
         handler.mouse_release_event(self._Click(1, state), 1, x, y)
         self._pump()
+
+    def _wheel(self, delta_x, delta_y, state=0):
+        self.window._event_handler.scroll_wheel_event(
+            self._Scroll(state), delta_x, delta_y)
+        self._pump()
+
+    def test_a_sideways_wheel_turn_obeys_the_flip_with_wheel_preference(self):
+        """Every other wheel direction stops turning pages when the
+        preference is off, and sideways has to as well."""
+        self._ready()
+        prefs['flip with wheel'] = False
+        self._wheel(1, 0)
+        self.assertEqual(self.window.imagehandler.get_current_page(), 1)
+        self._wheel(-1, 0)
+        self.assertEqual(self.window.imagehandler.get_current_page(), 1)
+
+    def test_a_sideways_wheel_turn_reads_the_other_way_in_manga_mode(self):
+        self._ready()
+        prefs['flip with wheel'] = True
+        self.window.is_manga_mode = True
+        self._wheel(-1, 0)
+        self.assertEqual(self.window.imagehandler.get_current_page(), 2)
 
     def test_a_plain_click_turns_the_page_as_it_always_did(self):
         self._ready()
@@ -677,6 +714,11 @@ class MainWindowTest(MComixTest):
         with self._quietly():
             self.window.delete_page()
         self._pump()
+        print('DEBUG archive_type=%r base=%r can_write=%r pref=%r' % (
+            self.window.filehandler.archive_type,
+            self.window.filehandler.get_path_to_base(),
+            self.window.writeable_archive_type(),
+            prefs['keep archive format when saving']))
         self.assertTrue(self.window.save_archive(), 'the save failed')
 
         with zipfile.ZipFile(source) as written:
@@ -686,6 +728,63 @@ class MainWindowTest(MComixTest):
                          'the archive on disk still holds the page')
         self.assertEqual(os.stat(source).st_mode, mode,
                          'the archive came back with different permissions')
+
+    def test_saving_waits_for_the_comments_as_well_as_the_pages(self):
+        """A comment is extracted like anything else in the archive.
+
+        The packer reads every file's size before it writes it, so a
+        save that waited only for the pages raised FileNotFoundError on
+        a comment that was not out yet and refused the save - which
+        happened whenever the reader saved soon after opening the book.
+        """
+        self._ready()
+        asked = []
+        # The packer is stubbed out: the book open here is the committed
+        # fixture itself, and a save writes over the archive it came
+        # from.  What the test is about is the waiting, not the writing.
+        with unittest.mock.patch.object(
+                self.window.filehandler, 'wait_for_files',
+                side_effect=lambda paths: asked.extend(paths)), \
+                unittest.mock.patch.object(main.archive_packer,
+                                           'write_archive'):
+            self.assertTrue(self.window.save_archive())
+
+        comments = [self.window.filehandler.get_comment_name(number)
+                    for number in range(
+                        1, self.window.filehandler
+                        .get_number_of_comments() + 1)]
+        self.assertTrue(comments, 'the fixture holds no comment')
+        for comment in comments:
+            self.assertIn(comment, asked)
+
+    def test_saving_does_not_write_the_directory_its_pages_were_in(self):
+        """The fixture was packed from a folder, so it holds an entry for
+        that folder.  Nothing can extract one - opening it for writing
+        raises - and nothing should write one either: the packer renames
+        every page into the archive root, so there is no folder left for
+        the entry to stand for."""
+        source = os.path.join(self.tmp_dir, 'Book.cbz')
+        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), source)
+        with zipfile.ZipFile(source) as original:
+            self.assertTrue(
+                [info.filename for info in original.infolist()
+                 if info.is_dir()],
+                'the fixture holds no directory entry, so this proves nothing')
+        self.window.filehandler.open_file(source)
+        # The book opened in setUp also has more than two pages, so the
+        # page count alone is true before this one has opened at all.
+        self.assertTrue(
+            wait_for(lambda: self.window.filehandler.get_path_to_base()
+                     == source and self.window.imagehandler
+                     .get_number_of_pages() > 2, seconds=20),
+            'the copied archive never opened')
+
+        self.assertTrue(self.window.save_archive(), 'the save failed')
+
+        with zipfile.ZipFile(source) as written:
+            self.assertEqual(
+                [info.filename for info in written.infolist()
+                 if info.is_dir()], [])
 
     # -- Leaving a book with pages still picked out -----------------------
 
@@ -799,6 +898,87 @@ class MainWindowTest(MComixTest):
             self.window.delete_popup_page()
         self._pump()
         self.assertEqual(self._pages(), before[:1] + before[2:])
+
+    def test_the_right_click_menu_offers_to_move_the_file(self):
+        self.assertIn('moveto.other',
+                      self._menu_actions(self.window.uimanager.popup
+                                         .get_menu_model()))
+
+    # -- Moving the file, or the archive it is a page of ------------------
+
+    def _movable_book(self):
+        """A copy of the fixture archive that a test may move about."""
+        source = os.path.join(self.tmp_dir, 'Movable.cbz')
+        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), source)
+        self.window.filehandler.open_file(source)
+        self._ready()
+        return source
+
+    def test_moving_the_archive_goes_on_reading_it_where_it_landed(self):
+        """The page being read comes back, which is what makes this
+        different from moving the file and opening it again by hand."""
+        source = self._movable_book()
+        destination = os.path.join(self.tmp_dir, 'destination')
+        os.makedirs(destination)
+        self.window.set_page(3)
+        self._pump()
+
+        self.window.move_current_file(destination)
+        self._pump()
+
+        moved = os.path.join(destination, 'Movable.cbz')
+        self.assertTrue(os.path.isfile(moved))
+        self.assertFalse(os.path.exists(source))
+        # get_path_to_base() is set as the book opens, before its pages
+        # have been listed, so the page is what there is to wait for.
+        self.assertTrue(wait_for(
+            lambda: self.window.imagehandler.get_current_page() == 3,
+            seconds=20), 'the book did not come back to the page being read')
+        self.assertEqual(self.window.filehandler.get_path_to_base(), moved)
+
+    def test_a_destination_moved_to_is_offered_next_time(self):
+        self._movable_book()
+        destination = os.path.join(self.tmp_dir, 'destination')
+        os.makedirs(destination)
+
+        self.window.move_current_file(destination)
+        self._pump()
+
+        self.assertEqual(prefs['recent move destinations'], [destination])
+
+    def test_the_library_follows_a_book_that_is_moved(self):
+        source = self._movable_book()
+        destination = os.path.join(self.tmp_dir, 'destination')
+        os.makedirs(destination)
+        library = backend.LibraryBackend()
+        self.assertTrue(library.add_book(source))
+
+        self.window.move_current_file(destination)
+        self._pump()
+
+        self.assertIsNone(library.get_book_by_path(source))
+        self.assertIsNotNone(library.get_book_by_path(
+            os.path.join(destination, 'Movable.cbz')))
+
+    def test_a_name_that_is_taken_stops_the_move_and_says_so(self):
+        source = self._movable_book()
+        destination = os.path.join(self.tmp_dir, 'destination')
+        os.makedirs(destination)
+        with open(os.path.join(destination, 'Movable.cbz'), 'wb') as handle:
+            handle.write(b'not the book')
+
+        self.window.move_current_file(destination)
+        self._pump()
+
+        self.assertTrue(os.path.isfile(source), 'the book moved anyway')
+        self.assertEqual(len(self._delete_dialogs()), 1,
+                         'nothing said why the move did not happen')
+        self.assertEqual(prefs['recent move destinations'], [])
+        # Left standing it would be answered by the next test that goes
+        # looking for a dialog.
+        for dialog in self._delete_dialogs():
+            dialog.destroy()
+        self._pump()
 
     def test_the_right_click_menu_offers_the_archive_editor(self):
         """The editor was on the Edit menu and nowhere else, so a reader

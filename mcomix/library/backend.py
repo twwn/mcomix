@@ -446,6 +446,34 @@ class _LibraryBackend:
             log.error(_('! Could not add book "%s" to the library'), path)
             return False
 
+    def update_book_path(self, old_path: str, new_path: str) -> bool:
+        """Follow the book at <old_path>, which is now at <new_path>.
+
+        The library stores a book by its path, so a book MComix has
+        moved itself would otherwise be left pointing at a file that is
+        not there any more.  Its thumbnail, its collections and where it
+        was last read all hang off the row's id, so all of them come
+        with it.
+
+        Returns whether a row was moved: False if the book was not in
+        the library, and False if a row holds <new_path> already - the
+        path column is unique, and a stale row there is not this book's
+        to throw away.
+        """
+        old_path = os.path.abspath(old_path)
+        new_path = os.path.abspath(new_path)
+        try:
+            cursor = self._con.execute('''update Book set path = ?, name = ?
+                where path = ?''',
+                                       (new_path, os.path.basename(new_path),
+                                        old_path))
+            moved = cursor.rowcount > 0
+            cursor.close()
+            return moved
+        except dbapi2.Error:
+            log.error(_('! Could not move book "%s" in the library'), old_path)
+            return False
+
     @callback.Callback
     def book_added(self, book: backend_types._Book) -> None:
         """Called when add_book() has put a book in the library that was

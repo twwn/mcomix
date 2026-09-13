@@ -234,6 +234,19 @@ class ExternalExecutableArchive(NonUnicodeArchive):
 
         return line
 
+    def _flush_pending_entry(self) -> str | None:
+        """The entry the parser is still holding back, if it was a file.
+
+        A listing that names an entry on one line and says what it *is*
+        on a later one - which both 7z and rar do, and which is the only
+        way to tell a directory from a file - cannot be parsed by
+        returning each name as it is read.  Such a parser holds the name
+        back until the next entry begins, and this hands over whichever
+        one it was still holding when the listing ended.  A parser that
+        decides on the spot holds nothing back.
+        """
+        return None
+
     def iter_contents(self) -> Iterator[str]:
         if not self._get_executable():
             return
@@ -250,6 +263,9 @@ class ExternalExecutableArchive(NonUnicodeArchive):
                 filename = self._parse_list_output_line(line)
                 if filename is not None:
                     yield self._unicode_filename(filename)
+            pending = self._flush_pending_entry()
+            if pending is not None:
+                yield self._unicode_filename(pending)
         finally:
             proc.stdout.close()
             proc.wait()

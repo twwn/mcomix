@@ -714,3 +714,127 @@ for test, attr in xfail_list:
     ):
         if name in globals():
             _expect_failure(globals()[name], attr)
+
+
+class DirectoryEntryTest(MComixTest):
+
+    """A directory an archive records is not a member anything extracts.
+
+    Every archive format keeps an entry for each directory its files are
+    in, and the four fixtures below were packed from a folder, so each
+    holds one for "images" beside the five files under it.  Offering
+    that entry in the listing had the extractor try to write it: opening
+    a directory for writing raises IsADirectoryError, which was caught
+    and logged with a traceback on every archive packed that way, which
+    is most of them.  The generated fixtures the tests above build are
+    all flat, which is why none of them saw it.
+    """
+
+    #: The five members each fixture really holds.
+    MEMBERS = ['images/01-JPG-Indexed.jpg', 'images/02-JPG-RGB.jpg',
+               'images/03-PNG-RGB.png', 'images/04-PNG-Indexed.png',
+               'images/Comment.txt']
+
+    #: Which handler to read which fixture with.  The externally driven
+    #: handlers read more than the format they are named after, and each
+    #: works the listing out differently, so each pairing is its own case.
+    CASES = (
+        ('zip', zip.ZipArchive, '01-ZIP-Normal.zip'),
+        ('tar', tar.TarArchive, '02-TAR-Normal.tar'),
+        ('rar (dll)', rar.RarArchive, '03-RAR-Normal.rar'),
+        ('rar (external)', rar_external.RarArchive, '03-RAR-Normal.rar'),
+        ('7z (external)', sevenzip_external.SevenZipArchive, '04-7Z-Normal.7z'),
+        ('7z (external) zip', sevenzip_external.SevenZipArchive,
+         '01-ZIP-Normal.zip'),
+        ('7z (external) rar', sevenzip_external.SevenZipArchive,
+         '03-RAR-Normal.rar'),
+    )
+
+    def test_the_directory_the_pages_are_in_is_not_a_member(self):
+        for name, handler, fixture in self.CASES:
+            with self.subTest(handler=name, archive=fixture):
+                if not handler.is_available():
+                    self.skipTest('%s is not available' % name)
+                archive = handler(get_testfile_path('archives', fixture))
+                try:
+                    self.assertCountEqual(archive.list_contents(),
+                                          self.MEMBERS)
+                finally:
+                    archive.close()
+
+
+class ListingParserTest(MComixTest):
+
+    """The line parsers of the handlers that drive an outside program.
+
+    Each of these listings names an entry on one line and says what it
+    is on a later one, so the parser holds a name back until the next
+    entry begins.  They are exercised here line by line rather than
+    through an archive, because the one format with no fixture holding a
+    directory - lha - cannot be packed on this machine: the lha in
+    Debian and Arch is Lhasa, which only unpacks.
+    """
+
+    def _parse(self, archive, lines):
+        """Every name <archive>'s parser returns for <lines>."""
+        names = []
+        for line in lines:
+            name = archive._parse_list_output_line(line)
+            if name is not None:
+                names.append(name)
+        pending = archive._flush_pending_entry()
+        if pending is not None:
+            names.append(pending)
+        return names
+
+    def test_7z_keeps_the_directory_out_and_the_last_file_in(self):
+        archive = sevenzip_external.SevenZipArchive('unused.7z')
+        self.assertEqual(self._parse(archive, [
+            'Listing archive: unused.7z',
+            '----------',
+            'Path = images',
+            'Size = 0',
+            'Attributes = D_ drwxr-xr-x',
+            '',
+            'Path = images/page.png',
+            'Size = 140',
+            'Attributes = A_ -rw-r--r--',
+        ]), ['images/page.png'])
+
+    def test_7z_takes_an_entry_with_no_attributes_for_a_file(self):
+        """Not every format 7z reads records any."""
+        archive = sevenzip_external.SevenZipArchive('unused.7z')
+        self.assertEqual(self._parse(archive, [
+            '----------',
+            'Path = page.png',
+            'Size = 140',
+        ]), ['page.png'])
+
+    def test_rar_keeps_the_directory_out_and_the_last_file_in(self):
+        archive = rar_external.RarArchive('unused.rar')
+        self.assertEqual(self._parse(archive, [
+            'Details: RAR 5',
+            '        Name: images',
+            '        Type: Directory',
+            '  Attributes: ...D...',
+            '        Name: images/page.png',
+            '        Type: File',
+            '        Size: 140',
+        ]), ['images/page.png'])
+
+    def test_rar_keeps_a_file_of_no_size(self):
+        """A comment file in the fixtures is empty, and is still a member."""
+        archive = rar_external.RarArchive('unused.rar')
+        self.assertEqual(self._parse(archive, [
+            'Details: RAR 5',
+            '        Name: images/Comment.txt',
+            '        Type: File',
+            '        Size: 0',
+        ]), ['images/Comment.txt'])
+
+    def test_lha_keeps_the_directory_out(self):
+        archive = lha_external.LhaArchive('unused.lha')
+        self.assertEqual(self._parse(archive, [
+            'drwxr-xr-x  1000/1000       0 100.0% Apr 12  2015 images/',
+            '-rw-------  1000/1000     332 100.0% Apr 12  2015 images/page.png',
+        ]), ['images/page.png'])

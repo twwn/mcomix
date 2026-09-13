@@ -508,6 +508,9 @@ class ThumbnailGridView(Gtk.GridView, _ThumbnailViewBase):
         for position in positions:
             self.selection.select_item(position, False)
 
+    def select_all(self) -> None:
+        self.selection.select_all()
+
     def unselect_all(self) -> None:
         self.selection.unselect_all()
 

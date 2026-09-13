@@ -7,6 +7,7 @@ from collections.abc import Callable, Sequence
 from typing import NamedTuple, Protocol, TYPE_CHECKING
 
 from mcomix import bookmark_menu
+from mcomix import move_menu
 from mcomix import openwith_menu
 from mcomix import edit_dialog
 from mcomix import enhance_dialog
@@ -378,6 +379,8 @@ _POPUP = (
     None,
     'extract_page_popup', 'delete_page_popup',
     None,
+    'menu_move_to_popup',
+    None,
     'edit_archive',
     None,
     'menu_open_with_popup',
@@ -472,6 +475,8 @@ class MainUI:
             _Entry('menu_edit', None, _('_Edit')),
             _Entry('menu_open_with', 'document-open', _('Open _with')),
             _Entry('menu_open_with_popup', 'document-open', _('Open _with')),
+            _Entry('menu_move_to_popup', 'folder-symbolic', _('_Move to'),
+                   _('Moves the file, or the archive the page is in, to another folder.')),
             _Entry('menu_file', None, _('_File')),
             _Entry('menu_view', None, _('_View')),
             _Entry('menu_view_popup', 'mcomix-image', _('_View')),
@@ -553,6 +558,7 @@ class MainUI:
         self.recent = recent.RecentFilesMenu(self, window)
         self.recentPopup = self.recent
         self._openwith = openwith_menu.OpenWithMenu(window)
+        self.move_to = move_menu.MoveToMenu(window, self.recent)
 
         # Gtk.MenuBar is gone; a GTK4 menu bar is a row of popovers.
         self.menubar = Gtk.PopoverMenuBar.new_from_model(self._build(_MENUBAR))
@@ -607,7 +613,8 @@ class MainUI:
                 'menu_open_with': self._openwith.model,
                 'menu_open_with_popup': self._openwith.model,
                 'menu_bookmarks': self.bookmarks.model,
-                'menu_bookmarks_popup': self.bookmarks.model}.get(name)
+                'menu_bookmarks_popup': self.bookmarks.model,
+                'menu_move_to_popup': self.move_to.model}.get(name)
 
     def _build(self, layout: _Layout) -> Gio.Menu:
         """Turn one of the layouts below into a Gio.Menu.

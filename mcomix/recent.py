@@ -17,6 +17,7 @@ from mcomix import portability
 from mcomix import archive_tools
 from mcomix import image_tools
 from mcomix import log
+from mcomix import widgets
 from mcomix.i18n import _
 
 
@@ -92,17 +93,31 @@ class RecentFilesMenu:
         modified = info.get_modified()
         return modified.to_unix() if modified is not None else 0
 
+    def _items(self) -> list[Gtk.RecentInfo]:
+        """The entries worth offering: local files only, most recently
+        used first, as Gtk.RecentChooserMenu picked them."""
+        items = [info for info in self._manager.get_items()
+                 if info.is_local() and self._is_supported(info)]
+        items.sort(key=self._modified, reverse=True)
+        return items
+
+    def paths(self) -> list[str]:
+        """Where the files on the list are, most recently used first."""
+        paths = []
+        for info in self._items():
+            path = Gio.File.new_for_uri(info.get_uri()).get_path()
+            if path is not None:
+                paths.append(path)
+        return paths
+
     def _rebuild(self) -> None:
         """Fill the menu with the files that are still worth offering."""
         self.model.remove_all()
 
-        # Local files only, most recently used first, as the chooser did.
-        items = [info for info in self._manager.get_items()
-                 if info.is_local() and self._is_supported(info)]
-        items.sort(key=self._modified, reverse=True)
-
+        items = self._items()
         for info in items[:self._LIMIT]:
-            entry = Gio.MenuItem.new(info.get_display_name(), None)
+            entry = Gio.MenuItem.new(
+                widgets.menu_label(info.get_display_name()), None)
             entry.set_action_and_target_value(
                 '%s.%s' % (self.ACTION_PREFIX, self.OPEN_ACTION),
                 GLib.Variant('s', info.get_uri()))

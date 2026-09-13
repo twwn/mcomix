@@ -35,6 +35,10 @@ class RarArchive(archive_base.ExternalExecutableArchive):
         self._state = self.STATE_HEADER
         #: Current path while listing contents.
         self._path = ''
+        #: The entry read but not yet handed over, and whether the type
+        #: line seen for it says it is a directory.
+        self._pending: str | None = None
+        self._pending_is_directory = False
 
     def _get_executable(self) -> str | None:
         return self._find_unrar_executable()
@@ -82,10 +86,12 @@ class RarArchive(archive_base.ExternalExecutableArchive):
         """Take one line of the listing, returning a name if it named one.
 
         The technical listing gives each entry several lines - Name,
-        Size, Flags - so a name is returned as it is read and the lines
-        under it are recorded against it.  Only entries with a size are
-        kept for iter_extract(): a directory has none, and nothing is
-        printed for it later.
+        Type, Size, Flags - so a name is held back until the next entry
+        begins and the lines under it are recorded against it.  Holding
+        it back is what lets the "Type: " line, which comes after the
+        name, keep a directory out of the listing: a directory is not a
+        member anything can extract.  Only entries with a size are kept
+        for iter_extract(), and a directory is printed without one.
         """
         if self._state == self.STATE_HEADER:
             if line.startswith('Details: '):
@@ -103,8 +109,12 @@ class RarArchive(archive_base.ExternalExecutableArchive):
         if self._state == self.STATE_LISTING:
             line = line.lstrip()
             if line.startswith('Name: '):
-                self._path = line[6:]
-                return self._path
+                finished = self._flush_pending_entry()
+                self._path = self._pending = line[6:]
+                self._pending_is_directory = False
+                return finished
+            if line.startswith('Type: '):
+                self._pending_is_directory = line[6:] == 'Directory'
             if line.startswith('Size: '):
                 filesize = int(line[6:])
                 if filesize > 0:
@@ -116,6 +126,11 @@ class RarArchive(archive_base.ExternalExecutableArchive):
                 if 'encrypted' in flags:
                     self._is_encrypted = True
         return None
+
+    def _flush_pending_entry(self) -> str | None:
+        """The entry just read, unless it was a directory."""
+        pending, self._pending = self._pending, None
+        return None if self._pending_is_directory else pending
 
     def is_solid(self) -> bool:
         """Whether the archive was packed as one stream.
@@ -139,6 +154,8 @@ class RarArchive(archive_base.ExternalExecutableArchive):
         for retry_count in range(2):
             self._state = self.STATE_HEADER
             self._path = ''
+            self._pending = None
+            self._pending_is_directory = False
             proc = subprocess.run(
                 self._get_list_arguments(), stdout=process.PIPE, stderr=process.STDOUT,
                 encoding="utf-8",
@@ -148,6 +165,9 @@ class RarArchive(archive_base.ExternalExecutableArchive):
                     filename = self._parse_list_output_line(line.rstrip(os.linesep))
                     if filename is not None:
                         yield self._unicode_filename(filename)
+                pending = self._flush_pending_entry()
+                if pending is not None:
+                    yield self._unicode_filename(pending)
             except self.EncryptedHeader:
                 if retry_count == 0:
                     continue

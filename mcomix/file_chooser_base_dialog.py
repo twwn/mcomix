@@ -91,7 +91,10 @@ class _BaseFileChooserDialog(Dialog):
         self._action = action
         self._destroyed = False
 
-        if action == Gtk.FileChooserAction.OPEN:
+        if action in (Gtk.FileChooserAction.OPEN,
+                      Gtk.FileChooserAction.SELECT_FOLDER):
+            # Picking something that is there already, whether it is a
+            # file or the folder holding one, is an Open either way.
             title = _('Open')
             buttons = (_('_Cancel'), Response.CANCEL,
                        _('_Open'), Response.OK)
@@ -563,6 +566,12 @@ class _BaseFileChooserDialog(Dialog):
         if response == Response.OK:
             chosen = widgets.chooser_paths(self.filechooser)
             if not chosen:
+                return
+
+            if self._action == Gtk.FileChooserAction.SELECT_FOLDER:
+                # A folder is what was asked for, so what was chosen is
+                # the answer rather than somewhere to look for one.
+                self._files_accepted(chosen, chosen[0])
                 return
 
             # Collect files, if necessary also from subdirectories

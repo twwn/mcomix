@@ -85,6 +85,12 @@ class TarArchive(archive_base.NonUnicodeArchive):
             info = self.tar.next()
             if info is None:
                 break
+            if info.isdir():
+                # A tarball records the directories its files are in as
+                # members of their own.  They are not members anything
+                # can extract - opening one for writing raises - so the
+                # listing does not offer them.
+                continue
             name = self._unicode_filename(info.name)
             self._contents.append(name)
             yield name

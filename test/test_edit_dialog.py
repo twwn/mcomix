@@ -301,6 +301,72 @@ class EditArchiveDialogTest(MComixTest):
         self._press('<Control><Shift>z')
         self.assertEqual(self._pages(), before[1:])
 
+    def _popup_actions(self, model):
+        """Every action the popup <model> addresses, in order."""
+        actions = []
+        for index in range(model.get_n_items()):
+            action = model.get_item_attribute_value(index, 'action', None)
+            if action is not None:
+                actions.append(action.get_string())
+            section = model.get_item_link(index, 'section')
+            if section is not None:
+                actions.extend(self._popup_actions(section))
+        return actions
+
+    def test_the_page_menu_names_what_the_keyboard_could_already_do(self):
+        """Selecting every page, undoing and redoing were reachable only
+        by Ctrl+A, Ctrl+Z and Ctrl+Y, and the editor has no menu bar to
+        name them on: nothing said they were there at all."""
+        self.assertEqual(
+            self._popup_actions(
+                self.dialog._image_area._popup_menu.get_menu_model()),
+            ['imagearea.remove', 'imagearea.select-all',
+             'imagearea.undo', 'imagearea.redo'])
+
+    def test_the_comment_menu_names_undo_and_redo_too(self):
+        self.assertEqual(
+            self._popup_actions(
+                self.dialog._comment_area._popup_menu.get_menu_model()),
+            ['commentarea.remove', 'commentarea.undo', 'commentarea.redo'])
+
+    def test_the_page_menu_selects_every_page(self):
+        self.dialog._load_original_files()
+        pump()
+        grid = self.dialog._image_area._grid
+        self.assertGreater(grid.model.get_n_items(), 1,
+                           'the fixture has too few pages')
+        grid.unselect_all()
+
+        self.dialog._image_area._select_all()
+        pump()
+
+        self.assertEqual(grid.get_selected_positions(),
+                         list(range(grid.model.get_n_items())))
+
+    def test_the_page_menu_takes_a_removal_back(self):
+        self.dialog._load_original_files()
+        pump()
+        before = self._pages()
+        self.dialog._image_area._grid.select_only(0)
+        self.dialog._image_area._remove_pages()
+        self.assertEqual(self._pages(), before[1:])
+
+        self.dialog._image_area._undo()
+
+        self.assertEqual(self._pages(), before)
+
+    def test_the_page_menu_makes_an_undone_removal_again(self):
+        self.dialog._load_original_files()
+        pump()
+        before = self._pages()
+        self.dialog._image_area._grid.select_only(0)
+        self.dialog._image_area._remove_pages()
+        self.dialog._image_area._undo()
+
+        self.dialog._image_area._redo()
+
+        self.assertEqual(self._pages(), before[1:])
+
     def test_undoing_what_was_never_changed_is_not_an_error(self):
         self.dialog._load_original_files()
         pump()

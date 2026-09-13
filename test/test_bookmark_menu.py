@@ -21,8 +21,10 @@ class _StubImageHandler:
     page = 3
     path = '/tmp/book.cbz'
 
+    pretty_name = 'book'
+
     def get_pretty_current_filename(self):
-        return 'book'
+        return self.pretty_name
 
     def get_real_path(self):
         return self.path
@@ -151,6 +153,15 @@ class BookmarksMenuTest(MComixTest):
         self._bookmark(3)
         self.assertTrue(self._clear_action().get_enabled(),
                         'a list with a bookmark in it did not')
+
+    def test_an_underscore_in_a_name_is_not_eaten(self):
+        """A bookmark is named after the file it is in, which names no
+        mnemonic - but GTK reads one out of it, because every item of a
+        menu model is built with use-underline set.  Gtk.MenuItem, which
+        the menu was made of before the port, showed the underscore."""
+        self.window.imagehandler.pretty_name = 'two_words'
+        self._bookmark(3)
+        self.assertEqual(self._sections()[-1], ['two__words, (3 / 20)'])
 
     def test_clearing_asks_before_it_removes_anything(self):
         """It throws away every bookmark at once and there is no undo."""

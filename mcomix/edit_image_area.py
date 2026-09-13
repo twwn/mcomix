@@ -61,16 +61,42 @@ class _ImageArea(Gtk.ScrolledWindow):
         self._popup_menu = self._create_popup_menu()
 
     def _create_popup_menu(self) -> Gtk.PopoverMenu:
-        """Build the right-click menu for the page list."""
+        """Build the right-click menu for the page list.
+
+        Selecting every page, undoing and redoing were the keyboard's
+        alone - Ctrl+A is Gtk.GridView's own binding and Ctrl+Z and
+        Ctrl+Y the dialog's - and this menu is the only place the editor
+        has to name them, so nothing said they were there.
+        """
         actions = Gio.SimpleActionGroup()
-        remove = Gio.SimpleAction.new('remove', None)
-        remove.connect('activate', self._remove_pages)
-        actions.add_action(remove)
+        for name, activated in (('remove', self._remove_pages),
+                                ('select-all', self._select_all),
+                                ('undo', self._undo),
+                                ('redo', self._redo)):
+            action = Gio.SimpleAction.new(name, None)
+            action.connect('activate', activated)
+            actions.add_action(action)
         self.insert_action_group('imagearea', actions)
 
         model = Gio.Menu()
-        model.append(_('Remove from archive'), 'imagearea.remove')
+        pages = Gio.Menu()
+        pages.append(_('Remove from archive'), 'imagearea.remove')
+        pages.append(_('Select _All'), 'imagearea.select-all')
+        model.append_section(None, pages)
+        history = Gio.Menu()
+        history.append(_('_Undo'), 'imagearea.undo')
+        history.append(_('_Redo'), 'imagearea.redo')
+        model.append_section(None, history)
         return Gtk.PopoverMenu.new_from_model(model)
+
+    def _select_all(self, *args: object) -> None:
+        self._grid.select_all()
+
+    def _undo(self, *args: object) -> None:
+        self._edit_dialog.undo()
+
+    def _redo(self, *args: object) -> None:
+        self._edit_dialog.redo()
 
     def fetch_images(self) -> None:
         """Load all the images in the archive or directory."""

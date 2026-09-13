@@ -37,8 +37,14 @@ class ZipArchive(archive_base.NonUnicodeArchive):
         if self._has_encryption():
             self.zip.setpassword(i18n.to_utf8(self._get_password()))
 
-        for filename in self.zip.namelist():
-            yield self._unicode_filename(filename)
+        for info in self.zip.infolist():
+            if info.is_dir():
+                # A zip records the directories its files are in as
+                # entries of their own.  They are not members anything
+                # can extract - opening one for writing raises - so the
+                # listing does not offer them.
+                continue
+            yield self._unicode_filename(info.filename)
 
     def extract(self, filename: str, destination_dir: str) -> None:
         """Write member <filename> into <destination_dir>."""

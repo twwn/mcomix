@@ -37,9 +37,10 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
         # Setting step and page increments here has no effect: the
         # scrolled window recomputes both from the viewport size whenever
         # it is allocated.  See the note in main.py.
-        # Disable stupid overlay scrollbars...
-        if hasattr(self.props, 'overlay_scrolling'):
-            self.props.overlay_scrolling = False
+        # An overlay scrollbar is drawn over the thumbnails and appears
+        # only while the pointer is near it, so the sidebar's width
+        # would change as the pointer moved across it.
+        self.props.overlay_scrolling = False
 
         self._list = thumbnail_list.ThumbnailListView()
         self._list.generate_thumbnail = self._generate_thumbnail
@@ -165,8 +166,14 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
 
         self._loaded = True
 
-        # Update current image selection in the thumb bar.
-        self._set_selected_row(self._currently_selected_row)
+        # The row for the page on screen, asked of the image handler
+        # rather than remembered: clear() drops every row, so it has no
+        # selection left to keep, and the sidebar is cleared and loaded
+        # again whenever the thumbnail size or the image enhancement
+        # changes.  Selecting row 0 there highlighted page 1 and
+        # scrolled away from the page being read.
+        page = self._window.imagehandler.get_current_page()
+        self._set_selected_row(max(page - 1, 0))
 
     def _generate_thumbnail(self, uid: int) -> "GdkPixbuf.Pixbuf | None":
         """The thumbnail for page <uid>, made on the list's worker thread.

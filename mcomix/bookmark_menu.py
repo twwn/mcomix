@@ -91,7 +91,8 @@ class BookmarksMenu:
         if self._bookmarks:
             listed = Gio.Menu()
             for position, bookmark in enumerate(self._bookmarks):
-                entry = Gio.MenuItem.new(bookmark.get_label(), None)
+                entry = Gio.MenuItem.new(
+                    widgets.menu_label(bookmark.get_label()), None)
                 entry.set_action_and_target_value(
                     '%s.open' % self.ACTION_PREFIX, GLib.Variant('i', position))
                 listed.append_item(entry)

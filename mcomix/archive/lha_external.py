@@ -30,12 +30,16 @@ class LhaArchive(archive_base.ExternalExecutableArchive):
         return ['pq2']
 
     def _parse_list_output_line(self, line: str) -> str | None:
-        """The name in one listing line, or None if it named nothing."""
+        """The name in one listing line, or None if it named nothing.
+
+        A line whose permissions begin with "d" describes a directory,
+        which is not a member anything can extract, so it names nothing
+        as far as the listing is concerned.
+        """
         match = self._LIST_LINE_RE.match(line)
-        if match:
-            return match.group(1)
-        else:
+        if match is None or line.startswith('d'):
             return None
+        return match.group(1)
 
     @staticmethod
     @functools.cache

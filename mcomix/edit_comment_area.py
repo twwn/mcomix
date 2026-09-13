@@ -50,16 +50,35 @@ class _CommentArea(Gtk.Box):
         self._popup_menu = self._create_popup_menu()
 
     def _create_popup_menu(self) -> Gtk.PopoverMenu:
-        """Build the right-click menu for the comment list."""
+        """Build the right-click menu for the comment list.
+
+        Undo and redo are the dialog's own Ctrl+Z and Ctrl+Y, and this
+        menu is one of the two places the editor has to name them.
+        """
         actions = Gio.SimpleActionGroup()
-        remove = Gio.SimpleAction.new('remove', None)
-        remove.connect('activate', self._remove_file)
-        actions.add_action(remove)
+        for name, activated in (('remove', self._remove_file),
+                                ('undo', self._undo),
+                                ('redo', self._redo)):
+            action = Gio.SimpleAction.new(name, None)
+            action.connect('activate', activated)
+            actions.add_action(action)
         self.insert_action_group('commentarea', actions)
 
         model = Gio.Menu()
-        model.append(_('Remove from archive'), 'commentarea.remove')
+        removal = Gio.Menu()
+        removal.append(_('Remove from archive'), 'commentarea.remove')
+        model.append_section(None, removal)
+        history = Gio.Menu()
+        history.append(_('_Undo'), 'commentarea.undo')
+        history.append(_('_Redo'), 'commentarea.redo')
+        model.append_section(None, history)
         return Gtk.PopoverMenu.new_from_model(model)
+
+    def _undo(self, *args: object) -> None:
+        self._edit_dialog.undo()
+
+    def _redo(self, *args: object) -> None:
+        self._edit_dialog.redo()
 
     def fetch_comments(self) -> None:
         """Load all comments in the archive."""

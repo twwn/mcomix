@@ -71,6 +71,16 @@ class OpenWithMenuTest(MComixTest):
         self.assertEqual(self._sections(menu),
                          [['One', 'Two'], ['_Edit commands']])
 
+    def test_an_underscore_in_a_label_is_not_eaten(self):
+        """A command's label is what the user typed, not a label MComix
+        wrote, so it names no mnemonic - but GTK reads one out of it,
+        because every item of a menu model is built with use-underline
+        set.  Gtk.MenuItem, which the menu was made of before the port,
+        showed the underscore."""
+        menu = self._menu([('Edit_in_GIMP', 'true', '', False)])
+        self.assertEqual(self._sections(menu),
+                         [['Edit__in__GIMP'], ['_Edit commands']])
+
     def test_a_separator_starts_a_new_section(self):
         menu = self._menu([('One', 'true', '', False),
                            ('---', '', '', False),

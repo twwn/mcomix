@@ -66,7 +66,8 @@ class OpenWithMenu:
                     self.model.append_section(None, section)
                 section = Gio.Menu()
                 continue
-            entry = Gio.MenuItem.new(command.get_label(), None)
+            entry = Gio.MenuItem.new(
+                widgets.menu_label(command.get_label()), None)
             entry.set_action_and_target_value('%s.run' % self.ACTION_PREFIX,
                                               GLib.Variant('i', position))
             section.append_item(entry)

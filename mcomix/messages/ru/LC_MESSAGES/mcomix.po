@@ -99,7 +99,7 @@ msgstr "_Нет"
 #: mcomix/message_dialog.py:26 mcomix/message_dialog.py:29
 #: mcomix/pageselect.py:32
 msgid "_Cancel"
-msgstr "Отменить"
+msgstr "О_тменить"
 
 #: mcomix/bookmark_backend.py:257
 #, python-format
@@ -264,7 +264,7 @@ msgstr "Сохранить _как..."
 
 #: mcomix/edit_dialog.py:60
 msgid "_Import"
-msgstr "Импортировать"
+msgstr "_Импортировать"
 
 #
 # File: src/edit.py, line: 50
@@ -345,31 +345,31 @@ msgstr "_ОК"
 # File: src/enhance.py, line: 79
 #: mcomix/enhance_dialog.py:80
 msgid "_Brightness:"
-msgstr "Яркость:"
+msgstr "_Яркость:"
 
 #
 # File: src/enhance.py, line: 90
 #: mcomix/enhance_dialog.py:81
 msgid "_Contrast:"
-msgstr "Контрастность:"
+msgstr "_Контрастность:"
 
 #
 # File: src/enhance.py, line: 101
 #: mcomix/enhance_dialog.py:82
 msgid "S_aturation:"
-msgstr "Насыщенность:"
+msgstr "Н_асыщенность:"
 
 #
 # File: src/enhance.py, line: 112
 #: mcomix/enhance_dialog.py:83
 msgid "S_harpness:"
-msgstr "Резкость:"
+msgstr "_Резкость:"
 
 #
 # File: src/enhance.py, line: 126
 #: mcomix/enhance_dialog.py:88
 msgid "_Automatically adjust contrast"
-msgstr "Автоматически подстроить контрастность"
+msgstr "Ав_томатически подстроить контрастность"
 
 #
 # File: src/enhance.py, line: 128
@@ -1082,7 +1082,7 @@ msgstr "Не спрашивать снова."
 # File: src/bookmark.py, line: 229
 #: mcomix/openwith_menu.py:77
 msgid "_Edit commands"
-msgstr "Редактировать команды"
+msgstr "_Редактировать команды"
 
 #: mcomix/openwith.py:81
 #, python-format
@@ -1134,7 +1134,7 @@ msgstr "Редактировать внешние команды"
 
 #: mcomix/openwith.py:341
 msgid "Add _separator"
-msgstr "Добавить разделитель"
+msgstr "Д_обавить разделитель"
 
 #: mcomix/openwith.py:346
 msgid "_Up"
@@ -1149,7 +1149,7 @@ msgstr "В_низ"
 # File: src/preferences.py, line: 288
 #: mcomix/openwith.py:352
 msgid "Run _command"
-msgstr "Выполнить команду"
+msgstr "_Выполнить команду"
 
 #: mcomix/openwith.py:407
 msgid "This is a separator pseudo-command."
@@ -2649,7 +2649,7 @@ msgstr "_Преобразовать изображение"
 
 #: mcomix/ui.py:470
 msgid "_Auto-rotate image"
-msgstr "Автоповорот изображения"
+msgstr "_Автоповорот изображения"
 
 #: mcomix/ui.py:471
 msgid "...when width exceeds height"
@@ -2785,7 +2785,7 @@ msgstr "О _программе"
 
 #: mcomix/ui.py:517
 msgid "Co_mments..."
-msgstr "К_омментарии..."
+msgstr "Ко_мментарии..."
 
 #
 # File: src/properties.py, line: 89
@@ -2803,7 +2803,7 @@ msgstr "_Параметры"
 # File: src/ui.py, line: 117
 #: mcomix/ui.py:527
 msgid "_Edit archive..."
-msgstr "_Редактировать архив..."
+msgstr "Ре_дактировать архив..."
 
 #: mcomix/ui.py:527
 msgid "Opens the archive editor."
@@ -3218,7 +3218,7 @@ msgstr ""
 # File: src/library.py, line: 769
 #: mcomix/library/control_area.py:76
 msgid "_Search:"
-msgstr "Поиск:"
+msgstr "_Поиск:"
 
 #
 # File: src/library.py, line: 774
@@ -3424,6 +3424,50 @@ msgstr "Убирать их и записывать архив"
 #: mcomix/message_dialog.py:91
 msgid "Leave the book as it is"
 msgstr "Оставлять книгу как есть"
+
+msgid "_Move to"
+msgstr "Пере_местить в"
+
+msgid "Moves the file, or the archive the page is in, to another folder."
+msgstr ""
+"Перемещает файл, или архив, в котором находится страница, в другой каталог."
+
+msgid "Moved to before"
+msgstr "Недавние назначения"
+
+msgid "From bookmarks"
+msgstr "Из закладок"
+
+msgid "Opened before"
+msgstr "Недавно открытые"
+
+msgid "Other folder..."
+msgstr "Другой каталог..."
+
+msgid "Move to folder"
+msgstr "Переместить в каталог"
+
+msgid "A file of that name is there already."
+msgstr "Файл с таким именем там уже есть."
+
+#, python-format
+msgid "There is not enough room there: the file is %s."
+msgstr "Там недостаточно места: файл занимает %s."
+
+#, python-format
+msgid "Could not move \"%(file)s\" to \"%(directory)s\""
+msgstr "Не удалось переместить «%(file)s» в «%(directory)s»"
+
+#, python-format
+msgid "! Could not move %(file)s to %(directory)s: %(error)s"
+msgstr "! Не удалось переместить %(file)s в %(directory)s: %(error)s"
+
+#, python-format
+msgid "! Could not move book \"%s\" in the library"
+msgstr "! Не удалось переместить книгу «%s» в библиотеке"
+
+msgid "Select _All"
+msgstr "Выделить вс_ё"
 
 #~ msgid "Search"
 #~ msgstr "Поиск"

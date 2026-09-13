@@ -1,5 +1,6 @@
 """main.py - Main window."""
 
+import errno
 import math
 import os
 import shutil
@@ -15,6 +16,7 @@ from mcomix import enhance_backend
 from mcomix import event
 from mcomix import file_chooser_simple_dialog
 from mcomix import file_handler
+from mcomix import file_mover
 from mcomix import image_handler
 from mcomix import image_tools
 from mcomix import lens
@@ -1366,11 +1368,15 @@ class MainWindow(Gtk.Window):
         self.set_layout_cursor(Gdk.Cursor.new_from_name('wait', None))
         try:
             image_files = list(self.imagehandler._image_files or [])
-            self.filehandler.wait_for_files(image_files)
             comment_files = [self.filehandler.get_comment_name(number)
                              for number in range(
                                  1, self.filehandler
                                  .get_number_of_comments() + 1)]
+            # Both lists, not just the pages: a comment is extracted
+            # like anything else in the archive, and the packer reads
+            # its size before it writes it, so saving before it was out
+            # raised FileNotFoundError and refused the save.
+            self.filehandler.wait_for_files(image_files + comment_files)
             archive_packer.write_archive(
                 path, image_files, comment_files,
                 carried_files=self.filehandler.get_other_files(),
@@ -1602,6 +1608,63 @@ class MainWindow(Gtk.Window):
                     self.filehandler.close_file()
                     if os.path.isfile(current_file):
                         os.unlink(current_file)
+
+    def move_current_file(self, directory: str) -> None:
+        """Move the open file, or the archive it is a page of, into
+        <directory>, and go on reading it where it has landed.
+
+        The book is not closed and opened again at its first page: the
+        page being read is the page that comes back, which is what makes
+        this different from moving the file from outside and opening it
+        afresh.  Where the old path is recorded it is brought forward -
+        the library holds one, and so does the store of last read pages.
+        """
+        current_file = self.imagehandler.get_real_path()
+        if current_file is None:
+            # The menu entries are insensitive without a file open.
+            return
+        in_archive = self.filehandler.archive_type is not None
+        page = self.imagehandler.get_current_page()
+        try:
+            target = file_mover.move_file(current_file, directory)
+        except OSError as error:
+            self._move_failed(current_file, directory, error)
+            return
+
+        self.uimanager.move_to.remember(directory)
+        backend.LibraryBackend().update_book_path(current_file, target)
+        # A loose image works out its own page from the file it is
+        # opened on; only an archive has to be told which one to show.
+        self.filehandler.open_file(target, page if in_archive else 0)
+        # Opening the book closed it first, which wrote the page being
+        # read back under the path the file no longer has.
+        self.filehandler.last_read_page.clear_page(current_file)
+
+    def _move_failed(self, current_file: str, directory: str,
+                     error: OSError) -> None:
+        """Say why <current_file> did not move into <directory>.
+
+        Nothing has moved when this is called, so what the message has
+        to say is why, and it says it in the terms the reader can act
+        on: a name that is taken, or a disk without the room.
+        """
+        log.error(_('! Could not move %(file)s to %(directory)s: %(error)s'),
+                  {'file': current_file, 'directory': directory,
+                   'error': error})
+        if error.errno == errno.EEXIST:
+            reason = _('A file of that name is there already.')
+        elif error.errno == errno.ENOSPC:
+            reason = (_('There is not enough room there: the file is %s.')
+                      % tools.format_byte_size(os.path.getsize(current_file)))
+        else:
+            reason = str(error)
+        dialog = message_dialog.MessageDialog(
+            self, buttons=Gtk.ButtonsType.CLOSE)
+        dialog.set_text(_('Could not move "%(file)s" to "%(directory)s"')
+                        % {'file': os.path.basename(current_file),
+                           'directory': directory},
+                        reason)
+        dialog.run_async(lambda response: None)
 
     def show_info_panel(self) -> None:
         """ Shows an OSD displaying information about the current page. """

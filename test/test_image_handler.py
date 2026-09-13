@@ -231,6 +231,28 @@ class VirtualDoublePageTest(MComixTest):
         self.handler.replace_pages(listing[1:])
         self.assertEqual(self.handler._available_images, set())
 
+    def test_a_number_the_book_no_longer_has_is_dropped(self):
+        """The caching thread reads a page while the main one removes it.
+
+        _get_pixbuf() stores what it read - the missing-page icon, where
+        the file has gone with the page - under the number it was asked
+        for, and page_available() records that number as extracted.
+        Either can land after the listing has been shortened, and
+        rewriting the pages then looked the stale number up in a listing
+        that is now too short for it.
+        """
+        listing = self._open('portrait-no-exif.png', 'landscape-no-exif.png')
+        self.handler.replace_pages(listing[:1])
+        # As the caching thread leaves them behind.
+        self.handler._raw_pixbufs[1] = image_tools.missing_image_icon()
+        self.handler._available_images.add(1)
+
+        self.handler.replace_pages(listing[:1])
+
+        self.assertEqual(self.handler._image_files, listing[:1])
+        self.assertEqual(set(self.handler._raw_pixbufs), set())
+        self.assertEqual(self.handler._available_images, {0})
+
     def test_a_cached_page_is_measured_from_the_pixbuf(self):
         self._open('portrait-no-exif.png', 'landscape-no-exif.png')
         # Whichever way round the answer is arrived at, it is the same.

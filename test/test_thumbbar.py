@@ -148,6 +148,15 @@ class ThumbnailSidebarTest(MComixTest):
             [item for item in self._items() if item.thumbnail is not None],
             'the sidebar made no thumbnails after being shown again')
 
+    def test_resizing_keeps_the_page_on_screen_selected(self):
+        self.sidebar.load_thumbnails()
+        self.window.set_page(3)
+        wait_for(lambda: self.sidebar._list.get_selected_row() == 2,
+                 seconds=20)
+        prefs['thumbnail size'] = prefs['thumbnail size'] * 2
+        self.sidebar.resize()
+        self.assertEqual(self.sidebar._list.get_selected_row(), 2)
+
     def test_resizing_reloads_at_the_new_size(self):
         self.sidebar.load_thumbnails()
         prefs['thumbnail size'] = prefs['thumbnail size'] * 2

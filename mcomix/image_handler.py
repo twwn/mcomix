@@ -327,9 +327,16 @@ class ImageHandler:
         never a half-built one.
         """
         old_files = self._image_files or []
-        available = {old_files[index] for index in self._available_images}
+        # A number past the end of the listing is dropped rather than
+        # looked up.  The caching thread writes into both of these, and
+        # a page taken out of the book while it was reading one leaves
+        # an entry behind for a page the book no longer has: _get_pixbuf
+        # stores the missing-page icon under the number it failed on.
+        available = {old_files[index] for index in self._available_images
+                     if index < len(old_files)}
         pixbufs = {old_files[index]: pixbuf
-                   for index, pixbuf in self._raw_pixbufs.items()}
+                   for index, pixbuf in self._raw_pixbufs.items()
+                   if index < len(old_files)}
         self.set_image_files(image_files)
         self._available_images = {index for index, path
                                   in enumerate(image_files)

@@ -208,6 +208,21 @@ def display() -> Gdk.Display:
     return opened
 
 
+def menu_label(text: str) -> str:
+    """<text> as a menu item's label, with nothing read as a mnemonic.
+
+    GTK builds every item of a Gio.Menu with use-underline set, so an
+    underscore in a name that came from outside - a file name, a
+    bookmark, a label the user typed - is swallowed and the letter after
+    it underlined instead.  A label MComix writes itself says where its
+    mnemonic goes; a name it was handed has none to find.
+
+    Gtk.MenuItem, which GTK4 removes, took a plain label and showed the
+    underscore, so nothing needed this before the menus became models.
+    """
+    return text.replace('_', '__')
+
+
 def simple_action(actions: Gio.ActionMap, name: str) -> Gio.SimpleAction:
     """The action registered as <name> in <actions>.
 

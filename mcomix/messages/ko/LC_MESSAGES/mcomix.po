@@ -271,19 +271,19 @@ msgstr "확인(_O)"
 
 #: mcomix/enhance_dialog.py:80
 msgid "_Brightness:"
-msgstr "명도:"
+msgstr "명도(_B):"
 
 #: mcomix/enhance_dialog.py:81
 msgid "_Contrast:"
-msgstr "대비:"
+msgstr "대비(_C):"
 
 #: mcomix/enhance_dialog.py:82
 msgid "S_aturation:"
-msgstr "채도:"
+msgstr "채도(_D):"
 
 #: mcomix/enhance_dialog.py:83
 msgid "S_harpness:"
-msgstr "선명도:"
+msgstr "선명도(_E):"
 
 #: mcomix/enhance_dialog.py:88
 msgid "_Automatically adjust contrast"
@@ -353,7 +353,7 @@ msgstr "책 추가"
 #: mcomix/file_chooser_library_dialog.py:52 mcomix/openwith.py:339
 #: mcomix/library/watchlist.py:54
 msgid "_Add"
-msgstr "추가"
+msgstr "추가(_A)"
 
 #: mcomix/file_handler.py:190
 #, python-format
@@ -906,7 +906,7 @@ msgstr "아래로(_D)"
 
 #: mcomix/openwith.py:352
 msgid "Run _command"
-msgstr "명령어 실행"
+msgstr "명령어 실행(_B)"
 
 #: mcomix/openwith.py:407
 msgid "This is a separator pseudo-command."
@@ -1439,7 +1439,7 @@ msgstr "모든 키보드 단축키를 기본값으로 리셋."
 
 #: mcomix/preferences_dialog.py:421
 msgid "Clear _dialog choices"
-msgstr "변경 취소"
+msgstr "변경 취소(_A)"
 
 #: mcomix/preferences_dialog.py:423
 msgid ""
@@ -2242,7 +2242,7 @@ msgstr "등록정보(_T)"
 
 #: mcomix/ui.py:523
 msgid "_Preferences"
-msgstr "설정(_D)"
+msgstr "설정(_F)"
 
 #: mcomix/ui.py:527
 msgid "_Edit archive..."
@@ -2763,6 +2763,49 @@ msgstr "제거하고 압축 파일 쓰기"
 #: mcomix/message_dialog.py:91
 msgid "Leave the book as it is"
 msgstr "책을 그대로 두기"
+
+msgid "_Move to"
+msgstr "이동 위치(_M)"
+
+msgid "Moves the file, or the archive the page is in, to another folder."
+msgstr "파일, 또는 페이지가 들어 있는 압축 파일을 다른 디렉토리로 이동합니다."
+
+msgid "Moved to before"
+msgstr "최근 이동 위치"
+
+msgid "From bookmarks"
+msgstr "북마크에서"
+
+msgid "Opened before"
+msgstr "최근에 연 위치"
+
+msgid "Other folder..."
+msgstr "다른 디렉토리..."
+
+msgid "Move to folder"
+msgstr "디렉토리로 이동"
+
+msgid "A file of that name is there already."
+msgstr "같은 이름의 파일이 이미 있습니다."
+
+#, python-format
+msgid "There is not enough room there: the file is %s."
+msgstr "공간이 부족합니다: 파일 크기는 %s입니다."
+
+#, python-format
+msgid "Could not move \"%(file)s\" to \"%(directory)s\""
+msgstr "\"%(file)s\"을(를) \"%(directory)s\"(으)로 이동할 수 없습니다"
+
+#, python-format
+msgid "! Could not move %(file)s to %(directory)s: %(error)s"
+msgstr "! %(file)s을(를) %(directory)s(으)로 이동할 수 없습니다: %(error)s"
+
+#, python-format
+msgid "! Could not move book \"%s\" in the library"
+msgstr "! 라이브러리의 책 \"%s\"을(를) 이동할 수 없습니다"
+
+msgid "Select _All"
+msgstr "모두 선택(_A)"
 
 #~ msgid "Search"
 #~ msgstr "검색"

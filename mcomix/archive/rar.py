@@ -169,6 +169,10 @@ class RarArchive(archive_base.BaseArchive):
                 filename = self._read_header()
                 if self._headerdata.Flags & 0x10:
                     self._is_solid = True
+                if self._header_is_directory():
+                    # Not a member anything can extract; skip past it.
+                    self._process()
+                    continue
                 yield filename
                 # Skip to the next entry if we're still on the same name
                 # (extract may have been called by iter_extract).
@@ -181,6 +185,27 @@ class RarArchive(archive_base.BaseArchive):
             pass
         finally:
             self._close()
+
+    #: The unrar HostOS values whose file attributes are DOS attributes
+    #: rather than a Unix mode: MS-DOS, OS/2 and Win32.
+    _DOS_HOSTS = (0, 1, 2)
+
+    def _header_is_directory(self) -> bool:
+        """Whether the header just read describes a directory.
+
+        The header flags do not say so portably - the bits that stand
+        for a directory in RAR 3 are dictionary-size bits in the older
+        formats, and the archives MComix meets carry both - but the file
+        attributes do, once it is known which system wrote them.  A
+        directory packed under Windows carries FILE_ATTRIBUTE_DIRECTORY
+        and one packed under Unix carries S_IFDIR in its mode; anything
+        else is taken for a file, so an attribute word that means
+        neither costs a listing nothing.
+        """
+        attributes = self._headerdata.FileAttr
+        if self._headerdata.HostOS in self._DOS_HOSTS:
+            return bool(attributes & 0x10)
+        return bool(attributes & 0xF000 == 0x4000)
 
     def extract(self, filename: str, destination_dir: str) -> None:
         """ Extract <filename> from the archive to <destination_dir>. """

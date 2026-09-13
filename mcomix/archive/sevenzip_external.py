@@ -38,6 +38,10 @@ class SevenZipArchive(archive_base.ExternalExecutableArchive):
         self._state = self.STATE_HEADER
         #: Current path while listing contents.
         self._path = ''
+        #: The entry read but not yet handed over, and whether the
+        #: attributes seen for it say it is a directory.
+        self._pending: str | None = None
+        self._pending_is_directory = False
 
     def _get_executable(self) -> str | None:
         return SevenZipArchive._find_7z_executable()
@@ -88,11 +92,15 @@ class SevenZipArchive(archive_base.ExternalExecutableArchive):
 
         The listing is asked for with -slt, so an entry is several
         "Key = value" lines rather than a row of columns; the name comes
-        back on the "Path = " line and the size, which decides whether
-        the entry is a file or a directory, on the "Size = " line after
-        it.  A run of dashes separates the header from the entries and
-        the entries from the footer, which is what the parser's three
-        states are.
+        back on the "Path = " line and the size on the "Size = " line
+        after it.  A run of dashes separates the header from the entries
+        and the entries from the footer, which is what the parser's
+        three states are.
+
+        A name is held back until the next entry begins, because what
+        says whether it is a directory - the "Attributes = " line, which
+        starts with D for one - comes after it.  A directory is not a
+        member anything can extract, so it is never returned.
         """
 
         if line.startswith('----------'):
@@ -115,8 +123,15 @@ class SevenZipArchive(archive_base.ExternalExecutableArchive):
 
         if self._state == self.STATE_LISTING:
             if line.startswith('Path = '):
-                self._path = line[7:]
-                return self._path
+                finished = self._flush_pending_entry()
+                self._path = self._pending = line[7:]
+                self._pending_is_directory = False
+                return finished
+            if line.startswith('Attributes = '):
+                # One letter per attribute, D first for a directory.  An
+                # entry with no attributes line at all is taken for a
+                # file: not every format 7z reads records any.
+                self._pending_is_directory = line[13:].startswith('D')
             if line.startswith('Size = '):
                 filesize = int(line[7:])
                 if filesize > 0:
@@ -125,6 +140,11 @@ class SevenZipArchive(archive_base.ExternalExecutableArchive):
                 self._is_encrypted = True
 
         return None
+
+    def _flush_pending_entry(self) -> str | None:
+        """The entry just read, unless it was a directory."""
+        pending, self._pending = self._pending, None
+        return None if self._pending_is_directory else pending
 
     def is_solid(self) -> bool:
         """Whether the archive was packed as one stream.
@@ -148,6 +168,8 @@ class SevenZipArchive(archive_base.ExternalExecutableArchive):
         for retry_count in range(2):
             self._state = self.STATE_HEADER
             self._path = ''
+            self._pending = None
+            self._pending_is_directory = False
             proc = subprocess.run(self._get_list_arguments(),
                                   stdout=subprocess.PIPE, stderr=process.STDOUT, encoding='utf-8')
             try:
@@ -155,6 +177,9 @@ class SevenZipArchive(archive_base.ExternalExecutableArchive):
                     filename = self._parse_list_output_line(line.rstrip(os.linesep))
                     if filename is not None:
                         yield filename
+                pending = self._flush_pending_entry()
+                if pending is not None:
+                    yield pending
             except self.EncryptedHeader:
                 if retry_count == 0:
                     continue
