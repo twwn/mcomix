@@ -20,8 +20,9 @@ if os.environ.get('DISPLAY'):
     os.environ['GDK_BACKEND'] = 'x11'
     os.environ.pop('WAYLAND_DISPLAY', None)
 
-# On Xvfb, which has no DRI3, GTK falls back to its Vulkan renderer running
-# in software. Setting one up and tearing it down for every test window
+# On Xvfb, which has no DRI3, GTK turns GL down (Mesa has only llvmpipe to
+# offer there) and takes its Vulkan renderer, on whatever Vulkan device the
+# machine has. Setting one up and tearing it down for every test window
 # costs over a quarter of the suite's time, and its unrealize has aborted
 # an xdist worker on a GSK assertion. The tests check what MComix draws, not
 # how GSK composites it, so the cairo renderer does; a renderer named in the
