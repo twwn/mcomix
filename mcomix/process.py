@@ -130,9 +130,18 @@ if sys.platform == 'win32':
     _exe_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
 
     def Win32Popen(cmd: Sequence[str]) -> int:
-        """ Spawns a new process on Win32. cmd is a list of parameters.
-        This method's sole purpose is calling CreateProcessW, not
-        CreateProcessA as it is done by subprocess.Popen. """
+        """Start <cmd> on its own and return its process id.
+
+        This was written because subprocess.Popen called
+        CreateProcessA, which could not pass a path outside the ANSI
+        code page; Popen has called CreateProcessW since Python 3.0.
+        What still sets this apart is that the program is looked up
+        with find_executable() - MComix' own directory first, then the
+        working directory, then PATH, with '.exe' added - and started
+        with the console window it asks for and none of MComix'
+        handles, where popen() hides the console and redirects the
+        standard streams.
+        """
         import ctypes
 
         # Declare common data types
