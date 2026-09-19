@@ -223,6 +223,25 @@ class WatchListEntryTest(unittest.TestCase):
         shutil.rmtree(tmpdir)
 
 
+    def test_new_files_come_in_the_order_they_are_numbered(self):
+        """They are added to the library in this order, and "All books"
+        shows the books in the order they were added: a set's order put
+        volume 10 before volume 2, or anywhere at all."""
+        tmpdir = os.path.abspath(tempfile.mkdtemp(prefix='library_types.'))
+        try:
+            names = ['Vol %d.cbz' % n for n in range(1, 13)]
+            for name in names:
+                open(os.path.join(tmpdir, name), 'wb').close()
+            entry = backend_types._WatchListEntry(tmpdir, False, None)
+            self.assertEqual([os.path.join(tmpdir, name) for name in names],
+                             entry.get_new_files([]))
+            recursive = backend_types._WatchListEntry(tmpdir, True, None)
+            self.assertEqual([os.path.join(tmpdir, name) for name in names],
+                             recursive.get_new_files([]))
+        finally:
+            shutil.rmtree(tmpdir)
+
+
 class WatchListTest(unittest.TestCase):
 
     """Looking a watched directory up by the path the caller happens to

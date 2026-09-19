@@ -15,6 +15,7 @@ import datetime
 
 from mcomix import callback
 from mcomix import archive_tools
+from mcomix import tools
 from mcomix import log
 from mcomix.i18n import _
 
@@ -541,7 +542,13 @@ class _WatchListEntry(_BackendObject):
 
             available_files = frozenset(found)
 
-        return list(available_files.difference(old_files))
+        # In the order a reader numbers them, "Vol 2" before "Vol 10":
+        # the library files them in the order it is given them, and
+        # "All books" shows them in that order.  A set's order put them
+        # anywhere.
+        new_files = list(available_files.difference(old_files))
+        tools.alphanumeric_sort(new_files)
+        return new_files
 
     def is_valid(self) -> bool:
         """ Check if the watched directory is a valid directory and exists. """
