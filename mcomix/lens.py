@@ -252,7 +252,7 @@ class MagnifyingLens:
             # later to only recompute the parts of the lens where the content might
             # have changed.
             if any(flips) or any(axis_flip):
-                # Unfortuantely, GdkPixbuf does not seem to provide an API for applying
+                # Unfortunately, GdkPixbuf does not seem to provide an API for applying
                 # arbitrary matrix transforms the same way, which is why we need to
                 # apply inefficient workarounds.
 
@@ -303,8 +303,6 @@ class MagnifyingLens:
                                             dest_width, dest_height, dest_x, dest_y, 1, 1,
                                             GdkPixbuf.InterpType.NEAREST, 255, check_x, check_y,
                                             *composite_color_args)
-                # unref temporary buffer
-                tempbuf = None
             else:
                 # no workaround needed
                 # 2D only, and spelled out rather than starred: the
