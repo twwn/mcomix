@@ -130,10 +130,12 @@ class _PropertiesDialog(Dialog):
         filename = window.filehandler.get_pretty_current_filename()
         page.set_filename(filename)
         path = window.filehandler.get_path_to_base()
+        pages = window.imagehandler.get_number_of_pages()
+        comments = window.filehandler.get_number_of_comments()
+        ngettext = i18n.get_translation().ngettext
         main_info = (
-            _('%d pages') % window.imagehandler.get_number_of_pages(),
-            _('%d comments')
-            % window.filehandler.get_number_of_comments(),
+            ngettext('%d page', '%d pages', pages) % pages,
+            ngettext('%d comment', '%d comments', comments) % comments,
             strings.ARCHIVE_DESCRIPTIONS[window.filehandler.archive_type]
         )
         page.set_main_info(main_info)

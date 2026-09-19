@@ -133,7 +133,8 @@ class _ControlArea(Gtk.Box):
         if last_page is not None and pages is not None and last_page != pages:
             infotext.append('%s %d/%d' % (_('Page'), last_page, pages))
         elif pages is not None:
-            infotext.append(_('%d pages') % pages)
+            infotext.append(i18n.get_translation().ngettext(
+                '%d page', '%d pages', pages) % pages)
 
         if size is not None:
             infotext.append('%.1f MiB' % (size / 1048576.0))

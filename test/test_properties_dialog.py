@@ -106,6 +106,17 @@ class PropertiesDialogTest(MComixTest):
         self.assertIn('01-ZIP-Normal.zip', rows)
         self.assertTrue([row for row in rows if row.endswith(' pages')], rows)
 
+    def test_one_page_and_one_comment_are_counted_in_the_singular(self):
+        """The counts were written with one form for every number, so
+        a book of one page with one comment said "1 pages, 1 comments"."""
+        path = os.path.join(self.tmp_dir, 'single.zip')
+        with zipfile.ZipFile(path, 'w') as archive:
+            archive.write(get_testfile_path('images', 'blue.png'), 'blue.png')
+            archive.writestr('notes.txt', 'Scanned by nobody.')
+        rows = self._rows(self._open(path)._archive_page)
+        self.assertIn('1 page', rows)
+        self.assertIn('1 comment', rows)
+
     def test_describing_the_archive_again_does_not_say_it_twice(self):
         """Every update resets the page first, and a reset that left the
         rows behind would stack the next book's on top of them."""
