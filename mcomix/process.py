@@ -3,7 +3,7 @@
 import os
 import subprocess
 import sys
-from collections.abc import Callable, Iterable, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from typing import IO
 
 from mcomix import i18n
@@ -28,25 +28,28 @@ CREATIONFLAGS = 0x08000000 if sys.platform == 'win32' else 0
 # and stderr are redirected to a pipe/devnull as well.
 def call(args: Sequence[str | bytes], stdin: Redirect = NULL,
          stdout: Redirect = NULL, stderr: Redirect = NULL,
-         workdir: str | None = None) -> bool:
+         workdir: str | None = None,
+         env: Mapping[str, str] | None = None) -> bool:
     """Run <args> and say whether it succeeded.
 
     <workdir> is the directory it runs in, which is what an archiver
     that names its entries after the files it is given needs: the names
-    are then the ones under that directory.
+    are then the ones under that directory.  <env> is its environment,
+    MComix' own where none is given.
     """
     return subprocess.call(args, stdin=stdin, stdout=stdout,
-                           stderr=stderr, cwd=workdir,
+                           stderr=stderr, cwd=workdir, env=env,
                            creationflags=CREATIONFLAGS) == 0
 
 
 def popen(args: Sequence[str | bytes], stdin: Redirect = NULL,
           stdout: Redirect = PIPE, stderr: Redirect = NULL,
-          workdir: str | None = None) -> subprocess.Popen[bytes]:
-    """Start <args>, in <workdir> if one is given."""
+          workdir: str | None = None,
+          env: Mapping[str, str] | None = None) -> subprocess.Popen[bytes]:
+    """Start <args>, in <workdir> and with <env> if they are given."""
     return subprocess.Popen(args, stdin=stdin,
                             stdout=stdout, stderr=stderr, cwd=workdir,
-                            creationflags=CREATIONFLAGS)
+                            env=env, creationflags=CREATIONFLAGS)
 
 
 def find_executable(candidates: Iterable[str], workdir: str | None = None,

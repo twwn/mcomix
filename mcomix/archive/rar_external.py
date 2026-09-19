@@ -11,6 +11,22 @@ from mcomix import process
 from mcomix.archive import archive_base
 
 
+def _unrar_environment() -> dict[str, str] | None:
+    """The environment unrar runs in: MComix' own, in a UTF-8 locale.
+
+    unrar writes the names it lists in the character set of its locale,
+    and reads the names it is given the same way.  Under C it wrote every
+    letter outside ASCII as '?', and under a Latin-1 locale the listing
+    was not UTF-8 at all, which is how it is read.  C.UTF-8 is there on
+    any glibc from 2.35 and on musl; where it is not, the C library
+    falls back to C, which is no worse than before.  Windows has no such
+    locale, and its unrar speaks the console's code page instead.
+    """
+    if sys.platform == 'win32':
+        return None
+    return dict(os.environ, LC_ALL='C.UTF-8')
+
+
 class RarArchive(archive_base.ExternalExecutableArchive):
     """ RAR file extractor using the unrar/rar executable. """
 
@@ -158,7 +174,7 @@ class RarArchive(archive_base.ExternalExecutableArchive):
             self._pending_is_directory = False
             proc = subprocess.run(
                 self._get_list_arguments(), stdout=process.PIPE, stderr=process.STDOUT,
-                encoding="utf-8",
+                encoding="utf-8", env=_unrar_environment(),
                 creationflags=process.CREATIONFLAGS)
             try:
                 for line in proc.stdout.splitlines():
@@ -190,7 +206,7 @@ class RarArchive(archive_base.ExternalExecutableArchive):
         cmd = self._get_extract_arguments() + [desired_filename]
         output = self._create_file(os.path.join(destination_dir, filename))
         try:
-            process.call(cmd, stdout=output)
+            process.call(cmd, stdout=output, env=_unrar_environment())
         finally:
             output.close()
 
@@ -210,7 +226,8 @@ class RarArchive(archive_base.ExternalExecutableArchive):
         if not self.filenames_initialized:
             self.list_contents()
 
-        proc = process.popen(self._get_extract_arguments())
+        proc = process.popen(self._get_extract_arguments(),
+                             env=_unrar_environment())
         assert proc.stdout is not None
         try:
             wanted = {self._original_filename(unicode_name): unicode_name

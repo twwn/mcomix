@@ -6,6 +6,7 @@ import shutil
 import sys
 import tempfile
 import unittest
+import unittest.mock
 import zipfile
 
 from . import MComixTest, get_testfile_path
@@ -838,3 +839,35 @@ class ListingParserTest(MComixTest):
             'drwxr-xr-x  1000/1000       0 100.0% Apr 12  2015 images/',
             '-rw-------  1000/1000     332 100.0% Apr 12  2015 images/page.png',
         ]), ['images/page.png'])
+
+
+class ExternalRarLocaleTest(MComixTest):
+
+    """The names unrar lists, whatever locale MComix was started in.
+
+    unrar writes names in the character set of the locale it runs in:
+    under C every letter outside ASCII came out as '?', and under a
+    Latin-1 locale the listing could not be read as UTF-8 at all."""
+
+    @unittest.skipUnless(rar_external.RarArchive.is_available(),
+                         'unrar is not installed')
+    def test_names_are_listed_right_under_the_c_locale(self):
+        with unittest.mock.patch.dict(os.environ,
+                                      {'LANG': 'C', 'LC_ALL': 'C'}):
+            archive = rar_external.RarArchive(
+                get_testfile_path('archives', 'Unicode.rar'))
+            names = list(archive.iter_contents())
+        self.assertIn('1-قفهسا.jpg', names)
+        self.assertFalse([name for name in names if '?' in name], names)
+
+    @unittest.skipUnless(rar_external.RarArchive.is_available(),
+                         'unrar is not installed')
+    def test_a_file_is_extracted_by_its_name_under_the_c_locale(self):
+        with unittest.mock.patch.dict(os.environ,
+                                      {'LANG': 'C', 'LC_ALL': 'C'}):
+            archive = rar_external.RarArchive(
+                get_testfile_path('archives', 'Unicode.rar'))
+            archive.list_contents()
+            archive.extract('1-قفهسا.jpg', self.tmp_dir)
+        extracted = os.path.join(self.tmp_dir, '1-قفهسا.jpg')
+        self.assertTrue(os.path.getsize(extracted) > 0)
