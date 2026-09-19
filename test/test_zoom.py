@@ -1,5 +1,7 @@
 """What the zoom model computes, which nothing else in the suite reaches."""
 
+import random
+
 from . import MComixTest
 
 from mcomix.constants import PageAxis, ZoomMode
@@ -85,6 +87,40 @@ class ZoomDistributionTest(MComixTest):
         scales, _ = self._widths(sizes, 300, do_not_transform=[True, False])
         self.assertEqual(scales[0], IDENTITY_ZOOM)
         self.assertLess(scales[1], IDENTITY_ZOOM)
+
+    def test_a_wide_page_beside_narrow_ones_still_fits(self):
+        """A page that rounds to a single pixel cannot be made smaller,
+        so the wide one beside it has to give up more than the one pixel
+        each box used to be allowed: 15 + 1 + 1 + 1 came to 17 in 16."""
+        sizes = [[1042, 443]] + [[26, 926]] * 3
+        _scales, widths = self._widths(sizes, 16, upscaling=True)
+        self.assertLessEqual(sum(widths), 16, widths)
+
+    def test_the_pages_fit_whatever_sizes_they_come_in(self):
+        """Random pages, some of them alike, from a fixed seed: the
+        widths add up to no more than the room there is, and pages that
+        came in alike are scaled alike."""
+        random.seed(7)
+        for _case in range(2000):
+            count = random.randint(1, 4)
+            sizes = []
+            for index in range(count):
+                if index and random.random() < 0.5:
+                    sizes.append(list(sizes[-1]))
+                else:
+                    sizes.append([random.randint(1, 2000),
+                                  random.randint(1, 2000)])
+            max_size = random.randint(count + 1, 3000)
+            scales, widths = self._widths(
+                sizes, max_size, upscaling=random.random() < 0.5)
+            self.assertLessEqual(sum(widths), max_size,
+                                 '%r in %d came to %r' % (sizes, max_size,
+                                                          widths))
+            for first in range(count):
+                for second in range(first + 1, count):
+                    if sizes[first] == sizes[second]:
+                        self.assertEqual(scales[first], scales[second],
+                                         '%r got %r' % (sizes, scales))
 
     def test_no_pages_at_all_need_no_room(self):
         self.assertEqual(ZoomModel._scale_distributed([], PageAxis.WIDTH, 100,

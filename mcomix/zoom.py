@@ -57,6 +57,13 @@ class _ScalingData:
     #: values a box that is never touched carries.
     forced_scale: float
     forced_vol_err: float
+    #: The size the box came in at, the whole-pixel size it stands at
+    #: now along the axis, and the volume it would have at the scale
+    #: every box started with: what the step after this one is worked
+    #: out from.  A box that is not being scaled carries none of it.
+    size: Sequence[float] = ()
+    current_size: int = 0
+    ideal_vol: float = 0.0
 
 
 class ZoomModel:
@@ -364,7 +371,8 @@ class ZoomModel:
                 forced_vol_err = 0.0
             scaling_data.append(_ScalingData(
                 local_scale, ideal, can_be_downscaled,
-                forced_scale, forced_vol_err))
+                forced_scale, forced_vol_err,
+                this_size, dummy_approx, ideal_vol))
         # Now we need to find at most total_axis_size - max_size occasions to
         # scale down some tuples so the whole thing would fit into max_size. If
         # we are lucky, there will be no gaps at the end (or at least fewer gaps
@@ -401,7 +409,20 @@ class ZoomModel:
                 if (not d.can_be_downscaled) or (d.ideal != current_min.ideal):
                     continue
                 d.local_scale = d.forced_scale
-                d.can_be_downscaled = False  # only once per tuple
+                d.current_size -= 1
+                # And again from there if it is still worth a pixel: one
+                # step each was not always enough to fit, since a box
+                # that cannot be made smaller at all - one already a
+                # pixel wide - leaves the rest to make up the whole
+                # difference.
+                d.can_be_downscaled = d.current_size > 1
+                if d.can_be_downscaled:
+                    d.forced_scale = tools.div(d.current_size - 1,
+                                               d.size[axis])
+                    d.forced_vol_err = tools.relerr(
+                        tools.volume(_scale_image_size(d.size,
+                                                       d.forced_scale)),
+                        d.ideal_vol)
                 total_axis_size -= 1
                 dirty = True
         # Where the loop leaves total_axis_size below max_size, the tuples
