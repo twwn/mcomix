@@ -87,7 +87,9 @@ class MainWindow(Gtk.Window):
         #: Saving, deleting and moving the files of the book, and the
         #: undo stack they are taken back through.
         self.file_actions = file_actions.FileActions(self)
-        # Remember last scroll destination.
+        #: Where a page that was not extracted yet when it was drawn is
+        #: to be scrolled to once it arrives: kept until a redraw asks
+        #: for somewhere else, not dropped by one that asks for nowhere.
         self._last_scroll_destination: int | None = constants.SCROLL_TO_START
 
         self.layout = layout.create_dummy_layout()
@@ -213,7 +215,7 @@ class MainWindow(Gtk.Window):
             prefs['vertical flip'] = False
             prefs['horizontal flip'] = False
 
-        # List of "toggles" than can be shown/hidden by the user.
+        # List of "toggles" that can be shown/hidden by the user.
         self._toggle_list = (
             # Preference        Action        Widget(s)
             ('show menubar', 'menubar', (self.menubar,)),
