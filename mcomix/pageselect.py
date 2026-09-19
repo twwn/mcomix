@@ -92,9 +92,9 @@ class Pageselector(Dialog):
         # stop it - not only the buttons.  Anything else leaves a thread
         # that terminate_program() then waits for at exit.  'unrealize',
         # not 'destroy': GTK4 emits the latter when the last reference to
-        # the window goes rather than when it is destroyed, and a handler
-        # that is a method of the window holds a reference to it, so
-        # 'destroy' would never come.  Nothing here hides the dialog,
+        # the window goes rather than when it is destroyed, and the
+        # worker holds one for as long as it runs, so 'destroy' would
+        # not come before it had stopped.  Nothing here hides the dialog,
         # which is the other thing that unrealizes a window.
         self.connect('unrealize', self._stop_thumbnailing)
         # A window says how large it is through its default size

@@ -205,9 +205,9 @@ class _BaseFileChooserDialog(Dialog):
         self._preview_timer: int | None = GLib.timeout_add(200, self._poll_preview)
         # 'unrealize', not 'destroy': GTK4 emits the latter when the last
         # reference to the window goes rather than when it is destroyed,
-        # and a handler that is a method of the window holds a reference
-        # to it, so 'destroy' would never come and the timer would poll
-        # a closed chooser for the rest of the session.  Nothing here
+        # and the timer's own method holds one, so 'destroy' would never
+        # come and the timer would poll a closed chooser for the rest of
+        # the session.  Nothing here
         # hides the dialog, which is the other thing that unrealizes a
         # window.
         self.connect('unrealize', self._stop_previewing)

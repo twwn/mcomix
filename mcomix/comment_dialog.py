@@ -60,9 +60,9 @@ class _CommentsDialog(Dialog):
         self._window.filehandler.file_available += self._on_file_available
         self._window.filehandler.file_opened += self._update_comments
         self._window.filehandler.file_closed += self._update_comments
-        # 'unrealize' rather than 'destroy', which GTK4 emits when the
-        # last reference to the window goes: the handlers connected to
-        # the widgets in it hold one, so it would never come.
+        # 'unrealize' rather than 'destroy', which GTK4 emits only when
+        # the last reference to the window goes - whenever Python's
+        # collector gets round to it, not when the window is closed.
         self.connect('unrealize', self._stop_following)
         self._update_comments()
         self.set_visible(True)

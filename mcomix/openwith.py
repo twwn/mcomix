@@ -371,9 +371,9 @@ class OpenWithEditor(Dialog):
         self._window.page_changed += self.test_command
         self._window.filehandler.file_opened += self.test_command
         self._window.filehandler.file_closed += self.test_command
-        # 'unrealize' rather than 'destroy', which GTK4 emits when the
-        # last reference to the window goes: the handlers connected to
-        # the widgets in it hold one, so it would never come.  Closing
+        # 'unrealize' rather than 'destroy', which GTK4 emits only when
+        # the last reference to the window goes - whenever Python's
+        # collector gets round to it, not when the window is closed.  Closing
         # the main window takes the editor with it without going
         # through close_editor(), and unrealizes it all the same.
         self.connect('unrealize', self._stop_following)
