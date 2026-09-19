@@ -1001,11 +1001,8 @@ class MainWindow(Gtk.Window):
         a new page and False otherwise."""
         return self.event_handler.scroll_with_flipping(x, y)
 
-    def scroll(self, x: float, y: float, bound: str | None = None) -> bool:
-        """Scroll <x> px horizontally and <y> px vertically. If <bound> is
-        'first' or 'second', we will not scroll out of the first or second
-        page respectively (dependent on manga mode). The <bound> argument
-        only makes sense in double page mode.
+    def scroll(self, x: float, y: float) -> bool:
+        """Scroll <x> px horizontally and <y> px vertically.
 
         Return True if call resulted in new adjustment values, False
         otherwise.
@@ -1017,26 +1014,11 @@ class MainWindow(Gtk.Window):
 
         hadjust_upper = max(0, self._hadjust.get_upper() - visible_width)
         vadjust_upper = max(0, self._vadjust.get_upper() - visible_height)
-        hadjust_lower = 0
-
-        if bound is not None and self.is_manga_mode:
-            bound = {'first': 'second', 'second': 'first'}[bound]
-
-        # Keeping to one page of a double means stopping short of the
-        # other one, so each bound is clamped by the width of the page
-        # widget it is not allowed to reach into, plus the two pixels
-        # the layout leaves between them.
-        if bound == 'first':
-            hadjust_upper = max(0, hadjust_upper -
-                                self.images[1].get_preferred_size()[1].width - 2)
-
-        elif bound == 'second':
-            hadjust_lower = self.images[0].get_preferred_size()[1].width + 2
 
         new_hadjust = old_hadjust + x
         new_vadjust = old_vadjust + y
 
-        new_hadjust = max(hadjust_lower, new_hadjust)
+        new_hadjust = max(0, new_hadjust)
         new_vadjust = max(0, new_vadjust)
 
         new_hadjust = min(hadjust_upper, new_hadjust)
