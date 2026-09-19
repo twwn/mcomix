@@ -4,6 +4,7 @@ brightness etc.)
 from gi.repository import GdkPixbuf, GLib
 
 from mcomix.preferences import prefs
+from mcomix import callback
 from mcomix import image_tools
 from mcomix.library import main_dialog
 
@@ -42,9 +43,14 @@ class ImageEnhancer:
 
         return pixbuf
 
+    @callback.Callback
     def signal_update(self) -> None:
         """Signal to the main window that a change in the enhancement
         values has been made.
+
+        A callback too, for the enhancement dialog: Ctrl+I changes a
+        value behind its back, and a control left showing the old one
+        would put it back the next time any control was moved.
         """
         self._window.draw_image()
 

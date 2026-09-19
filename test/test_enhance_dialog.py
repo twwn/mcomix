@@ -64,5 +64,30 @@ class EnhanceDialogTest(MComixTest):
         pump()
         self.assertEqual(1, self._histograms_drawn_turning_a_page())
 
+    def test_ctrl_i_with_the_dialog_open_is_not_undone_by_a_slider(self):
+        """Ctrl+I inverts the colours through an action of its own; the
+        dialog's checkbox did not follow it, and the next move of any
+        slider set the colours back from the checkbox."""
+        enhance_dialog.open_dialog(None, self.window)
+        pump()
+        dialog = enhance_dialog._dialog
+        self.window.actiongroup.get_action('invert_color').activate()
+        pump()
+        self.assertTrue(self.window.enhancer.invert_color)
+        self.assertTrue(dialog._invert_color_button.get_active())
+        dialog._brightness_scale.set_value(0.5)
+        pump()
+        self.assertTrue(self.window.enhancer.invert_color)
+
+    def test_the_dialog_follows_the_enhancer_only_while_it_is_open(self):
+        enhance_dialog.open_dialog(None, self.window)
+        pump()
+        dialog = enhance_dialog._dialog
+        dialog.response(Response.OK)
+        pump()
+        self.window.actiongroup.get_action('invert_color').activate()
+        pump()
+        self.assertFalse(dialog._invert_color_button.get_active())
+
 
 # vim: expandtab:sw=4:ts=4

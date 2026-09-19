@@ -113,6 +113,7 @@ class _EnhanceImageDialog(Dialog):
         self._window.imagehandler.page_available += self._on_page_available
         self._window.filehandler.file_closed += self._on_book_close
         self._window.page_changed += self._on_page_change
+        self._enhancer.signal_update += self._follow_enhancer
         # 'unrealize' rather than 'destroy', which GTK4 emits only when
         # the last reference to the window goes - whenever Python's
         # collector gets round to it, not when the window is closed.
@@ -132,6 +133,18 @@ class _EnhanceImageDialog(Dialog):
         self._window.imagehandler.page_available -= self._on_page_available
         self._window.filehandler.file_closed -= self._on_book_close
         self._window.page_changed -= self._on_page_change
+        self._enhancer.signal_update -= self._follow_enhancer
+
+    def _follow_enhancer(self) -> None:
+        """Show what the enhancer holds, whoever changed it.
+
+        Ctrl+I inverts the colours without the dialog; its checkbox
+        would otherwise go on saying they were not, and the next move of
+        any control would set them back from it.
+        """
+        self._block = True
+        self._invert_color_button.set_active(self._enhancer.invert_color)
+        self._block = False
 
     def _on_book_close(self) -> None:
         self.clear_histogram()
