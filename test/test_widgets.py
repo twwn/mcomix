@@ -33,6 +33,10 @@ class PopupAtTest(MComixTest):
 
     def tearDown(self):
         self.popover.popdown()
+        # Nothing in the window unparents a popover it did not add, and
+        # GTK warns when a widget is finalized with one still attached.
+        if self.popover.get_parent() is not None:
+            self.popover.unparent()
         self.window.destroy()
         pump()
         super().tearDown()
