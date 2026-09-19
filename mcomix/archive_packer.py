@@ -514,7 +514,15 @@ class Packer:
                       self._archive_path)
         finally:
             if not self._packing_successful:
-                archive.clean_up()
+                # Closing what failed to be written can fail the same
+                # way, the disk being as full as it was a moment ago;
+                # the failure has been logged already, and nothing joins
+                # this thread to hand another exception to.
+                try:
+                    archive.clean_up()
+                except Exception as error:
+                    log.debug('Could not clean up after "%s": %s',
+                              self._archive_path, error)
 
         if not self._packing_successful:
             # Half an archive is worse than none: the caller renames

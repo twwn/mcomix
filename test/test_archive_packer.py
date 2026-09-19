@@ -126,6 +126,22 @@ class PackerTest(MComixTest):
         self.assertFalse(os.path.exists(self.archive),
                          'the half-written archive was left behind')
 
+    def test_a_clean_up_that_fails_as_well_stays_in_the_thread(self):
+        """A write that fails for want of room leaves a writer whose
+        closing fails the same way, and the exception from the finally
+        clause went to threading.excepthook as a bare traceback."""
+        writer = unittest.mock.Mock()
+        writer.add.side_effect = OSError('no space left on device')
+        writer.clean_up.side_effect = OSError('no space left on device')
+        packer = archive_packer.Packer(self.pages, [], self.archive, 'Comic')
+        with unittest.mock.patch.object(archive_packer, 'make_writer',
+                                        return_value=writer), \
+                unittest.mock.patch('threading.excepthook') as excepthook:
+            packer.pack()
+            self.assertFalse(packer.wait())
+        writer.clean_up.assert_called_once_with()
+        excepthook.assert_not_called()
+
 
 class WriterTest(MComixTest):
 
