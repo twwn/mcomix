@@ -559,8 +559,13 @@ class MainWindow(Gtk.Window):
                 self.scroll_to_predefined(destination, index)
 
         else:
-            # Save scroll destination for when the page becomes available.
-            self._last_scroll_destination = scroll_to
+            # Save scroll destination for when the page becomes available,
+            # unless this redraw was asked for none: one that came while
+            # the page was on its way - a resize, a toggled statusbar -
+            # would otherwise leave it to open wherever the page before
+            # it had been left.
+            if scroll_to is not None:
+                self._last_scroll_destination = scroll_to
             # The pages are hidden rather than cleared, and this stops
             # short of _clear_main_area(), which would also throw the
             # layout away and reset the background colour: this page is

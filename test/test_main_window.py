@@ -1533,6 +1533,28 @@ class MainWindowTest(MComixTest):
         self._pump()
         self.assertEqual(1, len(scrolls))
 
+    def test_a_redraw_while_a_page_is_coming_keeps_where_it_opens(self):
+        """The destination waited with the page, and any redraw in the
+        meantime - a resize, a toggled statusbar - replaced it with
+        none, so the page opened where the one before had been left."""
+        wait_for(self.window.imagehandler.page_is_available, seconds=10)
+        self._pump()
+        with unittest.mock.patch.object(
+                self.window.imagehandler, 'page_is_available',
+                return_value=False):
+            self.window.draw_image(scroll_to=constants.SCROLL_TO_END)
+            self._pump()
+            self.window.draw_image()
+            self._pump()
+        with unittest.mock.patch.object(
+                self.window, 'scroll_to_predefined') as scrolled:
+            self.window._page_available(
+                self.window.imagehandler.get_current_page())
+            self._pump()
+        self.assertTrue(scrolled.called, 'the arriving page was not scrolled')
+        self.assertEqual((constants.SCROLL_TO_END,) * 2,
+                         tuple(scrolled.call_args[0][0]))
+
 
 class RestartTest(MComixTest):
 
