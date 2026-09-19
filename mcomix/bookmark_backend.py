@@ -58,8 +58,7 @@ class _BookmarksStore:
 
             # Update already loaded bookmarks with window and file handler information
             for bookmark in self._bookmarks:
-                bookmark._window = window
-                bookmark._file_handler = window.filehandler
+                bookmark.attach(window)
 
     def add_bookmark_by_values(self, name: str, path: str, page: int, numpages: int,
                                archive_type: int | None,

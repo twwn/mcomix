@@ -38,6 +38,15 @@ class _Bookmark:
         self._file_handler = file_handler
         self._date_added = date_added
 
+    def attach(self, window: 'main.MainWindow') -> None:
+        """Open in <window> from now on.
+
+        For a bookmark read from disk before there was a window to open
+        it in, which is when the store loads them.
+        """
+        self._window = window
+        self._file_handler = window.filehandler
+
     def get_label(self) -> str:
         """The text the menu shows for this bookmark."""
         return str(self)
