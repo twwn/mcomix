@@ -132,7 +132,12 @@ class Statusbar(Gtk.Box):
         """Set the statusbar to display the current state."""
 
         space = " " * Statusbar.SPACING
-        text = (space + "|" + space).join(self._get_status_text())
+        # Only the fields that have something to say: before a book is
+        # open none of them has, and the bar was a row of bare
+        # separators; a file whose size is not known left one in the
+        # middle of the line.
+        text = (space + "|" + space).join(
+            field for field in self._get_status_text() if field)
         self.status.set_text(space + text)
 
     def _get_status_text(self) -> list[str]:

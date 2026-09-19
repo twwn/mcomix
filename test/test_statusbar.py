@@ -56,6 +56,16 @@ class StatusbarTextTest(MComixTest):
         self.assertNotIn('800x600', text,
                          'the resolution field is off but was shown')
 
+    def test_a_field_with_nothing_to_say_takes_no_room(self):
+        """Before a book is open every field is empty, and the bar was a
+        row of bare separators; a file whose size is not known leaves one
+        in the middle of the line."""
+        self.bar.update()
+        self.assertEqual('', self._text())
+        self.bar.set_page_number([1], 10)
+        self.bar.update()
+        self.assertEqual('1 / 10', self._text())
+
     def test_the_page_field_lists_the_pages_in_the_order_it_was_given(self):
         """The pages on screen are handed over in reading order, which
         is right to left in manga mode, so the field lists them as they
