@@ -20,6 +20,14 @@ if os.environ.get('DISPLAY'):
     os.environ['GDK_BACKEND'] = 'x11'
     os.environ.pop('WAYLAND_DISPLAY', None)
 
+# On Xvfb, which has no DRI3, GTK falls back to its Vulkan renderer running
+# in software. Setting one up and tearing it down for every test window
+# costs over a quarter of the suite's time, and its unrealize has aborted
+# an xdist worker on a GSK assertion. The tests check what MComix draws, not
+# how GSK composites it, so the cairo renderer does; a renderer named in the
+# environment is kept.
+os.environ.setdefault('GSK_RENDERER', 'cairo')
+
 # Make sure the GTK version MComix targets is selected before any module
 # pulls in gi.repository; mcomix.run does this for the application itself.
 
