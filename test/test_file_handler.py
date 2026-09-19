@@ -350,7 +350,11 @@ class BusyCursorTest(MComixTest):
         window.cursor_handler = self.cursor
         window.imagehandler.get_real_path.return_value = '/book/page.png'
         window.imagehandler.get_current_page.return_value = 1
-        return file_handler.FileHandler(window)
+        handler = file_handler.FileHandler(window)
+        # The handler opens the library database for the last page read,
+        # and only a real window's terminate_program() closes it.
+        self.addCleanup(handler.last_read_page.backend.close)
+        return handler
 
     def test_listing_an_archive_sets_the_wait_cursor(self):
         handler = self._handler()

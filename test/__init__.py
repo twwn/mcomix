@@ -192,6 +192,7 @@ class MComixTest(unittest.TestCase):
         # Registered after _restore so that it runs before it, once the
         # test's own tearDown and cleanups have closed what they opened.
         self.addCleanup(self._no_window_left_on_screen)
+        self.addCleanup(self._no_library_left_open)
         # Change storage directories.
         home_dir = os.path.join(self.tmp_dir, 'home')
         os.mkdir(home_dir)
@@ -258,6 +259,23 @@ class MComixTest(unittest.TestCase):
         if left:
             self.fail('left on screen: %s'
                       % ', '.join(type(window).__name__ for window in left))
+
+    def _no_library_left_open(self):
+        """Fail the test that leaves the library database open.
+
+        LibraryBackend() hands out one backend per process, opened on
+        the database under the temporary home of whichever test asked
+        first; a MainWindow asks as it is built, and only
+        terminate_program() closes it.  Left open, it went to the next
+        test on the same worker that asked for the library, pointing at
+        a database whose directory had been removed, and every write
+        there failed with "attempt to write a readonly database".
+        """
+        backend = sys.modules.get('mcomix.library.backend')
+        if backend is None or backend._backend is None:
+            return
+        backend._backend.close()
+        self.fail('left the library database open')
 
     def _restore(self):
         # Nothing this test changed is worth writing after it, and the
