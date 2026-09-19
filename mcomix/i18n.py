@@ -190,7 +190,7 @@ def get_translation() -> gettext.NullTranslations:
 
 
 def _(message: str) -> str:
-    """Translate the messsage using the current translator."""
+    """Translate the message using the current translator."""
     return get_translation().gettext(message)
 
 

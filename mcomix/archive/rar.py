@@ -379,7 +379,7 @@ class UnrarException(Exception):
 @functools.cache
 def _get_unrar_dll() -> ctypes.CDLL | None:
     """ Tries to load libunrar and will return a handle of it.
-    Returns None if an error occured or the library couldn't be found. """
+    Returns None if an error occurred or the library couldn't be found. """
 
     # Load UnRAR64.dll on win32
     if sys.platform == 'win32':

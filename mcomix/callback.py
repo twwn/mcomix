@@ -21,7 +21,7 @@ class CallbackList[T, **P, R]:
         self.__function = function
 
     def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R | None:
-        """ Runs the wrapped function. After the funtion has finished,
+        """ Runs the wrapped function. After the function has finished,
         callbacks are run. Code within the function and the callback is
         always executed in the main thread. """
 
