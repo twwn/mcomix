@@ -79,6 +79,9 @@ class CommentsDialogTest(MComixTest):
         self._open(get_testfile_path('archives', '01-ZIP-Normal.zip'))
         wait_for(lambda: not self._tabs(), seconds=20)
         self.assertEqual(self._tabs(), [])
+        # An empty notebook is hidden rather than shown with a tab strip
+        # that has nothing in it, which GTK warns about.
+        self.assertFalse(self.dialog._notebook.get_visible())
 
     def test_a_comment_that_was_extracted_late_is_shown(self):
         """The dialog is told when a file comes out of the archive, and
@@ -88,6 +91,7 @@ class CommentsDialogTest(MComixTest):
         self.dialog = comment_dialog._CommentsDialog(self.window)
         wait_for(lambda: len(self._tabs()) == 1, seconds=20)
         self.assertEqual(self._tabs(), ['late.txt'])
+        self.assertTrue(self.dialog._notebook.get_visible())
 
 
     def test_a_closed_dialog_does_not_read_the_comments_of_the_next_book(self):

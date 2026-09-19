@@ -83,7 +83,7 @@ class _CommentsDialog(Dialog):
         for path in path_list:
             if path in self._comments:
                 self._add_comment(path, self._comments[path])
-        self._notebook.set_visible(True)
+        self._show_notebook()
 
     def _update_comments(self) -> None:
 
@@ -102,7 +102,16 @@ class _CommentsDialog(Dialog):
                 self._window.filehandler.ask_for_files([path])
             self._comments[path] = num
 
-        self._notebook.set_visible(True)
+        self._show_notebook()
+
+    def _show_notebook(self) -> None:
+        """Show the notebook if it has a comment to show.
+
+        An empty one says nothing, and a scrollable one without a page
+        has GTK warn that its tab strip "reported min height -3" each
+        time it is laid out.
+        """
+        self._notebook.set_visible(self._notebook.get_n_pages() > 0)
 
     def _add_comment(self, path: str, num: int) -> None:
 
