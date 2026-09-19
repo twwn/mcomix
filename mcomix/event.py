@@ -499,17 +499,18 @@ class EventHandler:
                 keycode, state, controller.get_group())
 
         if translated:
-            if state & Gdk.ModifierType.SHIFT_MASK:
-                # If the resulting key is upper case (i.e. SHIFT + key),
-                # convert it to lower case and remove SHIFT from the consumed flags
-                # to match how keys are registered (<Shift> + lowercase)
-                if accel_keyval != Gdk.keyval_to_lower(accel_keyval):
-                    accel_keyval = Gdk.keyval_to_lower(accel_keyval)
-                    consumed &= ~Gdk.ModifierType.SHIFT_MASK
-                # If lower/upper case conversion with SHIFT is not applicable to the key pressed,
-                # i.e. Space and other special keys, remove SHIFT from the consumed mask.
-                if Gdk.keyval_to_upper(accel_keyval) == Gdk.keyval_to_lower(accel_keyval):
-                    consumed &= ~Gdk.ModifierType.SHIFT_MASK
+            if Gdk.keyval_to_upper(accel_keyval) != Gdk.keyval_to_lower(accel_keyval):
+                # A letter is bound in lower case, with <Shift> if Shift
+                # was held - whichever case it came out in.  Shift alone
+                # types it in upper case, Caps Lock does too, and the two
+                # together type it in lower case, each time with Shift
+                # among the consumed modifiers.
+                accel_keyval = Gdk.keyval_to_lower(accel_keyval)
+                consumed &= ~Gdk.ModifierType.SHIFT_MASK
+            elif state & Gdk.ModifierType.SHIFT_MASK:
+                # A key with no case, such as Space, keeps the Shift held
+                # with it as well.
+                consumed &= ~Gdk.ModifierType.SHIFT_MASK
 
             manager.execute((accel_keyval, state & ~consumed & ALL_ACCELS_MASK))
 
