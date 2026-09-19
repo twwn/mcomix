@@ -197,3 +197,26 @@ class CatalogueDirectionTest(MComixTest):
 
 
 # vim: expandtab:sw=4:ts=4
+
+
+class CatalogueCandidatesTest(unittest.TestCase):
+
+    """Which catalogue directories a locale name is looked for under.
+
+    These are what gettext's private _expand_lang() gave, less the
+    variants carrying a character set, which no catalogue directory
+    has."""
+
+    def test_the_candidates_for_each_kind_of_name(self):
+        for name, expected in (
+                ('de_DE', ['de_DE', 'de']),
+                ('pt_BR', ['pt_BR', 'pt']),
+                ('zh_CN.UTF-8', ['zh_CN', 'zh']),
+                ('sr@latin', ['sr_RS@latin', 'sr@latin', 'sr_RS', 'sr']),
+                ('C', ['C']),
+                ('de_DE.UTF-8@euro', ['de_DE', 'de']),
+                ('pt', ['pt_PT', 'pt']),
+                ('zh', ['zh_CN', 'zh']),
+                ('zh_TW.Big5', ['zh_TW', 'zh'])):
+            with self.subTest(name=name):
+                self.assertEqual(expected, i18n.catalogue_candidates(name))

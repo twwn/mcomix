@@ -78,6 +78,26 @@ def to_utf8(string: str | bytes) -> bytes:
         return string
 
 
+def catalogue_candidates(name: str) -> list[str]:
+    """The catalogue directories to try for the locale <name>, best first.
+
+    What gettext searches for, less the variants with a character set in
+    them, which no catalogue directory carries: "sr@latin" is tried as
+    sr_RS@latin, sr@latin, sr_RS and sr.  locale.normalize() fills in
+    what the name leaves out, so "zh" alone finds zh_CN.  This did the
+    same through gettext's private _expand_lang().
+    """
+    normalized = locale.normalize(name)
+    base, _at, modifier = normalized.partition('@')
+    language, _underscore, territory = base.partition('.')[0].partition('_')
+    candidates = []
+    for suffix in (['@' + modifier] if modifier else []) + ['']:
+        if territory:
+            candidates.append('%s_%s%s' % (language, territory, suffix))
+        candidates.append(language + suffix)
+    return candidates
+
+
 def install_gettext(force_lang: str | None = None) -> None:
     """ Initialize gettext with the correct directory that contains
     MComix translations. This has to be done before any calls to gettext.gettext
@@ -108,9 +128,7 @@ def install_gettext(force_lang: str | None = None) -> None:
     else:
         # Get the user's current locale
         lang = portability.get_default_locale()
-        # No public equivalent: _expand_lang turns a locale identifier
-        # into the candidates gettext itself would search for.
-        lang_identifiers = gettext._expand_lang(lang)  # type: ignore[attr-defined]
+        lang_identifiers = catalogue_candidates(lang)
 
     # Make sure GTK uses the correct language.
     os.environ['LANGUAGE'] = lang
