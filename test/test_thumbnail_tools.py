@@ -47,6 +47,37 @@ class ThumbnailFailureTest(MComixTest):
         self.assertEqual(finished, [(self._source, None)])
 
 
+class ThumbnailNameTest(MComixTest):
+
+    """The name a thumbnail is stored under.
+
+    The freedesktop specification names it after a hash of the file's
+    URI, which every application works out the same way; a file has one
+    thumbnail whatever path a caller happens to hold it by."""
+
+    def setUp(self):
+        super().setUp()
+        self._thumbnailer = thumbnail_tools.Thumbnailer(
+            dst_dir=os.path.join(self.tmp_dir, 'thumbnails'), size=(128, 128))
+
+    def test_a_relative_path_names_the_same_thumbnail_as_an_absolute_one(self):
+        """A relative path made a URI of its own, so the same file was
+        thumbnailed again under a name nothing else would look for."""
+        absolute = get_testfile_path('images', 'red.png')
+        directory, name = os.path.split(absolute)
+        saved = os.getcwd()
+        os.chdir(directory)
+        try:
+            self.assertEqual(self._thumbnailer._path_to_thumbpath(absolute),
+                             self._thumbnailer._path_to_thumbpath(name))
+            self.assertEqual(
+                self._thumbnailer._path_to_thumbpath(absolute),
+                self._thumbnailer._path_to_thumbpath(
+                    os.path.join('.', name)))
+        finally:
+            os.chdir(saved)
+
+
 class ThumbnailReuseTest(MComixTest):
 
     """Whether a thumbnail already on disk can stand in for a new one.

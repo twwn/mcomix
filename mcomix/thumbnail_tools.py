@@ -37,6 +37,18 @@ if TYPE_CHECKING:
     from gi.repository import GdkPixbuf
 
 
+def _file_uri(filepath: str) -> str:
+    """The URI of the file at <filepath>.
+
+    Absolute, whatever the caller held the file by: the specification
+    names a thumbnail after the URI, so a relative path would file the
+    same page under a name no other application - and no other working
+    directory - would look for.
+    """
+    return portability.uri_prefix() + pathname2url(
+        os.path.abspath(os.path.normpath(filepath)))
+
+
 class Thumbnailer:
     """ The Thumbnailer class is responsible for managing MComix
     internal thumbnail creation. Depending on its settings,
@@ -206,7 +218,7 @@ class Thumbnailer:
     def _get_text_data(self, filepath: str) -> dict[str, str]:
         """ Creates a tEXt dictionary for <filepath>. """
         mime = mimetypes.guess_type(filepath)[0] or "unknown/mime"
-        uri = portability.uri_prefix() + pathname2url(os.path.normpath(filepath))
+        uri = _file_uri(filepath)
         stat = os.stat(filepath)
         # MTime could be floating point number, so convert to long first to have a fixed point number
         mtime = str(int(stat.st_mtime))
@@ -327,8 +339,7 @@ class Thumbnailer:
         freedesktop specification asks for, so the URI is built here and
         _uri_to_thumbpath() turns it into the name.
         """
-        uri = portability.uri_prefix() + pathname2url(os.path.normpath(filepath))
-        return self._uri_to_thumbpath(uri)
+        return self._uri_to_thumbpath(_file_uri(filepath))
 
     def _uri_to_thumbpath(self, uri: str) -> str:
         """Return the path of the thumbnail for <uri> under <dst_dir>.
