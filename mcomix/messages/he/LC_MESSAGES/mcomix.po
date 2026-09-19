@@ -48,42 +48,38 @@ msgstr "ניתן להשיג עותק של רישיון זה בכתובת %s"
 msgid "Non-supported archive format: %s"
 msgstr "תסדיר ארכיון שלא נתמך: %s"
 
-# ! שגיאת חילוץ: %s
 #: mcomix/archive_extractor.py:306 mcomix/archive_extractor.py:331
 #, python-format
 msgid "! Extraction error: %s"
-msgstr "! Extraction error: %s"
+msgstr "! שגיאת חילוץ: %s"
 
 #: mcomix/archive_packer.py:167
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! לא ניתן היה למחוק את %(file)s: %(error)s"
 
-# ! לא ניתן ליצור ארכיון בנתיב \"%s\"
 #: mcomix/archive_packer.py:495 mcomix/archive_packer.py:513
 #, python-format
 msgid "! Could not create archive at path \"%s\""
-msgstr "! Could not create archive at path \"%s\""
+msgstr "! לא ניתן ליצור ארכיון בנתיב \"%s\""
 
-# ! לא ניתן להוסיף את הקובץ %(sourcefile)s אל הארכיון %(archivefile)s, נוטש כעת...
 #: mcomix/archive_packer.py:504
 #, python-format
 msgid ""
 "! Could not add file %(sourcefile)s to archive %(archivefile)s, aborting..."
 msgstr ""
-"! Could not add file %(sourcefile)s to archive %(archivefile)s, aborting..."
+"! לא ניתן להוסיף את הקובץ %(sourcefile)s אל הארכיון %(archivefile)s, נוטש "
+"כעת..."
 
-# ! לא ניתן לקרוא את %s
 #: mcomix/archive_tools.py:189
 #, python-format
 msgid "! Could not read %s"
-msgstr "! Could not read %s"
+msgstr "! לא ניתן לקרוא את %s"
 
-# ! לא ניתן לנתח את קובץ הסימניות %s
 #: mcomix/bookmark_backend.py:227
 #, python-format
 msgid "! Could not parse bookmarks file %s"
-msgstr "! Could not parse bookmarks file %s"
+msgstr "! לא ניתן לנתח את קובץ הסימניות %s"
 
 #: mcomix/bookmark_backend.py:290 mcomix/message_dialog.py:28
 msgid "_Yes"
@@ -185,7 +181,7 @@ msgstr "_ערוך סימניות..."
 #: mcomix/callback.py:82
 #, python-format
 msgid "! Callback %(function)r failed: %(error)s"
-msgstr "! Callback %(function)r failed: %(error)s"
+msgstr "! פונקציית הקריאה החוזרת %(function)r נכשלה: %(error)s"
 
 #: mcomix/column_list.py:14
 msgid "New accelerator..."
