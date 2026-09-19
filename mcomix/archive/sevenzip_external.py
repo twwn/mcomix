@@ -214,7 +214,7 @@ class SevenZipArchive(archive_base.ExternalExecutableArchive):
                 proc = subprocess.run(
                     self._get_extract_arguments(list_file=tmplistfile.name),
                     stdout=output, stderr=subprocess.PIPE,
-                    creationflags=process._get_creationflags())
+                    creationflags=process.CREATIONFLAGS)
 
                 if proc.stderr:
                     log.error(_("Extraction of %(archivefile)s might have failed: %(error)s"),

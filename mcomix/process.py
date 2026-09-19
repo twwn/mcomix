@@ -18,12 +18,10 @@ STDOUT = subprocess.STDOUT
 type Redirect = int | IO[bytes] | None
 
 
-def _get_creationflags() -> int:
-    if sys.platform == 'win32':
-        # Do not create a console window.
-        return 0x08000000
-    else:
-        return 0
+#: What every program MComix runs is started with: on Windows,
+#: CREATE_NO_WINDOW, so that a console program such as unrar or 7z does
+#: not open a console window of its own; nothing elsewhere.
+CREATIONFLAGS = 0x08000000 if sys.platform == 'win32' else 0
 
 
 # Cannot spawn processes with PythonW/Win32 unless stdin
@@ -39,7 +37,7 @@ def call(args: Sequence[str | bytes], stdin: Redirect = NULL,
     """
     return subprocess.call(args, stdin=stdin, stdout=stdout,
                            stderr=stderr, cwd=workdir,
-                           creationflags=_get_creationflags()) == 0
+                           creationflags=CREATIONFLAGS) == 0
 
 
 def popen(args: Sequence[str | bytes], stdin: Redirect = NULL,
@@ -48,7 +46,7 @@ def popen(args: Sequence[str | bytes], stdin: Redirect = NULL,
     """Start <args>, in <workdir> if one is given."""
     return subprocess.Popen(args, stdin=stdin,
                             stdout=stdout, stderr=stderr, cwd=workdir,
-                            creationflags=_get_creationflags())
+                            creationflags=CREATIONFLAGS)
 
 
 def find_executable(candidates: Iterable[str], workdir: str | None = None,

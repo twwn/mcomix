@@ -159,7 +159,7 @@ class RarArchive(archive_base.ExternalExecutableArchive):
             proc = subprocess.run(
                 self._get_list_arguments(), stdout=process.PIPE, stderr=process.STDOUT,
                 encoding="utf-8",
-                creationflags=process._get_creationflags())
+                creationflags=process.CREATIONFLAGS)
             try:
                 for line in proc.stdout.splitlines():
                     filename = self._parse_list_output_line(line.rstrip(os.linesep))
