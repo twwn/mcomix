@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: mcomix 0.99\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-13 16:44+0200\n"
+"POT-Creation-Date: 2026-09-19 11:37+0200\n"
 "PO-Revision-Date: 2013-01-07 22:51+0200\n"
 "Last-Translator: Isratine Citizen <genghiskhan@gmx.ca>\n"
 "Language-Team: Hebrew <eliz@gnu.org>\n"
@@ -2628,9 +2628,14 @@ msgstr "לא ניתן היה לקבוע את גרסת מסד הנתונים של
 msgid "Upgrading library database version from %(from)d to %(to)d."
 msgstr "שדרוג גרסת מסד הנתונים של הספרייה מ־%(from)d ל־%(to)d."
 
-#: mcomix/library/backend_types.py:313 mcomix/library/collection_area.py:195
+#: mcomix/library/backend_types.py:315 mcomix/library/collection_area.py:195
 msgid "All books"
 msgstr "כל החוברות"
+
+#: mcomix/library/backend_types.py:456
+#, python-format
+msgid "! Could not scan for new books: %s"
+msgstr "! לא ניתן לסרוק חוברות חדשות: %s"
 
 #: mcomix/library/book_area.py:132
 msgid "Opens the selected books for viewing."

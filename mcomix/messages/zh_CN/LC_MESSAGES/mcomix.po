@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Comix 4.0.1\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-13 16:44+0200\n"
+"POT-Creation-Date: 2026-09-19 11:37+0200\n"
 "PO-Revision-Date: 2009-01-28 13:36+0800\n"
 "Last-Translator: Xie Yanbo <xieyanbo@gmail.com>\n"
 "Language-Team: Xie Yanbo <xieyanbo@gmail.com>\n"
@@ -2551,9 +2551,14 @@ msgstr "无法确定收藏库的数据库版本！"
 msgid "Upgrading library database version from %(from)d to %(to)d."
 msgstr "将收藏库数据库版本从 %(from)d 升级到 %(to)d 。"
 
-#: mcomix/library/backend_types.py:313 mcomix/library/collection_area.py:195
+#: mcomix/library/backend_types.py:315 mcomix/library/collection_area.py:195
 msgid "All books"
 msgstr "所有书籍"
+
+#: mcomix/library/backend_types.py:456
+#, python-format
+msgid "! Could not scan for new books: %s"
+msgstr "！ 无法扫描新书：%s"
 
 #: mcomix/library/book_area.py:132
 msgid "Opens the selected books for viewing."

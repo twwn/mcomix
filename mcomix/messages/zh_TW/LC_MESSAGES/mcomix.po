@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix zh_TW\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-13 16:44+0200\n"
+"POT-Creation-Date: 2026-09-19 11:37+0200\n"
 "PO-Revision-Date: 2013-07-05 21:37+0800\n"
 "Last-Translator: Wayne Su <mstarmstar@hotmail.com>\n"
 "Language-Team: \n"
@@ -2542,9 +2542,14 @@ msgstr "無法偵測書庫的資料版本！"
 msgid "Upgrading library database version from %(from)d to %(to)d."
 msgstr "將書庫的資料庫版本從 %(from)d 升級到 %(to)d 。"
 
-#: mcomix/library/backend_types.py:313 mcomix/library/collection_area.py:195
+#: mcomix/library/backend_types.py:315 mcomix/library/collection_area.py:195
 msgid "All books"
 msgstr "所有書籍"
+
+#: mcomix/library/backend_types.py:456
+#, python-format
+msgid "! Could not scan for new books: %s"
+msgstr "！ 無法掃描新書：%s"
 
 #: mcomix/library/book_area.py:132
 msgid "Opens the selected books for viewing."

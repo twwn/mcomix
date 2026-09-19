@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-13 16:44+0200\n"
+"POT-Creation-Date: 2026-09-19 11:37+0200\n"
 "PO-Revision-Date: 2018-05-10 22:46+0900\n"
 "Last-Translator: Minho Jeung <jeungmh@gmail.com>\n"
 "Language-Team: \n"
@@ -2579,9 +2579,14 @@ msgstr "라이브러리 데이터베이스 버전을 특정할 수 없습니다!
 msgid "Upgrading library database version from %(from)d to %(to)d."
 msgstr "라이브러리 버전을 %(from)d 에서 %(to)d 으로 업그레이드합니다."
 
-#: mcomix/library/backend_types.py:313 mcomix/library/collection_area.py:195
+#: mcomix/library/backend_types.py:315 mcomix/library/collection_area.py:195
 msgid "All books"
 msgstr "모든 책"
+
+#: mcomix/library/backend_types.py:456
+#, python-format
+msgid "! Could not scan for new books: %s"
+msgstr "! 새 책을 검색할 수 없습니다: %s"
 
 #: mcomix/library/book_area.py:132
 msgid "Opens the selected books for viewing."

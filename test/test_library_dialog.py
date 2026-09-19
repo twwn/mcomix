@@ -8,6 +8,7 @@ backend made unreachable.
 """
 
 import os
+import threading
 import unittest.mock
 
 from gi.repository import GLib, Gtk
@@ -306,6 +307,29 @@ class LibraryScanCursorTest(_LibraryWindowTest):
         self.assertTrue(
             wait_for(lambda: self._cursor_name(dialog) is None, seconds=20),
             'the library was left showing the wait pointer')
+
+    def test_a_scan_that_fails_is_logged_rather_than_raised(self):
+        """Nothing joins the scan thread, so an exception it let out went
+        to threading.excepthook as a bare traceback on stderr."""
+        dialog = self._open()
+        self._watching(dialog)
+        finished = []
+        dialog.backend.watchlist.scan_finished += lambda: finished.append(True)
+        with unittest.mock.patch.object(
+                dialog.backend, 'get_paths_of_books_outside_recent',
+                side_effect=OSError('the database went away')), \
+                unittest.mock.patch('threading.excepthook') as excepthook, \
+                self.assertLogs('mcomix', 'ERROR') as logs:
+            dialog.scan_for_new_files()
+            self.assertTrue(wait_for(lambda: finished, seconds=20),
+                            'a scan that raised never reported a finish')
+            for thread in threading.enumerate():
+                if thread.name.endswith('-scan_for_new_files'):
+                    thread.join(5)
+        excepthook.assert_not_called()
+        self.assertEqual(
+            ['ERROR:mcomix:! Could not scan for new books: '
+             'the database went away'], logs.output)
 
 
 class LibraryMenuPositionTest(_LibraryWindowTest):

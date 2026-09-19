@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-13 16:44+0200\n"
+"POT-Creation-Date: 2026-09-19 11:37+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Marcelo Góes <vanquirius@gentoo.org>\n"
 "Language-Team: \n"
@@ -2612,9 +2612,14 @@ msgid "Upgrading library database version from %(from)d to %(to)d."
 msgstr ""
 "Atualizando a versão do banco de dados da biblioteca de %(from)d para %(to)d."
 
-#: mcomix/library/backend_types.py:313 mcomix/library/collection_area.py:195
+#: mcomix/library/backend_types.py:315 mcomix/library/collection_area.py:195
 msgid "All books"
 msgstr "Todos os livros"
+
+#: mcomix/library/backend_types.py:456
+#, python-format
+msgid "! Could not scan for new books: %s"
+msgstr "! Não foi possível procurar novos livros: %s"
 
 #: mcomix/library/book_area.py:132
 msgid "Opens the selected books for viewing."

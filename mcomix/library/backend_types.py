@@ -10,10 +10,12 @@ the one backend that mcomix.library.backend hands out.
 
 import os
 import threading
+import traceback
 import datetime
 
 from mcomix import callback
 from mcomix import archive_tools
+from mcomix import log
 from mcomix.i18n import _
 
 from collections.abc import Sequence
@@ -448,6 +450,11 @@ class _WatchList:
             for entry in self.get_watchlist():
                 new_files = entry.get_new_files(existing_books)
                 self.new_files_found(new_files, entry)
+        except Exception as error:
+            # Nothing joins this thread to take an exception from it, so
+            # it is logged, as the other threads' failures are.
+            log.error(_('! Could not scan for new books: %s'), error)
+            log.debug('Traceback:\n%s', traceback.format_exc())
         finally:
             # Whatever went wrong walking a directory, the scan is over
             # and whoever is showing that it is running has to be told.
