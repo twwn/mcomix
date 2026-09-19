@@ -157,7 +157,9 @@ class FiniteLayout:  # 2D only
             else:
                 return -1 if backwards else len(self.get_content_boxes())
         self.set_viewport_position(new_pos)
-        return index
+        # Asked again: a spread is one wrapper Box, and the step may have
+        # crossed from one of its pages into the other.
+        return self.get_current_index()
 
     def scroll_to_predefined(self, destination: Sequence[int],
                              index: int | None = None) -> None:
