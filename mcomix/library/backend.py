@@ -80,12 +80,11 @@ class _LibraryBackend:
         version = self._library_version()
         self._upgrade_database(version, _LibraryBackend.DB_VERSION)
 
-    def get_books_in_collection(self, collection: int | None = None, filter_string: str | None = None) -> list[int]:
+    def get_books_in_collection(self, collection: int | None = None) -> list[int]:
         """Return a sequence with all the books in <collection>, or *ALL*
-        books if <collection> is None. If <filter_string> is not None, we
-        only return books where the <filter_string> occurs in the path.
+        books if <collection> is None.
         """
-        return self._books_in_collection('id', collection, filter_string)
+        return self._books_in_collection('id', collection)
 
     def get_book_paths_in_collection(
             self, collection: int | None = None) -> "list[tuple[int, str]]":
@@ -99,8 +98,7 @@ class _LibraryBackend:
         return self._books_in_collection('id, path', collection)
 
     def _books_in_collection(self, columns: str,  # type: ignore[explicit-any]  # the rows hold whichever columns were asked for
-                             collection: int | None = None,
-                             filter_string: str | None = None) -> list[Any]:
+                             collection: int | None = None) -> list[Any]:
         """<columns> of the book table, for the books in <collection>.
 
         The connection's row factory unwraps a row of one column, so a
@@ -108,11 +106,7 @@ class _LibraryBackend:
         list of tuples.
         """
         if collection is None:
-            if filter_string is None:
-                return self.fetchall('select %s from Book' % columns)
-            return self.fetchall(
-                'select %s from Book where path like ?' % columns,
-                ("%%%s%%" % filter_string, ))
+            return self.fetchall('select %s from Book' % columns)
         # One statement over the collection and everything under it,
         # rather than one each with the answers added together, which
         # named a book filed in both a collection and one under it once
@@ -126,11 +120,7 @@ class _LibraryBackend:
             where id in (select book from Contain
                          where collection in (%s))''' \
             % (columns, ', '.join('?' * len(collections)))
-        parameters: "list[str | int]" = list(collections)
-        if filter_string is not None:
-            sql += ' and path like ?'
-            parameters.append("%%%s%%" % filter_string)
-        return self.fetchall(sql + ' order by id', parameters)
+        return self.fetchall(sql + ' order by id', list(collections))
 
     def get_book_by_path(self, path: str) -> backend_types._Book | None:
         """Return the book at <path>, or None if the library has no
