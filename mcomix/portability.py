@@ -17,20 +17,6 @@ def uri_prefix() -> str:
         return "file://"
 
 
-def normalize_uri(uri: str) -> str:
-    """Normalize URIs passed into the program by different applications,
-    normally via drag-and-drop."""
-
-    if uri.startswith("file://localhost/"):  # Correctly formatted.
-        return uri[16:]
-    elif uri.startswith("file:///"):  # Nautilus etc.
-        return uri[7:]
-    elif uri.startswith("file:/"):  # Xffm etc.
-        return uri[5:]
-    else:
-        return uri
-
-
 def invalid_filesystem_chars() -> str:
     """List of characters that cannot be used in filenames on the target platform."""
     if sys.platform == "win32":
