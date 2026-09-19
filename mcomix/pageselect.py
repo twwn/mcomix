@@ -78,7 +78,8 @@ class Pageselector(Dialog):
         widgets.pack(self.get_content_area(), selection_box, False, False, 0, end=True)
         self.set_visible(True)
 
-        self._selector_adjustment.connect('value-changed', self._cb_value_changed)
+        self.connect_while_open(self._selector_adjustment, 'value-changed',
+                                self._cb_value_changed)
 
         # Set focus on the input box.
         self._page_spinner.select_region(0, -1)

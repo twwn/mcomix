@@ -1,6 +1,6 @@
 """widgets.py - Small helpers for widgets whose API changed in GTK4."""
 
-from gi.repository import Gdk, Gio, Graphene, Gtk
+from gi.repository import Gdk, Gio, GObject, Graphene, Gtk
 
 from collections.abc import Callable, Iterable, Iterator
 from typing import cast
@@ -242,12 +242,95 @@ _middle_click = False
 
 def _menu_popovers(root: Gtk.Widget) -> Iterator[Gtk.PopoverMenu]:
     """Every menu popover in <root>'s widget tree, <root> included."""
-    if isinstance(root, Gtk.PopoverMenu):
-        yield root
+    for widget in (root, *_descendants(root)):
+        if isinstance(widget, Gtk.PopoverMenu):
+            yield widget
+
+
+def _descendants(root: Gtk.Widget) -> Iterator[Gtk.Widget]:
+    """Every widget in <root>'s widget tree, <root> left out."""
     child = root.get_first_child()
     while child is not None:
-        yield from _menu_popovers(child)
+        yield child
+        yield from _descendants(child)
         child = child.get_next_sibling()
+
+
+class Releasable:
+
+    """A widget that holds more than its handlers of whoever built it.
+
+    release() below hands every one of these in a closed window's tree
+    to its release(), which lets go of the rest: the closures a list
+    view's factories and sorters hold, the cells still bound to rows.
+    """
+
+    def release(self) -> None:
+        """Let go of everything that would keep the closed window alive."""
+
+
+def release(window: Gtk.Window) -> None:
+    """Let go of what <window>'s widgets hold of MComix, once it is closed.
+
+    GTK 4 does not dispose a destroyed window's widgets:
+    gtk_window_destroy() drops GTK's own reference to the window and
+    leaves its children where they are.  A child still has a parent, so
+    PyGObject holds its wrapper, and with it the handlers connected to
+    it; one that is a method of the window, or a closure over it, then
+    keeps the window and everything it shows alive for the rest of the
+    session.  The same goes for the event controllers the window and
+    its widgets hold.
+
+    What goes is every handler connected from Python, which PyGObject
+    connects with no user data.  GTK's own handlers nearly all carry
+    theirs and stay: cutting those - as disposing the widgets would -
+    makes GTK trip over its own shortcut controllers when they are
+    finally freed.  The few it connects without (a list view's drop
+    target, a file chooser cell's gestures) go too, on widgets that
+    have nothing left to do.  The window's own handlers stay, since Python's
+    collector can see those, and some of them are still to run.
+    """
+    widgets = list(_descendants(window))
+    # First, while their handlers are still there to be disconnected
+    # by their own ids: a list view unbinding its rows does just that.
+    for widget in widgets:
+        if isinstance(widget, Releasable):
+            widget.release()
+    for controller in window.observe_controllers():
+        _cut_handlers(controller)
+    for widget in widgets:
+        cut_handlers(widget)
+
+
+def empty_action_group(group: Gio.SimpleActionGroup) -> None:
+    """Take every action out of <group>, for release() to hand on.
+
+    An action's handler is typically a method of whoever built it, and
+    PyGObject keeps the handler with the action in C; once nothing in
+    Python refers to the action itself, nothing can see that handler to
+    collect it, and it holds its owner for as long as the group lives.
+    """
+    for name in group.list_actions():
+        group.remove_action(name)
+
+
+def _cut_handlers(instance: GObject.Object) -> None:
+    """Disconnect every handler Python connected to <instance>."""
+    GObject.signal_handlers_disconnect_matched(
+        instance, GObject.SignalMatchType.DATA, 0, 0, None, None, None)
+
+
+def cut_handlers(widget: Gtk.Widget) -> None:
+    """Disconnect every handler Python connected to <widget> or to one of
+    its event controllers, which is what release() does to every widget
+    in a closed window.
+
+    For a widget release() cannot find there: a list view keeps the
+    cells it has built but is not showing, outside the tree.
+    """
+    _cut_handlers(widget)
+    for controller in widget.observe_controllers():
+        _cut_handlers(controller)
 
 
 def _menu_button_pressed(button: int) -> None:

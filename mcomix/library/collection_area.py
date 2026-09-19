@@ -8,6 +8,7 @@ book area, and for another collection dragged onto the one it is to sit
 under.
 """
 
+import weakref
 from xml.sax.saxutils import escape as xmlescape
 from gi.repository import Gdk, Gio, GLib, Gtk
 from typing import TYPE_CHECKING
@@ -38,7 +39,7 @@ _SIDEBAR_MIN_CHARS = 14
 _SIDEBAR_MAX_CHARS = 28
 
 
-class _CollectionArea(Gtk.ScrolledWindow):
+class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable):
 
     """The _CollectionArea is the sidebar area in the library where
     different collections are displayed in a tree.
@@ -46,7 +47,7 @@ class _CollectionArea(Gtk.ScrolledWindow):
 
     def __init__(self, library: "_LibraryDialog") -> None:
         super().__init__()
-        self._library = library
+        self._library_ref = weakref.ref(library)
         self.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         # A Gtk.ScrolledWindow asks for its child's *minimum* width, and
         # an ellipsized label is willing to shrink to a single character:
@@ -101,6 +102,32 @@ class _CollectionArea(Gtk.ScrolledWindow):
         self._collection_menu = self._create_popup_menu()
 
         self.display_collections()
+
+    def release(self) -> None:
+        """Take the collection popup actions out, once the window is closed.
+
+        GTK holds an inserted action group, and each action holds a
+        handler that is a method of this area: a cycle through C that
+        Python's collector cannot see, which kept the area - and its
+        tree - alive after the window had gone.
+        """
+        self.insert_action_group('collections', None)
+        # And the list: it holds a method of this area in turn, which
+        # makes another such cycle for as long as the area is its parent.
+        self.set_child(None)
+        widgets.empty_action_group(self._popup_actions)
+
+    @property
+    def _library(self) -> "_LibraryDialog":
+        """The library window this area is part of.
+
+        Held weakly: GTK holds the area for as long as the window's
+        widgets stand, which is for good once the window is closed,
+        and a plain reference would keep the window alive with it.
+        """
+        library = self._library_ref()
+        assert library is not None, 'the library window is gone'
+        return library
 
     def _create_popup_menu(self) -> Gtk.PopoverMenu:
         """Build the right-click menu for the collection list."""

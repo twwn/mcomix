@@ -3,10 +3,12 @@
 from gi.repository import Gdk, Gio, GLib, GObject, Gtk, Pango
 
 from mcomix import tools
+from mcomix import widgets
 from mcomix.i18n import _
 
 from collections.abc import Callable, Iterable, Iterator
 import re
+import weakref
 from typing import Any, cast
 
 
@@ -104,6 +106,18 @@ class _Cell:
         #: where it sits.  Set once, when the cell is built: a list item
         #: keeps its child for as long as it has one.
         self.list_item: Gtk.ListItem | None = None
+
+    def drop_handler(self) -> None:
+        """Disconnect the handler bind() connected to the cell itself.
+
+        Unless it is gone already: widgets.release() cuts every handler
+        in a closed window, and GTK unbinds the rows only afterwards.
+        """
+        widget = cast(GObject.Object, self)
+        if self.handler is not None \
+                and GObject.signal_handler_is_connected(widget, self.handler):
+            widget.disconnect(self.handler)
+        self.handler = None
 
     @property
     def position(self) -> int:
@@ -444,7 +458,7 @@ class _AccelCell(Gtk.Button, _Cell):
     accelerator = ''
 
 
-class ColumnListView(Gtk.ColumnView):
+class ColumnListView(Gtk.ColumnView, widgets.Releasable):
 
     """A list of rows under titled columns.
 
@@ -495,6 +509,9 @@ class ColumnListView(Gtk.ColumnView):
         super().__init__(model=self.selection)
         self._sorted.set_sorter(self.get_sorter())
         self._reorderable = False
+        #: Every cell the columns' factories have built, on screen or
+        #: kept aside for rows to come; release() needs both.
+        self._cells: "weakref.WeakSet[_Cell]" = weakref.WeakSet()
         #: Every column, by the attribute it shows, in the order added.
         self._columns: list[tuple[str, Gtk.ColumnViewColumn]] = []
         #: The chooser's actions, once a caller has asked for one.
@@ -505,6 +522,30 @@ class ColumnListView(Gtk.ColumnView):
         self._search_controller: Gtk.EventControllerKey | None = None
         self._search_typed_so_far = ''
         self._search_at = 0
+
+    def release(self) -> None:
+        """Unbind every row and drop every column, once the window is closed.
+
+        The columns' factories and sorters hold the callbacks the
+        columns were added with, which are the owner's methods, and a
+        bound cell holds its row and the owner's edit callback; all of
+        them are held in C, where Python's collector cannot see them.
+        """
+        self.set_model(None)
+        # The column chooser's actions hold this view's own method.
+        self.insert_action_group(self._CHOOSER_PREFIX, None)
+        if self._chooser_actions is not None:
+            widgets.empty_action_group(self._chooser_actions)
+        for item in list(self.get_columns()):
+            column = cast(Gtk.ColumnViewColumn, item)
+            self.remove_column(column)
+            # Whoever added the column may hold on to it still.
+            column.set_factory(None)
+            column.set_sorter(None)
+        # Including the cells GTK keeps aside for rows to come, which
+        # are nowhere in the window's widget tree.
+        for cell in list(self._cells):
+            widgets.cut_handlers(cast(Gtk.Widget, cell))
 
     @staticmethod
     def _children_of(row: Row) -> "Gio.ListStore[Row] | None":
@@ -613,9 +654,7 @@ class ColumnListView(Gtk.ColumnView):
         def bind(cell: _ToggleCell, row: Row) -> None:
             # Setting 'active' emits 'toggled' as a click does, so the
             # handler is put back only once the value is in place.
-            if cell.handler is not None:
-                cell.disconnect(cell.handler)
-                cell.handler = None
+            cell.drop_handler()
             cell.set_active(bool(getattr(row, attr, False)))
             cell.set_sensitive(activatable(row)
                                if activatable is not None else True)
@@ -625,9 +664,7 @@ class ColumnListView(Gtk.ColumnView):
                     lambda button: toggled(row, button.get_active()))
 
         def unbind(cell: _ToggleCell) -> None:
-            if cell.handler is not None:
-                cell.disconnect(cell.handler)
-                cell.handler = None
+            cell.drop_handler()
 
         return self._add_column(title, _ToggleCell, bind, expand, attr, None,
                                 unbind=unbind)
@@ -671,9 +708,7 @@ class ColumnListView(Gtk.ColumnView):
         be put in change while the dialog stands.
         """
         def bind(cell: _ChoiceCell, row: Row) -> None:
-            if cell.handler is not None:
-                cell.disconnect(cell.handler)
-                cell.handler = None
+            cell.drop_handler()
             options = choices()
             model = Gtk.StringList()
             for option in options:
@@ -690,9 +725,7 @@ class ColumnListView(Gtk.ColumnView):
                 lambda widget, _param: self._chose(widget, row, chosen))
 
         def unbind(cell: _ChoiceCell) -> None:
-            if cell.handler is not None:
-                cell.disconnect(cell.handler)
-                cell.handler = None
+            cell.drop_handler()
 
         return self._add_column(title, _ChoiceCell, bind, expand, attr, None,
                                 unbind=unbind)
@@ -720,6 +753,7 @@ class ColumnListView(Gtk.ColumnView):
                      item: Gtk.ListItem) -> None:
             cell = cell_type()
             cell.list_item = item
+            self._cells.add(cell)
             self._decorate_cell(cell)
             if expanding:
                 expander = Gtk.TreeExpander()

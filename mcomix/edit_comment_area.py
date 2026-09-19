@@ -1,6 +1,7 @@
 """edit_comment_area.py - The area in the editing window that displays comments."""
 
 import os
+import weakref
 from gi.repository import Gio, Gdk, Gtk
 from mcomix import column_list
 from mcomix import widgets
@@ -13,13 +14,13 @@ if TYPE_CHECKING:
     from mcomix import edit_dialog as edit_dialog_module
 
 
-class _CommentArea(Gtk.Box):
+class _CommentArea(Gtk.Box, widgets.Releasable):
 
     """The area used for displaying and handling non-image files."""
 
     def __init__(self, edit_dialog: "edit_dialog_module._EditArchiveDialog") -> None:
         super().__init__(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-        self._edit_dialog = edit_dialog
+        self._editor = weakref.ref(edit_dialog)
 
         scrolled = Gtk.ScrolledWindow()
         scrolled.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
@@ -47,6 +48,29 @@ class _CommentArea(Gtk.Box):
         scrolled.set_child(self._list)
 
         self._popup_menu = self._create_popup_menu()
+
+    def release(self) -> None:
+        """Take the comment area actions out, once the window is closed.
+
+        GTK holds an inserted action group, and each action holds a
+        handler that is a method of this area: a cycle through C that
+        Python's collector cannot see, which kept the area - and its
+        list - alive after the window had gone.
+        """
+        self.insert_action_group('commentarea', None)
+
+    @property
+    def _edit_dialog(self) -> "edit_dialog_module._EditArchiveDialog":
+        """The editor this area is part of.
+
+        Held weakly: GTK holds the area for as long as the editor's
+        widgets stand, which is for good once the editor is closed, and
+        a plain reference would then keep the editor, and every page it
+        shows, alive with it.
+        """
+        editor = self._editor()
+        assert editor is not None, 'the editor is gone'
+        return editor
 
     def _create_popup_menu(self) -> Gtk.PopoverMenu:
         """Build the right-click menu for the comment list.

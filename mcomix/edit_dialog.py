@@ -21,7 +21,7 @@ from mcomix import preview
 from mcomix.i18n import _
 from mcomix.dialog import Response
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
     from mcomix import main
@@ -84,13 +84,17 @@ class _EditArchiveDialog(Dialog):
         # whichever of its two lists has the focus; both lists name them
         # in their right-click menus, which is all the menu there is.
         shortcuts = Gtk.ShortcutController()
-        for accelerator, step in (('<Control>z', self.undo),
-                                  ('<Control>y', self.redo),
-                                  ('<Control><Shift>z', self.redo)):
+        # The unbound methods, handed the editor GTK hands over: GTK
+        # holds these where Python's collector cannot see them, and a
+        # bound method would keep the editor alive once it is closed.
+        for accelerator, step in (('<Control>z', _EditArchiveDialog.undo),
+                                  ('<Control>y', _EditArchiveDialog.redo),
+                                  ('<Control><Shift>z', _EditArchiveDialog.redo)):
             shortcuts.add_shortcut(Gtk.Shortcut.new(
                 Gtk.ShortcutTrigger.parse_string(accelerator),
                 Gtk.CallbackAction.new(
-                    lambda widget, args, step=step: step())))
+                    lambda widget, args, step=step:
+                    step(cast(_EditArchiveDialog, widget)))))
         self.add_controller(shortcuts)
 
         self._image_area = edit_image_area._ImageArea(self, window)

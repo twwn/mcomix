@@ -1,10 +1,11 @@
 """dialog.py - The window MComix' dialogs are built out of."""
 
-from gi.repository import GObject, Gtk
+from gi.repository import GLib, GObject, Gtk
 
 from mcomix import widgets
 
 import enum
+from collections.abc import Callable
 from typing import Any
 
 
@@ -88,8 +89,13 @@ class Dialog(Gtk.Window):
         escape = Gtk.ShortcutController()
         escape.add_shortcut(Gtk.Shortcut.new(
             Gtk.ShortcutTrigger.parse_string('Escape'),
-            Gtk.CallbackAction.new(self._escaped)))
+            Gtk.CallbackAction.new(_escaped)))
         self.add_controller(escape)
+        #: What connect_while_open() connected, to disconnect on close.
+        self._while_open: list[tuple[GObject.Object, int]] = []
+        # After everything else that waits for it: nothing is left to
+        # run once the dialog's widgets have let go of it.
+        self.connect_after('unrealize', Dialog._release)
 
     # -- What Gtk.Dialog offered ------------------------------------------
 
@@ -147,6 +153,26 @@ class Dialog(Gtk.Window):
         """Answer the dialog with <response>."""
         self.emit('response', response)
 
+    def connect_while_open(self, instance: GObject.Object, signal: str, handler: Callable[..., object], *args: object) -> None:  # type: ignore[explicit-any]  # a handler takes what the signal hands over
+        """Connect <handler> to <signal> on <instance> until the dialog
+        is closed.
+
+        For a handler on something that is not one of the dialog's own
+        widgets - an adjustment, a selection, a model - and that closes
+        over the dialog.  Whatever holds that object in C holds the
+        handler where Python's collector cannot see it, and that would
+        keep the closed dialog alive for good.
+        """
+        self._while_open.append(
+            (instance, instance.connect(signal, handler, *args)))
+
+    def _release(self) -> None:
+        """Let go of everything that would keep the closed dialog alive."""
+        widgets.release(self)
+        for instance, handler in self._while_open:
+            instance.disconnect(handler)
+        self._while_open.clear()
+
     # -- Where the answers come from --------------------------------------
 
     def _closed(self, *args: object) -> bool:
@@ -155,7 +181,7 @@ class Dialog(Gtk.Window):
         # did with its delete event.
         return False
 
-    def _escaped(self, *args: object) -> bool:
+    def _escaped(self) -> bool:
         # DELETE_EVENT, not CANCEL: escape closed a Gtk.Dialog, which
         # answered with the response its delete event did, and that is
         # what MComix' dialogs are written against - the enhancement
@@ -163,5 +189,17 @@ class Dialog(Gtk.Window):
         # escape at all while this said CANCEL.
         self.emit('response', Response.DELETE_EVENT)
         return True
+
+
+def _escaped(widget: Gtk.Widget, args: "GLib.Variant | None") -> bool:
+    """Answer the dialog the escape key was pressed in.
+
+    A function rather than the dialog's own method: GTK holds the
+    callback of a Gtk.CallbackAction where Python's collector cannot
+    see it, so a bound method there would keep the dialog alive for
+    good.  GTK hands over the widget the shortcut belongs to instead.
+    """
+    assert isinstance(widget, Dialog)
+    return widget._escaped()
 
 # vim: expandtab:sw=4:ts=4

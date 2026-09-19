@@ -66,7 +66,9 @@ class BlackBackgroundTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self.area = book_area._BookArea(_Library())
+        # Held here: an area holds its library window only weakly.
+        self.library = _Library()
+        self.area = book_area._BookArea(self.library)
         self.window = Gtk.Window()
         self.window.set_default_size(200, 200)
         self.window.set_child(self.area)
@@ -94,7 +96,8 @@ class BlackBackgroundTest(MComixTest):
         with unittest.mock.patch.object(
                 Gtk.StyleContext, 'add_provider_for_display', add):
             for _ in range(3):
-                book_area._BookArea(_Library()).close()
+                library = _Library()
+                book_area._BookArea(library).close()
         self.assertLessEqual(add.call_count, 1)
 
 
@@ -127,7 +130,8 @@ class CoverOrderTest(MComixTest):
         prefs['lib sort key'] = key
         prefs['lib sort order'] = (constants.SORT_ASCENDING if ascending
                                    else constants.SORT_DESCENDING)
-        area = book_area._BookArea(_Library())
+        self.library = _Library()
+        area = book_area._BookArea(self.library)
         area._covers.set_items(
             book_area._BookItem(book) for book in self.BOOKS)
         area.set_sort_order()
@@ -163,7 +167,9 @@ class CoverRemovalTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self.area = book_area._BookArea(_Library())
+        # Held here: an area holds its library window only weakly.
+        self.library = _Library()
+        self.area = book_area._BookArea(self.library)
         self.area._covers.set_items(
             book_area._BookItem(_Book(index, '/books/%d.cbz' % index))
             for index in range(5))
@@ -422,7 +428,8 @@ class DragIconTest(MComixTest):
     """
 
     def _area(self, books):
-        area = book_area._BookArea(_CoverlessLibrary())
+        self.library = _CoverlessLibrary()
+        area = book_area._BookArea(self.library)
         area._covers.set_items(
             book_area._BookItem(_Book(index, '/books/%d.cbz' % index))
             for index in range(books))

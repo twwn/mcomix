@@ -10,6 +10,7 @@ that hands books to the collection tree.
 
 import functools
 import os
+import weakref
 from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk
 import PIL.Image as Image
 import PIL.ImageDraw as ImageDraw
@@ -66,7 +67,7 @@ class _BookItem(thumbnail_list.ThumbnailItem):
         self.added = book.added
 
 
-class _BookArea(Gtk.ScrolledWindow):
+class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
 
     """The _BookArea is the central area in the library where the book
     covers are displayed.
@@ -81,7 +82,7 @@ class _BookArea(Gtk.ScrolledWindow):
     def __init__(self, library: 'main_dialog._LibraryDialog') -> None:
         super().__init__()
 
-        self._library = library
+        self._library_ref = weakref.ref(library)
         self._cache = get_pixbuf_cache()
 
         self._library.backend.book_added_to_collection += self._new_book_added
@@ -134,6 +135,32 @@ class _BookArea(Gtk.ScrolledWindow):
 
         self._popup_actions = Gio.SimpleActionGroup()
         self._book_menu = self._create_popup_menu()
+
+    def release(self) -> None:
+        """Take the book popup actions out, once the window is closed.
+
+        GTK holds an inserted action group, and each action holds a
+        handler that is a method of this area: a cycle through C that
+        Python's collector cannot see, which kept the area - and the
+        covers it shows - alive after the window had gone.
+        """
+        self.insert_action_group('books', None)
+        # And the cover grid: it holds a method of this area in turn, which
+        # makes another such cycle for as long as the area is its parent.
+        self.set_child(None)
+        widgets.empty_action_group(self._popup_actions)
+
+    @property
+    def _library(self) -> 'main_dialog._LibraryDialog':
+        """The library window this area is part of.
+
+        Held weakly: GTK holds the area for as long as the window's
+        widgets stand, which is for good once the window is closed,
+        and a plain reference would keep the window alive with it.
+        """
+        library = self._library_ref()
+        assert library is not None, 'the library window is gone'
+        return library
 
     #: The popup's plain entries: action name, label, tooltip, handler.
     def _menu_entries(self) -> "tuple[tuple[str, str, str, Callable[..., None]], ...]":  # type: ignore[explicit-any]  # the menu items differ in what their handlers take
@@ -384,8 +411,11 @@ class _BookArea(Gtk.ScrolledWindow):
         key = prefs['lib sort key']
         ascending = prefs['lib sort order'] == constants.SORT_ASCENDING
 
+        # Through the class, not self: GTK keeps the sort function where
+        # Python's collector cannot see it, and a closure over the area
+        # would keep the area alive once the library window is closed.
         def compare(left: _BookItem, right: _BookItem, _data: object) -> int:
-            answer = self._compare_books(key, left, right)
+            answer = _BookArea._compare_books(key, left, right)
             return answer if ascending else -answer
 
         self._covers.set_sorter(Gtk.CustomSorter.new(compare))

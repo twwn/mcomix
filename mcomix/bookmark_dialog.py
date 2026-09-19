@@ -90,8 +90,8 @@ class _BookmarksDialog(Dialog):
         keys.connect('key-pressed', self._key_press_event)
         self._list.add_controller(keys)
         self._list.connect('activate', self._bookmark_activated)
-        self._list.selection.connect('selection-changed',
-                                     self._selection_changed)
+        self.connect_while_open(self._list.selection, 'selection-changed',
+                                self._selection_changed)
 
         for bookmark in self._bookmarks_store.get_bookmarks():
             self._add_bookmark(bookmark)

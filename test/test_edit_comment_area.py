@@ -49,7 +49,10 @@ class CommentAreaTest(MComixTest):
             with open(path, 'w') as comment:
                 comment.write(name)
             self.paths.append(path)
-        self.area = edit_comment_area._CommentArea(_StubDialog(self.paths))
+        # Held here: the area holds its editor only weakly, as the
+        # editor holds the area.
+        self.dialog = _StubDialog(self.paths)
+        self.area = edit_comment_area._CommentArea(self.dialog)
         self.window = Gtk.Window()
         self.window.set_default_size(400, 300)
         self.window.set_child(self.area)

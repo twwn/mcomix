@@ -7,6 +7,7 @@ shown down to the books a substring occurs in.
 """
 
 import os
+import weakref
 from gi.repository import Gtk
 from gi.repository import GLib
 from gi.repository import Pango
@@ -34,7 +35,7 @@ class _ControlArea(Gtk.Box):
         super().__init__(orientation=Gtk.Orientation.VERTICAL, spacing=12)
         widgets.set_border(self, 10)
 
-        self._library = library
+        self._library_ref = weakref.ref(library)
 
         borderbox = Gtk.Frame()
         borderbox.set_size_request(350, -1)
@@ -100,6 +101,18 @@ class _ControlArea(Gtk.Box):
         self._open_button.set_tooltip_text(_('Open the selected book.'))
         self._open_button.set_sensitive(False)
         widgets.pack(hbox, self._open_button, True, True, 0, end=True)
+
+    @property
+    def _library(self) -> "main_dialog._LibraryDialog":
+        """The library window this area is part of.
+
+        Held weakly: GTK holds the area for as long as the window's
+        widgets stand, which is for good once the window is closed,
+        and a plain reference would keep the window alive with it.
+        """
+        library = self._library_ref()
+        assert library is not None, 'the library window is gone'
+        return library
 
     def update_info(self, selected: Sequence[int]) -> None:
         """Update the info box using the currently <selected> books from

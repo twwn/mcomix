@@ -15,6 +15,7 @@ from mcomix import i18n
 from mcomix import tools
 from mcomix import file_chooser_library_dialog
 from mcomix import status
+from mcomix import widgets
 from mcomix.library import backend as library_backend
 from mcomix.library import book_area as library_book_area
 from mcomix.library import collection_area as library_collection_area
@@ -55,6 +56,9 @@ class _LibraryDialog(Gtk.Window):
         keys = Gtk.EventControllerKey()
         keys.connect('key-pressed', self._key_press_event)
         self.add_controller(keys)
+        # As every MComix dialog does: GTK never disposes a closed
+        # window's widgets, and what they hold would keep this one alive.
+        self.connect_after('unrealize', widgets.release)
 
         self.filter_string: str | None = None
         self._file_handler = file_handler

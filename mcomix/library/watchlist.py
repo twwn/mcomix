@@ -55,8 +55,8 @@ class WatchListDialog(Dialog):
                                      shown=self._collection_name_of)
         self._list.add_toggle_column(_("With subdirectories"), 'recursive',
                                      self._recursive_changed_cb)
-        self._list.selection.connect('selection-changed',
-                                     self._item_selected_cb)
+        self.connect_while_open(self._list.selection, 'selection-changed',
+                                self._item_selected_cb)
 
         add_button = Gtk.Button.new_with_mnemonic(_('_Add'))
         add_button.connect('clicked', self._add_cb)

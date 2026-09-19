@@ -334,8 +334,8 @@ class OpenWithEditor(Dialog):
         self._changed = False
 
         self._command_list = column_list.ColumnListView()
-        self._command_list.selection.connect('selection-changed',
-                                             self._item_selected)
+        self.connect_while_open(self._command_list.selection,
+                                'selection-changed', self._item_selected)
         self._add_button = Gtk.Button.new_with_mnemonic(_('_Add'))
         self._add_button.connect('clicked', self._add_command)
         self._add_sep_button = Gtk.Button.new_with_mnemonic(_('Add _separator'))

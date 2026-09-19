@@ -3,10 +3,12 @@
 from gi.repository import Gdk, GdkPixbuf, Gio, GLib, GObject, Gtk, Pango
 
 from mcomix import image_tools
+from mcomix import widgets
 from mcomix.preferences import prefs
 from mcomix.worker_thread import WorkerThread
 
 from collections.abc import Callable, Iterable, Iterator, Sequence
+import weakref
 from typing import Any, cast
 
 
@@ -88,7 +90,7 @@ class _ThumbnailCell(Gtk.Box):
         return position
 
 
-class _ThumbnailViewBase:
+class _ThumbnailViewBase(widgets.Releasable):
 
     """What a thumbnail view is made of, whatever shape it has.
 
@@ -129,6 +131,9 @@ class _ThumbnailViewBase:
         self._label_width = 0
         #: The items whose cells are on screen right now.
         self._bound: set[ThumbnailItem] = set()
+        #: Every cell the factory has built, on screen or kept aside
+        #: for rows to come; release() needs the ones kept aside too.
+        self._cells: "weakref.WeakSet[_ThumbnailCell]" = weakref.WeakSet()
         #: Ignore thumbnails that arrive after stop_update().
         self._updates_stopped = True
         self._thread = WorkerThread(self._thumbnail_worker,
@@ -152,6 +157,7 @@ class _ThumbnailViewBase:
         """Build an empty cell: a label, and the thumbnail itself."""
         cell = _ThumbnailCell(self.CELL_ORIENTATION)
         cell.list_item = list_item
+        self._cells.add(cell)
         self._size_cell(cell)
         self._decorate_cell(cell)
         list_item.set_child(cell)
@@ -283,6 +289,22 @@ class _ThumbnailViewBase:
         """Stop making thumbnails, and ignore the ones still coming."""
         self._updates_stopped = True
         self._thread.stop()
+
+    def release(self) -> None:
+        """Stop, unbind every cell and drop the factory, once the window
+        is closed.
+
+        The factory's handlers are this view's own methods, and each
+        bound entry holds a handler of this view's as well; GTK holds
+        both, so the view kept itself, its thumbnails and whatever
+        carries it alive after the window had gone.
+        """
+        self.stop_update()
+        view = cast("Gtk.ListView | Gtk.GridView", self)
+        view.set_model(None)
+        view.set_factory(None)
+        for cell in list(self._cells):
+            widgets.cut_handlers(cell)
 
     def refresh(self) -> None:
         """Ask again for the thumbnails the cells on screen are missing.

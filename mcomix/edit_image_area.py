@@ -1,6 +1,7 @@
 """edit_image_area.py - The area of the editing archive window that displays images."""
 
 import os
+import weakref
 from gi.repository import Gdk, GdkPixbuf, Gio, Gtk
 
 from mcomix import widgets
@@ -19,7 +20,7 @@ if TYPE_CHECKING:
     from mcomix import main
 
 
-class _ImageArea(Gtk.ScrolledWindow):
+class _ImageArea(Gtk.ScrolledWindow, widgets.Releasable):
 
     """The area used for displaying and handling image files."""
 
@@ -28,7 +29,7 @@ class _ImageArea(Gtk.ScrolledWindow):
         super().__init__()
 
         self._window = window
-        self._edit_dialog = edit_dialog
+        self._editor = weakref.ref(edit_dialog)
         self.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
 
         # As every other preview in MComix, as large as this screen
@@ -41,7 +42,7 @@ class _ImageArea(Gtk.ScrolledWindow):
         self._grid.generate_thumbnail = self._generate_thumbnail
         self._grid.set_thumbnail_size(self._thumbnail_size)
         self._grid.set_reorderable(True)
-        self._grid.about_to_reorder = edit_dialog.record_change
+        self._grid.about_to_reorder = lambda: self._edit_dialog.record_change()
         clicks = Gtk.GestureClick()
         clicks.set_button(3)
         clicks.connect('pressed', self._button_press)
@@ -59,6 +60,32 @@ class _ImageArea(Gtk.ScrolledWindow):
         self._window.imagehandler.page_available += self._on_page_available
 
         self._popup_menu = self._create_popup_menu()
+
+    def release(self) -> None:
+        """Take the image area actions out, once the window is closed.
+
+        GTK holds an inserted action group, and each action holds a
+        handler that is a method of this area: a cycle through C that
+        Python's collector cannot see, which kept the area - and the
+        thumbnails it shows - alive after the window had gone.
+        """
+        self.insert_action_group('imagearea', None)
+        # And the grid: it holds a method of this area in turn, which
+        # makes another such cycle for as long as the area is its parent.
+        self.set_child(None)
+
+    @property
+    def _edit_dialog(self) -> "edit_dialog_module._EditArchiveDialog":
+        """The editor this area is part of.
+
+        Held weakly: GTK holds the area for as long as the editor's
+        widgets stand, which is for good once the editor is closed, and
+        a plain reference would then keep the editor, and every page it
+        shows, alive with it.
+        """
+        editor = self._editor()
+        assert editor is not None, 'the editor is gone'
+        return editor
 
     def _create_popup_menu(self) -> Gtk.PopoverMenu:
         """Build the right-click menu for the page list.

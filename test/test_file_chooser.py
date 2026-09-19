@@ -185,8 +185,14 @@ class FileChooserTest(MComixTest):
     def test_the_buttons_still_answer(self):
         answered = []
         self.dialog.connect('response', lambda _d, r: answered.append(r))
-        for button in self.dialog._buttons:
-            button.emit('clicked')
+        # Without the dialog's own answer to them: the first would close
+        # it, and a closed dialog's buttons let go of it.
+        self.dialog.handler_block_by_func(self.dialog._response)
+        try:
+            for button in self.dialog._buttons:
+                button.emit('clicked')
+        finally:
+            self.dialog.handler_unblock_by_func(self.dialog._response)
         self.assertIn(Response.CANCEL, answered)
         self.assertIn(Response.OK, answered)
 
