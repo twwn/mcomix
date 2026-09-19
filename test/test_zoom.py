@@ -122,6 +122,50 @@ class ZoomDistributionTest(MComixTest):
                         self.assertEqual(scales[first], scales[second],
                                          '%r got %r' % (sizes, scales))
 
+    def test_what_holds_for_any_pages_on_any_screen(self):
+        """Three promises of get_zoomed_size(), over random pages and
+        screens from a fixed seed: a page that may not be transformed
+        comes back at the size it went in at, fitting by width or to the
+        screen leaves the pages no wider than the screen between them,
+        and making them the same size does make them the same size."""
+        random.seed(11)
+        model = ZoomModel()
+        for _case in range(2000):
+            count = random.randint(1, 2)
+            sizes = [[random.randint(1, 3000), random.randint(1, 3000)]
+                     for _ in range(count)]
+            if count == 2 and random.random() < 0.4:
+                sizes[1] = list(sizes[0])
+            screen = [random.randint(10, 2000), random.randint(10, 2000)]
+            fixed = [random.random() < 0.2 for _ in range(count)]
+            same = random.random() < 0.5
+            fit_same = same and random.random() < 0.5
+            mode = random.choice(list(ZoomMode))
+            model.set_fit_mode(int(mode))
+            model.set_scale_up(random.random() < 0.5)
+            model.reset_user_zoom()
+            zoomed = random.random() < 0.5
+            if zoomed:
+                for _step in range(random.randint(1, 3)):
+                    if random.random() < 0.5:
+                        model.zoom_in()
+                    else:
+                        model.zoom_out()
+            drawn, _distorted = model.get_zoomed_size(
+                sizes, screen, PageAxis.WIDTH, fixed, same, fit_same)
+            case = '%r on %r, %s' % (sizes, screen, mode)
+            for size, keep, came_out in zip(sizes, fixed, drawn):
+                if keep:
+                    self.assertEqual(size, list(came_out), case)
+            if (mode in (ZoomMode.WIDTH, ZoomMode.BEST) and not any(fixed)
+                    and not zoomed):
+                self.assertLessEqual(
+                    sum(page[PageAxis.WIDTH] for page in drawn),
+                    screen[PageAxis.WIDTH], case)
+            if fit_same and count == 2 and not any(fixed):
+                self.assertEqual(drawn[0][PageAxis.HEIGHT],
+                                 drawn[1][PageAxis.HEIGHT], case)
+
     def test_no_pages_at_all_need_no_room(self):
         self.assertEqual(ZoomModel._scale_distributed([], PageAxis.WIDTH, 100,
                                                       False, []), [])
