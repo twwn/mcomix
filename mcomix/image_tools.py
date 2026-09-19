@@ -1054,9 +1054,11 @@ def get_supported_formats() -> dict[str, tuple[set[str], set[str]]]:
         gdk_mime_types = format.get_mime_types()
         gdk_extensions = format.get_extensions()
         # A format that will not say what it is called, what it
-        # serves or what it is filed under describes nothing.
-        if (format_name is None or gdk_mime_types is None
-                or gdk_extensions is None):
+        # serves or what it is filed under describes nothing, and a
+        # disabled one opens nothing.  gdk-pixbuf 2.44 offers its
+        # legacy XPM loader under no extension, beside one that has it.
+        if (not format_name or not gdk_mime_types or not gdk_extensions
+                or format.is_disabled()):
             continue
         name = format_name.upper()
         if name in supported_formats_gdk:

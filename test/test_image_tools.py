@@ -3,6 +3,7 @@ import os
 import shutil
 import tempfile
 import unittest
+import unittest.mock
 
 from gi.repository import Gdk, GdkPixbuf
 
@@ -862,3 +863,51 @@ class RgbaTest(unittest.TestCase):
 
 
 # vim: expandtab:sw=4:ts=4
+
+
+class _Format:
+
+    """Enough of a GdkPixbuf.PixbufFormat for get_supported_formats()."""
+
+    def __init__(self, name, mime_types, extensions, disabled=False):
+        self._answers = name, mime_types, extensions
+        self._disabled = disabled
+
+    def get_name(self):
+        return self._answers[0]
+
+    def get_mime_types(self):
+        return self._answers[1]
+
+    def get_extensions(self):
+        return self._answers[2]
+
+    def is_disabled(self):
+        return self._disabled
+
+
+class SupportedFormatsTest(MComixTest):
+
+    def _gdk_formats(self, *formats):
+        """The formats get_supported_formats() makes of gdk-pixbuf
+        offering <formats>, leaving out what Pillow offers."""
+        with unittest.mock.patch.object(GdkPixbuf.Pixbuf, 'get_formats',
+                                        return_value=list(formats)), \
+                unittest.mock.patch.object(Image, 'MIME', {}), \
+                unittest.mock.patch.object(Image, 'EXTENSION', {}), \
+                unittest.mock.patch.object(Image, 'init'):
+            return image_tools.get_supported_formats.__wrapped__()
+
+    def test_a_format_filed_under_no_extension_is_not_offered(self):
+        """gdk-pixbuf 2.44 offers its legacy XPM loader with a mime type
+        and no extension, beside the XPM loader that has one, and the
+        file chooser listed "LEGACY-XPM images" as a format of its own."""
+        formats = self._gdk_formats(
+            _Format('legacy-xpm', ['image/x-xpixmap'], []),
+            _Format('xpm', ['image/x-xpixmap'], ['xpm']))
+        self.assertEqual(formats, {'XPM': ({'image/x-xpixmap'}, {'xpm'})})
+
+    def test_a_disabled_format_is_not_offered(self):
+        formats = self._gdk_formats(
+            _Format('png', ['image/png'], ['png'], disabled=True))
+        self.assertEqual(formats, {})
