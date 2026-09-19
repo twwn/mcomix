@@ -215,7 +215,6 @@ class FileHandler:
         """
 
         self._window.cursor_handler.set_busy(False)
-        self._window.imagehandler._base_path = self._base_path
         self._window.imagehandler.set_image_files(image_files)
         self.file_opened()
 

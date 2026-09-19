@@ -46,8 +46,6 @@ class ImageHandler:
         self._thread = WorkerThread(self._cache_pixbuf, name='image',
                                     sort_orders=True)
 
-        #: Archive path, if currently opened file is archive
-        self._base_path: str | None = None
         #: List of image file names, either from extraction or directory
         self._image_files: list[str] | None = None
         #: Map of image file name to its index in _image_files
@@ -270,7 +268,6 @@ class ImageHandler:
         """Run clean-up tasks. Should be called prior to exit."""
 
         self._thread.stop()
-        self._base_path = None
         self.set_image_files([])
         self._current_image_index = None
         self._available_images.clear()
@@ -480,8 +477,7 @@ class ImageHandler:
         """
         index = self._current_image_index
         if self._window.filehandler.archive_type is not None:
-            name = '' if self._base_path is None \
-                else os.path.basename(self._base_path)
+            name = self._window.filehandler.get_base_filename()
         elif self._image_files and index is not None:
             img_file = os.path.abspath(self._image_files[index])
             name = os.path.join(
