@@ -86,6 +86,17 @@ class BlackBackgroundTest(MComixTest):
         self.assertTrue(self.area._covers.has_css_class(
             book_area._BookArea._BLACK_CSS_CLASS))
 
+    def test_the_rule_goes_to_the_display_once(self):
+        """Every library window opened added a provider of its own to the
+        display, where it stayed after the window had closed."""
+        add = unittest.mock.Mock(
+            wraps=Gtk.StyleContext.add_provider_for_display)
+        with unittest.mock.patch.object(
+                Gtk.StyleContext, 'add_provider_for_display', add):
+            for _ in range(3):
+                book_area._BookArea(_Library()).close()
+        self.assertLessEqual(add.call_count, 1)
+
 
 class _Book:
 

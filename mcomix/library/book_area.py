@@ -8,6 +8,7 @@ carries the popup menu that acts on a selection, and the drag source
 that hands books to the collection tree.
 """
 
+import functools
 import os
 from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk
 import PIL.Image as Image
@@ -36,6 +37,20 @@ from typing import TYPE_CHECKING, cast
 if TYPE_CHECKING:
     from mcomix.library import backend_types
     from mcomix.library import main_dialog
+
+
+@functools.cache
+def _paint_black(display: Gdk.Display, css_class: str) -> None:
+    """Give <display> the rule that paints <css_class> black, once.
+
+    The provider stays with the display for as long as the display
+    lasts, and every library window opened after the first finds it
+    there; one per window would pile up, closed windows' and all.
+    """
+    provider = Gtk.CssProvider()
+    provider.load_from_string('.%s { background-color: black; }' % css_class)
+    Gtk.StyleContext.add_provider_for_display(
+        display, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
 
 class _BookItem(thumbnail_list.ThumbnailItem):
@@ -101,12 +116,7 @@ class _BookArea(Gtk.ScrolledWindow):
         # A style provider belongs to a display rather than to a widget,
         # so the view carries a class for the rule to single it out.
         self._covers.add_css_class(self._BLACK_CSS_CLASS)
-        self._black_background = Gtk.CssProvider()
-        self._black_background.load_from_string(
-            '.%s { background-color: black; }' % self._BLACK_CSS_CLASS)
-        Gtk.StyleContext.add_provider_for_display(
-            self._covers.get_display(), self._black_background,
-            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+        _paint_black(self._covers.get_display(), self._BLACK_CSS_CLASS)
         # Books drag out to the collection area, and files drop in from
         # a file manager.  GTK4 has neither a model drag source nor a
         # model drag destination; controllers do both, and a drop target
