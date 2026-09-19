@@ -1,11 +1,11 @@
 """slideshow.py - Slideshow handler."""
 
-from gi.repository import GLib
+from gi.repository import GLib, Gtk
 
 from mcomix.preferences import prefs
 from mcomix.i18n import _
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
     from mcomix import main
@@ -46,12 +46,23 @@ class Slideshow:
         """Toggle a slideshow on or off."""
         if action.get_active():
             self._start()
-            self._window.uimanager.slideshow_button.set_icon_name('media-playback-stop')
-            self._window.uimanager.slideshow_button.set_tooltip_text(_('Stop slideshow'))
+            self._show_on_button('media-playback-stop-symbolic',
+                                 _('Stop slideshow'))
         else:
             self._stop()
-            self._window.uimanager.slideshow_button.set_icon_name('media-playback-start')
-            self._window.uimanager.slideshow_button.set_tooltip_text(_('Start slideshow'))
+            self._show_on_button('media-playback-start-symbolic',
+                                 _('Start slideshow'))
+
+    def _show_on_button(self, icon_name: str, tooltip: str) -> None:
+        """Show on the tool bar's button what pressing it would do.
+
+        The icon goes into the image the tool bar made for the button,
+        at the tool bar's icon size: Gtk.Button.set_icon_name() would put
+        an image of the default size in its place.
+        """
+        button = self._window.uimanager.slideshow_button
+        cast(Gtk.Image, button.get_child()).set_from_icon_name(icon_name)
+        button.set_tooltip_text(tooltip)
 
     def is_running(self) -> bool:
         """Return True if a slideshow is currently running."""

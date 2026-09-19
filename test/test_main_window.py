@@ -121,6 +121,21 @@ class MainWindowTest(MComixTest):
             self.assertIsNotNone(button.get_action_name(),
                                  'a tool bar button does nothing')
 
+    def test_the_slideshow_button_keeps_its_icon_while_it_changes_it(self):
+        """Starting and stopping a slideshow put an icon of the default
+        size, full colour rather than symbolic, in place of the tool
+        bar's own: Gtk.Button.set_icon_name() replaces the button's child
+        with an image of its own."""
+        button = self.window.uimanager.slideshow_button
+        icon = button.get_child()
+        action = self.window.actiongroup.get_action('slideshow')
+        for running, name in ((True, 'media-playback-stop-symbolic'),
+                              (False, 'media-playback-start-symbolic')):
+            action.set_active(running)
+            self.assertIs(button.get_child(), icon)
+            self.assertEqual(icon.get_icon_name(), name)
+            self.assertEqual(icon.get_icon_size(), Gtk.IconSize.LARGE)
+
     def test_the_tool_bar_takes_up_room(self):
         # It was packed, and its buttons were not shown, so it came out
         # seven pixels tall and looked like it had gone.
