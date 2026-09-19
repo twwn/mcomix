@@ -220,7 +220,11 @@ def _is_tarfile(path: str, mode: tar.ReadMode) -> bool:
 
 def get_archive_info(path: str) -> tuple[int, int, int] | None:
     """Return a tuple (mime, num_pages, size) with info about the archive
-    at <path>, or None if <path> doesn't point to a supported
+    at <path>, or None if <path> doesn't point to a supported archive.
+
+    <mime> is the archive type, one of the constants archive_mime_type()
+    answers with, and <num_pages> counts the images in the archive and
+    in the archives within it.
     """
     cleanup: list[Callable[[], object]] = []
     try:
