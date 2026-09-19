@@ -284,74 +284,39 @@ def get_most_common_edge_colour(pixbufs: GdkPixbuf.Pixbuf | Sequence[GdkPixbuf.P
                      steps: int = 10) -> Sequence[int]:
         """The commonest colour in <colors>, near shades counted as one.
 
-        <colors> is (count, colour) pairs sorted by colour, the way
-        Image.getcolors() counts them.  Each colour is rounded to the
-        nearest multiple of <steps> - 128, 83, 10 becomes 130, 85, 10
-        at <steps> of 5 - and neighbours that round alike make a group,
-        which is why the pairs have to arrive sorted.  The answer is
-        the commonest colour, unrounded, of the group whose colours
-        cover the most pixels between them.
+        <colors> is (count, colour) pairs, the way Image.getcolors()
+        counts them.  Each colour is rounded to the nearest multiple of
+        <steps> - 128, 83, 10 becomes 130, 85, 10 at <steps> of 5 - and
+        the colours that round alike make a group.  The answer is the
+        commonest colour, unrounded, of the group whose colours cover
+        the most pixels between them; ties go to whichever came first.
 
         Grouping is what lets a scanned margin answer with the grey it
         looks like, rather than with whichever of its hundred nearly
         equal greys happened to be counted once more than the rest.
+        The groups used to be made of runs of neighbours in a list
+        sorted by colour, but two shades that round alike need not be
+        neighbours there: a shade of another group could fall between
+        them, and the group was counted in pieces.
         """
+        # Where a value exactly halfway rounds up, as it always has.
+        middle = steps // 2 if steps % 2 == 0 else steps // 2 + 1
 
-        # No group yet: the first colour read starts one.  This was a
-        # (0, 0, 0) tuple, which no rounded colour could ever equal,
-        # since those are lists - the comparison below was always false
-        # on the first turn.  It made no difference, both branches
-        # starting the same group from an empty one, but it said
-        # something the code did not do.
-        group: list[int] | None = None
-        # List of (count, color) pairs, group contains most colors
-        colors_in_prominent_group = []
-        color_count_in_prominent_group = 0
-        # List of (count, color) pairs, current color group
-        colors_in_group = []
-        color_count_in_group = 0
+        def rounded(value: int) -> int:
+            remainder = value % steps
+            value += steps - remainder if remainder >= middle else -remainder
+            return min(255, max(0, value))
 
+        # Once per component value rather than once per component of
+        # every colour: a noisy scan has thousands of them.
+        table = [rounded(value) for value in range(256)]
+        groups: dict[tuple[int, ...], list[tuple[int, Sequence[int]]]] = {}
         for count, color in colors:
-
-            # Round color
-            rounded = [0] * len(color)
-            for i, color_value in enumerate(color):
-                if steps % 2 == 0:
-                    middle = steps // 2
-                else:
-                    middle = steps // 2 + 1
-
-                remainder = color_value % steps
-                if remainder >= middle:
-                    color_value = color_value + (steps - remainder)
-                else:
-                    color_value = color_value - remainder
-
-                rounded[i] = min(255, max(0, color_value))
-
-            # Change prominent group if necessary
-            if rounded == group:
-                # Color still fits in the previous color group
-                colors_in_group.append((count, color))
-                color_count_in_group += count
-            else:
-                # Color group changed, check if current group has more colors
-                # than last group
-                if color_count_in_group > color_count_in_prominent_group:
-                    colors_in_prominent_group = colors_in_group
-                    color_count_in_prominent_group = color_count_in_group
-
-                group = rounded
-                colors_in_group = [(count, color)]
-                color_count_in_group = count
-
-        # Cleanup if only one edge color group was found
-        if color_count_in_group > color_count_in_prominent_group:
-            colors_in_prominent_group = colors_in_group
-
-        colors_in_prominent_group.sort(key=operator.itemgetter(0), reverse=True)
-        # List is now sorted by color count, first color appears most often
-        return colors_in_prominent_group[0][1]
+            groups.setdefault(tuple([table[value] for value in color]),
+                              []).append((count, color))
+        prominent = max(groups.values(),
+                        key=lambda members: sum(count for count, _c in members))
+        return max(prominent, key=operator.itemgetter(0))[1]
 
     def get_edge_pixbuf(pixbuf: GdkPixbuf.Pixbuf, side: str,
                         edge: int) -> GdkPixbuf.Pixbuf:

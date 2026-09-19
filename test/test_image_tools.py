@@ -911,3 +911,57 @@ class SupportedFormatsTest(MComixTest):
         formats = self._gdk_formats(
             _Format('png', ['image/png'], ['png'], disabled=True))
         self.assertEqual(formats, {})
+
+
+class EdgeColourTest(MComixTest):
+
+    """The colour of the paper, which the dynamic background is painted
+    in: the commonest colour of the group of near shades that covers the
+    most of the two outer edges."""
+
+    def _page(self, *rows):
+        """A page one pixel wide, of (count, colour) runs top to bottom;
+        both of its edges are that one column."""
+        colours = [colour for count, colour in rows for _ in range(count)]
+        image = Image.new('RGB', (1, len(colours)))
+        image.putdata(colours)
+        return image_tools.pil_to_pixbuf(image)
+
+    def _expect(self, colour, answer):
+        self.assertEqual([component / 255.0 for component in colour] + [1.0],
+                         answer)
+
+    def test_no_page_is_black(self):
+        self.assertEqual([0.0, 0.0, 0.0, 1.0],
+                         image_tools.get_most_common_edge_colour([]))
+
+    def test_one_colour_is_that_colour(self):
+        self._expect((250, 245, 240), image_tools.get_most_common_edge_colour(
+            self._page((10, (250, 245, 240)))))
+
+    def test_near_shades_are_counted_together(self):
+        """Three greys a shade apart outnumber the one red that is
+        commoner than any of them alone."""
+        page = self._page((4, (201, 201, 201)), (3, (199, 200, 200)),
+                          (3, (202, 199, 200)), (5, (200, 30, 30)))
+        self._expect((201, 201, 201),
+                     image_tools.get_most_common_edge_colour(page))
+
+    def test_a_group_is_counted_whole_whatever_lies_between_its_shades(self):
+        """Sorted by colour, a shade of another group can fall between
+        two of one group's; the group was then counted in two halves and
+        lost to a smaller one."""
+        page = self._page((3, (186, 0, 0)), (4, (187, 100, 0)),
+                          (3, (188, 0, 0)))
+        self._expect((186, 0, 0), image_tools.get_most_common_edge_colour(page))
+
+    def test_two_pages_are_read_at_their_outer_edges(self):
+        white = self._page((10, (255, 255, 255)))
+        black = self._page((10, (0, 0, 0)))
+        wide = Image.new('RGB', (10, 10), (0, 0, 0))
+        wide.paste((255, 255, 255), (0, 0, 2, 10))
+        left = image_tools.pil_to_pixbuf(wide)
+        self._expect((255, 255, 255),
+                     image_tools.get_most_common_edge_colour((left, white)))
+        self._expect((0, 0, 0),
+                     image_tools.get_most_common_edge_colour((black, black)))
