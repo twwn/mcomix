@@ -45,7 +45,9 @@
   failed part way never showed the rest of its pages; the About dialog
   named three of the seven formats MComix reads; a turned JPEG page of a
   PDF was compressed again; on Windows and with Python 3.14, PDF pages
-  were turned upright with auto rotation turned off.
+  were turned upright with auto rotation turned off; MobiPocket books
+  opened without pages on Windows, and on Linux wherever gdk-pixbuf
+  offers a format with no file extension.
 
 ### Removed
 

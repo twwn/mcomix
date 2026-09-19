@@ -9,10 +9,19 @@ import struct
 from collections.abc import Iterator
 from typing import IO
 
-from gi.repository import Gio
-
-from mcomix import image_tools
 from mcomix.archive import archive_base
+
+#: How each image format a MobiPocket book carries begins, and the
+#: extension its pages are listed under.  A book's resources are told
+#: apart by these rather than by Gio.content_type_guess(), which on
+#: Windows guesses from a file name alone and answers "*" for data.
+_SIGNATURES = (
+    (b'\xff\xd8\xff', 'jpg'),
+    (b'\x89PNG\r\n\x1a\n', 'png'),
+    (b'GIF87a', 'gif'),
+    (b'GIF89a', 'gif'),
+    (b'BM', 'bmp'),
+)
 
 
 class UnpackException(Exception):
@@ -88,19 +97,18 @@ class MobiArchive(archive_base.NonUnicodeArchive):
             self.file = None
 
     def iter_contents(self) -> Iterator[str]:
-        """List archive contents."""
-        supported_mimes: dict[str, str] = {}
-        for mimes, exts in image_tools.get_supported_formats().values():
-            ext = next(iter(exts))
-            for mime in mimes:
-                supported_mimes[mime] = ext
+        """Name each image among the book's resources.
+
+        The resources are the records from firstimg on, and not every
+        one is a picture: fonts, the book's index and the end-of-file
+        marker are among them.  A page is named after its record.
+        """
         for i in range(self.firstimg, self.sect.num_sections):
-            magic = self.sect.load_section(i, 10)
-            mime, uncertain = Gio.content_type_guess(data=magic)
-            mime = mime.lower()
-            if mime in supported_mimes:
-                ext = supported_mimes[mime]
-                yield "image%05d.%s" % (1 + i - self.firstimg, ext)
+            magic = self.sect.load_section(i, 8)
+            for signature, ext in _SIGNATURES:
+                if magic.startswith(signature):
+                    yield "image%05d.%s" % (1 + i - self.firstimg, ext)
+                    break
 
     def extract(self, filename: str, destination_dir: str) -> None:
         """Extract <filename> from the archive to <destination_dir>."""
