@@ -1,6 +1,7 @@
 """Moving the viewport over the page."""
 
 import math
+import random
 
 from . import MComixTest
 
@@ -181,6 +182,36 @@ class SmartScrollingTest(MComixTest):
             Box(content), Box(viewport, (100, 20)), (-1, -1), (50, 50))
         self.assertEqual([0, 0], forwards)
         self.assertEqual([50, 50], backwards)
+
+    def test_every_destination_is_mirrored_by_reading_the_other_way(self):
+        """Scrolling to a named place answers the mirror of itself when
+        the reading direction and the destination are both turned round:
+        1 and -1 name an end of the axis and change places, while the
+        ones read along the direction - the two ends of the reading, and
+        the middle - stay as they are.  Random pages, viewports and
+        positions, from a fixed seed."""
+        destinations = (0, 1, -1, constants.SCROLL_TO_CENTER,
+                        constants.SCROLL_TO_START, constants.SCROLL_TO_END)
+        random.seed(5)
+        for _case in range(2000):
+            content = [random.randint(1, 400) for _ in range(2)]
+            view = [random.randint(1, 300) for _ in range(2)]
+            start = [random.randint(-100, 100) for _ in range(2)]
+            position = [random.randint(-450, 450) for _ in range(2)]
+            destination = [random.choice(destinations) for _ in range(2)]
+            content_box = Box(content, start)
+            forwards = self.scrolling.scroll_to_predefined(
+                content_box, Box(view, position), (1, 1), destination)
+            mirrored = [2 * s + c - v - p for s, c, v, p
+                        in zip(start, content, view, position)]
+            backwards = self.scrolling.scroll_to_predefined(
+                content_box, Box(view, mirrored), (-1, -1),
+                [-d if d in (1, -1) else d for d in destination])
+            self.assertEqual([2 * s + c - v - f for s, c, v, f
+                              in zip(start, content, view, forwards)],
+                             backwards,
+                             'content %s viewport %s at %s to %s'
+                             % (content, view, position, destination))
 
 
 # vim: expandtab:sw=4:ts=4
