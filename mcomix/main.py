@@ -1439,8 +1439,9 @@ class MainWindow(Gtk.Window):
         self.write_config_files()
 
         self.filehandler.close_file()
-        if main_dialog._dialog is not None:
-            main_dialog._dialog.close()
+        library = main_dialog.get_dialog()
+        if library is not None:
+            library.close()
         backend.LibraryBackend().close()
 
         # Wait for the threads that are still doing work which has to

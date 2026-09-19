@@ -242,6 +242,15 @@ class _LibraryDialog(Gtk.Window):
         return Gdk.EVENT_PROPAGATE
 
 
+def get_dialog() -> "_LibraryDialog | None":
+    """The library window, while there is one.
+
+    It is there from the time it is opened until it is closed; hidden
+    with Escape, it is still there, and opening it shows it again.
+    """
+    return _dialog
+
+
 def open_dialog(action: Gio.SimpleAction, window: "main.MainWindow") -> None:
     """ Shows the library window. """
     global _dialog
