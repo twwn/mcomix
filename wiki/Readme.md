@@ -15,9 +15,9 @@ Command | What it does
 --------|-------------
 `sfwikisync -p mcomix pull` | Downloads every wiki page into `content`. **Existing files are overwritten without asking**, so anything edited locally and not pushed yet is lost.
 `sfwikisync -p mcomix push` | Uploads every file in `content` whose text differs from its page, creating pages that do not exist yet. The page's labels are kept.
-`sfwikisync -p mcomix github` | Converts every file in `content` to GitHub Markdown, as [Moving the pages to GitHub](#moving-the-pages-to-github) describes, and writes it into `github`, overwriting a file of the same name. A construct out of its shape stops the conversion before anything is written, naming the page and the line. The image attachments are not downloaded: copy them into `github/images`.
+`sfwikisync -p mcomix github` | Converts every file in `content` to GitHub Markdown, as [Moving the pages to GitHub](#moving-the-pages-to-github) describes, and writes it into `github`, overwriting a file of the same name. The images the pages show are copied from `images` into `github/images`. A construct out of its shape, or an image `images` does not hold, stops the conversion before anything is written, naming the page and the line, or the image and its page.
 
-`-w` names another wiki than `wiki`, `-d` another folder than `content`, and `-o` another folder than `github`.
+`-w` names another wiki than `wiki`, `-d` another folder than `content`, `-o` another folder than `github`, and `-i` another folder than `images`.
 
 Pushing needs a bearer token. On SourceForge's [OAuth management page](https://sourceforge.net/auth/oauth/), register an application (named *sfwikisync*, for example) and generate a bearer token for it. Pass it in the environment:
 

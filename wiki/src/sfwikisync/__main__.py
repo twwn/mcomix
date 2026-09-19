@@ -6,6 +6,7 @@ import glob
 import logging
 import os
 import pathlib
+import shutil
 import sys
 
 from . import github
@@ -31,6 +32,7 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument("-w", "--wikiname", default="wiki")
     parser.add_argument("-d", "--contentdir", default="content")
     parser.add_argument("-o", "--outdir", default="github")
+    parser.add_argument("-i", "--imagedir", default="images")
     # A token given on the command line lands in the shell's history and in
     # the process list, so the environment is the better place for it.
     parser.add_argument(
@@ -101,10 +103,14 @@ def push(client: WikiClient, contentdir: str) -> None:
             logging.info(f"No change to '{page_title}'")
 
 
-def convert_to_github(project: str, contentdir: str, outdir: str) -> bool:
+def convert_to_github(
+    project: str, contentdir: str, outdir: str, imagedir: str
+) -> bool:
     """Converts all markdown files in the content directory to GitHub Markdown, and writes them into
-    the output directory. Existing files are overwritten without confirmation. Returns False, having
-    written nothing, if a page is out of the shapes wiki/Readme.md permits."""
+    the output directory, with the images they show copied from the image directory into an images
+    folder there. Existing files are overwritten without confirmation. Returns False, having written
+    nothing, if a page is out of the shapes wiki/Readme.md permits or shows an image the image
+    directory does not hold."""
     pages = {
         path.stem: path.read_text(encoding="utf-8")
         for path in sorted(pathlib.Path(contentdir).glob("*.md"))
@@ -114,17 +120,26 @@ def convert_to_github(project: str, contentdir: str, outdir: str) -> bool:
     except github.ConversionError as error:
         logging.error(error)
         return False
+    source = pathlib.Path(imagedir)
+    images = github.images(pages)
+    missing = [image for image in images if not (source / image.filename).is_file()]
+    for image in missing:
+        logging.error(
+            f"'{image.filename}', shown on '{image.page}', is not in {source}"
+        )
+    if missing:
+        return False
 
     basedir = pathlib.Path(outdir)
     basedir.mkdir(parents=True, exist_ok=True)
     for name, text in converted.items():
         (basedir / f"{name}.md").write_text(text, encoding="utf-8")
         logging.info(f"Converted '{name}'")
-    # The attachments are not part of a page's text, so they are not fetched.
-    for image in github.images(pages):
-        logging.info(
-            f"Copy '{image.filename}', attached to '{image.page}', into {basedir / github.IMAGE_DIR}"
-        )
+    target = basedir / github.IMAGE_DIR
+    target.mkdir(exist_ok=True)
+    for image in images:
+        shutil.copyfile(source / image.filename, target / image.filename)
+        logging.info(f"Copied '{image.filename}'")
     return True
 
 
@@ -135,7 +150,10 @@ def main() -> int:
     program_args = parse_arguments()
     if program_args.operation == Operations.github.name:
         converted = convert_to_github(
-            program_args.project, program_args.contentdir, program_args.outdir
+            program_args.project,
+            program_args.contentdir,
+            program_args.outdir,
+            program_args.imagedir,
         )
         return 0 if converted else 1
 

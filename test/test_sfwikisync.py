@@ -118,9 +118,11 @@ class ArgumentsTest(unittest.TestCase):
 
     def test_the_defaults(self):
         args = self.parse('-p', 'mcomix', 'pull')
-        self.assertEqual(('mcomix', 'wiki', 'content', 'github', None, 'pull'),
+        self.assertEqual(('mcomix', 'wiki', 'content', 'github', 'images',
+                          None, 'pull'),
                          (args.project, args.wikiname, args.contentdir,
-                          args.outdir, args.bearertoken, args.operation))
+                          args.outdir, args.imagedir, args.bearertoken,
+                          args.operation))
 
     def test_push_without_a_token_is_refused(self):
         message = self.refused('-p', 'mcomix', 'push')
@@ -385,6 +387,35 @@ class MainTest(FolderTest):
                                         'github')
         self.assertEqual(1, status)
         self.assertIn('Home.md:1:', '\n'.join(logs.output))
+        self.assertFalse(output.exists())
+
+    def test_github_copies_the_images_the_pages_show(self):
+        (self.content / 'Home.md').write_text(
+            'Home\n===\n\n[[img src="shot.png" alt="A shot"]]\n')
+        images = self.content / 'images'
+        images.mkdir()
+        (images / 'shot.png').write_bytes(b'shot')
+        (images / 'README.md').write_text('Not shown\n')
+        output = self.content / 'out'
+        with self.assertLogs(level='INFO'):
+            status, _client = self.main('-p', 'mcomix', '-d',
+                                        str(self.content), '-o', str(output),
+                                        '-i', str(images), 'github')
+        self.assertEqual(0, status)
+        self.assertEqual(['shot.png'], os.listdir(output / 'images'))
+        self.assertEqual(b'shot', (output / 'images' / 'shot.png').read_bytes())
+
+    def test_github_writes_nothing_for_an_image_it_does_not_hold(self):
+        (self.content / 'Home.md').write_text(
+            'Home\n===\n\n[[img src="shot.png" alt="A shot"]]\n')
+        output = self.content / 'out'
+        with self.assertLogs(level='ERROR') as logs:
+            status, _client = self.main('-p', 'mcomix', '-d',
+                                        str(self.content), '-o', str(output),
+                                        '-i', str(self.content / 'images'),
+                                        'github')
+        self.assertEqual(1, status)
+        self.assertIn("'shot.png', shown on 'Home'", '\n'.join(logs.output))
         self.assertFalse(output.exists())
 
     def test_pull_and_push_go_to_the_project_wiki(self):
