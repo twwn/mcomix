@@ -111,3 +111,61 @@ class OpenWithCommandTest(MComixTest):
             self._parse('viewer "one')
 
 # vim: expandtab:sw=4:ts=4
+
+
+class _StubArchiveHandler(_StubFileHandler):
+
+    archive_type = 'zip'
+
+    def __init__(self, path):
+        self._path = path
+
+    def get_path_to_base(self):
+        return self._path
+
+    def get_base_filename(self):
+        return os.path.basename(self._path)
+
+
+class DocumentedVariablesTest(MComixTest):
+
+    """Every variable the manual lists, with the manual's own examples
+    (wiki/content/External_Commands.md)."""
+
+    def _expand(self, variable, window):
+        return openwith.OpenWithCommand(
+            'test', 'viewer %' + variable, '', False).parse(window)[1]
+
+    def test_for_an_image_file(self):
+        window = _StubWindow('cats.jpg', '/home/user/Downloads/cats.jpg')
+        for variable, expected in (('F', '/home/user/Downloads/cats.jpg'),
+                                   ('f', 'cats.jpg'),
+                                   ('D', '/home/user/Downloads'),
+                                   ('d', 'Downloads'),
+                                   ('B', '/home/user/Downloads'),
+                                   ('b', 'Downloads'),
+                                   ('S', '/home/user'),
+                                   ('s', 'user')):
+            with self.subTest(variable=variable):
+                self.assertEqual(expected, self._expand(variable, window))
+
+    def test_for_an_archive(self):
+        window = _StubWindow('cats.jpg', '/tmp/extracted/cats.jpg')
+        window.filehandler = _StubArchiveHandler('/home/user/comic-2012.zip')
+        for variable, expected in (('A', '/home/user/comic-2012.zip'),
+                                   ('a', 'comic-2012.zip'),
+                                   ('C', '/home/user'),
+                                   ('c', 'user'),
+                                   ('B', '/home/user/comic-2012.zip'),
+                                   ('b', 'comic-2012.zip'),
+                                   ('S', '/home/user'),
+                                   ('s', 'user')):
+            with self.subTest(variable=variable):
+                self.assertEqual(expected, self._expand(variable, window))
+
+    def test_archive_variables_are_refused_for_an_image_file(self):
+        window = _StubWindow('cats.jpg', '/home/user/Downloads/cats.jpg')
+        for variable in 'AaCc':
+            with self.subTest(variable=variable):
+                with self.assertRaises(openwith.OpenWithException):
+                    self._expand(variable, window)
