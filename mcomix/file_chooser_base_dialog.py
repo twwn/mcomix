@@ -85,6 +85,13 @@ class _BaseFileChooserDialog(Dialog):
     #: rest of the interface.
     save_name: str | None = None
 
+    #: Whether "All files" is the first of the filters.  A chooser that
+    #: should not offer it leaves it out from the start: GTK 4.22's
+    #: Gtk.FileChooserWidget.remove_filter() frees the filter it takes
+    #: out while it is still referenced, and the next garbage collection
+    #: crashed MComix.
+    _offers_all_files = True
+
     def __init__(self, action: Gtk.FileChooserAction = Gtk.FileChooserAction.OPEN,
                  parent: "Gtk.Window | None" = None,
                  folder: str | None = None) -> None:
@@ -210,7 +217,8 @@ class _BaseFileChooserDialog(Dialog):
         # that is forgotten.
         self.connect('map', self._widen_the_places)
 
-        self._all_files_filter = self.add_filter(_('All files'), [], ['*'])
+        self._all_files_filter = (self.add_filter(_('All files'), [], ['*'])
+                                  if self._offers_all_files else None)
 
         try:
             current_file = self._current_file()
@@ -529,7 +537,7 @@ class _BaseFileChooserDialog(Dialog):
                 full_path = os.path.join(root, file)
                 mimetype = mimetypes.guess_type(full_path)[0] or 'application/octet-stream'
 
-                if (filter == self._all_files_filter
+                if ((filter is not None and filter == self._all_files_filter)
                         or self._matches(filter, full_path, mimetype)):
                     yield full_path
 

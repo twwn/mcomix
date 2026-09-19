@@ -1,6 +1,7 @@
 """ The file chooser dialog, which GTK4 leaves MComix to assemble. """
 
 import os
+import unittest.mock
 
 from gi.repository import Gdk, Gio, Gtk
 
@@ -258,3 +259,90 @@ class FileChooserTest(MComixTest):
                         'the preview says no file size')
 
 # vim: expandtab:sw=4:ts=4
+
+
+class _Library(Gtk.Window):
+
+    """The library window, as far as its file chooser asks."""
+
+    def __init__(self):
+        super().__init__()
+        self.added = []
+
+    def add_books(self, paths, collection):
+        self.added.append(paths)
+
+
+class LibraryFileChooserTest(MComixTest):
+
+    def setUp(self):
+        super().setUp()
+        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
+                          constants.THUMBNAIL_PATH):
+            os.makedirs(directory, exist_ok=True)
+        icons.load_icons()
+        self.window = main.MainWindow()
+        main.set_main_window(self.window)
+        self.library = _Library()
+        pump()
+        from mcomix import file_chooser_library_dialog
+        self._module = file_chooser_library_dialog
+
+    def tearDown(self):
+        self._module.close_library_filechooser_dialog()
+        self.library.destroy()
+        self.window.terminate_program()
+        self.window.destroy()
+        main.set_main_window(None)
+        pump()
+        super().tearDown()
+
+    def _open(self):
+        self._module.open_library_filechooser_dialog(self.library)
+        pump()
+        return self._module._library_filechooser_dialog
+
+    def test_takes_no_filter_out_of_the_chooser(self):
+        """GTK 4.22's remove_filter() frees the filter it takes out while
+        the chooser's own list and PyGObject still refer to it; the
+        chooser took out "All files", and the next garbage collection
+        crashed MComix with a segmentation fault."""
+        with unittest.mock.patch.object(Gtk.FileChooserWidget,
+                                        'remove_filter') as remove:
+            self._open()
+        remove.assert_not_called()
+
+    def test_all_files_is_not_offered(self):
+        names = [f.get_name() for f in self._open().list_filters()]
+        self.assertEqual(names[0], 'All archives')
+        self.assertNotIn('All files', names)
+
+    def test_it_opens_on_all_archives(self):
+        self.assertEqual(self._open().filechooser.get_filter().get_name(),
+                         'All archives')
+
+    def test_a_remembered_filter_it_does_not_have_opens_all_archives(self):
+        for remembered in (0, 999):
+            prefs['last filter in library filechooser'] = remembered
+            self.assertEqual(
+                self._open().filechooser.get_filter().get_name(),
+                'All archives')
+            self._module.close_library_filechooser_dialog()
+            pump()
+
+    def test_the_filter_books_were_added_with_is_the_one_it_opens_on(self):
+        """The index was written into the list without "All files" and
+        read back from the list with it, so the chooser opened on the
+        filter before the one last used - or, after "All archives", on
+        "All files", which is not in the chooser at all."""
+        for position in range(3):
+            dialog = self._open()
+            chosen = dialog.list_filters()[position]
+            dialog.filechooser.set_filter(chosen)
+            dialog.files_chosen(['/books/one.cbz'])
+            pump()
+            self.assertEqual(
+                self._open().filechooser.get_filter().get_name(),
+                chosen.get_name())
+            self._module.close_library_filechooser_dialog()
+            pump()

@@ -47,7 +47,8 @@
   PDF was compressed again; on Windows and with Python 3.14, PDF pages
   were turned upright with auto rotation turned off; MobiPocket books
   opened without pages on Windows, and on Linux wherever gdk-pixbuf
-  offers a format with no file extension.
+  offers a format with no file extension; the library's "Add books"
+  dialog opened on the filter before the one used last.
 
 ### Removed
 

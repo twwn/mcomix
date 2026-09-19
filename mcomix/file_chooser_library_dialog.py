@@ -18,6 +18,9 @@ class _LibraryFileChooserDialog(file_chooser_base_dialog._BaseFileChooserDialog)
 
     """The filechooser dialog used when adding books to the library."""
 
+    # The library files archives, and nothing but.
+    _offers_all_files = False
+
     def __init__(self, library: "main_dialog._LibraryDialog") -> None:
         super().__init__(parent=library)
         self.set_title(_('Add books'))
@@ -28,23 +31,10 @@ class _LibraryFileChooserDialog(file_chooser_base_dialog._BaseFileChooserDialog)
         self.add_archive_filters()
         self.add_pending_filters()
 
-        # Remove 'All files' filter from base class
         filters = self.list_filters()
-        self.filechooser.remove_filter(filters[0])
-        self.filechooser.set_filter(filters[1])
-
-        try:
-            # When setting this to the first filter ("All files"), this
-            # fails on some GTK+ versions and sets the filter to "blank".
-            # The effect is the same though (i.e. display all files), and
-            # there is no solution that I know of, so we'll have to live
-            # with it. It only happens the second time a dialog is created
-            # though, which is very strange.
-            self.filechooser.set_filter(filters[
-                prefs['last filter in library filechooser']])
-
-        except Exception:
-            self.filechooser.set_filter(filters[0])
+        index = prefs['last filter in library filechooser'] - 1
+        self.filechooser.set_filter(
+            filters[index] if 0 <= index < len(filters) else filters[0])
 
         # Buttons that make more sense here than Open.  Gtk.Dialog has
         # no action area to empty in GTK4; place_buttons() puts the row
@@ -59,11 +49,15 @@ class _LibraryFileChooserDialog(file_chooser_base_dialog._BaseFileChooserDialog)
         if paths:
             # There is nothing to remember while the chooser is showing
             # everything, which is what it does with no filter set.
+            # The preference counts from 1, as it did when "All files"
+            # came first here: its default, 1, is "All archives", and so
+            # is the value every preferences file holds that was written
+            # with the default in it.
             chosen = self.filechooser.get_filter()
             filters = self.list_filters()
             if chosen in filters:
                 prefs['last filter in library filechooser'] = \
-                    filters.index(chosen)
+                    filters.index(chosen) + 1
 
             close_library_filechooser_dialog()
             self._library.add_books(paths, None)
