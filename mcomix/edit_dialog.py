@@ -318,6 +318,10 @@ class _EditArchiveDialog(Dialog):
         # what lets the two be used together.
         self._window.select_page_paths(self._image_area.selected_paths())
         self._image_area.cleanup()
+        # The snapshots hold the pages' entries, thumbnails and all, and
+        # a closed editor is never collected (see _ImageArea.cleanup()).
+        self._undone.clear()
+        self._redone.clear()
         Dialog.destroy(self)
 
 

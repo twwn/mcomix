@@ -409,6 +409,23 @@ class EditArchiveDialogTest(MComixTest):
         area._remove_pages()
         self.assertFalse(self.dialog.redo())
 
+    def test_a_closed_editor_lets_go_of_its_thumbnails(self):
+        """A closed editor is never collected - GTK 4 no longer disposes
+        the widgets of a destroyed window, and the handlers they hold
+        keep the dialog alive - so it has to drop its pages' entries,
+        each with a thumbnail, and the undo snapshots that hold them."""
+        self.dialog._load_original_files()
+        pump()
+        grid = self.dialog._image_area._grid
+        self.assertGreater(grid.store.get_n_items(), 0)
+        grid.select_only(0)
+        self.dialog._image_area._remove_pages()
+        self.dialog.undo()
+        self.assertTrue(self.dialog._redone)
+        self.dialog.destroy()
+        self.assertEqual(grid.store.get_n_items(), 0)
+        self.assertEqual((self.dialog._undone, self.dialog._redone), ([], []))
+
     def test_an_undone_page_keeps_the_thumbnail_that_was_made_for_it(self):
         """A snapshot is the entries themselves, not their paths."""
         self.dialog._load_original_files()

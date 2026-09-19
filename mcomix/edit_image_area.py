@@ -200,19 +200,23 @@ class _ImageArea(Gtk.ScrolledWindow):
     # source and a drop target of its own. See ThumbnailGridView.
 
     def cleanup(self) -> None:
-        """Stop making thumbnails, and stop listening for pages.
+        """Stop making thumbnails, stop listening for pages, and drop
+        the entries.
 
         A page extracted after the editor has closed would otherwise
         reach _on_page_available(), whose refresh() clears the flag
-        stop_update() has just set and puts the worker thread back to
-        work for a dialog that is gone.  callback.CallbackList keeps
-        only a weak reference, so the registration would go by itself
-        once Python collected this area; the point of taking it out here
-        is that the editor stops working the moment it closes rather
-        than whenever that happens to be.
+        stop_update() sets and puts the worker thread back to work for a
+        dialog that is gone.
+
+        Nothing here goes by itself, because a closed editor is never
+        collected: GTK 4 no longer disposes the widgets of a destroyed
+        window, and the Python handlers they hold keep the dialog alive.
+        callback.CallbackList's weak reference to this area never dies,
+        and the entries, each with its thumbnail, stayed with it - every
+        editor opened kept a thumbnail of every page it had shown.
         """
         self._window.imagehandler.page_available -= self._on_page_available
-        self._grid.stop_update()
+        self._grid.clear()
 
     def _on_page_available(self, page: int) -> None:
         """ Called whenever a new page is ready for display. """
