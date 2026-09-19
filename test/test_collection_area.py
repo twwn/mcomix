@@ -16,6 +16,7 @@ from gi.repository import Gtk
 from . import MComixTest, pump
 
 from mcomix import constants
+from mcomix.dialog import Response
 from mcomix import message_dialog
 from mcomix.library import backend
 from mcomix.library import collection_area
@@ -98,6 +99,31 @@ class CollectionAreaTest(MComixTest):
             if row.collection == collection:
                 return row
         return None
+
+    # -- Naming a collection ---------------------------------------------
+
+    def test_a_new_name_of_spaces_alone_makes_no_collection(self):
+        """The name was taken as typed, so spaces alone made a collection
+        whose name showed as nothing."""
+        before = self.backend.get_collection_by_name('   ')
+        self.area._add_answered(Response.OK, '   ')
+        self.assertIsNone(self.backend.get_collection_by_name('   '))
+        self.assertIsNone(before)
+
+    def test_spaces_around_a_new_name_are_dropped(self):
+        self.area._add_answered(Response.OK, '  Shelf  ')
+        self.assertIsNotNone(self.backend.get_collection_by_name('Shelf'))
+        self.assertIsNone(self.backend.get_collection_by_name('  Shelf  '))
+
+    def test_a_collection_is_not_renamed_to_spaces(self):
+        self.area._rename_answered(Response.OK, self.manga, '  ')
+        self.assertEqual('Manga',
+                         self.backend.get_collection_by_id(self.manga).name)
+
+    def test_spaces_around_a_new_name_are_dropped_on_renaming(self):
+        self.area._rename_answered(Response.OK, self.manga, ' Mangas ')
+        self.assertEqual('Mangas',
+                         self.backend.get_collection_by_id(self.manga).name)
 
     # -- What it lists ----------------------------------------------------
 

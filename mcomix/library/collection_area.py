@@ -264,7 +264,13 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable):
             lambda response: self._add_answered(response, entry.get_text()))
 
     def _add_answered(self, response: int, name: str) -> None:
-        """Create the collection the add dialog asked about."""
+        """Create the collection the add dialog asked about.
+
+        Spaces around the name are not part of it: typed by accident,
+        they made a second "Shelf" beside the first, and spaces alone a
+        collection whose name showed as nothing.
+        """
+        name = name.strip()
         if response == Response.OK and name:
             collection = self._library.backend.add_collection(name)
             if collection is not None:
@@ -359,7 +365,9 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable):
 
     def _rename_answered(self, response: int, collection: int,
                          new_name: str) -> None:
-        """Rename the collection the rename dialog asked about."""
+        """Rename the collection the rename dialog asked about, less any
+        spaces around the new name, as add_collection() takes them."""
+        new_name = new_name.strip()
         if response == Response.OK and new_name:
             if self._library.backend.rename_collection(collection, new_name):
                 self.display_collections()
