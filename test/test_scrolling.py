@@ -168,5 +168,19 @@ class SmartScrollingTest(MComixTest):
                 backwards,
                 [[end - value for end, value in zip(ends, position)]
                  for position in forwards])
+    def test_a_viewport_just_past_the_content_starts_it_over_either_way(self):
+        """A viewport wholly outside the content - just touching its edge
+        - begins the content afresh on every axis.  Reading forwards
+        that was so for one that ended where the content starts; reading
+        backwards, one that started where the content ends kept its
+        place on the other axes instead."""
+        content, viewport = (100, 100), (50, 50)
+        forwards = self.scrolling.scroll_smartly(
+            Box(content), Box(viewport, (-50, 30)), (1, 1), (50, 50))
+        backwards = self.scrolling.scroll_smartly(
+            Box(content), Box(viewport, (100, 20)), (-1, -1), (50, 50))
+        self.assertEqual([0, 0], forwards)
+        self.assertEqual([50, 50], backwards)
+
 
 # vim: expandtab:sw=4:ts=4

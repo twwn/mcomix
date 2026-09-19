@@ -93,7 +93,9 @@ class Scrolling:
                 if position > invisible_size:
                     result[axis] = invisible_size
                     carry = False
-                    if position > content:
+                    # >=, the mirror of <= -viewport above: a viewport
+                    # that starts where the content ends shows none of it.
+                    if position >= content:
                         reset_all_axes = True
                         break
         if reset_all_axes:
