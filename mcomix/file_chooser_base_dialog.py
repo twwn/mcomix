@@ -207,9 +207,8 @@ class _BaseFileChooserDialog(Dialog):
         # reference to the window goes rather than when it is destroyed,
         # and the timer's own method holds one, so 'destroy' would never
         # come and the timer would poll a closed chooser for the rest of
-        # the session.  Nothing here
-        # hides the dialog, which is the other thing that unrealizes a
-        # window.
+        # the session.  Nothing here hides the dialog, which is the other
+        # thing that unrealizes a window.
         self.connect('unrealize', self._stop_previewing)
 
         self.place_buttons(buttons)
