@@ -8,6 +8,7 @@ what looks like an environment variable is a name like any other.
 
 import ntpath
 import os
+import time
 from unittest import mock
 
 from . import MComixTest
@@ -169,3 +170,36 @@ class DocumentedVariablesTest(MComixTest):
             with self.subTest(variable=variable):
                 with self.assertRaises(openwith.OpenWithException):
                     self._expand(variable, window)
+
+
+class _StubOSD:
+
+    def __init__(self):
+        self.shown = []
+
+    def show(self, text):
+        self.shown.append(text)
+
+
+class WorkingDirectoryTest(MComixTest):
+
+    def test_the_command_runs_in_its_directory_and_mcomix_stays_put(self):
+        """The working directory was set by changing MComix' own, for
+        every thread in it, and changing it back afterwards."""
+        workdir = os.path.join(self.tmp_dir, 'work')
+        os.makedirs(workdir)
+        written = os.path.join(self.tmp_dir, 'where')
+        window = _StubWindow('page.jpg', '/books/page.jpg')
+        window.osd = _StubOSD()
+        command = openwith.OpenWithCommand(
+            'where', 'sh -c "pwd > %s"' % written, workdir, False)
+        with mock.patch('os.chdir', side_effect=AssertionError('chdir')):
+            command.execute(window)
+        self.assertEqual([], window.osd.shown)
+        deadline = time.monotonic() + 5
+        while not (os.path.exists(written) and os.path.getsize(written)) \
+                and time.monotonic() < deadline:
+            time.sleep(0.01)
+        with open(written) as where:
+            self.assertEqual(os.path.realpath(workdir),
+                             os.path.realpath(where.read().strip()))

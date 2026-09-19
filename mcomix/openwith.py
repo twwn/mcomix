@@ -82,26 +82,25 @@ class OpenWithCommand:
             window.osd.show(_("'%s' is disabled for archives.") % self.get_label())
             return
 
-        current_dir = os.getcwd()
         try:
-            if self.is_valid_workdir(window):
-                workdir = self.parse(window, text=self.get_cwd())[0]
-                os.chdir(workdir)
+            # The command's directory is the command's own: changing
+            # MComix' working directory for it would change it for every
+            # thread MComix runs as well.
+            workdir = self.parse(window, text=self.get_cwd())[0] \
+                if self.is_valid_workdir(window) else None
 
             # The command runs on its own from here; on Unix the SIGCHLD
             # handler installed in run.py collects it once it exits.
             args = self.parse(window)
             if sys.platform == 'win32':
-                process.Win32Popen(args)
+                process.Win32Popen(args, workdir)
             else:
-                process.popen(args, stdout=process.NULL)
+                process.popen(args, stdout=process.NULL, workdir=workdir)
 
         except Exception as e:
             text = _("Could not run command %(cmdlabel)s: %(exception)s") % \
                 {'cmdlabel': self.get_label(), 'exception': str(e)}
             window.osd.show(text)
-        finally:
-            os.chdir(current_dir)
 
     def is_executable(self, window: 'main.MainWindow') -> bool:
         """ Check if a name is executable. This name can be either

@@ -43,9 +43,11 @@ def call(args: Sequence[str | bytes], stdin: Redirect = NULL,
 
 
 def popen(args: Sequence[str | bytes], stdin: Redirect = NULL,
-          stdout: Redirect = PIPE, stderr: Redirect = NULL) -> subprocess.Popen[bytes]:
+          stdout: Redirect = PIPE, stderr: Redirect = NULL,
+          workdir: str | None = None) -> subprocess.Popen[bytes]:
+    """Start <args>, in <workdir> if one is given."""
     return subprocess.Popen(args, stdin=stdin,
-                            stdout=stdout, stderr=stderr,
+                            stdout=stdout, stderr=stderr, cwd=workdir,
                             creationflags=_get_creationflags())
 
 
@@ -129,8 +131,9 @@ if sys.platform == 'win32':
 
     _exe_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
 
-    def Win32Popen(cmd: Sequence[str]) -> int:
-        """Start <cmd> on its own and return its process id.
+    def Win32Popen(cmd: Sequence[str], workdir: str | None = None) -> int:
+        """Start <cmd> on its own, in <workdir> if one is given, and
+        return its process id.
 
         This was written because subprocess.Popen called
         CreateProcessA, which could not pass a path outside the ANSI
@@ -189,7 +192,7 @@ if sys.platform == 'win32':
         buffer = ctypes.create_unicode_buffer(cmdline)
 
         # Resolve executable path.
-        exe = find_executable((cmd[0],))
+        exe = find_executable((cmd[0],), workdir=workdir)
 
         # Some required structures for the method call...
         startupinfo = StartupInfo()
@@ -199,7 +202,7 @@ if sys.platform == 'win32':
 
         # Spawn new process
         success = ctypes.windll.kernel32.CreateProcessW(exe, buffer,
-                                                        None, None, False, 0, None, None, ctypes.byref(startupinfo),
+                                                        None, None, False, 0, None, workdir, ctypes.byref(startupinfo),
                                                         ctypes.byref(processinfo))
 
         if success:
