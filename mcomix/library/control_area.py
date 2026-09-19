@@ -166,8 +166,8 @@ class _ControlArea(Gtk.Box):
             self._dirlabel.set_text('')
 
     def _filter_books(self, entry: Gtk.Entry, *args: object) -> None:
-        """Display only the books in the current collection whose paths
-        contain the string in the Gtk.Entry. The string is not
+        """Display only the books in the current collection whose name or
+        path contains the string in the Gtk.Entry. The string is not
         case-sensitive.
         """
         self._library.filter_string = entry.get_text()

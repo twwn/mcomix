@@ -550,3 +550,47 @@ class MiddleClickTest(MComixTest):
 
 
 # vim: expandtab:sw=4:ts=4
+
+
+class _FilteredLibrary:
+
+    """A library showing all books through <filter_string>."""
+
+    backend = _Backend()
+
+    def __init__(self, filter_string):
+        self.filter_string = filter_string
+        self.collection_area = self
+
+    def get_current_collection(self):
+        return constants.COLLECTION_ALL
+
+
+class NewBookUnderAFilterTest(MComixTest):
+
+    """A book added while the covers are filtered is drawn if the filter
+    lets it through - by name or by path, as the covers drawn from the
+    database are."""
+
+    def _drawn(self, filter_string, name, path):
+        library = _FilteredLibrary(filter_string)
+        area = book_area._BookArea(library)
+        try:
+            book = _Book(1, path)
+            book.name = name
+            with unittest.mock.patch.object(area, 'add_books') as added:
+                area._new_book_added(book, None)
+            return added.called
+        finally:
+            area.close()
+
+    def test_a_name_that_matches(self):
+        self.assertTrue(self._drawn('batman', 'Batman 01', '/books/Batman 01.cbz'))
+
+    def test_a_path_that_matches(self):
+        """The name alone was asked, so a book filed under a matching
+        folder was left out until the covers were drawn again."""
+        self.assertTrue(self._drawn('dc', 'Batman 01', '/books/DC/Batman 01.cbz'))
+
+    def test_neither_matches(self):
+        self.assertFalse(self._drawn('marvel', 'Batman 01', '/books/DC/Batman 01.cbz'))

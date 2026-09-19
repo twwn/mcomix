@@ -331,9 +331,12 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
             if self.is_book_displayed(book):
                 return
 
-            # If the current view is filtered, only draw new books that match the filter
-            if not (self._library.filter_string and
-                    self._library.filter_string.lower() not in book.name.lower()):
+            # Under a filter, only a book it lets through: by name or by
+            # path, and without regard to case, as the covers drawn from
+            # the database are chosen.
+            wanted = (self._library.filter_string or '').lower()
+            if (wanted in book.name.lower()
+                    or wanted in book.path.lower()):
                 self.add_books([book])
 
     def is_book_displayed(self, book: 'backend_types._Book | None') -> bool:
