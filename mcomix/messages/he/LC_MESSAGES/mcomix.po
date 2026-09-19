@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: mcomix 0.99\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-19 15:45+0200\n"
+"POT-Creation-Date: 2026-09-19 20:18+0200\n"
 "PO-Revision-Date: 2013-01-07 22:51+0200\n"
 "Last-Translator: Isratine Citizen <genghiskhan@gmx.ca>\n"
 "Language-Team: Hebrew <eliz@gnu.org>\n"
@@ -137,7 +137,7 @@ msgid "C_lear bookmarks..."
 msgstr "_נקה סימניות..."
 
 #: mcomix/bookmark_dialog.py:33 mcomix/main.py:751 mcomix/openwith.py:343
-#: mcomix/library/collection_area.py:122 mcomix/library/watchlist.py:63
+#: mcomix/library/collection_area.py:149 mcomix/library/watchlist.py:63
 msgid "_Remove"
 msgstr "הס_ר"
 
@@ -152,13 +152,13 @@ msgstr "ס_גור"
 msgid "Type"
 msgstr "טיפוס"
 
-#: mcomix/bookmark_dialog.py:64 mcomix/edit_comment_area.py:37
+#: mcomix/bookmark_dialog.py:64 mcomix/edit_comment_area.py:38
 #: mcomix/keybindings_editor.py:51
 msgid "Name"
 msgstr "שם"
 
 #: mcomix/bookmark_dialog.py:67 mcomix/main.py:1300
-#: mcomix/library/control_area.py:134
+#: mcomix/library/control_area.py:147
 msgid "Page"
 msgstr "עמוד"
 
@@ -183,7 +183,7 @@ msgstr "_ערוך סימניות..."
 msgid "! Callback %(function)r failed: %(error)s"
 msgstr "! פונקציית הקריאה החוזרת %(function)r נכשלה: %(error)s"
 
-#: mcomix/column_list.py:14
+#: mcomix/column_list.py:16
 msgid "New accelerator..."
 msgstr "קיצור דרך חדש..."
 
@@ -199,7 +199,7 @@ msgid "Could not read %s"
 msgstr "לא ניתן לקרוא את %s"
 
 # מזהם = מזהה אותם
-#: mcomix/edit_comment_area.py:28
+#: mcomix/edit_comment_area.py:29
 msgid ""
 "Please note that the only files that are automatically added to this list "
 "are those files in archives that MComix recognizes as comments."
@@ -207,19 +207,21 @@ msgstr ""
 "נא לשים לב שהקבצים היחידים שייווספו אוטומטית אל רשימה זו יהיו קבצים "
 "בארכיונים שהיישום MComix מזהם כהערות."
 
-#: mcomix/edit_comment_area.py:38 mcomix/properties_dialog.py:229
+#: mcomix/edit_comment_area.py:39 mcomix/properties_dialog.py:229
 msgid "Size"
 msgstr "גודל"
 
-#: mcomix/edit_comment_area.py:68 mcomix/edit_image_area.py:83
+#: mcomix/edit_comment_area.py:92 mcomix/edit_image_area.py:110
 msgid "Remove from archive"
 msgstr "הסר מן ארכיון"
 
-#: mcomix/edit_comment_area.py:71 mcomix/edit_image_area.py:87 mcomix/ui.py:434
+#: mcomix/edit_comment_area.py:95 mcomix/edit_image_area.py:114
+#: mcomix/ui.py:434
 msgid "_Undo"
 msgstr "_ביטול"
 
-#: mcomix/edit_comment_area.py:72 mcomix/edit_image_area.py:88 mcomix/ui.py:437
+#: mcomix/edit_comment_area.py:96 mcomix/edit_image_area.py:115
+#: mcomix/ui.py:437
 msgid "_Redo"
 msgstr "בי_צוע חוזר"
 
@@ -239,33 +241,33 @@ msgstr "שמור _בשם"
 msgid "_Import"
 msgstr "_ייבוא"
 
-#: mcomix/edit_dialog.py:101
+#: mcomix/edit_dialog.py:105
 msgid "Images"
 msgstr "תמונות"
 
-#: mcomix/edit_dialog.py:102
+#: mcomix/edit_dialog.py:106
 msgid "Comment files"
 msgstr "קבצי הערות"
 
-#: mcomix/edit_dialog.py:186 mcomix/file_actions.py:180
+#: mcomix/edit_dialog.py:190 mcomix/file_actions.py:180
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! לא ניתן היה לשמור את הארכיון %(archivefile)s: %(error)s"
 
 # מאחר ונרשם שמירה (saved) בנטיה לעבר, יש הכרח לציין את המילה "היה" (לשמור) בהתאמה
-#: mcomix/edit_dialog.py:199 mcomix/file_actions.py:185
+#: mcomix/edit_dialog.py:203 mcomix/file_actions.py:185
 msgid "The new archive could not be saved!"
 msgstr "לא ניתן היה לשמור את הארכיון החדש!"
 
-#: mcomix/edit_dialog.py:200 mcomix/file_actions.py:186
+#: mcomix/edit_dialog.py:204 mcomix/file_actions.py:186
 msgid "The original files have not been removed."
 msgstr "הקבצים הנוכחיים לא הוסרו."
 
-#: mcomix/edit_dialog.py:284
+#: mcomix/edit_dialog.py:288
 msgid "Archives are stored as ZIP files."
 msgstr "הארכיונים מאוחסנים כקבציי ZIP."
 
-#: mcomix/edit_image_area.py:84
+#: mcomix/edit_image_area.py:111
 msgid "Select _All"
 msgstr "בחירת ה_כול"
 
@@ -386,7 +388,7 @@ msgstr "לא ניתן היה להעביר את \"%(file)s\" אל \"%(directory)s
 msgid "Open"
 msgstr "פתיחה"
 
-#: mcomix/file_chooser_base_dialog.py:107 mcomix/library/book_area.py:141
+#: mcomix/file_chooser_base_dialog.py:107 mcomix/library/book_area.py:168
 msgid "_Open"
 msgstr "_פתח"
 
@@ -847,7 +849,7 @@ msgstr "מאפיינים"
 msgid "Preferences"
 msgstr "העדפות"
 
-#: mcomix/keybindings.py:146 mcomix/library/main_dialog.py:52
+#: mcomix/keybindings.py:146 mcomix/library/main_dialog.py:53
 msgid "Library"
 msgstr "ספרייה"
 
@@ -886,7 +888,7 @@ msgid "Couldn't load keybindings: %s"
 msgstr "לא ניתן לטעון את צירופי המקשים: %s"
 
 #: mcomix/last_read_page.py:245 mcomix/thumbnail_tools.py:125
-#: mcomix/library/book_area.py:659
+#: mcomix/library/book_area.py:689
 #, python-format
 msgid "! Could not remove file \"%s\""
 msgstr "! לא ניתן היה למחוק את הקובץ \"%s\""
@@ -1743,7 +1745,7 @@ msgstr "שם קובץ"
 msgid "File name (GLib)"
 msgstr "שם קובץ (GLib)"
 
-#: mcomix/preferences_dialog.py:669 mcomix/library/book_area.py:214
+#: mcomix/preferences_dialog.py:669 mcomix/library/book_area.py:241
 msgid "File size"
 msgstr "גודל קובץ"
 
@@ -1752,12 +1754,12 @@ msgid "Last modified"
 msgstr "שונה לאחרונה"
 
 #: mcomix/preferences_dialog.py:676 mcomix/preferences_dialog.py:720
-#: mcomix/library/book_area.py:218
+#: mcomix/library/book_area.py:245
 msgid "Ascending"
 msgstr "סדר מיון עולה"
 
 #: mcomix/preferences_dialog.py:677 mcomix/preferences_dialog.py:721
-#: mcomix/library/book_area.py:219
+#: mcomix/library/book_area.py:246
 msgid "Descending"
 msgstr "סדר מיון יורד"
 
@@ -1838,7 +1840,7 @@ msgstr ""
 "גודל גבוהה, אולם זמני טעינת עמודים יהיו ארוכים יותר."
 
 # מקורי
-#: mcomix/preferences_dialog.py:832 mcomix/library/book_area.py:226
+#: mcomix/preferences_dialog.py:832 mcomix/library/book_area.py:253
 msgid "Normal"
 msgstr "רגיל"
 
@@ -1863,7 +1865,7 @@ msgstr "תמונה"
 msgid "Archive"
 msgstr "ארכיון"
 
-#: mcomix/properties_dialog.py:137 mcomix/library/control_area.py:137
+#: mcomix/properties_dialog.py:137 mcomix/library/control_area.py:150
 #, python-format
 msgid "%d page"
 msgid_plural "%d pages"
@@ -2220,7 +2222,7 @@ msgstr "צלמית וקטורית"
 msgid "! Could not save thumbnail \"%(thumbpath)s\": %(error)s"
 msgstr "! לא ניתן היה לשמור את תמונת־הציפורן \"%(thumbpath)s\": %(error)s"
 
-#: mcomix/ui.py:427 mcomix/library/book_area.py:160
+#: mcomix/ui.py:427 mcomix/library/book_area.py:187
 msgid "_Copy"
 msgstr "_העתק"
 
@@ -2632,7 +2634,7 @@ msgstr "לא ניתן היה לקבוע את גרסת מסד הנתונים של
 msgid "Upgrading library database version from %(from)d to %(to)d."
 msgstr "שדרוג גרסת מסד הנתונים של הספרייה מ־%(from)d ל־%(to)d."
 
-#: mcomix/library/backend_types.py:315 mcomix/library/collection_area.py:195
+#: mcomix/library/backend_types.py:315 mcomix/library/collection_area.py:222
 msgid "All books"
 msgstr "כל החוברות"
 
@@ -2641,231 +2643,231 @@ msgstr "כל החוברות"
 msgid "! Could not scan for new books: %s"
 msgstr "! לא ניתן לסרוק חוברות חדשות: %s"
 
-#: mcomix/library/book_area.py:142
+#: mcomix/library/book_area.py:169
 msgid "Opens the selected books for viewing."
 msgstr "פתיחת החוברת הנבחרת לצפיה."
 
-#: mcomix/library/book_area.py:144
+#: mcomix/library/book_area.py:171
 msgid "Open _without closing library"
 msgstr "פתח _ללא סגירת הספרייה"
 
 # והשאר את
-#: mcomix/library/book_area.py:145
+#: mcomix/library/book_area.py:172
 msgid "Opens the selected books, but keeps the library window open."
 msgstr "פתיחת החוברות הנבחרות, והשארת חלון הספרייה פתוח."
 
-#: mcomix/library/book_area.py:147 mcomix/library/collection_area.py:108
+#: mcomix/library/book_area.py:174 mcomix/library/collection_area.py:135
 msgid "_Add..."
 msgstr "הוס_ף..."
 
-#: mcomix/library/book_area.py:148 mcomix/library/collection_area.py:109
+#: mcomix/library/book_area.py:175 mcomix/library/collection_area.py:136
 msgid "Add more books to the library."
 msgstr "הוסף עוד חוברות אל הספרייה."
 
-#: mcomix/library/book_area.py:151
+#: mcomix/library/book_area.py:178
 msgid "Remove _from this collection"
 msgstr "הסר מן _אוסף זה"
 
 # אולי מוטב יהיה להחליף את המילה from "מן" אל "מהאוסף"
-#: mcomix/library/book_area.py:152
+#: mcomix/library/book_area.py:179
 msgid "Removes the selected books from the current collection."
 msgstr "הסרת החוברות הנבחרות מן האוסף הנוכחי."
 
-#: mcomix/library/book_area.py:154
+#: mcomix/library/book_area.py:181
 msgid "Remove from the _library"
 msgstr "הסר מן ה_ספרייה"
 
-#: mcomix/library/book_area.py:155
+#: mcomix/library/book_area.py:182
 msgid "Completely removes the selected books from the library."
 msgstr "הסרה מוחלטת של החוברות הנבחרות מן הספרייה."
 
-#: mcomix/library/book_area.py:157
+#: mcomix/library/book_area.py:184
 msgid "_Remove and delete from disk"
 msgstr "הסר ומחק מן ה_כונן"
 
-#: mcomix/library/book_area.py:158
+#: mcomix/library/book_area.py:185
 msgid "Deletes the selected books from disk."
 msgstr "מחיקת החוברות הנבחרות מן הכונן."
 
-#: mcomix/library/book_area.py:161
+#: mcomix/library/book_area.py:188
 msgid "Copies the selected book's path to clipboard."
 msgstr "העתקת נתיב החוברת הנבחרת אל לוח גזירים."
 
 # חוברות ספרייה
-#: mcomix/library/book_area.py:200
+#: mcomix/library/book_area.py:227
 msgid "Library books"
 msgstr "ספריית חוברות"
 
-#: mcomix/library/book_area.py:212
+#: mcomix/library/book_area.py:239
 msgid "Book name"
 msgstr "שם חוברת"
 
-#: mcomix/library/book_area.py:213
+#: mcomix/library/book_area.py:240
 msgid "Full path"
 msgstr "נתיב מלא"
 
-#: mcomix/library/book_area.py:215
+#: mcomix/library/book_area.py:242
 msgid "Date added"
 msgstr "תאריך הוספה"
 
-#: mcomix/library/book_area.py:224
+#: mcomix/library/book_area.py:251
 msgid "Huge"
 msgstr "ענק"
 
-#: mcomix/library/book_area.py:225
+#: mcomix/library/book_area.py:252
 msgid "Large"
 msgstr "גדול"
 
-#: mcomix/library/book_area.py:227
+#: mcomix/library/book_area.py:254
 msgid "Small"
 msgstr "קטן"
 
-#: mcomix/library/book_area.py:228
+#: mcomix/library/book_area.py:255
 msgid "Tiny"
 msgstr "זעיר"
 
-#: mcomix/library/book_area.py:232
+#: mcomix/library/book_area.py:259
 msgid "Custom..."
 msgstr "מותאם..."
 
-#: mcomix/library/book_area.py:236
+#: mcomix/library/book_area.py:263
 msgid "_Sort"
 msgstr "_מיון"
 
-#: mcomix/library/book_area.py:237
+#: mcomix/library/book_area.py:264
 msgid "Cover si_ze"
 msgstr "_גודל כריכה"
 
-#: mcomix/library/book_area.py:451
+#: mcomix/library/book_area.py:481
 msgid "Set library cover size"
 msgstr "קבע כריכה עבור הספרייה"
 
 # אולי מוטב יהיה להחליף את המילה from "מן" אל "מהאוסף"
-#: mcomix/library/book_area.py:582
+#: mcomix/library/book_area.py:612
 #, python-format
 msgid "Removed %(num)d book from '%(collection)s'."
 msgid_plural "Removed %(num)d books from '%(collection)s'."
 msgstr[0] "הוסרה חוברת %(num)d מהאוסף '%(collection)s'."
 msgstr[1] "הוסרו %(num)d חוברות מהאוסף '%(collection)s'."
 
-#: mcomix/library/book_area.py:605 mcomix/library/collection_area.py:264
+#: mcomix/library/book_area.py:635 mcomix/library/collection_area.py:291
 #, python-format
 msgid "Removed %d book from the library."
 msgid_plural "Removed %d books from the library."
 msgstr[0] "הוסרה חוברת %d מן הספרייה."
 msgstr[1] "הוסרו %d חוברות מן הספרייה."
 
-#: mcomix/library/book_area.py:630
+#: mcomix/library/book_area.py:660
 msgid "Remove books from the library?"
 msgstr "להסיר חוברות מן הספרייה?"
 
-#: mcomix/library/book_area.py:631
+#: mcomix/library/book_area.py:661
 msgid ""
 "The selected books will be removed from the library and permanently deleted. "
 "Are you sure that you want to continue?"
 msgstr ""
 "החוברות הנבחרות יוסרו מן הספרייה וימחקו לצמיתות. האם עדיין ברצונך להמשיך?"
 
-#: mcomix/library/collection_area.py:112
+#: mcomix/library/collection_area.py:139
 msgid "New"
 msgstr "חדש"
 
-#: mcomix/library/collection_area.py:113
+#: mcomix/library/collection_area.py:140
 msgid "Add a new empty collection."
 msgstr "הוסף אוסף ריק חדש."
 
-#: mcomix/library/collection_area.py:114
+#: mcomix/library/collection_area.py:141
 msgid "Re_name"
 msgstr "_שינוי שם..."
 
-#: mcomix/library/collection_area.py:115
+#: mcomix/library/collection_area.py:142
 msgid "Renames the selected collection."
 msgstr "שינוי שם האוסף הנבחר."
 
-#: mcomix/library/collection_area.py:116
+#: mcomix/library/collection_area.py:143
 msgid "_Duplicate"
 msgstr "ש_כפול"
 
-#: mcomix/library/collection_area.py:117
+#: mcomix/library/collection_area.py:144
 msgid "Creates a duplicate of the selected collection."
 msgstr "יצירת עותק זהה של האוסף הנבחרץ"
 
 # ניקוי/איפוס
-#: mcomix/library/collection_area.py:119
+#: mcomix/library/collection_area.py:146
 msgid "_Clean up"
 msgstr "_טיהור"
 
 # שכבר לא קיימות
 # שאינן קיימות עוד
 # שלא קיימות עוד
-#: mcomix/library/collection_area.py:120
+#: mcomix/library/collection_area.py:147
 msgid "Removes no longer existent books from the collection."
 msgstr "הסרת חוברות שאינן קיימות עוד מהאוסף."
 
-#: mcomix/library/collection_area.py:123
+#: mcomix/library/collection_area.py:150
 msgid "Deletes the selected collection."
 msgstr "מחיקת האוסף הנבחר."
 
 # ספריית אוספים
 # אוספי ספרייה
-#: mcomix/library/collection_area.py:141
+#: mcomix/library/collection_area.py:168
 msgid "Library collections"
 msgstr "ספריית אוספים"
 
-#: mcomix/library/collection_area.py:221
+#: mcomix/library/collection_area.py:248
 msgid "Add new collection?"
 msgstr "להוסיף אוסף חדש?"
 
-#: mcomix/library/collection_area.py:222
+#: mcomix/library/collection_area.py:249
 msgid "Please enter a name for the new collection."
 msgstr "נא להזין שם עבור האוסף החדש."
 
 # בשם, שנקרא
-#: mcomix/library/collection_area.py:247
+#: mcomix/library/collection_area.py:274
 #, python-format
 msgid "Could not add a new collection called '%s'."
 msgstr "לא ניתן להוסיף אוסף חדש בשם '%s'."
 
-#: mcomix/library/collection_area.py:252 mcomix/library/collection_area.py:344
+#: mcomix/library/collection_area.py:279 mcomix/library/collection_area.py:371
 msgid "A collection by that name already exists."
 msgstr "אוסף הקרוי בשם זה כבר קיים."
 
-#: mcomix/library/collection_area.py:314
+#: mcomix/library/collection_area.py:341
 msgid "Rename collection?"
 msgstr "לשנות שם אוסף?"
 
-#: mcomix/library/collection_area.py:315
+#: mcomix/library/collection_area.py:342
 msgid "Please enter a new name for the selected collection."
 msgstr "נא להזין שם חדש עבור האוסף הנוכחי."
 
-#: mcomix/library/collection_area.py:340
+#: mcomix/library/collection_area.py:367
 #, python-format
 msgid "Could not change the name to '%s'."
 msgstr "לא ניתן לשנות את השם אל '%s'."
 
-#: mcomix/library/collection_area.py:356
+#: mcomix/library/collection_area.py:383
 msgid "Could not duplicate collection."
 msgstr "לא ניתן לשכפל אוסף."
 
 # מקור
-#: mcomix/library/collection_area.py:532
+#: mcomix/library/collection_area.py:559
 msgid "Root"
 msgstr "שורש"
 
-#: mcomix/library/collection_area.py:535
+#: mcomix/library/collection_area.py:562
 #, python-format
 msgid ""
 "Put the collection '%(subcollection)s' in the collection "
 "'%(supercollection)s'."
 msgstr "השמת האוסף '%(subcollection)s' בתוך האוסף '%(supercollection)s'."
 
-#: mcomix/library/collection_area.py:547
+#: mcomix/library/collection_area.py:574
 #, python-format
 msgid "Add books to '%s'."
 msgstr "הוסף חוברות אל '%s'."
 
 # אולי מוטב יהיה להחליף את המילה from "מן" אל "מהאוסף" ואת המילה to "אל" אל "אל האוסף"
-#: mcomix/library/collection_area.py:550
+#: mcomix/library/collection_area.py:577
 #, python-format
 msgid ""
 "Move books from '%(source collection)s' to '%(destination collection)s'."
@@ -2873,12 +2875,12 @@ msgstr ""
 "העברת חוברות מהאוסף '%(source collection)s' אל האוסף "
 "'%(destination collection)s'."
 
-#: mcomix/library/control_area.py:75
+#: mcomix/library/control_area.py:76
 msgid "_Search:"
 msgstr "_חיפוש:"
 
 # התאמת אותיות גדולות/קטנות
-#: mcomix/library/control_area.py:81
+#: mcomix/library/control_area.py:82
 msgid ""
 "Display only those books that have the specified text string in their full "
 "path. The search is not case sensitive."
@@ -2886,42 +2888,44 @@ msgstr ""
 "הצגה של חוברות שלהן מחרוזת התמליל שמצוינת בנתיב המלא שלהן, בלבד. החיפוש אינו "
 "תלוי רישיות."
 
-#: mcomix/library/control_area.py:90
+#: mcomix/library/control_area.py:91
 msgid "_Watch list"
 msgstr "רשימת _צפיה"
 
-#: mcomix/library/control_area.py:94
+#: mcomix/library/control_area.py:95
 msgid "Open the watchlist management dialog."
 msgstr "ניהול רשימת צפיה."
 
-#: mcomix/library/control_area.py:97
+#: mcomix/library/control_area.py:98
 msgid "_Open list"
 msgstr "_פתח נבחרות"
 
-#: mcomix/library/control_area.py:100
+#: mcomix/library/control_area.py:101
 msgid "Open the selected book."
 msgstr "פתח את החוברת הנבחרת."
 
-#: mcomix/library/control_area.py:144
+#: mcomix/library/control_area.py:157
 #, python-format
 msgid "Finished reading on %(date)s, %(time)s"
 msgstr "הקריאה הסתיימה ב־%(date)s, %(time)s"
 
-#: mcomix/library/main_dialog.py:125
+#: mcomix/library/main_dialog.py:129
 msgid "Scanning for new books..."
 msgstr "סורק כעת עבור חוברות חדשות..."
 
-#: mcomix/library/main_dialog.py:170
+#: mcomix/library/main_dialog.py:174
 #, python-format
 msgid "Added new book '%(bookname)s' from directory '%(directory)s'."
 msgstr "התווספה חוברת חדשה '%(bookname)s' מן המדור '%(directory)s'."
 
-#: mcomix/library/main_dialog.py:173
+#: mcomix/library/main_dialog.py:181
 #, python-format
-msgid "Added %(count)d new books from directory '%(directory)s'."
-msgstr "התווספו %(count)d חוברות חדשות מן המדור '%(directory)s'."
+msgid "Added %(count)d new book from directory '%(directory)s'."
+msgid_plural "Added %(count)d new books from directory '%(directory)s'."
+msgstr[0] "התווספו %(count)d חוברות חדשות מן המדור '%(directory)s'."
+msgstr[1] "התווספו %(count)d חוברות חדשות מן המדור '%(directory)s'."
 
-#: mcomix/library/main_dialog.py:180
+#: mcomix/library/main_dialog.py:189
 #, python-format
 msgid "No new books found in directory '%s'."
 msgstr "לא נמצאו חוברות חדשות במדור '%s'."

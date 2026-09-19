@@ -174,8 +174,13 @@ class _LibraryDialog(Gtk.Window):
                 message = _("Added new book '%(bookname)s' "
                             "from directory '%(directory)s'.")
             else:
-                message = _("Added %(count)d new books "
-                            "from directory '%(directory)s'.")
+                # Only ever two or more, but that is not one form in
+                # every language: Polish says "2 nowe książki" and
+                # "5 nowych książek".
+                message = i18n.get_translation().ngettext(
+                    "Added %(count)d new book from directory '%(directory)s'.",
+                    "Added %(count)d new books from directory '%(directory)s'.",
+                    len(filelist))
 
             self.set_status_message(message % {'directory': watchentry.directory,
                                                'count': len(filelist), 'bookname': os.path.basename(filelist[0])})

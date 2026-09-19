@@ -7,8 +7,10 @@ with no sqlite, which the plain "from sqlite3 import dbapi2" in the
 backend made unreachable.
 """
 
+import gettext
 import os
 import threading
+import types
 import unittest.mock
 
 from gi.repository import GLib, Gtk
@@ -17,6 +19,7 @@ from . import MComixTest, get_testfile_path, pump, wait_for
 
 from mcomix import column_list
 from mcomix import constants
+from mcomix import i18n
 from mcomix import icons
 from mcomix import main
 from mcomix import message_dialog
@@ -385,3 +388,35 @@ class CustomCoverSizeTest(_LibraryWindowTest):
         self.assertEqual(constants.SIZE_NORMAL, action.get_state().get_int32())
 
 # vim: expandtab:sw=4:ts=4
+
+
+class NewBooksMessageTest(MComixTest):
+
+    """What the status bar says after a scan of a watched directory.
+
+    The count of new books was translated with one form for every
+    number, so Polish said "2 nowych książek", which is the form for
+    five."""
+
+    def _message(self, count):
+        class _Library:
+            def add_books(self, paths, collection_name):
+                pass
+
+            def set_status_message(self, message):
+                self.message = message
+
+        library = _Library()
+        entry = types.SimpleNamespace(collection=None, directory='/comics')
+        main_dialog._LibraryDialog._new_files_found(
+            library, ['/comics/%d.cbz' % n for n in range(count)], entry)
+        return library.message
+
+    def test_polish_counts_two_books_and_five_books_differently(self):
+        catalogue = os.path.join(os.path.dirname(i18n.__file__), 'messages',
+                                 'pl', 'LC_MESSAGES', 'mcomix.mo')
+        with open(catalogue, 'rb') as mo:
+            polish = gettext.GNUTranslations(mo)
+        with unittest.mock.patch.object(i18n, '_translation', polish):
+            self.assertIn('2 nowe książki', self._message(2))
+            self.assertIn('5 nowych książek', self._message(5))
