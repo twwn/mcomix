@@ -207,7 +207,6 @@ class MainWindow(Gtk.Window):
             self.actiongroup.get_action('invert_scroll').activate()
 
         if prefs['keep transformation']:
-            prefs['keep transformation'] = False
             self.actiongroup.get_action('keep_transformation').activate()
         else:
             prefs['rotation'] = 0
@@ -969,8 +968,15 @@ class MainWindow(Gtk.Window):
     def change_hide_all(self, toggleaction: "ui.Action") -> None:
         self._update_toggle_preference('hide all', toggleaction)
 
-    def change_keep_transformation(self, *args: object) -> None:
-        prefs['keep transformation'] = not prefs['keep transformation']
+    def change_keep_transformation(self, toggleaction: "ui.Action") -> None:
+        """Keep the rotation and flips from one page to the next, or not.
+
+        The action's state is the answer, as it is for every toggle
+        here; this used to turn the preference over instead, which only
+        agreed with the action because the window turned it off first
+        to have the action turn it back on at startup.
+        """
+        prefs['keep transformation'] = toggleaction.get_active()
 
     def manual_zoom_in(self, *args: object) -> None:
         self.zoom.zoom_in()
