@@ -860,6 +860,21 @@ class ExternalRarLocaleTest(MComixTest):
         self.assertIn('1-قفهسا.jpg', names)
         self.assertFalse([name for name in names if '?' in name], names)
 
+    @unittest.skipUnless(zip_external.ZipArchive.is_available(),
+                         'unzip is not installed')
+    def test_unzip_names_are_listed_and_extracted_under_the_c_locale(self):
+        """unzip is locale-bound the same way: under C it wrote each
+        letter outside ASCII as #U followed by its code."""
+        with unittest.mock.patch.dict(os.environ,
+                                      {'LANG': 'C', 'LC_ALL': 'C'}):
+            archive = zip_external.ZipArchive(
+                get_testfile_path('archives', 'Unicode.zip'))
+            names = list(archive.iter_contents())
+            archive.extract('1-قفهسا.jpg', self.tmp_dir)
+        self.assertIn('1-قفهسا.jpg', names)
+        self.assertTrue(os.path.getsize(
+            os.path.join(self.tmp_dir, '1-قفهسا.jpg')) > 0)
+
     @unittest.skipUnless(rar_external.RarArchive.is_available(),
                          'unrar is not installed')
     def test_a_file_is_extracted_by_its_name_under_the_c_locale(self):

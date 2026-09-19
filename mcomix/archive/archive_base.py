@@ -3,6 +3,7 @@ extraction and adding new archive formats. """
 
 import os
 import errno
+import sys
 import threading
 from collections.abc import Callable, Iterable, Iterator
 from typing import IO
@@ -197,6 +198,24 @@ class NonUnicodeArchive(BaseArchive):
         return self.unicode_mapping.get(filename, filename)
 
 
+def utf8_environment() -> dict[str, str] | None:
+    """The environment an external archiver runs in: MComix' own, in a
+    UTF-8 locale.
+
+    unrar and unzip write the names they list in the character set of
+    their locale, and read the names they are given the same way, while
+    MComix reads their listings as UTF-8.  Under C, unrar wrote every
+    letter outside ASCII as '?' and unzip as '#U' and its code, and
+    under a Latin-1 locale neither listing was UTF-8 at all.  C.UTF-8 is
+    there on any glibc from 2.35 and on musl; where it is not, the C
+    library falls back to C, which is no worse than before.  Windows has
+    no such locale, and its archivers speak the console's code page.
+    """
+    if sys.platform == 'win32':
+        return None
+    return dict(os.environ, LC_ALL='C.UTF-8')
+
+
 class ExternalExecutableArchive(NonUnicodeArchive):
     """ For archives that are extracted by spawning an external
     application. """
@@ -263,7 +282,7 @@ class ExternalExecutableArchive(NonUnicodeArchive):
 
         proc = process.popen([self._executable] +
                              self._get_list_arguments() +
-                             [self.archive])
+                             [self.archive], env=utf8_environment())
         assert proc.stdout is not None
         try:
             for raw_line in proc.stdout:
@@ -298,7 +317,7 @@ class ExternalExecutableArchive(NonUnicodeArchive):
             process.call([self._executable] +
                          self._get_extract_arguments() +
                          [self.archive, self._original_filename(filename)],
-                         stdout=output)
+                         stdout=output, env=utf8_environment())
         finally:
             output.close()
 
