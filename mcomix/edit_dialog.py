@@ -99,7 +99,7 @@ class _EditArchiveDialog(Dialog):
         self.add_controller(shortcuts)
 
         self._image_area = edit_image_area._ImageArea(self, window)
-        self._comment_area = edit_comment_area._CommentArea(self)
+        self._comment_area = edit_comment_area._CommentArea(self, window)
 
         notebook = Gtk.Notebook()
         widgets.set_border(notebook, 6)
@@ -188,7 +188,10 @@ class _EditArchiveDialog(Dialog):
                 if self.file_handler.archive_type is not None else None,
                 # A page renamed in the window is renamed in whatever
                 # the editor writes as well: the two are the same book.
-                page_names=self._window.file_actions.page_names())
+                page_names=self._window.file_actions.page_names(),
+                # A comment file is renamed in this editor and nowhere
+                # else, so the list itself says what each is called.
+                comment_names=self._comment_area.file_names())
             saved = True
         except OSError as error:
             log.error(_('! Could not save the archive %(archivefile)s: '

@@ -75,20 +75,11 @@ class FileActions:
         """What <name>, typed for <page>, would call it, or None where
         it would call it nothing it is not called already.
 
-        A name typed with a folder in front of it is read as the last
-        part of it, a page being a file inside the book rather than a
-        path, and a name typed without an extension keeps the old one,
-        since what MComix and every other reader take for a page is
-        decided by that.
+        The rule is the one every file in a book is renamed by, in
+        rename_dialog.read(): the last part of what was typed, with the
+        old extension where none was typed.
         """
-        name = os.path.basename(name.strip())
-        if not name:
-            return None
-        if not os.path.splitext(name)[1]:
-            name += os.path.splitext(self.page_name(page))[1]
-        if name == self.page_name(page):
-            return None
-        return name
+        return rename_dialog.read(self.page_name(page), name)
 
     def page_called(self, name: str, other_than: int) -> "int | None":
         """The page called <name>, if a page other than <other_than> is.

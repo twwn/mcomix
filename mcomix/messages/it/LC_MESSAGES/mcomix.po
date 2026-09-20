@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-20 19:06+0200\n"
+"POT-Creation-Date: 2026-09-20 19:12+0200\n"
 "PO-Revision-Date: 2013-04-26 18:00+0100\n"
 "Last-Translator: Giovanni Scafora <giovanni@archlinux.org>\n"
 "Language-Team: Arch Linux Italian Team <giovanni@archlinux.org>\n"
@@ -52,17 +52,17 @@ msgstr "Il formato dell'archivio non è supportato: %s"
 msgid "! Extraction error: %s"
 msgstr "! Si è verificato un errore durante l'estrazione: %s"
 
-#: mcomix/archive_packer.py:169 mcomix/library/book_area.py:696
+#: mcomix/archive_packer.py:171 mcomix/library/book_area.py:696
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! Impossibile rimuovere %(file)s: %(error)s"
 
-#: mcomix/archive_packer.py:511 mcomix/archive_packer.py:529
+#: mcomix/archive_packer.py:518 mcomix/archive_packer.py:536
 #, python-format
 msgid "! Could not create archive at path \"%s\""
 msgstr "! Impossibile creare un archivio nel percorso \"%s\""
 
-#: mcomix/archive_packer.py:520
+#: mcomix/archive_packer.py:527
 #, python-format
 msgid ""
 "! Could not add file %(sourcefile)s to archive %(archivefile)s, aborting..."
@@ -89,7 +89,7 @@ msgid "_No"
 msgstr "_No"
 
 #: mcomix/bookmark_backend.py:329 mcomix/edit_dialog.py:58
-#: mcomix/file_actions.py:872 mcomix/file_chooser_base_dialog.py:106
+#: mcomix/file_actions.py:796 mcomix/file_chooser_base_dialog.py:106
 #: mcomix/file_chooser_base_dialog.py:111
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:32
@@ -155,7 +155,7 @@ msgstr "_Chiudi"
 msgid "Type"
 msgstr "Tipo"
 
-#: mcomix/bookmark_dialog.py:64 mcomix/edit_comment_area.py:38
+#: mcomix/bookmark_dialog.py:64 mcomix/edit_comment_area.py:43
 #: mcomix/keybindings_editor.py:51
 msgid "Name"
 msgstr "Nome"
@@ -199,7 +199,7 @@ msgstr "Commenti"
 msgid "Could not read %s"
 msgstr "Impossibile leggere %s"
 
-#: mcomix/edit_comment_area.py:29
+#: mcomix/edit_comment_area.py:34
 msgid ""
 "Please note that the only files that are automatically added to this list "
 "are those files in archives that MComix recognizes as comments."
@@ -207,23 +207,45 @@ msgstr ""
 "Nota che gli unici file che sono automaticamente aggiunti a questa lista "
 "sono quelli presenti negli archivi che MComix riconosce come commenti."
 
-#: mcomix/edit_comment_area.py:39 mcomix/properties_dialog.py:229
+#: mcomix/edit_comment_area.py:44 mcomix/properties_dialog.py:229
 msgid "Size"
 msgstr "Dimensione"
 
-#: mcomix/edit_comment_area.py:92 mcomix/edit_image_area.py:112
+#: mcomix/edit_comment_area.py:98
+msgid "Re_name file..."
+msgstr "Cam_bia nome file..."
+
+#: mcomix/edit_comment_area.py:99 mcomix/edit_image_area.py:112
 msgid "Remove from archive"
 msgstr "Rimuovi dall'archivio"
 
-#: mcomix/edit_comment_area.py:95 mcomix/edit_image_area.py:116
+#: mcomix/edit_comment_area.py:102 mcomix/edit_image_area.py:116
 #: mcomix/ui.py:441
 msgid "_Undo"
 msgstr "_Annulla"
 
-#: mcomix/edit_comment_area.py:96 mcomix/edit_image_area.py:117
+#: mcomix/edit_comment_area.py:103 mcomix/edit_image_area.py:117
 #: mcomix/ui.py:444
 msgid "_Redo"
 msgstr "_Ripeti"
+
+#: mcomix/edit_comment_area.py:164
+#, python-format
+msgid "Another file in the archive is called \"%s\" already."
+msgstr "Un altro file nell’archivio si chiama già «%s»."
+
+#: mcomix/edit_comment_area.py:169
+#, python-format
+msgid "A page of the book is called \"%s\" already."
+msgstr "Una pagina del libro si chiama già «%s»."
+
+#: mcomix/edit_comment_area.py:174
+msgid "Rename file?"
+msgstr "Vuoi rinominare il file?"
+
+#: mcomix/edit_comment_area.py:175
+msgid "Please enter a new name for this file."
+msgstr "Digitare un nuovo nome per questo file."
 
 #: mcomix/edit_dialog.py:57 mcomix/keybindings.py:146
 msgid "Edit archive"
@@ -249,20 +271,20 @@ msgstr "Immagini"
 msgid "Comment files"
 msgstr "File di commento"
 
-#: mcomix/edit_dialog.py:194 mcomix/file_actions.py:684
+#: mcomix/edit_dialog.py:197 mcomix/file_actions.py:608
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! Impossibile salvare l'archivio %(archivefile)s: %(error)s"
 
-#: mcomix/edit_dialog.py:207 mcomix/file_actions.py:689
+#: mcomix/edit_dialog.py:210 mcomix/file_actions.py:613
 msgid "The new archive could not be saved!"
 msgstr "Il nuovo archivio non può essere salvato!"
 
-#: mcomix/edit_dialog.py:208 mcomix/file_actions.py:690
+#: mcomix/edit_dialog.py:211 mcomix/file_actions.py:614
 msgid "The original files have not been removed."
 msgstr "I file originali non sono stati rimossi."
 
-#: mcomix/edit_dialog.py:295
+#: mcomix/edit_dialog.py:298
 msgid "Archives are stored as ZIP files."
 msgstr "Gli archivi sono salvati come file ZIP."
 
@@ -286,8 +308,8 @@ msgstr "_Ripristina"
 msgid "Reset to defaults."
 msgstr "Ripristina i valori di default."
 
-#: mcomix/enhance_dialog.py:35 mcomix/file_actions.py:597
-#: mcomix/file_actions.py:640 mcomix/file_chooser_base_dialog.py:112
+#: mcomix/enhance_dialog.py:35 mcomix/file_actions.py:521
+#: mcomix/file_actions.py:564 mcomix/file_chooser_base_dialog.py:112
 #: mcomix/openwith.py:360
 msgid "_Save"
 msgstr "_Salva"
@@ -337,37 +359,29 @@ msgstr "_Inverti i colori dell'immagine"
 msgid "Invert (negate) image colors."
 msgstr "Inverte (nega) i colori dell'immagine."
 
-#: mcomix/file_actions.py:298 mcomix/file_actions.py:1020
+#: mcomix/file_actions.py:282 mcomix/file_actions.py:944
 msgid "A file of that name is there already."
 msgstr "Un file con quel nome è già lì."
 
-#: mcomix/file_actions.py:358
-msgid "Rename page?"
-msgstr "Vuoi rinominare la pagina?"
-
-#: mcomix/file_actions.py:359
-msgid "Please enter a new name for this page."
-msgstr "Digitare un nuovo nome per questa pagina."
-
-#: mcomix/file_actions.py:382
-msgid "S_wap the names"
-msgstr "Sca_mbia i nomi"
-
-#: mcomix/file_actions.py:383
-msgid "_Replace"
-msgstr "So_stituisci"
-
-#: mcomix/file_actions.py:401
+#: mcomix/file_actions.py:346
 #, python-format
 msgid "Page %(number)d is called \"%(name)s\" already."
 msgstr "La pagina %(number)d si chiama già «%(name)s»."
 
-#: mcomix/file_actions.py:593
+#: mcomix/file_actions.py:351
+msgid "Rename page?"
+msgstr "Vuoi rinominare la pagina?"
+
+#: mcomix/file_actions.py:352
+msgid "Please enter a new name for this page."
+msgstr "Digitare un nuovo nome per questa pagina."
+
+#: mcomix/file_actions.py:517
 #, python-format
 msgid "Write \"%s\" again before closing it?"
 msgstr "Riscrivere «%s» prima di chiuderlo?"
 
-#: mcomix/file_actions.py:594
+#: mcomix/file_actions.py:518
 msgid ""
 "The book has changes that the archive on disk does not hold. They are lost "
 "when it closes."
@@ -375,58 +389,60 @@ msgstr ""
 "Il libro ha modifiche che l'archivio su disco non contiene. Andranno perse "
 "alla chiusura."
 
-#: mcomix/file_actions.py:596
+#: mcomix/file_actions.py:520
 msgid "_Close without saving"
 msgstr "_Chiudi senza salvare"
 
-#: mcomix/file_actions.py:635
+#: mcomix/file_actions.py:559
 #, python-format
 msgid "Write \"%s\" again now?"
 msgstr "Riscrivere «%s» adesso?"
 
-#: mcomix/file_actions.py:636
+#: mcomix/file_actions.py:560
 msgid ""
 "The archive on disk will be replaced by the book as it stands: the pages it "
 "holds now, in the order and under the names it shows."
-msgstr "L'archivio su disco sarà sostituito dal libro così com'è: le pagine che ha ora, nell'ordine e con i nomi che mostra."
+msgstr ""
+"L'archivio su disco sarà sostituito dal libro così com'è: le pagine che ha "
+"ora, nell'ordine e con i nomi che mostra."
 
-#: mcomix/file_actions.py:639
+#: mcomix/file_actions.py:563
 msgid "_Not now"
 msgstr "_Non ora"
 
-#: mcomix/file_actions.py:790
+#: mcomix/file_actions.py:714
 msgid "Save page as"
 msgstr "Salva la pagina come"
 
-#: mcomix/file_actions.py:831
+#: mcomix/file_actions.py:755
 #, python-format
 msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! Impossibile salvare %(file)s in %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:835 mcomix/file_actions.py:1022
+#: mcomix/file_actions.py:759 mcomix/file_actions.py:946
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "Non c'è spazio sufficiente: il file occupa %s."
 
-#: mcomix/file_actions.py:841
+#: mcomix/file_actions.py:765
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "Impossibile salvare \"%(file)s\" in \"%(directory)s\""
 
-#: mcomix/file_actions.py:870
+#: mcomix/file_actions.py:794
 #, python-format
 msgid "Delete \"%s\"?"
 msgstr "Vuoi eliminare \"%s\"?"
 
-#: mcomix/file_actions.py:871
+#: mcomix/file_actions.py:795
 msgid "The file will be deleted from your harddisk."
 msgstr "Il file sarà cancellato dal tuo harddisk."
 
-#: mcomix/file_actions.py:873 mcomix/ui.py:433
+#: mcomix/file_actions.py:797 mcomix/ui.py:433
 msgid "_Delete"
 msgstr "_Elimina"
 
-#: mcomix/file_actions.py:943
+#: mcomix/file_actions.py:867
 #, python-format
 msgid "The file is gone, and its %d bookmark cannot be opened any more."
 msgid_plural ""
@@ -436,17 +452,17 @@ msgstr[0] ""
 msgstr[1] ""
 "Il file non c'è più e i suoi %d segnalibri non possono più essere aperti."
 
-#: mcomix/file_actions.py:947
+#: mcomix/file_actions.py:871
 #, python-format
 msgid "Remove the bookmarks in \"%s\"?"
 msgstr "Eliminare i segnalibri in \"%s\"?"
 
-#: mcomix/file_actions.py:1016
+#: mcomix/file_actions.py:940
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr "! Impossibile spostare %(file)s in %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:1028
+#: mcomix/file_actions.py:952
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "Impossibile spostare \"%(file)s\" in \"%(directory)s\""
@@ -2013,6 +2029,14 @@ msgstr "Proprietario"
 #: mcomix/recent.py:133
 msgid "No entries found"
 msgstr "Nessuna voce trovata"
+
+#: mcomix/rename_dialog.py:108
+msgid "S_wap the names"
+msgstr "Sca_mbia i nomi"
+
+#: mcomix/rename_dialog.py:109
+msgid "_Replace"
+msgstr "So_stituisci"
 
 #: mcomix/run.py:45
 msgid "[OPTION...] [PATH]"

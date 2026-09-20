@@ -88,7 +88,8 @@ def write_archive(archive_path: str, image_files: Sequence[str],
                   carried_files: "Mapping[str, str] | None" = None,
                   archive_type: int = constants.ZIP,
                   permissions_from: "str | None" = None,
-                  page_names: "Mapping[str, str] | None" = None) -> None:
+                  page_names: "Mapping[str, str] | None" = None,
+                  comment_names: "Mapping[str, str] | None" = None) -> None:
     """Write an archive of those files at <archive_path>.
 
     Whatever is at that path already is replaced, and only once the new
@@ -138,7 +139,8 @@ def write_archive(archive_path: str, image_files: Sequence[str],
                         os.path.splitext(os.path.basename(archive_path))[0],
                         carried_files=carried_files,
                         archive_type=archive_type,
-                        page_names=page_names)
+                        page_names=page_names,
+                        comment_names=comment_names)
         packer.pack()
         if not packer.wait():
             raise OSError('the archive could not be packed')
@@ -413,7 +415,8 @@ class Packer:
                  archive_path: str, base_name: str,
                  carried_files: "Mapping[str, str] | None" = None,
                  archive_type: int = constants.ZIP,
-                 page_names: "Mapping[str, str] | None" = None) -> None:
+                 page_names: "Mapping[str, str] | None" = None,
+                 comment_names: "Mapping[str, str] | None" = None) -> None:
         """Setup a Packer object to create an archive at <archive_path>.
         All files pointed to by paths in the sequences <image_files> and
         <other_files> will be included in the archive when packed.
@@ -439,6 +442,9 @@ class Packer:
         and a name that is taken already is given an underscore in
         front of it, as a file that came with the pages is.
 
+        <comment_names> does the same for the files in <other_files>,
+        which otherwise keep the names their own files have.
+
         <archive_type> is which format to write, out of the three
         can_write() answers for; anything else is a ZIP.
         """
@@ -446,6 +452,7 @@ class Packer:
         self._other_files = other_files
         self._carried_files = carried_files or {}
         self._page_names = page_names or {}
+        self._comment_names = comment_names or {}
         self._archive_path = archive_path
         self._base_name = base_name
         self._archive_type = archive_type
@@ -474,8 +481,8 @@ class Packer:
         The pages come first, numbered so that their names sort the way
         they were given - except for a page the reader has renamed,
         which is written under the name they gave it - and a file that
-        came with them keeps its own name unless one of the pages has
-        already taken it.
+        came with them keeps its own name, or the name the reader gave
+        it, unless one of the pages has already taken that.
         """
         digits = len(str(len(self._image_files)))
         taken = set()
@@ -490,7 +497,7 @@ class Packer:
             yield path, name
 
         for path in self._other_files:
-            name = os.path.basename(path)
+            name = self._comment_names.get(path, os.path.basename(path))
             while name in taken:
                 name = '_%s' % name
             taken.add(name)

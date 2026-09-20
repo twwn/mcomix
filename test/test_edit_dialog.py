@@ -357,7 +357,8 @@ class EditArchiveDialogTest(MComixTest):
         self.assertEqual(
             self._popup_actions(
                 self.dialog._comment_area._popup_menu.get_menu_model()),
-            ['commentarea.remove', 'commentarea.undo', 'commentarea.redo'])
+            ['commentarea.rename', 'commentarea.remove',
+             'commentarea.undo', 'commentarea.redo'])
 
     def test_the_keyboard_opens_the_page_menu(self):
         """The editor has no menu bar, and its popup was reachable with
@@ -711,6 +712,7 @@ class SavedArchiveContentsTest(MComixTest):
             book.writestr('ComicInfo.xml',
                           '<ComicInfo><Series>S</Series></ComicInfo>')
             book.writestr('metadata.json', '{"series": "S"}')
+            book.writestr('info.txt', 'read me')
             book.writestr('extra/notes.md', 'notes')
             book.writestr('__MACOSX/._notes.md', 'junk')
         self.window = main.MainWindow(open_path=self.source)
@@ -756,6 +758,22 @@ class SavedArchiveContentsTest(MComixTest):
 
     def test_a_comment_file_is_written_once_and_not_carried_as_well(self):
         self.assertEqual(self._saved().count('ComicInfo.xml'), 1)
+
+    def test_a_comment_file_is_saved_under_the_name_it_was_given(self):
+        """The name a comment is renamed to in the editor is the name
+        the save writes it under, as a page's is."""
+        area = self.dialog._comment_area
+        rows = [row.name for row in area._list.each_row()]
+        self.assertIn('info.txt', rows, 'the fixture holds no comment file')
+        area._list.select_only(rows.index('info.txt'))
+        with unittest.mock.patch.object(
+                edit_dialog.edit_comment_area.rename_dialog, 'ask') as asked:
+            area._rename_file()
+        asked.call_args.kwargs['answered'](Response.OK, 'Notes.txt')
+
+        saved = self._saved()
+        self.assertIn('Notes.txt', saved)
+        self.assertNotIn('info.txt', saved)
 
 
 # vim: expandtab:sw=4:ts=4

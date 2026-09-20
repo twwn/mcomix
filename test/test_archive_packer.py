@@ -65,6 +65,17 @@ class PackerTest(MComixTest):
         self.assertTrue(self._pack('Comic', [self.comment]))
         self.assertIn('comment.txt', self._names())
 
+    def test_a_comment_file_is_written_under_the_name_it_was_given(self):
+        """A comment renamed in the archive editor is written under that
+        name, as a page renamed there is."""
+        packer = archive_packer.Packer(
+            self.pages, [self.comment], self.archive, 'Comic',
+            comment_names={self.comment: 'Notes.txt'})
+        packer.pack()
+        self.assertTrue(packer.wait())
+        self.assertIn('Notes.txt', self._names())
+        self.assertNotIn('comment.txt', self._names())
+
     def test_a_file_whose_name_a_page_has_taken_is_moved_aside(self):
         taken = os.path.join(self.tmp_dir, '1 - Comic.jpg')
         with open(taken, 'w') as clash:

@@ -7,12 +7,14 @@ archive reads them back out of it in the order they are shown.
 """
 
 import os
+import unittest.mock
 
 from gi.repository import Gdk, Gtk
 
 from . import MComixTest, pump
 
 from mcomix import edit_comment_area
+from mcomix.dialog import Response
 
 
 class _StubHandler:
@@ -52,7 +54,12 @@ class CommentAreaTest(MComixTest):
         # Held here: the area holds its editor only weakly, as the
         # editor holds the area.
         self.dialog = _StubDialog(self.paths)
-        self.area = edit_comment_area._CommentArea(self.dialog)
+        # The area asks the window whether a page holds a name a
+        # comment file is being renamed to; this book has no pages.
+        self.main_window = unittest.mock.MagicMock()
+        self.main_window.file_actions.page_called.return_value = None
+        self.area = edit_comment_area._CommentArea(self.dialog,
+                                                   self.main_window)
         self.window = Gtk.Window()
         self.window.set_default_size(400, 300)
         self.window.set_child(self.area)
@@ -104,6 +111,86 @@ class CommentAreaTest(MComixTest):
             self.area._key_press(None, Gdk.KEY_Delete, 0, 0),
             Gdk.EVENT_STOP)
         self.assertEqual(self.area.get_file_listing(), self.paths[1:])
+
+    # -- Renaming a comment file ------------------------------------------
+
+    def _asked_for_a_name(self, row=0):
+        """Ask to rename the file at <row>, and answer with what the
+        dialog was given: the clash callable and the answer callable.
+
+        The dialog itself is not built: its parent is the editor, which
+        is a stub here, and what this area does is decide what clashes
+        and what each answer means.
+        """
+        self.area.fetch_comments()
+        self.area._list.select_only(row)
+        with unittest.mock.patch.object(edit_comment_area.rename_dialog,
+                                        'ask') as asked:
+            self.area._rename_file()
+        self.assertEqual(asked.call_count, 1, 'nothing asked for a name')
+        return asked.call_args.kwargs['clash'], \
+            asked.call_args.kwargs['answered']
+
+    def test_a_comment_takes_the_name_that_was_typed(self):
+        clash, answered = self._asked_for_a_name()
+        self.assertIsNone(clash('Notes.txt'))
+        answered(Response.OK, 'Notes.txt')
+        self.assertEqual(self.area._list.get_row(0).name, 'Notes.txt')
+        self.assertEqual(self.area.file_names()[self.paths[0]], 'Notes.txt')
+        self.assertEqual(self.dialog.changes, 1,
+                         'the name cannot be undone')
+
+    def test_a_name_with_no_extension_keeps_the_old_one(self):
+        clash, answered = self._asked_for_a_name()
+        answered(Response.OK, 'Notes')
+        self.assertEqual(self.area._list.get_row(0).name, 'Notes.txt')
+
+    def test_a_name_another_file_holds_offers_a_swap_and_a_replace(self):
+        clash, answered = self._asked_for_a_name()
+        taken = clash('two.txt')
+        self.assertIsNotNone(taken, 'the name was taken without a word')
+        self.assertIn('two.txt', taken.told)
+        self.assertTrue(taken.answers)
+
+    def test_a_name_a_page_holds_is_warned_about_with_nothing_offered(self):
+        """The page is in the other tab, which this list does not
+        touch: it can be neither renamed nor removed from here."""
+        self.main_window.file_actions.page_called.return_value = 4
+        clash, answered = self._asked_for_a_name()
+        taken = clash('Cover.png')
+        self.assertIsNotNone(taken)
+        self.assertIn('Cover.png', taken.told)
+        self.assertFalse(taken.answers)
+
+    def test_swapping_the_names_gives_each_file_the_others(self):
+        clash, answered = self._asked_for_a_name()
+        answered(edit_comment_area.rename_dialog.SWAP, 'two.txt')
+        self.assertEqual([row.name for row in self.area._list.each_row()],
+                         ['two.txt', 'one.txt', 'three.txt'])
+
+    def test_replacing_takes_the_file_that_held_the_name_out(self):
+        clash, answered = self._asked_for_a_name()
+        answered(edit_comment_area.rename_dialog.REPLACE, 'two.txt')
+        self.assertEqual(self.area.get_file_listing(),
+                         [self.paths[0], self.paths[2]])
+        self.assertEqual(self.area._list.get_row(0).name, 'two.txt')
+
+    def test_a_name_that_says_nothing_renames_nothing(self):
+        clash, answered = self._asked_for_a_name()
+        answered(Response.OK, '   ')
+        answered(Response.OK, 'one.txt')
+        self.assertEqual([row.name for row in self.area._list.each_row()],
+                         ['one.txt', 'two.txt', 'three.txt'])
+        self.assertEqual(self.dialog.changes, 0)
+
+    def test_f2_asks_for_a_name(self):
+        self.area.fetch_comments()
+        self.area._list.select_only(0)
+        with unittest.mock.patch.object(self.area, '_rename_file') as asked:
+            self.assertEqual(
+                self.area._key_press(None, Gdk.KEY_F2, 0, 0),
+                Gdk.EVENT_STOP)
+        asked.assert_called_once_with()
 
     def test_another_key_is_left_to_whoever_wants_it(self):
         self.area.fetch_comments()

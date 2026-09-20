@@ -42,6 +42,26 @@ class Clash(NamedTuple):
     answers: bool
 
 
+def read(current: str, typed: str) -> "str | None":
+    """What <typed> calls a file now called <current>, or None where it
+    calls it nothing it is not called already.
+
+    A name typed with a folder in front of it is read as the last part
+    of it, a file inside an archive being a name rather than a path, and
+    a name typed without an extension keeps the old one, since what
+    MComix and every other reader take a file in a book for is decided
+    by that.
+    """
+    name = os.path.basename(typed.strip())
+    if not name:
+        return None
+    if not os.path.splitext(name)[1]:
+        name += os.path.splitext(current)[1]
+    if name == current:
+        return None
+    return name
+
+
 def ask(parent: Gtk.Window, *, title: str, prompt: str, name: str,
         clash: Callable[[str], "Clash | None"],
         answered: Callable[[int, str], None]) -> None:
