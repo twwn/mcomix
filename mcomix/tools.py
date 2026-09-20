@@ -40,8 +40,13 @@ def cmp(a: Comparable, b: Comparable) -> int:
 class AlphanumericSortKey:
     """ Compares two strings by their natural order (i.e. 1 before 10) """
     def __init__(self, filename: str) -> None:
+        # isdecimal() rather than isdigit(), which is also true of the
+        # superscripts and the circled numbers - "m²" in a page's name
+        # made int() raise and the book could not be listed at all.
+        # What the regular expression splits off as a number is exactly
+        # what isdecimal() is true of.
         self.filename_parts: list[int | str] = [
-            int(part) if part.isdigit() else part
+            int(part) if part.isdecimal() else part
             for part in NUMERIC_REGEXP.findall(filename.lower())
         ]
 

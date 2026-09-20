@@ -33,7 +33,8 @@ def _sort_key(version: str) -> "tuple[tuple[int, int | str], ...]":
         token = token.strip(_SEPARATORS)
         if not token:
             continue
-        if token.isdigit():
+        # isdecimal(), not isdigit(), which int() cannot parse.
+        if token.isdecimal():
             key.append((_NUMBER, int(token)))
         elif token == 'dev':
             key.append((_DEV, token))

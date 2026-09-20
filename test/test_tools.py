@@ -79,6 +79,15 @@ class TestAlphanumericSort(unittest.TestCase):
         self.assertListEqual(lst, ['Comic 001-00.jpg', 'Comic 001-01.jpg', 'Comic 001-03.jpg', 'zCover.jpg'])
 
 
+    def test_a_digit_that_is_not_a_number_is_sorted_as_text(self) -> None:
+        """str.isdigit() is true of the superscripts and the circled
+        numbers, which int() refuses: a page named "m\u00b2" made the sort
+        raise ValueError, and the book could not be listed at all."""
+        lst = ['page 1\u00b23.jpg', '10.jpg', '2.jpg']
+        tools.alphanumeric_sort(lst)
+        self.assertListEqual(lst, ['2.jpg', '10.jpg', 'page 1\u00b23.jpg'])
+
+
 class TestAtomicWrite(unittest.TestCase):
     def setUp(self) -> None:
         self.tmp_dir = tempfile.mkdtemp()

@@ -40,6 +40,10 @@ class TestVersion(unittest.TestCase):
         self.assertEqual(Version('unknown'), Version('unknown'))
         self.assertIsInstance(Version('') < Version('1.8'), bool)
 
+    def test_a_digit_int_cannot_parse_does_not_raise(self) -> None:
+        # str.isdigit() is true of "\u00b2", and int() refuses it.
+        self.assertIsInstance(Version('1.\u00b2') < Version('1.8'), bool)
+
     def test_str_returns_the_original_string(self) -> None:
         self.assertEqual(str(Version('1.24.9-rc1')), '1.24.9-rc1')
 
