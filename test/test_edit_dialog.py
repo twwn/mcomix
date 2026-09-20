@@ -125,6 +125,135 @@ class EditArchiveDialogTest(MComixTest):
         self.assertEqual(self._editors_listening(), 0,
                          'a closed editor would answer the next book too')
 
+    def _edited(self):
+        """Take a page out in the editor, which nothing else knows of."""
+        self.dialog._load_original_files()
+        pump()
+        self.assertGreater(self.dialog._image_area._grid.model.get_n_items(), 1,
+                           'the fixture has too few pages')
+        self.dialog._image_area._grid.select_only(0)
+        self.dialog._image_area._remove_pages()
+        self.assertTrue(self.dialog.changes_not_applied())
+
+    def _closing_prompts(self):
+        """The question asked before a book the editor is working on
+        closes, as opposed to the offer to write the archive."""
+        return [window for window in Gtk.Window.list_toplevels()
+                if isinstance(window, message_dialog.MessageDialog)
+                and window.get_widget_for_response(Response.NO) is not None
+                and window.dialog_id is None]
+
+    def test_the_editors_work_is_asked_about_before_the_book_closes(self):
+        """What the editor holds cannot be written from anywhere else
+        once the book has gone, so this is the one question on the way
+        out that can stop the close."""
+        self._edited()
+        edit_dialog._dialog = self.dialog
+        try:
+            self.window.filehandler.close_file()
+            pump()
+            prompts = self._closing_prompts()
+            self.assertEqual(len(prompts), 1,
+                             'the editor was emptied without a word')
+            self.assertTrue(self.window.filehandler.file_loaded,
+                            'the book closed before the question was answered')
+            prompts[0].emit('response', Response.NO)
+            pump()
+            self.assertTrue(self.window.filehandler.file_loaded,
+                            'the book closed although the reader said no')
+        finally:
+            edit_dialog._dialog = None
+            for prompt in self._closing_prompts():
+                prompt.destroy()
+            pump()
+
+    def test_letting_the_book_go_closes_it(self):
+        self._edited()
+        edit_dialog._dialog = self.dialog
+        try:
+            self.window.filehandler.close_file()
+            pump()
+            prompts = self._closing_prompts()
+            self.assertEqual(len(prompts), 1)
+            prompts[0].emit('response', Response.YES)
+            pump()
+            self.assertFalse(self.window.filehandler.file_loaded,
+                             'the book was kept although the reader let it go')
+        finally:
+            edit_dialog._dialog = None
+            for prompt in self._closing_prompts():
+                prompt.destroy()
+            pump()
+
+    def test_an_editor_holding_nothing_new_is_not_asked_about(self):
+        self.dialog._load_original_files()
+        pump()
+        edit_dialog._dialog = self.dialog
+        try:
+            self.assertFalse(self.dialog.changes_not_applied())
+            self.window.filehandler.close_file()
+            pump()
+            self.assertEqual(self._closing_prompts(), [],
+                             'it asked about an editor with nothing in it')
+            self.assertFalse(self.window.filehandler.file_loaded)
+        finally:
+            edit_dialog._dialog = None
+
+    def test_a_listing_handed_to_the_window_is_no_longer_held(self):
+        self._edited()
+        self.dialog._response(self.dialog, Response.APPLY)
+        pump()
+        self.assertFalse(self.dialog.changes_not_applied(),
+                         'the window has the listing, so the editor is not '
+                         'the only place it lives')
+
+    def test_a_change_made_after_applying_is_held_again(self):
+        self._edited()
+        self.dialog._response(self.dialog, Response.APPLY)
+        pump()
+        self.dialog._image_area._grid.select_only(0)
+        self.dialog._image_area._remove_pages()
+        self.assertTrue(self.dialog.changes_not_applied())
+
+    def test_a_comment_renamed_and_not_saved_is_held(self):
+        """Apply hands the window the pages alone, so a name given to a
+        comment file lives in the editor until the book is written."""
+        self.dialog._load_original_files()
+        pump()
+        rows = list(self.dialog._comment_area._list.each_row())
+        self.assertTrue(rows, 'the fixture holds no comment file')
+        self.dialog._comment_area._give_name(rows[0], 'Notes.txt')
+        self.assertTrue(self.dialog.changes_not_applied())
+
+    def test_quitting_asks_once_and_not_again_from_the_quit_itself(self):
+        """close_program() asks, and terminate_program() closes the
+        book under it: a question raised from there would stand with
+        the main loop already gone."""
+        self._edited()
+        edit_dialog._dialog = self.dialog
+        try:
+            with unittest.mock.patch.object(self.window,
+                                            'terminate_program') as quit_now:
+                self.window.close_program()
+                pump()
+                prompts = self._closing_prompts()
+                self.assertEqual(len(prompts), 1, 'MComix quit without a word')
+                prompts[0].emit('response', Response.YES)
+                pump()
+            quit_now.assert_called_once_with()
+
+            self.window.terminate_program()
+            pump()
+            self.assertEqual(self._closing_prompts(), [],
+                             'the quit itself asked a second time')
+            self.assertIsNone(edit_dialog._dialog,
+                              'the editor outlived the program')
+        finally:
+            edit_dialog._dialog = None
+            for prompt in self._closing_prompts():
+                prompt.destroy()
+            pump()
+
     def test_a_page_with_no_path_is_left_out_of_the_image_area(self):
         """The page count is read once and the paths one at a time, so a
         book closed in between leaves pages that answer with no path at

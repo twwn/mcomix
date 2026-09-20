@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 0.90.4\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-20 19:12+0200\n"
+"POT-Creation-Date: 2026-09-20 19:38+0200\n"
 "PO-Revision-Date: 2018-02-24 08:43+0100\n"
 "Last-Translator: Jonatan Nyberg <jonatan@autistici.org>\n"
 "Language-Team: Swedish <LL@li.org>\n"
@@ -99,8 +99,8 @@ msgstr "_Nej"
 
 #
 # File: src/preferences.py, line: 230
-#: mcomix/bookmark_backend.py:329 mcomix/edit_dialog.py:58
-#: mcomix/file_actions.py:796 mcomix/file_chooser_base_dialog.py:106
+#: mcomix/bookmark_backend.py:329 mcomix/edit_dialog.py:59
+#: mcomix/file_actions.py:817 mcomix/file_chooser_base_dialog.py:106
 #: mcomix/file_chooser_base_dialog.py:111
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:32
@@ -156,7 +156,7 @@ msgstr "Redigera bokmärken"
 msgid "C_lear bookmarks..."
 msgstr "Tö_m alla bokmärken..."
 
-#: mcomix/bookmark_dialog.py:33 mcomix/main.py:762 mcomix/openwith.py:342
+#: mcomix/bookmark_dialog.py:33 mcomix/main.py:763 mcomix/openwith.py:342
 #: mcomix/library/collection_area.py:149 mcomix/library/watchlist.py:63
 msgid "_Remove"
 msgstr "_Ta bort"
@@ -184,7 +184,7 @@ msgstr "Namn"
 
 #
 # File: src/bookmark.py, line: 256
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1346
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1347
 #: mcomix/library/control_area.py:147
 msgid "Page"
 msgstr "Sida"
@@ -268,79 +268,97 @@ msgstr "Å_ngra"
 msgid "_Redo"
 msgstr "_Gör om"
 
-#: mcomix/edit_comment_area.py:164
+#: mcomix/edit_comment_area.py:175
 #, python-format
 msgid "Another file in the archive is called \"%s\" already."
 msgstr "En annan fil i arkivet heter redan \"%s\"."
 
-#: mcomix/edit_comment_area.py:169
+#: mcomix/edit_comment_area.py:180
 #, python-format
 msgid "A page of the book is called \"%s\" already."
 msgstr "En sida i boken heter redan \"%s\"."
 
-#: mcomix/edit_comment_area.py:174
+#: mcomix/edit_comment_area.py:185
 msgid "Rename file?"
 msgstr "Döp om filen?"
 
-#: mcomix/edit_comment_area.py:175
+#: mcomix/edit_comment_area.py:186
 msgid "Please enter a new name for this file."
 msgstr "Ange ett nytt namn för den här filen."
 
 #
 # File: src/edit.py, line: 28
-#: mcomix/edit_dialog.py:57 mcomix/keybindings.py:146
+#: mcomix/edit_dialog.py:58 mcomix/keybindings.py:146
 msgid "Edit archive"
 msgstr "Redigera arkiv"
 
-#: mcomix/edit_dialog.py:60
+#: mcomix/edit_dialog.py:61
 msgid "A_pply"
 msgstr "_Verkställ"
 
-#: mcomix/edit_dialog.py:71 mcomix/ui.py:471 mcomix/ui.py:472
+#: mcomix/edit_dialog.py:76 mcomix/ui.py:471 mcomix/ui.py:472
 msgid "Save _As"
 msgstr "Spara _som"
 
-#: mcomix/edit_dialog.py:73
+#: mcomix/edit_dialog.py:78
 msgid "_Import"
 msgstr "_Importera"
 
 #
 # File: src/edit.py, line: 50
-#: mcomix/edit_dialog.py:106
+#: mcomix/edit_dialog.py:111
 msgid "Images"
 msgstr "Bilder"
 
 #
 # File: src/comment.py, line: 16
 # File: src/preferences.py, line: 288
-#: mcomix/edit_dialog.py:107
+#: mcomix/edit_dialog.py:112
 msgid "Comment files"
 msgstr "Kommentarer"
 
 #
 # File: src/library.py, line: 271
-#: mcomix/edit_dialog.py:197 mcomix/file_actions.py:608
+#: mcomix/edit_dialog.py:240 mcomix/file_actions.py:629
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! Kunde inte spara arkivet %(archivefile)s: %(error)s"
 
 #
 # File: src/edit.py, line: 99
-#: mcomix/edit_dialog.py:210 mcomix/file_actions.py:613
+#: mcomix/edit_dialog.py:253 mcomix/file_actions.py:634
 msgid "The new archive could not be saved!"
 msgstr "Det nya arkivet kunde inte sparas!"
 
 #
 # File: src/edit.py, line: 101
-#: mcomix/edit_dialog.py:211 mcomix/file_actions.py:614
+#: mcomix/edit_dialog.py:254 mcomix/file_actions.py:635
 msgid "The original files have not been removed."
 msgstr "Originalfilerna har inte tagits bort."
 
 #
 # File: src/edit.py, line: 115
-#: mcomix/edit_dialog.py:298
+#: mcomix/edit_dialog.py:357
 msgid "Archives are stored as ZIP files."
 msgstr "Arkiven sparas i ZIP-format."
+
+#: mcomix/edit_dialog.py:441
+msgid "Close the book the archive editor is working on?"
+msgstr "Stänga boken som arkivredigeraren arbetar med?"
+
+#: mcomix/edit_dialog.py:442
+msgid ""
+"The editor holds changes that have not been applied or saved. They go with "
+"the book."
+msgstr "Redigeraren har ändringar som varken tillämpats eller sparats. De följer med boken."
+
+#: mcomix/edit_dialog.py:444
+msgid "_Go on editing"
+msgstr "_Fortsätt redigera"
+
+#: mcomix/edit_dialog.py:445
+msgid "_Close the book"
+msgstr "_Stäng boken"
 
 #: mcomix/edit_image_area.py:111 mcomix/ui.py:435
 msgid "Re_name page..."
@@ -366,8 +384,8 @@ msgstr "Återställ till standardinställningar."
 
 #
 # File: src/filechooser.py, line: 39
-#: mcomix/enhance_dialog.py:35 mcomix/file_actions.py:521
-#: mcomix/file_actions.py:564 mcomix/file_chooser_base_dialog.py:112
+#: mcomix/enhance_dialog.py:35 mcomix/file_actions.py:542
+#: mcomix/file_actions.py:585 mcomix/file_chooser_base_dialog.py:112
 #: mcomix/openwith.py:360
 msgid "_Save"
 msgstr "_Spara"
@@ -429,29 +447,29 @@ msgstr "_Invertera bildfärger"
 msgid "Invert (negate) image colors."
 msgstr "Invertera (negera) bildfärgerna."
 
-#: mcomix/file_actions.py:282 mcomix/file_actions.py:944
+#: mcomix/file_actions.py:283 mcomix/file_actions.py:965
 msgid "A file of that name is there already."
 msgstr "Det finns redan en fil med det namnet där."
 
-#: mcomix/file_actions.py:346
+#: mcomix/file_actions.py:347
 #, python-format
 msgid "Page %(number)d is called \"%(name)s\" already."
 msgstr "Sida %(number)d heter redan \"%(name)s\"."
 
-#: mcomix/file_actions.py:351
+#: mcomix/file_actions.py:352
 msgid "Rename page?"
 msgstr "Döp om sidan?"
 
-#: mcomix/file_actions.py:352
+#: mcomix/file_actions.py:353
 msgid "Please enter a new name for this page."
 msgstr "Ange ett nytt namn för den här sidan."
 
-#: mcomix/file_actions.py:517
+#: mcomix/file_actions.py:538
 #, python-format
 msgid "Write \"%s\" again before closing it?"
 msgstr "Skriva \"%s\" igen innan den stängs?"
 
-#: mcomix/file_actions.py:518
+#: mcomix/file_actions.py:539
 msgid ""
 "The book has changes that the archive on disk does not hold. They are lost "
 "when it closes."
@@ -459,16 +477,16 @@ msgstr ""
 "Boken har ändringar som arkivet på disken inte innehåller. De går förlorade "
 "när den stängs."
 
-#: mcomix/file_actions.py:520
+#: mcomix/file_actions.py:541
 msgid "_Close without saving"
 msgstr "Stän_g utan att spara"
 
-#: mcomix/file_actions.py:559
+#: mcomix/file_actions.py:580
 #, python-format
 msgid "Write \"%s\" again now?"
 msgstr "Skriva \"%s\" igen nu?"
 
-#: mcomix/file_actions.py:560
+#: mcomix/file_actions.py:581
 msgid ""
 "The archive on disk will be replaced by the book as it stands: the pages it "
 "holds now, in the order and under the names it shows."
@@ -476,46 +494,46 @@ msgstr ""
 "Arkivet på disken ersätts av boken som den är nu: sidorna den har nu, i den "
 "ordning och under de namn den visar."
 
-#: mcomix/file_actions.py:563
+#: mcomix/file_actions.py:584
 msgid "_Not now"
 msgstr "I_nte nu"
 
 #
 # File: src/library.py, line: 832
 # File: src/properties.py, line: 113
-#: mcomix/file_actions.py:714
+#: mcomix/file_actions.py:735
 msgid "Save page as"
 msgstr "Spara sidan som"
 
-#: mcomix/file_actions.py:755
+#: mcomix/file_actions.py:776
 #, python-format
 msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! Kunde inte spara %(file)s till %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:759 mcomix/file_actions.py:946
+#: mcomix/file_actions.py:780 mcomix/file_actions.py:967
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "Det finns inte tillräckligt med plats där: filen är %s."
 
-#: mcomix/file_actions.py:765
+#: mcomix/file_actions.py:786
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "Kunde inte spara \"%(file)s\" till \"%(directory)s\""
 
-#: mcomix/file_actions.py:794
+#: mcomix/file_actions.py:815
 #, python-format
 msgid "Delete \"%s\"?"
 msgstr "Ta bort \"%s\"?"
 
-#: mcomix/file_actions.py:795
+#: mcomix/file_actions.py:816
 msgid "The file will be deleted from your harddisk."
 msgstr "Filen kommer att tas bort från hårddisken."
 
-#: mcomix/file_actions.py:797 mcomix/ui.py:433
+#: mcomix/file_actions.py:818 mcomix/ui.py:433
 msgid "_Delete"
 msgstr "_Ta bort"
 
-#: mcomix/file_actions.py:867
+#: mcomix/file_actions.py:888
 #, python-format
 msgid "The file is gone, and its %d bookmark cannot be opened any more."
 msgid_plural ""
@@ -523,17 +541,17 @@ msgid_plural ""
 msgstr[0] "Filen är borta, och dess %d bokmärke kan inte längre öppnas."
 msgstr[1] "Filen är borta, och dess %d bokmärken kan inte längre öppnas."
 
-#: mcomix/file_actions.py:871
+#: mcomix/file_actions.py:892
 #, python-format
 msgid "Remove the bookmarks in \"%s\"?"
 msgstr "Ta bort bokmärkena i \"%s\"?"
 
-#: mcomix/file_actions.py:940
+#: mcomix/file_actions.py:961
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr "! Kunde inte flytta %(file)s till %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:952
+#: mcomix/file_actions.py:973
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "Kunde inte flytta \"%(file)s\" till \"%(directory)s\""
@@ -1191,14 +1209,14 @@ msgstr "Det gick inte att läsa tangentbindningar: %s"
 msgid "! Could not remove file \"%s\""
 msgstr "Kunde inte ta bort filen \"%s\""
 
-#: mcomix/main.py:755
+#: mcomix/main.py:756
 #, python-format
 msgid "Remove the page picked out of \"%s\"?"
 msgid_plural "Remove the pages picked out of \"%s\"?"
 msgstr[0] "Ta bort den valda sidan ur \"%s\"?"
 msgstr[1] "Ta bort de valda sidorna ur \"%s\"?"
 
-#: mcomix/main.py:758
+#: mcomix/main.py:759
 msgid ""
 "They are taken out of the archive on disk, which is written again at once. "
 "Leaving the book without removing them forgets which pages they were."
@@ -1206,13 +1224,13 @@ msgstr ""
 "De tas ur arkivet på disken, som skrivs igen med detsamma. Att lämna boken "
 "utan att ta bort dem gör att det glöms vilka sidor det var."
 
-#: mcomix/main.py:761
+#: mcomix/main.py:762
 msgid "_Keep them"
 msgstr "_Behåll"
 
 #
 # File: src/main.py, line: 666
-#: mcomix/main.py:1167
+#: mcomix/main.py:1168
 msgid "SLIDESHOW"
 msgstr "BILDSPEL"
 

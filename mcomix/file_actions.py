@@ -18,6 +18,7 @@ from gi.repository import Gtk
 from mcomix import archive_packer
 from mcomix import bookmark_backend
 from mcomix import constants
+from mcomix import edit_dialog
 from mcomix import file_chooser_simple_dialog
 from mcomix import file_mover
 from mcomix import i18n
@@ -499,14 +500,34 @@ class FileActions:
         is closed, when another is opened over it and when MComix
         quits - and the close waits for the answer.
 
-        The offer is made once for a set of changes: the answer stands
-        for the whole of the close that follows it, which reaches here
-        more than once, and the next change to the book asks again.
+        The archive editor is asked about first, and is the one
+        question on the way out that can stop the close: what it holds
+        cannot be written from anywhere else once the book has gone.
+
+        Both offers are made once for a set of changes: the answer
+        stands for the whole of the close that follows it, which
+        reaches here more than once, and the next change to the book
+        asks again.
         """
-        if not self.has_unsaved_changes() or self._close_offer_answered:
+        if self._close_offer_answered:
             then()
             return
         self._close_offer_answered = True
+
+        def go_on_editing() -> None:
+            """The close is off, and the next one asks again."""
+            self._close_offer_answered = False
+
+        edit_dialog.ask_before_closing(
+            self._window,
+            closing=lambda: self._write_before_closing(then),
+            keeping=go_on_editing)
+
+    def _write_before_closing(self, then: "Callable[[], None]") -> None:
+        """Offer to write the book out if it has changes, then close."""
+        if not self.has_unsaved_changes():
+            then()
+            return
         path = self._window.filehandler.get_path_to_base()
         assert path is not None  # has_unsaved_changes() answered for it
         dialog = message_dialog.MessageDialog(

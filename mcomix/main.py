@@ -12,6 +12,7 @@ from mcomix import cursor_handler
 from mcomix import i18n
 from mcomix import enhance_backend
 from mcomix import event
+from mcomix import edit_dialog
 from mcomix import file_actions
 from mcomix import file_handler
 from mcomix import image_handler
@@ -1438,19 +1439,26 @@ class MainWindow(Gtk.Window):
     def close_program(self, *args: object) -> bool:
         """Quit, keeping the window size unless it is a fullscreen one.
 
-        A book whose pages have been changed without the archive being
-        written again is asked about first, and the quit waits for the
-        answer.  This is the window's close-request handler as well as
-        the Quit action, so it answers whether the window may go: not
-        while the question is up, since the window it stands against
-        would be taken down with it.
+        What has to be asked before a book closes is asked first - the
+        archive editor's unapplied work, and the book's own unwritten
+        changes - and the quit waits for the answer.  This is the
+        window's close-request handler as well as the Quit action, so
+        it answers whether the window may go: not while a question is
+        up, since the window it stands against would be taken down with
+        it.
         """
         self.save_window_geometry()
-        if not self.file_actions.has_unsaved_changes():
+        quit_now: list[bool] = []
+
+        def quit_for_good() -> None:
+            quit_now.append(True)
             self.terminate_program()
-            return False
-        self.file_actions.before_closing(self.terminate_program)
-        return True
+
+        self.file_actions.before_closing(quit_for_good)
+        # Whether the quit happened while this ran says whether there is
+        # a question on screen: everything before_closing() asks about
+        # is answered later, from the main loop.
+        return not quit_now
 
     def restart_program(self) -> None:
         """Quit, and start MComix again on the book being read.
@@ -1507,8 +1515,11 @@ class MainWindow(Gtk.Window):
         # Whatever was to be done about a book with unwritten changes
         # has been done by now: close_program() asks before it quits,
         # and the close below is not to stop for a question with the
-        # main loop already gone.
+        # main loop already gone.  The archive editor is taken down for
+        # the same reason - it is asked about before the quit, and a
+        # question raised from here would never be answered.
         self.file_actions.forget_changes()
+        edit_dialog._close_dialog()
         self.filehandler.close_file()
         library = main_dialog.get_dialog()
         if library is not None:

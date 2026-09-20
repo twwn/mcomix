@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 1.00-SVN\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-20 19:12+0200\n"
+"POT-Creation-Date: 2026-09-20 19:38+0200\n"
 "PO-Revision-Date: 2012-08-16 13:10+0900\n"
 "Last-Translator: Toshiharu Kudoh <toshi.kd2@gmail.com>\n"
 "Language-Team: Japanese\n"
@@ -88,8 +88,8 @@ msgstr "はい(_Y)"
 msgid "_No"
 msgstr "いいえ(_N)"
 
-#: mcomix/bookmark_backend.py:329 mcomix/edit_dialog.py:58
-#: mcomix/file_actions.py:796 mcomix/file_chooser_base_dialog.py:106
+#: mcomix/bookmark_backend.py:329 mcomix/edit_dialog.py:59
+#: mcomix/file_actions.py:817 mcomix/file_chooser_base_dialog.py:106
 #: mcomix/file_chooser_base_dialog.py:111
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:32
@@ -136,7 +136,7 @@ msgstr "ブックマークの編集"
 msgid "C_lear bookmarks..."
 msgstr "ブックマークの消去(_L)..."
 
-#: mcomix/bookmark_dialog.py:33 mcomix/main.py:762 mcomix/openwith.py:342
+#: mcomix/bookmark_dialog.py:33 mcomix/main.py:763 mcomix/openwith.py:342
 #: mcomix/library/collection_area.py:149 mcomix/library/watchlist.py:63
 msgid "_Remove"
 msgstr "削除(_R)"
@@ -157,7 +157,7 @@ msgstr "種類"
 msgid "Name"
 msgstr "名前"
 
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1346
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1347
 #: mcomix/library/control_area.py:147
 msgid "Page"
 msgstr "ページ"
@@ -226,64 +226,82 @@ msgstr "元に戻す(_U)"
 msgid "_Redo"
 msgstr "やり直す(_R)"
 
-#: mcomix/edit_comment_area.py:164
+#: mcomix/edit_comment_area.py:175
 #, python-format
 msgid "Another file in the archive is called \"%s\" already."
 msgstr "書庫内の別のファイルがすでに「%s」という名前です。"
 
-#: mcomix/edit_comment_area.py:169
+#: mcomix/edit_comment_area.py:180
 #, python-format
 msgid "A page of the book is called \"%s\" already."
 msgstr "本のページがすでに「%s」という名前です。"
 
-#: mcomix/edit_comment_area.py:174
+#: mcomix/edit_comment_area.py:185
 msgid "Rename file?"
 msgstr "ファイルの名前を変更しますか?"
 
-#: mcomix/edit_comment_area.py:175
+#: mcomix/edit_comment_area.py:186
 msgid "Please enter a new name for this file."
 msgstr "このファイルの新しい名前を入力してください。"
 
-#: mcomix/edit_dialog.py:57 mcomix/keybindings.py:146
+#: mcomix/edit_dialog.py:58 mcomix/keybindings.py:146
 msgid "Edit archive"
 msgstr "アーカイブファイルを編集"
 
-#: mcomix/edit_dialog.py:60
+#: mcomix/edit_dialog.py:61
 msgid "A_pply"
 msgstr "適用(_P)"
 
-#: mcomix/edit_dialog.py:71 mcomix/ui.py:471 mcomix/ui.py:472
+#: mcomix/edit_dialog.py:76 mcomix/ui.py:471 mcomix/ui.py:472
 msgid "Save _As"
 msgstr "別名で保存(_A)"
 
-#: mcomix/edit_dialog.py:73
+#: mcomix/edit_dialog.py:78
 msgid "_Import"
 msgstr "インポート(_I)"
 
-#: mcomix/edit_dialog.py:106
+#: mcomix/edit_dialog.py:111
 msgid "Images"
 msgstr "画像"
 
-#: mcomix/edit_dialog.py:107
+#: mcomix/edit_dialog.py:112
 msgid "Comment files"
 msgstr "コメントファイル"
 
-#: mcomix/edit_dialog.py:197 mcomix/file_actions.py:608
+#: mcomix/edit_dialog.py:240 mcomix/file_actions.py:629
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! アーカイブファイル %(archivefile)s を保存できませんでした: %(error)s"
 
-#: mcomix/edit_dialog.py:210 mcomix/file_actions.py:613
+#: mcomix/edit_dialog.py:253 mcomix/file_actions.py:634
 msgid "The new archive could not be saved!"
 msgstr "新しいアーカイブファイルが保存できませんでした!"
 
-#: mcomix/edit_dialog.py:211 mcomix/file_actions.py:614
+#: mcomix/edit_dialog.py:254 mcomix/file_actions.py:635
 msgid "The original files have not been removed."
 msgstr "元のファイルは削除されません。"
 
-#: mcomix/edit_dialog.py:298
+#: mcomix/edit_dialog.py:357
 msgid "Archives are stored as ZIP files."
 msgstr "アーカイブファイルは ZIP 形式で保存されます。"
+
+#: mcomix/edit_dialog.py:441
+msgid "Close the book the archive editor is working on?"
+msgstr "書庫エディタが編集中の本を閉じますか?"
+
+#: mcomix/edit_dialog.py:442
+msgid ""
+"The editor holds changes that have not been applied or saved. They go with "
+"the book."
+msgstr "エディタには、適用も保存もされていない変更があります。本と一緒に失われます。"
+
+#: mcomix/edit_dialog.py:444
+msgid "_Go on editing"
+msgstr "編集を続ける(_G)"
+
+#: mcomix/edit_dialog.py:445
+msgid "_Close the book"
+msgstr "本を閉じる(_C)"
 
 #: mcomix/edit_image_area.py:111 mcomix/ui.py:435
 msgid "Re_name page..."
@@ -305,8 +323,8 @@ msgstr "元に戻す(_R)"
 msgid "Reset to defaults."
 msgstr "デフォルトにリセットします。"
 
-#: mcomix/enhance_dialog.py:35 mcomix/file_actions.py:521
-#: mcomix/file_actions.py:564 mcomix/file_chooser_base_dialog.py:112
+#: mcomix/enhance_dialog.py:35 mcomix/file_actions.py:542
+#: mcomix/file_actions.py:585 mcomix/file_chooser_base_dialog.py:112
 #: mcomix/openwith.py:360
 msgid "_Save"
 msgstr "保存(_S)"
@@ -354,44 +372,44 @@ msgstr "画像の色を反転(_I)"
 msgid "Invert (negate) image colors."
 msgstr "画像の色を反転（ネガ）します。"
 
-#: mcomix/file_actions.py:282 mcomix/file_actions.py:944
+#: mcomix/file_actions.py:283 mcomix/file_actions.py:965
 msgid "A file of that name is there already."
 msgstr "同じ名前のファイルがすでにあります。"
 
-#: mcomix/file_actions.py:346
+#: mcomix/file_actions.py:347
 #, python-format
 msgid "Page %(number)d is called \"%(name)s\" already."
 msgstr "%(number)d ページ目はすでに「%(name)s」という名前です。"
 
-#: mcomix/file_actions.py:351
+#: mcomix/file_actions.py:352
 msgid "Rename page?"
 msgstr "ページの名前を変更しますか?"
 
-#: mcomix/file_actions.py:352
+#: mcomix/file_actions.py:353
 msgid "Please enter a new name for this page."
 msgstr "このページの新しい名前を入力してください。"
 
-#: mcomix/file_actions.py:517
+#: mcomix/file_actions.py:538
 #, python-format
 msgid "Write \"%s\" again before closing it?"
 msgstr "閉じる前に「%s」を書き直しますか？"
 
-#: mcomix/file_actions.py:518
+#: mcomix/file_actions.py:539
 msgid ""
 "The book has changes that the archive on disk does not hold. They are lost "
 "when it closes."
 msgstr "この本には、ディスク上の書庫にない変更があります。閉じると失われます。"
 
-#: mcomix/file_actions.py:520
+#: mcomix/file_actions.py:541
 msgid "_Close without saving"
 msgstr "保存せずに閉じる(_C)"
 
-#: mcomix/file_actions.py:559
+#: mcomix/file_actions.py:580
 #, python-format
 msgid "Write \"%s\" again now?"
 msgstr "「%s」を今すぐ書き直しますか？"
 
-#: mcomix/file_actions.py:560
+#: mcomix/file_actions.py:581
 msgid ""
 "The archive on disk will be replaced by the book as it stands: the pages it "
 "holds now, in the order and under the names it shows."
@@ -399,60 +417,60 @@ msgstr ""
 "ディスク上の書庫が、現在の本で置き換えられます。今あるページが、表示されてい"
 "る順序と名前で書き込まれます。"
 
-#: mcomix/file_actions.py:563
+#: mcomix/file_actions.py:584
 msgid "_Not now"
 msgstr "今はしない(_N)"
 
-#: mcomix/file_actions.py:714
+#: mcomix/file_actions.py:735
 msgid "Save page as"
 msgstr "別名でページを保存"
 
-#: mcomix/file_actions.py:755
+#: mcomix/file_actions.py:776
 #, python-format
 msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! %(file)s を %(directory)s に保存できませんでした: %(error)s"
 
-#: mcomix/file_actions.py:759 mcomix/file_actions.py:946
+#: mcomix/file_actions.py:780 mcomix/file_actions.py:967
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "空き容量が足りません: ファイルサイズは %s です。"
 
-#: mcomix/file_actions.py:765
+#: mcomix/file_actions.py:786
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "\"%(file)s\" を \"%(directory)s\" に保存できませんでした"
 
-#: mcomix/file_actions.py:794
+#: mcomix/file_actions.py:815
 #, python-format
 msgid "Delete \"%s\"?"
 msgstr "\"%s\" を消去しますか?"
 
-#: mcomix/file_actions.py:795
+#: mcomix/file_actions.py:816
 msgid "The file will be deleted from your harddisk."
 msgstr "ファイルはあなたのハードディスクから消去されます。"
 
-#: mcomix/file_actions.py:797 mcomix/ui.py:433
+#: mcomix/file_actions.py:818 mcomix/ui.py:433
 msgid "_Delete"
 msgstr "消去(_D)"
 
-#: mcomix/file_actions.py:867
+#: mcomix/file_actions.py:888
 #, python-format
 msgid "The file is gone, and its %d bookmark cannot be opened any more."
 msgid_plural ""
 "The file is gone, and its %d bookmarks cannot be opened any more."
 msgstr[0] "ファイルは削除され、その %d 個のブックマークはもう開けません。"
 
-#: mcomix/file_actions.py:871
+#: mcomix/file_actions.py:892
 #, python-format
 msgid "Remove the bookmarks in \"%s\"?"
 msgstr "\"%s\" のブックマークを削除しますか?"
 
-#: mcomix/file_actions.py:940
+#: mcomix/file_actions.py:961
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr "! %(file)s を %(directory)s に移動できませんでした: %(error)s"
 
-#: mcomix/file_actions.py:952
+#: mcomix/file_actions.py:973
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "\"%(file)s\" を \"%(directory)s\" に移動できませんでした"
@@ -972,13 +990,13 @@ msgstr "キーバインディングを読めませんでした: %s"
 msgid "! Could not remove file \"%s\""
 msgstr "! ファイル \"%s\" を削除できませんでした"
 
-#: mcomix/main.py:755
+#: mcomix/main.py:756
 #, python-format
 msgid "Remove the page picked out of \"%s\"?"
 msgid_plural "Remove the pages picked out of \"%s\"?"
 msgstr[0] "選んだページを「%s」から取り除きますか？"
 
-#: mcomix/main.py:758
+#: mcomix/main.py:759
 msgid ""
 "They are taken out of the archive on disk, which is written again at once. "
 "Leaving the book without removing them forgets which pages they were."
@@ -986,11 +1004,11 @@ msgstr ""
 "ディスク上の書庫から取り除かれ、書庫はすぐに書き直されます。取り除かずに本を"
 "離れると、どのページだったかは忘れられます。"
 
-#: mcomix/main.py:761
+#: mcomix/main.py:762
 msgid "_Keep them"
 msgstr "残す(_K)"
 
-#: mcomix/main.py:1167
+#: mcomix/main.py:1168
 msgid "SLIDESHOW"
 msgstr "SLIDESHOW"
 

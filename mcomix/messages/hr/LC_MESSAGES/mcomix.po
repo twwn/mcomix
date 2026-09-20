@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: comix 4.0.1\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-20 19:12+0200\n"
+"POT-Creation-Date: 2026-09-20 19:38+0200\n"
 "PO-Revision-Date: 2008-12-13 18:00+0100\n"
 "Last-Translator: Adrian C. <anrxc@sysphere.org>\n"
 "Language-Team: Croatian\n"
@@ -94,8 +94,8 @@ msgstr "_Ne"
 
 #
 # File: src/preferences.py, line: 230
-#: mcomix/bookmark_backend.py:329 mcomix/edit_dialog.py:58
-#: mcomix/file_actions.py:796 mcomix/file_chooser_base_dialog.py:106
+#: mcomix/bookmark_backend.py:329 mcomix/edit_dialog.py:59
+#: mcomix/file_actions.py:817 mcomix/file_chooser_base_dialog.py:106
 #: mcomix/file_chooser_base_dialog.py:111
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:32
@@ -148,7 +148,7 @@ msgstr "Uređivanje oznaka"
 msgid "C_lear bookmarks..."
 msgstr "_Očisti oznake..."
 
-#: mcomix/bookmark_dialog.py:33 mcomix/main.py:762 mcomix/openwith.py:342
+#: mcomix/bookmark_dialog.py:33 mcomix/main.py:763 mcomix/openwith.py:342
 #: mcomix/library/collection_area.py:149 mcomix/library/watchlist.py:63
 msgid "_Remove"
 msgstr "_Ukloni"
@@ -176,7 +176,7 @@ msgstr "Ime"
 
 #
 # File: src/bookmark.py, line: 256
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1346
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1347
 #: mcomix/library/control_area.py:147
 msgid "Page"
 msgstr "Stranica"
@@ -260,79 +260,97 @@ msgstr "_Poništi"
 msgid "_Redo"
 msgstr "P_onovi"
 
-#: mcomix/edit_comment_area.py:164
+#: mcomix/edit_comment_area.py:175
 #, python-format
 msgid "Another file in the archive is called \"%s\" already."
 msgstr "Druga datoteka u arhivi već se zove „%s“."
 
-#: mcomix/edit_comment_area.py:169
+#: mcomix/edit_comment_area.py:180
 #, python-format
 msgid "A page of the book is called \"%s\" already."
 msgstr "Stranica knjige već se zove „%s“."
 
-#: mcomix/edit_comment_area.py:174
+#: mcomix/edit_comment_area.py:185
 msgid "Rename file?"
 msgstr "Preimenuj datoteku?"
 
-#: mcomix/edit_comment_area.py:175
+#: mcomix/edit_comment_area.py:186
 msgid "Please enter a new name for this file."
 msgstr "Unesite novo ime za ovu datoteku."
 
 #
 # File: src/edit.py, line: 28
-#: mcomix/edit_dialog.py:57 mcomix/keybindings.py:146
+#: mcomix/edit_dialog.py:58 mcomix/keybindings.py:146
 msgid "Edit archive"
 msgstr "Uredi arhivu"
 
-#: mcomix/edit_dialog.py:60
+#: mcomix/edit_dialog.py:61
 msgid "A_pply"
 msgstr "_Primijeni"
 
-#: mcomix/edit_dialog.py:71 mcomix/ui.py:471 mcomix/ui.py:472
+#: mcomix/edit_dialog.py:76 mcomix/ui.py:471 mcomix/ui.py:472
 msgid "Save _As"
 msgstr "Spremi _kao"
 
-#: mcomix/edit_dialog.py:73
+#: mcomix/edit_dialog.py:78
 msgid "_Import"
 msgstr "_Uvezi"
 
 #
 # File: src/edit.py, line: 50
-#: mcomix/edit_dialog.py:106
+#: mcomix/edit_dialog.py:111
 msgid "Images"
 msgstr "Slike"
 
 #
 # File: src/comment.py, line: 16
 # File: src/preferences.py, line: 288
-#: mcomix/edit_dialog.py:107
+#: mcomix/edit_dialog.py:112
 msgid "Comment files"
 msgstr "Datoteke s komentarima"
 
 #
 # File: src/library.py, line: 271
-#: mcomix/edit_dialog.py:197 mcomix/file_actions.py:608
+#: mcomix/edit_dialog.py:240 mcomix/file_actions.py:629
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! Nije moguće spremiti arhivu %(archivefile)s: %(error)s"
 
 #
 # File: src/edit.py, line: 99
-#: mcomix/edit_dialog.py:210 mcomix/file_actions.py:613
+#: mcomix/edit_dialog.py:253 mcomix/file_actions.py:634
 msgid "The new archive could not be saved!"
 msgstr "Neuspješna pohrana nove arhive!"
 
 #
 # File: src/edit.py, line: 101
-#: mcomix/edit_dialog.py:211 mcomix/file_actions.py:614
+#: mcomix/edit_dialog.py:254 mcomix/file_actions.py:635
 msgid "The original files have not been removed."
 msgstr "Izvorne datoteke nisu obrisane."
 
 #
 # File: src/edit.py, line: 115
-#: mcomix/edit_dialog.py:298
+#: mcomix/edit_dialog.py:357
 msgid "Archives are stored as ZIP files."
 msgstr "Arhive se spremaju kao ZIP datoteke."
+
+#: mcomix/edit_dialog.py:441
+msgid "Close the book the archive editor is working on?"
+msgstr "Zatvoriti knjigu na kojoj radi uređivač arhive?"
+
+#: mcomix/edit_dialog.py:442
+msgid ""
+"The editor holds changes that have not been applied or saved. They go with "
+"the book."
+msgstr "Uređivač ima promjene koje nisu primijenjene ni spremljene. Nestat će s knjigom."
+
+#: mcomix/edit_dialog.py:444
+msgid "_Go on editing"
+msgstr "_Nastavi uređivanje"
+
+#: mcomix/edit_dialog.py:445
+msgid "_Close the book"
+msgstr "_Zatvori knjigu"
 
 #: mcomix/edit_image_area.py:111 mcomix/ui.py:435
 msgid "Re_name page..."
@@ -358,8 +376,8 @@ msgstr "Vrati na zadane vrijednosti."
 
 #
 # File: src/filechooser.py, line: 39
-#: mcomix/enhance_dialog.py:35 mcomix/file_actions.py:521
-#: mcomix/file_actions.py:564 mcomix/file_chooser_base_dialog.py:112
+#: mcomix/enhance_dialog.py:35 mcomix/file_actions.py:542
+#: mcomix/file_actions.py:585 mcomix/file_chooser_base_dialog.py:112
 #: mcomix/openwith.py:360
 msgid "_Save"
 msgstr "_Spremi"
@@ -421,29 +439,29 @@ msgstr "_Invertiraj boje slike"
 msgid "Invert (negate) image colors."
 msgstr "Invertira (negira) boje slike."
 
-#: mcomix/file_actions.py:282 mcomix/file_actions.py:944
+#: mcomix/file_actions.py:283 mcomix/file_actions.py:965
 msgid "A file of that name is there already."
 msgstr "Datoteka tog imena već je ondje."
 
-#: mcomix/file_actions.py:346
+#: mcomix/file_actions.py:347
 #, python-format
 msgid "Page %(number)d is called \"%(name)s\" already."
 msgstr "Stranica %(number)d već se zove „%(name)s“."
 
-#: mcomix/file_actions.py:351
+#: mcomix/file_actions.py:352
 msgid "Rename page?"
 msgstr "Preimenuj stranicu?"
 
-#: mcomix/file_actions.py:352
+#: mcomix/file_actions.py:353
 msgid "Please enter a new name for this page."
 msgstr "Unesite novo ime za ovu stranicu."
 
-#: mcomix/file_actions.py:517
+#: mcomix/file_actions.py:538
 #, python-format
 msgid "Write \"%s\" again before closing it?"
 msgstr "Zapisati „%s“ ponovno prije zatvaranja?"
 
-#: mcomix/file_actions.py:518
+#: mcomix/file_actions.py:539
 msgid ""
 "The book has changes that the archive on disk does not hold. They are lost "
 "when it closes."
@@ -451,16 +469,16 @@ msgstr ""
 "Knjiga ima promjene koje arhiv na disku ne sadrži. Zatvaranjem će se "
 "izgubiti."
 
-#: mcomix/file_actions.py:520
+#: mcomix/file_actions.py:541
 msgid "_Close without saving"
 msgstr "_Zatvori bez spremanja"
 
-#: mcomix/file_actions.py:559
+#: mcomix/file_actions.py:580
 #, python-format
 msgid "Write \"%s\" again now?"
 msgstr "Zapisati „%s“ ponovno sada?"
 
-#: mcomix/file_actions.py:560
+#: mcomix/file_actions.py:581
 msgid ""
 "The archive on disk will be replaced by the book as it stands: the pages it "
 "holds now, in the order and under the names it shows."
@@ -468,43 +486,43 @@ msgstr ""
 "Arhiv na disku bit će zamijenjen knjigom kakva je sada: stranicama koje sada "
 "ima, redoslijedom i pod imenima koja prikazuje."
 
-#: mcomix/file_actions.py:563
+#: mcomix/file_actions.py:584
 msgid "_Not now"
 msgstr "Ne _sada"
 
-#: mcomix/file_actions.py:714
+#: mcomix/file_actions.py:735
 msgid "Save page as"
 msgstr "Spremi stranicu kao"
 
-#: mcomix/file_actions.py:755
+#: mcomix/file_actions.py:776
 #, python-format
 msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! Nije moguće spremiti %(file)s u %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:759 mcomix/file_actions.py:946
+#: mcomix/file_actions.py:780 mcomix/file_actions.py:967
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "Ondje nema dovoljno mjesta: datoteka je %s."
 
-#: mcomix/file_actions.py:765
+#: mcomix/file_actions.py:786
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "Nije moguće spremiti „%(file)s” u „%(directory)s”"
 
-#: mcomix/file_actions.py:794
+#: mcomix/file_actions.py:815
 #, python-format
 msgid "Delete \"%s\"?"
 msgstr "Obrisati „%s”?"
 
-#: mcomix/file_actions.py:795
+#: mcomix/file_actions.py:816
 msgid "The file will be deleted from your harddisk."
 msgstr "Datoteka će biti obrisana s tvrdog diska."
 
-#: mcomix/file_actions.py:797 mcomix/ui.py:433
+#: mcomix/file_actions.py:818 mcomix/ui.py:433
 msgid "_Delete"
 msgstr "Ob_riši"
 
-#: mcomix/file_actions.py:867
+#: mcomix/file_actions.py:888
 #, python-format
 msgid "The file is gone, and its %d bookmark cannot be opened any more."
 msgid_plural ""
@@ -513,17 +531,17 @@ msgstr[0] "Datoteke više nema i njezina %d oznaka se više ne može otvoriti."
 msgstr[1] "Datoteke više nema i njezine %d oznake se više ne mogu otvoriti."
 msgstr[2] "Datoteke više nema i njezinih %d oznaka se više ne može otvoriti."
 
-#: mcomix/file_actions.py:871
+#: mcomix/file_actions.py:892
 #, python-format
 msgid "Remove the bookmarks in \"%s\"?"
 msgstr "Ukloniti oznake u „%s”?"
 
-#: mcomix/file_actions.py:940
+#: mcomix/file_actions.py:961
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr "! Nije moguće premjestiti %(file)s u %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:952
+#: mcomix/file_actions.py:973
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "Nije moguće premjestiti „%(file)s” u „%(directory)s”"
@@ -1176,7 +1194,7 @@ msgstr "Nije moguće učitati prečace: %s"
 msgid "! Could not remove file \"%s\""
 msgstr "! Nije moguće obrisati datoteku „%s”"
 
-#: mcomix/main.py:755
+#: mcomix/main.py:756
 #, python-format
 msgid "Remove the page picked out of \"%s\"?"
 msgid_plural "Remove the pages picked out of \"%s\"?"
@@ -1184,7 +1202,7 @@ msgstr[0] "Ukloniti odabranu stranicu iz „%s“?"
 msgstr[1] "Ukloniti odabrane stranice iz „%s“?"
 msgstr[2] "Ukloniti odabrane stranice iz „%s“?"
 
-#: mcomix/main.py:758
+#: mcomix/main.py:759
 msgid ""
 "They are taken out of the archive on disk, which is written again at once. "
 "Leaving the book without removing them forgets which pages they were."
@@ -1192,13 +1210,13 @@ msgstr ""
 "Uklanjaju se iz arhiva na disku, koji se odmah ponovno zapisuje. Napustite "
 "li knjigu bez njihova uklanjanja, zaboravit će se koje su stranice bile."
 
-#: mcomix/main.py:761
+#: mcomix/main.py:762
 msgid "_Keep them"
 msgstr "Za_drži"
 
 #
 # File: src/main.py, line: 666
-#: mcomix/main.py:1167
+#: mcomix/main.py:1168
 msgid "SLIDESHOW"
 msgstr "PREZENTACIJA"
 

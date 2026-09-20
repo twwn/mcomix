@@ -22,6 +22,7 @@ from mcomix import preview
 from mcomix.i18n import _
 from mcomix.dialog import Response
 
+from collections.abc import Callable
 from typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
@@ -67,6 +68,10 @@ class _EditArchiveDialog(Dialog):
         #: again when it comes back.
         self._undone: list[_EditState] = []
         self._redone: list[_EditState] = []
+        #: What the editor last handed over - to the window with Apply,
+        #: or to a new archive with Save As.  What it shows now, where
+        #: it differs from this, is work that would go with the book.
+        self._handed_over: "tuple[tuple[str, ...], tuple[tuple[str, str], ...]]" = ((), ())
 
         self._save_button = self.add_button(_('Save _As'), constants.RESPONSE_SAVE_AS)
 
@@ -161,6 +166,9 @@ class _EditArchiveDialog(Dialog):
             # picked out here too; what is picked out when it closes
             # goes back the same way.
             self._image_area.select_paths(self._window.selected_page_paths())
+            # What the book was when the editor opened it, which is
+            # what everything since is a change to.
+            self._handed_over = self._contents()
         finally:
             # The cursor belongs to the main window rather than to this
             # dialog: whatever gets out of the two calls above, the
@@ -256,6 +264,22 @@ class _EditArchiveDialog(Dialog):
         images, comments = state
         self._image_area.restore(images)
         self._comment_area.restore(comments)
+
+    def _contents(self) -> "tuple[tuple[str, ...], tuple[tuple[str, str], ...]]":
+        """What the editor would write out: the pages in the order it
+        shows them, and each comment file with the name it carries."""
+        return (tuple(self._image_area.get_file_listing()),
+                tuple(sorted(self._comment_area.file_names().items())))
+
+    def changes_not_applied(self) -> bool:
+        """Whether the editor is holding work nothing else has yet.
+
+        The listing is handed to the window by Apply and written out by
+        Save As; until one of those, what the editor shows lives in the
+        editor alone, and closing the book it belongs to throws it
+        away.
+        """
+        return self._contents() != self._handed_over
 
     def record_change(self) -> None:
         """Remember both listings, before something changes one of them.
@@ -356,6 +380,11 @@ class _EditArchiveDialog(Dialog):
             picked_out = self._image_area.selected_paths()
             self._window.pages_replaced(self._image_area.get_file_listing())
             self._window.select_page_paths(picked_out)
+            # The window has the listing now, so it is no longer work
+            # that lives in the editor alone.  The names of the comment
+            # files go with it, there being nowhere else for them to go
+            # until the book is written.
+            self._handed_over = self._contents()
 
         else:
             _close_dialog()
@@ -389,6 +418,39 @@ def _close_dialog(*args: object) -> None:
     if _dialog is not None:
         _dialog.destroy()
         _dialog = None
+
+
+def ask_before_closing(parent: "main.MainWindow", *,
+                       closing: "Callable[[], None]",
+                       keeping: "Callable[[], None]") -> None:
+    """Ask whether to close a book the archive editor is working on.
+
+    <closing> runs when the reader lets the book go, <keeping> when
+    they would rather go on editing, and the close is then off: this is
+    the one question on the way out that can stop it, because what the
+    editor holds cannot be written from anywhere else once the book has
+    gone.  With no editor open, or none holding work that has not been
+    applied or saved, <closing> runs at once and nothing is asked.
+    """
+    if _dialog is None or not _dialog.changes_not_applied():
+        closing()
+        return
+    dialog = message_dialog.MessageDialog(
+        parent, modal=True, buttons=Gtk.ButtonsType.NONE)
+    dialog.set_text(
+        _('Close the book the archive editor is working on?'),
+        _('The editor holds changes that have not been applied or '
+          'saved. They go with the book.'))
+    dialog.add_button(_('_Go on editing'), Response.NO)
+    dialog.add_button(_('_Close the book'), Response.YES)
+    # A confirmation defaults to the answer that changes nothing, and
+    # the one that throws the editor's work away is drawn as what it is.
+    dialog.set_default_response(Response.NO)
+    closes = dialog.get_widget_for_response(Response.YES)
+    if closes is not None:
+        closes.add_css_class('destructive-action')
+    dialog.run_async(
+        lambda response: closing() if response == Response.YES else keeping())
 
 
 def _forget_dialog(dialog: "_EditArchiveDialog") -> None:
