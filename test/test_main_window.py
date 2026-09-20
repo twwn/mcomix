@@ -1269,6 +1269,35 @@ class MainWindowTest(MComixTest):
             dialog.destroy()
         self._pump()
 
+    # -- The right-click menu from the keyboard ---------------------------
+
+    def test_the_context_menu_action_opens_the_menu_over_the_page(self):
+        """With the menu bar hidden the popup is the only menu there is,
+        and it opened for a right click and nothing else.  A key press
+        carries no position, so the page it acts on is the one on
+        screen."""
+        self._ready()
+        self.window.set_page(2)
+        self._pump()
+        self.assertFalse(self.window.popup.get_visible())
+
+        self.window.event_handler._open_popup_menu()
+        self._pump()
+
+        self.assertTrue(self.window.popup.get_visible(),
+                        'the menu did not open')
+        self.assertEqual(self.window.popup_page,
+                         self.window.imagehandler.get_current_page())
+        self.window.popup.popdown()
+        self._pump()
+
+    def test_the_context_menu_is_bound_to_the_keys_that_ask_for_one(self):
+        manager = keybindings.keybinding_manager(self.window)
+        self.assertEqual(
+            [Gtk.accelerator_name(*binding)
+             for binding in manager.get_bindings_for_action('popup_menu')],
+            ['Menu', '<Shift>F10'])
+
     # -- Saving a page out of the book ------------------------------------
 
     def test_a_page_that_could_not_be_saved_says_so(self):

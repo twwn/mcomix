@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 1.00-SVN\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-20 02:46+0200\n"
+"POT-Creation-Date: 2026-09-20 06:49+0200\n"
 "PO-Revision-Date: 2012-08-16 13:10+0900\n"
 "Last-Translator: Toshiharu Kudoh <toshi.kd2@gmail.com>\n"
 "Language-Team: Japanese\n"
@@ -88,7 +88,7 @@ msgstr "はい(_Y)"
 msgid "_No"
 msgstr "いいえ(_N)"
 
-#: mcomix/bookmark_backend.py:291 mcomix/edit_dialog.py:57
+#: mcomix/bookmark_backend.py:291 mcomix/edit_dialog.py:58
 #: mcomix/file_actions.py:368 mcomix/file_chooser_base_dialog.py:106
 #: mcomix/file_chooser_base_dialog.py:111
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
@@ -222,44 +222,44 @@ msgstr "元に戻す(_U)"
 msgid "_Redo"
 msgstr "やり直す(_R)"
 
-#: mcomix/edit_dialog.py:56 mcomix/keybindings.py:143
+#: mcomix/edit_dialog.py:57 mcomix/keybindings.py:145
 msgid "Edit archive"
 msgstr "アーカイブファイルを編集"
 
-#: mcomix/edit_dialog.py:59
+#: mcomix/edit_dialog.py:60
 msgid "A_pply"
 msgstr "適用(_P)"
 
-#: mcomix/edit_dialog.py:70 mcomix/ui.py:464 mcomix/ui.py:465
+#: mcomix/edit_dialog.py:71 mcomix/ui.py:464 mcomix/ui.py:465
 msgid "Save _As"
 msgstr "別名で保存(_A)"
 
-#: mcomix/edit_dialog.py:72
+#: mcomix/edit_dialog.py:73
 msgid "_Import"
 msgstr "インポート(_I)"
 
-#: mcomix/edit_dialog.py:105
+#: mcomix/edit_dialog.py:106
 msgid "Images"
 msgstr "画像"
 
-#: mcomix/edit_dialog.py:106
+#: mcomix/edit_dialog.py:107
 msgid "Comment files"
 msgstr "コメントファイル"
 
-#: mcomix/edit_dialog.py:190 mcomix/file_actions.py:180
+#: mcomix/edit_dialog.py:191 mcomix/file_actions.py:180
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! アーカイブファイル %(archivefile)s を保存できませんでした: %(error)s"
 
-#: mcomix/edit_dialog.py:203 mcomix/file_actions.py:185
+#: mcomix/edit_dialog.py:204 mcomix/file_actions.py:185
 msgid "The new archive could not be saved!"
 msgstr "新しいアーカイブファイルが保存できませんでした!"
 
-#: mcomix/edit_dialog.py:204 mcomix/file_actions.py:186
+#: mcomix/edit_dialog.py:205 mcomix/file_actions.py:186
 msgid "The original files have not been removed."
 msgstr "元のファイルは削除されません。"
 
-#: mcomix/edit_dialog.py:288
+#: mcomix/edit_dialog.py:292
 msgid "Archives are stored as ZIP files."
 msgstr "アーカイブファイルは ZIP 形式で保存されます。"
 
@@ -267,7 +267,7 @@ msgstr "アーカイブファイルは ZIP 形式で保存されます。"
 msgid "Select _All"
 msgstr "すべて選択(_A)"
 
-#: mcomix/enhance_dialog.py:28 mcomix/keybindings.py:145
+#: mcomix/enhance_dialog.py:28 mcomix/keybindings.py:147
 msgid "Enhance image"
 msgstr "画像の調整"
 
@@ -389,7 +389,7 @@ msgstr "同じ名前のファイルがすでにあります。"
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "\"%(file)s\" を \"%(directory)s\" に移動できませんでした"
 
-#: mcomix/file_chooser_base_dialog.py:105 mcomix/keybindings.py:144
+#: mcomix/file_chooser_base_dialog.py:105 mcomix/keybindings.py:146
 msgid "Open"
 msgstr "開く"
 
@@ -473,7 +473,7 @@ msgstr ""
 "ば、閲覧を %(page)d ページで再開します。そうでなければ、最初のページが読み込"
 "まれます。"
 
-#: mcomix/file_handler.py:903
+#: mcomix/file_handler.py:910
 #, python-format
 msgid ""
 "! Corrupt file \"%s\", deleting it; the last file read will not be reopened."
@@ -745,9 +745,10 @@ msgstr "全画面表示から退出"
 #: mcomix/keybindings.py:116 mcomix/keybindings.py:118
 #: mcomix/keybindings.py:119 mcomix/keybindings.py:120
 #: mcomix/keybindings.py:121 mcomix/keybindings.py:122
-#: mcomix/keybindings.py:123 mcomix/keybindings.py:124
-#: mcomix/keybindings.py:125 mcomix/keybindings.py:126
-#: mcomix/keybindings.py:127 mcomix/preferences_dialog.py:130
+#: mcomix/keybindings.py:124 mcomix/keybindings.py:125
+#: mcomix/keybindings.py:126 mcomix/keybindings.py:127
+#: mcomix/keybindings.py:128 mcomix/keybindings.py:129
+#: mcomix/preferences_dialog.py:130
 msgid "User interface"
 msgstr "ユーザーインターフェース"
 
@@ -772,119 +773,123 @@ msgid "Menubar"
 msgstr "メニューバー"
 
 #: mcomix/keybindings.py:123
+msgid "Context menu"
+msgstr "コンテキストメニュー"
+
+#: mcomix/keybindings.py:125
 msgid "Statusbar"
 msgstr "ステータスバー"
 
-#: mcomix/keybindings.py:124
+#: mcomix/keybindings.py:126
 msgid "Scrollbars"
 msgstr "スクロールバー"
 
-#: mcomix/keybindings.py:125 mcomix/preferences_dialog.py:154
+#: mcomix/keybindings.py:127 mcomix/preferences_dialog.py:154
 msgid "Thumbnails"
 msgstr "サムネイル"
 
-#: mcomix/keybindings.py:126
+#: mcomix/keybindings.py:128
 msgid "Hide all"
 msgstr "全て隠す"
 
-#: mcomix/keybindings.py:127 mcomix/slideshow.py:54 mcomix/ui.py:502
+#: mcomix/keybindings.py:129 mcomix/slideshow.py:54 mcomix/ui.py:502
 msgid "Start slideshow"
 msgstr "スライドショーを動かす"
 
-#: mcomix/keybindings.py:130
+#: mcomix/keybindings.py:132
 msgid "Delete"
 msgstr "削除"
 
-#: mcomix/keybindings.py:130 mcomix/keybindings.py:133
-#: mcomix/keybindings.py:134 mcomix/keybindings.py:135
+#: mcomix/keybindings.py:132 mcomix/keybindings.py:135
 #: mcomix/keybindings.py:136 mcomix/keybindings.py:137
-#: mcomix/keybindings.py:139 mcomix/keybindings.py:140
-#: mcomix/keybindings.py:141 mcomix/keybindings.py:143
-#: mcomix/keybindings.py:144 mcomix/keybindings.py:145
+#: mcomix/keybindings.py:138 mcomix/keybindings.py:139
+#: mcomix/keybindings.py:141 mcomix/keybindings.py:142
+#: mcomix/keybindings.py:143 mcomix/keybindings.py:145
 #: mcomix/keybindings.py:146 mcomix/keybindings.py:147
+#: mcomix/keybindings.py:148 mcomix/keybindings.py:149
 msgid "File"
 msgstr "ファイル"
 
-#: mcomix/keybindings.py:131
+#: mcomix/keybindings.py:133
 msgid "Undo"
 msgstr "元に戻す"
 
-#: mcomix/keybindings.py:131 mcomix/keybindings.py:132
+#: mcomix/keybindings.py:133 mcomix/keybindings.py:134
 msgid "Edit"
 msgstr "編集"
 
-#: mcomix/keybindings.py:132
+#: mcomix/keybindings.py:134
 msgid "Redo"
 msgstr "やり直す"
 
-#: mcomix/keybindings.py:133
+#: mcomix/keybindings.py:135
 msgid "Refresh"
 msgstr "再読み込み"
 
-#: mcomix/keybindings.py:134
+#: mcomix/keybindings.py:136
 msgid "Close"
 msgstr "閉じる"
 
-#: mcomix/keybindings.py:135
+#: mcomix/keybindings.py:137
 msgid "Quit"
 msgstr "終了"
 
-#: mcomix/keybindings.py:136
+#: mcomix/keybindings.py:138
 msgid "Save and quit"
 msgstr "保存して終了"
 
-#: mcomix/keybindings.py:137
+#: mcomix/keybindings.py:139
 msgid "Save As"
 msgstr "別名で保存"
 
-#: mcomix/keybindings.py:139
+#: mcomix/keybindings.py:141
 msgid "Archive comments"
 msgstr "アーカイブファイルのコメント"
 
-#: mcomix/keybindings.py:140 mcomix/properties_dialog.py:36
+#: mcomix/keybindings.py:142 mcomix/properties_dialog.py:36
 msgid "Properties"
 msgstr "プロパティー"
 
-#: mcomix/keybindings.py:141 mcomix/preferences_dialog.py:69
+#: mcomix/keybindings.py:143 mcomix/preferences_dialog.py:69
 msgid "Preferences"
 msgstr "設定"
 
-#: mcomix/keybindings.py:146 mcomix/library/main_dialog.py:53
+#: mcomix/keybindings.py:148 mcomix/library/main_dialog.py:53
 msgid "Library"
 msgstr "ライブラリー"
 
-#: mcomix/keybindings.py:147 mcomix/ui.py:506
+#: mcomix/keybindings.py:149 mcomix/ui.py:506
 msgid "Invert image colors"
 msgstr "画像の色を反転"
 
-#: mcomix/keybindings.py:150
+#: mcomix/keybindings.py:152
 msgid "Add bookmark"
 msgstr "ブックマークに追加"
 
-#: mcomix/keybindings.py:150 mcomix/keybindings.py:151
+#: mcomix/keybindings.py:152 mcomix/keybindings.py:153
 msgid "Bookmarks"
 msgstr "ブックマーク"
 
-#: mcomix/keybindings.py:151
+#: mcomix/keybindings.py:153
 msgid "Edit bookmarks"
 msgstr "ブックマークの編集"
 
-#: mcomix/keybindings.py:159 mcomix/openwith.py:563
+#: mcomix/keybindings.py:161 mcomix/openwith.py:563
 msgid "Command"
 msgstr "コマンド"
 
-#: mcomix/keybindings.py:160
+#: mcomix/keybindings.py:162
 msgid "External commands"
 msgstr "外部コマンド"
 
-#: mcomix/keybindings.py:238
+#: mcomix/keybindings.py:240
 #, python-format
 msgid "Keybinding for \"%(action)s\" overrides hotkey for another action."
 msgstr ""
 "\"%(action)s\" のキーバインディングは他のアクションのホットキーをオーバーライ"
 "ドします。"
 
-#: mcomix/keybindings.py:394
+#: mcomix/keybindings.py:396
 #, python-format
 msgid "Couldn't load keybindings: %s"
 msgstr "キーバインディングを読めませんでした: %s"
@@ -2622,11 +2627,11 @@ msgstr ""
 "ライブラリーデータベースのバージョンを %(from)d から %(to)d へアップグレード"
 "しています。"
 
-#: mcomix/library/backend_types.py:316 mcomix/library/collection_area.py:222
+#: mcomix/library/backend_types.py:337 mcomix/library/collection_area.py:222
 msgid "All books"
 msgstr "全ての本"
 
-#: mcomix/library/backend_types.py:457
+#: mcomix/library/backend_types.py:478
 #, python-format
 msgid "! Could not scan for new books: %s"
 msgstr "! 新しい本を検索できませんでした: %s"

@@ -448,6 +448,14 @@ class EventHandler:
                          ['<Control>M'],
                          self._window.actiongroup.get_action('menubar').activate)
 
+        # The menu key and Shift+F10 are what a GTK3 widget was told to
+        # show a context menu by; a GTK4 widget hears them itself, and
+        # here they are an action of their own so that a reader can
+        # rebind them like any other.
+        manager.register('popup_menu',
+                         ['Menu', '<Shift>F10'],
+                         self._open_popup_menu)
+
         manager.register('statusbar',
                          [],
                          self._window.actiongroup.get_action('statusbar').activate)
@@ -528,6 +536,21 @@ class EventHandler:
             return Gdk.EVENT_STOP
 
         return Gdk.EVENT_PROPAGATE
+
+    def _open_popup_menu(self) -> None:
+        """Open the right-click menu over the page being read.
+
+        With the menu bar hidden it is the only menu there is, and it
+        opened for a right click and nothing else.  A key press carries
+        no position, so it stands in the middle of the page area, and
+        the page it acts on is the one on screen rather than the one
+        under the pointer.
+        """
+        self._window.popup_page = \
+            self._window.imagehandler.get_current_page()
+        area = self._window.page_area
+        widgets.popup_at(self._window.popup, area,
+                         area.get_width() / 2, area.get_height() / 2)
 
     def escape_event(self) -> None:
         """ Determines the behavior of the ESC key. """

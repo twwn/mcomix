@@ -120,6 +120,8 @@ BINDING_INFO: "dict[str, dict[str, str]]" = {
     'fullscreen': {'title': _('Fullscreen'), 'group': _('User interface')},
     'toolbar': {'title': _('Toolbar'), 'group': _('User interface')},
     'menubar': {'title': _('Menubar'), 'group': _('User interface')},
+    'popup_menu': {'title': _('Context menu'),
+                   'group': _('User interface')},
     'statusbar': {'title': _('Statusbar'), 'group': _('User interface')},
     'scrollbar': {'title': _('Scrollbars'), 'group': _('User interface')},
     'thumbnails': {'title': _('Thumbnails'), 'group': _('User interface')},

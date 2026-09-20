@@ -96,7 +96,7 @@ Undo | CTRL+Z
 Redo | CTRL+Y, CTRL+SHIFT+Z
 Add bookmark | CTRL+D
 Edit bookmarks | CTRL+B
-Open the page's menu | RightMouse
+Open the page's menu | RightMouse, Menu, SHIFT+F10
 Minimize window | N
 Quit program | CTRL+Q
 Save and quit | CTRL+SHIFT+Q
