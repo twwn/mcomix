@@ -30,7 +30,7 @@ from mcomix.i18n import _
 from mcomix.library import backend
 from mcomix.preferences import prefs
 
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -146,12 +146,26 @@ class FileActions:
         page = self._window.popup_page
         if page is None:
             page = self._window.imagehandler.get_current_page()
-        if not page or not self._window.filehandler.file_loaded:
+        if page:
+            self.rename_page_dialog(page)
+
+    def rename_page_dialog(self, page: int,
+                           parent: "Gtk.Window | None" = None,
+                           when_done: "Callable[[], None] | None" = None
+                           ) -> None:
+        """Ask what to call <page>, and give it the answer.
+
+        <parent> is the window the dialog belongs to, which is the
+        archive editor when the rename was asked for there, and
+        <when_done> is called once a name has been given, so that
+        whatever shows the name can show the new one.
+        """
+        if not self._window.filehandler.file_loaded:
             return
         old_name = self.page_name(page)
 
         dialog = message_dialog.MessageDialog(
-            self._window, buttons=Gtk.ButtonsType.OK_CANCEL)
+            parent or self._window, buttons=Gtk.ButtonsType.OK_CANCEL)
         dialog.set_text(_('Rename page?'),
                         _('Please enter a new name for this page.'))
         dialog.set_default_response(Response.OK)
@@ -164,7 +178,7 @@ class FileActions:
         # The entry outlives the dialog: what was typed is read out of
         # it once the answer has come back.
         dialog.run_async(lambda response: self._rename_answered(
-            response, page, entry.get_text()))
+            response, page, entry.get_text(), when_done))
 
         def pick_out_the_name() -> bool:
             """Select the part a rename replaces: the name without its
@@ -179,10 +193,13 @@ class FileActions:
 
         GLib.idle_add(pick_out_the_name)
 
-    def _rename_answered(self, response: int, page: int, name: str) -> None:
+    def _rename_answered(self, response: int, page: int, name: str,
+                         when_done: "Callable[[], None] | None" = None
+                         ) -> None:
         """Give <page> the name that was typed, if the answer was yes."""
-        if response == Response.OK:
-            self.rename_page(page, name)
+        if response == Response.OK and self.rename_page(page, name) \
+                and when_done is not None:
+            when_done()
 
     def page_name(self, page: int) -> str:
         """What the page at <page> is called: the name it was given, or

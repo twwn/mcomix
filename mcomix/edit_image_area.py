@@ -96,7 +96,8 @@ class _ImageArea(Gtk.ScrolledWindow, widgets.Releasable):
         has to name them, so nothing said they were there.
         """
         actions = Gio.SimpleActionGroup()
-        for name, activated in (('remove', self._remove_pages),
+        for name, activated in (('rename', self._rename_page),
+                                ('remove', self._remove_pages),
                                 ('select-all', self._select_all),
                                 ('undo', self._undo),
                                 ('redo', self._redo)):
@@ -107,6 +108,7 @@ class _ImageArea(Gtk.ScrolledWindow, widgets.Releasable):
 
         model = Gio.Menu()
         pages = Gio.Menu()
+        pages.append(_('Re_name page...'), 'imagearea.rename')
         pages.append(_('Remove from archive'), 'imagearea.remove')
         pages.append(_('Select _All'), 'imagearea.select-all')
         model.append_section(None, pages)
@@ -115,6 +117,33 @@ class _ImageArea(Gtk.ScrolledWindow, widgets.Releasable):
         history.append(_('_Redo'), 'imagearea.redo')
         model.append_section(None, history)
         return Gtk.PopoverMenu.new_from_model(model)
+
+    def _rename_page(self, *args: object) -> None:
+        """Ask what to call the page that is selected.
+
+        One page: a name belongs to one file, and a menu opened over a
+        page selects it, so the one under the pointer is the one meant.
+        The window's own rename is what does it, since the name it
+        gives is the name this editor writes the page under as well.
+        """
+        items = self._grid.get_selected_items()
+        if len(items) != 1:
+            return
+        path = items[0].uid
+        assert isinstance(path, str)
+        pages = self._window.imagehandler.get_image_files()
+        if path not in pages:
+            return
+        page = pages.index(path) + 1
+        self._window.file_actions.rename_page_dialog(
+            page, self._edit_dialog, lambda: self._rename_done(items[0], page))
+
+    def _rename_done(self, item: thumbnail_list.ThumbnailItem,
+                     page: int) -> None:
+        """Show the name the page has been given on its thumbnail."""
+        item.tooltip = i18n.to_unicode(
+            self._window.file_actions.page_name(page))
+        self._grid.refresh_item(item)
 
     def _select_all(self, *args: object) -> None:
         self._grid.select_all()

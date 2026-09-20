@@ -61,7 +61,7 @@ From a shell, `mcomix --page 42 book.cbz` opens a book at page 42.
 Editing and saving books
 ---
 
-"Edit &rarr; Edit archive..." opens the archive editor on the book, which may be an archive or a directory of images. Its "Images" tab shows the pages as thumbnails, which can be dragged into another order, and its "Comment files" tab lists the text files that came with them. "Remove from archive", in the right-click menu of either list, takes out what is selected, and "Import" adds images from elsewhere on disk. CTRL+Z undoes a change, and CTRL+Y or CTRL+SHIFT+Z redoes it.
+"Edit &rarr; Edit archive..." opens the archive editor on the book, which may be an archive or a directory of images. Its "Images" tab shows the pages as thumbnails, which can be dragged into another order, and its "Comment files" tab lists the text files that came with them. "Remove from archive", in the right-click menu of either list, takes out what is selected, "Rename page..." in the same menu gives the selected page a name, and "Import" adds images from elsewhere on disk. CTRL+Z undoes a change, and CTRL+Y or CTRL+SHIFT+Z redoes it.
 
 "Apply" hands the edited page list to the main window without writing anything to disk, so that the book can be read in its new order before it is saved. "Save As" writes the pages and the comment files out as a new archive. "Cancel" leaves the book and the archive as they were.
 

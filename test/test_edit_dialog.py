@@ -25,6 +25,16 @@ from mcomix.dialog import Response
 from mcomix.preferences import prefs
 
 
+def _children(widget):
+    """Every direct child of <widget>, in order."""
+    children = []
+    child = widget.get_first_child()
+    while child is not None:
+        children.append(child)
+        child = child.get_next_sibling()
+    return children
+
+
 class EditArchiveDialogTest(MComixTest):
 
     def setUp(self):
@@ -340,7 +350,7 @@ class EditArchiveDialogTest(MComixTest):
         self.assertEqual(
             self._popup_actions(
                 self.dialog._image_area._popup_menu.get_menu_model()),
-            ['imagearea.remove', 'imagearea.select-all',
+            ['imagearea.rename', 'imagearea.remove', 'imagearea.select-all',
              'imagearea.undo', 'imagearea.redo'])
 
     def test_the_comment_menu_names_undo_and_redo_too(self):
@@ -383,6 +393,45 @@ class EditArchiveDialogTest(MComixTest):
                          area._key_press(None, Gdk.KEY_F10, 0,
                                          Gdk.ModifierType(0)))
         self.assertFalse(area._popup_menu.get_visible())
+
+    def test_the_page_menu_offers_to_rename_a_page(self):
+        self.assertIn(
+            'imagearea.rename',
+            self._popup_actions(
+                self.dialog._image_area._popup_menu.get_menu_model()))
+
+    def test_renaming_from_the_editor_names_the_page_the_window_holds(self):
+        """The editor and the window are the same book: a name given
+        here is the name the page is written under either way."""
+        self.dialog._load_original_files()
+        pump()
+        grid = self.dialog._image_area._grid
+        self.assertTrue(grid.model.get_n_items() > 1,
+                        'the fixture has too few pages')
+        grid.select_only(0)
+
+        # The offer to write the archive again is another dialog, and
+        # what it asks about is not this test's business.
+        with unittest.mock.patch.object(self.window.file_actions,
+                                        'offer_to_save'):
+            self.dialog._image_area._rename_page()
+            pump()
+
+        dialogs = [window for window in Gtk.Window.list_toplevels()
+                   if isinstance(window, message_dialog.MessageDialog)]
+        self.assertEqual(len(dialogs), 1, 'nothing asked for a name')
+        entries = [child for child in _children(dialogs[0].get_content_area())
+                   if isinstance(child, Gtk.Entry)]
+        self.assertEqual(len(entries), 1)
+        entries[0].set_text('Cover.png')
+        with unittest.mock.patch.object(self.window.file_actions,
+                                        'offer_to_save'):
+            dialogs[0].emit('response', Response.OK)
+            pump()
+
+        self.assertEqual(self.window.file_actions.page_name(1), 'Cover.png')
+        self.assertEqual(grid.get_item(0).tooltip, 'Cover.png',
+                         'the thumbnail still shows the old name')
 
     def test_the_page_menu_selects_every_page(self):
         self.dialog._load_original_files()

@@ -354,6 +354,17 @@ class _ThumbnailViewBase(widgets.Releasable):
         for position in range(self.model.get_n_items()):
             yield cast(ThumbnailItem, self.model.get_item(position))
 
+    def refresh_item(self, item: ThumbnailItem) -> None:
+        """Draw <item> again, whatever has changed about it.
+
+        A cell reads the entry when it is bound, so a label or a
+        tooltip that changes afterwards is not shown until the store
+        says the entry has: this is that word.
+        """
+        found, position = self.store.find(item)
+        if found:
+            self.store.items_changed(position, 1, 1)
+
     def remove_items(self, items: Iterable[ThumbnailItem]) -> None:
         """Drop <items>, wherever the store happens to hold them."""
         for item in items:
