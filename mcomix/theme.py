@@ -68,6 +68,15 @@ picture.mcomix-selected-page {
     outline-offset: -4px;
 }
 
+/* The page a reader has marked to swap with another.  Dashed, so that
+   it is told apart from a page picked out to be removed at a glance,
+   and drawn the same way otherwise: a page can be both at once. */
+picture.mcomix-marked-page {
+    outline: 4px dashed rgb(53, 132, 228);
+    outline: 4px dashed @accent_bg_color;
+    outline-offset: -4px;
+}
+
 .sidebar, .navigation-sidebar {
     background-color: @sidebar_bg_color;
     color: @sidebar_fg_color;

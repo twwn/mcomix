@@ -84,6 +84,10 @@ class MainWindow(Gtk.Window):
         #: go by and dealt with together; only closing the book, or
         #: removing them, empties this.
         self.selected_pages: set[int] = set()
+        #: The page marked to be swapped with the next one clicked, if
+        #: any: a swap takes two pages, and they are picked one at a
+        #: time.
+        self.swap_page: "int | None" = None
         #: Saving, deleting and moving the files of the book, and the
         #: undo stack they are taken back through.
         self.file_actions = file_actions.FileActions(self)
@@ -634,9 +638,10 @@ class MainWindow(Gtk.Window):
 
     def _on_file_closed(self) -> None:
         """Follow a book being closed: empty the window and the sidebar."""
-        # All three stand against the pages of the book that is going,
-        # and none of them means anything against the next one.
+        # All of them stand against the pages of the book that is
+        # going, and none means anything against the next one.
         self.selected_pages = set()
+        self.swap_page = None
         self.file_actions.forget_changes()
         self.lens.file_changed()
         self.clear()
@@ -1209,6 +1214,31 @@ class MainWindow(Gtk.Window):
         self._draw_selection()
         self.uimanager.set_sensitivities()
 
+    #: The CSS class on the page waiting to be swapped.
+    _MARKED_CLASS = 'mcomix-marked-page'
+
+    def mark_for_swap(self, page: "int | None") -> None:
+        """Mark <page> to be swapped, or swap it with the marked one.
+
+        The first page clicked is marked and drawn as such; the second
+        changes places with it.  Clicking the marked page again takes
+        the mark off, which is the way out of a page marked by mistake,
+        and clicking anywhere that is not a page leaves the mark where
+        it is.
+        """
+        if page is None or not 1 <= page <= \
+                self.imagehandler.get_number_of_pages():
+            return
+        if self.swap_page is None:
+            self.swap_page = page
+            self._draw_selection()
+            return
+        marked, self.swap_page = self.swap_page, None
+        if marked != page:
+            self.file_actions.swap_pages(marked, page)
+        self._draw_selection()
+        self.uimanager.set_sensitivities()
+
     def clear_selection(self) -> None:
         """Put every picked-out page back."""
         if not self.selected_pages:
@@ -1239,15 +1269,22 @@ class MainWindow(Gtk.Window):
         self.uimanager.set_sensitivities()
 
     def _draw_selection(self) -> None:
-        """Outline whichever page widgets are showing picked-out pages."""
+        """Outline the page widgets showing a picked-out or marked page.
+
+        A page picked out to be removed and a page marked to be swapped
+        are drawn differently, and a page can be both.
+        """
         current = self.imagehandler.get_current_page()
         for offset, image in enumerate(self.images):
-            selected = (offset < self.displayed_page_count()
-                        and current + offset in self.selected_pages)
-            if selected:
-                image.add_css_class(self._SELECTED_CLASS)
-            else:
-                image.remove_css_class(self._SELECTED_CLASS)
+            on_screen = offset < self.displayed_page_count()
+            for css_class, marked in (
+                    (self._SELECTED_CLASS,
+                     current + offset in self.selected_pages),
+                    (self._MARKED_CLASS, current + offset == self.swap_page)):
+                if on_screen and marked:
+                    image.add_css_class(css_class)
+                else:
+                    image.remove_css_class(css_class)
 
     def page_at(self, x: float, y: float) -> "int | None":
         """The number of the page drawn at <x>, <y> on the page area.

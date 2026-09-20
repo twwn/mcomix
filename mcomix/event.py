@@ -673,7 +673,13 @@ class EventHandler:
                     y == self._pressed_pointer_pos_y and \
                     not self._window.was_out_of_focus:
 
-                if state & Gdk.ModifierType.CONTROL_MASK:
+                if (state & Gdk.ModifierType.CONTROL_MASK
+                        and state & Gdk.ModifierType.SHIFT_MASK):
+                    # Marking a page to swap with another, which is the
+                    # picking-out gesture with something added: the two
+                    # are the two ways of naming a page with the mouse.
+                    self._window.mark_for_swap(self._window.page_at(x, y))
+                elif state & Gdk.ModifierType.CONTROL_MASK:
                     # Picking a page out rather than turning it: a plain
                     # click is how a book is read, and it cannot be the
                     # gesture that stops on a page as well.

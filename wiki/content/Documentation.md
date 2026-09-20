@@ -71,6 +71,8 @@ Deleting the open file takes it out of the recent files and out of the library, 
 
 "Copy page", in the page's right-click menu, puts the page the menu was opened over on the clipboard, as the image it is and as the path to its file; "Edit &rarr; Copy" takes the view instead, which in double page mode is both pages joined as they read.
 
+Two pages change places with CTRL+SHIFT and a click: the first page clicked is marked, drawn with a dashed outline, and the second changes places with it. Clicking the marked page again takes the mark off. The book in the window is what changes, "Edit &rarr; Undo" puts the pages back, and the archive on disk is not touched until it is saved.
+
 Pages can also be taken out in the main window. "Delete page", in the page's right-click menu, removes the page the menu was opened over, and "Edit &rarr; Undo" puts it back. CTRL and a click picks a page out, which is drawn outlined, and another such click puts it back; Delete then removes every page picked out, and the archive editor opens with them selected. The archive on disk is not touched until it is written. MComix offers to write it after a removal, and when a book with pages still picked out is left; either offer can be answered for good, and taken back under "Prompts answered for good" in the preferences.
 
 ### The format a save is written in ###

@@ -88,6 +88,34 @@ class FileActions:
         self._show_pages(listing, min(min(going), len(listing)))
         return True
 
+    def swap_pages(self, first: int, second: int) -> bool:
+        """Put the page at <first> where <second> is, and say whether it
+        went.
+
+        The book in the window is what changes, as a removal does: the
+        archive on disk is not written until it is saved, and the swap
+        can be undone.  A page swapped with itself, or with a page that
+        is not there, is no swap at all.
+
+        A page that is picked out is picked out for its file rather than
+        for its number, so a mark on one of the two goes with it.
+        """
+        listing = self._window.imagehandler.get_image_files()
+        if first == second or not (1 <= first <= len(listing)
+                                   and 1 <= second <= len(listing)):
+            return False
+        self._undone.append(list(listing))
+        self._redone.clear()
+        listing[first - 1], listing[second - 1] = \
+            listing[second - 1], listing[first - 1]
+        selected = self._window.selected_pages
+        if (first in selected) != (second in selected):
+            self._window.selected_pages = selected ^ {first, second}
+        self._show_pages(listing,
+                         self._window.imagehandler.get_current_page())
+        self.offer_to_save()
+        return True
+
     def _show_pages(self, listing: list[str], page: int) -> None:
         """Draw the book as <listing>, standing on <page>."""
         self._window.selected_pages = {number for number in self._window.selected_pages

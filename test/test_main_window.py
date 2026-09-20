@@ -1429,6 +1429,97 @@ class MainWindowTest(MComixTest):
             dialog.destroy()
         self._pump()
 
+    # -- Swapping two pages -----------------------------------------------
+
+    def test_marking_a_page_and_another_swaps_the_two(self):
+        """Two pages change places in the book being read; the archive
+        on disk is not touched until it is saved."""
+        before = self._ready()
+        with self._quietly():
+            self.window.mark_for_swap(1)
+            self.assertEqual(self.window.swap_page, 1)
+            self.window.mark_for_swap(3)
+        self._pump()
+
+        self.assertIsNone(self.window.swap_page, 'the mark stayed behind')
+        self.assertEqual(self._pages(),
+                         [before[2], before[1], before[0]] + before[3:])
+
+    def test_marking_the_marked_page_again_takes_the_mark_off(self):
+        before = self._ready()
+        self.window.mark_for_swap(2)
+        self.window.mark_for_swap(2)
+        self._pump()
+
+        self.assertIsNone(self.window.swap_page)
+        self.assertEqual(self._pages(), before, 'the book changed anyway')
+
+    def test_a_swap_can_be_undone(self):
+        before = self._ready()
+        with self._quietly():
+            self.window.mark_for_swap(1)
+            self.window.mark_for_swap(2)
+        self._pump()
+        self.assertNotEqual(self._pages(), before)
+
+        self.window.file_actions.undo()
+        self._pump()
+        self.assertEqual(self._pages(), before)
+
+    def test_a_page_picked_out_goes_with_it_when_it_is_swapped(self):
+        """A page is picked out for its file, not for its number."""
+        before = self._ready()
+        self.window.select_page(1)
+        with self._quietly():
+            self.window.file_actions.swap_pages(1, 3)
+        self._pump()
+
+        self.assertEqual(self.window.selected_pages, {3})
+        self.assertEqual(self.window.selected_page_paths(), [before[0]])
+
+    def test_a_swap_with_a_page_that_is_not_there_changes_nothing(self):
+        before = self._ready()
+        self.assertFalse(self.window.file_actions.swap_pages(1, 99))
+        self.assertFalse(self.window.file_actions.swap_pages(2, 2))
+        self._pump()
+        self.assertEqual(self._pages(), before)
+
+    def test_the_mark_is_drawn_on_the_page_it_stands_on(self):
+        self._ready()
+        self.window.set_page(1)
+        self._pump()
+        self.window.mark_for_swap(1)
+        self._pump()
+
+        self.assertTrue(self.window.images[0].has_css_class(
+            main.MainWindow._MARKED_CLASS), 'the mark is not drawn')
+        self.window.mark_for_swap(1)
+        self._pump()
+        self.assertFalse(self.window.images[0].has_css_class(
+            main.MainWindow._MARKED_CLASS), 'the mark is still drawn')
+
+    def test_closing_the_book_forgets_the_mark(self):
+        self._ready()
+        self.window.mark_for_swap(2)
+        self.window.filehandler.close_file()
+        self._pump()
+        self.assertIsNone(self.window.swap_page)
+
+    def test_control_and_shift_and_a_click_mark_the_page_under_it(self):
+        """Ctrl and a click picks a page out; Ctrl, Shift and a click
+        marks it to be swapped. The point of the test is that the one
+        gesture is not read as the other."""
+        self._ready()
+
+        self._click(Gdk.ModifierType.CONTROL_MASK
+                    | Gdk.ModifierType.SHIFT_MASK)
+
+        self.assertEqual(self.window.swap_page, 1)
+        self.assertEqual(self.window.selected_pages, set(),
+                         'it picked the page out as well')
+        self.assertEqual(self.window.imagehandler.get_current_page(), 1,
+                         'the page was turned as well as marked')
+
     # -- The right-click menu from the keyboard ---------------------------
 
     def test_the_context_menu_action_opens_the_menu_over_the_page(self):
