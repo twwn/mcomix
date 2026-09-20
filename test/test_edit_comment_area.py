@@ -77,6 +77,14 @@ class CommentAreaTest(MComixTest):
         self.area.fetch_comments()
         self.assertEqual(self.area.get_file_listing(), self.paths)
 
+    def test_fetching_twice_lists_each_comment_once(self):
+        """The list of pages beside this one replaces what it shows, and
+        a name here is read back by the path it came from, which two
+        rows for one file cannot answer for."""
+        self.area.fetch_comments()
+        self.area.fetch_comments()
+        self.assertEqual(self.area.get_file_listing(), self.paths)
+
     def test_an_imported_file_goes_on_the_end(self):
         self.area.fetch_comments()
         extra = os.path.join(self.tmp_dir, 'extra.txt')

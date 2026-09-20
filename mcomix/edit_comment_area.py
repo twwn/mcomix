@@ -111,20 +111,31 @@ class _CommentArea(Gtk.Box, widgets.Releasable):
         self._edit_dialog.redo()
 
     def fetch_comments(self) -> None:
-        """Load all comments in the archive."""
+        """Show the comment files the archive holds, and nothing else.
 
-        for num in range(1,
-                         self._edit_dialog.file_handler.get_number_of_comments() + 1):
-
-            self.add_extra_file(
-                self._edit_dialog.file_handler.get_comment_name(num))
+        What is there is replaced rather than added to, as the list of
+        pages beside this one replaces what it shows: a second fetch
+        would otherwise list every comment twice, and the name each is
+        written under is read back by the path it came from, which two
+        rows for one file cannot answer for.
+        """
+        handler = self._edit_dialog.file_handler
+        self._list.set_rows([
+            self._row_for(handler.get_comment_name(number))
+            for number in range(1, handler.get_number_of_comments() + 1)])
 
     def add_extra_file(self, path: str) -> None:
         """Add an extra imported file (at <path>) to the list."""
-        self._list.append_row(column_list.Row(
+        self._list.append_row(self._row_for(path))
+
+    @staticmethod
+    def _row_for(path: str) -> column_list.Row:
+        """The row for the file at <path>: what it is called, how large
+        it is written out, and the file itself."""
+        return column_list.Row(
             name=os.path.basename(path),
             size=tools.format_byte_size(os.stat(path).st_size),
-            path=path))
+            path=path)
 
     def get_file_listing(self) -> list[str]:
         """Return a list with the full paths to all the files, in order."""
