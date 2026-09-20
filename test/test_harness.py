@@ -13,7 +13,7 @@ information into the reader's data directory.
 import os
 import tempfile
 
-from gi.repository import Gtk
+from gi.repository import GLib, Gtk
 
 from . import MComixTest, session_tmp_dir
 
@@ -32,6 +32,15 @@ class RedirectionTest(MComixTest):
             self.assertTrue(path.startswith(self.tmp_dir),
                             '%s is %s, outside the temporary home'
                             % (name, path))
+
+    def test_the_program_has_the_name_run_py_gives_it(self):
+        """GLib takes the window class and the name a recent files entry
+        is registered under from the program name, which run.py sets
+        before it builds a window.  The suite builds them without
+        run.py, and every book it recorded raised "no name of the
+        application that is registering it was defined"."""
+        self.assertEqual(GLib.get_prgname(), constants.APPNAME)
+        self.assertEqual(GLib.get_application_name(), constants.APPNAME)
 
     def test_the_recent_files_store_outlives_every_test(self):
         """Gtk.RecentManager's default reads the data directory once and

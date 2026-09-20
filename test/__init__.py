@@ -164,6 +164,18 @@ from mcomix import constants
 from mcomix import preferences
 from mcomix.preferences import prefs
 
+# Start the way run.py starts.
+
+# GLib.set_prgname() is what names the program to GLib: the window class
+# is taken from it, and so is the application name a recent files entry
+# is registered under.  run.py sets it before it builds a window; the
+# suite builds windows without run.py, so nothing set it, and every
+# recorded book raised "Attempting to add ... to the list of recently
+# used resources, but no name of the application that is registering it
+# was defined" - 337 of them in one run at 1dbe0a91.
+
+GLib.set_prgname(constants.APPNAME)
+
 #: The preferences as MComix defines them, kept aside so that every test
 #: can start from them.  Deep, because several of them hold a container -
 #: and one of those containers is a constant of MComix' own.
