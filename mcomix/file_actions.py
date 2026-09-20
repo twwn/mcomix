@@ -409,6 +409,11 @@ class FileActions:
                     if os.path.isfile(current_file):
                         os.unlink(current_file)
 
+            if not os.path.exists(current_file):
+                # A file that has been deleted can never be opened
+                # again, and the recent files went on offering it.
+                self._window.uimanager.recent.remove_path(current_file)
+
     def move_current_file(self, directory: str) -> None:
         """Move the open file, or the archive it is a page of, into
         <directory>, and go on reading it where it has landed.

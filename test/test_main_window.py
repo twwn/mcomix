@@ -864,6 +864,20 @@ class MainWindowTest(MComixTest):
         self.assertEqual(self._delete_dialogs(), [],
                          'it asked about the file as well')
 
+    def test_the_recent_list_lets_go_of_a_file_that_was_deleted(self):
+        """A deleted file can never be opened again, and the entry for
+        it went on standing in the recent files."""
+        source = self._movable_book()
+        recent_menu = self.window.uimanager.recent
+
+        with unittest.mock.patch.object(recent_menu,
+                                        'remove_path') as forgotten:
+            self.window.file_actions._delete_answered(Response.OK, source)
+            self._pump()
+
+        self.assertFalse(os.path.exists(source), 'the file is still there')
+        forgotten.assert_called_once_with(source)
+
     def _delete_dialogs(self):
         return [window for window in Gtk.Window.list_toplevels()
                 if isinstance(window, message_dialog.MessageDialog)
