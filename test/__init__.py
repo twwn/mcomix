@@ -63,9 +63,26 @@ os.environ['TMPDIR'] = os.environ['TEMP'] = os.environ['TMP'] = _SESSION_TMPDIR
 tempfile.tempdir = _SESSION_TMPDIR
 atexit.register(shutil.rmtree, _SESSION_TMPDIR, True)
 
-from gi.repository import GLib
+from gi.repository import GLib, Gtk
 
 assert GLib.get_tmp_dir() == _SESSION_TMPDIR, GLib.get_tmp_dir()
+
+# Pin the recent files store the same way, and for the same reason.
+
+# Gtk.RecentManager's default reads the data directory once, when it is
+# first asked for, and writes there for the rest of the process.  Built
+# inside the temporary home of whichever test opened a window first, it
+# went on writing into a directory later tests had already removed:
+# every change raised "Attempting to store changes into
+# .../recently-used.xbel, but failed" (29 and 17 of them in two runs at
+# 2e91651f), and a write that landed between the listing and the rmdir
+# of that removal left the whole test directory behind with "Directory
+# not empty".  This store is in the session's own directory, which lasts
+# as long as the process, and every test is handed it in place of the
+# default.
+_RECENT_STORE = Gtk.RecentManager(
+    filename=os.path.join(_SESSION_TMPDIR, 'recent.xbel'))
+Gtk.RecentManager.get_default = staticmethod(lambda: _RECENT_STORE)
 
 # Pin multiprocessing's temporary directory the same way.  It is worked
 # out once per process, the first time a manager or a forkserver needs a
@@ -193,6 +210,13 @@ class MComixTest(unittest.TestCase):
         # test's own tearDown and cleanups have closed what they opened.
         self.addCleanup(self._no_window_left_on_screen)
         self.addCleanup(self._no_library_left_open)
+        # The recent files store is one for the process, so what a test
+        # puts in it would otherwise be there for the next one.
+        try:
+            _RECENT_STORE.purge_items()
+        except GLib.Error:
+            # Nothing to purge, which GTK reports as an error.
+            pass
         # Change storage directories.
         home_dir = os.path.join(self.tmp_dir, 'home')
         os.mkdir(home_dir)

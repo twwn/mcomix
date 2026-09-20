@@ -13,7 +13,9 @@ information into the reader's data directory.
 import os
 import tempfile
 
-from . import MComixTest
+from gi.repository import Gtk
+
+from . import MComixTest, session_tmp_dir
 
 from mcomix import constants
 from mcomix import preferences
@@ -30,6 +32,17 @@ class RedirectionTest(MComixTest):
             self.assertTrue(path.startswith(self.tmp_dir),
                             '%s is %s, outside the temporary home'
                             % (name, path))
+
+    def test_the_recent_files_store_outlives_every_test(self):
+        """Gtk.RecentManager's default reads the data directory once and
+        writes there for the rest of the process, so one built inside a
+        test's temporary home goes on writing into a directory the next
+        test has removed - which GTK reports on every change, and which
+        races the removal itself."""
+        store = Gtk.RecentManager.get_default()
+        self.assertTrue(store.props.filename.startswith(session_tmp_dir()),
+                        'the recent files store is at %s, which goes with '
+                        'this test' % store.props.filename)
 
     def test_a_file_chooser_starts_out_in_the_temporary_home(self):
         """The folders a chooser starts in default to the home
