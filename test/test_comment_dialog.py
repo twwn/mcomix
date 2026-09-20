@@ -94,6 +94,34 @@ class CommentsDialogTest(MComixTest):
         self.assertTrue(self.dialog._notebook.get_visible())
 
 
+    def _text_of(self, index):
+        """What the text view on page <index> of the notebook holds."""
+        page = self.dialog._notebook.get_nth_page(index)
+        buffer = page.get_first_child().get_child().get_buffer()
+        return buffer.get_text(*buffer.get_bounds(), False)
+
+    def test_a_comment_is_shown_whatever_encoding_it_is_written_in(self):
+        """Nothing says what encoding a text file in an archive is in.
+
+        It was read as text, which decodes it in whatever encoding the
+        machine's locale names: a comment written in another one raised
+        UnicodeDecodeError, and the dialog showed "Could not read" in
+        place of every line of it.
+        """
+        self._open(self._archive_with_comments(
+            'latin.zip',
+            ('note.txt', 'caf\xe9 \xe0 la carte'.encode('latin-1'))))
+        self.dialog = comment_dialog._CommentsDialog(self.window)
+        wait_for(lambda: len(self._tabs()) == 1, seconds=20)
+        self.assertEqual('caf\xe9 \xe0 la carte', self._text_of(0))
+
+    def test_a_comment_in_utf_8_is_shown_as_it_was_written(self):
+        self._open(self._archive_with_comments(
+            'utf8.zip', ('note.txt', 'caf\xe9 \u3042'.encode('utf-8'))))
+        self.dialog = comment_dialog._CommentsDialog(self.window)
+        wait_for(lambda: len(self._tabs()) == 1, seconds=20)
+        self.assertEqual('caf\xe9 \u3042', self._text_of(0))
+
     def test_a_closed_dialog_does_not_read_the_comments_of_the_next_book(self):
         """A destroyed dialog stayed listening, and put a tab together for
         every comment of every book opened after it."""

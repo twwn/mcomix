@@ -43,6 +43,7 @@ from mcomix import log
 from mcomix import last_read_page
 from mcomix import message_dialog
 from mcomix.library import backend
+from mcomix import i18n
 from mcomix.i18n import _
 
 from collections.abc import Iterable, Sequence
@@ -572,14 +573,21 @@ class FileHandler:
     def get_comment_text(self, num: int) -> str | None:
         """Return the text in comment <num> or None if comment <num> is not
         readable.
+
+        The file was read as text, which decodes it in whatever encoding
+        the machine's locale names - so a comment written in another one
+        raised UnicodeDecodeError and the dialog said it could not read
+        the file at all.  Nothing says what encoding a text file inside
+        an archive is in, so the bytes are read and i18n.to_unicode()
+        works it out, as it does for the names of the files beside it.
         """
         self._wait_on_comment(num)
         try:
-            with open(self._comment_files[num - 1], 'r') as fd:
-                text = fd.read()
+            with open(self._comment_files[num - 1], 'rb') as fd:
+                data = fd.read()
         except Exception:
-            text = None
-        return text
+            return None
+        return i18n.to_unicode(data)
 
     def get_comment_name(self, num: int) -> str:
         """Return the filename of comment <num>."""

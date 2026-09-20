@@ -129,7 +129,7 @@ class _CommentsDialog(Dialog):
             text = _('Could not read %s') % name
 
         text_buffer = Gtk.TextBuffer(tag_table=self._tag_table)
-        text_buffer.set_text(i18n.to_unicode(text))
+        text_buffer.set_text(text)
         text_buffer.apply_tag(self._tag, *text_buffer.get_bounds())
         text_view = Gtk.TextView(buffer=text_buffer)
         widgets.set_border(text_view, 6)
