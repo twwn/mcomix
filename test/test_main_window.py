@@ -1278,6 +1278,8 @@ class MainWindowTest(MComixTest):
         self._ready()
         page = self.window.imagehandler.get_path_to_page(1)
         self.assertIsNotNone(page)
+        # Whether the page is out of the archive does not matter here:
+        # the folder it would be copied into is not there either way.
         before = prefs['path of last saved in filechooser']
         # A folder that is not there: the copy raises, as it would on a
         # folder that cannot be written to or has no room left.
@@ -1296,6 +1298,13 @@ class MainWindowTest(MComixTest):
 
     def test_a_page_that_was_saved_says_nothing(self):
         self._ready()
+        # The listing says the page is there; the extractor says the
+        # file is. Without the wait this test saved a page that was not
+        # out of the archive yet, and failed about one run in eight.
+        self.assertTrue(
+            wait_for(lambda: self.window.imagehandler.page_is_available(1),
+                     seconds=20),
+            'page 1 never came out of the archive')
         page = self.window.imagehandler.get_path_to_page(1)
         target = os.path.join(self.tmp_dir, 'saved.png')
 
