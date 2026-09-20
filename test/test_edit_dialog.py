@@ -10,7 +10,7 @@ import shutil
 import unittest.mock
 import zipfile
 
-from gi.repository import Gtk
+from gi.repository import Gdk, Gtk
 
 from . import MComixTest, get_testfile_path, pump, wait_for
 
@@ -348,6 +348,41 @@ class EditArchiveDialogTest(MComixTest):
             self._popup_actions(
                 self.dialog._comment_area._popup_menu.get_menu_model()),
             ['commentarea.remove', 'commentarea.undo', 'commentarea.redo'])
+
+    def test_the_keyboard_opens_the_page_menu(self):
+        """The editor has no menu bar, and its popup was reachable with
+        the pointer alone.  A GTK4 widget has no popup-menu signal, so
+        the two keys that asked for one through it are heard by the
+        area itself, as the library's areas hear them."""
+        area = self.dialog._image_area
+        for keyval, state in ((Gdk.KEY_Menu, Gdk.ModifierType(0)),
+                              (Gdk.KEY_F10, Gdk.ModifierType.SHIFT_MASK)):
+            self.assertFalse(area._popup_menu.get_visible())
+            self.assertEqual(Gdk.EVENT_STOP,
+                             area._key_press(None, keyval, 0, state))
+            pump()
+            self.assertTrue(area._popup_menu.get_visible(),
+                            'the menu did not open for %s'
+                            % Gdk.keyval_name(keyval))
+            area._popup_menu.popdown()
+            pump()
+
+    def test_the_keyboard_opens_the_comment_menu(self):
+        area = self.dialog._comment_area
+        self.assertEqual(Gdk.EVENT_STOP,
+                         area._key_press(None, Gdk.KEY_F10, 0,
+                                         Gdk.ModifierType.SHIFT_MASK))
+        pump()
+        self.assertTrue(area._popup_menu.get_visible())
+        area._popup_menu.popdown()
+        pump()
+
+    def test_f10_on_its_own_is_left_to_gtk_in_the_editor(self):
+        area = self.dialog._image_area
+        self.assertEqual(Gdk.EVENT_PROPAGATE,
+                         area._key_press(None, Gdk.KEY_F10, 0,
+                                         Gdk.ModifierType(0)))
+        self.assertFalse(area._popup_menu.get_visible())
 
     def test_the_page_menu_selects_every_page(self):
         self.dialog._load_original_files()

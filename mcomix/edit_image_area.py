@@ -220,6 +220,14 @@ class _ImageArea(Gtk.ScrolledWindow, widgets.Releasable):
         if keyval == Gdk.KEY_Delete:
             self._remove_pages()
             return Gdk.EVENT_STOP
+        # A GTK4 widget has no popup-menu signal, so the keys that asked
+        # for a menu through it are heard here.  The menu names what the
+        # keyboard can do with the pages, and was reachable with the
+        # pointer alone.  It opens at the corner of the view, which has
+        # no position of its own to open at.
+        if widgets.menu_key(keyval, state):
+            widgets.popup_at(self._popup_menu, self._grid, 0, 0)
+            return Gdk.EVENT_STOP
         return Gdk.EVENT_PROPAGATE
 
     # The pages are reordered by dragging. Gtk.IconView did that for

@@ -152,6 +152,11 @@ class _CommentArea(Gtk.Box, widgets.Releasable):
         if keyval == Gdk.KEY_Delete:
             self._remove_file()
             return Gdk.EVENT_STOP
+        # As in the page area beside it: the menu key and Shift+F10 open
+        # the popup, which a GTK4 widget is not told about by a signal.
+        if widgets.menu_key(keyval, state):
+            widgets.popup_at(self._popup_menu, self._list, 0, 0)
+            return Gdk.EVENT_STOP
         return Gdk.EVENT_PROPAGATE
 
 # vim: expandtab:sw=4:ts=4
