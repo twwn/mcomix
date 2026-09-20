@@ -119,3 +119,64 @@ class MergeTest(MComixTest):
 
         self.assertEqual([bookmark._page for bookmark in written],
                          [1, 2, 3, 4, 5, 6, 7])
+
+
+class MovedBookTest(MComixTest):
+
+    """A bookmark holds the path of the file it marks, so a book moved
+    out from under it was bookmarked where it no longer is."""
+
+    def setUp(self):
+        super().setUp()
+        os.makedirs(constants.DATA_DIR, exist_ok=True)
+        self.store = bookmark_backend.BookmarksStore
+        self.store._initialized = False
+        self.store._bookmarks = []
+        self.store._bookmarks_mtime = 0
+
+    def _bookmark(self, path, page=3):
+        return bookmark_menu_item._Bookmark(
+            None, None, os.path.basename(path), path, page, 20, None,
+            datetime.datetime(2026, 1, 1))
+
+    def test_a_bookmark_of_the_moved_book_holds_its_new_path(self):
+        self.store._bookmarks = [self._bookmark('/books/one.cbz'),
+                                 self._bookmark('/books/two.cbz')]
+
+        self.store.update_path('/books/one.cbz', '/elsewhere/one.cbz')
+
+        self.assertEqual([bookmark._path
+                          for bookmark in self.store._bookmarks],
+                         ['/elsewhere/one.cbz', '/books/two.cbz'],
+                         'the bookmark did not follow the book, or moved '
+                         'out of its place in the list')
+
+    def test_what_the_bookmark_says_about_the_page_is_kept(self):
+        self.store._bookmarks = [self._bookmark('/books/one.cbz', page=7)]
+
+        self.store.update_path('/books/one.cbz', '/elsewhere/one.cbz')
+
+        moved = self.store._bookmarks[0]
+        self.assertEqual(moved.pack()[2:],
+                         (7, 20, None, datetime.datetime(2026, 1, 1)))
+        self.assertEqual(moved.pack()[0], 'one.cbz')
+
+    def test_every_bookmark_of_the_same_book_follows_it(self):
+        self.store._bookmarks = [self._bookmark('/books/one.cbz', page=2),
+                                 self._bookmark('/books/one.cbz', page=9)]
+
+        self.store.update_path('/books/one.cbz', '/elsewhere/one.cbz')
+
+        self.assertEqual([bookmark._path
+                          for bookmark in self.store._bookmarks],
+                         ['/elsewhere/one.cbz'] * 2)
+
+    def test_a_book_that_is_bookmarked_nowhere_writes_nothing(self):
+        self.store._bookmarks = [self._bookmark('/books/two.cbz')]
+        written = []
+        self.store.write_bookmarks_file = lambda *args: written.append(args)
+        try:
+            self.store.update_path('/books/one.cbz', '/elsewhere/one.cbz')
+        finally:
+            del self.store.write_bookmarks_file
+        self.assertEqual(written, [])

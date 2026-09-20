@@ -5,6 +5,7 @@ real window, which is where a whole class of start-up regressions hides.
 """
 
 import contextlib
+import datetime
 import os
 import shutil
 import threading
@@ -1234,6 +1235,30 @@ class MainWindowTest(MComixTest):
         self._pump()
 
         self.assertEqual(prefs['recent move destinations'], [destination])
+
+    def test_a_bookmark_follows_a_book_that_is_moved(self):
+        """A bookmark holds the path of the file it marks, and the book
+        moved out from under it: opening the bookmark afterwards said
+        the file was not there."""
+        source = self._movable_book()
+        destination = os.path.join(self.tmp_dir, 'destination')
+        os.makedirs(destination)
+        # The store is one for the process and keeps whatever another
+        # test left in it.
+        store = bookmark_backend.BookmarksStore
+        store._initialized = False
+        store._bookmarks = []
+        store.initialize(self.window)
+        self.addCleanup(setattr, store, '_bookmarks', [])
+        store.add_bookmark_by_values('Movable', source, 2, 4, None,
+                                     datetime.datetime(2026, 1, 1))
+
+        self.window.file_actions.move_current_file(destination)
+        self._pump()
+
+        moved = os.path.join(destination, 'Movable.cbz')
+        self.assertEqual([bookmark._path
+                          for bookmark in store.get_bookmarks()], [moved])
 
     def test_the_library_follows_a_book_that_is_moved(self):
         source = self._movable_book()

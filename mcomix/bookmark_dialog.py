@@ -103,6 +103,7 @@ class _BookmarksDialog(Dialog):
         # the dialog is open.
         self._bookmarks_store.add_bookmark += self._bookmark_added
         self._bookmarks_store.remove_bookmark += self._bookmark_removed
+        self._bookmarks_store.replace_bookmark += self._bookmark_replaced
         self._bookmarks_store.clear_bookmarks += self._bookmarks_cleared
 
         self.set_visible(True)
@@ -169,6 +170,12 @@ class _BookmarksDialog(Dialog):
         if row is not None:
             self._list.remove_row(row)
         self._store_changed()
+
+    def _bookmark_replaced(self, old: "bookmark_menu_item._Bookmark",
+                           new: "bookmark_menu_item._Bookmark") -> None:
+        """Follow a bookmark whose file has moved while the dialog is open."""
+        self._bookmark_removed(old)
+        self._bookmark_added(new)
 
     def _bookmarks_cleared(self) -> None:
         """Empty the list, the store having been emptied."""

@@ -62,6 +62,8 @@ class BookmarksMenu:
         self._rebuild()
         self._bookmarks_store.add_bookmark += lambda bookmark: self._rebuild()
         self._bookmarks_store.remove_bookmark += lambda bookmark: self._rebuild()
+        self._bookmarks_store.replace_bookmark += \
+            lambda old, new: self._rebuild()
         self._bookmarks_store.clear_bookmarks += self._rebuild
         self._bookmarks_store.set_bookmark_order += lambda order: self._rebuild()
 

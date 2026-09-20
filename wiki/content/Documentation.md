@@ -14,7 +14,7 @@ The pages in the screenshots on this page are from "The Potion of Flight", episo
 
 The window has a menu bar and a toolbar at the top, the page thumbnails on the left, the page in the middle and a status bar at the bottom. "View &rarr; Toolbars" turns the menubar, the toolbar, the statusbar, the scrollbars and the thumbnails on and off, and "Hide all" in the same menu, or the I key, puts all of them away at once. Fullscreen mode, the F key, hides them too while "Automatically hide all toolbars in fullscreen" is set in the preferences.
 
-The arrow keys scroll the page, and PageDown and PageUp turn it. "Move to", in the page's right-click menu, moves the file that is open, or the archive the page is in, to another folder.
+The arrow keys scroll the page, and PageDown and PageUp turn it. "Move to", in the page's right-click menu, moves the file that is open, or the archive the page is in, to another folder. The book goes on being read where it was, and what MComix records about it - its place in the library, the page it was left on, and any bookmark in it - follows it to the new folder.
 
 "File &rarr; Properties" describes the page being read and the archive it is in. Where the archive carries a ComicInfo.xml, the archive's page also names the series, the issue number, the title and the writer given there.
 

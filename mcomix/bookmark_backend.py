@@ -82,6 +82,29 @@ class _BookmarksStore:
         self.write_bookmarks_file()
 
     @callback.Callback
+    def replace_bookmark(self, old: bookmark_menu_item._Bookmark,
+                         new: bookmark_menu_item._Bookmark) -> None:
+        """Put <new> where <old> stands in the list."""
+        self._bookmarks[self._bookmarks.index(old)] = new
+        self.write_bookmarks_file()
+
+    def update_path(self, old_path: str, new_path: str) -> None:
+        """Follow a book that has been moved to <new_path>.
+
+        A bookmark holds the path of the file it marks, so a book moved
+        while it was bookmarked left the bookmark pointing at a file
+        that is no longer there, and opening it said so.  The library
+        and the store of last read pages are brought forward the same
+        way when a book moves.
+        """
+        for bookmark in [bookmark for bookmark in self._bookmarks
+                         if bookmark.same_path(old_path)]:
+            name, _path, page, numpages, archive_type, added = bookmark.pack()
+            self.replace_bookmark(bookmark, bookmark_menu_item._Bookmark(
+                self._window, self._file_handler, name, new_path, page,
+                numpages, archive_type, added))
+
+    @callback.Callback
     def set_bookmark_order(self,
                            order: list[bookmark_menu_item._Bookmark]) -> None:
         """Put the stored bookmarks into <order>.
