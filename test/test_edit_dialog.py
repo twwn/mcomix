@@ -20,6 +20,7 @@ from mcomix import edit_dialog
 from mcomix import file_chooser_simple_dialog
 from mcomix import icons
 from mcomix import main
+from mcomix import widgets
 from mcomix import message_dialog
 from mcomix.dialog import Response
 from mcomix.preferences import prefs
@@ -70,6 +71,28 @@ class EditArchiveDialogTest(MComixTest):
                           SimpleFileChooserDialog):
                 return window
         return None
+
+    def test_a_popup_menu_is_let_go_of_when_the_editor_closes(self):
+        """A Gtk.PopoverMenu is parented to the widget it opens over,
+        and GTK finalizes that widget with the menu still on it:
+        "Finalizing MComixColumnListView, but it still has children
+        left: GtkPopoverMenu"."""
+        self.dialog._load_original_files()
+        pump()
+        menus = [self.dialog._image_area._popup_menu,
+                 self.dialog._comment_area._popup_menu]
+        widgets.popup_at(menus[0], self.dialog._image_area._grid, 0, 0)
+        widgets.popup_at(menus[1], self.dialog._comment_area._list, 0, 0)
+        pump()
+        self.assertTrue(all(menu.get_parent() is not None for menu in menus),
+                        'neither menu was parented, so this proves nothing')
+
+        self.dialog.destroy()
+        pump()
+
+        self.assertEqual([menu for menu in menus
+                          if menu.get_parent() is not None], [],
+                         'the editor was finalized with a menu still on it')
 
     # -- The editor and the book it belongs to ----------------------------
 

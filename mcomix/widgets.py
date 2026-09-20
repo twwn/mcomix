@@ -1,5 +1,7 @@
 """widgets.py - Small helpers for widgets whose API changed in GTK4."""
 
+import weakref
+
 from gi.repository import Gdk, Gio, GObject, Graphene, Gtk
 
 from collections.abc import Callable, Iterable, Iterator
@@ -162,6 +164,12 @@ def set_chooser_file(chooser: Gtk.FileChooser, path: str) -> None:
     chooser.set_file(Gio.File.new_for_path(path))
 
 
+#: The popovers popup_at() has parented, which release() takes off
+#: their widgets again.  Weak, so that a popover nothing else holds is
+#: nothing this keeps alive.
+_parented: "weakref.WeakSet[Gtk.Popover]" = weakref.WeakSet()
+
+
 def popup_at(popover: Gtk.Popover, widget: Gtk.Widget,
              x: float, y: float) -> None:
     """Show <popover> over <widget>, pointing at (<x>, <y>) within it.
@@ -181,6 +189,7 @@ def popup_at(popover: Gtk.Popover, widget: Gtk.Widget,
     if parent is None:
         parent = widget
         popover.set_parent(parent)
+        _parented.add(popover)
     if widget is not parent:
         found, point = widget.compute_point(parent, Graphene.Point().init(x, y))
         if found:
@@ -297,6 +306,9 @@ def release(window: Gtk.Window) -> None:
     session.  The same goes for the event controllers the window and
     its widgets hold.
 
+    The popovers go as well: one is parented to the widget it opens
+    over, which GTK then finalizes with the menu still on it.
+
     What goes is every handler connected from Python, which PyGObject
     connects with no user data.  GTK's own handlers nearly all carry
     theirs and stay: cutting those - as disposing the widgets would -
@@ -316,6 +328,18 @@ def release(window: Gtk.Window) -> None:
         _cut_handlers(controller)
     for widget in widgets:
         cut_handlers(widget)
+    # A popover MComix opened is parented to the widget it opened over
+    # and stays there once it has been closed, so GTK finalized that
+    # widget with the menu still on it: "Finalizing
+    # MComixColumnListView, but it still has children left:
+    # GtkPopoverMenu".  Nothing is going to open it again in a window
+    # that has closed.  Only the ones popup_at() parented: GTK builds
+    # popovers of its own inside its file chooser, and taking one of
+    # those off its widget leaves the chooser tripping over the parts
+    # that are missing.
+    for widget in widgets:
+        if widget in _parented:
+            widget.unparent()
 
 
 def empty_action_group(group: Gio.SimpleActionGroup) -> None:
