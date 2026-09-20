@@ -1,3 +1,71 @@
+# MComix 4.0.1
+## Release date: 2026-09-20
+
+### Features
+
+- A page can be renamed while reading: from the page's menu, from the
+  archive editor, or with F2. A name another page already holds is
+  reported, with a swap or a replace offered. In a folder of images the
+  file is renamed at once; in an archive the change is written with the
+  rest.
+- Two pages side by side can be swapped by dragging one onto the other,
+  as well as with Ctrl+Shift and a click.
+- The archive editor renames comment files too, and says which changes
+  it is offering to write.
+- The page's menu copies the page it was opened over, and it and the
+  archive editor's menus can both be opened from the keyboard.
+- Deleting a file that carries bookmarks offers to remove them, from the
+  library as well as from the window.
+- A change that was not written is offered again when the book closes,
+  and the archive editor asks about its unapplied work before the book
+  is closed out from under it.
+- Books found by a watch-list scan, and pages and comments counted in a
+  message, are counted in each language's own plural forms.
+
+### Bug fixes
+
+- MComix did not start at all when the comment extensions held a
+  bracket, MobiPocket books opened without their pages, and closing the
+  library's Add books dialog crashed MComix.
+- A page whose name held a superscript digit stopped the book opening,
+  a comment file not written in the machine's own encoding could not be
+  read, and ZIP and RAR archives opened with the external unzip and
+  unrar programs lost non-ASCII page names.
+- Closed dialogs, library windows and archive editors were never freed,
+  so everything they showed stayed in memory for the rest of the
+  session, and each library window left another style rule behind for
+  every later style lookup to consult.
+- A book deleted from the window stayed in the library, a bookmark did
+  not follow the book it marks when the book was moved, and the recent
+  files went on offering a book that had been moved or deleted.
+- The library's filter read a per-cent sign as "every book", a book
+  added under a filter was left out if only its path matched, a
+  collection could be named with spaces alone, a watch-list scan added
+  what it found in no particular order, and a scan that failed was
+  reported nowhere.
+- Pages side by side could be laid out wider than the room they had,
+  smart scrolling answered with the page it had left or kept a stale
+  row, and a redraw while a page was on its way lost where the page was
+  to open.
+- The dynamic background colour counted a group of shades in pieces.
+- Letter shortcuts did nothing while Caps Lock was on, Shift+F10 did
+  not open the library's popup menus, and a click on a thumbnail in the
+  sidebar did not turn to that page.
+- A slider in the enhancement dialog undid Ctrl+I, the slideshow button
+  changed size, the status bar showed separators for fields that said
+  nothing, the Comments dialog showed an empty frame while it had no
+  comment, and the file chooser offered image formats that have no
+  extension or are turned off.
+- A page that could not be saved, and a book the library could not
+  delete from disk, were reported only to the log; a save that ran out
+  of room reported the failure twice, the second time as a traceback.
+- A thumbnail of a file named by a relative path was filed under a name
+  no other application would look for, and Open with changed MComix'
+  own working directory to run its command.
+- Eighteen labels in eight languages said something other than what
+  they name, the Hebrew interface read as two voices, and error
+  messages that had lost their "reason: detail" shape have it back.
+
 # MComix 4.0.0
 ## Release date: 2026-09-13
 
