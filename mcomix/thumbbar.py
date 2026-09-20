@@ -57,6 +57,20 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
         drag.connect('drag-begin', self._drag_begin)
         self._list.add_controller(drag)
 
+        # A click on a thumbnail turns to that page, as it did when
+        # this was a Gtk.TreeView with set_activate_on_single_click():
+        # a Gtk.ListView activates a row on the second click unless it
+        # is told otherwise, so the sidebar answered every first click
+        # with nothing but a highlight.
+        self._list.set_single_click_activate(True)
+
+        # Rows are selected on hover as well once they activate on a
+        # single click, and the highlight is what says which page is
+        # being read, so it goes back there when the pointer leaves.
+        motion = Gtk.EventControllerMotion()
+        motion.connect('leave', self._pointer_left)
+        self._list.add_controller(motion)
+
         clicks = Gtk.GestureClick()
         clicks.set_button(0)
         clicks.set_propagation_phase(Gtk.PropagationPhase.CAPTURE)
@@ -210,6 +224,10 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
         """Handle events due to changed thumbnail selection."""
         self._set_selected_row(position, scroll=False)
         self._window.set_page(position + 1)
+
+    def _pointer_left(self, controller: Gtk.EventControllerMotion) -> None:
+        """Put the highlight back on the page being read."""
+        self._set_selected_row(self._currently_selected_row, scroll=False)
 
     def _mouse_press_event(self, gesture: Gtk.GestureClick, n_press: int,
                            x: float, y: float) -> None:

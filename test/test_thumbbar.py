@@ -10,6 +10,8 @@ now what says which thumbnails to make.
 import os
 
 
+from gi.repository import Gtk
+
 from . import MComixTest, get_testfile_path, pump, wait_for
 
 from mcomix import constants
@@ -106,6 +108,36 @@ class ThumbnailSidebarTest(MComixTest):
         wait_for(lambda: self.window.imagehandler.get_current_page() == 3,
                  seconds=20)
         self.assertEqual(self.window.imagehandler.get_current_page(), 3)
+
+    def test_a_single_click_on_a_thumbnail_turns_to_that_page(self):
+        """The Gtk.TreeView this was activated a row on a single click.
+
+        A Gtk.ListView waits for the second one unless it is told to,
+        so the first click on a thumbnail only highlighted it.
+        """
+        self.assertTrue(self.sidebar._list.get_single_click_activate())
+
+    def test_the_highlight_goes_back_to_the_page_being_read(self):
+        """Activating on a single click makes GTK select on hover too.
+
+        The highlight is what says which page is being read, so the
+        pointer crossing the sidebar must not leave it somewhere else.
+        """
+        self.sidebar.load_thumbnails()
+        self.window.set_page(2)
+        wait_for(lambda: self.sidebar._list.get_selected_row() == 1,
+                 seconds=20)
+        # What hovering the last row does.
+        last = self._pages() - 1
+        self.assertGreater(last, 1)
+        self.sidebar._list.select_row(last, scroll=False)
+        self.assertEqual(self.sidebar._list.get_selected_row(), last)
+        motion = [controller for controller
+                  in self.sidebar._list.observe_controllers()
+                  if isinstance(controller, Gtk.EventControllerMotion)]
+        self.assertEqual(len(motion), 1)
+        motion[0].emit('leave')
+        self.assertEqual(self.sidebar._list.get_selected_row(), 1)
 
     def test_page_numbers_are_shown_only_when_the_preference_says_so(self):
         prefs['show page numbers on thumbnails'] = False
