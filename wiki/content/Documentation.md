@@ -94,7 +94,7 @@ The collections are on the left, and the books of the one selected on the right,
 
 Right-clicking a collection offers "New", "Add...", "Rename", "Duplicate", "Clean up", which drops the books whose files are gone, and "Remove". Removing a collection keeps its books in the library, and moves the collections under it to the top level.
 
-Right-clicking the books offers "Open", "Open without closing library", "Add...", three ways to take them out - "Remove from this collection", "Remove from the library" and "Remove and delete from disk", the only one that touches the files - and "Copy", which puts the books on the clipboard. Its "Sort" and "Cover size" submenus set the order, by book name, full path, file size or date added, and how large the covers are drawn. Clicking a cover with the middle mouse button starts a second MComix on that book.
+Right-clicking the books offers "Open", "Open without closing library", "Add...", three ways to take them out - "Remove from this collection", "Remove from the library" and "Remove and delete from disk", the only one that touches the files - and "Copy", which puts the books on the clipboard. Deleting books from disk asks about any bookmarks in them, as deleting the open file does. Its "Sort" and "Cover size" submenus set the order, by book name, full path, file size or date added, and how large the covers are drawn. Clicking a cover with the middle mouse button starts a second MComix on that book.
 
 ### Library watch list ###
 

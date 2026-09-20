@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-20 13:02+0200\n"
+"POT-Creation-Date: 2026-09-20 13:11+0200\n"
 "PO-Revision-Date: 2009-02-02 14:19+0100\n"
 "Last-Translator: Dariusz Jakoniuk <pipaceliny@gmail.com>\n"
 "Language-Team: \n"
@@ -56,7 +56,7 @@ msgstr "! Błąd rozpakowywania: %s"
 
 #
 # File: src/comment.py, line: 53
-#: mcomix/archive_packer.py:167 mcomix/library/book_area.py:695
+#: mcomix/archive_packer.py:167 mcomix/library/book_area.py:696
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! Nie udało się usunąć %(file)s: %(error)s"
@@ -482,7 +482,7 @@ msgstr "Nie udało się przenieść \"%(file)s\" do \"%(directory)s\""
 msgid "Open"
 msgstr "Otwórz"
 
-#: mcomix/file_chooser_base_dialog.py:107 mcomix/library/book_area.py:168
+#: mcomix/file_chooser_base_dialog.py:107 mcomix/library/book_area.py:169
 msgid "_Open"
 msgstr "_Otwórz"
 
@@ -2134,7 +2134,7 @@ msgstr "Nazwa pliku"
 msgid "File name (GLib)"
 msgstr "Nazwa pliku (GLib)"
 
-#: mcomix/preferences_dialog.py:669 mcomix/library/book_area.py:241
+#: mcomix/preferences_dialog.py:669 mcomix/library/book_area.py:242
 msgid "File size"
 msgstr "Rozmiar pliku"
 
@@ -2143,12 +2143,12 @@ msgid "Last modified"
 msgstr "Data modyfikacji"
 
 #: mcomix/preferences_dialog.py:676 mcomix/preferences_dialog.py:720
-#: mcomix/library/book_area.py:245
+#: mcomix/library/book_area.py:246
 msgid "Ascending"
 msgstr "Rosnąco"
 
 #: mcomix/preferences_dialog.py:677 mcomix/preferences_dialog.py:721
-#: mcomix/library/book_area.py:246
+#: mcomix/library/book_area.py:247
 msgid "Descending"
 msgstr "Malejąco"
 
@@ -2231,7 +2231,7 @@ msgstr ""
 "Zmienia sposób skalowania obrazów. Wolniejsze algorytmy dają lepszą jakość, "
 "ale strony wczytują się dłużej."
 
-#: mcomix/preferences_dialog.py:832 mcomix/library/book_area.py:253
+#: mcomix/preferences_dialog.py:832 mcomix/library/book_area.py:254
 msgid "Normal"
 msgstr "Zwykły"
 
@@ -2694,7 +2694,7 @@ msgstr "! Nie udało się zapisać miniatury \"%(thumbpath)s\": %(error)s"
 #
 # File: src/librarybackend.py, line: 272
 # File: src/librarybackend.py, line: 274
-#: mcomix/ui.py:427 mcomix/library/book_area.py:187
+#: mcomix/ui.py:427 mcomix/library/book_area.py:188
 msgid "_Copy"
 msgstr "Sko_piuj"
 
@@ -3208,109 +3208,109 @@ msgstr "Wszystkie książki"
 msgid "! Could not scan for new books: %s"
 msgstr "! Nie udało się wyszukać nowych książek: %s"
 
-#: mcomix/library/book_area.py:169
+#: mcomix/library/book_area.py:170
 msgid "Opens the selected books for viewing."
 msgstr "Otwiera wybrane książki do przeglądania."
 
-#: mcomix/library/book_area.py:171
+#: mcomix/library/book_area.py:172
 msgid "Open _without closing library"
 msgstr "Otwórz _bez zamykania biblioteki"
 
-#: mcomix/library/book_area.py:172
+#: mcomix/library/book_area.py:173
 msgid "Opens the selected books, but keeps the library window open."
 msgstr "Otwiera wybrane książki, pozostawiając okno biblioteki otwarte."
 
-#: mcomix/library/book_area.py:174 mcomix/library/collection_area.py:135
+#: mcomix/library/book_area.py:175 mcomix/library/collection_area.py:135
 msgid "_Add..."
 msgstr "_Dodaj..."
 
 #
 # File: src/library.py, line: 793
-#: mcomix/library/book_area.py:175 mcomix/library/collection_area.py:136
+#: mcomix/library/book_area.py:176 mcomix/library/collection_area.py:136
 msgid "Add more books to the library."
 msgstr "Dodaj więcej książek do biblioteki."
 
-#: mcomix/library/book_area.py:178
+#: mcomix/library/book_area.py:179
 msgid "Remove _from this collection"
 msgstr "Usuń z tej _kolekcji"
 
-#: mcomix/library/book_area.py:179
+#: mcomix/library/book_area.py:180
 msgid "Removes the selected books from the current collection."
 msgstr "Usuwa wybrane książki z bieżącej kolekcji."
 
-#: mcomix/library/book_area.py:181
+#: mcomix/library/book_area.py:182
 msgid "Remove from the _library"
 msgstr "Usuń z bib_lioteki"
 
-#: mcomix/library/book_area.py:182
+#: mcomix/library/book_area.py:183
 msgid "Completely removes the selected books from the library."
 msgstr "Całkowicie usuwa wybrane książki z biblioteki."
 
-#: mcomix/library/book_area.py:184
+#: mcomix/library/book_area.py:185
 msgid "_Remove and delete from disk"
 msgstr "_Usuń i skasuj z dysku"
 
-#: mcomix/library/book_area.py:185
+#: mcomix/library/book_area.py:186
 msgid "Deletes the selected books from disk."
 msgstr "Kasuje wybrane książki z dysku."
 
 #
 # File: src/library.py, line: 806
-#: mcomix/library/book_area.py:188
+#: mcomix/library/book_area.py:189
 msgid "Copies the selected book's path to clipboard."
 msgstr "Kopiuje ścieżkę wybranej książki do schowka."
 
-#: mcomix/library/book_area.py:227
+#: mcomix/library/book_area.py:228
 msgid "Library books"
 msgstr "Książki w bibliotece"
 
-#: mcomix/library/book_area.py:239
+#: mcomix/library/book_area.py:240
 msgid "Book name"
 msgstr "Nazwa książki"
 
-#: mcomix/library/book_area.py:240
+#: mcomix/library/book_area.py:241
 msgid "Full path"
 msgstr "Pełna ścieżka"
 
-#: mcomix/library/book_area.py:242
+#: mcomix/library/book_area.py:243
 msgid "Date added"
 msgstr "Data dodania"
 
-#: mcomix/library/book_area.py:251
+#: mcomix/library/book_area.py:252
 msgid "Huge"
 msgstr "Ogromny"
 
-#: mcomix/library/book_area.py:252
+#: mcomix/library/book_area.py:253
 msgid "Large"
 msgstr "Duży"
 
-#: mcomix/library/book_area.py:254
+#: mcomix/library/book_area.py:255
 msgid "Small"
 msgstr "Mały"
 
-#: mcomix/library/book_area.py:255
+#: mcomix/library/book_area.py:256
 msgid "Tiny"
 msgstr "Bardzo mały"
 
-#: mcomix/library/book_area.py:259
+#: mcomix/library/book_area.py:260
 msgid "Custom..."
 msgstr "Własny..."
 
-#: mcomix/library/book_area.py:263
+#: mcomix/library/book_area.py:264
 msgid "_Sort"
 msgstr "_Sortuj"
 
-#: mcomix/library/book_area.py:264
+#: mcomix/library/book_area.py:265
 msgid "Cover si_ze"
 msgstr "Roz_miar okładek"
 
-#: mcomix/library/book_area.py:484
+#: mcomix/library/book_area.py:485
 msgid "Set library cover size"
 msgstr "Ustaw rozmiar okładek w bibliotece"
 
 #
 # File: src/library.py, line: 588
-#: mcomix/library/book_area.py:615
+#: mcomix/library/book_area.py:616
 #, python-format
 msgid "Removed %(num)d book from '%(collection)s'."
 msgid_plural "Removed %(num)d books from '%(collection)s'."
@@ -3318,7 +3318,7 @@ msgstr[0] "Usunięto %(num)d książkę z \"%(collection)s\"."
 msgstr[1] "Usunięto %(num)d książki z \"%(collection)s\"."
 msgstr[2] "Usunięto %(num)d książek z \"%(collection)s\"."
 
-#: mcomix/library/book_area.py:638 mcomix/library/collection_area.py:297
+#: mcomix/library/book_area.py:639 mcomix/library/collection_area.py:297
 #, python-format
 msgid "Removed %d book from the library."
 msgid_plural "Removed %d books from the library."
@@ -3328,13 +3328,13 @@ msgstr[2] "Usunięto %d książek z biblioteki."
 
 #
 # File: src/library.py, line: 597
-#: mcomix/library/book_area.py:663
+#: mcomix/library/book_area.py:664
 msgid "Remove books from the library?"
 msgstr "Usuń książki z biblioteki?"
 
 #
 # File: src/library.py, line: 599
-#: mcomix/library/book_area.py:664
+#: mcomix/library/book_area.py:665
 msgid ""
 "The selected books will be removed from the library and permanently deleted. "
 "Are you sure that you want to continue?"
@@ -3342,13 +3342,21 @@ msgstr ""
 "Wybrane książki zostaną usunięte z biblioteki i trwale skasowane. Czy na "
 "pewno kontynuować?"
 
-#: mcomix/library/book_area.py:699
+#: mcomix/library/book_area.py:700
 #, python-format
 msgid "%d book could not be deleted from disk."
 msgid_plural "%d books could not be deleted from disk."
 msgstr[0] "Nie udało się usunąć %d książki z dysku."
 msgstr[1] "Nie udało się usunąć %d książek z dysku."
 msgstr[2] "Nie udało się usunąć %d książek z dysku."
+
+#: mcomix/library/book_area.py:729
+#, python-format
+msgid "Remove the bookmarks in the deleted book?"
+msgid_plural "Remove the bookmarks in the %(count)d deleted books?"
+msgstr[0] "Usunąć zakładki w usuniętej książce?"
+msgstr[1] "Usunąć zakładki w %(count)d usuniętych książkach?"
+msgstr[2] "Usunąć zakładki w %(count)d usuniętych książkach?"
 
 #: mcomix/library/collection_area.py:139
 msgid "New"

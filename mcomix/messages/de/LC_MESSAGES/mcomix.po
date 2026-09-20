@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 2.0.0\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-20 13:02+0200\n"
+"POT-Creation-Date: 2026-09-20 13:11+0200\n"
 "PO-Revision-Date: 2024-01-21 19:55+0100\n"
 "Last-Translator: Moritz Brunner <oddegamra@gmx.org>\n"
 "Language-Team: \n"
@@ -55,7 +55,7 @@ msgstr "Nicht unterstütztes Archiv-Format: %s"
 msgid "! Extraction error: %s"
 msgstr "! Extraktions-Fehler: %s"
 
-#: mcomix/archive_packer.py:167 mcomix/library/book_area.py:695
+#: mcomix/archive_packer.py:167 mcomix/library/book_area.py:696
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! Konnte %(file)s nicht entfernen: %(error)s"
@@ -417,7 +417,7 @@ msgstr "\"%(file)s\" konnte nicht nach \"%(directory)s\" verschoben werden"
 msgid "Open"
 msgstr "Öffnen"
 
-#: mcomix/file_chooser_base_dialog.py:107 mcomix/library/book_area.py:168
+#: mcomix/file_chooser_base_dialog.py:107 mcomix/library/book_area.py:169
 msgid "_Open"
 msgstr "Ö_ffnen"
 
@@ -1806,7 +1806,7 @@ msgstr "Dateiname"
 msgid "File name (GLib)"
 msgstr "Dateiname (GLib)"
 
-#: mcomix/preferences_dialog.py:669 mcomix/library/book_area.py:241
+#: mcomix/preferences_dialog.py:669 mcomix/library/book_area.py:242
 msgid "File size"
 msgstr "Dateigröße"
 
@@ -1815,12 +1815,12 @@ msgid "Last modified"
 msgstr "Zuletzt geändert"
 
 #: mcomix/preferences_dialog.py:676 mcomix/preferences_dialog.py:720
-#: mcomix/library/book_area.py:245
+#: mcomix/library/book_area.py:246
 msgid "Ascending"
 msgstr "Aufsteigend"
 
 #: mcomix/preferences_dialog.py:677 mcomix/preferences_dialog.py:721
-#: mcomix/library/book_area.py:246
+#: mcomix/library/book_area.py:247
 msgid "Descending"
 msgstr "Absteigend"
 
@@ -1900,7 +1900,7 @@ msgstr ""
 "Ändert Bild-Skalierungs-Modus. Langsamere Algorithmen resultieren in "
 "besserer Bildqualität, aber längeren Ladezeiten."
 
-#: mcomix/preferences_dialog.py:832 mcomix/library/book_area.py:253
+#: mcomix/preferences_dialog.py:832 mcomix/library/book_area.py:254
 msgid "Normal"
 msgstr "Normal"
 
@@ -2283,7 +2283,7 @@ msgstr "Vektor-Symbol"
 msgid "! Could not save thumbnail \"%(thumbpath)s\": %(error)s"
 msgstr "! Konnte Vorschaubild \"%(thumbpath)s\" nicht speichern: %(error)s"
 
-#: mcomix/ui.py:427 mcomix/library/book_area.py:187
+#: mcomix/ui.py:427 mcomix/library/book_area.py:188
 msgid "_Copy"
 msgstr "Ko_pieren"
 
@@ -2717,121 +2717,121 @@ msgstr "Alle Bücher"
 msgid "! Could not scan for new books: %s"
 msgstr "! Suche nach neuen Büchern fehlgeschlagen: %s"
 
-#: mcomix/library/book_area.py:169
+#: mcomix/library/book_area.py:170
 msgid "Opens the selected books for viewing."
 msgstr "Öffnet die ausgewählten Bücher zum Lesen."
 
-#: mcomix/library/book_area.py:171
+#: mcomix/library/book_area.py:172
 msgid "Open _without closing library"
 msgstr "Öffnen _ohne Bibliothek zu schließen"
 
-#: mcomix/library/book_area.py:172
+#: mcomix/library/book_area.py:173
 msgid "Opens the selected books, but keeps the library window open."
 msgstr "Öffnet die ausgewählten Bücher, aber lässt die Bibliothek offen."
 
-#: mcomix/library/book_area.py:174 mcomix/library/collection_area.py:135
+#: mcomix/library/book_area.py:175 mcomix/library/collection_area.py:135
 msgid "_Add..."
 msgstr "_Hinzufügen..."
 
-#: mcomix/library/book_area.py:175 mcomix/library/collection_area.py:136
+#: mcomix/library/book_area.py:176 mcomix/library/collection_area.py:136
 msgid "Add more books to the library."
 msgstr "Weitere Bücher zu der Bibliothek hinzufügen."
 
-#: mcomix/library/book_area.py:178
+#: mcomix/library/book_area.py:179
 msgid "Remove _from this collection"
 msgstr "Aus Sa_mmlung entfernen"
 
-#: mcomix/library/book_area.py:179
+#: mcomix/library/book_area.py:180
 msgid "Removes the selected books from the current collection."
 msgstr "Entfernt die ausgewählten Bücher von der aktuellen Sammlung."
 
-#: mcomix/library/book_area.py:181
+#: mcomix/library/book_area.py:182
 msgid "Remove from the _library"
 msgstr "Aus _Bibliothek entfernen"
 
-#: mcomix/library/book_area.py:182
+#: mcomix/library/book_area.py:183
 msgid "Completely removes the selected books from the library."
 msgstr "Entfernt die ausgewählten Bücher komplett aus der Bibliothek."
 
-#: mcomix/library/book_area.py:184
+#: mcomix/library/book_area.py:185
 msgid "_Remove and delete from disk"
 msgstr "Aus Bibliothek entfernen und _löschen"
 
-#: mcomix/library/book_area.py:185
+#: mcomix/library/book_area.py:186
 msgid "Deletes the selected books from disk."
 msgstr "Löscht die ausgewählten Bücher von der Festplatte."
 
-#: mcomix/library/book_area.py:188
+#: mcomix/library/book_area.py:189
 msgid "Copies the selected book's path to clipboard."
 msgstr "Kopiert den Dateipfad des ausgewählten Buches in die Zwischenablage."
 
-#: mcomix/library/book_area.py:227
+#: mcomix/library/book_area.py:228
 msgid "Library books"
 msgstr "Bücher in Bibliothek"
 
-#: mcomix/library/book_area.py:239
+#: mcomix/library/book_area.py:240
 msgid "Book name"
 msgstr "Buch-Name"
 
-#: mcomix/library/book_area.py:240
+#: mcomix/library/book_area.py:241
 msgid "Full path"
 msgstr "Voller Pfad"
 
-#: mcomix/library/book_area.py:242
+#: mcomix/library/book_area.py:243
 msgid "Date added"
 msgstr "Hinzufüge-Datum"
 
-#: mcomix/library/book_area.py:251
+#: mcomix/library/book_area.py:252
 msgid "Huge"
 msgstr "Riesig"
 
-#: mcomix/library/book_area.py:252
+#: mcomix/library/book_area.py:253
 msgid "Large"
 msgstr "Groß"
 
-#: mcomix/library/book_area.py:254
+#: mcomix/library/book_area.py:255
 msgid "Small"
 msgstr "Klein"
 
-#: mcomix/library/book_area.py:255
+#: mcomix/library/book_area.py:256
 msgid "Tiny"
 msgstr "Winzig"
 
-#: mcomix/library/book_area.py:259
+#: mcomix/library/book_area.py:260
 msgid "Custom..."
 msgstr "Benutzerdefiniert..."
 
-#: mcomix/library/book_area.py:263
+#: mcomix/library/book_area.py:264
 msgid "_Sort"
 msgstr "_Sortierung"
 
-#: mcomix/library/book_area.py:264
+#: mcomix/library/book_area.py:265
 msgid "Cover si_ze"
 msgstr "Deckblatt_größe"
 
-#: mcomix/library/book_area.py:484
+#: mcomix/library/book_area.py:485
 msgid "Set library cover size"
 msgstr "Deckblattgröße ändern"
 
-#: mcomix/library/book_area.py:615
+#: mcomix/library/book_area.py:616
 #, python-format
 msgid "Removed %(num)d book from '%(collection)s'."
 msgid_plural "Removed %(num)d books from '%(collection)s'."
 msgstr[0] "%(num)d Buch wurde aus »%(collection)s« entfernt."
 msgstr[1] "%(num)d Bücher wurden aus »%(collection)s« entfernt."
 
-#: mcomix/library/book_area.py:638 mcomix/library/collection_area.py:297
+#: mcomix/library/book_area.py:639 mcomix/library/collection_area.py:297
 #, python-format
 msgid "Removed %d book from the library."
 msgid_plural "Removed %d books from the library."
 msgstr[0] "%d Buch wurde aus der Bibliothek entfernt."
 msgstr[1] "%d Bücher wurden aus der Bibliothek entfernt."
 
-#: mcomix/library/book_area.py:663
+#: mcomix/library/book_area.py:664
 msgid "Remove books from the library?"
 msgstr "Bücher aus der Bibliothek entfernen?"
 
-#: mcomix/library/book_area.py:664
+#: mcomix/library/book_area.py:665
 msgid ""
 "The selected books will be removed from the library and permanently deleted. "
 "Are you sure that you want to continue?"
@@ -2839,12 +2839,19 @@ msgstr ""
 "Die ausgewählten Bücher werden aus der Bibliothek entfernt und die "
 "Originaldatei wird gelöscht. Sind Sie sicher, dass Sie fortfahren möchten?"
 
-#: mcomix/library/book_area.py:699
+#: mcomix/library/book_area.py:700
 #, python-format
 msgid "%d book could not be deleted from disk."
 msgid_plural "%d books could not be deleted from disk."
 msgstr[0] "%d Buch konnte nicht von der Festplatte gelöscht werden."
 msgstr[1] "%d Bücher konnten nicht von der Festplatte gelöscht werden."
+
+#: mcomix/library/book_area.py:729
+#, python-format
+msgid "Remove the bookmarks in the deleted book?"
+msgid_plural "Remove the bookmarks in the %(count)d deleted books?"
+msgstr[0] "Die Lesezeichen im gelöschten Buch entfernen?"
+msgstr[1] "Die Lesezeichen in den %(count)d gelöschten Büchern entfernen?"
 
 #: mcomix/library/collection_area.py:139
 msgid "New"

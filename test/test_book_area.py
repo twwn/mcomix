@@ -1,6 +1,7 @@
 """The library's cover area, and the black it is painted on."""
 
 import contextlib
+import datetime
 import os
 import sqlite3
 import unittest.mock
@@ -8,9 +9,11 @@ import warnings
 
 from gi.repository import Gdk, GLib, Gtk
 
-from . import MComixTest, wait_for
+from . import MComixTest, pump, wait_for
 from .test_theme import background_of
 
+from mcomix import bookmark_backend
+from mcomix import bookmark_menu_item
 from mcomix import constants
 from mcomix import message_dialog
 from mcomix import process
@@ -382,6 +385,58 @@ class DeleteFromDiskTest(MComixTest):
         self.assertTrue(self.library.messages, 'the library said nothing')
         self.assertEqual('1 book could not be deleted from disk.',
                          self.library.messages[-1])
+
+    def _bookmark_store(self):
+        # MComixTest redirects DATA_DIR without creating it, and the
+        # store writes its file as soon as a bookmark is added.
+        os.makedirs(constants.DATA_DIR, exist_ok=True)
+        store = bookmark_backend.BookmarksStore
+        store._initialized = False
+        store._bookmarks = []
+        self.addCleanup(setattr, store, '_bookmarks', [])
+        return store
+
+    def _bookmark(self, path):
+        return bookmark_menu_item._Bookmark(
+            None, None, os.path.basename(path), path, 2, 20, None,
+            datetime.datetime(2026, 1, 1))
+
+    def test_deleting_a_bookmarked_book_asks_about_its_bookmarks(self):
+        """The window's own delete asks; the library deleted the file
+        and left the bookmark pointing at nothing."""
+        path = os.path.join(self.tmp_dir, 'deletable.cbz')
+        with open(path, 'wb') as handle:
+            handle.write(b'not really a book')
+        self.area._covers.set_items([book_area._BookItem(_Book(1, path))])
+        self.area._covers.selection.select_all()
+        store = self._bookmark_store()
+        store.add_bookmark(self._bookmark(path))
+
+        self.area._remove_answered(Response.YES)
+        pump()
+
+        dialogs = [window for window in self._dialogs()
+                   if window.dialog_id == message_dialog.RememberedDialog
+                   .REMOVE_BOOKMARKS_OF_DELETED_FILE]
+        self.assertEqual(len(dialogs), 1, 'nothing asked about the bookmark')
+        self.assertEqual(len(store.get_bookmarks()), 1,
+                         'the bookmark went without being asked about')
+        dialogs[0].emit('response', Response.YES)
+        pump()
+        self.assertEqual(store.get_bookmarks(), [])
+
+    def test_deleting_a_book_nobody_bookmarked_asks_nothing(self):
+        path = os.path.join(self.tmp_dir, 'deletable.cbz')
+        with open(path, 'wb') as handle:
+            handle.write(b'not really a book')
+        self.area._covers.set_items([book_area._BookItem(_Book(1, path))])
+        self.area._covers.selection.select_all()
+        self._bookmark_store()
+
+        self.area._remove_answered(Response.YES)
+        pump()
+
+        self.assertEqual(self._dialogs(), [])
 
     def test_a_book_that_was_deleted_says_nothing_of_the_kind(self):
         path = os.path.join(self.tmp_dir, 'deletable.cbz')

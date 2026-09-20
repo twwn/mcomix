@@ -24,6 +24,7 @@ from mcomix import preview
 from mcomix import process
 from mcomix import icons
 from mcomix import widgets
+from mcomix import bookmark_backend
 from mcomix import i18n
 from mcomix import log
 from mcomix import message_dialog
@@ -32,7 +33,7 @@ from mcomix.library.pixbuf_cache import get_pixbuf_cache
 from mcomix.i18n import _
 from mcomix.dialog import Response
 
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Sequence
 from typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
@@ -700,6 +701,43 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
                     '%d books could not be deleted from disk.',
                     len(failed))
                 self._library.set_status_message(message % len(failed))
+
+            gone = [path for path in paths if path not in failed]
+            self._offer_to_remove_bookmarks(gone)
+
+    def _offer_to_remove_bookmarks(self, paths: "Sequence[str]") -> None:
+        """Ask whether the bookmarks in the deleted books should go too.
+
+        Asked rather than done, as the window's own delete asks: a
+        bookmark is a page the reader marked, not a record MComix keeps
+        of a file, and it is the same remembered prompt, so a reader who
+        has answered it once is not asked again here.
+        """
+        store = bookmark_backend.BookmarksStore
+        marked = [path for path in paths if store.bookmarks_for_path(path)]
+        if not marked:
+            return
+        dialog = message_dialog.MessageDialog(
+            self._library, buttons=Gtk.ButtonsType.YES_NO)
+        dialog.set_should_remember_choice(
+            message_dialog.RememberedDialog.REMOVE_BOOKMARKS_OF_DELETED_FILE)
+        # Named rather than positional, so that a language whose
+        # singular form covers 21 and 31 as well can carry the number
+        # in it: a mapping leaves a format string that does not use the
+        # key alone, where a bare %d would raise.
+        message = i18n.get_translation().ngettext(
+            'Remove the bookmarks in the deleted book?',
+            'Remove the bookmarks in the %(count)d deleted books?',
+            len(marked))
+        dialog.set_text(message % {'count': len(marked)})
+        dialog.set_default_response(Response.NO)
+
+        def answered(response: int) -> None:
+            if response == Response.YES:
+                for path in marked:
+                    store.remove_for_path(path)
+
+        dialog.run_async(answered)
 
     def _copy_selected(self, *args: object) -> None:
         """ Copies the currently selected item to clipboard. """
