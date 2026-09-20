@@ -1197,6 +1197,23 @@ class MainWindow(Gtk.Window):
 
     #: The CSS class that draws the outline round a picked-out page.
     _SELECTED_CLASS = 'mcomix-selected-page'
+    #: The CSS class on the page waiting to be swapped.  theme.py draws
+    #: both the same way, bar what tells them apart.
+    _MARKED_CLASS = 'mcomix-marked-page'
+
+    def _numbered_page(self, page: "int | None") -> "int | None":
+        """<page> if it is a page of the book that is open, else None.
+
+        What the two gestures that name a page with the mouse ask
+        before acting on what they were given: None is what page_at()
+        answers for the background around the pages, and a number
+        outside the book is what a listing that has changed under a
+        caller leaves it holding.
+        """
+        if page is None or not 1 <= page <= \
+                self.imagehandler.get_number_of_pages():
+            return None
+        return page
 
     def select_page(self, page: "int | None") -> None:
         """Pick <page> out, or put it back if it is picked out already.
@@ -1207,15 +1224,12 @@ class MainWindow(Gtk.Window):
         and deal with them at the end.  None picks out nothing, and
         leaves what is picked out alone.
         """
-        if page is None or not 1 <= page <= \
-                self.imagehandler.get_number_of_pages():
+        page = self._numbered_page(page)
+        if page is None:
             return
         self.selected_pages ^= {page}
         self._draw_selection()
         self.uimanager.set_sensitivities()
-
-    #: The CSS class on the page waiting to be swapped.
-    _MARKED_CLASS = 'mcomix-marked-page'
 
     def mark_for_swap(self, page: "int | None") -> None:
         """Mark <page> to be swapped, or swap it with the marked one.
@@ -1226,8 +1240,8 @@ class MainWindow(Gtk.Window):
         and clicking anywhere that is not a page leaves the mark where
         it is.
         """
-        if page is None or not 1 <= page <= \
-                self.imagehandler.get_number_of_pages():
+        page = self._numbered_page(page)
+        if page is None:
             return
         if self.swap_page is None:
             self.swap_page = page

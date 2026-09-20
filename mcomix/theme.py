@@ -55,11 +55,12 @@ notebook > stack, .toolbar, actionbar > revealer > box {
     color: @window_fg_color;
 }
 
-/* The page a reader has picked out to delete.  An outline rather than a
-   border, which would take room and move the page it is drawn around,
-   and offset inwards, since a page is drawn to the edge of the box it
-   was laid out in and an outline outside that would be off screen. */
-picture.mcomix-selected-page {
+/* A page a reader has said something about: picked out to delete, or
+   marked to swap with another.  An outline rather than a border, which
+   would take room and move the page it is drawn around, and offset
+   inwards, since a page is drawn to the edge of the box it was laid
+   out in and an outline outside that would be off screen. */
+picture.mcomix-selected-page, picture.mcomix-marked-page {
     /* Stated twice: a theme that does not define an accent colour -
        GTK has only defined one since 4.14 - leaves the second
        declaration unparsed, and the first one stands. */
@@ -68,13 +69,11 @@ picture.mcomix-selected-page {
     outline-offset: -4px;
 }
 
-/* The page a reader has marked to swap with another.  Dashed, so that
-   it is told apart from a page picked out to be removed at a glance,
-   and drawn the same way otherwise: a page can be both at once. */
+/* What tells the two apart at a glance, the rest being shared: the
+   page marked to be swapped is dashed.  A page can be both at once,
+   and is then drawn dashed, since this comes second. */
 picture.mcomix-marked-page {
-    outline: 4px dashed rgb(53, 132, 228);
-    outline: 4px dashed @accent_bg_color;
-    outline-offset: -4px;
+    outline-style: dashed;
 }
 
 .sidebar, .navigation-sidebar {
