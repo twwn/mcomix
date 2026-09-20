@@ -109,7 +109,42 @@ class _EditArchiveDialog(Dialog):
 
         self.set_visible(True)
 
+        # The editor is about the files of one book: its two lists are
+        # that book's pages and comment files, extracted to a temporary
+        # directory that goes when the book does.  So the editor goes
+        # with it, rather than standing over a book that is no longer
+        # there - where its save fails on files that have been cleaned
+        # up, and Apply would hand the window a listing of them.
+        self.file_handler.file_closed += self._on_book_close
+        # 'unrealize' rather than 'destroy', which GTK4 emits only when
+        # the last reference to the window goes.
+        self.connect('unrealize', self._stop_following)
+
         GLib.idle_add(self._load_original_files)
+
+    def _on_book_close(self) -> None:
+        """Close the editor, the book it lists having gone.
+
+        From the idle queue rather than here and now: this runs inside
+        the file handler's own call round its listeners, and closing
+        takes the editor out of that list while it is being walked,
+        which would step over whoever subscribed after it.
+        """
+        GLib.idle_add(self._close_with_the_book)
+
+    def _close_with_the_book(self) -> bool:
+        _forget_dialog(self)
+        self.destroy()
+        return False
+
+    def _stop_following(self, *args: object) -> None:
+        """Stop hearing about the book once the editor has closed.
+
+        A destroyed dialog is not collected - the handlers on its own
+        widgets hold it - so one left listening would answer the close
+        of every book opened after it.
+        """
+        self.file_handler.file_closed -= self._on_book_close
 
     def _load_original_files(self) -> bool:
         """Load the original files from the archive or directory into
@@ -353,6 +388,18 @@ def _close_dialog(*args: object) -> None:
 
     if _dialog is not None:
         _dialog.destroy()
+        _dialog = None
+
+
+def _forget_dialog(dialog: "_EditArchiveDialog") -> None:
+    """Let go of <dialog> if it is the one the menu entry opens.
+
+    An editor that closes itself has to say so here, or the menu would
+    go on presenting the window that has gone.
+    """
+    global _dialog
+
+    if _dialog is dialog:
         _dialog = None
 
 # vim: expandtab:sw=4:ts=4

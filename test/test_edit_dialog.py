@@ -71,6 +71,60 @@ class EditArchiveDialogTest(MComixTest):
                 return window
         return None
 
+    # -- The editor and the book it belongs to ----------------------------
+
+    def _editors(self):
+        """Every archive editor on screen."""
+        return [window for window in Gtk.Window.list_toplevels()
+                if isinstance(window, edit_dialog._EditArchiveDialog)
+                and window.get_visible()]
+
+    def _editors_listening(self):
+        """How many editors are still told when a book closes.
+
+        Read off the callback list itself: a destroyed dialog is not
+        collected, so one that never unsubscribed goes on answering.
+        """
+        callbacks = self.window.filehandler.__dict__.get('file_closed')
+        if callbacks is None:
+            return 0
+        held = getattr(callbacks, '_CallbackList__callbacks')
+        return len([1 for reference, _function in held
+                    if reference is not None
+                    and isinstance(reference(),
+                                   edit_dialog._EditArchiveDialog)])
+
+    def test_the_editor_closes_with_the_book_it_edits(self):
+        """Its lists are one book's pages and comment files, out of a
+        temporary directory that goes when the book does: a save then
+        fails on files that have been cleaned up, and Apply would hand
+        the window a listing of them."""
+        self.assertEqual(len(self._editors()), 1, 'no editor was open')
+        self.window.filehandler.close_file()
+        pump()
+        self.assertEqual(self._editors(), [],
+                         'the editor stood over a book that had gone')
+
+    def test_the_editor_that_closed_is_not_the_one_the_menu_opens(self):
+        """open_dialog() presents the editor it holds, so an editor that
+        closed itself has to be let go of or the menu presents a window
+        that is not there."""
+        edit_dialog._dialog = self.dialog
+        try:
+            self.window.filehandler.close_file()
+            pump()
+            self.assertIsNone(edit_dialog._dialog)
+        finally:
+            edit_dialog._dialog = None
+
+    def test_a_closed_editor_stops_hearing_about_books(self):
+        self.assertEqual(self._editors_listening(), 1,
+                         'the editor is not listening at all')
+        self.dialog.destroy()
+        pump()
+        self.assertEqual(self._editors_listening(), 0,
+                         'a closed editor would answer the next book too')
+
     def test_a_page_with_no_path_is_left_out_of_the_image_area(self):
         """The page count is read once and the paths one at a time, so a
         book closed in between leaves pages that answer with no path at
