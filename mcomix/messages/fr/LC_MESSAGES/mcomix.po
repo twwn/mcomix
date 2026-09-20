@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 0.93\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-20 18:58+0200\n"
+"POT-Creation-Date: 2026-09-20 19:06+0200\n"
 "PO-Revision-Date: 2015-04-05 08:54+0100\n"
 "Last-Translator: Benoit Pierre <benoit.pierre@gmail.com>\n"
 "Language-Team: \n"
@@ -87,7 +87,7 @@ msgid "_No"
 msgstr "_Non"
 
 #: mcomix/bookmark_backend.py:329 mcomix/edit_dialog.py:58
-#: mcomix/file_actions.py:870 mcomix/file_chooser_base_dialog.py:106
+#: mcomix/file_actions.py:872 mcomix/file_chooser_base_dialog.py:106
 #: mcomix/file_chooser_base_dialog.py:111
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:32
@@ -246,16 +246,16 @@ msgstr "Images"
 msgid "Comment files"
 msgstr "Fichiers de commentaires"
 
-#: mcomix/edit_dialog.py:194 mcomix/file_actions.py:682
+#: mcomix/edit_dialog.py:194 mcomix/file_actions.py:684
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! Impossible d'enregistrer l'archive %(archivefile)s : %(error)s"
 
-#: mcomix/edit_dialog.py:207 mcomix/file_actions.py:687
+#: mcomix/edit_dialog.py:207 mcomix/file_actions.py:689
 msgid "The new archive could not be saved!"
 msgstr "Impossible d'enregistrer la nouvelle archive !"
 
-#: mcomix/edit_dialog.py:208 mcomix/file_actions.py:688
+#: mcomix/edit_dialog.py:208 mcomix/file_actions.py:690
 msgid "The original files have not been removed."
 msgstr "Les fichiers originaux n'ont pas été supprimés."
 
@@ -284,7 +284,7 @@ msgid "Reset to defaults."
 msgstr "Réinitialiser."
 
 #: mcomix/enhance_dialog.py:35 mcomix/file_actions.py:597
-#: mcomix/file_actions.py:638 mcomix/file_chooser_base_dialog.py:112
+#: mcomix/file_actions.py:640 mcomix/file_chooser_base_dialog.py:112
 #: mcomix/openwith.py:360
 msgid "_Save"
 msgstr "_Enregistrer"
@@ -334,7 +334,7 @@ msgstr "_Inverser les couleurs de l'image"
 msgid "Invert (negate) image colors."
 msgstr "Inverse (négatif) les couleurs de l'image."
 
-#: mcomix/file_actions.py:298 mcomix/file_actions.py:1018
+#: mcomix/file_actions.py:298 mcomix/file_actions.py:1020
 msgid "A file of that name is there already."
 msgstr "Un fichier de ce nom s'y trouve déjà."
 
@@ -376,56 +376,54 @@ msgstr ""
 msgid "_Close without saving"
 msgstr "_Fermer sans enregistrer"
 
-#: mcomix/file_actions.py:634
+#: mcomix/file_actions.py:635
 #, python-format
 msgid "Write \"%s\" again now?"
 msgstr "Réécrire « %s » maintenant ?"
 
-#: mcomix/file_actions.py:635
+#: mcomix/file_actions.py:636
 msgid ""
-"The archive on disk will be replaced by the book as it stands, without the "
-"pages that were removed."
-msgstr ""
-"L'archive sur le disque sera remplacée par le livre tel qu'il est, sans les "
-"pages retirées."
+"The archive on disk will be replaced by the book as it stands: the pages it "
+"holds now, in the order and under the names it shows."
+msgstr "L'archive sur le disque sera remplacée par le livre tel qu'il est : les pages qu'il contient maintenant, dans l'ordre et sous les noms qu'il affiche."
 
-#: mcomix/file_actions.py:637
+#: mcomix/file_actions.py:639
 msgid "_Not now"
 msgstr "Pas _maintenant"
 
-#: mcomix/file_actions.py:788
+#: mcomix/file_actions.py:790
 msgid "Save page as"
 msgstr "Enregistrer la page sous"
 
-#: mcomix/file_actions.py:829
+#: mcomix/file_actions.py:831
 #, python-format
 msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! Impossible d'enregistrer %(file)s dans %(directory)s : %(error)s"
 
-#: mcomix/file_actions.py:833 mcomix/file_actions.py:1020
+#: mcomix/file_actions.py:835 mcomix/file_actions.py:1022
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "Il n'y a pas assez de place : le fichier fait %s."
 
-#: mcomix/file_actions.py:839
+#: mcomix/file_actions.py:841
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "Impossible d'enregistrer « %(file)s » dans « %(directory)s »"
 
-#: mcomix/file_actions.py:868
+#: mcomix/file_actions.py:870
 #, python-format
 msgid "Delete \"%s\"?"
 msgstr "Supprimer \"%s\" ?"
 
-#: mcomix/file_actions.py:869
+#: mcomix/file_actions.py:871
 msgid "The file will be deleted from your harddisk."
 msgstr "Le fichier sera effacer de votre disque dur."
 
-#: mcomix/file_actions.py:871 mcomix/ui.py:433
+#: mcomix/file_actions.py:873 mcomix/ui.py:433
 msgid "_Delete"
 msgstr "_Supprimer"
 
-#: mcomix/file_actions.py:941
+#: mcomix/file_actions.py:943
 #, python-format
 msgid "The file is gone, and its %d bookmark cannot be opened any more."
 msgid_plural ""
@@ -434,17 +432,17 @@ msgstr[0] "Le fichier a disparu, et son %d signet ne peut plus être ouvert."
 msgstr[1] ""
 "Le fichier a disparu, et ses %d signets ne peuvent plus être ouverts."
 
-#: mcomix/file_actions.py:945
+#: mcomix/file_actions.py:947
 #, python-format
 msgid "Remove the bookmarks in \"%s\"?"
 msgstr "Supprimer les signets de « %s » ?"
 
-#: mcomix/file_actions.py:1014
+#: mcomix/file_actions.py:1016
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr "! Impossible de déplacer %(file)s vers %(directory)s : %(error)s"
 
-#: mcomix/file_actions.py:1026
+#: mcomix/file_actions.py:1028
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "Impossible de déplacer « %(file)s » vers « %(directory)s »"
@@ -1030,8 +1028,8 @@ msgid "Delete them"
 msgstr "Supprimer"
 
 #: mcomix/message_dialog.py:86
-msgid "Removing a page from the book being read:"
-msgstr "Lors du retrait d'une page du livre en cours de lecture :"
+msgid "Changing the pages of the book being read:"
+msgstr "Lors de la modification des pages du livre en cours de lecture :"
 
 #: mcomix/message_dialog.py:87
 msgid "Write the archive again at once"
@@ -3080,6 +3078,16 @@ msgid "Automatically scan for new books when library is _opened"
 msgstr ""
 "Rechercher automatiquement les nouveaux livres à l'_ouverture de la "
 "bibliothèque"
+
+#~ msgid ""
+#~ "The archive on disk will be replaced by the book as it stands, without "
+#~ "the pages that were removed."
+#~ msgstr ""
+#~ "L'archive sur le disque sera remplacée par le livre tel qu'il est, sans "
+#~ "les pages retirées."
+
+#~ msgid "Removing a page from the book being read:"
+#~ msgstr "Lors du retrait d'une page du livre en cours de lecture :"
 
 #, python-format
 #~ msgid "%d pages"

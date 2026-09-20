@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Comix 4.0.1\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-20 18:58+0200\n"
+"POT-Creation-Date: 2026-09-20 19:06+0200\n"
 "PO-Revision-Date: 2009-01-28 13:36+0800\n"
 "Last-Translator: Xie Yanbo <xieyanbo@gmail.com>\n"
 "Language-Team: Xie Yanbo <xieyanbo@gmail.com>\n"
@@ -91,7 +91,7 @@ msgid "_No"
 msgstr "否(_N)"
 
 #: mcomix/bookmark_backend.py:329 mcomix/edit_dialog.py:58
-#: mcomix/file_actions.py:870 mcomix/file_chooser_base_dialog.py:106
+#: mcomix/file_actions.py:872 mcomix/file_chooser_base_dialog.py:106
 #: mcomix/file_chooser_base_dialog.py:111
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:32
@@ -250,16 +250,16 @@ msgstr "注释文件"
 
 #
 # File: src/library.py, line: 271
-#: mcomix/edit_dialog.py:194 mcomix/file_actions.py:682
+#: mcomix/edit_dialog.py:194 mcomix/file_actions.py:684
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! 无法保存文件包 %(archivefile)s：%(error)s"
 
-#: mcomix/edit_dialog.py:207 mcomix/file_actions.py:687
+#: mcomix/edit_dialog.py:207 mcomix/file_actions.py:689
 msgid "The new archive could not be saved!"
 msgstr "无法保存新的文件包！"
 
-#: mcomix/edit_dialog.py:208 mcomix/file_actions.py:688
+#: mcomix/edit_dialog.py:208 mcomix/file_actions.py:690
 msgid "The original files have not been removed."
 msgstr "原始文件没有被删除。"
 
@@ -288,7 +288,7 @@ msgid "Reset to defaults."
 msgstr "重置为默认值。"
 
 #: mcomix/enhance_dialog.py:35 mcomix/file_actions.py:597
-#: mcomix/file_actions.py:638 mcomix/file_chooser_base_dialog.py:112
+#: mcomix/file_actions.py:640 mcomix/file_chooser_base_dialog.py:112
 #: mcomix/openwith.py:360
 msgid "_Save"
 msgstr "保存(_S)"
@@ -336,7 +336,7 @@ msgstr "反转图像颜色(_I)"
 msgid "Invert (negate) image colors."
 msgstr "反转（求反）图像颜色。"
 
-#: mcomix/file_actions.py:298 mcomix/file_actions.py:1018
+#: mcomix/file_actions.py:298 mcomix/file_actions.py:1020
 msgid "A file of that name is there already."
 msgstr "那里已经有同名文件。"
 
@@ -376,71 +376,71 @@ msgstr "本书有磁盘上的压缩包中没有的更改。关闭后这些更改
 msgid "_Close without saving"
 msgstr "不保存并关闭(_C)"
 
-#: mcomix/file_actions.py:634
+#: mcomix/file_actions.py:635
 #, python-format
 msgid "Write \"%s\" again now?"
 msgstr "现在重新写入“%s”吗？"
 
-#: mcomix/file_actions.py:635
+#: mcomix/file_actions.py:636
 msgid ""
-"The archive on disk will be replaced by the book as it stands, without the "
-"pages that were removed."
-msgstr "磁盘上的压缩包将被替换为当前的书，其中不含已移除的页面。"
+"The archive on disk will be replaced by the book as it stands: the pages it "
+"holds now, in the order and under the names it shows."
+msgstr "磁盘上的压缩包将被替换为当前的书：现在的页面，按显示的顺序和名称写入。"
 
-#: mcomix/file_actions.py:637
+#: mcomix/file_actions.py:639
 msgid "_Not now"
 msgstr "暂不(_N)"
 
-#: mcomix/file_actions.py:788
+#: mcomix/file_actions.py:790
 msgid "Save page as"
 msgstr "页面另存为"
 
-#: mcomix/file_actions.py:829
+#: mcomix/file_actions.py:831
 #, python-format
 msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! 无法将 %(file)s 保存到 %(directory)s：%(error)s"
 
-#: mcomix/file_actions.py:833 mcomix/file_actions.py:1020
+#: mcomix/file_actions.py:835 mcomix/file_actions.py:1022
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "那里空间不足：文件大小为 %s。"
 
-#: mcomix/file_actions.py:839
+#: mcomix/file_actions.py:841
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "无法将 \"%(file)s\" 保存到 \"%(directory)s\""
 
-#: mcomix/file_actions.py:868
+#: mcomix/file_actions.py:870
 #, python-format
 msgid "Delete \"%s\"?"
 msgstr "确定删除 %s ？"
 
-#: mcomix/file_actions.py:869
+#: mcomix/file_actions.py:871
 msgid "The file will be deleted from your harddisk."
 msgstr "该文件将从硬盘上删除。"
 
-#: mcomix/file_actions.py:871 mcomix/ui.py:433
+#: mcomix/file_actions.py:873 mcomix/ui.py:433
 msgid "_Delete"
 msgstr "删除(_D)"
 
-#: mcomix/file_actions.py:941
+#: mcomix/file_actions.py:943
 #, python-format
 msgid "The file is gone, and its %d bookmark cannot be opened any more."
 msgid_plural ""
 "The file is gone, and its %d bookmarks cannot be opened any more."
 msgstr[0] "文件已删除，其中的 %d 个书签无法再打开。"
 
-#: mcomix/file_actions.py:945
+#: mcomix/file_actions.py:947
 #, python-format
 msgid "Remove the bookmarks in \"%s\"?"
 msgstr "删除“%s”中的书签？"
 
-#: mcomix/file_actions.py:1014
+#: mcomix/file_actions.py:1016
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr "! 无法将 %(file)s 移动到 %(directory)s：%(error)s"
 
-#: mcomix/file_actions.py:1026
+#: mcomix/file_actions.py:1028
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "无法将 \"%(file)s\" 移动到 \"%(directory)s\""
@@ -1022,8 +1022,8 @@ msgid "Delete them"
 msgstr "删除"
 
 #: mcomix/message_dialog.py:86
-msgid "Removing a page from the book being read:"
-msgstr "从正在阅读的书中移除页面时："
+msgid "Changing the pages of the book being read:"
+msgstr "更改正在阅读的书的页面时："
 
 #: mcomix/message_dialog.py:87
 msgid "Write the archive again at once"
@@ -2960,6 +2960,14 @@ msgstr "包含子目录"
 #: mcomix/library/watchlist.py:80
 msgid "Automatically scan for new books when library is _opened"
 msgstr "当打开收藏库时自动扫描新书(_O)"
+
+#~ msgid ""
+#~ "The archive on disk will be replaced by the book as it stands, without "
+#~ "the pages that were removed."
+#~ msgstr "磁盘上的压缩包将被替换为当前的书，其中不含已移除的页面。"
+
+#~ msgid "Removing a page from the book being read:"
+#~ msgstr "从正在阅读的书中移除页面时："
 
 #, python-format
 #~ msgid "%d pages"

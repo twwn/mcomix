@@ -618,9 +618,10 @@ class FileActions:
     def offer_to_save(self) -> None:
         """Ask whether to write the book back over its own archive.
 
-        Asked after every page removed, until the reader ticks "Do not
-        ask again", which is how every other prompt with a lasting
-        answer works.
+        Asked after every change to the pages - one removed, two
+        swapped, one renamed - until the reader ticks "Do not ask
+        again", which is how every other prompt with a lasting answer
+        works.
         """
         archive_type = self.writeable_archive_type()
         path = self._window.filehandler.get_path_to_base()
@@ -633,7 +634,8 @@ class FileActions:
         dialog.set_text(
             _('Write "%s" again now?') % os.path.basename(path),
             _('The archive on disk will be replaced by the book as it '
-              'stands, without the pages that were removed.'))
+              'stands: the pages it holds now, in the order and under '
+              'the names it shows.'))
         dialog.add_button(_('_Not now'), Response.NO)
         dialog.add_button(_('_Save'), Response.YES)
         # Enter must not overwrite an archive.  A confirmation defaults

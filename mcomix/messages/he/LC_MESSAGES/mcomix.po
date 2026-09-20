@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: mcomix 0.99\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-20 18:58+0200\n"
+"POT-Creation-Date: 2026-09-20 19:06+0200\n"
 "PO-Revision-Date: 2013-01-07 22:51+0200\n"
 "Last-Translator: Isratine Citizen <genghiskhan@gmx.ca>\n"
 "Language-Team: Hebrew <eliz@gnu.org>\n"
@@ -90,7 +90,7 @@ msgid "_No"
 msgstr "_לא"
 
 #: mcomix/bookmark_backend.py:329 mcomix/edit_dialog.py:58
-#: mcomix/file_actions.py:870 mcomix/file_chooser_base_dialog.py:106
+#: mcomix/file_actions.py:872 mcomix/file_chooser_base_dialog.py:106
 #: mcomix/file_chooser_base_dialog.py:111
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:32
@@ -249,17 +249,17 @@ msgstr "תמונות"
 msgid "Comment files"
 msgstr "קבצי הערות"
 
-#: mcomix/edit_dialog.py:194 mcomix/file_actions.py:682
+#: mcomix/edit_dialog.py:194 mcomix/file_actions.py:684
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! לא ניתן היה לשמור את הארכיון %(archivefile)s: %(error)s"
 
 # מאחר ונרשם שמירה (saved) בנטיה לעבר, יש הכרח לציין את המילה "היה" (לשמור) בהתאמה
-#: mcomix/edit_dialog.py:207 mcomix/file_actions.py:687
+#: mcomix/edit_dialog.py:207 mcomix/file_actions.py:689
 msgid "The new archive could not be saved!"
 msgstr "לא ניתן היה לשמור את הארכיון החדש!"
 
-#: mcomix/edit_dialog.py:208 mcomix/file_actions.py:688
+#: mcomix/edit_dialog.py:208 mcomix/file_actions.py:690
 msgid "The original files have not been removed."
 msgstr "הקבצים הנוכחיים לא הוסרו."
 
@@ -288,7 +288,7 @@ msgid "Reset to defaults."
 msgstr "שחזר אל ברירות המחדל."
 
 #: mcomix/enhance_dialog.py:35 mcomix/file_actions.py:597
-#: mcomix/file_actions.py:638 mcomix/file_chooser_base_dialog.py:112
+#: mcomix/file_actions.py:640 mcomix/file_chooser_base_dialog.py:112
 #: mcomix/openwith.py:360
 msgid "_Save"
 msgstr "_שמירה"
@@ -338,7 +338,7 @@ msgstr "ה_פוך את צבעי התמונה"
 msgid "Invert (negate) image colors."
 msgstr "הופך (מנגיד) את צבעי התמונה."
 
-#: mcomix/file_actions.py:298 mcomix/file_actions.py:1018
+#: mcomix/file_actions.py:298 mcomix/file_actions.py:1020
 msgid "A file of that name is there already."
 msgstr "קובץ בשם הזה כבר נמצא שם."
 
@@ -378,54 +378,54 @@ msgstr "בספר יש שינויים שאינם בארכיון בדיסק. הם 
 msgid "_Close without saving"
 msgstr "ס_גור בלי לשמור"
 
-#: mcomix/file_actions.py:634
+#: mcomix/file_actions.py:635
 #, python-format
 msgid "Write \"%s\" again now?"
 msgstr "לכתוב את „%s” מחדש עכשיו?"
 
-#: mcomix/file_actions.py:635
+#: mcomix/file_actions.py:636
 msgid ""
-"The archive on disk will be replaced by the book as it stands, without the "
-"pages that were removed."
-msgstr "הארכיון בדיסק יוחלף בספר כפי שהוא כעת, ללא העמודים שהוסרו."
+"The archive on disk will be replaced by the book as it stands: the pages it "
+"holds now, in the order and under the names it shows."
+msgstr "הארכיון בדיסק יוחלף בספר כפי שהוא כעת: העמודים שיש בו כעת, בסדר ובשמות שהוא מציג."
 
-#: mcomix/file_actions.py:637
+#: mcomix/file_actions.py:639
 msgid "_Not now"
 msgstr "_לא עכשיו"
 
-#: mcomix/file_actions.py:788
+#: mcomix/file_actions.py:790
 msgid "Save page as"
 msgstr "שמירת עמוד בשם"
 
-#: mcomix/file_actions.py:829
+#: mcomix/file_actions.py:831
 #, python-format
 msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! לא ניתן היה לשמור את %(file)s ב־%(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:833 mcomix/file_actions.py:1020
+#: mcomix/file_actions.py:835 mcomix/file_actions.py:1022
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "אין שם מספיק מקום: גודל הקובץ הוא %s."
 
-#: mcomix/file_actions.py:839
+#: mcomix/file_actions.py:841
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "לא ניתן היה לשמור את \"%(file)s\" ב־\"%(directory)s\""
 
-#: mcomix/file_actions.py:868
+#: mcomix/file_actions.py:870
 #, python-format
 msgid "Delete \"%s\"?"
 msgstr "למחוק את \"%s\"?"
 
-#: mcomix/file_actions.py:869
+#: mcomix/file_actions.py:871
 msgid "The file will be deleted from your harddisk."
 msgstr "הקובץ יימחק מן הכונן הקשיח שלך."
 
-#: mcomix/file_actions.py:871 mcomix/ui.py:433
+#: mcomix/file_actions.py:873 mcomix/ui.py:433
 msgid "_Delete"
 msgstr "_מחק"
 
-#: mcomix/file_actions.py:941
+#: mcomix/file_actions.py:943
 #, python-format
 msgid "The file is gone, and its %d bookmark cannot be opened any more."
 msgid_plural ""
@@ -433,17 +433,17 @@ msgid_plural ""
 msgstr[0] "הקובץ נמחק, ולא ניתן עוד לפתוח את %d הסימנייה שבו."
 msgstr[1] "הקובץ נמחק, ולא ניתן עוד לפתוח את %d הסימניות שבו."
 
-#: mcomix/file_actions.py:945
+#: mcomix/file_actions.py:947
 #, python-format
 msgid "Remove the bookmarks in \"%s\"?"
 msgstr "להסיר את הסימניות ב־\"%s\"?"
 
-#: mcomix/file_actions.py:1014
+#: mcomix/file_actions.py:1016
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr "! לא ניתן היה להעביר את %(file)s אל %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:1026
+#: mcomix/file_actions.py:1028
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "לא ניתן היה להעביר את \"%(file)s\" אל \"%(directory)s\""
@@ -1030,8 +1030,8 @@ msgid "Delete them"
 msgstr "למחוק"
 
 #: mcomix/message_dialog.py:86
-msgid "Removing a page from the book being read:"
-msgstr "בהסרת עמוד מהספר הנקרא:"
+msgid "Changing the pages of the book being read:"
+msgstr "בשינוי עמודי הספר הנקרא:"
 
 #: mcomix/message_dialog.py:87
 msgid "Write the archive again at once"
@@ -3065,6 +3065,14 @@ msgstr "עם מדורי משנה"
 #: mcomix/library/watchlist.py:80
 msgid "Automatically scan for new books when library is _opened"
 msgstr "סרוק חוברות אוטומטית כאשר הספרייה הינה _פתוחה"
+
+#~ msgid ""
+#~ "The archive on disk will be replaced by the book as it stands, without "
+#~ "the pages that were removed."
+#~ msgstr "הארכיון בדיסק יוחלף בספר כפי שהוא כעת, ללא העמודים שהוסרו."
+
+#~ msgid "Removing a page from the book being read:"
+#~ msgstr "בהסרת עמוד מהספר הנקרא:"
 
 #, python-format
 #~ msgid "%d pages"

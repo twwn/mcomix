@@ -83,7 +83,7 @@ REMEMBERED_DIALOGS = {
         _('Deleting books that are removed from the library:'),
         ((_('Delete them'), Response.YES),)),
     RememberedDialog.SAVE_EDITED_ARCHIVE: _Prompt(
-        _('Removing a page from the book being read:'),
+        _('Changing the pages of the book being read:'),
         ((_('Write the archive again at once'), Response.YES),
          (_('Leave the archive as it is'), Response.NO))),
     RememberedDialog.REMOVE_PICKED_OUT_PAGES: _Prompt(
