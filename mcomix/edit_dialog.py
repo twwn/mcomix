@@ -185,7 +185,10 @@ class _EditArchiveDialog(Dialog):
                 carried_files=self.file_handler.get_other_files(),
                 archive_type=self._save_format()[0],
                 permissions_from=self.file_handler.get_path_to_base()
-                if self.file_handler.archive_type is not None else None)
+                if self.file_handler.archive_type is not None else None,
+                # A page renamed in the window is renamed in whatever
+                # the editor writes as well: the two are the same book.
+                page_names=self._window.file_actions.page_names())
             saved = True
         except OSError as error:
             log.error(_('! Could not save the archive %(archivefile)s: '

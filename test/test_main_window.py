@@ -1429,6 +1429,91 @@ class MainWindowTest(MComixTest):
             dialog.destroy()
         self._pump()
 
+    # -- Renaming a page --------------------------------------------------
+
+    def test_renaming_a_page_gives_it_the_name_that_was_typed(self):
+        self._ready()
+        with self._quietly():
+            self.assertEqual(
+                self.window.file_actions.rename_page(1, 'Cover.png'),
+                'Cover.png')
+        self.assertEqual(self.window.file_actions.page_name(1), 'Cover.png')
+
+    def test_a_name_with_no_extension_keeps_the_old_one(self):
+        """What MComix and every other reader take for a page is
+        decided by the extension, so a name without one keeps it."""
+        self._ready()
+        old = self.window.file_actions.page_name(1)
+        with self._quietly():
+            self.window.file_actions.rename_page(1, 'Cover')
+        self.assertEqual(self.window.file_actions.page_name(1),
+                         'Cover' + os.path.splitext(old)[1])
+
+    def test_a_name_with_a_folder_in_front_of_it_is_read_as_a_name(self):
+        self._ready()
+        with self._quietly():
+            self.window.file_actions.rename_page(1, '/books/Cover.png')
+        self.assertEqual(self.window.file_actions.page_name(1), 'Cover.png')
+
+    def test_a_name_that_says_nothing_renames_nothing(self):
+        self._ready()
+        before = self.window.file_actions.page_name(1)
+        self.assertIsNone(self.window.file_actions.rename_page(1, '   '))
+        self.assertIsNone(self.window.file_actions.rename_page(1, before))
+        self.assertEqual(self.window.file_actions.page_name(1), before)
+
+    def test_the_archive_is_written_with_the_name_that_was_given(self):
+        source = self._movable_book()
+        self._ready()
+        with self._quietly():
+            self.window.file_actions.rename_page(1, 'Cover.jpg')
+        self.assertTrue(self.window.file_actions.save_archive())
+        self._pump()
+
+        with zipfile.ZipFile(source) as written:
+            names = written.namelist()
+        self.assertIn('Cover.jpg', names)
+        self.assertEqual(len([name for name in names
+                              if image_tools.is_image_file(name)]),
+                         len(self._pages()))
+
+    def test_closing_the_book_forgets_the_names(self):
+        self._ready()
+        with self._quietly():
+            self.window.file_actions.rename_page(1, 'Cover.png')
+        self.window.filehandler.close_file()
+        self._pump()
+        self.assertEqual(self.window.file_actions.page_names(), {})
+
+    def test_the_menu_offers_to_rename_the_page(self):
+        self.assertIn('win.rename-page-popup',
+                      self._menu_actions(self.window.uimanager.popup
+                                         .get_menu_model()))
+
+    def test_the_rename_dialog_offers_the_name_with_the_stem_picked_out(self):
+        """A file manager leaves the extension out of what it selects,
+        so that typing replaces the name and keeps the kind."""
+        self._ready()
+        self.window.popup_page = 1
+        name = self.window.file_actions.page_name(1)
+
+        self.window.file_actions.rename_popup_page()
+        self._pump()
+
+        dialogs = self._delete_dialogs()
+        self.assertEqual(len(dialogs), 1, 'nothing asked for a name')
+        entries = [child
+                   for child in self._children(dialogs[0].get_content_area())
+                   if isinstance(child, Gtk.Entry)]
+        self.assertEqual(len(entries), 1)
+        self.assertEqual(entries[0].get_text(), name)
+        self.assertEqual(entries[0].get_selection_bounds(),
+                         (0, len(os.path.splitext(name)[0])),
+                         'the extension is selected as well')
+        for dialog in dialogs:
+            dialog.destroy()
+        self._pump()
+
     # -- Swapping two pages -----------------------------------------------
 
     def test_marking_a_page_and_another_swaps_the_two(self):

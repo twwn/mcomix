@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 0.90.4\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-20 13:11+0200\n"
+"POT-Creation-Date: 2026-09-20 13:30+0200\n"
 "PO-Revision-Date: 2018-02-24 08:43+0100\n"
 "Last-Translator: Jonatan Nyberg <jonatan@autistici.org>\n"
 "Language-Team: Swedish <LL@li.org>\n"
@@ -53,19 +53,19 @@ msgstr "! Extraktionsfel: %s"
 
 #
 # File: src/comment.py, line: 53
-#: mcomix/archive_packer.py:167 mcomix/library/book_area.py:696
+#: mcomix/archive_packer.py:169 mcomix/library/book_area.py:696
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! Kunde inte ta bort %(file)s: %(error)s"
 
 #
 # File: src/library.py, line: 271
-#: mcomix/archive_packer.py:495 mcomix/archive_packer.py:513
+#: mcomix/archive_packer.py:511 mcomix/archive_packer.py:529
 #, python-format
 msgid "! Could not create archive at path \"%s\""
 msgstr "! Kunde inte skapa arkivet i sökvägen: \"%s\""
 
-#: mcomix/archive_packer.py:504
+#: mcomix/archive_packer.py:520
 #, python-format
 msgid ""
 "! Could not add file %(sourcefile)s to archive %(archivefile)s, aborting..."
@@ -100,7 +100,7 @@ msgstr "_Nej"
 #
 # File: src/preferences.py, line: 230
 #: mcomix/bookmark_backend.py:329 mcomix/edit_dialog.py:58
-#: mcomix/file_actions.py:369 mcomix/file_chooser_base_dialog.py:106
+#: mcomix/file_actions.py:486 mcomix/file_chooser_base_dialog.py:106
 #: mcomix/file_chooser_base_dialog.py:111
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:32
@@ -156,7 +156,7 @@ msgstr "Redigera bokmärken"
 msgid "C_lear bookmarks..."
 msgstr "Tö_m alla bokmärken..."
 
-#: mcomix/bookmark_dialog.py:33 mcomix/main.py:757 mcomix/openwith.py:342
+#: mcomix/bookmark_dialog.py:33 mcomix/main.py:762 mcomix/openwith.py:342
 #: mcomix/library/collection_area.py:149 mcomix/library/watchlist.py:63
 msgid "_Remove"
 msgstr "_Ta bort"
@@ -165,7 +165,7 @@ msgstr "_Ta bort"
 # File: src/ui.py, line: 48
 #: mcomix/bookmark_dialog.py:34 mcomix/comment_dialog.py:29
 #: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:73
-#: mcomix/properties_dialog.py:37 mcomix/ui.py:458
+#: mcomix/properties_dialog.py:37 mcomix/ui.py:462
 #: mcomix/library/watchlist.py:40
 msgid "_Close"
 msgstr "Stäng _fil"
@@ -184,7 +184,7 @@ msgstr "Namn"
 
 #
 # File: src/bookmark.py, line: 256
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1295
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1346
 #: mcomix/library/control_area.py:147
 msgid "Page"
 msgstr "Sida"
@@ -255,12 +255,12 @@ msgid "Remove from archive"
 msgstr "Ta bort från arkiv"
 
 #: mcomix/edit_comment_area.py:95 mcomix/edit_image_area.py:114
-#: mcomix/ui.py:437
+#: mcomix/ui.py:441
 msgid "_Undo"
 msgstr "Å_ngra"
 
 #: mcomix/edit_comment_area.py:96 mcomix/edit_image_area.py:115
-#: mcomix/ui.py:440
+#: mcomix/ui.py:444
 msgid "_Redo"
 msgstr "_Gör om"
 
@@ -274,7 +274,7 @@ msgstr "Redigera arkiv"
 msgid "A_pply"
 msgstr "_Verkställ"
 
-#: mcomix/edit_dialog.py:71 mcomix/ui.py:467 mcomix/ui.py:468
+#: mcomix/edit_dialog.py:71 mcomix/ui.py:471 mcomix/ui.py:472
 msgid "Save _As"
 msgstr "Spara _som"
 
@@ -297,26 +297,26 @@ msgstr "Kommentarer"
 
 #
 # File: src/library.py, line: 271
-#: mcomix/edit_dialog.py:191 mcomix/file_actions.py:181
+#: mcomix/edit_dialog.py:194 mcomix/file_actions.py:298
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! Kunde inte spara arkivet %(archivefile)s: %(error)s"
 
 #
 # File: src/edit.py, line: 99
-#: mcomix/edit_dialog.py:204 mcomix/file_actions.py:186
+#: mcomix/edit_dialog.py:207 mcomix/file_actions.py:303
 msgid "The new archive could not be saved!"
 msgstr "Det nya arkivet kunde inte sparas!"
 
 #
 # File: src/edit.py, line: 101
-#: mcomix/edit_dialog.py:205 mcomix/file_actions.py:187
+#: mcomix/edit_dialog.py:208 mcomix/file_actions.py:304
 msgid "The original files have not been removed."
 msgstr "Originalfilerna har inte tagits bort."
 
 #
 # File: src/edit.py, line: 115
-#: mcomix/edit_dialog.py:292
+#: mcomix/edit_dialog.py:295
 msgid "Archives are stored as ZIP files."
 msgstr "Arkiven sparas i ZIP-format."
 
@@ -340,7 +340,7 @@ msgstr "Återställ till standardinställningar."
 
 #
 # File: src/filechooser.py, line: 39
-#: mcomix/enhance_dialog.py:35 mcomix/file_actions.py:138
+#: mcomix/enhance_dialog.py:35 mcomix/file_actions.py:254
 #: mcomix/file_chooser_base_dialog.py:112 mcomix/openwith.py:360
 msgid "_Save"
 msgstr "_Spara"
@@ -394,7 +394,7 @@ msgstr ""
 "Justera kontrast automatiskt (både ljushet och mörkhet), separat för varje "
 "färgkomponent."
 
-#: mcomix/enhance_dialog.py:96 mcomix/ui.py:509
+#: mcomix/enhance_dialog.py:96 mcomix/ui.py:513
 msgid "_Invert image colors"
 msgstr "_Invertera bildfärger"
 
@@ -402,12 +402,20 @@ msgstr "_Invertera bildfärger"
 msgid "Invert (negate) image colors."
 msgstr "Invertera (negera) bildfärgerna."
 
-#: mcomix/file_actions.py:134
+#: mcomix/file_actions.py:113
+msgid "Rename page?"
+msgstr "Döp om sidan?"
+
+#: mcomix/file_actions.py:114
+msgid "Please enter a new name for this page."
+msgstr "Ange ett nytt namn för den här sidan."
+
+#: mcomix/file_actions.py:250
 #, python-format
 msgid "Write \"%s\" again now?"
 msgstr "Skriva \"%s\" igen nu?"
 
-#: mcomix/file_actions.py:135
+#: mcomix/file_actions.py:251
 msgid ""
 "The archive on disk will be replaced by the book as it stands, without the "
 "pages that were removed."
@@ -415,46 +423,46 @@ msgstr ""
 "Arkivet på disken ersätts av boken som den är nu, utan de sidor som togs "
 "bort."
 
-#: mcomix/file_actions.py:137
+#: mcomix/file_actions.py:253
 msgid "_Not now"
 msgstr "I_nte nu"
 
 #
 # File: src/library.py, line: 832
 # File: src/properties.py, line: 113
-#: mcomix/file_actions.py:287
+#: mcomix/file_actions.py:404
 msgid "Save page as"
 msgstr "Spara sidan som"
 
-#: mcomix/file_actions.py:328
+#: mcomix/file_actions.py:445
 #, python-format
 msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! Kunde inte spara %(file)s till %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:332 mcomix/file_actions.py:515
+#: mcomix/file_actions.py:449 mcomix/file_actions.py:632
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "Det finns inte tillräckligt med plats där: filen är %s."
 
-#: mcomix/file_actions.py:338
+#: mcomix/file_actions.py:455
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "Kunde inte spara \"%(file)s\" till \"%(directory)s\""
 
-#: mcomix/file_actions.py:367
+#: mcomix/file_actions.py:484
 #, python-format
 msgid "Delete \"%s\"?"
 msgstr "Ta bort \"%s\"?"
 
-#: mcomix/file_actions.py:368
+#: mcomix/file_actions.py:485
 msgid "The file will be deleted from your harddisk."
 msgstr "Filen kommer att tas bort från hårddisken."
 
-#: mcomix/file_actions.py:370 mcomix/ui.py:432
+#: mcomix/file_actions.py:487 mcomix/ui.py:433
 msgid "_Delete"
 msgstr "_Ta bort"
 
-#: mcomix/file_actions.py:436
+#: mcomix/file_actions.py:553
 #, python-format
 msgid "The file is gone, and its %d bookmark cannot be opened any more."
 msgid_plural ""
@@ -462,21 +470,21 @@ msgid_plural ""
 msgstr[0] "Filen är borta, och dess %d bokmärke kan inte längre öppnas."
 msgstr[1] "Filen är borta, och dess %d bokmärken kan inte längre öppnas."
 
-#: mcomix/file_actions.py:440
+#: mcomix/file_actions.py:557
 #, python-format
 msgid "Remove the bookmarks in \"%s\"?"
 msgstr "Ta bort bokmärkena i \"%s\"?"
 
-#: mcomix/file_actions.py:509
+#: mcomix/file_actions.py:626
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr "! Kunde inte flytta %(file)s till %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:513
+#: mcomix/file_actions.py:630
 msgid "A file of that name is there already."
 msgstr "Det finns redan en fil med det namnet där."
 
-#: mcomix/file_actions.py:521
+#: mcomix/file_actions.py:638
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "Kunde inte flytta \"%(file)s\" till \"%(directory)s\""
@@ -623,7 +631,7 @@ msgstr "Tangent %d"
 
 #
 # File: src/ui.py, line: 284
-#: mcomix/keybindings.py:45 mcomix/ui.py:444
+#: mcomix/keybindings.py:45 mcomix/ui.py:448
 msgid "Previous page"
 msgstr "Föregående sida"
 
@@ -637,7 +645,7 @@ msgstr "Navigering"
 
 #
 # File: src/ui.py, line: 285
-#: mcomix/keybindings.py:46 mcomix/ui.py:443
+#: mcomix/keybindings.py:46 mcomix/ui.py:447
 msgid "Next page"
 msgstr "Nästa sida"
 
@@ -678,13 +686,13 @@ msgstr "Nästa sida (alltid en sida)"
 
 #
 # File: src/ui.py, line: 282
-#: mcomix/keybindings.py:54 mcomix/ui.py:445
+#: mcomix/keybindings.py:54 mcomix/ui.py:449
 msgid "First page"
 msgstr "Första sidan"
 
 #
 # File: src/ui.py, line: 286
-#: mcomix/keybindings.py:55 mcomix/ui.py:446
+#: mcomix/keybindings.py:55 mcomix/ui.py:450
 msgid "Last page"
 msgstr "Sista sidan"
 
@@ -694,21 +702,21 @@ msgstr "Gå till sida"
 
 #
 # File: src/edit.py, line: 28
-#: mcomix/keybindings.py:58 mcomix/ui.py:450
+#: mcomix/keybindings.py:58 mcomix/ui.py:454
 msgid "Next archive"
 msgstr "Nästa arkiv"
 
 #
 # File: src/ui.py, line: 284
-#: mcomix/keybindings.py:59 mcomix/ui.py:451
+#: mcomix/keybindings.py:59 mcomix/ui.py:455
 msgid "Previous archive"
 msgstr "Föregående arkiv"
 
-#: mcomix/keybindings.py:60 mcomix/ui.py:452
+#: mcomix/keybindings.py:60 mcomix/ui.py:456
 msgid "Next directory"
 msgstr "Nästa katalog"
 
-#: mcomix/keybindings.py:61 mcomix/ui.py:453
+#: mcomix/keybindings.py:61 mcomix/ui.py:457
 msgid "Previous directory"
 msgstr "Föregående katalog"
 
@@ -860,7 +868,7 @@ msgstr "Rotera automatiskt efter höjd"
 #
 # File: src/preferences.py, line: 177
 # File: src/ui.py, line: 296
-#: mcomix/keybindings.py:102 mcomix/preferences_dialog.py:249 mcomix/ui.py:494
+#: mcomix/keybindings.py:102 mcomix/preferences_dialog.py:249 mcomix/ui.py:498
 msgid "Double page mode"
 msgstr "Dubbelsidesläge"
 
@@ -877,42 +885,42 @@ msgstr "Visningsläge"
 
 #
 # File: src/ui.py, line: 297
-#: mcomix/keybindings.py:103 mcomix/ui.py:501
+#: mcomix/keybindings.py:103 mcomix/ui.py:505
 msgid "Manga mode"
 msgstr "Mangaläge"
 
-#: mcomix/keybindings.py:104 mcomix/ui.py:502
+#: mcomix/keybindings.py:104 mcomix/ui.py:506
 msgid "Invert smart scroll"
 msgstr "Vänd smart rullning"
 
 #
 # File: src/ui.py, line: 298
-#: mcomix/keybindings.py:106 mcomix/ui.py:506
+#: mcomix/keybindings.py:106 mcomix/ui.py:510
 msgid "Magnifying lens"
 msgstr "Förstoringsglas"
 
-#: mcomix/keybindings.py:107 mcomix/ui.py:507
+#: mcomix/keybindings.py:107 mcomix/ui.py:511
 msgid "Stretch small images"
 msgstr "Sträck ut små bilder"
 
 #
 # File: src/preferences.py, line: 262
 # File: src/ui.py, line: 288
-#: mcomix/keybindings.py:109 mcomix/ui.py:514
+#: mcomix/keybindings.py:109 mcomix/ui.py:518
 msgid "Best fit mode"
 msgstr "Bästa anpassningsläge"
 
 #
 # File: src/preferences.py, line: 263
 # File: src/ui.py, line: 290
-#: mcomix/keybindings.py:110 mcomix/ui.py:515
+#: mcomix/keybindings.py:110 mcomix/ui.py:519
 msgid "Fit width mode"
 msgstr "Breddanpassningsläge"
 
 #
 # File: src/preferences.py, line: 264
 # File: src/ui.py, line: 292
-#: mcomix/keybindings.py:111 mcomix/ui.py:516
+#: mcomix/keybindings.py:111 mcomix/ui.py:520
 msgid "Fit height mode"
 msgstr "Höjdanpassningsläge"
 
@@ -925,7 +933,7 @@ msgstr "Anpassa storleksläge"
 #
 # File: src/preferences.py, line: 265
 # File: src/ui.py, line: 294
-#: mcomix/keybindings.py:113 mcomix/ui.py:518
+#: mcomix/keybindings.py:113 mcomix/ui.py:522
 msgid "Manual zoom mode"
 msgstr "Manuellt zoomläge"
 
@@ -995,7 +1003,7 @@ msgstr "Göm alla"
 
 #
 # File: src/preferences.py, line: 279
-#: mcomix/keybindings.py:129 mcomix/slideshow.py:54 mcomix/ui.py:505
+#: mcomix/keybindings.py:129 mcomix/slideshow.py:54 mcomix/ui.py:509
 msgid "Start slideshow"
 msgstr "Starta bildspel"
 
@@ -1077,7 +1085,7 @@ msgstr "Inställningar"
 msgid "Library"
 msgstr "Bibliotek"
 
-#: mcomix/keybindings.py:149 mcomix/ui.py:509
+#: mcomix/keybindings.py:149 mcomix/ui.py:513
 msgid "Invert image colors"
 msgstr "Invertera bildfärger"
 
@@ -1129,14 +1137,14 @@ msgstr "Det gick inte att läsa tangentbindningar: %s"
 msgid "! Could not remove file \"%s\""
 msgstr "Kunde inte ta bort filen \"%s\""
 
-#: mcomix/main.py:750
+#: mcomix/main.py:755
 #, python-format
 msgid "Remove the page picked out of \"%s\"?"
 msgid_plural "Remove the pages picked out of \"%s\"?"
 msgstr[0] "Ta bort den valda sidan ur \"%s\"?"
 msgstr[1] "Ta bort de valda sidorna ur \"%s\"?"
 
-#: mcomix/main.py:753
+#: mcomix/main.py:758
 msgid ""
 "They are taken out of the archive on disk, which is written again at once. "
 "Leaving the book without removing them forgets which pages they were."
@@ -1144,13 +1152,13 @@ msgstr ""
 "De tas ur arkivet på disken, som skrivs igen med detsamma. Att lämna boken "
 "utan att ta bort dem gör att det glöms vilka sidor det var."
 
-#: mcomix/main.py:756
+#: mcomix/main.py:761
 msgid "_Keep them"
 msgstr "_Behåll"
 
 #
 # File: src/main.py, line: 666
-#: mcomix/main.py:1162
+#: mcomix/main.py:1167
 msgid "SLIDESHOW"
 msgstr "BILDSPEL"
 
@@ -1397,13 +1405,13 @@ msgstr ""
 msgid "! Could not draw the next frame: %s"
 msgstr "! Kunde inte rita nästa bildruta: %s"
 
-#: mcomix/pageselect.py:29 mcomix/ui.py:447
+#: mcomix/pageselect.py:29 mcomix/ui.py:451
 msgid "Go to page..."
 msgstr "Gå till sida..."
 
 #
 # File: src/ui.py, line: 69
-#: mcomix/pageselect.py:31 mcomix/ui.py:483 mcomix/ui.py:484
+#: mcomix/pageselect.py:31 mcomix/ui.py:487 mcomix/ui.py:488
 msgid "_Go"
 msgstr "_Gå"
 
@@ -1777,7 +1785,7 @@ msgstr "Göm automatiskt alla verktygsrader i helskärmsläge"
 #
 # File: src/preferences.py, line: 263
 # File: src/ui.py, line: 290
-#: mcomix/preferences_dialog.py:311 mcomix/ui.py:517
+#: mcomix/preferences_dialog.py:311 mcomix/ui.py:521
 msgid "Fit to size mode"
 msgstr "Anpassa till storleksläge"
 
@@ -2067,7 +2075,7 @@ msgstr ""
 "och fönstrets storlek behålls."
 
 #: mcomix/preferences_dialog.py:618 mcomix/preferences_dialog.py:759
-#: mcomix/preferences_dialog.py:831 mcomix/ui.py:523
+#: mcomix/preferences_dialog.py:831 mcomix/ui.py:527
 msgid "Never"
 msgstr "Aldrig"
 
@@ -2686,31 +2694,39 @@ msgstr "! Kunde inte spara miniatyrbild \"%(thumbpath)s\": %(error)s"
 #
 # File: src/librarybackend.py, line: 272
 # File: src/librarybackend.py, line: 274
-#: mcomix/ui.py:427 mcomix/library/book_area.py:188
+#: mcomix/ui.py:428 mcomix/library/book_area.py:188
 msgid "_Copy"
 msgstr "Kopi_era"
 
-#: mcomix/ui.py:427
+#: mcomix/ui.py:428
 msgid "Copies the current page to clipboard."
 msgstr "Kopierar den aktuella sidan till Urklipp."
 
-#: mcomix/ui.py:429
+#: mcomix/ui.py:430
 msgid "_Copy page"
 msgstr "Kopi_era sidan"
 
-#: mcomix/ui.py:430
+#: mcomix/ui.py:431
 msgid "Copies the page the menu was opened over to the clipboard."
 msgstr "Kopierar den sida som menyn öppnades över till Urklipp."
 
-#: mcomix/ui.py:432
+#: mcomix/ui.py:433
 msgid "Deletes the current file or archive from disk."
 msgstr "Tar bort aktuell fil eller arkiv från disken."
 
-#: mcomix/ui.py:434
+#: mcomix/ui.py:435
+msgid "Re_name page..."
+msgstr "Dö_p om sidan..."
+
+#: mcomix/ui.py:436
+msgid "Renames the page the menu was opened over."
+msgstr "Döper om den sida som menyn öppnades över."
+
+#: mcomix/ui.py:438
 msgid "_Delete page"
 msgstr "Ta bort si_dan"
 
-#: mcomix/ui.py:435
+#: mcomix/ui.py:439
 msgid ""
 "Removes the page the menu was opened over from the book. The archive on disk "
 "is not changed until it is saved."
@@ -2718,89 +2734,89 @@ msgstr ""
 "Tar bort sidan som menyn öppnades över ur boken. Arkivet på disken ändras "
 "inte förrän det sparas."
 
-#: mcomix/ui.py:438
+#: mcomix/ui.py:442
 msgid "Takes back the last page removed from the book."
 msgstr "Hämtar tillbaka den sida som senast togs bort ur boken."
 
-#: mcomix/ui.py:441
+#: mcomix/ui.py:445
 msgid "Removes again the page the last undo brought back."
 msgstr "Tar bort sidan som den senaste ångringen hämtade tillbaka igen."
 
 #
 # File: src/ui.py, line: 34
-#: mcomix/ui.py:443
+#: mcomix/ui.py:447
 msgid "_Next page"
 msgstr "_Nästa sida"
 
 #
 # File: src/ui.py, line: 36
-#: mcomix/ui.py:444
+#: mcomix/ui.py:448
 msgid "_Previous page"
 msgstr "F_öregående sida"
 
 #
 # File: src/ui.py, line: 38
-#: mcomix/ui.py:445
+#: mcomix/ui.py:449
 msgid "_First page"
 msgstr "_Första sidan"
 
 #
 # File: src/ui.py, line: 40
-#: mcomix/ui.py:446
+#: mcomix/ui.py:450
 msgid "_Last page"
 msgstr "_Sista sidan"
 
-#: mcomix/ui.py:447
+#: mcomix/ui.py:451
 msgid "_Go to page..."
 msgstr "_Gå till sida..."
 
-#: mcomix/ui.py:448
+#: mcomix/ui.py:452
 msgid "Re_fresh"
 msgstr "_Uppdatera"
 
-#: mcomix/ui.py:448
+#: mcomix/ui.py:452
 msgid "Reloads the currently opened files or archive."
 msgstr "Uppdaterar de för tillfället öppnade filerna eller arkivet."
 
-#: mcomix/ui.py:450
+#: mcomix/ui.py:454
 msgid "Next _archive"
 msgstr "Nästa _arkiv"
 
-#: mcomix/ui.py:451
+#: mcomix/ui.py:455
 msgid "Previous a_rchive"
 msgstr "Föregående a_rkiv"
 
-#: mcomix/ui.py:454
+#: mcomix/ui.py:458
 msgid "Zoom _In"
 msgstr "Zooma _in"
 
-#: mcomix/ui.py:455
+#: mcomix/ui.py:459
 msgid "Zoom _Out"
 msgstr "Zooma _ut"
 
-#: mcomix/ui.py:456
+#: mcomix/ui.py:460
 msgid "_Normal Size"
 msgstr "_Normal storlek"
 
-#: mcomix/ui.py:457
+#: mcomix/ui.py:461
 msgid "Mi_nimize"
 msgstr "Mi_nimera"
 
-#: mcomix/ui.py:458
+#: mcomix/ui.py:462
 msgid "Closes all opened files."
 msgstr "Stänger alla öppna filer."
 
 #
 # File: src/ui.py, line: 50
-#: mcomix/ui.py:459
+#: mcomix/ui.py:463
 msgid "_Quit"
 msgstr "_Avsluta"
 
-#: mcomix/ui.py:460
+#: mcomix/ui.py:464
 msgid "_Save and quit"
 msgstr "S_para och avsluta"
 
-#: mcomix/ui.py:460
+#: mcomix/ui.py:464
 msgid ""
 "Quits and restores the currently opened file next time the program starts."
 msgstr ""
@@ -2808,283 +2824,283 @@ msgstr ""
 
 #
 # File: src/ui.py, line: 52
-#: mcomix/ui.py:462 mcomix/ui.py:524 mcomix/ui.py:526
+#: mcomix/ui.py:466 mcomix/ui.py:528 mcomix/ui.py:530
 msgid "_Rotate 90° CW"
 msgstr "_Rotera 90 grader medsols"
 
 #
 # File: src/ui.py, line: 54
-#: mcomix/ui.py:463
+#: mcomix/ui.py:467
 msgid "Rotate _180°"
 msgstr "Rotera 180 _grader"
 
 #
 # File: src/ui.py, line: 56
-#: mcomix/ui.py:464 mcomix/ui.py:525 mcomix/ui.py:527
+#: mcomix/ui.py:468 mcomix/ui.py:529 mcomix/ui.py:531
 msgid "Rotat_e 90° CCW"
 msgstr "Rot_era 90 grader motsols"
 
 #
 # File: src/ui.py, line: 58
-#: mcomix/ui.py:465
+#: mcomix/ui.py:469
 msgid "Fli_p horizontally"
 msgstr "S_pegelvänd horisontellt"
 
 #
 # File: src/ui.py, line: 60
-#: mcomix/ui.py:466
+#: mcomix/ui.py:470
 msgid "Flip _vertically"
 msgstr "Spegelvänd _vertikalt"
 
-#: mcomix/ui.py:468
+#: mcomix/ui.py:472
 msgid "Saves the page the menu was opened over."
 msgstr "Sparar den sida som menyn öppnades över."
 
-#: mcomix/ui.py:470
+#: mcomix/ui.py:474
 msgid "_Zoom"
 msgstr "_Zooma"
 
 #
 # File: src/ui.py, line: 63
-#: mcomix/ui.py:471
+#: mcomix/ui.py:475
 msgid "_Recent"
 msgstr "Senaste f_iler"
 
 #
 # File: src/ui.py, line: 64
-#: mcomix/ui.py:472 mcomix/ui.py:473
+#: mcomix/ui.py:476 mcomix/ui.py:477
 msgid "_Bookmarks"
 msgstr "_Bokmärken"
 
 #
 # File: src/ui.py, line: 65
-#: mcomix/ui.py:474
+#: mcomix/ui.py:478
 msgid "T_oolbars"
 msgstr "_Verktygsrader"
 
 #
 # File: src/ui.py, line: 66
-#: mcomix/ui.py:475
+#: mcomix/ui.py:479
 msgid "_Edit"
 msgstr "_Redigera"
 
 #
 # File: src/filechooser.py, line: 35
 # File: src/library.py, line: 489
-#: mcomix/ui.py:476 mcomix/ui.py:477
+#: mcomix/ui.py:480 mcomix/ui.py:481
 msgid "Open _with"
 msgstr "Öppna _med"
 
-#: mcomix/ui.py:478
+#: mcomix/ui.py:482
 msgid "_Move to"
 msgstr "Fl_ytta till"
 
-#: mcomix/ui.py:479
+#: mcomix/ui.py:483
 msgid "Moves the file, or the archive the page is in, to another folder."
 msgstr "Flyttar filen, eller arkivet som sidan finns i, till en annan katalog."
 
 #
 # File: src/ui.py, line: 67
-#: mcomix/ui.py:480
+#: mcomix/ui.py:484
 msgid "_File"
 msgstr "_Arkiv"
 
 #
 # File: src/ui.py, line: 68
-#: mcomix/ui.py:481 mcomix/ui.py:482
+#: mcomix/ui.py:485 mcomix/ui.py:486
 msgid "_View"
 msgstr "_Visa"
 
 #
 # File: src/ui.py, line: 79
-#: mcomix/ui.py:485
+#: mcomix/ui.py:489
 msgid "_Tools"
 msgstr "Verkt_yg"
 
 #
 # File: src/ui.py, line: 71
-#: mcomix/ui.py:486
+#: mcomix/ui.py:490
 msgid "_Transform image"
 msgstr "_Transformera bild"
 
-#: mcomix/ui.py:487
+#: mcomix/ui.py:491
 msgid "_Auto-rotate image"
 msgstr "_Automatisk rotera bild"
 
-#: mcomix/ui.py:488
+#: mcomix/ui.py:492
 msgid "...when width exceeds height"
 msgstr "... när bredden överstiger höjden"
 
-#: mcomix/ui.py:489
+#: mcomix/ui.py:493
 msgid "...when height exceeds width"
 msgstr "... när höjden överstiger bredden"
 
 #
 # File: src/ui.py, line: 75
-#: mcomix/ui.py:493
+#: mcomix/ui.py:497
 msgid "_Fullscreen"
 msgstr "_Helskärmsläge"
 
-#: mcomix/ui.py:493
+#: mcomix/ui.py:497
 msgid "Fullscreen mode"
 msgstr "Fullskärmsläge"
 
 #
 # File: src/ui.py, line: 77
-#: mcomix/ui.py:494
+#: mcomix/ui.py:498
 msgid "_Double page mode"
 msgstr "_Dubbelsidesläge"
 
 #
 # File: src/ui.py, line: 79
-#: mcomix/ui.py:495
+#: mcomix/ui.py:499
 msgid "_Toolbar"
 msgstr "_Verktygsrad"
 
 #
 # File: src/ui.py, line: 81
-#: mcomix/ui.py:496
+#: mcomix/ui.py:500
 msgid "_Menubar"
 msgstr "_Menyrad"
 
 #
 # File: src/ui.py, line: 83
-#: mcomix/ui.py:497
+#: mcomix/ui.py:501
 msgid "St_atusbar"
 msgstr "St_atusrad"
 
 #
 # File: src/ui.py, line: 85
-#: mcomix/ui.py:498
+#: mcomix/ui.py:502
 msgid "S_crollbars"
 msgstr "_Rullningslister"
 
 #
 # File: src/ui.py, line: 87
-#: mcomix/ui.py:499
+#: mcomix/ui.py:503
 msgid "Th_umbnails"
 msgstr "Miniat_yrbilder"
 
 #
 # File: src/ui.py, line: 89
-#: mcomix/ui.py:500
+#: mcomix/ui.py:504
 msgid "H_ide all"
 msgstr "_Göm alla"
 
 #
 # File: src/ui.py, line: 91
-#: mcomix/ui.py:501
+#: mcomix/ui.py:505
 msgid "_Manga mode"
 msgstr "_Mangaläge"
 
-#: mcomix/ui.py:502
+#: mcomix/ui.py:506
 msgid "Invert smart scrolling direction."
 msgstr "Invertera smart rullningsriktning."
 
 #
 # File: src/ui.py, line: 93
-#: mcomix/ui.py:503
+#: mcomix/ui.py:507
 msgid "_Keep transformation"
 msgstr "Behåll transf_ormation"
 
-#: mcomix/ui.py:503
+#: mcomix/ui.py:507
 msgid "Keeps the currently selected transformation for the next pages."
 msgstr ""
 "Behåller den för närvarande valda transformationen för de följande sidorna."
 
 #
 # File: src/ui.py, line: 95
-#: mcomix/ui.py:505
+#: mcomix/ui.py:509
 msgid "Start slid_eshow"
 msgstr "S_tarta bildspel"
 
 #
 # File: src/ui.py, line: 97
-#: mcomix/ui.py:506
+#: mcomix/ui.py:510
 msgid "Magnifying _lens"
 msgstr "Förstorings_glas"
 
-#: mcomix/ui.py:507
+#: mcomix/ui.py:511
 msgid "Stretch images to fit to the screen, depending on zoom mode."
 msgstr "Sträck ut bilder för att passa skärmen, beroende på zoomläge."
 
 #
 # File: src/ui.py, line: 101
-#: mcomix/ui.py:514
+#: mcomix/ui.py:518
 msgid "_Best fit mode"
 msgstr "_Bästa anpassningsläge"
 
 #
 # File: src/ui.py, line: 103
-#: mcomix/ui.py:515
+#: mcomix/ui.py:519
 msgid "Fit _width mode"
 msgstr "Br_eddanpassningsläge"
 
 #
 # File: src/ui.py, line: 105
-#: mcomix/ui.py:516
+#: mcomix/ui.py:520
 msgid "Fit _height mode"
 msgstr "H_öjdanpassningsläge"
 
 #
 # File: src/ui.py, line: 103
-#: mcomix/ui.py:517
+#: mcomix/ui.py:521
 msgid "Fit _size mode"
 msgstr "Passa _storleksläge"
 
 #
 # File: src/ui.py, line: 107
-#: mcomix/ui.py:518
+#: mcomix/ui.py:522
 msgid "M_anual zoom mode"
 msgstr "M_anuellt zoomläge"
 
 #
 # File: src/ui.py, line: 113
-#: mcomix/ui.py:531
+#: mcomix/ui.py:535
 msgid "A_bout"
 msgstr "_Om"
 
-#: mcomix/ui.py:534
+#: mcomix/ui.py:538
 msgid "Co_mments..."
 msgstr "Ko_mmentarer..."
 
 #
 # File: src/properties.py, line: 89
-#: mcomix/ui.py:537
+#: mcomix/ui.py:541
 msgid "Proper_ties"
 msgstr "_Egenskaper"
 
 #
 # File: src/ui.py, line: 128
-#: mcomix/ui.py:540
+#: mcomix/ui.py:544
 msgid "_Preferences"
 msgstr "Inst_ällningar"
 
 #
 # File: src/ui.py, line: 117
-#: mcomix/ui.py:544
+#: mcomix/ui.py:548
 msgid "_Edit archive..."
 msgstr "_Redigera arkiv..."
 
-#: mcomix/ui.py:544
+#: mcomix/ui.py:548
 msgid "Opens the archive editor."
 msgstr "Öppnar arkivredigeraren."
 
 #
 # File: src/ui.py, line: 119
-#: mcomix/ui.py:546
+#: mcomix/ui.py:550
 msgid "_Open..."
 msgstr "_Öppna..."
 
 #
 # File: src/ui.py, line: 123
-#: mcomix/ui.py:547
+#: mcomix/ui.py:551
 msgid "Enha_nce image..."
 msgstr "Fö_rbättra bild..."
 
 #
 # File: src/ui.py, line: 132
-#: mcomix/ui.py:550
+#: mcomix/ui.py:554
 msgid "_Library..."
 msgstr "Bib_liotek..."
 

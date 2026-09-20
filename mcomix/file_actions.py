@@ -13,7 +13,7 @@ import errno
 import os
 import shutil
 
-from gi.repository import Gtk
+from gi.repository import GLib, Gtk
 
 from mcomix import archive_packer
 from mcomix import bookmark_backend
@@ -24,6 +24,7 @@ from mcomix import i18n
 from mcomix import log
 from mcomix import message_dialog
 from mcomix import tools
+from mcomix import widgets
 from mcomix.dialog import Response
 from mcomix.i18n import _
 from mcomix.library import backend
@@ -48,11 +49,107 @@ class FileActions:
         #: to do.
         self._undone: list[list[str]] = []
         self._redone: list[list[str]] = []
+        #: The name the reader has given a page, by the path of the
+        #: file behind it.  A page keeps the name it is given until the
+        #: book is written, where the packer writes it under that name
+        #: instead of the numbered one it would make up.
+        self._page_names: dict[str, str] = {}
 
     def forget_changes(self) -> None:
         """Drop the undo stack, which belongs to the book that is going."""
         self._undone.clear()
         self._redone.clear()
+        self._page_names.clear()
+
+    def page_names(self) -> dict[str, str]:
+        """The name each renamed page is to be written under, by path."""
+        return dict(self._page_names)
+
+    def rename_page(self, page: int, name: str) -> "str | None":
+        """Call the page at <page> <name>, and answer with the name it
+        took, or None if it took none.
+
+        The name replaces the whole of the old one.  A name typed with
+        a folder in front of it is read as the last part of it, a page
+        being a file inside the book rather than a path, and a name
+        typed without an extension keeps the old one, since what MComix
+        and every other reader take for a page is decided by that.
+
+        The book in the window is what changes: the page is written
+        under this name when the archive is saved, and the archive on
+        disk is not touched until then.
+        """
+        listing = self._window.imagehandler.get_image_files()
+        if not 1 <= page <= len(listing):
+            return None
+        path = listing[page - 1]
+        name = os.path.basename(name.strip())
+        if not name:
+            return None
+        if not os.path.splitext(name)[1]:
+            name += os.path.splitext(self.page_name(page))[1]
+        if name == self.page_name(page):
+            return None
+        self._page_names[path] = name
+        self.offer_to_save()
+        return name
+
+    def rename_popup_page(self, *args: object) -> None:
+        """Ask what to call the page the right-click menu was opened over.
+
+        The page under the pointer, as Save As and Delete page act on,
+        or the page being read where the menu was opened on the
+        background around the pages.
+        """
+        page = self._window.popup_page
+        if page is None:
+            page = self._window.imagehandler.get_current_page()
+        if not page or not self._window.filehandler.file_loaded:
+            return
+        old_name = self.page_name(page)
+
+        dialog = message_dialog.MessageDialog(
+            self._window, buttons=Gtk.ButtonsType.OK_CANCEL)
+        dialog.set_text(_('Rename page?'),
+                        _('Please enter a new name for this page.'))
+        dialog.set_default_response(Response.OK)
+
+        entry = Gtk.Entry()
+        entry.set_text(old_name)
+        entry.set_activates_default(True)
+        widgets.pack(dialog.get_content_area(), entry, True, True, 6)
+
+        # The entry outlives the dialog: what was typed is read out of
+        # it once the answer has come back.
+        dialog.run_async(lambda response: self._rename_answered(
+            response, page, entry.get_text()))
+
+        def pick_out_the_name() -> bool:
+            """Select the part a rename replaces: the name without its
+            extension, as a file manager picks it out.
+
+            Once the dialog has been shown, rather than before: the
+            entry takes the focus as that happens, and a focused entry
+            has the whole of its text selected.
+            """
+            entry.select_region(0, len(os.path.splitext(old_name)[0]))
+            return GLib.SOURCE_REMOVE
+
+        GLib.idle_add(pick_out_the_name)
+
+    def _rename_answered(self, response: int, page: int, name: str) -> None:
+        """Give <page> the name that was typed, if the answer was yes."""
+        if response == Response.OK:
+            self.rename_page(page, name)
+
+    def page_name(self, page: int) -> str:
+        """What the page at <page> is called: the name it was given, or
+        the name of the file it was read from."""
+        listing = self._window.imagehandler.get_image_files()
+        if not 1 <= page <= len(listing):
+            return ''
+        path = listing[page - 1]
+        return self._page_names.get(path, os.path.basename(path))
 
     def delete_page(self, page: "int | None" = None) -> bool:
         """Take pages out of the book being read, and say whether any went.
@@ -204,7 +301,8 @@ class FileActions:
             archive_packer.write_archive(
                 path, image_files, comment_files,
                 carried_files=self._window.filehandler.get_other_files(),
-                archive_type=archive_type, permissions_from=path)
+                archive_type=archive_type, permissions_from=path,
+                page_names=self._page_names)
         except OSError as error:
             log.error(_('! Could not save the archive %(archivefile)s: '
                         '%(error)s'),
