@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-20 12:35+0200\n"
+"POT-Creation-Date: 2026-09-20 13:02+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Marcelo Góes <vanquirius@gentoo.org>\n"
 "Language-Team: \n"
@@ -68,20 +68,20 @@ msgstr ""
 msgid "! Could not read %s"
 msgstr "! Non foi posible ler %s"
 
-#: mcomix/bookmark_backend.py:249
+#: mcomix/bookmark_backend.py:264
 #, python-format
 msgid "! Could not parse bookmarks file %s"
 msgstr "! Non foi posible analizar o ficheiro de favoritos %s"
 
-#: mcomix/bookmark_backend.py:312 mcomix/message_dialog.py:28
+#: mcomix/bookmark_backend.py:327 mcomix/message_dialog.py:28
 msgid "_Yes"
 msgstr "_Si"
 
-#: mcomix/bookmark_backend.py:313 mcomix/message_dialog.py:27
+#: mcomix/bookmark_backend.py:328 mcomix/message_dialog.py:27
 msgid "_No"
 msgstr "_Non"
 
-#: mcomix/bookmark_backend.py:314 mcomix/edit_dialog.py:58
+#: mcomix/bookmark_backend.py:329 mcomix/edit_dialog.py:58
 #: mcomix/file_actions.py:369 mcomix/file_chooser_base_dialog.py:106
 #: mcomix/file_chooser_base_dialog.py:111
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
@@ -89,14 +89,14 @@ msgstr "_Non"
 msgid "_Cancel"
 msgstr "_Cancelar"
 
-#: mcomix/bookmark_backend.py:322
+#: mcomix/bookmark_backend.py:337
 #, python-format
 msgid "Replace existing bookmark on page %s?"
 msgid_plural "Replace existing bookmarks on pages %s?"
 msgstr[0] "Quere substituír o favorito existente na páxina %s?"
 msgstr[1] "Quere substituír os favoritos existentes nas páxinas %s?"
 
-#: mcomix/bookmark_backend.py:327
+#: mcomix/bookmark_backend.py:342
 #, python-format
 msgid ""
 "The current book already contains marked pages. Do you want to replace them "
@@ -105,17 +105,17 @@ msgstr ""
 "Este libro xa contén páxinas marcadas. Quere substituílas por un novo "
 "favorito na páxina %d?"
 
-#: mcomix/bookmark_backend.py:330
+#: mcomix/bookmark_backend.py:345
 msgid ""
 "Selecting \"No\" will create a new bookmark without affecting the other "
 "bookmarks."
 msgstr "Ao escoller «Non» crearase un novo favorito sen afectar aos demais."
 
-#: mcomix/bookmark_backend.py:350
+#: mcomix/bookmark_backend.py:365
 msgid "Clear all bookmarks?"
 msgstr "Quere limpar todos os favoritos?"
 
-#: mcomix/bookmark_backend.py:351
+#: mcomix/bookmark_backend.py:366
 msgid ""
 "All stored bookmarks will be removed. Are you sure that you want to continue?"
 msgstr ""
@@ -351,7 +351,7 @@ msgstr "Gardar a páxina como"
 msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! Non foi posible gardar %(file)s en %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:332 mcomix/file_actions.py:466
+#: mcomix/file_actions.py:332 mcomix/file_actions.py:515
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "Non hai espazo abondo: o ficheiro ocupa %s."
@@ -374,16 +374,29 @@ msgstr "O ficheiro eliminarase do disco duro."
 msgid "_Delete"
 msgstr "_Eliminar"
 
-#: mcomix/file_actions.py:460
+#: mcomix/file_actions.py:436
+#, python-format
+msgid "The file is gone, and its %d bookmark cannot be opened any more."
+msgid_plural ""
+"The file is gone, and its %d bookmarks cannot be opened any more."
+msgstr[0] "O ficheiro xa non está, e o seu %d favorito non se pode abrir."
+msgstr[1] "O ficheiro xa non está, e os seus %d favoritos non se poden abrir."
+
+#: mcomix/file_actions.py:440
+#, python-format
+msgid "Remove the bookmarks in \"%s\"?"
+msgstr "Eliminar os favoritos de «%s»?"
+
+#: mcomix/file_actions.py:509
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr "! Non foi posible mover %(file)s a %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:464
+#: mcomix/file_actions.py:513
 msgid "A file of that name is there already."
 msgstr "Xa existe un ficheiro con ese nome."
 
-#: mcomix/file_actions.py:472
+#: mcomix/file_actions.py:521
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "Non foi posible mover «%(file)s» a «%(directory)s»"
@@ -918,71 +931,83 @@ msgstr "_Conservalas"
 msgid "SLIDESHOW"
 msgstr "Presentación de imaxes"
 
-#: mcomix/message_dialog.py:71
+#: mcomix/message_dialog.py:72
 msgid "Opening a book that was left part-read:"
 msgstr "Ao abrir un libro lido a medias:"
 
-#: mcomix/message_dialog.py:72
+#: mcomix/message_dialog.py:73
 msgid "Continue from the last read page"
 msgstr "Seguir desde a última páxina lida"
 
-#: mcomix/message_dialog.py:73
+#: mcomix/message_dialog.py:74
 msgid "Start at the first page"
 msgstr "Comezar pola primeira páxina"
 
-#: mcomix/message_dialog.py:75
+#: mcomix/message_dialog.py:76
 msgid "Deleting the opened file:"
 msgstr "Ao eliminar o ficheiro aberto:"
 
-#: mcomix/message_dialog.py:76
+#: mcomix/message_dialog.py:77
 msgid "Delete it"
 msgstr "Eliminar"
 
-#: mcomix/message_dialog.py:78
+#: mcomix/message_dialog.py:79
 msgid "Bookmarking a page that is bookmarked already:"
 msgstr "Ao marcar unha páxina que xa ten un favorito:"
 
-#: mcomix/message_dialog.py:79
+#: mcomix/message_dialog.py:80
 msgid "Replace the existing bookmark"
 msgstr "Substituír o favorito existente"
 
-#: mcomix/message_dialog.py:80
+#: mcomix/message_dialog.py:81
 msgid "Keep both bookmarks"
 msgstr "Conservar os dous favoritos"
 
-#: mcomix/message_dialog.py:82
+#: mcomix/message_dialog.py:83
 msgid "Deleting books that are removed from the library:"
 msgstr "Ao eliminar os libros que se retiran da biblioteca:"
 
-#: mcomix/message_dialog.py:83
+#: mcomix/message_dialog.py:84
 msgid "Delete them"
 msgstr "Eliminar"
 
-#: mcomix/message_dialog.py:85
+#: mcomix/message_dialog.py:86
 msgid "Removing a page from the book being read:"
 msgstr "Ao quitar unha páxina do libro que se está a ler:"
 
-#: mcomix/message_dialog.py:86
+#: mcomix/message_dialog.py:87
 msgid "Write the archive again at once"
 msgstr "Escribir o arquivo de novo de contado"
 
-#: mcomix/message_dialog.py:87
+#: mcomix/message_dialog.py:88
 msgid "Leave the archive as it is"
 msgstr "Deixar o arquivo tal como está"
 
-#: mcomix/message_dialog.py:89
+#: mcomix/message_dialog.py:90
 msgid "Leaving a book with pages still picked out:"
 msgstr "Ao deixar un libro con páxinas aínda escollidas:"
 
-#: mcomix/message_dialog.py:90
+#: mcomix/message_dialog.py:91
 msgid "Remove them and write the archive"
 msgstr "Quitalas e escribir o arquivo"
 
-#: mcomix/message_dialog.py:91
+#: mcomix/message_dialog.py:92
 msgid "Leave the book as it is"
 msgstr "Deixar o libro tal como está"
 
-#: mcomix/message_dialog.py:144
+#: mcomix/message_dialog.py:94
+msgid "Deleting a file that is bookmarked:"
+msgstr "Ao eliminar un ficheiro con favoritos:"
+
+#: mcomix/message_dialog.py:95
+msgid "Remove its bookmarks"
+msgstr "Eliminar os seus favoritos"
+
+#: mcomix/message_dialog.py:96
+msgid "Keep its bookmarks"
+msgstr "Manter os seus favoritos"
+
+#: mcomix/message_dialog.py:149
 msgid "Do not ask again."
 msgstr "Non preguntar de novo."
 

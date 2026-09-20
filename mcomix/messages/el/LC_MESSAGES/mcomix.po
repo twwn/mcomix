@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-20 12:35+0200\n"
+"POT-Creation-Date: 2026-09-20 13:02+0200\n"
 "PO-Revision-Date: 2006-09-27 10:18+0200\n"
 "Last-Translator: Paul Chatzidimitriou <paulmedic555@gmail.com>\n"
 "Language-Team: \n"
@@ -76,21 +76,21 @@ msgstr ""
 msgid "! Could not read %s"
 msgstr "! Δεν ήταν δυνατή η ανάγνωση του %s"
 
-#: mcomix/bookmark_backend.py:249
+#: mcomix/bookmark_backend.py:264
 #, python-format
 msgid "! Could not parse bookmarks file %s"
 msgstr "! Δεν ήταν δυνατή η ανάλυση του αρχείου σελιδοδεικτών %s"
 
-#: mcomix/bookmark_backend.py:312 mcomix/message_dialog.py:28
+#: mcomix/bookmark_backend.py:327 mcomix/message_dialog.py:28
 msgid "_Yes"
 msgstr "_Ναι"
 
 #
-#: mcomix/bookmark_backend.py:313 mcomix/message_dialog.py:27
+#: mcomix/bookmark_backend.py:328 mcomix/message_dialog.py:27
 msgid "_No"
 msgstr "Ό_χι"
 
-#: mcomix/bookmark_backend.py:314 mcomix/edit_dialog.py:58
+#: mcomix/bookmark_backend.py:329 mcomix/edit_dialog.py:58
 #: mcomix/file_actions.py:369 mcomix/file_chooser_base_dialog.py:106
 #: mcomix/file_chooser_base_dialog.py:111
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
@@ -98,14 +98,14 @@ msgstr "Ό_χι"
 msgid "_Cancel"
 msgstr "_Ακύρωση"
 
-#: mcomix/bookmark_backend.py:322
+#: mcomix/bookmark_backend.py:337
 #, python-format
 msgid "Replace existing bookmark on page %s?"
 msgid_plural "Replace existing bookmarks on pages %s?"
 msgstr[0] "Αντικατάσταση του υπάρχοντος σελιδοδείκτη στη σελίδα %s;"
 msgstr[1] "Αντικατάσταση των υπαρχόντων σελιδοδεικτών στις σελίδες %s;"
 
-#: mcomix/bookmark_backend.py:327
+#: mcomix/bookmark_backend.py:342
 #, python-format
 msgid ""
 "The current book already contains marked pages. Do you want to replace them "
@@ -114,7 +114,7 @@ msgstr ""
 "Αυτό το βιβλίο έχει ήδη σημειωμένες σελίδες. Θέλετε να τις αντικαταστήσετε "
 "με νέο σελιδοδείκτη στη σελίδα %d;"
 
-#: mcomix/bookmark_backend.py:330
+#: mcomix/bookmark_backend.py:345
 msgid ""
 "Selecting \"No\" will create a new bookmark without affecting the other "
 "bookmarks."
@@ -123,11 +123,11 @@ msgstr ""
 "υπόλοιποι."
 
 #
-#: mcomix/bookmark_backend.py:350
+#: mcomix/bookmark_backend.py:365
 msgid "Clear all bookmarks?"
 msgstr "Εκκαθάριση όλων των σελιδοδεικτών;"
 
-#: mcomix/bookmark_backend.py:351
+#: mcomix/bookmark_backend.py:366
 msgid ""
 "All stored bookmarks will be removed. Are you sure that you want to continue?"
 msgstr ""
@@ -409,7 +409,7 @@ msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr ""
 "! Δεν ήταν δυνατή η αποθήκευση του %(file)s στο %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:332 mcomix/file_actions.py:466
+#: mcomix/file_actions.py:332 mcomix/file_actions.py:515
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "Δεν υπάρχει αρκετός χώρος εκεί: το αρχείο είναι %s."
@@ -432,17 +432,32 @@ msgstr "Το αρχείο θα διαγραφεί από τον σκληρό δ�
 msgid "_Delete"
 msgstr "Δ_ιαγραφή"
 
-#: mcomix/file_actions.py:460
+#: mcomix/file_actions.py:436
+#, python-format
+msgid "The file is gone, and its %d bookmark cannot be opened any more."
+msgid_plural ""
+"The file is gone, and its %d bookmarks cannot be opened any more."
+msgstr[0] ""
+"Το αρχείο χάθηκε και ο %d σελιδοδείκτης του δεν μπορεί πια να ανοίξει."
+msgstr[1] ""
+"Το αρχείο χάθηκε και οι %d σελιδοδείκτες του δεν μπορούν πια να ανοίξουν."
+
+#: mcomix/file_actions.py:440
+#, python-format
+msgid "Remove the bookmarks in \"%s\"?"
+msgstr "Αφαίρεση των σελιδοδεικτών στο «%s»;"
+
+#: mcomix/file_actions.py:509
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr ""
 "! Δεν ήταν δυνατή η μετακίνηση του %(file)s στο %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:464
+#: mcomix/file_actions.py:513
 msgid "A file of that name is there already."
 msgstr "Υπάρχει ήδη αρχείο με αυτό το όνομα."
 
-#: mcomix/file_actions.py:472
+#: mcomix/file_actions.py:521
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "Δεν ήταν δυνατή η μετακίνηση του «%(file)s» στο «%(directory)s»"
@@ -1106,73 +1121,85 @@ msgstr "_Διατήρηση"
 msgid "SLIDESHOW"
 msgstr "ΠΡΟΒΟΛΗ ΕΝΑΛΛΑΓΗΣ"
 
-#: mcomix/message_dialog.py:71
+#: mcomix/message_dialog.py:72
 msgid "Opening a book that was left part-read:"
 msgstr "Κατά το άνοιγμα μισοδιαβασμένου βιβλίου:"
 
-#: mcomix/message_dialog.py:72
+#: mcomix/message_dialog.py:73
 msgid "Continue from the last read page"
 msgstr "Συνέχεια από την τελευταία σελίδα που διαβάστηκε"
 
-#: mcomix/message_dialog.py:73
+#: mcomix/message_dialog.py:74
 msgid "Start at the first page"
 msgstr "Έναρξη από την πρώτη σελίδα"
 
 #
-#: mcomix/message_dialog.py:75
+#: mcomix/message_dialog.py:76
 msgid "Deleting the opened file:"
 msgstr "Κατά τη διαγραφή του ανοιχτού αρχείου:"
 
-#: mcomix/message_dialog.py:76
+#: mcomix/message_dialog.py:77
 msgid "Delete it"
 msgstr "Διαγραφή"
 
-#: mcomix/message_dialog.py:78
+#: mcomix/message_dialog.py:79
 msgid "Bookmarking a page that is bookmarked already:"
 msgstr "Κατά την προσθήκη σελιδοδείκτη σε σελίδα που έχει ήδη έναν:"
 
-#: mcomix/message_dialog.py:79
+#: mcomix/message_dialog.py:80
 msgid "Replace the existing bookmark"
 msgstr "Αντικατάσταση του υπάρχοντος σελιδοδείκτη"
 
 #
-#: mcomix/message_dialog.py:80
+#: mcomix/message_dialog.py:81
 msgid "Keep both bookmarks"
 msgstr "Διατήρηση και των δύο σελιδοδεικτών"
 
-#: mcomix/message_dialog.py:82
+#: mcomix/message_dialog.py:83
 msgid "Deleting books that are removed from the library:"
 msgstr "Κατά τη διαγραφή βιβλίων που αφαιρούνται από τη βιβλιοθήκη:"
 
-#: mcomix/message_dialog.py:83
+#: mcomix/message_dialog.py:84
 msgid "Delete them"
 msgstr "Διαγραφή"
 
-#: mcomix/message_dialog.py:85
+#: mcomix/message_dialog.py:86
 msgid "Removing a page from the book being read:"
 msgstr "Αφαίρεση σελίδας από το βιβλίο που διαβάζεται:"
 
-#: mcomix/message_dialog.py:86
+#: mcomix/message_dialog.py:87
 msgid "Write the archive again at once"
 msgstr "Εγγραφή του αρχείου ξανά αμέσως"
 
-#: mcomix/message_dialog.py:87
+#: mcomix/message_dialog.py:88
 msgid "Leave the archive as it is"
 msgstr "Να μείνει το αρχείο ως έχει"
 
-#: mcomix/message_dialog.py:89
+#: mcomix/message_dialog.py:90
 msgid "Leaving a book with pages still picked out:"
 msgstr "Έξοδος από βιβλίο με σελίδες ακόμη επιλεγμένες:"
 
-#: mcomix/message_dialog.py:90
+#: mcomix/message_dialog.py:91
 msgid "Remove them and write the archive"
 msgstr "Αφαίρεσή τους και εγγραφή του αρχείου"
 
-#: mcomix/message_dialog.py:91
+#: mcomix/message_dialog.py:92
 msgid "Leave the book as it is"
 msgstr "Να μείνει το βιβλίο ως έχει"
 
-#: mcomix/message_dialog.py:144
+#: mcomix/message_dialog.py:94
+msgid "Deleting a file that is bookmarked:"
+msgstr "Κατά τη διαγραφή αρχείου με σελιδοδείκτες:"
+
+#: mcomix/message_dialog.py:95
+msgid "Remove its bookmarks"
+msgstr "Αφαίρεση των σελιδοδεικτών του"
+
+#: mcomix/message_dialog.py:96
+msgid "Keep its bookmarks"
+msgstr "Διατήρηση των σελιδοδεικτών του"
+
+#: mcomix/message_dialog.py:149
 msgid "Do not ask again."
 msgstr "Να μην ερωτηθώ ξανά."
 

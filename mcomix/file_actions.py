@@ -414,6 +414,38 @@ class FileActions:
                 # again, and the recent files went on offering it.
                 self._window.uimanager.recent.remove_path(current_file)
                 self._forget_deleted_book(current_file)
+                self._offer_to_remove_bookmarks(current_file)
+
+    def _offer_to_remove_bookmarks(self, path: str) -> None:
+        """Ask whether the bookmarks in the deleted file should go too.
+
+        Asked rather than done: a bookmark is a page the reader marked,
+        not a record MComix keeps of a file, so it is the one thing a
+        delete does not take with it unasked.  The answer can be given
+        for good, and taken back under "Prompts answered for good" in
+        the preferences, as every other standing answer can.
+        """
+        bookmarks = bookmark_backend.BookmarksStore.bookmarks_for_path(path)
+        if not bookmarks:
+            return
+        dialog = message_dialog.MessageDialog(
+            self._window, buttons=Gtk.ButtonsType.YES_NO)
+        dialog.set_should_remember_choice(
+            message_dialog.RememberedDialog.REMOVE_BOOKMARKS_OF_DELETED_FILE)
+        message = i18n.get_translation().ngettext(
+            'The file is gone, and its %d bookmark cannot be opened any more.',
+            'The file is gone, and its %d bookmarks cannot be opened any more.',
+            len(bookmarks))
+        dialog.set_text(
+            _('Remove the bookmarks in "%s"?') % os.path.basename(path),
+            message % len(bookmarks))
+        dialog.set_default_response(Response.NO)
+
+        def answered(response: int) -> None:
+            if response == Response.YES:
+                bookmark_backend.BookmarksStore.remove_for_path(path)
+
+        dialog.run_async(answered)
 
     @staticmethod
     def _forget_deleted_book(path: str) -> None:

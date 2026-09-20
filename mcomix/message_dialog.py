@@ -47,6 +47,7 @@ class RememberedDialog(StrEnum):
     LIBRARY_REMOVE_BOOK_FROM_DISK = 'library-remove-book-from-disk'
     SAVE_EDITED_ARCHIVE = 'save-edited-archive'
     REMOVE_PICKED_OUT_PAGES = 'remove-picked-out-pages'
+    REMOVE_BOOKMARKS_OF_DELETED_FILE = 'remove-bookmarks-of-deleted-file'
 
 
 class _Prompt(NamedTuple):
@@ -89,6 +90,10 @@ REMEMBERED_DIALOGS = {
         _('Leaving a book with pages still picked out:'),
         ((_('Remove them and write the archive'), Response.YES),
          (_('Leave the book as it is'), Response.NO))),
+    RememberedDialog.REMOVE_BOOKMARKS_OF_DELETED_FILE: _Prompt(
+        _('Deleting a file that is bookmarked:'),
+        ((_('Remove its bookmarks'), Response.YES),
+         (_('Keep its bookmarks'), Response.NO))),
 }
 
 

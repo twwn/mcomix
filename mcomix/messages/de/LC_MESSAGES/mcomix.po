@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 2.0.0\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-20 12:35+0200\n"
+"POT-Creation-Date: 2026-09-20 13:02+0200\n"
 "PO-Revision-Date: 2024-01-21 19:55+0100\n"
 "Last-Translator: Moritz Brunner <oddegamra@gmx.org>\n"
 "Language-Team: \n"
@@ -78,20 +78,20 @@ msgstr ""
 msgid "! Could not read %s"
 msgstr "! %s kann nicht gelesen werden"
 
-#: mcomix/bookmark_backend.py:249
+#: mcomix/bookmark_backend.py:264
 #, python-format
 msgid "! Could not parse bookmarks file %s"
 msgstr "! Lesezeichen-Speicher %s kann nicht gelesen werden"
 
-#: mcomix/bookmark_backend.py:312 mcomix/message_dialog.py:28
+#: mcomix/bookmark_backend.py:327 mcomix/message_dialog.py:28
 msgid "_Yes"
 msgstr "_Ja"
 
-#: mcomix/bookmark_backend.py:313 mcomix/message_dialog.py:27
+#: mcomix/bookmark_backend.py:328 mcomix/message_dialog.py:27
 msgid "_No"
 msgstr "_Nein"
 
-#: mcomix/bookmark_backend.py:314 mcomix/edit_dialog.py:58
+#: mcomix/bookmark_backend.py:329 mcomix/edit_dialog.py:58
 #: mcomix/file_actions.py:369 mcomix/file_chooser_base_dialog.py:106
 #: mcomix/file_chooser_base_dialog.py:111
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
@@ -99,14 +99,14 @@ msgstr "_Nein"
 msgid "_Cancel"
 msgstr "_Abbrechen"
 
-#: mcomix/bookmark_backend.py:322
+#: mcomix/bookmark_backend.py:337
 #, python-format
 msgid "Replace existing bookmark on page %s?"
 msgid_plural "Replace existing bookmarks on pages %s?"
 msgstr[0] "Existierendes Lesezeichen auf Seite %s ersetzen?"
 msgstr[1] "Existierende Lesezeichen auf den Seiten %s ersetzen?"
 
-#: mcomix/bookmark_backend.py:327
+#: mcomix/bookmark_backend.py:342
 #, python-format
 msgid ""
 "The current book already contains marked pages. Do you want to replace them "
@@ -115,7 +115,7 @@ msgstr ""
 "Das geöffnete Buch enthält bereits markierte Seiten. Wollen Sie diese mit "
 "einem neuen Lesezeichen auf Seite %d ersetzen?"
 
-#: mcomix/bookmark_backend.py:330
+#: mcomix/bookmark_backend.py:345
 msgid ""
 "Selecting \"No\" will create a new bookmark without affecting the other "
 "bookmarks."
@@ -123,11 +123,11 @@ msgstr ""
 "\"Nein\" erzeugt ein neues Lesezeichen, ohne die anderen Lesezeichen zu "
 "beeinflussen."
 
-#: mcomix/bookmark_backend.py:350
+#: mcomix/bookmark_backend.py:365
 msgid "Clear all bookmarks?"
 msgstr "Alle Lesezeichen löschen?"
 
-#: mcomix/bookmark_backend.py:351
+#: mcomix/bookmark_backend.py:366
 msgid ""
 "All stored bookmarks will be removed. Are you sure that you want to continue?"
 msgstr ""
@@ -361,7 +361,7 @@ msgstr "Seite speichern als"
 msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! Konnte %(file)s nicht in %(directory)s speichern: %(error)s"
 
-#: mcomix/file_actions.py:332 mcomix/file_actions.py:466
+#: mcomix/file_actions.py:332 mcomix/file_actions.py:515
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "Dort ist nicht genug Platz: die Datei ist %s groß."
@@ -384,16 +384,31 @@ msgstr "Die Datei wird von Ihrer Festplatte gelöscht."
 msgid "_Delete"
 msgstr "_Löschen"
 
-#: mcomix/file_actions.py:460
+#: mcomix/file_actions.py:436
+#, python-format
+msgid "The file is gone, and its %d bookmark cannot be opened any more."
+msgid_plural ""
+"The file is gone, and its %d bookmarks cannot be opened any more."
+msgstr[0] ""
+"Die Datei ist fort, und ihr %d Lesezeichen lässt sich nicht mehr öffnen."
+msgstr[1] ""
+"Die Datei ist fort, und ihre %d Lesezeichen lassen sich nicht mehr öffnen."
+
+#: mcomix/file_actions.py:440
+#, python-format
+msgid "Remove the bookmarks in \"%s\"?"
+msgstr "Die Lesezeichen in \"%s\" entfernen?"
+
+#: mcomix/file_actions.py:509
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr "! Konnte %(file)s nicht nach %(directory)s verschieben: %(error)s"
 
-#: mcomix/file_actions.py:464
+#: mcomix/file_actions.py:513
 msgid "A file of that name is there already."
 msgstr "Eine Datei dieses Namens ist dort bereits."
 
-#: mcomix/file_actions.py:472
+#: mcomix/file_actions.py:521
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "\"%(file)s\" konnte nicht nach \"%(directory)s\" verschoben werden"
@@ -932,71 +947,83 @@ msgstr "_Behalten"
 msgid "SLIDESHOW"
 msgstr "DIASCHAU"
 
-#: mcomix/message_dialog.py:71
+#: mcomix/message_dialog.py:72
 msgid "Opening a book that was left part-read:"
 msgstr "Beim Öffnen eines teilweise gelesenen Buches:"
 
-#: mcomix/message_dialog.py:72
+#: mcomix/message_dialog.py:73
 msgid "Continue from the last read page"
 msgstr "Auf der zuletzt gelesenen Seite weiterlesen"
 
-#: mcomix/message_dialog.py:73
+#: mcomix/message_dialog.py:74
 msgid "Start at the first page"
 msgstr "Auf der ersten Seite beginnen"
 
-#: mcomix/message_dialog.py:75
+#: mcomix/message_dialog.py:76
 msgid "Deleting the opened file:"
 msgstr "Beim Löschen der geöffneten Datei:"
 
-#: mcomix/message_dialog.py:76
+#: mcomix/message_dialog.py:77
 msgid "Delete it"
 msgstr "Löschen"
 
-#: mcomix/message_dialog.py:78
+#: mcomix/message_dialog.py:79
 msgid "Bookmarking a page that is bookmarked already:"
 msgstr "Beim Setzen eines Lesezeichens auf einer Seite, die bereits eines hat:"
 
-#: mcomix/message_dialog.py:79
+#: mcomix/message_dialog.py:80
 msgid "Replace the existing bookmark"
 msgstr "Bestehendes Lesezeichen ersetzen"
 
-#: mcomix/message_dialog.py:80
+#: mcomix/message_dialog.py:81
 msgid "Keep both bookmarks"
 msgstr "Beide Lesezeichen behalten"
 
-#: mcomix/message_dialog.py:82
+#: mcomix/message_dialog.py:83
 msgid "Deleting books that are removed from the library:"
 msgstr "Beim Löschen von Büchern, die aus der Bibliothek entfernt werden:"
 
-#: mcomix/message_dialog.py:83
+#: mcomix/message_dialog.py:84
 msgid "Delete them"
 msgstr "Löschen"
 
-#: mcomix/message_dialog.py:85
+#: mcomix/message_dialog.py:86
 msgid "Removing a page from the book being read:"
 msgstr "Eine Seite aus dem gelesenen Buch entfernen:"
 
-#: mcomix/message_dialog.py:86
+#: mcomix/message_dialog.py:87
 msgid "Write the archive again at once"
 msgstr "Das Archiv sofort neu schreiben"
 
-#: mcomix/message_dialog.py:87
+#: mcomix/message_dialog.py:88
 msgid "Leave the archive as it is"
 msgstr "Das Archiv unverändert lassen"
 
-#: mcomix/message_dialog.py:89
+#: mcomix/message_dialog.py:90
 msgid "Leaving a book with pages still picked out:"
 msgstr "Ein Buch mit noch ausgewählten Seiten verlassen:"
 
-#: mcomix/message_dialog.py:90
+#: mcomix/message_dialog.py:91
 msgid "Remove them and write the archive"
 msgstr "Sie entfernen und das Archiv schreiben"
 
-#: mcomix/message_dialog.py:91
+#: mcomix/message_dialog.py:92
 msgid "Leave the book as it is"
 msgstr "Das Buch unverändert lassen"
 
-#: mcomix/message_dialog.py:144
+#: mcomix/message_dialog.py:94
+msgid "Deleting a file that is bookmarked:"
+msgstr "Beim Löschen einer Datei mit Lesezeichen:"
+
+#: mcomix/message_dialog.py:95
+msgid "Remove its bookmarks"
+msgstr "Ihre Lesezeichen entfernen"
+
+#: mcomix/message_dialog.py:96
+msgid "Keep its bookmarks"
+msgstr "Ihre Lesezeichen behalten"
+
+#: mcomix/message_dialog.py:149
 msgid "Do not ask again."
 msgstr "Nicht noch einmal fragen."
 

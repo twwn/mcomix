@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 0.90.4\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-20 12:35+0200\n"
+"POT-Creation-Date: 2026-09-20 13:02+0200\n"
 "PO-Revision-Date: 2016-01-10 18:09+0200\n"
 "Last-Translator: Ulyanich Michael <ulianich_mihail@ukr.net>\n"
 "Language-Team: Russian <kde-russian@lists.kde.ru>\n"
@@ -85,24 +85,24 @@ msgstr "! Невозможно прочитать %s"
 
 #
 # File: src/comment.py, line: 53
-#: mcomix/bookmark_backend.py:249
+#: mcomix/bookmark_backend.py:264
 #, python-format
 msgid "! Could not parse bookmarks file %s"
 msgstr "! Не удалось прочитать файл закладок %s"
 
-#: mcomix/bookmark_backend.py:312 mcomix/message_dialog.py:28
+#: mcomix/bookmark_backend.py:327 mcomix/message_dialog.py:28
 msgid "_Yes"
 msgstr "_Да"
 
 #
 # File: src/ui.py, line: 69
-#: mcomix/bookmark_backend.py:313 mcomix/message_dialog.py:27
+#: mcomix/bookmark_backend.py:328 mcomix/message_dialog.py:27
 msgid "_No"
 msgstr "_Нет"
 
 #
 # File: src/preferences.py, line: 230
-#: mcomix/bookmark_backend.py:314 mcomix/edit_dialog.py:58
+#: mcomix/bookmark_backend.py:329 mcomix/edit_dialog.py:58
 #: mcomix/file_actions.py:369 mcomix/file_chooser_base_dialog.py:106
 #: mcomix/file_chooser_base_dialog.py:111
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
@@ -110,7 +110,7 @@ msgstr "_Нет"
 msgid "_Cancel"
 msgstr "О_тменить"
 
-#: mcomix/bookmark_backend.py:322
+#: mcomix/bookmark_backend.py:337
 #, python-format
 msgid "Replace existing bookmark on page %s?"
 msgid_plural "Replace existing bookmarks on pages %s?"
@@ -118,7 +118,7 @@ msgstr[0] "Заменить существующую закладку на ст�
 msgstr[1] "Заменить существующие закладки на страницах %s?"
 msgstr[2] "Заменить существующие закладки на страницах %s?"
 
-#: mcomix/bookmark_backend.py:327
+#: mcomix/bookmark_backend.py:342
 #, python-format
 msgid ""
 "The current book already contains marked pages. Do you want to replace them "
@@ -127,7 +127,7 @@ msgstr ""
 "В текущей книге уже есть отмеченные страницы. Заменить их новой закладкой на "
 "странице %d?"
 
-#: mcomix/bookmark_backend.py:330
+#: mcomix/bookmark_backend.py:345
 msgid ""
 "Selecting \"No\" will create a new bookmark without affecting the other "
 "bookmarks."
@@ -137,13 +137,13 @@ msgstr ""
 
 #
 # File: src/bookmark.py, line: 77
-#: mcomix/bookmark_backend.py:350
+#: mcomix/bookmark_backend.py:365
 msgid "Clear all bookmarks?"
 msgstr "Очистить все закладки?"
 
 #
 # File: src/bookmark.py, line: 79
-#: mcomix/bookmark_backend.py:351
+#: mcomix/bookmark_backend.py:366
 msgid ""
 "All stored bookmarks will be removed. Are you sure that you want to continue?"
 msgstr ""
@@ -433,7 +433,7 @@ msgstr "Сохранить страницу как"
 msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! Не удалось сохранить %(file)s в %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:332 mcomix/file_actions.py:466
+#: mcomix/file_actions.py:332 mcomix/file_actions.py:515
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "Там недостаточно места: файл занимает %s."
@@ -456,16 +456,30 @@ msgstr "Файл будет удалён с вашего жёсткого дис
 msgid "_Delete"
 msgstr "_Удалить"
 
-#: mcomix/file_actions.py:460
+#: mcomix/file_actions.py:436
+#, python-format
+msgid "The file is gone, and its %d bookmark cannot be opened any more."
+msgid_plural ""
+"The file is gone, and its %d bookmarks cannot be opened any more."
+msgstr[0] "Файла больше нет, и %d его закладку уже не открыть."
+msgstr[1] "Файла больше нет, и %d его закладки уже не открыть."
+msgstr[2] "Файла больше нет, и %d его закладок уже не открыть."
+
+#: mcomix/file_actions.py:440
+#, python-format
+msgid "Remove the bookmarks in \"%s\"?"
+msgstr "Удалить закладки в «%s»?"
+
+#: mcomix/file_actions.py:509
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr "! Не удалось переместить %(file)s в %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:464
+#: mcomix/file_actions.py:513
 msgid "A file of that name is there already."
 msgstr "Файл с таким именем там уже есть."
 
-#: mcomix/file_actions.py:472
+#: mcomix/file_actions.py:521
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "Не удалось переместить «%(file)s» в «%(directory)s»"
@@ -1142,76 +1156,88 @@ msgstr "Оста_вить"
 msgid "SLIDESHOW"
 msgstr "СЛАЙДШОУ"
 
-#: mcomix/message_dialog.py:71
+#: mcomix/message_dialog.py:72
 msgid "Opening a book that was left part-read:"
 msgstr "При открытии недочитанной книги:"
 
-#: mcomix/message_dialog.py:72
+#: mcomix/message_dialog.py:73
 msgid "Continue from the last read page"
 msgstr "Продолжить с последней прочитанной страницы"
 
-#: mcomix/message_dialog.py:73
+#: mcomix/message_dialog.py:74
 msgid "Start at the first page"
 msgstr "Начать с первой страницы"
 
 #
 # File: src/preferences.py, line: 214
-#: mcomix/message_dialog.py:75
+#: mcomix/message_dialog.py:76
 msgid "Deleting the opened file:"
 msgstr "При удалении открытого файла:"
 
-#: mcomix/message_dialog.py:76
+#: mcomix/message_dialog.py:77
 msgid "Delete it"
 msgstr "Удалить"
 
-#: mcomix/message_dialog.py:78
+#: mcomix/message_dialog.py:79
 msgid "Bookmarking a page that is bookmarked already:"
 msgstr "При установке закладки на страницу, где она уже есть:"
 
-#: mcomix/message_dialog.py:79
+#: mcomix/message_dialog.py:80
 msgid "Replace the existing bookmark"
 msgstr "Заменить существующую закладку"
 
 # File: src/bookmark.py, line: 31
-#: mcomix/message_dialog.py:80
+#: mcomix/message_dialog.py:81
 msgid "Keep both bookmarks"
 msgstr "Оставить обе закладки"
 
 #
 # File: src/library.py, line: 597
-#: mcomix/message_dialog.py:82
+#: mcomix/message_dialog.py:83
 msgid "Deleting books that are removed from the library:"
 msgstr "При удалении книг, убранных из библиотеки:"
 
-#: mcomix/message_dialog.py:83
+#: mcomix/message_dialog.py:84
 msgid "Delete them"
 msgstr "Удалить"
 
-#: mcomix/message_dialog.py:85
+#: mcomix/message_dialog.py:86
 msgid "Removing a page from the book being read:"
 msgstr "При удалении страницы из читаемой книги:"
 
-#: mcomix/message_dialog.py:86
+#: mcomix/message_dialog.py:87
 msgid "Write the archive again at once"
 msgstr "Сразу записывать архив заново"
 
-#: mcomix/message_dialog.py:87
+#: mcomix/message_dialog.py:88
 msgid "Leave the archive as it is"
 msgstr "Оставлять архив как есть"
 
-#: mcomix/message_dialog.py:89
+#: mcomix/message_dialog.py:90
 msgid "Leaving a book with pages still picked out:"
 msgstr "При выходе из книги с ещё выбранными страницами:"
 
-#: mcomix/message_dialog.py:90
+#: mcomix/message_dialog.py:91
 msgid "Remove them and write the archive"
 msgstr "Убирать их и записывать архив"
 
-#: mcomix/message_dialog.py:91
+#: mcomix/message_dialog.py:92
 msgid "Leave the book as it is"
 msgstr "Оставлять книгу как есть"
 
-#: mcomix/message_dialog.py:144
+#: mcomix/message_dialog.py:94
+msgid "Deleting a file that is bookmarked:"
+msgstr "При удалении файла с закладками:"
+
+#: mcomix/message_dialog.py:95
+msgid "Remove its bookmarks"
+msgstr "Удалить его закладки"
+
+#: mcomix/message_dialog.py:96
+msgid "Keep its bookmarks"
+msgstr "Сохранить его закладки"
+
+#: mcomix/message_dialog.py:149
 msgid "Do not ask again."
 msgstr "Не спрашивать снова."
 

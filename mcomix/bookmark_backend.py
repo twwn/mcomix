@@ -88,6 +88,22 @@ class _BookmarksStore:
         self._bookmarks[self._bookmarks.index(old)] = new
         self.write_bookmarks_file()
 
+    def bookmarks_for_path(self, path: str
+                           ) -> list[bookmark_menu_item._Bookmark]:
+        """Every bookmark that marks a page of the file at <path>."""
+        return [bookmark for bookmark in self._bookmarks
+                if bookmark.same_path(path)]
+
+    def remove_for_path(self, path: str) -> None:
+        """Remove every bookmark that marks a page of the file at <path>.
+
+        One at a time, through remove_bookmark(), so that the menu and
+        an open bookmarks dialog hear about each of them as they would
+        about any other removal.
+        """
+        for bookmark in self.bookmarks_for_path(path):
+            self.remove_bookmark(bookmark)
+
     def update_path(self, old_path: str, new_path: str) -> None:
         """Follow a book that has been moved to <new_path>.
 
@@ -97,8 +113,7 @@ class _BookmarksStore:
         and the store of last read pages are brought forward the same
         way when a book moves.
         """
-        for bookmark in [bookmark for bookmark in self._bookmarks
-                         if bookmark.same_path(old_path)]:
+        for bookmark in self.bookmarks_for_path(old_path):
             name, _path, page, numpages, archive_type, added = bookmark.pack()
             self.replace_bookmark(bookmark, bookmark_menu_item._Bookmark(
                 self._window, self._file_handler, name, new_path, page,

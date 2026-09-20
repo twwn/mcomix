@@ -864,6 +864,58 @@ class MainWindowTest(MComixTest):
         self.assertEqual(self._delete_dialogs(), [],
                          'it asked about the file as well')
 
+    def _bookmark_store(self):
+        """The process-wide store, emptied for this test."""
+        store = bookmark_backend.BookmarksStore
+        store._initialized = False
+        store._bookmarks = []
+        store.initialize(self.window)
+        self.addCleanup(setattr, store, '_bookmarks', [])
+        return store
+
+    def test_deleting_a_bookmarked_file_asks_about_its_bookmarks(self):
+        """A bookmark is a page the reader marked, not a record of a
+        file, so it is the one thing a delete does not take unasked."""
+        source = self._movable_book()
+        store = self._bookmark_store()
+        store.add_bookmark_by_values('Movable', source, 2, 4, None,
+                                     datetime.datetime(2026, 1, 1))
+
+        self.window.file_actions._delete_answered(Response.OK, source)
+        self._pump()
+
+        dialogs = self._delete_dialogs()
+        self.assertEqual(len(dialogs), 1, 'nothing asked about the bookmark')
+        self.assertEqual(len(store.get_bookmarks()), 1,
+                         'the bookmark went without being asked about')
+        dialogs[0].emit('response', Response.YES)
+        self._pump()
+        self.assertEqual(store.get_bookmarks(), [])
+
+    def test_keeping_the_bookmarks_of_a_deleted_file_keeps_them(self):
+        source = self._movable_book()
+        store = self._bookmark_store()
+        store.add_bookmark_by_values('Movable', source, 2, 4, None,
+                                     datetime.datetime(2026, 1, 1))
+
+        self.window.file_actions._delete_answered(Response.OK, source)
+        self._pump()
+
+        dialogs = self._delete_dialogs()
+        self.assertEqual(len(dialogs), 1)
+        dialogs[0].emit('response', Response.NO)
+        self._pump()
+        self.assertEqual(len(store.get_bookmarks()), 1)
+
+    def test_deleting_a_file_nobody_bookmarked_asks_nothing(self):
+        source = self._movable_book()
+        self._bookmark_store()
+
+        self.window.file_actions._delete_answered(Response.OK, source)
+        self._pump()
+
+        self.assertEqual(self._delete_dialogs(), [])
+
     def test_the_library_lets_go_of_a_book_that_was_deleted(self):
         """The library holds a record of a file; deleting the file left
         it offering a book that is not there, to be cleaned up by hand."""

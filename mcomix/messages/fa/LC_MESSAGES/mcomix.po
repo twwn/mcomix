@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: comix 3.6.4\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-20 12:35+0200\n"
+"POT-Creation-Date: 2026-09-20 13:02+0200\n"
 "PO-Revision-Date: 2008-05-21 12:40+0330\n"
 "Last-Translator: Meelad Zakaria <meelad@farsiweb.info>\n"
 "Language-Team: Persian \n"
@@ -76,21 +76,21 @@ msgstr ""
 msgid "! Could not read %s"
 msgstr "! خواندن %s ممکن نشد"
 
-#: mcomix/bookmark_backend.py:249
+#: mcomix/bookmark_backend.py:264
 #, python-format
 msgid "! Could not parse bookmarks file %s"
 msgstr "! تجزیهٔ پروندهٔ نشانک‌های %s ممکن نشد"
 
-#: mcomix/bookmark_backend.py:312 mcomix/message_dialog.py:28
+#: mcomix/bookmark_backend.py:327 mcomix/message_dialog.py:28
 msgid "_Yes"
 msgstr "_بله"
 
 #
-#: mcomix/bookmark_backend.py:313 mcomix/message_dialog.py:27
+#: mcomix/bookmark_backend.py:328 mcomix/message_dialog.py:27
 msgid "_No"
 msgstr "_خیر"
 
-#: mcomix/bookmark_backend.py:314 mcomix/edit_dialog.py:58
+#: mcomix/bookmark_backend.py:329 mcomix/edit_dialog.py:58
 #: mcomix/file_actions.py:369 mcomix/file_chooser_base_dialog.py:106
 #: mcomix/file_chooser_base_dialog.py:111
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
@@ -98,14 +98,14 @@ msgstr "_خیر"
 msgid "_Cancel"
 msgstr "_انصراف"
 
-#: mcomix/bookmark_backend.py:322
+#: mcomix/bookmark_backend.py:337
 #, python-format
 msgid "Replace existing bookmark on page %s?"
 msgid_plural "Replace existing bookmarks on pages %s?"
 msgstr[0] "نشانک موجود در صفحهٔ %s جایگزین شود؟"
 msgstr[1] "نشانک‌های موجود در صفحه‌های %s جایگزین شوند؟"
 
-#: mcomix/bookmark_backend.py:327
+#: mcomix/bookmark_backend.py:342
 #, python-format
 msgid ""
 "The current book already contains marked pages. Do you want to replace them "
@@ -114,18 +114,18 @@ msgstr ""
 "این کتاب هم‌اکنون صفحه‌های نشان‌شده دارد. آیا می‌خواهید آن‌ها را با نشانک تازه‌ای "
 "در صفحهٔ %d جایگزین کنید؟"
 
-#: mcomix/bookmark_backend.py:330
+#: mcomix/bookmark_backend.py:345
 msgid ""
 "Selecting \"No\" will create a new bookmark without affecting the other "
 "bookmarks."
 msgstr "انتخاب «خیر» نشانک تازه‌ای می‌سازد بدون آنکه بقیه تغییر کنند."
 
 #
-#: mcomix/bookmark_backend.py:350
+#: mcomix/bookmark_backend.py:365
 msgid "Clear all bookmarks?"
 msgstr "همهٔ نشانک‌ها پاک شوند؟"
 
-#: mcomix/bookmark_backend.py:351
+#: mcomix/bookmark_backend.py:366
 msgid ""
 "All stored bookmarks will be removed. Are you sure that you want to continue?"
 msgstr ""
@@ -404,7 +404,7 @@ msgstr "ذخیرهٔ صفحه به نام"
 msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! ذخیرهٔ %(file)s در %(directory)s ممکن نشد: %(error)s"
 
-#: mcomix/file_actions.py:332 mcomix/file_actions.py:466
+#: mcomix/file_actions.py:332 mcomix/file_actions.py:515
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "آنجا فضای کافی نیست: اندازهٔ پرونده %s است."
@@ -427,16 +427,29 @@ msgstr "پرونده از دیسک سخت شما حذف خواهد شد."
 msgid "_Delete"
 msgstr "_حذف"
 
-#: mcomix/file_actions.py:460
+#: mcomix/file_actions.py:436
+#, python-format
+msgid "The file is gone, and its %d bookmark cannot be opened any more."
+msgid_plural ""
+"The file is gone, and its %d bookmarks cannot be opened any more."
+msgstr[0] "پرونده از بین رفته و %d نشانک آن دیگر گشوده نمی‌شود."
+msgstr[1] "پرونده از بین رفته و %d نشانک آن دیگر گشوده نمی‌شوند."
+
+#: mcomix/file_actions.py:440
+#, python-format
+msgid "Remove the bookmarks in \"%s\"?"
+msgstr "نشانک‌های «%s» حذف شوند؟"
+
+#: mcomix/file_actions.py:509
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr "! انتقال %(file)s به %(directory)s ممکن نشد: %(error)s"
 
-#: mcomix/file_actions.py:464
+#: mcomix/file_actions.py:513
 msgid "A file of that name is there already."
 msgstr "پرونده‌ای با این نام از پیش آنجاست."
 
-#: mcomix/file_actions.py:472
+#: mcomix/file_actions.py:521
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "انتقال «%(file)s» به «%(directory)s» ممکن نشد"
@@ -1100,73 +1113,85 @@ msgstr "_نگه‌داشتن"
 msgid "SLIDESHOW"
 msgstr "نمایش اسلایدی"
 
-#: mcomix/message_dialog.py:71
+#: mcomix/message_dialog.py:72
 msgid "Opening a book that was left part-read:"
 msgstr "هنگام گشودن کتابی که نیمه‌خوانده رها شده:"
 
-#: mcomix/message_dialog.py:72
+#: mcomix/message_dialog.py:73
 msgid "Continue from the last read page"
 msgstr "ادامه از آخرین صفحهٔ خوانده‌شده"
 
-#: mcomix/message_dialog.py:73
+#: mcomix/message_dialog.py:74
 msgid "Start at the first page"
 msgstr "آغاز از نخستین صفحه"
 
 #
-#: mcomix/message_dialog.py:75
+#: mcomix/message_dialog.py:76
 msgid "Deleting the opened file:"
 msgstr "هنگام حذف پروندهٔ گشوده:"
 
-#: mcomix/message_dialog.py:76
+#: mcomix/message_dialog.py:77
 msgid "Delete it"
 msgstr "حذف"
 
-#: mcomix/message_dialog.py:78
+#: mcomix/message_dialog.py:79
 msgid "Bookmarking a page that is bookmarked already:"
 msgstr "هنگام نشانک‌گذاری صفحه‌ای که هم‌اکنون نشانک دارد:"
 
-#: mcomix/message_dialog.py:79
+#: mcomix/message_dialog.py:80
 msgid "Replace the existing bookmark"
 msgstr "جایگزینی نشانک موجود"
 
 #
-#: mcomix/message_dialog.py:80
+#: mcomix/message_dialog.py:81
 msgid "Keep both bookmarks"
 msgstr "نگه‌داشتن هر دو نشانک"
 
-#: mcomix/message_dialog.py:82
+#: mcomix/message_dialog.py:83
 msgid "Deleting books that are removed from the library:"
 msgstr "هنگام حذف کتاب‌هایی که از کتاب‌خانه برداشته می‌شوند:"
 
-#: mcomix/message_dialog.py:83
+#: mcomix/message_dialog.py:84
 msgid "Delete them"
 msgstr "حذف"
 
-#: mcomix/message_dialog.py:85
+#: mcomix/message_dialog.py:86
 msgid "Removing a page from the book being read:"
 msgstr "هنگام حذف صفحه از کتابی که خوانده می‌شود:"
 
-#: mcomix/message_dialog.py:86
+#: mcomix/message_dialog.py:87
 msgid "Write the archive again at once"
 msgstr "بایگانی بی‌درنگ دوباره نوشته شود"
 
-#: mcomix/message_dialog.py:87
+#: mcomix/message_dialog.py:88
 msgid "Leave the archive as it is"
 msgstr "بایگانی همان‌طور که هست بماند"
 
-#: mcomix/message_dialog.py:89
+#: mcomix/message_dialog.py:90
 msgid "Leaving a book with pages still picked out:"
 msgstr "هنگام ترک کتابی که هنوز صفحه‌هایی در آن گزیده است:"
 
-#: mcomix/message_dialog.py:90
+#: mcomix/message_dialog.py:91
 msgid "Remove them and write the archive"
 msgstr "حذف آن‌ها و نوشتن بایگانی"
 
-#: mcomix/message_dialog.py:91
+#: mcomix/message_dialog.py:92
 msgid "Leave the book as it is"
 msgstr "کتاب همان‌طور که هست بماند"
 
-#: mcomix/message_dialog.py:144
+#: mcomix/message_dialog.py:94
+msgid "Deleting a file that is bookmarked:"
+msgstr "هنگام حذف پرونده‌ای که نشانک دارد:"
+
+#: mcomix/message_dialog.py:95
+msgid "Remove its bookmarks"
+msgstr "نشانک‌هایش حذف شوند"
+
+#: mcomix/message_dialog.py:96
+msgid "Keep its bookmarks"
+msgstr "نشانک‌هایش نگه داشته شوند"
+
+#: mcomix/message_dialog.py:149
 msgid "Do not ask again."
 msgstr "دیگر نپرس."
 
