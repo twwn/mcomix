@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-20 18:49+0200\n"
+"POT-Creation-Date: 2026-09-20 18:58+0200\n"
 "PO-Revision-Date: 2018-05-10 22:46+0900\n"
 "Last-Translator: Minho Jeung <jeungmh@gmail.com>\n"
 "Language-Team: \n"
@@ -84,7 +84,7 @@ msgid "_No"
 msgstr "아니요(_N)"
 
 #: mcomix/bookmark_backend.py:329 mcomix/edit_dialog.py:58
-#: mcomix/file_actions.py:652 mcomix/file_chooser_base_dialog.py:106
+#: mcomix/file_actions.py:870 mcomix/file_chooser_base_dialog.py:106
 #: mcomix/file_chooser_base_dialog.py:111
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:32
@@ -240,16 +240,16 @@ msgstr "이미지"
 msgid "Comment files"
 msgstr "주석 파일"
 
-#: mcomix/edit_dialog.py:194 mcomix/file_actions.py:464
+#: mcomix/edit_dialog.py:194 mcomix/file_actions.py:682
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! 압축 파일 %(archivefile)s을(를) 저장할 수 없습니다: %(error)s"
 
-#: mcomix/edit_dialog.py:207 mcomix/file_actions.py:469
+#: mcomix/edit_dialog.py:207 mcomix/file_actions.py:687
 msgid "The new archive could not be saved!"
 msgstr "새 압축파일을 저장할 수 없습니다!"
 
-#: mcomix/edit_dialog.py:208 mcomix/file_actions.py:470
+#: mcomix/edit_dialog.py:208 mcomix/file_actions.py:688
 msgid "The original files have not been removed."
 msgstr "원본 파일이 제거되지 않았습니다."
 
@@ -277,8 +277,8 @@ msgstr "되돌리기(_R)"
 msgid "Reset to defaults."
 msgstr "기본값으로 리셋."
 
-#: mcomix/enhance_dialog.py:35 mcomix/file_actions.py:379
-#: mcomix/file_actions.py:420 mcomix/file_chooser_base_dialog.py:112
+#: mcomix/enhance_dialog.py:35 mcomix/file_actions.py:597
+#: mcomix/file_actions.py:638 mcomix/file_chooser_base_dialog.py:112
 #: mcomix/openwith.py:360
 msgid "_Save"
 msgstr "저장(_S)"
@@ -326,99 +326,112 @@ msgstr "이미지 색 반전(_I)"
 msgid "Invert (negate) image colors."
 msgstr "이미지 색을 반전(음화)합니다."
 
-#: mcomix/file_actions.py:127 mcomix/file_actions.py:800
+#: mcomix/file_actions.py:298 mcomix/file_actions.py:1018
 msgid "A file of that name is there already."
 msgstr "같은 이름의 파일이 이미 있습니다."
 
-#: mcomix/file_actions.py:195
+#: mcomix/file_actions.py:358
 msgid "Rename page?"
 msgstr "쪽 이름을 변경하시겠습니까?"
 
-#: mcomix/file_actions.py:196
+#: mcomix/file_actions.py:359
 msgid "Please enter a new name for this page."
 msgstr "이 페이지에 대한 새 이름을 입력하세요."
 
-#: mcomix/file_actions.py:375
+#: mcomix/file_actions.py:382
+msgid "S_wap the names"
+msgstr "이름 맞바꾸기(_W)"
+
+#: mcomix/file_actions.py:383
+msgid "_Replace"
+msgstr "바꾸기(_R)"
+
+#: mcomix/file_actions.py:401
+#, python-format
+msgid "Page %(number)d is called \"%(name)s\" already."
+msgstr "%(number)d쪽의 이름이 이미 \"%(name)s\"입니다."
+
+#: mcomix/file_actions.py:593
 #, python-format
 msgid "Write \"%s\" again before closing it?"
 msgstr "닫기 전에 \"%s\"을(를) 다시 쓸까요?"
 
-#: mcomix/file_actions.py:376
+#: mcomix/file_actions.py:594
 msgid ""
 "The book has changes that the archive on disk does not hold. They are lost "
 "when it closes."
 msgstr ""
 "책에 디스크의 압축 파일에 없는 변경 사항이 있습니다. 닫으면 사라집니다."
 
-#: mcomix/file_actions.py:378
+#: mcomix/file_actions.py:596
 msgid "_Close without saving"
 msgstr "저장하지 않고 닫기(_C)"
 
-#: mcomix/file_actions.py:416
+#: mcomix/file_actions.py:634
 #, python-format
 msgid "Write \"%s\" again now?"
 msgstr "\"%s\"을(를) 지금 다시 쓸까요?"
 
-#: mcomix/file_actions.py:417
+#: mcomix/file_actions.py:635
 msgid ""
 "The archive on disk will be replaced by the book as it stands, without the "
 "pages that were removed."
 msgstr "디스크의 압축 파일이 제거한 쪽을 뺀 현재 상태의 책으로 바뀝니다."
 
-#: mcomix/file_actions.py:419
+#: mcomix/file_actions.py:637
 msgid "_Not now"
 msgstr "지금은 안 함(_N)"
 
-#: mcomix/file_actions.py:570
+#: mcomix/file_actions.py:788
 msgid "Save page as"
 msgstr "페이지를 다른 이름으로 저장"
 
-#: mcomix/file_actions.py:611
+#: mcomix/file_actions.py:829
 #, python-format
 msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! %(file)s을(를) %(directory)s(으)로 저장할 수 없습니다: %(error)s"
 
-#: mcomix/file_actions.py:615 mcomix/file_actions.py:802
+#: mcomix/file_actions.py:833 mcomix/file_actions.py:1020
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "공간이 부족합니다: 파일 크기는 %s입니다."
 
-#: mcomix/file_actions.py:621
+#: mcomix/file_actions.py:839
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "\"%(file)s\"을(를) \"%(directory)s\"(으)로 저장할 수 없습니다"
 
-#: mcomix/file_actions.py:650
+#: mcomix/file_actions.py:868
 #, python-format
 msgid "Delete \"%s\"?"
 msgstr "\"%s\"을(를) 삭제합니까?"
 
-#: mcomix/file_actions.py:651
+#: mcomix/file_actions.py:869
 msgid "The file will be deleted from your harddisk."
 msgstr "파일이 하드디스크에서 삭제됩니다."
 
-#: mcomix/file_actions.py:653 mcomix/ui.py:433
+#: mcomix/file_actions.py:871 mcomix/ui.py:433
 msgid "_Delete"
 msgstr "삭제(_D)"
 
-#: mcomix/file_actions.py:723
+#: mcomix/file_actions.py:941
 #, python-format
 msgid "The file is gone, and its %d bookmark cannot be opened any more."
 msgid_plural ""
 "The file is gone, and its %d bookmarks cannot be opened any more."
 msgstr[0] "파일이 사라져 그 안의 책갈피 %d개를 더 이상 열 수 없습니다."
 
-#: mcomix/file_actions.py:727
+#: mcomix/file_actions.py:945
 #, python-format
 msgid "Remove the bookmarks in \"%s\"?"
 msgstr "\"%s\"의 책갈피를 제거할까요?"
 
-#: mcomix/file_actions.py:796
+#: mcomix/file_actions.py:1014
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr "! %(file)s을(를) %(directory)s(으)로 이동할 수 없습니다: %(error)s"
 
-#: mcomix/file_actions.py:808
+#: mcomix/file_actions.py:1026
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "\"%(file)s\"을(를) \"%(directory)s\"(으)로 이동할 수 없습니다"

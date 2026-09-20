@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Comix 4.0.3\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-20 18:49+0200\n"
+"POT-Creation-Date: 2026-09-20 18:58+0200\n"
 "PO-Revision-Date: 2009-01-26 19:34+0100\n"
 "Last-Translator: Ernő Drabik <drerno@gmail.com>\n"
 "Language-Team: \n"
@@ -82,7 +82,7 @@ msgid "_No"
 msgstr "_Nem"
 
 #: mcomix/bookmark_backend.py:329 mcomix/edit_dialog.py:58
-#: mcomix/file_actions.py:652 mcomix/file_chooser_base_dialog.py:106
+#: mcomix/file_actions.py:870 mcomix/file_chooser_base_dialog.py:106
 #: mcomix/file_chooser_base_dialog.py:111
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:32
@@ -239,16 +239,16 @@ msgstr "Képek"
 msgid "Comment files"
 msgstr "Megjegyzésfájlok"
 
-#: mcomix/edit_dialog.py:194 mcomix/file_actions.py:464
+#: mcomix/edit_dialog.py:194 mcomix/file_actions.py:682
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! Nem sikerült menteni a(z) %(archivefile)s archívumot: %(error)s"
 
-#: mcomix/edit_dialog.py:207 mcomix/file_actions.py:469
+#: mcomix/edit_dialog.py:207 mcomix/file_actions.py:687
 msgid "The new archive could not be saved!"
 msgstr "Nem lehet elmenteni az új arhívumot!"
 
-#: mcomix/edit_dialog.py:208 mcomix/file_actions.py:470
+#: mcomix/edit_dialog.py:208 mcomix/file_actions.py:688
 msgid "The original files have not been removed."
 msgstr "Az eredeti fájlok megmaradtak."
 
@@ -276,8 +276,8 @@ msgstr "_Visszaállítás"
 msgid "Reset to defaults."
 msgstr "Alapértékek visszaállítása."
 
-#: mcomix/enhance_dialog.py:35 mcomix/file_actions.py:379
-#: mcomix/file_actions.py:420 mcomix/file_chooser_base_dialog.py:112
+#: mcomix/enhance_dialog.py:35 mcomix/file_actions.py:597
+#: mcomix/file_actions.py:638 mcomix/file_chooser_base_dialog.py:112
 #: mcomix/openwith.py:360
 msgid "_Save"
 msgstr "M_entés"
@@ -328,24 +328,37 @@ msgstr "A kép színeinek _invertálása"
 msgid "Invert (negate) image colors."
 msgstr "Invertálja (negálja) a kép színeit."
 
-#: mcomix/file_actions.py:127 mcomix/file_actions.py:800
+#: mcomix/file_actions.py:298 mcomix/file_actions.py:1018
 msgid "A file of that name is there already."
 msgstr "Már van ott ilyen nevű fájl."
 
-#: mcomix/file_actions.py:195
+#: mcomix/file_actions.py:358
 msgid "Rename page?"
 msgstr "Átnevezi az oldalt?"
 
-#: mcomix/file_actions.py:196
+#: mcomix/file_actions.py:359
 msgid "Please enter a new name for this page."
 msgstr "Adja meg az oldal új nevét."
 
-#: mcomix/file_actions.py:375
+#: mcomix/file_actions.py:382
+msgid "S_wap the names"
+msgstr "Nevek _cseréje"
+
+#: mcomix/file_actions.py:383
+msgid "_Replace"
+msgstr "C_sere"
+
+#: mcomix/file_actions.py:401
+#, python-format
+msgid "Page %(number)d is called \"%(name)s\" already."
+msgstr "A(z) %(number)d. oldal neve már „%(name)s”."
+
+#: mcomix/file_actions.py:593
 #, python-format
 msgid "Write \"%s\" again before closing it?"
 msgstr "Újraírja a következőt bezárás előtt: „%s”?"
 
-#: mcomix/file_actions.py:376
+#: mcomix/file_actions.py:594
 msgid ""
 "The book has changes that the archive on disk does not hold. They are lost "
 "when it closes."
@@ -353,16 +366,16 @@ msgstr ""
 "A könyvben olyan változások vannak, amelyeket a lemezen lévő archívum nem "
 "tartalmaz. Bezáráskor elvesznek."
 
-#: mcomix/file_actions.py:378
+#: mcomix/file_actions.py:596
 msgid "_Close without saving"
 msgstr "_Bezárás mentés nélkül"
 
-#: mcomix/file_actions.py:416
+#: mcomix/file_actions.py:634
 #, python-format
 msgid "Write \"%s\" again now?"
 msgstr "Újraírja most a következőt: „%s”?"
 
-#: mcomix/file_actions.py:417
+#: mcomix/file_actions.py:635
 msgid ""
 "The archive on disk will be replaced by the book as it stands, without the "
 "pages that were removed."
@@ -370,44 +383,44 @@ msgstr ""
 "A lemezen lévő archívumot a könyv jelenlegi állapota váltja fel, az "
 "eltávolított oldalak nélkül."
 
-#: mcomix/file_actions.py:419
+#: mcomix/file_actions.py:637
 msgid "_Not now"
 msgstr "Most _ne"
 
-#: mcomix/file_actions.py:570
+#: mcomix/file_actions.py:788
 msgid "Save page as"
 msgstr "Oldal mentése másként"
 
-#: mcomix/file_actions.py:611
+#: mcomix/file_actions.py:829
 #, python-format
 msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr ""
 "! Nem sikerült menteni a(z) %(file)s fájlt ide: %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:615 mcomix/file_actions.py:802
+#: mcomix/file_actions.py:833 mcomix/file_actions.py:1020
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "Nincs ott elég hely: a fájl %s."
 
-#: mcomix/file_actions.py:621
+#: mcomix/file_actions.py:839
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "Nem sikerült menteni: „%(file)s” ide: „%(directory)s”"
 
-#: mcomix/file_actions.py:650
+#: mcomix/file_actions.py:868
 #, python-format
 msgid "Delete \"%s\"?"
 msgstr "Törli ezt: „%s”?"
 
-#: mcomix/file_actions.py:651
+#: mcomix/file_actions.py:869
 msgid "The file will be deleted from your harddisk."
 msgstr "A fájl törlődik a merevlemezről."
 
-#: mcomix/file_actions.py:653 mcomix/ui.py:433
+#: mcomix/file_actions.py:871 mcomix/ui.py:433
 msgid "_Delete"
 msgstr "T_örlés"
 
-#: mcomix/file_actions.py:723
+#: mcomix/file_actions.py:941
 #, python-format
 msgid "The file is gone, and its %d bookmark cannot be opened any more."
 msgid_plural ""
@@ -415,18 +428,18 @@ msgid_plural ""
 msgstr[0] "A fájl eltűnt, és a benne lévő %d könyvjelző már nem nyitható meg."
 msgstr[1] "A fájl eltűnt, és a benne lévő %d könyvjelző már nem nyitható meg."
 
-#: mcomix/file_actions.py:727
+#: mcomix/file_actions.py:945
 #, python-format
 msgid "Remove the bookmarks in \"%s\"?"
 msgstr "Eltávolítja a(z) „%s” könyvjelzőit?"
 
-#: mcomix/file_actions.py:796
+#: mcomix/file_actions.py:1014
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr ""
 "! Nem sikerült áthelyezni a(z) %(file)s fájlt ide: %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:808
+#: mcomix/file_actions.py:1026
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "Nem sikerült áthelyezni: „%(file)s” ide: „%(directory)s”"

@@ -41,6 +41,13 @@ class FileActions:
 
     """The file operations MainWindow offers, and their undo stack."""
 
+    #: What the rename dialog answers with where the name typed is a
+    #: name another page holds: swap the two names, or write the other
+    #: page over.  Response has no member for either, and no other
+    #: button of that dialog answers with these.
+    _SWAP = Response.APPLY
+    _REPLACE = Response.ACCEPT
+
     def __init__(self, window: "main.MainWindow") -> None:
         self._window = window
         #: What the pages were before each change made from the window,
@@ -71,6 +78,39 @@ class FileActions:
         """The name each renamed page is to be written under, by path."""
         return dict(self._page_names)
 
+    def name_typed(self, page: int, name: str) -> "str | None":
+        """What <name>, typed for <page>, would call it, or None where
+        it would call it nothing it is not called already.
+
+        A name typed with a folder in front of it is read as the last
+        part of it, a page being a file inside the book rather than a
+        path, and a name typed without an extension keeps the old one,
+        since what MComix and every other reader take for a page is
+        decided by that.
+        """
+        name = os.path.basename(name.strip())
+        if not name:
+            return None
+        if not os.path.splitext(name)[1]:
+            name += os.path.splitext(self.page_name(page))[1]
+        if name == self.page_name(page):
+            return None
+        return name
+
+    def page_called(self, name: str, other_than: int) -> "int | None":
+        """The page called <name>, if a page other than <other_than> is.
+
+        The names the reader sees, which are the names the book is
+        written under: the name of the file behind a page counts as
+        much as one the reader has given it, both being what that page
+        would be called in the archive.
+        """
+        for number in range(
+                1, len(self._window.imagehandler.get_image_files()) + 1):
+            if number != other_than and self.page_name(number) == name:
+                return number
+        return None
+
     def rename_page(self, page: int, name: str) -> "str | None":
         """Call the page at <page> <name>, and answer with the name it
         took, or None if it took none.
@@ -89,25 +129,156 @@ class FileActions:
         if not 1 <= page <= len(listing):
             return None
         path = listing[page - 1]
-        name = os.path.basename(name.strip())
-        if not name:
+        typed = self.name_typed(page, name)
+        if typed is None:
             return None
-        if not os.path.splitext(name)[1]:
-            name += os.path.splitext(self.page_name(page))[1]
-        if name == self.page_name(page):
-            return None
+        name = typed
         if self._window.filehandler.archive_type is None:
             return self._rename_on_disk(page, path, name)
-        if name == os.path.basename(path):
-            # Renamed back to what the file in the archive is called:
-            # there is nothing left for the packer to do differently,
-            # and a name kept here would count as a change to write.
-            self._page_names.pop(path, None)
-        else:
-            self._page_names[path] = name
+        self._give_name(path, name)
         self._close_offer_answered = False
         self.offer_to_save()
         return name
+
+    def _give_name(self, path: str, name: str) -> None:
+        """Write down that the page whose file is <path> is called <name>.
+
+        A page named what the file in the archive is called already is
+        written down as nothing at all: there is then nothing for the
+        packer to do differently, and a name kept here would count as a
+        change waiting to be written.
+        """
+        if name == os.path.basename(path):
+            self._page_names.pop(path, None)
+        else:
+            self._page_names[path] = name
+
+    def swap_page_names(self, page: int, name: str) -> bool:
+        """Call <page> <name> and the page that holds <name> what <page>
+        was called, and say whether both were.
+
+        One of the two answers to a name that is taken: two pages whose
+        names are the wrong way round are put right in one step, rather
+        than one of them having to be called something else first.
+        """
+        typed = self.name_typed(page, name)
+        holder = None if typed is None else self.page_called(typed, page)
+        if typed is None or holder is None:
+            return False
+        if self._window.filehandler.archive_type is None:
+            return self._swap_names_on_disk(page, holder, typed)
+        listing = self._window.imagehandler.get_image_files()
+        held = self.page_name(page)
+        self._give_name(listing[page - 1], typed)
+        self._give_name(listing[holder - 1], held)
+        self._close_offer_answered = False
+        self.offer_to_save()
+        return True
+
+    def replace_page_named(self, page: int, name: str) -> bool:
+        """Call <page> <name>, and take the page that held <name> out of
+        the book; say whether that was done.
+
+        The other answer to a name that is taken, and the one a file
+        manager gives: the page that had the name goes, as the file
+        written over goes.  Two pages cannot both be called one name,
+        so there is nothing in between.  The last page of a book is not
+        taken out, a book with no pages being no book.
+        """
+        typed = self.name_typed(page, name)
+        holder = None if typed is None else self.page_called(typed, page)
+        if typed is None or holder is None:
+            return False
+        if self._window.filehandler.archive_type is None:
+            return self._replace_on_disk(page, holder, typed)
+        path = self._window.imagehandler.get_image_files()[page - 1]
+        if not self.remove_pages({holder}):
+            return False
+        self._give_name(path, typed)
+        self._close_offer_answered = False
+        self.offer_to_save()
+        return True
+
+    def _swap_names_on_disk(self, page: int, holder: int,
+                            name: str) -> bool:
+        """Swap the names of two pages that are files of their own.
+
+        Through a name neither file has: a rename onto a name that is
+        taken writes over the file that has it, which is what swapping
+        the two names is there to avoid.
+        """
+        listing = self._window.imagehandler.get_image_files()
+        path, other = listing[page - 1], listing[holder - 1]
+        held = os.path.basename(path)
+        aside = other + '.mcomix-swap'
+        target = os.path.join(os.path.dirname(path), name)
+        other_target = os.path.join(os.path.dirname(other), held)
+        try:
+            os.rename(other, aside)
+        except OSError as error:
+            log.error('Could not rename %s: %r', other, error)
+            return False
+        try:
+            os.rename(path, target)
+            os.rename(aside, other_target)
+        except OSError as error:
+            log.error('Could not rename %s: %r', path, error)
+            # The file taken out of the way goes back under its own
+            # name, whichever of the two renames failed: a page whose
+            # file is called something no listing knows is a page that
+            # has gone missing from the book.
+            for source, back in ((aside, other), (target, path)):
+                if os.path.lexists(source) and not os.path.lexists(back):
+                    os.rename(source, back)
+            return False
+        self._paths_changed(listing, {path: target, other: other_target})
+        self._show_pages(listing,
+                         self._window.imagehandler.get_current_page())
+        return True
+
+    def _replace_on_disk(self, page: int, holder: int, name: str) -> bool:
+        """Write the file of <page> over the file of <holder>.
+
+        A book read as a folder of images has no archive to write, so
+        replacing a page happens on disk at once: the file that had the
+        name is gone, and the page it was leaves the book with it.
+        """
+        listing = self._window.imagehandler.get_image_files()
+        path = listing[page - 1]
+        target = os.path.join(os.path.dirname(path), name)
+        if not self.remove_pages({holder}):
+            return False
+        try:
+            os.replace(path, target)
+        except OSError as error:
+            log.error('Could not rename %s: %r', path, error)
+            # The page that was taken out to make room for the name is
+            # put back, the name having gone nowhere.
+            self.undo()
+            return False
+        listing = self._window.imagehandler.get_image_files()
+        self._paths_changed(listing, {path: target})
+        self._show_pages(listing,
+                         self._window.imagehandler.get_current_page())
+        return True
+
+    def _paths_changed(self, listing: list[str],
+                       moved: dict[str, str]) -> None:
+        """Follow each file of <moved> from its old path to its new one
+        through <listing> and through every listing the undo stack is
+        keeping.
+
+        <listing> is the book the caller is about to draw - the window
+        hands out a copy of its own, so the one that is drawn is the
+        one that has to be changed - and the kept ones would otherwise
+        bring a page back under the name it no longer has.  All of them
+        in one pass, because two files that change names with each
+        other would otherwise be followed one into the other.
+        """
+        for kept in [listing] + self._undone + self._redone:
+            for index, held in enumerate(kept):
+                if held in moved:
+                    kept[index] = moved[held]
 
     def _rename_on_disk(self, page: int, path: str,
                         name: str) -> "str | None":
@@ -135,16 +306,8 @@ class FileActions:
             # log, and the reader has been told by the page not moving.
             log.error('Could not rename %s: %r', path, error)
             return None
-        # Every listing the window holds is a list of paths, and one of
-        # them has just changed: the book on screen, and the ones the
-        # undo stack is keeping, which would otherwise bring back a
-        # page under the name it no longer has.
         listing = self._window.imagehandler.get_image_files()
-        for kept in self._undone + self._redone:
-            for index, held in enumerate(kept):
-                if held == path:
-                    kept[index] = target
-        listing[page - 1] = target
+        self._paths_changed(listing, {path: target})
         self._show_pages(listing,
                          self._window.imagehandler.get_current_page())
         return name
@@ -201,6 +364,54 @@ class FileActions:
         entry.set_activates_default(True)
         widgets.pack(dialog.get_content_area(), entry, True, True, 6)
 
+        warning = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        # The style class the desktop paints its warnings in, on the
+        # line and on the icon beside it: a name that is taken is not a
+        # refusal - the dialog goes on offering what can be done about
+        # it - but it is not to be missed either.
+        warning.add_css_class('warning')
+        icon = Gtk.Image.new_from_icon_name('dialog-warning-symbolic')
+        told = Gtk.Label()
+        told.set_xalign(0)
+        told.set_wrap(True)
+        warning.append(icon)
+        warning.append(told)
+        warning.set_visible(False)
+        widgets.pack(dialog.get_content_area(), warning, False, False, 0)
+
+        swap = dialog.add_button(_('S_wap the names'), self._SWAP)
+        replace = dialog.add_button(_('_Replace'), self._REPLACE)
+        replace.add_css_class('destructive-action')
+        swap.set_visible(False)
+        replace.set_visible(False)
+
+        def name_typed(*args: object) -> None:
+            """Say whether what has been typed is another page's name,
+            and offer what can be done about it.
+
+            Enter renames while the name is free, and cancels once it
+            is not: the answers a taken name leaves - one page's name
+            for another's, or a page written over - are neither of them
+            the harmless one that a confirmation defaults to.
+            """
+            typed = self.name_typed(page, entry.get_text())
+            holder = None if typed is None else self.page_called(typed, page)
+            if holder is not None and typed is not None:
+                told.set_text(
+                    _('Page %(number)d is called "%(name)s" already.')
+                    % {'number': holder, 'name': typed})
+            warning.set_visible(holder is not None)
+            swap.set_visible(holder is not None)
+            replace.set_visible(holder is not None)
+            renames = dialog.get_widget_for_response(Response.OK)
+            if renames is not None:
+                renames.set_visible(holder is None)
+            dialog.set_default_response(
+                Response.CANCEL if holder is not None else Response.OK)
+
+        entry.connect('changed', name_typed)
+        name_typed()
+
         # The entry outlives the dialog: what was typed is read out of
         # it once the answer has come back.
         dialog.run_async(lambda response: self._rename_answered(
@@ -222,9 +433,16 @@ class FileActions:
     def _rename_answered(self, response: int, page: int, name: str,
                          when_done: "Callable[[], None] | None" = None
                          ) -> None:
-        """Give <page> the name that was typed, if the answer was yes."""
-        if response == Response.OK and self.rename_page(page, name) \
-                and when_done is not None:
+        """Do what was answered with the name that was typed."""
+        if response == Response.OK:
+            done = self.rename_page(page, name) is not None
+        elif response == self._SWAP:
+            done = self.swap_page_names(page, name)
+        elif response == self._REPLACE:
+            done = self.replace_page_named(page, name)
+        else:
+            done = False
+        if done and when_done is not None:
             when_done()
 
     def page_name(self, page: int) -> str:

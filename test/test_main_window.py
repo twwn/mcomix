@@ -1824,6 +1824,171 @@ class MainWindowTest(MComixTest):
             dialog.destroy()
         self._pump()
 
+    # -- Renaming to a name another page holds ----------------------------
+
+    def _loose_book(self, name, pages=3):
+        """Open a directory of <pages> images, and answer with its path."""
+        directory = os.path.join(self.tmp_dir, name)
+        os.makedirs(directory)
+        for number in range(pages):
+            shutil.copy(get_testfile_path('images', 'blue.png'),
+                        os.path.join(directory, '%d.png' % number))
+        self.window.filehandler.open_file(os.path.join(directory, '0.png'))
+        self.assertTrue(wait_for(
+            lambda: self.window.imagehandler.get_number_of_pages() == pages,
+            seconds=20), 'the folder of images never opened')
+        return directory
+
+    def _rename_dialog(self, page=1):
+        """Open the rename dialog on <page> and answer with it."""
+        self.window.popup_page = page
+        self.window.file_actions.rename_popup_page()
+        self._pump()
+        dialogs = self._delete_dialogs()
+        self.assertEqual(len(dialogs), 1, 'nothing asked for a name')
+        return dialogs[0]
+
+    def _typed_in(self, dialog, name):
+        """Type <name> into the dialog's entry."""
+        entries = [child
+                   for child in self._children(dialog.get_content_area())
+                   if isinstance(child, Gtk.Entry)]
+        self.assertEqual(len(entries), 1)
+        entries[0].set_text(name)
+
+    @staticmethod
+    def _warning_line(dialog):
+        """The line the dialog warns on, whether or not it is shown."""
+        return [child for child in dialog.get_content_area()
+                if child.has_css_class('warning')]
+
+    def test_a_name_another_page_holds_is_warned_about(self):
+        """It was taken without a word, and the packer put an
+        underscore in front of it when the book was written."""
+        self._ready()
+        held = self.window.file_actions.page_name(2)
+        dialog = self._rename_dialog()
+        try:
+            warnings = self._warning_line(dialog)
+            self.assertEqual(len(warnings), 1, 'the dialog has no warning line')
+            self.assertFalse(warnings[0].get_visible(),
+                             'it warned about the name the page has')
+            self._typed_in(dialog, held)
+            self.assertTrue(warnings[0].get_visible(),
+                            'the name was taken without a word')
+            told = [child for child in warnings[0]
+                    if isinstance(child, Gtk.Label)]
+            self.assertEqual(len(told), 1)
+            self.assertIn(held, told[0].get_text())
+        finally:
+            dialog.destroy()
+            self._pump()
+
+    def test_a_name_another_page_holds_offers_a_swap_and_a_replace(self):
+        self._ready()
+        held = self.window.file_actions.page_name(2)
+        dialog = self._rename_dialog()
+        try:
+            renames = dialog.get_widget_for_response(Response.OK)
+            swaps = dialog.get_widget_for_response(
+                file_actions.FileActions._SWAP)
+            replaces = dialog.get_widget_for_response(
+                file_actions.FileActions._REPLACE)
+            self.assertTrue(renames.get_visible())
+            self.assertFalse(swaps.get_visible())
+            self.assertFalse(replaces.get_visible())
+
+            self._typed_in(dialog, held)
+            self.assertFalse(renames.get_visible(),
+                             'it still offered to take a name twice over')
+            self.assertTrue(swaps.get_visible())
+            self.assertTrue(replaces.get_visible())
+            self.assertIs(dialog.get_default_widget(),
+                          dialog.get_widget_for_response(Response.CANCEL),
+                          'Enter would have written a page over')
+
+            self._typed_in(dialog, 'Cover.png')
+            self.assertTrue(renames.get_visible(),
+                            'the warning outlived the name that earned it')
+            self.assertFalse(swaps.get_visible())
+            self.assertFalse(self._warning_line(dialog)[0].get_visible())
+        finally:
+            dialog.destroy()
+            self._pump()
+
+    def test_swapping_the_names_gives_each_page_the_others(self):
+        self._ready()
+        names = self.window.file_actions
+        first, second = names.page_name(1), names.page_name(2)
+        with self._quietly():
+            self.assertTrue(names.swap_page_names(1, second))
+        self.assertEqual(names.page_name(1), second)
+        self.assertEqual(names.page_name(2), first)
+
+    def test_replacing_takes_the_page_that_held_the_name_out(self):
+        """Two pages cannot both be called one name, so the page
+        written over leaves the book, as an overwritten file does."""
+        before = self._ready()
+        names = self.window.file_actions
+        held = names.page_name(2)
+        with self._quietly():
+            self.assertTrue(names.replace_page_named(1, held))
+        self._pump()
+        self.assertEqual(self._pages(), [before[0]] + before[2:])
+        self.assertEqual(names.page_name(1), held)
+        self.assertTrue(names.can_undo(), 'the page cannot be brought back')
+
+    def test_a_name_no_page_holds_is_neither_swapped_nor_replaced(self):
+        self._ready()
+        names = self.window.file_actions
+        self.assertFalse(names.swap_page_names(1, 'Nobody.png'))
+        self.assertFalse(names.replace_page_named(1, 'Nobody.png'))
+        self.assertEqual(names.page_names(), {})
+
+    def test_the_dialog_answers_reach_the_swap_and_the_replace(self):
+        self._ready()
+        names = self.window.file_actions
+        with unittest.mock.patch.object(names, 'swap_page_names') as swapped:
+            names._rename_answered(file_actions.FileActions._SWAP,
+                                   1, 'Held.png')
+        swapped.assert_called_once_with(1, 'Held.png')
+        with unittest.mock.patch.object(names,
+                                        'replace_page_named') as replaced:
+            names._rename_answered(file_actions.FileActions._REPLACE,
+                                   1, 'Held.png')
+        replaced.assert_called_once_with(1, 'Held.png')
+
+    def test_swapping_the_names_of_a_loose_book_renames_both_files(self):
+        """A book read as a folder of images has no archive to write,
+        so both files change their names at once - through a third
+        name, neither file being written over."""
+        directory = self._loose_book('swap-names')
+        names = self.window.file_actions
+        self.assertTrue(names.swap_page_names(1, '1.png'))
+        self._pump()
+        self.assertEqual(self._pages()[:2],
+                         [os.path.join(directory, '1.png'),
+                          os.path.join(directory, '0.png')])
+        for name in ('0.png', '1.png', '2.png'):
+            self.assertTrue(os.path.isfile(os.path.join(directory, name)),
+                            '%s is gone' % name)
+        self.assertEqual(
+            [name for name in os.listdir(directory)
+             if not name.endswith('.png')], [],
+            'the name a file was put aside under was left behind')
+
+    def test_replacing_a_page_of_a_loose_book_writes_over_the_file(self):
+        directory = self._loose_book('replace-names')
+        names = self.window.file_actions
+        self.assertTrue(names.replace_page_named(1, '1.png'))
+        self._pump()
+        self.assertFalse(os.path.exists(os.path.join(directory, '0.png')),
+                         'the page kept its own file as well')
+        self.assertEqual(sorted(os.listdir(directory)), ['1.png', '2.png'])
+        self.assertEqual(self._pages(),
+                         [os.path.join(directory, '1.png'),
+                          os.path.join(directory, '2.png')])
+
     # -- Swapping two pages -----------------------------------------------
 
     def test_marking_a_page_and_another_swaps_the_two(self):
