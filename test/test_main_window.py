@@ -30,6 +30,7 @@ from mcomix import keybindings
 from mcomix import file_actions
 from mcomix import main
 from mcomix import message_dialog
+from mcomix import rename_dialog
 from mcomix.dialog import Response
 from mcomix.library import backend
 from mcomix.preferences import prefs
@@ -1891,9 +1892,9 @@ class MainWindowTest(MComixTest):
         try:
             renames = dialog.get_widget_for_response(Response.OK)
             swaps = dialog.get_widget_for_response(
-                file_actions.FileActions._SWAP)
+                rename_dialog.SWAP)
             replaces = dialog.get_widget_for_response(
-                file_actions.FileActions._REPLACE)
+                rename_dialog.REPLACE)
             self.assertTrue(renames.get_visible())
             self.assertFalse(swaps.get_visible())
             self.assertFalse(replaces.get_visible())
@@ -1949,12 +1950,12 @@ class MainWindowTest(MComixTest):
         self._ready()
         names = self.window.file_actions
         with unittest.mock.patch.object(names, 'swap_page_names') as swapped:
-            names._rename_answered(file_actions.FileActions._SWAP,
+            names._rename_answered(rename_dialog.SWAP,
                                    1, 'Held.png')
         swapped.assert_called_once_with(1, 'Held.png')
         with unittest.mock.patch.object(names,
                                         'replace_page_named') as replaced:
-            names._rename_answered(file_actions.FileActions._REPLACE,
+            names._rename_answered(rename_dialog.REPLACE,
                                    1, 'Held.png')
         replaced.assert_called_once_with(1, 'Held.png')
 

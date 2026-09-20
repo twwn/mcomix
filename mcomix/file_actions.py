@@ -13,7 +13,7 @@ import errno
 import os
 import shutil
 
-from gi.repository import GLib, Gtk
+from gi.repository import Gtk
 
 from mcomix import archive_packer
 from mcomix import bookmark_backend
@@ -23,8 +23,8 @@ from mcomix import file_mover
 from mcomix import i18n
 from mcomix import log
 from mcomix import message_dialog
+from mcomix import rename_dialog
 from mcomix import tools
-from mcomix import widgets
 from mcomix.dialog import Response
 from mcomix.i18n import _
 from mcomix.library import backend
@@ -40,13 +40,6 @@ if TYPE_CHECKING:
 class FileActions:
 
     """The file operations MainWindow offers, and their undo stack."""
-
-    #: What the rename dialog answers with where the name typed is a
-    #: name another page holds: swap the two names, or write the other
-    #: page over.  Response has no member for either, and no other
-    #: button of that dialog answers with these.
-    _SWAP = Response.APPLY
-    _REPLACE = Response.ACCEPT
 
     def __init__(self, window: "main.MainWindow") -> None:
         self._window = window
@@ -351,84 +344,24 @@ class FileActions:
         """
         if not self._window.filehandler.file_loaded:
             return
-        old_name = self.page_name(page)
 
-        dialog = message_dialog.MessageDialog(
-            parent or self._window, buttons=Gtk.ButtonsType.OK_CANCEL)
-        dialog.set_text(_('Rename page?'),
-                        _('Please enter a new name for this page.'))
-        dialog.set_default_response(Response.OK)
+        def clash(typed: str) -> "rename_dialog.Clash | None":
+            """The page that holds what has been typed, if one does."""
+            name = self.name_typed(page, typed)
+            holder = None if name is None else self.page_called(name, page)
+            if holder is None or name is None:
+                return None
+            return rename_dialog.Clash(
+                _('Page %(number)d is called "%(name)s" already.')
+                % {'number': holder, 'name': name}, True)
 
-        entry = Gtk.Entry()
-        entry.set_text(old_name)
-        entry.set_activates_default(True)
-        widgets.pack(dialog.get_content_area(), entry, True, True, 6)
-
-        warning = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-        # The style class the desktop paints its warnings in, on the
-        # line and on the icon beside it: a name that is taken is not a
-        # refusal - the dialog goes on offering what can be done about
-        # it - but it is not to be missed either.
-        warning.add_css_class('warning')
-        icon = Gtk.Image.new_from_icon_name('dialog-warning-symbolic')
-        told = Gtk.Label()
-        told.set_xalign(0)
-        told.set_wrap(True)
-        warning.append(icon)
-        warning.append(told)
-        warning.set_visible(False)
-        widgets.pack(dialog.get_content_area(), warning, False, False, 0)
-
-        swap = dialog.add_button(_('S_wap the names'), self._SWAP)
-        replace = dialog.add_button(_('_Replace'), self._REPLACE)
-        replace.add_css_class('destructive-action')
-        swap.set_visible(False)
-        replace.set_visible(False)
-
-        def name_typed(*args: object) -> None:
-            """Say whether what has been typed is another page's name,
-            and offer what can be done about it.
-
-            Enter renames while the name is free, and cancels once it
-            is not: the answers a taken name leaves - one page's name
-            for another's, or a page written over - are neither of them
-            the harmless one that a confirmation defaults to.
-            """
-            typed = self.name_typed(page, entry.get_text())
-            holder = None if typed is None else self.page_called(typed, page)
-            if holder is not None and typed is not None:
-                told.set_text(
-                    _('Page %(number)d is called "%(name)s" already.')
-                    % {'number': holder, 'name': typed})
-            warning.set_visible(holder is not None)
-            swap.set_visible(holder is not None)
-            replace.set_visible(holder is not None)
-            renames = dialog.get_widget_for_response(Response.OK)
-            if renames is not None:
-                renames.set_visible(holder is None)
-            dialog.set_default_response(
-                Response.CANCEL if holder is not None else Response.OK)
-
-        entry.connect('changed', name_typed)
-        name_typed()
-
-        # The entry outlives the dialog: what was typed is read out of
-        # it once the answer has come back.
-        dialog.run_async(lambda response: self._rename_answered(
-            response, page, entry.get_text(), when_done))
-
-        def pick_out_the_name() -> bool:
-            """Select the part a rename replaces: the name without its
-            extension, as a file manager picks it out.
-
-            Once the dialog has been shown, rather than before: the
-            entry takes the focus as that happens, and a focused entry
-            has the whole of its text selected.
-            """
-            entry.select_region(0, len(os.path.splitext(old_name)[0]))
-            return GLib.SOURCE_REMOVE
-
-        GLib.idle_add(pick_out_the_name)
+        rename_dialog.ask(
+            parent or self._window,
+            title=_('Rename page?'),
+            prompt=_('Please enter a new name for this page.'),
+            name=self.page_name(page), clash=clash,
+            answered=lambda response, typed: self._rename_answered(
+                response, page, typed, when_done))
 
     def _rename_answered(self, response: int, page: int, name: str,
                          when_done: "Callable[[], None] | None" = None
@@ -436,9 +369,9 @@ class FileActions:
         """Do what was answered with the name that was typed."""
         if response == Response.OK:
             done = self.rename_page(page, name) is not None
-        elif response == self._SWAP:
+        elif response == rename_dialog.SWAP:
             done = self.swap_page_names(page, name)
-        elif response == self._REPLACE:
+        elif response == rename_dialog.REPLACE:
             done = self.replace_page_named(page, name)
         else:
             done = False
