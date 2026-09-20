@@ -1514,6 +1514,50 @@ class MainWindowTest(MComixTest):
             dialog.destroy()
         self._pump()
 
+    def test_renaming_a_loose_image_renames_the_file_on_disk(self):
+        """A book read as a folder of images has no archive to write,
+        so the rename happens at once."""
+        directory = os.path.join(self.tmp_dir, 'loose')
+        os.makedirs(directory)
+        for number in range(3):
+            shutil.copy(get_testfile_path('images', 'blue.png'),
+                        os.path.join(directory, '%d.png' % number))
+        self.window.filehandler.open_file(
+            os.path.join(directory, '0.png'))
+        self.assertTrue(wait_for(
+            lambda: self.window.imagehandler.get_number_of_pages() == 3,
+            seconds=20))
+
+        self.assertEqual(self.window.file_actions.rename_page(1, 'Cover.png'),
+                         'Cover.png')
+        self._pump()
+
+        self.assertTrue(os.path.isfile(os.path.join(directory, 'Cover.png')))
+        self.assertFalse(os.path.exists(os.path.join(directory, '0.png')))
+        self.assertEqual(self.window.file_actions.page_name(1), 'Cover.png')
+
+    def test_a_loose_image_is_not_renamed_over_another_file(self):
+        directory = os.path.join(self.tmp_dir, 'loose2')
+        os.makedirs(directory)
+        for number in range(3):
+            shutil.copy(get_testfile_path('images', 'blue.png'),
+                        os.path.join(directory, '%d.png' % number))
+        self.window.filehandler.open_file(
+            os.path.join(directory, '0.png'))
+        self.assertTrue(wait_for(
+            lambda: self.window.imagehandler.get_number_of_pages() == 3,
+            seconds=20))
+
+        self.assertIsNone(self.window.file_actions.rename_page(1, '1.png'))
+        self._pump()
+
+        self.assertTrue(os.path.isfile(os.path.join(directory, '0.png')))
+        self.assertEqual(len(self._delete_dialogs()), 1,
+                         'nothing said why the page was not renamed')
+        for dialog in self._delete_dialogs():
+            dialog.destroy()
+        self._pump()
+
     # -- Swapping two pages -----------------------------------------------
 
     def test_marking_a_page_and_another_swaps_the_two(self):

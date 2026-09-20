@@ -90,8 +90,50 @@ class FileActions:
             name += os.path.splitext(self.page_name(page))[1]
         if name == self.page_name(page):
             return None
+        if self._window.filehandler.archive_type is None:
+            return self._rename_on_disk(page, path, name)
         self._page_names[path] = name
         self.offer_to_save()
+        return name
+
+    def _rename_on_disk(self, page: int, path: str,
+                        name: str) -> "str | None":
+        """Rename the file of a page that is a file: a book read as a
+        folder of images has no archive to write, so the rename happens
+        at once, and is what the window shows from then on.
+
+        A name that is taken is refused rather than written over:
+        MComix is renaming one page of a book here, not moving a file
+        about, and the file of that name may be another page of the
+        same book.
+        """
+        target = os.path.join(os.path.dirname(path), name)
+        if os.path.lexists(target):
+            dialog = message_dialog.MessageDialog(
+                self._window, buttons=Gtk.ButtonsType.CLOSE)
+            dialog.set_text(_('A file of that name is there already.'))
+            dialog.run_async(lambda response: None)
+            return None
+        try:
+            os.rename(path, target)
+        except OSError as error:
+            # Not translated, as image_handler's own failures are not:
+            # what it says is a file system error to whoever reads the
+            # log, and the reader has been told by the page not moving.
+            log.error('Could not rename %s: %r', path, error)
+            return None
+        # Every listing the window holds is a list of paths, and one of
+        # them has just changed: the book on screen, and the ones the
+        # undo stack is keeping, which would otherwise bring back a
+        # page under the name it no longer has.
+        listing = self._window.imagehandler.get_image_files()
+        for kept in self._undone + self._redone:
+            for index, held in enumerate(kept):
+                if held == path:
+                    kept[index] = target
+        listing[page - 1] = target
+        self._show_pages(listing,
+                         self._window.imagehandler.get_current_page())
         return name
 
     def rename_popup_page(self, *args: object) -> None:
