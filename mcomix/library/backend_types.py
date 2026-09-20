@@ -26,6 +26,27 @@ if TYPE_CHECKING:
     from mcomix.library.backend import _LibraryBackend
 
 
+#: What quotes a wildcard in the LIKE patterns below.  Every query
+#: using one names it with ESCAPE, since SQLite has no default.
+_LIKE_ESCAPE = '\\'
+
+
+def _contains(text: str) -> str:
+    """<text> as a LIKE pattern that matches wherever it occurs.
+
+    The library's filter is what a reader typed, not a pattern.  Put
+    into LIKE as it stands, a per-cent sign matched every book in the
+    library and an underscore matched any character at all, so filtering
+    for "50% off" or "Vol_01" answered with books that hold neither.
+    The two wildcards are quoted here, and so is the quoting character
+    itself.  The covers a filter leaves on screen are chosen in Python,
+    by a plain substring, so this is also what makes the two agree.
+    """
+    for character in (_LIKE_ESCAPE, '%', '_'):
+        text = text.replace(character, _LIKE_ESCAPE + character)
+    return '%' + text + '%'
+
+
 class _BackendObject:
 
     """Something that reads and writes through the library backend.
@@ -250,9 +271,9 @@ class _Collection(_BackendObject):
         if filter_string:
             # Parenthesised: AND binds tighter than OR, so without them
             # a matching path would answer for the whole library.
-            sql += ''' AND (book.name LIKE '%' || ? || '%'
-                            OR book.path LIKE '%' || ? || '%') '''
-            sql_args += [filter_string, filter_string]
+            sql += ''' AND (book.name LIKE ? ESCAPE '\\'
+                            OR book.path LIKE ? ESCAPE '\\') '''
+            sql_args += [_contains(filter_string), _contains(filter_string)]
         sql += ' ORDER BY book.id'
 
         rows = self.get_backend().fetchall(sql, sql_args)
@@ -326,10 +347,10 @@ class _DefaultCollection(_Collection):
 
         sql_args = []
         if filter_string:
-            sql += ''' WHERE book.name LIKE '%' || ? || '%' '''
-            sql_args.append(filter_string)
-            sql += ''' OR book.path LIKE '%' || ? || '%' '''
-            sql_args.append(filter_string)
+            sql += ''' WHERE book.name LIKE ? ESCAPE '\\' '''
+            sql_args.append(_contains(filter_string))
+            sql += ''' OR book.path LIKE ? ESCAPE '\\' '''
+            sql_args.append(_contains(filter_string))
 
         rows = self.get_backend().fetchall(sql, sql_args)
 

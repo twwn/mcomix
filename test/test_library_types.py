@@ -98,6 +98,41 @@ class CollectionTest(unittest.TestCase):
                          ['03-RAR-Normal.rar'])
         self.assertEqual(test_col.get_books('zip'), [])
 
+    def _books_named(self, *names):
+        """Add a copy of the fixture archive under each of <names>."""
+        directory = tempfile.mkdtemp('mcomix-test')
+        self.addCleanup(shutil.rmtree, directory)
+        source = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        for name in names:
+            shutil.copy(source, os.path.join(directory, name))
+            self.library.add_book(os.path.join(directory, name), None)
+
+    def test_a_filter_is_read_as_text_and_not_as_a_pattern(self):
+        """A per-cent sign is LIKE's "anything at all" and an underscore
+        its "any character", so a filter holding either answered with
+        books that do not hold it - and with every book in the library
+        for a filter of "%" alone."""
+        self._books_named('50% off.zip', '50x off.zip',
+                          'Vol_01.zip', 'VolX01.zip')
+        default = backend_types.DefaultCollection
+
+        self.assertEqual([book.name for book in default.get_books('50%')],
+                         ['50% off.zip'])
+        self.assertEqual([book.name for book in default.get_books('vol_')],
+                         ['Vol_01.zip'])
+        self.assertEqual(default.get_books('%.zip%'), [])
+
+    def test_a_collection_filter_is_read_as_text_too(self):
+        """The collection's own query filters with a LIKE of its own."""
+        self._books_named('50% off.zip', '50x off.zip')
+        test_col = self.library.get_collection_by_name("Test")
+        for book in backend_types.DefaultCollection.get_books():
+            if book.name.startswith('50'):
+                self.library.add_book_to_collection(book.id, test_col.id)
+
+        self.assertEqual([book.name for book in test_col.get_books('50%')],
+                         ['50% off.zip'])
+
     def test_get_book_with_attribs(self):
         books = backend_types.DefaultCollection.get_books('zip')
 
