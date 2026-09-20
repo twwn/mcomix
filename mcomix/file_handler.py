@@ -638,9 +638,16 @@ class FileHandler:
     def update_comment_extensions(self) -> None:
         """Update the regular expression used to filter out comments in
         archives by their filename.
+
+        The extensions are what a reader typed into the preferences,
+        not a pattern: joined into one as they stood, "c++" matched
+        "cc", "a.b" matched "axb", and a lone bracket raised re.error
+        here - in the handler's constructor, so MComix would not start
+        at all until the preferences file was edited by hand.
         """
-        exts = '|'.join(prefs['comment extensions'])
-        self._comment_re = re.compile(r'\.(%s)\s*$' % exts, re.I)
+        self._comment_re = re.compile(
+            r'\.' + tools.fixed_strings_regex(prefs['comment extensions'])
+            + r'\s*$', re.I)
 
     def get_path_to_base(self) -> str | None:
         """Return the full path to the current base (path to archive or

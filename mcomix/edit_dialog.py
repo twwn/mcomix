@@ -14,6 +14,7 @@ from mcomix import column_list
 from mcomix import edit_image_area
 from mcomix import edit_comment_area
 from mcomix import thumbnail_list
+from mcomix import tools
 from mcomix import widgets
 from mcomix import constants
 from mcomix import message_dialog
@@ -246,8 +247,11 @@ class _EditArchiveDialog(Dialog):
 
     def _import_files(self, paths: list[str]) -> None:
         """Add the chosen <paths> to the archive being edited."""
-        exts = '|'.join(prefs['comment extensions'])
-        comment_re = re.compile(r'\.(%s)\s*$' % exts, re.I)
+        # The extensions are read as text, not as a pattern: see
+        # FileHandler.update_comment_extensions().
+        comment_re = re.compile(
+            r'\.' + tools.fixed_strings_regex(prefs['comment extensions'])
+            + r'\s*$', re.I)
 
         images = [path for path in paths if image_tools.is_image_file(path)]
         comments = [path for path in paths

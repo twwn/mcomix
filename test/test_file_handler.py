@@ -556,3 +556,52 @@ class FileInfoTest(MComixTest):
         self.assertEqual(1, len(messages), messages)
         self.assertIn(constants.FILEINFO_PICKLE_PATH, messages[0])
         self.assertNotIn('preferences', messages[0])
+
+
+class CommentExtensionsTest(MComixTest):
+
+    """The extensions that say which files in an archive are comments.
+
+    They are what a reader typed into the preferences, and they went
+    into a regular expression as they stood: a lone bracket raised
+    re.error inside the file handler's constructor, so MComix would not
+    start until the preferences file was edited by hand.
+    """
+
+    def setUp(self):
+        super().setUp()
+        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
+                          constants.THUMBNAIL_PATH):
+            os.makedirs(directory, exist_ok=True)
+        icons.load_icons()
+        self.window = main.MainWindow()
+        main.set_main_window(self.window)
+        pump()
+
+    def tearDown(self):
+        self.window.terminate_program()
+        self.window.destroy()
+        main.set_main_window(None)
+        pump()
+        super().tearDown()
+
+    def _pattern_for(self, *extensions):
+        prefs['comment extensions'] = list(extensions)
+        self.window.filehandler.update_comment_extensions()
+        return self.window.filehandler._comment_re
+
+    def test_a_bracket_is_an_extension_rather_than_a_syntax_error(self):
+        pattern = self._pattern_for('(', 'txt')
+        self.assertTrue(pattern.search('read me.txt'))
+        self.assertFalse(pattern.search('read me.doc'))
+
+    def test_an_extension_is_matched_as_the_text_it_is(self):
+        pattern = self._pattern_for('c++')
+        self.assertTrue(pattern.search('notes.c++'))
+        self.assertFalse(pattern.search('notes.cc'),
+                         'the plus signs were read as "one or more"')
+
+    def test_a_dot_in_an_extension_matches_only_a_dot(self):
+        pattern = self._pattern_for('a.b')
+        self.assertTrue(pattern.search('notes.a.b'))
+        self.assertFalse(pattern.search('notes.axb'))
