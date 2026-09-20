@@ -434,6 +434,9 @@ class FileActions:
         self._window.uimanager.move_to.remember(directory)
         backend.LibraryBackend().update_book_path(current_file, target)
         bookmark_backend.BookmarksStore.update_path(current_file, target)
+        # The book is about to be opened where it landed, which records
+        # that; the entry for where it was would open nothing.
+        self._window.uimanager.recent.remove_path(current_file)
         # A loose image works out its own page from the file it is
         # opened on; only an archive has to be told which one to show.
         self._window.filehandler.open_file(target, page if in_archive else 0)

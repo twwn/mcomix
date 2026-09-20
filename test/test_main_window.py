@@ -1260,6 +1260,21 @@ class MainWindowTest(MComixTest):
         self.assertEqual([bookmark._path
                           for bookmark in store.get_bookmarks()], [moved])
 
+    def test_the_recent_list_lets_go_of_the_path_a_book_has_left(self):
+        """The book is opened again where it landed, which records that.
+        The entry for where it was would open nothing."""
+        source = self._movable_book()
+        destination = os.path.join(self.tmp_dir, 'destination')
+        os.makedirs(destination)
+        recent_menu = self.window.uimanager.recent
+
+        with unittest.mock.patch.object(recent_menu,
+                                        'remove_path') as forgotten:
+            self.window.file_actions.move_current_file(destination)
+            self._pump()
+
+        forgotten.assert_called_once_with(source)
+
     def test_the_library_follows_a_book_that_is_moved(self):
         source = self._movable_book()
         destination = os.path.join(self.tmp_dir, 'destination')
