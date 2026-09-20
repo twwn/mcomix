@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix zh_TW\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-20 13:30+0200\n"
+"POT-Creation-Date: 2026-09-20 18:45+0200\n"
 "PO-Revision-Date: 2013-07-05 21:37+0800\n"
 "Last-Translator: Wayne Su <mstarmstar@hotmail.com>\n"
 "Language-Team: \n"
@@ -92,7 +92,7 @@ msgid "_No"
 msgstr "否(_N)"
 
 #: mcomix/bookmark_backend.py:329 mcomix/edit_dialog.py:58
-#: mcomix/file_actions.py:486 mcomix/file_chooser_base_dialog.py:106
+#: mcomix/file_actions.py:639 mcomix/file_chooser_base_dialog.py:106
 #: mcomix/file_chooser_base_dialog.py:111
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:32
@@ -206,16 +206,16 @@ msgstr ""
 msgid "Size"
 msgstr "大小"
 
-#: mcomix/edit_comment_area.py:92 mcomix/edit_image_area.py:110
+#: mcomix/edit_comment_area.py:92 mcomix/edit_image_area.py:112
 msgid "Remove from archive"
 msgstr "從壓縮檔移除"
 
-#: mcomix/edit_comment_area.py:95 mcomix/edit_image_area.py:114
+#: mcomix/edit_comment_area.py:95 mcomix/edit_image_area.py:116
 #: mcomix/ui.py:441
 msgid "_Undo"
 msgstr "復原(_U)"
 
-#: mcomix/edit_comment_area.py:96 mcomix/edit_image_area.py:115
+#: mcomix/edit_comment_area.py:96 mcomix/edit_image_area.py:117
 #: mcomix/ui.py:444
 msgid "_Redo"
 msgstr "重做(_R)"
@@ -244,16 +244,16 @@ msgstr "圖片"
 msgid "Comment files"
 msgstr "註解檔"
 
-#: mcomix/edit_dialog.py:194 mcomix/file_actions.py:298
+#: mcomix/edit_dialog.py:194 mcomix/file_actions.py:451
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "！ 無法儲存壓縮檔 %(archivefile)s：%(error)s"
 
-#: mcomix/edit_dialog.py:207 mcomix/file_actions.py:303
+#: mcomix/edit_dialog.py:207 mcomix/file_actions.py:456
 msgid "The new archive could not be saved!"
 msgstr "無法儲存新壓縮檔！"
 
-#: mcomix/edit_dialog.py:208 mcomix/file_actions.py:304
+#: mcomix/edit_dialog.py:208 mcomix/file_actions.py:457
 msgid "The original files have not been removed."
 msgstr "原始檔案沒有被移除。"
 
@@ -261,7 +261,11 @@ msgstr "原始檔案沒有被移除。"
 msgid "Archives are stored as ZIP files."
 msgstr "已儲存為 ZIP 壓縮檔。"
 
-#: mcomix/edit_image_area.py:111
+#: mcomix/edit_image_area.py:111 mcomix/ui.py:435
+msgid "Re_name page..."
+msgstr "重新命名頁面(_N)..."
+
+#: mcomix/edit_image_area.py:113
 msgid "Select _All"
 msgstr "全選(_A)"
 
@@ -277,8 +281,9 @@ msgstr "還原(_R)"
 msgid "Reset to defaults."
 msgstr "重設為預設值。"
 
-#: mcomix/enhance_dialog.py:35 mcomix/file_actions.py:254
-#: mcomix/file_chooser_base_dialog.py:112 mcomix/openwith.py:360
+#: mcomix/enhance_dialog.py:35 mcomix/file_actions.py:366
+#: mcomix/file_actions.py:407 mcomix/file_chooser_base_dialog.py:112
+#: mcomix/openwith.py:360
 msgid "_Save"
 msgstr "儲存(_S)"
 
@@ -325,83 +330,98 @@ msgstr "反轉圖片色彩(_I)"
 msgid "Invert (negate) image colors."
 msgstr "反轉（負片）圖片的色彩。"
 
-#: mcomix/file_actions.py:113
+#: mcomix/file_actions.py:127 mcomix/file_actions.py:787
+msgid "A file of that name is there already."
+msgstr "那裡已經有同名的檔案。"
+
+#: mcomix/file_actions.py:182
 msgid "Rename page?"
 msgstr "重新命名頁面？"
 
-#: mcomix/file_actions.py:114
+#: mcomix/file_actions.py:183
 msgid "Please enter a new name for this page."
 msgstr "請輸入這一頁的新名稱。"
 
-#: mcomix/file_actions.py:250
+#: mcomix/file_actions.py:362
+#, python-format
+msgid "Write \"%s\" again before closing it?"
+msgstr "關閉前重新寫入「%s」嗎？"
+
+#: mcomix/file_actions.py:363
+msgid ""
+"The book has changes that the archive on disk does not hold. They are lost "
+"when it closes."
+msgstr "本書有磁碟上的壓縮檔中沒有的變更。關閉後這些變更將遺失。"
+
+#: mcomix/file_actions.py:365
+msgid "_Close without saving"
+msgstr "不儲存並關閉(_C)"
+
+#: mcomix/file_actions.py:403
 #, python-format
 msgid "Write \"%s\" again now?"
 msgstr "現在重新寫入「%s」嗎？"
 
-#: mcomix/file_actions.py:251
+#: mcomix/file_actions.py:404
 msgid ""
 "The archive on disk will be replaced by the book as it stands, without the "
 "pages that were removed."
 msgstr "磁碟上的壓縮檔將被替換為目前的書，其中不含已移除的頁面。"
 
-#: mcomix/file_actions.py:253
+#: mcomix/file_actions.py:406
 msgid "_Not now"
 msgstr "暫不(_N)"
 
-#: mcomix/file_actions.py:404
+#: mcomix/file_actions.py:557
 msgid "Save page as"
 msgstr "頁面另存為"
 
-#: mcomix/file_actions.py:445
+#: mcomix/file_actions.py:598
 #, python-format
 msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "！ 無法將 %(file)s 儲存到 %(directory)s：%(error)s"
 
-#: mcomix/file_actions.py:449 mcomix/file_actions.py:632
+#: mcomix/file_actions.py:602 mcomix/file_actions.py:789
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "那裡空間不足：檔案大小為 %s。"
 
-#: mcomix/file_actions.py:455
+#: mcomix/file_actions.py:608
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "無法將 \"%(file)s\" 儲存到 \"%(directory)s\""
 
-#: mcomix/file_actions.py:484
+#: mcomix/file_actions.py:637
 #, python-format
 msgid "Delete \"%s\"?"
 msgstr "要刪除 %s ？"
 
-#: mcomix/file_actions.py:485
+#: mcomix/file_actions.py:638
 msgid "The file will be deleted from your harddisk."
 msgstr "檔案將會從你的硬碟中刪除。"
 
-#: mcomix/file_actions.py:487 mcomix/ui.py:433
+#: mcomix/file_actions.py:640 mcomix/ui.py:433
 msgid "_Delete"
 msgstr "刪除(_D)"
 
-#: mcomix/file_actions.py:553
+#: mcomix/file_actions.py:710
 #, python-format
 msgid "The file is gone, and its %d bookmark cannot be opened any more."
 msgid_plural ""
 "The file is gone, and its %d bookmarks cannot be opened any more."
 msgstr[0] "檔案已刪除，其中的 %d 個書籤無法再開啟。"
 
-#: mcomix/file_actions.py:557
+#: mcomix/file_actions.py:714
 #, python-format
 msgid "Remove the bookmarks in \"%s\"?"
 msgstr "刪除「%s」中的書籤？"
 
-#: mcomix/file_actions.py:626
+#: mcomix/file_actions.py:783
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr "！ 無法將 %(file)s 移動到 %(directory)s：%(error)s"
 
-#: mcomix/file_actions.py:630
-msgid "A file of that name is there already."
-msgstr "那裡已經有同名的檔案。"
-
-#: mcomix/file_actions.py:638
+#: mcomix/file_actions.py:795
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "無法將 \"%(file)s\" 移動到 \"%(directory)s\""
@@ -458,28 +478,28 @@ msgstr "新增書籍"
 msgid "_Add"
 msgstr "加入(_A)..."
 
-#: mcomix/file_handler.py:224
+#: mcomix/file_handler.py:239
 #, python-format
 msgid "No images in '%s'"
 msgstr "%s 裏沒有圖片"
 
-#: mcomix/file_handler.py:384
+#: mcomix/file_handler.py:406
 #, python-format
 msgid "Could not open %s: No such file."
 msgstr "無法開啟 %s：沒有這個檔案。"
 
-#: mcomix/file_handler.py:387 mcomix/file_provider.py:222
+#: mcomix/file_handler.py:409 mcomix/file_provider.py:222
 #: mcomix/file_provider.py:275
 #, python-format
 msgid "Could not open %s: Permission denied."
 msgstr "無法開啟 %s：沒有權限。"
 
-#: mcomix/file_handler.py:538
+#: mcomix/file_handler.py:560
 #, python-format
 msgid "Continue reading from page %d?"
 msgstr "要從第%d頁開始繼續讀嗎？"
 
-#: mcomix/file_handler.py:539
+#: mcomix/file_handler.py:561
 #, python-format
 msgid ""
 "You stopped reading here on %(date)s, %(time)s. If you choose \"Yes\", "
@@ -489,7 +509,7 @@ msgstr ""
 "你在 %(date)s %(time)s 時讀到這裏就停了。如果你選「是」，可以從第 %(page)d 頁"
 "開始讀；否則就會載入第一頁。"
 
-#: mcomix/file_handler.py:910
+#: mcomix/file_handler.py:932
 #, python-format
 msgid ""
 "! Corrupt file \"%s\", deleting it; the last file read will not be reopened."
@@ -2209,10 +2229,6 @@ msgstr "將開啟選單時所在的頁面複製到剪貼簿。"
 #: mcomix/ui.py:433
 msgid "Deletes the current file or archive from disk."
 msgstr "從磁碟刪除目前這個檔案或壓縮檔。"
-
-#: mcomix/ui.py:435
-msgid "Re_name page..."
-msgstr "重新命名頁面(_N)..."
 
 #: mcomix/ui.py:436
 msgid "Renames the page the menu was opened over."

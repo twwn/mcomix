@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: comix 3.6.4\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-20 13:30+0200\n"
+"POT-Creation-Date: 2026-09-20 18:45+0200\n"
 "PO-Revision-Date: 2008-05-21 12:40+0330\n"
 "Last-Translator: Meelad Zakaria <meelad@farsiweb.info>\n"
 "Language-Team: Persian \n"
@@ -91,7 +91,7 @@ msgid "_No"
 msgstr "_خیر"
 
 #: mcomix/bookmark_backend.py:329 mcomix/edit_dialog.py:58
-#: mcomix/file_actions.py:486 mcomix/file_chooser_base_dialog.py:106
+#: mcomix/file_actions.py:639 mcomix/file_chooser_base_dialog.py:106
 #: mcomix/file_chooser_base_dialog.py:111
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:32
@@ -233,16 +233,16 @@ msgstr "اندازه"
 #
 # File: src/edit.py, line: 168
 # File: src/edit.py, line: 285
-#: mcomix/edit_comment_area.py:92 mcomix/edit_image_area.py:110
+#: mcomix/edit_comment_area.py:92 mcomix/edit_image_area.py:112
 msgid "Remove from archive"
 msgstr "برداشتن از بایگانی"
 
-#: mcomix/edit_comment_area.py:95 mcomix/edit_image_area.py:114
+#: mcomix/edit_comment_area.py:95 mcomix/edit_image_area.py:116
 #: mcomix/ui.py:441
 msgid "_Undo"
 msgstr "_واگرد"
 
-#: mcomix/edit_comment_area.py:96 mcomix/edit_image_area.py:115
+#: mcomix/edit_comment_area.py:96 mcomix/edit_image_area.py:117
 #: mcomix/ui.py:444
 msgid "_Redo"
 msgstr "_ازنو"
@@ -277,20 +277,20 @@ msgid "Comment files"
 msgstr "پرونده‌های توضیح"
 
 #
-#: mcomix/edit_dialog.py:194 mcomix/file_actions.py:298
+#: mcomix/edit_dialog.py:194 mcomix/file_actions.py:451
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! ذخیرهٔ بایگانی %(archivefile)s ممکن نشد: %(error)s"
 
 #
 # File: src/edit.py, line: 99
-#: mcomix/edit_dialog.py:207 mcomix/file_actions.py:303
+#: mcomix/edit_dialog.py:207 mcomix/file_actions.py:456
 msgid "The new archive could not be saved!"
 msgstr "ذخیرهٔ بایگانی جدید ممکن نشد!"
 
 #
 # File: src/edit.py, line: 101
-#: mcomix/edit_dialog.py:208 mcomix/file_actions.py:304
+#: mcomix/edit_dialog.py:208 mcomix/file_actions.py:457
 msgid "The original files have not been removed."
 msgstr "پرونده‌های اصلی برداشته نشده‌اند."
 
@@ -300,7 +300,11 @@ msgstr "پرونده‌های اصلی برداشته نشده‌اند."
 msgid "Archives are stored as ZIP files."
 msgstr "بایگانی‌ها به شکل پرونده‌های ZIP ذخیره می‌شوند."
 
-#: mcomix/edit_image_area.py:111
+#: mcomix/edit_image_area.py:111 mcomix/ui.py:435
+msgid "Re_name page..."
+msgstr "ت_غییر نام صفحه..."
+
+#: mcomix/edit_image_area.py:113
 msgid "Select _All"
 msgstr "انتخاب _همه"
 
@@ -318,8 +322,9 @@ msgstr "باز_گشت"
 msgid "Reset to defaults."
 msgstr "بازنشانی به پیش‌فرض‌ها."
 
-#: mcomix/enhance_dialog.py:35 mcomix/file_actions.py:254
-#: mcomix/file_chooser_base_dialog.py:112 mcomix/openwith.py:360
+#: mcomix/enhance_dialog.py:35 mcomix/file_actions.py:366
+#: mcomix/file_actions.py:407 mcomix/file_chooser_base_dialog.py:112
+#: mcomix/openwith.py:360
 msgid "_Save"
 msgstr "_ذخیره"
 
@@ -379,63 +384,82 @@ msgstr "_وارونه کردن رنگ‌های تصویر"
 msgid "Invert (negate) image colors."
 msgstr "رنگ‌های تصویر را وارونه می‌کند."
 
-#: mcomix/file_actions.py:113
+#: mcomix/file_actions.py:127 mcomix/file_actions.py:787
+msgid "A file of that name is there already."
+msgstr "پرونده‌ای با این نام از پیش آنجاست."
+
+#: mcomix/file_actions.py:182
 msgid "Rename page?"
 msgstr "نام صفحه تغییر کند؟"
 
-#: mcomix/file_actions.py:114
+#: mcomix/file_actions.py:183
 msgid "Please enter a new name for this page."
 msgstr "برای این صفحه نام تازه‌ای وارد کنید."
 
-#: mcomix/file_actions.py:250
+#: mcomix/file_actions.py:362
+#, python-format
+msgid "Write \"%s\" again before closing it?"
+msgstr "«%s» پیش از بستن دوباره نوشته شود؟"
+
+#: mcomix/file_actions.py:363
+msgid ""
+"The book has changes that the archive on disk does not hold. They are lost "
+"when it closes."
+msgstr "کتاب تغییرهایی دارد که بایگانی روی دیسک آن‌ها را ندارد. با بستن از دست می‌روند."
+
+#: mcomix/file_actions.py:365
+msgid "_Close without saving"
+msgstr "ب_ستن بدون ذخیره"
+
+#: mcomix/file_actions.py:403
 #, python-format
 msgid "Write \"%s\" again now?"
 msgstr "«%s» همین حالا دوباره نوشته شود؟"
 
-#: mcomix/file_actions.py:251
+#: mcomix/file_actions.py:404
 msgid ""
 "The archive on disk will be replaced by the book as it stands, without the "
 "pages that were removed."
 msgstr ""
 "بایگانی روی دیسک با کتاب به شکل کنونی آن، بدون صفحه‌های حذف‌شده، جایگزین می‌شود."
 
-#: mcomix/file_actions.py:253
+#: mcomix/file_actions.py:406
 msgid "_Not now"
 msgstr "_حالا نه"
 
-#: mcomix/file_actions.py:404
+#: mcomix/file_actions.py:557
 msgid "Save page as"
 msgstr "ذخیرهٔ صفحه به نام"
 
-#: mcomix/file_actions.py:445
+#: mcomix/file_actions.py:598
 #, python-format
 msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! ذخیرهٔ %(file)s در %(directory)s ممکن نشد: %(error)s"
 
-#: mcomix/file_actions.py:449 mcomix/file_actions.py:632
+#: mcomix/file_actions.py:602 mcomix/file_actions.py:789
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "آنجا فضای کافی نیست: اندازهٔ پرونده %s است."
 
-#: mcomix/file_actions.py:455
+#: mcomix/file_actions.py:608
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "ذخیرهٔ «%(file)s» در «%(directory)s» ممکن نشد"
 
-#: mcomix/file_actions.py:484
+#: mcomix/file_actions.py:637
 #, python-format
 msgid "Delete \"%s\"?"
 msgstr "«%s» حذف شود؟"
 
-#: mcomix/file_actions.py:485
+#: mcomix/file_actions.py:638
 msgid "The file will be deleted from your harddisk."
 msgstr "پرونده از دیسک سخت شما حذف خواهد شد."
 
-#: mcomix/file_actions.py:487 mcomix/ui.py:433
+#: mcomix/file_actions.py:640 mcomix/ui.py:433
 msgid "_Delete"
 msgstr "_حذف"
 
-#: mcomix/file_actions.py:553
+#: mcomix/file_actions.py:710
 #, python-format
 msgid "The file is gone, and its %d bookmark cannot be opened any more."
 msgid_plural ""
@@ -443,21 +467,17 @@ msgid_plural ""
 msgstr[0] "پرونده از بین رفته و %d نشانک آن دیگر گشوده نمی‌شود."
 msgstr[1] "پرونده از بین رفته و %d نشانک آن دیگر گشوده نمی‌شوند."
 
-#: mcomix/file_actions.py:557
+#: mcomix/file_actions.py:714
 #, python-format
 msgid "Remove the bookmarks in \"%s\"?"
 msgstr "نشانک‌های «%s» حذف شوند؟"
 
-#: mcomix/file_actions.py:626
+#: mcomix/file_actions.py:783
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr "! انتقال %(file)s به %(directory)s ممکن نشد: %(error)s"
 
-#: mcomix/file_actions.py:630
-msgid "A file of that name is there already."
-msgstr "پرونده‌ای با این نام از پیش آنجاست."
-
-#: mcomix/file_actions.py:638
+#: mcomix/file_actions.py:795
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "انتقال «%(file)s» به «%(directory)s» ممکن نشد"
@@ -535,32 +555,32 @@ msgstr "ا_فزودن"
 
 #
 # File: src/filehandler.py, line: 285
-#: mcomix/file_handler.py:224
+#: mcomix/file_handler.py:239
 #, python-format
 msgid "No images in '%s'"
 msgstr "هیچ تصویری در «%s» نیست"
 
 #
 # File: src/filehandler.py, line: 213
-#: mcomix/file_handler.py:384
+#: mcomix/file_handler.py:406
 #, python-format
 msgid "Could not open %s: No such file."
 msgstr "گشودن %s ممکن نشد: چنین پرونده‌ای وجود ندارد."
 
 #
 # File: src/filehandler.py, line: 217
-#: mcomix/file_handler.py:387 mcomix/file_provider.py:222
+#: mcomix/file_handler.py:409 mcomix/file_provider.py:222
 #: mcomix/file_provider.py:275
 #, python-format
 msgid "Could not open %s: Permission denied."
 msgstr "گشودن %s ممکن نشد: اجازه داده نشد."
 
-#: mcomix/file_handler.py:538
+#: mcomix/file_handler.py:560
 #, python-format
 msgid "Continue reading from page %d?"
 msgstr "خواندن از صفحهٔ %d ادامه یابد؟"
 
-#: mcomix/file_handler.py:539
+#: mcomix/file_handler.py:561
 #, python-format
 msgid ""
 "You stopped reading here on %(date)s, %(time)s. If you choose \"Yes\", "
@@ -571,7 +591,7 @@ msgstr ""
 "برگزینید، خواندن از صفحهٔ %(page)d پی گرفته می‌شود. در غیر این صورت نخستین "
 "صفحه بار می‌شود."
 
-#: mcomix/file_handler.py:910
+#: mcomix/file_handler.py:932
 #, python-format
 msgid ""
 "! Corrupt file \"%s\", deleting it; the last file read will not be reopened."
@@ -2613,10 +2633,6 @@ msgstr "صفحه‌ای را که فهرست روی آن گشوده شد در ت
 #: mcomix/ui.py:433
 msgid "Deletes the current file or archive from disk."
 msgstr "پرونده یا بایگانی کنونی را از دیسک حذف می‌کند."
-
-#: mcomix/ui.py:435
-msgid "Re_name page..."
-msgstr "ت_غییر نام صفحه..."
 
 #: mcomix/ui.py:436
 msgid "Renames the page the menu was opened over."

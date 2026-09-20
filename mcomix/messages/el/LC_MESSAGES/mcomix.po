@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-20 13:30+0200\n"
+"POT-Creation-Date: 2026-09-20 18:45+0200\n"
 "PO-Revision-Date: 2006-09-27 10:18+0200\n"
 "Last-Translator: Paul Chatzidimitriou <paulmedic555@gmail.com>\n"
 "Language-Team: \n"
@@ -91,7 +91,7 @@ msgid "_No"
 msgstr "Ό_χι"
 
 #: mcomix/bookmark_backend.py:329 mcomix/edit_dialog.py:58
-#: mcomix/file_actions.py:486 mcomix/file_chooser_base_dialog.py:106
+#: mcomix/file_actions.py:639 mcomix/file_chooser_base_dialog.py:106
 #: mcomix/file_chooser_base_dialog.py:111
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:32
@@ -236,16 +236,16 @@ msgstr "Μέγεθος"
 #
 # File: src/edit.py, line: 168
 # File: src/edit.py, line: 285
-#: mcomix/edit_comment_area.py:92 mcomix/edit_image_area.py:110
+#: mcomix/edit_comment_area.py:92 mcomix/edit_image_area.py:112
 msgid "Remove from archive"
 msgstr "Αφαίρεση από το αρχείο"
 
-#: mcomix/edit_comment_area.py:95 mcomix/edit_image_area.py:114
+#: mcomix/edit_comment_area.py:95 mcomix/edit_image_area.py:116
 #: mcomix/ui.py:441
 msgid "_Undo"
 msgstr "Α_ναίρεση"
 
-#: mcomix/edit_comment_area.py:96 mcomix/edit_image_area.py:115
+#: mcomix/edit_comment_area.py:96 mcomix/edit_image_area.py:117
 #: mcomix/ui.py:444
 msgid "_Redo"
 msgstr "Ε_πανάληψη"
@@ -280,20 +280,20 @@ msgid "Comment files"
 msgstr "Αρχεία σχολίων"
 
 #
-#: mcomix/edit_dialog.py:194 mcomix/file_actions.py:298
+#: mcomix/edit_dialog.py:194 mcomix/file_actions.py:451
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! Δεν ήταν δυνατή η αποθήκευση του αρχείου %(archivefile)s: %(error)s"
 
 #
 # File: src/edit.py, line: 99
-#: mcomix/edit_dialog.py:207 mcomix/file_actions.py:303
+#: mcomix/edit_dialog.py:207 mcomix/file_actions.py:456
 msgid "The new archive could not be saved!"
 msgstr "Δεν ήταν δυνατή η αποθήκευση του νέου αρχείου!"
 
 #
 # File: src/edit.py, line: 101
-#: mcomix/edit_dialog.py:208 mcomix/file_actions.py:304
+#: mcomix/edit_dialog.py:208 mcomix/file_actions.py:457
 msgid "The original files have not been removed."
 msgstr "Τα αρχικά αρχεία δεν αφαιρέθηκαν."
 
@@ -303,7 +303,11 @@ msgstr "Τα αρχικά αρχεία δεν αφαιρέθηκαν."
 msgid "Archives are stored as ZIP files."
 msgstr "Τα αρχεία αποθηκεύονται ως αρχεία ZIP."
 
-#: mcomix/edit_image_area.py:111
+#: mcomix/edit_image_area.py:111 mcomix/ui.py:435
+msgid "Re_name page..."
+msgstr "Μετονομασ_ία σελίδας..."
+
+#: mcomix/edit_image_area.py:113
 msgid "Select _All"
 msgstr "Επιλογή ό_λων"
 
@@ -321,8 +325,9 @@ msgstr "_Επαναφορά"
 msgid "Reset to defaults."
 msgstr "Επαναφορά των προεπιλογών."
 
-#: mcomix/enhance_dialog.py:35 mcomix/file_actions.py:254
-#: mcomix/file_chooser_base_dialog.py:112 mcomix/openwith.py:360
+#: mcomix/enhance_dialog.py:35 mcomix/file_actions.py:366
+#: mcomix/file_actions.py:407 mcomix/file_chooser_base_dialog.py:112
+#: mcomix/openwith.py:360
 msgid "_Save"
 msgstr "Απ_οθήκευση"
 
@@ -382,20 +387,39 @@ msgstr "Αντιστροφή _χρωμάτων εικόνας"
 msgid "Invert (negate) image colors."
 msgstr "Αντιστρέφει τα χρώματα της εικόνας."
 
-#: mcomix/file_actions.py:113
+#: mcomix/file_actions.py:127 mcomix/file_actions.py:787
+msgid "A file of that name is there already."
+msgstr "Υπάρχει ήδη αρχείο με αυτό το όνομα."
+
+#: mcomix/file_actions.py:182
 msgid "Rename page?"
 msgstr "Μετονομασία σελίδας;"
 
-#: mcomix/file_actions.py:114
+#: mcomix/file_actions.py:183
 msgid "Please enter a new name for this page."
 msgstr "Δώστε ένα νέο όνομα για αυτήν τη σελίδα."
 
-#: mcomix/file_actions.py:250
+#: mcomix/file_actions.py:362
+#, python-format
+msgid "Write \"%s\" again before closing it?"
+msgstr "Εγγραφή του «%s» ξανά πριν από το κλείσιμο;"
+
+#: mcomix/file_actions.py:363
+msgid ""
+"The book has changes that the archive on disk does not hold. They are lost "
+"when it closes."
+msgstr "Το βιβλίο έχει αλλαγές που δεν περιέχει το αρχείο στον δίσκο. Θα χαθούν όταν κλείσει."
+
+#: mcomix/file_actions.py:365
+msgid "_Close without saving"
+msgstr "_Κλείσιμο χωρίς αποθήκευση"
+
+#: mcomix/file_actions.py:403
 #, python-format
 msgid "Write \"%s\" again now?"
 msgstr "Εγγραφή του «%s» ξανά τώρα;"
 
-#: mcomix/file_actions.py:251
+#: mcomix/file_actions.py:404
 msgid ""
 "The archive on disk will be replaced by the book as it stands, without the "
 "pages that were removed."
@@ -403,44 +427,44 @@ msgstr ""
 "Το αρχείο στον δίσκο θα αντικατασταθεί από το βιβλίο όπως είναι τώρα, χωρίς "
 "τις σελίδες που αφαιρέθηκαν."
 
-#: mcomix/file_actions.py:253
+#: mcomix/file_actions.py:406
 msgid "_Not now"
 msgstr "Ό_χι τώρα"
 
-#: mcomix/file_actions.py:404
+#: mcomix/file_actions.py:557
 msgid "Save page as"
 msgstr "Αποθήκευση σελίδας ως"
 
-#: mcomix/file_actions.py:445
+#: mcomix/file_actions.py:598
 #, python-format
 msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr ""
 "! Δεν ήταν δυνατή η αποθήκευση του %(file)s στο %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:449 mcomix/file_actions.py:632
+#: mcomix/file_actions.py:602 mcomix/file_actions.py:789
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "Δεν υπάρχει αρκετός χώρος εκεί: το αρχείο είναι %s."
 
-#: mcomix/file_actions.py:455
+#: mcomix/file_actions.py:608
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "Δεν ήταν δυνατή η αποθήκευση του «%(file)s» στο «%(directory)s»"
 
-#: mcomix/file_actions.py:484
+#: mcomix/file_actions.py:637
 #, python-format
 msgid "Delete \"%s\"?"
 msgstr "Διαγραφή του «%s»;"
 
-#: mcomix/file_actions.py:485
+#: mcomix/file_actions.py:638
 msgid "The file will be deleted from your harddisk."
 msgstr "Το αρχείο θα διαγραφεί από τον σκληρό δίσκο."
 
-#: mcomix/file_actions.py:487 mcomix/ui.py:433
+#: mcomix/file_actions.py:640 mcomix/ui.py:433
 msgid "_Delete"
 msgstr "Δ_ιαγραφή"
 
-#: mcomix/file_actions.py:553
+#: mcomix/file_actions.py:710
 #, python-format
 msgid "The file is gone, and its %d bookmark cannot be opened any more."
 msgid_plural ""
@@ -450,22 +474,18 @@ msgstr[0] ""
 msgstr[1] ""
 "Το αρχείο χάθηκε και οι %d σελιδοδείκτες του δεν μπορούν πια να ανοίξουν."
 
-#: mcomix/file_actions.py:557
+#: mcomix/file_actions.py:714
 #, python-format
 msgid "Remove the bookmarks in \"%s\"?"
 msgstr "Αφαίρεση των σελιδοδεικτών στο «%s»;"
 
-#: mcomix/file_actions.py:626
+#: mcomix/file_actions.py:783
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr ""
 "! Δεν ήταν δυνατή η μετακίνηση του %(file)s στο %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:630
-msgid "A file of that name is there already."
-msgstr "Υπάρχει ήδη αρχείο με αυτό το όνομα."
-
-#: mcomix/file_actions.py:638
+#: mcomix/file_actions.py:795
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "Δεν ήταν δυνατή η μετακίνηση του «%(file)s» στο «%(directory)s»"
@@ -543,32 +563,32 @@ msgstr "_Προσθήκη"
 
 #
 # File: src/filehandler.py, line: 285
-#: mcomix/file_handler.py:224
+#: mcomix/file_handler.py:239
 #, python-format
 msgid "No images in '%s'"
 msgstr "Δεν υπάρχουν εικόνες στο «%s»"
 
 #
 # File: src/filehandler.py, line: 213
-#: mcomix/file_handler.py:384
+#: mcomix/file_handler.py:406
 #, python-format
 msgid "Could not open %s: No such file."
 msgstr "Δεν ήταν δυνατό το άνοιγμα του %s: δεν υπάρχει τέτοιο αρχείο."
 
 #
 # File: src/filehandler.py, line: 217
-#: mcomix/file_handler.py:387 mcomix/file_provider.py:222
+#: mcomix/file_handler.py:409 mcomix/file_provider.py:222
 #: mcomix/file_provider.py:275
 #, python-format
 msgid "Could not open %s: Permission denied."
 msgstr "Δεν ήταν δυνατό το άνοιγμα του %s: δεν επιτρέπεται η πρόσβαση."
 
-#: mcomix/file_handler.py:538
+#: mcomix/file_handler.py:560
 #, python-format
 msgid "Continue reading from page %d?"
 msgstr "Συνέχεια ανάγνωσης από τη σελίδα %d;"
 
-#: mcomix/file_handler.py:539
+#: mcomix/file_handler.py:561
 #, python-format
 msgid ""
 "You stopped reading here on %(date)s, %(time)s. If you choose \"Yes\", "
@@ -579,7 +599,7 @@ msgstr ""
 "ανάγνωση θα συνεχιστεί στη σελίδα %(page)d. Αλλιώς θα φορτωθεί η πρώτη "
 "σελίδα."
 
-#: mcomix/file_handler.py:910
+#: mcomix/file_handler.py:932
 #, python-format
 msgid ""
 "! Corrupt file \"%s\", deleting it; the last file read will not be reopened."
@@ -2649,10 +2669,6 @@ msgstr "Αντιγράφει στο πρόχειρο τη σελίδα πάνω 
 #: mcomix/ui.py:433
 msgid "Deletes the current file or archive from disk."
 msgstr "Διαγράφει το τρέχον αρχείο από τον δίσκο."
-
-#: mcomix/ui.py:435
-msgid "Re_name page..."
-msgstr "Μετονομασ_ία σελίδας..."
 
 #: mcomix/ui.py:436
 msgid "Renames the page the menu was opened over."

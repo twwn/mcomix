@@ -77,6 +77,8 @@ Two pages change places with CTRL+SHIFT and a click: the first page clicked is m
 
 Pages can also be taken out in the main window. "Delete page", in the page's right-click menu, removes the page the menu was opened over, and "Edit &rarr; Undo" puts it back. CTRL and a click picks a page out, which is drawn outlined, and another such click puts it back; Delete then removes every page picked out, and the archive editor opens with them selected. The archive on disk is not touched until it is written. MComix offers to write it after a removal, and when a book with pages still picked out is left; either offer can be answered for good, and taken back under "Prompts answered for good" in the preferences.
 
+A change that has not been written is offered again on the way out: closing the book, opening another over it and quitting all stop to ask whether to write the archive first, since closing is what throws the change away. The question is the one asked at the change itself, so an answer remembered there stands here as well, and a book whose changes have all been undone has nothing to ask about.
+
 ### The format a save is written in ###
 
 Archives are saved as ZIP files, whatever they were read as. With "Save an edited archive in the format it was opened in" set in the preferences, a book is written back in its own format where MComix can write that: ZIP and tar always, 7z where the `7z` program is installed, and RAR where `rar` is. `unrar`, which reads RAR files, cannot write them, and a PDF is never written back.

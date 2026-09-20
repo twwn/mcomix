@@ -159,8 +159,23 @@ class FileHandler:
         if one was stored for this book. If it is positive we show that page,
         and if it is negative we show the last image.
 
-        Return True if the file is successfully loaded.
+        Return True if the file is successfully loaded.  A book with
+        changes that have not been written is asked about first, and
+        the file is then opened once that question has been answered:
+        the answer is not waited for, so the caller is told the file is
+        being opened rather than that it failed to open.
         """
+        def open_it() -> None:
+            self._open_file(path, start_page, keep_fileprovider)
+
+        if self._window.file_actions.has_unsaved_changes():
+            self._window.file_actions.before_closing(open_it)
+            return True
+        return self._open_file(path, start_page, keep_fileprovider)
+
+    def _open_file(self, path: str | list[str], start_page: int = 0,
+                   keep_fileprovider: bool = False) -> bool:
+        """Open <path>, the book that was open having been dealt with."""
 
         self._close()
 
@@ -289,8 +304,15 @@ class FileHandler:
         pass
 
     def close_file(self) -> None:
-        """Close the currently opened file and its provider. """
-        self._close(close_provider=True)
+        """Close the currently opened file and its provider.
+
+        A book whose pages have been changed without being written is
+        offered to the reader to write first: closing is what throws
+        those changes away, and the offer made at the change itself may
+        have been turned down by a reader who meant to go on editing.
+        """
+        self._window.file_actions.before_closing(
+            lambda: self._close(close_provider=True))
 
     def _close(self, close_provider: bool = False) -> None:
         """Run tasks for "closing" the currently opened file(s)."""

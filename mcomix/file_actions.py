@@ -54,12 +54,18 @@ class FileActions:
         #: book is written, where the packer writes it under that name
         #: instead of the numbered one it would make up.
         self._page_names: dict[str, str] = {}
+        #: Whether the offer to write the book out before it closes has
+        #: been answered.  The offer is made once per set of changes:
+        #: an answer of "not now" has to close the book rather than be
+        #: asked again by every step of the close.
+        self._close_offer_answered = False
 
     def forget_changes(self) -> None:
         """Drop the undo stack, which belongs to the book that is going."""
         self._undone.clear()
         self._redone.clear()
         self._page_names.clear()
+        self._close_offer_answered = False
 
     def page_names(self) -> dict[str, str]:
         """The name each renamed page is to be written under, by path."""
@@ -92,7 +98,14 @@ class FileActions:
             return None
         if self._window.filehandler.archive_type is None:
             return self._rename_on_disk(page, path, name)
-        self._page_names[path] = name
+        if name == os.path.basename(path):
+            # Renamed back to what the file in the archive is called:
+            # there is nothing left for the packer to do differently,
+            # and a name kept here would count as a change to write.
+            self._page_names.pop(path, None)
+        else:
+            self._page_names[path] = name
+        self._close_offer_answered = False
         self.offer_to_save()
         return name
 
@@ -274,6 +287,10 @@ class FileActions:
 
     def _show_pages(self, listing: list[str], page: int) -> None:
         """Draw the book as <listing>, standing on <page>."""
+        # Every change to the pages comes through here, and a change
+        # made after the book was let off being written is a change the
+        # reader has not been asked about yet.
+        self._close_offer_answered = False
         self._window.selected_pages = {number for number in self._window.selected_pages
                                if number <= len(listing)}
         self._window.pages_replaced(listing, page)
@@ -298,6 +315,74 @@ class FileActions:
                 or prefs['keep archive format when saving']:
             return archive_type
         return None
+
+    def has_unsaved_changes(self) -> bool:
+        """Whether the book on screen differs from the archive on disk.
+
+        The pages themselves, in their order, and the names the reader
+        has given them: any of it is a change the archive does not hold
+        until it is written again.  A book that cannot be written back
+        over its own archive has nothing to save, and neither has one
+        whose changes have all been taken back - the first listing the
+        undo stack kept is the book as it was opened, and the stack is
+        empty once everything has been undone.
+        """
+        if self.writeable_archive_type() is None:
+            return False
+        if self._page_names:
+            return True
+        return bool(self._undone) and \
+            self._window.imagehandler.get_image_files() != self._undone[0]
+
+    def before_closing(self, then: "Callable[[], None]") -> None:
+        """Offer to write the book out if it has changes, then run <then>.
+
+        Closing a book throws away everything that has not been written
+        to its archive, and the offer made at the change itself may
+        have been turned down by a reader who meant to go on editing.
+        So the question is put once more on the way out - when the book
+        is closed, when another is opened over it and when MComix
+        quits - and the close waits for the answer.
+
+        The offer is made once for a set of changes: the answer stands
+        for the whole of the close that follows it, which reaches here
+        more than once, and the next change to the book asks again.
+        """
+        if not self.has_unsaved_changes() or self._close_offer_answered:
+            then()
+            return
+        self._close_offer_answered = True
+        path = self._window.filehandler.get_path_to_base()
+        assert path is not None  # has_unsaved_changes() answered for it
+        dialog = message_dialog.MessageDialog(
+            self._window, modal=True, buttons=Gtk.ButtonsType.NONE)
+        dialog.set_should_remember_choice(
+            message_dialog.RememberedDialog.SAVE_EDITED_ARCHIVE)
+        dialog.set_text(
+            _('Write "%s" again before closing it?') % os.path.basename(path),
+            _('The book has changes that the archive on disk does not '
+              'hold. They are lost when it closes.'))
+        dialog.add_button(_('_Close without saving'), Response.NO)
+        dialog.add_button(_('_Save'), Response.YES)
+        # The other way round from the offer made at the change itself,
+        # where Enter must not overwrite an archive: here it is the
+        # answer that leaves the archive alone which throws work away,
+        # and the reader has already said what they wanted the book to
+        # look like.  So Enter saves, and the button that does not is
+        # drawn as the destructive one.
+        dialog.set_default_response(Response.YES)
+        closes = dialog.get_widget_for_response(Response.NO)
+        if closes is not None:
+            closes.add_css_class('destructive-action')
+        dialog.run_async(lambda response: self._closing_answered(response,
+                                                                 then))
+
+    def _closing_answered(self, response: int,
+                          then: "Callable[[], None]") -> None:
+        """Write the book out if that is the answer, then close it."""
+        if response == Response.YES:
+            self.save_archive()
+        then()
 
     def offer_to_save(self) -> None:
         """Ask whether to write the book back over its own archive.
@@ -565,6 +650,10 @@ class FileActions:
     def _delete_answered(self, result: int, current_file: str) -> None:
         """Delete <current_file> if the confirmation came back positive."""
         if result == Response.OK:
+            # The file is going, and with it whatever was waiting to be
+            # written into it: nothing below is to stop and offer to
+            # write the book back over an archive about to be deleted.
+            self.forget_changes()
             # Go to next page/archive, and delete current file
             if self._window.filehandler.archive_type is not None:
                 self._window.filehandler.last_read_page.clear_page(current_file)

@@ -1159,6 +1159,162 @@ class MainWindowTest(MComixTest):
                 [info.filename for info in written.infolist()
                  if info.is_dir()], [])
 
+    # -- Closing a book whose changes have not been written ---------------
+
+    def _forget_stored_answer(self):
+        """Take back the remembered answer a test stored, which is
+        written into the preferences the whole process shares."""
+        prefs['stored dialog choices'].pop(
+            message_dialog.RememberedDialog.SAVE_EDITED_ARCHIVE, None)
+
+    def _remember_answer(self, response):
+        prefs['stored dialog choices'][
+            message_dialog.RememberedDialog.SAVE_EDITED_ARCHIVE] = \
+            int(response)
+        self.addCleanup(self._forget_stored_answer)
+
+    def test_a_change_that_has_not_been_written_is_one_to_save(self):
+        self._ready()
+        self.assertFalse(self.window.file_actions.has_unsaved_changes())
+        with self._quietly():
+            self.assertTrue(self.window.file_actions.swap_pages(1, 2))
+        self.assertTrue(self.window.file_actions.has_unsaved_changes())
+
+    def test_a_change_taken_back_is_nothing_to_save(self):
+        """The first listing the undo stack kept is the book as it was
+        opened, and an undo that empties the stack is back at it."""
+        self._ready()
+        with self._quietly():
+            self.assertTrue(self.window.file_actions.swap_pages(1, 2))
+        self.assertTrue(self.window.file_actions.undo())
+        self.assertFalse(self.window.file_actions.has_unsaved_changes())
+
+    def test_a_page_named_what_it_is_called_already_is_nothing_to_save(self):
+        """Renaming a page back to the name of its own file leaves the
+        packer nothing to do differently."""
+        pages = self._ready()
+        own_name = os.path.basename(pages[0])
+        with self._quietly():
+            self.assertEqual(self.window.file_actions.rename_page(
+                1, 'Cover.png'), 'Cover.png')
+            self.assertEqual(self.window.file_actions.rename_page(
+                1, own_name), own_name)
+        self.assertEqual(self.window.file_actions.page_names(), {})
+        self.assertFalse(self.window.file_actions.has_unsaved_changes())
+
+    def test_closing_the_book_offers_to_write_the_changes_first(self):
+        """The offer made at the change itself is not the last word:
+        closing is what throws the change away."""
+        self._ready()
+        with self._quietly():
+            self.assertTrue(self.window.file_actions.swap_pages(1, 2))
+        self.window.filehandler.close_file()
+        self._pump()
+        try:
+            self.assertEqual(len(self._save_prompts()), 1,
+                             'the change was thrown away without a word')
+            self.assertTrue(self.window.filehandler.file_loaded,
+                            'the book closed before the question was answered')
+        finally:
+            self._close_prompts()
+
+    def test_saying_yes_on_the_way_out_writes_the_archive(self):
+        self._ready()
+        with self._quietly():
+            self.assertTrue(self.window.file_actions.swap_pages(1, 2))
+        self._remember_answer(Response.YES)
+        with unittest.mock.patch.object(self.window.file_actions,
+                                        'save_archive') as written:
+            self.window.filehandler.close_file()
+            self._pump()
+        written.assert_called_once_with()
+        self.assertFalse(self.window.filehandler.file_loaded,
+                         'the book stayed open after the archive was written')
+
+    def test_saying_no_on_the_way_out_closes_the_book_as_it_is(self):
+        self._ready()
+        with self._quietly():
+            self.assertTrue(self.window.file_actions.swap_pages(1, 2))
+        self._remember_answer(Response.NO)
+        with unittest.mock.patch.object(self.window.file_actions,
+                                        'save_archive') as written:
+            self.window.filehandler.close_file()
+            self._pump()
+        written.assert_not_called()
+        self.assertFalse(self.window.filehandler.file_loaded,
+                         'the book was left open')
+
+    def test_opening_another_book_over_it_offers_to_write_it_first(self):
+        self._ready()
+        with self._quietly():
+            self.assertTrue(self.window.file_actions.swap_pages(1, 2))
+        self.window.filehandler.open_file(
+            get_testfile_path('archives', 'double-pages-test.cbz'))
+        self._pump()
+        try:
+            self.assertEqual(len(self._save_prompts()), 1,
+                             'the book was replaced without a word')
+        finally:
+            self._close_prompts()
+
+    def test_quitting_offers_to_write_the_changes_first(self):
+        """And the window stays until the question has been answered:
+        it is the window the question stands against."""
+        self._ready()
+        with self._quietly():
+            self.assertTrue(self.window.file_actions.swap_pages(1, 2))
+        with unittest.mock.patch.object(self.window,
+                                        'terminate_program') as quit_now:
+            self.assertTrue(self.window.close_program(),
+                            'the window went with the question still on it')
+            self._pump()
+            try:
+                prompts = self._save_prompts()
+                self.assertEqual(len(prompts), 1, 'MComix quit without a word')
+                quit_now.assert_not_called()
+                prompts[0].emit('response', Response.NO)
+                self._pump()
+            finally:
+                self._close_prompts()
+            quit_now.assert_called_once_with()
+
+    def test_the_offer_is_made_once_for_the_close_that_follows_it(self):
+        """A close reaches it more than once - quitting asks, and the
+        file handler it closes asks again - and one answer stands for
+        the whole of it."""
+        self._ready()
+        with self._quietly():
+            self.assertTrue(self.window.file_actions.swap_pages(1, 2))
+        closed = []
+        self.window.file_actions.before_closing(lambda: closed.append('first'))
+        self.window.file_actions.before_closing(lambda: closed.append('second'))
+        self._pump()
+        try:
+            self.assertEqual(len(self._save_prompts()), 1,
+                             'the same close was asked about twice')
+            self.assertEqual(closed, ['second'],
+                             'the second close waited for an answer of its own')
+        finally:
+            self._close_prompts()
+
+    def test_a_change_made_afterwards_is_asked_about_again(self):
+        self._ready()
+        with self._quietly():
+            self.assertTrue(self.window.file_actions.swap_pages(1, 2))
+        self._remember_answer(Response.NO)
+        self.window.file_actions.before_closing(lambda: None)
+        self._pump()
+        with self._quietly():
+            self.assertTrue(self.window.file_actions.swap_pages(2, 3))
+        self._forget_stored_answer()
+        self.window.file_actions.before_closing(lambda: None)
+        self._pump()
+        try:
+            self.assertEqual(len(self._save_prompts()), 1,
+                             'the new change was let go without a word')
+        finally:
+            self._close_prompts()
+
     # -- Leaving a book with pages still picked out -----------------------
 
     def _leaving_prompts(self):
@@ -1568,6 +1724,9 @@ class MainWindowTest(MComixTest):
         self._ready()
         with self._quietly():
             self.window.file_actions.rename_page(1, 'Cover.png')
+        # A name that has not been written is offered to be written
+        # before the book closes; this is the book closing all the same.
+        self._remember_answer(Response.NO)
         self.window.filehandler.close_file()
         self._pump()
         self.assertEqual(self.window.file_actions.page_names(), {})

@@ -348,6 +348,9 @@ class BusyCursorTest(MComixTest):
         """
         window = mock.MagicMock()
         window.cursor_handler = self.cursor
+        # A book with changes that have not been written stops to ask
+        # about them before it closes; this window holds no book.
+        window.file_actions.has_unsaved_changes.return_value = False
         window.imagehandler.get_real_path.return_value = '/book/page.png'
         window.imagehandler.get_current_page.return_value = 1
         handler = file_handler.FileHandler(window)
@@ -417,12 +420,25 @@ class CloseWakesWaitersTest(MComixTest):
         def set_busy(self, busy):
             self.busy = busy
 
+    class _StubFileActions:
+
+        """Closing asks this whether the book has changes to write."""
+
+        @staticmethod
+        def has_unsaved_changes():
+            return False
+
+        @staticmethod
+        def before_closing(then):
+            then()
+
     class _StubWindow:
 
         def __init__(self):
             self.imagehandler = CloseWakesWaitersTest._StubImageHandler()
             self.cursor_handler = \
                 CloseWakesWaitersTest._StubCursorHandler()
+            self.file_actions = CloseWakesWaitersTest._StubFileActions()
 
     PAGE = '/book/page.png'
 

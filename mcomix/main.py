@@ -1435,10 +1435,22 @@ class MainWindow(Gtk.Window):
         self._spacing = prefs['space between two pages']
         self.draw_image()
 
-    def close_program(self, *args: object) -> None:
-        """Quit, keeping the window size unless it is a fullscreen one."""
+    def close_program(self, *args: object) -> bool:
+        """Quit, keeping the window size unless it is a fullscreen one.
+
+        A book whose pages have been changed without the archive being
+        written again is asked about first, and the quit waits for the
+        answer.  This is the window's close-request handler as well as
+        the Quit action, so it answers whether the window may go: not
+        while the question is up, since the window it stands against
+        would be taken down with it.
+        """
         self.save_window_geometry()
-        self.terminate_program()
+        if not self.file_actions.has_unsaved_changes():
+            self.terminate_program()
+            return False
+        self.file_actions.before_closing(self.terminate_program)
+        return True
 
     def restart_program(self) -> None:
         """Quit, and start MComix again on the book being read.
@@ -1462,8 +1474,16 @@ class MainWindow(Gtk.Window):
         # Both have to be read before the file handler is closed.
         path = self.imagehandler.get_real_path()
         page = self.imagehandler.get_current_page()
-        self.close_program()
-        process.launch_mcomix(path, page)
+
+        def start_again() -> None:
+            """Quit and start the new MComix, once the book being read
+            has been dealt with: quitting can stop to ask whether to
+            write the book out, and the new window is not to come up
+            over that question."""
+            self.close_program()
+            process.launch_mcomix(path, page)
+
+        self.file_actions.before_closing(start_again)
 
     def terminate_program(self) -> None:
         """Run clean-up tasks and exit the program."""
@@ -1484,6 +1504,11 @@ class MainWindow(Gtk.Window):
 
         self.write_config_files()
 
+        # Whatever was to be done about a book with unwritten changes
+        # has been done by now: close_program() asks before it quits,
+        # and the close below is not to stop for a question with the
+        # main loop already gone.
+        self.file_actions.forget_changes()
         self.filehandler.close_file()
         library = main_dialog.get_dialog()
         if library is not None:
