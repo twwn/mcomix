@@ -76,6 +76,35 @@ class Clipboard:
         # nothing to name in the unlikely case that it has not.
         self.copy(path or '', pixbuf)
 
+    def copy_popup_page(self, *args: object) -> None:
+        """Put the page the right-click menu was opened over on the clipboard.
+
+        The menu bar's Copy takes the view, which in double page mode is
+        both pages joined as they read; the popup stands on one page and
+        acts on that one, as its Save As and Delete page do.  Opened on
+        the background around the pages there is no one page to mean,
+        and the view is what is copied.
+        """
+        page = self._window.popup_page
+        if page is None or not self._window.filehandler.file_loaded:
+            self.copy_page()
+            return
+
+        # page_at() numbers the pages from the current one in the order
+        # the layout holds them, which is the order of the pixbufs and
+        # of the transforms as well.
+        index = page - self._window.imagehandler.get_current_page()
+        pixbufs = self._window.imagehandler.get_pixbufs(
+            self._window.displayed_page_count())
+        if not 0 <= index < len(pixbufs):
+            self.copy_page()
+            return
+
+        transforms = self._window.transforms + [Transform.ID] * 2
+        path = self._window.imagehandler.get_path_to_page(page)
+        self.copy(path or '', self._as_shown(pixbufs[index],
+                                             transforms[index]))
+
     @staticmethod
     def _as_shown(pixbuf: GdkPixbuf.Pixbuf,
                   transform: Matrix) -> GdkPixbuf.Pixbuf:

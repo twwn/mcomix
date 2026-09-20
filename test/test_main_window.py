@@ -1203,6 +1203,46 @@ class MainWindowTest(MComixTest):
         self._pump()
         self.assertEqual(self._pages(), before[:1] + before[2:])
 
+    def test_the_right_click_menu_offers_to_copy_the_page(self):
+        self.assertIn('win.copy-page-popup',
+                      self._menu_actions(self.window.uimanager.popup
+                                         .get_menu_model()))
+
+    def test_the_right_click_menu_copies_the_page_it_was_opened_over(self):
+        """The menu bar's Copy takes the view; the popup stands on one
+        page, and takes that one, as its Save As and Delete page do."""
+        self._ready()
+        prefs['default double page'] = False
+        self.window.set_page(2)
+        self._pump()
+        self.window.popup_page = 2
+        copied = []
+        with unittest.mock.patch.object(
+                self.window.clipboard, 'copy',
+                side_effect=lambda text, pixbuf: copied.append((text, pixbuf))):
+            self.window.clipboard.copy_popup_page()
+
+        self.assertEqual(len(copied), 1)
+        text, pixbuf = copied[0]
+        self.assertEqual(text,
+                         self.window.imagehandler.get_path_to_page(2))
+        self.assertIsNotNone(pixbuf)
+
+    def test_copying_from_the_background_takes_the_whole_view(self):
+        """Opened on the background around the pages, the menu stands on
+        no page at all, and the view is what there is to copy."""
+        self._ready()
+        self.window.popup_page = None
+        copied = []
+        with unittest.mock.patch.object(
+                self.window.clipboard, 'copy',
+                side_effect=lambda text, pixbuf: copied.append((text, pixbuf))):
+            self.window.clipboard.copy_popup_page()
+
+        self.assertEqual(len(copied), 1)
+        self.assertEqual(copied[0][0],
+                         self.window.imagehandler.get_path_to_page())
+
     def test_the_right_click_menu_offers_to_move_the_file(self):
         self.assertIn('moveto.other',
                       self._menu_actions(self.window.uimanager.popup

@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: comix 3.6.4\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-20 06:49+0200\n"
+"POT-Creation-Date: 2026-09-20 12:35+0200\n"
 "PO-Revision-Date: 2008-05-21 12:40+0330\n"
 "Last-Translator: Meelad Zakaria <meelad@farsiweb.info>\n"
 "Language-Team: Persian \n"
@@ -76,36 +76,36 @@ msgstr ""
 msgid "! Could not read %s"
 msgstr "! خواندن %s ممکن نشد"
 
-#: mcomix/bookmark_backend.py:226
+#: mcomix/bookmark_backend.py:249
 #, python-format
 msgid "! Could not parse bookmarks file %s"
 msgstr "! تجزیهٔ پروندهٔ نشانک‌های %s ممکن نشد"
 
-#: mcomix/bookmark_backend.py:289 mcomix/message_dialog.py:28
+#: mcomix/bookmark_backend.py:312 mcomix/message_dialog.py:28
 msgid "_Yes"
 msgstr "_بله"
 
 #
-#: mcomix/bookmark_backend.py:290 mcomix/message_dialog.py:27
+#: mcomix/bookmark_backend.py:313 mcomix/message_dialog.py:27
 msgid "_No"
 msgstr "_خیر"
 
-#: mcomix/bookmark_backend.py:291 mcomix/edit_dialog.py:58
-#: mcomix/file_actions.py:368 mcomix/file_chooser_base_dialog.py:106
+#: mcomix/bookmark_backend.py:314 mcomix/edit_dialog.py:58
+#: mcomix/file_actions.py:369 mcomix/file_chooser_base_dialog.py:106
 #: mcomix/file_chooser_base_dialog.py:111
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:32
 msgid "_Cancel"
 msgstr "_انصراف"
 
-#: mcomix/bookmark_backend.py:299
+#: mcomix/bookmark_backend.py:322
 #, python-format
 msgid "Replace existing bookmark on page %s?"
 msgid_plural "Replace existing bookmarks on pages %s?"
 msgstr[0] "نشانک موجود در صفحهٔ %s جایگزین شود؟"
 msgstr[1] "نشانک‌های موجود در صفحه‌های %s جایگزین شوند؟"
 
-#: mcomix/bookmark_backend.py:304
+#: mcomix/bookmark_backend.py:327
 #, python-format
 msgid ""
 "The current book already contains marked pages. Do you want to replace them "
@@ -114,18 +114,18 @@ msgstr ""
 "این کتاب هم‌اکنون صفحه‌های نشان‌شده دارد. آیا می‌خواهید آن‌ها را با نشانک تازه‌ای "
 "در صفحهٔ %d جایگزین کنید؟"
 
-#: mcomix/bookmark_backend.py:307
+#: mcomix/bookmark_backend.py:330
 msgid ""
 "Selecting \"No\" will create a new bookmark without affecting the other "
 "bookmarks."
 msgstr "انتخاب «خیر» نشانک تازه‌ای می‌سازد بدون آنکه بقیه تغییر کنند."
 
 #
-#: mcomix/bookmark_backend.py:327
+#: mcomix/bookmark_backend.py:350
 msgid "Clear all bookmarks?"
 msgstr "همهٔ نشانک‌ها پاک شوند؟"
 
-#: mcomix/bookmark_backend.py:328
+#: mcomix/bookmark_backend.py:351
 msgid ""
 "All stored bookmarks will be removed. Are you sure that you want to continue?"
 msgstr ""
@@ -150,7 +150,7 @@ msgstr "_برداشتن"
 # File: src/ui.py, line: 48
 #: mcomix/bookmark_dialog.py:34 mcomix/comment_dialog.py:29
 #: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:73
-#: mcomix/properties_dialog.py:37 mcomix/ui.py:455
+#: mcomix/properties_dialog.py:37 mcomix/ui.py:458
 #: mcomix/library/watchlist.py:40
 msgid "_Close"
 msgstr "ب_ستن"
@@ -238,12 +238,12 @@ msgid "Remove from archive"
 msgstr "برداشتن از بایگانی"
 
 #: mcomix/edit_comment_area.py:95 mcomix/edit_image_area.py:114
-#: mcomix/ui.py:434
+#: mcomix/ui.py:437
 msgid "_Undo"
 msgstr "_واگرد"
 
 #: mcomix/edit_comment_area.py:96 mcomix/edit_image_area.py:115
-#: mcomix/ui.py:437
+#: mcomix/ui.py:440
 msgid "_Redo"
 msgstr "_ازنو"
 
@@ -257,7 +257,7 @@ msgstr "ویرایش بایگانی"
 msgid "A_pply"
 msgstr "ا_عمال"
 
-#: mcomix/edit_dialog.py:71 mcomix/ui.py:464 mcomix/ui.py:465
+#: mcomix/edit_dialog.py:71 mcomix/ui.py:467 mcomix/ui.py:468
 msgid "Save _As"
 msgstr "ذخ_یره با نام"
 
@@ -277,20 +277,20 @@ msgid "Comment files"
 msgstr "پرونده‌های توضیح"
 
 #
-#: mcomix/edit_dialog.py:191 mcomix/file_actions.py:180
+#: mcomix/edit_dialog.py:191 mcomix/file_actions.py:181
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! ذخیرهٔ بایگانی %(archivefile)s ممکن نشد: %(error)s"
 
 #
 # File: src/edit.py, line: 99
-#: mcomix/edit_dialog.py:204 mcomix/file_actions.py:185
+#: mcomix/edit_dialog.py:204 mcomix/file_actions.py:186
 msgid "The new archive could not be saved!"
 msgstr "ذخیرهٔ بایگانی جدید ممکن نشد!"
 
 #
 # File: src/edit.py, line: 101
-#: mcomix/edit_dialog.py:205 mcomix/file_actions.py:186
+#: mcomix/edit_dialog.py:205 mcomix/file_actions.py:187
 msgid "The original files have not been removed."
 msgstr "پرونده‌های اصلی برداشته نشده‌اند."
 
@@ -318,7 +318,7 @@ msgstr "باز_گشت"
 msgid "Reset to defaults."
 msgstr "بازنشانی به پیش‌فرض‌ها."
 
-#: mcomix/enhance_dialog.py:35 mcomix/file_actions.py:137
+#: mcomix/enhance_dialog.py:35 mcomix/file_actions.py:138
 #: mcomix/file_chooser_base_dialog.py:112 mcomix/openwith.py:360
 msgid "_Save"
 msgstr "_ذخیره"
@@ -371,7 +371,7 @@ msgstr ""
 "کنتراست (هم روشنی و هم تیرگی) را برای هر باند رنگی جداگانه به‌طور خودکار "
 "تنظیم می‌کند."
 
-#: mcomix/enhance_dialog.py:96 mcomix/ui.py:506
+#: mcomix/enhance_dialog.py:96 mcomix/ui.py:509
 msgid "_Invert image colors"
 msgstr "_وارونه کردن رنگ‌های تصویر"
 
@@ -379,64 +379,64 @@ msgstr "_وارونه کردن رنگ‌های تصویر"
 msgid "Invert (negate) image colors."
 msgstr "رنگ‌های تصویر را وارونه می‌کند."
 
-#: mcomix/file_actions.py:133
+#: mcomix/file_actions.py:134
 #, python-format
 msgid "Write \"%s\" again now?"
 msgstr "«%s» همین حالا دوباره نوشته شود؟"
 
-#: mcomix/file_actions.py:134
+#: mcomix/file_actions.py:135
 msgid ""
 "The archive on disk will be replaced by the book as it stands, without the "
 "pages that were removed."
 msgstr ""
 "بایگانی روی دیسک با کتاب به شکل کنونی آن، بدون صفحه‌های حذف‌شده، جایگزین می‌شود."
 
-#: mcomix/file_actions.py:136
+#: mcomix/file_actions.py:137
 msgid "_Not now"
 msgstr "_حالا نه"
 
-#: mcomix/file_actions.py:286
+#: mcomix/file_actions.py:287
 msgid "Save page as"
 msgstr "ذخیرهٔ صفحه به نام"
 
-#: mcomix/file_actions.py:327
+#: mcomix/file_actions.py:328
 #, python-format
 msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! ذخیرهٔ %(file)s در %(directory)s ممکن نشد: %(error)s"
 
-#: mcomix/file_actions.py:331 mcomix/file_actions.py:456
+#: mcomix/file_actions.py:332 mcomix/file_actions.py:466
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "آنجا فضای کافی نیست: اندازهٔ پرونده %s است."
 
-#: mcomix/file_actions.py:337
+#: mcomix/file_actions.py:338
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "ذخیرهٔ «%(file)s» در «%(directory)s» ممکن نشد"
 
-#: mcomix/file_actions.py:366
+#: mcomix/file_actions.py:367
 #, python-format
 msgid "Delete \"%s\"?"
 msgstr "«%s» حذف شود؟"
 
-#: mcomix/file_actions.py:367
+#: mcomix/file_actions.py:368
 msgid "The file will be deleted from your harddisk."
 msgstr "پرونده از دیسک سخت شما حذف خواهد شد."
 
-#: mcomix/file_actions.py:369 mcomix/ui.py:429
+#: mcomix/file_actions.py:370 mcomix/ui.py:432
 msgid "_Delete"
 msgstr "_حذف"
 
-#: mcomix/file_actions.py:450
+#: mcomix/file_actions.py:460
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr "! انتقال %(file)s به %(directory)s ممکن نشد: %(error)s"
 
-#: mcomix/file_actions.py:454
+#: mcomix/file_actions.py:464
 msgid "A file of that name is there already."
 msgstr "پرونده‌ای با این نام از پیش آنجاست."
 
-#: mcomix/file_actions.py:462
+#: mcomix/file_actions.py:472
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "انتقال «%(file)s» به «%(directory)s» ممکن نشد"
@@ -576,7 +576,7 @@ msgstr "کلید %d"
 
 #
 # File: src/ui.py, line: 284
-#: mcomix/keybindings.py:45 mcomix/ui.py:441
+#: mcomix/keybindings.py:45 mcomix/ui.py:444
 msgid "Previous page"
 msgstr "صفحهٔ قبل"
 
@@ -590,7 +590,7 @@ msgstr "ناوبری"
 
 #
 # File: src/ui.py, line: 285
-#: mcomix/keybindings.py:46 mcomix/ui.py:440
+#: mcomix/keybindings.py:46 mcomix/ui.py:443
 msgid "Next page"
 msgstr "صفحهٔ بعد"
 
@@ -629,13 +629,13 @@ msgstr "صفحهٔ تکی بعدی"
 
 #
 # File: src/ui.py, line: 282
-#: mcomix/keybindings.py:54 mcomix/ui.py:442
+#: mcomix/keybindings.py:54 mcomix/ui.py:445
 msgid "First page"
 msgstr "صفحهٔ اول"
 
 #
 # File: src/ui.py, line: 286
-#: mcomix/keybindings.py:55 mcomix/ui.py:443
+#: mcomix/keybindings.py:55 mcomix/ui.py:446
 msgid "Last page"
 msgstr "آخرین صفحه"
 
@@ -645,21 +645,21 @@ msgid "Go to page"
 msgstr "رفتن به صفحه"
 
 #
-#: mcomix/keybindings.py:58 mcomix/ui.py:447
+#: mcomix/keybindings.py:58 mcomix/ui.py:450
 msgid "Next archive"
 msgstr "بایگانی بعدی"
 
 #
 # File: src/ui.py, line: 284
-#: mcomix/keybindings.py:59 mcomix/ui.py:448
+#: mcomix/keybindings.py:59 mcomix/ui.py:451
 msgid "Previous archive"
 msgstr "بایگانی پیشین"
 
-#: mcomix/keybindings.py:60 mcomix/ui.py:449
+#: mcomix/keybindings.py:60 mcomix/ui.py:452
 msgid "Next directory"
 msgstr "شاخهٔ بعدی"
 
-#: mcomix/keybindings.py:61 mcomix/ui.py:450
+#: mcomix/keybindings.py:61 mcomix/ui.py:453
 msgid "Previous directory"
 msgstr "شاخهٔ پیشین"
 
@@ -813,7 +813,7 @@ msgstr "چرخش خودکار بر پایهٔ بلندا"
 #
 # File: src/preferences.py, line: 177
 # File: src/ui.py, line: 296
-#: mcomix/keybindings.py:102 mcomix/preferences_dialog.py:249 mcomix/ui.py:491
+#: mcomix/keybindings.py:102 mcomix/preferences_dialog.py:249 mcomix/ui.py:494
 msgid "Double page mode"
 msgstr "حالت دو صفحه‌ای"
 
@@ -830,43 +830,43 @@ msgstr "حالت نما"
 
 #
 # File: src/ui.py, line: 297
-#: mcomix/keybindings.py:103 mcomix/ui.py:498
+#: mcomix/keybindings.py:103 mcomix/ui.py:501
 msgid "Manga mode"
 msgstr "حالت ژاپنی"
 
-#: mcomix/keybindings.py:104 mcomix/ui.py:499
+#: mcomix/keybindings.py:104 mcomix/ui.py:502
 msgid "Invert smart scroll"
 msgstr "وارونگی لغزش هوشمند"
 
 #
 # File: src/ui.py, line: 298
-#: mcomix/keybindings.py:106 mcomix/ui.py:503
+#: mcomix/keybindings.py:106 mcomix/ui.py:506
 msgid "Magnifying lens"
 msgstr "عدسی بزرگ‌نما"
 
 #
-#: mcomix/keybindings.py:107 mcomix/ui.py:504
+#: mcomix/keybindings.py:107 mcomix/ui.py:507
 msgid "Stretch small images"
 msgstr "کشیدن تصاویر کوچک"
 
 #
 # File: src/preferences.py, line: 262
 # File: src/ui.py, line: 288
-#: mcomix/keybindings.py:109 mcomix/ui.py:511
+#: mcomix/keybindings.py:109 mcomix/ui.py:514
 msgid "Best fit mode"
 msgstr "حالت بهترین جا شدن"
 
 #
 # File: src/preferences.py, line: 263
 # File: src/ui.py, line: 290
-#: mcomix/keybindings.py:110 mcomix/ui.py:512
+#: mcomix/keybindings.py:110 mcomix/ui.py:515
 msgid "Fit width mode"
 msgstr "حالت منطبق با عرض صفحه"
 
 #
 # File: src/preferences.py, line: 264
 # File: src/ui.py, line: 292
-#: mcomix/keybindings.py:111 mcomix/ui.py:513
+#: mcomix/keybindings.py:111 mcomix/ui.py:516
 msgid "Fit height mode"
 msgstr "حالت منطبق با ارتفاع صفحه"
 
@@ -879,7 +879,7 @@ msgstr "حالت جا شدن در اندازه"
 #
 # File: src/preferences.py, line: 265
 # File: src/ui.py, line: 294
-#: mcomix/keybindings.py:113 mcomix/ui.py:515
+#: mcomix/keybindings.py:113 mcomix/ui.py:518
 msgid "Manual zoom mode"
 msgstr "حالت زوم دستی"
 
@@ -949,7 +949,7 @@ msgstr "نهفتن همه"
 
 #
 # File: src/preferences.py, line: 279
-#: mcomix/keybindings.py:129 mcomix/slideshow.py:54 mcomix/ui.py:502
+#: mcomix/keybindings.py:129 mcomix/slideshow.py:54 mcomix/ui.py:505
 msgid "Start slideshow"
 msgstr "آغاز نمایش اسلایدی"
 
@@ -1029,7 +1029,7 @@ msgstr "ترجیحات"
 msgid "Library"
 msgstr "کتاب‌خانه"
 
-#: mcomix/keybindings.py:149 mcomix/ui.py:506
+#: mcomix/keybindings.py:149 mcomix/ui.py:509
 msgid "Invert image colors"
 msgstr "وارونه کردن رنگ‌های تصویر"
 
@@ -1320,13 +1320,13 @@ msgid "! Could not draw the next frame: %s"
 msgstr "! کشیدن فریم بعدی ممکن نشد: %s"
 
 #
-#: mcomix/pageselect.py:29 mcomix/ui.py:444
+#: mcomix/pageselect.py:29 mcomix/ui.py:447
 msgid "Go to page..."
 msgstr "رفتن به صفحه..."
 
 #
 # File: src/ui.py, line: 69
-#: mcomix/pageselect.py:31 mcomix/ui.py:480 mcomix/ui.py:481
+#: mcomix/pageselect.py:31 mcomix/ui.py:483 mcomix/ui.py:484
 msgid "_Go"
 msgstr "_رفتن"
 
@@ -1670,7 +1670,7 @@ msgid "Automatically hide all toolbars in fullscreen"
 msgstr "نهفتن خودکار همهٔ نوارها در تمام‌صفحه"
 
 #
-#: mcomix/preferences_dialog.py:311 mcomix/ui.py:514
+#: mcomix/preferences_dialog.py:311 mcomix/ui.py:517
 msgid "Fit to size mode"
 msgstr "حالت جا شدن در اندازه"
 
@@ -1953,7 +1953,7 @@ msgstr ""
 "آن و اندازهٔ پنجره حفظ می‌شوند."
 
 #: mcomix/preferences_dialog.py:618 mcomix/preferences_dialog.py:759
-#: mcomix/preferences_dialog.py:831 mcomix/ui.py:520
+#: mcomix/preferences_dialog.py:831 mcomix/ui.py:523
 msgid "Never"
 msgstr "هرگز"
 
@@ -2570,14 +2570,22 @@ msgid "Copies the current page to clipboard."
 msgstr "صفحهٔ کنونی را در تخته‌گیره رونوشت می‌کند."
 
 #: mcomix/ui.py:429
+msgid "_Copy page"
+msgstr "ر_ونوشت صفحه"
+
+#: mcomix/ui.py:430
+msgid "Copies the page the menu was opened over to the clipboard."
+msgstr "صفحه‌ای را که فهرست روی آن گشوده شد در تخته‌گیره رونوشت می‌کند."
+
+#: mcomix/ui.py:432
 msgid "Deletes the current file or archive from disk."
 msgstr "پرونده یا بایگانی کنونی را از دیسک حذف می‌کند."
 
-#: mcomix/ui.py:431
+#: mcomix/ui.py:434
 msgid "_Delete page"
 msgstr "_حذف صفحه"
 
-#: mcomix/ui.py:432
+#: mcomix/ui.py:435
 msgid ""
 "Removes the page the menu was opened over from the book. The archive on disk "
 "is not changed until it is saved."
@@ -2585,362 +2593,362 @@ msgstr ""
 "صفحه‌ای را که منو روی آن باز شده است از کتاب حذف می‌کند. بایگانی روی دیسک تا "
 "زمانی که ذخیره نشود تغییر نمی‌کند."
 
-#: mcomix/ui.py:435
+#: mcomix/ui.py:438
 msgid "Takes back the last page removed from the book."
 msgstr "آخرین صفحهٔ حذف‌شده از کتاب را بازمی‌گرداند."
 
-#: mcomix/ui.py:438
+#: mcomix/ui.py:441
 msgid "Removes again the page the last undo brought back."
 msgstr "صفحه‌ای را که آخرین واگرد بازگرداند دوباره حذف می‌کند."
 
 #
 # File: src/ui.py, line: 34
-#: mcomix/ui.py:440
+#: mcomix/ui.py:443
 msgid "_Next page"
 msgstr "صفحهٔ _بعد"
 
 #
 # File: src/ui.py, line: 36
-#: mcomix/ui.py:441
+#: mcomix/ui.py:444
 msgid "_Previous page"
 msgstr "صفحهٔ _قبل"
 
 #
 # File: src/ui.py, line: 38
-#: mcomix/ui.py:442
+#: mcomix/ui.py:445
 msgid "_First page"
 msgstr "صفحهٔ _اول"
 
 #
 # File: src/ui.py, line: 40
-#: mcomix/ui.py:443
+#: mcomix/ui.py:446
 msgid "_Last page"
 msgstr "صفحهٔ آ_خر"
 
 #
-#: mcomix/ui.py:444
+#: mcomix/ui.py:447
 msgid "_Go to page..."
 msgstr "_رفتن به صفحه..."
 
-#: mcomix/ui.py:445
+#: mcomix/ui.py:448
 msgid "Re_fresh"
 msgstr "نوسا_زی"
 
-#: mcomix/ui.py:445
+#: mcomix/ui.py:448
 msgid "Reloads the currently opened files or archive."
 msgstr "پرونده‌ها یا بایگانی گشوده را دوباره بار می‌کند."
 
-#: mcomix/ui.py:447
+#: mcomix/ui.py:450
 msgid "Next _archive"
 msgstr "با_یگانی بعدی"
 
-#: mcomix/ui.py:448
+#: mcomix/ui.py:451
 msgid "Previous a_rchive"
 msgstr "بایگانی _پیشین"
 
-#: mcomix/ui.py:451
+#: mcomix/ui.py:454
 msgid "Zoom _In"
 msgstr "_بزرگنمایی"
 
-#: mcomix/ui.py:452
+#: mcomix/ui.py:455
 msgid "Zoom _Out"
 msgstr "_کوچک نمایی"
 
-#: mcomix/ui.py:453
+#: mcomix/ui.py:456
 msgid "_Normal Size"
 msgstr "اندازهٔ _عادی"
 
-#: mcomix/ui.py:454
+#: mcomix/ui.py:457
 msgid "Mi_nimize"
 msgstr "ک_مینه کردن"
 
-#: mcomix/ui.py:455
+#: mcomix/ui.py:458
 msgid "Closes all opened files."
 msgstr "همهٔ پرونده‌های گشوده را می‌بندد."
 
 #
 # File: src/ui.py, line: 50
-#: mcomix/ui.py:456
+#: mcomix/ui.py:459
 msgid "_Quit"
 msgstr "_خروج"
 
-#: mcomix/ui.py:457
+#: mcomix/ui.py:460
 msgid "_Save and quit"
 msgstr "_ذخیره و خروج"
 
-#: mcomix/ui.py:457
+#: mcomix/ui.py:460
 msgid ""
 "Quits and restores the currently opened file next time the program starts."
 msgstr "بیرون می‌رود و در آغاز بعدی برنامه پروندهٔ گشوده را بازمی‌گرداند."
 
 #
 # File: src/ui.py, line: 52
-#: mcomix/ui.py:459 mcomix/ui.py:521 mcomix/ui.py:523
+#: mcomix/ui.py:462 mcomix/ui.py:524 mcomix/ui.py:526
 msgid "_Rotate 90° CW"
 msgstr "_چرخاندن ۹۰ درجه‌ای در جهت ساعت"
 
 #
 # File: src/ui.py, line: 54
-#: mcomix/ui.py:460
+#: mcomix/ui.py:463
 msgid "Rotate _180°"
 msgstr "چرخاندن ۱۸۰ در_جه‌ای"
 
 #
 # File: src/ui.py, line: 56
-#: mcomix/ui.py:461 mcomix/ui.py:522 mcomix/ui.py:524
+#: mcomix/ui.py:464 mcomix/ui.py:525 mcomix/ui.py:527
 msgid "Rotat_e 90° CCW"
 msgstr "چرخان_دن ۹۰ درجه‌ای در خلاف جهت ساعت"
 
 #
 # File: src/ui.py, line: 58
-#: mcomix/ui.py:462
+#: mcomix/ui.py:465
 msgid "Fli_p horizontally"
 msgstr "_پشت و رو کردن افقی"
 
 #
 # File: src/ui.py, line: 60
-#: mcomix/ui.py:463
+#: mcomix/ui.py:466
 msgid "Flip _vertically"
 msgstr "پشت و رو کردن _عمودی"
 
-#: mcomix/ui.py:465
+#: mcomix/ui.py:468
 msgid "Saves the page the menu was opened over."
 msgstr "صفحه‌ای را که فهرست روی آن گشوده شد ذخیره می‌کند."
 
-#: mcomix/ui.py:467
+#: mcomix/ui.py:470
 msgid "_Zoom"
 msgstr "ب_زرگ‌نمایی"
 
-#: mcomix/ui.py:468
+#: mcomix/ui.py:471
 msgid "_Recent"
 msgstr "_اخیر"
 
 #
 # File: src/ui.py, line: 64
-#: mcomix/ui.py:469 mcomix/ui.py:470
+#: mcomix/ui.py:472 mcomix/ui.py:473
 msgid "_Bookmarks"
 msgstr "نشان_ک‌ها"
 
 #
 # File: src/ui.py, line: 65
-#: mcomix/ui.py:471
+#: mcomix/ui.py:474
 msgid "T_oolbars"
 msgstr "ن_وارهای ابزار"
 
 #
 # File: src/ui.py, line: 66
-#: mcomix/ui.py:472
+#: mcomix/ui.py:475
 msgid "_Edit"
 msgstr "_ویرایش"
 
-#: mcomix/ui.py:473 mcomix/ui.py:474
+#: mcomix/ui.py:476 mcomix/ui.py:477
 msgid "Open _with"
 msgstr "_گشودن با"
 
-#: mcomix/ui.py:475
+#: mcomix/ui.py:478
 msgid "_Move to"
 msgstr "انت_قال به"
 
-#: mcomix/ui.py:476
+#: mcomix/ui.py:479
 msgid "Moves the file, or the archive the page is in, to another folder."
 msgstr "پرونده، یا بایگانی‌ای که صفحه در آن است، را به شاخهٔ دیگری منتقل می‌کند."
 
 #
 # File: src/ui.py, line: 67
-#: mcomix/ui.py:477
+#: mcomix/ui.py:480
 msgid "_File"
 msgstr "_پرونده"
 
 #
 # File: src/ui.py, line: 68
-#: mcomix/ui.py:478 mcomix/ui.py:479
+#: mcomix/ui.py:481 mcomix/ui.py:482
 msgid "_View"
 msgstr "_نما"
 
 #
-#: mcomix/ui.py:482
+#: mcomix/ui.py:485
 msgid "_Tools"
 msgstr "_ابزارها"
 
-#: mcomix/ui.py:483
+#: mcomix/ui.py:486
 msgid "_Transform image"
 msgstr "_دگرگونی تصویر"
 
 #
-#: mcomix/ui.py:484
+#: mcomix/ui.py:487
 msgid "_Auto-rotate image"
 msgstr "چرخش _خودکار تصویر"
 
-#: mcomix/ui.py:485
+#: mcomix/ui.py:488
 msgid "...when width exceeds height"
 msgstr "...وقتی پهنا از بلندا بیشتر باشد"
 
-#: mcomix/ui.py:486
+#: mcomix/ui.py:489
 msgid "...when height exceeds width"
 msgstr "...وقتی بلندا از پهنا بیشتر باشد"
 
 #
 # File: src/ui.py, line: 75
-#: mcomix/ui.py:490
+#: mcomix/ui.py:493
 msgid "_Fullscreen"
 msgstr "تمام‌_صفحه"
 
-#: mcomix/ui.py:490
+#: mcomix/ui.py:493
 msgid "Fullscreen mode"
 msgstr "حالت تمام‌صفحه"
 
 #
 # File: src/ui.py, line: 77
-#: mcomix/ui.py:491
+#: mcomix/ui.py:494
 msgid "_Double page mode"
 msgstr "حالت _دو صفحه‌ای"
 
 #
 # File: src/ui.py, line: 79
-#: mcomix/ui.py:492
+#: mcomix/ui.py:495
 msgid "_Toolbar"
 msgstr "_نوار ابزار"
 
 #
 # File: src/ui.py, line: 81
-#: mcomix/ui.py:493
+#: mcomix/ui.py:496
 msgid "_Menubar"
 msgstr "نوار _منو"
 
 #
 # File: src/ui.py, line: 83
-#: mcomix/ui.py:494
+#: mcomix/ui.py:497
 msgid "St_atusbar"
 msgstr "نوار و_ضعیت"
 
 #
 # File: src/ui.py, line: 85
-#: mcomix/ui.py:495
+#: mcomix/ui.py:498
 msgid "S_crollbars"
 msgstr "نوارهای ل_غزش"
 
 #
 # File: src/ui.py, line: 87
-#: mcomix/ui.py:496
+#: mcomix/ui.py:499
 msgid "Th_umbnails"
 msgstr "مس_طوره‌ها"
 
 #
 # File: src/ui.py, line: 89
-#: mcomix/ui.py:497
+#: mcomix/ui.py:500
 msgid "H_ide all"
 msgstr "مخ_فی کردن همه"
 
 #
 # File: src/ui.py, line: 91
-#: mcomix/ui.py:498
+#: mcomix/ui.py:501
 msgid "_Manga mode"
 msgstr "حالت _ژاپنی"
 
-#: mcomix/ui.py:499
+#: mcomix/ui.py:502
 msgid "Invert smart scrolling direction."
 msgstr "جهت لغزش هوشمند را وارونه می‌کند."
 
 #
 # File: src/ui.py, line: 93
-#: mcomix/ui.py:500
+#: mcomix/ui.py:503
 msgid "_Keep transformation"
 msgstr "_نگهداشتن تغییر شکل‌ها"
 
-#: mcomix/ui.py:500
+#: mcomix/ui.py:503
 msgid "Keeps the currently selected transformation for the next pages."
 msgstr "دگرگونی برگزیده را برای صفحه‌های بعدی نگه می‌دارد."
 
 #
 # File: src/preferences.py, line: 279
-#: mcomix/ui.py:502
+#: mcomix/ui.py:505
 msgid "Start slid_eshow"
 msgstr "آغاز _نمایش اسلایدی"
 
 #
 # File: src/ui.py, line: 97
-#: mcomix/ui.py:503
+#: mcomix/ui.py:506
 msgid "Magnifying _lens"
 msgstr "_عدسی بزرگ‌نما"
 
-#: mcomix/ui.py:504
+#: mcomix/ui.py:507
 msgid "Stretch images to fit to the screen, depending on zoom mode."
 msgstr "تصاویر را بسته به حالت بزرگ‌نمایی تا اندازهٔ نمایشگر می‌کشد."
 
 #
 # File: src/ui.py, line: 101
-#: mcomix/ui.py:511
+#: mcomix/ui.py:514
 msgid "_Best fit mode"
 msgstr "حالت _بهترین جا شدن"
 
 #
 # File: src/ui.py, line: 103
-#: mcomix/ui.py:512
+#: mcomix/ui.py:515
 msgid "Fit _width mode"
 msgstr "حالت منطبق با عر_ض صفحه"
 
 #
 # File: src/ui.py, line: 105
-#: mcomix/ui.py:513
+#: mcomix/ui.py:516
 msgid "Fit _height mode"
 msgstr "حالت منطبق با _ارتفاع صفحه"
 
 #
 # File: src/ui.py, line: 103
-#: mcomix/ui.py:514
+#: mcomix/ui.py:517
 msgid "Fit _size mode"
 msgstr "_حالت جا شدن در اندازه"
 
 #
 # File: src/ui.py, line: 107
-#: mcomix/ui.py:515
+#: mcomix/ui.py:518
 msgid "M_anual zoom mode"
 msgstr "حا_لت بزرگ‌نمایی دستی"
 
 #
 # File: src/ui.py, line: 113
-#: mcomix/ui.py:528
+#: mcomix/ui.py:531
 msgid "A_bout"
 msgstr "_درباره"
 
-#: mcomix/ui.py:531
+#: mcomix/ui.py:534
 msgid "Co_mments..."
 msgstr "_توضیحات..."
 
 #
-#: mcomix/ui.py:534
+#: mcomix/ui.py:537
 msgid "Proper_ties"
 msgstr "_ویژگی‌ها"
 
 #
 # File: src/ui.py, line: 128
-#: mcomix/ui.py:537
+#: mcomix/ui.py:540
 msgid "_Preferences"
 msgstr "تر_جیحات"
 
 #
 # File: src/ui.py, line: 117
-#: mcomix/ui.py:541
+#: mcomix/ui.py:544
 msgid "_Edit archive..."
 msgstr "ویرای_ش بایگانی..."
 
-#: mcomix/ui.py:541
+#: mcomix/ui.py:544
 msgid "Opens the archive editor."
 msgstr "ویرایشگر بایگانی را می‌گشاید."
 
 #
 # File: src/ui.py, line: 119
-#: mcomix/ui.py:543
+#: mcomix/ui.py:546
 msgid "_Open..."
 msgstr "_باز کردن..."
 
-#: mcomix/ui.py:544
+#: mcomix/ui.py:547
 msgid "Enha_nce image..."
 msgstr "بهبود _تصویر..."
 
 #
 # File: src/ui.py, line: 132
-#: mcomix/ui.py:547
+#: mcomix/ui.py:550
 msgid "_Library..."
 msgstr "ک_تاب‌خانه..."
 

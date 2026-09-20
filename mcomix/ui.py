@@ -375,7 +375,7 @@ _POPUP = (
     None,
     'open', 'menu_recent', 'library',
     None,
-    'extract_page_popup', 'delete_page_popup',
+    'copy_page_popup', 'extract_page_popup', 'delete_page_popup',
     None,
     'menu_move_to_popup',
     None,
@@ -426,6 +426,9 @@ class MainUI:
         self._actions.add([
             _Entry('copy_page', 'edit-copy', _('_Copy'), _('Copies the current page to clipboard.'),
                    window.clipboard.copy_page),
+            _Entry('copy_page_popup', 'edit-copy', _('_Copy page'),
+                   _('Copies the page the menu was opened over to the clipboard.'),
+                   window.clipboard.copy_popup_page),
             _Entry('delete', 'edit-delete', _('_Delete'), _('Deletes the current file or archive from disk.'),
                    window.file_actions.delete),
             _Entry('delete_page_popup', 'edit-delete', _('_Delete page'),

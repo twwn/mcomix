@@ -65,6 +65,8 @@ Editing and saving books
 
 "Apply" hands the edited page list to the main window without writing anything to disk, so that the book can be read in its new order before it is saved. "Save As" writes the pages and the comment files out as a new archive. "Cancel" leaves the book and the archive as they were.
 
+"Copy page", in the page's right-click menu, puts the page the menu was opened over on the clipboard, as the image it is and as the path to its file; "Edit &rarr; Copy" takes the view instead, which in double page mode is both pages joined as they read.
+
 Pages can also be taken out in the main window. "Delete page", in the page's right-click menu, removes the page the menu was opened over, and "Edit &rarr; Undo" puts it back. CTRL and a click picks a page out, which is drawn outlined, and another such click puts it back; Delete then removes every page picked out, and the archive editor opens with them selected. The archive on disk is not touched until it is written. MComix offers to write it after a removal, and when a book with pages still picked out is left; either offer can be answered for good, and taken back under "Prompts answered for good" in the preferences.
 
 ### The format a save is written in ###
