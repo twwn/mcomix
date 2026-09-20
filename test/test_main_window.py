@@ -594,6 +594,9 @@ class MainWindowTest(MComixTest):
         def get_current_event_state(self):
             return self._state
 
+    #: A motion controller tells a handler the same as a scroll one.
+    _Motion = _Scroll
+
     def _click(self, state=0):
         """Click the middle of the first page, and say where that was."""
         boxes = self.window.layout.get_content_boxes()
@@ -1428,6 +1431,90 @@ class MainWindowTest(MComixTest):
         for dialog in self._delete_dialogs():
             dialog.destroy()
         self._pump()
+
+    def _drag(self, start, end, state):
+        """Press at <start>, move, and release at <end>, holding <state>."""
+        handler = self.window.event_handler
+        self.window.was_out_of_focus = False
+        handler.mouse_press_event(self._Click(1), 1, *start)
+        handler.mouse_release_event(self._Click(1, state), 1, *end)
+        self._pump()
+
+    def _spread_points(self):
+        """The middle of each of the two pages on screen."""
+        boxes = self.window.layout.get_content_boxes()
+        self.assertEqual(len(boxes), 2, 'two pages are not on screen')
+        scrolled_x, scrolled_y = self.window.scroll_offset()
+        points = []
+        for content in boxes:
+            left, top = content.get_position()
+            width, height = content.get_size()
+            points.append((left + width / 2 - scrolled_x,
+                           top + height / 2 - scrolled_y))
+        return points
+
+    def test_dragging_a_page_onto_the_other_swaps_the_two(self):
+        """A spread whose halves arrived the wrong way round is put
+        right by dragging one onto the other."""
+        prefs['default double page'] = True
+        try:
+            before = self._ready()
+            self.window.set_page(2)
+            self.assertTrue(wait_for(
+                lambda: len(self.window.layout.get_content_boxes()) == 2))
+            first, second = self._spread_points()
+
+            with self._quietly():
+                self._drag(first, second, Gdk.ModifierType.CONTROL_MASK
+                           | Gdk.ModifierType.SHIFT_MASK)
+
+            self.assertEqual(self._pages(),
+                             [before[0], before[2], before[1]] + before[3:])
+        finally:
+            prefs['default double page'] = False
+
+    def test_a_drag_that_ends_where_it_started_swaps_nothing(self):
+        prefs['default double page'] = True
+        try:
+            before = self._ready()
+            self.window.set_page(2)
+            self.assertTrue(wait_for(
+                lambda: len(self.window.layout.get_content_boxes()) == 2))
+            first, _second = self._spread_points()
+
+            self._drag(first, (first[0] + 20, first[1] + 20),
+                       Gdk.ModifierType.CONTROL_MASK
+                       | Gdk.ModifierType.SHIFT_MASK)
+
+            self.assertEqual(self._pages(), before)
+        finally:
+            prefs['default double page'] = False
+
+    def test_a_plain_drag_still_moves_the_view(self):
+        """Panning is what a drag without the modifiers does, and the
+        swap must not have taken it."""
+        self._ready()
+        self._pump()
+        scrolled = []
+        with unittest.mock.patch.object(
+                self.window, 'scroll',
+                side_effect=lambda dx, dy: scrolled.append((dx, dy))):
+            self.window.event_handler.mouse_move_event(
+                self._Motion(Gdk.ModifierType.BUTTON1_MASK), 10, 10)
+        self.assertTrue(scrolled, 'the view did not move')
+
+    def test_a_drag_that_swaps_does_not_move_the_view(self):
+        self._ready()
+        self._pump()
+        scrolled = []
+        with unittest.mock.patch.object(
+                self.window, 'scroll',
+                side_effect=lambda dx, dy: scrolled.append((dx, dy))):
+            self.window.event_handler.mouse_move_event(
+                self._Motion(Gdk.ModifierType.BUTTON1_MASK
+                             | Gdk.ModifierType.CONTROL_MASK
+                             | Gdk.ModifierType.SHIFT_MASK), 10, 10)
+        self.assertEqual(scrolled, [], 'the pages moved under the drag')
 
     # -- Renaming a page --------------------------------------------------
 

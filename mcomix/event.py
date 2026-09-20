@@ -673,8 +673,7 @@ class EventHandler:
                     y == self._pressed_pointer_pos_y and \
                     not self._window.was_out_of_focus:
 
-                if (state & Gdk.ModifierType.CONTROL_MASK
-                        and state & Gdk.ModifierType.SHIFT_MASK):
+                if self._is_swap_gesture(state):
                     # Marking a page to swap with another, which is the
                     # picking-out gesture with something added: the two
                     # are the two ways of naming a page with the mouse.
@@ -689,6 +688,12 @@ class EventHandler:
                 else:
                     self._flip_page(1)
 
+            elif self._is_swap_gesture(state) \
+                    and not self._window.was_out_of_focus:
+                # The same two pages, named by dragging one onto the
+                # other rather than by clicking each in turn, which is
+                # what a spread the wrong way round asks for.
+                self._swap_dragged(x, y)
             else:
                 self._window.was_out_of_focus = False
 
@@ -701,6 +706,26 @@ class EventHandler:
             elif state & Gdk.ModifierType.SHIFT_MASK:
                 self._flip_page(-10)
 
+    @staticmethod
+    def _is_swap_gesture(state: Gdk.ModifierType) -> bool:
+        """Whether <state> is the modifiers a swap is asked for with."""
+        return bool(state & Gdk.ModifierType.CONTROL_MASK
+                    and state & Gdk.ModifierType.SHIFT_MASK)
+
+    def _swap_dragged(self, x: float, y: float) -> None:
+        """Swap the page the drag started on with the one it ended on.
+
+        Nothing happens where either end is not on a page, or where
+        both are on the same one: a drag that begins and ends on one
+        page is the reader changing their mind.
+        """
+        first = self._window.page_at(self._pressed_pointer_pos_x,
+                                     self._pressed_pointer_pos_y)
+        second = self._window.page_at(x, y)
+        if first is None or second is None or first == second:
+            return
+        self._window.file_actions.swap_pages(first, second)
+
     def mouse_move_event(self, controller: Gtk.EventControllerMotion,
                          x: float, y: float) -> None:
         """Handle mouse pointer movement events."""
@@ -710,12 +735,19 @@ class EventHandler:
         # event stream to do better with.
         self._window.cursor_handler.refresh()
 
-        if controller.get_current_event_state() & Gdk.ModifierType.BUTTON1_MASK:
-            self._window.cursor_handler.set_cursor_type(constants.GRAB_CURSOR)
-            self._window.scroll(self._last_pointer_pos_x - x,
-                                self._last_pointer_pos_y - y)
-            self._last_pointer_pos_x = x
-            self._last_pointer_pos_y = y
+        state = controller.get_current_event_state()
+        if not state & Gdk.ModifierType.BUTTON1_MASK:
+            return
+        if self._is_swap_gesture(state):
+            # A page being dragged onto another is not the view being
+            # dragged about: the pages have to stay where they are for
+            # the drag to end on the one it was aimed at.
+            return
+        self._window.cursor_handler.set_cursor_type(constants.GRAB_CURSOR)
+        self._window.scroll(self._last_pointer_pos_x - x,
+                            self._last_pointer_pos_y - y)
+        self._last_pointer_pos_x = x
+        self._last_pointer_pos_y = y
 
     def drag_n_drop_event(self, target: Gtk.DropTarget,
                           value: Gdk.FileList, x: float,

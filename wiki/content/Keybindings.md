@@ -92,6 +92,7 @@ Save currently opened image | CTRL+SHIFT+S
 Reload currently opened directory or archive | CTRL+SHIFT+R
 Pick a page out, or put it back | CTRL+LeftMouse
 Mark a page to swap, or swap it with the marked one | CTRL+SHIFT+LeftMouse
+Swap two pages side by side | CTRL+SHIFT+LeftMouse dragged onto the other page
 Delete the page or the file | Delete
 Undo | CTRL+Z
 Redo | CTRL+Y, CTRL+SHIFT+Z
