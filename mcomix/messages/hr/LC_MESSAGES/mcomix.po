@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: comix 4.0.1\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-20 02:34+0200\n"
+"POT-Creation-Date: 2026-09-20 02:46+0200\n"
 "PO-Revision-Date: 2008-12-13 18:00+0100\n"
 "Last-Translator: Adrian C. <anrxc@sysphere.org>\n"
 "Language-Team: Croatian\n"
@@ -54,7 +54,7 @@ msgstr "! Greška pri raspakiravanju: %s"
 
 #
 # File: src/comment.py, line: 53
-#: mcomix/archive_packer.py:167
+#: mcomix/archive_packer.py:167 mcomix/library/book_area.py:695
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! Nije moguće obrisati %(file)s: %(error)s"
@@ -1091,7 +1091,6 @@ msgid "Couldn't load keybindings: %s"
 msgstr "Nije moguće učitati prečace: %s"
 
 #: mcomix/last_read_page.py:245 mcomix/thumbnail_tools.py:137
-#: mcomix/library/book_area.py:692
 #, python-format
 msgid "! Could not remove file \"%s\""
 msgstr "! Nije moguće obrisati datoteku „%s”"
@@ -3293,6 +3292,14 @@ msgid ""
 msgstr ""
 "Odabrane knjige bit će uklonjene iz biblioteke i trajno obrisane. Jeste li "
 "sigurni da želite nastaviti?"
+
+#: mcomix/library/book_area.py:699
+#, python-format
+msgid "%d book could not be deleted from disk."
+msgid_plural "%d books could not be deleted from disk."
+msgstr[0] "%d knjiga nije izbrisana s diska."
+msgstr[1] "%d knjige nisu izbrisane s diska."
+msgstr[2] "%d knjiga nije izbrisano s diska."
 
 #: mcomix/library/collection_area.py:139
 msgid "New"

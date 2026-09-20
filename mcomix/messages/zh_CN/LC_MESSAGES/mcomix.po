@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Comix 4.0.1\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-20 02:34+0200\n"
+"POT-Creation-Date: 2026-09-20 02:46+0200\n"
 "PO-Revision-Date: 2009-01-28 13:36+0800\n"
 "Last-Translator: Xie Yanbo <xieyanbo@gmail.com>\n"
 "Language-Team: Xie Yanbo <xieyanbo@gmail.com>\n"
@@ -56,7 +56,7 @@ msgstr "！ 解压缩错误：%s"
 
 #
 # File: src/comment.py, line: 53
-#: mcomix/archive_packer.py:167
+#: mcomix/archive_packer.py:167 mcomix/library/book_area.py:695
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! 无法删除 %(file)s：%(error)s"
@@ -890,7 +890,6 @@ msgid "Couldn't load keybindings: %s"
 msgstr "无法加载快捷键设置：%s"
 
 #: mcomix/last_read_page.py:245 mcomix/thumbnail_tools.py:137
-#: mcomix/library/book_area.py:692
 #, python-format
 msgid "! Could not remove file \"%s\""
 msgstr "！ 无法删除文件 %s"
@@ -2691,6 +2690,12 @@ msgid ""
 "The selected books will be removed from the library and permanently deleted. "
 "Are you sure that you want to continue?"
 msgstr "这些书将从该收藏库删除并彻底删除。您确定要继续吗？"
+
+#: mcomix/library/book_area.py:699
+#, python-format
+msgid "%d book could not be deleted from disk."
+msgid_plural "%d books could not be deleted from disk."
+msgstr[0] "无法从磁盘删除 %d 本书。"
 
 #: mcomix/library/collection_area.py:139
 msgid "New"

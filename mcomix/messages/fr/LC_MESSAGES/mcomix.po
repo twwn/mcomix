@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 0.93\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-20 02:34+0200\n"
+"POT-Creation-Date: 2026-09-20 02:46+0200\n"
 "PO-Revision-Date: 2015-04-05 08:54+0100\n"
 "Last-Translator: Benoit Pierre <benoit.pierre@gmail.com>\n"
 "Language-Team: \n"
@@ -50,7 +50,7 @@ msgstr "Format d'archive non supporté : %s"
 msgid "! Extraction error: %s"
 msgstr "Erreur d'extraction : %s"
 
-#: mcomix/archive_packer.py:167
+#: mcomix/archive_packer.py:167 mcomix/library/book_area.py:695
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! Impossible de supprimer %(file)s : %(error)s"
@@ -894,7 +894,6 @@ msgid "Couldn't load keybindings: %s"
 msgstr "Impossible de charger les raccourcis clavier : %s"
 
 #: mcomix/last_read_page.py:245 mcomix/thumbnail_tools.py:137
-#: mcomix/library/book_area.py:692
 #, python-format
 msgid "! Could not remove file \"%s\""
 msgstr "! Impossible de supprimer \"%s\""
@@ -2793,6 +2792,13 @@ msgid ""
 msgstr ""
 "Les livres sélectionnés seront supprimés de la bibliothèque et "
 "définitivement effacés. Voulez-vous vraiment continuer ?"
+
+#: mcomix/library/book_area.py:699
+#, python-format
+msgid "%d book could not be deleted from disk."
+msgid_plural "%d books could not be deleted from disk."
+msgstr[0] "%d livre n'a pas pu être supprimé du disque."
+msgstr[1] "%d livres n'ont pas pu être supprimés du disque."
 
 #: mcomix/library/collection_area.py:139
 msgid "New"

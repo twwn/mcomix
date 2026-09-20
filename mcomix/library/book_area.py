@@ -681,15 +681,25 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
             # Remove books from library
             self._remove_books_from_library()
 
-            # Remove from the harddisk
+            # Remove from the harddisk.  A file that will not go - one
+            # inside a directory that cannot be written to, or a path
+            # that is a directory itself - was logged and nothing more,
+            # and the book had left the library by then, so the reader
+            # was told the file was deleted while it was still there.
+            failed = []
             for book_path in paths:
                 try:
-                    # try to delete the book.
-                    # this can throw an exception if the path points to folder instead
-                    # of a single file
                     os.remove(book_path)
-                except Exception:
-                    log.error(_('! Could not remove file "%s"'), book_path)
+                except OSError as error:
+                    failed.append(book_path)
+                    log.error(_('! Could not remove %(file)s: %(error)s'),
+                              {'file': book_path, 'error': error})
+            if failed:
+                message = i18n.get_translation().ngettext(
+                    '%d book could not be deleted from disk.',
+                    '%d books could not be deleted from disk.',
+                    len(failed))
+                self._library.set_status_message(message % len(failed))
 
     def _copy_selected(self, *args: object) -> None:
         """ Copies the currently selected item to clipboard. """

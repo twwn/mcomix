@@ -1,6 +1,7 @@
 """The library's cover area, and the black it is painted on."""
 
 import contextlib
+import os
 import sqlite3
 import unittest.mock
 import warnings
@@ -41,6 +42,17 @@ class _Backend:
 
     book_added_to_collection = _Event()
 
+    def __init__(self):
+        #: The book ids remove_book() was given.
+        self.removed = []
+
+    @contextlib.contextmanager
+    def transaction(self):
+        yield
+
+    def remove_book(self, book):
+        self.removed.append(book)
+
 
 class _Library:
 
@@ -51,7 +63,14 @@ class _LibraryWindow(Gtk.Window):
 
     """A library that is a real window, which a dialog can be transient for."""
 
-    backend = _Backend()
+    def __init__(self):
+        super().__init__()
+        self.backend = _Backend()
+        #: What set_status_message() was told, in order.
+        self.messages = []
+
+    def set_status_message(self, message):
+        self.messages.append(message)
 
 
 class BlackBackgroundTest(MComixTest):
@@ -351,6 +370,32 @@ class DeleteFromDiskTest(MComixTest):
                       'Enter would delete the books')
         self.assertTrue(deletes.has_css_class('destructive-action'),
                         'the deleting button is drawn as an ordinary one')
+
+
+    def test_a_book_that_could_not_be_deleted_from_disk_says_so(self):
+        """The book leaves the library before the file is deleted, so a
+        deletion that fails is the only thing that can tell the reader
+        the file is still there.  The fixture's path is not a file, so
+        os.remove() raises as it would on a folder that cannot be
+        written to."""
+        self.area._remove_answered(Response.YES)
+        self.assertTrue(self.library.messages, 'the library said nothing')
+        self.assertEqual('1 book could not be deleted from disk.',
+                         self.library.messages[-1])
+
+    def test_a_book_that_was_deleted_says_nothing_of_the_kind(self):
+        path = os.path.join(self.tmp_dir, 'deletable.cbz')
+        with open(path, 'wb') as handle:
+            handle.write(b'not really a book')
+        self.area._covers.set_items([book_area._BookItem(_Book(1, path))])
+        self.area._covers.selection.select_all()
+
+        self.area._remove_answered(Response.YES)
+
+        self.assertFalse(os.path.exists(path))
+        self.assertTrue(all('could not be deleted' not in message
+                            for message in self.library.messages),
+                        self.library.messages)
 
 
 class RemovalTransactionTest(MComixTest):

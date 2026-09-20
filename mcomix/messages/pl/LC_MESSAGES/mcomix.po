@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-20 02:34+0200\n"
+"POT-Creation-Date: 2026-09-20 02:46+0200\n"
 "PO-Revision-Date: 2009-02-02 14:19+0100\n"
 "Last-Translator: Dariusz Jakoniuk <pipaceliny@gmail.com>\n"
 "Language-Team: \n"
@@ -56,7 +56,7 @@ msgstr "! Błąd rozpakowywania: %s"
 
 #
 # File: src/comment.py, line: 53
-#: mcomix/archive_packer.py:167
+#: mcomix/archive_packer.py:167 mcomix/library/book_area.py:695
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! Nie udało się usunąć %(file)s: %(error)s"
@@ -1096,7 +1096,6 @@ msgid "Couldn't load keybindings: %s"
 msgstr "Nie udało się wczytać skrótów: %s"
 
 #: mcomix/last_read_page.py:245 mcomix/thumbnail_tools.py:137
-#: mcomix/library/book_area.py:692
 #, python-format
 msgid "! Could not remove file \"%s\""
 msgstr "! Nie udało się usunąć pliku \"%s\""
@@ -3303,6 +3302,14 @@ msgid ""
 msgstr ""
 "Wybrane książki zostaną usunięte z biblioteki i trwale skasowane. Czy na "
 "pewno kontynuować?"
+
+#: mcomix/library/book_area.py:699
+#, python-format
+msgid "%d book could not be deleted from disk."
+msgid_plural "%d books could not be deleted from disk."
+msgstr[0] "Nie udało się usunąć %d książki z dysku."
+msgstr[1] "Nie udało się usunąć %d książek z dysku."
+msgstr[2] "Nie udało się usunąć %d książek z dysku."
 
 #: mcomix/library/collection_area.py:139
 msgid "New"

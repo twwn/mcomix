@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: comix 3.6.4\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-20 02:34+0200\n"
+"POT-Creation-Date: 2026-09-20 02:46+0200\n"
 "PO-Revision-Date: 2008-05-21 12:40+0330\n"
 "Last-Translator: Meelad Zakaria <meelad@farsiweb.info>\n"
 "Language-Team: Persian \n"
@@ -53,7 +53,7 @@ msgid "! Extraction error: %s"
 msgstr "! خطای استخراج: %s"
 
 #
-#: mcomix/archive_packer.py:167
+#: mcomix/archive_packer.py:167 mcomix/library/book_area.py:695
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! برداشتن %(file)s ممکن نشد: %(error)s"
@@ -1066,7 +1066,6 @@ msgid "Couldn't load keybindings: %s"
 msgstr "بار کردن میان‌برها ممکن نشد: %s"
 
 #: mcomix/last_read_page.py:245 mcomix/thumbnail_tools.py:137
-#: mcomix/library/book_area.py:692
 #, python-format
 msgid "! Could not remove file \"%s\""
 msgstr "! برداشتن پروندهٔ «%s» ممکن نشد"
@@ -3183,6 +3182,13 @@ msgid ""
 msgstr ""
 "کتاب‌های برگزیده از کتاب‌خانه برداشته و برای همیشه حذف می‌شوند. آیا مطمئنید که "
 "می‌خواهید ادامه دهید؟"
+
+#: mcomix/library/book_area.py:699
+#, python-format
+msgid "%d book could not be deleted from disk."
+msgid_plural "%d books could not be deleted from disk."
+msgstr[0] "%d کتاب از دیسک حذف نشد."
+msgstr[1] "%d کتاب از دیسک حذف نشدند."
 
 #: mcomix/library/collection_area.py:139
 msgid "New"
