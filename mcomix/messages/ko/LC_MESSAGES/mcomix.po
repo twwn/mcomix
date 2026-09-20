@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-19 20:18+0200\n"
+"POT-Creation-Date: 2026-09-20 02:34+0200\n"
 "PO-Revision-Date: 2018-05-10 22:46+0900\n"
 "Last-Translator: Minho Jeung <jeungmh@gmail.com>\n"
 "Language-Team: \n"
@@ -70,34 +70,34 @@ msgstr ""
 msgid "! Could not read %s"
 msgstr "! %s을(를) 읽을 수 없습니다"
 
-#: mcomix/bookmark_backend.py:227
+#: mcomix/bookmark_backend.py:226
 #, python-format
 msgid "! Could not parse bookmarks file %s"
 msgstr "! 책갈피 파일 %s를 해석할 수 없습니다"
 
-#: mcomix/bookmark_backend.py:290 mcomix/message_dialog.py:28
+#: mcomix/bookmark_backend.py:289 mcomix/message_dialog.py:28
 msgid "_Yes"
 msgstr "예(_Y)"
 
-#: mcomix/bookmark_backend.py:291 mcomix/message_dialog.py:27
+#: mcomix/bookmark_backend.py:290 mcomix/message_dialog.py:27
 msgid "_No"
 msgstr "아니요(_N)"
 
-#: mcomix/bookmark_backend.py:292 mcomix/edit_dialog.py:57
-#: mcomix/file_actions.py:344 mcomix/file_chooser_base_dialog.py:106
+#: mcomix/bookmark_backend.py:291 mcomix/edit_dialog.py:57
+#: mcomix/file_actions.py:368 mcomix/file_chooser_base_dialog.py:106
 #: mcomix/file_chooser_base_dialog.py:111
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:32
 msgid "_Cancel"
 msgstr "취소(_C)"
 
-#: mcomix/bookmark_backend.py:300
+#: mcomix/bookmark_backend.py:299
 #, python-format
 msgid "Replace existing bookmark on page %s?"
 msgid_plural "Replace existing bookmarks on pages %s?"
 msgstr[0] "페이지 %s에 이미 존재하는 책갈피를 교체하시겠습니까?"
 
-#: mcomix/bookmark_backend.py:305
+#: mcomix/bookmark_backend.py:304
 #, python-format
 msgid ""
 "The current book already contains marked pages. Do you want to replace them "
@@ -106,18 +106,18 @@ msgstr ""
 "이 책에는 이미 표시된 페이지가 있습니다. 페이지 %d의 새 책갈피로 교체하시겠습"
 "니까?"
 
-#: mcomix/bookmark_backend.py:308
+#: mcomix/bookmark_backend.py:307
 msgid ""
 "Selecting \"No\" will create a new bookmark without affecting the other "
 "bookmarks."
 msgstr ""
 "\"아니요\"를 선택하면 다른 책갈피에 영향을 주지 않고 새 책갈피를 생성합니다."
 
-#: mcomix/bookmark_backend.py:328
+#: mcomix/bookmark_backend.py:327
 msgid "Clear all bookmarks?"
 msgstr "모든 책갈피를 지우시겠습니까?"
 
-#: mcomix/bookmark_backend.py:329
+#: mcomix/bookmark_backend.py:328
 msgid ""
 "All stored bookmarks will be removed. Are you sure that you want to continue?"
 msgstr "저장된 책갈피가 모두 제거됩니다. 계속하시겠습니까?"
@@ -130,7 +130,7 @@ msgstr "책갈피 편집"
 msgid "C_lear bookmarks..."
 msgstr "책갈피 모두 지우기...(_L)"
 
-#: mcomix/bookmark_dialog.py:33 mcomix/main.py:751 mcomix/openwith.py:343
+#: mcomix/bookmark_dialog.py:33 mcomix/main.py:757 mcomix/openwith.py:342
 #: mcomix/library/collection_area.py:149 mcomix/library/watchlist.py:63
 msgid "_Remove"
 msgstr "제거(_R)"
@@ -151,7 +151,7 @@ msgstr "유형"
 msgid "Name"
 msgstr "이름"
 
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1300
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1295
 #: mcomix/library/control_area.py:147
 msgid "Page"
 msgstr "페이지"
@@ -274,7 +274,7 @@ msgid "Reset to defaults."
 msgstr "기본값으로 리셋."
 
 #: mcomix/enhance_dialog.py:35 mcomix/file_actions.py:137
-#: mcomix/file_chooser_base_dialog.py:112 mcomix/openwith.py:361
+#: mcomix/file_chooser_base_dialog.py:112 mcomix/openwith.py:360
 msgid "_Save"
 msgstr "저장(_S)"
 
@@ -340,34 +340,44 @@ msgstr "지금은 안 함(_N)"
 msgid "Save page as"
 msgstr "페이지를 다른 이름으로 저장"
 
-#: mcomix/file_actions.py:342
+#: mcomix/file_actions.py:327
 #, python-format
-msgid "Delete \"%s\"?"
-msgstr "\"%s\"을(를) 삭제합니까?"
+msgid "! Could not save %(file)s to %(directory)s: %(error)s"
+msgstr "! %(file)s을(를) %(directory)s(으)로 저장할 수 없습니다: %(error)s"
 
-#: mcomix/file_actions.py:343
-msgid "The file will be deleted from your harddisk."
-msgstr "파일이 하드디스크에서 삭제됩니다."
-
-#: mcomix/file_actions.py:345 mcomix/ui.py:429
-msgid "_Delete"
-msgstr "삭제(_D)"
-
-#: mcomix/file_actions.py:426
-#, python-format
-msgid "! Could not move %(file)s to %(directory)s: %(error)s"
-msgstr "! %(file)s을(를) %(directory)s(으)로 이동할 수 없습니다: %(error)s"
-
-#: mcomix/file_actions.py:430
-msgid "A file of that name is there already."
-msgstr "같은 이름의 파일이 이미 있습니다."
-
-#: mcomix/file_actions.py:432
+#: mcomix/file_actions.py:331 mcomix/file_actions.py:456
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "공간이 부족합니다: 파일 크기는 %s입니다."
 
-#: mcomix/file_actions.py:438
+#: mcomix/file_actions.py:337
+#, python-format
+msgid "Could not save \"%(file)s\" to \"%(directory)s\""
+msgstr "\"%(file)s\"을(를) \"%(directory)s\"(으)로 저장할 수 없습니다"
+
+#: mcomix/file_actions.py:366
+#, python-format
+msgid "Delete \"%s\"?"
+msgstr "\"%s\"을(를) 삭제합니까?"
+
+#: mcomix/file_actions.py:367
+msgid "The file will be deleted from your harddisk."
+msgstr "파일이 하드디스크에서 삭제됩니다."
+
+#: mcomix/file_actions.py:369 mcomix/ui.py:429
+msgid "_Delete"
+msgstr "삭제(_D)"
+
+#: mcomix/file_actions.py:450
+#, python-format
+msgid "! Could not move %(file)s to %(directory)s: %(error)s"
+msgstr "! %(file)s을(를) %(directory)s(으)로 이동할 수 없습니다: %(error)s"
+
+#: mcomix/file_actions.py:454
+msgid "A file of that name is there already."
+msgstr "같은 이름의 파일이 이미 있습니다."
+
+#: mcomix/file_actions.py:462
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "\"%(file)s\"을(를) \"%(directory)s\"(으)로 이동할 수 없습니다"
@@ -384,34 +394,34 @@ msgstr "열기(_O)"
 msgid "Save"
 msgstr "저장"
 
-#: mcomix/file_chooser_base_dialog.py:220
+#: mcomix/file_chooser_base_dialog.py:219
 msgid "All files"
 msgstr "모든 파일"
 
-#: mcomix/file_chooser_base_dialog.py:471
+#: mcomix/file_chooser_base_dialog.py:470
 msgid "All archives"
 msgstr "모든 압축파일"
 
-#: mcomix/file_chooser_base_dialog.py:471
+#: mcomix/file_chooser_base_dialog.py:470
 #, python-format
 msgid "%s archives"
 msgstr "%s archives"
 
-#: mcomix/file_chooser_base_dialog.py:477
+#: mcomix/file_chooser_base_dialog.py:476
 msgid "All images"
 msgstr "모든 이미지"
 
-#: mcomix/file_chooser_base_dialog.py:477
+#: mcomix/file_chooser_base_dialog.py:476
 #, python-format
 msgid "%s images"
 msgstr "%s images"
 
-#: mcomix/file_chooser_base_dialog.py:603
+#: mcomix/file_chooser_base_dialog.py:602
 #, python-format
 msgid "A file named '%s' already exists. Do you want to replace it?"
 msgstr "'%s' 파일이 이미 있습니다. 덮어씌우시겠습니까?"
 
-#: mcomix/file_chooser_base_dialog.py:605
+#: mcomix/file_chooser_base_dialog.py:604
 msgid "Replacing it will overwrite its contents."
 msgstr "내용을 덮어씁니다."
 
@@ -419,7 +429,7 @@ msgstr "내용을 덮어씁니다."
 msgid "Add books"
 msgstr "책 추가"
 
-#: mcomix/file_chooser_library_dialog.py:43 mcomix/openwith.py:339
+#: mcomix/file_chooser_library_dialog.py:43 mcomix/openwith.py:338
 #: mcomix/library/watchlist.py:61
 msgid "_Add"
 msgstr "추가(_A)"
@@ -456,7 +466,7 @@ msgstr ""
 "\"네\"를 선택하면 %(page)d 페이지로 돌아갑니다. \n"
 "아니면 첫 페이지를 불러옵니다."
 
-#: mcomix/file_handler.py:896
+#: mcomix/file_handler.py:903
 #, python-format
 msgid ""
 "! Corrupt file \"%s\", deleting it; the last file read will not be reopened."
@@ -469,7 +479,7 @@ msgstr ""
 msgid "Invalid path: '%s'"
 msgstr "유효하지 않은 경로: '%s'"
 
-#: mcomix/image_tools.py:1006
+#: mcomix/image_tools.py:971
 msgid "Unknown filetype"
 msgstr "알 수 없는 파일 형식"
 
@@ -852,7 +862,7 @@ msgstr "책갈피"
 msgid "Edit bookmarks"
 msgstr "책갈피 편집"
 
-#: mcomix/keybindings.py:159 mcomix/openwith.py:564
+#: mcomix/keybindings.py:159 mcomix/openwith.py:563
 msgid "Command"
 msgstr "명령어"
 
@@ -870,19 +880,19 @@ msgstr "\"%(action)s\"에 할당한 키는 다른 동작의 단축키보다 우�
 msgid "Couldn't load keybindings: %s"
 msgstr "키 설정을 불러오지 못했습니다: %s"
 
-#: mcomix/last_read_page.py:245 mcomix/thumbnail_tools.py:125
-#: mcomix/library/book_area.py:689
+#: mcomix/last_read_page.py:245 mcomix/thumbnail_tools.py:137
+#: mcomix/library/book_area.py:692
 #, python-format
 msgid "! Could not remove file \"%s\""
 msgstr "! 다음 파일을 제거할 수 없습니다: \"%s\""
 
-#: mcomix/main.py:744
+#: mcomix/main.py:750
 #, python-format
 msgid "Remove the page picked out of \"%s\"?"
 msgid_plural "Remove the pages picked out of \"%s\"?"
 msgstr[0] "선택한 쪽을 \"%s\"에서 제거할까요?"
 
-#: mcomix/main.py:747
+#: mcomix/main.py:753
 msgid ""
 "They are taken out of the archive on disk, which is written again at once. "
 "Leaving the book without removing them forgets which pages they were."
@@ -890,11 +900,11 @@ msgstr ""
 "디스크의 압축 파일에서 빠지고 압축 파일은 즉시 다시 쓰입니다. 제거하지 않고 "
 "책을 떠나면 어느 쪽이었는지 잊힙니다."
 
-#: mcomix/main.py:750
+#: mcomix/main.py:756
 msgid "_Keep them"
 msgstr "유지(_K)"
 
-#: mcomix/main.py:1167
+#: mcomix/main.py:1162
 msgid "SLIDESHOW"
 msgstr "슬라이드쇼"
 
@@ -995,80 +1005,80 @@ msgstr "명령 편집(_E)"
 msgid "'%s' is disabled for archives."
 msgstr "'%s' 는 압축 파일에 대해 비활성화됩니다."
 
-#: mcomix/openwith.py:100
+#: mcomix/openwith.py:101
 #, python-format
 msgid "Could not run command %(cmdlabel)s: %(exception)s"
 msgstr "명령 %(cmdlabel)s 을 실행하지 못했습니다: %(exception)s"
 
-#: mcomix/openwith.py:150
+#: mcomix/openwith.py:149
 msgid "Command line is empty."
 msgstr "명령행이 비어 있습니다."
 
-#: mcomix/openwith.py:215
+#: mcomix/openwith.py:214
 msgid "Incomplete escape sequence. For a literal '%', use '%%'."
 msgstr "불완전한 이스케이프 시퀀스. '%' 대신 '%%' 를 사용하십시오."
 
-#: mcomix/openwith.py:219
+#: mcomix/openwith.py:218
 msgid "Incomplete quote sequence. For a literal '\"', use '%\"'."
 msgstr "불완전한 인용 시퀀스. '\"' 대신 '%\"' 를 사용하십시오."
 
-#: mcomix/openwith.py:236 mcomix/openwith.py:250 mcomix/openwith.py:257
-#: mcomix/openwith.py:270
+#: mcomix/openwith.py:235 mcomix/openwith.py:249 mcomix/openwith.py:256
+#: mcomix/openwith.py:269
 msgid "File-related variables can only be used for files."
 msgstr "File-related variables can only be used for files."
 
-#: mcomix/openwith.py:240
+#: mcomix/openwith.py:239
 msgid "Archive-related variables can only be used for archives."
 msgstr "Archive-related variables can only be used for archives."
 
-#: mcomix/openwith.py:304
+#: mcomix/openwith.py:303
 #, python-format
 msgid "Invalid escape sequence: %%%s"
 msgstr "적합하지 않은 이스케이프 시퀀스: %%%s"
 
-#: mcomix/openwith.py:330
+#: mcomix/openwith.py:329
 msgid "Edit external commands"
 msgstr "외부 명령어 편집"
 
-#: mcomix/openwith.py:341
+#: mcomix/openwith.py:340
 msgid "Add _separator"
 msgstr "구분자 추가(_S)"
 
-#: mcomix/openwith.py:346
+#: mcomix/openwith.py:345
 msgid "_Up"
 msgstr "위로(_U)"
 
-#: mcomix/openwith.py:349
+#: mcomix/openwith.py:348
 msgid "_Down"
 msgstr "아래로(_D)"
 
-#: mcomix/openwith.py:352
+#: mcomix/openwith.py:351
 msgid "Run _command"
 msgstr "명령어 실행(_B)"
 
-#: mcomix/openwith.py:428
+#: mcomix/openwith.py:427
 msgid "This is a separator pseudo-command."
 msgstr "이것은 구분자 의사 명령어입니다."
 
-#: mcomix/openwith.py:439
+#: mcomix/openwith.py:438
 #, python-format
 msgid "\"%s\" does not have a valid working directory."
 msgstr "\"%s\" 는 적절한 작업 디렉토리가 아닙니다."
 
-#: mcomix/openwith.py:442
+#: mcomix/openwith.py:441
 #, python-format
 msgid "\"%s\" does not appear to have a valid executable."
 msgstr "\"%s\" 는 적절한 실행 파일이 아닙니다."
 
-#: mcomix/openwith.py:451
+#: mcomix/openwith.py:450
 msgid "Command label"
 msgstr "명령어 라벨"
 
-#: mcomix/openwith.py:542
+#: mcomix/openwith.py:541
 msgid "Preview:"
 msgstr "미리보기:"
 
-#: mcomix/openwith.py:550
+#: mcomix/openwith.py:549
 #, python-format
 msgid ""
 "Please refer to the <a href=\"%s\">external command documentation</a> for a "
@@ -1077,23 +1087,23 @@ msgstr ""
 "변수 목록과 그 외 정보는 <a href=\\\"%s\\\">external command documentation</"
 "a>를 참조하십시오."
 
-#: mcomix/openwith.py:563
+#: mcomix/openwith.py:562
 msgid "Label"
 msgstr "라벨"
 
-#: mcomix/openwith.py:565
+#: mcomix/openwith.py:564
 msgid "Working directory"
 msgstr "작업 디렉토리"
 
-#: mcomix/openwith.py:572
+#: mcomix/openwith.py:571
 msgid "Disabled in archives"
 msgstr "압축 파일 안에서 비활성화"
 
-#: mcomix/openwith.py:625
+#: mcomix/openwith.py:624
 msgid "Save changes to commands?"
 msgstr "변경점을 명령어 목록에 저장하시겠습니까?"
 
-#: mcomix/openwith.py:626
+#: mcomix/openwith.py:625
 msgid ""
 "You have made changes to the list of external commands that have not been "
 "saved yet. Press \"Yes\" to save all changes, or \"No\" to discard them."
@@ -1989,27 +1999,27 @@ msgstr ""
 msgid "Stop slideshow"
 msgstr "슬라이드쇼"
 
-#: mcomix/status.py:158
+#: mcomix/status.py:163
 msgid "Show page numbers"
 msgstr "페이지 번호 보기"
 
-#: mcomix/status.py:159
+#: mcomix/status.py:164
 msgid "Show file numbers"
 msgstr "파일 번호 보기"
 
-#: mcomix/status.py:160
+#: mcomix/status.py:165
 msgid "Show resolution"
 msgstr "해상도 보기"
 
-#: mcomix/status.py:161
+#: mcomix/status.py:166
 msgid "Show path"
 msgstr "경로 보기"
 
-#: mcomix/status.py:162
+#: mcomix/status.py:167
 msgid "Show filename"
 msgstr "파일명 보기"
 
-#: mcomix/status.py:163
+#: mcomix/status.py:168
 msgid "Show filesize"
 msgstr "파일용량 보기"
 
@@ -2172,7 +2182,7 @@ msgstr "아이콘 디자인"
 msgid "Vector icon"
 msgstr "벡터 아이콘"
 
-#: mcomix/thumbnail_tools.py:242
+#: mcomix/thumbnail_tools.py:254
 #, python-format
 msgid "! Could not save thumbnail \"%(thumbpath)s\": %(error)s"
 msgstr "! 섬네일 저장 실패 \"%(thumbpath)s\": %(error)s"
@@ -2529,65 +2539,65 @@ msgstr "책 추가:"
 msgid "Adding '%s'..."
 msgstr "추가 '%s'..."
 
-#: mcomix/library/backend.py:188
+#: mcomix/library/backend.py:178
 #, python-format
 msgid "! Non-existent book #%i"
 msgstr "! 존재하지 않는 책: #%i"
 
-#: mcomix/library/backend.py:225
+#: mcomix/library/backend.py:215
 #, python-format
 msgid "! Could not get cover for book \"%s\""
 msgstr "! 다음 책의 커버 이미지를 얻지 못했습니다: \"%s\""
 
-#: mcomix/library/backend.py:242 mcomix/library/backend.py:289
-#: mcomix/library/backend.py:309 mcomix/library/backend.py:320
-#: mcomix/library/backend.py:348
+#: mcomix/library/backend.py:232 mcomix/library/backend.py:279
+#: mcomix/library/backend.py:299 mcomix/library/backend.py:310
+#: mcomix/library/backend.py:338
 msgid "Recent"
 msgstr "최근 파일"
 
-#: mcomix/library/backend.py:424
+#: mcomix/library/backend.py:414
 #, python-format
 msgid "! Could not add book \"%s\" to the library"
 msgstr "! 책 \"%s\" 을 라이브러리에 추가하지 못했습니다"
 
-#: mcomix/library/backend.py:449
+#: mcomix/library/backend.py:439
 #, python-format
 msgid "! Could not move book \"%s\" in the library"
 msgstr "! 라이브러리의 책 \"%s\"을(를) 이동할 수 없습니다"
 
-#: mcomix/library/backend.py:493
+#: mcomix/library/backend.py:483
 #, python-format
 msgid "! Could not add collection \"%s\""
 msgstr "! 모음집을 추가하지 못했습니다: \"%s\""
 
-#: mcomix/library/backend.py:525
+#: mcomix/library/backend.py:515
 #, python-format
 msgid "! Could not add book %(book)s to collection %(collection)s"
 msgstr "! 책 %(book)s 을 모음집 %(collection)s 에 추가하지 못했습니다"
 
-#: mcomix/library/backend.py:552
+#: mcomix/library/backend.py:542
 #, python-format
 msgid "! Could not rename collection to \"%s\""
 msgstr "! 모음집 이름을 다음으로 변경하지 못했습니다: \"%s\""
 
-#: mcomix/library/backend.py:563 mcomix/library/backend.py:565
+#: mcomix/library/backend.py:553 mcomix/library/backend.py:555
 msgid "(Copy)"
 msgstr "(Copy)"
 
-#: mcomix/library/backend.py:814
+#: mcomix/library/backend.py:804
 msgid "Could not determine library database version!"
 msgstr "라이브러리 데이터베이스 버전을 특정할 수 없습니다!"
 
-#: mcomix/library/backend.py:864
+#: mcomix/library/backend.py:854
 #, python-format
 msgid "Upgrading library database version from %(from)d to %(to)d."
 msgstr "라이브러리 버전을 %(from)d 에서 %(to)d 으로 업그레이드합니다."
 
-#: mcomix/library/backend_types.py:315 mcomix/library/collection_area.py:222
+#: mcomix/library/backend_types.py:316 mcomix/library/collection_area.py:222
 msgid "All books"
 msgstr "모든 책"
 
-#: mcomix/library/backend_types.py:456
+#: mcomix/library/backend_types.py:457
 #, python-format
 msgid "! Could not scan for new books: %s"
 msgstr "! 새 책을 검색할 수 없습니다: %s"
@@ -2685,27 +2695,27 @@ msgstr "정렬(_S)"
 msgid "Cover si_ze"
 msgstr "커버 사이즈(_Z)"
 
-#: mcomix/library/book_area.py:481
+#: mcomix/library/book_area.py:484
 msgid "Set library cover size"
 msgstr "라이브러리 커버 사이즈 설정"
 
-#: mcomix/library/book_area.py:612
+#: mcomix/library/book_area.py:615
 #, python-format
 msgid "Removed %(num)d book from '%(collection)s'."
 msgid_plural "Removed %(num)d books from '%(collection)s'."
 msgstr[0] "'%(collection)s' 에서 %(num)d  책 제거."
 
-#: mcomix/library/book_area.py:635 mcomix/library/collection_area.py:291
+#: mcomix/library/book_area.py:638 mcomix/library/collection_area.py:297
 #, python-format
 msgid "Removed %d book from the library."
 msgid_plural "Removed %d books from the library."
 msgstr[0] "%d 권의 책을 라이브러리에서 제거했습니다."
 
-#: mcomix/library/book_area.py:660
+#: mcomix/library/book_area.py:663
 msgid "Remove books from the library?"
 msgstr "라이브러리에서 책을 제거하시겠습니까?"
 
-#: mcomix/library/book_area.py:661
+#: mcomix/library/book_area.py:664
 msgid ""
 "The selected books will be removed from the library and permanently deleted. "
 "Are you sure that you want to continue?"
@@ -2760,49 +2770,49 @@ msgstr "새 모음집을 추가합니까?"
 msgid "Please enter a name for the new collection."
 msgstr "새 모음집의 이름을 입력해주세요."
 
-#: mcomix/library/collection_area.py:274
+#: mcomix/library/collection_area.py:280
 #, python-format
 msgid "Could not add a new collection called '%s'."
 msgstr "새 모음집을 추가하지 못했습니다: '%s'."
 
-#: mcomix/library/collection_area.py:279 mcomix/library/collection_area.py:371
+#: mcomix/library/collection_area.py:285 mcomix/library/collection_area.py:379
 msgid "A collection by that name already exists."
 msgstr "같은 이름의 모음집이 존재합니다."
 
-#: mcomix/library/collection_area.py:341
+#: mcomix/library/collection_area.py:347
 msgid "Rename collection?"
 msgstr "모음집 이름을 변경하시겠습니까?"
 
-#: mcomix/library/collection_area.py:342
+#: mcomix/library/collection_area.py:348
 msgid "Please enter a new name for the selected collection."
 msgstr "선택된 모음집에 대한 새 이름을 입력하세요."
 
-#: mcomix/library/collection_area.py:367
+#: mcomix/library/collection_area.py:375
 #, python-format
 msgid "Could not change the name to '%s'."
 msgstr "이름을 변경하지 못했습니다. '%s'."
 
-#: mcomix/library/collection_area.py:383
+#: mcomix/library/collection_area.py:391
 msgid "Could not duplicate collection."
 msgstr "모음집을 복제하지 못했습니다."
 
-#: mcomix/library/collection_area.py:559
+#: mcomix/library/collection_area.py:567
 msgid "Root"
 msgstr "관리자"
 
-#: mcomix/library/collection_area.py:562
+#: mcomix/library/collection_area.py:570
 #, python-format
 msgid ""
 "Put the collection '%(subcollection)s' in the collection "
 "'%(supercollection)s'."
 msgstr "'%(subcollection)s' 모음집을 '%(supercollection)s' 모음집에 넣기."
 
-#: mcomix/library/collection_area.py:574
+#: mcomix/library/collection_area.py:582
 #, python-format
 msgid "Add books to '%s'."
 msgstr "책 추가 '%s'."
 
-#: mcomix/library/collection_area.py:577
+#: mcomix/library/collection_area.py:585
 #, python-format
 msgid ""
 "Move books from '%(source collection)s' to '%(destination collection)s'."

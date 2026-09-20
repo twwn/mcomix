@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Comix 3.2\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-19 20:18+0200\n"
+"POT-Creation-Date: 2026-09-20 02:34+0200\n"
 "PO-Revision-Date: 2009-01-25 22:33+0100\n"
 "Last-Translator: Carles Escrig i Royo <simkin@ono.com>\n"
 "Language-Team: CA <gentoo@softcatala.net>\n"
@@ -78,39 +78,39 @@ msgstr ""
 msgid "! Could not read %s"
 msgstr "! No s'ha pogut llegir %s"
 
-#: mcomix/bookmark_backend.py:227
+#: mcomix/bookmark_backend.py:226
 #, python-format
 msgid "! Could not parse bookmarks file %s"
 msgstr "! No s'ha pogut analitzar el fitxer de marcadors %s"
 
-#: mcomix/bookmark_backend.py:290 mcomix/message_dialog.py:28
+#: mcomix/bookmark_backend.py:289 mcomix/message_dialog.py:28
 msgid "_Yes"
 msgstr "_Sí"
 
 #
 # File: src/ui.py, line: 69
-#: mcomix/bookmark_backend.py:291 mcomix/message_dialog.py:27
+#: mcomix/bookmark_backend.py:290 mcomix/message_dialog.py:27
 msgid "_No"
 msgstr "_No"
 
 #
 # File: src/preferences.py, line: 230
-#: mcomix/bookmark_backend.py:292 mcomix/edit_dialog.py:57
-#: mcomix/file_actions.py:344 mcomix/file_chooser_base_dialog.py:106
+#: mcomix/bookmark_backend.py:291 mcomix/edit_dialog.py:57
+#: mcomix/file_actions.py:368 mcomix/file_chooser_base_dialog.py:106
 #: mcomix/file_chooser_base_dialog.py:111
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:32
 msgid "_Cancel"
 msgstr "_Cancel·la"
 
-#: mcomix/bookmark_backend.py:300
+#: mcomix/bookmark_backend.py:299
 #, python-format
 msgid "Replace existing bookmark on page %s?"
 msgid_plural "Replace existing bookmarks on pages %s?"
 msgstr[0] "Voleu substituir el marcador existent a la pàgina %s?"
 msgstr[1] "Voleu substituir els marcadors existents a les pàgines %s?"
 
-#: mcomix/bookmark_backend.py:305
+#: mcomix/bookmark_backend.py:304
 #, python-format
 msgid ""
 "The current book already contains marked pages. Do you want to replace them "
@@ -119,7 +119,7 @@ msgstr ""
 "Aquest llibre ja conté pàgines marcades. Voleu substituir-les per un "
 "marcador nou a la pàgina %d?"
 
-#: mcomix/bookmark_backend.py:308
+#: mcomix/bookmark_backend.py:307
 msgid ""
 "Selecting \"No\" will create a new bookmark without affecting the other "
 "bookmarks."
@@ -127,13 +127,13 @@ msgstr "Si trieu «No» es crearà un marcador nou sense afectar els altres."
 
 #
 # File: src/bookmark.py, line: 31
-#: mcomix/bookmark_backend.py:328
+#: mcomix/bookmark_backend.py:327
 msgid "Clear all bookmarks?"
 msgstr "Voleu esborrar tots els marcadors?"
 
 #
 # File: src/bookmark.py, line: 79
-#: mcomix/bookmark_backend.py:329
+#: mcomix/bookmark_backend.py:328
 msgid ""
 "All stored bookmarks will be removed. Are you sure that you want to continue?"
 msgstr ""
@@ -149,7 +149,7 @@ msgstr "Edició dels marcadors"
 msgid "C_lear bookmarks..."
 msgstr "Esborra _tots els marcadors..."
 
-#: mcomix/bookmark_dialog.py:33 mcomix/main.py:751 mcomix/openwith.py:343
+#: mcomix/bookmark_dialog.py:33 mcomix/main.py:757 mcomix/openwith.py:342
 #: mcomix/library/collection_area.py:149 mcomix/library/watchlist.py:63
 msgid "_Remove"
 msgstr "E_limina"
@@ -177,7 +177,7 @@ msgstr "Nom"
 
 #
 # File: src/bookmark.py, line: 256
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1300
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1295
 #: mcomix/library/control_area.py:147
 msgid "Page"
 msgstr "Pàgina"
@@ -334,7 +334,7 @@ msgstr "Restableix els valors predeterminats."
 #
 # File: src/filechooser.py, line: 39
 #: mcomix/enhance_dialog.py:35 mcomix/file_actions.py:137
-#: mcomix/file_chooser_base_dialog.py:112 mcomix/openwith.py:361
+#: mcomix/file_chooser_base_dialog.py:112 mcomix/openwith.py:360
 msgid "_Save"
 msgstr "_Desa"
 
@@ -416,34 +416,44 @@ msgstr "Ara _no"
 msgid "Save page as"
 msgstr "Anomena i desa la pàgina"
 
-#: mcomix/file_actions.py:342
+#: mcomix/file_actions.py:327
 #, python-format
-msgid "Delete \"%s\"?"
-msgstr "Voleu suprimir «%s»?"
+msgid "! Could not save %(file)s to %(directory)s: %(error)s"
+msgstr "! No s'ha pogut desar %(file)s a %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:343
-msgid "The file will be deleted from your harddisk."
-msgstr "El fitxer se suprimirà del disc dur."
-
-#: mcomix/file_actions.py:345 mcomix/ui.py:429
-msgid "_Delete"
-msgstr "_Suprimeix"
-
-#: mcomix/file_actions.py:426
-#, python-format
-msgid "! Could not move %(file)s to %(directory)s: %(error)s"
-msgstr "! No s'ha pogut moure %(file)s a %(directory)s: %(error)s"
-
-#: mcomix/file_actions.py:430
-msgid "A file of that name is there already."
-msgstr "Ja hi ha un fitxer amb aquest nom."
-
-#: mcomix/file_actions.py:432
+#: mcomix/file_actions.py:331 mcomix/file_actions.py:456
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "No hi ha prou espai: el fitxer ocupa %s."
 
-#: mcomix/file_actions.py:438
+#: mcomix/file_actions.py:337
+#, python-format
+msgid "Could not save \"%(file)s\" to \"%(directory)s\""
+msgstr "No s'ha pogut desar «%(file)s» a «%(directory)s»"
+
+#: mcomix/file_actions.py:366
+#, python-format
+msgid "Delete \"%s\"?"
+msgstr "Voleu suprimir «%s»?"
+
+#: mcomix/file_actions.py:367
+msgid "The file will be deleted from your harddisk."
+msgstr "El fitxer se suprimirà del disc dur."
+
+#: mcomix/file_actions.py:369 mcomix/ui.py:429
+msgid "_Delete"
+msgstr "_Suprimeix"
+
+#: mcomix/file_actions.py:450
+#, python-format
+msgid "! Could not move %(file)s to %(directory)s: %(error)s"
+msgstr "! No s'ha pogut moure %(file)s a %(directory)s: %(error)s"
+
+#: mcomix/file_actions.py:454
+msgid "A file of that name is there already."
+msgstr "Ja hi ha un fitxer amb aquest nom."
+
+#: mcomix/file_actions.py:462
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "No s'ha pogut moure «%(file)s» a «%(directory)s»"
@@ -467,19 +477,19 @@ msgstr "Desa"
 
 #
 # File: src/filechooser.py, line: 75
-#: mcomix/file_chooser_base_dialog.py:220
+#: mcomix/file_chooser_base_dialog.py:219
 msgid "All files"
 msgstr "Tots els fitxers"
 
 #
 # File: src/filechooser.py, line: 78
-#: mcomix/file_chooser_base_dialog.py:471
+#: mcomix/file_chooser_base_dialog.py:470
 msgid "All archives"
 msgstr "Tots els arxius"
 
 #
 # File: src/filechooser.py, line: 82
-#: mcomix/file_chooser_base_dialog.py:471
+#: mcomix/file_chooser_base_dialog.py:470
 #, python-format
 msgid "%s archives"
 msgstr "Arxius %s"
@@ -487,28 +497,28 @@ msgstr "Arxius %s"
 #
 # File: src/filechooser.py, line: 171
 # File: src/filechooser.py, line: 249
-#: mcomix/file_chooser_base_dialog.py:477
+#: mcomix/file_chooser_base_dialog.py:476
 msgid "All images"
 msgstr "Totes les imatges"
 
 #
 # File: src/filechooser.py, line: 171
 # File: src/filechooser.py, line: 249
-#: mcomix/file_chooser_base_dialog.py:477
+#: mcomix/file_chooser_base_dialog.py:476
 #, python-format
 msgid "%s images"
 msgstr "Imatges %s"
 
 #
 # File: src/filechooser.py, line: 125
-#: mcomix/file_chooser_base_dialog.py:603
+#: mcomix/file_chooser_base_dialog.py:602
 #, python-format
 msgid "A file named '%s' already exists. Do you want to replace it?"
 msgstr "Ja existeix un fitxer anomenat '%s'. Voleu substituir-lo?"
 
 #
 # File: src/filechooser.py, line: 128
-#: mcomix/file_chooser_base_dialog.py:605
+#: mcomix/file_chooser_base_dialog.py:604
 msgid "Replacing it will overwrite its contents."
 msgstr "Substituint-lo hi sobreescriureu els continguts."
 
@@ -518,7 +528,7 @@ msgstr "Substituint-lo hi sobreescriureu els continguts."
 msgid "Add books"
 msgstr "Afegeix llibres"
 
-#: mcomix/file_chooser_library_dialog.py:43 mcomix/openwith.py:339
+#: mcomix/file_chooser_library_dialog.py:43 mcomix/openwith.py:338
 #: mcomix/library/watchlist.py:61
 msgid "_Add"
 msgstr "_Afegeix"
@@ -561,7 +571,7 @@ msgstr ""
 "lectura continuarà a la pàgina %(page)d. Altrament es carregarà la primera "
 "pàgina."
 
-#: mcomix/file_handler.py:896
+#: mcomix/file_handler.py:903
 #, python-format
 msgid ""
 "! Corrupt file \"%s\", deleting it; the last file read will not be reopened."
@@ -576,7 +586,7 @@ msgstr "Camí no vàlid: «%s»"
 
 #
 # File: src/filehandler.py, line: 411
-#: mcomix/image_tools.py:1006
+#: mcomix/image_tools.py:971
 msgid "Unknown filetype"
 msgstr "Tipus de fitxer desconegut"
 
@@ -1062,7 +1072,7 @@ msgstr "Edició dels marcadors"
 #
 # File: src/comment.py, line: 16
 # File: src/preferences.py, line: 288
-#: mcomix/keybindings.py:159 mcomix/openwith.py:564
+#: mcomix/keybindings.py:159 mcomix/openwith.py:563
 msgid "Command"
 msgstr "Ordre"
 
@@ -1082,20 +1092,20 @@ msgstr "La drecera de «%(action)s» anul·la la d'una altra acció."
 msgid "Couldn't load keybindings: %s"
 msgstr "No s'han pogut carregar les dreceres: %s"
 
-#: mcomix/last_read_page.py:245 mcomix/thumbnail_tools.py:125
-#: mcomix/library/book_area.py:689
+#: mcomix/last_read_page.py:245 mcomix/thumbnail_tools.py:137
+#: mcomix/library/book_area.py:692
 #, python-format
 msgid "! Could not remove file \"%s\""
 msgstr "! No s'ha pogut suprimir el fitxer «%s»"
 
-#: mcomix/main.py:744
+#: mcomix/main.py:750
 #, python-format
 msgid "Remove the page picked out of \"%s\"?"
 msgid_plural "Remove the pages picked out of \"%s\"?"
 msgstr[0] "Voleu treure la pàgina triada de «%s»?"
 msgstr[1] "Voleu treure les pàgines triades de «%s»?"
 
-#: mcomix/main.py:747
+#: mcomix/main.py:753
 msgid ""
 "They are taken out of the archive on disk, which is written again at once. "
 "Leaving the book without removing them forgets which pages they were."
@@ -1103,13 +1113,13 @@ msgstr ""
 "Es treuen de l'arxiu del disc, que s'escriu de nou de seguida. Si deixeu el "
 "llibre sense treure-les, s'oblidarà quines pàgines eren."
 
-#: mcomix/main.py:750
+#: mcomix/main.py:756
 msgid "_Keep them"
 msgstr "Man_té-les"
 
 #
 # File: src/main.py, line: 666
-#: mcomix/main.py:1167
+#: mcomix/main.py:1162
 msgid "SLIDESHOW"
 msgstr "PRESENTACIÓ"
 
@@ -1218,75 +1228,75 @@ msgstr "_Edita les ordres"
 msgid "'%s' is disabled for archives."
 msgstr "«%s» està inhabilitat per als arxius."
 
-#: mcomix/openwith.py:100
+#: mcomix/openwith.py:101
 #, python-format
 msgid "Could not run command %(cmdlabel)s: %(exception)s"
 msgstr "No s'ha pogut executar l'ordre %(cmdlabel)s: %(exception)s"
 
-#: mcomix/openwith.py:150
+#: mcomix/openwith.py:149
 msgid "Command line is empty."
 msgstr "La línia d'ordres és buida."
 
-#: mcomix/openwith.py:215
+#: mcomix/openwith.py:214
 msgid "Incomplete escape sequence. For a literal '%', use '%%'."
 msgstr ""
 "Seqüència d'escapada incompleta. Per al caràcter «%» mateix, useu «%%»."
 
-#: mcomix/openwith.py:219
+#: mcomix/openwith.py:218
 msgid "Incomplete quote sequence. For a literal '\"', use '%\"'."
 msgstr "Cometes sense tancar. Per al caràcter «\"» mateix, useu «%\"»."
 
 #
 # File: src/edit.py, line: 115
-#: mcomix/openwith.py:236 mcomix/openwith.py:250 mcomix/openwith.py:257
-#: mcomix/openwith.py:270
+#: mcomix/openwith.py:235 mcomix/openwith.py:249 mcomix/openwith.py:256
+#: mcomix/openwith.py:269
 msgid "File-related variables can only be used for files."
 msgstr "Les variables relatives als fitxers només es poden usar per a fitxers."
 
 #
 # File: src/edit.py, line: 115
-#: mcomix/openwith.py:240
+#: mcomix/openwith.py:239
 msgid "Archive-related variables can only be used for archives."
 msgstr "Les variables relatives als arxius només es poden usar per a arxius."
 
-#: mcomix/openwith.py:304
+#: mcomix/openwith.py:303
 #, python-format
 msgid "Invalid escape sequence: %%%s"
 msgstr "Seqüència d'escapada no vàlida: %%%s"
 
-#: mcomix/openwith.py:330
+#: mcomix/openwith.py:329
 msgid "Edit external commands"
 msgstr "Edició de les ordres externes"
 
-#: mcomix/openwith.py:341
+#: mcomix/openwith.py:340
 msgid "Add _separator"
 msgstr "Afegeix un _separador"
 
-#: mcomix/openwith.py:346
+#: mcomix/openwith.py:345
 msgid "_Up"
 msgstr "A_munt"
 
-#: mcomix/openwith.py:349
+#: mcomix/openwith.py:348
 msgid "_Down"
 msgstr "A_vall"
 
 #
 # File: src/comment.py, line: 16
 # File: src/preferences.py, line: 288
-#: mcomix/openwith.py:352
+#: mcomix/openwith.py:351
 msgid "Run _command"
 msgstr "Executa l'_ordre"
 
-#: mcomix/openwith.py:428
+#: mcomix/openwith.py:427
 msgid "This is a separator pseudo-command."
 msgstr "Això és una pseudoordre separadora."
 
-#: mcomix/openwith.py:439
+#: mcomix/openwith.py:438
 #, python-format
 msgid "\"%s\" does not have a valid working directory."
 msgstr "«%s» no té un directori de treball vàlid."
 
-#: mcomix/openwith.py:442
+#: mcomix/openwith.py:441
 #, python-format
 msgid "\"%s\" does not appear to have a valid executable."
 msgstr "Sembla que «%s» no té un executable vàlid."
@@ -1294,17 +1304,17 @@ msgstr "Sembla que «%s» no té un executable vàlid."
 #
 # File: src/comment.py, line: 16
 # File: src/preferences.py, line: 288
-#: mcomix/openwith.py:451
+#: mcomix/openwith.py:450
 msgid "Command label"
 msgstr "Etiqueta de l'ordre"
 
 #
 # File: src/ui.py, line: 36
-#: mcomix/openwith.py:542
+#: mcomix/openwith.py:541
 msgid "Preview:"
 msgstr "Vista prèvia:"
 
-#: mcomix/openwith.py:550
+#: mcomix/openwith.py:549
 #, python-format
 msgid ""
 "Please refer to the <a href=\"%s\">external command documentation</a> for a "
@@ -1313,27 +1323,27 @@ msgstr ""
 "Consulteu la <a href=\"%s\">documentació de les ordres externes</a> per a la "
 "llista de variables disponibles i altres indicacions."
 
-#: mcomix/openwith.py:563
+#: mcomix/openwith.py:562
 msgid "Label"
 msgstr "Etiqueta"
 
 #
 # File: src/thumbremover.py, line: 58
-#: mcomix/openwith.py:565
+#: mcomix/openwith.py:564
 msgid "Working directory"
 msgstr "Directori de treball"
 
 #
 # File: src/filechooser.py, line: 86
-#: mcomix/openwith.py:572
+#: mcomix/openwith.py:571
 msgid "Disabled in archives"
 msgstr "Inhabilitat als arxius"
 
-#: mcomix/openwith.py:625
+#: mcomix/openwith.py:624
 msgid "Save changes to commands?"
 msgstr "Voleu desar els canvis a les ordres?"
 
-#: mcomix/openwith.py:626
+#: mcomix/openwith.py:625
 msgid ""
 "You have made changes to the list of external commands that have not been "
 "saved yet. Press \"Yes\" to save all changes, or \"No\" to discard them."
@@ -2400,27 +2410,27 @@ msgstr "No s'ha trobat cap versió de Python Imaging Library al sistema."
 msgid "Stop slideshow"
 msgstr "Atura la projecció"
 
-#: mcomix/status.py:158
+#: mcomix/status.py:163
 msgid "Show page numbers"
 msgstr "Mostra els números de pàgina"
 
-#: mcomix/status.py:159
+#: mcomix/status.py:164
 msgid "Show file numbers"
 msgstr "Mostra els números de fitxer"
 
-#: mcomix/status.py:160
+#: mcomix/status.py:165
 msgid "Show resolution"
 msgstr "Mostra la resolució"
 
-#: mcomix/status.py:161
+#: mcomix/status.py:166
 msgid "Show path"
 msgstr "Mostra el camí"
 
-#: mcomix/status.py:162
+#: mcomix/status.py:167
 msgid "Show filename"
 msgstr "Mostra el nom del fitxer"
 
-#: mcomix/status.py:163
+#: mcomix/status.py:168
 msgid "Show filesize"
 msgstr "Mostra la mida del fitxer"
 
@@ -2641,7 +2651,7 @@ msgstr "Disseny d'icones"
 msgid "Vector icon"
 msgstr "Icona vectorial"
 
-#: mcomix/thumbnail_tools.py:242
+#: mcomix/thumbnail_tools.py:254
 #, python-format
 msgid "! Could not save thumbnail \"%(thumbpath)s\": %(error)s"
 msgstr "! No s'ha pogut desar la miniatura «%(thumbpath)s»: %(error)s"
@@ -3088,44 +3098,44 @@ msgstr "Llibres afegits:"
 msgid "Adding '%s'..."
 msgstr "Afegint '%s'..."
 
-#: mcomix/library/backend.py:188
+#: mcomix/library/backend.py:178
 #, python-format
 msgid "! Non-existent book #%i"
 msgstr "! El llibre #%i no existeix"
 
-#: mcomix/library/backend.py:225
+#: mcomix/library/backend.py:215
 #, python-format
 msgid "! Could not get cover for book \"%s\""
 msgstr "! No s'ha pogut obtenir la coberta del llibre «%s»"
 
-#: mcomix/library/backend.py:242 mcomix/library/backend.py:289
-#: mcomix/library/backend.py:309 mcomix/library/backend.py:320
-#: mcomix/library/backend.py:348
+#: mcomix/library/backend.py:232 mcomix/library/backend.py:279
+#: mcomix/library/backend.py:299 mcomix/library/backend.py:310
+#: mcomix/library/backend.py:338
 msgid "Recent"
 msgstr "Utilitzats recentment"
 
-#: mcomix/library/backend.py:424
+#: mcomix/library/backend.py:414
 #, python-format
 msgid "! Could not add book \"%s\" to the library"
 msgstr "! No s'ha pogut afegir el llibre «%s» a la biblioteca"
 
-#: mcomix/library/backend.py:449
+#: mcomix/library/backend.py:439
 #, python-format
 msgid "! Could not move book \"%s\" in the library"
 msgstr "! No s'ha pogut moure el llibre «%s» a la biblioteca"
 
-#: mcomix/library/backend.py:493
+#: mcomix/library/backend.py:483
 #, python-format
 msgid "! Could not add collection \"%s\""
 msgstr "! No s'ha pogut afegir la col·lecció «%s»"
 
-#: mcomix/library/backend.py:525
+#: mcomix/library/backend.py:515
 #, python-format
 msgid "! Could not add book %(book)s to collection %(collection)s"
 msgstr ""
 "! No s'ha pogut afegir el llibre %(book)s a la col·lecció %(collection)s"
 
-#: mcomix/library/backend.py:552
+#: mcomix/library/backend.py:542
 #, python-format
 msgid "! Could not rename collection to \"%s\""
 msgstr "! No s'ha pogut canviar el nom de la col·lecció a «%s»"
@@ -3133,16 +3143,16 @@ msgstr "! No s'ha pogut canviar el nom de la col·lecció a «%s»"
 #
 # File: src/librarybackend.py, line: 272
 # File: src/librarybackend.py, line: 274
-#: mcomix/library/backend.py:563 mcomix/library/backend.py:565
+#: mcomix/library/backend.py:553 mcomix/library/backend.py:555
 msgid "(Copy)"
 msgstr "(Copia)"
 
-#: mcomix/library/backend.py:814
+#: mcomix/library/backend.py:804
 msgid "Could not determine library database version!"
 msgstr ""
 "No s'ha pogut determinar la versió de la base de dades de la biblioteca!"
 
-#: mcomix/library/backend.py:864
+#: mcomix/library/backend.py:854
 #, python-format
 msgid "Upgrading library database version from %(from)d to %(to)d."
 msgstr ""
@@ -3151,11 +3161,11 @@ msgstr ""
 
 #
 # File: src/library.py, line: 202
-#: mcomix/library/backend_types.py:315 mcomix/library/collection_area.py:222
+#: mcomix/library/backend_types.py:316 mcomix/library/collection_area.py:222
 msgid "All books"
 msgstr "Tots els llibres"
 
-#: mcomix/library/backend_types.py:456
+#: mcomix/library/backend_types.py:457
 #, python-format
 msgid "! Could not scan for new books: %s"
 msgstr "! No s'han pogut cercar llibres nous: %s"
@@ -3257,20 +3267,20 @@ msgstr "Or_dena"
 msgid "Cover si_ze"
 msgstr "Mida de les cobe_rtes"
 
-#: mcomix/library/book_area.py:481
+#: mcomix/library/book_area.py:484
 msgid "Set library cover size"
 msgstr "Estableix la mida de les cobertes a la biblioteca"
 
 #
 # File: src/library.py, line: 588
-#: mcomix/library/book_area.py:612
+#: mcomix/library/book_area.py:615
 #, python-format
 msgid "Removed %(num)d book from '%(collection)s'."
 msgid_plural "Removed %(num)d books from '%(collection)s'."
 msgstr[0] "S'ha tret %(num)d llibre de «%(collection)s»."
 msgstr[1] "S'han tret %(num)d llibres de «%(collection)s»."
 
-#: mcomix/library/book_area.py:635 mcomix/library/collection_area.py:291
+#: mcomix/library/book_area.py:638 mcomix/library/collection_area.py:297
 #, python-format
 msgid "Removed %d book from the library."
 msgid_plural "Removed %d books from the library."
@@ -3279,13 +3289,13 @@ msgstr[1] "S'han tret %d llibres de la biblioteca."
 
 #
 # File: src/library.py, line: 597
-#: mcomix/library/book_area.py:660
+#: mcomix/library/book_area.py:663
 msgid "Remove books from the library?"
 msgstr "Voleu esborrar els llibres de la biblioteca?"
 
 #
 # File: src/library.py, line: 599
-#: mcomix/library/book_area.py:661
+#: mcomix/library/book_area.py:664
 msgid ""
 "The selected books will be removed from the library and permanently deleted. "
 "Are you sure that you want to continue?"
@@ -3349,7 +3359,7 @@ msgstr "Introduïu un nom per a la nova col·lecció."
 
 #
 # File: src/library.py, line: 876
-#: mcomix/library/collection_area.py:274
+#: mcomix/library/collection_area.py:280
 #, python-format
 msgid "Could not add a new collection called '%s'."
 msgstr "No s'ha pogut afegir una nova col·lecció amb el nom '%s'."
@@ -3357,44 +3367,44 @@ msgstr "No s'ha pogut afegir una nova col·lecció amb el nom '%s'."
 #
 # File: src/library.py, line: 275
 # File: src/library.py, line: 881
-#: mcomix/library/collection_area.py:279 mcomix/library/collection_area.py:371
+#: mcomix/library/collection_area.py:285 mcomix/library/collection_area.py:379
 msgid "A collection by that name already exists."
 msgstr "Ja existeix una col·lecció amb aquest nom."
 
 #
 # File: src/library.py, line: 251
-#: mcomix/library/collection_area.py:341
+#: mcomix/library/collection_area.py:347
 msgid "Rename collection?"
 msgstr "Voleu reanomenar la col·lecció?"
 
 #
 # File: src/library.py, line: 253
-#: mcomix/library/collection_area.py:342
+#: mcomix/library/collection_area.py:348
 msgid "Please enter a new name for the selected collection."
 msgstr "Introduïu un nom nou per a la col·lecció seleccionada."
 
 #
 # File: src/library.py, line: 271
-#: mcomix/library/collection_area.py:367
+#: mcomix/library/collection_area.py:375
 #, python-format
 msgid "Could not change the name to '%s'."
 msgstr "No s'ha pogut canviar el nom a '%s'."
 
 #
 # File: src/library.py, line: 285
-#: mcomix/library/collection_area.py:383
+#: mcomix/library/collection_area.py:391
 msgid "Could not duplicate collection."
 msgstr "No s'ha pogut duplicar la col·lecció."
 
 #
 # File: src/library.py, line: 382
-#: mcomix/library/collection_area.py:559
+#: mcomix/library/collection_area.py:567
 msgid "Root"
 msgstr "Arrel"
 
 #
 # File: src/library.py, line: 386
-#: mcomix/library/collection_area.py:562
+#: mcomix/library/collection_area.py:570
 #, python-format
 msgid ""
 "Put the collection '%(subcollection)s' in the collection "
@@ -3405,14 +3415,14 @@ msgstr ""
 
 #
 # File: src/library.py, line: 407
-#: mcomix/library/collection_area.py:574
+#: mcomix/library/collection_area.py:582
 #, python-format
 msgid "Add books to '%s'."
 msgstr "Afegeix llibres a '%s'."
 
 #
 # File: src/library.py, line: 411
-#: mcomix/library/collection_area.py:577
+#: mcomix/library/collection_area.py:585
 #, python-format
 msgid ""
 "Move books from '%(source collection)s' to '%(destination collection)s'."

@@ -1269,6 +1269,42 @@ class MainWindowTest(MComixTest):
             dialog.destroy()
         self._pump()
 
+    # -- Saving a page out of the book ------------------------------------
+
+    def test_a_page_that_could_not_be_saved_says_so(self):
+        """A copy that failed was logged and nothing more, so the reader
+        was left with a dialog that had closed and no page where they
+        had asked for one."""
+        self._ready()
+        page = self.window.imagehandler.get_path_to_page(1)
+        self.assertIsNotNone(page)
+        before = prefs['path of last saved in filechooser']
+        # A folder that is not there: the copy raises, as it would on a
+        # folder that cannot be written to or has no room left.
+        target = os.path.join(self.tmp_dir, 'nowhere', 'page.png')
+
+        self.window.file_actions._save_page_to(page, target)
+        self._pump()
+
+        self.assertEqual(len(self._delete_dialogs()), 1,
+                         'nothing said why the page was not saved')
+        self.assertEqual(prefs['path of last saved in filechooser'], before,
+                         'a save that failed moved where the next starts')
+        for dialog in self._delete_dialogs():
+            dialog.destroy()
+        self._pump()
+
+    def test_a_page_that_was_saved_says_nothing(self):
+        self._ready()
+        page = self.window.imagehandler.get_path_to_page(1)
+        target = os.path.join(self.tmp_dir, 'saved.png')
+
+        self.window.file_actions._save_page_to(page, target)
+        self._pump()
+
+        self.assertTrue(os.path.isfile(target))
+        self.assertEqual(self._delete_dialogs(), [])
+
     def test_the_right_click_menu_offers_the_archive_editor(self):
         """The editor was on the Edit menu and nowhere else, so a reader
         with the menu bar hidden - which the right-click menu is there

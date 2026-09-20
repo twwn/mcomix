@@ -303,18 +303,42 @@ class FileActions:
 
         Where it went is where the next save starts from, which is not
         the folder the chooser opened in: the user may have walked out
-        of it.
+        of it.  A save that failed went nowhere, so it neither says
+        where the next one starts nor passes in silence: a folder that
+        cannot be written to, or one that has no room left, used to
+        leave the reader with a dialog that had closed and no page
+        where they had asked for one.
         """
         target = i18n.to_unicode(target)
         try:
             shutil.copy2(file_path, target)
-        except Exception as e:
-            log.warning(e)
+        except OSError as error:
+            self._save_failed(file_path, target, error)
+            return
 
         prefs['path of last saved in filechooser'] = \
             os.path.dirname(target) \
             if prefs['store last saved in directory'] \
             else constants.HOME_DIR
+
+    def _save_failed(self, file_path: str, target: str,
+                     error: OSError) -> None:
+        """Say why the page at <file_path> did not become <target>."""
+        log.error(_('! Could not save %(file)s to %(directory)s: %(error)s'),
+                  {'file': file_path, 'directory': os.path.dirname(target),
+                   'error': error})
+        if error.errno == errno.ENOSPC:
+            reason = (_('There is not enough room there: the file is %s.')
+                      % tools.format_byte_size(os.path.getsize(file_path)))
+        else:
+            reason = str(error)
+        dialog = message_dialog.MessageDialog(
+            self._window, buttons=Gtk.ButtonsType.CLOSE)
+        dialog.set_text(_('Could not save "%(file)s" to "%(directory)s"')
+                        % {'file': os.path.basename(target),
+                           'directory': os.path.dirname(target)},
+                        reason)
+        dialog.run_async(lambda response: None)
 
     def delete(self, *args: object) -> None:
         """Delete the page that is picked out, or else the whole file.
