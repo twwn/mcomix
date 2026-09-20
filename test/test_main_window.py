@@ -864,6 +864,20 @@ class MainWindowTest(MComixTest):
         self.assertEqual(self._delete_dialogs(), [],
                          'it asked about the file as well')
 
+    def test_the_library_lets_go_of_a_book_that_was_deleted(self):
+        """The library holds a record of a file; deleting the file left
+        it offering a book that is not there, to be cleaned up by hand."""
+        source = self._movable_book()
+        library = backend.LibraryBackend()
+        self.assertTrue(library.add_book(source))
+        self.assertIsNotNone(library.get_book_by_path(source))
+
+        self.window.file_actions._delete_answered(Response.OK, source)
+        self._pump()
+
+        self.assertFalse(os.path.exists(source), 'the file is still there')
+        self.assertIsNone(library.get_book_by_path(source))
+
     def test_the_recent_list_lets_go_of_a_file_that_was_deleted(self):
         """A deleted file can never be opened again, and the entry for
         it went on standing in the recent files."""

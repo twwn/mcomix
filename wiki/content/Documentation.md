@@ -67,6 +67,8 @@ Editing and saving books
 
 A saved archive names its pages after the book, numbered in the order they are read: a twelve-page "Batman 01.cbz" is written with "01 - Batman 01.jpg" first and "12 - Batman 01.jpg" last, in as many digits as the page count needs, and a three-page book counts "1" to "3". The names the pages had are not kept, so a book saved in a new order is a book whose page names say that order. The comment files keep their own names, and one that a page has taken is given an underscore in front of it.
 
+Deleting the open file takes it out of the recent files and out of the library, both of which describe a file that is no longer there; the library also offers "Clean up" for books deleted from outside MComix.
+
 "Copy page", in the page's right-click menu, puts the page the menu was opened over on the clipboard, as the image it is and as the path to its file; "Edit &rarr; Copy" takes the view instead, which in double page mode is both pages joined as they read.
 
 Pages can also be taken out in the main window. "Delete page", in the page's right-click menu, removes the page the menu was opened over, and "Edit &rarr; Undo" puts it back. CTRL and a click picks a page out, which is drawn outlined, and another such click puts it back; Delete then removes every page picked out, and the archive editor opens with them selected. The archive on disk is not touched until it is written. MComix offers to write it after a removal, and when a book with pages still picked out is left; either offer can be answered for good, and taken back under "Prompts answered for good" in the preferences.

@@ -413,6 +413,23 @@ class FileActions:
                 # A file that has been deleted can never be opened
                 # again, and the recent files went on offering it.
                 self._window.uimanager.recent.remove_path(current_file)
+                self._forget_deleted_book(current_file)
+
+    @staticmethod
+    def _forget_deleted_book(path: str) -> None:
+        """Take the book at <path> out of the library, the file being gone.
+
+        Without a word: what the library holds about a book is a record
+        of a file, and the library itself offers "Clean up", which
+        "Removes no longer existent books from the collection", so the
+        entry is on its way out either way.  Leaving it meant a library
+        that went on offering a book MComix had just deleted, and
+        cleaning up by hand to be rid of it.
+        """
+        library = backend.LibraryBackend()
+        book = library.get_book_by_path(path)
+        if book is not None and book.id is not None:
+            library.remove_book(book.id)
 
     def move_current_file(self, directory: str) -> None:
         """Move the open file, or the archive it is a page of, into
