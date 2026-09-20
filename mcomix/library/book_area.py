@@ -770,9 +770,9 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         if keyval == Gdk.KEY_Delete:
             self._remove_books_from_collection()
             return Gdk.EVENT_STOP
-        # A GTK4 widget has no popup-menu signal, so the menu key is
-        # heard here.
-        if keyval == Gdk.KEY_Menu:
+        # A GTK4 widget has no popup-menu signal, so the keys that
+        # asked for a menu through it are heard here.
+        if widgets.menu_key(keyval, state):
             self._popup_book_menu()
             return Gdk.EVENT_STOP
         return Gdk.EVENT_PROPAGATE

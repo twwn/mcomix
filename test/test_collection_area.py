@@ -11,7 +11,7 @@ Gtk.DropTarget, since a real drag needs a pointer no test has.
 
 import os
 
-from gi.repository import Gtk
+from gi.repository import Gdk, Gtk
 
 from . import MComixTest, pump
 
@@ -244,6 +244,29 @@ class CollectionAreaTest(MComixTest):
             for dialog in opened:
                 dialog.destroy()
             pump()
+
+    def test_the_menu_key_and_shift_f10_both_open_the_menu(self):
+        """A GTK3 widget's popup-menu signal answered both keys.
+
+        Shift+F10 is the only one a keyboard without a menu key has.
+        """
+        for keyval, state in ((Gdk.KEY_Menu, Gdk.ModifierType(0)),
+                              (Gdk.KEY_F10, Gdk.ModifierType.SHIFT_MASK)):
+            self.assertFalse(self.area._collection_menu.get_visible())
+            self.assertEqual(Gdk.EVENT_STOP,
+                             self.area._key_press(None, keyval, 0, state))
+            pump()
+            self.assertTrue(self.area._collection_menu.get_visible(),
+                            'the menu did not open for %s'
+                            % Gdk.keyval_name(keyval))
+            self.area._collection_menu.popdown()
+            pump()
+
+    def test_f10_on_its_own_is_left_to_gtk(self):
+        self.assertEqual(Gdk.EVENT_PROPAGATE,
+                         self.area._key_press(None, Gdk.KEY_F10, 0,
+                                              Gdk.ModifierType(0)))
+        self.assertFalse(self.area._collection_menu.get_visible())
 
     # -- Where a drop lands -----------------------------------------------
 

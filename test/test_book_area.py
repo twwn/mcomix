@@ -594,3 +594,63 @@ class NewBookUnderAFilterTest(MComixTest):
 
     def test_neither_matches(self):
         self.assertFalse(self._drawn('marvel', 'Batman 01', '/books/DC/Batman 01.cbz'))
+
+
+class _CollectionArea:
+
+    """Stands in for the sidebar the cover area asks which collection is
+    being shown."""
+
+    @staticmethod
+    def get_current_collection():
+        return constants.COLLECTION_ALL
+
+
+class _MenuLibrary:
+
+    backend = _Backend()
+    collection_area = _CollectionArea()
+
+
+class MenuKeyTest(MComixTest):
+
+    """The keys that ask the cover area for its popup menu.
+
+    A GTK3 widget was told by its popup-menu signal, which GTK emitted
+    for the menu key and for Shift+F10 alike; the port heard only the
+    menu key, leaving a keyboard without one with no way to the menu.
+    """
+
+    def setUp(self):
+        super().setUp()
+        # Held here: an area holds its library window only weakly.
+        self.library = _MenuLibrary()
+        self.area = book_area._BookArea(self.library)
+        self.window = Gtk.Window()
+        self.window.set_default_size(400, 300)
+        self.window.set_child(self.area)
+        self.window.present()
+
+    def tearDown(self):
+        self.area._book_menu.popdown()
+        self.area.close()
+        self.window.destroy()
+        super().tearDown()
+
+    def _press(self, keyval, state):
+        return self.area._key_press(None, keyval, 0, state)
+
+    def test_both_keys_open_the_menu(self):
+        for keyval, state in ((Gdk.KEY_Menu, Gdk.ModifierType(0)),
+                              (Gdk.KEY_F10, Gdk.ModifierType.SHIFT_MASK)):
+            self.assertFalse(self.area._book_menu.get_visible())
+            self.assertEqual(Gdk.EVENT_STOP, self._press(keyval, state))
+            self.assertTrue(self.area._book_menu.get_visible(),
+                            'the menu did not open for %s'
+                            % Gdk.keyval_name(keyval))
+            self.area._book_menu.popdown()
+
+    def test_f10_on_its_own_is_left_to_gtk(self):
+        self.assertEqual(Gdk.EVENT_PROPAGATE,
+                         self._press(Gdk.KEY_F10, Gdk.ModifierType(0)))
+        self.assertFalse(self.area._book_menu.get_visible())

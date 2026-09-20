@@ -199,3 +199,39 @@ class MenuClickTest(MComixTest):
 
 
 # vim: expandtab:sw=4:ts=4
+
+
+class MenuKeyTest(MComixTest):
+
+    """The keys that ask a widget for its context menu.
+
+    A GTK3 widget was told by its popup-menu signal, which GTK emitted
+    for the menu key and for Shift+F10 alike.  A GTK4 widget hears the
+    keys itself, and the port heard only one of them.
+    """
+
+    def test_the_menu_key_asks_for_the_menu(self):
+        self.assertTrue(widgets.menu_key(Gdk.KEY_Menu,
+                                         Gdk.ModifierType(0)))
+
+    def test_shift_and_f10_ask_for_the_menu(self):
+        self.assertTrue(widgets.menu_key(Gdk.KEY_F10,
+                                         Gdk.ModifierType.SHIFT_MASK))
+
+    def test_f10_on_its_own_does_not(self):
+        # F10 alone opens the menu bar, which is GTK's to answer.
+        self.assertFalse(widgets.menu_key(Gdk.KEY_F10,
+                                          Gdk.ModifierType(0)))
+
+    def test_another_modifier_with_either_key_does_not(self):
+        for keyval in (Gdk.KEY_Menu, Gdk.KEY_F10):
+            self.assertFalse(widgets.menu_key(
+                keyval, Gdk.ModifierType.CONTROL_MASK
+                | Gdk.ModifierType.SHIFT_MASK))
+
+    def test_a_lock_key_is_not_a_modifier_here(self):
+        # Caps Lock and the pointer buttons are not part of what an
+        # accelerator is compared on, and must not hide the shortcut.
+        self.assertTrue(widgets.menu_key(
+            Gdk.KEY_F10,
+            Gdk.ModifierType.SHIFT_MASK | Gdk.ModifierType.LOCK_MASK))

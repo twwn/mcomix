@@ -194,6 +194,22 @@ def popup_at(popover: Gtk.Popover, widget: Gtk.Widget,
     popover.popup()
 
 
+def menu_key(keyval: int, state: Gdk.ModifierType) -> bool:
+    """Whether a key press is the one that asks for a context menu.
+
+    A GTK3 widget was told by its popup-menu signal, which GTK emitted
+    for the menu key and for Shift+F10 alike; a GTK4 widget has no such
+    signal and hears the key itself.  Both keys are what GTK's own
+    widgets bind their menus to, and Shift+F10 is the only way in on a
+    keyboard without a menu key.
+    """
+    modifiers = state & Gtk.accelerator_get_default_mod_mask()
+    if keyval == Gdk.KEY_Menu:
+        return not modifiers
+    return (keyval == Gdk.KEY_F10
+            and modifiers == Gdk.ModifierType.SHIFT_MASK)
+
+
 def display() -> Gdk.Display:
     """The display MComix is running on.
 
