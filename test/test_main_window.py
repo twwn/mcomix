@@ -1159,6 +1159,26 @@ class MainWindowTest(MComixTest):
                 [info.filename for info in written.infolist()
                  if info.is_dir()], [])
 
+    def test_the_rename_key_names_the_page_being_read(self):
+        """A key press carries no pointer position, so the page a menu
+        was opened over earlier must not be the one it renames."""
+        self._ready()
+        self.window.popup_page = 3
+        with unittest.mock.patch.object(self.window.file_actions,
+                                        'rename_page_dialog') as asked:
+            self.window.file_actions.rename_page_being_read()
+        asked.assert_called_once_with(
+            self.window.imagehandler.get_current_page())
+
+    def test_the_rename_key_does_nothing_without_a_book(self):
+        with unittest.mock.patch.object(self.window.file_actions,
+                                        'rename_page_dialog') as asked, \
+                unittest.mock.patch.object(
+                    self.window.imagehandler, 'get_current_page',
+                    return_value=0):
+            self.window.file_actions.rename_page_being_read()
+        asked.assert_not_called()
+
     # -- Closing a book whose changes have not been written ---------------
 
     def _forget_stored_answer(self):

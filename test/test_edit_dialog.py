@@ -433,6 +433,19 @@ class EditArchiveDialogTest(MComixTest):
         self.assertEqual(grid.get_item(0).tooltip, 'Cover.png',
                          'the thumbnail still shows the old name')
 
+    def test_f2_asks_for_a_name_for_the_page_selected(self):
+        """The key a file manager renames with, on the list that shows
+        the pages: the menu's rename was the only way to reach it."""
+        self.dialog._load_original_files()
+        pump()
+        area = self.dialog._image_area
+        area._grid.select_only(0)
+        with unittest.mock.patch.object(area, '_rename_page') as asked:
+            self.assertEqual(
+                area._key_press(None, Gdk.KEY_F2, 0, Gdk.ModifierType(0)),
+                Gdk.EVENT_STOP)
+        asked.assert_called_once_with()
+
     def test_the_page_menu_selects_every_page(self):
         self.dialog._load_original_files()
         pump()

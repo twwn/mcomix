@@ -162,6 +162,19 @@ class FileActions:
         if page:
             self.rename_page_dialog(page)
 
+    def rename_page_being_read(self, *args: object) -> None:
+        """Ask what to call the page on screen.
+
+        What the rename key means, a key press carrying no pointer
+        position to read a page off: the menu's own rename acts on the
+        page the menu was opened over, and there is no menu here.  In
+        double page mode the page being read is the first of the two,
+        as it is for everything else that names one page.
+        """
+        page = self._window.imagehandler.get_current_page()
+        if page:
+            self.rename_page_dialog(page)
+
     def rename_page_dialog(self, page: int,
                            parent: "Gtk.Window | None" = None,
                            when_done: "Callable[[], None] | None" = None

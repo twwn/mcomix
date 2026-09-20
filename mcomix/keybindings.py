@@ -130,6 +130,7 @@ BINDING_INFO: "dict[str, dict[str, str]]" = {
 
     # File operations
     'delete': {'title': _('Delete'), 'group': _('File')},
+    'rename_page': {'title': _('Rename page'), 'group': _('File')},
     'undo': {'title': _('Undo'), 'group': _('Edit')},
     'redo': {'title': _('Redo'), 'group': _('Edit')},
     'refresh_archive': {'title': _('Refresh'), 'group': _('File')},

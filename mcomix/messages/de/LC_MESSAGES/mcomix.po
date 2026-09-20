@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 2.0.0\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-20 18:45+0200\n"
+"POT-Creation-Date: 2026-09-20 18:49+0200\n"
 "PO-Revision-Date: 2024-01-21 19:55+0100\n"
 "Last-Translator: Moritz Brunner <oddegamra@gmx.org>\n"
 "Language-Team: \n"
@@ -92,7 +92,7 @@ msgid "_No"
 msgstr "_Nein"
 
 #: mcomix/bookmark_backend.py:329 mcomix/edit_dialog.py:58
-#: mcomix/file_actions.py:639 mcomix/file_chooser_base_dialog.py:106
+#: mcomix/file_actions.py:652 mcomix/file_chooser_base_dialog.py:106
 #: mcomix/file_chooser_base_dialog.py:111
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:32
@@ -228,7 +228,7 @@ msgstr "_Rückgängig"
 msgid "_Redo"
 msgstr "_Wiederholen"
 
-#: mcomix/edit_dialog.py:57 mcomix/keybindings.py:145
+#: mcomix/edit_dialog.py:57 mcomix/keybindings.py:146
 msgid "Edit archive"
 msgstr "Archiv bearbeiten"
 
@@ -252,16 +252,16 @@ msgstr "Bilder"
 msgid "Comment files"
 msgstr "Kommentare"
 
-#: mcomix/edit_dialog.py:194 mcomix/file_actions.py:451
+#: mcomix/edit_dialog.py:194 mcomix/file_actions.py:464
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! Konnte das Archiv %(archivefile)s nicht speichern: %(error)s"
 
-#: mcomix/edit_dialog.py:207 mcomix/file_actions.py:456
+#: mcomix/edit_dialog.py:207 mcomix/file_actions.py:469
 msgid "The new archive could not be saved!"
 msgstr "Das neue Archiv konnte nicht gespeichert werden!"
 
-#: mcomix/edit_dialog.py:208 mcomix/file_actions.py:457
+#: mcomix/edit_dialog.py:208 mcomix/file_actions.py:470
 msgid "The original files have not been removed."
 msgstr "Die Originaldateien wurden nicht entfernt."
 
@@ -277,7 +277,7 @@ msgstr "_Seite umbenennen..."
 msgid "Select _All"
 msgstr "A_lles markieren"
 
-#: mcomix/enhance_dialog.py:28 mcomix/keybindings.py:147
+#: mcomix/enhance_dialog.py:28 mcomix/keybindings.py:148
 msgid "Enhance image"
 msgstr "Bild aufbessern"
 
@@ -289,8 +289,8 @@ msgstr "_Zurücksetzen"
 msgid "Reset to defaults."
 msgstr "Auf Voreinstellung zurücksetzen."
 
-#: mcomix/enhance_dialog.py:35 mcomix/file_actions.py:366
-#: mcomix/file_actions.py:407 mcomix/file_chooser_base_dialog.py:112
+#: mcomix/enhance_dialog.py:35 mcomix/file_actions.py:379
+#: mcomix/file_actions.py:420 mcomix/file_chooser_base_dialog.py:112
 #: mcomix/openwith.py:360
 msgid "_Save"
 msgstr "_Speichern"
@@ -340,39 +340,41 @@ msgstr "Farben _invertieren"
 msgid "Invert (negate) image colors."
 msgstr "Farben invertieren (umkehren)."
 
-#: mcomix/file_actions.py:127 mcomix/file_actions.py:787
+#: mcomix/file_actions.py:127 mcomix/file_actions.py:800
 msgid "A file of that name is there already."
 msgstr "Eine Datei dieses Namens ist dort bereits."
 
-#: mcomix/file_actions.py:182
+#: mcomix/file_actions.py:195
 msgid "Rename page?"
 msgstr "Seite umbenennen?"
 
-#: mcomix/file_actions.py:183
+#: mcomix/file_actions.py:196
 msgid "Please enter a new name for this page."
 msgstr "Bitte geben Sie einen neuen Namen für diese Seite ein."
 
-#: mcomix/file_actions.py:362
+#: mcomix/file_actions.py:375
 #, python-format
 msgid "Write \"%s\" again before closing it?"
 msgstr "„%s“ vor dem Schließen neu schreiben?"
 
-#: mcomix/file_actions.py:363
+#: mcomix/file_actions.py:376
 msgid ""
 "The book has changes that the archive on disk does not hold. They are lost "
 "when it closes."
-msgstr "Das Buch hat Änderungen, die das Archiv auf der Festplatte nicht enthält. Beim Schließen gehen sie verloren."
+msgstr ""
+"Das Buch hat Änderungen, die das Archiv auf der Festplatte nicht enthält. "
+"Beim Schließen gehen sie verloren."
 
-#: mcomix/file_actions.py:365
+#: mcomix/file_actions.py:378
 msgid "_Close without saving"
 msgstr "Schl_ießen ohne zu speichern"
 
-#: mcomix/file_actions.py:403
+#: mcomix/file_actions.py:416
 #, python-format
 msgid "Write \"%s\" again now?"
 msgstr "„%s“ jetzt neu schreiben?"
 
-#: mcomix/file_actions.py:404
+#: mcomix/file_actions.py:417
 msgid ""
 "The archive on disk will be replaced by the book as it stands, without the "
 "pages that were removed."
@@ -380,43 +382,43 @@ msgstr ""
 "Das Archiv auf der Festplatte wird durch das Buch in seinem jetzigen Stand "
 "ersetzt, ohne die entfernten Seiten."
 
-#: mcomix/file_actions.py:406
+#: mcomix/file_actions.py:419
 msgid "_Not now"
 msgstr "_Jetzt nicht"
 
-#: mcomix/file_actions.py:557
+#: mcomix/file_actions.py:570
 msgid "Save page as"
 msgstr "Seite speichern als"
 
-#: mcomix/file_actions.py:598
+#: mcomix/file_actions.py:611
 #, python-format
 msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! Konnte %(file)s nicht in %(directory)s speichern: %(error)s"
 
-#: mcomix/file_actions.py:602 mcomix/file_actions.py:789
+#: mcomix/file_actions.py:615 mcomix/file_actions.py:802
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "Dort ist nicht genug Platz: die Datei ist %s groß."
 
-#: mcomix/file_actions.py:608
+#: mcomix/file_actions.py:621
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "\"%(file)s\" konnte nicht in \"%(directory)s\" gespeichert werden"
 
-#: mcomix/file_actions.py:637
+#: mcomix/file_actions.py:650
 #, python-format
 msgid "Delete \"%s\"?"
 msgstr "\"%s\" löschen?"
 
-#: mcomix/file_actions.py:638
+#: mcomix/file_actions.py:651
 msgid "The file will be deleted from your harddisk."
 msgstr "Die Datei wird von Ihrer Festplatte gelöscht."
 
-#: mcomix/file_actions.py:640 mcomix/ui.py:433
+#: mcomix/file_actions.py:653 mcomix/ui.py:433
 msgid "_Delete"
 msgstr "_Löschen"
 
-#: mcomix/file_actions.py:710
+#: mcomix/file_actions.py:723
 #, python-format
 msgid "The file is gone, and its %d bookmark cannot be opened any more."
 msgid_plural ""
@@ -426,22 +428,22 @@ msgstr[0] ""
 msgstr[1] ""
 "Die Datei ist fort, und ihre %d Lesezeichen lassen sich nicht mehr öffnen."
 
-#: mcomix/file_actions.py:714
+#: mcomix/file_actions.py:727
 #, python-format
 msgid "Remove the bookmarks in \"%s\"?"
 msgstr "Die Lesezeichen in \"%s\" entfernen?"
 
-#: mcomix/file_actions.py:783
+#: mcomix/file_actions.py:796
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr "! Konnte %(file)s nicht nach %(directory)s verschieben: %(error)s"
 
-#: mcomix/file_actions.py:795
+#: mcomix/file_actions.py:808
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "\"%(file)s\" konnte nicht nach \"%(directory)s\" verschoben werden"
 
-#: mcomix/file_chooser_base_dialog.py:105 mcomix/keybindings.py:146
+#: mcomix/file_chooser_base_dialog.py:105 mcomix/keybindings.py:147
 msgid "Open"
 msgstr "Öffnen"
 
@@ -854,94 +856,99 @@ msgstr "Diaschau starten"
 msgid "Delete"
 msgstr "Löschen"
 
-#: mcomix/keybindings.py:132 mcomix/keybindings.py:135
+#: mcomix/keybindings.py:132 mcomix/keybindings.py:133
 #: mcomix/keybindings.py:136 mcomix/keybindings.py:137
 #: mcomix/keybindings.py:138 mcomix/keybindings.py:139
-#: mcomix/keybindings.py:141 mcomix/keybindings.py:142
-#: mcomix/keybindings.py:143 mcomix/keybindings.py:145
+#: mcomix/keybindings.py:140 mcomix/keybindings.py:142
+#: mcomix/keybindings.py:143 mcomix/keybindings.py:144
 #: mcomix/keybindings.py:146 mcomix/keybindings.py:147
 #: mcomix/keybindings.py:148 mcomix/keybindings.py:149
+#: mcomix/keybindings.py:150
 msgid "File"
 msgstr "Datei"
 
 #: mcomix/keybindings.py:133
+msgid "Rename page"
+msgstr "Seite umbenennen"
+
+#: mcomix/keybindings.py:134
 msgid "Undo"
 msgstr "Rückgängig"
 
-#: mcomix/keybindings.py:133 mcomix/keybindings.py:134
+#: mcomix/keybindings.py:134 mcomix/keybindings.py:135
 msgid "Edit"
 msgstr "Bearbeiten"
 
-#: mcomix/keybindings.py:134
+#: mcomix/keybindings.py:135
 msgid "Redo"
 msgstr "Wiederholen"
 
-#: mcomix/keybindings.py:135
+#: mcomix/keybindings.py:136
 msgid "Refresh"
 msgstr "Aktualisieren"
 
-#: mcomix/keybindings.py:136
+#: mcomix/keybindings.py:137
 msgid "Close"
 msgstr "Schließen"
 
-#: mcomix/keybindings.py:137
+#: mcomix/keybindings.py:138
 msgid "Quit"
 msgstr "Beenden"
 
-#: mcomix/keybindings.py:138
+#: mcomix/keybindings.py:139
 msgid "Save and quit"
 msgstr "Speichern und beenden"
 
-#: mcomix/keybindings.py:139
+#: mcomix/keybindings.py:140
 msgid "Save As"
 msgstr "Speichern unter"
 
-#: mcomix/keybindings.py:141
+#: mcomix/keybindings.py:142
 msgid "Archive comments"
 msgstr "Archiv-Kommentare"
 
-#: mcomix/keybindings.py:142 mcomix/properties_dialog.py:36
+#: mcomix/keybindings.py:143 mcomix/properties_dialog.py:36
 msgid "Properties"
 msgstr "Eigenschaften"
 
-#: mcomix/keybindings.py:143 mcomix/preferences_dialog.py:69
+#: mcomix/keybindings.py:144 mcomix/preferences_dialog.py:69
 msgid "Preferences"
 msgstr "Einstellungen"
 
-#: mcomix/keybindings.py:148 mcomix/library/main_dialog.py:53
+#: mcomix/keybindings.py:149 mcomix/library/main_dialog.py:53
 msgid "Library"
 msgstr "Bibliothek"
 
-#: mcomix/keybindings.py:149 mcomix/ui.py:513
+#: mcomix/keybindings.py:150 mcomix/ui.py:513
 msgid "Invert image colors"
 msgstr "Farben invertieren"
 
-#: mcomix/keybindings.py:152
+#: mcomix/keybindings.py:153
 msgid "Add bookmark"
 msgstr "Lesezeichen hinzufügen"
 
-#: mcomix/keybindings.py:152 mcomix/keybindings.py:153
+#: mcomix/keybindings.py:153 mcomix/keybindings.py:154
 msgid "Bookmarks"
 msgstr "Lesezeichen"
 
-#: mcomix/keybindings.py:153
+#: mcomix/keybindings.py:154
 msgid "Edit bookmarks"
 msgstr "Lesezeichen bearbeiten"
 
-#: mcomix/keybindings.py:161 mcomix/openwith.py:563
+#: mcomix/keybindings.py:162 mcomix/openwith.py:563
 msgid "Command"
 msgstr "Befehl"
 
-#: mcomix/keybindings.py:162
+#: mcomix/keybindings.py:163
 msgid "External commands"
 msgstr "Externe Programme"
 
-#: mcomix/keybindings.py:240
+#: mcomix/keybindings.py:241
 #, python-format
 msgid "Keybinding for \"%(action)s\" overrides hotkey for another action."
 msgstr "Taste für \"%(action)s\" überschreibt andere Aktion mit selber Taste."
 
-#: mcomix/keybindings.py:396
+#: mcomix/keybindings.py:397
 #, python-format
 msgid "Couldn't load keybindings: %s"
 msgstr "Konnte Tastaturbelegung nicht laden: %s"

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-20 18:45+0200\n"
+"POT-Creation-Date: 2026-09-20 18:49+0200\n"
 "PO-Revision-Date: 2009-05-04 23:52+0300\n"
 "Last-Translator: Oleksandr Zaiats <ai@eth0.net.ua>\n"
 "Language-Team: \n"
@@ -85,7 +85,7 @@ msgid "_No"
 msgstr "Н_і"
 
 #: mcomix/bookmark_backend.py:329 mcomix/edit_dialog.py:58
-#: mcomix/file_actions.py:639 mcomix/file_chooser_base_dialog.py:106
+#: mcomix/file_actions.py:652 mcomix/file_chooser_base_dialog.py:106
 #: mcomix/file_chooser_base_dialog.py:111
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:32
@@ -219,7 +219,7 @@ msgstr "_Скасувати"
 msgid "_Redo"
 msgstr "П_овторити"
 
-#: mcomix/edit_dialog.py:57 mcomix/keybindings.py:145
+#: mcomix/edit_dialog.py:57 mcomix/keybindings.py:146
 msgid "Edit archive"
 msgstr "Редагувати архів"
 
@@ -243,16 +243,16 @@ msgstr "Зображення"
 msgid "Comment files"
 msgstr "Файли коментарів"
 
-#: mcomix/edit_dialog.py:194 mcomix/file_actions.py:451
+#: mcomix/edit_dialog.py:194 mcomix/file_actions.py:464
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! Не вдалося зберегти архів %(archivefile)s: %(error)s"
 
-#: mcomix/edit_dialog.py:207 mcomix/file_actions.py:456
+#: mcomix/edit_dialog.py:207 mcomix/file_actions.py:469
 msgid "The new archive could not be saved!"
 msgstr "Не можу зберегти новий архів!"
 
-#: mcomix/edit_dialog.py:208 mcomix/file_actions.py:457
+#: mcomix/edit_dialog.py:208 mcomix/file_actions.py:470
 msgid "The original files have not been removed."
 msgstr "Оригінальні файли не були видалені."
 
@@ -268,7 +268,7 @@ msgstr "Перей_менувати сторінку..."
 msgid "Select _All"
 msgstr "Виді_лити все"
 
-#: mcomix/enhance_dialog.py:28 mcomix/keybindings.py:147
+#: mcomix/enhance_dialog.py:28 mcomix/keybindings.py:148
 msgid "Enhance image"
 msgstr "Покращення зображення"
 
@@ -280,8 +280,8 @@ msgstr "Від_новити"
 msgid "Reset to defaults."
 msgstr "Повернути типові значення."
 
-#: mcomix/enhance_dialog.py:35 mcomix/file_actions.py:366
-#: mcomix/file_actions.py:407 mcomix/file_chooser_base_dialog.py:112
+#: mcomix/enhance_dialog.py:35 mcomix/file_actions.py:379
+#: mcomix/file_actions.py:420 mcomix/file_chooser_base_dialog.py:112
 #: mcomix/openwith.py:360
 msgid "_Save"
 msgstr "З_берегти"
@@ -331,39 +331,41 @@ msgstr "_Інвертувати кольори зображення"
 msgid "Invert (negate) image colors."
 msgstr "Інвертує (обертає) кольори зображення."
 
-#: mcomix/file_actions.py:127 mcomix/file_actions.py:787
+#: mcomix/file_actions.py:127 mcomix/file_actions.py:800
 msgid "A file of that name is there already."
 msgstr "Файл із такою назвою вже там є."
 
-#: mcomix/file_actions.py:182
+#: mcomix/file_actions.py:195
 msgid "Rename page?"
 msgstr "Перейменувати сторінку?"
 
-#: mcomix/file_actions.py:183
+#: mcomix/file_actions.py:196
 msgid "Please enter a new name for this page."
 msgstr "Будь ласка введіть нове ім’я для цієї сторінки."
 
-#: mcomix/file_actions.py:362
+#: mcomix/file_actions.py:375
 #, python-format
 msgid "Write \"%s\" again before closing it?"
 msgstr "Записати «%s» заново перед закриттям?"
 
-#: mcomix/file_actions.py:363
+#: mcomix/file_actions.py:376
 msgid ""
 "The book has changes that the archive on disk does not hold. They are lost "
 "when it closes."
-msgstr "У книзі є зміни, яких немає в архіві на диску. Під час закриття їх буде втрачено."
+msgstr ""
+"У книзі є зміни, яких немає в архіві на диску. Під час закриття їх буде "
+"втрачено."
 
-#: mcomix/file_actions.py:365
+#: mcomix/file_actions.py:378
 msgid "_Close without saving"
 msgstr "З_акрити без збереження"
 
-#: mcomix/file_actions.py:403
+#: mcomix/file_actions.py:416
 #, python-format
 msgid "Write \"%s\" again now?"
 msgstr "Записати «%s» заново зараз?"
 
-#: mcomix/file_actions.py:404
+#: mcomix/file_actions.py:417
 msgid ""
 "The archive on disk will be replaced by the book as it stands, without the "
 "pages that were removed."
@@ -371,43 +373,43 @@ msgstr ""
 "Архів на диску буде замінено книгою в її теперішньому вигляді, без вилучених "
 "сторінок."
 
-#: mcomix/file_actions.py:406
+#: mcomix/file_actions.py:419
 msgid "_Not now"
 msgstr "Не _зараз"
 
-#: mcomix/file_actions.py:557
+#: mcomix/file_actions.py:570
 msgid "Save page as"
 msgstr "Зберегти сторінку як"
 
-#: mcomix/file_actions.py:598
+#: mcomix/file_actions.py:611
 #, python-format
 msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! Не вдалося зберегти %(file)s у %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:602 mcomix/file_actions.py:789
+#: mcomix/file_actions.py:615 mcomix/file_actions.py:802
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "Там недостатньо місця: файл займає %s."
 
-#: mcomix/file_actions.py:608
+#: mcomix/file_actions.py:621
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "Не вдалося зберегти «%(file)s» у «%(directory)s»"
 
-#: mcomix/file_actions.py:637
+#: mcomix/file_actions.py:650
 #, python-format
 msgid "Delete \"%s\"?"
 msgstr "Видалити «%s»?"
 
-#: mcomix/file_actions.py:638
+#: mcomix/file_actions.py:651
 msgid "The file will be deleted from your harddisk."
 msgstr "Файл буде видалено з жорсткого диска."
 
-#: mcomix/file_actions.py:640 mcomix/ui.py:433
+#: mcomix/file_actions.py:653 mcomix/ui.py:433
 msgid "_Delete"
 msgstr "В_илучити"
 
-#: mcomix/file_actions.py:710
+#: mcomix/file_actions.py:723
 #, python-format
 msgid "The file is gone, and its %d bookmark cannot be opened any more."
 msgid_plural ""
@@ -416,22 +418,22 @@ msgstr[0] "Файла більше немає, і %d його закладку �
 msgstr[1] "Файла більше немає, і %d його закладки вже не відкрити."
 msgstr[2] "Файла більше немає, і %d його закладок вже не відкрити."
 
-#: mcomix/file_actions.py:714
+#: mcomix/file_actions.py:727
 #, python-format
 msgid "Remove the bookmarks in \"%s\"?"
 msgstr "Вилучити закладки у «%s»?"
 
-#: mcomix/file_actions.py:783
+#: mcomix/file_actions.py:796
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr "! Не вдалося перемістити %(file)s до %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:795
+#: mcomix/file_actions.py:808
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "Не вдалося перемістити «%(file)s» до «%(directory)s»"
 
-#: mcomix/file_chooser_base_dialog.py:105 mcomix/keybindings.py:146
+#: mcomix/file_chooser_base_dialog.py:105 mcomix/keybindings.py:147
 msgid "Open"
 msgstr "Відкрити"
 
@@ -841,94 +843,99 @@ msgstr "Почати слайдшоу"
 msgid "Delete"
 msgstr "Вилучити"
 
-#: mcomix/keybindings.py:132 mcomix/keybindings.py:135
+#: mcomix/keybindings.py:132 mcomix/keybindings.py:133
 #: mcomix/keybindings.py:136 mcomix/keybindings.py:137
 #: mcomix/keybindings.py:138 mcomix/keybindings.py:139
-#: mcomix/keybindings.py:141 mcomix/keybindings.py:142
-#: mcomix/keybindings.py:143 mcomix/keybindings.py:145
+#: mcomix/keybindings.py:140 mcomix/keybindings.py:142
+#: mcomix/keybindings.py:143 mcomix/keybindings.py:144
 #: mcomix/keybindings.py:146 mcomix/keybindings.py:147
 #: mcomix/keybindings.py:148 mcomix/keybindings.py:149
+#: mcomix/keybindings.py:150
 msgid "File"
 msgstr "Файл"
 
 #: mcomix/keybindings.py:133
+msgid "Rename page"
+msgstr "Перейменувати сторінку"
+
+#: mcomix/keybindings.py:134
 msgid "Undo"
 msgstr "Скасувати"
 
-#: mcomix/keybindings.py:133 mcomix/keybindings.py:134
+#: mcomix/keybindings.py:134 mcomix/keybindings.py:135
 msgid "Edit"
 msgstr "Зміни"
 
-#: mcomix/keybindings.py:134
+#: mcomix/keybindings.py:135
 msgid "Redo"
 msgstr "Повторити"
 
-#: mcomix/keybindings.py:135
+#: mcomix/keybindings.py:136
 msgid "Refresh"
 msgstr "Оновити"
 
-#: mcomix/keybindings.py:136
+#: mcomix/keybindings.py:137
 msgid "Close"
 msgstr "Закрити"
 
-#: mcomix/keybindings.py:137
+#: mcomix/keybindings.py:138
 msgid "Quit"
 msgstr "Вийти"
 
-#: mcomix/keybindings.py:138
+#: mcomix/keybindings.py:139
 msgid "Save and quit"
 msgstr "Зберегти і вийти"
 
-#: mcomix/keybindings.py:139
+#: mcomix/keybindings.py:140
 msgid "Save As"
 msgstr "Зберегти як"
 
-#: mcomix/keybindings.py:141
+#: mcomix/keybindings.py:142
 msgid "Archive comments"
 msgstr "Коментарі архіву"
 
-#: mcomix/keybindings.py:142 mcomix/properties_dialog.py:36
+#: mcomix/keybindings.py:143 mcomix/properties_dialog.py:36
 msgid "Properties"
 msgstr "Властивості"
 
-#: mcomix/keybindings.py:143 mcomix/preferences_dialog.py:69
+#: mcomix/keybindings.py:144 mcomix/preferences_dialog.py:69
 msgid "Preferences"
 msgstr "Параметри"
 
-#: mcomix/keybindings.py:148 mcomix/library/main_dialog.py:53
+#: mcomix/keybindings.py:149 mcomix/library/main_dialog.py:53
 msgid "Library"
 msgstr "Бібліотека"
 
-#: mcomix/keybindings.py:149 mcomix/ui.py:513
+#: mcomix/keybindings.py:150 mcomix/ui.py:513
 msgid "Invert image colors"
 msgstr "Інвертування кольорів зображення"
 
-#: mcomix/keybindings.py:152
+#: mcomix/keybindings.py:153
 msgid "Add bookmark"
 msgstr "Додати закладку"
 
-#: mcomix/keybindings.py:152 mcomix/keybindings.py:153
+#: mcomix/keybindings.py:153 mcomix/keybindings.py:154
 msgid "Bookmarks"
 msgstr "Закладки"
 
-#: mcomix/keybindings.py:153
+#: mcomix/keybindings.py:154
 msgid "Edit bookmarks"
 msgstr "Редагування закладок"
 
-#: mcomix/keybindings.py:161 mcomix/openwith.py:563
+#: mcomix/keybindings.py:162 mcomix/openwith.py:563
 msgid "Command"
 msgstr "Команда"
 
-#: mcomix/keybindings.py:162
+#: mcomix/keybindings.py:163
 msgid "External commands"
 msgstr "Зовнішні команди"
 
-#: mcomix/keybindings.py:240
+#: mcomix/keybindings.py:241
 #, python-format
 msgid "Keybinding for \"%(action)s\" overrides hotkey for another action."
 msgstr "Сполучення клавіш для «%(action)s» перекриває сполучення іншої дії."
 
-#: mcomix/keybindings.py:396
+#: mcomix/keybindings.py:397
 #, python-format
 msgid "Couldn't load keybindings: %s"
 msgstr "Не вдалося завантажити сполучення клавіш: %s"

@@ -339,6 +339,10 @@ class EventHandler:
                          ['Delete'],
                          self._window.file_actions.delete)
 
+        manager.register('rename_page',
+                         ['F2'],
+                         self._window.file_actions.rename_page_being_read)
+
         manager.register('undo',
                          ['<Control>z'],
                          self._window.file_actions.undo)

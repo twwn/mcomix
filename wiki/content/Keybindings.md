@@ -94,6 +94,7 @@ Pick a page out, or put it back | CTRL+LeftMouse
 Mark a page to swap, or swap it with the marked one | CTRL+SHIFT+LeftMouse
 Swap two pages side by side | CTRL+SHIFT+LeftMouse dragged onto the other page
 Delete the page or the file | Delete
+Rename page | F2
 Undo | CTRL+Z
 Redo | CTRL+Y, CTRL+SHIFT+Z
 Add bookmark | CTRL+D

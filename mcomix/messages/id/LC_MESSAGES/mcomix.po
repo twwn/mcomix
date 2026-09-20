@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Comix-4.0.1\n"
 "Report-Msgid-Bugs-To: https://sourceforge.net/projects/mcomix\n"
-"POT-Creation-Date: 2026-09-20 18:45+0200\n"
+"POT-Creation-Date: 2026-09-20 18:49+0200\n"
 "PO-Revision-Date: 2008-12-13 21:23+0700\n"
 "Last-Translator: Andhika Padmawan <andhika.padmawan@gmail.com>\n"
 "Language-Team: Indonesia <id@li.org>\n"
@@ -97,7 +97,7 @@ msgstr "_Tidak"
 #
 # File: src/preferences.py, line: 230
 #: mcomix/bookmark_backend.py:329 mcomix/edit_dialog.py:58
-#: mcomix/file_actions.py:639 mcomix/file_chooser_base_dialog.py:106
+#: mcomix/file_actions.py:652 mcomix/file_chooser_base_dialog.py:106
 #: mcomix/file_chooser_base_dialog.py:111
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:32
@@ -258,7 +258,7 @@ msgstr "_Jadi lagi"
 
 #
 # File: src/edit.py, line: 28
-#: mcomix/edit_dialog.py:57 mcomix/keybindings.py:145
+#: mcomix/edit_dialog.py:57 mcomix/keybindings.py:146
 msgid "Edit archive"
 msgstr "Sunting arsip"
 
@@ -289,20 +289,20 @@ msgstr "Berkas komentar"
 
 #
 # File: src/library.py, line: 271
-#: mcomix/edit_dialog.py:194 mcomix/file_actions.py:451
+#: mcomix/edit_dialog.py:194 mcomix/file_actions.py:464
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! Tidak dapat menyimpan arsip %(archivefile)s: %(error)s"
 
 #
 # File: src/edit.py, line: 99
-#: mcomix/edit_dialog.py:207 mcomix/file_actions.py:456
+#: mcomix/edit_dialog.py:207 mcomix/file_actions.py:469
 msgid "The new archive could not be saved!"
 msgstr "Berkas baru tak dapat disimpan!"
 
 #
 # File: src/edit.py, line: 101
-#: mcomix/edit_dialog.py:208 mcomix/file_actions.py:457
+#: mcomix/edit_dialog.py:208 mcomix/file_actions.py:470
 msgid "The original files have not been removed."
 msgstr "Berkas asli belum dihapus."
 
@@ -322,7 +322,7 @@ msgstr "Pilih Semu_a"
 
 #
 # File: src/enhance.py, line: 51
-#: mcomix/enhance_dialog.py:28 mcomix/keybindings.py:147
+#: mcomix/enhance_dialog.py:28 mcomix/keybindings.py:148
 msgid "Enhance image"
 msgstr "Tingkatkan citra"
 
@@ -336,8 +336,8 @@ msgstr "Kembalikan ke nilai bawaan."
 
 #
 # File: src/filechooser.py, line: 39
-#: mcomix/enhance_dialog.py:35 mcomix/file_actions.py:366
-#: mcomix/file_actions.py:407 mcomix/file_chooser_base_dialog.py:112
+#: mcomix/enhance_dialog.py:35 mcomix/file_actions.py:379
+#: mcomix/file_actions.py:420 mcomix/file_chooser_base_dialog.py:112
 #: mcomix/openwith.py:360
 msgid "_Save"
 msgstr "_Simpan"
@@ -399,39 +399,41 @@ msgstr "_Balik warna gambar"
 msgid "Invert (negate) image colors."
 msgstr "Membalik (menegasikan) warna gambar."
 
-#: mcomix/file_actions.py:127 mcomix/file_actions.py:787
+#: mcomix/file_actions.py:127 mcomix/file_actions.py:800
 msgid "A file of that name is there already."
 msgstr "Berkas dengan nama itu sudah ada di sana."
 
-#: mcomix/file_actions.py:182
+#: mcomix/file_actions.py:195
 msgid "Rename page?"
 msgstr "Ganti nama halaman?"
 
-#: mcomix/file_actions.py:183
+#: mcomix/file_actions.py:196
 msgid "Please enter a new name for this page."
 msgstr "Silakan masukkan nama baru untuk halaman ini."
 
-#: mcomix/file_actions.py:362
+#: mcomix/file_actions.py:375
 #, python-format
 msgid "Write \"%s\" again before closing it?"
 msgstr "Tulis ulang \"%s\" sebelum menutupnya?"
 
-#: mcomix/file_actions.py:363
+#: mcomix/file_actions.py:376
 msgid ""
 "The book has changes that the archive on disk does not hold. They are lost "
 "when it closes."
-msgstr "Buku ini memiliki perubahan yang tidak ada dalam arsip di diska. Perubahan itu hilang saat ditutup."
+msgstr ""
+"Buku ini memiliki perubahan yang tidak ada dalam arsip di diska. Perubahan "
+"itu hilang saat ditutup."
 
-#: mcomix/file_actions.py:365
+#: mcomix/file_actions.py:378
 msgid "_Close without saving"
 msgstr "Tutup _tanpa menyimpan"
 
-#: mcomix/file_actions.py:403
+#: mcomix/file_actions.py:416
 #, python-format
 msgid "Write \"%s\" again now?"
 msgstr "Tulis ulang \"%s\" sekarang?"
 
-#: mcomix/file_actions.py:404
+#: mcomix/file_actions.py:417
 msgid ""
 "The archive on disk will be replaced by the book as it stands, without the "
 "pages that were removed."
@@ -439,43 +441,43 @@ msgstr ""
 "Arsip di diska akan diganti dengan buku sebagaimana adanya, tanpa halaman "
 "yang dihapus."
 
-#: mcomix/file_actions.py:406
+#: mcomix/file_actions.py:419
 msgid "_Not now"
 msgstr "_Nanti saja"
 
-#: mcomix/file_actions.py:557
+#: mcomix/file_actions.py:570
 msgid "Save page as"
 msgstr "Simpan halaman sebagai"
 
-#: mcomix/file_actions.py:598
+#: mcomix/file_actions.py:611
 #, python-format
 msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! Tidak dapat menyimpan %(file)s ke %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:602 mcomix/file_actions.py:789
+#: mcomix/file_actions.py:615 mcomix/file_actions.py:802
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "Ruang di sana tidak cukup: berkas berukuran %s."
 
-#: mcomix/file_actions.py:608
+#: mcomix/file_actions.py:621
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "Tidak dapat menyimpan \"%(file)s\" ke \"%(directory)s\""
 
-#: mcomix/file_actions.py:637
+#: mcomix/file_actions.py:650
 #, python-format
 msgid "Delete \"%s\"?"
 msgstr "Hapus \"%s\"?"
 
-#: mcomix/file_actions.py:638
+#: mcomix/file_actions.py:651
 msgid "The file will be deleted from your harddisk."
 msgstr "Berkas akan dihapus dari cakram keras."
 
-#: mcomix/file_actions.py:640 mcomix/ui.py:433
+#: mcomix/file_actions.py:653 mcomix/ui.py:433
 msgid "_Delete"
 msgstr "_Hapus"
 
-#: mcomix/file_actions.py:710
+#: mcomix/file_actions.py:723
 #, python-format
 msgid "The file is gone, and its %d bookmark cannot be opened any more."
 msgid_plural ""
@@ -483,17 +485,17 @@ msgid_plural ""
 msgstr[0] ""
 "Berkas sudah tidak ada, dan %d bookmark di dalamnya tidak dapat dibuka lagi."
 
-#: mcomix/file_actions.py:714
+#: mcomix/file_actions.py:727
 #, python-format
 msgid "Remove the bookmarks in \"%s\"?"
 msgstr "Hapus bookmark dalam \"%s\"?"
 
-#: mcomix/file_actions.py:783
+#: mcomix/file_actions.py:796
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr "! Tidak dapat memindahkan %(file)s ke %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:795
+#: mcomix/file_actions.py:808
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "Tidak dapat memindahkan \"%(file)s\" ke \"%(directory)s\""
@@ -501,7 +503,7 @@ msgstr "Tidak dapat memindahkan \"%(file)s\" ke \"%(directory)s\""
 #
 # File: src/filechooser.py, line: 35
 # File: src/library.py, line: 489
-#: mcomix/file_chooser_base_dialog.py:105 mcomix/keybindings.py:146
+#: mcomix/file_chooser_base_dialog.py:105 mcomix/keybindings.py:147
 msgid "Open"
 msgstr "Buka"
 
@@ -1020,119 +1022,124 @@ msgstr "Hapus"
 
 #
 # File: src/preferences.py, line: 196
-#: mcomix/keybindings.py:132 mcomix/keybindings.py:135
+#: mcomix/keybindings.py:132 mcomix/keybindings.py:133
 #: mcomix/keybindings.py:136 mcomix/keybindings.py:137
 #: mcomix/keybindings.py:138 mcomix/keybindings.py:139
-#: mcomix/keybindings.py:141 mcomix/keybindings.py:142
-#: mcomix/keybindings.py:143 mcomix/keybindings.py:145
+#: mcomix/keybindings.py:140 mcomix/keybindings.py:142
+#: mcomix/keybindings.py:143 mcomix/keybindings.py:144
 #: mcomix/keybindings.py:146 mcomix/keybindings.py:147
 #: mcomix/keybindings.py:148 mcomix/keybindings.py:149
+#: mcomix/keybindings.py:150
 msgid "File"
 msgstr "Berkas"
 
 #: mcomix/keybindings.py:133
+msgid "Rename page"
+msgstr "Ganti nama halaman"
+
+#: mcomix/keybindings.py:134
 msgid "Undo"
 msgstr "Tak jadi"
 
-#: mcomix/keybindings.py:133 mcomix/keybindings.py:134
+#: mcomix/keybindings.py:134 mcomix/keybindings.py:135
 msgid "Edit"
 msgstr "Sunting"
 
-#: mcomix/keybindings.py:134
+#: mcomix/keybindings.py:135
 msgid "Redo"
 msgstr "Jadi lagi"
 
 #
 # File: src/edit.py, line: 51
-#: mcomix/keybindings.py:135
+#: mcomix/keybindings.py:136
 msgid "Refresh"
 msgstr "Segarkan"
 
 #
 # File: src/ui.py, line: 48
-#: mcomix/keybindings.py:136
+#: mcomix/keybindings.py:137
 msgid "Close"
 msgstr "Tutup"
 
 #
 # File: src/ui.py, line: 50
-#: mcomix/keybindings.py:137
+#: mcomix/keybindings.py:138
 msgid "Quit"
 msgstr "Keluar"
 
-#: mcomix/keybindings.py:138
+#: mcomix/keybindings.py:139
 msgid "Save and quit"
 msgstr "Simpan dan keluar"
 
 #
 # File: src/filechooser.py, line: 39
-#: mcomix/keybindings.py:139
+#: mcomix/keybindings.py:140
 msgid "Save As"
 msgstr "Simpan sebagai"
 
 #
 # File: src/properties.py, line: 135
-#: mcomix/keybindings.py:141
+#: mcomix/keybindings.py:142
 msgid "Archive comments"
 msgstr "Komentar arsip"
 
 #
 # File: src/properties.py, line: 89
-#: mcomix/keybindings.py:142 mcomix/properties_dialog.py:36
+#: mcomix/keybindings.py:143 mcomix/properties_dialog.py:36
 msgid "Properties"
 msgstr "Properti"
 
 #
 # File: src/preferences.py, line: 78
-#: mcomix/keybindings.py:143 mcomix/preferences_dialog.py:69
+#: mcomix/keybindings.py:144 mcomix/preferences_dialog.py:69
 msgid "Preferences"
 msgstr "Pengaturan"
 
 #
 # File: src/library.py, line: 38
-#: mcomix/keybindings.py:148 mcomix/library/main_dialog.py:53
+#: mcomix/keybindings.py:149 mcomix/library/main_dialog.py:53
 msgid "Library"
 msgstr "Perpustakaan"
 
-#: mcomix/keybindings.py:149 mcomix/ui.py:513
+#: mcomix/keybindings.py:150 mcomix/ui.py:513
 msgid "Invert image colors"
 msgstr "Pembalikan warna gambar"
 
 #
 # File: src/bookmark.py, line: 27
-#: mcomix/keybindings.py:152
+#: mcomix/keybindings.py:153
 msgid "Add bookmark"
 msgstr "Tambah bookmark"
 
 #
 # File: src/ui.py, line: 64
-#: mcomix/keybindings.py:152 mcomix/keybindings.py:153
+#: mcomix/keybindings.py:153 mcomix/keybindings.py:154
 msgid "Bookmarks"
 msgstr "Bookmark"
 
-#: mcomix/keybindings.py:153
+#: mcomix/keybindings.py:154
 msgid "Edit bookmarks"
 msgstr "Sunting bookmark"
 
 #
 # File: src/comment.py, line: 16
 # File: src/preferences.py, line: 288
-#: mcomix/keybindings.py:161 mcomix/openwith.py:563
+#: mcomix/keybindings.py:162 mcomix/openwith.py:563
 msgid "Command"
 msgstr "Perintah"
 
 #
 # File: src/bookmark.py, line: 229
-#: mcomix/keybindings.py:162
+#: mcomix/keybindings.py:163
 msgid "External commands"
 msgstr "Perintah luar"
 
-#: mcomix/keybindings.py:240
+#: mcomix/keybindings.py:241
 #, python-format
 msgid "Keybinding for \"%(action)s\" overrides hotkey for another action."
 msgstr "Pintasan untuk \"%(action)s\" menimpa pintasan tindakan lain."
 
-#: mcomix/keybindings.py:396
+#: mcomix/keybindings.py:397
 #, python-format
 msgid "Couldn't load keybindings: %s"
 msgstr "Tidak dapat memuat pintasan: %s"
