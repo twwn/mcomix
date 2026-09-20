@@ -275,6 +275,7 @@ class _BookmarksDialog(Dialog):
         """
         self._bookmarks_store.add_bookmark -= self._bookmark_added
         self._bookmarks_store.remove_bookmark -= self._bookmark_removed
+        self._bookmarks_store.replace_bookmark -= self._bookmark_replaced
         self._bookmarks_store.clear_bookmarks -= self._bookmarks_cleared
 
         ordering = [row.bookmark for row in self._list.each_stored_row()]

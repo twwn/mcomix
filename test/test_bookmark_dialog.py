@@ -289,6 +289,26 @@ class BookmarksDialogTest(MComixTest):
         self.assertTrue(self.dialog._list.move_row(0, 2))
         self.assertEqual(self._writes(self.dialog._close), 1)
 
+    def test_a_closed_dialog_hears_nothing_more_about_a_moved_book(self):
+        """The dialog follows the store while it is open, and lets go of
+        it when it closes.  A handler left subscribed runs on a window
+        that has been destroyed, and the store goes on holding the
+        dialog it belongs to."""
+        def paths():
+            return [row.bookmark._path
+                    for row in self.dialog._list.each_stored_row()]
+
+        before = paths()
+        self.assertIn('/tmp/alpha.cbz', before)
+        self.dialog._close()
+        pump()
+
+        self.store.update_path('/tmp/alpha.cbz', '/elsewhere/alpha.cbz')
+        pump()
+
+        self.assertEqual(paths(), before,
+                         'the closed dialog still followed the store')
+
     def test_closing_does_not_bring_back_a_bookmark_removed_elsewhere(self):
         """A second dialog over the same store held a list of its own.
 
