@@ -45,7 +45,7 @@ The [UnRAR library](https://www.rarlab.com/rar_add.htm) (`libunrar.so` or `UnRAR
 
 ## Running from source
 
-Install GTK 4 and PyGObject first, as PyGObject's [Getting Started guide](https://pygobject.readthedocs.io/en/latest/getting_started.html) describes. Then create a [virtual environment](https://docs.python.org/3/library/venv.html) and install MComix into it from the source archive:
+Install GTK 4 and PyGObject first, as PyGObject's [Getting Started guide](https://pygobject.readthedocs.io/en/latest/getting_started.html) describes. Then create a [virtual environment](https://docs.python.org/3/library/venv.html) and install MComix into it from the source archive, which is attached to each [release](https://github.com/twwn/mcomix/releases):
 
 ```bash
 python3 -m venv --system-site-packages mcomix-venv
@@ -65,7 +65,7 @@ To uninstall, delete the virtual environment. The preferences are kept in `~/.co
 Clone the repository, and install it in editable mode with the development tools, so that changes to the source take effect the next time MComix starts:
 
 ```bash
-git clone https://git.code.sf.net/p/mcomix/git mcomix
+git clone https://github.com/twwn/mcomix.git
 cd mcomix
 ../mcomix-venv/bin/python -m pip install -e '.[dev]'
 ```
