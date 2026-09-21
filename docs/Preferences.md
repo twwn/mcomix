@@ -1,7 +1,7 @@
 Preferences dialog
 ===
 
-The preferences dialog opens on F12. It has five tabs: Appearance, Behaviour, Display, Advanced and Shortcuts, the keybinding editor the [Keybindings] page describes.
+The preferences dialog opens on F12. It has five tabs: Appearance, Behaviour, Display, Advanced and Shortcuts, the keybinding editor the [Keybindings](Keybindings.md) page describes.
 
 A change takes effect at once, except for the interface language and the number of thumbnail threads, which are read when MComix starts. Picking a language offers to start MComix again, keeping the book, its page and the window size; declining keeps the choice for the next start.
 

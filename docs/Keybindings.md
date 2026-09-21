@@ -103,7 +103,7 @@ Open the page's menu | RightMouse, Menu, SHIFT+F10
 Minimize window | N
 Quit program | CTRL+Q
 Save and quit | CTRL+SHIFT+Q
-Execute first, second, ... external command (see [External_Commands]) | 1 to 9
+Execute first, second, ... external command (see [External Commands](External_Commands.md)) | 1 to 9
 
 Delete takes the pages picked out with CTRL+LeftMouse out of the book; with none picked out, it asks before deleting the file from disk.
 

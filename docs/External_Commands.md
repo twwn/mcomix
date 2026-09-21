@@ -9,7 +9,7 @@ MComix can run programs of your choosing on the file that is open: an image edit
 Add and edit commands
 ---
 
-[[img src="mcomix-external-commands.png" alt="Edit external commands"]]
+![Edit external commands](images/mcomix-external-commands.png)
 
 "Add" puts a new command in the list, and "Add separator" a line that divides the menu; "Remove", "Up" and "Down" act on the selected row, which can also be dragged to another place. Each command has four fields:
 

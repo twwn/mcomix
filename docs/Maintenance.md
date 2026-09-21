@@ -8,8 +8,7 @@ Translation files
 
 Whenever a translatable string is added or changed, regenerate the translation template `mcomix/messages/mcomix.pot`, merge it into every catalogue in `mcomix/messages/*/LC_MESSAGES/mcomix.po`, and compile each catalogue into the `mcomix.mo` beside it. The compiled files are kept in Git, and `test/test_messages.py` fails until all three agree with the source. Run this from MComix' root directory; it needs GNU gettext.
 
-~~~~~~
-:::bash
+```bash
 #!/bin/sh
 VERSION=$(grep VERSION mcomix/constants.py | sed -e "s/VERSION = //" -e "s/'//g")
 MAINTAINER="https://sourceforge.net/projects/mcomix"
@@ -26,7 +25,7 @@ do
 	msgmerge -U --backup=none ${pofile} mcomix/messages/mcomix.pot
 	msgfmt ${pofile} -o ${pofile%.*}.mo
 done
-~~~~~~
+```
 
 Preparing a new release
 -----------------------
@@ -40,12 +39,11 @@ Preparing a new release
 Building the source archive
 ---------------------------
 
-With a development environment set up as on the [Installation] page, build `dist/mcomix-<version>.tar.gz`:
+With a development environment set up as on the [Installation](Installation.md) page, build `dist/mcomix-<version>.tar.gz`:
 
-~~~~~~
-:::bash
+```bash
 python3 -m build -s
-~~~~~~
+```
 
 Do not build it on Windows, to avoid files in the archive having executable permission bits set.
 
@@ -64,28 +62,25 @@ Directory | Files | From
 
 In a MINGW64 shell in MComix' root directory, build `dist/MComix` and `dist/mcomix-win64-<version>.zip`:
 
-~~~~~~
-:::bash
+```bash
 python win32/build_pyinstaller.py
-~~~~~~
+```
 
 Then, in a regular Windows console with the [WiX Toolset](https://wixtoolset.org/docs/wix3/) version 3 on the `PATH`, build `dist/mcomix-win64-<version>.msi`. This also writes the installer's SHA-256 to `win32/tools/checksum.sha256`, and prints it.
 
-~~~~~~
-:::bash
+```bash
 python win32/build_msi.py
-~~~~~~
+```
 
 Building the Chocolatey package
 -------------------------------
 
 The Chocolatey package does not carry MComix: it downloads the MSI installer from SourceForge and checks it against the checksum in `win32/tools/checksum.sha256`. So upload the installer first, and pack the checksum file written by the build of that same installer. The file is deliberately not kept in Git, since it describes one build of one version. With the [Chocolatey CLI](https://chocolatey.org/install), in MComix' root directory:
 
-~~~~~~
-:::bash
+```bash
 choco pack win32/mcomix.nuspec --version <version> --out dist
 choco push dist/mcomix.<version>.nupkg --source https://push.chocolatey.org/
-~~~~~~
+```
 
 Pushing needs an API key from a Chocolatey account with rights to the `mcomix` package, set once with `choco apikey`. Packages are moderated, so the new version appears some time after it is pushed.
 

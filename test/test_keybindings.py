@@ -245,7 +245,7 @@ class DefaultKeybindingsTest(MComixTest):
 
 class DocumentedMouseBindingsTest(MComixTest):
 
-    """What wiki/content/Keybindings.md promises the mouse can do.
+    """What docs/Keybindings.md promises the mouse can do.
 
     The page documented "Mouse4" for the OSD panel, and event.py had a
     branch for button 4 to match - but GDK turns X11 buttons 4 and 5 into
@@ -270,10 +270,10 @@ class DocumentedMouseBindingsTest(MComixTest):
     WHEEL_WORD = re.compile(r'\bMouseWheel\w*\b')
 
     def _named_on_the_page(self):
-        """Every button name wiki/content/Keybindings.md uses."""
+        """Every button name docs/Keybindings.md uses."""
         page = os.path.join(os.path.dirname(os.path.dirname(
             os.path.abspath(mcomix.event.__file__))),
-            'wiki', 'content', 'Keybindings.md')
+            'docs', 'Keybindings.md')
         with open(page, encoding='utf-8') as fp:
             return set(self.MOUSE_WORD.findall(
                 self.WHEEL_WORD.sub('', fp.read())))
@@ -329,7 +329,7 @@ class DocumentedMouseBindingsTest(MComixTest):
 
 class DocumentedKeyBindingsTest(MComixTest):
 
-    """Whether wiki/content/Keybindings.md names the keys MComix binds.
+    """Whether docs/Keybindings.md names the keys MComix binds.
 
     The page is the only list of the bindings a reader ever sees, and
     nothing checked it: it said the first page was on "Pos1", which is the
@@ -431,7 +431,7 @@ class DocumentedKeyBindingsTest(MComixTest):
     def _page(self):
         path = os.path.join(os.path.dirname(os.path.dirname(
             os.path.abspath(mcomix.event.__file__))),
-            'wiki', 'content', 'Keybindings.md')
+            'docs', 'Keybindings.md')
         with open(path, encoding='utf-8') as fp:
             return fp.read()
 

@@ -1,6 +1,6 @@
-"""Whether the pages under wiki/content/ describe the program as it is.
+"""Whether the pages under docs/ describe the program as it is.
 
-The wiki is the only documentation a reader has, and nothing checked it
+The manual is the only documentation a reader has, and nothing checked it
 against the code: Keybindings.md turned out to name the German key "Pos1"
 for Home and to describe a keybinding editor that had not existed for two
 GTK versions, and Preferences.md documented an option that had been
@@ -10,7 +10,6 @@ sides, so an option or a tab added to the program has to be written down.
 
 import ast
 import glob as glob_module
-import importlib.util
 import os
 import re
 import tomllib
@@ -25,13 +24,20 @@ from mcomix import preferences
 from mcomix import preferences_dialog
 from mcomix import ui
 
-#: Where the wiki lives, relative to the checkout.
-WIKI = os.path.join(os.path.dirname(os.path.dirname(
-    os.path.abspath(preferences_dialog.__file__))), 'wiki', 'content')
+#: The checkout, and the documentation inside it.
+ROOT = os.path.dirname(os.path.dirname(
+    os.path.abspath(preferences_dialog.__file__)))
+DOCS = os.path.join(ROOT, 'docs')
+
+#: The images the pages show, kept beside them.
+IMAGES = os.path.join(DOCS, 'images')
+
+#: How a page shows one of them: GitHub Markdown, relative to the page.
+IMAGE_LINK = re.compile(r'!\[[^]]*\]\(images/([^)]+)\)')
 
 
 def read_page(name):
-    with open(os.path.join(WIKI, name), encoding='utf-8') as fp:
+    with open(os.path.join(DOCS, name), encoding='utf-8') as fp:
         return fp.read()
 
 
@@ -138,8 +144,7 @@ class PreferencesPageTest(unittest.TestCase):
         regenerated from scratch - so the catalogues are what holds this.
         """
         obsolete = set()
-        messages = os.path.join(os.path.dirname(WIKI), os.pardir,
-                                'mcomix', 'messages')
+        messages = os.path.join(ROOT, 'mcomix', 'messages')
         for language in os.listdir(messages):
             catalogue = os.path.join(messages, language, 'LC_MESSAGES',
                                      'mcomix.po')
@@ -342,8 +347,7 @@ class DependenciesTest(unittest.TestCase):
 
     def setUp(self):
         self.page = read_page(self.PAGE)
-        with open(os.path.join(os.path.dirname(WIKI), os.pardir,
-                               'pyproject.toml'), 'rb') as fp:
+        with open(os.path.join(ROOT, 'pyproject.toml'), 'rb') as fp:
             self.project = tomllib.load(fp)
 
     def _floors(self):
@@ -403,8 +407,6 @@ class MaintenancePageTest(unittest.TestCase):
 
     PAGE = 'Maintenance.md'
 
-    #: The repository root, which the page's paths are relative to.
-    ROOT = os.path.dirname(WIKI)
 
     #: Every path the page names as a file in the repository.
     NAMED_PATHS = (
@@ -418,7 +420,7 @@ class MaintenancePageTest(unittest.TestCase):
 
     def setUp(self):
         self.page = read_page(self.PAGE)
-        self.root = os.path.normpath(os.path.join(self.ROOT, os.pardir))
+        self.root = ROOT
 
     def test_every_file_the_page_names_is_there(self):
         missing = [path for path in self.NAMED_PATHS
@@ -513,8 +515,7 @@ class InstallationPageTest(unittest.TestCase):
 
     def setUp(self):
         self.page = read_page(self.PAGE)
-        with open(os.path.join(os.path.dirname(WIKI), os.pardir,
-                               'pyproject.toml'), 'rb') as fp:
+        with open(os.path.join(ROOT, 'pyproject.toml'), 'rb') as fp:
             self.project = tomllib.load(fp)
 
     def test_the_extras_the_page_names_exist(self):
@@ -537,39 +538,23 @@ class InstallationPageTest(unittest.TestCase):
 
 
 def read_pages():
-    """{page name: text} for every page of the wiki."""
+    """{page name: text} for every page of the documentation."""
     return {name[:-len('.md')]: read_page(name)
-            for name in sorted(os.listdir(WIKI)) if name.endswith('.md')}
+            for name in sorted(os.listdir(DOCS)) if name.endswith('.md')}
 
 
-def load_converter():
-    """wiki/src/sfwikisync/github.py, loaded from its file.
-
-    sfwikisync is not installed with MComix, and this one module of it
-    imports nothing from the rest, which needs requests.
-    """
-    path = os.path.join(os.path.dirname(WIKI), 'src', 'sfwikisync',
-                        'github.py')
-    spec = importlib.util.spec_from_file_location('sfwikisync_github', path)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
-github = load_converter()
-
-#: The files the pages show as attachments, which SourceForge keeps apart
-#: from the pages' text.
-IMAGES = os.path.join(os.path.dirname(WIKI), 'images')
+def images_shown():
+    """The file name of every image the pages show."""
+    return {name for page in read_pages().values()
+            for name in IMAGE_LINK.findall(page)}
 
 
 class ImagesTest(unittest.TestCase):
 
-    """wiki/images against the images the pages show."""
+    """docs/images against the images the pages show."""
 
     def setUp(self):
-        self.shown = {image.filename
-                      for image in github.images(read_pages())}
+        self.shown = images_shown()
         self.kept = {name for name in os.listdir(IMAGES)
                      if name != 'README.md'}
 
@@ -589,261 +574,5 @@ class ImagesTest(unittest.TestCase):
             with self.subTest(required=required):
                 self.assertIn(required, readme)
 
-
-class GitHubConversionTest(unittest.TestCase):
-
-    """Every page, converted to GitHub Markdown as wiki/Readme.md plans.
-
-    The Readme permits each Allura construct in one shape, so that a
-    script can convert the pages without a person reading them.  The
-    script refuses anything else, so a page edited out of shape fails
-    here rather than on the day the pages move.
-    """
-
-    def setUp(self):
-        self.pages = read_pages()
-        self.converted = github.convert(self.pages, 'mcomix')
-
-    @staticmethod
-    def prose(text):
-        """The lines of a converted page outside its code blocks, with its
-        code spans taken out."""
-        lines = []
-        code = False
-        for line in text.splitlines():
-            if line.startswith('```'):
-                code = not code
-            elif not code:
-                lines.append(re.sub(r'(`+).+?\1', '', line))
-        return lines
-
-    @staticmethod
-    def code(text, fence):
-        """The lines inside a page's code blocks, without the fences and
-        without Allura's language line."""
-        lines = []
-        code = False
-        for line in text.splitlines():
-            if line.startswith(fence):
-                code = not code
-            elif code and not line.startswith(':::'):
-                lines.append(line)
-        return lines
-
-    def test_every_page_is_converted(self):
-        self.assertEqual(list(self.pages), list(self.converted))
-        self.assertIn(github.HOME, self.converted)
-
-    def test_no_allura_markup_is_left(self):
-        left = [(name, line) for name, text in self.converted.items()
-                for line in self.prose(text)
-                if '[[' in line or '[TOC]' in line or '<a name=' in line
-                or line.startswith(('~~~', ':::'))]
-        self.assertEqual([], left)
-
-    def test_every_link_between_pages_lands(self):
-        targets = {name + '.md' for name in self.converted}
-        targets.update('%s/%s' % (github.IMAGE_DIR, image.filename)
-                       for image in github.images(self.pages))
-        links = []
-        for name, text in self.converted.items():
-            for line in self.prose(text):
-                for target in re.findall(r'\]\(([^)]+)\)', line):
-                    if not re.match(r'[a-z]+:', target):
-                        links.append((name, target.partition('#')[0]
-                                      or name + '.md'))
-        self.assertEqual([], [link for link in links
-                              if link[1] not in targets])
-        # So that a pattern finding no links cannot pass for every link
-        # landing.
-        self.assertGreater(len(links), 10)
-
-    def test_no_brackets_are_left_that_are_not_a_link(self):
-        """GitHub would show a bare [Page_Name] as the brackets and the
-        name."""
-        bare = [(name, line) for name, text in self.converted.items()
-                for line in self.prose(text)
-                if re.search(r'\[[^\]]*\](?!\()', line)]
-        self.assertEqual([], bare)
-
-    def test_code_blocks_keep_their_language_and_their_lines(self):
-        for name, source in self.pages.items():
-            with self.subTest(page=name):
-                converted = self.converted[name]
-                self.assertEqual(re.findall(r'(?m)^:::(\w+)$', source),
-                                 re.findall(r'(?m)^```(\w+)$', converted))
-                self.assertEqual(self.code(source, github.FENCE),
-                                 self.code(converted, '```'))
-        # The translation script on Maintenance.md is indented with tabs,
-        # which the comparison above has to have seen.
-        self.assertIn('\tmsgfmt ${pofile} -o ${pofile%.*}.mo',
-                      self.code(self.converted['Maintenance'], '```'))
-
-    def test_the_readme_lists_every_image_attachment(self):
-        """The attachments are not in the repository, so the Readme's list
-        is what says which files the move has to fetch."""
-        with open(os.path.join(os.path.dirname(WIKI), 'Readme.md'),
-                  encoding='utf-8') as fp:
-            listed = re.findall(r'(?m)^- `([^`]+)`, on `([^`]+)\.md`',
-                                fp.read())
-        shown = [(image.filename, image.page)
-                 for image in github.images(self.pages)]
-        self.assertTrue(shown)
-        self.assertEqual(sorted(listed), sorted(shown))
-
-    def test_home_links_to_the_files_and_shows_every_image(self):
-        home = self.converted[github.HOME]
-        self.assertIn('(https://sourceforge.net/projects/mcomix/files/)', home)
-        for image in github.images(self.pages):
-            self.assertIn('![%s](images/%s)' % (image.alt, image.filename),
-                          home)
-
-    def test_the_tables_of_contents_and_the_anchor_are_gone(self):
-        self.assertTrue(self.converted['Installation'].startswith(
-            '# Installation\n\n## Linux\n'))
-        self.assertIn('\n\n## Dependencies\n', self.converted['Installation'])
-        # Neither the line of the table of contents nor the blank line
-        # after it.
-        self.assertRegex(self.converted['Documentation'],
-                         r'^Documentation\n===\n\n\S')
-
-
-class GitHubShapeTest(unittest.TestCase):
-
-    """What the conversion makes of each shape wiki/Readme.md permits, and
-    that it refuses each one out of shape, naming the line."""
-
-    #: The title every test page starts with, so their text is line 4 on.
-    TITLE = 'Title\n===\n\n'
-
-    def convert(self, home, **others):
-        pages = {github.HOME: self.TITLE + home}
-        pages.update((name, self.TITLE + text)
-                     for name, text in others.items())
-        return github.convert(pages, 'project')
-
-    def assertRefused(self, line, home, page=github.HOME, **others):
-        with self.assertRaises(github.ConversionError) as raised:
-            self.convert(home, **others)
-        self.assertEqual((page, line),
-                         (raised.exception.page, raised.exception.line),
-                         str(raised.exception))
-
-    def test_a_link_to_a_page_takes_its_file_name(self):
-        converted = self.convert(
-            'See [Other_Page] and [that page](Other_Page).\n', Other_Page='')
-        self.assertEqual(
-            self.TITLE + 'See [Other Page](Other_Page.md) and '
-            '[that page](Other_Page.md).\n', converted['Home'])
-
-    def test_code_and_links_to_other_sites_are_left_alone(self):
-        text = ("Run `pip install '.[dev]'` from [PyPI](https://pypi.org/) "
-                "in `<dir>`.\n")
-        self.assertEqual(self.TITLE + text, self.convert(text)['Home'])
-
-    def test_a_link_into_a_page_takes_the_anchor_github_gives(self):
-        other = ('### Fit modes ###\n\nFit modes\n---\n\n'
-                 '#### Image-related variables\n')
-        home = ('[a](Other_Page#fit-modes) [b](Other_Page#fit-modes-1) '
-                '[c](Other_Page#image-related-variables) [d](#title)\n')
-        self.assertEqual(
-            self.TITLE + '[a](Other_Page.md#fit-modes) '
-            '[b](Other_Page.md#fit-modes-1) '
-            '[c](Other_Page.md#image-related-variables) [d](#title)\n',
-            self.convert(home, Other_Page=other)['Home'])
-
-    def test_links_that_land_nowhere_are_refused(self):
-        for home in ('[Nothing]\n', '[text](Nothing)\n',
-                     '[text](Other_Page#nothing)\n', '[text](#nothing)\n',
-                     '[text](Other_Page "A title")\n'):
-            with self.subTest(home=home):
-                self.assertRefused(4, home, Other_Page='')
-
-    def test_an_image_is_converted_and_listed(self):
-        home = '[[img src="shot.png" alt="A shot"]]\n'
-        self.assertEqual(self.TITLE + '![A shot](images/shot.png)\n',
-                         self.convert(home)['Home'])
-        self.assertEqual([github.Image('Home', 'shot.png', 'A shot')],
-                         github.images({'Home': home}))
-
-    def test_images_and_macros_out_of_shape_are_refused(self):
-        for home in ('[[img src="shot.png"]]\n',
-                     '[[img src="dir/shot.png" alt="A shot"]]\n',
-                     'See [[img src="shot.png" alt="A shot"]]\n',
-                     '![A shot](shot.png)\n',
-                     '[[include ref=Other_Page]]\n'):
-            with self.subTest(home=home):
-                self.assertRefused(4, home)
-
-    def test_home_links_to_the_files_and_shows_every_image(self):
-        converted = self.convert(
-            '[[download_button]]\n\n[[project_screenshots]]\n',
-            B_Page='[[img src="b.png" alt="B"]]\n',
-            A_Page='[[img src="a.png" alt="A"]]\n')
-        self.assertEqual(
-            self.TITLE
-            + '[Download](https://sourceforge.net/projects/project/files/)'
-            '\n\n![A](images/a.png)\n\n![B](images/b.png)\n',
-            converted['Home'])
-
-    def test_the_download_button_and_the_screenshots_are_for_home(self):
-        for macro in ('[[download_button]]', '[[project_screenshots]]'):
-            with self.subTest(macro=macro):
-                self.assertRefused(4, '', page='Other_Page',
-                                   Other_Page=macro + '\n')
-
-    def test_the_table_of_contents_after_the_title_is_dropped(self):
-        self.assertEqual(self.TITLE + 'Text\n',
-                         self.convert('[TOC]\n\nText\n')['Home'])
-        self.assertEqual(
-            '# Title\n\nText\n',
-            github.convert({'Home': '# Title\n\n[TOC]\n\nText\n'},
-                           'project')['Home'])
-
-    def test_a_table_of_contents_anywhere_else_is_refused(self):
-        self.assertRefused(5, 'Text\n[TOC]\n')
-        self.assertRefused(4, 'See [TOC].\n')
-        with self.assertRaises(github.ConversionError) as raised:
-            github.convert({'Home': 'Title\n===\n[TOC]\n'}, 'project')
-        self.assertEqual(3, raised.exception.line)
-
-    def test_a_code_block_is_fenced_with_backticks(self):
-        home = '~~~~~~\n:::bash\n\techo [dev] <b> `x\n~~~~~~\n'
-        self.assertEqual(self.TITLE + '```bash\n\techo [dev] <b> `x\n```\n',
-                         self.convert(home)['Home'])
-
-    def test_code_blocks_out_of_shape_are_refused(self):
-        for line, home in ((4, '~~~~~~\necho\n~~~~~~\n'),
-                           (4, '~~~~~~\n:::bash\necho\n'),
-                           (4, '```bash\necho\n```\n'),
-                           (4, '~~~\n:::bash\necho\n~~~\n'),
-                           (4, '    echo\n'),
-                           (6, '~~~~~~\n:::bash\n```\n~~~~~~\n')):
-            with self.subTest(home=home):
-                self.assertRefused(line, home)
-
-    def test_an_anchor_line_before_its_heading_is_dropped(self):
-        home = ('<a name="part-one"></a>\n## Part one\n\n'
-                '<a name="part-two"></a>\nPart two\n---\n')
-        self.assertEqual(self.TITLE + '## Part one\n\nPart two\n---\n',
-                         self.convert(home)['Home'])
-
-    def test_html_and_code_spans_out_of_shape_are_refused(self):
-        for home in ('<a name="part-one"></a>\nText\n',
-                     '<a name="one"></a>\n## Part one\n',
-                     'A line<br>break\n',
-                     'Text <!-- a note -->\n',
-                     'An `unclosed code span\n'):
-            with self.subTest(home=home):
-                self.assertRefused(4, home)
-
-    def test_the_error_names_the_page_and_the_line(self):
-        with self.assertRaises(github.ConversionError) as raised:
-            self.convert('', Other_Page='Text\n[Nothing]\n')
-        self.assertEqual('Other_Page.md:5: [Nothing] names no page',
-                         str(raised.exception))
-
-    def test_a_page_without_a_final_newline_keeps_it_that_way(self):
-        self.assertEqual(self.TITLE + 'Text', self.convert('Text')['Home'])
 
 # vim: expandtab:sw=4:ts=4

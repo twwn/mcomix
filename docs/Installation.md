@@ -1,7 +1,5 @@
 # Installation
 
-[TOC]
-
 ## Linux
 
 Most distributions package MComix. Install it with the distribution's own package manager where that version is current, and from Flathub where it is not.
@@ -25,7 +23,6 @@ Without a package manager, run the MSI installer, which needs administrator righ
 
 Uninstalling leaves the preferences, the library and the bookmarks in `%APPDATA%\MComix`. Delete that folder to remove them as well.
 
-<a name="dependencies"></a>
 ## Dependencies
 
 Running MComix from source requires:
@@ -50,13 +47,12 @@ The [UnRAR library](https://www.rarlab.com/rar_add.htm) (`libunrar.so` or `UnRAR
 
 Install GTK 4 and PyGObject first, as PyGObject's [Getting Started guide](https://pygobject.readthedocs.io/en/latest/getting_started.html) describes. Then create a [virtual environment](https://docs.python.org/3/library/venv.html) and install MComix into it from the source archive:
 
-~~~~~~
-:::bash
+```bash
 python3 -m venv --system-site-packages mcomix-venv
 tar -xzf mcomix-<version>.tar.gz
 cd mcomix-<version>
 ../mcomix-venv/bin/python -m pip install .
-~~~~~~
+```
 
 `--system-site-packages` lets the environment use the PyGObject installed above; without it, pip tries to build PyGObject from source. Install `'.[fileformats]'` instead of `.` to add PyMuPDF and chardet. MComix is then run as `mcomix-venv/bin/mcomix`.
 
@@ -68,16 +64,14 @@ To uninstall, delete the virtual environment. The preferences are kept in `~/.co
 
 Clone the repository, and install it in editable mode with the development tools, so that changes to the source take effect the next time MComix starts:
 
-~~~~~~
-:::bash
+```bash
 git clone https://git.code.sf.net/p/mcomix/git mcomix
 cd mcomix
 ../mcomix-venv/bin/python -m pip install -e '.[dev]'
-~~~~~~
+```
 
 The test suite opens windows, so run it under `xvfb-run`:
 
-~~~~~~
-:::bash
+```bash
 xvfb-run -a ../mcomix-venv/bin/python -m pytest test/ -n 8
-~~~~~~
+```

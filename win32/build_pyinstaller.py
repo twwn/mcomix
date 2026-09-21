@@ -41,7 +41,7 @@ having to play around with relative path names.
        libjxl is the loader for the JPEG XL files the open dialog offers
        to filter for; pip is what step 2 installs pyinstaller with.
 
-       wiki/content/Maintenance.md lists the same packages, and a test
+       docs/Maintenance.md lists the same packages, and a test
        holds the two lists to each other.
 
     2. In the same shell, install pyinstaller with pip:

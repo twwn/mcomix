@@ -1,14 +1,12 @@
 Documentation
 ===
 
-[TOC]
-
-This is the user manual for MComix. The [Installation] page covers installing it, and [Preferences], [Keybindings] and [External_Commands] have pages of their own.
+This is the user manual for MComix. The [Installation](Installation.md) page covers installing it, and [Preferences](Preferences.md), [Keybindings](Keybindings.md) and [External Commands](External_Commands.md) have pages of their own.
 
 The main window
 ---
 
-[[img src="mcomix-mainwindow.png" alt="MComix' main window"]]
+![MComix' main window](images/mcomix-mainwindow.png)
 
 The pages in the screenshots on this page are from "The Potion of Flight", episode 1 of [Pepper&Carrot](https://www.peppercarrot.com/) by David Revoy, published under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) and scaled down here.
 
@@ -96,7 +94,7 @@ The book library
 
 The library, CTRL+L, files books in collections and shows their covers. A book is an archive in any format MComix opens; a directory cannot be added.
 
-[[img src="mcomix-library.png" alt="Library window"]]
+![Library window](images/mcomix-library.png)
 
 The collections are on the left, and the books of the one selected on the right, including those in the collections under it. "All books" holds every book in the library. Drag a collection onto another to file it there, and drag books onto a collection to add them to it. The search field shows only the books whose name or path contains what is typed.
 
@@ -115,4 +113,4 @@ While "Store information about recently opened files" is set to "Always", every 
 Execute external programs
 ---
 
-"File &rarr; Open with" runs programs of your choosing on the file that is open. The [External_Commands] page describes how to set them up.
+"File &rarr; Open with" runs programs of your choosing on the file that is open. The [External Commands](External_Commands.md) page describes how to set them up.

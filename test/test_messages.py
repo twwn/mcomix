@@ -59,7 +59,7 @@ class TemplateTest(MComixTest):
 
     def _extract(self):
         """The msgids xgettext finds in the source right now. The file set
-        is the one wiki/content/Maintenance.md documents.
+        is the one docs/Maintenance.md documents.
 
         The header is kept, though read_msgids() drops it again: it is
         where xgettext states the encoding it wrote, and asked to omit
@@ -83,13 +83,13 @@ class TemplateTest(MComixTest):
         missing = self._extract() - read_msgids(TEMPLATE_PATH)
         self.assertEqual(set(), missing,
                          'strings the source marks that mcomix.pot lacks; '
-                         'regenerate it as wiki/content/Maintenance.md says')
+                         'regenerate it as docs/Maintenance.md says')
 
     def test_the_template_holds_nothing_the_source_dropped(self):
         stale = read_msgids(TEMPLATE_PATH) - self._extract()
         self.assertEqual(set(), stale,
                          'strings in mcomix.pot the source no longer marks; '
-                         'regenerate it as wiki/content/Maintenance.md says')
+                         'regenerate it as docs/Maintenance.md says')
 
     @unittest.skipIf(shutil.which('msgfmt') is None, 'msgfmt is not installed')
     def test_every_catalogue_is_compiled(self):
@@ -111,7 +111,7 @@ class TemplateTest(MComixTest):
                            check=True, capture_output=True)
             self.assertEqual(read_catalogue(fresh), read_catalogue(compiled),
                              '%s is out of step with its catalogue; compile '
-                             'it as wiki/content/Maintenance.md says' % name)
+                             'it as docs/Maintenance.md says' % name)
 
     def test_every_catalogue_covers_the_template(self):
         template = read_msgids(TEMPLATE_PATH)

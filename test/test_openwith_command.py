@@ -131,7 +131,7 @@ class _StubArchiveHandler(_StubFileHandler):
 class DocumentedVariablesTest(MComixTest):
 
     """Every variable the manual lists, with the manual's own examples
-    (wiki/content/External_Commands.md)."""
+    (docs/External_Commands.md)."""
 
     def _expand(self, variable, window):
         return openwith.OpenWithCommand(
