@@ -11,7 +11,7 @@ Whenever a translatable string is added or changed, regenerate the translation t
 ```bash
 #!/bin/sh
 VERSION=$(grep VERSION mcomix/constants.py | sed -e "s/VERSION = //" -e "s/'//g")
-MAINTAINER="https://sourceforge.net/projects/mcomix"
+MAINTAINER="https://github.com/twwn/mcomix/issues"
 
 xgettext -LPython -omcomix.pot -pmcomix/messages/ -cTRANSLATORS \
 	--from-code=utf-8 --package-name=MComix --package-version=${VERSION} \
@@ -75,7 +75,7 @@ python win32/build_msi.py
 Building the Chocolatey package
 -------------------------------
 
-The Chocolatey package does not carry MComix: it downloads the MSI installer from SourceForge and checks it against the checksum in `win32/tools/checksum.sha256`. So upload the installer first, and pack the checksum file written by the build of that same installer. The file is deliberately not kept in Git, since it describes one build of one version. With the [Chocolatey CLI](https://chocolatey.org/install), in MComix' root directory:
+The Chocolatey package does not carry MComix: it downloads the MSI installer from the GitHub release and checks it against the checksum in `win32/tools/checksum.sha256`. So publish the release first, and pack the checksum file written by the build of that same installer. The file is deliberately not kept in Git, since it describes one build of one version. With the [Chocolatey CLI](https://chocolatey.org/install), in MComix' root directory:
 
 ```bash
 choco pack win32/mcomix.nuspec --version <version> --out dist
@@ -87,13 +87,11 @@ Pushing needs an API key from a Chocolatey account with rights to the `mcomix` p
 Uploading a new release
 -----------------------
 
-In the list of files on MComix' SourceForge project page, create a folder named `MComix-<version>`, which is where the Chocolatey package downloads from, and upload `mcomix-<version>.tar.gz`, `mcomix-win64-<version>.zip` and `mcomix-win64-<version>.msi` into it. With the (i) button beside each file, make the MSI installer the default download for Windows, and the source archive the default for everything else. If the web form times out on the Windows packages, upload them with scp, following SourceForge's [SCP upload manual](https://sourceforge.net/p/forge/documentation/SCP/).
-
-Then post a news entry with the release's section of `ChangeLog.md`.
+On GitHub, draft a release from the tag the release commit carries, name it `MComix <version>`, and give it the release's section of `ChangeLog.md` as its notes. Attach `mcomix-<version>.tar.gz`, `mcomix-win64-<version>.zip` and `mcomix-win64-<version>.msi` to it; the Chocolatey package downloads the MSI from exactly that release, under the file name the build gives it.
 
 After a release
 ---------------
 
 Raise `VERSION` in `mcomix/constants.py` and append `-dev0`, so that anyone running MComix from Git can tell it is not a release.
 
-On SourceForge, start a milestone for the new version in the "Bugs" and "Support Requests" trackers, and close the old ones. The "Git" milestone always stays open. A milestone lets a bug report say which version the bug occurs in, or was fixed in.
+Open a milestone for the next version in the issue tracker and close the one just released, so that an issue can say which version the bug occurs in, or was fixed in.

@@ -24,7 +24,7 @@ class _AboutDialog(Gtk.AboutDialog):
         self.set_name(constants.APPNAME)
         self.set_program_name(constants.APPNAME)
         self.set_version(constants.VERSION)
-        self.set_website('https://sourceforge.net/p/mcomix/wiki/')
+        self.set_website('https://github.com/twwn/mcomix')
         self.set_copyright('Copyright © 2005-2026')
 
         icon_data = pkgutil.get_data('mcomix', 'images/mcomix.png')

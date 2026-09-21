@@ -1,7 +1,6 @@
 ﻿$ErrorActionPreference = 'Stop'
 
 $packageName = $env:ChocolateyPackageName
-$packageTitle = $env:ChocolateyPackageTitle
 $packageVersion = $env:ChocolateyPackageVersion
 
 # The checksum belongs to one build of one version, so it is not kept in
@@ -16,7 +15,7 @@ $packageArgs = @{
   packageName   = $packageName
   fileType      = 'msi'
   softwareName  = 'MComix'
-  url64bit      =  "https://sourceforge.net/projects/$packageName/files/$packageTitle-$packageVersion/$packageName-win64-$packageVersion.msi/download"
+  url64bit      =  "https://github.com/twwn/mcomix/releases/download/$packageVersion/$packageName-win64-$packageVersion.msi"
   checksum64    = (Get-Content $checksumPath -Raw).Trim()
   checksumType64=  'sha256'
   silentArgs    = "/qn /norestart /l*v `"$($env:TEMP)\$($packageName).$($env:chocolateyPackageVersion).MsiInstall.log`""
