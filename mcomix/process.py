@@ -136,13 +136,10 @@ if sys.platform == 'win32':
         """Start <cmd> on its own, in <workdir> if one is given, and
         return its process id.
 
-        This was written because subprocess.Popen called
-        CreateProcessA, which could not pass a path outside the ANSI
-        code page; Popen has called CreateProcessW since Python 3.0.
-        What still sets this apart is that the program is looked up
-        with find_executable() - MComix' own directory first, then the
-        working directory, then PATH, with '.exe' added - and started
-        with the console window it asks for and none of MComix'
+        What sets this apart from popen() is that the program is looked
+        up with find_executable() - MComix' own directory first, then
+        the working directory, then PATH, with '.exe' added - and
+        started with the console window it asks for and none of MComix'
         handles, where popen() hides the console and redirects the
         standard streams.
         """

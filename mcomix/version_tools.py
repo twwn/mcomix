@@ -1,11 +1,9 @@
 """Compare the version strings reported by the tools MComix probes for.
 
-This used to be packaging's LegacyVersion, which upstream removed in
-version 22.0, and for which a copy of packaging 21.0 was vendored. Only
-the plain dotted versions that mutool and PyMuPDF report have to be
-ordered, so a small natural-order comparison does the job without a
-dependency - and, unlike a strict PEP 440 parser, it cannot raise on an
-unexpected version string.
+Only the plain dotted versions that mutool and PyMuPDF report have to
+be ordered, so a small natural-order comparison does the job without a
+dependency - and, unlike a strict PEP 440 parser such as packaging's,
+it cannot raise on an unexpected version string.
 """
 
 import functools
