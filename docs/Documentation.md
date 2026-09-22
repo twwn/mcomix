@@ -77,7 +77,7 @@ Two pages change places with CTRL+SHIFT and a click: the first page clicked is m
 
 Pages can also be taken out in the main window. "Delete page", in the page's right-click menu, removes the page the menu was opened over, and "Edit &rarr; Undo" puts it back. CTRL and a click picks a page out, which is drawn outlined, and another such click puts it back; Delete then removes every page picked out, and the archive editor opens with them selected. The archive on disk is not touched until it is written. MComix offers to write it after any change to the pages - one removed, two swapped, one renamed - and when a book with pages still picked out is left; either offer can be answered for good, and taken back under "Prompts answered for good" in the preferences.
 
-A change that has not been written is offered again on the way out: closing the book, opening another over it and quitting all stop to ask whether to write the archive first, since closing is what throws the change away. The question is the one asked at the change itself, so an answer remembered there stands here as well, and a book whose changes have all been undone has nothing to ask about.
+A change that has not been written is offered again on the way out: closing the book, opening another over it and quitting all stop to ask whether to write the archive first, since closing is what throws the change away. The question is the one asked at the change itself, so an answer remembered there stands here as well, and a book whose changes have all been undone has nothing to ask about. Nor has one whose archive MComix has deleted, from the window or from the library: the changes go with it.
 
 ### The format a save is written in ###
 

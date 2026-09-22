@@ -706,9 +706,18 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
             # A file that has been deleted can never be opened again, so
             # the recent files forget it, as they do after the window's
             # own delete.
-            recent = self._library.main_window.uimanager.recent
+            main_window = self._library.main_window
             for path in gone:
-                recent.remove_path(path)
+                main_window.uimanager.recent.remove_path(path)
+            # The book on screen may be one of them, and whatever was
+            # waiting to be written into it went with its file: closing
+            # it is not to offer to write the archive back where it was
+            # just deleted from.  The window's own delete forgets the
+            # changes the same way.
+            open_book = main_window.filehandler.get_path_to_base()
+            if open_book is not None and os.path.abspath(open_book) in [
+                    os.path.abspath(path) for path in gone]:
+                main_window.file_actions.forget_changes()
             self._offer_to_remove_bookmarks(gone)
 
     def _offer_to_remove_bookmarks(self, paths: "Sequence[str]") -> None:

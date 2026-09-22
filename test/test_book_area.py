@@ -88,6 +88,23 @@ class _Recent:
         self.removed.append(path)
 
 
+class _OpenBook:
+
+    """Stands in for the main window's file handler and file actions:
+    the book it has open, and whether its unwritten changes were
+    forgotten."""
+
+    def __init__(self):
+        self.path = None
+        self.forgotten = False
+
+    def get_path_to_base(self):
+        return self.path
+
+    def forget_changes(self):
+        self.forgotten = True
+
+
 class _LibraryWindow(Gtk.Window):
 
     """A library that is a real window, which a dialog can be transient for."""
@@ -96,8 +113,10 @@ class _LibraryWindow(Gtk.Window):
         super().__init__()
         self.backend = _Backend()
         self.recent = _Recent()
+        self.open_book = _OpenBook()
         self.main_window = types.SimpleNamespace(
-            uimanager=types.SimpleNamespace(recent=self.recent))
+            uimanager=types.SimpleNamespace(recent=self.recent),
+            filehandler=self.open_book, file_actions=self.open_book)
         self.control_area = _ControlArea()
         #: What set_status_message() was told, in order.
         self.messages = []
@@ -495,6 +514,41 @@ class DeleteFromDiskTest(MComixTest):
         self.area._remove_answered(Response.YES)
 
         self.assertEqual([path], self.library.recent.removed)
+
+    def test_deleting_the_open_book_forgets_its_unwritten_changes(self):
+        """Otherwise closing it offers to write the archive back where
+        it was just deleted from, and Enter there saves."""
+        path = os.path.join(self.tmp_dir, 'deletable.cbz')
+        with open(path, 'wb') as handle:
+            handle.write(b'not really a book')
+        self.area._covers.set_items([book_area._BookItem(_Book(1, path))])
+        self.area._covers.selection.select_all()
+        self.library.open_book.path = path
+
+        self.area._remove_answered(Response.YES)
+
+        self.assertTrue(self.library.open_book.forgotten)
+
+    def test_deleting_another_book_keeps_the_open_ones_changes(self):
+        path = os.path.join(self.tmp_dir, 'deletable.cbz')
+        with open(path, 'wb') as handle:
+            handle.write(b'not really a book')
+        self.area._covers.set_items([book_area._BookItem(_Book(1, path))])
+        self.area._covers.selection.select_all()
+        self.library.open_book.path = os.path.join(self.tmp_dir, 'open.cbz')
+
+        self.area._remove_answered(Response.YES)
+
+        self.assertFalse(self.library.open_book.forgotten)
+
+    def test_an_open_book_that_would_not_go_keeps_its_changes(self):
+        """The fixture's path is not a file, so it is not deleted, and
+        the changes still have an archive to go into."""
+        self.library.open_book.path = '/books/1.cbz'
+
+        self.area._remove_answered(Response.YES)
+
+        self.assertFalse(self.library.open_book.forgotten)
 
     def test_a_book_that_would_not_go_stays_in_the_recent_files(self):
         """The fixture's path is not a file, so it is not deleted."""
