@@ -31,7 +31,7 @@ Preparing a new release
 -----------------------
 
 1. Give the release its section in `ChangeLog.md`, with a `## Release date:` line below the heading.
-2. Set `VERSION` in `mcomix/constants.py` to the release's year and month, such as `26.10` for October 2026.
+2. Set `VERSION` in `mcomix/constants.py` to the release's year and month, such as `26.10` for October 2026. A further release in the same month adds a number counting from 1, as `26.10.1`.
 3. Regenerate the translation files as above. The template's header carries the version.
 4. Add the release to `share/metainfo/mcomix.metainfo.xml`.
 5. Commit, with a message naming the version, such as "MComix 26.10", and create an [annotated tag](https://git-scm.com/book/en/v2/Git-Basics-Tagging) for it: `git tag -a 26.10 -m "Version 26.10"`.
