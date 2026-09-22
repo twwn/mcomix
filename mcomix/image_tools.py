@@ -629,7 +629,8 @@ def load_pixbuf(path: str) -> GdkPixbuf.Pixbuf:
     # the files gdk-pixbuf goes on to fail to load, handing them to PIL.
     def by_pil() -> GdkPixbuf.Pixbuf:
         # Whether or how animations work through PIL is undefined.
-        return pil_to_pixbuf(Image.open(path), keep_orientation=True)
+        return pil_to_pixbuf(_in_srgb(Image.open(path)),
+                             keep_orientation=True)
 
     pixbuf = _first_provider_that_loads(
         ((constants.IMAGEIO_GDKPIXBUF,
@@ -739,7 +740,7 @@ def load_pixbuf_data(imgdata: bytes) -> GdkPixbuf.Pixbuf:
     return _first_provider_that_loads(
         ((constants.IMAGEIO_GDKPIXBUF, by_gdk_pixbuf),
          (constants.IMAGEIO_PIL,
-          lambda: pil_to_pixbuf(Image.open(BytesIO(imgdata)),
+          lambda: pil_to_pixbuf(_in_srgb(Image.open(BytesIO(imgdata))),
                                 keep_orientation=True))),
         '%s bytes' % len(imgdata))
 

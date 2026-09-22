@@ -5,7 +5,7 @@ import tempfile
 import unittest
 import unittest.mock
 
-from gi.repository import Gdk, GdkPixbuf
+from gi.repository import Gdk, GdkPixbuf, GLib
 
 from collections import namedtuple
 from PIL import Image, ImageDraw
@@ -404,6 +404,40 @@ class ImageToolsTest(MComixTest):
         red = tuple(pixbuf.get_pixels()[:3])
         for got, want in zip(red, expected):
             self.assertAlmostEqual(got, want, delta=3, msg=(red, expected))
+
+    @unittest.skipUnless(os.path.isfile(_ADOBE_RGB_PROFILE),
+                         'needs an Adobe RGB colour profile')
+    def test_a_page_pil_reads_in_gdk_pixbufs_place_comes_out_in_srgb(self):
+        """A page gdk-pixbuf will not read is read by PIL, which hands
+        over the stored numbers where glycin would have converted them;
+        the same page would then look different depending on which of
+        the two read it."""
+        from PIL import ImageCms
+        with open(_ADOBE_RGB_PROFILE, 'rb') as fp:
+            profile = fp.read()
+        path = os.path.join(self.tmp_dir, 'adobe-rgb.jpg')
+        Image.new('RGB', (8, 8), (200, 30, 30)).save(
+            path, quality=98, icc_profile=profile)
+        with open(path, 'rb') as fp:
+            data = fp.read()
+        expected = ImageCms.profileToProfile(
+            Image.new('RGB', (1, 1), (200, 30, 30)), BytesIO(profile),
+            ImageCms.createProfile('sRGB')).getpixel((0, 0))
+
+        def refuse(*args):
+            raise GLib.Error('refused')
+
+        with unittest.mock.patch.object(GdkPixbuf.Pixbuf, 'new_from_file',
+                                        refuse), \
+                unittest.mock.patch.object(GdkPixbuf, 'PixbufLoader',
+                                           unittest.mock.Mock(
+                                               side_effect=GLib.Error('no'))):
+            for pixbuf in (image_tools.load_pixbuf(path),
+                           image_tools.load_pixbuf_data(data)):
+                red = tuple(pixbuf.get_pixels()[:3])
+                for got, want in zip(red, expected):
+                    self.assertAlmostEqual(got, want, delta=3,
+                                           msg=(red, expected))
 
     # Expose a rounding error bug in load_pixbuf_size.
     def test_load_pixbuf_rounding_error(self):
