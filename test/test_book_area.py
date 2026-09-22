@@ -4,6 +4,7 @@ import contextlib
 import datetime
 import os
 import sqlite3
+import types
 import unittest.mock
 import warnings
 
@@ -62,6 +63,18 @@ class _Library:
     backend = _Backend()
 
 
+class _Recent:
+
+    """Stands in for the recent files, remembering what they forgot."""
+
+    def __init__(self):
+        #: The paths remove_path() was given, in order.
+        self.removed = []
+
+    def remove_path(self, path):
+        self.removed.append(path)
+
+
 class _LibraryWindow(Gtk.Window):
 
     """A library that is a real window, which a dialog can be transient for."""
@@ -69,6 +82,9 @@ class _LibraryWindow(Gtk.Window):
     def __init__(self):
         super().__init__()
         self.backend = _Backend()
+        self.recent = _Recent()
+        self.main_window = types.SimpleNamespace(
+            uimanager=types.SimpleNamespace(recent=self.recent))
         #: What set_status_message() was told, in order.
         self.messages = []
 
@@ -451,6 +467,25 @@ class DeleteFromDiskTest(MComixTest):
         self.assertTrue(all('could not be deleted' not in message
                             for message in self.library.messages),
                         self.library.messages)
+
+    def test_a_deleted_book_leaves_the_recent_files(self):
+        """The window's own delete forgets the path there; the library
+        deleted the file and the recent files went on offering it."""
+        path = os.path.join(self.tmp_dir, 'deletable.cbz')
+        with open(path, 'wb') as handle:
+            handle.write(b'not really a book')
+        self.area._covers.set_items([book_area._BookItem(_Book(1, path))])
+        self.area._covers.selection.select_all()
+
+        self.area._remove_answered(Response.YES)
+
+        self.assertEqual([path], self.library.recent.removed)
+
+    def test_a_book_that_would_not_go_stays_in_the_recent_files(self):
+        """The fixture's path is not a file, so it is not deleted."""
+        self.area._remove_answered(Response.YES)
+
+        self.assertEqual([], self.library.recent.removed)
 
 
 class RemovalTransactionTest(MComixTest):

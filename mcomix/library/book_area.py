@@ -703,6 +703,12 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
                 self._library.set_status_message(message % len(failed))
 
             gone = [path for path in paths if path not in failed]
+            # A file that has been deleted can never be opened again, so
+            # the recent files forget it, as they do after the window's
+            # own delete.
+            recent = self._library.main_window.uimanager.recent
+            for path in gone:
+                recent.remove_path(path)
             self._offer_to_remove_bookmarks(gone)
 
     def _offer_to_remove_bookmarks(self, paths: "Sequence[str]") -> None:
