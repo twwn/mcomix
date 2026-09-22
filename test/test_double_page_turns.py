@@ -10,6 +10,7 @@ ones read 1+2, 3, 4, 5 forward and 5, 4, 2+3, 1+2 back.
 
 import os
 import shutil
+import unittest.mock
 import zipfile
 
 from . import MComixTest, get_testfile_path, pump, wait_for
@@ -113,5 +114,34 @@ class DoublePageTurnsTest(MComixTest):
         self.assertEqual(self._turn(+1), '3+4')
         self.assertEqual(self._turn(+1, single_step=True), '4+5')
         self.assertEqual(self._turn(-1), '2+3')
+
+    def test_back_before_the_pages_are_extracted_pairs_the_two_before(self):
+        """The pairing forward needs the size of every page back to the
+        last wide one; with one of them not out of the archive yet, the
+        two pages before the current one are paired where they can be,
+        as they always were."""
+        self._open('NNNWWN')
+        handler = self.window.imagehandler
+        self.window.set_page(4)
+        pump()
+        available = handler.page_is_available
+
+        def not_page_one(page=None):
+            return page != 1 and available(page)
+
+        with unittest.mock.patch.object(handler, 'page_is_available',
+                                        not_page_one):
+            self.assertEqual(self.window._previous_spread(4), 2)
+
+    def test_back_past_a_wide_page_after_a_single_step_stops_after_it(self):
+        """After a single step the spread before the pages on screen
+        would reach into them, and the page before that is wide: the
+        turn back lands on the page after the wide one rather than
+        skipping it."""
+        self._open('NWNNN')
+        self.assertEqual(self._turn(+1), '2')
+        self.assertEqual(self._turn(+1), '3+4')
+        self.assertEqual(self._turn(+1, single_step=True), '4+5')
+        self.assertEqual(self.window._previous_spread(4), 3)
 
 # vim: expandtab:sw=4:ts=4
