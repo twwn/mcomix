@@ -31,11 +31,19 @@ class _StubFileHandler:
         pass
 
 
+class _StubImageHandler:
+
+    def get_current_page(self):
+        return 0
+
+
 class _StubWindow(Gtk.Window):
 
     def __init__(self):
         super().__init__()
         self.filehandler = _StubFileHandler()
+        # Selecting a command tests it, which reads the page on screen.
+        self.imagehandler = _StubImageHandler()
 
     @callback.Callback
     def page_changed(self):

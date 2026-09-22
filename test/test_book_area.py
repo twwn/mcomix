@@ -57,6 +57,19 @@ class _Backend:
     def remove_book(self, book):
         self.removed.append(book)
 
+    def get_book_by_id(self, book):
+        # No book is found, so a cover is drawn as the missing image.
+        return None
+
+
+class _ControlArea:
+
+    """Stands in for the pane the cover area tells of every change of
+    selection."""
+
+    def update_info(self, selected):
+        pass
+
 
 class _Library:
 
@@ -85,6 +98,7 @@ class _LibraryWindow(Gtk.Window):
         self.recent = _Recent()
         self.main_window = types.SimpleNamespace(
             uimanager=types.SimpleNamespace(recent=self.recent))
+        self.control_area = _ControlArea()
         #: What set_status_message() was told, in order.
         self.messages = []
 
@@ -341,6 +355,7 @@ class _RecordingLibrary:
 
     def __init__(self, refuse=False):
         self.backend = _RecordingBackend(refuse)
+        self.control_area = _ControlArea()
         self.messages = []
         self.collection_area = self
 
@@ -550,6 +565,7 @@ class _CoverlessLibrary:
 
     def __init__(self):
         self.backend = _CoverlessBackend()
+        self.control_area = _ControlArea()
 
 
 class DragIconTest(MComixTest):
@@ -621,6 +637,7 @@ class _PathLibrary:
 
     def __init__(self):
         self.backend = _PathBackend()
+        self.control_area = _ControlArea()
 
 
 class MiddleClickTest(MComixTest):
