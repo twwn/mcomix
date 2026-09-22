@@ -513,8 +513,26 @@ class ThumbnailGridView(Gtk.GridView, _ThumbnailViewBase):
         if self.about_to_reorder is not None:
             self.about_to_reorder()
         item = cast(ThumbnailItem, self.store.get_item(source))
+        # The entry that was dragged or clicked holds the keyboard focus,
+        # and taking it out of the model makes GTK focus another entry
+        # and scroll the view back to the first one when it next lays
+        # the view out.  The focus goes to the entry where it has landed,
+        # without scrolling, and the view is put back where it was once
+        # that layout is done: the reader dropped the entry on a row
+        # they could see, and the view stays on that row.
+        adjustment = self.get_vadjustment()
+        value = adjustment.get_value() if adjustment is not None else None
         self.store.remove(source)
         self.store.insert(destination, item)
+        unscrolled = Gtk.ScrollInfo.new()
+        unscrolled.set_enable_horizontal(False)
+        unscrolled.set_enable_vertical(False)
+        self.scroll_to(destination, Gtk.ListScrollFlags.FOCUS, unscrolled)
+        if adjustment is not None and value is not None:
+            def restore() -> bool:
+                adjustment.set_value(value)
+                return GLib.SOURCE_REMOVE
+            GLib.idle_add(restore)
         return True
 
     # -- Selection --------------------------------------------------------

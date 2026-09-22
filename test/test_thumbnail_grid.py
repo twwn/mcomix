@@ -7,6 +7,8 @@ and reordering by dragging, which is a drag source and a drop target on
 every cell.
 """
 
+import time
+
 from gi.repository import GdkPixbuf, Gtk
 
 from . import MComixTest, pump
@@ -214,5 +216,78 @@ class ThumbnailGridViewTest(MComixTest):
         self.view.selection.select_item(1, False)
         self.assertEqual([item.uid for item in self.view.get_selected_items()],
                          ['five', 'four'])
+
+
+class MovingAScrolledEntryTest(MComixTest):
+
+    """Moving the entry that has the focus, far down a long grid.
+
+    A click or a drag gives the entry under the pointer the keyboard
+    focus, and taking the focused entry out of the model made GTK focus
+    another and scroll back to the top: every page moved in the archive
+    editor threw the view back to page one.
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.view = thumbnail_list.ThumbnailGridView()
+        self.view.generate_thumbnail = lambda uid: None
+        self.view.set_thumbnail_size(48)
+        self.view.set_reorderable(True)
+        scroller = Gtk.ScrolledWindow()
+        scroller.set_child(self.view)
+        self.window = Gtk.Window()
+        self.window.set_default_size(300, 300)
+        self.window.set_child(scroller)
+        self.window.present()
+        self.view.set_items(thumbnail_list.ThumbnailItem(uid)
+                            for uid in range(200))
+        self._settle()
+        self.adjustment = scroller.get_vadjustment()
+        self.adjustment.set_value(self.adjustment.get_upper() / 2)
+        self._settle()
+
+    def tearDown(self):
+        self.view.release()
+        self.window.destroy()
+        super().tearDown()
+
+    @staticmethod
+    def _settle():
+        # The scroll happens when the view is next laid out, which is a
+        # frame away rather than an idle one.
+        for _ in range(25):
+            pump()
+            time.sleep(0.02)
+
+    def _focused_cell(self):
+        cells = [cell for cell in self.view._each_cell()
+                 if cell.get_mapped()
+                 and cell.compute_bounds(self.window)[1].get_y() > 0]
+        cell = min(cells, key=lambda cell: cell.position)
+        # The cell's list item is what a click focuses.
+        cell.get_parent().grab_focus()
+        return cell.position
+
+    def test_the_view_stays_where_the_entry_was_dropped(self):
+        position = self._focused_cell()
+        before = self.adjustment.get_value()
+
+        self.assertTrue(self.view.move_item(position, position + 4))
+        self._settle()
+
+        self.assertEqual(self.adjustment.get_value(), before)
+
+    def test_the_moved_entry_keeps_the_focus(self):
+        position = self._focused_cell()
+        moved = self.view.get_item(position)
+
+        self.view.move_item(position, position + 4)
+        self._settle()
+
+        focused = self.window.get_focus()
+        self.assertIsNotNone(focused)
+        self.assertIs(self.view.get_item(focused.get_first_child().position),
+                      moved)
 
 # vim: expandtab:sw=4:ts=4
