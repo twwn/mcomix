@@ -55,6 +55,7 @@ import atexit
 import copy
 import shutil
 import tempfile
+import traceback
 
 _TMP_ROOT = os.path.join(os.path.dirname(__file__), 'tmp')
 os.makedirs(_TMP_ROOT, exist_ok=True)
@@ -218,6 +219,14 @@ class MComixTest(unittest.TestCase):
         # closed from addCleanup wrote the reader's own bookmarks and
         # file information into their data directory.
         self.addCleanup(self._restore)
+        # PyGObject prints an exception raised in a signal handler or a
+        # main loop callback and carries on, so the test whose code
+        # raised it passed.  Collect them instead, and check once the
+        # cleanups below have pumped the main loop for the last time.
+        self._callback_errors = []
+        self.addCleanup(setattr, sys, 'excepthook', sys.excepthook)
+        sys.excepthook = self._callback_raised
+        self.addCleanup(self._nothing_raised_in_a_callback)
         # Registered after _restore so that it runs before it, once the
         # test's own tearDown and cleanups have closed what they opened.
         self.addCleanup(self._no_window_left_on_screen)
@@ -295,6 +304,17 @@ class MComixTest(unittest.TestCase):
         if left:
             self.fail('left on screen: %s'
                       % ', '.join(type(window).__name__ for window in left))
+
+    def _callback_raised(self, kind, value, trace):
+        """Keep what PyGObject would have printed and gone on from."""
+        self._callback_errors.append((kind, value, trace))
+
+    def _nothing_raised_in_a_callback(self):
+        """Fail the test during which a callback raised an exception."""
+        if self._callback_errors:
+            self.fail('raised in a callback:\n' + ''.join(
+                ''.join(traceback.format_exception(kind, value, trace))
+                for kind, value, trace in self._callback_errors))
 
     def _no_library_left_open(self):
         """Fail the test that leaves the library database open.
