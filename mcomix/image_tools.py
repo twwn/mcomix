@@ -620,6 +620,14 @@ def load_pixbuf_size(path: str, width: int, height: int) -> GdkPixbuf.Pixbuf:
     cheaper than loading the whole picture and scaling it afterwards,
     and the result is fitted again at the end because neither of them
     promises the exact size asked for.
+
+    A JPEG goes to PIL first.  Its draft() lets libjpeg decode at an
+    eighth, a quarter or a half of the size, which gdk-pixbuf does too,
+    but where gdk-pixbuf's loaders run sandboxed each call also pays
+    for the sandbox: a thumbnail of a 1200x1800 page took 0.8 ms
+    through PIL against 9-11 ms through gdk-pixbuf.  Everything else
+    goes to gdk-pixbuf first, since draft() does nothing for a PNG and
+    PIL then decodes the whole picture.
     """
     # A box with a zero side asks gdk-pixbuf for a scale it refuses -
     # "assertion 'width > 0 || width == -1' failed" - and then makes PIL
@@ -663,12 +671,23 @@ def load_pixbuf_size(path: str, width: int, height: int) -> GdkPixbuf.Pixbuf:
         image.draft(None, (width, height))
         return pil_to_pixbuf(image, keep_orientation=True)
 
+    attempts = [(constants.IMAGEIO_GDKPIXBUF, by_gdk_pixbuf),
+                (constants.IMAGEIO_PIL, by_pil)]
+    if image_format == 'JPEG':
+        attempts.reverse()
     pixbuf = _first_provider_that_loads(
-        ((constants.IMAGEIO_GDKPIXBUF, by_gdk_pixbuf),
-         (constants.IMAGEIO_PIL, by_pil)),
-        '%s at size %s' % (path, (width, height)))
-    return fit_in_rectangle(pixbuf, width, height,
-                            scaling_quality=GdkPixbuf.InterpType.BILINEAR)
+        attempts, '%s at size %s' % (path, (width, height)))
+    fitted = fit_in_rectangle(pixbuf, width, height,
+                              scaling_quality=GdkPixbuf.InterpType.BILINEAR)
+    if fitted is not pixbuf:
+        # Scaling makes a new pixbuf, which knows nothing of the Exif
+        # orientation the loader found; PIL's draft() nearly always
+        # leaves a picture that still has to be scaled.
+        orientation = getattr(pixbuf, 'orientation', None) \
+            or pixbuf.get_option('orientation')
+        if orientation is not None:
+            setattr(fitted, 'orientation', orientation)
+    return fitted
 
 
 def load_pixbuf_data(imgdata: bytes) -> GdkPixbuf.Pixbuf:
