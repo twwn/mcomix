@@ -985,9 +985,8 @@ class MainWindow(Gtk.Window):
         """Keep the rotation and flips from one page to the next, or not.
 
         The action's state is the answer, as it is for every toggle
-        here; this used to turn the preference over instead, which only
-        agreed with the action because the window turned it off first
-        to have the action turn it back on at startup.
+        here, rather than the preference turned over: the two agree
+        only for as long as nothing else sets either.
         """
         prefs['keep transformation'] = toggleaction.get_active()
 

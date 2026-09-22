@@ -109,10 +109,9 @@ class OpenWithMenu:
     def _dialog_closed(self, *args: object) -> None:
         """Forget the editor once it has taken itself down.
 
-        This used to be bound to the editor's 'response' and destroy it,
-        which took the window away before an editor with unsaved changes
-        had finished asking about them.  The editor closes itself now
-        and says when it has.
+        The editor closes itself and says when it has.  Destroying it on
+        its 'response' would take the window away before an editor with
+        unsaved changes had finished asking about them.
         """
         global _openwith_edit_diag
         _openwith_edit_diag = None

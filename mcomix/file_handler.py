@@ -685,9 +685,6 @@ class FileHandler:
     def get_base_filename(self) -> str:
         """Return the filename of the current base (archive filename or
         directory name), or the empty string where there is no base yet.
-
-        basename() used to be handed whatever get_path_to_base()
-        answered, which is None when no file is open, and raised on it.
         """
         base = self.get_path_to_base()
         return '' if base is None else os.path.basename(base)

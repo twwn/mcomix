@@ -70,10 +70,9 @@ class ImageHandler:
     def _cache_pages(self) -> int:
         """How many pages to keep in cache, as the preferences say now.
 
-        This was read once, when the handler was built, so changing the
-        preference did nothing at all until the book was closed - even
-        though the preferences dialog writes the new value and asks the
-        handler to cache again in the same breath.
+        Read every time rather than once, when the handler is built: the
+        preferences dialog writes a new value and asks the handler to
+        cache again in the same breath.
         """
         return prefs['max pages to cache']
 

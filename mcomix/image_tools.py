@@ -205,9 +205,9 @@ def fit_in_rectangle(src: GdkPixbuf.Pixbuf, width: int, height: int,
     rotation %= 360
 
     if width < 0 and height < 0:
-        # Unbounded in both directions is not a rectangle.  It used to
-        # bound the width and leave the height, which max() below then
-        # turned into one pixel: a page scaled to a line, quietly.
+        # Unbounded in both directions is not a rectangle.  Bounding
+        # only one side would leave the other to max() below, which
+        # makes one pixel of it: a page quietly scaled to a line.
         raise ValueError('width and height cannot both be unbounded')
 
     # "Unbounded" really means "bounded to RENDER_SIZE_LIMIT" - for simplicity.

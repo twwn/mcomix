@@ -607,12 +607,9 @@ class OpenWithEditor(Dialog):
     def _response(self, dialog: "OpenWithEditor", response: int) -> None:
         """Answer the editor: Save saves, anything else offers to.
 
-        Every way out ends in close_editor(), and the editor is still on
-        screen while the question about unsaved changes is asked.  The
-        menu used to destroy it the moment any answer came, which meant
-        the reader was asked whether to save a list that had already
-        gone: the prompt stood over the window it belonged to, and the
-        window was not there any more.
+        Every way out ends in close_editor(), and the editor stays on
+        screen while the question about unsaved changes is asked, so
+        that the prompt stands over the list it asks about.
         """
         if response == Response.ACCEPT:
             # The Save button is only enabled if all commands are valid

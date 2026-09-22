@@ -40,10 +40,9 @@ LARGEST_PAGE_GAP = 100
 def _sort_row(first: Gtk.Widget, second: Gtk.Widget) -> Gtk.Box:
     """A row of two boxes, ending where the page ends.
 
-    They used to take whatever room the row had, so a row whose first
-    box held shorter words ended short of the one above it.  Keeping
-    them to their own width and hanging the row from the right lines the
-    two up.
+    Each box keeps to its own width and the row hangs from the right,
+    so that a row whose first box holds shorter words still ends where
+    the one above it does.
     """
     row = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
     row.set_halign(Gtk.Align.END)

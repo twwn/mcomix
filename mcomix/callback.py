@@ -34,10 +34,7 @@ class CallbackList[T, **P, R]:
             # on the answer in that case, so there is none to give.
             def in_main_thread() -> bool:
                 self(*args, **kwargs)
-                # Remove this function from the idle queue.  This was a
-                # bare 0, which GLib reads the same way, but the name
-                # says which of the two answers an idle source can give
-                # is meant.
+                # Remove this function from the idle queue.
                 return GLib.SOURCE_REMOVE
 
             GLib.idle_add(in_main_thread)

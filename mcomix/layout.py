@@ -321,9 +321,8 @@ class FiniteLayout:  # 2D only
 def create_dummy_layout() -> FiniteLayout:
     """A one-page layout of a single pixel, for a window with no book
     open in it."""
-    # One Box, so one flag saying whether it was distorted.  This was a
-    # tuple holding a pair of them, which is the shape of nothing the
-    # layout has: get_content_distorted() answers one flag per Box.
+    # One Box, so one flag saying whether it was distorted:
+    # get_content_distorted() answers one flag per Box.
     return FiniteLayout(((1, 1),), (False,), (1, 1), (1, 1), 0, False, 0, 0)
 
 

@@ -230,10 +230,10 @@ class WatchListDialog(Dialog):
                      *args: object) -> None:
         """Scan now scans and stays open; anything else closes.
 
-        Scan now used to close the dialog as well, which took the list
-        away from a reader who had pressed it to see what the directory
-        they had just added held.  The scan it starts covers every edit
-        made so far, so the dialog no longer owes one when it closes.
+        Scan now leaves the list on screen for a reader who pressed it
+        to see what the directory they had just added holds.  The scan
+        it starts covers every edit made so far, so the dialog does not
+        owe one when it closes.
 
         Closing counts whichever way it was done: the edits are written
         to the database as they are made, so escape and the window's own

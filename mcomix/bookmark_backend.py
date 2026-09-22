@@ -269,11 +269,10 @@ class _BookmarksStore:
         """Whether the store's file has been written since it was read.
 
         A file that is not there has not been written by anyone, so the
-        answer is no.  It used to be yes, which made get_bookmarks()
-        re-read nothing over the bookmarks it was holding: deleting the
-        file under a running MComix emptied its list, and the next
-        bookmark added wrote that empty list back over what the reader
-        had.
+        answer is no.  Were it yes, get_bookmarks() would re-read nothing
+        over the bookmarks it holds: deleting the file under a running
+        MComix would empty its list, and the next bookmark added would
+        write that empty list back over what the reader had.
         """
         path = constants.BOOKMARK_PICKLE_PATH
         if not os.path.isfile(path):
