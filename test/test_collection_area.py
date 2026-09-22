@@ -255,7 +255,11 @@ class CollectionAreaTest(MComixTest):
             self.assertFalse(self.area._collection_menu.get_visible())
             self.assertEqual(Gdk.EVENT_STOP,
                              self.area._key_press(None, keyval, 0, state))
-            pump()
+            # Read before the main loop turns: popup() shows the menu at
+            # once, and under xdist, where every worker shares one X
+            # server, it has been found taken down again after a pump -
+            # most likely by a pointer grab another worker's popover
+            # held - though nothing here had failed.
             self.assertTrue(self.area._collection_menu.get_visible(),
                             'the menu did not open for %s'
                             % Gdk.keyval_name(keyval))
