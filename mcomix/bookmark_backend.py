@@ -107,11 +107,10 @@ class _BookmarksStore:
     def update_path(self, old_path: str, new_path: str) -> None:
         """Follow a book that has been moved to <new_path>.
 
-        A bookmark holds the path of the file it marks, so a book moved
-        while it was bookmarked left the bookmark pointing at a file
-        that is no longer there, and opening it said so.  The library
-        and the store of last read pages are brought forward the same
-        way when a book moves.
+        A bookmark holds the path of the file it marks, and one left at
+        the old path would point at a file that is not there.  The
+        library and the store of last read pages are brought forward the
+        same way when a book moves.
         """
         for bookmark in self.bookmarks_for_path(old_path):
             name, _path, page, numpages, archive_type, added = bookmark.pack()

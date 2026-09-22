@@ -134,9 +134,8 @@ class OnScreenDisplay:
                   rect: tuple[int, int, int, int]) -> None:
         """Draw the text of <layout> in white on a black box at <rect>."""
 
-        # There is no window to paint into any more, and no damage to
-        # work out: the canvas draws the OSD over the pages, and cairo
-        # is still what draws it - a snapshot hands one out.
+        # The canvas draws the OSD over the pages, with cairo from the
+        # snapshot, and works out for itself what that damages.
         def draw(snapshot: Gtk.Snapshot) -> None:
             bounds = Graphene.Rect()
             bounds.init(*rect)

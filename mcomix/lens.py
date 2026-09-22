@@ -103,8 +103,8 @@ class MagnifyingLens:
         pixbuf = self._get_lens_pixbuf(x, y, lens_size, border_size,
                                        (x - rectangle[0], y - rectangle[1]))
 
-        # There is no window to paint into any more: the canvas draws the
-        # lens over the pages, and works out for itself what that damages.
+        # The canvas draws the lens over the pages, and works out for
+        # itself what that damages.
         texture = image_tools.pixbuf_to_texture(pixbuf)
         bounds = Graphene.Rect()
         bounds.init(*rectangle)

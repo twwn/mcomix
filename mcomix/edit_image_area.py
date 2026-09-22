@@ -283,8 +283,9 @@ class _ImageArea(Gtk.ScrolledWindow, widgets.Releasable):
         collected: GTK 4 no longer disposes the widgets of a destroyed
         window, and the Python handlers they hold keep the dialog alive.
         callback.CallbackList's weak reference to this area never dies,
-        and the entries, each with its thumbnail, stayed with it - every
-        editor opened kept a thumbnail of every page it had shown.
+        and the entries, each with its thumbnail, would stay with it:
+        every editor opened would keep a thumbnail of every page it had
+        shown.
         """
         self._window.imagehandler.page_available -= self._on_page_available
         self._grid.clear()
