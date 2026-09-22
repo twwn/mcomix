@@ -10,7 +10,7 @@ import shutil
 import unittest.mock
 import zipfile
 
-from gi.repository import Gdk, Gtk
+from gi.repository import Gdk, Gio, Gtk
 
 from . import MComixTest, get_testfile_path, pump, wait_for
 
@@ -870,6 +870,40 @@ class EditArchiveDialogTest(MComixTest):
                                                 lambda found=found: found):
                     self.assertEqual(self.dialog._save_format(),
                                      (archive_type, '.zip'))
+
+    def test_the_question_before_overwriting_takes_clicks(self):
+        """The editor is modal, and its Save as chooser sits under its
+        grab.  The question asked before a file is replaced was put to
+        the main window, not modal: it was drawn, but a click on OK went
+        nowhere and the archive was never written.  It has to belong to
+        the chooser and be modal itself to be answerable."""
+        self.assertTrue(self.dialog.get_modal())
+        target = os.path.join(self.tmp_dir, 'taken.cbz')
+        with open(target, 'wb') as handle:
+            handle.write(b'already here')
+        packed = []
+        with unittest.mock.patch.object(self.dialog, '_pack_archive',
+                                        packed.append):
+            self.dialog._response(self.dialog, constants.RESPONSE_SAVE_AS)
+            pump()
+            chooser = self._chooser()
+            chooser.filechooser.set_file(Gio.File.new_for_path(target))
+            wait_for(lambda: widgets.chooser_paths(chooser.filechooser)
+                     == [target], seconds=5)
+            chooser.response(Response.OK)
+            pump()
+            questions = [window for window in Gtk.Window.list_toplevels()
+                         if isinstance(window, message_dialog.MessageDialog)
+                         and window.get_visible()]
+            self.assertEqual(len(questions), 1, 'nothing asked')
+            question = questions[0]
+            self.assertIs(question.get_transient_for(), chooser)
+            self.assertTrue(question.get_modal())
+            self.assertEqual(packed, [], 'written before the answer')
+
+            question.emit('response', Response.OK)
+            pump()
+        self.assertEqual(packed, [target])
 
     def test_save_as_opens_a_chooser_saying_what_it_writes(self):
         self.dialog._response(self.dialog, constants.RESPONSE_SAVE_AS)

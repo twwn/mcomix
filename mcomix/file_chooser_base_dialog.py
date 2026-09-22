@@ -596,8 +596,13 @@ class _BaseFileChooserDialog(Dialog):
                     not os.path.isdir(first_path) and
                     os.path.exists(first_path)):
 
+                # Over the chooser and modal, like the chooser itself:
+                # a chooser opened from a modal window - the archive
+                # editor's Save as - sits under that window's grab, and
+                # a question put to the main window instead would be
+                # drawn but take no clicks.
                 overwrite_dialog = message_dialog.MessageDialog(
-                    None, buttons=Gtk.ButtonsType.OK_CANCEL)
+                    self, modal=True, buttons=Gtk.ButtonsType.OK_CANCEL)
                 overwrite_dialog.set_text(
                     _("A file named '%s' already exists. Do you want to replace it?")
                     % os.path.basename(first_path),
