@@ -58,7 +58,7 @@ class EditArchiveDialogTest(MComixTest):
                           SimpleFileChooserDialog):
                 window.destroy()
         self.dialog.destroy()
-        edit_dialog._close_dialog()
+        edit_dialog.close_dialog()
         self.window.terminate_program()
         self.window.destroy()
         main.set_main_window(None)
@@ -971,7 +971,7 @@ class SavedArchiveContentsTest(MComixTest):
 
     def tearDown(self):
         self.dialog.destroy()
-        edit_dialog._close_dialog()
+        edit_dialog.close_dialog()
         self.window.terminate_program()
         self.window.destroy()
         main.set_main_window(None)

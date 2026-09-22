@@ -244,7 +244,7 @@ class _EditArchiveDialog(Dialog):
             self._window.cursor_handler.set_busy(False)
 
         if saved:
-            _close_dialog()
+            close_dialog()
             return
 
         dialog = message_dialog.MessageDialog(
@@ -387,7 +387,7 @@ class _EditArchiveDialog(Dialog):
             self._handed_over = self._contents()
 
         else:
-            _close_dialog()
+            close_dialog()
 
     def destroy(self) -> None:
         # What is picked out here is picked out in the window when the
@@ -412,7 +412,7 @@ def open_dialog(action: Gio.SimpleAction, window: "main.MainWindow") -> None:
         _dialog.present()
 
 
-def _close_dialog(*args: object) -> None:
+def close_dialog(*args: object) -> None:
     global _dialog
 
     if _dialog is not None:

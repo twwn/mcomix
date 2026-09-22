@@ -1541,7 +1541,7 @@ class MainWindow(Gtk.Window):
         # the same reason - it is asked about before the quit, and a
         # question raised from here would never be answered.
         self.file_actions.forget_changes()
-        edit_dialog._close_dialog()
+        edit_dialog.close_dialog()
         self.filehandler.close_file()
         library = main_dialog.get_dialog()
         if library is not None:
