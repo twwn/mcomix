@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import os
 import pathlib
-import re
 import shutil
 import string
 import subprocess
@@ -12,6 +11,10 @@ import zipfile
 sys.path.append(str(pathlib.Path(__file__).parent.parent))
 
 from mcomix import constants
+
+# The installer's builder beside this file, which reads the version the
+# same way for WiX.
+import build_msi
 
 """ Wrapper for pyinstaller, to compensate some shortcomings of the build process.
 
@@ -85,14 +88,14 @@ def prepare_version_file() -> None:
     with open('win32/version_file.template') as fp:
         tmpl = string.Template(fp.read())
 
-    version_match = re.search(r"^(\d+)\.(\d+).(\d+)", constants.VERSION)
-    if not version_match:
-        print('Could not determine current version', file=sys.stderr)
+    try:
+        major, minor, patch = build_msi.version_triplet(constants.VERSION)
+    except ValueError as error:
+        print('Could not determine current version:', error, file=sys.stderr)
         sys.exit(1)
 
-    version_file_contents = tmpl.substitute(major=version_match.group(1),
-                                            minor=version_match.group(2),
-                                            patch=version_match.group(3))
+    version_file_contents = tmpl.substitute(major=major, minor=minor,
+                                            patch=patch)
     with open('win32/version_file.txt', 'w') as out:
         out.write(version_file_contents)
 

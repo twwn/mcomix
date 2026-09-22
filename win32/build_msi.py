@@ -31,14 +31,24 @@ class IdType(enum.Enum):
     File = 3
 
 
+def version_triplet(version: str) -> tuple[int, int, int]:
+    """The three numbers a Windows version is made of, from <version>.
+
+    WiX and the version resource of the executable both want three, and
+    MComix is numbered by year and month, as 26.10: a version with two
+    numbers gets 0 as its third.  Anything after the numbers, such as a
+    suffix, is left out, since WiX takes nothing else.
+    """
+    match = re.match(r"^(\d+)\.(\d+)(?:\.(\d+))?", version)
+    if not match:
+        raise ValueError(f"No version number in {version!r}")
+    major, minor, patch = match.groups(default="0")
+    return int(major), int(minor), int(patch)
+
+
 def normalize_mcomix_version() -> str:
-    """WiX doesn't like any suffixes appended to the version, so only take the
-    usual version triplet."""
-    match = re.match(r"^(\d+\.\d+\.\d+)", VERSION)
-    if match:
-        return match.group(1)
-    else:
-        raise AttributeError()
+    """The version as WiX takes it: three numbers and nothing else."""
+    return "%d.%d.%d" % version_triplet(VERSION)
 
 
 def auto_close_last_xml_element(xml_list: list[str]) -> None:

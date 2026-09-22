@@ -31,10 +31,10 @@ Preparing a new release
 -----------------------
 
 1. Give the release its section in `ChangeLog.md`, with a `## Release date:` line below the heading.
-2. Remove the `-dev0` suffix from `VERSION` in `mcomix/constants.py`.
+2. Set `VERSION` in `mcomix/constants.py` to the release's year and month, such as `26.10` for October 2026.
 3. Regenerate the translation files as above. The template's header carries the version.
 4. Add the release to `share/metainfo/mcomix.metainfo.xml`.
-5. Commit, with a message naming the version, such as "MComix 4.0.0", and create an [annotated tag](https://git-scm.com/book/en/v2/Git-Basics-Tagging) for it: `git tag -a 4.0.0 -m "Version 4.0.0"`.
+5. Commit, with a message naming the version, such as "MComix 26.10", and create an [annotated tag](https://git-scm.com/book/en/v2/Git-Basics-Tagging) for it: `git tag -a 26.10 -m "Version 26.10"`.
 
 Building the source archive
 ---------------------------
@@ -82,7 +82,7 @@ choco pack win32/mcomix.nuspec --version <version> --out dist
 choco push dist/mcomix-gtk.<version>.nupkg --source https://push.chocolatey.org/
 ```
 
-The package is `mcomix-gtk`, since `mcomix` on chocolatey.org is the original MComix 3. Pushing needs an API key from the Chocolatey account the nuspec names as its owner, set once with `choco apikey`. Packages are moderated, so the new version appears some time after it is pushed.
+`choco pack` may write a version such as 26.10 with a third number, as `mcomix-gtk.26.10.0.nupkg`; push the file it names. The package is `mcomix-gtk`, since `mcomix` on chocolatey.org is the original MComix 3. Pushing needs an API key from the Chocolatey account the nuspec names as its owner, set once with `choco apikey`. Packages are moderated, so the new version appears some time after it is pushed.
 
 Uploading a new release
 -----------------------
@@ -92,6 +92,4 @@ On GitHub, draft a release from the tag the release commit carries, name it `MCo
 After a release
 ---------------
 
-Raise `VERSION` in `mcomix/constants.py` and append `-dev0`, so that anyone running MComix from Git can tell it is not a release.
-
-Open a milestone for the next version in the issue tracker and close the one just released, so that an issue can say which version the bug occurs in, or was fixed in.
+Open a milestone for the next release in the issue tracker and close the one just released, so that an issue can say which version the bug occurs in, or was fixed in.
