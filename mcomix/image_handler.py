@@ -96,6 +96,13 @@ class ImageHandler:
 
         self._wait_on_page(index + 1)
         image_files = self._image_files
+        if index >= len(image_files or []):
+            # An order the caching thread took before pages were taken
+            # out of the book, which asks for a number the book no
+            # longer has.  There is nothing to read and nothing to file,
+            # and it is not a page that would not load.
+            log.debug('Page %u is no longer in the book', index + 1)
+            return image_tools.missing_image_icon()
         try:
             pixbuf = image_tools.load_pixbuf((image_files or [])[index])
             tools.garbage_collect()

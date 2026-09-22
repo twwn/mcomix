@@ -266,6 +266,24 @@ class VirtualDoublePageTest(MComixTest):
         self.assertEqual(set(self.handler._raw_pixbufs), set())
         self.assertEqual(self.handler._available_images, {0})
 
+    def test_a_number_the_book_no_longer_has_is_not_a_page_that_failed(self):
+        """The caching thread takes an order and then waits for the page;
+        deleting a page meanwhile leaves it asking for a number past the
+        end of the book.  That was logged as an error, "Could not load
+        pixbuf for page 2: IndexError", for a page nobody had asked to
+        see, after every deletion in the main window's tests."""
+        listing = self._open('portrait-no-exif.png', 'landscape-no-exif.png')
+        self.handler._raw_pixbufs.clear()
+        self.handler.replace_pages(listing[:1])
+        # As page_available() leaves it when it lands after the change.
+        self.handler._available_images.add(1)
+
+        with self.assertNoLogs('mcomix', level='ERROR'):
+            pixbuf = self.handler._get_pixbuf(1)
+
+        self.assertIs(pixbuf, image_tools.missing_image_icon())
+        self.assertNotIn(1, self.handler._raw_pixbufs)
+
     def test_a_page_read_while_the_pages_are_rewritten_keeps_to_its_file(self):
         """The caching thread reads a page while the editor deletes one
         in front of it.
