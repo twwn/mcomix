@@ -374,6 +374,38 @@ def get_most_common_edge_colour(pixbufs: GdkPixbuf.Pixbuf | Sequence[GdkPixbuf.P
     return [component / 255.0 for component in most_used] + [1.0]
 
 
+def _in_srgb(image: Image.Image) -> Image.Image:
+    """<image> converted into sRGB from the colour profile it carries.
+
+    Where glycin decodes for gdk-pixbuf, a picture with an embedded
+    profile comes back converted into sRGB, and that is how a page is
+    shown; PIL hands the stored numbers over as they are, so an Adobe
+    RGB red of (200, 30, 30) read as (233, 24, 24) through one and
+    (200, 30, 30) through the other.  A picture without a profile, or a
+    PIL built without LittleCMS, is left as it is.  The Exif data goes
+    along, since the orientation is read from it afterwards.
+    """
+    profile = image.info.get('icc_profile')
+    if not profile:
+        return image
+    try:
+        from PIL import ImageCms
+        mode = 'RGBA' if 'A' in image.getbands() else 'RGB'
+        converted = ImageCms.profileToProfile(
+            image, BytesIO(profile), ImageCms.createProfile('sRGB'),
+            outputMode=mode)
+    except (ImportError, OSError, ValueError) as error:
+        # ImageCms.PyCMSError is an OSError: a profile LittleCMS cannot
+        # read, or one that does not fit the picture's mode.
+        log.debug('Could not convert a picture into sRGB: %s', error)
+        return image
+    if converted is None:
+        return image
+    if 'exif' in image.info:
+        converted.info['exif'] = image.info['exif']
+    return converted
+
+
 def pil_to_pixbuf(im: Image.Image,
                   keep_orientation: bool = False) -> GdkPixbuf.Pixbuf:
     """Return a pixbuf created from the PIL <im>."""
@@ -669,7 +701,7 @@ def load_pixbuf_size(path: str, width: int, height: int) -> GdkPixbuf.Pixbuf:
     def by_pil() -> GdkPixbuf.Pixbuf:
         image = Image.open(path)
         image.draft(None, (width, height))
-        return pil_to_pixbuf(image, keep_orientation=True)
+        return pil_to_pixbuf(_in_srgb(image), keep_orientation=True)
 
     attempts = [(constants.IMAGEIO_GDKPIXBUF, by_gdk_pixbuf),
                 (constants.IMAGEIO_PIL, by_pil)]

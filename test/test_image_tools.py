@@ -145,6 +145,10 @@ def hexdump(data, group_size=4):
     return [line for line in xhexdump(data, group_size=group_size)]
 
 
+#: Ghostscript's copy of the Adobe RGB (1998) profile, where it is installed.
+_ADOBE_RGB_PROFILE = '/usr/share/ghostscript/iccprofiles/a98.icc'
+
+
 class ImageToolsTest(MComixTest):
 
     def assertImagesEqual(self, im1, im2, msg=None, max_diff=20,
@@ -377,6 +381,29 @@ class ImageToolsTest(MComixTest):
         pixbuf = image_tools.load_pixbuf_size(
             get_image_path('landscape-exif-270-rotation.jpg'), 64, 64)
         self.assertEqual(270, image_tools.get_implied_rotation(pixbuf))
+
+    @unittest.skipUnless(os.path.isfile(_ADOBE_RGB_PROFILE),
+                         'needs an Adobe RGB colour profile')
+    def test_a_scaled_jpeg_with_a_colour_profile_comes_out_in_srgb(self):
+        """glycin converts a picture with an embedded profile into
+        sRGB, so a page read through gdk-pixbuf is shown converted;
+        read through PIL, the thumbnail of the same page showed the
+        stored numbers, and an Adobe RGB red came out duller."""
+        from PIL import ImageCms
+        with open(_ADOBE_RGB_PROFILE, 'rb') as fp:
+            profile = fp.read()
+        path = os.path.join(self.tmp_dir, 'adobe-rgb.jpg')
+        Image.new('RGB', (64, 64), (200, 30, 30)).save(
+            path, quality=98, icc_profile=profile)
+        expected = ImageCms.profileToProfile(
+            Image.new('RGB', (1, 1), (200, 30, 30)), BytesIO(profile),
+            ImageCms.createProfile('sRGB')).getpixel((0, 0))
+
+        pixbuf = image_tools.load_pixbuf_size(path, 32, 32)
+
+        red = tuple(pixbuf.get_pixels()[:3])
+        for got, want in zip(red, expected):
+            self.assertAlmostEqual(got, want, delta=3, msg=(red, expected))
 
     # Expose a rounding error bug in load_pixbuf_size.
     def test_load_pixbuf_rounding_error(self):
