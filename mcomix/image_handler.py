@@ -50,6 +50,10 @@ class ImageHandler:
         self._image_files: list[str] | None = None
         #: Map of image file name to its index in _image_files
         self._image_file_index: dict[str, int] = {}
+        #: Whether each page is shown wide, by its path and whether pages
+        #: are turned by their metadata: what spread_start() reads of
+        #: every page back to the last wide one, on every turn back.
+        self._wide: dict[tuple[str, bool], bool] = {}
         #: Index of current page, or None before one has been chosen
         self._current_image_index: int | None = None
         #: Indexes of the pages whose file is out of the archive and can
@@ -232,11 +236,52 @@ class ImageHandler:
         for page in (page, page + 1):
             if not self.page_is_available(page):
                 return False
-            width, height = self._get_displayed_size(page)
-            if width > height:
+            if self._is_wide(page):
                 return True
 
         return False
+
+    def _is_wide(self, page: int) -> bool:
+        """Whether <page> is shown wider than it is tall."""
+        path = self.get_path_to_page(page)
+        key = (path or '', bool(prefs['auto rotate from exif']))
+        wide = self._wide.get(key) if path is not None else None
+        if wide is None:
+            width, height = self._get_displayed_size(page)
+            wide = width > height
+            if path is not None:
+                self._wide[key] = wide
+        return wide
+
+    def spread_start(self, page: int) -> int | None:
+        """The first page of the spread <page> is shown in, turning
+        forward through the book.
+
+        Which pages are shown together depends on where the pairing
+        started, so this pairs forward from the nearest page that starts
+        a spread whatever came before it: the first page, a wide page -
+        always shown on its own - or the page after one.  None where a
+        page on the way has not been extracted yet, so that nothing is
+        known of its size.
+        """
+        if not self.page_is_available(page):
+            return None
+        if self._is_wide(page):
+            return page
+        start = page
+        while start > 1:
+            if not self.page_is_available(start - 1):
+                return None
+            if self._is_wide(start - 1):
+                break
+            start -= 1
+        # Every page from <start> to <page> is narrow, so they are paired
+        # two by two from <start> - after the title page, where that is
+        # shown on its own - and <page> is in the pair its distance from
+        # there says.
+        if start == 1 and page > 1 and self.get_virtual_double_page(1):
+            start = 2
+        return start + (page - start) // 2 * 2
 
     def _get_displayed_size(self, page: int) -> tuple[int, int]:
         """Return the (width, height) <page> will be displayed at.
@@ -323,6 +368,7 @@ class ImageHandler:
         # scan the whole list again for every single file that shows up.
         self._image_file_index = {path: index
                                   for index, path in enumerate(image_files)}
+        self._wide = {}
 
     def replace_pages(self, image_files: list[str]) -> None:
         """Rewrite the pages of the book that is already open as <image_files>.

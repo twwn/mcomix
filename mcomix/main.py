@@ -831,8 +831,8 @@ class MainWindow(Gtk.Window):
                 prefs['double step in double page mode']):
             if +1 == step and not self.imagehandler.get_virtual_double_page():
                 new_page += 1
-            elif -1 == step and not self.imagehandler.get_virtual_double_page(new_page - 1):
-                new_page -= 1
+            elif -1 == step:
+                new_page = self._previous_spread(current_page)
 
         if new_page <= 0:
             # Only switch to previous page when flipping one page before the
@@ -849,6 +849,29 @@ class MainWindow(Gtk.Window):
 
         if new_page != current_page:
             self.set_page(new_page, at_bottom=(-1 == step))
+
+    def _previous_spread(self, current_page: int) -> int:
+        """The page a turn back from <current_page> lands on, in double
+        page mode.
+
+        The pages before it are shown as they were turning forward: a
+        narrow page just before a wide one stood on its own, or was the
+        second of a pair, as the run of narrow pages since the last wide
+        page, or the start of the book, fell.  Only a spread that ends
+        before <current_page> will do; where the pairing forward cannot
+        be worked out, or would reach into the pages on screen - the
+        reader has turned a single page since - the two pages before it
+        are paired where they can be.
+        """
+        before = current_page - 1
+        start = self.imagehandler.spread_start(before)
+        if start == before - 1 or (
+                start == before
+                and self.imagehandler.get_virtual_double_page(before)):
+            return start
+        if not self.imagehandler.get_virtual_double_page(before - 1):
+            return before - 1
+        return before
 
     def first_page(self) -> None:
         number_of_pages = self.imagehandler.get_number_of_pages()

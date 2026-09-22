@@ -30,7 +30,7 @@ No mode scales a small page up unless "View &rarr; Stretch small images" is on.
 
 ### Double page mode and manga mode ###
 
-Double page mode, the D key, shows two pages side by side, so that a double-page spread reads as one. The first page of a book, which is its cover, and any page wider than it is tall are shown on their own unless the preferences say otherwise. Pages turn two at a time; CTRL with PageDown or PageUp turns one.
+Double page mode, the D key, shows two pages side by side, so that a double-page spread reads as one. The first page of a book, which is its cover, and any page wider than it is tall are shown on their own unless the preferences say otherwise. Pages turn two at a time, and turning back shows the same pairs as turning forward did; CTRL with PageDown or PageUp turns one, which moves the pairing on by a page.
 
 Manga mode, the M key, lays pages out and scrolls from right to left.
 
