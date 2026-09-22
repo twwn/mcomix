@@ -1,25 +1,16 @@
 # Installation
 
+The packages named `mcomix` that Linux distributions, Flathub, WinGet and Scoop offer are the original MComix 3, built on GTK 3, not this version.
+
 ## Linux
 
-Most distributions package MComix. Install it with the distribution's own package manager where that version is current, and from Flathub where it is not.
-
-Distribution | Command
--------------|--------
-Debian 12 or later, Ubuntu 23.04 or later | `sudo apt install mcomix`
-openSUSE Leap 15.4 or later | `sudo zypper install mcomix`
-Arch Linux, from the AUR | `yay -S mcomix`
-Any, with [Flatpak](https://flatpak.org/setup/) | `flatpak install flathub net.sourceforge.mcomix`
+Install MComix from source, as [Running from source](#running-from-source) below describes.
 
 ## Windows
 
-Package manager | Command
-----------------|--------
-[WinGet](https://learn.microsoft.com/en-us/windows/package-manager/winget/) | `winget install mcomix`
-[Chocolatey](https://chocolatey.org/install) | `choco install -y mcomix`
-[Scoop](https://scoop.sh/), Extras bucket | `scoop bucket add extras`, then `scoop install extras/mcomix`
+Each [release](https://github.com/twwn/mcomix/releases) carries an MSI installer, which needs administrator rights, and `mcomix-win64-<version>.zip`, which can be extracted anywhere and run as `MComix.exe` from there. Both carry everything MComix needs.
 
-Without a package manager, run the MSI installer, which needs administrator rights. Where those are not available, extract `mcomix-win64-<version>.zip` anywhere and run `MComix.exe` from there. Both carry everything MComix needs.
+With [Chocolatey](https://chocolatey.org/install), `choco install -y mcomix-gtk` installs the MSI installer of the latest release.
 
 Uninstalling leaves the preferences, the library and the bookmarks in `%APPDATA%\MComix`. Delete that folder to remove them as well.
 

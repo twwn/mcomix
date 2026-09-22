@@ -1,8 +1,8 @@
 MComix documentation
 ===
 
-- [Installation](Installation.md) — packages for Linux distributions and
-  Windows, what MComix needs to run, and how to run it from source.
+- [Installation](Installation.md) — the Windows installer and package,
+  what MComix needs to run, and how to run it from source.
 - [Documentation](Documentation.md) — the user manual.
 - [Preferences](Preferences.md) — every option the preferences dialog shows.
 - [Keybindings](Keybindings.md) — the keys and mouse buttons MComix binds.

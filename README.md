@@ -84,10 +84,10 @@ something other than what they name were corrected.
 
 ## Installation
 
-The [Installation](docs/Installation.md) page lists the packages for Linux
-distributions and Windows, what MComix needs to run, and how to run it from
-source. Most users will find it easiest to install the package their
-operating system provides.
+The [Installation](docs/Installation.md) page covers the Windows installer
+and the Chocolatey package, what MComix needs to run, and how to run it from
+source. The packages named `mcomix` in Linux distributions, on Flathub,
+WinGet and Scoop are the original MComix 3, not this version.
 
 ## Documentation
 
