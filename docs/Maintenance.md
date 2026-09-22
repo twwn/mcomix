@@ -79,10 +79,10 @@ The Chocolatey package does not carry MComix: it downloads the MSI installer fro
 
 ```bash
 choco pack win32/mcomix.nuspec --version <version> --out dist
-choco push dist/mcomix.<version>.nupkg --source https://push.chocolatey.org/
+choco push dist/mcomix-gtk.<version>.nupkg --source https://push.chocolatey.org/
 ```
 
-Pushing needs an API key from a Chocolatey account with rights to the `mcomix` package, set once with `choco apikey`. Packages are moderated, so the new version appears some time after it is pushed.
+The package is `mcomix-gtk`, since `mcomix` on chocolatey.org is the original MComix 3. Pushing needs an API key from the Chocolatey account the nuspec names as its owner, set once with `choco apikey`. Packages are moderated, so the new version appears some time after it is pushed.
 
 Uploading a new release
 -----------------------

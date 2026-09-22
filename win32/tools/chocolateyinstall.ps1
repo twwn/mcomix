@@ -15,7 +15,9 @@ $packageArgs = @{
   packageName   = $packageName
   fileType      = 'msi'
   softwareName  = 'MComix'
-  url64bit      =  "https://github.com/twwn/mcomix/releases/download/$packageVersion/$packageName-win64-$packageVersion.msi"
+  # The installer's name is the one win32/build_msi.py gives it, which
+  # is not the package's.
+  url64bit      =  "https://github.com/twwn/mcomix/releases/download/$packageVersion/mcomix-win64-$packageVersion.msi"
   checksum64    = (Get-Content $checksumPath -Raw).Trim()
   checksumType64=  'sha256'
   silentArgs    = "/qn /norestart /l*v `"$($env:TEMP)\$($packageName).$($env:chocolateyPackageVersion).MsiInstall.log`""
