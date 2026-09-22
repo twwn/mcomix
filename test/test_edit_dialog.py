@@ -871,6 +871,13 @@ class EditArchiveDialogTest(MComixTest):
                     self.assertEqual(self.dialog._save_format(),
                                      (archive_type, '.zip'))
 
+    def test_a_page_thumbnail_is_turned_as_the_page_is_shown(self):
+        """The editor's thumbnails stood a page with an Exif rotation
+        the way the file stores it, not the way MComix shows it."""
+        path = get_testfile_path('images', 'landscape-exif-270-rotation.jpg')
+        pixbuf = self.dialog._image_area._generate_thumbnail(path)
+        self.assertGreater(pixbuf.get_width(), pixbuf.get_height())
+
     def test_the_question_before_overwriting_takes_clicks(self):
         """The editor is modal, and its Save as chooser sits under its
         grab.  The question asked before a file is replaced was put to

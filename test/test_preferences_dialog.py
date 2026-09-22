@@ -93,6 +93,18 @@ class PreferencesDialogTest(MComixTest):
 
     # -- What the pair shows ----------------------------------------------
 
+    def test_turning_pages_by_their_metadata_turns_the_thumbnails_too(self):
+        """The sidebar's thumbnails are turned as the pages are, so
+        changing the preference has to make them again, not only
+        redraw the page."""
+        dialog = self._open()
+        button = Gtk.CheckButton(active=not prefs['auto rotate from exif'])
+        with unittest.mock.patch.object(self.window.thumbnailsidebar,
+                                        'resize') as remade:
+            dialog._check_button_cb(button, 'auto rotate from exif')
+        remade.assert_called_once_with()
+        self.assertEqual(prefs['auto rotate from exif'], button.get_active())
+
     def test_the_pair_shows_the_colour_the_preference_names(self):
         prefs['smart bg'] = False
         self._open()

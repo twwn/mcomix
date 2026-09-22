@@ -545,7 +545,9 @@ class ImageHandler:
         # None from the thumbnailer is a page that would not load, which
         # every view of it shows as the missing icon; None from here is
         # a page not extracted yet, which the callers ask for again.
-        return pixbuf if pixbuf is not None else image_tools.missing_image_icon()
+        if pixbuf is None:
+            return image_tools.missing_image_icon()
+        return image_tools.turned_as_shown(pixbuf, path)
 
     def _wait_on_page(self, page: int | None,
                       check_only: bool = False) -> bool:

@@ -318,6 +318,19 @@ class VirtualDoublePageTest(MComixTest):
         self.assertEqual((pixbuf.get_width(), pixbuf.get_height()),
                          (210, 297))
 
+    def test_a_thumbnail_is_turned_as_its_page_is_shown(self):
+        """The page is shown turned by its Exif orientation, and its
+        thumbnail stood the other way round beside it."""
+        self._open('landscape-exif-270-rotation.jpg')
+        thumbnail = self.handler.get_thumbnail(1, 64, 64)
+        self.assertGreater(thumbnail.get_width(), thumbnail.get_height())
+
+    def test_a_thumbnail_is_left_as_stored_when_pages_are_not_turned(self):
+        prefs['auto rotate from exif'] = False
+        self._open('landscape-exif-270-rotation.jpg')
+        thumbnail = self.handler.get_thumbnail(1, 64, 64)
+        self.assertLess(thumbnail.get_width(), thumbnail.get_height())
+
     def test_a_cached_page_is_measured_from_the_pixbuf(self):
         self._open('portrait-no-exif.png', 'landscape-no-exif.png')
         # Whichever way round the answer is arrived at, it is the same.

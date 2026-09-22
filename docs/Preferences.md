@@ -61,7 +61,7 @@ Fixed height for other pages | 1800 by default.
 Slideshow delay (in seconds) | 3 by default.
 Slideshow step (in pixels) | How far each step of a slideshow scrolls: forward for a positive value, backwards for a negative one, and a page turn for 0. 50 by default.
 During a slideshow automatically open the next archive |
-Automatically rotate images according to their metadata | Such as an Exif orientation tag.
+Automatically rotate images according to their metadata | Such as an Exif orientation tag. The thumbnails of the pages are turned the same way.
 Scaling mode | "Normal (fast)", "Bilinear" or "Hyperbolic (slow)". A slower one gives better quality and a longer page load. "Bilinear" by default.
 
 Advanced tab

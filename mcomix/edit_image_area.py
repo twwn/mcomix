@@ -182,6 +182,8 @@ class _ImageArea(Gtk.ScrolledWindow, widgets.Releasable):
             # Not a page from the current archive, ignore.
             pass
         pixbuf = self._thumbnailer.thumbnail(path)
+        if pixbuf is not None:
+            pixbuf = image_tools.turned_as_shown(pixbuf, path)
         if pixbuf is None:
             # The icon that stands in for a page that would not load is
             # 24 pixels square; on its own in a cell many times that it

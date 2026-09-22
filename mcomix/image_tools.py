@@ -830,6 +830,21 @@ def get_implied_rotation(pixbuf: GdkPixbuf.Pixbuf) -> int:
     return _implied_rotation(orientation)
 
 
+def turned_as_shown(thumbnail: GdkPixbuf.Pixbuf,
+                    path: str) -> GdkPixbuf.Pixbuf:
+    """<thumbnail> of the picture at <path>, turned as the page is shown.
+
+    A page is shown turned by the orientation its Exif data gives, where
+    'auto rotate from exif' says so, and its thumbnail is turned the same
+    way when it is drawn - not when it is made, since what is stored in
+    the freedesktop thumbnail cache is read by other programs, which turn
+    it as they see fit.
+    """
+    if not prefs['auto rotate from exif']:
+        return thumbnail
+    return rotate_pixbuf(thumbnail, get_implied_rotation_from_file(path))
+
+
 def get_implied_rotation_from_file(path: str) -> int:
     """Same as <get_implied_rotation>, for an image that has not been loaded.
 

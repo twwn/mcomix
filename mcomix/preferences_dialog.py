@@ -955,8 +955,13 @@ class _PreferencesDialog(Dialog):
                 self._window.thumbnailsidebar.change_thumbnail_background_color(bg_colour)
 
         elif preference in ('checkered bg for transparent images',
-                            'no double page for wide images', 'auto rotate from exif'):
+                            'no double page for wide images'):
             self._window.draw_image()
+
+        elif preference == 'auto rotate from exif':
+            self._window.draw_image()
+            # The sidebar's thumbnails are turned as the pages are.
+            self._window.thumbnailsidebar.resize()
 
         elif (preference == 'hide all in fullscreen' and
               self._window.is_fullscreen()):
