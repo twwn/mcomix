@@ -231,12 +231,7 @@ def inverse_axis_map(order: Sequence[int]) -> list[int]:
     """Return the axis order that undoes remap_axes(..., <order>).
 
     remap_axes() reads dimension order[i] into position i, so undoing it
-    means reading position i back into dimension order[i].  What used to
-    stand here was list(range(len(order))) indexed by order and then by
-    itself, which is order copied out again: an inverse only for a
-    permutation that is its own, which the two MComix passes -
-    NORMAL_AXES and SWAPPED_AXES, the only permutations of two - both
-    are.
+    means reading position i back into dimension order[i].
     """
     inverse = [0] * len(order)
     for position, axis in enumerate(order):

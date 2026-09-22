@@ -253,9 +253,8 @@ class _Collection(_BackendObject):
         once the join also scans book: at 40,000 books across six
         collections it takes 53.50ms against 22.85ms.
 
-        The ordering used to be an accident of the loop - grouped by
-        collection - and is now the order the books were added, which is
-        what the library's "All books" has always shown.
+        The books come in the order they were added, which is what the
+        library's "All books" shows, rather than grouped by collection.
         """
 
         collections = [self] + self.get_all_collections()

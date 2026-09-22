@@ -92,8 +92,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
 
         # A cover's uid is the book id, which is what _get_pixbuf()
         # takes; the rest of what the sorters compare rides along on the
-        # item.  This was a six column Gtk.ListStore whose column
-        # numbers had to agree with the SORT_ constants.
+        # item.
         self._covers = thumbnail_list.ThumbnailGridView()
         self._covers.generate_thumbnail = self._get_pixbuf
         self.set_thumbnail_size()

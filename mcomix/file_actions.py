@@ -754,9 +754,9 @@ class FileActions:
         the folder the chooser opened in: the user may have walked out
         of it.  A save that failed went nowhere, so it neither says
         where the next one starts nor passes in silence: a folder that
-        cannot be written to, or one that has no room left, used to
-        leave the reader with a dialog that had closed and no page
-        where they had asked for one.
+        cannot be written to, or one that has no room left, would
+        otherwise leave the reader with a dialog that had closed and no
+        page where they had asked for one.
         """
         target = i18n.to_unicode(target)
         try:

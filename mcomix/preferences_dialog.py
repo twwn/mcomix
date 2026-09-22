@@ -896,19 +896,13 @@ class _PreferencesDialog(Dialog):
             tooltip_text2: str | None) -> tuple[Gtk.CheckButton, Gtk.CheckButton]:
         """Two buttons for the two states of <prefkey>, off then on.
 
-        One preference, not two: the pair used to have one key each,
-        which is two answers to a question that has one, and the key
-        the first button was given is not a preference at all - nothing
-        reads it, and reading the preferences file drops what it does
-        not know, so what the button said was thrown away on the way
-        out.
+        One preference, not two: a key for each button would be two
+        answers to a question that has one.
 
-        Gtk.RadioButton is gone in GTK4: a check button that has been
-        put in a group with another is a radio button.  Neither of them
-        is active until one is set, where the first Gtk.RadioButton of a
-        group was active to begin with, so both are set from the
-        preference here - without which the pair came up showing
-        neither of its two answers.
+        A check button put in a group with another is a radio button.
+        Neither of them is active until one is set, so both are set from
+        the preference here - without which the pair would come up
+        showing neither of its two answers.
         """
         button1 = Gtk.CheckButton(label=label1)
         if tooltip_text1:

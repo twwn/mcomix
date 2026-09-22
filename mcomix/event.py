@@ -38,11 +38,9 @@ class EventHandler:
                              page_area: Gtk.Widget) -> None:
         """Add the controllers input arrives through in GTK4.
 
-        There are no event masks and no *-event signals any more: a
-        widget gets what the controllers added to it deliver.  The keys
-        are taken in the capture phase, which is where the toplevel's
-        key-press-event handler used to sit - ahead of the thumbnail
-        list, which would otherwise make its own use of Up and Space.
+        A widget gets what the controllers added to it deliver.  The
+        keys are taken in the capture phase, ahead of the thumbnail list,
+        which would otherwise make its own use of Up and Space.
         """
         keys = Gtk.EventControllerKey()
         keys.set_propagation_phase(Gtk.PropagationPhase.CAPTURE)

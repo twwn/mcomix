@@ -244,8 +244,7 @@ class _ThumbnailViewBase(widgets.Releasable):
         """Paint the view on <colour>, with its labels in <text_colour>.
 
         <colour> is a sequence of red, green, blue and alpha between 0
-        and 1.  This was two properties of two cell renderers; a view
-        built from widgets says it in CSS instead.
+        and 1.  A view built from widgets says it in CSS.
         """
         widget = cast(Gtk.Widget, self)
         provider = self._colour_provider

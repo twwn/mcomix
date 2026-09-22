@@ -294,10 +294,10 @@ def get_most_common_edge_colour(pixbufs: GdkPixbuf.Pixbuf | Sequence[GdkPixbuf.P
         Grouping is what lets a scanned margin answer with the grey it
         looks like, rather than with whichever of its hundred nearly
         equal greys happened to be counted once more than the rest.
-        The groups used to be made of runs of neighbours in a list
-        sorted by colour, but two shades that round alike need not be
-        neighbours there: a shade of another group could fall between
-        them, and the group was counted in pieces.
+        A group is every shade that rounds alike, not a run of
+        neighbours in a list sorted by colour: two shades that round
+        alike need not be neighbours there, and a shade of another
+        group falling between them would count the group in pieces.
         """
         # Where a value exactly halfway rounds up, as it always has.
         middle = steps // 2 if steps % 2 == 0 else steps // 2 + 1

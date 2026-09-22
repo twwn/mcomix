@@ -40,8 +40,7 @@ class _ScalingData:
 
     """What is known about one box while the scales are worked out.
 
-    This was a five-element list indexed by number throughout, which
-    said nothing about what any of the five meant.
+    Named fields, so that each of the five says what it means.
     """
 
     #: The scale this box is to be given.
