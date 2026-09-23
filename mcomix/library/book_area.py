@@ -524,6 +524,18 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         return (int(0.67 * size) + 2 * border_size,
                 size + 2 * border_size)
 
+    @functools.cached_property
+    def _finished_mark(self) -> GdkPixbuf.Pixbuf | None:
+        """The tick drawn on the cover of a book read to the end.
+
+        Loaded once: the icon is an SVG file, and loading it cost about
+        5 ms, fifty times what the rest of a cached cover costs, for
+        every finished book each time the covers were drawn.  It is only
+        read from then on, so the worker threads can share it; two of
+        them may both load it the first time, which does no harm.
+        """
+        return icons.load_pixbuf('object-select-symbolic', 24)
+
     def _get_pixbuf(self, uid: int) -> GdkPixbuf.Pixbuf:
         """ Get or create the thumbnail for the selected book <uid>. """
         assert isinstance(uid, int)
@@ -558,7 +570,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
             return pixbuf
 
         # Composite icon on the lower right corner of the book cover pixbuf.
-        book_pixbuf = icons.load_pixbuf('object-select-symbolic', 24)
+        book_pixbuf = self._finished_mark
         if book_pixbuf is None:
             return pixbuf
         translation_x = pixbuf.get_width() - book_pixbuf.get_width() - 1

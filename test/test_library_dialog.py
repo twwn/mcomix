@@ -392,9 +392,9 @@ class CustomCoverSizeTest(_LibraryWindowTest):
 # vim: expandtab:sw=4:ts=4
 
 
-class BookInfoTest(_LibraryWindowTest):
+class _OneBookTest(_LibraryWindowTest):
 
-    """The line under the covers that describes the selected book."""
+    """The library open on "All books", which holds one book."""
 
     def setUp(self):
         super().setUp()
@@ -405,17 +405,64 @@ class BookInfoTest(_LibraryWindowTest):
         self.dialog.book_area.display_covers(constants.COLLECTION_ALL)
         pump()
 
+    def _left_on(self, page):
+        lastread = last_read_page.LastReadPage(self.dialog.backend)
+        lastread.set_enabled(True)
+        lastread.set_page(self.path, page)
+
+
+class FinishedMarkTest(_OneBookTest):
+
+    """The tick on the cover of a book read to its last page."""
+
+    def _corner(self):
+        """The pixel inside the tick's lower right corner, on the cover."""
+        uid = self.dialog.backend.get_book_by_path(self.path).id
+        cover = self.dialog.book_area._get_pixbuf(uid)
+        x, y = cover.get_width() - 12, cover.get_height() - 12
+        offset = y * cover.get_rowstride() + x * cover.get_n_channels()
+        return tuple(cover.get_pixels()[offset:offset + 3])
+
+    def test_a_finished_book_carries_the_mark_and_an_unread_one_not(self):
+        unread = self._corner()
+        self._left_on(4)
+        self.assertNotEqual(unread, self._corner())
+
+    def test_a_part_read_book_carries_no_mark(self):
+        unread = self._corner()
+        self._left_on(2)
+        self.assertEqual(unread, self._corner())
+
+    def test_covers_too_small_for_the_mark_go_without(self):
+        prefs['library cover size'] = 40
+        unread = self._corner()
+        self._left_on(4)
+        self.assertEqual(unread, self._corner())
+
+    def test_the_mark_is_loaded_once_for_every_cover(self):
+        # Loading it is loading an SVG file, about 5 ms, and it was done
+        # for every finished book each time its cover was drawn.
+        self._left_on(4)
+        # The cover setUp() asked for may still be drawing on a worker
+        # thread, which would load the mark alongside the main thread.
+        self.dialog.book_area.stop_update()
+        with unittest.mock.patch.object(
+                icons, 'load_pixbuf', wraps=icons.load_pixbuf) as load:
+            for _ in range(3):
+                self._corner()
+        self.assertEqual(1, load.call_count)
+
+
+class BookInfoTest(_OneBookTest):
+
+    """The line under the covers that describes the selected book."""
+
     def _select(self):
         covers = self.dialog.book_area._covers
         covers.unselect_all()
         covers.select_only(0)
         pump()
         return self.dialog.control_area
-
-    def _left_on(self, page):
-        lastread = last_read_page.LastReadPage(self.dialog.backend)
-        lastread.set_enabled(True)
-        lastread.set_page(self.path, page)
 
     def test_an_unread_book_shows_its_name_folder_and_page_count(self):
         info = self._select()
