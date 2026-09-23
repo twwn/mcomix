@@ -11,6 +11,7 @@ from mcomix import histogram
 from mcomix import icons
 from mcomix import main
 from mcomix.dialog import Response
+from mcomix.preferences import prefs
 
 
 class EnhanceDialogTest(MComixTest):
@@ -89,5 +90,51 @@ class EnhanceDialogTest(MComixTest):
         pump()
         self.assertFalse(dialog._invert_color_button.get_active())
 
+
+    def test_ticking_invert_in_the_dialog_lets_ctrl_i_take_it_off(self):
+        """The checkbox inverted the colours and left Ctrl+I's action
+        off, so the next Ctrl+I turned it on over colours that were
+        inverted already, and nothing changed on screen."""
+        enhance_dialog.open_dialog(None, self.window)
+        pump()
+        enhance_dialog._dialog._invert_color_button.set_active(True)
+        pump()
+        self.assertTrue(self.window.enhancer.invert_color)
+        self.window.actiongroup.get_action('invert_color').activate()
+        pump()
+        self.assertFalse(self.window.enhancer.invert_color)
+
+    def test_save_keeps_the_values_for_the_next_start(self):
+        enhance_dialog.open_dialog(None, self.window)
+        pump()
+        dialog = enhance_dialog._dialog
+        dialog._brightness_scale.set_value(0.5)
+        dialog._invert_color_button.set_active(True)
+        pump()
+        self.assertEqual(1.0, prefs['brightness'])
+        dialog.response(Response.APPLY)
+        pump()
+        self.assertEqual(1.5, prefs['brightness'])
+        self.assertTrue(prefs['invert color'])
+        self.assertTrue(
+            self.window.actiongroup.get_action('invert_color').get_active())
+
+    def test_revert_goes_back_to_the_values_last_saved(self):
+        enhance_dialog.open_dialog(None, self.window)
+        pump()
+        dialog = enhance_dialog._dialog
+        dialog._brightness_scale.set_value(0.5)
+        dialog.response(Response.APPLY)
+        dialog._brightness_scale.set_value(-0.5)
+        dialog._invert_color_button.set_active(True)
+        pump()
+        self.assertEqual(0.5, self.window.enhancer.brightness)
+        dialog.response(Response.REJECT)
+        pump()
+        self.assertEqual(1.5, self.window.enhancer.brightness)
+        self.assertEqual(0.5, dialog._brightness_scale.get_value())
+        self.assertFalse(self.window.enhancer.invert_color)
+        self.assertFalse(
+            self.window.actiongroup.get_action('invert_color').get_active())
 
 # vim: expandtab:sw=4:ts=4

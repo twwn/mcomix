@@ -186,6 +186,13 @@ class _EnhanceImageDialog(Dialog):
         self._contrast_scale.set_sensitive(
             not self._autocontrast_button.get_active())
         self._enhancer.invert_color = self._invert_color_button.get_active()
+        # Ctrl+I toggles the inversion through an action with a state of
+        # its own, the only enhancement that has one; left behind, that
+        # state would make the next Ctrl+I set the colours to what they
+        # already are.  The colours are already what the enhancer says,
+        # so the state moves without running the action's own handler.
+        self._window.actiongroup.get_action('invert_color').show_active(
+            self._enhancer.invert_color)
         self._enhancer.signal_update()
 
     def _response(self, dialog: Dialog, response: int) -> None:
@@ -201,14 +208,6 @@ class _EnhanceImageDialog(Dialog):
             prefs['sharpness'] = self._enhancer.sharpness
             prefs['auto contrast'] = self._enhancer.autocontrast
             prefs['invert color'] = self._enhancer.invert_color
-            # Ctrl+I toggles this one through an action with a state of
-            # its own, the only enhancement that has one; left behind,
-            # that state would make the next Ctrl+I set the colours to
-            # what they already are.  The colours are already what the
-            # enhancer says, so the state moves without running the
-            # action's own handler.
-            self._window.actiongroup.get_action('invert_color').show_active(
-                prefs['invert color'])
 
         elif response == Response.REJECT:
             self._block = True

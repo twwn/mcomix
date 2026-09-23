@@ -40,7 +40,7 @@ CTRL+S starts a slideshow, which works like pressing the Down arrow key at inter
 
 ### Enhancing the image ###
 
-"Tools &rarr; Enhance image...", the E key, sets the brightness, contrast, saturation and sharpness of the pages with sliders, beside a histogram of the page being read. "Automatically adjust contrast" adjusts the contrast of each colour band to the page, and "Invert image colors", also CTRL+I, turns the colours to their negative. A change shows at once on the pages, the thumbnails, the magnifying lens and the library's covers, and lasts until MComix is closed, whichever book is open.
+"Tools &rarr; Enhance image...", the E key, sets the brightness, contrast, saturation and sharpness of the pages with sliders, beside a histogram of the page being read. "Automatically adjust contrast" adjusts the contrast of each colour band to the page, and "Invert image colors", also CTRL+I, turns the colours to their negative. A change shows at once on the pages, the thumbnails, the magnifying lens and the library's covers, and lasts until MComix is closed, whichever book is open. "Save" keeps the values for the next time MComix starts, and "Revert" goes back to the ones last saved. Inverting the colours with CTRL+I is kept for the next start straight away.
 
 "Save" keeps the values as the ones MComix starts with, "Revert" goes back to those, and "OK" closes the dialog with the values as they are.
 
