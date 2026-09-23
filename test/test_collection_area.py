@@ -301,6 +301,22 @@ class CollectionAreaTest(MComixTest):
             0, self.area._drag_motion(_StubDrop('%s:0' % (
                 constants.LIBRARY_DRAG_BOOKS,)), x, y))
 
+    def test_books_moved_into_a_collection_under_it_keep_their_covers(self):
+        """The covers of "Comics" include those of "Inner", filed under
+        it, so books moved from one to the other are still on show; the
+        covers were taken away all the same."""
+        self.area._list.expand_to(self._collection_row(self.inner))
+        self._settle()
+        self.area._list.select_row(self._row_for(self.comics))
+        self.assertTrue(self.area._drag_data_received(
+            None, '%s:4,5' % (constants.LIBRARY_DRAG_BOOKS,),
+            *self._middle_of(self.inner)))
+        self.assertEqual(self.library.book_area.removed, [])
+        self.assertTrue(self.area._drag_data_received(
+            None, '%s:6' % (constants.LIBRARY_DRAG_BOOKS,),
+            *self._middle_of(self.manga)))
+        self.assertEqual(self.library.book_area.removed, [6])
+
     def test_books_are_not_dropped_into_recent(self):
         """"Recent" is what MComix files a book in when it is read.
         Books moved there left the collection they were dragged from,

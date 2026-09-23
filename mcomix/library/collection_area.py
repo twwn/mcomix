@@ -494,7 +494,12 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable):
                 if move_from is not None:
                     self._library.backend.remove_book_from_collection(
                         book, move_from)
-            if move_from is not None:
+            # Books moved into a collection under the one on show are
+            # still among its covers, which include those of every
+            # collection under it.
+            if move_from is not None and not \
+                    self._library.backend.collection_is_within(
+                        dest_collection, move_from):
                 self._library.book_area.remove_books(
                     [book for book in books if book is not None])
         else:

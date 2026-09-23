@@ -364,6 +364,22 @@ class _LibraryBackend:
             where id = ?''', (collection,))
         return supercollection
 
+    def collection_is_within(self, collection: int,
+                             ancestor: int | None) -> bool:
+        """Whether <collection> is <ancestor> or one of the collections
+        under it, at any depth.  "All books", the ancestor None or
+        COLLECTION_ALL, holds every collection there is."""
+        if ancestor is None or ancestor == constants.COLLECTION_ALL:
+            return True
+        seen: set[int] = set()
+        walk: int | None = collection
+        while walk is not None and walk not in seen:
+            if walk == ancestor:
+                return True
+            seen.add(walk)
+            walk = self.get_supercollection(walk)
+        return False
+
     def add_book(self, path: str, collection: int | None = None) -> bool:
         """Add the archive at <path> to the library. If <collection> is
         not None, it is the collection that the books should be put in.

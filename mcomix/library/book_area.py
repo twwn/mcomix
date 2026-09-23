@@ -318,14 +318,17 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
     def _new_book_added(self, book: 'backend_types._Book',
                         collection: int | None) -> None:
         """ Bound to the backend's book_added_to_collection: draws
-        the cover of <book> when <collection> is the one on show, or
-        when all books are, and the filter does not hide it.  A book
+        the cover of <book> when <collection> is the one on show or one
+        under it, or when all books are, and the filter does not hide it.  A book
         filed in no collection counts as being in "All books". """
         if collection is None:
             collection = constants.COLLECTION_ALL
 
-        if (collection == self._library.collection_area.get_current_collection() or
-                self._library.collection_area.get_current_collection() == constants.COLLECTION_ALL):
+        # The covers of a collection include the books of every
+        # collection under it, as display_covers() draws them.
+        if self._library.backend.collection_is_within(
+                collection,
+                self._library.collection_area.get_current_collection()):
             # Make sure not to show a book twice when COLLECTION_ALL is selected
             # and the book is added to another collection, triggering this event.
             if self.is_book_displayed(book):

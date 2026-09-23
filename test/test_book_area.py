@@ -61,6 +61,18 @@ class _Backend:
         # No book is found, so a cover is drawn as the missing image.
         return None
 
+    #: Which collection each collection is filed under, where any is.
+    supercollections: dict = {}
+
+    def collection_is_within(self, collection, ancestor):
+        if ancestor in (None, constants.COLLECTION_ALL):
+            return True
+        while collection is not None:
+            if collection == ancestor:
+                return True
+            collection = self.supercollections.get(collection)
+        return False
+
 
 class _ControlArea:
 
@@ -792,6 +804,28 @@ class NewBookUnderAFilterTest(MComixTest):
 
     def test_a_name_that_matches(self):
         self.assertTrue(self._drawn('batman', 'Batman 01', '/books/Batman 01.cbz'))
+
+    def test_a_book_filed_under_the_collection_on_show_is_drawn(self):
+        """The covers of a collection include the books of the ones
+        under it, but a book filed in one of those while it was on show
+        was drawn only once the covers were drawn again."""
+        library = _FilteredLibrary('')
+        library.get_current_collection = lambda: 1
+        library.backend = _Backend()
+        library.backend.supercollections = {3: 1}
+        area = book_area._BookArea(library)
+        try:
+            filed_under, filed_elsewhere = (_Book(7, '/books/7.cbz'),
+                                            _Book(8, '/books/8.cbz'))
+            filed_under.name, filed_elsewhere.name = '7', '8'
+            with unittest.mock.patch.object(area, 'add_books') as added:
+                area._new_book_added(filed_under, 3)
+                self.assertTrue(added.called, 'filed under it, not drawn')
+                area._new_book_added(filed_elsewhere, 2)
+                self.assertEqual(added.call_count, 1,
+                                 'drawn though filed elsewhere')
+        finally:
+            area.close()
 
     def test_a_path_that_matches(self):
         """The name alone was asked, so a book filed under a matching
