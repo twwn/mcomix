@@ -337,6 +337,32 @@ class CollectionAreaTest(MComixTest):
             *self._middle_of(self.manga)))
         self.assertEqual(self.library.book_area.removed, [])
 
+    def test_books_moved_are_written_in_one_transaction(self):
+        """Every book moved is filed in one collection and taken out of
+        another; each of those writes was a transaction of its own, a
+        journal write and an fsync each on a real disk."""
+        self.area._list.select_row(self._row_for(self.comics))
+        statements = []
+        self.backend._con.set_trace_callback(statements.append)
+        try:
+            self.assertTrue(self.area._drag_data_received(
+                None, '%s:4,5,6' % (constants.LIBRARY_DRAG_BOOKS,),
+                *self._middle_of(self.manga)))
+        finally:
+            self.backend._con.set_trace_callback(None)
+        writes = [index for index, statement in enumerate(statements)
+                  if statement.lstrip().lower().startswith(
+                      ('insert', 'delete'))]
+        self.assertEqual(6, len(writes))
+        begins = [index for index, statement in enumerate(statements)
+                  if statement.upper().startswith('BEGIN')]
+        commits = [index for index, statement in enumerate(statements)
+                   if statement.upper().startswith('COMMIT')]
+        self.assertEqual(1, len(begins), statements)
+        self.assertEqual(1, len(commits), statements)
+        self.assertLess(begins[0], writes[0])
+        self.assertGreater(commits[0], writes[-1])
+
     def test_books_are_not_dropped_into_recent(self):
         """"Recent" is what MComix files a book in when it is read.
         Books moved there left the collection they were dragged from,

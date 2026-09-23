@@ -486,14 +486,17 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable):
             # moved, and so are books dragged with no collection shown.
             move_from = (src_collection if src_collection is not None
                          and src_collection != constants.COLLECTION_ALL else None)
-            for book in books:
-                if book is None:
-                    continue
-                self._library.backend.add_book_to_collection(book,
-                                                             dest_collection)
-                if move_from is not None:
-                    self._library.backend.remove_book_from_collection(
-                        book, move_from)
+            # Two writes a book: as transactions of their own, a few
+            # hundred books held the window up for seconds.
+            with self._library.backend.transaction():
+                for book in books:
+                    if book is None:
+                        continue
+                    self._library.backend.add_book_to_collection(
+                        book, dest_collection)
+                    if move_from is not None:
+                        self._library.backend.remove_book_from_collection(
+                            book, move_from)
             # The covers on show are those of every collection under
             # this one as well: books moved into one of those are still
             # among them, and so is a book that is also filed in one -
