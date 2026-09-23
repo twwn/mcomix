@@ -690,7 +690,8 @@ class _PreferencesDialog(Dialog):
 
     def _sort_by_changed_cb(self, combobox: "widgets.Chooser[int]",
                             *args: object) -> None:
-        """ Called when a new option was selected for the virtual double page option. """
+        """Sort the files of a directory by the key chosen, and reopen
+        the open one so that its pages are listed in the new order."""
         value = combobox.get_value()
         prefs['sort by'] = value
 
@@ -698,7 +699,8 @@ class _PreferencesDialog(Dialog):
 
     def _sort_order_changed_cb(self, combobox: "widgets.Chooser[int]",
                                *args: object) -> None:
-        """ Called when sort order changes (ascending or descending) """
+        """Sort the files of a directory ascending or descending, and
+        reopen the open one so that its pages follow."""
         value = combobox.get_value()
         prefs['sort order'] = value
 
@@ -738,7 +740,9 @@ class _PreferencesDialog(Dialog):
 
     def _sort_archive_by_changed_cb(self, combobox: "widgets.Chooser[int]",
                                     *args: object) -> None:
-        """ Called when a new option was selected for the virtual double page option. """
+        """Sort the files within an archive by the key chosen, and
+        reopen the open one so that its pages are listed in the new
+        order."""
         value = combobox.get_value()
         prefs['sort archive by'] = value
 
@@ -746,7 +750,8 @@ class _PreferencesDialog(Dialog):
 
     def _sort_archive_order_changed_cb(self, combobox: "widgets.Chooser[int]",
                                        *args: object) -> None:
-        """ Called when sort order changes (ascending or descending) """
+        """Sort the files within an archive ascending or descending,
+        and reopen the open one so that its pages follow."""
         value = combobox.get_value()
         prefs['sort archive order'] = value
 
@@ -816,7 +821,7 @@ class _PreferencesDialog(Dialog):
 
     def _scaling_quality_changed_cb(self, combobox: "widgets.Chooser[int]",
                                     *args: object) -> None:
-        """ Called whan image scaling quality changes. """
+        """ Called when image scaling quality changes. """
         value = combobox.get_value()
         last_value = prefs['scaling quality']
         prefs['scaling quality'] = value
