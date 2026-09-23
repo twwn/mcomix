@@ -213,6 +213,41 @@ class FileChooserTest(MComixTest):
         self.assertEqual(dialog.filechooser.get_filter().get_name(),
                          'All files')
 
+    # -- Opening what was chosen --------------------------------------------
+
+    def test_one_file_chosen_opens_its_directory(self):
+        self.dialog.files_chosen(
+            [get_testfile_path('images', 'portrait-no-exif.png')])
+        self.assertTrue(wait_for(
+            lambda: self.window.imagehandler.get_number_of_pages() > 1))
+        self.assertIsNone(self._module._main_filechooser_dialog)
+
+    def test_several_files_chosen_open_those_alone(self):
+        """Choosing several restricts the book to them, rather than to
+        the directory the first is in."""
+        chosen = [get_testfile_path('images', name)
+                  for name in ('portrait-no-exif.png', 'red.png')]
+        self.dialog.files_chosen(chosen)
+        self.assertTrue(wait_for(
+            lambda: self.window.imagehandler.get_number_of_pages() > 0))
+        pump()
+        self.assertEqual(2, self.window.imagehandler.get_number_of_pages())
+
+    def test_the_filter_files_were_opened_with_is_remembered(self):
+        images = self.dialog.list_filters().index(
+            next(f for f in self.dialog.list_filters()
+                 if f.get_name() == 'All images'))
+        self.dialog.filechooser.set_filter(self.dialog.list_filters()[images])
+        self.dialog.files_chosen(
+            [get_testfile_path('images', 'portrait-no-exif.png')])
+        self.assertEqual(images, prefs['last filter in main filechooser'])
+
+    def test_choosing_nothing_only_closes_it(self):
+        self.dialog.files_chosen([])
+        pump()
+        self.assertIsNone(self._module._main_filechooser_dialog)
+        self.assertFalse(self.window.filehandler.file_loaded)
+
     def test_the_group_filters_come_first(self):
         names = [f.get_name() for f in self.dialog.list_filters()]
         self.assertEqual(names[:3], ['All files', 'All archives',
