@@ -57,9 +57,13 @@ class _StubFileHandler:
     def __init__(self):
         self.opened = []
 
-    def open_file(self, path, page=1):
+    def open_file(self, path, page=1, start_member=None):
         self.opened.append((path, page))
         return True
+
+    def page_member(self, page):
+        # A loose image, or an archive whose files are not named here.
+        return None
 
 
 class _StubWindow(Gtk.Window):
@@ -464,6 +468,58 @@ class BookmarkInTheOpenBookTest(MComixTest):
                          'the archive was opened again')
         self.assertEqual(3, self.window.imagehandler.get_current_page())
         self.assertEqual({1}, self.window.selected_pages)
+
+    def test_a_bookmark_in_an_archive_follows_its_picture(self):
+        """A bookmark in an archive kept the page number alone, so sorting
+        the archive the other way moved it to another picture."""
+        self._open(get_testfile_path('archives', '01-ZIP-Normal.zip'), 4)
+        self.window.set_page(2)
+        pump()
+        store = bookmark_backend.BookmarksStore
+        store._initialized = False
+        store._bookmarks = []
+        store.initialize(self.window)
+        store.add_current_to_bookmarks()
+        pump()
+        bookmark = store.get_bookmarks()[-1]
+        shown = os.path.basename(self.window.imagehandler.get_path_to_page(2))
+        prefs['sort archive order'] = constants.SORT_DESCENDING
+        self.window.filehandler.refresh_file()
+        self.assertTrue(wait_for(
+            lambda: not self.window.filehandler.file_loading
+            and self.window.imagehandler.page_is_available(), seconds=20))
+        self.window.set_page(1)
+        pump()
+        bookmark.load()
+        pump()
+        page = self.window.imagehandler.get_current_page()
+        self.assertEqual(shown, os.path.basename(
+            self.window.imagehandler.get_path_to_page(page)))
+
+    def test_it_follows_its_picture_into_a_closed_archive_as_well(self):
+        """Opened from elsewhere, the archive came up at the page
+        number."""
+        self._open(get_testfile_path('archives', '01-ZIP-Normal.zip'), 4)
+        self.window.set_page(2)
+        pump()
+        store = bookmark_backend.BookmarksStore
+        store._initialized = False
+        store._bookmarks = []
+        store.initialize(self.window)
+        store.add_current_to_bookmarks()
+        pump()
+        bookmark = store.get_bookmarks()[-1]
+        shown = os.path.basename(self.window.imagehandler.get_path_to_page(2))
+        self.window.filehandler.close_file()
+        pump()
+        prefs['sort archive order'] = constants.SORT_DESCENDING
+        bookmark.load()
+        self.assertTrue(wait_for(
+            lambda: not self.window.filehandler.file_loading
+            and self.window.imagehandler.page_is_available(), seconds=20))
+        page = self.window.imagehandler.get_current_page()
+        self.assertEqual(shown, os.path.basename(
+            self.window.imagehandler.get_path_to_page(page)))
 
     def test_a_bookmark_in_another_folder_opens_it(self):
         self._folder()

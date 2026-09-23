@@ -27,7 +27,8 @@ class _Bookmark:
                  file_handler: 'file_handler.FileHandler | None',
                  name: str, path: str, page: int, numpages: int,
                  archive_type: int | None,
-                 date_added: datetime.datetime) -> None:
+                 date_added: datetime.datetime,
+                 member: str | None = None) -> None:
 
         self._name = name
         self._path = path
@@ -37,6 +38,11 @@ class _Bookmark:
         self._archive_type = archive_type
         self._file_handler = file_handler
         self._date_added = date_added
+        #: The name within the archive of the file of the page, which
+        #: finds the page wherever a change of sort order has put it;
+        #: None for a loose image, whose path is its file, and for a
+        #: bookmark made before this was kept.
+        self._member = member
 
     def attach(self, window: 'main.MainWindow') -> None:
         """Open in <window> from now on.
@@ -69,7 +75,9 @@ class _Bookmark:
         page, so the open folder is recognised by holding that file, and
         the page is found by it rather than by the number, which the
         folder may have moved since.  An archive is recognised by its
-        own path.
+        own path, and its page is found by the name of its file within
+        it where the bookmark knows that, since the archive may be
+        sorted another way since.
         """
 
         if self._file_handler is None or self._window is None:
@@ -80,9 +88,12 @@ class _Bookmark:
                 self._window.set_page(files.index(self._path) + 1)
                 return
         elif self._file_handler.get_path_to_base() == self._path:
-            self._window.set_page(self._page)
+            page = (self._file_handler.page_of_member(self._member)
+                    if self._member is not None else None)
+            self._window.set_page(page or self._page)
             return
-        self._file_handler.open_file(self._path, self._page)
+        self._file_handler.open_file(self._path, self._page,
+                                     start_member=self._member)
 
     def open_in_new_instance(self) -> None:
         """Open the file and page in an MComix of its own.
@@ -114,6 +125,15 @@ class _Bookmark:
             path=i18n.to_display_string(self._path),
             added=self._date_added.strftime("%x %X"),
             bookmark=self)
+
+    def get_member(self) -> str | None:
+        """The name within the archive of the file of the page, if known.
+
+        Kept beside pack()'s tuple rather than in it: an older MComix
+        builds a bookmark from the tuple as it is, and one field more
+        cost it every bookmark in the file.
+        """
+        return self._member
 
     def pack(self) -> tuple[str, str, int, int, int | None, datetime.datetime]:
         """Return a tuple suitable for pickling. The bookmark can be fully

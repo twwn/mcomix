@@ -62,10 +62,12 @@ class _BookmarksStore:
 
     def add_bookmark_by_values(self, name: str, path: str, page: int, numpages: int,
                                archive_type: int | None,
-                               date_added: datetime.datetime) -> None:
+                               date_added: datetime.datetime,
+                               member: str | None = None) -> None:
         """Create a bookmark and add it to the list."""
         bookmark = bookmark_menu_item._Bookmark(self._window, self._file_handler,
-                                                i18n.to_display_string(name), path, page, numpages, archive_type, date_added)
+                                                i18n.to_display_string(name), path, page, numpages, archive_type, date_added,
+                                                member=member)
 
         self.add_bookmark(bookmark)
 
@@ -116,7 +118,7 @@ class _BookmarksStore:
             name, _path, page, numpages, archive_type, added = bookmark.pack()
             self.replace_bookmark(bookmark, bookmark_menu_item._Bookmark(
                 self._window, self._file_handler, name, new_path, page,
-                numpages, archive_type, added))
+                numpages, archive_type, added, member=bookmark.get_member()))
 
     @callback.Callback
     def set_bookmark_order(self,
@@ -166,6 +168,7 @@ class _BookmarksStore:
         page = self._image_handler.get_current_page()
         numpages = self._image_handler.get_number_of_pages()
         archive_type = self._file_handler.archive_type
+        member = self._file_handler.page_member(page)
         date_added = datetime.datetime.now()
 
         same_file_bookmarks = []
@@ -180,7 +183,7 @@ class _BookmarksStore:
 
         def add() -> None:
             self.add_bookmark_by_values(name, path, page, numpages,
-                                        archive_type, date_added)
+                                        archive_type, date_added, member)
 
         # If the same file was already bookmarked, ask to replace
         # the existing bookmarks before deleting them.
@@ -249,14 +252,28 @@ class _BookmarksStore:
                 with open(path, 'rb') as fd:
                     pickle.load(fd)  # Version record, no longer used.
                     packs = pickle.load(fd)
+                    # The name within its archive of each bookmark's
+                    # page, in a record of its own after the bookmarks,
+                    # which an older MComix stops short of.  A file one
+                    # of those wrote has none.
+                    try:
+                        members = pickle.load(fd)
+                    except EOFError:
+                        members = []
+                if (not isinstance(members, list)
+                        or len(members) != len(packs)):
+                    members = [None] * len(packs)
 
-                for pack in packs:
+                for pack, member in zip(packs, members):
                     # Handle old bookmarks without date_added attribute
                     if len(pack) == 5:
                         pack = pack + (datetime.datetime.now(),)
 
-                    bookmark = bookmark_menu_item._Bookmark(self._window,
-                                                            self._file_handler, *pack)
+                    name, book_path, page, numpages, archive_type, added = pack
+                    bookmark = bookmark_menu_item._Bookmark(
+                        self._window, self._file_handler, name, book_path, page,
+                        numpages, archive_type, added,
+                        member=member if isinstance(member, str) else None)
                     bookmarks.append(bookmark)
 
             except Exception:
@@ -309,6 +326,9 @@ class _BookmarksStore:
 
             packs = [bookmark.pack() for bookmark in self._bookmarks]
             pickle.dump(packs, fd, pickle.HIGHEST_PROTOCOL)
+            pickle.dump([bookmark.get_member()
+                         for bookmark in self._bookmarks],
+                        fd, pickle.HIGHEST_PROTOCOL)
 
         self._bookmarks_mtime = int(time.time())
 

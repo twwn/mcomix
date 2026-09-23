@@ -151,13 +151,34 @@ class FileHandler:
                 # The picture on screen, by its name in the archive: a
                 # change to how the archive is sorted reopens it, and
                 # the page number it had then names another picture.
-                shown = self._window.imagehandler.get_path_to_page()
-                if shown is not None and self._tmp_dir is not None:
-                    start_member = os.path.relpath(shown, self._tmp_dir)
+                start_member = self.page_member(start_page)
             else:
                 start_page = 0
             self.open_file(current_file, start_page, keep_fileprovider=True,
                            start_member=start_member)
+
+    def page_member(self, page: int) -> str | None:
+        """The name within the open archive of the file of <page>, or
+        None where no archive is open or the page has no file.
+
+        What stays with a picture when the archive is sorted another
+        way, which moves the page number.
+        """
+        if self.archive_type is None or self._tmp_dir is None:
+            return None
+        path = self._window.imagehandler.get_path_to_page(page)
+        if path is None:
+            return None
+        return os.path.relpath(path, self._tmp_dir)
+
+    def page_of_member(self, member: str) -> int | None:
+        """The page of the open archive whose file is called <member>
+        within it, or None where it has none."""
+        if self.archive_type is None or self._tmp_dir is None:
+            return None
+        wanted = os.path.join(self._tmp_dir, member)
+        files = self._window.imagehandler.get_image_files()
+        return files.index(wanted) + 1 if wanted in files else None
 
     def open_file(self, path: str | list[str], start_page: int = 0,
                   keep_fileprovider: bool = False,

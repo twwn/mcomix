@@ -39,7 +39,7 @@ class _StubFileHandler:
     def __init__(self):
         self.opened = []
 
-    def open_file(self, path, page=1):
+    def open_file(self, path, page=1, start_member=None):
         self.opened.append((path, page))
         return True
 

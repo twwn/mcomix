@@ -121,6 +121,54 @@ class MergeTest(MComixTest):
                          [1, 2, 3, 4, 5, 6, 7])
 
 
+class MemberRecordTest(MComixTest):
+
+    """The name within its archive of each bookmark's page is stored in
+    a record after the bookmarks, which an older MComix reading the file
+    stops short of."""
+
+    def setUp(self):
+        super().setUp()
+        os.makedirs(constants.DATA_DIR, exist_ok=True)
+        self.store = bookmark_backend.BookmarksStore
+        self.store._initialized = False
+        self.store._bookmarks = []
+        self.store._bookmarks_mtime = 0
+
+    _bookmark = MergeTest._bookmark
+    _write_pickle = MergeTest._write_pickle
+
+    def _with_member(self, page, member):
+        return bookmark_menu_item._Bookmark(
+            None, None, 'book', '/books/b.cbz', page, 20, 1,
+            datetime.datetime(2026, 1, 1), member=member)
+
+    def test_the_names_come_back_with_their_bookmarks(self):
+        self.store._bookmarks = [self._with_member(2, 'pages/02.jpg'),
+                                 self._with_member(3, None)]
+        self.store.write_bookmarks_file(merge=False)
+        bookmarks, _mtime = self.store.load_bookmarks()
+        self.assertEqual(['pages/02.jpg', None],
+                         [bookmark.get_member() for bookmark in bookmarks])
+
+    def test_a_file_an_older_mcomix_wrote_has_no_names(self):
+        self._write_pickle([self._bookmark(2), self._bookmark(3)])
+        bookmarks, _mtime = self.store.load_bookmarks()
+        self.assertEqual([None, None],
+                         [bookmark.get_member() for bookmark in bookmarks])
+
+    def test_an_older_mcomix_reads_the_file_as_it_always_did(self):
+        """What it reads: the version record, then one tuple of six
+        fields per bookmark, each of which it builds a bookmark from."""
+        self.store._bookmarks = [self._with_member(2, 'pages/02.jpg')]
+        self.store.write_bookmarks_file(merge=False)
+        with open(constants.BOOKMARK_PICKLE_PATH, 'rb') as fd:
+            pickle.load(fd)
+            packs = pickle.load(fd)
+        self.assertEqual([6], [len(pack) for pack in packs])
+        bookmark_menu_item._Bookmark(None, None, *packs[0])
+
+
 class MovedBookTest(MComixTest):
 
     """A bookmark holds the path of the file it marks, so a book moved

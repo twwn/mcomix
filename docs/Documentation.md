@@ -52,7 +52,7 @@ CTRL+S starts a slideshow, which works like pressing the Down arrow key at inter
 
 ### Opening a book in another window ###
 
-Picking an entry under "File &rarr; Recent" or in the "Bookmarks" menu closes the book being read and opens the one picked. A bookmark in the book that is already open only turns to its page, so that the pages picked out and the changes that can be undone stay as they are; in a directory of images, the page is found by its file, wherever sorting has put it. Clicking an entry with the middle mouse button starts a second MComix on it instead, at the page a bookmark marks.
+Picking an entry under "File &rarr; Recent" or in the "Bookmarks" menu closes the book being read and opens the one picked. A bookmark in the book that is already open only turns to its page, so that the pages picked out and the changes that can be undone stay as they are; the page is found by its file, wherever sorting has put it. A bookmark in an archive finds its page by its file too, whether the archive is open or not, so that sorting the archive another way does not move it to another picture. Clicking an entry with the middle mouse button starts a second MComix on it instead, at the page a bookmark marks.
 
 From a shell, `mcomix --page 42 book.cbz` opens a book at page 42.
 
