@@ -77,7 +77,8 @@ class LastReadPage:
 
         return int(count)
 
-    def set_page(self, path: str, page: int) -> None:
+    def set_page(self, path: str, page: int,
+                 member: str | None = None) -> None:
         """ Stores <page> as the last read page of the book at <path>,
         adding the book to the library if it is not there yet and filing
         it in the "Recent" collection either way.  Raises ValueError
@@ -99,7 +100,7 @@ class LastReadPage:
             self.backend.add_book_to_collection(
                 book.id, self._recent_collection_id())
 
-        book.set_last_read_page(page)
+        book.set_last_read_page(page, member=member)
 
     def clear_page(self, path: str) -> None:
         """ Forgets the page stored for the book at <path>.  The book
@@ -176,6 +177,15 @@ class LastReadPage:
                 return None
         else:
             return None
+
+    def get_member(self, path: str) -> str | None:
+        """ The name within its archive of the file of the page to carry
+        on from in the book at <path>, where one was stored with it;
+        None wherever get_page() is. """
+        if self.get_page(path) is None:
+            return None
+        book = self.backend.get_book_by_path(os.path.abspath(path))
+        return book.get_last_read_member() if book else None
 
     def get_date(self, path: str) -> datetime.datetime | None:
         """ When the stored page of the book at <path> was set, or None

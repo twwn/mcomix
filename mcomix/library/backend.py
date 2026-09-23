@@ -46,7 +46,7 @@ class _LibraryBackend:
 
     #: Current version of the library database structure.
     # See method _upgrade_database() for changes between versions.
-    DB_VERSION = 9
+    DB_VERSION = 10
 
     def __init__(self) -> None:
 
@@ -993,6 +993,19 @@ class _LibraryBackend:
                 self._con.execute('''delete from recent
                     where book not in (select id from book)''')
 
+            if 9 in upgrades:
+                # The name within its archive of the page a book was
+                # left on, which finds that page wherever a change of
+                # sort order has put it.  An older MComix leaves the
+                # column alone and writes rows without it, so a file it
+                # has opened says version 9 again with the column
+                # already there: added only where it is missing.
+                columns = [row[1] for row in self._con.execute(
+                    '''pragma table_info(recent)''').fetchall()]
+                if 'member' not in columns:
+                    self._con.execute(
+                        '''alter table recent add column member text''')
+
             self._con.execute('''update info set value = ? where key = 'version' ''',
                               (str(_LibraryBackend.DB_VERSION),))
 
@@ -1056,7 +1069,8 @@ class _LibraryBackend:
         self._con.execute('''create table if not exists recent (
             book integer primary key,
             page integer,
-            time_set datetime)''')
+            time_set datetime,
+            member text)''')
         self._con.execute('''insert or ignore into collection (id, name)
             values (?, ?)''', (constants.COLLECTION_RECENT, 'RECENT'))
 

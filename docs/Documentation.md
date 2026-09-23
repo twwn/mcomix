@@ -108,7 +108,7 @@ The watch list, opened from the library window, names directories to look in for
 
 ### Recent books ###
 
-While "Store information about recently opened files" is set to "Always", every archive with pages that is opened in MComix joins the "Recent" collection, which remembers the page it was left at. Setting it to "Never" stops that, and offers to clear what is kept.
+While "Store information about recently opened files" is set to "Always", every archive with pages that is opened in MComix joins the "Recent" collection, which remembers the page it was left at - by the picture, so that sorting the archive another way in the meantime does not reopen it at another one. Setting it to "Never" stops that, and offers to clear what is kept.
 
 Execute external programs
 ---

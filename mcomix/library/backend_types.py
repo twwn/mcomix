@@ -151,13 +151,23 @@ class _Book(_BackendObject):
         else:
             return None
 
+    def get_last_read_member(self) -> str | None:
+        """The name within the archive of the file of the page this book
+        was left on, where it was stored with the page."""
+        member = self.get_backend().fetchone(
+            '''SELECT member FROM recent WHERE book = ?''', (self.id,))
+        return member if isinstance(member, str) else None
+
     def set_last_read_page(self, page: int | None,
-                           time: datetime.datetime | None = None) -> None:
+                           time: datetime.datetime | None = None,
+                           member: str | None = None) -> None:
         """Remember <page> as where this book was left, at <time>.
 
         A <page> of None removes what was remembered instead, and a
         <time> of None is now.  Pages count from 1, and anything below
-        that is not a page: it raises ValueError.
+        that is not a page: it raises ValueError.  <member> is the name
+        within the archive of the page's file, which finds the page
+        again wherever sorting the archive another way puts it.
         """
 
         if page is not None and page < 1:
@@ -185,8 +195,8 @@ class _Book(_BackendObject):
         # workers read it while this writes it: a cover drawn then had
         # no tick for a book read to the end.
         self.get_backend().execute(
-            '''INSERT OR REPLACE INTO recent (book, page, time_set)
-               VALUES (?, ?, ?)''', (self.id, page, written))
+            '''INSERT OR REPLACE INTO recent (book, page, time_set, member)
+               VALUES (?, ?, ?, ?)''', (self.id, page, written, member))
 
 
 class _Collection(_BackendObject):

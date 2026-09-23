@@ -289,9 +289,14 @@ class FileHandler:
                 last_image_index = self._get_index_for_page(self._start_page,
                                                             len(image_files),
                                                             current_file)
-                if self._start_member is not None:
-                    member = os.path.join(self._tmp_dir or '',
-                                          self._start_member)
+                start_member = self._start_member
+                if start_member is None and self._start_page == 0:
+                    # Where the book was left, found by its picture
+                    # rather than its number where that was kept.
+                    start_member = self.last_read_page.get_member(
+                        current_file)
+                if start_member is not None:
+                    member = os.path.join(self._tmp_dir or '', start_member)
                     if member in image_files:
                         last_image_index = image_files.index(member)
                 # A page the caller asked for, or a standing "yes" to
@@ -1027,7 +1032,8 @@ class FileHandler:
             if page == 1:
                 self.last_read_page.clear_page(archive_path)
             else:
-                self.last_read_page.set_page(archive_path, page)
+                self.last_read_page.set_page(archive_path, page,
+                                             self.page_member(page))
         except ValueError:
             # The book no longer exists in the library and has been deleted
             pass

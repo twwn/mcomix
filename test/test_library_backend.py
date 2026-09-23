@@ -311,6 +311,32 @@ class UpgradeFromEveryVersionTest(LibraryDatabaseTest):
                     'RECENT')
                 self._done(library)
 
+    def test_every_version_keeps_the_name_of_the_page_left_on(self):
+        """Version 10 added the column that holds the name within its
+        archive of the page a book was left on."""
+        for version in self._versions():
+            with self.subTest(version=version):
+                library = self._upgraded(version)
+                columns = [row[1] for row in library._con.execute(
+                    'pragma table_info(recent)').fetchall()]
+                self.assertIn('member', columns)
+                self._done(library)
+
+    def test_a_file_an_older_mcomix_opened_again_is_upgraded_again(self):
+        """An older MComix writes its own version over a newer one it
+        opens, and leaves the column there: the step finds it and does
+        not add it a second time, which sqlite refuses."""
+        library = self._upgraded(9)
+        library._con.execute(
+            "update info set value = '9' where key = 'version'")
+        self._done(library)
+        backend._backend = None
+        library = backend.LibraryBackend()
+        held = library._con.execute(
+            "select value from info where key = 'version'").fetchone()
+        self.assertEqual(int(held), backend._LibraryBackend.DB_VERSION)
+        self._done(library)
+
     def test_a_watched_directory_survives_every_version_that_had_one(self):
         for version in self._versions(2):
             with self.subTest(version=version):

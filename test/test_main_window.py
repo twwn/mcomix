@@ -787,6 +787,32 @@ class MainWindowTest(MComixTest):
                          os.path.basename(handler.get_path_to_page(page)))
         self.assertNotEqual(2, page)
 
+    def test_the_page_a_book_was_left_on_follows_its_picture(self):
+        """Where a book was left is kept by page number, and sorting the
+        archive the other way made that number name another picture."""
+        self._ready()
+        handler = self.window.imagehandler
+        filehandler = self.window.filehandler
+        filehandler.last_read_page.set_enabled(True)
+        path = filehandler.get_path_to_base()
+        self.window.set_page(2)
+        self._pump()
+        shown = os.path.basename(handler.get_path_to_page(2))
+        filehandler.close_file()
+        self._pump()
+        prefs['sort archive order'] = constants.SORT_DESCENDING
+        prefs['stored dialog choices'][
+            message_dialog.RememberedDialog.RESUME_FROM_LAST_READ_PAGE] = \
+            Response.YES
+        filehandler.open_file(path)
+        self.assertTrue(wait_for(
+            lambda: not filehandler.file_loading
+            and handler.get_number_of_pages() > 2
+            and handler.page_is_available(), seconds=20))
+        page = handler.get_current_page()
+        self.assertEqual(shown,
+                         os.path.basename(handler.get_path_to_page(page)))
+
     def test_a_plain_click_turns_the_page_as_it_always_did(self):
         self._ready()
         self._click()
