@@ -13,7 +13,7 @@ import threading
 import types
 import unittest.mock
 
-from gi.repository import GLib, Gtk
+from gi.repository import GdkPixbuf, GLib, Gtk
 
 from . import MComixTest, get_testfile_path, pump, wait_for
 
@@ -415,6 +415,13 @@ class FinishedMarkTest(_OneBookTest):
 
     """The tick on the cover of a book read to its last page."""
 
+    def setUp(self):
+        super().setUp()
+        # The covers are drawn here, on the main thread.  A worker still
+        # drawing the one display_covers() asked for could otherwise
+        # draw it finished and make the mark before a test looks.
+        self.dialog.book_area.stop_update()
+
     def _corner(self):
         """The pixel inside the tick's lower right corner, on the cover."""
         uid = self.dialog.backend.get_book_by_path(self.path).id
@@ -439,13 +446,33 @@ class FinishedMarkTest(_OneBookTest):
         self._left_on(4)
         self.assertEqual(unread, self._corner())
 
+    def test_the_mark_shows_whatever_colour_the_theme_draws_the_icon(self):
+        # A symbolic icon loaded as a pixbuf keeps the colour it was
+        # drawn in, which GTK would otherwise have recoloured: Adwaita's
+        # dark grey vanished on a dark cover, and a theme that draws its
+        # symbolic icons white would vanish on a light one.  The mark is
+        # the icon's shape, dark on a light disc, for any theme.
+        white = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, True, 8,
+                                     16, 16)
+        white.fill(0xFFFFFFFF)
+        with unittest.mock.patch.object(icons, 'load_pixbuf',
+                                        return_value=white):
+            mark = self.dialog.book_area._finished_mark
+        pixels = mark.get_pixels()
+
+        def pixel(x, y):
+            offset = y * mark.get_rowstride() + x * mark.get_n_channels()
+            return tuple(pixels[offset:offset + 4])
+
+        self.assertLess(max(pixel(12, 12)[:3]), 64, 'the tick is not dark')
+        self.assertGreater(min(pixel(2, 12)[:3]), 200, 'the disc is not light')
+        self.assertGreater(pixel(2, 12)[3], 200, 'the disc is not opaque')
+        self.assertEqual(0, pixel(0, 0)[3], 'the mark is not round')
+
     def test_the_mark_is_loaded_once_for_every_cover(self):
         # Loading it is loading an SVG file, about 5 ms, and it was done
         # for every finished book each time its cover was drawn.
         self._left_on(4)
-        # The cover setUp() asked for may still be drawing on a worker
-        # thread, which would load the mark alongside the main thread.
-        self.dialog.book_area.stop_update()
         with unittest.mock.patch.object(
                 icons, 'load_pixbuf', wraps=icons.load_pixbuf) as load:
             for _ in range(3):

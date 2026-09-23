@@ -528,13 +528,31 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
     def _finished_mark(self) -> GdkPixbuf.Pixbuf | None:
         """The tick drawn on the cover of a book read to the end.
 
-        Loaded once: the icon is an SVG file, and loading it cost about
+        A symbolic icon is a shape in whatever colour the icon theme
+        drew it, which GTK recolours for the widget it stands in; loaded
+        as a pixbuf it keeps that colour, and Adwaita's dark grey all
+        but vanished on a dark cover.  So only the icon's shape is used,
+        in dark grey on a light disc, which shows on any cover under
+        any theme.
+
+        Made once: the icon is an SVG file, and loading it cost about
         5 ms, fifty times what the rest of a cached cover costs, for
         every finished book each time the covers were drawn.  It is only
         read from then on, so the worker threads can share it; two of
-        them may both load it the first time, which does no harm.
+        them may both make it the first time, which does no harm.
         """
-        return icons.load_pixbuf('object-select-symbolic', 24)
+        tick = icons.load_pixbuf('object-select-symbolic', 16)
+        if tick is None:
+            return None
+        # Drawn four times over and scaled down, which smooths the edge
+        # that ImageDraw leaves jagged.
+        mark = Image.new('RGBA', (96, 96), (0, 0, 0, 0))
+        ImageDraw.Draw(mark).ellipse((0, 0, 95, 95),
+                                     fill=(255, 255, 255, 230))
+        mark = mark.resize((24, 24), Image.Resampling.LANCZOS)
+        shape = image_tools.pixbuf_to_pil(tick).convert('RGBA')
+        mark.paste((46, 52, 54, 255), (4, 4), mask=shape.getchannel('A'))
+        return image_tools.pil_to_pixbuf(mark)
 
     def _get_pixbuf(self, uid: int) -> GdkPixbuf.Pixbuf:
         """ Get or create the thumbnail for the selected book <uid>. """
