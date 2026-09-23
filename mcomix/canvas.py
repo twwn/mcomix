@@ -46,6 +46,9 @@ class PageCanvas(Gtk.Widget):
         self._pointer: tuple[float, float] = (0.0, 0.0)
         #: The last size announced through 'resized'.
         self._allocated = (0, 0)
+        #: Where scroll_to() was last asked to go, until the next
+        #: allocation has applied it.
+        self._wanted: tuple[float, float] | None = None
         # A page larger than the window must not be drawn over the rest
         # of it.
         self.set_overflow(Gtk.Overflow.HIDDEN)
@@ -75,6 +78,21 @@ class PageCanvas(Gtk.Widget):
         if (width, height) == self._size:
             return
         self._size = (width, height)
+        self.queue_allocate()
+
+    def scroll_to(self, x: float, y: float) -> None:
+        """Show the content from (<x>, <y>) at the top left.
+
+        The adjustments learn a new content size only when the canvas is
+        next allocated, a frame after set_content_size(); a position past
+        the size they still hold would be cut short to it, and a page
+        larger than the one before it opened a row from the top rather
+        than at its end.  So the position is kept, and the allocation
+        applies it once the adjustments span the new content.
+        """
+        self._wanted = (x, y)
+        self._hadjustment.set_value(x)
+        self._vadjustment.set_value(y)
         self.queue_allocate()
 
     def put(self, child: Gtk.Widget, x: int, y: int) -> None:
@@ -160,10 +178,13 @@ class PageCanvas(Gtk.Widget):
             # Not from inside the allocation itself: whoever listens is
             # going to want to lay the pages out again.
             GLib.idle_add(self._announce_resize)
+        wanted, self._wanted = self._wanted, None
         self._allocating = True
         try:
-            self._configure(self._hadjustment, width, self._size[0])
-            self._configure(self._vadjustment, height, self._size[1])
+            self._configure(self._hadjustment, width, self._size[0],
+                            None if wanted is None else wanted[0])
+            self._configure(self._vadjustment, height, self._size[1],
+                            None if wanted is None else wanted[1])
         finally:
             self._allocating = False
         x_offset = int(round(self._hadjustment.get_value()))
@@ -182,12 +203,14 @@ class PageCanvas(Gtk.Widget):
         return GLib.SOURCE_REMOVE
 
     @staticmethod
-    def _configure(adjustment: Gtk.Adjustment, viewport: int, content: int) -> None:
+    def _configure(adjustment: Gtk.Adjustment, viewport: int, content: int,
+                   wanted: float | None = None) -> None:
         # The upper bound is whichever of the content and the viewport
         # is larger, so that a page smaller than the window leaves
         # nothing to scroll; MainWindow.scroll() reads it back.
         upper = max(content, viewport)
-        value = min(adjustment.get_value(), upper - viewport)
+        value = min(adjustment.get_value() if wanted is None else wanted,
+                    upper - viewport)
         adjustment.configure(max(0, value), 0, upper,
                              viewport * 0.1, viewport * 0.9, viewport)
 

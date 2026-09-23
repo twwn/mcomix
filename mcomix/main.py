@@ -1080,8 +1080,7 @@ class MainWindow(Gtk.Window):
     def update_viewport_position(self) -> None:
         """Move the scrollbars to where the layout says the view is."""
         viewport_position = self.layout.get_viewport_box().get_position()
-        self._hadjust.set_value(viewport_position[0])  # 2D only
-        self._vadjust.set_value(viewport_position[1])  # 2D only
+        self.page_area.scroll_to(*viewport_position)  # 2D only
 
     def update_layout_position(self) -> None:
         """Tell the layout where the scrollbars have been moved to.

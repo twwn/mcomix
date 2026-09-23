@@ -138,5 +138,29 @@ class PageCanvasTest(MComixTest):
         self._settle()
         self.assertEqual(adjustment.get_value(),
                          self.CONTENT[0] - self.canvas.get_width())
+    def test_scrolling_past_the_old_size_to_a_new_one_gets_there(self):
+        """The adjustments are told a new content size when the canvas
+        is next allocated, a frame after set_content_size().  A position
+        set in between was cut short to the old size, so a page larger
+        than the one before it, opened at its end, came back a few
+        pixels from its top left corner instead."""
+        self.canvas.set_content_size(1, 1)
+        self._settle()
+        self.canvas.set_content_size(*self.CONTENT)
+        end = (self.CONTENT[0] - self.canvas.get_width(),
+               self.CONTENT[1] - self.canvas.get_height())
+        self.canvas.scroll_to(*end)
+        self._settle()
+        self.assertEqual((self.canvas.get_hadjustment().get_value(),
+                          self.canvas.get_vadjustment().get_value()), end)
+
+    def test_a_position_scrolled_to_is_cut_to_the_content(self):
+        self.canvas.set_content_size(*self.CONTENT)
+        self._settle()
+        self.canvas.scroll_to(self.CONTENT[0] * 2, -10)
+        self._settle()
+        self.assertEqual((self.canvas.get_hadjustment().get_value(),
+                          self.canvas.get_vadjustment().get_value()),
+                         (self.CONTENT[0] - self.canvas.get_width(), 0))
 
 # vim: expandtab:sw=4:ts=4
