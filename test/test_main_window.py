@@ -1278,6 +1278,80 @@ class MainWindowTest(MComixTest):
         finally:
             self._close_prompts()
 
+    def test_turning_past_the_end_offers_to_write_the_changes_first(self):
+        """Turning past the last page opens the next archive in the
+        folder, which closed the book before the question about its
+        changes was asked - and closed, it had no changes to ask about,
+        so they were thrown away without a word."""
+        self._ready()
+        prefs['auto open next archive'] = True
+        with self._quietly():
+            self.assertTrue(self.window.file_actions.swap_pages(1, 2))
+        opened = self.window.filehandler.get_path_to_base()
+        self.window.next_book()
+        self._pump()
+        try:
+            self.assertEqual(len(self._save_prompts()), 1,
+                             'the next book was opened without a word')
+            self.assertEqual(self.window.filehandler.get_path_to_base(),
+                             opened, 'the book went before the answer')
+            self._save_prompts()[0].emit('response', Response.NO)
+            self._pump()
+            self.assertTrue(wait_for(
+                lambda: self.window.filehandler.get_path_to_base()
+                not in (None, opened), seconds=10),
+                'the next book was not opened after the answer')
+        finally:
+            self._close_prompts()
+
+    def test_turning_back_past_the_start_offers_to_write_the_changes_first(self):
+        self._ready()
+        prefs['auto open next archive'] = True
+        self.window.filehandler.open_file(
+            get_testfile_path('archives', 'double-pages-test.cbz'))
+        self._ready()
+        with self._quietly():
+            self.assertTrue(self.window.file_actions.swap_pages(1, 2))
+        self.window.previous_book()
+        self._pump()
+        try:
+            self.assertEqual(len(self._save_prompts()), 1,
+                             'the previous book was opened without a word')
+        finally:
+            self._close_prompts()
+
+    def test_turning_past_the_end_into_a_folder_offers_to_write_first(self):
+        """With no archive after it, turning past the end walks on to
+        the next folder - which moved the walk before anything asked
+        about the book, and then threw its changes away."""
+        first = os.path.join(self.tmp_dir, 'a')
+        second = os.path.join(self.tmp_dir, 'b')
+        os.mkdir(first)
+        os.mkdir(second)
+        book = os.path.join(first, 'book.zip')
+        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), book)
+        shutil.copy(get_testfile_path('images', 'blue.png'), second)
+        prefs['auto open next archive'] = True
+        prefs['auto open next directory'] = True
+        self.window.filehandler.open_file(book)
+        self._ready()
+        with self._quietly():
+            self.assertTrue(self.window.file_actions.swap_pages(1, 2))
+        self.window.next_book()
+        self._pump()
+        try:
+            self.assertEqual(len(self._save_prompts()), 1,
+                             'the next folder was opened without a word')
+            self.assertEqual(self.window.filehandler.get_path_to_base(), book,
+                             'the book went before the answer')
+            self._save_prompts()[0].emit('response', Response.NO)
+            self._pump()
+            self.assertTrue(wait_for(
+                lambda: self.window.filehandler.get_path_to_base() == second,
+                seconds=10), 'the next folder was not opened after the answer')
+        finally:
+            self._close_prompts()
+
     def test_quitting_offers_to_write_the_changes_first(self):
         """And the window stays until the question has been answered:
         it is the window the question stands against."""

@@ -712,7 +712,8 @@ class FileHandler:
 
             for path in files[current_index + 1:]:
                 if archive_tools.archive_mime_type(path) is not None:
-                    self._close()
+                    # open_file() closes this book itself, once it has
+                    # asked about changes that have not been written.
                     self.open_file(path, keep_fileprovider=True)
                     return True
 
@@ -734,7 +735,7 @@ class FileHandler:
 
             for path in reversed(files[:current_index]):
                 if archive_tools.archive_mime_type(path) is not None:
-                    self._close()
+                    # See open_next_archive().
                     self.open_file(path, prefs['open first file in prev archive']-1,
                                    keep_fileprovider=True)
                     return True
@@ -743,8 +744,27 @@ class FileHandler:
 
     def open_next_directory(self, *args: object) -> bool:
         """ Opens the next sibling directory of the current file, as specified by
-        file provider. Returns True if a new directory was opened and files found. """
+        file provider. Returns True if a new directory was opened and files found,
+        or if it is being opened once the book has been dealt with.
 
+        The walk moves the file provider on before anything is opened, so
+        a book with changes that have not been written is asked about
+        first, and the walk waits for the answer.
+        """
+
+        if self._file_provider is None:
+            return False
+        return self._once_dealt_with(self._open_next_directory)
+
+    def _once_dealt_with(self, step: "Callable[[], bool]") -> bool:
+        """Run <step> once the open book has been dealt with, and return
+        what it answers, or True where it is waiting for an answer."""
+        answer: list[bool] = []
+        self._window.file_actions.before_closing(lambda: answer.append(step()))
+        return answer[0] if answer else True
+
+    def _open_next_directory(self) -> bool:
+        """open_next_directory(), the book having been dealt with."""
         if self._file_provider is None:
             return False
 
@@ -771,8 +791,16 @@ class FileHandler:
 
     def open_previous_directory(self, *args: object) -> bool:
         """ Opens the previous sibling directory of the current file, as specified by
-        file provider. Returns True if a new directory was opened and files found. """
+        file provider. Returns True if a new directory was opened and files found,
+        or if it is being opened once the book has been dealt with - see
+        open_next_directory(). """
 
+        if self._file_provider is None:
+            return False
+        return self._once_dealt_with(self._open_previous_directory)
+
+    def _open_previous_directory(self) -> bool:
+        """open_previous_directory(), the book having been dealt with."""
         if self._file_provider is None:
             return False
 
