@@ -11,6 +11,7 @@ import os
 from gi.repository import Gdk, Gio, Gtk
 
 from mcomix.preferences import prefs
+from mcomix import constants
 from mcomix import i18n
 from mcomix import tools
 from mcomix import file_chooser_library_dialog
@@ -161,14 +162,12 @@ class _LibraryDialog(Gtk.Window):
 
         if filelist:
             # A watch list entry that has been removed keeps its
-            # directory but no longer names a collection.
+            # directory but no longer names a collection, and one that
+            # files its books in none names the default collection,
+            # whose id is None.
             collection = watchentry.collection
-            if collection is not None and collection.id is not None:
-                collection_name = collection.name
-            else:
-                collection_name = None
-
-            self.add_books(filelist, collection_name)
+            self.add_books(filelist,
+                           None if collection is None else collection.id)
 
             if len(filelist) == 1:
                 message = _("Added new book '%(bookname)s' "
@@ -208,28 +207,20 @@ class _LibraryDialog(Gtk.Window):
         _close_dialog()
 
     def add_books(self, paths: Sequence[str],
-                  collection_name: str | None = None) -> None:
-        """Add the books at <paths> to the library. If <collection_name>
-        is not None, it is the name of a (new or existing) collection the
-        books should be put in.
+                  collection: int | None = None) -> None:
+        """Add the books at <paths> to the library, and file them in
+        <collection>.
+
+        None files them in no collection, and so do the two collections
+        a book is not filed in: "All books", which holds every book
+        anyway, and "Recent", which holds the books that have been read.
+        Neither has a row of its own to file anything under.
         """
-        if collection_name is None:
-            collection_id = self.collection_area.get_current_collection()
-        else:
-            collection = self.backend.get_collection_by_name(collection_name)
-
-            if collection is not None:
-                collection_id = collection.id
-            else:
-                # Collection by that name doesn't exist.  add_collection()
-                # answers None if it could not add one either, and the
-                # books then go into no collection rather than nowhere.
-                collection_id = self.backend.add_collection(collection_name)
-
-        library_add_progress_dialog._AddLibraryProgressDialog(self, paths, collection_id)
-
-        if collection_id is not None:
-            prefs['last library collection'] = collection_id
+        if collection in (constants.COLLECTION_ALL,
+                          constants.COLLECTION_RECENT):
+            collection = None
+        library_add_progress_dialog._AddLibraryProgressDialog(
+            self, paths, collection)
 
     def _key_press_event(self, controller: Gtk.EventControllerKey,
                          keyval: int, keycode: int,

@@ -86,6 +86,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         self._library_ref = weakref.ref(library)
         self._cache = get_pixbuf_cache()
 
+        self._library.backend.book_added += self._new_book_in_library
         self._library.backend.book_added_to_collection += self._new_book_added
 
         self.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
@@ -283,6 +284,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         # only weakly - but a closed area is not collected, and one left
         # listening would put a cover in its grid for every book filed
         # from then on.
+        self._library.backend.book_added -= self._new_book_in_library
         self._library.backend.book_added_to_collection -= self._new_book_added
 
         # Unselect first, or closing with several books selected sends a
@@ -314,6 +316,17 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         """ Adds a cover to the grid for each of <books>. """
         for book in books:
             self._covers.append_item(_BookItem(book))
+
+    def _new_book_in_library(self, book: 'backend_types._Book') -> None:
+        """Bound to the backend's book_added: draws the cover of <book>,
+        which the library did not have before, where "All books" is on
+        show.
+
+        A book filed in no collection is announced only here, and is in
+        "All books" all the same; one filed in a collection is announced
+        again for that, and is not drawn twice.
+        """
+        self._new_book_added(book, None)
 
     def _new_book_added(self, book: 'backend_types._Book',
                         collection: int | None) -> None:
@@ -958,9 +971,8 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         if not paths:
             return False
 
-        collection = self._library.collection_area.get_current_collection()
-        collection_name = self._library.backend.get_collection_name(collection)
-        self._library.add_books(paths, collection_name)
+        self._library.add_books(
+            paths, self._library.collection_area.get_current_collection())
         return True
 
 

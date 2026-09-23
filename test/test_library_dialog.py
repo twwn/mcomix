@@ -13,7 +13,7 @@ import threading
 import types
 import unittest.mock
 
-from gi.repository import GdkPixbuf, GLib, Gtk
+from gi.repository import GdkPixbuf, Gio, GLib, Gtk
 
 from . import MComixTest, get_testfile_path, pump, wait_for
 
@@ -25,6 +25,7 @@ from mcomix import last_read_page
 from mcomix import main
 from mcomix import message_dialog
 from mcomix.dialog import Response
+from mcomix.library import backend_types
 from mcomix.library import book_area
 from mcomix.library import collection_area
 from mcomix.library import main_dialog
@@ -544,6 +545,110 @@ class CopyBookTest(_OneBookTest):
         self.assertIsInstance(cover, GdkPixbuf.Pixbuf)
 
 
+class AddBooksTest(_LibraryWindowTest):
+
+    """Which collection books added to the library are filed in.
+
+    add_books() took a collection's name, and with none the collection
+    on show: files dropped on "Recent" made a second collection called
+    "Recent", since the row of the real one holds the untranslated
+    RECENT; files dropped on "All books" were filed under its id -1,
+    which no row has; and a watched directory that files its books in
+    no collection filed them in whichever one was on show.
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+
+    def _showing(self, collection):
+        prefs['last library collection'] = collection
+        dialog = self._open()
+        # Read again, for a library that was open already.
+        dialog.collection_area.display_collections()
+        pump()
+        self.assertEqual(collection,
+                         dialog.collection_area.get_current_collection())
+        return dialog
+
+    def _drop(self, dialog):
+        files = types.SimpleNamespace(
+            get_files=lambda: [Gio.File.new_for_path(self.path)])
+        self.assertTrue(dialog.book_area._drag_data_received(
+            None, files, 0, 0))
+        self._wait_for_book(dialog)
+
+    def _wait_for_book(self, dialog):
+        self.assertTrue(wait_for(
+            lambda: dialog.backend.get_book_by_path(self.path) is not None,
+            seconds=10))
+        pump()
+
+    @staticmethod
+    def _filed(dialog):
+        return dialog.backend.fetchall(
+            'select collection, book from Contain order by collection')
+
+    def test_files_dropped_on_all_books_are_filed_in_no_collection(self):
+        dialog = self._showing(constants.COLLECTION_ALL)
+        self._drop(dialog)
+        self.assertEqual([], self._filed(dialog))
+        book = dialog.backend.get_book_by_path(self.path)
+        self.assertTrue(wait_for(lambda: [item.uid for item in
+                                          dialog.book_area._each_item()]
+                                 == [book.id]))
+
+    def test_files_dropped_on_recent_make_no_collection_of_that_name(self):
+        dialog = self._showing(constants.COLLECTION_RECENT)
+        self._drop(dialog)
+        self.assertEqual([constants.COLLECTION_RECENT],
+                         dialog.backend.get_all_collections())
+        self.assertEqual([], self._filed(dialog))
+
+    def test_files_dropped_on_a_collection_are_filed_in_it(self):
+        prefs['last library collection'] = constants.COLLECTION_ALL
+        comics = self._open().backend.add_collection('Comics')
+        dialog = self._showing(comics)
+        self._drop(dialog)
+        book = dialog.backend.get_book_by_path(self.path)
+        self.assertEqual([(comics, book.id)], self._filed(dialog))
+
+    def test_a_watched_directory_with_no_collection_files_in_none(self):
+        prefs['last library collection'] = constants.COLLECTION_ALL
+        comics = self._open().backend.add_collection('Comics')
+        dialog = self._showing(comics)
+        entry = types.SimpleNamespace(
+            collection=backend_types.DefaultCollection, directory='/comics')
+        dialog._new_files_found([self.path], entry)
+        self._wait_for_book(dialog)
+        self.assertEqual([], self._filed(dialog))
+
+    def test_a_collection_a_scan_filed_books_in_still_shows_them(self):
+        # add_books() made the collection the books went into the "last
+        # library collection" while another stayed on show, and picking
+        # that collection then did nothing: it was already the last one.
+        prefs['last library collection'] = constants.COLLECTION_ALL
+        backend = self._open().backend
+        comics = backend.add_collection('Comics')
+        manga = backend.add_collection('Manga')
+        dialog = self._showing(comics)
+        entry = types.SimpleNamespace(
+            collection=backend.get_collection_by_id(manga),
+            directory='/manga')
+        dialog._new_files_found([self.path], entry)
+        self._wait_for_book(dialog)
+        book = backend.get_book_by_path(self.path)
+        self.assertEqual([(manga, book.id)], self._filed(dialog))
+
+        sidebar = dialog.collection_area._list
+        sidebar.select_row(next(row for row in sidebar.each_stored_row()
+                                if row.collection == manga))
+        self.assertTrue(wait_for(lambda: [item.uid for item in
+                                          dialog.book_area._each_item()]
+                                 == [book.id]),
+                        'the covers of "Manga" never showed')
+
+
 class NewBooksMessageTest(MComixTest):
 
     """What the status bar says after a scan of a watched directory.
@@ -554,7 +659,7 @@ class NewBooksMessageTest(MComixTest):
 
     def _message(self, count):
         class _Library:
-            def add_books(self, paths, collection_name):
+            def add_books(self, paths, collection):
                 pass
 
             def set_status_message(self, message):

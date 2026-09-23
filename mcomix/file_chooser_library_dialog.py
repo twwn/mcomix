@@ -60,7 +60,8 @@ class _LibraryFileChooserDialog(file_chooser_base_dialog._BaseFileChooserDialog)
                     filters.index(chosen) + 1
 
             close_library_filechooser_dialog()
-            self._library.add_books(paths, None)
+            self._library.add_books(
+                paths, self._library.collection_area.get_current_collection())
 
         else:
             close_library_filechooser_dialog()

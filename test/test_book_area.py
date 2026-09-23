@@ -44,6 +44,7 @@ class _Event:
 
 class _Backend:
 
+    book_added = _Event()
     book_added_to_collection = _Event()
 
     def __init__(self):

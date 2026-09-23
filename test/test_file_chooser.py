@@ -1,6 +1,7 @@
 """ The file chooser dialog, which GTK4 leaves MComix to assemble. """
 
 import os
+import types
 import unittest.mock
 
 from gi.repository import Gdk, Gio, Gtk
@@ -271,12 +272,17 @@ class _Library(Gtk.Window):
 
     """The library window, as far as its file chooser asks."""
 
+    #: The collection the library is showing.
+    SHOWN = 7
+
     def __init__(self):
         super().__init__()
         self.added = []
+        self.collection_area = types.SimpleNamespace(
+            get_current_collection=lambda: self.SHOWN)
 
     def add_books(self, paths, collection):
-        self.added.append(paths)
+        self.added.append((paths, collection))
 
 
 class LibraryFileChooserTest(MComixTest):
@@ -335,6 +341,13 @@ class LibraryFileChooserTest(MComixTest):
                 'All archives')
             self._module.close_library_filechooser_dialog()
             pump()
+
+    def test_books_go_into_the_collection_on_show(self):
+        dialog = self._open()
+        dialog.files_chosen(['/books/one.cbz'])
+        pump()
+        self.assertEqual([(['/books/one.cbz'], _Library.SHOWN)],
+                         self.library.added)
 
     def test_the_filter_books_were_added_with_is_the_one_it_opens_on(self):
         """The index was written into the list without "All files" and
