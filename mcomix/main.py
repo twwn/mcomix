@@ -1048,13 +1048,16 @@ class MainWindow(Gtk.Window):
         Return True if call resulted in new adjustment values, False
         otherwise.
         """
-        old_hadjust = self._hadjust.get_value()
-        old_vadjust = self._vadjust.get_value()
+        # From the page area rather than the scroll bars: until the
+        # page area is next allocated, a frame after a page turn, they
+        # still hold the page turned from.
+        old_hadjust, old_vadjust = self.page_area.get_position()
 
         visible_width, visible_height = self.get_visible_area_size()
+        content_width, content_height = self.page_area.get_content_size()
 
-        hadjust_upper = max(0, self._hadjust.get_upper() - visible_width)
-        vadjust_upper = max(0, self._vadjust.get_upper() - visible_height)
+        hadjust_upper = max(0, content_width - visible_width)
+        vadjust_upper = max(0, content_height - visible_height)
 
         new_hadjust = old_hadjust + x
         new_vadjust = old_vadjust + y
@@ -1065,8 +1068,7 @@ class MainWindow(Gtk.Window):
         new_hadjust = min(hadjust_upper, new_hadjust)
         new_vadjust = min(vadjust_upper, new_vadjust)
 
-        self._vadjust.set_value(new_vadjust)
-        self._hadjust.set_value(new_hadjust)
+        self.page_area.scroll_to(new_hadjust, new_vadjust)
 
         return old_vadjust != new_vadjust or old_hadjust != new_hadjust
 
@@ -1083,13 +1085,14 @@ class MainWindow(Gtk.Window):
         self.page_area.scroll_to(*viewport_position)  # 2D only
 
     def update_layout_position(self) -> None:
-        """Tell the layout where the scrollbars have been moved to.
+        """Tell the layout where the page area is scrolled to.
 
         The opposite direction from update_viewport_position(), and what
-        the scrollbars' own handlers call.
+        smart scrolling calls before it asks the layout for its next
+        step.
         """
-        self.layout.set_viewport_position(
-            (int(round(self._hadjust.get_value())), int(round(self._vadjust.get_value()))))
+        x, y = self.page_area.get_position()
+        self.layout.set_viewport_position((int(round(x)), int(round(y))))
 
     def clear(self) -> None:
         """Clear the currently displayed data (i.e. "close" the file)."""

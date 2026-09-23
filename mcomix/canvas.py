@@ -95,6 +95,18 @@ class PageCanvas(Gtk.Widget):
         self._vadjustment.set_value(y)
         self.queue_allocate()
 
+    def get_position(self) -> tuple[float, float]:
+        """Return where the content is scrolled to, across and down.
+
+        That is where scroll_to() last asked to go until the allocation
+        has applied it, since the adjustments may still hold a position
+        cut short to the size before; a step taken from theirs would be
+        taken on the content that is going.
+        """
+        if self._wanted is not None:
+            return self._wanted
+        return (self._hadjustment.get_value(), self._vadjustment.get_value())
+
     def put(self, child: Gtk.Widget, x: int, y: int) -> None:
         """Place <child> on the canvas at (<x>, <y>)."""
         self._children.append((child, x, y))

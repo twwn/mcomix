@@ -157,6 +157,16 @@ class _ScrollablePageTest(_KeyPressWindowTest):
         return (self.window._hadjust.get_upper()
                 - self.window.get_visible_area_size()[0])
 
+    def _draw_without_a_frame(self):
+        """Draw the page a key turned to, and stop short of the frame
+        that tells the scroll bars its size - where a key pressed
+        quickly after the one before lands."""
+        self.assertTrue(self.window.imagehandler.page_is_available())
+        # The redraw the page turn queued, run now rather than from the
+        # main loop, which could let the frame clock tick first.
+        self.window._draw_image()
+        self.assertIsNotNone(self.window.page_area._wanted)
+
     def _settle(self):
         """Wait until the page shown is drawn and its size has reached
         the scroll bars, which is a frame after the page is laid out."""
@@ -219,6 +229,25 @@ class ArrowKeysTest(_ScrollablePageTest):
             self._press(Gdk.KEY_Up)
             self._settle()
         self.assertEqual((self.page - 1, self._bottom()), self._where())
+
+    def test_up_before_the_page_before_is_sized_scrolls_it(self):
+        """An arrow key that comes in the frame between a page turn and
+        the scroll bars learning the new page's size was read against
+        the page turned from: the page before, opened at its end from
+        a smaller one, did not move."""
+        while self._where()[1] < self._bottom():
+            self._down()
+        for _ in range(self.PRESSES):
+            self._down()
+        self.assertEqual((self.page + 1, 0), self._where())
+        for _ in range(self.PRESSES - 1):
+            self._press(Gdk.KEY_Up)
+            self._settle()
+        self._press(Gdk.KEY_Up)
+        self._draw_without_a_frame()
+        self._press(Gdk.KEY_Up)
+        self._settle()
+        self.assertEqual((self.page, self._bottom() - 50), self._where())
 
     def test_with_flipping_off_the_keys_only_scroll(self):
         prefs['flip with wheel'] = False
@@ -293,3 +322,23 @@ class SmartScrollKeysTest(_ScrollablePageTest):
         page, x, y = self._space()
         self.assertEqual((self.page, self._right()), (page, x))
         self.assertGreater(y, 0)
+
+    def test_a_second_shift_space_before_the_page_is_sized_reads_on_back(self):
+        """A key that comes in the frame between a page turn and the
+        scroll bars learning the new page's size was read against the
+        page turned from.  Shift+Space back from a page that fits the
+        window found the layout at the top left of the page before
+        rather than at its end, and turned back past it unseen."""
+        for _ in range(50):
+            if self._space()[0] != self.page:
+                break
+        self._space(Gdk.ModifierType.SHIFT_MASK)
+        expected = self._space(Gdk.ModifierType.SHIFT_MASK)
+        # Once more, with the second key before the frame.
+        for _ in range(50):
+            if self._space()[0] != self.page:
+                break
+        self._press(Gdk.KEY_space, Gdk.ModifierType.SHIFT_MASK)
+        self._draw_without_a_frame()
+        self.assertEqual(expected,
+                         self._space(Gdk.ModifierType.SHIFT_MASK))
