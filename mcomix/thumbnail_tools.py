@@ -28,6 +28,7 @@ from mcomix import constants
 from mcomix import archive_tools
 from mcomix import tools
 from mcomix import image_tools
+from mcomix.archive import password as archive_password
 from mcomix import portability
 from mcomix import callback
 from mcomix import log
@@ -225,16 +226,24 @@ class Thumbnailer:
         """ Creates the thumbnail pixbuf for <filepath>, and saves the pixbuf
         to disk if necessary. Returns the created pixbuf, or None, if creation failed. """
 
-        try:
-            pixbuf, tEXt_data = self._create_thumbnail_pixbuf(filepath)
-        except Exception as error:
-            # Whether a file is a picture is decided by its name, so a
-            # damaged one is only found out here.  That is a thumbnail
-            # that failed, which is what None says; raising instead left
-            # a threaded caller waiting for a finish that never came.
-            log.debug('Could not make a thumbnail of "%s": %s',
-                      filepath, error)
-            pixbuf, tEXt_data = None, None
+        # A thumbnail is made on the reader's behalf, not at their
+        # asking - the library draws a cover for every book, the file
+        # chooser previews whatever is selected - so an encrypted
+        # archive is not asked the password of.  It is shown locked.
+        with archive_password.never_asked() as withheld:
+            try:
+                pixbuf, tEXt_data = self._create_thumbnail_pixbuf(filepath)
+            except Exception as error:
+                # Whether a file is a picture is decided by its name, so a
+                # damaged one is only found out here.  That is a thumbnail
+                # that failed, which is what None says; raising instead left
+                # a threaded caller waiting for a finish that never came.
+                log.debug('Could not make a thumbnail of "%s": %s',
+                          filepath, error)
+                pixbuf, tEXt_data = None, None
+        if pixbuf is None and withheld.wanted:
+            # Not stored: it is not a thumbnail of the archive.
+            pixbuf, tEXt_data = image_tools.locked_image_icon(), None
         self.thumbnail_finished(filepath, pixbuf)
 
         if pixbuf and self.store_on_disk and tEXt_data is not None:

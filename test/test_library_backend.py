@@ -19,6 +19,7 @@ from mcomix.i18n import _
 from mcomix import last_read_page
 from mcomix.library import backend
 from mcomix.library import backend_types
+from mcomix.archive import password as archive_password
 
 
 class LibraryDatabaseTest(unittest.TestCase):
@@ -1692,3 +1693,40 @@ class LastReadPageRewriteTest(LibraryDatabaseTest):
         book.set_last_read_page(None)
         self.assertIsNone(book.get_last_read_page())
         self.assertIsNone(book.get_last_read_date())
+
+
+class EncryptedBookTest(LibraryDatabaseTest):
+
+    """Adding an encrypted archive to the library asks for no password,
+    and the book is added all the same.
+
+    The watch list adds whatever a directory holds, and each encrypted
+    archive in it put up a password prompt on its way into the library.
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.library = backend.LibraryBackend()
+        self.asked = []
+
+        def ask(archive, on_password):
+            self.asked.append(archive)
+            on_password(None)
+
+        patcher = unittest.mock.patch.object(
+            archive_password, 'ask_for_password', ask)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def tearDown(self):
+        self.library.close()
+        super().tearDown()
+
+    def test_encrypted_books_are_added_without_a_prompt(self):
+        for name in ('Encrypted.zip', 'Encrypted.rar', 'Encrypted.7z',
+                     'EncryptedHeader.rar', 'EncryptedHeader.7z'):
+            with self.subTest(name):
+                path = get_testfile_path('archives', name)
+                self.assertTrue(self.library.add_book(path))
+                self.assertIsNotNone(self.library.get_book_by_path(path))
+        self.assertEqual([], self.asked)

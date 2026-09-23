@@ -144,7 +144,13 @@ class BaseArchive:
 
     def _get_password(self) -> str:
         """ Returns the password for this archive, asking for it once if it
-        has not been asked for yet.  Blocks until the dialog is answered. """
+        has not been asked for yet.  Blocks until the dialog is answered.
+
+        Inside archive_password.never_asked() nothing is asked and the
+        answer is no password, which is not remembered: a prompt the
+        reader does ask for, by opening the book, still comes. """
+        if self._password is None and archive_password.withheld_here():
+            return ''
         ask_for_password = self._password is None
         # Don't trigger concurrent password dialogs.
         if ask_for_password and self.support_concurrent_extractions:

@@ -5,6 +5,7 @@ import operator
 from gi.repository import GLib, GdkPixbuf, Gdk, Gtk
 import PIL
 from PIL import Image
+from PIL import ImageDraw
 from PIL import ImageEnhance
 from PIL import ImageOps
 from io import BytesIO
@@ -47,6 +48,34 @@ def missing_image_icon() -> GdkPixbuf.Pixbuf:
     # and a square this small will not be what runs out.
     assert icon is not None
     return icon
+
+
+@functools.cache
+def locked_image_icon() -> GdkPixbuf.Pixbuf:
+    """The pixbuf shown in place of the cover of an encrypted archive,
+    which is not opened to make one without its password.
+
+    A padlock in dark grey on a light disc, large enough to stay sharp
+    at the size of a thumbnail.  The theme has the padlock only as a symbolic icon, a
+    shape GTK recolours for the widget it stands in; loaded as a pixbuf
+    it keeps the theme's dark grey, which would all but vanish on the
+    library's black, hence the disc.
+    """
+    from mcomix import icons
+    size = 64
+    # Drawn four times over and scaled down, which smooths the edge
+    # ImageDraw leaves jagged.
+    disc = Image.new('RGBA', (size * 4, size * 4), (0, 0, 0, 0))
+    ImageDraw.Draw(disc).ellipse((0, 0, size * 4 - 1, size * 4 - 1),
+                                 fill=(255, 255, 255, 230))
+    disc = disc.resize((size, size), Image.Resampling.LANCZOS)
+    lock = icons.load_pixbuf('changes-prevent-symbolic', size // 2)
+    if lock is not None:
+        shape = pixbuf_to_pil(lock).convert('RGBA')
+        disc.paste((46, 52, 54, 255), ((size - shape.width) // 2,
+                                       (size - shape.height) // 2),
+                   mask=shape.getchannel('A'))
+    return pil_to_pixbuf(disc)
 
 
 def rgba(red: float, green: float, blue: float,

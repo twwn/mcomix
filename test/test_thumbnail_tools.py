@@ -1,6 +1,7 @@
 """ Tests for the freedesktop.org thumbnail store. """
 
 import os
+import unittest.mock
 import zipfile
 from urllib.request import pathname2url
 
@@ -10,6 +11,7 @@ import PIL.PngImagePlugin
 from . import MComixTest, get_testfile_path, wait_for
 
 from mcomix import image_tools
+from mcomix.archive import password as archive_password
 from mcomix import portability
 from mcomix import thumbnail_tools
 from mcomix.preferences import prefs
@@ -286,3 +288,54 @@ class ArchiveCoverOrientationTest(MComixTest):
         self.assertGreater(shown.get_width(), shown.get_height())
         with PIL.Image.open(path) as stored:
             self.assertIn('X-MComix::Orientation', stored.info)
+
+
+class EncryptedArchiveThumbnailTest(MComixTest):
+
+    """A thumbnail of an encrypted archive is made without asking for
+    its password, and shows a lock.
+
+    The library draws a cover for every book it holds, again whenever
+    it draws them, and the file chooser previews whatever is selected:
+    each of those asked for the password of an encrypted book, one
+    dialog after another.
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.asked = []
+
+        def ask(archive, on_password):
+            self.asked.append(archive)
+            on_password(None)
+
+        patcher = unittest.mock.patch.object(
+            archive_password, 'ask_for_password', ask)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def _thumbnail(self, name):
+        return thumbnail_tools.Thumbnailer(
+            dst_dir=os.path.join(self.tmp_dir, 'thumbnails'),
+            store_on_disk=True, archive_support=True,
+            size=(128, 128)).thumbnail(get_testfile_path('archives', name))
+
+    def test_no_password_is_asked_for(self):
+        for name in ('Encrypted.zip', 'Encrypted.rar', 'Encrypted.7z',
+                     'EncryptedHeader.rar', 'EncryptedHeader.7z'):
+            with self.subTest(name):
+                self._thumbnail(name)
+        self.assertEqual([], self.asked)
+
+    def test_the_thumbnail_is_a_lock(self):
+        for name in ('Encrypted.zip', 'Encrypted.rar', 'Encrypted.7z'):
+            with self.subTest(name):
+                self.assertIs(image_tools.locked_image_icon(),
+                              self._thumbnail(name))
+
+    def test_the_lock_is_not_stored(self):
+        """It stands for a thumbnail that could not be made; the store
+        is for thumbnails."""
+        self._thumbnail('Encrypted.zip')
+        self.assertFalse(os.path.exists(os.path.join(self.tmp_dir,
+                                                     'thumbnails')))

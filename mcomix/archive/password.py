@@ -1,5 +1,8 @@
 """The prompt that asks for an encrypted archive's password."""
 
+import contextlib
+import threading
+
 from gi.repository import Gtk
 
 from mcomix import message_dialog
@@ -7,7 +10,51 @@ from mcomix import widgets
 from mcomix.i18n import _
 from mcomix.dialog import Response
 
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+
+
+class Withheld:
+
+    """What never_asked() found out: whether anything in its block
+    wanted a password."""
+
+    def __init__(self) -> None:
+        self.wanted = False
+
+
+_withholding = threading.local()
+
+
+@contextlib.contextmanager
+def never_asked() -> Iterator[Withheld]:
+    """Answer every request for a password made on this thread inside
+    the block with none, without asking.
+
+    For what works through archives on the reader's behalf rather than
+    at their asking - a thumbnail, the library's listing of a book - and
+    so should not put up a prompt, let alone one for every archive it
+    passes.  What it answers with says whether any archive wanted one.
+    """
+    withheld = Withheld()
+    outer = getattr(_withholding, 'current', None)
+    _withholding.current = withheld
+    try:
+        yield withheld
+    finally:
+        _withholding.current = outer
+        if outer is not None and withheld.wanted:
+            outer.wanted = True
+
+
+def withheld_here() -> bool:
+    """Whether a password wanted now, on this thread, is to be withheld
+    rather than asked for; if it is, never_asked() is told it was
+    wanted."""
+    withheld: Withheld | None = getattr(_withholding, 'current', None)
+    if withheld is None:
+        return False
+    withheld.wanted = True
+    return True
 
 
 def ask_for_password(archive: str,

@@ -18,6 +18,7 @@ from collections.abc import Iterator, Sequence
 from typing import Any, TYPE_CHECKING
 
 from mcomix import archive_tools
+from mcomix.archive import password as archive_password
 from mcomix import constants
 from mcomix import thumbnail_tools
 from mcomix import log
@@ -389,7 +390,23 @@ class _LibraryBackend:
         """
         path = os.path.abspath(path)
         name = os.path.basename(path)
-        info = archive_tools.get_archive_info(path)
+        # The library lists what it is given, and what a watched
+        # directory holds, on the reader's behalf: an encrypted archive
+        # is not asked the password of.  One whose very listing is
+        # encrypted is still a book, of pages not yet known.
+        with archive_password.never_asked() as withheld:
+            try:
+                info = archive_tools.get_archive_info(path)
+            except Exception:
+                # A handler that gives up on no password may say so by
+                # raising, as libunrar does over an encrypted listing.
+                if not withheld.wanted:
+                    raise
+                info = None
+        if info is None and withheld.wanted:
+            mime = archive_tools.archive_mime_type(path)
+            if mime is not None:
+                info = (mime, 0, os.stat(path).st_size)
         if info is None:
             return False
         format, pages, size = info
