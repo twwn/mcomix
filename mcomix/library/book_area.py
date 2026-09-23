@@ -576,9 +576,14 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         if pixbuf is None:
             width, height = self._pixbuf_size(border_size=0)
             try:
-                pixbuf = self._library.backend.get_book_thumbnail(book.path) or image_tools.missing_image_icon()
+                thumbnail = self._library.backend.get_book_thumbnail(book.path)
             except Exception:
+                thumbnail = None
+            if thumbnail is None:
                 pixbuf = image_tools.missing_image_icon()
+            else:
+                # Turned as the cover is shown when the book is read.
+                pixbuf = image_tools.turned_as_shown(thumbnail, book.path)
             pixbuf = image_tools.fit_in_rectangle(pixbuf, width, height, scale_up=True)
             self._cache.add(book.path, pixbuf)
 

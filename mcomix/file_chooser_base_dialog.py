@@ -689,7 +689,8 @@ class _BaseFileChooserDialog(Dialog):
                 self._sizelabel.set_text('')
 
             else:
-                pixbuf = image_tools.add_border(pixbuf, 1)
+                pixbuf = image_tools.add_border(
+                    image_tools.turned_as_shown(pixbuf, filepath), 1)
                 self._preview_image.set_paintable(
                     image_tools.pixbuf_to_texture(pixbuf))
                 self._namelabel.set_text(os.path.basename(filepath))

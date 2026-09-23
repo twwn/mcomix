@@ -840,10 +840,18 @@ def turned_as_shown(thumbnail: GdkPixbuf.Pixbuf,
     way when it is drawn - not when it is made, since what is stored in
     the freedesktop thumbnail cache is read by other programs, which turn
     it as they see fit.
+
+    <path> may be an archive, whose thumbnail is of its cover: what the
+    cover's orientation was is not to be had from the archive's path,
+    and the thumbnailer keeps it with the thumbnail instead.
     """
     if not prefs['auto rotate from exif']:
         return thumbnail
-    return rotate_pixbuf(thumbnail, get_implied_rotation_from_file(path))
+    if is_image_file(path):
+        rotation = get_implied_rotation_from_file(path)
+    else:
+        rotation = get_implied_rotation(thumbnail)
+    return rotate_pixbuf(thumbnail, rotation)
 
 
 def get_implied_rotation_from_file(path: str) -> int:

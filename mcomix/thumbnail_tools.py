@@ -37,6 +37,19 @@ if TYPE_CHECKING:
     from gi.repository import GdkPixbuf
 
 
+#: The tEXt key the Exif orientation of an archive's cover is stored
+#: under, beside the thumbnail made of it.  Not one of the spec's own
+#: Thumb:: keys, which other programs read.
+_ORIENTATION_KEY = 'tEXt::X-MComix::Orientation'
+
+
+def _orientation_of(pixbuf: "GdkPixbuf.Pixbuf") -> str | None:
+    """The Exif orientation the loader found for <pixbuf>, if any."""
+    orientation = getattr(pixbuf, 'orientation', None) \
+        or pixbuf.get_option('orientation')
+    return str(orientation) if orientation is not None else None
+
+
 def _file_uri(filepath: str) -> str:
     """The URI of the file at <filepath>.
 
@@ -59,7 +72,8 @@ class Thumbnailer:
                  store_on_disk: bool | None = None,
                  size: tuple[int, int] | None = None,
                  force_recreation: bool = False,
-                 archive_support: bool = False) -> None:
+                 archive_support: bool = False,
+                 cover_orientation_required: bool = False) -> None:
         """
         <dst_dir> set the thumbnailer's storage directory.
 
@@ -77,6 +91,11 @@ class Thumbnailer:
         If <archive_support> is True, support for archive thumbnail creation
         (based on cover detection) is enabled. Otherwise, only image files are
         supported.
+
+        If <cover_orientation_required> is True, the stored thumbnail of
+        an archive is made again where it does not say how its cover was
+        turned: a store only MComix writes to, such as the library's,
+        then comes to say so for every cover.
         """
         self.dst_dir = dst_dir
         if store_on_disk is None:
@@ -91,6 +110,7 @@ class Thumbnailer:
             self.default_sizes = False
         self.force_recreation = force_recreation
         self.archive_support = archive_support
+        self.cover_orientation_required = cover_orientation_required
 
     def thumbnail(self, filepath: str, threaded: bool = False) -> "GdkPixbuf.Pixbuf | None":
         """ Returns a thumbnail pixbuf for <filepath>, transparently handling
@@ -174,6 +194,14 @@ class Thumbnailer:
                     tEXt_data = self._get_text_data(image_path)
                     # Use the archive's mTime instead of the extracted file's mtime
                     tEXt_data['tEXt::Thumb::MTime'] = str(int(os.stat(filepath).st_mtime))
+                    # The thumbnail is stored as the cover is in the
+                    # file, other programs reading the store; its Exif
+                    # orientation is kept beside it, since the cover is
+                    # not to be had again without opening the archive.
+                    # 1 is Exif's own "as stored", written rather than
+                    # left out so that a thumbnail made before this was
+                    # kept can be told from one of an upright cover.
+                    tEXt_data[_ORIENTATION_KEY] = _orientation_of(pixbuf) or '1'
                 else:
                     tEXt_data = None
 
@@ -280,7 +308,17 @@ class Thumbnailer:
                 if not (self._source_is_unchanged(filepath, img.info)
                         and self._is_current_size(img.size, img.info)):
                     return None
-                return image_tools.pil_to_pixbuf(img, keep_orientation=True)
+                orientation = img.info.get(_ORIENTATION_KEY[len('tEXt::'):])
+                if (self.cover_orientation_required
+                        and not isinstance(orientation, str)
+                        and not image_tools.is_image_file(filepath)):
+                    # A cover whose orientation nobody wrote down, which
+                    # is made again to find it out.
+                    return None
+                pixbuf = image_tools.pil_to_pixbuf(img, keep_orientation=True)
+                if isinstance(orientation, str):
+                    setattr(pixbuf, 'orientation', orientation)
+                return pixbuf
         except OSError:
             # Not an image, not readable, or broken off partway through
             # being written: there is nothing to reuse, and one that

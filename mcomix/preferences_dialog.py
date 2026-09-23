@@ -965,8 +965,15 @@ class _PreferencesDialog(Dialog):
 
         elif preference == 'auto rotate from exif':
             self._window.draw_image()
-            # The sidebar's thumbnails are turned as the pages are.
+            # The sidebar's thumbnails are turned as the pages are, and
+            # so are the library's covers, which are kept turned.
             self._window.thumbnailsidebar.resize()
+            from mcomix.library import main_dialog, pixbuf_cache
+            library = main_dialog.get_dialog()
+            if library is not None:
+                library.book_area.load_covers()
+            else:
+                pixbuf_cache.get_pixbuf_cache().invalidate_all()
 
         elif (preference == 'hide all in fullscreen' and
               self._window.is_fullscreen()):

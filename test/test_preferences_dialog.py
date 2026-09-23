@@ -125,6 +125,18 @@ class PreferencesDialogTest(MComixTest):
         remade.assert_called_once_with()
         self.assertEqual(prefs['auto rotate from exif'], button.get_active())
 
+    def test_turning_pages_by_their_metadata_forgets_the_drawn_covers(self):
+        """The library's covers are kept as they were drawn, turned or
+        not; with the library closed, the next one opened would have
+        drawn them the old way from what was kept."""
+        from mcomix.library import pixbuf_cache
+        dialog = self._open()
+        cache = pixbuf_cache.get_pixbuf_cache()
+        cache.add('/books/kept.cbz', image_tools.missing_image_icon())
+        button = Gtk.CheckButton(active=not prefs['auto rotate from exif'])
+        dialog._check_button_cb(button, 'auto rotate from exif')
+        self.assertIsNone(cache.get('/books/kept.cbz'))
+
     def test_the_pair_shows_the_colour_the_preference_names(self):
         prefs['smart bg'] = False
         self._open()

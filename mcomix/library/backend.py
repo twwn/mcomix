@@ -208,7 +208,8 @@ class _LibraryBackend:
                                                   store_on_disk=True,
                                                   archive_support=True,
                                                   size=(constants.MAX_LIBRARY_COVER_SIZE,
-                                                        constants.MAX_LIBRARY_COVER_SIZE))
+                                                        constants.MAX_LIBRARY_COVER_SIZE),
+                                                  cover_orientation_required=True)
         thumb = thumbnailer.thumbnail(path)
 
         if thumb is None:

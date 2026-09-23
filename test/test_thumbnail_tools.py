@@ -1,6 +1,7 @@
 """ Tests for the freedesktop.org thumbnail store. """
 
 import os
+import zipfile
 from urllib.request import pathname2url
 
 import PIL.Image
@@ -8,8 +9,10 @@ import PIL.PngImagePlugin
 
 from . import MComixTest, get_testfile_path, wait_for
 
+from mcomix import image_tools
 from mcomix import portability
 from mcomix import thumbnail_tools
+from mcomix.preferences import prefs
 
 
 class ThumbnailFailureTest(MComixTest):
@@ -211,3 +214,75 @@ class ThumbnailReuseTest(MComixTest):
             'the URI carried a character the hash would have to encode')
 
 # vim: expandtab:sw=4:ts=4
+
+
+class ArchiveCoverOrientationTest(MComixTest):
+
+    """The thumbnail of an archive is of its cover, and is turned the
+    way that picture is shown - the Exif orientation of a file inside
+    the archive, which nothing can read off the archive's path.
+
+    The picture is 210 pixels wide and 297 high, and its Exif data turns
+    it a quarter, so it is shown wider than it is high.
+    """
+
+    def setUp(self):
+        super().setUp()
+        self._archive = os.path.join(self.tmp_dir, 'turned.cbz')
+        with zipfile.ZipFile(self._archive, 'w') as archive:
+            archive.write(get_testfile_path(
+                'images', 'landscape-exif-270-rotation.jpg'), '01.jpg')
+        self._store = os.path.join(self.tmp_dir, 'thumbnails')
+
+    def _shown(self):
+        thumbnailer = thumbnail_tools.Thumbnailer(
+            dst_dir=self._store, store_on_disk=True, archive_support=True,
+            size=(128, 128))
+        pixbuf = thumbnailer.thumbnail(self._archive)
+        self.assertIsNotNone(pixbuf)
+        return image_tools.turned_as_shown(pixbuf, self._archive)
+
+    def test_a_new_thumbnail_is_turned_as_its_cover_is(self):
+        prefs['auto rotate from exif'] = True
+        shown = self._shown()
+        self.assertGreater(shown.get_width(), shown.get_height())
+
+    def test_one_from_the_store_is_turned_as_well(self):
+        """What is stored is not turned, other programs reading the
+        store; what the cover's orientation was is stored with it."""
+        prefs['auto rotate from exif'] = True
+        self._shown()
+        stored = PIL.Image.open(thumbnail_tools.Thumbnailer(
+            dst_dir=self._store)._path_to_thumbpath(self._archive))
+        self.assertLess(stored.size[0], stored.size[1])
+        shown = self._shown()
+        self.assertGreater(shown.get_width(), shown.get_height())
+
+    def test_it_is_left_as_it_is_where_exif_is_not_followed(self):
+        prefs['auto rotate from exif'] = False
+        shown = self._shown()
+        self.assertLess(shown.get_width(), shown.get_height())
+
+    def test_a_stored_cover_that_says_nothing_of_it_is_made_again(self):
+        """A store only MComix writes to - the library's covers - holds
+        thumbnails made before the orientation was kept; they are made
+        again, or those covers would stay unturned for good."""
+        prefs['auto rotate from exif'] = True
+        self._shown()
+        path = thumbnail_tools.Thumbnailer(
+            dst_dir=self._store)._path_to_thumbpath(self._archive)
+        with PIL.Image.open(path) as stored:
+            info = PIL.PngImagePlugin.PngInfo()
+            for key, value in stored.info.items():
+                if isinstance(value, str) and 'MComix::' not in key:
+                    info.add_text(key, value)
+            stored.load()
+            stored.save(path, 'PNG', pnginfo=info)
+        thumbnailer = thumbnail_tools.Thumbnailer(
+            dst_dir=self._store, store_on_disk=True, archive_support=True,
+            size=(128, 128), cover_orientation_required=True)
+        shown = image_tools.turned_as_shown(
+            thumbnailer.thumbnail(self._archive), self._archive)
+        self.assertGreater(shown.get_width(), shown.get_height())
+        with PIL.Image.open(path) as stored:
+            self.assertIn('X-MComix::Orientation', stored.info)

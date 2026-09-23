@@ -300,6 +300,19 @@ class FileChooserTest(MComixTest):
         self.assertTrue(self.dialog._sizelabel.get_text(),
                         'the preview says no file size')
 
+    def test_a_picture_is_previewed_turned_as_it_is_shown(self):
+        """The picture is 210 pixels wide and 297 high, and its Exif
+        data turns it a quarter when it is read; the preview showed it
+        as it is stored."""
+        prefs['auto rotate from exif'] = True
+        path = get_testfile_path('images', 'landscape-exif-270-rotation.jpg')
+        self.dialog.filechooser.set_file(Gio.File.new_for_path(path))
+        wait_for(lambda: self.dialog._preview_image.get_paintable() is not None)
+        paintable = self.dialog._preview_image.get_paintable()
+        self.assertIsNotNone(paintable, 'the preview never appeared')
+        self.assertGreater(paintable.get_intrinsic_width(),
+                           paintable.get_intrinsic_height())
+
 # vim: expandtab:sw=4:ts=4
 
 

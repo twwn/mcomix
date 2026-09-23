@@ -196,6 +196,63 @@ class _Book:
         self.added = added
 
 
+class _CoverBackend(_Backend):
+
+    """A backend holding one book, whose cover the real thumbnailer
+    makes."""
+
+    def __init__(self, path, store):
+        super().__init__()
+        self._book = _Book(1, path)
+        self._book.get_last_read_page = lambda: None
+        self._store = store
+
+    def get_book_by_id(self, book):
+        return self._book if book == 1 else None
+
+    def get_book_thumbnail(self, path):
+        from mcomix import thumbnail_tools
+        return thumbnail_tools.Thumbnailer(
+            dst_dir=self._store, store_on_disk=True, archive_support=True,
+            size=(constants.MAX_LIBRARY_COVER_SIZE,) * 2,
+            cover_orientation_required=True).thumbnail(path)
+
+
+class TurnedCoverTest(MComixTest):
+
+    """A cover is drawn turned as the page it is shows when the book is
+    read: its Exif orientation, where 'auto rotate from exif' says so."""
+
+    def setUp(self):
+        super().setUp()
+        import zipfile
+        from . import get_testfile_path
+        archive = os.path.join(self.tmp_dir, 'turned.cbz')
+        with zipfile.ZipFile(archive, 'w') as book:
+            book.write(get_testfile_path(
+                'images', 'landscape-exif-270-rotation.jpg'), '01.jpg')
+        self.library = _Library()
+        self.library.backend = _CoverBackend(
+            archive, os.path.join(self.tmp_dir, 'covers'))
+        self.library.main_window = types.SimpleNamespace(
+            enhancer=types.SimpleNamespace(enhance=lambda pixbuf: pixbuf))
+        self.area = book_area._BookArea(self.library)
+        self.area._cache.invalidate_all()
+
+    def tearDown(self):
+        self.area.close()
+        self.area._cache.invalidate_all()
+        super().tearDown()
+
+    def test_the_cover_of_a_turned_page_is_turned(self):
+        """The picture is 210 pixels wide and 297 high, and shown the
+        other way round; the cover was drawn as it is stored."""
+        prefs['auto rotate from exif'] = True
+        prefs['library cover size'] = constants.SIZE_NORMAL
+        pixbuf = self.area._get_pixbuf(1)
+        self.assertGreater(pixbuf.get_width(), pixbuf.get_height())
+
+
 class CoverOrderTest(MComixTest):
 
     """What order the covers are shown in.
