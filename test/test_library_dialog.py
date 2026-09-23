@@ -527,6 +527,23 @@ class BookInfoTest(_OneBookTest):
         self.assertFalse(info._open_button.get_sensitive())
 
 
+class CopyBookTest(_OneBookTest):
+
+    """"Copy" in the menu over the covers."""
+
+    def test_copy_puts_the_selected_book_on_the_clipboard(self):
+        area = self.dialog.book_area
+        area._covers.select_only(0)
+        pump()
+        clipboard = self.dialog.main_window.clipboard
+        with unittest.mock.patch.object(clipboard, 'copy') as copy:
+            area._popup_actions.activate_action('copy-to-clipboard', None)
+        copy.assert_called_once()
+        path, cover = copy.call_args.args
+        self.assertEqual(self.path, path)
+        self.assertIsInstance(cover, GdkPixbuf.Pixbuf)
+
+
 class NewBooksMessageTest(MComixTest):
 
     """What the status bar says after a scan of a watched directory.
