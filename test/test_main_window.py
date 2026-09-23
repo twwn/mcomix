@@ -1962,6 +1962,38 @@ class MainWindowTest(MComixTest):
             dialog.destroy()
         self._pump()
 
+    def test_a_loose_image_is_renamed_to_its_own_name_in_other_case(self):
+        """On a file system that ignores case - Windows', and macOS' by
+        default - the new name of a page renamed to 0.PNG from 0.png is
+        there already: it is the file itself.  The rename was refused
+        with "A file of that name is there already"."""
+        directory = self._loose_book('case')
+
+        def folded(path):
+            """The entry that <path> names where case is ignored."""
+            wanted = os.path.basename(path).casefold()
+            parent = os.path.dirname(path)
+            if not os.path.isdir(parent):
+                return None
+            for entry in os.listdir(parent):
+                if entry.casefold() == wanted:
+                    return os.path.join(parent, entry)
+            return None
+
+        with unittest.mock.patch(
+                'os.path.lexists',
+                side_effect=lambda path: folded(path) is not None), \
+                unittest.mock.patch(
+                    'os.path.samefile',
+                    side_effect=lambda one, two: folded(one) == folded(two)):
+            renamed = self.window.file_actions.rename_page(1, '0.PNG')
+        self._pump()
+
+        self.assertEqual(renamed, '0.PNG')
+        self.assertEqual(sorted(os.listdir(directory)),
+                         ['0.PNG', '1.png', '2.png'])
+        self.assertEqual(self._delete_dialogs(), [])
+
     # -- Renaming to a name another page holds ----------------------------
 
     def _loose_book(self, name, pages=3):

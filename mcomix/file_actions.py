@@ -38,6 +38,18 @@ if TYPE_CHECKING:
     from mcomix import main
 
 
+def _same_file_recased(path: str, target: str) -> bool:
+    """Whether <target> is <path> itself under a name that differs only
+    in case, which is what a file system that ignores case answers."""
+    if (os.path.basename(path).casefold()
+            != os.path.basename(target).casefold()):
+        return False
+    try:
+        return os.path.samefile(path, target)
+    except OSError:
+        return False
+
+
 class FileActions:
 
     """The file operations MainWindow offers, and their undo stack."""
@@ -274,10 +286,12 @@ class FileActions:
         A name that is taken is refused rather than written over:
         MComix is renaming one page of a book here, not moving a file
         about, and the file of that name may be another page of the
-        same book.
+        same book.  Where the file system ignores case, as Windows' and
+        macOS' do, the name a change of case asks for is taken by the
+        file itself, which is no reason to refuse it.
         """
         target = os.path.join(os.path.dirname(path), name)
-        if os.path.lexists(target):
+        if os.path.lexists(target) and not _same_file_recased(path, target):
             dialog = message_dialog.MessageDialog(
                 self._window, buttons=Gtk.ButtonsType.CLOSE)
             dialog.set_text(_('A file of that name is there already.'))
