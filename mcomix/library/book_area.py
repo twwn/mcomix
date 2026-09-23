@@ -428,12 +428,9 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
 
     @staticmethod
     def _compare_books(key: int, left: _BookItem, right: _BookItem) -> int:
-        """Order two covers by <key>, one of the SORT_ constants.
-
-        A Gtk.ListStore sorted itself by a column number, which is why
-        the SORT_ constants used to have to match the column layout. A
-        Gtk.Sorter is handed the two items instead.
-        """
+        """Order two covers by <key>, one of the SORT_ constants: the
+        name of the file, its size, the date the book was added, or else
+        the whole path."""
         if key == constants.SORT_NAME:
             return tools.cmp(
                 tools.AlphanumericSortKey(os.path.basename(left.path).lower()),
