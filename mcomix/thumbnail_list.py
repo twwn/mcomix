@@ -528,8 +528,31 @@ class ThumbnailGridView(Gtk.GridView, _ThumbnailViewBase):
         self.store.remove(source)
         self.store.insert(destination, item)
         if had_focus:
-            GLib.idle_add(self._focus_entry, item)
+            self._focus_after_layout(item)
         return True
+
+    def _focus_after_layout(self, item: ThumbnailItem) -> None:
+        """Give <item> the focus once the view has been laid out again.
+
+        Not from the idle queue: an idle can run before the next frame
+        lays the view out, and the cell it focuses is then one that has
+        not been moved to where it will be drawn yet - GTK scrolls a row
+        up or down to show it.  After the frame has been painted, the
+        cells are where the reader sees them.
+        """
+        clock = self.get_frame_clock()
+        if clock is None:
+            # Not on screen, so there is no layout to wait for.
+            GLib.idle_add(self._focus_entry, item)
+            return
+        handler = 0
+
+        def painted(clock: Gdk.FrameClock) -> None:
+            clock.disconnect(handler)
+            self._focus_entry(item)
+
+        handler = clock.connect('after-paint', painted)
+        clock.request_phase(Gdk.FrameClockPhase.LAYOUT)
 
     def _focus_entry(self, item: ThumbnailItem) -> bool:
         """Give the keyboard focus to the cell showing <item>, if one is."""
