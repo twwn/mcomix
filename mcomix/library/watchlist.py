@@ -16,6 +16,7 @@ from gi.repository import Gio, Gtk, GLib
 from mcomix.library import backend_types
 from mcomix.dialog import Dialog
 from mcomix import column_list
+from mcomix import constants
 from mcomix import widgets
 from mcomix.preferences import prefs
 from mcomix.i18n import _
@@ -124,10 +125,21 @@ class WatchListDialog(Dialog):
         self.set_response_sensitive(WatchListDialog.RESPONSE_SCANNOW,
                                     self._list.store.get_n_items() > 0)
 
+    def _collections(self) -> list[int]:
+        """The id of every collection a directory can be watched into,
+        besides the default one.
+
+        Not "Recent", which holds the books that have been read and is
+        not filed in: the library adds what a scan finds there to no
+        collection at all.
+        """
+        return [id for id in self.library.backend.get_all_collections()
+                if id != constants.COLLECTION_RECENT]
+
     def _collection_names(self) -> list[str]:
         """ The name of every collection a directory can be watched into. """
         names = [backend_types.DefaultCollection.name]
-        for id in self.library.backend.get_all_collections():
+        for id in self._collections():
             name = self.library.backend.get_collection_name(id)
             if name is not None:
                 names.append(name)
@@ -139,14 +151,16 @@ class WatchListDialog(Dialog):
         # one's name, and the list offers the default first.
         if name == backend_types.DefaultCollection.name:
             return -1
-        for id in self.library.backend.get_all_collections():
+        for id in self._collections():
             if self.library.backend.get_collection_name(id) == name:
                 return id
         return -1
 
     def _collection_name_of(self, row: column_list.Row) -> str:
         """ The name of the collection <row> is watched into. """
-        if row.collection_id == -1:
+        # A directory watched into "Recent", which the list once
+        # offered, has its books added to no collection.
+        if row.collection_id in (-1, constants.COLLECTION_RECENT):
             return backend_types.DefaultCollection.name
         name = self.library.backend.get_collection_name(row.collection_id)
         # A directory whose collection has gone is watched into the default

@@ -73,7 +73,27 @@ class WatchListDialogTest(MComixTest):
         self.assertEqual(names[0], 'All books')
         self.assertIn('Shelf', names)
 
+    def test_recent_is_not_offered(self):
+        # It holds the books that have been read, and the library files
+        # nothing a scan finds there.
+        self.assertNotIn('Recent', self.dialog._collection_names())
+
+    def test_a_directory_watched_into_recent_shows_the_default_one(self):
+        row = self.dialog._list.get_row(0)
+        row.collection_id = constants.COLLECTION_RECENT
+        self.assertEqual(self.dialog._collection_name_of(row), 'All books')
+
     # -- Editing ----------------------------------------------------------
+
+    def test_a_collection_of_its_own_called_recent_can_be_chosen(self):
+        """Files dropped on "Recent" once made a collection of that name,
+        and picking it filed the directory's books in the real "Recent",
+        whose name is the same once translated."""
+        own = self.backend.add_collection('Recent')
+        row = self.dialog._list.get_row(0)
+        self.dialog._collection_chosen(row, 'Recent')
+        entry = self.backend.watchlist.get_watchlist_entry(row.directory)
+        self.assertEqual(entry.collection.id, own)
 
     def test_choosing_a_collection_writes_it_to_the_database(self):
         row = self.dialog._list.get_row(0)
