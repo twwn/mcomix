@@ -1369,6 +1369,41 @@ class DuplicateCollectionTest(LibraryDatabaseTest):
         self.assertEqual(self.library.get_books_in_collection(self.collection),
                          self.library.get_books_in_collection(copy.id))
 
+    def _book_in(self, name, collection):
+        """File a book called <name> in <collection>, and answer its id."""
+        self.library._con.execute(
+            '''insert into book (name, path, pages, format, size)
+               values (?, ?, ?, ?, ?)''',
+            (name, '/does/not/exist/%s.cbz' % name, 20, 1, 1))
+        book = self.library.get_book_by_path(
+            '/does/not/exist/%s.cbz' % name).id
+        self.library.add_book_to_collection(book, collection)
+        return book
+
+    def test_the_copy_shows_the_books_of_the_collections_under_it(self):
+        """A collection shows the books of every collection under it as
+        well as its own; the copy held only its own, and so showed
+        fewer books than the collection it was a copy of."""
+        inner = self.library.add_collection('Inner')
+        self.library.add_collection_to_collection(inner, self.collection)
+        self._book_in('b', inner)
+        self.assertTrue(self.library.duplicate_collection(self.collection))
+        copy = self.library.get_collection_by_name('Shelf (Copy)')
+        original = self.library.get_collection_by_id(self.collection)
+        self.assertEqual(sorted(book.id for book in original.get_books()),
+                         sorted(book.id for book in copy.get_books()))
+        self.assertEqual(self.library.get_all_collections_in_collection(
+            copy.id), [], 'the copy took the collections under it along')
+
+    def test_the_copy_is_put_beside_the_collection(self):
+        """It went to the top of the library, wherever the collection
+        was."""
+        outer = self.library.add_collection('Outer')
+        self.library.add_collection_to_collection(self.collection, outer)
+        self.assertTrue(self.library.duplicate_collection(self.collection))
+        copy = self.library.get_collection_by_name('Shelf (Copy)')
+        self.assertEqual(outer, self.library.get_supercollection(copy.id))
+
     def test_a_collection_that_cannot_be_created_is_reported(self):
         self.library.add_collection = lambda name: None
 

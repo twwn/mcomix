@@ -560,9 +560,15 @@ class _LibraryBackend:
         return False
 
     def duplicate_collection(self, collection: int) -> bool:
-        """Duplicate the <collection> by creating a new collection
-        containing the same books. Return True if the duplication was
-        successful.
+        """Duplicate <collection> as a new collection beside it, holding
+        the books it shows, and say whether that worked.
+
+        A collection shows the books of every collection under it as
+        well as its own, so the copy is filed with all of them - flat,
+        rather than with copies of the collections under it, whose names
+        would all have to change, a name being unique in the library.
+        It goes under the collection the original is under, as a file
+        manager puts a copy beside the file it was made from.
         """
         name = self.get_collection_name(collection)
         if name is None:  # Original collection does not exist.
@@ -570,12 +576,19 @@ class _LibraryBackend:
         copy_name = name + ' ' + _('(Copy)')
         while self.get_collection_by_name(copy_name):
             copy_name = copy_name + ' ' + _('(Copy)')
-        copy = self.add_collection(copy_name)
-        if copy is None:  # Could not create the new.
-            return False
-        self.execute('''insert or ignore into Contain (collection, book)
-            select ?, book from Contain
-            where collection = ?''', (copy, collection))
+        shown = [collection] + self.get_all_collections_in_collection(
+            collection)
+        with self.transaction():
+            copy = self.add_collection(copy_name)
+            if copy is None:  # Could not create the new.
+                return False
+            supercollection = self.get_supercollection(collection)
+            if supercollection is not None:
+                self.add_collection_to_collection(copy, supercollection)
+            self.execute('''insert or ignore into Contain (collection, book)
+                select ?, book from Contain
+                where collection in (%s)''' % ','.join('?' * len(shown)),
+                         [copy] + shown)
         return True
 
     def clean_collection(self, collection: int | None = None) -> int:
