@@ -145,19 +145,30 @@ class FileHandler:
         real_path = self._window.imagehandler.get_real_path()
         if self.file_loaded and real_path is not None:
             current_file = os.path.abspath(real_path)
+            start_member = None
             if self.archive_type is not None:
                 start_page = self._window.imagehandler.get_current_page()
+                # The picture on screen, by its name in the archive: a
+                # change to how the archive is sorted reopens it, and
+                # the page number it had then names another picture.
+                shown = self._window.imagehandler.get_path_to_page()
+                if shown is not None and self._tmp_dir is not None:
+                    start_member = os.path.relpath(shown, self._tmp_dir)
             else:
                 start_page = 0
-            self.open_file(current_file, start_page, keep_fileprovider=True)
+            self.open_file(current_file, start_page, keep_fileprovider=True,
+                           start_member=start_member)
 
     def open_file(self, path: str | list[str], start_page: int = 0,
-                  keep_fileprovider: bool = False) -> bool:
+                  keep_fileprovider: bool = False,
+                  start_member: str | None = None) -> bool:
         """Open the file pointed to by <path>.
 
         If <start_page> is 0 we show the first page, or the last read page
         if one was stored for this book. If it is positive we show that page,
-        and if it is negative we show the last image.
+        and if it is negative we show the last image.  <start_member>, the
+        name of a file within an archive, is opened in preference to any
+        of those where the archive still has it.
 
         Return True if the file is successfully loaded.  A book with
         changes that have not been written is asked about first, and
@@ -166,15 +177,18 @@ class FileHandler:
         being opened rather than that it failed to open.
         """
         def open_it() -> None:
-            self._open_file(path, start_page, keep_fileprovider)
+            self._open_file(path, start_page, keep_fileprovider,
+                            start_member)
 
         if self._window.file_actions.has_unsaved_changes():
             self._window.file_actions.before_closing(open_it)
             return True
-        return self._open_file(path, start_page, keep_fileprovider)
+        return self._open_file(path, start_page, keep_fileprovider,
+                               start_member)
 
     def _open_file(self, path: str | list[str], start_page: int = 0,
-                   keep_fileprovider: bool = False) -> bool:
+                   keep_fileprovider: bool = False,
+                   start_member: str | None = None) -> bool:
         """Open <path>, the book that was open having been dealt with."""
 
         self._close()
@@ -199,6 +213,7 @@ class FileHandler:
                                     if self.archive_type is not None
                                     else file_provider.FileProvider.IMAGES)
         self._start_page = start_page
+        self._start_member = start_member
         self._current_file = os.path.abspath(path)
         self._stop_waiting = False
 
@@ -253,6 +268,11 @@ class FileHandler:
                 last_image_index = self._get_index_for_page(self._start_page,
                                                             len(image_files),
                                                             current_file)
+                if self._start_member is not None:
+                    member = os.path.join(self._tmp_dir or '',
+                                          self._start_member)
+                    if member in image_files:
+                        last_image_index = image_files.index(member)
                 # A page the caller asked for, or a standing "yes" to
                 # the prompt below, opens the book where it was left.
                 # That standing answer is the response the prompt was

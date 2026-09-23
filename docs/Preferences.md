@@ -69,8 +69,8 @@ Advanced tab
 
 Option | Explanation
 -------|------------
-Sort files and directories by | The order of the files in a directory, "No sorting", "File name", "File name (GLib)", "File size" or "Last modified", and its direction. Not the order inside an archive.
-Sort archives by | The order of the files inside an archive, and its direction. "Natural order" reads the numbers in a name, giving Page1, Page3, Page20; "Literal order" compares character by character, giving Page1, Page20, Page3; "GLib order" uses the collation keys many other GTK applications sort by.
+Sort files and directories by | The order of the files in a directory, "No sorting", "File name", "File name (GLib)", "File size" or "Last modified", and its direction. Not the order inside an archive. A change reopens the open book in the new order, at the picture that was on screen.
+Sort archives by | The order of the files inside an archive, and its direction. "Natural order" reads the numbers in a name, giving Page1, Page3, Page20; "Literal order" compares character by character, giving Page1, Page20, Page3; "GLib order" uses the collation keys many other GTK applications sort by. A change reopens the open archive in the new order, at the picture that was on screen.
 Maximum number of concurrent extraction threads | For the formats that can be unpacked by more than one thread. 1 by default.
 Maximum number of concurrent thumbnail threads | Read when MComix starts. 3 by default.
 Store thumbnails for opened files | In the freedesktop.org thumbnail directory that file managers and other programs share.

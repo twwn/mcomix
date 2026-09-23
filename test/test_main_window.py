@@ -763,6 +763,27 @@ class MainWindowTest(MComixTest):
         self._wheel(-1, 0)
         self.assertEqual(self.window.imagehandler.get_current_page(), 2)
 
+    def test_resorting_an_archive_keeps_the_page_that_was_shown(self):
+        """Changing how an archive's files are sorted reopens it, and it
+        came back at the same page number - which, sorted the other way,
+        is another picture.  A directory's files are sorted the same
+        way and came back at the picture that was shown."""
+        self._ready()
+        handler = self.window.imagehandler
+        self.window.set_page(2)
+        self._pump()
+        shown = os.path.basename(handler.get_path_to_page(2))
+        prefs['sort archive order'] = constants.SORT_DESCENDING
+        self.window.filehandler.refresh_file()
+        self.assertTrue(wait_for(
+            lambda: not self.window.filehandler.file_loading
+            and handler.get_number_of_pages() > 2
+            and handler.page_is_available(), seconds=20))
+        page = handler.get_current_page()
+        self.assertEqual(shown,
+                         os.path.basename(handler.get_path_to_page(page)))
+        self.assertNotEqual(2, page)
+
     def test_a_plain_click_turns_the_page_as_it_always_did(self):
         self._ready()
         self._click()
