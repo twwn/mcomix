@@ -535,6 +535,17 @@ class FileInfoTest(MComixTest):
         with open(constants.FILEINFO_PICKLE_PATH, 'wb') as pickle_file:
             pickle_file.write(content)
 
+    def test_an_archive_s_pages_of_one_name_come_in_path_order(self):
+        """GLib's order compares the names alone, so the first page of
+        each chapter of an archive - "b/01.jpg" and "a/01.jpg" - tied,
+        and kept the order the archive listed them in."""
+        prefs['sort archive by'] = constants.SORT_NAME_GLIB
+        prefs['sort archive order'] = constants.SORT_ASCENDING
+        for listed in (['b/01.jpg', 'a/01.jpg'], ['a/01.jpg', 'b/01.jpg']):
+            files = list(listed)
+            self.handler._sort_archive_images(files)
+            self.assertEqual(['a/01.jpg', 'b/01.jpg'], files)
+
     def test_the_file_and_page_come_back(self):
         """As an older MComix wrote them, without the file of the page."""
         self._write(pickle.dumps(['/books/a.zip', 41]))

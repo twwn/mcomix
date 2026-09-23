@@ -1,3 +1,4 @@
+import itertools
 import os
 import shutil
 import tempfile
@@ -125,6 +126,30 @@ class SortFilesTest(MComixTest):
             FileProvider.sort_files(files)
         self.assertEqual(set(files), expected)
 
+
+    def test_files_a_key_cannot_tell_apart_are_sorted_by_name(self) -> None:
+        """Pages copied in one go share their modification time and
+        often their size, and were left in the order the directory
+        listed them, which is not the same from one copy to the next."""
+        directory = os.path.join(self.tmp_dir, 'book')
+        os.makedirs(directory)
+        files = []
+        for name in ('3.png', '10.png', '1.png', '2.png'):
+            path = os.path.join(directory, name)
+            with open(path, 'wb') as page:
+                page.write(b'x' * 10)
+            os.utime(path, (1_000_000_000, 1_000_000_000))
+            files.append(path)
+        expected = [os.path.join(directory, name)
+                    for name in ('1.png', '2.png', '3.png', '10.png')]
+        for key in (constants.SORT_LAST_MODIFIED, constants.SORT_SIZE):
+            for listed in itertools.permutations(files):
+                with self.subTest(key=key, listed=listed):
+                    prefs['sort by'] = key
+                    prefs['sort order'] = constants.SORT_ASCENDING
+                    ordered = list(listed)
+                    FileProvider.sort_files(ordered)
+                    self.assertEqual(expected, ordered)
 
 class PreDefinedFileProviderTest(MComixTest):
 

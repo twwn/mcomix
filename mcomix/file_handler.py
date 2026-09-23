@@ -541,7 +541,11 @@ class FileHandler:
         elif prefs['sort archive by'] == constants.SORT_NAME_LITERAL:
             filelist.sort()
         elif prefs['sort archive by'] == constants.SORT_NAME_GLIB:
-            filelist.sort(key=lambda filename: GLib.utf8_collate_key_for_filename(os.path.basename(filename), -1))
+            # Names the collation cannot tell apart are put in natural
+            # order, rather than left in the order the archive lists them.
+            filelist.sort(key=lambda filename: (
+                GLib.utf8_collate_key_for_filename(os.path.basename(filename), -1),
+                tools.AlphanumericSortKey(filename)))
         else:
             # No sorting
             pass

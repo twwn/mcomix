@@ -149,16 +149,26 @@ class FileProvider:
         order the file system listed them in; a descending sort order
         still reverses that.
         """
+        # Files the chosen key cannot tell apart - pages copied in one
+        # go share their modification time - are put in natural order
+        # by name, rather than left in the order the file system listed
+        # them, which is not the same from one copy of a book to the
+        # next.
         if preferences.prefs['sort by'] == constants.SORT_NAME:
             tools.alphanumeric_sort(files)
         elif preferences.prefs['sort by'] == constants.SORT_NAME_GLIB:
-            files.sort(key=lambda filename: GLib.utf8_collate_key_for_filename(os.path.basename(filename), -1))
+            files.sort(key=lambda filename: (
+                GLib.utf8_collate_key_for_filename(os.path.basename(filename), -1),
+                tools.AlphanumericSortKey(filename)))
         elif preferences.prefs['sort by'] == constants.SORT_LAST_MODIFIED:
             # Most recently modified file first
-            files.sort(key=lambda filename: -_modification_time(filename))
+            files.sort(key=lambda filename: (
+                -_modification_time(filename),
+                tools.AlphanumericSortKey(filename)))
         elif preferences.prefs['sort by'] == constants.SORT_SIZE:
             # Smallest file first
-            files.sort(key=_file_size)
+            files.sort(key=lambda filename: (
+                _file_size(filename), tools.AlphanumericSortKey(filename)))
         # else: don't sort at all: use OS ordering.
 
         # Default is ascending.
