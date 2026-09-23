@@ -11,9 +11,10 @@ import gi
 # is first imported, so it has to be in before the tests patch that.
 import PIL.Image
 
-from . import MComixTest
+from . import MComixTest, get_testfile_path
 
 from mcomix import run
+from mcomix.preferences import prefs
 
 PYPROJECT = os.path.join(os.path.dirname(os.path.dirname(
     os.path.abspath(run.__file__))), 'pyproject.toml')
@@ -104,6 +105,44 @@ class ArgumentTest(MComixTest):
                 as printed, self.assertRaises(SystemExit):
             run.parse_arguments(['--help'])
         self.assertNotIn('page-member', printed.getvalue())
+
+    def _open(self, argv):
+        opts, args = run.parse_arguments(argv)
+        return run.what_to_open(opts, args)
+
+    def test_the_last_file_is_opened_at_the_file_of_its_page(self):
+        """What 9c4095ef keeps for "auto load last file" reaches the
+        window: the page's file as well as its number."""
+        book = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        prefs['auto load last file'] = True
+        prefs['path to last file'] = book
+        prefs['page of last file'] = 2
+        prefs['member of last file'] = 'images/02-JPG-RGB.jpg'
+        self.assertEqual((book, 2, 'images/02-JPG-RGB.jpg'), self._open([]))
+
+    def test_a_last_file_kept_by_an_older_mcomix_has_no_file_of_its_page(self):
+        book = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        prefs['auto load last file'] = True
+        prefs['path to last file'] = book
+        prefs['page of last file'] = 2
+        self.assertEqual((book, 2, None), self._open([]))
+
+    def test_a_book_named_on_the_command_line_wins(self):
+        """The last file's page and its file are about the last file,
+        not about the book that was named."""
+        prefs['auto load last file'] = True
+        prefs['path to last file'] = get_testfile_path(
+            'archives', '01-ZIP-Normal.zip')
+        prefs['page of last file'] = 2
+        prefs['member of last file'] = 'images/02-JPG-RGB.jpg'
+        self.assertEqual(('/books/one.cbz', 0, None),
+                         self._open(['/books/one.cbz']))
+
+    def test_a_last_file_that_is_gone_is_not_opened(self):
+        prefs['auto load last file'] = True
+        prefs['path to last file'] = '/books/gone.cbz'
+        prefs['member of last file'] = 'pages/02.jpg'
+        self.assertEqual((None, 0, None), self._open([]))
 
     def test_a_page_that_is_not_a_number_is_refused(self):
         with self.assertRaises(SystemExit):

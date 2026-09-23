@@ -163,6 +163,40 @@ def apply_layout_direction() -> None:
         Gtk.Widget.set_default_direction(Gtk.TextDirection.RTL)
 
 
+def what_to_open(opts: argparse.Namespace, args: list[str]
+                 ) -> "tuple[str | list[str] | None, int, str | None]":
+    """The file or files to open at start, the page to open at, and the
+    file of that page within an archive where it is known.
+
+    The command line decides where it names anything; otherwise the
+    last file viewed, where "auto load last file" says so and the file
+    is still there.  A page of 0 leaves the choice to the file handler:
+    the first page, or the last one read if there is one for the book.
+    """
+    open_path: "str | list[str] | None" = None
+    open_page = 0
+    open_member: "str | None" = None
+    if len(args) == 1:
+        open_path = args[0]
+    elif len(args) > 1:
+        open_path = args
+
+    elif preferences.prefs['auto load last file'] \
+            and preferences.prefs['path to last file'] \
+            and os.path.isfile(preferences.prefs['path to last file']):
+        open_path = preferences.prefs['path to last file']
+        open_page = preferences.prefs['page of last file']
+        open_member = preferences.prefs['member of last file'] or None
+
+    # --page is about the book that was named, not about the one the
+    # last session was left on: a page without a path is ignored.
+    if args and opts.page:
+        open_page = opts.page
+    if args:
+        open_member = opts.page_member
+    return open_path, open_page, open_member
+
+
 def run() -> None:
     """Run the program."""
 
@@ -203,29 +237,7 @@ def run() -> None:
     from mcomix import icons
     icons.load_icons()
 
-    open_path: "str | list[str] | None" = None
-    # 0 leaves the choice of page to the file handler: the first one, or
-    # the last read page if there is one for this book.
-    open_page = 0
-    open_member: "str | None" = None
-    if len(args) == 1:
-        open_path = args[0]
-    elif len(args) > 1:
-        open_path = args
-
-    elif preferences.prefs['auto load last file'] \
-            and preferences.prefs['path to last file'] \
-            and os.path.isfile(preferences.prefs['path to last file']):
-        open_path = preferences.prefs['path to last file']
-        open_page = preferences.prefs['page of last file']
-        open_member = preferences.prefs['member of last file'] or None
-
-    # --page is about the book that was named, not about the one the
-    # last session was left on: a page without a path is ignored.
-    if args and opts.page:
-        open_page = opts.page
-    if args:
-        open_member = opts.page_member
+    open_path, open_page, open_member = what_to_open(opts, args)
 
     apply_layout_direction()
 
