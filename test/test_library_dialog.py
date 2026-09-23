@@ -528,6 +528,59 @@ class BookInfoTest(_OneBookTest):
         self.assertFalse(info._open_button.get_sensitive())
 
 
+class OpenFromLibraryTest(_LibraryWindowTest):
+
+    """Opening a book from the library while its covers are drawn."""
+
+    def _open_while_drawing(self, open_it):
+        """Open the one book by <open_it>(book area) while its cover is
+        still being drawn, then show the library again.
+
+        Opening a book stopped the worker that draws the covers - a
+        guard against a hang at exit that closing the library now sees
+        to - so every cover still to be drawn stayed blank for good once
+        the library was shown again."""
+        prefs['last library collection'] = constants.COLLECTION_ALL
+        dialog = self._open()
+        path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        dialog.backend.add_book(path)
+        covers = dialog.book_area._covers
+        # The cover is held back until the book has been opened, so it
+        # is still being drawn when that happens.  Not for long: opening
+        # the book can redraw the covers, which waits for the worker.
+        opened = threading.Event()
+        draw = covers.generate_thumbnail
+
+        def held_back(uid):
+            opened.wait(1)
+            return draw(uid)
+
+        covers.generate_thumbnail = held_back
+        dialog.book_area.display_covers(constants.COLLECTION_ALL)
+        self.assertTrue(wait_for(lambda: any(covers.each_item())))
+        pump()
+        open_it(dialog.book_area)
+        opened.set()
+        self.assertFalse(dialog.get_visible())
+
+        main_dialog.open_dialog(None, self.window)
+        self.assertTrue(wait_for(
+            lambda: all(item.thumbnail is not None
+                        for item in covers.each_item()), seconds=5),
+            'the cover was never drawn')
+
+    def test_a_cover_double_clicked_while_drawing(self):
+        self._open_while_drawing(
+            lambda area: area._book_activated(area._covers, 0))
+
+    def test_open_from_the_menu_while_drawing(self):
+        def open_selected(area):
+            area._covers.select_only(0)
+            area.open_selected_book()
+
+        self._open_while_drawing(open_selected)
+
+
 class CopyBookTest(_OneBookTest):
 
     """"Copy" in the menu over the covers."""

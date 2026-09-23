@@ -410,10 +410,6 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         books = [item.uid for item in self._selected_items()]
         if not books:
             return
-        if not keep_library_open:
-            # Necessary to prevent a deadlock at exit when trying to
-            # "join" the worker thread.
-            self.stop_update()
         self._library.open_book(books, keep_library_open=keep_library_open)
 
     def open_selected_book(self, *args: object) -> None:
@@ -619,9 +615,6 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         book = self.get_book_at_path(position)
         if book is None:
             return
-        # Necessary to prevent a deadlock at exit when trying to "join"
-        # the worker thread.
-        self.stop_update()
         self._library.open_book([book], keep_library_open=False)
 
     def _selection_changed(self, selection: Gtk.MultiSelection,
