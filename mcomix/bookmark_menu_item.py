@@ -102,7 +102,7 @@ class _Bookmark:
         button means everywhere it opens something: a window of its own
         rather than this one's contents replaced.
         """
-        process.launch_mcomix(self._path, self._page)
+        process.launch_mcomix(self._path, self._page, self._member)
 
     def get_directory(self) -> str:
         """The directory the bookmarked file is in."""

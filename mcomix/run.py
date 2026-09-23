@@ -58,6 +58,12 @@ def parse_arguments(argv: list[str]) -> tuple[argparse.Namespace, list[str]]:
                         help=_('Temporarily override the interface language.'))
     parser.add_argument('--page', dest='page', type=int, default=0,
                         help=_('Open the file at the given page.'))
+    # The name within an archive of the file of that page, which finds
+    # the page wherever the archive's sort order puts it: what a
+    # bookmark opened with the middle button hands the MComix it
+    # starts.  Not for a reader to type, so not in the help.
+    parser.add_argument('--page-member', dest='page_member',
+                        help=argparse.SUPPRESS)
 
     viewmodes = parser.add_argument_group(_('View modes'))
     viewmodes.add_argument('-f', '--fullscreen', dest='fullscreen', action='store_true',
@@ -216,6 +222,7 @@ def run() -> None:
     # last session was left on: a page without a path is ignored.
     if args and opts.page:
         open_page = opts.page
+    open_member = opts.page_member if args else None
 
     apply_layout_direction()
 
@@ -226,7 +233,8 @@ def run() -> None:
     window = main.MainWindow(fullscreen=opts.fullscreen, is_slideshow=opts.slideshow,
                              show_library=opts.library, manga_mode=opts.manga,
                              double_page=opts.doublepage, zoom_mode=opts.zoommode,
-                             open_path=open_path, open_page=open_page)
+                             open_path=open_path, open_page=open_page,
+                             open_member=open_member)
     main.set_main_window(window)
 
     if sys.platform != 'win32':

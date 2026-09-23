@@ -231,8 +231,13 @@ def mcomix_command() -> list[str]:
     return [sys.executable, os.path.abspath(sys.argv[0])]
 
 
-def launch_mcomix(path: "str | None" = None, page: int = 0) -> None:
+def launch_mcomix(path: "str | None" = None, page: int = 0,
+                  member: "str | None" = None) -> None:
     """Open <path> in an MComix of its own, at <page> if one is given.
+
+    <member> is the name within the archive at <path> of the file of that
+    page, which the new program finds the page by where the archive
+    still has it, wherever its sort order has put it.
 
     The new program is passed the file the way the command line would
     pass it, so a file that has gone missing is reported by the reader
@@ -245,6 +250,8 @@ def launch_mcomix(path: "str | None" = None, page: int = 0) -> None:
     if path is not None:
         if page:
             command += ['--page', str(page)]
+        if member is not None:
+            command += ['--page-member', member]
         command.append(path)
     # It runs on its own from here; on Unix the SIGCHLD handler
     # installed in run.py collects it once it exits.

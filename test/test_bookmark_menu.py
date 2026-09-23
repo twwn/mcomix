@@ -329,7 +329,8 @@ class BookmarksMenuTest(MComixTest):
         launched = []
         with unittest.mock.patch.object(
                 process, 'launch_mcomix',
-                side_effect=lambda path, page=0: launched.append((path, page))):
+                side_effect=lambda path, page=0, member=None:
+                launched.append((path, page))):
             widgets._menu_button_pressed(Gdk.BUTTON_MIDDLE)
             self.menu._actions.lookup_action('open').activate(
                 GLib.Variant('i', 0))
@@ -520,6 +521,34 @@ class BookmarkInTheOpenBookTest(MComixTest):
         page = self.window.imagehandler.get_current_page()
         self.assertEqual(shown, os.path.basename(
             self.window.imagehandler.get_path_to_page(page)))
+
+    def test_a_middle_click_hands_the_file_of_the_page_on(self):
+        """The second MComix opens the archive afresh, sorted as the
+        preferences say, and finds the page by its file as a bookmark
+        opened here does."""
+        self._open(get_testfile_path('archives', '01-ZIP-Normal.zip'), 4)
+        bookmark = bookmark_menu_item._Bookmark(
+            self.window, self.window.filehandler, 'book',
+            get_testfile_path('archives', '01-ZIP-Normal.zip'), 2, 4,
+            constants.ZIP, datetime.datetime.now(),
+            member='images/02-JPG-RGB.jpg')
+        with unittest.mock.patch.object(process, 'launch_mcomix') as launch:
+            bookmark.open_in_new_instance()
+        launch.assert_called_once_with(
+            get_testfile_path('archives', '01-ZIP-Normal.zip'), 2,
+            'images/02-JPG-RGB.jpg')
+
+    def test_a_window_opened_at_the_file_of_a_page_shows_it(self):
+        """What the second MComix does with it: the file decides over
+        the page number."""
+        self.window = main.MainWindow(
+            open_path=get_testfile_path('archives', '01-ZIP-Normal.zip'),
+            open_page=2, open_member='images/03-PNG-RGB.png')
+        main.set_main_window(self.window)
+        self.assertTrue(wait_for(
+            lambda: not self.window.filehandler.file_loading
+            and self.window.imagehandler.page_is_available(), seconds=20))
+        self.assertEqual(3, self.window.imagehandler.get_current_page())
 
     def test_a_bookmark_in_another_folder_opens_it(self):
         self._folder()

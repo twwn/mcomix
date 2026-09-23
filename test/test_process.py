@@ -220,6 +220,17 @@ class LaunchTest(MComixTest):
                                          '--page', '7', '/books/one.cbz']])
 
     @unittest.skipIf(sys.platform == 'win32', 'Win32Popen is used there')
+    def test_the_file_of_the_page_is_passed_on(self):
+        """A bookmark in an archive also names the file of its page,
+        which finds the page wherever the archive's sort order has put
+        it; the new program is told it too."""
+        with self._as_main('mcomix.__main__'):
+            process.launch_mcomix('/books/one.cbz', 7, 'pages/07.jpg')
+        self.assertEqual(self.spawned, [[
+            sys.executable, '-m', 'mcomix', '--page', '7',
+            '--page-member', 'pages/07.jpg', '/books/one.cbz']])
+
+    @unittest.skipIf(sys.platform == 'win32', 'Win32Popen is used there')
     def test_no_file_starts_it_as_a_launcher_would(self):
         """Restarting with nothing open passes nothing on, and leaves
         the new program to read the preferences for what to open."""

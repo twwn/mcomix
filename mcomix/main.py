@@ -62,7 +62,8 @@ class MainWindow(Gtk.Window):
                  double_page: bool = False,
                  zoom_mode: "constants.ZoomMode | None" = None,
                  open_path: "str | list[str] | None" = None,
-                 open_page: int = 0) -> None:
+                 open_page: int = 0,
+                 open_member: str | None = None) -> None:
         super().__init__()
 
         # ----------------------------------------------------------------
@@ -296,11 +297,13 @@ class MainWindow(Gtk.Window):
 
                 open_path = fileinfo[0]
                 open_page = fileinfo[1] + 1
+                open_member = None
 
         prefs['previous quit was quit and save'] = False
 
         if open_path is not None:
-            self.filehandler.open_file(open_path, open_page)
+            self.filehandler.open_file(open_path, open_page,
+                                       start_member=open_member)
 
         if is_slideshow:
             self.actiongroup.get_action('slideshow').activate()

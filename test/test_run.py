@@ -1,5 +1,6 @@
 """What the program does before it has a window to say it in."""
 
+import io
 import os
 import re
 import tomllib
@@ -86,6 +87,23 @@ class ArgumentTest(MComixTest):
         opts, args = run.parse_arguments(['--page', '7', '/books/one.cbz'])
         self.assertEqual(args, ['/books/one.cbz'])
         self.assertEqual(opts.page, 7)
+
+    def test_the_file_of_the_page_can_be_named(self):
+        """What a bookmark in an archive hands a second MComix, beside
+        the page: the name within the archive of the page's file."""
+        opts, args = run.parse_arguments(
+            ['--page', '7', '--page-member', 'pages/07.jpg',
+             '/books/one.cbz'])
+        self.assertEqual(args, ['/books/one.cbz'])
+        self.assertEqual(opts.page_member, 'pages/07.jpg')
+
+    def test_the_file_of_the_page_is_not_in_the_help(self):
+        """It is for MComix to hand another MComix, not for a reader to
+        type."""
+        with unittest.mock.patch('sys.stdout', new_callable=io.StringIO) \
+                as printed, self.assertRaises(SystemExit):
+            run.parse_arguments(['--help'])
+        self.assertNotIn('page-member', printed.getvalue())
 
     def test_a_page_that_is_not_a_number_is_refused(self):
         with self.assertRaises(SystemExit):
