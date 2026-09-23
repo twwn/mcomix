@@ -609,8 +609,15 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
             for item in selected:
                 self._library.backend.remove_book_from_collection(item.uid,
                                                                   collection)
-            self._covers.remove_items(selected)
-            for item in selected:
+            # The covers are those of every collection under this one as
+            # well, so a book that is also filed in one of those is still
+            # among them and keeps its cover.
+            shown = self._library.backend.get_collection_by_id(collection)
+            still_here = ({book.id for book in shown.get_books()}
+                          if shown is not None else set())
+            gone = [item for item in selected if item.uid not in still_here]
+            self._covers.remove_items(gone)
+            for item in gone:
                 self._cache.invalidate(item.path)
 
         coll_name = self._library.backend.get_collection_name(collection)

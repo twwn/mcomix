@@ -381,6 +381,14 @@ class _RecordingBackend(_Backend):
     def get_collection_name(self, collection):
         return 'Collection'
 
+    #: The ids of the books still among the collection's own after a
+    #: removal - those filed in a collection under it as well.
+    still_filed: set = set()
+
+    def get_collection_by_id(self, collection):
+        return types.SimpleNamespace(get_books=lambda: [
+            types.SimpleNamespace(id=uid) for uid in self.still_filed])
+
 
 class _RecordingLibrary:
 
@@ -609,6 +617,17 @@ class RemovalTransactionTest(MComixTest):
         area, library = self._area(refuse=False)
         area._remove_books_from_collection()
         self.assertEqual((1, 1), (library.backend.begun, library.backend.ended))
+
+    def test_a_book_still_filed_under_the_collection_keeps_its_cover(self):
+        """The covers of a collection include the books of the ones
+        under it, so a book taken out of it but filed in one of those as
+        well is still one of its books; its cover went all the same."""
+        area, library = self._area(refuse=False)
+        library.backend.still_filed = {1}
+        area._remove_books_from_collection()
+        self.assertEqual([item.uid for item in area._each_item()], [1])
+        self.assertEqual(sorted(uid for uid, _ in library.backend.removed),
+                         [0, 1, 2])
 
     def test_a_collection_removal_that_raises_ends_it_too(self):
         area, library = self._area(refuse=True)
