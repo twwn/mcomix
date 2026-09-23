@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-09-21 05:15+0200\n"
+"POT-Creation-Date: 2026-09-23 17:56+0200\n"
 "PO-Revision-Date: 2006-09-27 10:18+0200\n"
 "Last-Translator: Paul Chatzidimitriou <paulmedic555@gmail.com>\n"
 "Language-Team: \n"
@@ -53,7 +53,7 @@ msgid "! Extraction error: %s"
 msgstr "! Σφάλμα αποσυμπίεσης: %s"
 
 #
-#: mcomix/archive_packer.py:171 mcomix/library/book_area.py:696
+#: mcomix/archive_packer.py:171 mcomix/library/book_area.py:745
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! Δεν ήταν δυνατή η αφαίρεση του %(file)s: %(error)s"
@@ -76,21 +76,21 @@ msgstr ""
 msgid "! Could not read %s"
 msgstr "! Δεν ήταν δυνατή η ανάγνωση του %s"
 
-#: mcomix/bookmark_backend.py:264
+#: mcomix/bookmark_backend.py:263
 #, python-format
 msgid "! Could not parse bookmarks file %s"
 msgstr "! Δεν ήταν δυνατή η ανάλυση του αρχείου σελιδοδεικτών %s"
 
-#: mcomix/bookmark_backend.py:327 mcomix/message_dialog.py:28
+#: mcomix/bookmark_backend.py:325 mcomix/message_dialog.py:28
 msgid "_Yes"
 msgstr "_Ναι"
 
 #
-#: mcomix/bookmark_backend.py:328 mcomix/message_dialog.py:27
+#: mcomix/bookmark_backend.py:326 mcomix/message_dialog.py:27
 msgid "_No"
 msgstr "Ό_χι"
 
-#: mcomix/bookmark_backend.py:329 mcomix/edit_dialog.py:59
+#: mcomix/bookmark_backend.py:327 mcomix/edit_dialog.py:59
 #: mcomix/file_actions.py:817 mcomix/file_chooser_base_dialog.py:106
 #: mcomix/file_chooser_base_dialog.py:111
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
@@ -98,14 +98,14 @@ msgstr "Ό_χι"
 msgid "_Cancel"
 msgstr "_Ακύρωση"
 
-#: mcomix/bookmark_backend.py:337
+#: mcomix/bookmark_backend.py:335
 #, python-format
 msgid "Replace existing bookmark on page %s?"
 msgid_plural "Replace existing bookmarks on pages %s?"
 msgstr[0] "Αντικατάσταση του υπάρχοντος σελιδοδείκτη στη σελίδα %s;"
 msgstr[1] "Αντικατάσταση των υπαρχόντων σελιδοδεικτών στις σελίδες %s;"
 
-#: mcomix/bookmark_backend.py:342
+#: mcomix/bookmark_backend.py:340
 #, python-format
 msgid ""
 "The current book already contains marked pages. Do you want to replace them "
@@ -114,7 +114,7 @@ msgstr ""
 "Αυτό το βιβλίο έχει ήδη σημειωμένες σελίδες. Θέλετε να τις αντικαταστήσετε "
 "με νέο σελιδοδείκτη στη σελίδα %d;"
 
-#: mcomix/bookmark_backend.py:345
+#: mcomix/bookmark_backend.py:343
 msgid ""
 "Selecting \"No\" will create a new bookmark without affecting the other "
 "bookmarks."
@@ -123,11 +123,11 @@ msgstr ""
 "υπόλοιποι."
 
 #
-#: mcomix/bookmark_backend.py:365
+#: mcomix/bookmark_backend.py:363
 msgid "Clear all bookmarks?"
 msgstr "Εκκαθάριση όλων των σελιδοδεικτών;"
 
-#: mcomix/bookmark_backend.py:366
+#: mcomix/bookmark_backend.py:364
 msgid ""
 "All stored bookmarks will be removed. Are you sure that you want to continue?"
 msgstr ""
@@ -145,16 +145,16 @@ msgid "C_lear bookmarks..."
 msgstr "Εκκα_θάριση σελιδοδεικτών..."
 
 #: mcomix/bookmark_dialog.py:33 mcomix/main.py:763 mcomix/openwith.py:342
-#: mcomix/library/collection_area.py:149 mcomix/library/watchlist.py:63
+#: mcomix/library/collection_area.py:149 mcomix/library/watchlist.py:64
 msgid "_Remove"
 msgstr "Α_φαίρεση"
 
 #
 # File: src/ui.py, line: 48
 #: mcomix/bookmark_dialog.py:34 mcomix/comment_dialog.py:29
-#: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:73
+#: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:72
 #: mcomix/properties_dialog.py:37 mcomix/ui.py:462
-#: mcomix/library/watchlist.py:40
+#: mcomix/library/watchlist.py:41
 msgid "_Close"
 msgstr "_Κλείσιμο"
 
@@ -172,8 +172,8 @@ msgstr "Όνομα"
 
 #
 # File: src/bookmark.py, line: 256
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1347
-#: mcomix/library/control_area.py:147
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1369
+#: mcomix/library/control_area.py:148
 msgid "Page"
 msgstr "Σελίδα"
 
@@ -196,7 +196,7 @@ msgstr "Προσθήκη _σελιδοδείκτη"
 msgid "_Edit Bookmarks..."
 msgstr "_Επεξεργασία σελιδοδεικτών..."
 
-#: mcomix/callback.py:82
+#: mcomix/callback.py:79
 #, python-format
 msgid "! Callback %(function)r failed: %(error)s"
 msgstr "! Η κλήση επιστροφής %(function)r απέτυχε: %(error)s"
@@ -208,7 +208,7 @@ msgstr "Νέα συντόμευση..."
 #
 # File: src/comment.py, line: 16
 # File: src/preferences.py, line: 288
-#: mcomix/comment_dialog.py:28 mcomix/preferences_dialog.py:419
+#: mcomix/comment_dialog.py:28 mcomix/preferences_dialog.py:418
 msgid "Comments"
 msgstr "Σχόλια"
 
@@ -590,14 +590,14 @@ msgstr "Εικόνες %s"
 
 #
 # File: src/filechooser.py, line: 125
-#: mcomix/file_chooser_base_dialog.py:602
+#: mcomix/file_chooser_base_dialog.py:607
 #, python-format
 msgid "A file named '%s' already exists. Do you want to replace it?"
 msgstr "Υπάρχει ήδη αρχείο με το όνομα «%s». Θέλετε να το αντικαταστήσετε;"
 
 #
 # File: src/filechooser.py, line: 128
-#: mcomix/file_chooser_base_dialog.py:604
+#: mcomix/file_chooser_base_dialog.py:609
 msgid "Replacing it will overwrite its contents."
 msgstr "Η αντικατάσταση θα σβήσει το περιεχόμενό του."
 
@@ -606,7 +606,7 @@ msgid "Add books"
 msgstr "Προσθήκη βιβλίων"
 
 #: mcomix/file_chooser_library_dialog.py:43 mcomix/openwith.py:338
-#: mcomix/library/watchlist.py:61
+#: mcomix/library/watchlist.py:62
 msgid "_Add"
 msgstr "_Προσθήκη"
 
@@ -648,7 +648,7 @@ msgstr ""
 "ανάγνωση θα συνεχιστεί στη σελίδα %(page)d. Αλλιώς θα φορτωθεί η πρώτη "
 "σελίδα."
 
-#: mcomix/file_handler.py:932
+#: mcomix/file_handler.py:957
 #, python-format
 msgid ""
 "! Corrupt file \"%s\", deleting it; the last file read will not be reopened."
@@ -663,7 +663,7 @@ msgstr "Μη έγκυρη διαδρομή: «%s»"
 
 #
 # File: src/filehandler.py, line: 411
-#: mcomix/image_tools.py:971
+#: mcomix/image_tools.py:1038
 msgid "Unknown filetype"
 msgstr "Άγνωστος τύπος αρχείου"
 
@@ -772,7 +772,7 @@ msgstr "Στοίχιση κάτω αριστερά"
 #: mcomix/keybindings.py:72 mcomix/keybindings.py:73 mcomix/keybindings.py:74
 #: mcomix/keybindings.py:76 mcomix/keybindings.py:77 mcomix/keybindings.py:78
 #: mcomix/keybindings.py:79 mcomix/keybindings.py:81 mcomix/keybindings.py:82
-#: mcomix/preferences_dialog.py:189
+#: mcomix/preferences_dialog.py:188
 msgid "Scroll"
 msgstr "Κύλιση"
 
@@ -910,7 +910,7 @@ msgstr "Αυτόματη περιστροφή καθ’ ύψος"
 #
 # File: src/preferences.py, line: 177
 # File: src/ui.py, line: 296
-#: mcomix/keybindings.py:102 mcomix/preferences_dialog.py:249 mcomix/ui.py:498
+#: mcomix/keybindings.py:102 mcomix/preferences_dialog.py:248 mcomix/ui.py:498
 msgid "Double page mode"
 msgstr "Προβολή διπλής σελίδας"
 
@@ -990,7 +990,7 @@ msgstr "Έξοδος από την πλήρη οθόνη"
 #: mcomix/keybindings.py:124 mcomix/keybindings.py:125
 #: mcomix/keybindings.py:126 mcomix/keybindings.py:127
 #: mcomix/keybindings.py:128 mcomix/keybindings.py:129
-#: mcomix/preferences_dialog.py:130
+#: mcomix/preferences_dialog.py:129
 msgid "User interface"
 msgstr "Περιβάλλον χρήστη"
 
@@ -1004,7 +1004,7 @@ msgstr "Ελαχιστοποίηση"
 
 #
 # File: src/preferences.py, line: 271
-#: mcomix/keybindings.py:120 mcomix/preferences_dialog.py:301
+#: mcomix/keybindings.py:120 mcomix/preferences_dialog.py:300
 msgid "Fullscreen"
 msgstr "Πλήρης οθόνη"
 
@@ -1034,7 +1034,7 @@ msgstr "Γραμμές κύλισης"
 
 #
 # File: src/preferences.py, line: 109
-#: mcomix/keybindings.py:127 mcomix/preferences_dialog.py:154
+#: mcomix/keybindings.py:127 mcomix/preferences_dialog.py:153
 msgid "Thumbnails"
 msgstr "Προεπισκοπήσεις"
 
@@ -1121,13 +1121,13 @@ msgstr "Ιδιότητες"
 
 #
 # File: src/preferences.py, line: 78
-#: mcomix/keybindings.py:144 mcomix/preferences_dialog.py:69
+#: mcomix/keybindings.py:144 mcomix/preferences_dialog.py:68
 msgid "Preferences"
 msgstr "Προτιμήσεις"
 
 #
 # File: src/library.py, line: 38
-#: mcomix/keybindings.py:149 mcomix/library/main_dialog.py:53
+#: mcomix/keybindings.py:149 mcomix/library/main_dialog.py:54
 msgid "Library"
 msgstr "Βιβλιοθήκη"
 
@@ -1199,7 +1199,7 @@ msgstr "_Διατήρηση"
 
 #
 # File: src/main.py, line: 666
-#: mcomix/main.py:1168
+#: mcomix/main.py:1190
 msgid "SLIDESHOW"
 msgstr "ΠΡΟΒΟΛΗ ΕΝΑΛΛΑΓΗΣ"
 
@@ -1225,8 +1225,8 @@ msgid "Delete it"
 msgstr "Διαγραφή"
 
 #: mcomix/message_dialog.py:79
-msgid "Bookmarking a page that is bookmarked already:"
-msgstr "Κατά την προσθήκη σελιδοδείκτη σε σελίδα που έχει ήδη έναν:"
+msgid "Bookmarking a page in a book that has bookmarks already:"
+msgstr "Κατά την προσθήκη σελιδοδείκτη σε βιβλίο που έχει ήδη σελιδοδείκτες:"
 
 #: mcomix/message_dialog.py:80
 msgid "Replace the existing bookmark"
@@ -1418,11 +1418,11 @@ msgstr "Κατάλογος εργασίας"
 msgid "Disabled in archives"
 msgstr "Απενεργοποιημένο στα αρχεία"
 
-#: mcomix/openwith.py:624
+#: mcomix/openwith.py:621
 msgid "Save changes to commands?"
 msgstr "Αποθήκευση των αλλαγών στις εντολές;"
 
-#: mcomix/openwith.py:625
+#: mcomix/openwith.py:622
 msgid ""
 "You have made changes to the list of external commands that have not been "
 "saved yet. Press \"Yes\" to save all changes, or \"No\" to discard them."
@@ -1454,44 +1454,44 @@ msgstr " από %s"
 
 #
 # File: src/preferences.py, line: 161
-#: mcomix/preferences_dialog.py:96
+#: mcomix/preferences_dialog.py:95
 msgid "Appearance"
 msgstr "Εμφάνιση"
 
 #
 # File: src/preferences.py, line: 237
-#: mcomix/preferences_dialog.py:97
+#: mcomix/preferences_dialog.py:96
 msgid "Behaviour"
 msgstr "Συμπεριφορά"
 
 #
 # File: src/preferences.py, line: 297
-#: mcomix/preferences_dialog.py:98
+#: mcomix/preferences_dialog.py:97
 msgid "Display"
 msgstr "Προβολή"
 
 #
-#: mcomix/preferences_dialog.py:99
+#: mcomix/preferences_dialog.py:98
 msgid "Advanced"
 msgstr "Προχωρημένο"
 
-#: mcomix/preferences_dialog.py:116
+#: mcomix/preferences_dialog.py:115
 msgid "Shortcuts"
 msgstr "Συντομεύσεις"
 
-#: mcomix/preferences_dialog.py:132
+#: mcomix/preferences_dialog.py:131
 msgid "Language (needs restart):"
 msgstr "Γλώσσα (απαιτεί επανεκκίνηση):"
 
-#: mcomix/preferences_dialog.py:135
+#: mcomix/preferences_dialog.py:134
 msgid "Theme:"
 msgstr "Θέμα:"
 
-#: mcomix/preferences_dialog.py:139
+#: mcomix/preferences_dialog.py:138
 msgid "Escape key closes program"
 msgstr "Το πλήκτρο Esc κλείνει το πρόγραμμα"
 
-#: mcomix/preferences_dialog.py:140
+#: mcomix/preferences_dialog.py:139
 msgid ""
 "When active, the ESC key closes the program, instead of only disabling "
 "fullscreen mode."
@@ -1501,47 +1501,47 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 93
-#: mcomix/preferences_dialog.py:143
+#: mcomix/preferences_dialog.py:142
 msgid "Background"
 msgstr "Παρασκήνιο"
 
-#: mcomix/preferences_dialog.py:146
+#: mcomix/preferences_dialog.py:145
 msgid "Use this colour as background:"
 msgstr "Χρήση αυτού του χρώματος ως παρασκηνίου:"
 
 #
 # File: src/preferences.py, line: 97
-#: mcomix/preferences_dialog.py:147
+#: mcomix/preferences_dialog.py:146
 msgid "Always use this selected colour as the background colour."
 msgstr "Να χρησιμοποιείται πάντα το επιλεγμένο χρώμα ως χρώμα παρασκηνίου."
 
 #
-#: mcomix/preferences_dialog.py:148 mcomix/preferences_dialog.py:159
+#: mcomix/preferences_dialog.py:147 mcomix/preferences_dialog.py:158
 msgid "Use dynamic background colour"
 msgstr "Χρήση δυναμικού χρώματος παρασκηνίου"
 
 #
 # File: src/preferences.py, line: 106
-#: mcomix/preferences_dialog.py:150
+#: mcomix/preferences_dialog.py:149
 msgid "Automatically pick a background colour that fits the viewed image."
 msgstr ""
 "Επιλέγει αυτόματα χρώμα παρασκηνίου που ταιριάζει στην εικόνα που "
 "προβάλλεται."
 
 #
-#: mcomix/preferences_dialog.py:157
+#: mcomix/preferences_dialog.py:156
 msgid "Use this colour as the thumbnail background:"
 msgstr "Χρήση αυτού του χρώματος ως παρασκηνίου των προεπισκοπήσεων:"
 
 #
-#: mcomix/preferences_dialog.py:158
+#: mcomix/preferences_dialog.py:157
 msgid "Always use this selected colour as the thumbnail background colour."
 msgstr ""
 "Να χρησιμοποιείται πάντα το επιλεγμένο χρώμα ως παρασκήνιο των "
 "προεπισκοπήσεων."
 
 #
-#: mcomix/preferences_dialog.py:161
+#: mcomix/preferences_dialog.py:160
 msgid ""
 "Automatically use the colour that fits the viewed image for the thumbnail "
 "background."
@@ -1550,28 +1550,28 @@ msgstr ""
 "ταιριάζει στην εικόνα που προβάλλεται."
 
 #
-#: mcomix/preferences_dialog.py:166
+#: mcomix/preferences_dialog.py:165
 msgid "Show page numbers on thumbnails"
 msgstr "Εμφάνιση αριθμών σελίδας στις προεπισκοπήσεις"
 
 #
-#: mcomix/preferences_dialog.py:169
+#: mcomix/preferences_dialog.py:168
 msgid "Thumbnail size (in pixels):"
 msgstr "Μέγεθος προεπισκοπήσεων (σε εικονοστοιχεία):"
 
 #
 # File: src/preferences.py, line: 151
-#: mcomix/preferences_dialog.py:174
+#: mcomix/preferences_dialog.py:173
 msgid "Transparency"
 msgstr "Διαφάνεια"
 
-#: mcomix/preferences_dialog.py:177
+#: mcomix/preferences_dialog.py:176
 msgid "Use checkered background for transparent images"
 msgstr "Χρήση καρό παρασκηνίου για διαφανείς εικόνες"
 
 #
 # File: src/preferences.py, line: 159
-#: mcomix/preferences_dialog.py:179
+#: mcomix/preferences_dialog.py:178
 msgid ""
 "Use a grey checkered background for transparent images. If this preference "
 "is unset, the background is plain white instead."
@@ -1580,11 +1580,11 @@ msgstr ""
 "είναι ανενεργή, το παρασκήνιο είναι απλό λευκό."
 
 #
-#: mcomix/preferences_dialog.py:192
+#: mcomix/preferences_dialog.py:191
 msgid "Use smart scrolling"
 msgstr "Χρήση έξυπνης κύλισης"
 
-#: mcomix/preferences_dialog.py:194
+#: mcomix/preferences_dialog.py:193
 msgid ""
 "With this preference set, the space key and mouse wheel do not only scroll "
 "down or up, but also sideways and so try to follow the natural reading order "
@@ -1595,12 +1595,12 @@ msgstr ""
 "τη φυσική σειρά ανάγνωσης του κόμικ."
 
 #
-#: mcomix/preferences_dialog.py:199
+#: mcomix/preferences_dialog.py:198
 msgid "Flip pages when scrolling off the edges of the page"
 msgstr "Αλλαγή σελίδας όταν η κύλιση περνά τα άκρα της σελίδας"
 
 #
-#: mcomix/preferences_dialog.py:201
+#: mcomix/preferences_dialog.py:200
 msgid ""
 "Flip pages when scrolling \"off the page\" with the scroll wheel or with the "
 "arrow keys. It takes n consecutive \"steps\" with the scroll wheel or the "
@@ -1610,13 +1610,13 @@ msgstr ""
 "Χρειάζονται n διαδοχικά «βήματα» με τη ροδέλα ή τα βέλη για να αλλάξει η "
 "σελίδα."
 
-#: mcomix/preferences_dialog.py:204
+#: mcomix/preferences_dialog.py:203
 msgid "Automatically open the next archive"
 msgstr "Αυτόματο άνοιγμα του επόμενου αρχείου"
 
 #
 # File: src/preferences.py, line: 203
-#: mcomix/preferences_dialog.py:206
+#: mcomix/preferences_dialog.py:205
 msgid ""
 "Automatically open the next archive in the directory when flipping past the "
 "last page, or the previous archive when flipping past the first page."
@@ -1625,11 +1625,11 @@ msgstr ""
 "σελίδα, ή το προηγούμενο όταν γυρίζετε πριν την πρώτη."
 
 #
-#: mcomix/preferences_dialog.py:209
+#: mcomix/preferences_dialog.py:208
 msgid "Automatically open next directory"
 msgstr "Αυτόματο άνοιγμα του επόμενου καταλόγου"
 
-#: mcomix/preferences_dialog.py:211
+#: mcomix/preferences_dialog.py:210
 msgid ""
 "Automatically open the first file in the next sibling directory when "
 "flipping past the last page of the last file in a directory, or the previous "
@@ -1639,11 +1639,11 @@ msgstr ""
 "περνάτε την τελευταία σελίδα του τελευταίου αρχείου ενός καταλόγου, ή τον "
 "προηγούμενο κατάλογο όταν γυρίζετε πριν την πρώτη σελίδα του πρώτου αρχείου."
 
-#: mcomix/preferences_dialog.py:214
+#: mcomix/preferences_dialog.py:213
 msgid "Open first file when navigating to previous archive"
 msgstr "Άνοιγμα του πρώτου αρχείου κατά τη μετάβαση στο προηγούμενο αρχείο"
 
-#: mcomix/preferences_dialog.py:216
+#: mcomix/preferences_dialog.py:215
 msgid ""
 "Automatically open the first file of the previous archive when navigating to "
 "it, instead of opening the last file of the previous archive."
@@ -1651,11 +1651,11 @@ msgstr ""
 "Κατά τη μετάβαση στο προηγούμενο αρχείο ανοίγει αυτόματα το πρώτο του αρχείο "
 "αντί για το τελευταίο."
 
-#: mcomix/preferences_dialog.py:219
+#: mcomix/preferences_dialog.py:218
 msgid "Open first file when navigating to previous directory"
 msgstr "Άνοιγμα του πρώτου αρχείου κατά τη μετάβαση στον προηγούμενο κατάλογο"
 
-#: mcomix/preferences_dialog.py:221
+#: mcomix/preferences_dialog.py:220
 msgid ""
 "Automatically open the first file of the previous directory when navigating "
 "to it, instead of opening the last file of the previous directory."
@@ -1663,27 +1663,27 @@ msgstr ""
 "Κατά τη μετάβαση στον προηγούμενο κατάλογο ανοίγει αυτόματα το πρώτο του "
 "αρχείο αντί για το τελευταίο."
 
-#: mcomix/preferences_dialog.py:223
+#: mcomix/preferences_dialog.py:222
 msgid "Number of pixels to scroll per arrow key press:"
 msgstr "Εικονοστοιχεία κύλισης ανά πάτημα βέλους:"
 
-#: mcomix/preferences_dialog.py:227
+#: mcomix/preferences_dialog.py:226
 msgid "Set the number of pixels to scroll on a page when using the arrow keys."
 msgstr "Ορίζει πόσα εικονοστοιχεία κυλά η σελίδα με τα πλήκτρα βελών."
 
-#: mcomix/preferences_dialog.py:229
+#: mcomix/preferences_dialog.py:228
 msgid "Number of pixels to scroll per mouse wheel turn:"
 msgstr "Εικονοστοιχεία κύλισης ανά στροφή της ροδέλας:"
 
-#: mcomix/preferences_dialog.py:233
+#: mcomix/preferences_dialog.py:232
 msgid "Set the number of pixels to scroll on a page when using a mouse wheel."
 msgstr "Ορίζει πόσα εικονοστοιχεία κυλά η σελίδα με τη ροδέλα του ποντικιού."
 
-#: mcomix/preferences_dialog.py:235
+#: mcomix/preferences_dialog.py:234
 msgid "Fraction of page to scroll per space key press (in percent):"
 msgstr "Τμήμα της σελίδας ανά πάτημα διαστήματος (επί τοις εκατό):"
 
-#: mcomix/preferences_dialog.py:240
+#: mcomix/preferences_dialog.py:239
 msgid ""
 "Sets the percentage by which the page will be scrolled down or up when the "
 "space key is pressed."
@@ -1691,11 +1691,11 @@ msgstr ""
 "Ορίζει το ποσοστό κατά το οποίο κυλά η σελίδα πάνω ή κάτω με το πλήκτρο "
 "διαστήματος."
 
-#: mcomix/preferences_dialog.py:243
+#: mcomix/preferences_dialog.py:242
 msgid "Number of \"steps\" to take before flipping the page:"
 msgstr "Αριθμός «βημάτων» πριν την αλλαγή σελίδας:"
 
-#: mcomix/preferences_dialog.py:247
+#: mcomix/preferences_dialog.py:246
 msgid ""
 "Set the number of \"steps\" needed to flip to the next or previous page.  "
 "Less steps will allow for very fast page turning but you might find yourself "
@@ -1706,44 +1706,44 @@ msgstr ""
 "κατά λάθος."
 
 #
-#: mcomix/preferences_dialog.py:252
+#: mcomix/preferences_dialog.py:251
 msgid "Flip two pages in double page mode"
 msgstr "Αλλαγή δύο σελίδων στη λειτουργία διπλής σελίδας"
 
 #
 # File: src/preferences.py, line: 184
-#: mcomix/preferences_dialog.py:254
+#: mcomix/preferences_dialog.py:253
 msgid ""
 "Flip two pages, instead of one, each time we flip pages in double page mode."
 msgstr ""
 "Αλλάζει δύο σελίδες αντί για μία κάθε φορά στη λειτουργία διπλής σελίδας."
 
-#: mcomix/preferences_dialog.py:256
+#: mcomix/preferences_dialog.py:255
 msgid "Show only one page where appropriate:"
 msgstr "Εμφάνιση μόνο μίας σελίδας όπου αρμόζει:"
 
-#: mcomix/preferences_dialog.py:259
+#: mcomix/preferences_dialog.py:258
 msgid "Page auto-resizing:"
 msgstr "Αυτόματη αλλαγή μεγέθους σελίδων:"
 
 #
-#: mcomix/preferences_dialog.py:262
+#: mcomix/preferences_dialog.py:261
 msgid "Space between two pages (in pixels):"
 msgstr "Απόσταση μεταξύ δύο σελίδων (σε εικονοστοιχεία):"
 
 #
 # File: src/preferences.py, line: 196
-#: mcomix/preferences_dialog.py:267
+#: mcomix/preferences_dialog.py:266
 msgid "Files"
 msgstr "Αρχεία"
 
 #
-#: mcomix/preferences_dialog.py:270
+#: mcomix/preferences_dialog.py:269
 msgid "Automatically open the last viewed file on startup"
 msgstr "Αυτόματο άνοιγμα του τελευταίου αρχείου κατά την εκκίνηση"
 
 #
-#: mcomix/preferences_dialog.py:272
+#: mcomix/preferences_dialog.py:271
 msgid ""
 "Automatically open, on startup, the file that was open when MComix was last "
 "closed."
@@ -1752,27 +1752,27 @@ msgstr ""
 "τελευταία φορά το MComix."
 
 #
-#: mcomix/preferences_dialog.py:274
+#: mcomix/preferences_dialog.py:273
 msgid "Store information about recently opened files:"
 msgstr "Αποθήκευση πληροφοριών για τα πρόσφατα ανοιγμένα αρχεία:"
 
 #
-#: mcomix/preferences_dialog.py:277
+#: mcomix/preferences_dialog.py:276
 msgid "Save As opens at the last directory saved into"
 msgstr "Η «Αποθήκευση ως» ανοίγει στον τελευταίο κατάλογο αποθήκευσης"
 
-#: mcomix/preferences_dialog.py:279
+#: mcomix/preferences_dialog.py:278
 msgid ""
 "Open the Save As dialog at the directory in which the last file was saved."
 msgstr ""
 "Ανοίγει τον διάλογο «Αποθήκευση ως» στον κατάλογο όπου αποθηκεύτηκε το "
 "τελευταίο αρχείο."
 
-#: mcomix/preferences_dialog.py:282
+#: mcomix/preferences_dialog.py:281
 msgid "Save an edited archive in the format it was opened in"
 msgstr "Αποθήκευση του επεξεργασμένου αρχείου στη μορφή με την οποία άνοιξε"
 
-#: mcomix/preferences_dialog.py:284
+#: mcomix/preferences_dialog.py:283
 msgid ""
 "Write an edited archive back as a ZIP, a tar, a 7z or a RAR, whichever it "
 "was read as. The last two need the 7z and rar programs, which MComix does "
@@ -1783,67 +1783,67 @@ msgstr ""
 "οποία δεν εγκαθιστά το MComix· μια μορφή που δεν μπορεί να γραφτεί "
 "αποθηκεύεται ως ZIP."
 
-#: mcomix/preferences_dialog.py:286
+#: mcomix/preferences_dialog.py:285
 msgid "Prompts answered for good"
 msgstr "Ερωτήσεις που απαντήθηκαν οριστικά"
 
 #
-#: mcomix/preferences_dialog.py:304
+#: mcomix/preferences_dialog.py:303
 msgid "Use fullscreen by default"
 msgstr "Χρήση πλήρους οθόνης από προεπιλογή"
 
 #
-#: mcomix/preferences_dialog.py:308
+#: mcomix/preferences_dialog.py:307
 msgid "Automatically hide all toolbars in fullscreen"
 msgstr "Αυτόματη απόκρυψη όλων των γραμμών σε πλήρη οθόνη"
 
 #
-#: mcomix/preferences_dialog.py:311 mcomix/ui.py:521
+#: mcomix/preferences_dialog.py:310 mcomix/ui.py:521
 msgid "Fit to size mode"
 msgstr "Λειτουργία προσαρμογής στο μέγεθος"
 
 #
 # File: src/ui.py, line: 103
-#: mcomix/preferences_dialog.py:313
+#: mcomix/preferences_dialog.py:312
 msgid "Fixed width for wide pages:"
 msgstr "Σταθερό πλάτος για τις πλατιές σελίδες:"
 
 #
 # File: src/preferences.py, line: 264
 # File: src/ui.py, line: 292
-#: mcomix/preferences_dialog.py:318
+#: mcomix/preferences_dialog.py:317
 msgid "Fixed height for wide pages:"
 msgstr "Σταθερό ύψος για τις πλατιές σελίδες:"
 
 #
 # File: src/ui.py, line: 103
-#: mcomix/preferences_dialog.py:323
+#: mcomix/preferences_dialog.py:322
 msgid "Fixed width for other pages:"
 msgstr "Σταθερό πλάτος για τις υπόλοιπες σελίδες:"
 
 #
 # File: src/ui.py, line: 103
-#: mcomix/preferences_dialog.py:328
+#: mcomix/preferences_dialog.py:327
 msgid "Fixed height for other pages:"
 msgstr "Σταθερό ύψος για τις υπόλοιπες σελίδες:"
 
 #
 # File: src/preferences.py, line: 279
-#: mcomix/preferences_dialog.py:333
+#: mcomix/preferences_dialog.py:332
 msgid "Slideshow"
 msgstr "Προβολή εναλλαγής εικόνων"
 
 #
-#: mcomix/preferences_dialog.py:335
+#: mcomix/preferences_dialog.py:334
 msgid "Slideshow delay (in seconds):"
 msgstr "Καθυστέρηση προβολής εναλλαγής (σε δευτερόλεπτα):"
 
 #
-#: mcomix/preferences_dialog.py:340
+#: mcomix/preferences_dialog.py:339
 msgid "Slideshow step (in pixels):"
 msgstr "Βήμα προβολής εναλλαγής (σε εικονοστοιχεία):"
 
-#: mcomix/preferences_dialog.py:344
+#: mcomix/preferences_dialog.py:343
 msgid ""
 "Specify the number of pixels to scroll while in slideshow mode. A positive "
 "value will scroll forward, a negative value will scroll backwards, and a "
@@ -1853,26 +1853,26 @@ msgstr ""
 "μπροστά, αρνητική πίσω, και η τιμή 0 κάνει την προβολή να αλλάζει πάντα "
 "σελίδα."
 
-#: mcomix/preferences_dialog.py:347
+#: mcomix/preferences_dialog.py:346
 msgid "During a slideshow automatically open the next archive"
 msgstr "Κατά την προβολή εναλλαγής αυτόματο άνοιγμα του επόμενου αρχείου"
 
-#: mcomix/preferences_dialog.py:349
+#: mcomix/preferences_dialog.py:348
 msgid ""
 "While in slideshow mode allow the next archive to automatically be opened."
 msgstr ""
 "Επιτρέπει στη λειτουργία προβολής εναλλαγής να ανοίγει αυτόματα το επόμενο "
 "αρχείο."
 
-#: mcomix/preferences_dialog.py:351
+#: mcomix/preferences_dialog.py:350
 msgid "Rotation"
 msgstr "Περιστροφή"
 
-#: mcomix/preferences_dialog.py:354
+#: mcomix/preferences_dialog.py:353
 msgid "Automatically rotate images according to their metadata"
 msgstr "Αυτόματη περιστροφή των εικόνων σύμφωνα με τα μεταδεδομένα τους"
 
-#: mcomix/preferences_dialog.py:356
+#: mcomix/preferences_dialog.py:355
 msgid ""
 "Automatically rotate images when an orientation is specified in the image "
 "metadata, such as in an Exif tag."
@@ -1881,49 +1881,49 @@ msgstr ""
 "προσανατολισμό, για παράδειγμα σε ετικέτα Exif."
 
 #
-#: mcomix/preferences_dialog.py:358
+#: mcomix/preferences_dialog.py:357
 msgid "Image quality"
 msgstr "Ποιότητα εικόνας"
 
 #
-#: mcomix/preferences_dialog.py:360
+#: mcomix/preferences_dialog.py:359
 msgid "Scaling mode"
 msgstr "Λειτουργία κλιμάκωσης"
 
-#: mcomix/preferences_dialog.py:372
+#: mcomix/preferences_dialog.py:371
 msgid "File order"
 msgstr "Σειρά αρχείων"
 
-#: mcomix/preferences_dialog.py:374
+#: mcomix/preferences_dialog.py:373
 msgid "Sort files and directories by:"
 msgstr "Ταξινόμηση αρχείων και καταλόγων κατά:"
 
 #
 # File: src/archive.py, line: 302
-#: mcomix/preferences_dialog.py:377
+#: mcomix/preferences_dialog.py:376
 msgid "Sort archives by:"
 msgstr "Ταξινόμηση αρχείων κατά:"
 
-#: mcomix/preferences_dialog.py:380
+#: mcomix/preferences_dialog.py:379
 msgid "Extraction and cache"
 msgstr "Αποσυμπίεση και λανθάνουσα μνήμη"
 
-#: mcomix/preferences_dialog.py:382
+#: mcomix/preferences_dialog.py:381
 msgid "Maximum number of concurrent extraction threads:"
 msgstr "Μέγιστος αριθμός ταυτόχρονων νημάτων αποσυμπίεσης:"
 
-#: mcomix/preferences_dialog.py:386
+#: mcomix/preferences_dialog.py:385
 msgid ""
 "Set the maximum number of concurrent threads for formats that support it."
 msgstr ""
 "Ορίζει τον μέγιστο αριθμό ταυτόχρονων νημάτων για τις μορφές που το "
 "υποστηρίζουν."
 
-#: mcomix/preferences_dialog.py:388
+#: mcomix/preferences_dialog.py:387
 msgid "Maximum number of concurrent thumbnail threads:"
 msgstr "Μέγιστος αριθμός ταυτόχρονων νημάτων για τις προεπισκοπήσεις:"
 
-#: mcomix/preferences_dialog.py:392
+#: mcomix/preferences_dialog.py:391
 msgid ""
 "Set the maximum number of concurrent threads used to generate thumbnails. "
 "Takes effect the next time MComix is started."
@@ -1932,13 +1932,13 @@ msgstr ""
 "προεπισκοπήσεων. Ισχύει από την επόμενη εκκίνηση του MComix."
 
 #
-#: mcomix/preferences_dialog.py:395
+#: mcomix/preferences_dialog.py:394
 msgid "Store thumbnails for opened files"
 msgstr "Αποθήκευση προεπισκοπήσεων για τα ανοιγμένα αρχεία"
 
 #
 # File: src/preferences.py, line: 227
-#: mcomix/preferences_dialog.py:397
+#: mcomix/preferences_dialog.py:396
 msgid ""
 "Store thumbnails for opened files according to the freedesktop.org "
 "specification. These thumbnails are shared by many other applications, such "
@@ -1948,11 +1948,11 @@ msgstr ""
 "freedesktop.org. Τις προεπισκοπήσεις αυτές χρησιμοποιούν και πολλές άλλες "
 "εφαρμογές, όπως οι περισσότεροι διαχειριστές αρχείων."
 
-#: mcomix/preferences_dialog.py:399
+#: mcomix/preferences_dialog.py:398
 msgid "Maximum number of pages to store in the cache:"
 msgstr "Μέγιστος αριθμός σελίδων στη λανθάνουσα μνήμη:"
 
-#: mcomix/preferences_dialog.py:403
+#: mcomix/preferences_dialog.py:402
 msgid ""
 "Set the max number of pages to cache. A value of -1 will cache the entire "
 "archive."
@@ -1962,19 +1962,19 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 124
-#: mcomix/preferences_dialog.py:405
+#: mcomix/preferences_dialog.py:404
 msgid "Magnifying Lens"
 msgstr "Μεγεθυντικός φακός"
 
 #
 # File: src/ui.py, line: 298
-#: mcomix/preferences_dialog.py:407
+#: mcomix/preferences_dialog.py:406
 msgid "Magnifying lens size (in pixels):"
 msgstr "Μέγεθος μεγεθυντικού φακού (σε εικονοστοιχεία):"
 
 #
 # File: src/preferences.py, line: 131
-#: mcomix/preferences_dialog.py:411
+#: mcomix/preferences_dialog.py:410
 msgid ""
 "Set the size of the magnifying lens. It is a square with a side of this many "
 "pixels."
@@ -1983,46 +1983,46 @@ msgstr ""
 "εικονοστοιχεία."
 
 #
-#: mcomix/preferences_dialog.py:413
+#: mcomix/preferences_dialog.py:412
 msgid "Magnification factor:"
 msgstr "Συντελεστής μεγέθυνσης:"
 
 #
 # File: src/preferences.py, line: 140
-#: mcomix/preferences_dialog.py:417
+#: mcomix/preferences_dialog.py:416
 msgid "Set the magnification factor of the magnifying lens."
 msgstr "Ορίζει τον συντελεστή μεγέθυνσης του μεγεθυντικού φακού."
 
 #
-#: mcomix/preferences_dialog.py:421
+#: mcomix/preferences_dialog.py:420
 msgid "Comment extensions:"
 msgstr "Καταλήξεις αρχείων σχολίων:"
 
 #
 # File: src/filechooser.py, line: 171
 # File: src/filechooser.py, line: 249
-#: mcomix/preferences_dialog.py:424
+#: mcomix/preferences_dialog.py:423
 msgid "Animated images"
 msgstr "Κινούμενες εικόνες"
 
-#: mcomix/preferences_dialog.py:426
+#: mcomix/preferences_dialog.py:425
 msgid "Animation mode:"
 msgstr "Λειτουργία κίνησης:"
 
-#: mcomix/preferences_dialog.py:447
+#: mcomix/preferences_dialog.py:446
 msgid "_Reset keys"
 msgstr "_Επαναφορά πλήκτρων"
 
-#: mcomix/preferences_dialog.py:449
+#: mcomix/preferences_dialog.py:448
 msgid "Resets all keyboard shortcuts to their default values."
 msgstr ""
 "Επαναφέρει όλες τις συντομεύσεις πληκτρολογίου στις προεπιλεγμένες τιμές."
 
-#: mcomix/preferences_dialog.py:452
+#: mcomix/preferences_dialog.py:451
 msgid "Clear _dialog choices"
 msgstr "Εκκαθάριση επιλογών _διαλόγων"
 
-#: mcomix/preferences_dialog.py:454
+#: mcomix/preferences_dialog.py:453
 msgid ""
 "Clears all dialog choices that you have previously chosen not to be asked "
 "again."
@@ -2030,11 +2030,11 @@ msgstr ""
 "Καθαρίζει όλες τις απαντήσεις σε διαλόγους για τους οποίους είχατε επιλέξει "
 "να μην ερωτηθείτε ξανά."
 
-#: mcomix/preferences_dialog.py:489
+#: mcomix/preferences_dialog.py:488
 msgid "Ask every time"
 msgstr "Ερώτηση κάθε φορά"
 
-#: mcomix/preferences_dialog.py:494
+#: mcomix/preferences_dialog.py:493
 msgid ""
 "What MComix answers this prompt with instead of asking. This is what the "
 "prompt's \"Do not ask again\" box sets."
@@ -2042,27 +2042,27 @@ msgstr ""
 "Η απάντηση που δίνει το MComix σε αυτή την ερώτηση αντί να τη θέσει. Αυτό "
 "ορίζει το πλαίσιο «Να μην ερωτηθώ ξανά.» της ίδιας της ερώτησης."
 
-#: mcomix/preferences_dialog.py:516
+#: mcomix/preferences_dialog.py:515
 msgid "Auto-detect (Default)"
 msgstr "Αυτόματος εντοπισμός (προεπιλογή)"
 
-#: mcomix/preferences_dialog.py:557
+#: mcomix/preferences_dialog.py:556
 msgid "Follow the system"
 msgstr "Ακολουθία του συστήματος"
 
-#: mcomix/preferences_dialog.py:558
+#: mcomix/preferences_dialog.py:557
 msgid "Light"
 msgstr "Φωτεινό"
 
-#: mcomix/preferences_dialog.py:559
+#: mcomix/preferences_dialog.py:558
 msgid "Dark"
 msgstr "Σκοτεινό"
 
-#: mcomix/preferences_dialog.py:560
+#: mcomix/preferences_dialog.py:559
 msgid "Pitch black"
 msgstr "Κατάμαυρο"
 
-#: mcomix/preferences_dialog.py:566
+#: mcomix/preferences_dialog.py:565
 msgid ""
 "How MComix itself is painted, whatever the desktop asks for. Pitch black is "
 "the dark theme with black backgrounds, which a screen that lights its pixels "
@@ -2073,11 +2073,11 @@ msgstr ""
 "οθόνη η οποία ανάβει τα εικονοστοιχεία ένα προς ένα δείχνει χωρίς καθόλου "
 "φως."
 
-#: mcomix/preferences_dialog.py:603
+#: mcomix/preferences_dialog.py:602
 msgid "Restart MComix in the language you picked?"
 msgstr "Επανεκκίνηση του MComix στη γλώσσα που επιλέξατε;"
 
-#: mcomix/preferences_dialog.py:604
+#: mcomix/preferences_dialog.py:603
 msgid ""
 "MComix is translated as it starts, so most of the interface stays in the "
 "language it started in until it is started again. The book being read, its "
@@ -2088,24 +2088,24 @@ msgstr ""
 "ξανά. Το βιβλίο που διαβάζετε, η σελίδα του και το μέγεθος του παραθύρου "
 "διατηρούνται."
 
-#: mcomix/preferences_dialog.py:618 mcomix/preferences_dialog.py:759
-#: mcomix/preferences_dialog.py:831 mcomix/ui.py:527
+#: mcomix/preferences_dialog.py:617 mcomix/preferences_dialog.py:758
+#: mcomix/preferences_dialog.py:830 mcomix/ui.py:527
 msgid "Never"
 msgstr "Ποτέ"
 
-#: mcomix/preferences_dialog.py:619
+#: mcomix/preferences_dialog.py:618
 msgid "Only for title pages"
 msgstr "Μόνο για τις σελίδες τίτλου"
 
-#: mcomix/preferences_dialog.py:620
+#: mcomix/preferences_dialog.py:619
 msgid "Only for wide images"
 msgstr "Μόνο για τις πλατιές εικόνες"
 
-#: mcomix/preferences_dialog.py:621 mcomix/preferences_dialog.py:760
+#: mcomix/preferences_dialog.py:620 mcomix/preferences_dialog.py:759
 msgid "Always"
 msgstr "Πάντα"
 
-#: mcomix/preferences_dialog.py:628
+#: mcomix/preferences_dialog.py:627
 msgid ""
 "When showing the first page of an archive, or an image's width exceeds its "
 "height, only a single page will be displayed."
@@ -2115,56 +2115,56 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 78
-#: mcomix/preferences_dialog.py:643
+#: mcomix/preferences_dialog.py:642
 msgid "Prefer same scale"
 msgstr "Προτίμηση στην ίδια κλίμακα"
 
 #
 # File: src/preferences.py, line: 78
-#: mcomix/preferences_dialog.py:644
+#: mcomix/preferences_dialog.py:643
 msgid "Prefer same size"
 msgstr "Προτίμηση στο ίδιο μέγεθος"
 
 #
-#: mcomix/preferences_dialog.py:645
+#: mcomix/preferences_dialog.py:644
 msgid "Fit to same size"
 msgstr "Προσαρμογή στο ίδιο μέγεθος"
 
-#: mcomix/preferences_dialog.py:652
+#: mcomix/preferences_dialog.py:651
 msgid "Maintain relative size or fit to same size."
 msgstr "Διατηρεί το σχετικό μέγεθος ή προσαρμόζει στο ίδιο μέγεθος."
 
-#: mcomix/preferences_dialog.py:666 mcomix/preferences_dialog.py:711
+#: mcomix/preferences_dialog.py:665 mcomix/preferences_dialog.py:710
 msgid "No sorting"
 msgstr "Χωρίς ταξινόμηση"
 
-#: mcomix/preferences_dialog.py:667
+#: mcomix/preferences_dialog.py:666
 msgid "File name"
 msgstr "Όνομα αρχείου"
 
-#: mcomix/preferences_dialog.py:668
+#: mcomix/preferences_dialog.py:667
 msgid "File name (GLib)"
 msgstr "Όνομα αρχείου (GLib)"
 
-#: mcomix/preferences_dialog.py:669 mcomix/library/book_area.py:242
+#: mcomix/preferences_dialog.py:668 mcomix/library/book_area.py:242
 msgid "File size"
 msgstr "Μέγεθος αρχείου"
 
-#: mcomix/preferences_dialog.py:670
+#: mcomix/preferences_dialog.py:669
 msgid "Last modified"
 msgstr "Ώρα τροποποίησης"
 
-#: mcomix/preferences_dialog.py:676 mcomix/preferences_dialog.py:720
+#: mcomix/preferences_dialog.py:675 mcomix/preferences_dialog.py:719
 #: mcomix/library/book_area.py:246
 msgid "Ascending"
 msgstr "Αύξουσα"
 
-#: mcomix/preferences_dialog.py:677 mcomix/preferences_dialog.py:721
+#: mcomix/preferences_dialog.py:676 mcomix/preferences_dialog.py:720
 #: mcomix/library/book_area.py:247
 msgid "Descending"
 msgstr "Φθίνουσα"
 
-#: mcomix/preferences_dialog.py:685
+#: mcomix/preferences_dialog.py:684
 msgid ""
 "Files will be opened and displayed according to the sort order specified "
 "here. This option does not affect ordering within archives."
@@ -2172,19 +2172,19 @@ msgstr ""
 "Τα αρχεία θα ανοίγονται και θα εμφανίζονται με τη σειρά που ορίζεται εδώ. Η "
 "επιλογή αυτή δεν επηρεάζει τη σειρά μέσα στα αρχεία."
 
-#: mcomix/preferences_dialog.py:712
+#: mcomix/preferences_dialog.py:711
 msgid "Natural order"
 msgstr "Φυσική σειρά"
 
-#: mcomix/preferences_dialog.py:713
+#: mcomix/preferences_dialog.py:712
 msgid "Literal order"
 msgstr "Κατά γράμμα σειρά"
 
-#: mcomix/preferences_dialog.py:714
+#: mcomix/preferences_dialog.py:713
 msgid "GLib order"
 msgstr "Σειρά GLib"
 
-#: mcomix/preferences_dialog.py:729
+#: mcomix/preferences_dialog.py:728
 msgid ""
 "Files within archives will be sorted according to the order specified here. "
 "Natural order will sort numbered files based on their natural order, i.e. 1, "
@@ -2199,7 +2199,7 @@ msgstr ""
 "κλειδιά σύγκρισης που παράγει το GLib/GTK και που χρησιμοποιούν και πολλές "
 "άλλες εφαρμογές GTK."
 
-#: mcomix/preferences_dialog.py:772
+#: mcomix/preferences_dialog.py:771
 msgid ""
 "Add information about all files opened from within MComix to the shared "
 "recent files list."
@@ -2208,11 +2208,11 @@ msgstr ""
 "στην κοινή λίστα πρόσφατων αρχείων."
 
 #
-#: mcomix/preferences_dialog.py:792
+#: mcomix/preferences_dialog.py:791
 msgid "Delete information about recently opened files?"
 msgstr "Διαγραφή των πληροφοριών για τα πρόσφατα ανοιγμένα αρχεία;"
 
-#: mcomix/preferences_dialog.py:793
+#: mcomix/preferences_dialog.py:792
 msgid ""
 "This will remove all entries from the \"Recent\" menu, and clear information "
 "about last read pages."
@@ -2221,20 +2221,20 @@ msgstr ""
 "σβήσει τις πληροφορίες για τις τελευταίες σελίδες που διαβάστηκαν."
 
 #
-#: mcomix/preferences_dialog.py:806
+#: mcomix/preferences_dialog.py:805
 msgid "Normal (fast)"
 msgstr "Κανονική (γρήγορη)"
 
 #
-#: mcomix/preferences_dialog.py:807
+#: mcomix/preferences_dialog.py:806
 msgid "Bilinear"
 msgstr "Διγραμμική"
 
-#: mcomix/preferences_dialog.py:808
+#: mcomix/preferences_dialog.py:807
 msgid "Hyperbolic (slow)"
 msgstr "Υπερβολική (αργή)"
 
-#: mcomix/preferences_dialog.py:814
+#: mcomix/preferences_dialog.py:813
 msgid ""
 "Changes how images are scaled. Slower algorithms result in higher quality "
 "resizing, but longer page loading times."
@@ -2242,17 +2242,17 @@ msgstr ""
 "Αλλάζει τον τρόπο κλιμάκωσης των εικόνων. Οι πιο αργοί αλγόριθμοι δίνουν "
 "καλύτερη ποιότητα, αλλά οι σελίδες φορτώνουν πιο αργά."
 
-#: mcomix/preferences_dialog.py:832 mcomix/library/book_area.py:254
+#: mcomix/preferences_dialog.py:831 mcomix/library/book_area.py:254
 msgid "Normal"
 msgstr "Κανονική"
 
-#: mcomix/preferences_dialog.py:838
+#: mcomix/preferences_dialog.py:837
 msgid "Controls how animated images should be displayed."
 msgstr "Καθορίζει πώς εμφανίζονται οι κινούμενες εικόνες."
 
 #
 # File: src/preferences.py, line: 295
-#: mcomix/preferences_dialog.py:882
+#: mcomix/preferences_dialog.py:881
 msgid ""
 "Treat all files found within archives, that have one of these file endings, "
 "as comments."
@@ -2272,7 +2272,7 @@ msgstr "Εικόνα"
 msgid "Archive"
 msgstr "Αρχείο"
 
-#: mcomix/properties_dialog.py:137 mcomix/library/control_area.py:150
+#: mcomix/properties_dialog.py:137 mcomix/library/control_area.py:151
 #, python-format
 msgid "%d page"
 msgid_plural "%d pages"
@@ -3179,28 +3179,28 @@ msgstr "! Δεν ήταν δυνατή η λήψη του εξωφύλλου τ�
 msgid "Recent"
 msgstr "Πρόσφατα"
 
-#: mcomix/library/backend.py:414
+#: mcomix/library/backend.py:430
 #, python-format
 msgid "! Could not add book \"%s\" to the library"
 msgstr "! Δεν ήταν δυνατή η προσθήκη του βιβλίου «%s» στη βιβλιοθήκη"
 
-#: mcomix/library/backend.py:439
+#: mcomix/library/backend.py:455
 #, python-format
 msgid "! Could not move book \"%s\" in the library"
 msgstr "! Δεν ήταν δυνατή η μετακίνηση του βιβλίου «%s» στη βιβλιοθήκη"
 
-#: mcomix/library/backend.py:483
+#: mcomix/library/backend.py:499
 #, python-format
 msgid "! Could not add collection \"%s\""
 msgstr "! Δεν ήταν δυνατή η προσθήκη της συλλογής «%s»"
 
-#: mcomix/library/backend.py:515
+#: mcomix/library/backend.py:531
 #, python-format
 msgid "! Could not add book %(book)s to collection %(collection)s"
 msgstr ""
 "! Δεν ήταν δυνατή η προσθήκη του βιβλίου %(book)s στη συλλογή %(collection)s"
 
-#: mcomix/library/backend.py:542
+#: mcomix/library/backend.py:558
 #, python-format
 msgid "! Could not rename collection to \"%s\""
 msgstr "! Δεν ήταν δυνατή η μετονομασία της συλλογής σε «%s»"
@@ -3208,16 +3208,16 @@ msgstr "! Δεν ήταν δυνατή η μετονομασία της συλλ
 #
 # File: src/librarybackend.py, line: 272
 # File: src/librarybackend.py, line: 274
-#: mcomix/library/backend.py:553 mcomix/library/backend.py:555
+#: mcomix/library/backend.py:569 mcomix/library/backend.py:571
 msgid "(Copy)"
 msgstr "(αντίγραφο)"
 
-#: mcomix/library/backend.py:804
+#: mcomix/library/backend.py:820
 msgid "Could not determine library database version!"
 msgstr ""
 "Δεν ήταν δυνατός ο προσδιορισμός της έκδοσης της βάσης της βιβλιοθήκης!"
 
-#: mcomix/library/backend.py:854
+#: mcomix/library/backend.py:870
 #, python-format
 msgid "Upgrading library database version from %(from)d to %(to)d."
 msgstr ""
@@ -3225,11 +3225,11 @@ msgstr ""
 
 #
 # File: src/library.py, line: 202
-#: mcomix/library/backend_types.py:337 mcomix/library/collection_area.py:222
+#: mcomix/library/backend_types.py:336 mcomix/library/collection_area.py:222
 msgid "All books"
 msgstr "Όλα τα βιβλία"
 
-#: mcomix/library/backend_types.py:478
+#: mcomix/library/backend_types.py:477
 #, python-format
 msgid "! Could not scan for new books: %s"
 msgstr "! Δεν ήταν δυνατή η αναζήτηση νέων βιβλίων: %s"
@@ -3329,18 +3329,18 @@ msgstr "_Ταξινόμηση"
 msgid "Cover si_ze"
 msgstr "Μέγεθος ε_ξωφύλλου"
 
-#: mcomix/library/book_area.py:485
+#: mcomix/library/book_area.py:497
 msgid "Set library cover size"
 msgstr "Ορίζει το μέγεθος των εξωφύλλων στη βιβλιοθήκη"
 
-#: mcomix/library/book_area.py:616
+#: mcomix/library/book_area.py:665
 #, python-format
 msgid "Removed %(num)d book from '%(collection)s'."
 msgid_plural "Removed %(num)d books from '%(collection)s'."
 msgstr[0] "Αφαιρέθηκε %(num)d βιβλίο από τη «%(collection)s»."
 msgstr[1] "Αφαιρέθηκαν %(num)d βιβλία από τη «%(collection)s»."
 
-#: mcomix/library/book_area.py:639 mcomix/library/collection_area.py:297
+#: mcomix/library/book_area.py:688 mcomix/library/collection_area.py:297
 #, python-format
 msgid "Removed %d book from the library."
 msgid_plural "Removed %d books from the library."
@@ -3349,11 +3349,11 @@ msgstr[1] "Αφαιρέθηκαν %d βιβλία από τη βιβλιοθήκ
 
 #
 # File: src/library.py, line: 597
-#: mcomix/library/book_area.py:664
+#: mcomix/library/book_area.py:713
 msgid "Remove books from the library?"
 msgstr "Αφαίρεση βιβλίων από τη βιβλιοθήκη;"
 
-#: mcomix/library/book_area.py:665
+#: mcomix/library/book_area.py:714
 msgid ""
 "The selected books will be removed from the library and permanently deleted. "
 "Are you sure that you want to continue?"
@@ -3361,14 +3361,14 @@ msgstr ""
 "Τα επιλεγμένα βιβλία θα αφαιρεθούν από τη βιβλιοθήκη και θα διαγραφούν "
 "οριστικά. Σίγουρα θέλετε να συνεχίσετε;"
 
-#: mcomix/library/book_area.py:700
+#: mcomix/library/book_area.py:749
 #, python-format
 msgid "%d book could not be deleted from disk."
 msgid_plural "%d books could not be deleted from disk."
 msgstr[0] "Δεν ήταν δυνατή η διαγραφή %d βιβλίου από τον δίσκο."
 msgstr[1] "Δεν ήταν δυνατή η διαγραφή %d βιβλίων από τον δίσκο."
 
-#: mcomix/library/book_area.py:729
+#: mcomix/library/book_area.py:793
 #, python-format
 msgid "Remove the bookmarks in the deleted book?"
 msgid_plural "Remove the bookmarks in the %(count)d deleted books?"
@@ -3470,13 +3470,13 @@ msgstr "Δεν ήταν δυνατή η δημιουργία αντιγράφο�
 
 #
 # File: src/library.py, line: 382
-#: mcomix/library/collection_area.py:567
+#: mcomix/library/collection_area.py:572
 msgid "Root"
 msgstr "Ρίζα"
 
 #
 # File: src/library.py, line: 386
-#: mcomix/library/collection_area.py:570
+#: mcomix/library/collection_area.py:575
 #, python-format
 msgid ""
 "Put the collection '%(subcollection)s' in the collection "
@@ -3487,14 +3487,14 @@ msgstr ""
 
 #
 # File: src/library.py, line: 407
-#: mcomix/library/collection_area.py:582
+#: mcomix/library/collection_area.py:591
 #, python-format
 msgid "Add books to '%s'."
 msgstr "Προσθήκη βιβλίων στο «%s»."
 
 #
 # File: src/library.py, line: 411
-#: mcomix/library/collection_area.py:585
+#: mcomix/library/collection_area.py:594
 #, python-format
 msgid ""
 "Move books from '%(source collection)s' to '%(destination collection)s'."
@@ -3502,13 +3502,13 @@ msgstr ""
 "Μετακίνηση βιβλίων από «%(source collection)s» σε "
 "«%(destination collection)s»."
 
-#: mcomix/library/control_area.py:76
+#: mcomix/library/control_area.py:77
 msgid "_Search:"
 msgstr "_Αναζήτηση:"
 
 #
 # File: src/library.py, line: 774
-#: mcomix/library/control_area.py:82
+#: mcomix/library/control_area.py:83
 msgid ""
 "Display only those books that have the specified text string in their full "
 "path. The search is not case sensitive."
@@ -3516,78 +3516,81 @@ msgstr ""
 "Εμφανίζει μόνο τα βιβλία που έχουν το δοθέν κείμενο στην πλήρη διαδρομή "
 "τους. Η αναζήτηση δεν διακρίνει πεζά από κεφαλαία."
 
-#: mcomix/library/control_area.py:91
+#: mcomix/library/control_area.py:92
 msgid "_Watch list"
 msgstr "Λίστα _παρακολούθησης"
 
-#: mcomix/library/control_area.py:95
+#: mcomix/library/control_area.py:96
 msgid "Open the watchlist management dialog."
 msgstr "Ανοίγει τον διάλογο διαχείρισης της λίστας παρακολούθησης."
 
-#: mcomix/library/control_area.py:98
+#: mcomix/library/control_area.py:99
 msgid "_Open list"
 msgstr "Άν_οιγμα επιλογής"
 
 #
 # File: src/library.py, line: 806
-#: mcomix/library/control_area.py:101
+#: mcomix/library/control_area.py:102
 msgid "Open the selected book."
 msgstr "Άνοιγμα του επιλεγμένου βιβλίου."
 
-#: mcomix/library/control_area.py:157
+#: mcomix/library/control_area.py:158
 #, python-format
 msgid "Finished reading on %(date)s, %(time)s"
 msgstr "Ολοκληρώθηκε η ανάγνωση στις %(date)s, %(time)s"
 
-#: mcomix/library/main_dialog.py:129
+#: mcomix/library/main_dialog.py:130
 msgid "Scanning for new books..."
 msgstr "Αναζήτηση νέων βιβλίων..."
 
-#: mcomix/library/main_dialog.py:174
+#: mcomix/library/main_dialog.py:173
 #, python-format
 msgid "Added new book '%(bookname)s' from directory '%(directory)s'."
 msgstr ""
 "Προστέθηκε το νέο βιβλίο «%(bookname)s» από τον κατάλογο «%(directory)s»."
 
-#: mcomix/library/main_dialog.py:181
+#: mcomix/library/main_dialog.py:180
 #, python-format
 msgid "Added %(count)d new book from directory '%(directory)s'."
 msgid_plural "Added %(count)d new books from directory '%(directory)s'."
 msgstr[0] "Προστέθηκαν %(count)d νέα βιβλία από τον κατάλογο «%(directory)s»."
 msgstr[1] "Προστέθηκαν %(count)d νέα βιβλία από τον κατάλογο «%(directory)s»."
 
-#: mcomix/library/main_dialog.py:189
+#: mcomix/library/main_dialog.py:188
 #, python-format
 msgid "No new books found in directory '%s'."
 msgstr "Δεν βρέθηκαν νέα βιβλία στον κατάλογο «%s»."
 
-#: mcomix/library/watchlist.py:37
+#: mcomix/library/watchlist.py:38
 msgid "Library watch list"
 msgstr "Λίστα παρακολούθησης της βιβλιοθήκης"
 
-#: mcomix/library/watchlist.py:39
+#: mcomix/library/watchlist.py:40
 msgid "_Scan now"
 msgstr "_Σάρωση τώρα"
 
 #
-#: mcomix/library/watchlist.py:51
+#: mcomix/library/watchlist.py:52
 msgid "Directory"
 msgstr "Κατάλογος"
 
 #
 # File: src/properties.py, line: 124
 # File: src/properties.py, line: 159
-#: mcomix/library/watchlist.py:52
+#: mcomix/library/watchlist.py:53
 msgid "Collection"
 msgstr "Συλλογή"
 
-#: mcomix/library/watchlist.py:56
+#: mcomix/library/watchlist.py:57
 msgid "With subdirectories"
 msgstr "Με τους υποκαταλόγους"
 
-#: mcomix/library/watchlist.py:80
+#: mcomix/library/watchlist.py:81
 msgid "Automatically scan for new books when library is _opened"
 msgstr "Αυτόματη αναζήτηση νέων βιβλίων κατά το άν_οιγμα της βιβλιοθήκης"
+
+#~ msgid "Bookmarking a page that is bookmarked already:"
+#~ msgstr "Κατά την προσθήκη σελιδοδείκτη σε σελίδα που έχει ήδη έναν:"
 
 #~ msgid ""
 #~ "The archive on disk will be replaced by the book as it stands, without "

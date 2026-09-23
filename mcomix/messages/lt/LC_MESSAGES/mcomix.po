@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 1.2.1\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-09-21 05:15+0200\n"
+"POT-Creation-Date: 2026-09-23 17:56+0200\n"
 "PO-Revision-Date: 2016-09-18 15:30+0300\n"
 "Last-Translator: Zygimantus <zygimantus@gmail.com>\n"
 "Language-Team: \n"
@@ -52,7 +52,7 @@ msgstr "Nepalaikomas archyvo formatas: %s"
 msgid "! Extraction error: %s"
 msgstr "! Išpakavimo klaida: %s"
 
-#: mcomix/archive_packer.py:171 mcomix/library/book_area.py:696
+#: mcomix/archive_packer.py:171 mcomix/library/book_area.py:745
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! Nepavyko pašalinti %(file)s: %(error)s"
@@ -75,20 +75,20 @@ msgstr ""
 msgid "! Could not read %s"
 msgstr "! Nepavyko perskaityti %s"
 
-#: mcomix/bookmark_backend.py:264
+#: mcomix/bookmark_backend.py:263
 #, python-format
 msgid "! Could not parse bookmarks file %s"
 msgstr "! Nepavyko išnagrinėti žymelių failo %s"
 
-#: mcomix/bookmark_backend.py:327 mcomix/message_dialog.py:28
+#: mcomix/bookmark_backend.py:325 mcomix/message_dialog.py:28
 msgid "_Yes"
 msgstr "_Taip"
 
-#: mcomix/bookmark_backend.py:328 mcomix/message_dialog.py:27
+#: mcomix/bookmark_backend.py:326 mcomix/message_dialog.py:27
 msgid "_No"
 msgstr "_Ne"
 
-#: mcomix/bookmark_backend.py:329 mcomix/edit_dialog.py:59
+#: mcomix/bookmark_backend.py:327 mcomix/edit_dialog.py:59
 #: mcomix/file_actions.py:817 mcomix/file_chooser_base_dialog.py:106
 #: mcomix/file_chooser_base_dialog.py:111
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
@@ -96,7 +96,7 @@ msgstr "_Ne"
 msgid "_Cancel"
 msgstr "Atšau_kti"
 
-#: mcomix/bookmark_backend.py:337
+#: mcomix/bookmark_backend.py:335
 #, python-format
 msgid "Replace existing bookmark on page %s?"
 msgid_plural "Replace existing bookmarks on pages %s?"
@@ -104,7 +104,7 @@ msgstr[0] "Pakeisti esamą žymelę %s puslapyje?"
 msgstr[1] "Pakeisti esamas žymeles %s puslapiuose?"
 msgstr[2] "Pakeisti esamas žymeles %s puslapių?"
 
-#: mcomix/bookmark_backend.py:342
+#: mcomix/bookmark_backend.py:340
 #, python-format
 msgid ""
 "The current book already contains marked pages. Do you want to replace them "
@@ -113,17 +113,17 @@ msgstr ""
 "Šioje knygoje jau yra pažymėtų puslapių. Ar pakeisti juos nauja žymele %d "
 "puslapyje?"
 
-#: mcomix/bookmark_backend.py:345
+#: mcomix/bookmark_backend.py:343
 msgid ""
 "Selecting \"No\" will create a new bookmark without affecting the other "
 "bookmarks."
 msgstr "Pasirinkus „Ne“ bus sukurta nauja žymelė, nekeičiant kitų."
 
-#: mcomix/bookmark_backend.py:365
+#: mcomix/bookmark_backend.py:363
 msgid "Clear all bookmarks?"
 msgstr "Išvalyti visas žymeles?"
 
-#: mcomix/bookmark_backend.py:366
+#: mcomix/bookmark_backend.py:364
 msgid ""
 "All stored bookmarks will be removed. Are you sure that you want to continue?"
 msgstr "Visos išsaugotos žymelės bus pašalintos. Ar tikrai norite tęsti?"
@@ -137,14 +137,14 @@ msgid "C_lear bookmarks..."
 msgstr "Iš_valyti žymeles..."
 
 #: mcomix/bookmark_dialog.py:33 mcomix/main.py:763 mcomix/openwith.py:342
-#: mcomix/library/collection_area.py:149 mcomix/library/watchlist.py:63
+#: mcomix/library/collection_area.py:149 mcomix/library/watchlist.py:64
 msgid "_Remove"
 msgstr "Pa_šalinti"
 
 #: mcomix/bookmark_dialog.py:34 mcomix/comment_dialog.py:29
-#: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:73
+#: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:72
 #: mcomix/properties_dialog.py:37 mcomix/ui.py:462
-#: mcomix/library/watchlist.py:40
+#: mcomix/library/watchlist.py:41
 msgid "_Close"
 msgstr "Už_daryti"
 
@@ -157,8 +157,8 @@ msgstr "Tipas"
 msgid "Name"
 msgstr "Pavadinimas"
 
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1347
-#: mcomix/library/control_area.py:147
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1369
+#: mcomix/library/control_area.py:148
 msgid "Page"
 msgstr "Puslapis"
 
@@ -178,7 +178,7 @@ msgstr "Pridėti ž_ymelę"
 msgid "_Edit Bookmarks..."
 msgstr "_Keisti žymeles..."
 
-#: mcomix/callback.py:82
+#: mcomix/callback.py:79
 #, python-format
 msgid "! Callback %(function)r failed: %(error)s"
 msgstr "! Atgalinis iškvietimas %(function)r nepavyko: %(error)s"
@@ -187,7 +187,7 @@ msgstr "! Atgalinis iškvietimas %(function)r nepavyko: %(error)s"
 msgid "New accelerator..."
 msgstr "Nauja sparčioji klavišų kombinacija..."
 
-#: mcomix/comment_dialog.py:28 mcomix/preferences_dialog.py:419
+#: mcomix/comment_dialog.py:28 mcomix/preferences_dialog.py:418
 msgid "Comments"
 msgstr "Komentarai"
 
@@ -516,12 +516,12 @@ msgstr "Visi vaizdai"
 msgid "%s images"
 msgstr "%s vaizdai"
 
-#: mcomix/file_chooser_base_dialog.py:602
+#: mcomix/file_chooser_base_dialog.py:607
 #, python-format
 msgid "A file named '%s' already exists. Do you want to replace it?"
 msgstr "Failas pavadinimu „%s“ jau yra. Ar norite jį pakeisti?"
 
-#: mcomix/file_chooser_base_dialog.py:604
+#: mcomix/file_chooser_base_dialog.py:609
 msgid "Replacing it will overwrite its contents."
 msgstr "Pakeitus jį, turinys bus perrašytas."
 
@@ -530,7 +530,7 @@ msgid "Add books"
 msgstr "Pridėti knygų"
 
 #: mcomix/file_chooser_library_dialog.py:43 mcomix/openwith.py:338
-#: mcomix/library/watchlist.py:61
+#: mcomix/library/watchlist.py:62
 msgid "_Add"
 msgstr "_Pridėti"
 
@@ -565,7 +565,7 @@ msgstr ""
 "Skaitymą čia nutraukėte %(date)s %(time)s. Pasirinkus „Taip“ skaitymas bus "
 "tęsiamas %(page)d puslapyje. Kitu atveju bus įkeltas pirmas puslapis."
 
-#: mcomix/file_handler.py:932
+#: mcomix/file_handler.py:957
 #, python-format
 msgid ""
 "! Corrupt file \"%s\", deleting it; the last file read will not be reopened."
@@ -578,7 +578,7 @@ msgstr ""
 msgid "Invalid path: '%s'"
 msgstr "Netinkamas kelias: „%s“"
 
-#: mcomix/image_tools.py:971
+#: mcomix/image_tools.py:1038
 msgid "Unknown filetype"
 msgstr "Nežinomas failo tipas"
 
@@ -664,7 +664,7 @@ msgstr "Lygiuoti apačioje kairėje"
 #: mcomix/keybindings.py:72 mcomix/keybindings.py:73 mcomix/keybindings.py:74
 #: mcomix/keybindings.py:76 mcomix/keybindings.py:77 mcomix/keybindings.py:78
 #: mcomix/keybindings.py:79 mcomix/keybindings.py:81 mcomix/keybindings.py:82
-#: mcomix/preferences_dialog.py:189
+#: mcomix/preferences_dialog.py:188
 msgid "Scroll"
 msgstr "Slinkimas"
 
@@ -782,7 +782,7 @@ msgstr "Automatinis pasukimas pagal plotį"
 msgid "Autorotate by height"
 msgstr "Automatinis pasukimas pagal aukštį"
 
-#: mcomix/keybindings.py:102 mcomix/preferences_dialog.py:249 mcomix/ui.py:498
+#: mcomix/keybindings.py:102 mcomix/preferences_dialog.py:248 mcomix/ui.py:498
 msgid "Double page mode"
 msgstr "Dviejų puslapių veiksena"
 
@@ -840,7 +840,7 @@ msgstr "Išeiti iš viso ekrano"
 #: mcomix/keybindings.py:124 mcomix/keybindings.py:125
 #: mcomix/keybindings.py:126 mcomix/keybindings.py:127
 #: mcomix/keybindings.py:128 mcomix/keybindings.py:129
-#: mcomix/preferences_dialog.py:130
+#: mcomix/preferences_dialog.py:129
 msgid "User interface"
 msgstr "Naudotojo sąsaja"
 
@@ -852,7 +852,7 @@ msgstr "Ekrano skydelis"
 msgid "Minimize"
 msgstr "Minimizuoti"
 
-#: mcomix/keybindings.py:120 mcomix/preferences_dialog.py:301
+#: mcomix/keybindings.py:120 mcomix/preferences_dialog.py:300
 msgid "Fullscreen"
 msgstr "Pilnas ekranas"
 
@@ -876,7 +876,7 @@ msgstr "Būsenos juosta"
 msgid "Scrollbars"
 msgstr "Slankjuostės"
 
-#: mcomix/keybindings.py:127 mcomix/preferences_dialog.py:154
+#: mcomix/keybindings.py:127 mcomix/preferences_dialog.py:153
 msgid "Thumbnails"
 msgstr "Miniatiūros"
 
@@ -947,11 +947,11 @@ msgstr "Archyvuoti komentarus"
 msgid "Properties"
 msgstr "Savybės"
 
-#: mcomix/keybindings.py:144 mcomix/preferences_dialog.py:69
+#: mcomix/keybindings.py:144 mcomix/preferences_dialog.py:68
 msgid "Preferences"
 msgstr "Nustatymai"
 
-#: mcomix/keybindings.py:149 mcomix/library/main_dialog.py:53
+#: mcomix/keybindings.py:149 mcomix/library/main_dialog.py:54
 msgid "Library"
 msgstr "Biblioteka"
 
@@ -1014,7 +1014,7 @@ msgstr ""
 msgid "_Keep them"
 msgstr "_Palikti"
 
-#: mcomix/main.py:1168
+#: mcomix/main.py:1190
 msgid "SLIDESHOW"
 msgstr "SKAIDRIŲ RODYMAS"
 
@@ -1039,8 +1039,8 @@ msgid "Delete it"
 msgstr "Ištrinti"
 
 #: mcomix/message_dialog.py:79
-msgid "Bookmarking a page that is bookmarked already:"
-msgstr "Dedant žymelę puslapyje, kuriame jau yra žymelė:"
+msgid "Bookmarking a page in a book that has bookmarks already:"
+msgstr "Dedant žymelę knygoje, kurioje jau yra žymelių:"
 
 #: mcomix/message_dialog.py:80
 msgid "Replace the existing bookmark"
@@ -1221,11 +1221,11 @@ msgstr "Darbinis aplankas"
 msgid "Disabled in archives"
 msgstr "Archyvuose išjungta"
 
-#: mcomix/openwith.py:624
+#: mcomix/openwith.py:621
 msgid "Save changes to commands?"
 msgstr "Išsaugoti komandų pakeitimus?"
 
-#: mcomix/openwith.py:625
+#: mcomix/openwith.py:622
 msgid ""
 "You have made changes to the list of external commands that have not been "
 "saved yet. Press \"Yes\" to save all changes, or \"No\" to discard them."
@@ -1251,39 +1251,39 @@ msgstr "_Eiti"
 msgid " of %s"
 msgstr " iš %s"
 
-#: mcomix/preferences_dialog.py:96
+#: mcomix/preferences_dialog.py:95
 msgid "Appearance"
 msgstr "Išvaizda"
 
-#: mcomix/preferences_dialog.py:97
+#: mcomix/preferences_dialog.py:96
 msgid "Behaviour"
 msgstr "Elgsena"
 
-#: mcomix/preferences_dialog.py:98
+#: mcomix/preferences_dialog.py:97
 msgid "Display"
 msgstr "Rodymas"
 
-#: mcomix/preferences_dialog.py:99
+#: mcomix/preferences_dialog.py:98
 msgid "Advanced"
 msgstr "Sudėtingiau"
 
-#: mcomix/preferences_dialog.py:116
+#: mcomix/preferences_dialog.py:115
 msgid "Shortcuts"
 msgstr "Nuorodos"
 
-#: mcomix/preferences_dialog.py:132
+#: mcomix/preferences_dialog.py:131
 msgid "Language (needs restart):"
 msgstr "Kalba (reikia perkrauti):"
 
-#: mcomix/preferences_dialog.py:135
+#: mcomix/preferences_dialog.py:134
 msgid "Theme:"
 msgstr "Tema:"
 
-#: mcomix/preferences_dialog.py:139
+#: mcomix/preferences_dialog.py:138
 msgid "Escape key closes program"
 msgstr "Escape mygtukas išjungia programą"
 
-#: mcomix/preferences_dialog.py:140
+#: mcomix/preferences_dialog.py:139
 msgid ""
 "When active, the ESC key closes the program, instead of only disabling "
 "fullscreen mode."
@@ -1291,35 +1291,35 @@ msgstr ""
 "Kai įjungta, Esc klavišas užveria programą, o ne tik išjungia viso ekrano "
 "veikseną."
 
-#: mcomix/preferences_dialog.py:143
+#: mcomix/preferences_dialog.py:142
 msgid "Background"
 msgstr "Fonas"
 
-#: mcomix/preferences_dialog.py:146
+#: mcomix/preferences_dialog.py:145
 msgid "Use this colour as background:"
 msgstr "Naudoti šią spalvą kaip foną:"
 
-#: mcomix/preferences_dialog.py:147
+#: mcomix/preferences_dialog.py:146
 msgid "Always use this selected colour as the background colour."
 msgstr "Visada naudoti pasirinktą spalvą kaip fono spalvą."
 
-#: mcomix/preferences_dialog.py:148 mcomix/preferences_dialog.py:159
+#: mcomix/preferences_dialog.py:147 mcomix/preferences_dialog.py:158
 msgid "Use dynamic background colour"
 msgstr "Fonui naudoti kintančią spalvą"
 
-#: mcomix/preferences_dialog.py:150
+#: mcomix/preferences_dialog.py:149
 msgid "Automatically pick a background colour that fits the viewed image."
 msgstr "Automatiškai parinkti fono spalvą, tinkančią rodomam paveikslėliui."
 
-#: mcomix/preferences_dialog.py:157
+#: mcomix/preferences_dialog.py:156
 msgid "Use this colour as the thumbnail background:"
 msgstr "Naudoti šią spalvą kaip miniatiūrų foną:"
 
-#: mcomix/preferences_dialog.py:158
+#: mcomix/preferences_dialog.py:157
 msgid "Always use this selected colour as the thumbnail background colour."
 msgstr "Visada naudoti pasirinktą spalvą kaip miniatiūrų fono spalvą."
 
-#: mcomix/preferences_dialog.py:161
+#: mcomix/preferences_dialog.py:160
 msgid ""
 "Automatically use the colour that fits the viewed image for the thumbnail "
 "background."
@@ -1327,23 +1327,23 @@ msgstr ""
 "Miniatiūrų fonui automatiškai naudoti spalvą, tinkančią rodomam "
 "paveikslėliui."
 
-#: mcomix/preferences_dialog.py:166
+#: mcomix/preferences_dialog.py:165
 msgid "Show page numbers on thumbnails"
 msgstr "Rodyti puslapių numerius miniatiūrose"
 
-#: mcomix/preferences_dialog.py:169
+#: mcomix/preferences_dialog.py:168
 msgid "Thumbnail size (in pixels):"
 msgstr "Miniatiūrų dydis (pikseliais):"
 
-#: mcomix/preferences_dialog.py:174
+#: mcomix/preferences_dialog.py:173
 msgid "Transparency"
 msgstr "Permatomumas"
 
-#: mcomix/preferences_dialog.py:177
+#: mcomix/preferences_dialog.py:176
 msgid "Use checkered background for transparent images"
 msgstr "Skaidriems paveikslėliams naudoti languotą foną"
 
-#: mcomix/preferences_dialog.py:179
+#: mcomix/preferences_dialog.py:178
 msgid ""
 "Use a grey checkered background for transparent images. If this preference "
 "is unset, the background is plain white instead."
@@ -1351,11 +1351,11 @@ msgstr ""
 "Skaidriems paveikslėliams naudoti pilką languotą foną. Jei ši nuostata "
 "išjungta, fonas yra vientisai baltas."
 
-#: mcomix/preferences_dialog.py:192
+#: mcomix/preferences_dialog.py:191
 msgid "Use smart scrolling"
 msgstr "Naudoti išmanų slinkimą"
 
-#: mcomix/preferences_dialog.py:194
+#: mcomix/preferences_dialog.py:193
 msgid ""
 "With this preference set, the space key and mouse wheel do not only scroll "
 "down or up, but also sideways and so try to follow the natural reading order "
@@ -1365,11 +1365,11 @@ msgstr ""
 "ar aukštyn, bet ir į šonus, taip stengiantis sekti natūralia komikso "
 "skaitymo tvarka."
 
-#: mcomix/preferences_dialog.py:199
+#: mcomix/preferences_dialog.py:198
 msgid "Flip pages when scrolling off the edges of the page"
 msgstr "Versti puslapius slenkant už puslapio kraštų"
 
-#: mcomix/preferences_dialog.py:201
+#: mcomix/preferences_dialog.py:200
 msgid ""
 "Flip pages when scrolling \"off the page\" with the scroll wheel or with the "
 "arrow keys. It takes n consecutive \"steps\" with the scroll wheel or the "
@@ -1379,11 +1379,11 @@ msgstr ""
 "klavišais. Puslapiui apversti reikia n iš eilės einančių „žingsnių“ ratuku "
 "arba rodyklėmis."
 
-#: mcomix/preferences_dialog.py:204
+#: mcomix/preferences_dialog.py:203
 msgid "Automatically open the next archive"
 msgstr "Automatiškai atverti kitą archyvą"
 
-#: mcomix/preferences_dialog.py:206
+#: mcomix/preferences_dialog.py:205
 msgid ""
 "Automatically open the next archive in the directory when flipping past the "
 "last page, or the previous archive when flipping past the first page."
@@ -1391,11 +1391,11 @@ msgstr ""
 "Automatiškai atveria kitą aplanko archyvą, kai pereinama už paskutinio "
 "puslapio, arba ankstesnį archyvą, kai grįžtama prieš pirmą puslapį."
 
-#: mcomix/preferences_dialog.py:209
+#: mcomix/preferences_dialog.py:208
 msgid "Automatically open next directory"
 msgstr "Automatiškai atverti sekantį aplanką"
 
-#: mcomix/preferences_dialog.py:211
+#: mcomix/preferences_dialog.py:210
 msgid ""
 "Automatically open the first file in the next sibling directory when "
 "flipping past the last page of the last file in a directory, or the previous "
@@ -1405,11 +1405,11 @@ msgstr ""
 "paskutinio aplanko failo paskutinio puslapio, arba ankstesnį aplanką, kai "
 "grįžtama prieš pirmo failo pirmą puslapį."
 
-#: mcomix/preferences_dialog.py:214
+#: mcomix/preferences_dialog.py:213
 msgid "Open first file when navigating to previous archive"
 msgstr "Pereinant į ankstesnį archyvą atverti pirmą failą"
 
-#: mcomix/preferences_dialog.py:216
+#: mcomix/preferences_dialog.py:215
 msgid ""
 "Automatically open the first file of the previous archive when navigating to "
 "it, instead of opening the last file of the previous archive."
@@ -1417,11 +1417,11 @@ msgstr ""
 "Pereinant į ankstesnį archyvą automatiškai atveria jo pirmą, o ne paskutinį "
 "failą."
 
-#: mcomix/preferences_dialog.py:219
+#: mcomix/preferences_dialog.py:218
 msgid "Open first file when navigating to previous directory"
 msgstr "Pereinant į ankstesnį aplanką atverti pirmą failą"
 
-#: mcomix/preferences_dialog.py:221
+#: mcomix/preferences_dialog.py:220
 msgid ""
 "Automatically open the first file of the previous directory when navigating "
 "to it, instead of opening the last file of the previous directory."
@@ -1429,28 +1429,28 @@ msgstr ""
 "Pereinant į ankstesnį aplanką automatiškai atveria jo pirmą, o ne paskutinį "
 "failą."
 
-#: mcomix/preferences_dialog.py:223
+#: mcomix/preferences_dialog.py:222
 msgid "Number of pixels to scroll per arrow key press:"
 msgstr "Pikselių skaičius vienam rodyklės klavišo paspaudimui:"
 
-#: mcomix/preferences_dialog.py:227
+#: mcomix/preferences_dialog.py:226
 msgid "Set the number of pixels to scroll on a page when using the arrow keys."
 msgstr "Nustato, kiek pikselių puslapis paslenka naudojant rodyklių klavišus."
 
-#: mcomix/preferences_dialog.py:229
+#: mcomix/preferences_dialog.py:228
 msgid "Number of pixels to scroll per mouse wheel turn:"
 msgstr "Pikselių skaičius vienam pelės ratuko pasukimui:"
 
-#: mcomix/preferences_dialog.py:233
+#: mcomix/preferences_dialog.py:232
 msgid "Set the number of pixels to scroll on a page when using a mouse wheel."
 msgstr "Nustato, kiek pikselių puslapis paslenka naudojant pelės ratuką."
 
-#: mcomix/preferences_dialog.py:235
+#: mcomix/preferences_dialog.py:234
 msgid "Fraction of page to scroll per space key press (in percent):"
 msgstr ""
 "Puslapio dalis, paslenkama vienu tarpo klavišo paspaudimu (procentais):"
 
-#: mcomix/preferences_dialog.py:240
+#: mcomix/preferences_dialog.py:239
 msgid ""
 "Sets the percentage by which the page will be scrolled down or up when the "
 "space key is pressed."
@@ -1458,11 +1458,11 @@ msgstr ""
 "Nustato, kiek procentų puslapis paslenka žemyn ar aukštyn paspaudus tarpo "
 "klavišą."
 
-#: mcomix/preferences_dialog.py:243
+#: mcomix/preferences_dialog.py:242
 msgid "Number of \"steps\" to take before flipping the page:"
 msgstr "„Žingsnių“ skaičius prieš verčiant puslapį:"
 
-#: mcomix/preferences_dialog.py:247
+#: mcomix/preferences_dialog.py:246
 msgid ""
 "Set the number of \"steps\" needed to flip to the next or previous page.  "
 "Less steps will allow for very fast page turning but you might find yourself "
@@ -1472,37 +1472,37 @@ msgstr ""
 "mažiau žingsnių versti galima labai greitai, bet lengviau tai padaryti "
 "netyčia."
 
-#: mcomix/preferences_dialog.py:252
+#: mcomix/preferences_dialog.py:251
 msgid "Flip two pages in double page mode"
 msgstr "Dviejų puslapių veiksenoje versti po du puslapius"
 
-#: mcomix/preferences_dialog.py:254
+#: mcomix/preferences_dialog.py:253
 msgid ""
 "Flip two pages, instead of one, each time we flip pages in double page mode."
 msgstr ""
 "Dviejų puslapių veiksenoje kaskart versti po du puslapius, o ne po vieną."
 
-#: mcomix/preferences_dialog.py:256
+#: mcomix/preferences_dialog.py:255
 msgid "Show only one page where appropriate:"
 msgstr "Rodyti tik vieną puslapį ten, kur tinka:"
 
-#: mcomix/preferences_dialog.py:259
+#: mcomix/preferences_dialog.py:258
 msgid "Page auto-resizing:"
 msgstr "Automatinis puslapių dydžio keitimas:"
 
-#: mcomix/preferences_dialog.py:262
+#: mcomix/preferences_dialog.py:261
 msgid "Space between two pages (in pixels):"
 msgstr "Tarpas tarp dviejų puslapių (pikseliais):"
 
-#: mcomix/preferences_dialog.py:267
+#: mcomix/preferences_dialog.py:266
 msgid "Files"
 msgstr "Failai"
 
-#: mcomix/preferences_dialog.py:270
+#: mcomix/preferences_dialog.py:269
 msgid "Automatically open the last viewed file on startup"
 msgstr "Paleidžiant automatiškai atverti paskutinį žiūrėtą failą"
 
-#: mcomix/preferences_dialog.py:272
+#: mcomix/preferences_dialog.py:271
 msgid ""
 "Automatically open, on startup, the file that was open when MComix was last "
 "closed."
@@ -1510,25 +1510,25 @@ msgstr ""
 "Paleidžiant automatiškai atveria failą, kuris buvo atvertas paskutinį kartą "
 "užveriant MComix."
 
-#: mcomix/preferences_dialog.py:274
+#: mcomix/preferences_dialog.py:273
 msgid "Store information about recently opened files:"
 msgstr "Saugoti informaciją apie neseniai atvertus failus:"
 
-#: mcomix/preferences_dialog.py:277
+#: mcomix/preferences_dialog.py:276
 msgid "Save As opens at the last directory saved into"
 msgstr "„Išsaugoti kaip“ atveriama paskutiniame naudotame aplanke"
 
-#: mcomix/preferences_dialog.py:279
+#: mcomix/preferences_dialog.py:278
 msgid ""
 "Open the Save As dialog at the directory in which the last file was saved."
 msgstr ""
 "Atveria „Išsaugoti kaip“ langą aplanke, kuriame išsaugotas paskutinis failas."
 
-#: mcomix/preferences_dialog.py:282
+#: mcomix/preferences_dialog.py:281
 msgid "Save an edited archive in the format it was opened in"
 msgstr "Įrašyti taisytą archyvą tokiu formatu, kokiu jis buvo atvertas"
 
-#: mcomix/preferences_dialog.py:284
+#: mcomix/preferences_dialog.py:283
 msgid ""
 "Write an edited archive back as a ZIP, a tar, a 7z or a RAR, whichever it "
 "was read as. The last two need the 7z and rar programs, which MComix does "
@@ -1539,51 +1539,51 @@ msgstr ""
 "programų, kurių MComix neįdiegia; formatas, kurio įrašyti negalima, įrašomas "
 "kaip ZIP."
 
-#: mcomix/preferences_dialog.py:286
+#: mcomix/preferences_dialog.py:285
 msgid "Prompts answered for good"
 msgstr "Kartą visiems laikams atsakyti klausimai"
 
-#: mcomix/preferences_dialog.py:304
+#: mcomix/preferences_dialog.py:303
 msgid "Use fullscreen by default"
 msgstr "Pagal numatymą naudoti visą ekraną"
 
-#: mcomix/preferences_dialog.py:308
+#: mcomix/preferences_dialog.py:307
 msgid "Automatically hide all toolbars in fullscreen"
 msgstr "Viso ekrano veiksenoje automatiškai slėpti visas juostas"
 
-#: mcomix/preferences_dialog.py:311 mcomix/ui.py:521
+#: mcomix/preferences_dialog.py:310 mcomix/ui.py:521
 msgid "Fit to size mode"
 msgstr "Talpinimo pagal dydį veiksena"
 
-#: mcomix/preferences_dialog.py:313
+#: mcomix/preferences_dialog.py:312
 msgid "Fixed width for wide pages:"
 msgstr "Pastovus plotis plačiems puslapiams:"
 
-#: mcomix/preferences_dialog.py:318
+#: mcomix/preferences_dialog.py:317
 msgid "Fixed height for wide pages:"
 msgstr "Pastovus aukštis plačiems puslapiams:"
 
-#: mcomix/preferences_dialog.py:323
+#: mcomix/preferences_dialog.py:322
 msgid "Fixed width for other pages:"
 msgstr "Pastovus plotis kitiems puslapiams:"
 
-#: mcomix/preferences_dialog.py:328
+#: mcomix/preferences_dialog.py:327
 msgid "Fixed height for other pages:"
 msgstr "Pastovus aukštis kitiems puslapiams:"
 
-#: mcomix/preferences_dialog.py:333
+#: mcomix/preferences_dialog.py:332
 msgid "Slideshow"
 msgstr "Skaidrių rodymas"
 
-#: mcomix/preferences_dialog.py:335
+#: mcomix/preferences_dialog.py:334
 msgid "Slideshow delay (in seconds):"
 msgstr "Skaidrių rodymo delsa (sekundėmis):"
 
-#: mcomix/preferences_dialog.py:340
+#: mcomix/preferences_dialog.py:339
 msgid "Slideshow step (in pixels):"
 msgstr "Skaidrių rodymo žingsnis (pikseliais):"
 
-#: mcomix/preferences_dialog.py:344
+#: mcomix/preferences_dialog.py:343
 msgid ""
 "Specify the number of pixels to scroll while in slideshow mode. A positive "
 "value will scroll forward, a negative value will scroll backwards, and a "
@@ -1593,24 +1593,24 @@ msgstr ""
 "reikšmė slenka pirmyn, neigiama atgal, o reikšmė 0 verčia rodymą visada "
 "pereiti į naują puslapį."
 
-#: mcomix/preferences_dialog.py:347
+#: mcomix/preferences_dialog.py:346
 msgid "During a slideshow automatically open the next archive"
 msgstr "Rodant skaidres automatiškai atverti kitą archyvą"
 
-#: mcomix/preferences_dialog.py:349
+#: mcomix/preferences_dialog.py:348
 msgid ""
 "While in slideshow mode allow the next archive to automatically be opened."
 msgstr "Leidžia skaidrių rodymo veiksenoje automatiškai atverti kitą archyvą."
 
-#: mcomix/preferences_dialog.py:351
+#: mcomix/preferences_dialog.py:350
 msgid "Rotation"
 msgstr "Pasukimas"
 
-#: mcomix/preferences_dialog.py:354
+#: mcomix/preferences_dialog.py:353
 msgid "Automatically rotate images according to their metadata"
 msgstr "Automatiškai sukti paveikslėlius pagal jų metaduomenis"
 
-#: mcomix/preferences_dialog.py:356
+#: mcomix/preferences_dialog.py:355
 msgid ""
 "Automatically rotate images when an orientation is specified in the image "
 "metadata, such as in an Exif tag."
@@ -1618,45 +1618,45 @@ msgstr ""
 "Automatiškai pasuka paveikslėlius, kai jų metaduomenyse nurodyta "
 "orientacija, pavyzdžiui Exif žymoje."
 
-#: mcomix/preferences_dialog.py:358
+#: mcomix/preferences_dialog.py:357
 msgid "Image quality"
 msgstr "Paveikslėlio kokybė"
 
-#: mcomix/preferences_dialog.py:360
+#: mcomix/preferences_dialog.py:359
 msgid "Scaling mode"
 msgstr "Mastelio keitimo veiksena"
 
-#: mcomix/preferences_dialog.py:372
+#: mcomix/preferences_dialog.py:371
 msgid "File order"
 msgstr "Failų tvarka"
 
-#: mcomix/preferences_dialog.py:374
+#: mcomix/preferences_dialog.py:373
 msgid "Sort files and directories by:"
 msgstr "Rikiuoti failus ir aplankus pagal:"
 
-#: mcomix/preferences_dialog.py:377
+#: mcomix/preferences_dialog.py:376
 msgid "Sort archives by:"
 msgstr "Rikiuoti archyvus pagal:"
 
-#: mcomix/preferences_dialog.py:380
+#: mcomix/preferences_dialog.py:379
 msgid "Extraction and cache"
 msgstr "Išpakavimas ir podėlis"
 
-#: mcomix/preferences_dialog.py:382
+#: mcomix/preferences_dialog.py:381
 msgid "Maximum number of concurrent extraction threads:"
 msgstr "Didžiausias lygiagrečių išpakavimo gijų skaičius:"
 
-#: mcomix/preferences_dialog.py:386
+#: mcomix/preferences_dialog.py:385
 msgid ""
 "Set the maximum number of concurrent threads for formats that support it."
 msgstr ""
 "Nustato didžiausią lygiagrečių gijų skaičių tai palaikantiems formatams."
 
-#: mcomix/preferences_dialog.py:388
+#: mcomix/preferences_dialog.py:387
 msgid "Maximum number of concurrent thumbnail threads:"
 msgstr "Didžiausias lygiagrečių miniatiūrų gijų skaičius:"
 
-#: mcomix/preferences_dialog.py:392
+#: mcomix/preferences_dialog.py:391
 msgid ""
 "Set the maximum number of concurrent threads used to generate thumbnails. "
 "Takes effect the next time MComix is started."
@@ -1664,11 +1664,11 @@ msgstr ""
 "Nustato didžiausią lygiagrečių gijų skaičių miniatiūroms kurti. Įsigalioja "
 "kitą kartą paleidus MComix."
 
-#: mcomix/preferences_dialog.py:395
+#: mcomix/preferences_dialog.py:394
 msgid "Store thumbnails for opened files"
 msgstr "Saugoti atvertų failų miniatiūras"
 
-#: mcomix/preferences_dialog.py:397
+#: mcomix/preferences_dialog.py:396
 msgid ""
 "Store thumbnails for opened files according to the freedesktop.org "
 "specification. These thumbnails are shared by many other applications, such "
@@ -1678,11 +1678,11 @@ msgstr ""
 "Šiomis miniatiūromis naudojasi daugelis kitų programų, pavyzdžiui dauguma "
 "failų tvarkyklių."
 
-#: mcomix/preferences_dialog.py:399
+#: mcomix/preferences_dialog.py:398
 msgid "Maximum number of pages to store in the cache:"
 msgstr "Didžiausias podėlyje saugomų puslapių skaičius:"
 
-#: mcomix/preferences_dialog.py:403
+#: mcomix/preferences_dialog.py:402
 msgid ""
 "Set the max number of pages to cache. A value of -1 will cache the entire "
 "archive."
@@ -1690,15 +1690,15 @@ msgstr ""
 "Nustato didžiausią podėlyje saugomų puslapių skaičių. Reikšmė -1 saugo visą "
 "archyvą."
 
-#: mcomix/preferences_dialog.py:405
+#: mcomix/preferences_dialog.py:404
 msgid "Magnifying Lens"
 msgstr "Didinamasis stiklas"
 
-#: mcomix/preferences_dialog.py:407
+#: mcomix/preferences_dialog.py:406
 msgid "Magnifying lens size (in pixels):"
 msgstr "Didinamojo stiklo dydis (pikseliais):"
 
-#: mcomix/preferences_dialog.py:411
+#: mcomix/preferences_dialog.py:410
 msgid ""
 "Set the size of the magnifying lens. It is a square with a side of this many "
 "pixels."
@@ -1706,40 +1706,40 @@ msgstr ""
 "Nustato didinamojo stiklo dydį. Tai kvadratas, kurio kraštinė yra tiek "
 "pikselių."
 
-#: mcomix/preferences_dialog.py:413
+#: mcomix/preferences_dialog.py:412
 msgid "Magnification factor:"
 msgstr "Didinimo koeficientas:"
 
-#: mcomix/preferences_dialog.py:417
+#: mcomix/preferences_dialog.py:416
 msgid "Set the magnification factor of the magnifying lens."
 msgstr "Nustato didinamojo stiklo didinimo koeficientą."
 
-#: mcomix/preferences_dialog.py:421
+#: mcomix/preferences_dialog.py:420
 msgid "Comment extensions:"
 msgstr "Komentarų failų galūnės:"
 
-#: mcomix/preferences_dialog.py:424
+#: mcomix/preferences_dialog.py:423
 msgid "Animated images"
 msgstr "Animuoti paveikslėliai"
 
-#: mcomix/preferences_dialog.py:426
+#: mcomix/preferences_dialog.py:425
 msgid "Animation mode:"
 msgstr "Animacijos veiksena:"
 
-#: mcomix/preferences_dialog.py:447
+#: mcomix/preferences_dialog.py:446
 msgid "_Reset keys"
 msgstr "A_tstatyti klavišus"
 
-#: mcomix/preferences_dialog.py:449
+#: mcomix/preferences_dialog.py:448
 msgid "Resets all keyboard shortcuts to their default values."
 msgstr ""
 "Atstato visas sparčiąsias klavišų kombinacijas į numatytąsias reikšmes."
 
-#: mcomix/preferences_dialog.py:452
+#: mcomix/preferences_dialog.py:451
 msgid "Clear _dialog choices"
 msgstr "_Išvalyti dialogų pasirinkimus"
 
-#: mcomix/preferences_dialog.py:454
+#: mcomix/preferences_dialog.py:453
 msgid ""
 "Clears all dialog choices that you have previously chosen not to be asked "
 "again."
@@ -1747,11 +1747,11 @@ msgstr ""
 "Išvalo visus dialogų atsakymus, apie kuriuos anksčiau pasirinkote daugiau "
 "neklausti."
 
-#: mcomix/preferences_dialog.py:489
+#: mcomix/preferences_dialog.py:488
 msgid "Ask every time"
 msgstr "Klausti kaskart"
 
-#: mcomix/preferences_dialog.py:494
+#: mcomix/preferences_dialog.py:493
 msgid ""
 "What MComix answers this prompt with instead of asking. This is what the "
 "prompt's \"Do not ask again\" box sets."
@@ -1759,27 +1759,27 @@ msgstr ""
 "Atsakymas, kurį MComix pateikia į šį klausimą, užuot jį uždavęs. Būtent tai "
 "nustato paties klausimo langelis „Daugiau neklausti.“."
 
-#: mcomix/preferences_dialog.py:516
+#: mcomix/preferences_dialog.py:515
 msgid "Auto-detect (Default)"
 msgstr "Nustatyti automatiškai (numatytoji)"
 
-#: mcomix/preferences_dialog.py:557
+#: mcomix/preferences_dialog.py:556
 msgid "Follow the system"
 msgstr "Sekti sistema"
 
-#: mcomix/preferences_dialog.py:558
+#: mcomix/preferences_dialog.py:557
 msgid "Light"
 msgstr "Šviesi"
 
-#: mcomix/preferences_dialog.py:559
+#: mcomix/preferences_dialog.py:558
 msgid "Dark"
 msgstr "Tamsi"
 
-#: mcomix/preferences_dialog.py:560
+#: mcomix/preferences_dialog.py:559
 msgid "Pitch black"
 msgstr "Visiškai juoda"
 
-#: mcomix/preferences_dialog.py:566
+#: mcomix/preferences_dialog.py:565
 msgid ""
 "How MComix itself is painted, whatever the desktop asks for. Pitch black is "
 "the dark theme with black backgrounds, which a screen that lights its pixels "
@@ -1789,11 +1789,11 @@ msgstr ""
 "yra tamsi tema juodu fonu, kurią pikselius po vieną uždegantis ekranas rodo "
 "kaip visišką šviesos nebuvimą."
 
-#: mcomix/preferences_dialog.py:603
+#: mcomix/preferences_dialog.py:602
 msgid "Restart MComix in the language you picked?"
 msgstr "Paleisti „MComix“ iš naujo pasirinkta kalba?"
 
-#: mcomix/preferences_dialog.py:604
+#: mcomix/preferences_dialog.py:603
 msgid ""
 "MComix is translated as it starts, so most of the interface stays in the "
 "language it started in until it is started again. The book being read, its "
@@ -1803,24 +1803,24 @@ msgstr ""
 "kalba, kuria buvo paleista, kol programa nepaleidžiama iš naujo. Skaitoma "
 "knyga, jos puslapis ir lango dydis išsaugomi."
 
-#: mcomix/preferences_dialog.py:618 mcomix/preferences_dialog.py:759
-#: mcomix/preferences_dialog.py:831 mcomix/ui.py:527
+#: mcomix/preferences_dialog.py:617 mcomix/preferences_dialog.py:758
+#: mcomix/preferences_dialog.py:830 mcomix/ui.py:527
 msgid "Never"
 msgstr "Niekada"
 
-#: mcomix/preferences_dialog.py:619
+#: mcomix/preferences_dialog.py:618
 msgid "Only for title pages"
 msgstr "Tik antraštiniams puslapiams"
 
-#: mcomix/preferences_dialog.py:620
+#: mcomix/preferences_dialog.py:619
 msgid "Only for wide images"
 msgstr "Tik platiems paveikslėliams"
 
-#: mcomix/preferences_dialog.py:621 mcomix/preferences_dialog.py:760
+#: mcomix/preferences_dialog.py:620 mcomix/preferences_dialog.py:759
 msgid "Always"
 msgstr "Visada"
 
-#: mcomix/preferences_dialog.py:628
+#: mcomix/preferences_dialog.py:627
 msgid ""
 "When showing the first page of an archive, or an image's width exceeds its "
 "height, only a single page will be displayed."
@@ -1828,53 +1828,53 @@ msgstr ""
 "Rodant pirmą archyvo puslapį arba kai paveikslėlio plotis viršija jo aukštį, "
 "rodomas tik vienas puslapis."
 
-#: mcomix/preferences_dialog.py:643
+#: mcomix/preferences_dialog.py:642
 msgid "Prefer same scale"
 msgstr "Pirmenybė tam pačiam masteliui"
 
-#: mcomix/preferences_dialog.py:644
+#: mcomix/preferences_dialog.py:643
 msgid "Prefer same size"
 msgstr "Pirmenybė tam pačiam dydžiui"
 
-#: mcomix/preferences_dialog.py:645
+#: mcomix/preferences_dialog.py:644
 msgid "Fit to same size"
 msgstr "Talpinti į tą patį dydį"
 
-#: mcomix/preferences_dialog.py:652
+#: mcomix/preferences_dialog.py:651
 msgid "Maintain relative size or fit to same size."
 msgstr "Išlaiko santykinį dydį arba talpina į tą patį dydį."
 
-#: mcomix/preferences_dialog.py:666 mcomix/preferences_dialog.py:711
+#: mcomix/preferences_dialog.py:665 mcomix/preferences_dialog.py:710
 msgid "No sorting"
 msgstr "Jokio rūšiavimo"
 
-#: mcomix/preferences_dialog.py:667
+#: mcomix/preferences_dialog.py:666
 msgid "File name"
 msgstr "Failo pavadinimas"
 
-#: mcomix/preferences_dialog.py:668
+#: mcomix/preferences_dialog.py:667
 msgid "File name (GLib)"
 msgstr "Failo pavadinimą (GLib)"
 
-#: mcomix/preferences_dialog.py:669 mcomix/library/book_area.py:242
+#: mcomix/preferences_dialog.py:668 mcomix/library/book_area.py:242
 msgid "File size"
 msgstr "Failo dydis"
 
-#: mcomix/preferences_dialog.py:670
+#: mcomix/preferences_dialog.py:669
 msgid "Last modified"
 msgstr "Keitimo laiką"
 
-#: mcomix/preferences_dialog.py:676 mcomix/preferences_dialog.py:720
+#: mcomix/preferences_dialog.py:675 mcomix/preferences_dialog.py:719
 #: mcomix/library/book_area.py:246
 msgid "Ascending"
 msgstr "Didėjančiai"
 
-#: mcomix/preferences_dialog.py:677 mcomix/preferences_dialog.py:721
+#: mcomix/preferences_dialog.py:676 mcomix/preferences_dialog.py:720
 #: mcomix/library/book_area.py:247
 msgid "Descending"
 msgstr "Mažėjančiai"
 
-#: mcomix/preferences_dialog.py:685
+#: mcomix/preferences_dialog.py:684
 msgid ""
 "Files will be opened and displayed according to the sort order specified "
 "here. This option does not affect ordering within archives."
@@ -1882,19 +1882,19 @@ msgstr ""
 "Failai bus atveriami ir rodomi čia nurodyta tvarka. Ši nuostata neveikia "
 "tvarkos archyvų viduje."
 
-#: mcomix/preferences_dialog.py:712
+#: mcomix/preferences_dialog.py:711
 msgid "Natural order"
 msgstr "Natūrali tvarka"
 
-#: mcomix/preferences_dialog.py:713
+#: mcomix/preferences_dialog.py:712
 msgid "Literal order"
 msgstr "Pažodinė tvarka"
 
-#: mcomix/preferences_dialog.py:714
+#: mcomix/preferences_dialog.py:713
 msgid "GLib order"
 msgstr "GLib tvarka"
 
-#: mcomix/preferences_dialog.py:729
+#: mcomix/preferences_dialog.py:728
 msgid ""
 "Files within archives will be sorted according to the order specified here. "
 "Natural order will sort numbered files based on their natural order, i.e. 1, "
@@ -1908,7 +1908,7 @@ msgstr ""
 "34, 5. GLib tvarka rikiuoja failus pagal GLib/GTK sukurtus palyginimo "
 "raktus, kuriuos naudoja ir daugelis kitų GTK programų."
 
-#: mcomix/preferences_dialog.py:772
+#: mcomix/preferences_dialog.py:771
 msgid ""
 "Add information about all files opened from within MComix to the shared "
 "recent files list."
@@ -1916,11 +1916,11 @@ msgstr ""
 "Prideda informaciją apie visus iš MComix atvertus failus į bendrą naujausių "
 "failų sąrašą."
 
-#: mcomix/preferences_dialog.py:792
+#: mcomix/preferences_dialog.py:791
 msgid "Delete information about recently opened files?"
 msgstr "Ištrinti informaciją apie neseniai atvertus failus?"
 
-#: mcomix/preferences_dialog.py:793
+#: mcomix/preferences_dialog.py:792
 msgid ""
 "This will remove all entries from the \"Recent\" menu, and clear information "
 "about last read pages."
@@ -1928,19 +1928,19 @@ msgstr ""
 "Tai pašalins visus įrašus iš meniu „Naujausi“ ir išvalys informaciją apie "
 "paskutinius skaitytus puslapius."
 
-#: mcomix/preferences_dialog.py:806
+#: mcomix/preferences_dialog.py:805
 msgid "Normal (fast)"
 msgstr "Įprastas (greitas)"
 
-#: mcomix/preferences_dialog.py:807
+#: mcomix/preferences_dialog.py:806
 msgid "Bilinear"
 msgstr "Bitiesinis"
 
-#: mcomix/preferences_dialog.py:808
+#: mcomix/preferences_dialog.py:807
 msgid "Hyperbolic (slow)"
 msgstr "Hiperbolinis (lėtas)"
 
-#: mcomix/preferences_dialog.py:814
+#: mcomix/preferences_dialog.py:813
 msgid ""
 "Changes how images are scaled. Slower algorithms result in higher quality "
 "resizing, but longer page loading times."
@@ -1948,15 +1948,15 @@ msgstr ""
 "Keičia paveikslėlių mastelio keitimo būdą. Lėtesni algoritmai duoda geresnę "
 "kokybę, bet puslapiai kraunasi ilgiau."
 
-#: mcomix/preferences_dialog.py:832 mcomix/library/book_area.py:254
+#: mcomix/preferences_dialog.py:831 mcomix/library/book_area.py:254
 msgid "Normal"
 msgstr "Normalus"
 
-#: mcomix/preferences_dialog.py:838
+#: mcomix/preferences_dialog.py:837
 msgid "Controls how animated images should be displayed."
 msgstr "Nurodo, kaip rodomi animuoti paveikslėliai."
 
-#: mcomix/preferences_dialog.py:882
+#: mcomix/preferences_dialog.py:881
 msgid ""
 "Treat all files found within archives, that have one of these file endings, "
 "as comments."
@@ -1971,7 +1971,7 @@ msgstr "Vaizdas"
 msgid "Archive"
 msgstr "Archyvas"
 
-#: mcomix/properties_dialog.py:137 mcomix/library/control_area.py:150
+#: mcomix/properties_dialog.py:137 mcomix/library/control_area.py:151
 #, python-format
 msgid "%d page"
 msgid_plural "%d pages"
@@ -2714,49 +2714,49 @@ msgstr "! Nepavyko gauti knygos „%s“ viršelio"
 msgid "Recent"
 msgstr "Naujausios"
 
-#: mcomix/library/backend.py:414
+#: mcomix/library/backend.py:430
 #, python-format
 msgid "! Could not add book \"%s\" to the library"
 msgstr "! Nepavyko pridėti knygos „%s“ į biblioteką"
 
-#: mcomix/library/backend.py:439
+#: mcomix/library/backend.py:455
 #, python-format
 msgid "! Could not move book \"%s\" in the library"
 msgstr "! Nepavyko perkelti knygos „%s“ bibliotekoje"
 
-#: mcomix/library/backend.py:483
+#: mcomix/library/backend.py:499
 #, python-format
 msgid "! Could not add collection \"%s\""
 msgstr "! Nepavyko pridėti kolekcijos „%s“"
 
-#: mcomix/library/backend.py:515
+#: mcomix/library/backend.py:531
 #, python-format
 msgid "! Could not add book %(book)s to collection %(collection)s"
 msgstr "! Nepavyko pridėti knygos %(book)s į kolekciją %(collection)s"
 
-#: mcomix/library/backend.py:542
+#: mcomix/library/backend.py:558
 #, python-format
 msgid "! Could not rename collection to \"%s\""
 msgstr "! Nepavyko pervadinti kolekcijos į „%s“"
 
-#: mcomix/library/backend.py:553 mcomix/library/backend.py:555
+#: mcomix/library/backend.py:569 mcomix/library/backend.py:571
 msgid "(Copy)"
 msgstr "(kopija)"
 
-#: mcomix/library/backend.py:804
+#: mcomix/library/backend.py:820
 msgid "Could not determine library database version!"
 msgstr "Nepavyko nustatyti bibliotekos duomenų bazės versijos!"
 
-#: mcomix/library/backend.py:854
+#: mcomix/library/backend.py:870
 #, python-format
 msgid "Upgrading library database version from %(from)d to %(to)d."
 msgstr "Bibliotekos duomenų bazės versija atnaujinama iš %(from)d į %(to)d."
 
-#: mcomix/library/backend_types.py:337 mcomix/library/collection_area.py:222
+#: mcomix/library/backend_types.py:336 mcomix/library/collection_area.py:222
 msgid "All books"
 msgstr "Visos knygos"
 
-#: mcomix/library/backend_types.py:478
+#: mcomix/library/backend_types.py:477
 #, python-format
 msgid "! Could not scan for new books: %s"
 msgstr "! Nepavyko ieškoti naujų knygų: %s"
@@ -2853,11 +2853,11 @@ msgstr "_Rūšiuoti"
 msgid "Cover si_ze"
 msgstr "Viršelio _dydis"
 
-#: mcomix/library/book_area.py:485
+#: mcomix/library/book_area.py:497
 msgid "Set library cover size"
 msgstr "Nustatyti bibliotekos viršelių dydį"
 
-#: mcomix/library/book_area.py:616
+#: mcomix/library/book_area.py:665
 #, python-format
 msgid "Removed %(num)d book from '%(collection)s'."
 msgid_plural "Removed %(num)d books from '%(collection)s'."
@@ -2865,7 +2865,7 @@ msgstr[0] "Iš „%(collection)s“ pašalinta %(num)d knyga."
 msgstr[1] "Iš „%(collection)s“ pašalintos %(num)d knygos."
 msgstr[2] "Iš „%(collection)s“ pašalinta %(num)d knygų."
 
-#: mcomix/library/book_area.py:639 mcomix/library/collection_area.py:297
+#: mcomix/library/book_area.py:688 mcomix/library/collection_area.py:297
 #, python-format
 msgid "Removed %d book from the library."
 msgid_plural "Removed %d books from the library."
@@ -2873,11 +2873,11 @@ msgstr[0] "Iš bibliotekos pašalinta %d knyga."
 msgstr[1] "Iš bibliotekos pašalintos %d knygos."
 msgstr[2] "Iš bibliotekos pašalinta %d knygų."
 
-#: mcomix/library/book_area.py:664
+#: mcomix/library/book_area.py:713
 msgid "Remove books from the library?"
 msgstr "Pašalinti knygas iš bibliotekos?"
 
-#: mcomix/library/book_area.py:665
+#: mcomix/library/book_area.py:714
 msgid ""
 "The selected books will be removed from the library and permanently deleted. "
 "Are you sure that you want to continue?"
@@ -2885,7 +2885,7 @@ msgstr ""
 "Pasirinktos knygos bus pašalintos iš bibliotekos ir visam laikui ištrintos. "
 "Ar tikrai norite tęsti?"
 
-#: mcomix/library/book_area.py:700
+#: mcomix/library/book_area.py:749
 #, python-format
 msgid "%d book could not be deleted from disk."
 msgid_plural "%d books could not be deleted from disk."
@@ -2893,7 +2893,7 @@ msgstr[0] "Nepavyko iš disko ištrinti %d knygos."
 msgstr[1] "Nepavyko iš disko ištrinti %d knygų."
 msgstr[2] "Nepavyko iš disko ištrinti %d knygų."
 
-#: mcomix/library/book_area.py:729
+#: mcomix/library/book_area.py:793
 #, python-format
 msgid "Remove the bookmarks in the deleted book?"
 msgid_plural "Remove the bookmarks in the %(count)d deleted books?"
@@ -2975,34 +2975,34 @@ msgstr "Nepavyko pakeisti pavadinimo į „%s“."
 msgid "Could not duplicate collection."
 msgstr "Nepavyko dublikuoti kolekcijos."
 
-#: mcomix/library/collection_area.py:567
+#: mcomix/library/collection_area.py:572
 msgid "Root"
 msgstr "Šaknis"
 
-#: mcomix/library/collection_area.py:570
+#: mcomix/library/collection_area.py:575
 #, python-format
 msgid ""
 "Put the collection '%(subcollection)s' in the collection "
 "'%(supercollection)s'."
 msgstr "Įdėti kolekciją „%(subcollection)s“ į kolekciją „%(supercollection)s“."
 
-#: mcomix/library/collection_area.py:582
+#: mcomix/library/collection_area.py:591
 #, python-format
 msgid "Add books to '%s'."
 msgstr "Pridėti knygų į „%s“."
 
-#: mcomix/library/collection_area.py:585
+#: mcomix/library/collection_area.py:594
 #, python-format
 msgid ""
 "Move books from '%(source collection)s' to '%(destination collection)s'."
 msgstr ""
 "Perkelti knygas iš „%(source collection)s“ į „%(destination collection)s“."
 
-#: mcomix/library/control_area.py:76
+#: mcomix/library/control_area.py:77
 msgid "_Search:"
 msgstr "_Ieškoti:"
 
-#: mcomix/library/control_area.py:82
+#: mcomix/library/control_area.py:83
 msgid ""
 "Display only those books that have the specified text string in their full "
 "path. The search is not case sensitive."
@@ -3010,37 +3010,37 @@ msgstr ""
 "Rodyti tik tas knygas, kurių visame kelyje yra nurodyta teksto eilutė. "
 "Paieška neskiria didžiųjų ir mažųjų raidžių."
 
-#: mcomix/library/control_area.py:91
+#: mcomix/library/control_area.py:92
 msgid "_Watch list"
 msgstr "_Stebimų sąrašas"
 
-#: mcomix/library/control_area.py:95
+#: mcomix/library/control_area.py:96
 msgid "Open the watchlist management dialog."
 msgstr "Atveria stebimų sąrašo tvarkymo langą."
 
-#: mcomix/library/control_area.py:98
+#: mcomix/library/control_area.py:99
 msgid "_Open list"
 msgstr "Atverti _pasirinktas"
 
-#: mcomix/library/control_area.py:101
+#: mcomix/library/control_area.py:102
 msgid "Open the selected book."
 msgstr "Atverti pasirinktą knygą."
 
-#: mcomix/library/control_area.py:157
+#: mcomix/library/control_area.py:158
 #, python-format
 msgid "Finished reading on %(date)s, %(time)s"
 msgstr "Perskaityta %(date)s %(time)s"
 
-#: mcomix/library/main_dialog.py:129
+#: mcomix/library/main_dialog.py:130
 msgid "Scanning for new books..."
 msgstr "Ieškoma naujų knygų..."
 
-#: mcomix/library/main_dialog.py:174
+#: mcomix/library/main_dialog.py:173
 #, python-format
 msgid "Added new book '%(bookname)s' from directory '%(directory)s'."
 msgstr "Pridėta nauja knyga „%(bookname)s“ iš aplanko „%(directory)s“."
 
-#: mcomix/library/main_dialog.py:181
+#: mcomix/library/main_dialog.py:180
 #, python-format
 msgid "Added %(count)d new book from directory '%(directory)s'."
 msgid_plural "Added %(count)d new books from directory '%(directory)s'."
@@ -3048,34 +3048,37 @@ msgstr[0] "Pridėta naujų knygų: %(count)d iš aplanko „%(directory)s“."
 msgstr[1] "Pridėta naujų knygų: %(count)d iš aplanko „%(directory)s“."
 msgstr[2] "Pridėta naujų knygų: %(count)d iš aplanko „%(directory)s“."
 
-#: mcomix/library/main_dialog.py:189
+#: mcomix/library/main_dialog.py:188
 #, python-format
 msgid "No new books found in directory '%s'."
 msgstr "Aplanke '%s' nebuvo rasta naujų knygų."
 
-#: mcomix/library/watchlist.py:37
+#: mcomix/library/watchlist.py:38
 msgid "Library watch list"
 msgstr "Bibliotekos stebimų sąrašas"
 
-#: mcomix/library/watchlist.py:39
+#: mcomix/library/watchlist.py:40
 msgid "_Scan now"
 msgstr "_Nuskaityti dabar"
 
-#: mcomix/library/watchlist.py:51
+#: mcomix/library/watchlist.py:52
 msgid "Directory"
 msgstr "Aplankas"
 
-#: mcomix/library/watchlist.py:52
+#: mcomix/library/watchlist.py:53
 msgid "Collection"
 msgstr "Kolekcija"
 
-#: mcomix/library/watchlist.py:56
+#: mcomix/library/watchlist.py:57
 msgid "With subdirectories"
 msgstr "Su poaplankiais"
 
-#: mcomix/library/watchlist.py:80
+#: mcomix/library/watchlist.py:81
 msgid "Automatically scan for new books when library is _opened"
 msgstr "Automatiškai ieškoti naujų knygų kai yra _atidaroma biblioteka"
+
+#~ msgid "Bookmarking a page that is bookmarked already:"
+#~ msgstr "Dedant žymelę puslapyje, kuriame jau yra žymelė:"
 
 #~ msgid ""
 #~ "The archive on disk will be replaced by the book as it stands, without "

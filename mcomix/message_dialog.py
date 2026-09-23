@@ -76,7 +76,7 @@ REMEMBERED_DIALOGS = {
         _('Deleting the opened file:'),
         ((_('Delete it'), Response.OK),)),
     RememberedDialog.REPLACE_EXISTING_BOOKMARK: _Prompt(
-        _('Bookmarking a page that is bookmarked already:'),
+        _('Bookmarking a page in a book that has bookmarks already:'),
         ((_('Replace the existing bookmark'), Response.YES),
          (_('Keep both bookmarks'), Response.NO))),
     RememberedDialog.LIBRARY_REMOVE_BOOK_FROM_DISK: _Prompt(

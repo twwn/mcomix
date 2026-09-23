@@ -45,7 +45,7 @@ Automatically open the last viewed file on startup | Started with no file to ope
 Store information about recently opened files | "Always" keeps the history under File &rarr; Recent and the page each book was left at, which the library's "Recent" collection lists. Switching to "Never" offers to clear both.
 Save As opens at the last directory saved into | Rather than at the directory the book came from.
 Save an edited archive in the format it was opened in | Write an edited archive back as the ZIP, tar, 7z or RAR it was read as. The last two need the `7z` and `rar` programs, which MComix does not install; a format it cannot write is saved as a ZIP.
-Prompts answered for good | Every prompt whose answer can be remembered, with the answer it has been given: opening a book that was left part-read, deleting the opened file, bookmarking a page that is bookmarked already, deleting books removed from the library, deleting a file that is bookmarked, changing the pages of the book being read, and leaving a book with pages still picked out. A prompt's "Do not ask again" box sets its answer here, and "Ask every time" takes it back.
+Prompts answered for good | Every prompt whose answer can be remembered, with the answer it has been given: opening a book that was left part-read, deleting the opened file, bookmarking a page in a book that has bookmarks already, deleting books removed from the library, deleting a file that is bookmarked, changing the pages of the book being read, and leaving a book with pages still picked out. A prompt's "Do not ask again" box sets its answer here, and "Ask every time" takes it back.
 
 Display tab
 ---
