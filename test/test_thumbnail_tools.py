@@ -251,15 +251,23 @@ class ArchiveCoverOrientationTest(MComixTest):
         self.assertGreater(shown.get_width(), shown.get_height())
 
     def test_one_from_the_store_is_turned_as_well(self):
-        """What is stored is not turned, other programs reading the
-        store; what the cover's orientation was is stored with it."""
+        """What is stored is upright, as other programs reading the
+        store expect; what the cover's orientation was is stored with
+        it."""
         prefs['auto rotate from exif'] = True
         self._shown()
-        stored = PIL.Image.open(thumbnail_tools.Thumbnailer(
-            dst_dir=self._store)._path_to_thumbpath(self._archive))
-        self.assertLess(stored.size[0], stored.size[1])
+        with PIL.Image.open(thumbnail_tools.Thumbnailer(
+                dst_dir=self._store)._path_to_thumbpath(self._archive)) as stored:
+            self.assertGreater(stored.size[0], stored.size[1])
         shown = self._shown()
         self.assertGreater(shown.get_width(), shown.get_height())
+
+    def test_one_from_the_store_is_turned_back_where_exif_is_not_followed(self):
+        prefs['auto rotate from exif'] = True
+        self._shown()
+        prefs['auto rotate from exif'] = False
+        shown = self._shown()
+        self.assertLess(shown.get_width(), shown.get_height())
 
     def test_it_is_left_as_it_is_where_exif_is_not_followed(self):
         prefs['auto rotate from exif'] = False
@@ -364,15 +372,15 @@ class ForeignThumbnailOrientationTest(MComixTest):
         self._thumbnailer = thumbnail_tools.Thumbnailer(
             dst_dir=self._store, store_on_disk=True, size=(128, 128))
 
-    def _stored(self, software):
-        """Put an upright thumbnail of the source in the store, as
-        <software> writes one."""
+    def _stored(self, software, size=(128, 91)):
+        """Put a thumbnail of the source of <size> in the store, as
+        <software> writes one; upright unless <size> says otherwise."""
         path = self._thumbnailer._path_to_thumbpath(self._source)
         os.makedirs(os.path.dirname(path), exist_ok=True)
         info = PIL.PngImagePlugin.PngInfo()
         info.add_text('Thumb::MTime', str(int(os.stat(self._source).st_mtime)))
         info.add_text('Software', software)
-        PIL.Image.new('RGB', (128, 91)).save(path, 'PNG', pnginfo=info)
+        PIL.Image.new('RGB', size).save(path, 'PNG', pnginfo=info)
 
     def _shown(self):
         pixbuf = self._thumbnailer.thumbnail(self._source)
@@ -383,11 +391,42 @@ class ForeignThumbnailOrientationTest(MComixTest):
         shown = self._shown()
         self.assertEqual((128, 91), (shown.get_width(), shown.get_height()))
 
-    def test_one_mcomix_wrote_is_turned(self):
-        """MComix' own are stored as the picture is in the file."""
+    def test_one_an_older_mcomix_wrote_is_turned(self):
+        """An older MComix stored the picture as it is in the file."""
+        self._stored('MComix 3.1.0', size=(91, 128))
+        shown = self._shown()
+        self.assertEqual((128, 91), (shown.get_width(), shown.get_height()))
+
+    def test_mcomix_stores_its_own_upright(self):
+        """As GNOME's and KDE's thumbnailers do, and as a file manager
+        reading the store shows them: stored as the picture is in the
+        file, a turned photograph lay on its side there."""
         path = self._thumbnailer._path_to_thumbpath(self._source)
         self._shown()
         with PIL.Image.open(path) as stored:
-            self.assertLess(stored.size[0], stored.size[1])
+            self.assertGreater(stored.size[0], stored.size[1])
         shown = self._shown()
         self.assertGreater(shown.get_width(), shown.get_height())
+
+    def test_an_upright_one_is_turned_back_where_exif_is_not_followed(self):
+        self._stored('GNOME::ThumbnailFactory')
+        prefs['auto rotate from exif'] = False
+        shown = self._shown()
+        self.assertEqual((91, 128), (shown.get_width(), shown.get_height()))
+
+    def test_a_small_turned_picture_s_thumbnail_is_reused(self):
+        """A picture smaller than the box is stored at its own size, and
+        stored upright a quarter-turned one is that size the other way
+        round; compared with its size as in the file, the thumbnail
+        looked stale and was made again on every look."""
+        small = os.path.join(self.tmp_dir, 'small.jpg')
+        exif = PIL.Image.Exif()
+        exif[274] = 6
+        PIL.Image.new('RGB', (60, 90)).save(small, exif=exif)
+        self._thumbnailer.thumbnail(small)
+        with unittest.mock.patch.object(
+                self._thumbnailer, '_create_thumbnail',
+                wraps=self._thumbnailer._create_thumbnail) as made:
+            pixbuf = self._thumbnailer.thumbnail(small)
+        self.assertFalse(made.called, 'the stored thumbnail was not reused')
+        self.assertEqual((90, 60), (pixbuf.get_width(), pixbuf.get_height()))

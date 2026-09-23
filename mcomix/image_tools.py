@@ -860,8 +860,10 @@ def get_implied_rotation(pixbuf: GdkPixbuf.Pixbuf) -> int:
     return _implied_rotation(orientation)
 
 
-#: Set on a thumbnail that is upright already - one another program
-#: put in the shared store - which turned_as_shown() leaves alone.
+#: Set on a thumbnail that is stored upright - turned by its picture's
+#: Exif orientation - rather than as the picture is in the file.  What
+#: MComix stores is upright, as GNOME's and KDE's thumbnailers store
+#: theirs; a thumbnail an older MComix stored is as in the file.
 UPRIGHT = 'mcomix_upright'
 
 
@@ -869,27 +871,25 @@ def turned_as_shown(thumbnail: GdkPixbuf.Pixbuf,
                     path: str) -> GdkPixbuf.Pixbuf:
     """<thumbnail> of the picture at <path>, turned as the page is shown.
 
-    A page is shown turned by the orientation its Exif data gives, where
-    'auto rotate from exif' says so, and its thumbnail is turned the same
-    way when it is drawn - not when it is made, since what is stored in
-    the freedesktop thumbnail cache is read by other programs, which turn
-    it as they see fit.
-
-    A thumbnail another program stored, which the thumbnailer marks
-    UPRIGHT, is turned already and left as it is.
+    A page is shown turned by the orientation its Exif data gives where
+    'auto rotate from exif' says so, and as it is in the file where it
+    does not; its thumbnail is drawn the same way.  One marked UPRIGHT is
+    turned already, and is turned back where the preference is off; one
+    that is not is turned where the preference is on.
 
     <path> may be an archive, whose thumbnail is of its cover: what the
     cover's orientation was is not to be had from the archive's path,
     and the thumbnailer keeps it with the thumbnail instead.
     """
-    if not prefs['auto rotate from exif'] or getattr(thumbnail, UPRIGHT,
-                                                        False):
+    upright = bool(getattr(thumbnail, UPRIGHT, False))
+    if upright == bool(prefs['auto rotate from exif']):
         return thumbnail
     if is_image_file(path):
         rotation = get_implied_rotation_from_file(path)
     else:
         rotation = get_implied_rotation(thumbnail)
-    return rotate_pixbuf(thumbnail, rotation)
+    return rotate_pixbuf(thumbnail, (360 - rotation) % 360 if upright
+                         else rotation)
 
 
 def get_implied_rotation_from_file(path: str) -> int:

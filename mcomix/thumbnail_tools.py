@@ -44,6 +44,27 @@ if TYPE_CHECKING:
 _ORIENTATION_KEY = 'tEXt::X-MComix::Orientation'
 
 
+#: The tEXt key that says a thumbnail MComix stored is upright - turned
+#: by its picture's Exif orientation - which one an older MComix stored
+#: is not.
+_UPRIGHT_KEY = 'tEXt::X-MComix::Upright'
+
+
+def _upright(pixbuf: "GdkPixbuf.Pixbuf") -> "GdkPixbuf.Pixbuf":
+    """<pixbuf>, just loaded, turned by the Exif orientation the loader
+    found, as GNOME's and KDE's thumbnailers store a thumbnail and as
+    every program reading the shared store expects one.  The orientation
+    stays with it, which is what turns it back where MComix is told not
+    to follow Exif; and it is marked upright."""
+    orientation = _orientation_of(pixbuf)
+    turned = image_tools.rotate_pixbuf(
+        pixbuf, image_tools.get_implied_rotation(pixbuf))
+    if orientation is not None:
+        setattr(turned, 'orientation', orientation)
+    setattr(turned, image_tools.UPRIGHT, True)
+    return turned
+
+
 def _orientation_of(pixbuf: "GdkPixbuf.Pixbuf") -> str | None:
     """The Exif orientation the loader found for <pixbuf>, if any."""
     orientation = getattr(pixbuf, 'orientation', None) \
@@ -189,19 +210,20 @@ class Thumbnailer:
                 if not os.path.isfile(image_path):
                     return None, None
 
-                pixbuf = image_tools.load_pixbuf_size(image_path, self.width, self.height)
+                pixbuf = _upright(image_tools.load_pixbuf_size(
+                    image_path, self.width, self.height))
                 tEXt_data: dict[str, str] | None
                 if self.store_on_disk:
                     tEXt_data = self._get_text_data(image_path)
                     # Use the archive's mTime instead of the extracted file's mtime
                     tEXt_data['tEXt::Thumb::MTime'] = str(int(os.stat(filepath).st_mtime))
-                    # The thumbnail is stored as the cover is in the
-                    # file, other programs reading the store; its Exif
-                    # orientation is kept beside it, since the cover is
-                    # not to be had again without opening the archive.
-                    # 1 is Exif's own "as stored", written rather than
-                    # left out so that a thumbnail made before this was
-                    # kept can be told from one of an upright cover.
+                    # The cover's Exif orientation is kept beside the
+                    # thumbnail, since the cover is not to be had again
+                    # without opening the archive, and a thumbnail shown
+                    # with 'auto rotate from exif' off is turned back by
+                    # it.  1 is Exif's own "as stored", written rather
+                    # than left out so that a thumbnail made before this
+                    # was kept can be told from one of an upright cover.
                     tEXt_data[_ORIENTATION_KEY] = _orientation_of(pixbuf) or '1'
                 else:
                     tEXt_data = None
@@ -212,7 +234,8 @@ class Thumbnailer:
                     fn()
 
         elif image_tools.is_image_file(filepath):
-            pixbuf = image_tools.load_pixbuf_size(filepath, self.width, self.height)
+            pixbuf = _upright(image_tools.load_pixbuf_size(
+                filepath, self.width, self.height))
             if self.store_on_disk:
                 tEXt_data = self._get_text_data(filepath)
             else:
@@ -268,7 +291,8 @@ class Thumbnailer:
             'tEXt::Thumb::Mimetype':      mime,
             'tEXt::Thumb::Image::Width':  str(width),
             'tEXt::Thumb::Image::Height': str(height),
-            'tEXt::Software':             'MComix %s' % constants.VERSION
+            'tEXt::Software':             'MComix %s' % constants.VERSION,
+            _UPRIGHT_KEY:                 '1',
         }
 
     def _save_thumbnail(self, pixbuf: "GdkPixbuf.Pixbuf", thumbpath: str,
@@ -328,11 +352,12 @@ class Thumbnailer:
                 if isinstance(orientation, str):
                     setattr(pixbuf, 'orientation', orientation)
                 software = img.info.get('Software')
-                if not (isinstance(software, str)
-                        and software.startswith('MComix')):
-                    # Another program's: GNOME's and KDE's thumbnailers
-                    # store a picture turned upright already, where
-                    # MComix stores it as it is in the file.
+                if (img.info.get(_UPRIGHT_KEY[len('tEXt::'):]) == '1'
+                        or not (isinstance(software, str)
+                                and software.startswith('MComix'))):
+                    # MComix' own are stored upright, as GNOME's and
+                    # KDE's thumbnailers store theirs; one an older
+                    # MComix stored is as the picture is in the file.
                     setattr(pixbuf, image_tools.UPRIGHT, True)
                 return pixbuf
         except OSError:
@@ -384,7 +409,10 @@ class Thumbnailer:
             # Written by something that does not record them, so there is
             # no way to tell a small source from a stale thumbnail.
             return False
-        return stored == source and max(source) <= max(self.width, self.height)
+        # Stored upright, a small picture turned a quarter by its Exif
+        # orientation is its own size the other way round.
+        return (stored in (source, source[::-1])
+                and max(source) <= max(self.width, self.height))
 
     def _path_to_thumbpath(self, filepath: str) -> str:
         """Return the path of the thumbnail for <filepath> in <dst_dir>.
