@@ -96,7 +96,7 @@ The library, CTRL+L, files books in collections and shows their covers. A book i
 
 ![Library window](images/mcomix-library.png)
 
-The collections are on the left, and the books of the one selected on the right, including those in the collections under it. "All books" holds every book in the library. Drag a collection onto another to file it there, and drag books onto a collection to add them to it. The search field shows only the books whose name or path contains what is typed.
+The collections are on the left, and the books of the one selected on the right, including those in the collections under it. "All books" holds every book in the library. Drag a collection onto another to file it there, and drag books onto a collection to add them to it; "Recent" takes only the books that are read, not books dragged onto it. The search field shows only the books whose name or path contains what is typed.
 
 Right-clicking a collection offers "New", "Add...", "Rename", "Duplicate", "Clean up", which drops the books whose files are gone, and "Remove". Removing a collection keeps its books in the library, and moves the collections under it to the top level.
 

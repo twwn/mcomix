@@ -301,6 +301,18 @@ class CollectionAreaTest(MComixTest):
             0, self.area._drag_motion(_StubDrop('%s:0' % (
                 constants.LIBRARY_DRAG_BOOKS,)), x, y))
 
+    def test_books_are_not_dropped_into_recent(self):
+        """"Recent" is what MComix files a book in when it is read.
+        Books moved there left the collection they were dragged from,
+        and clearing the recent books then took them out of the library
+        as books that were only there for having been read."""
+        self.area._list.select_row(self._row_for(self.comics))
+        payload = _StubDrop('%s:0' % (constants.LIBRARY_DRAG_BOOKS,))
+        self.assertEqual(Gdk.DragAction.MOVE, self.area._drag_motion(
+            payload, *self._middle_of(self.manga)))
+        self.assertEqual(0, self.area._drag_motion(
+            payload, *self._middle_of(constants.COLLECTION_RECENT)))
+
     def test_a_drag_of_something_else_is_left_alone(self):
         self.assertEqual(0, self.area._drag_motion(_StubDrop(None), 0.0, 0.0))
 

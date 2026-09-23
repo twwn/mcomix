@@ -575,7 +575,11 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable):
                 return self._refuse_drop()
             dest_row, pos = drop
             dest_collection = dest_row.collection
-            if src_collection == dest_collection or dest_collection == constants.COLLECTION_ALL:
+            # "Recent" is filled by reading, and emptying it takes out of
+            # the library the books that are there only for having been
+            # read: a book filed in it by hand would go with them.
+            if src_collection == dest_collection or dest_collection in (
+                    constants.COLLECTION_ALL, constants.COLLECTION_RECENT):
                 return self._refuse_drop()
             dest_name = self._collection_name(dest_collection)
             if src_collection == constants.COLLECTION_ALL:
