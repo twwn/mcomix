@@ -2566,6 +2566,84 @@ class RestartTest(MComixTest):
         self.assertEqual(['closed', 'launched'], order)
 
 
+class ResumeAfterSaveAndQuitTest(MComixTest):
+
+    """The next start after "Save and quit" opens the book at its page.
+
+    The quit's half was tested - it sets the preference and keeps the
+    window size - but nothing started a window afterwards to see what
+    it made of the file the quit had written.
+    """
+
+    def setUp(self):
+        super().setUp()
+        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
+                          constants.THUMBNAIL_PATH):
+            os.makedirs(directory, exist_ok=True)
+        icons.load_icons()
+
+    def _window(self, path=None):
+        window = main.MainWindow(open_path=path)
+        main.set_main_window(window)
+        self.addCleanup(self._close, window)
+        return window
+
+    @staticmethod
+    def _close(window):
+        window.terminate_program()
+        window.destroy()
+        main.set_main_window(None)
+        pump()
+
+    @staticmethod
+    def _where(window):
+        page = window.imagehandler.get_current_page()
+        return page, window.imagehandler.get_page_filename(page)
+
+    def _quit_and_start_again(self, path, page):
+        """Open <path> at <page>, quit as "Save and quit" leaves things,
+        and start a window with no file named; what that one shows."""
+        window = self._window(path)
+        self.assertTrue(wait_for(
+            lambda: window.imagehandler.get_number_of_pages() >= page))
+        window.set_page(page)
+        pump()
+        left = self._where(window)
+        # What save_and_terminate_program() leaves, less the quit.
+        prefs['previous quit was quit and save'] = True
+        window.write_config_files()
+        self._close(window)
+
+        again = self._window()
+        self.assertTrue(wait_for(
+            lambda: again.imagehandler.get_number_of_pages() > 0))
+        pump()
+        self.assertFalse(prefs['previous quit was quit and save'])
+        return left, self._where(again)
+
+    def test_an_archive_opens_at_the_page_it_was_left_on(self):
+        left, again = self._quit_and_start_again(
+            get_testfile_path('archives', '01-ZIP-Normal.zip'), 3)
+        self.assertEqual((3, '03-PNG-RGB.png'), left)
+        self.assertEqual(left, again)
+
+    def test_a_directory_opens_at_the_image_it_was_left_on(self):
+        left, again = self._quit_and_start_again(
+            get_testfile_path('images', 'portrait-no-exif.png'), 5)
+        self.assertEqual(left, again)
+
+    def test_a_plain_quit_before_it_opens_nothing(self):
+        window = self._window(
+            get_testfile_path('archives', '01-ZIP-Normal.zip'))
+        self.assertTrue(wait_for(
+            lambda: window.imagehandler.get_number_of_pages() > 0))
+        window.write_config_files()
+        self._close(window)
+        again = self._window()
+        pump()
+        self.assertFalse(again.filehandler.file_loaded)
+
+
 class InvertedColoursAtStartUpTest(MComixTest):
 
     """The action Ctrl+I inverts the colours with, on a window that
