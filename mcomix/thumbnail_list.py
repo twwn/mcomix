@@ -514,26 +514,33 @@ class ThumbnailGridView(Gtk.GridView, _ThumbnailViewBase):
             self.about_to_reorder()
         item = cast(ThumbnailItem, self.store.get_item(source))
         # The entry that was dragged or clicked holds the keyboard focus,
-        # and taking it out of the model makes GTK focus another entry
-        # and scroll the view back to the first one when it next lays
-        # the view out.  The focus goes to the entry where it has landed,
-        # without scrolling, and the view is put back where it was once
-        # that layout is done: the reader dropped the entry on a row
-        # they could see, and the view stays on that row.
-        adjustment = self.get_vadjustment()
-        value = adjustment.get_value() if adjustment is not None else None
+        # and taking the focused entry out of the model makes GTK focus
+        # another and scroll the view to it when it next lays the view
+        # out - to the first entry, as often as not.  So the focus is
+        # let go of first, and nothing scrolls: the reader dropped the
+        # entry on a row they could see.  Once the view has been laid
+        # out again, the entry where it has landed gets the focus back.
+        root = self.get_root()
+        focus = root.get_focus() if root is not None else None
+        had_focus = focus is not None and focus.is_ancestor(self)
+        if had_focus and root is not None:
+            root.set_focus(None)
         self.store.remove(source)
         self.store.insert(destination, item)
-        unscrolled = Gtk.ScrollInfo.new()
-        unscrolled.set_enable_horizontal(False)
-        unscrolled.set_enable_vertical(False)
-        self.scroll_to(destination, Gtk.ListScrollFlags.FOCUS, unscrolled)
-        if adjustment is not None and value is not None:
-            def restore() -> bool:
-                adjustment.set_value(value)
-                return GLib.SOURCE_REMOVE
-            GLib.idle_add(restore)
+        if had_focus:
+            GLib.idle_add(self._focus_entry, item)
         return True
+
+    def _focus_entry(self, item: ThumbnailItem) -> bool:
+        """Give the keyboard focus to the cell showing <item>, if one is."""
+        for cell in self._each_cell():
+            parent = cell.get_parent()
+            if (parent is not None and 0 <= cell.position
+                    < self.store.get_n_items()
+                    and self.store.get_item(cell.position) is item):
+                parent.grab_focus()
+                break
+        return GLib.SOURCE_REMOVE
 
     # -- Selection --------------------------------------------------------
 

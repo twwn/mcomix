@@ -223,9 +223,10 @@ class MovingAScrolledEntryTest(MComixTest):
     """Moving the entry that has the focus, far down a long grid.
 
     A click or a drag gives the entry under the pointer the keyboard
-    focus, and taking the focused entry out of the model made GTK focus
-    another and scroll back to the top: every page moved in the archive
-    editor threw the view back to page one.
+    focus, and taking the focused entry out of the model makes GTK focus
+    another and scroll to it - back to page one of the archive editor,
+    or, with the view put back afterwards, a blink of the scroll bar and
+    the pages.
     """
 
     def setUp(self):
@@ -270,13 +271,21 @@ class MovingAScrolledEntryTest(MComixTest):
         return cell.position
 
     def test_the_view_stays_where_the_entry_was_dropped(self):
+        """Not only in the end: a view that scrolled away and was put
+        back a frame later blinked, the scroll bar and the pages with
+        it."""
         position = self._focused_cell()
         before = self.adjustment.get_value()
+        scrolled = []
+        self.adjustment.connect(
+            'value-changed',
+            lambda adjustment: scrolled.append(adjustment.get_value()))
 
         self.assertTrue(self.view.move_item(position, position + 4))
         self._settle()
 
         self.assertEqual(self.adjustment.get_value(), before)
+        self.assertEqual(scrolled, [])
 
     def test_the_moved_entry_keeps_the_focus(self):
         position = self._focused_cell()
