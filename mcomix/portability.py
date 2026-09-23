@@ -30,7 +30,9 @@ def get_default_locale() -> str:
     if sys.platform == "win32":
         windll = ctypes.windll.kernel32
         code = windll.GetUserDefaultUILanguage()
-        return locale.windows_locale[code]
+        # Python's table leaves out some of the languages Windows can be
+        # displayed in, such as K'iche' (0x0486).
+        return locale.windows_locale.get(code, "C")
     else:
         try:
             lang = locale.getdefaultlocale(

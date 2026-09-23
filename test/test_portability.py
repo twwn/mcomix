@@ -61,6 +61,27 @@ class DefaultLocaleTest(MComixTest):
         self.assertEqual('C', self._locale('C'))
 
 
+class WindowsDefaultLocaleTest(MComixTest):
+
+    """What Windows says the user's display language is."""
+
+    def _locale(self, langid):
+        kernel32 = unittest.mock.Mock()
+        kernel32.GetUserDefaultUILanguage.return_value = langid
+        windll = unittest.mock.Mock(kernel32=kernel32)
+        with unittest.mock.patch('sys.platform', 'win32'), \
+                unittest.mock.patch('ctypes.windll', windll, create=True):
+            return portability.get_default_locale()
+
+    def test_a_language_id_is_turned_into_a_locale_name(self):
+        self.assertEqual('en_GB', self._locale(0x0809))
+
+    def test_a_language_id_python_does_not_know_falls_back_on_c(self):
+        """K'iche' is a Windows display language that Python's table of
+        language ids leaves out; MComix stopped with KeyError before it
+        had opened a window."""
+        self.assertEqual('C', self._locale(0x0486))
+
 class ColourSchemeTest(MComixTest):
 
     def _detect(self, connection):
