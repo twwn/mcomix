@@ -613,6 +613,13 @@ class MainWindowTest(MComixTest):
         handler.mouse_press_event(self._Click(1), 1, x, y)
         handler.mouse_release_event(self._Click(1, state), 1, x, y)
         self._pump()
+        return x, y
+
+    def _refocus(self):
+        """Take the focus from the window and give it back, as a click
+        into it from another window does before the click itself."""
+        self.window.lost_focus()
+        self.window.gained_focus()
 
     def _wheel(self, delta_x, delta_y, state=0):
         self.window.event_handler.scroll_wheel_event(
@@ -761,6 +768,41 @@ class MainWindowTest(MComixTest):
         self._click()
         self.assertEqual(self.window.imagehandler.get_current_page(), 2)
         self.assertEqual(self.window.selected_pages, set())
+
+    def test_a_click_that_raises_the_window_does_not_turn_the_page(self):
+        """The focus comes back before the click that brought it, and
+        the release was told apart from a page turn by where the press
+        before it had been, which the press into an unfocused window
+        does not record: a click at the spot the last one was made,
+        which is where a reader keeps clicking, turned the page."""
+        self._ready()
+        x, y = self._click()
+        self.assertEqual(self.window.imagehandler.get_current_page(), 2)
+        self._refocus()
+        handler = self.window.event_handler
+        handler.mouse_press_event(self._Click(1), 1, x, y)
+        self._pump()
+        handler.mouse_release_event(self._Click(1), 1, x, y)
+        self._pump()
+        self.assertEqual(self.window.imagehandler.get_current_page(), 2)
+
+    def test_a_drag_that_raises_the_window_moves_the_view_from_its_start(self):
+        """The press into an unfocused window did not record where it
+        was, so the first move of the drag was measured from the click
+        before it and threw the view across the page."""
+        self._ready()
+        x, y = self._click()
+        self._refocus()
+        handler = self.window.event_handler
+        handler.mouse_press_event(self._Click(1), 1, x + 30, y + 20)
+        self._pump()
+        scrolled = []
+        with unittest.mock.patch.object(
+                self.window, 'scroll',
+                side_effect=lambda dx, dy: scrolled.append((dx, dy))):
+            handler.mouse_move_event(
+                self._Motion(Gdk.ModifierType.BUTTON1_MASK), x + 40, y + 20)
+        self.assertEqual(scrolled, [(-10, 0)])
 
     def test_control_and_a_click_picks_the_page_out_instead(self):
         """A plain click is how a book is read, so it cannot be the

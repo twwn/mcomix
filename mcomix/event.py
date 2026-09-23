@@ -28,6 +28,9 @@ class EventHandler:
         self._last_pointer_pos_y = 0.0
         self._pressed_pointer_pos_x = 0.0
         self._pressed_pointer_pos_y = 0.0
+        #: Set by a press that brought the window back into focus, which
+        #: its release must not answer.
+        self._raising_click = False
 
         #: For scrolling "off the page".
         self._extra_scroll_events = 0
@@ -619,9 +622,6 @@ class EventHandler:
         arrive here as 8 and 9.
         """
 
-        if self._window.was_out_of_focus:
-            return
-
         # The coordinates are the page area's own, since there is no
         # root window to give them in.  Both the press and the release are
         # measured against it, and the page area does not move under the
@@ -630,12 +630,22 @@ class EventHandler:
         state = gesture.get_current_event_state()
 
         if button == 1:
+            # Even for a click that only raises the window: a drag it
+            # starts pans from here, not from wherever the click before
+            # it was.
             self._pressed_pointer_pos_x = x
             self._pressed_pointer_pos_y = y
             self._last_pointer_pos_x = x
             self._last_pointer_pos_y = y
 
-        elif button == 2:
+        if self._window.was_out_of_focus:
+            # This click raised the window.  gained_focus() clears the
+            # flag from the idle queue, which runs before the release
+            # arrives, so the release is told here instead.
+            self._raising_click = True
+            return
+
+        if button == 2:
             self._window.actiongroup.get_action('lens').set_active(True)
 
         elif (button == 3 and
@@ -668,6 +678,10 @@ class EventHandler:
         state = gesture.get_current_event_state()
 
         self._window.cursor_handler.set_cursor_type(constants.NORMAL_CURSOR)
+
+        raising, self._raising_click = self._raising_click, False
+        if raising:
+            return
 
         if (button == 1):
 
