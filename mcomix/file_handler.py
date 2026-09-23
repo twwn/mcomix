@@ -979,14 +979,21 @@ class FileHandler:
 
         if self.file_loaded:
             path = self._window.imagehandler.get_real_path()
-            page_index = self._window.imagehandler.get_current_page() - 1
-            current_file_info = [path, page_index]
+            page = self._window.imagehandler.get_current_page()
+            current_file_info = [path, page - 1]
 
             with tools.atomic_write(constants.FILEINFO_PICKLE_PATH, binary=True) as config:
                 pickle.dump(current_file_info, config, pickle.HIGHEST_PROTOCOL)
+                # The file of the page within an archive, in a record of
+                # its own after the pair, which an older MComix stops
+                # short of: it finds the page however the archive is
+                # sorted by the time the file is read.
+                pickle.dump(self.page_member(page), config,
+                            pickle.HIGHEST_PROTOCOL)
 
-    def read_fileinfo_file(self) -> "tuple[str, int] | None":
-        """The file and page a "quit and save" left off at.
+    def read_fileinfo_file(self) -> "tuple[str, int, str | None] | None":
+        """The file and page index a "quit and save" left off at, and
+        the name within an archive of the page's file where it was kept.
 
         What the pickle holds is whatever was written to it, so the pair
         is checked rather than trusted: a file of the wrong shape says
@@ -994,11 +1001,17 @@ class FileHandler:
         """
 
         fileinfo = None
+        member = None
 
         if os.path.isfile(constants.FILEINFO_PICKLE_PATH):
             try:
                 with open(constants.FILEINFO_PICKLE_PATH, 'rb') as config:
                     fileinfo = pickle.load(config)
+                    try:
+                        member = pickle.load(config)
+                    except EOFError:
+                        # Written by an older MComix.
+                        member = None
             except Exception as ex:
                 log.error(_('! Corrupt file "%s", deleting it; the last file '
                             'read will not be reopened.'),
@@ -1010,7 +1023,8 @@ class FileHandler:
                 and isinstance(fileinfo[0], str)
                 and isinstance(fileinfo[1], int)):
             return None
-        return fileinfo[0], fileinfo[1]
+        return (fileinfo[0], fileinfo[1],
+                member if isinstance(member, str) else None)
 
     def update_last_read_page(self) -> None:
         """ Stores the currently viewed page. """

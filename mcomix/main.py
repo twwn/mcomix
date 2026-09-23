@@ -295,9 +295,8 @@ class MainWindow(Gtk.Window):
 
             if fileinfo is not None:
 
-                open_path = fileinfo[0]
-                open_page = fileinfo[1] + 1
-                open_member = None
+                open_path, index, open_member = fileinfo
+                open_page = index + 1
 
         prefs['previous quit was quit and save'] = False
 
@@ -1551,11 +1550,17 @@ class MainWindow(Gtk.Window):
         if prefs['auto load last file'] and self.filehandler.file_loaded:
             prefs['path to last file'] = \
                 self.imagehandler.get_real_path() or ''
-            prefs['page of last file'] = self.imagehandler.get_current_page()
+            page = self.imagehandler.get_current_page()
+            prefs['page of last file'] = page
+            # The file of that page within an archive, which finds it
+            # again however the archive is sorted by then.
+            prefs['member of last file'] = \
+                self.filehandler.page_member(page) or ''
 
         else:
             prefs['path to last file'] = ''
             prefs['page of last file'] = 1
+            prefs['member of last file'] = ''
 
         self.write_config_files()
 

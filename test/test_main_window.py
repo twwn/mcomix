@@ -7,6 +7,7 @@ real window, which is where a whole class of start-up regressions hides.
 import contextlib
 import datetime
 import os
+import pickle
 import shutil
 import threading
 import zipfile
@@ -812,6 +813,32 @@ class MainWindowTest(MComixTest):
         page = handler.get_current_page()
         self.assertEqual(shown,
                          os.path.basename(handler.get_path_to_page(page)))
+
+    def test_the_last_file_is_kept_with_the_file_of_its_page(self):
+        """"Automatically open the last viewed file" reopened it at the
+        page number, which names another picture once the archive is
+        sorted the other way."""
+        self._ready()
+        prefs['auto load last file'] = True
+        self.window.set_page(2)
+        self._pump()
+        self.window.terminate_program()
+        self.assertEqual(2, prefs['page of last file'])
+        self.assertEqual('images/02-JPG-RGB.jpg',
+                         prefs['member of last file'])
+
+    def test_quit_and_save_keeps_the_file_of_the_page(self):
+        """What an older MComix reads of it - the file and the index of
+        the page - comes first and is unchanged."""
+        self._ready()
+        self.window.set_page(2)
+        self._pump()
+        self.window.filehandler.write_fileinfo_file()
+        with open(constants.FILEINFO_PICKLE_PATH, 'rb') as stored:
+            pair = pickle.load(stored)
+            member = pickle.load(stored)
+        self.assertEqual([self.window.imagehandler.get_real_path(), 1], pair)
+        self.assertEqual('images/02-JPG-RGB.jpg', member)
 
     def test_a_plain_click_turns_the_page_as_it_always_did(self):
         self._ready()
@@ -2853,5 +2880,41 @@ class ZoomModeAtStartUpTest(MComixTest):
 
     def test_the_preference_is_the_mode_it_started_in(self):
         self.assertEqual(constants.ZoomMode.MANUAL, prefs['zoom mode'])
+
+
+
+class ResumeAtTheFileOfThePageTest(MComixTest):
+
+    """A "quit and save" is resumed at the file of its page, where it
+    was kept, rather than at the page number."""
+
+    def setUp(self):
+        super().setUp()
+        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
+                          constants.THUMBNAIL_PATH):
+            os.makedirs(directory, exist_ok=True)
+        icons.load_icons()
+        self.window = None
+
+    def tearDown(self):
+        if self.window is not None:
+            self.window.terminate_program()
+            self.window.destroy()
+            main.set_main_window(None)
+        pump()
+        super().tearDown()
+
+    def test_the_file_of_the_page_decides_over_its_number(self):
+        path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        with open(constants.FILEINFO_PICKLE_PATH, 'wb') as stored:
+            pickle.dump([path, 1], stored)
+            pickle.dump('images/03-PNG-RGB.png', stored)
+        prefs['previous quit was quit and save'] = True
+        self.window = main.MainWindow()
+        main.set_main_window(self.window)
+        self.assertTrue(wait_for(
+            lambda: not self.window.filehandler.file_loading
+            and self.window.imagehandler.page_is_available(), seconds=20))
+        self.assertEqual(3, self.window.imagehandler.get_current_page())
 
 # vim: expandtab:sw=4:ts=4

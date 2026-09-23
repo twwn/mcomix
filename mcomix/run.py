@@ -207,6 +207,7 @@ def run() -> None:
     # 0 leaves the choice of page to the file handler: the first one, or
     # the last read page if there is one for this book.
     open_page = 0
+    open_member: "str | None" = None
     if len(args) == 1:
         open_path = args[0]
     elif len(args) > 1:
@@ -217,12 +218,14 @@ def run() -> None:
             and os.path.isfile(preferences.prefs['path to last file']):
         open_path = preferences.prefs['path to last file']
         open_page = preferences.prefs['page of last file']
+        open_member = preferences.prefs['member of last file'] or None
 
     # --page is about the book that was named, not about the one the
     # last session was left on: a page without a path is ignored.
     if args and opts.page:
         open_page = opts.page
-    open_member = opts.page_member if args else None
+    if args:
+        open_member = opts.page_member
 
     apply_layout_direction()
 

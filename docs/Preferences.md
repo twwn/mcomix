@@ -41,7 +41,7 @@ Flip two pages in double page mode | Turn two pages at a time while two are show
 Show only one page where appropriate | When double page mode shows one page anyway: "Never", "Only for title pages" (the first page, which is the cover), "Only for wide images", or "Always", which is both.
 Page auto-resizing | How two pages of different sizes are fitted beside each other: "Prefer same scale", "Prefer same size" or "Fit to same size".
 Space between two pages (in pixels) | From 0 to 100; 2 by default.
-Automatically open the last viewed file on startup | Started with no file to open, MComix reopens the one that was open when it last closed. After "Save and quit", it does so whatever this is set to.
+Automatically open the last viewed file on startup | Started with no file to open, MComix reopens the one that was open when it last closed. After "Save and quit", it does so whatever this is set to. Either way it opens the book at the picture that was shown, however an archive has been sorted since.
 Store information about recently opened files | "Always" keeps the history under File &rarr; Recent and the page each book was left at, which the library's "Recent" collection lists. Switching to "Never" offers to clear both.
 Save As opens at the last directory saved into | Rather than at the directory the book came from.
 Save an edited archive in the format it was opened in | Write an edited archive back as the ZIP, tar, 7z or RAR it was read as. The last two need the `7z` and `rar` programs, which MComix does not install; a format it cannot write is saved as a ZIP.

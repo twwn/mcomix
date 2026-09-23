@@ -536,9 +536,19 @@ class FileInfoTest(MComixTest):
             pickle_file.write(content)
 
     def test_the_file_and_page_come_back(self):
+        """As an older MComix wrote them, without the file of the page."""
         self._write(pickle.dumps(['/books/a.zip', 41]))
 
-        self.assertEqual(('/books/a.zip', 41),
+        self.assertEqual(('/books/a.zip', 41, None),
+                         self.handler.read_fileinfo_file())
+
+    def test_the_file_of_the_page_comes_back_with_them(self):
+        """Written in a record after the pair, which is all an older
+        MComix reads."""
+        self._write(pickle.dumps(['/books/a.zip', 41])
+                    + pickle.dumps('pages/42.jpg'))
+
+        self.assertEqual(('/books/a.zip', 41, 'pages/42.jpg'),
                          self.handler.read_fileinfo_file())
 
     def test_no_file_is_no_answer(self):
