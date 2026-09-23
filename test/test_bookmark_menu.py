@@ -20,6 +20,7 @@ from mcomix import message_dialog
 from mcomix import process
 from mcomix import widgets
 from mcomix.dialog import Response
+from mcomix.preferences import prefs
 
 
 class _StubImageHandler:
@@ -158,6 +159,52 @@ class BookmarksMenuTest(MComixTest):
         if path is not None:
             self.window.imagehandler.path = path
         self.store.add_current_to_bookmarks()
+
+    # -- A second bookmark in the same book --------------------------------
+
+    def _pages(self):
+        return sorted(bookmark._page for bookmark in self.store.get_bookmarks())
+
+    def _bookmark_again(self, page, response):
+        """Bookmark <page> in the book bookmarked on page 3, and answer
+        the question that asks whether to replace it with <response>."""
+        self._bookmark(3)
+        self._bookmark(page)
+        pump()
+        prompts = self._dialogs()
+        self.assertEqual(1, len(prompts), 'nothing asked about page 3')
+        prompts[0].response(response)
+        pump()
+
+    def test_the_same_page_again_is_neither_added_nor_asked_about(self):
+        self._bookmark(3)
+        self._bookmark(3)
+        pump()
+        self.assertEqual([], self._dialogs())
+        self.assertEqual([3], self._pages())
+
+    def test_yes_replaces_the_bookmarks_already_in_the_book(self):
+        self._bookmark_again(5, Response.YES)
+        self.assertEqual([5], self._pages())
+
+    def test_no_keeps_them_beside_the_new_one(self):
+        self._bookmark_again(5, Response.NO)
+        self.assertEqual([3, 5], self._pages())
+
+    def test_cancel_adds_nothing(self):
+        self._bookmark_again(5, Response.CANCEL)
+        self.assertEqual([3], self._pages())
+
+    def test_a_remembered_yes_replaces_without_asking(self):
+        choices = prefs['stored dialog choices']
+        key = message_dialog.RememberedDialog.REPLACE_EXISTING_BOOKMARK
+        choices[key] = Response.YES
+        self.addCleanup(choices.pop, key)
+        self._bookmark(3)
+        self._bookmark(5)
+        pump()
+        self.assertEqual([], self._dialogs())
+        self.assertEqual([5], self._pages())
 
     def test_the_fixed_entries_are_always_there(self):
         self.assertEqual(self._sections(),
