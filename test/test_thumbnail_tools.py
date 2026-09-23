@@ -1,6 +1,7 @@
 """ Tests for the freedesktop.org thumbnail store. """
 
 import os
+import shutil
 import unittest.mock
 import zipfile
 from urllib.request import pathname2url
@@ -339,3 +340,54 @@ class EncryptedArchiveThumbnailTest(MComixTest):
         self._thumbnail('Encrypted.zip')
         self.assertFalse(os.path.exists(os.path.join(self.tmp_dir,
                                                      'thumbnails')))
+
+
+class ForeignThumbnailOrientationTest(MComixTest):
+
+    """A thumbnail another program put in the shared store is not turned
+    again.
+
+    GNOME's and KDE's thumbnailers store a picture turned upright by its
+    Exif orientation already; MComix stores it as it is in the file, and
+    turns it when it draws it.  Turning one of theirs by the picture's
+    Exif turned it past upright.
+    """
+
+    def setUp(self):
+        super().setUp()
+        prefs['auto rotate from exif'] = True
+        self._store = os.path.join(self.tmp_dir, 'thumbnails')
+        self._source = os.path.join(self.tmp_dir, 'turned.jpg')
+        # 210 wide and 297 high in the file, shown the other way round.
+        shutil.copy(get_testfile_path(
+            'images', 'landscape-exif-270-rotation.jpg'), self._source)
+        self._thumbnailer = thumbnail_tools.Thumbnailer(
+            dst_dir=self._store, store_on_disk=True, size=(128, 128))
+
+    def _stored(self, software):
+        """Put an upright thumbnail of the source in the store, as
+        <software> writes one."""
+        path = self._thumbnailer._path_to_thumbpath(self._source)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        info = PIL.PngImagePlugin.PngInfo()
+        info.add_text('Thumb::MTime', str(int(os.stat(self._source).st_mtime)))
+        info.add_text('Software', software)
+        PIL.Image.new('RGB', (128, 91)).save(path, 'PNG', pnginfo=info)
+
+    def _shown(self):
+        pixbuf = self._thumbnailer.thumbnail(self._source)
+        return image_tools.turned_as_shown(pixbuf, self._source)
+
+    def test_one_another_program_wrote_is_left_as_it_is(self):
+        self._stored('GNOME::ThumbnailFactory')
+        shown = self._shown()
+        self.assertEqual((128, 91), (shown.get_width(), shown.get_height()))
+
+    def test_one_mcomix_wrote_is_turned(self):
+        """MComix' own are stored as the picture is in the file."""
+        path = self._thumbnailer._path_to_thumbpath(self._source)
+        self._shown()
+        with PIL.Image.open(path) as stored:
+            self.assertLess(stored.size[0], stored.size[1])
+        shown = self._shown()
+        self.assertGreater(shown.get_width(), shown.get_height())

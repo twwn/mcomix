@@ -327,6 +327,13 @@ class Thumbnailer:
                 pixbuf = image_tools.pil_to_pixbuf(img, keep_orientation=True)
                 if isinstance(orientation, str):
                     setattr(pixbuf, 'orientation', orientation)
+                software = img.info.get('Software')
+                if not (isinstance(software, str)
+                        and software.startswith('MComix')):
+                    # Another program's: GNOME's and KDE's thumbnailers
+                    # store a picture turned upright already, where
+                    # MComix stores it as it is in the file.
+                    setattr(pixbuf, image_tools.UPRIGHT, True)
                 return pixbuf
         except OSError:
             # Not an image, not readable, or broken off partway through

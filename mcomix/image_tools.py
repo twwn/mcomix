@@ -860,6 +860,11 @@ def get_implied_rotation(pixbuf: GdkPixbuf.Pixbuf) -> int:
     return _implied_rotation(orientation)
 
 
+#: Set on a thumbnail that is upright already - one another program
+#: put in the shared store - which turned_as_shown() leaves alone.
+UPRIGHT = 'mcomix_upright'
+
+
 def turned_as_shown(thumbnail: GdkPixbuf.Pixbuf,
                     path: str) -> GdkPixbuf.Pixbuf:
     """<thumbnail> of the picture at <path>, turned as the page is shown.
@@ -870,11 +875,15 @@ def turned_as_shown(thumbnail: GdkPixbuf.Pixbuf,
     the freedesktop thumbnail cache is read by other programs, which turn
     it as they see fit.
 
+    A thumbnail another program stored, which the thumbnailer marks
+    UPRIGHT, is turned already and left as it is.
+
     <path> may be an archive, whose thumbnail is of its cover: what the
     cover's orientation was is not to be had from the archive's path,
     and the thumbnailer keeps it with the thumbnail instead.
     """
-    if not prefs['auto rotate from exif']:
+    if not prefs['auto rotate from exif'] or getattr(thumbnail, UPRIGHT,
+                                                        False):
         return thumbnail
     if is_image_file(path):
         rotation = get_implied_rotation_from_file(path)
