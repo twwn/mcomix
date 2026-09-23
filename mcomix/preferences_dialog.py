@@ -949,10 +949,10 @@ class _PreferencesDialog(Dialog):
             if not prefs['smart thumb bg']:
                 self._window.thumbnailsidebar.change_thumbnail_background_color(
                     prefs['thumb bg colour'])
-            elif self._window.imagehandler.page_is_available():
-                pixbuf_count = self._window.displayed_page_count()
-                bg_colour = self._window.imagehandler.get_pixbuf_auto_background(pixbuf_count)
-                self._window.thumbnailsidebar.change_thumbnail_background_color(bg_colour)
+            else:
+                # draw_image() will set the thumbnails' background to the
+                # colour it reads off the page.
+                self._window.draw_image()
 
         elif preference in ('checkered bg for transparent images',
                             'no double page for wide images'):

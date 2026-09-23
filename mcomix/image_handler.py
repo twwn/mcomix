@@ -15,7 +15,7 @@ from mcomix import callback
 from mcomix import log
 from mcomix.worker_thread import WorkerThread
 
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -137,39 +137,6 @@ class ImageHandler:
         for i in range(number_of_bufs):
             result.append(self._get_pixbuf(self._current_image_index + i))
         return result
-
-    def get_pixbuf_auto_background(
-            self,
-            number_of_bufs: int) -> Sequence[float]:
-        """ Returns an automatically calculated background color
-        for the current page(s).
-
-        <number_of_bufs> is one or two, the two page counts a screen
-        can show.  The colour the preference names where there is no
-        page to read one off, which is what the background is then
-        painted in anyway.
-        """
-
-        pixbufs = self.get_pixbufs(number_of_bufs)
-
-        if not pixbufs:
-            fallback: Sequence[float] = prefs['bg colour']
-            return fallback
-        elif len(pixbufs) == 1:
-            pixbufs[0] = self._window.enhancer.enhance(pixbufs[0])
-            auto_bg = image_tools.get_most_common_edge_colour(pixbufs[0])
-        elif len(pixbufs) == 2:
-            left, right = pixbufs
-            left = self._window.enhancer.enhance(left)
-            right = self._window.enhancer.enhance(right)
-            if self._window.is_manga_mode:
-                left, right = right, left
-
-            auto_bg = image_tools.get_most_common_edge_colour((left, right))
-        else:
-            assert False, 'Unexpected pixbuf count'
-
-        return auto_bg
 
     def do_cacheing(self) -> None:
         """Make sure that the correct pixbufs are stored in cache. These

@@ -4,7 +4,7 @@ import math
 import os
 import threading
 
-from gi.repository import Gdk, Gtk, GLib
+from gi.repository import Gdk, GdkPixbuf, Gtk, GLib
 
 from mcomix import canvas
 from mcomix import constants
@@ -532,7 +532,7 @@ class MainWindow(Gtk.Window):
             smartbg = prefs['smart bg']
             smartthumbbg = prefs['smart thumb bg'] and prefs['show thumbnails']
             if smartbg or smartthumbbg:
-                bg_colour = self.imagehandler.get_pixbuf_auto_background(pixbuf_count)
+                bg_colour = self._edge_colour(pixbuf_list, content_boxes)
             if smartbg:
                 self.set_bg_colour(bg_colour, dynamic=True)
             if smartthumbbg:
@@ -584,6 +584,26 @@ class MainWindow(Gtk.Window):
         self._waiting_for_redraw = False
 
         return False
+
+    @staticmethod
+    def _edge_colour(pixbufs: Sequence[GdkPixbuf.Pixbuf],
+                     boxes: Sequence[box.Box]) -> list[float]:
+        """The colour the pages on screen fade into, for the dynamic
+        background.
+
+        It is read off <pixbufs> as they are drawn - turned, flipped and
+        enhanced - down the outer sides of the pages standing furthest
+        left and right in <boxes>, the places each is drawn at.  The
+        pages as they are in the file would need enhancing a second
+        time, at their full size, for this alone, and their sides are
+        not the ones on screen once a quarter turn has been applied.
+        """
+        order = sorted(range(len(pixbufs)),
+                       key=lambda index: boxes[index].get_position()[0])
+        if len(order) == 1:
+            return image_tools.get_most_common_edge_colour(pixbufs[order[0]])
+        return image_tools.get_most_common_edge_colour(
+            (pixbufs[order[0]], pixbufs[order[-1]]))
 
     def _update_page_information(self) -> None:
         """ Updates the window with information that can be gathered
