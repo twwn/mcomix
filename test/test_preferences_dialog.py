@@ -93,6 +93,26 @@ class PreferencesDialogTest(MComixTest):
 
     # -- What the pair shows ----------------------------------------------
 
+    def test_a_spinner_stores_its_value_in_the_unit_of_the_preference(self):
+        """Three spinners show another unit than the preference is kept
+        in: the slideshow delay in seconds for milliseconds, the smart
+        scroll step in per cent for a fraction, and the lens
+        magnification with a decimal place.  Everything else is a whole
+        number of pixels or pages."""
+        dialog = self._open()
+        for preference, shown, stored in (
+                ('slideshow delay', 2.5, 2500),
+                ('smart scroll percentage', 40, 0.4),
+                ('lens magnification', 2.5, 2.5),
+                ('thumbnail size', 120, 120),
+                ('max pages to cache', -1, -1)):
+            spinner = Gtk.SpinButton.new(
+                Gtk.Adjustment.new(0, -10, 10000, 1, 10, 0), 0.0, 2)
+            spinner.set_value(shown)
+            dialog._spinner_cb(spinner, preference)
+            self.assertEqual(prefs[preference], stored, preference)
+            self.assertIs(type(prefs[preference]), type(stored), preference)
+
     def test_turning_pages_by_their_metadata_turns_the_thumbnails_too(self):
         """The sidebar's thumbnails are turned as the pages are, so
         changing the preference has to make them again, not only
