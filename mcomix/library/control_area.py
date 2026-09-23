@@ -14,6 +14,7 @@ from gi.repository import Pango
 
 from mcomix import i18n
 from mcomix import labels
+from mcomix import tools
 from mcomix.library.watchlist import WatchListDialog
 from mcomix import widgets
 from mcomix.i18n import _
@@ -150,7 +151,7 @@ class _ControlArea(Gtk.Box):
                 '%d page', '%d pages', pages) % pages)
 
         if size is not None:
-            infotext.append('%.1f MiB' % (size / 1048576.0))
+            infotext.append(tools.format_byte_size(size))
 
         if (pages is not None and last_page is not None and
                 last_date is not None and last_page == pages):

@@ -21,6 +21,7 @@ from mcomix import column_list
 from mcomix import constants
 from mcomix import i18n
 from mcomix import icons
+from mcomix import last_read_page
 from mcomix import main
 from mcomix import message_dialog
 from mcomix.dialog import Response
@@ -29,6 +30,7 @@ from mcomix.library import collection_area
 from mcomix.library import main_dialog
 from mcomix.library import watchlist
 from mcomix.preferences import prefs
+from mcomix import tools
 from mcomix import widgets
 
 
@@ -388,6 +390,67 @@ class CustomCoverSizeTest(_LibraryWindowTest):
         self.assertEqual(constants.SIZE_NORMAL, action.get_state().get_int32())
 
 # vim: expandtab:sw=4:ts=4
+
+
+class BookInfoTest(_LibraryWindowTest):
+
+    """The line under the covers that describes the selected book."""
+
+    def setUp(self):
+        super().setUp()
+        prefs['last library collection'] = constants.COLLECTION_ALL
+        self.dialog = self._open()
+        self.path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        self.dialog.backend.add_book(self.path)
+        self.dialog.book_area.display_covers(constants.COLLECTION_ALL)
+        pump()
+
+    def _select(self):
+        covers = self.dialog.book_area._covers
+        covers.unselect_all()
+        covers.select_only(0)
+        pump()
+        return self.dialog.control_area
+
+    def _left_on(self, page):
+        lastread = last_read_page.LastReadPage(self.dialog.backend)
+        lastread.set_enabled(True)
+        lastread.set_page(self.path, page)
+
+    def test_an_unread_book_shows_its_name_folder_and_page_count(self):
+        info = self._select()
+        self.assertEqual('01-ZIP-Normal.zip', info._namelabel.get_text())
+        self.assertEqual(os.path.dirname(self.path),
+                         info._dirlabel.get_text())
+        self.assertEqual('4 pages, 1.3 KiB', info._filelabel.get_text())
+        self.assertTrue(info._open_button.get_sensitive())
+
+    def test_the_size_is_written_as_everywhere_else(self):
+        # It was the only size MComix wrote in MiB whatever the file:
+        # a book of 1,344 bytes read "0.0 MiB".
+        info = self._select()
+        self.assertTrue(info._filelabel.get_text().endswith(
+            tools.format_byte_size(os.path.getsize(self.path))))
+
+    def test_a_book_left_part_read_shows_the_page_it_was_left_on(self):
+        self._left_on(2)
+        info = self._select()
+        self.assertEqual('Page 2/4, 1.3 KiB', info._filelabel.get_text())
+
+    def test_a_book_read_to_the_end_says_when_it_was_finished(self):
+        self._left_on(4)
+        info = self._select()
+        self.assertTrue(info._filelabel.get_text().startswith(
+            '4 pages, 1.3 KiB, Finished reading on '))
+
+    def test_selecting_nothing_empties_the_line(self):
+        info = self._select()
+        self.dialog.book_area._covers.unselect_all()
+        pump()
+        self.assertEqual('', info._namelabel.get_text())
+        self.assertEqual('', info._filelabel.get_text())
+        self.assertEqual('', info._dirlabel.get_text())
+        self.assertFalse(info._open_button.get_sensitive())
 
 
 class NewBooksMessageTest(MComixTest):
