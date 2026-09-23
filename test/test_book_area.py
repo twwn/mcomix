@@ -297,6 +297,29 @@ class CoverOrderTest(MComixTest):
                          [1, 3, 2])
 
 
+    def _order_of(self, books, key):
+        self.BOOKS = books
+        return self._order(key)
+
+    def test_covers_a_key_cannot_tell_apart_go_by_their_path(self):
+        """Books added in one go share the date they were added, and
+        books of one name in two folders - each series' "Volume 1" -
+        share their name: they came in whatever order the view held
+        them, which is the order they were added or last shown in."""
+        for key, books in (
+                (constants.SORT_LAST_MODIFIED,
+                 [_Book(1, '/b/one.cbz', added='2001'),
+                  _Book(2, '/a/two.cbz', added='2001')]),
+                (constants.SORT_SIZE,
+                 [_Book(1, '/b/one.cbz', size=5),
+                  _Book(2, '/a/two.cbz', size=5)]),
+                (constants.SORT_NAME,
+                 [_Book(1, '/b/Volume 1.cbz'),
+                  _Book(2, '/a/Volume 1.cbz')])):
+            for listed in (books, books[::-1]):
+                with self.subTest(key=key, listed=[b.id for b in listed]):
+                    self.assertEqual([2, 1], self._order_of(listed, key))
+
 class CoverRemovalTest(MComixTest):
 
     """Removing covers by book id rather than one position at a time.

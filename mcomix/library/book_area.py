@@ -442,15 +442,23 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
     def _compare_books(key: int, left: _BookItem, right: _BookItem) -> int:
         """Order two covers by <key>, one of the SORT_ constants: the
         name of the file, its size, the date the book was added, or else
-        the whole path."""
+        the whole path.
+
+        Covers the key cannot tell apart - books added in one go, each
+        series' "Volume 1" - are put in order by their paths, rather than
+        left in whatever order the view held them in.
+        """
+        answer = 0
         if key == constants.SORT_NAME:
-            return tools.cmp(
+            answer = tools.cmp(
                 tools.AlphanumericSortKey(os.path.basename(left.path).lower()),
                 tools.AlphanumericSortKey(os.path.basename(right.path).lower()))
-        if key == constants.SORT_SIZE:
-            return tools.cmp(left.size, right.size)
-        if key == constants.SORT_LAST_MODIFIED:
-            return tools.cmp(left.added, right.added)
+        elif key == constants.SORT_SIZE:
+            answer = tools.cmp(left.size, right.size)
+        elif key == constants.SORT_LAST_MODIFIED:
+            answer = tools.cmp(left.added, right.added)
+        if answer:
+            return answer
         return tools.cmp(tools.AlphanumericSortKey(left.path),
                          tools.AlphanumericSortKey(right.path))
 
