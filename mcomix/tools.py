@@ -49,6 +49,9 @@ class AlphanumericSortKey:
             int(part) if part.isdecimal() else part
             for part in NUMERIC_REGEXP.findall(filename.lower())
         ]
+        #: What decides between two names the parts cannot tell apart,
+        #: such as "Page1" and "page01".
+        self.filename = filename
 
     def __lt__(self, other: 'AlphanumericSortKey') -> bool:
         for left, right in itertools.zip_longest(self.filename_parts, other.filename_parts, fillvalue=''):
@@ -62,7 +65,10 @@ class AlphanumericSortKey:
                 if left_text != right_text:
                     return left_text < right_text
 
-        return False
+        # Names that differ only in case or in leading zeros are put in
+        # order by the names themselves, so that the order of a book's
+        # pages does not depend on the order they were listed in.
+        return self.filename < other.filename
 
 
 def alphanumeric_sort(filenames: list[str]) -> None:

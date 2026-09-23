@@ -1,3 +1,4 @@
+import itertools
 import os
 import shutil
 import tempfile
@@ -87,6 +88,24 @@ class TestAlphanumericSort(unittest.TestCase):
         tools.alphanumeric_sort(lst)
         self.assertListEqual(lst, ['2.jpg', '10.jpg', 'page 1\u00b23.jpg'])
 
+
+    def test_the_order_does_not_depend_on_the_order_listed(self) -> None:
+        """Names that differ only in case or in leading zeros compared
+        equal, and the sort kept them in whatever order the directory
+        or the archive listed them: all 24 orders of these four came
+        out as 24 different sorts."""
+        names = ['Page1.jpg', 'page1.jpg', 'page01.jpg', 'PAGE001.jpg']
+        sorts = set()
+        for listed in itertools.permutations(names):
+            lst = list(listed)
+            tools.alphanumeric_sort(lst)
+            sorts.add(tuple(lst))
+        self.assertEqual(1, len(sorts), sorts)
+
+    def test_numbers_still_come_before_the_case_of_a_name(self) -> None:
+        lst = ['page10.jpg', 'Page2.jpg', 'page2.jpg']
+        tools.alphanumeric_sort(lst)
+        self.assertListEqual(lst, ['Page2.jpg', 'page2.jpg', 'page10.jpg'])
 
 class TestAtomicWrite(unittest.TestCase):
     def setUp(self) -> None:
