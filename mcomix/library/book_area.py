@@ -185,6 +185,9 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
             ('completely-remove', _('_Remove and delete from disk'),
              _('Deletes the selected books from disk.'),
              self._completely_remove_book),
+            ('cleanup', _('Clean _up'),
+             _('Removes no longer existent books from the collection.'),
+             self._clean_up),
             ('copy-to-clipboard', _('_Copy'),
              _("Copies the selected book's path to clipboard."),
              self._copy_selected),
@@ -229,7 +232,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         model.append_section(None, heading)
 
         entries = self._menu_entries()
-        for group in (entries[0:2], entries[2:3], entries[3:6], entries[6:7]):
+        for group in (entries[0:2], entries[2:3], entries[3:7], entries[7:8]):
             section = Gio.Menu()
             for name, label, tooltip, handler in group:
                 section.append(label, 'books.' + name)
@@ -862,11 +865,21 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
             self._set_sensitive(action, books_selected)
 
         self._set_sensitive('add', collection is not None)
+        self._set_sensitive('cleanup', collection is not None)
         self._set_sensitive('remove-from-collection',
                             books_selected and not is_collection_all)
         self._set_sensitive('copy-to-clipboard', len(selected) == 1)
 
         widgets.popup_at(self._book_menu, over or self, x, y)
+
+    def _clean_up(self, *args: object) -> None:
+        """Take the books of the collection on show whose files have
+        gone out of the library, as the collection's own menu does."""
+        collection = self._library.collection_area.get_current_collection()
+        if collection is None:
+            return
+        self._library.collection_area.clean_collection(
+            None if collection == constants.COLLECTION_ALL else collection)
 
     def _set_sensitive(self, action: str, sensitive: bool) -> None:
         """ Enables the popup menu action <action> based on <sensitive>. """

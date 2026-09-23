@@ -9,6 +9,7 @@ backend made unreachable.
 
 import gettext
 import os
+import shutil
 import threading
 import types
 import unittest.mock
@@ -24,6 +25,7 @@ from mcomix import icons
 from mcomix import last_read_page
 from mcomix import main
 from mcomix import message_dialog
+from mcomix import widgets
 from mcomix.dialog import Response
 from mcomix.library import backend_types
 from mcomix.library import book_area
@@ -32,7 +34,6 @@ from mcomix.library import main_dialog
 from mcomix.library import watchlist
 from mcomix.preferences import prefs
 from mcomix import tools
-from mcomix import widgets
 
 
 class _LibraryWindowTest(MComixTest):
@@ -410,6 +411,35 @@ class _OneBookTest(_LibraryWindowTest):
         lastread = last_read_page.LastReadPage(self.dialog.backend)
         lastread.set_enabled(True)
         lastread.set_page(self.path, page)
+
+
+class MissingBooksTest(_LibraryWindowTest):
+
+    """Books whose files have gone can be taken out of the library from
+    the covers' own menu, not only from the collections' menu beside
+    them."""
+
+    def test_clean_up_in_the_covers_menu_takes_out_the_books_gone(self):
+        prefs['last library collection'] = constants.COLLECTION_ALL
+        dialog = self._open()
+        path = os.path.join(self.tmp_dir, 'gone.cbz')
+        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), path)
+        dialog.backend.add_book(path)
+        dialog.book_area.display_covers(constants.COLLECTION_ALL)
+        pump()
+        os.remove(path)
+        self.assertEqual(constants.COLLECTION_ALL,
+                         dialog.collection_area.get_current_collection())
+        dialog.book_area._popup_book_menu()
+        cleanup = widgets.simple_action(dialog.book_area._popup_actions,
+                                        'cleanup')
+        self.assertTrue(cleanup.get_enabled())
+        cleanup.activate(None)
+        pump()
+        self.assertIsNone(dialog.backend.get_book_by_path(path))
+        for popover in (dialog.book_area._book_menu,):
+            popover.popdown()
+        pump()
 
 
 class FinishedMarkTest(_OneBookTest):

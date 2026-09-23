@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Comix-4.0.1\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-09-23 17:56+0200\n"
+"POT-Creation-Date: 2026-09-23 21:51+0200\n"
 "PO-Revision-Date: 2008-12-13 21:23+0700\n"
 "Last-Translator: Andhika Padmawan <andhika.padmawan@gmail.com>\n"
 "Language-Team: Indonesia <id@li.org>\n"
@@ -56,7 +56,7 @@ msgstr "! Galat saat mengekstrak: %s"
 
 #
 # File: src/comment.py, line: 53
-#: mcomix/archive_packer.py:171 mcomix/library/book_area.py:745
+#: mcomix/archive_packer.py:171 mcomix/library/book_area.py:746
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! Tidak dapat menghapus %(file)s: %(error)s"
@@ -97,7 +97,7 @@ msgstr "_Tidak"
 #
 # File: src/preferences.py, line: 230
 #: mcomix/bookmark_backend.py:327 mcomix/edit_dialog.py:59
-#: mcomix/file_actions.py:817 mcomix/file_chooser_base_dialog.py:106
+#: mcomix/file_actions.py:831 mcomix/file_chooser_base_dialog.py:106
 #: mcomix/file_chooser_base_dialog.py:111
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:32
@@ -148,7 +148,7 @@ msgstr "Sunting bookmark"
 msgid "C_lear bookmarks..."
 msgstr "Ha_pus bookmark..."
 
-#: mcomix/bookmark_dialog.py:33 mcomix/main.py:763 mcomix/openwith.py:342
+#: mcomix/bookmark_dialog.py:33 mcomix/main.py:783 mcomix/openwith.py:342
 #: mcomix/library/collection_area.py:149 mcomix/library/watchlist.py:64
 msgid "_Remove"
 msgstr "_Hapus"
@@ -176,7 +176,7 @@ msgstr "Nama"
 
 #
 # File: src/bookmark.py, line: 256
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1369
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1391
 #: mcomix/library/control_area.py:148
 msgid "Page"
 msgstr "Halaman"
@@ -311,20 +311,20 @@ msgstr "Berkas komentar"
 
 #
 # File: src/library.py, line: 271
-#: mcomix/edit_dialog.py:240 mcomix/file_actions.py:629
+#: mcomix/edit_dialog.py:240 mcomix/file_actions.py:643
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! Tidak dapat menyimpan arsip %(archivefile)s: %(error)s"
 
 #
 # File: src/edit.py, line: 99
-#: mcomix/edit_dialog.py:253 mcomix/file_actions.py:634
+#: mcomix/edit_dialog.py:253 mcomix/file_actions.py:648
 msgid "The new archive could not be saved!"
 msgstr "Berkas baru tak dapat disimpan!"
 
 #
 # File: src/edit.py, line: 101
-#: mcomix/edit_dialog.py:254 mcomix/file_actions.py:635
+#: mcomix/edit_dialog.py:254 mcomix/file_actions.py:649
 msgid "The original files have not been removed."
 msgstr "Berkas asli belum dihapus."
 
@@ -378,8 +378,8 @@ msgstr "Kembalikan ke nilai bawaan."
 
 #
 # File: src/filechooser.py, line: 39
-#: mcomix/enhance_dialog.py:35 mcomix/file_actions.py:542
-#: mcomix/file_actions.py:585 mcomix/file_chooser_base_dialog.py:112
+#: mcomix/enhance_dialog.py:35 mcomix/file_actions.py:556
+#: mcomix/file_actions.py:599 mcomix/file_chooser_base_dialog.py:112
 #: mcomix/openwith.py:360
 msgid "_Save"
 msgstr "_Simpan"
@@ -441,29 +441,29 @@ msgstr "_Balik warna gambar"
 msgid "Invert (negate) image colors."
 msgstr "Membalik (menegasikan) warna gambar."
 
-#: mcomix/file_actions.py:283 mcomix/file_actions.py:965
+#: mcomix/file_actions.py:297 mcomix/file_actions.py:979
 msgid "A file of that name is there already."
 msgstr "Berkas dengan nama itu sudah ada di sana."
 
-#: mcomix/file_actions.py:347
+#: mcomix/file_actions.py:361
 #, python-format
 msgid "Page %(number)d is called \"%(name)s\" already."
 msgstr "Halaman %(number)d sudah bernama \"%(name)s\"."
 
-#: mcomix/file_actions.py:352
+#: mcomix/file_actions.py:366
 msgid "Rename page?"
 msgstr "Ganti nama halaman?"
 
-#: mcomix/file_actions.py:353
+#: mcomix/file_actions.py:367
 msgid "Please enter a new name for this page."
 msgstr "Silakan masukkan nama baru untuk halaman ini."
 
-#: mcomix/file_actions.py:538
+#: mcomix/file_actions.py:552
 #, python-format
 msgid "Write \"%s\" again before closing it?"
 msgstr "Tulis ulang \"%s\" sebelum menutupnya?"
 
-#: mcomix/file_actions.py:539
+#: mcomix/file_actions.py:553
 msgid ""
 "The book has changes that the archive on disk does not hold. They are lost "
 "when it closes."
@@ -471,16 +471,16 @@ msgstr ""
 "Buku ini memiliki perubahan yang tidak ada dalam arsip di diska. Perubahan "
 "itu hilang saat ditutup."
 
-#: mcomix/file_actions.py:541
+#: mcomix/file_actions.py:555
 msgid "_Close without saving"
 msgstr "Tutup _tanpa menyimpan"
 
-#: mcomix/file_actions.py:580
+#: mcomix/file_actions.py:594
 #, python-format
 msgid "Write \"%s\" again now?"
 msgstr "Tulis ulang \"%s\" sekarang?"
 
-#: mcomix/file_actions.py:581
+#: mcomix/file_actions.py:595
 msgid ""
 "The archive on disk will be replaced by the book as it stands: the pages it "
 "holds now, in the order and under the names it shows."
@@ -488,43 +488,43 @@ msgstr ""
 "Arsip di diska akan diganti dengan buku sebagaimana adanya: halaman yang "
 "dimilikinya sekarang, dalam urutan dan dengan nama yang ditampilkan."
 
-#: mcomix/file_actions.py:584
+#: mcomix/file_actions.py:598
 msgid "_Not now"
 msgstr "_Nanti saja"
 
-#: mcomix/file_actions.py:735
+#: mcomix/file_actions.py:749
 msgid "Save page as"
 msgstr "Simpan halaman sebagai"
 
-#: mcomix/file_actions.py:776
+#: mcomix/file_actions.py:790
 #, python-format
 msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! Tidak dapat menyimpan %(file)s ke %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:780 mcomix/file_actions.py:967
+#: mcomix/file_actions.py:794 mcomix/file_actions.py:981
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "Ruang di sana tidak cukup: berkas berukuran %s."
 
-#: mcomix/file_actions.py:786
+#: mcomix/file_actions.py:800
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "Tidak dapat menyimpan \"%(file)s\" ke \"%(directory)s\""
 
-#: mcomix/file_actions.py:815
+#: mcomix/file_actions.py:829
 #, python-format
 msgid "Delete \"%s\"?"
 msgstr "Hapus \"%s\"?"
 
-#: mcomix/file_actions.py:816
+#: mcomix/file_actions.py:830
 msgid "The file will be deleted from your harddisk."
 msgstr "Berkas akan dihapus dari cakram keras."
 
-#: mcomix/file_actions.py:818 mcomix/ui.py:433
+#: mcomix/file_actions.py:832 mcomix/ui.py:433
 msgid "_Delete"
 msgstr "_Hapus"
 
-#: mcomix/file_actions.py:888
+#: mcomix/file_actions.py:902
 #, python-format
 msgid "The file is gone, and its %d bookmark cannot be opened any more."
 msgid_plural ""
@@ -532,17 +532,17 @@ msgid_plural ""
 msgstr[0] ""
 "Berkas sudah tidak ada, dan %d bookmark di dalamnya tidak dapat dibuka lagi."
 
-#: mcomix/file_actions.py:892
+#: mcomix/file_actions.py:906
 #, python-format
 msgid "Remove the bookmarks in \"%s\"?"
 msgstr "Hapus bookmark dalam \"%s\"?"
 
-#: mcomix/file_actions.py:961
+#: mcomix/file_actions.py:975
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr "! Tidak dapat memindahkan %(file)s ke %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:973
+#: mcomix/file_actions.py:987
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "Tidak dapat memindahkan \"%(file)s\" ke \"%(directory)s\""
@@ -624,32 +624,32 @@ msgstr "T_ambah"
 
 #
 # File: src/filehandler.py, line: 285
-#: mcomix/file_handler.py:239
+#: mcomix/file_handler.py:254
 #, python-format
 msgid "No images in '%s'"
 msgstr "Tak ada citra di '%s'"
 
 #
 # File: src/filehandler.py, line: 213
-#: mcomix/file_handler.py:406
+#: mcomix/file_handler.py:426
 #, python-format
 msgid "Could not open %s: No such file."
 msgstr "Tak dapat membuka %s: Tak ada berkas."
 
 #
 # File: src/filehandler.py, line: 217
-#: mcomix/file_handler.py:409 mcomix/file_provider.py:222
+#: mcomix/file_handler.py:429 mcomix/file_provider.py:222
 #: mcomix/file_provider.py:275
 #, python-format
 msgid "Could not open %s: Permission denied."
 msgstr "Tak dapat membuka %s: Hak akses ditolak."
 
-#: mcomix/file_handler.py:560
+#: mcomix/file_handler.py:580
 #, python-format
 msgid "Continue reading from page %d?"
 msgstr "Lanjutkan membaca dari halaman %d?"
 
-#: mcomix/file_handler.py:561
+#: mcomix/file_handler.py:581
 #, python-format
 msgid ""
 "You stopped reading here on %(date)s, %(time)s. If you choose \"Yes\", "
@@ -660,7 +660,7 @@ msgstr ""
 "pembacaan dilanjutkan pada halaman %(page)d. Jika tidak, halaman pertama "
 "yang dimuat."
 
-#: mcomix/file_handler.py:957
+#: mcomix/file_handler.py:977
 #, python-format
 msgid ""
 "! Corrupt file \"%s\", deleting it; the last file read will not be reopened."
@@ -675,7 +675,7 @@ msgstr "Lokasi tidak sah: \"%s\""
 
 #
 # File: src/filehandler.py, line: 411
-#: mcomix/image_tools.py:1038
+#: mcomix/image_tools.py:1046
 msgid "Unknown filetype"
 msgstr "Tipe berkas tak diketahui"
 
@@ -1191,18 +1191,18 @@ msgstr "Pintasan untuk \"%(action)s\" menimpa pintasan tindakan lain."
 msgid "Couldn't load keybindings: %s"
 msgstr "Tidak dapat memuat pintasan: %s"
 
-#: mcomix/last_read_page.py:245 mcomix/thumbnail_tools.py:137
+#: mcomix/last_read_page.py:245 mcomix/thumbnail_tools.py:157
 #, python-format
 msgid "! Could not remove file \"%s\""
 msgstr "! Tidak dapat menghapus berkas \"%s\""
 
-#: mcomix/main.py:756
+#: mcomix/main.py:776
 #, python-format
 msgid "Remove the page picked out of \"%s\"?"
 msgid_plural "Remove the pages picked out of \"%s\"?"
 msgstr[0] "Hapus halaman yang dipilih dari \"%s\"?"
 
-#: mcomix/main.py:759
+#: mcomix/main.py:779
 msgid ""
 "They are taken out of the archive on disk, which is written again at once. "
 "Leaving the book without removing them forgets which pages they were."
@@ -1210,13 +1210,13 @@ msgstr ""
 "Halaman itu dikeluarkan dari arsip di diska, yang langsung ditulis ulang. "
 "Meninggalkan buku tanpa menghapusnya akan melupakan halaman mana saja itu."
 
-#: mcomix/main.py:762
+#: mcomix/main.py:782
 msgid "_Keep them"
 msgstr "_Pertahankan"
 
 #
 # File: src/main.py, line: 666
-#: mcomix/main.py:1190
+#: mcomix/main.py:1212
 msgid "SLIDESHOW"
 msgstr "SALINDIA"
 
@@ -2154,8 +2154,8 @@ msgstr ""
 "tetap dalam bahasa saat dijalankan sampai dijalankan kembali. Buku yang "
 "sedang dibaca, halamannya, dan ukuran jendela tetap dipertahankan."
 
-#: mcomix/preferences_dialog.py:617 mcomix/preferences_dialog.py:758
-#: mcomix/preferences_dialog.py:830 mcomix/ui.py:527
+#: mcomix/preferences_dialog.py:617 mcomix/preferences_dialog.py:763
+#: mcomix/preferences_dialog.py:835 mcomix/ui.py:527
 msgid "Never"
 msgstr "Tidak pernah"
 
@@ -2167,7 +2167,7 @@ msgstr "Hanya untuk halaman judul"
 msgid "Only for wide images"
 msgstr "Hanya untuk gambar lebar"
 
-#: mcomix/preferences_dialog.py:620 mcomix/preferences_dialog.py:759
+#: mcomix/preferences_dialog.py:620 mcomix/preferences_dialog.py:764
 msgid "Always"
 msgstr "Selalu"
 
@@ -2202,7 +2202,7 @@ msgstr "Sesuaikan ke ukuran yang sama"
 msgid "Maintain relative size or fit to same size."
 msgstr "Mempertahankan ukuran relatif atau menyesuaikan ke ukuran yang sama."
 
-#: mcomix/preferences_dialog.py:665 mcomix/preferences_dialog.py:710
+#: mcomix/preferences_dialog.py:665 mcomix/preferences_dialog.py:712
 msgid "No sorting"
 msgstr "Tanpa pengurutan"
 
@@ -2214,7 +2214,7 @@ msgstr "Nama berkas"
 msgid "File name (GLib)"
 msgstr "Nama berkas (GLib)"
 
-#: mcomix/preferences_dialog.py:668 mcomix/library/book_area.py:242
+#: mcomix/preferences_dialog.py:668 mcomix/library/book_area.py:245
 msgid "File size"
 msgstr "Ukuran berkas"
 
@@ -2222,13 +2222,13 @@ msgstr "Ukuran berkas"
 msgid "Last modified"
 msgstr "Waktu perubahan"
 
-#: mcomix/preferences_dialog.py:675 mcomix/preferences_dialog.py:719
-#: mcomix/library/book_area.py:246
+#: mcomix/preferences_dialog.py:675 mcomix/preferences_dialog.py:721
+#: mcomix/library/book_area.py:249
 msgid "Ascending"
 msgstr "Menaik"
 
-#: mcomix/preferences_dialog.py:676 mcomix/preferences_dialog.py:720
-#: mcomix/library/book_area.py:247
+#: mcomix/preferences_dialog.py:676 mcomix/preferences_dialog.py:722
+#: mcomix/library/book_area.py:250
 msgid "Descending"
 msgstr "Menurun"
 
@@ -2240,19 +2240,19 @@ msgstr ""
 "Berkas akan dibuka dan ditampilkan menurut urutan yang ditentukan di sini. "
 "Pilihan ini tidak memengaruhi urutan di dalam arsip."
 
-#: mcomix/preferences_dialog.py:711
+#: mcomix/preferences_dialog.py:713
 msgid "Natural order"
 msgstr "Urutan alami"
 
-#: mcomix/preferences_dialog.py:712
+#: mcomix/preferences_dialog.py:714
 msgid "Literal order"
 msgstr "Urutan harfiah"
 
-#: mcomix/preferences_dialog.py:713
+#: mcomix/preferences_dialog.py:715
 msgid "GLib order"
 msgstr "Urutan GLib"
 
-#: mcomix/preferences_dialog.py:728
+#: mcomix/preferences_dialog.py:730
 msgid ""
 "Files within archives will be sorted according to the order specified here. "
 "Natural order will sort numbered files based on their natural order, i.e. 1, "
@@ -2268,7 +2268,7 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 219
-#: mcomix/preferences_dialog.py:771
+#: mcomix/preferences_dialog.py:776
 msgid ""
 "Add information about all files opened from within MComix to the shared "
 "recent files list."
@@ -2278,11 +2278,11 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 214
-#: mcomix/preferences_dialog.py:791
+#: mcomix/preferences_dialog.py:796
 msgid "Delete information about recently opened files?"
 msgstr "Hapus informasi tentang berkas yang baru dibuka?"
 
-#: mcomix/preferences_dialog.py:792
+#: mcomix/preferences_dialog.py:797
 msgid ""
 "This will remove all entries from the \"Recent\" menu, and clear information "
 "about last read pages."
@@ -2290,19 +2290,19 @@ msgstr ""
 "Ini akan menghapus semua entri dari menu \"Terkini\" dan membersihkan "
 "informasi tentang halaman terakhir yang dibaca."
 
-#: mcomix/preferences_dialog.py:805
+#: mcomix/preferences_dialog.py:810
 msgid "Normal (fast)"
 msgstr "Normal (cepat)"
 
-#: mcomix/preferences_dialog.py:806
+#: mcomix/preferences_dialog.py:811
 msgid "Bilinear"
 msgstr "Bilinear"
 
-#: mcomix/preferences_dialog.py:807
+#: mcomix/preferences_dialog.py:812
 msgid "Hyperbolic (slow)"
 msgstr "Hiperbolik (lambat)"
 
-#: mcomix/preferences_dialog.py:813
+#: mcomix/preferences_dialog.py:818
 msgid ""
 "Changes how images are scaled. Slower algorithms result in higher quality "
 "resizing, but longer page loading times."
@@ -2310,17 +2310,17 @@ msgstr ""
 "Mengubah cara gambar diskalakan. Algoritme yang lebih lambat memberi "
 "kualitas lebih baik, tetapi halaman lebih lama dimuat."
 
-#: mcomix/preferences_dialog.py:831 mcomix/library/book_area.py:254
+#: mcomix/preferences_dialog.py:836 mcomix/library/book_area.py:257
 msgid "Normal"
 msgstr "Normal"
 
-#: mcomix/preferences_dialog.py:837
+#: mcomix/preferences_dialog.py:842
 msgid "Controls how animated images should be displayed."
 msgstr "Menentukan cara gambar beranimasi ditampilkan."
 
 #
 # File: src/preferences.py, line: 295
-#: mcomix/preferences_dialog.py:881
+#: mcomix/preferences_dialog.py:886
 msgid ""
 "Treat all files found within archives, that have one of these file endings, "
 "as comments."
@@ -2768,7 +2768,7 @@ msgstr "Desain ikon"
 msgid "Vector icon"
 msgstr "Ikon vektor"
 
-#: mcomix/thumbnail_tools.py:254
+#: mcomix/thumbnail_tools.py:282
 #, python-format
 msgid "! Could not save thumbnail \"%(thumbpath)s\": %(error)s"
 msgstr "! Tidak dapat menyimpan miniatur \"%(thumbpath)s\": %(error)s"
@@ -2776,7 +2776,7 @@ msgstr "! Tidak dapat menyimpan miniatur \"%(thumbpath)s\": %(error)s"
 #
 # File: src/librarybackend.py, line: 272
 # File: src/librarybackend.py, line: 274
-#: mcomix/ui.py:428 mcomix/library/book_area.py:188
+#: mcomix/ui.py:428 mcomix/library/book_area.py:191
 msgid "_Copy"
 msgstr "_Salin"
 
@@ -3232,38 +3232,38 @@ msgstr "Menambah '%s'..."
 msgid "! Non-existent book #%i"
 msgstr "! Buku #%i tidak ada"
 
-#: mcomix/library/backend.py:215
+#: mcomix/library/backend.py:216
 #, python-format
 msgid "! Could not get cover for book \"%s\""
 msgstr "! Tidak dapat mengambil sampul buku \"%s\""
 
-#: mcomix/library/backend.py:232 mcomix/library/backend.py:279
-#: mcomix/library/backend.py:299 mcomix/library/backend.py:310
-#: mcomix/library/backend.py:338
+#: mcomix/library/backend.py:233 mcomix/library/backend.py:280
+#: mcomix/library/backend.py:300 mcomix/library/backend.py:311
+#: mcomix/library/backend.py:339
 msgid "Recent"
 msgstr "Baru-baru Ini Dipakai"
 
-#: mcomix/library/backend.py:430
+#: mcomix/library/backend.py:431
 #, python-format
 msgid "! Could not add book \"%s\" to the library"
 msgstr "! Tidak dapat menambahkan buku \"%s\" ke perpustakaan"
 
-#: mcomix/library/backend.py:455
+#: mcomix/library/backend.py:456
 #, python-format
 msgid "! Could not move book \"%s\" in the library"
 msgstr "! Tidak dapat memindahkan buku \"%s\" di pustaka"
 
-#: mcomix/library/backend.py:499
+#: mcomix/library/backend.py:500
 #, python-format
 msgid "! Could not add collection \"%s\""
 msgstr "! Tidak dapat menambahkan koleksi \"%s\""
 
-#: mcomix/library/backend.py:531
+#: mcomix/library/backend.py:532
 #, python-format
 msgid "! Could not add book %(book)s to collection %(collection)s"
 msgstr "! Tidak dapat menambahkan buku %(book)s ke koleksi %(collection)s"
 
-#: mcomix/library/backend.py:558
+#: mcomix/library/backend.py:559
 #, python-format
 msgid "! Could not rename collection to \"%s\""
 msgstr "! Tidak dapat mengganti nama koleksi menjadi \"%s\""
@@ -3271,15 +3271,15 @@ msgstr "! Tidak dapat mengganti nama koleksi menjadi \"%s\""
 #
 # File: src/librarybackend.py, line: 272
 # File: src/librarybackend.py, line: 274
-#: mcomix/library/backend.py:569 mcomix/library/backend.py:571
+#: mcomix/library/backend.py:576 mcomix/library/backend.py:578
 msgid "(Copy)"
 msgstr "(Salin)"
 
-#: mcomix/library/backend.py:820
+#: mcomix/library/backend.py:834
 msgid "Could not determine library database version!"
 msgstr "Tidak dapat menentukan versi basis data perpustakaan!"
 
-#: mcomix/library/backend.py:870
+#: mcomix/library/backend.py:884
 #, python-format
 msgid "Upgrading library database version from %(from)d to %(to)d."
 msgstr "Memutakhirkan versi basis data perpustakaan dari %(from)d ke %(to)d."
@@ -3341,69 +3341,77 @@ msgstr "_Hapus dan buang dari cakram"
 msgid "Deletes the selected books from disk."
 msgstr "Menghapus buku yang dipilih dari cakram."
 
+#: mcomix/library/book_area.py:188 mcomix/library/collection_area.py:146
+msgid "Clean _up"
+msgstr "B_ersihkan"
+
+#: mcomix/library/book_area.py:189 mcomix/library/collection_area.py:147
+msgid "Removes no longer existent books from the collection."
+msgstr "Menghapus dari koleksi buku yang sudah tidak ada."
+
 #
 # File: src/library.py, line: 806
-#: mcomix/library/book_area.py:189
+#: mcomix/library/book_area.py:192
 msgid "Copies the selected book's path to clipboard."
 msgstr "Menyalin lokasi buku yang dipilih ke papan klip."
 
-#: mcomix/library/book_area.py:228
+#: mcomix/library/book_area.py:231
 msgid "Library books"
 msgstr "Buku perpustakaan"
 
-#: mcomix/library/book_area.py:240
+#: mcomix/library/book_area.py:243
 msgid "Book name"
 msgstr "Nama buku"
 
-#: mcomix/library/book_area.py:241
+#: mcomix/library/book_area.py:244
 msgid "Full path"
 msgstr "Lokasi lengkap"
 
-#: mcomix/library/book_area.py:243
+#: mcomix/library/book_area.py:246
 msgid "Date added"
 msgstr "Tanggal ditambahkan"
 
-#: mcomix/library/book_area.py:252
+#: mcomix/library/book_area.py:255
 msgid "Huge"
 msgstr "Sangat besar"
 
-#: mcomix/library/book_area.py:253
+#: mcomix/library/book_area.py:256
 msgid "Large"
 msgstr "Besar"
 
-#: mcomix/library/book_area.py:255
+#: mcomix/library/book_area.py:258
 msgid "Small"
 msgstr "Kecil"
 
-#: mcomix/library/book_area.py:256
+#: mcomix/library/book_area.py:259
 msgid "Tiny"
 msgstr "Sangat kecil"
 
-#: mcomix/library/book_area.py:260
+#: mcomix/library/book_area.py:263
 msgid "Custom..."
 msgstr "Ubahan..."
 
-#: mcomix/library/book_area.py:264
+#: mcomix/library/book_area.py:267
 msgid "_Sort"
 msgstr "U_rutkan"
 
-#: mcomix/library/book_area.py:265
+#: mcomix/library/book_area.py:268
 msgid "Cover si_ze"
 msgstr "Ukuran sampu_l"
 
-#: mcomix/library/book_area.py:497
+#: mcomix/library/book_area.py:496
 msgid "Set library cover size"
 msgstr "Menentukan ukuran sampul di perpustakaan"
 
 #
 # File: src/library.py, line: 588
-#: mcomix/library/book_area.py:665
+#: mcomix/library/book_area.py:666
 #, python-format
 msgid "Removed %(num)d book from '%(collection)s'."
 msgid_plural "Removed %(num)d books from '%(collection)s'."
 msgstr[0] "%(num)d buku dikeluarkan dari \"%(collection)s\"."
 
-#: mcomix/library/book_area.py:688 mcomix/library/collection_area.py:297
+#: mcomix/library/book_area.py:689 mcomix/library/collection_area.py:297
 #, python-format
 msgid "Removed %d book from the library."
 msgid_plural "Removed %d books from the library."
@@ -3411,13 +3419,13 @@ msgstr[0] "%d buku dikeluarkan dari perpustakaan."
 
 #
 # File: src/library.py, line: 597
-#: mcomix/library/book_area.py:713
+#: mcomix/library/book_area.py:714
 msgid "Remove books from the library?"
 msgstr "Hapus buku dari pustaka?"
 
 #
 # File: src/library.py, line: 599
-#: mcomix/library/book_area.py:714
+#: mcomix/library/book_area.py:715
 msgid ""
 "The selected books will be removed from the library and permanently deleted. "
 "Are you sure that you want to continue?"
@@ -3425,13 +3433,13 @@ msgstr ""
 "Buku yang dipilih akan dikeluarkan dari perpustakaan dan dihapus secara "
 "permanen. Yakin ingin melanjutkan?"
 
-#: mcomix/library/book_area.py:749
+#: mcomix/library/book_area.py:750
 #, python-format
 msgid "%d book could not be deleted from disk."
 msgid_plural "%d books could not be deleted from disk."
 msgstr[0] "%d buku tidak dapat dihapus dari diska."
 
-#: mcomix/library/book_area.py:793
+#: mcomix/library/book_area.py:794
 #, python-format
 msgid "Remove the bookmarks in the deleted book?"
 msgid_plural "Remove the bookmarks in the %(count)d deleted books?"
@@ -3462,14 +3470,6 @@ msgstr "_Duplikat"
 #: mcomix/library/collection_area.py:144
 msgid "Creates a duplicate of the selected collection."
 msgstr "Membuat salinan koleksi yang dipilih."
-
-#: mcomix/library/collection_area.py:146
-msgid "_Clean up"
-msgstr "Bersih_kan"
-
-#: mcomix/library/collection_area.py:147
-msgid "Removes no longer existent books from the collection."
-msgstr "Menghapus dari koleksi buku yang sudah tidak ada."
 
 #: mcomix/library/collection_area.py:150
 msgid "Deletes the selected collection."
@@ -3532,13 +3532,13 @@ msgstr "Tak dapat menduplikasi koleksi."
 
 #
 # File: src/library.py, line: 382
-#: mcomix/library/collection_area.py:572
+#: mcomix/library/collection_area.py:581
 msgid "Root"
 msgstr "Root"
 
 #
 # File: src/library.py, line: 386
-#: mcomix/library/collection_area.py:575
+#: mcomix/library/collection_area.py:584
 #, python-format
 msgid ""
 "Put the collection '%(subcollection)s' in the collection "
@@ -3547,14 +3547,14 @@ msgstr "Taruh koleksi '%(subcollection)s' di koleksi '%(supercollection)s'."
 
 #
 # File: src/library.py, line: 407
-#: mcomix/library/collection_area.py:591
+#: mcomix/library/collection_area.py:600
 #, python-format
 msgid "Add books to '%s'."
 msgstr "Tambah buku ke '%s'."
 
 #
 # File: src/library.py, line: 411
-#: mcomix/library/collection_area.py:594
+#: mcomix/library/collection_area.py:603
 #, python-format
 msgid ""
 "Move books from '%(source collection)s' to '%(destination collection)s'."
@@ -3650,6 +3650,9 @@ msgstr "Dengan subdirektori"
 #: mcomix/library/watchlist.py:81
 msgid "Automatically scan for new books when library is _opened"
 msgstr "Cari buku baru secara otomatis saat perpustakaan di_buka"
+
+#~ msgid "_Clean up"
+#~ msgstr "Bersih_kan"
 
 #~ msgid "Bookmarking a page that is bookmarked already:"
 #~ msgstr "Saat memberi bookmark pada halaman yang sudah punya:"

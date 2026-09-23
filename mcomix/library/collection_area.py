@@ -143,7 +143,7 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable):
             ('duplicate', _('_Duplicate'),
              _('Creates a duplicate of the selected collection.'),
              self._duplicate_collection),
-            ('cleanup', _('_Clean up'),
+            ('cleanup', _('Clean _up'),
              _('Removes no longer existent books from the collection.'),
              self._clean_collection),
             ('remove', _('_Remove'),
