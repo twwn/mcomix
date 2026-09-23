@@ -15,8 +15,8 @@ Open library | CTRL+L
 Close file | CTRL+W
 Next page | PageDown, KeyPadPageDown, LeftMouse
 Previous page | PageUp, KeyPadPageUp, Backspace, BackMouse, ALT+RightMouse
-Page to the right | ALT+Right, MouseWheelRight
-Page to the left | ALT+Left, MouseWheelLeft
+Page to the right | ALT+Right
+Page to the left | ALT+Left
 Forward ten pages | SHIFT+PageDown, SHIFT+KeyPadPageDown, SHIFT+ALT+Right, SHIFT+LeftMouse
 Back ten pages | SHIFT+PageUp, SHIFT+KeyPadPageUp, SHIFT+Backspace, SHIFT+ALT+Left, SHIFT+RightMouse
 Forward only one page (in double page mode) | CTRL+PageDown, CTRL+KeyPadPageDown
@@ -38,8 +38,8 @@ Function | Binding
 ---------|--------
 Scroll down | Down, KeyPadDown
 Scroll up | Up, KeyPadUp
-Scroll left | Left, KeyPadLeft
-Scroll right | Right, KeyPadRight
+Scroll left | Left, KeyPadLeft, MouseWheelLeft
+Scroll right | Right, KeyPadRight, MouseWheelRight
 Scroll by dragging the page | LeftMouse
 Smart scroll down | Space, MouseWheelDown
 Smart scroll up | SHIFT+Space, MouseWheelUp
@@ -48,7 +48,7 @@ Align the page to a corner, an edge or the centre | KeyPad1 to KeyPad9, as the k
 Show magnifying lens | L, MiddleMouse
 Show OSD panel | TAB, ForwardMouse
 
-The wheel scrolls smartly only while "Use smart scrolling" is on in the preferences, and by a fixed number of pixels otherwise.
+The wheel scrolls smartly only while "Use smart scrolling" is on in the preferences, and by a fixed number of pixels otherwise. Tilted sideways, or swiped sideways on a touchpad, it scrolls across a page wider than the window and turns the page at the side, as the arrow keys do.
 
 The view
 ---

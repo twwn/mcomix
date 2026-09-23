@@ -570,12 +570,12 @@ class EventHandler:
 
         A scroll controller says how far and along which axis, not which
         way: there is no Gdk.ScrollDirection to ask it for, and the sign
-        of the delta is what carries the direction.  Down the page scrolls
-        and turns the page where there is nothing left to scroll;
-        sideways turns a page outright, since nothing scrolls horizontally
-        past the end of one.  A wheel that reports both axes at once is
-        taken as the vertical one, because reading a diagonal nudge as a
-        page turn would jump the book about.
+        of the delta is what carries the direction.  Down the page and
+        across it - a tilt wheel, a touchpad - both scroll, and turn the
+        page where there is nothing left to scroll that way, across
+        reading the way the book does.  A wheel that reports both axes at
+        once is taken as the vertical one, because reading a diagonal
+        nudge as a page turn would jump the book about.
 
         The middle button is the magnifying lens, and the wheel belongs to
         whatever is under it while the lens is up.
@@ -603,11 +603,9 @@ class EventHandler:
                 self.scroll_with_flipping(0, pixels if down else -pixels)
 
         elif delta_x:
-            # Which way round a sideways turn reads depends on the book.
-            if (delta_x > 0) != self._window.is_manga_mode:
-                self._next_page_with_protection()
-            else:
-                self._previous_page_with_protection()
+            # Which way a turn at the side goes depends on the book, and
+            # is scroll_with_flipping()'s to work out.
+            self.scroll_with_flipping(pixels if delta_x > 0 else -pixels, 0)
 
         return Gdk.EVENT_STOP
 

@@ -342,3 +342,42 @@ class SmartScrollKeysTest(_ScrollablePageTest):
         self._draw_without_a_frame()
         self.assertEqual(expected,
                          self._space(Gdk.ModifierType.SHIFT_MASK))
+
+
+class _Scroll:
+
+    """What a scroll controller tells the wheel handler: the modifiers."""
+
+    def get_current_event_state(self):
+        return Gdk.ModifierType(0)
+
+
+class SidewaysWheelTest(_ScrollablePageTest):
+
+    """A sideways wheel - a tilt wheel, a touchpad - on a page wider
+    than the window scrolls across it before it turns it, as the wheel
+    turned down scrolls down it first."""
+
+    def _tilt(self, delta_x):
+        self.window.event_handler.scroll_wheel_event(_Scroll(), delta_x, 0)
+        self._settle()
+
+    def test_a_tilt_scrolls_across_the_page(self):
+        """It turned the page, after three tilts, and the page was never
+        scrolled across."""
+        pixels = prefs['number of pixels to scroll per mouse wheel event']
+        self._tilt(1)
+        self.assertEqual(self.page, self._where()[0])
+        self.assertEqual(pixels, self.window._hadjust.get_value())
+        self._tilt(-1)
+        self.assertEqual(0, self.window._hadjust.get_value())
+
+    def test_a_tilt_at_the_side_turns_after_the_presses_asked(self):
+        while self.window._hadjust.get_value() < self._right():
+            self._tilt(1)
+        for _ in range(self.PRESSES - 1):
+            self._tilt(1)
+            self.assertEqual(self.page, self._where()[0],
+                             'the page turned before its tilts were up')
+        self._tilt(1)
+        self.assertEqual(self.page + 1, self._where()[0])

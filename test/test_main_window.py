@@ -729,19 +729,22 @@ class MainWindowTest(MComixTest):
                 handler._left_right_page_progress(1)
         self.assertEqual([1, -1], turned)
 
-    def test_a_sideways_turn_is_a_page_either_way(self):
-        """Nothing scrolls horizontally past the end of a page, so
-        sideways never scrolls; which way round it reads depends on the
-        book."""
-        for manga, rightwards in ((False, '_next_page_with_protection'),
-                                  (True, '_previous_page_with_protection')):
+    def test_a_sideways_turn_scrolls_across_either_way(self):
+        """Sideways scrolls across, and turns the page at the side;
+        which way the turn goes depends on the book, which
+        scroll_with_flipping() works out."""
+        pixels = prefs['number of pixels to scroll per mouse wheel event']
+        for manga in (False, True):
             self.window.is_manga_mode = manga
-            self.assertEqual([(rightwards, ())], self._wheel_dispatch(1, 0))
+            self.assertEqual([('scroll_with_flipping', (pixels, 0))],
+                             self._wheel_dispatch(1, 0))
+            self.assertEqual([('scroll_with_flipping', (-pixels, 0))],
+                             self._wheel_dispatch(-1, 0))
 
     def test_a_diagonal_turn_is_read_as_a_vertical_one(self):
         """A wheel reporting both axes at once is the vertical one:
-        sideways turns a page outright, so reading a diagonal nudge that
-        way would jump the book about."""
+        read sideways, a diagonal nudge on a page that fits the window
+        would turn it and jump the book about."""
         prefs['smart scroll'] = False
         pixels = prefs['number of pixels to scroll per mouse wheel event']
         self.assertEqual([('scroll_with_flipping', (0, pixels))],
