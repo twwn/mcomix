@@ -1,6 +1,7 @@
 """The background colour read off the pages on screen."""
 
 import os
+import threading
 import unittest.mock
 
 from PIL import Image
@@ -77,10 +78,20 @@ class DynamicBackgroundTest(MComixTest):
         to 70 ms a page turn for a 2000 by 3000 scan."""
         self.window.enhancer.brightness = 1.1
         pump()
-        with unittest.mock.patch.object(
-                image_tools, 'enhance',
-                side_effect=image_tools.enhance) as enhance:
+        enhance = image_tools.enhance
+        # The thumbnail sidebar enhances its thumbnails too, on worker
+        # threads that may be at it while the page is drawn: only the
+        # redraw's own calls, on this thread, are counted.
+        here = threading.get_ident()
+        calls = []
+
+        def counted(*args, **kwargs):
+            if threading.get_ident() == here:
+                calls.append(args)
+            return enhance(*args, **kwargs)
+
+        with unittest.mock.patch.object(image_tools, 'enhance', counted):
             # The redraw itself rather than the main loop, which would
-            # also run the thumbnail sidebar enhancing its thumbnails.
+            # also run the sidebar's idle callbacks.
             self.window._draw_image()
-        self.assertEqual(1, enhance.call_count)
+        self.assertEqual(1, len(calls))
