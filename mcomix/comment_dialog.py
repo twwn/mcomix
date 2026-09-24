@@ -81,7 +81,7 @@ class _CommentsDialog(Dialog):
 
     def _on_file_available(self, path_list: Sequence[str]) -> None:
         for path in path_list:
-            if path in self._comments:
+            if path in self._comments and path not in self._shown:
                 self._add_comment(path, self._comments[path])
         self._show_notebook()
 
@@ -91,6 +91,10 @@ class _CommentsDialog(Dialog):
         while self._notebook.get_n_pages():
             self._notebook.remove_page(-1)
         self._comments = {}
+        #: The comments that have a tab.  The extractor announces a file
+        #: from the idle queue, so one that came out while the book was
+        #: being listed here is shown here and announced after as well.
+        self._shown: set[str] = set()
 
         for num in range(1, self._window.filehandler.get_number_of_comments() + 1):
             path = self._window.filehandler.get_comment_name(num)
@@ -115,6 +119,7 @@ class _CommentsDialog(Dialog):
 
     def _add_comment(self, path: str, num: int) -> None:
 
+        self._shown.add(path)
         name = os.path.basename(path)
 
         page = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)

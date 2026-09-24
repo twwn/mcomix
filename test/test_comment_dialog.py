@@ -71,6 +71,18 @@ class CommentsDialogTest(MComixTest):
         wait_for(lambda: len(self._tabs()) == 2, seconds=20)
         self.assertEqual(sorted(self._tabs()), ['one.txt', 'two.txt'])
 
+    def test_a_comment_announced_after_it_was_shown_is_not_shown_twice(self):
+        """The extractor announces a file from the idle queue, and one
+        that finished while the dialog was being built was both shown
+        by it and announced to it after: a second tab of the same
+        comment, seen once in a loaded run of the suite."""
+        self._open(self._archive_with_comments(
+            'commented.zip', ('one.txt', 'first'), ('two.txt', 'second')))
+        self.dialog = comment_dialog._CommentsDialog(self.window)
+        wait_for(lambda: len(self._tabs()) == 2, seconds=20)
+        self.dialog._on_file_available(list(self.dialog._comments))
+        self.assertEqual(sorted(self._tabs()), ['one.txt', 'two.txt'])
+
     def test_the_comments_of_the_book_before_are_taken_off_the_dialog(self):
         self._open(self._archive_with_comments(
             'commented.zip', ('one.txt', 'first')))
