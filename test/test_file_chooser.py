@@ -444,6 +444,40 @@ class LibraryFileChooserTest(MComixTest):
             self._module.close_library_filechooser_dialog()
             pump()
 
+    def _books_in_folder(self, filter_name):
+        """What adding a folder of books finds under <filter_name>."""
+        folder = os.path.join(self.tmp_dir, 'books')
+        os.makedirs(os.path.join(folder, 'deeper'))
+        for name in ('LOUD.CBZ', 'quiet.cbz', 'rar.cbr', 'seven.CB7',
+                     os.path.join('deeper', 'more.cbz'), 'notes.txt'):
+            with open(os.path.join(folder, name), 'wb') as book:
+                book.write(b'PK\x03\x04')
+        dialog = self._open()
+        chosen, = [f for f in dialog.list_filters()
+                   if f.get_name() == filter_name]
+        found = dialog.collect_files_from_subdir(
+            folder, chosen, dialog.should_open_recursive())
+        return sorted(os.path.relpath(path, folder) for path in found)
+
+    def test_a_folder_added_as_zip_archives_brings_its_zip_books(self):
+        """Python's mimetypes, which the walk asked, reads the system's
+        mime.types files; one of them here calls .cbz a RAR comic.  So
+        LOUD.CBZ, whose upper-case name no "*.cbz" matched, was left
+        behind, although the chooser listed it under that filter."""
+        self.assertEqual(
+            ['LOUD.CBZ', os.path.join('deeper', 'more.cbz'), 'quiet.cbz'],
+            self._books_in_folder('ZIP archives'))
+
+    def test_a_folder_added_as_rar_archives_brings_no_zip_books(self):
+        self.assertEqual(['rar.cbr'],
+                         self._books_in_folder('RAR archives'))
+
+    def test_a_folder_added_as_all_archives_brings_every_book(self):
+        self.assertEqual(
+            ['LOUD.CBZ', os.path.join('deeper', 'more.cbz'), 'quiet.cbz',
+             'rar.cbr', 'seven.CB7'],
+            self._books_in_folder('All archives'))
+
 
 class FileDetailsTest(MComixTest):
 

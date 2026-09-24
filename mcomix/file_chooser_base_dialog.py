@@ -1,8 +1,6 @@
 """file_chooser_base_dialog.py - Custom FileChooserDialog implementations."""
 
 import os
-import mimetypes
-import fnmatch
 import shutil
 import tempfile
 import threading
@@ -31,8 +29,6 @@ from mcomix import i18n
 from mcomix.archive import password as archive_password
 from mcomix.i18n import _
 from mcomix.dialog import Response
-
-mimetypes.init()
 
 #: How large a preview is on a screen that has nothing to say about it.
 _PREVIEW_SIZE = 128
@@ -201,9 +197,6 @@ class _BaseFileChooserDialog(Dialog):
         #: are made to lead from one into the other.
         self._search: "Gtk.SearchEntry | None" = None
         self._listing: "Gtk.ColumnView | None" = None
-        #: What each filter was built to match, by filter.
-        self._filter_rules: dict[Gtk.FileFilter,
-                                 tuple[Sequence[str], Sequence[str]]] = {}
         #: One-format filters, held back so the groups can come first:
         #: the name, the mime types and the patterns each was built for.
         self._pending_filters: list[tuple[str, Iterable[str], Sequence[str]]] = []
@@ -295,8 +288,8 @@ class _BaseFileChooserDialog(Dialog):
         # that is forgotten.
         self.connect('map', self._widen_the_places)
 
-        self._all_files_filter = (self.add_filter(_('All files'), [], ['*'])
-                                  if self._offers_all_files else None)
+        if self._offers_all_files:
+            self.add_filter(_('All files'), [], ['*'])
 
         try:
             current_file = self._current_file()
@@ -530,15 +523,11 @@ class _BaseFileChooserDialog(Dialog):
         """Add a filter, called <name>, for each mime type in <mimes> and
         each pattern in <patterns> to the filechooser.
         """
-        # A filter built from mime types and patterns matches a file
-        # that answers any one of them.  What it matches on is kept here
-        # as well, for the walk below that has no chooser to ask.
         ffilter = Gtk.FileFilter()
         for mime in mimes:
             ffilter.add_mime_type(mime)
         for pattern in patterns:
             ffilter.add_pattern(pattern)
-        self._filter_rules[ffilter] = (tuple(patterns), tuple(mimes))
 
         ffilter.set_name(name)
         self.filechooser.add_filter(ffilter)
@@ -569,19 +558,14 @@ class _BaseFileChooserDialog(Dialog):
         ffilter = Gtk.FileFilter()
         ffilter.set_name(everything)
         self.filechooser.add_filter(ffilter)
-        all_mimes: list[str] = []
-        all_patterns: list[str] = []
         for name in _by_familiarity(supported_formats, common):
             mime_types, extensions = supported_formats[name]
             patterns = ['*.%s' % ext for ext in extensions]
             self._pending_filters.append((one % name, mime_types, patterns))
-            all_mimes.extend(mime_types)
-            all_patterns.extend(patterns)
             for mime in mime_types:
                 ffilter.add_mime_type(mime)
             for pat in patterns:
                 ffilter.add_pattern(pat)
-        self._filter_rules[ffilter] = (tuple(all_patterns), tuple(all_mimes))
 
     def add_pending_filters(self) -> None:
         """Add the one-format filters held back while the groups were
@@ -590,33 +574,35 @@ class _BaseFileChooserDialog(Dialog):
             self.add_filter(name, mimes, patterns)
         self._pending_filters = []
 
-    def _matches(self, ffilter: "Gtk.FileFilter | None", path: str,
-                 mime_type: str | None) -> bool:
-        """Whether <path> passes <ffilter>, by the rules it was built from."""
-        match_patterns, match_mimes = (self._filter_rules.get(ffilter, ((), ()))
-                                       if ffilter is not None else ((), ()))
-        if mime_type in match_mimes:
+    @staticmethod
+    def _matches(ffilter: "Gtk.FileFilter | None", path: str) -> bool:
+        """Whether the chooser would list <path> under <ffilter>.
+
+        The filter itself is asked, rather than rules kept beside it:
+        those were matched against Python's mimetypes, which reads the
+        system's mime.types files, and one of them calls .cbz a RAR
+        comic.  The content type is guessed from the name alone, so
+        that a walk over a large folder opens none of its files.
+        """
+        if ffilter is None:
             return True
-        return any(fnmatch.fnmatch(path, pattern)
-                   for pattern in match_patterns)
+        name = os.path.basename(path)
+        info = Gio.FileInfo()
+        info.set_display_name(GLib.filename_display_name(name))
+        info.set_content_type(Gio.content_type_guess(name, None)[0])
+        return ffilter.match(info)
 
     def collect_files_from_subdir(self, path: str, filter: "Gtk.FileFilter | None",
                                   recursive: bool = False) -> Iterator[str]:
         """Yield the files under <path> that <filter> accepts.
 
         Only the files directly in <path>, unless <recursive> is set.
-        The "All files" filter is let through by identity before the
-        rules are consulted, although the "*" it was built with would
-        match everything anyway.
         """
 
         for root, dirs, files in os.walk(path):
             for file in files:
                 full_path = os.path.join(root, file)
-                mimetype = mimetypes.guess_type(full_path)[0] or 'application/octet-stream'
-
-                if ((filter is not None and filter == self._all_files_filter)
-                        or self._matches(filter, full_path, mimetype)):
+                if self._matches(filter, full_path):
                     yield full_path
 
             if not recursive:
