@@ -58,8 +58,9 @@ dev = [
   "pylsp-mypy",
   "pyls-isort",
   "python-lsp-black",
-  # For mypy
-  "types-Pillow",
+  # For mypy.  Not types-Pillow: Pillow carries its own annotations,
+  # and that package's stubs, frozen at Pillow 10.2, take precedence
+  # over them and describe an API this code no longer checks against.
   # Which GTK the stubs describe is chosen when they are built, and the
   # default is GTK4, which is the GTK this code uses.  Install them as
   # they come; setting PYGOBJECT_STUB_CONFIG would check this code
