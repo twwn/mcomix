@@ -359,6 +359,14 @@ class _BaseFileChooserDialog(Dialog):
         Nothing in the API promises that bar is there, so if it cannot
         be found the buttons go back in the dialog's own row.
         """
+        # A window keeps its default widget without a reference, and
+        # takes it back from a button that leaves only at its next
+        # frame; the OK button about to be dropped would be freed while
+        # still the default, and set_default_widget() below told it it
+        # no longer was - GTK 4.14 warned "g_object_notify: assertion
+        # 'G_IS_OBJECT (object)' failed" or crashed.
+        if self.get_default_widget() in self._buttons:
+            self.set_default_widget(None)
         for button in self._buttons:
             parent = button.get_parent()
             if parent is not None:
