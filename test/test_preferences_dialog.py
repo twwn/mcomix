@@ -8,11 +8,12 @@ said went out with the wash.
 """
 
 import os
+import shutil
 import unittest.mock
 
 from gi.repository import Gtk
 
-from . import MComixTest, pump
+from . import MComixTest, get_testfile_path, pump
 
 from mcomix import constants
 from mcomix import i18n
@@ -427,5 +428,42 @@ class PreferencesDialogTest(MComixTest):
         with open(constants.KEYBINDINGS_CONF_PATH) as stored:
             self.assertTrue('<Control>F9' not in stored.read(),
                             'the key given by hand was saved after the reset')
+
+    def _never_store_recent(self, recent_count):
+        """Answer "Never" to "Store recently opened files", over a
+        recent list of <recent_count> and one book's page remembered.
+        Returns the stood-in recent list and the questions asked."""
+        prefs['store recent file info'] = True
+        last_read = self.window.filehandler.last_read_page
+        last_read.set_enabled(True)
+        book = os.path.join(self.tmp_dir, 'book.cbz')
+        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), book)
+        last_read.set_page(book, 3)
+        recent = unittest.mock.Mock()
+        recent.count.return_value = recent_count
+        self.window.uimanager.recent = recent
+        self._open()
+        chooser = unittest.mock.Mock()
+        chooser.get_value.return_value = False
+        self.dialog._store_recent_changed_cb(chooser)
+        pump()
+        return recent, [window for window in Gtk.Window.list_toplevels()
+                        if isinstance(window, message_dialog.MessageDialog)
+                        and window.get_visible()]
+
+    def test_never_storing_recent_files_asks_to_forget_them(self):
+        recent, questions = self._never_store_recent(2)
+        self.assertEqual(1, len(questions))
+        questions[0].response(Response.YES)
+        pump()
+        recent.remove_all.assert_called_once_with()
+        self.assertEqual(0, self.window.filehandler.last_read_page.count())
+        self.assertFalse(prefs['store recent file info'])
+
+    def test_keeping_them_forgets_nothing(self):
+        recent, questions = self._never_store_recent(2)
+        questions[0].response(Response.NO)
+        pump()
+        recent.remove_all.assert_not_called()
 
 # vim: expandtab:sw=4:ts=4
