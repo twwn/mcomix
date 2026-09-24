@@ -8,7 +8,7 @@ it draws is a cursor, so nothing raises when it draws the wrong thing.
 import hashlib
 import os
 
-from gi.repository import GdkPixbuf
+from gi.repository import GdkPixbuf, GLib
 
 from . import MComixTest, get_testfile_path, pump, wait_for
 from . import test_key_press
@@ -23,10 +23,24 @@ from mcomix.preferences import prefs
 
 def _source(has_alpha):
     """A small page to magnify, asymmetric in both axes so that a flip
-    or a rotation shows up in what is drawn."""
-    name = 'pattern-transparent-rgba.png' if has_alpha else 'pattern.jpg'
-    page = GdkPixbuf.Pixbuf.new_from_file(get_testfile_path('images', name))
-    return page.scale_simple(40, 30, GdkPixbuf.InterpType.NEAREST)
+    or a rotation shows up in what is drawn.
+
+    Made here rather than read from a file: the fingerprint below is
+    of what the lens does with the pixels, and a JPEG or a PNG comes out
+    of glycin a little differently from gdk-pixbuf's own loaders.
+    """
+    width, height = 40, 30
+    channels = 4 if has_alpha else 3
+    pixels = bytearray()
+    for y in range(height):
+        for x in range(width):
+            pixels += bytes((x * 6, y * 8, (x * 3 + y * 5) % 256))
+            if has_alpha:
+                # Clear down the left edge, half clear through the middle.
+                pixels.append(0 if x < 8 else 128 if x < 24 else 255)
+    return GdkPixbuf.Pixbuf.new_from_bytes(
+        GLib.Bytes.new(bytes(pixels)), GdkPixbuf.Colorspace.RGB, has_alpha,
+        8, width, height, width * channels)
 
 
 class LensDrawingTest(MComixTest):
@@ -103,8 +117,8 @@ class LensDrawingTest(MComixTest):
                           (False, True), (True, True)):
                 for has_alpha in (False, True):
                     digest.update(self._drawn(rotation, flips, has_alpha))
-        self.assertEqual('322586bbb8b2ef4fec95b6c694f4765c'
-                         '85eff384d89e0c05e862d13d9e4dadcf',
+        self.assertEqual('28bd0c2285043e7155eaec27933ecd1e'
+                         'b56f7bc99347f7a8af5a2116cd386e79',
                          digest.hexdigest())
 
 
