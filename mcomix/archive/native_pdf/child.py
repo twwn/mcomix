@@ -88,6 +88,30 @@ def jpeg_with_orientation(jpeg: bytes, orientation: int) -> bytes:
             + b''.join(segments[first:]) + jpeg[position:])
 
 
+def _open(filename: str | None) -> "pymupdf.Document":
+    """The document at <filename>, or a new one where it is None.
+
+    PyMuPDF takes a file name only as UTF-8 text, and a name on disk
+    need not be: Python hands one that is not over with lone surrogates,
+    which PyMuPDF cannot pass on.  Such a file is opened by the name the
+    system gives the descriptor it was opened with, which is ASCII;
+    MuPDF opens the file again through it and keeps its own descriptor,
+    so this one is closed at once.  Windows names are wide text and
+    never come to this.
+    """
+    if filename is None:
+        return pymupdf.open()
+    try:
+        filename.encode('utf-8')
+    except UnicodeEncodeError:
+        descriptor = os.open(filename, os.O_RDONLY)
+        try:
+            return pymupdf.open('/dev/fd/%d' % descriptor, filetype='pdf')
+        finally:
+            os.close(descriptor)
+    return pymupdf.open(filename)
+
+
 class FitzWorker:
 
     """A PDF open in this process, which is one MComix did not start in.
@@ -104,7 +128,7 @@ class FitzWorker:
         self.log = mp.get_logger()
         if log_level is not None:
             self.log.setLevel(log_level)
-        self.doc = pymupdf.open(filename)
+        self.doc = _open(filename)
 
     def page_count(self) -> int:
         """How many pages the document has."""

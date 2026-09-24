@@ -370,6 +370,24 @@ class FitzArchiveTest(MComixTest):
         self.assertIsInstance(count, int)
         self.assertEqual(1, count)
 
+    def test_a_pdf_whose_path_is_not_utf_8_opens(self):
+        """PyMuPDF takes a file name only as UTF-8 text, and a name on
+        disk need not be: a PDF in a folder named in Latin-1 raised
+        FileDataError in the worker, and could not be opened at all."""
+        latin = os.fsdecode(os.path.join(os.fsencode(self.tmp_dir),
+                                         'B\xfccher.pdf'.encode('latin-1')))
+        os.rename(self.pdf, latin)
+        archive = pdf_multi.PdfMultiArchive(latin)
+        try:
+            names = list(archive.iter_contents())
+            archive.extract(names[0], self.destination)
+        finally:
+            archive._mgr.mgr.shutdown()
+            archive.close()
+        self.assertEqual(1, len(names))
+        self.assertTrue(os.path.isfile(os.path.join(self.destination,
+                                                    names[0])))
+
     def test_a_turned_page_keeps_its_pixels_and_names_its_turn(self):
         """The worker records the page's rotation as Exif orientation
         rather than turning its pixels, and the display turns it as it
