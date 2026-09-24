@@ -832,3 +832,53 @@ class AddCollectionTest(_LibraryWindowTest):
         self._add('Shelf')
         self.assertEqual(['Shelf'], self._names(dialog))
         self.assertIn('already exists', dialog._statusbar.get_text())
+
+
+class CollectionMenuTest(_LibraryWindowTest):
+
+    """What the collections' own menu does beside adding one."""
+
+    def _id(self, dialog, name):
+        return dialog.backend.get_collection_by_name(name).id
+
+    def test_clean_up_of_all_books_takes_out_the_books_gone(self):
+        prefs['last library collection'] = constants.COLLECTION_ALL
+        dialog = self._open()
+        path = os.path.join(self.tmp_dir, 'gone.cbz')
+        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), path)
+        dialog.backend.add_book(path)
+        os.remove(path)
+        self.assertEqual(constants.COLLECTION_ALL,
+                         dialog.collection_area.get_current_collection())
+        dialog.collection_area._clean_collection()
+        pump()
+        self.assertIsNone(dialog.backend.get_book_by_path(path))
+
+    def test_renaming_takes_the_name_without_its_spaces(self):
+        dialog = self._open()
+        dialog.backend.add_collection('Box')
+        box = self._id(dialog, 'Box')
+        dialog.collection_area._rename_answered(Response.OK, box, ' Crate ')
+        self.assertEqual('Crate', dialog.backend.get_collection_name(box))
+
+    def test_renaming_to_a_name_taken_is_refused_and_said_so(self):
+        dialog = self._open()
+        dialog.backend.add_collection('Shelf')
+        dialog.backend.add_collection('Box')
+        box = self._id(dialog, 'Box')
+        dialog.collection_area._rename_answered(Response.OK, box, 'Shelf')
+        self.assertEqual('Box', dialog.backend.get_collection_name(box))
+        self.assertIn('already exists', dialog._statusbar.get_text())
+
+    def test_a_duplicate_that_fails_is_said_so(self):
+        dialog = self._open()
+        dialog.backend.add_collection('Box')
+        dialog.collection_area.display_collections()
+        rows = [row for row in dialog.collection_area._list.each_row()
+                if row.collection == self._id(dialog, 'Box')]
+        dialog.collection_area._list.select_row(rows[0])
+        with unittest.mock.patch.object(dialog.backend, 'duplicate_collection',
+                                        return_value=False):
+            dialog.collection_area._duplicate_collection()
+        self.assertIn('Could not duplicate collection.',
+                      dialog._statusbar.get_text())
