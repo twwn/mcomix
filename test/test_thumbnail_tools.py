@@ -4,16 +4,16 @@ import os
 import shutil
 import unittest.mock
 import zipfile
-from urllib.request import pathname2url
+from hashlib import md5
 
 import PIL.Image
 import PIL.PngImagePlugin
+from gi.repository import Gio
 
 from . import MComixTest, get_testfile_path, wait_for
 
 from mcomix import image_tools
 from mcomix.archive import password as archive_password
-from mcomix import portability
 from mcomix import thumbnail_tools
 from mcomix.preferences import prefs
 
@@ -82,6 +82,32 @@ class ThumbnailNameTest(MComixTest):
                     os.path.join('.', name)))
         finally:
             os.chdir(saved)
+
+    def test_the_name_is_the_one_every_other_program_works_out(self):
+        """The URI was built by urllib's pathname2url(), which escapes
+        the brackets, commas and plus signs GLib - and so GNOME's and
+        KDE's thumbnailers - leave as they are, and from Python 3.14 on
+        gives an absolute path an empty authority of its own, so that
+        every URI began "file://///".  No thumbnail MComix stored was
+        found by anything else, nor one anything else stored by
+        MComix."""
+        for name in ('Batman (2016) #1.cbz', 'w\u00e4hle, 1+1=2.png'):
+            source = os.path.join(self.tmp_dir, name)
+            uri = Gio.File.new_for_path(source).get_uri()
+            self.assertEqual(
+                md5(uri.encode('utf-8')).hexdigest() + '.png',
+                os.path.basename(self._thumbnailer._path_to_thumbpath(source)))
+
+    def test_the_uri_stored_with_it_is_the_file_s(self):
+        source = os.path.join(self.tmp_dir, 'red (1).png')
+        shutil.copy(get_testfile_path('images', 'red.png'), source)
+        thumbnailer = thumbnail_tools.Thumbnailer(
+            dst_dir=self._thumbnailer.dst_dir, store_on_disk=True,
+            size=(128, 128))
+        thumbnailer.thumbnail(source)
+        with PIL.Image.open(thumbnailer._path_to_thumbpath(source)) as stored:
+            self.assertEqual(Gio.File.new_for_path(source).get_uri(),
+                             stored.info['Thumb::URI'])
 
 
 class ThumbnailReuseTest(MComixTest):
@@ -232,7 +258,7 @@ class ThumbnailReuseTest(MComixTest):
 
     def test_the_name_does_not_depend_on_the_machine_s_encoding(self):
         """The store is shared, so the name has to be the one every other
-        application works out.  pathname2url() percent-encodes anything
+        application works out.  _file_uri() percent-encodes anything
         outside ASCII, which is what makes the encoding immaterial - this
         asserts that rather than assuming it."""
         source = os.path.join(self.tmp_dir, 'w\u00e4hle.png')
@@ -240,7 +266,7 @@ class ThumbnailReuseTest(MComixTest):
         self.assertTrue(
             os.path.basename(uri).removesuffix('.png').isascii())
         self.assertTrue(
-            (portability.uri_prefix() + pathname2url(source)).isascii(),
+            thumbnail_tools._file_uri(source).isascii(),
             'the URI carried a character the hash would have to encode')
 
 # vim: expandtab:sw=4:ts=4

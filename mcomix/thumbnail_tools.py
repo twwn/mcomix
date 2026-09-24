@@ -19,9 +19,9 @@ import mimetypes
 import threading
 import PIL.Image as Image
 from collections.abc import Callable, Iterable, Mapping
-from urllib.request import pathname2url
 from typing import TYPE_CHECKING
 from hashlib import md5
+from gi.repository import GLib
 
 from mcomix.preferences import prefs
 from mcomix import constants
@@ -29,7 +29,6 @@ from mcomix import archive_tools
 from mcomix import tools
 from mcomix import image_tools
 from mcomix.archive import password as archive_password
-from mcomix import portability
 from mcomix import callback
 from mcomix import log
 from mcomix.i18n import _
@@ -78,10 +77,13 @@ def _file_uri(filepath: str) -> str:
     Absolute, whatever the caller held the file by: the specification
     names a thumbnail after the URI, so a relative path would file the
     same page under a name no other application - and no other working
-    directory - would look for.
+    directory - would look for.  GLib's, because the name has to be
+    the one GNOME's and KDE's thumbnailers work out: urllib's
+    pathname2url() escapes brackets, commas and plus signs they leave
+    alone, and from Python 3.14 on begins an absolute path with "///".
     """
-    return portability.uri_prefix() + pathname2url(
-        os.path.abspath(os.path.normpath(filepath)))
+    return GLib.filename_to_uri(
+        os.path.abspath(os.path.normpath(filepath)), None)
 
 
 class Thumbnailer:
@@ -444,7 +446,7 @@ class Thumbnailer:
 
         UTF-8 because the specification says so, and because the name has
         to be the one every other application works out for the same file.
-        Nothing turns on the choice today - pathname2url() percent-encodes
+        Nothing turns on the choice today - _file_uri() percent-encodes
         anything outside ASCII, so the URI is ASCII whatever the file is
         called - but the encoding the machine happens to prefer is no part
         of the answer.
