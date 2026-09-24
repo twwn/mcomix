@@ -396,9 +396,10 @@ def _get_unrar_dll() -> ctypes.CDLL | None:
     else:
         # find_library on UNIX uses various mechanisms to determine the path
         # of a library, so one could assume the library is not installed
-        # when find_library fails
-        candidates = (ctypes.util.find_library("unrar") or '/usr/lib64/libunrar.so',
-                      os.path.join(os.getcwd(), "libunrar.so"))
+        # when find_library fails.  Never the current directory: that is
+        # wherever MComix was started from, and a libunrar.so found there
+        # would run as MComix.
+        candidates = (ctypes.util.find_library("unrar") or '/usr/lib64/libunrar.so',)
         loader = ctypes.cdll
 
     for candidate in candidates:

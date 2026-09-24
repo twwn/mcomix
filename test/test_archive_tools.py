@@ -72,3 +72,36 @@ class ArchiveToolsTest(MComixTest):
         with open(path, 'wb') as broken:
             broken.write(b'\0' * (tarfile.RECORDSIZE * 8))
         self.assertIsNone(archive_tools.archive_mime_type(path))
+
+
+class UnrarLibraryTest(MComixTest):
+
+    def test_libunrar_is_not_loaded_from_the_current_directory(self):
+        """Where the system had no libunrar, the one in whatever
+        directory MComix was started from was loaded: a library planted
+        in a folder of downloads ran as MComix."""
+        import ctypes
+        import sys
+        import unittest.mock
+        from mcomix.archive import rar
+        if sys.platform == 'win32':
+            self.skipTest('Windows searches for DLLs by its own rules')
+        tried = []
+
+        def load(path):
+            tried.append(path)
+            raise OSError('not loaded')
+
+        # Cached for the process: cleared on both sides, so that neither
+        # this answer nor an earlier one outlives the patch.
+        rar._get_unrar_dll.cache_clear()
+        self.addCleanup(rar._get_unrar_dll.cache_clear)
+        with unittest.mock.patch('ctypes.util.find_library',
+                                 return_value=None), \
+                unittest.mock.patch.object(ctypes.cdll, 'LoadLibrary', load):
+            self.assertIsNone(rar._get_unrar_dll())
+        self.assertTrue(tried, 'nothing was tried, so this proves nothing')
+        cwd = os.getcwd()
+        self.assertEqual([path for path in tried
+                          if os.path.dirname(os.path.abspath(path)) == cwd],
+                         [])
