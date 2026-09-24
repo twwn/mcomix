@@ -422,5 +422,23 @@ class WriteArchiveTest(MComixTest):
             self.assertEqual(before, fp.read())
         self.assertEqual(['packed.cbz'], os.listdir(self.directory))
 
+    def test_the_old_archive_stays_when_the_permissions_cannot_be_set(self):
+        """The mode was set once the new archive had replaced the old
+        one, so a failure there reported a save that had not happened
+        over an archive that had already been written over."""
+        self._write()
+        with open(self.archive, 'rb') as fp:
+            before = fp.read()
+
+        def refuse(*args, **kwargs):
+            raise PermissionError(1, 'Operation not permitted')
+
+        with unittest.mock.patch('os.chmod', refuse), \
+                self.assertRaises(OSError):
+            self._write(pages=self.pages[:1])
+        with open(self.archive, 'rb') as fp:
+            self.assertEqual(before, fp.read())
+        self.assertEqual(['packed.cbz'], os.listdir(self.directory))
+
 
 # vim: expandtab:sw=4:ts=4

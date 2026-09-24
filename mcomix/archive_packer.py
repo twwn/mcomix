@@ -150,12 +150,14 @@ def write_archive(archive_path: str, image_files: Sequence[str],
         else:
             mode = os.stat(tmp_path).st_mode
 
+        # The mode is set before the new archive takes the old one's
+        # place, so that a failure there leaves the old one untouched.
         # os.replace() rather than removing the old archive first: it
         # replaces on Windows as well, where os.rename() over a file
         # that is there fails, and a replacement that fails leaves the
         # old archive where it was.
+        os.chmod(tmp_path, mode)
         os.replace(tmp_path, archive_path)
-        os.chmod(archive_path, mode)
         written = True
     finally:
         # A half-written archive under a temporary name is of no use to
