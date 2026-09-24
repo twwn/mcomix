@@ -146,7 +146,7 @@ class VirtualDoublePageTest(MComixTest):
         with open(broken, 'wb') as damaged:
             damaged.write(b'not an image')
         self.assertIs(self.handler.get_thumbnail(1, 64, 64),
-                      image_tools.missing_image_icon())
+                      image_tools.missing_image_icon(64, 64))
 
     def test_a_page_that_loads_is_the_pixbuf_the_cache_keeps(self):
         self._open('portrait-no-exif.png')

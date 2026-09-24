@@ -253,6 +253,48 @@ class TurnedCoverTest(MComixTest):
         self.assertGreater(pixbuf.get_width(), pixbuf.get_height())
 
 
+class UnreadableCoverTest(MComixTest):
+
+    """A book with no page that will load is shown as the missing image.
+    That was the theme's 24 pixel icon scaled up to the size of a
+    cover, and came out blurred."""
+
+    def setUp(self):
+        super().setUp()
+        import zipfile
+        archive = os.path.join(self.tmp_dir, 'unreadable.cbz')
+        with zipfile.ZipFile(archive, 'w') as book:
+            book.writestr('01.jpg', b'not an image')
+        self.library = _Library()
+        self.library.backend = _CoverBackend(
+            archive, os.path.join(self.tmp_dir, 'covers'))
+        self.library.main_window = types.SimpleNamespace(
+            enhancer=types.SimpleNamespace(enhance=lambda pixbuf: pixbuf))
+        self.area = book_area._BookArea(self.library)
+        self.area._cache.invalidate_all()
+
+    def tearDown(self):
+        self.area.close()
+        self.area._cache.invalidate_all()
+        super().tearDown()
+
+    def test_the_missing_image_is_drawn_at_the_size_of_a_cover(self):
+        from mcomix import image_tools
+        prefs['library cover size'] = constants.SIZE_NORMAL
+        width, height = self.area._pixbuf_size(border_size=0)
+        icon = image_tools.missing_image_icon(width, height)
+        self.assertEqual(width, icon.get_width())
+
+        cover = self.area._get_pixbuf(1)
+        # Inside the one pixel border every cover has.
+        self.assertEqual((icon.get_width() + 2, icon.get_height() + 2),
+                         (cover.get_width(), cover.get_height()))
+        drawn = image_tools.pixbuf_to_pil(cover).crop(
+            (1, 1, icon.get_width() + 1, icon.get_height() + 1))
+        self.assertEqual(image_tools.pixbuf_to_pil(icon).tobytes(),
+                         drawn.tobytes())
+
+
 class CoverOrderTest(MComixTest):
 
     """What order the covers are shown in.

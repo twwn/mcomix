@@ -809,6 +809,44 @@ class EnhanceTest(MComixTest):
         self.assertEqual(0, im.getpixel((1, 1))[3])
 
 
+class MissingImageIconTest(MComixTest):
+
+    """The picture shown for an image that would not load."""
+
+    def test_it_is_drawn_as_large_as_fits_the_size_asked_for(self):
+        # The page it shows is 134 by 200.
+        for box, size in (((134, 200), (134, 200)),
+                          ((400, 400), (268, 400)),
+                          ((134, 1000), (134, 200)),
+                          ((64, 64), (43, 64))):
+            with self.subTest(box=box):
+                icon = image_tools.missing_image_icon(*box)
+                self.assertEqual(size, (icon.get_width(), icon.get_height()))
+
+    def test_the_same_size_is_drawn_once(self):
+        self.assertIs(image_tools.missing_image_icon(40, 60),
+                      image_tools.missing_image_icon(40, 60))
+
+    def test_without_an_svg_loader_it_is_a_square_the_size_asked_for(self):
+        """gdk-pixbuf can be built without one, and then the icon theme
+        has nothing to offer either where its icon is an SVG, as
+        Adwaita's is."""
+        real = GdkPixbuf.Pixbuf.new_from_file_at_size
+
+        def without_svg(path, width, height):
+            if path.endswith('.svg'):
+                raise GLib.Error('Unrecognized image file format')
+            return real(path, width, height)
+
+        image_tools.missing_image_icon.cache_clear()
+        self.addCleanup(image_tools.missing_image_icon.cache_clear)
+        with unittest.mock.patch.object(GdkPixbuf.Pixbuf,
+                                        'new_from_file_at_size',
+                                        without_svg):
+            icon = image_tools.missing_image_icon(48, 64)
+        self.assertEqual((48, 48), (icon.get_width(), icon.get_height()))
+
+
 class PixbufToTextureTest(MComixTest):
 
     """Gdk.Texture.new_for_pixbuf() is deprecated as of GTK 4.20, so the

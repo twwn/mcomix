@@ -2,6 +2,7 @@
 
 import functools
 import operator
+import os
 from gi.repository import GLib, GdkPixbuf, Gdk, Gtk
 import PIL
 from PIL import Image
@@ -28,24 +29,47 @@ log.info('PIL version: %s [%s]', PIL_VERSION[0], PIL_VERSION[1])
 #: 24 pixels is what Gtk.IconSize.LARGE_TOOLBAR stood for.
 _MISSING_IMAGE_SIZE = 24
 
+#: A blank page with a warning sign on it, drawn for MComix.
+_MISSING_IMAGE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                   'images', 'missing-image.svg')
 
-@functools.cache
-def missing_image_icon() -> GdkPixbuf.Pixbuf:
-    """The pixbuf shown in place of an image that would not load.
 
-    It is built on the first call rather than at import: GTK4 looks
-    icon themes up per display, and there is no display yet while this
-    module is being imported.
+# Bounded, because each library cover size and each thumbnail size asks
+# for one of its own, and one the size of a large cover is megabytes.
+@functools.lru_cache(maxsize=8)
+def missing_image_icon(width: int = _MISSING_IMAGE_SIZE,
+                       height: int = _MISSING_IMAGE_SIZE) -> GdkPixbuf.Pixbuf:
+    """The pixbuf shown in place of an image that would not load, as
+    large as fits in <width> x <height> pixels.
+
+    It is drawn from an SVG at the size it is shown at, since a cover
+    or a thumbnail is many times larger than an icon, and an icon
+    scaled up to fill it comes out blurred.
     """
+    try:
+        drawn = GdkPixbuf.Pixbuf.new_from_file_at_size(_MISSING_IMAGE_FILE,
+                                                       width, height)
+        if drawn is not None:
+            return drawn
+    except GLib.Error as error:
+        # A gdk-pixbuf built without an SVG loader.
+        log.debug('Could not draw %s: %s', _MISSING_IMAGE_FILE, error.message)
+    # The theme's icon is built on the first call rather than at import:
+    # GTK4 looks icon themes up per display, and there is no display yet
+    # while this module is being imported.
     from mcomix import icons
+    size = min(width, height)
+    try:
+        icon = icons.load_pixbuf('image-missing', size)
+    except GLib.Error:
+        # The theme's icon is an SVG as well.
+        icon = None
     # A theme that keeps its icons in a GResource has no file to load
     # one from, and a blank square is still something to draw.
-    icon = (icons.load_pixbuf('image-missing', _MISSING_IMAGE_SIZE)
-            or GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, True, 8,
-                                    _MISSING_IMAGE_SIZE,
-                                    _MISSING_IMAGE_SIZE))
+    icon = icon or GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, True, 8,
+                                        size, size)
     # Pixbuf.new() answers with nothing only when the allocation fails,
-    # and a square this small will not be what runs out.
+    # and a square the size of a cover will not be what runs out.
     assert icon is not None
     return icon
 

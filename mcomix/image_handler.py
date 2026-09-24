@@ -559,7 +559,7 @@ class ImageHandler:
         # every view of it shows as the missing icon; None from here is
         # a page not extracted yet, which the callers ask for again.
         if pixbuf is None:
-            return image_tools.missing_image_icon()
+            return image_tools.missing_image_icon(width, height)
         return image_tools.turned_as_shown(pixbuf, path)
 
     def _wait_on_page(self, page: int | None,

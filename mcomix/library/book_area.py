@@ -580,7 +580,8 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         book = self._library.backend.get_book_by_id(uid)
         if book is None:
             # The book went while its cover was being drawn.
-            return image_tools.missing_image_icon()
+            return image_tools.missing_image_icon(
+                *self._pixbuf_size(border_size=0))
         # One lookup rather than exists() plus get(): another worker thread
         # may evict the entry in between, and get() would then return None.
         pixbuf = self._cache.get(book.path)
@@ -591,11 +592,14 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
             except Exception:
                 thumbnail = None
             if thumbnail is None:
-                pixbuf = image_tools.missing_image_icon()
+                # Drawn at this size already, and not composited, so
+                # that the library shows through its rounded corners.
+                pixbuf = image_tools.missing_image_icon(width, height)
             else:
                 # Turned as the cover is shown when the book is read.
-                pixbuf = image_tools.turned_as_shown(thumbnail, book.path)
-            pixbuf = image_tools.fit_in_rectangle(pixbuf, width, height, scale_up=True)
+                pixbuf = image_tools.fit_in_rectangle(
+                    image_tools.turned_as_shown(thumbnail, book.path),
+                    width, height, scale_up=True)
             self._cache.add(book.path, pixbuf)
 
         pixbuf = self._library.main_window.enhancer.enhance(pixbuf)
@@ -934,7 +938,8 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         book = selected[0].uid
 
         cover = self._library.backend.get_book_cover(book) \
-            or image_tools.missing_image_icon()
+            or image_tools.missing_image_icon(constants.MAX_LIBRARY_COVER_SIZE,
+                                              constants.MAX_LIBRARY_COVER_SIZE)
 
         halved = cover.scale_simple(max(0, cover.get_width() // 2),
                                     max(0, cover.get_height() // 2),

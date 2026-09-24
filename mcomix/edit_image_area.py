@@ -185,12 +185,8 @@ class _ImageArea(Gtk.ScrolledWindow, widgets.Releasable):
         if pixbuf is not None:
             pixbuf = image_tools.turned_as_shown(pixbuf, path)
         if pixbuf is None:
-            # The icon that stands in for a page that would not load is
-            # 24 pixels square; on its own in a cell many times that it
-            # looks like the page came out tiny rather than missing.
-            pixbuf = image_tools.fit_in_rectangle(
-                image_tools.missing_image_icon(),
-                self._thumbnail_size, self._thumbnail_size, scale_up=True)
+            pixbuf = image_tools.missing_image_icon(self._thumbnail_size,
+                                                    self._thumbnail_size)
         return pixbuf
 
     def add_extra_image(self, path: str) -> None:
