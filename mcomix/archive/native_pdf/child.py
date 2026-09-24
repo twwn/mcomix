@@ -52,6 +52,9 @@ def jpeg_with_orientation(jpeg: bytes, orientation: int) -> bytes:
     while True:
         if jpeg[position:position + 1] != b'\xff':
             raise ValueError('no JPEG marker at byte %d' % position)
+        if position + 1 >= len(jpeg):
+            # Broken off after a marker's first byte.
+            raise ValueError('the file ends before its picture')
         marker = jpeg[position + 1]
         if marker == 0xFF:
             # A fill byte ahead of the marker.

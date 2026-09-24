@@ -327,6 +327,18 @@ class JpegOrientationTest(unittest.TestCase):
                 jpeg_with_orientation(data, 6)
 
 
+    def test_a_file_broken_off_is_refused(self):
+        """A file that ended on a marker's first byte raised IndexError,
+        which nothing caught: the turned page of a damaged PDF failed
+        where it would otherwise have been saved again or rendered."""
+        from mcomix.archive.native_pdf.child import jpeg_with_orientation
+        source = self._jpeg()
+        for end in range(2, source.index(b'\xff\xda') + 1):
+            for data in (source[:end], source[:end] + b'\xff'):
+                with self.subTest(end=end, data=data[-2:]), \
+                        self.assertRaises(ValueError):
+                    jpeg_with_orientation(data, 6)
+
 @unittest.skipUnless(pdf_multi.PdfMultiArchive is not pdf_multi.DisabledFitzArchive,
                      'native PDF handler is not available')
 class FitzArchiveTest(MComixTest):
