@@ -522,12 +522,16 @@ class BookInfoTest(_OneBookTest):
         pump()
         return self.dialog.control_area
 
+    def _size(self):
+        """The book's size, as GLib writes it in the machine's language."""
+        return GLib.format_size(os.path.getsize(self.path))
+
     def test_an_unread_book_shows_its_name_folder_and_page_count(self):
         info = self._select()
         self.assertEqual('01-ZIP-Normal.zip', info._namelabel.get_text())
         self.assertEqual(os.path.dirname(self.path),
                          info._dirlabel.get_text())
-        self.assertEqual('4 pages, 1.3 KiB', info._filelabel.get_text())
+        self.assertEqual('4 pages, %s' % self._size(), info._filelabel.get_text())
         self.assertTrue(info._open_button.get_sensitive())
 
     def test_the_size_is_written_as_everywhere_else(self):
@@ -540,13 +544,14 @@ class BookInfoTest(_OneBookTest):
     def test_a_book_left_part_read_shows_the_page_it_was_left_on(self):
         self._left_on(2)
         info = self._select()
-        self.assertEqual('Page 2/4, 1.3 KiB', info._filelabel.get_text())
+        self.assertEqual('Page 2/4, %s' % self._size(),
+                         info._filelabel.get_text())
 
     def test_a_book_read_to_the_end_says_when_it_was_finished(self):
         self._left_on(4)
         info = self._select()
         self.assertTrue(info._filelabel.get_text().startswith(
-            '4 pages, 1.3 KiB, Finished reading on '))
+            '4 pages, %s, Finished reading on ' % self._size()))
 
     def test_selecting_nothing_empties_the_line(self):
         info = self._select()

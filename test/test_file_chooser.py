@@ -4,7 +4,7 @@ import os
 import types
 import unittest.mock
 
-from gi.repository import Gdk, Gio, Gtk
+from gi.repository import Gdk, Gio, GLib, Gtk
 
 from . import MComixTest, get_testfile_path, pump, wait_for
 
@@ -334,6 +334,20 @@ class FileChooserTest(MComixTest):
                 paintable = self.dialog._preview_image.get_paintable()
                 self.assertIsNotNone(paintable, 'the preview stayed empty')
                 self.assertEqual(self.dialog._namelabel.get_text(), name)
+
+    def test_the_preview_writes_the_size_as_the_list_beside_it_does(self):
+        """GTK's list of files says "1.0 MB" of a file of a million
+        bytes, and the preview under it said "976.6 KiB"."""
+        path = os.path.join(self.tmp_dir, 'million.cbz')
+        with open(path, 'wb') as book:
+            book.write(b'PK\x03\x04'.ljust(1000000, b'\x00'))
+        self.dialog.filechooser.set_file(Gio.File.new_for_path(path))
+        wait_for(lambda: self.dialog._namelabel.get_text() == 'million.cbz',
+                 seconds=10)
+        # GLib.format_size() is what GtkFileChooserWidget writes the
+        # sizes in its list with.
+        self.assertEqual(GLib.format_size(1000000),
+                         self.dialog._sizelabel.get_text())
 
     def test_under_the_preview_a_picture_says_its_size_in_pixels(self):
         path = get_testfile_path('images', 'blue.png')

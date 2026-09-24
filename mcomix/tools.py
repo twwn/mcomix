@@ -14,6 +14,8 @@ from functools import reduce
 from collections.abc import Collection, Iterable, Iterator, Mapping, Sequence
 from typing import Any, IO, Protocol, TypeVar
 
+from gi.repository import GLib
+
 Numeric = TypeVar('Numeric', int, float)
 #: Whatever a vector happens to hold, where nothing is done to it.
 T = TypeVar('T')
@@ -29,7 +31,6 @@ class SupportsLessThan(Protocol):
 Comparable = TypeVar('Comparable', bound=SupportsLessThan)
 
 NUMERIC_REGEXP = re.compile(r"\d+|\D+")  # Split into numerics and characters
-PREFIXED_BYTE_UNITS = ("B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB", "RiB", "QiB")
 
 
 def cmp(a: Comparable, b: Comparable) -> int:
@@ -175,22 +176,15 @@ def number_of_digits(n: int) -> int:
     return int(math.log10(abs(n))) + 1
 
 
-def decompose_byte_size_exponent(n: float) -> tuple[float, int]:
-    e = 0
-    while n > 1024.0:
-        n /= 1024.0
-        e += 1
-    return (n, e)
+def format_byte_size(n: int) -> str:
+    """<n> bytes, written as GTK writes a size: in powers of 1000, kB
+    and MB, in GLib's words for them.
 
-
-def byte_size_exponent_to_prefix(e: int) -> str:
-    return PREFIXED_BYTE_UNITS[min(e, len(PREFIXED_BYTE_UNITS) - 1)]
-
-
-def format_byte_size(n: float) -> str:
-    nn, e = decompose_byte_size_exponent(n)
-    return ('%d %s' if nn == int(nn) else '%.1f %s') % \
-        (nn, byte_size_exponent_to_prefix(e))
+    The file chooser lists its files with sizes GTK wrote, and the
+    preview beside that list says the size of the same file, so the
+    two have to agree.
+    """
+    return GLib.format_size(n)
 
 
 def garbage_collect() -> None:

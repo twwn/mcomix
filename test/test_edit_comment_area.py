@@ -9,7 +9,7 @@ archive reads them back out of it in the order they are shown.
 import os
 import unittest.mock
 
-from gi.repository import Gdk, Gtk
+from gi.repository import Gdk, GLib, Gtk
 
 from . import MComixTest, pump
 
@@ -97,7 +97,7 @@ class CommentAreaTest(MComixTest):
         self.area.fetch_comments()
         row = self.area._list.get_row(0)
         self.assertEqual(row.name, 'one.txt')
-        self.assertEqual(row.size, '7 B')
+        self.assertEqual(row.size, GLib.format_size(7))
 
     def test_removing_the_selected_comment_takes_it_out_of_the_listing(self):
         self.area.fetch_comments()
