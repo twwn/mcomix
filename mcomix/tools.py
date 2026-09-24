@@ -292,6 +292,23 @@ def formats_to_regex(
         itertools.chain.from_iterable([e[1] for e in formats.values()])) + r'$', re.I)
 
 
+def replaced_path(path: str) -> str:
+    """The file to rename a new version over, to replace <path>.
+
+    <path> itself, unless it is a symbolic link: then the file it points
+    at, so that the link stays and what it points at is what changes.
+    Renamed over the link, the new file took its place - settings a
+    dotfile manager had linked into place stopped reaching the file it
+    keeps, and a book read through a link was saved beside the book it
+    stood for.  A link whose target's directory is gone is replaced
+    itself, as before.
+    """
+    real_path = os.path.realpath(path)
+    if os.path.isdir(os.path.dirname(real_path)):
+        return real_path
+    return path
+
+
 @contextlib.contextmanager
 def atomic_write(path: str, binary: bool = False) -> "Iterator[IO[Any]]":  # type: ignore[explicit-any]  # the mode decides whether it is text or bytes
     """ Context manager that yields a file object for writing to <path>.
@@ -300,15 +317,9 @@ def atomic_write(path: str, binary: bool = False) -> "Iterator[IO[Any]]":  # typ
     only renamed over <path> after writing finished without error.  Since
     that rename is atomic, concurrently running instances can neither read a
     half-written file nor leave a truncated one behind by writing at the
-    same time.
-
-    A <path> that is a symbolic link is written through: the file it
-    points at is the one replaced, and the link stays.  Renamed over the
-    link, the new file took its place, and settings a dotfile manager
-    had linked into place stopped reaching the file it keeps. """
-    real_path = os.path.realpath(path)
-    if os.path.isdir(os.path.dirname(real_path)):
-        path = real_path
+    same time.  A <path> that is a symbolic link is written through, see
+    replaced_path(). """
+    path = replaced_path(path)
     directory = os.path.dirname(path) or os.curdir
     fd, temp_path = tempfile.mkstemp(dir=directory,
                                      prefix=os.path.basename(path) + '.',

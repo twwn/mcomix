@@ -6,6 +6,7 @@ one of the pages has taken it.
 """
 
 import os
+import sys
 import tarfile
 import unittest
 import unittest.mock
@@ -311,6 +312,25 @@ class WriteArchiveTest(MComixTest):
     def _names(self):
         with zipfile.ZipFile(self.archive) as packed:
             return packed.namelist()
+
+    @unittest.skipIf(sys.platform == 'win32', 'symbolic links need privileges')
+    def test_a_book_saved_through_a_link_is_saved_where_the_link_points(self):
+        """A book reached through a symbolic link - a reading list of
+        links into the collection - was written back over the link: the
+        book in the collection kept its old pages, and a copy with the
+        new ones stood where the link had been."""
+        shelf = os.path.join(self.tmp_dir, 'shelf')
+        os.makedirs(shelf)
+        book = os.path.join(shelf, 'book.cbz')
+        archive_packer.write_archive(book, self.pages[:1], [])
+        os.symlink(book, self.archive)
+
+        self._write()
+
+        self.assertTrue(os.path.islink(self.archive))
+        with zipfile.ZipFile(book) as packed:
+            self.assertEqual(4, len(packed.namelist()))
+        self.assertEqual(['book.cbz'], os.listdir(shelf))
 
     def test_an_archive_written_from_nothing_carries_a_comicinfo(self):
         self._write()

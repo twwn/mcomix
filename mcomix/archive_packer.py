@@ -13,6 +13,7 @@ from mcomix import comicinfo
 from mcomix import constants
 from mcomix import log
 from mcomix import process
+from mcomix import tools
 from mcomix.i18n import _
 
 
@@ -107,6 +108,8 @@ def write_archive(archive_path: str, image_files: Sequence[str],
     behind: everything here writes to the directory the archive is in -
     the temporary file, the rename, the permissions - and any of it can.
     """
+    # Through a symbolic link to the book it stands for.
+    archive_path = tools.replaced_path(archive_path)
     carried_files = dict(carried_files or {})
     comment_files = list(comment_files)
     # The default comment extensions take in .xml, so a book's
