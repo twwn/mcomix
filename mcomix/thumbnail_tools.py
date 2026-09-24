@@ -266,7 +266,8 @@ class Thumbnailer:
                 pixbuf, tEXt_data = None, None
         if pixbuf is None and withheld.wanted:
             # Not stored: it is not a thumbnail of the archive.
-            pixbuf, tEXt_data = image_tools.locked_image_icon(), None
+            pixbuf, tEXt_data = image_tools.locked_image_icon(
+                min(self.width, self.height)), None
         self.thumbnail_finished(filepath, pixbuf)
 
         if pixbuf and self.store_on_disk and tEXt_data is not None:

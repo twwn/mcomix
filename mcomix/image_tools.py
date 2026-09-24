@@ -96,23 +96,28 @@ def _draw_missing_image(width: int, height: int) -> GdkPixbuf.Pixbuf:
     return icon
 
 
-@functools.cache
-def locked_image_icon() -> GdkPixbuf.Pixbuf:
+# Bounded, as missing_image_icon() is: each thumbnail size asks for one.
+@functools.lru_cache(maxsize=8)
+def locked_image_icon(size: int) -> GdkPixbuf.Pixbuf:
     """The pixbuf shown in place of the cover of an encrypted archive,
-    which is not opened to make one without its password.
+    which is not opened to make one without its password, <size>
+    pixels square.
 
-    A padlock in dark grey on a light disc, large enough to stay sharp
-    at the size of a thumbnail.  The theme has the padlock only as a symbolic icon, a
-    shape GTK recolours for the widget it stands in; loaded as a pixbuf
-    it keeps the theme's dark grey, which would all but vanish on the
-    library's black, hence the disc.
+    A padlock in dark grey on a light disc, drawn at the size of the
+    thumbnail it stands for: drawn at 64 pixels, it was scaled up into
+    a blur by the library, whose covers are made at 500.  The theme has
+    the padlock only as a symbolic icon, a shape GTK recolours for the
+    widget it stands in; loaded as a pixbuf it keeps the theme's dark
+    grey, which would all but vanish on the library's black, hence the
+    disc.
     """
     from mcomix import icons
-    size = 64
-    # Drawn four times over and scaled down, which smooths the edge
-    # ImageDraw leaves jagged.
-    disc = Image.new('RGBA', (size * 4, size * 4), (0, 0, 0, 0))
-    ImageDraw.Draw(disc).ellipse((0, 0, size * 4 - 1, size * 4 - 1),
+    size = max(1, size)
+    # Drawn larger and scaled down, which smooths the edge ImageDraw
+    # leaves jagged: four times over, or as near as 1024 pixels allow.
+    over = max(1, min(4, 1024 // size))
+    disc = Image.new('RGBA', (size * over, size * over), (0, 0, 0, 0))
+    ImageDraw.Draw(disc).ellipse((0, 0, size * over - 1, size * over - 1),
                                  fill=(255, 255, 255, 230))
     disc = disc.resize((size, size), Image.Resampling.LANCZOS)
     lock = icons.load_pixbuf('changes-prevent-symbolic', size // 2)

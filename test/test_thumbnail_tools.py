@@ -323,11 +323,11 @@ class EncryptedArchiveThumbnailTest(MComixTest):
         patcher.start()
         self.addCleanup(patcher.stop)
 
-    def _thumbnail(self, name):
+    def _thumbnail(self, name, size=128):
         return thumbnail_tools.Thumbnailer(
             dst_dir=os.path.join(self.tmp_dir, 'thumbnails'),
             store_on_disk=True, archive_support=True,
-            size=(128, 128)).thumbnail(get_testfile_path('archives', name))
+            size=(size, size)).thumbnail(get_testfile_path('archives', name))
 
     def test_no_password_is_asked_for(self):
         for name in ('Encrypted.zip', 'Encrypted.rar', 'Encrypted.7z',
@@ -339,8 +339,14 @@ class EncryptedArchiveThumbnailTest(MComixTest):
     def test_the_thumbnail_is_a_lock(self):
         for name in ('Encrypted.zip', 'Encrypted.rar', 'Encrypted.7z'):
             with self.subTest(name):
-                self.assertIs(image_tools.locked_image_icon(),
+                self.assertIs(image_tools.locked_image_icon(128),
                               self._thumbnail(name))
+
+    def test_the_lock_is_drawn_at_the_size_of_the_thumbnail(self):
+        """It was drawn at 64 pixels whatever the size, and the library,
+        whose covers are made at 500, scaled it up into a blur."""
+        lock = self._thumbnail('Encrypted.zip', size=500)
+        self.assertEqual((500, 500), (lock.get_width(), lock.get_height()))
 
     def test_the_lock_is_not_stored(self):
         """It stands for a thumbnail that could not be made; the store
