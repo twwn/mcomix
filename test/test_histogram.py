@@ -28,7 +28,7 @@ class HistogramTest(MComixTest):
         page.putdata([(9, 9, 9)] * 90 + [(10, 10, 10)] * 90
                      + [(11, 11, 11)] * 10)
         self.drawn = histogram.draw_histogram(
-            image_tools.pil_to_pixbuf(page), height=self.HEIGHT, text=False)
+            image_tools.pil_to_pixbuf(page), height=self.HEIGHT)
         self.tall = int(90 * (self.HEIGHT - 6) / 90)
         self.short = int(10 * (self.HEIGHT - 6) / 90)
 

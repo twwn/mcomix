@@ -1,7 +1,6 @@
 """histogram.py - Draw histograms (RGB) from pixbufs."""
 
 import PIL.Image as Image
-import PIL.ImageDraw as ImageDraw
 import PIL.ImageOps as ImageOps
 
 from gi.repository import GdkPixbuf
@@ -16,16 +15,13 @@ type Rgb = tuple[int, int, int]
 
 
 def draw_histogram(pixbuf: GdkPixbuf.Pixbuf, height: int = 170,
-                   fill: int = 170, text: bool = True) -> GdkPixbuf.Pixbuf:
+                   fill: int = 170) -> GdkPixbuf.Pixbuf:
     """Draw a histogram from <pixbuf> and return it as another pixbuf.
 
     The returned pixbuf will be 262x<height> px.
 
     The value of <fill> determines the colour intensity of the filled graphs,
     valid values are between 0 and 255.
-
-    If <text> is True a label with the maximum pixel value will be added to
-    one corner.
     """
     im = Image.new('RGB', (258, height - 4), (30, 30, 30))
     hist_data = image_tools.pixbuf_to_pil(pixbuf).histogram()
@@ -65,11 +61,6 @@ def draw_histogram(pixbuf: GdkPixbuf.Pixbuf, height: int = 170,
         for y in range(b[x] + 1, b[x-1] + 1):
             r_px, g_px, b_px = cast(Rgb, pixels[x, height - 5 - y])
             pixels[x, height - 5 - y] = (r_px, g_px, 255)
-    if text:
-        maxstr = 'max: ' + str(maximum)
-        draw = ImageDraw.Draw(im)
-        draw.rectangle((0, 0, len(maxstr) * 6 + 2, 10), fill=(30, 30, 30))
-        draw.text((2, 0), maxstr, fill=(255, 255, 255))
     im = ImageOps.expand(im, 1, (80, 80, 80))
     im = ImageOps.expand(im, 1, (0, 0, 0))
     return image_tools.pil_to_pixbuf(im)

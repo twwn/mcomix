@@ -168,7 +168,7 @@ class _EnhanceImageDialog(Dialog):
 
     def draw_histogram(self, pixbuf: GdkPixbuf.Pixbuf) -> None:
         """Draw a histogram representing <pixbuf> in the dialog."""
-        histogram_pixbuf = histogram.draw_histogram(pixbuf, text=False)
+        histogram_pixbuf = histogram.draw_histogram(pixbuf)
         self._hist_image.set_paintable(
             image_tools.pixbuf_to_texture(histogram_pixbuf))
 
