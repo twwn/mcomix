@@ -13,6 +13,13 @@ from mcomix import log
 from mcomix import portability
 from mcomix.preferences import prefs
 
+#: The CSS class that outlines a page picked out with CTRL and a click,
+#: in the main view and in the thumbnail bar.
+PICKED_OUT_CLASS = 'mcomix-selected-page'
+#: The CSS class on the page waiting to be swapped with another.  Both
+#: are drawn the same way, bar what tells them apart.
+MARKED_CLASS = 'mcomix-marked-page'
+
 #: The names libadwaita gives the colours an application is painted in.
 #: A user stylesheet that defines them - Gradience writes one, and so do
 #: most GTK4 themes - is written for libadwaita applications, whose
@@ -55,6 +62,18 @@ notebook > stack, .toolbar, actionbar > revealer > box {
     color: @window_fg_color;
 }
 
+.sidebar, .navigation-sidebar {
+    background-color: @sidebar_bg_color;
+    color: @sidebar_fg_color;
+}
+'''
+
+#: The outline round a page a reader has picked out or marked, in the
+#: main view and in the thumbnail bar.  Not part of the palette, which
+#: is loaded only where MComix states colours of its own: with
+#: libadwaita running and the colour scheme left to the system, that is
+#: never, and the pages went unmarked.
+_PAGE_MARKS = '''
 /* A page a reader has said something about: picked out to delete, or
    marked to swap with another.  An outline rather than a border, which
    would take room and move the page it is drawn around, and offset
@@ -74,11 +93,6 @@ picture.mcomix-selected-page, picture.mcomix-marked-page {
    and is then drawn dashed, since this comes second. */
 picture.mcomix-marked-page {
     outline-style: dashed;
-}
-
-.sidebar, .navigation-sidebar {
-    background-color: @sidebar_bg_color;
-    color: @sidebar_fg_color;
 }
 '''
 
@@ -130,6 +144,8 @@ _BLACKENED = (
 _provider = None
 #: The provider that states a scheme's colours, while one is stated.
 _stated: "Gtk.CssProvider | None" = None
+#: The provider that draws the outline round marked pages.
+_marks: "Gtk.CssProvider | None" = None
 #: Whether libadwaita is running, which decides who answers for the
 #: light and the dark.
 _started = False
@@ -145,9 +161,27 @@ def follow_theme() -> None:
     below maps what the theme states onto the widgets plain GTK4
     styles - less thorough, but better than ignoring the theme.
     """
+    show_page_marks()
     if not _start_libadwaita():
         follow_palette()
     apply_colour_scheme()
+
+
+def show_page_marks(display: "Gdk.Display | None" = None) -> None:
+    """Draw the outline round pages picked out or marked to swap.
+
+    At application priority, as the palette is, so that a user's own
+    stylesheet can still draw them differently.  Once per display.
+    """
+    global _marks
+    if display is None:
+        display = Gdk.Display.get_default()
+    if display is None or _marks is not None:
+        return
+    _marks = Gtk.CssProvider()
+    _marks.load_from_string(_PAGE_MARKS)
+    Gtk.StyleContext.add_provider_for_display(
+        display, _marks, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
 
 def apply_colour_scheme(scheme: str | None = None) -> None:

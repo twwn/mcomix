@@ -273,3 +273,79 @@ class PitchBlackBackgroundTest(MComixTest):
 
 
 # vim: expandtab:sw=4:ts=4
+
+
+def _border_nodes(window):
+    """Every border node painted when <window> is drawn, as the widths of
+    its four sides - how an outline comes out of the renderer."""
+    if gi.version_info < (3, 48):
+        raise unittest.SkipTest('PyGObject %s cannot read render nodes'
+                                % gi.__version__)
+    wait_for(lambda: window.get_width() > 0 and window.get_height() > 0,
+             seconds=5)
+    paintable = Gtk.WidgetPaintable.new(window)
+    found = []
+
+    def walk(node):
+        if node is None:
+            return
+        kind = node.get_node_type()
+        if kind == Gsk.RenderNodeType.BORDER_NODE:
+            found.append(tuple(node.get_widths()))
+        if kind == Gsk.RenderNodeType.CONTAINER_NODE:
+            for index in range(node.get_n_children()):
+                walk(node.get_child(index))
+        elif hasattr(node, 'get_child'):
+            try:
+                walk(node.get_child())
+            except TypeError:
+                pass
+
+    for _ in range(20):
+        found.clear()
+        snapshot = Gtk.Snapshot()
+        paintable.snapshot(snapshot, window.get_width(), window.get_height())
+        node = snapshot.to_node()
+        walk(node)
+        if node is not None:
+            break
+        wait_for(lambda: False, seconds=0.05)
+    return found
+
+
+class PageMarkTest(MComixTest):
+
+    """The outline round a page picked out or marked to swap.
+
+    Its rule was in the palette, which MComix states only where it has
+    colours of its own to state: with libadwaita running and the colour
+    scheme left to the system - what a new profile has - nothing loaded
+    it, and a page picked out looked like any other.
+    """
+
+    def test_a_picked_out_page_is_outlined_whatever_the_colour_scheme(self):
+        from gi.repository import Gdk as _Gdk
+        prefs['colour scheme'] = theme.SYSTEM
+        theme.follow_theme()
+        picture = Gtk.Picture()
+        texture = _Gdk.MemoryTexture.new(
+            4, 4, _Gdk.MemoryFormat.R8G8B8A8, gi.repository.GLib.Bytes.new(
+                b'\xff' * 64), 16)
+        picture.set_paintable(texture)
+        picture.set_size_request(40, 40)
+        picture.add_css_class(theme.PICKED_OUT_CLASS)
+        window = Gtk.Window()
+        window.set_child(picture)
+        window.set_default_size(60, 60)
+        window.present()
+        try:
+            self.assertTrue(_border_nodes(window),
+                            'nothing outlined the page')
+        finally:
+            window.destroy()
+            # Off the display again: it is shared by every test that
+            # runs after this one in the same worker.
+            if theme._marks is not None:
+                Gtk.StyleContext.remove_provider_for_display(
+                    _Gdk.Display.get_default(), theme._marks)
+                theme._marks = None
