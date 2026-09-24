@@ -1253,11 +1253,10 @@ class MainWindow(Gtk.Window):
         pages = [current + offset for offset in range(this_screen)]
         return list(reversed(pages)) if self.is_manga_mode else pages
 
-    #: The CSS class that draws the outline round a picked-out page.
-    _SELECTED_CLASS = 'mcomix-selected-page'
-    #: The CSS class on the page waiting to be swapped.  theme.py draws
-    #: both the same way, bar what tells them apart.
-    _MARKED_CLASS = 'mcomix-marked-page'
+    #: The CSS classes that outline a picked-out page and the page
+    #: waiting to be swapped; theme.py draws them.
+    _SELECTED_CLASS = theme.PICKED_OUT_CLASS
+    _MARKED_CLASS = theme.MARKED_CLASS
 
     def _numbered_page(self, page: "int | None") -> "int | None":
         """<page> if it is a page of the book that is open, else None.
@@ -1357,6 +1356,8 @@ class MainWindow(Gtk.Window):
                     image.add_css_class(css_class)
                 else:
                     image.remove_css_class(css_class)
+        # The thumbnail bar outlines them wherever they are in the book.
+        self.thumbnailsidebar.restyle()
 
     def page_at(self, x: float, y: float) -> "int | None":
         """The number of the page drawn at <x>, <y> on the page area.

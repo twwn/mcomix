@@ -44,6 +44,7 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
 
         self._list = thumbnail_list.ThumbnailListView()
         self._list.generate_thumbnail = self._generate_thumbnail
+        self._list.style_cell = self._style_cell
         self._list.set_thumbnail_size(self._pixbuf_size)
         self._list.set_can_focus(False)
         self._list.connect('activate', self._row_activated)
@@ -124,6 +125,23 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
         self._loaded = False
         self._list.clear()
         self._currently_selected_row = 0
+
+    def _style_cell(self, picture: Gtk.Picture, row: int) -> None:
+        """Outline the thumbnail of a page picked out or marked to swap,
+        as the main view outlines the page itself."""
+        page = row + 1
+        for css_class, marked in (
+                (theme.PICKED_OUT_CLASS, page in self._window.selected_pages),
+                (theme.MARKED_CLASS, page == self._window.swap_page)):
+            if marked:
+                picture.add_css_class(css_class)
+            else:
+                picture.remove_css_class(css_class)
+
+    def restyle(self) -> None:
+        """Outline again the thumbnails of the pages picked out or marked,
+        after either has changed."""
+        self._list.restyle()
 
     def resize(self) -> None:
         """Reload the thumbnails with the size specified by in the

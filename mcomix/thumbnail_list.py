@@ -126,6 +126,10 @@ class _ThumbnailViewBase(widgets.Releasable):
     def _init_thumbnails(self) -> None:
         #: Replaced by whoever knows how to make a thumbnail for a uid.
         self.generate_thumbnail: "Callable[..., GdkPixbuf.Pixbuf | None] | None" = None  # type: ignore[explicit-any]  # the view does not care what a uid is
+        #: Replaced by whoever marks some rows out: called with a cell's
+        #: picture and the row it shows whenever the cell is bound, and
+        #: by restyle().
+        self.style_cell: "Callable[[Gtk.Picture, int], None] | None" = None
         #: The size a thumbnail is drawn at, and whether the label is
         #: drawn with it.  A cover is taller than it is wide, so the two
         #: are kept apart.
@@ -184,8 +188,20 @@ class _ThumbnailViewBase(widgets.Releasable):
         cell.handler = item.connect('notify::thumbnail',
                                     self._thumbnail_arrived, cell)
         self._bound.add(item)
+        if self.style_cell is not None:
+            self.style_cell(cell.picture, list_item.get_position())
         if item.thumbnail is None:
             self._ask_for(item)
+
+    def restyle(self) -> None:
+        """Call style_cell() again for every cell on screen, after what it
+        marks out has changed."""
+        if self.style_cell is None:
+            return
+        for cell in self._each_cell():
+            position = cell.position
+            if position >= 0:
+                self.style_cell(cell.picture, position)
 
     def _unbind_cell(self, factory: Gtk.SignalListItemFactory,
                      list_item: Gtk.ListItem) -> None:

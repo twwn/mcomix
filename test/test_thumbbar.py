@@ -197,4 +197,42 @@ class ThumbnailSidebarTest(MComixTest):
                          self.sidebar._pixbuf_size)
         self.assertEqual(len(self._items()), self._pages())
 
+    # -- Pages picked out and marked ----------------------------------------
+    #
+    # They are outlined in the main view only while they are on screen:
+    # a page picked out and turned past was shown nowhere at all.  The
+    # thumbnail bar outlines them as the main view does.
+
+    def _outlined(self, css_class):
+        """The pages whose thumbnails carry <css_class>, among those on
+        screen."""
+        return sorted(cell.position + 1
+                      for cell in self.sidebar._list._each_cell()
+                      if cell.position >= 0
+                      and cell.picture.has_css_class(css_class))
+
+    def _ready(self):
+        self.sidebar.load_thumbnails()
+        wait_for(lambda: len(list(self.sidebar._list._each_cell()))
+                 >= self._pages(), seconds=20)
+        pump()
+
+    def test_a_page_picked_out_is_outlined_in_the_sidebar(self):
+        from mcomix import theme
+        self._ready()
+        self.window.select_page(2)
+        self.window.select_page(3)
+        self.window.set_page(1)
+        pump()
+        self.assertEqual([2, 3], self._outlined(theme.PICKED_OUT_CLASS))
+        self.window.clear_selection()
+        self.assertEqual([], self._outlined(theme.PICKED_OUT_CLASS))
+
+    def test_the_page_marked_to_swap_is_outlined_in_the_sidebar(self):
+        from mcomix import theme
+        self._ready()
+        self.window.mark_for_swap(3)
+        pump()
+        self.assertEqual([3], self._outlined(theme.MARKED_CLASS))
+
 # vim: expandtab:sw=4:ts=4
