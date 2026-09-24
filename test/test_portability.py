@@ -77,10 +77,15 @@ class WindowsDefaultLocaleTest(MComixTest):
         self.assertEqual('en_GB', self._locale(0x0809))
 
     def test_a_language_id_python_does_not_know_falls_back_on_c(self):
-        """K'iche' is a Windows display language that Python's table of
-        language ids leaves out; MComix stopped with KeyError before it
-        had opened a window."""
-        self.assertEqual('C', self._locale(0x0486))
+        """A language id missing from Python's table stopped MComix with
+        KeyError before it had opened a window.
+
+        0x1000 is LOCALE_CUSTOM_UNSPECIFIED, what Windows answers for a
+        display language it has no id of its own for, and no Python has
+        it.  K'iche' (0x0486) was the example first: Python 3.14 leaves
+        it out, and 3.12, the floor, has it.
+        """
+        self.assertEqual('C', self._locale(0x1000))
 
 class ColourSchemeTest(MComixTest):
 
