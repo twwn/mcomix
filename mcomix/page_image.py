@@ -47,7 +47,12 @@ class _AnimationPaintable(GObject.GObject, Gdk.Paintable):  # type: ignore[misc]
 
     def do_get_flags(self) -> Gdk.PaintableFlags:
         # Every frame is the same size; only what is drawn changes.
-        return Gdk.PaintableFlags.SIZE
+        # STATIC_SIZE, the name the C identifier gives, is the one
+        # PyGObject 3.46, the floor, knows; the stubs know only SIZE,
+        # the name GObject introspection gives, which only newer
+        # PyGObject accepts as well.
+        flags: Gdk.PaintableFlags = Gdk.PaintableFlags.STATIC_SIZE  # type: ignore[attr-defined]
+        return flags
 
     def do_snapshot(self, snapshot: Gtk.Snapshot, width: float,
                     height: float) -> None:
