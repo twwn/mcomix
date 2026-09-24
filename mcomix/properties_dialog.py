@@ -221,10 +221,14 @@ class _PropertiesDialog(Dialog):
             log.debug('Could not stat "%s": %s', location, error)
             page.set_secondary_info(secondary_info)
             return
+        # The number where there is no name for it: a file brought from
+        # another system may belong to a user this one does not know.
+        uid = str(stats.st_uid)
         if _has_pwd:
-            uid = pwd.getpwuid(stats.st_uid)[0]
-        else:
-            uid = str(stats.st_uid)
+            try:
+                uid = pwd.getpwuid(stats.st_uid).pw_name
+            except KeyError:
+                pass
         secondary_info.extend((
             (_('Size'), tools.format_byte_size(stats.st_size)),
             (_('Accessed'), time.strftime('%Y-%m-%d, %H:%M:%S',

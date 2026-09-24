@@ -201,3 +201,23 @@ class PropertiesDialogTest(MComixTest):
                                  seconds=10))
         wait_for(lambda: False, seconds=0.5)
         self.assertNotIn('Series:', self._texts(page))
+
+    def test_a_file_whose_owner_has_no_name_here_is_described(self):
+        """A file from another system - a USB stick, an unpacked
+        download - can be owned by a user id this one has no name for.
+        pwd.getpwuid() raised KeyError for it, and the page was left
+        without its file's size, dates and owner."""
+        if not properties_dialog._has_pwd:
+            self.skipTest('no user database to lack the owner')
+
+        def nobody(uid):
+            raise KeyError('getpwuid(): uid not found: %d' % uid)
+
+        with mock.patch('pwd.getpwuid', nobody):
+            dialog = self._open(get_testfile_path('images', 'blue.png'))
+            page = dialog._image_page
+            self.assertTrue(
+                wait_for(lambda: 'Owner:' in self._texts(page), seconds=10),
+                'the page was left without its file: %r' % self._texts(page))
+        uid = str(os.stat(get_testfile_path('images', 'blue.png')).st_uid)
+        self.assertIn(uid, self._texts(page))
