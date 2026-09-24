@@ -39,6 +39,10 @@ class MagnifyingLens:
         #: What tells the lens where the pointer is.
         self._motion = Gtk.EventControllerMotion()
         self._motion.connect('motion', self._motion_event)
+        # The lens stands in for the pointer, so it goes where the
+        # pointer goes: off the pages with it, and back with it.
+        self._motion.connect('enter', self._motion_event)
+        self._motion.connect('leave', self._leave_event)
         self._area.add_controller(self._motion)
         # A scroll moves the pages under a pointer that stays put, and
         # no motion event comes to say so.
@@ -177,6 +181,11 @@ class MagnifyingLens:
         self._point = (x, y)
         if self.enabled:
             self._draw_lens()
+
+    def _leave_event(self, controller: Gtk.EventControllerMotion) -> None:
+        """ Called when the mouse leaves the image area. """
+        self._point = None
+        self._clear_lens()
 
     def _get_lens_pixbuf(self, x: int, y: int, lens_size: Sequence[int],
                          border_size: int,

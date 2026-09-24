@@ -257,6 +257,20 @@ class LensFollowsThePagesTest(MComixTest):
         self.assertTrue(before[2] != after[2],
                         'the lens still shows the page before')
 
+    def test_the_lens_leaves_the_pages_with_the_pointer(self):
+        """It stayed where the pointer had left the pages, and was drawn
+        again there at the next page turn, with the pointer on the menu
+        bar."""
+        overlays = self.window.page_area._overlays
+        self.assertIn('lens', overlays)
+        self.lens._motion.emit('leave')
+        self.assertNotIn('lens', overlays)
+        self.window.flip_page(+1)
+        self._wait_for_the_page()
+        self.assertNotIn('lens', overlays)
+        self.lens._motion.emit('enter', 30.0, 40.0)
+        self.assertIn('lens', overlays)
+
     def test_a_scroll_keeps_the_lens_under_the_pointer(self):
         # Zoomed in far enough for the page to be scrolled across.
         prefs['zoom mode'] = constants.ZoomMode.MANUAL
