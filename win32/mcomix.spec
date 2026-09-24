@@ -26,7 +26,7 @@ added_files = [(os.path.join('..', path),
                for path in list_files('mcomix/messages', '*.mo')]
 added_files.extend([(os.path.join('..', path),
                      os.path.split(path)[0])
-                    for path in list_files('mcomix/images', '*.png')])
+                    for path in list_files('mcomix/images', '*.png', '*.svg')])
 
 attach_console = True
 if 'PYINSTALLER_CONSOLE' in os.environ:

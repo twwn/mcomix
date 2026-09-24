@@ -69,4 +69,38 @@ class VersionFileTest(MComixTest):
         self.assertIn('prodvers=(26, 10, 0, 0)', written)
 
 
+class SpecDataTest(MComixTest):
+
+    """The files win32/mcomix.spec hands PyInstaller beside the code."""
+
+    def test_every_image_is_packed(self):
+        # PyInstaller runs the spec from the top of the checkout, with
+        # its own names already defined; these stand in for them.
+        found: dict[str, list[tuple[str, str]]] = {}
+
+        def analysis(*args: object, datas: list[tuple[str, str]],
+                     **kwargs: object) -> unittest.mock.Mock:
+            found['datas'] = datas
+            return unittest.mock.Mock()
+
+        names = {'Analysis': analysis, 'PYZ': unittest.mock.Mock(),
+                 'EXE': unittest.mock.Mock(),
+                 'COLLECT': unittest.mock.Mock()}
+        top = os.path.dirname(WIN32)
+        cwd = os.getcwd()
+        os.chdir(top)
+        self.addCleanup(os.chdir, cwd)
+        with open(os.path.join(WIN32, 'mcomix.spec')) as fp:
+            exec(fp.read(), names)
+
+        packed = {os.path.normpath(os.path.join(WIN32, source))
+                  for source, _ in found['datas']}
+        images = {os.path.join(dirpath, filename)
+                  for dirpath, _, filenames
+                  in os.walk(os.path.join(top, 'mcomix', 'images'))
+                  for filename in filenames
+                  if filename.endswith(('.png', '.svg'))}
+        self.assertEqual(set(), images - packed)
+
+
 # vim: expandtab:sw=4:ts=4
