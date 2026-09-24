@@ -114,6 +114,27 @@ class StoredKeybindingsTest(MComixTest):
         self.assertEqual([keybindings.parse_accelerator('<Control>S')],
                          manager.get_bindings_for_action('slideshow'))
 
+    def test_a_file_of_the_wrong_shape_leaves_the_defaults(self):
+        """Any JSON that was not an object of lists of names stopped
+        MComix before it had a window, and a name where a list belongs
+        bound every letter of it."""
+        default = [keybindings.parse_accelerator('<Control>S')]
+        for stored in ([], 'x', {'slideshow': None},
+                       {'slideshow': '<Control>S'}, {'slideshow': [1]}):
+            with self.subTest(stored=stored):
+                manager = self._manager(stored)
+                self.assertEqual(default,
+                                 manager.get_bindings_for_action('slideshow'))
+
+    def test_a_file_that_is_not_json_leaves_the_defaults(self):
+        with open(constants.KEYBINDINGS_CONF_PATH, 'w') as fp:
+            fp.write('not json')
+        with self.assertLogs('mcomix', level='ERROR'):
+            manager = keybindings._KeybindingManager(_StubWindow())
+        manager.register('slideshow', ['<Control>S'], lambda: None)
+        self.assertEqual([keybindings.parse_accelerator('<Control>S')],
+                         manager.get_bindings_for_action('slideshow'))
+
     def test_a_shortcut_this_gtk_cannot_read_falls_back_to_the_default(self):
         """A stored accelerator that does not parse used to be kept as
         the (0, 0) parse_accelerator() answers with.  That is a binding

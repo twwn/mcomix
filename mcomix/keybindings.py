@@ -393,10 +393,27 @@ class _KeybindingManager:
         except Exception as e:
             log.error(_("Couldn't load keybindings: %s"), e)
             stored_action_bindings = {}
+        # The file is plain JSON a reader can edit by hand, so what it
+        # holds is checked for shape as well as syntax: anything but an
+        # object of lists of strings stopped MComix from starting, and a
+        # single string where a list belongs bound each of its letters.
+        if not isinstance(stored_action_bindings, dict):
+            log.error(_("Couldn't load keybindings: %s"),
+                      'not an object of action names')
+            stored_action_bindings = {}
 
         for action in BINDING_INFO:
             bindings = []
-            for keyname in stored_action_bindings.get(action, ()):
+            stored = stored_action_bindings.get(action, [])
+            if not isinstance(stored, list):
+                log.warning('Ignoring the stored shortcuts %r for %r: '
+                            'not a list', stored, action)
+                stored = []
+            for keyname in stored:
+                if not isinstance(keyname, str):
+                    log.warning('Ignoring the stored shortcut %r for %r: '
+                                'not a name', keyname, action)
+                    continue
                 binding = parse_accelerator(keyname)
                 if binding == UNREADABLE:
                     log.warning('Ignoring the stored shortcut %r for %r: '
