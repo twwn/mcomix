@@ -41,6 +41,27 @@ class _StubDialog:
         self.changes += 1
 
 
+class _Event:
+
+    """What a callback.Callback of the file handler is to its listeners:
+    something to add oneself to and take oneself off."""
+
+    def __init__(self):
+        self.listeners = []
+
+    def __iadd__(self, listener):
+        self.listeners.append(listener)
+        return self
+
+    def __isub__(self, listener):
+        self.listeners.remove(listener)
+        return self
+
+    def __call__(self, *args):
+        for listener in list(self.listeners):
+            listener(*args)
+
+
 class CommentAreaTest(MComixTest):
 
     def setUp(self):
@@ -58,6 +79,8 @@ class CommentAreaTest(MComixTest):
         # comment file is being renamed to; this book has no pages.
         self.main_window = unittest.mock.MagicMock()
         self.main_window.file_actions.page_called.return_value = None
+        self.file_available = _Event()
+        self.main_window.filehandler.file_available = self.file_available
         self.area = edit_comment_area._CommentArea(self.dialog,
                                                    self.main_window)
         self.window = Gtk.Window()
@@ -92,6 +115,29 @@ class CommentAreaTest(MComixTest):
             comment.write('extra')
         self.area.add_extra_file(extra)
         self.assertEqual(self.area.get_file_listing(), self.paths + [extra])
+
+    def test_a_comment_not_out_of_the_archive_yet_is_listed_all_the_same(self):
+        """The editor lists the comments as soon as the book is open,
+        and reading the size of one the extractor had not reached raised
+        FileNotFoundError: no comment was listed at all."""
+        late = os.path.join(self.tmp_dir, 'late.txt')
+        self.paths.append(late)
+        self.area.fetch_comments()
+        rows = list(self.area._list.each_row())
+        self.assertEqual([row.path for row in rows], self.paths)
+        self.assertEqual('', rows[-1].size)
+        # Out of the archive now, and announced.
+        with open(late, 'w') as comment:
+            comment.write('late')
+        self.file_available([late])
+        self.assertEqual(GLib.format_size(4), rows[-1].size)
+
+    def test_the_area_listens_for_files_only_while_it_is_shown(self):
+        self.assertEqual([self.area._on_file_available],
+                         self.file_available.listeners)
+        self.window.destroy()
+        pump()
+        self.assertEqual([], self.file_available.listeners)
 
     def test_a_comment_shows_its_name_and_its_size(self):
         self.area.fetch_comments()

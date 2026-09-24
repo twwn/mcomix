@@ -2,6 +2,7 @@
 
 import os
 import weakref
+from collections.abc import Sequence
 from gi.repository import Gio, Gdk, Gtk
 from mcomix import column_list
 from mcomix import rename_dialog
@@ -53,6 +54,25 @@ class _CommentArea(Gtk.Box, widgets.Releasable):
         scrolled.set_child(self._list)
 
         self._popup_menu = self._create_popup_menu()
+
+        # A comment file listed before it is out of the archive has its
+        # size filled in when the extractor announces it.  'unrealize'
+        # rather than 'destroy', which GTK4 emits only when the last
+        # reference goes.
+        self._window.filehandler.file_available += self._on_file_available
+        self.connect('unrealize', self._stop_following)
+
+    def _stop_following(self, *args: object) -> None:
+        """Stop hearing about extracted files once the editor is gone."""
+        self._window.filehandler.file_available -= self._on_file_available
+
+    def _on_file_available(self, paths: Sequence[str]) -> None:
+        """Give the rows of the files in <paths> their sizes."""
+        arrived = set(paths)
+        for row in self._list.each_row():
+            if row.path in arrived and not row.size:
+                row.size = self._size_of(row.path)
+                row.changed()
 
     def release(self) -> None:
         """Take the comment area actions out, once the window is closed.
@@ -129,12 +149,28 @@ class _CommentArea(Gtk.Box, widgets.Releasable):
         self._list.append_row(self._row_for(path))
 
     @staticmethod
-    def _row_for(path: str) -> column_list.Row:
+    def _size_of(path: str) -> str:
+        """How large the file at <path> is, or nothing while it is not
+        there yet."""
+        try:
+            return tools.format_byte_size(os.stat(path).st_size)
+        except FileNotFoundError:
+            return ''
+
+    @classmethod
+    def _row_for(cls, path: str) -> column_list.Row:
         """The row for the file at <path>: what it is called, how large
-        it is written out, and the file itself."""
+        it is written out, and the file itself.
+
+        The editor lists the comments as soon as the book is open, and
+        the extractor may not have reached one yet: its size comes when
+        it does (_on_file_available).  Reading it here raised
+        FileNotFoundError, and the editor opened with no comments listed
+        and without the pages picked out in the window.
+        """
         return column_list.Row(
             name=os.path.basename(path),
-            size=tools.format_byte_size(os.stat(path).st_size),
+            size=cls._size_of(path),
             path=path)
 
     def get_file_listing(self) -> list[str]:
