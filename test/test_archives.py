@@ -305,6 +305,24 @@ class TarCompressionTest(MComixTest):
             finally:
                 archive.close()
 
+    def test_a_listing_begun_again_lets_go_of_the_first_tarball(self):
+        """A listing left partway, then another begun on the same
+        handler, opened the tarball a second time and left the first
+        open for good: close() only knows the latest.  The extractor
+        closes a handler whose listing it stopped, so nothing does this
+        today; the handler no longer depends on that."""
+        path = get_testfile_path('archives', 'SolidFlat.tar')
+        archive = tar.TarArchive(path)
+        try:
+            first = archive.iter_contents()
+            next(first)
+            abandoned = archive.tar
+            self.assertEqual(sorted(archive.list_contents()), self.CONTENTS)
+            self.assertIsNot(abandoned, archive.tar)
+            self.assertTrue(abandoned.closed, 'the first tarball stayed open')
+        finally:
+            archive.close()
+
 
 class RecursiveArchiveNestingTest(MComixTest):
 

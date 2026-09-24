@@ -72,13 +72,16 @@ class TarArchive(archive_base.NonUnicodeArchive):
     def iter_contents(self) -> Iterator[str]:
         """Yield the name of every member, walking the tarball once.
 
-        The walk starts by opening the file again, because a tarball is
-        read forwards and the previous listing left it at the end.
+        A listing that ran to the end is kept and answers every later
+        one.  Otherwise the walk opens the file again, because a tarball
+        is read forwards; a tarball a listing left partway is closed
+        first, or nothing would close it.
         """
         if self._contents_listed:
             for name in self._contents:
                 yield name
             return
+        self.close()
         self.tar = tarfile.open(self.archive, open_mode(read_magic(self.archive)))
         self._contents = []
         while True:
@@ -97,7 +100,7 @@ class TarArchive(archive_base.NonUnicodeArchive):
         self._contents_listed = True
 
     def list_contents(self) -> list[str]:
-        """Every member's name, from a fresh walk of the tarball."""
+        """Every member's name, as iter_contents() yields them."""
         return list(self.iter_contents())
 
     def extract(self, filename: str, destination_dir: str) -> None:
