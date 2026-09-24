@@ -2,7 +2,7 @@
 
 import os
 import tarfile
-from collections.abc import Callable, Iterable, Iterator, Sequence
+from collections.abc import Iterable, Iterator
 from typing import Literal
 
 from . import archive_base
@@ -39,38 +39,6 @@ def read_magic(path: str) -> bytes:
     """Return the bytes at the head of <path> that name its compression."""
     with open(path, 'rb') as fd:
         return fd.read(5)
-
-
-def _name_decoder(names: Sequence[str]) -> Callable[[str], str]:
-    """How to read back those of <names> that are not UTF-8.
-
-    tarfile reads a name as UTF-8 and keeps the bytes it cannot as lone
-    surrogates, which GTK refuses in a label or a title and the log
-    refuses to write.  Those names are turned back into their bytes and
-    read in the encoding archive_base.name_encoding() finds for all of
-    them, Latin-1 where it finds none: that reads any byte, so what is
-    listed is always text that can be shown.
-    """
-    raw = [name.encode('utf-8', 'surrogateescape') for name in names
-           if _has_surrogates(name)]
-    if not raw:
-        return lambda name: name
-    chosen = archive_base.name_encoding(raw, 'latin-1')
-
-    def decode(name: str) -> str:
-        if not _has_surrogates(name):
-            return name
-        return name.encode('utf-8', 'surrogateescape').decode(chosen)
-    return decode
-
-
-def _has_surrogates(name: str) -> bool:
-    """Whether <name> holds bytes tarfile could not read as UTF-8."""
-    try:
-        name.encode('utf-8')
-    except UnicodeEncodeError:
-        return True
-    return False
 
 
 class TarArchive(archive_base.NonUnicodeArchive):
@@ -127,7 +95,7 @@ class TarArchive(archive_base.NonUnicodeArchive):
                 # listing does not offer them.
                 continue
             members.append(info.name)
-        decode = _name_decoder(members)
+        decode = archive_base.surrogate_name_decoder(members)
         self._contents = []
         for member in members:
             # Listed under the name it was written in, and extracted

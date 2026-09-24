@@ -170,19 +170,33 @@ class SevenZipArchive(archive_base.ExternalExecutableArchive):
             self._path = ''
             self._pending = None
             self._pending_is_directory = False
+            # UTF-8 is asked for, but a name a zip stores without its
+            # UTF-8 flag comes through as the bytes it was stored as.
+            # Those are kept as surrogates here and read back below.
             proc = subprocess.run(self._get_list_arguments(),
-                                  stdout=subprocess.PIPE, stderr=process.STDOUT, encoding='utf-8')
+                                  stdout=subprocess.PIPE, stderr=process.STDOUT,
+                                  encoding='utf-8', errors='surrogateescape')
+            names: list[str] = []
             try:
                 for line in proc.stdout.splitlines():
                     filename = self._parse_list_output_line(line.rstrip(os.linesep))
                     if filename is not None:
-                        yield filename
+                        names.append(filename)
                 pending = self._flush_pending_entry()
                 if pending is not None:
-                    yield pending
+                    names.append(pending)
             except self.EncryptedHeader:
                 if retry_count == 0:
                     continue
+            decode = archive_base.surrogate_name_decoder(names)
+            # Listed under the name it was written in; the stream the
+            # files come out of is matched against the same names, and
+            # a single file is asked of 7z by the one it printed.
+            shown = [self._unicode_filename(name, decode) for name in names]
+            as_shown = dict(zip(names, shown))
+            self._contents = [(as_shown.get(name, name), size)
+                              for name, size in self._contents]
+            yield from shown
             break
 
         self.filenames_initialized = True
@@ -205,7 +219,8 @@ class SevenZipArchive(archive_base.ExternalExecutableArchive):
 
         tmplistfile = tempfile.NamedTemporaryFile(prefix='mcomix.7z.', delete=False)
         try:
-            desired_filename = self._original_filename(filename).encode('utf-8')
+            desired_filename = self._original_filename(filename).encode(
+                'utf-8', 'surrogateescape')
             tmplistfile.write(desired_filename + os.linesep.encode('utf-8'))
             tmplistfile.close()
 

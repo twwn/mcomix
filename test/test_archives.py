@@ -393,6 +393,79 @@ class ZipLegacyNameTest(MComixTest):
             self.assertEqual(b'x', fp.read())
 
 
+@unittest.skipUnless(sevenzip_external.SevenZipArchive._find_7z_executable(),
+                     '7z is not installed')
+class SevenZipLegacyNameTest(ZipLegacyNameTest):
+
+    """The same zips, compressed in a way zipfile does not read, which
+    sends them to 7z.
+
+    7z was asked for UTF-8 but passes such a name through as the bytes
+    it was stored as, and the listing, decoded strictly, raised
+    UnicodeDecodeError: a zip of Shift-JIS or Windows-1252 names could
+    not be opened at all.
+    """
+
+    def _legacy_zip(self, names, encoding):
+        path = os.path.join(self.tmp_dir, 'legacy.zip')
+        placeholders = []
+        with zipfile.ZipFile(path, 'w',
+                             compression=zipfile.ZIP_BZIP2) as archive:
+            for number, name in enumerate(names):
+                placeholder = chr(ord('A') + number) * len(
+                    name.encode(encoding))
+                placeholders.append(placeholder)
+                archive.writestr(placeholder, b'x')
+        with open(path, 'rb') as fp:
+            data = fp.read()
+        for number, name in enumerate(names):
+            data = data.replace(placeholders[number].encode('ascii'),
+                                name.encode(encoding))
+        with open(path, 'wb') as fp:
+            fp.write(data)
+        return path
+
+    def _handler(self, path):
+        return sevenzip_external.SevenZipArchive(path)
+
+    def _listed(self, path):
+        archive = self._handler(path)
+        try:
+            return archive.list_contents()
+        finally:
+            archive.close()
+
+    def test_names_in_a_western_code_page_are_listed(self):
+        names = ['Übersicht.jpg', 'Café.jpg']
+        listed = self._listed(self._legacy_zip(names, 'cp1252'))
+        self.assertEqual(2, len(listed))
+        for name in listed:
+            name.encode('utf-8')
+
+    def test_a_page_listed_under_its_decoded_name_is_extracted(self):
+        archive = self._handler(self._legacy_zip(['Übersicht.jpg'], 'utf-8'))
+        try:
+            archive.list_contents()
+            archive.extract('Übersicht.jpg', self.tmp_dir)
+        finally:
+            archive.close()
+        with open(os.path.join(self.tmp_dir, 'Übersicht.jpg'), 'rb') as fp:
+            self.assertEqual(b'x', fp.read())
+
+    def test_every_page_comes_out_of_the_stream(self):
+        names = ['表紙.jpg', '第01話.jpg', 'あとがき.png', '第02話.jpg']
+        archive = self._handler(self._legacy_zip(names, 'shift_jis'))
+        try:
+            listed = archive.list_contents()
+            extracted = list(archive.iter_extract(listed, self.tmp_dir))
+        finally:
+            archive.close()
+        self.assertEqual(sorted(listed), sorted(extracted))
+        for name in listed:
+            with open(os.path.join(self.tmp_dir, name), 'rb') as fp:
+                self.assertEqual(b'x', fp.read())
+
+
 class TarLegacyNameTest(MComixTest):
 
     """Names a tarball stores in something other than UTF-8.

@@ -204,6 +204,38 @@ def name_encoding(raw_names: Sequence[bytes], fallback: str) -> str:
     return fallback
 
 
+def surrogate_name_decoder(names: Sequence[str]) -> Callable[[str], str]:
+    """How to read back those of <names> that are not UTF-8.
+
+    tarfile, and the 7z handler, read a name as UTF-8 and keep the bytes
+    they cannot as lone surrogates, which GTK refuses in a label or a
+    title and the log refuses to write.  Those names are turned back into their bytes and
+    read in the encoding name_encoding() finds for all of
+    them, Latin-1 where it finds none: that reads any byte, so what is
+    listed is always text that can be shown.
+    """
+    raw = [name.encode('utf-8', 'surrogateescape') for name in names
+           if _has_surrogates(name)]
+    if not raw:
+        return lambda name: name
+    chosen = name_encoding(raw, 'latin-1')
+
+    def decode(name: str) -> str:
+        if not _has_surrogates(name):
+            return name
+        return name.encode('utf-8', 'surrogateescape').decode(chosen)
+    return decode
+
+
+def _has_surrogates(name: str) -> bool:
+    """Whether <name> holds bytes tarfile could not read as UTF-8."""
+    try:
+        name.encode('utf-8')
+    except UnicodeEncodeError:
+        return True
+    return False
+
+
 class NonUnicodeArchive(BaseArchive):
     """ Base class for archives that manage a conversion of byte member names ->
     Unicode member names internally. Required for formats that do not provide
