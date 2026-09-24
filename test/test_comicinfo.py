@@ -105,6 +105,13 @@ class ForPagesTest(MComixTest):
         self.assertLess(document.index(b'<PageCount>'),
                         document.index(b'<Pages>'))
 
+    def test_a_file_in_an_encoding_python_does_not_know_is_replaced(self):
+        """The LookupError came out of saving the archive as well."""
+        root = ElementTree.fromstring(comicinfo.for_pages(
+            self.pages,
+            b'<?xml version="1.0" encoding="x-unknown"?><ComicInfo/>'))
+        self.assertEqual(str(len(self.pages)), root.findtext('PageCount'))
+
     def test_a_file_that_is_not_xml_is_replaced(self):
         root = self._written(b'this was never a ComicInfo.xml')
         self.assertEqual('3', root.findtext('PageCount'))
@@ -185,6 +192,15 @@ class DescribeTest(MComixTest):
 
     def test_a_file_that_is_not_xml_describes_nothing(self):
         self.assertEqual([], self._describe('<ComicInfo><Series>Broken'))
+
+    def test_a_file_in_an_encoding_python_does_not_know_describes_nothing(self):
+        """expat hands the declared encoding to Python's codecs, and a
+        name they do not know raised LookupError, past the ParseError
+        the parsing was guarded for: the properties dialog failed on
+        such a book."""
+        self.assertEqual([], self._describe(
+            b'<?xml version="1.0" encoding="x-unknown"?>'
+            b'<ComicInfo><Series>S</Series></ComicInfo>'))
 
     def test_a_document_that_is_not_a_comicinfo_describes_nothing(self):
         self.assertEqual([], self._describe('<Book><Series>Other</Series></Book>'))

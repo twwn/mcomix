@@ -118,7 +118,9 @@ def _parse(existing: bytes) -> "ElementTree.Element | None":
     """
     try:
         root = ElementTree.fromstring(existing)
-    except ElementTree.ParseError:
+    except (ElementTree.ParseError, LookupError):
+        # LookupError: the document declares an encoding Python's codecs
+        # have no name for, which expat hands on rather than refusing.
         return None
     return root if root.tag == 'ComicInfo' else None
 
