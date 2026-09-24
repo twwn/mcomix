@@ -397,7 +397,8 @@ class EditArchiveDialogTest(MComixTest):
         def refuse(*args, **kwargs):
             raise OSError(13, 'Permission denied')
 
-        with unittest.mock.patch('os.rename', refuse):
+        with unittest.mock.patch('os.rename', refuse), \
+                unittest.mock.patch('os.replace', refuse):
             self.dialog._pack_archive(target)
         pump()
 

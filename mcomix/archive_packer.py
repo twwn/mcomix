@@ -150,11 +150,11 @@ def write_archive(archive_path: str, image_files: Sequence[str],
         else:
             mode = os.stat(tmp_path).st_mode
 
-        # Removed first: a rename over a file that is there fails on
-        # Win32.
-        if os.path.exists(archive_path):
-            os.unlink(archive_path)
-        os.rename(tmp_path, archive_path)
+        # os.replace() rather than removing the old archive first: it
+        # replaces on Windows as well, where os.rename() over a file
+        # that is there fails, and a replacement that fails leaves the
+        # old archive where it was.
+        os.replace(tmp_path, archive_path)
         os.chmod(archive_path, mode)
         written = True
     finally:

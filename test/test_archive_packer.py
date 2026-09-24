@@ -398,5 +398,29 @@ class WriteArchiveTest(MComixTest):
             self._write(pages=self.pages + ['/no/such/page.jpg'])
         self.assertEqual([], os.listdir(self.directory))
 
+    def test_the_old_archive_stays_when_the_new_one_cannot_take_its_place(self):
+        """The old archive was deleted before the new one was renamed
+        over it, and the new one was deleted as a leftover when the
+        rename failed, so the book was gone from the disk."""
+        self._write()
+        with open(self.archive, 'rb') as fp:
+            before = fp.read()
+        rename, replace = os.rename, os.replace
+
+        def _refused(real):
+            def move(source, target, *args, **kwargs):
+                if target == self.archive:
+                    raise PermissionError(13, 'Permission denied', target)
+                return real(source, target, *args, **kwargs)
+            return move
+
+        with unittest.mock.patch('os.rename', _refused(rename)), \
+                unittest.mock.patch('os.replace', _refused(replace)), \
+                self.assertRaises(OSError):
+            self._write(pages=self.pages[:1])
+        with open(self.archive, 'rb') as fp:
+            self.assertEqual(before, fp.read())
+        self.assertEqual(['packed.cbz'], os.listdir(self.directory))
+
 
 # vim: expandtab:sw=4:ts=4
