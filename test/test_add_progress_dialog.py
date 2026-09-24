@@ -95,3 +95,27 @@ class AddProgressDialogTest(MComixTest):
             sorted(book.path for book in
                    [self.backend.get_book_by_path(p) for p in archives]),
             'the books the dialog added are not in the library')
+
+    def test_a_damaged_book_does_not_stop_the_rest(self):
+        """A tar archive broken off halfway raised out of add_book(), and
+        so out of the loop: the books after it were never added, and the
+        progress dialog stayed on screen."""
+        with open(get_testfile_path('archives', '02-TAR-Normal.tar'),
+                  'rb') as whole:
+            data = whole.read()
+        damaged = os.path.join(self.tmp_dir, 'damaged.tar')
+        with open(damaged, 'wb') as book:
+            book.write(data[:len(data) // 2])
+        after = os.path.join(self.tmp_dir, 'after.cbz')
+        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), after)
+
+        self._add([damaged, after])
+
+        self.assertIsNone(self.backend.get_book_by_path(damaged))
+        self.assertIsNotNone(self.backend.get_book_by_path(after),
+                             'the book after the damaged one was not added')
+        self.assertFalse(
+            [window for window in Gtk.Window.list_toplevels()
+             if isinstance(window, add_progress_dialog._AddLibraryProgressDialog)
+             and window.get_visible()],
+            'the progress dialog stayed up')

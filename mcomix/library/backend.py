@@ -386,11 +386,17 @@ class _LibraryBackend:
         with archive_password.never_asked() as withheld:
             try:
                 info = archive_tools.get_archive_info(path)
-            except Exception:
+            except Exception as error:
                 # A handler that gives up on no password may say so by
                 # raising, as libunrar does over an encrypted listing.
+                # Any other failure is a damaged book, which is not
+                # added; raising left the books after it in a batch
+                # unadded too.
                 if not withheld.wanted:
-                    raise
+                    log.warning(_('! Could not add book "%s" to the library'),
+                                i18n.to_display_string(path))
+                    log.debug('%s', error)
+                    return False
                 info = None
         if info is None and withheld.wanted:
             mime = archive_tools.archive_mime_type(path)
