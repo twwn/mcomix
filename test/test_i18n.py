@@ -220,3 +220,36 @@ class CatalogueCandidatesTest(unittest.TestCase):
                 ('zh_TW.Big5', ['zh_TW', 'zh'])):
             with self.subTest(name=name):
                 self.assertEqual(expected, i18n.catalogue_candidates(name))
+
+
+class ToUnicodeTest(unittest.TestCase):
+
+    """Text that says nothing of its encoding: a comment file in an
+    archive, a line an archiver printed."""
+
+    GERMAN = ('Übersetzung und Lettering von der Gruppe. Dieser Band '
+              'enthält die Kapitel 1 bis 12. Größe und Qualität der Scans '
+              'wurden verbessert. Viel Spaß!')
+    FRENCH = ("Ce volume réunit les épisodes parus entre 1998 et 2001. "
+              "Traduction française et lettrage : l'équipe. Merci à tous, "
+              "à bientôt !")
+
+    def test_text_is_passed_through(self):
+        self.assertEqual('Größe', i18n.to_unicode('Größe'))
+
+    def test_utf_8_is_read_as_utf_8(self):
+        self.assertEqual(self.GERMAN,
+                         i18n.to_unicode(self.GERMAN.encode('utf-8')))
+
+    def test_text_written_by_dos_is_read_in_its_code_page(self):
+        """It was read in chardet's guess, Windows-1252, where code page
+        437's bytes for "Größe" read "Gr”áe"."""
+        for text, encoding in ((self.GERMAN, 'cp437'),
+                               (self.FRENCH, 'cp850')):
+            with self.subTest(encoding=encoding):
+                self.assertEqual(text, i18n.to_unicode(text.encode(encoding)))
+
+    def test_text_written_by_windows_is_still_read_in_its_code_page(self):
+        for text in (self.GERMAN, self.FRENCH):
+            with self.subTest(text=text[:10]):
+                self.assertEqual(text, i18n.to_unicode(text.encode('cp1252')))

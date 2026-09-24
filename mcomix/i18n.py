@@ -7,6 +7,7 @@ import os
 import pkgutil
 import re
 import sys
+from collections.abc import Sequence
 
 try:
     import chardet
@@ -70,30 +71,59 @@ def guess_encoding(data: bytes, sure: bool = False) -> str | None:
     return encoding
 
 
+#: The code pages of DOS, which DOS programs - and Windows' zip folders,
+#: which write the OEM code page - wrote text and names in.  chardet
+#: does not consider them among the encodings of the web, and cannot
+#: tell them from those by the bytes alone.  Code page 866, Russian
+#: DOS, is not among them: it reads every byte above 127 as a Cyrillic
+#: letter, so any text would read as letters in it.
+DOS_CODE_PAGES = ('cp437', 'cp850')
+
+
+def best_decoding(items: Sequence[bytes],
+                  candidates: Sequence[str]) -> str | None:
+    """The one of <candidates> that reads every one of <items> with the
+    largest share of letters among what is not ASCII, or None if none
+    reads them all; on a tie the one named first.
+
+    The same bytes in the wrong one of two single-byte code pages come
+    out as signs - currency, box drawing - where the right one gives
+    letters: "Mañana" written by DOS is "Ma¤ana" in Windows-1252,
+    "Größe" written by Windows "Gr÷▀e" in code page 437.  Kana and
+    ideographs are letters too.
+    """
+    best, best_share = None, -1.0
+    for encoding in candidates:
+        try:
+            texts = [item.decode(encoding) for item in items]
+        except (UnicodeDecodeError, LookupError):
+            continue
+        others = [character for text in texts for character in text
+                  if not character.isascii()]
+        share = (sum(character.isalpha() for character in others)
+                 / len(others)) if others else 1.0
+        if share > best_share:
+            best, best_share = encoding, share
+    return best
+
+
 def to_unicode(string: str | bytes) -> str:
-    """Convert <string> to unicode. First try the default filesystem
-    encoding, and then fall back on some common encodings.
+    """<string> as text: as UTF-8 if it is that, or else in whichever of
+    chardet's guess (the locale's encoding where chardet is not
+    installed), the file system's encoding, the DOS code pages and
+    Latin-1 reads it best (best_decoding()).  Latin-1 reads any bytes,
+    so something always comes back.
     """
     if isinstance(string, str):
         return string
-
-    # chardet's guess, where it has one, and the locale's otherwise.
-    probable_encoding = guess_encoding(string) or locale.getpreferredencoding()
-
-    for encoding in (
-            probable_encoding,
-            sys.getfilesystemencoding(),
-            'utf-8',
-            'latin-1'):
-
-        try:
-            ustring = str(string, encoding)
-            return ustring
-
-        except (UnicodeError, LookupError):
-            pass
-
-    return string.decode('utf-8', 'replace')
+    try:
+        return string.decode('utf-8')
+    except UnicodeDecodeError:
+        pass
+    candidates = [guess_encoding(string) or locale.getpreferredencoding(),
+                  sys.getfilesystemencoding(), *DOS_CODE_PAGES, 'latin-1']
+    encoding = best_decoding([string], candidates) or 'latin-1'
+    return string.decode(encoding)
 
 
 def to_utf8(string: str | bytes) -> bytes:
