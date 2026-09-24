@@ -156,7 +156,11 @@ class _ScrollablePageTest(_KeyPressWindowTest):
         self.window.change_zoom_mode()
         for _ in range(8):
             self.window.manual_zoom_in()
-        pump()
+        # Until the scroll bars have been told the zoomed page's size,
+        # a frame after it is laid out, _right() and _bottom() read the
+        # size of the window instead: a test that took its expected end
+        # from them there, under load, expected (14, 14).
+        self._settle()
         self.assertTrue(self.window.is_scrollable())
         self.page = self.window.imagehandler.get_current_page()
 
