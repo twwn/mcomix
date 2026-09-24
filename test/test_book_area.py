@@ -10,7 +10,7 @@ import warnings
 
 from gi.repository import Gdk, GLib, Gtk
 
-from . import MComixTest, pump, wait_for
+from . import MComixTest, hold_open, pump, wait_for
 from .test_theme import background_of
 
 from mcomix import bookmark_backend
@@ -1023,6 +1023,7 @@ class MenuKeyTest(MComixTest):
         return self.area._key_press(None, keyval, 0, state)
 
     def test_both_keys_open_the_menu(self):
+        hold_open(self.area._book_menu)
         for keyval, state in ((Gdk.KEY_Menu, Gdk.ModifierType(0)),
                               (Gdk.KEY_F10, Gdk.ModifierType.SHIFT_MASK)):
             self.assertFalse(self.area._book_menu.get_visible())

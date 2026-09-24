@@ -17,7 +17,7 @@ import warnings
 
 from gi.repository import Gdk, Gio, Gtk
 
-from . import MComixTest, get_testfile_path, pump, wait_for
+from . import MComixTest, get_testfile_path, hold_open, pump, wait_for
 
 from mcomix import archive_packer
 from mcomix import bookmark_backend
@@ -2405,6 +2405,7 @@ class MainWindowTest(MComixTest):
         self.window.set_page(2)
         self._pump()
         self.assertFalse(self.window.popup.get_visible())
+        hold_open(self.window.popup)
 
         self.window.event_handler._open_popup_menu()
         self._pump()

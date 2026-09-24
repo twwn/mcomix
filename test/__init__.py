@@ -131,6 +131,20 @@ def pump(rounds=4000):
         turns += 1
 
 
+def hold_open(popover):
+    """Keep <popover> open whatever the other xdist workers do.
+
+    Every worker draws on the one X server xvfb-run started, and an
+    autohide popover closes when its window loses the focus, which
+    another worker's window takes whenever it is presented: a test that
+    opened a menu and looked a main loop turn later found it closed in
+    about one run in two when 24 copies ran under coverage.  What the
+    tests ask is whether MComix opened the menu, which does not depend
+    on it hiding itself.
+    """
+    popover.set_autohide(False)
+
+
 def wait_for(predicate, seconds=5):
     """Run the main loop until <predicate> holds, or time runs out.
 

@@ -12,7 +12,7 @@ import zipfile
 
 from gi.repository import Gdk, Gio, Gtk
 
-from . import MComixTest, get_testfile_path, pump, wait_for
+from . import MComixTest, get_testfile_path, hold_open, pump, wait_for
 
 from mcomix import archive_packer
 from mcomix import constants
@@ -573,6 +573,7 @@ class EditArchiveDialogTest(MComixTest):
         the two keys that asked for one through it are heard by the
         area itself, as the library's areas hear them."""
         area = self.dialog._image_area
+        hold_open(area._popup_menu)
         for keyval, state in ((Gdk.KEY_Menu, Gdk.ModifierType(0)),
                               (Gdk.KEY_F10, Gdk.ModifierType.SHIFT_MASK)):
             self.assertFalse(area._popup_menu.get_visible())
@@ -587,6 +588,7 @@ class EditArchiveDialogTest(MComixTest):
 
     def test_the_keyboard_opens_the_comment_menu(self):
         area = self.dialog._comment_area
+        hold_open(area._popup_menu)
         self.assertEqual(Gdk.EVENT_STOP,
                          area._key_press(None, Gdk.KEY_F10, 0,
                                          Gdk.ModifierType.SHIFT_MASK))

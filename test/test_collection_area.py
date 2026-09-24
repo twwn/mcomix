@@ -13,7 +13,7 @@ import os
 
 from gi.repository import Gdk, Gtk
 
-from . import MComixTest, pump
+from . import MComixTest, hold_open, pump
 
 from mcomix import constants
 from mcomix.dialog import Response
@@ -271,16 +271,14 @@ class CollectionAreaTest(MComixTest):
 
         Shift+F10 is the only one a keyboard without a menu key has.
         """
+        hold_open(self.area._collection_menu)
         for keyval, state in ((Gdk.KEY_Menu, Gdk.ModifierType(0)),
                               (Gdk.KEY_F10, Gdk.ModifierType.SHIFT_MASK)):
             self.assertFalse(self.area._collection_menu.get_visible())
             self.assertEqual(Gdk.EVENT_STOP,
                              self.area._key_press(None, keyval, 0, state))
-            # Read before the main loop turns: popup() shows the menu at
-            # once, and under xdist, where every worker shares one X
-            # server, it has been found taken down again after a pump -
-            # most likely by a pointer grab another worker's popover
-            # held - though nothing here had failed.
+            # Read before the main loop turns, although hold_open() has
+            # taken away what closed it after a pump under xdist.
             self.assertTrue(self.area._collection_menu.get_visible(),
                             'the menu did not open for %s'
                             % Gdk.keyval_name(keyval))
