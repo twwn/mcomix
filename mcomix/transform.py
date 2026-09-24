@@ -154,11 +154,6 @@ class Transform(Matrix):
     TRPINV = Matrix(0, -1, -1, 0)
 
     @classmethod
-    def __call__(cls, *values: float) -> Matrix:
-        """Construct a new Matrix by calling Transform(values)."""
-        return Matrix(*values)
-
-    @classmethod
     def from_rotation(cls, deg: int) -> Matrix:
         """Get the predefined Matrix for a supported rotation."""
         if abs(deg) not in (0, 90, 180, 270):
