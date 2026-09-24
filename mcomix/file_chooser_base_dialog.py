@@ -28,7 +28,6 @@ from mcomix import message_dialog
 from mcomix import file_provider
 from mcomix import tools
 from mcomix import i18n
-from mcomix import strings
 from mcomix.archive import password as archive_password
 from mcomix.i18n import _
 from mcomix.dialog import Response
@@ -78,7 +77,7 @@ def file_details(path: str) -> str:
         if pages is not None:
             details.append(i18n.get_translation().ngettext(
                 '%d page', '%d pages', pages) % pages)
-        description = strings.ARCHIVE_DESCRIPTIONS.get(mime)
+        description = archive_tools.describe(path, mime)
         if description:
             details.append(description)
         return ', '.join(details)

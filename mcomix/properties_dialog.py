@@ -15,7 +15,7 @@ from mcomix.dialog import Dialog
 from mcomix import comicinfo
 from mcomix import i18n
 from mcomix import log
-from mcomix import strings
+from mcomix import archive_tools
 from mcomix import properties_page
 from mcomix import widgets
 from mcomix import tools
@@ -136,7 +136,7 @@ class _PropertiesDialog(Dialog):
         main_info = (
             ngettext('%d page', '%d pages', pages) % pages,
             ngettext('%d comment', '%d comments', comments) % comments,
-            strings.ARCHIVE_DESCRIPTIONS[window.filehandler.archive_type]
+            archive_tools.describe(path or '', window.filehandler.archive_type)
         )
         page.set_main_info(main_info)
         if path is not None:

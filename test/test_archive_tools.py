@@ -105,3 +105,22 @@ class UnrarLibraryTest(MComixTest):
         self.assertEqual([path for path in tried
                           if os.path.dirname(os.path.abspath(path)) == cwd],
                          [])
+
+
+class DescribeTest(MComixTest):
+
+    def test_a_tarball_is_described_by_its_compression(self):
+        """An xz compressed tarball is of type TAR, since tarfile reads
+        it like a plain one, and was described as a plain one although
+        a gzip or bzip2 compressed one was not."""
+        for name, described in (('SolidFlat.tar', 'Tar archive'),
+                                ('SolidFlat.tar.gz',
+                                 'Gzip compressed tar archive'),
+                                ('SolidFlat.tar.bz2',
+                                 'Bzip2 compressed tar archive'),
+                                ('SolidFlat.tar.xz',
+                                 'XZ compressed tar archive')):
+            with self.subTest(name):
+                path = get_testfile_path('archives', name)
+                self.assertEqual(described, archive_tools.describe(
+                    path, archive_tools.archive_mime_type(path)))

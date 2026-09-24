@@ -191,6 +191,26 @@ def archive_mime_type(path: str) -> int | None:
     return None
 
 
+def describe(path: str, archive_type: int) -> str:
+    """How the archive at <path>, of <archive_type>, is described to the
+    reader.
+
+    An xz compressed tarball is of type constants.TAR, since tarfile
+    reads it as it reads a plain one, but it is described by what it is,
+    as a gzip or bzip2 compressed one is.
+    """
+    # Imported here: strings translates at import time, which has to
+    # wait for gettext, and this module is imported before that.
+    from mcomix import strings
+    if archive_type == constants.TAR:
+        try:
+            if tar.open_mode(tar.read_magic(path)) == 'r:xz':
+                archive_type = constants.XZ
+        except OSError:
+            pass
+    return strings.ARCHIVE_DESCRIPTIONS.get(archive_type, '')
+
+
 #: What a tar opened in each of tar.open_mode()'s modes is reported as.
 #: An xz or lzma compressed tarball is read by tarfile like any other tar,
 #: so constants.XZ is left for the ones it cannot read.
