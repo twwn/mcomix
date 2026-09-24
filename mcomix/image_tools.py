@@ -780,14 +780,19 @@ def enhance(pixbuf: GdkPixbuf.Pixbuf, brightness: float = 1.0,
             invert_color: bool = False) -> GdkPixbuf.Pixbuf:
     """Return a modified pixbuf from <pixbuf> where the enhancement operations
     corresponding to each argument has been performed. A value of 1.0 means
-    no change. If <autocontrast> is True it overrides the <contrast> value,
-    but only if the image mode is supported by ImageOps.autocontrast (i.e.
-    it is L or RGB.)
+    no change. If <autocontrast> is True it overrides the <contrast> value.
+
+    Transparency is kept as it is: ImageOps.autocontrast() and
+    ImageOps.invert() take no image with an alpha channel, and
+    invert() raises on one, so the colours are enhanced on their own.
     """
     im = pixbuf_to_pil(pixbuf)
+    alpha = im.getchannel('A') if im.mode == 'RGBA' else None
+    if alpha is not None:
+        im = im.convert('RGB')
     if brightness != 1.0:
         im = ImageEnhance.Brightness(im).enhance(brightness)
-    if autocontrast and im.mode in ('L', 'RGB'):
+    if autocontrast:
         im = ImageOps.autocontrast(im, cutoff=0.1)
     elif contrast != 1.0:
         im = ImageEnhance.Contrast(im).enhance(contrast)
@@ -797,6 +802,8 @@ def enhance(pixbuf: GdkPixbuf.Pixbuf, brightness: float = 1.0,
         im = ImageEnhance.Sharpness(im).enhance(sharpness)
     if invert_color:
         im = ImageOps.invert(im)
+    if alpha is not None:
+        im.putalpha(alpha)
     return pil_to_pixbuf(im)
 
 

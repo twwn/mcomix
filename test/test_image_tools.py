@@ -776,6 +776,39 @@ class ImageToolsTest(MComixTest):
                 self.assertImagesEqual(result, expected, msg=msg)
 
 
+class EnhanceTest(MComixTest):
+
+    """The enhancements of the dialog, on a picture that has an alpha
+    channel: a thumbnail of a transparent page, or the library's
+    cover of a book with no page that will load."""
+
+    def _transparent(self):
+        im = Image.new('RGBA', (4, 2), (40, 80, 120, 255))
+        im.putpixel((3, 1), (200, 100, 0, 0))
+        im.putpixel((2, 1), (10, 250, 60, 128))
+        return image_tools.pil_to_pixbuf(im)
+
+    def test_inverted_colours_keep_their_transparency(self):
+        im = image_tools.pixbuf_to_pil(image_tools.enhance(
+            self._transparent(), invert_color=True))
+        self.assertEqual('RGBA', im.mode)
+        self.assertEqual((215, 175, 135, 255), im.getpixel((0, 0)))
+        self.assertEqual(0, im.getpixel((3, 1))[3])
+        self.assertEqual((245, 5, 195, 128), im.getpixel((2, 1)))
+
+    def test_automatic_contrast_is_applied_and_keeps_the_transparency(self):
+        """It was left out for a picture with an alpha channel."""
+        im = Image.new('RGBA', (2, 2), (100, 100, 100, 255))
+        im.putpixel((1, 0), (150, 150, 150, 255))
+        im.putpixel((1, 1), (120, 120, 120, 0))
+        im = image_tools.pixbuf_to_pil(image_tools.enhance(
+            image_tools.pil_to_pixbuf(im), autocontrast=True))
+        self.assertEqual('RGBA', im.mode)
+        self.assertEqual((0, 0, 0, 255), im.getpixel((0, 0)))
+        self.assertEqual((255, 255, 255, 255), im.getpixel((1, 0)))
+        self.assertEqual(0, im.getpixel((1, 1))[3])
+
+
 class PixbufToTextureTest(MComixTest):
 
     """Gdk.Texture.new_for_pixbuf() is deprecated as of GTK 4.20, so the
