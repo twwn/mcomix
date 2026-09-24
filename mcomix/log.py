@@ -13,12 +13,29 @@ __all__ = [
     'getLevel', 'setLevel',
 ]
 
+
+class _Formatter(logging.Formatter):
+
+    """A formatter whose lines any UTF-8 stream can write.
+
+    A name on disk that is not UTF-8 reaches Python with lone
+    surrogates, and standard output encodes strictly: a line naming
+    such a file raised in the handler, which printed a "--- Logging
+    error ---" traceback in place of the line.  Those characters are
+    written as their escapes instead.
+    """
+
+    def format(self, record: logging.LogRecord) -> str:
+        return super().format(record).encode(
+            'utf-8', 'backslashreplace').decode('utf-8')
+
+
 # Set up default logger.
 __logger = logging.getLogger('mcomix')
 __logger.setLevel(WARNING)
 if not __logger.handlers:
     __handler = logging.StreamHandler(sys.stdout)
-    __handler.setFormatter(logging.Formatter(
+    __handler.setFormatter(_Formatter(
         '%(asctime)s [%(threadName)s] %(levelname)s: %(message)s',
         '%H:%M:%S'))
     __logger.handlers = [__handler]
