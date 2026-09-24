@@ -63,13 +63,13 @@ class _BookmarksDialog(Dialog):
         self._name_col = self._list.add_text_column(
             _('Name'), 'name', expand=True,
             sort_key=self._sort_key('_name', '_page', '_path'))
-        self._page_col = self._list.add_text_column(
+        self._list.add_text_column(
             _('Page'), 'page',
             sort_key=self._sort_key('_page', '_numpages', '_name'))
         self._path_col = self._list.add_text_column(
             _('Location'), 'path', sort_key=lambda row: row.path)
         # TRANSLATORS: "Added" as in "Date Added"
-        self._date_add_col = self._list.add_text_column(
+        self._list.add_text_column(
             _('Added'), 'added', sort_key=self._sort_key('_date_added'))
 
         # Right-clicking any heading offers the rest; Location starts

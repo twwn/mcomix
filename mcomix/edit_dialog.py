@@ -58,7 +58,7 @@ class _EditArchiveDialog(Dialog):
             title=_('Edit archive'), transient_for=window, modal=True)
         self.add_buttons(_('_Cancel'), Response.CANCEL)
 
-        self._accept_changes_button = self.add_button(_('A_pply'), Response.APPLY)
+        self.add_button(_('A_pply'), Response.APPLY)
 
         self.file_handler = window.filehandler
         self._window = window

@@ -54,7 +54,6 @@ class Extractor:
         # Everything else is filled in by setup(), which raises rather
         # than leaving any of it half done; nothing here works before
         # that has been called.
-        self._src: str
         self._dst: str
         self._files: list[str]
         self._extracted: set[str]
@@ -90,7 +89,6 @@ class Extractor:
         Listing the archive starts here, in a thread of its own, and
         contents_listed() says when it is done.
         """
-        self._src = src
         self._dst = dst
         self._files = []
         self._extracted = set()

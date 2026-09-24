@@ -561,9 +561,7 @@ class MainUI:
         # The three menus whose contents change while the program runs
         # keep models of their own, spliced into the layouts below.
         self.bookmarks = bookmark_menu.BookmarksMenu(self, window)
-        self.bookmarks_popup = self.bookmarks
         self.recent = recent.RecentFilesMenu(self, window)
-        self.recentPopup = self.recent
         self._openwith = openwith_menu.OpenWithMenu(window)
         self.move_to = move_menu.MoveToMenu(window, self.recent)
 
