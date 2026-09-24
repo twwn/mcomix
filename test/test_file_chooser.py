@@ -12,6 +12,7 @@ from mcomix import constants
 from mcomix import icons
 from mcomix import file_chooser_base_dialog
 from mcomix import main
+from mcomix.archive import password as archive_password
 from mcomix.dialog import Response
 from mcomix.preferences import prefs
 
@@ -334,6 +335,13 @@ class FileChooserTest(MComixTest):
                 self.assertIsNotNone(paintable, 'the preview stayed empty')
                 self.assertEqual(self.dialog._namelabel.get_text(), name)
 
+    def test_under_the_preview_a_picture_says_its_size_in_pixels(self):
+        path = get_testfile_path('images', 'blue.png')
+        self.dialog.filechooser.set_file(Gio.File.new_for_path(path))
+        self.assertTrue(wait_for(
+            lambda: self.dialog._detailslabel.get_text() == '100x100 px',
+            seconds=10), repr(self.dialog._detailslabel.get_text()))
+
 
 # vim: expandtab:sw=4:ts=4
 
@@ -435,3 +443,47 @@ class LibraryFileChooserTest(MComixTest):
                 chosen.get_name())
             self._module.close_library_filechooser_dialog()
             pump()
+
+
+class FileDetailsTest(MComixTest):
+
+    """What the file chooser's preview says about a file, below its name
+    and size."""
+
+    def setUp(self):
+        super().setUp()
+        self.asked = []
+
+        def ask(archive, on_password):
+            self.asked.append(archive)
+            on_password(None)
+
+        patcher = unittest.mock.patch.object(
+            archive_password, 'ask_for_password', ask)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def test_a_picture_gives_its_size_in_pixels(self):
+        self.assertEqual('100x100 px', file_chooser_base_dialog.file_details(
+            get_testfile_path('images', 'blue.png')))
+
+    def test_a_book_gives_its_page_count_and_kind(self):
+        """The four pictures, not the comment beside them."""
+        self.assertEqual('4 pages, ZIP archive',
+                         file_chooser_base_dialog.file_details(
+                             get_testfile_path('archives',
+                                               '01-ZIP-Normal.zip')))
+
+    def test_a_book_whose_listing_is_encrypted_gives_its_kind_alone(self):
+        """Its names cannot be read without the password, which the
+        preview does not ask for."""
+        details = file_chooser_base_dialog.file_details(
+            get_testfile_path('archives', 'EncryptedHeader.7z'))
+        self.assertEqual([], self.asked)
+        self.assertNotIn('page', details)
+
+    def test_a_file_mcomix_does_not_read_gives_nothing(self):
+        path = os.path.join(self.tmp_dir, 'notes.txt')
+        with open(path, 'w') as notes:
+            notes.write('nothing to see')
+        self.assertEqual('', file_chooser_base_dialog.file_details(path))

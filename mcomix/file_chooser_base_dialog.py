@@ -3,6 +3,9 @@
 import os
 import mimetypes
 import fnmatch
+import shutil
+import tempfile
+import threading
 from gi.repository import Gdk, Gio, GLib, GObject, Gtk, Pango
 
 from collections.abc import Iterable, Iterator, Sequence
@@ -24,6 +27,9 @@ from mcomix import thumbnail_tools
 from mcomix import message_dialog
 from mcomix import file_provider
 from mcomix import tools
+from mcomix import i18n
+from mcomix import strings
+from mcomix.archive import password as archive_password
 from mcomix.i18n import _
 from mcomix.dialog import Response
 
@@ -54,6 +60,71 @@ _PLACES_WIDTH = 220
 #: The formats a comic reader is asked for, before the rest.
 _COMMON_ARCHIVES = ('ZIP', 'RAR', '7z', 'Tar', 'PDF')
 _COMMON_IMAGES = ('JPEG', 'PNG', 'WEBP', 'GIF', 'AVIF', 'JXL', 'TIFF', 'BMP')
+
+
+def file_details(path: str) -> str:
+    """What the preview says about <path> below its name and size.
+
+    A picture's size in pixels, read from its header; a book's page
+    count and kind, which means listing it.  Nothing for a file MComix
+    does not read, and whatever could be found out for one that fails
+    part of the way.  Run off the main loop: listing a book reads it,
+    and a PDF starts a process to do so.
+    """
+    mime = archive_tools.archive_mime_type(path)
+    if mime is not None:
+        details = []
+        pages = _count_pages(path, mime)
+        if pages is not None:
+            details.append(i18n.get_translation().ngettext(
+                '%d page', '%d pages', pages) % pages)
+        description = strings.ARCHIVE_DESCRIPTIONS.get(mime)
+        if description:
+            details.append(description)
+        return ', '.join(details)
+    if image_tools.is_image_file(path):
+        try:
+            width, height = image_tools.get_image_size(path)
+        except Exception:
+            return ''
+        if width > 0 and height > 0:
+            # As the properties dialog writes it.
+            return '%dx%d px' % (width, height)
+    return ''
+
+
+def _count_pages(path: str, mime: int) -> int | None:
+    """How many pages the book at <path> has, or None if it cannot be
+    listed without a password or at all.
+
+    Counted as the file handler counts them: the pictures in the book
+    and in the books inside it, less what a Mac's archiver adds.
+    """
+    tmpdir = tempfile.mkdtemp(prefix='mcomix_preview.')
+    archive = None
+    try:
+        # The preview is shown on the reader's behalf, not at their
+        # asking, so an encrypted book is not asked the password of.
+        with archive_password.never_asked() as withheld:
+            archive = archive_tools.get_recursive_archive_handler(
+                path, tmpdir, type=mime)
+            if archive is None:
+                return None
+            names = archive.list_contents()
+        if withheld.wanted:
+            # A listing that needed the password lists nothing, which is
+            # not a book of no pages.
+            return None
+        return len([name for name in names
+                    if image_tools.is_image_file(name)
+                    and '__MACOSX' not in os.path.normpath(name).split(os.sep)])
+    except Exception as error:
+        log.debug('Could not count the pages of "%s": %s', path, error)
+        return None
+    finally:
+        if archive is not None:
+            archive.close()
+        shutil.rmtree(tmpdir, True)
 
 
 def _by_familiarity(names: Iterable[str], common: Sequence[str]) -> list[str]:
@@ -188,11 +259,18 @@ class _BaseFileChooserDialog(Dialog):
         self._sizelabel.set_ellipsize(Pango.EllipsizeMode.MIDDLE)
         widgets.pack(preview_box, self._sizelabel, False, False, 0)
 
+        # A picture's size in pixels, a book's page count and kind.
+        self._detailslabel = labels.FormattedLabel(scale=pango_scale_small)
+        self._detailslabel.set_ellipsize(Pango.EllipsizeMode.END)
+        widgets.pack(preview_box, self._detailslabel, False, False, 0)
+        #: The file the details were found out for, and what they are.
+        self._details: tuple[str, str] | None = None
+
         # An ellipsized label still asks for room enough for all of its
         # text, so the column - and with it the file list beside it -
         # moved every time the name under the preview changed.  Holding
         # the labels to a width stops that.
-        for label in (self._namelabel, self._sizelabel):
+        for label in (self._namelabel, self._sizelabel, self._detailslabel):
             label.set_max_width_chars(_PREVIEW_LABEL_WIDTH)
             label.set_width_chars(_PREVIEW_LABEL_WIDTH)
         preview_box.set_visible(True)
@@ -667,10 +745,30 @@ class _BaseFileChooserDialog(Dialog):
                 archive_support=True)
             thumbnailer.thumbnail_finished += self._preview_thumbnail_finished
             thumbnailer.thumbnail(path, threaded=True)
+            thread = threading.Thread(target=self._find_details, args=(path,))
+            thread.name += '-preview-details'
+            thread.daemon = True
+            thread.start()
         else:
             self._preview_image.set_paintable(None)
             self._namelabel.set_text('')
             self._sizelabel.set_text('')
+            self._detailslabel.set_text('')
+
+    def _find_details(self, path: str) -> None:
+        """Find out file_details() of <path>, on a thread of its own."""
+        details = file_details(path)
+        GLib.idle_add(self._details_found, path, details)
+
+    def _details_found(self, path: str, details: str) -> bool:
+        """Keep what was found out about <path>, and show it if <path> is
+        the file the preview is showing."""
+        if self._destroyed or path != self._previewed:
+            return GLib.SOURCE_REMOVE
+        self._details = (path, details)
+        if self._namelabel.get_text() == os.path.basename(path):
+            self._detailslabel.set_text(details)
+        return GLib.SOURCE_REMOVE
 
     def _preview_thumbnail_finished(self, filepath: str,
                                     pixbuf: "GdkPixbuf.Pixbuf | None") -> None:
@@ -689,6 +787,7 @@ class _BaseFileChooserDialog(Dialog):
                 self._preview_image.set_paintable(None)
                 self._namelabel.set_text('')
                 self._sizelabel.set_text('')
+                self._detailslabel.set_text('')
                 return
 
             if pixbuf is None:
@@ -703,6 +802,11 @@ class _BaseFileChooserDialog(Dialog):
             self._preview_image.set_paintable(
                 image_tools.pixbuf_to_texture(pixbuf))
             self._namelabel.set_text(os.path.basename(filepath))
+            # What was found out about this file, if it came first; what
+            # comes later is set by _details_found().
+            self._detailslabel.set_text(
+                self._details[1] if self._details is not None
+                and self._details[0] == filepath else '')
             try:
                 size = tools.format_byte_size(os.stat(filepath).st_size)
             except OSError:
