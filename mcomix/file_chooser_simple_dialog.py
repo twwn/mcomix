@@ -23,7 +23,6 @@ class SimpleFileChooserDialog(file_chooser_base_dialog._BaseFileChooserDialog):
         super().__init__(action, parent, folder)
         if action == Gtk.FileChooserAction.OPEN:
             self.filechooser.set_select_multiple(True)
-        self._paths: list[str] | None = None
         self._on_paths: "Callable[[list[str]], None] | None" = None
 
     def run_async(self, on_paths: Callable[[list[str]], None]) -> None:
@@ -36,7 +35,6 @@ class SimpleFileChooserDialog(file_chooser_base_dialog._BaseFileChooserDialog):
         self.set_visible(True)
 
     def files_chosen(self, paths: list[str]) -> None:
-        self._paths = paths
         if self._on_paths is not None:
             on_paths, self._on_paths = self._on_paths, None
             on_paths(paths)
