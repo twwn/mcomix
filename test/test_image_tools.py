@@ -1140,3 +1140,39 @@ class EdgeColourTest(MComixTest):
                      image_tools.get_most_common_edge_colour((left, white)))
         self._expect((0, 0, 0),
                      image_tools.get_most_common_edge_colour((black, black)))
+
+
+class RawExifProfileTest(MComixTest):
+
+    """The orientation ImageMagick writes into a PNG as a text chunk,
+    "Raw profile type exif", in hex, rather than as an eXIf chunk."""
+
+    @staticmethod
+    def _profile(orientation=6, header='exif', size=None, hexdata=None):
+        exif = Image.Exif()
+        exif[0x0112] = orientation
+        data = exif.tobytes()
+        return '\n%s\n%8d\n%s\n' % (
+            header, len(data) if size is None else size,
+            data.hex() if hexdata is None else hexdata)
+
+    def _pixbuf(self, profile):
+        pixbuf = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, False, 8, 4, 2)
+        pixbuf.set_option('tEXt::Raw profile type exif', profile)
+        return pixbuf
+
+    def test_the_turn_is_read_out_of_the_profile(self):
+        self.assertEqual(90, image_tools.get_implied_rotation(
+            self._pixbuf(self._profile(6))))
+        self.assertEqual(270, image_tools.get_implied_rotation(
+            self._pixbuf(self._profile(8))))
+
+    def test_a_profile_that_does_not_hold_up_turns_nothing(self):
+        for name, profile in (
+                ('another header', self._profile(header='iptc')),
+                ('a size that does not match', self._profile(size=3)),
+                ('something other than hex', self._profile(hexdata='xyz')),
+                ('too few lines', '\nexif\n')):
+            with self.subTest(name):
+                self.assertEqual(0, image_tools.get_implied_rotation(
+                    self._pixbuf(profile)))
