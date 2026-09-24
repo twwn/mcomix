@@ -767,3 +767,68 @@ class NewBooksMessageTest(MComixTest):
         with unittest.mock.patch.object(i18n, '_translation', polish):
             self.assertIn('2 nowe książki', self._message(2))
             self.assertIn('5 nowych książek', self._message(5))
+
+
+class AddCollectionTest(_LibraryWindowTest):
+
+    """"New collection...", through the dialog that asks for its name."""
+
+    def _add(self, name, response=Response.OK):
+        dialog = self._open()
+        dialog.collection_area.add_collection()
+        pump()
+        prompts = [window for window in Gtk.Window.list_toplevels()
+                   if isinstance(window, message_dialog.MessageDialog)
+                   and window.get_visible()]
+        self.assertEqual(1, len(prompts))
+        entry = self._entry_in(prompts[0])
+        entry.set_text(name)
+        prompts[0].response(response)
+        pump()
+        return dialog
+
+    @staticmethod
+    def _entry_in(widget):
+        pending = [widget]
+        while pending:
+            widget = pending.pop()
+            if isinstance(widget, Gtk.Entry):
+                return widget
+            child = widget.get_first_child()
+            while child is not None:
+                pending.append(child)
+                child = child.get_next_sibling()
+        raise AssertionError('the dialog has no entry')
+
+    def _names(self, dialog):
+        """The collections, less the Recent one the library keeps."""
+        return sorted(dialog.backend.get_collection_name(collection)
+                      for collection in dialog.backend.get_all_collections()
+                      if dialog.backend.get_collection_name(collection)
+                      != 'Recent')
+
+    def test_a_new_collection_is_made_and_shown(self):
+        dialog = self._add('Shelf')
+        self.assertEqual(['Shelf'], self._names(dialog))
+        shelf = dialog.backend.get_collection_by_name('Shelf')
+        self.assertEqual(shelf.id,
+                         dialog.collection_area.get_current_collection())
+
+    def test_spaces_around_the_name_are_not_part_of_it(self):
+        dialog = self._add('  Shelf ')
+        self.assertEqual(['Shelf'], self._names(dialog))
+
+    def test_a_name_of_nothing_but_spaces_makes_nothing(self):
+        dialog = self._add('   ')
+        self.assertEqual([], self._names(dialog))
+
+    def test_cancel_makes_nothing(self):
+        dialog = self._add('Shelf', Response.CANCEL)
+        self.assertEqual([], self._names(dialog))
+
+    def test_a_name_already_taken_is_refused_and_said_so(self):
+        dialog = self._open()
+        dialog.backend.add_collection('Shelf')
+        self._add('Shelf')
+        self.assertEqual(['Shelf'], self._names(dialog))
+        self.assertIn('already exists', dialog._statusbar.get_text())
