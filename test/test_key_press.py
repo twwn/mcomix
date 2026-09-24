@@ -32,12 +32,16 @@ class _KeyPressWindowTest(MComixTest):
 
     """A main window, and a way to press a key in it."""
 
+    #: Preferences set before the window is made.
+    WINDOW_PREFS: dict = {}
+
     def setUp(self):
         super().setUp()
         for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
                           constants.THUMBNAIL_PATH):
             os.makedirs(directory, exist_ok=True)
         icons.load_icons()
+        prefs.update(self.WINDOW_PREFS)
         self.window = main.MainWindow()
         main.set_main_window(self.window)
         pump()
@@ -127,6 +131,17 @@ class _ScrollablePageTest(_KeyPressWindowTest):
 
     #: How many presses at the end of the page turn it.
     PRESSES = 3
+
+    #: A window of a size the tests know.  Left to itself it opens at
+    #: the size remembered, widened to what its menu bar and tool bar
+    #: ask for and cut to the screen: 745 by 384 pixels of page under
+    #: Arch's xvfb-run, whose screen is 640 by 480, and 745 by 504 on a
+    #: 1280 by 1024 one - where six of these tests failed on the CI.
+    #: Without the bars and the sidebar, and no larger than 640 by 480,
+    #: it is the size asked for on either.
+    WINDOW_PREFS = {'window width': 640, 'window height': 400,
+                    'show menubar': False, 'show toolbar': False,
+                    'show thumbnails': False}
 
     def setUp(self):
         super().setUp()

@@ -11,6 +11,7 @@ import os
 from gi.repository import GdkPixbuf
 
 from . import MComixTest, get_testfile_path, pump, wait_for
+from . import test_key_press
 
 from mcomix import constants
 from mcomix import icons
@@ -188,6 +189,9 @@ class LensFollowsThePagesTest(MComixTest):
                           constants.THUMBNAIL_PATH):
             os.makedirs(directory, exist_ok=True)
         icons.load_icons()
+        # A window of a size the test knows, whatever the screen, as
+        # test_key_press's scrolling tests have it (_ScrollablePageTest).
+        prefs.update(test_key_press._ScrollablePageTest.WINDOW_PREFS)
         self.window = main.MainWindow()
         main.set_main_window(self.window)
         pump()
@@ -253,7 +257,9 @@ class LensFollowsThePagesTest(MComixTest):
         start = adjustment.get_value()
         self.window.page_area.scroll_to(
             start + 60, self.window.page_area.get_position()[1])
-        wait_for(lambda: adjustment.get_value() == start + 60, seconds=5)
+        self.assertTrue(wait_for(
+            lambda: adjustment.get_value() == start + 60, seconds=5),
+            'the page did not scroll 60 pixels across')
         self.assertEqual(before_x + 60, self.drawn[-1][1][0],
                          'the lens stayed where the pointer was on the '
                          'canvas, not on the screen')
