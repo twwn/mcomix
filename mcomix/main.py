@@ -586,6 +586,10 @@ class MainWindow(Gtk.Window):
                     index = None
                 self.scroll_to_predefined(destination, index)
 
+            # The pages have changed under the pointer, which has not
+            # moved, so no motion event will redraw the lens.
+            self.lens.redraw()
+
         else:
             # Save scroll destination for when the page becomes available,
             # unless this redraw was asked for none: one that came while

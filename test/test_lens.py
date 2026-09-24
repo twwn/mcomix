@@ -17,6 +17,7 @@ from mcomix import icons
 from mcomix import image_tools
 from mcomix import main
 from mcomix.lens import MagnifyingLens
+from mcomix.preferences import prefs
 
 
 def _source(has_alpha):
@@ -169,6 +170,93 @@ class LensCursorTest(MComixTest):
         self.window.lens.enabled = True
         self.window.lens.enabled = False
         self.assertEqual(constants.NORMAL_CURSOR, self._cursor)
+
+
+class LensFollowsThePagesTest(MComixTest):
+
+    """The lens over pages that change under a pointer that stays put.
+
+    Nothing moves the mouse when a key turns the page or scrolls it, so
+    no motion event comes; the lens went on showing the page before, at
+    the place on the canvas where the pointer had been, until the mouse
+    was moved.
+    """
+
+    def setUp(self):
+        super().setUp()
+        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
+                          constants.THUMBNAIL_PATH):
+            os.makedirs(directory, exist_ok=True)
+        icons.load_icons()
+        self.window = main.MainWindow()
+        main.set_main_window(self.window)
+        pump()
+        # A folder of pictures that differ from one another; the pages
+        # of the test archives are all one pixel.
+        self.window.filehandler.open_file(
+            get_testfile_path('images', 'pattern.jpg'))
+        self._wait_for_the_page()
+        self.lens = self.window.lens
+        self.drawn = []
+        original = self.lens._get_lens_pixbuf
+
+        def record(*args):
+            pixbuf = original(*args)
+            self.drawn.append((self.lens._last_lens_rect, args[:2],
+                               bytes(pixbuf.get_pixels())))
+            return pixbuf
+
+        self.lens._get_lens_pixbuf = record
+        # The tests move the pointer themselves.  Every xdist worker
+        # shares one Xvfb and its one pointer, and a window mapped or
+        # resized under it hears of it as motion.
+        self.window.page_area.remove_controller(self.lens._motion)
+        self.lens.enabled = True
+        width, height = self.window.get_visible_area_size()
+        self.lens._motion_event(None, width / 2, height / 2)
+
+    def tearDown(self):
+        self.window.terminate_program()
+        self.window.destroy()
+        main.set_main_window(None)
+        pump()
+        super().tearDown()
+
+    def _wait_for_the_page(self):
+        imagehandler = self.window.imagehandler
+        wait_for(lambda: imagehandler.page_is_available()
+                 and not self.window._waiting_for_redraw, seconds=20)
+        pump()
+
+    def test_a_page_turn_redraws_the_lens(self):
+        before = self.drawn[-1]
+        self.window.flip_page(+1)
+        self._wait_for_the_page()
+        after = self.drawn[-1]
+        self.assertEqual(before[1], after[1],
+                         'the pointer did not move, nor did the pages')
+        # Not assertNotEqual: it would print both lenses, byte by byte.
+        self.assertTrue(before[2] != after[2],
+                        'the lens still shows the page before')
+
+    def test_a_scroll_keeps_the_lens_under_the_pointer(self):
+        # Zoomed in far enough for the page to be scrolled across.
+        prefs['zoom mode'] = constants.ZoomMode.MANUAL
+        self.window.change_zoom_mode()
+        for _ in range(8):
+            self.window.manual_zoom_in()
+        self._wait_for_the_page()
+        adjustment = self.window.page_area.get_hadjustment()
+        wait_for(lambda: adjustment.get_upper() - adjustment.get_page_size()
+                 > 100, seconds=5)
+        before_x = self.drawn[-1][1][0]
+        start = adjustment.get_value()
+        self.window.page_area.scroll_to(
+            start + 60, self.window.page_area.get_position()[1])
+        wait_for(lambda: adjustment.get_value() == start + 60, seconds=5)
+        self.assertEqual(before_x + 60, self.drawn[-1][1][0],
+                         'the lens stayed where the pointer was on the '
+                         'canvas, not on the screen')
 
 
 # vim: expandtab:sw=4:ts=4

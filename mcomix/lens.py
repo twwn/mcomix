@@ -36,14 +36,23 @@ class MagnifyingLens:
     def __init__(self, window: 'main.MainWindow') -> None:
         self._window = window
         self._area = self._window.page_area
-        motion = Gtk.EventControllerMotion()
-        motion.connect('motion', self._motion_event)
-        self._area.add_controller(motion)
+        #: What tells the lens where the pointer is.
+        self._motion = Gtk.EventControllerMotion()
+        self._motion.connect('motion', self._motion_event)
+        self._area.add_controller(self._motion)
+        # A scroll moves the pages under a pointer that stays put, and
+        # no motion event comes to say so.
+        for adjustment in (self._area.get_hadjustment(),
+                           self._area.get_vadjustment()):
+            adjustment.connect('value-changed',
+                               lambda _adjustment: self.redraw())
 
         #: Stores lens state
         self._enabled = False
-        #: Stores a tuple of the last mouse coordinates
-        self._point: tuple[int, int] | None = None
+        #: Where the pointer was last seen, in the page area's own
+        #: coordinates rather than the canvas': the pages can move
+        #: under a pointer that stays where it is.
+        self._point: tuple[float, float] | None = None
         #: Stores the last rectangle that was used to render the lens
         self._last_lens_rect: tuple[int, int, int, int] | None = None
 
@@ -80,21 +89,38 @@ class MagnifyingLens:
         if self._enabled and self._window.filehandler.file_loaded:
             self._window.cursor_handler.set_cursor_type(constants.NO_CURSOR)
 
-            if self._point:
-                self._draw_lens(*self._point)
+            self._draw_lens()
         else:
             self._window.cursor_handler.set_cursor_type(constants.NORMAL_CURSOR)
             self._clear_lens()
             self._last_lens_rect = None
 
-    def _draw_lens(self, x: int, y: int) -> None:
-        """Calculate what image data to put in the lens and update the cursor
-        with it; <x> and <y> are the positions of the cursor within the
-        main window layout area.
+    def redraw(self) -> None:
+        """Draw the lens again over whatever is under the pointer now.
+
+        A page turn, a zoom or a scroll by key changes what is under a
+        pointer that has not moved, and no motion event follows: the
+        lens went on showing the page before until the mouse was moved.
+        """
+        if self._enabled and self._window.filehandler.file_loaded:
+            self._draw_lens()
+
+    def _draw_lens(self) -> None:
+        """Calculate what image data to put in the lens, where the
+        pointer is, and draw it over the pages.
         """
         # A Gtk.Picture with nothing in it has nothing to magnify.
-        if self._window.images[0].get_paintable() is None:
+        if (self._point is None
+                or self._window.images[0].get_paintable() is None):
             return
+
+        # The lens works in canvas coordinates, and a controller reports
+        # where the pointer is in the widget, so the scroll offset is
+        # added - now, not when the pointer moved, since the pages may
+        # have been scrolled since.
+        offset_x, offset_y = self._window.scroll_offset()
+        x = int(self._point[0] + offset_x)
+        y = int(self._point[1] + offset_y)
 
         lens_size = (prefs['lens size'],) * 2  # 2D only
         border_size = 1
@@ -148,13 +174,9 @@ class MagnifyingLens:
     def _motion_event(self, controller: Gtk.EventControllerMotion,
                       x: float, y: float) -> None:
         """ Called whenever the mouse moves over the image area. """
-        # The lens works in canvas coordinates, and a controller reports
-        # where the pointer is in the widget, so the scroll offset is
-        # added.
-        offset_x, offset_y = self._window.scroll_offset()
-        self._point = (int(x + offset_x), int(y + offset_y))
+        self._point = (x, y)
         if self.enabled:
-            self._draw_lens(*self._point)
+            self._draw_lens()
 
     def _get_lens_pixbuf(self, x: int, y: int, lens_size: Sequence[int],
                          border_size: int,
