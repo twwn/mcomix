@@ -17,6 +17,7 @@ from . import MComixTest, pump
 from mcomix import constants
 from mcomix import i18n
 from mcomix import icons
+from mcomix import keybindings
 from mcomix import main
 from mcomix import message_dialog
 from mcomix import preferences_dialog
@@ -401,5 +402,30 @@ class PreferencesDialogTest(MComixTest):
         self.assertEqual('_Reset keys', self.dialog.reset_button.get_label())
         self.assertEqual({self._DELETE: int(Response.OK)},
                          prefs['stored dialog choices'])
+
+    def test_reset_keys_puts_the_defaults_back_and_they_still_work(self):
+        """Reset keys empties the key manager - callbacks and all - and
+        has the window register its keys again, so a key has to reach
+        its action afterwards as well as be listed."""
+        km = keybindings.keybinding_manager(self.window)
+        default = list(km.get_bindings_for_action('next_page'))
+        km.edit_accel('next_page', '<Control>F9', '')
+        self.assertIn(keybindings.parse_accelerator('<Control>F9'),
+                      km.get_bindings_for_action('next_page'))
+        self._open()
+        shortcuts = self.dialog.notebook.page_num(self.dialog.shortcuts)
+        self.dialog.notebook.set_current_page(shortcuts)
+        pump()
+        self.dialog.response(constants.RESPONSE_REVERT_TO_DEFAULT)
+        self.assertEqual(default, km.get_bindings_for_action('next_page'))
+        reached = []
+        with unittest.mock.patch.object(
+                self.window, 'flip_page',
+                side_effect=lambda *args, **kwargs: reached.append(args)):
+            km.execute(default[0])
+        self.assertTrue(reached, 'the default key reaches nothing')
+        with open(constants.KEYBINDINGS_CONF_PATH) as stored:
+            self.assertTrue('<Control>F9' not in stored.read(),
+                            'the key given by hand was saved after the reset')
 
 # vim: expandtab:sw=4:ts=4
