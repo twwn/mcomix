@@ -8,6 +8,7 @@ now what says which thumbnails to make.
 """
 
 import os
+import unittest.mock
 
 
 from gi.repository import Gtk
@@ -138,6 +139,22 @@ class ThumbnailSidebarTest(MComixTest):
         self.assertEqual(len(motion), 1)
         motion[0].emit('leave')
         self.assertEqual(self.sidebar._list.get_selected_row(), 1)
+
+    def _hover(self, row):
+        """What the pointer over <row> does: it selects it."""
+        self.sidebar._list.select_row(row, scroll=False)
+
+    def test_a_thumbnail_dragged_carries_its_picture(self):
+        """The drag's icon is the thumbnail being dragged.  Asking the
+        sidebar's list for its item raised AttributeError: the list
+        view had no model, only the grid of the library did."""
+        self.sidebar.load_thumbnails()
+        wait_for(lambda: self._items()[0].thumbnail is not None, seconds=20)
+        self._hover(0)
+        source = unittest.mock.Mock()
+        self.sidebar._drag_begin(source, None)
+        source.set_icon.assert_called_once_with(
+            self._items()[0].thumbnail, -5, -5)
 
     def test_page_numbers_are_shown_only_when_the_preference_says_so(self):
         prefs['show page numbers on thumbnails'] = False

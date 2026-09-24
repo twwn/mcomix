@@ -405,7 +405,10 @@ class ThumbnailListView(Gtk.ListView, _ThumbnailViewBase):
 
     def __init__(self) -> None:
         self.store = Gio.ListStore.new(ThumbnailItem)
-        self.selection = Gtk.SingleSelection(model=self.store)
+        # Nothing sorts the pages: they are shown in the order they are
+        # held.
+        self.model = self.store
+        self.selection = Gtk.SingleSelection(model=self.model)
         # A page is selected because the viewer moved to it, so the list
         # must be able to start with nothing selected and to follow the
         # page rather than lead it.
