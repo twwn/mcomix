@@ -85,7 +85,10 @@ def find_executable(candidates: Iterable[str], workdir: str | None = None,
         workdir = os.getcwd()
     workdir = os.path.abspath(workdir)
 
-    search_path = os.environ['PATH'].split(os.pathsep)
+    # os.defpath where PATH is not set at all, as shutil.which() does:
+    # MComix started from a service or a bare environment stopped with
+    # KeyError the first time it looked for 7z or unrar.
+    search_path = os.environ.get('PATH', os.defpath).split(os.pathsep)
     if sys.platform == 'win32':
         search_path.insert(0, workdir)
         search_path.insert(0, _exe_dir)

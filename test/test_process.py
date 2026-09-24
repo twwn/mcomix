@@ -36,6 +36,15 @@ def _create_tree(root, entries):
 
 class ProcessTest(MComixTest):
 
+    @unittest.skipIf(sys.platform == 'win32', 'os.defpath holds no sh there')
+    def test_with_no_path_set_the_default_one_is_searched(self):
+        environ = {name: value for name, value in os.environ.items()
+                   if name != 'PATH'}
+        with unittest.mock.patch.dict(os.environ, environ, clear=True):
+            found = process.find_executable(('sh',))
+        self.assertIsNotNone(found)
+        self.assertIn(os.path.dirname(found), os.defpath.split(os.pathsep))
+
     def test_find_executable(self):
         cleanup = []
         try:
