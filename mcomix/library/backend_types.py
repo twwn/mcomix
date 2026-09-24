@@ -17,6 +17,7 @@ from mcomix import callback
 from mcomix import archive_tools
 from mcomix import tools
 from mcomix import log
+from mcomix import i18n
 from mcomix.i18n import _
 
 from collections.abc import Sequence
@@ -45,6 +46,23 @@ def _contains(text: str) -> str:
     for character in (_LIKE_ESCAPE, '%', '_'):
         text = text.replace(character, _LIKE_ESCAPE + character)
     return '%' + text + '%'
+
+
+def storable(path: str) -> bool:
+    """Whether the library can hold a book, or watch a directory, at
+    <path>.
+
+    Paths are SQLite text, which is UTF-8, and a name on disk need not
+    be: Python hands one that is not over with lone surrogates, which
+    SQLite's binding refuses with UnicodeEncodeError.  Such a book is
+    read like any other; it is only not in the library, and so has no
+    last read page kept for it either.
+    """
+    try:
+        path.encode('utf-8')
+    except UnicodeEncodeError:
+        return False
+    return True
 
 
 class _BackendObject:
@@ -412,6 +430,11 @@ class _WatchList:
         """
 
         directory = os.path.normpath(os.path.abspath(path))
+        if not storable(directory):
+            log.warning('Not watching "%s": its name is not UTF-8, which '
+                        'is what the library stores',
+                        i18n.to_display_string(directory))
+            return
         sql = """INSERT OR IGNORE INTO watchlist (path, collection, recursive)
                  VALUES (?, ?, ?)"""
         self.backend.execute(sql, [directory, collection.id, recursive])
@@ -576,7 +599,9 @@ class _WatchListEntry(_BackendObject):
         # the library files them in the order it is given them, and
         # "All books" shows them in that order.  A set's order put them
         # anywhere.
-        new_files = list(available_files.difference(old_files))
+        # A file the library cannot hold would be new at every scan.
+        new_files = [path for path in available_files.difference(old_files)
+                     if storable(path)]
         tools.alphanumeric_sort(new_files)
         return new_files
 

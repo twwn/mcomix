@@ -276,6 +276,23 @@ class WatchListEntryTest(unittest.TestCase):
         finally:
             shutil.rmtree(tmpdir)
 
+    def test_a_file_the_library_cannot_hold_is_not_new(self):
+        """A name that is not UTF-8 cannot be stored (b54fa3ed), so it
+        was found new at every scan, and the library said each time that
+        it had added a book it had not."""
+        tmpdir = os.path.abspath(tempfile.mkdtemp(prefix='library_types.'))
+        try:
+            plain = os.path.join(tmpdir, 'plain.cbz')
+            open(plain, 'wb').close()
+            open(os.path.join(os.fsencode(tmpdir),
+                              'B\xfccher.cbz'.encode('latin-1')), 'wb').close()
+            for recursive in (False, True):
+                entry = backend_types._WatchListEntry(tmpdir, recursive, None)
+                with self.subTest(recursive=recursive):
+                    self.assertEqual([plain], entry.get_new_files([]))
+        finally:
+            shutil.rmtree(tmpdir)
+
 
 class WatchListTest(unittest.TestCase):
 
@@ -316,6 +333,18 @@ class WatchListTest(unittest.TestCase):
         with contextlib.chdir(self.tmpdir):
             entry = self.library.watchlist.get_watchlist_entry('comics')
         self.assertEqual(self.watched, entry.directory)
+
+    def test_a_directory_the_library_cannot_hold_is_not_watched(self):
+        """Its path would be a watch list row, which is UTF-8 text:
+        adding it raised UnicodeEncodeError out of the watch list
+        dialog."""
+        latin = os.fsdecode(os.path.join(os.fsencode(self.tmpdir),
+                                         'B\xfccher'.encode('latin-1')))
+        os.makedirs(latin)
+        self.library.watchlist.add_directory(latin)
+        self.assertEqual([self.watched],
+                         [entry.directory for entry
+                          in self.library.watchlist.get_watchlist()])
 
     def test_a_directory_that_is_not_watched_is_an_error(self):
         with self.assertRaises(ValueError):
