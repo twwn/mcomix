@@ -114,6 +114,59 @@ class OpenWithCommandTest(MComixTest):
 # vim: expandtab:sw=4:ts=4
 
 
+class _Osd:
+
+    def __init__(self):
+        self.shown = []
+
+    def show(self, text):
+        self.shown.append(text)
+
+
+class ExecuteTest(MComixTest):
+
+    """Running a command: where it runs, and what the reader is told
+    when it will not."""
+
+    def setUp(self):
+        super().setUp()
+        self.window = _StubWindow('page.jpg', '/books/page.jpg')
+        self.window.osd = _Osd()
+        patcher = mock.patch.object(openwith.process, 'popen')
+        self.popen = patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def _command(self, command, cwd='', disabled_for_archives=False):
+        return openwith.OpenWithCommand('Viewer', command, cwd,
+                                        disabled_for_archives)
+
+    def test_a_command_runs_with_the_page_and_its_directory(self):
+        self._command('viewer %f', cwd=self.tmp_dir).execute(self.window)
+        self.popen.assert_called_once_with(
+            ['viewer', 'page.jpg'], stdout=openwith.process.NULL,
+            workdir=self.tmp_dir)
+        self.assertEqual([], self.window.osd.shown)
+
+    def test_a_directory_that_is_not_there_is_not_run_in(self):
+        self._command('viewer', cwd='/no/such/directory').execute(self.window)
+        self.assertIsNone(self.popen.call_args.kwargs['workdir'])
+
+    def test_a_command_kept_from_archives_says_so_over_one(self):
+        self.window.filehandler.archive_type = 1
+        self._command('viewer', disabled_for_archives=True).execute(
+            self.window)
+        self.popen.assert_not_called()
+        self.assertEqual(["'Viewer' is disabled for archives."],
+                         self.window.osd.shown)
+
+    def test_a_command_that_cannot_start_says_why(self):
+        self.popen.side_effect = FileNotFoundError(2, 'No such file')
+        self._command('no-such-viewer').execute(self.window)
+        self.assertEqual(1, len(self.window.osd.shown))
+        self.assertIn('Could not run command Viewer', self.window.osd.shown[0])
+        self.assertIn('No such file', self.window.osd.shown[0])
+
+
 class _StubArchiveHandler(_StubFileHandler):
 
     archive_type = 'zip'
