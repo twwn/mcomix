@@ -186,6 +186,27 @@ class CollectionAreaTest(MComixTest):
         pump()
         self.assertIn(self.manga, self.library.book_area.displayed)
 
+    # -- Redrawing ---------------------------------------------------------
+
+    def _expanded(self):
+        return [row.collection for row in self.area._list.expanded_rows()]
+
+    def test_an_expanded_collection_stays_expanded_on_redrawing(self):
+        self.area._list.toggle_expanded(self._row_for(self.comics))
+        self.area._list.select_row(self._row_for(self.manga))
+        pump()
+        self.area.display_collections()
+        self.assertEqual([self.comics], self._expanded())
+        self.assertEqual(self.manga, self.area.get_current_collection())
+
+    def test_the_selected_collection_stays_expanded_on_redrawing(self):
+        self.area._list.toggle_expanded(self._row_for(self.comics))
+        self.area._list.select_row(self._row_for(self.comics))
+        pump()
+        self.area.display_collections()
+        self.assertEqual([self.comics], self._expanded())
+        self.assertEqual(self.comics, self.area.get_current_collection())
+
     # -- Removing and renaming --------------------------------------------
 
     def test_removing_the_selected_collection_takes_it_out(self):

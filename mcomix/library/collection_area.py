@@ -235,7 +235,10 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable):
                 prefs['last library collection'] = None
                 self._list.expand_to(row)
                 self._list.select_row(row)
-            elif row.collection in expanded_collections:
+            # Not an elif: the selected collection may be expanded too.
+            # expand_to() opens only the rows above, and the rows come
+            # parents first, so none has opened this one yet.
+            if row.collection in expanded_collections:
                 self._list.expand_to(row)
                 self._list.toggle_expanded(row)
 
