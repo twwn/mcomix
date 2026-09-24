@@ -1,6 +1,6 @@
 """recent.py - Recent files handler."""
 
-from gi.repository import Gio, GLib, GObject, Gtk
+from gi.repository import Gio, GLib, Gtk
 import os
 
 from typing import TYPE_CHECKING
@@ -169,8 +169,8 @@ class RecentFilesMenu:
             process.launch_mcomix(path)
 
     def count(self) -> int:
-        """ Returns the amount of stored entries. """
-        return len(self._manager.get_items())
+        """How many entries the menu has to offer, shown or not."""
+        return len(self._items())
 
     def add_path(self, path: str) -> None:
         """Record <path> as recently opened."""
@@ -191,11 +191,16 @@ class RecentFilesMenu:
             pass
 
     def remove_all(self) -> None:
-        """ Removes all entries to recently opened files. """
-        try:
-            self._manager.purge_items()
-        except GObject.GError as error:
-            log.debug(error)
+        """Take every entry the menu offers off the recently-used list.
+
+        Those alone: the list is the whole desktop's, and purging it, as
+        this used to, took every other program's history with it.
+        """
+        for info in self._items():
+            try:
+                self._manager.remove_item(info.get_uri())
+            except GLib.GError as error:
+                log.debug(error)
 
 
 # vim: expandtab:sw=4:ts=4

@@ -203,6 +203,24 @@ class RecentFilesMenuTest(MComixTest):
         self.assertEqual([], [info.get_uri()
                               for info in self.manager.get_items()])
 
+    def test_clearing_it_leaves_other_programs_files_alone(self):
+        """Switching "Store information about recently opened files" to
+        "Never" offers to clear the Recent menu, and did it with
+        Gtk.RecentManager.purge_items(): the list is the whole desktop's,
+        so every program's history went - documents, music, whatever
+        else - not just the books and pages the menu offers."""
+        notes = self._add('notes.txt', mime_type='text/plain')
+        self._add('book.cbz')
+        menu = recent.RecentFilesMenu(None, self.window)
+        self.assertEqual(1, menu.count())
+
+        menu.remove_all()
+
+        self.assertEqual(
+            [Gio.File.new_for_path(notes).get_uri()],
+            [info.get_uri() for info in self.manager.get_items()])
+        self.assertEqual(0, menu.count())
+
     def test_the_menu_follows_the_list(self):
         menu = recent.RecentFilesMenu(None, self.window)
         self._add('book.cbz')
