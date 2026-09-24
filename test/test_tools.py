@@ -145,6 +145,26 @@ class TestAtomicWrite(unittest.TestCase):
             self.assertEqual(file.read(), b'old')
         self.assertListEqual(os.listdir(self.tmp_dir), ['preferences.conf'])
 
+    @unittest.skipIf(sys.platform == 'win32', 'symbolic links need privileges')
+    def test_a_linked_file_stays_linked(self) -> None:
+        """Settings kept elsewhere and linked into place, as dotfile
+        managers do: the new file was renamed over the link, so the
+        link was gone and what it pointed at never changed again."""
+        kept = os.path.join(self.tmp_dir, 'dotfiles')
+        os.makedirs(kept)
+        target = os.path.join(kept, 'preferences.conf')
+        with open(target, 'w') as file:
+            file.write('old')
+        os.symlink(target, self.path)
+
+        with tools.atomic_write(self.path) as file:
+            file.write('new')
+
+        self.assertTrue(os.path.islink(self.path))
+        with open(target, 'r') as file:
+            self.assertEqual(file.read(), 'new')
+        self.assertListEqual(os.listdir(kept), ['preferences.conf'])
+
 
 @unittest.skipIf(sys.platform == 'win32', 'the XDG directories are for Unix')
 class TestXdgDirectories(unittest.TestCase):

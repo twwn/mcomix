@@ -300,7 +300,15 @@ def atomic_write(path: str, binary: bool = False) -> "Iterator[IO[Any]]":  # typ
     only renamed over <path> after writing finished without error.  Since
     that rename is atomic, concurrently running instances can neither read a
     half-written file nor leave a truncated one behind by writing at the
-    same time. """
+    same time.
+
+    A <path> that is a symbolic link is written through: the file it
+    points at is the one replaced, and the link stays.  Renamed over the
+    link, the new file took its place, and settings a dotfile manager
+    had linked into place stopped reaching the file it keeps. """
+    real_path = os.path.realpath(path)
+    if os.path.isdir(os.path.dirname(real_path)):
+        path = real_path
     directory = os.path.dirname(path) or os.curdir
     fd, temp_path = tempfile.mkstemp(dir=directory,
                                      prefix=os.path.basename(path) + '.',
