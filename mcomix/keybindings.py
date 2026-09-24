@@ -18,8 +18,6 @@ defaults an action registers with are used only where that file held
 nothing for it.
 """
 
-import os
-import shutil
 from gi.repository import Gdk, Gtk
 import json
 from collections import defaultdict
@@ -200,7 +198,6 @@ class _KeybindingManager:
         #: accelerator => action name
         self._binding_to_action: dict[Binding, str] = {}
 
-        self._migrate_from_old_bindings()
         self._initialize()
 
     def register(self, name: str, bindings: Sequence[str],  # type: ignore[explicit-any]  # an action takes what it was registered with
@@ -418,22 +415,6 @@ class _KeybindingManager:
         """ Returns the accelerators bound to the action <name>, as
         (key, modifiers) pairs. """
         return self._action_to_bindings[name]
-
-    def _migrate_from_old_bindings(self) -> None:
-        """ This method deals with upgrading from MComix 1.0 and older to
-        MComix 1.01, which integrated all UI hotkeys into this class. Simply
-        remove old files and start from default values. """
-        gtkrc = os.path.join(constants.CONFIG_DIR, 'keybindings-Gtk.rc')
-        if os.path.isfile(gtkrc):
-            # In case the user has made modifications to his files,
-            # keep the old ones around for reference.
-            if not os.path.isfile(gtkrc + '.delete-me'):
-                shutil.move(gtkrc, gtkrc + '.delete-me')
-
-            if os.path.isfile(constants.KEYBINDINGS_CONF_PATH) and \
-                    not os.path.isfile(constants.KEYBINDINGS_CONF_PATH + '.delete-me'):
-                shutil.move(constants.KEYBINDINGS_CONF_PATH,
-                            constants.KEYBINDINGS_CONF_PATH + '.delete-me')
 
 
 _manager: _KeybindingManager | None = None
