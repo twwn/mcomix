@@ -387,14 +387,6 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         """Every selected cover, in the order they are shown."""
         return cast('list[_BookItem]', self._covers.get_selected_items())
 
-    def remove_book_at_path(self, position: int) -> None:
-        """Remove the book shown at <position> from the _BookArea."""
-        item = self._item_at(position)
-        if item is None:
-            return
-        self._covers.remove_items([item])
-        self._cache.invalidate(item.path)
-
     def get_book_at_path(self, position: int) -> int | None:
         """Return the book ID of the cover shown at <position>."""
         item = self._item_at(position)
