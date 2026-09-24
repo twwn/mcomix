@@ -7,6 +7,7 @@ from unittest import mock
 from . import MComixTest, get_testfile_path
 
 from mcomix import constants
+from mcomix import file_provider
 from mcomix.file_provider import FileProvider, OrderedFileProvider, PreDefinedFileProvider
 from mcomix.preferences import prefs
 
@@ -211,3 +212,56 @@ class PreDefinedFileProviderTest(MComixTest):
                          provider.get_directory())
 
 # vim: expandtab:sw=4:ts=4
+
+
+class GetFileProviderTest(MComixTest):
+
+    """Which provider a start is given, from the names it was handed."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.book = os.path.join(self.tmp_dir, 'book.cbz')
+        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'),
+                    self.book)
+
+    def test_one_name_is_walked_among_its_neighbours(self) -> None:
+        provider = file_provider.get_file_provider([self.book])
+        self.assertIsInstance(provider, OrderedFileProvider)
+
+    def test_one_name_that_is_not_there_gives_none(self) -> None:
+        self.assertIsNone(file_provider.get_file_provider(
+            [os.path.join(self.tmp_dir, 'gone.cbz')]))
+
+    def test_several_names_are_those_and_no_others(self) -> None:
+        provider = file_provider.get_file_provider([self.book, self.book])
+        self.assertIsInstance(provider, PreDefinedFileProvider)
+
+    def test_no_names_reopen_the_last_file_where_asked_to(self) -> None:
+        prefs['auto load last file'] = True
+        prefs['path to last file'] = self.book
+        provider = file_provider.get_file_provider([])
+        self.assertIsInstance(provider, OrderedFileProvider)
+        self.assertEqual(self.tmp_dir, provider.get_directory())
+
+    def test_no_names_open_nothing_where_not_asked_to(self) -> None:
+        prefs['auto load last file'] = False
+        prefs['path to last file'] = self.book
+        self.assertIsNone(file_provider.get_file_provider([]))
+
+    def test_no_names_open_nothing_when_the_last_file_is_gone(self) -> None:
+        prefs['auto load last file'] = True
+        prefs['path to last file'] = os.path.join(self.tmp_dir, 'gone.cbz')
+        self.assertIsNone(file_provider.get_file_provider([]))
+
+
+class UnreadableDirectoryTest(MComixTest):
+
+    def test_a_directory_that_cannot_be_listed_lists_nothing(self) -> None:
+        folder = os.path.join(self.tmp_dir, 'locked')
+        os.mkdir(folder)
+        shutil.copy(get_testfile_path('images', 'blue.png'),
+                    os.path.join(folder, 'blue.png'))
+        provider = OrderedFileProvider(os.path.join(folder, 'blue.png'))
+        with mock.patch('os.listdir', side_effect=PermissionError(13, 'No')):
+            with self.assertLogs('mcomix', level='WARNING'):
+                self.assertEqual([], provider.list_files())
