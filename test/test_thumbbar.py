@@ -11,7 +11,7 @@ import os
 import unittest.mock
 
 
-from gi.repository import Gtk
+from gi.repository import Gdk, Gtk
 
 from . import MComixTest, get_testfile_path, pump, wait_for
 
@@ -144,6 +144,18 @@ class ThumbnailSidebarTest(MComixTest):
         """What the pointer over <row> does: it selects it."""
         self.sidebar._list.select_row(row, scroll=False)
 
+    def test_a_thumbnail_dragged_away_offers_its_page(self):
+        self.sidebar.load_thumbnails()
+        self._hover(2)
+        offered = []
+        with unittest.mock.patch.object(
+                Gdk.ContentProvider, 'new_for_value',
+                side_effect=lambda value: offered.append(value) or 'provider'):
+            self.assertEqual('provider', self.sidebar._drag_prepare(
+                unittest.mock.Mock(), 0, 0))
+        self.assertEqual([self.window.imagehandler.get_path_to_page(3)],
+                         [value.get_path() for value in offered])
+
     def test_a_thumbnail_dragged_carries_its_picture(self):
         """The drag's icon is the thumbnail being dragged.  Asking the
         sidebar's list for its item raised AttributeError: the list
@@ -155,6 +167,19 @@ class ThumbnailSidebarTest(MComixTest):
         self.sidebar._drag_begin(source, None)
         source.set_icon.assert_called_once_with(
             self._items()[0].thumbnail, -5, -5)
+
+    def test_a_click_that_brings_the_window_back_turns_no_page(self):
+        """The click that gives MComix the focus again is claimed before
+        the row can take it as a choice of page."""
+        gesture = unittest.mock.Mock()
+        self.window.was_out_of_focus = True
+        self.sidebar._mouse_press_event(gesture, 1, 0, 0)
+        gesture.set_state.assert_called_once_with(
+            Gtk.EventSequenceState.CLAIMED)
+        gesture.reset_mock()
+        self.window.was_out_of_focus = False
+        self.sidebar._mouse_press_event(gesture, 1, 0, 0)
+        gesture.set_state.assert_not_called()
 
     def test_page_numbers_are_shown_only_when_the_preference_says_so(self):
         prefs['show page numbers on thumbnails'] = False
