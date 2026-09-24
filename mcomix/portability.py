@@ -7,16 +7,6 @@ import sys
 from mcomix import constants
 
 
-def uri_prefix() -> str:
-    """The prefix used for creating file URIs. This is 'file://' on
-    Linux, but 'file:' on Windows due to urllib using a different
-    URI creating scheme here."""
-    if sys.platform == "win32":
-        return "file:"
-    else:
-        return "file://"
-
-
 def invalid_filesystem_chars() -> str:
     """List of characters that cannot be used in filenames on the target platform."""
     if sys.platform == "win32":

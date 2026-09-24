@@ -1,8 +1,5 @@
 """recent.py - Recent files handler."""
 
-import urllib.request
-import urllib.parse
-import urllib.error
 from gi.repository import Gio, GLib, GObject, Gtk
 import os
 
@@ -13,13 +10,23 @@ if TYPE_CHECKING:
     from mcomix import ui as ui_module
 
 from mcomix import preferences
-from mcomix import portability
 from mcomix import process
 from mcomix import archive_tools
 from mcomix import image_tools
 from mcomix import log
 from mcomix import widgets
 from mcomix.i18n import _
+
+
+def _uri(path: str) -> str:
+    """The URI the recently-used list keeps <path> under.
+
+    GLib's: GTK keeps every entry the way GLib writes its URI, and
+    urllib's pathname2url() escapes the brackets, commas and plus signs
+    GLib leaves alone, and from Python 3.14 on begins an absolute path
+    with "///", so an entry named by it was never found to remove.
+    """
+    return Gio.File.new_for_path(path).get_uri()
 
 
 class RecentFilesMenu:
@@ -142,7 +149,9 @@ class RecentFilesMenu:
             self._load(uri)
 
     def _load(self, uri: str) -> None:
-        path = urllib.request.url2pathname(uri[7:])
+        path = Gio.File.new_for_uri(uri).get_path()
+        if path is None:
+            return
         did_file_load = self._window.filehandler.open_file(path)
 
         if not did_file_load:
@@ -155,7 +164,9 @@ class RecentFilesMenu:
         button means everywhere it opens something: a window of its own
         rather than this one's contents replaced.
         """
-        process.launch_mcomix(urllib.request.url2pathname(uri[7:]))
+        path = Gio.File.new_for_uri(uri).get_path()
+        if path is not None:
+            process.launch_mcomix(path)
 
     def count(self) -> int:
         """ Returns the amount of stored entries. """
@@ -165,14 +176,14 @@ class RecentFilesMenu:
         """Record <path> as recently opened."""
         if not preferences.prefs['store recent file info']:
             return
-        uri = portability.uri_prefix() + urllib.request.pathname2url(path)
+        uri = _uri(path)
         self._manager.add_item(uri)
 
     def remove_path(self, path: str) -> None:
         """Forget <path>, which could not be opened."""
         if not preferences.prefs['store recent file info']:
             return
-        uri = portability.uri_prefix() + urllib.request.pathname2url(path)
+        uri = _uri(path)
         try:
             self._manager.remove_item(uri)
         except GLib.GError:

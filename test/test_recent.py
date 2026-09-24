@@ -5,7 +5,7 @@ import os
 import time
 import unittest.mock
 
-from gi.repository import Gdk, GLib, Gtk
+from gi.repository import Gdk, Gio, GLib, Gtk
 
 from . import MComixTest, pump, session_tmp_dir
 
@@ -176,6 +176,25 @@ class RecentFilesMenuTest(MComixTest):
         self.assertEqual(launched, [(path, 0)])
         self.assertEqual(self.window.opened, [],
                          'the file was opened here as well')
+
+    def test_a_book_that_will_not_open_leaves_the_list(self):
+        """The entry to forget was named by urllib's pathname2url(),
+        which escapes the brackets that GTK, keeping every URI the way
+        GLib writes it, leaves alone - and from Python 3.14 on begins
+        with "file://///" - so no entry was ever found to remove, and a
+        book that was gone stayed on the menu."""
+        path = os.path.join(self.tmp_dir, 'Batman (2016) #1.cbz')
+        self.manager.add_item(Gio.File.new_for_path(path).get_uri())
+        pump()
+        self.assertEqual(1, len(self.manager.get_items()))
+        self.window.open_file = lambda path: False
+        menu = recent.RecentFilesMenu(None, self.window)
+        target = menu.model.get_item_attribute_value(0, 'target')
+        menu._actions.lookup_action(
+            recent.RecentFilesMenu.OPEN_ACTION).activate(target)
+        pump()
+        self.assertEqual([], [info.get_uri()
+                              for info in self.manager.get_items()])
 
     def test_the_menu_follows_the_list(self):
         menu = recent.RecentFilesMenu(None, self.window)
