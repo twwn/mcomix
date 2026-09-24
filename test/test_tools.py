@@ -1,6 +1,7 @@
 import itertools
 import os
 import shutil
+import sys
 import tempfile
 import unittest
 
@@ -143,3 +144,48 @@ class TestAtomicWrite(unittest.TestCase):
         with open(self.path, 'rb') as file:
             self.assertEqual(file.read(), b'old')
         self.assertListEqual(os.listdir(self.tmp_dir), ['preferences.conf'])
+
+
+@unittest.skipIf(sys.platform == 'win32', 'the XDG directories are for Unix')
+class TestXdgDirectories(unittest.TestCase):
+
+    """Where the settings, the library and the thumbnails go.
+
+    The base directory specification says a variable that is empty, or
+    that names a relative path, is to be ignored in favour of the
+    default.  An empty one was taken as it was: $XDG_CONFIG_HOME set to
+    nothing put MComix' settings in a directory called mcomix under
+    whatever directory it was started from."""
+
+    CASES = (
+        (tools.get_config_directory, 'XDG_CONFIG_HOME', ('.config', 'mcomix')),
+        (tools.get_data_directory, 'XDG_DATA_HOME', ('.local/share', 'mcomix')),
+        (tools.get_thumbnail_directory, 'XDG_CACHE_HOME',
+         ('.cache', 'thumbnails', 'normal')),
+    )
+
+    def _with(self, variable, value, function):
+        saved = os.environ.get(variable)
+        os.environ[variable] = value
+        try:
+            return function()
+        finally:
+            if saved is None:
+                del os.environ[variable]
+            else:
+                os.environ[variable] = saved
+
+    def test_an_empty_or_relative_variable_is_ignored(self):
+        home = os.path.expanduser('~')
+        for function, variable, default in self.CASES:
+            for value in ('', 'relative/dir'):
+                with self.subTest(variable=variable, value=value):
+                    self.assertEqual(os.path.join(home, *default),
+                                     self._with(variable, value, function))
+
+    def test_an_absolute_variable_is_used(self):
+        for function, variable, default in self.CASES:
+            with self.subTest(variable=variable):
+                self.assertEqual(
+                    os.path.join('/somewhere', *default[1:]),
+                    self._with(variable, '/somewhere', function))

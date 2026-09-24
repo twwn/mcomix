@@ -110,6 +110,21 @@ def get_home_directory() -> str:
         return os.path.expanduser('~')
 
 
+def _xdg_base(variable: str, default: str) -> str:
+    """The base directory $<variable> names, or <default> under the home
+    directory.
+
+    The base directory specification has a variable that is empty, or
+    that names a relative path, ignored in favour of the default; taken
+    as it was, an empty one put MComix' files under whatever directory
+    it was started from.
+    """
+    value = os.environ.get(variable, '')
+    if os.path.isabs(value):
+        return value
+    return os.path.join(get_home_directory(), default)
+
+
 def get_config_directory() -> str:
     """Return the path to the MComix config directory. On UNIX, this will
     be $XDG_CONFIG_HOME/mcomix, on Windows it will be in %APPDATA%/MComix.
@@ -120,8 +135,7 @@ def get_config_directory() -> str:
     if sys.platform == 'win32':
         return os.path.join(os.path.expandvars('%APPDATA%'), 'MComix')
     else:
-        base_path = os.getenv('XDG_CONFIG_HOME',
-                              os.path.join(get_home_directory(), '.config'))
+        base_path = _xdg_base('XDG_CONFIG_HOME', '.config')
         return os.path.join(base_path, 'mcomix')
 
 
@@ -136,8 +150,7 @@ def get_data_directory() -> str:
     if sys.platform == 'win32':
         return os.path.join(os.path.expandvars('%APPDATA%'), 'MComix')
     else:
-        base_path = os.getenv('XDG_DATA_HOME',
-                              os.path.join(get_home_directory(), '.local/share'))
+        base_path = _xdg_base('XDG_DATA_HOME', '.local/share')
         return os.path.join(base_path, 'mcomix')
 
 
@@ -150,9 +163,8 @@ def get_thumbnail_directory() -> str:
     if sys.platform == 'win32':
         cache_dir = os.path.join(get_data_directory(), '.thumbnails')
     else:
-        cache_dir = os.getenv('XDG_CACHE_HOME',
-                              os.path.join(get_home_directory(), '.cache'))
-        cache_dir = os.path.join(cache_dir, 'thumbnails')
+        cache_dir = os.path.join(_xdg_base('XDG_CACHE_HOME', '.cache'),
+                                 'thumbnails')
 
     return os.path.join(cache_dir, 'normal')
 
