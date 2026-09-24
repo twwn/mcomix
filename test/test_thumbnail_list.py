@@ -67,6 +67,16 @@ class ThumbnailListViewTest(MComixTest):
         self.view.set_pages(range(1, self.ROWS + 1))
         self._settle()
 
+    def test_a_small_thumbnail_is_not_enlarged_to_fill_its_cell(self):
+        """CONTAIN drew a 3 by 3 page 27 times over in an 82 pixel
+        cell of the thumbnail bar, and the properties dialog's picture
+        46 times; a Gtk.TreeView drew a thumbnail at its own size."""
+        from mcomix import properties_page
+        cell = thumbnail_list._ThumbnailCell(Gtk.Orientation.HORIZONTAL)
+        for picture in (cell.picture, properties_page._Page()._thumb):
+            self.assertEqual(Gtk.ContentFit.SCALE_DOWN,
+                             picture.get_content_fit())
+
     def test_every_row_is_asked_for_at_most_once(self):
         self._fill()
         self.assertTrue(self.asked, 'nothing was asked for at all')

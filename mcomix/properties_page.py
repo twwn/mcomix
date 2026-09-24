@@ -28,6 +28,8 @@ class _Page(Gtk.ScrolledWindow):
         widgets.pack(self._vbox, topbox, True, True, 0)
         # A Gtk.Image draws what it is given at an icon size.
         self._thumb = Gtk.Picture()
+        # Not enlarged past its own size, as the thumbnail bar's are not.
+        self._thumb.set_content_fit(Gtk.ContentFit.SCALE_DOWN)
         self._thumb.set_size_request(128, 128)
         widgets.pack(topbox, self._thumb, False, False, 0)
         borderbox = Gtk.Frame()

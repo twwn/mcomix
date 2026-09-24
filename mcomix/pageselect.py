@@ -56,6 +56,8 @@ class Pageselector(Dialog):
         # A Gtk.Image draws whatever it is given at an icon size; a
         # picture draws it at its own.
         self._image_preview = Gtk.Picture()
+        # Not enlarged past its own size, as the thumbnail bar's are not.
+        self._image_preview.set_content_fit(Gtk.ContentFit.SCALE_DOWN)
         self._image_preview.set_size_request(
             prefs['thumbnail size'], prefs['thumbnail size'])
 

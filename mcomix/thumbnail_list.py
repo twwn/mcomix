@@ -53,7 +53,11 @@ class _ThumbnailCell(Gtk.Box):
         self.label = Gtk.Label()
         self.label.set_ellipsize(Pango.EllipsizeMode.END)
         self.picture = Gtk.Picture()
-        self.picture.set_content_fit(Gtk.ContentFit.CONTAIN)
+        # Never larger than it is: a thumbnail is made at the size it is
+        # shown at, and one smaller than that is a picture that small,
+        # which CONTAIN blew up to fill the cell - a 3 by 3 page drawn
+        # 27 times over.  A Gtk.TreeView drew it at its own size.
+        self.picture.set_content_fit(Gtk.ContentFit.SCALE_DOWN)
         if orientation == Gtk.Orientation.HORIZONTAL:
             self.label.set_xalign(1.0)
             self.picture.set_hexpand(True)

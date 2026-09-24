@@ -51,6 +51,10 @@ class PageselectTest(MComixTest):
         self.assertEqual(adjustment.get_upper(),
                          self.window.imagehandler.get_number_of_pages())
 
+    def test_the_preview_is_not_enlarged_past_its_own_size(self):
+        self.assertEqual(Gtk.ContentFit.SCALE_DOWN,
+                         self.dialog._image_preview.get_content_fit())
+
     def test_a_page_that_is_not_available_leaves_the_preview_empty(self):
         """A page the extractor has not reached has no thumbnail, and
         handing None to Gdk.Texture raised instead of showing nothing."""

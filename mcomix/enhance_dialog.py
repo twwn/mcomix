@@ -52,6 +52,8 @@ class _EnhanceImageDialog(Dialog):
         # A Gtk.Image draws whatever it is given at an icon size; a
         # picture draws it at its own.
         self._hist_image = Gtk.Picture()
+        # Drawn at its own size, however far the dialog is widened.
+        self._hist_image.set_content_fit(Gtk.ContentFit.SCALE_DOWN)
         self._hist_image.set_size_request(262, 170)
         widgets.pack(vbox, self._hist_image, True, True, 0)
         widgets.pack(vbox, Gtk.Separator.new(Gtk.Orientation.HORIZONTAL), True, True, 0)

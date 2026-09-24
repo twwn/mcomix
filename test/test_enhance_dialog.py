@@ -50,6 +50,13 @@ class EnhanceDialogTest(MComixTest):
         pump()
         self.assertEqual(1, self._histograms_drawn_turning_a_page())
 
+    def test_the_histogram_is_not_enlarged_with_the_dialog(self):
+        from gi.repository import Gtk
+        enhance_dialog.open_dialog(None, self.window)
+        pump()
+        self.assertEqual(Gtk.ContentFit.SCALE_DOWN,
+                         enhance_dialog._dialog._hist_image.get_content_fit())
+
     def test_a_closed_dialog_draws_nothing_for_a_page_turned_to(self):
         """A dialog closed with OK was destroyed but stayed listening, and
         drew a histogram for every page turned for the rest of the
