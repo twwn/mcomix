@@ -199,6 +199,40 @@ class RedirectedPathsTest(LibraryDatabaseTest):
         self.assertEqual(reached - set(self.REDIRECTED_PATHS), set())
 
 
+class PathNotUtf8Test(LibraryDatabaseTest):
+
+    """A book whose path on disk is not UTF-8.
+
+    The library stores paths as SQLite text, which is UTF-8, and Python
+    hands such a path over with lone surrogates, which SQLite's binding
+    refuses with UnicodeEncodeError.  Opening such a book asks for its
+    last read page, and the error came out of that half way through
+    opening it, which then never finished.
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.path = os.fsdecode(os.path.join(
+            os.fsencode(self.tmp_dir), 'B\xfccher.cbz'.encode('latin-1')))
+        shutil.copy(self._archive(), self.path)
+        self.library = backend.LibraryBackend()
+        self.addCleanup(self.library.close)
+
+    def test_it_is_not_in_the_library(self):
+        self.assertIsNone(self.library.get_book_by_path(self.path))
+
+    def test_it_is_not_added_to_it(self):
+        self.assertFalse(self.library.add_book(self.path))
+        self.assertIsNone(self.library.get_book_by_path(self.path))
+
+    def test_its_last_page_is_neither_read_nor_kept(self):
+        pages = last_read_page.LastReadPage(self.library)
+        pages.set_enabled(True)
+        self.assertIsNone(pages.get_page(self.path))
+        with self.assertRaises(ValueError):
+            pages.set_page(self.path, 2)
+
+
 class ContainIndexTest(LibraryDatabaseTest):
 
     """remove_book() deletes from contain by book alone.

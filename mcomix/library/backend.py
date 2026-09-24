@@ -24,6 +24,7 @@ from mcomix import thumbnail_tools
 from mcomix import log
 from mcomix import callback
 from mcomix.library import backend_types
+from mcomix import i18n
 from mcomix.i18n import _
 # Only for importing legacy data from last-read module
 from mcomix import last_read_page
@@ -32,6 +33,22 @@ from sqlite3 import dbapi2
 
 if TYPE_CHECKING:
     from gi.repository import GdkPixbuf
+
+
+def storable(path: str) -> bool:
+    """Whether the library can hold a book at <path>.
+
+    Paths are SQLite text, which is UTF-8, and a name on disk need not
+    be: Python hands one that is not over with lone surrogates, which
+    SQLite's binding refuses with UnicodeEncodeError.  Such a book is
+    read like any other; it is only not in the library, and so has no
+    last read page kept for it either.
+    """
+    try:
+        path.encode('utf-8')
+    except UnicodeEncodeError:
+        return False
+    return True
 
 
 class _LibraryBackend:
@@ -132,6 +149,8 @@ class _LibraryBackend:
         """
 
         path = os.path.abspath(path)
+        if not storable(path):
+            return None
 
         book = self.fetchone('''select id, name, path, pages, format,
                                        size, added
@@ -370,6 +389,11 @@ class _LibraryBackend:
         added).
         """
         path = os.path.abspath(path)
+        if not storable(path):
+            log.warning('Not adding "%s" to the library: its name is not '
+                        'UTF-8, which is what the library stores',
+                        i18n.to_display_string(path))
+            return False
         name = os.path.basename(path)
         # The library lists what it is given, and what a watched
         # directory holds, on the reader's behalf: an encrypted archive
@@ -445,6 +469,10 @@ class _LibraryBackend:
         """
         old_path = os.path.abspath(old_path)
         new_path = os.path.abspath(new_path)
+        if not (storable(old_path) and storable(new_path)):
+            # Not in the library, or a name it cannot hold: the row
+            # stays where it was, for "Clean up" to find gone.
+            return False
         try:
             changed = self.execute('''update Book set path = ?, name = ?
                 where path = ?''', (new_path, os.path.basename(new_path),
