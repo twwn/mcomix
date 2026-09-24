@@ -184,8 +184,15 @@ class RecentFilesMenuTest(MComixTest):
         with "file://///" - so no entry was ever found to remove, and a
         book that was gone stayed on the menu."""
         path = os.path.join(self.tmp_dir, 'Batman (2016) #1.cbz')
-        self.manager.add_item(Gio.File.new_for_path(path).get_uri())
-        pump()
+        # add_full(), which files the entry before it returns;
+        # add_item() asks for the file's type first, and the answer
+        # comes back through the main loop when it comes.
+        data = Gtk.RecentData()
+        data.display_name = os.path.basename(path)
+        data.mime_type = 'application/zip'
+        data.app_name = 'mcomix-test'
+        data.app_exec = 'mcomix %u'
+        self.manager.add_full(Gio.File.new_for_path(path).get_uri(), data)
         self.assertEqual(1, len(self.manager.get_items()))
         self.window.open_file = lambda path: False
         menu = recent.RecentFilesMenu(None, self.window)
