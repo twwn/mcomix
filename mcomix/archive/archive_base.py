@@ -13,11 +13,6 @@ from mcomix import process
 from mcomix import callback
 from mcomix.archive import password as archive_password
 
-try:
-    import chardet
-except ImportError:
-    chardet = None  # type: ignore[assignment]
-
 
 class BaseArchive:
     """ Base archive interface. All filenames passed from and into archives
@@ -190,10 +185,9 @@ def name_encoding(raw_names: Sequence[bytes], fallback: str) -> str:
     that decodes any byte.
     """
     candidates = ['utf-8']
-    if chardet is not None:
-        guessed = chardet.detect(b'\n'.join(raw_names))
-        if guessed['encoding'] and guessed['confidence'] >= 0.5:
-            candidates.append(guessed['encoding'])
+    guessed = i18n.guess_encoding(b'\n'.join(raw_names), sure=True)
+    if guessed is not None:
+        candidates.append(guessed)
     for encoding in candidates:
         try:
             for name in raw_names:

@@ -120,12 +120,17 @@ class CommentsDialogTest(MComixTest):
         UnicodeDecodeError, and the dialog showed "Could not read" in
         place of every line of it.
         """
+        # A comment of a length a real one has: fifteen letters are too
+        # few to tell a code page by, and chardet 7 reads "café à la
+        # carte" as Windows-1251 however they are encoded.
+        text = ('Ce volume réunit les épisodes parus dans le magazine '
+                'entre 1998 et 2001. Traduction française et lettrage: '
+                "l'équipe. Merci à tous les lecteurs, à bientôt!")
         self._open(self._archive_with_comments(
-            'latin.zip',
-            ('note.txt', 'caf\xe9 \xe0 la carte'.encode('latin-1'))))
+            'latin.zip', ('note.txt', text.encode('latin-1'))))
         self.dialog = comment_dialog._CommentsDialog(self.window)
         wait_for(lambda: len(self._tabs()) == 1, seconds=20)
-        self.assertEqual('caf\xe9 \xe0 la carte', self._text_of(0))
+        self.assertEqual(text, self._text_of(0))
 
     def test_a_comment_in_utf_8_is_shown_as_it_was_written(self):
         self._open(self._archive_with_comments(

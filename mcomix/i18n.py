@@ -13,6 +13,10 @@ try:
 except ImportError:
     chardet = None  # type: ignore[assignment]
 
+#: Which chardet this is: 7 was written anew, and reads its confidence
+#: differently.
+_CHARDET_MAJOR = int(chardet.__version__.split('.')[0]) if chardet else 0
+
 from mcomix import preferences
 from mcomix import portability
 from mcomix import constants
@@ -37,6 +41,35 @@ _language_preference = 'auto'
 _RTL_LANGUAGES = frozenset(('fa', 'he'))
 
 
+def guess_encoding(data: bytes, sure: bool = False) -> str | None:
+    """The encoding chardet, where it is installed, reads <data> in.
+
+    Only the encodings in use on the web are considered, which is what
+    chardet 6 considers unless told otherwise; chardet 7 considers every
+    encoding it knows, and read the Latin-1 of a comment as MacCyrillic
+    and thirty Shift-JIS page names as EBCDIC.  chardet 5 has no such
+    choice to make.
+
+    With <sure>, a guess chardet is not sure of is None.  Up to chardet
+    6 a confidence of 0.5 separates them; chardet 7 puts its
+    confidences on another scale altogether - page names it read right
+    came at 0.01 to 0.43, and some it read wrong at 0.027 - so a guess
+    from it is taken as it is.
+    """
+    if not chardet:
+        return None
+    era = getattr(chardet, 'EncodingEra', None)
+    if era is not None:
+        guessed = chardet.detect(data, encoding_era=era.MODERN_WEB)
+    else:
+        guessed = chardet.detect(data)
+    encoding = guessed['encoding']
+    if (sure and encoding is not None and _CHARDET_MAJOR < 7
+            and guessed['confidence'] < 0.5):
+        return None
+    return encoding
+
+
 def to_unicode(string: str | bytes) -> str:
     """Convert <string> to unicode. First try the default filesystem
     encoding, and then fall back on some common encodings.
@@ -44,12 +77,8 @@ def to_unicode(string: str | bytes) -> str:
     if isinstance(string, str):
         return string
 
-    # Try chardet heuristic
-    if chardet:
-        probable_encoding = chardet.detect(string)['encoding'] or \
-            locale.getpreferredencoding()  # Fallback if chardet detection fails
-    else:
-        probable_encoding = locale.getpreferredencoding()
+    # chardet's guess, where it has one, and the locale's otherwise.
+    probable_encoding = guess_encoding(string) or locale.getpreferredencoding()
 
     for encoding in (
             probable_encoding,
