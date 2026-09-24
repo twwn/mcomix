@@ -538,6 +538,32 @@ class MainWindowTest(MComixTest):
         self.window.select_page(3)
         self.assertEqual(self.window.selected_pages, {1, 3})
 
+    def test_the_menu_puts_back_every_page_picked_out(self):
+        """Only a second CTRL and click on each page put it back, one
+        page at a time."""
+        self._ready()
+        self.window.select_page(1)
+        self.window.select_page(3)
+        action = self.window.actiongroup.get_action('unpick_pages')
+        self.assertTrue(action.get_sensitive())
+        action.activate()
+        self.assertEqual(self.window.selected_pages, set())
+        self.assertEqual(self._selected_images(), [])
+
+    def test_escape_puts_back_the_pages_picked_out_first(self):
+        """Escape lets go of a selection before it leaves fullscreen,
+        or quits where the preferences say so."""
+        self._ready()
+        self.window.select_page(1)
+        with unittest.mock.patch.dict(prefs, {'escape quits': True}), \
+                unittest.mock.patch.object(self.window,
+                                           'close_program') as closed:
+            self.window.event_handler.escape_event()
+            self.assertEqual(self.window.selected_pages, set())
+            closed.assert_not_called()
+            self.window.event_handler.escape_event()
+            closed.assert_called_once_with()
+
     def test_turning_the_page_keeps_the_pages_picked_out(self):
         """Pages are picked out as they go by and dealt with at the end
         of the book, so a page turn cannot be what forgets them."""

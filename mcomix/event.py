@@ -558,8 +558,15 @@ class EventHandler:
                          area.get_width() / 2, area.get_height() / 2)
 
     def escape_event(self) -> None:
-        """ Determines the behavior of the ESC key. """
-        if prefs['escape quits']:
+        """What the escape key does.
+
+        Pages picked out are put back first, as escape lets go of what
+        is selected elsewhere; only with none picked out does it leave
+        fullscreen, or quit where the preferences say so.
+        """
+        if self._window.selected_pages:
+            self._window.clear_selection()
+        elif prefs['escape quits']:
             self._window.close_program()
         else:
             self._window.actiongroup.get_action('fullscreen').set_active(False)

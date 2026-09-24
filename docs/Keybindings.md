@@ -77,7 +77,7 @@ Show/hide menubar | CTRL+M
 Show/hide thumbnails | F9
 Hide/show all UI elements | I
 
-Escape quits instead where "Escape key closes program" is on in the preferences.
+Escape quits instead where "Escape key closes program" is on in the preferences. While pages are picked out, Escape first puts them all back.
 
 Other functions
 ---

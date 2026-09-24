@@ -1292,7 +1292,7 @@ class MainWindow(Gtk.Window):
         self._draw_selection()
         self.uimanager.set_sensitivities()
 
-    def clear_selection(self) -> None:
+    def clear_selection(self, *args: object) -> None:
         """Put every picked-out page back."""
         if not self.selected_pages:
             return

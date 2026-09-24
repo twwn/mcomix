@@ -14,7 +14,7 @@ Option | Explanation
 -------|------------
 Language (needs restart) | "Auto-detect (Default)" takes the language from the system.
 Theme | How MComix itself is painted. "Follow the system" takes the desktop's colour scheme, "Light" and "Dark" pick one side of the theme, and "Pitch black" is the dark theme with black backgrounds, which a screen that lights its pixels one by one shows as no light at all.
-Escape key closes program | Escape quits instead of only leaving fullscreen mode.
+Escape key closes program | Escape quits instead of only leaving fullscreen mode. Pages picked out are put back first, as they are either way.
 Use this colour as background | The colour behind the page.
 Use dynamic background colour | Instead of a set colour, one worked out from the edges of the page, so that a page with a white border is shown against white. The option is there for the page and for the thumbnails.
 Use this colour as the thumbnail background | The colour behind the thumbnails in the sidebar.
