@@ -926,6 +926,10 @@ class ExternalExecutableContractTest(MComixTest):
     def test_the_arguments_are_lists_a_command_can_be_built_from(self):
         for klass in self.HANDLERS:
             handler = self._handler(klass)
+            # The arguments are built only once the program has been
+            # found, and asking for them before raises; this machine
+            # need not have unrar or lha for their shape to be checked.
+            handler._get_executable = lambda: 'program'
             for name in ('_get_list_arguments', '_get_extract_arguments'):
                 arguments = getattr(handler, name)()
                 self.assertIsInstance(
