@@ -7,6 +7,8 @@ are the ones the TreeView did for itself: reading a row back, selecting
 one, and answering which row is under the pointer.
 """
 
+import unittest.mock
+
 from gi.repository import Gdk, Gtk, Pango
 
 from . import MComixTest, pump
@@ -174,6 +176,15 @@ class ColumnListViewTest(MComixTest):
     def test_unselecting_leaves_nothing_selected(self):
         self.view.select_only(1)
         self.view.unselect_all()
+        self.assertEqual(self.view.get_selected_positions(), [])
+
+    def test_unselecting_does_not_need_the_selections_own_unselect_all(self):
+        """GTK 4.14's Gtk.SingleSelection has no unselect_all(), and the
+        one it inherits does nothing there; the row stayed selected."""
+        with unittest.mock.patch.object(Gtk.SingleSelection, 'unselect_all',
+                                        lambda selection: False):
+            self.view.select_only(1)
+            self.view.unselect_all()
         self.assertEqual(self.view.get_selected_positions(), [])
 
     def test_more_than_one_row_can_be_selected_where_that_was_asked_for(self):

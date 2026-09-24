@@ -1228,7 +1228,14 @@ class ColumnListView(Gtk.ColumnView, widgets.Releasable):
 
     def unselect_all(self) -> None:
         """Leave nothing selected."""
-        self.selection.unselect_all()
+        if isinstance(self.selection, Gtk.SingleSelection):
+            # GTK 4.14's Gtk.SingleSelection has no unselect_all() of
+            # its own, and the one it inherits goes through
+            # set_selection(), which it does not implement either, so
+            # it did nothing.  GTK 4.22's is this.
+            self.selection.unselect_item(self.selection.get_selected())
+        else:
+            self.selection.unselect_all()
 
     def row_at(self, x: float, y: float) -> "Row | None":
         """The row under (<x>, <y>), or None if no row is."""
