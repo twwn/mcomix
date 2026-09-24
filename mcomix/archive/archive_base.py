@@ -172,30 +172,70 @@ class BaseArchive:
         return self._password
 
 
+#: The code pages of DOS, which is what an archiver running under it -
+#: or Windows' own zip folders, which write the OEM code page - named
+#: files in.  chardet does not consider them among the encodings of the
+#: web, and cannot tell them from those by the bytes alone.
+_DOS_CODE_PAGES = ('cp437', 'cp850')
+
+
 def name_encoding(raw_names: Sequence[bytes], fallback: str) -> str:
     """The encoding the member names <raw_names> were written in.
 
     An archive format that does not say - a zip name without its UTF-8
     flag, any tar name - holds whatever the program that wrote it used:
-    UTF-8 from most tools of the last twenty years, and the code page of
-    its language from Windows.  UTF-8 is tried first, then whatever
-    chardet, where installed, makes of all the names at once (one name
-    is too short to tell a code page by: it read a Shift-JIS "表紙.jpg"
-    as Windows-1252), and then <fallback>, which has to be an encoding
-    that decodes any byte.
+    UTF-8 from most tools of the last twenty years, the code page of its
+    language from Windows, and a DOS code page from DOS and from
+    Windows' zip folders.  UTF-8 is taken if every name is UTF-8.
+    Otherwise the choice is between chardet's guess at all the names at
+    once, where it is installed (one name is too short to tell a code
+    page by: it read a Shift-JIS "表紙.jpg" as Windows-1252), the DOS
+    code pages and <fallback>, which has to decode any byte: whichever
+    of them reads every name, with the most of what is not ASCII read
+    as letters.  The same bytes in the wrong one of two single-byte code
+    pages read as symbols - "Mañana" written by DOS is "Ma¤ana" in
+    Windows-1252, "Größe" written by Windows "Gr÷▀e" in code page 437.
+    On a tie chardet's guess is taken, then the rest in that order.
     """
-    candidates = ['utf-8']
+    if _decodes(raw_names, 'utf-8'):
+        return 'utf-8'
+    candidates = []
     guessed = i18n.guess_encoding(b'\n'.join(raw_names), sure=True)
     if guessed is not None:
         candidates.append(guessed)
+    candidates.extend(_DOS_CODE_PAGES)
+    candidates.append(fallback)
+    best, best_score = fallback, -1.0
     for encoding in candidates:
-        try:
-            for name in raw_names:
-                name.decode(encoding)
-        except (UnicodeDecodeError, LookupError):
+        if not _decodes(raw_names, encoding):
             continue
-        return encoding
-    return fallback
+        score = _letter_share(raw_names, encoding)
+        if score > best_score:
+            best, best_score = encoding, score
+    return best
+
+
+def _decodes(raw_names: Sequence[bytes], encoding: str) -> bool:
+    """Whether every one of <raw_names> reads in <encoding>."""
+    try:
+        for name in raw_names:
+            name.decode(encoding)
+    except (UnicodeDecodeError, LookupError):
+        return False
+    return True
+
+
+def _letter_share(raw_names: Sequence[bytes], encoding: str) -> float:
+    """How much of what is not ASCII in <raw_names>, read in <encoding>,
+    reads as letters: the kana and ideographs of a Japanese name count,
+    the box-drawing and currency signs of a misread one do not."""
+    others = [character
+              for name in raw_names
+              for character in name.decode(encoding)
+              if not character.isascii()]
+    if not others:
+        return 1.0
+    return sum(character.isalpha() for character in others) / len(others)
 
 
 def surrogate_name_decoder(names: Sequence[str]) -> Callable[[str], str]:

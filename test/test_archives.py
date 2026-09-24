@@ -381,6 +381,22 @@ class ZipLegacyNameTest(MComixTest):
         self.assertEqual(names,
                          self._listed(self._legacy_zip(names, 'shift_jis')))
 
+    def test_names_written_by_dos_are_read_in_its_code_page(self):
+        """Windows' zip folders write the DOS code page too.  chardet
+        7 reads such names as Windows-1252 ("Ma¤ana", "Žrger") and does
+        not consider the DOS code pages at all; chardet 6 did the same
+        for these."""
+        names = ['Mañana/001.jpg', 'Ärger/Seite 01.jpg', 'Größe.jpg']
+        self.assertEqual(names, self._listed(self._legacy_zip(names, 'cp437')))
+
+    @unittest.skipUnless(chardet, 'chardet is optional')
+    def test_names_in_the_western_windows_code_page_are_read_in_it(self):
+        """Not in code page 437 because it decodes them: "Größe" is
+        "Gr÷▀e" there."""
+        names = ['Größe.jpg', 'Übersicht.jpg', 'Café/01.jpg']
+        self.assertEqual(names,
+                         self._listed(self._legacy_zip(names, 'cp1252')))
+
     def test_a_page_listed_under_its_decoded_name_is_extracted(self):
         names = ['Übersicht.jpg']
         archive = zip.ZipArchive(self._legacy_zip(names, 'utf-8'))
