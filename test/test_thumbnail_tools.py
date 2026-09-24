@@ -100,6 +100,33 @@ class ThumbnailReuseTest(MComixTest):
                                                         size=(128, 128))
         self._source = get_testfile_path('images', 'red.png')
 
+    def test_a_thumbnail_is_written_under_another_name_and_moved_in(self):
+        """The store is read by every program on the desktop while
+        MComix writes to it, so the specification asks for a thumbnail
+        to be written to a temporary file in the same directory and
+        renamed into place; it was written in place, where another
+        reader could meet half of it, and made private only afterwards."""
+        from gi.repository import GdkPixbuf
+        savev = GdkPixbuf.Pixbuf.savev
+        written = []
+
+        def save(pixbuf, path, *args):
+            written.append((path, oct(os.stat(path).st_mode & 0o777)
+                            if os.path.exists(path) else None))
+            return savev(pixbuf, path, *args)
+
+        with unittest.mock.patch.object(GdkPixbuf.Pixbuf, 'savev', save):
+            self._thumbnailer.thumbnail(self._source)
+        final = self._thumbnailer._path_to_thumbpath(self._source)
+        self.assertEqual(1, len(written))
+        path, mode = written[0]
+        self.assertNotEqual(final, path, 'it was written in place')
+        self.assertEqual(os.path.dirname(final), os.path.dirname(path))
+        self.assertEqual('0o600', mode,
+                         'what was being written could be read by others')
+        self.assertFalse(os.path.exists(path), 'the temporary file stayed')
+        self.assertEqual(0o600, os.stat(final).st_mode & 0o777)
+
     def _write_thumbnail(self, size=(128, 96), source=None, **text):
         """Put a thumbnail for <source> in the store, of <size> and
         carrying the tEXt chunks named in <text>."""

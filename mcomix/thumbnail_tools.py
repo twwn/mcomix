@@ -299,22 +299,37 @@ class Thumbnailer:
     def _save_thumbnail(self, pixbuf: "GdkPixbuf.Pixbuf", thumbpath: str,
                         tEXt_data: dict[str, str]) -> None:
         """ Saves <pixbuf> as <thumbpath>, with additional metadata
-        from <tEXt_data>. If <thumbpath> already exists, it is overwritten. """
+        from <tEXt_data>. If <thumbpath> already exists, it is overwritten.
 
+        Written to a temporary file in the same directory, private from
+        the start, and renamed into place, as the thumbnail specification
+        asks: the store is read by every program on the desktop, and one
+        of them may look while this is being written.  The directory is
+        made without asking first whether it is there, since another
+        thread or program may be making it too. """
+
+        temporary = None
         try:
             directory = os.path.dirname(thumbpath)
-            if not os.path.isdir(directory):
-                os.makedirs(directory, 0o700)
-            if os.path.isfile(thumbpath):
-                os.remove(thumbpath)
-
-            pixbuf.savev(thumbpath, 'png',
+            os.makedirs(directory, 0o700, exist_ok=True)
+            handle, temporary = tempfile.mkstemp(
+                dir=directory, prefix=os.path.basename(thumbpath) + '.',
+                suffix='.tmp')
+            os.close(handle)
+            pixbuf.savev(temporary, 'png',
                          list(tEXt_data), list(tEXt_data.values()))
-            os.chmod(thumbpath, 0o600)
+            os.replace(temporary, thumbpath)
+            temporary = None
 
         except Exception as ex:
             log.warning(_('! Could not save thumbnail "%(thumbpath)s": %(error)s'),
                         {'thumbpath': thumbpath, 'error': ex})
+        finally:
+            if temporary is not None:
+                try:
+                    os.unlink(temporary)
+                except OSError:
+                    pass
 
     def _stored_thumbnail(self, filepath: str) -> "GdkPixbuf.Pixbuf | None":
         """The thumbnail already on disk for <filepath>, if it can be used.
