@@ -219,12 +219,15 @@ class FileActions:
             os.rename(path, target)
             os.rename(aside, other_target)
         except OSError as error:
-            log.error('Could not rename %s: %r', path, error)
+            log.error('Could not swap the names of %s and %s: %s',
+                      path, other, error)
             # The file taken out of the way goes back under its own
             # name, whichever of the two renames failed: a page whose
             # file is called something no listing knows is a page that
-            # has gone missing from the book.
-            for source, back in ((aside, other), (target, path)):
+            # has gone missing from the book.  Last move first: when
+            # only the last failed, the page's file holds the other's
+            # name, and has to leave it before that can go back.
+            for source, back in ((target, path), (aside, other)):
                 if os.path.lexists(source) and not os.path.lexists(back):
                     os.rename(source, back)
             return False

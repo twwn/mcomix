@@ -2203,6 +2203,43 @@ class MainWindowTest(MComixTest):
              if not name.endswith('.png')], [],
             'the name a file was put aside under was left behind')
 
+    def _swap_failing_at(self, directory, failing):
+        """Swap the names of the first two pages while the first rename
+        for which <failing> says True raises, and return what is left."""
+        rename = os.rename
+        failed = []
+
+        def _rename(source, target):
+            if not failed and failing(source, target):
+                failed.append(source)
+                raise PermissionError(13, 'Permission denied', source)
+            rename(source, target)
+
+        with self._quietly(), \
+                unittest.mock.patch('os.rename', _rename):
+            self.assertFalse(
+                self.window.file_actions.swap_page_names(1, '1.png'))
+        return sorted(os.listdir(directory))
+
+    def test_a_swap_whose_last_rename_fails_puts_both_files_back(self):
+        """The file put aside went back only when its own name was free,
+        and the page's file was only moved off that name afterwards, so
+        it stayed under the name it was put aside under."""
+        directory = self._loose_book('swap-fails-last')
+        before = sorted(os.listdir(directory))
+        left = self._swap_failing_at(
+            directory,
+            lambda source, target: source.endswith('.mcomix-swap'))
+        self.assertEqual(before, left)
+
+    def test_a_swap_whose_second_rename_fails_puts_both_files_back(self):
+        directory = self._loose_book('swap-fails-second')
+        before = sorted(os.listdir(directory))
+        left = self._swap_failing_at(
+            directory,
+            lambda source, target: source.endswith('0.png'))
+        self.assertEqual(before, left)
+
     def test_replacing_a_page_of_a_loose_book_writes_over_the_file(self):
         directory = self._loose_book('replace-names')
         names = self.window.file_actions
