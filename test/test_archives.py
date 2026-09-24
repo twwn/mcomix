@@ -11,6 +11,11 @@ import zipfile
 
 from . import MComixTest, get_testfile_path
 
+try:
+    import chardet
+except ImportError:
+    chardet = None
+
 from mcomix import process
 from mcomix.archive import (
     archive_recursive,
@@ -368,7 +373,7 @@ class ZipLegacyNameTest(MComixTest):
         names = ['Übersicht.jpg', 'Café/01.jpg']
         self.assertEqual(names, self._listed(self._legacy_zip(names, 'utf-8')))
 
-    @unittest.skipUnless(zip.chardet, 'chardet is optional')
+    @unittest.skipUnless(chardet, 'chardet is optional')
     def test_names_in_a_windows_code_page_are_read_in_it(self):
         names = ['表紙.jpg', '第01話/001.jpg', '第01話/002.jpg', 'あとがき.png']
         self.assertEqual(names,
