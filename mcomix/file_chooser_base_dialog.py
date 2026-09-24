@@ -110,9 +110,11 @@ def _count_pages(path: str, mime: int) -> int | None:
             if archive is None:
                 return None
             names = archive.list_contents()
-        if withheld.wanted:
+        if withheld.wanted and not names:
             # A listing that needed the password lists nothing, which is
-            # not a book of no pages.
+            # not a book of no pages.  One whose names are readable -
+            # a zip, which wants the password only for the pages - is
+            # counted as any other.
             return None
         return len([name for name in names
                     if image_tools.is_image_file(name)

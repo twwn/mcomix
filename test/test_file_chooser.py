@@ -482,6 +482,15 @@ class FileDetailsTest(MComixTest):
         self.assertEqual([], self.asked)
         self.assertNotIn('page', details)
 
+    def test_an_encrypted_book_whose_names_are_readable_is_counted(self):
+        """A zip wants the password for its pages but not for its names,
+        and was given its kind alone, as a book with an encrypted listing
+        is."""
+        self.assertEqual('4 pages, ZIP archive',
+                         file_chooser_base_dialog.file_details(
+                             get_testfile_path('archives', 'Encrypted.zip')))
+        self.assertEqual([], self.asked)
+
     def test_a_file_mcomix_does_not_read_gives_nothing(self):
         path = os.path.join(self.tmp_dir, 'notes.txt')
         with open(path, 'w') as notes:
