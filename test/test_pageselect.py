@@ -16,6 +16,7 @@ from mcomix import icons
 from mcomix import main
 from mcomix import pageselect
 from mcomix.dialog import Response
+from mcomix.preferences import prefs
 
 
 class PageselectTest(MComixTest):
@@ -95,6 +96,36 @@ class PageselectTest(MComixTest):
         self.assertIsNotNone(shown)
         self.dialog._thumbnail_finished(1, None)
         self.assertIs(self.dialog._image_preview.get_paintable(), shown)
+
+
+    def _type(self, text):
+        spinner = self.dialog._page_spinner
+        spinner.set_text(text)
+        spinner.emit('changed')
+
+    def test_a_page_number_typed_is_previewed_at_once(self):
+        self._type('3')
+        self.assertEqual(3, self.dialog._selector_adjustment.get_value())
+        self.assertEqual(3, self.dialog._thumbnail_page)
+
+    def test_a_number_past_the_last_page_or_not_a_number_is_left(self):
+        for text in ('9', '0', 'x'):
+            with self.subTest(text=text):
+                self._type(text)
+                self.assertEqual(
+                    1, self.dialog._selector_adjustment.get_value())
+
+    def test_moving_the_selector_previews_the_page_it_is_moved_to(self):
+        self.dialog._selector_adjustment.set_value(2)
+        self.assertEqual(2, self.dialog._thumbnail_page)
+
+    def test_the_size_it_is_given_is_remembered(self):
+        self.dialog.set_default_size(420, 360)
+        self.assertTrue(wait_for(
+            lambda: prefs['pageselector width'] == self.dialog.get_width()
+            and self.dialog.get_width() > 0, seconds=5))
+        self.assertEqual(self.dialog.get_height(),
+                         prefs['pageselector height'])
 
 
 # vim: expandtab:sw=4:ts=4
