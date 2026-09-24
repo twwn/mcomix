@@ -324,6 +324,68 @@ class TarCompressionTest(MComixTest):
             archive.close()
 
 
+class ZipLegacyNameTest(MComixTest):
+
+    """Names a zip stores without its UTF-8 flag.
+
+    zipfile reads those as code page 437, which is what the format
+    once said, so a zip made by an older Linux or Mac tool - UTF-8
+    names, no flag - or by Windows in another language listed its pages
+    under names like "\u2229\u00ba\u00ba".
+    """
+
+    def _legacy_zip(self, names, encoding):
+        """A zip holding one tiny file per name in <names>, the names
+        written in <encoding> with the UTF-8 flag left off."""
+        path = os.path.join(self.tmp_dir, 'legacy.zip')
+        placeholders = []
+        with zipfile.ZipFile(path, 'w') as archive:
+            for number, name in enumerate(names):
+                length = len(name.encode(encoding))
+                # One letter repeated, so that no placeholder is found
+                # inside another.
+                placeholder = chr(ord('A') + number) * length
+                placeholders.append(placeholder)
+                archive.writestr(placeholder, b'x')
+        with open(path, 'rb') as fp:
+            data = fp.read()
+        # Not zip(): the handler module has that name here.
+        for number, name in enumerate(names):
+            data = data.replace(placeholders[number].encode('ascii'),
+                                name.encode(encoding))
+        with open(path, 'wb') as fp:
+            fp.write(data)
+        return path
+
+    def _listed(self, path):
+        archive = zip.ZipArchive(path)
+        try:
+            return archive.list_contents()
+        finally:
+            archive.close()
+
+    def test_utf_8_names_without_the_flag_are_read_as_utf_8(self):
+        names = ['Übersicht.jpg', 'Café/01.jpg']
+        self.assertEqual(names, self._listed(self._legacy_zip(names, 'utf-8')))
+
+    @unittest.skipUnless(zip.chardet, 'chardet is optional')
+    def test_names_in_a_windows_code_page_are_read_in_it(self):
+        names = ['表紙.jpg', '第01話/001.jpg', '第01話/002.jpg', 'あとがき.png']
+        self.assertEqual(names,
+                         self._listed(self._legacy_zip(names, 'shift_jis')))
+
+    def test_a_page_listed_under_its_decoded_name_is_extracted(self):
+        names = ['Übersicht.jpg']
+        archive = zip.ZipArchive(self._legacy_zip(names, 'utf-8'))
+        try:
+            archive.list_contents()
+            archive.extract('Übersicht.jpg', self.tmp_dir)
+        finally:
+            archive.close()
+        with open(os.path.join(self.tmp_dir, 'Übersicht.jpg'), 'rb') as fp:
+            self.assertEqual(b'x', fp.read())
+
+
 class RecursiveArchiveNestingTest(MComixTest):
 
     def _nested_zip(self, depth):

@@ -2,10 +2,15 @@
 
 import os
 import zipfile
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator, Sequence
 
 from mcomix import log
 from mcomix import i18n
+
+try:
+    import chardet
+except ImportError:
+    chardet = None  # type: ignore[assignment]
 from mcomix.archive import archive_base
 from mcomix.i18n import _
 
@@ -18,6 +23,48 @@ def is_py_supported_zipfile(path: str) -> bool:
             if file_info.compress_type not in (zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED):
                 return False
     return True
+
+
+#: The general purpose flag that says a member's name is UTF-8.
+_UTF8_FLAG = 0x800
+
+
+def _legacy_name_decoder(infos: Sequence[zipfile.ZipInfo]) \
+        -> Callable[[str], str]:
+    """How to read back the names <infos> stored without the UTF-8 flag.
+
+    zipfile reads such a name as code page 437, which is what the format
+    once said, but the tools that wrote most of them did not: an older
+    Linux or Mac archiver wrote UTF-8 and left the flag off, and Windows
+    wrote the code page of its language.  The bytes come back intact
+    through code page 437, so every such name is tried as UTF-8 first,
+    and then, where chardet is installed, in whatever it makes of all of
+    them at once - one name is too short to tell a code page by.  Where
+    neither reads every name, they stay as zipfile read them.
+    """
+    raw = [info.filename.encode('cp437') for info in infos
+           if not info.flag_bits & _UTF8_FLAG and not info.filename.isascii()]
+    if not raw:
+        return lambda name: name
+    candidates = ['utf-8']
+    if chardet is not None:
+        guessed = chardet.detect(b'\n'.join(raw))
+        if guessed['encoding'] and guessed['confidence'] >= 0.5:
+            candidates.append(guessed['encoding'])
+    for encoding in candidates:
+        try:
+            for name in raw:
+                name.decode(encoding)
+        except (UnicodeDecodeError, LookupError):
+            continue
+        chosen = encoding
+
+        def decode(name: str) -> str:
+            if name.isascii():
+                return name
+            return name.encode('cp437').decode(chosen)
+        return decode
+    return lambda name: name
 
 
 class ZipArchive(archive_base.NonUnicodeArchive):
@@ -37,14 +84,21 @@ class ZipArchive(archive_base.NonUnicodeArchive):
         if self._has_encryption():
             self.zip.setpassword(i18n.to_utf8(self._get_password()))
 
-        for info in self.zip.infolist():
+        infos = self.zip.infolist()
+        legacy = _legacy_name_decoder(infos)
+        for info in infos:
             if info.is_dir():
                 # A zip records the directories its files are in as
                 # entries of their own.  They are not members anything
                 # can extract - opening one for writing raises - so the
                 # listing does not offer them.
                 continue
-            yield self._unicode_filename(info.filename)
+            if info.flag_bits & _UTF8_FLAG:
+                yield self._unicode_filename(info.filename)
+            else:
+                # Listed under the name it was written in, and extracted
+                # under the one zipfile knows it by.
+                yield self._unicode_filename(info.filename, legacy)
 
     def extract(self, filename: str, destination_dir: str) -> None:
         """Write member <filename> into <destination_dir>."""
