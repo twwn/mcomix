@@ -2,7 +2,6 @@
 extraction and adding new archive formats. """
 
 import os
-import errno
 import sys
 import threading
 from collections.abc import Callable, Iterable, Iterator
@@ -108,15 +107,10 @@ class BaseArchive:
                            if part not in ('', os.curdir, os.pardir))
 
     def _create_directory(self, directory: str) -> None:
-        """ Recursively create a directory if it doesn't exist yet. """
-        if os.path.exists(directory):
-            return
-        try:
-            os.makedirs(directory)
-        except OSError as e:
-            # Can happen with concurrent calls.
-            if e.errno != errno.EEXIST:
-                raise e
+        """ Recursively create a directory if it doesn't exist yet.
+
+        Extraction threads may make the same one at the same time. """
+        os.makedirs(directory, exist_ok=True)
 
     def _create_file(self, dst_path: str) -> IO[bytes]:
         """ Open <dst_path> for writing, making sure base directory exists. """
