@@ -1173,6 +1173,33 @@ class MainWindowTest(MComixTest):
         self.assertIsNone(self._page_area_cursor(),
                           'the wait cursor outlived the save')
 
+    def test_a_save_that_fails_says_so_and_leaves_the_book(self):
+        """The one failure save_archive() answers: the reader is told,
+        in a dialog of its own, that the original is still there."""
+        self._ready()
+        path = self.window.filehandler.get_path_to_base()
+        with open(path, 'rb') as book:
+            before = book.read()
+        with unittest.mock.patch.object(
+                archive_packer, 'write_archive',
+                side_effect=OSError(28, 'No space left on device')):
+            self.assertFalse(self.window.file_actions.save_archive())
+        self._pump()
+        notices = [window for window in Gtk.Window.list_toplevels()
+                   if isinstance(window, message_dialog.MessageDialog)
+                   and window.get_visible()]
+        try:
+            self.assertEqual(1, len(notices))
+            self.assertEqual('The new archive could not be saved!',
+                             notices[0]._primary.get_text())
+        finally:
+            for notice in notices:
+                notice.destroy()
+            self._pump()
+        with open(path, 'rb') as book:
+            self.assertEqual(before, book.read())
+        self.assertIsNone(self._page_area_cursor())
+
     def test_a_save_shows_the_wait_cursor_while_it_runs(self):
         """And through the cursor handler, so that the pointer does not
         hide itself part way through - see HandSetCursorTest."""
