@@ -7,6 +7,8 @@ import os
 import pickle
 import shutil
 import sys
+import types
+import typing
 from collections.abc import Sequence
 from typing import Any, TypedDict, cast
 
@@ -398,6 +400,47 @@ def _rgba_from_16bit_colour(colour: object) -> list[float]:
     return components + [1.0]
 
 
+def _fits(value: object, key: str) -> bool:
+    """Whether <value> is of the type the preference <key> holds, as the
+    Preferences table declares it.  A list of numbers - a colour - also
+    has to be as long as its default."""
+    if not _of_type(value, typing.get_type_hints(Preferences)[key]):
+        return False
+    default = cast("dict[str, object]", _DEFAULTS)[key]
+    if (isinstance(default, list) and default
+            and isinstance(default[0], float)):
+        return len(cast(list[object], value)) == len(default)
+    return True
+
+
+def _of_type(value: object, annotation: object) -> bool:
+    """Whether <value> is of the type <annotation> names: the plain
+    types JSON gives, lists and dicts of them, and unions."""
+    if annotation is type(None):
+        return value is None
+    origin = typing.get_origin(annotation)
+    arguments = typing.get_args(annotation)
+    if origin in (types.UnionType, typing.Union):
+        return any(_of_type(value, member) for member in arguments)
+    if origin is list or origin is Sequence or annotation is list:
+        return isinstance(value, list) and all(
+            _of_type(item, arguments[0]) for item in value) \
+            if arguments else isinstance(value, list)
+    if origin is dict:
+        return isinstance(value, dict) and all(
+            _of_type(item_key, arguments[0])
+            and _of_type(item, arguments[1])
+            for item_key, item in value.items())
+    if annotation is bool:
+        return isinstance(value, bool)
+    # JSON has one kind of number, and a bool is an int to Python.
+    if annotation is float:
+        return isinstance(value, (int, float)) and not isinstance(value, bool)
+    if annotation is int:
+        return isinstance(value, int) and not isinstance(value, bool)
+    return isinstance(annotation, type) and isinstance(value, annotation)
+
+
 def _migrate_preferences(saved_prefs: dict[str, object]) -> None:
     """Bring <saved_prefs> forward to CONFIG_FORMAT_VERSION, in place.
 
@@ -445,6 +488,15 @@ def read_preferences_file() -> None:
         except OSError as error:
             # Readable again next time, most likely; leave the file alone.
             print('! Could not read preferences file: %s' % error)
+        else:
+            # JSON, but not of preferences: it is set aside as a file
+            # that will not parse is, rather than stopping MComix.
+            if not isinstance(saved_prefs, dict):
+                _move_corrupt_file_aside(
+                    constants.PREFERENCE_PATH,
+                    ValueError('%s where preferences belong'
+                               % type(saved_prefs).__name__))
+                saved_prefs = None
 
     elif os.path.isfile(constants.PREFERENCE_PICKLE_PATH):
         try:
@@ -465,8 +517,17 @@ def read_preferences_file() -> None:
         # preferences this one has never heard of; those are left where
         # they are rather than taken in.
         for key in saved_prefs:
-            if key in _DEFAULTS:
-                set_by_name(key, saved_prefs[key])
+            if key not in _DEFAULTS:
+                continue
+            # A value of another type, typed into the file by hand, is
+            # left where it is too: taken in, it would reach code that
+            # can do nothing with it - a lens of size "big" - at the
+            # first moment it was read.
+            if not _fits(saved_prefs[key], key):
+                print('! Ignoring the preference %r: %r is not what it holds'
+                      % (key, saved_prefs[key]))
+                continue
+            set_by_name(key, saved_prefs[key])
 
     global _as_read
     _as_read = copy.deepcopy(dict(prefs))

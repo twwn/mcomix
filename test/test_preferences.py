@@ -80,6 +80,46 @@ class ReadPreferencesFileTest(MComixTest):
         self.assertFalse(os.path.exists(self.path))
         self.assertTrue(os.path.isfile(self.broken))
 
+    def test_moves_aside_a_file_that_holds_no_preferences(self) -> None:
+        """JSON of another shape - a list, a string, a number - stopped
+        MComix with AttributeError before it had a window."""
+        for text in ('[1]', '"abc"', '42'):
+            with self.subTest(text=text):
+                self._write(text)
+                preferences.read_preferences_file()
+                self.assertFalse(os.path.exists(self.path))
+                with open(self.broken) as broken:
+                    self.assertEqual(text, broken.read())
+
+    def test_a_value_of_the_wrong_type_is_not_taken_in(self) -> None:
+        """Typed in by hand, it was taken in as it was, to reach code
+        that could do nothing with it."""
+        default = prefs['lens size']
+        for value in ('big', None, 1.5, True):
+            with self.subTest(value=value):
+                self._write(json.dumps({'lens size': value,
+                                        'lens magnification': 3}))
+                preferences.read_preferences_file()
+                self.assertEqual(default, prefs['lens size'])
+                # The rest of the file is read all the same; a whole
+                # number is a float's value, as JSON writes one.
+                self.assertEqual(3, prefs['lens magnification'])
+
+    def test_a_colour_of_the_wrong_length_is_not_taken_in(self) -> None:
+        default = list(prefs['bg colour'])
+        self._write(json.dumps({'config format version':
+                                preferences.CONFIG_FORMAT_VERSION,
+                                'bg colour': [1.0]}))
+        preferences.read_preferences_file()
+        self.assertEqual(default, prefs['bg colour'])
+
+    def test_every_default_is_of_the_type_it_is_declared_to_be(self) -> None:
+        """A default that did not pass would be written out, and the
+        next start would refuse it."""
+        for key, value in preferences._DEFAULTS.items():
+            with self.subTest(key=key):
+                self.assertTrue(preferences._fits(value, key))
+
     def test_replaces_an_older_broken_file(self) -> None:
         with open(self.broken, 'w') as old:
             old.write('older breakage')
