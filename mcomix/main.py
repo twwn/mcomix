@@ -436,6 +436,17 @@ class MainWindow(Gtk.Window):
             do_not_transform = [image_tools.is_animation(x) for x in pixbuf_list]
             size_list = [[pixbuf.get_width(), pixbuf.get_height()]
                          for pixbuf in pixbuf_list]
+            # A page that would not load stands in as a page as tall as
+            # the room there is, whatever size it was read at: it is
+            # drawn again at the size it is laid out at, below.
+            missing = [image_tools.is_missing_image(x) for x in pixbuf_list]
+            if any(missing):
+                room = max(1, self.get_visible_area_size()[1])
+                for i in range(pixbuf_count):
+                    if missing[i]:
+                        width, height = size_list[i]
+                        size_list[i] = [max(1, round(width * room / height)),
+                                        room]
 
             # A list from the start: the rotation handling below turns
             # it around and negates it, both of which give back a list.
@@ -499,6 +510,14 @@ class MainWindow(Gtk.Window):
             for i in range(pixbuf_count):
                 if do_not_transform[i]:
                     continue
+                if missing[i]:
+                    # Drawn from its SVG at the size shown, turned as the
+                    # page would be, so that the fitting below only turns it.
+                    width, height = scaled_sizes[i]
+                    if tools.rotation_swaps_axes(rotation_list[i]):
+                        width, height = height, width
+                    pixbuf_list[i] = image_tools.missing_image_icon(
+                        max(1, int(width)), max(1, int(height)))
                 pixbuf_list[i] = image_tools.fit_pixbuf_to_rectangle(
                     pixbuf_list[i], scaled_sizes[i], rotation_list[i])
                 # The turn only.  fit_pixbuf_to_rectangle() also scaled

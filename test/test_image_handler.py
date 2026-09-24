@@ -115,7 +115,7 @@ class VirtualDoublePageTest(MComixTest):
             damaged.write(b'not an image')
         self.handler._raw_pixbufs.clear()
         self.assertIs(self.handler._get_pixbuf(0),
-                      image_tools.missing_image_icon())
+                      image_tools.missing_page())
 
     def test_a_page_that_would_not_load_is_not_read_again(self):
         """Its answer is cached like any other, so a page turn back and
@@ -152,7 +152,7 @@ class VirtualDoublePageTest(MComixTest):
         self._open('portrait-no-exif.png')
         self.handler._raw_pixbufs.clear()
         pixbuf = self.handler._get_pixbuf(0)
-        self.assertIsNot(pixbuf, image_tools.missing_image_icon())
+        self.assertIsNot(pixbuf, image_tools.missing_page())
         self.assertIs(self.handler._raw_pixbufs[0], pixbuf)
         self.assertIs(self.handler._get_pixbuf(0), pixbuf)
 
@@ -182,7 +182,7 @@ class VirtualDoublePageTest(MComixTest):
 
         self.handler._raw_pixbufs = _VanishingCache()
         pixbuf = self.handler._get_pixbuf(0)
-        self.assertIsNot(pixbuf, image_tools.missing_image_icon(),
+        self.assertIsNot(pixbuf, image_tools.missing_page(),
                          'a good page came back as the missing-image icon')
         self.assertEqual((pixbuf.get_width(), pixbuf.get_height()),
                          (210, 297))
@@ -257,7 +257,7 @@ class VirtualDoublePageTest(MComixTest):
         listing = self._open('portrait-no-exif.png', 'landscape-no-exif.png')
         self.handler.replace_pages(listing[:1])
         # As the caching thread leaves them behind.
-        self.handler._raw_pixbufs[1] = image_tools.missing_image_icon()
+        self.handler._raw_pixbufs[1] = image_tools.missing_page()
         self.handler._available_images.add(1)
 
         self.handler.replace_pages(listing[:1])
@@ -281,7 +281,7 @@ class VirtualDoublePageTest(MComixTest):
         with self.assertNoLogs('mcomix', level='ERROR'):
             pixbuf = self.handler._get_pixbuf(1)
 
-        self.assertIs(pixbuf, image_tools.missing_image_icon())
+        self.assertIs(pixbuf, image_tools.missing_page())
         self.assertNotIn(1, self.handler._raw_pixbufs)
 
     def test_a_page_read_while_the_pages_are_rewritten_keeps_to_its_file(self):

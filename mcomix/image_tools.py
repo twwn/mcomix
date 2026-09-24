@@ -26,26 +26,48 @@ PIL_VERSION = ('Pillow', PIL.__version__)
 log.info(f'GDK version: {GdkPixbuf.PIXBUF_VERSION}, GTK+: {Gtk.get_major_version()}.{Gtk.get_minor_version()}, GLib: {GLib.MAJOR_VERSION}.{GLib.MINOR_VERSION}')
 log.info('PIL version: %s [%s]', PIL_VERSION[0], PIL_VERSION[1])
 
-#: 24 pixels is what Gtk.IconSize.LARGE_TOOLBAR stood for.
-_MISSING_IMAGE_SIZE = 24
+#: The attribute that marks a pixbuf as missing_image_icon()'s.
+MISSING_IMAGE = 'mcomix_missing_image'
 
 #: A blank page with a warning sign on it, drawn for MComix.
 _MISSING_IMAGE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                    'images', 'missing-image.svg')
 
+#: The width and height the SVG is drawn at, which is what a page that
+#: would not load is read as when nothing says how large it is shown.
+_MISSING_PAGE_SIZE = (134, 200)
 
-# Bounded, because each library cover size and each thumbnail size asks
-# for one of its own, and one the size of a large cover is megabytes.
-@functools.lru_cache(maxsize=8)
-def missing_image_icon(width: int = _MISSING_IMAGE_SIZE,
-                       height: int = _MISSING_IMAGE_SIZE) -> GdkPixbuf.Pixbuf:
+
+def missing_page() -> GdkPixbuf.Pixbuf:
+    """What a page that would not load is read as.
+
+    Whatever shows it draws it again at its own size - the main window,
+    the thumbnails - so this one is only what is handed on as the page
+    itself, to the clipboard or the lens: the picture at the size it was
+    designed at rather than at the size of an icon.
+    """
+    return missing_image_icon(*_MISSING_PAGE_SIZE)
+
+
+def missing_image_icon(width: int, height: int) -> GdkPixbuf.Pixbuf:
     """The pixbuf shown in place of an image that would not load, as
     large as fits in <width> x <height> pixels.
 
     It is drawn from an SVG at the size it is shown at, since a cover
     or a thumbnail is many times larger than an icon, and an icon
-    scaled up to fill it comes out blurred.
+    scaled up to fill it comes out blurred.  Every one is marked, so
+    that is_missing_image() knows it wherever it has been handed.
     """
+    pixbuf = _draw_missing_image(width, height)
+    setattr(pixbuf, MISSING_IMAGE, True)
+    return pixbuf
+
+
+# Bounded, because each library cover size and each thumbnail size asks
+# for one of its own, and one the size of a large cover is megabytes.
+@functools.lru_cache(maxsize=8)
+def _draw_missing_image(width: int, height: int) -> GdkPixbuf.Pixbuf:
+    """missing_image_icon(), drawn once for each size."""
     try:
         drawn = GdkPixbuf.Pixbuf.new_from_file_at_size(_MISSING_IMAGE_FILE,
                                                        width, height)
@@ -544,6 +566,11 @@ def file_animates(path: str) -> bool:
     except Exception:
         pass
     return _glycin_animates(path)
+
+
+def is_missing_image(pixbuf: GdkPixbuf.Pixbuf) -> bool:
+    """Whether <pixbuf> is what a page that would not load was read as."""
+    return bool(getattr(pixbuf, MISSING_IMAGE, False))
 
 
 def _glycin_animates(path: str) -> bool:

@@ -2091,6 +2091,31 @@ class MainWindowTest(MComixTest):
             seconds=20), 'the folder of images never opened')
         return directory
 
+    def test_a_page_that_will_not_load_is_drawn_as_large_as_a_page(self):
+        """The picture for a page that would not load was drawn at 24
+        pixels and shown at that size, or scaled up from it into a
+        blur where small pages are enlarged; the library and the
+        thumbnails drew it at the size they show it at."""
+        directory = self._loose_book('broken-page', pages=2)
+        with open(os.path.join(directory, '0.png'), 'wb') as damaged:
+            damaged.write(b'not an image')
+        prefs['stretch'] = False
+        with unittest.mock.patch.object(
+                image_tools, 'missing_image_icon',
+                wraps=image_tools.missing_image_icon) as drawn:
+            self.window.filehandler.refresh_file()
+            self._pump()
+            self.window.set_page(1)
+            self.window.draw_image()
+            self._pump()
+        shown = self.window.images[0].get_paintable()
+        height = shown.get_intrinsic_height()
+        self.assertGreater(height, 200,
+                           'the picture was shown at the size of an icon')
+        self.assertIn(height, [call.args[1] for call in drawn.call_args_list
+                               if len(call.args) == 2],
+                      'the picture was scaled rather than drawn at its size')
+
     def _rename_dialog(self, page=1):
         """Open the rename dialog on <page> and answer with it."""
         self.window.popup_page = page

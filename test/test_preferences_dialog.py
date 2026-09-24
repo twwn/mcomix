@@ -132,7 +132,7 @@ class PreferencesDialogTest(MComixTest):
         from mcomix.library import pixbuf_cache
         dialog = self._open()
         cache = pixbuf_cache.get_pixbuf_cache()
-        cache.add('/books/kept.cbz', image_tools.missing_image_icon())
+        cache.add('/books/kept.cbz', image_tools.missing_page())
         button = Gtk.CheckButton(active=not prefs['auto rotate from exif'])
         dialog._check_button_cb(button, 'auto rotate from exif')
         self.assertIsNone(cache.get('/books/kept.cbz'))

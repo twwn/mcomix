@@ -827,6 +827,18 @@ class MissingImageIconTest(MComixTest):
         self.assertIs(image_tools.missing_image_icon(40, 60),
                       image_tools.missing_image_icon(40, 60))
 
+    def test_it_is_known_for_what_it_is_after_the_cache_has_moved_on(self):
+        """The main window draws a page that would not load again at the
+        size it is shown at, and tells it by this: an identity test
+        against the cache failed once eight other sizes had pushed the
+        page's own one out."""
+        page = image_tools.missing_page()
+        for side in range(30, 40):
+            image_tools.missing_image_icon(side, side)
+        self.assertTrue(image_tools.is_missing_image(page))
+        self.assertFalse(image_tools.is_missing_image(
+            GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, False, 8, 4, 4)))
+
     def test_without_an_svg_loader_it_is_a_square_the_size_asked_for(self):
         """gdk-pixbuf can be built without one, and then the icon theme
         has nothing to offer either where its icon is an SVG, as
@@ -838,8 +850,8 @@ class MissingImageIconTest(MComixTest):
                 raise GLib.Error('Unrecognized image file format')
             return real(path, width, height)
 
-        image_tools.missing_image_icon.cache_clear()
-        self.addCleanup(image_tools.missing_image_icon.cache_clear)
+        image_tools._draw_missing_image.cache_clear()
+        self.addCleanup(image_tools._draw_missing_image.cache_clear)
         with unittest.mock.patch.object(GdkPixbuf.Pixbuf,
                                         'new_from_file_at_size',
                                         without_svg):

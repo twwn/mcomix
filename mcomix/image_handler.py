@@ -85,7 +85,7 @@ class ImageHandler:
 
         A page not in the cache is waited for and read from disk, and
         whatever comes of that is what the cache holds from then on: a
-        page that will not load answers with the missing-image icon
+        page that will not load answers with image_tools.missing_page()
         rather than being tried again on every page turn.
 
         The cache is read with one dict.get() rather than a test and a
@@ -105,13 +105,13 @@ class ImageHandler:
             # longer has.  There is nothing to read and nothing to file,
             # and it is not a page that would not load.
             log.debug('Page %u is no longer in the book', index + 1)
-            return image_tools.missing_image_icon()
+            return image_tools.missing_page()
         try:
             pixbuf = image_tools.load_pixbuf((image_files or [])[index])
             tools.garbage_collect()
         except Exception as e:
             log.error('Could not load pixbuf for page %u: %r', index + 1, e)
-            pixbuf = image_tools.missing_image_icon()
+            pixbuf = image_tools.missing_page()
         # The caching thread reads while the archive editor may rewrite
         # the pages, and after a deletion the number it was asked for
         # belongs to the page behind: filed there, that page showed the
