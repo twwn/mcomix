@@ -197,6 +197,17 @@ def what_to_open(opts: argparse.Namespace, args: list[str]
     return open_path, open_page, open_member
 
 
+def make_directories() -> None:
+    """Make the directories MComix keeps its data and settings in.
+
+    Whether they are there is not asked first: MComix runs one process
+    per window, and another one started at the same moment may make
+    them between the question and the answer.
+    """
+    for directory in (constants.DATA_DIR, constants.CONFIG_DIR):
+        os.makedirs(directory, 0o700, exist_ok=True)
+
+
 def run() -> None:
     """Run the program."""
 
@@ -223,11 +234,7 @@ def run() -> None:
 
     from gi.repository import GLib
 
-    if not os.path.exists(constants.DATA_DIR):
-        os.makedirs(constants.DATA_DIR, 0o700)
-
-    if not os.path.exists(constants.CONFIG_DIR):
-        os.makedirs(constants.CONFIG_DIR, 0o700)
+    make_directories()
 
     # Before any widget is built: libadwaita restyles what already
     # exists, but only what it was started before.

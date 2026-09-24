@@ -149,4 +149,27 @@ class ArgumentTest(MComixTest):
             run.parse_arguments(['--page', 'seven', '/books/one.cbz'])
 
 
+
+class MakeDirectoriesTest(MComixTest):
+
+    def test_directories_another_mcomix_has_just_made_are_taken_as_made(self):
+        """MComix runs one process per window, and two started at once
+        on a new account both found the directories missing; the one
+        that made them second died of FileExistsError."""
+        from mcomix import constants
+        for directory in (constants.DATA_DIR, constants.CONFIG_DIR):
+            os.makedirs(directory, exist_ok=True)
+        # What the second process saw: missing when it looked, there by
+        # the time it made them.
+        with unittest.mock.patch('os.path.exists', return_value=False):
+            run.make_directories()
+        self.assertTrue(os.path.isdir(constants.DATA_DIR))
+        self.assertTrue(os.path.isdir(constants.CONFIG_DIR))
+
+    def test_they_are_made_for_the_user_alone(self):
+        from mcomix import constants
+        run.make_directories()
+        for directory in (constants.DATA_DIR, constants.CONFIG_DIR):
+            self.assertEqual(0o700, os.stat(directory).st_mode & 0o777)
+
 # vim: expandtab:sw=4:ts=4
