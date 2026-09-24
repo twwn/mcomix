@@ -15,13 +15,12 @@ import os
 import re
 import shutil
 import tempfile
-import mimetypes
 import threading
 import PIL.Image as Image
 from collections.abc import Callable, Iterable, Mapping
 from typing import TYPE_CHECKING
 from hashlib import md5
-from gi.repository import GLib
+from gi.repository import Gio, GLib
 
 from mcomix.preferences import prefs
 from mcomix import constants
@@ -216,9 +215,7 @@ class Thumbnailer:
                     image_path, self.width, self.height))
                 tEXt_data: dict[str, str] | None
                 if self.store_on_disk:
-                    tEXt_data = self._get_text_data(image_path)
-                    # Use the archive's mTime instead of the extracted file's mtime
-                    tEXt_data['tEXt::Thumb::MTime'] = str(int(os.stat(filepath).st_mtime))
+                    tEXt_data = self._get_text_data(filepath, image_path)
                     # The cover's Exif orientation is kept beside the
                     # thumbnail, since the cover is not to be had again
                     # without opening the archive, and a thumbnail shown
@@ -278,15 +275,28 @@ class Thumbnailer:
 
         return pixbuf
 
-    def _get_text_data(self, filepath: str) -> dict[str, str]:
-        """ Creates a tEXt dictionary for <filepath>. """
-        mime = mimetypes.guess_type(filepath)[0] or "unknown/mime"
+    def _get_text_data(self, filepath: str,
+                       picture: str | None = None) -> dict[str, str]:
+        """The tEXt chunks for a thumbnail of <filepath>.
+
+        <picture> is what the thumbnail was made from, where that is not
+        <filepath> itself - an archive's cover, extracted - and only its
+        dimensions are written.  The URI, the size and the time are the
+        archive's: they were the extracted cover's, so that other
+        programs, which check the URI, took the thumbnail for one of a
+        temporary file and made their own over it.  The type is GIO's
+        guess from the name, as theirs is; Python's mimetypes reads the
+        system's mime.types files, and one of them calls .cbz a RAR
+        comic.
+        """
+        content_type, _uncertain = Gio.content_type_guess(filepath, None)
+        mime = Gio.content_type_get_mime_type(content_type) or 'unknown/mime'
         uri = _file_uri(filepath)
         stat = os.stat(filepath)
         # MTime could be floating point number, so convert to long first to have a fixed point number
         mtime = str(int(stat.st_mtime))
         size = str(stat.st_size)
-        width, height = image_tools.get_image_size(filepath)
+        width, height = image_tools.get_image_size(picture or filepath)
         return {
             'tEXt::Thumb::URI':           uri,
             'tEXt::Thumb::MTime':         mtime,

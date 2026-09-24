@@ -327,6 +327,23 @@ class ArchiveCoverOrientationTest(MComixTest):
         shown = self._shown()
         self.assertLess(shown.get_width(), shown.get_height())
 
+    def test_the_store_is_told_it_is_the_archive_s(self):
+        """The URI, size and type written with it were those of the
+        cover, extracted to a temporary file, so other programs, which
+        check the URI, took it for a thumbnail of that file."""
+        self._shown()
+        with PIL.Image.open(thumbnail_tools.Thumbnailer(
+                dst_dir=self._store)._path_to_thumbpath(self._archive)) as stored:
+            self.assertEqual(Gio.File.new_for_path(self._archive).get_uri(),
+                             stored.info['Thumb::URI'])
+            self.assertEqual(str(os.stat(self._archive).st_size),
+                             stored.info['Thumb::Size'])
+            self.assertEqual('application/vnd.comicbook+zip',
+                             stored.info['Thumb::Mimetype'])
+            self.assertEqual(('210', '297'),
+                             (stored.info['Thumb::Image::Width'],
+                              stored.info['Thumb::Image::Height']))
+
     def test_a_stored_cover_that_says_nothing_of_it_is_made_again(self):
         """A store only MComix writes to - the library's covers - holds
         thumbnails made before the orientation was kept; they are made
