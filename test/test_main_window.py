@@ -1093,6 +1093,56 @@ class MainWindowTest(MComixTest):
         self.assertFalse(os.path.exists(source), 'the file is still there')
         forgotten.assert_called_once_with(source)
 
+    def _folder_book(self, count):
+        """A folder of <count> pictures, opened; their paths in order."""
+        folder = os.path.join(self.tmp_dir, 'folder')
+        os.makedirs(folder)
+        paths = []
+        for number in range(1, count + 1):
+            path = os.path.join(folder, '%02d.png' % number)
+            shutil.copy(get_testfile_path('images', 'blue.png'), path)
+            paths.append(path)
+        self.window.filehandler.open_file(paths[0])
+        self.assertTrue(wait_for(
+            lambda: self.window.imagehandler.get_number_of_pages() == count,
+            seconds=20))
+        self._pump()
+        return paths
+
+    def _shown(self):
+        return self.window.imagehandler.get_path_to_page()
+
+    def test_deleting_a_picture_of_a_folder_goes_on_to_the_next(self):
+        paths = self._folder_book(4)
+        self.window.set_page(2)
+        self._pump()
+        self.window.file_actions._delete_answered(Response.OK, paths[1])
+        self.assertTrue(wait_for(
+            lambda: self.window.imagehandler.get_number_of_pages() == 3,
+            seconds=20))
+        self._pump()
+        self.assertFalse(os.path.exists(paths[1]))
+        self.assertEqual(paths[2], self._shown())
+
+    def test_deleting_the_last_picture_of_a_folder_goes_back_one(self):
+        paths = self._folder_book(3)
+        self.window.set_page(3)
+        self._pump()
+        self.window.file_actions._delete_answered(Response.OK, paths[2])
+        self.assertTrue(wait_for(
+            lambda: self.window.imagehandler.get_number_of_pages() == 2,
+            seconds=20))
+        self._pump()
+        self.assertFalse(os.path.exists(paths[2]))
+        self.assertEqual(paths[1], self._shown())
+
+    def test_deleting_the_only_picture_of_a_folder_closes_it(self):
+        paths = self._folder_book(1)
+        self.window.file_actions._delete_answered(Response.OK, paths[0])
+        self._pump()
+        self.assertFalse(os.path.exists(paths[0]))
+        self.assertFalse(self.window.filehandler.file_loaded)
+
     def _delete_dialogs(self):
         return [window for window in Gtk.Window.list_toplevels()
                 if isinstance(window, message_dialog.MessageDialog)
