@@ -134,9 +134,14 @@ class MoveToMenuTest(MComixTest):
             sections.append((label.get_string() if label else None, entries))
         return sections
 
+    @staticmethod
+    def _path(target):
+        """The directory a menu entry's target names."""
+        return os.fsdecode(bytes(target.get_bytestring()))
+
     def _destinations(self, model):
         """Every directory the menu offers, in the order it offers them."""
-        return [target.get_string()
+        return [self._path(target)
                 for _label, entries in self._sections(model)
                 for _entry, target in entries if target is not None]
 
@@ -180,13 +185,35 @@ class MoveToMenuTest(MComixTest):
         prefs['recent move destinations'] = [self._directory('moved')]
 
         self.assertEqual(
-            [(label, [target.get_string() if target is not None else entry
+            [(label, [self._path(target) if target is not None else entry
                       for entry, target in entries])
              for label, entries in self._sections(self._menu().model)],
             [('Moved to before', [os.path.join(self.tmp_dir, 'moved')]),
              ('From bookmarks', [os.path.join(self.tmp_dir, 'bookmarked')]),
              ('Opened before', [os.path.join(self.tmp_dir, 'opened')]),
              (None, ['Other folder...'])])
+
+    def test_a_directory_whose_name_is_not_utf_8_is_offered_all_the_same(self):
+        """A GVariant string and a menu label must both be UTF-8, and a
+        directory name on disk need not be: a Latin-1 one raised
+        UnicodeEncodeError while the menu was built, and it was built
+        with nothing in it at all."""
+        latin = os.fsdecode(os.path.join(os.fsencode(self.tmp_dir),
+                                         'B\xfccher'.encode('latin-1')))
+        os.makedirs(latin)
+        plain = self._directory('plain')
+        prefs['recent move destinations'] = [latin, plain]
+
+        menu = self._menu()
+        self.assertEqual(self._destinations(menu.model), [latin, plain])
+        labels = [entry for _label, entries in self._sections(menu.model)
+                  for entry, _target in entries]
+        self.assertTrue(any('B\ufffdcher' in label for label in labels),
+                        labels)
+
+        menu._actions.activate_action(
+            'move', GLib.Variant.new_bytestring(os.fsencode(latin)))
+        self.assertEqual(self.window.file_actions.moved_to, [latin])
 
     def test_a_directory_on_two_lists_is_offered_once(self):
         shared = self._directory('shared')
@@ -248,8 +275,8 @@ class MoveToMenuTest(MComixTest):
         prefs['recent move destinations'] = [destination]
         menu = self._menu()
 
-        menu._actions.activate_action('move',
-                                      GLib.Variant('s', destination))
+        menu._actions.activate_action(
+            'move', GLib.Variant.new_bytestring(os.fsencode(destination)))
 
         self.assertEqual(self.window.moved_to, [destination])
 

@@ -11,6 +11,7 @@ from mcomix import constants
 from mcomix import file_chooser_simple_dialog
 from mcomix import widgets
 from mcomix.preferences import prefs
+from mcomix import i18n
 from mcomix.i18n import _
 
 if TYPE_CHECKING:
@@ -59,7 +60,10 @@ class MoveToMenu:
         self.model = Gio.Menu()
 
         self._actions = Gio.SimpleActionGroup()
-        move = Gio.SimpleAction.new('move', GLib.VariantType.new('s'))
+        # The directory as the bytes of its name, not as a string: a
+        # GVariant string has to be UTF-8, and a directory name on disk
+        # need not be.
+        move = Gio.SimpleAction.new('move', GLib.VariantType.new('ay'))
         move.connect('activate', self._move_activated)
         self._actions.add_action(move)
         other = Gio.SimpleAction.new('other', None)
@@ -107,7 +111,7 @@ class MoveToMenu:
                 entry = Gio.MenuItem.new(self._label_for(directory), None)
                 entry.set_action_and_target_value(
                     '%s.move' % self.ACTION_PREFIX,
-                    GLib.Variant('s', directory))
+                    GLib.Variant.new_bytestring(os.fsencode(directory)))
                 section.append_item(entry)
                 if section.get_n_items() >= self.SECTION_LIMIT:
                     break
@@ -164,11 +168,14 @@ class MoveToMenu:
             head = (cls._LABEL_WIDTH - 3) // 3
             directory = '%s...%s' % (directory[:head],
                                      directory[head + 3 - cls._LABEL_WIDTH:])
-        return widgets.menu_label(directory)
+        # A name that is not UTF-8 is shown with what cannot be read of
+        # it replaced: a menu label has to be UTF-8.
+        return widgets.menu_label(i18n.to_display_string(directory))
 
     def _move_activated(self, action: Gio.SimpleAction,
                         target: GLib.Variant) -> None:
-        self._window.file_actions.move_current_file(target.get_string())
+        self._window.file_actions.move_current_file(
+            os.fsdecode(bytes(target.get_bytestring())))
 
     def _other_activated(self, *args: object) -> None:
         """Ask for a directory that is on none of the lists."""
