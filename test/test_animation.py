@@ -53,10 +53,14 @@ class FramesTest(MComixTest):
     def test_a_page_that_is_one_picture_has_no_frames_to_decode(self):
         """Nothing asks for the frames of a still page - load_pixbuf()
         does not mark one - but if something did, the one frame it has
-        says it lasts no time, which is what stops the decoder."""
+        says it lasts no time, which is what stops the decoder.
+
+        Zero from glycin, -1 from gdk-pixbuf where there is no glycin:
+        Frames.next() counts both as the end.
+        """
         frames = animation.frames(get_image_path('blue.png'))
         self.assertNotIsInstance(frames, animation._PillowFrames)
-        self.assertEqual(frames.next()[1], 0)
+        self.assertLessEqual(frames.next()[1], 0)
 
     def test_a_page_that_is_not_there_at_all_says_so(self):
         self.assertRaises(Exception, animation.frames,
