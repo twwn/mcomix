@@ -683,19 +683,32 @@ class _BaseFileChooserDialog(Dialog):
         # What is being previewed is what the poll last saw selected.
         if self._previewed and self._previewed == filepath:
 
-            if pixbuf is None:
+            if pixbuf is None and not (image_tools.is_image_file(filepath)
+                                       or archive_tools.is_archive_file(filepath)):
+                # Not something MComix reads, which "All files" lists.
                 self._preview_image.set_paintable(None)
                 self._namelabel.set_text('')
                 self._sizelabel.set_text('')
+                return
 
+            if pixbuf is None:
+                # A picture or a book whose thumbnail could not be made
+                # is shown as the library and the thumbnail bar show it,
+                # rather than as though nothing were selected.
+                pixbuf = image_tools.missing_image_icon(self._preview_pixels,
+                                                        self._preview_pixels)
             else:
                 pixbuf = image_tools.add_border(
                     image_tools.turned_as_shown(pixbuf, filepath), 1)
-                self._preview_image.set_paintable(
-                    image_tools.pixbuf_to_texture(pixbuf))
-                self._namelabel.set_text(os.path.basename(filepath))
-                self._sizelabel.set_text(tools.format_byte_size(
-                    os.stat(filepath).st_size))
+            self._preview_image.set_paintable(
+                image_tools.pixbuf_to_texture(pixbuf))
+            self._namelabel.set_text(os.path.basename(filepath))
+            try:
+                size = tools.format_byte_size(os.stat(filepath).st_size)
+            except OSError:
+                # Gone since it was selected.
+                size = ''
+            self._sizelabel.set_text(size)
 
     def _current_file(self) -> str | None:
         """The book that is open, or None if none is."""
