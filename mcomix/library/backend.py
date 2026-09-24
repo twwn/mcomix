@@ -217,25 +217,6 @@ class _LibraryBackend:
             log.warning(_('! Could not get cover for book "%s"'), path)
         return thumb
 
-    def get_collections_in_collection(self, collection: int | None = None) -> list[int]:
-        """Return a sequence with all the subcollections in <collection>,
-        or all top-level collections if <collection> is None.
-
-        Either way they sort by name, but the top-level ones have to
-        sort "Recent" under its translation: the row holds the
-        untranslated name RECENT, so that a library carried from one
-        language to another still finds the collection, and sorting on
-        what the row holds would put it wherever the letter R falls.
-        """
-        if collection is None:
-            return self.fetchall('''select id from Collection
-                where supercollection isnull
-                order by case when id = ? then ? else name end''',
-                                 (constants.COLLECTION_RECENT, _('Recent')))
-        return self.fetchall('''select id from Collection
-            where supercollection = ?
-            order by name''', (collection,))
-
     def get_all_collections_in_collection(self, collection: int) -> list[int]:
         """Return every collection under <collection>, including the
         ones under those, in no particular order.

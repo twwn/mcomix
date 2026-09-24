@@ -58,10 +58,6 @@ class Matrix:
             return not self == other
         return NotImplemented
 
-    def and_then(self, next: Matrix) -> Matrix:
-        """The matrix result of transforming self by 'next'."""
-        return self + next
-
     def and_then_all(self, *nexts: Matrix) -> Matrix:
         """The matrix resulting from self transformed by each 'nexts' in turn."""
         out = self

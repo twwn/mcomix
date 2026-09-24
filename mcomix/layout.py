@@ -198,10 +198,6 @@ class FiniteLayout:  # 2D only
         aspect ratio."""
         return self.content_distorted
 
-    def get_wrapper_boxes(self) -> list[box.Box]:
-        """The Boxes each page can be scrolled within."""
-        return self.wrapper_boxes
-
     def get_union_box(self) -> box.Box:
         """The Box covering every wrapper Box: the whole scrollable
         area."""

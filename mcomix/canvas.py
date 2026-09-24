@@ -43,7 +43,6 @@ class PageCanvas(Gtk.Widget):
         #: Set while size_allocate() is configuring the adjustments, so
         #: that the value they emit does not ask for another allocation.
         self._allocating = False
-        self._pointer: tuple[float, float] = (0.0, 0.0)
         #: The last size announced through 'resized'.
         self._allocated = (0, 0)
         #: Where scroll_to() was last asked to go, until the next
@@ -52,10 +51,6 @@ class PageCanvas(Gtk.Widget):
         # A page larger than the window must not be drawn over the rest
         # of it.
         self.set_overflow(Gtk.Overflow.HIDDEN)
-        # get_pointer() answers with what this controller last reported.
-        motion = Gtk.EventControllerMotion()
-        motion.connect('motion', self._moved)
-        self.add_controller(motion)
 
     def get_hadjustment(self) -> Gtk.Adjustment:
         return self._hadjustment
@@ -165,13 +160,6 @@ class PageCanvas(Gtk.Widget):
             draw(snapshot)
         snapshot.restore()
 
-    def get_pointer(self) -> tuple[float, float]:
-        """Return where the pointer last was, in canvas coordinates."""
-        return self._pointer
-
-    def _moved(self, _controller: Gtk.EventControllerMotion, x: float,
-               y: float) -> None:
-        self._pointer = (x, y)
 
     def _scrolled(self, _adjustment: Gtk.Adjustment) -> None:
         if not self._allocating:

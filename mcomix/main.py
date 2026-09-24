@@ -1174,14 +1174,6 @@ class MainWindow(Gtk.Window):
 
         return tuple(dimensions)
 
-    def get_layout_pointer_position(self) -> tuple[float, float]:
-        """Return a 2-tuple with the x and y coordinates of the pointer
-        on the main layout area, relative to the layout.
-        """
-        x, y = self.page_area.get_pointer()
-        offset_x, offset_y = self.scroll_offset()
-        return (x + offset_x, y + offset_y)
-
     def scroll_offset(self) -> tuple[float, float]:
         """How far the page area is scrolled, across and down.
 

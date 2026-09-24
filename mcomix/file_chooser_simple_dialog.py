@@ -35,10 +35,6 @@ class SimpleFileChooserDialog(file_chooser_base_dialog._BaseFileChooserDialog):
         self._on_paths = on_paths
         self.set_visible(True)
 
-    def get_paths(self) -> "list[str] | None":
-        """Return the paths that were selected, if any."""
-        return self._paths
-
     def files_chosen(self, paths: list[str]) -> None:
         self._paths = paths
         if self._on_paths is not None:

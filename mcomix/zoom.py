@@ -88,10 +88,6 @@ class ZoomModel:
         """
         self._fitmode = constants.ZoomMode(fitmode)
 
-    def get_scale_up(self) -> bool:
-        """Whether a page smaller than the room it has is enlarged."""
-        return self._scale_up
-
     def set_scale_up(self, scale_up: bool) -> None:
         """Enlarge a page to fill the room it has, or leave it be."""
         self._scale_up = scale_up

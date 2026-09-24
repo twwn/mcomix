@@ -39,9 +39,6 @@ class _AnimationPaintable(GObject.GObject, Gdk.Paintable):  # type: ignore[misc]
         self._texture = texture
         self.invalidate_contents()
 
-    def get_texture(self) -> Gdk.Texture | None:
-        return self._texture
-
     def do_get_intrinsic_width(self) -> int:
         return self._width
 
