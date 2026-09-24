@@ -6,11 +6,6 @@ from collections.abc import Callable, Iterator, Sequence
 
 from mcomix import log
 from mcomix import i18n
-
-try:
-    import chardet
-except ImportError:
-    chardet = None  # type: ignore[assignment]
 from mcomix.archive import archive_base
 from mcomix.i18n import _
 
@@ -34,37 +29,22 @@ def _legacy_name_decoder(infos: Sequence[zipfile.ZipInfo]) \
     """How to read back the names <infos> stored without the UTF-8 flag.
 
     zipfile reads such a name as code page 437, which is what the format
-    once said, but the tools that wrote most of them did not: an older
-    Linux or Mac archiver wrote UTF-8 and left the flag off, and Windows
-    wrote the code page of its language.  The bytes come back intact
-    through code page 437, so every such name is tried as UTF-8 first,
-    and then, where chardet is installed, in whatever it makes of all of
-    them at once - one name is too short to tell a code page by.  Where
-    neither reads every name, they stay as zipfile read them.
+    once said, but the tools that wrote most of them did not.  The bytes
+    come back intact through code page 437, and are read in the encoding
+    archive_base.name_encoding() finds for all of them; where it finds
+    none, they stay as zipfile read them.
     """
     raw = [info.filename.encode('cp437') for info in infos
            if not info.flag_bits & _UTF8_FLAG and not info.filename.isascii()]
     if not raw:
         return lambda name: name
-    candidates = ['utf-8']
-    if chardet is not None:
-        guessed = chardet.detect(b'\n'.join(raw))
-        if guessed['encoding'] and guessed['confidence'] >= 0.5:
-            candidates.append(guessed['encoding'])
-    for encoding in candidates:
-        try:
-            for name in raw:
-                name.decode(encoding)
-        except (UnicodeDecodeError, LookupError):
-            continue
-        chosen = encoding
+    chosen = archive_base.name_encoding(raw, 'cp437')
 
-        def decode(name: str) -> str:
-            if name.isascii():
-                return name
-            return name.encode('cp437').decode(chosen)
-        return decode
-    return lambda name: name
+    def decode(name: str) -> str:
+        if name.isascii():
+            return name
+        return name.encode('cp437').decode(chosen)
+    return decode
 
 
 class ZipArchive(archive_base.NonUnicodeArchive):

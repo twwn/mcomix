@@ -1,9 +1,11 @@
 import hashlib
+import io
 import locale
 import os
 import re
 import shutil
 import sys
+import tarfile
 import tempfile
 import unittest
 import unittest.mock
@@ -388,6 +390,64 @@ class ZipLegacyNameTest(MComixTest):
         finally:
             archive.close()
         with open(os.path.join(self.tmp_dir, 'Übersicht.jpg'), 'rb') as fp:
+            self.assertEqual(b'x', fp.read())
+
+
+class TarLegacyNameTest(MComixTest):
+
+    """Names a tarball stores in something other than UTF-8.
+
+    tarfile reads them as UTF-8 with the undecodable bytes kept as lone
+    surrogates, which GTK refuses outright: a label or a title given
+    one raised UnicodeEncodeError, and so did every log line naming the
+    page.
+    """
+
+    def _tar(self, names, encoding):
+        path = os.path.join(self.tmp_dir, 'legacy.tar')
+        with tarfile.open(path, 'w', format=tarfile.GNU_FORMAT,
+                          encoding=encoding) as archive:
+            for name in names:
+                info = tarfile.TarInfo(name)
+                info.size = 1
+                archive.addfile(info, io.BytesIO(b'x'))
+        return path
+
+    def _listed(self, path):
+        archive = tar.TarArchive(path)
+        try:
+            return archive.list_contents()
+        finally:
+            archive.close()
+
+    def test_latin_1_names_are_read_as_latin_1(self):
+        names = ['Übersicht.png', 'Zwölf.png']
+        self.assertEqual(names, self._listed(self._tar(names, 'latin-1')))
+
+    @unittest.skipUnless(chardet, 'chardet is optional')
+    def test_names_in_a_windows_code_page_are_read_in_it(self):
+        names = ['表紙.jpg', '第01話/001.jpg', '第01話/002.jpg', 'あとがき.png']
+        self.assertEqual(names, self._listed(self._tar(names, 'shift_jis')))
+
+    def test_every_name_listed_can_be_shown(self):
+        """Whatever the names were written in, what is listed is text
+        GTK takes: UTF-8 without lone surrogates."""
+        for encoding, names in (
+                ('latin-1', ['Übersicht.png', 'Zwölf.png']),
+                ('shift_jis', ['表紙.jpg', 'あとがき.png']),
+                ('cp1251', ['Обзор.png', 'Страница.png'])):
+            with self.subTest(encoding):
+                for name in self._listed(self._tar(names, encoding)):
+                    name.encode('utf-8')
+
+    def test_a_page_listed_under_its_decoded_name_is_extracted(self):
+        archive = tar.TarArchive(self._tar(['Übersicht.png'], 'latin-1'))
+        try:
+            archive.list_contents()
+            archive.extract('Übersicht.png', self.tmp_dir)
+        finally:
+            archive.close()
+        with open(os.path.join(self.tmp_dir, 'Übersicht.png'), 'rb') as fp:
             self.assertEqual(b'x', fp.read())
 
 

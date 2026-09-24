@@ -4,7 +4,7 @@ extraction and adding new archive formats. """
 import os
 import sys
 import threading
-from collections.abc import Callable, Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator, Sequence
 from typing import IO
 
 from mcomix import portability
@@ -12,6 +12,11 @@ from mcomix import i18n
 from mcomix import process
 from mcomix import callback
 from mcomix.archive import password as archive_password
+
+try:
+    import chardet
+except ImportError:
+    chardet = None  # type: ignore[assignment]
 
 
 class BaseArchive:
@@ -170,6 +175,33 @@ class BaseArchive:
         # so by here it is a string, empty if the user gave none.
         assert self._password is not None
         return self._password
+
+
+def name_encoding(raw_names: Sequence[bytes], fallback: str) -> str:
+    """The encoding the member names <raw_names> were written in.
+
+    An archive format that does not say - a zip name without its UTF-8
+    flag, any tar name - holds whatever the program that wrote it used:
+    UTF-8 from most tools of the last twenty years, and the code page of
+    its language from Windows.  UTF-8 is tried first, then whatever
+    chardet, where installed, makes of all the names at once (one name
+    is too short to tell a code page by: it read a Shift-JIS "表紙.jpg"
+    as Windows-1252), and then <fallback>, which has to be an encoding
+    that decodes any byte.
+    """
+    candidates = ['utf-8']
+    if chardet is not None:
+        guessed = chardet.detect(b'\n'.join(raw_names))
+        if guessed['encoding'] and guessed['confidence'] >= 0.5:
+            candidates.append(guessed['encoding'])
+    for encoding in candidates:
+        try:
+            for name in raw_names:
+                name.decode(encoding)
+        except (UnicodeDecodeError, LookupError):
+            continue
+        return encoding
+    return fallback
 
 
 class NonUnicodeArchive(BaseArchive):
