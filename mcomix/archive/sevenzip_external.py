@@ -314,9 +314,11 @@ class TarArchive(SevenZipArchive):
             return
         self._state = self.STATE_HEADER
         self._path = 'archive.tar'
+        # The head of the listing names the archive, and its path need
+        # not be UTF-8; what is read here is the member's size alone.
         proc = subprocess.run(self._get_list_arguments(),
                               stdout=subprocess.PIPE, stderr=process.STDOUT,
-                              encoding='utf-8')
+                              encoding='utf-8', errors='surrogateescape')
         for line in proc.stdout.splitlines():
             self._parse_list_output_line(line.rstrip(os.linesep))
         if self._contents:

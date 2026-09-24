@@ -466,6 +466,32 @@ class SevenZipLegacyNameTest(ZipLegacyNameTest):
                 self.assertEqual(b'x', fp.read())
 
 
+@unittest.skipUnless(sevenzip_external.SevenZipArchive._find_7z_executable(),
+                     '7z is not installed')
+class SevenZipTarAtLegacyPathTest(MComixTest):
+
+    def test_a_tarball_at_a_path_that_is_not_utf_8_is_listed(self):
+        """7z prints the archive's own path in the head of its listing,
+        and the listing of a tarball tarfile cannot read, decoded
+        strictly, raised UnicodeDecodeError at a Latin-1 path."""
+        import lzma
+        content = io.BytesIO()
+        with tarfile.open(fileobj=content, mode='w') as archive:
+            info = tarfile.TarInfo('01.png')
+            info.size = 1
+            archive.addfile(info, io.BytesIO(b'x'))
+        path = os.fsdecode(os.path.join(os.fsencode(self.tmp_dir),
+                                        'B\xfccher.tar.xz'.encode('latin-1')))
+        with open(path, 'wb') as fp:
+            fp.write(lzma.compress(content.getvalue(),
+                                   format=lzma.FORMAT_XZ))
+        archive = sevenzip_external.TarArchive(path)
+        try:
+            self.assertEqual(['archive.tar'], archive.list_contents())
+        finally:
+            archive.close()
+
+
 class TarLegacyNameTest(MComixTest):
 
     """Names a tarball stores in something other than UTF-8.
