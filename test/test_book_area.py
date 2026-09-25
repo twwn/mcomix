@@ -847,6 +847,24 @@ class DragIconTest(MComixTest):
                          'building the drag icon called a deprecated API')
         return icons
 
+    def test_the_drag_offers_the_positions_of_the_selected_covers(self):
+        """What a drop on the collection list reads back: the kind of
+        drag, and the positions of the covers dragged."""
+        area = self._area(3)
+        area._covers.select_only(0)
+        area._covers.selection.select_item(2, False)
+        # A Gdk.ContentProvider's value cannot be read back through
+        # PyGObject, so what it is made from is recorded instead.
+        with unittest.mock.patch.object(
+                Gdk.ContentProvider, 'new_for_value',
+                wraps=Gdk.ContentProvider.new_for_value) as made:
+            content = area._drag_prepare(None, 0.0, 0.0)
+        self.assertIsInstance(content, Gdk.ContentProvider)
+        made.assert_called_once_with(
+            '%s:0,2' % constants.LIBRARY_DRAG_BOOKS)
+        area._covers.selection.unselect_all()
+        self.assertIsNone(area._drag_prepare(None, 0.0, 0.0))
+
     def test_one_book_has_an_icon(self):
         icons = self._icon_for(1)
         self.assertEqual(1, len(icons))
