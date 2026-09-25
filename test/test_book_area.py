@@ -1127,3 +1127,69 @@ class MenuKeyTest(MComixTest):
         self.assertEqual(Gdk.EVENT_PROPAGATE,
                          self._press(Gdk.KEY_F10, Gdk.ModifierType(0)))
         self.assertFalse(self.area._book_menu.get_visible())
+
+
+class OpenAndClickTest(MComixTest):
+
+    """Opening the books picked out, with the library left open or not,
+    and what a right click picks out before the menu opens."""
+
+    class _Gesture:
+
+        def get_widget(self):
+            return None
+
+    def setUp(self):
+        super().setUp()
+        # Held here: an area holds its library window only weakly.
+        self.library = _MenuLibrary()
+        self.library.control_area = _ControlArea()
+        self.opened = []
+        self.library.open_book = (
+            lambda books, keep_library_open: self.opened.append(
+                (books, keep_library_open)))
+        self.area = book_area._BookArea(self.library)
+        self.area._covers.set_items(
+            book_area._BookItem(_Book(index, '/books/%d.cbz' % index))
+            for index in range(3))
+        self.window = Gtk.Window()
+        self.window.set_child(self.area)
+        self.window.present()
+
+    def tearDown(self):
+        self.area._book_menu.popdown()
+        self.area.close()
+        self.window.destroy()
+        super().tearDown()
+
+    def test_the_books_picked_out_open_with_the_library_closing(self):
+        self.area._covers.select_only(1)
+        self.area.open_selected_book()
+        self.assertEqual([([1], False)], self.opened)
+
+    def test_or_with_it_left_open(self):
+        self.area._covers.select_only(2)
+        self.area.open_selected_book_noclose()
+        self.assertEqual([([2], True)], self.opened)
+
+    def test_nothing_picked_out_opens_nothing(self):
+        self.area._covers.selection.unselect_all()
+        self.area.open_selected_book()
+        self.assertEqual([], self.opened)
+
+    def test_a_right_click_picks_out_the_cover_under_it(self):
+        hold_open(self.area._book_menu)
+        self.area._covers.select_only(0)
+        with unittest.mock.patch.object(self.area._covers, 'position_at',
+                                        return_value=2):
+            self.area._button_press(self._Gesture(), 1, 5.0, 5.0)
+        self.assertEqual([2], self.area._covers.get_selected_positions())
+        self.assertTrue(self.area._book_menu.get_visible())
+
+    def test_a_right_click_on_one_already_picked_keeps_the_others(self):
+        hold_open(self.area._book_menu)
+        self.area._covers.selection.select_all()
+        with unittest.mock.patch.object(self.area._covers, 'position_at',
+                                        return_value=1):
+            self.area._button_press(self._Gesture(), 1, 5.0, 5.0)
+        self.assertEqual([0, 1, 2], self.area._covers.get_selected_positions())
