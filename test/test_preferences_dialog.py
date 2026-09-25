@@ -23,6 +23,7 @@ from mcomix import keybindings
 from mcomix import main
 from mcomix import message_dialog
 from mcomix import preferences_dialog
+from mcomix import theme
 from mcomix import image_tools
 from mcomix.dialog import Response
 from mcomix.preferences import prefs
@@ -480,7 +481,9 @@ class PreferenceCallbacksTest(MComixTest):
                'thumbnailsidebar.toggle_page_numbers_visible',
                'imagehandler.do_cacheing',
                'event_handler.reset_extra_scroll_events',
-               'filehandler.update_comment_extensions')
+               'filehandler.update_comment_extensions',
+               'filehandler.refresh_file',
+               'thumbnailsidebar.change_thumbnail_background_color')
 
     def setUp(self):
         super().setUp()
@@ -563,6 +566,52 @@ class PreferenceCallbacksTest(MComixTest):
             lambda: self.dialog._double_page_changed_cb(chooser)))
         self.assertEqual(constants.SHOW_DOUBLE_AS_ONE_WIDE,
                          prefs['virtual double page for fitting images'])
+
+    def _choose(self, callback, value):
+        chooser = unittest.mock.Mock()
+        chooser.get_value.return_value = value
+        return self._called(lambda: getattr(self.dialog, callback)(chooser))
+
+    def test_each_chooser_stores_its_value_and_has_the_window_follow(self):
+        """A choice that changes the order of the pages opens the book
+        again, one that changes how they are drawn draws them again, and
+        a choice that is the one already made does neither."""
+        refresh, draw = {'filehandler.refresh_file'}, {'draw_image'}
+        prefs['scaling quality'] = 2
+        prefs['animation mode'] = constants.ANIMATION_NORMAL
+        for callback, preference, value, called in (
+                ('_double_page_autoresize_changed_cb',
+                 'double page autoresize',
+                 constants.DOUBLE_PAGE_AUTORESIZE_FIT_SIZE, draw),
+                ('_sort_by_changed_cb', 'sort by', constants.SORT_SIZE,
+                 refresh),
+                ('_sort_order_changed_cb', 'sort order',
+                 constants.SORT_DESCENDING, refresh),
+                ('_sort_archive_by_changed_cb', 'sort archive by',
+                 constants.SORT_NAME_LITERAL, refresh),
+                ('_sort_archive_order_changed_cb', 'sort archive order',
+                 constants.SORT_DESCENDING, refresh),
+                ('_scaling_quality_changed_cb', 'scaling quality', 3, draw),
+                ('_scaling_quality_changed_cb', 'scaling quality', 3, set()),
+                ('_animation_mode_changed_cb', 'animation mode',
+                 constants.ANIMATION_DISABLED, refresh),
+                ('_animation_mode_changed_cb', 'animation mode',
+                 constants.ANIMATION_DISABLED, set())):
+            with self.subTest(callback=callback, value=value, called=called):
+                self.assertEqual(called, self._choose(callback, value))
+                self.assertEqual(value, prefs[preference])
+
+    def test_a_colour_scheme_repaints_the_page_and_the_thumbnails(self):
+        """They are painted from a colour, not from the style sheet the
+        scheme changes."""
+        with unittest.mock.patch.object(theme, 'apply_colour_scheme') as \
+                applied:
+            called = self._choose('_colour_scheme_changed_cb', theme.DARK)
+        applied.assert_called_once_with()
+        self.assertEqual(theme.DARK, prefs['colour scheme'])
+        self.assertEqual({'set_bg_colour',
+                          'thumbnailsidebar.change_thumbnail_background_color'},
+                         called)
 
     def test_the_comment_extensions_are_read_out_of_their_entry(self):
         entry = unittest.mock.Mock()
