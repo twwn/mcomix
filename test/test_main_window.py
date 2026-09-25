@@ -1732,6 +1732,65 @@ class MainWindowTest(MComixTest):
                          'the archive on disk still holds the pages')
         self.assertEqual(opened, [True], 'it did not go on to the next book')
 
+    # -- The other buttons ------------------------------------------------
+
+    def _button(self, button, state=0):
+        """Press and release <button> over the middle of the first page."""
+        (left, top), (wide, high) = (
+            self.window.layout.get_content_boxes()[0].get_position(),
+            self.window.layout.get_content_boxes()[0].get_size())
+        x, y = left + wide / 2, top + high / 2
+        self.window.was_out_of_focus = False
+        handler = self.window.event_handler
+        handler.mouse_press_event(self._Click(button), 1, x, y)
+        handler.mouse_release_event(self._Click(button, state), 1, x, y)
+        self._pump()
+
+    def _page(self):
+        return self.window.imagehandler.get_current_page()
+
+    def test_shift_and_a_click_turns_ten_pages_or_to_the_last(self):
+        pages = len(self._ready())
+        self._button(1, Gdk.ModifierType.SHIFT_MASK)
+        self.assertEqual(min(11, pages), self._page())
+
+    def test_shift_and_a_right_click_turns_back_ten_or_to_the_first(self):
+        pages = len(self._ready())
+        self.window.set_page(pages)
+        self._pump()
+        self._button(3, Gdk.ModifierType.SHIFT_MASK)
+        self.assertEqual(max(1, pages - 10), self._page())
+
+    def test_alt_and_a_right_click_turns_back_a_page(self):
+        self._ready()
+        self.window.set_page(3)
+        self._pump()
+        self._button(3, Gdk.ModifierType.ALT_MASK)
+        self.assertEqual(2, self._page())
+
+    def test_the_middle_button_holds_the_lens_while_it_is_down(self):
+        self._ready()
+        lens = self.window.actiongroup.get_action('lens')
+        self.assertFalse(lens.get_active())
+        self._press(2)
+        self.assertTrue(lens.get_active())
+        self.window.event_handler.mouse_release_event(self._Click(2), 1, 0, 0)
+        self.assertFalse(lens.get_active())
+
+    def test_a_right_click_opens_the_menu_over_the_page_under_it(self):
+        self._ready()
+        hold_open(self.window.popup)
+        self.window.popup_page = None
+        self._button(3)
+        try:
+            self.assertTrue(self.window.popup.get_visible(),
+                            'the menu did not open')
+            self.assertEqual(1, self.window.popup_page)
+            self.assertEqual(1, self._page(), 'the page was turned as well')
+        finally:
+            self.window.popup.popdown()
+            self._pump()
+
     def test_the_right_click_menu_offers_to_delete_a_page(self):
         self.assertIn('win.delete-page-popup',
                       self._menu_actions(self.window.uimanager.popup
