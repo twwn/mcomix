@@ -300,6 +300,24 @@ class RememberedResumeAnswerTest(MComixTest):
             pump()
         return self.window.imagehandler.get_current_page()
 
+    def test_a_record_gone_before_its_date_was_read_asks_nothing(self):
+        """Another window closing the same book takes the record away
+        between the page being read and its date: there is nothing to
+        resume to, so nothing is asked and the book stays at its front."""
+        with mock.patch.object(self.handler.last_read_page, 'get_date',
+                               return_value=None), \
+                mock.patch.object(self.handler, 'write_fileinfo_file') \
+                as recorded:
+            page = self._open_and_settle()
+        # The answer that there is nothing to resume to finishes the
+        # opening as an answer from the prompt would.
+        recorded.assert_called_once_with()
+        prompts = [window for window in Gtk.Window.list_toplevels()
+                   if isinstance(window, message_dialog.MessageDialog)
+                   and window.get_transient_for() is self.window]
+        self.assertEqual([], prompts)
+        self.assertEqual(1, page)
+
     def test_answering_yes_turns_to_the_page_where_it_was_left(self):
         self.assertEqual(3, self._answer_the_prompt(Response.YES))
 
