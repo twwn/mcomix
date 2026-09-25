@@ -288,6 +288,13 @@ class LibadwaitaColoursTest(MComixTest):
     all, silently.  Starting libadwaita cannot be undone and takes over
     the look of every window after it, so it is started in a process of
     its own.
+
+    The stylesheet read - one gtk.css stating the light colours and the
+    dark ones under a prefers-color-scheme query - was checked against
+    libadwaita 1.9.4.  libadwaita 1.5.0, Ubuntu 24.04's, which the
+    GitHub jobs run on, gave no colours for light or dark: that query
+    came with GTK 4.16, which libadwaita requires from 1.6, and before
+    1.6 the test holds it to nothing.
     """
 
     _SCRIPT = (
@@ -296,9 +303,12 @@ class LibadwaitaColoursTest(MComixTest):
         'if not theme._start_libadwaita():\n'
         '    print(json.dumps(None))\n'
         'else:\n'
-        '    print(json.dumps([theme._definitions(scheme) for scheme in\n'
-        '                      (theme.LIGHT, theme.DARK, theme.BLACK,\n'
-        '                       theme.SYSTEM)]))\n')
+        '    from gi.repository import Adw\n'
+        '    print(json.dumps([[Adw.get_major_version(),\n'
+        '                       Adw.get_minor_version()]]\n'
+        '                     + [theme._definitions(scheme) for scheme in\n'
+        '                        (theme.LIGHT, theme.DARK, theme.BLACK,\n'
+        '                         theme.SYSTEM)]))\n')
 
     def test_each_scheme_states_the_colours_it_is_named_for(self):
         environment = dict(os.environ, HOME=self.tmp_dir)
@@ -310,7 +320,10 @@ class LibadwaitaColoursTest(MComixTest):
         answer = json.loads(result.stdout.splitlines()[-1])
         if answer is None:
             self.skipTest('libadwaita is not installed')
-        light, dark, black, system = answer
+        version, light, dark, black, system = answer
+        if tuple(version) < (1, 6):
+            self.skipTest('libadwaita %d.%d keeps no stylesheet of the '
+                          'kind read here' % tuple(version))
         for name, colours in (('light', light), ('dark', dark),
                               ('pitch black', black)):
             with self.subTest(scheme=name):
