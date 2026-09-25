@@ -494,6 +494,38 @@ class CoverSizeDialogTest(MComixTest):
                                 if isinstance(child, Gtk.Scale)))
 
 
+    def _answer_custom(self, value, response):
+        """Pick "Custom", move its scale to <value> and answer the dialog
+        with <response>; give back the action the menu shows."""
+        action = self._Action()
+        self.area._book_size_changed(action, GLib.Variant('i', 0))
+        dialog = self._opened_dialogs()[0]
+        scale = next(child for child in _children(dialog.get_content_area())
+                     if isinstance(child, Gtk.Scale))
+        scale.set_value(value)
+        dialog.response(response)
+        pump()
+        return action
+
+    def test_a_custom_size_is_taken_from_the_scale_on_ok(self):
+        prefs['library cover size'] = 125
+        action = self._answer_custom(210, Response.OK)
+        self.assertEqual(210, prefs['library cover size'])
+        self.assertEqual(1, len(self.reloaded))
+        self.assertEqual(self.area._current_cover_size(),
+                         action.state.get_int32())
+        self.assertEqual([], self._opened_dialogs())
+
+    def test_a_custom_size_given_up_changes_nothing(self):
+        prefs['library cover size'] = 125
+        action = self._answer_custom(210, Response.DELETE_EVENT)
+        self.assertEqual(125, prefs['library cover size'])
+        self.assertEqual([], self.reloaded)
+        # The menu goes back to the size there is, from "Custom".
+        self.assertEqual(self.area._current_cover_size(),
+                         action.state.get_int32())
+
+
 class _RecordingBackend(_Backend):
 
     """A backend that counts the transaction it is put into.
