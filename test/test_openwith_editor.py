@@ -176,6 +176,48 @@ class OpenWithEditorTest(MComixTest):
         self.editor._down_command(None)
         self.assertEqual(self._labels(), ['Editor', '-', 'Shell'])
 
+    # -- Trying a command out ---------------------------------------------
+
+    def _tried(self, label, command, cwd):
+        """Put one command in the list, select it, and answer with what
+        the editor says of it: the command line, and the warning."""
+        self.editor._command_list.unselect_all()
+        self.editor._add_row(openwith.column_list.Row(
+            label=label, command=command, cwd=cwd, disabled=False,
+            editable=True))
+        self.editor._command_list.select_only(len(self.COMMANDS))
+        self.editor.test_command()
+        return (self.editor._test_field.get_text(),
+                self.editor._exec_label.get_text())
+
+    def test_a_command_that_can_run_is_shown_as_it_would_run(self):
+        self.assertEqual(('sh -c ls ""', ''),
+                         self._tried('Listing', 'sh -c "ls" ""', self.tmp_dir))
+        self.assertTrue(self.editor._run_button.get_sensitive())
+
+    def test_a_working_directory_that_is_not_there_is_pointed_out(self):
+        missing = self.tmp_dir + '/not-there'
+        self.assertEqual(
+            '"Listing" does not have a valid working directory.',
+            self._tried('Listing', 'sh -c ls', missing)[1])
+
+    def test_a_program_that_is_not_there_is_pointed_out(self):
+        self.assertEqual(
+            '"Missing" does not appear to have a valid executable.',
+            self._tried('Missing', 'mcomix-no-such-program', '')[1])
+
+    def test_nothing_selected_leaves_nothing_to_try(self):
+        self._tried('Listing', 'sh -c ls', '')
+        self.editor._command_list.unselect_all()
+        pump()
+        self.assertEqual('', self.editor._test_field.get_text())
+
+    def test_the_run_button_runs_the_selected_command(self):
+        self._tried('Listing', 'sh -c ls', '')
+        with mock.patch.object(openwith.OpenWithCommand, 'execute') as run:
+            self.editor._run_command(None)
+        run.assert_called_once_with(self.window)
+
     # -- Editing ----------------------------------------------------------
 
     def test_typing_a_label_writes_it_to_the_row(self):
