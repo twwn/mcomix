@@ -843,6 +843,55 @@ class EnhanceSlidersTest(MComixTest):
                          list(self._enhanced(sharpness=1.0).getdata()))
 
 
+class InSrgbTest(MComixTest):
+
+    """A picture PIL reads, brought into sRGB from the colour profile it
+    carries."""
+
+    def _with_profile(self, profile):
+        im = Image.new('RGB', (2, 2), (200, 30, 30))
+        exif = Image.Exif()
+        exif[0x0112] = 6  # Orientation: turned a quarter clockwise.
+        im.info['icc_profile'] = profile
+        im.info['exif'] = exif.tobytes()
+        return im
+
+    def test_a_profile_littlecms_cannot_read_leaves_the_picture_alone(self):
+        """ImageCms.PyCMSError, which it raises, is not the OSError it
+        was taken for, and the picture was not read at all."""
+        im = self._with_profile(b'not a colour profile')
+        self.assertIs(im, image_tools._in_srgb(im))
+
+    def test_a_page_with_such_a_profile_is_read_by_pil(self):
+        """Where gdk-pixbuf will not read the page either, there was
+        nothing left to show it with."""
+        path = os.path.join(self.tmp_dir, 'unreadable-profile.jpg')
+        Image.new('RGB', (8, 8), (200, 30, 30)).save(
+            path, quality=98, icc_profile=b'not a colour profile' * 4)
+
+        def refuse(*args):
+            raise GLib.Error('refused')
+
+        with unittest.mock.patch.object(GdkPixbuf.Pixbuf, 'new_from_file',
+                                        refuse), \
+                unittest.mock.patch.object(
+                    GdkPixbuf.Pixbuf, 'new_from_file_at_size', refuse):
+            pixbuf = image_tools.load_pixbuf(path)
+            thumbnail = image_tools.load_pixbuf_size(path, 4, 4)
+        self.assertEqual(8, pixbuf.get_width())
+        self.assertEqual(4, thumbnail.get_width())
+
+    def test_the_exif_data_goes_along_with_the_converted_picture(self):
+        """The orientation is read from it after the conversion."""
+        from PIL import ImageCms
+        profile = ImageCms.ImageCmsProfile(
+            ImageCms.createProfile('sRGB')).tobytes()
+        im = self._with_profile(profile)
+        converted = image_tools._in_srgb(im)
+        self.assertIsNot(im, converted)
+        self.assertEqual(im.info['exif'], converted.info.get('exif'))
+
+
 class MissingImageIconTest(MComixTest):
 
     """The picture shown for an image that would not load."""

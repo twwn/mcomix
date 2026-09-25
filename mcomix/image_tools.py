@@ -455,13 +455,17 @@ def _in_srgb(image: Image.Image) -> Image.Image:
         return image
     try:
         from PIL import ImageCms
+    except ImportError:
+        return image
+    try:
         mode = 'RGBA' if 'A' in image.getbands() else 'RGB'
         converted = ImageCms.profileToProfile(
             image, BytesIO(profile), ImageCms.createProfile('sRGB'),
             outputMode=mode)
-    except (ImportError, OSError, ValueError) as error:
-        # ImageCms.PyCMSError is an OSError: a profile LittleCMS cannot
-        # read, or one that does not fit the picture's mode.
+    except (ImageCms.PyCMSError, OSError, ValueError) as error:
+        # A profile LittleCMS cannot read, or one that does not fit the
+        # picture's mode.  ImageCms.PyCMSError is not an OSError, for
+        # all that it wraps one.
         log.debug('Could not convert a picture into sRGB: %s', error)
         return image
     if converted is None:
