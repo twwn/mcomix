@@ -809,6 +809,40 @@ class EnhanceTest(MComixTest):
         self.assertEqual(0, im.getpixel((1, 1))[3])
 
 
+class EnhanceSlidersTest(MComixTest):
+
+    """What the contrast, saturation and sharpness sliders do, each
+    turned all the way down or up on a picture of colours and edges."""
+
+    def _picture(self):
+        im = Image.new('RGB', (4, 4), (200, 40, 40))
+        for x in range(2):
+            for y in range(4):
+                im.putpixel((x, y), (20, 60, 220))
+        im.putpixel((3, 3), (250, 250, 250))
+        return image_tools.pil_to_pixbuf(im)
+
+    def _enhanced(self, **values):
+        return image_tools.pixbuf_to_pil(
+            image_tools.enhance(self._picture(), **values))
+
+    def test_no_contrast_leaves_one_colour(self):
+        im = self._enhanced(contrast=0.0)
+        self.assertEqual(1, len(set(im.getdata())))
+
+    def test_no_saturation_leaves_greys(self):
+        im = self._enhanced(saturation=0.0)
+        self.assertTrue(all(r == g == b for r, g, b in im.getdata()))
+        self.assertGreater(len(set(im.getdata())), 1)
+
+    def test_sharpness_changes_the_pixels_at_an_edge(self):
+        original = image_tools.pixbuf_to_pil(self._picture())
+        im = self._enhanced(sharpness=2.0)
+        self.assertNotEqual(list(original.getdata()), list(im.getdata()))
+        self.assertEqual(list(original.getdata()),
+                         list(self._enhanced(sharpness=1.0).getdata()))
+
+
 class MissingImageIconTest(MComixTest):
 
     """The picture shown for an image that would not load."""
