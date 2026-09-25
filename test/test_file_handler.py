@@ -147,6 +147,45 @@ class AnArchiveThatWillNotOpenTest(MComixTest):
             lambda: self.window.imagehandler.get_number_of_pages() > 0))
 
 
+class APathThatCannotBeOpenedTest(AnArchiveThatWillNotOpenTest):
+
+    """A name that is not there, or not a file or a folder, opened over
+    a book: the book is closed, the reason is shown, and nothing claims
+    to be open."""
+
+    def _over_a_book(self, path):
+        self.assertTrue(self.handler.open_file(
+            get_testfile_path('archives', '01-ZIP-Normal.zip')))
+        self.assertTrue(wait_for(
+            lambda: self.window.imagehandler.get_number_of_pages() > 0))
+        pump()
+        with mock.patch.object(self.window.osd, 'show') as shown:
+            self.assertFalse(self.handler.open_file(path))
+        pump()
+        return shown
+
+    def _closed(self):
+        self.assertFalse(self.handler.file_loaded)
+        self.assertFalse(self.window.actiongroup.get_action('close')
+                         .get_sensitive())
+
+    def test_a_name_that_is_not_there(self):
+        """The failure was answered with file_opened(), which marks a
+        book as loaded: the Close, Save and page menus came back for a
+        window with nothing in it."""
+        path = os.path.join(self.tmp_dir, 'gone.cbz')
+        shown = self._over_a_book(path)
+        self.assertIn('No such file', shown.call_args.args[0])
+        self._closed()
+
+    def test_a_name_that_is_neither_file_nor_folder(self):
+        path = os.path.join(self.tmp_dir, 'pipe')
+        os.mkfifo(path)
+        shown = self._over_a_book(path)
+        self.assertIn('Invalid path', shown.call_args.args[0])
+        self._closed()
+
+
 class RememberedResumeAnswerTest(MComixTest):
 
     """Opening a book the reader has stopped in before.

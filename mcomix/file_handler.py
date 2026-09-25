@@ -223,9 +223,11 @@ class FileHandler:
 
         error_message = self._check_access(path)
         if error_message:
+            # Nothing is open now: _close() has told the window about the
+            # book that went, and file_opened() would mark this failure
+            # as a book loaded.
             self._window.statusbar.set_message(error_message)
             self._window.osd.show(error_message)
-            self.file_opened()
             return False
 
         self.filelist = self._opened_provider.list_files()
