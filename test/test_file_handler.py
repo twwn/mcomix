@@ -7,12 +7,15 @@ import threading
 import zipfile
 from unittest import mock
 
+from gi.repository import Gtk
+
 from . import MComixTest, get_testfile_path, pump, wait_for
 
 from mcomix import constants
 from mcomix import file_handler
 from mcomix import icons
 from mcomix import main
+from mcomix import message_dialog
 from mcomix.dialog import Response
 from mcomix.preferences import prefs
 
@@ -192,7 +195,9 @@ class RememberedResumeAnswerTest(MComixTest):
 
     MComix offers to carry on where they left off, and the prompt can be
     answered once and for all.  A standing "yes" resumes without asking;
-    a standing "no" opens at the front, also without asking.
+    a standing "no" opens at the front, also without asking.  With no
+    standing answer the book opens at the front while the prompt waits,
+    and turns to where it was left only on a "yes".
     """
 
     def setUp(self):
@@ -239,6 +244,28 @@ class RememberedResumeAnswerTest(MComixTest):
         prefs['stored dialog choices']['resume-from-last-read-page'] = \
             int(Response.NO)
         self.assertEqual(1, self._open_and_settle())
+
+    def _answer_the_prompt(self, response):
+        """Open the book with no standing answer, answer the prompt that
+        comes up with <response>, and give the page shown then."""
+        self._open_and_settle()
+        prompts = [window for window in Gtk.Window.list_toplevels()
+                   if isinstance(window, message_dialog.MessageDialog)
+                   and window.get_transient_for() is self.window]
+        self.assertEqual(1, len(prompts), 'nothing asked where to resume')
+        self.assertEqual(1, self.window.imagehandler.get_current_page(),
+                         'the book was not shown from the front while '
+                         'the prompt waited')
+        prompts[0].response(response)
+        for _round in range(10):
+            pump()
+        return self.window.imagehandler.get_current_page()
+
+    def test_answering_yes_turns_to_the_page_where_it_was_left(self):
+        self.assertEqual(3, self._answer_the_prompt(Response.YES))
+
+    def test_answering_no_stays_at_the_front(self):
+        self.assertEqual(1, self._answer_the_prompt(Response.NO))
 
 
 class ABookWithNoPagesTest(MComixTest):
