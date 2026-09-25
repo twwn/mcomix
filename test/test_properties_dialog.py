@@ -140,7 +140,20 @@ class PropertiesDialogTest(MComixTest):
         dialog._offer_archive_page(True)
         self.assertEqual(self._tabs(), ['Archive', 'Image'])
 
-# vim: expandtab:sw=4:ts=4
+    def test_an_open_dialog_follows_the_book_to_a_loose_image_and_back(self):
+        """The tabs follow each book opened while the dialog stands."""
+        self._open(get_testfile_path('archives', '01-ZIP-Normal.zip'))
+        self.assertEqual(self._tabs(), ['Archive', 'Image'])
+        self.window.filehandler.open_file(
+            get_testfile_path('images', 'blue.png'))
+        self.assertTrue(wait_for(lambda: self._tabs() == ['Image'],
+                                 seconds=10), self._tabs())
+        self.assertFalse(self.dialog._notebook.get_show_tabs())
+        self.window.filehandler.open_file(
+            get_testfile_path('archives', '01-ZIP-Normal.zip'))
+        self.assertTrue(wait_for(lambda: self._tabs() == ['Archive', 'Image'],
+                                 seconds=10), self._tabs())
+        self.assertTrue(self.dialog._notebook.get_show_tabs())
 
     # -- What the archive's ComicInfo.xml says ----------------------------
 
@@ -221,3 +234,5 @@ class PropertiesDialogTest(MComixTest):
                 'the page was left without its file: %r' % self._texts(page))
         uid = str(os.stat(get_testfile_path('images', 'blue.png')).st_uid)
         self.assertIn(uid, self._texts(page))
+
+# vim: expandtab:sw=4:ts=4
