@@ -446,6 +446,23 @@ class CollectionAreaTest(MComixTest):
     def test_a_drag_of_something_else_is_left_alone(self):
         self.assertEqual(0, self.area._drag_motion(_StubDrop(None), 0.0, 0.0))
 
+    def test_a_collection_is_dragged_under_a_picture_of_its_row(self):
+        source = _StubDragSource()
+        self.area._drag_begin(source, None)
+        self.assertEqual([], source.icons, 'an icon with nothing selected')
+        self.area._list.select_row(self._row_for(self.manga))
+        self.area._drag_begin(source, None)
+        self.assertEqual(1, len(source.icons))
+        paintable, x, y = source.icons[0]
+        self.assertIsInstance(paintable, Gtk.WidgetPaintable)
+        cells = [cell for cell in self.area._list._each_cell()
+                 if cell.row is self._row_for(self.manga)]
+        self.assertTrue(cells[0].is_ancestor(paintable.get_widget()),
+                        'the picture is not of the dragged row')
+        # Above and to the left of the picture, leaving the row under
+        # the pointer in sight.
+        self.assertEqual((-5, -5), (x, y))
+
     def _bounds_of(self, collection):
         row = self._row_for(collection)
         for cell in self.area._list._each_cell():
@@ -462,6 +479,17 @@ class CollectionAreaTest(MComixTest):
     def _edge_of(self, collection):
         bounds = self._bounds_of(collection)
         return (10.0, bounds.origin.y + 1.0)
+
+
+class _StubDragSource:
+
+    """Stands in for the Gtk.DragSource a drag starts from."""
+
+    def __init__(self):
+        self.icons = []
+
+    def set_icon(self, paintable, x, y):
+        self.icons.append((paintable, x, y))
 
 
 class _StubDrop:
