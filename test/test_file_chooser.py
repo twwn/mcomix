@@ -1,6 +1,7 @@
 """ The file chooser dialog, which GTK4 leaves MComix to assemble. """
 
 import os
+import shutil
 import types
 import unittest.mock
 
@@ -298,6 +299,31 @@ class FileChooserTest(MComixTest):
         self.assertEqual([], chosen, 'a single click opened the file')
         self.dialog._activated(None, 2, 0.0, 0.0)
         self.assertEqual([path], chosen)
+
+    def test_a_folder_chosen_hands_on_the_files_in_it(self):
+        """In order, and only those the filter on show lets through."""
+        folder = os.path.join(self.tmp_dir, 'book')
+        os.makedirs(folder)
+        # Enough pages that the order the folder lists them in is not
+        # the natural one by chance.
+        pages = ['page %d.png' % number for number in range(1, 13)]
+        for name in reversed(pages[::2] + pages[1::2]):
+            shutil.copy(get_testfile_path('images', 'blue.png'),
+                        os.path.join(folder, name))
+        with open(os.path.join(folder, 'notes.txt'), 'w') as notes:
+            notes.write('Scanned at 600 dpi.\n')
+        chosen = []
+        self.dialog.files_chosen = chosen.extend
+        self.dialog.filechooser.set_file(Gio.File.new_for_path(folder))
+        wait_for(lambda: self.dialog.filechooser.get_file() is not None)
+        # Chosen after the folder: GTK takes the filter away when
+        # set_file() is given a folder.
+        self.dialog.filechooser.set_filter(next(
+            f for f in self.dialog.list_filters()
+            if f.get_name() == 'All images'))
+        self.dialog.response(Response.OK)
+        self.assertEqual([os.path.join(folder, name) for name in pages],
+                         chosen)
 
     def test_a_selected_file_is_previewed(self):
         # The thumbnail arrives on a worker thread, and the callback that
