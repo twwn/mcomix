@@ -635,6 +635,25 @@ class FileInfoTest(MComixTest):
             self.handler._sort_archive_images(files)
             self.assertEqual(['a/01.jpg', 'b/01.jpg'], files)
 
+    def test_each_archive_order_and_its_reverse(self):
+        """Natural order counts, literal order compares characters - a
+        capital first - and no sorting keeps the archive's own order;
+        descending turns each of them round."""
+        listed = ['p10.jpg', 'P3.jpg', 'p2.jpg']
+        for key, ascending in (
+                (constants.SORT_NAME, ['p2.jpg', 'P3.jpg', 'p10.jpg']),
+                (constants.SORT_NAME_LITERAL, ['P3.jpg', 'p10.jpg', 'p2.jpg']),
+                (0, listed)):
+            for order, expected in (
+                    (constants.SORT_ASCENDING, ascending),
+                    (constants.SORT_DESCENDING, ascending[::-1])):
+                with self.subTest(key=key, order=order):
+                    prefs['sort archive by'] = key
+                    prefs['sort archive order'] = order
+                    files = list(listed)
+                    self.handler._sort_archive_images(files)
+                    self.assertEqual(expected, files)
+
     def test_the_file_and_page_come_back(self):
         """As an older MComix wrote them, without the file of the page."""
         self._write(pickle.dumps(['/books/a.zip', 41]))
