@@ -1897,6 +1897,38 @@ class MainWindowTest(MComixTest):
     def _page(self):
         return self.window.imagehandler.get_current_page()
 
+    def test_the_first_and_last_page_actions_go_there(self):
+        pages = len(self._ready())
+        self.window.set_page(2)
+        self._pump()
+        self.window.actiongroup.get_action('last_page').activate()
+        self._pump()
+        self.assertEqual(pages, self._page())
+        self.window.actiongroup.get_action('first_page').activate()
+        self._pump()
+        self.assertEqual(1, self._page())
+
+    def test_turning_back_from_the_first_page_goes_to_the_book_before(self):
+        self._ready()
+        self.window.set_page(1)
+        self._pump()
+        with unittest.mock.patch.object(self.window, 'previous_book') as back:
+            self.window.flip_page(-1)
+        back.assert_called_once_with()
+        self.assertEqual(1, self._page())
+
+    def test_leaving_fullscreen_asks_the_window_to_leave_it(self):
+        action = self.window.actiongroup.get_action('fullscreen')
+        with unittest.mock.patch.object(self.window, 'fullscreen') as into, \
+                unittest.mock.patch.object(self.window,
+                                           'unfullscreen') as out:
+            action.set_active(True)
+            self._pump()
+            action.set_active(False)
+            self._pump()
+        into.assert_called_once_with()
+        out.assert_called_once_with()
+
     def test_shift_and_a_click_turns_ten_pages_or_to_the_last(self):
         pages = len(self._ready())
         self._button(1, Gdk.ModifierType.SHIFT_MASK)
