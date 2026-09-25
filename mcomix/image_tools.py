@@ -1128,9 +1128,10 @@ def get_image_info(path: str) -> tuple[str, tuple[int, int]]:
             im = Image.open(path)
             image_format = im.format
             image_dimensions = im.size
-        except IOError:
-            # If the file cannot be found, or the image
-            # cannot be opened and identified.
+        except (OSError, Image.DecompressionBombError):
+            # If the file cannot be found, or the image cannot be opened
+            # and identified - or is larger than PIL will open, which it
+            # says with an error that is not an OSError.
             pass
     if image_format is None or image_dimensions is None:
         image_format = _('Unknown filetype')

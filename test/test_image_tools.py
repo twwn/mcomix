@@ -530,6 +530,23 @@ class ImageToolsTest(MComixTest):
         self._check_image_info(os.devnull, ('Unknown filetype', 0, 0),
                                'invalid image')
 
+    def test_a_picture_too_large_for_pil_is_an_unknown_one(self):
+        """Pillow refuses a picture of more than twice
+        Image.MAX_IMAGE_PIXELS with DecompressionBombError, which is not
+        the IOError that was caught, so a picture gdk-pixbuf cannot name
+        raised out of the size a page is laid out at."""
+        path = get_image_path('blue.png')
+
+        def unknown(*args):
+            raise GLib.Error('not a format gdk-pixbuf knows')
+
+        with unittest.mock.patch.object(GdkPixbuf.Pixbuf, 'get_file_info',
+                                        unknown), \
+                unittest.mock.patch.object(Image, 'MAX_IMAGE_PIXELS', 10):
+            self.assertEqual(('Unknown filetype', (0, 0)),
+                             image_tools.get_image_info(path))
+            self.assertEqual((0, 0), image_tools.get_image_size(path))
+
     def test_get_implied_rotation(self):
         for name in _ROTATED_TEST_IMAGES:
             image = get_test_image(name)
