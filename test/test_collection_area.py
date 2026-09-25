@@ -199,6 +199,18 @@ class CollectionAreaTest(MComixTest):
         self.assertEqual([self.comics], self._expanded())
         self.assertEqual(self.manga, self.area.get_current_collection())
 
+    def test_activating_a_collection_opens_and_closes_it(self):
+        """Enter or a double click on a collection with others in it
+        shows them, and again hides them."""
+        rows = list(self.area._list.each_row())
+        position = rows.index(self._row_for(self.comics))
+        self.assertNotIn(self.inner, self._shown())
+        self.area._list.emit('activate', position)
+        self.assertEqual([self.comics], self._expanded())
+        self.assertIn(self.inner, self._shown())
+        self.area._list.emit('activate', position)
+        self.assertEqual([], self._expanded())
+
     def test_the_selected_collection_stays_expanded_on_redrawing(self):
         self.area._list.toggle_expanded(self._row_for(self.comics))
         self.area._list.select_row(self._row_for(self.comics))
