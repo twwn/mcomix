@@ -9,6 +9,8 @@ import os
 import zipfile
 from unittest import mock
 
+from gi.repository import Gtk
+
 from . import MComixTest, get_testfile_path, pump, wait_for
 
 from mcomix import comment_dialog
@@ -70,6 +72,27 @@ class CommentsDialogTest(MComixTest):
         self.dialog = comment_dialog._CommentsDialog(self.window)
         wait_for(lambda: len(self._tabs()) == 2, seconds=20)
         self.assertEqual(sorted(self._tabs()), ['one.txt', 'two.txt'])
+
+    def _shown_text(self, index):
+        """The text the tab at <index> shows."""
+        widget = self.dialog._notebook.get_nth_page(index)
+        while not isinstance(widget, Gtk.TextView):
+            widget = widget.get_first_child()
+        buffer = widget.get_buffer()
+        return buffer.get_text(*buffer.get_bounds(), False)
+
+    def test_a_comment_that_cannot_be_read_says_so_in_its_tab(self):
+        self._open(self._archive_with_comments(
+            'commented.zip', ('one.txt', 'first')))
+        handler = self.window.filehandler
+        self.assertTrue(wait_for(
+            lambda: handler.get_number_of_comments() == 1 and
+            handler.file_is_available(handler.get_comment_name(1)),
+            seconds=20))
+        os.remove(handler.get_comment_name(1))
+        self.dialog = comment_dialog._CommentsDialog(self.window)
+        self.assertTrue(wait_for(lambda: len(self._tabs()) == 1, seconds=20))
+        self.assertEqual('Could not read one.txt', self._shown_text(0))
 
     def test_a_comment_announced_after_it_was_shown_is_not_shown_twice(self):
         """The extractor announces a file from the idle queue, and one
