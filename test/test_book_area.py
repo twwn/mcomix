@@ -773,6 +773,14 @@ class RemovalTransactionTest(MComixTest):
         area._remove_books_from_collection()
         self.assertEqual((1, 1), (library.backend.begun, library.backend.ended))
 
+    def test_the_delete_key_takes_the_books_out_of_the_collection(self):
+        """Out of the collection on show, not out of the library."""
+        area, library = self._area(refuse=False)
+        self.assertEqual(Gdk.EVENT_STOP, area._key_press(
+            None, Gdk.KEY_Delete, 0, Gdk.ModifierType(0)))
+        self.assertEqual([(0, 7), (1, 7), (2, 7)],
+                         sorted(library.backend.removed))
+
     def test_a_book_still_filed_under_the_collection_keeps_its_cover(self):
         """The covers of a collection include the books of the ones
         under it, so a book taken out of it but filed in one of those as
