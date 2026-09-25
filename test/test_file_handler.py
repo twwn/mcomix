@@ -110,6 +110,20 @@ class DirectoryWalkTest(MComixTest):
         self.handler.open_next_directory()
         self.assertEqual(image, self._opened_file())
 
+    def test_there_is_nothing_before_the_first_directory(self):
+        archive = self._put_archive('a')
+        self._open(archive)
+        self.assertFalse(self.handler.open_previous_directory())
+        self.assertEqual(archive, self._opened_file())
+        self.assertTrue(self.handler.file_loaded)
+
+    def test_there_is_nothing_after_the_last_directory(self):
+        archive = self._put_archive('c')
+        self._open(archive)
+        self.assertFalse(self.handler.open_next_directory())
+        self.assertEqual(archive, self._opened_file())
+        self.assertTrue(self.handler.file_loaded)
+
 
 class AnArchiveThatWillNotOpenTest(MComixTest):
 
