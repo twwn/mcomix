@@ -10,6 +10,7 @@ Gtk.DropTarget, since a real drag needs a pointer no test has.
 """
 
 import os
+import unittest.mock
 
 from gi.repository import Gdk, Gtk
 
@@ -462,6 +463,38 @@ class CollectionAreaTest(MComixTest):
         # Above and to the left of the picture, leaving the row under
         # the pointer in sight.
         self.assertEqual((-5, -5), (x, y))
+
+    def test_a_collection_is_not_dropped_into_one_under_it(self):
+        """Comics holds Inner; Comics put inside Inner would be a cycle,
+        which the library has no way back out of."""
+        self.area._list.expand_to(self._collection_row(self.inner))
+        self._settle()
+        self.area._list.select_row(self._row_for(self.comics))
+        self.assertEqual(0, self.area._drag_motion(_StubDrop('%s:%d' % (
+            constants.LIBRARY_DRAG_COLLECTION, self.comics)),
+            *self._middle_of(self.inner)))
+
+    def test_books_dragged_out_of_all_books_are_added_not_moved(self):
+        self.area._list.select_row(self._row_for(constants.COLLECTION_ALL))
+        self.assertEqual(Gdk.DragAction.MOVE, self.area._drag_motion(
+            _StubDrop('%s:0' % (constants.LIBRARY_DRAG_BOOKS,)),
+            *self._middle_of(self.manga)))
+        self.assertEqual("Add books to 'Manga'.", self.library.messages[-1])
+
+    def test_a_drop_of_something_else_is_not_taken(self):
+        self.area._list.select_row(self._row_for(self.manga))
+        self.assertFalse(self.area._drag_data_received(
+            None, 'something-else:1', *self._middle_of(self.comics)))
+
+    def test_the_drag_offers_the_selected_collection(self):
+        with unittest.mock.patch.object(
+                Gdk.ContentProvider, 'new_for_value',
+                wraps=Gdk.ContentProvider.new_for_value) as made:
+            self.assertIsNone(self.area._drag_prepare(None, 0.0, 0.0))
+            self.area._list.select_row(self._row_for(self.manga))
+            self.assertIsNotNone(self.area._drag_prepare(None, 0.0, 0.0))
+        made.assert_called_once_with('%s:%d' % (
+            constants.LIBRARY_DRAG_COLLECTION, self.manga))
 
     def _bounds_of(self, collection):
         row = self._row_for(collection)
