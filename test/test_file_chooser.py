@@ -289,6 +289,33 @@ class FileChooserTest(MComixTest):
         self.dialog.response(Response.OK)
         self.assertEqual(chosen, [path])
 
+    def _choose(self, path):
+        """Select <path> and answer Open, keeping what is handed on."""
+        chosen = []
+        self.dialog.files_chosen = chosen.extend
+        self.dialog.filechooser.set_file(Gio.File.new_for_path(path))
+        wait_for(lambda: self.dialog.filechooser.get_file() is not None)
+        self.dialog.response(Response.OK)
+        return chosen
+
+    def test_the_folder_a_file_was_chosen_in_is_remembered(self):
+        prefs['store recent file info'] = True
+        path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        self.assertEqual([path], self._choose(path))
+        self.assertEqual(os.path.dirname(path),
+                         prefs['path of last browsed in filechooser'])
+
+    def test_without_a_file_history_no_folder_is_remembered(self):
+        """"Store information about recently opened files" off keeps
+        where the reader has been browsing out of the preferences too:
+        the chooser opens in the home folder next time."""
+        prefs['store recent file info'] = False
+        prefs['path of last browsed in filechooser'] = self.tmp_dir
+        path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        self.assertEqual([path], self._choose(path))
+        self.assertEqual(constants.HOME_DIR,
+                         prefs['path of last browsed in filechooser'])
+
     def test_a_double_click_on_a_file_opens_it(self):
         chosen = []
         self.dialog.files_chosen = chosen.extend
