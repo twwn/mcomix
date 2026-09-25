@@ -248,6 +248,48 @@ class WriterTest(MComixTest):
         self.assertIn('Path = 1 - Comic.jpg',
                       os.popen('7z l -ba -slt %s' % path).read())
 
+    @unittest.skipIf(archive_packer.szip_executable() is None,
+                     '7-Zip is not installed')
+    def test_pages_that_cannot_be_linked_are_copied_to_7z(self):
+        """The pages are laid out for 7z by linking them, which fails
+        across file systems; they are copied then."""
+        def refuse(*args):
+            raise OSError(18, 'Invalid cross-device link')
+
+        with unittest.mock.patch('os.link', side_effect=refuse):
+            path, packed = self._pack('Comic.cb7', constants.SEVENZIP)
+        self.assertTrue(packed)
+        self.assertIn('Path = 2 - Comic.jpg',
+                      os.popen('7z l -ba -slt %s' % path).read())
+
+    def _staging_left(self):
+        return [name for name in os.listdir(self.tmp_dir)
+                if name.startswith('mcomix-pack.')]
+
+    def test_7z_that_is_not_installed_packs_nothing(self):
+        with unittest.mock.patch.object(archive_packer._SevenZipWriter,
+                                        '_executable', return_value=None):
+            _path, packed = self._pack('Comic.cb7', constants.SEVENZIP)
+        self.assertFalse(packed)
+        self.assertEqual([], self._staging_left())
+
+    def test_an_archiver_that_refuses_packs_nothing(self):
+        with unittest.mock.patch.object(archive_packer._SevenZipWriter,
+                                        '_executable',
+                                        return_value='/bin/false'), \
+                unittest.mock.patch.object(archive_packer.process, 'call',
+                                           return_value=False):
+            _path, packed = self._pack('Comic.cb7', constants.SEVENZIP)
+        self.assertFalse(packed)
+        self.assertEqual([], self._staging_left())
+
+    def test_an_archive_that_cannot_be_created_packs_nothing(self):
+        refused = OSError(13, 'Permission denied')
+        with unittest.mock.patch.object(archive_packer, 'make_writer',
+                                        side_effect=refused):
+            _path, packed = self._pack('Comic.cbz', constants.ZIP)
+        self.assertFalse(packed)
+
     @unittest.skipIf(archive_packer.rar_executable() is None,
                      'the rar program is not installed')
     def test_a_rar_holds_the_same_entries(self):
@@ -424,6 +466,17 @@ class WriteArchiveTest(MComixTest):
     def test_nothing_is_left_beside_the_archive_that_was_written(self):
         self._write()
         self.assertEqual(['packed.cbz'], os.listdir(self.directory))
+
+    def test_a_packer_that_fails_fails_the_write(self):
+        """The packer runs on a thread of its own and answers whether it
+        managed; a failure there has to come out of write_archive() as
+        the error it raises, with nothing left behind."""
+        with unittest.mock.patch.object(
+                archive_packer._ZipWriter, 'add',
+                side_effect=OSError(5, 'Input/output error')), \
+                self.assertRaisesRegex(OSError, 'could not be packed'):
+            self._write()
+        self.assertEqual([], os.listdir(self.directory))
 
     def test_nothing_is_left_beside_an_archive_that_failed(self):
         with self.assertRaises(OSError):
