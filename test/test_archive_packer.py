@@ -84,6 +84,18 @@ class PackerTest(MComixTest):
         self.assertTrue(self._pack('Comic', [taken]))
         self.assertIn('_1 - Comic.jpg', self._names())
 
+    def test_two_pages_renamed_alike_are_both_written(self):
+        """A name the reader gave one page can be the number another is
+        written under; the second to claim it is moved aside rather than
+        the archive holding two entries of one name."""
+        packer = archive_packer.Packer(
+            self.pages, [], self.archive, 'Comic',
+            page_names={self.pages[1]: '1 - Comic.jpg'})
+        packer.pack()
+        self.assertTrue(packer.wait())
+        self.assertEqual(['1 - Comic.jpg', '_1 - Comic.jpg', '3 - Comic.png'],
+                         self._names())
+
     def test_every_entry_is_deflated(self):
         """The pages were stored rather than deflated, so an archive
         rewritten with a page or two removed could still come out larger
