@@ -53,6 +53,7 @@ gi.require_version('GdkPixbuf', '2.0')
 
 import atexit
 import copy
+import gc
 import shutil
 import tempfile
 import traceback
@@ -115,6 +116,28 @@ if '_' not in builtins.__dict__:
 from mcomix import log
 
 log.setLevel('DEBUG')
+
+
+# The cyclic garbage collector is run by whichever thread happens to set
+# it off, and a GTK object it frees is finalised on that thread.  Under
+# PyGObject 3.46 and GTK 4.14 - the floors job on GitHub - a thumbnail
+# worker that set it off took its xdist worker down, with "Fatal Python
+# error: Aborted" and the worker's stack "Garbage-collecting".  So the
+# suite runs the collector itself, on the main thread, between tests,
+# and never lets a worker thread start it.  Every test would triple the
+# time the suite takes; every so many costs next to nothing.
+gc.disable()
+_COLLECT_EVERY = 25
+_tests_since_collecting = 0
+
+
+def _collect_garbage_now_and_then():
+    """Run the collector on the main thread every _COLLECT_EVERY tests."""
+    global _tests_since_collecting
+    _tests_since_collecting += 1
+    if _tests_since_collecting >= _COLLECT_EVERY:
+        _tests_since_collecting = 0
+        gc.collect()
 
 
 def pump(rounds=4000):
@@ -323,6 +346,7 @@ class MComixTest(unittest.TestCase):
         for window in left:
             window.destroy()
         pump()
+        _collect_garbage_now_and_then()
         if left:
             self.fail('left on screen: %s'
                       % ', '.join(type(window).__name__ for window in left))
