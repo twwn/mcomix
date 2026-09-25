@@ -338,6 +338,38 @@ class CoverOrderTest(MComixTest):
         self.assertEqual(self._order(constants.SORT_SIZE, ascending=False),
                          [1, 3, 2])
 
+    def test_the_menu_sorts_the_covers_again(self):
+        """The popup menu's "Sort by" and ascending/descending choices
+        are one stateful action each; picking one keeps the choice and
+        puts the covers on show in the new order."""
+        prefs['lib sort key'] = constants.SORT_NAME
+        prefs['lib sort order'] = constants.SORT_ASCENDING
+        # Held here: an area holds its library window only weakly.
+        self.library = _Library()
+        area = book_area._BookArea(self.library)
+        self.addCleanup(area.close)
+        area._covers.set_items(
+            book_area._BookItem(book) for book in self.BOOKS)
+        area.set_sort_order()
+
+        def order():
+            return [item.uid for item in area._covers.each_item()]
+
+        self.assertEqual([2, 3, 1], order())
+        actions = area._popup_actions
+        actions.change_action_state('sort-key',
+                                    GLib.Variant('i', constants.SORT_PATH))
+        self.assertEqual(constants.SORT_PATH, prefs['lib sort key'])
+        self.assertEqual(constants.SORT_PATH,
+                         actions.get_action_state('sort-key').get_int32())
+        self.assertEqual([2, 1, 3], order())
+        actions.change_action_state(
+            'sort-order', GLib.Variant('i', constants.SORT_DESCENDING))
+        self.assertEqual(constants.SORT_DESCENDING, prefs['lib sort order'])
+        self.assertEqual(constants.SORT_DESCENDING,
+                         actions.get_action_state('sort-order').get_int32())
+        self.assertEqual([3, 1, 2], order())
+
 
     def _order_of(self, books, key):
         self.BOOKS = books
