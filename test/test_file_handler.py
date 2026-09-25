@@ -110,6 +110,29 @@ class DirectoryWalkTest(MComixTest):
         self.handler.open_next_directory()
         self.assertEqual(image, self._opened_file())
 
+    def test_walking_back_into_a_directory_with_no_book_opens_it(self):
+        """As walking on into one does: the directory is what is open,
+        and the walk goes on from there."""
+        image = self._put_image('b')
+        self._open(image)
+        self.assertTrue(self.handler.open_previous_directory())
+        self.assertEqual(os.path.join(self.root, 'a'), self._opened_file())
+
+    def test_an_archive_gone_from_its_directory_is_not_walked_from(self):
+        """Its place among the others cannot be told once it is not
+        listed, so neither the next nor the previous archive opens."""
+        first = os.path.join(self.root, 'b', 'first.cbz')
+        last = os.path.join(self.root, 'b', 'last.cbz')
+        middle = os.path.join(self.root, 'b', 'middle.cbz')
+        for path in (first, middle, last):
+            shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'),
+                        path)
+        self._open(middle)
+        os.remove(middle)
+        self.assertFalse(self.handler.open_next_archive())
+        self.assertFalse(self.handler.open_previous_archive())
+        self.assertEqual(middle, self._opened_file())
+
     def test_there_is_nothing_before_the_first_directory(self):
         archive = self._put_archive('a')
         self._open(archive)
