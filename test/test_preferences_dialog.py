@@ -12,7 +12,7 @@ import os
 import shutil
 import unittest.mock
 
-from gi.repository import Gtk
+from gi.repository import Gdk, Gtk
 
 from . import MComixTest, get_testfile_path, pump
 
@@ -554,10 +554,49 @@ class PreferenceCallbacksTest(MComixTest):
                 ('smart bg', False, {'set_bg_colour'}),
                 ('checkered bg for transparent images', True, {'draw_image'}),
                 ('show page numbers on thumbnails', True,
-                 {'thumbnailsidebar.toggle_page_numbers_visible'})):
+                 {'thumbnailsidebar.toggle_page_numbers_visible'}),
+                ('smart thumb bg', True, {'draw_image'}),
+                ('smart thumb bg', False,
+                 {'thumbnailsidebar.change_thumbnail_background_color'})):
             with self.subTest(preference=preference, active=active):
                 self.assertEqual(called, self._check(preference, active))
                 self.assertEqual(active, prefs[preference])
+
+    def test_the_thumbnails_own_background_stops_following_the_page(self):
+        """Either answer to "smart thumb bg" is a choice of the
+        thumbnails' own, so they no longer take the page's colour."""
+        prefs['thumbnail bg uses main colour'] = True
+        self._check('smart thumb bg', True)
+        self.assertFalse(prefs['thumbnail bg uses main colour'])
+
+    def test_hiding_everything_in_fullscreen_redraws_only_in_fullscreen(self):
+        for fullscreen, called in ((False, set()), (True, {'draw_image'})):
+            with self.subTest(fullscreen=fullscreen), \
+                    unittest.mock.patch.object(self.window, 'is_fullscreen',
+                                               return_value=fullscreen):
+                self.assertEqual(called,
+                                 self._check('hide all in fullscreen', True))
+
+    def test_a_thumbnail_background_colour_is_stored_and_shown(self):
+        """Shown at once where the thumbnails do not take their colour
+        off the page; where they do, the next page drawn shows it."""
+        button = unittest.mock.Mock()
+        button.get_rgba.return_value = Gdk.RGBA(red=1.0, green=0.5,
+                                                blue=0.25, alpha=1.0)
+        for smart, called in (
+                (False,
+                 {'thumbnailsidebar.change_thumbnail_background_color'}),
+                (True, set())):
+            with self.subTest(smart=smart):
+                prefs['smart thumb bg'] = smart
+                prefs['thumb bg colour'] = [0.0, 0.0, 0.0, 1.0]
+                with unittest.mock.patch.object(
+                        self.window.filehandler, 'file_loaded', True):
+                    self.assertEqual(called, self._called(
+                        lambda: self.dialog._color_button_cb(
+                            button, None, 'thumb bg colour')))
+                self.assertEqual([1.0, 0.5, 0.25, 1.0],
+                                 prefs['thumb bg colour'])
 
     def test_the_double_page_choice_is_stored_and_redrawn(self):
         chooser = unittest.mock.Mock()
