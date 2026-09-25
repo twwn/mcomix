@@ -214,6 +214,13 @@ class CollectionAreaTest(MComixTest):
         self.area._remove_collection()
         self.assertNotIn(self.manga, self._shown())
 
+    def test_the_delete_key_removes_the_selected_collection(self):
+        self.area._list.select_row(self._row_for(self.manga))
+        self.assertEqual(Gdk.EVENT_STOP, self.area._key_press(
+            None, Gdk.KEY_Delete, 0, Gdk.ModifierType(0)))
+        self.assertNotIn(self.manga, self._shown())
+        self.assertIsNone(self.backend.get_collection_name(self.manga))
+
     def test_all_books_is_not_a_collection_that_can_be_removed(self):
         self.area._list.select_row(
             self._row_for(constants.COLLECTION_ALL))
