@@ -153,6 +153,18 @@ class ThumbnailReuseTest(MComixTest):
         self.assertFalse(os.path.exists(path), 'the temporary file stayed')
         self.assertEqual(0o600, os.stat(final).st_mode & 0o777)
 
+    def test_a_thumbnail_that_cannot_be_stored_is_still_made(self):
+        """A store that refuses the file - full, or read-only - costs
+        the next start the work again, and nothing else: the thumbnail
+        is shown, and the half-written file does not stay behind."""
+        refused = OSError(28, 'No space left on device')
+        with unittest.mock.patch.object(thumbnail_tools.os, 'replace',
+                                        side_effect=refused):
+            pixbuf = self._thumbnailer.thumbnail(self._source)
+        self.assertIsNotNone(pixbuf)
+        final = self._thumbnailer._path_to_thumbpath(self._source)
+        self.assertEqual([], os.listdir(os.path.dirname(final)))
+
     def _write_thumbnail(self, size=(128, 96), source=None, **text):
         """Put a thumbnail for <source> in the store, of <size> and
         carrying the tEXt chunks named in <text>."""
