@@ -1239,6 +1239,29 @@ class MainWindowTest(MComixTest):
                 dialog.destroy()
             self._pump()
 
+    def _answer_save_prompt(self, response):
+        """Remove a page, answer the prompt with <response>, and say
+        whether the archive would have been written.  The book is the
+        fixture itself, so the writing is not let through."""
+        self._ready()
+        self.window.select_page(2)
+        self.window.file_actions.delete_page()
+        self._pump()
+        prompts = self._save_prompts()
+        self.assertEqual(1, len(prompts), 'nothing offered to save')
+        with unittest.mock.patch.object(self.window.file_actions,
+                                        'save_archive') as saved:
+            prompts[0].response(response)
+            self._pump()
+        self.assertEqual([], self._save_prompts(), 'the prompt stayed up')
+        return saved.called
+
+    def test_save_in_the_prompt_writes_the_archive(self):
+        self.assertTrue(self._answer_save_prompt(Response.YES))
+
+    def test_not_now_in_the_prompt_leaves_it_alone(self):
+        self.assertFalse(self._answer_save_prompt(Response.NO))
+
     def test_a_book_in_a_format_that_cannot_be_written_is_not_offered(self):
         """Writing in place keeps the name the file has, so it has to
         keep the format that name says."""
