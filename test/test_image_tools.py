@@ -1122,6 +1122,19 @@ class EdgeColourTest(MComixTest):
         self._expect((201, 201, 201),
                      image_tools.get_most_common_edge_colour(page))
 
+    def test_of_two_pages_the_outer_edges_are_read(self):
+        """The left of the first page and the right of the second, and
+        not the second page's left, which is where the two meet."""
+        blue, green, red = (20, 40, 200), (20, 200, 40), (200, 20, 20)
+        first = self._page((5, blue), (5, green))
+        # Two columns deep, as the edge is: its left column red, its
+        # right blue.
+        image = Image.new('RGB', (4, 10))
+        image.putdata([red, red, blue, blue] * 10)
+        second = image_tools.pil_to_pixbuf(image)
+        self._expect(blue,
+                     image_tools.get_most_common_edge_colour([first, second]))
+
     def test_a_group_is_counted_whole_whatever_lies_between_its_shades(self):
         """Sorted by colour, a shade of another group can fall between
         two of one group's; the group was then counted in two halves and
