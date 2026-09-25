@@ -102,11 +102,14 @@ picture.mcomix-marked-page {
 SYSTEM, LIGHT, DARK, BLACK = 'system', 'light', 'dark', 'black'
 
 #: Where libadwaita keeps the stylesheet it states its own colours in,
-#: and how its dark ones are told apart from its light ones there.
-_ADWAITA_STYLESHEET = '/org/gnome/Adwaita/styles/gtk.css'
-#: Where libadwaita before 1.6 kept them instead: one stylesheet for
-#: the light colours and one for the dark, with no media query to tell
-#: them apart.  1.5.0 is Ubuntu 24.04's.
+#: and how its dark ones are told apart from its light ones there: its
+#: gtk.css from 1.9, its default.css in 1.8, each stating the light
+#: colours and the dark ones under a media query.
+_ADWAITA_STYLESHEETS = ('/org/gnome/Adwaita/styles/gtk.css',
+                        '/org/gnome/Adwaita/styles/default.css')
+#: Where libadwaita up to 1.7 kept them instead: one stylesheet for the
+#: light colours and one for the dark, with no media query to tell them
+#: apart.  1.5.0 is Ubuntu 24.04's.
 _ADWAITA_DEFAULTS = '/org/gnome/Adwaita/styles/defaults-%s.css'
 _DARK_MEDIA = '@media (prefers-color-scheme: dark) {'
 _DEFINE = re.compile(r'@define-color\s+([A-Za-z0-9_]+)\s+([^;]+);')
@@ -256,12 +259,16 @@ def _definitions(scheme: str) -> dict[str, str]:
 def _adwaita_colours(dark: bool) -> dict[str, str]:
     """libadwaita's own light or dark colours, where it is installed.
 
-    Read from the one stylesheet libadwaita 1.6 and later carry, or
+    Read from the one stylesheet libadwaita 1.8 and later carry, or
     else from the light or the dark one of the two that came before.
     """
     if not _started:
         return {}
-    text = _resource_text(_ADWAITA_STYLESHEET)
+    text = None
+    for path in _ADWAITA_STYLESHEETS:
+        text = _resource_text(path)
+        if text is not None:
+            break
     if text is None:
         text = _resource_text(
             _ADWAITA_DEFAULTS % ('dark' if dark else 'light'))

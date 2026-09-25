@@ -281,8 +281,8 @@ class PitchBlackBackgroundTest(MComixTest):
 class LibadwaitaStylesheetsTest(MComixTest):
 
     """Where the colours are read from, with libadwaita's resources
-    stood in for: the one gtk.css of 1.6 and later, or the light and
-    the dark stylesheets of the releases before."""
+    stood in for: the one gtk.css of 1.9, the one default.css of 1.8,
+    or the light and the dark stylesheets of the releases before."""
 
     # As libadwaita 1.5.0's _defaults.scss compiles, the lines that
     # matter to MComix (sassc -t compact keeps one to a line).
@@ -306,7 +306,7 @@ class LibadwaitaStylesheetsTest(MComixTest):
                                            side_effect=lookup):
             return theme._adwaita_colours(dark)
 
-    def test_before_1_6_each_variant_is_read_from_its_own_stylesheet(self):
+    def test_up_to_1_7_each_variant_is_read_from_its_own_stylesheet(self):
         resources = {'/org/gnome/Adwaita/styles/defaults-%s.css' % variant:
                      text for variant, text in self._DEFAULTS.items()}
         self.assertEqual({'window_bg_color': '#fafafa',
@@ -316,7 +316,7 @@ class LibadwaitaStylesheetsTest(MComixTest):
                           'window_fg_color': 'white'},
                          self._colours(resources, dark=True))
 
-    def test_the_one_stylesheet_of_1_6_is_read_first(self):
+    def test_the_one_stylesheet_of_1_9_is_read_first(self):
         resources = {
             '/org/gnome/Adwaita/styles/gtk.css':
                 '@define-color window_bg_color #fafafb;\n'
@@ -325,6 +325,20 @@ class LibadwaitaStylesheetsTest(MComixTest):
             '/org/gnome/Adwaita/styles/defaults-dark.css':
                 '@define-color window_bg_color #242424;\n',
         }
+        self.assertEqual({'window_bg_color': '#222226'},
+                         self._colours(resources, dark=True))
+
+    def test_1_8_keeps_both_variants_in_default_css(self):
+        resources = {
+            '/org/gnome/Adwaita/styles/default.css':
+                '@define-color window_bg_color #fafafb;\n'
+                '@media (prefers-color-scheme: dark) { '
+                '@define-color window_bg_color #222226; }\n',
+            '/org/gnome/Adwaita/styles/main.css':
+                '.background { color: red; }\n',
+        }
+        self.assertEqual({'window_bg_color': '#fafafb'},
+                         self._colours(resources, dark=False))
         self.assertEqual({'window_bg_color': '#222226'},
                          self._colours(resources, dark=True))
 
@@ -344,11 +358,12 @@ class LibadwaitaColoursTest(MComixTest):
     the look of every window after it, so it is started in a process of
     its own.
 
-    libadwaita 1.6 and later carry one gtk.css, stating the light
-    colours and the dark ones under a prefers-color-scheme query (1.9.4
-    here); 1.5.0, Ubuntu 24.04's and so the GitHub jobs', carries a
-    defaults-light.css and a defaults-dark.css.  Each is read where it is
-    the one there, so this runs against either.
+    libadwaita 1.9 carries one gtk.css (1.9.4 here) and 1.8 one
+    default.css, each stating the light colours and the dark ones under
+    a prefers-color-scheme query; up to 1.7 - 1.5.0 is Ubuntu 24.04's
+    and so the GitHub jobs' - it carries a defaults-light.css and a
+    defaults-dark.css.  Each is read where it is the one there, so this
+    runs against any of them.
     """
 
     _SCRIPT = (
