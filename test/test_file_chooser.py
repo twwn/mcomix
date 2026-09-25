@@ -11,6 +11,7 @@ from . import MComixTest, get_testfile_path, pump, wait_for
 
 from mcomix import constants
 from mcomix import icons
+from mcomix import image_tools
 from mcomix import file_chooser_base_dialog
 from mcomix import main
 from mcomix.archive import password as archive_password
@@ -364,6 +365,38 @@ class FileChooserTest(MComixTest):
         self.assertEqual(self.dialog._namelabel.get_text(), 'blue.png')
         self.assertTrue(self.dialog._sizelabel.get_text(),
                         'the preview says no file size')
+
+    def test_choosing_a_folder_after_a_file_clears_the_preview(self):
+        path = get_testfile_path('images', 'blue.png')
+        self.dialog.filechooser.set_file(Gio.File.new_for_path(path))
+        self.assertTrue(wait_for(
+            lambda: self.dialog._preview_image.get_paintable() is not None))
+        self.dialog.filechooser.set_file(
+            Gio.File.new_for_path(get_testfile_path('archives')))
+        self.assertTrue(wait_for(
+            lambda: self.dialog._preview_image.get_paintable() is None),
+            'the file stayed previewed')
+        self.assertEqual(('', '', ''),
+                         (self.dialog._namelabel.get_text(),
+                          self.dialog._sizelabel.get_text(),
+                          self.dialog._detailslabel.get_text()))
+
+    def test_a_file_gone_before_its_preview_came_is_shown_with_no_size(self):
+        path = os.path.join(self.tmp_dir, 'gone.png')
+        self.dialog._stop_previewing()
+        self.dialog._previewed = path
+        self.dialog._preview_thumbnail_finished(
+            path, image_tools.missing_image_icon(16, 16))
+        self.assertEqual('gone.png', self.dialog._namelabel.get_text())
+        self.assertEqual('', self.dialog._sizelabel.get_text())
+
+    def test_what_is_found_out_about_a_file_no_longer_previewed_is_dropped(self):
+        path = get_testfile_path('images', 'blue.png')
+        self.dialog._stop_previewing()
+        self.dialog._previewed = get_testfile_path('images', 'red.png')
+        self.dialog._details_found(path, '100 x 100')
+        self.assertIsNone(self.dialog._details)
+        self.assertEqual('', self.dialog._detailslabel.get_text())
 
     def test_a_picture_is_previewed_turned_as_it_is_shown(self):
         """The picture is 210 pixels wide and 297 high, and its Exif
