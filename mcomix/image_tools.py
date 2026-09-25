@@ -400,30 +400,15 @@ def get_most_common_edge_colour(pixbufs: GdkPixbuf.Pixbuf | Sequence[GdkPixbuf.P
 
     def get_edge_pixbuf(pixbuf: GdkPixbuf.Pixbuf, side: str,
                         edge: int) -> GdkPixbuf.Pixbuf:
-        """ Returns a pixbuf corresponding to the side passed in <side>.
-        Valid sides are 'left', 'right', 'top', 'bottom'. """
+        """The <edge> columns of <pixbuf> down its <side>, 'left' or
+        'right'."""
         width = pixbuf.get_width()
         height = pixbuf.get_height()
         edge = min(edge, width, height)
-
-        if side in ('left', 'right'):
-            sub_width, sub_height = edge, height
-        elif side in ('top', 'bottom'):
-            sub_width, sub_height = width, edge
-        else:
-            assert False, 'Invalid edge side'
-
         subpix = _allocated(GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB,
-                                                 pixbuf.get_has_alpha(), 8, sub_width, sub_height))
-        if side == 'left':
-            pixbuf.copy_area(0, 0, edge, height, subpix, 0, 0)
-        elif side == 'right':
-            pixbuf.copy_area(width - edge, 0, edge, height, subpix, 0, 0)
-        elif side == 'top':
-            pixbuf.copy_area(0, 0, width, edge, subpix, 0, 0)
-        else:
-            pixbuf.copy_area(0, height - edge, width, edge, subpix, 0, 0)
-
+                                                 pixbuf.get_has_alpha(), 8, edge, height))
+        left = 0 if side == 'left' else width - edge
+        pixbuf.copy_area(left, 0, edge, height, subpix, 0, 0)
         return subpix
 
     if not pixbufs:
