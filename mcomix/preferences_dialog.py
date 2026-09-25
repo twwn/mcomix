@@ -959,8 +959,7 @@ class _PreferencesDialog(Dialog):
                 # colour it reads off the page.
                 self._window.draw_image()
 
-        elif preference in ('checkered bg for transparent images',
-                            'no double page for wide images'):
+        elif preference == 'checkered bg for transparent images':
             self._window.draw_image()
 
         elif preference == 'auto rotate from exif':
