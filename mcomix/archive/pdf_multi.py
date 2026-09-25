@@ -40,10 +40,8 @@ class UnsupportedFitzVersionError(ImportError):
 class DisabledFitzArchive(DisabledArchive):
     """Subclass of DisabledArchive used when FitzArchive is unavailable.
 
-    This class will masquerade as FitzArchive for purposes of upstream
-    reporting, so that the correct class is logged as being unavailable."""
-
-    __name__ = "FitzArchive"
+    Logged under its own name when archive_tools passes it over, which
+    says what it stands for."""
 
 
 def module_version(module: object) -> str:
