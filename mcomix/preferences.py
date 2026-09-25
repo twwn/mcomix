@@ -22,7 +22,9 @@ from mcomix import tools
 #:      0 and 1 - where they used to be three 16-bit integers.
 #:   2: the answer to the prompt that deletes the opened file is stored
 #:      under "delete-opened-file", where the name used to be misspelt.
-CONFIG_FORMAT_VERSION = 2
+#:   3: "store recent file info" is True or False, where MComix before
+#:      2012 stored 0 (nothing), 1 (the file) or 2 (the file and page).
+CONFIG_FORMAT_VERSION = 3
 
 #: The key the version above is stored under.  It lives among the
 #: preferences rather than wrapping them, so the file stays a flat mapping.
@@ -466,6 +468,15 @@ def _migrate_preferences(saved_prefs: dict[str, object]) -> None:
         choices = saved_prefs.get('stored dialog choices')
         if isinstance(choices, dict) and 'delete-opend-file' in choices:
             choices['delete-opened-file'] = choices.pop('delete-opend-file')
+
+    if version < 3:
+        # Carried forward unchanged by every MComix since, for as long as
+        # nobody touched the setting, and a number is not what the
+        # preference holds now: left as it was, a 0 was taken for no
+        # answer and recent files were stored after all.
+        stored = saved_prefs.get('store recent file info')
+        if isinstance(stored, int) and not isinstance(stored, bool):
+            saved_prefs['store recent file info'] = stored != 0
 
     saved_prefs[_FORMAT_VERSION_KEY] = CONFIG_FORMAT_VERSION
 

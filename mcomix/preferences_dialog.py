@@ -763,15 +763,8 @@ class _PreferencesDialog(Dialog):
                 (_('Never'), False),
                 (_('Always'), True))
 
-        # Map legacy 0/1/2 values:
-        if prefs['store recent file info'] == 0:
-            selection = False
-        elif prefs['store recent file info'] in (1, 2):
-            selection = True
-        else:
-            selection = prefs['store recent file info']
-
-        box = self._create_combobox(items, selection, self._store_recent_changed_cb)
+        box = self._create_combobox(items, prefs['store recent file info'],
+                                    self._store_recent_changed_cb)
         box.set_tooltip_text(
             _('Add information about all files opened from within MComix to the shared recent files list.'))
         return box

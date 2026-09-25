@@ -236,6 +236,24 @@ class MigratePreferencesTest(MComixTest):
         self.assertEqual(prefs['stored dialog choices'],
                          {'delete-opened-file': -5})
 
+    def test_recent_files_stored_as_a_number_keep_their_answer(self) -> None:
+        """MComix before 2012 stored "never" as 0 and the two ways of
+        storing as 1 and 2, and the number stayed in the file for as
+        long as nobody changed the setting.  Once numbers were refused
+        for a preference that holds True or False, a 0 was dropped, and
+        the default - store them - took its place; a file at version 2
+        can hold one too."""
+        for version in (None, 2):
+            for stored, kept in ((0, False), (1, True), (2, True)):
+                with self.subTest(version=version, stored=stored):
+                    saved = {'store recent file info': stored}
+                    if version is not None:
+                        saved[preferences._FORMAT_VERSION_KEY] = version
+                    self._write(saved)
+                    prefs['store recent file info'] = not kept
+                    preferences.read_preferences_file()
+                    self.assertIs(kept, prefs['store recent file info'])
+
     def test_a_version_that_is_not_a_number_is_taken_as_the_oldest(self) -> None:
         """The version comes out of the file like everything else in it,
         so it can be anything a hand edit or a half-written file left
