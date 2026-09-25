@@ -2677,6 +2677,27 @@ class MainWindowTest(MComixTest):
             dialog.destroy()
         self._pump()
 
+    def test_a_page_saved_where_there_is_no_room_says_how_large_it_is(self):
+        self._ready()
+        self.assertTrue(
+            wait_for(lambda: self.window.imagehandler.page_is_available(1),
+                     seconds=20),
+            'page 1 never came out of the archive')
+        page = self.window.imagehandler.get_path_to_page(1)
+        full = OSError(errno.ENOSPC, os.strerror(errno.ENOSPC))
+        with unittest.mock.patch.object(file_actions.shutil, 'copy2',
+                                        side_effect=full):
+            self.window.file_actions._save_page_to(
+                page, os.path.join(self.tmp_dir, 'saved.png'))
+        self._pump()
+        dialogs = self._delete_dialogs()
+        self.assertEqual(1, len(dialogs),
+                         'nothing said why the page was not saved')
+        self.addCleanup(dialogs[0].destroy)
+        self.assertEqual('There is not enough room there: the file is %s.'
+                         % tools.format_byte_size(os.path.getsize(page)),
+                         dialogs[0]._secondary.get_text())
+
     def test_a_page_that_was_saved_says_nothing(self):
         self._ready()
         # The listing says the page is there; the extractor says the
