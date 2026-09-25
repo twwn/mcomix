@@ -7,6 +7,10 @@ that brought this up - applied as written, and the dialog came out grey
 with a pitch-black sidebar in it.
 """
 
+import json
+import os
+import subprocess
+import sys
 import unittest
 
 import gi
@@ -271,6 +275,52 @@ class PitchBlackBackgroundTest(MComixTest):
                     theme.background(list(self._PICTURE), dynamic=dynamic),
                     self._PICTURE, '%s, dynamic=%s' % (scheme, dynamic))
 
+
+
+class LibadwaitaColoursTest(MComixTest):
+
+    """The light and the dark libadwaita states, read out of the
+    stylesheet it carries.
+
+    Where libadwaita is running MComix takes its surface colours from
+    there rather than copying them, so a libadwaita that moved or
+    renamed its stylesheet would leave every scheme with no colours at
+    all, silently.  Starting libadwaita cannot be undone and takes over
+    the look of every window after it, so it is started in a process of
+    its own.
+    """
+
+    _SCRIPT = (
+        'import json\n'
+        'from mcomix import theme\n'
+        'if not theme._start_libadwaita():\n'
+        '    print(json.dumps(None))\n'
+        'else:\n'
+        '    print(json.dumps([theme._definitions(scheme) for scheme in\n'
+        '                      (theme.LIGHT, theme.DARK, theme.BLACK,\n'
+        '                       theme.SYSTEM)]))\n')
+
+    def test_each_scheme_states_the_colours_it_is_named_for(self):
+        environment = dict(os.environ, HOME=self.tmp_dir)
+        result = subprocess.run(
+            [sys.executable, '-c', self._SCRIPT], capture_output=True,
+            text=True, timeout=30, env=environment,
+            cwd=os.path.dirname(os.path.dirname(theme.__file__)))
+        self.assertEqual(0, result.returncode, result.stderr)
+        answer = json.loads(result.stdout.splitlines()[-1])
+        if answer is None:
+            self.skipTest('libadwaita is not installed')
+        light, dark, black, system = answer
+        for name, colours in (('light', light), ('dark', dark),
+                              ('pitch black', black)):
+            with self.subTest(scheme=name):
+                self.assertIn('window_bg_color', colours)
+                self.assertIn('view_fg_color', colours)
+        self.assertNotEqual(light['window_bg_color'],
+                            dark['window_bg_color'])
+        self.assertEqual('#000000', black['window_bg_color'])
+        self.assertEqual(dark['view_fg_color'], black['view_fg_color'])
+        self.assertEqual({}, system)
 
 # vim: expandtab:sw=4:ts=4
 
