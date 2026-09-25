@@ -654,6 +654,17 @@ class FileInfoTest(MComixTest):
                     self.handler._sort_archive_images(files)
                     self.assertEqual(expected, files)
 
+    def test_a_negative_page_opens_at_the_end_of_the_book(self):
+        """At the last page, or at the last two in double page mode, so
+        that the last pair is what shows; a page past the end is the
+        last one."""
+        for double, start, expected in ((False, -1, 9), (True, -1, 8),
+                                        (False, 50, 9), (False, 3, 2)):
+            with self.subTest(double=double, start=start):
+                prefs['default double page'] = double
+                self.assertEqual(expected, self.handler._get_index_for_page(
+                    start, 10, '/books/a.zip'))
+
     def test_the_file_and_page_come_back(self):
         """As an older MComix wrote them, without the file of the page."""
         self._write(pickle.dumps(['/books/a.zip', 41]))
