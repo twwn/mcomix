@@ -284,6 +284,48 @@ class MigratePreferencesTest(MComixTest):
         self.assertEqual(prefs['bg colour'], preferences.DEFAULT_BG_COLOUR)
 
 
+class DamagedFilesTest(MComixTest):
+
+    """Preferences files that are there but hold no preferences one can
+    use: each leaves the defaults, and nothing stops MComix."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        os.makedirs(constants.CONFIG_DIR, exist_ok=True)
+
+    def test_a_legacy_pickle_that_does_not_load_is_passed_over(self) -> None:
+        with open(constants.PREFERENCE_PICKLE_PATH, 'wb') as legacy:
+            legacy.write(b'not a pickle')
+        prefs['lens size'] = 321
+        preferences.read_preferences_file()
+        self.assertEqual(321, prefs['lens size'])
+
+    def test_an_old_colour_that_is_no_colour_becomes_the_default(self) -> None:
+        """The 16-bit colours of a file from before format version 1
+        are turned into Gdk.RGBA components; what is not a colour at all
+        is taken for the default rather than raising on the way up."""
+        for stored in (7, 'dark grey', [1, 'two', 3]):
+            with self.subTest(stored=stored):
+                with open(constants.PREFERENCE_PATH, 'w') as config_file:
+                    json.dump({'bg colour': stored}, config_file)
+                prefs['bg colour'] = [0.5, 0.5, 0.5, 1.0]
+                preferences.read_preferences_file()
+                self.assertEqual(list(preferences.DEFAULT_BG_COLOUR),
+                                 prefs['bg colour'])
+
+    def test_a_file_of_something_else_is_written_over(self) -> None:
+        """What another instance left in the file is kept on writing;
+        a file holding JSON that is not preferences has nothing to
+        keep, and is written over with this instance's."""
+        with open(constants.PREFERENCE_PATH, 'w') as config_file:
+            json.dump(['not', 'preferences'], config_file)
+        prefs['lens size'] = 222
+        preferences.write_preferences_file()
+        with open(constants.PREFERENCE_PATH) as config_file:
+            stored = json.load(config_file)
+        self.assertEqual(222, stored['lens size'])
+
+
 class WritePreferencesFileTest(MComixTest):
 
     def setUp(self) -> None:
