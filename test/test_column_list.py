@@ -715,4 +715,33 @@ class ColumnListViewTest(MComixTest):
             window.destroy()
             pump()
 
+    def test_a_choice_column_reports_the_pick_with_the_row_it_was_in(self):
+        """The watch list's collection column: a pick in the drop-down
+        is handed over as the row and the name picked, and the cell
+        starts out on the choice the row holds."""
+        view = column_list.ColumnListView()
+        chosen = []
+        view.add_choice_column('Shelf', 'shelf',
+                               lambda: ['top', 'middle', 'bottom'],
+                               lambda row, name: chosen.append((row, name)))
+        row = column_list.Row(shelf='middle')
+        view.set_rows([row])
+        window = Gtk.Window()
+        window.set_child(view)
+        window.present()
+        try:
+            for _ in range(20):
+                pump()
+                view.allocate(400, 300, -1, None)
+            cells = [cell for cell in view._each_cell()
+                     if isinstance(cell, Gtk.DropDown)]
+            self.assertEqual(1, len(cells), 'the column drew no drop-down')
+            self.assertEqual(1, cells[0].get_selected())
+            self.assertEqual([], chosen)
+            cells[0].set_selected(2)
+            self.assertEqual(chosen, [(row, 'bottom')])
+        finally:
+            window.destroy()
+            pump()
+
 # vim: expandtab:sw=4:ts=4
