@@ -3348,6 +3348,58 @@ class ZoomModeAtStartUpTest(MComixTest):
 
 
 
+class StartUpOptionsTest(MComixTest):
+
+    """What the command line asks of a window as it starts."""
+
+    def setUp(self):
+        super().setUp()
+        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
+                          constants.THUMBNAIL_PATH):
+            os.makedirs(directory, exist_ok=True)
+        icons.load_icons()
+        keybindings._manager = None
+
+    def _start(self, **options):
+        self.window = main.MainWindow(**options)
+        main.set_main_window(self.window)
+        self.addCleanup(self._close)
+        pump()
+        return self.window
+
+    def _close(self):
+        from mcomix.library import main_dialog
+        main_dialog._close_dialog()
+        if self.window.slideshow.is_running():
+            self.window.actiongroup.get_action('slideshow').activate()
+        self.window.terminate_program()
+        self.window.destroy()
+        main.set_main_window(None)
+        pump()
+
+    def _active(self, name):
+        return self.window.actiongroup.get_action(name).get_active()
+
+    def test_a_slideshow_asked_for_starts_once_the_book_is_open(self):
+        """"mcomix --slideshow book.cbz" started no slideshow: the action
+        was activated as the window was built, while the book was still
+        being read, and an action is not usable without a book open."""
+        self._start(open_path=get_testfile_path('archives',
+                                                '01-ZIP-Normal.zip'),
+                    is_slideshow=True)
+        self.assertTrue(wait_for(lambda: self.window.filehandler.file_loaded))
+        pump()
+        self.assertTrue(self.window.slideshow.is_running())
+        self.assertTrue(self._active('slideshow'))
+        # Once: the next book opened does not start it again.
+        self.window.actiongroup.get_action('slideshow').activate()
+        self.window.filehandler.open_file(
+            get_testfile_path('images', 'blue.png'))
+        self.assertTrue(wait_for(lambda: self.window.filehandler.file_loaded))
+        pump()
+        self.assertFalse(self.window.slideshow.is_running())
+
+
 class ResumeAtTheFileOfThePageTest(MComixTest):
 
     """A "quit and save" is resumed at the file of its page, where it

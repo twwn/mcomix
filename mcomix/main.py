@@ -304,8 +304,8 @@ class MainWindow(Gtk.Window):
             self.filehandler.open_file(open_path, open_page,
                                        start_member=open_member)
 
-        if is_slideshow:
-            self.actiongroup.get_action('slideshow').activate()
+        if is_slideshow and open_path is not None:
+            self._start_slideshow_once_open()
 
         if show_library:
             self.actiongroup.get_action('library').activate()
@@ -673,6 +673,29 @@ class MainWindow(Gtk.Window):
         if current_page <= page < (current_page + nb_pages):
             self.draw_image(scroll_to=self._last_scroll_destination)
             self._update_page_information()
+
+    def _start_slideshow_once_open(self) -> None:
+        """Start the slideshow the command line asked for.
+
+        The action can be used only with a book open, and the book the
+        command line names is still being read when the window starts:
+        activated then, as it was, it did nothing at all.  So it waits
+        for the book, once - the listener stays behind, since taking a
+        listener out of the list while that list is being called skips
+        the one after it, but it does nothing again.
+        """
+        started = False
+
+        def opened() -> None:
+            nonlocal started
+            if not started:
+                started = True
+                self.actiongroup.get_action('slideshow').activate()
+
+        if self.filehandler.file_loaded:
+            opened()
+        else:
+            self.filehandler.file_opened += opened
 
     def _on_file_opened(self) -> None:
         """Follow a book being opened: menus, lens and statusbar."""
