@@ -12,7 +12,7 @@ import os
 import shutil
 import unittest.mock
 
-from gi.repository import Gdk, Gtk
+from gi.repository import Gtk
 
 from . import MComixTest, get_testfile_path, pump
 
@@ -581,8 +581,9 @@ class PreferenceCallbacksTest(MComixTest):
         """Shown at once where the thumbnails do not take their colour
         off the page; where they do, the next page drawn shows it."""
         button = unittest.mock.Mock()
-        button.get_rgba.return_value = Gdk.RGBA(red=1.0, green=0.5,
-                                                blue=0.25, alpha=1.0)
+        # Built by image_tools.rgba(): PyGObject 3.46, the floor, hands
+        # the arguments of Gdk.RGBA(red=...) to nothing.
+        button.get_rgba.return_value = image_tools.rgba(1.0, 0.5, 0.25, 1.0)
         for smart, called in (
                 (False,
                  {'thumbnailsidebar.change_thumbnail_background_color'}),
