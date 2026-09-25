@@ -233,6 +233,49 @@ class PathNotUtf8Test(LibraryDatabaseTest):
             pages.set_page(self.path, 2)
 
 
+class NothingThereTest(LibraryDatabaseTest):
+
+    """What the library answers about books and collections it does not
+    hold, which is None or False rather than an error."""
+
+    def setUp(self):
+        super().setUp()
+        self.library = backend.LibraryBackend()
+        self.addCleanup(self.library.close)
+
+    def test_a_book_it_does_not_hold_has_no_cover(self):
+        self.assertIsNone(self.library.get_book_cover(9999))
+
+    def test_a_collection_it_does_not_hold_is_none(self):
+        self.assertIsNone(self.library.get_collection_by_id(9999))
+
+    def test_a_collection_it_does_not_hold_is_not_duplicated(self):
+        before = self.library.get_all_collections()
+        self.assertFalse(self.library.duplicate_collection(9999))
+        self.assertEqual(before, self.library.get_all_collections())
+
+    def test_no_collection_has_no_collections_under_it(self):
+        """None stands for the whole library elsewhere in the backend,
+        and is refused here rather than read as a collection."""
+        with self.assertRaises(ValueError):
+            self.library.get_all_collections_in_collection(None)
+
+    def test_a_book_moved_to_a_name_it_cannot_hold_stays_where_it_was(self):
+        """The row is left for "Clean up" to find gone, rather than the
+        move raising half way through."""
+        path = os.path.join(self.tmp_dir, 'Book.cbz')
+        shutil.copy(self._archive(), path)
+        self.assertTrue(self.library.add_book(path))
+        unstorable = os.fsdecode(os.path.join(
+            os.fsencode(self.tmp_dir), 'B\xfccher.cbz'.encode('latin-1')))
+        self.assertFalse(self.library.update_book_path(path, unstorable))
+        self.assertIsNotNone(self.library.get_book_by_path(path))
+
+    def test_a_library_that_does_not_say_its_version_is_version_minus_one(self):
+        self.library._con.execute("delete from info where key = 'version'")
+        self.assertEqual(-1, self.library._library_version())
+
+
 class ContainIndexTest(LibraryDatabaseTest):
 
     """remove_book() deletes from contain by book alone.
