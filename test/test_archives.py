@@ -20,8 +20,10 @@ except ImportError:
 
 from mcomix import process
 from mcomix.archive import (
+    archive_base,
     archive_recursive,
     lha_external,
+    pdf_multi,
     rar,
     rar_external,
     sevenzip_external,
@@ -291,6 +293,36 @@ class RecursiveArchiveCloseTest(MComixTest):
         recursive.list_contents()
         recursive.close()
         self.assertIsNone(recursive._main_archive.zip.fp)
+
+
+class MissingProgramTest(MComixTest):
+
+    """An archive read with a program that is not installed.
+
+    archive_tools offers such a format only where the program is there,
+    so this is a program that went between being looked for and being
+    asked; the handler then lists nothing and writes nothing, rather
+    than running a program called None.
+    """
+
+    def test_nothing_is_listed_or_extracted(self):
+        path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        archive = zip_external.ZipArchive(path)
+        with unittest.mock.patch.object(zip_external.ZipArchive,
+                                        '_get_executable',
+                                        return_value=None), \
+                unittest.mock.patch.object(archive_base.process,
+                                           'popen') as run:
+            self.assertEqual([], archive.list_contents())
+            destination = os.path.join(self.tmp_dir, 'out')
+            os.makedirs(destination)
+            archive.extract('images/01-JPG-Indexed.jpg', destination)
+        run.assert_not_called()
+        self.assertEqual([], os.listdir(destination))
+
+    def test_a_handler_that_was_switched_off_is_never_available(self):
+        self.assertFalse(archive_base.DisabledArchive.is_available())
+        self.assertFalse(pdf_multi.DisabledFitzArchive.is_available())
 
 
 class TarCompressionTest(MComixTest):
