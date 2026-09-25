@@ -199,6 +199,30 @@ class PropertiesDialogTest(MComixTest):
         # What the file on disk is still follows what the comic is.
         self.assertIn('Location:', texts)
 
+    def test_a_comicinfo_still_in_the_archive_is_waited_for(self):
+        """The dialog does not hold itself up while ComicInfo.xml is
+        extracted: it asks for it at the front of the queue and says
+        what it says once it is out."""
+        book = self._book('<ComicInfo><Series>Night Watch</Series>'
+                          '</ComicInfo>')
+        with mock.patch('mcomix.file_handler.FileHandler.file_is_available',
+                        return_value=False), \
+                mock.patch('mcomix.file_handler.FileHandler.ask_for_files'
+                           ) as asked:
+            dialog = self._open(book)
+            page = dialog._archive_page
+            self.assertNotIn('Night Watch', self._texts(page))
+        awaited = dialog._awaited_comicinfo
+        self.assertIsNotNone(awaited)
+        self.assertIn(mock.call([awaited]), asked.call_args_list)
+        self.assertTrue(wait_for(
+            lambda: self.window.filehandler.file_is_available(awaited),
+            seconds=10))
+        self.window.filehandler.file_available([awaited])
+        pump()
+        self.assertIn('Night Watch', self._texts(page))
+        self.assertIsNone(dialog._awaited_comicinfo)
+
     def test_an_archive_without_comicinfo_names_no_series(self):
         dialog = self._open(self._book())
         page = dialog._archive_page
