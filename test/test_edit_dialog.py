@@ -656,6 +656,85 @@ class EditArchiveDialogTest(MComixTest):
                 Gdk.EVENT_STOP)
         asked.assert_called_once_with()
 
+    def test_a_right_click_on_a_page_picks_it_and_opens_the_menu(self):
+        self.dialog._load_original_files()
+        pump()
+        area = self.dialog._image_area
+        area._grid.select_only(0)
+        hold_open(area._popup_menu)
+        with unittest.mock.patch.object(area._grid, 'position_at',
+                                        return_value=1):
+            area._button_press(None, 1, 10.0, 10.0)
+        pump()
+        try:
+            self.assertEqual([1], area._grid.get_selected_positions())
+            self.assertTrue(area._popup_menu.get_visible())
+        finally:
+            area._popup_menu.popdown()
+            pump()
+
+    def test_a_right_click_on_a_page_already_picked_keeps_the_others(self):
+        self.dialog._load_original_files()
+        pump()
+        area = self.dialog._image_area
+        area._grid.select_all()
+        hold_open(area._popup_menu)
+        with unittest.mock.patch.object(area._grid, 'position_at',
+                                        return_value=1):
+            area._button_press(None, 1, 10.0, 10.0)
+        pump()
+        try:
+            self.assertEqual(list(range(area._grid.model.get_n_items())),
+                             area._grid.get_selected_positions())
+        finally:
+            area._popup_menu.popdown()
+            pump()
+
+    def test_a_right_click_between_pages_does_nothing(self):
+        self.dialog._load_original_files()
+        pump()
+        area = self.dialog._image_area
+        area._grid.select_only(0)
+        with unittest.mock.patch.object(area._grid, 'position_at',
+                                        return_value=-1):
+            area._button_press(None, 1, 10.0, 10.0)
+        pump()
+        self.assertEqual([0], area._grid.get_selected_positions())
+        self.assertFalse(area._popup_menu.get_visible())
+
+    def test_the_delete_key_takes_the_selected_pages_out(self):
+        self.dialog._load_original_files()
+        pump()
+        before = self._pages()
+        area = self.dialog._image_area
+        area._grid.select_only(0)
+        self.assertEqual(Gdk.EVENT_STOP, area._key_press(
+            None, Gdk.KEY_Delete, 0, Gdk.ModifierType(0)))
+        self.assertEqual(before[1:], self._pages())
+
+    def test_with_nothing_or_two_selected_there_is_nothing_to_act_on(self):
+        """Removing needs a page picked out, and renaming exactly one."""
+        self.dialog._load_original_files()
+        pump()
+        before = self._pages()
+        area = self.dialog._image_area
+        # A removal of nothing is no change: the redo of what was undone
+        # before it is still there to be had.
+        area._grid.select_only(0)
+        area._remove_pages()
+        area._undo()
+        area._grid.unselect_all()
+        area._remove_pages()
+        self.assertEqual(before, self._pages())
+        area._redo()
+        self.assertEqual(before[1:], self._pages())
+        area._undo()
+        area._grid.select_all()
+        with unittest.mock.patch.object(
+                self.window.file_actions, 'rename_page_dialog') as asked:
+            area._rename_page()
+        asked.assert_not_called()
+
     def test_the_page_menu_selects_every_page(self):
         self.dialog._load_original_files()
         pump()
