@@ -104,6 +104,10 @@ SYSTEM, LIGHT, DARK, BLACK = 'system', 'light', 'dark', 'black'
 #: Where libadwaita keeps the stylesheet it states its own colours in,
 #: and how its dark ones are told apart from its light ones there.
 _ADWAITA_STYLESHEET = '/org/gnome/Adwaita/styles/gtk.css'
+#: Where libadwaita before 1.6 kept them instead: one stylesheet for
+#: the light colours and one for the dark, with no media query to tell
+#: them apart.  1.5.0 is Ubuntu 24.04's.
+_ADWAITA_DEFAULTS = '/org/gnome/Adwaita/styles/defaults-%s.css'
 _DARK_MEDIA = '@media (prefers-color-scheme: dark) {'
 _DEFINE = re.compile(r'@define-color\s+([A-Za-z0-9_]+)\s+([^;]+);')
 
@@ -250,21 +254,35 @@ def _definitions(scheme: str) -> dict[str, str]:
 
 
 def _adwaita_colours(dark: bool) -> dict[str, str]:
-    """libadwaita's own light or dark colours, where it is installed."""
+    """libadwaita's own light or dark colours, where it is installed.
+
+    Read from the one stylesheet libadwaita 1.6 and later carry, or
+    else from the light or the dark one of the two that came before.
+    """
     if not _started:
         return {}
+    text = _resource_text(_ADWAITA_STYLESHEET)
+    if text is None:
+        text = _resource_text(
+            _ADWAITA_DEFAULTS % ('dark' if dark else 'light'))
+    if text is None:
+        return {}
+    return _parse_colours(text, dark)
+
+
+def _resource_text(path: str) -> str | None:
+    """The text of the resource at <path>, or None where there is none."""
     try:
         from gi.repository import Gio
         stylesheet = Gio.resources_lookup_data(
-            _ADWAITA_STYLESHEET, Gio.ResourceLookupFlags.NONE)
+            path, Gio.ResourceLookupFlags.NONE)
         data = stylesheet.get_data()
         if data is None:
-            return {}
-        text = data.decode('utf-8')
+            return None
+        return data.decode('utf-8')
     except Exception as error:
         log.debug('Could not read libadwaita\'s own colours: %s', error)
-        return {}
-    return _parse_colours(text, dark)
+        return None
 
 
 def _parse_colours(text: str, dark: bool) -> dict[str, str]:

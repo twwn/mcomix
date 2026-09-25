@@ -12,9 +12,10 @@ import os
 import subprocess
 import sys
 import unittest
+import unittest.mock
 
 import gi
-from gi.repository import Gdk, Gsk, Gtk
+from gi.repository import Gdk, Gio, GLib, Gsk, Gtk
 
 from . import MComixTest, wait_for
 
@@ -277,6 +278,60 @@ class PitchBlackBackgroundTest(MComixTest):
 
 
 
+class LibadwaitaStylesheetsTest(MComixTest):
+
+    """Where the colours are read from, with libadwaita's resources
+    stood in for: the one gtk.css of 1.6 and later, or the light and
+    the dark stylesheets of the releases before."""
+
+    # As libadwaita 1.5.0's _defaults.scss compiles, the lines that
+    # matter to MComix (sassc -t compact keeps one to a line).
+    _DEFAULTS = {
+        'light': '@define-color window_bg_color #fafafa;\n'
+                 '@define-color window_fg_color rgba(0, 0, 0, 0.8);\n'
+                 '@define-color accent_bg_color @blue_3;\n',
+        'dark': '@define-color window_bg_color #242424;\n'
+                '@define-color window_fg_color white;\n'
+                '@define-color accent_bg_color @blue_3;\n',
+    }
+
+    def _colours(self, resources, dark):
+        def lookup(path, flags):
+            if path not in resources:
+                raise GLib.Error('no resource at %s' % path)
+            return GLib.Bytes.new(resources[path].encode('utf-8'))
+
+        with unittest.mock.patch.object(theme, '_started', True), \
+                unittest.mock.patch.object(Gio, 'resources_lookup_data',
+                                           side_effect=lookup):
+            return theme._adwaita_colours(dark)
+
+    def test_before_1_6_each_variant_is_read_from_its_own_stylesheet(self):
+        resources = {'/org/gnome/Adwaita/styles/defaults-%s.css' % variant:
+                     text for variant, text in self._DEFAULTS.items()}
+        self.assertEqual({'window_bg_color': '#fafafa',
+                          'window_fg_color': 'rgba(0, 0, 0, 0.8)'},
+                         self._colours(resources, dark=False))
+        self.assertEqual({'window_bg_color': '#242424',
+                          'window_fg_color': 'white'},
+                         self._colours(resources, dark=True))
+
+    def test_the_one_stylesheet_of_1_6_is_read_first(self):
+        resources = {
+            '/org/gnome/Adwaita/styles/gtk.css':
+                '@define-color window_bg_color #fafafb;\n'
+                '@media (prefers-color-scheme: dark) { '
+                '@define-color window_bg_color #222226; }\n',
+            '/org/gnome/Adwaita/styles/defaults-dark.css':
+                '@define-color window_bg_color #242424;\n',
+        }
+        self.assertEqual({'window_bg_color': '#222226'},
+                         self._colours(resources, dark=True))
+
+    def test_no_stylesheet_at_all_states_nothing(self):
+        self.assertEqual({}, self._colours({}, dark=True))
+
+
 class LibadwaitaColoursTest(MComixTest):
 
     """The light and the dark libadwaita states, read out of the
@@ -289,12 +344,11 @@ class LibadwaitaColoursTest(MComixTest):
     the look of every window after it, so it is started in a process of
     its own.
 
-    The stylesheet read - one gtk.css stating the light colours and the
-    dark ones under a prefers-color-scheme query - was checked against
-    libadwaita 1.9.4.  libadwaita 1.5.0, Ubuntu 24.04's, which the
-    GitHub jobs run on, gave no colours for light or dark: that query
-    came with GTK 4.16, which libadwaita requires from 1.6, and before
-    1.6 the test holds it to nothing.
+    libadwaita 1.6 and later carry one gtk.css, stating the light
+    colours and the dark ones under a prefers-color-scheme query (1.9.4
+    here); 1.5.0, Ubuntu 24.04's and so the GitHub jobs', carries a
+    defaults-light.css and a defaults-dark.css.  Each is read where it is
+    the one there, so this runs against either.
     """
 
     _SCRIPT = (
@@ -321,12 +375,9 @@ class LibadwaitaColoursTest(MComixTest):
         if answer is None:
             self.skipTest('libadwaita is not installed')
         version, light, dark, black, system = answer
-        if tuple(version) < (1, 6):
-            self.skipTest('libadwaita %d.%d keeps no stylesheet of the '
-                          'kind read here' % tuple(version))
         for name, colours in (('light', light), ('dark', dark),
                               ('pitch black', black)):
-            with self.subTest(scheme=name):
+            with self.subTest(scheme=name, libadwaita=version):
                 self.assertIn('window_bg_color', colours)
                 self.assertIn('view_fg_color', colours)
         self.assertNotEqual(light['window_bg_color'],
