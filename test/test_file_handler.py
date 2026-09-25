@@ -134,11 +134,9 @@ class DirectoryWalkTest(MComixTest):
         self.assertFalse(self.handler.file_is_available(image))
 
 
-class AnArchiveThatWillNotOpenTest(MComixTest):
+class _WindowTest(MComixTest):
 
-    """An archive the extractor refuses - a format with no handler
-    installed, most often - is reported and left, and the window goes on
-    working."""
+    """A main window with nothing open, and its file handler."""
 
     def setUp(self):
         super().setUp()
@@ -158,6 +156,13 @@ class AnArchiveThatWillNotOpenTest(MComixTest):
         pump()
         super().tearDown()
 
+
+class AnArchiveThatWillNotOpenTest(_WindowTest):
+
+    """An archive the extractor refuses - a format with no handler
+    installed, most often - is reported and left, and the window goes on
+    working."""
+
     def test_closing_it_and_opening_another_still_work(self):
         """The failure left the handler marked as holding an archive with
         no condition to wait on, so the next close raised ValueError: no
@@ -173,7 +178,7 @@ class AnArchiveThatWillNotOpenTest(MComixTest):
             lambda: self.window.imagehandler.get_number_of_pages() > 0))
 
 
-class APathThatCannotBeOpenedTest(AnArchiveThatWillNotOpenTest):
+class APathThatCannotBeOpenedTest(_WindowTest):
 
     """A name that is not there, or not a file or a folder, opened over
     a book: the book is closed, the reason is shown, and nothing claims
@@ -209,6 +214,17 @@ class APathThatCannotBeOpenedTest(AnArchiveThatWillNotOpenTest):
         os.mkfifo(path)
         shown = self._over_a_book(path)
         self.assertIn('Invalid path', shown.call_args.args[0])
+        self._closed()
+
+    def test_a_file_that_cannot_be_read(self):
+        path = os.path.join(self.tmp_dir, 'locked.cbz')
+        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), path)
+        os.chmod(path, 0)
+        self.addCleanup(os.chmod, path, 0o600)
+        if os.access(path, os.R_OK):
+            self.skipTest('cannot make the file unreadable (running as root?)')
+        shown = self._over_a_book(path)
+        self.assertIn('Permission denied', shown.call_args.args[0])
         self._closed()
 
 
