@@ -339,6 +339,50 @@ class VirtualDoublePageTest(MComixTest):
         self.assertEqual(self.handler._get_displayed_size(2), uncached)
 
 
+class PageNameAndSizeTest(MComixTest):
+
+    """What the status bar is told of the pages on screen: a name and a
+    size for one page, or for each of two."""
+
+    def setUp(self):
+        super().setUp()
+        prefs['max pages to cache'] = 4
+        prefs['default double page'] = True
+        self.handler = image_handler.ImageHandler(_StubWindow())
+
+    def tearDown(self):
+        self.handler.cleanup()
+        super().tearDown()
+
+    _make_book = VirtualDoublePageTest._make_book
+    _open = VirtualDoublePageTest._open
+
+    def test_two_pages_answer_with_a_name_and_a_size_each(self):
+        paths = self._open('red.png', 'blue.png', 'red.png')
+        self.assertEqual(('01-red.png', '02-blue.png'),
+                         self.handler.get_page_filename(double=True))
+        self.assertEqual(
+            tuple(image_handler.tools.format_byte_size(os.path.getsize(path))
+                  for path in paths[:2]),
+            self.handler.get_page_filesize(double=True))
+
+    def test_a_page_whose_file_went_has_no_size(self):
+        paths = self._open('red.png', 'blue.png', 'red.png')
+        os.remove(paths[1])
+        first, second = self.handler.get_page_filesize(double=True)
+        self.assertEqual(image_handler.tools.format_byte_size(
+            os.path.getsize(paths[0])), first)
+        self.assertEqual('', second)
+        os.remove(paths[0])
+        self.assertEqual(('', ''), self.handler.get_page_filesize(double=True))
+
+    def test_the_last_page_has_no_second_to_answer_for(self):
+        self._open('red.png', 'blue.png', 'red.png')
+        self.handler.set_page(3)
+        self.assertIsNone(self.handler.get_page_filename(double=True))
+        self.assertEqual(('', ''), self.handler.get_page_filesize(double=True))
+
+
 class CacheWindowTest(MComixTest):
 
     """The set of pages _ask_for_pages() picks must always contain the page
