@@ -306,6 +306,36 @@ class CollectionAreaTest(MComixTest):
         self.assertEqual(self.backend.get_supercollection(self.manga),
                          self.comics)
 
+    def test_a_collection_dropped_beside_a_top_level_one_goes_to_the_root(self):
+        """A drop above or below a row puts the collection beside it,
+        in the collection that one is in - none at all, for a
+        collection at the top."""
+        self.area._list.expand_to(self._collection_row(self.inner))
+        self._settle()
+        self.area._list.select_row(self._row_for(self.inner))
+        self.assertTrue(self.area._drag_data_received(
+            None, '%s:%d' % (constants.LIBRARY_DRAG_COLLECTION, self.inner),
+            *self._edge_of(self.manga)))
+        self.assertIsNone(self.backend.get_supercollection(self.inner))
+
+    def test_dragging_a_collection_says_where_it_would_go(self):
+        self.area._list.select_row(self._row_for(self.manga))
+        payload = _StubDrop('%s:%d' % (constants.LIBRARY_DRAG_COLLECTION,
+                                       self.manga))
+        self.assertEqual(Gdk.DragAction.MOVE, self.area._drag_motion(
+            payload, *self._middle_of(self.comics)))
+        self.assertEqual("Put the collection 'Manga' in the collection "
+                         "'Comics'.", self.library.messages[-1])
+        self.area._list.expand_to(self._collection_row(self.inner))
+        self._settle()
+        self.area._list.select_row(self._row_for(self.inner))
+        payload = _StubDrop('%s:%d' % (constants.LIBRARY_DRAG_COLLECTION,
+                                       self.inner))
+        self.assertEqual(Gdk.DragAction.MOVE, self.area._drag_motion(
+            payload, *self._edge_of(self.manga)))
+        self.assertEqual("Put the collection 'Inner' in the collection "
+                         "'Root'.", self.library.messages[-1])
+
     def test_a_collection_is_not_dropped_into_itself(self):
         """A collection inside one of its own is a cycle, which the
         library has no way back out of."""
