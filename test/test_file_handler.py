@@ -124,6 +124,15 @@ class DirectoryWalkTest(MComixTest):
         self.assertEqual(archive, self._opened_file())
         self.assertTrue(self.handler.file_loaded)
 
+    def test_a_loose_page_is_available_for_as_long_as_its_file_is_there(self):
+        """Pages that are files of their own need no extracting: they
+        are there to be read, until something takes them away."""
+        image = self._put_image('a')
+        self._open(image)
+        self.assertTrue(self.handler.file_is_available(image))
+        os.remove(image)
+        self.assertFalse(self.handler.file_is_available(image))
+
 
 class AnArchiveThatWillNotOpenTest(MComixTest):
 
