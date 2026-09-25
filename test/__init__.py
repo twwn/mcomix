@@ -252,6 +252,14 @@ class MComixTest(unittest.TestCase):
         except GLib.Error:
             # Nothing to purge, which GTK reports as an error.
             pass
+        # So is the file the last file chooser was answered with, which
+        # the next chooser opens on and starts to preview: a test that
+        # chose the test archive left every later chooser on the worker
+        # selecting it, and whatever the preview found out about it
+        # arriving in the middle of the next test.
+        chooser = sys.modules.get('mcomix.file_chooser_base_dialog')
+        if chooser is not None:
+            chooser._BaseFileChooserDialog._last_activated_file = None
         # Change storage directories.
         home_dir = os.path.join(self.tmp_dir, 'home')
         os.mkdir(home_dir)

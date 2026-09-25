@@ -367,15 +367,18 @@ class FileChooserTest(MComixTest):
                         'the preview says no file size')
 
     def test_choosing_a_folder_after_a_file_clears_the_preview(self):
-        path = get_testfile_path('images', 'blue.png')
-        self.dialog.filechooser.set_file(Gio.File.new_for_path(path))
+        """Driven through what the selection poll calls rather than
+        through the chooser: GTK 4.14's chooser, handed a folder by
+        set_file(), put up a dialog of its own."""
+        self.dialog._stop_previewing()
+        self.dialog._previewed = get_testfile_path('images', 'blue.png')
+        self.dialog._update_preview()
         self.assertTrue(wait_for(
             lambda: self.dialog._preview_image.get_paintable() is not None))
-        self.dialog.filechooser.set_file(
-            Gio.File.new_for_path(get_testfile_path('archives')))
-        self.assertTrue(wait_for(
-            lambda: self.dialog._preview_image.get_paintable() is None),
-            'the file stayed previewed')
+        self.dialog._previewed = get_testfile_path('archives')
+        self.dialog._update_preview()
+        self.assertIsNone(self.dialog._preview_image.get_paintable(),
+                          'the file stayed previewed')
         self.assertEqual(('', '', ''),
                          (self.dialog._namelabel.get_text(),
                           self.dialog._sizelabel.get_text(),
