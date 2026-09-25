@@ -413,6 +413,75 @@ class MainWindowTest(MComixTest):
         self.assertEqual(self.window.get_window_size(),
                          (prefs['window width'], prefs['window height']))
 
+    # -- Filling the screen and hiding everything --------------------------
+
+    _TOGGLES = ('menubar', 'scrollbar', 'statusbar', 'thumbnails', 'toolbar')
+
+    def _toggles_usable(self):
+        return {name: self.window.actiongroup.get_action(name).get_sensitive()
+                for name in self._TOGGLES}
+
+    def _state_changes_to(self, fullscreen):
+        """Tell the window it has filled the screen, or stopped, as the
+        notification from the window manager does; the bare X server
+        the suite runs on has none to grant the request."""
+        with unittest.mock.patch.object(type(self.window), 'is_fullscreen',
+                                        return_value=fullscreen):
+            self.window.event_handler.window_state_event(self.window, None)
+
+    def test_hide_all_leaves_the_bars_it_hides_unusable(self):
+        """Hidden by "hide all", a bar's own item could not show it, so
+        each is greyed out until "hide all" is turned off again."""
+        hide_all = self.window.actiongroup.get_action('hide_all')
+        hide_all.set_active(True)
+        self._pump()
+        self.assertEqual({name: False for name in self._TOGGLES},
+                         self._toggles_usable())
+        hide_all.set_active(False)
+        self._pump()
+        self.assertEqual({name: True for name in self._TOGGLES},
+                         self._toggles_usable())
+
+    def test_filling_the_screen_hides_all_where_that_is_asked_for(self):
+        prefs['hide all in fullscreen'] = True
+        with unittest.mock.patch.object(self.window, 'draw_image') as drawn:
+            self._state_changes_to(True)
+        self.assertTrue(self.window.was_fullscreen)
+        self.assertEqual({name: False for name in self._TOGGLES},
+                         self._toggles_usable())
+        drawn.assert_called_once_with()
+        with unittest.mock.patch.object(
+                self.window, 'restore_window_geometry',
+                return_value=False), \
+                unittest.mock.patch.object(self.window,
+                                           'draw_image') as drawn:
+            self._state_changes_to(False)
+        self.assertFalse(self.window.was_fullscreen)
+        self.assertEqual({name: True for name in self._TOGGLES},
+                         self._toggles_usable())
+        # The size it went back to is the size it had, so there is no
+        # resize to redraw it.
+        drawn.assert_called_once_with()
+
+    def test_going_back_to_a_new_size_leaves_the_redraw_to_the_resize(self):
+        self._state_changes_to(True)
+        with unittest.mock.patch.object(
+                self.window, 'restore_window_geometry',
+                return_value=True), \
+                unittest.mock.patch.object(self.window,
+                                           'draw_image') as drawn:
+            self._state_changes_to(False)
+        drawn.assert_not_called()
+
+    def test_a_notification_that_changes_nothing_is_let_pass(self):
+        """Both notify::fullscreened and notify::maximized arrive, and
+        the second finds the change already dealt with."""
+        self._state_changes_to(True)
+        with unittest.mock.patch.object(self.window, 'draw_image') as drawn:
+            self._state_changes_to(True)
+        drawn.assert_not_called()
+        self._state_changes_to(False)
+
     def test_save_and_quit_keeps_the_window_size(self):
         """It is the entry that promises to put the reader back where
         they were, and it went straight to terminate_program(), which
