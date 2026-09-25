@@ -477,6 +477,59 @@ class MainWindowTest(MComixTest):
         self.assertEqual(prefs['path of last saved in filechooser'],
                          elsewhere)
 
+    def _save_first_page(self, target_dir):
+        """Ask to save the first page into <target_dir>, and answer with
+        the one chooser that opened."""
+        prefs['path of last saved in filechooser'] = target_dir
+        handler = self.window.imagehandler
+        self.assertTrue(
+            wait_for(lambda: os.path.exists(
+                handler.get_path_to_page(1) or '')),
+            'the first page was never extracted')
+        self.window.file_actions.extract_page()
+        self._pump()
+        dialogs = self._save_dialogs()
+        self.assertEqual(1, len(dialogs), 'no save dialog was opened')
+        self.addCleanup(dialogs[0].destroy)
+        return dialogs[0]
+
+    def test_a_name_taken_in_the_folder_is_offered_with_a_number(self):
+        target_dir = os.path.join(constants.DATA_DIR, 'saved')
+        os.makedirs(target_dir, exist_ok=True)
+        for name in ('01-ZIP-Normal_01-JPG-Indexed.jpg',
+                     '01-ZIP-Normal_01-JPG-Indexed (1).jpg'):
+            with open(os.path.join(target_dir, name), 'wb'):
+                pass
+        dialog = self._save_first_page(target_dir)
+        self.assertEqual('01-ZIP-Normal_01-JPG-Indexed (2).jpg',
+                         dialog.save_name)
+
+    def test_the_page_is_written_where_the_chooser_answers(self):
+        target_dir = os.path.join(constants.DATA_DIR, 'saved')
+        os.makedirs(target_dir, exist_ok=True)
+        dialog = self._save_first_page(target_dir)
+        target = os.path.join(target_dir, 'kept.jpg')
+        dialog.files_chosen([target])
+        self._pump()
+        self.assertEqual(
+            os.path.getsize(self.window.imagehandler.get_path_to_page(1)),
+            os.path.getsize(target))
+        self.assertEqual([], self._save_dialogs(),
+                         'the chooser was left standing')
+
+    def test_a_save_that_was_cancelled_writes_nothing(self):
+        target_dir = os.path.join(constants.DATA_DIR, 'saved')
+        os.makedirs(target_dir, exist_ok=True)
+        dialog = self._save_first_page(target_dir)
+        with unittest.mock.patch.object(
+                self.window.file_actions, '_save_page_to') as saved:
+            dialog.files_chosen([])
+        self._pump()
+        saved.assert_not_called()
+        self.assertEqual([], os.listdir(target_dir))
+        self.assertEqual([], self._save_dialogs(),
+                         'the chooser was left standing')
+
     def test_the_right_click_menu_offers_to_save_a_page(self):
         """It offered every other thing the File menu does, but not the
         one that needs a page picked out - which is the one only it can
