@@ -288,6 +288,17 @@ class FileChooserTest(MComixTest):
         self.dialog.response(Response.OK)
         self.assertEqual(chosen, [path])
 
+    def test_a_double_click_on_a_file_opens_it(self):
+        chosen = []
+        self.dialog.files_chosen = chosen.extend
+        path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        self.dialog.filechooser.set_file(Gio.File.new_for_path(path))
+        wait_for(lambda: self.dialog.filechooser.get_file() is not None)
+        self.dialog._activated(None, 1, 0.0, 0.0)
+        self.assertEqual([], chosen, 'a single click opened the file')
+        self.dialog._activated(None, 2, 0.0, 0.0)
+        self.assertEqual([path], chosen)
+
     def test_a_selected_file_is_previewed(self):
         # The thumbnail arrives on a worker thread, and the callback that
         # takes it used to ask the chooser what was being previewed with
