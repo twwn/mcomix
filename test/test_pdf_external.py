@@ -55,4 +55,61 @@ class PdfExternalTest(MComixTest):
         self.assertTrue(os.path.isfile(mupdf.mudraw[0]))
         self.assertTrue(mupdf.trace_args)
 
+class MuPdfVersionTest(MComixTest):
+
+    """Which commands the handler settles on for each MuPDF there is.
+
+    From 1.8 mutool draws pages itself; before that a separate mudraw
+    did, 1.7 traced a page with "-F trace" and 1.6 - which does not
+    answer to "-v" at all - with "-x".  The tools are stood in for by
+    scripts on a PATH of their own, since only the newest is installed.
+    """
+
+    def setUp(self):
+        super().setUp()
+        self._bin = os.path.join(self.tmp_dir, 'bin')
+        os.makedirs(self._bin)
+        saved_path = os.environ.get('PATH')
+        os.environ['PATH'] = self._bin
+        self.addCleanup(os.environ.__setitem__, 'PATH', saved_path or '')
+        pdf_external._find_mupdf.cache_clear()
+        self.addCleanup(pdf_external._find_mupdf.cache_clear)
+
+    def _tool(self, name, says_version=None):
+        path = os.path.join(self._bin, name)
+        with open(path, 'w') as script:
+            script.write('#!/bin/sh\n')
+            if says_version is not None:
+                script.write('echo "mutool version %s" >&2\n' % says_version)
+        os.chmod(path, 0o755)
+        return path
+
+    def test_mutool_from_1_8_draws_the_pages_itself(self):
+        mutool = self._tool('mutool', '1.18.0')
+        mupdf = pdf_external._find_mupdf()
+        self.assertEqual(([mutool], [mutool, 'draw'], ['-F', 'trace']),
+                         (mupdf.mutool, mupdf.mudraw, mupdf.trace_args))
+
+    def test_1_7_draws_with_mudraw_and_traces_with_f(self):
+        mutool = self._tool('mutool', '1.7')
+        mudraw = self._tool('mudraw')
+        mupdf = pdf_external._find_mupdf()
+        self.assertEqual(([mutool], [mudraw], ['-F', 'trace']),
+                         (mupdf.mutool, mupdf.mudraw, mupdf.trace_args))
+
+    def test_a_mutool_that_says_no_version_is_1_6_and_traces_with_x(self):
+        self._tool('mutool')
+        mudraw = self._tool('mudraw')
+        mupdf = pdf_external._find_mupdf()
+        self.assertEqual(([mudraw], ['-x']), (mupdf.mudraw, mupdf.trace_args))
+
+    def test_an_old_mutool_without_mudraw_is_no_mupdf(self):
+        self._tool('mutool', '1.7')
+        self.assertIsNone(pdf_external._find_mupdf())
+
+    def test_no_mutool_is_no_mupdf(self):
+        self.assertIsNone(pdf_external._find_mupdf())
+        self.assertFalse(pdf_external.PdfArchive.is_available())
+
+
 # vim: expandtab:sw=4:ts=4
