@@ -6,6 +6,7 @@ real window, which is where a whole class of start-up regressions hides.
 
 import contextlib
 import datetime
+import errno
 import os
 import pickle
 import shutil
@@ -29,9 +30,11 @@ from mcomix import icons
 from mcomix import image_tools
 from mcomix import keybindings
 from mcomix import file_actions
+from mcomix import file_mover
 from mcomix import main
 from mcomix import message_dialog
 from mcomix import rename_dialog
+from mcomix import tools
 from mcomix.dialog import Response
 from mcomix.library import backend
 from mcomix.preferences import prefs
@@ -1933,6 +1936,40 @@ class MainWindowTest(MComixTest):
             lambda: self.window.imagehandler.get_current_page() == 3,
             seconds=20), 'the book did not come back to the page being read')
         self.assertEqual(self.window.filehandler.get_path_to_base(), moved)
+
+    def _move_refused(self, destination):
+        """Move the book into <destination>, which will not take it, and
+        answer with what the message that says so gives as the reason."""
+        source = self.window.filehandler.get_path_to_base()
+        self.window.file_actions.move_current_file(destination)
+        self._pump()
+        messages = self._message_dialogs()
+        self.assertEqual(1, len(messages), 'nothing said it did not move')
+        self.addCleanup(messages[0].destroy)
+        self.assertTrue(os.path.isfile(source), 'the book moved all the same')
+        self.assertEqual([], prefs['recent move destinations'])
+        return messages[0]._secondary.get_text()
+
+    def test_a_name_taken_in_the_destination_is_said_to_be(self):
+        self._movable_book()
+        destination = os.path.join(self.tmp_dir, 'destination')
+        os.makedirs(destination)
+        with open(os.path.join(destination, 'Movable.cbz'), 'wb'):
+            pass
+        self.assertEqual('A file of that name is there already.',
+                         self._move_refused(destination))
+
+    def test_a_destination_without_room_says_how_large_the_file_is(self):
+        source = self._movable_book()
+        destination = os.path.join(self.tmp_dir, 'destination')
+        os.makedirs(destination)
+        full = OSError(errno.ENOSPC, os.strerror(errno.ENOSPC))
+        with unittest.mock.patch.object(file_mover, 'move_file',
+                                        side_effect=full):
+            reason = self._move_refused(destination)
+        self.assertEqual('There is not enough room there: the file is %s.'
+                         % tools.format_byte_size(os.path.getsize(source)),
+                         reason)
 
     def test_a_destination_moved_to_is_offered_next_time(self):
         self._movable_book()
