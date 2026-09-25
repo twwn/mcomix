@@ -7,6 +7,7 @@ preferences file drops what it does not know, so whatever the button
 said went out with the wash.
 """
 
+import contextlib
 import os
 import shutil
 import unittest.mock
@@ -465,5 +466,109 @@ class PreferencesDialogTest(MComixTest):
         questions[0].response(Response.NO)
         pump()
         recent.remove_all.assert_not_called()
+
+
+class PreferenceCallbacksTest(MComixTest):
+
+    """What each control of the dialog stores, and what it has the
+    window do beside storing it."""
+
+    #: What the callbacks may call on the window, by name.
+    TARGETS = ('draw_image', 'set_bg_colour', 'change_zoom_mode',
+               'update_space', 'slideshow.update_delay',
+               'thumbnailsidebar.resize',
+               'thumbnailsidebar.toggle_page_numbers_visible',
+               'imagehandler.do_cacheing',
+               'event_handler.reset_extra_scroll_events',
+               'filehandler.update_comment_extensions')
+
+    def setUp(self):
+        super().setUp()
+        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
+                          constants.THUMBNAIL_PATH):
+            os.makedirs(directory, exist_ok=True)
+        icons.load_icons()
+        self.window = main.MainWindow()
+        main.set_main_window(self.window)
+        pump()
+        self.dialog = preferences_dialog._PreferencesDialog(self.window)
+        pump()
+
+    def tearDown(self):
+        self.dialog.destroy()
+        self.window.terminate_program()
+        self.window.destroy()
+        main.set_main_window(None)
+        pump()
+        super().tearDown()
+
+    def _called(self, callback):
+        """Run <callback> with the window's methods stood in for, and
+        return the names of those it called."""
+        mocks = {}
+        with contextlib.ExitStack() as stack:
+            for name in self.TARGETS:
+                owner = self.window
+                *path, attribute = name.split('.')
+                for step in path:
+                    owner = getattr(owner, step)
+                mocks[name] = stack.enter_context(
+                    unittest.mock.patch.object(owner, attribute))
+            callback()
+        return {name for name, mock in mocks.items() if mock.called}
+
+    def _spin(self, preference, value):
+        spinner = unittest.mock.Mock()
+        spinner.get_value.return_value = value
+        return self._called(
+            lambda: self.dialog._spinner_cb(spinner, preference))
+
+    def _check(self, preference, active):
+        button = unittest.mock.Mock()
+        button.get_active.return_value = active
+        return self._called(
+            lambda: self.dialog._check_button_cb(button, preference))
+
+    def test_each_spinner_stores_its_value_and_has_the_window_follow(self):
+        for preference, value, stored, called in (
+                ('slideshow delay', 2.5, 2500, {'slideshow.update_delay'}),
+                ('smart scroll percentage', 40, 0.4, set()),
+                ('lens magnification', 2.5, 2.5, set()),
+                ('thumbnail size', 90, 90,
+                 {'thumbnailsidebar.resize', 'draw_image'}),
+                ('max pages to cache', 5, 5, {'imagehandler.do_cacheing'}),
+                ('number of key presses before page turn', 2, 2,
+                 {'event_handler.reset_extra_scroll_events'}),
+                ('fit to size width wide', 500, 500, {'change_zoom_mode'}),
+                ('space between two pages', 4, 4, {'update_space'})):
+            with self.subTest(preference=preference):
+                self.assertEqual(called, self._spin(preference, value))
+                self.assertEqual(stored, prefs[preference])
+
+    def test_each_check_button_has_the_window_follow(self):
+        for preference, active, called in (
+                ('smart bg', True, {'draw_image'}),
+                ('smart bg', False, {'set_bg_colour'}),
+                ('checkered bg for transparent images', True, {'draw_image'}),
+                ('show page numbers on thumbnails', True,
+                 {'thumbnailsidebar.toggle_page_numbers_visible'})):
+            with self.subTest(preference=preference, active=active):
+                self.assertEqual(called, self._check(preference, active))
+                self.assertEqual(active, prefs[preference])
+
+    def test_the_double_page_choice_is_stored_and_redrawn(self):
+        chooser = unittest.mock.Mock()
+        chooser.get_value.return_value = constants.SHOW_DOUBLE_AS_ONE_WIDE
+        self.assertEqual({'draw_image'}, self._called(
+            lambda: self.dialog._double_page_changed_cb(chooser)))
+        self.assertEqual(constants.SHOW_DOUBLE_AS_ONE_WIDE,
+                         prefs['virtual double page for fitting images'])
+
+    def test_the_comment_extensions_are_read_out_of_their_entry(self):
+        entry = unittest.mock.Mock()
+        entry.get_text.return_value = 'txt, nfo ,, xml'
+        self.assertEqual({'filehandler.update_comment_extensions'},
+                         self._called(lambda: self.dialog._entry_cb(entry)))
+        self.assertEqual(['txt', 'nfo', 'xml'], prefs['comment extensions'])
 
 # vim: expandtab:sw=4:ts=4
