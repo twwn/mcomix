@@ -3350,7 +3350,9 @@ class ZoomModeAtStartUpTest(MComixTest):
 
 class StartUpOptionsTest(MComixTest):
 
-    """What the command line asks of a window as it starts."""
+    """What the command line and the preferences ask of a window as it
+    starts: each is an action activated once, so the menus show what
+    is in effect."""
 
     def setUp(self):
         super().setUp()
@@ -3380,6 +3382,14 @@ class StartUpOptionsTest(MComixTest):
     def _active(self, name):
         return self.window.actiongroup.get_action(name).get_active()
 
+    def test_the_command_line_options_are_in_effect(self):
+        self._start(fullscreen=True, manga_mode=True, double_page=True,
+                    zoom_mode=constants.ZoomMode.WIDTH)
+        for name in ('fullscreen', 'manga_mode', 'double_page'):
+            with self.subTest(action=name):
+                self.assertTrue(self._active(name))
+        self.assertEqual(constants.ZoomMode.WIDTH, prefs['zoom mode'])
+
     def test_a_slideshow_asked_for_starts_once_the_book_is_open(self):
         """"mcomix --slideshow book.cbz" started no slideshow: the action
         was activated as the window was built, while the book was still
@@ -3398,6 +3408,31 @@ class StartUpOptionsTest(MComixTest):
         self.assertTrue(wait_for(lambda: self.window.filehandler.file_loaded))
         pump()
         self.assertFalse(self.window.slideshow.is_running())
+
+    def test_the_library_can_be_asked_for_at_start(self):
+        from mcomix.library import main_dialog
+        self._start(show_library=True)
+        self.assertIsNotNone(main_dialog.get_dialog())
+
+    def test_the_preferences_that_are_toggles_are_shown_on(self):
+        for preference in ('stretch', 'invert smart scroll',
+                           'keep transformation'):
+            prefs[preference] = True
+        prefs['rotation'] = 90
+        self._start()
+        for name in ('stretch', 'invert_scroll', 'keep_transformation'):
+            with self.subTest(action=name):
+                self.assertTrue(self._active(name))
+        self.assertEqual(90, prefs['rotation'])
+
+    def test_a_turn_is_forgotten_unless_it_is_to_be_kept(self):
+        prefs['keep transformation'] = False
+        prefs['rotation'] = 90
+        prefs['horizontal flip'] = prefs['vertical flip'] = True
+        self._start()
+        self.assertEqual((0, False, False),
+                         (prefs['rotation'], prefs['horizontal flip'],
+                          prefs['vertical flip']))
 
 
 class ResumeAtTheFileOfThePageTest(MComixTest):
