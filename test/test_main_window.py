@@ -2540,6 +2540,43 @@ class MainWindowTest(MComixTest):
             lambda source, target: source.endswith('0.png'))
         self.assertEqual(before, left)
 
+    def test_a_swap_whose_first_rename_fails_leaves_both_files_alone(self):
+        directory = self._loose_book('swap-fails-first')
+        before = sorted(os.listdir(directory))
+        pages = self._pages()
+        left = self._swap_failing_at(
+            directory,
+            lambda source, target: target.endswith('.mcomix-swap'))
+        self.assertEqual(before, left)
+        self.assertEqual(pages, self._pages())
+
+    def test_a_replace_that_fails_puts_the_page_it_took_out_back(self):
+        """The page that held the name is taken out to make room; a
+        rename the file system refuses leaves the name where it was,
+        so the page comes back."""
+        directory = self._loose_book('replace-fails')
+        before = sorted(os.listdir(directory))
+        pages = self._pages()
+        refused = PermissionError(13, 'Permission denied')
+        with self._quietly(), \
+                unittest.mock.patch('os.replace', side_effect=refused):
+            self.assertFalse(
+                self.window.file_actions.replace_page_named(1, '1.png'))
+        self._pump()
+        self.assertEqual(before, sorted(os.listdir(directory)))
+        self.assertEqual(pages, self._pages())
+
+    def test_a_rename_the_file_system_refuses_renames_nothing(self):
+        directory = self._loose_book('rename-fails')
+        before = sorted(os.listdir(directory))
+        refused = PermissionError(13, 'Permission denied')
+        with unittest.mock.patch('os.rename', side_effect=refused):
+            self.assertIsNone(
+                self.window.file_actions.rename_page(1, 'Cover.png'))
+        self._pump()
+        self.assertEqual(before, sorted(os.listdir(directory)))
+        self.assertEqual('0.png', self.window.file_actions.page_name(1))
+
     def test_replacing_a_page_of_a_loose_book_writes_over_the_file(self):
         directory = self._loose_book('replace-names')
         names = self.window.file_actions
