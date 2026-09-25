@@ -121,6 +121,25 @@ class WatchListDialogTest(MComixTest):
         self.dialog._collection_chosen(row, 'All books')
         self.assertFalse(self.dialog._changed)
 
+    def test_a_directory_watched_into_a_collection_shows_its_name(self):
+        row = self.dialog._list.get_row(0)
+        self.dialog._collection_chosen(row, 'Shelf')
+        self.assertEqual('Shelf', self.dialog._collection_name_of(row))
+
+    def test_a_name_no_collection_has_any_longer_is_the_default_one(self):
+        """The names are offered as the list was filled.  One whose
+        collection was removed in the meantime is taken as the default
+        collection, which this directory has already, so nothing is
+        written."""
+        row = self.dialog._list.get_row(0)
+        names = self.dialog._collection_names()
+        self.backend.remove_collection(self.collection)
+        self.assertIn('Shelf', names)
+        self.dialog._collection_chosen(row, 'Shelf')
+        entry = self.backend.watchlist.get_watchlist_entry(row.directory)
+        self.assertIsNone(entry.collection.id)
+        self.assertFalse(self.dialog._changed)
+
     def test_turning_subdirectories_on_writes_it_to_the_database(self):
         row = self.dialog._list.get_row(0)
         self.assertFalse(row.recursive)
