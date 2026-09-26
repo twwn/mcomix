@@ -1929,6 +1929,53 @@ class MainWindowTest(MComixTest):
         into.assert_called_once_with()
         out.assert_called_once_with()
 
+    def _info_panel(self):
+        with unittest.mock.patch.object(self.window.osd, 'show') as shown:
+            self.window.show_info_panel()
+        return [call.args[0] for call in shown.call_args_list]
+
+    def test_the_info_panel_names_the_file_its_place_and_the_page(self):
+        self._ready()
+        self.window.set_page(2)
+        self._pump()
+        number, count = self.window.filehandler.get_file_number()
+        self.assertGreater(count, 1, 'the archive stands alone')
+        self.assertEqual(['01-ZIP-Normal.zip\n(%d / %d)\nPage 2 / 4'
+                          % (number, count)], self._info_panel())
+
+    def test_for_loose_images_it_leaves_out_the_place_of_the_file(self):
+        self._folder_book(3)
+        self.assertEqual(['folder/01.png\n\nPage 1 / 3'], self._info_panel())
+
+    def test_with_no_book_open_it_shows_nothing(self):
+        self.window.filehandler.close_file()
+        self._pump()
+        self.assertEqual([], self._info_panel())
+
+    def test_the_window_goes_back_to_being_maximised(self):
+        prefs['window maximized'] = True
+        with unittest.mock.patch.object(self.window, 'maximize') as maximize, \
+                unittest.mock.patch.object(type(self.window), 'is_maximized',
+                                           return_value=False):
+            self.assertTrue(self.window.restore_window_geometry())
+        maximize.assert_called_once_with()
+
+    def test_a_window_that_has_its_size_already_is_left_alone(self):
+        prefs['window width'], prefs['window height'] = \
+            self.window.get_window_size()
+        prefs['window maximized'] = self.window.is_maximized()
+        with unittest.mock.patch.object(self.window,
+                                        'set_default_size') as sized:
+            self.assertFalse(self.window.restore_window_geometry())
+        sized.assert_not_called()
+
+    def test_the_gap_between_two_pages_is_taken_and_drawn(self):
+        prefs['space between two pages'] = 7
+        with unittest.mock.patch.object(self.window, 'draw_image') as drawn:
+            self.window.update_space()
+        self.assertEqual(7, self.window._spacing)
+        drawn.assert_called_once_with()
+
     def test_shift_and_a_click_turns_ten_pages_or_to_the_last(self):
         pages = len(self._ready())
         self._button(1, Gdk.ModifierType.SHIFT_MASK)
