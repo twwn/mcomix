@@ -130,6 +130,19 @@ def _by_familiarity(names: Iterable[str], common: Sequence[str]) -> list[str]:
     return known + sorted(name for name in names if name not in known)
 
 
+def _add_extensions(ffilter: Gtk.FileFilter, extensions: Iterable[str]) -> None:
+    """Let <ffilter> take a file named with any of <extensions>, in any case.
+
+    A pattern such as "*.cbz" is matched case by case, so a name in
+    capitals got in only through its content type.  GIO on Windows has
+    none for .cbz or .cb7, and the chooser there left LOUD.CBZ out, as
+    did adding a folder of books to the library.  A suffix is matched
+    without regard to case.
+    """
+    for extension in sorted(extensions):
+        ffilter.add_suffix(extension)
+
+
 class _BaseFileChooserDialog(Dialog):
 
     """We roll our own FileChooserDialog because the one in GTK seems
@@ -198,7 +211,7 @@ class _BaseFileChooserDialog(Dialog):
         self._search: "Gtk.SearchEntry | None" = None
         self._listing: "Gtk.ColumnView | None" = None
         #: One-format filters, held back so the groups can come first:
-        #: the name, the mime types and the patterns each was built for.
+        #: the name, the mime types and the extensions each was built for.
         self._pending_filters: list[tuple[str, Iterable[str], Sequence[str]]] = []
         self.filechooser = Gtk.FileChooserWidget(action=action)
         # The preview sits beside the list rather than inside it, so the
@@ -527,15 +540,18 @@ class _BaseFileChooserDialog(Dialog):
                 if filter is not None]
 
     def add_filter(self, name: str, mimes: Iterable[str],
-                   patterns: Iterable[str] = ()) -> Gtk.FileFilter:
-        """Add a filter, called <name>, for each mime type in <mimes> and
-        each pattern in <patterns> to the filechooser.
+                   patterns: Iterable[str] = (),
+                   extensions: Iterable[str] = ()) -> Gtk.FileFilter:
+        """Add a filter, called <name>, for each mime type in <mimes>,
+        each pattern in <patterns> and each of <extensions> to the
+        filechooser.
         """
         ffilter = Gtk.FileFilter()
         for mime in mimes:
             ffilter.add_mime_type(mime)
         for pattern in patterns:
             ffilter.add_pattern(pattern)
+        _add_extensions(ffilter, extensions)
 
         ffilter.set_name(name)
         self.filechooser.add_filter(ffilter)
@@ -568,18 +584,17 @@ class _BaseFileChooserDialog(Dialog):
         self.filechooser.add_filter(ffilter)
         for name in _by_familiarity(supported_formats, common):
             mime_types, extensions = supported_formats[name]
-            patterns = ['*.%s' % ext for ext in extensions]
-            self._pending_filters.append((one % name, mime_types, patterns))
+            self._pending_filters.append(
+                (one % name, mime_types, sorted(extensions)))
             for mime in mime_types:
                 ffilter.add_mime_type(mime)
-            for pat in patterns:
-                ffilter.add_pattern(pat)
+            _add_extensions(ffilter, extensions)
 
     def add_pending_filters(self) -> None:
         """Add the one-format filters held back while the groups were
         being offered, so that every "All ..." comes first."""
-        for name, mimes, patterns in self._pending_filters:
-            self.add_filter(name, mimes, patterns)
+        for name, mimes, extensions in self._pending_filters:
+            self.add_filter(name, mimes, extensions=extensions)
         self._pending_filters = []
 
     @staticmethod

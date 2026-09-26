@@ -611,6 +611,22 @@ class LibraryFileChooserTest(MComixTest):
             ['LOUD.CBZ', os.path.join('deeper', 'more.cbz'), 'quiet.cbz'],
             self._books_in_folder('ZIP archives'))
 
+    def test_a_name_in_capitals_is_taken_where_its_type_is_not_known(self):
+        """GIO on Windows has no MIME type for .cbz or .cb7, so there the
+        filter's own rules decide, and "*.cbz" matched lower case only:
+        the chooser and the walk over a folder both left LOUD.CBZ out."""
+        dialog = self._open()
+        for filter_name, name in (('ZIP archives', 'LOUD.CBZ'),
+                                  ('7z archives', 'seven.CB7'),
+                                  ('All archives', 'LOUD.CBZ')):
+            with self.subTest(filter_name=filter_name):
+                chosen, = [f for f in dialog.list_filters()
+                           if f.get_name() == filter_name]
+                info = Gio.FileInfo()
+                info.set_display_name(name)
+                info.set_content_type('application/octet-stream')
+                self.assertTrue(chosen.match(info))
+
     def test_a_folder_added_as_rar_archives_brings_no_zip_books(self):
         self.assertEqual(['rar.cbr'],
                          self._books_in_folder('RAR archives'))
