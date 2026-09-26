@@ -40,7 +40,7 @@ Preparing a new release
 Releasing with GitHub Actions
 -----------------------------
 
-Pushing the tag starts `.github/workflows/release.yml`. It checks that the tag is the version in `mcomix/constants.py`, builds the source archive on Linux and the Windows zip and MSI installer in MSYS2, starts the built MComix on a PDF and on a book that is not there, and drafts the GitHub release with the three files attached and the release's section of `ChangeLog.md` as its notes.
+Pushing the tag starts `.github/workflows/release.yml`. It checks that the tag is the version in `mcomix/constants.py`, builds the source archive on Linux and the Windows zip and MSI installer in MSYS2, starts the built MComix on a PDF and on a book that is not there, and drafts the GitHub release with the three files, a `SHA256SUMS` file and the release's section of `ChangeLog.md` as its notes. Each file also gets a signed build provenance: `gh attestation verify <file> --repo twwn/mcomix` shows it was built there, from the tag.
 
 The build takes everything at its newest: MSYS2's packages, 7-Zip from the runner, and the newest released UnRAR.dll, which the workflow finds on RARLAB's site, passing over a beta. The run's summary lists the versions it took and the sizes of the files.
 

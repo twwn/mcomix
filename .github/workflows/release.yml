@@ -4,9 +4,9 @@ name: Release
 #
 # With a tag - pushed, or given by hand - it is a release: the tag has to
 # be VERSION in mcomix/constants.py, and the files are attached to a
-# draft GitHub release with the tag's ChangeLog.md section as its notes.
-# The draft is reviewed and published by hand; publishing it starts
-# publish.yml.
+# draft GitHub release with the tag's ChangeLog.md section as its notes,
+# checksums and build provenance beside them.  The draft is reviewed and
+# published by hand; publishing it starts publish.yml.
 #
 # Without one - every Monday, on a pull request that touches the build,
 # or by hand - it builds the same files from the commit and keeps them as
@@ -273,17 +273,29 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       contents: write
+      id-token: write
+      attestations: write
     env:
       TAG: ${{ needs.setup.outputs.version }}
     steps:
       - uses: actions/download-artifact@v8
         with:
           path: artifacts
+      - name: Gather the files and their checksums
+        run: |
+          mkdir release
+          mv artifacts/source/*.tar.gz artifacts/windows/* release/
+          (cd release && sha256sum -- * > SHA256SUMS)
+          cat release/SHA256SUMS
+      # Anyone can check with "gh attestation verify <file> --repo <this
+      # repository>" that a file was built here, from this tag.
+      - uses: actions/attest-build-provenance@v4
+        with:
+          subject-path: "release/mcomix-*"
       - name: Draft the release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --draft \
             --verify-tag --title "MComix $TAG" \
-            --notes-file artifacts/notes/notes.md \
-            artifacts/source/*.tar.gz artifacts/windows/*
+            --notes-file artifacts/notes/notes.md release/*
