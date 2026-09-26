@@ -317,6 +317,35 @@ class FileChooserTest(MComixTest):
         self.assertEqual(constants.HOME_DIR,
                          prefs['path of last browsed in filechooser'])
 
+    def _reopened_in(self):
+        """Close the chooser, open it again with no book open, and
+        answer with the folder it shows."""
+        self._module._close_main_filechooser_dialog()
+        pump()
+        self._module.open_main_filechooser_dialog(None, self.window)
+        pump()
+        self.dialog = self._module._main_filechooser_dialog
+        wait_for(lambda: self.dialog.filechooser.get_current_folder()
+                 is not None)
+        return self.dialog.filechooser.get_current_folder().get_path()
+
+    def test_it_opens_where_the_reader_last_browsed(self):
+        browsed = os.path.join(self.tmp_dir, 'browsed')
+        os.makedirs(browsed)
+        prefs['store recent file info'] = True
+        prefs['path of last browsed in filechooser'] = browsed
+        self.assertEqual(browsed, self._reopened_in())
+
+    def test_without_a_file_history_it_opens_in_the_home_folder(self):
+        """A folder remembered before the history was turned off is
+        not where it opens either."""
+        browsed = os.path.join(self.tmp_dir, 'browsed')
+        os.makedirs(browsed)
+        prefs['store recent file info'] = False
+        prefs['path of last browsed in filechooser'] = browsed
+        self.assertEqual(os.path.realpath(constants.HOME_DIR),
+                         os.path.realpath(self._reopened_in()))
+
     def test_a_double_click_on_a_file_opens_it(self):
         chosen = []
         self.dialog.files_chosen = chosen.extend
