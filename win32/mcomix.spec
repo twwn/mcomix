@@ -53,10 +53,11 @@ a = Analysis(['../mcomixstarter.py'],
              },
              runtime_hooks=[],
              excludes=[],
-             # The code as .pyc files beside the executables rather than
-             # in an archive inside each: there are two of them, and the
-             # archive, 5.9 MB, was in the package twice.
-             noarchive=True)
+             # The code stays in an archive inside each executable, 5.9 MB
+             # twice over.  Kept as .pyc files beside them instead, it is
+             # stored once and zips 5 MB smaller, but takes some 8 MB more
+             # unpacked, in 1,800 files where there were two.
+             noarchive=False)
 
 # The icon theme's X11 cursors: GTK on Windows draws the system's.
 a.datas = [entry for entry in a.datas

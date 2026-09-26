@@ -140,10 +140,8 @@ class SpecDataTest(MComixTest):
         self.assertEqual(catalogues, gi['languages'])
 
     def test_both_executables_are_built_in_one_run(self):
-        """And share the code, which each carried a copy of inside it
-        when the build ran PyInstaller once for each."""
+        """Rather than in a run of PyInstaller each."""
         found = self._run_spec()
-        self.assertTrue(found['Analysis']['noarchive'])
         self.assertEqual({'MComix': False, 'MComix.Console': True},
                          {exe['name']: exe['console'] for exe in found['EXE']})
         args, kwargs = found['COLLECT']
