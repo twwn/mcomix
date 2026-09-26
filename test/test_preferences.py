@@ -284,6 +284,37 @@ class MigratePreferencesTest(MComixTest):
         self.assertEqual(prefs['bg colour'], preferences.DEFAULT_BG_COLOUR)
 
 
+class WindowsSettingsFolderTest(MComixTest):
+
+    """Before 2023 MComix kept its settings on Windows in the MComix
+    folder of the profile; the first start since moves that folder to
+    %APPDATA%, unless there is a settings folder there already."""
+
+    def _migrate(self):
+        import sys
+        from unittest import mock
+        with mock.patch.object(sys, 'platform', 'win32'):
+            preferences.migrate_home_config_path()
+
+    def test_the_old_folder_is_moved_to_where_the_settings_are_now(self):
+        old = os.path.join(os.path.expanduser('~'), 'MComix')
+        os.makedirs(old)
+        with open(os.path.join(old, 'preferences.conf'), 'w') as kept:
+            kept.write('{}')
+        self.assertFalse(os.path.isdir(constants.CONFIG_DIR))
+        self._migrate()
+        self.assertFalse(os.path.exists(old))
+        self.assertTrue(os.path.isfile(
+            os.path.join(constants.CONFIG_DIR, 'preferences.conf')))
+
+    def test_settings_already_there_are_not_moved_over(self):
+        old = os.path.join(os.path.expanduser('~'), 'MComix')
+        os.makedirs(old)
+        os.makedirs(constants.CONFIG_DIR)
+        self._migrate()
+        self.assertTrue(os.path.isdir(old))
+
+
 class DamagedFilesTest(MComixTest):
 
     """Preferences files that are there but hold no preferences one can
