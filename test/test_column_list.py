@@ -328,6 +328,44 @@ class ColumnListViewTest(MComixTest):
                                                  Gdk.ModifierType(0)))
         self.assertEqual(self.view.get_selected_rows(), [])
 
+    def test_a_space_or_a_key_that_types_nothing_is_no_search(self):
+        """Nor is typing into a list that has nothing to search by."""
+        self.assertFalse(self.view._search_typed(None, ord('t'), 0,
+                                                 Gdk.ModifierType(0)))
+        self.view.set_search_attribute('name')
+        for keyval in (Gdk.KEY_space, Gdk.KEY_Tab, Gdk.KEY_Shift_L):
+            with self.subTest(key=Gdk.keyval_name(keyval)):
+                self.assertFalse(self.view._search_typed(
+                    None, keyval, 0, Gdk.ModifierType(0)))
+        self.assertEqual(self.view.get_selected_rows(), [])
+        # And none of them went into what has been typed so far.
+        self.assertTrue(self.view._search_typed(None, ord('o'), 0,
+                                                Gdk.ModifierType(0)))
+        self.assertEqual([row.name for row in self.view.get_selected_rows()],
+                         ['one'])
+
+    # -- Where a drop lands -----------------------------------------------
+
+    def test_a_drop_lands_before_into_or_after_by_the_height_on_the_row(self):
+        """The top quarter of a row is before it, the bottom quarter
+        after it, and the middle on it, as Gtk.TreeView read it."""
+        bounds = None
+        for cell in self.view._each_cell():
+            if cell.row is not None and cell.row.name == 'two':
+                found, bounds = cell.compute_bounds(self.view)
+                self.assertTrue(found)
+                break
+        self.assertIsNotNone(bounds, 'the row was not drawn')
+        top, height = bounds.origin.y, bounds.size.height
+        x = bounds.origin.x + 1
+        for fraction, where in ((0.1, self.view.DROP_BEFORE),
+                                (0.5, self.view.DROP_INTO),
+                                (0.9, self.view.DROP_AFTER)):
+            with self.subTest(fraction=fraction):
+                row, position = self.view.drop_at(x, top + fraction * height)
+                self.assertEqual(('two', where), (row.name, position))
+        self.assertIsNone(self.view.drop_at(x, 10000))
+
     def test_a_shortcut_is_left_to_whoever_wants_it(self):
         self.view.set_search_attribute('name')
         self.assertFalse(self.view._search_typed(
