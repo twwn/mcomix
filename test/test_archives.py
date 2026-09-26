@@ -295,6 +295,33 @@ class RecursiveArchiveCloseTest(MComixTest):
         self.assertIsNone(recursive._main_archive.zip.fp)
 
 
+class UnreadableInnerArchiveTest(MComixTest):
+
+    """A book holding a file named as an archive that is none: its own
+    pages are still the book, and the listing is taken once."""
+
+    def test_the_outer_pages_are_listed_and_the_inner_file_passed_over(self):
+        path = os.path.join(self.tmp_dir, 'book.zip')
+        with zipfile.ZipFile(path, 'w') as book:
+            book.write(get_testfile_path('images', 'red.png'), 'page.png')
+            book.writestr('extra.cbz', b'not an archive at all')
+        recursive = archive_recursive.RecursiveArchive(
+            zip.ZipArchive(path), os.path.join(self.tmp_dir, 'extracted'))
+        try:
+            with unittest.mock.patch.object(archive_recursive.log,
+                                            'warning') as warning:
+                self.assertEqual(['page.png'], recursive.list_contents())
+            warning.assert_called_once()
+            # Asked again, the listing already taken answers.
+            with unittest.mock.patch.object(
+                    recursive, '_iter_contents',
+                    side_effect=AssertionError('listed twice')):
+                self.assertEqual(['page.png'],
+                                 list(recursive.iter_contents()))
+        finally:
+            recursive.close()
+
+
 class MissingProgramTest(MComixTest):
 
     """An archive read with a program that is not installed.
