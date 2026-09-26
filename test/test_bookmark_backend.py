@@ -97,6 +97,16 @@ class MergeTest(MComixTest):
         self.assertEqual([1, 3, 2], [bookmark._page
                                      for bookmark in self.store._bookmarks])
 
+    def test_a_file_that_will_not_unpickle_costs_the_bookmarks_only(self):
+        from unittest import mock
+        from mcomix import log
+        with open(constants.BOOKMARK_PICKLE_PATH, 'wb') as damaged:
+            damaged.write(b'not a pickle')
+        with mock.patch.object(log, 'error') as error:
+            bookmarks, mtime = self.store.load_bookmarks()
+        self.assertEqual([], bookmarks)
+        error.assert_called_once()
+
     def test_clearing_writes_the_store_once(self):
         """Removing them one at a time re-pickled and fsynced the whole
         store for every bookmark."""
