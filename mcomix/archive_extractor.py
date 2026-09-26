@@ -293,6 +293,18 @@ class Extractor:
                     return
                 self._extraction_finished(f)
 
+            # A pass that ends without raising has still not always
+            # handed over everything: the external handlers once
+            # dropped every empty file.  What it left out is marked as
+            # done, for the same reason as below.
+            with self._condition:
+                missing = [name for name in files
+                           if name not in self._extracted]
+            if missing:
+                log.warning('! Not extracted in one pass: %s', ', '.join(missing))
+            for name in missing:
+                self._extraction_finished(name)
+
         except Exception as ex:
             # Logged rather than raised over, as _extract_file() does and
             # for the same reason: the window handles a missing page,

@@ -210,3 +210,43 @@ class FailedBatchTest(_ExtractorTest):
         error.assert_called()
         self.assertTrue(os.path.isfile(os.path.join(self.destination, names[0])))
         self.assertFalse(os.path.exists(os.path.join(self.destination, names[1])))
+
+
+class ShortBatchTest(_ExtractorTest):
+
+    """A solid archive whose one pass ends without handing over every
+    file it was asked for, and without raising: what the external
+    handlers did with an empty member (b28479f3, f1a9de5d)."""
+
+    class _LeavesOneOut:
+
+        def __init__(self, archive):
+            self._archive = archive
+
+        def __getattr__(self, name):
+            return getattr(self._archive, name)
+
+        def is_solid(self):
+            return True
+
+        def iter_extract(self, entries, destination_dir):
+            for name in sorted(entries)[1:]:
+                self._archive.extract(name, destination_dir)
+                yield name
+
+    def setUp(self):
+        super().setUp()
+        self.extractor._archive = self._LeavesOneOut(self.extractor._archive)
+
+    def test_a_file_the_pass_left_out_is_not_waited_for(self):
+        names = sorted(self.MEMBERS)
+        self.extractor.set_files(names)
+        with unittest.mock.patch.object(log, 'warning') as warning:
+            self.extractor.extract()
+            self.assertTrue(
+                wait_for(lambda: all(self.extractor.is_ready(name)
+                                     for name in names), seconds=5),
+                'never marked: %s' % [name for name in names
+                                      if not self.extractor.is_ready(name)])
+        warning.assert_called_once()
+        self.assertIn(names[0], warning.call_args.args[1])
