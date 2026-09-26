@@ -10,12 +10,14 @@ sides, so an option or a tab added to the program has to be written down.
 
 import ast
 import glob as glob_module
+import gzip
 import os
 import re
 import tomllib
 import unittest
 
 from mcomix import comicinfo
+from mcomix import constants
 from mcomix import edit_comment_area
 from mcomix import edit_dialog
 from mcomix import edit_image_area
@@ -490,6 +492,7 @@ class ReleasingPageTest(NamedPathsMixin, unittest.TestCase):
     NAMED_PATHS = (
         'ChangeLog.md',
         'mcomix/constants.py',
+        'share/man/man1/mcomix.1.gz',
         'share/metainfo/mcomix.metainfo.xml',
         'win32/build_pyinstaller.py',
         'win32/build_msi.py',
@@ -627,7 +630,11 @@ MARKDOWN = ('README.md', 'CONTRIBUTING.md', 'SECURITY.md', 'ChangeLog.md',
 LINKING = MARKDOWN + (
     os.path.join('mcomix', '**', '*.py'), 'pyproject.toml',
     os.path.join('win32', '*.nuspec'), os.path.join('share', '**', '*.xml'),
+    os.path.join('share', 'man', 'man1', '*.gz'),
     os.path.join('.github', '**', '*.yml'))
+
+#: The manual page, as the source archive carries it.
+MAN_PAGE = os.path.join(ROOT, 'share', 'man', 'man1', 'mcomix.1.gz')
 
 #: An inline link or image in Markdown: its target, without the title
 #: that may follow it.
@@ -645,6 +652,15 @@ def expand(patterns):
     return sorted({path for pattern in patterns
                    for path in glob_module.glob(os.path.join(ROOT, pattern),
                                                 recursive=True)})
+
+
+def read_text(path):
+    """The text of <path>, unpacked if it is gzipped."""
+    if path.endswith('.gz'):
+        with gzip.open(path, 'rt', encoding='utf-8') as fp:
+            return fp.read()
+    with open(path, encoding='utf-8') as fp:
+        return fp.read()
 
 
 def anchors(path):
@@ -723,9 +739,7 @@ class LinksTest(unittest.TestCase):
         broken = []
         followed = 0
         for path in expand(LINKING):
-            with open(path, encoding='utf-8') as fp:
-                text = fp.read()
-            for match in GITHUB_LINK.finditer(text):
+            for match in GITHUB_LINK.finditer(read_text(path)):
                 name, fragment, raw = match.groups()
                 target = os.path.join(ROOT, name or raw)
                 followed += 1
@@ -747,6 +761,30 @@ class LinksTest(unittest.TestCase):
                 self.assertIn(anchor, found)
         self.assertIn('comicinfoxml',
                       anchors(os.path.join(DOCS, 'editing.md')))
+
+
+
+class ManPageTest(unittest.TestCase):
+
+    """The manual page against the program it describes.
+
+    It went on naming MComix 4.0.0 after the version became 26.09, and
+    sent its readers to MComix 3's manual and bug tracker on SourceForge.
+    """
+
+    def setUp(self):
+        self.page = read_text(MAN_PAGE)
+
+    def test_the_page_names_the_version(self):
+        title = re.search(r'(?m)^\.TH .*$', self.page)
+        self.assertIsNotNone(title)
+        self.assertIn('"MComix %s"' % constants.VERSION, title.group(0))
+
+    def test_the_page_sends_its_readers_here(self):
+        urls = re.findall(r'(?m)^\.UR (\S+)', self.page)
+        self.assertTrue(urls, 'the page links nowhere')
+        self.assertEqual([], [url for url in urls if not url.startswith(
+            'https://github.com/twwn/mcomix/')])
 
 
 # vim: expandtab:sw=4:ts=4
