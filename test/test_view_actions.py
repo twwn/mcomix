@@ -80,6 +80,27 @@ class ViewActionsTest(MComixTest):
                 self.window.filehandler.close_file()
                 pump()
 
+    def test_an_animation_is_drawn_unturned(self):
+        """It is drawn frame by frame at the size the layout gives, with
+        no one frame to turn; the book's rotation is left for its other
+        pages."""
+        self._open('animated.gif')
+        self._activate('rotate_90')
+        self.assertEqual(90, prefs['rotation'])
+        self.assertEqual(Transform.ID, self._transform())
+
+    def test_the_thumbnails_take_the_page_s_colour_where_asked(self):
+        from unittest import mock
+        prefs['smart thumb bg'] = True
+        prefs['show thumbnails'] = True
+        with mock.patch.object(self.window.thumbnailsidebar,
+                               'change_thumbnail_background_color') as painted:
+            self._open('red.png')
+        self.assertTrue(painted.called, 'the thumbnails kept their colour')
+        colour, = painted.call_args.args
+        self.assertEqual((1.0, 0.0, 0.0), tuple(colour[:3]))
+        self.assertEqual({'dynamic': True}, painted.call_args.kwargs)
+
     def test_each_flip_turns_its_own_preference_over(self):
         self._open('portrait-no-exif.png')
         self._activate('flip_horiz')
