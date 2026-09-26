@@ -466,7 +466,41 @@ class CacheEverythingTest(MComixTest):
         its place in the wanted list."""
         prefs['max pages to cache'] = -1
         self.handler.page_available(2)
-        self.assertEqual([(3, 1)], self.ordered)
+        [(priority, index)] = self.ordered
+        self.assertEqual(1, index)
+        self.assertGreaterEqual(priority, 3)
+
+    def test_the_pages_that_land_are_cached_nearest_first(self):
+        """From the page shown, the page ahead before the page behind:
+        a book opened at its end was otherwise decoded from its front."""
+        prefs['max pages to cache'] = -1
+        self.handler.set_image_files(['%02d.png' % n for n in range(1, 10)])
+        self.handler.set_page(5)
+        for page in (1, 9, 4, 6, 3):
+            self.handler.page_available(page)
+        self.assertEqual([6, 4, 3, 9, 1],
+                         [index + 1 for _priority, index
+                          in sorted(self.ordered)])
+
+    def test_a_page_turn_queues_again_what_is_left_to_cache(self):
+        """A turn clears the queue to put the pages around the new page
+        first; the pages already unpacked and not yet decoded were
+        dropped with it, and nothing queued them again."""
+        prefs['max pages to cache'] = -1
+        pages = 20
+        self.handler.set_image_files(['%02d.png' % n
+                                      for n in range(1, pages + 1)])
+        window = self.handler._window
+        window.filehandler.file_loaded = True
+        window.filehandler.ask_for_files = lambda files: None
+        for page in range(1, pages + 1):
+            self.handler.page_available(page)
+        extended = []
+        with unittest.mock.patch.object(self.handler._thread, 'extend_orders',
+                                        extended.extend):
+            self.handler.set_page(pages)
+        self.assertEqual(list(range(pages, 0, -1)),
+                         [index + 1 for _priority, index in sorted(extended)])
 
     def test_otherwise_a_page_nobody_wants_is_left_alone(self):
         prefs['max pages to cache'] = 4

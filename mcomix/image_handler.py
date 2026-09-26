@@ -166,8 +166,25 @@ class ImageHandler:
                           and index not in self._raw_pixbufs]
         # The order they are wanted in is the order to read them in.
         orders = list(enumerate(wanted_pixbufs))
+        if -1 == self._cache_pages:
+            # Everything else that is unpacked follows, nearest first:
+            # clearing the orders above dropped whatever was queued
+            # after the last turn, and nothing else queues it again.
+            listed = set(self._wanted_pixbufs) | set(self._raw_pixbufs)
+            orders += [(self._background_priority(index), index)
+                       for index in self._available_images
+                       if index not in listed]
         if orders:
             self._thread.extend_orders(orders)
+
+    def _background_priority(self, index: int) -> int:
+        """The caching priority of a page outside the wanted ones, when
+        the whole book is cached: after every wanted page, and nearer
+        the current page sooner, the page ahead before the page behind.
+        """
+        current = self._current_image_index or 0
+        return (self.get_number_of_pages() + 2 * abs(index - current)
+                + (index < current))
 
     def _cache_pixbuf(self, wanted: tuple[int, int]) -> None:
         """Read one page into the cache, on the caching thread."""
@@ -326,7 +343,7 @@ class ImageHandler:
             priority = self._wanted_pixbufs.index(index)
         elif -1 == self._cache_pages:
             # We're caching everything.
-            priority = self.get_number_of_pages()
+            priority = self._background_priority(index)
         if priority is not None:
             self._thread.append_order((priority, index))
 
