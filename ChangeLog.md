@@ -1,3 +1,85 @@
+# MComix 26.09
+## Release date: 2026-09-26
+
+### Features
+
+- The page thumbnails, the file chooser's preview and the library's
+  covers are turned the way the page is shown, Exif orientation
+  included.
+- The file chooser's preview says a picture's size in pixels and a
+  book's number of pages and kind of archive.
+- A sideways turn of the wheel scrolls across a wide page before it
+  turns it.
+- Every page picked out can be put back at once, from the Edit menu,
+  the page's menu or with Escape, and the thumbnail bar outlines the
+  pages picked out and the page marked to swap.
+- The covers' menu in the library offers "Clean up", which takes out
+  the books whose files have gone.
+- A RAR book packed in volumes, name.part1.rar, name.part2.rar and so
+  on, is one book: it is read whole from its first volume, opening any
+  other volume opens it from there, and the walk from book to book and
+  the library pass the other volumes over.
+- JPEG thumbnails are decoded by Pillow, dragging books onto a
+  collection is one write rather than one per book, the library draws
+  its "finished" tick once rather than for every cover, and the dynamic
+  background reads each page once.
+- MComix is now numbered by year and month, from 26.09. The Chocolatey
+  package is published under an id of its own, mcomix-gtk, and a pushed
+  release tag builds the release and its Windows packages on GitHub.
+  The manual is in docs/ in the repository, and the README is a front
+  page again.
+
+### Bug fixes
+
+- Turning past the last page, or deleting the open book from the
+  library, could throw away or write back changes not yet written; a
+  save that failed at its last step deleted the archive it replaced,
+  and a book saved through a symbolic link was saved beside it.
+- A bookmark, and the book reopened where it was left, went to another
+  picture once the archive was sorted anew; a bookmark another MComix
+  added within the same second was lost.
+- Names that are not UTF-8 - a zip without the UTF-8 flag, a tarball,
+  a PDF's path, a DOS archiver's names and comments, a "Move to"
+  destination - were listed in mojibake, broke labels, or stopped a
+  book from opening.
+- A RAR book in volumes listed its split pages twice with libunrar and
+  lost every page after the first volume with unrar; an empty file in
+  a solid archive never came out with unrar or 7z, and anything waiting
+  for it waited until the book closed.
+- The library asked for the password of every encrypted book, again
+  and again; one damaged book stopped a batch from being added; a
+  duplicated collection, "Remove from this collection" and books
+  dropped on "Recent" each lost or hid books; sizes were all in MiB.
+- MComix' thumbnails were neither found by other programs nor theirs
+  by MComix, were written in place in the shared store, lay on their
+  side for other programs, and small ones were blown up into a blur.
+- Colour profiles were lost from JPEG thumbnails and from pages Pillow
+  read, a picture with an unreadable profile or larger than Pillow
+  opens was not read, and inverting the colours failed on a picture
+  with transparency.
+- Opening several books from a file manager started an MComix for
+  each, "mcomix --slideshow <book>" started no slideshow, opening a
+  file that is not there left the window claiming a book, and a
+  settings or keybindings file of the wrong shape stopped MComix from
+  starting.
+- Clearing MComix' Recent menu wiped every program's recent files, a
+  recent book that could not be opened stayed on the menu, and an
+  empty XDG variable put MComix' files where it was started.
+- On Windows, MComix did not start in a display language Python has no
+  id for, libunrar was loaded from the directory MComix was started
+  in, and the home folder the file choosers open in was the settings
+  folder of before 2023.
+- The colour scheme stated no colours on libadwaita 1.5 and 1.8, pages
+  picked out were not outlined with libadwaita, and animated pages and
+  the Add books chooser failed on PyGObject 3.46 and GTK 4.14.
+- The magnifying lens stayed on the page before, or on the pages after
+  the pointer left; a key pressed just after a page turn scrolled the
+  page turned from; turning back in double page mode showed other
+  pairs than forward; a click that raised the window could turn the
+  page.
+- "Never" store recent files, set before 2012, had turned into
+  "always".
+
 # MComix 4.0.1
 ## Release date: 2026-09-20
 

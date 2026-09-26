@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: comix 4.0.1\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-09-24 07:15+0200\n"
+"POT-Creation-Date: 2026-09-26 09:29+0200\n"
 "PO-Revision-Date: 2008-12-13 18:00+0100\n"
 "Last-Translator: Adrian C. <anrxc@sysphere.org>\n"
 "Language-Team: Croatian\n"
@@ -42,29 +42,29 @@ msgstr "%s se distribuira pod uvjetima GNU Opće javne licence."
 msgid "A copy of this license can be obtained from %s"
 msgstr "Primjerak ove licence možete dobiti na %s"
 
-#: mcomix/archive_extractor.py:99
+#: mcomix/archive_extractor.py:97
 #, python-format
 msgid "Non-supported archive format: %s"
 msgstr "Nepodržani format arhive: %s"
 
-#: mcomix/archive_extractor.py:306 mcomix/archive_extractor.py:331
+#: mcomix/archive_extractor.py:316 mcomix/archive_extractor.py:341
 #, python-format
 msgid "! Extraction error: %s"
 msgstr "! Greška pri raspakiravanju: %s"
 
 #
 # File: src/comment.py, line: 53
-#: mcomix/archive_packer.py:173 mcomix/library/book_area.py:758
+#: mcomix/archive_packer.py:176 mcomix/library/book_area.py:743
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! Nije moguće obrisati %(file)s: %(error)s"
 
-#: mcomix/archive_packer.py:520 mcomix/archive_packer.py:538
+#: mcomix/archive_packer.py:523 mcomix/archive_packer.py:541
 #, python-format
 msgid "! Could not create archive at path \"%s\""
 msgstr "! Nije moguće stvoriti arhivu na putanji „%s”"
 
-#: mcomix/archive_packer.py:529
+#: mcomix/archive_packer.py:532
 #, python-format
 msgid ""
 "! Could not add file %(sourcefile)s to archive %(archivefile)s, aborting..."
@@ -72,7 +72,7 @@ msgstr ""
 "! Nije moguće dodati datoteku %(sourcefile)s u arhivu %(archivefile)s, "
 "prekidam..."
 
-#: mcomix/archive_tools.py:189
+#: mcomix/archive_tools.py:190
 #, python-format
 msgid "! Could not read %s"
 msgstr "! Nije moguće pročitati %s"
@@ -82,27 +82,27 @@ msgstr "! Nije moguće pročitati %s"
 msgid "! Could not parse bookmarks file %s"
 msgstr "! Nije moguće obraditi datoteku oznaka %s"
 
-#: mcomix/bookmark_backend.py:345 mcomix/message_dialog.py:28
+#: mcomix/bookmark_backend.py:355 mcomix/message_dialog.py:28
 msgid "_Yes"
 msgstr "_Da"
 
 #
 # File: src/ui.py, line: 69
-#: mcomix/bookmark_backend.py:346 mcomix/message_dialog.py:27
+#: mcomix/bookmark_backend.py:356 mcomix/message_dialog.py:27
 msgid "_No"
 msgstr "_Ne"
 
 #
 # File: src/preferences.py, line: 230
-#: mcomix/bookmark_backend.py:347 mcomix/edit_dialog.py:59
-#: mcomix/file_actions.py:834 mcomix/file_chooser_base_dialog.py:106
-#: mcomix/file_chooser_base_dialog.py:111
+#: mcomix/bookmark_backend.py:357 mcomix/edit_dialog.py:59
+#: mcomix/file_actions.py:834 mcomix/file_chooser_base_dialog.py:174
+#: mcomix/file_chooser_base_dialog.py:179
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:32
 msgid "_Cancel"
 msgstr "O_dustani"
 
-#: mcomix/bookmark_backend.py:355
+#: mcomix/bookmark_backend.py:365
 #, python-format
 msgid "Replace existing bookmark on page %s?"
 msgid_plural "Replace existing bookmarks on pages %s?"
@@ -110,7 +110,7 @@ msgstr[0] "Zamijeniti postojeću oznaku na stranici %s?"
 msgstr[1] "Zamijeniti postojeće oznake na stranicama %s?"
 msgstr[2] "Zamijeniti postojeće oznake na stranicama %s?"
 
-#: mcomix/bookmark_backend.py:360
+#: mcomix/bookmark_backend.py:370
 #, python-format
 msgid ""
 "The current book already contains marked pages. Do you want to replace them "
@@ -119,7 +119,7 @@ msgstr ""
 "Ova knjiga već sadrži označene stranice. Želite li ih zamijeniti novom "
 "oznakom na stranici %d?"
 
-#: mcomix/bookmark_backend.py:363
+#: mcomix/bookmark_backend.py:373
 msgid ""
 "Selecting \"No\" will create a new bookmark without affecting the other "
 "bookmarks."
@@ -127,13 +127,13 @@ msgstr "Odabir „Ne” stvara novu oznaku bez promjene ostalih."
 
 #
 # File: src/bookmark.py, line: 31
-#: mcomix/bookmark_backend.py:383
+#: mcomix/bookmark_backend.py:393
 msgid "Clear all bookmarks?"
 msgstr "Očistiti sve oznake?"
 
 #
 # File: src/bookmark.py, line: 79
-#: mcomix/bookmark_backend.py:384
+#: mcomix/bookmark_backend.py:394
 msgid ""
 "All stored bookmarks will be removed. Are you sure that you want to continue?"
 msgstr "Sve spremljene oznake će biti uklonjene. Sigurno želite nastaviti?"
@@ -148,7 +148,7 @@ msgstr "Uređivanje oznaka"
 msgid "C_lear bookmarks..."
 msgstr "_Očisti oznake..."
 
-#: mcomix/bookmark_dialog.py:33 mcomix/main.py:785 mcomix/openwith.py:342
+#: mcomix/bookmark_dialog.py:33 mcomix/main.py:831 mcomix/openwith.py:333
 #: mcomix/library/collection_area.py:149 mcomix/library/watchlist.py:64
 msgid "_Remove"
 msgstr "_Ukloni"
@@ -169,14 +169,14 @@ msgstr "Vrsta"
 #
 # File: src/bookmark.py, line: 255
 # File: src/edit.py, line: 267
-#: mcomix/bookmark_dialog.py:64 mcomix/edit_comment_area.py:43
+#: mcomix/bookmark_dialog.py:64 mcomix/edit_comment_area.py:44
 #: mcomix/keybindings_editor.py:51
 msgid "Name"
 msgstr "Ime"
 
 #
 # File: src/bookmark.py, line: 256
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1385
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1430
 #: mcomix/library/control_area.py:148
 msgid "Page"
 msgstr "Stranica"
@@ -218,14 +218,14 @@ msgstr "Komentari"
 
 #
 # File: src/comment.py, line: 53
-#: mcomix/comment_dialog.py:129
+#: mcomix/comment_dialog.py:134
 #, python-format
 msgid "Could not read %s"
 msgstr "Neuspješno čitanje %s"
 
 #
 # File: src/edit.py, line: 255
-#: mcomix/edit_comment_area.py:34
+#: mcomix/edit_comment_area.py:35
 msgid ""
 "Please note that the only files that are automatically added to this list "
 "are those files in archives that MComix recognizes as comments."
@@ -235,52 +235,52 @@ msgstr ""
 
 #
 # File: src/edit.py, line: 270
-#: mcomix/edit_comment_area.py:44 mcomix/properties_dialog.py:229
+#: mcomix/edit_comment_area.py:45 mcomix/properties_dialog.py:233
 msgid "Size"
 msgstr "Veličina"
 
-#: mcomix/edit_comment_area.py:98
+#: mcomix/edit_comment_area.py:118
 msgid "Re_name file..."
 msgstr "Pr_eimenuj datoteku..."
 
 #
 # File: src/edit.py, line: 168
 # File: src/edit.py, line: 285
-#: mcomix/edit_comment_area.py:99 mcomix/edit_image_area.py:112
+#: mcomix/edit_comment_area.py:119 mcomix/edit_image_area.py:112
 msgid "Remove from archive"
 msgstr "Ukloni iz arhive"
 
-#: mcomix/edit_comment_area.py:102 mcomix/edit_image_area.py:116
+#: mcomix/edit_comment_area.py:122 mcomix/edit_image_area.py:116
 #: mcomix/ui.py:444
 msgid "_Undo"
 msgstr "_Poništi"
 
-#: mcomix/edit_comment_area.py:103 mcomix/edit_image_area.py:117
+#: mcomix/edit_comment_area.py:123 mcomix/edit_image_area.py:117
 #: mcomix/ui.py:447
 msgid "_Redo"
 msgstr "P_onovi"
 
-#: mcomix/edit_comment_area.py:175
+#: mcomix/edit_comment_area.py:211
 #, python-format
 msgid "Another file in the archive is called \"%s\" already."
 msgstr "Druga datoteka u arhivi već se zove „%s“."
 
-#: mcomix/edit_comment_area.py:180
+#: mcomix/edit_comment_area.py:216
 #, python-format
 msgid "A page of the book is called \"%s\" already."
 msgstr "Stranica knjige već se zove „%s“."
 
-#: mcomix/edit_comment_area.py:185
+#: mcomix/edit_comment_area.py:221
 msgid "Rename file?"
 msgstr "Preimenuj datoteku?"
 
-#: mcomix/edit_comment_area.py:186
+#: mcomix/edit_comment_area.py:222
 msgid "Please enter a new name for this file."
 msgstr "Unesite novo ime za ovu datoteku."
 
 #
 # File: src/edit.py, line: 28
-#: mcomix/edit_dialog.py:58 mcomix/keybindings.py:146
+#: mcomix/edit_dialog.py:58 mcomix/keybindings.py:144
 msgid "Edit archive"
 msgstr "Uredi arhivu"
 
@@ -364,7 +364,7 @@ msgstr "Odaberi _sve"
 
 #
 # File: src/enhance.py, line: 51
-#: mcomix/enhance_dialog.py:28 mcomix/keybindings.py:148
+#: mcomix/enhance_dialog.py:28 mcomix/keybindings.py:146
 msgid "Enhance image"
 msgstr "Poboljšaj sliku"
 
@@ -379,8 +379,8 @@ msgstr "Vrati na zadane vrijednosti."
 #
 # File: src/filechooser.py, line: 39
 #: mcomix/enhance_dialog.py:35 mcomix/file_actions.py:559
-#: mcomix/file_actions.py:602 mcomix/file_chooser_base_dialog.py:112
-#: mcomix/openwith.py:360
+#: mcomix/file_actions.py:602 mcomix/file_chooser_base_dialog.py:180
+#: mcomix/openwith.py:351
 msgid "_Save"
 msgstr "_Spremi"
 
@@ -395,37 +395,37 @@ msgstr "_U redu"
 
 #
 # File: src/enhance.py, line: 79
-#: mcomix/enhance_dialog.py:81
+#: mcomix/enhance_dialog.py:83
 msgid "_Brightness:"
 msgstr "Sv_jetlina:"
 
 #
 # File: src/enhance.py, line: 90
-#: mcomix/enhance_dialog.py:82
+#: mcomix/enhance_dialog.py:84
 msgid "_Contrast:"
 msgstr "_Kontrast:"
 
 #
 # File: src/enhance.py, line: 101
-#: mcomix/enhance_dialog.py:83
+#: mcomix/enhance_dialog.py:85
 msgid "Sat_uration:"
 msgstr "_Zasićenje:"
 
 #
 # File: src/enhance.py, line: 112
-#: mcomix/enhance_dialog.py:84
+#: mcomix/enhance_dialog.py:86
 msgid "S_harpness:"
 msgstr "O_štrina:"
 
 #
 # File: src/enhance.py, line: 126
-#: mcomix/enhance_dialog.py:89
+#: mcomix/enhance_dialog.py:91
 msgid "_Automatically adjust contrast"
 msgstr "_Automatski prilagodi kontrast"
 
 #
 # File: src/enhance.py, line: 128
-#: mcomix/enhance_dialog.py:91
+#: mcomix/enhance_dialog.py:93
 msgid ""
 "Automatically adjust contrast (both lightness and darkness), separately for "
 "each colour band."
@@ -433,11 +433,11 @@ msgstr ""
 "Automatski prilagodi kontrast (osvjetljenje i crninu), posebno za svaki skup "
 "boja."
 
-#: mcomix/enhance_dialog.py:96 mcomix/ui.py:516
+#: mcomix/enhance_dialog.py:98 mcomix/ui.py:516
 msgid "_Invert image colors"
 msgstr "_Invertiraj boje slike"
 
-#: mcomix/enhance_dialog.py:98
+#: mcomix/enhance_dialog.py:100
 msgid "Invert (negate) image colors."
 msgstr "Invertira (negira) boje slike."
 
@@ -548,38 +548,47 @@ msgstr "! Nije moguće premjestiti %(file)s u %(directory)s: %(error)s"
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "Nije moguće premjestiti „%(file)s” u „%(directory)s”"
 
+#: mcomix/file_chooser_base_dialog.py:75 mcomix/properties_dialog.py:137
+#: mcomix/library/control_area.py:151
+#, python-format
+msgid "%d page"
+msgid_plural "%d pages"
+msgstr[0] "%d stranica"
+msgstr[1] "%d stranice"
+msgstr[2] "%d stranica"
+
 #
 # File: src/filechooser.py, line: 35
 # File: src/library.py, line: 489
-#: mcomix/file_chooser_base_dialog.py:105 mcomix/keybindings.py:147
+#: mcomix/file_chooser_base_dialog.py:173 mcomix/keybindings.py:145
 msgid "Open"
 msgstr "Otvori"
 
-#: mcomix/file_chooser_base_dialog.py:107 mcomix/library/book_area.py:169
+#: mcomix/file_chooser_base_dialog.py:175 mcomix/library/book_area.py:169
 msgid "_Open"
 msgstr "_Otvori"
 
 #
 # File: src/filechooser.py, line: 39
-#: mcomix/file_chooser_base_dialog.py:110
+#: mcomix/file_chooser_base_dialog.py:178
 msgid "Save"
 msgstr "Spremi"
 
 #
 # File: src/filechooser.py, line: 75
-#: mcomix/file_chooser_base_dialog.py:219
+#: mcomix/file_chooser_base_dialog.py:292
 msgid "All files"
 msgstr "Sve datoteke"
 
 #
 # File: src/filechooser.py, line: 78
-#: mcomix/file_chooser_base_dialog.py:470
+#: mcomix/file_chooser_base_dialog.py:546
 msgid "All archives"
 msgstr "Sve arhive"
 
 #
 # File: src/filechooser.py, line: 82
-#: mcomix/file_chooser_base_dialog.py:470
+#: mcomix/file_chooser_base_dialog.py:546
 #, python-format
 msgid "%s archives"
 msgstr "%s arhive"
@@ -587,28 +596,28 @@ msgstr "%s arhive"
 #
 # File: src/filechooser.py, line: 171
 # File: src/filechooser.py, line: 249
-#: mcomix/file_chooser_base_dialog.py:476
+#: mcomix/file_chooser_base_dialog.py:552
 msgid "All images"
 msgstr "Sve slike"
 
 #
 # File: src/filechooser.py, line: 171
 # File: src/filechooser.py, line: 249
-#: mcomix/file_chooser_base_dialog.py:476
+#: mcomix/file_chooser_base_dialog.py:552
 #, python-format
 msgid "%s images"
 msgstr "%s slike"
 
 #
 # File: src/filechooser.py, line: 125
-#: mcomix/file_chooser_base_dialog.py:607
+#: mcomix/file_chooser_base_dialog.py:680
 #, python-format
 msgid "A file named '%s' already exists. Do you want to replace it?"
 msgstr "Datoteka imena '%s' već postoji. Želite je zamijeniti?"
 
 #
 # File: src/filechooser.py, line: 128
-#: mcomix/file_chooser_base_dialog.py:609
+#: mcomix/file_chooser_base_dialog.py:682
 msgid "Replacing it will overwrite its contents."
 msgstr "Zamjenom će sadržaj biti prepisan."
 
@@ -618,39 +627,39 @@ msgstr "Zamjenom će sadržaj biti prepisan."
 msgid "Add books"
 msgstr "Dodaj knjige"
 
-#: mcomix/file_chooser_library_dialog.py:43 mcomix/openwith.py:338
+#: mcomix/file_chooser_library_dialog.py:43 mcomix/openwith.py:329
 #: mcomix/library/watchlist.py:62
 msgid "_Add"
 msgstr "Doda_j"
 
 #
 # File: src/filehandler.py, line: 285
-#: mcomix/file_handler.py:275
+#: mcomix/file_handler.py:282
 #, python-format
 msgid "No images in '%s'"
 msgstr "Nema slika u '%s'"
 
 #
 # File: src/filehandler.py, line: 213
-#: mcomix/file_handler.py:452
+#: mcomix/file_handler.py:459
 #, python-format
 msgid "Could not open %s: No such file."
 msgstr "Nemoguće otvoriti %s: Datoteka ne postoji."
 
 #
 # File: src/filehandler.py, line: 217
-#: mcomix/file_handler.py:455 mcomix/file_provider.py:232
+#: mcomix/file_handler.py:462 mcomix/file_provider.py:232
 #: mcomix/file_provider.py:285
 #, python-format
 msgid "Could not open %s: Permission denied."
 msgstr "Nemoguće otvoriti %s: Pristup odbijen."
 
-#: mcomix/file_handler.py:610
+#: mcomix/file_handler.py:617
 #, python-format
 msgid "Continue reading from page %d?"
 msgstr "Nastaviti čitanje od stranice %d?"
 
-#: mcomix/file_handler.py:611
+#: mcomix/file_handler.py:618
 #, python-format
 msgid ""
 "You stopped reading here on %(date)s, %(time)s. If you choose \"Yes\", "
@@ -660,7 +669,7 @@ msgstr ""
 "Ovdje ste prestali čitati %(date)s u %(time)s. Odaberete li „Da”, čitanje se "
 "nastavlja na stranici %(page)d. Inače će se učitati prva stranica."
 
-#: mcomix/file_handler.py:1020
+#: mcomix/file_handler.py:1039
 #, python-format
 msgid ""
 "! Corrupt file \"%s\", deleting it; the last file read will not be reopened."
@@ -675,7 +684,7 @@ msgstr "Neispravna putanja: „%s”"
 
 #
 # File: src/filehandler.py, line: 411
-#: mcomix/image_tools.py:1115
+#: mcomix/image_tools.py:1137
 msgid "Unknown filetype"
 msgstr "Nepoznat tip datoteke"
 
@@ -686,517 +695,517 @@ msgstr "Tipka %d"
 
 #
 # File: src/ui.py, line: 284
-#: mcomix/keybindings.py:45 mcomix/ui.py:451
+#: mcomix/keybindings.py:43 mcomix/ui.py:451
 msgid "Previous page"
 msgstr "Prethodna stranica"
 
-#: mcomix/keybindings.py:45 mcomix/keybindings.py:46 mcomix/keybindings.py:47
-#: mcomix/keybindings.py:48 mcomix/keybindings.py:49 mcomix/keybindings.py:50
-#: mcomix/keybindings.py:51 mcomix/keybindings.py:52 mcomix/keybindings.py:54
-#: mcomix/keybindings.py:55 mcomix/keybindings.py:56 mcomix/keybindings.py:58
-#: mcomix/keybindings.py:59 mcomix/keybindings.py:60 mcomix/keybindings.py:61
+#: mcomix/keybindings.py:43 mcomix/keybindings.py:44 mcomix/keybindings.py:45
+#: mcomix/keybindings.py:46 mcomix/keybindings.py:47 mcomix/keybindings.py:48
+#: mcomix/keybindings.py:49 mcomix/keybindings.py:50 mcomix/keybindings.py:52
+#: mcomix/keybindings.py:53 mcomix/keybindings.py:54 mcomix/keybindings.py:56
+#: mcomix/keybindings.py:57 mcomix/keybindings.py:58 mcomix/keybindings.py:59
 msgid "Navigation"
 msgstr "Navigacija"
 
 #
 # File: src/ui.py, line: 285
-#: mcomix/keybindings.py:46 mcomix/ui.py:450
+#: mcomix/keybindings.py:44 mcomix/ui.py:450
 msgid "Next page"
 msgstr "Sljedeća stranica"
 
 #
 # File: src/ui.py, line: 286
-#: mcomix/keybindings.py:47
+#: mcomix/keybindings.py:45
 msgid "Back 10 pages"
 msgstr "Natrag 10 stranica"
 
-#: mcomix/keybindings.py:48
+#: mcomix/keybindings.py:46
 msgid "Forward 10 pages"
 msgstr "Naprijed 10 stranica"
 
 #
 # File: src/ui.py, line: 284
-#: mcomix/keybindings.py:49
+#: mcomix/keybindings.py:47
 msgid "Page to the left"
 msgstr "Stranica lijevo"
 
 #
 # File: src/ui.py, line: 285
-#: mcomix/keybindings.py:50
+#: mcomix/keybindings.py:48
 msgid "Page to the right"
 msgstr "Stranica desno"
 
 #
 # File: src/ui.py, line: 284
-#: mcomix/keybindings.py:51
+#: mcomix/keybindings.py:49
 msgid "Previous single page"
 msgstr "Prethodna pojedinačna stranica"
 
 #
 # File: src/ui.py, line: 285
-#: mcomix/keybindings.py:52
+#: mcomix/keybindings.py:50
 msgid "Next single page"
 msgstr "Sljedeća pojedinačna stranica"
 
 #
 # File: src/ui.py, line: 282
-#: mcomix/keybindings.py:54 mcomix/ui.py:452
+#: mcomix/keybindings.py:52 mcomix/ui.py:452
 msgid "First page"
 msgstr "Prva stranica"
 
 #
 # File: src/ui.py, line: 286
-#: mcomix/keybindings.py:55 mcomix/ui.py:453
+#: mcomix/keybindings.py:53 mcomix/ui.py:453
 msgid "Last page"
 msgstr "Zadnja stranica"
 
 #
 # File: src/ui.py, line: 285
-#: mcomix/keybindings.py:56
+#: mcomix/keybindings.py:54
 msgid "Go to page"
 msgstr "Idi na stranicu"
 
 #
 # File: src/edit.py, line: 28
-#: mcomix/keybindings.py:58 mcomix/ui.py:457
+#: mcomix/keybindings.py:56 mcomix/ui.py:457
 msgid "Next archive"
 msgstr "Sljedeća arhiva"
 
 #
 # File: src/ui.py, line: 284
-#: mcomix/keybindings.py:59 mcomix/ui.py:458
+#: mcomix/keybindings.py:57 mcomix/ui.py:458
 msgid "Previous archive"
 msgstr "Prethodna arhiva"
 
-#: mcomix/keybindings.py:60 mcomix/ui.py:459
+#: mcomix/keybindings.py:58 mcomix/ui.py:459
 msgid "Next directory"
 msgstr "Sljedeći direktorij"
 
-#: mcomix/keybindings.py:61 mcomix/ui.py:460
+#: mcomix/keybindings.py:59 mcomix/ui.py:460
 msgid "Previous directory"
 msgstr "Prethodni direktorij"
 
-#: mcomix/keybindings.py:64
+#: mcomix/keybindings.py:62
 msgid "Align bottom left"
 msgstr "Poravnaj dolje lijevo"
 
 #
 # File: src/preferences.py, line: 167
-#: mcomix/keybindings.py:64 mcomix/keybindings.py:65 mcomix/keybindings.py:66
-#: mcomix/keybindings.py:68 mcomix/keybindings.py:69 mcomix/keybindings.py:70
-#: mcomix/keybindings.py:72 mcomix/keybindings.py:73 mcomix/keybindings.py:74
-#: mcomix/keybindings.py:76 mcomix/keybindings.py:77 mcomix/keybindings.py:78
-#: mcomix/keybindings.py:79 mcomix/keybindings.py:81 mcomix/keybindings.py:82
+#: mcomix/keybindings.py:62 mcomix/keybindings.py:63 mcomix/keybindings.py:64
+#: mcomix/keybindings.py:66 mcomix/keybindings.py:67 mcomix/keybindings.py:68
+#: mcomix/keybindings.py:70 mcomix/keybindings.py:71 mcomix/keybindings.py:72
+#: mcomix/keybindings.py:74 mcomix/keybindings.py:75 mcomix/keybindings.py:76
+#: mcomix/keybindings.py:77 mcomix/keybindings.py:79 mcomix/keybindings.py:80
 #: mcomix/preferences_dialog.py:188
 msgid "Scroll"
 msgstr "Pomicanje"
 
-#: mcomix/keybindings.py:65
+#: mcomix/keybindings.py:63
 msgid "Align bottom center"
 msgstr "Poravnaj dolje po sredini"
 
-#: mcomix/keybindings.py:66
+#: mcomix/keybindings.py:64
 msgid "Align bottom right"
 msgstr "Poravnaj dolje desno"
 
-#: mcomix/keybindings.py:68
+#: mcomix/keybindings.py:66
 msgid "Align middle left"
 msgstr "Poravnaj po sredini lijevo"
 
-#: mcomix/keybindings.py:69
+#: mcomix/keybindings.py:67
 msgid "Align center"
 msgstr "Poravnaj po sredini"
 
-#: mcomix/keybindings.py:70
+#: mcomix/keybindings.py:68
 msgid "Align middle right"
 msgstr "Poravnaj po sredini desno"
 
-#: mcomix/keybindings.py:72
+#: mcomix/keybindings.py:70
 msgid "Align top left"
 msgstr "Poravnaj gore lijevo"
 
-#: mcomix/keybindings.py:73
+#: mcomix/keybindings.py:71
 msgid "Align top center"
 msgstr "Poravnaj gore po sredini"
 
-#: mcomix/keybindings.py:74
+#: mcomix/keybindings.py:72
 msgid "Align top right"
 msgstr "Poravnaj gore desno"
 
-#: mcomix/keybindings.py:76
+#: mcomix/keybindings.py:74
 msgid "Scroll down"
 msgstr "Pomakni dolje"
 
-#: mcomix/keybindings.py:77
+#: mcomix/keybindings.py:75
 msgid "Scroll up"
 msgstr "Pomakni gore"
 
-#: mcomix/keybindings.py:78
+#: mcomix/keybindings.py:76
 msgid "Scroll right"
 msgstr "Pomakni desno"
 
-#: mcomix/keybindings.py:79
+#: mcomix/keybindings.py:77
 msgid "Scroll left"
 msgstr "Pomakni lijevo"
 
-#: mcomix/keybindings.py:81
+#: mcomix/keybindings.py:79
 msgid "Smart scroll up"
 msgstr "Pametno pomicanje gore"
 
-#: mcomix/keybindings.py:82
+#: mcomix/keybindings.py:80
 msgid "Smart scroll down"
 msgstr "Pametno pomicanje dolje"
 
-#: mcomix/keybindings.py:85
+#: mcomix/keybindings.py:83
 msgid "Zoom in"
 msgstr "Uvećaj"
 
 #
 # File: src/ui.py, line: 42
-#: mcomix/keybindings.py:85 mcomix/keybindings.py:86 mcomix/keybindings.py:87
+#: mcomix/keybindings.py:83 mcomix/keybindings.py:84 mcomix/keybindings.py:85
 msgid "Zoom"
 msgstr "Uvećanje"
 
-#: mcomix/keybindings.py:86
+#: mcomix/keybindings.py:84
 msgid "Zoom out"
 msgstr "Umanji"
 
-#: mcomix/keybindings.py:87
+#: mcomix/keybindings.py:85
 msgid "Normal size"
 msgstr "Uobičajena veličina"
 
 #
 # File: src/ui.py, line: 93
-#: mcomix/keybindings.py:89
+#: mcomix/keybindings.py:87
 msgid "Keep transformation"
 msgstr "Zadržavanje transformacije"
 
 #
 # File: src/ui.py, line: 93
-#: mcomix/keybindings.py:89 mcomix/keybindings.py:90 mcomix/keybindings.py:91
-#: mcomix/keybindings.py:92 mcomix/keybindings.py:93 mcomix/keybindings.py:94
-#: mcomix/keybindings.py:95
+#: mcomix/keybindings.py:87 mcomix/keybindings.py:88 mcomix/keybindings.py:89
+#: mcomix/keybindings.py:90 mcomix/keybindings.py:91 mcomix/keybindings.py:92
+#: mcomix/keybindings.py:93
 msgid "Transformation"
 msgstr "Transformacija"
 
 #
 # File: src/ui.py, line: 52
-#: mcomix/keybindings.py:90 mcomix/keybindings.py:97 mcomix/keybindings.py:99
+#: mcomix/keybindings.py:88 mcomix/keybindings.py:95 mcomix/keybindings.py:97
 msgid "Rotate 90° CW"
 msgstr "Rotiraj 90° u smjeru kazaljke na satu"
 
 #
 # File: src/ui.py, line: 54
-#: mcomix/keybindings.py:91
+#: mcomix/keybindings.py:89
 msgid "Rotate 180°"
 msgstr "Rotiraj 180°"
 
 #
 # File: src/ui.py, line: 56
-#: mcomix/keybindings.py:92 mcomix/keybindings.py:98 mcomix/keybindings.py:100
+#: mcomix/keybindings.py:90 mcomix/keybindings.py:96 mcomix/keybindings.py:98
 msgid "Rotate 90° CCW"
 msgstr "Rotiraj 90° suprotno od kazaljke na satu"
 
 #
 # File: src/ui.py, line: 58
-#: mcomix/keybindings.py:93
+#: mcomix/keybindings.py:91
 msgid "Flip horizontally"
 msgstr "Zrcali vodoravno"
 
 #
 # File: src/ui.py, line: 60
-#: mcomix/keybindings.py:94
+#: mcomix/keybindings.py:92
 msgid "Flip vertically"
 msgstr "Zrcali okomito"
 
-#: mcomix/keybindings.py:95
+#: mcomix/keybindings.py:93
 msgid "Never autorotate"
 msgstr "Nikad ne rotiraj automatski"
 
-#: mcomix/keybindings.py:97 mcomix/keybindings.py:98
+#: mcomix/keybindings.py:95 mcomix/keybindings.py:96
 msgid "Autorotate by width"
 msgstr "Automatska rotacija prema širini"
 
-#: mcomix/keybindings.py:99 mcomix/keybindings.py:100
+#: mcomix/keybindings.py:97 mcomix/keybindings.py:98
 msgid "Autorotate by height"
 msgstr "Automatska rotacija prema visini"
 
 #
 # File: src/preferences.py, line: 177
 # File: src/ui.py, line: 296
-#: mcomix/keybindings.py:102 mcomix/preferences_dialog.py:248 mcomix/ui.py:501
+#: mcomix/keybindings.py:100 mcomix/preferences_dialog.py:248 mcomix/ui.py:501
 msgid "Double page mode"
 msgstr "Prikaz dvostrukih stranica"
 
 #
 # File: src/preferences.py, line: 263
 # File: src/ui.py, line: 290
-#: mcomix/keybindings.py:102 mcomix/keybindings.py:103
-#: mcomix/keybindings.py:104 mcomix/keybindings.py:106
-#: mcomix/keybindings.py:107 mcomix/keybindings.py:109
+#: mcomix/keybindings.py:100 mcomix/keybindings.py:101
+#: mcomix/keybindings.py:102 mcomix/keybindings.py:104
+#: mcomix/keybindings.py:105 mcomix/keybindings.py:107
+#: mcomix/keybindings.py:108 mcomix/keybindings.py:109
 #: mcomix/keybindings.py:110 mcomix/keybindings.py:111
-#: mcomix/keybindings.py:112 mcomix/keybindings.py:113
 msgid "View mode"
 msgstr "Način prikaza"
 
 #
 # File: src/ui.py, line: 297
-#: mcomix/keybindings.py:103 mcomix/ui.py:508
+#: mcomix/keybindings.py:101 mcomix/ui.py:508
 msgid "Manga mode"
 msgstr "Manga prikaz"
 
-#: mcomix/keybindings.py:104 mcomix/ui.py:509
+#: mcomix/keybindings.py:102 mcomix/ui.py:509
 msgid "Invert smart scroll"
 msgstr "Invertiranje pametnog pomicanja"
 
 #
 # File: src/ui.py, line: 298
-#: mcomix/keybindings.py:106 mcomix/ui.py:513
+#: mcomix/keybindings.py:104 mcomix/ui.py:513
 msgid "Magnifying lens"
 msgstr "Povećalo"
 
-#: mcomix/keybindings.py:107 mcomix/ui.py:514
+#: mcomix/keybindings.py:105 mcomix/ui.py:514
 msgid "Stretch small images"
 msgstr "Rastezanje malih slika"
 
 #
 # File: src/preferences.py, line: 262
 # File: src/ui.py, line: 288
-#: mcomix/keybindings.py:109 mcomix/ui.py:521
+#: mcomix/keybindings.py:107 mcomix/ui.py:521
 msgid "Best fit mode"
 msgstr "Najbolje pristajanje"
 
 #
 # File: src/preferences.py, line: 263
 # File: src/ui.py, line: 290
-#: mcomix/keybindings.py:110 mcomix/ui.py:522
+#: mcomix/keybindings.py:108 mcomix/ui.py:522
 msgid "Fit width mode"
 msgstr "Prilagodi širini"
 
 #
 # File: src/preferences.py, line: 264
 # File: src/ui.py, line: 292
-#: mcomix/keybindings.py:111 mcomix/ui.py:523
+#: mcomix/keybindings.py:109 mcomix/ui.py:523
 msgid "Fit height mode"
 msgstr "Prilagodi visini"
 
 #
 # File: src/ui.py, line: 103
-#: mcomix/keybindings.py:112
+#: mcomix/keybindings.py:110
 msgid "Fit size mode"
 msgstr "Način prilagodbe veličini"
 
 #
 # File: src/preferences.py, line: 265
 # File: src/ui.py, line: 294
-#: mcomix/keybindings.py:113 mcomix/ui.py:525
+#: mcomix/keybindings.py:111 mcomix/ui.py:525
 msgid "Manual zoom mode"
 msgstr "Ručno uvećanje"
 
-#: mcomix/keybindings.py:116
+#: mcomix/keybindings.py:114
 msgid "Leave fullscreen"
 msgstr "Izađi iz cijelog zaslona"
 
-#: mcomix/keybindings.py:116 mcomix/keybindings.py:118
+#: mcomix/keybindings.py:114 mcomix/keybindings.py:116
+#: mcomix/keybindings.py:117 mcomix/keybindings.py:118
 #: mcomix/keybindings.py:119 mcomix/keybindings.py:120
-#: mcomix/keybindings.py:121 mcomix/keybindings.py:122
+#: mcomix/keybindings.py:122 mcomix/keybindings.py:123
 #: mcomix/keybindings.py:124 mcomix/keybindings.py:125
 #: mcomix/keybindings.py:126 mcomix/keybindings.py:127
-#: mcomix/keybindings.py:128 mcomix/keybindings.py:129
 #: mcomix/preferences_dialog.py:129
 msgid "User interface"
 msgstr "Korisničko sučelje"
 
-#: mcomix/keybindings.py:118
+#: mcomix/keybindings.py:116
 msgid "OSD panel"
 msgstr "Zaslonska ploča"
 
-#: mcomix/keybindings.py:119
+#: mcomix/keybindings.py:117
 msgid "Minimize"
 msgstr "Smanji"
 
 #
 # File: src/preferences.py, line: 271
-#: mcomix/keybindings.py:120 mcomix/preferences_dialog.py:300
+#: mcomix/keybindings.py:118 mcomix/preferences_dialog.py:300
 msgid "Fullscreen"
 msgstr "Cijeli zaslon"
 
-#: mcomix/keybindings.py:121
+#: mcomix/keybindings.py:119
 msgid "Toolbar"
 msgstr "Alatna traka"
 
-#: mcomix/keybindings.py:122
+#: mcomix/keybindings.py:120
 msgid "Menubar"
 msgstr "Izbornici"
 
-#: mcomix/keybindings.py:123
+#: mcomix/keybindings.py:121
 msgid "Context menu"
 msgstr "Kontekstni izbornik"
 
 #
 # File: src/ui.py, line: 83
-#: mcomix/keybindings.py:125
+#: mcomix/keybindings.py:123
 msgid "Statusbar"
 msgstr "Statusna traka"
 
 #
 # File: src/ui.py, line: 85
-#: mcomix/keybindings.py:126
+#: mcomix/keybindings.py:124
 msgid "Scrollbars"
 msgstr "Trake pomicanja"
 
 #
 # File: src/preferences.py, line: 109
-#: mcomix/keybindings.py:127 mcomix/preferences_dialog.py:153
+#: mcomix/keybindings.py:125 mcomix/preferences_dialog.py:153
 msgid "Thumbnails"
 msgstr "Sličice"
 
 #
 # File: src/ui.py, line: 89
-#: mcomix/keybindings.py:128
+#: mcomix/keybindings.py:126
 msgid "Hide all"
 msgstr "Sakrij sve"
 
 #
 # File: src/preferences.py, line: 279
-#: mcomix/keybindings.py:129 mcomix/slideshow.py:54 mcomix/ui.py:512
+#: mcomix/keybindings.py:127 mcomix/slideshow.py:54 mcomix/ui.py:512
 msgid "Start slideshow"
 msgstr "Pokreni prezentaciju"
 
-#: mcomix/keybindings.py:132
+#: mcomix/keybindings.py:130
 msgid "Delete"
 msgstr "Obriši"
 
 #
 # File: src/preferences.py, line: 196
-#: mcomix/keybindings.py:132 mcomix/keybindings.py:133
+#: mcomix/keybindings.py:130 mcomix/keybindings.py:131
+#: mcomix/keybindings.py:134 mcomix/keybindings.py:135
 #: mcomix/keybindings.py:136 mcomix/keybindings.py:137
-#: mcomix/keybindings.py:138 mcomix/keybindings.py:139
-#: mcomix/keybindings.py:140 mcomix/keybindings.py:142
-#: mcomix/keybindings.py:143 mcomix/keybindings.py:144
+#: mcomix/keybindings.py:138 mcomix/keybindings.py:140
+#: mcomix/keybindings.py:141 mcomix/keybindings.py:142
+#: mcomix/keybindings.py:144 mcomix/keybindings.py:145
 #: mcomix/keybindings.py:146 mcomix/keybindings.py:147
-#: mcomix/keybindings.py:148 mcomix/keybindings.py:149
-#: mcomix/keybindings.py:150
+#: mcomix/keybindings.py:148
 msgid "File"
 msgstr "Datoteka"
 
-#: mcomix/keybindings.py:133
+#: mcomix/keybindings.py:131
 msgid "Rename page"
 msgstr "Preimenuj stranicu"
 
-#: mcomix/keybindings.py:134
+#: mcomix/keybindings.py:132
 msgid "Undo"
 msgstr "Poništi"
 
-#: mcomix/keybindings.py:134 mcomix/keybindings.py:135
+#: mcomix/keybindings.py:132 mcomix/keybindings.py:133
 msgid "Edit"
 msgstr "Uređivanje"
 
-#: mcomix/keybindings.py:135
+#: mcomix/keybindings.py:133
 msgid "Redo"
 msgstr "Ponovi"
 
 #
 # File: src/edit.py, line: 51
-#: mcomix/keybindings.py:136
+#: mcomix/keybindings.py:134
 msgid "Refresh"
 msgstr "Osvježi"
 
 #
 # File: src/ui.py, line: 48
-#: mcomix/keybindings.py:137
+#: mcomix/keybindings.py:135
 msgid "Close"
 msgstr "Zatvori"
 
 #
 # File: src/ui.py, line: 50
-#: mcomix/keybindings.py:138
+#: mcomix/keybindings.py:136
 msgid "Quit"
 msgstr "Izađi"
 
-#: mcomix/keybindings.py:139
+#: mcomix/keybindings.py:137
 msgid "Save and quit"
 msgstr "Spremi i izađi"
 
 #
 # File: src/filechooser.py, line: 39
-#: mcomix/keybindings.py:140
+#: mcomix/keybindings.py:138
 msgid "Save As"
 msgstr "Spremi kao"
 
 #
 # File: src/properties.py, line: 135
-#: mcomix/keybindings.py:142
+#: mcomix/keybindings.py:140
 msgid "Archive comments"
 msgstr "Komentari arhive"
 
 #
 # File: src/properties.py, line: 89
-#: mcomix/keybindings.py:143 mcomix/properties_dialog.py:36
+#: mcomix/keybindings.py:141 mcomix/properties_dialog.py:36
 msgid "Properties"
 msgstr "Svojstva"
 
 #
 # File: src/preferences.py, line: 78
-#: mcomix/keybindings.py:144 mcomix/preferences_dialog.py:68
+#: mcomix/keybindings.py:142 mcomix/preferences_dialog.py:68
 msgid "Preferences"
 msgstr "Postavke"
 
 #
 # File: src/library.py, line: 38
-#: mcomix/keybindings.py:149 mcomix/library/main_dialog.py:54
+#: mcomix/keybindings.py:147 mcomix/library/main_dialog.py:54
 msgid "Library"
 msgstr "Biblioteka"
 
-#: mcomix/keybindings.py:150 mcomix/ui.py:516
+#: mcomix/keybindings.py:148 mcomix/ui.py:516
 msgid "Invert image colors"
 msgstr "Invertiranje boja slike"
 
 #
 # File: src/bookmark.py, line: 27
-#: mcomix/keybindings.py:153
+#: mcomix/keybindings.py:151
 msgid "Add bookmark"
 msgstr "Dodaj oznaku"
 
 #
 # File: src/ui.py, line: 64
-#: mcomix/keybindings.py:153 mcomix/keybindings.py:154
+#: mcomix/keybindings.py:151 mcomix/keybindings.py:152
 msgid "Bookmarks"
 msgstr "Oznake"
 
-#: mcomix/keybindings.py:154
+#: mcomix/keybindings.py:152
 msgid "Edit bookmarks"
 msgstr "Uređivanje oznaka"
 
 #
 # File: src/comment.py, line: 16
 # File: src/preferences.py, line: 288
-#: mcomix/keybindings.py:162 mcomix/openwith.py:563
+#: mcomix/keybindings.py:160 mcomix/openwith.py:554
 msgid "Command"
 msgstr "Naredba"
 
 #
 # File: src/bookmark.py, line: 229
-#: mcomix/keybindings.py:163
+#: mcomix/keybindings.py:161
 msgid "External commands"
 msgstr "Vanjske naredbe"
 
-#: mcomix/keybindings.py:241
+#: mcomix/keybindings.py:238
 #, python-format
 msgid "Keybinding for \"%(action)s\" overrides hotkey for another action."
 msgstr "Prečac za „%(action)s” nadjačava prečac druge radnje."
 
-#: mcomix/keybindings.py:397
+#: mcomix/keybindings.py:394 mcomix/keybindings.py:401
 #, python-format
 msgid "Couldn't load keybindings: %s"
 msgstr "Nije moguće učitati prečace: %s"
 
-#: mcomix/last_read_page.py:255 mcomix/thumbnail_tools.py:179
+#: mcomix/last_read_page.py:255 mcomix/thumbnail_tools.py:180
 #, python-format
 msgid "! Could not remove file \"%s\""
 msgstr "! Nije moguće obrisati datoteku „%s”"
 
-#: mcomix/main.py:778
+#: mcomix/main.py:824
 #, python-format
 msgid "Remove the page picked out of \"%s\"?"
 msgid_plural "Remove the pages picked out of \"%s\"?"
@@ -1204,7 +1213,7 @@ msgstr[0] "Ukloniti odabranu stranicu iz „%s“?"
 msgstr[1] "Ukloniti odabrane stranice iz „%s“?"
 msgstr[2] "Ukloniti odabrane stranice iz „%s“?"
 
-#: mcomix/main.py:781
+#: mcomix/main.py:827
 msgid ""
 "They are taken out of the archive on disk, which is written again at once. "
 "Leaving the book without removing them forgets which pages they were."
@@ -1212,13 +1221,13 @@ msgstr ""
 "Uklanjaju se iz arhiva na disku, koji se odmah ponovno zapisuje. Napustite "
 "li knjigu bez njihova uklanjanja, zaboravit će se koje su stranice bile."
 
-#: mcomix/main.py:784
+#: mcomix/main.py:830
 msgid "_Keep them"
 msgstr "Za_drži"
 
 #
 # File: src/main.py, line: 666
-#: mcomix/main.py:1206
+#: mcomix/main.py:1252
 msgid "SLIDESHOW"
 msgstr "PREZENTACIJA"
 
@@ -1308,23 +1317,23 @@ msgstr "Zadrži njezine oznake"
 msgid "Do not ask again."
 msgstr "Ne pitaj ponovno."
 
-#: mcomix/move_menu.py:97
+#: mcomix/move_menu.py:101
 msgid "Moved to before"
 msgstr "Nedavna odredišta"
 
-#: mcomix/move_menu.py:98
+#: mcomix/move_menu.py:102
 msgid "From bookmarks"
 msgstr "Iz oznaka"
 
-#: mcomix/move_menu.py:99
+#: mcomix/move_menu.py:103
 msgid "Opened before"
 msgstr "Nedavno otvoreni"
 
-#: mcomix/move_menu.py:118
+#: mcomix/move_menu.py:122
 msgid "Other folder..."
 msgstr "Drugi direktorij..."
 
-#: mcomix/move_menu.py:178
+#: mcomix/move_menu.py:185
 msgid "Move to folder"
 msgstr "Premjesti u direktorij"
 
@@ -1344,69 +1353,69 @@ msgstr "„%s” je onemogućeno za arhive."
 msgid "Could not run command %(cmdlabel)s: %(exception)s"
 msgstr "Nije moguće pokrenuti naredbu %(cmdlabel)s: %(exception)s"
 
-#: mcomix/openwith.py:149
+#: mcomix/openwith.py:146
 msgid "Command line is empty."
 msgstr "Naredbeni redak je prazan."
 
-#: mcomix/openwith.py:214
+#: mcomix/openwith.py:211
 msgid "Incomplete escape sequence. For a literal '%', use '%%'."
 msgstr "Nepotpuni izlazni niz. Za sam znak „%” koristite „%%”."
 
-#: mcomix/openwith.py:218
+#: mcomix/openwith.py:215
 msgid "Incomplete quote sequence. For a literal '\"', use '%\"'."
 msgstr "Nezatvoreni navodnici. Za sam znak „\"” koristite „%\"”."
 
 #
 # File: src/edit.py, line: 115
-#: mcomix/openwith.py:235 mcomix/openwith.py:249 mcomix/openwith.py:256
-#: mcomix/openwith.py:269
+#: mcomix/openwith.py:229 mcomix/openwith.py:243 mcomix/openwith.py:250
+#: mcomix/openwith.py:263
 msgid "File-related variables can only be used for files."
 msgstr "Varijable vezane uz datoteke mogu se koristiti samo za datoteke."
 
 #
 # File: src/edit.py, line: 115
-#: mcomix/openwith.py:239
+#: mcomix/openwith.py:233
 msgid "Archive-related variables can only be used for archives."
 msgstr "Varijable vezane uz arhive mogu se koristiti samo za arhive."
 
-#: mcomix/openwith.py:303
+#: mcomix/openwith.py:297
 #, python-format
 msgid "Invalid escape sequence: %%%s"
 msgstr "Neispravan izlazni niz: %%%s"
 
-#: mcomix/openwith.py:329
+#: mcomix/openwith.py:320
 msgid "Edit external commands"
 msgstr "Uređivanje vanjskih naredbi"
 
-#: mcomix/openwith.py:340
+#: mcomix/openwith.py:331
 msgid "Add _separator"
 msgstr "Dodaj _razdjelnik"
 
-#: mcomix/openwith.py:345
+#: mcomix/openwith.py:336
 msgid "_Up"
 msgstr "_Gore"
 
-#: mcomix/openwith.py:348
+#: mcomix/openwith.py:339
 msgid "_Down"
 msgstr "_Dolje"
 
 #
 # File: src/comment.py, line: 16
 # File: src/preferences.py, line: 288
-#: mcomix/openwith.py:351
+#: mcomix/openwith.py:342
 msgid "Run _command"
 msgstr "Pokreni _naredbu"
 
-#: mcomix/openwith.py:427
+#: mcomix/openwith.py:418
 msgid "This is a separator pseudo-command."
 msgstr "Ovo je pseudonaredba razdjelnika."
 
-#: mcomix/openwith.py:438
+#: mcomix/openwith.py:429
 #, python-format
 msgid "\"%s\" does not have a valid working directory."
 msgstr "„%s” nema ispravan radni direktorij."
 
-#: mcomix/openwith.py:441
+#: mcomix/openwith.py:432
 #, python-format
 msgid "\"%s\" does not appear to have a valid executable."
 msgstr "Čini se da „%s” nema ispravnu izvršnu datoteku."
@@ -1414,17 +1423,17 @@ msgstr "Čini se da „%s” nema ispravnu izvršnu datoteku."
 #
 # File: src/comment.py, line: 16
 # File: src/preferences.py, line: 288
-#: mcomix/openwith.py:450
+#: mcomix/openwith.py:441
 msgid "Command label"
 msgstr "Oznaka naredbe"
 
 #
 # File: src/ui.py, line: 36
-#: mcomix/openwith.py:541
+#: mcomix/openwith.py:532
 msgid "Preview:"
 msgstr "Pregled:"
 
-#: mcomix/openwith.py:549
+#: mcomix/openwith.py:540
 #, python-format
 msgid ""
 "Please refer to the <a href=\"%s\">external command documentation</a> for a "
@@ -1433,27 +1442,27 @@ msgstr ""
 "Popis dostupnih varijabli i ostale upute potražite u <a "
 "href=\"%s\">dokumentaciji vanjskih naredbi</a>."
 
-#: mcomix/openwith.py:562
+#: mcomix/openwith.py:553
 msgid "Label"
 msgstr "Naslov"
 
 #
 # File: src/thumbremover.py, line: 58
-#: mcomix/openwith.py:564
+#: mcomix/openwith.py:555
 msgid "Working directory"
 msgstr "Radni direktorij"
 
 #
 # File: src/filechooser.py, line: 86
-#: mcomix/openwith.py:571
+#: mcomix/openwith.py:562
 msgid "Disabled in archives"
 msgstr "Onemogućeno u arhivama"
 
-#: mcomix/openwith.py:621
+#: mcomix/openwith.py:612
 msgid "Save changes to commands?"
 msgstr "Spremiti promjene naredbi?"
 
-#: mcomix/openwith.py:622
+#: mcomix/openwith.py:613
 msgid ""
 "You have made changes to the list of external commands that have not been "
 "saved yet. Press \"Yes\" to save all changes, or \"No\" to discard them."
@@ -1463,7 +1472,7 @@ msgstr ""
 
 #
 # File: src/library.py, line: 271
-#: mcomix/page_image.py:166
+#: mcomix/page_image.py:170
 #, python-format
 msgid "! Could not draw the next frame: %s"
 msgstr "! Nije moguće iscrtati sljedeći okvir: %s"
@@ -2148,7 +2157,7 @@ msgstr ""
 "stranica i veličina prozora ostaju sačuvani."
 
 #: mcomix/preferences_dialog.py:617 mcomix/preferences_dialog.py:763
-#: mcomix/preferences_dialog.py:835 mcomix/ui.py:530
+#: mcomix/preferences_dialog.py:828 mcomix/ui.py:530
 msgid "Never"
 msgstr "Nikad"
 
@@ -2262,7 +2271,7 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 219
-#: mcomix/preferences_dialog.py:776
+#: mcomix/preferences_dialog.py:769
 msgid ""
 "Add information about all files opened from within MComix to the shared "
 "recent files list."
@@ -2272,11 +2281,11 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 214
-#: mcomix/preferences_dialog.py:796
+#: mcomix/preferences_dialog.py:789
 msgid "Delete information about recently opened files?"
 msgstr "Obrisati podatke o nedavno otvorenim datotekama?"
 
-#: mcomix/preferences_dialog.py:797
+#: mcomix/preferences_dialog.py:790
 msgid ""
 "This will remove all entries from the \"Recent\" menu, and clear information "
 "about last read pages."
@@ -2284,19 +2293,19 @@ msgstr ""
 "Time se uklanjaju sve stavke iz izbornika „Nedavno” i brišu podaci o "
 "posljednje pročitanim stranicama."
 
-#: mcomix/preferences_dialog.py:810
+#: mcomix/preferences_dialog.py:803
 msgid "Normal (fast)"
 msgstr "Uobičajeno (brzo)"
 
-#: mcomix/preferences_dialog.py:811
+#: mcomix/preferences_dialog.py:804
 msgid "Bilinear"
 msgstr "Bilinearno"
 
-#: mcomix/preferences_dialog.py:812
+#: mcomix/preferences_dialog.py:805
 msgid "Hyperbolic (slow)"
 msgstr "Hiperbolično (sporo)"
 
-#: mcomix/preferences_dialog.py:818
+#: mcomix/preferences_dialog.py:811
 msgid ""
 "Changes how images are scaled. Slower algorithms result in higher quality "
 "resizing, but longer page loading times."
@@ -2304,17 +2313,17 @@ msgstr ""
 "Mijenja način skaliranja slika. Sporiji algoritmi daju bolju kvalitetu, ali "
 "se stranice dulje učitavaju."
 
-#: mcomix/preferences_dialog.py:836 mcomix/library/book_area.py:257
+#: mcomix/preferences_dialog.py:829 mcomix/library/book_area.py:257
 msgid "Normal"
 msgstr "Uobičajeno"
 
-#: mcomix/preferences_dialog.py:842
+#: mcomix/preferences_dialog.py:835
 msgid "Controls how animated images should be displayed."
 msgstr "Određuje kako se prikazuju animirane slike."
 
 #
 # File: src/preferences.py, line: 295
-#: mcomix/preferences_dialog.py:886
+#: mcomix/preferences_dialog.py:879
 msgid ""
 "Treat all files found within archives, that have one of these file endings, "
 "as comments."
@@ -2333,14 +2342,6 @@ msgstr "Slika"
 #: mcomix/properties_dialog.py:110
 msgid "Archive"
 msgstr "Arhiva"
-
-#: mcomix/properties_dialog.py:137 mcomix/library/control_area.py:151
-#, python-format
-msgid "%d page"
-msgid_plural "%d pages"
-msgstr[0] "%d stranica"
-msgstr[1] "%d stranice"
-msgstr[2] "%d stranica"
 
 #: mcomix/properties_dialog.py:138
 #, python-format
@@ -2371,32 +2372,32 @@ msgstr "Scenarist"
 #
 # File: src/properties.py, line: 126
 # File: src/properties.py, line: 160
-#: mcomix/properties_dialog.py:230
+#: mcomix/properties_dialog.py:234
 msgid "Accessed"
 msgstr "Pristupljeno"
 
 #
 # File: src/properties.py, line: 128
 # File: src/properties.py, line: 162
-#: mcomix/properties_dialog.py:232
+#: mcomix/properties_dialog.py:236
 msgid "Modified"
 msgstr "Mijenjano"
 
 #
 # File: src/properties.py, line: 130
 # File: src/properties.py, line: 164
-#: mcomix/properties_dialog.py:234
+#: mcomix/properties_dialog.py:238
 msgid "Permissions"
 msgstr "Dozvole"
 
 #
 # File: src/properties.py, line: 131
 # File: src/properties.py, line: 165
-#: mcomix/properties_dialog.py:235
+#: mcomix/properties_dialog.py:239
 msgid "Owner"
 msgstr "Vlasnik"
 
-#: mcomix/recent.py:133
+#: mcomix/recent.py:140
 msgid "No entries found"
 msgstr "Nije pronađen nijedan unos"
 
@@ -2766,7 +2767,7 @@ msgstr "Dizajn ikona"
 msgid "Vector icon"
 msgstr "Vektorska ikona"
 
-#: mcomix/thumbnail_tools.py:315
+#: mcomix/thumbnail_tools.py:337
 #, python-format
 msgid "! Could not save thumbnail \"%(thumbpath)s\": %(error)s"
 msgstr "! Nije moguće spremiti sličicu „%(thumbpath)s”: %(error)s"
@@ -3193,12 +3194,12 @@ msgstr "Arhiva je zaštićena lozinkom:"
 msgid "Please enter the password to continue:"
 msgstr "Unesite lozinku za nastavak:"
 
-#: mcomix/archive/sevenzip_external.py:220
+#: mcomix/archive/sevenzip_external.py:238
 #, python-format
 msgid "Extraction of %(archivefile)s might have failed: %(error)s"
 msgstr "Raspakiravanje %(archivefile)s možda nije uspjelo: %(error)s"
 
-#: mcomix/archive/zip.py:60
+#: mcomix/archive/zip.py:94
 #, python-format
 msgid ""
 "%(filename)s's extracted size is %(actual_size)d bytes, but should be "
@@ -3232,42 +3233,42 @@ msgstr "Dodane knjige:"
 msgid "Adding '%s'..."
 msgstr "Dodajem '%s'..."
 
-#: mcomix/library/backend.py:179
+#: mcomix/library/backend.py:182
 #, python-format
 msgid "! Non-existent book #%i"
 msgstr "! Knjiga #%i ne postoji"
 
-#: mcomix/library/backend.py:217
+#: mcomix/library/backend.py:220
 #, python-format
 msgid "! Could not get cover for book \"%s\""
 msgstr "! Nije moguće dohvatiti naslovnicu knjige „%s”"
 
-#: mcomix/library/backend.py:262 mcomix/library/backend.py:282
-#: mcomix/library/backend.py:293 mcomix/library/backend.py:321
+#: mcomix/library/backend.py:265 mcomix/library/backend.py:285
+#: mcomix/library/backend.py:296 mcomix/library/backend.py:324
 msgid "Recent"
 msgstr "Nedavno"
 
-#: mcomix/library/backend.py:429
+#: mcomix/library/backend.py:403 mcomix/library/backend.py:450
 #, python-format
 msgid "! Could not add book \"%s\" to the library"
 msgstr "! Nije moguće dodati knjigu „%s” u biblioteku"
 
-#: mcomix/library/backend.py:454
+#: mcomix/library/backend.py:480
 #, python-format
 msgid "! Could not move book \"%s\" in the library"
 msgstr "! Nije moguće premjestiti knjigu „%s” u biblioteci"
 
-#: mcomix/library/backend.py:498
+#: mcomix/library/backend.py:524
 #, python-format
 msgid "! Could not add collection \"%s\""
 msgstr "! Nije moguće dodati zbirku „%s”"
 
-#: mcomix/library/backend.py:530
+#: mcomix/library/backend.py:556
 #, python-format
 msgid "! Could not add book %(book)s to collection %(collection)s"
 msgstr "! Nije moguće dodati knjigu %(book)s u zbirku %(collection)s"
 
-#: mcomix/library/backend.py:557
+#: mcomix/library/backend.py:583
 #, python-format
 msgid "! Could not rename collection to \"%s\""
 msgstr "! Nije moguće preimenovati zbirku u „%s”"
@@ -3275,26 +3276,26 @@ msgstr "! Nije moguće preimenovati zbirku u „%s”"
 #
 # File: src/librarybackend.py, line: 272
 # File: src/librarybackend.py, line: 274
-#: mcomix/library/backend.py:574 mcomix/library/backend.py:576
+#: mcomix/library/backend.py:600 mcomix/library/backend.py:602
 msgid "(Copy)"
 msgstr "(Kopiranje)"
 
-#: mcomix/library/backend.py:832
+#: mcomix/library/backend.py:858
 msgid "Could not determine library database version!"
 msgstr "Nije moguće utvrditi inačicu baze podataka biblioteke!"
 
-#: mcomix/library/backend.py:882
+#: mcomix/library/backend.py:908
 #, python-format
 msgid "Upgrading library database version from %(from)d to %(to)d."
 msgstr "Nadogradnja inačice baze podataka biblioteke s %(from)d na %(to)d."
 
 #
 # File: src/library.py, line: 202
-#: mcomix/library/backend_types.py:346 mcomix/library/collection_area.py:222
+#: mcomix/library/backend_types.py:364 mcomix/library/collection_area.py:222
 msgid "All books"
 msgstr "Sve knjige"
 
-#: mcomix/library/backend_types.py:487
+#: mcomix/library/backend_types.py:510
 #, python-format
 msgid "! Could not scan for new books: %s"
 msgstr "! Nije moguće tražiti nove knjige: %s"
@@ -3403,13 +3404,13 @@ msgstr "Razvr_staj"
 msgid "Cover si_ze"
 msgstr "Veličina _naslovnica"
 
-#: mcomix/library/book_area.py:504
+#: mcomix/library/book_area.py:496
 msgid "Set library cover size"
 msgstr "Postavlja veličinu naslovnica u biblioteci"
 
 #
 # File: src/library.py, line: 588
-#: mcomix/library/book_area.py:678
+#: mcomix/library/book_area.py:670
 #, python-format
 msgid "Removed %(num)d book from '%(collection)s'."
 msgid_plural "Removed %(num)d books from '%(collection)s'."
@@ -3417,7 +3418,7 @@ msgstr[0] "Iz zbirke „%(collection)s” uklonjena je %(num)d knjiga."
 msgstr[1] "Iz zbirke „%(collection)s” uklonjene su %(num)d knjige."
 msgstr[2] "Iz zbirke „%(collection)s” uklonjeno je %(num)d knjiga."
 
-#: mcomix/library/book_area.py:701 mcomix/library/collection_area.py:300
+#: mcomix/library/book_area.py:693 mcomix/library/collection_area.py:300
 #, python-format
 msgid "Removed %d book from the library."
 msgid_plural "Removed %d books from the library."
@@ -3427,13 +3428,13 @@ msgstr[2] "Iz biblioteke je uklonjeno %d knjiga."
 
 #
 # File: src/library.py, line: 597
-#: mcomix/library/book_area.py:726
+#: mcomix/library/book_area.py:714
 msgid "Remove books from the library?"
 msgstr "Obrisati knjige iz biblioteke?"
 
 #
 # File: src/library.py, line: 599
-#: mcomix/library/book_area.py:727
+#: mcomix/library/book_area.py:715
 msgid ""
 "The selected books will be removed from the library and permanently deleted. "
 "Are you sure that you want to continue?"
@@ -3441,7 +3442,7 @@ msgstr ""
 "Odabrane knjige bit će uklonjene iz biblioteke i trajno obrisane. Jeste li "
 "sigurni da želite nastaviti?"
 
-#: mcomix/library/book_area.py:762
+#: mcomix/library/book_area.py:747
 #, python-format
 msgid "%d book could not be deleted from disk."
 msgid_plural "%d books could not be deleted from disk."
@@ -3449,7 +3450,7 @@ msgstr[0] "%d knjiga nije izbrisana s diska."
 msgstr[1] "%d knjige nisu izbrisane s diska."
 msgstr[2] "%d knjiga nije izbrisano s diska."
 
-#: mcomix/library/book_area.py:806
+#: mcomix/library/book_area.py:791
 #, python-format
 msgid "Remove the bookmarks in the deleted book?"
 msgid_plural "Remove the bookmarks in the %(count)d deleted books?"
