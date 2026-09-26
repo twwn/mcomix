@@ -3,26 +3,19 @@
 
 ### New
 
-- Thumbnails, file chooser previews and library covers follow the
-  page's Exif orientation.
-- The file chooser's preview shows a picture's size and a book's page
-  count and archive type.
+- Thumbnails, file chooser previews and library covers follow the page's Exif orientation.
+- The file chooser's preview shows a picture's size and a book's page count and archive type.
 - A sideways scroll pans across a wide page before turning it.
-- All picked-out pages can be put back at once: Edit menu, page menu
-  or Escape.
-- The thumbnail bar outlines picked-out pages and the page marked for
-  swapping.
-- Library: "Clean up" in the covers' menu removes books whose files
-  are gone.
-- RAR books split into volumes (name.part1.rar, name.part2.rar, ...)
-  open as one book, from any volume.
+- All picked-out pages can be put back at once: Edit menu, page menu or Escape.
+- The thumbnail bar outlines picked-out pages and the page marked for swapping.
+- Library: "Clean up" in the covers' menu removes books whose files are gone.
+- RAR books split into volumes (name.part1.rar, name.part2.rar, ...) open as one book, from any volume.
 - `-o FILE` writes the log to a file.
 
 ### Faster
 
 - JPEG thumbnails are decoded by Pillow.
-- Dragging books onto a collection is one database write, not one per
-  book.
+- Dragging books onto a collection is one database write, not one per book.
 - The library draws its "finished" tick once, not for every cover.
 - The dynamic background reads each page once.
 
@@ -33,231 +26,128 @@
 - Toolbar icons and GTK's own translations are included.
 - MComix starts in a display language Python has no code for.
 - libunrar is no longer loaded from the directory MComix starts in.
-- The file choosers open in your home folder, not the settings folder
-  of before 2023.
+- The file choosers open in your home folder, not the settings folder of before 2023.
 - The Chocolatey package is `mcomix-gtk`.
 
 ### Fixes
 
-- Changes not yet written are no longer lost, or written back, when
-  turning past the last page or deleting the open book.
+- Changes not yet written are no longer lost, or written back, when turning past the last page or deleting the open book.
 - A save that fails at its last step no longer deletes the archive.
 - Saving through a symbolic link saves the book it points to.
-- Bookmarks and the last page read keep their picture when an archive
-  is sorted anew.
+- Bookmarks and the last page read keep their picture when an archive is sorted anew.
 - A bookmark another MComix window added in the same second is kept.
-- Names that are not UTF-8 no longer show as mojibake or stop a book
-  opening: ZIPs without the UTF-8 flag, tarballs, PDF paths, DOS
-  archivers' names and comments, "Move to" folders.
-- Split RAR books no longer list pages twice (libunrar) or lose those
-  after the first volume (unrar).
+- Names that are not UTF-8 no longer show as mojibake or stop a book opening: ZIPs without the UTF-8 flag, tarballs, PDF paths, DOS archivers' names and comments, "Move to" folders.
+- Split RAR books no longer list pages twice (libunrar) or lose those after the first volume (unrar).
 - Empty files in solid archives are extracted by unrar and 7z.
 - The library asks no password for encrypted books.
 - One damaged book no longer stops a batch from being added.
-- Duplicating a collection, "Remove from this collection" and dropping
-  books on "Recent" no longer lose or hide books.
+- Duplicating a collection, "Remove from this collection" and dropping books on "Recent" no longer lose or hide books.
 - Book sizes are given in fitting units, not always MiB.
-- Thumbnails are shared properly with other programs: found both ways,
-  written atomically, stored upright.
+- Thumbnails are shared properly with other programs: found both ways, written atomically, stored upright.
 - Small thumbnails are no longer blown up into a blur.
 - Colour profiles are kept in JPEG thumbnails and in pages Pillow reads.
-- Pictures with an unreadable colour profile, or larger than Pillow
-  opens, are read.
+- Pictures with an unreadable colour profile, or larger than Pillow opens, are read.
 - Inverting colours works on pictures with transparency.
-- Opening several books from a file manager starts one MComix, not one
-  each.
+- Opening several books from a file manager starts one MComix, not one each.
 - `mcomix --slideshow <book>` starts the slideshow.
 - Opening a missing file no longer leaves the window claiming a book.
-- A settings or keybindings file of the wrong shape no longer stops
-  MComix from starting.
-- Clearing MComix' Recent menu no longer wipes other programs' recent
-  files, and a recent book that cannot be opened leaves the menu.
-- An empty XDG variable no longer puts MComix' files in the directory
-  it was started from.
-- Colour schemes work with libadwaita 1.5 and 1.8, and picked-out pages
-  are outlined with libadwaita.
-- Animated pages and the Add books chooser work on PyGObject 3.46 and
-  GTK 4.14.
+- A settings or keybindings file of the wrong shape no longer stops MComix from starting.
+- Clearing MComix' Recent menu no longer wipes other programs' recent files, and a recent book that cannot be opened leaves the menu.
+- An empty XDG variable no longer puts MComix' files in the directory it was started from.
+- Colour schemes work with libadwaita 1.5 and 1.8, and picked-out pages are outlined with libadwaita.
+- Animated pages and the Add books chooser work on PyGObject 3.46 and GTK 4.14.
 - The magnifying lens follows page turns and leaves with the pointer.
 - A key pressed just after a page turn scrolls the new page.
 - Turning back in double page mode shows the same pairs as forward.
 - A click that raises the window no longer turns the page.
-- "Never" store recent files, set before 2012, no longer becomes
-  "always".
+- "Never" store recent files, set before 2012, no longer becomes "always".
 - Lithuanian, translated since 2017, can be picked in the preferences.
 
 ### Project
 
 - Versions are numbered by year and month, from 26.09.
-- The documentation is in `docs/`, one page per task: install,
-  reading, editing, library, troubleshooting, development, releasing.
-- A pushed release tag builds, tests and publishes the release on
-  GitHub, with SHA256 checksums and signed build provenance.
-- Issue forms, a pull request template, a security policy and a
-  contributing guide.
+- The documentation is in `docs/`, one page per task: install, reading, editing, library, troubleshooting, development, releasing.
+- A pushed release tag builds, tests and publishes the release on GitHub, with SHA256 checksums and signed build provenance.
+- Issue forms, a pull request template, a security policy and a contributing guide.
 
 # MComix 4.0.1
 ## Release date: 2026-09-20
 
 ### Features
 
-- A page can be renamed while reading: from the page's menu, from the
-  archive editor, or with F2. A name another page already holds is
-  reported, with a swap or a replace offered. In a folder of images the
-  file is renamed at once; in an archive the change is written with the
-  rest.
-- Two pages side by side can be swapped by dragging one onto the other,
-  as well as with Ctrl+Shift and a click.
-- The archive editor renames comment files too, and says which changes
-  it is offering to write.
-- The page's menu copies the page it was opened over, and it and the
-  archive editor's menus can both be opened from the keyboard.
-- Deleting a file that carries bookmarks offers to remove them, from the
-  library as well as from the window.
-- A change that was not written is offered again when the book closes,
-  and the archive editor asks about its unapplied work before the book
-  is closed out from under it.
-- Books found by a watch-list scan, and pages and comments counted in a
-  message, are counted in each language's own plural forms.
+- A page can be renamed while reading: from the page's menu, from the archive editor, or with F2. A name another page already holds is reported, with a swap or a replace offered. In a folder of images the file is renamed at once; in an archive the change is written with the rest.
+- Two pages side by side can be swapped by dragging one onto the other, as well as with Ctrl+Shift and a click.
+- The archive editor renames comment files too, and says which changes it is offering to write.
+- The page's menu copies the page it was opened over, and it and the archive editor's menus can both be opened from the keyboard.
+- Deleting a file that carries bookmarks offers to remove them, from the library as well as from the window.
+- A change that was not written is offered again when the book closes, and the archive editor asks about its unapplied work before the book is closed out from under it.
+- Books found by a watch-list scan, and pages and comments counted in a message, are counted in each language's own plural forms.
 
 ### Bug fixes
 
-- MComix did not start at all when the comment extensions held a
-  bracket, MobiPocket books opened without their pages, and closing the
-  library's Add books dialog crashed MComix.
-- A page whose name held a superscript digit stopped the book opening,
-  a comment file not written in the machine's own encoding could not be
-  read, and ZIP and RAR archives opened with the external unzip and
-  unrar programs lost non-ASCII page names.
-- Closed dialogs, library windows and archive editors were never freed,
-  so everything they showed stayed in memory for the rest of the
-  session, and each library window left another style rule behind for
-  every later style lookup to consult.
-- A book deleted from the window stayed in the library, a bookmark did
-  not follow the book it marks when the book was moved, and the recent
-  files went on offering a book that had been moved or deleted.
-- The library's filter read a per-cent sign as "every book", a book
-  added under a filter was left out if only its path matched, a
-  collection could be named with spaces alone, a watch-list scan added
-  what it found in no particular order, and a scan that failed was
-  reported nowhere.
-- Pages side by side could be laid out wider than the room they had,
-  smart scrolling answered with the page it had left or kept a stale
-  row, and a redraw while a page was on its way lost where the page was
-  to open.
+- MComix did not start at all when the comment extensions held a bracket, MobiPocket books opened without their pages, and closing the library's Add books dialog crashed MComix.
+- A page whose name held a superscript digit stopped the book opening, a comment file not written in the machine's own encoding could not be read, and ZIP and RAR archives opened with the external unzip and unrar programs lost non-ASCII page names.
+- Closed dialogs, library windows and archive editors were never freed, so everything they showed stayed in memory for the rest of the session, and each library window left another style rule behind for every later style lookup to consult.
+- A book deleted from the window stayed in the library, a bookmark did not follow the book it marks when the book was moved, and the recent files went on offering a book that had been moved or deleted.
+- The library's filter read a per-cent sign as "every book", a book added under a filter was left out if only its path matched, a collection could be named with spaces alone, a watch-list scan added what it found in no particular order, and a scan that failed was reported nowhere.
+- Pages side by side could be laid out wider than the room they had, smart scrolling answered with the page it had left or kept a stale row, and a redraw while a page was on its way lost where the page was to open.
 - The dynamic background colour counted a group of shades in pieces.
-- Letter shortcuts did nothing while Caps Lock was on, Shift+F10 did
-  not open the library's popup menus, and a click on a thumbnail in the
-  sidebar did not turn to that page.
-- A slider in the enhancement dialog undid Ctrl+I, the slideshow button
-  changed size, the status bar showed separators for fields that said
-  nothing, the Comments dialog showed an empty frame while it had no
-  comment, and the file chooser offered image formats that have no
-  extension or are turned off.
-- A page that could not be saved, and a book the library could not
-  delete from disk, were reported only to the log; a save that ran out
-  of room reported the failure twice, the second time as a traceback.
-- A thumbnail of a file named by a relative path was filed under a name
-  no other application would look for, and Open with changed MComix'
-  own working directory to run its command.
-- Eighteen labels in eight languages said something other than what
-  they name, the Hebrew interface read as two voices, and error
-  messages that had lost their "reason: detail" shape have it back.
+- Letter shortcuts did nothing while Caps Lock was on, Shift+F10 did not open the library's popup menus, and a click on a thumbnail in the sidebar did not turn to that page.
+- A slider in the enhancement dialog undid Ctrl+I, the slideshow button changed size, the status bar showed separators for fields that said nothing, the Comments dialog showed an empty frame while it had no comment, and the file chooser offered image formats that have no extension or are turned off.
+- A page that could not be saved, and a book the library could not delete from disk, were reported only to the log; a save that ran out of room reported the failure twice, the second time as a traceback.
+- A thumbnail of a file named by a relative path was filed under a name no other application would look for, and Open with changed MComix' own working directory to run its command.
+- Eighteen labels in eight languages said something other than what they name, the Hebrew interface read as two voices, and error messages that had lost their "reason: detail" shape have it back.
 
 # MComix 4.0.0
 ## Release date: 2026-09-13
 
 ### Features
 
-- MComix runs on GTK 4 and follows the desktop's light or dark theme,
-  fully where libadwaita is installed. A Theme preference picks light,
-  dark, or pitch black for OLED screens.
-- Pages can be taken out while reading, with "Delete page" or by picking
-  them out with Ctrl and a click; a removal can be undone.
-- The archive editor can undo and redo, and can write a book back in the
-  format it was opened in. Saved archives carry a ComicInfo.xml and keep
-  every file the original held.
-- The right-click menu saves the page under the pointer and moves the
-  open file to another folder.
-- Properties names the series, issue number, title and writer an
-  archive's ComicInfo.xml gives.
-- A middle click opens a recent file, a bookmark or a library cover in a
-  new window, and the mouse's thumb buttons turn back a page and show the
-  OSD panel.
-- Picking a language offers to restart MComix in it, and each "Do not ask
-  again" answer can be taken back on its own.
-- The keys that add and edit bookmarks can be changed in the Shortcuts
-  tab, as every other key can.
+- MComix runs on GTK 4 and follows the desktop's light or dark theme, fully where libadwaita is installed. A Theme preference picks light, dark, or pitch black for OLED screens.
+- Pages can be taken out while reading, with "Delete page" or by picking them out with Ctrl and a click; a removal can be undone.
+- The archive editor can undo and redo, and can write a book back in the format it was opened in. Saved archives carry a ComicInfo.xml and keep every file the original held.
+- The right-click menu saves the page under the pointer and moves the open file to another folder.
+- Properties names the series, issue number, title and writer an archive's ComicInfo.xml gives.
+- A middle click opens a recent file, a bookmark or a library cover in a new window, and the mouse's thumb buttons turn back a page and show the OSD panel.
+- Picking a language offers to restart MComix in it, and each "Do not ask again" answer can be taken back on its own.
+- The keys that add and edit bookmarks can be changed in the Shortcuts tab, as every other key can.
 - Preferences are saved as they change, without undoing another window's.
-- Double page mode can leave up to 100 pixels between the pages, where
-  it allowed 2.
-- The library shows its progress while scanning, and is much faster when
-  large.
+- Double page mode can leave up to 100 pixels between the pages, where it allowed 2.
+- The library shows its progress while scanning, and is much faster when large.
 - All 24 translations are complete, and usable from the keyboard.
 
 ### Bug fixes
 
-- Among the long-standing ones: the bookmarks menu was shuffled after
-  another window saved; a new page cache size applied only after closing
-  the book; MComix instances quitting at once could truncate each
-  other's preferences and keybindings; one bad line in keybindings.conf
-  silenced a shortcut; an interrupted library upgrade could leave the
-  library unopenable or empty; next and previous directory crashed at
-  the root of the file system; PDF pages past 9999 opened the wrong
-  page; encrypted RAR files could not be opened through the UnRAR
-  library; a multi-volume RAR with a volume missing kept the UnRAR
-  library retrying forever; the library lost covers and "finished" marks
-  when its threads used the database at once; a solid archive that
-  failed part way never showed the rest of its pages; the About dialog
-  named three of the seven formats MComix reads; a turned JPEG page of a
-  PDF was compressed again; on Windows and with Python 3.14, PDF pages
-  were turned upright with auto rotation turned off; MobiPocket books
-  opened without pages on Windows, and on Linux wherever gdk-pixbuf
-  offers a format with no file extension; the library's "Add books"
-  dialog opened on the filter before the one used last.
+- Among the long-standing ones: the bookmarks menu was shuffled after another window saved; a new page cache size applied only after closing the book; MComix instances quitting at once could truncate each other's preferences and keybindings; one bad line in keybindings.conf silenced a shortcut; an interrupted library upgrade could leave the library unopenable or empty; next and previous directory crashed at the root of the file system; PDF pages past 9999 opened the wrong page; encrypted RAR files could not be opened through the UnRAR library; a multi-volume RAR with a volume missing kept the UnRAR library retrying forever; the library lost covers and "finished" marks when its threads used the database at once; a solid archive that failed part way never showed the rest of its pages; the About dialog named three of the seven formats MComix reads; a turned JPEG page of a PDF was compressed again; on Windows and with Python 3.14, PDF pages were turned upright with auto rotation turned off; MobiPocket books opened without pages on Windows, and on Linux wherever gdk-pixbuf offers a format with no file extension; the library's "Add books" dialog opened on the filter before the one used last.
 
 ### Removed
 
-- GTK 3 support, the "Use archive thumbnail as application icon" option,
-  and restoring the window's position, which GTK 4 does not allow.
+- GTK 3 support, the "Use archive thumbnail as application icon" option, and restoring the window's position, which GTK 4 does not allow.
 
 ### Requirements
 
-- Python 3.12, GTK 4, PyGObject 3.46, pycairo 1.25 and Pillow 10.1, or
-  newer. libadwaita, chardet and PyMuPDF 1.24.7 or newer are optional.
-- Upgrading from 3.x: the library is upgraded in place, and MComix 3.2
-  still opens it. The preferences are converted, and the old file is kept
-  as `preferences.conf.v0`; copy it back before returning to 3.2, which
-  otherwise shows a black background. Keybindings and bookmarks carry
-  over unchanged.
+- Python 3.12, GTK 4, PyGObject 3.46, pycairo 1.25 and Pillow 10.1, or newer. libadwaita, chardet and PyMuPDF 1.24.7 or newer are optional.
+- Upgrading from 3.x: the library is upgraded in place, and MComix 3.2 still opens it. The preferences are converted, and the old file is kept as `preferences.conf.v0`; copy it back before returning to 3.2, which otherwise shows a black background. Keybindings and bookmarks carry over unchanged.
 
 # MComix 3.2.0
 ## Release date: 2026-08-20
 
 ### Bug fixes
 
-- Adapt keybinding handling to changed API of Gtk.accelerator_parse
-  in newer versions of Gtk. This fixes broken keybindings.
-- The pytest package needed for running MComix' unit tests is now
-  installed when installing the `dev` dependency group.
+- Adapt keybinding handling to changed API of Gtk.accelerator_parse in newer versions of Gtk. This fixes broken keybindings.
+- The pytest package needed for running MComix' unit tests is now installed when installing the `dev` dependency group.
 
 ### Features
 
-- MComix now respects the XDG Thumbnail Directory specification (again),
-  and will store thumbnails relative to XDG_CACHE_HOME instead of
-  relative to the home directory on UNIX systems. Nothing changes
-  on Windows. Note: Existing thumbnails in the former cache directory
-  ($HOME/.thumbnails) are not moved automatically by this update.
-- Added new sort order option (GLib order) that uses GTK collate keys
-  when computing file order.
+- MComix now respects the XDG Thumbnail Directory specification (again), and will store thumbnails relative to XDG_CACHE_HOME instead of relative to the home directory on UNIX systems. Nothing changes on Windows. Note: Existing thumbnails in the former cache directory ($HOME/.thumbnails) are not moved automatically by this update.
+- Added new sort order option (GLib order) that uses GTK collate keys when computing file order.
 
 # MComix 3.1.1
 ## Release date: 2025-09-06
 
 ### Bug fixes
 
-- Added official mime types for CBZ/CBR comic books to desktop
-  metadata file.
+- Added official mime types for CBZ/CBR comic books to desktop metadata file.
 
 - Fix "context has already been set" error in Python 3.13.
 
@@ -267,95 +157,56 @@
 ### Features
 
 - Image colors can be negated in the Image Enhancement dialog.
-  Furthermore, enhancements now apply to most UI elements, such as
-  sidebar thumbnails, magnified lens image and library covers.
-- "Fit to size" has been generalised. Bounds can now be set
-  independently for width and height, and different bounds can be
-  applied to wide pages and other pages.
+  Furthermore, enhancements now apply to most UI elements, such as sidebar thumbnails, magnified lens image and library covers.
+- "Fit to size" has been generalised. Bounds can now be set independently for width and height, and different bounds can be applied to wide pages and other pages.
 
 ### Bug Fixes
 
 - Fixed regression from 2.0.0 in Library collection list.
-  The bug prevented drag-and-dropping books from the
-  main book area into a collection.
-- Added official MIME types for CBZ/CBR files to list
-  of supported archive formats.
-- Fixed a bug that caused the "Recent" pseudo-collection in the
-  Library to be displayed with the wrong localized name in some
-  cases.
-- Fixed error when re-opening an archive in double-page mode,
-  thanks to a patch by Spencer Berger.
+  The bug prevented drag-and-dropping books from the main book area into a collection.
+- Added official MIME types for CBZ/CBR files to list of supported archive formats.
+- Fixed a bug that caused the "Recent" pseudo-collection in the Library to be displayed with the wrong localized name in some cases.
+- Fixed error when re-opening an archive in double-page mode, thanks to a patch by Spencer Berger.
 - Improved robustness to invalid UTF-8.
-- Fixed copy/paste error in application metadata XML file
-  (thanks to Emfox Zhou)
-- The library search field now considers not only the book name,
-  but also its full path, as the tooltip already stated.
+- Fixed copy/paste error in application metadata XML file (thanks to Emfox Zhou)
+- The library search field now considers not only the book name, but also its full path, as the tooltip already stated.
 
 # MComix 3.0.0
 ## Release date: 2023-09-16
 
 ### Breaking Changes
 
-- MComix no longer uses the now obsolete setup.py-based
-  installation and packaging. Instead, it is based on
-  pyproject.toml with setuptools as build backend (since
-  MComix already had a dependency on it anyway).
-- Due to this change, application meta files (such as
-  mcomix.desktop) that usually go into /usr/share are no
-  longer copied automatically by the installation process,
-  since the Python ecosystem is moving away from packaging
-  files outside of the Python package itself.
-- Source archives will be distributed in .tar.gz format
-  only, since this is what the Python packaging specifications
-  mandate.
+- MComix no longer uses the now obsolete setup.py-based installation and packaging. Instead, it is based on pyproject.toml with setuptools as build backend (since MComix already had a dependency on it anyway).
+- Due to this change, application meta files (such as mcomix.desktop) that usually go into /usr/share are no longer copied automatically by the installation process, since the Python ecosystem is moving away from packaging files outside of the Python package itself.
+- Source archives will be distributed in .tar.gz format only, since this is what the Python packaging specifications mandate.
 - When the package is installed, simply run "mcomix".
   `mcomixstarter.py` is no longer needed.
-- Refer to the installation documentation at
-  https://sourceforge.net/p/mcomix/wiki/Installation/
-  for more information.
-- The Windows all-in-one ZIP package is now called simply
-  mcomix-win64-\<version\>.zip.
-- Former `README` and `ChangeLog` have been converted to
-  Markdown format and are now called `README.md` and
-  `ChangeLog.md`.
-- On Win32, the MComix user folder, formerly in `%HOMEPATH%/MComix`,
-  has been moved to `%APPDATA%/MComix` to be more in line
-  with regular Windows directory conventions. The old directory
-  will be automatically migrated on startup.
+- Refer to the installation documentation at https://sourceforge.net/p/mcomix/wiki/Installation/ for more information.
+- The Windows all-in-one ZIP package is now called simply mcomix-win64-\<version\>.zip.
+- Former `README` and `ChangeLog` have been converted to Markdown format and are now called `README.md` and `ChangeLog.md`.
+- On Win32, the MComix user folder, formerly in `%HOMEPATH%/MComix`, has been moved to `%APPDATA%/MComix` to be more in line with regular Windows directory conventions. The old directory will be automatically migrated on startup.
 
 ### Bug fixes
 
-- Fix regression from version 2.0.0 that triggered the wrong
-  hotkey functionality when the SHIFT modifier was involved on
-  Windows (for example, SHIFT+Space only triggered Space)
-- MComix should now be properly selectable as default application
-  on Windows in the "Open with..." shell dialog.
-- Fixed broken thumbnail generation using the Python PDF extraction
-  manager on Windows.
-- Fixed bug in Python PDF extraction that prevented rotated PDF images
-  being displayed without rotation.
+- Fix regression from version 2.0.0 that triggered the wrong hotkey functionality when the SHIFT modifier was involved on Windows (for example, SHIFT+Space only triggered Space)
+- MComix should now be properly selectable as default application on Windows in the "Open with..." shell dialog.
+- Fixed broken thumbnail generation using the Python PDF extraction manager on Windows.
+- Fixed bug in Python PDF extraction that prevented rotated PDF images being displayed without rotation.
 - Fixed regression from version 2.2.0 that broke archive password handling.
-- MComix previously didn't remember to restore the "maximized" window state
-  when restarting.
-- Fixed window not being restored at correct position after restarting
-  when runnig on Windows.
+- MComix previously didn't remember to restore the "maximized" window state when restarting.
+- Fixed window not being restored at correct position after restarting when runnig on Windows.
 
 ### Features
 
-- MComix automatically switches to a dark theme if Windows color
-  settings are set to "Dark".
-- MComix now has a Windows MSI installer. Users no longer have to
-  manually extract the ZIP archive and move around files.
+- MComix automatically switches to a dark theme if Windows color settings are set to "Dark".
+- MComix now has a Windows MSI installer. Users no longer have to manually extract the ZIP archive and move around files.
 
 # MComix 2.3.0
 ## Release date: 2023-08-26
 
 ### Bug fixes
 
-- Updated the bundled UnRAR64.dll in the Win32 All-In-One
-  package to the latest version. Old versions may or may not
-  be affected by a remote code execution vulnerability recently
-  fixed in WinRAR 6.23.
+- Updated the bundled UnRAR64.dll in the Win32 All-In-One package to the latest version. Old versions may or may not be affected by a remote code execution vulnerability recently fixed in WinRAR 6.23.
 - Restored Python 3.7 compatibility in native PDF extractor.
 - Added missing pdf_native submodule to source distribution.
 
@@ -375,19 +226,15 @@
 
 ### Bug fixes
 
-- Fixed incorrect PDF transformations on systems using a recent version of
-  MuPDF.
+- Fixed incorrect PDF transformations on systems using a recent version of MuPDF.
 - Fixed incompatibility with Pillow 10.0.0 due to bug in version check.
 
 ### Features
 
-- MComix can now use the PyMuPDF Python package to provide PDF reading
-  capabilities, with improved extraction/decoding speed.
-- Added support for MobiPocket (AZW3) format books. Archives with DRM are
-  not supported.
+- MComix can now use the PyMuPDF Python package to provide PDF reading capabilities, with improved extraction/decoding speed.
+- Added support for MobiPocket (AZW3) format books. Archives with DRM are not supported.
 - The OSD now shows the current page and the total number of pages.
-- The tabs of the Preferences dialog are scrollable so all dialog tabs
-  can be properly used on smaller screens.
+- The tabs of the Preferences dialog are scrollable so all dialog tabs can be properly used on smaller screens.
 - Updated the simplified Chinese translation.
 
 # MComix 2.1.1
@@ -398,8 +245,7 @@
 - 7z.dll is again bundled with Windows all-in-one package.
 - Improved quality and speed of the magnifying lens.
 - Added new de facto IEC prefixes.
-- Window size should be remembered correctly again when restarting the
-  application.
+- Window size should be remembered correctly again when restarting the application.
 - Replaced usage of deprecated GTK threading/timer functionality.
 - Fixed GLib application name. This improves integration with Gnome.
 
@@ -412,17 +258,13 @@
 - Fixed DPI detection for PDFs which cannot be decoded using UTF-8.
 - Fixed magnifying lens errors when image was rotated.
 - Fixed another byte/unicode error in file chooser dialog.
-- 7z archives with encrypted header could not be extracted on Windows,
-  as MComix did not properly parse that the archive needed password input.
+- 7z archives with encrypted header could not be extracted on Windows, as MComix did not properly parse that the archive needed password input.
 
 ### Features
 
 - Added option to customize space between pages in double-page mode.
-- Added options to open first file/archive when going backwards to
-  previous archive/directory.
-- The "Fit to same size" option now results in more aggressively distorted
-  images to make them fit, if necessary. The old, more conservative
-  behaviour is available via the "Prefer same size" option.
+- Added options to open first file/archive when going backwards to previous archive/directory.
+- The "Fit to same size" option now results in more aggressively distorted images to make them fit, if necessary. The old, more conservative behaviour is available via the "Prefer same size" option.
 
 # MComix 2.0.2
 ## Release date: 2022-05-20
@@ -430,8 +272,7 @@
 ### Bug fixes
 
 - Fixed bytes/unicode error in library 'Add collection' dialog.
-- Fixed missing localization and image resources after calling
-  "setup.py install"
+- Fixed missing localization and image resources after calling "setup.py install"
 - Fixed bytes/unicode error in unrar executable extraction handler.
 - Fixed one more instance of incorrect color conversion from preferences.
 
@@ -441,18 +282,13 @@
 ### Bug fixes
 
 - Fixed conversion of unexpected color values from stored preferences.
-- Fixed error trying to display page file size within archives where
-  members have not been extracted yet.
+- Fixed error trying to display page file size within archives where members have not been extracted yet.
 - Fixed bytes/unicode error in the library 'Add Book' dialog.
-- Fixed endless password popup when library fails to genrate thumbnail
-  for password-protected archive.
-- Handle error when thumbnail metadata Thumb::MTime is a floating point
-  number.
+- Fixed endless password popup when library fails to genrate thumbnail for password-protected archive.
+- Handle error when thumbnail metadata Thumb::MTime is a floating point number.
 - Fixed alphanumeric sort for names with mismatched text/number patterns.
-- Fixed unicode/bytes error in "Save as" dialog, as well as errors
-  when saving double-page images.
-- Reduced declared minimum PyGObject version to 3.36.0 as well as
-  PyCairo to 1.16.0.
+- Fixed unicode/bytes error in "Save as" dialog, as well as errors when saving double-page images.
+- Reduced declared minimum PyGObject version to 3.36.0 as well as PyCairo to 1.16.0.
 - Fixed minimum Pillow requirement in code not matching setup.py.
 
 # MComix 2.0.0
@@ -460,24 +296,17 @@
 
 ### Breaking changes
 
-- MComix now requires Python 3.7 or newer, as well as GTK+ 3, PyGObject, and
-  PyCairo. Minimum Pillow version has been increased to 6.0.0.
-- MComix no longer depends on the setuptools module. Optional dependencies
-  on czipfile and subprocess32 have been removed, since they are no longer
-  supported or necessary for Python 3.
+- MComix now requires Python 3.7 or newer, as well as GTK+ 3, PyGObject, and PyCairo. Minimum Pillow version has been increased to 6.0.0.
+- MComix no longer depends on the setuptools module. Optional dependencies on czipfile and subprocess32 have been removed, since they are no longer supported or necessary for Python 3.
 
 ### Known issues
 
-- The MComix window will not remember its last position on Windows. Code
-  that works on Linux causes the window to fly off the screen for some
-  reason.
+- The MComix window will not remember its last position on Windows. Code that works on Linux causes the window to fly off the screen for some reason.
 
 ### Features
 
-- Animated image formats are now supported. Previously, MComix would only
-  display the first frame.
-- Supported image formats are now a combination of formats supported by
- GDK/Pixbuf and Pillow formats.
+- Animated image formats are now supported. Previously, MComix would only display the first frame.
+- Supported image formats are now a combination of formats supported by GDK/Pixbuf and Pillow formats.
 
 ### Translation
 
@@ -489,8 +318,7 @@
 
 ### Environment/Locale/Translation:
 
-- Fixed a bug that made it impossible to open a book with MComix directly if
-  the path contains spaces (Windows only)
+- Fixed a bug that made it impossible to open a book with MComix directly if the path contains spaces (Windows only)
 - Updated libraries for the Windows distribution: UnRAR DLL
 
 # MComix 1.2
@@ -498,34 +326,23 @@
 
 ### Gui/Main
 
-- If metadata-based rotation is enabled, PNG files will be automatically
-  rotated as well.
+- If metadata-based rotation is enabled, PNG files will be automatically rotated as well.
 - Double page mode respects Exif rotation now.
-- Some transformation issues have been fixed. In double page mode, all
-  transformations are applied to the union of both pages. Also, reflection
-  is performed first, followed by rotation.
+- Some transformation issues have been fixed. In double page mode, all transformations are applied to the union of both pages. Also, reflection is performed first, followed by rotation.
 - Some OSD issues have been fixed.
-- When flipping pages, the content of the viewport does not appear
-  somewhere else first anymore.
+- When flipping pages, the content of the viewport does not appear somewhere else first anymore.
 - The default scaling quality is now "Bilinear".
 
 ### Gui/Thumbnailer
 
-- The thumbnailer now displays page numbers in a reasonable color
-  appropriate for the respective background color.
-- The thumbnailer uses the same size for all thumbnails now. If thumbnails
-  need to be rescaled, it is done using linear interpolation.
-- When using the keyboard, the thumbnailer now tries to keep the currently
-  selected page in the upper half of its area.
+- The thumbnailer now displays page numbers in a reasonable color appropriate for the respective background color.
+- The thumbnailer uses the same size for all thumbnails now. If thumbnails need to be rescaled, it is done using linear interpolation.
+- When using the keyboard, the thumbnailer now tries to keep the currently selected page in the upper half of its area.
 - The size of the thumbnailer is calculated more reasonably now.
-- Fixed a bug that could lead to crashes if the thumbnailer uses a dynamic
-  background color.
+- Fixed a bug that could lead to crashes if the thumbnailer uses a dynamic background color.
 - The "missing image" icon appears in its original size in the thumbnailer.
-- Fix race condition that could lead to thumbnails being rendered with
-  different sizes.
-- Added a workaround for a bug in gdk-pixbuf that could prevent thumbnails
-  of animated GIF images from being rendered properly. For details, see
-  https://bugzilla.gnome.org/show_bug.cgi?id=735422
+- Fix race condition that could lead to thumbnails being rendered with different sizes.
+- Added a workaround for a bug in gdk-pixbuf that could prevent thumbnails of animated GIF images from being rendered properly. For details, see https://bugzilla.gnome.org/show_bug.cgi?id=735422
 - Re-enabled double buffering for the thumbnailer.
 
 ### Gui/Library
@@ -537,23 +354,16 @@
 
 ### Gui/EditArchive
 
-- Applying changes in the "Edit archive" dialog could raise an exception
-  under certain circumstances. This has been fixed.
-- Fixed a bug that prevented MComix from shutting down properly if an
-  archive with no images in it has been opened or the "Edit archive" dialog
-  has been used.
-- Some issues with displaying thumbnails in the "Edit archive" dialog have
-  been fixed.
+- Applying changes in the "Edit archive" dialog could raise an exception under certain circumstances. This has been fixed.
+- Fixed a bug that prevented MComix from shutting down properly if an archive with no images in it has been opened or the "Edit archive" dialog has been used.
+- Some issues with displaying thumbnails in the "Edit archive" dialog have been fixed.
 
 ### Gui/WM
 
 - Fullscreen handling has been improved.
 - The Preferences dialog is not modal anymore.
-- When clicking on the thumbnailer while the main window is unfocused, the
-  window should be focused only without switching to another page. This has
-  been fixed so it works properly now.
-- Modal dialogs do not immediately hide the mouse cursor in the main area
-  anymore.
+- When clicking on the thumbnailer while the main window is unfocused, the window should be focused only without switching to another page. This has been fixed so it works properly now.
+- Modal dialogs do not immediately hide the mouse cursor in the main area anymore.
 - Fix various minor window manager interaction issues.
 - The default window width is now 640 pixels.
 
@@ -561,66 +371,46 @@
 
 - You can select the text in the Properties dialog now.
 - The "Continue reading" dialog defaults to "Yes" now.
-- Dialogs refresh their respective contents whenever you switch to another
-  page or book.
+- Dialogs refresh their respective contents whenever you switch to another page or book.
 - The password dialog now displays the path of the archive.
-- Overall widget handling has been fixed and improved. This also eliminates
-  some GTK warnings.
+- Overall widget handling has been fixed and improved. This also eliminates some GTK warnings.
 - Fixed a lot of issues with empty directories and empty archives.
 - File name filters and supported formats handling have been improved.
-- Various other issues with the Preferences dialog and the Properties
-  dialog have been fixed.
+- Various other issues with the Preferences dialog and the Properties dialog have been fixed.
 - Recently opened PDF files are now listed in the "Recent Files" menu.
 
 ### Environment/Locale/Translations
 
-- The list of supported image formats is now determined dynamically,
-  depending on the underlying libraries. This might implicitly add support
-  for image formats such as WebP.
-- Due to a bug, PIL (or Pillow) was preferred over GdkPixbuf on Windows
-  in earlier versions. Now, GdkPixbuf will be preferred on Windows as well.
-- MComix uses czipfile when available to speed up extraction of
-  encrypted zip files.
+- The list of supported image formats is now determined dynamically, depending on the underlying libraries. This might implicitly add support for image formats such as WebP.
+- Due to a bug, PIL (or Pillow) was preferred over GdkPixbuf on Windows in earlier versions. Now, GdkPixbuf will be preferred on Windows as well.
+- MComix uses czipfile when available to speed up extraction of encrypted zip files.
 - Zombie processes will be removed if possible.
-- Some issues related to child processes have been fixed. Unnecessary
-  console windows should not appear anymore.
-- File descriptors will be properly closed when possible. This fixes an
-  issue especially on Windows where files used to stay "locked".
+- Some issues related to child processes have been fixed. Unnecessary console windows should not appear anymore.
+- File descriptors will be properly closed when possible. This fixes an issue especially on Windows where files used to stay "locked".
 - Searching for external tools (e.g. MuPDF) is performed more properly now.
-- Temporary directories will be created only when necessary and will be
-  deleted as soon as the corresponding book has been closed.
-- The shebangs now ask for python2 instead of just python so we do not
-  accidentally run Python 3.
+- Temporary directories will be created only when necessary and will be deleted as soon as the corresponding book has been closed.
+- The shebangs now ask for python2 instead of just python so we do not accidentally run Python 3.
 - comicthumb has been rewritten to make it consistent with MComix.
 - Some locale issues have been fixed.
 - The French translation has been updated.
 - The Russian translation has been updated (by Ulyanich Michael).
 - The Korean translation has been updated (by Gyeongmin Bak).
 - Fixed PDF support with newer versions of MuPDF (1.7 and 1.8).
-- Better support for using the 7z executable: encrypted files are now
-  supported (including encrypted header support, and for all supported
-  formats: 7z, RAR and ZIP).
-- Fixed an issue with unrar.dll that could lead to crashes if 7z is also
-  present.
-- Improved detection of available RAR extractors. (unrar-free is currently
-  incompatible with MComix and will be ignored.)
+- Better support for using the 7z executable: encrypted files are now supported (including encrypted header support, and for all supported formats: 7z, RAR and ZIP).
+- Fixed an issue with unrar.dll that could lead to crashes if 7z is also present.
+- Improved detection of available RAR extractors. (unrar-free is currently incompatible with MComix and will be ignored.)
 - Fixed support for LHA archives (they were always marked as empty).
 - Fixed support for tar.xz archives (they were always marked as empty).
-- Updated libraries for the Windows distribution: Pillow 3.1.0 and
-  UnRAR 5.30
-- On Windows, MComix normally appears to be frozen on startup while
-  fontconfig is updating the font cache. As a workaround, a window will be
-  displayed.
-- Fix MComix not starting when 'auto load last file' is on and the last
-  attempt at opening a file was an invalid path
+- Updated libraries for the Windows distribution: Pillow 3.1.0 and UnRAR 5.30
+- On Windows, MComix normally appears to be frozen on startup while fontconfig is updating the font cache. As a workaround, a window will be displayed.
+- Fix MComix not starting when 'auto load last file' is on and the last attempt at opening a file was an invalid path
 - The Windows icon file mcomix.ico has been updated.
 
 ### Misc
 
 - The MIME database has been updated.
 - The Py2Exe workaround has been removed.
-- A Wine-based helper script allows building Windows versions of MComix in
-  Wine.
+- A Wine-based helper script allows building Windows versions of MComix in Wine.
 - Huge code refactoring, cleanups and documentation updates
 - Various minor bug fixes and improvements
 - New code and examples for testing, improved logging
@@ -630,105 +420,57 @@
 # MComix 1.01
 ## Release date: 31.01.2015
 
-- Keyboard shortcuts can now be edited from MComix' preference dialog
-  in a new tab "Shortcuts". (by Valentin Gologuzov)
-  Please not that the arrow keys, Backspace and Escape cannot be bound
-  to actions right now, unless you're manually editing the config file.
-- During database upgrade, MComix did not consider that books in the
-  "Last read" database might no longer exist, leading to program crash.
+- Keyboard shortcuts can now be edited from MComix' preference dialog in a new tab "Shortcuts". (by Valentin Gologuzov) Please not that the arrow keys, Backspace and Escape cannot be bound to actions right now, unless you're manually editing the config file.
+- During database upgrade, MComix did not consider that books in the "Last read" database might no longer exist, leading to program crash.
   This has been fixed.
-- Adding a collection with a numeric name to the library made the library
-  unusable. This has been fixed.
+- Adding a collection with a numeric name to the library made the library unusable. This has been fixed.
 - Fixed win32 builds missing the 'calendar' module.
 - Fixed bookmarks not being displayed in the Ubuntu Unity global menu.
-- Fixed 'Continue reading' not working when files are opened from
-  the command line (by Boris Bogar).
-- Improved page extraction and caching algorithm, leading to much better
-  responsiveness, especially for viewing large archives. (by Benoit Pierre)
-- MComix will now always hide the mouse cursor after a period of
-  inactivity, even when not in fullscreen mode. (by Benoit Pierre)
-- The ALT+Left and ALT+Right keys will now either advance one page,
-  or go back one page, depending on the user being in manga mode.
+- Fixed 'Continue reading' not working when files are opened from the command line (by Boris Bogar).
+- Improved page extraction and caching algorithm, leading to much better responsiveness, especially for viewing large archives. (by Benoit Pierre)
+- MComix will now always hide the mouse cursor after a period of inactivity, even when not in fullscreen mode. (by Benoit Pierre)
+- The ALT+Left and ALT+Right keys will now either advance one page, or go back one page, depending on the user being in manga mode.
 - CTRL plus mouse wheel will now zoom in/out one level.
-- Manual zooming will now use a logarithmic scale instead of a linear
-  spline.
-- The library will now use natural sorting for "Sort by name" and
-  "Sort by path" instead of alphanumeric sorting, bringing it in line
-  with most other sorting done by MComix.
-- Adding a book to a collection with the same book already existing
-  in another collection did not immediately show the book in the
-  library main view when the new collection was already selected.
-- MComix can now use the '7z' executable to read .tar.xz and .tar.lzma
-  archives.
-- ZIP archives using BZIP2 compression will now fall back to external
-  unzip/7z instead of failing (by Awad Mackie).
-- MComix can now read PDF files using tools provided by mupdf,
-  namely mutool and mudraw. (by Benoit Pierre)
+- Manual zooming will now use a logarithmic scale instead of a linear spline.
+- The library will now use natural sorting for "Sort by name" and "Sort by path" instead of alphanumeric sorting, bringing it in line with most other sorting done by MComix.
+- Adding a book to a collection with the same book already existing in another collection did not immediately show the book in the library main view when the new collection was already selected.
+- MComix can now use the '7z' executable to read .tar.xz and .tar.lzma archives.
+- ZIP archives using BZIP2 compression will now fall back to external unzip/7z instead of failing (by Awad Mackie).
+- MComix can now read PDF files using tools provided by mupdf, namely mutool and mudraw. (by Benoit Pierre)
 - Double page mode will not implicitly resize images anymore.
 - The smart scrolling algorithm has been improved.
 - Some issues with the magnifying glass have been fixed.
-- Some new variables have been introduced that you can use when running
-  external commands. See the documentation for details:
+- Some new variables have been introduced that you can use when running external commands. See the documentation for details:
   https://sourceforge.net/p/mcomix/wiki/External_Commands
-- MComix will now use the current GTK theme's icons for
-  Next/Previous buttons.
+- MComix will now use the current GTK theme's icons for Next/Previous buttons.
 - Added AppData meta information for software repositories.
 - Updated traditional Chinese translation (by Wayne Su).
 
 # MComix 1.00
 ## Release date: 26.04.2013
 
-- When "Store information about recently opened files" is enabled in
-  the preferences dialog, all opened books will automatically be added
-  to the library and moved into the collection "Recent". In addition,
-  the last read page will be stored and recalled the next time the book
-  is opened again.
-- Fixed several malfunctions that could occur if no SQLite library
-  was installed.
-- Fixed a bug that prevented MComix from showing the first page of an
-  archive nested in other archives.
-- If both scrollbars were shown, it was impossible to scroll all the way
-  down using the scrolling keys. This has been fixed.
-- When a directory was opened using the File->Open dialog, MComix did not
-  sort files within the directory, ignoring the user's preferences.
+- When "Store information about recently opened files" is enabled in the preferences dialog, all opened books will automatically be added to the library and moved into the collection "Recent". In addition, the last read page will be stored and recalled the next time the book is opened again.
+- Fixed several malfunctions that could occur if no SQLite library was installed.
+- Fixed a bug that prevented MComix from showing the first page of an archive nested in other archives.
+- If both scrollbars were shown, it was impossible to scroll all the way down using the scrolling keys. This has been fixed.
+- When a directory was opened using the File->Open dialog, MComix did not sort files within the directory, ignoring the user's preferences.
 - "File->Refresh" did not restore the currently viewed page in archives.
-- Deleting a file in the library without closing the same file in the main
-  window before no longer causes an exception.
+- Deleting a file in the library without closing the same file in the main window before no longer causes an exception.
 - The two images in double-page mode will now scale separately again.
   (by Valentin Gologuzov)
-- "Fit to size" mode no longer scales up small images unless "Stretch
-  small images" is enabled as well.
-- If "Store information about recently opened files" is disabled,
-  MComix will no longer remember the last browsed directory in the
-  File->Open dialog.
-- Deleting a large amout of books from the library should be much
-  faster now.
-- MComix now starts in RTL mode when a RTL language has been manually
-  selected in the preference dialog.
-- Added an option to run arbitrary external commands on the currently
-  opened file or archive. Commands can be edited from the "File->Open with"
-  menu entry. The first item in this list can be accessed with the '1'
-  key, the second using '2', and so on, up to '9' for command nine.
+- "Fit to size" mode no longer scales up small images unless "Stretch small images" is enabled as well.
+- If "Store information about recently opened files" is disabled, MComix will no longer remember the last browsed directory in the File->Open dialog.
+- Deleting a large amout of books from the library should be much faster now.
+- MComix now starts in RTL mode when a RTL language has been manually selected in the preference dialog.
+- Added an option to run arbitrary external commands on the currently opened file or archive. Commands can be edited from the "File->Open with" menu entry. The first item in this list can be accessed with the '1' key, the second using '2', and so on, up to '9' for command nine.
 
-  The first argument to each command must be the absolute path to an
-  executable, or an executable found in PATH, or an executable found in
-  the specified working directory.
-- Added an option to automatically rotate images if their height exceeds
-  their width (or width exceeds height), located in the menu bar under
-  Tools -> Transform image -> Auto-rotate image.
-- Added a new preference option to control sorting of files within
-  archives. Natural sort order is the default ordering, which sorts
-  numbers in file names based on their natural order (e.g. 1, 2, .., 10),
-  while literal order will use standard C sorting (e.g. 1, 23, 4).
-- "Reset zoom" is now bound to CTRL-0 and KeyPad0 by default. Previously,
-  CTRL-0 and CTRL-KeyPad0 were used.
-- Using the Shift key with one of the next page / previous page
-  keybindings will advance or go back by 10 pages instead of only one.
-- Added thumbnailer file for Gnome3 integration. Please note that
-  comicthumb is unmaintained and not installed by MComix' setup routine
-  by default.
-- MComix will no longer complain that the PIL library is missing when
-  a user has Pillow (a PIL fork) installed.
+  The first argument to each command must be the absolute path to an executable, or an executable found in PATH, or an executable found in the specified working directory.
+- Added an option to automatically rotate images if their height exceeds their width (or width exceeds height), located in the menu bar under Tools -> Transform image -> Auto-rotate image.
+- Added a new preference option to control sorting of files within archives. Natural sort order is the default ordering, which sorts numbers in file names based on their natural order (e.g. 1, 2, .., 10), while literal order will use standard C sorting (e.g. 1, 23, 4).
+- "Reset zoom" is now bound to CTRL-0 and KeyPad0 by default. Previously, CTRL-0 and CTRL-KeyPad0 were used.
+- Using the Shift key with one of the next page / previous page keybindings will advance or go back by 10 pages instead of only one.
+- Added thumbnailer file for Gnome3 integration. Please note that comicthumb is unmaintained and not installed by MComix' setup routine by default.
+- MComix will no longer complain that the PIL library is missing when a user has Pillow (a PIL fork) installed.
 - Updated traditional Chinese translation (by Wayne Su).
 - Updated Hebrew translation (by Isratine Citizen).
 - Updated Japanese translation (by Toshiharu Kudoh).
@@ -740,43 +482,23 @@
 # MComix 0.99
 ## Release date: 14.07.2012
 
-- Fixed "Go to page" dialog's thumbnail not scaling depending on dialog
-  size.
-- Using the mouse wheel to scroll left now correctly advances to the
-  next page in manga mode, instead of going back one page. Scrolling right
-  has also been fixed.
-- Multiple open instances of MComix no longer overwrite each others'
-  bookmarks when closed.
+- Fixed "Go to page" dialog's thumbnail not scaling depending on dialog size.
+- Using the mouse wheel to scroll left now correctly advances to the next page in manga mode, instead of going back one page. Scrolling right has also been fixed.
+- Multiple open instances of MComix no longer overwrite each others' bookmarks when closed.
 - Fixed exception when trying to pack an archive using the archive editor.
-- Fixed a bug that prevented using the "Next archive"/"Previous archive"
-  buttons when an empty archive was loaded (by Gabriel Falcone).
-- "Smart scrolling" now also works with the mouse wheel. In smart
-  scrolling mode, MComix tries to follow the natural reading flow of a
-  comic book by not only scrolling up or down, but also sideways.
-  Please not that smart scrolling does not work in "Fit to width" or "Best
-  fit mode", as there is no need to scroll sideways in these modes.
-- Zoom is now enabled in all fit modes (best fit, fit to width, fit to
-  height).
-- Added new zoom mode 'Fit to size'. This mode always stretches an image
-  to a given height or width. By default, a height of 1800px is set.
+- Fixed a bug that prevented using the "Next archive"/"Previous archive" buttons when an empty archive was loaded (by Gabriel Falcone).
+- "Smart scrolling" now also works with the mouse wheel. In smart scrolling mode, MComix tries to follow the natural reading flow of a comic book by not only scrolling up or down, but also sideways.
+  Please not that smart scrolling does not work in "Fit to width" or "Best fit mode", as there is no need to scroll sideways in these modes.
+- Zoom is now enabled in all fit modes (best fit, fit to width, fit to height).
+- Added new zoom mode 'Fit to size'. This mode always stretches an image to a given height or width. By default, a height of 1800px is set.
   This can be changed in the preferences dialog.
-- Most confirmation dialogs can now be permanently disabled by activating
-  the "Do not ask again" checkbox in each dialog. This action can be
-  undone by clicking on "Clear dialog choices" in the preferences dialog.
-- Added new preference option for switching between different resizing
-  algorithms (higher quality usually means longer page loading times).
-- Added "Scan now" button to library watch list dialog to trigger
-  immediate update. Also added an option to scan directories recursively.
-  Automatically scanning for new books every time the library is opened
-  can now be disabled in the watch list dialog.
-- The watch list feature no longer tries to add archive formats that
-  aren't currently supported, i.e. no .7z archives when 7z isn't
-  installed or found.
-- Added an option to quit the program when the ESC key is pressed. When
-  disabled, ESC only exits fullscreen mode. ESC now also closes the
-  library.
-- Added a new menu item to minimize the MComix window, bound to "N" by
-  default.
+- Most confirmation dialogs can now be permanently disabled by activating the "Do not ask again" checkbox in each dialog. This action can be undone by clicking on "Clear dialog choices" in the preferences dialog.
+- Added new preference option for switching between different resizing algorithms (higher quality usually means longer page loading times).
+- Added "Scan now" button to library watch list dialog to trigger immediate update. Also added an option to scan directories recursively.
+  Automatically scanning for new books every time the library is opened can now be disabled in the watch list dialog.
+- The watch list feature no longer tries to add archive formats that aren't currently supported, i.e. no .7z archives when 7z isn't installed or found.
+- Added an option to quit the program when the ESC key is pressed. When disabled, ESC only exits fullscreen mode. ESC now also closes the library.
+- Added a new menu item to minimize the MComix window, bound to "N" by default.
 - Updated traditional Chinese translation (by Wayne Su).
 - Updated Italian translation (by Giovanni Scafora).
 - Added Hebrew translation (by Isratine Citizen).
@@ -784,24 +506,13 @@
 # MComix 0.98
 ## Release date: 09.04.2012
 
-- Fixed a bug that occasionally caused MComix to display wrong images
-  after deleting an image from a directory.
-- Fixed a bug that caused MComix to jump back up after scrolling down when
-  an archive was still being loaded.
-- Fixed NumLock being enabled breaking other keybindings containing
-  Shift, Alt or Ctrl (e.g. smart scrolling with space).
-- The last-read-page module now falls back to pysqlite2 if sqlite3 isn't
-  available.
-- The library can now scan directories for new files every time it is
-  started, and automatically add new books. Watched directories can be
-  edited with the "Watch list" button in the library main window.
-- Added "Date added" to library sort criteriae. This might be slightly
-  inaccurate for older library entries, as only the day, not the time of
-  the moment a book was added used to be stored in the library database.
-- Improved performance for library book area and thumbnail side bar by
-  only loading thumbnails when they become visible, e.g. triggered by the
-  user scrolling around. The "Delay thumbnail generation" option has thus
-  been removed.
+- Fixed a bug that occasionally caused MComix to display wrong images after deleting an image from a directory.
+- Fixed a bug that caused MComix to jump back up after scrolling down when an archive was still being loaded.
+- Fixed NumLock being enabled breaking other keybindings containing Shift, Alt or Ctrl (e.g. smart scrolling with space).
+- The last-read-page module now falls back to pysqlite2 if sqlite3 isn't available.
+- The library can now scan directories for new files every time it is started, and automatically add new books. Watched directories can be edited with the "Watch list" button in the library main window.
+- Added "Date added" to library sort criteriae. This might be slightly inaccurate for older library entries, as only the day, not the time of the moment a book was added used to be stored in the library database.
+- Improved performance for library book area and thumbnail side bar by only loading thumbnails when they become visible, e.g. triggered by the user scrolling around. The "Delay thumbnail generation" option has thus been removed.
 - Greatly improved performance for browsing directories with many images.
 - Updated Japanese translation (by Toshiharu Kudoh).
 - Updated French translation (by Frédéric Chateaux).
@@ -809,212 +520,114 @@
 # MComix 0.97.1
 ## Release date: 18.02.2012
 
-- Corrected libunrar regression. (thanks to Giovanni Scafora for pointing
-  this out)
+- Corrected libunrar regression. (thanks to Giovanni Scafora for pointing this out)
 
 # MComix 0.97
 ## Release date: 17.02.2012
 
-- Fixed segmentation fault on x64 platforms when trying to extract RAR
-  archives with libunrar.
-- The lens now uses the original pixbuf when preparing the magnified image
-  instead of the already scaled pixbuf that is shown in MComix' display
-  area. In addition, fixed zero division error when trying to use the lens
-  on images with width greatly exceeding height.
-- If 'Auto load last opened file' was enabled in the preferences, MComix
-  would try to load an invalid path if no file was opened when MComix was
-  last closed.
-- Menu item hotkeys can now be changed by hovering over a menu item with
-  the mouse and pressing the desired key, or key combination.
+- Fixed segmentation fault on x64 platforms when trying to extract RAR archives with libunrar.
+- The lens now uses the original pixbuf when preparing the magnified image instead of the already scaled pixbuf that is shown in MComix' display area. In addition, fixed zero division error when trying to use the lens on images with width greatly exceeding height.
+- If 'Auto load last opened file' was enabled in the preferences, MComix would try to load an invalid path if no file was opened when MComix was last closed.
+- Menu item hotkeys can now be changed by hovering over a menu item with the mouse and pressing the desired key, or key combination.
   (by Juha Sahakangas and Alan Horkan)
-- All other hotkeys (such as keys for scrolling or zooming) can now be
-  customized by editing keybindings.conf in MComix' configuration
-  directory, i.e. ~/.config/mcomix on Linux or %HOMEPATH%/MComix on
-  Windows. MComix must not be running while editing the file, or changes
-  will be overwritten once the program exits.
-- Removed error nag box that would pop up after program shutdown on
-  Windows occasionally.
-- The order in which files are loaded and displayed can now be customized
-  in the "Advanced" tab of the preferences dialog. Files can be sorted
-  either by name, file size, or by last-modified date. This change does
-  not affect ordering of files inside archives.
+- All other hotkeys (such as keys for scrolling or zooming) can now be customized by editing keybindings.conf in MComix' configuration directory, i.e. ~/.config/mcomix on Linux or %HOMEPATH%/MComix on Windows. MComix must not be running while editing the file, or changes will be overwritten once the program exits.
+- Removed error nag box that would pop up after program shutdown on Windows occasionally.
+- The order in which files are loaded and displayed can now be customized in the "Advanced" tab of the preferences dialog. Files can be sorted either by name, file size, or by last-modified date. This change does not affect ordering of files inside archives.
   (by C Nelson)
-- MComix can now automatically remember the last read page in archive
-  files. When an archive is opened, the last read page will be loaded if
-  "Store information about recently opened files" is set to "File names
-  and last read page" (see "Behaviour" tab of the preferences window).
+- MComix can now automatically remember the last read page in archive files. When an archive is opened, the last read page will be loaded if "Store information about recently opened files" is set to "File names and last read page" (see "Behaviour" tab of the preferences window).
 - Updated Italian translation (by Giovanni Scafora).
 
 # MComix 0.96
 ## Release date: 24.12.2011
 
-- Opening a RAR archive with 7z would destroy the archive, leaving only
-  a 0-byte file. This has been fixed.
-- Fixed MComix opening files in other directories after scrolling past the
-  first page, even when "Automatically open next directory" was disabled.
-- Fixed a bug that would hang MComix when trying to open a
-  password-protected RAR archive.
-- MComix no longer restores the last opened file when it was terminated
-  abnormally.
-- Files opened outside of archives are now naturally sorted (e.g. 1.jpg,
-  2.jpg, 10.jpg instead of 1.jpg, 10.jpg, 2.jpg). Before, only images
-  within archives were naturally sorted.
-- The preference option "Show only one page where appropriate" has been
-  split up to allow controlling whether certain pages should be displayed
-  as single page in double page mode (title pages/wide pages/none).
-- "Delete" is now bound to "DEL" instead of "F8" for consistency with most
-  other desktop applications.
+- Opening a RAR archive with 7z would destroy the archive, leaving only a 0-byte file. This has been fixed.
+- Fixed MComix opening files in other directories after scrolling past the first page, even when "Automatically open next directory" was disabled.
+- Fixed a bug that would hang MComix when trying to open a password-protected RAR archive.
+- MComix no longer restores the last opened file when it was terminated abnormally.
+- Files opened outside of archives are now naturally sorted (e.g. 1.jpg, 2.jpg, 10.jpg instead of 1.jpg, 10.jpg, 2.jpg). Before, only images within archives were naturally sorted.
+- The preference option "Show only one page where appropriate" has been split up to allow controlling whether certain pages should be displayed as single page in double page mode (title pages/wide pages/none).
+- "Delete" is now bound to "DEL" instead of "F8" for consistency with most other desktop applications.
 - Updated traditional Chinese translation (by Wayne Su).
 
 # MComix 0.95
 ## Release date: 05.11.2011
 
-- mcomix/mcomixstarter.py has been moved out of the mcomix package into
-  the root directory of the mcomix distribution.
+- mcomix/mcomixstarter.py has been moved out of the mcomix package into the root directory of the mcomix distribution.
 
-  Note for packagers: Please do not directly symlink a file in /usr/bin to
-  mcomix/run.py! Use the wrapper generated by 'setup.py install' instead,
-  or a script similar to mcomixstarter.py.
+  Note for packagers: Please do not directly symlink a file in /usr/bin to mcomix/run.py! Use the wrapper generated by 'setup.py install' instead, or a script similar to mcomixstarter.py.
 - Fixed library freezing up when displaying large amounts of books.
-  In addition, changes to cover size and sort order weren't kept
-  across program restarts.
+  In addition, changes to cover size and sort order weren't kept across program restarts.
 - Fixed "Copy to clipboard" doing nothing on Win32.
-- Fixed freezing on password-protected 7zip archives. Please not that such
-  files currently aren't supported and will always appear empty in MComix.
+- Fixed freezing on password-protected 7zip archives. Please not that such files currently aren't supported and will always appear empty in MComix.
 - The All-in-one package on Win32 should now use the native Windows theme.
-- Fix MComix crashing on startup when opening a file in a directory
-  that contains names Python cannot directly convert to Unicode strings.
+- Fix MComix crashing on startup when opening a file in a directory that contains names Python cannot directly convert to Unicode strings.
   (by Joseph Seaton)
-- Selecting "Japanese" from the language dropdown box in the preferences
-  dialog reverted the language to English.
+- Selecting "Japanese" from the language dropdown box in the preferences dialog reverted the language to English.
 - Added support for reading archives in archives.
   (by David Pineau)
-- Reduced minumum slideshow scrolling delay. With small values here and in
-  scrolling distance (e.g. 0.05s, 1px), MComix can simulate "smooth"
-  scrolling.
-- The "Dynamic background color" option now uses a color that should be
-  closer to a page's actual edge color.
-- Removed preference options for 'Use double page mode by default' and
-  'Use manga mode by default'. The last used settings will be remembered
-  instead.
-- The OSD is now used more frequently for displaying error messages that
-  would only appear in the status bar or in the console before.
-  In addition, the OSD can now be triggered with mouse button 4, as well
-  as with the TAB key.
+- Reduced minumum slideshow scrolling delay. With small values here and in scrolling distance (e.g. 0.05s, 1px), MComix can simulate "smooth" scrolling.
+- The "Dynamic background color" option now uses a color that should be closer to a page's actual edge color.
+- Removed preference options for 'Use double page mode by default' and 'Use manga mode by default'. The last used settings will be remembered instead.
+- The OSD is now used more frequently for displaying error messages that would only appear in the status bar or in the console before.
+  In addition, the OSD can now be triggered with mouse button 4, as well as with the TAB key.
 - Updated French translation. (by Frédéric Chateaux)
 
 # MComix 0.94
 ## Release date: 27.09.2011
 
-- Fixed MComix opening archives in sibling directories
-  even when "Automatically open next archive" was disabled.
-- Fixed recursively adding directories to the library not working
-  consistently on Win32.
-- Fixed the first command line argument to MComix being ignored on Win32,
-  breaking "Open with..." functionality.
-- The library window has been slighly reorganized. All collection-related
-  functionality can now be accessed via the right-click popup on the
-  collection panel to the left. Similiarily, "Add books" is now on the
-  main book panel popup. Additionally, CTRL-SHIFT-A has been set as
-  shortcut for this action.
-- Library covers will now be cached after being loaded. This will avoid
-  frequent reloading when switching between collections, or when filtering
-  books.
-- The magnifying lens can no longer become partially invisible when moving
-  around near window edges, and should no longer flicker.
-- MComix automatically switching to next/previous directories can now
-  be controlled with a new preference option.
+- Fixed MComix opening archives in sibling directories even when "Automatically open next archive" was disabled.
+- Fixed recursively adding directories to the library not working consistently on Win32.
+- Fixed the first command line argument to MComix being ignored on Win32, breaking "Open with..." functionality.
+- The library window has been slighly reorganized. All collection-related functionality can now be accessed via the right-click popup on the collection panel to the left. Similiarily, "Add books" is now on the main book panel popup. Additionally, CTRL-SHIFT-A has been set as shortcut for this action.
+- Library covers will now be cached after being loaded. This will avoid frequent reloading when switching between collections, or when filtering books.
+- The magnifying lens can no longer become partially invisible when moving around near window edges, and should no longer flicker.
+- MComix automatically switching to next/previous directories can now be controlled with a new preference option.
 - Updated French translation. (by Frédéric Chateaux)
 
 # MComix 0.93
 ## Release date: 27.08.2011
 
-- Removing a book from the library while its thumbnail wasn't loaded yet
-  would result in a segmentation fault. This issue has been fixed.
-- Fixed sorting in the bookmark edit dialog not working as expected. The
-  buttons "Sort ascending" and "Sort descending" have been removed, as
-  they did the same as clicking on the "Name" header of the bookmarks
-  table. Double-clicking a bookmark will open it.
-- Fixed a bug that made it impossible to show toolbar/menu controls in
-  fullscreen mode if "Automatically hide all toolbars in fullscreen" was
-  enabled.
+- Removing a book from the library while its thumbnail wasn't loaded yet would result in a segmentation fault. This issue has been fixed.
+- Fixed sorting in the bookmark edit dialog not working as expected. The buttons "Sort ascending" and "Sort descending" have been removed, as they did the same as clicking on the "Name" header of the bookmarks table. Double-clicking a bookmark will open it.
+- Fixed a bug that made it impossible to show toolbar/menu controls in fullscreen mode if "Automatically hide all toolbars in fullscreen" was enabled.
 - Fixed exception related to calculation of dynamic background colors.
   (by Nephiel)
-- Library collection names did not accept non-ASCII characters. This has
-  been fixed.
-- Added support for LHA/LZH archives, using either 'lha' or '7z' as
-  extractors. Please not that the '7z' executable on Windows does not
-  support printing Unicode characters at all, so extracting an archive with
-  non-ASCII filenames will always fail.
-- By selecting a folder instead of a file in the library's "Add book"
-  dialog, all archives within the selected directory will be added to the
-  library recursively.
-- Doing the same in the normal "Open" dialog will open all files within the
-  directory.
-- MComix will now ask for confirmation when creating a new bookmark in an
-  archive that was already bookmarked before. This allows the user to
-  either create a new bookmark, or replace the old one with the current
-  page.
-- ALT+Left mouse button and ALT+Right now advance one page, while ALT+Right
-  mouse button/ALT+Left go back one page.
-- When on the last page, advancing to the next page will load files from
-  the next sibling directory - holding CTRL is no longer necessary.
-- Added a new option to invert the smart scrolling direction. Instead of
-  going left/right, then top/bottom, MComix will scroll top/bottom, then
-  left/right.
-- Settings in the Enhance dialog can now be remembered using the "Save"
-  button.
-- The option "Stretch small images" now increases an image's base size
-  when using manual zoom mode.
-- Information shown in the status bar can now be enabled/disabled
-  separately by right-clicking on the status bar and toggling the
-  respective check box.
-- By pressing TAB, an OSD-like panel will be displayed, showing the current
-  page and file.
-- MComix can now use Chardet (http://chardet.feedparser.org) for guessing
-  filename encodings in archives, if installed. If file names are too
-  short, the detection will still be hit-and-miss.
+- Library collection names did not accept non-ASCII characters. This has been fixed.
+- Added support for LHA/LZH archives, using either 'lha' or '7z' as extractors. Please not that the '7z' executable on Windows does not support printing Unicode characters at all, so extracting an archive with non-ASCII filenames will always fail.
+- By selecting a folder instead of a file in the library's "Add book" dialog, all archives within the selected directory will be added to the library recursively.
+- Doing the same in the normal "Open" dialog will open all files within the directory.
+- MComix will now ask for confirmation when creating a new bookmark in an archive that was already bookmarked before. This allows the user to either create a new bookmark, or replace the old one with the current page.
+- ALT+Left mouse button and ALT+Right now advance one page, while ALT+Right mouse button/ALT+Left go back one page.
+- When on the last page, advancing to the next page will load files from the next sibling directory - holding CTRL is no longer necessary.
+- Added a new option to invert the smart scrolling direction. Instead of going left/right, then top/bottom, MComix will scroll top/bottom, then left/right.
+- Settings in the Enhance dialog can now be remembered using the "Save" button.
+- The option "Stretch small images" now increases an image's base size when using manual zoom mode.
+- Information shown in the status bar can now be enabled/disabled separately by right-clicking on the status bar and toggling the respective check box.
+- By pressing TAB, an OSD-like panel will be displayed, showing the current page and file.
+- MComix can now use Chardet (http://chardet.feedparser.org) for guessing filename encodings in archives, if installed. If file names are too short, the detection will still be hit-and-miss.
 
 # MComix 0.92
 ## Release date: 27.05.2011
 
-- Fixed a bug that made MComix save preview thumbnails to disk
-  even if this behaviour was disabled in the preferences window.
-- Fixed a bug in the the archive editor that prevented it from actually
-  saving the modified archive on Win32.
+- Fixed a bug that made MComix save preview thumbnails to disk even if this behaviour was disabled in the preferences window.
+- Fixed a bug in the the archive editor that prevented it from actually saving the modified archive on Win32.
 - Added limited support for password-protected ZIP and RAR archives.
-  For ZIP archives, Python >= 2.6 is required. For RAR archives,
-  only extraction with libunrar/unrar.dll is supported.
-- Added a combobox to the library dialog to enable sorting of books
-  based on file name, full path, or file size.
-- If a library collection has sub-collections, the books from these
-  sub-collections will be shown as well when the collection is opened.
+  For ZIP archives, Python >= 2.6 is required. For RAR archives, only extraction with libunrar/unrar.dll is supported.
+- Added a combobox to the library dialog to enable sorting of books based on file name, full path, or file size.
+- If a library collection has sub-collections, the books from these sub-collections will be shown as well when the collection is opened.
 - The "Bookmarks" menu can be accessed via the normal menu bar again.
-  "Clear bookmarks" has been removed in favour of using the "Edit
-  bookmarks" dialog.
+  "Clear bookmarks" has been removed in favour of using the "Edit bookmarks" dialog.
   (by Alan Horkan)
-- Several usability improvements were done to the Enhance, Edit and
-  Library dialogs.
+- Several usability improvements were done to the Enhance, Edit and Library dialogs.
   (by Alan Horkan)
-- If applications for extracting RAR or 7Z archives aren't found on
-  start-up, MComix will no longer allow selecting the corresponding file
-  types in the "Open" dialog.
+- If applications for extracting RAR or 7Z archives aren't found on start-up, MComix will no longer allow selecting the corresponding file types in the "Open" dialog.
   (suggested by Alan Horkan)
-- The "Copy" menu item will now copy the current file name to the
-  clipboard, in addition to the currently opened page as bitmap.
-- The currently opened file or archive can now be deleted using
-  File -> Delete, or by pressing F8.
-- Added an option to use the first page of an archive as application
-  icon instead of the standard MComix icon. (inspired by Alexandr
-  Domrachev)
-- Added an option to manually change the user interface language
-  used by MComix. Changes to the language require an application
-  restart to take effect.
+- The "Copy" menu item will now copy the current file name to the clipboard, in addition to the currently opened page as bitmap.
+- The currently opened file or archive can now be deleted using File -> Delete, or by pressing F8.
+- Added an option to use the first page of an archive as application icon instead of the standard MComix icon. (inspired by Alexandr Domrachev)
+- Added an option to manually change the user interface language used by MComix. Changes to the language require an application restart to take effect.
 - Added the following new command line switches:
-  -m                  Manga mode
-  -s                  Slideshow
-  -d                  Double-page mode
-  -b, -w, -h          Fit best/width/height, respectively.
+  -m                  Manga mode -s                  Slideshow -d                  Double-page mode -b, -w, -h          Fit best/width/height, respectively.
   (suggested by Anonymous on the Comix tracker, adapted by Alan Horkan)
   -W\[all|warn|error\]  Set log level (default is 'warn')
 - The following preference items have been removed:
@@ -1029,55 +642,30 @@
 # MComix 0.91
 ## Release date: 24.04.2011
 
-- Fixed excessive memory consumption due to cached pixmaps not being
-  properly evicted.
-- Fixed certain wait conditions that prevented MComix from exiting
-  on Win32.
-- Fixed "Remove from the library" deleting the actual book instead of
-  its library thumbnail.
-- The "Go to page" dialog now shows thumbnails when they are available,
-  not only after all thumbnails have been loaded. Additionally,
-  some usability improvements have been done to the dialog, such as
-  instantly updating the thumbnail when editing the page box, and setting
-  focus to the page box when the dialog is opened.
-- When passing more than one file to MComix at startup, only those files
-  will be opened. This differs from the traditional behavior, where
-  MComix would only consider the first file and open all remaining
-  files in the same directory.
-  If the passed files are archives, MComix will only open these archives
-  when "Automatically open next archive" is enabled. If only a single file
-  is passed, MComix will keep opening all files in that directory.
-- When the first/last file of a directory is open, pressing CTRL and
-  advancing to the previous/next page (e.g. by pressing CTRL+Space),
-  files in the previous/next sibling directory will be opened.
-  Note that this feature is disabled by intent when MComix has been
-  opened with a list of more than one file.
+- Fixed excessive memory consumption due to cached pixmaps not being properly evicted.
+- Fixed certain wait conditions that prevented MComix from exiting on Win32.
+- Fixed "Remove from the library" deleting the actual book instead of its library thumbnail.
+- The "Go to page" dialog now shows thumbnails when they are available, not only after all thumbnails have been loaded. Additionally, some usability improvements have been done to the dialog, such as instantly updating the thumbnail when editing the page box, and setting focus to the page box when the dialog is opened.
+- When passing more than one file to MComix at startup, only those files will be opened. This differs from the traditional behavior, where MComix would only consider the first file and open all remaining files in the same directory.
+  If the passed files are archives, MComix will only open these archives when "Automatically open next archive" is enabled. If only a single file is passed, MComix will keep opening all files in that directory.
+- When the first/last file of a directory is open, pressing CTRL and advancing to the previous/next page (e.g. by pressing CTRL+Space), files in the previous/next sibling directory will be opened.
+  Note that this feature is disabled by intent when MComix has been opened with a list of more than one file.
 
   This feature is also available via CTRL+N/CTRL+P, or the menu bar.
 - Speed up thumbnail generation by parallelizing load tasks.
-  (inspired by David Zaragoza, who originally suggested to use
-  processes instead of threads)
+  (inspired by David Zaragoza, who originally suggested to use processes instead of threads)
 - Library cover generation is now parallelized as well.
-- New option to delay loading of thumbnails. This way, thumbnails will
-  only be generated when they are actually needed, i.e. the thumbnail
-  sidebar is open or "Go to page" is used.
+- New option to delay loading of thumbnails. This way, thumbnails will only be generated when they are actually needed, i.e. the thumbnail sidebar is open or "Go to page" is used.
 - Minor options have been moved into a new tab in the preferences dialog.
-- MComix' configuration files are now stored in ~/.config/mcomix instead
-  of in ~/.local/share/mcomix, as originally intended.
-- Added the toolbar show/hide menu to the right-click popup. Previously,
-  if the menu bar had been disabled using the normal menu, there was no
-  way to get it back.
+- MComix' configuration files are now stored in ~/.config/mcomix instead of in ~/.local/share/mcomix, as originally intended.
+- Added the toolbar show/hide menu to the right-click popup. Previously, if the menu bar had been disabled using the normal menu, there was no way to get it back.
 - The menu bar can now also be shown/hidden using CTRL+M.
   (by Alan Horkan)
-- MComix could not switch back to windowed mode when started in fullscreen
-  mode on Win32.
-- The MComix window will no longer close instantly after starting up when
-  reporting an error due to unsatisfied dependencies on Win32.
-- Fixed the settings dialog window no longer opening when it has been
-  closed with the X icon on the dialog before.
+- MComix could not switch back to windowed mode when started in fullscreen mode on Win32.
+- The MComix window will no longer close instantly after starting up when reporting an error due to unsatisfied dependencies on Win32.
+- Fixed the settings dialog window no longer opening when it has been closed with the X icon on the dialog before.
 - Fix "Automatically open next archive" with empty archives.
-- Fixed magnifiying lens being broken when the page was rotated in any
-  way.
+- Fixed magnifiying lens being broken when the page was rotated in any way.
 - Fixed setup.py failing when no X session was started.
 - Required Python version is now 2.5 or newer.
 - Updated Swedish translation. (by Martin Karlsson)
@@ -1088,58 +676,32 @@
 
  MComix now uses a slightly different directory structure than before.
   The 'src' folder is now 'mcomix' to provide a correct package name.
-  'mcomix.py' is now 'mcomixstarter.py' to avoid confusing Python by
-  having a module with the same name as the package around.
-  Translations and images required by the GUI are now sub-packages of
-  'mcomix'.
+  'mcomix.py' is now 'mcomixstarter.py' to avoid confusing Python by having a module with the same name as the package around.
+  Translations and images required by the GUI are now sub-packages of 'mcomix'.
 
-  A setuptools-based setup.py replaces `install.py`. This should help for
-  uniform installs across different operating systems.
+  A setuptools-based setup.py replaces `install.py`. This should help for uniform installs across different operating systems.
 - Several strings have been reworked to ease localization.
 - Added ability to apply current changes in the edit archive window.
-- Various usability fixes on Win32, including Unicode filenames,
-  loading speed, recently opened files not being displayed,
-  temporary directories not being deleted, crashing due to missing
-  icons, MIME type file filters in the "Open" dialog not working,
-  thumbnails being regenerated unnecessarily, and others.
-- Magnifying lens is now hotkeyed to 'L', while 'G' is Go to page. (by
-  Nephiel)
-- Right-click menu is now more suitable for fullscreen reading, adding
-  several menu items previously only available via normal menu. (by
-  Nephiel)
+- Various usability fixes on Win32, including Unicode filenames, loading speed, recently opened files not being displayed, temporary directories not being deleted, crashing due to missing icons, MIME type file filters in the "Open" dialog not working, thumbnails being regenerated unnecessarily, and others.
+- Magnifying lens is now hotkeyed to 'L', while 'G' is Go to page. (by Nephiel)
+- Right-click menu is now more suitable for fullscreen reading, adding several menu items previously only available via normal menu. (by Nephiel)
 - Additional RAR handler using libunrar.so/unrar.dll.
 
-  Added archive handler using Rarlab's libunrar library
-  for extracting files. Apart from being faster for sequential
-  extractions than calling unrar for each single file,
-  this library supports Unicode filenames natively and thus
-  allows Windows users to read most RAR files.
-  Libunrar can be obtained from http://www.rarlab.com/rar_add.htm
-  and can be placed either in usual system directories such as
-  /usr/lib or C:\Windows\system32, or directly in MComix' root directory.
-- Fixed rar/unrar failing regularly on Win32 when the archive contains
-  files not matching the current locale.
-- Go to Page is now enabled even when the archive is still loading. (by
-  Nephiel)
-- Added support for the 7zip archive format. As with rar/unrar, this
-  requires the "7z" executable being installed and on PATH.
-- When pressing CTRL while being in double page mode, stepping forwards
-  and backwards will now always only advance/go back one image instead of
-  possibly two.
+  Added archive handler using Rarlab's libunrar library for extracting files. Apart from being faster for sequential extractions than calling unrar for each single file, this library supports Unicode filenames natively and thus allows Windows users to read most RAR files.
+  Libunrar can be obtained from http://www.rarlab.com/rar_add.htm and can be placed either in usual system directories such as /usr/lib or C:\Windows\system32, or directly in MComix' root directory.
+- Fixed rar/unrar failing regularly on Win32 when the archive contains files not matching the current locale.
+- Go to Page is now enabled even when the archive is still loading. (by Nephiel)
+- Added support for the 7zip archive format. As with rar/unrar, this requires the "7z" executable being installed and on PATH.
+- When pressing CTRL while being in double page mode, stepping forwards and backwards will now always only advance/go back one image instead of possibly two.
 - Graceful shutdown on SIGTERM. (by Marco Nicolini)
 - Switching pages while in slideshow mode now resets the slideshow timer.
   (by Anonymous)
-- When opening an archive in double page mode, the first page (i.e. the
-  cover) is displayed as single page.
-- The currently opened file can now be extracted from archives using
-  the 'Save as...' menu item.
-- Fixed thumbnail size preference not being respected, and scaling of
-  book covers in the library dialog being broken.
-- Files in the library can now be opened without closing the library
-  window using the right-click popup menu.
+- When opening an archive in double page mode, the first page (i.e. the cover) is displayed as single page.
+- The currently opened file can now be extracted from archives using the 'Save as...' menu item.
+- Fixed thumbnail size preference not being respected, and scaling of book covers in the library dialog being broken.
+- Files in the library can now be opened without closing the library window using the right-click popup menu.
 - Reordered various menu items.
-- A possible deadlock that could occur when opening archive files has been
-  fixed.
+- A possible deadlock that could occur when opening archive files has been fixed.
 - Updated German translation.
 
 # MComix 0.90 Initial Release
@@ -1148,8 +710,7 @@
 - Changed the mechanism of page flipping.
 - Added preferences to allow changing scrolling amount with arrow keys and mouse scroll button.
 - Added auto scrolling functionality.
-- Changed automatic background color selection algorithm to random sampling instead of
-  only edge sampling.
+- Changed automatic background color selection algorithm to random sampling instead of only edge sampling.
 - Fixed non-recognition of pbm, pgm, and ppm images in archives.
 - Added save and quit functionality.
 - Added crash recovery.
@@ -1159,8 +720,7 @@
 - Added color preference and selection for thumbnail bar background color.
 - Fixed lens not magnifying the enhanced image.
 - Added file deletion to the Library right-click option window.
-- Added recursive book adding in the Library (if you select more than one folder in the
-  book selection window.
+- Added recursive book adding in the Library (if you select more than one folder in the book selection window.
 - Split each file to only contain one class per file (except labels.py).
 - Fixed file name ampersand encoding error.
 - Added page selector with page preview.
@@ -1179,44 +739,29 @@
 - Added a Galician translation by Roxerio Roxo Carrillo.
 - The German translation updated for Comix 4 by Chris Leick.
 - Added support for BMP images in archives. Thanks to Nathaniel Moseley.
-- The status bar now displays the filename of the viewed image files also
-in archives.
-- Fixed a bug that caused the wrong background colour to be used with the
-dynamic background colour preference on some systems. Thanks to Nathaniel
-Moseley.
+- The status bar now displays the filename of the viewed image files also in archives.
+- Fixed a bug that caused the wrong background colour to be used with the dynamic background colour preference on some systems. Thanks to Nathaniel Moseley.
 - Fixed a bug that could cause the thumbnail maintenance dialog to crash.
-- Fixed a bug that caused the zoom scale in manual zoom mode to be wrong
-when using double page mode.
+- Fixed a bug that caused the zoom scale in manual zoom mode to be wrong when using double page mode.
 
 
 # Comix 4.0.4
 
-- Applied a workaround for a bug that caused the "Open" dialog to crash
-when trying to open a file when the file type filter had been reset to
-blank. This bug seems to only appear on some systems, probably depending
-on the installed GTK+ version.
-- Fixed a bug that caused the error message for unfulfilled dependencies
-to not be printed properly.
-- The rar/unrar program is now invoked in such a way as to keep broken
-or incomplete files extracted from RAR archives, since Comix might be
-able to display parts of these files anyway.
+- Applied a workaround for a bug that caused the "Open" dialog to crash when trying to open a file when the file type filter had been reset to blank. This bug seems to only appear on some systems, probably depending on the installed GTK+ version.
+- Fixed a bug that caused the error message for unfulfilled dependencies to not be printed properly.
+- The rar/unrar program is now invoked in such a way as to keep broken or incomplete files extracted from RAR archives, since Comix might be able to display parts of these files anyway.
 
 # Comix 4.0.3
 
 - Hungarian translation updated by Ernő Drabik.
 - French translation updated by Benoît H.
-- Added a feature to automatically rotate images according to their
-EXIF tags.
-- Fixed a bug that caused drag-n-drop actions from KDE applications to
-not work properly.
+- Added a feature to automatically rotate images according to their EXIF tags.
+- Fixed a bug that caused drag-n-drop actions from KDE applications to not work properly.
 - Fixed some bugs that caused problems with non-UTF-8 filename encodings.
-- Fixed a bug that caused the manual zoom mode to not work as expected
-when set as the default mode.
+- Fixed a bug that caused the manual zoom mode to not work as expected when set as the default mode.
 - Comix now accepts directories as command-line arguments.
-- Added command-line arguments to start Comix in fullscreen mode and to
-display the library on startup.
-- Comix preferences and data now reside in the $XDG_CONFIG_HOME and
-$XDG_DATA_HOME directories instead of in ~/.comix/.
+- Added command-line arguments to start Comix in fullscreen mode and to display the library on startup.
+- Comix preferences and data now reside in the $XDG_CONFIG_HOME and $XDG_DATA_HOME directories instead of in ~/.comix/.
 - Some minor interface enhancements.
 
 # Comix 4.0.2
@@ -1224,8 +769,7 @@ $XDG_DATA_HOME directories instead of in ~/.comix/.
 - Brazilian Portuguese translation updated by Marcelo Góes.
 - Traditional Chinese translation updated by Wayne Su.
 - Catalan translation updated by Carles Escrig Royo.
-- Internal filenames in archives created by the archive editing dialog
-no longer contain temporary filename cruft.
+- Internal filenames in archives created by the archive editing dialog no longer contain temporary filename cruft.
 
 # Comix 4.0.1
 
@@ -1233,29 +777,16 @@ no longer contain temporary filename cruft.
 - Polish translation updated by Darek Jakoniuk.
 - Russian translation updated by Артем Смирнов.
 - Simplified Chinese translation updated by Xie Yanbo.
-- Re-added the "flip pages when scrolling off the page" preference
-from previous Comix versions. Thanks to Mamoru Tasaka.
-- Added a portability module for handling home directories in a more
-portable way. Thanks to Oddegamra.
+- Re-added the "flip pages when scrolling off the page" preference from previous Comix versions. Thanks to Mamoru Tasaka.
+- Added a portability module for handling home directories in a more portable way. Thanks to Oddegamra.
 
 # Comix 4.0.0
 
-- Comix has been completely rewritten from scratch. On the surface things
-look quite a bit like they used to, but the internal workings are
-entirely new. There are too many changes for them all to be mentioned
-here, but a couple of highlights are a much more functional library and a
-new archive editing dialog. The work on this new version of Comix has
-been going on in rather sporadic phases for almost two years, and during
-that time I have received help from lots of different people. Now, I must
-admit, I can no longer remember them all. So instead of trying to list as
-many as I can here, I will instead simply say thank you to everyone who
-have contributed fixes, patches, suggestions or encouraging words. Thanks!
+- Comix has been completely rewritten from scratch. On the surface things look quite a bit like they used to, but the internal workings are entirely new. There are too many changes for them all to be mentioned here, but a couple of highlights are a much more functional library and a new archive editing dialog. The work on this new version of Comix has been going on in rather sporadic phases for almost two years, and during that time I have received help from lots of different people. Now, I must admit, I can no longer remember them all. So instead of trying to list as many as I can here, I will instead simply say thank you to everyone who have contributed fixes, patches, suggestions or encouraging words. Thanks!
 
 # Comix 3.6.5
 
-- Applied security fix patches to handle unsecure tempfile creation and
-character escaping in filenames. Thanks to Mamoru Tasaka and others for
-the patches.
+- Applied security fix patches to handle unsecure tempfile creation and character escaping in filenames. Thanks to Mamoru Tasaka and others for the patches.
 - Added a Korean translation by 김민기.
 - Added a Persian translation by Maryam Sanaat.
 - Added a Indonesian translation by Andhika Padmawan.
@@ -1265,20 +796,15 @@ the patches.
 
 - Added a Russian translation by Artyom Smirnov.
 - Added a Croatian translation by Adrian C.
-- Fixed a bug in the thumbnailer, comicthumb, failing to create thumbnails
-for Zip and tar archives.
+- Fixed a bug in the thumbnailer, comicthumb, failing to create thumbnails for Zip and tar archives.
 - Some minor changes.
 
 
 # Comix 3.6.3
 
 - Added a Hungarian translation by Ernő Drabik.
-- Added a patch by Abdullah Hamed that fixes so that the arrow keys can be
-used to flip pages also when not in fit-to-screen mode when the
-corresponding preference is set. Just like was possible only with the
-scroll wheel before.
-- Fixed a bug with opening certain Zip files. Thanks to Steve Juranich for
-the fix.
+- Added a patch by Abdullah Hamed that fixes so that the arrow keys can be used to flip pages also when not in fit-to-screen mode when the corresponding preference is set. Just like was possible only with the scroll wheel before.
+- Fixed a bug with opening certain Zip files. Thanks to Steve Juranich for the fix.
 - Fixed a bug concerning %'s in filenames.
 
 # Comix 3.6.2
@@ -1291,60 +817,39 @@ the fix.
 
 # Comix 3.6
 
-- Added an "Adjust colour" dialog that lets you specify values for
-brightness, contrast, saturation and sharpness.
-- Improved the behaviour of the "Save window position and size" and
-"Default fullscreen" preferences.
+- Added an "Adjust colour" dialog that lets you specify values for brightness, contrast, saturation and sharpness.
+- Improved the behaviour of the "Save window position and size" and "Default fullscreen" preferences.
 - Changed the "Save window position and size" preference to on by default.
 - Changed the menus a bit.
 - Improved autocontrast (slightly heavier contrast change).
-- Changed the UI of the properties dialog a bit to better suit low
-resolution screens.
-- Improved handling of Zip files containing files with filenames of an
-unknown character encoding.
-- Added extra error message to `install.py` that is displayed when trying to
-install into a non-existing directory.
-- Added a --no-balloon option to `install.py` that tells the Nautilus
-thumbnailer to not imprint balloon images on thumbnails by default.
-- Fixed a bug that could cause Comix to scale images to the wrong
-dimensions on a dual-screen setup. Thanks to Vegard Eriksen for this fix.
-- Fixed a bug that caused icons to not be loaded when starting Comix
-through a symbolic link not located in the same directory as the `comix`
-executable.
-- Fixed a bug that could cause an error message when going back to a
-previous archive by flipping backwards in double page mode and directly
-switching to single page mode afterwards.
+- Changed the UI of the properties dialog a bit to better suit low resolution screens.
+- Improved handling of Zip files containing files with filenames of an unknown character encoding.
+- Added extra error message to `install.py` that is displayed when trying to install into a non-existing directory.
+- Added a --no-balloon option to `install.py` that tells the Nautilus thumbnailer to not imprint balloon images on thumbnails by default.
+- Fixed a bug that could cause Comix to scale images to the wrong dimensions on a dual-screen setup. Thanks to Vegard Eriksen for this fix.
+- Fixed a bug that caused icons to not be loaded when starting Comix through a symbolic link not located in the same directory as the `comix` executable.
+- Fixed a bug that could cause an error message when going back to a previous archive by flipping backwards in double page mode and directly switching to single page mode afterwards.
 - Fixed a bug that caused Comix to treat empty files as tar archives.
 Thanks to Christoph Wolk for this fix.
-- Fixed a bug in comicthumb with thumbnailing rar archives, plus
-some cleanup. (Christoph Wolk)
+- Fixed a bug in comicthumb with thumbnailing rar archives, plus some cleanup. (Christoph Wolk)
 
 # Comix 3.5.1
 
-- Fixed a bug that caused the mode of all images to be reported as
-"unknown" instead of RGB/CMYK etc.
-- Fixed a bug that could cause an error when trying to quit Comix under
-certain circumstances (i.e. when there is no ~/.comix/menu_thumbnails/
-directory present).
+- Fixed a bug that caused the mode of all images to be reported as "unknown" instead of RGB/CMYK etc.
+- Fixed a bug that could cause an error when trying to quit Comix under certain circumstances (i.e. when there is no ~/.comix/menu_thumbnails/ directory present).
 
 # Comix 3.5
 
 - Added a bunch of new icons, including a new "logo".
-- The magnifying lens code has been polished a bit. It is now
-substantially faster so the lens should appear less choppy.
+- The magnifying lens code has been polished a bit. It is now substantially faster so the lens should appear less choppy.
 - Added horizontal and vertical lossless JPEG flip commands.
 - Added a JPEG desaturation command.
-- Added support for SVG, PCX, PNM, PBM, PGM, PPM, Targa and Sun raster
-image files.
+- Added support for SVG, PCX, PNM, PBM, PGM, PPM, Targa and Sun raster image files.
 - Rearranged the toolbar a bit and added tooltips to it.
-- When a directory is given as a command line parameter, Comix now
-recursively searches for cbr, cbz and cbt files as well as image files.
-- Changed `install.py` so that it aborts installation if the required
-dependencies are not found.
-- Fixed a bug that caused the space key to not scroll down when in double
-page mode and manga mode and the window is wider than the pages.
-- Applied a workaround for a bug(?) in WindowMaker that caused problems
-when using the "fullscreen as default" preference.
+- When a directory is given as a command line parameter, Comix now recursively searches for cbr, cbz and cbt files as well as image files.
+- Changed `install.py` so that it aborts installation if the required dependencies are not found.
+- Fixed a bug that caused the space key to not scroll down when in double page mode and manga mode and the window is wider than the pages.
+- Applied a workaround for a bug(?) in WindowMaker that caused problems when using the "fullscreen as default" preference.
 - Fixed a memory leak in the magnifying lens code.
 - Some internal and some minor changes.
 
@@ -1353,85 +858,56 @@ when using the "fullscreen as default" preference.
 - Added more image data to the properties dialog.
 - Added a "delete image" command that can remove single images from Comix.
 It is currently not possible to remove image files within archives.
-- Added lossless JPEG rotation commands. It is currently not possible to
-rotate image files within archives. The `jpegtran` program (part of the
-jpeg library) must be present for this to work. Comix can still run as
-normal without `jpegtran`, but then without the new JPEG rotation
-capabilities.
+- Added lossless JPEG rotation commands. It is currently not possible to rotate image files within archives. The `jpegtran` program (part of the jpeg library) must be present for this to work. Comix can still run as normal without `jpegtran`, but then without the new JPEG rotation capabilities.
 - Changed the buttons in the toolbar.
-- Improved the space key smart scrolling mode so that it automatically
-performs all the sideways scrolling as well.
-- Added a preference to set the magnitude of the space key scroll in
-percentages of either the window size or the page size.
+- Improved the space key smart scrolling mode so that it automatically performs all the sideways scrolling as well.
+- Added a preference to set the magnitude of the space key scroll in percentages of either the window size or the page size.
 - Added a Traditional Chinese translation by Hsin-Lin Cheng.
 - Comments are now displayed using a monospaced font.
 - Comments can now be dragged around with the mouse just like an image.
-- Directories can now be given as command line parameters as well as
-files. If a directory is given it will be recursed into and the first
-image file found will be loaded.
+- Directories can now be given as command line parameters as well as files. If a directory is given it will be recursed into and the first image file found will be loaded.
 - Improved cover guessing of comicthumb and the library a bit.
-- Handling of files that have filenames encoded with the wrong
- character encoding is now more sturdy.
+- Handling of files that have filenames encoded with the wrong character encoding is now more sturdy.
 
- - Fixed a bug that could cause outdated thumbnails to be left in the
- ~/.comix/menu_thumbnails/ directory when running multiple instances of
- Comix at the same time.
+ - Fixed a bug that could cause outdated thumbnails to be left in the ~/.comix/menu_thumbnails/ directory when running multiple instances of Comix at the same time.
 
- - Applied a workaround for a bug(?) in WindowMaker that caused the "Open
- dialog" to be invisible while in fullscreen mode when using WindowMaker.
- The same problem applies to the library window, but there is no
- workaround for that in place currently.
+ - Applied a workaround for a bug(?) in WindowMaker that caused the "Open dialog" to be invisible while in fullscreen mode when using WindowMaker.
+ The same problem applies to the library window, but there is no workaround for that in place currently.
 
- - Fixed a bug that could cause no images to be displayed when turning
- double page mode off, then on again and flipping to the next couple
- of pages in that order.
+ - Fixed a bug that could cause no images to be displayed when turning double page mode off, then on again and flipping to the next couple of pages in that order.
 - Some minor changes.
 
 # Comix 3.3
 
 - Added a slideshow feature.
-- Added RGB colour histogram to the properties dialog. More data will be
-added in future versions.
+- Added RGB colour histogram to the properties dialog. More data will be added in future versions.
 - Added a Catalan translation by Carles Escrig.
 - Rewrote `install.py` from scratch.
-- Fixed a bug that caused compressed tar archives to be presented as
-plain tar archives.
-- Fixed a bug that could cause invalid page numbers in bookmarks when
-re-adding an already present bookmark.
+- Fixed a bug that caused compressed tar archives to be presented as plain tar archives.
+- Fixed a bug that could cause invalid page numbers in bookmarks when re-adding an already present bookmark.
 - Some minor changes.
 
 # Comix 3.2.1
 
-- Added support for the `rar` program in addition to `unrar` to handle
-RAR (.cbr) files.
+- Added support for the `rar` program in addition to `unrar` to handle RAR (.cbr) files.
 - Updated Polish translation by Kamil Leduchowski.
 - Some minor changes.
 
 # Comix 3.2
 
 - Changed PyGTK requirement to version 2.8 or higher.
-- Added a "Fit width mode" and a "Fit height mode" that automatically
-scales images to fit the width or height of the window.
-- Default filenames for extracted images are changed to
-<archive_name>_<page>.<ext> from <page>.<ext>.
+- Added a "Fit width mode" and a "Fit height mode" that automatically scales images to fit the width or height of the window.
+- Default filenames for extracted images are changed to `<archive_name>_<page>.<ext>` from `<page>.<ext>`.
 - Moved the manga mode setting from the preferences dialog to the menus.
-- Redesigned the library interface a bit. The background colour is now
-fixed and does not change with the background colour of the main window.
-Default thumbnail size is now 128x128 px, and thumbnails have a border to
-make them more clearly separated.
+- Redesigned the library interface a bit. The background colour is now fixed and does not change with the background colour of the main window.
+Default thumbnail size is now 128x128 px, and thumbnails have a border to make them more clearly separated.
 - Added Greek translation by Paul Chatzidimitriou.
 - Xie Yanbo updated the Simplified Chinese translation.
-- Changed the menu icons for "Open library..." and "Add to library". The
-icons are taken from the Silk Icons set at www.famfamfam.com.
+- Changed the menu icons for "Open library..." and "Add to library". The icons are taken from the Silk Icons set at www.famfamfam.com.
 - Broken images are now correctly handled by the thumbnail sidebar.
-- The workaround against a problem with unrar applied in version 3.1.3 has
-been removed again. It created some new problems with archives that
-have multiple files with the same filename in different subdirectories.
-- Fixed a bug so that translations and extra icons are always available
-when running Comix from the source directory, no matter what directory is
-the current working directory.
-- Fixed a bug in the "Go to page dialog" that caused the page to not be
-changed when manually typing in a new page number and pressing Enter.
+- The workaround against a problem with unrar applied in version 3.1.3 has been removed again. It created some new problems with archives that have multiple files with the same filename in different subdirectories.
+- Fixed a bug so that translations and extra icons are always available when running Comix from the source directory, no matter what directory is the current working directory.
+- Fixed a bug in the "Go to page dialog" that caused the page to not be changed when manually typing in a new page number and pressing Enter.
 - Some minor changes.
 
 # Comix 3.1.3
@@ -1441,42 +917,27 @@ changed when manually typing in a new page number and pressing Enter.
 
 # Comix 3.1.2
 
-- Fixed a bug which caused ALL files to be added to the library when
-adding in recursive mode instead of just archives. Also, only files with
-cbz, cbr or cbt as filename extension will now be added in recursive mode
-to avoid adding cruft files with the same magic numbers as the archives.
+- Fixed a bug which caused ALL files to be added to the library when adding in recursive mode instead of just archives. Also, only files with cbz, cbr or cbt as filename extension will now be added in recursive mode to avoid adding cruft files with the same magic numbers as the archives.
 
 # Comix 3.1.1
 
 - Added automatic dependency checking to `install.py`.
-- Added error messages and graceful exit from Comix in the case of missing
-dependencies.
-- Applied a workaround for a bug(?) in unrar that caused problems with
-some RAR archives containing directories with invalid filename encodings.
+- Added error messages and graceful exit from Comix in the case of missing dependencies.
+- Applied a workaround for a bug(?) in unrar that caused problems with some RAR archives containing directories with invalid filename encodings.
 Thanks to François Ingelrest.
 - Updated French translation by Achraf Cherti.
-- Changed the "Use stored thumbnails for images in archives" preference to
-off by default.
-- Changed the "Go to the next archive in directory after last page"
-preference to on by default.
+- Changed the "Use stored thumbnails for images in archives" preference to off by default.
+- Changed the "Go to the next archive in directory after last page" preference to on by default.
 
 # Comix 3.1
 
-- Created a new convert dialog that is built from the standard GTK+ save
-dialog. It now supports saving in different directories etc.
-- Added an "Extract image" menu item that lets you extract individual
-images from the archive.
+- Created a new convert dialog that is built from the standard GTK+ save dialog. It now supports saving in different directories etc.
+- Added an "Extract image" menu item that lets you extract individual images from the archive.
 - Added support for recursive adding of archives to the library.
 - Added a Frech translation by Achraf Cherti.
-- Fixed a bug which rendered the magnifying lens and the ability to drag
-images around with the mouse useless in some situations, and with some
-certain versions (7.0?) of X.org.
-- Pressing enter in the "Go to page" dialog entry now has the same effect
-as pressing OK.
-- Applied a workaround for a bug(?) in certain builds of PIL that made
-Comix crash when it tried to draw page numbers on thumbnails. Now Comix
-simply ignores the page numbers if this problem occurs and imforms the
-user that a different version of PIL is required, instead of crashing.
+- Fixed a bug which rendered the magnifying lens and the ability to drag images around with the mouse useless in some situations, and with some certain versions (7.0?) of X.org.
+- Pressing enter in the "Go to page" dialog entry now has the same effect as pressing OK.
+- Applied a workaround for a bug(?) in certain builds of PIL that made Comix crash when it tried to draw page numbers on thumbnails. Now Comix simply ignores the page numbers if this problem occurs and imforms the user that a different version of PIL is required, instead of crashing.
 
 # Comix 3.0.1
 
@@ -1486,39 +947,25 @@ user that a different version of PIL is required, instead of crashing.
 
 - Major cleanup of the entire code base.
 - Completely redesigned the properties dialog.
-- Comix now stores a list of the 10 last viewed files. It also updates the
-~/.recently-used file as is proposed by the freedesktop.org standard.
+- Comix now stores a list of the 10 last viewed files. It also updates the ~/.recently-used file as is proposed by the freedesktop.org standard.
 Thanks to Jose M. daLuz.
 - Added an "Add to library" menu item.
 - Redesigned the library window slightly.
 - Added an Italian translation by Raimondo Giammanco.
-- The Nautilus thumbnailer, comicthumb, has been updated by Christoph Wolk
-to support subarchives among other things.
-- Added a preference to set the size of the magnifying lens. Thanks to
-Jose M. daLuz.
+- The Nautilus thumbnailer, comicthumb, has been updated by Christoph Wolk to support subarchives among other things.
+- Added a preference to set the size of the magnifying lens. Thanks to Jose M. daLuz.
 - Added a scalable svg icon.
 - Improved handling of files without read permission.
-- Fixed a bug which caused the recommended name for a converted directory
-of images to be the same as one of the image files plus filename extension
-instead of the name of the directory plus filename extension. Thanks to
-Manuel Quiñones.
-- Fixed a bug with the magnifying lens which could appear when using it in
-double page mode and manga mode, possibly showing the images as if not in
-manga mode.
-- Fixed a bug which caused unnecessary reloading of files from disk when
-resizing images that is already in memory in double page mode.
-- Fixed a bug which could cause the wrong image to be displayed when
-continuously flipping forward really fast in cache mode.
+- Fixed a bug which caused the recommended name for a converted directory of images to be the same as one of the image files plus filename extension instead of the name of the directory plus filename extension. Thanks to Manuel Quiñones.
+- Fixed a bug with the magnifying lens which could appear when using it in double page mode and manga mode, possibly showing the images as if not in manga mode.
+- Fixed a bug which caused unnecessary reloading of files from disk when resizing images that is already in memory in double page mode.
+- Fixed a bug which could cause the wrong image to be displayed when continuously flipping forward really fast in cache mode.
 - Some minor fixes.
 
 # Comix 2.9
 
-- Added a comic book library feature to Comix. Comic book archives can be
-added to the library through a dialog or by drag and drop. The comic books
-appear as covers in the library window where they can be browsed or
-opened. They can be easily filtered by typing in regular expressions.
-- When dropping multiple files on the Comix main window, the first file
-gets opened now instead of none.
+- Added a comic book library feature to Comix. Comic book archives can be added to the library through a dialog or by drag and drop. The comic books appear as covers in the library window where they can be browsed or opened. They can be easily filtered by typing in regular expressions.
+- When dropping multiple files on the Comix main window, the first file gets opened now instead of none.
 - The convert dialog now saves the last used archive type.
 - Fixed a memory leak when creating new thumbnails from files.
 - Some minor fixes.
@@ -1527,227 +974,132 @@ gets opened now instead of none.
 
 - MIME types for cbz, cbr and cbt archives are now registered by default.
 Use the --no-mime flag for `install.py` to skip it.
-- Added a thumbnailer (by Christoph Wolk) that lets file managers create
-thumbnails for cbz, cbr and cbt archives. Currently it is only supported
-by Nautilus and does not affect other file managers. It is installed if
-the --no-mime flag is not given to `install.py`. Nautilus has to be
-restarted before the thumbnailer is activated.
-- Added a "Hide all" menu item which hides menubar, toolbar, statusbar,
-scrollbars and thumbnails at once.
-- Added an option to only display a single image in double page mode if
-that image consists of two pages. An image is assumed to consist of two
-pages if it's width is greater than it's height.
-- Filename is now displayed as well as directory name when viewing images
-in a directory in single page mode.
+- Added a thumbnailer (by Christoph Wolk) that lets file managers create thumbnails for cbz, cbr and cbt archives. Currently it is only supported by Nautilus and does not affect other file managers. It is installed if the --no-mime flag is not given to `install.py`. Nautilus has to be restarted before the thumbnailer is activated.
+- Added a "Hide all" menu item which hides menubar, toolbar, statusbar, scrollbars and thumbnails at once.
+- Added an option to only display a single image in double page mode if that image consists of two pages. An image is assumed to consist of two pages if it's width is greater than it's height.
+- Filename is now displayed as well as directory name when viewing images in a directory in single page mode.
 - Changed max zoom to 1000% to prevent X server resource drains.
 - F11 can now be used to toggle fullscreen mode.
-- Fixed a bug which caused the cursor to be invisible when dragging around
-an image in fullscreen mode.
+- Fixed a bug which caused the cursor to be invisible when dragging around an image in fullscreen mode.
 - Fixed a bug which removed the drag and drop functionality.
-- Fixed a bug which could cause the scroll wheel to stop working when
-displaying the magnifying lens by pressing the middle mouse button,
-holding down the right mouse button and letting go the middle mouse button
-again.
-- Fixed a bug which could cause the chess board pattern background for
-small transparent images to be zoomed in or out when changing size.
-- Fixed a bug which could cause changes of saturation in small images to
-not be updated when changing it and changing it back again.
-- Fixed a bug which could cause the images to be scaled incorrectly when
-the "Use smart scaling in double page mode" preference was set.
-- Fixed a bug which caused the thumb selection not to be updated when
-moving from page two to page one in double page mode.
+- Fixed a bug which could cause the scroll wheel to stop working when displaying the magnifying lens by pressing the middle mouse button, holding down the right mouse button and letting go the middle mouse button again.
+- Fixed a bug which could cause the chess board pattern background for small transparent images to be zoomed in or out when changing size.
+- Fixed a bug which could cause changes of saturation in small images to not be updated when changing it and changing it back again.
+- Fixed a bug which could cause the images to be scaled incorrectly when the "Use smart scaling in double page mode" preference was set.
+- Fixed a bug which caused the thumb selection not to be updated when moving from page two to page one in double page mode.
 - Some minor fixes.
 
 # Comix 2.7
 
-- Improved image quality through dithering in 16 bits per pixel. Thanks to
-John Ellis, the author of GQview, for helping me with this.
-- Added previews of files in the "Open" dialog. Stored thumbnails are used
-when they exist, otherwise previews are created directly from the files.
-Previews of archives are also available, but only when thumbnails have
-already been stored for that archive.
-- The cursor is now only being hidden when it has been idle for two
-seconds instead of always.
+- Improved image quality through dithering in 16 bits per pixel. Thanks to John Ellis, the author of GQview, for helping me with this.
+- Added previews of files in the "Open" dialog. Stored thumbnails are used when they exist, otherwise previews are created directly from the files.
+Previews of archives are also available, but only when thumbnails have already been stored for that archive.
+- The cursor is now only being hidden when it has been idle for two seconds instead of always.
 - Changed "Hide cursor in fullscreen mode" to on by default.
 - Added chess board pattern as background for transparent images.
 - Added file filters to the "Open" dialog.
 - Saturation adjustment now affects the magnifying lens also.
 - Added Brazilian Portuguese translation by Marcelo Góes.
 - Added German translation by Christoph Wolk.
-- Added a "comix.xml" file which can be installed to register cbz, cbr and
-cbt mime types. Because of inconsistency on some systems, mime types are
-not registered by default. Follow the instructions in the mime README file
-to install. Thanks to Cristoph Wolk for this contribution.
-- Changed permissions of temporary folders to octal 700 to preserve the
-users privacy.
-- Added page number information to thumbnails generated for archives. This
-information will displayed for previews of archives if available.
-- Fixed a bug which caused the image width and height information embedded
-in thumbnails to be put in the wrong namespace of the PNG tEXt chunks.
+- Added a "comix.xml" file which can be installed to register cbz, cbr and cbt mime types. Because of inconsistency on some systems, mime types are not registered by default. Follow the instructions in the mime README file to install. Thanks to Cristoph Wolk for this contribution.
+- Changed permissions of temporary folders to octal 700 to preserve the users privacy.
+- Added page number information to thumbnails generated for archives. This information will displayed for previews of archives if available.
+- Fixed a bug which caused the image width and height information embedded in thumbnails to be put in the wrong namespace of the PNG tEXt chunks.
 - Fixed possible wrong permissions of thumbnail folders on some systems.
 Permissions should now always be 700.
-- Fixed a bug which caused the magnifying lens to display the wrong page
-in manga mode (thanks Christoph Wolk).
-- Fixed a bug which could cause Comix to crash when trying to view a very
-small image scaled down so that it contained no pixels at all.
+- Fixed a bug which caused the magnifying lens to display the wrong page in manga mode (thanks Christoph Wolk).
+- Fixed a bug which could cause Comix to crash when trying to view a very small image scaled down so that it contained no pixels at all.
 - Some minor fixes.
 
 # Comix 2.6
 
-- Comix now conforms to the thumbnail managing standard as proposed by
-freedesktop.org. Thumbnails for plain image files can be read and written
-to ~/.thumbnails where they are shared with other applications conforming
-to the same standard. Thumbnails for images in archives can also be
-stored, but due to limitations in the standard they are stored in ~/.comix
-for private use by Comix only.
-- Improved handling of corrupt and missing files. Comix now simply
-displays a "file missing" image instead of terminating.
+- Comix now conforms to the thumbnail managing standard as proposed by freedesktop.org. Thumbnails for plain image files can be read and written to ~/.thumbnails where they are shared with other applications conforming to the same standard. Thumbnails for images in archives can also be stored, but due to limitations in the standard they are stored in ~/.comix for private use by Comix only.
+- Improved handling of corrupt and missing files. Comix now simply displays a "file missing" image instead of terminating.
 - Added a menu entry for the lens toggle action.
 - Some minor fixes.
 
 # Comix 2.5
 
-- Added a mouse controlled "magnification lens" that can be used to zoom
-in on parts of the images. It will appear while holding the middle mouse
-button. Pressing 'z' can also toggle it on or off.
+- Added a mouse controlled "magnification lens" that can be used to zoom in on parts of the images. It will appear while holding the middle mouse button. Pressing 'z' can also toggle it on or off.
 - Added the ability to set the size of the thumbnails.
-- Improved the look of the bookmark handling features. Small thumbnails
-will now be displayed for the bookmarks.
-- Fixed a bug which caused one of the two images in double page mode to
-remain displayed even after using the "Close" command.
-- Fixed a bug which caused the "Use smart scaling in double page mode"
-preference to misbehave with rotated images.
-- Fixed a bug which caused the convert dialog to not automatically fill in
-a new filename for files with non-UTF8 filenames.
+- Improved the look of the bookmark handling features. Small thumbnails will now be displayed for the bookmarks.
+- Fixed a bug which caused one of the two images in double page mode to remain displayed even after using the "Close" command.
+- Fixed a bug which caused the "Use smart scaling in double page mode" preference to misbehave with rotated images.
+- Fixed a bug which caused the convert dialog to not automatically fill in a new filename for files with non-UTF8 filenames.
 - Some minor fixes.
 
 # Comix 2.4.1
 
 - Improved cache handling slightly.
-- FIxed a bug which could cause Comix to crash when starting with the
-"Save window position and size for future sessions" option turned on.
-- Fixed a bug which caused only one thumbnail to remain selected when
-clicking on the first of the two selected thumbnails in double page mode.
-- Fixed a bug which caused Comix to always go to the first page when
-reloading thumbnails in double page mode due to switching the "Show page
-numbers on thumbnails" on or off.
+- FIxed a bug which could cause Comix to crash when starting with the "Save window position and size for future sessions" option turned on.
+- Fixed a bug which caused only one thumbnail to remain selected when clicking on the first of the two selected thumbnails in double page mode.
+- Fixed a bug which caused Comix to always go to the first page when reloading thumbnails in double page mode due to switching the "Show page numbers on thumbnails" on or off.
 
 # Comix 2.4
 
-- Added full support for internationalization (i18n). Apart from English,
-Comix is now translated to Swedish, Simplified Chinese and Spanish.
-- Added an option to let Comix automatically adjust the contrast of the
-images so that the darkest pixel is completely black and the lightest
-pixel is completely white.
-- Added an option to space key "smart scrolling" feature as if in double
-page mode even when in single page mode.
-- Added thin borders around the thumbnails so that they should be more
-easily distinguished.
+- Added full support for internationalization (i18n). Apart from English, Comix is now translated to Swedish, Simplified Chinese and Spanish.
+- Added an option to let Comix automatically adjust the contrast of the images so that the darkest pixel is completely black and the lightest pixel is completely white.
+- Added an option to space key "smart scrolling" feature as if in double page mode even when in single page mode.
+- Added thin borders around the thumbnails so that they should be more easily distinguished.
 - Added accelerators for more menu items.
-- Fixed a bug which caused the wrong image to be displayed when viewing
-the third last and the second last pages in double page mode, exiting
-double page mode and flipping forward one page.
-- Fixed a bug which caused Comix to display no warning when trying to
-create a file in a directory where it does not have permission to do so.
+- Fixed a bug which caused the wrong image to be displayed when viewing the third last and the second last pages in double page mode, exiting double page mode and flipping forward one page.
+- Fixed a bug which caused Comix to display no warning when trying to create a file in a directory where it does not have permission to do so.
 
 # Comix 2.3
 
-- Comix now depends on the Python Imaging Library
-(http://www.pythonware.com/products/pil/) to handle some image
-manipulations.
+- Comix now depends on the Python Imaging Library (http://www.pythonware.com/products/pil/) to handle some image manipulations.
 - Added the ability to rotate and mirror images.
 - Added an option to set the contrast of the images.
-- Added an option to show the page numbers in the upper left corner of
-each thumbnail.
+- Added an option to show the page numbers in the upper left corner of each thumbnail.
 - Cleaned up the preferences dialog a bit.
 - The arrow keys now flips pages in fit-to-screen mode.
-- Added an option to go to the same directory as last time when opening
-the "Open" dialog, instead of always going to a preset directory.
-- Fixed a bug which caused comments to not be displayed until after all
-thumbnails had been loaded when using the "Always view comments when
-opening a new file" option.
-- Fixed a bug which caused comment files in a directory, had their
-extensions been added to the comment extensions list while the directory
-was loaded, to not be opened correctly until the directory had been
-reloaded.
-- Fixed a bug which caused the scrollbars to not align themselves
-automatically when switching between viewing comments and viewing images.
-- Fixed a bug which caused the "Fit width", "Fit height" and "Best fit"
-commands to scale incorrectly when viewing thumbnails.
-- Fixed a bug which could cause the wrong image to be displayed if
-switching from one page to another and back again really quickly.
+- Added an option to go to the same directory as last time when opening the "Open" dialog, instead of always going to a preset directory.
+- Fixed a bug which caused comments to not be displayed until after all thumbnails had been loaded when using the "Always view comments when opening a new file" option.
+- Fixed a bug which caused comment files in a directory, had their extensions been added to the comment extensions list while the directory was loaded, to not be opened correctly until the directory had been reloaded.
+- Fixed a bug which caused the scrollbars to not align themselves automatically when switching between viewing comments and viewing images.
+- Fixed a bug which caused the "Fit width", "Fit height" and "Best fit" commands to scale incorrectly when viewing thumbnails.
+- Fixed a bug which could cause the wrong image to be displayed if switching from one page to another and back again really quickly.
 - Some minor fixes.
 
 # Comix 2.2.1
 
-- Fixed a bug which caused underscores in bookmark names to be shown
-as underlines for the next character.
-- Fixed a bug which caused Comix to crash when trying to close the
-program while loading thumbnails for an archive/directory that was
-opened while loading thumbnails for the same archive/directory.
-- Fixed a bug which caused some events (e.g. switching fullscreen on/off),
-invoked while loading thumbnails, to be delayed until all the thumbnails
-had been loaded if they were invoked more than once during this loading.
-There are still some issues with events that in themself initiate the
-loading of thumbnails (e.g. open new file) being delayed if invoked
-multiple times during the loading. This should, however, not be a problem
-in most cases.
-- Fixed a bug which caused some thumbnails to not be displayed in whole
-when using certain GTK themes.
-- Fixed a bug which caused the selected thumbnails to not be updated
-properly when switching between single page and double page mode.
-- Fixed a bug which caused the thumbnail scrollbar to not update it's
-length when resizing the main window.
-- Made the automatic scrolling of the thumbnail pane more consequent
-in double page mode.
+- Fixed a bug which caused underscores in bookmark names to be shown as underlines for the next character.
+- Fixed a bug which caused Comix to crash when trying to close the program while loading thumbnails for an archive/directory that was opened while loading thumbnails for the same archive/directory.
+- Fixed a bug which caused some events (e.g. switching fullscreen on/off), invoked while loading thumbnails, to be delayed until all the thumbnails had been loaded if they were invoked more than once during this loading.
+There are still some issues with events that in themself initiate the loading of thumbnails (e.g. open new file) being delayed if invoked multiple times during the loading. This should, however, not be a problem in most cases.
+- Fixed a bug which caused some thumbnails to not be displayed in whole when using certain GTK themes.
+- Fixed a bug which caused the selected thumbnails to not be updated properly when switching between single page and double page mode.
+- Fixed a bug which caused the thumbnail scrollbar to not update it's length when resizing the main window.
+- Made the automatic scrolling of the thumbnail pane more consequent in double page mode.
 
 # Comix 2.2
 
 - Added a thumbnail browser.
 - Added a "smart scrolling" option for the space key.
 - The number pad on the keyboard can now be used to align the image(s).
-'1' takes you to the lower left corner, '2' takes you to the middle of the
-bottom, '3' takes you to the lower right corner and so on for all nine
-digits.
-- Added an option to automatically open the last viewed page when Comix
-is started.
-- The zoom in and zoom out commands now zoom straight on, preserving
-the alignment of the viewed image(s).
-- Fixed a bug which caused images to be scaled slighty wrong during
-specific window size/image size combinations.
-- Fixed a bug which caused the wrong image to be displayed when jumping
-two pages forward with the cache option turned on in single page mode.
+'1' takes you to the lower left corner, '2' takes you to the middle of the bottom, '3' takes you to the lower right corner and so on for all nine digits.
+- Added an option to automatically open the last viewed page when Comix is started.
+- The zoom in and zoom out commands now zoom straight on, preserving the alignment of the viewed image(s).
+- Fixed a bug which caused images to be scaled slighty wrong during specific window size/image size combinations.
+- Fixed a bug which caused the wrong image to be displayed when jumping two pages forward with the cache option turned on in single page mode.
 
 # Comix 2.1
 
 - Made the dialogs more GNOME HIG compliant.
-- Added an option to let the scroll wheel scroll horizontally when at the
-top or bottom of the page.
-- Added an option to let the scroll wheel flip pages when scrolling "off
-the page".
-- Added an option to use smart scaling when in double page mode and
-fit-to-screen mode. The smart scaling feature makes the images scale
-independently so that no space is wasted. The largest of the images is
-scaled as before, but the smallest in now scaled up to fill any extra
-space.
+- Added an option to let the scroll wheel scroll horizontally when at the top or bottom of the page.
+- Added an option to let the scroll wheel flip pages when scrolling "off the page".
+- Added an option to use smart scaling when in double page mode and fit-to-screen mode. The smart scaling feature makes the images scale independently so that no space is wasted. The largest of the images is scaled as before, but the smallest in now scaled up to fill any extra space.
 - Added an option to set the toolbar to show either icons, text or both.
-- The image can now be dragged around with the middle mouse button
-as well.
-- If adding a bookmark for an archive/directory that is already
-bookmarked, Comix now updates the page number of that bookmark
-instead of adding a new one.
+- The image can now be dragged around with the middle mouse button as well.
+- If adding a bookmark for an archive/directory that is already bookmarked, Comix now updates the page number of that bookmark instead of adding a new one.
 - Added tooltips for the preferences dialog.
 - Removed the zoom entry in the preferences dialog.
 - Made the cleanup of files in /tmp a bit more sturdy.
-- Fixed a bug which caused the scrollbars to not align themselves
-automatically when opening a new archive/folder.
+- Fixed a bug which caused the scrollbars to not align themselves automatically when opening a new archive/folder.
 - Fixed a bug which caused changes to fullscreen, fit-to-screen mode etc.
-that were made while the preferences dialog was open to be reverted when
-the dialog was closed.
-- Fixed a bug which caused some images to appear twice if they were
-packed in an archive containing multiple subfolders.
-- Fixed a bug which caused some strange behaviour when (un)hiding the
-menubar after a bookmark had been added/removed.
+that were made while the preferences dialog was open to be reverted when the dialog was closed.
+- Fixed a bug which caused some images to appear twice if they were packed in an archive containing multiple subfolders.
+- Fixed a bug which caused some strange behaviour when (un)hiding the menubar after a bookmark had been added/removed.
 - Some minor fixes.
 
 # Comix 2.0
@@ -1758,238 +1110,165 @@ menubar after a bookmark had been added/removed.
 # Comix 2.0b
 
 - Comix 2.0b has a major speed advantage over previous versions.
-I rewrote some of the code, mainly the parts concerning the caching of
-images. Page flipping with the cache option turned off is now about
-twice as fast as before (not counting the time it takes to scale the
-image(s) since this is highly dependant on the image scaling quality being
-used). Forward page flipping with the cache option turned on now seems
-almost instantaneous (again not counting the possible delay to scale
-the image(s)). Backwards flipping with the cache option turned on is no
-longer suffering any speed penalty, it is just as fast as normal flipping
-without any cache would be. The only occasion when things will be slower
-with the cache option turned on is when doing irregular flipping, as from
-page 1 to page 7 to page 3 etc., and even then things will seem to be
-as fast as normal though some extra work is done "under the hood".
+I rewrote some of the code, mainly the parts concerning the caching of images. Page flipping with the cache option turned off is now about twice as fast as before (not counting the time it takes to scale the image(s) since this is highly dependant on the image scaling quality being used). Forward page flipping with the cache option turned on now seems almost instantaneous (again not counting the possible delay to scale the image(s)). Backwards flipping with the cache option turned on is no longer suffering any speed penalty, it is just as fast as normal flipping without any cache would be. The only occasion when things will be slower with the cache option turned on is when doing irregular flipping, as from page 1 to page 7 to page 3 etc., and even then things will seem to be as fast as normal though some extra work is done "under the hood".
 Using cache is strongly recommended from now on.
 - Added a bookmarks manager that lets you add or remove single bookmarks.
-- Added support for image/x-icon, image/x-xpixmap and image/x-xbitmap
-image formats.
-- Changed the text entry field for the default path to a button which
-brings up a nice standard folder selection dialog.
-- The "Flip position of pages in double page mode" option, now called
-"Manga mode", automatically aligns the scrollbars to the upper-right
-corner of the window when flipping to a new page.
-- The "Hide menubar etc. in fullscreen" option now also affects the
-scrollbars.
-- Fixed a bug which caused temporary files to be overwritten when viewing
-two archives in two different Comix sessions at the same time.
-- Fixed a bug which caused the separators in the menus to disappear after
-a while.
-- Fixed a bug that caused the wrong page to be displayed when flipping
-backwards one step in double page mode, switching to one page mode,
-switching back to double page mode again and then flipping forward one
-step, all with the cache option set.
+- Added support for image/x-icon, image/x-xpixmap and image/x-xbitmap image formats.
+- Changed the text entry field for the default path to a button which brings up a nice standard folder selection dialog.
+- The "Flip position of pages in double page mode" option, now called "Manga mode", automatically aligns the scrollbars to the upper-right corner of the window when flipping to a new page.
+- The "Hide menubar etc. in fullscreen" option now also affects the scrollbars.
+- Fixed a bug which caused temporary files to be overwritten when viewing two archives in two different Comix sessions at the same time.
+- Fixed a bug which caused the separators in the menus to disappear after a while.
+- Fixed a bug that caused the wrong page to be displayed when flipping backwards one step in double page mode, switching to one page mode, switching back to double page mode again and then flipping forward one step, all with the cache option set.
 - Lots of minor fixes.
 
 # Comix 1.6
 
-- The next page can now be flipped to by pressing the left mouse button
-on the main window. Images can still be moved around by clicking and
-dragging before you release the button again.
+- The next page can now be flipped to by pressing the left mouse button on the main window. Images can still be moved around by clicking and dragging before you release the button again.
 - The "Hide cursor" option now only affect fullscreen.
-- Comix now sorts files by the standard set up by the LC_COLLATE
-environmental variable.
-- Added a new dialog to display an error message if the convert utility
-is used in some way to alter a file which the user does not have
-appropriate permissions to.
-- Fixed a bug with the wrong filename sometimes being shown in the
-properties dialog when viewing plain image files.
-- Fixed a bug with strange things happening when opening the
-preferences window in windowed mode and closing it in fullscreen mode
-and vice versa.
-- Fixed a bug with the "Hide menubar etc. in fullscreen" option not
-always working as expected.
+- Comix now sorts files by the standard set up by the LC_COLLATE environmental variable.
+- Added a new dialog to display an error message if the convert utility is used in some way to alter a file which the user does not have appropriate permissions to.
+- Fixed a bug with the wrong filename sometimes being shown in the properties dialog when viewing plain image files.
+- Fixed a bug with strange things happening when opening the preferences window in windowed mode and closing it in fullscreen mode and vice versa.
+- Fixed a bug with the "Hide menubar etc. in fullscreen" option not always working as expected.
 - Some minor fixes.
 
 # Comix 1.5
 
 - Added support for forward/back buttons on mice that have them.
 Thanks to Stephen Jones for this feature.
-- New option to set which filename extensions should be treated as
-comment files.
-- New option to automatically hide menubar etc. when entering
-fullscreen mode.
+- New option to set which filename extensions should be treated as comment files.
+- New option to automatically hide menubar etc. when entering fullscreen mode.
 - Improved the look of the properties dialog.
 - Fixed problems with parsing certain comment files.
 - Some minor fixes.
 
 # Comix 1.4
 
-- Added support for embedded archive comments in the form of .txt or
-.nfo files.
-- The convert utility now creates exact copies of the directory structure
-in the source archive/directory, including correct filenames.
-- The zoom in and zoom out commands now zoom 15% relative to the
-current size instead of 20% relative to the original size.
+- Added support for embedded archive comments in the form of .txt or .nfo files.
+- The convert utility now creates exact copies of the directory structure in the source archive/directory, including correct filenames.
+- The zoom in and zoom out commands now zoom 15% relative to the current size instead of 20% relative to the original size.
 - Changed default image scaling quality to "Tiles" from "Hyper".
 - Some minor fixes.
 
 # Comix 1.3.1
 
-- Fixed a bug with old cached images sometimes being shown when a new
-archive/directory had been opened.
+- Fixed a bug with old cached images sometimes being shown when a new archive/directory had been opened.
 
 # Comix 1.3
 
-- The viewed page(s) can now be dragged around by pressing the mouse
-button and moving the cursor.
+- The viewed page(s) can now be dragged around by pressing the mouse button and moving the cursor.
 - New option to cache the next page for faster forward page flipping.
-Continuous backwards flipping will be slower with this option. Slightly
-more RAM will be used as well.
-- Comix now handles manipulation of already loaded images (resizing,
-changing scaling technique, etc.) more efficiently due to less disk IO.
-- Fixed a bug that caused saved options to not be loaded when the
-program is restarted.
+Continuous backwards flipping will be slower with this option. Slightly more RAM will be used as well.
+- Comix now handles manipulation of already loaded images (resizing, changing scaling technique, etc.) more efficiently due to less disk IO.
+- Fixed a bug that caused saved options to not be loaded when the program is restarted.
 
 # Comix 1.2
 
 - Drag and drop support.
 - Changed the `install.py` script slightly.
-- Added new error messages for the statusbar when trying to open
-non-valid files etc.
+- Added new error messages for the statusbar when trying to open non-valid files etc.
 
 # Comix 1.1.2
 
-- Applied a workaround for a bug(?) in newer versions of PyGTK, which made
-the OK button in the file selection dialog return the wrong value,
-rendering it useless. Thanks to neota for this solution.
+- Applied a workaround for a bug(?) in newer versions of PyGTK, which made the OK button in the file selection dialog return the wrong value, rendering it useless. Thanks to neota for this solution.
 
 # Comix 1.1.1
 
-- The "file" dependancy is no longer needed. All mime type checks are now
-done internally.
+- The "file" dependancy is no longer needed. All mime type checks are now done internally.
 - Fixed an error in the .desktop file.
-- The `install.py` script now uses "update-desktop-database" to update the
-menus properly.
+- The `install.py` script now uses "update-desktop-database" to update the menus properly.
 - Some minor fixes.
 
 # Comix 1.1
 
 - Support for nestled archives, i.e. archives in archives.
-- The `install.py` script now includes a "--installdir" option to let the
-user choose the install directory, e.g. /usr instead of /usr/local.
+- The `install.py` script now includes a "--installdir" option to let the user choose the install directory, e.g. /usr instead of /usr/local.
 - Comix now includes a manpage.
 - Some minor fixes.
 
 # Comix 1.0.2
 
-- Added support for filenames encoded with various international
-character encodings.
+- Added support for filenames encoded with various international character encodings.
 - Some minor fixes.
 
 # Comix 1.0.1
 
-- Fixed a bug with the background colour option not working as expected
-on certain systems.
+- Fixed a bug with the background colour option not working as expected on certain systems.
 
 # Comix 1.0
 
-- Added an archive convert feature. Archives and directories can be
-converted to Zip, tar, tar.gz or tar.bz2.
+- Added an archive convert feature. Archives and directories can be converted to Zip, tar, tar.gz or tar.bz2.
 - More changes toward a hopefully more user-friendly GUI.
 
 # Comix 0.9
 
-- A number of efforts has been made to make Comix more GNOME HIG
-compliant.
+- A number of efforts has been made to make Comix more GNOME HIG compliant.
 - Added optional menubar, toolbar and statusbar.
 - Added an option to hide the mouse cursor.
 - The space key now works in fit to screen mode as well.
-- Fixed a bug with certain hotkeys not working before the right-click menu
-had been shown the first time.
-- Fixed a bug with archive names sometimes being displayed incorrectly in
-the bookmarks menu.
+- Fixed a bug with certain hotkeys not working before the right-click menu had been shown the first time.
+- Fixed a bug with archive names sometimes being displayed incorrectly in the bookmarks menu.
 - Some minor fixes.
 
 # Comix 0.8
 
-- Comix now handles zip, tar, tar.gz and tar.bz2 archives
-internally. The unzip and tar programs are no longer needed.
-- New option to let you go to the next archive when flipping past the
-last page in the current archive, and vice versa for the first page.
-- Fixed a bug with small images sometimes being stretched to
-fit the screen although the corresponding option was not set.
+- Comix now handles zip, tar, tar.gz and tar.bz2 archives internally. The unzip and tar programs are no longer needed.
+- New option to let you go to the next archive when flipping past the last page in the current archive, and vice versa for the first page.
+- Fixed a bug with small images sometimes being stretched to fit the screen although the corresponding option was not set.
 - Fixed a bug with exiting fullscreen mode with the escape key.
 - Supported image formats are now "only" JPEG, PNG, TIFF, GIF and BMP.
-There were problems with other files being reported as image files though
-they were not.
+There were problems with other files being reported as image files though they were not.
 - Some minor fixes.
 
 # Comix 0.7
 
 - Added a new "bookmark" feature.
-- Now reads any image format supported by gtk.gdk.Pixbuf (that
-means most formats).
+- Now reads any image format supported by gtk.gdk.Pixbuf (that means most formats).
 - Fixed a bug with capital letters not working as hotkeys.
 - Some minor fixes.
 
 # Comix 0.6
 
-- Added a new option to hide the scrollbars even when not in fit to
-screen mode.
-- Pressing space now scrolls the page to show the next part of it, if
-pressed at the bottom of the page it flips to the next page.
+- Added a new option to hide the scrollbars even when not in fit to screen mode.
+- Pressing space now scrolls the page to show the next part of it, if pressed at the bottom of the page it flips to the next page.
 - Dialogs should now look better and use buttons with stock icons.
-- Scrolling could be a bit faulty due to different dimensions of the
-scrollbars in different themes. That problem is now fixed.
-- `Fit width', `Fit height' and `Fit to screen' commands should now be
-exact.
+- Scrolling could be a bit faulty due to different dimensions of the scrollbars in different themes. That problem is now fixed.
+- `Fit width', `Fit height' and `Fit to screen' commands should now be exact.
 
 # Comix 0.5.2
 
-- The makefile in 0.5.1 could in some cases change the permissions
-of the folders Comix were installed in to 0755. To solve this
-vulnerability Comix 0.5.2 uses a python script `install.py` to install
-the program instead.
+- The makefile in 0.5.1 could in some cases change the permissions of the folders Comix were installed in to 0755. To solve this vulnerability Comix 0.5.2 uses a python script `install.py` to install the program instead.
 
 Usage of the 0.5.1 makefile is not recommended!
 
 # Comix 0.5.1
 
-- Fixed a problem with the makefile. Destination directories will now
-be created if they do not already exist.
+- Fixed a problem with the makefile. Destination directories will now be created if they do not already exist.
 
 # Comix 0.5
 
 - Fixed a bug with the background colour option not working.
-- Added a colour picking dialog instead of the old entry box for the
-background colour.
+- Added a colour picking dialog instead of the old entry box for the background colour.
 - Added a new more user-friendly file chooser dialog.
-- Added `Fit width', `Fit height' and `Fit to screen' commands to the
-right-click menu.
+- Added `Fit width', `Fit height' and `Fit to screen' commands to the right-click menu.
 - Added new option to save zooming values to future sessions.
-- The right-click menu and the preferences window now looks better
-and should hopefully be more user friendly.
+- The right-click menu and the preferences window now looks better and should hopefully be more user friendly.
 - Changed some hotkeys and their effect.
 - PyGTK requirement is now 2.6+.
 
 # Comix 0.4
 
-- Comix now supports image zooming and window scrolling as well
-as the old fit-to-screen-mode.
-- Comix now includes a makefile, a .desktop file and an icon for an
-easy installation and desktop integration.
+- Comix now supports image zooming and window scrolling as well as the old fit-to-screen-mode.
+- Comix now includes a makefile, a .desktop file and an icon for an easy installation and desktop integration.
 
 # Comix 0.3
 
 - New option to save window position and size to future sessions.
-- New option to set a default path to open when selecting a new file
-with the `Open file' command.
+- New option to set a default path to open when selecting a new file with the `Open file' command.
 - Comix now supports page scrolling with the mouse wheel.
-- Fixed a bug with trying to view `File info' when viewing the last page
-in double page mode.
-- Fixed a bug with the number of pages always reported as zero in the
-go-to-page-window.
+- Fixed a bug with trying to view `File info' when viewing the last page in double page mode.
+- Fixed a bug with the number of pages always reported as zero in the go-to-page-window.
 - Some minor fixes.
 
 # Comix 0.2.1
@@ -1998,17 +1277,13 @@ go-to-page-window.
 
 # Comix 0.2
 
-- Now uses the shutil module to move and delete files instead
-of calling the `rm` and `mv` programs.
-- Now uses gtk.gdk.pixbuf_get_file_info() to check image file types
-and the `file' program to check filetypes for ZIP/RAR archives.
+- Now uses the shutil module to move and delete files instead of calling the `rm` and `mv` programs.
+- Now uses gtk.gdk.pixbuf_get_file_info() to check image file types and the `file' program to check filetypes for ZIP/RAR archives.
 Filename extensions should no longer matter for Comix.
 - Now supports tar, tar.gz and tar.bz2 archives.
-- New menu option `File info' brings up a window and displays various
-information about the file being viewed.
+- New menu option `File info' brings up a window and displays various information about the file being viewed.
 - New option to flip the pages viewed in double page mode.
 - New option to reverse the reading order (start with the last page).
 - New option to set the saturation of the images displayed.
 - Some minor fixes.
-- New dependencies are `file` and `tar` (should be installed on most
-systems as default).
+- New dependencies are `file` and `tar` (should be installed on most systems as default).

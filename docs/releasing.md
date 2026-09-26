@@ -4,7 +4,7 @@ Versions are year and month: `26.10` for October 2026. A second release that mon
 
 ## Steps
 
-1. Give the release its section in `ChangeLog.md`: a `# MComix <version>` heading, a `## Release date:` line below it.
+1. Give the release its section in `ChangeLog.md`: a `# MComix <version>` heading, a `## Release date:` line below it. Each entry on one line, however long: the release notes keep every line break.
 2. Set `VERSION` in `mcomix/constants.py`, and the version and month in the first line of the man page, `share/man/man1/mcomix.1.gz` (unpack, edit, pack with `gzip -9n`).
 3. Regenerate the translation files, as in [Development](development.md#translations). The template's header carries the version.
 4. Add the release to `share/metainfo/mcomix.metainfo.xml`.
