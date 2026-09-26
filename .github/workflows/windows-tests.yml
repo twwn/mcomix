@@ -43,10 +43,14 @@ jobs:
             mingw-w64-ucrt-x86_64-python-pytest
             mingw-w64-ucrt-x86_64-python-pytest-xdist
             mingw-w64-ucrt-x86_64-gettext-tools
+      # Without MSYSTEM, which MSYS2's Python reads to write paths with
+      # "/" instead of a backslash: MComix.exe runs without it,
+      # started from Explorer, and a run with it tests a Python that
+      # MComix never runs on.
       - name: pytest
         run: |
           export PATH="$PATH:/c/Program Files/7-Zip"
-          python -m pytest test/ -q -n auto -rfE --junitxml=pytest.xml
+          env -u MSYSTEM python -m pytest test/ -q -n auto -rfE --junitxml=pytest.xml
       - uses: actions/upload-artifact@v7
         if: always()
         with:
