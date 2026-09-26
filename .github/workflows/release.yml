@@ -26,7 +26,6 @@ env:
   TAG: ${{ inputs.tag || github.ref_name }}
   # The programs the Windows packages carry, as docs/Maintenance.md
   # lists them.  7-Zip is taken from the runner, which has it installed.
-  MUPDF_VERSION: "1.28.5"
   UNRARDLL_VERSION: "722"
 
 jobs:
@@ -109,18 +108,16 @@ jobs:
             mingw-w64-ucrt-x86_64-python-pip
             mingw-w64-ucrt-x86_64-python-pymupdf
             mingw-w64-ucrt-x86_64-pyinstaller
-      - name: Fetch 7-Zip, mutool and UnRAR.dll into ../mcomix-other
+      - name: Fetch 7-Zip and UnRAR.dll into ../mcomix-other
         shell: pwsh
         run: |
           $sevenzip = "$env:ProgramFiles/7-Zip/7z.exe"
           $other = Join-Path (Split-Path $PWD) 'mcomix-other'
-          New-Item -ItemType Directory -Force "$other/7z", "$other/mutool", "$other/unrar" | Out-Null
+          New-Item -ItemType Directory -Force "$other/7z", "$other/unrar" | Out-Null
           Copy-Item "$env:ProgramFiles/7-Zip/7z.exe", "$env:ProgramFiles/7-Zip/7z.dll", "$env:ProgramFiles/7-Zip/License.txt" "$other/7z"
-          Invoke-WebRequest "https://casper.mupdf.com/downloads/archive/mupdf-$env:MUPDF_VERSION-windows.zip" -OutFile mupdf.zip
-          & $sevenzip e mupdf.zip "mupdf-$env:MUPDF_VERSION-windows/mutool.exe" "mupdf-$env:MUPDF_VERSION-windows/COPYING.txt" "-o$other/mutool" -y
           Invoke-WebRequest "https://www.rarlab.com/rar/unrardll-$env:UNRARDLL_VERSION.exe" -OutFile unrardll.exe
           & $sevenzip e unrardll.exe x64/UnRAR64.dll license.txt "-o$other/unrar" -y
-          Remove-Item mupdf.zip, unrardll.exe
+          Remove-Item unrardll.exe
       # WiX 3's tools run from where they are unpacked; nothing has to
       # be installed.
       - name: Fetch WiX 3

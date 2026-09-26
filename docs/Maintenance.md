@@ -74,8 +74,9 @@ The packages carry these archive programs, which the build copies from `../mcomi
 Directory | Files | From
 ----------|-------|-----
 `7z` | `7z.exe`, `7z.dll`, `License.txt` | [7-Zip](https://www.7-zip.org/download.html)
-`mutool` | `mutool.exe`, `COPYING.txt` | [MuPDF](https://mupdf.com/releases?product=MuPDF)
 `unrar` | `UnRAR64.dll`, `license.txt` | [RARLAB](https://www.rarlab.com/rar_add.htm)
+
+PDF files are read by PyMuPDF, which the packages carry with its own copy of MuPDF, so they carry no `mutool`: MComix only turns to `mutool` where PyMuPDF is missing, and a second MuPDF would add 47 MB.
 
 In a UCRT64 shell in MComix' root directory, build `dist/MComix` and `dist/mcomix-win64-<version>.zip`:
 

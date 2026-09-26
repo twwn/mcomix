@@ -145,15 +145,14 @@ def copy_other_files() -> None:
         shutil.copy('../mcomix-other/7z/7z.dll', 'dist/MComix/7z.dll')
         win32_newline('../mcomix-other/7z/License.txt', 'dist/MComix/licenses/7z/License.txt')
 
-    if os.path.isdir('../mcomix-other/mutool'):
-        shutil.copy('../mcomix-other/mutool/mutool.exe', 'dist/MComix/mutool.exe')
-        win32_newline('../mcomix-other/mutool/COPYING.txt', 'dist/MComix/licenses/mupdf/COPYING.txt')
-
     # Where MSYS2's packages keep their licences: beside the Python
     # running this, whichever MSYS2 environment it is.
     licenses_basedir = os.path.join(sys.prefix, 'share', 'licenses')
+    # MuPDF is shipped as PyMuPDF's libmupdf.dll, so its licence comes
+    # from there rather than with a mutool of its own.
     components = ('cairo', 'fontconfig', 'freetype', 'gdk-pixbuf2', 'glib2', 'gtk4',
-                  'libadwaita', 'pango', 'python-cairo', 'python-Pillow')
+                  'libadwaita', 'mupdf', 'pango', 'python-cairo', 'python-Pillow',
+                  'python-pymupdf')
     if os.path.isdir(licenses_basedir):
         for entry in components:
             path = os.path.join(licenses_basedir, entry)
