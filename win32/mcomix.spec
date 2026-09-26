@@ -58,6 +58,11 @@ a = Analysis(['../mcomixstarter.py'],
              # archive, 5.9 MB, was in the package twice.
              noarchive=True)
 
+# The icon theme's X11 cursors: GTK on Windows draws the system's.
+a.datas = [entry for entry in a.datas
+           if not entry[0].replace('\\', '/').startswith(
+               'share/icons/Adwaita/cursors/')]
+
 pyz = PYZ(a.pure)
 
 

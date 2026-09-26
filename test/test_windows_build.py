@@ -150,6 +150,13 @@ class SpecDataTest(MComixTest):
         self.assertEqual(['MComix', 'MComix.Console'], list(args[:2]))
         self.assertEqual('MComix', kwargs['name'])
 
+    def test_the_icon_theme_goes_without_its_cursors(self):
+        args, _ = self._run_spec()['COLLECT']
+        collected = [entry[0] for part in args[2:] for entry in part]
+        self.assertEqual(
+            ['share/icons/Adwaita/symbolic/actions/go-next-symbolic.svg'],
+            collected)
+
 
 class ChocolateyPackageTest(MComixTest):
 
