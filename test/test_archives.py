@@ -1099,6 +1099,41 @@ class MultiVolumeRarTest(MComixTest):
                         self.assertEqual(packed.read(), got.read(), name)
 
 
+class EmptyMemberTest(MComixTest):
+
+    """SolidEmptyMember.rar, made with "rar a -s" of 01.png, an empty
+    Comment.txt and 02.png: a solid archive is unpacked in one pass,
+    and a member of no bytes is a file all the same."""
+
+    CASES = (
+        ('rar (dll)', rar.RarArchive),
+        ('rar (external)', rar_external.RarArchive),
+    )
+
+    def test_an_empty_member_is_extracted_as_an_empty_file(self):
+        for label, handler in self.CASES:
+            with self.subTest(handler=label):
+                if not handler.is_available():
+                    self.skipTest('%s is not available' % label)
+                archive = handler(get_testfile_path(
+                    'archives', 'SolidEmptyMember.rar'))
+                destination = tempfile.mkdtemp(dir=self.tmp_dir)
+                try:
+                    names = archive.list_contents()
+                    self.assertCountEqual(
+                        ['01.png', 'Comment.txt', '02.png'], names)
+                    self.assertCountEqual(
+                        names, archive.iter_extract(names, destination))
+                finally:
+                    archive.close()
+                self.assertEqual(0, os.path.getsize(
+                    os.path.join(destination, 'Comment.txt')))
+                with open(os.path.join(destination, '02.png'), 'rb') as got, \
+                        open(get_testfile_path('images', 'blue.png'),
+                             'rb') as packed:
+                    self.assertEqual(packed.read(), got.read())
+
+
 class ListingParserTest(MComixTest):
 
     """The line parsers of the handlers that drive an outside program.

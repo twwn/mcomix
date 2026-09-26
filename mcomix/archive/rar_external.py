@@ -93,8 +93,9 @@ class RarArchive(archive_base.ExternalExecutableArchive):
         begins and the lines under it are recorded against it.  Holding
         it back is what lets the "Type: " line, which comes after the
         name, keep a directory out of the listing: a directory is not a
-        member anything can extract.  Only entries with a size are kept
-        for iter_extract(), and a directory is printed without one.  A
+        member anything can extract.  Every file is kept for
+        iter_extract() with its size, an empty one too, whose share of
+        the stream is nothing; a directory is printed without a size.  A
         file split across volumes is listed again at the start of each
         volume after its first, with "<--" (or "<->") as its ratio; that
         is the rest of an entry already listed, not an entry of its own.
@@ -141,7 +142,7 @@ class RarArchive(archive_base.ExternalExecutableArchive):
         pending, self._pending = self._pending, None
         if pending is None or self._pending_continued:
             return None
-        if self._pending_size > 0:
+        if not self._pending_is_directory:
             self._contents.append((pending, self._pending_size))
         return None if self._pending_is_directory else pending
 
