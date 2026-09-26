@@ -164,6 +164,53 @@ class SpecDataTest(MComixTest):
             collected)
 
 
+class BundledLicencesTest(MComixTest):
+
+    """Whose licences the Windows packages carry: every MSYS2 package
+    whose files are in the bundle, found in MSYS2's package database."""
+
+    def _package(self, root, name, files):
+        entry = root / 'var' / 'lib' / 'pacman' / 'local' / (name + '-1.0-1')
+        entry.mkdir(parents=True)
+        (entry / 'desc').write_text('%NAME%\n' + name + '\n\n%VERSION%\n1.0-1\n')
+        (entry / 'files').write_text('%FILES%\nucrt64/\nucrt64/bin/\n'
+                                     + ''.join(f + '\n' for f in files)
+                                     + '\n%BACKUP%\n')
+
+    def test_the_packages_the_bundle_takes_files_from(self):
+        root = pathlib.Path(self.tmp_dir) / 'msys64'
+        prefix = root / 'ucrt64'
+        self._package(root, 'mingw-w64-ucrt-x86_64-gtk4',
+                      ['ucrt64/bin/libgtk-4-1.dll', 'ucrt64/share/doc/README',
+                       'ucrt64/share/licenses/gtk4/COPYING'])
+        # Its licence folder is not called after the package.
+        self._package(root, 'mingw-w64-ucrt-x86_64-python',
+                      ['ucrt64/bin/libpython3.14.dll',
+                       'ucrt64/lib/python3.14/lib-dynload/_ssl.pyd',
+                       'ucrt64/share/doc/README',
+                       'ucrt64/share/licenses/python3.14/LICENSE'])
+        self._package(root, 'mingw-w64-ucrt-x86_64-sqlite3',
+                      ['ucrt64/bin/libsqlite3-0.dll',
+                       'ucrt64/share/licenses/sqlite3/LICENSE'])
+        bundle = pathlib.Path(self.tmp_dir) / 'MComix' / '_internal'
+        for name in ('libgtk-4-1.dll', 'python3.14/lib-dynload/_ssl.pyd',
+                     'README', 'mcomix/images/mcomix.png'):
+            (bundle / name).parent.mkdir(parents=True, exist_ok=True)
+            (bundle / name).write_text('')
+        # README is both packages', so it names neither; sqlite3 has no
+        # file in the bundle.
+        self.assertEqual(['gtk4', 'python3.14'],
+                         build_pyinstaller.bundled_licences(bundle, prefix))
+
+    def test_without_a_package_database_the_known_ones(self):
+        bundle = pathlib.Path(self.tmp_dir) / 'MComix' / '_internal'
+        bundle.mkdir(parents=True)
+        licences = build_pyinstaller.bundled_licences(
+            bundle, pathlib.Path(self.tmp_dir) / 'nowhere')
+        self.assertIn('gtk4', licences)
+        self.assertIn('python-pymupdf', licences)
+
+
 class FrozenEntryTest(MComixTest):
 
     """mcomixstarter.py, the script the Windows build freezes."""

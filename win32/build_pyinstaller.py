@@ -143,16 +143,57 @@ def copy_other_files() -> None:
     # Where MSYS2's packages keep their licences: beside the Python
     # running this, whichever MSYS2 environment it is.
     licenses_basedir = os.path.join(sys.prefix, 'share', 'licenses')
-    # MuPDF is shipped as PyMuPDF's libmupdf.dll, so its licence comes
-    # from there rather than with a mutool of its own.
-    components = ('cairo', 'fontconfig', 'freetype', 'gdk-pixbuf2', 'glib2', 'gtk4',
-                  'libadwaita', 'mupdf', 'pango', 'python-cairo', 'python-Pillow',
-                  'python-pymupdf')
-    if os.path.isdir(licenses_basedir):
-        for entry in components:
-            path = os.path.join(licenses_basedir, entry)
-            if os.path.isdir(path):
-                shutil.copytree(path, os.path.join('dist/MComix/licenses', entry))
+    for entry in bundled_licences(pathlib.Path('dist/MComix/_internal'),
+                                  pathlib.Path(sys.prefix)):
+        path = os.path.join(licenses_basedir, entry)
+        if os.path.isdir(path):
+            shutil.copytree(path, os.path.join('dist/MComix/licenses', entry))
+
+
+#: The licences to ship where there is no package database to tell whose
+#: files the bundle carries: those of the libraries MComix itself uses.
+_KNOWN_LICENCES = ('cairo', 'fontconfig', 'freetype', 'gdk-pixbuf2', 'glib2',
+                   'gtk4', 'libadwaita', 'mupdf', 'pango', 'python',
+                   'python-cairo', 'python-gobject', 'python-Pillow',
+                   'python-pymupdf')
+
+
+def bundled_licences(bundle: pathlib.Path, prefix: pathlib.Path) -> list[str]:
+    """The licence folders, under <prefix>/share/licenses, of the MSYS2
+    packages whose files <bundle> carries.
+
+    MSYS2 keeps a package database, as pacman does anywhere, one level up
+    from the environment's prefix: var/lib/pacman/local/<package>/files
+    lists every file a package installed, its licence folder among them
+    - share/licenses/gtk4 for gtk4, share/licenses/python3.14 for python.
+    A file of the bundle is known by its name, and only a name one package
+    alone installs counts. Without the database, the licences of the
+    libraries MComix itself uses.
+    """
+    local = prefix.parent / 'var' / 'lib' / 'pacman' / 'local'
+    if not local.is_dir():
+        return list(_KNOWN_LICENCES)
+    owners: dict[str, str | None] = {}
+    licences: dict[str, set[str]] = {}
+    for package in local.iterdir():
+        try:
+            desc = (package / 'desc').read_text(encoding='utf-8')
+            files = (package / 'files').read_text(encoding='utf-8')
+        except OSError:
+            continue
+        name = desc.split('%NAME%\n', 1)[-1].split('\n', 1)[0]
+        listed = files.split('%FILES%\n', 1)[-1].split('\n\n', 1)[0]
+        for path in listed.splitlines():
+            parts = path.split('/')
+            if parts[:3] == [prefix.name, 'share', 'licenses'] and len(parts) > 4:
+                licences.setdefault(name, set()).add(parts[3])
+            if path and not path.endswith('/'):
+                key = parts[-1].lower()
+                # A name two packages install says nothing of either.
+                owners[key] = name if owners.get(key, name) == name else None
+    found = {owner for path in bundle.rglob('*') if path.is_file()
+             for owner in [owners.get(path.name.lower())] if owner}
+    return sorted(set().union(*(licences.get(name, set()) for name in found)))
 
 
 def create_release_archive() -> None:
