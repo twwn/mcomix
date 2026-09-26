@@ -483,6 +483,31 @@ class UpgradeFromEveryVersionTest(LibraryDatabaseTest):
                     'the legacy database was left behind')
 
 
+    def test_a_book_gone_is_dropped_and_one_the_library_has_is_kept(self):
+        """Of the legacy rows, one names a file that is gone and is in
+        no library, and one names the library's own a.cbz, whose file
+        is gone as well: that one keeps its row and goes into Recent
+        with its page, and the other is dropped rather than added."""
+        self._write_database(3)
+        legacy = dbapi2.connect(constants.LASTPAGE_DATABASE_PATH,
+                                isolation_level=None)
+        legacy.executemany(
+            'insert into lastread (path, page, time_set) values (?, ?, ?)',
+            [('/books/a.cbz', 3, '2020-01-02 00:00:00'),
+             ('/gone/b.cbz', 5, '2020-01-03 00:00:00')])
+        legacy.close()
+        library = backend.LibraryBackend()
+        try:
+            kept = library.get_book_by_path('/books/a.cbz')
+            self.assertEqual(1, kept.id)
+            self.assertEqual(3, kept.get_last_read_page())
+            self.assertIn(1, library.get_books_in_collection(
+                constants.COLLECTION_RECENT))
+            self.assertIsNone(library.get_book_by_path('/gone/b.cbz'))
+        finally:
+            self._done(library)
+
+
 class InterruptedUpgradeTest(LibraryDatabaseTest):
 
     """An upgrade that stops part way through a table rebuild.
