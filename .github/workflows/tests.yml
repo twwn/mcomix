@@ -15,8 +15,8 @@ jobs:
         # The floor requires-python sets, and the newest release.
         python-version: ["3.12", "3.14"]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
       # librsvg2-common is gdk-pixbuf's SVG loader and adwaita-icon-theme
@@ -47,8 +47,8 @@ jobs:
     # gobject-introspection 1.0, hence libgirepository1.0-dev.
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       # librsvg2-common is gdk-pixbuf's SVG loader and adwaita-icon-theme

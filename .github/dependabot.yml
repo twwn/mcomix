@@ -1,0 +1,12 @@
+# Keeps the actions the workflows use at their current major version:
+# an action left behind runs on a Node the runners are dropping, and
+# says so in every run's log.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns: ["*"]
