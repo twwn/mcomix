@@ -439,6 +439,13 @@ class ColumnListViewTest(MComixTest):
             cell.emit('clicked')
             self.assertEqual(cell.label.props.disabled_text,
                              column_list._ASK_FOR_ONE_HINT)
+            # A modifier pressed on its own, on the way to a combination,
+            # is no shortcut: it is swallowed and the cell goes on
+            # waiting.
+            self.assertTrue(cell._pressed(None, Gdk.KEY_Control_L, 0,
+                                          Gdk.ModifierType.CONTROL_MASK))
+            self.assertEqual(rebound, [])
+            self.assertTrue(cell.capturing)
             self.assertTrue(
                 cell._pressed(None, Gdk.KEY_b, 0, Gdk.ModifierType.CONTROL_MASK))
             self.assertEqual(rebound, [(row, '<Control>b')])
