@@ -26,37 +26,32 @@ having to play around with relative path names.
     0. To begin with, follow the installation instructions of PyGObject
        on Windows. At the time of this writing, using MSYS2 is recommended.
 
-    1. Using the MSYS2 mingw64 shell, install:
+    1. Using the MSYS2 UCRT64 shell, install:
 
            pacman -Sy \
-               mingw-w64-x86_64-gtk4 \
-               mingw-w64-x86_64-libadwaita \
-               mingw-w64-x86_64-libjxl \
-               mingw-w64-x86_64-python \
-               mingw-w64-x86_64-python-gobject \
-               mingw-w64-x86_64-python-pillow \
-               mingw-w64-x86_64-python-pip \
-               mingw-w64-x86_64-python-pymupdf
+               mingw-w64-ucrt-x86_64-gtk4 \
+               mingw-w64-ucrt-x86_64-libadwaita \
+               mingw-w64-ucrt-x86_64-libjxl \
+               mingw-w64-ucrt-x86_64-python \
+               mingw-w64-ucrt-x86_64-python-gobject \
+               mingw-w64-ucrt-x86_64-python-pillow \
+               mingw-w64-ucrt-x86_64-python-pip \
+               mingw-w64-ucrt-x86_64-python-pymupdf \
+               mingw-w64-ucrt-x86_64-pyinstaller
 
-       libadwaita is the only one of these MComix runs without: it is
-       what reads the colour names a GTK4 theme states, and the build
-       that ships without it follows only what plain GTK4 can be told.
-       libjxl is the loader for the JPEG XL files the open dialog offers
-       to filter for; pip is what step 2 installs pyinstaller with.
+       UCRT64, not MINGW64: MSYS2 builds PyMuPDF for UCRT64 and CLANG64
+       only.  libadwaita is the only one of these MComix runs without:
+       it is what reads the colour names a GTK4 theme states, and the
+       build that ships without it follows only what plain GTK4 can be
+       told.  libjxl is the loader for the JPEG XL files the open dialog
+       offers to filter for, and pyinstaller is MSYS2's own build of it,
+       which pip would otherwise have to build for this Python.
 
-       docs/Maintenance.md lists the same packages, and a test
-       holds the two lists to each other.
+       docs/Maintenance.md and .github/workflows/release.yml list the
+       same packages, and a test holds the three lists to each other.
 
-    2. In the same shell, install pyinstaller with pip:
-
-           python3 -m pip install --user pyinstaller
-
-       Make sure that the installed pyinstaller executable is on PATH.
-       You may wish to use a virtual environment:
-
-           python3 -m venv venv --system-site-packages
-           . ./venv/bin/activate
-           python3 -m pip install pyinstaller
+    2. Make sure the pyinstaller executable is on PATH; the package
+       above puts it there.
 
     3. 'win32/build_pyinstaller.py' will create the folder 'dist/MComix'
        and copy relevant libraries.
@@ -151,7 +146,9 @@ def copy_other_files() -> None:
         shutil.copy('../mcomix-other/mutool/mutool.exe', 'dist/MComix/mutool.exe')
         win32_newline('../mcomix-other/mutool/COPYING.txt', 'dist/MComix/licenses/mupdf/COPYING.txt')
 
-    licenses_basedir = '/mingw64/share/licenses'
+    # Where MSYS2's packages keep their licences: beside the Python
+    # running this, whichever MSYS2 environment it is.
+    licenses_basedir = os.path.join(sys.prefix, 'share', 'licenses')
     components = ('cairo', 'fontconfig', 'freetype', 'gdk-pixbuf2', 'glib2', 'gtk4',
                   'libadwaita', 'pango', 'python-cairo', 'python-Pillow')
     if os.path.isdir(licenses_basedir):

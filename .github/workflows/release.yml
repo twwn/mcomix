@@ -95,19 +95,19 @@ jobs:
       # path is inherited so that WiX, installed below, is found.
       - uses: msys2/setup-msys2@v2
         with:
-          msystem: MINGW64
+          msystem: UCRT64
           update: true
           path-type: inherit
           install: >-
-            mingw-w64-x86_64-gtk4
-            mingw-w64-x86_64-libadwaita
-            mingw-w64-x86_64-libjxl
-            mingw-w64-x86_64-python
-            mingw-w64-x86_64-python-gobject
-            mingw-w64-x86_64-python-pillow
-            mingw-w64-x86_64-python-pip
-            mingw-w64-x86_64-python-pymupdf
-            mingw-w64-x86_64-pyinstaller
+            mingw-w64-ucrt-x86_64-gtk4
+            mingw-w64-ucrt-x86_64-libadwaita
+            mingw-w64-ucrt-x86_64-libjxl
+            mingw-w64-ucrt-x86_64-python
+            mingw-w64-ucrt-x86_64-python-gobject
+            mingw-w64-ucrt-x86_64-python-pillow
+            mingw-w64-ucrt-x86_64-python-pip
+            mingw-w64-ucrt-x86_64-python-pymupdf
+            mingw-w64-ucrt-x86_64-pyinstaller
       - name: Fetch 7-Zip, mutool and UnRAR.dll into ../mcomix-other
         shell: pwsh
         run: |

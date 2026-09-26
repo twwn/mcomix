@@ -67,7 +67,7 @@ Do not build it on Windows, to avoid files in the archive having executable perm
 Building the Windows packages
 -----------------------------
 
-The Windows packages are built in [MSYS2](https://www.msys2.org/), with these packages, updated with `pacman -Syuu` before each release: `mingw-w64-x86_64-gtk4`, `mingw-w64-x86_64-libadwaita`, `mingw-w64-x86_64-libjxl`, `mingw-w64-x86_64-python`, `mingw-w64-x86_64-python-gobject`, `mingw-w64-x86_64-python-pillow`, `mingw-w64-x86_64-python-pip` and `mingw-w64-x86_64-python-pymupdf`. `win32/build_pyinstaller.py` names the same list. The development dependencies install PyInstaller; update it with `pip-review --auto --local`.
+The Windows packages are built in [MSYS2](https://www.msys2.org/)'s UCRT64 environment - MSYS2 builds PyMuPDF for UCRT64 and CLANG64 only - with these packages, updated with `pacman -Syuu` before each release: `mingw-w64-ucrt-x86_64-gtk4`, `mingw-w64-ucrt-x86_64-libadwaita`, `mingw-w64-ucrt-x86_64-libjxl`, `mingw-w64-ucrt-x86_64-python`, `mingw-w64-ucrt-x86_64-python-gobject`, `mingw-w64-ucrt-x86_64-python-pillow`, `mingw-w64-ucrt-x86_64-python-pip`, `mingw-w64-ucrt-x86_64-python-pymupdf` and `mingw-w64-ucrt-x86_64-pyinstaller`. `win32/build_pyinstaller.py` and `.github/workflows/release.yml` name the same list.
 
 The packages carry these archive programs, which the build copies from `../mcomix-other`, beside MComix' root directory. A directory that is not there is left out of the package.
 
@@ -77,7 +77,7 @@ Directory | Files | From
 `mutool` | `mutool.exe`, `COPYING.txt` | [MuPDF](https://mupdf.com/releases?product=MuPDF)
 `unrar` | `UnRAR64.dll`, `license.txt` | [RARLAB](https://www.rarlab.com/rar_add.htm)
 
-In a MINGW64 shell in MComix' root directory, build `dist/MComix` and `dist/mcomix-win64-<version>.zip`:
+In a UCRT64 shell in MComix' root directory, build `dist/MComix` and `dist/mcomix-win64-<version>.zip`:
 
 ```bash
 python win32/build_pyinstaller.py

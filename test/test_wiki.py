@@ -484,20 +484,32 @@ class MaintenancePageTest(unittest.TestCase):
         list the build script documents is in win32/build_pyinstaller.py.
         They had drifted apart: the page asked for python3-pillow,
         python3 and python3-gobject, which MSYS2 renamed years ago, and
-        for mingw-w64-x86_64-mypy, which nothing in the build runs.
+        for mingw-w64-x86_64-mypy, which nothing in the build runs.  The
+        release workflow installs its own copy, and the Windows build
+        failed on GitHub when MSYS2 stopped building one of them for the
+        environment all three named.
         """
-        script = os.path.join(self.root, 'win32', 'build_pyinstaller.py')
-        with open(script) as fp:
-            source = fp.read()
-        pattern = r'mingw-w64-x86_64-[\w-]+'
-        self.assertEqual(sorted(set(re.findall(pattern, source))),
-                         sorted(set(re.findall(pattern, self.page))))
+        pattern = r'mingw-w64-ucrt-x86_64-[\w-]+'
+        page = sorted(set(re.findall(pattern, self.page)))
+        for name in (os.path.join('win32', 'build_pyinstaller.py'),
+                     os.path.join('.github', 'workflows', 'release.yml')):
+            with self.subTest(name=name), \
+                    open(os.path.join(self.root, name)) as fp:
+                self.assertEqual(page,
+                                 sorted(set(re.findall(pattern, fp.read()))))
+
+    def test_the_build_is_for_the_environment_the_packages_are_for(self):
+        with open(os.path.join(self.root, '.github', 'workflows',
+                               'release.yml')) as fp:
+            self.assertIn('msystem: UCRT64', fp.read())
+        self.assertIn('UCRT64 shell', self.page)
+        self.assertNotRegex(self.page, r'mingw-w64-x86_64-')
 
     def test_the_msys2_list_is_not_empty(self):
         """So that a rewritten build script cannot turn the comparison
         above into one between two empty sets."""
         self.assertGreater(
-            len(set(re.findall(r'mingw-w64-x86_64-[\w-]+', self.page))), 5)
+            len(set(re.findall(r'mingw-w64-ucrt-x86_64-[\w-]+', self.page))), 5)
 
     def test_the_page_no_longer_asks_for_ujson(self):
         """setuptools>=77 is the build backend and reads pyproject.toml
