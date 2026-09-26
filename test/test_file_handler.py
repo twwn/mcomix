@@ -158,6 +158,22 @@ class DirectoryWalkTest(MComixTest):
         self.assertTrue(self.handler.open_previous_archive())
         self.assertEqual(first, self._opened_file())
 
+    def test_a_later_volume_opened_by_hand_opens_the_whole_book(self):
+        """From the file chooser, the command line or Recent: what the
+        reader wants is the book, not its rest from the middle of a
+        page on."""
+        first = self._put_rar_set('b')
+        self._open(os.path.join(self.root, 'b', 'Multivolume.part3.rar'))
+        self.assertEqual(first, self._opened_file())
+        self.assertEqual(4, self.window.imagehandler.get_number_of_pages())
+
+    def test_without_its_first_volume_a_later_one_opens_as_it_is(self):
+        self._put_rar_set('b')
+        os.remove(os.path.join(self.root, 'b', 'Multivolume.part1.rar'))
+        second = os.path.join(self.root, 'b', 'Multivolume.part2.rar')
+        self._open(second)
+        self.assertEqual(second, self._opened_file())
+
     def test_walking_back_into_a_rar_set_opens_its_first_volume(self):
         """The walk back opens the last book of the directory before,
         which is the set, not its last volume."""

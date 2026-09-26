@@ -73,6 +73,30 @@ class ArchiveToolsTest(MComixTest):
                 self.assertFalse(archive_tools.is_later_volume(
                     get_testfile_path('archives', name)))
 
+    def test_a_later_volume_leads_to_the_first_one_beside_it(self):
+        import shutil
+        for width in (1, 2):
+            with self.subTest(width=width):
+                directory = os.path.join(self.tmp_dir, 'width%d' % width)
+                os.makedirs(directory)
+                names = []
+                for part in (1, 2, 3):
+                    name = 'Set.part%s.rar' % str(part).zfill(width)
+                    shutil.copy(get_testfile_path(
+                        'archives', 'Multivolume.part%d.rar' % part),
+                        os.path.join(directory, name))
+                    names.append(os.path.join(directory, name))
+                first, second, third = names
+                self.assertEqual(first, archive_tools.first_volume(second))
+                self.assertEqual(first, archive_tools.first_volume(third))
+                self.assertIsNone(archive_tools.first_volume(first))
+                os.remove(first)
+                self.assertIsNone(archive_tools.first_volume(second))
+
+    def test_a_book_that_is_no_later_volume_leads_nowhere(self):
+        self.assertIsNone(archive_tools.first_volume(
+            get_testfile_path('archives', '03-RAR-Normal.rar')))
+
     def test_a_later_rar_4_volume_is_told_by_its_flags(self):
         """The rar here writes only RAR 5, so the main header of a RAR 4
         volume is written by hand: CRC16, type 0x73, the flags, size."""

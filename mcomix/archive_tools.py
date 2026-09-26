@@ -2,6 +2,7 @@
 
 import functools
 import os
+import re
 import shutil
 import zipfile
 import tarfile
@@ -267,6 +268,36 @@ def is_later_volume(path: str) -> bool:
     except OSError:
         return False
     return _is_later_rar_volume(head)
+
+
+#: A volume of a set named the way RAR 3 and later name them:
+#: name.part1.rar, name.part2.rar, or name.part01.rar and on for a set
+#: of ten or more.
+_VOLUME_NAME = re.compile(r'^(?P<stem>.*\.part)(?P<number>\d+)(?P<ext>\.[^.]+)$',
+                          re.IGNORECASE)
+
+
+def first_volume(path: str) -> str | None:
+    """The first volume of the set <path> is a later volume of, where it
+    is beside it; None where <path> is no later volume, or the first
+    one is not there.
+
+    A later volume opened by itself is the rest of the set from the
+    middle of a page on, and the reader who opens one wants the book:
+    the set is read from its first volume, which the archive handlers
+    follow through the rest.
+    """
+    if not is_later_volume(path):
+        return None
+    named = _VOLUME_NAME.match(path)
+    if named is None:
+        return None
+    number = named.group('number')
+    first = (named.group('stem') + '1'.zfill(len(number))
+             + named.group('ext'))
+    if first == path or not os.path.isfile(first) or is_later_volume(first):
+        return None
+    return first
 
 
 def describe(path: str, archive_type: int) -> str:

@@ -214,6 +214,11 @@ class FileHandler:
 
         self._close()
 
+        # A later volume of a RAR set is the rest of the set from the
+        # middle of a page on; the book is read from its first volume.
+        if isinstance(path, str):
+            path = archive_tools.first_volume(path) or path
+
         try:
             path = self._initialize_fileprovider(path, keep_fileprovider)
         except ValueError as ex:

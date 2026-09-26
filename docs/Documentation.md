@@ -14,6 +14,8 @@ The window has a menu bar and a toolbar at the top, the page thumbnails on the l
 
 The arrow keys scroll the page, and PageDown and PageUp turn it. "Move to", in the page's right-click menu, moves the file that is open, or the archive the page is in, to another folder. The book goes on being read where it was, and what MComix records about it - its place in the library, the page it was left on, any bookmark in it, and its entry in the recent files - follows it to the new folder.
 
+A RAR book packed in volumes, name.part1.rar, name.part2.rar and so on, is read from its first volume: opening any other volume of the set opens the whole book from name.part1.rar where that is beside it.
+
 "File &rarr; Properties" describes the page being read and the archive it is in. Where the archive carries a ComicInfo.xml, the archive's page also names the series, the issue number, the title and the writer given there.
 
 ### Fit modes ###
