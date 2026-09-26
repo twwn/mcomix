@@ -54,6 +54,7 @@ The [UnRAR library](https://www.rarlab.com/rar_add.htm) (`libunrar.so` or `UnRAR
 `7z` | 7z files; ZIP, LHA, xz and lzma files Python cannot read; RAR as a last resort.
 `lha` | LHA files, without `7z`.
 `unzip` | ZIP files Python cannot read, without `7z`.
+`xz` | Writes an edited `.tar.xz` book on every core, not one.
 [chardet](https://pypi.org/project/chardet/) | Guesses the encoding of file names and comments that are not UTF-8.
 
 The Windows packages include everything but `lha` and `unzip`, which `7z` stands in for.

@@ -6,6 +6,7 @@ one of the pages has taken it.
 """
 
 import os
+import shutil
 import sys
 import tarfile
 import unittest
@@ -211,6 +212,41 @@ class WriterTest(MComixTest):
             self.assertEqual(written.read(2), b'\x1f\x8b', 'not gzipped')
         with tarfile.open(path, 'r:gz') as written:
             self.assertEqual(len(written.getnames()), 2)
+
+    def test_a_tar_xz_is_compressed_with_xz(self):
+        """By the xz program where it is installed, and by tarfile
+        where it is not."""
+        for xz in (archive_packer.xz_executable(), None):
+            with self.subTest(xz=xz), unittest.mock.patch.object(
+                    archive_packer, 'xz_executable', return_value=xz):
+                path, packed = self._pack('Comic%s.tar.xz' % bool(xz),
+                                          constants.TAR)
+                self.assertTrue(packed)
+                with open(path, 'rb') as written:
+                    self.assertEqual(written.read(6), b'\xfd7zXZ\x00')
+                with tarfile.open(path, 'r:xz') as written:
+                    self.assertEqual(written.getnames(),
+                                     ['1 - Comic.jpg', '2 - Comic.jpg'])
+
+    @unittest.skipIf(archive_packer.xz_executable() is None,
+                     'xz is not installed')
+    def test_the_xz_program_does_the_compressing_where_it_is_there(self):
+        writer = archive_packer.make_writer(
+            os.path.join(self.tmp_dir, 'Comic.cbt.xz'), constants.TAR)
+        try:
+            self.assertIsInstance(writer, archive_packer._XzProgramTarWriter)
+        finally:
+            writer.clean_up()
+
+    def test_an_xz_program_that_fails_leaves_no_archive(self):
+        false = shutil.which('false')
+        if false is None:
+            self.skipTest('no false program')
+        with unittest.mock.patch.object(archive_packer, 'xz_executable',
+                                        return_value=false):
+            path, packed = self._pack('Comic.tar.xz', constants.TAR)
+        self.assertFalse(packed)
+        self.assertFalse(os.path.exists(path))
 
     def test_a_tar_that_says_nothing_about_compression_has_none(self):
         path, packed = self._pack('Comic.cbt', constants.TAR)
