@@ -442,6 +442,38 @@ class CacheWindowTest(MComixTest):
         self.assertEqual(self._wanted(7, False, 10), [9, 8])
 
 
+class CacheEverythingTest(MComixTest):
+
+    """"Maximum number of pages to store in the cache" at -1, which the
+    preferences dialog offers as caching the whole book."""
+
+    def setUp(self):
+        super().setUp()
+        self.handler = image_handler.ImageHandler(_StubWindow())
+        self.handler.set_image_files(['%02d.png' % n for n in range(1, 4)])
+        self.ordered = []
+        patcher = unittest.mock.patch.object(
+            self.handler._thread, 'append_order', self.ordered.append)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def tearDown(self):
+        self.handler.cleanup()
+        super().tearDown()
+
+    def test_every_page_that_lands_is_cached_after_the_wanted_ones(self):
+        """At a priority below every wanted page, which is numbered by
+        its place in the wanted list."""
+        prefs['max pages to cache'] = -1
+        self.handler.page_available(2)
+        self.assertEqual([(3, 1)], self.ordered)
+
+    def test_otherwise_a_page_nobody_wants_is_left_alone(self):
+        prefs['max pages to cache'] = 4
+        self.handler.page_available(2)
+        self.assertEqual([], self.ordered)
+
+
 class NoPageYetTest(MComixTest):
 
     """What the handler answers before a page has been set.
