@@ -529,6 +529,7 @@ class _PreferencesDialog(Dialog):
             ('Italiano', 'it'),  # Italian
             ('日本語', 'ja'),  # Japanese
             ('한국어', 'ko'),  # Korean
+            ('Lietuvių kalba', 'lt'),  # Lithuanian
             ('Nederlands', 'nl'),  # Dutch
             ('Język polski', 'pl'),  # Polish
             ('Português', 'pt_BR'),  # Portuguese

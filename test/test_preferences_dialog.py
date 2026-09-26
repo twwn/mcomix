@@ -358,6 +358,21 @@ class PreferencesDialogTest(MComixTest):
         self.assertEqual([], self._prompts())
         self.assertEqual('auto', prefs['language'])
 
+    def test_every_translation_can_be_picked(self):
+        """Lithuanian was translated in 2017 and never offered: the list
+        of languages is written out by hand, and nothing held it to the
+        catalogues that ship."""
+        messages = os.path.join(
+            os.path.dirname(preferences_dialog.__file__), 'messages')
+        shipped = {name for name in os.listdir(messages)
+                   if os.path.isfile(os.path.join(
+                       messages, name, 'LC_MESSAGES', 'mcomix.mo'))}
+        self.assertGreater(len(shipped), 20)
+        self._open()
+        offered = set(self.dialog._language_chooser._values)
+        self.assertEqual(set(), shipped - offered)
+        self.assertEqual(set(), offered - shipped - {'auto', 'en'})
+
     def test_the_offer_follows_the_interface_not_the_stored_choice(self):
         """A reader who picks a language and declines the restart leaves
         the preference ahead of the interface, and this dialog is built

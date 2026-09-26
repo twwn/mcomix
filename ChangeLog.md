@@ -84,6 +84,7 @@
 - A click that raises the window no longer turns the page.
 - "Never" store recent files, set before 2012, no longer becomes
   "always".
+- Lithuanian, translated since 2017, can be picked in the preferences.
 
 ### Project
 
