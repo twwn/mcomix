@@ -104,12 +104,16 @@ class MainWindow(Gtk.Window):
         self._waiting_for_redraw = False
         #: Where the redraw that is pending was asked to scroll to.
         self._pending_scroll_to: int | None = None
-        #: The page the reader last turned to, and which way that went,
-        #: for _skip_broken_page(); whether the search past pages that
+        #: The page the reader last turned to, the page they turned from,
+        #: and which way that went, for _skip_broken_page(); whether it
+        #: was a turn of a page, which past an end of the book opens the
+        #: next or the previous one; whether the search past pages that
         #: will not load has turned around at an end of the book yet,
         #: and whether it has given up, finding none that would.
         self._skip_origin: int | None = None
+        self._skip_from = 0
         self._skip_direction = 1
+        self._skip_turning = False
         self._skip_reversed = False
         self._skip_gave_up = False
 
@@ -790,19 +794,23 @@ class MainWindow(Gtk.Window):
         self.new_page()
         self._draw_selection()
 
-    def set_page(self, num: int, at_bottom: bool = False) -> None:
+    def set_page(self, num: int, at_bottom: bool = False,
+                 turning: bool = False) -> None:
         """Switch to page <num> of the currently open book.
 
         A bookmark, or the archive editor after pages were removed, can name
         a page that no longer exists, so <num> is clamped to what the book
-        actually has rather than taken at face value.
+        actually has rather than taken at face value.  <turning> says it
+        is a turn of a page, as flip_page() makes it, rather than a jump.
         """
         num = min(max(num, 1), self.imagehandler.get_number_of_pages())
         current = self.imagehandler.get_current_page()
         if num < 1 or num == current:
             return
         self._skip_origin = num
+        self._skip_from = current
         self._skip_direction = 1 if num > current else -1
+        self._skip_turning = turning
         self._skip_reversed = False
         self._skip_gave_up = False
         self._show_page(num, at_bottom)
@@ -824,7 +832,10 @@ class MainWindow(Gtk.Window):
         what Home or End onto a page that will not load wants; finding
         nothing that way either, it goes back to that page and shows
         what it always showed, the picture of a page that would not
-        load.
+        load.  A turn of a page is different: pages that will not load
+        from there to the end are as good as no pages, so the turn goes
+        past the end, back to the page it started from and on to the
+        next book or the previous one, as a turn from that page would.
         """
         count = self.imagehandler.get_number_of_pages()
         current = self.imagehandler.get_current_page()
@@ -834,6 +845,21 @@ class MainWindow(Gtk.Window):
             origin = self._skip_origin = current
             self._skip_direction = 1
         page = current + self._skip_direction
+        if not 1 <= page <= count and self._skip_turning:
+            # Should that open nothing, the reader is left where they
+            # were; should the page they were on not load either, the
+            # search goes on from it, away from the end.
+            self._skip_turning = False
+            self._skip_origin = self._skip_from
+            self._skip_reversed = True
+            direction = self._skip_direction
+            self._skip_direction = -direction
+            self._show_page(self._skip_from, direction > 0)
+            if direction > 0:
+                self.next_book()
+            else:
+                self.previous_book()
+            return
         if not 1 <= page <= count and not self._skip_reversed:
             self._skip_reversed = True
             self._skip_direction = -self._skip_direction
@@ -979,7 +1005,8 @@ class MainWindow(Gtk.Window):
             new_page = number_of_pages
 
         if new_page != current_page:
-            self.set_page(new_page, at_bottom=(-1 == step))
+            self.set_page(new_page, at_bottom=(-1 == step),
+                          turning=abs(step) == 1)
 
     def _previous_spread(self, current_page: int) -> int:
         """The page a turn back from <current_page> lands on, in double

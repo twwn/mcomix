@@ -4,6 +4,7 @@ a missing page in its place. """
 
 import os
 import shutil
+import zipfile
 
 from . import MComixTest, get_testfile_path, pump, wait_for
 
@@ -121,3 +122,56 @@ class SkipBrokenPagesTest(MComixTest):
         self.assertFalse(self.window.displayed_double())
         self.assertEqual(3, self._turn(self.window.flip_page, 1))
         self.assertTrue(self.window.displayed_double())
+
+    def _archive(self, name, pages):
+        """A zip archive beside the others, of pages as _book() makes
+        them.  Returns its path."""
+        book = os.path.join(self.tmp_dir, 'book')
+        paths = self._book(pages)
+        archive = os.path.join(self.tmp_dir, name)
+        with zipfile.ZipFile(archive, 'w') as zipped:
+            for path in paths:
+                zipped.write(path, os.path.basename(path))
+        shutil.rmtree(book)
+        return archive
+
+    def _in(self, archive):
+        """The page on screen once <archive> is the book open."""
+        self.assertTrue(wait_for(
+            lambda: self.window.filehandler.get_path_to_base() == archive
+            and self.window.imagehandler.get_number_of_pages() > 0))
+        return self._settled()
+
+    def test_turning_forward_past_the_last_good_page_opens_the_next_book(self):
+        """Pages that will not load, up to the end, are as good as none."""
+        first = self._archive('1.zip', 'ooxx')
+        second = self._archive('2.zip', 'oo')
+        self._open(first)
+        self.assertEqual(2, self._turn(self.window.set_page, 2))
+        self.window.flip_page(1)
+        self.assertEqual(1, self._in(second))
+
+    def test_turning_back_past_the_first_good_page_opens_the_previous(self):
+        first = self._archive('1.zip', 'oo')
+        second = self._archive('2.zip', 'xxoo')
+        self.assertEqual(3, self._open(second))
+        self.window.flip_page(-1)
+        self.assertEqual(2, self._in(first))
+
+    def test_with_nothing_to_open_the_reader_stays_where_they_were(self):
+        prefs['auto open next archive'] = False
+        first = self._archive('1.zip', 'ooxx')
+        self._archive('2.zip', 'oo')
+        self._open(first)
+        self.assertEqual(2, self._turn(self.window.set_page, 2))
+        for _turn in range(2):
+            self.assertEqual(2, self._turn(self.window.flip_page, 1))
+            self.assertEqual(first, self.window.filehandler.get_path_to_base())
+
+    def test_end_onto_a_page_that_will_not_load_still_turns_back(self):
+        """End is a jump, not a turn: it stays in the book."""
+        first = self._archive('1.zip', 'ooxx')
+        self._archive('2.zip', 'oo')
+        self._open(first)
+        self.assertEqual(2, self._turn(self.window.last_page))
+        self.assertEqual(first, self.window.filehandler.get_path_to_base())
