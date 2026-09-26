@@ -23,12 +23,12 @@ Uninstalling keeps your preferences, library and bookmarks in `%APPDATA%\MComix`
 Install from source, into a [virtual environment](https://docs.python.org/3/library/venv.html):
 
 1. Install GTK 4 and PyGObject from your distribution ([PyGObject's guide](https://pygobject.readthedocs.io/en/latest/getting_started.html)).
-2. Download `mcomix-<version>.tar.gz` from a [release](https://github.com/twwn/mcomix/releases).
+2. Download `mcomix-<version>.tar.xz` from a [release](https://github.com/twwn/mcomix/releases).
 3. Install and run:
 
 ```bash
 python3 -m venv --system-site-packages ~/mcomix-venv
-~/mcomix-venv/bin/pip install "./mcomix-<version>.tar.gz[fileformats]"
+~/mcomix-venv/bin/pip install "./mcomix-<version>.tar.xz[fileformats]"
 ~/mcomix-venv/bin/mcomix
 ```
 

@@ -33,7 +33,7 @@ choco install mcomix-gtk
 
 ```bash
 python3 -m venv --system-site-packages ~/mcomix-venv
-~/mcomix-venv/bin/pip install "./mcomix-<version>.tar.gz[fileformats]"
+~/mcomix-venv/bin/pip install "./mcomix-<version>.tar.xz[fileformats]"
 ~/mcomix-venv/bin/mcomix
 ```
 

@@ -56,10 +56,10 @@ The same steps, without GitHub Actions.
 On Linux, [set up for development](development.md#set-up), then:
 
 ```bash
-python3 -m build -s
+python3 tools/source_archive.py
 ```
 
-This writes `dist/mcomix-<version>.tar.gz`. Not on Windows: files in the archive would get executable permission bits.
+This writes `dist/mcomix-<version>.tar.xz`: the sdist, compressed with xz, named with the version as the tag spells it. Not on Windows: files in the archive would get executable permission bits.
 
 ### Windows packages
 
@@ -104,7 +104,7 @@ It also writes the installer's SHA-256 to `win32/tools/checksum.sha256` and the 
 ### GitHub release
 
 Draft a release from the tag, named `MComix <version>`, with the release's section of `ChangeLog.md` as its notes.
-Attach `mcomix-<version>.tar.gz`, `mcomix-win64-<version>.zip` and `mcomix-win64-<version>.msi`.
+Attach `mcomix-<version>.tar.xz`, `mcomix-win64-<version>.zip` and `mcomix-win64-<version>.msi`.
 The Chocolatey package downloads the MSI from exactly that release, under exactly that name.
 
 ### Chocolatey package
