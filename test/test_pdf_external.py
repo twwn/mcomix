@@ -1,6 +1,7 @@
 """ Tests for the external (mutool/mudraw) PDF handler. """
 
 import os
+import sys
 import unittest
 
 from mcomix.archive import pdf_external
@@ -55,6 +56,8 @@ class PdfExternalTest(MComixTest):
         self.assertTrue(os.path.isfile(mupdf.mudraw[0]))
         self.assertTrue(mupdf.trace_args)
 
+@unittest.skipIf(sys.platform == 'win32',
+                 'the stand-in tools are shell scripts')
 class MuPdfVersionTest(MComixTest):
 
     """Which commands the handler settles on for each MuPDF there is.

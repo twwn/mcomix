@@ -3,6 +3,7 @@
 import io
 import os
 import re
+import sys
 import tomllib
 import unittest.mock
 
@@ -20,11 +21,23 @@ PYPROJECT = os.path.join(os.path.dirname(os.path.dirname(
     os.path.abspath(run.__file__))), 'pyproject.toml')
 
 
+def _answer_enter(test):
+    """Answer the "Press ENTER" that wait_and_exit() asks on Windows,
+    for as long as <test> runs; pytest refuses to read standard input."""
+    answer = unittest.mock.patch('builtins.input', return_value='')
+    answer.start()
+    test.addCleanup(answer.stop)
+
+
 class RequiredPillowTest(MComixTest):
 
     """run.py let MComix start with Pillow 9.1.0 while pyproject.toml
     required 10.1.0, so a distribution packaging MComix outside pip could
     ship a Pillow no test had been run against."""
+
+    def setUp(self):
+        super().setUp()
+        _answer_enter(self)
 
     @unittest.skipUnless(os.path.isfile(PYPROJECT),
                          'not running from a source tree')
@@ -52,6 +65,10 @@ class DependencyCheckTest(MComixTest):
 
     """setup_dependencies() reports a missing dependency rather than
     letting it out as a traceback."""
+
+    def setUp(self):
+        super().setUp()
+        _answer_enter(self)
 
     def _fail_with(self, error):
         with unittest.mock.patch.object(gi, 'require_version',
@@ -190,6 +207,8 @@ class MakeDirectoriesTest(MComixTest):
         self.assertTrue(os.path.isdir(constants.DATA_DIR))
         self.assertTrue(os.path.isdir(constants.CONFIG_DIR))
 
+    @unittest.skipIf(sys.platform == 'win32',
+                     'Windows keeps no POSIX mode bits on a directory')
     def test_they_are_made_for_the_user_alone(self):
         from mcomix import constants
         run.make_directories()

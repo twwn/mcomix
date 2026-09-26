@@ -1,6 +1,7 @@
 """ The parts of portability.py that differ between desktops. """
 
 import os
+import sys
 import unittest.mock
 
 from gi.repository import Gio, GLib
@@ -37,6 +38,8 @@ class _Connection:
         return _Answer(answer)
 
 
+@unittest.skipIf(sys.platform == 'win32',
+                 "Windows' language comes from GetUserDefaultUILanguage()")
 class DefaultLocaleTest(MComixTest):
 
     """What the environment says the user's language is."""
@@ -87,6 +90,8 @@ class WindowsDefaultLocaleTest(MComixTest):
         """
         self.assertEqual('C', self._locale(0x1000))
 
+@unittest.skipIf(sys.platform == 'win32',
+                 "Windows' colour scheme comes from the registry")
 class ColourSchemeTest(MComixTest):
 
     def _detect(self, connection):

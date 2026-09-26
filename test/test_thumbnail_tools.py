@@ -2,6 +2,7 @@
 
 import os
 import shutil
+import sys
 import unittest.mock
 import zipfile
 from hashlib import md5
@@ -153,6 +154,8 @@ class ThumbnailReuseTest(MComixTest):
                                                         size=(128, 128))
         self._source = get_testfile_path('images', 'red.png')
 
+    @unittest.skipIf(sys.platform == 'win32',
+                     'Windows keeps no POSIX mode bits on a file')
     def test_a_thumbnail_is_written_under_another_name_and_moved_in(self):
         """The store is read by every program on the desktop while
         MComix writes to it, so the specification asks for a thumbnail
@@ -377,8 +380,11 @@ class ArchiveCoverOrientationTest(MComixTest):
                              stored.info['Thumb::URI'])
             self.assertEqual(str(os.stat(self._archive).st_size),
                              stored.info['Thumb::Size'])
-            self.assertEqual('application/vnd.comicbook+zip',
-                             stored.info['Thumb::Mimetype'])
+            # GIO on Windows knows file types by the registry's names
+            # and has no MIME type for .cbz: "application/x-ext-cbz".
+            if sys.platform != 'win32':
+                self.assertEqual('application/vnd.comicbook+zip',
+                                 stored.info['Thumb::Mimetype'])
             self.assertEqual(('210', '297'),
                              (stored.info['Thumb::Image::Width'],
                               stored.info['Thumb::Image::Height']))

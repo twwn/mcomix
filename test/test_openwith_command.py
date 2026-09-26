@@ -8,7 +8,9 @@ what looks like an environment variable is a name like any other.
 
 import ntpath
 import os
+import sys
 import time
+import unittest
 from unittest import mock
 
 from . import MComixTest
@@ -160,6 +162,11 @@ class ExecuteTest(MComixTest):
         patcher = mock.patch.object(openwith.process, 'popen')
         self.popen = patcher.start()
         self.addCleanup(patcher.stop)
+        # Windows starts the command through process.Win32Popen instead;
+        # what is checked here is the same on both.
+        platform = mock.patch.object(openwith.sys, 'platform', 'linux')
+        platform.start()
+        self.addCleanup(platform.stop)
 
     def _command(self, command, cwd='', disabled_for_archives=False):
         return openwith.OpenWithCommand('Viewer', command, cwd,
@@ -215,6 +222,14 @@ class DocumentedVariablesTest(MComixTest):
         return openwith.OpenWithCommand(
             'test', 'viewer %' + variable, '', False).parse(window)[1]
 
+    def _assert_path(self, expected, expanded):
+        """The manual's examples are POSIX paths, and a path MComix
+        builds is written with the separator of the system it runs on."""
+        if expected.startswith('/'):
+            expected = os.path.normpath(expected)
+            expanded = os.path.normpath(expanded)
+        self.assertEqual(expected, expanded)
+
     def test_for_an_image_file(self):
         window = _StubWindow('cats.jpg', '/home/user/Downloads/cats.jpg')
         for variable, expected in (('F', '/home/user/Downloads/cats.jpg'),
@@ -226,7 +241,7 @@ class DocumentedVariablesTest(MComixTest):
                                    ('S', '/home/user'),
                                    ('s', 'user')):
             with self.subTest(variable=variable):
-                self.assertEqual(expected, self._expand(variable, window))
+                self._assert_path(expected, self._expand(variable, window))
 
     def test_for_an_archive(self):
         window = _StubWindow('cats.jpg', '/tmp/extracted/cats.jpg')
@@ -240,7 +255,7 @@ class DocumentedVariablesTest(MComixTest):
                                    ('S', '/home/user'),
                                    ('s', 'user')):
             with self.subTest(variable=variable):
-                self.assertEqual(expected, self._expand(variable, window))
+                self._assert_path(expected, self._expand(variable, window))
 
     def test_archive_variables_are_refused_for_an_image_file(self):
         window = _StubWindow('cats.jpg', '/home/user/Downloads/cats.jpg')
@@ -261,6 +276,7 @@ class _StubOSD:
 
 class WorkingDirectoryTest(MComixTest):
 
+    @unittest.skipIf(sys.platform == 'win32', 'the command is run by sh')
     def test_the_command_runs_in_its_directory_and_mcomix_stays_put(self):
         """The working directory was set by changing MComix' own, for
         every thread in it, and changing it back afterwards."""
