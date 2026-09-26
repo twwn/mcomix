@@ -320,8 +320,10 @@ class FileHandler:
                     # to be answered, or the standing answer is no.
                     current_image_index = 0
                 if last_image_index != current_image_index:
-                    # Bump last page closer to the front of the extractor queue.
-                    self._window.set_page(last_image_index + 1)
+                    # The prompt may yet turn to it, so it is unpacked
+                    # right after the pages shown meanwhile.
+                    self._window.imagehandler.set_resume_page(
+                        last_image_index + 1)
 
             self._window.set_page(current_image_index + 1)
 
@@ -337,6 +339,7 @@ class FileHandler:
 
                         The file info records the current page, so it is
                         written when the answer has settled which that is."""
+                        self._window.imagehandler.set_resume_page(None)
                         if goto_last_read_page:
                             self._window.set_page(last_image_index + 1)
                         self.write_fileinfo_file()
@@ -971,6 +974,11 @@ class FileHandler:
 
     def ask_for_files(self, files: Sequence[str]) -> None:
         """Ask for <files> to be given priority for extraction.
+
+        They go to the front in the order given, and whatever else is
+        still to be unpacked follows in the order it was in.  The image
+        handler names every page not unpacked yet on each page turn, so
+        this is one pass over the list rather than a move per name.
         """
         if self.archive_type is None:
             return
@@ -981,12 +989,13 @@ class FileHandler:
                 # The archive has not been listed yet, so there is no
                 # order of extraction to move anything to the front of.
                 return
-            for path in reversed(files):
-                name = self._name_table[path]
-                if not self._extractor.is_ready(name):
-                    extractor_files.remove(name)
-                    extractor_files.insert(0, name)
-            self._extractor.set_files(extractor_files)
+            pending = set(extractor_files)
+            first = list(dict.fromkeys(
+                name for name in (self._name_table[path] for path in files)
+                if name in pending))
+            moved = set(first)
+            self._extractor.set_files(
+                first + [name for name in extractor_files if name not in moved])
 
     def thread_delete(self, path: str) -> None:
         """Start a threaded removal of the directory tree rooted at <path>.

@@ -528,3 +528,48 @@ class BeforeAPageIsChosenTest(MComixTest):
         self.assertFalse(self.handler._wait_on_page(None, check_only=True))
 
 # vim: expandtab:sw=4:ts=4
+
+
+class ExtractionOrderTest(MComixTest):
+
+    """The order the pages not unpacked yet are asked for in, which
+    follows the reader about the book: Home, End, or a page picked in
+    the middle."""
+
+    def setUp(self):
+        super().setUp()
+        prefs['max pages to cache'] = 0
+        prefs['default double page'] = False
+        window = _StubWindow()
+        self.asked = []
+        window.filehandler.ask_for_files = self.asked.append
+        self.handler = image_handler.ImageHandler(window)
+        self.handler.set_image_files(['%02d.png' % n for n in range(1, 10)])
+
+    def tearDown(self):
+        self.handler.cleanup()
+        super().tearDown()
+
+    def _order(self, page):
+        self.handler._ask_for_pages(page)
+        return [int(name[:2]) for name in self.asked[-1]]
+
+    def test_from_the_last_page_back_to_the_first(self):
+        self.assertEqual([9, 8, 7, 6, 5, 4, 3, 2, 1], self._order(9))
+
+    def test_from_the_first_page_on_to_the_last(self):
+        self.assertEqual([1, 2, 3, 4, 5, 6, 7, 8, 9], self._order(1))
+
+    def test_from_the_middle_outwards_ahead_first(self):
+        self.assertEqual([4, 5, 3, 6, 2, 7, 1, 8, 9], self._order(4))
+
+    def test_pages_already_unpacked_are_not_asked_for(self):
+        for page in (3, 5):
+            self.handler.page_available(page)
+        self.assertEqual([4, 6, 2, 7, 1, 8, 9], self._order(4))
+
+    def test_a_page_offered_to_resume_at_follows_the_current_one(self):
+        self.handler.set_resume_page(7)
+        self.assertEqual([1, 7, 2, 3, 4, 5, 6, 8, 9], self._order(1))
+        self.handler.set_image_files(['%02d.png' % n for n in range(1, 10)])
+        self.assertEqual([1, 2, 3, 4, 5, 6, 7, 8, 9], self._order(1))

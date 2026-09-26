@@ -11,6 +11,7 @@ from gi.repository import Gtk
 
 from . import MComixTest, get_testfile_path, pump, wait_for
 
+from mcomix import archive_extractor
 from mcomix import constants
 from mcomix import file_handler
 from mcomix import icons
@@ -395,6 +396,100 @@ class RememberedResumeAnswerTest(MComixTest):
 
     def test_answering_no_stays_at_the_front(self):
         self.assertEqual(1, self._answer_the_prompt(Response.NO))
+
+
+class ExtractionOrderTest(MComixTest):
+
+    """The order an archive's pages are unpacked in, opened at a page
+    other than the first.
+
+    The pages around the one shown come first, and the rest follow
+    nearest first: a book resumed at its end was unpacked from its
+    first page onwards, so turning back from the end waited on every
+    page before the one turned to.
+    """
+
+    PAGES = 12
+
+    def setUp(self):
+        super().setUp()
+        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
+                          constants.THUMBNAIL_PATH):
+            os.makedirs(directory, exist_ok=True)
+        self.archive = os.path.join(self.tmp_dir, 'book.zip')
+        with open(get_testfile_path('images', 'red.png'), 'rb') as image:
+            data = image.read()
+        with zipfile.ZipFile(self.archive, 'w') as book:
+            for number in range(1, self.PAGES + 1):
+                book.writestr('%02d.png' % number, data)
+        prefs['max extract threads'] = 1
+        prefs['max pages to cache'] = 7
+        prefs['default double page'] = False
+        prefs['stored dialog choices']['resume-from-last-read-page'] = \
+            int(Response.YES)
+        icons.load_icons()
+        self.window = main.MainWindow()
+        main.set_main_window(self.window)
+        self.handler = self.window.filehandler
+        self.handler.last_read_page.set_enabled(True)
+        pump()
+
+        self.unpacked = []
+        extract_file = archive_extractor.Extractor._extract_file
+
+        def recording(extractor, name):
+            self.unpacked.append(name)
+            extract_file(extractor, name)
+
+        patcher = mock.patch.object(archive_extractor.Extractor,
+                                    '_extract_file', recording)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def tearDown(self):
+        self.window.terminate_program()
+        self.window.destroy()
+        main.set_main_window(None)
+        pump()
+        super().tearDown()
+
+    def _unpacked(self):
+        self.assertTrue(wait_for(lambda: len(self.unpacked) == self.PAGES))
+        return [int(name[:2]) for name in self.unpacked]
+
+    def test_a_book_opened_at_its_end_is_unpacked_back_to_front(self):
+        """As turning back from the next book opens it."""
+        self.handler.open_file(self.archive, -1)
+        self.assertEqual(list(range(self.PAGES, 0, -1)), self._unpacked())
+        self.assertEqual(self.PAGES,
+                         self.window.imagehandler.get_current_page())
+
+    def test_a_book_resumed_in_its_middle_is_unpacked_outwards(self):
+        self.handler.last_read_page.set_page(self.archive, 6)
+        self.handler.open_file(self.archive)
+        # The cache window first: the page shown, the one before it and
+        # the five after it.  Then the rest, nearest first.
+        self.assertEqual([6, 7, 5, 8, 9, 10, 11, 4, 3, 2, 1, 12],
+                         self._unpacked())
+        self.assertEqual(6, self.window.imagehandler.get_current_page())
+
+    def test_the_page_offered_to_resume_at_comes_after_the_front(self):
+        """While the reader is asked whether to go back to page 10, the
+        book is shown from its front, and page 10 is unpacked next."""
+        del prefs['stored dialog choices']['resume-from-last-read-page']
+        self.handler.last_read_page.set_page(self.archive, 10)
+        self.handler.open_file(self.archive)
+        unpacked = self._unpacked()
+        prompts = []
+        self.assertTrue(wait_for(lambda: prompts.extend(
+            window for window in Gtk.Window.list_toplevels()
+            if isinstance(window, message_dialog.MessageDialog)
+            and window.get_transient_for() is self.window) or prompts))
+        prompts[0].response(Response.YES)
+        pump()
+        self.assertEqual([1, 2, 3, 4, 5, 6, 10, 11, 9, 12, 7, 8], unpacked)
+        self.assertEqual(10, self.window.imagehandler.get_current_page())
+        self.assertIsNone(self.window.imagehandler._resume_page)
 
 
 class ABookWithNoPagesTest(MComixTest):

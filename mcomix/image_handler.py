@@ -56,6 +56,8 @@ class ImageHandler:
         self._wide: dict[tuple[str, bool], bool] = {}
         #: Index of current page, or None before one has been chosen
         self._current_image_index: int | None = None
+        #: A page to unpack the surroundings of next, see set_resume_page()
+        self._resume_page: int | None = None
         #: Indexes of the pages whose file is out of the archive and can
         #: therefore be decoded
         self._available_images: set[int] = set()
@@ -336,6 +338,7 @@ class ImageHandler:
         self._image_file_index = {path: index
                                   for index, path in enumerate(image_files)}
         self._wide = {}
+        self._resume_page = None
 
     def replace_pages(self, image_files: list[str]) -> None:
         """Rewrite the pages of the book that is already open as <image_files>.
@@ -592,10 +595,11 @@ class ImageHandler:
         self._window.filehandler.wait_on_file(path)
         return True
 
-    def _ask_for_pages(self, page: int) -> list[int]:
-        """Ask for pages around <page> to be given priority extraction.
+    def _cache_window(self, page: int) -> list[int]:
+        """The indexes of the pages around <page> worth keeping decoded,
+        in the order they are wanted in: the page itself and the ones
+        after it, then the ones before, clipped to the book.
         """
-        files = []
         if prefs['default double page']:
             page_width = 2
         else:
@@ -621,17 +625,48 @@ class ImageHandler:
         previous_page = page_list[0:lead]
         del page_list[0:lead]
         page_list[2*page_width:2*page_width] = previous_page
-        page_list = [index for index in page_list
-                     if 0 <= index < self.get_number_of_pages()]
+        return [index for index in page_list
+                if 0 <= index < self.get_number_of_pages()]
+
+    def set_resume_page(self, page: int | None) -> None:
+        """Unpack the pages around <page> right after those around the
+        current one, or stop doing so if <page> is None.
+
+        The page a book was left at, while the reader is asked whether
+        to go back to it: the book is shown from its front meanwhile,
+        and a "yes" should not then wait for everything in between.
+        Forgotten when the book changes.
+        """
+        self._resume_page = page
+
+    def _ask_for_pages(self, page: int) -> list[int]:
+        """Ask for pages around <page> to be given priority extraction,
+        and return the indexes of those worth keeping decoded.
+        """
+        page_list = self._cache_window(page)
 
         log.debug('Ask for priority extraction around page %u: %s',
                   page, ' '.join([str(n + 1) for n in page_list]))
 
-        image_files = self._image_files or []
-        for index in page_list:
-            if index not in self._available_images:
-                files.append(image_files[index])
+        order = list(page_list)
+        if self._resume_page is not None:
+            order += [index for index in self._cache_window(self._resume_page)
+                      if index not in page_list]
 
+        # Every other page follows, nearest first and the one ahead
+        # before the one behind at the same distance, so that the pages
+        # the reader is likeliest to turn to next are the next ones
+        # unpacked: a book opened at its end, or a jump into its middle,
+        # otherwise went on to unpack it from its first page.
+        current = page - 1
+        listed = set(order)
+        order += sorted((index for index in range(self.get_number_of_pages())
+                         if index not in listed),
+                        key=lambda index: (abs(index - current), index < current))
+
+        image_files = self._image_files or []
+        files = [image_files[index] for index in order
+                 if index not in self._available_images]
         if files:
             self._window.filehandler.ask_for_files(files)
 
