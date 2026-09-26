@@ -1,24 +1,43 @@
 name: Tests
 
+# On main, on pull requests, and every Monday: the gates install the
+# newest of everything they do not pin, so a week in which something
+# moved under the suite shows as a failed Monday run.  A tag is a commit
+# main has already tested.
+
 on:
   push:
+    branches: [main]
   pull_request:
+  schedule:
+    - cron: "43 4 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   gates:
-    # Ubuntu's own GTK 4, with PyGObject and pycairo built by pip against
-    # it, so that each Python in the matrix gets bindings of its own.
-    runs-on: ubuntu-24.04
+    # The newest Ubuntu's own GTK 4, with PyGObject and pycairo built by
+    # pip against it, so that each Python in the matrix gets bindings of
+    # its own.
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         # The floor requires-python sets, and the newest release.
-        python-version: ["3.12", "3.14"]
+        python-version: ["3.12", "3.x"]
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: pyproject.toml
       # librsvg2-common is gdk-pixbuf's SVG loader and adwaita-icon-theme
       # the icons as files, which a desktop has and this install did not
       # bring: without them the picture for a page that would not load
@@ -44,13 +63,17 @@ jobs:
   floors:
     # The lowest versions pyproject.toml declares, built with pip against
     # Ubuntu's GTK 4.  PyGObject 3.46 still builds against
-    # gobject-introspection 1.0, hence libgirepository1.0-dev.
+    # gobject-introspection 1.0, hence libgirepository1.0-dev - and
+    # Ubuntu 24.04, pinned, whose GTK 4.14 is also the oldest the suite
+    # runs on.
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
       # librsvg2-common is gdk-pixbuf's SVG loader and adwaita-icon-theme
       # the icons as files, which a desktop has and this install did not
       # bring: without them the picture for a page that would not load
