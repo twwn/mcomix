@@ -1541,6 +1541,15 @@ class MainWindowTest(MComixTest):
         asked.assert_called_once_with(
             self.window.imagehandler.get_current_page())
 
+    def test_the_menu_opened_beside_the_pages_renames_the_page_being_read(self):
+        self._ready()
+        self.window.popup_page = None
+        with unittest.mock.patch.object(self.window.file_actions,
+                                        'rename_page_dialog') as asked:
+            self.window.file_actions.rename_popup_page()
+        asked.assert_called_once_with(
+            self.window.imagehandler.get_current_page())
+
     def test_the_rename_key_does_nothing_without_a_book(self):
         with unittest.mock.patch.object(self.window.file_actions,
                                         'rename_page_dialog') as asked, \
@@ -2141,6 +2150,15 @@ class MainWindowTest(MComixTest):
         self.assertEqual('There is not enough room there: the file is %s.'
                          % tools.format_byte_size(os.path.getsize(source)),
                          reason)
+
+    def test_any_other_refusal_gives_the_system_s_own_reason(self):
+        self._movable_book()
+        destination = os.path.join(self.tmp_dir, 'destination')
+        os.makedirs(destination)
+        denied = OSError(errno.EACCES, os.strerror(errno.EACCES))
+        with unittest.mock.patch.object(file_mover, 'move_file',
+                                        side_effect=denied):
+            self.assertEqual(str(denied), self._move_refused(destination))
 
     def test_a_destination_moved_to_is_offered_next_time(self):
         self._movable_book()
