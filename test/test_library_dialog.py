@@ -413,6 +413,29 @@ class _OneBookTest(_LibraryWindowTest):
         lastread.set_page(self.path, page)
 
 
+class ReloadCoversTest(_OneBookTest):
+
+    """load_covers(), which a new cover size and the Exif and enhance
+    preferences ask for: the covers are drawn again, at the size the
+    preference says, and none of them from the cache."""
+
+    def test_the_covers_are_drawn_again_at_the_new_size(self):
+        area = self.dialog.book_area
+        prefs['library cover size'] = 64
+        with unittest.mock.patch.object(area._cache,
+                                        'invalidate_all') as emptied, \
+                unittest.mock.patch.object(area, 'display_covers',
+                                           return_value=False) as shown:
+            area.load_covers()
+            emptied.assert_called_once_with()
+            self.assertEqual(area._pixbuf_size(),
+                             (area._covers._thumbnail_width,
+                              area._covers._thumbnail_height))
+            shown.assert_not_called()
+            pump()
+        shown.assert_called_once_with(constants.COLLECTION_ALL)
+
+
 class MissingBooksTest(_LibraryWindowTest):
 
     """Books whose files have gone can be taken out of the library from
