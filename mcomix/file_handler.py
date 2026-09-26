@@ -752,6 +752,10 @@ class FileHandler:
         """Open the archive that comes directly after the currently loaded
         archive in that archive's directory listing, sorted alphabetically.
         Returns True if a new archive was opened, False otherwise.
+
+        The later volumes of a RAR set are passed over: the set is read
+        from its first volume, and one of the others opened by itself
+        is what is left of the set from there on.
         """
         if self.archive_type is not None:
 
@@ -763,7 +767,8 @@ class FileHandler:
             current_index = files.index(absolute_path)
 
             for path in files[current_index + 1:]:
-                if archive_tools.archive_mime_type(path) is not None:
+                if archive_tools.archive_mime_type(path) is not None \
+                        and not archive_tools.is_later_volume(path):
                     # open_file() closes this book itself, once it has
                     # asked about changes that have not been written.
                     self.open_file(path, keep_fileprovider=True)
@@ -786,7 +791,8 @@ class FileHandler:
             current_index = files.index(absolute_path)
 
             for path in reversed(files[:current_index]):
-                if archive_tools.archive_mime_type(path) is not None:
+                if archive_tools.archive_mime_type(path) is not None \
+                        and not archive_tools.is_later_volume(path):
                     # See open_next_archive().
                     self.open_file(path, prefs['open first file in prev archive']-1,
                                    keep_fileprovider=True)
@@ -828,7 +834,10 @@ class FileHandler:
             self._file_provider.set_directory(current_dir)
             return False
 
-        files = self._file_provider.list_files(listmode)
+        # The later volumes of a RAR set are read through its first, and
+        # are not books to open by themselves.
+        files = [path for path in self._file_provider.list_files(listmode)
+                 if not archive_tools.is_later_volume(path)]
         self._close()
         if files:
             path = files[0]
@@ -864,7 +873,10 @@ class FileHandler:
             self._file_provider.set_directory(current_dir)
             return False
 
-        files = self._file_provider.list_files(listmode)
+        # The later volumes of a RAR set are read through its first, and
+        # are not books to open by themselves.
+        files = [path for path in self._file_provider.list_files(listmode)
+                 if not archive_tools.is_later_volume(path)]
         self._close()
         if files:
             path = files[prefs['open first file in prev directory']-1]

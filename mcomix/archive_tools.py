@@ -191,6 +191,84 @@ def archive_mime_type(path: str) -> int | None:
     return None
 
 
+#: The signatures a RAR archive starts with, in the two formats.
+_RAR4_SIGNATURE = b'Rar!\x1a\x07\x00'
+_RAR5_SIGNATURE = b'Rar!\x1a\x07\x01\x00'
+
+
+def _read_vint(data: bytes, offset: int) -> tuple[int, int]:
+    """The variable-length integer of RAR 5 at <offset> in <data>, and
+    the offset after it: seven bits a byte, lowest first, the high bit
+    saying another byte follows.  IndexError if <data> ends first."""
+    value = shift = 0
+    while True:
+        byte = data[offset]
+        offset += 1
+        value |= (byte & 0x7F) << shift
+        shift += 7
+        if not byte & 0x80:
+            return value, offset
+
+
+def _is_later_rar_volume(head: bytes) -> bool:
+    """Whether <head>, the start of a file, is the start of a RAR volume
+    other than the first of its set.
+
+    RAR 5 says so in the main archive header: the "volume" flag with the
+    "volume number" field, which every volume but the first carries.
+    RAR 3 and 4 set "first volume" on the first volume of a set, and
+    also a flag for the name.partN.rar naming; a volume of that naming
+    without "first volume" is a later one.  A set from before RAR 3
+    sets neither, and is never taken for a later volume: its other
+    volumes are name.r00, name.r01 and so on, which are not listed as
+    archives in the first place.
+    """
+    try:
+        if head.startswith(_RAR5_SIGNATURE):
+            offset = len(_RAR5_SIGNATURE) + 4  # after the header's CRC32
+            _size, offset = _read_vint(head, offset)
+            header_type, offset = _read_vint(head, offset)
+            if header_type != 1:  # not the main archive header
+                return False
+            header_flags, offset = _read_vint(head, offset)
+            if header_flags & 0x0001:  # an extra area
+                _extra_size, offset = _read_vint(head, offset)
+            if header_flags & 0x0002:  # a data area
+                _data_size, offset = _read_vint(head, offset)
+            archive_flags, offset = _read_vint(head, offset)
+            return archive_flags & 0x0003 == 0x0003
+        if head.startswith(_RAR4_SIGNATURE):
+            offset = len(_RAR4_SIGNATURE) + 2  # after the header's CRC16
+            if head[offset] != 0x73:  # not the main archive header
+                return False
+            flags = int.from_bytes(head[offset + 1:offset + 3], 'little')
+            volume, new_numbering, first_volume = 0x0001, 0x0010, 0x0100
+            return (flags & (volume | new_numbering | first_volume)
+                    == volume | new_numbering)
+    except IndexError:
+        pass
+    return False
+
+
+def is_later_volume(path: str) -> bool:
+    """Whether the file at <path> is a volume of an archive packed in
+    several, other than the first.
+
+    Such a file is not a book: opened on its own it lists what is left
+    from the volume before, and the set is read from its first volume,
+    which the archive handlers follow through the rest.  Only RAR sets
+    are recognised; a file that cannot be read is not a later volume.
+    """
+    if not is_archive_file(path):
+        return False
+    try:
+        with open(path, 'rb') as archive:
+            head = archive.read(32)
+    except OSError:
+        return False
+    return _is_later_rar_volume(head)
+
+
 def describe(path: str, archive_type: int) -> str:
     """How the archive at <path>, of <archive_type>, is described to the
     reader.

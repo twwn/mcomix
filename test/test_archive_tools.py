@@ -61,6 +61,42 @@ class ArchiveToolsTest(MComixTest):
             )
             self.assertEqual(archive_type, expected_type, msg=msg)
 
+    def test_only_the_first_volume_of_a_rar_set_is_a_book(self):
+        for part, later in ((1, False), (2, True), (3, True)):
+            with self.subTest(part=part):
+                self.assertEqual(later, archive_tools.is_later_volume(
+                    get_testfile_path('archives',
+                                      'Multivolume.part%d.rar' % part)))
+        for name in ('RAR4.rar', 'RAR5.rar', '01-ZIP-Normal.zip'):
+            with self.subTest(name=name):
+                self.assertFalse(archive_tools.is_later_volume(
+                    get_testfile_path('archives', name)))
+
+    def test_a_later_rar_4_volume_is_told_by_its_flags(self):
+        """The rar here writes only RAR 5, so the main header of a RAR 4
+        volume is written by hand: CRC16, type 0x73, the flags, size."""
+        def header(flags):
+            return (b'Rar!\x1a\x07\x00' + b'\x00\x00\x73'
+                    + flags.to_bytes(2, 'little') + b'\x0d\x00' + bytes(6))
+        volume, new_numbering, first_volume = 0x0001, 0x0010, 0x0100
+        for flags, later in (
+                (volume | new_numbering, True),
+                (volume | new_numbering | first_volume, False),
+                # Before RAR 3, which named the others name.r00 and so on.
+                (volume, False),
+                (0, False)):
+            with self.subTest(flags=hex(flags)):
+                path = os.path.join(self.tmp_dir, 'set.part2.rar')
+                with open(path, 'wb') as volume_file:
+                    volume_file.write(header(flags))
+                self.assertEqual(later, archive_tools.is_later_volume(path))
+
+    def test_a_rar_that_ends_inside_its_header_is_not_a_later_volume(self):
+        path = os.path.join(self.tmp_dir, 'short.rar')
+        with open(path, 'wb') as short:
+            short.write(b'Rar!\x1a\x07\x01\x00\x00\x00\x00\x00\x8c')
+        self.assertFalse(archive_tools.is_later_volume(path))
+
     def test_empty_tar_is_a_tar(self):
 
         path = os.path.join(self.tmp_dir, 'empty.tar')

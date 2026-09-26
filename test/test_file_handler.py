@@ -133,6 +133,39 @@ class DirectoryWalkTest(MComixTest):
         self.assertFalse(self.handler.open_previous_archive())
         self.assertEqual(middle, self._opened_file())
 
+    def _put_rar_set(self, directory):
+        """Copy the RAR set packed in three volumes into <directory>, and
+        return the path of its first volume."""
+        from mcomix.archive import rar, rar_external
+        if not (rar.RarArchive.is_available()
+                or rar_external.RarArchive.is_available()):
+            self.skipTest('nothing here reads RAR')
+        for part in (1, 2, 3):
+            name = 'Multivolume.part%d.rar' % part
+            shutil.copy(get_testfile_path('archives', name),
+                        os.path.join(self.root, directory, name))
+        return os.path.join(self.root, directory, 'Multivolume.part1.rar')
+
+    def test_the_later_volumes_of_a_rar_set_are_not_books_of_their_own(self):
+        """Opened by itself, part2 is the rest of the set from the middle
+        of a page on; the set is read through part1."""
+        first = self._put_rar_set('b')
+        after = os.path.join(self.root, 'b', 'z.cbz')
+        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), after)
+        self._open(first)
+        self.assertTrue(self.handler.open_next_archive())
+        self.assertEqual(after, self._opened_file())
+        self.assertTrue(self.handler.open_previous_archive())
+        self.assertEqual(first, self._opened_file())
+
+    def test_walking_back_into_a_rar_set_opens_its_first_volume(self):
+        """The walk back opens the last book of the directory before,
+        which is the set, not its last volume."""
+        first = self._put_rar_set('b')
+        self._open(self._put_archive('c'))
+        self.assertTrue(self.handler.open_previous_directory())
+        self.assertEqual(first, self._opened_file())
+
     def test_there_is_nothing_before_the_first_directory(self):
         archive = self._put_archive('a')
         self._open(archive)

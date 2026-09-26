@@ -29,7 +29,7 @@ Option | Explanation
 -------|------------
 Use smart scrolling | The space key and the mouse wheel follow the reading order of a comic page: sideways first, then down, then sideways again. A page that cannot be scrolled sideways, as in "Fit to width" mode, scrolls down only.
 Flip pages when scrolling off the edges of the page | Scrolling past the end of a page, with the wheel or the arrow keys, turns it.
-Automatically open the next archive | Turning past the last page opens the next archive in the directory, and turning back past the first page opens the previous one.
+Automatically open the next archive | Turning past the last page opens the next archive in the directory, and turning back past the first page opens the previous one. A RAR book packed in volumes, name.part1.rar, name.part2.rar and so on, counts as one archive, opened from its first volume.
 Automatically open next directory | The same, past the last or first file of a directory, for the next or previous sibling directory.
 Open first file when navigating to previous archive | Rather than its last file.
 Open first file when navigating to previous directory | Rather than its last file.
