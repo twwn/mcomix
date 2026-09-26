@@ -1,0 +1,83 @@
+name: Publish
+
+# Puts a published release out to the Windows package managers, once
+# the draft release.yml made has been reviewed and published by hand.
+# Each job does nothing but say why where its secret is not set.
+#
+#   Chocolatey  the package mcomix-gtk, which downloads the release's MSI.
+#               Secret CHOCOLATEY_API_KEY: an API key of the account
+#               win32/mcomix.nuspec names as its owner.
+#   winget      a pull request to microsoft/winget-pkgs.  Secret
+#               WINGET_TOKEN: a classic token with public_repo, of an
+#               account with a fork of microsoft/winget-pkgs.  The
+#               package has to be there once before this can update it:
+#               submit the first version by hand, with
+#               "komac new" or "wingetcreate new".  The identifier is the
+#               repository variable WINGET_IDENTIFIER, twwn.MComix where
+#               it is not set.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "The published release to put out, such as 26.09"
+        required: true
+
+permissions:
+  contents: read
+
+env:
+  TAG: ${{ inputs.tag || github.event.release.tag_name }}
+
+jobs:
+  chocolatey:
+    runs-on: windows-2025
+    env:
+      CHOCOLATEY_API_KEY: ${{ secrets.CHOCOLATEY_API_KEY }}
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Without an API key there is nothing to push
+        if: env.CHOCOLATEY_API_KEY == ''
+        run: echo "::notice::CHOCOLATEY_API_KEY is not set; the Chocolatey package was not pushed."
+      - uses: actions/checkout@v7
+        if: env.CHOCOLATEY_API_KEY != ''
+        with:
+          ref: ${{ env.TAG }}
+      # The package downloads the installer from the release, so the
+      # checksum it checks is taken from that very file; the release's
+      # name goes beside it, as win32/build_msi.py writes both.
+      - name: Record the release's installer
+        if: env.CHOCOLATEY_API_KEY != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download $env:TAG --repo $env:GITHUB_REPOSITORY --pattern "mcomix-win64-$env:TAG.msi" --dir dist
+          (Get-FileHash "dist/mcomix-win64-$env:TAG.msi" -Algorithm SHA256).Hash.ToLower() | Set-Content win32/tools/checksum.sha256
+          $env:TAG | Set-Content win32/tools/release.txt
+      - name: Pack and push mcomix-gtk
+        if: env.CHOCOLATEY_API_KEY != ''
+        run: |
+          choco pack win32/mcomix.nuspec --version $env:TAG --out dist
+          $package = Get-ChildItem dist -Filter 'mcomix-gtk.*.nupkg' | Select-Object -First 1
+          choco push $package.FullName --source https://push.chocolatey.org/ --api-key $env:CHOCOLATEY_API_KEY
+
+  winget:
+    runs-on: windows-2025
+    env:
+      WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
+    steps:
+      - name: Without a token there is nothing to submit
+        if: env.WINGET_TOKEN == ''
+        shell: pwsh
+        run: echo "::notice::WINGET_TOKEN is not set; no winget pull request was opened."
+      - uses: vedantmgoyal9/winget-releaser@v2
+        if: env.WINGET_TOKEN != ''
+        with:
+          identifier: ${{ vars.WINGET_IDENTIFIER || 'twwn.MComix' }}
+          release-tag: ${{ env.TAG }}
+          installers-regex: '\.msi$'
+          token: ${{ env.WINGET_TOKEN }}

@@ -35,6 +35,23 @@ Preparing a new release
 3. Regenerate the translation files as above. The template's header carries the version.
 4. Add the release to `share/metainfo/mcomix.metainfo.xml`.
 5. Commit, with a message naming the version, such as "MComix 26.10", and create an [annotated tag](https://git-scm.com/book/en/v2/Git-Basics-Tagging) for it: `git tag -a 26.10 -m "Version 26.10"`.
+6. Push the commit and the tag: `git push && git push origin 26.10`.
+
+Releasing with GitHub Actions
+-----------------------------
+
+Pushing the tag starts `.github/workflows/release.yml`. It checks that the tag is the version in `mcomix/constants.py`, builds the source archive on Linux and the Windows zip and MSI installer in MSYS2, and drafts the GitHub release with the three files attached and the release's section of `ChangeLog.md` as its notes. The programs the Windows packages carry are fetched by the workflow; their versions are set at its top. It can also be run by hand from the Actions tab, given the tag.
+
+Review the draft and publish it. Publishing starts `.github/workflows/publish.yml`, which pushes the Chocolatey package and opens the pull request that puts the new version into winget. Each needs a secret in the repository's settings, and skips with a notice where it is not set:
+
+Secret | For
+-------|----
+`CHOCOLATEY_API_KEY` | An API key of the Chocolatey account `win32/mcomix.nuspec` names as its owner.
+`WINGET_TOKEN` | A classic token with the `public_repo` scope, of an account with a fork of [microsoft/winget-pkgs](https://github.com/microsoft/winget-pkgs).
+
+winget only takes updates to a package it has: submit the first version by hand, with `komac new` or `wingetcreate new`, under the identifier the repository variable `WINGET_IDENTIFIER` names (`twwn.MComix` where it is not set). `MComix.MComix` is the original MComix 3.
+
+The sections below are the same steps by hand.
 
 Building the source archive
 ---------------------------

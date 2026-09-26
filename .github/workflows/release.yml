@@ -1,0 +1,165 @@
+name: Release
+
+# Builds a release from its tag and drafts the GitHub release with the
+# three files attached and the ChangeLog.md section as its notes.  The
+# draft is reviewed and published by hand; publishing it is what starts
+# publish.yml, which puts the Chocolatey and winget packages out.
+#
+# The tag is the release's version, as docs/Maintenance.md numbers it
+# (26.09, 26.10.1), and has to match VERSION in mcomix/constants.py.
+
+on:
+  push:
+    tags:
+      - "[0-9][0-9].[0-9][0-9]"
+      - "[0-9][0-9].[0-9][0-9].[0-9]*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "The tag to build, such as 26.09"
+        required: true
+
+permissions:
+  contents: read
+
+env:
+  TAG: ${{ inputs.tag || github.ref_name }}
+  # The programs the Windows packages carry, as docs/Maintenance.md
+  # lists them.  7-Zip is taken from the runner, which has it installed.
+  MUPDF_VERSION: "1.28.5"
+  UNRARDLL_VERSION: "722"
+
+jobs:
+  notes:
+    name: Check the version and take the release notes
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.TAG }}
+      - name: The tag is the version MComix says it is
+        run: |
+          version=$(sed -n "s/^VERSION = '\(.*\)'$/\1/p" mcomix/constants.py)
+          if [ "$version" != "$TAG" ]; then
+            echo "::error::The tag is $TAG, but mcomix/constants.py says $version"
+            exit 1
+          fi
+      - name: The release's section of ChangeLog.md
+        run: |
+          awk -v heading="# MComix $TAG" '
+            $0 == heading { found = 1; next }
+            found && /^# MComix / { exit }
+            found' ChangeLog.md > notes.md
+          if ! grep -q '[^[:space:]]' notes.md; then
+            echo "::error::ChangeLog.md has no section headed \"# MComix $TAG\""
+            exit 1
+          fi
+      - uses: actions/upload-artifact@v7
+        with:
+          name: notes
+          path: notes.md
+
+  source:
+    name: Source archive
+    needs: notes
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.TAG }}
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - run: |
+          python -m pip install build
+          python -m build -s
+      - uses: actions/upload-artifact@v7
+        with:
+          name: source
+          path: dist/mcomix-*.tar.gz
+          if-no-files-found: error
+
+  windows:
+    name: Windows packages
+    needs: notes
+    runs-on: windows-2025
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.TAG }}
+      # The packages docs/Maintenance.md lists, and MSYS2's own build of
+      # PyInstaller, which pip would have to build for this Python; the
+      # path is inherited so that WiX, installed below, is found.
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          path-type: inherit
+          install: >-
+            mingw-w64-x86_64-gtk4
+            mingw-w64-x86_64-libadwaita
+            mingw-w64-x86_64-libjxl
+            mingw-w64-x86_64-python
+            mingw-w64-x86_64-python-gobject
+            mingw-w64-x86_64-python-pillow
+            mingw-w64-x86_64-python-pip
+            mingw-w64-x86_64-python-pymupdf
+            mingw-w64-x86_64-pyinstaller
+      - name: Fetch 7-Zip, mutool and UnRAR.dll into ../mcomix-other
+        shell: pwsh
+        run: |
+          $sevenzip = "$env:ProgramFiles/7-Zip/7z.exe"
+          $other = Join-Path (Split-Path $PWD) 'mcomix-other'
+          New-Item -ItemType Directory -Force "$other/7z", "$other/mutool", "$other/unrar" | Out-Null
+          Copy-Item "$env:ProgramFiles/7-Zip/7z.exe", "$env:ProgramFiles/7-Zip/7z.dll", "$env:ProgramFiles/7-Zip/License.txt" "$other/7z"
+          Invoke-WebRequest "https://casper.mupdf.com/downloads/archive/mupdf-$env:MUPDF_VERSION-windows.zip" -OutFile mupdf.zip
+          & $sevenzip e mupdf.zip "mupdf-$env:MUPDF_VERSION-windows/mutool.exe" "mupdf-$env:MUPDF_VERSION-windows/COPYING.txt" "-o$other/mutool" -y
+          Invoke-WebRequest "https://www.rarlab.com/rar/unrardll-$env:UNRARDLL_VERSION.exe" -OutFile unrardll.exe
+          & $sevenzip e unrardll.exe x64/UnRAR64.dll license.txt "-o$other/unrar" -y
+          Remove-Item mupdf.zip, unrardll.exe
+      # WiX 3's tools run from where they are unpacked; nothing has to
+      # be installed.
+      - name: Fetch WiX 3
+        shell: pwsh
+        run: |
+          $wix = Join-Path $env:RUNNER_TEMP 'wix3'
+          Invoke-WebRequest "https://github.com/wixtoolset/wix3/releases/download/wix3141rtm/wix314-binaries.zip" -OutFile wix.zip
+          Expand-Archive wix.zip -DestinationPath $wix
+          Remove-Item wix.zip
+          $wix | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
+      - name: Build dist/MComix and the zip
+        run: python win32/build_pyinstaller.py
+      - name: Build the MSI installer
+        run: |
+          python win32/build_msi.py
+          test -f "dist/mcomix-win64-$TAG.msi"
+          test -f "dist/mcomix-win64-$TAG.zip"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: windows
+          path: |
+            dist/mcomix-win64-*.zip
+            dist/mcomix-win64-*.msi
+          if-no-files-found: error
+
+  draft:
+    name: Draft the GitHub release
+    needs: [notes, source, windows]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          path: artifacts
+      - name: Draft the release with the three files
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --draft \
+            --verify-tag --title "MComix $TAG" \
+            --notes-file artifacts/notes/notes.md \
+            artifacts/source/*.tar.gz artifacts/windows/*
