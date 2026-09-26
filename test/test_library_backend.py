@@ -22,6 +22,11 @@ from mcomix.library import backend_types
 from mcomix.archive import password as archive_password
 
 
+#: The one book of the libraries the upgrade tests write, as add_book()
+#: stores a path: absolute, which on Windows begins with a drive.
+_A_BOOK = os.path.abspath('/books/a.cbz')
+
+
 class LibraryDatabaseTest(unittest.TestCase):
 
     """A LibraryBackend over a library of its own.
@@ -137,7 +142,7 @@ class LibraryDatabaseTest(unittest.TestCase):
             "insert into collection (id, name) values (1, 'Shelf')")
         connection.execute(
             'insert into book (id, name, path, pages, format, size)'
-            " values (1, 'a.cbz', '/books/a.cbz', 20, 1, 1)")
+            " values (1, 'a.cbz', ?, 20, 1, 1)", (_A_BOOK,))
         connection.execute(
             'insert into contain (collection, book) values (1, 1)')
         if version >= 4:
@@ -398,7 +403,7 @@ class UpgradeFromEveryVersionTest(LibraryDatabaseTest):
         for version in self._versions():
             with self.subTest(version=version):
                 library = self._upgraded(version)
-                book = library.get_book_by_path('/books/a.cbz')
+                book = library.get_book_by_path(_A_BOOK)
                 self.assertIsNotNone(book, 'the book was lost')
                 self.assertEqual(book.pages, 20)
                 self.assertEqual(library.get_books_in_collection(1),
@@ -495,12 +500,12 @@ class UpgradeFromEveryVersionTest(LibraryDatabaseTest):
                                 isolation_level=None)
         legacy.executemany(
             'insert into lastread (path, page, time_set) values (?, ?, ?)',
-            [('/books/a.cbz', 3, '2020-01-02 00:00:00'),
+            [(_A_BOOK, 3, '2020-01-02 00:00:00'),
              ('/gone/b.cbz', 5, '2020-01-03 00:00:00')])
         legacy.close()
         library = backend.LibraryBackend()
         try:
-            kept = library.get_book_by_path('/books/a.cbz')
+            kept = library.get_book_by_path(_A_BOOK)
             self.assertEqual(1, kept.id)
             self.assertEqual(3, kept.get_last_read_page())
             self.assertIn(1, library.get_books_in_collection(
@@ -1517,7 +1522,9 @@ class DuplicateCollectionTest(LibraryDatabaseTest):
         self.library._con.execute(
             '''insert into book (name, path, pages, format, size)
                values (?, ?, ?, ?, ?)''',
-            ('a', '/does/not/exist/a.cbz', 20, 1, 1))
+            # As add_book() stores it: absolute, which on Windows begins
+            # with a drive, and is what get_book_by_path() looks for.
+            ('a', os.path.abspath('/does/not/exist/a.cbz'), 20, 1, 1))
         self.library.add_book_to_collection(
             self.library.get_book_by_path('/does/not/exist/a.cbz').id,
             self.collection)
@@ -1546,7 +1553,8 @@ class DuplicateCollectionTest(LibraryDatabaseTest):
         self.library._con.execute(
             '''insert into book (name, path, pages, format, size)
                values (?, ?, ?, ?, ?)''',
-            (name, '/does/not/exist/%s.cbz' % name, 20, 1, 1))
+            (name, os.path.abspath('/does/not/exist/%s.cbz' % name), 20, 1,
+             1))
         book = self.library.get_book_by_path(
             '/does/not/exist/%s.cbz' % name).id
         self.library.add_book_to_collection(book, collection)
