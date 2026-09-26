@@ -695,34 +695,27 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
             len(selected))
         self._library.set_status_message(msg % len(selected))
 
-    def _completely_remove_book(self, request_response: object = True,
-                                *args: object) -> None:
+    def _completely_remove_book(self, *args: object) -> None:
         """Remove the currently selected books from the library and the
-        hard drive.
+        hard drive, once the reader has said yes.
         """
-
-        if request_response:
-
-            choice_dialog = message_dialog.MessageDialog(
-                self._library, buttons=Gtk.ButtonsType.YES_NO)
-            # These books are deleted from the disk, so Enter must not
-            # be what does it; the button that does is drawn as the
-            # destructive action it is.
-            choice_dialog.set_default_response(Response.NO)
-            deletes = choice_dialog.get_widget_for_response(Response.YES)
-            if deletes is not None:
-                deletes.add_css_class('destructive-action')
-            choice_dialog.set_should_remember_choice(
-                message_dialog.RememberedDialog.LIBRARY_REMOVE_BOOK_FROM_DISK)
-            choice_dialog.set_text(
-                _('Remove books from the library?'),
-                _('The selected books will be removed from the library and '
-                  'permanently deleted. Are you sure that you want to continue?')
-            )
-            choice_dialog.run_async(self._remove_answered)
-            return
-
-        self._remove_answered(Response.YES)
+        choice_dialog = message_dialog.MessageDialog(
+            self._library, buttons=Gtk.ButtonsType.YES_NO)
+        # These books are deleted from the disk, so Enter must not
+        # be what does it; the button that does is drawn as the
+        # destructive action it is.
+        choice_dialog.set_default_response(Response.NO)
+        deletes = choice_dialog.get_widget_for_response(Response.YES)
+        if deletes is not None:
+            deletes.add_css_class('destructive-action')
+        choice_dialog.set_should_remember_choice(
+            message_dialog.RememberedDialog.LIBRARY_REMOVE_BOOK_FROM_DISK)
+        choice_dialog.set_text(
+            _('Remove books from the library?'),
+            _('The selected books will be removed from the library and '
+              'permanently deleted. Are you sure that you want to continue?')
+        )
+        choice_dialog.run_async(self._remove_answered)
 
     def _remove_answered(self, response: int) -> None:
         """Delete the selected books once the confirmation has come back."""
