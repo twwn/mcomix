@@ -84,6 +84,17 @@ class LibraryDialogTest(_LibraryWindowTest):
         self.assertEqual(dialog.backend.get_all_collections(),
                          [constants.COLLECTION_RECENT])
 
+    def test_quitting_closes_the_library(self):
+        """Its covers are drawn by a worker thread, which only close()
+        stops, and close() is also what keeps the window's size for the
+        next time."""
+        dialog = self._open()
+        with unittest.mock.patch.object(
+                dialog, 'close', wraps=dialog.close) as closed:
+            self.window.terminate_program()
+        closed.assert_called_once_with()
+        self.assertIsNone(main_dialog.get_dialog())
+
     def test_the_window_carries_the_three_areas(self):
         dialog = self._open()
         self.assertIsNotNone(dialog.book_area)
