@@ -98,18 +98,13 @@ def prepare_version_file() -> None:
         out.write(version_file_contents)
 
 
-def run_pyinstaller(attach_console: bool) -> int:
-    """ Runs setup.py py2exe. """
+def run_pyinstaller() -> int:
+    """Build dist/MComix, with both executables the spec names, in one
+    run of the PyInstaller of the Python running this."""
     print('Executing pyinstaller...')
-    args = ['pyinstaller', 'win32/mcomix.spec', '--noconfirm']
-
-    # The spec file takes this environment setting to determine if a console should be attached
-    environ = os.environ.copy()
-    environ["PYINSTALLER_CONSOLE"] = "1" if attach_console else "0"
-
-    proc_result = subprocess.run(args, shell=True, env=environ)
-
-    return proc_result.returncode
+    args = [sys.executable, '-m', 'PyInstaller', 'win32/mcomix.spec',
+            '--noconfirm']
+    return subprocess.run(args).returncode
 
 
 def win32_newline(source: str, dest: str) -> None:
@@ -175,23 +170,13 @@ def create_release_archive() -> None:
 if __name__ == '__main__':
     prepare_version_file()
 
-    # First, a console application is created with default arguments from the spec
+    # MComix.exe and MComix.Console.exe, from the one spec.
     clear_distdir('dist/MComix/')
-    success = run_pyinstaller(attach_console=True) == 0
-    if not success:
-        sys.exit(1)
-
-    shutil.move('dist/MComix/MComix.exe', 'dist/MComix.Console.exe')
-
-    # Create version without console
-    clear_distdir('dist/MComix/')
-    success = run_pyinstaller(attach_console=False) == 0
-    if not success:
+    if run_pyinstaller() != 0:
         sys.exit(1)
 
     os.unlink('win32/version_file.txt')
 
-    shutil.move('dist/MComix.Console.exe', 'dist/MComix/')
     copy_other_files()
     create_release_archive()
 

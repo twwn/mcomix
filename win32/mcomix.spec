@@ -4,8 +4,6 @@
 import glob
 import os
 
-block_cipher = None
-
 
 def list_files(basedir, *patterns):
     """ Locates all files in <basedir> that match one of <patterns>. """
@@ -33,10 +31,6 @@ added_files.extend([(os.path.join('..', path),
 languages = sorted(name for name in os.listdir('mcomix/messages')
                    if os.path.isdir(os.path.join('mcomix/messages', name)))
 
-attach_console = True
-if 'PYINSTALLER_CONSOLE' in os.environ:
-    attach_console = int(os.environ['PYINSTALLER_CONSOLE']) != 0
-
 a = Analysis(['../mcomixstarter.py'],
              pathex=[],
              binaries=[],
@@ -59,36 +53,40 @@ a = Analysis(['../mcomixstarter.py'],
              },
              runtime_hooks=[],
              excludes=[],
-             win_no_prefer_redirects=False,
-             win_private_assemblies=False,
-             cipher=block_cipher,
-             noarchive=False)
+             # The code as .pyc files beside the executables rather than
+             # in an archive inside each: there are two of them, and the
+             # archive, 5.9 MB, was in the package twice.
+             noarchive=True)
 
-pyz = PYZ(a.pure,
-          a.zipped_data,
-          cipher=block_cipher)
+pyz = PYZ(a.pure)
 
-exe = EXE(pyz,
-          a.scripts,
-          [],
-          exclude_binaries=True,
-          name='MComix',
-          debug=False,
-          bootloader_ignore_signals=False,
-          strip=False,
-          upx=True,
-          console=attach_console,
-          disable_windowed_traceback=False,
-          target_arch=None,
-          version='version_file.txt',
-          codesign_identity=None,
-          entitlements_file=None , icon='../mcomix/images/mcomix.ico')
 
-coll = COLLECT(exe,
+def executable(name, console):
+    """One of the two executables, which share everything else."""
+    return EXE(pyz,
+               a.scripts,
+               [],
+               exclude_binaries=True,
+               name=name,
+               debug=False,
+               bootloader_ignore_signals=False,
+               strip=False,
+               upx=False,
+               console=console,
+               disable_windowed_traceback=False,
+               target_arch=None,
+               version='version_file.txt',
+               codesign_identity=None,
+               entitlements_file=None,
+               icon='../mcomix/images/mcomix.ico')
+
+
+# MComix.exe for the desktop, and MComix.Console.exe, which opens a
+# console for what MComix logs, for when something goes wrong.
+coll = COLLECT(executable('MComix', console=False),
+               executable('MComix.Console', console=True),
                a.binaries,
-               a.zipfiles,
                a.datas,
                strip=False,
-               upx=True,
-               upx_exclude=[],
+               upx=False,
                name='MComix')

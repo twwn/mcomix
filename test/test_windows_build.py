@@ -12,6 +12,7 @@ import pathlib
 import shutil
 import subprocess
 import sys
+import types
 import unittest.mock
 
 from . import MComixTest
@@ -73,30 +74,48 @@ class VersionFileTest(MComixTest):
 
 class SpecDataTest(MComixTest):
 
-    """The files win32/mcomix.spec hands PyInstaller beside the code."""
+    """What win32/mcomix.spec hands PyInstaller."""
 
-    def test_every_image_is_packed(self):
-        # PyInstaller runs the spec from the top of the checkout, with
-        # its own names already defined; these stand in for them.
-        found: dict[str, list[tuple[str, str]]] = {}
+    #: What Analysis answers with, as far as the spec reads it: a data
+    #: file is (name in the bundle, source, kind).
+    COLLECTED = [
+        ('share/icons/Adwaita/symbolic/actions/go-next-symbolic.svg',
+         '/ucrt64/share/icons/Adwaita/symbolic/actions/go-next-symbolic.svg',
+         'DATA'),
+        ('share/icons/Adwaita/cursors/default', '/ucrt64/share/icons/'
+         'Adwaita/cursors/default', 'DATA'),
+    ]
 
-        def analysis(*args: object, datas: list[tuple[str, str]],
-                     **kwargs: object) -> unittest.mock.Mock:
-            found['datas'] = datas
-            return unittest.mock.Mock()
+    def _run_spec(self):
+        """Run the spec as PyInstaller does - from the top of the checkout,
+        with its names defined - and answer with what it handed them."""
+        found = {'EXE': []}
+
+        def analysis(*args, **kwargs):
+            found['Analysis'] = kwargs
+            return types.SimpleNamespace(pure=[], scripts=[], binaries=[],
+                                         datas=list(self.COLLECTED))
+
+        def exe(*args, **kwargs):
+            found['EXE'].append(kwargs)
+            return kwargs['name']
+
+        def collect(*args, **kwargs):
+            found['COLLECT'] = args, kwargs
 
         names = {'Analysis': analysis, 'PYZ': unittest.mock.Mock(),
-                 'EXE': unittest.mock.Mock(),
-                 'COLLECT': unittest.mock.Mock()}
-        top = os.path.dirname(WIN32)
+                 'EXE': exe, 'COLLECT': collect}
         cwd = os.getcwd()
-        os.chdir(top)
+        os.chdir(os.path.dirname(WIN32))
         self.addCleanup(os.chdir, cwd)
         with open(os.path.join(WIN32, 'mcomix.spec')) as fp:
             exec(fp.read(), names)
+        return found
 
+    def test_every_image_is_packed(self):
+        top = os.path.dirname(WIN32)
         packed = {os.path.normpath(os.path.join(WIN32, source))
-                  for source, _ in found['datas']}
+                  for source, _ in self._run_spec()['Analysis']['datas']}
         images = {os.path.join(dirpath, filename)
                   for dirpath, _, filenames
                   in os.walk(os.path.join(top, 'mcomix', 'images'))
@@ -104,29 +123,11 @@ class SpecDataTest(MComixTest):
                   if filename.endswith(('.png', '.svg'))}
         self.assertEqual(set(), images - packed)
 
-    def _hooksconfig(self):
-        """The configuration the spec hands PyInstaller's hooks."""
-        found = {}
-
-        def analysis(*args, hooksconfig, **kwargs):
-            found.update(hooksconfig)
-            return unittest.mock.Mock()
-
-        names = {'Analysis': analysis, 'PYZ': unittest.mock.Mock(),
-                 'EXE': unittest.mock.Mock(),
-                 'COLLECT': unittest.mock.Mock()}
-        cwd = os.getcwd()
-        os.chdir(os.path.dirname(WIN32))
-        self.addCleanup(os.chdir, cwd)
-        with open(os.path.join(WIN32, 'mcomix.spec')) as fp:
-            exec(fp.read(), names)
-        return found['gi']
-
     def test_the_gtk_hooks_are_told_this_is_gtk_4(self):
         """Left to itself, PyInstaller's GTK hook looks for GTK 3, finds
         none, and collects neither the icon theme nor GTK's translations:
         the 26.09 zip had no share/icons and no gtk40.mo."""
-        gi = self._hooksconfig()
+        gi = self._run_spec()['Analysis']['hooksconfig']['gi']
         self.assertEqual('4.0', gi['module-versions']['Gtk'])
         self.assertIn('Adwaita', gi['icons'])
 
@@ -135,7 +136,19 @@ class SpecDataTest(MComixTest):
         catalogues = sorted(name for name in os.listdir(messages)
                             if os.path.isdir(os.path.join(messages, name)))
         self.assertGreater(len(catalogues), 20)
-        self.assertEqual(catalogues, self._hooksconfig()['languages'])
+        gi = self._run_spec()['Analysis']['hooksconfig']['gi']
+        self.assertEqual(catalogues, gi['languages'])
+
+    def test_both_executables_are_built_in_one_run(self):
+        """And share the code, which each carried a copy of inside it
+        when the build ran PyInstaller once for each."""
+        found = self._run_spec()
+        self.assertTrue(found['Analysis']['noarchive'])
+        self.assertEqual({'MComix': False, 'MComix.Console': True},
+                         {exe['name']: exe['console'] for exe in found['EXE']})
+        args, kwargs = found['COLLECT']
+        self.assertEqual(['MComix', 'MComix.Console'], list(args[:2]))
+        self.assertEqual('MComix', kwargs['name'])
 
 
 class ChocolateyPackageTest(MComixTest):
