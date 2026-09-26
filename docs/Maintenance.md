@@ -40,13 +40,15 @@ Preparing a new release
 Releasing with GitHub Actions
 -----------------------------
 
-Pushing the tag starts `.github/workflows/release.yml`. It checks that the tag is the version in `mcomix/constants.py`, builds the source archive on Linux and the Windows zip and MSI installer in MSYS2, starts the built MComix on a PDF and on a book that is not there, and drafts the GitHub release with the three files, a `SHA256SUMS` file and the release's section of `ChangeLog.md` as its notes. Each file also gets a signed build provenance: `gh attestation verify <file> --repo twwn/mcomix` shows it was built there, from the tag.
+Pushing the tag starts `.github/workflows/release.yml`. It checks that the tag is the version in `mcomix/constants.py`, builds the source archive on Linux and the Windows zip and MSI installer in MSYS2, starts the built MComix on a PDF and on a book that is not there, and publishes the GitHub release with the three files, a `SHA256SUMS` file and the release's section of `ChangeLog.md` as its notes. Each file also gets a signed build provenance: `gh attestation verify <file> --repo twwn/mcomix` shows it was built there, from the tag.
+
+To release a tag again - after moving it to a later commit, say - push it again, or run the workflow by hand from the Actions tab, given the tag. A draft release of the tag is replaced; a published one is not, and has to be deleted by hand first, keeping the tag.
 
 The build takes everything at its newest: MSYS2's packages, 7-Zip from the runner, and the newest released UnRAR.dll, which the workflow finds on RARLAB's site, passing over a beta. The run's summary lists the versions it took and the sizes of the files.
 
 Without a tag, the same workflow makes a test build: every Monday, for a pull request that changes the build, and when run by hand from the Actions tab with the tag left empty. Its files are kept with the run for two weeks, to try a build before releasing it, and a Monday build that fails is the warning that something the build takes has changed.
 
-Review the draft and publish it. Publishing starts `.github/workflows/publish.yml`, which pushes the Chocolatey package and opens the pull request that puts the new version into winget. Each needs a secret in the repository's settings, and skips with a notice where it is not set:
+Once the release is published, the workflow runs `.github/workflows/publish.yml`, which pushes the Chocolatey package and opens the pull request that puts the new version into winget. It runs as well for a release published by hand, and can be run by hand, given the tag. Each needs a secret in the repository's settings, and skips with a notice where it is not set:
 
 Secret | For
 -------|----

@@ -1,8 +1,9 @@
 name: Publish
 
-# Puts a published release out to the Windows package managers, once
-# the draft release.yml made has been reviewed and published by hand.
-# Each job does nothing but say why where its secret is not set.
+# Puts a published release out to the Windows package managers: called
+# by release.yml once it has published one, run by GitHub when a release
+# is published by hand, or run by hand, given the tag.  Each job does
+# nothing but say why where its secret is not set.
 #
 #   Chocolatey  the package mcomix-gtk, which downloads the release's MSI.
 #               Secret CHOCOLATEY_API_KEY: an API key of the account
@@ -19,6 +20,17 @@ name: Publish
 on:
   release:
     types: [published]
+  workflow_call:
+    inputs:
+      tag:
+        description: "The published release to put out"
+        required: true
+        type: string
+    secrets:
+      CHOCOLATEY_API_KEY:
+        required: false
+      WINGET_TOKEN:
+        required: false
   workflow_dispatch:
     inputs:
       tag:
