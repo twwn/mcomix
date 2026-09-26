@@ -14,9 +14,10 @@ if mcomix_path is not None:
 # mouse and keyboard reach it - and where the compositor, rather than the
 # test, decides whether a window is mapped and how large it comes out.
 # Pin the backend to the X server DISPLAY names, which is the one
-# xvfb-run started.
+# xvfb-run started.  Not on Windows, whose GTK has no X11 backend, and
+# where Wine hands its own DISPLAY down to the programs it runs.
 
-if os.environ.get('DISPLAY'):
+if os.environ.get('DISPLAY') and sys.platform != 'win32':
     os.environ['GDK_BACKEND'] = 'x11'
     os.environ.pop('WAYLAND_DISPLAY', None)
 
@@ -224,6 +225,7 @@ class MComixTest(unittest.TestCase):
 
     #: Global state setUp() overwrites and tearDown() has to put back.
     OVERRIDDEN_ENVIRONMENT = ('HOME', 'XDG_DATA_HOME', 'XDG_CONFIG_HOME',
+                              'USERPROFILE', 'APPDATA', 'LOCALAPPDATA',
                               'TMPDIR', 'TEMP', 'TMP')
 
     #: constants resolves these once, at import time, so setting the
@@ -296,6 +298,12 @@ class MComixTest(unittest.TestCase):
         os.environ['HOME'] = home_dir
         os.environ['XDG_DATA_HOME'] = os.path.join(home_dir, 'data')
         os.environ['XDG_CONFIG_HOME'] = os.path.join(home_dir, 'config')
+        # Windows reads none of the three: os.path.expanduser() takes the
+        # profile folder from USERPROFILE, and MComix' settings are under
+        # APPDATA.  Without these the tests reached the real profile.
+        os.environ['USERPROFILE'] = home_dir
+        os.environ['APPDATA'] = os.path.join(home_dir, 'AppData', 'Roaming')
+        os.environ['LOCALAPPDATA'] = os.path.join(home_dir, 'AppData', 'Local')
         # Create and setup temporary directory.
         temp_dir = os.path.join(self.tmp_dir, 'tmp')
         os.mkdir(temp_dir)

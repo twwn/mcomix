@@ -341,7 +341,7 @@ def migrate_home_config_path() -> None:
     home directory to %APPDATA% on Win32, if the directory
     doesn't already exist. """
     if sys.platform == "win32":
-        old_config_dir = os.path.join(os.path.expanduser("~"), "MComix")
+        old_config_dir = os.path.join(constants.HOME_DIR, "MComix")
         if os.path.isdir(old_config_dir) and not os.path.isdir(constants.CONFIG_DIR):
             shutil.move(old_config_dir, constants.CONFIG_DIR)
 
