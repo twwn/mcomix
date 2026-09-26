@@ -4,6 +4,7 @@ import os
 import pickle
 import shutil
 import threading
+import unittest
 import zipfile
 from unittest import mock
 
@@ -282,6 +283,8 @@ class APathThatCannotBeOpenedTest(_WindowTest):
         self.assertIn('No such file', shown.call_args.args[0])
         self._closed()
 
+    @unittest.skipUnless(hasattr(os, 'mkfifo'), 'Windows has no named pipes '
+                         'in the file system')
     def test_a_name_that_is_neither_file_nor_folder(self):
         path = os.path.join(self.tmp_dir, 'pipe')
         os.mkfifo(path)

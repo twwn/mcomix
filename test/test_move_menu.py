@@ -2,6 +2,7 @@
 
 import datetime
 import os
+import sys
 import unittest
 
 from gi.repository import GLib, Gtk
@@ -169,7 +170,9 @@ class MoveToMenuTest(MComixTest):
         self.assertEqual(self._destinations(self._menu().model),
                          [os.path.join(self.tmp_dir, 'there')])
 
-    @unittest.skipIf(os.getuid() == 0, 'root may write anywhere')
+    @unittest.skipIf(sys.platform == 'win32' or os.getuid() == 0,
+                     'the mode bits hold back neither root nor anyone '
+                     'on Windows')
     def test_a_directory_that_cannot_be_written_to_is_not_offered(self):
         closed = self._directory('closed')
         os.chmod(closed, 0o500)

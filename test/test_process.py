@@ -157,6 +157,8 @@ class ProcessTest(MComixTest):
             for fn in reversed(cleanup):
                 fn()
 
+    @unittest.skipIf(sys.platform == 'win32', 'file names are UTF-16 there, '
+                     'with no bytes to escape')
     def test_an_argument_the_locale_cannot_encode(self):
         """ Paths read from the filesystem carry undecodable bytes as
         surrogate escapes, and those must reach the spawned process
