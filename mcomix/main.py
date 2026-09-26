@@ -1266,8 +1266,6 @@ class MainWindow(Gtk.Window):
         self._bg_css_provider.load_from_string(
             '#%s { background-color: %s; }'
             % (self._BG_CSS_NAME, image_tools.rgba(*colour).to_string()))
-        if prefs['thumbnail bg uses main colour']:
-            self.thumbnailsidebar.change_thumbnail_background_color(prefs['bg colour'])
         self._bg_colour = colour
 
     def get_bg_colour(self) -> Sequence[float]:

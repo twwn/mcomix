@@ -943,7 +943,6 @@ class _PreferencesDialog(Dialog):
 
         elif preference == 'smart thumb bg':
 
-            prefs['thumbnail bg uses main colour'] = False
             if not prefs['smart thumb bg']:
                 self._window.thumbnailsidebar.change_thumbnail_background_color(
                     prefs['thumb bg colour'])

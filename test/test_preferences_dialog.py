@@ -562,13 +562,6 @@ class PreferenceCallbacksTest(MComixTest):
                 self.assertEqual(called, self._check(preference, active))
                 self.assertEqual(active, prefs[preference])
 
-    def test_the_thumbnails_own_background_stops_following_the_page(self):
-        """Either answer to "smart thumb bg" is a choice of the
-        thumbnails' own, so they no longer take the page's colour."""
-        prefs['thumbnail bg uses main colour'] = True
-        self._check('smart thumb bg', True)
-        self.assertFalse(prefs['thumbnail bg uses main colour'])
-
     def test_hiding_everything_in_fullscreen_redraws_only_in_fullscreen(self):
         for fullscreen, called in ((False, set()), (True, {'draw_image'})):
             with self.subTest(fullscreen=fullscreen), \
