@@ -209,3 +209,35 @@ class TestXdgDirectories(unittest.TestCase):
                 self.assertEqual(
                     os.path.join('/somewhere', *default[1:]),
                     self._with(variable, '/somewhere', function))
+
+
+class TestWindowsDirectories(unittest.TestCase):
+
+    """Where the settings, the library and the thumbnails go on Windows,
+    checked here with ntpath's expandvars, which is what os.path is
+    there: posixpath's leaves %APPDATA% as it is."""
+
+    def test_everything_goes_into_mcomix_under_appdata(self):
+        import ntpath
+        from unittest import mock
+        roaming = '/Users/reader/AppData/Roaming'
+        with mock.patch.object(sys, 'platform', 'win32'), \
+                mock.patch.object(os.path, 'expandvars', ntpath.expandvars), \
+                mock.patch.dict(os.environ, {'APPDATA': roaming}):
+            self.assertEqual(os.path.join(roaming, 'MComix'),
+                             tools.get_config_directory())
+            self.assertEqual(os.path.join(roaming, 'MComix'),
+                             tools.get_data_directory())
+            self.assertEqual(
+                os.path.join(roaming, 'MComix', '.thumbnails', 'normal'),
+                tools.get_thumbnail_directory())
+            self.assertEqual(os.path.join(os.path.expanduser('~'), 'MComix'),
+                             tools.get_home_directory())
+
+
+class TestNumberOfDigits(unittest.TestCase):
+
+    def test_zero_has_one_digit(self):
+        """log10 of it would raise."""
+        self.assertEqual(1, tools.number_of_digits(0))
+        self.assertEqual(3, tools.number_of_digits(-120))
