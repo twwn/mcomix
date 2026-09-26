@@ -79,4 +79,5 @@ Workflow | Runs | Does
 `tests.yml` | Every push to `main`, every pull request, Mondays | The three checks on Python 3.12 and the newest Python; the tests again on the oldest dependency versions `pyproject.toml` allows.
 `codeql.yml` | The same | Code scanning of the Python code and the workflows.
 `release.yml` | A version tag, a pull request that changes the build, Mondays | Builds and tests the release files: see [Releasing](releasing.md).
+`windows-tests.yml` | By hand | The tests on Windows, in MSYS2's UCRT64 environment, as the Windows packages are built.
 Dependabot | Monthly | Pull requests updating the actions the workflows use.

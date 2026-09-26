@@ -1,0 +1,55 @@
+name: Windows tests
+
+# The suite on Windows, in MSYS2's UCRT64 environment - the GTK 4,
+# Python and PyGObject the Windows packages are built from.  The Linux
+# gates cannot see a bug that only Windows has, such as the one about
+# loading libunrar from the directory MComix starts in.
+#
+# Started by hand only, until a first run shows how much of the suite
+# holds on Windows: tests written against a POSIX file system or an X
+# server may need skipping there before this can run on every push.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pytest:
+    runs-on: windows-2025
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v7
+      # The packages release.yml builds with, and pytest.  The runner's
+      # own 7-Zip is on the inherited path, which the archive tests
+      # call.
+      - uses: msys2/setup-msys2@66cd2cce69caa17b53920067426061ca1de3a884 # v2.32.0
+        with:
+          msystem: UCRT64
+          update: true
+          path-type: inherit
+          install: >-
+            mingw-w64-ucrt-x86_64-gtk4
+            mingw-w64-ucrt-x86_64-adwaita-icon-theme
+            mingw-w64-ucrt-x86_64-libadwaita
+            mingw-w64-ucrt-x86_64-libjxl
+            mingw-w64-ucrt-x86_64-python
+            mingw-w64-ucrt-x86_64-python-gobject
+            mingw-w64-ucrt-x86_64-python-pillow
+            mingw-w64-ucrt-x86_64-python-pymupdf
+            mingw-w64-ucrt-x86_64-python-pytest
+            mingw-w64-ucrt-x86_64-python-pytest-xdist
+            mingw-w64-ucrt-x86_64-gettext-tools
+      - name: pytest
+        run: |
+          export PATH="$PATH:/c/Program Files/7-Zip"
+          python -m pytest test/ -q -n auto -rfE --junitxml=pytest.xml
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: pytest
+          path: pytest.xml
+          retention-days: 14
