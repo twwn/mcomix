@@ -7,6 +7,7 @@ they cannot read would first be found there; these tests run the part
 that reads it here.
 """
 
+import ast
 import os
 import pathlib
 import shutil
@@ -154,6 +155,27 @@ class SpecDataTest(MComixTest):
         self.assertEqual(
             ['share/icons/Adwaita/symbolic/actions/go-next-symbolic.svg'],
             collected)
+
+
+class FrozenEntryTest(MComixTest):
+
+    """mcomixstarter.py, the script the Windows build freezes."""
+
+    def test_it_lets_a_worker_process_be_one(self):
+        """The PDF workers are MComix started again; without
+        freeze_support() they were a second MComix, which refused their
+        arguments ("unrecognized arguments: -B -S -I -c", in a frozen
+        build on Linux), and no PDF opened."""
+        path = os.path.join(os.path.dirname(WIN32), 'mcomixstarter.py')
+        with open(path) as fp:
+            tree = ast.parse(fp.read())
+        guard = next(node for node in tree.body
+                     if isinstance(node, ast.If)
+                     and ast.unparse(node.test) == "__name__ == '__main__'")
+        calls = [ast.unparse(statement.value) for statement in guard.body
+                 if isinstance(statement, ast.Expr)]
+        self.assertEqual(['multiprocessing.freeze_support()', 'main()'],
+                         calls)
 
 
 class ChocolateyPackageTest(MComixTest):
