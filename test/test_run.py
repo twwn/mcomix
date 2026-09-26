@@ -106,6 +106,17 @@ class ArgumentTest(MComixTest):
             run.parse_arguments(['--help'])
         self.assertNotIn('page-member', printed.getvalue())
 
+    def test_a_log_file_can_be_named(self):
+        """The one way to read the log of MComix.exe, which has no
+        console; -o was accepted and ignored."""
+        opts, args = run.parse_arguments(['-o', 'mcomix.log', '/books/one.cbz'])
+        self.assertEqual(args, ['/books/one.cbz'])
+        self.assertEqual(opts.output, 'mcomix.log')
+        with unittest.mock.patch('sys.stdout', new_callable=io.StringIO) \
+                as printed, self.assertRaises(SystemExit):
+            run.parse_arguments(['--help'])
+        self.assertIn('-o FILE', printed.getvalue())
+
     def _open(self, argv):
         opts, args = run.parse_arguments(argv)
         return run.what_to_open(opts, args)

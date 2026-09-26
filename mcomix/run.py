@@ -89,9 +89,9 @@ def parse_arguments(argv: list[str]) -> tuple[argparse.Namespace, list[str]]:
                            choices=('all', 'debug', 'info', 'warn', 'error'),
                            metavar='[ all | debug | info | warn | error ]',
                            help=_('Sets the desired output log level.'))
-    # This supresses an error when MComix is used with cProfile
-    debugopts.add_argument('-o', dest='output', default='',
-                           help=argparse.SUPPRESS)
+    # What a build without a console, MComix.exe on Windows, is read by.
+    debugopts.add_argument('-o', dest='output', default='', metavar='FILE',
+                           help=_('Writes the log to FILE as well.'))
 
     # The usage line above already names it; keep it out of --help.
     parser.add_argument('paths', nargs='*', help=argparse.SUPPRESS)
@@ -220,8 +220,14 @@ def run() -> None:
     argv = sys.argv[1:]
     opts, args = parse_arguments(argv)
 
-    # First things first: set the log level.
+    # First things first: set the log level, and where the log goes.
     log.setLevel(opts.loglevel)
+    if opts.output:
+        try:
+            log.log_to_file(opts.output)
+        except OSError as error:
+            log.error('! Could not write the log to %s: %s', opts.output, error)
+    log.log_uncaught_exceptions()
 
     # Reconfigure stdout to replace characters that cannot be printed
     if hasattr(sys.stdout, 'reconfigure'):

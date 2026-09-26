@@ -18,6 +18,8 @@ choco install -y mcomix-gtk
 
 Uninstalling keeps your preferences, library and bookmarks in `%APPDATA%\MComix`; delete that folder to remove them too.
 
+Something wrong? `MComix.exe -W debug -o mcomix.log` writes a log to attach to an [issue](https://github.com/twwn/mcomix/issues).
+
 ## Linux
 
 Install from source, as [Running from source](#running-from-source) describes.
