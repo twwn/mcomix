@@ -33,11 +33,12 @@ class RarArchive(archive_base.ExternalExecutableArchive):
         self._contents: list[tuple[str, int]] = []
         #: Indicates which part of the file listing has been read.
         self._state = self.STATE_HEADER
-        #: Current path while listing contents.
-        self._path = ''
-        #: The entry read but not yet handed over, and whether the type
-        #: line seen for it says it is a directory.
+        #: The entry read but not yet handed over, whether the type
+        #: line seen for it says it is a directory, its size, and whether
+        #: it goes on from the volume before.
         self._pending: str | None = None
+        self._pending_size = 0
+        self._pending_continued = False
         self._pending_is_directory = False
 
     def _get_executable(self) -> str | None:
@@ -63,9 +64,11 @@ class RarArchive(archive_base.ExternalExecutableArchive):
 
         "vt" is the verbose technical listing, which names each entry on
         a line of its own rather than in columns that a long name would
-        run over.
+        run over, and "-v" lists every volume of a book packed in
+        several, where unrar would otherwise stop at the end of the
+        first.  "p", which extracts, reads on through all of them.
         """
-        args = [self._executable, 'vt']
+        args = [self._executable, 'vt', '-v']
         args.append(self._get_password_argument())
         args.extend(('--', self.archive))
         return args
@@ -91,7 +94,10 @@ class RarArchive(archive_base.ExternalExecutableArchive):
         it back is what lets the "Type: " line, which comes after the
         name, keep a directory out of the listing: a directory is not a
         member anything can extract.  Only entries with a size are kept
-        for iter_extract(), and a directory is printed without one.
+        for iter_extract(), and a directory is printed without one.  A
+        file split across volumes is listed again at the start of each
+        volume after its first, with "<--" (or "<->") as its ratio; that
+        is the rest of an entry already listed, not an entry of its own.
         """
         if self._state == self.STATE_HEADER:
             if line.startswith('Details: '):
@@ -110,15 +116,17 @@ class RarArchive(archive_base.ExternalExecutableArchive):
             line = line.lstrip()
             if line.startswith('Name: '):
                 finished = self._flush_pending_entry()
-                self._path = self._pending = line[6:]
+                self._pending = line[6:]
                 self._pending_is_directory = False
+                self._pending_size = 0
+                self._pending_continued = False
                 return finished
             if line.startswith('Type: '):
                 self._pending_is_directory = line[6:] == 'Directory'
             if line.startswith('Size: '):
-                filesize = int(line[6:])
-                if filesize > 0:
-                    self._contents.append((self._path, filesize))
+                self._pending_size = int(line[6:])
+            if line.startswith('Ratio: '):
+                self._pending_continued = line[7:] in ('<--', '<->')
             if line.startswith('Flags: '):
                 flags = line[7:].split()
                 if 'solid' in flags:
@@ -128,8 +136,13 @@ class RarArchive(archive_base.ExternalExecutableArchive):
         return None
 
     def _flush_pending_entry(self) -> str | None:
-        """The entry just read, unless it was a directory."""
+        """The entry just read, unless it was a directory or the rest
+        of one read before."""
         pending, self._pending = self._pending, None
+        if pending is None or self._pending_continued:
+            return None
+        if self._pending_size > 0:
+            self._contents.append((pending, self._pending_size))
         return None if self._pending_is_directory else pending
 
     def is_solid(self) -> bool:
@@ -153,9 +166,10 @@ class RarArchive(archive_base.ExternalExecutableArchive):
 
         for retry_count in range(2):
             self._state = self.STATE_HEADER
-            self._path = ''
             self._pending = None
             self._pending_is_directory = False
+            self._pending_size = 0
+            self._pending_continued = False
             proc = subprocess.run(
                 self._get_list_arguments(), stdout=process.PIPE, stderr=process.STDOUT,
                 encoding="utf-8", env=archive_base.utf8_environment(),

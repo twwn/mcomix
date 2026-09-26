@@ -1074,6 +1074,7 @@ class MultiVolumeRarTest(MComixTest):
 
     CASES = (
         ('rar (dll)', rar.RarArchive),
+        ('rar (external)', rar_external.RarArchive),
         ('7z (external)', sevenzip_external.SevenZipArchive),
     )
 
