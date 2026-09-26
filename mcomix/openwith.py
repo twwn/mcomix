@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 from mcomix.dialog import Response
 
 
-DEBUGGING_CONTEXT, NO_FILE_CONTEXT, IMAGE_FILE_CONTEXT, ARCHIVE_CONTEXT = -1, 0, 1, 2
+NO_FILE_CONTEXT, IMAGE_FILE_CONTEXT, ARCHIVE_CONTEXT = 0, 1, 2
 
 
 class OpenWithException(Exception):
@@ -136,20 +136,17 @@ class OpenWithCommand:
 
         return False
 
-    def parse(self, window: 'main.MainWindow', text: str = '',
-              check_restrictions: bool = True) -> list[str]:
+    def parse(self, window: 'main.MainWindow', text: str = '') -> list[str]:
         """ Parses the command string and replaces special characters
         with their respective variable contents. Returns a list of
-        arguments.
-        If check_restrictions is False, no checking will be done
-        if one of the variables isn't valid in the current file context. """
+        arguments. """
         if not text:
             text = self.get_command()
         if not text.strip():
             raise OpenWithException(_('Command line is empty.'))
 
         return self._commandline_to_arguments(text, window,
-                                              self._get_context_type(window, check_restrictions))
+                                              self._get_context_type(window))
 
     def _commandline_to_arguments(self, line: str, window: 'main.MainWindow',
                                   context_type: int) -> list[str]:
@@ -227,9 +224,6 @@ class OpenWithCommand:
         """ Replaces variables with their respective file
         or archive path. """
 
-        if context_type == DEBUGGING_CONTEXT:
-            return '%' + identifier
-
         if not (context_type & IMAGE_FILE_CONTEXT) and identifier in ('f', 'd', 'b', 's', 'F', 'D', 'B', 'S'):
             raise OpenWithException(
                 _("File-related variables can only be used for files."))
@@ -302,10 +296,7 @@ class OpenWithCommand:
             raise OpenWithException(
                 _("Invalid escape sequence: %%%s") % identifier)
 
-    def _get_context_type(self, window: 'main.MainWindow',
-                          check_restrictions: bool = True) -> int:
-        if not check_restrictions:
-            return DEBUGGING_CONTEXT  # ignore context, reflect variable name
+    def _get_context_type(self, window: 'main.MainWindow') -> int:
         context = 0
         if not window.filehandler.file_loaded:
             context = NO_FILE_CONTEXT  # no file loaded
