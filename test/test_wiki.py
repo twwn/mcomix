@@ -237,13 +237,13 @@ class ManualTest(unittest.TestCase):
 
     def test_the_page_quotes_the_current_defaults(self):
         wrong = [name for name in self.QUOTED_DEFAULTS
-                 if str(preferences.prefs[name]) not in self.page]
+                 if str(preferences._DEFAULTS[name]) not in self.page]
         self.assertEqual([], wrong)
 
     def test_the_page_quotes_the_slideshow_delay_in_seconds(self):
         """The preference is in milliseconds and the page is in seconds,
         so this one cannot be compared as it stands."""
-        self.assertEqual(3000, preferences.prefs['slideshow delay'])
+        self.assertEqual(3000, preferences._DEFAULTS['slideshow delay'])
         self.assertIn('three seconds', self.page)
 
     def test_the_view_menu_has_the_items_the_page_names(self):
