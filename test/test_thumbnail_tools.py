@@ -110,6 +110,33 @@ class ThumbnailNameTest(MComixTest):
                              stored.info['Thumb::URI'])
 
 
+class CoverGuessTest(MComixTest):
+
+    """Which picture of a book its thumbnail is made from: one named as
+    the cover or the front, if there is one, else the first page."""
+
+    def _guess(self, *names):
+        thumbnailer = thumbnail_tools.Thumbnailer(
+            dst_dir=os.path.join(self.tmp_dir, 'thumbnails'), size=(128, 128))
+        return thumbnailer._guess_cover(names)
+
+    def test_a_picture_named_the_cover_goes_before_the_first_page(self):
+        self.assertEqual('z/Cover.jpg',
+                         self._guess('01.jpg', '02.jpg', 'z/Cover.jpg'))
+        self.assertEqual('front.png', self._guess('01.jpg', 'front.png'))
+
+    def test_the_back_cover_the_credits_and_a_mac_s_files_are_passed_over(self):
+        self.assertEqual('02.jpg', self._guess(
+            'back cover.jpg', '__MACOSX/._cover.jpg', 'credits-cover.jpg',
+            'notes.txt', '02.jpg', '10.jpg'))
+
+    def test_without_a_named_cover_the_first_page_in_reading_order(self):
+        self.assertEqual('2.jpg', self._guess('10.jpg', '2.jpg', 'notes.txt'))
+
+    def test_a_book_of_no_pictures_has_no_cover(self):
+        self.assertIsNone(self._guess('notes.txt', 'ComicInfo.xml'))
+
+
 class ThumbnailReuseTest(MComixTest):
 
     """Whether a thumbnail already on disk can stand in for a new one.
