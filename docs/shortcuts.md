@@ -1,12 +1,11 @@
-Keybindings
-===
+# Keyboard and mouse
 
-Menu items show their key beside their label. The tables below list every binding MComix starts with, including those of functions with no menu item. All keys except the two bookmark ones can be changed, as the last section describes.
+- Menu items show their keys. The tables list every default binding, also of functions without a menu item.
+- All keys but the two bookmark ones can be changed: see the last section.
+- `KeyPad` is the numeric keypad: `KeyPadHome` is its Home key.
+- `BackMouse` and `ForwardMouse` are the mouse's thumb buttons.
 
-Keys are written as a keyboard names them. `KeyPad` is the numeric keypad, so `KeyPadHome` is the Home key on the keypad. `BackMouse` and `ForwardMouse` are the thumb buttons a mouse marks "back" and "forward".
-
-Opening files and moving from page to page
----
+## Opening files and moving from page to page
 
 Function | Binding
 ---------|--------
@@ -29,10 +28,9 @@ Previous archive | SHIFT+CTRL+P
 Next directory | CTRL+N
 Previous directory | CTRL+P
 
-In manga mode the page to the right is the previous one, and the page to the left the next. PageDown and PageUp always go forward and back.
+In manga mode the page to the right is the previous one, the page to the left the next. PageDown and PageUp always go forward and back.
 
-Reading and scrolling
----
+## Reading and scrolling
 
 Function | Binding
 ---------|--------
@@ -48,10 +46,10 @@ Align the page to a corner, an edge or the centre | KeyPad1 to KeyPad9, as the k
 Show magnifying lens | L, MiddleMouse
 Show OSD panel | TAB, ForwardMouse
 
-The wheel scrolls smartly only while "Use smart scrolling" is on in the preferences, and by a fixed number of pixels otherwise. Tilted sideways, or swiped sideways on a touchpad, it scrolls across a page wider than the window and turns the page at the side, as the arrow keys do.
+- The wheel scrolls smartly only with "Use smart scrolling" on; otherwise by a fixed number of pixels.
+- Tilted, or swiped sideways on a touchpad, it scrolls across a wide page and turns it at the side, like the arrow keys.
 
-The view
----
+## The view
 
 Function | Binding
 ---------|--------
@@ -77,10 +75,9 @@ Show/hide menubar | CTRL+M
 Show/hide thumbnails | F9
 Hide/show all UI elements | I
 
-Escape quits instead where "Escape key closes program" is on in the preferences. While pages are picked out, Escape first puts them all back.
+Escape quits instead with "Escape key closes program" on. While pages are picked out, Escape first puts them all back.
 
-Other functions
----
+## Other functions
 
 Function | Binding
 ---------|--------
@@ -103,15 +100,14 @@ Open the page's menu | RightMouse, Menu, SHIFT+F10
 Minimize window | N
 Quit program | CTRL+Q
 Save and quit | CTRL+SHIFT+Q
-Execute first, second, ... external command (see [External Commands](External_Commands.md)) | 1 to 9
+Execute first, second, ... external command (see [External commands](external-commands.md)) | 1 to 9
 
-Delete takes the pages picked out with CTRL+LeftMouse out of the book; with none picked out, it asks before deleting the file from disk.
+- Delete removes the pages picked out with CTRL+LeftMouse; with none picked out, it asks before deleting the file.
+- No key until given one: Rotate 180°, Flip horizontally, Flip vertically, Never autorotate, the two rotations under "Autorotate by width" and the two under "Autorotate by height", Toolbar, Statusbar, Scrollbars and Edit archive.
 
-These functions have no key until one is given to them: Rotate 180°, Flip horizontally, Flip vertically, Never autorotate, the two rotations under "Autorotate by width" and the two under "Autorotate by height", Toolbar, Statusbar, Scrollbars and Edit archive.
+## Changing keys
 
-Customizing hotkeys
----
-
-The Shortcuts tab of the preferences dialog lists every function by group, with a column for each of its keys. Click a key and press the combination you want; Backspace or Delete clears it, and Escape leaves it as it was. A combination reaches one function only, so giving it to one takes it off any other.
-
-The bindings are kept as JSON in `keybindings.conf`, in MComix' configuration directory. MComix writes that file whenever a binding is changed and again when it closes, so edit it by hand only while MComix is not running.
+- The preferences' Shortcuts tab lists every function by group, with a column per key.
+- Click a key and press the new combination. Backspace or Delete clears it; Escape keeps it.
+- A combination belongs to one function only: giving it to one takes it off any other.
+- The bindings live as JSON in `keybindings.conf`, in MComix' [settings folder](troubleshooting.md#settings-and-data). MComix rewrites it on every change and on quitting, so edit it by hand only while MComix is closed.

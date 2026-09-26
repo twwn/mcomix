@@ -50,7 +50,7 @@ having to play around with relative path names.
        PyInstaller, which pip would otherwise have to build for this
        Python.
 
-       docs/Maintenance.md and .github/workflows/release.yml list the
+       docs/releasing.md and .github/workflows/release.yml list the
        same packages, and a test holds the three lists to each other.
 
     2. Make sure the pyinstaller executable is on PATH; the package

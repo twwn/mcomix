@@ -1,0 +1,63 @@
+# Install
+
+> [!NOTE]
+> The `mcomix` packages in Linux distributions, Flathub, WinGet and Scoop are the original MComix 3 on GTK 3, not this version.
+
+## Windows
+
+Every [release](https://github.com/twwn/mcomix/releases) has two downloads, each with everything MComix needs:
+
+- the **MSI installer** (needs administrator rights);
+- the **portable zip**, `mcomix-win64-<version>.zip`: extract it anywhere and run `MComix.exe`.
+
+Or, with [Chocolatey](https://chocolatey.org/install):
+
+```powershell
+choco install -y mcomix-gtk
+```
+
+Uninstalling keeps your preferences, library and bookmarks in `%APPDATA%\MComix`; delete that folder to remove them too.
+
+## Linux
+
+Install from source, into a [virtual environment](https://docs.python.org/3/library/venv.html):
+
+1. Install GTK 4 and PyGObject from your distribution ([PyGObject's guide](https://pygobject.readthedocs.io/en/latest/getting_started.html)).
+2. Download `mcomix-<version>.tar.gz` from a [release](https://github.com/twwn/mcomix/releases).
+3. Install and run:
+
+```bash
+python3 -m venv --system-site-packages ~/mcomix-venv
+~/mcomix-venv/bin/pip install "./mcomix-<version>.tar.gz[fileformats]"
+~/mcomix-venv/bin/mcomix
+```
+
+- `--system-site-packages` uses the system's PyGObject, which pip would otherwise try to build.
+- `[fileformats]` adds PyMuPDF (PDF) and chardet (non-UTF-8 names); leave it out to go without.
+- To start it as `mcomix`: `ln -s ~/mcomix-venv/bin/mcomix ~/.local/bin/`, where `~/.local/bin` is on the `PATH`.
+- Desktop integration: copy the source archive's `share` folder (desktop file, icons, MIME types, AppStream metadata, man page) to `/usr/local/share`. pip neither installs nor removes it. The desktop file starts `mcomix`, so it needs the link above.
+- Uninstall: delete `~/mcomix-venv` and the link. Your settings stay: see [Settings and data](troubleshooting.md#settings-and-data).
+
+## Requirements
+
+- [Python 3.12](https://www.python.org/) or newer
+- [GTK 4](https://www.gtk.org/), [PyGObject](https://pygobject.readthedocs.io/) 3.46.0 or newer, [pycairo](https://github.com/pygobject/pycairo) 1.25.0 or newer
+- [Pillow](https://pypi.org/project/Pillow/) 10.1.0 or newer
+
+Optional; programs are found on the `PATH`:
+
+Package or program | Adds
+-------------------|-----
+[libadwaita](https://gnome.pages.gitlab.gnome.org/libadwaita/) | Follows the desktop's GTK 4 theme fully. Without it, as far as plain GTK 4 can.
+[PyMuPDF](https://pypi.org/project/PyMuPDF/) 1.24.7 or newer, or `mutool` from [MuPDF](https://mupdf.com/) | PDF files.
+The [UnRAR library](https://www.rarlab.com/rar_add.htm) (`libunrar.so` or `UnRAR64.dll`), or the `unrar` or `rar` program | RAR files. `unrar-free` is not used.
+`7z` | 7z files; ZIP, LHA, xz and lzma files Python cannot read; RAR as a last resort.
+`lha` | LHA files, without `7z`.
+`unzip` | ZIP files Python cannot read, without `7z`.
+[chardet](https://pypi.org/project/chardet/) | Guesses the encoding of file names and comments that are not UTF-8.
+
+The Windows packages include everything but `lha` and `unzip`, which `7z` stands in for.
+
+## Develop
+
+See [Development](development.md).

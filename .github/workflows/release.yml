@@ -126,7 +126,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           ref: ${{ needs.setup.outputs.ref }}
-      # The packages docs/Maintenance.md lists, at MSYS2's newest; the path
+      # The packages docs/releasing.md lists, at MSYS2's newest; the path
       # is inherited so that WiX, fetched below, is found.
       - uses: msys2/setup-msys2@66cd2cce69caa17b53920067426061ca1de3a884 # v2.32.0
         with:

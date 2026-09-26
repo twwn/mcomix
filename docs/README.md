@@ -1,11 +1,23 @@
-MComix documentation
-===
+# MComix documentation
 
-- [Installation](Installation.md) — Windows packages, running from source, optional helpers.
-- [Documentation](Documentation.md) — the user manual: reading, editing, the library.
-- [Preferences](Preferences.md) — every option in the preferences dialog.
-- [Keybindings](Keybindings.md) — keys and mouse buttons.
-- [External Commands](External_Commands.md) — run your own programs on the open file.
-- [Maintenance](Maintenance.md) — translations, builds and releases.
+## Get started
 
-Screenshots live in [images](images/); its [README](images/README.md) credits the comic they show.
+- [Install](install.md): Windows installer, zip or Chocolatey; Linux from source.
+- [Troubleshooting](troubleshooting.md): logs, common problems, reporting a bug.
+
+## Use
+
+- [Reading](reading.md): the window, opening books, fit modes, double page and manga, slideshow, rotating, enhancing.
+- [Editing books](editing.md): rename, reorder, swap and delete pages; save archives.
+- [Library](library.md): collections, covers, watched folders.
+- [Preferences](preferences.md): every option.
+- [Keyboard and mouse](shortcuts.md): every binding, and how to change them.
+- [External commands](external-commands.md): run your own programs on the open file.
+
+## Contribute
+
+- [Development](development.md): set up, test, translate.
+- [Releasing](releasing.md): versions, builds, packages.
+- [Changelog](../ChangeLog.md) · [Contributing](../CONTRIBUTING.md) · [Security](../SECURITY.md)
+
+The screenshots are in [images](images/), credited in its [README](images/README.md).

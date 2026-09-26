@@ -29,29 +29,29 @@
 choco install mcomix-gtk
 ```
 
-**Linux and from source** – install GTK 4 and PyGObject from your distribution, then:
+**Linux** – install GTK 4 and PyGObject from your distribution, download the source archive from the [latest release](https://github.com/twwn/mcomix/releases/latest), then:
 
 ```bash
-python3 -m venv --system-site-packages ~/.local/mcomix
-~/.local/mcomix/bin/pip install "mcomix-<version>.tar.gz[fileformats]"
-~/.local/mcomix/bin/mcomix
+python3 -m venv --system-site-packages ~/mcomix-venv
+~/mcomix-venv/bin/pip install "./mcomix-<version>.tar.gz[fileformats]"
+~/mcomix-venv/bin/mcomix
 ```
 
-The source archive is attached to every [release](https://github.com/twwn/mcomix/releases). [Installation](docs/Installation.md) has the details, the optional helpers (unrar, 7z, MuPDF) and desktop integration.
+[Install](docs/install.md) has the details: optional helpers (unrar, 7z, MuPDF), desktop integration, uninstalling.
 
 > [!NOTE]
 > The `mcomix` packages in Linux distributions, Flathub, WinGet and Scoop are the original MComix 3 on GTK 3, not this version.
 
 ## Documentation
 
-| | |
-|---|---|
-| [User manual](docs/Documentation.md) | Reading, editing, the library |
-| [Preferences](docs/Preferences.md) | Every option, explained |
-| [Keybindings](docs/Keybindings.md) | Keys and mouse buttons |
-| [External commands](docs/External_Commands.md) | Run your own programs on the open file |
-| [Maintenance](docs/Maintenance.md) | Translations, builds and releases |
-| [ChangeLog](ChangeLog.md) | What changed, release by release |
+- [Reading](docs/reading.md) – opening books, fit modes, double page and manga, slideshow
+- [Editing books](docs/editing.md) – rename, reorder and delete pages; save archives
+- [Library](docs/library.md) – collections, covers, watched folders
+- [Preferences](docs/preferences.md) · [Keyboard and mouse](docs/shortcuts.md) · [External commands](docs/external-commands.md)
+- [Troubleshooting](docs/troubleshooting.md) – logs, common problems, reporting a bug
+- [Changelog](ChangeLog.md) – what changed, release by release
+
+All pages: [docs](docs/README.md).
 
 ## About this fork
 
@@ -65,13 +65,7 @@ The GTK 4 port is offered back upstream.
 
 ## Contributing
 
-Issues and pull requests are welcome. A change carries its tests and docs, and keeps the three checks clean:
-
-```bash
-xvfb-run -a python -m pytest test/ -n auto
-python -m flake8 --select=F mcomix/ test/
-python -m mypy mcomix
-```
+Issues and pull requests are welcome: see [Contributing](CONTRIBUTING.md) and [Development](docs/development.md).
 
 ## Credits
 

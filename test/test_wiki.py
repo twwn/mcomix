@@ -1,9 +1,9 @@
 """Whether the pages under docs/ describe the program as it is.
 
 The manual is the only documentation a reader has, and nothing checked it
-against the code: Keybindings.md turned out to name the German key "Pos1"
+against the code: the page of keys turned out to name the German key "Pos1"
 for Home and to describe a keybinding editor that had not existed for two
-GTK versions, and Preferences.md documented an option that had been
+GTK versions, and the preferences page documented an option that had been
 removed while missing six that had been added.  These tests read both
 sides, so an option or a tab added to the program has to be written down.
 """
@@ -57,9 +57,9 @@ def translated(node):
 
 class PreferencesPageTest(unittest.TestCase):
 
-    """Preferences.md against the dialog it documents."""
+    """preferences.md against the dialog it documents."""
 
-    PAGE = 'Preferences.md'
+    PAGE = 'preferences.md'
 
     def setUp(self):
         self.page = read_page(self.PAGE)
@@ -179,18 +179,19 @@ class PreferencesPageTest(unittest.TestCase):
         self.assertEqual([], quoted)
 
 
-class DocumentationPageTest(unittest.TestCase):
+class ManualTest(unittest.TestCase):
 
-    """Documentation.md against the defaults and menus it quotes.
+    """The manual against the defaults and menus it quotes.
 
-    The page said "Fit to size" resizes to 1200px in height, which was the
-    shape of that setting before it became four spinners with quite
+    The manual said "Fit to size" resizes to 1200px in height, which was
+    the shape of that setting before it became four spinners with quite
     different defaults.  A number or a menu label quoted in prose goes
-    stale silently, so the ones the page names are checked against the
-    program.
+    stale silently, so the ones the manual names are checked against the
+    program.  The manual is three pages, read here as one: which page a
+    label is on is the pages' business, that it is on one is this test's.
     """
 
-    PAGE = 'Documentation.md'
+    PAGES = ('reading.md', 'editing.md', 'library.md')
 
     #: Each default the page quotes, against the preference holding it.
     QUOTED_DEFAULTS = (
@@ -230,7 +231,7 @@ class DocumentationPageTest(unittest.TestCase):
     )
 
     def setUp(self):
-        self.page = read_page(self.PAGE)
+        self.page = '\n'.join(map(read_page, self.PAGES))
 
     def test_the_page_quotes_the_current_defaults(self):
         wrong = [name for name in self.QUOTED_DEFAULTS
@@ -330,7 +331,7 @@ class DocumentationPageTest(unittest.TestCase):
 
 class DependenciesTest(unittest.TestCase):
 
-    """The dependency list on Installation.md against pyproject.toml.
+    """The dependency list on install.md against pyproject.toml.
 
     The list, then on Home.md, asked for Python 3.7, PyGObject 3.36,
     PyCairo 1.16 and Pillow 6.0 while the project required 3.12, 3.46,
@@ -339,7 +340,7 @@ class DependenciesTest(unittest.TestCase):
     when it will not.
     """
 
-    PAGE = 'Installation.md'
+    PAGE = 'install.md'
 
     #: Each distribution named in pyproject.toml against the name the page
     #: writes it under, where the two differ.
@@ -393,30 +394,18 @@ class DependenciesTest(unittest.TestCase):
         self.assertEqual([], missing)
 
 
-class MaintenancePageTest(unittest.TestCase):
+class NamedPathsMixin:
 
-    """Maintenance.md against the files and paths its recipes name.
+    """The files a page of recipes names, which have to be there.
 
-    Every command on this page is run by hand at release time, months
-    apart, so a path that has moved is found by a maintainer in the middle
-    of a release rather than by anyone reading.  The page also carried an
-    MSYS2 package - python-ujson, "needed to process pyproject.toml
-    projects" - that nothing in the tree has required since setuptools
-    started reading TOML with the standard library's tomllib.
+    Every command on these pages is run by hand, some of them at release
+    time, months apart, so a path that has moved is found by a maintainer
+    in the middle of a release rather than by anyone reading.
     """
 
-    PAGE = 'Maintenance.md'
-
-
-    #: Every path the page names as a file in the repository.
-    NAMED_PATHS = (
-        'ChangeLog.md',
-        'mcomix/constants.py',
-        'mcomix/messages/mcomix.pot',
-        'win32/build_pyinstaller.py',
-        'win32/build_msi.py',
-        'win32/mcomix.nuspec',
-    )
+    #: The page, and every path it names as a file in the repository.
+    PAGE = ''
+    NAMED_PATHS: tuple[str, ...] = ()
 
     def setUp(self):
         self.page = read_page(self.PAGE)
@@ -434,6 +423,21 @@ class MaintenancePageTest(unittest.TestCase):
                    if path not in self.page]
         self.assertEqual([], missing)
 
+
+class DevelopmentPageTest(NamedPathsMixin, unittest.TestCase):
+
+    """development.md against the files and paths its recipes name."""
+
+    PAGE = 'development.md'
+
+    NAMED_PATHS = (
+        'mcomix/constants.py',
+        'mcomix/messages/mcomix.pot',
+        'mcomix/preferences_dialog.py',
+        'test/test_messages.py',
+        'test/test_wiki.py',
+    )
+
     def test_the_version_is_where_the_snippet_greps_for_it(self):
         """The translation snippet reads the version with a grep of
         mcomix/constants.py, so the assignment has to stay there and stay
@@ -442,15 +446,6 @@ class MaintenancePageTest(unittest.TestCase):
             source = fp.read()
         self.assertRegex(source, r"(?m)^VERSION = '[^']+'$")
         self.assertIn('grep VERSION mcomix/constants.py', self.page)
-
-    def test_the_checksum_goes_where_the_page_says(self):
-        with open(os.path.join(self.root, 'win32', 'build_msi.py')) as fp:
-            builder = fp.read()
-        self.assertIn('win32/tools/checksum.sha256', builder)
-        self.assertIn('win32/tools/checksum.sha256', self.page)
-        # The page says it is deliberately not kept in Git.
-        with open(os.path.join(self.root, '.gitignore')) as fp:
-            self.assertIn('win32/tools/checksum.sha256', fp.read())
 
     def test_the_xgettext_globs_reach_every_translatable_module(self):
         """The snippet passes three globs to xgettext.  A module outside
@@ -478,6 +473,39 @@ class MaintenancePageTest(unittest.TestCase):
                 if 'from mcomix.i18n import _' in source:
                     missed.append(os.path.relpath(path, self.root))
         self.assertEqual([], sorted(missed))
+
+
+class ReleasingPageTest(NamedPathsMixin, unittest.TestCase):
+
+    """releasing.md against the files and paths its recipes name.
+
+    The page, then Maintenance.md, also carried an MSYS2 package -
+    python-ujson, "needed to process pyproject.toml projects" - that
+    nothing in the tree has required since setuptools started reading
+    TOML with the standard library's tomllib.
+    """
+
+    PAGE = 'releasing.md'
+
+    NAMED_PATHS = (
+        'ChangeLog.md',
+        'mcomix/constants.py',
+        'share/metainfo/mcomix.metainfo.xml',
+        'win32/build_pyinstaller.py',
+        'win32/build_msi.py',
+        'win32/mcomix.nuspec',
+        '.github/workflows/release.yml',
+        '.github/workflows/publish.yml',
+    )
+
+    def test_the_checksum_goes_where_the_page_says(self):
+        with open(os.path.join(self.root, 'win32', 'build_msi.py')) as fp:
+            builder = fp.read()
+        self.assertIn('win32/tools/checksum.sha256', builder)
+        self.assertIn('win32/tools/checksum.sha256', self.page)
+        # The page says it is deliberately not kept in Git.
+        with open(os.path.join(self.root, '.gitignore')) as fp:
+            self.assertIn('win32/tools/checksum.sha256', fp.read())
 
     def test_the_msys2_packages_are_the_ones_the_build_script_names(self):
         """The list a maintainer installs from is on this page, and the
@@ -518,35 +546,37 @@ class MaintenancePageTest(unittest.TestCase):
         self.assertNotIn('ujson', self.page)
 
 
-class InstallationPageTest(unittest.TestCase):
+class ExtrasTest(unittest.TestCase):
 
-    """Installation.md against the extras and paths it tells a reader to
-    use."""
+    """The extras install.md and development.md tell a reader to install,
+    against pyproject.toml."""
 
-    PAGE = 'Installation.md'
+    PAGES = ('install.md', 'development.md')
+
+    #: An extra as the pages write it: in brackets after "." or a source
+    #: archive, several of them separated by commas.
+    EXTRAS = re.compile(r'(?:\.|\.tar\.gz)\[([\w,-]+)\]')
 
     def setUp(self):
-        self.page = read_page(self.PAGE)
+        self.named = set()
+        for page in map(read_page, self.PAGES):
+            for extras in self.EXTRAS.findall(page):
+                self.named.update(extras.split(','))
         with open(os.path.join(ROOT, 'pyproject.toml'), 'rb') as fp:
-            self.project = tomllib.load(fp)
+            self.extras = set(
+                tomllib.load(fp)['project']['optional-dependencies'])
 
-    def test_the_extras_the_page_names_exist(self):
-        """The page tells the reader to install .[fileformats] and
-        .[dev]."""
-        extras = self.project['project']['optional-dependencies']
-        for extra in ('fileformats', 'dev'):
-            self.assertIn(extra, extras)
-            self.assertIn('.[%s]' % extra, self.page)
+    def test_the_extras_the_pages_name_exist(self):
+        self.assertEqual(set(), self.named - self.extras)
 
-    def test_the_page_names_every_extra_there_is(self):
+    def test_the_pages_name_every_extra_there_is(self):
         """An extra nobody is told about is one nobody installs."""
-        missing = [extra for extra
-                   in self.project['project']['optional-dependencies']
-                   if '.[%s]' % extra not in self.page]
-        self.assertEqual([], missing)
+        self.assertEqual(set(), self.extras - self.named)
 
-    def test_the_page_no_longer_asks_for_ujson(self):
-        self.assertNotIn('ujson', self.page)
+    def test_the_pages_no_longer_ask_for_ujson(self):
+        for name in self.PAGES:
+            with self.subTest(name=name):
+                self.assertNotIn('ujson', read_page(name))
 
 
 def read_pages():
@@ -585,6 +615,138 @@ class ImagesTest(unittest.TestCase):
                          'https://creativecommons.org/licenses/by/4.0/'):
             with self.subTest(required=required):
                 self.assertIn(required, readme)
+
+
+#: The Markdown files a reader follows links through, relative to ROOT.
+MARKDOWN = ('README.md', 'CONTRIBUTING.md', 'SECURITY.md', 'ChangeLog.md',
+            os.path.join('.github', 'PULL_REQUEST_TEMPLATE.md'),
+            os.path.join('docs', '*.md'), os.path.join('docs', '*', '*.md'))
+
+#: The files that link to the repository on GitHub from outside it: the
+#: program, its packages and metadata, and the workflows.
+LINKING = MARKDOWN + (
+    os.path.join('mcomix', '**', '*.py'), 'pyproject.toml',
+    os.path.join('win32', '*.nuspec'), os.path.join('share', '**', '*.xml'),
+    os.path.join('.github', '**', '*.yml'))
+
+#: An inline link or image in Markdown: its target, without the title
+#: that may follow it.
+LINK = re.compile(r'\]\(([^)\s]+)(?:\s+"[^"]*")?\)')
+
+#: A link to a file of this repository as GitHub shows it, and as it
+#: serves it raw.
+GITHUB_LINK = re.compile(
+    r'https://github\.com/twwn/mcomix/blob/main/([^\s)"\'<>#]+)(?:#([\w-]+))?'
+    r'|https://raw\.githubusercontent\.com/twwn/mcomix/main/([^\s)"\'<>#]+)')
+
+
+def expand(patterns):
+    """The files under ROOT the glob <patterns> match."""
+    return sorted({path for pattern in patterns
+                   for path in glob_module.glob(os.path.join(ROOT, pattern),
+                                                recursive=True)})
+
+
+def anchors(path):
+    """The anchors GitHub gives the headings of the Markdown file <path>.
+
+    It lowercases a heading, drops everything but letters, digits,
+    underscores, hyphens and spaces, and turns the spaces into hyphens; a
+    heading that comes out as an earlier one did gets -1, -2 and so on.
+    Lines inside a fenced code block are not headings, whatever they
+    start with."""
+    with open(path, encoding='utf-8') as fp:
+        lines = fp.read().splitlines()
+    found = set()
+    fenced = False
+    for line in lines:
+        if line.startswith('```'):
+            fenced = not fenced
+            continue
+        heading = re.match(r'#{1,6} (.*?)#*$', line)
+        if fenced or not heading:
+            continue
+        anchor = re.sub(r'[^\w\- ]', '', heading.group(1).strip().lower())
+        anchor = anchor.replace(' ', '-')
+        taken, number = anchor, 0
+        while taken in found:
+            number += 1
+            taken = '%s-%d' % (anchor, number)
+        found.add(taken)
+    return found
+
+
+class LinksTest(unittest.TestCase):
+
+    """Every link between the pages, and into the repository, against
+    the files and headings it names.
+
+    The documentation moved to other file names, which GitHub does not
+    redirect: a page, the README, the external commands dialog and the
+    build script still named the old ones, and nothing would have said
+    so until a reader followed one.
+    """
+
+    def _broken(self, path, target, fragment):
+        """Why <target>#<fragment>, linked from <path>, leads nowhere, or
+        None if it leads somewhere."""
+        if not os.path.exists(target):
+            return 'no such file'
+        if fragment and target.endswith('.md') \
+                and fragment not in anchors(target):
+            return 'no such heading'
+        return None
+
+    def test_every_relative_link_leads_somewhere(self):
+        broken = []
+        followed = 0
+        for path in expand(MARKDOWN):
+            with open(path, encoding='utf-8') as fp:
+                text = fp.read()
+            for link in LINK.findall(text):
+                if re.match(r'[a-z]+:', link):
+                    continue
+                name, _, fragment = link.partition('#')
+                target = (os.path.normpath(os.path.join(
+                    os.path.dirname(path), name)) if name else path)
+                followed += 1
+                why = self._broken(path, target, fragment)
+                if why:
+                    broken.append('%s: %s (%s)' % (
+                        os.path.relpath(path, ROOT), link, why))
+        self.assertEqual([], broken)
+        self.assertGreater(followed, 50, 'the links were not found')
+
+    def test_every_link_to_the_repository_leads_somewhere(self):
+        """The program, its packages and its metadata link to files on
+        the main branch; those links outlive the release they came in."""
+        broken = []
+        followed = 0
+        for path in expand(LINKING):
+            with open(path, encoding='utf-8') as fp:
+                text = fp.read()
+            for match in GITHUB_LINK.finditer(text):
+                name, fragment, raw = match.groups()
+                target = os.path.join(ROOT, name or raw)
+                followed += 1
+                why = self._broken(path, target, fragment)
+                if why:
+                    broken.append('%s: %s (%s)' % (
+                        os.path.relpath(path, ROOT), match.group(0), why))
+        self.assertEqual([], broken)
+        self.assertGreater(followed, 5, 'the links were not found')
+
+    def test_the_anchors_are_made_as_github_makes_them(self):
+        """So that the test above compares links with the anchors GitHub
+        gives, rather than with its own idea of them."""
+        path = os.path.join(DOCS, 'reading.md')
+        found = anchors(path)
+        for anchor in ('the-window', 'double-page-and-manga-mode',
+                       'fit-modes'):
+            with self.subTest(anchor=anchor):
+                self.assertIn(anchor, found)
+        self.assertIn('comicinfoxml',
+                      anchors(os.path.join(DOCS, 'editing.md')))
 
 
 # vim: expandtab:sw=4:ts=4

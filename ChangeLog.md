@@ -88,9 +88,12 @@
 ### Project
 
 - Versions are numbered by year and month, from 26.09.
-- The manual is in `docs/`, and the README is the front page.
+- The documentation is in `docs/`, one page per task: install,
+  reading, editing, library, troubleshooting, development, releasing.
 - A pushed release tag builds, tests and publishes the release on
   GitHub, with SHA256 checksums and signed build provenance.
+- Issue forms, a pull request template, a security policy and a
+  contributing guide.
 
 # MComix 4.0.1
 ## Release date: 2026-09-20
