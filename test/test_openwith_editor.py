@@ -176,6 +176,12 @@ class OpenWithEditorTest(MComixTest):
         self.editor._down_command(None)
         self.assertEqual(self._labels(), ['Editor', '-', 'Shell'])
 
+    def test_nothing_selected_moves_nothing(self):
+        self.editor._command_list.unselect_all()
+        self.editor._down_command(None)
+        self.editor._up_command(None)
+        self.assertEqual(self._labels(), ['Editor', '-', 'Shell'])
+
     # -- Trying a command out ---------------------------------------------
 
     def _tried(self, label, command, cwd):

@@ -111,6 +111,31 @@ class OpenWithCommandTest(MComixTest):
         with self.assertRaises(openwith.OpenWithException):
             self._parse('viewer "one')
 
+    def test_a_slash_variable_is_the_path_separator(self):
+        self.assertEqual(['viewer', os.path.sep], self._parse('viewer %/'))
+
+    def test_a_variable_the_manual_does_not_list_is_refused(self):
+        with self.assertRaisesRegex(openwith.OpenWithException,
+                                    'Invalid escape sequence: %x'):
+            self._parse('viewer %x')
+
+    def test_an_empty_command_line_is_refused(self):
+        with self.assertRaisesRegex(openwith.OpenWithException,
+                                    'Command line is empty'):
+            self._parse('   ')
+
+    def test_a_working_directory_of_two_arguments_is_not_valid(self):
+        """An unquoted space splits the directory into two arguments,
+        which is not a directory, even where the first half is one."""
+        command = openwith.OpenWithCommand(
+            'test', 'viewer', self.tmp_dir + ' more', False)
+        self.assertFalse(command.is_valid_workdir(
+            _StubWindow('page.jpg', '/books/page.jpg')))
+        quoted = openwith.OpenWithCommand(
+            'test', 'viewer', '"%s"' % self.tmp_dir, False)
+        self.assertTrue(quoted.is_valid_workdir(
+            _StubWindow('page.jpg', '/books/page.jpg')))
+
 # vim: expandtab:sw=4:ts=4
 
 
