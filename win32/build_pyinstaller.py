@@ -30,6 +30,7 @@ having to play around with relative path names.
 
            pacman -Sy \
                mingw-w64-ucrt-x86_64-gtk4 \
+               mingw-w64-ucrt-x86_64-adwaita-icon-theme \
                mingw-w64-ucrt-x86_64-libadwaita \
                mingw-w64-ucrt-x86_64-libjxl \
                mingw-w64-ucrt-x86_64-python \
@@ -44,8 +45,10 @@ having to play around with relative path names.
        it is what reads the colour names a GTK4 theme states, and the
        build that ships without it follows only what plain GTK4 can be
        told.  libjxl is the loader for the JPEG XL files the open dialog
-       offers to filter for, and pyinstaller is MSYS2's own build of it,
-       which pip would otherwise have to build for this Python.
+       offers to filter for, and adwaita-icon-theme holds the icons the
+       toolbar and menus name.  pyinstaller is MSYS2's own build of
+       PyInstaller, which pip would otherwise have to build for this
+       Python.
 
        docs/Maintenance.md and .github/workflows/release.yml list the
        same packages, and a test holds the three lists to each other.

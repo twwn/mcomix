@@ -28,6 +28,11 @@ added_files.extend([(os.path.join('..', path),
                      os.path.split(path)[0])
                     for path in list_files('mcomix/images', '*.png', '*.svg')])
 
+# The languages MComix speaks: the translations of GTK, GLib and
+# libadwaita are collected for these alone, as MComix' own are.
+languages = sorted(name for name in os.listdir('mcomix/messages')
+                   if os.path.isdir(os.path.join('mcomix/messages', name)))
+
 attach_console = True
 if 'PYINSTALLER_CONSOLE' in os.environ:
     attach_console = int(os.environ['PYINSTALLER_CONSOLE']) != 0
@@ -38,7 +43,20 @@ a = Analysis(['../mcomixstarter.py'],
              datas=added_files,
              hiddenimports=[],
              hookspath=[],
-             hooksconfig={},
+             # PyInstaller's GTK hook freezes GTK 3 unless it is told
+             # which GTK this is, and with no GTK 3 installed it collected
+             # nothing at all: no icon theme, so the toolbar's Adwaita
+             # icons were missing, no GTK translations, so the file
+             # chooser was English in every language, and no Windows
+             # font configuration.
+             hooksconfig={
+                 'gi': {
+                     'module-versions': {'Gtk': '4.0', 'Gdk': '4.0'},
+                     'icons': ['Adwaita', 'hicolor'],
+                     'themes': [],
+                     'languages': languages,
+                 },
+             },
              runtime_hooks=[],
              excludes=[],
              win_no_prefer_redirects=False,

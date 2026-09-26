@@ -104,8 +104,38 @@ class SpecDataTest(MComixTest):
                   if filename.endswith(('.png', '.svg'))}
         self.assertEqual(set(), images - packed)
 
+    def _hooksconfig(self):
+        """The configuration the spec hands PyInstaller's hooks."""
+        found = {}
 
-# vim: expandtab:sw=4:ts=4
+        def analysis(*args, hooksconfig, **kwargs):
+            found.update(hooksconfig)
+            return unittest.mock.Mock()
+
+        names = {'Analysis': analysis, 'PYZ': unittest.mock.Mock(),
+                 'EXE': unittest.mock.Mock(),
+                 'COLLECT': unittest.mock.Mock()}
+        cwd = os.getcwd()
+        os.chdir(os.path.dirname(WIN32))
+        self.addCleanup(os.chdir, cwd)
+        with open(os.path.join(WIN32, 'mcomix.spec')) as fp:
+            exec(fp.read(), names)
+        return found['gi']
+
+    def test_the_gtk_hooks_are_told_this_is_gtk_4(self):
+        """Left to itself, PyInstaller's GTK hook looks for GTK 3, finds
+        none, and collects neither the icon theme nor GTK's translations:
+        the 26.09 zip had no share/icons and no gtk40.mo."""
+        gi = self._hooksconfig()
+        self.assertEqual('4.0', gi['module-versions']['Gtk'])
+        self.assertIn('Adwaita', gi['icons'])
+
+    def test_translations_are_collected_for_mcomix_languages_alone(self):
+        messages = os.path.join(os.path.dirname(WIN32), 'mcomix', 'messages')
+        catalogues = sorted(name for name in os.listdir(messages)
+                            if os.path.isdir(os.path.join(messages, name)))
+        self.assertGreater(len(catalogues), 20)
+        self.assertEqual(catalogues, self._hooksconfig()['languages'])
 
 
 class ChocolateyPackageTest(MComixTest):
@@ -142,3 +172,5 @@ class ChocolateyPackageTest(MComixTest):
         self.assertEqual(
             'https://github.com/twwn/mcomix/releases/download/26.09/'
             'mcomix-win64-26.09.msi', result.stdout.strip())
+
+# vim: expandtab:sw=4:ts=4
