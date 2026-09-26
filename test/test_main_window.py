@@ -912,6 +912,21 @@ class MainWindowTest(MComixTest):
         self.assertEqual([('_smart_scroll_up', (pixels,))],
                          self._wheel_dispatch(0, -1))
 
+    def test_a_smart_scroll_step_is_capped_by_the_wheel_or_the_percentage(self):
+        """The wheel gives its pixels as the cap; the space bar gives
+        none, and "smart scroll percentage" of the visible area caps it."""
+        self._ready()
+        handler = self.window.event_handler
+        prefs['smart scroll percentage'] = 0.5
+        width, height = self.window.get_visible_area_size()
+        for small_step, cap in ((7, [7, 7]), (None, [0.5 * width, 0.5 * height])):
+            with self.subTest(small_step=small_step), \
+                    unittest.mock.patch.object(
+                        self.window.layout, 'scroll_smartly',
+                        return_value=0) as scrolled:
+                handler._smart_scrolling(small_step, False)
+            self.assertEqual(cap, scrolled.call_args.args[0])
+
     def test_control_and_the_wheel_zooms_rather_than_scrolling(self):
         for smart in (False, True):
             prefs['smart scroll'] = smart
