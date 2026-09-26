@@ -58,10 +58,8 @@ a = Analysis(['../mcomixstarter.py'],
              },
              runtime_hooks=[],
              excludes=[],
-             # The code stays in an archive inside each executable, 5.9 MB
-             # twice over.  Kept as .pyc files beside them instead, it is
-             # stored once and zips 5 MB smaller, but takes some 8 MB more
-             # unpacked, in 1,800 files where there were two.
+             # The code in an archive inside the executable: as .pyc files
+             # beside it, it takes some 8 MB more unpacked, in 1,800 files.
              noarchive=False)
 
 # The icon theme's X11 cursors: GTK on Windows draws the system's.
@@ -72,30 +70,27 @@ a.datas = [entry for entry in a.datas
 pyz = PYZ(a.pure)
 
 
-def executable(name, console):
-    """One of the two executables, which share everything else."""
-    return EXE(pyz,
-               a.scripts,
-               [],
-               exclude_binaries=True,
-               name=name,
-               debug=False,
-               bootloader_ignore_signals=False,
-               strip=False,
-               upx=False,
-               console=console,
-               disable_windowed_traceback=False,
-               target_arch=None,
-               version='version_file.txt',
-               codesign_identity=None,
-               entitlements_file=None,
-               icon='../mcomix/images/mcomix.ico')
+# MComix.exe, without a console: "-W debug -o FILE" writes the log that
+# MComix.Console.exe, dropped for the 5.7 MB its copy of the code took,
+# was there to show.
+exe = EXE(pyz,
+          a.scripts,
+          [],
+          exclude_binaries=True,
+          name='MComix',
+          debug=False,
+          bootloader_ignore_signals=False,
+          strip=False,
+          upx=False,
+          console=False,
+          disable_windowed_traceback=False,
+          target_arch=None,
+          version='version_file.txt',
+          codesign_identity=None,
+          entitlements_file=None,
+          icon='../mcomix/images/mcomix.ico')
 
-
-# MComix.exe for the desktop, and MComix.Console.exe, which opens a
-# console for what MComix logs, for when something goes wrong.
-coll = COLLECT(executable('MComix', console=False),
-               executable('MComix.Console', console=True),
+coll = COLLECT(exe,
                a.binaries,
                a.datas,
                strip=False,

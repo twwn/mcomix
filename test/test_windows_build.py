@@ -145,13 +145,15 @@ class SpecDataTest(MComixTest):
         self.assertIn('cairo', hidden)
         self.assertIn('gi._gi_cairo', hidden)
 
-    def test_both_executables_are_built_in_one_run(self):
-        """Rather than in a run of PyInstaller each."""
+    def test_mcomix_exe_is_the_one_executable(self):
+        """Without a console, as the desktop starts it; -W debug -o FILE
+        is what its log is read by, where a second, console build each
+        carried its own 5.7 MB copy of the code."""
         found = self._run_spec()
-        self.assertEqual({'MComix': False, 'MComix.Console': True},
-                         {exe['name']: exe['console'] for exe in found['EXE']})
+        self.assertEqual([('MComix', False)],
+                         [(exe['name'], exe['console']) for exe in found['EXE']])
         args, kwargs = found['COLLECT']
-        self.assertEqual(['MComix', 'MComix.Console'], list(args[:2]))
+        self.assertEqual('MComix', args[0])
         self.assertEqual('MComix', kwargs['name'])
 
     def test_the_icon_theme_goes_without_its_cursors(self):

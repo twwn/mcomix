@@ -170,7 +170,7 @@ def create_release_archive() -> None:
 if __name__ == '__main__':
     prepare_version_file()
 
-    # MComix.exe and MComix.Console.exe, from the one spec.
+    # dist/MComix, with MComix.exe, from the spec.
     clear_distdir('dist/MComix/')
     if run_pyinstaller() != 0:
         sys.exit(1)

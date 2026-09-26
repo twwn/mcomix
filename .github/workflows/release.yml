@@ -208,13 +208,15 @@ jobs:
           APPDATA: ${{ runner.temp }}\appdata
         run: |
           $bundle = Resolve-Path dist/MComix
-          foreach ($path in 'MComix.exe', 'MComix.Console.exe', 'UnRAR64.dll', '7z.exe',
+          foreach ($path in 'MComix.exe', 'UnRAR64.dll', '7z.exe',
                             '_internal/share/icons/Adwaita/index.theme',
                             '_internal/share/locale/de/LC_MESSAGES/gtk40.mo',
                             '_internal/cairo') {
             if (-not (Test-Path (Join-Path $bundle $path))) { throw "The bundle has no $path" }
           }
-          if (Test-Path (Join-Path $bundle 'mutool.exe')) { throw 'The bundle carries mutool.exe again' }
+          foreach ($path in 'mutool.exe', 'MComix.Console.exe') {
+            if (Test-Path (Join-Path $bundle $path)) { throw "The bundle carries $path again" }
+          }
           $failed = $false
           foreach ($run in @(
               @{ Name = 'pdf'; Book = "$env:RUNNER_TEMP\smoke.pdf"; Expect = 'Page 1 is available' },
@@ -222,7 +224,7 @@ jobs:
             $out = Join-Path $env:RUNNER_TEMP "$($run.Name).out"
             $err = Join-Path $env:RUNNER_TEMP "$($run.Name).err"
             $log = Join-Path $env:RUNNER_TEMP "$($run.Name).log"
-            Start-Process (Join-Path $bundle 'MComix.Console.exe') -ArgumentList '-W', 'debug', '-o', $log, $run.Book `
+            Start-Process (Join-Path $bundle 'MComix.exe') -ArgumentList '-W', 'debug', '-o', $log, $run.Book `
               -RedirectStandardOutput $out -RedirectStandardError $err
             Start-Sleep -Seconds 20
             Get-Process -Name 'MComix*' -ErrorAction SilentlyContinue | Stop-Process -Force
