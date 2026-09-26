@@ -67,7 +67,8 @@ class VersionFileTest(MComixTest):
                 unittest.mock.patch('builtins.print'):
             build_pyinstaller.prepare_version_file()
 
-        with open(os.path.join('win32', 'version_file.txt')) as fp:
+        with open(os.path.join('win32', 'version_file.txt'),
+                  encoding='utf-8') as fp:
             written = fp.read()
         self.assertIn('filevers=(26, 10, 0, 0)', written)
         self.assertIn('prodvers=(26, 10, 0, 0)', written)
@@ -109,7 +110,7 @@ class SpecDataTest(MComixTest):
         cwd = os.getcwd()
         os.chdir(os.path.dirname(WIN32))
         self.addCleanup(os.chdir, cwd)
-        with open(os.path.join(WIN32, 'mcomix.spec')) as fp:
+        with open(os.path.join(WIN32, 'mcomix.spec'), encoding='utf-8') as fp:
             exec(fp.read(), names)
         return found
 
@@ -221,7 +222,7 @@ class FrozenEntryTest(MComixTest):
         arguments ("unrecognized arguments: -B -S -I -c", in a frozen
         build on Linux), and no PDF opened."""
         path = os.path.join(os.path.dirname(WIN32), 'mcomixstarter.py')
-        with open(path) as fp:
+        with open(path, encoding='utf-8') as fp:
             tree = ast.parse(fp.read())
         guard = next(node for node in tree.body
                      if isinstance(node, ast.If)

@@ -42,7 +42,7 @@ def _named_in_the_source():
     """Every string the source of MComix holds, bar the two tables."""
     named = {}
     for path in _sources():
-        tree = ast.parse(open(path).read())
+        tree = ast.parse(open(path, encoding='utf-8').read())
         skip = _table_keys(tree) if os.path.basename(path) == 'preferences.py' else set()
         for node in ast.walk(tree):
             if (isinstance(node, ast.Constant) and isinstance(node.value, str)
@@ -631,7 +631,7 @@ class EveryPreferenceIsUsedTest(MComixTest):
         wanted = dict(self._CONTROLS)
         found = {}
         for path in _sources():
-            tree = ast.parse(open(path).read())
+            tree = ast.parse(open(path, encoding='utf-8').read())
             for node in ast.walk(tree):
                 if not isinstance(node, ast.Call):
                     continue

@@ -214,7 +214,7 @@ class DefaultKeybindingsTest(MComixTest):
         """
         source = os.path.join(os.path.dirname(mcomix.event.__file__),
                               'event.py')
-        with open(source) as fp:
+        with open(source, encoding='utf-8') as fp:
             tree = ast.parse(fp.read())
 
         def literal(node):
@@ -309,7 +309,7 @@ class DocumentedMouseBindingsTest(MComixTest):
         """Every button the click handlers in event.py branch on."""
         source = os.path.join(os.path.dirname(mcomix.event.__file__),
                               'event.py')
-        with open(source) as fp:
+        with open(source, encoding='utf-8') as fp:
             tree = ast.parse(fp.read())
         handled = set()
         for function in ast.walk(tree):
@@ -485,7 +485,7 @@ class DocumentedKeyBindingsTest(MComixTest):
         """Return {action: {binding, ...}} from event.py's defaults."""
         source = os.path.join(os.path.dirname(mcomix.event.__file__),
                               'event.py')
-        with open(source) as fp:
+        with open(source, encoding='utf-8') as fp:
             tree = ast.parse(fp.read())
         return {
             call.args[0].value: {keybindings.parse_accelerator(element.value)

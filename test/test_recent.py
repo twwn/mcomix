@@ -86,7 +86,7 @@ class RecentFilesMenuTest(MComixTest):
         path = os.path.join(self.tmp_dir, name)
         with open(path, 'w') as handle:
             handle.write('x')
-        uri = 'file://' + path
+        uri = Gio.File.new_for_path(path).get_uri()
         data = Gtk.RecentData()
         data.display_name = name
         data.mime_type = mime_type

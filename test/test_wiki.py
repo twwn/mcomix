@@ -44,7 +44,7 @@ def read_page(name):
 
 
 def parse_module(module):
-    with open(module.__file__) as fp:
+    with open(module.__file__, encoding='utf-8') as fp:
         return ast.parse(fp.read())
 
 
@@ -249,7 +249,7 @@ class ManualTest(unittest.TestCase):
     def test_the_view_menu_has_the_items_the_page_names(self):
         """ui.py holds each label with its mnemonic underscore, which the
         page does not write."""
-        with open(ui.__file__) as fp:
+        with open(ui.__file__, encoding='utf-8') as fp:
             source = fp.read()
         missing = [item for item in self.QUOTED_MENU_ITEMS
                    if item not in source.replace('_', '')]
@@ -312,7 +312,7 @@ class ManualTest(unittest.TestCase):
         """MComix writes PageCount and Pages into every archive it
         saves, and nothing else about the comic."""
         self.assertIn(comicinfo.NAME, self.page)
-        with open(comicinfo.__file__) as fp:
+        with open(comicinfo.__file__, encoding='utf-8') as fp:
             source = fp.read()
         for field in ('PageCount', 'Pages'):
             with self.subTest(field=field):
@@ -323,7 +323,7 @@ class ManualTest(unittest.TestCase):
         """Which format a save is written in, and whether a page is
         turned the way its metadata says, are preferences' to decide, so
         the page has to name them as the dialog does."""
-        with open(preferences_dialog.__file__) as fp:
+        with open(preferences_dialog.__file__, encoding='utf-8') as fp:
             source = fp.read()
         for label in self.QUOTED_PREFERENCES:
             with self.subTest(label=label):
@@ -444,7 +444,8 @@ class DevelopmentPageTest(NamedPathsMixin, unittest.TestCase):
         """The translation snippet reads the version with a grep of
         mcomix/constants.py, so the assignment has to stay there and stay
         greppable."""
-        with open(os.path.join(self.root, 'mcomix', 'constants.py')) as fp:
+        with open(os.path.join(self.root, 'mcomix', 'constants.py'),
+                  encoding='utf-8') as fp:
             source = fp.read()
         self.assertRegex(source, r"(?m)^VERSION = '[^']+'$")
         self.assertIn('grep VERSION mcomix/constants.py', self.page)
@@ -470,7 +471,7 @@ class DevelopmentPageTest(NamedPathsMixin, unittest.TestCase):
                 path = os.path.normpath(os.path.join(directory, name))
                 if path in covered:
                     continue
-                with open(path) as fp:
+                with open(path, encoding='utf-8') as fp:
                     source = fp.read()
                 if 'from mcomix.i18n import _' in source:
                     missed.append(os.path.relpath(path, self.root))
@@ -502,12 +503,14 @@ class ReleasingPageTest(NamedPathsMixin, unittest.TestCase):
     )
 
     def test_the_checksum_goes_where_the_page_says(self):
-        with open(os.path.join(self.root, 'win32', 'build_msi.py')) as fp:
+        with open(os.path.join(self.root, 'win32', 'build_msi.py'),
+                  encoding='utf-8') as fp:
             builder = fp.read()
         self.assertIn('win32/tools/checksum.sha256', builder)
         self.assertIn('win32/tools/checksum.sha256', self.page)
         # The page says it is deliberately not kept in Git.
-        with open(os.path.join(self.root, '.gitignore')) as fp:
+        with open(os.path.join(self.root, '.gitignore'),
+                  encoding='utf-8') as fp:
             self.assertIn('win32/tools/checksum.sha256', fp.read())
 
     def test_the_msys2_packages_are_the_ones_the_build_script_names(self):
@@ -525,13 +528,14 @@ class ReleasingPageTest(NamedPathsMixin, unittest.TestCase):
         for name in (os.path.join('win32', 'build_pyinstaller.py'),
                      os.path.join('.github', 'workflows', 'release.yml')):
             with self.subTest(name=name), \
-                    open(os.path.join(self.root, name)) as fp:
+                    open(os.path.join(self.root, name),
+                         encoding='utf-8') as fp:
                 self.assertEqual(page,
                                  sorted(set(re.findall(pattern, fp.read()))))
 
     def test_the_build_is_for_the_environment_the_packages_are_for(self):
         with open(os.path.join(self.root, '.github', 'workflows',
-                               'release.yml')) as fp:
+                               'release.yml'), encoding='utf-8') as fp:
             self.assertIn('msystem: UCRT64', fp.read())
         self.assertIn('UCRT64 shell', self.page)
         self.assertNotRegex(self.page, r'mingw-w64-x86_64-')

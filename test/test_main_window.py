@@ -1514,7 +1514,7 @@ class MainWindowTest(MComixTest):
         sites in edit_dialog.py and three in main.py did it anyway."""
         direct = []
         for module in (main, edit_dialog):
-            with open(module.__file__) as fp:
+            with open(module.__file__, encoding='utf-8') as fp:
                 for number, line in enumerate(fp, 1):
                     if ('set_layout_cursor(' in line
                             and 'def set_layout_cursor' not in line
