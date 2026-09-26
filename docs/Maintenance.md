@@ -40,7 +40,11 @@ Preparing a new release
 Releasing with GitHub Actions
 -----------------------------
 
-Pushing the tag starts `.github/workflows/release.yml`. It checks that the tag is the version in `mcomix/constants.py`, builds the source archive on Linux and the Windows zip and MSI installer in MSYS2, and drafts the GitHub release with the three files attached and the release's section of `ChangeLog.md` as its notes. The programs the Windows packages carry are fetched by the workflow; their versions are set at its top. It can also be run by hand from the Actions tab, given the tag.
+Pushing the tag starts `.github/workflows/release.yml`. It checks that the tag is the version in `mcomix/constants.py`, builds the source archive on Linux and the Windows zip and MSI installer in MSYS2, starts the built MComix on a PDF and on a book that is not there, and drafts the GitHub release with the three files attached and the release's section of `ChangeLog.md` as its notes.
+
+The build takes everything at its newest: MSYS2's packages, 7-Zip from the runner, and the newest released UnRAR.dll, which the workflow finds on RARLAB's site, passing over a beta. The run's summary lists the versions it took and the sizes of the files.
+
+Without a tag, the same workflow makes a test build: every Monday, for a pull request that changes the build, and when run by hand from the Actions tab with the tag left empty. Its files are kept with the run for two weeks, to try a build before releasing it, and a Monday build that fails is the warning that something the build takes has changed.
 
 Review the draft and publish it. Publishing starts `.github/workflows/publish.yml`, which pushes the Chocolatey package and opens the pull request that puts the new version into winget. Each needs a secret in the repository's settings, and skips with a notice where it is not set:
 

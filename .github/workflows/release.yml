@@ -1,74 +1,106 @@
 name: Release
 
-# Builds a release from its tag and drafts the GitHub release with the
-# three files attached and the ChangeLog.md section as its notes.  The
-# draft is reviewed and published by hand; publishing it is what starts
-# publish.yml, which puts the Chocolatey and winget packages out.
+# Builds the source archive and the Windows zip and installer.
 #
-# The tag is the release's version, as docs/Maintenance.md numbers it
-# (26.09, 26.10.1), and has to match VERSION in mcomix/constants.py.
+# With a tag - pushed, or given by hand - it is a release: the tag has to
+# be VERSION in mcomix/constants.py, and the files are attached to a
+# draft GitHub release with the tag's ChangeLog.md section as its notes.
+# The draft is reviewed and published by hand; publishing it starts
+# publish.yml.
+#
+# Without one - every Monday, on a pull request that touches the build,
+# or by hand - it builds the same files from the commit and keeps them as
+# the run's artifacts: a build to try, and the early warning that MSYS2
+# or a download has moved under the build before a release finds out.
 
 on:
   push:
     tags:
       - "[0-9][0-9].[0-9][0-9]"
       - "[0-9][0-9].[0-9][0-9].[0-9]*"
+  pull_request:
+    paths:
+      - "win32/**"
+      - "mcomixstarter.py"
+      - "pyproject.toml"
+      - ".github/workflows/release.yml"
+  schedule:
+    - cron: "17 5 * * 1"
   workflow_dispatch:
     inputs:
       tag:
-        description: "The tag to build, such as 26.09"
-        required: true
+        description: "A tag to release, such as 26.09; empty for a test build"
+        required: false
+        default: ""
 
 permissions:
   contents: read
 
-env:
-  TAG: ${{ inputs.tag || github.ref_name }}
-  # The programs the Windows packages carry, as docs/Maintenance.md
-  # lists them.  7-Zip is taken from the runner, which has it installed.
-  UNRARDLL_VERSION: "722"
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  notes:
-    name: Check the version and take the release notes
+  setup:
+    name: What to build
     runs-on: ubuntu-24.04
+    outputs:
+      ref: ${{ steps.what.outputs.ref }}
+      version: ${{ steps.what.outputs.version }}
+      release: ${{ steps.what.outputs.release }}
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: ${{ env.TAG }}
-      - name: The tag is the version MComix says it is
+          ref: ${{ inputs.tag || github.sha }}
+      - name: A release, or a test build
+        id: what
+        env:
+          TAG: ${{ inputs.tag || (github.ref_type == 'tag' && github.ref_name || '') }}
         run: |
           version=$(sed -n "s/^VERSION = '\(.*\)'$/\1/p" mcomix/constants.py)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if [ -z "$TAG" ]; then
+            echo "ref=$GITHUB_SHA" >> "$GITHUB_OUTPUT"
+            echo "release=false" >> "$GITHUB_OUTPUT"
+            echo "A test build of MComix $version at ${GITHUB_SHA::8}." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
           if [ "$version" != "$TAG" ]; then
             echo "::error::The tag is $TAG, but mcomix/constants.py says $version"
             exit 1
           fi
+          echo "ref=$TAG" >> "$GITHUB_OUTPUT"
+          echo "release=true" >> "$GITHUB_OUTPUT"
       - name: The release's section of ChangeLog.md
+        if: steps.what.outputs.release == 'true'
+        env:
+          VERSION: ${{ steps.what.outputs.version }}
         run: |
-          awk -v heading="# MComix $TAG" '
+          awk -v heading="# MComix $VERSION" '
             $0 == heading { found = 1; next }
             found && /^# MComix / { exit }
             found' ChangeLog.md > notes.md
           if ! grep -q '[^[:space:]]' notes.md; then
-            echo "::error::ChangeLog.md has no section headed \"# MComix $TAG\""
+            echo "::error::ChangeLog.md has no section headed \"# MComix $VERSION\""
             exit 1
           fi
       - uses: actions/upload-artifact@v7
+        if: steps.what.outputs.release == 'true'
         with:
           name: notes
           path: notes.md
 
   source:
     name: Source archive
-    needs: notes
+    needs: setup
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: ${{ env.TAG }}
+          ref: ${{ needs.setup.outputs.ref }}
       - uses: actions/setup-python@v7
         with:
-          python-version: "3.14"
+          python-version: "3.x"
       - run: |
           python -m pip install build
           python -m build -s
@@ -77,22 +109,24 @@ jobs:
           name: source
           path: dist/mcomix-*.tar.gz
           if-no-files-found: error
+          retention-days: ${{ needs.setup.outputs.release == 'true' && 30 || 14 }}
 
   windows:
     name: Windows packages
-    needs: notes
+    needs: setup
     runs-on: windows-2025
+    env:
+      VERSION: ${{ needs.setup.outputs.version }}
     defaults:
       run:
         shell: msys2 {0}
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: ${{ env.TAG }}
-      # The packages docs/Maintenance.md lists, and MSYS2's own build of
-      # PyInstaller, which pip would have to build for this Python; the
-      # path is inherited so that WiX, installed below, is found.
-      - uses: msys2/setup-msys2@v2
+          ref: ${{ needs.setup.outputs.ref }}
+      # The packages docs/Maintenance.md lists, at MSYS2's newest; the path
+      # is inherited so that WiX, fetched below, is found.
+      - uses: msys2/setup-msys2@66cd2cce69caa17b53920067426061ca1de3a884 # v2.32.0
         with:
           msystem: UCRT64
           update: true
@@ -108,6 +142,9 @@ jobs:
             mingw-w64-ucrt-x86_64-python-pip
             mingw-w64-ucrt-x86_64-python-pymupdf
             mingw-w64-ucrt-x86_64-pyinstaller
+      # 7-Zip is the runner's, which its image keeps current.  RARLAB
+      # links its newest UnRAR.dll from rar_add.htm, a beta as often as
+      # not; the newest release below a beta is looked for by number.
       - name: Fetch 7-Zip and UnRAR.dll into ../mcomix-other
         shell: pwsh
         run: |
@@ -115,11 +152,27 @@ jobs:
           $other = Join-Path (Split-Path $PWD) 'mcomix-other'
           New-Item -ItemType Directory -Force "$other/7z", "$other/unrar" | Out-Null
           Copy-Item "$env:ProgramFiles/7-Zip/7z.exe", "$env:ProgramFiles/7-Zip/7z.dll", "$env:ProgramFiles/7-Zip/License.txt" "$other/7z"
-          Invoke-WebRequest "https://www.rarlab.com/rar/unrardll-$env:UNRARDLL_VERSION.exe" -OutFile unrardll.exe
+          $page = (Invoke-WebRequest 'https://www.rarlab.com/rar_add.htm').Content
+          if ($page -notmatch 'rar/unrardll-(\d+)(b\d+)?\.exe') { throw 'rar_add.htm links no UnRAR.dll' }
+          $linked = $Matches[0]
+          $number = [int]$Matches[1]
+          $candidates = if ($Matches[2]) { ($number - 1)..($number - 30) } else { @($number) }
+          $unrar = $null
+          foreach ($candidate in $candidates) {
+            try {
+              Invoke-WebRequest "https://www.rarlab.com/rar/unrardll-$candidate.exe" -OutFile unrardll.exe
+              $unrar = $candidate
+              break
+            } catch { }
+          }
+          if (-not $unrar) { throw "No released UnRAR.dll below the one rar_add.htm links, $linked" }
           & $sevenzip e unrardll.exe x64/UnRAR64.dll license.txt "-o$other/unrar" -y
           Remove-Item unrardll.exe
+          $sevenzipVersion = (& $sevenzip | Select-Object -Skip 1 -First 1).Trim()
+          "UNRAR_VERSION=$($unrar.ToString().Insert(1, '.'))" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
+          "SEVENZIP_VERSION=$sevenzipVersion" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
       # WiX 3's tools run from where they are unpacked; nothing has to
-      # be installed.
+      # be installed.  WiX 3 has had its last release, 3.14.1.
       - name: Fetch WiX 3
         shell: pwsh
         run: |
@@ -133,8 +186,77 @@ jobs:
       - name: Build the MSI installer
         run: |
           python win32/build_msi.py
-          test -f "dist/mcomix-win64-$TAG.msi"
-          test -f "dist/mcomix-win64-$TAG.zip"
+          test -f "dist/mcomix-win64-$VERSION.msi"
+          test -f "dist/mcomix-win64-$VERSION.zip"
+      # What the frozen build has got wrong before: its PDF workers, which
+      # are MComix started again, and the on-screen display, which draws
+      # with cairo; and the icon theme and GTK's translations, which
+      # PyInstaller left out.
+      - name: A PDF to open
+        run: |
+          python -c "
+          import pymupdf, sys
+          book = pymupdf.open()
+          for number in (1, 2):
+              book.new_page().insert_text((72, 72), 'Page %d' % number, fontsize=48)
+          book.save(sys.argv[1])
+          " "$RUNNER_TEMP/smoke.pdf"
+      - name: Start the built MComix
+        shell: pwsh
+        env:
+          # Its settings, library and thumbnails, away from the runner's.
+          APPDATA: ${{ runner.temp }}\appdata
+        run: |
+          $bundle = Resolve-Path dist/MComix
+          foreach ($path in 'MComix.exe', 'MComix.Console.exe', 'UnRAR64.dll', '7z.exe',
+                            '_internal/share/icons/Adwaita/index.theme',
+                            '_internal/share/locale/de/LC_MESSAGES/gtk40.mo',
+                            '_internal/cairo') {
+            if (-not (Test-Path (Join-Path $bundle $path))) { throw "The bundle has no $path" }
+          }
+          if (Test-Path (Join-Path $bundle 'mutool.exe')) { throw 'The bundle carries mutool.exe again' }
+          $failed = $false
+          foreach ($run in @(
+              @{ Name = 'pdf'; Book = "$env:RUNNER_TEMP\smoke.pdf"; Expect = 'Page 1 is available' },
+              @{ Name = 'missing'; Book = "$env:RUNNER_TEMP\not-there.cbz"; Expect = $null })) {
+            $out = Join-Path $env:RUNNER_TEMP "$($run.Name).out"
+            $err = Join-Path $env:RUNNER_TEMP "$($run.Name).err"
+            $log = Join-Path $env:RUNNER_TEMP "$($run.Name).log"
+            Start-Process (Join-Path $bundle 'MComix.Console.exe') -ArgumentList '-W', 'debug', '-o', $log, $run.Book `
+              -RedirectStandardOutput $out -RedirectStandardError $err
+            Start-Sleep -Seconds 20
+            Get-Process -Name 'MComix*' -ErrorAction SilentlyContinue | Stop-Process -Force
+            Start-Sleep -Seconds 2
+            $text = (@($out, $err, $log) | Where-Object { Test-Path $_ } | ForEach-Object { Get-Content $_ -Raw }) -join "`n"
+            Write-Output "::group::$($run.Name)"
+            Write-Output $text
+            Write-Output '::endgroup::'
+            foreach ($bad in 'Traceback', 'unrecognized arguments') {
+              if ($text -match $bad) { Write-Output "::error::$($run.Name): $bad"; $failed = $true }
+            }
+            if ($run.Expect -and $text -notmatch $run.Expect) {
+              Write-Output "::error::$($run.Name): no '$($run.Expect)'"; $failed = $true
+            }
+          }
+          if ($failed) { exit 1 }
+      - name: Say what was built
+        run: |
+          {
+            echo "### MComix $VERSION for Windows"
+            echo
+            echo "| File | Size |"
+            echo "|---|---|"
+            for file in dist/mcomix-win64-*; do
+              echo "| $(basename "$file") | $(du -h "$file" | cut -f1) |"
+            done
+            echo
+            echo "Carrying UnRAR.dll $UNRAR_VERSION, $SEVENZIP_VERSION, and from MSYS2:"
+            echo
+            pacman -Q mingw-w64-ucrt-x86_64-gtk4 mingw-w64-ucrt-x86_64-libadwaita \
+              mingw-w64-ucrt-x86_64-python mingw-w64-ucrt-x86_64-python-gobject \
+              mingw-w64-ucrt-x86_64-python-pillow mingw-w64-ucrt-x86_64-python-pymupdf \
+              mingw-w64-ucrt-x86_64-pyinstaller | sed 's/^mingw-w64-ucrt-x86_64-/- /'
+          } >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v7
         with:
           name: windows
@@ -142,18 +264,22 @@ jobs:
             dist/mcomix-win64-*.zip
             dist/mcomix-win64-*.msi
           if-no-files-found: error
+          retention-days: ${{ needs.setup.outputs.release == 'true' && 30 || 14 }}
 
   draft:
     name: Draft the GitHub release
-    needs: [notes, source, windows]
+    needs: [setup, source, windows]
+    if: needs.setup.outputs.release == 'true'
     runs-on: ubuntu-24.04
     permissions:
       contents: write
+    env:
+      TAG: ${{ needs.setup.outputs.version }}
     steps:
       - uses: actions/download-artifact@v8
         with:
           path: artifacts
-      - name: Draft the release with the three files
+      - name: Draft the release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
