@@ -1,4 +1,5 @@
 
+import lzma
 import os
 import tarfile
 
@@ -102,6 +103,24 @@ class ArchiveToolsTest(MComixTest):
         path = os.path.join(self.tmp_dir, 'empty.tar')
         tarfile.open(path, 'w:').close()
         self.assertEqual(archive_tools.archive_mime_type(path), constants.TAR)
+
+    def test_the_formats_with_no_fixture_are_told_by_their_first_bytes(self):
+        """PDF, MOBI, and a single file compressed with xz or lzma that
+        is not a tarball: test/files/archives holds none of them."""
+        page = b'not a tarball, only what was compressed'
+        for name, content, expected in (
+                ('book.pdf', b'%PDF-1.4\n%\xe2\xe3\xcf\xd3\n', constants.PDF),
+                ('book.mobi', bytes(60) + b'BOOKMOBI' + bytes(8),
+                 constants.MOBI),
+                ('page.xz', lzma.compress(page), constants.XZ),
+                ('page.lzma', lzma.compress(page, format=lzma.FORMAT_ALONE),
+                 constants.XZ)):
+            with self.subTest(name=name):
+                path = os.path.join(self.tmp_dir, name)
+                with open(path, 'wb') as archive:
+                    archive.write(content)
+                self.assertEqual(expected,
+                                 archive_tools.archive_mime_type(path))
 
     def test_zero_filled_file_is_not_an_archive(self):
 
