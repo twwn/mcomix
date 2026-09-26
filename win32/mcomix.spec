@@ -35,7 +35,12 @@ a = Analysis(['../mcomixstarter.py'],
              pathex=[],
              binaries=[],
              datas=added_files,
-             hiddenimports=[],
+             # PyGObject imports these itself, when a cairo context
+             # crosses into Python - as the on-screen display draws with
+             # one - so PyInstaller cannot see them; left out, the
+             # display raised "Couldn't find foreign struct converter
+             # for 'cairo.Context'" and drew nothing.
+             hiddenimports=['cairo', 'gi._gi_cairo'],
              hookspath=[],
              # PyInstaller's GTK hook freezes GTK 3 unless it is told
              # which GTK this is, and with no GTK 3 installed it collected

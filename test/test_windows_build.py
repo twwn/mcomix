@@ -140,6 +140,11 @@ class SpecDataTest(MComixTest):
         gi = self._run_spec()['Analysis']['hooksconfig']['gi']
         self.assertEqual(catalogues, gi['languages'])
 
+    def test_the_cairo_glue_pygobject_imports_itself_is_packed(self):
+        hidden = self._run_spec()['Analysis']['hiddenimports']
+        self.assertIn('cairo', hidden)
+        self.assertIn('gi._gi_cairo', hidden)
+
     def test_both_executables_are_built_in_one_run(self):
         """Rather than in a run of PyInstaller each."""
         found = self._run_spec()
