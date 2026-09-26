@@ -28,10 +28,10 @@ The tag starts the release workflow. The rest is automatic.
 5. Attests each file's build provenance: `gh attestation verify <file> --repo twwn/mcomix` proves it was built there, from the tag.
 6. Runs `.github/workflows/publish.yml`: the [packages](#packages).
 
-- To release a tag again, after moving it: push it again (`git push -f origin 26.10`), or run the workflow from the Actions tab, given the tag.
+- To release a tag again, after moving it: push it again (`git push -f origin 26.10`), or run the workflow from the Actions tab, from the tag ("Use workflow from", Tags).
   A draft release is replaced. A published one is not: delete it by hand first, keeping the tag.
 - The build takes everything at its newest: MSYS2's packages, 7-Zip from the runner, the newest non-beta UnRAR.dll from RARLAB's site. The run's summary lists versions and sizes.
-- Without a tag it makes a test build: every Monday, for a pull request that changes the build, and by hand with the tag left empty.
+- Without a tag it makes a test build: every Monday, for a pull request that changes the build, and by hand from a branch.
   Its files stay with the run for two weeks. A failed Monday build means something the build takes has changed.
 
 ## Packages

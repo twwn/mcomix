@@ -2,16 +2,17 @@ name: Release
 
 # Builds the source archive and the Windows zip and installer.
 #
-# With a tag - pushed, or given by hand - it is a release: the tag has to
-# be VERSION in mcomix/constants.py, the built MComix has to start, and
-# then the GitHub release is published with the files, their checksums
+# From a tag - pushed, or chosen under "Use workflow from" when run by
+# hand - it is a release: the tag has to be VERSION in
+# mcomix/constants.py, the built MComix has to start, and then the
+# GitHub release is published with the files, their checksums
 # and build provenance, and the tag's ChangeLog.md section as its notes,
 # and publish.yml puts it out to Chocolatey and winget.  A draft release
 # of the tag is replaced; a published one is left alone, and has to be
 # deleted by hand (keeping the tag) before the tag can be released again.
 #
-# Without one - every Monday, on a pull request that touches the build,
-# or by hand - it builds the same files from the commit and keeps them as
+# From a branch - every Monday, on a pull request that touches the
+# build, or by hand - it builds the same files and keeps them as
 # the run's artifacts: a build to try, and the early warning that MSYS2
 # or a download has moved under the build before a release finds out.
 
@@ -29,12 +30,10 @@ on:
       - ".github/workflows/release.yml"
   schedule:
     - cron: "17 5 * * 1"
+  # Every job checks out the commit the run was started on, and nothing
+  # else: a ref handed in from outside, and built with the rights of the
+  # default branch, is what CodeQL calls cache poisoning.
   workflow_dispatch:
-    inputs:
-      tag:
-        description: "A tag to release, such as 26.09; empty for a test build"
-        required: false
-        default: ""
 
 permissions:
   contents: read
@@ -48,22 +47,18 @@ jobs:
     name: What to build
     runs-on: ubuntu-24.04
     outputs:
-      ref: ${{ steps.what.outputs.ref }}
       version: ${{ steps.what.outputs.version }}
       release: ${{ steps.what.outputs.release }}
     steps:
       - uses: actions/checkout@v7
-        with:
-          ref: ${{ inputs.tag || github.sha }}
       - name: A release, or a test build
         id: what
         env:
-          TAG: ${{ inputs.tag || (github.ref_type == 'tag' && github.ref_name || '') }}
+          TAG: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
         run: |
           version=$(sed -n "s/^VERSION = '\(.*\)'$/\1/p" mcomix/constants.py)
           echo "version=$version" >> "$GITHUB_OUTPUT"
           if [ -z "$TAG" ]; then
-            echo "ref=$GITHUB_SHA" >> "$GITHUB_OUTPUT"
             echo "release=false" >> "$GITHUB_OUTPUT"
             echo "A test build of MComix $version at ${GITHUB_SHA::8}." >> "$GITHUB_STEP_SUMMARY"
             exit 0
@@ -72,7 +67,6 @@ jobs:
             echo "::error::The tag is $TAG, but mcomix/constants.py says $version"
             exit 1
           fi
-          echo "ref=$TAG" >> "$GITHUB_OUTPUT"
           echo "release=true" >> "$GITHUB_OUTPUT"
       - name: The release's section of ChangeLog.md
         if: steps.what.outputs.release == 'true'
@@ -99,8 +93,6 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
-        with:
-          ref: ${{ needs.setup.outputs.ref }}
       - uses: actions/setup-python@v7
         with:
           python-version: "3.x"
@@ -125,8 +117,6 @@ jobs:
         shell: msys2 {0}
     steps:
       - uses: actions/checkout@v7
-        with:
-          ref: ${{ needs.setup.outputs.ref }}
       # The packages docs/releasing.md lists, at MSYS2's newest; the path
       # is inherited so that WiX, fetched below, is found.
       - uses: msys2/setup-msys2@66cd2cce69caa17b53920067426061ca1de3a884 # v2.32.0
