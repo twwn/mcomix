@@ -1,0 +1,17 @@
+name: Feature request
+description: Something MComix could do.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What you would like
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: What it is for
+      description: The reading or library task it would help with.
+    validations:
+      required: true

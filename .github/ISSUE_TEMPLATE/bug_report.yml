@@ -1,0 +1,67 @@
+name: Bug report
+description: Something in MComix does not work as it should.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The `mcomix` packages of Linux distributions, Flathub, WinGet and Scoop are the original MComix 3.
+        Report bugs in those [upstream](https://sourceforge.net/p/mcomix/bugs/).
+  - type: input
+    id: version
+    attributes:
+      label: MComix version
+      description: "File → About, or `mcomix --version`."
+      placeholder: "26.09"
+    validations:
+      required: true
+  - type: dropdown
+    id: system
+    attributes:
+      label: System
+      options:
+        - Windows
+        - Linux
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    id: installed
+    attributes:
+      label: Installed from
+      options:
+        - Windows installer (MSI)
+        - Windows zip
+        - Chocolatey
+        - Source archive
+        - Git checkout
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: And what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open …
+        2. …
+  - type: textarea
+    id: log
+    attributes:
+      label: Log
+      description: |
+        Start MComix with `-W debug -o mcomix.log`, reproduce the problem, and paste the file here.
+        On Windows: `MComix.exe -W debug -o mcomix.log`.
+      render: text
+  - type: textarea
+    id: file
+    attributes:
+      label: A file that shows it
+      description: A small book or picture that shows the problem helps most. Drag it in here, zipped if need be.
