@@ -66,6 +66,20 @@ class ViewActionsTest(MComixTest):
                 self.assertEqual(Transform.from_rotation(rotation),
                                  self._transform())
 
+    def test_a_page_is_turned_as_its_exif_tag_says_where_that_is_asked_for(self):
+        """The picture is stored 210 by 297 with Exif orientation 8,
+        which is a turn of 270 degrees that stands it on its long side."""
+        for exif, transform, size in (
+                (True, Transform.from_rotation(270), (297, 210)),
+                (False, Transform.ID, (210, 297))):
+            with self.subTest(exif=exif):
+                prefs['auto rotate from exif'] = exif
+                self._open('landscape-exif-270-rotation.jpg')
+                self.assertEqual(transform, self._transform())
+                self.assertEqual(size, self._shown_size())
+                self.window.filehandler.close_file()
+                pump()
+
     def test_each_flip_turns_its_own_preference_over(self):
         self._open('portrait-no-exif.png')
         self._activate('flip_horiz')
