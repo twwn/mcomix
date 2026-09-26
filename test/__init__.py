@@ -450,3 +450,10 @@ def session_tmp_dir():
 
 def get_testfile_path(*components):
     return str(os.path.join(os.path.dirname(__file__), 'files', *components))
+
+
+#: For a test of a file name that is not UTF-8.  Windows keeps names in
+#: UTF-16, so the bytes such a test makes a name of cannot name a file
+#: there, and os.fsdecode() refuses them.
+posix_byte_names = unittest.skipIf(
+    sys.platform == 'win32', 'Windows file names are UTF-16, not bytes')

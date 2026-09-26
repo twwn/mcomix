@@ -12,7 +12,7 @@ import unittest.mock
 
 from sqlite3 import dbapi2
 
-from . import get_testfile_path
+from . import get_testfile_path, posix_byte_names
 
 from mcomix import constants
 from mcomix.i18n import _
@@ -199,6 +199,7 @@ class RedirectedPathsTest(LibraryDatabaseTest):
         self.assertEqual(reached - set(self.REDIRECTED_PATHS), set())
 
 
+@posix_byte_names
 class PathNotUtf8Test(LibraryDatabaseTest):
 
     """A book whose path on disk is not UTF-8.
@@ -293,6 +294,7 @@ class NothingThereTest(LibraryDatabaseTest):
         with self.assertRaises(ValueError):
             self.library.get_all_collections_in_collection(None)
 
+    @posix_byte_names
     def test_a_book_moved_to_a_name_it_cannot_hold_stays_where_it_was(self):
         """The row is left for "Clean up" to find gone, rather than the
         move raising half way through."""

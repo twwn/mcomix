@@ -12,7 +12,7 @@ import unittest
 import unittest.mock
 import zipfile
 
-from . import MComixTest, get_testfile_path
+from . import get_testfile_path, MComixTest, posix_byte_names
 
 try:
     import chardet
@@ -535,6 +535,14 @@ class SevenZipLegacyNameTest(ZipLegacyNameTest):
     def _handler(self, path):
         return sevenzip_external.SevenZipArchive(path)
 
+    # 7-Zip for Windows decodes a name stored without the UTF-8 flag in
+    # the OEM code page itself and prints what that gives, so the bytes
+    # the name was stored as never reach MComix to be read as UTF-8.
+    @unittest.skipIf(sys.platform == 'win32',
+                     '7-Zip for Windows reads the name in the OEM code page')
+    def test_utf_8_names_without_the_flag_are_read_as_utf_8(self):
+        super().test_utf_8_names_without_the_flag_are_read_as_utf_8()
+
     def _listed(self, path):
         archive = self._handler(path)
         try:
@@ -549,6 +557,8 @@ class SevenZipLegacyNameTest(ZipLegacyNameTest):
         for name in listed:
             name.encode('utf-8')
 
+    @unittest.skipIf(sys.platform == 'win32',
+                     '7-Zip for Windows reads the name in the OEM code page')
     def test_a_page_listed_under_its_decoded_name_is_extracted(self):
         archive = self._handler(self._legacy_zip(['Übersicht.jpg'], 'utf-8'))
         try:
@@ -577,6 +587,7 @@ class SevenZipLegacyNameTest(ZipLegacyNameTest):
                      '7z is not installed')
 class SevenZipTarAtLegacyPathTest(MComixTest):
 
+    @posix_byte_names
     def test_a_tarball_at_a_path_that_is_not_utf_8_is_listed(self):
         """7z prints the archive's own path in the head of its listing,
         and the listing of a tarball tarfile cannot read, decoded
@@ -974,25 +985,7 @@ if 'win32' == sys.platform:
         ('7zExternalLhaUnicode', 'test_list_contents'),
         ('7zExternalLhaUnicode', 'test_iter_extract'),
         ('7zExternalLhaUnicode', 'test_extract'),
-        # Unicode not supported by the tar executable we used.
-        ('TarBzip2SolidUnicode', 'test_iter_contents'),
-        ('TarBzip2SolidUnicode', 'test_list_contents'),
-        ('TarBzip2SolidUnicode', 'test_iter_extract'),
-        ('TarBzip2SolidUnicode', 'test_extract'),
-        ('TarGzipSolidUnicode', 'test_iter_contents'),
-        ('TarGzipSolidUnicode', 'test_list_contents'),
-        ('TarGzipSolidUnicode', 'test_iter_extract'),
-        ('TarGzipSolidUnicode', 'test_extract'),
-        ('TarSolidUnicode', 'test_iter_contents'),
-        ('TarSolidUnicode', 'test_list_contents'),
-        ('TarSolidUnicode', 'test_iter_extract'),
-        ('TarSolidUnicode', 'test_extract'),
-        # Idem with unzip...
-        ('ZipExternalUnicode', 'test_iter_contents'),
-        ('ZipExternalUnicode', 'test_list_contents'),
-        ('ZipExternalUnicode', 'test_iter_extract'),
-        ('ZipExternalUnicode', 'test_extract'),
-        # ...and unrar!
+        # Unicode not supported by unrar.
         ('RarExternalUnicode', 'test_iter_contents'),
         ('RarExternalUnicode', 'test_list_contents'),
         ('RarExternalUnicode', 'test_iter_extract'),
@@ -1292,6 +1285,8 @@ class ExternalRarLocaleTest(MComixTest):
 
     @unittest.skipUnless(zip_external.ZipArchive.is_available(),
                          'unzip is not installed')
+    @unittest.skipIf(sys.platform == 'win32',
+                     "the unzip found there is MSYS2's, with no C.UTF-8")
     def test_unzip_names_are_listed_and_extracted_under_the_c_locale(self):
         """unzip is locale-bound the same way: under C it wrote each
         letter outside ASCII as #U followed by its code."""

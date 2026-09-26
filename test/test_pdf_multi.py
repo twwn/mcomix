@@ -18,7 +18,7 @@ from PIL import features
 from mcomix.archive import pdf_multi
 from mcomix.preferences import prefs
 
-from . import MComixTest
+from . import MComixTest, posix_byte_names
 
 
 PYPROJECT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(mcomix.__file__))),
@@ -382,6 +382,7 @@ class FitzArchiveTest(MComixTest):
         self.assertIsInstance(count, int)
         self.assertEqual(1, count)
 
+    @posix_byte_names
     def test_a_pdf_whose_path_is_not_utf_8_opens(self):
         """PyMuPDF takes a file name only as UTF-8 text, and a name on
         disk need not be: a PDF in a folder named in Latin-1 raised

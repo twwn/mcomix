@@ -5,7 +5,7 @@ import tempfile
 import shutil
 import os
 
-from . import get_testfile_path
+from . import get_testfile_path, posix_byte_names
 
 from mcomix import constants
 from mcomix.library import backend
@@ -292,6 +292,7 @@ class WatchListEntryTest(unittest.TestCase):
         finally:
             shutil.rmtree(tmpdir)
 
+    @posix_byte_names
     def test_a_file_the_library_cannot_hold_is_not_new(self):
         """A name that is not UTF-8 cannot be stored (b54fa3ed), so it
         was found new at every scan, and the library said each time that
@@ -350,6 +351,7 @@ class WatchListTest(unittest.TestCase):
             entry = self.library.watchlist.get_watchlist_entry('comics')
         self.assertEqual(self.watched, entry.directory)
 
+    @posix_byte_names
     def test_a_directory_the_library_cannot_hold_is_not_watched(self):
         """Its path would be a watch list row, which is UTF-8 text:
         adding it raised UnicodeEncodeError out of the watch list

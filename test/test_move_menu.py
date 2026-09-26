@@ -7,7 +7,7 @@ import unittest
 
 from gi.repository import GLib, Gtk
 
-from . import MComixTest, pump, wait_for
+from . import MComixTest, posix_byte_names, pump, wait_for
 
 from mcomix import bookmark_backend
 from mcomix import callback
@@ -196,6 +196,7 @@ class MoveToMenuTest(MComixTest):
              ('Opened before', [os.path.join(self.tmp_dir, 'opened')]),
              (None, ['Other folder...'])])
 
+    @posix_byte_names
     def test_a_directory_whose_name_is_not_utf_8_is_offered_all_the_same(self):
         """A GVariant string and a menu label must both be UTF-8, and a
         directory name on disk need not be: a Latin-1 one raised
