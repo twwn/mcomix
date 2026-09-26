@@ -8,7 +8,9 @@ that reads it here.
 """
 
 import os
+import pathlib
 import shutil
+import subprocess
 import sys
 import unittest.mock
 
@@ -104,3 +106,39 @@ class SpecDataTest(MComixTest):
 
 
 # vim: expandtab:sw=4:ts=4
+
+
+class ChocolateyPackageTest(MComixTest):
+
+    """What win32/build_msi.py leaves beside chocolateyinstall.ps1, and
+    the installer the script then downloads."""
+
+    def test_the_release_is_recorded_as_it_is_named(self):
+        path = pathlib.Path(self.tmp_dir) / 'release.txt'
+        with unittest.mock.patch.object(build_msi, 'RELEASE_PATH', path):
+            build_msi.write_release('26.09')
+        self.assertEqual('26.09\n', path.read_text())
+
+    @unittest.skipUnless(shutil.which('pwsh'), 'PowerShell is not installed')
+    def test_the_script_downloads_the_release_not_the_package_version(self):
+        """Chocolatey gives the package's version back as a number, 26.9.0
+        for 26.09; the release and its installer are named 26.09."""
+        tools = pathlib.Path(self.tmp_dir)
+        shutil.copy(pathlib.Path(__file__).parent.parent / 'win32' / 'tools'
+                    / 'chocolateyinstall.ps1', tools)
+        (tools / 'checksum.sha256').write_text('abc\n')
+        (tools / 'release.txt').write_text('26.09\n')
+        (tools / 'run.ps1').write_text(
+            'function Install-ChocolateyPackage {'
+            ' param([Parameter(ValueFromRemainingArguments)]$a) }\n'
+            "$env:ChocolateyPackageName = 'mcomix-gtk'\n"
+            "$env:ChocolateyPackageVersion = '26.9.0'\n"
+            '. "$PSScriptRoot/chocolateyinstall.ps1"\n'
+            '$packageArgs.url64bit\n')
+        result = subprocess.run(
+            ['pwsh', '-NoProfile', '-File', str(tools / 'run.ps1')],
+            capture_output=True, text=True, timeout=60)
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertEqual(
+            'https://github.com/twwn/mcomix/releases/download/26.09/'
+            'mcomix-win64-26.09.msi', result.stdout.strip())

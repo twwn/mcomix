@@ -24,6 +24,12 @@ MAX_ID_LENGTH = 72
 # describes one build of one version, and is wrong for every other.
 CHECKSUM_PATH = pathlib.Path("win32/tools/checksum.sha256")
 
+# And the version the installer was released as, which names the release
+# and the installer the script downloads.  The package's own version
+# will not do: Chocolatey reads 26.09 as a number and gives it back as
+# 26.9.0, which names neither.
+RELEASE_PATH = pathlib.Path("win32/tools/release.txt")
+
 
 class IdType(enum.Enum):
     Directory = 1
@@ -281,6 +287,12 @@ def write_checksum(msi_path: pathlib.PurePath) -> str:
     return checksum
 
 
+def write_release(version: str) -> None:
+    """Record <version>, as the release is named, for the choco package."""
+    RELEASE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    RELEASE_PATH.write_text(version + "\n")
+
+
 def main() -> None:
     spec_path = pathlib.Path("win32/msi/mcomix.wxs")
     win32_builddir = pathlib.Path("dist/MComix")
@@ -310,8 +322,9 @@ def main() -> None:
     )
 
     checksum = write_checksum(msi_path)
+    write_release(VERSION)
     print(f"{msi_path}: sha256 {checksum}")
-    print(f"Written to {CHECKSUM_PATH} for the chocolatey package.")
+    print(f"Written to {CHECKSUM_PATH} and {RELEASE_PATH} for the chocolatey package.")
 
 
 if __name__ == "__main__":

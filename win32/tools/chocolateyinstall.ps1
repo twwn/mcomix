@@ -1,19 +1,21 @@
 ﻿$ErrorActionPreference = 'Stop'
 
 $packageName = $env:ChocolateyPackageName
-$packageVersion = $env:ChocolateyPackageVersion
-# MComix is numbered by year and month, as 26.10, and Chocolatey may
-# give the package's version as 26.10.0; the release and the installer
-# are named without the third number.
-$releaseVersion = $packageVersion -replace '^(\d+\.\d+)\.0$', '$1'
 
-# The checksum belongs to one build of one version, so it is not kept in
-# the source tree: win32/build_msi.py writes it beside this script when
-# it builds the installer named below, and `choco pack` ships it.
+# The checksum and the release belong to one build of one version, so
+# they are not kept in the source tree: win32/build_msi.py writes both
+# beside this script when it builds the installer named below, and
+# `choco pack` ships them.  The release is read from there rather than
+# from the package's version, which Chocolatey gives back as a number:
+# 26.9.0 for the release 26.09.
 $checksumPath = Join-Path $PSScriptRoot 'checksum.sha256'
-if (-not (Test-Path $checksumPath)) {
-  throw "Missing $checksumPath - run win32\build_msi.py before packing."
+$releasePath = Join-Path $PSScriptRoot 'release.txt'
+foreach ($path in $checksumPath, $releasePath) {
+  if (-not (Test-Path $path)) {
+    throw "Missing $path - run win32\build_msi.py before packing."
+  }
 }
+$releaseVersion = (Get-Content $releasePath -Raw).Trim()
 
 $packageArgs = @{
   packageName   = $packageName

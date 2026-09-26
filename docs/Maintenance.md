@@ -66,7 +66,7 @@ In a MINGW64 shell in MComix' root directory, build `dist/MComix` and `dist/mcom
 python win32/build_pyinstaller.py
 ```
 
-Then, in a regular Windows console with the [WiX Toolset](https://wixtoolset.org/docs/wix3/) version 3 on the `PATH`, build `dist/mcomix-win64-<version>.msi`. This also writes the installer's SHA-256 to `win32/tools/checksum.sha256`, and prints it.
+Then, in a regular Windows console with the [WiX Toolset](https://wixtoolset.org/docs/wix3/) version 3 on the `PATH`, build `dist/mcomix-win64-<version>.msi`. This also writes the installer's SHA-256 to `win32/tools/checksum.sha256`, and prints it, and the version to `win32/tools/release.txt`.
 
 ```bash
 python win32/build_msi.py
@@ -75,7 +75,7 @@ python win32/build_msi.py
 Building the Chocolatey package
 -------------------------------
 
-The Chocolatey package does not carry MComix: it downloads the MSI installer from the GitHub release and checks it against the checksum in `win32/tools/checksum.sha256`. So publish the release first, and pack the checksum file written by the build of that same installer. The file is deliberately not kept in Git, since it describes one build of one version. With the [Chocolatey CLI](https://chocolatey.org/install), in MComix' root directory:
+The Chocolatey package does not carry MComix: it downloads the MSI installer from the GitHub release and checks it against the checksum in `win32/tools/checksum.sha256`. So publish the release first, and pack the checksum and release files written by the build of that same installer. They are deliberately not kept in Git, since they describe one build of one version; the release file is there because Chocolatey reads a version as a number, and gives 26.09 back as 26.9.0. With the [Chocolatey CLI](https://chocolatey.org/install), in MComix' root directory:
 
 ```bash
 choco pack win32/mcomix.nuspec --version <version> --out dist
