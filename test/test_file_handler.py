@@ -3,6 +3,7 @@
 import os
 import pickle
 import shutil
+import sys
 import threading
 import unittest
 import zipfile
@@ -120,6 +121,8 @@ class DirectoryWalkTest(MComixTest):
         self.assertTrue(self.handler.open_previous_directory())
         self.assertEqual(os.path.join(self.root, 'a'), self._opened_file())
 
+    @unittest.skipIf(sys.platform == 'win32',
+                     'Windows deletes no archive MComix holds open')
     def test_an_archive_gone_from_its_directory_is_not_walked_from(self):
         """Its place among the others cannot be told once it is not
         listed, so neither the next nor the previous archive opens."""

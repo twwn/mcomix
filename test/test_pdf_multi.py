@@ -184,7 +184,11 @@ class FitzWorkerTest(MComixTest):
     def _worker(self, **kwargs):
         from mcomix.archive.native_pdf.child import FitzWorker
         _make_pdf(self.pdf, **kwargs)
-        return FitzWorker(self.pdf)
+        worker = FitzWorker(self.pdf)
+        # The document stays open until it is closed or collected, and
+        # Windows removes no file that is open.
+        self.addCleanup(worker.doc.close)
+        return worker
 
     def test_a_scanned_page_is_listed_for_extraction(self):
         names = list(self._worker().iter_contents())
