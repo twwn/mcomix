@@ -99,16 +99,16 @@ def bin_search(lst: "list[Comparable]", value: Comparable) -> int:
 
 
 def get_home_directory() -> str:
-    """The directory MComix treats as the user's own.
+    """The user's home directory: /home/username, or the profile folder
+    on Windows.
 
-    The home directory itself on UNIX-like systems, e.g. /home/username.
-    On Windows it is an MComix directory inside the user's profile,
-    since Windows has no convention of dotfiles in the profile root.
+    Where the file choosers open and save by default, and what a path
+    in the "Move to" menu is written as "~" under.  On Windows this was
+    the MComix folder in the profile, which held MComix' settings until
+    they moved to %APPDATA% (preferences.migrate_home_config_path() moves
+    it there), and was left naming a folder that is no longer there.
     """
-    if sys.platform == 'win32':
-        return os.path.join(os.path.expanduser('~'), 'MComix')
-    else:
-        return os.path.expanduser('~')
+    return os.path.expanduser('~')
 
 
 def _xdg_base(variable: str, default: str) -> str:

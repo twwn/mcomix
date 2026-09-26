@@ -231,7 +231,10 @@ class TestWindowsDirectories(unittest.TestCase):
             self.assertEqual(
                 os.path.join(roaming, 'MComix', '.thumbnails', 'normal'),
                 tools.get_thumbnail_directory())
-            self.assertEqual(os.path.join(os.path.expanduser('~'), 'MComix'),
+            # The profile itself, where the choosers open: the MComix
+            # folder in it is where the settings were before %APPDATA%,
+            # and is moved away at the first start.
+            self.assertEqual(os.path.expanduser('~'),
                              tools.get_home_directory())
 
 
