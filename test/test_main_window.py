@@ -463,6 +463,32 @@ class MainWindowTest(MComixTest):
         # resize to redraw it.
         drawn.assert_called_once_with()
 
+    def _bars_shown(self, fullscreen):
+        """Which of the menu bar, the status bar and the tool bar the
+        window shows, in fullscreen or out of it."""
+        with unittest.mock.patch.object(type(self.window), 'is_fullscreen',
+                                        return_value=fullscreen):
+            self.window._update_toggles_visibility()
+        return {'menubar': self.window.menubar.get_visible(),
+                'statusbar': self.window.statusbar.get_visible(),
+                'toolbar': self.window.toolbar.get_visible()}
+
+    def test_in_fullscreen_the_bars_follow_hide_all_in_fullscreen(self):
+        """"Hide all" is the answer outside fullscreen only; inside
+        it, "hide all in fullscreen" is."""
+        for preference in ('show menubar', 'show statusbar', 'show toolbar'):
+            prefs[preference] = True
+        shown = {'menubar': True, 'statusbar': True, 'toolbar': True}
+        hidden = {'menubar': False, 'statusbar': False, 'toolbar': False}
+        prefs['hide all'] = True
+        prefs['hide all in fullscreen'] = False
+        self.assertEqual(hidden, self._bars_shown(False))
+        self.assertEqual(shown, self._bars_shown(True))
+        prefs['hide all'] = False
+        prefs['hide all in fullscreen'] = True
+        self.assertEqual(shown, self._bars_shown(False))
+        self.assertEqual(hidden, self._bars_shown(True))
+
     def test_going_back_to_a_new_size_leaves_the_redraw_to_the_resize(self):
         self._state_changes_to(True)
         with unittest.mock.patch.object(
@@ -1698,6 +1724,43 @@ class MainWindowTest(MComixTest):
                              'the previous book was opened without a word')
         finally:
             self._close_prompts()
+
+    def test_which_book_or_folder_comes_next_follows_the_two_preferences(self):
+        """Past either end of a book: the next archive in the folder if
+        "auto open next archive" is set, and failing that the next
+        folder if "auto open next directory" is - but from an archive
+        only when both are set, so that archives alone do not lead out
+        of their folder."""
+        for (archive_open, next_archive, next_folder, found_archive,
+             archive_tried, folder_tried) in (
+                (True, True, True, True, True, False),
+                (True, True, True, False, True, True),
+                (True, False, True, False, False, False),
+                (False, False, True, False, False, True),
+                (False, True, False, False, True, False)):
+            prefs['auto open next archive'] = next_archive
+            prefs['auto open next directory'] = next_folder
+            for method, archive_step, folder_step in (
+                    ('_open_next_book', 'open_next_archive',
+                     'open_next_directory'),
+                    ('_open_previous_book', 'open_previous_archive',
+                     'open_previous_directory')):
+                with self.subTest(archive_open=archive_open,
+                                  next_archive=next_archive,
+                                  next_folder=next_folder,
+                                  found_archive=found_archive,
+                                  method=method), \
+                        unittest.mock.patch.object(
+                            self.window.filehandler, 'archive_type',
+                            'zip' if archive_open else None), \
+                        unittest.mock.patch.object(
+                            self.window.filehandler, archive_step,
+                            return_value=found_archive) as archive, \
+                        unittest.mock.patch.object(
+                            self.window.filehandler, folder_step) as folder:
+                    getattr(self.window, method)()
+                    self.assertEqual(archive_tried, archive.called)
+                    self.assertEqual(folder_tried, folder.called)
 
     def test_turning_past_the_end_into_a_folder_offers_to_write_first(self):
         """With no archive after it, turning past the end walks on to
