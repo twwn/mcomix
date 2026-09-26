@@ -1506,6 +1506,14 @@ class DuplicateCollectionTest(LibraryDatabaseTest):
         self.assertEqual(self.library.get_books_in_collection(self.collection),
                          self.library.get_books_in_collection(copy.id))
 
+    def test_a_second_copy_takes_a_name_of_its_own(self):
+        """A collection's name is unique in the library, and the first
+        copy has taken "Shelf (Copy)"."""
+        self.assertTrue(self.library.duplicate_collection(self.collection))
+        self.assertTrue(self.library.duplicate_collection(self.collection))
+        self.assertIsNotNone(
+            self.library.get_collection_by_name('Shelf (Copy) (Copy)'))
+
     def _book_in(self, name, collection):
         """File a book called <name> in <collection>, and answer its id."""
         self.library._con.execute(
