@@ -279,10 +279,17 @@ class MComixTest(unittest.TestCase):
         # the next chooser opens on and starts to preview: a test that
         # chose the test archive left every later chooser on the worker
         # selecting it, and whatever the preview found out about it
-        # arriving in the middle of the next test.
+        # arriving in the middle of the next test.  It is written on the
+        # class of the chooser that was answered, so every subclass
+        # holds its own.
         chooser = sys.modules.get('mcomix.file_chooser_base_dialog')
         if chooser is not None:
-            chooser._BaseFileChooserDialog._last_activated_file = None
+            classes = [chooser._BaseFileChooserDialog]
+            while classes:
+                cls = classes.pop()
+                if '_last_activated_file' in vars(cls):
+                    cls._last_activated_file = None
+                classes.extend(cls.__subclasses__())
         # Change storage directories.
         home_dir = os.path.join(self.tmp_dir, 'home')
         os.mkdir(home_dir)
