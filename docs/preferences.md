@@ -68,7 +68,7 @@ Option | Explanation
 -------|------------
 Sort files and directories by | Order of files in a directory: "No sorting", "File name", "File name (GLib)", "File size" or "Last modified", and direction. Not the order inside an archive. A change reopens the book in the new order, at the same picture.
 Sort archives by | Order of files inside an archive, and direction. "Natural order" reads numbers: Page1, Page3, Page20. "Literal order" compares characters: Page1, Page20, Page3. "GLib order" sorts as many GTK programs do. A change reopens the archive in the new order, at the same picture.
-Maximum number of concurrent extraction threads | For formats more than one thread can unpack. 1 by default.
+Maximum number of concurrent extraction threads | For formats more than one thread can unpack: ZIP, PDF, and those unpacked by an outside program, such as 7z. 4 by default.
 Maximum number of concurrent thumbnail threads | Read at start. 3 by default.
 Store thumbnails for opened files | In the freedesktop.org thumbnail directory that file managers and other programs share.
 Maximum number of pages to store in the cache | 7 by default. -1 caches the whole book; a large number can run MComix out of memory.

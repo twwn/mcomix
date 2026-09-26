@@ -254,6 +254,27 @@ class MigratePreferencesTest(MComixTest):
                     preferences.read_preferences_file()
                     self.assertIs(kept, prefs['store recent file info'])
 
+    def test_the_old_default_of_one_extraction_thread_gives_way(self) -> None:
+        """One thread was the default before format 4, and MComix 3
+        wrote it into every file; any other number is an answer."""
+        for version in (None, 3):
+            for stored, read in ((1, 4), (2, 2), (8, 8)):
+                with self.subTest(version=version, stored=stored):
+                    saved = {'max extract threads': stored}
+                    if version is not None:
+                        saved[preferences._FORMAT_VERSION_KEY] = version
+                    self._write(saved)
+                    # What the last round read is not the default.
+                    prefs['max extract threads'] = 4
+                    preferences.read_preferences_file()
+                    self.assertEqual(read, prefs['max extract threads'])
+
+    def test_one_extraction_thread_chosen_since_is_kept(self) -> None:
+        self._write({preferences._FORMAT_VERSION_KEY: 4,
+                     'max extract threads': 1})
+        preferences.read_preferences_file()
+        self.assertEqual(1, prefs['max extract threads'])
+
     def test_a_version_that_is_not_a_number_is_taken_as_the_oldest(self) -> None:
         """The version comes out of the file like everything else in it,
         so it can be anything a hand edit or a half-written file left

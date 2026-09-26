@@ -24,7 +24,7 @@ from mcomix import tools
 #:      under "delete-opened-file", where the name used to be misspelt.
 #:   3: "store recent file info" is True or False, where MComix before
 #:      2012 stored 0 (nothing), 1 (the file) or 2 (the file and page).
-CONFIG_FORMAT_VERSION = 3
+CONFIG_FORMAT_VERSION = 4
 
 #: The key the version above is stored under.  It lives among the
 #: preferences rather than wrapping them, so the file stays a flat mapping.
@@ -269,7 +269,7 @@ _DEFAULTS: Preferences = {
                          | constants.STATUS_PATH | constants.STATUS_FILENAME
                          | constants.STATUS_FILESIZE),
     'max threads': 3,
-    'max extract threads': 1,
+    'max extract threads': 4,
     'scaling quality': 2,  # GdkPixbuf.InterpType.BILINEAR
     'escape quits': False,
     'fit to size width wide': 3790,
@@ -477,6 +477,15 @@ def _migrate_preferences(saved_prefs: dict[str, object]) -> None:
         stored = saved_prefs.get('store recent file info')
         if isinstance(stored, int) and not isinstance(stored, bool):
             saved_prefs['store recent file info'] = stored != 0
+
+    if version < 4:
+        # One was the default until format 4, and MComix 3 wrote every
+        # preference into the file, default or not: a 1 there is nearly
+        # always that default carried forward rather than an answer, and
+        # left as it was it kept every archive to the single extraction
+        # thread the new default was raised to get past.
+        if saved_prefs.get('max extract threads') == 1:
+            del saved_prefs['max extract threads']
 
     saved_prefs[_FORMAT_VERSION_KEY] = CONFIG_FORMAT_VERSION
 
