@@ -75,6 +75,28 @@ class MergeTest(MComixTest):
         self.assertEqual([bookmark._page
                           for bookmark in self.store.get_bookmarks()], [1])
 
+    def test_a_write_by_another_instance_in_the_same_second_is_merged(self):
+        """The file's time was compared in whole seconds, and a later
+        one wanted: another instance writing within the second of this
+        one's own write went unseen, and this one's next write put the
+        file back without the other's bookmark."""
+        self.store._bookmarks = [self._bookmark(1)]
+        self.store.write_bookmarks_file()
+        ours = os.stat(constants.BOOKMARK_PICKLE_PATH).st_mtime_ns
+        self._write_pickle([self._bookmark(1), self._bookmark(2)])
+        # The other write, a moment later within the same second.
+        second = ours // 10**9 * 10**9
+        theirs = second + (ours - second + 10**9 // 2) % 10**9
+        if theirs == ours:
+            theirs += 1
+        os.utime(constants.BOOKMARK_PICKLE_PATH, ns=(theirs, theirs))
+
+        self.store._bookmarks.append(self._bookmark(3))
+        self.store.write_bookmarks_file()
+
+        self.assertEqual([1, 3, 2], [bookmark._page
+                                     for bookmark in self.store._bookmarks])
+
     def test_clearing_writes_the_store_once(self):
         """Removing them one at a time re-pickled and fsynced the whole
         store for every bookmark."""

@@ -4,7 +4,6 @@ import os
 import pickle
 import operator
 import datetime
-import time
 
 from gi.repository import Gtk
 
@@ -45,7 +44,8 @@ class _BookmarksStore:
 
         #: List of bookmarks
         self._bookmarks = bookmarks
-        #: Modification date of bookmarks file
+        #: Modification time of the bookmarks file, in nanoseconds, as
+        #: it was when this instance last read or wrote it
         self._bookmarks_mtime = mtime
 
     def initialize(self, window: 'main.MainWindow') -> None:
@@ -233,8 +233,8 @@ class _BookmarksStore:
     def load_bookmarks(self) -> tuple[list[bookmark_menu_item._Bookmark], int]:
         """Read the stored bookmarks, and return them with the file's mtime.
 
-        The mtime comes back with them because that is what
-        file_was_modified() compares against later to tell another
+        The mtime comes back with them, in nanoseconds, because that is
+        what file_was_modified() compares against later to tell another
         instance's write from this one's own.
 
         A file that is not there, or one that cannot be unpickled, gives
@@ -248,7 +248,7 @@ class _BookmarksStore:
 
         if os.path.isfile(path):
             try:
-                mtime = int(os.stat(path).st_mtime)
+                mtime = os.stat(path).st_mtime_ns
                 with open(path, 'rb') as fd:
                     pickle.load(fd)  # Version record, no longer used.
                     packs = pickle.load(fd)
@@ -294,10 +294,14 @@ class _BookmarksStore:
         if not os.path.isfile(path):
             return False
         try:
-            mtime = int(os.stat(path).st_mtime)
+            mtime = os.stat(path).st_mtime_ns
         except OSError:
             mtime = 0
-        return mtime > self._bookmarks_mtime
+        # Compared whole, and for any difference rather than for a later
+        # time: in whole seconds, as it was, a write by another instance
+        # within the second of this one's own went unseen, and the next
+        # write here put the file back without what it had added.
+        return mtime != self._bookmarks_mtime
 
     def write_bookmarks_file(self, merge: bool = True) -> None:
         """Store relevant bookmark info in the mcomix directory.
@@ -330,7 +334,13 @@ class _BookmarksStore:
                          for bookmark in self._bookmarks],
                         fd, pickle.HIGHEST_PROTOCOL)
 
-        self._bookmarks_mtime = int(time.time())
+        # The file's own time rather than the clock's, which is what the
+        # next file_was_modified() compares with.
+        try:
+            self._bookmarks_mtime = os.stat(
+                constants.BOOKMARK_PICKLE_PATH).st_mtime_ns
+        except OSError:
+            self._bookmarks_mtime = 0
 
     def show_replace_bookmark_dialog(self,
                                      old_bookmarks: list[bookmark_menu_item._Bookmark],
