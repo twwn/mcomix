@@ -175,3 +175,78 @@ class SkipBrokenPagesTest(MComixTest):
         self._open(first)
         self.assertEqual(2, self._turn(self.window.last_page))
         self.assertEqual(first, self.window.filehandler.get_path_to_base())
+
+
+class SkipBrokenPagesInTheSidebarTest(MComixTest):
+    """The thumbnail sidebar leaves out the pages the reader skips."""
+
+    def setUp(self):
+        super().setUp()
+        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
+                          constants.THUMBNAIL_PATH):
+            os.makedirs(directory, exist_ok=True)
+        prefs['skip broken pages'] = True
+        prefs['default double page'] = False
+        prefs['show thumbnails'] = True
+        icons.load_icons()
+        self.window = main.MainWindow()
+        main.set_main_window(self.window)
+        self.sidebar = self.window.thumbnailsidebar
+        pump()
+
+    def tearDown(self):
+        self.window.terminate_program()
+        self.window.destroy()
+        main.set_main_window(None)
+        pump()
+        super().tearDown()
+
+    _book = SkipBrokenPagesTest._book
+    _settled = SkipBrokenPagesTest._settled
+
+    def _open(self, pages):
+        """Open a book of <pages>, as _book() spells them, once every
+        thumbnail on screen has been made."""
+        self.window.filehandler.open_file(self._book(pages)[0])
+        self.assertTrue(wait_for(
+            lambda: self.window.filehandler.file_loaded
+            and self.window.imagehandler.get_number_of_pages() > 0))
+        self.sidebar.load_thumbnails()
+        self.assertTrue(wait_for(lambda: all(
+            item.thumbnail is not None
+            for item in self.sidebar._list.store)))
+        return self._settled()
+
+    def _rows(self):
+        return [item.uid for item in self.sidebar._list.each_item()]
+
+    def test_a_page_that_will_not_load_has_no_row(self):
+        self._open('oxxo')
+        self.assertEqual([1, 4], self._rows())
+
+    def test_without_the_preference_every_page_has_its_row(self):
+        prefs['skip broken pages'] = False
+        self._open('oxxo')
+        self.assertEqual([1, 2, 3, 4], self._rows())
+
+    def test_turning_the_preference_on_or_off_lists_them_again(self):
+        self._open('oxxo')
+        prefs['skip broken pages'] = False
+        self.sidebar.refilter()
+        self.assertEqual([1, 2, 3, 4], self._rows())
+        prefs['skip broken pages'] = True
+        self.sidebar.refilter()
+        self.assertEqual([1, 4], self._rows())
+
+    def test_the_row_selected_is_the_page_being_read(self):
+        self.assertEqual(1, self._open('oxxo'))
+        self.window.flip_page(1)
+        self.assertEqual(4, self._settled())
+        row = self.sidebar._list.get_selected_row()
+        self.assertEqual((1, 4), (row, self.sidebar._list.page_at(row)))
+
+    def test_a_row_turns_to_its_own_page(self):
+        self._open('oxoxo')
+        self.assertEqual([1, 3, 5], self._rows())
+        self.sidebar._row_activated(self.sidebar._list, 2)
+        self.assertEqual(5, self._settled())

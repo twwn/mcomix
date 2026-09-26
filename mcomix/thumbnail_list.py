@@ -8,6 +8,7 @@ from mcomix.preferences import prefs
 from mcomix.worker_thread import WorkerThread
 
 from collections.abc import Callable, Iterable, Iterator, Sequence
+import bisect
 import weakref
 from typing import Any, cast
 
@@ -118,7 +119,7 @@ class _ThumbnailViewBase(widgets.Releasable):
     #: Built by the view classes below, which know which kind of
     #: selection they want.  <store> holds the entries; <model> is what
     #: the view shows, which is the store itself unless something sorts
-    #: it; <selection> wraps <model>.
+    #: or filters it; <selection> wraps <model>.
     store: "Gio.ListStore[ThumbnailItem]"
     model: "Gio.ListModel[ThumbnailItem]"
     selection: Gtk.SelectionModel
@@ -405,9 +406,13 @@ class ThumbnailListView(Gtk.ListView, _ThumbnailViewBase):
 
     def __init__(self) -> None:
         self.store = Gio.ListStore.new(ThumbnailItem)
+        #: Replaced by whoever decides that a page is not to be listed.
+        self.is_hidden: "Callable[[int], bool] | None" = None
         # Nothing sorts the pages: they are shown in the order they are
-        # held.
-        self.model = self.store
+        # held, less those is_hidden() leaves out.
+        self._filter = Gtk.CustomFilter.new(self._is_shown)
+        self.model = Gtk.FilterListModel(model=self.store,
+                                         filter=self._filter)
         self.selection = Gtk.SingleSelection(model=self.model)
         # A page is selected because the viewer moved to it, so the list
         # must be able to start with nothing selected and to follow the
@@ -418,8 +423,33 @@ class ThumbnailListView(Gtk.ListView, _ThumbnailViewBase):
         super().__init__(model=self.selection, factory=self._make_factory())
 
     def set_pages(self, uids: Iterable[int]) -> None:
-        """Show one row per page number in <uids>."""
+        """Show one row per page number in <uids>, which ascend."""
         self.set_items(ThumbnailItem(uid, label=str(uid)) for uid in uids)
+
+    def _is_shown(self, item: GObject.Object) -> bool:
+        uid = cast(ThumbnailItem, item).uid
+        return self.is_hidden is None or not self.is_hidden(uid)
+
+    def refilter(self) -> None:
+        """Ask is_hidden() again about every page, after its answer
+        has changed."""
+        self._filter.changed(Gtk.FilterChange.DIFFERENT)
+
+    def row_of(self, uid: int) -> int | None:
+        """The row page <uid> is shown in, or None where it is not."""
+        rows = self.model.get_n_items()
+        row = bisect.bisect_left(
+            range(rows), uid,
+            key=lambda position: cast(ThumbnailItem,
+                                      self.model.get_item(position)).uid)
+        if row < rows and self.page_at(row) == uid:
+            return row
+        return None
+
+    def page_at(self, row: int) -> int | None:
+        """The page shown in <row>, or None if there is no such row."""
+        item = self.get_item(row)
+        return None if item is None else cast(int, item.uid)
 
     def set_page_numbers_visible(self, visible: bool, digits: int = 0) -> None:
         """Show or hide the page number beside each thumbnail."""
@@ -432,9 +462,13 @@ class ThumbnailListView(Gtk.ListView, _ThumbnailViewBase):
             return 0
         return position
 
-    def select_row(self, row: int, scroll: bool = True) -> None:
-        """Select <row>, scrolling it into view unless told not to."""
-        if not 0 <= row < self.store.get_n_items():
+    def select_row(self, row: int | None, scroll: bool = True) -> None:
+        """Select <row>, scrolling it into view unless told not to;
+        None selects nothing."""
+        if row is None:
+            self.selection.set_selected(Gtk.INVALID_LIST_POSITION)
+            return
+        if not 0 <= row < self.model.get_n_items():
             return
         self.selection.set_selected(row)
         if scroll:

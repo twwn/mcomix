@@ -1,6 +1,6 @@
 """thumbbar.py - Thumbnail sidebar for main window."""
 
-from gi.repository import Gdk, Gio, Gtk
+from gi.repository import Gdk, Gio, GLib, Gtk
 
 from mcomix.preferences import prefs
 
@@ -30,8 +30,11 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
         self._window = window
         #: Thumbnail load status
         self._loaded = False
-        #: Selected row in the list
-        self._currently_selected_row = 0
+        #: The page being read, whose row is the one selected
+        self._selected_page = 1
+        #: The files behind the pages whose thumbnails would not load,
+        #: which "skip broken pages" leaves out of the list
+        self._broken: set[str] = set()
 
         self.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.ALWAYS)
         # Setting step and page increments here has no effect: the
@@ -45,6 +48,7 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
         self._list = thumbnail_list.ThumbnailListView()
         self._list.generate_thumbnail = self._generate_thumbnail
         self._list.style_cell = self._style_cell
+        self._list.is_hidden = self._is_hidden
         self._list.set_thumbnail_size(self._pixbuf_size)
         self._list.set_can_focus(False)
         self._list.connect('activate', self._row_activated)
@@ -84,6 +88,7 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
 
         self._window.page_changed += self._on_page_change
         self._window.imagehandler.page_available += self._on_page_available
+        self._window.filehandler.file_closed += self._forget_broken
 
     def toggle_page_numbers_visible(self) -> None:
         """ Enables or disables page numbers on the thumbnail bar. """
@@ -124,15 +129,44 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
 
         self._loaded = False
         self._list.clear()
-        self._currently_selected_row = 0
+        self._selected_page = 1
+
+    def _is_hidden(self, page: int) -> bool:
+        """Whether <page> is left out of the list: a page that would not
+        load, where the reader has asked to skip those."""
+        if not prefs['skip broken pages']:
+            return False
+        path = self._window.imagehandler.get_path_to_page(page)
+        return path is not None and path in self._broken
+
+    def refilter(self) -> None:
+        """List or leave out the pages that would not load again, after
+        "skip broken pages" has changed."""
+        self._list.refilter()
+        self._select_page(self._selected_page, scroll=False)
+
+    def _forget_broken(self) -> None:
+        """Forget the pages that would not load, with the book they
+        were in."""
+        self._broken.clear()
+
+    def _found_broken(self, path: str) -> bool:
+        """Leave the page behind <path> out, now that its thumbnail has
+        turned out to be the picture of one that would not load."""
+        if path not in self._broken:
+            self._broken.add(path)
+            if prefs['skip broken pages']:
+                self.refilter()
+        return GLib.SOURCE_REMOVE
 
     def _style_cell(self, picture: Gtk.Picture, row: int) -> None:
         """Outline the thumbnail of a page picked out or marked to swap,
         as the main view outlines the page itself."""
-        page = row + 1
+        page = self._list.page_at(row)
         for css_class, marked in (
                 (theme.PICKED_OUT_CLASS, page in self._window.selected_pages),
-                (theme.MARKED_CLASS, page == self._window.swap_page)):
+                (theme.MARKED_CLASS,
+                 page is not None and page == self._window.swap_page)):
             if marked:
                 picture.add_css_class(css_class)
             else:
@@ -205,7 +239,7 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
         # changes.  Selecting row 0 there highlighted page 1 and
         # scrolled away from the page being read.
         page = self._window.imagehandler.get_current_page()
-        self._set_selected_row(max(page - 1, 0))
+        self._select_page(max(page, 1))
 
     def _generate_thumbnail(self, uid: int) -> "GdkPixbuf.Pixbuf | None":
         """The thumbnail for page <uid>, made on the list's worker thread.
@@ -220,32 +254,41 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
         size = self._thumbnail_size
         pixbuf = self._window.imagehandler.get_thumbnail(page, size, size,
                                                          nowait=True)
+        if pixbuf is not None and image_tools.is_missing_image(pixbuf):
+            path = self._window.imagehandler.get_path_to_page(page)
+            if path is not None:
+                GLib.idle_add(self._found_broken, path)
         if pixbuf is not None:
             pixbuf = self._window.enhancer.enhance(pixbuf)
             pixbuf = image_tools.add_border(pixbuf, self._BORDER_SIZE)
 
         return pixbuf
 
-    def _set_selected_row(self, row: int, scroll: bool = True) -> None:
-        """Set currently selected row.
+    def _select_page(self, page: int, scroll: bool = True) -> None:
+        """Select the row of <page>, the page being read.
         If <scroll> is True, the list is automatically
-        scrolled to ensure the selected row is visible.
+        scrolled to ensure the selected row is visible.  A page left out
+        of the list leaves no row selected.
         """
-        self._currently_selected_row = row
-        self._list.select_row(row, scroll=self._loaded and scroll)
+        self._selected_page = page
+        self._list.select_row(self._list.row_of(page),
+                              scroll=self._loaded and scroll)
 
-    def _get_selected_row(self) -> int:
-        """Return the index of the currently selected row."""
-        return self._list.get_selected_row()
+    def _get_selected_page(self) -> int | None:
+        """The page in the row that is selected."""
+        return self._list.page_at(self._list.get_selected_row())
 
     def _row_activated(self, view: Gtk.ListView, position: int) -> None:
         """Handle events due to changed thumbnail selection."""
-        self._set_selected_row(position, scroll=False)
-        self._window.set_page(position + 1)
+        page = self._list.page_at(position)
+        if page is None:
+            return
+        self._select_page(page, scroll=False)
+        self._window.set_page(page)
 
     def _pointer_left(self, controller: Gtk.EventControllerMotion) -> None:
         """Put the highlight back on the page being read."""
-        self._set_selected_row(self._currently_selected_row, scroll=False)
+        self._select_page(self._selected_page, scroll=False)
 
     def _mouse_press_event(self, gesture: Gtk.GestureClick, n_press: int,
                            x: float, y: float) -> None:
@@ -261,8 +304,10 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
         """Offer the file behind the thumbnail being dragged, so that it
         can be copied (e.g. to a file manager).
         """
-        selected = self._get_selected_row()
-        path = self._window.imagehandler.get_path_to_page(selected + 1)
+        selected = self._get_selected_page()
+        if selected is None:
+            return None
+        path = self._window.imagehandler.get_path_to_page(selected)
         if path is None:
             return None
         # A Gio.File is what the other end reads a text/uri-list from;
@@ -273,7 +318,7 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
         """Set the hotspot for the cursor at the top left corner of the
         thumbnail (so that we might actually see where we are dropping!).
         """
-        item = self._list.get_item(self._get_selected_row())
+        item = self._list.get_item(self._list.get_selected_row())
         if item is None or item.thumbnail is None:
             return
         # A thumbnail is a Gdk.Texture, which is already the kind of
@@ -282,10 +327,10 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
         source.set_icon(item.thumbnail, -5, -5)
 
     def _on_page_change(self) -> None:
-        row = self._window.imagehandler.get_current_page() - 1
-        if row == self._currently_selected_row:
+        page = self._window.imagehandler.get_current_page()
+        if page == self._selected_page:
             return
-        self._set_selected_row(row)
+        self._select_page(page)
 
     def _on_page_available(self, page: int) -> None:
         """ Called whenever a new page is ready for display. """

@@ -957,6 +957,9 @@ class _PreferencesDialog(Dialog):
                 # colour it reads off the page.
                 self._window.draw_image()
 
+        elif preference == 'skip broken pages':
+            self._window.thumbnailsidebar.refilter()
+
         elif preference == 'checkered bg for transparent images':
             self._window.draw_image()
 
