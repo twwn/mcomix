@@ -168,6 +168,24 @@ class SkipBrokenPagesTest(MComixTest):
             self.assertEqual(2, self._turn(self.window.flip_page, 1))
             self.assertEqual(first, self.window.filehandler.get_path_to_base())
 
+    def test_a_slideshow_goes_past_them_into_the_next_book(self):
+        """A slideshow turns pages through flip_page() as a key does,
+        and may open the next book where the reader's turns would not."""
+        prefs['auto open next archive'] = False
+        prefs['slideshow delay'] = 60000
+        prefs['number of pixels to scroll per slideshow event'] = 0
+        first = self._archive('1.zip', 'ooxx')
+        second = self._archive('2.zip', 'oo')
+        self._open(first)
+        self.assertEqual(2, self._turn(self.window.set_page, 2))
+        slideshow = self.window.slideshow
+        slideshow._start()
+        try:
+            slideshow._next()
+            self.assertEqual(1, self._in(second))
+        finally:
+            slideshow._stop()
+
     def test_end_onto_a_page_that_will_not_load_still_turns_back(self):
         """End is a jump, not a turn: it stays in the book."""
         first = self._archive('1.zip', 'ooxx')
