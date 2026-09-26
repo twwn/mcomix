@@ -22,6 +22,9 @@ class PopupAtTest(MComixTest):
         self.popover = Gtk.PopoverMenu.new_from_model(model)
         self.window = Gtk.Window()
         self.window.set_default_size(400, 300)
+        # Undecorated, or on Windows, where GTK draws the title bar
+        # itself, the box would begin that much further down.
+        self.window.set_decorated(False)
         self.inner = Gtk.Box()
         self.inner.set_margin_start(50)
         self.inner.set_margin_top(30)
