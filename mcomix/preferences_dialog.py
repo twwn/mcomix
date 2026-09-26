@@ -219,6 +219,11 @@ class _PreferencesDialog(Dialog):
             'open first file in prev directory',
             _('Automatically open the first file of the previous directory when navigating to it, instead of opening the last file of the previous directory.')))
 
+        page.add_row(self._create_pref_check_button(
+            _('Skip pages that cannot be shown'),
+            'skip broken pages',
+            _('Turn past a page whose image is damaged or cannot be read, instead of showing the broken-image icon in its place.')))
+
         page.add_row(Gtk.Label(label=_('Number of pixels to scroll per arrow key press:')),
                      self._create_pref_spinner(
                          'number of pixels to scroll per key event',

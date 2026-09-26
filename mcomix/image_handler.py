@@ -204,7 +204,8 @@ class ImageHandler:
         double page mode (i.e. if double page mode is on, the corresponding
         preference is set, and one of the two images that should normally
         be displayed has a width that exceeds its height), or if currently
-        on the first page.
+        on the first page.  With "skip broken pages" set, also where one
+        of the two has been read and would not load.
         """
         if page is None:
             page = self.get_current_page()
@@ -212,6 +213,13 @@ class ImageHandler:
         if (page == 1 and
                 prefs['virtual double page for fitting images'] & constants.SHOW_DOUBLE_AS_ONE_TITLE and
                 self._window.filehandler.archive_type is not None):
+            return True
+
+        if (prefs['skip broken pages'] and prefs['default double page']
+                and page < self.get_number_of_pages()
+                and (self.is_broken(page) or self.is_broken(page + 1))):
+            # Shown on its own, so that the page that would not load
+            # beside it can be turned past.
             return True
 
         if (not prefs['default double page'] or
@@ -226,6 +234,15 @@ class ImageHandler:
                 return True
 
         return False
+
+    def is_broken(self, page: int) -> bool:
+        """Whether <page> has been read, and would not load.
+
+        Only a page in the cache is known either way, which the pages
+        on screen always are once they have been drawn.
+        """
+        pixbuf = self._raw_pixbufs.get(page - 1)
+        return pixbuf is not None and image_tools.is_missing_image(pixbuf)
 
     def _is_wide(self, page: int) -> bool:
         """Whether <page> is shown wider than it is tall."""

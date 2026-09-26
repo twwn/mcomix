@@ -104,6 +104,14 @@ class MainWindow(Gtk.Window):
         self._waiting_for_redraw = False
         #: Where the redraw that is pending was asked to scroll to.
         self._pending_scroll_to: int | None = None
+        #: The page the reader last turned to, and which way that went,
+        #: for _skip_broken_page(); whether the search past pages that
+        #: will not load has turned around at an end of the book yet,
+        #: and whether it has given up, finding none that would.
+        self._skip_origin: int | None = None
+        self._skip_direction = 1
+        self._skip_reversed = False
+        self._skip_gave_up = False
 
         self.page_area = canvas.PageCanvas()
         # A style provider applies to the whole display rather than to
@@ -440,6 +448,18 @@ class MainWindow(Gtk.Window):
             # the room there is, whatever size it was read at: it is
             # drawn again at the size it is laid out at, below.
             missing = [image_tools.is_missing_image(x) for x in pixbuf_list]
+            if prefs['skip broken pages'] and not self._skip_gave_up and (
+                    missing[0] or (any(missing) and not self.displayed_double())):
+                # Unless the reader would rather not see it.  A first
+                # page that would not load is turned past; a second one
+                # leaves the first on its own, now that it has been read
+                # and get_virtual_double_page() knows it for what it is.
+                self._waiting_for_redraw = False
+                if missing[0]:
+                    self._skip_broken_page()
+                else:
+                    self.draw_image(scroll_to=scroll_to)
+                return False
             if any(missing):
                 room = max(1, self.get_visible_area_size()[1])
                 for i in range(pixbuf_count):
@@ -760,6 +780,7 @@ class MainWindow(Gtk.Window):
         applying an edit was asked to do.
         """
         self.imagehandler.replace_pages(image_files)
+        self._skip_origin = None
         self.thumbnailsidebar.clear()
         count = self.imagehandler.get_number_of_pages()
         if not count:
@@ -777,12 +798,54 @@ class MainWindow(Gtk.Window):
         actually has rather than taken at face value.
         """
         num = min(max(num, 1), self.imagehandler.get_number_of_pages())
-        if num < 1 or num == self.imagehandler.get_current_page():
+        current = self.imagehandler.get_current_page()
+        if num < 1 or num == current:
             return
+        self._skip_origin = num
+        self._skip_direction = 1 if num > current else -1
+        self._skip_reversed = False
+        self._skip_gave_up = False
+        self._show_page(num, at_bottom)
+
+    def _show_page(self, num: int, at_bottom: bool) -> None:
+        """Turn to page <num>, which is in the book."""
         self.imagehandler.set_page(num)
         self.page_changed()
         self.new_page(at_bottom=at_bottom)
         self.slideshow.update_delay()
+
+    def _skip_broken_page(self) -> None:
+        """Turn past the page on screen, which would not load.
+
+        "Skip broken pages" has it, and the search goes on the way the
+        reader was going, one page at a time, each page drawn - and so
+        read - in turn.  At an end of the book it turns around and
+        looks the other way from the page the reader turned to, which is
+        what Home or End onto a page that will not load wants; finding
+        nothing that way either, it goes back to that page and shows
+        what it always showed, the picture of a page that would not
+        load.
+        """
+        count = self.imagehandler.get_number_of_pages()
+        current = self.imagehandler.get_current_page()
+        origin = self._skip_origin
+        if origin is None or not 1 <= origin <= count:
+            # The pages were replaced since the reader last turned one.
+            origin = self._skip_origin = current
+            self._skip_direction = 1
+        page = current + self._skip_direction
+        if not 1 <= page <= count and not self._skip_reversed:
+            self._skip_reversed = True
+            self._skip_direction = -self._skip_direction
+            page = origin + self._skip_direction
+        if not 1 <= page <= count:
+            self._skip_gave_up = True
+            if origin == current:
+                self.draw_image()
+            else:
+                self._show_page(origin, False)
+            return
+        self._show_page(page, self._skip_direction < 0)
 
     def next_book(self) -> None:
         """Open whatever follows the book being read, if anything should.

@@ -31,6 +31,7 @@ Automatically open the next archive | Past the last page, open the next archive 
 Automatically open next directory | The same for the next or previous sibling directory.
 Open first file when navigating to previous archive | Instead of its last file.
 Open first file when navigating to previous directory | Instead of its last file.
+Skip pages that cannot be shown | Turn past a page that is damaged or unreadable, the way you were going, instead of showing the broken-image icon. Off by default. In double page mode its partner is shown alone.
 Number of pixels to scroll per arrow key press | 50 by default.
 Number of pixels to scroll per mouse wheel turn | 50 by default.
 Fraction of page to scroll per space key press (in percent) | 50 by default.

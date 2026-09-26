@@ -71,6 +71,7 @@ Preferences = TypedDict('Preferences', {
     'lens size': int,
     'virtual double page for fitting images': int,
     'double step in double page mode': bool,
+    'skip broken pages': bool,
     'show page numbers on thumbnails': bool,
     'thumbnail size': int,
     'colour scheme': str,
@@ -209,6 +210,7 @@ _DEFAULTS: Preferences = {
     'virtual double page for fitting images': (constants.SHOW_DOUBLE_AS_ONE_TITLE
                                                | constants.SHOW_DOUBLE_AS_ONE_WIDE),
     'double step in double page mode': True,
+    'skip broken pages': False,
     'show page numbers on thumbnails': True,
     'thumbnail size': 80,
     'colour scheme': 'system',
