@@ -73,6 +73,19 @@ class DependencyCheckTest(MComixTest):
         self.assertEqual(1, exit.code)
 
 
+class WaitAndExitTest(MComixTest):
+
+    def test_without_a_console_it_exits_rather_than_asking(self):
+        """MComix.exe has no standard input or output; asking whether
+        they were closed raised AttributeError in place of the exit."""
+        with unittest.mock.patch.object(run.sys, 'platform', 'win32'), \
+                unittest.mock.patch.object(run.sys, 'stdin', None), \
+                unittest.mock.patch.object(run.sys, 'stdout', None), \
+                self.assertRaises(SystemExit) as exited:
+            run.wait_and_exit()
+        self.assertEqual(1, exited.exception.code)
+
+
 class ArgumentTest(MComixTest):
 
     """The command line, which is also how MComix asks another MComix to

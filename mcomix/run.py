@@ -29,7 +29,11 @@ def wait_and_exit() -> None:
     """ Wait for the user pressing ENTER before closing. This should help
     the user find possibly missing dependencies when starting, since the
     Python window will not close down immediately after the error. """
-    if sys.platform == 'win32' and not sys.stdin.closed and not sys.stdout.closed:
+    # Only where there is a console to press ENTER in: MComix.exe, built
+    # without one, has no standard input or output at all.
+    if (sys.platform == 'win32' and sys.stdin is not None
+            and sys.stdout is not None
+            and not sys.stdin.closed and not sys.stdout.closed):
         print()
         input("Press ENTER to continue...")
     sys.exit(1)
