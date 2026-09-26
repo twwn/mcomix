@@ -58,6 +58,7 @@ import gc
 import shutil
 import stat
 import tempfile
+import time
 import traceback
 
 _TMP_ROOT = os.path.join(os.path.dirname(__file__), 'tmp')
@@ -222,16 +223,38 @@ GLib.set_prgname(constants.APPNAME)
 default_prefs = copy.deepcopy(dict(prefs))
 
 
-def _make_writable_and_retry(function, path, error):
-    """Let shutil.rmtree() remove a file a test made read-only.
+#: What Windows answers when a directory is removed while a file in it
+#: is still open: the file is gone from nobody's view until the last
+#: handle on it closes, and the directory is not empty until then.
+_ERROR_DIR_NOT_EMPTY = 145
 
-    Windows refuses to delete a read-only file, where POSIX asks only
-    whether the directory holding it may be written.
+
+def _make_writable_and_retry(function, path, error):
+    """Let shutil.rmtree() remove what Windows keeps it from removing.
+
+    A file a test made read-only, which Windows refuses to delete where
+    POSIX asks only whether the directory holding it may be written;
+    and a directory a file chooser was watching, which GTK lets go of
+    from the main loop after the chooser is gone.
     """
-    if not isinstance(error, PermissionError):
+    if isinstance(error, PermissionError):
+        os.chmod(path, stat.S_IWRITE)
+        function(path)
+        return
+    if getattr(error, 'winerror', None) != _ERROR_DIR_NOT_EMPTY:
         raise error
-    os.chmod(path, stat.S_IWRITE)
-    function(path)
+    deadline = time.monotonic() + 5
+    while True:
+        gc.collect()
+        pump(100)
+        try:
+            function(path)
+            return
+        except OSError as again:
+            if (getattr(again, 'winerror', None) != _ERROR_DIR_NOT_EMPTY
+                    or time.monotonic() > deadline):
+                raise
+        time.sleep(0.02)
 
 
 class MComixTest(unittest.TestCase):
