@@ -1060,6 +1060,44 @@ class DirectoryEntryTest(MComixTest):
                     archive.close()
 
 
+class MultiVolumeRarTest(MComixTest):
+
+    """A book packed in volumes: Multivolume.part1.rar to part3.rar,
+    made with "rar a -m0 -v4k" of four test images, of which 02.jpg and
+    03.jpg are each split across two volumes."""
+
+    #: What each page was packed from.
+    PAGES = (('01.png', ('images', 'red.png')),
+             ('02.jpg', ('images', 'landscape-no-exif.jpg')),
+             ('03.jpg', ('images', 'portrait-no-exif.jpg')),
+             ('04.png', ('images', 'blue.png')))
+
+    CASES = (
+        ('rar (dll)', rar.RarArchive),
+        ('7z (external)', sevenzip_external.SevenZipArchive),
+    )
+
+    def test_every_page_is_listed_once_and_read_whole(self):
+        names = [name for name, source in self.PAGES]
+        for label, handler in self.CASES:
+            with self.subTest(handler=label):
+                if not handler.is_available():
+                    self.skipTest('%s is not available' % label)
+                archive = handler(get_testfile_path(
+                    'archives', 'Multivolume.part1.rar'))
+                destination = tempfile.mkdtemp(dir=self.tmp_dir)
+                try:
+                    self.assertEqual(names, archive.list_contents())
+                    self.assertEqual(
+                        names, list(archive.iter_extract(names, destination)))
+                finally:
+                    archive.close()
+                for name, source in self.PAGES:
+                    with open(os.path.join(destination, name), 'rb') as got, \
+                            open(get_testfile_path(*source), 'rb') as packed:
+                        self.assertEqual(packed.read(), got.read(), name)
+
+
 class ListingParserTest(MComixTest):
 
     """The line parsers of the handlers that drive an outside program.

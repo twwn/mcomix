@@ -54,6 +54,13 @@ class RarArchive(archive_base.BaseArchive):
         # The next volume is about to be opened, this is just a notification.
         RAR_VOL_NOTIFY = 1
 
+    class _HeaderFlag:
+        """ Bits of an entry header's Flags """
+        # The entry goes on from the volume before: its header is read
+        # again at the start of each volume a file is split into.
+        RHDF_SPLITBEFORE = 0x01
+        RHDF_SOLID = 0x10
+
     class _ErrorCode:
         """ Rar error codes """
         ERAR_END_ARCHIVE = 10
@@ -167,10 +174,13 @@ class RarArchive(archive_base.BaseArchive):
         try:
             while True:
                 filename = self._read_header()
-                if self._headerdata.Flags & 0x10:
+                if self._headerdata.Flags & RarArchive._HeaderFlag.RHDF_SOLID:
                     self._is_solid = True
-                if self._header_is_directory():
-                    # Not a member anything can extract; skip past it.
+                if self._header_is_directory() or (
+                        self._headerdata.Flags
+                        & RarArchive._HeaderFlag.RHDF_SPLITBEFORE):
+                    # Not a member anything can extract, or the rest of
+                    # one listed in the volume before; skip past it.
                     self._process()
                     continue
                 yield filename

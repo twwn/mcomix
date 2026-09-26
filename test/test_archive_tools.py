@@ -13,6 +13,10 @@ _EXTENSION_TO_MIME_TYPES = {
     'zip': constants.ZIP,
     'zip.bz2': constants.ZIP_EXTERNAL,
     'rar': constants.RAR,
+    # The volumes of Multivolume.rar: each starts with the RAR signature.
+    'part1.rar': constants.RAR,
+    'part2.rar': constants.RAR,
+    'part3.rar': constants.RAR,
     'tar': constants.TAR,
     'tar.gz': constants.GZIP,
     'tar.bz2': constants.BZIP2,
