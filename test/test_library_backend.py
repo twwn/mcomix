@@ -233,6 +233,39 @@ class PathNotUtf8Test(LibraryDatabaseTest):
             pages.set_page(self.path, 2)
 
 
+class RarSetTest(LibraryDatabaseTest):
+
+    """A RAR book packed in volumes is one book, read from its first
+    volume; the others list the rest of the set from the middle of a
+    page on."""
+
+    def setUp(self):
+        super().setUp()
+        self.volumes = []
+        for part in (1, 2, 3):
+            name = 'Multivolume.part%d.rar' % part
+            path = os.path.join(self.tmp_dir, name)
+            shutil.copy(get_testfile_path('archives', name), path)
+            self.volumes.append(path)
+        self.library = backend.LibraryBackend()
+        self.addCleanup(self.library.close)
+
+    def test_a_later_volume_is_not_added(self):
+        for path in self.volumes[1:]:
+            with self.subTest(path=os.path.basename(path)):
+                self.assertFalse(self.library.add_book(path))
+                self.assertIsNone(self.library.get_book_by_path(path))
+
+    def test_the_first_volume_is_added_as_the_book(self):
+        from mcomix.archive import rar, rar_external
+        if not (rar.RarArchive.is_available()
+                or rar_external.RarArchive.is_available()):
+            self.skipTest('nothing here reads RAR')
+        self.assertTrue(self.library.add_book(self.volumes[0]))
+        self.assertEqual(4, self.library.get_book_by_path(
+            self.volumes[0]).pages)
+
+
 class NothingThereTest(LibraryDatabaseTest):
 
     """What the library answers about books and collections it does not

@@ -258,6 +258,22 @@ class WatchListEntryTest(unittest.TestCase):
         shutil.rmtree(tmpdir)
 
 
+    def test_the_later_volumes_of_a_rar_set_are_nothing_new(self):
+        tmpdir = os.path.abspath(tempfile.mkdtemp(prefix='library_types.'))
+        try:
+            for part in (1, 2, 3):
+                name = 'Multivolume.part%d.rar' % part
+                shutil.copy(get_testfile_path('archives', name),
+                            os.path.join(tmpdir, name))
+            first = os.path.join(tmpdir, 'Multivolume.part1.rar')
+            for recursive in (False, True):
+                with self.subTest(recursive=recursive):
+                    entry = backend_types._WatchListEntry(
+                        tmpdir, recursive, None)
+                    self.assertEqual([first], entry.get_new_files([]))
+        finally:
+            shutil.rmtree(tmpdir)
+
     def test_new_files_come_in_the_order_they_are_numbered(self):
         """They are added to the library in this order, and "All books"
         shows the books in the order they were added: a set's order put

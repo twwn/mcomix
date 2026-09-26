@@ -599,9 +599,12 @@ class _WatchListEntry(_BackendObject):
         # the library files them in the order it is given them, and
         # "All books" shows them in that order.  A set's order put them
         # anywhere.
-        # A file the library cannot hold would be new at every scan.
+        # A file the library cannot hold would be new at every scan, and
+        # so would the later volumes of a RAR set, which are no books to
+        # add; only files not in the library already are read for that.
         new_files = [path for path in available_files.difference(old_files)
-                     if storable(path)]
+                     if storable(path)
+                     and not archive_tools.is_later_volume(path)]
         tools.alphanumeric_sort(new_files)
         return new_files
 

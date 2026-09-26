@@ -378,6 +378,13 @@ class _LibraryBackend:
                         'UTF-8, which is what the library stores',
                         i18n.to_display_string(path))
             return False
+        if archive_tools.is_later_volume(path):
+            # Read through the first volume of its set, and not a book
+            # by itself: what it lists is the rest of the set from the
+            # middle of a page on.
+            log.info('Not adding "%s" to the library: it is a later '
+                     'volume of a RAR set', i18n.to_display_string(path))
+            return False
         name = os.path.basename(path)
         # The library lists what it is given, and what a watched
         # directory holds, on the reader's behalf: an encrypted archive
