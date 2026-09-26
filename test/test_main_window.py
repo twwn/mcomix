@@ -715,6 +715,37 @@ class MainWindowTest(MComixTest):
             self.window.event_handler.escape_event()
             closed.assert_called_once_with()
 
+    def test_otherwise_escape_leaves_fullscreen(self):
+        fullscreen = self.window.actiongroup.get_action('fullscreen')
+        with unittest.mock.patch.dict(prefs, {'escape quits': False}), \
+                unittest.mock.patch.object(fullscreen,
+                                           'set_active') as set_active:
+            self.window.event_handler.escape_event()
+        set_active.assert_called_once_with(False)
+
+    def test_a_number_key_runs_that_command_of_open_with(self):
+        """Counted over the commands alone: a separator is no command a
+        key could run."""
+        from mcomix import openwith
+        prefs['openwith commands'] = [
+            ('First', 'first', '', False), ('-', '', '', False),
+            ('Second', 'second', '', False)]
+        with unittest.mock.patch.object(openwith.OpenWithCommand,
+                                        'execute', autospec=True) as run:
+            self.window.event_handler._execute_command(1)
+            self.assertEqual(['Second'],
+                             [call.args[0].get_label()
+                              for call in run.call_args_list])
+            self.window.event_handler._execute_command(2)
+            self.assertEqual(1, run.call_count)
+
+    def test_the_scroll_left_key_scrolls_left_by_the_key_step(self):
+        prefs['number of pixels to scroll per key event'] = 17
+        with unittest.mock.patch.object(self.window.event_handler,
+                                        'scroll_with_flipping') as scrolled:
+            self.window.event_handler._scroll_left()
+        scrolled.assert_called_once_with(-17, 0)
+
     def test_turning_the_page_keeps_the_pages_picked_out(self):
         """Pages are picked out as they go by and dealt with at the end
         of the book, so a page turn cannot be what forgets them."""
