@@ -1,3 +1,4 @@
+import concurrent.futures
 import hashlib
 import io
 import locale
@@ -388,6 +389,37 @@ class TarCompressionTest(MComixTest):
             self.assertTrue(abandoned.closed, 'the first tarball stayed open')
         finally:
             archive.close()
+
+
+class ZipConcurrentExtractionTest(MComixTest):
+
+    """Several extraction threads reading one ZipFile at once.
+
+    zipfile serialises the reads of its members on a lock of its own and
+    keeps a position per member, so each thread gets its own bytes; the
+    extractor is let use several threads on a zip for that reason.
+    """
+
+    def test_threads_reading_one_zip_each_get_their_own_member(self):
+        contents = {'%02d.bin' % n: os.urandom(64 * 1024) * 3
+                    for n in range(48)}
+        path = os.path.join(self.tmp_dir, 'book.zip')
+        with zipfile.ZipFile(path, 'w', zipfile.ZIP_DEFLATED) as book:
+            for name, data in contents.items():
+                book.writestr(name, data)
+        archive = zip.ZipArchive(path)
+        self.assertTrue(archive.support_concurrent_extractions)
+        destination = os.path.join(self.tmp_dir, 'out')
+        try:
+            names = archive.list_contents()
+            with concurrent.futures.ThreadPoolExecutor(8) as threads:
+                list(threads.map(
+                    lambda name: archive.extract(name, destination), names))
+        finally:
+            archive.close()
+        for name, data in contents.items():
+            with open(os.path.join(destination, name), 'rb') as extracted:
+                self.assertEqual(data, extracted.read(), name)
 
 
 class ZipLegacyNameTest(MComixTest):

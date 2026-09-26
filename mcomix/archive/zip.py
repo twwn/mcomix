@@ -51,6 +51,12 @@ class ZipArchive(archive_base.NonUnicodeArchive):
 
     """A ZIP file read through the standard library."""
 
+    # zipfile reads one member at a time under a lock of its own, and
+    # each member it opens keeps its own place in the file, so several
+    # threads can read from the one ZipFile.  The work that is worth
+    # sharing out, inflating, runs outside the GIL.
+    support_concurrent_extractions = True
+
     def __init__(self, archive: str) -> None:
         super().__init__(archive)
         self.zip = zipfile.ZipFile(archive, 'r')
