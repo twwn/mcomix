@@ -14,7 +14,6 @@ executable permission bits.
 """
 
 import glob
-import lzma
 import os
 import re
 import subprocess
@@ -39,8 +38,7 @@ def repack(sdist: str, target: str, prefix: str) -> None:
     """Copy <sdist> to <target>, xz-compressed, with every member moved
     from the folder it is in to <prefix>."""
     with tarfile.open(sdist) as source, \
-            tarfile.open(target, 'w:xz',
-                         preset=9 | lzma.PRESET_EXTREME) as packed:
+            tarfile.open(target, 'w:xz', preset=9) as packed:
         for member in source.getmembers():
             _top, sep, rest = member.name.partition('/')
             member.name = prefix + sep + rest
