@@ -170,10 +170,11 @@ class PackerTest(MComixTest):
 
 class WriterTest(MComixTest):
 
-    """The three formats a book can be written back into.
+    """The four formats a book can be written back into.
 
-    MComix reads a dozen and writes what the standard library and 7-Zip
-    can make: a ZIP, a tar, and a 7z where 7-Zip is installed.
+    MComix reads a dozen and writes what the standard library, 7-Zip and
+    rar can make: a ZIP, a tar, a 7z where 7-Zip is installed and a RAR
+    where rar is.
     """
 
     def setUp(self):

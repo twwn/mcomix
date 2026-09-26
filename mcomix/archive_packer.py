@@ -181,11 +181,11 @@ class _Writer:
 
     """One archive being written, whatever format it is in.
 
-    MComix reads a dozen archive formats and writes three, which is
-    what the ones it reads with an external program can be asked to
-    make: a ZIP, a tar, and a 7z where 7-Zip is installed.  A RAR is
-    read with unrar, which cannot create one; a PDF, a MOBI and an LHA
-    are not formats a book of pages is written back into.
+    MComix reads a dozen archive formats and writes four: a ZIP and a
+    tar, which the standard library makes; a 7z where 7-Zip is
+    installed, and a RAR where rar is - unrar, which is what a RAR is
+    read with, cannot create one.  A PDF, a MOBI and an LHA are not
+    formats a book of pages is written back into.
     """
 
     def __init__(self, archive_path: str) -> None:
