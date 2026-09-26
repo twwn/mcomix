@@ -1,14 +1,11 @@
 MComix documentation
 ===
 
-- [Installation](Installation.md) — the Windows installer and package,
-  what MComix needs to run, and how to run it from source.
-- [Documentation](Documentation.md) — the user manual.
-- [Preferences](Preferences.md) — every option the preferences dialog shows.
-- [Keybindings](Keybindings.md) — the keys and mouse buttons MComix binds.
-- [External Commands](External_Commands.md) — running programs of your own on
-  the open file.
-- [Maintenance](Maintenance.md) — the tasks involved in releasing a version.
+- [Installation](Installation.md) — Windows packages, running from source, optional helpers.
+- [Documentation](Documentation.md) — the user manual: reading, editing, the library.
+- [Preferences](Preferences.md) — every option in the preferences dialog.
+- [Keybindings](Keybindings.md) — keys and mouse buttons.
+- [External Commands](External_Commands.md) — run your own programs on the open file.
+- [Maintenance](Maintenance.md) — translations, builds and releases.
 
-The screenshots these pages show are in [images](images/), whose
-[README](images/README.md) credits the comic they display.
+Screenshots live in [images](images/); its [README](images/README.md) credits the comic they show.

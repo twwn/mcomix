@@ -1,28 +1,36 @@
 # Installation
 
-The packages named `mcomix` that Linux distributions, Flathub, WinGet and Scoop offer are the original MComix 3, built on GTK 3, not this version.
-
-## Linux
-
-Install MComix from source, as [Running from source](#running-from-source) below describes.
+> [!NOTE]
+> The `mcomix` packages in Linux distributions, Flathub, WinGet and Scoop are the original MComix 3 on GTK 3, not this version.
 
 ## Windows
 
-Each [release](https://github.com/twwn/mcomix/releases) carries an MSI installer, which needs administrator rights, and `mcomix-win64-<version>.zip`, which can be extracted anywhere and run as `MComix.exe` from there. Both carry everything MComix needs.
+Every [release](https://github.com/twwn/mcomix/releases) has two downloads, each with everything MComix needs:
 
-With [Chocolatey](https://chocolatey.org/install), `choco install -y mcomix-gtk` installs the MSI installer of the latest release.
+- the **MSI installer** (needs administrator rights);
+- the **portable zip**, `mcomix-win64-<version>.zip`: extract it anywhere and run `MComix.exe`.
 
-Uninstalling leaves the preferences, the library and the bookmarks in `%APPDATA%\MComix`. Delete that folder to remove them as well.
+Or, with [Chocolatey](https://chocolatey.org/install):
+
+```powershell
+choco install -y mcomix-gtk
+```
+
+Uninstalling keeps your preferences, library and bookmarks in `%APPDATA%\MComix`; delete that folder to remove them too.
+
+## Linux
+
+Install from source, as [Running from source](#running-from-source) describes.
 
 ## Dependencies
 
-Running MComix from source requires:
+From source, MComix needs:
 
 - [Python 3.12](https://www.python.org/) or newer;
 - [GTK 4](https://www.gtk.org/), [PyGObject](https://pygobject.readthedocs.io/) 3.46.0 or newer and [pycairo](https://github.com/pygobject/pycairo) 1.25.0 or newer;
 - [Pillow](https://pypi.org/project/Pillow/) 10.1.0 or newer.
 
-Everything else is optional. Programs are looked for on the `PATH`.
+Everything else is optional; programs are found on the `PATH`.
 
 Package or program | What it adds
 -------------------|-------------
@@ -36,7 +44,7 @@ The [UnRAR library](https://www.rarlab.com/rar_add.htm) (`libunrar.so` or `UnRAR
 
 ## Running from source
 
-Install GTK 4 and PyGObject first, as PyGObject's [Getting Started guide](https://pygobject.readthedocs.io/en/latest/getting_started.html) describes. Then create a [virtual environment](https://docs.python.org/3/library/venv.html) and install MComix into it from the source archive, which is attached to each [release](https://github.com/twwn/mcomix/releases):
+Install GTK 4 and PyGObject first ([PyGObject's guide](https://pygobject.readthedocs.io/en/latest/getting_started.html)). Then install MComix into a [virtual environment](https://docs.python.org/3/library/venv.html) from the source archive attached to each [release](https://github.com/twwn/mcomix/releases):
 
 ```bash
 python3 -m venv --system-site-packages mcomix-venv
@@ -45,15 +53,15 @@ cd mcomix-<version>
 ../mcomix-venv/bin/python -m pip install .
 ```
 
-`--system-site-packages` lets the environment use the PyGObject installed above; without it, pip tries to build PyGObject from source. Install `'.[fileformats]'` instead of `.` to add PyMuPDF and chardet. MComix is then run as `mcomix-venv/bin/mcomix`.
+`--system-site-packages` lets the environment use the system's PyGObject, which pip would otherwise try to build. Install `'.[fileformats]'` instead of `.` to add PyMuPDF and chardet. Run MComix as `mcomix-venv/bin/mcomix`.
 
-On Linux, the `share` folder of the source archive holds the desktop file, the icons, the MIME types, the AppStream metadata and the manual page, laid out as they belong under `/usr/local/share`. Copy them there for desktop integration; pip neither installs nor removes them.
+For desktop integration on Linux, copy the source archive's `share` folder - desktop file, icons, MIME types, AppStream metadata and manual page - to `/usr/local/share`. pip neither installs nor removes it.
 
-To uninstall, delete the virtual environment. The preferences are kept in `~/.config/mcomix`, and the library and the bookmarks in `~/.local/share/mcomix`.
+To uninstall, delete the virtual environment. Preferences live in `~/.config/mcomix`, the library and bookmarks in `~/.local/share/mcomix`.
 
 ## Developing MComix
 
-Clone the repository, and install it in editable mode with the development tools, so that changes to the source take effect the next time MComix starts:
+Clone the repository and install it in editable mode with the development tools; changes take effect the next time MComix starts:
 
 ```bash
 git clone https://github.com/twwn/mcomix.git
@@ -61,7 +69,7 @@ cd mcomix
 ../mcomix-venv/bin/python -m pip install -e '.[dev]'
 ```
 
-The test suite opens windows, so run it under `xvfb-run`:
+The tests open windows, so run them under `xvfb-run`:
 
 ```bash
 xvfb-run -a ../mcomix-venv/bin/python -m pytest test/ -n 8
