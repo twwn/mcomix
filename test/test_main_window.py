@@ -40,6 +40,24 @@ from mcomix.library import backend
 from mcomix.preferences import prefs
 
 
+def _descriptors_on(path):
+    """The descriptors this process holds open on the file at <path>.
+
+    Windows moves and replaces no file that is open; Linux does both,
+    so this is how a test here sees what would fail there.
+    """
+    wanted = os.stat(path)
+    held = []
+    for fd in os.listdir('/proc/self/fd'):
+        try:
+            found = os.stat(os.path.join('/proc/self/fd', fd))
+        except OSError:
+            continue
+        if (found.st_dev, found.st_ino) == (wanted.st_dev, wanted.st_ino):
+            held.append(fd)
+    return held
+
+
 class MainWindowTest(MComixTest):
 
     def setUp(self):
@@ -1545,6 +1563,36 @@ class MainWindowTest(MComixTest):
         self.assertEqual(os.stat(source).st_mode, mode,
                          'the archive came back with different permissions')
 
+    @unittest.skipUnless(os.path.isdir('/proc/self/fd'),
+                         'the open descriptors are read from /proc')
+    def test_nothing_holds_the_archive_open_when_it_is_written_over(self):
+        """Windows replaces no file that is open, and the extractor kept
+        the archive open for as long as the book was: saving there failed
+        with "Access is denied"."""
+        source = os.path.join(self.tmp_dir, 'Book.cbz')
+        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), source)
+        self.window.filehandler.open_file(source)
+        self.assertTrue(
+            wait_for(lambda: self.window.imagehandler
+                     .get_number_of_pages() > 2, seconds=20),
+            'the copied archive never listed its pages')
+        self.window.select_page(1)
+        with self._quietly():
+            self.window.file_actions.delete_page()
+        self._pump()
+        replace = os.replace
+        held = []
+
+        def replacing(tmp_path, archive_path):
+            held.extend(_descriptors_on(archive_path))
+            replace(tmp_path, archive_path)
+
+        with unittest.mock.patch.object(archive_packer.os, 'replace',
+                                        replacing):
+            self.assertTrue(self.window.file_actions.save_archive(),
+                            'the save failed')
+        self.assertEqual([], held)
+
     def test_saving_waits_for_the_comments_as_well_as_the_pages(self):
         """A comment is extracted like anything else in the archive.
 
@@ -2225,6 +2273,30 @@ class MainWindowTest(MComixTest):
             lambda: self.window.imagehandler.get_current_page() == 3,
             seconds=20), 'the book did not come back to the page being read')
         self.assertEqual(self.window.filehandler.get_path_to_base(), moved)
+
+    @unittest.skipUnless(os.path.isdir('/proc/self/fd'),
+                         'the open descriptors are read from /proc')
+    def test_nothing_holds_the_archive_open_when_it_is_moved(self):
+        """Windows moves no file that is open, and the extractor kept the
+        archive open for as long as the book was: moving it failed there
+        with "being used by another process"."""
+        source = self._movable_book()
+        destination = os.path.join(self.tmp_dir, 'destination')
+        os.makedirs(destination)
+        move = shutil.move
+        held = []
+
+        def moving(path, target):
+            held.extend(_descriptors_on(path))
+            return move(path, target)
+
+        with unittest.mock.patch.object(file_mover.shutil, 'move', moving):
+            self.window.file_actions.move_current_file(destination)
+        self._pump()
+        self.assertTrue(os.path.isfile(os.path.join(destination,
+                                                    'Movable.cbz')))
+        self.assertFalse(os.path.exists(source))
+        self.assertEqual([], held)
 
     def _move_refused(self, destination):
         """Move the book into <destination>, which will not take it, and

@@ -218,6 +218,9 @@ class _EditArchiveDialog(Dialog):
         # page or a comment still inside the archive it came from would
         # raise FileNotFoundError and lose the save.
         self.file_handler.wait_for_files(images + comments)
+        carried_files = self.file_handler.get_other_files()
+        # The archive may be the one being written over.
+        self.file_handler.release_archive()
 
         saved = False
         try:
@@ -225,7 +228,7 @@ class _EditArchiveDialog(Dialog):
                 archive_path,
                 images,
                 comments,
-                carried_files=self.file_handler.get_other_files(),
+                carried_files=carried_files,
                 archive_type=self._save_format()[0],
                 permissions_from=self.file_handler.get_path_to_base()
                 if self.file_handler.archive_type is not None else None,

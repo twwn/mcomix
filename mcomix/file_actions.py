@@ -637,9 +637,11 @@ class FileActions:
             # its size before it writes it, so saving before it was out
             # raised FileNotFoundError and refused the save.
             self._window.filehandler.wait_for_files(image_files + comment_files)
+            carried_files = self._window.filehandler.get_other_files()
+            self._window.filehandler.release_archive()
             archive_packer.write_archive(
                 path, image_files, comment_files,
-                carried_files=self._window.filehandler.get_other_files(),
+                carried_files=carried_files,
                 archive_type=archive_type, permissions_from=path,
                 page_names=self._page_names)
         except OSError as error:
@@ -948,6 +950,7 @@ class FileActions:
             return
         in_archive = self._window.filehandler.archive_type is not None
         page = self._window.imagehandler.get_current_page()
+        self._window.filehandler.release_archive()
         try:
             target = file_mover.move_file(current_file, directory)
         except OSError as error:

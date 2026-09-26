@@ -686,6 +686,23 @@ class FileHandler:
         for path in paths:
             self.wait_on_file(path)
 
+    def release_archive(self) -> None:
+        """Unpack what is left of the open archive, and close its file.
+
+        Windows neither moves nor replaces a file that is open, and the
+        extractor holds the archive open for as long as the book is, so
+        moving the book or writing it back over itself failed there with
+        "The process cannot access the file because it is being used by
+        another process".  Whatever moves the archive or writes over it
+        calls this first.  Every member is waited for before the file is
+        closed, since nothing more comes out of it until the book is
+        opened again.
+        """
+        if self.archive_type is None:
+            return
+        self.wait_for_files(list(self._name_table))
+        self._extractor.close()
+
     def get_other_files(self) -> dict[str, str]:
         """The archive members that are neither pages nor comments.
 
