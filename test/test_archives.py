@@ -1108,6 +1108,7 @@ class EmptyMemberTest(MComixTest):
     CASES = (
         ('rar (dll)', rar.RarArchive),
         ('rar (external)', rar_external.RarArchive),
+        ('7z (external)', sevenzip_external.SevenZipArchive),
     )
 
     def test_an_empty_member_is_extracted_as_an_empty_file(self):

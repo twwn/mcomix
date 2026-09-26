@@ -133,9 +133,12 @@ class SevenZipArchive(archive_base.ExternalExecutableArchive):
                 # file: not every format 7z reads records any.
                 self._pending_is_directory = line[13:].startswith('D')
             if line.startswith('Size = '):
-                filesize = int(line[7:])
-                if filesize > 0:
-                    self._contents.append((self._path, filesize))
+                # Every entry, an empty file's too: its share of the
+                # stream iter_extract() reads is nothing, but it is a
+                # file to hand over all the same.  A directory's size of
+                # nothing is read past just as harmlessly, since no one
+                # asks for a directory.
+                self._contents.append((self._path, int(line[7:])))
             elif line == 'Encrypted = +':
                 self._is_encrypted = True
 
