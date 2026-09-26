@@ -56,6 +56,7 @@ import atexit
 import copy
 import gc
 import shutil
+import stat
 import tempfile
 import traceback
 
@@ -219,6 +220,18 @@ GLib.set_prgname(constants.APPNAME)
 #: can start from them.  Deep, because several of them hold a container -
 #: and one of those containers is a constant of MComix' own.
 default_prefs = copy.deepcopy(dict(prefs))
+
+
+def _make_writable_and_retry(function, path, error):
+    """Let shutil.rmtree() remove a file a test made read-only.
+
+    Windows refuses to delete a read-only file, where POSIX asks only
+    whether the directory holding it may be written.
+    """
+    if not isinstance(error, PermissionError):
+        raise error
+    os.chmod(path, stat.S_IWRITE)
+    function(path)
 
 
 class MComixTest(unittest.TestCase):
@@ -412,7 +425,7 @@ class MComixTest(unittest.TestCase):
         # Leave the temporary directory behind for post-mortem analysis
         # when the test did not pass.
         if not self._test_failed():
-            shutil.rmtree(self.tmp_dir)
+            shutil.rmtree(self.tmp_dir, onexc=_make_writable_and_retry)
 
     def _test_failed(self):
         """Return True if the running test has already failed.
