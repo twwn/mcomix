@@ -64,6 +64,22 @@ jobs:
           Remove-Item Env:MSYSTEM -ErrorAction SilentlyContinue
           $env:PATH = "$env:RUNNER_TEMP\msys64\ucrt64\bin;$env:PATH;$env:ProgramFiles\7-Zip"
           python -m pytest -v -p no:xdist --durations=15 test/test_main_window.py
+      # A file chooser built in a single process warned twice from GTK's
+      # places sidebar: g_filename_to_uri() of a NULL Desktop folder.  The
+      # tests point USERPROFILE at a home with no Desktop in it; whether
+      # that is what makes GLib find none.
+      - name: the Desktop folder GLib finds
+        if: always()
+        shell: pwsh
+        run: |
+          Remove-Item Env:MSYSTEM -ErrorAction SilentlyContinue
+          $env:PATH = "$env:RUNNER_TEMP\msys64\ucrt64\bin;$env:PATH"
+          $home_dir = (New-Item -ItemType Directory -Path "$env:RUNNER_TEMP\desktop-probe").FullName
+          $env:USERPROFILE = $home_dir
+          $env:HOME = $home_dir
+          python -c "from gi.repository import GLib; print('no Desktop folder:', GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DESKTOP))"
+          New-Item -ItemType Directory -Path "$home_dir\Desktop" | Out-Null
+          python -c "from gi.repository import GLib; print('a Desktop folder:', GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DESKTOP))"
       - uses: actions/upload-artifact@v7
         if: always()
         with:
