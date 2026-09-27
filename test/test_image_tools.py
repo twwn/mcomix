@@ -845,19 +845,20 @@ class EnhanceSlidersTest(MComixTest):
 
     def test_no_contrast_leaves_one_colour(self):
         im = self._enhanced(contrast=0.0)
-        self.assertEqual(1, len(set(im.getdata())))
+        self.assertEqual(1, len(im.getcolors()))
 
     def test_no_saturation_leaves_greys(self):
         im = self._enhanced(saturation=0.0)
-        self.assertTrue(all(r == g == b for r, g, b in im.getdata()))
-        self.assertGreater(len(set(im.getdata())), 1)
+        colours = [colour for count, colour in im.getcolors()]
+        self.assertTrue(all(r == g == b for r, g, b in colours))
+        self.assertGreater(len(colours), 1)
 
     def test_sharpness_changes_the_pixels_at_an_edge(self):
         original = image_tools.pixbuf_to_pil(self._picture())
         im = self._enhanced(sharpness=2.0)
-        self.assertNotEqual(list(original.getdata()), list(im.getdata()))
-        self.assertEqual(list(original.getdata()),
-                         list(self._enhanced(sharpness=1.0).getdata()))
+        self.assertNotEqual(original.tobytes(), im.tobytes())
+        self.assertEqual(original.tobytes(),
+                         self._enhanced(sharpness=1.0).tobytes())
 
 
 class InSrgbTest(MComixTest):
