@@ -7,7 +7,7 @@ import unittest.mock
 
 from gi.repository import Gdk, Gio, GLib, Gtk
 
-from . import MComixTest, pump, session_tmp_dir
+from . import MComixTest, pump, session_tmp_dir, wait_for
 
 from mcomix import process
 from mcomix import recent
@@ -111,6 +111,30 @@ class RecentFilesMenuTest(MComixTest):
         self._add('notes.txt', mime_type='text/plain')
         menu = recent.RecentFilesMenu(None, self.window)
         self.assertNotIn('notes.txt', self._labels(menu))
+
+    def test_a_closed_window_s_menu_stops_following_the_list(self):
+        """The manager is one for the application: a menu still
+        connected to it after its window closed was kept alive by it,
+        window and all, and rebuilt for every later change."""
+        self.window.present()
+        pump()
+        menu = recent.RecentFilesMenu(None, self.window)
+        rebuilds = []
+        menu._rebuild = lambda: rebuilds.append(True)
+        self._add('open.cbz')
+        wait_for(lambda: rebuilds)
+        self.assertTrue(rebuilds, 'the menu does not hear the manager at all')
+        self.window.destroy()
+        rebuilds.clear()
+        # The change is told to a handler of the test's own as well,
+        # which says when the menu would have heard of it.
+        heard = []
+        handler = self.manager.connect('changed', lambda _m: heard.append(True))
+        self.addCleanup(self.manager.disconnect, handler)
+        self._add('closed.cbz')
+        wait_for(lambda: heard)
+        self.assertTrue(heard)
+        self.assertEqual(rebuilds, [])
 
     def test_an_empty_list_says_so(self):
         menu = recent.RecentFilesMenu(None, self.window)

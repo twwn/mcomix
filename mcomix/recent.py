@@ -75,7 +75,13 @@ class RecentFilesMenu:
         if window is not None:
             window.insert_action_group(self.ACTION_PREFIX, self._actions)
 
-        self._manager.connect('changed', self._changed)
+        # The manager is the application's one and outlives the window;
+        # a handler left on it would keep the window's menu, and the
+        # window with it, alive, rebuilding for every later change.
+        changed = self._manager.connect('changed', self._changed)
+        if window is not None:
+            window.connect('unrealize',
+                           lambda _window: self._manager.disconnect(changed))
         self._rebuild()
 
     def _changed(self, *args: object) -> None:
