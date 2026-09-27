@@ -5,6 +5,7 @@ import locale
 import os
 import re
 import shutil
+import subprocess
 import sys
 import tarfile
 import tempfile
@@ -539,14 +540,6 @@ class SevenZipLegacyNameTest(ZipLegacyNameTest):
     def _handler(self, path):
         return sevenzip_external.SevenZipArchive(path)
 
-    # 7-Zip for Windows decodes a name stored without the UTF-8 flag in
-    # the OEM code page itself and prints what that gives, so the bytes
-    # the name was stored as never reach MComix to be read as UTF-8.
-    @unittest.skipIf(sys.platform == 'win32',
-                     '7-Zip for Windows reads the name in the OEM code page')
-    def test_utf_8_names_without_the_flag_are_read_as_utf_8(self):
-        super().test_utf_8_names_without_the_flag_are_read_as_utf_8()
-
     def _listed(self, path):
         archive = self._handler(path)
         try:
@@ -562,8 +555,6 @@ class SevenZipLegacyNameTest(ZipLegacyNameTest):
         for name in listed:
             name.encode('utf-8')
 
-    @unittest.skipIf(sys.platform == 'win32',
-                     '7-Zip for Windows reads the name in the OEM code page')
     def test_a_page_listed_under_its_decoded_name_is_extracted(self):
         archive = self._handler(self._legacy_zip(['Übersicht.jpg'], 'utf-8'))
         try:
@@ -573,6 +564,55 @@ class SevenZipLegacyNameTest(ZipLegacyNameTest):
             archive.close()
         with open(os.path.join(self.tmp_dir, 'Übersicht.jpg'), 'rb') as fp:
             self.assertEqual(b'x', fp.read())
+
+    def test_windows_7_zip_is_asked_for_the_bytes_of_a_name(self):
+        """What 7-Zip for Windows prints, played to the handler on any
+        system: a name stored without the UTF-8 flag comes back read in
+        the OEM code page, until 7z is asked for ISO 8859-1, which gives
+        each byte back as itself."""
+        stored = 'Übersicht.jpg'.encode('utf-8')
+
+        def listing(name, flag=''):
+            return ('Path = book.zip\nType = zip\n\n----------\n'
+                    'Path = %s\nSize = 1\nAttributes = A\n'
+                    'Characteristics = %s\n\n' % (name, flag))
+
+        calls = []
+
+        def run(args, **_kwargs):
+            calls.append(args)
+            if sevenzip_external._BYTES_CODE_PAGE in args:
+                out = listing(stored.decode('latin-1'))
+            else:
+                out = listing(stored.decode('cp437'))
+            return subprocess.CompletedProcess(args, 0, stdout=out)
+
+        archive = self._handler('book.zip')
+        with unittest.mock.patch.object(sevenzip_external, '_WINDOWS', True), \
+                unittest.mock.patch.object(sevenzip_external.subprocess, 'run', run), \
+                unittest.mock.patch.object(sevenzip_external.SevenZipArchive,
+                                           '_find_7z_executable', return_value='7z'):
+            self.assertEqual(['Übersicht.jpg'], archive.list_contents())
+            self.assertEqual(2, len(calls))
+            self.assertIn(sevenzip_external._BYTES_CODE_PAGE,
+                          archive._get_extract_arguments())
+            self.assertEqual(stored.decode('latin-1'),
+                             archive._original_filename('Übersicht.jpg'))
+
+    def test_a_name_with_the_utf_8_flag_is_left_as_7_zip_read_it(self):
+        def run(args, **_kwargs):
+            return subprocess.CompletedProcess(args, 0, stdout=(
+                'Path = book.zip\nType = zip\n\n----------\n'
+                'Path = Übersicht.jpg\nSize = 1\nCharacteristics = UTF8\n\n'))
+
+        archive = self._handler('book.zip')
+        with unittest.mock.patch.object(sevenzip_external, '_WINDOWS', True), \
+                unittest.mock.patch.object(sevenzip_external.subprocess, 'run', run), \
+                unittest.mock.patch.object(sevenzip_external.SevenZipArchive,
+                                           '_find_7z_executable', return_value='7z'):
+            self.assertEqual(['Übersicht.jpg'], archive.list_contents())
+            self.assertNotIn(sevenzip_external._BYTES_CODE_PAGE,
+                             archive._get_extract_arguments())
 
     def test_every_page_comes_out_of_the_stream(self):
         names = ['表紙.jpg', '第01話.jpg', 'あとがき.png', '第02話.jpg']

@@ -4,6 +4,7 @@ import functools
 import re
 import os
 import subprocess
+import sys
 import tempfile
 from collections.abc import Iterable, Iterator
 
@@ -11,6 +12,20 @@ from mcomix import process
 from mcomix import log
 from mcomix.archive import archive_base
 from mcomix.i18n import _
+
+
+#: Whether 7z is 7-Zip for Windows, which reads a zip entry's name that
+#: lacks the UTF-8 flag in a code page of its own choosing: the OEM code
+#: page in some builds, UTF-8 with every byte that is not UTF-8 turned
+#: into a private character in others.  Either way the bytes the name
+#: was stored as never reach MComix.  7z elsewhere prints those bytes.
+_WINDOWS = sys.platform == 'win32'
+
+#: What makes 7-Zip for Windows read those names in ISO 8859-1 instead,
+#: which turns each byte into the character with the same number and so
+#: gives the bytes back.  Only a zip takes it: the 7z format refuses to
+#: open with it at all.
+_BYTES_CODE_PAGE = '-mcp=28591'
 
 
 class SevenZipArchive(archive_base.ExternalExecutableArchive):
@@ -42,6 +57,12 @@ class SevenZipArchive(archive_base.ExternalExecutableArchive):
         #: attributes seen for it say it is a directory.
         self._pending: str | None = None
         self._pending_is_directory = False
+        #: Whether the listing is of a zip, and the names in it stored
+        #: without the UTF-8 flag.
+        self._is_zip = False
+        self._flagless: set[str] = set()
+        #: Whether 7z is to read those names as bytes (_BYTES_CODE_PAGE).
+        self._names_as_bytes = False
 
     def _get_executable(self) -> str | None:
         return SevenZipArchive._find_7z_executable()
@@ -68,6 +89,8 @@ class SevenZipArchive(archive_base.ExternalExecutableArchive):
         output rather than leaving it to the console's code page.
         """
         args = [self._executable, 'l', '-slt', '-sccUTF-8']
+        if self._names_as_bytes:
+            args.append(_BYTES_CODE_PAGE)
         args.append(self._get_password_argument())
         args.extend(('--', self.archive))
         return args
@@ -81,6 +104,8 @@ class SevenZipArchive(archive_base.ExternalExecutableArchive):
         or a wildcard.
         """
         args = [self._executable, 'x', '-so', '-sccUTF-8']
+        if self._names_as_bytes:
+            args.append(_BYTES_CODE_PAGE)
         if list_file is not None:
             args.append('-i@' + list_file)
         args.append(self._get_password_argument())
@@ -120,6 +145,8 @@ class SevenZipArchive(archive_base.ExternalExecutableArchive):
                 raise self.EncryptedHeader()
             if line == 'Solid = +':
                 self._is_solid = True
+            elif line == 'Type = zip':
+                self._is_zip = True
 
         if self._state == self.STATE_LISTING:
             if line.startswith('Path = '):
@@ -141,6 +168,9 @@ class SevenZipArchive(archive_base.ExternalExecutableArchive):
                 self._contents.append((self._path, int(line[7:])))
             elif line == 'Encrypted = +':
                 self._is_encrypted = True
+            elif (line.startswith('Characteristics = ') and self._is_zip
+                  and 'UTF8' not in line[18:].split()):
+                self._flagless.add(self._path)
 
         return None
 
@@ -168,11 +198,14 @@ class SevenZipArchive(archive_base.ExternalExecutableArchive):
         if not self._get_executable():
             return
 
-        for retry_count in range(2):
+        for attempt in range(3):
             self._state = self.STATE_HEADER
             self._path = ''
             self._pending = None
             self._pending_is_directory = False
+            self._contents = []
+            self._is_zip = False
+            self._flagless = set()
             # UTF-8 is asked for, but a name a zip stores without its
             # UTF-8 flag comes through as the bytes it was stored as.
             # Those are kept as surrogates here and read back below.
@@ -190,13 +223,20 @@ class SevenZipArchive(archive_base.ExternalExecutableArchive):
                 if pending is not None:
                     names.append(pending)
             except self.EncryptedHeader:
-                if retry_count == 0:
+                if attempt == 0:
                     continue
-            decode = archive_base.surrogate_name_decoder(names)
+            if (_WINDOWS and self._is_zip and not self._names_as_bytes
+                    and not all(name.isascii() for name in self._flagless)):
+                # Read in 7-Zip's own code page: list them again as bytes.
+                self._names_as_bytes = True
+                continue
+            stored = {name: self._as_stored(name) for name in names}
+            decode = archive_base.surrogate_name_decoder(list(stored.values()))
             # Listed under the name it was written in; the stream the
             # files come out of is matched against the same names, and
             # a single file is asked of 7z by the one it printed.
-            shown = [self._unicode_filename(name, decode) for name in names]
+            shown = [self._unicode_filename(name, lambda name: decode(stored[name]))
+                     for name in names]
             as_shown = dict(zip(names, shown))
             self._contents = [(as_shown.get(name, name), size)
                               for name, size in self._contents]
@@ -204,6 +244,21 @@ class SevenZipArchive(archive_base.ExternalExecutableArchive):
             break
 
         self.filenames_initialized = True
+
+    def _as_stored(self, name: str) -> str:
+        """<name> as the bytes it was stored as, read as UTF-8 with the
+        rest kept as surrogates - the way 7z's listing reads everywhere
+        but on Windows, and the way surrogate_name_decoder() takes it.
+
+        Only a name 7-Zip for Windows read in ISO 8859-1 needs turning
+        back; every other name 7z printed is what it stands for.
+        """
+        if not self._names_as_bytes or name not in self._flagless:
+            return name
+        try:
+            return name.encode('latin-1').decode('utf-8', 'surrogateescape')
+        except UnicodeEncodeError:
+            return name
 
     def extract(self, filename: str, destination_dir: str) -> None:
         """ Extract <filename> from the archive to <destination_dir>.
