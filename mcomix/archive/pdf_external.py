@@ -100,7 +100,8 @@ class PdfArchive(archive_base.BaseArchive):
     def iter_contents(self) -> Iterator[str]:
         """Yield a name per page, which is all a PDF has to list."""
         proc = subprocess.run(self._mupdf.mutool + ['show', '--', self.archive, 'pages'],
-                              stdout=subprocess.PIPE, encoding='utf-8')
+                              stdout=subprocess.PIPE, encoding='utf-8',
+                              creationflags=process.CREATIONFLAGS)
         for line in proc.stdout.splitlines():
             if line.startswith('page '):
                 yield line.split()[1] + '.png'
@@ -123,7 +124,8 @@ class PdfArchive(archive_base.BaseArchive):
         # Try to find optimal DPI.
         cmd = mupdf.mudraw + mupdf.trace_args + ['--', self.archive, str(page_num)]
         log.debug('finding optimal DPI for %s: %s', filename, ' '.join(cmd))
-        proc = subprocess.run(cmd, stdout=subprocess.PIPE, encoding='utf-8', errors='replace')
+        proc = subprocess.run(cmd, stdout=subprocess.PIPE, encoding='utf-8', errors='replace',
+                              creationflags=process.CREATIONFLAGS)
         max_size = 0
         max_dpi = PDF_RENDER_DPI_DEF
         for line in proc.stdout.splitlines():

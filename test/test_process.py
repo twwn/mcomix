@@ -257,3 +257,41 @@ class LaunchTest(MComixTest):
         with self._as_main('mcomix.__main__'):
             process.launch_mcomix('/books/one.cbz', 0)
         self.assertNotIn('--page', self.spawned[0])
+
+
+class NoConsoleWindowTest(unittest.TestCase):
+
+    """Every program MComix starts is started without a console window.
+
+    MComix.exe is a windowed program with no console of its own, so a
+    console program it starts - 7z, unrar, mutool - gets a new console
+    window, which flashes up for as long as it runs, unless it is
+    started with CREATE_NO_WINDOW.  process.call() and process.popen()
+    pass process.CREATIONFLAGS; a call to subprocess itself has to
+    pass it too.
+    """
+
+    _STARTS = {'run', 'Popen', 'call', 'check_call', 'check_output'}
+
+    def test_every_subprocess_call_passes_the_creation_flags(self):
+        import ast
+        root = os.path.dirname(process.__file__)
+        missing = []
+        for directory, _dirs, files in os.walk(root):
+            for name in files:
+                if not name.endswith('.py'):
+                    continue
+                path = os.path.join(directory, name)
+                with open(path, encoding='utf-8') as source:
+                    tree = ast.parse(source.read(), path)
+                for node in ast.walk(tree):
+                    if (isinstance(node, ast.Call)
+                            and isinstance(node.func, ast.Attribute)
+                            and node.func.attr in self._STARTS
+                            and isinstance(node.func.value, ast.Name)
+                            and node.func.value.id == 'subprocess'
+                            and not any(keyword.arg == 'creationflags'
+                                        for keyword in node.keywords)):
+                        missing.append('%s:%d' % (
+                            os.path.relpath(path, root), node.lineno))
+        self.assertEqual(missing, [])

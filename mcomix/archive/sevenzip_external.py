@@ -178,7 +178,8 @@ class SevenZipArchive(archive_base.ExternalExecutableArchive):
             # Those are kept as surrogates here and read back below.
             proc = subprocess.run(self._get_list_arguments(),
                                   stdout=subprocess.PIPE, stderr=process.STDOUT,
-                                  encoding='utf-8', errors='surrogateescape')
+                                  encoding='utf-8', errors='surrogateescape',
+                                  creationflags=process.CREATIONFLAGS)
             names: list[str] = []
             try:
                 for line in proc.stdout.splitlines():
@@ -321,7 +322,8 @@ class TarArchive(SevenZipArchive):
         # not be UTF-8; what is read here is the member's size alone.
         proc = subprocess.run(self._get_list_arguments(),
                               stdout=subprocess.PIPE, stderr=process.STDOUT,
-                              encoding='utf-8', errors='surrogateescape')
+                              encoding='utf-8', errors='surrogateescape',
+                              creationflags=process.CREATIONFLAGS)
         for line in proc.stdout.splitlines():
             self._parse_list_output_line(line.rstrip(os.linesep))
         if self._contents:
