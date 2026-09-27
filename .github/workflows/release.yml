@@ -316,11 +316,14 @@ jobs:
           echo "Published [MComix $TAG]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/tag/$TAG)." >> "$GITHUB_STEP_SUMMARY"
 
   # A release published with the workflow's own token starts no other
-  # workflow, so the package managers are called from here.
+  # workflow, so the package managers are called from here, handed the
+  # two secrets they use and no others.
   publish:
     name: Put it out
     needs: [setup, release]
     uses: ./.github/workflows/publish.yml
     with:
       tag: ${{ needs.setup.outputs.version }}
-    secrets: inherit
+    secrets:
+      CHOCOLATEY_API_KEY: ${{ secrets.CHOCOLATEY_API_KEY }}
+      WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
