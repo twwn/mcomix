@@ -406,6 +406,12 @@ class MComixTest(unittest.TestCase):
         # profile folder from USERPROFILE, and MComix' settings are under
         # APPDATA.  Without these the tests reached the real profile.
         os.environ['USERPROFILE'] = home_dir
+        if sys.platform == 'win32':
+            # Windows finds the Desktop as %USERPROFILE%\Desktop and
+            # answers nothing for one that does not exist; GTK's places
+            # sidebar hands that nothing to g_filename_to_uri(), and
+            # every file chooser warned twice.
+            os.mkdir(os.path.join(home_dir, 'Desktop'))
         os.environ['APPDATA'] = os.path.join(home_dir, 'AppData', 'Roaming')
         os.environ['LOCALAPPDATA'] = os.path.join(home_dir, 'AppData', 'Local')
         # Create and setup temporary directory.
