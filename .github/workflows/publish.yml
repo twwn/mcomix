@@ -46,6 +46,7 @@ env:
 jobs:
   chocolatey:
     runs-on: windows-2025
+    timeout-minutes: 15
     env:
       CHOCOLATEY_API_KEY: ${{ secrets.CHOCOLATEY_API_KEY }}
     defaults:
@@ -79,6 +80,7 @@ jobs:
 
   winget:
     runs-on: windows-2025
+    timeout-minutes: 15
     env:
       WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
     steps:

@@ -28,6 +28,10 @@ jobs:
     # behind, and the floors job below already has Ubuntu 24.04's GTK
     # 4.14; 26.04 has GTK 4.22 and libadwaita 1.9.
     runs-on: ubuntu-26.04
+    # A few minutes a run; a suite that hangs, as it does when a test
+    # leaves a worker thread running, ends here and not after GitHub's
+    # six hours.
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -69,6 +73,7 @@ jobs:
     # Ubuntu 24.04, pinned, whose GTK 4.14 is also the oldest the suite
     # runs on.
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7

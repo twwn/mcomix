@@ -46,6 +46,7 @@ jobs:
   setup:
     name: What to build
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
     outputs:
       version: ${{ steps.what.outputs.version }}
       release: ${{ steps.what.outputs.release }}
@@ -91,6 +92,7 @@ jobs:
     name: Source archive
     needs: setup
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
@@ -110,6 +112,7 @@ jobs:
     name: Windows packages
     needs: setup
     runs-on: windows-2025
+    timeout-minutes: 30
     env:
       VERSION: ${{ needs.setup.outputs.version }}
     defaults:
@@ -266,6 +269,7 @@ jobs:
     needs: [setup, source, windows]
     if: needs.setup.outputs.release == 'true'
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
     permissions:
       contents: write
       id-token: write
