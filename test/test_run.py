@@ -142,8 +142,11 @@ class ArgumentTest(MComixTest):
         opts, args = run.parse_arguments(['-o', 'mcomix.log', '/books/one.cbz'])
         self.assertEqual(args, ['/books/one.cbz'])
         self.assertEqual(opts.output, 'mcomix.log')
+        # Python 3.14's argparse colours its help where the environment
+        # asks for colour, as FORCE_COLOR does, whatever it writes to.
         with unittest.mock.patch('sys.stdout', new_callable=io.StringIO) \
-                as printed, self.assertRaises(SystemExit):
+                as printed, self.assertRaises(SystemExit), \
+                unittest.mock.patch.dict(os.environ, {'PYTHON_COLORS': '0'}):
             run.parse_arguments(['--help'])
         self.assertIn('-o FILE', printed.getvalue())
 
