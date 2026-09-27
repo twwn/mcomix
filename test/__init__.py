@@ -171,6 +171,17 @@ def hold_open(popover):
     popover.set_autohide(False)
 
 
+class WaitGaveUp(UserWarning):
+    """A wait_for() that ran out of time.
+
+    Warned rather than raised: a caller that asserts what wait_for()
+    answers fails anyway, and one that does not has still spent all of
+    <seconds>.  pytest's summary of warnings then says which waits did,
+    by the line that called them, which is where a slow suite on a slow
+    system spends its time.
+    """
+
+
 def wait_for(predicate, seconds=5):
     """Run the main loop until <predicate> holds, or time runs out.
 
@@ -189,7 +200,12 @@ def wait_for(predicate, seconds=5):
             if predicate():
                 return True
             context.iteration(True)
-        return predicate()
+        held = predicate()
+        if not held:
+            import warnings
+            warnings.warn('gave up waiting after %s s' % seconds,
+                          WaitGaveUp, stacklevel=2)
+        return held
     finally:
         GLib.source_remove(heartbeat)
 
