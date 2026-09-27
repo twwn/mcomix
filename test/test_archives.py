@@ -456,9 +456,13 @@ class ZipLegacyNameTest(MComixTest):
         return path
 
     def _listed(self, path):
+        """The names listed, with "/" as the archive writes them: MComix
+        lists them with the system's separator, and what is tested here
+        is how they are decoded."""
         archive = zip.ZipArchive(path)
         try:
-            return archive.list_contents()
+            return [name.replace(os.sep, '/')
+                    for name in archive.list_contents()]
         finally:
             archive.close()
 
@@ -546,7 +550,8 @@ class SevenZipLegacyNameTest(ZipLegacyNameTest):
     def _listed(self, path):
         archive = self._handler(path)
         try:
-            return archive.list_contents()
+            return [name.replace(os.sep, '/')
+                    for name in archive.list_contents()]
         finally:
             archive.close()
 

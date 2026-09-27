@@ -2111,7 +2111,8 @@ class MainWindowTest(MComixTest):
 
     def test_for_loose_images_it_leaves_out_the_place_of_the_file(self):
         self._folder_book(3)
-        self.assertEqual(['folder/01.png\n\nPage 1 / 3'], self._info_panel())
+        self.assertEqual([os.path.join('folder', '01.png') + '\n\nPage 1 / 3'],
+                         self._info_panel())
 
     def test_with_no_book_open_it_shows_nothing(self):
         self.window.filehandler.close_file()

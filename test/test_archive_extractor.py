@@ -24,9 +24,10 @@ class _ExtractorTest(MComixTest):
     """One extractor over the ZIP fixture, set up and listed."""
 
     #: What 01-ZIP-Normal.zip holds, less the directory entry.
-    MEMBERS = ('images/01-JPG-Indexed.jpg', 'images/02-JPG-RGB.jpg',
-               'images/03-PNG-RGB.png', 'images/04-PNG-Indexed.png',
-               'images/Comment.txt')
+    #: As MComix lists them: with the system's separator.
+    MEMBERS = tuple(os.path.join('images', name) for name in (
+        '01-JPG-Indexed.jpg', '02-JPG-RGB.jpg', '03-PNG-RGB.png',
+        '04-PNG-Indexed.png', 'Comment.txt'))
 
     def setUp(self):
         super().setUp()
