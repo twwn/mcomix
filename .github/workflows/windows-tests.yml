@@ -50,7 +50,7 @@ jobs:
           $env:PATH = "$env:RUNNER_TEMP\msys64\ucrt64\bin;$env:PATH;$env:ProgramFiles\7-Zip"
           python -c "import os, sys; print(sys.executable, repr(os.sep), sorted(k for k in os.environ if k.upper().startswith(('MSYS', 'MINGW')))); assert os.sep == '\\'"
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          python -m pytest test/ -q -n auto -rfE --junitxml=pytest.xml
+          python -m pytest test/ -q -n auto -rfE --durations=30 --junitxml=pytest.xml
       - uses: actions/upload-artifact@v7
         if: always()
         with:
