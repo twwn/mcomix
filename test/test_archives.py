@@ -1085,9 +1085,10 @@ class DirectoryEntryTest(MComixTest):
     """
 
     #: The five members each fixture really holds.
-    MEMBERS = ['images/01-JPG-Indexed.jpg', 'images/02-JPG-RGB.jpg',
-               'images/03-PNG-RGB.png', 'images/04-PNG-Indexed.png',
-               'images/Comment.txt']
+    #: As MComix lists them: with the system's separator.
+    MEMBERS = [os.path.join('images', name) for name in (
+        '01-JPG-Indexed.jpg', '02-JPG-RGB.jpg', '03-PNG-RGB.png',
+        '04-PNG-Indexed.png', 'Comment.txt')]
 
     #: Which handler to read which fixture with.  The externally driven
     #: handlers read more than the format they are named after, and each
