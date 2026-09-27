@@ -24,8 +24,10 @@ jobs:
   gates:
     # The newest Ubuntu's own GTK 4, with PyGObject and pycairo built by
     # pip against it, so that each Python in the matrix gets bindings of
-    # its own.
-    runs-on: ubuntu-latest
+    # its own.  Named, not ubuntu-latest: that label lags a release
+    # behind, and the floors job below already has Ubuntu 24.04's GTK
+    # 4.14; 26.04 has GTK 4.22 and libadwaita 1.9.
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:
