@@ -39,15 +39,16 @@ jobs:
             mingw-w64-ucrt-x86_64-python-pytest-xdist
             mingw-w64-ucrt-x86_64-gettext-tools
       # From PowerShell, with UCRT64's programs and the runner's 7-Zip on
-      # the path and nothing else of MSYS2's: MComix.exe runs that way,
-      # started from Explorer.  In an msys2 shell MSYSTEM is set, which
-      # makes MSYS2's Python write paths with "/", and the shell put it
-      # back for the Python it started even through "env -u MSYSTEM".
+      # the path and nothing else of MSYS2's, and without MSYSTEM, which
+      # makes MSYS2's Python write paths with "/": MComix.exe runs that
+      # way, started from Explorer.  setup-msys2 sets MSYSTEM for every
+      # step after it, this one included, so it is taken out here.
       - name: pytest
         shell: pwsh
         run: |
+          Remove-Item Env:MSYSTEM -ErrorAction SilentlyContinue
           $env:PATH = "$env:RUNNER_TEMP\msys64\ucrt64\bin;$env:PATH;$env:ProgramFiles\7-Zip"
-          python -c "import os, sys; print(sys.executable, repr(os.sep)); assert os.sep == '\\'"
+          python -c "import os, sys; print(sys.executable, repr(os.sep), sorted(k for k in os.environ if k.upper().startswith(('MSYS', 'MINGW')))); assert os.sep == '\\'"
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           python -m pytest test/ -q -n auto -rfE --junitxml=pytest.xml
       - uses: actions/upload-artifact@v7
