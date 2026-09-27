@@ -38,6 +38,7 @@ jobs:
             mingw-w64-ucrt-x86_64-python-pytest
             mingw-w64-ucrt-x86_64-python-pytest-xdist
             mingw-w64-ucrt-x86_64-gettext-tools
+            mingw-w64-ucrt-x86_64-gdb
       # From PowerShell, with UCRT64's programs and the runner's 7-Zip on
       # the path and nothing else of MSYS2's, and without MSYSTEM, which
       # makes MSYS2's Python write paths with "/": MComix.exe runs that
@@ -67,6 +68,20 @@ jobs:
             test/test_file_handler.py::RememberedResumeAnswerTest `
             test/test_edit_dialog.py::EditArchiveDialogTest::test_the_question_before_overwriting_takes_clicks
           python -c "import pstats; s = pstats.Stats('profile.out'); s.sort_stats('tottime').print_stats(30); s.sort_stats('cumulative').print_stats('mcomix', 50)"
+      # A worker dies of an access violation in most runs, mostly in
+      # MainWindow.present() of a new window, and Python cannot print the
+      # C stack on Windows.  The files it died in, in one process under
+      # gdb, which prints the C stack where it stops.
+      - name: C stack of a crash
+        if: always()
+        continue-on-error: true
+        timeout-minutes: 25
+        shell: pwsh
+        run: |
+          Remove-Item Env:MSYSTEM -ErrorAction SilentlyContinue
+          $env:PATH = "$env:RUNNER_TEMP\msys64\ucrt64\bin;$env:PATH;$env:ProgramFiles\7-Zip"
+          gdb -batch -ex run -ex "bt 40" -ex "info registers rip" --args python -m pytest -q -p no:xdist -p no:faulthandler `
+            test/test_dialog_freed.py test/test_edit_dialog.py test/test_key_press.py
       - uses: actions/upload-artifact@v7
         if: always()
         with:
