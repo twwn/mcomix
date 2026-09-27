@@ -92,6 +92,20 @@ class MainWindowTest(MComixTest):
     def _pump(self, rounds=2000):
         pump(rounds)
 
+    def test_the_window_lets_go_of_the_focus_before_its_surface(self):
+        # See DialogTest's test of the same name: the text field holding
+        # the focus on Windows only stops filtering the window's
+        # messages if it loses the focus while the surface is there.
+        entry = Gtk.Entry()
+        self.window.statusbar.append(entry)
+        entry.grab_focus()
+        self.assertIs(self.window.get_focus().get_parent(), entry)
+        focus_when_unrealized = []
+        entry.connect('unrealize', lambda _entry: focus_when_unrealized.append(
+            self.window.get_focus()))
+        # tearDown() destroys the window, after this test has run.
+        self.addCleanup(self.assertEqual, focus_when_unrealized, [None])
+
     @staticmethod
     def _children(widget):
         children = []

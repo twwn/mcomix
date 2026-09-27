@@ -88,6 +88,25 @@ class DialogTest(MComixTest):
         self.dialog.emit('close-request')
         self.assertEqual(self.answers, [Response.DELETE_EVENT])
 
+    def test_a_destroyed_dialog_lets_go_of_the_focus_before_its_surface(self):
+        # On Windows the text field holding the focus registers a filter
+        # for the window's messages and takes it off only when it loses
+        # the focus while the window still has its surface.  Left there,
+        # the filter outlived the field it belongs to, and the next
+        # window's messages reached freed memory: a crash, in some later
+        # test or in the reader's session.
+        entry = Gtk.Entry()
+        self.dialog.get_content_area().append(entry)
+        self.dialog.present()
+        pump()
+        entry.grab_focus()
+        self.assertIsNotNone(self.dialog.get_focus())
+        focus_when_unrealized = []
+        entry.connect('unrealize', lambda _entry: focus_when_unrealized.append(
+            self.dialog.get_focus()))
+        self.dialog.destroy()
+        self.assertEqual(focus_when_unrealized, [None])
+
     def test_a_subclass_may_keep_a_list_of_its_own_buttons(self):
         # The file chooser does, under the name _buttons, which is what
         # this base used to keep its own responses in: it was silently

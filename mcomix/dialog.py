@@ -97,6 +97,7 @@ class Dialog(Gtk.Window):
         # After everything else that waits for it: nothing is left to
         # run once the dialog's widgets have let go of it.
         self.connect_after('unrealize', Dialog._release)
+        widgets.drop_focus_when_closed(self)
         # GTK 4.14 left a window it destroyed along with its parent still
         # pointing at that parent, which was then freed; freeing the
         # window afterwards disconnected its handlers from freed memory,

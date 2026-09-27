@@ -294,6 +294,26 @@ class Releasable:
         """Let go of everything that would keep the closed window alive."""
 
 
+def drop_focus_when_closed(window: Gtk.Window) -> None:
+    """Take the focus off <window>'s widgets before its surface goes.
+
+    GTK's input method context on Windows (4.24, gtkimcontextime.c)
+    starts filtering the window's messages when a text field takes the
+    focus, and stops only when the field loses the focus while the
+    window still has its surface.  A window destroyed with a text field
+    focused left the filter behind, pointing at a context that was then
+    freed; the next messages any window received ran it, and Windows
+    workers of the test suite died of access violations in DestroyWindow
+    and present() (GTK issue 8289 is the same code).  An 'unrealize'
+    handler runs before GTK's own, while the surface is still there.
+    """
+    window.connect('unrealize', _drop_focus)
+
+
+def _drop_focus(window: Gtk.Window) -> None:
+    window.set_focus(None)
+
+
 def release(window: Gtk.Window) -> None:
     """Let go of what <window>'s widgets hold of MComix, once it is closed.
 

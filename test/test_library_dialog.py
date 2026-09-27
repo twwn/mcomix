@@ -95,6 +95,19 @@ class LibraryDialogTest(_LibraryWindowTest):
         closed.assert_called_once_with()
         self.assertIsNone(main_dialog.get_dialog())
 
+    def test_the_window_lets_go_of_the_focus_before_its_surface(self):
+        # See DialogTest's test of the same name.
+        dialog = self._open()
+        entry = next(widget for widget in widgets._descendants(dialog)
+                     if isinstance(widget, Gtk.Entry))
+        entry.grab_focus()
+        self.assertIs(dialog.get_focus().get_parent(), entry)
+        focus_when_unrealized = []
+        entry.connect('unrealize', lambda _entry: focus_when_unrealized.append(
+            dialog.get_focus()))
+        main_dialog._close_dialog()
+        self.assertEqual(focus_when_unrealized, [None])
+
     def test_the_window_carries_the_three_areas(self):
         dialog = self._open()
         self.assertIsNotNone(dialog.book_area)

@@ -65,6 +65,7 @@ class MainWindow(Gtk.Window):
                  open_page: int = 0,
                  open_member: str | None = None) -> None:
         super().__init__()
+        widgets.drop_focus_when_closed(self)
 
         # ----------------------------------------------------------------
         # Attributes

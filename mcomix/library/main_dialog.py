@@ -46,6 +46,7 @@ class _LibraryDialog(Gtk.Window):
     def __init__(self, window: "main.MainWindow",
                  file_handler: "file_handler_module.FileHandler") -> None:
         super().__init__()
+        widgets.drop_focus_when_closed(self)
 
         self.main_window = window
 
