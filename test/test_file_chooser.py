@@ -257,13 +257,22 @@ class FileChooserTest(MComixTest):
                                      'All images'])
 
     def test_the_formats_a_reader_opens_come_before_the_rest(self):
-        names = [f.get_name() for f in self.dialog.list_filters()]
         # Alphabetical order put ANI, APM and APNG ahead of JPEG and PNG.
-        for earlier, later in (('ZIP archives', 'LHA archives'),
-                               ('JPEG images', 'ANI images'),
-                               ('PNG images', 'BMP images')):
-            self.assertLess(names.index(earlier), names.index(later),
-                            '%s should come before %s' % (earlier, later))
+        # Which formats there are depends on the gdk-pixbuf: the one on
+        # Ubuntu 26.04, which decodes through glycin, offers no ANI.
+        names = [f.get_name() for f in self.dialog.list_filters()]
+        for kind, common in (
+                ('archives', file_chooser_base_dialog._COMMON_ARCHIVES),
+                ('images', file_chooser_base_dialog._COMMON_IMAGES)):
+            with self.subTest(kind):
+                offered = [name.removesuffix(' ' + kind) for name in names
+                           if name.endswith(' ' + kind)
+                           and not name.startswith('All ')]
+                known = [name for name in common if name in offered]
+                self.assertIn(common[0], known)
+                self.assertEqual(
+                    offered,
+                    known + sorted(set(offered) - set(known)))
 
     def test_closing_the_chooser_stops_the_preview_poll(self):
         """Nothing announces a change of selection, so the preview is
