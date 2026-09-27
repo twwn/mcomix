@@ -7,6 +7,10 @@ updates:
     directory: /
     schedule:
       interval: monthly
+    # A release a week old or more: a compromised one is usually found
+    # and pulled within days, before it would be proposed here.
+    cooldown:
+      default-days: 7
     groups:
       actions:
         patterns: ["*"]
