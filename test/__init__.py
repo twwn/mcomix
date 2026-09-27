@@ -265,6 +265,23 @@ default_prefs = copy.deepcopy(dict(prefs))
 _ERROR_DIR_NOT_EMPTY = 145
 
 
+class RemovalWaited(UserWarning):
+    """A test directory that Windows would not let go of at once.
+
+    Warned, like WaitGaveUp, so that pytest's summary of warnings says
+    which tests waited for which of their folders, and for how long:
+    a handle something still holds on a folder costs the test up to
+    five seconds of retrying before it is removed.
+    """
+
+
+def _removal_waited(path, seconds):
+    import warnings
+    inside = os.path.relpath(path, _TMP_ROOT).split(os.sep, 1)[1:]
+    warnings.warn('waited %d s to remove %s' % (round(seconds), ''.join(inside) or '.'),
+                  RemovalWaited)
+
+
 def _make_writable_and_retry(function, path, error):
     """Let shutil.rmtree() remove what Windows keeps it from removing.
 
@@ -279,12 +296,14 @@ def _make_writable_and_retry(function, path, error):
         return
     if getattr(error, 'winerror', None) != _ERROR_DIR_NOT_EMPTY:
         raise error
-    deadline = time.monotonic() + 5
+    start = time.monotonic()
+    deadline = start + 5
     while True:
         gc.collect()
         pump(100)
         try:
             function(path)
+            _removal_waited(path, time.monotonic() - start)
             return
         except OSError as again:
             if (getattr(again, 'winerror', None) != _ERROR_DIR_NOT_EMPTY
