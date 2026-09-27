@@ -51,6 +51,20 @@ jobs:
           python -c "import os, sys; print(sys.executable, repr(os.sep), sorted(k for k in os.environ if k.upper().startswith(('MSYS', 'MINGW')))); assert os.sep == '\\'"
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           python -m pytest test/ -q -n auto -rfE --durations=30 --junitxml=pytest.xml
+      # Window tests take 11-14 s each here and well under one on Linux.
+      # Three of them alone, in one process, under the profiler: whether
+      # they are slow without the other workers, and where the time goes.
+      - name: profile three window tests
+        if: always()
+        shell: pwsh
+        run: |
+          Remove-Item Env:MSYSTEM -ErrorAction SilentlyContinue
+          $env:PATH = "$env:RUNNER_TEMP\msys64\ucrt64\bin;$env:PATH;$env:ProgramFiles\7-Zip"
+          python -m cProfile -o profile.out -m pytest -q -p no:xdist --durations=0 `
+            test/test_preferences_dialog.py::PreferenceCallbacksTest::test_the_double_page_choice_is_stored_and_redrawn `
+            test/test_edit_dialog.py::EditArchiveDialogTest::test_control_z_takes_a_removal_back `
+            test/test_dialog_freed.py::MainWindowDialogsFreedTest::test_preferences
+          python -c "import pstats; s = pstats.Stats('profile.out'); s.sort_stats('tottime').print_stats(30); s.sort_stats('cumulative').print_stats('mcomix', 50)"
       - uses: actions/upload-artifact@v7
         if: always()
         with:
