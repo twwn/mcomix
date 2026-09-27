@@ -5,6 +5,7 @@ from gi.repository import GLib, GObject, Gtk
 from mcomix import widgets
 
 import enum
+import weakref
 from collections.abc import Callable
 from typing import Any
 
@@ -96,6 +97,24 @@ class Dialog(Gtk.Window):
         # After everything else that waits for it: nothing is left to
         # run once the dialog's widgets have let go of it.
         self.connect_after('unrealize', Dialog._release)
+        # GTK 4.14 left a window it destroyed along with its parent still
+        # pointing at that parent, which was then freed; freeing the
+        # window afterwards disconnected its handlers from freed memory,
+        # a segmentation fault.  The dialog lets go of the parent itself,
+        # when the dialog is destroyed and when the parent is, after
+        # GTK's own handler has run.
+        self._parent_destroyed: int | None = None
+        parent = self.get_transient_for()
+        if parent is not None:
+            dialog = weakref.ref(self)
+
+            def parent_destroyed(parent: Gtk.Widget) -> None:
+                still = dialog()
+                if still is not None:
+                    still._let_go_of_parent()
+
+            self._parent_destroyed = parent.connect('destroy',
+                                                    parent_destroyed)
 
     # -- What Gtk.Dialog offered ------------------------------------------
 
@@ -165,6 +184,18 @@ class Dialog(Gtk.Window):
         """
         self._while_open.append(
             (instance, instance.connect(signal, handler, *args)))
+
+    def _let_go_of_parent(self) -> None:
+        """Stop pointing at the window the dialog was over."""
+        parent = self.get_transient_for()
+        if parent is not None and self._parent_destroyed is not None:
+            parent.disconnect(self._parent_destroyed)
+        self._parent_destroyed = None
+        self.set_transient_for(None)
+
+    def destroy(self) -> None:
+        self._let_go_of_parent()
+        super().destroy()
 
     def _release(self) -> None:
         """Let go of everything that would keep the closed dialog alive."""

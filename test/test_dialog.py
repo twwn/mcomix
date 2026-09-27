@@ -190,6 +190,21 @@ class MessageDialogTest(MComixTest):
         self.assertTrue(
             self._build(destroy_with_parent=True).get_destroy_with_parent())
 
+    def test_a_closed_dialog_lets_go_of_the_window_it_was_over(self):
+        """GTK 4.14 left a window it destroyed with its parent pointing
+        at that parent, which was then freed, and freeing the dialog
+        afterwards disconnected its handlers from freed memory: a
+        segmentation fault in gc.collect() on the CI.  A dialog that has
+        closed no longer names the window it was over, whichever of the
+        two goes first."""
+        for destroy_with_parent in (False, True):
+            with self.subTest(destroy_with_parent=destroy_with_parent):
+                built = self._build(destroy_with_parent=destroy_with_parent)
+                self.assertIs(built.get_transient_for(), self.parent)
+                built.destroy()
+                pump()
+                self.assertIsNone(built.get_transient_for())
+
     def test_the_buttons_asked_for_are_the_buttons_built(self):
         built = self._build(buttons=Gtk.ButtonsType.YES_NO)
         self.assertIsNotNone(built.get_widget_for_response(Response.YES))
