@@ -73,61 +73,120 @@
 # MComix 4.0.1
 ## Release date: 2026-09-20
 
-### Features
+### New
 
-- A page can be renamed while reading: from the page's menu, from the archive editor, or with F2. A name another page already holds is reported, with a swap or a replace offered. In a folder of images the file is renamed at once; in an archive the change is written with the rest.
-- Two pages side by side can be swapped by dragging one onto the other, as well as with Ctrl+Shift and a click.
-- The archive editor renames comment files too, and says which changes it is offering to write.
-- The page's menu copies the page it was opened over, and it and the archive editor's menus can both be opened from the keyboard.
-- Deleting a file that carries bookmarks offers to remove them, from the library as well as from the window.
-- A change that was not written is offered again when the book closes, and the archive editor asks about its unapplied work before the book is closed out from under it.
-- Books found by a watch-list scan, and pages and comments counted in a message, are counted in each language's own plural forms.
+- Pages can be renamed while reading: from the page menu, the archive editor, or with F2.
+- A name another page already holds is reported, with a swap or a replace offered.
+- In a folder of images the file is renamed at once; in an archive, with the other changes.
+- Two pages side by side swap by dragging one onto the other, or with Ctrl+Shift and a click.
+- The archive editor renames comment files too.
+- The archive editor says which changes it offers to write.
+- The page menu copies the page it was opened over.
+- The page menu and the archive editor's menus open from the keyboard.
+- Deleting a file with bookmarks offers to remove them, from the window and from the library.
+- Unwritten changes are offered again when the book closes.
+- The archive editor asks about its unapplied work before its book is closed.
+- Counts in messages and watch-list scans use each language's plural forms.
 
-### Bug fixes
+### Fixes
 
-- MComix did not start at all when the comment extensions held a bracket, MobiPocket books opened without their pages, and closing the library's Add books dialog crashed MComix.
-- A page whose name held a superscript digit stopped the book opening, a comment file not written in the machine's own encoding could not be read, and ZIP and RAR archives opened with the external unzip and unrar programs lost non-ASCII page names.
-- Closed dialogs, library windows and archive editors were never freed, so everything they showed stayed in memory for the rest of the session, and each library window left another style rule behind for every later style lookup to consult.
-- A book deleted from the window stayed in the library, a bookmark did not follow the book it marks when the book was moved, and the recent files went on offering a book that had been moved or deleted.
-- The library's filter read a per-cent sign as "every book", a book added under a filter was left out if only its path matched, a collection could be named with spaces alone, a watch-list scan added what it found in no particular order, and a scan that failed was reported nowhere.
-- Pages side by side could be laid out wider than the room they had, smart scrolling answered with the page it had left or kept a stale row, and a redraw while a page was on its way lost where the page was to open.
-- The dynamic background colour counted a group of shades in pieces.
-- Letter shortcuts did nothing while Caps Lock was on, Shift+F10 did not open the library's popup menus, and a click on a thumbnail in the sidebar did not turn to that page.
-- A slider in the enhancement dialog undid Ctrl+I, the slideshow button changed size, the status bar showed separators for fields that said nothing, the Comments dialog showed an empty frame while it had no comment, and the file chooser offered image formats that have no extension or are turned off.
-- A page that could not be saved, and a book the library could not delete from disk, were reported only to the log; a save that ran out of room reported the failure twice, the second time as a traceback.
-- A thumbnail of a file named by a relative path was filed under a name no other application would look for, and Open with changed MComix' own working directory to run its command.
-- Eighteen labels in eight languages said something other than what they name, the Hebrew interface read as two voices, and error messages that had lost their "reason: detail" shape have it back.
+- MComix did not start when the comment extensions held a bracket.
+- MobiPocket books opened without pages.
+- Closing the library's Add books dialog crashed MComix.
+- A page name with a superscript digit stopped the book opening.
+- A comment file not in the machine's own encoding could not be read.
+- The external unzip and unrar programs lost non-ASCII page names.
+- Closed dialogs, library windows and archive editors stayed in memory for the whole session.
+- Each library window left a style rule behind, slowing every later style lookup.
+- A book deleted from the window stayed in the library.
+- A bookmark did not follow its book when the book was moved.
+- Recent files kept offering books that were moved or deleted.
+- The library filter read "%" as "every book".
+- A book added under a filter was left out if only its path matched.
+- A collection could be named with spaces alone.
+- Watch-list scans added books in no particular order.
+- A failed watch-list scan was reported nowhere.
+- Pages side by side could be laid out wider than their room.
+- Smart scrolling answered with the page it had left, or kept a stale row.
+- A redraw while a page loaded lost where the page was to open.
+- The dynamic background counted a group of shades in pieces.
+- Letter shortcuts did nothing with Caps Lock on.
+- Shift+F10 did not open the library's popup menus.
+- A click on a sidebar thumbnail did not turn to that page.
+- A slider in the enhancement dialog undid Ctrl+I.
+- The slideshow button changed size.
+- The status bar showed separators for empty fields.
+- The Comments dialog showed an empty frame when there was no comment.
+- The file chooser offered image formats that have no extension or are turned off.
+- A page that could not be saved was reported only in the log.
+- A book the library could not delete from disk was reported only in the log.
+- A save that ran out of room reported the failure twice, once as a traceback.
+- Thumbnails of files named by a relative path were filed where no other program looks.
+- Open with changed MComix' own working directory.
+- 18 labels in 8 languages named something else than what they label.
+- The Hebrew interface read as two voices.
+- Error messages have their "reason: detail" shape back.
 
 # MComix 4.0.0
 ## Release date: 2026-09-13
 
-### Features
+### New
 
-- MComix runs on GTK 4 and follows the desktop's light or dark theme, fully where libadwaita is installed. A Theme preference picks light, dark, or pitch black for OLED screens.
-- Pages can be taken out while reading, with "Delete page" or by picking them out with Ctrl and a click; a removal can be undone.
-- The archive editor can undo and redo, and can write a book back in the format it was opened in. Saved archives carry a ComicInfo.xml and keep every file the original held.
-- The right-click menu saves the page under the pointer and moves the open file to another folder.
-- Properties names the series, issue number, title and writer an archive's ComicInfo.xml gives.
-- A middle click opens a recent file, a bookmark or a library cover in a new window, and the mouse's thumb buttons turn back a page and show the OSD panel.
-- Picking a language offers to restart MComix in it, and each "Do not ask again" answer can be taken back on its own.
-- The keys that add and edit bookmarks can be changed in the Shortcuts tab, as every other key can.
+- MComix runs on GTK 4.
+- It follows the desktop's light or dark theme, fully where libadwaita is installed.
+- A Theme preference picks light, dark, or pitch black for OLED screens.
+- Pages can be taken out while reading: "Delete page", or pick them out with Ctrl and a click.
+- A removal can be undone.
+- The archive editor can undo and redo.
+- The archive editor can write a book back in the format it was opened in.
+- Saved archives carry a ComicInfo.xml and keep every file the original held.
+- The right-click menu saves the page under the pointer.
+- The right-click menu moves the open file to another folder.
+- Properties shows the series, issue, title and writer from an archive's ComicInfo.xml.
+- A middle click opens a recent file, a bookmark or a library cover in a new window.
+- The mouse's thumb buttons turn back a page and show the OSD panel.
+- Picking a language offers to restart MComix in it.
+- Each "Do not ask again" answer can be taken back on its own.
+- The bookmark keys can be changed in the Shortcuts tab, like every other key.
 - Preferences are saved as they change, without undoing another window's.
-- Double page mode can leave up to 100 pixels between the pages, where it allowed 2.
-- The library shows its progress while scanning, and is much faster when large.
-- All 24 translations are complete, and usable from the keyboard.
+- Double page mode allows up to 100 pixels between the pages, not 2.
+- The library shows its progress while scanning.
+- The library is much faster when large.
+- All 24 translations are complete and usable from the keyboard.
 
-### Bug fixes
+### Fixes
 
-- Among the long-standing ones: the bookmarks menu was shuffled after another window saved; a new page cache size applied only after closing the book; MComix instances quitting at once could truncate each other's preferences and keybindings; one bad line in keybindings.conf silenced a shortcut; an interrupted library upgrade could leave the library unopenable or empty; next and previous directory crashed at the root of the file system; PDF pages past 9999 opened the wrong page; encrypted RAR files could not be opened through the UnRAR library; a multi-volume RAR with a volume missing kept the UnRAR library retrying forever; the library lost covers and "finished" marks when its threads used the database at once; a solid archive that failed part way never showed the rest of its pages; the About dialog named three of the seven formats MComix reads; a turned JPEG page of a PDF was compressed again; on Windows and with Python 3.14, PDF pages were turned upright with auto rotation turned off; MobiPocket books opened without pages on Windows, and on Linux wherever gdk-pixbuf offers a format with no file extension; the library's "Add books" dialog opened on the filter before the one used last.
+- The bookmarks menu was shuffled after another window saved.
+- A new page cache size applied only after closing the book.
+- MComix instances quitting at once could truncate each other's preferences and keybindings.
+- One bad line in keybindings.conf silenced a shortcut.
+- An interrupted library upgrade could leave the library unopenable or empty.
+- Next and previous directory crashed at the root of the file system.
+- PDF pages past 9999 opened the wrong page.
+- Encrypted RAR files did not open through the UnRAR library.
+- A multi-volume RAR with a volume missing kept the UnRAR library retrying forever.
+- The library lost covers and "finished" marks when its threads used the database at once.
+- A solid archive that failed partway never showed the rest of its pages.
+- The About dialog named 3 of the 7 formats MComix reads.
+- A turned JPEG page of a PDF was compressed again.
+- On Windows and with Python 3.14, PDF pages were turned upright with auto rotation off.
+- MobiPocket books opened without pages on Windows, and on Linux where gdk-pixbuf offers a format without a file extension.
+- The library's Add books dialog opened on the filter before the one used last.
 
 ### Removed
 
-- GTK 3 support, the "Use archive thumbnail as application icon" option, and restoring the window's position, which GTK 4 does not allow.
+- GTK 3 support.
+- The "Use archive thumbnail as application icon" option.
+- Restoring the window's position, which GTK 4 does not allow.
 
 ### Requirements
 
-- Python 3.12, GTK 4, PyGObject 3.46, pycairo 1.25 and Pillow 10.1, or newer. libadwaita, chardet and PyMuPDF 1.24.7 or newer are optional.
-- Upgrading from 3.x: the library is upgraded in place, and MComix 3.2 still opens it. The preferences are converted, and the old file is kept as `preferences.conf.v0`; copy it back before returning to 3.2, which otherwise shows a black background. Keybindings and bookmarks carry over unchanged.
+- Python 3.12, GTK 4, PyGObject 3.46, pycairo 1.25 and Pillow 10.1, or newer.
+- Optional: libadwaita, chardet, and PyMuPDF 1.24.7 or newer.
+- Upgrading from 3.x: the library is upgraded in place, and MComix 3.2 still opens it.
+- The preferences are converted; the old file is kept as `preferences.conf.v0`.
+- Before returning to 3.2, copy that file back, or 3.2 shows a black background.
+- Keybindings and bookmarks carry over unchanged.
 
 # MComix 3.2.0
 ## Release date: 2026-08-20
