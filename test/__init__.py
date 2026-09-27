@@ -143,16 +143,35 @@ def _collect_garbage_now_and_then():
         gc.collect()
 
 
-def pump(rounds=4000):
+class PumpNeverIdle(UserWarning):
+    """A pump() that stopped with events still pending.
+
+    On Windows the tests of a window took twelve seconds each where
+    Linux takes a fraction of one: the main context there always has
+    something pending, so every pump() ran all of its turns.  Warned
+    with the calling line, like WaitGaveUp.
+    """
+
+
+def pump(rounds=4000, seconds=1.0):
     """Let the main loop run through whatever is pending.
 
     GTK4 has no Gtk.events_pending()/Gtk.main_iteration_do(); the main
-    context they stood for is still there.
+    context they stood for is still there.  At most <rounds> turns and
+    <seconds>: a context that never runs dry would otherwise hold every
+    caller for all of its turns.
     """
+    import time
     from gi.repository import GLib
     context = GLib.MainContext.default()
+    deadline = time.monotonic() + seconds
     turns = 0
-    while context.pending() and turns < rounds:
+    while context.pending():
+        if turns >= rounds or time.monotonic() > deadline:
+            import warnings
+            warnings.warn('still busy after %d turns' % turns,
+                          PumpNeverIdle, stacklevel=2)
+            break
         context.iteration(False)
         turns += 1
 
