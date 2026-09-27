@@ -38,7 +38,6 @@ jobs:
             mingw-w64-ucrt-x86_64-python-pytest
             mingw-w64-ucrt-x86_64-python-pytest-xdist
             mingw-w64-ucrt-x86_64-gettext-tools
-            mingw-w64-ucrt-x86_64-gdb
       # From PowerShell, with UCRT64's programs and the runner's 7-Zip on
       # the path and nothing else of MSYS2's, and without MSYSTEM, which
       # makes MSYS2's Python write paths with "/": MComix.exe runs that
@@ -52,36 +51,19 @@ jobs:
           python -c "import os, sys; print(sys.executable, repr(os.sep), sorted(k for k in os.environ if k.upper().startswith(('MSYS', 'MINGW')))); assert os.sep == '\\'"
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           python -m pytest test/ -q -n auto -rfE --durations=30 --junitxml=pytest.xml
-      # Window tests take 11-14 s each here and well under one on Linux,
-      # and three of them alone took under one here too.  The slowest
-      # of the last full run, alone in one process under the profiler,
-      # with pytest's warnings saying which waited to remove a folder.
-      - name: profile the slowest tests
+      # Window tests take 11-14 s each in the run above and under 1.5 s
+      # each in a process of their own; the IME crash fix (985506cf) did
+      # not change that.  One whole file in one process, one line per
+      # test: the runner's timestamps on those lines say whether a test
+      # gets slower the more tests its process has run.
+      - name: one file in one process
         if: always()
-        timeout-minutes: 20
+        timeout-minutes: 30
         shell: pwsh
         run: |
           Remove-Item Env:MSYSTEM -ErrorAction SilentlyContinue
           $env:PATH = "$env:RUNNER_TEMP\msys64\ucrt64\bin;$env:PATH;$env:ProgramFiles\7-Zip"
-          python -m cProfile -o profile.out -m pytest -q -p no:xdist --durations=20 `
-            test/test_file_chooser.py `
-            test/test_file_handler.py::RememberedResumeAnswerTest `
-            test/test_edit_dialog.py::EditArchiveDialogTest::test_the_question_before_overwriting_takes_clicks
-          python -c "import pstats; s = pstats.Stats('profile.out'); s.sort_stats('tottime').print_stats(30); s.sort_stats('cumulative').print_stats('mcomix', 50)"
-      # A worker dies of an access violation in most runs, mostly in
-      # MainWindow.present() of a new window, and Python cannot print the
-      # C stack on Windows.  The files it died in, in one process under
-      # gdb, which prints the C stack where it stops.
-      - name: C stack of a crash
-        if: always()
-        continue-on-error: true
-        timeout-minutes: 25
-        shell: pwsh
-        run: |
-          Remove-Item Env:MSYSTEM -ErrorAction SilentlyContinue
-          $env:PATH = "$env:RUNNER_TEMP\msys64\ucrt64\bin;$env:PATH;$env:ProgramFiles\7-Zip"
-          gdb -batch -ex run -ex "bt 40" -ex "info registers rip" --args python -m pytest -q -p no:xdist -p no:faulthandler `
-            test/test_dialog_freed.py test/test_edit_dialog.py test/test_key_press.py
+          python -m pytest -v -p no:xdist --durations=15 test/test_main_window.py
       - uses: actions/upload-artifact@v7
         if: always()
         with:
