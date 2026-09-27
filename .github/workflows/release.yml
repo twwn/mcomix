@@ -52,6 +52,8 @@ jobs:
       release: ${{ steps.what.outputs.release }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - name: A release, or a test build
         id: what
         env:
@@ -95,6 +97,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: actions/setup-python@v7
         with:
           python-version: "3.x"
@@ -120,6 +124,8 @@ jobs:
         shell: msys2 {0}
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       # The packages docs/releasing.md lists, at MSYS2's newest; the path
       # is inherited so that WiX, fetched below, is found.
       - uses: msys2/setup-msys2@66cd2cce69caa17b53920067426061ca1de3a884 # v2.32.0

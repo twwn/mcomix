@@ -59,6 +59,7 @@ jobs:
       - uses: actions/checkout@v7
         if: env.CHOCOLATEY_API_KEY != ''
         with:
+          persist-credentials: false
           ref: ${{ env.TAG }}
       # The package downloads the installer from the release, so the
       # checksum it checks is taken from that very file; the release's
