@@ -1,6 +1,8 @@
 # MComix 26.09
 ## Release date: 2026-09-26
 
+The first release of this fork on GitHub. Its earlier releases, since MComix 3.2: [4.0.1](https://github.com/twwn/mcomix/blob/main/ChangeLog.md#mcomix-401) and [4.0.0](https://github.com/twwn/mcomix/blob/main/ChangeLog.md#mcomix-400).
+
 ### New
 
 - Thumbnails, file chooser previews and library covers follow the page's Exif orientation.
