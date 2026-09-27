@@ -162,21 +162,27 @@ class FileHandler:
         None where no archive is open or the page has no file.
 
         What stays with a picture when the archive is sorted another
-        way, which moves the page number.
+        way, which moves the page number.  Written with "/", as archives
+        write it, whatever the system: it is kept in the preferences, the
+        bookmarks and the library, which may be read on another system.
         """
         if self.archive_type is None or self._tmp_dir is None:
             return None
         path = self._window.imagehandler.get_path_to_page(page)
         if path is None:
             return None
-        return os.path.relpath(path, self._tmp_dir)
+        return os.path.relpath(path, self._tmp_dir).replace(os.sep, '/')
+
+    def _extracted_path(self, member: str) -> str:
+        """Where <member>, as page_member() names it, is extracted to."""
+        return os.path.join(self._tmp_dir or '', os.path.normpath(member))
 
     def page_of_member(self, member: str) -> int | None:
         """The page of the open archive whose file is called <member>
         within it, or None where it has none."""
         if self.archive_type is None or self._tmp_dir is None:
             return None
-        wanted = os.path.join(self._tmp_dir, member)
+        wanted = self._extracted_path(member)
         files = self._window.imagehandler.get_image_files()
         return files.index(wanted) + 1 if wanted in files else None
 
@@ -303,7 +309,7 @@ class FileHandler:
                     start_member = self.last_read_page.get_member(
                         current_file)
                 if start_member is not None:
-                    member = os.path.join(self._tmp_dir or '', start_member)
+                    member = self._extracted_path(start_member)
                     if member in image_files:
                         last_image_index = image_files.index(member)
                 # A page the caller asked for, or a standing "yes" to
