@@ -7,14 +7,15 @@
 # Secondary outputs (generated from /mcomix/images/mcomix.svg):
 #   /mcomix/images/mcomix.png (212-pixel-wide bitmap)
 #   /mcomix/images/mcomix-$(N).png (packaged $(N)-pixel-wide bitmaps)
-#   /share/icons/hicolor/$(N)x$(N)/mcomix.png ($(N)-pixel-wide XDG icons)
+#   /share/icons/hicolor/$(N)x$(N)/apps/mcomix.png ($(N)-pixel-wide XDG icons)
+#   /share/icons/hicolor/scalable/apps/mcomix.svg (scalable XDG icon)
 
 PNG_SIZES = 16 22 24 32 48 256
 ICON_OUTPUTS := $(foreach i,$(PNG_SIZES),../mcomix/images/mcomix-$(i).png)
-XDG_OUTPUTS := $(foreach i,$(PNG_SIZES),../share/icons/hicolor/$(i)x$(i)/mcomix.png)
+XDG_OUTPUTS := $(foreach i,$(PNG_SIZES),../share/icons/hicolor/$(i)x$(i)/apps/mcomix.png)
 
 
-.PHONY: svg-icon png-icons all
+.PHONY: svg-icon png-icons xdg-icons all
 .DEFAULT_GOAL := all
 
 svg-icon: ../mcomix/images/mcomix.svg
@@ -23,7 +24,7 @@ svg-icon: ../mcomix/images/mcomix.svg
 	inkscape -C --export-type=svg --export-plain-svg \
 	--export-filename=$@ $<
 
-../share/icons/hicolor/scalable/mcomix.svg: mcomix_icon_artwork.svg
+../share/icons/hicolor/scalable/apps/mcomix.svg: mcomix_icon_artwork.svg
 	inkscape -C --export-type=svg --export-plain-svg \
 	--export-filename=$@ $<
 
@@ -34,8 +35,8 @@ define PNG_template =
 endef
 
 define XDG_template =
-  ../share/icons/hicolor/$(1)x$(1)/mcomix.png: ../mcomix/images/mcomix.svg mcomix_icon_artwork.svg
-  	inkscape -C -w $(1) --export-type=png \
+  ../share/icons/hicolor/$(1)x$(1)/apps/mcomix.png: ../mcomix/images/mcomix.svg mcomix_icon_artwork.svg
+	inkscape -C -w $(1) --export-type=png \
 		--export-filename=$$@ ../mcomix/images/mcomix.svg
 endef
 
@@ -48,7 +49,7 @@ $(foreach i,$(PNG_SIZES),$(eval $(call XDG_template,$(i))))
 
 png-icons: $(ICON_OUTPUTS) ../mcomix/images/mcomix.png
 
-xdg-icons: $(XDG_OUTPUTS) ../share/icons/hicolor/scalable/mcomix.svg
+xdg-icons: $(XDG_OUTPUTS) ../share/icons/hicolor/scalable/apps/mcomix.svg
 
 all: svg-icon png-icons xdg-icons
 
