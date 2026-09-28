@@ -1,26 +1,23 @@
-### 2023 MComix icon update (fully vectorized)
+# Icon artwork
 
-`mcomix_icon_artwork.svg` is the Inkscape source file for a 2023 update of the icon artwork, previously available only as a bitmap image (see below).
+`mcomix_icon_artwork.svg` is the icon's source, drawn in Inkscape in 2023.
+It redraws the original bitmap icon as vectors, and fixes flaws that showed at full size.
 
-The updated icon is rendered as a 100% vector-format SVG, making it fully scalable to any size with no degradation.
-The new vector artwork is a mostly-faithful recreation of the original artwork, but addresses several visual defects found in the previous rendering (when viewed at full scale).
+## Regenerating the icons
 
-The SVG file in this directory represents the icon "source code".
-`../mcomix/images/mcomix.svg` is the new MComix icon image, exported as an optimized SVG suitable for GUI applications.
+After editing the source, run `make` here, with Inkscape on the `PATH`.
+It writes, from the source:
 
-All bitmap-format icons (in various standard sizes) are generated directly from the optimized SVG file. The `Makefile` in this directory should be run after editing  `mcomix_icon_arwork.svg`. It will first generate the optimized `../mcomix/images/mcomix.svg` file, then generate all of the necessary PNG icons from the optimized SVG.
+- `../mcomix/images/mcomix.svg`, the icon as plain SVG;
+- `../mcomix/images/mcomix.png`, 212 pixels wide, which the About dialog shows, and `mcomix-<size>.png`;
+- `../share/icons/hicolor/<size>x<size>/apps/mcomix.png` and `scalable/apps/mcomix.svg`, the desktop's icons.
 
-A set of icon files following the FreeDesktop icon standard are also generated into `../share/icons/hicolor/`, in both PNG and SVG format.
+The sizes are 16, 22, 24, 32, 48 and 256.
 
-Updating the Windows icon file `../mcomix/images/mcomix.ico` is currently a manual process performed with the GIMP gui.
+The Windows icon, `../mcomix/images/mcomix.ico`, is not generated: export it by hand, with GIMP for instance.
 
-### Historical MComix icon artwork (bitmap)
+## The original icon
 
-The original MComix icon artwork was created by @oxaric.
-It was available only as a 2655px x 1988px PNG bitmap.
-The original vector sources can no longer be located.
-
-Standard icon sizes were produced by scaling down the PNG file, with mixed results. (Smaller sizes became increasingly blurry.)
-
-The original `mcomix-large.png` art can be retrieved via the git history.
-
+The original icon was drawn by @oxaric, as a 2655 × 1988 pixel PNG; its vector source is lost.
+The smaller sizes were scaled down from it, and blurred the smaller they got.
+That PNG, `mcomix-large.png`, is in the Git history.
