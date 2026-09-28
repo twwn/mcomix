@@ -38,7 +38,11 @@ Path | What
 `mcomix/messages/` | Translations.
 `test/` | The tests; `test/files/` the books they open.
 `share/` | Desktop file, icons, MIME types, AppStream metadata, man page.
-`win32/` | The Windows build.
+`artwork/` | The icon's source, and the Makefile that draws every size from it: see its [README](../artwork/README.md).
+`win32/` | The Windows build, the MSI installer and the Chocolatey package.
+`mcomixstarter.py` | The script the Windows build freezes into `MComix.exe`.
+`tools/` | `source_archive.py`, which builds the source archive: see [Releasing](releasing.md#source-archive).
+`.github/` | The [workflows](#continuous-integration), issue forms, pull request template and Dependabot's settings.
 `docs/` | This documentation. `test/test_wiki.py` checks it against the code.
 
 ## Translations
