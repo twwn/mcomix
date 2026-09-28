@@ -23,8 +23,8 @@ Go back only one page (in double page mode) | CTRL+PageUp, CTRL+KeyPadPageUp, CT
 First page | Home, KeyPadHome
 Last page | End, KeyPadEnd
 Go to page | G
-Next archive | SHIFT+CTRL+N
-Previous archive | SHIFT+CTRL+P
+Next archive | CTRL+SHIFT+N
+Previous archive | CTRL+SHIFT+P
 Next directory | CTRL+N
 Previous directory | CTRL+P
 

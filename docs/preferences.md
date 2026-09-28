@@ -41,7 +41,7 @@ Show only one page where appropriate | When double page mode shows one page: "Ne
 Page auto-resizing | How two pages of different sizes are fitted side by side: "Prefer same scale", "Prefer same size" or "Fit to same size".
 Space between two pages (in pixels) | 0 to 100; 2 by default.
 Automatically open the last viewed file on startup | Started without a file, reopen the one open at last close, at the picture that was shown. After "Save and quit" this happens regardless.
-Store information about recently opened files | "Always" keeps File &rarr; Recent and each book's last page, which the library's "Recent" collection lists. Switching to "Never" offers to clear both.
+Store information about recently opened files | "Always" keeps File → Recent and each book's last page, which the library's "Recent" collection lists. Switching to "Never" offers to clear both.
 Save As opens at the last directory saved into | Instead of the book's own directory.
 Save an edited archive in the format it was opened in | Write it back as the ZIP, tar, 7z or RAR it was read as. 7z and RAR need the `7z` and `rar` programs, which MComix does not install; a format it cannot write is saved as ZIP.
 Prompts answered for good | Every prompt whose answer can be remembered, with its answer: reopening a part-read book, deleting the open file, bookmarking a book that has bookmarks, deleting books removed from the library, deleting a bookmarked file, changing the pages of the open book, leaving a book with pages picked out. "Do not ask again" sets an answer here; "Ask every time" takes it back.

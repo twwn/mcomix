@@ -35,7 +35,7 @@ If that helps, set `GSK_RENDERER=cairo` in your environment for good, and mentio
 
 ## Wrong version
 
-- "File &rarr; About" shows the version; so does `mcomix --version` on Linux.
+- "File → About" shows the version; so does `mcomix --version` on Linux.
 - This MComix counts year and month, as 26.09.
 - MComix 3.x is the original on GTK 3: the `mcomix` package of Linux distributions, Flathub, WinGet and Scoop.
 

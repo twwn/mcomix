@@ -279,7 +279,7 @@ class ManualTest(unittest.TestCase):
                   and isinstance(node.func, ast.Name)
                   and node.func.id == '_Entry' and len(node.args) > 2
                   and isinstance(node.args[0], ast.Constant)}
-        path = '"%s &rarr; %s"' % (labels['menu_view'].replace('_', ''),
+        path = '"%s → %s"' % (labels['menu_view'].replace('_', ''),
                                    labels['menu_toolbars'].replace('_', ''))
         self.assertIn(path, self.page)
 

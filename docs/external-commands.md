@@ -2,7 +2,7 @@
 
 Run programs of your choosing on the open file: an image editor for a page, a file manager at the book, a script of your own.
 
-- "File &rarr; Open with" lists them; its "Edit commands" sets them up.
+- "File → Open with" lists them; its "Edit commands" sets them up.
 - Keys 1 to 9 run the first nine.
 
 ## Add and edit commands

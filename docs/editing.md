@@ -5,7 +5,7 @@ The archive on disk is untouched until the changes are written.
 
 ## In the main window
 
-- "Copy page", in the page's right-click menu, copies that page as an image and as its file's path. "Edit &rarr; Copy" copies the view: both pages, joined, in double page mode.
+- "Copy page", in the page's right-click menu, copies that page as an image and as its file's path. "Edit → Copy" copies the view: both pages, joined, in double page mode.
 - "Rename page...", in the page's menu or F2, names the page for the next save.
   - The name replaces the whole old one; the entry picks out everything but the extension.
   - A name without an extension keeps the old extension.
@@ -16,14 +16,14 @@ The archive on disk is untouched until the changes are written.
   - "Replace": this page gets the name, and the other page leaves the book. In a folder of images its file is written over.
 - CTRL+SHIFT and a click marks a page, drawn with a dashed outline; the next such click swaps the two. Clicking the marked page again unmarks it.
   In double page mode, the same keys drag one page onto the other.
-- "Delete page", in the page's menu, removes that page; "Edit &rarr; Undo" puts it back.
+- "Delete page", in the page's menu, removes that page; "Edit → Undo" puts it back.
 - CTRL and a click picks a page out (outlined, in the thumbnails too); again puts it back.
   Escape, or "Put back pages picked out" in the Edit and page menus, puts back all of them.
   Delete removes every page picked out, and opens the archive editor with them selected.
 
 ## The archive editor
 
-"Edit &rarr; Edit archive..." opens it on the book: an archive or a folder of images.
+"Edit → Edit archive..." opens it on the book: an archive or a folder of images.
 
 - "Images" shows the pages as thumbnails; drag them into another order.
 - "Comment files" lists the text files that came with them.
