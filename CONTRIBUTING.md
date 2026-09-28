@@ -21,7 +21,7 @@ python -m mypy mcomix
 - One change per pull request, with a test that fails without it.
 - Docs under `docs/` follow the change.
 - New strings go into every catalogue: [Translations](docs/development.md#translations).
-- Commit subjects start with a type (`fix:`, `feat:`, `docs:`, `test:`, `refactor:`, `perf:`, `build:`) and say what was wrong.
+- Commit subjects start with a type (`fix:`, `feat:`, `perf:`, `refactor:`, `test:`, `docs:`, `i18n:`, `build:`, `chore:`) and say what was wrong.
 - Write briefly: one fact per line.
 
 ## Report a bug
