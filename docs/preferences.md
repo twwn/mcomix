@@ -26,6 +26,7 @@ Use checkered background for transparent images | A grey checkerboard behind tra
 Option | Explanation
 -------|------------
 Automatically open the last viewed file on startup | Started without a file, reopen the one open at last close, at the picture that was shown. After "Save and quit" this happens regardless.
+Open the library on startup | As `-l` does: the library comes up beside the window, to pick the book there.
 Store information about recently opened files | "Always" keeps File → Recent and each book's last page, which the library's "Recent" collection lists. Switching to "Never" offers to clear both.
 Save As opens at the last directory saved into | Instead of the book's own directory.
 Save an edited archive in the format it was opened in | Write it back as the ZIP, tar, 7z or RAR it was read as. 7z and RAR need the `7z` and `rar` programs, which MComix does not install; a format it cannot write is saved as ZIP.

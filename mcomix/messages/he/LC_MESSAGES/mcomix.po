@@ -196,7 +196,7 @@ msgstr "! פונקציית הקריאה החוזרת %(function)r נכשלה: %(
 msgid "New accelerator..."
 msgstr "קיצור דרך חדש..."
 
-#: mcomix/comment_dialog.py:28 mcomix/preferences_dialog.py:435
+#: mcomix/comment_dialog.py:28 mcomix/preferences_dialog.py:439
 msgid "Comments"
 msgstr "הערות"
 
@@ -684,7 +684,7 @@ msgstr "גלילה אל שמאל תחתון"
 #: mcomix/keybindings.py:71 mcomix/keybindings.py:72 mcomix/keybindings.py:73
 #: mcomix/keybindings.py:75 mcomix/keybindings.py:76 mcomix/keybindings.py:77
 #: mcomix/keybindings.py:78 mcomix/keybindings.py:80 mcomix/keybindings.py:81
-#: mcomix/preferences_dialog.py:224
+#: mcomix/preferences_dialog.py:228
 msgid "Scroll"
 msgstr "גלילה"
 
@@ -804,7 +804,7 @@ msgstr "סיבוב אוטומטי לפי רוחב"
 msgid "Autorotate by height"
 msgstr "סיבוב אוטומטי לפי גובה"
 
-#: mcomix/keybindings.py:101 mcomix/preferences_dialog.py:317 mcomix/ui.py:511
+#: mcomix/keybindings.py:101 mcomix/preferences_dialog.py:321 mcomix/ui.py:511
 msgid "Double page mode"
 msgstr "מצב עמוד כפול"
 
@@ -876,7 +876,7 @@ msgstr "הצג לוח OSD"
 msgid "Minimize"
 msgstr "מזעור"
 
-#: mcomix/keybindings.py:119 mcomix/preferences_dialog.py:307
+#: mcomix/keybindings.py:119 mcomix/preferences_dialog.py:311
 msgid "Fullscreen"
 msgstr "מסך מלא"
 
@@ -1395,25 +1395,29 @@ msgstr ""
 "פתח אוטומטית, בזמן הפעלה, את הקובץ שהיה פתוח בזמן שהיישום MComix נסגר "
 "באחרונה."
 
+#: mcomix/preferences_dialog.py:197
+msgid "Open the library on startup"
+msgstr "פתיחת הספרייה עם ההפעלה"
+
 # זה לא ה-קבצים מאחר שמדובר כאן ברשימה של קבצים ולא בקבצים עצמם שנפתחו לאחרונה!
-#: mcomix/preferences_dialog.py:196
+#: mcomix/preferences_dialog.py:200
 msgid "Store information about recently opened files:"
 msgstr "אחסן מידע אודות קבצים שנפתחו לאחרונה:"
 
-#: mcomix/preferences_dialog.py:199
+#: mcomix/preferences_dialog.py:203
 msgid "Save As opens at the last directory saved into"
 msgstr "\"שמירה בשם\" נפתח במדור שאליו נשמר הקובץ האחרון"
 
-#: mcomix/preferences_dialog.py:201
+#: mcomix/preferences_dialog.py:205
 msgid ""
 "Open the Save As dialog at the directory in which the last file was saved."
 msgstr "פותח את דו־שיח \"שמירה בשם\" במדור שבו נשמר הקובץ האחרון."
 
-#: mcomix/preferences_dialog.py:204
+#: mcomix/preferences_dialog.py:208
 msgid "Save an edited archive in the format it was opened in"
 msgstr "שמירת ארכיון שנערך בתבנית שבה נפתח"
 
-#: mcomix/preferences_dialog.py:206
+#: mcomix/preferences_dialog.py:210
 msgid ""
 "Write an edited archive back as a ZIP, a tar, a 7z or a RAR, whichever it "
 "was read as. The last two need the 7z and rar programs, which MComix does "
@@ -1423,16 +1427,16 @@ msgstr ""
 "אלה האחרונים דורשים את התוכניות 7z ו־rar, ש־MComix אינו מתקין; תבנית שאי "
 "אפשר לכתוב נשמרת כ־ZIP."
 
-#: mcomix/preferences_dialog.py:208
+#: mcomix/preferences_dialog.py:212
 msgid "Prompts answered for good"
 msgstr "שאלות שנענו אחת ולתמיד"
 
 # גלילה חכמה עם המקש רווח
-#: mcomix/preferences_dialog.py:227
+#: mcomix/preferences_dialog.py:231
 msgid "Use smart scrolling"
 msgstr "השתמש בגלילה חכמה"
 
-#: mcomix/preferences_dialog.py:229
+#: mcomix/preferences_dialog.py:233
 msgid ""
 "With this preference set, the space key and mouse wheel do not only scroll "
 "down or up, but also sideways and so try to follow the natural reading order "
@@ -1441,14 +1445,14 @@ msgstr ""
 "בקביעת העדפה זו, המקש רווח וגלגל העכבר לא יגוללו רק מטה או מעלה, אלא גם "
 "לצדדים ובכך MComix ינסה לעקוב אחר סדר הקריאה הטבעי של חוברת הקומיקס."
 
-#: mcomix/preferences_dialog.py:234
+#: mcomix/preferences_dialog.py:238
 msgid "Flip pages when scrolling off the edges of the page"
 msgstr "דפדף עמודים בעת גלילה מחוץ לקצוות של העמוד"
 
 # הדבר, העניין
 # על מנת שהעמוד ידופדף
 # Do not use this character ״
-#: mcomix/preferences_dialog.py:236
+#: mcomix/preferences_dialog.py:240
 msgid ""
 "Flip pages when scrolling \"off the page\" with the scroll wheel or with the "
 "arrow keys. It takes n consecutive \"steps\" with the scroll wheel or the "
@@ -1458,11 +1462,11 @@ msgstr ""
 "החיצים. הדבר מצריך מספר \"צעדים\" עקביים עם גולל העכבר או מקשי החיצים על מנת "
 "לדפדף בעמודים."
 
-#: mcomix/preferences_dialog.py:239
+#: mcomix/preferences_dialog.py:243
 msgid "Skip pages that cannot be shown"
 msgstr "דילוג על עמודים שלא ניתן להציג"
 
-#: mcomix/preferences_dialog.py:241
+#: mcomix/preferences_dialog.py:245
 msgid ""
 "Turn past a page whose image is damaged or cannot be read, instead of "
 "showing the broken-image icon in its place."
@@ -1471,38 +1475,38 @@ msgstr ""
 "את סמל התמונה הפגומה."
 
 # בכל לחיצה
-#: mcomix/preferences_dialog.py:243
+#: mcomix/preferences_dialog.py:247
 msgid "Number of pixels to scroll per arrow key press:"
 msgstr "מספר פיקסלים לגולל לכל לחיצה על מקש חץ:"
 
-#: mcomix/preferences_dialog.py:247
+#: mcomix/preferences_dialog.py:251
 msgid "Set the number of pixels to scroll on a page when using the arrow keys."
 msgstr "קבע את מספר הפיקסלים לגולל בעמוד בעת שימוש במקשי החצים."
 
-#: mcomix/preferences_dialog.py:249
+#: mcomix/preferences_dialog.py:253
 msgid "Number of pixels to scroll per mouse wheel turn:"
 msgstr "מספר פיקסלים לגולל לכל סיבוב של גלגל העכבר:"
 
-#: mcomix/preferences_dialog.py:253
+#: mcomix/preferences_dialog.py:257
 msgid "Set the number of pixels to scroll on a page when using a mouse wheel."
 msgstr "קבע את מספר הפיקסלים לגולל בעמוד בעת שימוש בגלגל העכבר."
 
-#: mcomix/preferences_dialog.py:255
+#: mcomix/preferences_dialog.py:259
 msgid "Fraction of page to scroll per space key press (in percent):"
 msgstr "מקטע עמוד לגולל לכל לחיצה על מקש הרווח (באחוזים):"
 
-#: mcomix/preferences_dialog.py:260
+#: mcomix/preferences_dialog.py:264
 msgid ""
 "Sets the percentage by which the page will be scrolled down or up when the "
 "space key is pressed."
 msgstr "קביעת האחוז שבו העמוד יגולל מטה או מעלה כאשר מקש הרווח נלחץ."
 
-#: mcomix/preferences_dialog.py:263
+#: mcomix/preferences_dialog.py:267
 msgid "Number of \"steps\" to take before flipping the page:"
 msgstr "מספר של \"צעדים\" שיש לקחת לפני דפדוף העמוד:"
 
 # שדרושים/שנצרכים
-#: mcomix/preferences_dialog.py:267
+#: mcomix/preferences_dialog.py:271
 msgid ""
 "Set the number of \"steps\" needed to flip to the next or previous page.  "
 "Less steps will allow for very fast page turning but you might find yourself "
@@ -1512,16 +1516,16 @@ msgstr ""
 "צעדים יקנו דפדוף מהיר מאוד של עמודים אולם יש סיכוי שתמצא/י את עצמך מעלעל/ת "
 "עמודים באופן מקרי ובלתי מכוון."
 
-#: mcomix/preferences_dialog.py:269
+#: mcomix/preferences_dialog.py:273
 msgid "Between books"
 msgstr "בין חוברות"
 
-#: mcomix/preferences_dialog.py:272
+#: mcomix/preferences_dialog.py:276
 msgid "Automatically open the next archive"
 msgstr "פתח את הארכיון הבא אוטומטית"
 
 # past = מעבר = beyond
-#: mcomix/preferences_dialog.py:274
+#: mcomix/preferences_dialog.py:278
 msgid ""
 "Automatically open the next archive in the directory when flipping past the "
 "last page, or the previous archive when flipping past the first page."
@@ -1529,12 +1533,12 @@ msgstr ""
 "פתח אוטומטית את הארכיון הבא שבמדור הקבצים בעת דפדוף מעבר לעמוד האחרון, או של "
 "הארכיון הקודם בעת דפדוף מעבר לעמוד הראשון."
 
-#: mcomix/preferences_dialog.py:277
+#: mcomix/preferences_dialog.py:281
 msgid "Automatically open next directory"
 msgstr "פתח את המדור הבא אוטומטית"
 
 # past = מעבר = beyond
-#: mcomix/preferences_dialog.py:279
+#: mcomix/preferences_dialog.py:283
 msgid ""
 "Automatically open the first file in the next sibling directory when "
 "flipping past the last page of the last file in a directory, or the previous "
@@ -1544,105 +1548,105 @@ msgstr ""
 "האחרון, או של הקובץ האחרון שבמדור, או המדור הקודם בעת דפדוף מעבר לעמוד "
 "הראשון של הקובץ הראשון."
 
-#: mcomix/preferences_dialog.py:282
+#: mcomix/preferences_dialog.py:286
 msgid "Open first file when navigating to previous archive"
 msgstr "פתיחת הקובץ הראשון בעת מעבר לארכיון הקודם"
 
-#: mcomix/preferences_dialog.py:284
+#: mcomix/preferences_dialog.py:288
 msgid ""
 "Automatically open the first file of the previous archive when navigating to "
 "it, instead of opening the last file of the previous archive."
 msgstr ""
 "בעת מעבר לארכיון הקודם ייפתח אוטומטית הקובץ הראשון שבו, במקום הקובץ האחרון."
 
-#: mcomix/preferences_dialog.py:287
+#: mcomix/preferences_dialog.py:291
 msgid "Open first file when navigating to previous directory"
 msgstr "פתיחת הקובץ הראשון בעת מעבר למדור הקודם"
 
-#: mcomix/preferences_dialog.py:289
+#: mcomix/preferences_dialog.py:293
 msgid ""
 "Automatically open the first file of the previous directory when navigating "
 "to it, instead of opening the last file of the previous directory."
 msgstr ""
 "בעת מעבר למדור הקודם ייפתח אוטומטית הקובץ הראשון שבו, במקום הקובץ האחרון."
 
-#: mcomix/preferences_dialog.py:291
+#: mcomix/preferences_dialog.py:295
 msgid "File order"
 msgstr "מסדר קבצים"
 
-#: mcomix/preferences_dialog.py:293
+#: mcomix/preferences_dialog.py:297
 msgid "Sort files and directories by:"
 msgstr "סדר קבצים ומדורים לפי:"
 
-#: mcomix/preferences_dialog.py:296
+#: mcomix/preferences_dialog.py:300
 msgid "Sort archives by:"
 msgstr "סדר ארכיונים לפי:"
 
 # שימוש במסך
-#: mcomix/preferences_dialog.py:310
+#: mcomix/preferences_dialog.py:314
 msgid "Use fullscreen by default"
 msgstr "השתמש במסך מלא באופן משתמט"
 
-#: mcomix/preferences_dialog.py:314
+#: mcomix/preferences_dialog.py:318
 msgid "Automatically hide all toolbars in fullscreen"
 msgstr "הסתר אוטומטית את כל סרגלי הכלים במסך מלא"
 
-#: mcomix/preferences_dialog.py:320
+#: mcomix/preferences_dialog.py:324
 msgid "Flip two pages in double page mode"
 msgstr "דפדף שני עמודים במצב של עמוד כפול"
 
-#: mcomix/preferences_dialog.py:322
+#: mcomix/preferences_dialog.py:326
 msgid ""
 "Flip two pages, instead of one, each time we flip pages in double page mode."
 msgstr ""
 "דפדף שני עמודים, במקום אחד, בכל פעם שאנחנו מדפדפים עמודים במצב של עמוד כפול."
 
-#: mcomix/preferences_dialog.py:324
+#: mcomix/preferences_dialog.py:328
 msgid "Show only one page where appropriate:"
 msgstr "הצג עמוד אחד בלבד במקום שהדבר הולם:"
 
-#: mcomix/preferences_dialog.py:327
+#: mcomix/preferences_dialog.py:331
 msgid "Page auto-resizing:"
 msgstr "שינוי גודל אוטומטי של עמודים:"
 
-#: mcomix/preferences_dialog.py:330
+#: mcomix/preferences_dialog.py:334
 msgid "Space between two pages (in pixels):"
 msgstr "רווח בין שני עמודים (בפיקסלים):"
 
-#: mcomix/preferences_dialog.py:335 mcomix/ui.py:534
+#: mcomix/preferences_dialog.py:339 mcomix/ui.py:534
 msgid "Fit to size mode"
 msgstr "מצב התאמה לגודל"
 
-#: mcomix/preferences_dialog.py:337
+#: mcomix/preferences_dialog.py:341
 msgid "Fixed width for wide pages:"
 msgstr "רוחב קבוע לעמודים רחבים:"
 
-#: mcomix/preferences_dialog.py:342
+#: mcomix/preferences_dialog.py:346
 msgid "Fixed height for wide pages:"
 msgstr "גובה קבוע לעמודים רחבים:"
 
-#: mcomix/preferences_dialog.py:347
+#: mcomix/preferences_dialog.py:351
 msgid "Fixed width for other pages:"
 msgstr "רוחב קבוע לשאר העמודים:"
 
-#: mcomix/preferences_dialog.py:352
+#: mcomix/preferences_dialog.py:356
 msgid "Fixed height for other pages:"
 msgstr "גובה קבוע לשאר העמודים:"
 
-#: mcomix/preferences_dialog.py:357
+#: mcomix/preferences_dialog.py:361
 msgid "Slideshow"
 msgstr "מצגת"
 
-#: mcomix/preferences_dialog.py:359
+#: mcomix/preferences_dialog.py:363
 msgid "Slideshow delay (in seconds):"
 msgstr "שיהוי מצגת (בשניות):"
 
 # מדרג
-#: mcomix/preferences_dialog.py:364
+#: mcomix/preferences_dialog.py:368
 msgid "Slideshow step (in pixels):"
 msgstr "צעדי מצגת (בשניות):"
 
-#: mcomix/preferences_dialog.py:368
+#: mcomix/preferences_dialog.py:372
 msgid ""
 "Specify the number of pixels to scroll while in slideshow mode. A positive "
 "value will scroll forward, a negative value will scroll backwards, and a "
@@ -1651,25 +1655,25 @@ msgstr ""
 "ציין את מספר הפיקסלים לגולל במהלך מצב מצגת. ערך חיובי יגולל הלאה, ערך שלילי "
 "יגולל לאחור, וערך של 0 יגרום למצגת לדפדף תמיד אל עמוד חדש."
 
-#: mcomix/preferences_dialog.py:371
+#: mcomix/preferences_dialog.py:375
 msgid "During a slideshow automatically open the next archive"
 msgstr "במהלך מצגת פתח אוטומטית את הארכיון הבא."
 
-#: mcomix/preferences_dialog.py:373
+#: mcomix/preferences_dialog.py:377
 msgid ""
 "While in slideshow mode allow the next archive to automatically be opened."
 msgstr "בהיותי במצב מצגת פתח אוטומטית את הארכיון הבא."
 
 # סיבוב
-#: mcomix/preferences_dialog.py:375
+#: mcomix/preferences_dialog.py:379
 msgid "Rotation"
 msgstr "רוטציה"
 
-#: mcomix/preferences_dialog.py:378
+#: mcomix/preferences_dialog.py:382
 msgid "Automatically rotate images according to their metadata"
 msgstr "סובב אוטומטי של תמונות בהתאם לנתונים המוצמדים (Metadata) הטמונים בתוכן"
 
-#: mcomix/preferences_dialog.py:380
+#: mcomix/preferences_dialog.py:384
 msgid ""
 "Automatically rotate images when an orientation is specified in the image "
 "metadata, such as in an Exif tag."
@@ -1677,33 +1681,33 @@ msgstr ""
 "סובב אוטומטי של תמונות במידה ומצוין כיוון בנתונים המוצמדים (Metadata) של "
 "התמונה, כמו למשל בתווית Exif."
 
-#: mcomix/preferences_dialog.py:382
+#: mcomix/preferences_dialog.py:386
 msgid "Image quality"
 msgstr "איכות תמונה"
 
 # מדרגיות
-#: mcomix/preferences_dialog.py:384
+#: mcomix/preferences_dialog.py:388
 msgid "Scaling mode"
 msgstr "מצב סילומיות"
 
-#: mcomix/preferences_dialog.py:396
+#: mcomix/preferences_dialog.py:400
 msgid "Extraction and cache"
 msgstr "חילוץ ומטמון"
 
-#: mcomix/preferences_dialog.py:398
+#: mcomix/preferences_dialog.py:402
 msgid "Maximum number of concurrent extraction threads:"
 msgstr "מספר מרבי של תהליכוני חילוץ במקביל:"
 
-#: mcomix/preferences_dialog.py:402
+#: mcomix/preferences_dialog.py:406
 msgid ""
 "Set the maximum number of concurrent threads for formats that support it."
 msgstr "קובע את המספר המרבי של תהליכונים במקביל עבור תבניות התומכות בכך."
 
-#: mcomix/preferences_dialog.py:404
+#: mcomix/preferences_dialog.py:408
 msgid "Maximum number of concurrent thumbnail threads:"
 msgstr "מספר מרבי של תהליכונים במקביל לתמונות־ציפורן:"
 
-#: mcomix/preferences_dialog.py:408
+#: mcomix/preferences_dialog.py:412
 msgid ""
 "Set the maximum number of concurrent threads used to generate thumbnails. "
 "Takes effect the next time MComix is started."
@@ -1711,11 +1715,11 @@ msgstr ""
 "קובע את המספר המרבי של תהליכונים במקביל ליצירת תמונות־ציפורן. ייכנס לתוקף "
 "בהפעלה הבאה של MComix."
 
-#: mcomix/preferences_dialog.py:411
+#: mcomix/preferences_dialog.py:415
 msgid "Store thumbnails for opened files"
 msgstr "אחסן תמונות־ציפורן עבור קבצים פתוחים"
 
-#: mcomix/preferences_dialog.py:413
+#: mcomix/preferences_dialog.py:417
 msgid ""
 "Store thumbnails for opened files according to the freedesktop.org "
 "specification. These thumbnails are shared by many other applications, such "
@@ -1724,27 +1728,27 @@ msgstr ""
 "אחסן תמונות־ציפורן עבור קבצים פתוחים בהתאם למפרט של freedesktop.org. תמונות־"
 "ציפורן אלה משותפות על ידי יישומים רבים אחרים, כגון רוב מנהלי הקבצים."
 
-#: mcomix/preferences_dialog.py:415
+#: mcomix/preferences_dialog.py:419
 msgid "Maximum number of pages to store in the cache:"
 msgstr "מספר עמודים מרבי לאחסון בתוך המטמון:"
 
 # לחלוטין
-#: mcomix/preferences_dialog.py:419
+#: mcomix/preferences_dialog.py:423
 msgid ""
 "Set the max number of pages to cache. A value of -1 will cache the entire "
 "archive."
 msgstr "קבע את מספר העמודים המרבי להטמנה. ערך של 1- יטמין את הארכיון בשלמותו."
 
-#: mcomix/preferences_dialog.py:421
+#: mcomix/preferences_dialog.py:425
 msgid "Magnifying Lens"
 msgstr "עדשת מגדלת"
 
-#: mcomix/preferences_dialog.py:423
+#: mcomix/preferences_dialog.py:427
 msgid "Magnifying lens size (in pixels):"
 msgstr "גודל עדשת המגדלת (בפיקסלים):"
 
 # עם פיקסלים רבים בצדדיה
-#: mcomix/preferences_dialog.py:427
+#: mcomix/preferences_dialog.py:431
 msgid ""
 "Set the size of the magnifying lens. It is a square with a side of this many "
 "pixels."
@@ -1752,49 +1756,49 @@ msgstr ""
 "קבע את גודל עדשת המגדלת. כעדשת המגדלת היא ריבוע עם מספר פיקסלים זה בצידיה."
 
 # יחס ההגדלה
-#: mcomix/preferences_dialog.py:429
+#: mcomix/preferences_dialog.py:433
 msgid "Magnification factor:"
 msgstr "מידת ההגדלה:"
 
-#: mcomix/preferences_dialog.py:433
+#: mcomix/preferences_dialog.py:437
 msgid "Set the magnification factor of the magnifying lens."
 msgstr "קבע את מידת ההגדלה של עדשת המגדלת."
 
-#: mcomix/preferences_dialog.py:437
+#: mcomix/preferences_dialog.py:441
 msgid "Comment extensions:"
 msgstr "סיומות הערה:"
 
-#: mcomix/preferences_dialog.py:440
+#: mcomix/preferences_dialog.py:444
 msgid "Animated images"
 msgstr "תמונות מונפשות"
 
-#: mcomix/preferences_dialog.py:442
+#: mcomix/preferences_dialog.py:446
 msgid "Animation mode:"
 msgstr "מצב הנפשה:"
 
-#: mcomix/preferences_dialog.py:463
+#: mcomix/preferences_dialog.py:467
 msgid "_Reset keys"
 msgstr "אי_פוס מקשים"
 
-#: mcomix/preferences_dialog.py:465
+#: mcomix/preferences_dialog.py:469
 msgid "Resets all keyboard shortcuts to their default values."
 msgstr "מאפס את כל קיצורי המקלדת לערכי ברירת המחדל שלהם."
 
-#: mcomix/preferences_dialog.py:468
+#: mcomix/preferences_dialog.py:472
 msgid "Clear _dialog choices"
 msgstr "ניקוי בחירות _דו־שיח"
 
-#: mcomix/preferences_dialog.py:470
+#: mcomix/preferences_dialog.py:474
 msgid ""
 "Clears all dialog choices that you have previously chosen not to be asked "
 "again."
 msgstr "איפוס כל ברירות דו שיח שבעבר בחרת שלא להישאל עליהם בשנית."
 
-#: mcomix/preferences_dialog.py:505
+#: mcomix/preferences_dialog.py:509
 msgid "Ask every time"
 msgstr "לשאול בכל פעם"
 
-#: mcomix/preferences_dialog.py:510
+#: mcomix/preferences_dialog.py:514
 msgid ""
 "What MComix answers this prompt with instead of asking. This is what the "
 "prompt's \"Do not ask again\" box sets."
@@ -1802,27 +1806,27 @@ msgstr ""
 "מה ש־MComix עונה על שאלה זו במקום לשאול אותה. זה מה שתיבת הסימון \"אל תשאל "
 "אותי שנית.\" שבשאלה קובעת."
 
-#: mcomix/preferences_dialog.py:532
+#: mcomix/preferences_dialog.py:536
 msgid "Auto-detect (Default)"
 msgstr "איתור אוטומטי (משתמט)"
 
-#: mcomix/preferences_dialog.py:574
+#: mcomix/preferences_dialog.py:578
 msgid "Follow the system"
 msgstr "בהתאם למערכת"
 
-#: mcomix/preferences_dialog.py:575
+#: mcomix/preferences_dialog.py:579
 msgid "Light"
 msgstr "בהיר"
 
-#: mcomix/preferences_dialog.py:576
+#: mcomix/preferences_dialog.py:580
 msgid "Dark"
 msgstr "כהה"
 
-#: mcomix/preferences_dialog.py:577
+#: mcomix/preferences_dialog.py:581
 msgid "Pitch black"
 msgstr "שחור מוחלט"
 
-#: mcomix/preferences_dialog.py:583
+#: mcomix/preferences_dialog.py:587
 msgid ""
 "How MComix itself is painted, whatever the desktop asks for. Pitch black is "
 "the dark theme with black backgrounds, which a screen that lights its pixels "
@@ -1832,11 +1836,11 @@ msgstr ""
 "ערכת הנושא הכהה עם רקעים שחורים, שמסך המדליק את הפיקסלים שלו אחד אחד מציג "
 "כהיעדר אור מוחלט."
 
-#: mcomix/preferences_dialog.py:620
+#: mcomix/preferences_dialog.py:624
 msgid "Restart MComix in the language you picked?"
 msgstr "להפעיל מחדש את MComix בשפה שבחרת?"
 
-#: mcomix/preferences_dialog.py:621
+#: mcomix/preferences_dialog.py:625
 msgid ""
 "MComix is translated as it starts, so most of the interface stays in the "
 "language it started in until it is started again. The book being read, its "
@@ -1845,24 +1849,24 @@ msgstr ""
 "‏MComix מתורגם בעת ההפעלה, ולכן רוב הממשק יישאר בשפה שבה הוא הופעל עד להפעלה "
 "מחדש. הספר הנקרא, העמוד שבו וגודל החלון יישמרו."
 
-#: mcomix/preferences_dialog.py:635 mcomix/preferences_dialog.py:781
-#: mcomix/preferences_dialog.py:846 mcomix/ui.py:540
+#: mcomix/preferences_dialog.py:639 mcomix/preferences_dialog.py:785
+#: mcomix/preferences_dialog.py:850 mcomix/ui.py:540
 msgid "Never"
 msgstr "לעולם לא"
 
-#: mcomix/preferences_dialog.py:636
+#: mcomix/preferences_dialog.py:640
 msgid "Only for title pages"
 msgstr "עבור כותרות עמודים בלבד"
 
-#: mcomix/preferences_dialog.py:637
+#: mcomix/preferences_dialog.py:641
 msgid "Only for wide images"
 msgstr "עבור תמונות רחבות בלבד"
 
-#: mcomix/preferences_dialog.py:638 mcomix/preferences_dialog.py:782
+#: mcomix/preferences_dialog.py:642 mcomix/preferences_dialog.py:786
 msgid "Always"
 msgstr "תמיד"
 
-#: mcomix/preferences_dialog.py:645
+#: mcomix/preferences_dialog.py:649
 msgid ""
 "When showing the first page of an archive, or an image's width exceeds its "
 "height, only a single page will be displayed."
@@ -1870,53 +1874,53 @@ msgstr ""
 "בעת הצגת העמוד הראשון של ארכיון, או כשרוחב התמונה עולה על גובהה, רק עמוד "
 "בודד יוצג."
 
-#: mcomix/preferences_dialog.py:660
+#: mcomix/preferences_dialog.py:664
 msgid "Prefer same scale"
 msgstr "העדפת אותו קנה מידה"
 
-#: mcomix/preferences_dialog.py:661
+#: mcomix/preferences_dialog.py:665
 msgid "Prefer same size"
 msgstr "העדפת אותו גודל"
 
-#: mcomix/preferences_dialog.py:662
+#: mcomix/preferences_dialog.py:666
 msgid "Fit to same size"
 msgstr "התאמה לאותו גודל"
 
-#: mcomix/preferences_dialog.py:669
+#: mcomix/preferences_dialog.py:673
 msgid "Maintain relative size or fit to same size."
 msgstr "שומר על הגודל היחסי או מתאים לאותו גודל."
 
-#: mcomix/preferences_dialog.py:683 mcomix/preferences_dialog.py:730
+#: mcomix/preferences_dialog.py:687 mcomix/preferences_dialog.py:734
 msgid "No sorting"
 msgstr "ללא מיון"
 
-#: mcomix/preferences_dialog.py:684
+#: mcomix/preferences_dialog.py:688
 msgid "File name"
 msgstr "שם קובץ"
 
-#: mcomix/preferences_dialog.py:685
+#: mcomix/preferences_dialog.py:689
 msgid "File name (GLib)"
 msgstr "שם קובץ (GLib)"
 
-#: mcomix/preferences_dialog.py:686 mcomix/library/book_area.py:245
+#: mcomix/preferences_dialog.py:690 mcomix/library/book_area.py:245
 msgid "File size"
 msgstr "גודל קובץ"
 
-#: mcomix/preferences_dialog.py:687
+#: mcomix/preferences_dialog.py:691
 msgid "Last modified"
 msgstr "שונה לאחרונה"
 
-#: mcomix/preferences_dialog.py:693 mcomix/preferences_dialog.py:739
+#: mcomix/preferences_dialog.py:697 mcomix/preferences_dialog.py:743
 #: mcomix/library/book_area.py:249
 msgid "Ascending"
 msgstr "סדר מיון עולה"
 
-#: mcomix/preferences_dialog.py:694 mcomix/preferences_dialog.py:740
+#: mcomix/preferences_dialog.py:698 mcomix/preferences_dialog.py:744
 #: mcomix/library/book_area.py:250
 msgid "Descending"
 msgstr "סדר מיון יורד"
 
-#: mcomix/preferences_dialog.py:702
+#: mcomix/preferences_dialog.py:706
 msgid ""
 "Files will be opened and displayed according to the sort order specified "
 "here. This option does not affect ordering within archives."
@@ -1924,19 +1928,19 @@ msgstr ""
 "קבצים יפתחו ויוצגו בהתאם אל סדר המיון שמצוין כאן. אפשרות זו לא משפיעה על "
 "הסדר שכבר מצוי בתוך ארכיונים."
 
-#: mcomix/preferences_dialog.py:731
+#: mcomix/preferences_dialog.py:735
 msgid "Natural order"
 msgstr "סדר טבעי"
 
-#: mcomix/preferences_dialog.py:732
+#: mcomix/preferences_dialog.py:736
 msgid "Literal order"
 msgstr "סדר מילולי"
 
-#: mcomix/preferences_dialog.py:733
+#: mcomix/preferences_dialog.py:737
 msgid "GLib order"
 msgstr "סדר GLib"
 
-#: mcomix/preferences_dialog.py:748
+#: mcomix/preferences_dialog.py:752
 msgid ""
 "Files within archives will be sorted according to the order specified here. "
 "Natural order will sort numbered files based on their natural order, i.e. 1, "
@@ -1950,7 +1954,7 @@ msgstr ""
 "GTK מייצרים, ובהם משתמשים יישומי GTK רבים אחרים."
 
 # הרשימת המשותפת של הקבצים שנפתחו לאחרונה
-#: mcomix/preferences_dialog.py:787
+#: mcomix/preferences_dialog.py:791
 msgid ""
 "Add information about all files opened from within MComix to the shared "
 "recent files list."
@@ -1958,12 +1962,12 @@ msgstr ""
 "הוסף מידע אודות כל הקבצים שנפתחו מתוך MComix אל רשימת הקבצים האחרונים "
 "המשותפת."
 
-#: mcomix/preferences_dialog.py:807
+#: mcomix/preferences_dialog.py:811
 msgid "Delete information about recently opened files?"
 msgstr "למחוק מידע אודות קבצים שנפתחו לאחרונה?"
 
 # באשר לעמודים שנקראו
-#: mcomix/preferences_dialog.py:808
+#: mcomix/preferences_dialog.py:812
 msgid ""
 "This will remove all entries from the \"Recent\" menu, and clear information "
 "about last read pages."
@@ -1971,20 +1975,20 @@ msgstr ""
 "אפשרות זו תסיר את כל הרשומות שבתפריט \"קבצים אחרונים\", ותאפס מידע אודות "
 "עמודים שנקראו לאחרונה."
 
-#: mcomix/preferences_dialog.py:821
+#: mcomix/preferences_dialog.py:825
 msgid "Normal (fast)"
 msgstr "רגיל (מהיר)"
 
-#: mcomix/preferences_dialog.py:822
+#: mcomix/preferences_dialog.py:826
 msgid "Bilinear"
 msgstr "דו־קווי"
 
-#: mcomix/preferences_dialog.py:823
+#: mcomix/preferences_dialog.py:827
 msgid "Hyperbolic (slow)"
 msgstr "היפרבולי (איטי)"
 
 # איכות שינוי גודל באיכות גבוהה
-#: mcomix/preferences_dialog.py:829
+#: mcomix/preferences_dialog.py:833
 msgid ""
 "Changes how images are scaled. Slower algorithms result in higher quality "
 "resizing, but longer page loading times."
@@ -1993,16 +1997,16 @@ msgstr ""
 "גודל גבוהה, אולם זמני טעינת עמודים יהיו ארוכים יותר."
 
 # מקורי
-#: mcomix/preferences_dialog.py:847 mcomix/library/book_area.py:257
+#: mcomix/preferences_dialog.py:851 mcomix/library/book_area.py:257
 msgid "Normal"
 msgstr "רגיל"
 
-#: mcomix/preferences_dialog.py:853
+#: mcomix/preferences_dialog.py:857
 msgid "Controls how animated images should be displayed."
 msgstr "קובע כיצד יוצגו תמונות מונפשות."
 
 # לטפל, לנהוג
-#: mcomix/preferences_dialog.py:897
+#: mcomix/preferences_dialog.py:901
 msgid ""
 "Treat all files found within archives, that have one of these file endings, "
 "as comments."
@@ -3146,9 +3150,6 @@ msgstr "עם מדורי משנה"
 #: mcomix/library/watchlist.py:81
 msgid "Automatically scan for new books when library is _opened"
 msgstr "סרוק חוברות אוטומטית כאשר הספרייה הינה _פתוחה"
-
-#~ msgid "Open the library on startup"
-#~ msgstr "פתיחת הספרייה עם ההפעלה"
 
 #~ msgid "The file will be deleted from your harddisk."
 #~ msgstr "הקובץ יימחק מן הכונן הקשיח שלך."

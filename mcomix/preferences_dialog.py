@@ -193,6 +193,10 @@ class _PreferencesDialog(Dialog):
             'auto load last file',
             _('Automatically open, on startup, the file that was open when MComix was last closed.')))
 
+        page.add_row(self._create_pref_check_button(
+            _('Open the library on startup'),
+            'open library on startup', None))
+
         page.add_row(Gtk.Label(label=_('Store information about recently opened files:')),
                      self._create_store_recent_combobox())
 

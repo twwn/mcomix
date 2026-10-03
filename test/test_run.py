@@ -219,3 +219,14 @@ class MakeDirectoriesTest(MComixTest):
             self.assertEqual(0o700, os.stat(directory).st_mode & 0o777)
 
 # vim: expandtab:sw=4:ts=4
+
+    def test_the_library_opens_at_start_when_asked_for(self):
+        """-l asks for it once; the preference asks every time."""
+        from mcomix.preferences import prefs
+        opts, _args = run.parse_arguments([])
+        self.assertFalse(run.shows_library(opts))
+        opts, _args = run.parse_arguments(['-l'])
+        self.assertTrue(run.shows_library(opts))
+        prefs['open library on startup'] = True
+        opts, _args = run.parse_arguments([])
+        self.assertTrue(run.shows_library(opts))

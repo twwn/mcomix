@@ -167,6 +167,13 @@ def apply_layout_direction() -> None:
         Gtk.Widget.set_default_direction(Gtk.TextDirection.RTL)
 
 
+def shows_library(opts: argparse.Namespace) -> bool:
+    """Whether the library opens at start: -l asks for it, and so does
+    "Open the library on startup" (upstream feature request 100), for a
+    reader who picks the next book there."""
+    return bool(opts.library or preferences.prefs['open library on startup'])
+
+
 def what_to_open(opts: argparse.Namespace, args: list[str]
                  ) -> "tuple[str | list[str] | None, int, str | None]":
     """The file or files to open at start, the page to open at, and the
@@ -263,7 +270,8 @@ def run() -> None:
 
     from mcomix import main
     window = main.MainWindow(fullscreen=opts.fullscreen, is_slideshow=opts.slideshow,
-                             show_library=opts.library, manga_mode=opts.manga,
+                             show_library=shows_library(opts),
+                             manga_mode=opts.manga,
                              double_page=opts.doublepage, zoom_mode=opts.zoommode,
                              open_path=open_path, open_page=open_page,
                              open_member=open_member)
