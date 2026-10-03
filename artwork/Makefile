@@ -9,6 +9,9 @@
 #   /mcomix/images/mcomix-$(N).png (packaged $(N)-pixel-wide bitmaps)
 #   /share/icons/hicolor/$(N)x$(N)/apps/mcomix.png ($(N)-pixel-wide XDG icons)
 #   /share/icons/hicolor/scalable/apps/mcomix.svg (scalable XDG icon)
+#
+# Separately, from social-preview.svg:
+#   social-preview.png (1280x640, GitHub's social preview; not in "all")
 
 PNG_SIZES = 16 22 24 32 48 256
 ICON_OUTPUTS := $(foreach i,$(PNG_SIZES),../mcomix/images/mcomix-$(i).png)
@@ -53,3 +56,7 @@ xdg-icons: $(XDG_OUTPUTS) ../share/icons/hicolor/scalable/apps/mcomix.svg
 
 all: svg-icon png-icons xdg-icons
 
+
+social-preview.png: social-preview.svg
+	inkscape -C -w 1280 -h 640 --export-type=png \
+		--export-filename=$@ $<

@@ -16,6 +16,12 @@ The sizes are 16, 22, 24, 32, 48 and 256.
 
 The Windows icon, `../mcomix/images/mcomix.ico`, is not generated: export it by hand, with GIMP for instance.
 
+## The social preview
+
+`social-preview.svg` is the image GitHub shows when the repository is linked: a copy of `../mcomix/images/mcomix.svg`, the name and a line about it, 1280 × 640 pixels.
+`make social-preview.png` renders it; the text is set in Noto Sans.
+Upload the PNG under Settings → General → Social preview.
+
 ## The original icon
 
 The original icon was drawn by @oxaric, as a 2655 × 1988 pixel PNG; its vector source is lost.
