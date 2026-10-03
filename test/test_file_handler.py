@@ -282,6 +282,22 @@ class DirectoryWalkTest(MComixTest):
         self.assertEqual(pictures[2],
                          self.window.imagehandler.get_real_path())
 
+    def test_a_second_turn_past_the_end_while_the_next_book_opens(self):
+        """Upstream bug 106: a fast wheel past a volume's end jumped from
+        volume 2 to 4.  A turn while the next book is still being listed
+        has no page to turn and is dropped, so one book is passed, not
+        two."""
+        books = self._put_archives('1.cbz', '2.cbz', '3.cbz')
+        self._open(books[0])
+        self.window.set_page(self.window.imagehandler.get_number_of_pages())
+        self.window.flip_page(+1)
+        self.window.flip_page(+1)
+        self.assertEqual(books[1], self._opened_file())
+        self.assertTrue(wait_for(
+            lambda: self.handler.file_loaded
+            and self.window.imagehandler.get_number_of_pages() > 0))
+        self.assertEqual(books[1], self._opened_file())
+
     def _put_rar_set(self, directory):
         """Copy the RAR set packed in three volumes into <directory>, and
         return the path of its first volume."""
