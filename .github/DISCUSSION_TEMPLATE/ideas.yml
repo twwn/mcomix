@@ -2,16 +2,50 @@ body:
   - type: markdown
     attributes:
       value: |
-        An idea for MComix, to talk over before it becomes a feature request.
+        An idea for MComix, to talk over before it becomes a request.
+        Sure of what you want? Use the [feature form](https://github.com/twwn/mcomix/issues/new?template=feature_request.yml).
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Reading
+        - Library
+        - Editing books
+        - Preferences and keys
+        - Formats
+        - Installation and packages
+        - Other
+    validations:
+      required: true
   - type: textarea
     id: idea
     attributes:
-      label: Idea
-      description: What MComix should do, and when you would use it.
+      label: The idea
+      description: What MComix would do.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: What it is for
+      description: The reading or library task it would help with.
     validations:
       required: true
   - type: textarea
     id: today
     attributes:
       label: How you do it today
-      description: A workaround or another program, if any.
+      description: A workaround, or another program that does it.
+  - type: textarea
+    id: sketch
+    attributes:
+      label: Sketch
+      description: A drawing or a screenshot, if it helps. Drag it in here.
+  - type: checkboxes
+    id: searched
+    attributes:
+      label: Before posting
+      options:
+        - label: I searched the discussions and the open feature requests.
+          required: true

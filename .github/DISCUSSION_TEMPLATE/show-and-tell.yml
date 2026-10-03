@@ -1,0 +1,21 @@
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Show how you use MComix: a setup, a theme, external commands, a way of keeping a library.
+  - type: textarea
+    id: what
+    attributes:
+      label: What you are showing
+    validations:
+      required: true
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: Drag them in here. Leave out books you may not share.
+  - type: textarea
+    id: how
+    attributes:
+      label: How to do it
+      description: Preferences, keys or commands, so others can do the same.

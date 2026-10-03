@@ -2,20 +2,27 @@ body:
   - type: markdown
     attributes:
       value: |
-        A question about using MComix.
-        A bug goes to the [bug form](https://github.com/twwn/mcomix/issues/new/choose) instead.
+        Ask how to do something in MComix.
+        The [manual](https://twwn.github.io/mcomix/docs/) and [Troubleshooting](https://twwn.github.io/mcomix/docs/troubleshooting.html) may already answer it.
+        Something broken goes to the [bug form](https://github.com/twwn/mcomix/issues/new/choose); a security problem to a [private advisory](https://github.com/twwn/mcomix/security/advisories/new).
+        The `mcomix` packages of Linux distributions, Flathub, WinGet and Scoop are the original MComix 3: ask [upstream](https://sourceforge.net/p/mcomix/discussion/) about those.
   - type: textarea
     id: question
     attributes:
       label: Question
-      description: What you want to do, and what happens instead.
+      description: What you want to do.
     validations:
       required: true
+  - type: textarea
+    id: tried
+    attributes:
+      label: What you tried
+      description: Menus, keys or preferences you tried, and what happened.
   - type: input
     id: version
     attributes:
       label: MComix version
-      description: Help → About.
+      description: "File → About, or `mcomix --version`."
       placeholder: "26.09"
   - type: dropdown
     id: system
@@ -25,3 +32,21 @@ body:
         - Windows
         - Linux
         - Other
+  - type: dropdown
+    id: installed
+    attributes:
+      label: Installed from
+      options:
+        - Windows installer (MSI)
+        - Windows zip
+        - Chocolatey
+        - Source archive
+        - Git checkout
+        - Other
+  - type: checkboxes
+    id: searched
+    attributes:
+      label: Before asking
+      options:
+        - label: I searched the discussions and the manual for an answer.
+          required: true
