@@ -9,6 +9,16 @@ from mcomix import icons
 
 class OwnIconsTest(MComixTest):
 
+    def test_loading_them_again_adds_nothing_to_the_search(self):
+        """Every test that builds a window loads the icons, and each load
+        put MComix' directory on the display's search path once more:
+        after two hundred tests an icon lookup went through two hundred
+        copies of it, and presenting a window took 70 ms instead of 1."""
+        icons.load_icons()
+        icons.load_icons()
+        path = icons.icon_theme().get_search_path()
+        self.assertEqual(1, path.count(icons.icon_search_path()))
+
     def _theme(self):
         """An icon theme that searches MComix' own icons and nothing
         else: whatever it finds, the program carries."""

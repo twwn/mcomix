@@ -28,8 +28,14 @@ def icon_theme() -> Gtk.IconTheme:
 
 
 def load_icons() -> None:
-    """Make MComix' own icons available by name."""
-    icon_theme().add_search_path(icon_search_path())
+    """Make MComix' own icons available by name.
+
+    Once per display: the theme searches its path in order, so every
+    further copy of the same directory made each icon lookup longer.
+    """
+    theme = icon_theme()
+    if icon_search_path() not in (theme.get_search_path() or []):
+        theme.add_search_path(icon_search_path())
 
 
 def load_pixbuf(name: str, size: int) -> "GdkPixbuf.Pixbuf | None":
