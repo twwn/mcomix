@@ -5,13 +5,21 @@ name: Windows tests
 # gates cannot see a bug that only Windows has, such as the one about
 # loading libunrar from the directory MComix starts in.
 #
-# Started by hand: a run takes about 20 minutes.
+# On every push to main, as tests.yml, and by hand: a run takes about
+# six and a half minutes.
 
 on:
+  push:
+    branches: [main]
+    paths-ignore: ["artwork/**"]
   workflow_dispatch:
 
 permissions:
   contents: read
+
+concurrency:
+  group: windows-tests-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   pytest:
@@ -52,11 +60,11 @@ jobs:
           python -c "import os, sys; print(sys.executable, repr(os.sep), sorted(k for k in os.environ if k.upper().startswith(('MSYS', 'MINGW')))); assert os.sep == '\\'"
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           python -m pytest test/ -q -n auto -rfE --durations=30 --junitxml=pytest.xml
-      # Window tests take 11-14 s each in the run above and under 1.5 s
-      # each in a process of their own; the IME crash fix (985506cf) did
-      # not change that.  One whole file in one process, one line per
-      # test: the runner's timestamps on those lines say whether a test
-      # gets slower the more tests its process has run.
+      # One whole file in one process, one line per test: the runner's
+      # timestamps on those lines say whether a test gets slower the more
+      # tests its process has run.  They did, from 0.33 s a test to 0.94 s
+      # over this file, until the icon search path stopped growing with
+      # every window (4ca25606): 0.29-0.30 s throughout since.
       - name: one file in one process
         if: always()
         timeout-minutes: 30
