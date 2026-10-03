@@ -11,7 +11,8 @@ A book is an archive in any format MComix opens; folders cannot be added.
 
 - Collections are on the left; the selected one's books on the right, with those of the collections under it.
 - "All books" holds every book.
-- Drag a collection onto another to file it there; drag books onto a collection to add them.
+- Drag a collection onto another to file it there.
+- Drag books onto a collection to move them there from the collection on show; from "All books" they are added and stay where they were.
 - "Recent" holds the books that are read, not books dragged onto it.
 - "Add..." and books dropped from a file manager go into the collection on show; under "All books" or "Recent" they join no collection.
 - Right-clicking a collection offers "New", "Add...", "Rename", "Duplicate", "Clean up" and "Remove".
@@ -21,7 +22,7 @@ A book is an archive in any format MComix opens; folders cannot be added.
 
 ## Books
 
-- The search field shows the books whose name or path contains what is typed.
+- The search field shows the books whose name or path contains its text, case aside, once Enter is pressed.
 - A book read to its last page has a tick on its cover.
 - The line under the covers gives the selected book's folder, size, page count, and the page it was left on or when it was finished.
 - Right-clicking the books offers "Open", "Open without closing library", "Add...", "Clean up", "Copy", and three ways to take them out:
