@@ -857,6 +857,37 @@ class FileHandler:
 
         return False
 
+    def next_archive(self, *args: object) -> bool:
+        """The Next archive command: open_next_archive(), and past the
+        folder's last archive, with "auto open next directory" on, the
+        first book of the next folder that has one, as a page turn past
+        the book's end opens it.
+
+        Only the command goes on: deleting the last archive opens the one
+        before it in its folder, and a page turn walks on by itself.
+        """
+        if self.open_next_archive():
+            return True
+        return self._at_end_of_archives(-1) and self.open_next_directory()
+
+    def previous_archive(self, *args: object) -> bool:
+        """The Previous archive command, next_archive() the other way."""
+        if self.open_previous_archive():
+            return True
+        return self._at_end_of_archives(0) and self.open_previous_directory()
+
+    def _at_end_of_archives(self, end: int) -> bool:
+        """Whether the open book is the archive at the end <end> (0 or -1)
+        of its folder's archives, the later volumes of RAR sets left out,
+        and the walk past it is wanted."""
+        if self.archive_type is None or not prefs['auto open next directory']:
+            return False
+        files = [path for path in self._opened_provider.list_files(
+                     file_provider.FileProvider.ARCHIVES)
+                 if not archive_tools.is_later_volume(path)]
+        return bool(files) and \
+            files[end] == os.path.abspath(self._base_path or '')
+
     def open_next_directory(self, *args: object) -> bool:
         """Open the first book in the next directory on the shelf that
         holds one (see file_provider.OrderedFileProvider).  Returns True

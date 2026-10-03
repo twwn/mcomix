@@ -382,11 +382,11 @@ class EventHandler:
 
         manager.register('next_archive',
                          ['<control><shift>N'],
-                         self._window.filehandler.open_next_archive)
+                         self._window.filehandler.next_archive)
 
         manager.register('previous_archive',
                          ['<control><shift>P'],
-                         self._window.filehandler.open_previous_archive)
+                         self._window.filehandler.previous_archive)
 
         manager.register('next_directory',
                          ['<control>N'],

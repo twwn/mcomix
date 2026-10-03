@@ -192,6 +192,34 @@ class DirectoryWalkTest(MComixTest):
         self.assertFalse(self.handler.open_previous_archive())
         self.assertEqual(middle, self._opened_file())
 
+    def test_next_archive_goes_on_into_the_next_folder(self):
+        """Ctrl+Shift+N at a folder's last archive did nothing, while a
+        page turn past its end walked on."""
+        first = self._put_archive('a')
+        after = self._put_archive('c')
+        self._open(first)
+        self.assertTrue(self.handler.next_archive())
+        self.assertEqual(after, self._opened_file())
+        self.assertTrue(self.handler.previous_archive())
+        self.assertEqual(first, self._opened_file())
+
+    def test_next_archive_stays_in_its_folder_where_the_walk_is_off(self):
+        prefs['auto open next directory'] = False
+        first = self._put_archive('a')
+        self._put_archive('c')
+        self._open(first)
+        self.assertFalse(self.handler.next_archive())
+        self.assertEqual(first, self._opened_file())
+
+    def test_next_archive_takes_the_folder_s_next_archive_first(self):
+        first = self._put_archive('a')
+        second = os.path.join(self.root, 'a', 'z.cbz')
+        shutil.copy(first, second)
+        self._put_archive('c')
+        self._open(first)
+        self.assertTrue(self.handler.next_archive())
+        self.assertEqual(second, self._opened_file())
+
     def _put_rar_set(self, directory):
         """Copy the RAR set packed in three volumes into <directory>, and
         return the path of its first volume."""

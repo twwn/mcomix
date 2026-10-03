@@ -25,7 +25,8 @@
 - An archive, PDF or AZW3 file opens as one book. RAR, 7z, LHA and PDF need a helper: see [Install](install.md#requirements).
 - An image opens with every image in its folder; a folder opens its images.
 - Several files picked at once open as one book of just those.
-- CTRL+SHIFT+N and CTRL+SHIFT+P open the next and previous archive in the folder; CTRL+N and CTRL+P the next and previous folder with a book, as "Automatically open next directory" in the [preferences](preferences.md) describes.
+- CTRL+SHIFT+N and CTRL+SHIFT+P open the next and previous archive in the folder. Past its last archive they go on into the next folder, as "Automatically open next directory" in the [preferences](preferences.md) describes, while that is on.
+- CTRL+N and CTRL+P open the next and previous folder with a book, the same way.
 - An encrypted archive asks for its password.
 - A RAR book in volumes (name.part1.rar, name.part2.rar, …) is read from its first volume.
   Opening any other volume opens the whole book from name.part1.rar, if it is there.
