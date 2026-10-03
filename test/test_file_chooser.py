@@ -474,6 +474,41 @@ class FileChooserTest(MComixTest):
                           self.dialog._sizelabel.get_text(),
                           self.dialog._detailslabel.get_text()))
 
+    def test_a_folder_is_previewed_by_its_first_picture(self):
+        """A folder opens as a book of its pictures, and the preview
+        stayed empty for it.  Driven through what the selection poll
+        calls, as the test above is."""
+        folder = self._unlisted_folder('book')
+        shutil.copy(get_testfile_path('images', '01-JPG-Indexed.jpg'),
+                    os.path.join(folder, '1.jpg'))
+        shutil.copy(get_testfile_path('images', 'blue.png'),
+                    os.path.join(folder, '2.png'))
+        self.dialog._stop_previewing()
+        self.dialog._previewed = folder
+        self.dialog._update_preview()
+        self.assertTrue(wait_for(
+            lambda: self.dialog._namelabel.get_text() == 'book', seconds=10))
+        paintable = self.dialog._preview_image.get_paintable()
+        self.assertIsNotNone(paintable)
+        # 1.jpg is a single pixel, framed; 2.png is 100 pixels wide.
+        self.assertLess(paintable.get_intrinsic_width(), 10)
+        self.assertEqual(('', '2 pages'),
+                         (self.dialog._sizelabel.get_text(),
+                          self.dialog._detailslabel.get_text()))
+
+    def test_a_folder_left_before_its_preview_came_is_not_shown(self):
+        folder = self._unlisted_folder('book')
+        shutil.copy(get_testfile_path('images', 'blue.png'),
+                    os.path.join(folder, '1.png'))
+        self.dialog._stop_previewing()
+        self.dialog._previewed = folder
+        self.dialog._update_preview()
+        self.dialog._previewed = None
+        self.dialog._update_preview()
+        self.assertFalse(wait_for(
+            lambda: self.dialog._namelabel.get_text(), seconds=1))
+        self.assertIsNone(self.dialog._preview_image.get_paintable())
+
     def test_a_file_gone_before_its_preview_came_is_shown_with_no_size(self):
         path = os.path.join(self.tmp_dir, 'gone.png')
         self.dialog._stop_previewing()

@@ -36,7 +36,8 @@ The file chooser's preview shows:
 
 - name and size, then a picture's size in pixels, or a book's page count and archive type;
 - for a book whose file list is encrypted, its type alone; no password is asked;
-- for an encrypted book, a padlock; for a file that will not load, the picture MComix shows for one.
+- for an encrypted book, a padlock; for a file that will not load, the picture MComix shows for one;
+- for a folder, its first picture, its name and its page count.
 
 ## Fit modes
 

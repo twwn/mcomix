@@ -760,10 +760,58 @@ class _BaseFileChooserDialog(Dialog):
             thread.daemon = True
             thread.start()
         else:
-            self._preview_image.set_paintable(None)
-            self._namelabel.set_text('')
-            self._sizelabel.set_text('')
-            self._detailslabel.set_text('')
+            self._clear_preview()
+            if path and os.path.isdir(path):
+                thread = threading.Thread(target=self._find_folder_cover,
+                                          args=(path,))
+                thread.name += '-preview-folder'
+                thread.daemon = True
+                thread.start()
+
+    def _clear_preview(self) -> None:
+        """Show no preview, and nothing under it."""
+        self._preview_image.set_paintable(None)
+        self._namelabel.set_text('')
+        self._sizelabel.set_text('')
+        self._detailslabel.set_text('')
+
+    def _find_folder_cover(self, folder: str) -> None:
+        """Find the first picture in <folder>, the page a folder opened
+        as a book starts on, and make its thumbnail, on a thread of its
+        own: the folder may be large, or far away."""
+        try:
+            pictures = file_provider.OrderedFileProvider(folder).list_files(
+                file_provider.FileProvider.IMAGES)
+        except ValueError:
+            # Gone since it was selected.
+            pictures = []
+        if not pictures:
+            return
+        thumbnailer = thumbnail_tools.Thumbnailer(
+            size=(self._preview_pixels, self._preview_pixels))
+        pixbuf = thumbnailer.thumbnail(pictures[0])
+        GLib.idle_add(self._folder_cover_found, folder, pictures[0], pixbuf,
+                      len(pictures))
+
+    def _folder_cover_found(self, folder: str, cover: str,
+                            pixbuf: "GdkPixbuf.Pixbuf | None",
+                            pages: int) -> bool:
+        """Preview <folder> by its first picture <cover>, if <folder> is
+        still what is selected."""
+        if self._destroyed or folder != self._previewed:
+            return GLib.SOURCE_REMOVE
+        if pixbuf is None:
+            pixbuf = image_tools.missing_image_icon(self._preview_pixels,
+                                                    self._preview_pixels)
+        else:
+            pixbuf = image_tools.add_border(
+                image_tools.turned_as_shown(pixbuf, cover), 1)
+        self._preview_image.set_paintable(image_tools.pixbuf_to_texture(pixbuf))
+        self._namelabel.set_text(os.path.basename(folder))
+        self._sizelabel.set_text('')
+        self._detailslabel.set_text(i18n.get_translation().ngettext(
+            '%d page', '%d pages', pages) % pages)
+        return GLib.SOURCE_REMOVE
 
     def _find_details(self, path: str) -> None:
         """Find out file_details() of <path>, on a thread of its own."""
@@ -794,10 +842,7 @@ class _BaseFileChooserDialog(Dialog):
             if pixbuf is None and not (image_tools.is_image_file(filepath)
                                        or archive_tools.is_archive_file(filepath)):
                 # Not something MComix reads, which "All files" lists.
-                self._preview_image.set_paintable(None)
-                self._namelabel.set_text('')
-                self._sizelabel.set_text('')
-                self._detailslabel.set_text('')
+                self._clear_preview()
                 return
 
             if pixbuf is None:
