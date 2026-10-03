@@ -90,6 +90,7 @@ No mode scales a small page up unless "View → Stretch small images" is on.
 - A bookmark finds its page by the page's file, wherever sorting the archive has put it.
 - A middle click on an entry starts a second MComix on it, at the bookmark's page.
 - CTRL+D adds a bookmark; CTRL+B edits them.
+- "Bookmarks → Remove this book's bookmarks..." removes the open book's, after asking.
 
 ## Command line
 

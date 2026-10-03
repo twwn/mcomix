@@ -212,8 +212,8 @@ class BookmarksMenuTest(MComixTest):
 
     def test_the_fixed_entries_are_always_there(self):
         self.assertEqual(self._sections(),
-                         [['Add _Bookmark', '_Edit Bookmarks...',
-                           'C_lear bookmarks...']])
+                         [['Add _Bookmark', "_Remove this book's bookmarks...",
+                           '_Edit Bookmarks...', 'C_lear bookmarks...']])
 
     def _clear_action(self):
         return widgets.simple_action(self.menu._actions, 'clear')
@@ -224,6 +224,51 @@ class BookmarksMenuTest(MComixTest):
         self._bookmark(3)
         self.assertTrue(self._clear_action().get_enabled(),
                         'a list with a bookmark in it did not')
+
+    def _remove_action(self):
+        return widgets.simple_action(self.menu._actions, 'remove')
+
+    def _mark(self, page, path='/tmp/book.cbz'):
+        """A bookmark on <page> of <path>, without the question a second
+        one in the same book asks."""
+        self.store.add_bookmark_by_values(
+            os.path.basename(path), path, page, 20, None,
+            datetime.datetime(2026, 1, 1))
+
+    def test_removing_is_offered_only_where_the_open_book_has_bookmarks(self):
+        """Finishing a book left its bookmark to be found and removed in
+        the bookmarks dialog (upstream feature request 17)."""
+        self.assertFalse(self._remove_action().get_enabled())
+        self._mark(3, '/tmp/other.cbz')
+        self.assertFalse(self._remove_action().get_enabled(),
+                         'offered for another book\'s bookmark')
+        self._mark(5)
+        self.assertTrue(self._remove_action().get_enabled())
+
+    def test_yes_removes_the_open_books_bookmarks_and_no_others(self):
+        self._mark(3)
+        self._mark(5)
+        self._mark(4, '/tmp/other.cbz')
+        self.menu._remove_activated()
+        pump()
+        dialogs = self._dialogs()
+        self.assertEqual(1, len(dialogs))
+        self.assertIs(dialogs[0].get_default_widget(),
+                      dialogs[0].get_widget_for_response(Response.NO))
+        dialogs[0].response(Response.YES)
+        pump()
+        self.assertEqual(['/tmp/other.cbz'],
+                         [bookmark.pack()[1]
+                          for bookmark in self.store.get_bookmarks()])
+        self.assertFalse(self._remove_action().get_enabled())
+
+    def test_no_keeps_them(self):
+        self._mark(3)
+        self.menu._remove_activated()
+        pump()
+        self._dialogs()[0].response(Response.NO)
+        pump()
+        self.assertEqual(1, len(self.store.get_bookmarks()))
 
     def test_an_underscore_in_a_name_is_not_eaten(self):
         """A bookmark is named after the file it is in, which names no
@@ -272,8 +317,8 @@ class BookmarksMenuTest(MComixTest):
         pump()
         self.assertEqual(self.store.get_bookmarks(), [])
         self.assertEqual(self._sections(),
-                         [['Add _Bookmark', '_Edit Bookmarks...',
-                           'C_lear bookmarks...']],
+                         [['Add _Bookmark', "_Remove this book's bookmarks...",
+                           '_Edit Bookmarks...', 'C_lear bookmarks...']],
                          'the menu still lists bookmarks that are gone')
         self.assertFalse(self._clear_action().get_enabled())
 
@@ -366,13 +411,13 @@ class BookmarksMenuTest(MComixTest):
     def test_the_fixed_entries_show_the_keys_they_answer_to(self):
         """The keys belong to the keybinding manager, so that the
         Shortcuts tab can change them; the menu shows what it is told."""
-        self.assertEqual(['<Control>D', '<Control>B', None],
+        self.assertEqual(['<Control>D', None, '<Control>B', None],
                          self._accelerators())
 
     def test_a_changed_key_shows_once_the_menu_is_refreshed(self):
         self.ui.accelerators['add_bookmark'] = '<Alt>a'
         self.menu.refresh()
-        self.assertEqual(['<Alt>a', '<Control>B', None],
+        self.assertEqual(['<Alt>a', None, '<Control>B', None],
                          self._accelerators())
 
     def test_the_key_adds_a_bookmark_while_a_book_is_open(self):

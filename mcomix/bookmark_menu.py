@@ -1,10 +1,13 @@
 """bookmark_menu.py - Bookmarks menu."""
 
-from gi.repository import Gio, GLib
+import os
+
+from gi.repository import Gio, GLib, Gtk
 
 
 from mcomix import bookmark_backend
 from mcomix import bookmark_dialog
+from mcomix import message_dialog
 from mcomix import widgets
 from mcomix.i18n import _
 from mcomix.dialog import Response
@@ -32,8 +35,10 @@ class BookmarksMenu:
     #: The permanent entries, and the keybinding actions whose keys reach
     #: them, which the Shortcuts tab can change like any other.  Clearing
     #: gets none: it throws away every bookmark, so it is not something
-    #: to be a keystroke away from.
+    #: to be a keystroke away from; nor does removing the open book's,
+    #: which asks first anyway.
     FIXED = (('add', _('Add _Bookmark'), 'add_bookmark'),
+             ('remove', _("_Remove this book's bookmarks..."), None),
              ('edit', _('_Edit Bookmarks...'), 'edit_bookmarks'),
              ('clear', _('C_lear bookmarks...'), None))
 
@@ -102,6 +107,7 @@ class BookmarksMenu:
         # says so rather than asking a question with only one answer.
         widgets.simple_action(self._actions, 'clear').set_enabled(
             bool(self._bookmarks))
+        self._update_remove()
 
         if self._bookmarks:
             listed = Gio.Menu()
@@ -162,6 +168,41 @@ class BookmarksMenu:
         """Forget the dialog, so that the next Edit opens a new one."""
         self._dialog = None
 
+    def _open_book(self) -> str | None:
+        """The path the bookmarks of the open book are kept under, or
+        None where no book is open."""
+        return self._window.imagehandler.get_real_path()
+
+    def _update_remove(self) -> None:
+        """Offer to remove the open book's bookmarks only where it has
+        some."""
+        path = self._open_book()
+        widgets.simple_action(self._actions, 'remove').set_enabled(
+            path is not None
+            and bool(self._bookmarks_store.bookmarks_for_path(path)))
+
+    def _remove_activated(self, *args: object) -> None:
+        """Remove the open book's bookmarks, once the reader has said yes.
+
+        Finishing a book left its bookmark behind, to be found in the
+        bookmarks dialog and removed there (upstream feature request
+        17).
+        """
+        path = self._open_book()
+        if path is None:
+            return
+        dialog = message_dialog.MessageDialog(
+            self._window, buttons=Gtk.ButtonsType.YES_NO)
+        dialog.set_text(
+            _('Remove the bookmarks in "%s"?') % os.path.basename(path))
+        dialog.set_default_response(Response.NO)
+
+        def answered(response: int) -> None:
+            if response == Response.YES:
+                self._bookmarks_store.remove_for_path(path)
+
+        dialog.run_async(answered)
+
     def _clear_activated(self, *args: object) -> None:
         """Remove every bookmark, once the reader has confirmed it."""
         self._bookmarks_store.show_clear_bookmarks_dialog(self._clear_answered)
@@ -176,5 +217,6 @@ class BookmarksMenu:
         or not.
         """
         widgets.simple_action(self._actions, 'add').set_enabled(loaded)
+        self._update_remove()
 
 # vim: expandtab:sw=4:ts=4
