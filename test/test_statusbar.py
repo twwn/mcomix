@@ -7,7 +7,7 @@ whole line back. These pin the text a label now carries.
 
 from gi.repository import Gtk
 
-from . import MComixTest
+from . import MComixTest, pump
 
 from mcomix import constants
 from mcomix import status
@@ -83,3 +83,26 @@ class StatusbarTextTest(MComixTest):
         self.assertNotIn('an error nobody cleared', self._text())
 
 # vim: expandtab:sw=4:ts=4
+
+
+class StatusbarHeightTest(MComixTest):
+
+    def test_a_name_in_another_script_does_not_change_the_height(self):
+        """A fallback font's taller lines made the bar 22 pixels high for
+        a Japanese or Korean file name and 18 for a Latin one, so the
+        page area above it moved, and the page was scaled again, at every
+        file whose name was in another script (upstream bug 148)."""
+        bar = status.Statusbar()
+        window = Gtk.Window()
+        window.set_child(bar)
+        self.addCleanup(window.destroy)
+        window.present()
+        pump()
+        heights = set()
+        for name in ('Volume 01 - page 003.jpg',
+                     '\u9032\u6483\u306e\u5de8\u4eba 003.jpg',
+                     '\ub098 \ud63c\uc790\ub9cc 003.jpg'):
+            bar.set_filename(name)
+            bar.update()
+            heights.add(bar.measure(Gtk.Orientation.VERTICAL, -1)[1])
+        self.assertEqual(1, len(heights), heights)

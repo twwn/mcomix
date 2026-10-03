@@ -45,6 +45,7 @@ class Statusbar(Gtk.Box):
         self.status.set_xalign(0)
         self.status.set_hexpand(True)
         self.status.set_ellipsize(Pango.EllipsizeMode.END)
+        self.status.connect('realize', self._keep_one_height)
         self.append(self.status)
 
         # Create popup menu for enabling/disabling status boxes.
@@ -72,6 +73,22 @@ class Statusbar(Gtk.Box):
         self.set_visible(True)
 
         self._loading = False
+
+    #: Text in the scripts whose fallback fonts set the tallest lines,
+    #: measured for the height every line of the status bar is given.
+    _TALLEST_LINE = 'Ag \u6f22\u5b57 \ud55c\uae00 \u0639\u0631\u0628\u064a'
+
+    def _keep_one_height(self, label: Gtk.Label) -> None:
+        """Make the status line as tall as its tallest script needs.
+
+        Pango takes a character the interface font lacks from a fallback
+        font, whose lines can be taller: a file name in Japanese or
+        Korean made the bar 22 pixels high instead of 18, and the page
+        area above it moved and rescaled the page at every file whose
+        name was in another script (upstream bug 148).
+        """
+        layout = label.create_pango_layout(self._TALLEST_LINE)
+        label.set_size_request(-1, layout.get_pixel_size()[1])
 
     def set_message(self, message: str) -> None:
         """Set a specific message (such as an error message) on the statusbar,
