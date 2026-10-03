@@ -449,6 +449,21 @@ class ColumnListViewTest(MComixTest):
             self.assertTrue(
                 cell._pressed(None, Gdk.KEY_b, 0, Gdk.ModifierType.CONTROL_MASK))
             self.assertEqual(rebound, [(row, '<Control>b')])
+            # The arrows and Tab are what MComix' own defaults use,
+            # though GTK keeps them for moving the focus: the editor
+            # took no key of the two, so a default cleared could not be
+            # given back by hand (upstream support request 27).
+            for keyval, state, name in (
+                    (Gdk.KEY_Left, 0, 'Left'),
+                    (Gdk.KEY_KP_Down, 0, 'KP_Down'),
+                    (Gdk.KEY_Tab, 0, 'Tab'),
+                    (Gdk.KEY_ISO_Left_Tab, Gdk.ModifierType.SHIFT_MASK,
+                     '<Shift>ISO_Left_Tab')):
+                cell.emit('clicked')
+                self.assertTrue(cell._pressed(None, keyval, 0,
+                                              Gdk.ModifierType(state)))
+                self.assertEqual(rebound[-1], (row, name))
+            del rebound[1:]
             # Backspace clears it, escape leaves it alone.
             cell.emit('clicked')
             self.assertTrue(cell._pressed(None, Gdk.KEY_BackSpace, 0,

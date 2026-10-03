@@ -25,6 +25,16 @@ _ASK_FOR_ONE_HINT = _('New accelerator...')
 #: action needs.
 _ACCEL_WIDTH_CHARS = 14
 
+#: Keys Gtk.accelerator_valid() turns down that MComix binds all the
+#: same: GTK keeps the arrows without a modifier, and Tab with or
+#: without one, for moving the focus, and MComix' defaults turn and
+#: scroll pages with the arrows and show the page information on Tab.
+_ALSO_BINDABLE = frozenset((
+    Gdk.KEY_Up, Gdk.KEY_Down, Gdk.KEY_Left, Gdk.KEY_Right,
+    Gdk.KEY_KP_Up, Gdk.KEY_KP_Down, Gdk.KEY_KP_Left, Gdk.KEY_KP_Right,
+    Gdk.KEY_Tab, Gdk.KEY_ISO_Left_Tab, Gdk.KEY_KP_Tab,
+))
+
 
 def _text_width(characters: int) -> int:
     """How wide <characters> of text come out, in pixels.
@@ -436,7 +446,9 @@ class _AccelCell(Gtk.Button, _Cell):
                 self.rebind(self.row, None)
             return True
         modifiers = state & Gtk.accelerator_get_default_mod_mask()
-        if not Gtk.accelerator_valid(keyval, modifiers):
+        if not (Gtk.accelerator_valid(keyval, modifiers)
+                or keyval in _ALSO_BINDABLE):
+            # A modifier on its own, on the way to a combination.
             return True
         self.capturing = False
         if self.rebind is not None and self.row is not None:
