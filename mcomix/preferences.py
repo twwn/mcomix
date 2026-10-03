@@ -649,6 +649,8 @@ def write_preferences_file() -> None:
     stored.update(_changed_here())
     # Whoever wrote the file last says what format it is in.
     stored[_FORMAT_VERSION_KEY] = CONFIG_FORMAT_VERSION
+    # Made at start-up, but it may have gone since.
+    os.makedirs(os.path.dirname(constants.PREFERENCE_PATH), exist_ok=True)
     with tools.atomic_write(constants.PREFERENCE_PATH) as config_file:
         json.dump(stored, config_file, indent=2)
     # What was just written is this instance's baseline from now on.

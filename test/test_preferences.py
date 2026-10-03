@@ -2,6 +2,7 @@ import ast
 import glob
 import json
 import os
+import shutil
 import pickle
 import stat
 
@@ -587,6 +588,15 @@ class WriteOnChangeTest(MComixTest):
         preferences.changed()
         self.assertEqual(self._written().get('stored dialog choices'),
                          {'resume-from-last-read-page': -8})
+
+    def test_a_change_is_written_where_the_folder_has_gone(self) -> None:
+        """The settings folder made at start-up can be gone by the time
+        a change is written: removed from outside, or never made for a
+        test that changes a preference.  The write raised, out of a GLib
+        timeout, and the change was lost."""
+        shutil.rmtree(constants.CONFIG_DIR)
+        prefs['lens size'] = 234
+        self.assertEqual(self._written().get('lens size'), 234)
 
     def test_reading_the_file_is_not_changing_it(self) -> None:
         with open(constants.PREFERENCE_PATH, 'w') as config_file:
