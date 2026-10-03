@@ -696,8 +696,9 @@ class FileHandler:
         """Unpack what is left of the open archive, and close its file.
 
         Windows neither moves nor replaces a file that is open, and the
-        extractor holds the archive open for as long as the book is, so
-        moving the book or writing it back over itself failed there with
+        extractor holds the archive open until every member is out
+        (_extracted_file() lets go of it then), so moving the book or
+        writing it back over itself soon after opening it failed there with
         "The process cannot access the file because it is being used by
         another process".  Whatever moves the archive or writes over it
         calls this first.  Every member is waited for before the file is
@@ -963,6 +964,13 @@ class FileHandler:
             return
         filepath = os.path.join(extractor.get_directory(), name)
         self.file_available([filepath])
+        if self._extractor.get_files() == []:
+            # Every member is out, and nothing more is read from the
+            # archive until the book is opened again, so its file is let
+            # go: Windows deletes, moves and renames no file that is
+            # open, and the reader expects to do all three in Explorer
+            # to a book they are only reading.  Closing again is a no-op.
+            self._extractor.close()
 
     def _wait_on_comment(self, num: int) -> None:
         """Block the running (main) thread until the file corresponding to

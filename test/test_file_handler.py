@@ -22,6 +22,8 @@ from mcomix import message_dialog
 from mcomix.dialog import Response
 from mcomix.preferences import prefs
 
+from .test_main_window import _descriptors_on
+
 
 class DirectoryWalkTest(MComixTest):
 
@@ -496,6 +498,33 @@ class ExtractionOrderTest(MComixTest):
         self.assertEqual([1, 2, 3, 4, 5, 6, 10, 11, 9, 12, 7, 8], unpacked)
         self.assertEqual(10, self.window.imagehandler.get_current_page())
         self.assertIsNone(self.window.imagehandler._resume_page)
+
+
+@unittest.skipUnless(os.path.isdir('/proc/self/fd'),
+                     'the open descriptors are read from /proc')
+class AnUnpackedArchiveIsLetGoTest(_WindowTest):
+
+    """Windows deletes, moves and renames no file that is open, and the
+    extractor held the archive open for as long as the book was, though
+    nothing more came out of it once every member was unpacked: Explorer
+    refused to touch a book that was only being read."""
+
+    def test_the_archive_is_closed_once_every_member_is_out(self):
+        source = os.path.join(self.tmp_dir, 'Book.cbz')
+        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), source)
+        self.handler.open_file(source)
+        self.assertTrue(wait_for(
+            lambda: self.handler.file_loaded
+            and self.handler._extractor.get_files() == [], seconds=20),
+            'the archive was never unpacked')
+        pump()
+        self.assertEqual([], _descriptors_on(source))
+        # The pages are still there to be read, from the unpacked files.
+        pages = self.window.imagehandler.get_number_of_pages()
+        self.assertGreater(pages, 2)
+        self.window.set_page(pages)
+        pump()
+        self.assertEqual(pages, self.window.imagehandler.get_current_page())
 
 
 class ABookWithNoPagesTest(MComixTest):

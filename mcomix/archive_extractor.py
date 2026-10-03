@@ -245,8 +245,8 @@ class Extractor:
         if self._archive:
             self._archive.close()
             # Once only: the file handler closes the archive early,
-            # before the book is moved or written over, and again when
-            # the book itself is closed.
+            # once every member is out or before the book is moved or
+            # written over, and again when the book itself is closed.
             self._archive = None
 
     def _extraction_finished(self, name: str) -> None:
