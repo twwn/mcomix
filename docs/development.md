@@ -84,5 +84,6 @@ Workflow | Runs | Does
 `codeql.yml` | A push to `main` or a pull request that changes Python code or a workflow, Mondays | Code scanning of the Python code and the workflows.
 `release.yml` | A version tag, a pull request that changes the build, Mondays | Builds and tests the release files: see [Releasing](releasing.md).
 `pages.yml` | A push to `main` that changes a page | Publishes the manual on [GitHub Pages](https://twwn.github.io/mcomix/).
+`release-notes.yml` | A push to `main` that changes `ChangeLog.md` | Makes each published release's notes its `ChangeLog.md` section again.
 `windows-tests.yml` | By hand | The tests on Windows, in MSYS2's UCRT64 environment, as the Windows packages are built.
 Dependabot | Monthly | Pull requests updating the actions the workflows use.

@@ -1,0 +1,59 @@
+name: Release notes
+
+# A published release's notes are its section of ChangeLog.md, as
+# release.yml wrote them when it published the release.  When
+# ChangeLog.md changes on main, every published release whose section
+# now reads differently gets the section's new text.  A release with no
+# section is left alone.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "ChangeLog.md"
+      - ".github/workflows/release-notes.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-notes
+  cancel-in-progress: false
+
+jobs:
+  notes:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      # The section is cut out as release.yml cuts it.
+      - name: Each release's notes from its section
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release list --repo "$GITHUB_REPOSITORY" --exclude-drafts \
+              --limit 1000 --json tagName --jq '.[].tagName' |
+          while read -r tag; do
+            awk -v heading="# MComix $tag" '
+              $0 == heading { found = 1; next }
+              found && /^# MComix / { exit }
+              found' ChangeLog.md > notes.md
+            if ! grep -q '[^[:space:]]' notes.md; then
+              echo "MComix $tag: no section, left as it is." >> "$GITHUB_STEP_SUMMARY"
+              continue
+            fi
+            gh release view "$tag" --repo "$GITHUB_REPOSITORY" \
+                --json body --jq .body > published.md
+            if [ "$(cat notes.md)" = "$(tr -d '\r' < published.md)" ]; then
+              echo "MComix $tag: up to date." >> "$GITHUB_STEP_SUMMARY"
+            else
+              gh release edit "$tag" --repo "$GITHUB_REPOSITORY" \
+                  --notes-file notes.md
+              echo "MComix $tag: notes replaced." >> "$GITHUB_STEP_SUMMARY"
+            fi
+          done
