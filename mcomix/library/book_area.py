@@ -182,7 +182,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
             ('remove-from-library', _('Remove from the _library'),
              _('Completely removes the selected books from the library.'),
              self._remove_books_from_library),
-            ('completely-remove', _('_Remove and delete from disk'),
+            ('completely-remove', _('_Remove and move to the trash'),
              _('Deletes the selected books from disk.'),
              self._completely_remove_book),
             ('cleanup', _('Clean _up'),
@@ -713,7 +713,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         choice_dialog.set_text(
             _('Remove books from the library?'),
             _('The selected books will be removed from the library and '
-              'permanently deleted. Are you sure that you want to continue?')
+              'moved to the trash.')
         )
         choice_dialog.run_async(self._remove_answered)
 
@@ -729,23 +729,23 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
             # Remove books from library
             self._remove_books_from_library()
 
-            # Remove from the harddisk.  A file that will not go - one
-            # inside a directory that cannot be written to, or a path
-            # that is a directory itself - was logged and nothing more,
-            # and the book had left the library by then, so the reader
-            # was told the file was deleted while it was still there.
+            # Into the trash.  A file that will not go - one on a file
+            # system with no trash, inside a directory that cannot be
+            # written to - was logged and nothing more, and the book had
+            # left the library by then, so the reader was told the file
+            # was gone while it was still there.
             failed = []
             for book_path in paths:
                 try:
-                    os.remove(book_path)
-                except OSError as error:
+                    tools.move_to_trash(book_path)
+                except GLib.Error as error:
                     failed.append(book_path)
                     log.error(_('! Could not remove %(file)s: %(error)s'),
-                              {'file': book_path, 'error': error})
+                              {'file': book_path, 'error': error.message})
             if failed:
                 message = i18n.get_translation().ngettext(
-                    '%d book could not be deleted from disk.',
-                    '%d books could not be deleted from disk.',
+                    '%d book could not be moved to the trash.',
+                    '%d books could not be moved to the trash.',
                     len(failed))
                 self._library.set_status_message(message % len(failed))
 

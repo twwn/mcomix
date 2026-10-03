@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 0.90.4\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-09-26 15:29+0200\n"
+"POT-Creation-Date: 2026-10-03 07:10+0200\n"
 "PO-Revision-Date: 2018-02-24 08:43+0100\n"
 "Last-Translator: Jonatan Nyberg <jonatan@autistici.org>\n"
 "Language-Team: Swedish <LL@li.org>\n"
@@ -46,7 +46,7 @@ msgstr "En kopia av denna licens kan erhållas från %s"
 msgid "Non-supported archive format: %s"
 msgstr "Arkivformat som inte stöds: %s"
 
-#: mcomix/archive_extractor.py:316 mcomix/archive_extractor.py:341
+#: mcomix/archive_extractor.py:320 mcomix/archive_extractor.py:345
 #, python-format
 msgid "! Extraction error: %s"
 msgstr "! Extraktionsfel: %s"
@@ -60,12 +60,12 @@ msgstr "! Kunde inte ta bort %(file)s: %(error)s"
 
 #
 # File: src/library.py, line: 271
-#: mcomix/archive_packer.py:523 mcomix/archive_packer.py:541
+#: mcomix/archive_packer.py:593 mcomix/archive_packer.py:611
 #, python-format
 msgid "! Could not create archive at path \"%s\""
 msgstr "! Kunde inte skapa arkivet i sökvägen: \"%s\""
 
-#: mcomix/archive_packer.py:532
+#: mcomix/archive_packer.py:602
 #, python-format
 msgid ""
 "! Could not add file %(sourcefile)s to archive %(archivefile)s, aborting..."
@@ -82,39 +82,39 @@ msgstr "! Kunde inte läsa %s"
 
 #
 # File: src/comment.py, line: 53
-#: mcomix/bookmark_backend.py:280
+#: mcomix/bookmark_backend.py:297
 #, python-format
 msgid "! Could not parse bookmarks file %s"
 msgstr "! Kunde inte parsa bokmärkesfil %s"
 
-#: mcomix/bookmark_backend.py:355 mcomix/message_dialog.py:28
+#: mcomix/bookmark_backend.py:372 mcomix/message_dialog.py:28
 msgid "_Yes"
 msgstr "_Ja"
 
 #
 # File: src/ui.py, line: 69
-#: mcomix/bookmark_backend.py:356 mcomix/message_dialog.py:27
+#: mcomix/bookmark_backend.py:373 mcomix/message_dialog.py:27
 msgid "_No"
 msgstr "_Nej"
 
 #
 # File: src/preferences.py, line: 230
-#: mcomix/bookmark_backend.py:357 mcomix/edit_dialog.py:59
-#: mcomix/file_actions.py:834 mcomix/file_chooser_base_dialog.py:174
-#: mcomix/file_chooser_base_dialog.py:179
+#: mcomix/bookmark_backend.py:374 mcomix/edit_dialog.py:59
+#: mcomix/file_actions.py:836 mcomix/file_chooser_base_dialog.py:187
+#: mcomix/file_chooser_base_dialog.py:192
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:32
 msgid "_Cancel"
 msgstr "_Avbryt"
 
-#: mcomix/bookmark_backend.py:365
+#: mcomix/bookmark_backend.py:382
 #, python-format
 msgid "Replace existing bookmark on page %s?"
 msgid_plural "Replace existing bookmarks on pages %s?"
 msgstr[0] "Ersätt befintligt bokmärke på sidan %s?"
 msgstr[1] "Ersätt befintliga bokmärken på sidorna %s?"
 
-#: mcomix/bookmark_backend.py:370
+#: mcomix/bookmark_backend.py:387
 #, python-format
 msgid ""
 "The current book already contains marked pages. Do you want to replace them "
@@ -123,7 +123,7 @@ msgstr ""
 "Den aktuella boken innehåller redan märkta sidor. Vill du ersätta dem med "
 "ett nytt bokmärke på sidan %d?"
 
-#: mcomix/bookmark_backend.py:373
+#: mcomix/bookmark_backend.py:390
 msgid ""
 "Selecting \"No\" will create a new bookmark without affecting the other "
 "bookmarks."
@@ -133,13 +133,13 @@ msgstr ""
 
 #
 # File: src/bookmark.py, line: 77
-#: mcomix/bookmark_backend.py:393
+#: mcomix/bookmark_backend.py:410
 msgid "Clear all bookmarks?"
 msgstr "Töm alla bokmärken?"
 
 #
 # File: src/bookmark.py, line: 79
-#: mcomix/bookmark_backend.py:394
+#: mcomix/bookmark_backend.py:411
 msgid ""
 "All stored bookmarks will be removed. Are you sure that you want to continue?"
 msgstr ""
@@ -156,7 +156,7 @@ msgstr "Redigera bokmärken"
 msgid "C_lear bookmarks..."
 msgstr "Tö_m alla bokmärken..."
 
-#: mcomix/bookmark_dialog.py:33 mcomix/main.py:894 mcomix/openwith.py:333
+#: mcomix/bookmark_dialog.py:33 mcomix/main.py:962 mcomix/openwith.py:333
 #: mcomix/library/collection_area.py:149 mcomix/library/watchlist.py:64
 msgid "_Remove"
 msgstr "_Ta bort"
@@ -184,7 +184,7 @@ msgstr "Namn"
 
 #
 # File: src/bookmark.py, line: 256
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1493
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1562
 #: mcomix/library/control_area.py:148
 msgid "Page"
 msgstr "Sida"
@@ -288,7 +288,7 @@ msgstr "Ange ett nytt namn för den här filen."
 
 #
 # File: src/edit.py, line: 28
-#: mcomix/edit_dialog.py:58 mcomix/keybindings.py:144
+#: mcomix/edit_dialog.py:58 mcomix/keybindings.py:145
 msgid "Edit archive"
 msgstr "Redigera arkiv"
 
@@ -319,34 +319,34 @@ msgstr "Kommentarer"
 
 #
 # File: src/library.py, line: 271
-#: mcomix/edit_dialog.py:240 mcomix/file_actions.py:646
+#: mcomix/edit_dialog.py:243 mcomix/file_actions.py:648
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! Kunde inte spara arkivet %(archivefile)s: %(error)s"
 
 #
 # File: src/edit.py, line: 99
-#: mcomix/edit_dialog.py:253 mcomix/file_actions.py:651
+#: mcomix/edit_dialog.py:256 mcomix/file_actions.py:653
 msgid "The new archive could not be saved!"
 msgstr "Det nya arkivet kunde inte sparas!"
 
 #
 # File: src/edit.py, line: 101
-#: mcomix/edit_dialog.py:254 mcomix/file_actions.py:652
+#: mcomix/edit_dialog.py:257 mcomix/file_actions.py:654
 msgid "The original files have not been removed."
 msgstr "Originalfilerna har inte tagits bort."
 
 #
 # File: src/edit.py, line: 115
-#: mcomix/edit_dialog.py:357
+#: mcomix/edit_dialog.py:360
 msgid "Archives are stored as ZIP files."
 msgstr "Arkiven sparas i ZIP-format."
 
-#: mcomix/edit_dialog.py:441
+#: mcomix/edit_dialog.py:444
 msgid "Close the book the archive editor is working on?"
 msgstr "Stänga boken som arkivredigeraren arbetar med?"
 
-#: mcomix/edit_dialog.py:442
+#: mcomix/edit_dialog.py:445
 msgid ""
 "The editor holds changes that have not been applied or saved. They go with "
 "the book."
@@ -354,11 +354,11 @@ msgstr ""
 "Redigeraren har ändringar som varken tillämpats eller sparats. De följer med "
 "boken."
 
-#: mcomix/edit_dialog.py:444
+#: mcomix/edit_dialog.py:447
 msgid "_Go on editing"
 msgstr "_Fortsätt redigera"
 
-#: mcomix/edit_dialog.py:445
+#: mcomix/edit_dialog.py:448
 msgid "_Close the book"
 msgstr "_Stäng boken"
 
@@ -372,7 +372,7 @@ msgstr "Markera _allt"
 
 #
 # File: src/enhance.py, line: 51
-#: mcomix/enhance_dialog.py:28 mcomix/keybindings.py:146
+#: mcomix/enhance_dialog.py:28 mcomix/keybindings.py:147
 msgid "Enhance image"
 msgstr "Förbättra bild"
 
@@ -387,7 +387,7 @@ msgstr "Återställ till standardinställningar."
 #
 # File: src/filechooser.py, line: 39
 #: mcomix/enhance_dialog.py:35 mcomix/file_actions.py:559
-#: mcomix/file_actions.py:602 mcomix/file_chooser_base_dialog.py:180
+#: mcomix/file_actions.py:602 mcomix/file_chooser_base_dialog.py:193
 #: mcomix/openwith.py:351
 msgid "_Save"
 msgstr "_Spara"
@@ -449,7 +449,7 @@ msgstr "_Invertera bildfärger"
 msgid "Invert (negate) image colors."
 msgstr "Invertera (negera) bildfärgerna."
 
-#: mcomix/file_actions.py:300 mcomix/file_actions.py:982
+#: mcomix/file_actions.py:300 mcomix/file_actions.py:997
 msgid "A file of that name is there already."
 msgstr "Det finns redan en fil med det namnet där."
 
@@ -503,39 +503,44 @@ msgstr "I_nte nu"
 #
 # File: src/library.py, line: 832
 # File: src/properties.py, line: 113
-#: mcomix/file_actions.py:752
+#: mcomix/file_actions.py:754
 msgid "Save page as"
 msgstr "Spara sidan som"
 
-#: mcomix/file_actions.py:793
+#: mcomix/file_actions.py:795
 #, python-format
 msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! Kunde inte spara %(file)s till %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:797 mcomix/file_actions.py:984
+#: mcomix/file_actions.py:799 mcomix/file_actions.py:999
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "Det finns inte tillräckligt med plats där: filen är %s."
 
-#: mcomix/file_actions.py:803
+#: mcomix/file_actions.py:805
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "Kunde inte spara \"%(file)s\" till \"%(directory)s\""
 
-#: mcomix/file_actions.py:832
+#: mcomix/file_actions.py:834
 #, python-format
 msgid "Delete \"%s\"?"
 msgstr "Ta bort \"%s\"?"
 
-#: mcomix/file_actions.py:833
-msgid "The file will be deleted from your harddisk."
-msgstr "Filen kommer att tas bort från hårddisken."
+#: mcomix/file_actions.py:835
+msgid "The file is moved to the trash."
+msgstr "Filen flyttas till papperskorgen."
 
-#: mcomix/file_actions.py:835 mcomix/ui.py:433
-msgid "_Delete"
-msgstr "_Ta bort"
+#: mcomix/file_actions.py:837
+msgid "_Move to Trash"
+msgstr "_Flytta till papperskorgen"
 
-#: mcomix/file_actions.py:905
+#: mcomix/file_actions.py:898
+#, python-format
+msgid "Could not move \"%s\" to the trash"
+msgstr "Kunde inte flytta \"%s\" till papperskorgen"
+
+#: mcomix/file_actions.py:919
 #, python-format
 msgid "The file is gone, and its %d bookmark cannot be opened any more."
 msgid_plural ""
@@ -543,17 +548,17 @@ msgid_plural ""
 msgstr[0] "Filen är borta, och dess %d bokmärke kan inte längre öppnas."
 msgstr[1] "Filen är borta, och dess %d bokmärken kan inte längre öppnas."
 
-#: mcomix/file_actions.py:909
+#: mcomix/file_actions.py:923
 #, python-format
 msgid "Remove the bookmarks in \"%s\"?"
 msgstr "Ta bort bokmärkena i \"%s\"?"
 
-#: mcomix/file_actions.py:978
+#: mcomix/file_actions.py:993
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr "! Kunde inte flytta %(file)s till %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:990
+#: mcomix/file_actions.py:1005
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "Kunde inte flytta \"%(file)s\" till \"%(directory)s\""
@@ -569,38 +574,38 @@ msgstr[1] "%d sidor"
 #
 # File: src/filechooser.py, line: 35
 # File: src/library.py, line: 489
-#: mcomix/file_chooser_base_dialog.py:173 mcomix/keybindings.py:145
+#: mcomix/file_chooser_base_dialog.py:186 mcomix/keybindings.py:146
 msgid "Open"
 msgstr "Öppna"
 
 #
 # File: src/filechooser.py, line: 35
 # File: src/library.py, line: 489
-#: mcomix/file_chooser_base_dialog.py:175 mcomix/library/book_area.py:169
+#: mcomix/file_chooser_base_dialog.py:188 mcomix/library/book_area.py:169
 msgid "_Open"
 msgstr "Ö_ppna"
 
 #
 # File: src/filechooser.py, line: 39
-#: mcomix/file_chooser_base_dialog.py:178
+#: mcomix/file_chooser_base_dialog.py:191
 msgid "Save"
 msgstr "Spara"
 
 #
 # File: src/filechooser.py, line: 75
-#: mcomix/file_chooser_base_dialog.py:292
+#: mcomix/file_chooser_base_dialog.py:305
 msgid "All files"
 msgstr "Alla filer"
 
 #
 # File: src/filechooser.py, line: 78
-#: mcomix/file_chooser_base_dialog.py:546
+#: mcomix/file_chooser_base_dialog.py:562
 msgid "All archives"
 msgstr "Alla arkiv"
 
 #
 # File: src/filechooser.py, line: 82
-#: mcomix/file_chooser_base_dialog.py:546
+#: mcomix/file_chooser_base_dialog.py:562
 #, python-format
 msgid "%s archives"
 msgstr "%s arkiv"
@@ -608,28 +613,28 @@ msgstr "%s arkiv"
 #
 # File: src/filechooser.py, line: 171
 # File: src/filechooser.py, line: 249
-#: mcomix/file_chooser_base_dialog.py:552
+#: mcomix/file_chooser_base_dialog.py:568
 msgid "All images"
 msgstr "Alla bildfiler"
 
 #
 # File: src/filechooser.py, line: 171
 # File: src/filechooser.py, line: 249
-#: mcomix/file_chooser_base_dialog.py:552
+#: mcomix/file_chooser_base_dialog.py:568
 #, python-format
 msgid "%s images"
 msgstr "%s bilder"
 
 #
 # File: src/filechooser.py, line: 125
-#: mcomix/file_chooser_base_dialog.py:680
+#: mcomix/file_chooser_base_dialog.py:695
 #, python-format
 msgid "A file named '%s' already exists. Do you want to replace it?"
 msgstr "En fil med namnet '%s' finns redan. Vill du ersätta den?"
 
 #
 # File: src/filechooser.py, line: 128
-#: mcomix/file_chooser_base_dialog.py:682
+#: mcomix/file_chooser_base_dialog.py:697
 msgid "Replacing it will overwrite its contents."
 msgstr "Ersätts filen så kommer dess innehåll att skrivas över."
 
@@ -646,32 +651,32 @@ msgstr "_Lägg till"
 
 #
 # File: src/filehandler.py, line: 285
-#: mcomix/file_handler.py:282
+#: mcomix/file_handler.py:288
 #, python-format
 msgid "No images in '%s'"
 msgstr "Inga bilder i '%s'"
 
 #
 # File: src/filehandler.py, line: 213
-#: mcomix/file_handler.py:462
+#: mcomix/file_handler.py:475
 #, python-format
 msgid "Could not open %s: No such file."
 msgstr "Kunde inte öppna %s: Filen finns inte."
 
 #
 # File: src/filehandler.py, line: 217
-#: mcomix/file_handler.py:465 mcomix/file_provider.py:232
+#: mcomix/file_handler.py:478 mcomix/file_provider.py:232
 #: mcomix/file_provider.py:285
 #, python-format
 msgid "Could not open %s: Permission denied."
 msgstr "Kunde inte öppna %s: Otillräckliga rättigheter."
 
-#: mcomix/file_handler.py:620
+#: mcomix/file_handler.py:633
 #, python-format
 msgid "Continue reading from page %d?"
 msgstr "Fortsätt läsa från sidan %d?"
 
-#: mcomix/file_handler.py:621
+#: mcomix/file_handler.py:634
 #, python-format
 msgid ""
 "You stopped reading here on %(date)s, %(time)s. If you choose \"Yes\", "
@@ -682,7 +687,7 @@ msgstr ""
 "läsningen att fortsätta på sidan %(page)d. I annat fall laddas den första "
 "sidan."
 
-#: mcomix/file_handler.py:1048
+#: mcomix/file_handler.py:1086
 #, python-format
 msgid ""
 "! Corrupt file \"%s\", deleting it; the last file read will not be reopened."
@@ -697,7 +702,7 @@ msgstr "Ogiltig sökväg: \"%s\""
 
 #
 # File: src/filehandler.py, line: 411
-#: mcomix/image_tools.py:1137
+#: mcomix/image_tools.py:1161
 msgid "Unknown filetype"
 msgstr "Okänd filtyp"
 
@@ -708,506 +713,506 @@ msgstr "Tangent %d"
 
 #
 # File: src/ui.py, line: 284
-#: mcomix/keybindings.py:43 mcomix/ui.py:451
+#: mcomix/keybindings.py:44 mcomix/ui.py:451
 msgid "Previous page"
 msgstr "Föregående sida"
 
-#: mcomix/keybindings.py:43 mcomix/keybindings.py:44 mcomix/keybindings.py:45
-#: mcomix/keybindings.py:46 mcomix/keybindings.py:47 mcomix/keybindings.py:48
-#: mcomix/keybindings.py:49 mcomix/keybindings.py:50 mcomix/keybindings.py:52
-#: mcomix/keybindings.py:53 mcomix/keybindings.py:54 mcomix/keybindings.py:56
-#: mcomix/keybindings.py:57 mcomix/keybindings.py:58 mcomix/keybindings.py:59
+#: mcomix/keybindings.py:44 mcomix/keybindings.py:45 mcomix/keybindings.py:46
+#: mcomix/keybindings.py:47 mcomix/keybindings.py:48 mcomix/keybindings.py:49
+#: mcomix/keybindings.py:50 mcomix/keybindings.py:51 mcomix/keybindings.py:53
+#: mcomix/keybindings.py:54 mcomix/keybindings.py:55 mcomix/keybindings.py:57
+#: mcomix/keybindings.py:58 mcomix/keybindings.py:59 mcomix/keybindings.py:60
 msgid "Navigation"
 msgstr "Navigering"
 
 #
 # File: src/ui.py, line: 285
-#: mcomix/keybindings.py:44 mcomix/ui.py:450
+#: mcomix/keybindings.py:45 mcomix/ui.py:450
 msgid "Next page"
 msgstr "Nästa sida"
 
 #
 # File: src/library.py, line: 832
 # File: src/properties.py, line: 113
-#: mcomix/keybindings.py:45
+#: mcomix/keybindings.py:46
 msgid "Back 10 pages"
 msgstr "Tillbaka tio sidor"
 
-#: mcomix/keybindings.py:46
+#: mcomix/keybindings.py:47
 msgid "Forward 10 pages"
 msgstr "Framåt tio sidor"
 
 #
 # File: src/ui.py, line: 284
-#: mcomix/keybindings.py:47
+#: mcomix/keybindings.py:48
 msgid "Page to the left"
 msgstr "Föregående sida (dynamisk)"
 
 #
 # File: src/ui.py, line: 285
-#: mcomix/keybindings.py:48
+#: mcomix/keybindings.py:49
 msgid "Page to the right"
 msgstr "Nästa sida (dynamisk)"
 
 #
 # File: src/ui.py, line: 284
-#: mcomix/keybindings.py:49
+#: mcomix/keybindings.py:50
 msgid "Previous single page"
 msgstr "Föregående sida (alltid en sida)"
 
 #
 # File: src/ui.py, line: 285
-#: mcomix/keybindings.py:50
+#: mcomix/keybindings.py:51
 msgid "Next single page"
 msgstr "Nästa sida (alltid en sida)"
 
 #
 # File: src/ui.py, line: 282
-#: mcomix/keybindings.py:52 mcomix/ui.py:452
+#: mcomix/keybindings.py:53 mcomix/ui.py:452
 msgid "First page"
 msgstr "Första sidan"
 
 #
 # File: src/ui.py, line: 286
-#: mcomix/keybindings.py:53 mcomix/ui.py:453
+#: mcomix/keybindings.py:54 mcomix/ui.py:453
 msgid "Last page"
 msgstr "Sista sidan"
 
-#: mcomix/keybindings.py:54
+#: mcomix/keybindings.py:55
 msgid "Go to page"
 msgstr "Gå till sida"
 
 #
 # File: src/edit.py, line: 28
-#: mcomix/keybindings.py:56 mcomix/ui.py:457
+#: mcomix/keybindings.py:57 mcomix/ui.py:457
 msgid "Next archive"
 msgstr "Nästa arkiv"
 
 #
 # File: src/ui.py, line: 284
-#: mcomix/keybindings.py:57 mcomix/ui.py:458
+#: mcomix/keybindings.py:58 mcomix/ui.py:458
 msgid "Previous archive"
 msgstr "Föregående arkiv"
 
-#: mcomix/keybindings.py:58 mcomix/ui.py:459
+#: mcomix/keybindings.py:59 mcomix/ui.py:459
 msgid "Next directory"
 msgstr "Nästa katalog"
 
-#: mcomix/keybindings.py:59 mcomix/ui.py:460
+#: mcomix/keybindings.py:60 mcomix/ui.py:460
 msgid "Previous directory"
 msgstr "Föregående katalog"
 
-#: mcomix/keybindings.py:62
+#: mcomix/keybindings.py:63
 msgid "Align bottom left"
 msgstr "Rulla till nedre vänstra"
 
 #
 # File: src/preferences.py, line: 167
-#: mcomix/keybindings.py:62 mcomix/keybindings.py:63 mcomix/keybindings.py:64
-#: mcomix/keybindings.py:66 mcomix/keybindings.py:67 mcomix/keybindings.py:68
-#: mcomix/keybindings.py:70 mcomix/keybindings.py:71 mcomix/keybindings.py:72
-#: mcomix/keybindings.py:74 mcomix/keybindings.py:75 mcomix/keybindings.py:76
-#: mcomix/keybindings.py:77 mcomix/keybindings.py:79 mcomix/keybindings.py:80
+#: mcomix/keybindings.py:63 mcomix/keybindings.py:64 mcomix/keybindings.py:65
+#: mcomix/keybindings.py:67 mcomix/keybindings.py:68 mcomix/keybindings.py:69
+#: mcomix/keybindings.py:71 mcomix/keybindings.py:72 mcomix/keybindings.py:73
+#: mcomix/keybindings.py:75 mcomix/keybindings.py:76 mcomix/keybindings.py:77
+#: mcomix/keybindings.py:78 mcomix/keybindings.py:80 mcomix/keybindings.py:81
 #: mcomix/preferences_dialog.py:188
 msgid "Scroll"
 msgstr "Scrollning"
 
-#: mcomix/keybindings.py:63
+#: mcomix/keybindings.py:64
 msgid "Align bottom center"
 msgstr "Rulla till botten centrum"
 
-#: mcomix/keybindings.py:64
+#: mcomix/keybindings.py:65
 msgid "Align bottom right"
 msgstr "Rulla till botten höger"
 
-#: mcomix/keybindings.py:66
+#: mcomix/keybindings.py:67
 msgid "Align middle left"
 msgstr "Rulla till mellan vänster"
 
-#: mcomix/keybindings.py:67
+#: mcomix/keybindings.py:68
 msgid "Align center"
 msgstr "Rulla till centrum"
 
-#: mcomix/keybindings.py:68
+#: mcomix/keybindings.py:69
 msgid "Align middle right"
 msgstr "Rulla till mellan höger"
 
-#: mcomix/keybindings.py:70
+#: mcomix/keybindings.py:71
 msgid "Align top left"
 msgstr "Rulla till toppen vänster"
 
-#: mcomix/keybindings.py:71
+#: mcomix/keybindings.py:72
 msgid "Align top center"
 msgstr "Rulla till toppen centrum"
 
-#: mcomix/keybindings.py:72
+#: mcomix/keybindings.py:73
 msgid "Align top right"
 msgstr "Rulla till toppen höger"
 
-#: mcomix/keybindings.py:74
+#: mcomix/keybindings.py:75
 msgid "Scroll down"
 msgstr "Rulla nedåt"
 
-#: mcomix/keybindings.py:75
+#: mcomix/keybindings.py:76
 msgid "Scroll up"
 msgstr "Rulla uppåt"
 
-#: mcomix/keybindings.py:76
+#: mcomix/keybindings.py:77
 msgid "Scroll right"
 msgstr "Rulla höger"
 
-#: mcomix/keybindings.py:77
+#: mcomix/keybindings.py:78
 msgid "Scroll left"
 msgstr "Rulla vänster"
 
-#: mcomix/keybindings.py:79
+#: mcomix/keybindings.py:80
 msgid "Smart scroll up"
 msgstr "Smart rulla uppåt"
 
-#: mcomix/keybindings.py:80
+#: mcomix/keybindings.py:81
 msgid "Smart scroll down"
 msgstr "Smart rulla nedåt"
 
-#: mcomix/keybindings.py:83
+#: mcomix/keybindings.py:84
 msgid "Zoom in"
 msgstr "Zooma in"
 
 #
 # File: src/ui.py, line: 42
-#: mcomix/keybindings.py:83 mcomix/keybindings.py:84 mcomix/keybindings.py:85
+#: mcomix/keybindings.py:84 mcomix/keybindings.py:85 mcomix/keybindings.py:86
 msgid "Zoom"
 msgstr "Zooma"
 
-#: mcomix/keybindings.py:84
+#: mcomix/keybindings.py:85
 msgid "Zoom out"
 msgstr "Zooma ut"
 
-#: mcomix/keybindings.py:85
+#: mcomix/keybindings.py:86
 msgid "Normal size"
 msgstr "Normal storlek"
 
 #
 # File: src/ui.py, line: 93
-#: mcomix/keybindings.py:87
+#: mcomix/keybindings.py:88
 msgid "Keep transformation"
 msgstr "Behåll transformation"
 
 #
 # File: src/ui.py, line: 93
-#: mcomix/keybindings.py:87 mcomix/keybindings.py:88 mcomix/keybindings.py:89
-#: mcomix/keybindings.py:90 mcomix/keybindings.py:91 mcomix/keybindings.py:92
-#: mcomix/keybindings.py:93
+#: mcomix/keybindings.py:88 mcomix/keybindings.py:89 mcomix/keybindings.py:90
+#: mcomix/keybindings.py:91 mcomix/keybindings.py:92 mcomix/keybindings.py:93
+#: mcomix/keybindings.py:94
 msgid "Transformation"
 msgstr "Transformation"
 
 #
 # File: src/ui.py, line: 52
-#: mcomix/keybindings.py:88 mcomix/keybindings.py:95 mcomix/keybindings.py:97
+#: mcomix/keybindings.py:89 mcomix/keybindings.py:96 mcomix/keybindings.py:98
 msgid "Rotate 90° CW"
 msgstr "Rotera 90 grader medurs"
 
 #
 # File: src/ui.py, line: 54
-#: mcomix/keybindings.py:89
+#: mcomix/keybindings.py:90
 msgid "Rotate 180°"
 msgstr "Rotera 180 grader"
 
 #
 # File: src/ui.py, line: 56
-#: mcomix/keybindings.py:90 mcomix/keybindings.py:96 mcomix/keybindings.py:98
+#: mcomix/keybindings.py:91 mcomix/keybindings.py:97 mcomix/keybindings.py:99
 msgid "Rotate 90° CCW"
 msgstr "Rotera 90 grader moturs"
 
 #
 # File: src/ui.py, line: 58
-#: mcomix/keybindings.py:91
+#: mcomix/keybindings.py:92
 msgid "Flip horizontally"
 msgstr "Spegelvänd horisontellt"
 
 #
 # File: src/ui.py, line: 60
-#: mcomix/keybindings.py:92
+#: mcomix/keybindings.py:93
 msgid "Flip vertically"
 msgstr "Spegelvänd vertikalt"
 
-#: mcomix/keybindings.py:93
+#: mcomix/keybindings.py:94
 msgid "Never autorotate"
 msgstr "Rotera aldrig automatiskt"
 
-#: mcomix/keybindings.py:95 mcomix/keybindings.py:96
+#: mcomix/keybindings.py:96 mcomix/keybindings.py:97
 msgid "Autorotate by width"
 msgstr "Rotera automatiskt efter bredd"
 
-#: mcomix/keybindings.py:97 mcomix/keybindings.py:98
+#: mcomix/keybindings.py:98 mcomix/keybindings.py:99
 msgid "Autorotate by height"
 msgstr "Rotera automatiskt efter höjd"
 
 #
 # File: src/preferences.py, line: 177
 # File: src/ui.py, line: 296
-#: mcomix/keybindings.py:100 mcomix/preferences_dialog.py:253 mcomix/ui.py:501
+#: mcomix/keybindings.py:101 mcomix/preferences_dialog.py:253 mcomix/ui.py:501
 msgid "Double page mode"
 msgstr "Dubbelsidesläge"
 
 #
 # File: src/preferences.py, line: 263
 # File: src/ui.py, line: 290
-#: mcomix/keybindings.py:100 mcomix/keybindings.py:101
-#: mcomix/keybindings.py:102 mcomix/keybindings.py:104
-#: mcomix/keybindings.py:105 mcomix/keybindings.py:107
-#: mcomix/keybindings.py:108 mcomix/keybindings.py:109
-#: mcomix/keybindings.py:110 mcomix/keybindings.py:111
+#: mcomix/keybindings.py:101 mcomix/keybindings.py:102
+#: mcomix/keybindings.py:103 mcomix/keybindings.py:105
+#: mcomix/keybindings.py:106 mcomix/keybindings.py:108
+#: mcomix/keybindings.py:109 mcomix/keybindings.py:110
+#: mcomix/keybindings.py:111 mcomix/keybindings.py:112
 msgid "View mode"
 msgstr "Visningsläge"
 
 #
 # File: src/ui.py, line: 297
-#: mcomix/keybindings.py:101 mcomix/ui.py:508
+#: mcomix/keybindings.py:102 mcomix/ui.py:508
 msgid "Manga mode"
 msgstr "Mangaläge"
 
-#: mcomix/keybindings.py:102 mcomix/ui.py:509
+#: mcomix/keybindings.py:103 mcomix/ui.py:509
 msgid "Invert smart scroll"
 msgstr "Vänd smart rullning"
 
 #
 # File: src/ui.py, line: 298
-#: mcomix/keybindings.py:104 mcomix/ui.py:513
+#: mcomix/keybindings.py:105 mcomix/ui.py:513
 msgid "Magnifying lens"
 msgstr "Förstoringsglas"
 
-#: mcomix/keybindings.py:105 mcomix/ui.py:514
+#: mcomix/keybindings.py:106 mcomix/ui.py:514
 msgid "Stretch small images"
 msgstr "Sträck ut små bilder"
 
 #
 # File: src/preferences.py, line: 262
 # File: src/ui.py, line: 288
-#: mcomix/keybindings.py:107 mcomix/ui.py:521
+#: mcomix/keybindings.py:108 mcomix/ui.py:521
 msgid "Best fit mode"
 msgstr "Bästa anpassningsläge"
 
 #
 # File: src/preferences.py, line: 263
 # File: src/ui.py, line: 290
-#: mcomix/keybindings.py:108 mcomix/ui.py:522
+#: mcomix/keybindings.py:109 mcomix/ui.py:522
 msgid "Fit width mode"
 msgstr "Breddanpassningsläge"
 
 #
 # File: src/preferences.py, line: 264
 # File: src/ui.py, line: 292
-#: mcomix/keybindings.py:109 mcomix/ui.py:523
+#: mcomix/keybindings.py:110 mcomix/ui.py:523
 msgid "Fit height mode"
 msgstr "Höjdanpassningsläge"
 
 #
 # File: src/ui.py, line: 103
-#: mcomix/keybindings.py:110
+#: mcomix/keybindings.py:111
 msgid "Fit size mode"
 msgstr "Anpassa storleksläge"
 
 #
 # File: src/preferences.py, line: 265
 # File: src/ui.py, line: 294
-#: mcomix/keybindings.py:111 mcomix/ui.py:525
+#: mcomix/keybindings.py:112 mcomix/ui.py:525
 msgid "Manual zoom mode"
 msgstr "Manuellt zoomläge"
 
-#: mcomix/keybindings.py:114
+#: mcomix/keybindings.py:115
 msgid "Leave fullscreen"
 msgstr "Avsluta fullskärm"
 
-#: mcomix/keybindings.py:114 mcomix/keybindings.py:116
-#: mcomix/keybindings.py:117 mcomix/keybindings.py:118
-#: mcomix/keybindings.py:119 mcomix/keybindings.py:120
-#: mcomix/keybindings.py:122 mcomix/keybindings.py:123
-#: mcomix/keybindings.py:124 mcomix/keybindings.py:125
-#: mcomix/keybindings.py:126 mcomix/keybindings.py:127
+#: mcomix/keybindings.py:115 mcomix/keybindings.py:117
+#: mcomix/keybindings.py:118 mcomix/keybindings.py:119
+#: mcomix/keybindings.py:120 mcomix/keybindings.py:121
+#: mcomix/keybindings.py:123 mcomix/keybindings.py:124
+#: mcomix/keybindings.py:125 mcomix/keybindings.py:126
+#: mcomix/keybindings.py:127 mcomix/keybindings.py:128
 #: mcomix/preferences_dialog.py:129
 msgid "User interface"
 msgstr "Användargränssnitt"
 
-#: mcomix/keybindings.py:116
+#: mcomix/keybindings.py:117
 msgid "OSD panel"
 msgstr "Visa OSD-panelen"
 
-#: mcomix/keybindings.py:117
+#: mcomix/keybindings.py:118
 msgid "Minimize"
 msgstr "Minimera"
 
 #
 # File: src/preferences.py, line: 271
-#: mcomix/keybindings.py:118 mcomix/preferences_dialog.py:305
+#: mcomix/keybindings.py:119 mcomix/preferences_dialog.py:305
 msgid "Fullscreen"
 msgstr "Helskärm"
 
-#: mcomix/keybindings.py:119
+#: mcomix/keybindings.py:120
 msgid "Toolbar"
 msgstr "Verktygsrad"
 
-#: mcomix/keybindings.py:120
+#: mcomix/keybindings.py:121
 msgid "Menubar"
 msgstr "Menyrad"
 
-#: mcomix/keybindings.py:121
+#: mcomix/keybindings.py:122
 msgid "Context menu"
 msgstr "Snabbmeny"
 
 #
 # File: src/ui.py, line: 83
-#: mcomix/keybindings.py:123
+#: mcomix/keybindings.py:124
 msgid "Statusbar"
 msgstr "Statusrad"
 
 #
 # File: src/ui.py, line: 85
-#: mcomix/keybindings.py:124
+#: mcomix/keybindings.py:125
 msgid "Scrollbars"
 msgstr "Rullningslister"
 
 #
 # File: src/preferences.py, line: 109
-#: mcomix/keybindings.py:125 mcomix/preferences_dialog.py:153
+#: mcomix/keybindings.py:126 mcomix/preferences_dialog.py:153
 msgid "Thumbnails"
 msgstr "Miniatyrbilder"
 
 #
 # File: src/ui.py, line: 89
-#: mcomix/keybindings.py:126
+#: mcomix/keybindings.py:127
 msgid "Hide all"
 msgstr "Göm alla"
 
 #
 # File: src/preferences.py, line: 279
-#: mcomix/keybindings.py:127 mcomix/slideshow.py:54 mcomix/ui.py:512
+#: mcomix/keybindings.py:128 mcomix/slideshow.py:54 mcomix/ui.py:512
 msgid "Start slideshow"
 msgstr "Starta bildspel"
 
-#: mcomix/keybindings.py:130
+#: mcomix/keybindings.py:131
 msgid "Delete"
 msgstr "Ta bort"
 
 #
 # File: src/preferences.py, line: 196
-#: mcomix/keybindings.py:130 mcomix/keybindings.py:131
-#: mcomix/keybindings.py:134 mcomix/keybindings.py:135
-#: mcomix/keybindings.py:136 mcomix/keybindings.py:137
-#: mcomix/keybindings.py:138 mcomix/keybindings.py:140
-#: mcomix/keybindings.py:141 mcomix/keybindings.py:142
-#: mcomix/keybindings.py:144 mcomix/keybindings.py:145
-#: mcomix/keybindings.py:146 mcomix/keybindings.py:147
-#: mcomix/keybindings.py:148
+#: mcomix/keybindings.py:131 mcomix/keybindings.py:132
+#: mcomix/keybindings.py:135 mcomix/keybindings.py:136
+#: mcomix/keybindings.py:137 mcomix/keybindings.py:138
+#: mcomix/keybindings.py:139 mcomix/keybindings.py:141
+#: mcomix/keybindings.py:142 mcomix/keybindings.py:143
+#: mcomix/keybindings.py:145 mcomix/keybindings.py:146
+#: mcomix/keybindings.py:147 mcomix/keybindings.py:148
+#: mcomix/keybindings.py:149
 msgid "File"
 msgstr "Fil"
 
-#: mcomix/keybindings.py:131
+#: mcomix/keybindings.py:132
 msgid "Rename page"
 msgstr "Döp om sidan"
 
-#: mcomix/keybindings.py:132
+#: mcomix/keybindings.py:133
 msgid "Undo"
 msgstr "Ångra"
 
-#: mcomix/keybindings.py:132 mcomix/keybindings.py:133
+#: mcomix/keybindings.py:133 mcomix/keybindings.py:134
 msgid "Edit"
 msgstr "Redigera"
 
-#: mcomix/keybindings.py:133
+#: mcomix/keybindings.py:134
 msgid "Redo"
 msgstr "Gör om"
 
 #
 # File: src/edit.py, line: 51
-#: mcomix/keybindings.py:134
+#: mcomix/keybindings.py:135
 msgid "Refresh"
 msgstr "Uppdatera"
 
 #
 # File: src/ui.py, line: 48
-#: mcomix/keybindings.py:135
+#: mcomix/keybindings.py:136
 msgid "Close"
 msgstr "Stäng"
 
 #
 # File: src/ui.py, line: 50
-#: mcomix/keybindings.py:136
+#: mcomix/keybindings.py:137
 msgid "Quit"
 msgstr "Avsluta"
 
-#: mcomix/keybindings.py:137
+#: mcomix/keybindings.py:138
 msgid "Save and quit"
 msgstr "Spara och avsluta"
 
-#: mcomix/keybindings.py:138
+#: mcomix/keybindings.py:139
 msgid "Save As"
 msgstr "Spara som"
 
 #
 # File: src/properties.py, line: 135
-#: mcomix/keybindings.py:140
+#: mcomix/keybindings.py:141
 msgid "Archive comments"
 msgstr "Arkiv kommentarer"
 
 #
 # File: src/properties.py, line: 89
-#: mcomix/keybindings.py:141 mcomix/properties_dialog.py:36
+#: mcomix/keybindings.py:142 mcomix/properties_dialog.py:36
 msgid "Properties"
 msgstr "Egenskaper"
 
 #
 # File: src/preferences.py, line: 78
-#: mcomix/keybindings.py:142 mcomix/preferences_dialog.py:68
+#: mcomix/keybindings.py:143 mcomix/preferences_dialog.py:68
 msgid "Preferences"
 msgstr "Inställningar"
 
 #
 # File: src/library.py, line: 38
-#: mcomix/keybindings.py:147 mcomix/library/main_dialog.py:54
+#: mcomix/keybindings.py:148 mcomix/library/main_dialog.py:55
 msgid "Library"
 msgstr "Bibliotek"
 
-#: mcomix/keybindings.py:148 mcomix/ui.py:516
+#: mcomix/keybindings.py:149 mcomix/ui.py:516
 msgid "Invert image colors"
 msgstr "Invertera bildfärger"
 
 #
 # File: src/bookmark.py, line: 27
-#: mcomix/keybindings.py:151
+#: mcomix/keybindings.py:152
 msgid "Add bookmark"
 msgstr "Lägg till bokmärke"
 
 #
 # File: src/ui.py, line: 64
-#: mcomix/keybindings.py:151 mcomix/keybindings.py:152
+#: mcomix/keybindings.py:152 mcomix/keybindings.py:153
 msgid "Bookmarks"
 msgstr "Bokmärken"
 
-#: mcomix/keybindings.py:152
+#: mcomix/keybindings.py:153
 msgid "Edit bookmarks"
 msgstr "Redigera bokmärken"
 
 #
 # File: src/comment.py, line: 16
 # File: src/preferences.py, line: 288
-#: mcomix/keybindings.py:160 mcomix/openwith.py:554
+#: mcomix/keybindings.py:161 mcomix/openwith.py:554
 msgid "Command"
 msgstr "Kommando"
 
 #
 # File: src/bookmark.py, line: 229
-#: mcomix/keybindings.py:161
+#: mcomix/keybindings.py:162
 msgid "External commands"
 msgstr "Externa kommandon"
 
-#: mcomix/keybindings.py:238
+#: mcomix/keybindings.py:239
 #, python-format
 msgid "Keybinding for \"%(action)s\" overrides hotkey for another action."
 msgstr ""
 "Tangentbindning för \"%(action)s\" åsidosätter snabbtangent för en annan "
 "åtgärd."
 
-#: mcomix/keybindings.py:394 mcomix/keybindings.py:401
+#: mcomix/keybindings.py:395 mcomix/keybindings.py:403
 #, python-format
 msgid "Couldn't load keybindings: %s"
 msgstr "Det gick inte att läsa tangentbindningar: %s"
@@ -1219,14 +1224,14 @@ msgstr "Det gick inte att läsa tangentbindningar: %s"
 msgid "! Could not remove file \"%s\""
 msgstr "Kunde inte ta bort filen \"%s\""
 
-#: mcomix/main.py:887
+#: mcomix/main.py:955
 #, python-format
 msgid "Remove the page picked out of \"%s\"?"
 msgid_plural "Remove the pages picked out of \"%s\"?"
 msgstr[0] "Ta bort den valda sidan ur \"%s\"?"
 msgstr[1] "Ta bort de valda sidorna ur \"%s\"?"
 
-#: mcomix/main.py:890
+#: mcomix/main.py:958
 msgid ""
 "They are taken out of the archive on disk, which is written again at once. "
 "Leaving the book without removing them forgets which pages they were."
@@ -1234,13 +1239,13 @@ msgstr ""
 "De tas ur arkivet på disken, som skrivs igen med detsamma. Att lämna boken "
 "utan att ta bort dem gör att det glöms vilka sidor det var."
 
-#: mcomix/main.py:893
+#: mcomix/main.py:961
 msgid "_Keep them"
 msgstr "_Behåll"
 
 #
 # File: src/main.py, line: 666
-#: mcomix/main.py:1315
+#: mcomix/main.py:1384
 msgid "SLIDESHOW"
 msgstr "BILDSPEL"
 
@@ -1328,29 +1333,29 @@ msgstr "Behåll dess bokmärken"
 msgid "Do not ask again."
 msgstr "Fråga inte igen."
 
-#: mcomix/move_menu.py:101
+#: mcomix/move_menu.py:105
 msgid "Moved to before"
 msgstr "Senaste målen"
 
-#: mcomix/move_menu.py:102
+#: mcomix/move_menu.py:106
 msgid "From bookmarks"
 msgstr "Från bokmärken"
 
-#: mcomix/move_menu.py:103
+#: mcomix/move_menu.py:107
 msgid "Opened before"
 msgstr "Nyligen öppnade"
 
-#: mcomix/move_menu.py:122
+#: mcomix/move_menu.py:126
 msgid "Other folder..."
 msgstr "Annan katalog..."
 
-#: mcomix/move_menu.py:185
+#: mcomix/move_menu.py:189
 msgid "Move to folder"
 msgstr "Flytta till katalog"
 
 #
 # File: src/bookmark.py, line: 229
-#: mcomix/openwith_menu.py:78
+#: mcomix/openwith_menu.py:82
 msgid "_Edit commands"
 msgstr "_Redigera kommandon"
 
@@ -2407,7 +2412,7 @@ msgstr "Rättigheter"
 msgid "Owner"
 msgstr "Ägare"
 
-#: mcomix/recent.py:140
+#: mcomix/recent.py:150
 msgid "No entries found"
 msgstr "Inga poster hittades"
 
@@ -2542,27 +2547,27 @@ msgstr "Ingen version av Python Imaging Library funnet på ditt system."
 msgid "Stop slideshow"
 msgstr "Stoppa bildspel"
 
-#: mcomix/status.py:163
+#: mcomix/status.py:190
 msgid "Show page numbers"
 msgstr "Visa sidnummer"
 
-#: mcomix/status.py:164
+#: mcomix/status.py:191
 msgid "Show file numbers"
 msgstr "Visa filnummer"
 
-#: mcomix/status.py:165
+#: mcomix/status.py:192
 msgid "Show resolution"
 msgstr "Visa upplösning"
 
-#: mcomix/status.py:166
+#: mcomix/status.py:193
 msgid "Show path"
 msgstr "Visa sökväg"
 
-#: mcomix/status.py:167
+#: mcomix/status.py:194
 msgid "Show filename"
 msgstr "Visa filnamn"
 
-#: mcomix/status.py:168
+#: mcomix/status.py:195
 msgid "Show filesize"
 msgstr "Visa filstorlek"
 
@@ -2808,6 +2813,10 @@ msgstr "Kopi_era sidan"
 #: mcomix/ui.py:431
 msgid "Copies the page the menu was opened over to the clipboard."
 msgstr "Kopierar den sida som menyn öppnades över till Urklipp."
+
+#: mcomix/ui.py:433
+msgid "_Delete"
+msgstr "_Ta bort"
 
 #: mcomix/ui.py:433
 msgid "Deletes the current file or archive from disk."
@@ -3222,12 +3231,12 @@ msgstr "Arkivet är lösenordsskyddat:"
 msgid "Please enter the password to continue:"
 msgstr "Ange lösenordet för att fortsätta:"
 
-#: mcomix/archive/sevenzip_external.py:238
+#: mcomix/archive/sevenzip_external.py:294
 #, python-format
 msgid "Extraction of %(archivefile)s might have failed: %(error)s"
 msgstr "Uppackningen av %(archivefile)s kan ha misslyckats: %(error)s"
 
-#: mcomix/archive/zip.py:94
+#: mcomix/archive/zip.py:100
 #, python-format
 msgid ""
 "%(filename)s's extracted size is %(actual_size)d bytes, but should be "
@@ -3383,8 +3392,8 @@ msgid "Completely removes the selected books from the library."
 msgstr "Tar helt bort de valda böckerna från biblioteket."
 
 #: mcomix/library/book_area.py:185
-msgid "_Remove and delete from disk"
-msgstr "_Radera och ta bort från disk"
+msgid "_Remove and move to the trash"
+msgstr "_Radera och flytta till papperskorgen"
 
 #: mcomix/library/book_area.py:186
 msgid "Deletes the selected books from disk."
@@ -3474,22 +3483,18 @@ msgstr[1] "Tog bort %d böcker från biblioteket."
 msgid "Remove books from the library?"
 msgstr "Ta bort böcker från biblioteket?"
 
-#
-# File: src/library.py, line: 599
 #: mcomix/library/book_area.py:715
 msgid ""
-"The selected books will be removed from the library and permanently deleted. "
-"Are you sure that you want to continue?"
+"The selected books will be removed from the library and moved to the trash."
 msgstr ""
-"De valda böckerna tas bort från biblioteket och tas bort permanent. Är du "
-"säker på att du vill fortsätta?"
+"De valda böckerna tas bort från biblioteket och flyttas till papperskorgen."
 
 #: mcomix/library/book_area.py:747
 #, python-format
-msgid "%d book could not be deleted from disk."
-msgid_plural "%d books could not be deleted from disk."
-msgstr[0] "Kunde inte ta bort %d bok från disken."
-msgstr[1] "Kunde inte ta bort %d böcker från disken."
+msgid "%d book could not be moved to the trash."
+msgid_plural "%d books could not be moved to the trash."
+msgstr[0] "Kunde inte flytta %d bok till papperskorgen."
+msgstr[1] "Kunde inte flytta %d böcker till papperskorgen."
 
 #: mcomix/library/book_area.py:791
 #, python-format
@@ -3656,23 +3661,23 @@ msgstr "Öppna den markerade boken."
 msgid "Finished reading on %(date)s, %(time)s"
 msgstr "Avslutade läsning den %(date)s, %(time)s"
 
-#: mcomix/library/main_dialog.py:130
+#: mcomix/library/main_dialog.py:131
 msgid "Scanning for new books..."
 msgstr "Letar efter nya böcker..."
 
-#: mcomix/library/main_dialog.py:173
+#: mcomix/library/main_dialog.py:174
 #, python-format
 msgid "Added new book '%(bookname)s' from directory '%(directory)s'."
 msgstr "Lade till ny bok '%(bookname)s' från katalogen '%(directory)s'."
 
-#: mcomix/library/main_dialog.py:180
+#: mcomix/library/main_dialog.py:181
 #, python-format
 msgid "Added %(count)d new book from directory '%(directory)s'."
 msgid_plural "Added %(count)d new books from directory '%(directory)s'."
 msgstr[0] "Lade till %(count)d nya böcker från katalogen '%(directory)s'."
 msgstr[1] "Lade till %(count)d nya böcker från katalogen '%(directory)s'."
 
-#: mcomix/library/main_dialog.py:188
+#: mcomix/library/main_dialog.py:189
 #, python-format
 msgid "No new books found in directory '%s'."
 msgstr "Inga nya böcker hittades i katalogen '%s'."
@@ -3704,6 +3709,27 @@ msgstr "Med underkataloger"
 #: mcomix/library/watchlist.py:81
 msgid "Automatically scan for new books when library is _opened"
 msgstr "Skanna automatiskt efter nya böcker när biblioteket _öppnas"
+
+#~ msgid "The file will be deleted from your harddisk."
+#~ msgstr "Filen kommer att tas bort från hårddisken."
+
+#~ msgid "_Remove and delete from disk"
+#~ msgstr "_Radera och ta bort från disk"
+
+#
+# File: src/library.py, line: 599
+#~ msgid ""
+#~ "The selected books will be removed from the library and permanently "
+#~ "deleted. Are you sure that you want to continue?"
+#~ msgstr ""
+#~ "De valda böckerna tas bort från biblioteket och tas bort permanent. Är du "
+#~ "säker på att du vill fortsätta?"
+
+#, python-format
+#~ msgid "%d book could not be deleted from disk."
+#~ msgid_plural "%d books could not be deleted from disk."
+#~ msgstr[0] "Kunde inte ta bort %d bok från disken."
+#~ msgstr[1] "Kunde inte ta bort %d böcker från disken."
 
 #~ msgid "_Clean up"
 #~ msgstr "_Städa upp"

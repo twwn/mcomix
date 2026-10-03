@@ -102,7 +102,7 @@ Quit program | CTRL+Q
 Save and quit | CTRL+SHIFT+Q
 Execute first, second, ... external command (see [External commands](external-commands.md)) | 1 to 9
 
-- Delete removes the pages picked out with CTRL+LeftMouse; with none picked out, it asks before deleting the file.
+- Delete removes the pages picked out with CTRL+LeftMouse; with none picked out, it asks before moving the file to the trash.
 - No key until given one: Rotate 180°, Flip horizontally, Flip vertically, Never autorotate, the two rotations under "Autorotate by width" and the two under "Autorotate by height", Toolbar, Statusbar, Scrollbars and Edit archive.
 
 ## Changing keys

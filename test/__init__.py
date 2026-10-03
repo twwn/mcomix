@@ -256,7 +256,39 @@ import unittest
 
 from mcomix import constants
 from mcomix import preferences
+from mcomix import tools
 from mcomix.preferences import prefs
+
+#: Where the test that is running keeps what it moves to the trash;
+#: MComixTest.setUp() sets it.
+_test_trash: list[str] = []
+
+
+def _move_to_test_trash(path: str) -> None:
+    """Move <path> into the running test's own trash folder.
+
+    MComix moves deleted books to the trash with Gio.File.trash(), and
+    GLib finds the trash through the data directory it read when the
+    process started - the real ~/.local/share, whatever a test points
+    XDG_DATA_HOME at - or, for a file on another file system, through a
+    .Trash folder at the top of that file system.  Either is outside
+    the test's home, so no test may reach it: every test gets this
+    instead, and a test asks its trash folder what arrived.
+    """
+    if not _test_trash:
+        raise GLib.Error('no test is running to keep %s' % path)
+    os.makedirs(_test_trash[0], exist_ok=True)
+    try:
+        shutil.move(path, os.path.join(
+            _test_trash[0], '%d-%s' % (len(os.listdir(_test_trash[0])),
+                                       os.path.basename(path))))
+    except OSError as error:
+        # Gio.File.trash() raises GLib.Error, as for a file that is
+        # not there.
+        raise GLib.Error(str(error))
+
+
+tools.move_to_trash = _move_to_test_trash
 
 # Start the way run.py starts.
 
@@ -364,6 +396,9 @@ class MComixTest(unittest.TestCase):
             self.__class__.__name__,
             self._testMethodName))
         self.tmp_dir = tempfile.mkdtemp(dir=_TMP_ROOT, prefix='%s.' % name)
+        #: What the test moved to the trash: see _move_to_test_trash().
+        self.trash_dir = os.path.join(self.tmp_dir, 'trash')
+        _test_trash[:] = [self.trash_dir]
         self._saved_environ = {var: os.environ.get(var)
                                for var in self.OVERRIDDEN_ENVIRONMENT}
         self._saved_tempdir = tempfile.tempdir

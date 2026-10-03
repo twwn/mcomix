@@ -16,7 +16,7 @@ import time
 import unittest.mock
 import warnings
 
-from gi.repository import Gdk, Gio, Gtk
+from gi.repository import Gdk, Gio, GLib, Gtk
 
 from . import MComixTest, get_testfile_path, hold_open, pump, wait_for
 
@@ -1269,6 +1269,37 @@ class MainWindowTest(MComixTest):
         dialogs[0].emit('response', Response.YES)
         self._pump()
         self.assertEqual(store.get_bookmarks(), [])
+
+    def test_a_deleted_file_goes_to_the_trash(self):
+        """It was unlinked: a confirmation clicked through by mistake
+        cost the book for good (upstream feature request 107)."""
+        source = self._movable_book()
+        self.window.file_actions._delete_answered(Response.OK, source)
+        self._pump()
+        self.assertFalse(os.path.exists(source))
+        self.assertEqual(['Movable.cbz'],
+                         [name.split('-', 1)[1]
+                          for name in os.listdir(self.trash_dir)])
+
+    def test_a_file_the_trash_refuses_stays_and_says_so(self):
+        """It is not deleted for good instead, which is not what the
+        reader agreed to."""
+        source = self._movable_book()
+
+        def refuse(path):
+            raise GLib.Error('There is no trash here')
+
+        with unittest.mock.patch.object(tools, 'move_to_trash', refuse):
+            self.window.file_actions._delete_answered(Response.OK, source)
+            self._pump()
+        self.assertTrue(os.path.isfile(source))
+        said = [(dialog._primary.get_text(), dialog._secondary.get_text())
+                for dialog in self._delete_dialogs()]
+        for dialog in self._delete_dialogs():
+            dialog.destroy()
+        self._pump()
+        self.assertIn(('Could not move "Movable.cbz" to the trash',
+                       'There is no trash here'), said)
 
     def test_keeping_the_bookmarks_of_a_deleted_file_keeps_them(self):
         source = self._movable_book()

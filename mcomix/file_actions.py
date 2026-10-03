@@ -13,7 +13,7 @@ import errno
 import os
 import shutil
 
-from gi.repository import Gtk
+from gi.repository import GLib, Gtk
 
 from mcomix import archive_packer
 from mcomix import bookmark_backend
@@ -832,9 +832,9 @@ class FileActions:
                 message_dialog.RememberedDialog.DELETE_OPENED_FILE)
         dialog.set_text(
                 _('Delete "%s"?') % os.path.basename(current_file),
-                _('The file will be deleted from your harddisk.'))
+                _('The file is moved to the trash.'))
         dialog.add_button(_('_Cancel'), Response.CANCEL)
-        dialog.add_button(_('_Delete'), Response.OK)
+        dialog.add_button(_('_Move to Trash'), Response.OK)
         # Enter must not delete a file.  A confirmation defaults to the
         # answer that changes nothing, and the one that does not is
         # drawn as the destructive action it is.
@@ -862,7 +862,7 @@ class FileActions:
                     self._window.filehandler.close_file()
 
                 if os.path.isfile(current_file):
-                    os.unlink(current_file)
+                    self._trash(current_file)
             else:
                 if self._window.imagehandler.get_number_of_pages() > 1:
                     # Open the next/previous file
@@ -872,13 +872,13 @@ class FileActions:
                         self._window.flip_page(+1)
                     # Unlink the desired file
                     if os.path.isfile(current_file):
-                        os.unlink(current_file)
+                        self._trash(current_file)
                     # Refresh the directory
                     self._window.filehandler.refresh_file()
                 else:
                     self._window.filehandler.close_file()
                     if os.path.isfile(current_file):
-                        os.unlink(current_file)
+                        self._trash(current_file)
 
             if not os.path.exists(current_file):
                 # A file that has been deleted can never be opened
@@ -886,6 +886,18 @@ class FileActions:
                 self._window.uimanager.recent.remove_path(current_file)
                 self._forget_deleted_book(current_file)
                 self._offer_to_remove_bookmarks(current_file)
+
+    def _trash(self, path: str) -> None:
+        """Move <path> to the trash, and say so where it will not go."""
+        try:
+            tools.move_to_trash(path)
+        except GLib.Error as error:
+            log.error('Could not move %s to the trash: %s', path, error.message)
+            dialog = message_dialog.MessageDialog(self._window)
+            dialog.set_text(
+                _('Could not move "%s" to the trash') % os.path.basename(path),
+                error.message)
+            dialog.run_async(lambda response: None)
 
     def _offer_to_remove_bookmarks(self, path: str) -> None:
         """Ask whether the bookmarks in the deleted file should go too.

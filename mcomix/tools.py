@@ -14,7 +14,7 @@ from functools import reduce
 from collections.abc import Collection, Iterable, Iterator, Mapping, Sequence
 from typing import Any, IO, Protocol, TypeVar
 
-from gi.repository import GLib
+from gi.repository import Gio, GLib
 
 Numeric = TypeVar('Numeric', int, float)
 #: Whatever a vector happens to hold, where nothing is done to it.
@@ -174,6 +174,19 @@ def number_of_digits(n: int) -> int:
     if n == 0:
         return 1
     return int(math.log10(abs(n))) + 1
+
+
+def move_to_trash(path: str) -> None:
+    """Move the file at <path> to the trash, from where it can be put back.
+
+    What MComix deletes - a book, a page's file - goes there rather than
+    being unlinked: a confirmation clicked through by mistake cost the
+    file for good (upstream feature request 107).  Where the file cannot
+    go to a trash - a file system that has none, a folder that cannot
+    be written - GLib.Error is raised and the file stays where it is;
+    it is not deleted for good instead, which is not what was asked.
+    """
+    Gio.File.new_for_path(path).trash(None)
 
 
 def format_byte_size(n: int) -> str:

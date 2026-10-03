@@ -27,7 +27,7 @@ A book is an archive in any format MComix opens; folders cannot be added.
 - Right-clicking the books offers "Open", "Open without closing library", "Add...", "Clean up", "Copy", and three ways to take them out:
   - "Remove from this collection".
   - "Remove from the library".
-  - "Remove and delete from disk": the only one that touches the files. It also takes them out of the recent files and asks about their bookmarks.
+  - "Remove and move to the trash": the only one that touches the files. They can be restored from the trash. It also takes them out of the recent files and asks about their bookmarks.
 - "Copy" puts a single book's path and cover on the clipboard.
 - "Sort" orders by name, full path, file size or date added; "Cover size" sets how large covers are drawn.
 - A middle click on a cover starts a second MComix on that book.

@@ -633,14 +633,14 @@ class DeleteFromDiskTest(MComixTest):
 
 
     def test_a_book_that_could_not_be_deleted_from_disk_says_so(self):
-        """The book leaves the library before the file is deleted, so a
-        deletion that fails is the only thing that can tell the reader
-        the file is still there.  The fixture's path is not a file, so
-        os.remove() raises as it would on a folder that cannot be
-        written to."""
+        """The book leaves the library before the file goes to the
+        trash, so a move that fails is the only thing that can tell the
+        reader the file is still there.  The fixture's path is not a
+        file, so the trash refuses it as it would a file on a file
+        system with no trash."""
         self.area._remove_answered(Response.YES)
         self.assertTrue(self.library.messages, 'the library said nothing')
-        self.assertEqual('1 book could not be deleted from disk.',
+        self.assertEqual('1 book could not be moved to the trash.',
                          self.library.messages[-1])
 
     def _bookmark_store(self):
@@ -705,9 +705,23 @@ class DeleteFromDiskTest(MComixTest):
         self.area._remove_answered(Response.YES)
 
         self.assertFalse(os.path.exists(path))
-        self.assertTrue(all('could not be deleted' not in message
+        self.assertTrue(all('could not be moved' not in message
                             for message in self.library.messages),
                         self.library.messages)
+
+    def test_a_deleted_book_goes_to_the_trash(self):
+        """It was removed for good (upstream feature request 107)."""
+        path = os.path.join(self.tmp_dir, 'deletable.cbz')
+        with open(path, 'wb') as handle:
+            handle.write(b'not really a book')
+        self.area._covers.set_items([book_area._BookItem(_Book(1, path))])
+        self.area._covers.selection.select_all()
+
+        self.area._remove_answered(Response.YES)
+
+        self.assertEqual(['deletable.cbz'],
+                         [name.split('-', 1)[1]
+                          for name in os.listdir(self.trash_dir)])
 
     def test_a_deleted_book_leaves_the_recent_files(self):
         """The window's own delete forgets the path there; the library
