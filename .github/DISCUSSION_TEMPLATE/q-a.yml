@@ -1,0 +1,27 @@
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A question about using MComix.
+        A bug goes to the [bug form](https://github.com/twwn/mcomix/issues/new/choose) instead.
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: What you want to do, and what happens instead.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: MComix version
+      description: Help → About.
+      placeholder: "26.09"
+  - type: dropdown
+    id: system
+    attributes:
+      label: System
+      options:
+        - Windows
+        - Linux
+        - Other
