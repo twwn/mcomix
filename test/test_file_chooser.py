@@ -148,8 +148,9 @@ class FileChooserTest(MComixTest):
         column = self.dialog._preview_image.get_parent()
 
         def select(path, expected):
-            self.dialog.filechooser.set_file(Gio.File.new_for_path(path))
-            wait_for(lambda: self.dialog._namelabel.get_text() == expected)
+            self._select(path)
+            self.assertTrue(wait_for(
+                lambda: self.dialog._namelabel.get_text() == expected))
             pump()
             return column.get_width()
 
@@ -300,20 +301,37 @@ class FileChooserTest(MComixTest):
         self.assertEqual(chosen, [path])
 
     def _select(self, path):
-        """Select the file <path> in the chooser, and wait until the
-        chooser says it is selected.
+        """Select the file or folder <path> in the chooser, and wait
+        until the chooser says it is selected.
 
-        set_file() into a folder the chooser has not listed yet moves to
-        the folder first, and on GitHub's Windows runner the folder's
-        first file was what ended up selected: the preview went on to
-        describe 01-JPG-Indexed.jpg, "1x1 px", for blue.png.  Waiting
-        for any file to be selected did not tell the two apart.
+        set_file() into a folder the chooser is not showing keeps the
+        file to select until a folder finishes loading, and asks for the
+        new folder asynchronously.  The folder the chooser opened in is
+        still loading when a test starts, and when its load finished
+        first, it took the file to select, did not find it there and
+        dropped it; the new folder then loaded with nothing to select,
+        and the chooser selected its first file.  On GitHub's runners
+        the preview went on to describe 01-JPG-Indexed.jpg, "1x1 px",
+        for blue.png.  Once the right folder is shown and loaded,
+        set_file() selects at once, so a wrong selection there is
+        answered by asking again.
         """
         chooser = self.dialog.filechooser
-        chooser.set_file(Gio.File.new_for_path(path))
+        target = Gio.File.new_for_path(path)
+
+        def selected():
+            paths = widgets.chooser_paths(chooser)
+            if paths == [path]:
+                return True
+            folder = chooser.get_current_folder()
+            if paths and folder is not None \
+                    and folder.equal(target.get_parent()):
+                chooser.set_file(target)
+            return False
+
+        chooser.set_file(target)
         self.assertTrue(
-            wait_for(lambda: widgets.chooser_paths(chooser) == [path],
-                     seconds=10),
+            wait_for(selected, seconds=10),
             'the chooser selected %r, not %r'
             % (widgets.chooser_paths(chooser), path))
 
@@ -410,8 +428,7 @@ class FileChooserTest(MComixTest):
             notes.write('Scanned at 600 dpi.\n')
         chosen = []
         self.dialog.files_chosen = chosen.extend
-        self.dialog.filechooser.set_file(Gio.File.new_for_path(folder))
-        wait_for(lambda: self.dialog.filechooser.get_file() is not None)
+        self._select(folder)
         # Chosen after the folder: GTK takes the filter away when
         # set_file() is given a folder.
         self.dialog.filechooser.set_filter(next(
