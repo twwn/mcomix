@@ -14,6 +14,7 @@ from mcomix import icons
 from mcomix import image_tools
 from mcomix import file_chooser_base_dialog
 from mcomix import main
+from mcomix import widgets
 from mcomix.archive import password as archive_password
 from mcomix.dialog import Response
 from mcomix.preferences import prefs
@@ -294,17 +295,33 @@ class FileChooserTest(MComixTest):
         chosen = []
         self.dialog.files_chosen = chosen.extend
         path = get_testfile_path('archives', '01-ZIP-Normal.zip')
-        self.dialog.filechooser.set_file(Gio.File.new_for_path(path))
-        wait_for(lambda: self.dialog.filechooser.get_file() is not None)
+        self._select(path)
         self.dialog.response(Response.OK)
         self.assertEqual(chosen, [path])
+
+    def _select(self, path):
+        """Select the file <path> in the chooser, and wait until the
+        chooser says it is selected.
+
+        set_file() into a folder the chooser has not listed yet moves to
+        the folder first, and on GitHub's Windows runner the folder's
+        first file was what ended up selected: the preview went on to
+        describe 01-JPG-Indexed.jpg, "1x1 px", for blue.png.  Waiting
+        for any file to be selected did not tell the two apart.
+        """
+        chooser = self.dialog.filechooser
+        chooser.set_file(Gio.File.new_for_path(path))
+        self.assertTrue(
+            wait_for(lambda: widgets.chooser_paths(chooser) == [path],
+                     seconds=10),
+            'the chooser selected %r, not %r'
+            % (widgets.chooser_paths(chooser), path))
 
     def _choose(self, path):
         """Select <path> and answer Open, keeping what is handed on."""
         chosen = []
         self.dialog.files_chosen = chosen.extend
-        self.dialog.filechooser.set_file(Gio.File.new_for_path(path))
-        wait_for(lambda: self.dialog.filechooser.get_file() is not None)
+        self._select(path)
         self.dialog.response(Response.OK)
         return chosen
 
@@ -359,8 +376,7 @@ class FileChooserTest(MComixTest):
         chosen = []
         self.dialog.files_chosen = chosen.extend
         path = get_testfile_path('archives', '01-ZIP-Normal.zip')
-        self.dialog.filechooser.set_file(Gio.File.new_for_path(path))
-        wait_for(lambda: self.dialog.filechooser.get_file() is not None)
+        self._select(path)
         self.dialog._activated(None, 1, 0.0, 0.0)
         self.assertEqual([], chosen, 'a single click opened the file')
         self.dialog._activated(None, 2, 0.0, 0.0)
@@ -396,7 +412,7 @@ class FileChooserTest(MComixTest):
         # takes it used to ask the chooser what was being previewed with
         # an API GTK4 had removed, so it never arrived at all.
         path = get_testfile_path('images', 'blue.png')
-        self.dialog.filechooser.set_file(Gio.File.new_for_path(path))
+        self._select(path)
         wait_for(lambda: self.dialog._preview_image.get_paintable() is not None)
         self.assertIsNotNone(self.dialog._preview_image.get_paintable(),
                              'the preview never appeared')
@@ -445,7 +461,7 @@ class FileChooserTest(MComixTest):
         as it is stored."""
         prefs['auto rotate from exif'] = True
         path = get_testfile_path('images', 'landscape-exif-270-rotation.jpg')
-        self.dialog.filechooser.set_file(Gio.File.new_for_path(path))
+        self._select(path)
         wait_for(lambda: self.dialog._preview_image.get_paintable() is not None)
         paintable = self.dialog._preview_image.get_paintable()
         self.assertIsNotNone(paintable, 'the preview never appeared')
@@ -479,7 +495,7 @@ class FileChooserTest(MComixTest):
         path = os.path.join(self.tmp_dir, 'million.cbz')
         with open(path, 'wb') as book:
             book.write(b'PK\x03\x04'.ljust(1000000, b'\x00'))
-        self.dialog.filechooser.set_file(Gio.File.new_for_path(path))
+        self._select(path)
         wait_for(lambda: self.dialog._namelabel.get_text() == 'million.cbz',
                  seconds=10)
         # GLib.format_size() is what GtkFileChooserWidget writes the
@@ -489,7 +505,7 @@ class FileChooserTest(MComixTest):
 
     def test_under_the_preview_a_picture_says_its_size_in_pixels(self):
         path = get_testfile_path('images', 'blue.png')
-        self.dialog.filechooser.set_file(Gio.File.new_for_path(path))
+        self._select(path)
         self.assertTrue(wait_for(
             lambda: self.dialog._detailslabel.get_text() == '100x100 px',
             seconds=10), repr(self.dialog._detailslabel.get_text()))
