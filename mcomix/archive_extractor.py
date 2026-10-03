@@ -358,10 +358,16 @@ class Extractor:
         sets nothing at all.
         """
         files = []
-        for f in archive.iter_contents():
-            if self._list_thread.must_stop():
-                return
-            files.append(f)
+        try:
+            for f in archive.iter_contents():
+                if self._list_thread.must_stop():
+                    return
+                files.append(f)
+        except Exception:
+            # The worker thread logs the error, but not which file it
+            # was reading.
+            log.error(_('! Could not read %s'), archive.archive)
+            raise
         with self._condition:
             self._files = files
             self._contents_listed = True

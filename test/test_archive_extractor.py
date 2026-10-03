@@ -65,6 +65,26 @@ class ExtractorSetupTest(_ExtractorTest):
             archive_extractor.Extractor().setup(not_an_archive,
                                                 self.destination)
 
+    def test_a_listing_that_fails_names_the_archive(self):
+        """The worker thread's message named the method and the error,
+        and a reader had no way to tell which file would not open."""
+        path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        extractor = archive_extractor.Extractor()
+        errors = []
+        with unittest.mock.patch(
+                'mcomix.archive.zip.ZipArchive.iter_contents',
+                side_effect=UnicodeEncodeError('charmap', 'x', 0, 1, 'test')), \
+                unittest.mock.patch.object(
+                    log, 'error',
+                    side_effect=lambda message, *args: errors.append(
+                        message % (args[0] if len(args) == 1 else args))):
+            extractor.setup(path, self.destination)
+            try:
+                self.assertTrue(wait_for(lambda: errors, seconds=20))
+            finally:
+                extractor.close()
+        self.assertIn(path, errors[0])
+
     def test_nothing_is_ready_before_anything_is_extracted(self):
         for name in self.MEMBERS:
             with self.subTest(name=name):
