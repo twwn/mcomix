@@ -52,6 +52,10 @@ class OpenWithMenu:
         self._window.filehandler.file_closed += self._set_sensitivity
         self._openwith_manager.set_commands += self._construct_menu
 
+    def release(self) -> None:
+        """Let go of the closed window: see MainUI.release()."""
+        widgets.empty_action_group(self._actions)
+
     def _construct_menu(self, *args: object) -> None:
         """ Build the menu entries from scratch. """
         self._commands = self._openwith_manager.get_commands()

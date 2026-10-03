@@ -21,7 +21,7 @@ def format_page_number(pages: Sequence[int], total: int) -> str:
     return '%s / %d' % (','.join('%d' % page for page in pages), total)
 
 
-class Statusbar(Gtk.Box):
+class Statusbar(Gtk.Box, widgets.Releasable):
 
     """The status bar along the bottom of the window.
 
@@ -89,6 +89,16 @@ class Statusbar(Gtk.Box):
         """
         layout = label.create_pango_layout(self._TALLEST_LINE)
         label.set_size_request(-1, layout.get_pixel_size()[1])
+
+    def release(self) -> None:
+        """Let go of the field actions once the window has closed.
+
+        Each holds this statusbar's method in C, where the collector
+        cannot see it, and the group and the dictionary here hold the
+        actions: the statusbar outlived its window.
+        """
+        widgets.empty_action_group(self._field_actions)
+        self._field_toggles.clear()
 
     def set_message(self, message: str) -> None:
         """Set a specific message (such as an error message) on the statusbar,

@@ -457,6 +457,17 @@ def _move_aside(path: str) -> None:
 _manager: _KeybindingManager | None = None
 
 
+def forget(window: 'main.MainWindow') -> None:
+    """Drop the manager if it was built for <window>, which has closed.
+
+    It holds that window's methods as the actions' callbacks, and is
+    one for the process: kept, it would hold the window for good.
+    """
+    global _manager
+    if _manager is not None and _manager._window is window:
+        _manager = None
+
+
 def keybinding_manager(window: 'main.MainWindow') -> _KeybindingManager:
     """ Returns a singleton instance of the keybinding manager. """
     global _manager

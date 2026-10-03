@@ -79,6 +79,10 @@ class MoveToMenu:
         self._window.filehandler.file_opened += self._rebuild
         self._window.filehandler.file_closed += self._rebuild
 
+    def release(self) -> None:
+        """Let go of the closed window: see MainUI.release()."""
+        widgets.empty_action_group(self._actions)
+
     def remember(self, directory: str) -> None:
         """Put <directory> at the head of the destinations moved to."""
         remembered = [path for path in prefs['recent move destinations']

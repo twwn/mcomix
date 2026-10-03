@@ -11,13 +11,14 @@ from mcomix import preview
 from mcomix import theme
 from mcomix import thumbnail_list
 from mcomix import tools
+from mcomix import widgets
 
 if TYPE_CHECKING:
     from gi.repository import GdkPixbuf
     from mcomix import main
 
 
-class ThumbnailSidebar(Gtk.ScrolledWindow):
+class ThumbnailSidebar(Gtk.ScrolledWindow, widgets.Releasable):
 
     """A thumbnail sidebar including scrollbar for the main window."""
 
@@ -89,6 +90,16 @@ class ThumbnailSidebar(Gtk.ScrolledWindow):
         self._window.page_changed += self._on_page_change
         self._window.imagehandler.page_available += self._on_page_available
         self._window.filehandler.file_closed += self._forget_broken
+
+    def release(self) -> None:
+        """Take the list off the sidebar once the window has closed.
+
+        GTK holds the list as the sidebar's child, which keeps its
+        Python wrapper out of the collector's reach, and the wrapper
+        holds the sidebar's methods it was handed - and through them
+        the window.
+        """
+        self.set_child(None)
 
     def toggle_page_numbers_visible(self) -> None:
         """ Enables or disables page numbers on the thumbnail bar. """
