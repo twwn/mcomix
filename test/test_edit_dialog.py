@@ -10,7 +10,7 @@ import shutil
 import unittest.mock
 import zipfile
 
-from gi.repository import Gdk, Gio, Gtk
+from gi.repository import Gdk, Gtk
 
 from . import MComixTest, get_testfile_path, hold_open, pump, wait_for
 
@@ -976,9 +976,17 @@ class EditArchiveDialogTest(MComixTest):
             self.dialog._response(self.dialog, constants.RESPONSE_SAVE_AS)
             pump()
             chooser = self._chooser()
-            chooser.filechooser.set_file(Gio.File.new_for_path(target))
-            wait_for(lambda: widgets.chooser_paths(chooser.filechooser)
-                     == [target], seconds=5)
+            # A Save chooser's file is its folder and the name typed in,
+            # and the folder changes once GTK has listed it.  On GitHub's
+            # runner (b227b832) the five seconds this waited for that ran
+            # out unnoticed: OK found nothing chosen and asked nothing.
+            # The folder and the name are set apart, as a reader sets
+            # them, and the wait is checked.
+            widgets.set_chooser_folder(chooser.filechooser, self.tmp_dir)
+            chooser.filechooser.set_current_name('taken.cbz')
+            self.assertTrue(wait_for(
+                lambda: widgets.chooser_paths(chooser.filechooser)
+                == [target], seconds=20), 'the chooser never chose it')
             chooser.response(Response.OK)
             pump()
             questions = [window for window in Gtk.Window.list_toplevels()
