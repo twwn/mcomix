@@ -858,9 +858,10 @@ class FileHandler:
         return False
 
     def open_next_directory(self, *args: object) -> bool:
-        """ Opens the next sibling directory of the current file, as specified by
-        file provider. Returns True if a new directory was opened and files found,
-        or if it is being opened once the book has been dealt with.
+        """Open the first book in the next directory on the shelf that
+        holds one (see file_provider.OrderedFileProvider).  Returns True
+        if one was opened, or if it is being opened once the book has
+        been dealt with.
 
         The walk moves the file provider on before anything is opened, so
         a book with changes that have not been written is asked about
@@ -884,24 +885,21 @@ class FileHandler:
             return False
 
         listmode = self._directory_listmode
+        files: list[str] = []
 
-        current_dir = self._file_provider.get_directory()
-        if not self._file_provider.next_directory():
-            # Restore current directory if no files were found
-            self._file_provider.set_directory(current_dir)
+        def has_books() -> bool:
+            files[:] = self._books_in_directory(listmode)
+            return bool(files)
+
+        # Directories with no book in them are passed over; at the end
+        # of the shelf the provider is left where it was.
+        if not self._file_provider.next_directory(has_books):
             return False
 
-        files = self._books_in_directory(listmode)
         self._close()
-        if files:
-            path = files[0]
-        else:
-            path = self._file_provider.get_directory()
-        self.open_file(path, keep_fileprovider=True)
-        # Whatever opened - a book of the other kind, or a directory with
-        # nothing to open, which leaves no file behind to say what the
-        # walk is looking for - the walk goes on looking for the kind it
-        # set out over.
+        self.open_file(files[0], keep_fileprovider=True)
+        # Whatever opened - a book of the other kind - the walk goes on
+        # looking for the kind it set out over.
         self._directory_listmode = listmode
         return True
 
@@ -929,10 +927,9 @@ class FileHandler:
         return []
 
     def open_previous_directory(self, *args: object) -> bool:
-        """ Opens the previous sibling directory of the current file, as specified by
-        file provider. Returns True if a new directory was opened and files found,
-        or if it is being opened once the book has been dealt with - see
-        open_next_directory(). """
+        """Open a book in the previous directory on the shelf that holds
+        one, the last unless the preferences say the first.  Returns as
+        open_next_directory() does."""
 
         if self._file_provider is None:
             return False
@@ -944,20 +941,18 @@ class FileHandler:
             return False
 
         listmode = self._directory_listmode
+        files: list[str] = []
 
-        current_dir = self._file_provider.get_directory()
-        if not self._file_provider.previous_directory():
-            # Restore current directory if no files were found
-            self._file_provider.set_directory(current_dir)
+        def has_books() -> bool:
+            files[:] = self._books_in_directory(listmode)
+            return bool(files)
+
+        # See _open_next_directory().
+        if not self._file_provider.previous_directory(has_books):
             return False
 
-        files = self._books_in_directory(listmode)
         self._close()
-        if files:
-            path = files[prefs['open first file in prev directory']-1]
-        else:
-            path = self._file_provider.get_directory()
-
+        path = files[prefs['open first file in prev directory']-1]
         self.open_file(path, (
             prefs['open first file in prev archive'] or
             prefs['open first file in prev directory'])-1,

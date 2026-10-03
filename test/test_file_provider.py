@@ -54,6 +54,63 @@ class OrderedFileProviderTest(MComixTest):
         self.assertEqual(self._walk(provider, OrderedFileProvider.previous_directory),
                          ['c', 'b', 'a'])
 
+    def _nest(self):
+        """Fill a/ with a1/ and a2/, and a2/ with deep/, a level further
+        down than the walk goes."""
+        for name in ('a1', os.path.join('a2', 'deep')):
+            os.makedirs(os.path.join(self.root, 'a', name))
+
+    def test_the_walk_goes_into_the_directories_on_the_shelf(self) -> None:
+        """The shelf is the directory above the one the book opened in;
+        each directory comes before the ones in it, two levels deep."""
+        self._nest()
+        provider = self._provider('a')
+        self.assertEqual(self._walk(provider, OrderedFileProvider.next_directory),
+                         ['a', 'a1', 'a2', 'b', 'c'])
+
+    def test_the_walk_back_is_the_walk_on_reversed(self) -> None:
+        self._nest()
+        provider = self._provider('c')
+        self.assertEqual(
+            self._walk(provider, OrderedFileProvider.previous_directory),
+            ['c', 'b', 'a2', 'a1', 'a'])
+
+    def test_the_walk_never_climbs_above_the_shelf(self) -> None:
+        """Opened in a/a2, the shelf is a: the walk back ends at a1
+        rather than going on to a, and the walk on ends after deep."""
+        self._nest()
+        provider = self._provider(os.path.join('a', 'a2'))
+        self.assertEqual(
+            self._walk(provider, OrderedFileProvider.previous_directory),
+            ['a2', 'a1'])
+        provider = self._provider(os.path.join('a', 'a2'))
+        self.assertEqual(self._walk(provider, OrderedFileProvider.next_directory),
+                         ['a2', 'deep'])
+
+    def test_a_linked_directory_is_visited_but_not_gone_into(self) -> None:
+        elsewhere = tempfile.mkdtemp(prefix='file_provider.')
+        self.addCleanup(shutil.rmtree, elsewhere)
+        os.mkdir(os.path.join(elsewhere, 'inside'))
+        try:
+            os.symlink(elsewhere, os.path.join(self.root, 'b2'),
+                       target_is_directory=True)
+        except (OSError, NotImplementedError):
+            self.skipTest('no symbolic links here')
+        provider = self._provider('b')
+        self.assertEqual(self._walk(provider, OrderedFileProvider.next_directory),
+                         ['b', 'b2', 'c'])
+
+    def test_directories_not_accepted_are_passed_over(self) -> None:
+        provider = self._provider('a')
+        self.assertTrue(provider.next_directory(
+            lambda: os.path.basename(provider.get_directory()) != 'b'))
+        self.assertEqual('c', os.path.basename(provider.get_directory()))
+
+    def test_with_nothing_accepted_the_directory_stays(self) -> None:
+        provider = self._provider('a')
+        self.assertFalse(provider.next_directory(lambda: False))
+        self.assertEqual('a', os.path.basename(provider.get_directory()))
+
     def test_root_directory_has_no_siblings(self) -> None:
         # The root is not listed inside itself, which used to raise ValueError.
         provider = OrderedFileProvider(os.path.abspath(os.sep))

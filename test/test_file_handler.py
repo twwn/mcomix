@@ -80,32 +80,52 @@ class DirectoryWalkTest(MComixTest):
         wait_for(lambda: not self.handler.file_loading, seconds=3)
         return self.handler._current_file
 
-    def test_walking_back_out_of_an_empty_directory_reopens_the_archive(self):
-        """ A directory with nothing to open leaves no archive open, and
-        the walk used to take that to mean it was looking for images from
-        then on - so coming back found none of the archives it left. """
+    def test_with_no_book_ahead_the_walk_stays_where_it_is(self):
+        """A directory with nothing to open used to be opened, as a book
+        with no pages; now it is passed over, and past the last one
+        holding a book nothing moves."""
         archive = self._put_archive('a')
         self._open(archive)
-        self.handler.open_next_directory()
-        self.assertEqual(os.path.join(self.root, 'b'), self._opened_file())
-        self.handler.open_previous_directory()
+        self.assertFalse(self.handler.open_next_directory())
         self.assertEqual(archive, self._opened_file())
+        self.assertTrue(self.handler.file_loaded)
 
     def test_walking_on_past_an_empty_directory_finds_the_next_archive(self):
         archive = self._put_archive('a')
         last = self._put_archive('c')
         self._open(archive)
-        self.handler.open_next_directory()
-        self.handler.open_next_directory()
+        self.assertTrue(self.handler.open_next_directory())
         self.assertEqual(last, self._opened_file())
 
     def test_walking_on_past_an_empty_directory_finds_the_next_images(self):
         image = self._put_image('a')
         last = self._put_image('c')
         self._open(image)
-        self.handler.open_next_directory()
-        self.handler.open_next_directory()
+        self.assertTrue(self.handler.open_next_directory())
         self.assertEqual(last, self._opened_file())
+
+    def test_walking_back_past_an_empty_directory_finds_the_archive(self):
+        archive = self._put_archive('a')
+        self._open(self._put_archive('c'))
+        self.assertTrue(self.handler.open_previous_directory())
+        self.assertEqual(archive, self._opened_file())
+
+    def test_the_walk_goes_into_a_series_and_out_again(self):
+        """Volumes kept in a directory of their own are walked into
+        from the book before the series, and out of to the one after."""
+        before = self._put_archive('a')
+        volumes = []
+        for name in ('Volume 1', 'Volume 2'):
+            os.makedirs(os.path.join(self.root, 'b', name))
+            volumes.append(self._put_archive(os.path.join('b', name)))
+        after = self._put_archive('c')
+        self._open(before)
+        for expected in volumes + [after]:
+            self.assertTrue(self.handler.open_next_directory())
+            self.assertEqual(expected, self._opened_file())
+        for expected in reversed([before] + volumes):
+            self.assertTrue(self.handler.open_previous_directory())
+            self.assertEqual(expected, self._opened_file())
 
     def test_walking_from_images_into_a_directory_of_archives_opens_one(self):
         """The walk looks for the kind of book it left, and takes the
@@ -149,13 +169,11 @@ class DirectoryWalkTest(MComixTest):
         self.handler.open_next_directory()
         self.assertEqual(image, self._opened_file())
 
-    def test_walking_back_into_a_directory_with_no_book_opens_it(self):
-        """As walking on into one does: the directory is what is open,
-        and the walk goes on from there."""
+    def test_with_no_book_behind_the_walk_back_stays_where_it_is(self):
         image = self._put_image('b')
         self._open(image)
-        self.assertTrue(self.handler.open_previous_directory())
-        self.assertEqual(os.path.join(self.root, 'a'), self._opened_file())
+        self.assertFalse(self.handler.open_previous_directory())
+        self.assertEqual(image, self._opened_file())
 
     @unittest.skipIf(sys.platform == 'win32',
                      'Windows deletes no archive MComix holds open')

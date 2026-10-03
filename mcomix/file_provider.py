@@ -131,14 +131,20 @@ class FileProvider:
         """
         return []
 
-    def next_directory(self) -> bool:
+    def next_directory(self, accept: "Callable[[], bool] | None" = None
+                       ) -> bool:
         """Move to the directory after this one, and say whether there
-        was one.  The next list_files() lists the new directory."""
+        was one.  The next list_files() lists the new directory.
+
+        With <accept>, the directories it says no to, asked while each
+        is the one listed, are passed over.
+        """
         return False
 
-    def previous_directory(self) -> bool:
+    def previous_directory(self, accept: "Callable[[], bool] | None" = None
+                           ) -> bool:
         """Move to the directory before this one, and say whether there
-        was one.  The next list_files() lists the new directory."""
+        was one, as next_directory() does."""
         return False
 
     @staticmethod
@@ -176,12 +182,26 @@ class FileProvider:
             files.reverse()
 
 
+#: How far below the shelf the walk from directory to directory goes:
+#: the shelf's own directories, and the ones in those.
+SHELF_DEPTH = 2
+
+
 class OrderedFileProvider(FileProvider):
-    """Every file in one directory, and the directories beside it.
+    """Every file in one directory, and the directories around it.
 
     This is what opening a book does: the rest of the directory is the
     rest of the series, so the reader can walk out of one volume and
     into the next without going back to a file chooser.
+
+    The walk stays on a shelf: the directory above the one the book
+    opened by hand is in.  It visits the shelf's directories and the
+    ones in them, in natural order, each directory before the ones in
+    it - SHELF_DEPTH levels and no further, so a book in Series/Volume
+    leads on to Series/Volume 2 and from there to the next series.  It
+    never climbs above the shelf, and does not go into a directory that
+    is a symbolic link, which may lead anywhere, though such a directory
+    is visited itself.
     """
 
     def __init__(self, file_or_directory: str) -> None:
@@ -192,6 +212,7 @@ class OrderedFileProvider(FileProvider):
         """
 
         self.set_directory(file_or_directory)
+        self.shelf = os.path.dirname(self.base_dir)
 
     def set_directory(self, file_or_directory: str) -> None:
         """List <file_or_directory> from now on, or the directory it is in."""
@@ -239,54 +260,81 @@ class OrderedFileProvider(FileProvider):
 
         return files
 
-    def next_directory(self) -> bool:
-        """Move to the next directory beside this one, if there is one."""
+    def next_directory(self, accept: "Callable[[], bool] | None" = None
+                       ) -> bool:
+        """Move to the next directory on the shelf, if there is one."""
 
-        return self.__switch_directory(1)
+        return self.__switch_directory(1, accept)
 
-    def previous_directory(self) -> bool:
-        """Move to the directory before this one, if there is one."""
+    def previous_directory(self, accept: "Callable[[], bool] | None" = None
+                           ) -> bool:
+        """Move to the directory before this one on the shelf, if there
+        is one."""
 
-        return self.__switch_directory(-1)
+        return self.__switch_directory(-1, accept)
 
-    def __switch_directory(self, offset: int) -> bool:
-        """Move <offset> places along the siblings, and say whether there
-        was a directory that far away.
+    def __switch_directory(self, step: int,
+                           accept: "Callable[[], bool] | None") -> bool:
+        """Move along the shelf in the direction <step> gives, to the
+        first directory <accept> takes, and say whether there was one.
 
-        The siblings are sorted the way the directory listing is, so one
-        place along is the next volume of a series.  Nothing moves and
-        False comes back at either end of the parent directory.
+        Nothing moves and False comes back at either end of the shelf,
+        or where this directory is not on it.
         """
 
-        directories = self.__get_sibling_directories(self.base_dir)
+        directories = self.__shelf_directories()
         try:
-            index = directories.index(self.base_dir) + offset
+            index = directories.index(self.base_dir)
         except ValueError:
-            # The directory is not among its own siblings: it is the root of
-            # the file system, or it was removed while it was open.
+            # The directory is not on the shelf: it is the root of the
+            # file system, which is its own shelf, or it was removed
+            # while it was open.
             return False
-        if 0 <= index < len(directories):
+        start = self.base_dir
+        index += step
+        while 0 <= index < len(directories):
             self.base_dir = directories[index]
-            return True
+            if accept is None or accept():
+                return True
+            index += step
+        self.base_dir = start
         return False
 
-    def __get_sibling_directories(self, dir: str) -> list[str]:
-        """Every directory in <dir>'s parent, <dir> itself included, sorted.
+    def __shelf_directories(self) -> list[str]:
+        """Every directory on the shelf, in the order the walk visits
+        them: depth first, in natural order, SHELF_DEPTH levels deep.
 
-        Empty where the parent cannot be read, which leaves the caller
-        where it was: a directory that is not among its own siblings has
-        nowhere to step to.
+        Empty where the shelf cannot be read, which leaves the caller
+        where it was.  A directory below it that cannot be read is
+        visited, with nothing visited inside it.
         """
 
-        parent_dir = os.path.dirname(dir)
+        if self.base_dir == self.shelf:
+            return []
+        walk: list[str] = []
+
+        def visit(directory: str, depth: int) -> None:
+            for child in self.__directories_in(directory):
+                walk.append(child)
+                if depth < SHELF_DEPTH and not os.path.islink(child):
+                    visit(child, depth + 1)
+
+        visit(self.shelf, 1)
+        return walk
+
+    @staticmethod
+    def __directories_in(directory: str) -> list[str]:
+        """The directories in <directory>, sorted; empty where it cannot
+        be read, which is reported."""
+
         try:
-            entries = os.listdir(parent_dir)
+            entries = os.listdir(directory)
         except OSError:
-            log.warning('! ' + _('Could not open %s: Permission denied.'), parent_dir)
+            log.warning('! ' + _('Could not open %s: Permission denied.'), directory)
             return []
 
         directories = [path for path in
-                       (os.path.join(parent_dir, entry) for entry in entries)
+                       (os.path.join(directory, entry) for entry in entries)
                        if os.path.isdir(path)]
 
         tools.alphanumeric_sort(directories)
