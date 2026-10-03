@@ -1358,8 +1358,16 @@ class MainWindow(Gtk.Window):
     def get_visible_area_size(self) -> tuple[int, ...]:
         """Return a 2-tuple with the width and height of the visible part
         of the main layout area.
+
+        Worked out from what holds the bars and the page area, the
+        window's child, rather than from the window: a title bar GTK
+        draws itself - on Windows - is part of the window's height.
         """
-        dimensions = list(self.get_window_size())
+        content = self.get_child()
+        if content is not None and content.get_width() and content.get_height():
+            dimensions = [content.get_width(), content.get_height()]
+        else:
+            dimensions = list(self.get_window_size())
 
         for preference, action, widget_list in self._toggle_list:
             for widget in widget_list:

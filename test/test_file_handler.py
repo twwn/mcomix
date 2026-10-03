@@ -558,6 +558,30 @@ class ABookOpenedAtItsEndTest(_WindowTest):
             adjustment.get_value())
 
 
+class ABookOpenedAtItsEndUnderATitleBarTest(ABookOpenedAtItsEndTest):
+
+    """The same, in a window with a title bar of its own, as GTK draws
+    on Windows: the room for the pages was worked out from the window's
+    height, title bar and all, so its last page stopped 39 px short of
+    the bottom there, and a page fitted to the height was 39 px too
+    tall."""
+
+    def setUp(self):
+        shown = main.MainWindow.present
+
+        def present(window):
+            # Before the window is shown, as GTK sets its own.
+            window.set_titlebar(Gtk.HeaderBar())
+            shown(window)
+
+        with mock.patch.object(main.MainWindow, 'present', present):
+            super().setUp()
+
+    def test_the_room_for_the_pages_leaves_out_the_title_bar(self):
+        self.assertEqual(self.window.page_area.get_height(),
+                         self.window.get_visible_area_size()[1])
+
+
 class ABookOpenedAtItsEndInDoublePageTest(_WindowTest):
 
     """Double page mode, wide pages shown on their own: a book opened
