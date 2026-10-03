@@ -282,6 +282,7 @@ class MainWindow(Gtk.Window):
         self.actiongroup.get_action('invert_color').show_active(
             prefs['invert color'])
 
+        self.actiongroup.get_action('leave_fullscreen').set_sensitive(False)
         self.actiongroup.get_action('menu_autorotate_width').set_sensitive(False)
         self.actiongroup.get_action('menu_autorotate_height').set_sensitive(False)
 

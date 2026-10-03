@@ -353,8 +353,16 @@ _MENUBAR = (
                                         'keep_transformation')))),
 )
 
+#: The actions whose menu items are left out while they are disabled
+#: rather than greyed out.
+_HIDDEN_WHEN_DISABLED = frozenset({'leave_fullscreen'})
+
 #: The right-click menu.
 _POPUP = (
+    # Shown only while the window fills the screen: the item under
+    # View, two levels down, was the only way out with the mouse
+    # (upstream feature requests 86 and 135).
+    'leave_fullscreen',
     ('menu_go_popup', ('next_page', 'previous_page', 'go_to',
                        'first_page', 'last_page', None,
                        'next_archive', 'previous_archive', None,
@@ -462,6 +470,8 @@ class MainUI:
             _Entry('zoom_out', 'zoom-out', _('Zoom _Out'), None, window.manual_zoom_out),
             _Entry('zoom_original', 'zoom-original', _('_Normal Size'), None, window.manual_zoom_original),
             _Entry('minimize', 'view-restore', _('Mi_nimize'), None, window.minimize),
+            _Entry('leave_fullscreen', 'view-restore-symbolic', _('Leave fullscreen'), None,
+                   _action_lambda(self._leave_fullscreen)),
             _Entry('close', 'window-close', _('_Close'), _('Closes all opened files.'), _action_lambda(window.filehandler.close_file)),
             _Entry('quit', 'application-exit', _('_Quit'), None, window.close_program),
             _Entry('save_and_quit', 'application-exit', _('_Save and quit'), _('Quits and restores the currently opened file next time the program starts.'),
@@ -636,6 +646,10 @@ class MainUI:
                      self.move_to):
             menu.release()
 
+    def _leave_fullscreen(self) -> None:
+        """Turn the fullscreen toggle off, which leaves fullscreen."""
+        self._actions.get_action('fullscreen').set_active(False)
+
     def add_shortcut(self, accelerator: str, action: str) -> None:
         """Make <accelerator> trigger the named <action>."""
         self.shortcuts.add_shortcut(Gtk.Shortcut.new(
@@ -679,6 +693,9 @@ class MainUI:
             entry = Gio.MenuItem.new(self._actions.label(item), None)
             detailed, target = self._actions.detailed(item)
             entry.set_action_and_target_value(detailed, target)
+            if item in _HIDDEN_WHEN_DISABLED:
+                entry.set_attribute_value('hidden-when',
+                                          GLib.Variant('s', 'action-disabled'))
             accelerator = self._accelerators.get(item)
             if accelerator:
                 entry.set_attribute_value('accel',

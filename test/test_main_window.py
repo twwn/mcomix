@@ -461,6 +461,52 @@ class MainWindowTest(MComixTest):
                                         return_value=fullscreen):
             self.window.event_handler.window_state_event(self.window, None)
 
+    def _popup_labels(self):
+        """The labels the right-click menu shows, opened over the page."""
+        hold_open(self.window.popup)
+        # A click into a window that had lost the focus only raises it.
+        self.window.was_out_of_focus = False
+        self.window.event_handler.mouse_press_event(
+            self._Click(3), 1, 10, 10)
+        self._pump()
+        try:
+            labels = []
+            stack = [self.window.popup]
+            while stack:
+                widget = stack.pop()
+                if isinstance(widget, Gtk.Label) and widget.is_drawable():
+                    labels.append(widget.get_text())
+                child = widget.get_first_child()
+                while child is not None:
+                    stack.append(child)
+                    child = child.get_next_sibling()
+            return labels
+        finally:
+            self.window.popup.popdown()
+            self._pump()
+
+    def test_the_menu_offers_a_way_out_of_fullscreen_only_there(self):
+        """The only way out with the mouse was View, two levels down in
+        the right-click menu (upstream feature requests 86 and 135)."""
+        leave = self.window.actiongroup.get_action('leave_fullscreen')
+        self.assertFalse(leave.get_sensitive())
+        self.assertNotIn('Leave fullscreen', self._popup_labels())
+
+        self._state_changes_to(True)
+        self.assertTrue(leave.get_sensitive())
+        self.assertIn('Leave fullscreen', self._popup_labels())
+
+        fullscreen = self.window.actiongroup.get_action('fullscreen')
+        fullscreen.show_active(True)
+        with unittest.mock.patch.object(self.window, 'unfullscreen') as out:
+            leave.activate()
+            self._pump()
+        out.assert_called_once_with()
+        self.assertFalse(fullscreen.get_active())
+
+        self._state_changes_to(False)
+        self.assertFalse(leave.get_sensitive())
+
     def test_hide_all_leaves_the_bars_it_hides_unusable(self):
         """Hidden by "hide all", a bar's own item could not show it, so
         each is greyed out until "hide all" is turned off again."""

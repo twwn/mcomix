@@ -10,6 +10,7 @@
 - "View → Toolbars" shows or hides the menubar, toolbar, statusbar, scrollbars and thumbnails.
 - "Hide all", in the same menu or the I key, puts them all away at once.
 - Fullscreen, the F key, hides them too while "Automatically hide all toolbars in fullscreen" is set.
+- Escape leaves fullscreen, and so does "Leave fullscreen" at the top of the right-click menu.
 - The arrow keys scroll the page; PageDown and PageUp turn it.
 - Space and the mouse wheel scroll in reading order: across, down, across again, then to the next page.
 - [Keyboard and mouse](shortcuts.md) lists every binding.
