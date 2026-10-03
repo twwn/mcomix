@@ -107,6 +107,38 @@ class DirectoryWalkTest(MComixTest):
         self.handler.open_next_directory()
         self.assertEqual(last, self._opened_file())
 
+    def test_walking_from_images_into_a_directory_of_archives_opens_one(self):
+        """The walk looks for the kind of book it left, and takes the
+        other kind where the directory has none: from loose images into
+        a directory of archives it opened the directory, a book with no
+        pages."""
+        self._open(self._put_image('a'))
+        archive = self._put_archive('b')
+        self.assertTrue(self.handler.open_next_directory())
+        self.assertEqual(archive, self._opened_file())
+        self.assertTrue(wait_for(
+            lambda: self.window.imagehandler.get_number_of_pages() == 4))
+
+    def test_walking_back_from_images_into_a_directory_of_archives(self):
+        archive = self._put_archive('a')
+        self._open(self._put_image('b'))
+        self.assertTrue(self.handler.open_previous_directory())
+        self.assertEqual(archive, self._opened_file())
+
+    def test_a_walk_goes_on_over_the_kind_of_book_it_set_out_over(self):
+        """From an archive, through a directory of loose images, into
+        one with both: its archive, not its images."""
+        self._open(self._put_archive('a'))
+        self._put_image('b')
+        self._put_image('c')
+        archive = self._put_archive('c')
+        self.handler.open_next_directory()
+        self._opened_file()
+        self.assertIsNone(self.handler.archive_type)
+        self.assertEqual(1, self.window.imagehandler.get_number_of_pages())
+        self.handler.open_next_directory()
+        self.assertEqual(archive, self._opened_file())
+
     def test_opening_a_directory_of_images_leaves_the_archives_behind(self):
         """ Opening a directory by hand, rather than walking into it,
         starts a walk over the images in it. """

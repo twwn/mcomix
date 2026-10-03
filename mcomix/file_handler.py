@@ -873,21 +873,42 @@ class FileHandler:
             self._file_provider.set_directory(current_dir)
             return False
 
-        # The later volumes of a RAR set are read through its first, and
-        # are not books to open by themselves.
-        files = [path for path in self._file_provider.list_files(listmode)
-                 if not archive_tools.is_later_volume(path)]
+        files = self._books_in_directory(listmode)
         self._close()
         if files:
             path = files[0]
         else:
             path = self._file_provider.get_directory()
         self.open_file(path, keep_fileprovider=True)
-        # A directory with nothing to open leaves no file behind to say
-        # what the walk is looking for, and the walk has to go on looking
-        # for the same kind of file rather than fall back to images.
+        # Whatever opened - a book of the other kind, or a directory with
+        # nothing to open, which leaves no file behind to say what the
+        # walk is looking for - the walk goes on looking for the kind it
+        # set out over.
         self._directory_listmode = listmode
         return True
+
+    def _books_in_directory(self, listmode: int) -> list[str]:
+        """What a walk into the directory now listed opens one of.
+
+        The files of the kind <listmode> names, the kind the walk set out
+        over, or the other kind where the directory holds none of those:
+        a walk from an archive into a directory of loose images opens the
+        images, and one from loose images into a directory of archives
+        opened the directory as a book with no pages.  Empty where the
+        directory holds neither.
+        """
+        assert self._file_provider is not None
+        other = (file_provider.FileProvider.IMAGES
+                 if listmode == file_provider.FileProvider.ARCHIVES
+                 else file_provider.FileProvider.ARCHIVES)
+        for mode in (listmode, other):
+            # The later volumes of a RAR set are read through its first,
+            # and are not books to open by themselves.
+            files = [path for path in self._file_provider.list_files(mode)
+                     if not archive_tools.is_later_volume(path)]
+            if files:
+                return files
+        return []
 
     def open_previous_directory(self, *args: object) -> bool:
         """ Opens the previous sibling directory of the current file, as specified by
@@ -912,10 +933,7 @@ class FileHandler:
             self._file_provider.set_directory(current_dir)
             return False
 
-        # The later volumes of a RAR set are read through its first, and
-        # are not books to open by themselves.
-        files = [path for path in self._file_provider.list_files(listmode)
-                 if not archive_tools.is_later_volume(path)]
+        files = self._books_in_directory(listmode)
         self._close()
         if files:
             path = files[prefs['open first file in prev directory']-1]
