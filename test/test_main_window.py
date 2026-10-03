@@ -699,10 +699,10 @@ class MainWindowTest(MComixTest):
         the one chooser that opened."""
         prefs['path of last saved in filechooser'] = target_dir
         handler = self.window.imagehandler
-        self.assertTrue(
-            wait_for(lambda: os.path.exists(
-                handler.get_path_to_page(1) or '')),
-            'the first page was never extracted')
+        # Not merely there: the extractor makes the file before it
+        # writes into it, and says it is available once it is written.
+        self.assertTrue(wait_for(lambda: handler.page_is_available(1)),
+                        'the first page was never extracted')
         self.window.file_actions.extract_page()
         self._pump()
         dialogs = self._save_dialogs()
