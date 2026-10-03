@@ -55,6 +55,7 @@ class EventHandler:
         clicks.set_button(0)
         clicks.connect('pressed', self.mouse_press_event)
         clicks.connect('released', self.mouse_release_event)
+        clicks.connect('cancel', self.mouse_cancel_event)
         page_area.add_controller(clicks)
 
         motion = Gtk.EventControllerMotion()
@@ -674,6 +675,19 @@ class EventHandler:
 
         elif button == 9:
             self._window.show_info_panel()
+
+    def mouse_cancel_event(self, gesture: Gtk.GestureClick,
+                           sequence: "Gdk.EventSequence | None") -> None:
+        """Put away the lens a press of another button cut short.
+
+        A second button pressed while the middle one holds the lens up
+        is not reported as a press: GTK cancels the middle button's
+        click instead, and both releases come unpaired.  The release
+        that would have put the lens away never arrived, and the lens
+        stayed up after both buttons were let go (upstream bug 70).
+        """
+        if gesture.get_current_button() == 2:
+            self._window.actiongroup.get_action('lens').set_active(False)
 
     def mouse_release_event(self, gesture: Gtk.GestureClick, n_press: int,
                             x: float, y: float) -> None:

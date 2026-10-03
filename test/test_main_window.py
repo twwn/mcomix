@@ -2185,6 +2185,19 @@ class MainWindowTest(MComixTest):
         self.window.event_handler.mouse_release_event(self._Click(2), 1, 0, 0)
         self.assertFalse(lens.get_active())
 
+    def test_another_button_puts_the_held_lens_away(self):
+        """GTK answers a second button pressed while the middle one holds
+        the lens up by cancelling the middle button's click, and sends
+        neither that press nor either release as such: the lens stayed up
+        once both buttons were let go (upstream bug 70).  Seen with real
+        buttons through xdotool; the cancel is what reaches MComix."""
+        self._ready()
+        lens = self.window.actiongroup.get_action('lens')
+        self._press(2)
+        self.assertTrue(lens.get_active())
+        self.window.event_handler.mouse_cancel_event(self._Click(2), None)
+        self.assertFalse(lens.get_active())
+
     def test_a_right_click_opens_the_menu_over_the_page_under_it(self):
         self._ready()
         hold_open(self.window.popup)
