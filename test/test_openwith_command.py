@@ -248,6 +248,7 @@ class DocumentedVariablesTest(MComixTest):
         window.filehandler = _StubArchiveHandler('/home/user/comic-2012.zip')
         for variable, expected in (('A', '/home/user/comic-2012.zip'),
                                    ('a', 'comic-2012.zip'),
+                                   ('n', 'comic-2012'),
                                    ('C', '/home/user'),
                                    ('c', 'user'),
                                    ('B', '/home/user/comic-2012.zip'),
@@ -259,7 +260,7 @@ class DocumentedVariablesTest(MComixTest):
 
     def test_archive_variables_are_refused_for_an_image_file(self):
         window = _StubWindow('cats.jpg', '/home/user/Downloads/cats.jpg')
-        for variable in 'AaCc':
+        for variable in 'AanCc':
             with self.subTest(variable=variable):
                 with self.assertRaises(openwith.OpenWithException):
                     self._expand(variable, window)

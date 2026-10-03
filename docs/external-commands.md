@@ -53,6 +53,7 @@ Variable | Meaning | Example
 ---------|---------|--------
 %A | Path of the open archive | /home/user/comic-2012.zip
 %a | Name of the open archive | comic-2012.zip
+%n | Name of the open archive without its extension | comic-2012
 %C | Path of the archive's directory | /home/user
 %c | Name of the archive's directory | user
 

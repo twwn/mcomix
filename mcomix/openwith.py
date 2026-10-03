@@ -228,7 +228,7 @@ class OpenWithCommand:
             raise OpenWithException(
                 _("File-related variables can only be used for files."))
 
-        if not (context_type & ARCHIVE_CONTEXT) and identifier in ('a', 'c', 'A', 'C'):
+        if not (context_type & ARCHIVE_CONTEXT) and identifier in ('a', 'n', 'c', 'A', 'C'):
             raise OpenWithException(
                 _("Archive-related variables can only be used for archives."))
 
@@ -254,6 +254,10 @@ class OpenWithCommand:
             return os.path.sep
         elif identifier == 'a':
             return window.filehandler.get_base_filename()
+        elif identifier == 'n':
+            # The archive's name without its last extension, for a
+            # command that names what it writes after the book.
+            return os.path.splitext(window.filehandler.get_base_filename())[0]
         elif identifier == 'd':
             return os.path.basename(os.path.dirname(page_path()))
         elif identifier == 'f':
