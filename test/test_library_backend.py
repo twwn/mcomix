@@ -1770,6 +1770,20 @@ class CollectionTreeQueryTest(LibraryDatabaseTest):
              self.comics: [(self.inner, 'Inner')]},
             self.library.get_collection_tree())
 
+    def test_names_are_in_natural_order_whatever_their_case(self):
+        # Upstream feature request 84: "Vol 10" came before "Vol 2", and
+        # a name in lower case after every name in upper case.
+        vol10 = self.library.add_collection('Vol 10')
+        vol2 = self.library.add_collection('Vol 2')
+        lower = self.library.add_collection('anthologies')
+        expected = [lower, self.comics, self.manga,
+                    constants.COLLECTION_RECENT, vol2, vol10]
+        self.assertEqual(
+            expected, [id for id, name in self.library.get_collection_tree()[None]])
+        self.assertEqual(
+            expected[:2] + [self.inner] + expected[2:],
+            self.library.get_all_collections())
+
     def test_recent_is_named_by_its_translation(self):
         # The row holds RECENT, so that a library carried from one
         # language to another still finds the collection.

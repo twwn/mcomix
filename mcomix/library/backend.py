@@ -18,6 +18,7 @@ from collections.abc import Iterator, Sequence
 from typing import Any, TYPE_CHECKING
 
 from mcomix import archive_tools
+from mcomix import tools
 from mcomix.archive import password as archive_password
 from mcomix import constants
 from mcomix import thumbnail_tools
@@ -33,6 +34,15 @@ from sqlite3 import dbapi2
 
 if TYPE_CHECKING:
     from gi.repository import GdkPixbuf
+
+
+def _name_order(name: str) -> tools.AlphanumericSortKey:
+    """The key collections are put in order by: their names as a
+    folder's files are, case aside and runs of digits by value, so
+    "Vol 2" comes before "Vol 10" and "manga" before "Zeta".  SQL's
+    "order by name" compared the bytes, which put both the other way.
+    """
+    return tools.AlphanumericSortKey(name)
 
 
 class _LibraryBackend:
@@ -252,9 +262,9 @@ class _LibraryBackend:
         one grouped by the collection it sits under.
 
         The collections at the root are under None.  Each group is in
-        the order the sidebar draws it, which is by name with "Recent"
-        under its translation rather than under the RECENT the row
-        holds.
+        the order the sidebar draws it: by name as _name_order() puts
+        it, with "Recent" under its translation rather than under the
+        RECENT the row holds.
 
         The sidebar built its tree by asking for the collections under
         each one it had found and then for the name of each of those, so
@@ -262,12 +272,11 @@ class _LibraryBackend:
         parent - 683 over a library of 340 collections, against one
         here.
         """
-        recent = (constants.COLLECTION_RECENT, _('Recent'))
         rows = self.fetchall('''select supercollection, id,
                 case when id = ? then ? else name end
-            from Collection
-            order by case when id = ? then ? else name end''',
-                             recent + recent)
+            from Collection''',
+                             (constants.COLLECTION_RECENT, _('Recent')))
+        rows.sort(key=lambda row: _name_order(row[2]))
         tree: dict[int | None, list[tuple[int, str]]] = {}
         for supercollection, id, name in rows:
             tree.setdefault(supercollection, []).append((id, name))
@@ -276,13 +285,16 @@ class _LibraryBackend:
     def get_all_collections(self) -> list[int]:
         """Return a sequence with all collections (flattened hierarchy).
 
-        Sorted alphabetically by collection name, with "Recent" under
-        its translated name rather than under the RECENT it is stored
-        as.
+        Sorted by collection name as get_collection_tree() sorts each
+        group, with "Recent" under its translated name rather than under
+        the RECENT it is stored as.
         """
-        return self.fetchall('''select id from Collection
-            order by case when id = ? then ? else name end''',
+        rows = self.fetchall('''select id,
+                case when id = ? then ? else name end
+            from Collection''',
                              (constants.COLLECTION_RECENT, _('Recent')))
+        rows.sort(key=lambda row: _name_order(row[1]))
+        return [id for id, name in rows]
 
     def get_collection_name(self, collection: int | None) -> str | None:
         """Return the name field of the <collection>, or None if the
