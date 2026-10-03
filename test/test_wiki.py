@@ -130,8 +130,8 @@ class PreferencesPageTest(unittest.TestCase):
     def test_the_dialog_really_has_the_tabs_the_test_looked_for(self):
         """So that renaming _init_*_tab silently empties the comparison
         rather than being checked against nothing."""
-        self.assertEqual(4, len(self._tab_titles()))
-        self.assertEqual(5, len(self._tab_builders()))
+        self.assertEqual(5, len(self._tab_titles()))
+        self.assertEqual(6, len(self._tab_builders()))
 
     #: A string this short could be a word the page uses for something
     #: else, so only the longer obsolete messages are looked for.

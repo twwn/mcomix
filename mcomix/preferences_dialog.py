@@ -94,6 +94,7 @@ class _PreferencesDialog(Dialog):
         page_inits = (
             (_('Appearance'), self._init_appearance_tab),
             (_('Behaviour'), self._init_behaviour_tab),
+            (_('Navigation'), self._init_navigation_tab),
             (_('Display'), self._init_display_tab),
             (_('Advanced'), self._init_advanced_tab),
         )
@@ -185,6 +186,41 @@ class _PreferencesDialog(Dialog):
         # ----------------------------------------------------------------
         page = preferences_page._PreferencePage(None)
 
+        page.new_section(_('Files'))
+
+        page.add_row(self._create_pref_check_button(
+            _('Automatically open the last viewed file on startup'),
+            'auto load last file',
+            _('Automatically open, on startup, the file that was open when MComix was last closed.')))
+
+        page.add_row(Gtk.Label(label=_('Store information about recently opened files:')),
+                     self._create_store_recent_combobox())
+
+        page.add_row(self._create_pref_check_button(_('Save As opens at the last directory saved into'),
+                                                    'store last saved in directory',
+                                                    _('Open the Save As dialog at the directory in which the last file was saved.')))
+
+        page.add_row(self._create_pref_check_button(
+            _('Save an edited archive in the format it was opened in'),
+            'keep archive format when saving',
+            _('Write an edited archive back as a ZIP, a tar, a 7z or a RAR, whichever it was read as. The last two need the 7z and rar programs, which MComix does not install; a format it cannot write is saved as a ZIP.')))
+
+        page.new_section(_('Prompts answered for good'))
+
+        for dialog_id, prompt in message_dialog.REMEMBERED_DIALOGS.items():
+            chooser = self._create_remembered_answer_control(dialog_id, prompt)
+            self._remembered_answers.append(chooser)
+            page.add_row(Gtk.Label(label=prompt.label), chooser)
+
+        return page
+
+    def _init_navigation_tab(self) -> preferences_page._PreferencePage:
+        # ----------------------------------------------------------------
+        # The "Navigation" tab: how a reader moves through a book, and
+        # from one book to the next.
+        # ----------------------------------------------------------------
+        page = preferences_page._PreferencePage(None)
+
         page.new_section(_('Scroll'))
 
         page.add_row(self._create_pref_check_button(
@@ -198,26 +234,6 @@ class _PreferencesDialog(Dialog):
             _('Flip pages when scrolling off the edges of the page'),
             'flip with wheel',
             _('Flip pages when scrolling "off the page" with the scroll wheel or with the arrow keys. It takes n consecutive "steps" with the scroll wheel or the arrow keys for the pages to be flipped.')))
-
-        page.add_row(self._create_pref_check_button(
-            _('Automatically open the next archive'),
-            'auto open next archive',
-            _('Automatically open the next archive in the directory when flipping past the last page, or the previous archive when flipping past the first page.')))
-
-        page.add_row(self._create_pref_check_button(
-            _('Automatically open next directory'),
-            'auto open next directory',
-            _('Automatically open the first file in the next sibling directory when flipping past the last page of the last file in a directory, or the previous directory when flipping past the first page of the first file.')))
-
-        page.add_row(self._create_pref_check_button(
-            _('Open first file when navigating to previous archive'),
-            'open first file in prev archive',
-            _('Automatically open the first file of the previous archive when navigating to it, instead of opening the last file of the previous archive.')))
-
-        page.add_row(self._create_pref_check_button(
-            _('Open first file when navigating to previous directory'),
-            'open first file in prev directory',
-            _('Automatically open the first file of the previous directory when navigating to it, instead of opening the last file of the previous directory.')))
 
         page.add_row(self._create_pref_check_button(
             _('Skip pages that cannot be shown'),
@@ -250,49 +266,35 @@ class _PreferencesDialog(Dialog):
                          1, 1, 100, 1, 3, 0,
                          _('Set the number of "steps" needed to flip to the next or previous page.  Less steps will allow for very fast page turning but you might find yourself accidentally turning pages.')))
 
-        page.new_section(_('Double page mode'))
+        page.new_section(_('Between books'))
 
         page.add_row(self._create_pref_check_button(
-            _('Flip two pages in double page mode'),
-            'double step in double page mode',
-            _('Flip two pages, instead of one, each time we flip pages in double page mode.')))
-
-        page.add_row(Gtk.Label(label=_('Show only one page where appropriate:')),
-                     self._create_doublepage_as_one_control())
-
-        page.add_row(Gtk.Label(label=_('Page auto-resizing:')),
-                     self._create_double_page_autoresize_control())
-
-        page.add_row(Gtk.Label(label=_('Space between two pages (in pixels):')),
-                     self._create_pref_spinner(
-                         'space between two pages',
-                         1, 0, LARGEST_PAGE_GAP, 1, 10, 0, None))
-
-        page.new_section(_('Files'))
+            _('Automatically open the next archive'),
+            'auto open next archive',
+            _('Automatically open the next archive in the directory when flipping past the last page, or the previous archive when flipping past the first page.')))
 
         page.add_row(self._create_pref_check_button(
-            _('Automatically open the last viewed file on startup'),
-            'auto load last file',
-            _('Automatically open, on startup, the file that was open when MComix was last closed.')))
-
-        page.add_row(Gtk.Label(label=_('Store information about recently opened files:')),
-                     self._create_store_recent_combobox())
-
-        page.add_row(self._create_pref_check_button(_('Save As opens at the last directory saved into'),
-                                                    'store last saved in directory',
-                                                    _('Open the Save As dialog at the directory in which the last file was saved.')))
+            _('Automatically open next directory'),
+            'auto open next directory',
+            _('Automatically open the first file in the next sibling directory when flipping past the last page of the last file in a directory, or the previous directory when flipping past the first page of the first file.')))
 
         page.add_row(self._create_pref_check_button(
-            _('Save an edited archive in the format it was opened in'),
-            'keep archive format when saving',
-            _('Write an edited archive back as a ZIP, a tar, a 7z or a RAR, whichever it was read as. The last two need the 7z and rar programs, which MComix does not install; a format it cannot write is saved as a ZIP.')))
+            _('Open first file when navigating to previous archive'),
+            'open first file in prev archive',
+            _('Automatically open the first file of the previous archive when navigating to it, instead of opening the last file of the previous archive.')))
 
-        page.new_section(_('Prompts answered for good'))
+        page.add_row(self._create_pref_check_button(
+            _('Open first file when navigating to previous directory'),
+            'open first file in prev directory',
+            _('Automatically open the first file of the previous directory when navigating to it, instead of opening the last file of the previous directory.')))
 
-        for dialog_id, prompt in message_dialog.REMEMBERED_DIALOGS.items():
-            chooser = self._create_remembered_answer_control(dialog_id, prompt)
-            self._remembered_answers.append(chooser)
-            page.add_row(Gtk.Label(label=prompt.label), chooser)
+        page.new_section(_('File order'))
+
+        page.add_row(Gtk.Label(label=_('Sort files and directories by:')),
+                     self._create_sort_by_control())
+
+        page.add_row(Gtk.Label(label=_('Sort archives by:')),
+                     self._create_archive_sort_by_control())
 
         return page
 
@@ -311,6 +313,24 @@ class _PreferencesDialog(Dialog):
         page.add_row(self._create_pref_check_button(
             _('Automatically hide all toolbars in fullscreen'),
             'hide all in fullscreen', None))
+
+        page.new_section(_('Double page mode'))
+
+        page.add_row(self._create_pref_check_button(
+            _('Flip two pages in double page mode'),
+            'double step in double page mode',
+            _('Flip two pages, instead of one, each time we flip pages in double page mode.')))
+
+        page.add_row(Gtk.Label(label=_('Show only one page where appropriate:')),
+                     self._create_doublepage_as_one_control())
+
+        page.add_row(Gtk.Label(label=_('Page auto-resizing:')),
+                     self._create_double_page_autoresize_control())
+
+        page.add_row(Gtk.Label(label=_('Space between two pages (in pixels):')),
+                     self._create_pref_spinner(
+                         'space between two pages',
+                         1, 0, LARGEST_PAGE_GAP, 1, 10, 0, None))
 
         page.new_section(_('Fit to size mode'))
 
@@ -372,14 +392,6 @@ class _PreferencesDialog(Dialog):
         # ----------------------------------------------------------------
 
         page = preferences_page._PreferencePage(None)
-
-        page.new_section(_('File order'))
-
-        page.add_row(Gtk.Label(label=_('Sort files and directories by:')),
-                     self._create_sort_by_control())
-
-        page.add_row(Gtk.Label(label=_('Sort archives by:')),
-                     self._create_archive_sort_by_control())
 
         page.new_section(_('Extraction and cache'))
 
