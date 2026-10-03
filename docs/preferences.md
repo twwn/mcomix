@@ -29,7 +29,7 @@ Use smart scrolling | Space and the mouse wheel follow a comic page's reading or
 Flip pages when scrolling off the edges of the page | Scrolling past a page's end, with the wheel or the arrow keys, turns it.
 Automatically open the next archive | Past the last page, open the next archive in the directory; past the first, the previous one. A RAR book in volumes (name.part1.rar, name.part2.rar, …) counts as one, opened from its first volume.
 Automatically open next directory | The same for the next or previous sibling directory.
-Open first file when navigating to previous archive | Instead of its last file.
+Open first file when navigating to previous archive | Instead of its last file, which is shown from its bottom.
 Open first file when navigating to previous directory | Instead of its last file.
 Skip pages that cannot be shown | Turn past a page that is damaged or unreadable, the way you were going, instead of showing the broken-image icon. Past the last page that can be shown, a turn opens the next book, as from the last page. The thumbnail bar leaves them out once their thumbnails are made. Off by default. In double page mode its partner is shown alone.
 Number of pixels to scroll per arrow key press | 50 by default.

@@ -331,7 +331,11 @@ class FileHandler:
                     self._window.imagehandler.set_resume_page(
                         last_image_index + 1)
 
-            self._window.set_page(current_image_index + 1)
+            # A book opened at its end is arrived at backwards - from the
+            # first page of the one after it - and is shown from the
+            # bottom of its last page, as a page turned back to is.
+            self._window.set_page(current_image_index + 1,
+                                  at_bottom=self._start_page < 0)
 
             if self.archive_type is None:
                 self.write_fileinfo_file()

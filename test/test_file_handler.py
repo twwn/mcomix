@@ -1,5 +1,6 @@
 """ Walking from one directory to the next, and back again. """
 
+import io
 import os
 import pickle
 import shutil
@@ -10,6 +11,7 @@ import zipfile
 from unittest import mock
 
 from gi.repository import Gtk
+from PIL import Image
 
 from . import MComixTest, get_testfile_path, pump, wait_for
 
@@ -525,6 +527,35 @@ class AnUnpackedArchiveIsLetGoTest(_WindowTest):
         self.window.set_page(pages)
         pump()
         self.assertEqual(pages, self.window.imagehandler.get_current_page())
+
+
+class ABookOpenedAtItsEndTest(_WindowTest):
+
+    """A book opened at its end, as going back past the first page of
+    the next one does, showed the top of its last page; a page turned
+    back to within a book is shown from its bottom (upstream bug 70)."""
+
+    def test_its_last_page_is_shown_from_the_bottom(self):
+        prefs['zoom mode'] = constants.ZoomMode.WIDTH
+        self.window.change_zoom_mode()
+        source = os.path.join(self.tmp_dir, 'tall.cbz')
+        with zipfile.ZipFile(source, 'w') as archive:
+            for name in ('1.png', '2.png'):
+                page = io.BytesIO()
+                Image.new('RGB', (100, 3000), (90, 90, 90)).save(page, 'PNG')
+                archive.writestr(name, page.getvalue())
+        self.handler.open_file(source, -1)
+        self.assertTrue(wait_for(
+            lambda: self.handler.file_loaded
+            and self.window.imagehandler.page_is_available(2), seconds=20))
+        pump()
+        adjustment = self.window.page_area.get_vadjustment()
+        self.assertTrue(wait_for(
+            lambda: adjustment.get_upper() > adjustment.get_page_size()))
+        self.assertEqual(2, self.window.imagehandler.get_current_page())
+        self.assertAlmostEqual(
+            adjustment.get_upper() - adjustment.get_page_size(),
+            adjustment.get_value())
 
 
 class ABookWithNoPagesTest(MComixTest):
