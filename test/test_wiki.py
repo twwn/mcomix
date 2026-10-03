@@ -650,6 +650,13 @@ GITHUB_LINK = re.compile(
     r'https://github\.com/twwn/mcomix/blob/main/([^\s)"\'<>#]+)(?:#([\w-]+))?'
     r'|https://raw\.githubusercontent\.com/twwn/mcomix/main/([^\s)"\'<>#]+)')
 
+#: A link to a page of the manual as GitHub Pages serves it
+#: (.github/workflows/pages.yml): the file's path with .html for .md,
+#: and a directory for its README.md.  A path ends in a letter, a digit
+#: or a slash, so that the full stop of a sentence is not part of it.
+PAGES_LINK = re.compile(
+    r'https://twwn\.github\.io/mcomix/([\w./-]*[\w/])?(?:#([\w-]+))?')
+
 
 def expand(patterns):
     """The files under ROOT the glob <patterns> match."""
@@ -753,6 +760,28 @@ class LinksTest(unittest.TestCase):
                         os.path.relpath(path, ROOT), match.group(0), why))
         self.assertEqual([], broken)
         self.assertGreater(followed, 5, 'the links were not found')
+
+    def test_every_link_to_the_site_leads_somewhere(self):
+        """The metadata, the packages and the external commands dialog
+        link to the manual on GitHub Pages, which is built from the
+        pages here under the same paths."""
+        broken = []
+        followed = 0
+        for path in expand(LINKING):
+            for match in PAGES_LINK.finditer(read_text(path)):
+                name, fragment = match.groups()
+                name = name or ''
+                if name == '' or name.endswith('/'):
+                    name += 'README.md'
+                elif name.endswith('.html'):
+                    name = name[:-len('.html')] + '.md'
+                followed += 1
+                why = self._broken(path, os.path.join(ROOT, name), fragment)
+                if why:
+                    broken.append('%s: %s (%s)' % (
+                        os.path.relpath(path, ROOT), match.group(0), why))
+        self.assertEqual([], broken)
+        self.assertGreater(followed, 3, 'the links were not found')
 
     def test_the_anchors_are_made_as_github_makes_them(self):
         """So that the test above compares links with the anchors GitHub

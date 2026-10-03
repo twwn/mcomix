@@ -539,7 +539,7 @@ class OpenWithEditor(Dialog):
         linklabel = Gtk.Label()
         linklabel.set_markup(_('Please refer to the <a href="%s">external command documentation</a> '
                                'for a list of usable variables and other hints.') %
-                             'https://github.com/twwn/mcomix/blob/main/docs/external-commands.md')
+                             'https://twwn.github.io/mcomix/docs/external-commands.html')
         linklabel.set_xalign(0)
         linklabel.set_yalign(0)
         widgets.pack(content, linklabel, False, False, 4)

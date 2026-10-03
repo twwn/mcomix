@@ -1,0 +1,84 @@
+name: Pages
+
+# The manual on GitHub Pages, at https://twwn.github.io/mcomix/: README.md
+# as the front page, docs/ beneath it, and the other pages they link to,
+# each at the path it has in the repository.  Jekyll and GitHub's own
+# plugins render them: links to .md files become links to the pages,
+# and the headings get the anchors GitHub gives them, which
+# test/test_wiki.py checks the links against.
+#
+# On a push to main that changes one of those files.  The repository's
+# Pages source has to be "GitHub Actions" (Settings, Pages).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "README.md"
+      - "ChangeLog.md"
+      - "CONTRIBUTING.md"
+      - "SECURITY.md"
+      - "COPYING"
+      - "docs/**"
+      - "artwork/README.md"
+      - "mcomix/images/mcomix.ico"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One deployment at a time, and never one cut off halfway.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/configure-pages@v6
+        id: pages
+      # Jekyll does not know GitHub's alerts and would print "[!NOTE]".
+      # CONTRIBUTING.md gets an empty front matter, without which GitHub's
+      # plugins copy a file of that name as it is instead of rendering it.
+      - name: The pages, and the files they link to
+        env:
+          BASE_PATH: ${{ steps.pages.outputs.base_path }}
+        run: |
+          mkdir -p site/artwork
+          cp README.md ChangeLog.md SECURITY.md COPYING site/
+          printf -- '---\n---\n' | cat - CONTRIBUTING.md > site/CONTRIBUTING.md
+          cp -r docs site/docs
+          cp artwork/README.md site/artwork/
+          cp mcomix/images/mcomix.ico site/favicon.ico
+          sed -i 's/^> \[!NOTE\]$/> **Note:**/' site/README.md site/docs/*.md
+          cat > site/_config.yml <<EOF
+          title: MComix
+          description: A comic and manga reader for Linux and Windows, built on GTK 4.
+          theme: jekyll-theme-primer
+          baseurl: "$BASE_PATH"
+          EOF
+      - uses: actions/jekyll-build-pages@v1
+        with:
+          source: site
+          destination: _site
+      - uses: actions/upload-pages-artifact@v5
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/deploy-pages@v5
+        id: deployment
