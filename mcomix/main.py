@@ -103,6 +103,8 @@ class MainWindow(Gtk.Window):
         self.transforms: list[Matrix] = []
         self._spacing = prefs['space between two pages']
         self._waiting_for_redraw = False
+        #: The idle that will run _draw_image(), while one is queued.
+        self._redraw_source: int | None = None
         #: Where the redraw that is pending was asked to scroll to.
         self._pending_scroll_to: int | None = None
         #: The page the reader last turned to, the page they turned from,
@@ -298,6 +300,7 @@ class MainWindow(Gtk.Window):
         self.page_area.connect('resized', self.event_handler.resize_event)
         self.connect('notify::fullscreened', self.event_handler.window_state_event)
         self.connect('notify::maximized', self.event_handler.window_state_event)
+        self.connect_after('unrealize', MainWindow._release)
 
         self.uimanager.set_sensitivities()
         self.restore_window_geometry()
@@ -361,8 +364,8 @@ class MainWindow(Gtk.Window):
             self._pending_scroll_to = scroll_to
         if not self._waiting_for_redraw:  # Don't stack up redraws.
             self._waiting_for_redraw = True
-            GLib.idle_add(self._draw_image,
-                          priority=GLib.PRIORITY_HIGH_IDLE)
+            self._redraw_source = GLib.idle_add(
+                self._draw_image, priority=GLib.PRIORITY_HIGH_IDLE)
 
     def _update_toggle_preference(self, preference: str,
                                   toggleaction: "ui.Action") -> None:
@@ -433,6 +436,7 @@ class MainWindow(Gtk.Window):
 
         Returns False, so the idle source does not run again.
         """
+        self._redraw_source = None
         scroll_to = self._pending_scroll_to
         self._pending_scroll_to = None
 
@@ -1703,6 +1707,45 @@ class MainWindow(Gtk.Window):
             process.launch_mcomix(path, page)
 
         self.file_actions.before_closing(start_again)
+
+    def _release(self) -> None:
+        """Let go of everything that would keep the closed window alive.
+
+        GTK 4 does not dispose a destroyed window's widgets, and the
+        handlers Python connected to them - and to the actions the menus
+        trigger - are held in C, where Python's collector cannot see
+        that they close over this window.  MComix builds one window per
+        process, so that cost a reader nothing; the tests build one each,
+        and kept every one of them alive with all it showed.
+        """
+        if self._redraw_source is not None:
+            # A redraw queued as the window closed would draw onto the
+            # cleared page area, and hold the window until it ran.
+            GLib.source_remove(self._redraw_source)
+            self._redraw_source = None
+        widgets.release(self)
+        self.page_area.clear()
+        self.uimanager.release()
+        self.cursor_handler.release()
+        self.lens.release()
+        bookmark_backend.BookmarksStore.forget(self)
+        keybindings.forget(self)
+        # Taking the widgets off the window frees the ones nothing else
+        # holds.  A widget GTK holds as a child keeps its Python wrapper,
+        # and the wrapper's attributes, out of reach of the collector:
+        # the thumbnail bar's reference to this window kept it alive.
+        self.set_child(None)
+        # And whatever else hangs on the window: GTK finalized it with
+        # popovers still parented to it ("Finalizing MainWindow, but it
+        # still has children left"), and they went on asking their dead
+        # root for its display the next time a style changed.
+        child = self.get_first_child()
+        while child is not None:
+            following = child.get_next_sibling()
+            child.unparent()
+            child = following
+        Gtk.StyleContext.remove_provider_for_display(
+            widgets.display(), self._bg_css_provider)
 
     def terminate_program(self) -> None:
         """Run clean-up tasks and exit the program."""

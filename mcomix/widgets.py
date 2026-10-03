@@ -281,6 +281,24 @@ def _descendants(root: Gtk.Widget) -> Iterator[Gtk.Widget]:
         child = child.get_next_sibling()
 
 
+def _released(root: Gtk.Widget) -> Iterator[Gtk.Widget]:
+    """The widgets in <root>'s tree that release() goes through.
+
+    Everything but the insides of a menu: a Gtk.PopoverMenu or menu bar
+    is built by GTK from its model, item by item, and MComix connects
+    nothing there but the gestures watch_menu_clicks() adds, whose
+    handler refers to nothing.  The main window's menus are 1,000 of its
+    1,090 widgets and 1,500 of its 1,630 controllers, and going through
+    them took 10 ms each time a window closed.
+    """
+    child = root.get_first_child()
+    while child is not None:
+        yield child
+        if not isinstance(child, (Gtk.PopoverMenu, Gtk.PopoverMenuBar)):
+            yield from _released(child)
+        child = child.get_next_sibling()
+
+
 class Releasable:
 
     """A widget that holds more than its handlers of whoever built it.
@@ -338,7 +356,7 @@ def release(window: Gtk.Window) -> None:
     have nothing left to do.  The window's own handlers stay, since Python's
     collector can see those, and some of them are still to run.
     """
-    widgets = list(_descendants(window))
+    widgets = list(_released(window))
     # First, while their handlers are still there to be disconnected
     # by their own ids: a list view unbinding its rows does just that.
     for widget in widgets:

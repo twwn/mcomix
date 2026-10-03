@@ -422,6 +422,12 @@ class ThumbnailListView(Gtk.ListView, _ThumbnailViewBase):
         _ThumbnailViewBase._init_thumbnails(self)
         super().__init__(model=self.selection, factory=self._make_factory())
 
+    def release(self) -> None:
+        _ThumbnailViewBase.release(self)
+        # The filter holds this view's method in C, and the model the
+        # view keeps holds the filter.
+        self._filter.set_filter_func(None)
+
     def set_pages(self, uids: Iterable[int]) -> None:
         """Show one row per page number in <uids>, which ascend."""
         self.set_items(ThumbnailItem(uid, label=str(uid)) for uid in uids)

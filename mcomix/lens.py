@@ -46,10 +46,12 @@ class MagnifyingLens:
         self._area.add_controller(self._motion)
         # A scroll moves the pages under a pointer that stays put, and
         # no motion event comes to say so.
-        for adjustment in (self._area.get_hadjustment(),
-                           self._area.get_vadjustment()):
-            adjustment.connect('value-changed',
-                               lambda _adjustment: self.redraw())
+        #: The adjustments' handlers, which release() disconnects.
+        self._scrolled = [
+            (adjustment, adjustment.connect('value-changed',
+                                            lambda _adjustment: self.redraw()))
+            for adjustment in (self._area.get_hadjustment(),
+                               self._area.get_vadjustment())]
 
         #: Stores lens state
         self._enabled = False
@@ -59,6 +61,15 @@ class MagnifyingLens:
         self._point: tuple[float, float] | None = None
         #: Stores the last rectangle that was used to render the lens
         self._last_lens_rect: tuple[int, int, int, int] | None = None
+
+    def release(self) -> None:
+        """Disconnect from the page area's adjustments, once the window
+        has closed.  They are not widgets, so widgets.release() does not
+        reach them, and what they hold in C holds the lens and the
+        window."""
+        for adjustment, handler in self._scrolled:
+            adjustment.disconnect(handler)
+        self._scrolled.clear()
 
     def get_enabled(self) -> bool:
         return self._enabled

@@ -60,12 +60,27 @@ class BookmarksMenu:
         window.insert_action_group(self.ACTION_PREFIX, self._actions)
 
         self._rebuild()
-        self._bookmarks_store.add_bookmark += lambda bookmark: self._rebuild()
-        self._bookmarks_store.remove_bookmark += lambda bookmark: self._rebuild()
-        self._bookmarks_store.replace_bookmark += \
-            lambda old, new: self._rebuild()
-        self._bookmarks_store.clear_bookmarks += self._rebuild
-        self._bookmarks_store.set_bookmark_order += lambda order: self._rebuild()
+        # Methods, which the store holds weakly, and not lambdas, which
+        # it would hold - and the window with them - for good.
+        store = self._bookmarks_store
+        store.add_bookmark += self._changed
+        store.remove_bookmark += self._changed
+        store.replace_bookmark += self._changed
+        store.clear_bookmarks += self._changed
+        store.set_bookmark_order += self._changed
+
+    def _changed(self, *args: object) -> None:
+        self._rebuild()
+
+    def release(self) -> None:
+        """Let go of the closed window: see MainUI.release()."""
+        store = self._bookmarks_store
+        store.add_bookmark -= self._changed
+        store.remove_bookmark -= self._changed
+        store.replace_bookmark -= self._changed
+        store.clear_bookmarks -= self._changed
+        store.set_bookmark_order -= self._changed
+        widgets.empty_action_group(self._actions)
 
     def _rebuild(self) -> None:
         """Put the fixed entries and the current bookmarks in the model."""

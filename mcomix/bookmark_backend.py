@@ -60,6 +60,23 @@ class _BookmarksStore:
             for bookmark in self._bookmarks:
                 bookmark.attach(window)
 
+    def forget(self, window: 'main.MainWindow') -> None:
+        """Let go of <window>, which has closed, and of its handlers.
+
+        The store is one for the process, so whatever it holds lives as
+        long as the process: it held the first window ever opened, and
+        its bookmarks went on opening in that one.  The next window to
+        call initialize() is the one they open in.
+        """
+        if self._window is not window:
+            return
+        self._window = None
+        self._file_handler = None
+        self._image_handler = None
+        self._initialized = False
+        for bookmark in self._bookmarks:
+            bookmark.detach()
+
     def add_bookmark_by_values(self, name: str, path: str, page: int, numpages: int,
                                archive_type: int | None,
                                date_added: datetime.datetime,

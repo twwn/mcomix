@@ -214,11 +214,22 @@ class PageCanvas(Gtk.Widget):
         adjustment.configure(max(0, value), 0, upper,
                              viewport * 0.1, viewport * 0.9, viewport)
 
-    def do_dispose(self) -> None:
-        # A GTK4 widget has to be rid of its children before it goes.
+    def clear(self) -> None:
+        """Take every child off the canvas.
+
+        A GTK4 widget has to be rid of its children before it goes,
+        which do_dispose() sees to - but only while the Python object is
+        there to run it.  A canvas freed by Python's collector together
+        with its wrapper is disposed without it, and GTK finalized it
+        with its pages still on it, so the window's release() calls this
+        first.
+        """
         for child, _x, _y in self._children:
             child.unparent()
         self._children = []
+
+    def do_dispose(self) -> None:
+        self.clear()
         # Gtk.Widget.do_dispose is put there by PyGObject for a widget
         # that overrides it, so the stubs do not describe it.
         Gtk.Widget.do_dispose(self)  # type: ignore[attr-defined]

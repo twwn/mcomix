@@ -120,6 +120,11 @@ class CursorHandler:
         self._kill_timer()
         self._timer_id = GLib.timeout_add(self.HIDE_DELAY, self._on_timeout)
 
+    def release(self) -> None:
+        """Stop the timer that would hide the pointer, once the window
+        has closed: GLib holds its callback, and with it the window."""
+        self._kill_timer()
+
     def _kill_timer(self) -> None:
         if self._timer_id is not None:
             GLib.source_remove(self._timer_id)

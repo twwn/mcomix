@@ -53,6 +53,12 @@ class _Bookmark:
         self._window = window
         self._file_handler = window.filehandler
 
+    def detach(self) -> None:
+        """Open nowhere, until attach() names a window again: the window
+        this opened in has closed."""
+        self._window = None
+        self._file_handler = None
+
     def get_label(self) -> str:
         """The text the menu shows for this bookmark."""
         return str(self)

@@ -84,6 +84,10 @@ class RecentFilesMenu:
                            lambda _window: self._manager.disconnect(changed))
         self._rebuild()
 
+    def release(self) -> None:
+        """Let go of the closed window: see MainUI.release()."""
+        widgets.empty_action_group(self._actions)
+
     def _changed(self, *args: object) -> None:
         self._rebuild()
 

@@ -622,6 +622,20 @@ class MainUI:
         widgets.watch_menu_clicks(self.popup)
         return GLib.SOURCE_REMOVE
 
+    def release(self) -> None:
+        """Let go of the closed window.
+
+        An action's handler is held with the action in C, out of sight
+        of Python's collector, and most of them are the window's own
+        methods or closures over it; while a group holds its actions,
+        the window cannot be freed.  So every group the menus keep is
+        emptied, this one's own included.
+        """
+        widgets.empty_action_group(self._actions.group)
+        for menu in (self.bookmarks, self.recent, self._openwith,
+                     self.move_to):
+            menu.release()
+
     def add_shortcut(self, accelerator: str, action: str) -> None:
         """Make <accelerator> trigger the named <action>."""
         self.shortcuts.add_shortcut(Gtk.Shortcut.new(
