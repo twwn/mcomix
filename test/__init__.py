@@ -73,6 +73,23 @@ from gi.repository import GLib, Gtk
 
 assert GLib.get_tmp_dir() == _SESSION_TMPDIR, GLib.get_tmp_dir()
 
+if sys.platform == 'win32':
+    # A Desktop that lasts as long as the process.  GTK's places sidebar
+    # hands g_filename_to_uri() whatever GLib finds for the Desktop, and
+    # GLib asks Windows, which reads it as %USERPROFILE%\Desktop and
+    # answers nothing for a folder that does not exist.  Each test points
+    # USERPROFILE at a home of its own and makes a Desktop there (setUp()
+    # below), but a test process kept warning "g_filename_to_uri:
+    # assertion 'filename != NULL' failed" from its file choosers after
+    # its first tests, reloading GLib's cache per test (f1dc1715) or not:
+    # whichever caches the answer - GLib, or the shell's known folders -
+    # holds a Desktop from the first lookup, which, inside a test's home,
+    # is gone once that test is.  The first lookup is made here, of one
+    # that stays.
+    os.environ['USERPROFILE'] = os.path.join(_SESSION_TMPDIR, 'profile')
+    os.makedirs(os.path.join(os.environ['USERPROFILE'], 'Desktop'))
+    GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DESKTOP)
+
 # Pin the recent files store the same way, and for the same reason.
 
 # Gtk.RecentManager's default reads the data directory once, when it is
