@@ -1,7 +1,9 @@
 """ Unicode-aware wrapper for zipfile.ZipFile. """
 
 import os
+import struct
 import zipfile
+import zlib
 from collections.abc import Callable, Iterator, Sequence
 
 from mcomix import log
@@ -23,6 +25,32 @@ def is_py_supported_zipfile(path: str) -> bool:
 #: The general purpose flag that says a member's name is UTF-8.
 _UTF8_FLAG = 0x800
 
+#: Info-ZIP's "Unicode Path" extra field: the name again, in UTF-8.
+_UNICODE_PATH = 0x7075
+
+
+def _named_in_utf8(info: zipfile.ZipInfo) -> bool:
+    """Whether zipfile read the name of <info> as UTF-8.
+
+    It does for a name with the UTF-8 flag, and for one stored in a code
+    page with a Unicode Path field beside it, which zipfile reads instead
+    of the name - where the field's checksum is that of the name, as it
+    is unless something renamed the member without updating the field.
+    """
+    if info.flag_bits & _UTF8_FLAG:
+        return True
+    extra = info.extra
+    stored_crc = None
+    while len(extra) >= 4:
+        kind, length = struct.unpack('<HH', extra[:4])
+        data = extra[4:4 + length]
+        if kind == _UNICODE_PATH and len(data) > 5 and data[0] == 1:
+            stored_crc = struct.unpack('<L', data[1:5])[0]
+        extra = extra[4 + length:]
+    # The name as stored comes back through code page 437 intact.
+    return (stored_crc is not None
+            and stored_crc == zlib.crc32(info.orig_filename.encode('cp437')))
+
 
 def _legacy_name_decoder(infos: Sequence[zipfile.ZipInfo]) \
         -> Callable[[str], str]:
@@ -35,7 +63,7 @@ def _legacy_name_decoder(infos: Sequence[zipfile.ZipInfo]) \
     none, they stay as zipfile read them.
     """
     raw = [info.filename.encode('cp437') for info in infos
-           if not info.flag_bits & _UTF8_FLAG and not info.filename.isascii()]
+           if not _named_in_utf8(info) and not info.filename.isascii()]
     if not raw:
         return lambda name: name
     chosen = archive_base.name_encoding(raw, 'cp437')
@@ -79,7 +107,7 @@ class ZipArchive(archive_base.NonUnicodeArchive):
                 # can extract - opening one for writing raises - so the
                 # listing does not offer them.
                 continue
-            if info.flag_bits & _UTF8_FLAG:
+            if _named_in_utf8(info):
                 yield self._unicode_filename(info.filename)
             else:
                 # Listed under the name it was written in, and extracted

@@ -5,6 +5,7 @@ import locale
 import os
 import re
 import shutil
+import struct
 import subprocess
 import sys
 import tarfile
@@ -12,6 +13,7 @@ import tempfile
 import unittest
 import unittest.mock
 import zipfile
+import zlib
 
 from . import get_testfile_path, MComixTest, posix_byte_names
 
@@ -502,6 +504,78 @@ class ZipLegacyNameTest(MComixTest):
         finally:
             archive.close()
         with open(os.path.join(self.tmp_dir, 'Übersicht.jpg'), 'rb') as fp:
+            self.assertEqual(b'x', fp.read())
+
+
+class ZipUnicodePathTest(MComixTest):
+
+    """Names a zip stores twice: in a code page, with the UTF-8 flag
+    left off, and in UTF-8 in an Info-ZIP "Unicode Path" extra field.
+
+    zipfile reads the second, so the name it hands back is already the
+    right one and need not be in code page 437 at all; read back
+    through code page 437 like a name without the flag, one with
+    "\uff5c" in it stopped the archive from opening ("'charmap' codec
+    can't encode characters").
+    """
+
+    def _zip(self, entries):
+        """A zip holding one tiny file per (name, stored) in <entries>,
+        the name written as the bytes <stored> with the UTF-8 flag left
+        off, and in UTF-8 in a Unicode Path field unless <name> is None."""
+        path = os.path.join(self.tmp_dir, 'unicode-path.zip')
+        placeholders = []
+        with zipfile.ZipFile(path, 'w') as archive:
+            for number, (name, stored) in enumerate(entries):
+                placeholder = chr(ord('A') + number) * len(stored)
+                placeholders.append(placeholder)
+                info = zipfile.ZipInfo(placeholder)
+                if name is not None:
+                    unicode_name = name.encode('utf-8')
+                    info.extra = struct.pack(
+                        '<HHBL', 0x7075, 5 + len(unicode_name), 1,
+                        zlib.crc32(stored)) + unicode_name
+                archive.writestr(info, b'x')
+        with open(path, 'rb') as fp:
+            data = fp.read()
+        for number, (name, stored) in enumerate(entries):
+            data = data.replace(placeholders[number].encode('ascii'), stored)
+        with open(path, 'wb') as fp:
+            fp.write(data)
+        return path
+
+    def _listed(self, path):
+        archive = zip.ZipArchive(path)
+        try:
+            return [name.replace(os.sep, '/')
+                    for name in archive.list_contents()]
+        finally:
+            archive.close()
+
+    def test_a_name_outside_code_page_437_is_listed(self):
+        name = '001 \uff5c \u8868\u7d19.jpg'
+        self.assertEqual([name],
+                         self._listed(self._zip([(name, b'001 _ __.jpg')])))
+
+    def test_a_name_in_its_field_is_not_read_again_in_a_code_page(self):
+        """The names without a field are Windows-1252, and the one with
+        one is not read in that as well: "Gr\u00f6\u00dfe" is in code
+        page 437, which made "Gr\u201d\u00e1e" of it."""
+        entries = [('Gr\u00f6\u00dfe.jpg', 'Gr\u00f6\u00dfe.jpg'.encode('cp1252')),
+                   (None, '\u00dcbersicht.jpg'.encode('cp1252')),
+                   (None, 'Caf\u00e9.jpg'.encode('cp1252'))]
+        self.assertEqual('Gr\u00f6\u00dfe.jpg',
+                         self._listed(self._zip(entries))[0])
+
+    def test_a_name_from_its_field_is_extracted(self):
+        name = '001 \uff5c \u8868\u7d19.jpg'
+        archive = zip.ZipArchive(self._zip([(name, b'001 _ __.jpg')]))
+        try:
+            archive.list_contents()
+            archive.extract(name, self.tmp_dir)
+        finally:
+            archive.close()
+        with open(os.path.join(self.tmp_dir, name), 'rb') as fp:
             self.assertEqual(b'x', fp.read())
 
 
