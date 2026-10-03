@@ -472,19 +472,24 @@ class FileChooserTest(MComixTest):
         the preview empty, with no name under it, as though nothing
         were selected, while the library and the thumbnail bar show the
         picture that says the image would not load."""
-        # Both written first: a file made after the chooser has listed
-        # its folder is not there to be selected until it notices.
+        # Both written first, into a folder the chooser has not listed:
+        # a file made after the chooser has listed its folder is not
+        # there to be selected until it notices, which took GTK 4.14 on
+        # GitHub longer than the wait.
+        folder = os.path.join(self.tmp_dir, 'damaged')
+        os.mkdir(folder)
         broken = {'broken.jpg': b'not an image',
                   'broken.cbz': b'PK\x03\x04garbage'}
         for name, body in broken.items():
-            with open(os.path.join(self.tmp_dir, name), 'wb') as damaged:
+            with open(os.path.join(folder, name), 'wb') as damaged:
                 damaged.write(body)
         for name in broken:
             with self.subTest(name):
-                path = os.path.join(self.tmp_dir, name)
+                path = os.path.join(folder, name)
                 self.dialog._preview_image.set_paintable(None)
-                self.dialog.filechooser.set_file(Gio.File.new_for_path(path))
-                wait_for(lambda: self.dialog._namelabel.get_text() == name)
+                self._select(path)
+                self.assertTrue(wait_for(
+                    lambda: self.dialog._namelabel.get_text() == name))
                 paintable = self.dialog._preview_image.get_paintable()
                 self.assertIsNotNone(paintable, 'the preview stayed empty')
                 self.assertEqual(self.dialog._namelabel.get_text(), name)
