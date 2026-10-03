@@ -25,6 +25,7 @@ from mcomix import archive_tools
 from mcomix import callback
 from mcomix.archive import archive_base
 from mcomix import log
+from mcomix import tools
 from mcomix.preferences import prefs
 from mcomix.worker_thread import WorkerThread
 from mcomix.i18n import _
@@ -193,7 +194,7 @@ class Extractor:
             if not self._extract_started:
                 if self._opened_archive.support_concurrent_extractions \
                    and not self._opened_archive.is_solid():
-                    max_threads = prefs['max extract threads']
+                    max_threads = tools.thread_count(prefs['max extract threads'])
                 else:
                     max_threads = 1
                 self._extract_thread = WorkerThread(self._extract_order,

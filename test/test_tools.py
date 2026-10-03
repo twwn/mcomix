@@ -4,6 +4,7 @@ import shutil
 import sys
 import tempfile
 import unittest
+import unittest.mock
 
 from mcomix import tools
 
@@ -236,6 +237,42 @@ class TestWindowsDirectories(unittest.TestCase):
             # and is moved away at the first start.
             self.assertEqual(os.path.expanduser('~'),
                              tools.get_home_directory())
+
+
+class TestThreadCount(unittest.TestCase):
+
+    """The automatic setting of the two thread preferences."""
+
+    def _available(self, count):
+        """Patch whichever call thread_count() asks for the processors
+        this process may run on, so that it answers <count>."""
+        if sys.version_info >= (3, 13):
+            return unittest.mock.patch.object(
+                os, 'process_cpu_count', return_value=count)
+        return unittest.mock.patch.object(
+            os, 'sched_getaffinity', return_value=set(range(count)),
+            create=True)
+
+    def test_a_chosen_number_is_kept(self):
+        for chosen in (1, 3, 16):
+            with self.subTest(chosen=chosen), self._available(24):
+                self.assertEqual(chosen, tools.thread_count(chosen))
+
+    def test_zero_is_one_thread_for_each_processor(self):
+        for available in (1, 2, 8, 24):
+            with self.subTest(available=available), \
+                    self._available(available):
+                self.assertEqual(available, tools.thread_count(0))
+
+    def test_zero_follows_the_processors_however_many(self):
+        with self._available(256):
+            self.assertEqual(256, tools.thread_count(0))
+
+    def test_zero_is_one_thread_where_the_count_is_unknown(self):
+        if sys.version_info < (3, 13):
+            self.skipTest('os.process_cpu_count() is new in Python 3.13')
+        with self._available(None):
+            self.assertEqual(1, tools.thread_count(0))
 
 
 class TestNumberOfDigits(unittest.TestCase):

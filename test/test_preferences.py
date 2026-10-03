@@ -259,16 +259,37 @@ class MigratePreferencesTest(MComixTest):
         """One thread was the default before format 4, and MComix 3
         wrote it into every file; any other number is an answer."""
         for version in (None, 3):
-            for stored, read in ((1, 4), (2, 2), (8, 8)):
+            for stored, read in ((1, 0), (2, 2), (8, 8)):
                 with self.subTest(version=version, stored=stored):
                     saved = {'max extract threads': stored}
                     if version is not None:
                         saved[preferences._FORMAT_VERSION_KEY] = version
                     self._write(saved)
                     # What the last round read is not the default.
-                    prefs['max extract threads'] = 4
+                    prefs['max extract threads'] = 0
                     preferences.read_preferences_file()
                     self.assertEqual(read, prefs['max extract threads'])
+
+    def test_mcomix_3_s_default_of_three_thumbnail_threads_gives_way(self) -> None:
+        """Three thumbnail threads was MComix 3's default, written into
+        every file it saved; the automatic setting (0) replaces it there,
+        and any other number is an answer."""
+        for version in (None, 5):
+            for stored, read in ((3, 0), (2, 2), (8, 8)):
+                with self.subTest(version=version, stored=stored):
+                    saved = {'max threads': stored}
+                    if version is not None:
+                        saved[preferences._FORMAT_VERSION_KEY] = version
+                    self._write(saved)
+                    # What the last round read is not the default.
+                    prefs['max threads'] = 0
+                    preferences.read_preferences_file()
+                    self.assertEqual(read, prefs['max threads'])
+
+    def test_three_thumbnail_threads_chosen_since_is_kept(self) -> None:
+        self._write({preferences._FORMAT_VERSION_KEY: 6, 'max threads': 3})
+        preferences.read_preferences_file()
+        self.assertEqual(3, prefs['max threads'])
 
     def test_one_extraction_thread_chosen_since_is_kept(self) -> None:
         self._write({preferences._FORMAT_VERSION_KEY: 4,

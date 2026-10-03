@@ -13,6 +13,7 @@ from mcomix import preferences_page
 from mcomix import widgets
 from mcomix import constants
 from mcomix import image_tools
+from mcomix import tools
 from mcomix import message_dialog
 from mcomix import keybindings
 from mcomix import keybindings_editor
@@ -394,17 +395,23 @@ class _PreferencesDialog(Dialog):
 
         page.new_section(_('Extraction and cache'))
 
+        # As many threads as there are processors, or the 16 the
+        # spinners always allowed where that is more: past that, only
+        # work that waits on something other than the processors, such
+        # as a slow disk, gains anything.
+        max_threads = max(16, tools.thread_count(0))
+
         page.add_row(Gtk.Label(label=_('Maximum number of concurrent extraction threads:')),
                      self._create_pref_spinner(
                          'max extract threads',
-                         1, 1, 16, 1, 4, 0,
-                         _('Set the maximum number of concurrent threads for formats that support it.')))
+                         1, 0, max_threads, 1, 4, 0,
+                         _('Set the maximum number of concurrent threads for formats that support it. A value of 0 uses one thread for each processor.')))
 
         page.add_row(Gtk.Label(label=_('Maximum number of concurrent thumbnail threads:')),
                      self._create_pref_spinner(
                          'max threads',
-                         1, 1, 16, 1, 4, 0,
-                         _('Set the maximum number of concurrent threads used to generate thumbnails. Takes effect the next time MComix is started.')))
+                         1, 0, max_threads, 1, 4, 0,
+                         _('Set the maximum number of concurrent threads used to generate thumbnails. A value of 0 uses one thread for each processor. Takes effect the next time MComix is started.')))
 
         page.add_row(self._create_pref_check_button(
             _('Store thumbnails for opened files'),

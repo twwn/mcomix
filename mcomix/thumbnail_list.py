@@ -3,6 +3,7 @@
 from gi.repository import Gdk, GdkPixbuf, Gio, GLib, GObject, Gtk, Pango
 
 from mcomix import image_tools
+from mcomix import tools
 from mcomix import widgets
 from mcomix.preferences import prefs
 from mcomix.worker_thread import WorkerThread
@@ -148,7 +149,8 @@ class _ThumbnailViewBase(widgets.Releasable):
         self._thread = WorkerThread(self._thumbnail_worker,
                                     name='thumbview',
                                     unique_orders=True,
-                                    max_threads=prefs['max threads'])
+                                    max_threads=tools.thread_count(
+                                        prefs['max threads']))
         #: The style provider carrying the background colour.
         self._colour_provider: Gtk.CssProvider | None = None
 

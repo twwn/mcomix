@@ -26,7 +26,8 @@ from mcomix import tools
 #:      2012 stored 0 (nothing), 1 (the file) or 2 (the file and page).
 #:   4: "max extract threads" no longer carries the old default of 1.
 #:   5: "escape quits" is gone: Escape is a key binding of Quit instead.
-CONFIG_FORMAT_VERSION = 5
+#:   6: "max threads" no longer carries MComix 3's default of 3.
+CONFIG_FORMAT_VERSION = 6
 
 #: Keys a step of _migrate_preferences() has given to another action, as
 #: (action, accelerator): the key bindings are read after the
@@ -276,8 +277,9 @@ _DEFAULTS: Preferences = {
     'statusbar fields': (constants.STATUS_PAGE | constants.STATUS_RESOLUTION
                          | constants.STATUS_PATH | constants.STATUS_FILENAME
                          | constants.STATUS_FILESIZE),
-    'max threads': 3,
-    'max extract threads': 4,
+    # 0 is the automatic setting: tools.thread_count() says what it means.
+    'max threads': 0,
+    'max extract threads': 0,
     'scaling quality': 2,  # GdkPixbuf.InterpType.BILINEAR
     'fit to size width wide': 3790,
     'fit to size height wide': 960,
@@ -499,6 +501,14 @@ def _migrate_preferences(saved_prefs: dict[str, object]) -> None:
         # does, and the key bindings are where a key's action is set.
         if saved_prefs.pop('escape quits', False) is True:
             keybinding_moves.append(('quit', 'Escape'))
+
+    if version < 6:
+        # Three thumbnail threads was MComix 3's default, written into
+        # every file it saved and carried forward since; left there, it
+        # would keep the thumbnails from the automatic setting that is
+        # the default now, as format 4 found of the extraction threads.
+        if saved_prefs.get('max threads') == 3:
+            del saved_prefs['max threads']
 
     saved_prefs[_FORMAT_VERSION_KEY] = CONFIG_FORMAT_VERSION
 

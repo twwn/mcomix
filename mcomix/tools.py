@@ -200,6 +200,35 @@ def format_byte_size(n: int) -> str:
     return GLib.format_size(n)
 
 
+def thread_count(chosen: int) -> int:
+    """How many worker threads a preference of <chosen> threads means.
+
+    A positive number is taken as it is.  0, the default, is the
+    automatic setting: one thread for each processor this process may
+    run on.  There is no ceiling on purpose.  The pools start a thread
+    only when there is an order for it, the thumbnails are made only
+    for the rows on screen and a book has only so many pages, so the
+    work bounds the count before the processors do.  A machine with
+    more processors has the memory to go with them, and faster ones
+    make each page cheaper, which wants fewer threads rather than more.
+    Measured on 24 processors (at b91ee04e): thumbnails of 120 PNG
+    pages of 1800 by 2700 took 2985 ms with one thread, 448 ms with 8
+    and 253 ms with 24; those of small JPEG pages, where the GIL is
+    what the threads wait for, 64 ms for 240 with 8 and 158 ms with 24,
+    under half a millisecond a thumbnail.
+    """
+    if chosen > 0:
+        return chosen
+    available: int | None
+    if sys.version_info >= (3, 13):
+        available = os.process_cpu_count()
+    elif hasattr(os, 'sched_getaffinity'):
+        available = len(os.sched_getaffinity(0))
+    else:
+        available = os.cpu_count()
+    return max(1, available or 1)
+
+
 def garbage_collect() -> None:
     """ Runs the garbage collector. """
     gc.collect(0)

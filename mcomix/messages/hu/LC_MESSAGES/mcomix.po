@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Comix 4.0.3\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-03 17:38+0200\n"
+"POT-Creation-Date: 2026-10-03 18:59+0200\n"
 "PO-Revision-Date: 2009-01-26 19:34+0100\n"
 "Last-Translator: Ernő Drabik <drerno@gmail.com>\n"
 "Language-Team: \n"
@@ -35,17 +35,17 @@ msgstr "A %s a GNU General Public License feltételei szerint terjeszthető."
 msgid "A copy of this license can be obtained from %s"
 msgstr "A licenc egy példánya beszerezhető innen: %s"
 
-#: mcomix/archive_extractor.py:98
+#: mcomix/archive_extractor.py:99
 #, python-format
 msgid "Non-supported archive format: %s"
 msgstr "Nem támogatott archívumformátum: %s"
 
-#: mcomix/archive_extractor.py:330 mcomix/archive_extractor.py:355
+#: mcomix/archive_extractor.py:331 mcomix/archive_extractor.py:356
 #, python-format
 msgid "! Extraction error: %s"
 msgstr "! Kibontási hiba: %s"
 
-#: mcomix/archive_extractor.py:379 mcomix/archive_tools.py:190
+#: mcomix/archive_extractor.py:380 mcomix/archive_tools.py:190
 #, python-format
 msgid "! Could not read %s"
 msgstr "! Nem sikerült beolvasni: %s"
@@ -129,13 +129,13 @@ msgstr "Könyvjelzők szerkesztése"
 msgid "C_lear bookmarks..."
 msgstr "Könyvjelzők _törlése..."
 
-#: mcomix/bookmark_dialog.py:33 mcomix/main.py:966 mcomix/openwith.py:333
+#: mcomix/bookmark_dialog.py:33 mcomix/main.py:966 mcomix/openwith.py:337
 #: mcomix/library/collection_area.py:149 mcomix/library/watchlist.py:64
 msgid "_Remove"
 msgstr "_Eltávolítás"
 
 #: mcomix/bookmark_dialog.py:34 mcomix/comment_dialog.py:29
-#: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:72
+#: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:73
 #: mcomix/properties_dialog.py:37 mcomix/ui.py:475
 #: mcomix/library/watchlist.py:41
 msgid "_Close"
@@ -189,7 +189,7 @@ msgstr "! A(z) %(function)r visszahívás meghiúsult: %(error)s"
 msgid "New accelerator..."
 msgstr "Új gyorsbillentyű..."
 
-#: mcomix/comment_dialog.py:28 mcomix/preferences_dialog.py:434
+#: mcomix/comment_dialog.py:28 mcomix/preferences_dialog.py:435
 msgid "Comments"
 msgstr "Megjegyzések"
 
@@ -337,7 +337,7 @@ msgstr "Vissza a mentett értékekhez."
 
 #: mcomix/enhance_dialog.py:39 mcomix/file_actions.py:559
 #: mcomix/file_actions.py:602 mcomix/file_chooser_base_dialog.py:193
-#: mcomix/openwith.py:351
+#: mcomix/openwith.py:355
 msgid "_Save"
 msgstr "M_entés"
 
@@ -550,7 +550,7 @@ msgstr "A csere felülírja az eredeti tartalmat."
 msgid "Add books"
 msgstr "Könyvek hozzáadása"
 
-#: mcomix/file_chooser_library_dialog.py:43 mcomix/openwith.py:329
+#: mcomix/file_chooser_library_dialog.py:43 mcomix/openwith.py:333
 #: mcomix/library/watchlist.py:62
 msgid "_Add"
 msgstr "Hozzá_adás"
@@ -619,7 +619,7 @@ msgstr "Előző oldal"
 #: mcomix/keybindings.py:54 mcomix/keybindings.py:56 mcomix/keybindings.py:57
 #: mcomix/keybindings.py:58 mcomix/keybindings.py:60 mcomix/keybindings.py:61
 #: mcomix/keybindings.py:62 mcomix/keybindings.py:63
-#: mcomix/preferences_dialog.py:97
+#: mcomix/preferences_dialog.py:98
 msgid "Navigation"
 msgstr "Navigáció"
 
@@ -696,7 +696,7 @@ msgstr "Igazítás balra lentre"
 #: mcomix/keybindings.py:74 mcomix/keybindings.py:75 mcomix/keybindings.py:76
 #: mcomix/keybindings.py:78 mcomix/keybindings.py:79 mcomix/keybindings.py:80
 #: mcomix/keybindings.py:81 mcomix/keybindings.py:83 mcomix/keybindings.py:84
-#: mcomix/preferences_dialog.py:223
+#: mcomix/preferences_dialog.py:224
 msgid "Scroll"
 msgstr "Gördítés"
 
@@ -814,7 +814,7 @@ msgstr "Automatikus forgatás szélesség szerint"
 msgid "Autorotate by height"
 msgstr "Automatikus forgatás magasság szerint"
 
-#: mcomix/keybindings.py:104 mcomix/preferences_dialog.py:316 mcomix/ui.py:511
+#: mcomix/keybindings.py:104 mcomix/preferences_dialog.py:317 mcomix/ui.py:511
 msgid "Double page mode"
 msgstr "Dupla lapos mód"
 
@@ -877,7 +877,7 @@ msgstr "Kilépés a teljes képernyőből"
 #: mcomix/keybindings.py:127 mcomix/keybindings.py:128
 #: mcomix/keybindings.py:129 mcomix/keybindings.py:130
 #: mcomix/keybindings.py:131 mcomix/keybindings.py:132
-#: mcomix/preferences_dialog.py:130
+#: mcomix/preferences_dialog.py:131
 msgid "User interface"
 msgstr "Felhasználói felület"
 
@@ -889,7 +889,7 @@ msgstr "Képernyőpanel"
 msgid "Minimize"
 msgstr "Minimalizálás"
 
-#: mcomix/keybindings.py:123 mcomix/preferences_dialog.py:306
+#: mcomix/keybindings.py:123 mcomix/preferences_dialog.py:307
 msgid "Fullscreen"
 msgstr "Teljes képernyő"
 
@@ -913,7 +913,7 @@ msgstr "Állapotsor"
 msgid "Scrollbars"
 msgstr "Görgetősávok"
 
-#: mcomix/keybindings.py:130 mcomix/preferences_dialog.py:149
+#: mcomix/keybindings.py:130 mcomix/preferences_dialog.py:150
 msgid "Thumbnails"
 msgstr "Bélyegképek"
 
@@ -984,7 +984,7 @@ msgstr "Az archívum megjegyzései"
 msgid "Properties"
 msgstr "Tulajdonságok"
 
-#: mcomix/keybindings.py:147 mcomix/preferences_dialog.py:68
+#: mcomix/keybindings.py:147 mcomix/preferences_dialog.py:69
 msgid "Preferences"
 msgstr "Beállítások"
 
@@ -1008,7 +1008,7 @@ msgstr "Könyvjelzők"
 msgid "Edit bookmarks"
 msgstr "Könyvjelzők szerkesztése"
 
-#: mcomix/keybindings.py:165 mcomix/openwith.py:554
+#: mcomix/keybindings.py:165 mcomix/openwith.py:558
 msgid "Command"
 msgstr "Parancs"
 
@@ -1186,7 +1186,7 @@ msgid "Incomplete quote sequence. For a literal '\"', use '%\"'."
 msgstr "Lezáratlan idézőjel. Magához a „\"” karakterhez használjon „%\"”-ot."
 
 #: mcomix/openwith.py:229 mcomix/openwith.py:243 mcomix/openwith.py:250
-#: mcomix/openwith.py:263
+#: mcomix/openwith.py:267
 msgid "File-related variables can only be used for files."
 msgstr "A fájlokra vonatkozó változók csak fájloknál használhatók."
 
@@ -1194,54 +1194,54 @@ msgstr "A fájlokra vonatkozó változók csak fájloknál használhatók."
 msgid "Archive-related variables can only be used for archives."
 msgstr "Az archívumokra vonatkozó változók csak archívumoknál használhatók."
 
-#: mcomix/openwith.py:297
+#: mcomix/openwith.py:301
 #, python-format
 msgid "Invalid escape sequence: %%%s"
 msgstr "Érvénytelen escape-szekvencia: %%%s"
 
-#: mcomix/openwith.py:320
+#: mcomix/openwith.py:324
 msgid "Edit external commands"
 msgstr "Külső parancsok szerkesztése"
 
-#: mcomix/openwith.py:331
+#: mcomix/openwith.py:335
 msgid "Add _separator"
 msgstr "El_választó hozzáadása"
 
-#: mcomix/openwith.py:336
+#: mcomix/openwith.py:340
 msgid "_Up"
 msgstr "_Fel"
 
-#: mcomix/openwith.py:339
+#: mcomix/openwith.py:343
 msgid "_Down"
 msgstr "_Le"
 
-#: mcomix/openwith.py:342
+#: mcomix/openwith.py:346
 msgid "Run _command"
 msgstr "_Parancs futtatása"
 
-#: mcomix/openwith.py:418
+#: mcomix/openwith.py:422
 msgid "This is a separator pseudo-command."
 msgstr "Ez egy elválasztó álparancs."
 
-#: mcomix/openwith.py:429
+#: mcomix/openwith.py:433
 #, python-format
 msgid "\"%s\" does not have a valid working directory."
 msgstr "A(z) „%s” nem rendelkezik érvényes munkamappával."
 
-#: mcomix/openwith.py:432
+#: mcomix/openwith.py:436
 #, python-format
 msgid "\"%s\" does not appear to have a valid executable."
 msgstr "Úgy tűnik, a(z) „%s” nem rendelkezik érvényes futtatható fájllal."
 
-#: mcomix/openwith.py:441
+#: mcomix/openwith.py:445
 msgid "Command label"
 msgstr "A parancs címkéje"
 
-#: mcomix/openwith.py:532
+#: mcomix/openwith.py:536
 msgid "Preview:"
 msgstr "Előnézet:"
 
-#: mcomix/openwith.py:540
+#: mcomix/openwith.py:544
 #, python-format
 msgid ""
 "Please refer to the <a href=\"%s\">external command documentation</a> for a "
@@ -1250,23 +1250,23 @@ msgstr ""
 "A használható változók listájáért és további tudnivalókért lásd a <a "
 "href=\"%s\">külső parancsok dokumentációját</a>."
 
-#: mcomix/openwith.py:553
+#: mcomix/openwith.py:557
 msgid "Label"
 msgstr "Címke"
 
-#: mcomix/openwith.py:555
+#: mcomix/openwith.py:559
 msgid "Working directory"
 msgstr "Munkamappa"
 
-#: mcomix/openwith.py:562
+#: mcomix/openwith.py:566
 msgid "Disabled in archives"
 msgstr "Archívumokban letiltva"
 
-#: mcomix/openwith.py:612
+#: mcomix/openwith.py:616
 msgid "Save changes to commands?"
 msgstr "Menti a parancsok módosításait?"
 
-#: mcomix/openwith.py:613
+#: mcomix/openwith.py:617
 msgid ""
 "You have made changes to the list of external commands that have not been "
 "saved yet. Press \"Yes\" to save all changes, or \"No\" to discard them."
@@ -1292,64 +1292,64 @@ msgstr "_Ugrás"
 msgid " of %s"
 msgstr " / %s"
 
-#: mcomix/preferences_dialog.py:95
+#: mcomix/preferences_dialog.py:96
 msgid "Appearance"
 msgstr "Megjelenés"
 
-#: mcomix/preferences_dialog.py:96
+#: mcomix/preferences_dialog.py:97
 msgid "Behaviour"
 msgstr "Viselkedés"
 
-#: mcomix/preferences_dialog.py:98
+#: mcomix/preferences_dialog.py:99
 msgid "Display"
 msgstr "Képernyő"
 
-#: mcomix/preferences_dialog.py:99
+#: mcomix/preferences_dialog.py:100
 msgid "Advanced"
 msgstr "Speciális"
 
-#: mcomix/preferences_dialog.py:116
+#: mcomix/preferences_dialog.py:117
 msgid "Shortcuts"
 msgstr "Gyorsbillentyűk"
 
-#: mcomix/preferences_dialog.py:132
+#: mcomix/preferences_dialog.py:133
 msgid "Language (needs restart):"
 msgstr "Nyelv (újraindítást igényel):"
 
-#: mcomix/preferences_dialog.py:135
+#: mcomix/preferences_dialog.py:136
 msgid "Theme:"
 msgstr "Téma:"
 
-#: mcomix/preferences_dialog.py:138
+#: mcomix/preferences_dialog.py:139
 msgid "Background"
 msgstr "Háttér"
 
-#: mcomix/preferences_dialog.py:141
+#: mcomix/preferences_dialog.py:142
 msgid "Use this colour as background:"
 msgstr "Ez a szín legyen a háttér:"
 
-#: mcomix/preferences_dialog.py:142
+#: mcomix/preferences_dialog.py:143
 msgid "Always use this selected colour as the background colour."
 msgstr "Mindig a kiválasztott szín legyen a háttérszín."
 
-#: mcomix/preferences_dialog.py:143 mcomix/preferences_dialog.py:154
+#: mcomix/preferences_dialog.py:144 mcomix/preferences_dialog.py:155
 msgid "Use dynamic background colour"
 msgstr "Dinamikus háttérszín használata"
 
-#: mcomix/preferences_dialog.py:145
+#: mcomix/preferences_dialog.py:146
 msgid "Automatically pick a background colour that fits the viewed image."
 msgstr ""
 "A program magától válasszon egy háttérszínt, ami az aktuális képhez illik."
 
-#: mcomix/preferences_dialog.py:152
+#: mcomix/preferences_dialog.py:153
 msgid "Use this colour as the thumbnail background:"
 msgstr "Ez a szín legyen a bélyegképek háttere:"
 
-#: mcomix/preferences_dialog.py:153
+#: mcomix/preferences_dialog.py:154
 msgid "Always use this selected colour as the thumbnail background colour."
 msgstr "Mindig a kiválasztott szín legyen a bélyegképek háttérszíne."
 
-#: mcomix/preferences_dialog.py:156
+#: mcomix/preferences_dialog.py:157
 msgid ""
 "Automatically use the colour that fits the viewed image for the thumbnail "
 "background."
@@ -1357,23 +1357,23 @@ msgstr ""
 "A bélyegképek hátteréhez automatikusan a megtekintett képhez illő színt "
 "használja."
 
-#: mcomix/preferences_dialog.py:161
+#: mcomix/preferences_dialog.py:162
 msgid "Show page numbers on thumbnails"
 msgstr "Oldalszámok megjelenítése a bélyegképeken"
 
-#: mcomix/preferences_dialog.py:164
+#: mcomix/preferences_dialog.py:165
 msgid "Thumbnail size (in pixels):"
 msgstr "Bélyegképek mérete (képpontban):"
 
-#: mcomix/preferences_dialog.py:169
+#: mcomix/preferences_dialog.py:170
 msgid "Transparency"
 msgstr "Átlátszóság"
 
-#: mcomix/preferences_dialog.py:172
+#: mcomix/preferences_dialog.py:173
 msgid "Use checkered background for transparent images"
 msgstr "Kockás háttér használata az átlátszó képekhez"
 
-#: mcomix/preferences_dialog.py:174
+#: mcomix/preferences_dialog.py:175
 msgid ""
 "Use a grey checkered background for transparent images. If this preference "
 "is unset, the background is plain white instead."
@@ -1381,15 +1381,15 @@ msgstr ""
 "Az átlátszó képek háttere tarka legyen (szürke). Ha ez a beállítás nem "
 "aktív, akkor a háttérszín teljesen fehér lesz."
 
-#: mcomix/preferences_dialog.py:184
+#: mcomix/preferences_dialog.py:185
 msgid "Files"
 msgstr "Fájlok"
 
-#: mcomix/preferences_dialog.py:187
+#: mcomix/preferences_dialog.py:188
 msgid "Automatically open the last viewed file on startup"
 msgstr "A legutóbb megtekintett fájl automatikus megnyitása induláskor"
 
-#: mcomix/preferences_dialog.py:189
+#: mcomix/preferences_dialog.py:190
 msgid ""
 "Automatically open, on startup, the file that was open when MComix was last "
 "closed."
@@ -1397,30 +1397,30 @@ msgstr ""
 "Induláskor automatikusan megnyitja azt a fájlt, amely az MComix legutóbbi "
 "bezárásakor nyitva volt."
 
-#: mcomix/preferences_dialog.py:192
+#: mcomix/preferences_dialog.py:193
 msgid "Open the library on startup"
 msgstr "A könyvtár megnyitása induláskor"
 
-#: mcomix/preferences_dialog.py:195
+#: mcomix/preferences_dialog.py:196
 msgid "Store information about recently opened files:"
 msgstr "A legutóbb megnyitott fájlok adatainak tárolása:"
 
-#: mcomix/preferences_dialog.py:198
+#: mcomix/preferences_dialog.py:199
 msgid "Save As opens at the last directory saved into"
 msgstr "A „Mentés másként” a legutóbb használt mappában nyílik meg"
 
-#: mcomix/preferences_dialog.py:200
+#: mcomix/preferences_dialog.py:201
 msgid ""
 "Open the Save As dialog at the directory in which the last file was saved."
 msgstr ""
 "A „Mentés másként” ablakot abban a mappában nyitja meg, ahová a legutóbbi "
 "fájl mentve lett."
 
-#: mcomix/preferences_dialog.py:203
+#: mcomix/preferences_dialog.py:204
 msgid "Save an edited archive in the format it was opened in"
 msgstr "A szerkesztett archívum mentése abban a formátumban, amelyben megnyílt"
 
-#: mcomix/preferences_dialog.py:205
+#: mcomix/preferences_dialog.py:206
 msgid ""
 "Write an edited archive back as a ZIP, a tar, a 7z or a RAR, whichever it "
 "was read as. The last two need the 7z and rar programs, which MComix does "
@@ -1431,15 +1431,15 @@ msgstr ""
 "program kell, amelyeket az MComix nem telepít; a nem írható formátumok ZIP-"
 "ként lesznek mentve."
 
-#: mcomix/preferences_dialog.py:207
+#: mcomix/preferences_dialog.py:208
 msgid "Prompts answered for good"
 msgstr "Egyszer s mindenkorra megválaszolt kérdések"
 
-#: mcomix/preferences_dialog.py:226
+#: mcomix/preferences_dialog.py:227
 msgid "Use smart scrolling"
 msgstr "Intelligens görgetés használata"
 
-#: mcomix/preferences_dialog.py:228
+#: mcomix/preferences_dialog.py:229
 msgid ""
 "With this preference set, the space key and mouse wheel do not only scroll "
 "down or up, but also sideways and so try to follow the natural reading order "
@@ -1449,11 +1449,11 @@ msgstr ""
 "és felfelé görget, hanem oldalra is, így követve a képregény természetes "
 "olvasási sorrendjét."
 
-#: mcomix/preferences_dialog.py:233
+#: mcomix/preferences_dialog.py:234
 msgid "Flip pages when scrolling off the edges of the page"
 msgstr "Lapozás, ha a görgetés túlfut az oldal szélén"
 
-#: mcomix/preferences_dialog.py:235
+#: mcomix/preferences_dialog.py:236
 msgid ""
 "Flip pages when scrolling \"off the page\" with the scroll wheel or with the "
 "arrow keys. It takes n consecutive \"steps\" with the scroll wheel or the "
@@ -1463,11 +1463,11 @@ msgstr ""
 "oldalról”. A lapozáshoz n egymást követő „lépés” kell a görgővel vagy a "
 "nyílbillentyűkkel."
 
-#: mcomix/preferences_dialog.py:238
+#: mcomix/preferences_dialog.py:239
 msgid "Skip pages that cannot be shown"
 msgstr "A meg nem jeleníthető oldalak átugrása"
 
-#: mcomix/preferences_dialog.py:240
+#: mcomix/preferences_dialog.py:241
 msgid ""
 "Turn past a page whose image is damaged or cannot be read, instead of "
 "showing the broken-image icon in its place."
@@ -1475,28 +1475,28 @@ msgstr ""
 "Átugorja azt az oldalt, amelynek képe sérült vagy nem olvasható, ahelyett "
 "hogy a helyén a sérült kép ikonját mutatná."
 
-#: mcomix/preferences_dialog.py:242
+#: mcomix/preferences_dialog.py:243
 msgid "Number of pixels to scroll per arrow key press:"
 msgstr "Görgetés képpontban a nyílbillentyűk egy lenyomására:"
 
-#: mcomix/preferences_dialog.py:246
+#: mcomix/preferences_dialog.py:247
 msgid "Set the number of pixels to scroll on a page when using the arrow keys."
 msgstr ""
 "Beállítja, hány képpontot görget az oldalon a nyílbillentyűk használata."
 
-#: mcomix/preferences_dialog.py:248
+#: mcomix/preferences_dialog.py:249
 msgid "Number of pixels to scroll per mouse wheel turn:"
 msgstr "Görgetés képpontban az egérgörgő egy fordulatára:"
 
-#: mcomix/preferences_dialog.py:252
+#: mcomix/preferences_dialog.py:253
 msgid "Set the number of pixels to scroll on a page when using a mouse wheel."
 msgstr "Beállítja, hány képpontot görget az oldalon az egérgörgő használata."
 
-#: mcomix/preferences_dialog.py:254
+#: mcomix/preferences_dialog.py:255
 msgid "Fraction of page to scroll per space key press (in percent):"
 msgstr "Az oldal görgetett hányada a szóköz egy lenyomására (százalékban):"
 
-#: mcomix/preferences_dialog.py:259
+#: mcomix/preferences_dialog.py:260
 msgid ""
 "Sets the percentage by which the page will be scrolled down or up when the "
 "space key is pressed."
@@ -1504,11 +1504,11 @@ msgstr ""
 "Beállítja, hány százalékot görög az oldal lefelé vagy felfelé a szóköz "
 "lenyomására."
 
-#: mcomix/preferences_dialog.py:262
+#: mcomix/preferences_dialog.py:263
 msgid "Number of \"steps\" to take before flipping the page:"
 msgstr "A lapozás előtt megteendő „lépések” száma:"
 
-#: mcomix/preferences_dialog.py:266
+#: mcomix/preferences_dialog.py:267
 msgid ""
 "Set the number of \"steps\" needed to flip to the next or previous page.  "
 "Less steps will allow for very fast page turning but you might find yourself "
@@ -1518,15 +1518,15 @@ msgstr ""
 "Kevesebb lépéssel nagyon gyorsan lehet lapozni, de könnyebb véletlenül is "
 "megtenni."
 
-#: mcomix/preferences_dialog.py:268
+#: mcomix/preferences_dialog.py:269
 msgid "Between books"
 msgstr "Könyvek között"
 
-#: mcomix/preferences_dialog.py:271
+#: mcomix/preferences_dialog.py:272
 msgid "Automatically open the next archive"
 msgstr "A következő archívum automatikus megnyitása"
 
-#: mcomix/preferences_dialog.py:273
+#: mcomix/preferences_dialog.py:274
 msgid ""
 "Automatically open the next archive in the directory when flipping past the "
 "last page, or the previous archive when flipping past the first page."
@@ -1534,11 +1534,11 @@ msgstr ""
 "Automatikusan megnyitja a következő arhívumot, ha az aktuális utolsó lapját "
 "elhagyjuk, illetve az előzőt, ha az első kép elé lépünk."
 
-#: mcomix/preferences_dialog.py:276
+#: mcomix/preferences_dialog.py:277
 msgid "Automatically open next directory"
 msgstr "A következő mappa automatikus megnyitása"
 
-#: mcomix/preferences_dialog.py:278
+#: mcomix/preferences_dialog.py:279
 msgid ""
 "Automatically open the first file in the next sibling directory when "
 "flipping past the last page of the last file in a directory, or the previous "
@@ -1548,11 +1548,11 @@ msgstr ""
 "mappa utolsó fájljának utolsó oldalán továbblapoz, illetve az előző mappát, "
 "amikor az első fájl első oldaláról visszalapoz."
 
-#: mcomix/preferences_dialog.py:281
+#: mcomix/preferences_dialog.py:282
 msgid "Open first file when navigating to previous archive"
 msgstr "Az első fájl megnyitása az előző archívumra lépéskor"
 
-#: mcomix/preferences_dialog.py:283
+#: mcomix/preferences_dialog.py:284
 msgid ""
 "Automatically open the first file of the previous archive when navigating to "
 "it, instead of opening the last file of the previous archive."
@@ -1560,11 +1560,11 @@ msgstr ""
 "Az előző archívumra lépéskor automatikusan annak első fájlját nyitja meg az "
 "utolsó helyett."
 
-#: mcomix/preferences_dialog.py:286
+#: mcomix/preferences_dialog.py:287
 msgid "Open first file when navigating to previous directory"
 msgstr "Az első fájl megnyitása az előző mappára lépéskor"
 
-#: mcomix/preferences_dialog.py:288
+#: mcomix/preferences_dialog.py:289
 msgid ""
 "Automatically open the first file of the previous directory when navigating "
 "to it, instead of opening the last file of the previous directory."
@@ -1572,82 +1572,82 @@ msgstr ""
 "Az előző mappára lépéskor automatikusan annak első fájlját nyitja meg az "
 "utolsó helyett."
 
-#: mcomix/preferences_dialog.py:290
+#: mcomix/preferences_dialog.py:291
 msgid "File order"
 msgstr "Fájlsorrend"
 
-#: mcomix/preferences_dialog.py:292
+#: mcomix/preferences_dialog.py:293
 msgid "Sort files and directories by:"
 msgstr "Fájlok és mappák rendezése eszerint:"
 
-#: mcomix/preferences_dialog.py:295
+#: mcomix/preferences_dialog.py:296
 msgid "Sort archives by:"
 msgstr "Archívumok rendezése eszerint:"
 
-#: mcomix/preferences_dialog.py:309
+#: mcomix/preferences_dialog.py:310
 msgid "Use fullscreen by default"
 msgstr "Teljes képernyő használata alapértelmezetten"
 
-#: mcomix/preferences_dialog.py:313
+#: mcomix/preferences_dialog.py:314
 msgid "Automatically hide all toolbars in fullscreen"
 msgstr "Minden eszköztár automatikus elrejtése teljes képernyőn"
 
-#: mcomix/preferences_dialog.py:319
+#: mcomix/preferences_dialog.py:320
 msgid "Flip two pages in double page mode"
 msgstr "Két oldal lapozása kétoldalas módban"
 
-#: mcomix/preferences_dialog.py:321
+#: mcomix/preferences_dialog.py:322
 msgid ""
 "Flip two pages, instead of one, each time we flip pages in double page mode."
 msgstr ""
 "Két lapot lapozzon a program egy helyett, amikor a dupla lapos megjelenítési "
 "mód az aktív."
 
-#: mcomix/preferences_dialog.py:323
+#: mcomix/preferences_dialog.py:324
 msgid "Show only one page where appropriate:"
 msgstr "Csak egy oldal megjelenítése, ahol ez indokolt:"
 
-#: mcomix/preferences_dialog.py:326
+#: mcomix/preferences_dialog.py:327
 msgid "Page auto-resizing:"
 msgstr "Az oldalak automatikus átméretezése:"
 
-#: mcomix/preferences_dialog.py:329
+#: mcomix/preferences_dialog.py:330
 msgid "Space between two pages (in pixels):"
 msgstr "Két oldal közötti térköz (képpontban):"
 
-#: mcomix/preferences_dialog.py:334 mcomix/ui.py:535
+#: mcomix/preferences_dialog.py:335 mcomix/ui.py:535
 msgid "Fit to size mode"
 msgstr "Mérethez igazítás módja"
 
-#: mcomix/preferences_dialog.py:336
+#: mcomix/preferences_dialog.py:337
 msgid "Fixed width for wide pages:"
 msgstr "Rögzített szélesség a széles oldalakhoz:"
 
-#: mcomix/preferences_dialog.py:341
+#: mcomix/preferences_dialog.py:342
 msgid "Fixed height for wide pages:"
 msgstr "Rögzített magasság a széles oldalakhoz:"
 
-#: mcomix/preferences_dialog.py:346
+#: mcomix/preferences_dialog.py:347
 msgid "Fixed width for other pages:"
 msgstr "Rögzített szélesség a többi oldalhoz:"
 
-#: mcomix/preferences_dialog.py:351
+#: mcomix/preferences_dialog.py:352
 msgid "Fixed height for other pages:"
 msgstr "Rögzített magasság a többi oldalhoz:"
 
-#: mcomix/preferences_dialog.py:356
+#: mcomix/preferences_dialog.py:357
 msgid "Slideshow"
 msgstr "Diavetítés"
 
-#: mcomix/preferences_dialog.py:358
+#: mcomix/preferences_dialog.py:359
 msgid "Slideshow delay (in seconds):"
 msgstr "Diavetítés késleltetése (másodpercben):"
 
-#: mcomix/preferences_dialog.py:363
+#: mcomix/preferences_dialog.py:364
 msgid "Slideshow step (in pixels):"
 msgstr "Diavetítés lépésköze (képpontban):"
 
-#: mcomix/preferences_dialog.py:367
+#: mcomix/preferences_dialog.py:368
 msgid ""
 "Specify the number of pixels to scroll while in slideshow mode. A positive "
 "value will scroll forward, a negative value will scroll backwards, and a "
@@ -1657,26 +1657,26 @@ msgstr ""
 "negatív hátrafelé görget, a 0 pedig azt eredményezi, hogy a vetítés mindig "
 "új oldalra lapoz."
 
-#: mcomix/preferences_dialog.py:370
+#: mcomix/preferences_dialog.py:371
 msgid "During a slideshow automatically open the next archive"
 msgstr "Diavetítés közben a következő archívum automatikus megnyitása"
 
-#: mcomix/preferences_dialog.py:372
+#: mcomix/preferences_dialog.py:373
 msgid ""
 "While in slideshow mode allow the next archive to automatically be opened."
 msgstr ""
 "Engedélyezi, hogy diavetítés módban automatikusan megnyíljon a következő "
 "archívum."
 
-#: mcomix/preferences_dialog.py:374
+#: mcomix/preferences_dialog.py:375
 msgid "Rotation"
 msgstr "Elforgatás"
 
-#: mcomix/preferences_dialog.py:377
+#: mcomix/preferences_dialog.py:378
 msgid "Automatically rotate images according to their metadata"
 msgstr "A képek automatikus forgatása a metaadataik szerint"
 
-#: mcomix/preferences_dialog.py:379
+#: mcomix/preferences_dialog.py:380
 msgid ""
 "Automatically rotate images when an orientation is specified in the image "
 "metadata, such as in an Exif tag."
@@ -1685,45 +1685,44 @@ msgstr ""
 "(például: egy EXIF cimkében), akkor a program automatikusan elvégzi az "
 "elforgatást."
 
-#: mcomix/preferences_dialog.py:381
+#: mcomix/preferences_dialog.py:382
 msgid "Image quality"
 msgstr "Képminőség"
 
-#: mcomix/preferences_dialog.py:383
+#: mcomix/preferences_dialog.py:384
 msgid "Scaling mode"
 msgstr "Méretezési mód"
 
-#: mcomix/preferences_dialog.py:395
+#: mcomix/preferences_dialog.py:396
 msgid "Extraction and cache"
 msgstr "Kibontás és gyorsítótár"
 
-#: mcomix/preferences_dialog.py:397
+#: mcomix/preferences_dialog.py:398
 msgid "Maximum number of concurrent extraction threads:"
 msgstr "Egyidejű kibontási szálak legnagyobb száma:"
 
-#: mcomix/preferences_dialog.py:401
+#: mcomix/preferences_dialog.py:402
 msgid ""
-"Set the maximum number of concurrent threads for formats that support it."
-msgstr ""
-"Beállítja az egyidejű szálak legnagyobb számát az ezt támogató formátumokhoz."
+"Set the maximum number of concurrent threads for formats that support it. A "
+"value of 0 uses one thread for each processor."
+msgstr "Beállítja az egyidejű szálak legnagyobb számát az ezt támogató formátumokhoz. A 0 érték processzoronként egy szálat használ."
 
-#: mcomix/preferences_dialog.py:403
+#: mcomix/preferences_dialog.py:404
 msgid "Maximum number of concurrent thumbnail threads:"
 msgstr "Egyidejű bélyegképszálak legnagyobb száma:"
 
-#: mcomix/preferences_dialog.py:407
+#: mcomix/preferences_dialog.py:408
 msgid ""
-"Set the maximum number of concurrent threads used to generate thumbnails. "
-"Takes effect the next time MComix is started."
-msgstr ""
-"Beállítja a bélyegképek készítéséhez használt egyidejű szálak legnagyobb "
-"számát. Az MComix következő indításakor lép érvénybe."
+"Set the maximum number of concurrent threads used to generate thumbnails. A "
+"value of 0 uses one thread for each processor. Takes effect the next time "
+"MComix is started."
+msgstr "Beállítja a bélyegképek készítéséhez használt egyidejű szálak legnagyobb számát. A 0 érték processzoronként egy szálat használ. Az MComix következő indításakor lép érvénybe."
 
-#: mcomix/preferences_dialog.py:410
+#: mcomix/preferences_dialog.py:411
 msgid "Store thumbnails for opened files"
 msgstr "A megnyitott fájlok bélyegképeinek tárolása"
 
-#: mcomix/preferences_dialog.py:412
+#: mcomix/preferences_dialog.py:413
 msgid ""
 "Store thumbnails for opened files according to the freedesktop.org "
 "specification. These thumbnails are shared by many other applications, such "
@@ -1733,11 +1732,11 @@ msgstr ""
 "előírásainak megfelelően. Ezen bélyegképeket más alkalmazások, például a "
 "legtöbb fájlkezelő is használhatja majd."
 
-#: mcomix/preferences_dialog.py:414
+#: mcomix/preferences_dialog.py:415
 msgid "Maximum number of pages to store in the cache:"
 msgstr "A gyorsítótárban tárolt oldalak legnagyobb száma:"
 
-#: mcomix/preferences_dialog.py:418
+#: mcomix/preferences_dialog.py:419
 msgid ""
 "Set the max number of pages to cache. A value of -1 will cache the entire "
 "archive."
@@ -1745,15 +1744,15 @@ msgstr ""
 "Beállítja a gyorsítótárazott oldalak legnagyobb számát. A -1 érték az egész "
 "archívumot gyorsítótárazza."
 
-#: mcomix/preferences_dialog.py:420
+#: mcomix/preferences_dialog.py:421
 msgid "Magnifying Lens"
 msgstr "Nagyító"
 
-#: mcomix/preferences_dialog.py:422
+#: mcomix/preferences_dialog.py:423
 msgid "Magnifying lens size (in pixels):"
 msgstr "A nagyító mérete (képpontban):"
 
-#: mcomix/preferences_dialog.py:426
+#: mcomix/preferences_dialog.py:427
 msgid ""
 "Set the size of the magnifying lens. It is a square with a side of this many "
 "pixels."
@@ -1761,39 +1760,39 @@ msgstr ""
 "A nagyító lencse méreteinek megadása. Ez egy négyzet, aminek az oldalai "
 "megadott pixelszámúak."
 
-#: mcomix/preferences_dialog.py:428
+#: mcomix/preferences_dialog.py:429
 msgid "Magnification factor:"
 msgstr "Nagyítási tényező:"
 
-#: mcomix/preferences_dialog.py:432
+#: mcomix/preferences_dialog.py:433
 msgid "Set the magnification factor of the magnifying lens."
 msgstr "A nagyító nagyítási tényezőjének beállítása."
 
-#: mcomix/preferences_dialog.py:436
+#: mcomix/preferences_dialog.py:437
 msgid "Comment extensions:"
 msgstr "Megjegyzésfájlok kiterjesztései:"
 
-#: mcomix/preferences_dialog.py:439
+#: mcomix/preferences_dialog.py:440
 msgid "Animated images"
 msgstr "Animált képek"
 
-#: mcomix/preferences_dialog.py:441
+#: mcomix/preferences_dialog.py:442
 msgid "Animation mode:"
 msgstr "Animáció módja:"
 
-#: mcomix/preferences_dialog.py:462
+#: mcomix/preferences_dialog.py:463
 msgid "_Reset keys"
 msgstr "Billentyűk _visszaállítása"
 
-#: mcomix/preferences_dialog.py:464
+#: mcomix/preferences_dialog.py:465
 msgid "Resets all keyboard shortcuts to their default values."
 msgstr "Visszaállítja az összes gyorsbillentyűt az alapértelmezett értékére."
 
-#: mcomix/preferences_dialog.py:467
+#: mcomix/preferences_dialog.py:468
 msgid "Clear _dialog choices"
 msgstr "A párbeszédablakok válaszainak _törlése"
 
-#: mcomix/preferences_dialog.py:469
+#: mcomix/preferences_dialog.py:470
 msgid ""
 "Clears all dialog choices that you have previously chosen not to be asked "
 "again."
@@ -1801,11 +1800,11 @@ msgstr ""
 "Törli az összes olyan párbeszédablak-választ, amelyekről korábban azt kérte, "
 "hogy ne kérdezze újra."
 
-#: mcomix/preferences_dialog.py:504
+#: mcomix/preferences_dialog.py:505
 msgid "Ask every time"
 msgstr "Kérdezzen mindig"
 
-#: mcomix/preferences_dialog.py:509
+#: mcomix/preferences_dialog.py:510
 msgid ""
 "What MComix answers this prompt with instead of asking. This is what the "
 "prompt's \"Do not ask again\" box sets."
@@ -1813,27 +1812,27 @@ msgstr ""
 "Amit az MComix erre a kérdésre válaszol ahelyett, hogy feltenné. Ezt állítja "
 "be a kérdés „Ne kérdezze újra.” jelölőnégyzete."
 
-#: mcomix/preferences_dialog.py:531
+#: mcomix/preferences_dialog.py:532
 msgid "Auto-detect (Default)"
 msgstr "Automatikus felismerés (alapértelmezett)"
 
-#: mcomix/preferences_dialog.py:573
+#: mcomix/preferences_dialog.py:574
 msgid "Follow the system"
 msgstr "A rendszer követése"
 
-#: mcomix/preferences_dialog.py:574
+#: mcomix/preferences_dialog.py:575
 msgid "Light"
 msgstr "Világos"
 
-#: mcomix/preferences_dialog.py:575
+#: mcomix/preferences_dialog.py:576
 msgid "Dark"
 msgstr "Sötét"
 
-#: mcomix/preferences_dialog.py:576
+#: mcomix/preferences_dialog.py:577
 msgid "Pitch black"
 msgstr "Koromfekete"
 
-#: mcomix/preferences_dialog.py:582
+#: mcomix/preferences_dialog.py:583
 msgid ""
 "How MComix itself is painted, whatever the desktop asks for. Pitch black is "
 "the dark theme with black backgrounds, which a screen that lights its pixels "
@@ -1843,11 +1842,11 @@ msgstr ""
 "környezet. A koromfekete a sötét téma fekete háttérrel, amelyet a "
 "képpontjait egyenként világító kijelző teljesen fénytelenként mutat."
 
-#: mcomix/preferences_dialog.py:619
+#: mcomix/preferences_dialog.py:620
 msgid "Restart MComix in the language you picked?"
 msgstr "Újraindítja a MComixot a kiválasztott nyelven?"
 
-#: mcomix/preferences_dialog.py:620
+#: mcomix/preferences_dialog.py:621
 msgid ""
 "MComix is translated as it starts, so most of the interface stays in the "
 "language it started in until it is started again. The book being read, its "
@@ -1857,24 +1856,24 @@ msgstr ""
 "nyelven marad, amíg újra nem indítja. Az olvasott könyv, annak oldala és az "
 "ablak mérete megmarad."
 
-#: mcomix/preferences_dialog.py:634 mcomix/preferences_dialog.py:783
-#: mcomix/preferences_dialog.py:848 mcomix/ui.py:541
+#: mcomix/preferences_dialog.py:635 mcomix/preferences_dialog.py:784
+#: mcomix/preferences_dialog.py:849 mcomix/ui.py:541
 msgid "Never"
 msgstr "Soha"
 
-#: mcomix/preferences_dialog.py:635
+#: mcomix/preferences_dialog.py:636
 msgid "Only for title pages"
 msgstr "Csak a címoldalaknál"
 
-#: mcomix/preferences_dialog.py:636
+#: mcomix/preferences_dialog.py:637
 msgid "Only for wide images"
 msgstr "Csak a széles képeknél"
 
-#: mcomix/preferences_dialog.py:637 mcomix/preferences_dialog.py:784
+#: mcomix/preferences_dialog.py:638 mcomix/preferences_dialog.py:785
 msgid "Always"
 msgstr "Mindig"
 
-#: mcomix/preferences_dialog.py:644
+#: mcomix/preferences_dialog.py:645
 msgid ""
 "When showing the first page of an archive, or an image's width exceeds its "
 "height, only a single page will be displayed."
@@ -1882,53 +1881,53 @@ msgstr ""
 "Egy archívum első oldalán, illetve ha egy kép szélessége meghaladja a "
 "magasságát, csak egy oldal jelenik meg."
 
-#: mcomix/preferences_dialog.py:662
+#: mcomix/preferences_dialog.py:663
 msgid "Prefer same scale"
 msgstr "Azonos méretarány előnyben részesítése"
 
-#: mcomix/preferences_dialog.py:663
+#: mcomix/preferences_dialog.py:664
 msgid "Prefer same size"
 msgstr "Azonos méret előnyben részesítése"
 
-#: mcomix/preferences_dialog.py:664
+#: mcomix/preferences_dialog.py:665
 msgid "Fit to same size"
 msgstr "Azonos mérethez igazítás"
 
-#: mcomix/preferences_dialog.py:671
+#: mcomix/preferences_dialog.py:672
 msgid "Maintain relative size or fit to same size."
 msgstr "Megtartja a viszonylagos méretet, vagy azonos mérethez igazít."
 
-#: mcomix/preferences_dialog.py:685 mcomix/preferences_dialog.py:732
+#: mcomix/preferences_dialog.py:686 mcomix/preferences_dialog.py:733
 msgid "No sorting"
 msgstr "Nincs rendezés"
 
-#: mcomix/preferences_dialog.py:686
+#: mcomix/preferences_dialog.py:687
 msgid "File name"
 msgstr "Fájlnév"
 
-#: mcomix/preferences_dialog.py:687
+#: mcomix/preferences_dialog.py:688
 msgid "File name (GLib)"
 msgstr "Fájlnév (GLib)"
 
-#: mcomix/preferences_dialog.py:688 mcomix/library/book_area.py:245
+#: mcomix/preferences_dialog.py:689 mcomix/library/book_area.py:245
 msgid "File size"
 msgstr "Fájlméret"
 
-#: mcomix/preferences_dialog.py:689
+#: mcomix/preferences_dialog.py:690
 msgid "Last modified"
 msgstr "Módosítás ideje"
 
-#: mcomix/preferences_dialog.py:695 mcomix/preferences_dialog.py:741
+#: mcomix/preferences_dialog.py:696 mcomix/preferences_dialog.py:742
 #: mcomix/library/book_area.py:249
 msgid "Ascending"
 msgstr "Növekvő"
 
-#: mcomix/preferences_dialog.py:696 mcomix/preferences_dialog.py:742
+#: mcomix/preferences_dialog.py:697 mcomix/preferences_dialog.py:743
 #: mcomix/library/book_area.py:250
 msgid "Descending"
 msgstr "Csökkenő"
 
-#: mcomix/preferences_dialog.py:704
+#: mcomix/preferences_dialog.py:705
 msgid ""
 "Files will be opened and displayed according to the sort order specified "
 "here. This option does not affect ordering within archives."
@@ -1936,19 +1935,19 @@ msgstr ""
 "A fájlok az itt megadott sorrendben nyílnak meg és jelennek meg. Ez a "
 "beállítás nem érinti az archívumokon belüli sorrendet."
 
-#: mcomix/preferences_dialog.py:733
+#: mcomix/preferences_dialog.py:734
 msgid "Natural order"
 msgstr "Természetes sorrend"
 
-#: mcomix/preferences_dialog.py:734
+#: mcomix/preferences_dialog.py:735
 msgid "Literal order"
 msgstr "Betű szerinti sorrend"
 
-#: mcomix/preferences_dialog.py:735
+#: mcomix/preferences_dialog.py:736
 msgid "GLib order"
 msgstr "GLib szerinti sorrend"
 
-#: mcomix/preferences_dialog.py:750
+#: mcomix/preferences_dialog.py:751
 msgid ""
 "Files within archives will be sorted according to the order specified here. "
 "Natural order will sort numbered files based on their natural order, i.e. 1, "
@@ -1962,7 +1961,7 @@ msgstr ""
 "használja, azaz 1, 2, 34, 5. A GLib szerinti sorrend a GLib/GTK által "
 "előállított rendezőkulcsokat használja, amelyeket sok más GTK-alkalmazás is."
 
-#: mcomix/preferences_dialog.py:789
+#: mcomix/preferences_dialog.py:790
 msgid ""
 "Add information about all files opened from within MComix to the shared "
 "recent files list."
@@ -1970,11 +1969,11 @@ msgstr ""
 "Az MComixból megnyitott összes fájl adatait hozzáadja a megosztott legutóbbi "
 "fájlok listájához."
 
-#: mcomix/preferences_dialog.py:809
+#: mcomix/preferences_dialog.py:810
 msgid "Delete information about recently opened files?"
 msgstr "Törli a legutóbb megnyitott fájlok adatait?"
 
-#: mcomix/preferences_dialog.py:810
+#: mcomix/preferences_dialog.py:811
 msgid ""
 "This will remove all entries from the \"Recent\" menu, and clear information "
 "about last read pages."
@@ -1982,19 +1981,19 @@ msgstr ""
 "Ez eltávolít minden bejegyzést a „Legutóbbiak” menüből, és törli a legutóbb "
 "olvasott oldalak adatait."
 
-#: mcomix/preferences_dialog.py:823
+#: mcomix/preferences_dialog.py:824
 msgid "Normal (fast)"
 msgstr "Normál (gyors)"
 
-#: mcomix/preferences_dialog.py:824
+#: mcomix/preferences_dialog.py:825
 msgid "Bilinear"
 msgstr "Bilineáris"
 
-#: mcomix/preferences_dialog.py:825
+#: mcomix/preferences_dialog.py:826
 msgid "Hyperbolic (slow)"
 msgstr "Hiperbolikus (lassú)"
 
-#: mcomix/preferences_dialog.py:831
+#: mcomix/preferences_dialog.py:832
 msgid ""
 "Changes how images are scaled. Slower algorithms result in higher quality "
 "resizing, but longer page loading times."
@@ -2002,15 +2001,15 @@ msgstr ""
 "Megváltoztatja a képek méretezésének módját. A lassabb algoritmusok jobb "
 "minőséget adnak, de az oldalak tovább töltődnek."
 
-#: mcomix/preferences_dialog.py:849 mcomix/library/book_area.py:257
+#: mcomix/preferences_dialog.py:850 mcomix/library/book_area.py:257
 msgid "Normal"
 msgstr "Normál"
 
-#: mcomix/preferences_dialog.py:855
+#: mcomix/preferences_dialog.py:856
 msgid "Controls how animated images should be displayed."
 msgstr "Meghatározza, hogyan jelenjenek meg az animált képek."
 
-#: mcomix/preferences_dialog.py:899
+#: mcomix/preferences_dialog.py:900
 msgid ""
 "Treat all files found within archives, that have one of these file endings, "
 "as comments."
@@ -2773,57 +2772,57 @@ msgstr "Hozzáadott könyvek:"
 msgid "Adding '%s'..."
 msgstr "Hozzáadás '%s'..."
 
-#: mcomix/library/backend.py:182
+#: mcomix/library/backend.py:192
 #, python-format
 msgid "! Non-existent book #%i"
 msgstr "! A(z) #%i. könyv nem létezik"
 
-#: mcomix/library/backend.py:220
+#: mcomix/library/backend.py:230
 #, python-format
 msgid "! Could not get cover for book \"%s\""
 msgstr "! Nem sikerült lekérni a(z) „%s” könyv borítóját"
 
-#: mcomix/library/backend.py:265 mcomix/library/backend.py:285
-#: mcomix/library/backend.py:296 mcomix/library/backend.py:324
+#: mcomix/library/backend.py:278 mcomix/library/backend.py:295
+#: mcomix/library/backend.py:308 mcomix/library/backend.py:336
 msgid "Recent"
 msgstr "Legutóbbi"
 
-#: mcomix/library/backend.py:403 mcomix/library/backend.py:450
+#: mcomix/library/backend.py:415 mcomix/library/backend.py:462
 #, python-format
 msgid "! Could not add book \"%s\" to the library"
 msgstr "! Nem sikerült hozzáadni a(z) „%s” könyvet a könyvtárhoz"
 
-#: mcomix/library/backend.py:480
+#: mcomix/library/backend.py:492
 #, python-format
 msgid "! Could not move book \"%s\" in the library"
 msgstr "! Nem sikerült áthelyezni a(z) „%s” könyvet a könyvtárban"
 
-#: mcomix/library/backend.py:524
+#: mcomix/library/backend.py:536
 #, python-format
 msgid "! Could not add collection \"%s\""
 msgstr "! Nem sikerült hozzáadni a(z) „%s” gyűjteményt"
 
-#: mcomix/library/backend.py:556
+#: mcomix/library/backend.py:568
 #, python-format
 msgid "! Could not add book %(book)s to collection %(collection)s"
 msgstr ""
 "! Nem sikerült hozzáadni a(z) %(book)s könyvet a(z) %(collection)s "
 "gyűjteményhez"
 
-#: mcomix/library/backend.py:583
+#: mcomix/library/backend.py:595
 #, python-format
 msgid "! Could not rename collection to \"%s\""
 msgstr "! Nem sikerült átnevezni a gyűjteményt erre: „%s”"
 
-#: mcomix/library/backend.py:600 mcomix/library/backend.py:602
+#: mcomix/library/backend.py:612 mcomix/library/backend.py:614
 msgid "(Copy)"
 msgstr "(Másolás)"
 
-#: mcomix/library/backend.py:858
+#: mcomix/library/backend.py:870
 msgid "Could not determine library database version!"
 msgstr "Nem sikerült megállapítani a könyvtár adatbázisának verzióját!"
 
-#: mcomix/library/backend.py:908
+#: mcomix/library/backend.py:920
 #, python-format
 msgid "Upgrading library database version from %(from)d to %(to)d."
 msgstr ""
@@ -3151,6 +3150,19 @@ msgstr "Almappákkal együtt"
 #: mcomix/library/watchlist.py:81
 msgid "Automatically scan for new books when library is _opened"
 msgstr "Új könyvek automatikus keresése a könyvtár _megnyitásakor"
+
+#~ msgid ""
+#~ "Set the maximum number of concurrent threads for formats that support it."
+#~ msgstr ""
+#~ "Beállítja az egyidejű szálak legnagyobb számát az ezt támogató "
+#~ "formátumokhoz."
+
+#~ msgid ""
+#~ "Set the maximum number of concurrent threads used to generate thumbnails. "
+#~ "Takes effect the next time MComix is started."
+#~ msgstr ""
+#~ "Beállítja a bélyegképek készítéséhez használt egyidejű szálak legnagyobb "
+#~ "számát. Az MComix következő indításakor lép érvénybe."
 
 #~ msgid "Escape key closes program"
 #~ msgstr "Az Esc billentyű bezárja a programot"
