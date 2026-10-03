@@ -1,13 +1,15 @@
 name: CodeQL
 
 # GitHub's code scanning over the Python code and these workflows: on
-# main, on pull requests, and every Monday for new queries. Findings show
-# under the repository's Security tab.
+# main and on pull requests where either changed, and every Monday for
+# new queries. Findings show under the repository's Security tab.
 
 on:
   push:
     branches: [main]
+    paths: ["**.py", ".github/workflows/**"]
   pull_request:
+    paths: ["**.py", ".github/workflows/**"]
   schedule:
     - cron: "29 3 * * 1"
 

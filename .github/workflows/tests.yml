@@ -4,11 +4,17 @@ name: Tests
 # newest of everything they do not pin, so a week in which something
 # moved under the suite shows as a failed Monday run.  A tag is a commit
 # main has already tested.
+#
+# The tests read nearly every file in the repository - the manual, the
+# workflows, the packaging - so the one thing a change can touch without
+# them is the icon's artwork source.
 
 on:
   push:
     branches: [main]
+    paths-ignore: ["artwork/**"]
   pull_request:
+    paths-ignore: ["artwork/**"]
   schedule:
     - cron: "43 4 * * 1"
   workflow_dispatch:
