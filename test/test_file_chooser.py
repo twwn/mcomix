@@ -139,10 +139,11 @@ class FileChooserTest(MComixTest):
         # name under the preview changed, or a file with no preview was
         # picked.
         import shutil
+        folder = self._unlisted_folder('names')
         long_name = 'a-really-quite-extremely-long-file-name-for-testing.png'
         shutil.copy(get_testfile_path('images', 'blue.png'),
-                    os.path.join(self.tmp_dir, long_name))
-        with open(os.path.join(self.tmp_dir, 'notes.txt'), 'w') as handle:
+                    os.path.join(folder, long_name))
+        with open(os.path.join(folder, 'notes.txt'), 'w') as handle:
             handle.write('not an image')
         column = self.dialog._preview_image.get_parent()
 
@@ -155,9 +156,8 @@ class FileChooserTest(MComixTest):
         widths = {
             'short name': select(get_testfile_path('images', 'blue.png'),
                                  'blue.png'),
-            'long name': select(os.path.join(self.tmp_dir, long_name),
-                                long_name),
-            'no preview': select(os.path.join(self.tmp_dir, 'notes.txt'), ''),
+            'long name': select(os.path.join(folder, long_name), long_name),
+            'no preview': select(os.path.join(folder, 'notes.txt'), ''),
         }
         self.assertEqual(len(set(widths.values())), 1,
                          'the preview column changed width: %r' % (widths,))
@@ -317,6 +317,20 @@ class FileChooserTest(MComixTest):
             'the chooser selected %r, not %r'
             % (widgets.chooser_paths(chooser), path))
 
+    def _unlisted_folder(self, name):
+        """Make and return a folder the chooser has not listed.
+
+        The chooser lists the temporary folder as it opens, and a file
+        made there afterwards is not there to be selected until the
+        chooser notices it, which took GTK 4.14 on GitHub longer than
+        the wait: the folder's first entry was selected instead.  Files
+        a test writes go into a folder of their own, written before the
+        chooser is sent there.
+        """
+        folder = os.path.join(self.tmp_dir, name)
+        os.mkdir(folder)
+        return folder
+
     def _choose(self, path):
         """Select <path> and answer Open, keeping what is handed on."""
         chosen = []
@@ -472,12 +486,7 @@ class FileChooserTest(MComixTest):
         the preview empty, with no name under it, as though nothing
         were selected, while the library and the thumbnail bar show the
         picture that says the image would not load."""
-        # Both written first, into a folder the chooser has not listed:
-        # a file made after the chooser has listed its folder is not
-        # there to be selected until it notices, which took GTK 4.14 on
-        # GitHub longer than the wait.
-        folder = os.path.join(self.tmp_dir, 'damaged')
-        os.mkdir(folder)
+        folder = self._unlisted_folder('damaged')
         broken = {'broken.jpg': b'not an image',
                   'broken.cbz': b'PK\x03\x04garbage'}
         for name, body in broken.items():
@@ -497,7 +506,7 @@ class FileChooserTest(MComixTest):
     def test_the_preview_writes_the_size_as_the_list_beside_it_does(self):
         """GTK's list of files says "1.0 MB" of a file of a million
         bytes, and the preview under it said "976.6 KiB"."""
-        path = os.path.join(self.tmp_dir, 'million.cbz')
+        path = os.path.join(self._unlisted_folder('sized'), 'million.cbz')
         with open(path, 'wb') as book:
             book.write(b'PK\x03\x04'.ljust(1000000, b'\x00'))
         self._select(path)
