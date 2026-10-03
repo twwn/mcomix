@@ -687,12 +687,34 @@ def _first_provider_that_loads(
     raise last_error or TypeError()
 
 
+def _is_lossy_webp(path: str) -> bool:
+    """Whether <path> is a WebP picture that is not stored losslessly.
+
+    PIL decodes those in half the time gdk-pixbuf takes here, glycin's
+    sandbox included, and a page's file name is no guide to its format:
+    a 1600x2215 page took 26 ms against 51 ms, a 4300x5950 one 205 ms
+    against 289 ms, conversion to a pixbuf counted (upstream bug 160).
+    A lossless one ("VP8L" as its first chunk) is the other way round,
+    270 ms against 204 ms, and stays with gdk-pixbuf.  An extended
+    WebP ("VP8X": alpha, animation, metadata) is taken as lossy, which
+    nearly all of them are.
+    """
+    try:
+        with open(path, 'rb') as fp:
+            head = fp.read(16)
+    except OSError:
+        return False
+    return (head[:4] == b'RIFF' and head[8:12] == b'WEBP'
+            and head[12:16] != b'VP8L')
+
+
 def load_pixbuf(path: str) -> GdkPixbuf.Pixbuf:
     """The whole picture at <path>, at the size it was stored at.
 
     gdk-pixbuf first and PIL after it, since between them they read more
     than either does alone; the last error is raised where neither could
-    read the file.  A picture that animates carries the path it came
+    read the file.  A lossy WebP goes to PIL first, which is faster at
+    it.  A picture that animates carries the path it came
     from, because only its first frame is here and whoever draws the
     rest needs the file back.
     """
@@ -706,10 +728,12 @@ def load_pixbuf(path: str) -> GdkPixbuf.Pixbuf:
         return pil_to_pixbuf(_in_srgb(Image.open(path)),
                              keep_orientation=True)
 
-    pixbuf = _first_provider_that_loads(
-        ((constants.IMAGEIO_GDKPIXBUF,
-          lambda: GdkPixbuf.Pixbuf.new_from_file(path)),
-         (constants.IMAGEIO_PIL, by_pil)), path)
+    attempts = [(constants.IMAGEIO_GDKPIXBUF,
+                 lambda: GdkPixbuf.Pixbuf.new_from_file(path)),
+                (constants.IMAGEIO_PIL, by_pil)]
+    if _is_lossy_webp(path):
+        attempts.reverse()
+    pixbuf = _first_provider_that_loads(attempts, path)
     if prefs['animation mode'] != constants.ANIMATION_DISABLED \
             and file_animates(path):
         # Whoever draws the frames needs the file back: what was loaded

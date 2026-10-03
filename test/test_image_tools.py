@@ -1290,3 +1290,53 @@ class RawExifProfileTest(MComixTest):
             with self.subTest(name):
                 self.assertEqual(0, image_tools.get_implied_rotation(
                     self._pixbuf(profile)))
+
+
+class WebPDecoderTest(MComixTest):
+
+    """Which decoder load_pixbuf() asks first for a WebP page.
+
+    PIL decodes a lossy WebP in half the time gdk-pixbuf takes here, and
+    a lossless one more slowly (upstream bug 160 measured WebP pages at
+    2.7 times the cost of the same pages as PNG).
+    """
+
+    def _saved(self, name, **options):
+        image = Image.new('RGB', (64, 48), (200, 30, 30))
+        ImageDraw.Draw(image).rectangle((0, 24, 63, 47), fill=(30, 30, 200))
+        if options.pop('alpha', False):
+            image = image.convert('RGBA')
+            image.putalpha(200)
+        path = os.path.join(self.tmp_dir, name)
+        image.save(path, **options)
+        return path
+
+    def _loaded(self, path):
+        """The pixbuf load_pixbuf() makes of <path>, and whether
+        gdk-pixbuf was asked for it."""
+        with unittest.mock.patch.object(
+                image_tools.GdkPixbuf.Pixbuf, 'new_from_file',
+                wraps=GdkPixbuf.Pixbuf.new_from_file) as gdk:
+            pixbuf = image_tools.load_pixbuf(path)
+        return pixbuf, gdk.called
+
+    def test_a_lossy_webp_goes_to_pil(self):
+        for name, options in (('lossy.webp', {'quality': 90}),
+                              ('alpha.webp', {'quality': 90, 'alpha': True})):
+            with self.subTest(name=name):
+                pixbuf, asked_gdk = self._loaded(self._saved(name, **options))
+                self.assertFalse(asked_gdk)
+                self.assertEqual((64, 48), (pixbuf.get_width(),
+                                            pixbuf.get_height()))
+
+    def test_a_lossless_webp_stays_with_gdk_pixbuf(self):
+        pixbuf, asked_gdk = self._loaded(
+            self._saved('lossless.webp', lossless=True))
+        self.assertTrue(asked_gdk)
+        self.assertEqual((64, 48), (pixbuf.get_width(), pixbuf.get_height()))
+
+    def test_other_formats_stay_with_gdk_pixbuf(self):
+        for name in ('page.png', 'page.jpg'):
+            with self.subTest(name=name):
+                _pixbuf, asked_gdk = self._loaded(self._saved(name))
+                self.assertTrue(asked_gdk)
