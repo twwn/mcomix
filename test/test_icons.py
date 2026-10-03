@@ -1,10 +1,18 @@
 """ MComix' own icons, as an icon theme finds them. """
 
+import glob
+import os
+import re
+
 from gi.repository import Gtk
+from PIL import Image
 
 from . import MComixTest
 
 from mcomix import icons
+
+#: The checkout: the desktop's copies of the icon are under share/.
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 class OwnIconsTest(MComixTest):
@@ -44,3 +52,22 @@ class OwnIconsTest(MComixTest):
         """So that the test above, which finds nothing in a theme that
         cannot read the directory, says something."""
         self.assertTrue(self._theme().has_icon('mcomix-archive'))
+
+
+class IconSizesTest(MComixTest):
+
+    def test_each_picture_is_the_size_its_folder_names(self):
+        """An icon theme's <N>x<N> folder holds pictures N pixels square.
+        The application icon is 4:3 and was exported N pixels wide only:
+        16x12 in 16x16, 256x192 in 256x256, which Debian's lintian
+        reports (upstream bug 159) and a theme may stretch."""
+        found = glob.glob(os.path.join(ROOT, '**', 'hicolor', '*x*', '**',
+                                       '*.png'), recursive=True)
+        self.assertGreater(len(found), 12)
+        wrong = []
+        for path in found:
+            folder = re.search(r'[/\\](\d+)x(\d+)[/\\]', path)
+            with Image.open(path) as image:
+                if image.size != (int(folder[1]), int(folder[2])):
+                    wrong.append((os.path.relpath(path, ROOT), image.size))
+        self.assertEqual([], wrong)

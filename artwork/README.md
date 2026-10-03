@@ -5,7 +5,7 @@ It redraws the original bitmap icon as vectors, and fixes flaws that showed at f
 
 ## Regenerating the icons
 
-After editing the source, run `make` here, with Inkscape on the `PATH`.
+After editing the source, run `make` here, with Inkscape and ImageMagick on the `PATH`.
 It writes, from the source:
 
 - `../mcomix/images/icons/hicolor/scalable/apps/mcomix.svg`, the icon as plain SVG, and `<size>x<size>/apps/mcomix.png` beside it: the window's icon, which MComix finds there whether or not it is installed;

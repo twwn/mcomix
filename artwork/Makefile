@@ -14,6 +14,10 @@
 #   social-preview.png (1280x640, GitHub's social preview; not in "all")
 
 PNG_SIZES = 16 22 24 32 48 256
+# The icon is 4:3, and an icon theme's <N>x<N> folder holds square
+# pictures: each is centred on a transparent square (ImageMagick).
+SQUARE := magick -background none -gravity center \
+	-define png:exclude-chunks=date,time
 SVG := ../mcomix/images/icons/hicolor/scalable/apps/mcomix.svg
 ICON_OUTPUTS := $(foreach i,$(PNG_SIZES),../mcomix/images/icons/hicolor/$(i)x$(i)/apps/mcomix.png)
 XDG_OUTPUTS := $(foreach i,$(PNG_SIZES),../share/icons/hicolor/$(i)x$(i)/apps/mcomix.png)
@@ -36,12 +40,14 @@ define PNG_template =
   ../mcomix/images/icons/hicolor/$(1)x$(1)/apps/mcomix.png: $(SVG) mcomix_icon_artwork.svg
 	inkscape -C -w $(1) --export-type=png \
 		--export-filename=$$@ $(SVG)
+	$(SQUARE) $$@ -strip -extent $(1)x$(1) PNG32:$$@
 endef
 
 define XDG_template =
   ../share/icons/hicolor/$(1)x$(1)/apps/mcomix.png: $(SVG) mcomix_icon_artwork.svg
 	inkscape -C -w $(1) --export-type=png \
 		--export-filename=$$@ $(SVG)
+	$(SQUARE) $$@ -strip -extent $(1)x$(1) PNG32:$$@
 endef
 
 $(foreach i,$(PNG_SIZES),$(eval $(call PNG_template,$(i))))
