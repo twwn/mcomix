@@ -211,7 +211,17 @@ class DirectoryWalkTest(MComixTest):
         image = self._put_image('a')
         self._open(image)
         self.assertTrue(self.handler.file_is_available(image))
-        os.remove(image)
+
+        def removed():
+            # Windows removes no open file, and the page is read by the
+            # window and the thumbnail bar as it opens: WinError 32 on
+            # GitHub's runner.
+            try:
+                os.remove(image)
+            except PermissionError:
+                return False
+            return True
+        self.assertTrue(wait_for(removed))
         self.assertFalse(self.handler.file_is_available(image))
 
 
