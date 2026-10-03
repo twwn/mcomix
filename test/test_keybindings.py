@@ -114,6 +114,43 @@ class StoredKeybindingsTest(MComixTest):
         self.assertEqual([keybindings.parse_accelerator('<Control>S')],
                          manager.get_bindings_for_action('slideshow'))
 
+    def _escape_manager(self, stored):
+        """A manager over <stored> with Leave fullscreen on Escape and
+        Quit on Ctrl+Q by default, and Escape moved to Quit."""
+        from mcomix import preferences
+        self.addCleanup(preferences.keybinding_moves.clear)
+        preferences.keybinding_moves[:] = [('quit', 'Escape')]
+        with open(constants.KEYBINDINGS_CONF_PATH, 'w') as fp:
+            json.dump(stored, fp)
+        manager = keybindings._KeybindingManager(_StubWindow())
+        self.fired = []
+        for action, default in (('exit_fullscreen', 'Escape'),
+                                ('quit', '<Control>Q')):
+            manager.register(action, [default],
+                             self.fired.append, args=[action])
+        manager.take_over_moved_keys()
+        return manager
+
+    def test_a_moved_key_reaches_its_new_action(self):
+        """With nothing stored, Quit keeps its own default as well: an
+        action takes its defaults only where it holds no key."""
+        for stored in ({}, {'exit_fullscreen': ['Escape'],
+                            'quit': ['<Control>q']}):
+            with self.subTest(stored=stored):
+                manager = self._escape_manager(stored)
+                self._press(manager, 'Escape')
+                self._press(manager, '<Control>Q')
+                self.assertEqual(['quit', 'quit'], self.fired)
+                self.assertEqual(
+                    [], manager.get_bindings_for_action('exit_fullscreen'))
+                with open(constants.KEYBINDINGS_CONF_PATH) as fp:
+                    self.assertIn('Escape', json.load(fp)['quit'])
+
+    def test_a_key_already_where_it_is_moved_to_is_left(self):
+        manager = self._escape_manager({'quit': ['Escape']})
+        self.assertEqual([keybindings.parse_accelerator('Escape')],
+                         manager.get_bindings_for_action('quit'))
+
     def test_a_file_of_the_wrong_shape_leaves_the_defaults(self):
         """Any JSON that was not an object of lists of names stopped
         MComix before it had a window, and a name where a list belongs

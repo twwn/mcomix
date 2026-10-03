@@ -225,10 +225,12 @@ class EventHandler:
                          self._window.scroll_to_predefined,
                          kwargs={'destination': (1, -1), 'index': constants.UNION_INDEX})
 
-        # Enter/exit fullscreen.
+        # Enter/exit fullscreen.  Escape puts picked-out pages back
+        # first, whatever it is bound to: key_press_event() sees to it.
         manager.register('exit_fullscreen',
                          ['Escape'],
-                         self.escape_event)
+                         self._window.actiongroup.get_action('fullscreen')
+                         .set_active, args=[False])
 
         # View modes
         manager.register('double_page',
@@ -506,6 +508,10 @@ class EventHandler:
             manager.register('execute_command_%d' % i, ['%d' % i],
                              self._execute_command, args=[i - 1])
 
+        # What the preferences used to say about a key, now that every
+        # action has its own.
+        manager.take_over_moved_keys()
+
     def key_press_event(self, controller: Gtk.EventControllerKey,
                         keyval: int, keycode: int,
                         state: Gdk.ModifierType) -> bool:
@@ -545,7 +551,15 @@ class EventHandler:
                 # with it as well.
                 consumed &= ~Gdk.ModifierType.SHIFT_MASK
 
-            manager.execute((accel_keyval, state & ~consumed & ALL_ACCELS_MASK))
+            modifiers = state & ~consumed & ALL_ACCELS_MASK
+            if (accel_keyval == Gdk.KEY_Escape and not modifiers
+                    and self._window.selected_pages):
+                # Escape lets go of what is picked out before it does
+                # what it is bound to, as it lets go of a selection
+                # anywhere else: leaving fullscreen, or quitting.
+                self._window.clear_selection()
+            else:
+                manager.execute((accel_keyval, modifiers))
 
         # ----------------------------------------------------------------
         # We kill the signals here for the Up, Down, Space and Enter keys,
@@ -576,20 +590,6 @@ class EventHandler:
         area = self._window.page_area
         widgets.popup_at(self._window.popup, area,
                          area.get_width() / 2, area.get_height() / 2)
-
-    def escape_event(self) -> None:
-        """What the escape key does.
-
-        Pages picked out are put back first, as escape lets go of what
-        is selected elsewhere; only with none picked out does it leave
-        fullscreen, or quit where the preferences say so.
-        """
-        if self._window.selected_pages:
-            self._window.clear_selection()
-        elif prefs['escape quits']:
-            self._window.close_program()
-        else:
-            self._window.actiongroup.get_action('fullscreen').set_active(False)
 
     def scroll_wheel_event(self, controller: Gtk.EventControllerScroll,
                            delta_x: float, delta_y: float) -> bool:

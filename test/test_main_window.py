@@ -820,27 +820,12 @@ class MainWindowTest(MComixTest):
         self.assertEqual(self.window.selected_pages, set())
         self.assertEqual(self._selected_images(), [])
 
-    def test_escape_puts_back_the_pages_picked_out_first(self):
-        """Escape lets go of a selection before it leaves fullscreen,
-        or quits where the preferences say so."""
-        self._ready()
-        self.window.select_page(1)
-        with unittest.mock.patch.dict(prefs, {'escape quits': True}), \
-                unittest.mock.patch.object(self.window,
-                                           'close_program') as closed:
-            self.window.event_handler.escape_event()
-            self.assertEqual(self.window.selected_pages, set())
-            closed.assert_not_called()
-            self.window.event_handler.escape_event()
-            closed.assert_called_once_with()
-
-    def test_otherwise_escape_leaves_fullscreen(self):
+    def test_escape_leaves_fullscreen(self):
         fullscreen = self.window.actiongroup.get_action('fullscreen')
-        with unittest.mock.patch.dict(prefs, {'escape quits': False}), \
-                unittest.mock.patch.object(fullscreen,
-                                           'set_active') as set_active:
-            self.window.event_handler.escape_event()
-        set_active.assert_called_once_with(False)
+        fullscreen.set_active(True)
+        keybindings.keybinding_manager(self.window).execute(
+            keybindings.parse_accelerator('Escape'))
+        self.assertFalse(fullscreen.get_active())
 
     def test_a_number_key_runs_that_command_of_open_with(self):
         """Counted over the commands alone: a separator is no command a

@@ -24,7 +24,14 @@ from mcomix import tools
 #:      under "delete-opened-file", where the name used to be misspelt.
 #:   3: "store recent file info" is True or False, where MComix before
 #:      2012 stored 0 (nothing), 1 (the file) or 2 (the file and page).
-CONFIG_FORMAT_VERSION = 4
+#:   4: "max extract threads" no longer carries the old default of 1.
+#:   5: "escape quits" is gone: Escape is a key binding of Quit instead.
+CONFIG_FORMAT_VERSION = 5
+
+#: Keys a step of _migrate_preferences() has given to another action, as
+#: (action, accelerator): the key bindings are read after the
+#: preferences, and take these over once every action has its keys.
+keybinding_moves: list[tuple[str, str]] = []
 
 #: The key the version above is stored under.  It lives among the
 #: preferences rather than wrapping them, so the file stays a flat mapping.
@@ -131,7 +138,6 @@ Preferences = TypedDict('Preferences', {
     'max threads': int,
     'max extract threads': int,
     'scaling quality': int,
-    'escape quits': bool,
     'fit to size width wide': int,
     'fit to size height wide': int,
     'fit to size width other': int,
@@ -273,7 +279,6 @@ _DEFAULTS: Preferences = {
     'max threads': 3,
     'max extract threads': 4,
     'scaling quality': 2,  # GdkPixbuf.InterpType.BILINEAR
-    'escape quits': False,
     'fit to size width wide': 3790,
     'fit to size height wide': 960,
     'fit to size width other': 1450,
@@ -488,6 +493,12 @@ def _migrate_preferences(saved_prefs: dict[str, object]) -> None:
         # thread the new default was raised to get past.
         if saved_prefs.get('max extract threads') == 1:
             del saved_prefs['max extract threads']
+
+    if version < 5:
+        # "Escape key closes program" is what binding Escape to Quit
+        # does, and the key bindings are where a key's action is set.
+        if saved_prefs.pop('escape quits', False) is True:
+            keybinding_moves.append(('quit', 'Escape'))
 
     saved_prefs[_FORMAT_VERSION_KEY] = CONFIG_FORMAT_VERSION
 

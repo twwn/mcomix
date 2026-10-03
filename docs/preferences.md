@@ -13,7 +13,6 @@ Option | Explanation
 -------|------------
 Language (needs restart) | "Auto-detect (Default)" follows the system.
 Theme | "Follow the system" takes the desktop's colour scheme; "Light" or "Dark" picks one; "Pitch black" is dark with black backgrounds, for OLED screens.
-Escape key closes program | Escape quits, instead of only leaving fullscreen. Pages picked out are put back first either way.
 Use this colour as background | The colour behind the page.
 Use dynamic background colour | A colour taken from the page's edges instead: a page with a white border is shown on white. For the page and for the thumbnails.
 Use this colour as the thumbnail background | The colour behind the sidebar's thumbnails.

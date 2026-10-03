@@ -135,11 +135,6 @@ class _PreferencesDialog(Dialog):
         page.add_row(Gtk.Label(label=_('Theme:')),
                      self._create_theme_control())
 
-        page.add_row(self._create_pref_check_button(
-            _('Escape key closes program'), 'escape quits',
-            _('When active, the ESC key closes the program, instead of only '
-              'disabling fullscreen mode.')))
-
         page.new_section(_('Background'))
 
         fixed_bg_button, dynamic_bg_button = self._create_binary_pref_radio_buttons(

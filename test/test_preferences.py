@@ -276,6 +276,26 @@ class MigratePreferencesTest(MComixTest):
         preferences.read_preferences_file()
         self.assertEqual(1, prefs['max extract threads'])
 
+    def test_escape_quits_becomes_a_key_of_quit(self) -> None:
+        """"Escape key closes program" said what a key does, which the
+        key bindings say now; a file from before format 5 that had it on
+        hands Escape to Quit."""
+        self.addCleanup(preferences.keybinding_moves.clear)
+        for stored, moves in ((True, [('quit', 'Escape')]), (False, [])):
+            with self.subTest(stored=stored):
+                preferences.keybinding_moves.clear()
+                self._write({_FORMAT_VERSION_KEY: 4, 'escape quits': stored})
+                preferences.read_preferences_file()
+                self.assertEqual(moves, preferences.keybinding_moves)
+                self.assertNotIn('escape quits', prefs)
+
+    def test_a_file_at_format_5_moves_no_key(self) -> None:
+        self.addCleanup(preferences.keybinding_moves.clear)
+        preferences.keybinding_moves.clear()
+        self._write({_FORMAT_VERSION_KEY: 5, 'escape quits': True})
+        preferences.read_preferences_file()
+        self.assertEqual([], preferences.keybinding_moves)
+
     def test_a_version_that_is_not_a_number_is_taken_as_the_oldest(self) -> None:
         """The version comes out of the file like everything else in it,
         so it can be anything a hand edit or a half-written file left

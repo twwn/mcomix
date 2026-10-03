@@ -121,6 +121,36 @@ class KeyPressTest(_KeyPressWindowTest):
         self.assertEqual(Gdk.EVENT_PROPAGATE, self._press(Gdk.KEY_n))
 
 
+class EscapeTest(_KeyPressWindowTest):
+
+    """Escape puts the pages picked out back before it does what it is
+    bound to; "Escape key closes program" made that true of quitting
+    too, and now that quitting is a binding of Escape like any other,
+    it is true whatever the key is bound to."""
+
+    def setUp(self):
+        super().setUp()
+        self.executed = []
+        manager = keybindings.keybinding_manager(self.window)
+        patcher = unittest.mock.patch.object(
+            manager, 'execute', side_effect=self.executed.append)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def test_pages_picked_out_are_put_back_first(self):
+        self.window.selected_pages = {1, 3}
+        with unittest.mock.patch.object(self.window, 'clear_selection') \
+                as cleared:
+            self._press(Gdk.KEY_Escape)
+        cleared.assert_called_once_with()
+        self.assertEqual([], self.executed)
+
+    def test_with_none_picked_out_escape_does_what_it_is_bound_to(self):
+        self.window.selected_pages = set()
+        self._press(Gdk.KEY_Escape)
+        self.assertEqual([(Gdk.KEY_Escape, 0)], self.executed)
+
+
 class _ScrollablePageTest(_KeyPressWindowTest):
 
     """A page far larger than the window, to scroll about in.

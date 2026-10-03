@@ -27,6 +27,7 @@ from typing import Any, TYPE_CHECKING
 
 from mcomix import constants
 from mcomix import log
+from mcomix import preferences
 from mcomix import tools
 from mcomix.i18n import _
 
@@ -252,6 +253,35 @@ class _KeybindingManager:
             self.announce_accelerator(name, Gtk.accelerator_name(key, mod))
 
         self._action_to_callback[name] = (callback, args, kwargs)
+
+    def take_over_moved_keys(self) -> None:
+        """Give each key preferences.keybinding_moves names to its new
+        action, once every action has been registered with its keys.
+
+        The key is taken off the action that held it, as edit_accel()
+        takes it, and goes on the end of the new action's list, which
+        keeps its own keys.  Done after registering rather than while
+        reading the file: an action with nothing stored takes its
+        defaults only where its list is empty.
+        """
+        moved = False
+        while preferences.keybinding_moves:
+            name, accelerator = preferences.keybinding_moves.pop(0)
+            binding = parse_accelerator(accelerator)
+            holder = self._binding_to_action.get(binding)
+            if holder == name:
+                continue
+            if holder is not None:
+                self._action_to_bindings[holder].remove(binding)
+                remaining = self._action_to_bindings[holder]
+                self.announce_accelerator(
+                    holder, Gtk.accelerator_name(*remaining[0])
+                    if remaining else '')
+            self._binding_to_action[binding] = name
+            self._action_to_bindings[name].append(binding)
+            moved = True
+        if moved:
+            self.save()
 
     def announce_accelerator(self, name: str, accelerator: str) -> None:
         """Tell the menus which key <name> answers to.
