@@ -47,8 +47,9 @@ class EditArchiveDialogTest(MComixTest):
         self.window = main.MainWindow(
             open_path=get_testfile_path('archives', '01-ZIP-Normal.zip'))
         main.set_main_window(self.window)
-        wait_for(lambda: self.window.imagehandler.get_number_of_pages() > 0,
-                 seconds=20)
+        self.assertTrue(wait_for(
+            lambda: self.window.imagehandler.get_number_of_pages() > 0,
+            seconds=20))
         self.dialog = edit_dialog._EditArchiveDialog(self.window)
         pump()
 
@@ -1054,8 +1055,9 @@ class SavedArchiveContentsTest(MComixTest):
             book.writestr('__MACOSX/._notes.md', 'junk')
         self.window = main.MainWindow(open_path=self.source)
         main.set_main_window(self.window)
-        wait_for(lambda: self.window.imagehandler.get_number_of_pages() > 0,
-                 seconds=20)
+        self.assertTrue(wait_for(
+            lambda: self.window.imagehandler.get_number_of_pages() > 0,
+            seconds=20))
         self.dialog = edit_dialog._EditArchiveDialog(self.window)
         pump()
 

@@ -35,6 +35,7 @@ from mcomix import main
 from mcomix import message_dialog
 from mcomix import rename_dialog
 from mcomix import tools
+from mcomix import widgets
 from mcomix.dialog import Response
 from mcomix.library import backend
 from mcomix.preferences import prefs
@@ -119,7 +120,9 @@ class MainWindowTest(MComixTest):
         """CTRL+D was a Gtk.Shortcut of the bookmarks menu's own, which the
         Shortcuts tab did not list and could not change.  It is now an
         action of the keybinding manager, and the menu shows its key."""
-        wait_for(lambda: self.window.filehandler.file_loaded, seconds=10)
+        self.assertTrue(wait_for(
+            lambda: self.window.filehandler.file_loaded,
+            seconds=10))
         # The store is one for the process and keeps the first window it
         # was given, which on a shared worker is another test's.
         store = bookmark_backend.BookmarksStore
@@ -341,8 +344,12 @@ class MainWindowTest(MComixTest):
                 warnings.simplefilter('ignore', DeprecationWarning)
                 self.assertEqual(dialog.filechooser.get_current_name(),
                                  '01-ZIP-Normal_01-JPG-Indexed.jpg')
-                folder = dialog.filechooser.get_current_folder()
-            self.assertEqual(folder.get_path(), target_dir)
+                # GTK asks for the folder on a thread and takes it as
+                # the current one only when the answer comes back.
+                self.assertTrue(wait_for(
+                    lambda: widgets.chooser_folder(dialog.filechooser)
+                    == target_dir), widgets.chooser_folder(
+                        dialog.filechooser))
         finally:
             dialog.destroy()
             self._pump()
@@ -3513,8 +3520,9 @@ class MainWindowTest(MComixTest):
 
     def _watch_scrolls(self):
         """Collect what _draw_image() asks the layout to scroll to."""
-        wait_for(lambda: self.window.imagehandler.page_is_available(),
-                 seconds=20)
+        self.assertTrue(wait_for(
+            lambda: self.window.imagehandler.page_is_available(),
+            seconds=20))
         scrolls = []
         self.window.scroll_to_predefined = (
             lambda destination, index=None:
@@ -3549,7 +3557,9 @@ class MainWindowTest(MComixTest):
         """The destination waited with the page, and any redraw in the
         meantime - a resize, a toggled statusbar - replaced it with
         none, so the page opened where the one before had been left."""
-        wait_for(self.window.imagehandler.page_is_available, seconds=10)
+        self.assertTrue(wait_for(
+            self.window.imagehandler.page_is_available,
+            seconds=10))
         self._pump()
         with unittest.mock.patch.object(
                 self.window.imagehandler, 'page_is_available',

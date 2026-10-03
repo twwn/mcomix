@@ -25,8 +25,9 @@ class EnhanceDialogTest(MComixTest):
         self.window = main.MainWindow(
             open_path=get_testfile_path('archives', '01-ZIP-Normal.zip'))
         main.set_main_window(self.window)
-        wait_for(lambda: self.window.imagehandler.get_number_of_pages() > 0,
-                 seconds=20)
+        self.assertTrue(wait_for(
+            lambda: self.window.imagehandler.get_number_of_pages() > 0,
+            seconds=20))
         pump()
 
     def tearDown(self):
@@ -41,7 +42,8 @@ class EnhanceDialogTest(MComixTest):
         with mock.patch.object(histogram, 'draw_histogram',
                                wraps=histogram.draw_histogram) as drawn:
             self.window.flip_page(+1)
-            wait_for(self.window.imagehandler.page_is_available)
+            self.assertTrue(wait_for(
+                self.window.imagehandler.page_is_available))
             pump()
         return drawn.call_count
 

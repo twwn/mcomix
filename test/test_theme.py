@@ -39,8 +39,9 @@ def background_of(window):
         # was painted is out of reach there.
         raise unittest.SkipTest('PyGObject %s cannot read render nodes'
                                 % gi.__version__)
-    wait_for(lambda: window.get_width() > 0 and window.get_height() > 0,
-             seconds=5)
+    if not wait_for(lambda: window.get_width() > 0
+                    and window.get_height() > 0, seconds=5):
+        raise AssertionError('the window was never allocated')
     paintable = Gtk.WidgetPaintable.new(window)
     widest = []
 
@@ -410,8 +411,9 @@ def _border_nodes(window):
     if gi.version_info < (3, 48):
         raise unittest.SkipTest('PyGObject %s cannot read render nodes'
                                 % gi.__version__)
-    wait_for(lambda: window.get_width() > 0 and window.get_height() > 0,
-             seconds=5)
+    if not wait_for(lambda: window.get_width() > 0
+                    and window.get_height() > 0, seconds=5):
+        raise AssertionError('the window was never allocated')
     paintable = Gtk.WidgetPaintable.new(window)
     found = []
 

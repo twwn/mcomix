@@ -99,8 +99,9 @@ class ThumbnailListViewTest(MComixTest):
 
     def test_the_picture_of_a_bound_row_shows_the_thumbnail(self):
         self._fill()
-        wait_for(lambda: self.view.store.get_item(0).thumbnail is not None,
-                 seconds=10)
+        self.assertTrue(wait_for(
+            lambda: self.view.store.get_item(0).thumbnail is not None,
+            seconds=10))
         self._settle()
         paintables = [row.picture.get_paintable()
                       for row in self.view._each_cell()]

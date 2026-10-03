@@ -165,7 +165,7 @@ class BlackBackgroundTest(MComixTest):
 
     def test_the_covers_are_painted_on_black(self):
         self.window.present()
-        wait_for(lambda: self.area._covers.get_width() > 0)
+        self.assertTrue(wait_for(lambda: self.area._covers.get_width() > 0))
         self.assertEqual('rgb(0,0,0)', background_of(self.area._covers))
 
     def test_the_view_carries_the_class_the_rule_is_written_against(self):
@@ -974,7 +974,8 @@ class MiddleClickTest(MComixTest):
         self.window.set_default_size(600, 400)
         self.window.set_child(self.area)
         self.window.present()
-        wait_for(lambda: self.area._covers.position_at(*self.FIRST) >= 0)
+        self.assertTrue(wait_for(
+            lambda: self.area._covers.position_at(*self.FIRST) >= 0))
 
     def tearDown(self):
         # The thumbnailer thread starts as soon as there are items, and

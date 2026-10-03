@@ -38,8 +38,9 @@ class ThumbnailSidebarTest(MComixTest):
         # zero for a while after the window is built. Waiting on the
         # count rather than pumping a fixed number of rounds is what
         # keeps this from racing the extractor.
-        wait_for(lambda: self.window.imagehandler.get_number_of_pages() > 0,
-                 seconds=20)
+        self.assertTrue(wait_for(
+            lambda: self.window.imagehandler.get_number_of_pages() > 0,
+            seconds=20))
 
     def tearDown(self):
         # Only terminate_program() stops the worker threads, and a GTK4
@@ -78,7 +79,9 @@ class ThumbnailSidebarTest(MComixTest):
 
     def test_a_thumbnail_is_a_texture_of_the_size_that_was_asked_for(self):
         self.sidebar.load_thumbnails()
-        wait_for(lambda: self._items()[0].thumbnail is not None, seconds=20)
+        self.assertTrue(wait_for(
+            lambda: self._items()[0].thumbnail is not None,
+            seconds=20))
         thumbnail = self._items()[0].thumbnail
         # The border adds two pixels to the size the preference names.
         limit = self.sidebar._pixbuf_size
@@ -126,8 +129,9 @@ class ThumbnailSidebarTest(MComixTest):
         """
         self.sidebar.load_thumbnails()
         self.window.set_page(2)
-        wait_for(lambda: self.sidebar._list.get_selected_row() == 1,
-                 seconds=20)
+        self.assertTrue(wait_for(
+            lambda: self.sidebar._list.get_selected_row() == 1,
+            seconds=20))
         # What hovering the last row does.
         last = self._pages() - 1
         self.assertGreater(last, 1)
@@ -161,7 +165,9 @@ class ThumbnailSidebarTest(MComixTest):
         sidebar's list for its item raised AttributeError: the list
         view had no model, only the grid of the library did."""
         self.sidebar.load_thumbnails()
-        wait_for(lambda: self._items()[0].thumbnail is not None, seconds=20)
+        self.assertTrue(wait_for(
+            lambda: self._items()[0].thumbnail is not None,
+            seconds=20))
         self._hover(0)
         source = unittest.mock.Mock()
         self.sidebar._drag_begin(source, None)
@@ -203,8 +209,10 @@ class ThumbnailSidebarTest(MComixTest):
         sidebar is shown, which is how the user reaches this.
         """
         self.sidebar.load_thumbnails()
-        wait_for(lambda: any(item.thumbnail is not None
-                             for item in self._items()), seconds=20)
+        self.assertTrue(wait_for(
+            lambda: any(item.thumbnail is not None
+                        for item in self._items()),
+            seconds=20))
 
         prefs['show thumbnails'] = False
         self.window.draw_image()
@@ -225,8 +233,9 @@ class ThumbnailSidebarTest(MComixTest):
     def test_resizing_keeps_the_page_on_screen_selected(self):
         self.sidebar.load_thumbnails()
         self.window.set_page(3)
-        wait_for(lambda: self.sidebar._list.get_selected_row() == 2,
-                 seconds=20)
+        self.assertTrue(wait_for(
+            lambda: self.sidebar._list.get_selected_row() == 2,
+            seconds=20))
         prefs['thumbnail size'] = prefs['thumbnail size'] * 2
         self.sidebar.resize()
         self.assertEqual(self.sidebar._list.get_selected_row(), 2)
@@ -255,8 +264,10 @@ class ThumbnailSidebarTest(MComixTest):
 
     def _ready(self):
         self.sidebar.load_thumbnails()
-        wait_for(lambda: len(list(self.sidebar._list._each_cell()))
-                 >= self._pages(), seconds=20)
+        self.assertTrue(wait_for(
+            lambda: len(list(self.sidebar._list._each_cell()))
+            >= self._pages(),
+            seconds=20))
         pump()
 
     def test_a_page_picked_out_is_outlined_in_the_sidebar(self):

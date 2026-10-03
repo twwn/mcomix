@@ -58,11 +58,13 @@ class DoublePageTurnsTest(MComixTest):
         self.window = main.MainWindow(open_path=path)
         main.set_main_window(self.window)
         handler = self.window.imagehandler
-        wait_for(lambda: handler.get_number_of_pages() == len(layout),
-                 seconds=20)
-        wait_for(lambda: all(handler.page_is_available(page)
-                             for page in range(1, len(layout) + 1)),
-                 seconds=20)
+        self.assertTrue(wait_for(
+            lambda: handler.get_number_of_pages() == len(layout),
+            seconds=20))
+        self.assertTrue(wait_for(
+            lambda: all(handler.page_is_available(page)
+                        for page in range(1, len(layout) + 1)),
+            seconds=20))
         pump()
 
     def _shown(self):

@@ -151,8 +151,9 @@ class LensCursorTest(MComixTest):
     def _open_a_file(self):
         self.window.filehandler.open_file(
             get_testfile_path('archives', '01-ZIP-Normal.zip'))
-        wait_for(lambda: self.window.imagehandler.get_number_of_pages() > 0,
-                 seconds=20)
+        self.assertTrue(wait_for(
+            lambda: self.window.imagehandler.get_number_of_pages() > 0,
+            seconds=20))
         pump()
 
     @property
@@ -242,8 +243,10 @@ class LensFollowsThePagesTest(MComixTest):
 
     def _wait_for_the_page(self):
         imagehandler = self.window.imagehandler
-        wait_for(lambda: imagehandler.page_is_available()
-                 and not self.window._waiting_for_redraw, seconds=20)
+        self.assertTrue(wait_for(
+            lambda: imagehandler.page_is_available()
+            and not self.window._waiting_for_redraw,
+            seconds=20))
         pump()
 
     def test_a_page_turn_redraws_the_lens(self):
@@ -279,8 +282,10 @@ class LensFollowsThePagesTest(MComixTest):
             self.window.manual_zoom_in()
         self._wait_for_the_page()
         adjustment = self.window.page_area.get_hadjustment()
-        wait_for(lambda: adjustment.get_upper() - adjustment.get_page_size()
-                 > 100, seconds=5)
+        self.assertTrue(wait_for(
+            lambda: adjustment.get_upper() - adjustment.get_page_size()
+            > 100,
+            seconds=5))
         before_x = self.drawn[-1][1][0]
         start = adjustment.get_value()
         self.window.page_area.scroll_to(

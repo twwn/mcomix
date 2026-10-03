@@ -30,8 +30,9 @@ class PageselectTest(MComixTest):
         self.window = main.MainWindow(
             open_path=get_testfile_path('archives', '01-ZIP-Normal.zip'))
         main.set_main_window(self.window)
-        wait_for(lambda: self.window.imagehandler.get_number_of_pages() > 0,
-                 seconds=20)
+        self.assertTrue(wait_for(
+            lambda: self.window.imagehandler.get_number_of_pages() > 0,
+            seconds=20))
         self.dialog = pageselect.Pageselector(self.window)
         pump()
 
@@ -79,7 +80,9 @@ class PageselectTest(MComixTest):
         is destroyed - and the handler is a method of the window, so the
         closure held a reference and the signal never came."""
         self.dialog._update_thumbnail(1)
-        wait_for(lambda: self.dialog._thread._threads, seconds=20)
+        self.assertTrue(wait_for(
+            lambda: self.dialog._thread._threads,
+            seconds=20))
         self.dialog.response(Response.CANCEL)
         pump()
         self.assertEqual(self.dialog._thread._threads, [],

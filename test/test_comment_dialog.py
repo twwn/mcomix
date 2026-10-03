@@ -56,10 +56,10 @@ class CommentsDialogTest(MComixTest):
             main.set_main_window(self.window)
         else:
             self.window.filehandler.open_file(path)
-        wait_for(lambda: self.window.imagehandler.get_number_of_pages() > 0,
-                 seconds=20)
-        wait_for(lambda: self.window.filehandler.get_number_of_comments() >= 0,
-                 seconds=20)
+        self.assertTrue(wait_for(
+            lambda: self.window.imagehandler.get_number_of_pages() > 0,
+            seconds=20))
+        # The comments are known from the same listing as the pages.
 
     def _tabs(self):
         notebook = self.dialog._notebook
@@ -110,7 +110,7 @@ class CommentsDialogTest(MComixTest):
         self._open(self._archive_with_comments(
             'commented.zip', ('one.txt', 'first')))
         self.dialog = comment_dialog._CommentsDialog(self.window)
-        wait_for(lambda: len(self._tabs()) == 1, seconds=20)
+        self.assertTrue(wait_for(lambda: len(self._tabs()) == 1, seconds=20))
         self._open(get_testfile_path('archives', '01-ZIP-Normal.zip'))
         wait_for(lambda: not self._tabs(), seconds=20)
         self.assertEqual(self._tabs(), [])
@@ -152,14 +152,14 @@ class CommentsDialogTest(MComixTest):
         self._open(self._archive_with_comments(
             'latin.zip', ('note.txt', text.encode('latin-1'))))
         self.dialog = comment_dialog._CommentsDialog(self.window)
-        wait_for(lambda: len(self._tabs()) == 1, seconds=20)
+        self.assertTrue(wait_for(lambda: len(self._tabs()) == 1, seconds=20))
         self.assertEqual(text, self._text_of(0))
 
     def test_a_comment_in_utf_8_is_shown_as_it_was_written(self):
         self._open(self._archive_with_comments(
             'utf8.zip', ('note.txt', 'caf\xe9 \u3042'.encode('utf-8'))))
         self.dialog = comment_dialog._CommentsDialog(self.window)
-        wait_for(lambda: len(self._tabs()) == 1, seconds=20)
+        self.assertTrue(wait_for(lambda: len(self._tabs()) == 1, seconds=20))
         self.assertEqual('caf\xe9 \u3042', self._text_of(0))
 
     def test_a_closed_dialog_does_not_read_the_comments_of_the_next_book(self):
@@ -178,9 +178,10 @@ class CommentsDialogTest(MComixTest):
             self._open(self._archive_with_comments(
                 'second.zip', ('two.txt', 'second')))
             handler = self.window.filehandler
-            wait_for(lambda: handler.get_number_of_comments() == 1 and
-                     handler.file_is_available(handler.get_comment_name(1)),
-                     seconds=20)
+            self.assertTrue(wait_for(
+                lambda: handler.get_number_of_comments() == 1 and
+                handler.file_is_available(handler.get_comment_name(1)),
+                seconds=20))
             pump()
         added.assert_not_called()
 

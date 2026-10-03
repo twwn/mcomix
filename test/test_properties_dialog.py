@@ -38,8 +38,9 @@ class PropertiesDialogTest(MComixTest):
     def _open(self, path):
         self.window = main.MainWindow(open_path=path)
         main.set_main_window(self.window)
-        wait_for(lambda: self.window.imagehandler.get_number_of_pages() > 0,
-                 seconds=20)
+        self.assertTrue(wait_for(
+            lambda: self.window.imagehandler.get_number_of_pages() > 0,
+            seconds=20))
         self.addCleanup(self._close)
         self.dialog = properties_dialog._PropertiesDialog(self.window)
         pump()
@@ -59,7 +60,8 @@ class PropertiesDialogTest(MComixTest):
         with mock.patch.object(properties_dialog._PropertiesDialog,
                                '_update_image_page') as updated:
             self.window.flip_page(+1)
-            wait_for(self.window.imagehandler.page_is_available)
+            self.assertTrue(wait_for(
+                self.window.imagehandler.page_is_available))
             pump()
             self.assertTrue(updated.called, 'an open dialog did not follow')
             updated.reset_mock()
@@ -67,7 +69,8 @@ class PropertiesDialogTest(MComixTest):
             self.dialog.destroy()
             pump()
             self.window.flip_page(+1)
-            wait_for(self.window.imagehandler.page_is_available)
+            self.assertTrue(wait_for(
+                self.window.imagehandler.page_is_available))
             pump()
         updated.assert_not_called()
 

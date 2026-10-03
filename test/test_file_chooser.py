@@ -59,7 +59,8 @@ class FileChooserTest(MComixTest):
     def test_down_from_the_search_box_takes_the_first_file_it_found(self):
         """The arrows used to stay in the box, so the only way to a
         result was the mouse."""
-        wait_for(lambda: self.dialog._listing.get_model().get_n_items())
+        self.assertTrue(wait_for(
+            lambda: self.dialog._listing.get_model().get_n_items()))
         self.assertTrue(self.dialog._into_the_list(Gdk.KEY_Down))
         selected = self.dialog._listing.get_model().get_selection()
         self.assertFalse(selected.is_empty())
@@ -70,17 +71,20 @@ class FileChooserTest(MComixTest):
         self.assertFalse(self.dialog._into_the_list(Gdk.KEY_Down))
 
     def test_only_the_down_arrow_leaves_the_search_box(self):
-        wait_for(lambda: self.dialog._listing.get_model().get_n_items())
+        self.assertTrue(wait_for(
+            lambda: self.dialog._listing.get_model().get_n_items()))
         self.assertFalse(self.dialog._into_the_list(Gdk.KEY_Right))
 
     def test_up_off_the_top_of_the_list_goes_back_to_the_search_box(self):
-        wait_for(lambda: self.dialog._listing.get_model().get_n_items())
+        self.assertTrue(wait_for(
+            lambda: self.dialog._listing.get_model().get_n_items()))
         self.dialog._listing.get_model().select_item(0, True)
         self.assertTrue(self.dialog._back_to_the_search(Gdk.KEY_Up))
 
     def test_up_anywhere_else_in_the_list_is_the_row_above(self):
         """Which is what the list does with it itself."""
-        wait_for(lambda: self.dialog._listing.get_model().get_n_items() > 1)
+        self.assertTrue(wait_for(
+            lambda: self.dialog._listing.get_model().get_n_items() > 1))
         self.dialog._listing.get_model().select_item(1, True)
         self.assertFalse(self.dialog._back_to_the_search(Gdk.KEY_Up))
 
@@ -383,8 +387,9 @@ class FileChooserTest(MComixTest):
         self._module.open_main_filechooser_dialog(None, self.window)
         pump()
         self.dialog = self._module._main_filechooser_dialog
-        wait_for(lambda: self.dialog.filechooser.get_current_folder()
-                 is not None)
+        self.assertTrue(wait_for(
+            lambda: self.dialog.filechooser.get_current_folder()
+            is not None))
         return self.dialog.filechooser.get_current_folder().get_path()
 
     def test_it_opens_where_the_reader_last_browsed(self):

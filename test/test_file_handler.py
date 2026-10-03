@@ -596,8 +596,11 @@ class AnUnpackedArchiveIsLetGoTest(_WindowTest):
             lambda: self.handler.file_loaded
             and self.handler._extractor.get_files() == [], seconds=20),
             'the archive was never unpacked')
-        pump()
-        self.assertEqual([], _descriptors_on(source))
+        # The list empties on the extracting thread, and the archive is
+        # closed by the file handler's answer to the last file, which
+        # comes through the main loop after it.
+        self.assertTrue(wait_for(lambda: _descriptors_on(source) == []),
+                        _descriptors_on(source))
         # The pages are still there to be read, from the unpacked files.
         pages = self.window.imagehandler.get_number_of_pages()
         self.assertGreater(pages, 2)
@@ -726,7 +729,7 @@ class ABookWithNoPagesTest(MComixTest):
 
     def test_closing_it_does_not_file_it_as_read(self):
         self.assertTrue(self.handler.open_file(self.archive))
-        wait_for(lambda: self.handler.file_loaded)
+        self.assertTrue(wait_for(lambda: self.handler.file_loaded))
         pump()
         self.assertEqual(0, self.window.imagehandler.get_current_page())
 
