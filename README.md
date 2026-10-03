@@ -66,6 +66,7 @@ The GTK 4 port is offered back upstream.
 ## Contributing
 
 Issues and pull requests are welcome: see [Contributing](CONTRIBUTING.md) and [Development](docs/development.md).
+Questions go to [Discussions](https://github.com/twwn/mcomix/discussions).
 
 ## Credits
 

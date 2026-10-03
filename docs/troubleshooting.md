@@ -58,4 +58,6 @@ Without quitting: "Clear dialog choices" in the preferences asks every question 
 2. [Open a bug report](https://github.com/twwn/mcomix/issues/new/choose): the form asks for the version, the system and the steps.
 3. Attach the log, and a book that shows the problem if you can share one.
 
+A question goes to [Discussions](https://github.com/twwn/mcomix/discussions).
+
 A security problem goes to a [private advisory](https://github.com/twwn/mcomix/security/advisories/new) instead: see [Security](../SECURITY.md).

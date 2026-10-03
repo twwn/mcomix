@@ -24,6 +24,10 @@ python -m mypy mcomix
 - Commit subjects start with a type (`fix:`, `feat:`, `perf:`, `refactor:`, `test:`, `docs:`, `i18n:`, `build:`, `chore:`) and say what was wrong.
 - Write briefly: one fact per line.
 
+## Ask a question
+
+Ask in [Discussions](https://github.com/twwn/mcomix/discussions), not in an issue.
+
 ## Report a bug
 
 Use the [bug form](https://github.com/twwn/mcomix/issues/new/choose).
