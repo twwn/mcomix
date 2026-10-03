@@ -99,6 +99,7 @@ BINDING_INFO: "dict[str, dict[str, str]]" = {
     'rotate_270_height': {'title': _('Rotate 90° CCW'), 'group': _('Autorotate by height')},
 
     'double_page': {'title': _('Double page mode'), 'group': _('View mode')},
+    'title_page_alone': {'title': _('Title page alone'), 'group': _('View mode')},
     'manga_mode': {'title': _('Manga mode'), 'group': _('View mode')},
     'invert_scroll': {'title': _('Invert smart scroll'), 'group': _('View mode')},
 

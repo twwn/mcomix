@@ -279,6 +279,9 @@ class MainWindow(Gtk.Window):
         # colours to what they already are.  Only the state is out of
         # step, so it is moved rather than toggled - toggling it here
         # would redraw a window that is still being built.
+        self.actiongroup.get_action('title_page_alone').show_active(
+            bool(prefs['virtual double page for fitting images']
+                 & constants.SHOW_DOUBLE_AS_ONE_TITLE))
         self.actiongroup.get_action('invert_color').show_active(
             prefs['invert color'])
 
@@ -1111,6 +1114,24 @@ class MainWindow(Gtk.Window):
         """Show one page at a time or two, and redraw either way."""
         prefs['default double page'] = toggleaction.get_active()
         self._update_page_information()
+        self.draw_image()
+
+    def change_title_page_alone(self, toggleaction: "ui.Action") -> None:
+        """Show the first page of an archive on its own in double page
+        mode, or paired with the second, and redraw.
+
+        The title page half of "Show only one page where appropriate",
+        which books disagree about: one with a cover pairs every spread
+        after it wrongly without it, one without pairs them wrongly with
+        it, and the preferences dialog was the only way to change it
+        (upstream feature request 132).
+        """
+        value = prefs['virtual double page for fitting images']
+        if toggleaction.get_active():
+            value |= constants.SHOW_DOUBLE_AS_ONE_TITLE
+        else:
+            value &= ~constants.SHOW_DOUBLE_AS_ONE_TITLE
+        prefs['virtual double page for fitting images'] = value
         self.draw_image()
 
     def change_manga_mode(self, toggleaction: "ui.Action") -> None:

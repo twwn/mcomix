@@ -224,6 +224,10 @@ class EventHandler:
                          ['d'],
                          self._window.actiongroup.get_action('double_page').activate)
 
+        manager.register('title_page_alone',
+                         [],
+                         self._window.actiongroup.get_action('title_page_alone').activate)
+
         manager.register('best_fit_mode',
                          ['b'],
                          self._window.actiongroup.get_action('best_fit_mode').activate)

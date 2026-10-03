@@ -656,6 +656,9 @@ class _PreferencesDialog(Dialog):
         """ Called when a new option was selected for the virtual double page option. """
         value = combobox.get_value()
         prefs['virtual double page for fitting images'] = value
+        # The View menu's toggle shows the title page half of it.
+        self._window.actiongroup.get_action('title_page_alone').show_active(
+            bool(value & constants.SHOW_DOUBLE_AS_ONE_TITLE))
         self._window.draw_image()
 
     def _create_double_page_autoresize_control(self) -> "widgets.Chooser[int]":

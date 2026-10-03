@@ -52,6 +52,7 @@ No mode scales a small page up unless "View → Stretch small images" is on.
 
 - Double page mode, the D key, shows two pages side by side, so a spread reads as one.
 - The cover and pages wider than tall are shown alone, unless the preferences say otherwise.
+- "View → Title page alone" turns the cover's half of that on or off, for a book that pairs wrongly with it. Its key can be set under Shortcuts.
 - Pages turn two at a time; turning back shows the same pairs as forward.
 - CTRL with PageDown or PageUp turns one page, which shifts the pairing by one.
 - Manga mode, the M key, lays out and scrolls pages from right to left.

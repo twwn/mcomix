@@ -485,6 +485,40 @@ class MainWindowTest(MComixTest):
             self.window.popup.popdown()
             self._pump()
 
+    def test_the_title_page_toggle_is_half_of_the_preference(self):
+        """Books disagree about whether the cover stands alone, and the
+        preferences dialog was the only way to change it (upstream
+        feature request 132): the View menu's toggle sets and clears the
+        title page half of "Show only one page where appropriate" and
+        leaves the wide-page half as it is."""
+        key = 'virtual double page for fitting images'
+        toggle = self.window.actiongroup.get_action('title_page_alone')
+        prefs[key] = constants.SHOW_DOUBLE_AS_ONE_WIDE
+        toggle.show_active(False)
+        with unittest.mock.patch.object(self.window, 'draw_image') as drawn:
+            toggle.set_active(True)
+        self.assertEqual(constants.SHOW_DOUBLE_AS_ONE_TITLE
+                         | constants.SHOW_DOUBLE_AS_ONE_WIDE, prefs[key])
+        drawn.assert_called_once_with()
+        toggle.set_active(False)
+        self.assertEqual(constants.SHOW_DOUBLE_AS_ONE_WIDE, prefs[key])
+
+    def test_the_title_page_toggle_follows_the_preferences_dialog(self):
+        from mcomix import preferences_dialog
+        toggle = self.window.actiongroup.get_action('title_page_alone')
+        toggle.show_active(False)
+        preferences_dialog.open_dialog(None, self.window)
+        self._pump()
+        try:
+            dialog = preferences_dialog._dialog
+            chooser = unittest.mock.Mock()
+            chooser.get_value.return_value = constants.SHOW_DOUBLE_AS_ONE_TITLE
+            dialog._double_page_changed_cb(chooser)
+            self.assertTrue(toggle.get_active())
+        finally:
+            preferences_dialog._close_dialog()
+            self._pump()
+
     def test_the_menu_offers_a_way_out_of_fullscreen_only_there(self):
         """The only way out with the mouse was View, two levels down in
         the right-click menu (upstream feature requests 86 and 135)."""
