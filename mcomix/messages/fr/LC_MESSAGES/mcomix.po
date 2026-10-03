@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 0.93\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-03 07:38+0200\n"
+"POT-Creation-Date: 2026-10-03 13:02+0200\n"
 "PO-Revision-Date: 2015-04-05 08:54+0100\n"
 "Last-Translator: Benoit Pierre <benoit.pierre@gmail.com>\n"
 "Language-Team: \n"
@@ -50,6 +50,11 @@ msgstr "Format d'archive non supporté : %s"
 msgid "! Extraction error: %s"
 msgstr "Erreur d'extraction : %s"
 
+#: mcomix/archive_extractor.py:369 mcomix/archive_tools.py:190
+#, python-format
+msgid "! Could not read %s"
+msgstr "! Impossible de lire %s"
+
 #: mcomix/archive_packer.py:176 mcomix/library/book_area.py:743
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
@@ -67,11 +72,6 @@ msgid ""
 msgstr ""
 "! Impossible d'ajouter le fichier %(sourcefile)s à l'archive "
 "%(archivefile)s, Processus abandonné."
-
-#: mcomix/archive_tools.py:190
-#, python-format
-msgid "! Could not read %s"
-msgstr "! Impossible de lire %s"
 
 #: mcomix/bookmark_backend.py:297
 #, python-format
@@ -156,7 +156,7 @@ msgstr "Type"
 msgid "Name"
 msgstr "Nom"
 
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1584
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1592
 #: mcomix/library/control_area.py:148
 msgid "Page"
 msgstr "Page"
@@ -327,49 +327,57 @@ msgid "Enhance image"
 msgstr "Amélioration de l'image"
 
 #: mcomix/enhance_dialog.py:32
+msgid "R_eset"
+msgstr "Réini_tialiser"
+
+#: mcomix/enhance_dialog.py:33
+msgid "Show the pages as they are, without enhancement."
+msgstr "Afficher les pages telles qu'elles sont, sans amélioration."
+
+#: mcomix/enhance_dialog.py:36
 msgid "_Revert"
 msgstr "_Rétablir"
 
-#: mcomix/enhance_dialog.py:33
-msgid "Reset to defaults."
-msgstr "Réinitialiser."
+#: mcomix/enhance_dialog.py:37
+msgid "Go back to the saved values."
+msgstr "Revenir aux valeurs enregistrées."
 
-#: mcomix/enhance_dialog.py:35 mcomix/file_actions.py:559
+#: mcomix/enhance_dialog.py:39 mcomix/file_actions.py:559
 #: mcomix/file_actions.py:602 mcomix/file_chooser_base_dialog.py:193
 #: mcomix/openwith.py:351
 msgid "_Save"
 msgstr "_Enregistrer"
 
-#: mcomix/enhance_dialog.py:36
+#: mcomix/enhance_dialog.py:40
 msgid "Save the selected values as default for future files."
 msgstr "Enregistrer les valeurs sélectionnées pour les futurs fichiers."
 
-#: mcomix/enhance_dialog.py:38 mcomix/message_dialog.py:24
+#: mcomix/enhance_dialog.py:42 mcomix/message_dialog.py:24
 #: mcomix/message_dialog.py:30
 msgid "_OK"
 msgstr "_Valider"
 
-#: mcomix/enhance_dialog.py:83
+#: mcomix/enhance_dialog.py:87
 msgid "_Brightness:"
 msgstr "_Luminosité :"
 
-#: mcomix/enhance_dialog.py:84
+#: mcomix/enhance_dialog.py:88
 msgid "_Contrast:"
 msgstr "_Contraste :"
 
-#: mcomix/enhance_dialog.py:85
+#: mcomix/enhance_dialog.py:89
 msgid "Sat_uration:"
 msgstr "_Saturation :"
 
-#: mcomix/enhance_dialog.py:86
+#: mcomix/enhance_dialog.py:90
 msgid "S_harpness:"
 msgstr "_Netteté :"
 
-#: mcomix/enhance_dialog.py:91
+#: mcomix/enhance_dialog.py:95
 msgid "_Automatically adjust contrast"
 msgstr "_Ajuster automatiquement le contraste"
 
-#: mcomix/enhance_dialog.py:93
+#: mcomix/enhance_dialog.py:97
 msgid ""
 "Automatically adjust contrast (both lightness and darkness), separately for "
 "each colour band."
@@ -377,11 +385,11 @@ msgstr ""
 "Ajustement automatique du contraste (clarté et obscurité), séparément pour "
 "chaque couleur."
 
-#: mcomix/enhance_dialog.py:98 mcomix/ui.py:527
+#: mcomix/enhance_dialog.py:102 mcomix/ui.py:527
 msgid "_Invert image colors"
 msgstr "_Inverser les couleurs de l'image"
 
-#: mcomix/enhance_dialog.py:100
+#: mcomix/enhance_dialog.py:104
 msgid "Invert (negate) image colors."
 msgstr "Inverse (négatif) les couleurs de l'image."
 
@@ -1051,7 +1059,7 @@ msgstr ""
 msgid "_Keep them"
 msgstr "Les _garder"
 
-#: mcomix/main.py:1406
+#: mcomix/main.py:1414
 msgid "SLIDESHOW"
 msgstr "DIAPORAMA"
 
@@ -2771,7 +2779,7 @@ msgstr "Veuillez saisir le mot de passe pour continuer :"
 msgid "Extraction of %(archivefile)s might have failed: %(error)s"
 msgstr "L'extraction de %(archivefile)s a peut-être échoué : %(error)s"
 
-#: mcomix/archive/zip.py:100
+#: mcomix/archive/zip.py:128
 #, python-format
 msgid ""
 "%(filename)s's extracted size is %(actual_size)d bytes, but should be "
@@ -3185,6 +3193,9 @@ msgid "Automatically scan for new books when library is _opened"
 msgstr ""
 "Rechercher automatiquement les nouveaux livres à l'_ouverture de la "
 "bibliothèque"
+
+#~ msgid "Reset to defaults."
+#~ msgstr "Réinitialiser."
 
 #~ msgid "The file will be deleted from your harddisk."
 #~ msgstr "Le fichier sera effacer de votre disque dur."

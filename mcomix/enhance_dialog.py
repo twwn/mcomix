@@ -29,9 +29,13 @@ class _EnhanceImageDialog(Dialog):
 
         self._window = window
 
-        reset = Gtk.Button.new_with_mnemonic(_('_Revert'))
-        reset.set_tooltip_text(_('Reset to defaults.'))
-        self.add_action_widget(reset, Response.REJECT)
+        neutral = Gtk.Button.new_with_mnemonic(_('R_eset'))
+        neutral.set_tooltip_text(_('Show the pages as they are, without enhancement.'))
+        neutral.connect('clicked', self._reset)
+        self._button_row.append(neutral)
+        revert = Gtk.Button.new_with_mnemonic(_('_Revert'))
+        revert.set_tooltip_text(_('Go back to the saved values.'))
+        self.add_action_widget(revert, Response.REJECT)
         save = Gtk.Button.new_with_mnemonic(_('_Save'))
         save.set_tooltip_text(_('Save the selected values as default for future files.'))
         self.add_action_widget(save, Response.APPLY)
@@ -212,15 +216,28 @@ class _EnhanceImageDialog(Dialog):
             prefs['invert color'] = self._enhancer.invert_color
 
         elif response == Response.REJECT:
-            self._block = True
-            self._brightness_scale.set_value(prefs['brightness'] - 1.0)
-            self._contrast_scale.set_value(prefs['contrast'] - 1.0)
-            self._saturation_scale.set_value(prefs['saturation'] - 1.0)
-            self._sharpness_scale.set_value(prefs['sharpness'] - 1.0)
-            self._autocontrast_button.set_active(prefs['auto contrast'])
-            self._invert_color_button.set_active(prefs['invert color'])
-            self._block = False
-            self._change_values(self)
+            self._show_values(prefs['brightness'], prefs['contrast'],
+                              prefs['saturation'], prefs['sharpness'],
+                              prefs['auto contrast'], prefs['invert color'])
+
+    def _reset(self, *args: object) -> None:
+        """Take every enhancement off, without saving: "Revert" goes
+        back to what was saved, which is not this once it has been."""
+        self._show_values(1.0, 1.0, 1.0, 1.0, False, False)
+
+    def _show_values(self, brightness: float, contrast: float,
+                     saturation: float, sharpness: float,
+                     autocontrast: bool, invert_color: bool) -> None:
+        """Set the controls to these values, and the pages with them."""
+        self._block = True
+        self._brightness_scale.set_value(brightness - 1.0)
+        self._contrast_scale.set_value(contrast - 1.0)
+        self._saturation_scale.set_value(saturation - 1.0)
+        self._sharpness_scale.set_value(sharpness - 1.0)
+        self._autocontrast_button.set_active(autocontrast)
+        self._invert_color_button.set_active(invert_color)
+        self._block = False
+        self._change_values(self)
 
 
 def open_dialog(action: Gio.SimpleAction, window: "main.MainWindow") -> None:

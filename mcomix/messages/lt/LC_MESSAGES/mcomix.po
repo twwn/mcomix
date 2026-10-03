@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 1.2.1\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-03 07:38+0200\n"
+"POT-Creation-Date: 2026-10-03 13:02+0200\n"
 "PO-Revision-Date: 2016-09-18 15:30+0300\n"
 "Last-Translator: Zygimantus <zygimantus@gmail.com>\n"
 "Language-Team: \n"
@@ -52,6 +52,11 @@ msgstr "Nepalaikomas archyvo formatas: %s"
 msgid "! Extraction error: %s"
 msgstr "! Išpakavimo klaida: %s"
 
+#: mcomix/archive_extractor.py:369 mcomix/archive_tools.py:190
+#, python-format
+msgid "! Could not read %s"
+msgstr "! Nepavyko perskaityti %s"
+
 #: mcomix/archive_packer.py:176 mcomix/library/book_area.py:743
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
@@ -69,11 +74,6 @@ msgid ""
 msgstr ""
 "! Nepavyko pridėti failo %(sourcefile)s į archyvą %(archivefile)s, "
 "nutraukiama..."
-
-#: mcomix/archive_tools.py:190
-#, python-format
-msgid "! Could not read %s"
-msgstr "! Nepavyko perskaityti %s"
 
 #: mcomix/bookmark_backend.py:297
 #, python-format
@@ -157,7 +157,7 @@ msgstr "Tipas"
 msgid "Name"
 msgstr "Pavadinimas"
 
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1584
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1592
 #: mcomix/library/control_area.py:148
 msgid "Page"
 msgstr "Puslapis"
@@ -327,49 +327,57 @@ msgid "Enhance image"
 msgstr "Pagerinti vaizdą"
 
 #: mcomix/enhance_dialog.py:32
+msgid "R_eset"
+msgstr "_Nulinti"
+
+#: mcomix/enhance_dialog.py:33
+msgid "Show the pages as they are, without enhancement."
+msgstr "Rodyti puslapius tokius, kokie yra, be pagerinimų."
+
+#: mcomix/enhance_dialog.py:36
 msgid "_Revert"
 msgstr "Atsta_tyti"
 
-#: mcomix/enhance_dialog.py:33
-msgid "Reset to defaults."
-msgstr "Atstatyti į numatytuosius."
+#: mcomix/enhance_dialog.py:37
+msgid "Go back to the saved values."
+msgstr "Grįžti prie įrašytų reikšmių."
 
-#: mcomix/enhance_dialog.py:35 mcomix/file_actions.py:559
+#: mcomix/enhance_dialog.py:39 mcomix/file_actions.py:559
 #: mcomix/file_actions.py:602 mcomix/file_chooser_base_dialog.py:193
 #: mcomix/openwith.py:351
 msgid "_Save"
 msgstr "Į_rašyti"
 
-#: mcomix/enhance_dialog.py:36
+#: mcomix/enhance_dialog.py:40
 msgid "Save the selected values as default for future files."
 msgstr "Išsaugoti pasirinktas reikšmes kaip numatytąsias kitiems failams."
 
-#: mcomix/enhance_dialog.py:38 mcomix/message_dialog.py:24
+#: mcomix/enhance_dialog.py:42 mcomix/message_dialog.py:24
 #: mcomix/message_dialog.py:30
 msgid "_OK"
 msgstr "_Gerai"
 
-#: mcomix/enhance_dialog.py:83
+#: mcomix/enhance_dialog.py:87
 msgid "_Brightness:"
 msgstr "_Šviesumas:"
 
-#: mcomix/enhance_dialog.py:84
+#: mcomix/enhance_dialog.py:88
 msgid "_Contrast:"
 msgstr "_Kontrastas:"
 
-#: mcomix/enhance_dialog.py:85
+#: mcomix/enhance_dialog.py:89
 msgid "Sat_uration:"
 msgstr "_Sodrumas:"
 
-#: mcomix/enhance_dialog.py:86
+#: mcomix/enhance_dialog.py:90
 msgid "S_harpness:"
 msgstr "Ryšku_mas:"
 
-#: mcomix/enhance_dialog.py:91
+#: mcomix/enhance_dialog.py:95
 msgid "_Automatically adjust contrast"
 msgstr "_Automatiškai derinti kontrastą"
 
-#: mcomix/enhance_dialog.py:93
+#: mcomix/enhance_dialog.py:97
 msgid ""
 "Automatically adjust contrast (both lightness and darkness), separately for "
 "each colour band."
@@ -377,11 +385,11 @@ msgstr ""
 "Automatiškai derina kontrastą (ir šviesumą, ir tamsumą) atskirai kiekvienai "
 "spalvų juostai."
 
-#: mcomix/enhance_dialog.py:98 mcomix/ui.py:527
+#: mcomix/enhance_dialog.py:102 mcomix/ui.py:527
 msgid "_Invert image colors"
 msgstr "_Invertuoti paveikslėlio spalvas"
 
-#: mcomix/enhance_dialog.py:100
+#: mcomix/enhance_dialog.py:104
 msgid "Invert (negate) image colors."
 msgstr "Invertuoja (neigia) paveikslėlio spalvas."
 
@@ -1047,7 +1055,7 @@ msgstr ""
 msgid "_Keep them"
 msgstr "_Palikti"
 
-#: mcomix/main.py:1406
+#: mcomix/main.py:1414
 msgid "SLIDESHOW"
 msgstr "SKAIDRIŲ RODYMAS"
 
@@ -2735,7 +2743,7 @@ msgstr "Norėdami tęsti, įveskite slaptažodį:"
 msgid "Extraction of %(archivefile)s might have failed: %(error)s"
 msgstr "%(archivefile)s išpakavimas galėjo nepavykti: %(error)s"
 
-#: mcomix/archive/zip.py:100
+#: mcomix/archive/zip.py:128
 #, python-format
 msgid ""
 "%(filename)s's extracted size is %(actual_size)d bytes, but should be "
@@ -3138,6 +3146,9 @@ msgstr "Su poaplankiais"
 #: mcomix/library/watchlist.py:81
 msgid "Automatically scan for new books when library is _opened"
 msgstr "Automatiškai ieškoti naujų knygų kai yra _atidaroma biblioteka"
+
+#~ msgid "Reset to defaults."
+#~ msgstr "Atstatyti į numatytuosius."
 
 #~ msgid "The file will be deleted from your harddisk."
 #~ msgstr "Failas bus ištrintas iš jūsų sistemos."

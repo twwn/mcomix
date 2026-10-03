@@ -144,4 +144,40 @@ class EnhanceDialogTest(MComixTest):
         self.assertFalse(
             self.window.actiongroup.get_action('invert_color').get_active())
 
+    def test_reset_takes_every_enhancement_off_and_saves_nothing(self):
+        """"Revert" said it reset to the defaults, and went back to the
+        saved values: once a set had been saved, nothing in the dialog
+        showed the pages as they are (upstream bug 70)."""
+        enhance_dialog.open_dialog(None, self.window)
+        pump()
+        dialog = enhance_dialog._dialog
+        dialog._brightness_scale.set_value(0.5)
+        dialog._autocontrast_button.set_active(True)
+        dialog.response(Response.APPLY)
+        dialog._invert_color_button.set_active(True)
+        pump()
+        reset, = [button for button in widgets_in(dialog._button_row)
+                  if button.get_label() == 'R_eset']
+        reset.emit('clicked')
+        pump()
+        enhancer = self.window.enhancer
+        self.assertEqual((1.0, 1.0, 1.0, 1.0, False, False),
+                         (enhancer.brightness, enhancer.contrast,
+                          enhancer.saturation, enhancer.sharpness,
+                          enhancer.autocontrast, enhancer.invert_color))
+        self.assertEqual(0.0, dialog._brightness_scale.get_value())
+        self.assertFalse(dialog._autocontrast_button.get_active())
+        self.assertFalse(
+            self.window.actiongroup.get_action('invert_color').get_active())
+        self.assertEqual(1.5, prefs['brightness'])
+        self.assertTrue(prefs['auto contrast'])
+
+
+def widgets_in(box):
+    """The children of <box>, in order."""
+    child = box.get_first_child()
+    while child is not None:
+        yield child
+        child = child.get_next_sibling()
+
 # vim: expandtab:sw=4:ts=4

@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix zh_TW\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-03 07:38+0200\n"
+"POT-Creation-Date: 2026-10-03 13:02+0200\n"
 "PO-Revision-Date: 2013-07-05 21:37+0800\n"
 "Last-Translator: Wayne Su <mstarmstar@hotmail.com>\n"
 "Language-Team: \n"
@@ -56,6 +56,11 @@ msgstr "不支援的壓縮檔格式：%s"
 msgid "! Extraction error: %s"
 msgstr "！ 解壓縮錯誤：%s"
 
+#: mcomix/archive_extractor.py:369 mcomix/archive_tools.py:190
+#, python-format
+msgid "! Could not read %s"
+msgstr "！ 無法讀取 %s"
+
 #: mcomix/archive_packer.py:176 mcomix/library/book_area.py:743
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
@@ -72,11 +77,6 @@ msgid ""
 "! Could not add file %(sourcefile)s to archive %(archivefile)s, aborting..."
 msgstr ""
 "！ 無法將檔案 %(sourcefile)s 加入壓縮檔 %(archivefile)s 中，正在取消..."
-
-#: mcomix/archive_tools.py:190
-#, python-format
-msgid "! Could not read %s"
-msgstr "！ 無法讀取 %s"
 
 #: mcomix/bookmark_backend.py:297
 #, python-format
@@ -156,7 +156,7 @@ msgstr "類型"
 msgid "Name"
 msgstr "檔案名稱"
 
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1584
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1592
 #: mcomix/library/control_area.py:148
 msgid "Page"
 msgstr "頁次"
@@ -323,59 +323,67 @@ msgid "Enhance image"
 msgstr "強化圖片"
 
 #: mcomix/enhance_dialog.py:32
+msgid "R_eset"
+msgstr "重設(_E)"
+
+#: mcomix/enhance_dialog.py:33
+msgid "Show the pages as they are, without enhancement."
+msgstr "依原樣顯示頁面，不做增強。"
+
+#: mcomix/enhance_dialog.py:36
 msgid "_Revert"
 msgstr "還原(_R)"
 
-#: mcomix/enhance_dialog.py:33
-msgid "Reset to defaults."
-msgstr "重設為預設值。"
+#: mcomix/enhance_dialog.py:37
+msgid "Go back to the saved values."
+msgstr "回到已儲存的值。"
 
-#: mcomix/enhance_dialog.py:35 mcomix/file_actions.py:559
+#: mcomix/enhance_dialog.py:39 mcomix/file_actions.py:559
 #: mcomix/file_actions.py:602 mcomix/file_chooser_base_dialog.py:193
 #: mcomix/openwith.py:351
 msgid "_Save"
 msgstr "儲存(_S)"
 
-#: mcomix/enhance_dialog.py:36
+#: mcomix/enhance_dialog.py:40
 msgid "Save the selected values as default for future files."
 msgstr "儲存選取的數值當以後檔案的預設值。"
 
-#: mcomix/enhance_dialog.py:38 mcomix/message_dialog.py:24
+#: mcomix/enhance_dialog.py:42 mcomix/message_dialog.py:24
 #: mcomix/message_dialog.py:30
 msgid "_OK"
 msgstr "確定(_O)"
 
-#: mcomix/enhance_dialog.py:83
+#: mcomix/enhance_dialog.py:87
 msgid "_Brightness:"
 msgstr "亮度(_B)："
 
-#: mcomix/enhance_dialog.py:84
+#: mcomix/enhance_dialog.py:88
 msgid "_Contrast:"
 msgstr "對比(_C)："
 
-#: mcomix/enhance_dialog.py:85
+#: mcomix/enhance_dialog.py:89
 msgid "Sat_uration:"
 msgstr "飽和度(_U)："
 
-#: mcomix/enhance_dialog.py:86
+#: mcomix/enhance_dialog.py:90
 msgid "S_harpness:"
 msgstr "清晰度(_H)："
 
-#: mcomix/enhance_dialog.py:91
+#: mcomix/enhance_dialog.py:95
 msgid "_Automatically adjust contrast"
 msgstr "自動調整對比(_A)"
 
-#: mcomix/enhance_dialog.py:93
+#: mcomix/enhance_dialog.py:97
 msgid ""
 "Automatically adjust contrast (both lightness and darkness), separately for "
 "each colour band."
 msgstr "分別為每個色頻自動調整明暗對比。"
 
-#: mcomix/enhance_dialog.py:98 mcomix/ui.py:527
+#: mcomix/enhance_dialog.py:102 mcomix/ui.py:527
 msgid "_Invert image colors"
 msgstr "反轉圖片色彩(_I)"
 
-#: mcomix/enhance_dialog.py:100
+#: mcomix/enhance_dialog.py:104
 msgid "Invert (negate) image colors."
 msgstr "反轉（負片）圖片的色彩。"
 
@@ -1030,7 +1038,7 @@ msgstr ""
 msgid "_Keep them"
 msgstr "保留(_K)"
 
-#: mcomix/main.py:1406
+#: mcomix/main.py:1414
 msgid "SLIDESHOW"
 msgstr "投影片放映"
 
@@ -2664,7 +2672,7 @@ msgstr "請輸入密碼才能繼續："
 msgid "Extraction of %(archivefile)s might have failed: %(error)s"
 msgstr "%(archivefile)s 的解壓縮可能失敗了：%(error)s"
 
-#: mcomix/archive/zip.py:100
+#: mcomix/archive/zip.py:128
 #, python-format
 msgid ""
 "%(filename)s's extracted size is %(actual_size)d bytes, but should be "
@@ -3052,6 +3060,9 @@ msgstr "含子目錄"
 #: mcomix/library/watchlist.py:81
 msgid "Automatically scan for new books when library is _opened"
 msgstr "書庫開啟時自動搜尋新書(_O)"
+
+#~ msgid "Reset to defaults."
+#~ msgstr "重設為預設值。"
 
 #~ msgid "The file will be deleted from your harddisk."
 #~ msgstr "檔案將會從你的硬碟中刪除。"

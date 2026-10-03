@@ -351,7 +351,7 @@ class DialogMnemonicTest(MComixTest):
     SCOPES = {
         'bookmark dialog': ('C_lear bookmarks...', '_Remove', '_Close'),
         'archive editor': ('_Cancel', 'A_pply', 'Save _As', '_Import'),
-        'enhance dialog': ('_Revert', '_Save', '_OK', '_Brightness:',
+        'enhance dialog': ('R_eset', '_Revert', '_Save', '_OK', '_Brightness:',
                            '_Contrast:', 'Sat_uration:', 'S_harpness:',
                            '_Automatically adjust contrast',
                            '_Invert image colors'),

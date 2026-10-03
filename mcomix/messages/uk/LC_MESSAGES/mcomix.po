@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-03 07:38+0200\n"
+"POT-Creation-Date: 2026-10-03 13:02+0200\n"
 "PO-Revision-Date: 2009-05-04 23:52+0300\n"
 "Last-Translator: Oleksandr Zaiats <ai@eth0.net.ua>\n"
 "Language-Team: \n"
@@ -48,6 +48,11 @@ msgstr "Непідтримуваний формат архіву: %s"
 msgid "! Extraction error: %s"
 msgstr "! Помилка розпакування: %s"
 
+#: mcomix/archive_extractor.py:369 mcomix/archive_tools.py:190
+#, python-format
+msgid "! Could not read %s"
+msgstr "! Не вдалося прочитати %s"
+
 #: mcomix/archive_packer.py:176 mcomix/library/book_area.py:743
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
@@ -65,11 +70,6 @@ msgid ""
 msgstr ""
 "! Не вдалося додати файл %(sourcefile)s до архіву %(archivefile)s, "
 "скасування..."
-
-#: mcomix/archive_tools.py:190
-#, python-format
-msgid "! Could not read %s"
-msgstr "! Не вдалося прочитати %s"
 
 #: mcomix/bookmark_backend.py:297
 #, python-format
@@ -154,7 +154,7 @@ msgstr "Тип"
 msgid "Name"
 msgstr "Ім’я"
 
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1584
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1592
 #: mcomix/library/control_area.py:148
 msgid "Page"
 msgstr "Сторінка"
@@ -324,49 +324,57 @@ msgid "Enhance image"
 msgstr "Покращення зображення"
 
 #: mcomix/enhance_dialog.py:32
+msgid "R_eset"
+msgstr "_Скинути"
+
+#: mcomix/enhance_dialog.py:33
+msgid "Show the pages as they are, without enhancement."
+msgstr "Показати сторінки такими, як вони є, без покращень."
+
+#: mcomix/enhance_dialog.py:36
 msgid "_Revert"
 msgstr "Від_новити"
 
-#: mcomix/enhance_dialog.py:33
-msgid "Reset to defaults."
-msgstr "Повернути типові значення."
+#: mcomix/enhance_dialog.py:37
+msgid "Go back to the saved values."
+msgstr "Повернутися до збережених значень."
 
-#: mcomix/enhance_dialog.py:35 mcomix/file_actions.py:559
+#: mcomix/enhance_dialog.py:39 mcomix/file_actions.py:559
 #: mcomix/file_actions.py:602 mcomix/file_chooser_base_dialog.py:193
 #: mcomix/openwith.py:351
 msgid "_Save"
 msgstr "З_берегти"
 
-#: mcomix/enhance_dialog.py:36
+#: mcomix/enhance_dialog.py:40
 msgid "Save the selected values as default for future files."
 msgstr "Зберегти вибрані значення як типові для наступних файлів."
 
-#: mcomix/enhance_dialog.py:38 mcomix/message_dialog.py:24
+#: mcomix/enhance_dialog.py:42 mcomix/message_dialog.py:24
 #: mcomix/message_dialog.py:30
 msgid "_OK"
 msgstr "_Гаразд"
 
-#: mcomix/enhance_dialog.py:83
+#: mcomix/enhance_dialog.py:87
 msgid "_Brightness:"
 msgstr "_Яскравість:"
 
-#: mcomix/enhance_dialog.py:84
+#: mcomix/enhance_dialog.py:88
 msgid "_Contrast:"
 msgstr "_Контраст:"
 
-#: mcomix/enhance_dialog.py:85
+#: mcomix/enhance_dialog.py:89
 msgid "Sat_uration:"
 msgstr "Нас_иченість:"
 
-#: mcomix/enhance_dialog.py:86
+#: mcomix/enhance_dialog.py:90
 msgid "S_harpness:"
 msgstr "_Різкість:"
 
-#: mcomix/enhance_dialog.py:91
+#: mcomix/enhance_dialog.py:95
 msgid "_Automatically adjust contrast"
 msgstr "_Автоматично налаштовувати контраст"
 
-#: mcomix/enhance_dialog.py:93
+#: mcomix/enhance_dialog.py:97
 msgid ""
 "Automatically adjust contrast (both lightness and darkness), separately for "
 "each colour band."
@@ -374,11 +382,11 @@ msgstr ""
 "Автоматично підлаштувати контраст (світлі та темні ділянки), окремо для "
 "кожної колірної смуги."
 
-#: mcomix/enhance_dialog.py:98 mcomix/ui.py:527
+#: mcomix/enhance_dialog.py:102 mcomix/ui.py:527
 msgid "_Invert image colors"
 msgstr "_Інвертувати кольори зображення"
 
-#: mcomix/enhance_dialog.py:100
+#: mcomix/enhance_dialog.py:104
 msgid "Invert (negate) image colors."
 msgstr "Інвертує (обертає) кольори зображення."
 
@@ -1045,7 +1053,7 @@ msgstr ""
 msgid "_Keep them"
 msgstr "Зали_шити"
 
-#: mcomix/main.py:1406
+#: mcomix/main.py:1414
 msgid "SLIDESHOW"
 msgstr "СЛАЙДШОУ"
 
@@ -2737,7 +2745,7 @@ msgstr "Введіть пароль, щоб продовжити:"
 msgid "Extraction of %(archivefile)s might have failed: %(error)s"
 msgstr "Розпакування %(archivefile)s могло не вдатися: %(error)s"
 
-#: mcomix/archive/zip.py:100
+#: mcomix/archive/zip.py:128
 #, python-format
 msgid ""
 "%(filename)s's extracted size is %(actual_size)d bytes, but should be "
@@ -3140,6 +3148,9 @@ msgstr "З підкаталогами"
 #: mcomix/library/watchlist.py:81
 msgid "Automatically scan for new books when library is _opened"
 msgstr "Автоматично шукати нові книжки при _відкритті бібліотеки"
+
+#~ msgid "Reset to defaults."
+#~ msgstr "Повернути типові значення."
 
 #~ msgid "The file will be deleted from your harddisk."
 #~ msgstr "Файл буде видалено з жорсткого диска."

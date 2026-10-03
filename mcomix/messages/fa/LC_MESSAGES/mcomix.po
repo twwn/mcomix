@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: comix 3.6.4\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-03 07:38+0200\n"
+"POT-Creation-Date: 2026-10-03 13:02+0200\n"
 "PO-Revision-Date: 2008-05-21 12:40+0330\n"
 "Last-Translator: Meelad Zakaria <meelad@farsiweb.info>\n"
 "Language-Team: Persian \n"
@@ -52,6 +52,11 @@ msgstr "قالب بایگانی پشتیبانی‌نشده: %s"
 msgid "! Extraction error: %s"
 msgstr "! خطای استخراج: %s"
 
+#: mcomix/archive_extractor.py:369 mcomix/archive_tools.py:190
+#, python-format
+msgid "! Could not read %s"
+msgstr "! خواندن %s ممکن نشد"
+
 #
 #: mcomix/archive_packer.py:176 mcomix/library/book_area.py:743
 #, python-format
@@ -70,11 +75,6 @@ msgid ""
 msgstr ""
 "! افزودن پروندهٔ %(sourcefile)s به بایگانی %(archivefile)s ممکن نشد، لغو "
 "می‌شود..."
-
-#: mcomix/archive_tools.py:190
-#, python-format
-msgid "! Could not read %s"
-msgstr "! خواندن %s ممکن نشد"
 
 #: mcomix/bookmark_backend.py:297
 #, python-format
@@ -169,7 +169,7 @@ msgstr "نام"
 
 #
 # File: src/bookmark.py, line: 256
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1584
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1592
 #: mcomix/library/control_area.py:148
 msgid "Page"
 msgstr "صفحه"
@@ -365,60 +365,68 @@ msgid "Enhance image"
 msgstr "بهبود تصویر"
 
 #: mcomix/enhance_dialog.py:32
+msgid "R_eset"
+msgstr "_بازنشانی"
+
+#: mcomix/enhance_dialog.py:33
+msgid "Show the pages as they are, without enhancement."
+msgstr "نمایش صفحه‌ها همان‌طور که هستند، بدون بهبود."
+
+#: mcomix/enhance_dialog.py:36
 msgid "_Revert"
 msgstr "باز_گشت"
 
-#: mcomix/enhance_dialog.py:33
-msgid "Reset to defaults."
-msgstr "بازنشانی به پیش‌فرض‌ها."
+#: mcomix/enhance_dialog.py:37
+msgid "Go back to the saved values."
+msgstr "بازگشت به مقادیر ذخیره‌شده."
 
-#: mcomix/enhance_dialog.py:35 mcomix/file_actions.py:559
+#: mcomix/enhance_dialog.py:39 mcomix/file_actions.py:559
 #: mcomix/file_actions.py:602 mcomix/file_chooser_base_dialog.py:193
 #: mcomix/openwith.py:351
 msgid "_Save"
 msgstr "_ذخیره"
 
-#: mcomix/enhance_dialog.py:36
+#: mcomix/enhance_dialog.py:40
 msgid "Save the selected values as default for future files."
 msgstr "ذخیرهٔ مقادیر انتخاب‌شده به عنوان پیش‌فرض برای پرونده‌های بعدی."
 
-#: mcomix/enhance_dialog.py:38 mcomix/message_dialog.py:24
+#: mcomix/enhance_dialog.py:42 mcomix/message_dialog.py:24
 #: mcomix/message_dialog.py:30
 msgid "_OK"
 msgstr "_تأیید"
 
 #
 # File: src/enhance.py, line: 79
-#: mcomix/enhance_dialog.py:83
+#: mcomix/enhance_dialog.py:87
 msgid "_Brightness:"
 msgstr "_روشنایی:"
 
 #
 # File: src/enhance.py, line: 90
-#: mcomix/enhance_dialog.py:84
+#: mcomix/enhance_dialog.py:88
 msgid "_Contrast:"
 msgstr "_کنتراست:"
 
 #
 # File: src/enhance.py, line: 101
-#: mcomix/enhance_dialog.py:85
+#: mcomix/enhance_dialog.py:89
 msgid "Sat_uration:"
 msgstr "_غلظت:"
 
 #
 # File: src/enhance.py, line: 112
-#: mcomix/enhance_dialog.py:86
+#: mcomix/enhance_dialog.py:90
 msgid "S_harpness:"
 msgstr "تی_زی:"
 
 #
-#: mcomix/enhance_dialog.py:91
+#: mcomix/enhance_dialog.py:95
 msgid "_Automatically adjust contrast"
 msgstr "تنظیم _خودکار کنتراست"
 
 #
 # File: src/enhance.py, line: 128
-#: mcomix/enhance_dialog.py:93
+#: mcomix/enhance_dialog.py:97
 msgid ""
 "Automatically adjust contrast (both lightness and darkness), separately for "
 "each colour band."
@@ -426,11 +434,11 @@ msgstr ""
 "کنتراست (هم روشنی و هم تیرگی) را برای هر باند رنگی جداگانه به‌طور خودکار "
 "تنظیم می‌کند."
 
-#: mcomix/enhance_dialog.py:98 mcomix/ui.py:527
+#: mcomix/enhance_dialog.py:102 mcomix/ui.py:527
 msgid "_Invert image colors"
 msgstr "_وارونه کردن رنگ‌های تصویر"
 
-#: mcomix/enhance_dialog.py:100
+#: mcomix/enhance_dialog.py:104
 msgid "Invert (negate) image colors."
 msgstr "رنگ‌های تصویر را وارونه می‌کند."
 
@@ -1222,7 +1230,7 @@ msgstr "_نگه‌داشتن"
 
 #
 # File: src/main.py, line: 666
-#: mcomix/main.py:1406
+#: mcomix/main.py:1414
 msgid "SLIDESHOW"
 msgstr "نمایش اسلایدی"
 
@@ -3153,7 +3161,7 @@ msgstr "برای ادامه گذرواژه را وارد کنید:"
 msgid "Extraction of %(archivefile)s might have failed: %(error)s"
 msgstr "استخراج %(archivefile)s شاید شکست خورده باشد: %(error)s"
 
-#: mcomix/archive/zip.py:100
+#: mcomix/archive/zip.py:128
 #, python-format
 msgid ""
 "%(filename)s's extracted size is %(actual_size)d bytes, but should be "
@@ -3598,6 +3606,9 @@ msgstr "همراه با زیرشاخه‌ها"
 #: mcomix/library/watchlist.py:81
 msgid "Automatically scan for new books when library is _opened"
 msgstr "پویش خودکار کتاب‌های تازه هنگام _گشودن کتاب‌خانه"
+
+#~ msgid "Reset to defaults."
+#~ msgstr "بازنشانی به پیش‌فرض‌ها."
 
 #~ msgid "The file will be deleted from your harddisk."
 #~ msgstr "پرونده از دیسک سخت شما حذف خواهد شد."

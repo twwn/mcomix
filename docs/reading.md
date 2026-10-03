@@ -70,6 +70,7 @@ No mode scales a small page up unless "View → Stretch small images" is on.
 - "Automatically adjust contrast" stretches each colour band to the page.
 - "Invert image colors", also CTRL+I, shows the negative.
 - Changes show at once on the pages, thumbnails, magnifying lens and library covers, for every book, until MComix closes.
+- "Reset" takes every enhancement off, without saving.
 - "Save" keeps the values for the next start; "Revert" goes back to the saved ones; "OK" closes the dialog.
 - CTRL+I is kept for the next start straight away.
 

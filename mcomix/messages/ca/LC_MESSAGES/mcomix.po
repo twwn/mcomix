@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Comix 3.2\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-03 07:38+0200\n"
+"POT-Creation-Date: 2026-10-03 13:02+0200\n"
 "PO-Revision-Date: 2009-01-25 22:33+0100\n"
 "Last-Translator: Carles Escrig i Royo <simkin@ono.com>\n"
 "Language-Team: CA <gentoo@softcatala.net>\n"
@@ -53,6 +53,11 @@ msgstr "Format d'arxiu no admès: %s"
 msgid "! Extraction error: %s"
 msgstr "! Error d'extracció: %s"
 
+#: mcomix/archive_extractor.py:369 mcomix/archive_tools.py:190
+#, python-format
+msgid "! Could not read %s"
+msgstr "! No s'ha pogut llegir %s"
+
 #
 # File: src/comment.py, line: 53
 #: mcomix/archive_packer.py:176 mcomix/library/book_area.py:743
@@ -72,11 +77,6 @@ msgid ""
 msgstr ""
 "! No s'ha pogut afegir el fitxer %(sourcefile)s a l'arxiu %(archivefile)s, "
 "s'interromp..."
-
-#: mcomix/archive_tools.py:190
-#, python-format
-msgid "! Could not read %s"
-msgstr "! No s'ha pogut llegir %s"
 
 #: mcomix/bookmark_backend.py:297
 #, python-format
@@ -177,7 +177,7 @@ msgstr "Nom"
 
 #
 # File: src/bookmark.py, line: 256
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1584
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1592
 #: mcomix/library/control_area.py:148
 msgid "Page"
 msgstr "Pàgina"
@@ -378,63 +378,71 @@ msgid "Enhance image"
 msgstr "Millora la imatge"
 
 #: mcomix/enhance_dialog.py:32
+msgid "R_eset"
+msgstr "Res_tableix"
+
+#: mcomix/enhance_dialog.py:33
+msgid "Show the pages as they are, without enhancement."
+msgstr "Mostra les pàgines tal com són, sense millores."
+
+#: mcomix/enhance_dialog.py:36
 msgid "_Revert"
 msgstr "_Restaura"
 
-#: mcomix/enhance_dialog.py:33
-msgid "Reset to defaults."
-msgstr "Restableix els valors predeterminats."
+#: mcomix/enhance_dialog.py:37
+msgid "Go back to the saved values."
+msgstr "Torna als valors desats."
 
 #
 # File: src/filechooser.py, line: 39
-#: mcomix/enhance_dialog.py:35 mcomix/file_actions.py:559
+#: mcomix/enhance_dialog.py:39 mcomix/file_actions.py:559
 #: mcomix/file_actions.py:602 mcomix/file_chooser_base_dialog.py:193
 #: mcomix/openwith.py:351
 msgid "_Save"
 msgstr "_Desa"
 
-#: mcomix/enhance_dialog.py:36
+#: mcomix/enhance_dialog.py:40
 msgid "Save the selected values as default for future files."
 msgstr "Desa els valors triats com a predeterminats per als fitxers següents."
 
-#: mcomix/enhance_dialog.py:38 mcomix/message_dialog.py:24
+#: mcomix/enhance_dialog.py:42 mcomix/message_dialog.py:24
 #: mcomix/message_dialog.py:30
 msgid "_OK"
 msgstr "D'ac_ord"
 
 #
 # File: src/enhance.py, line: 79
-#: mcomix/enhance_dialog.py:83
+#: mcomix/enhance_dialog.py:87
 msgid "_Brightness:"
 msgstr "_Brillantor:"
 
 #
 # File: src/enhance.py, line: 90
-#: mcomix/enhance_dialog.py:84
+#: mcomix/enhance_dialog.py:88
 msgid "_Contrast:"
 msgstr "_Contrast:"
 
 #
 # File: src/enhance.py, line: 101
-#: mcomix/enhance_dialog.py:85
+#: mcomix/enhance_dialog.py:89
 msgid "Sat_uration:"
 msgstr "S_aturació:"
 
 #
 # File: src/enhance.py, line: 112
-#: mcomix/enhance_dialog.py:86
+#: mcomix/enhance_dialog.py:90
 msgid "S_harpness:"
 msgstr "Nitide_sa:"
 
 #
 # File: src/enhance.py, line: 126
-#: mcomix/enhance_dialog.py:91
+#: mcomix/enhance_dialog.py:95
 msgid "_Automatically adjust contrast"
 msgstr "A_justa automàticament el contrast"
 
 #
 # File: src/enhance.py, line: 128
-#: mcomix/enhance_dialog.py:93
+#: mcomix/enhance_dialog.py:97
 msgid ""
 "Automatically adjust contrast (both lightness and darkness), separately for "
 "each colour band."
@@ -442,11 +450,11 @@ msgstr ""
 "Ajusta automàticament el contrast (tant la claror com la foscor), de manera "
 "independent per a cada banda de color."
 
-#: mcomix/enhance_dialog.py:98 mcomix/ui.py:527
+#: mcomix/enhance_dialog.py:102 mcomix/ui.py:527
 msgid "_Invert image colors"
 msgstr "_Inverteix els colors de la imatge"
 
-#: mcomix/enhance_dialog.py:100
+#: mcomix/enhance_dialog.py:104
 msgid "Invert (negate) image colors."
 msgstr "Inverteix (nega) els colors de la imatge."
 
@@ -1248,7 +1256,7 @@ msgstr "Man_té-les"
 
 #
 # File: src/main.py, line: 666
-#: mcomix/main.py:1406
+#: mcomix/main.py:1414
 msgid "SLIDESHOW"
 msgstr "PRESENTACIÓ"
 
@@ -3258,7 +3266,7 @@ msgstr "Introduïu la contrasenya per a continuar:"
 msgid "Extraction of %(archivefile)s might have failed: %(error)s"
 msgstr "És possible que l'extracció de %(archivefile)s hagi fallat: %(error)s"
 
-#: mcomix/archive/zip.py:100
+#: mcomix/archive/zip.py:128
 #, python-format
 msgid ""
 "%(filename)s's extracted size is %(actual_size)d bytes, but should be "
@@ -3722,6 +3730,9 @@ msgstr "Amb subdirectoris"
 #: mcomix/library/watchlist.py:81
 msgid "Automatically scan for new books when library is _opened"
 msgstr "Cerca automàticament llibres nous en _obrir la biblioteca"
+
+#~ msgid "Reset to defaults."
+#~ msgstr "Restableix els valors predeterminats."
 
 #~ msgid "The file will be deleted from your harddisk."
 #~ msgstr "El fitxer se suprimirà del disc dur."
