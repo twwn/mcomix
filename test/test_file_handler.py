@@ -558,6 +558,40 @@ class ABookOpenedAtItsEndTest(_WindowTest):
             adjustment.get_value())
 
 
+class ABookOpenedAtItsEndInDoublePageTest(_WindowTest):
+
+    """Double page mode, wide pages shown on their own: a book opened
+    at its end, as going back from the next one does, showed its last
+    page but one when that was wide, and never its last page (upstream
+    bug 95)."""
+
+    def _open(self, sizes):
+        prefs['default double page'] = True
+        prefs['virtual double page for fitting images'] = \
+            constants.SHOW_DOUBLE_AS_ONE_WIDE
+        source = os.path.join(self.tmp_dir, 'book.cbz')
+        with zipfile.ZipFile(source, 'w') as archive:
+            for number, size in enumerate(sizes, 1):
+                page = io.BytesIO()
+                Image.new('RGB', size, (90, 90, 90)).save(page, 'PNG')
+                archive.writestr('%d.png' % number, page.getvalue())
+        self.handler.open_file(source, -1)
+        self.assertTrue(wait_for(
+            lambda: self.handler.file_loaded and all(
+                self.window.imagehandler.page_is_available(page)
+                for page in range(1, len(sizes) + 1)), seconds=20))
+        pump()
+
+    def test_a_wide_page_before_the_last_leaves_the_last_on_its_own(self):
+        self._open([(100, 150), (300, 150), (100, 150)])
+        self.assertEqual(3, self.window.imagehandler.get_current_page())
+
+    def test_two_narrow_pages_at_the_end_are_shown_together(self):
+        self._open([(100, 150), (300, 150), (100, 150), (100, 150)])
+        self.assertEqual(3, self.window.imagehandler.get_current_page())
+        self.assertEqual(2, self.window.displayed_page_count())
+
+
 class ABookWithNoPagesTest(MComixTest):
 
     """Closing an archive that has no pictures in it.

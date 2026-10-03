@@ -336,6 +336,9 @@ class FileHandler:
             # bottom of its last page, as a page turned back to is.
             self._window.set_page(current_image_index + 1,
                                   at_bottom=self._start_page < 0)
+            if (self._start_page < 0 and prefs['default double page']
+                    and current_image_index + 2 == len(image_files)):
+                self._window.arrive_at_end(current_image_index + 1)
 
             if self.archive_type is None:
                 self.write_fileinfo_file()

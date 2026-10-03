@@ -117,6 +117,10 @@ class MainWindow(Gtk.Window):
         self._skip_turning = False
         self._skip_reversed = False
         self._skip_gave_up = False
+        #: The last page but one, where a book opened at its end in
+        #: double page mode stands until the sizes of its last two pages
+        #: say whether they are shown together; see arrive_at_end().
+        self._end_pending: int | None = None
 
         self.page_area = canvas.PageCanvas()
         # A style provider applies to the whole display rather than to
@@ -690,8 +694,40 @@ class MainWindow(Gtk.Window):
         self.statusbar.update()
         self.update_title()
 
+    def arrive_at_end(self, page: int) -> None:
+        """Note that the book was opened at <page>, its last but one, to
+        show its last two pages together.
+
+        Whether they are shown together is known only once both are out
+        of the archive: a wide one is shown on its own, and the last page
+        was then never shown at all - going back from the next book stood
+        on the wide page before it (upstream bug 95).  _page_available()
+        moves on to the last page if so, or this, where both are out
+        already.
+        """
+        self._end_pending = page
+        self._settle_at_end()
+
+    def _settle_at_end(self) -> None:
+        """Move from the last page but one to the last, if the two are
+        not shown together; see arrive_at_end()."""
+        pending = self._end_pending
+        if pending is None:
+            return
+        if self.imagehandler.get_current_page() != pending:
+            # The reader has moved on; where they went stands.
+            self._end_pending = None
+            return
+        if not (self.imagehandler.page_is_available(pending)
+                and self.imagehandler.page_is_available(pending + 1)):
+            return
+        self._end_pending = None
+        if self.imagehandler.get_virtual_double_page(pending):
+            self.set_page(pending + 1, at_bottom=True)
+
     def _page_available(self, page: int) -> None:
         """ Called whenever a new page is ready for displaying. """
+        self._settle_at_end()
         # Refresh display when currently opened page becomes available.
         current_page = self.imagehandler.get_current_page()
         nb_pages = self.displayed_page_count()
@@ -734,6 +770,7 @@ class MainWindow(Gtk.Window):
         """Follow a book being closed: empty the window and the sidebar."""
         # All of them stand against the pages of the book that is
         # going, and none means anything against the next one.
+        self._end_pending = None
         self.selected_pages = set()
         self.swap_page = None
         self.file_actions.forget_changes()
