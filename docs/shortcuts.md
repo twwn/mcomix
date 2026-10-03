@@ -20,6 +20,8 @@ Forward ten pages | SHIFT+PageDown, SHIFT+KeyPadPageDown, SHIFT+ALT+Right, SHIFT
 Back ten pages | SHIFT+PageUp, SHIFT+KeyPadPageUp, SHIFT+Backspace, SHIFT+ALT+Left, SHIFT+RightMouse
 Forward only one page (in double page mode) | CTRL+PageDown, CTRL+KeyPadPageDown
 Go back only one page (in double page mode) | CTRL+PageUp, CTRL+KeyPadPageUp, CTRL+Backspace
+One page to the right (in double page mode) | CTRL+Right, CTRL+KeyPadRight
+One page to the left (in double page mode) | CTRL+Left, CTRL+KeyPadLeft
 First page | Home, KeyPadHome
 Last page | End, KeyPadEnd
 Go to page | G

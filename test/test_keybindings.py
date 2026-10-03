@@ -391,6 +391,10 @@ class DocumentedKeyBindingsTest(MComixTest):
         'Page to the left': 'previous_page_dynamic',
         'Back ten pages': 'previous_page_ff',
         'Forward only one page (in double page mode)': 'next_page_singlestep',
+        'One page to the right (in double page mode)':
+            'next_page_singlestep_dynamic',
+        'One page to the left (in double page mode)':
+            'previous_page_singlestep_dynamic',
         'Go back only one page (in double page mode)':
             'previous_page_singlestep',
         'First page': 'first_page',

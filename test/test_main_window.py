@@ -1065,6 +1065,25 @@ class MainWindowTest(MComixTest):
                 handler._left_right_page_progress(1)
         self.assertEqual([1, -1], turned)
 
+    def test_ctrl_and_an_arrow_turn_one_page_the_way_the_arrow_points(self):
+        """CTRL with PageDown or PageUp turns a single page in double page
+        mode; with the arrows it did nothing (upstream feature request
+        134).  The plain arrows turn the page the way they point, forward
+        to the left in manga mode, and so do these."""
+        manager = keybindings.keybinding_manager(self.window)
+        handler = self.window.event_handler
+        turned = []
+        with unittest.mock.patch.object(
+                handler, '_flip_page',
+                side_effect=lambda pages, **kwargs: turned.append(
+                    (pages, kwargs.get('single_step')))):
+            for manga in (False, True):
+                self.window.is_manga_mode = manga
+                for key in ('<Control>Right', '<Control>Left'):
+                    manager.execute(keybindings.parse_accelerator(key))
+        self.assertEqual([(1, True), (-1, True), (-1, True), (1, True)],
+                         turned)
+
     def test_a_sideways_turn_scrolls_across_either_way(self):
         """Sideways scrolls across, and turns the page at the side;
         which way the turn goes depends on the book, which

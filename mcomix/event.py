@@ -152,6 +152,17 @@ class EventHandler:
                          ['<Alt>Right'],
                          self._left_right_page_progress, kwargs={'number_of_pages': 1})
 
+        # One page in the direction on screen, as ALT and the arrows turn
+        # two in double page mode (upstream feature request 134).
+        manager.register('previous_page_singlestep_dynamic',
+                         ['<Ctrl>Left', '<Ctrl>KP_Left'],
+                         self._left_right_page_progress,
+                         kwargs={'number_of_pages': -1, 'single_step': True})
+        manager.register('next_page_singlestep_dynamic',
+                         ['<Ctrl>Right', '<Ctrl>KP_Right'],
+                         self._left_right_page_progress,
+                         kwargs={'number_of_pages': 1, 'single_step': True})
+
         manager.register('previous_page_ff',
                          ['<Shift>Page_Up', '<Shift>KP_Page_Up', '<Shift>BackSpace', '<Shift><Alt>Left'],
                          self._flip_page, kwargs={'number_of_pages': -10})
@@ -996,7 +1007,8 @@ class EventHandler:
         self._extra_scroll_events = 0
         self._window.flip_page(number_of_pages, single_step=single_step)
 
-    def _left_right_page_progress(self, number_of_pages: int = 1) -> None:
+    def _left_right_page_progress(self, number_of_pages: int = 1,
+                                  single_step: bool = False) -> None:
         """Turn <number_of_pages> towards the right of the book.
 
         A book read left to right has its next page on the right, so a
@@ -1007,7 +1019,7 @@ class EventHandler:
         screen rather than for the next or previous one.
         """
         self._flip_page(-number_of_pages if self._window.is_manga_mode
-                        else number_of_pages)
+                        else number_of_pages, single_step=single_step)
 
     def _execute_command(self, cmdindex: int) -> None:
         """ Execute an external command. cmdindex should be an integer from 0 to 9,

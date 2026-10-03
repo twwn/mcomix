@@ -49,6 +49,8 @@ BINDING_INFO: "dict[str, dict[str, str]]" = {
     'next_page_dynamic': {'title': _('Page to the right'), 'group': _('Navigation')},
     'previous_page_singlestep': {'title': _('Previous single page'), 'group': _('Navigation')},
     'next_page_singlestep': {'title': _('Next single page'), 'group': _('Navigation')},
+    'previous_page_singlestep_dynamic': {'title': _('Single page to the left'), 'group': _('Navigation')},
+    'next_page_singlestep_dynamic': {'title': _('Single page to the right'), 'group': _('Navigation')},
 
     'first_page': {'title': _('First page'), 'group': _('Navigation')},
     'last_page': {'title': _('Last page'), 'group': _('Navigation')},
