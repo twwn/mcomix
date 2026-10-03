@@ -301,6 +301,41 @@ class AnArchiveThatWillNotOpenTest(_WindowTest):
             lambda: self.window.imagehandler.get_number_of_pages() > 0))
 
 
+class AnArchiveThatCannotBeListedTest(_WindowTest):
+
+    """An archive that opens but whose listing fails half way - a
+    damaged central directory, a name the codec cannot read - is
+    reported, and the window stops waiting for it."""
+
+    def test_the_reader_is_told_and_the_wait_ends(self):
+        """The listing thread logged the error and stopped, and nothing
+        told the file handler: the wait cursor stayed for the session,
+        and the window showed no book and said nothing."""
+        path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        busy = []
+        self.window.cursor_handler.set_busy = busy.append
+        with mock.patch('mcomix.archive.zip.ZipArchive.iter_contents',
+                        side_effect=OSError('damaged')), \
+                mock.patch.object(self.window.osd, 'show') as shown:
+            self.assertTrue(self.handler.open_file(path))
+            self.assertEqual([True], busy)
+            self.assertTrue(wait_for(lambda: not self.handler.file_loading,
+                                     seconds=10), 'still loading')
+        self.assertEqual([True, False], busy)
+        message = 'Could not read %s' % os.path.basename(path)
+        shown.assert_called_once_with(message)
+        self.assertEqual(message,
+                         self.window.statusbar.status.get_text().strip())
+        # Nothing claims to be open: no Close, no page menus.
+        self.assertFalse(self.handler.file_loaded)
+        self.assertEqual(0, self.window.imagehandler.get_number_of_pages())
+        # And the next book opens as ever.
+        self.handler.close_file()
+        self.assertTrue(self.handler.open_file(path))
+        self.assertTrue(wait_for(
+            lambda: self.window.imagehandler.get_number_of_pages() > 0))
+
+
 class APathThatCannotBeOpenedTest(_WindowTest):
 
     """A name that is not there, or not a file or a folder, opened over

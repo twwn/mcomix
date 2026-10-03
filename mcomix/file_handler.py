@@ -100,6 +100,7 @@ class FileHandler:
         self._extractor = archive_extractor.Extractor()
         self._extractor.file_extracted += self._extracted_file
         self._extractor.contents_listed += self._listed_contents
+        self._extractor.listing_failed += self._listing_failed
         #: Condition to wait on when extracting archives and waiting on files.
         self._condition: threading.Condition | None = None
         #: Provides a list of available files/archives in the open directory.
@@ -550,6 +551,23 @@ class FileHandler:
         self._extractor.set_files(archive_images + comment_files + other_files)
 
         self._archive_opened(image_files)
+
+    def _listing_failed(self, archive: archive_extractor.Extractor,
+                        path: str) -> None:
+        """Tell the reader the archive <path> could not be read.
+
+        Nothing is opened: as for a name that is not there, the book
+        before it has gone and nothing claims to be open.  The archive
+        is closed as one still being listed is, which lets go of the
+        extractor's threads and the wait cursor; the folder's other
+        books stay a page turn away.
+        """
+        if not self.file_loading or path != self._base_path:
+            return
+        self._close()
+        message = _('Could not read %s') % os.path.basename(path)
+        self._window.statusbar.set_message(message)
+        self._window.osd.show(message)
 
     def _sort_archive_images(self, filelist: list[str]) -> None:
         """Sort <filelist> in place, by the archive sort preferences.

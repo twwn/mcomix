@@ -42,10 +42,11 @@ class Extractor:
     reader turns pages - each call re-queues what is left in the new
     order.
 
-    Two of its methods are callbacks rather than work: contents_listed()
-    and file_extracted() do nothing themselves and exist to be listened
-    to, which mcomix.callback arranges to happen on the main thread
-    whichever thread announced it.
+    Three of its methods are callbacks rather than work:
+    contents_listed(), listing_failed() and file_extracted() do nothing
+    themselves and exist to be listened to, which mcomix.callback
+    arranges to happen on the main thread whichever thread announced
+    it.
     """
 
     def __init__(self) -> None:
@@ -223,6 +224,15 @@ class Extractor:
         pass
 
     @callback.Callback
+    def listing_failed(self, extractor: 'Extractor', path: str) -> None:
+        """Announce that the archive <path> could not be listed.
+
+        contents_listed() is not called for it, and nothing is ever
+        extracted from it.
+        """
+        pass
+
+    @callback.Callback
     def file_extracted(self, extractor: 'Extractor',
                        filename: str) -> None:
         """Announce that <filename> is now on disk and can be read.
@@ -367,6 +377,7 @@ class Extractor:
             # The worker thread logs the error, but not which file it
             # was reading.
             log.error(_('! Could not read %s'), archive.archive)
+            self.listing_failed(self, archive.archive)
             raise
         with self._condition:
             self._files = files
