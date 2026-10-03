@@ -1760,11 +1760,15 @@ class MainWindow(Gtk.Window):
         # And whatever else hangs on the window: GTK finalized it with
         # popovers still parented to it ("Finalizing MainWindow, but it
         # still has children left"), and they went on asking their dead
-        # root for its display the next time a style changed.
+        # root for its display the next time a style changed.  Only the
+        # popovers: the title bar GTK draws on Windows is a child of the
+        # window too, which GTK takes off itself when it disposes of the
+        # window, and one already freed by then crashed it.
         child = self.get_first_child()
         while child is not None:
             following = child.get_next_sibling()
-            child.unparent()
+            if isinstance(child, Gtk.Popover):
+                child.unparent()
             child = following
         Gtk.StyleContext.remove_provider_for_display(
             widgets.display(), self._bg_css_provider)
