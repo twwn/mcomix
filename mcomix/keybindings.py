@@ -20,6 +20,7 @@ nothing for it.
 
 from gi.repository import Gdk, Gtk
 import json
+import os
 from collections import defaultdict
 from collections.abc import Callable, Mapping, Sequence
 from typing import Any, TYPE_CHECKING
@@ -392,6 +393,7 @@ class _KeybindingManager:
             stored_action_bindings = {}
         except Exception as e:
             log.error(_("Couldn't load keybindings: %s"), e)
+            _move_aside(constants.KEYBINDINGS_CONF_PATH)
             stored_action_bindings = {}
         # The file is plain JSON a reader can edit by hand, so what it
         # holds is checked for shape as well as syntax: anything but an
@@ -400,6 +402,7 @@ class _KeybindingManager:
         if not isinstance(stored_action_bindings, dict):
             log.error(_("Couldn't load keybindings: %s"),
                       'not an object of action names')
+            _move_aside(constants.KEYBINDINGS_CONF_PATH)
             stored_action_bindings = {}
 
         for action in BINDING_INFO:
@@ -432,6 +435,23 @@ class _KeybindingManager:
         """ Returns the accelerators bound to the action <name>, as
         (key, modifiers) pairs. """
         return self._action_to_bindings[name]
+
+
+def _move_aside(path: str) -> None:
+    """Keep an unreadable keybindings file as <path>.broken.
+
+    MComix writes the bindings it runs with on quitting, which after a
+    file it could not read are the defaults: the reader's own bindings,
+    a typo away from loading, were written over with them.  The
+    preferences file is kept the same way.
+    """
+    broken = path + '.broken'
+    try:
+        os.replace(path, broken)
+    except OSError as e:
+        log.error('Could not keep the keybindings file as %s: %s', broken, e)
+    else:
+        log.error('The keybindings file is kept as %s', broken)
 
 
 _manager: _KeybindingManager | None = None

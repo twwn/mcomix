@@ -111,3 +111,4 @@ Execute first, second, ... external command (see [External commands](external-co
 - Click a key and press the new combination. Backspace or Delete clears it; Escape keeps it.
 - A combination belongs to one function only: giving it to one takes it off any other.
 - The bindings live as JSON in `keybindings.conf`, in MComix' [settings folder](troubleshooting.md#settings-and-data). MComix rewrites it on every change and on quitting, so edit it by hand only while MComix is closed.
+- A file MComix cannot read is renamed `keybindings.conf.broken`, and the default keys are used.

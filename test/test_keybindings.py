@@ -135,6 +135,21 @@ class StoredKeybindingsTest(MComixTest):
         self.assertEqual([keybindings.parse_accelerator('<Control>S')],
                          manager.get_bindings_for_action('slideshow'))
 
+    def test_a_file_it_cannot_read_is_kept_rather_than_written_over(self):
+        """The defaults it falls back to were saved on quitting, over
+        the reader's hand-edited file with its one stray comma (upstream
+        bug 155).  The file is kept beside, as preferences.conf is."""
+        for content in ('{"slideshow": ["<Control>S"],}', '[]'):
+            with self.subTest(content=content):
+                with open(constants.KEYBINDINGS_CONF_PATH, 'w') as fp:
+                    fp.write(content)
+                with self.assertLogs('mcomix', level='ERROR'):
+                    manager = keybindings._KeybindingManager(_StubWindow())
+                manager.register('slideshow', ['<Control>S'], lambda: None)
+                manager.save()
+                with open(constants.KEYBINDINGS_CONF_PATH + '.broken') as fp:
+                    self.assertEqual(content, fp.read())
+
     def test_a_shortcut_this_gtk_cannot_read_falls_back_to_the_default(self):
         """A stored accelerator that does not parse used to be kept as
         the (0, 0) parse_accelerator() answers with.  That is a binding
