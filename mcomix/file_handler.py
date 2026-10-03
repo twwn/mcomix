@@ -142,11 +142,22 @@ class FileHandler:
         return self._file_provider
 
     def refresh_file(self, *args: object, **kwargs: object) -> None:
-        """ Closes the current file(s)/archive and reloads them. """
+        """Close the current file(s)/archive and reload them.
+
+        A file deleted since it was opened is replaced by the one nearest
+        to it in its folder: the next in the folder's order, or the last
+        where it was the last.  Only where the folder holds nothing of
+        its kind is the reader told it is gone.
+        """
         real_path = self._window.imagehandler.get_real_path()
         if self.file_loaded and real_path is not None:
             current_file = os.path.abspath(real_path)
             start_member = None
+            if not os.path.exists(current_file):
+                nearest = self._nearest_in_folder(current_file)
+                if nearest is not None:
+                    self.open_file(nearest, keep_fileprovider=True)
+                    return
             if self.archive_type is not None:
                 start_page = self._window.imagehandler.get_current_page()
                 # The picture on screen, by its name in the archive: a
@@ -157,6 +168,24 @@ class FileHandler:
                 start_page = 0
             self.open_file(current_file, start_page, keep_fileprovider=True,
                            start_member=start_member)
+
+    def _nearest_in_folder(self, gone: str) -> str | None:
+        """The file of the open book's kind that is nearest to <gone> in
+        its folder's order, or None where there is none."""
+        mode = (file_provider.FileProvider.ARCHIVES
+                if self.archive_type is not None
+                else file_provider.FileProvider.IMAGES)
+        files = [path for path in self._opened_provider.list_files(mode)
+                 if path != gone and not archive_tools.is_later_volume(path)]
+        if not files:
+            return None
+        # Where <gone> would be listed: sorted in among the rest, by a
+        # key that may read the file, which then counts as empty and
+        # old.
+        placed = files + [gone]
+        file_provider.FileProvider.sort_files(placed)
+        index = placed.index(gone)
+        return files[min(index, len(files) - 1)]
 
     def page_member(self, page: int) -> str | None:
         """The name within the open archive of the file of <page>, or

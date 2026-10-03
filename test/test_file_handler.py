@@ -220,6 +220,68 @@ class DirectoryWalkTest(MComixTest):
         self.assertTrue(self.handler.next_archive())
         self.assertEqual(second, self._opened_file())
 
+    def _put_archives(self, *names):
+        paths = [os.path.join(self.root, 'b', name) for name in names]
+        for path in paths:
+            shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'),
+                        path)
+        return paths
+
+    @unittest.skipIf(sys.platform == 'win32',
+                     'Windows deletes no archive MComix holds open')
+    def test_refreshing_a_deleted_archive_opens_the_next_one(self):
+        """It said "No such file" and closed the book, with the rest
+        of the folder there to read."""
+        first, middle, last = self._put_archives('1.cbz', '2.cbz', '3.cbz')
+        self._open(middle)
+        os.remove(middle)
+        self.handler.refresh_file()
+        self.assertEqual(last, self._opened_file())
+        self.assertTrue(wait_for(lambda: self.handler.file_loaded))
+
+    @unittest.skipIf(sys.platform == 'win32',
+                     'Windows deletes no archive MComix holds open')
+    def test_refreshing_the_deleted_last_archive_opens_the_one_before(self):
+        first, last = self._put_archives('1.cbz', '2.cbz')
+        self._open(last)
+        os.remove(last)
+        self.handler.refresh_file()
+        self.assertEqual(first, self._opened_file())
+
+    @unittest.skipIf(sys.platform == 'win32',
+                     'Windows deletes no archive MComix holds open')
+    def test_refreshing_the_folder_s_only_archive_says_it_is_gone(self):
+        only, = self._put_archives('1.cbz')
+        self._open(only)
+        os.remove(only)
+        with mock.patch.object(self.window.osd, 'show') as shown:
+            self.handler.refresh_file()
+        self.assertIn('No such file', shown.call_args.args[0])
+        self.assertFalse(self.handler.file_loaded)
+
+    def test_refreshing_a_deleted_picture_opens_the_next_one(self):
+        pictures = [os.path.join(self.root, 'b', '%d.jpg' % number)
+                    for number in (1, 2, 3)]
+        for path in pictures:
+            shutil.copy(get_testfile_path('images', '01-JPG-Indexed.jpg'),
+                        path)
+        self._open(pictures[1])
+
+        def removed():
+            # Windows removes no file that is open, and the window and
+            # the thumbnail bar read the page as it opens.
+            try:
+                os.remove(pictures[1])
+            except PermissionError:
+                return False
+            return True
+        self.assertTrue(wait_for(removed))
+        self.handler.refresh_file()
+        self.assertTrue(wait_for(
+            lambda: self.window.imagehandler.get_number_of_pages() == 2))
+        self.assertEqual(pictures[2],
+                         self.window.imagehandler.get_real_path())
+
     def _put_rar_set(self, directory):
         """Copy the RAR set packed in three volumes into <directory>, and
         return the path of its first volume."""
