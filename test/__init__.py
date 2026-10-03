@@ -410,8 +410,11 @@ class MComixTest(unittest.TestCase):
             # Windows finds the Desktop as %USERPROFILE%\Desktop and
             # answers nothing for one that does not exist; GTK's places
             # sidebar hands that nothing to g_filename_to_uri(), and
-            # every file chooser warned twice.
+            # every file chooser warned twice.  GLib looks the folder up
+            # once per process and keeps the answer, which is the first
+            # test's home or none; it is asked again for this one.
             os.mkdir(os.path.join(home_dir, 'Desktop'))
+            GLib.reload_user_special_dirs_cache()
         os.environ['APPDATA'] = os.path.join(home_dir, 'AppData', 'Roaming')
         os.environ['LOCALAPPDATA'] = os.path.join(home_dir, 'AppData', 'Local')
         # Create and setup temporary directory.
