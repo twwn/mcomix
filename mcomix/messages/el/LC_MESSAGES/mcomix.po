@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-04 15:22+0200\n"
+"POT-Creation-Date: 2026-10-04 15:26+0200\n"
 "PO-Revision-Date: 2006-09-27 10:18+0200\n"
 "Last-Translator: Paul Chatzidimitriou <paulmedic555@gmail.com>\n"
 "Language-Team: \n"
@@ -58,7 +58,7 @@ msgid "! Could not read %s"
 msgstr "! Δεν ήταν δυνατή η ανάγνωση του %s"
 
 #
-#: mcomix/archive_packer.py:176 mcomix/file_actions.py:999
+#: mcomix/archive_packer.py:176 mcomix/file_actions.py:1040
 #: mcomix/library/book_area.py:744
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
@@ -92,7 +92,7 @@ msgid "_No"
 msgstr "Ό_χι"
 
 #: mcomix/bookmark_backend.py:374 mcomix/edit_dialog.py:59
-#: mcomix/file_actions.py:859 mcomix/file_actions.py:982
+#: mcomix/file_actions.py:859 mcomix/file_actions.py:1023
 #: mcomix/file_chooser_base_dialog.py:187
 #: mcomix/file_chooser_base_dialog.py:192
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
@@ -202,7 +202,7 @@ msgstr "_Αφαίρεση σελιδοδεικτών αυτού του βιβλ�
 msgid "_Edit Bookmarks..."
 msgstr "_Επεξεργασία σελιδοδεικτών..."
 
-#: mcomix/bookmark_menu.py:197 mcomix/file_actions.py:1039
+#: mcomix/bookmark_menu.py:197 mcomix/file_actions.py:1080
 #, python-format
 msgid "Remove the bookmarks in \"%s\"?"
 msgstr "Αφαίρεση των σελιδοδεικτών στο «%s»;"
@@ -285,7 +285,7 @@ msgstr "Δώστε ένα νέο όνομα για αυτό το αρχείο."
 
 #
 # File: src/edit.py, line: 28
-#: mcomix/edit_dialog.py:58 mcomix/keybindings.py:149
+#: mcomix/edit_dialog.py:58 mcomix/keybindings.py:151
 msgid "Edit archive"
 msgstr "Επεξεργασία αρχείου"
 
@@ -366,7 +366,7 @@ msgstr "Επιλογή ό_λων"
 
 #
 # File: src/enhance.py, line: 51
-#: mcomix/enhance_dialog.py:28 mcomix/keybindings.py:151
+#: mcomix/enhance_dialog.py:28 mcomix/keybindings.py:153
 msgid "Enhance image"
 msgstr "Βελτίωση εικόνας"
 
@@ -448,7 +448,7 @@ msgstr "Αντιστροφή _χρωμάτων εικόνας"
 msgid "Invert (negate) image colors."
 msgstr "Αντιστρέφει τα χρώματα της εικόνας."
 
-#: mcomix/file_actions.py:303 mcomix/file_actions.py:1113
+#: mcomix/file_actions.py:303 mcomix/file_actions.py:1154
 msgid "A file of that name is there already."
 msgstr "Υπάρχει ήδη αρχείο με αυτό το όνομα."
 
@@ -509,7 +509,7 @@ msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr ""
 "! Δεν ήταν δυνατή η αποθήκευση του %(file)s στο %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:822 mcomix/file_actions.py:1115
+#: mcomix/file_actions.py:822 mcomix/file_actions.py:1156
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "Δεν υπάρχει αρκετός χώρος εκεί: το αρχείο είναι %s."
@@ -532,34 +532,43 @@ msgstr "Το αρχείο μετακινείται στα απορρίμματα
 msgid "_Move to Trash"
 msgstr "_Μετακίνηση στα Απορρίμματα"
 
-#: mcomix/file_actions.py:955
+#: mcomix/file_actions.py:890
+#, python-format
+msgid "Delete \"%s\" permanently?"
+msgstr "Οριστική διαγραφή του «%s»;"
+
+#: mcomix/file_actions.py:891
+msgid "It does not go to the trash and cannot be restored."
+msgstr "Δεν μετακινείται στα απορρίμματα και δεν θα μπορεί να ανακτηθεί."
+
+#: mcomix/file_actions.py:996
 #, python-format
 msgid "Could not move \"%s\" to the trash"
 msgstr "Δεν ήταν δυνατή η μετακίνηση του «%s» στα απορρίμματα"
 
-#: mcomix/file_actions.py:959 mcomix/library/book_area.py:754
+#: mcomix/file_actions.py:1000 mcomix/library/book_area.py:754
 #, python-format
 msgid "%d book could not be moved to the trash."
 msgid_plural "%d books could not be moved to the trash."
 msgstr[0] "Δεν ήταν δυνατή η μετακίνηση %d βιβλίου στα απορρίμματα."
 msgstr[1] "Δεν ήταν δυνατή η μετακίνηση %d βιβλίων στα απορρίμματα."
 
-#: mcomix/file_actions.py:963
+#: mcomix/file_actions.py:1004
 msgid "Delete it permanently instead? It cannot be restored."
 msgid_plural "Delete them permanently instead? They cannot be restored."
 msgstr[0] "Να διαγραφεί οριστικά; Δεν θα μπορεί να ανακτηθεί."
 msgstr[1] "Να διαγραφούν οριστικά; Δεν θα μπορούν να ανακτηθούν."
 
-#: mcomix/file_actions.py:983
+#: mcomix/file_actions.py:1024
 msgid "_Delete Permanently"
 msgstr "Οριστική _διαγραφή"
 
-#: mcomix/file_actions.py:1014
+#: mcomix/file_actions.py:1055
 #, python-format
 msgid "Could not delete \"%s\""
 msgstr "Δεν ήταν δυνατή η διαγραφή του «%s»"
 
-#: mcomix/file_actions.py:1035
+#: mcomix/file_actions.py:1076
 #, python-format
 msgid "The file is gone, and its %d bookmark cannot be opened any more."
 msgid_plural ""
@@ -569,13 +578,13 @@ msgstr[0] ""
 msgstr[1] ""
 "Το αρχείο χάθηκε και οι %d σελιδοδείκτες του δεν μπορούν πια να ανοίξουν."
 
-#: mcomix/file_actions.py:1109
+#: mcomix/file_actions.py:1150
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr ""
 "! Δεν ήταν δυνατή η μετακίνηση του %(file)s στο %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:1121
+#: mcomix/file_actions.py:1162
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "Δεν ήταν δυνατή η μετακίνηση του «%(file)s» στο «%(directory)s»"
@@ -591,7 +600,7 @@ msgstr[1] "%d σελίδες"
 #
 # File: src/filechooser.py, line: 35
 # File: src/library.py, line: 489
-#: mcomix/file_chooser_base_dialog.py:186 mcomix/keybindings.py:150
+#: mcomix/file_chooser_base_dialog.py:186 mcomix/keybindings.py:152
 msgid "Open"
 msgstr "Άνοιγμα"
 
@@ -1120,119 +1129,123 @@ msgstr "Διαγραφή"
 
 #
 # File: src/ui.py, line: 67
-#: mcomix/keybindings.py:135 mcomix/keybindings.py:136
-#: mcomix/keybindings.py:139 mcomix/keybindings.py:140
-#: mcomix/keybindings.py:141 mcomix/keybindings.py:142
-#: mcomix/keybindings.py:143 mcomix/keybindings.py:145
-#: mcomix/keybindings.py:146 mcomix/keybindings.py:147
-#: mcomix/keybindings.py:149 mcomix/keybindings.py:150
-#: mcomix/keybindings.py:151 mcomix/keybindings.py:152
-#: mcomix/keybindings.py:153
+#: mcomix/keybindings.py:135 mcomix/keybindings.py:137
+#: mcomix/keybindings.py:138 mcomix/keybindings.py:141
+#: mcomix/keybindings.py:142 mcomix/keybindings.py:143
+#: mcomix/keybindings.py:144 mcomix/keybindings.py:145
+#: mcomix/keybindings.py:147 mcomix/keybindings.py:148
+#: mcomix/keybindings.py:149 mcomix/keybindings.py:151
+#: mcomix/keybindings.py:152 mcomix/keybindings.py:153
+#: mcomix/keybindings.py:154 mcomix/keybindings.py:155
 msgid "File"
 msgstr "Αρχείο"
 
 #: mcomix/keybindings.py:136
+msgid "Delete permanently"
+msgstr "Οριστική διαγραφή"
+
+#: mcomix/keybindings.py:138
 msgid "Rename page"
 msgstr "Μετονομασία σελίδας"
 
-#: mcomix/keybindings.py:137
+#: mcomix/keybindings.py:139
 msgid "Undo"
 msgstr "Αναίρεση"
 
-#: mcomix/keybindings.py:137 mcomix/keybindings.py:138
+#: mcomix/keybindings.py:139 mcomix/keybindings.py:140
 msgid "Edit"
 msgstr "Επεξεργασία"
 
-#: mcomix/keybindings.py:138
+#: mcomix/keybindings.py:140
 msgid "Redo"
 msgstr "Επανάληψη"
 
 #
-#: mcomix/keybindings.py:139
+#: mcomix/keybindings.py:141
 msgid "Refresh"
 msgstr "Ανανέωση"
 
 #
 # File: src/ui.py, line: 48
-#: mcomix/keybindings.py:140
+#: mcomix/keybindings.py:142
 msgid "Close"
 msgstr "Κλείσιμο"
 
 #
 # File: src/ui.py, line: 50
-#: mcomix/keybindings.py:141
+#: mcomix/keybindings.py:143
 msgid "Quit"
 msgstr "Έξοδος"
 
-#: mcomix/keybindings.py:142
+#: mcomix/keybindings.py:144
 msgid "Save and quit"
 msgstr "Αποθήκευση και έξοδος"
 
-#: mcomix/keybindings.py:143
+#: mcomix/keybindings.py:145
 msgid "Save As"
 msgstr "Αποθήκευση ως"
 
 #
-#: mcomix/keybindings.py:145
+#: mcomix/keybindings.py:147
 msgid "Archive comments"
 msgstr "Σχόλια του αρχείου"
 
 #
 # File: src/properties.py, line: 89
-#: mcomix/keybindings.py:146 mcomix/properties_dialog.py:36
+#: mcomix/keybindings.py:148 mcomix/properties_dialog.py:36
 msgid "Properties"
 msgstr "Ιδιότητες"
 
 #
 # File: src/preferences.py, line: 78
-#: mcomix/keybindings.py:147 mcomix/preferences_dialog.py:69
+#: mcomix/keybindings.py:149 mcomix/preferences_dialog.py:69
 msgid "Preferences"
 msgstr "Προτιμήσεις"
 
 #
 # File: src/library.py, line: 38
-#: mcomix/keybindings.py:152 mcomix/library/main_dialog.py:55
+#: mcomix/keybindings.py:154 mcomix/library/main_dialog.py:55
 msgid "Library"
 msgstr "Βιβλιοθήκη"
 
-#: mcomix/keybindings.py:153 mcomix/ui.py:527
+#: mcomix/keybindings.py:155 mcomix/ui.py:527
 msgid "Invert image colors"
 msgstr "Αντιστροφή χρωμάτων εικόνας"
 
 #
 # File: src/bookmark.py, line: 27
-#: mcomix/keybindings.py:156
+#: mcomix/keybindings.py:158
 msgid "Add bookmark"
 msgstr "Προσθήκη σελιδοδείκτη"
 
 #
 # File: src/ui.py, line: 64
-#: mcomix/keybindings.py:156 mcomix/keybindings.py:157
+#: mcomix/keybindings.py:158 mcomix/keybindings.py:159
 msgid "Bookmarks"
 msgstr "Σελιδοδείκτες"
 
-#: mcomix/keybindings.py:157
+#: mcomix/keybindings.py:159
 msgid "Edit bookmarks"
 msgstr "Επεξεργασία σελιδοδεικτών"
 
 #
-#: mcomix/keybindings.py:165 mcomix/openwith.py:558
+#: mcomix/keybindings.py:167 mcomix/openwith.py:558
 msgid "Command"
 msgstr "Εντολή"
 
 #
 # File: src/bookmark.py, line: 229
-#: mcomix/keybindings.py:166
+#: mcomix/keybindings.py:168
 msgid "External commands"
 msgstr "Εξωτερικές εντολές"
 
-#: mcomix/keybindings.py:243
+#: mcomix/keybindings.py:245
 #, python-format
 msgid "Keybinding for \"%(action)s\" overrides hotkey for another action."
 msgstr ""
 "Η συντόμευση για «%(action)s» υπερισχύει της συντόμευσης άλλης ενέργειας."
 
-#: mcomix/keybindings.py:428 mcomix/keybindings.py:436
+#: mcomix/keybindings.py:430 mcomix/keybindings.py:438
 #, python-format
 msgid "Couldn't load keybindings: %s"
 msgstr "Δεν ήταν δυνατή η φόρτωση των συντομεύσεων: %s"

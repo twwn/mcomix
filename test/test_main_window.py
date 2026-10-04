@@ -1453,6 +1453,75 @@ class MainWindowTest(MComixTest):
         self.assertIsNotNone(said[0].get_widget_for_response(Response.CLOSE),
                              'the message has no button')
 
+    def _asked_to_delete_permanently(self, source):
+        """Press Shift+Delete on <source> and return the question."""
+        self.window.file_actions.delete_permanently()
+        self._pump()
+        dialogs = self._delete_dialogs()
+        self.addCleanup(self._pump)
+        for dialog in dialogs:
+            self.addCleanup(dialog.destroy)
+        self.assertEqual(len(dialogs), 1, 'nothing was asked')
+        return dialogs[0]
+
+    def test_shift_delete_is_the_key_for_deleting_permanently(self):
+        """As in a file browser."""
+        manager = keybindings.keybinding_manager(self.window)
+        self.assertEqual([keybindings.parse_accelerator('<Shift>Delete')],
+                         manager.get_bindings_for_action('delete_permanently'))
+
+    def test_deleting_permanently_asks_first(self):
+        source = self._movable_book()
+        dialog = self._asked_to_delete_permanently(source)
+        self.assertTrue(os.path.isfile(source), 'the file went unasked')
+        self.assertEqual(('Delete "Movable.cbz" permanently?',
+                          'It does not go to the trash and cannot be '
+                          'restored.'),
+                         (dialog._primary.get_text(),
+                          dialog._secondary.get_text()))
+        self.assertIs(dialog.get_default_widget(),
+                      dialog.get_widget_for_response(Response.CANCEL),
+                      'Enter would delete the file for good')
+        self.assertTrue(dialog.get_widget_for_response(Response.OK)
+                        .has_css_class('destructive-action'))
+        self.assertIsNone(dialog.dialog_id,
+                          'the answer could be given for good')
+
+    def test_deleting_permanently_bypasses_the_trash(self):
+        source = self._movable_book()
+        dialog = self._asked_to_delete_permanently(source)
+        with unittest.mock.patch.object(
+                self.window.uimanager.recent, 'remove_path') as forgotten:
+            dialog.get_widget_for_response(Response.OK).emit('clicked')
+            self._pump()
+        self.assertFalse(os.path.exists(source))
+        self.assertFalse(os.path.isdir(self.trash_dir)
+                         and os.listdir(self.trash_dir),
+                         'the file went to the trash')
+        forgotten.assert_called_once_with(source)
+        self.assertNotEqual(self.window.filehandler.get_path_to_base(),
+                            source, 'the deleted book is still open')
+
+    def test_turning_down_deleting_permanently_keeps_the_file(self):
+        source = self._movable_book()
+        dialog = self._asked_to_delete_permanently(source)
+        dialog.get_widget_for_response(Response.CANCEL).emit('clicked')
+        self._pump()
+        self.assertTrue(os.path.isfile(source))
+        self.assertEqual(self.window.filehandler.get_path_to_base(), source,
+                         'the book was closed for nothing')
+
+    def test_shift_delete_removes_the_picked_out_page_as_delete_does(self):
+        """Pages are not files of their own until the book is written."""
+        before = self._ready()
+        self.window.select_page(1)
+        with self._quietly():
+            self.window.file_actions.delete_permanently()
+        self._pump()
+        self.assertEqual(self._pages(), before[1:])
+        self.assertEqual(self._delete_dialogs(), [],
+                         'it asked about the file as well')
+
     def test_keeping_the_bookmarks_of_a_deleted_file_keeps_them(self):
         source = self._movable_book()
         store = self._bookmark_store()

@@ -93,6 +93,7 @@ Pick a page out, or put it back | CTRL+LeftMouse
 Mark a page to swap, or swap it with the marked one | CTRL+SHIFT+LeftMouse
 Swap two pages side by side | CTRL+SHIFT+LeftMouse dragged onto the other page
 Delete the page or the file | Delete
+Delete the file permanently | SHIFT+Delete
 Rename page | F2
 Undo | CTRL+Z
 Redo | CTRL+Y, CTRL+SHIFT+Z
@@ -105,6 +106,7 @@ Save and quit | CTRL+SHIFT+Q
 Execute first, second, ... external command (see [External commands](external-commands.md)) | 1 to 9
 
 - Delete removes the pages picked out with CTRL+LeftMouse; with none picked out, it asks before moving the file to the trash.
+- SHIFT+Delete asks before deleting the file permanently, without the trash; pages picked out are removed as Delete removes them.
 - Where the trash refuses the file, MComix offers to delete it permanently. GLib keeps no trash on a folder bind-mounted from another partition, or on a tmpfs such as /tmp.
 - No key until given one: Rotate 180°, Flip horizontally, Flip vertically, Never autorotate, the two rotations under "Autorotate by width" and the two under "Autorotate by height", Toolbar, Statusbar, Scrollbars and Edit archive.
 

@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-04 15:22+0200\n"
+"POT-Creation-Date: 2026-10-04 15:26+0200\n"
 "PO-Revision-Date: 2009-01-25 21:54+0100\n"
 "Last-Translator: Jan Nekvasil <jan.nekvasil@gmail.com>\n"
 "Language-Team: \n"
@@ -58,7 +58,7 @@ msgstr "! Nepodařilo se přečíst %s"
 
 #
 # File: src/comment.py, line: 53
-#: mcomix/archive_packer.py:176 mcomix/file_actions.py:999
+#: mcomix/archive_packer.py:176 mcomix/file_actions.py:1040
 #: mcomix/library/book_area.py:744
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
@@ -95,7 +95,7 @@ msgstr "_Ne"
 #
 # File: src/preferences.py, line: 230
 #: mcomix/bookmark_backend.py:374 mcomix/edit_dialog.py:59
-#: mcomix/file_actions.py:859 mcomix/file_actions.py:982
+#: mcomix/file_actions.py:859 mcomix/file_actions.py:1023
 #: mcomix/file_chooser_base_dialog.py:187
 #: mcomix/file_chooser_base_dialog.py:192
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
@@ -207,7 +207,7 @@ msgstr "_Odebrat záložky této knihy..."
 msgid "_Edit Bookmarks..."
 msgstr "_Upravit záložky..."
 
-#: mcomix/bookmark_menu.py:197 mcomix/file_actions.py:1039
+#: mcomix/bookmark_menu.py:197 mcomix/file_actions.py:1080
 #, python-format
 msgid "Remove the bookmarks in \"%s\"?"
 msgstr "Smazat záložky v „%s“?"
@@ -292,7 +292,7 @@ msgstr "Prosím vložte nové jméno tohoto souboru."
 
 #
 # File: src/edit.py, line: 28
-#: mcomix/edit_dialog.py:58 mcomix/keybindings.py:149
+#: mcomix/edit_dialog.py:58 mcomix/keybindings.py:151
 msgid "Edit archive"
 msgstr "Upravit archiv"
 
@@ -375,7 +375,7 @@ msgstr "V_ybrat vše"
 
 #
 # File: src/enhance.py, line: 51
-#: mcomix/enhance_dialog.py:28 mcomix/keybindings.py:151
+#: mcomix/enhance_dialog.py:28 mcomix/keybindings.py:153
 msgid "Enhance image"
 msgstr "Vylepšit obrázek"
 
@@ -460,7 +460,7 @@ msgstr "_Invertovat barvy obrázku"
 msgid "Invert (negate) image colors."
 msgstr "Invertuje (neguje) barvy obrázku."
 
-#: mcomix/file_actions.py:303 mcomix/file_actions.py:1113
+#: mcomix/file_actions.py:303 mcomix/file_actions.py:1154
 msgid "A file of that name is there already."
 msgstr "Soubor s tímto názvem už tam je."
 
@@ -519,7 +519,7 @@ msgstr "Uložit stranu jako"
 msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! Nepodařilo se uložit %(file)s do %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:822 mcomix/file_actions.py:1115
+#: mcomix/file_actions.py:822 mcomix/file_actions.py:1156
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "Není tam dost místa: soubor má %s."
@@ -542,12 +542,21 @@ msgstr "Soubor bude přesunut do koše."
 msgid "_Move to Trash"
 msgstr "Pře_sunout do koše"
 
-#: mcomix/file_actions.py:955
+#: mcomix/file_actions.py:890
+#, python-format
+msgid "Delete \"%s\" permanently?"
+msgstr "Trvale smazat „%s“?"
+
+#: mcomix/file_actions.py:891
+msgid "It does not go to the trash and cannot be restored."
+msgstr "Nepřesune se do koše a nepůjde obnovit."
+
+#: mcomix/file_actions.py:996
 #, python-format
 msgid "Could not move \"%s\" to the trash"
 msgstr "Nepodařilo se přesunout „%s“ do koše"
 
-#: mcomix/file_actions.py:959 mcomix/library/book_area.py:754
+#: mcomix/file_actions.py:1000 mcomix/library/book_area.py:754
 #, python-format
 msgid "%d book could not be moved to the trash."
 msgid_plural "%d books could not be moved to the trash."
@@ -555,23 +564,23 @@ msgstr[0] "Nepodařilo se přesunout %d knihu do koše."
 msgstr[1] "Nepodařilo se přesunout %d knihy do koše."
 msgstr[2] "Nepodařilo se přesunout %d knih do koše."
 
-#: mcomix/file_actions.py:963
+#: mcomix/file_actions.py:1004
 msgid "Delete it permanently instead? It cannot be restored."
 msgid_plural "Delete them permanently instead? They cannot be restored."
 msgstr[0] "Smazat jej místo toho trvale? Nepůjde jej obnovit."
 msgstr[1] "Smazat je místo toho trvale? Nepůjde je obnovit."
 msgstr[2] "Smazat je místo toho trvale? Nepůjde je obnovit."
 
-#: mcomix/file_actions.py:983
+#: mcomix/file_actions.py:1024
 msgid "_Delete Permanently"
 msgstr "_Smazat trvale"
 
-#: mcomix/file_actions.py:1014
+#: mcomix/file_actions.py:1055
 #, python-format
 msgid "Could not delete \"%s\""
 msgstr "Nepodařilo se smazat „%s“"
 
-#: mcomix/file_actions.py:1035
+#: mcomix/file_actions.py:1076
 #, python-format
 msgid "The file is gone, and its %d bookmark cannot be opened any more."
 msgid_plural ""
@@ -580,12 +589,12 @@ msgstr[0] "Soubor je pryč a jeho %d záložku už nelze otevřít."
 msgstr[1] "Soubor je pryč a jeho %d záložky už nelze otevřít."
 msgstr[2] "Soubor je pryč a jeho %d záložek už nelze otevřít."
 
-#: mcomix/file_actions.py:1109
+#: mcomix/file_actions.py:1150
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr "! Nepodařilo se přesunout %(file)s do %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:1121
+#: mcomix/file_actions.py:1162
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "Nepodařilo se přesunout „%(file)s“ do „%(directory)s“"
@@ -602,7 +611,7 @@ msgstr[2] "%d stránek"
 #
 # File: src/filechooser.py, line: 35
 # File: src/library.py, line: 489
-#: mcomix/file_chooser_base_dialog.py:186 mcomix/keybindings.py:150
+#: mcomix/file_chooser_base_dialog.py:186 mcomix/keybindings.py:152
 msgid "Open"
 msgstr "Otevřít"
 
@@ -1135,124 +1144,128 @@ msgstr "Smazat"
 
 #
 # File: src/preferences.py, line: 196
-#: mcomix/keybindings.py:135 mcomix/keybindings.py:136
-#: mcomix/keybindings.py:139 mcomix/keybindings.py:140
-#: mcomix/keybindings.py:141 mcomix/keybindings.py:142
-#: mcomix/keybindings.py:143 mcomix/keybindings.py:145
-#: mcomix/keybindings.py:146 mcomix/keybindings.py:147
-#: mcomix/keybindings.py:149 mcomix/keybindings.py:150
-#: mcomix/keybindings.py:151 mcomix/keybindings.py:152
-#: mcomix/keybindings.py:153
+#: mcomix/keybindings.py:135 mcomix/keybindings.py:137
+#: mcomix/keybindings.py:138 mcomix/keybindings.py:141
+#: mcomix/keybindings.py:142 mcomix/keybindings.py:143
+#: mcomix/keybindings.py:144 mcomix/keybindings.py:145
+#: mcomix/keybindings.py:147 mcomix/keybindings.py:148
+#: mcomix/keybindings.py:149 mcomix/keybindings.py:151
+#: mcomix/keybindings.py:152 mcomix/keybindings.py:153
+#: mcomix/keybindings.py:154 mcomix/keybindings.py:155
 msgid "File"
 msgstr "Soubor"
 
 #: mcomix/keybindings.py:136
+msgid "Delete permanently"
+msgstr "Smazat trvale"
+
+#: mcomix/keybindings.py:138
 msgid "Rename page"
 msgstr "Přejmenovat stránku"
 
-#: mcomix/keybindings.py:137
+#: mcomix/keybindings.py:139
 msgid "Undo"
 msgstr "Zpět"
 
-#: mcomix/keybindings.py:137 mcomix/keybindings.py:138
+#: mcomix/keybindings.py:139 mcomix/keybindings.py:140
 msgid "Edit"
 msgstr "Úpravy"
 
-#: mcomix/keybindings.py:138
+#: mcomix/keybindings.py:140
 msgid "Redo"
 msgstr "Znovu"
 
 #
 # File: src/edit.py, line: 51
-#: mcomix/keybindings.py:139
+#: mcomix/keybindings.py:141
 msgid "Refresh"
 msgstr "Obnovit"
 
 #
 # File: src/ui.py, line: 48
-#: mcomix/keybindings.py:140
+#: mcomix/keybindings.py:142
 msgid "Close"
 msgstr "Zavřít"
 
 #
 # File: src/ui.py, line: 50
-#: mcomix/keybindings.py:141
+#: mcomix/keybindings.py:143
 msgid "Quit"
 msgstr "Ukončit"
 
-#: mcomix/keybindings.py:142
+#: mcomix/keybindings.py:144
 msgid "Save and quit"
 msgstr "Uložit a ukončit"
 
 #
 # File: src/filechooser.py, line: 39
-#: mcomix/keybindings.py:143
+#: mcomix/keybindings.py:145
 msgid "Save As"
 msgstr "Uložit jako"
 
 #
 # File: src/properties.py, line: 135
-#: mcomix/keybindings.py:145
+#: mcomix/keybindings.py:147
 msgid "Archive comments"
 msgstr "Komentáře archivu"
 
 #
 # File: src/properties.py, line: 89
-#: mcomix/keybindings.py:146 mcomix/properties_dialog.py:36
+#: mcomix/keybindings.py:148 mcomix/properties_dialog.py:36
 msgid "Properties"
 msgstr "Vlastnosti"
 
 #
 # File: src/preferences.py, line: 78
-#: mcomix/keybindings.py:147 mcomix/preferences_dialog.py:69
+#: mcomix/keybindings.py:149 mcomix/preferences_dialog.py:69
 msgid "Preferences"
 msgstr "Nastavení"
 
 #
 # File: src/library.py, line: 38
-#: mcomix/keybindings.py:152 mcomix/library/main_dialog.py:55
+#: mcomix/keybindings.py:154 mcomix/library/main_dialog.py:55
 msgid "Library"
 msgstr "Knihovna"
 
-#: mcomix/keybindings.py:153 mcomix/ui.py:527
+#: mcomix/keybindings.py:155 mcomix/ui.py:527
 msgid "Invert image colors"
 msgstr "Inverze barev obrázku"
 
 #
 # File: src/bookmark.py, line: 27
-#: mcomix/keybindings.py:156
+#: mcomix/keybindings.py:158
 msgid "Add bookmark"
 msgstr "Přidat záložku"
 
 #
 # File: src/ui.py, line: 64
-#: mcomix/keybindings.py:156 mcomix/keybindings.py:157
+#: mcomix/keybindings.py:158 mcomix/keybindings.py:159
 msgid "Bookmarks"
 msgstr "Záložky"
 
-#: mcomix/keybindings.py:157
+#: mcomix/keybindings.py:159
 msgid "Edit bookmarks"
 msgstr "Úprava záložek"
 
 #
 # File: src/comment.py, line: 16
 # File: src/preferences.py, line: 288
-#: mcomix/keybindings.py:165 mcomix/openwith.py:558
+#: mcomix/keybindings.py:167 mcomix/openwith.py:558
 msgid "Command"
 msgstr "Příkaz"
 
 #
 # File: src/bookmark.py, line: 229
-#: mcomix/keybindings.py:166
+#: mcomix/keybindings.py:168
 msgid "External commands"
 msgstr "Externí příkazy"
 
-#: mcomix/keybindings.py:243
+#: mcomix/keybindings.py:245
 #, python-format
 msgid "Keybinding for \"%(action)s\" overrides hotkey for another action."
 msgstr "Zkratka pro „%(action)s“ přebíjí zkratku jiné akce."
 
-#: mcomix/keybindings.py:428 mcomix/keybindings.py:436
+#: mcomix/keybindings.py:430 mcomix/keybindings.py:438
 #, python-format
 msgid "Couldn't load keybindings: %s"
 msgstr "Nepodařilo se načíst klávesové zkratky: %s"

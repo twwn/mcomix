@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 0.90.4\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-04 15:22+0200\n"
+"POT-Creation-Date: 2026-10-04 15:26+0200\n"
 "PO-Revision-Date: 2016-01-10 18:09+0200\n"
 "Last-Translator: Ulyanich Michael <ulianich_mihail@ukr.net>\n"
 "Language-Team: Russian <kde-russian@lists.kde.ru>\n"
@@ -63,7 +63,7 @@ msgstr "! Невозможно прочитать %s"
 
 #
 # File: src/comment.py, line: 53
-#: mcomix/archive_packer.py:176 mcomix/file_actions.py:999
+#: mcomix/archive_packer.py:176 mcomix/file_actions.py:1040
 #: mcomix/library/book_area.py:744
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
@@ -104,7 +104,7 @@ msgstr "_Нет"
 #
 # File: src/preferences.py, line: 230
 #: mcomix/bookmark_backend.py:374 mcomix/edit_dialog.py:59
-#: mcomix/file_actions.py:859 mcomix/file_actions.py:982
+#: mcomix/file_actions.py:859 mcomix/file_actions.py:1023
 #: mcomix/file_chooser_base_dialog.py:187
 #: mcomix/file_chooser_base_dialog.py:192
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
@@ -217,7 +217,7 @@ msgstr "Удалить закладки этой _книги..."
 msgid "_Edit Bookmarks..."
 msgstr "_Управление закладками"
 
-#: mcomix/bookmark_menu.py:197 mcomix/file_actions.py:1039
+#: mcomix/bookmark_menu.py:197 mcomix/file_actions.py:1080
 #, python-format
 msgid "Remove the bookmarks in \"%s\"?"
 msgstr "Удалить закладки в «%s»?"
@@ -302,7 +302,7 @@ msgstr "Пожалуйста, введите новое имя для этого
 
 #
 # File: src/edit.py, line: 28
-#: mcomix/edit_dialog.py:58 mcomix/keybindings.py:149
+#: mcomix/edit_dialog.py:58 mcomix/keybindings.py:151
 msgid "Edit archive"
 msgstr "Редактировать архив"
 
@@ -385,7 +385,7 @@ msgstr "Выделить вс_ё"
 
 #
 # File: src/enhance.py, line: 51
-#: mcomix/enhance_dialog.py:28 mcomix/keybindings.py:151
+#: mcomix/enhance_dialog.py:28 mcomix/keybindings.py:153
 msgid "Enhance image"
 msgstr "Улучшение изображения"
 
@@ -471,7 +471,7 @@ msgstr "_Инвертировать цвета изображения"
 msgid "Invert (negate) image colors."
 msgstr "Инвертирует (обращает) цвета изображения."
 
-#: mcomix/file_actions.py:303 mcomix/file_actions.py:1113
+#: mcomix/file_actions.py:303 mcomix/file_actions.py:1154
 msgid "A file of that name is there already."
 msgstr "Файл с таким именем там уже есть."
 
@@ -534,7 +534,7 @@ msgstr "Сохранить страницу как"
 msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! Не удалось сохранить %(file)s в %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:822 mcomix/file_actions.py:1115
+#: mcomix/file_actions.py:822 mcomix/file_actions.py:1156
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "Там недостаточно места: файл занимает %s."
@@ -557,12 +557,21 @@ msgstr "Файл будет перемещён в корзину."
 msgid "_Move to Trash"
 msgstr "_Переместить в Корзину"
 
-#: mcomix/file_actions.py:955
+#: mcomix/file_actions.py:890
+#, python-format
+msgid "Delete \"%s\" permanently?"
+msgstr "Удалить \"%s\" безвозвратно?"
+
+#: mcomix/file_actions.py:891
+msgid "It does not go to the trash and cannot be restored."
+msgstr "Файл не будет перемещён в корзину, и восстановить его будет нельзя."
+
+#: mcomix/file_actions.py:996
 #, python-format
 msgid "Could not move \"%s\" to the trash"
 msgstr "Не удалось переместить «%s» в корзину"
 
-#: mcomix/file_actions.py:959 mcomix/library/book_area.py:754
+#: mcomix/file_actions.py:1000 mcomix/library/book_area.py:754
 #, python-format
 msgid "%d book could not be moved to the trash."
 msgid_plural "%d books could not be moved to the trash."
@@ -570,23 +579,23 @@ msgstr[0] "Не удалось переместить %d книгу в корз�
 msgstr[1] "Не удалось переместить %d книги в корзину."
 msgstr[2] "Не удалось переместить %d книг в корзину."
 
-#: mcomix/file_actions.py:963
+#: mcomix/file_actions.py:1004
 msgid "Delete it permanently instead? It cannot be restored."
 msgid_plural "Delete them permanently instead? They cannot be restored."
 msgstr[0] "Удалить его безвозвратно? Восстановить его будет нельзя."
 msgstr[1] "Удалить их безвозвратно? Восстановить их будет нельзя."
 msgstr[2] "Удалить их безвозвратно? Восстановить их будет нельзя."
 
-#: mcomix/file_actions.py:983
+#: mcomix/file_actions.py:1024
 msgid "_Delete Permanently"
 msgstr "_Удалить безвозвратно"
 
-#: mcomix/file_actions.py:1014
+#: mcomix/file_actions.py:1055
 #, python-format
 msgid "Could not delete \"%s\""
 msgstr "Не удалось удалить «%s»"
 
-#: mcomix/file_actions.py:1035
+#: mcomix/file_actions.py:1076
 #, python-format
 msgid "The file is gone, and its %d bookmark cannot be opened any more."
 msgid_plural ""
@@ -595,12 +604,12 @@ msgstr[0] "Файла больше нет, и %d его закладку уже 
 msgstr[1] "Файла больше нет, и %d его закладки уже не открыть."
 msgstr[2] "Файла больше нет, и %d его закладок уже не открыть."
 
-#: mcomix/file_actions.py:1109
+#: mcomix/file_actions.py:1150
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr "! Не удалось переместить %(file)s в %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:1121
+#: mcomix/file_actions.py:1162
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "Не удалось переместить «%(file)s» в «%(directory)s»"
@@ -617,7 +626,7 @@ msgstr[2] "%d страниц"
 #
 # File: src/filechooser.py, line: 35
 # File: src/library.py, line: 489
-#: mcomix/file_chooser_base_dialog.py:186 mcomix/keybindings.py:150
+#: mcomix/file_chooser_base_dialog.py:186 mcomix/keybindings.py:152
 msgid "Open"
 msgstr "Открыть"
 
@@ -1152,123 +1161,127 @@ msgstr "Удалить"
 
 #
 # File: src/preferences.py, line: 196
-#: mcomix/keybindings.py:135 mcomix/keybindings.py:136
-#: mcomix/keybindings.py:139 mcomix/keybindings.py:140
-#: mcomix/keybindings.py:141 mcomix/keybindings.py:142
-#: mcomix/keybindings.py:143 mcomix/keybindings.py:145
-#: mcomix/keybindings.py:146 mcomix/keybindings.py:147
-#: mcomix/keybindings.py:149 mcomix/keybindings.py:150
-#: mcomix/keybindings.py:151 mcomix/keybindings.py:152
-#: mcomix/keybindings.py:153
+#: mcomix/keybindings.py:135 mcomix/keybindings.py:137
+#: mcomix/keybindings.py:138 mcomix/keybindings.py:141
+#: mcomix/keybindings.py:142 mcomix/keybindings.py:143
+#: mcomix/keybindings.py:144 mcomix/keybindings.py:145
+#: mcomix/keybindings.py:147 mcomix/keybindings.py:148
+#: mcomix/keybindings.py:149 mcomix/keybindings.py:151
+#: mcomix/keybindings.py:152 mcomix/keybindings.py:153
+#: mcomix/keybindings.py:154 mcomix/keybindings.py:155
 msgid "File"
 msgstr "Файл"
 
 #: mcomix/keybindings.py:136
+msgid "Delete permanently"
+msgstr "Удалить безвозвратно"
+
+#: mcomix/keybindings.py:138
 msgid "Rename page"
 msgstr "Переименовать страницу"
 
-#: mcomix/keybindings.py:137
+#: mcomix/keybindings.py:139
 msgid "Undo"
 msgstr "Отменить"
 
-#: mcomix/keybindings.py:137 mcomix/keybindings.py:138
+#: mcomix/keybindings.py:139 mcomix/keybindings.py:140
 msgid "Edit"
 msgstr "Правка"
 
-#: mcomix/keybindings.py:138
+#: mcomix/keybindings.py:140
 msgid "Redo"
 msgstr "Вернуть"
 
 #
 # File: src/edit.py, line: 51
-#: mcomix/keybindings.py:139
+#: mcomix/keybindings.py:141
 msgid "Refresh"
 msgstr "Обновить"
 
 #
 # File: src/ui.py, line: 48
-#: mcomix/keybindings.py:140
+#: mcomix/keybindings.py:142
 msgid "Close"
 msgstr "Закрыть"
 
 #
 # File: src/ui.py, line: 50
-#: mcomix/keybindings.py:141
+#: mcomix/keybindings.py:143
 msgid "Quit"
 msgstr "Выйти"
 
-#: mcomix/keybindings.py:142
+#: mcomix/keybindings.py:144
 msgid "Save and quit"
 msgstr "Сохранить и выйти"
 
-#: mcomix/keybindings.py:143
+#: mcomix/keybindings.py:145
 msgid "Save As"
 msgstr "Сохранить как..."
 
 #
 # File: src/properties.py, line: 135
-#: mcomix/keybindings.py:145
+#: mcomix/keybindings.py:147
 msgid "Archive comments"
 msgstr "Комментарии архива"
 
 #
 # File: src/properties.py, line: 89
-#: mcomix/keybindings.py:146 mcomix/properties_dialog.py:36
+#: mcomix/keybindings.py:148 mcomix/properties_dialog.py:36
 msgid "Properties"
 msgstr "Свойства"
 
 #
 # File: src/preferences.py, line: 78
-#: mcomix/keybindings.py:147 mcomix/preferences_dialog.py:69
+#: mcomix/keybindings.py:149 mcomix/preferences_dialog.py:69
 msgid "Preferences"
 msgstr "Параметры"
 
 #
 # File: src/library.py, line: 38
-#: mcomix/keybindings.py:152 mcomix/library/main_dialog.py:55
+#: mcomix/keybindings.py:154 mcomix/library/main_dialog.py:55
 msgid "Library"
 msgstr "Библиотека"
 
-#: mcomix/keybindings.py:153 mcomix/ui.py:527
+#: mcomix/keybindings.py:155 mcomix/ui.py:527
 msgid "Invert image colors"
 msgstr "Инвертировать цвета изображения"
 
 #
 # File: src/bookmark.py, line: 27
-#: mcomix/keybindings.py:156
+#: mcomix/keybindings.py:158
 msgid "Add bookmark"
 msgstr "Добавить закладку"
 
 #
 # File: src/ui.py, line: 64
-#: mcomix/keybindings.py:156 mcomix/keybindings.py:157
+#: mcomix/keybindings.py:158 mcomix/keybindings.py:159
 msgid "Bookmarks"
 msgstr "Закладки"
 
-#: mcomix/keybindings.py:157
+#: mcomix/keybindings.py:159
 msgid "Edit bookmarks"
 msgstr "Редактировать закладки"
 
 #
 # File: src/comment.py, line: 16
 # File: src/preferences.py, line: 288
-#: mcomix/keybindings.py:165 mcomix/openwith.py:558
+#: mcomix/keybindings.py:167 mcomix/openwith.py:558
 msgid "Command"
 msgstr "Команда"
 
 #
 # File: src/bookmark.py, line: 229
-#: mcomix/keybindings.py:166
+#: mcomix/keybindings.py:168
 msgid "External commands"
 msgstr "Внешние команды"
 
-#: mcomix/keybindings.py:243
+#: mcomix/keybindings.py:245
 #, python-format
 msgid "Keybinding for \"%(action)s\" overrides hotkey for another action."
 msgstr ""
 "Комбинация клавиш для «%(action)s» перекрывает комбинацию другого действия."
 
-#: mcomix/keybindings.py:428 mcomix/keybindings.py:436
+#: mcomix/keybindings.py:430 mcomix/keybindings.py:438
 #, python-format
 msgid "Couldn't load keybindings: %s"
 msgstr "Не удалось загрузить комбинации клавиш: %s"

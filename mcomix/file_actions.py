@@ -867,8 +867,49 @@ class FileActions:
             deletes.add_css_class('destructive-action')
         dialog.run_async(lambda response: self._delete_answered(response, current_file))
 
-    def _delete_answered(self, result: int, current_file: str) -> None:
-        """Delete <current_file> if the confirmation came back positive."""
+    def delete_permanently(self, *args: object) -> None:
+        """Delete as delete() does, except that the file does not go to
+        the trash.
+
+        Shift+Delete, as in a file browser.  Pages picked out are taken
+        out of the book as Delete takes them: they are not files of
+        their own until the book is written, and taking them out can be
+        undone.  The question has no "Do not ask again", and Enter
+        keeps the file.
+        """
+        if self._window.selected_pages:
+            self.delete_page()
+            return
+
+        current_file = self._window.imagehandler.get_real_path()
+        if current_file is None:
+            return
+        dialog = message_dialog.MessageDialog(
+            self._window, modal=True, buttons=Gtk.ButtonsType.NONE)
+        dialog.set_text(
+            _('Delete "%s" permanently?') % os.path.basename(current_file),
+            _('It does not go to the trash and cannot be restored.'))
+        self._add_delete_permanently_buttons(dialog)
+        dialog.run_async(lambda response: self._delete_answered(
+            response, current_file, self._remove_permanently))
+
+    def _remove_permanently(self, path: str,
+                            then: "Callable[[], None]") -> None:
+        """Delete <path> for good, then run <then>."""
+        if os.path.isfile(path):
+            self._delete_permanently([path])
+        then()
+
+    def _delete_answered(
+            self, result: int, current_file: str,
+            remove: "Callable[[str, Callable[[], None]], None] | None" = None
+    ) -> None:
+        """Delete <current_file> if the confirmation came back positive.
+
+        <remove> takes the file away and then runs what it is given;
+        moving it to the trash, unless another is named.
+        """
+        remove = remove or self._trash
         if result == Response.OK:
             # The file is going, and with it whatever was waiting to be
             # written into it: nothing below is to stop and offer to
@@ -884,8 +925,8 @@ class FileActions:
                 if not next_opened:
                     self._window.filehandler.close_file()
 
-                self._trash(current_file,
-                            lambda: self._file_deleted(current_file))
+                remove(current_file,
+                       lambda: self._file_deleted(current_file))
             else:
                 if self._window.imagehandler.get_number_of_pages() > 1:
                     # Open the next/previous file
@@ -899,11 +940,11 @@ class FileActions:
                         self._window.filehandler.refresh_file()
                         self._file_deleted(current_file)
 
-                    self._trash(current_file, refresh)
+                    remove(current_file, refresh)
                 else:
                     self._window.filehandler.close_file()
-                    self._trash(current_file,
-                                lambda: self._file_deleted(current_file))
+                    remove(current_file,
+                           lambda: self._file_deleted(current_file))
 
     def _file_deleted(self, path: str) -> None:
         """Forget <path> wherever MComix kept it, if it is gone."""

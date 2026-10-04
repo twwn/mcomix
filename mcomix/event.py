@@ -362,6 +362,10 @@ class EventHandler:
                          ['Delete'],
                          self._window.file_actions.delete)
 
+        manager.register('delete_permanently',
+                         ['<Shift>Delete'],
+                         self._window.file_actions.delete_permanently)
+
         manager.register('rename_page',
                          ['F2'],
                          self._window.file_actions.rename_page_being_read)
