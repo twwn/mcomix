@@ -1671,6 +1671,46 @@ class MainWindowTest(MComixTest):
             self.assertEqual(self.window.file_actions.writeable_archive_type(),
                              constants.TAR)
 
+    def test_a_remembered_save_does_not_write_the_book_opened_after_it(self):
+        """A remembered answer comes back from the idle queue, and a key
+        handled before it - Next archive, pressed straight after the
+        page went - closed the book first.  The answer then wrote the
+        next archive over itself with the pages of nothing: that book
+        was still being listed."""
+        first = os.path.join(self.tmp_dir, 'a.cbz')
+        second = os.path.join(self.tmp_dir, 'b.cbz')
+        for path in (first, second):
+            shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'),
+                        path)
+        with zipfile.ZipFile(second) as untouched:
+            second_names = untouched.namelist()
+        self.window.filehandler.open_file(first)
+        self._ready()
+        before = self.window.imagehandler.get_number_of_pages()
+        self._remember_answer(Response.YES)
+
+        with self._quietly():
+            self.assertTrue(self.window.file_actions.delete_page(1))
+        # Twice before the main loop turns: a key held down, or pressed
+        # again, is handled ahead of the remembered answer.
+        self.assertTrue(self.window.filehandler.next_archive())
+        self.assertTrue(self.window.filehandler.next_archive())
+        self._pump()
+        self.assertTrue(wait_for(
+            lambda: self.window.filehandler.get_path_to_base() == second
+            and self.window.imagehandler.get_number_of_pages() > 2,
+            seconds=20), 'the next archive was not opened')
+        self._pump()
+
+        with zipfile.ZipFile(second) as written:
+            self.assertEqual(written.namelist(), second_names,
+                             'the next archive was written over')
+        with zipfile.ZipFile(first) as written:
+            pages = [name for name in written.namelist()
+                     if image_tools.is_image_file(name)]
+        self.assertEqual(len(pages), before - 1,
+                         'the book the page went from was not written')
+
     def test_saving_writes_the_book_over_the_archive_it_came_from(self):
         source = os.path.join(self.tmp_dir, 'Book.cbz')
         shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), source)
@@ -2053,14 +2093,42 @@ class MainWindowTest(MComixTest):
         with self._quietly():
             self.assertTrue(self.window.file_actions.swap_pages(1, 2))
         closed = []
+        self.window.file_actions.before_closing(
+            lambda: (closed.append('first'),
+                     self.window.file_actions.before_closing(
+                         lambda: closed.append('again'))))
+        self._pump()
+        try:
+            prompts = self._save_prompts()
+            self.assertEqual(len(prompts), 1)
+            prompts[0].emit('response', Response.NO)
+            self._pump()
+            self.assertEqual(len(self._save_prompts()), 0,
+                             'the same close was asked about twice')
+            self.assertEqual(closed, ['first', 'again'],
+                             'the close waited for an answer of its own')
+        finally:
+            self._close_prompts()
+
+    def test_a_close_asked_for_meanwhile_waits_for_the_same_answer(self):
+        """Next archive pressed twice came in ahead of the answer and
+        closed the book under the question.  The newest close is the
+        one that runs."""
+        self._ready()
+        with self._quietly():
+            self.assertTrue(self.window.file_actions.swap_pages(1, 2))
+        closed = []
         self.window.file_actions.before_closing(lambda: closed.append('first'))
         self.window.file_actions.before_closing(lambda: closed.append('second'))
         self._pump()
         try:
-            self.assertEqual(len(self._save_prompts()), 1,
+            prompts = self._save_prompts()
+            self.assertEqual(len(prompts), 1,
                              'the same close was asked about twice')
-            self.assertEqual(closed, ['second'],
-                             'the second close waited for an answer of its own')
+            self.assertEqual(closed, [], 'a close ran before the answer')
+            prompts[0].emit('response', Response.NO)
+            self._pump()
+            self.assertEqual(closed, ['second'])
         finally:
             self._close_prompts()
 

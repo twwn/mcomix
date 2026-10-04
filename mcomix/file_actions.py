@@ -72,6 +72,8 @@ class FileActions:
         #: an answer of "not now" has to close the book rather than be
         #: asked again by every step of the close.
         self._close_offer_answered = False
+        #: The close waiting for that answer while the offer is out.
+        self._waiting_close: "Callable[[], None] | None" = None
 
     def forget_changes(self) -> None:
         """Drop the undo stack, which belongs to the book that is going."""
@@ -79,6 +81,7 @@ class FileActions:
         self._redone.clear()
         self._page_names.clear()
         self._close_offer_answered = False
+        self._waiting_close = None
 
     def page_names(self) -> dict[str, str]:
         """The name each renamed page is to be written under, by path."""
@@ -525,20 +528,40 @@ class FileActions:
         stands for the whole of the close that follows it, which
         reaches here more than once, and the next change to the book
         asks again.
+
+        A close asked for while the offer is out waits for the same
+        answer, in place of the one that asked: a Next archive pressed
+        twice, or a key held down, came in ahead of an answer that is
+        delivered from the main loop, and closed the book under the
+        question.  The answer then wrote whichever book was open by
+        then - the next archive, half listed - and the book it was
+        asked about lost its changes.
         """
+        if self._waiting_close is not None:
+            self._waiting_close = then
+            return
         if self._close_offer_answered:
             then()
             return
         self._close_offer_answered = True
+        self._waiting_close = then
 
         def go_on_editing() -> None:
             """The close is off, and the next one asks again."""
             self._close_offer_answered = False
+            self._waiting_close = None
 
         edit_dialog.ask_before_closing(
             self._window,
-            closing=lambda: self._write_before_closing(then),
+            closing=lambda: self._write_before_closing(self._close_now),
             keeping=go_on_editing)
+
+    def _close_now(self) -> None:
+        """Run the close that waited for the offer to be answered."""
+        then = self._waiting_close
+        self._waiting_close = None
+        if then is not None:
+            then()
 
     def _write_before_closing(self, then: "Callable[[], None]") -> None:
         """Offer to write the book out if it has changes, then close."""
