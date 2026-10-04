@@ -31,7 +31,7 @@ from mcomix.i18n import _
 from mcomix.library import backend
 from mcomix.preferences import prefs
 
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Mapping
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -884,8 +884,8 @@ class FileActions:
                 if not next_opened:
                     self._window.filehandler.close_file()
 
-                if os.path.isfile(current_file):
-                    self._trash(current_file)
+                self._trash(current_file,
+                            lambda: self._file_deleted(current_file))
             else:
                 if self._window.imagehandler.get_number_of_pages() > 1:
                     # Open the next/previous file
@@ -893,35 +893,127 @@ class FileActions:
                         self._window.flip_page(-1)
                     else:
                         self._window.flip_page(+1)
-                    # Unlink the desired file
-                    if os.path.isfile(current_file):
-                        self._trash(current_file)
-                    # Refresh the directory
-                    self._window.filehandler.refresh_file()
+
+                    def refresh() -> None:
+                        """List the directory again, without the file."""
+                        self._window.filehandler.refresh_file()
+                        self._file_deleted(current_file)
+
+                    self._trash(current_file, refresh)
                 else:
                     self._window.filehandler.close_file()
-                    if os.path.isfile(current_file):
-                        self._trash(current_file)
+                    self._trash(current_file,
+                                lambda: self._file_deleted(current_file))
 
-            if not os.path.exists(current_file):
-                # A file that has been deleted can never be opened
-                # again, and the recent files went on offering it.
-                self._window.uimanager.recent.remove_path(current_file)
-                self._forget_deleted_book(current_file)
-                self._offer_to_remove_bookmarks(current_file)
+    def _file_deleted(self, path: str) -> None:
+        """Forget <path> wherever MComix kept it, if it is gone."""
+        if not os.path.exists(path):
+            # A file that has been deleted can never be opened
+            # again, and the recent files went on offering it.
+            self._window.uimanager.recent.remove_path(path)
+            self._forget_deleted_book(path)
+            self._offer_to_remove_bookmarks(path)
 
-    def _trash(self, path: str) -> None:
-        """Move <path> to the trash, and say so where it will not go."""
+    def _trash(self, path: str, then: "Callable[[], None]") -> None:
+        """Move <path> to the trash, then run <then>.
+
+        Where the trash will not take the file, the reader is offered to
+        delete it permanently instead, and <then> runs once that has
+        been answered.
+        """
+        if not os.path.isfile(path):
+            then()
+            return
         try:
             tools.move_to_trash(path)
         except GLib.Error as error:
             log.error('Could not move %s to the trash: %s', path, error.message)
+            self.offer_to_delete_permanently(
+                {path: error.message}, lambda deleted: then())
+            return
+        then()
+
+    def offer_to_delete_permanently(
+            self, refused: "Mapping[str, str]",
+            then: "Callable[[list[str]], None]",
+            parent: "Gtk.Window | None" = None) -> None:
+        """Offer to delete the files the trash refused, then run <then>
+        with those that were deleted.
+
+        <refused> holds each file with the reason the trash gave.  GLib
+        keeps no trash on a mount it counts as internal to the system,
+        and that takes in every mount whose root is not "/": a folder
+        bind-mounted from another partition, a tmpfs.  A file browser
+        offers to delete such a file at once, and the reader, who has
+        just said the file is to go, expects the same.  The file is
+        never deleted for good without being asked, and Enter keeps it.
+        """
+        dialog = message_dialog.MessageDialog(
+            parent or self._window, modal=True,
+            buttons=Gtk.ButtonsType.NONE)
+        if len(refused) == 1:
+            title = _('Could not move "%s" to the trash') % \
+                os.path.basename(next(iter(refused)))
+        else:
+            title = i18n.get_translation().ngettext(
+                '%d book could not be moved to the trash.',
+                '%d books could not be moved to the trash.',
+                len(refused)) % len(refused)
+        question = i18n.get_translation().ngettext(
+            'Delete it permanently instead? It cannot be restored.',
+            'Delete them permanently instead? They cannot be restored.',
+            len(refused))
+        reasons = '\n'.join(dict.fromkeys(refused.values()))
+        dialog.set_text(title, '%s\n\n%s' % (reasons, question))
+        self._add_delete_permanently_buttons(dialog)
+
+        def answered(response: int) -> None:
+            deleted = []
+            if response == Response.OK:
+                deleted = self._delete_permanently(list(refused), parent)
+            then(deleted)
+
+        dialog.run_async(answered)
+
+    @staticmethod
+    def _add_delete_permanently_buttons(
+            dialog: message_dialog.MessageDialog) -> None:
+        """Cancel, the default, and the destructive Delete Permanently."""
+        dialog.add_button(_('_Cancel'), Response.CANCEL)
+        dialog.add_button(_('_Delete Permanently'), Response.OK)
+        dialog.set_default_response(Response.CANCEL)
+        deletes = dialog.get_widget_for_response(Response.OK)
+        if deletes is not None:
+            deletes.add_css_class('destructive-action')
+
+    def _delete_permanently(self, paths: "Iterable[str]",
+                            parent: "Gtk.Window | None" = None) -> list[str]:
+        """Delete <paths> for good, say which could not be, and return
+        those that were."""
+        deleted = []
+        failed: dict[str, str] = {}
+        for path in paths:
+            try:
+                os.remove(path)
+            except OSError as error:
+                log.error(_('! Could not remove %(file)s: %(error)s'),
+                          {'file': path, 'error': error.strerror or error})
+                failed[path] = str(error.strerror or error)
+            else:
+                deleted.append(path)
+        if failed:
             dialog = message_dialog.MessageDialog(
-                self._window, buttons=Gtk.ButtonsType.CLOSE)
+                parent or self._window, buttons=Gtk.ButtonsType.CLOSE)
+            first = next(iter(failed))
+            if len(failed) == 1:
+                reasons = failed[first]
+            else:
+                reasons = '\n'.join('%s: %s' % (os.path.basename(path), reason)
+                                    for path, reason in failed.items())
             dialog.set_text(
-                _('Could not move "%s" to the trash') % os.path.basename(path),
-                error.message)
+                _('Could not delete "%s"') % os.path.basename(first), reasons)
             dialog.run_async(lambda response: None)
+        return deleted
 
     def _offer_to_remove_bookmarks(self, path: str) -> None:
         """Ask whether the bookmarks in the deleted file should go too.

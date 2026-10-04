@@ -733,39 +733,52 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
             # system with no trash, inside a directory that cannot be
             # written to - was logged and nothing more, and the book had
             # left the library by then, so the reader was told the file
-            # was gone while it was still there.
-            failed = []
+            # was gone while it was still there.  It is offered to be
+            # deleted permanently instead, as the window's delete does.
+            refused: dict[str, str] = {}
             for book_path in paths:
                 try:
                     tools.move_to_trash(book_path)
                 except GLib.Error as error:
-                    failed.append(book_path)
+                    refused[book_path] = error.message
                     log.error(_('! Could not remove %(file)s: %(error)s'),
                               {'file': book_path, 'error': error.message})
-            if failed:
-                message = i18n.get_translation().ngettext(
-                    '%d book could not be moved to the trash.',
-                    '%d books could not be moved to the trash.',
-                    len(failed))
-                self._library.set_status_message(message % len(failed))
+            if not refused:
+                self._books_deleted(paths)
+                return
 
-            gone = [path for path in paths if path not in failed]
-            # A file that has been deleted can never be opened again, so
-            # the recent files forget it, as they do after the window's
-            # own delete.
-            main_window = self._library.main_window
-            for path in gone:
-                main_window.uimanager.recent.remove_path(path)
-            # The book on screen may be one of them, and whatever was
-            # waiting to be written into it went with its file: closing
-            # it is not to offer to write the archive back where it was
-            # just deleted from.  The window's own delete forgets the
-            # changes the same way.
-            open_book = main_window.filehandler.get_path_to_base()
-            if open_book is not None and os.path.abspath(open_book) in [
-                    os.path.abspath(path) for path in gone]:
-                main_window.file_actions.forget_changes()
-            self._offer_to_remove_bookmarks(gone)
+            def answered(deleted: list[str]) -> None:
+                kept = [path for path in refused if path not in deleted]
+                if kept:
+                    message = i18n.get_translation().ngettext(
+                        '%d book could not be moved to the trash.',
+                        '%d books could not be moved to the trash.',
+                        len(kept))
+                    self._library.set_status_message(message % len(kept))
+                self._books_deleted([path for path in paths
+                                     if path not in kept])
+
+            self._library.main_window.file_actions.offer_to_delete_permanently(
+                refused, answered, parent=self._library)
+
+    def _books_deleted(self, gone: "Sequence[str]") -> None:
+        """Forget the books at <gone>, whose files have been deleted."""
+        # A file that has been deleted can never be opened again, so
+        # the recent files forget it, as they do after the window's
+        # own delete.
+        main_window = self._library.main_window
+        for path in gone:
+            main_window.uimanager.recent.remove_path(path)
+        # The book on screen may be one of them, and whatever was
+        # waiting to be written into it went with its file: closing
+        # it is not to offer to write the archive back where it was
+        # just deleted from.  The window's own delete forgets the
+        # changes the same way.
+        open_book = main_window.filehandler.get_path_to_base()
+        if open_book is not None and os.path.abspath(open_book) in [
+                os.path.abspath(path) for path in gone]:
+            main_window.file_actions.forget_changes()
+        self._offer_to_remove_bookmarks(gone)
 
     def _offer_to_remove_bookmarks(self, paths: "Sequence[str]") -> None:
         """Ask whether the bookmarks in the deleted books should go too.

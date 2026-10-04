@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Comix 3.2\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-03 18:59+0200\n"
+"POT-Creation-Date: 2026-10-04 15:22+0200\n"
 "PO-Revision-Date: 2009-01-25 22:33+0100\n"
 "Last-Translator: Carles Escrig i Royo <simkin@ono.com>\n"
 "Language-Team: CA <gentoo@softcatala.net>\n"
@@ -48,19 +48,20 @@ msgstr "Podeu obtenir una còpia d'aquesta llicència a %s"
 msgid "Non-supported archive format: %s"
 msgstr "Format d'arxiu no admès: %s"
 
-#: mcomix/archive_extractor.py:331 mcomix/archive_extractor.py:356
+#: mcomix/archive_extractor.py:333 mcomix/archive_extractor.py:358
 #, python-format
 msgid "! Extraction error: %s"
 msgstr "! Error d'extracció: %s"
 
-#: mcomix/archive_extractor.py:380 mcomix/archive_tools.py:190
+#: mcomix/archive_extractor.py:382 mcomix/archive_tools.py:190
 #, python-format
 msgid "! Could not read %s"
 msgstr "! No s'ha pogut llegir %s"
 
 #
 # File: src/comment.py, line: 53
-#: mcomix/archive_packer.py:176 mcomix/library/book_area.py:743
+#: mcomix/archive_packer.py:176 mcomix/file_actions.py:999
+#: mcomix/library/book_area.py:744
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! No s'ha pogut suprimir %(file)s: %(error)s"
@@ -96,7 +97,8 @@ msgstr "_No"
 #
 # File: src/preferences.py, line: 230
 #: mcomix/bookmark_backend.py:374 mcomix/edit_dialog.py:59
-#: mcomix/file_actions.py:836 mcomix/file_chooser_base_dialog.py:187
+#: mcomix/file_actions.py:859 mcomix/file_actions.py:982
+#: mcomix/file_chooser_base_dialog.py:187
 #: mcomix/file_chooser_base_dialog.py:192
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:32
@@ -205,7 +207,7 @@ msgstr "_Suprimeix els marcadors d'aquest llibre..."
 msgid "_Edit Bookmarks..."
 msgstr "_Edita els marcadors..."
 
-#: mcomix/bookmark_menu.py:197 mcomix/file_actions.py:923
+#: mcomix/bookmark_menu.py:197 mcomix/file_actions.py:1039
 #, python-format
 msgid "Remove the bookmarks in \"%s\"?"
 msgstr "Voleu suprimir els marcadors de «%s»?"
@@ -222,7 +224,7 @@ msgstr "Drecera nova..."
 #
 # File: src/comment.py, line: 16
 # File: src/preferences.py, line: 288
-#: mcomix/comment_dialog.py:28 mcomix/preferences_dialog.py:435
+#: mcomix/comment_dialog.py:28 mcomix/preferences_dialog.py:441
 msgid "Comments"
 msgstr "Comentaris"
 
@@ -321,20 +323,20 @@ msgstr "Fitxers de comentaris"
 
 #
 # File: src/library.py, line: 271
-#: mcomix/edit_dialog.py:243 mcomix/file_actions.py:648
+#: mcomix/edit_dialog.py:243 mcomix/file_actions.py:671
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! No s'ha pogut desar l'arxiu %(archivefile)s: %(error)s"
 
 #
 # File: src/edit.py, line: 99
-#: mcomix/edit_dialog.py:256 mcomix/file_actions.py:653
+#: mcomix/edit_dialog.py:256 mcomix/file_actions.py:676
 msgid "The new archive could not be saved!"
 msgstr "No s'ha pogut desar l'arxiu nou!"
 
 #
 # File: src/edit.py, line: 101
-#: mcomix/edit_dialog.py:257 mcomix/file_actions.py:654
+#: mcomix/edit_dialog.py:257 mcomix/file_actions.py:677
 msgid "The original files have not been removed."
 msgstr "No s'han eliminat els fitxers originals."
 
@@ -395,8 +397,8 @@ msgstr "Torna als valors desats."
 
 #
 # File: src/filechooser.py, line: 39
-#: mcomix/enhance_dialog.py:39 mcomix/file_actions.py:559
-#: mcomix/file_actions.py:602 mcomix/file_chooser_base_dialog.py:193
+#: mcomix/enhance_dialog.py:39 mcomix/file_actions.py:582
+#: mcomix/file_actions.py:625 mcomix/file_chooser_base_dialog.py:193
 #: mcomix/openwith.py:355
 msgid "_Save"
 msgstr "_Desa"
@@ -458,45 +460,45 @@ msgstr "_Inverteix els colors de la imatge"
 msgid "Invert (negate) image colors."
 msgstr "Inverteix (nega) els colors de la imatge."
 
-#: mcomix/file_actions.py:300 mcomix/file_actions.py:997
+#: mcomix/file_actions.py:303 mcomix/file_actions.py:1113
 msgid "A file of that name is there already."
 msgstr "Ja hi ha un fitxer amb aquest nom."
 
-#: mcomix/file_actions.py:364
+#: mcomix/file_actions.py:367
 #, python-format
 msgid "Page %(number)d is called \"%(name)s\" already."
 msgstr "La pàgina %(number)d ja es diu «%(name)s»."
 
-#: mcomix/file_actions.py:369
+#: mcomix/file_actions.py:372
 msgid "Rename page?"
 msgstr "Voleu reanomenar la pàgina?"
 
-#: mcomix/file_actions.py:370
+#: mcomix/file_actions.py:373
 msgid "Please enter a new name for this page."
 msgstr "Introduïu un nom nou per a aquesta pàgina."
 
-#: mcomix/file_actions.py:555
+#: mcomix/file_actions.py:578
 #, python-format
 msgid "Write \"%s\" again before closing it?"
 msgstr "Voleu tornar a escriure «%s» abans de tancar-lo?"
 
-#: mcomix/file_actions.py:556
+#: mcomix/file_actions.py:579
 msgid ""
 "The book has changes that the archive on disk does not hold. They are lost "
 "when it closes."
 msgstr ""
 "El llibre té canvis que l'arxiu del disc no conté. Es perdran en tancar-lo."
 
-#: mcomix/file_actions.py:558
+#: mcomix/file_actions.py:581
 msgid "_Close without saving"
 msgstr "Tan_ca sense desar"
 
-#: mcomix/file_actions.py:597
+#: mcomix/file_actions.py:620
 #, python-format
 msgid "Write \"%s\" again now?"
 msgstr "Voleu tornar a escriure «%s» ara?"
 
-#: mcomix/file_actions.py:598
+#: mcomix/file_actions.py:621
 msgid ""
 "The archive on disk will be replaced by the book as it stands: the pages it "
 "holds now, in the order and under the names it shows."
@@ -504,48 +506,70 @@ msgstr ""
 "L'arxiu del disc se substituirà pel llibre tal com és ara: les pàgines que "
 "té, en l'ordre i amb els noms que mostra."
 
-#: mcomix/file_actions.py:601
+#: mcomix/file_actions.py:624
 msgid "_Not now"
 msgstr "Ara _no"
 
-#: mcomix/file_actions.py:754
+#: mcomix/file_actions.py:777
 msgid "Save page as"
 msgstr "Anomena i desa la pàgina"
 
-#: mcomix/file_actions.py:795
+#: mcomix/file_actions.py:818
 #, python-format
 msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! No s'ha pogut desar %(file)s a %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:799 mcomix/file_actions.py:999
+#: mcomix/file_actions.py:822 mcomix/file_actions.py:1115
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "No hi ha prou espai: el fitxer ocupa %s."
 
-#: mcomix/file_actions.py:805
+#: mcomix/file_actions.py:828
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "No s'ha pogut desar «%(file)s» a «%(directory)s»"
 
-#: mcomix/file_actions.py:834
+#: mcomix/file_actions.py:857
 #, python-format
 msgid "Delete \"%s\"?"
 msgstr "Voleu suprimir «%s»?"
 
-#: mcomix/file_actions.py:835
+#: mcomix/file_actions.py:858
 msgid "The file is moved to the trash."
 msgstr "El fitxer es mou a la paperera."
 
-#: mcomix/file_actions.py:837
+#: mcomix/file_actions.py:860
 msgid "_Move to Trash"
 msgstr "_Mou a la paperera"
 
-#: mcomix/file_actions.py:898
+#: mcomix/file_actions.py:955
 #, python-format
 msgid "Could not move \"%s\" to the trash"
 msgstr "No s'ha pogut moure «%s» a la paperera"
 
-#: mcomix/file_actions.py:919
+#: mcomix/file_actions.py:959 mcomix/library/book_area.py:754
+#, python-format
+msgid "%d book could not be moved to the trash."
+msgid_plural "%d books could not be moved to the trash."
+msgstr[0] "No s'ha pogut moure %d llibre a la paperera."
+msgstr[1] "No s'han pogut moure %d llibres a la paperera."
+
+#: mcomix/file_actions.py:963
+msgid "Delete it permanently instead? It cannot be restored."
+msgid_plural "Delete them permanently instead? They cannot be restored."
+msgstr[0] "Voleu suprimir-lo definitivament? No es podrà recuperar."
+msgstr[1] "Voleu suprimir-los definitivament? No es podran recuperar."
+
+#: mcomix/file_actions.py:983
+msgid "_Delete Permanently"
+msgstr "_Suprimeix definitivament"
+
+#: mcomix/file_actions.py:1014
+#, python-format
+msgid "Could not delete \"%s\""
+msgstr "No s'ha pogut suprimir «%s»"
+
+#: mcomix/file_actions.py:1035
 #, python-format
 msgid "The file is gone, and its %d bookmark cannot be opened any more."
 msgid_plural ""
@@ -553,12 +577,12 @@ msgid_plural ""
 msgstr[0] "El fitxer ja no hi és, i el seu %d marcador no es pot obrir."
 msgstr[1] "El fitxer ja no hi és, i els seus %d marcadors no es poden obrir."
 
-#: mcomix/file_actions.py:993
+#: mcomix/file_actions.py:1109
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr "! No s'ha pogut moure %(file)s a %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:1005
+#: mcomix/file_actions.py:1121
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "No s'ha pogut moure «%(file)s» a «%(directory)s»"
@@ -2017,38 +2041,43 @@ msgstr "Mode d'escalat"
 msgid "Extraction and cache"
 msgstr "Extracció i memòria cau"
 
-#: mcomix/preferences_dialog.py:398
+#: mcomix/preferences_dialog.py:404
 msgid "Maximum number of concurrent extraction threads:"
 msgstr "Nombre màxim de fils d'extracció concurrents:"
 
-#: mcomix/preferences_dialog.py:402
+#: mcomix/preferences_dialog.py:408
 msgid ""
 "Set the maximum number of concurrent threads for formats that support it. A "
 "value of 0 uses one thread for each processor."
-msgstr "Estableix el nombre màxim de fils concurrents per als formats que ho admeten. Un valor de 0 fa servir un fil per a cada processador."
+msgstr ""
+"Estableix el nombre màxim de fils concurrents per als formats que ho "
+"admeten. Un valor de 0 fa servir un fil per a cada processador."
 
 #
 # File: src/thumbremover.py, line: 65
-#: mcomix/preferences_dialog.py:404
+#: mcomix/preferences_dialog.py:410
 msgid "Maximum number of concurrent thumbnail threads:"
 msgstr "Nombre màxim de fils concurrents per a les miniatures:"
 
-#: mcomix/preferences_dialog.py:408
+#: mcomix/preferences_dialog.py:414
 msgid ""
 "Set the maximum number of concurrent threads used to generate thumbnails. A "
 "value of 0 uses one thread for each processor. Takes effect the next time "
 "MComix is started."
-msgstr "Estableix el nombre màxim de fils concurrents per a generar miniatures. Un valor de 0 fa servir un fil per a cada processador. Té efecte el proper cop que s'iniciï MComix."
+msgstr ""
+"Estableix el nombre màxim de fils concurrents per a generar miniatures. Un "
+"valor de 0 fa servir un fil per a cada processador. Té efecte el proper cop "
+"que s'iniciï MComix."
 
 #
 # File: src/preferences.py, line: 222
-#: mcomix/preferences_dialog.py:411
+#: mcomix/preferences_dialog.py:417
 msgid "Store thumbnails for opened files"
 msgstr "Desa les miniatures dels fitxers oberts"
 
 #
 # File: src/preferences.py, line: 227
-#: mcomix/preferences_dialog.py:413
+#: mcomix/preferences_dialog.py:419
 msgid ""
 "Store thumbnails for opened files according to the freedesktop.org "
 "specification. These thumbnails are shared by many other applications, such "
@@ -2058,11 +2087,11 @@ msgstr ""
 "freedesktop.org. Aquestes miniatures es comparteixen amb moltes altres "
 "aplicacions, com ara bé la majoria de gestors de fitxers."
 
-#: mcomix/preferences_dialog.py:415
+#: mcomix/preferences_dialog.py:421
 msgid "Maximum number of pages to store in the cache:"
 msgstr "Nombre màxim de pàgines desades a la memòria cau:"
 
-#: mcomix/preferences_dialog.py:419
+#: mcomix/preferences_dialog.py:425
 msgid ""
 "Set the max number of pages to cache. A value of -1 will cache the entire "
 "archive."
@@ -2072,19 +2101,19 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 124
-#: mcomix/preferences_dialog.py:421
+#: mcomix/preferences_dialog.py:427
 msgid "Magnifying Lens"
 msgstr "Lupa"
 
 #
 # File: src/preferences.py, line: 125
-#: mcomix/preferences_dialog.py:423
+#: mcomix/preferences_dialog.py:429
 msgid "Magnifying lens size (in pixels):"
 msgstr "Mida de la lupa (en píxels):"
 
 #
 # File: src/preferences.py, line: 131
-#: mcomix/preferences_dialog.py:427
+#: mcomix/preferences_dialog.py:433
 msgid ""
 "Set the size of the magnifying lens. It is a square with a side of this many "
 "pixels."
@@ -2094,45 +2123,45 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 133
-#: mcomix/preferences_dialog.py:429
+#: mcomix/preferences_dialog.py:435
 msgid "Magnification factor:"
 msgstr "Factor d'ampliació:"
 
 #
 # File: src/preferences.py, line: 140
-#: mcomix/preferences_dialog.py:433
+#: mcomix/preferences_dialog.py:439
 msgid "Set the magnification factor of the magnifying lens."
 msgstr "Configura el factor d'augment de la lupa."
 
 #
 # File: src/preferences.py, line: 289
-#: mcomix/preferences_dialog.py:437
+#: mcomix/preferences_dialog.py:443
 msgid "Comment extensions:"
 msgstr "Extensions dels fitxers de comentaris:"
 
 #
 # File: src/enhance.py, line: 51
-#: mcomix/preferences_dialog.py:440
+#: mcomix/preferences_dialog.py:446
 msgid "Animated images"
 msgstr "Imatges animades"
 
-#: mcomix/preferences_dialog.py:442
+#: mcomix/preferences_dialog.py:448
 msgid "Animation mode:"
 msgstr "Mode d'animació:"
 
-#: mcomix/preferences_dialog.py:463
+#: mcomix/preferences_dialog.py:469
 msgid "_Reset keys"
 msgstr "_Restableix les tecles"
 
-#: mcomix/preferences_dialog.py:465
+#: mcomix/preferences_dialog.py:471
 msgid "Resets all keyboard shortcuts to their default values."
 msgstr "Restableix totes les dreceres de teclat als valors predeterminats."
 
-#: mcomix/preferences_dialog.py:468
+#: mcomix/preferences_dialog.py:474
 msgid "Clear _dialog choices"
 msgstr "Esborra les tries dels _diàlegs"
 
-#: mcomix/preferences_dialog.py:470
+#: mcomix/preferences_dialog.py:476
 msgid ""
 "Clears all dialog choices that you have previously chosen not to be asked "
 "again."
@@ -2140,11 +2169,11 @@ msgstr ""
 "Esborra totes les respostes dels diàlegs sobre les quals vau triar no tornar "
 "a ser preguntat."
 
-#: mcomix/preferences_dialog.py:505
+#: mcomix/preferences_dialog.py:511
 msgid "Ask every time"
 msgstr "Pregunta-ho cada vegada"
 
-#: mcomix/preferences_dialog.py:510
+#: mcomix/preferences_dialog.py:516
 msgid ""
 "What MComix answers this prompt with instead of asking. This is what the "
 "prompt's \"Do not ask again\" box sets."
@@ -2153,27 +2182,27 @@ msgstr ""
 "el que estableix la casella «No ho tornis a preguntar.» de la pregunta "
 "mateixa."
 
-#: mcomix/preferences_dialog.py:532
+#: mcomix/preferences_dialog.py:538
 msgid "Auto-detect (Default)"
 msgstr "Detecta automàticament (predeterminat)"
 
-#: mcomix/preferences_dialog.py:574
+#: mcomix/preferences_dialog.py:580
 msgid "Follow the system"
 msgstr "Segueix el sistema"
 
-#: mcomix/preferences_dialog.py:575
+#: mcomix/preferences_dialog.py:581
 msgid "Light"
 msgstr "Clar"
 
-#: mcomix/preferences_dialog.py:576
+#: mcomix/preferences_dialog.py:582
 msgid "Dark"
 msgstr "Fosc"
 
-#: mcomix/preferences_dialog.py:577
+#: mcomix/preferences_dialog.py:583
 msgid "Pitch black"
 msgstr "Negre absolut"
 
-#: mcomix/preferences_dialog.py:583
+#: mcomix/preferences_dialog.py:589
 msgid ""
 "How MComix itself is painted, whatever the desktop asks for. Pitch black is "
 "the dark theme with black backgrounds, which a screen that lights its pixels "
@@ -2183,11 +2212,11 @@ msgstr ""
 "l'escriptori. El negre absolut és el tema fosc amb fons negres, que una "
 "pantalla que encén els píxels un a un mostra com a absència total de llum."
 
-#: mcomix/preferences_dialog.py:620
+#: mcomix/preferences_dialog.py:626
 msgid "Restart MComix in the language you picked?"
 msgstr "Voleu reiniciar el MComix en l'idioma que heu triat?"
 
-#: mcomix/preferences_dialog.py:621
+#: mcomix/preferences_dialog.py:627
 msgid ""
 "MComix is translated as it starts, so most of the interface stays in the "
 "language it started in until it is started again. The book being read, its "
@@ -2198,24 +2227,24 @@ msgstr ""
 "iniciar. Es conserven el llibre que esteu llegint, la seva pàgina i la mida "
 "de la finestra."
 
-#: mcomix/preferences_dialog.py:635 mcomix/preferences_dialog.py:784
-#: mcomix/preferences_dialog.py:849 mcomix/ui.py:541
+#: mcomix/preferences_dialog.py:641 mcomix/preferences_dialog.py:790
+#: mcomix/preferences_dialog.py:855 mcomix/ui.py:541
 msgid "Never"
 msgstr "Mai"
 
-#: mcomix/preferences_dialog.py:636
+#: mcomix/preferences_dialog.py:642
 msgid "Only for title pages"
 msgstr "Només per a les pàgines de títol"
 
-#: mcomix/preferences_dialog.py:637
+#: mcomix/preferences_dialog.py:643
 msgid "Only for wide images"
 msgstr "Només per a les imatges amples"
 
-#: mcomix/preferences_dialog.py:638 mcomix/preferences_dialog.py:785
+#: mcomix/preferences_dialog.py:644 mcomix/preferences_dialog.py:791
 msgid "Always"
 msgstr "Sempre"
 
-#: mcomix/preferences_dialog.py:645
+#: mcomix/preferences_dialog.py:651
 msgid ""
 "When showing the first page of an archive, or an image's width exceeds its "
 "height, only a single page will be displayed."
@@ -2225,58 +2254,58 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 78
-#: mcomix/preferences_dialog.py:663
+#: mcomix/preferences_dialog.py:669
 msgid "Prefer same scale"
 msgstr "Prefereix la mateixa escala"
 
 #
 # File: src/preferences.py, line: 78
-#: mcomix/preferences_dialog.py:664
+#: mcomix/preferences_dialog.py:670
 msgid "Prefer same size"
 msgstr "Prefereix la mateixa mida"
 
 #
 # File: src/preferences.py, line: 263
 # File: src/ui.py, line: 290
-#: mcomix/preferences_dialog.py:665
+#: mcomix/preferences_dialog.py:671
 msgid "Fit to same size"
 msgstr "Ajusta a la mateixa mida"
 
-#: mcomix/preferences_dialog.py:672
+#: mcomix/preferences_dialog.py:678
 msgid "Maintain relative size or fit to same size."
 msgstr "Manté la mida relativa o ajusta a la mateixa mida."
 
-#: mcomix/preferences_dialog.py:686 mcomix/preferences_dialog.py:733
+#: mcomix/preferences_dialog.py:692 mcomix/preferences_dialog.py:739
 msgid "No sorting"
 msgstr "Sense ordenació"
 
-#: mcomix/preferences_dialog.py:687
+#: mcomix/preferences_dialog.py:693
 msgid "File name"
 msgstr "Nom del fitxer"
 
-#: mcomix/preferences_dialog.py:688
+#: mcomix/preferences_dialog.py:694
 msgid "File name (GLib)"
 msgstr "Nom del fitxer (GLib)"
 
-#: mcomix/preferences_dialog.py:689 mcomix/library/book_area.py:245
+#: mcomix/preferences_dialog.py:695 mcomix/library/book_area.py:245
 msgid "File size"
 msgstr "Mida del fitxer"
 
-#: mcomix/preferences_dialog.py:690
+#: mcomix/preferences_dialog.py:696
 msgid "Last modified"
 msgstr "Data de modificació"
 
-#: mcomix/preferences_dialog.py:696 mcomix/preferences_dialog.py:742
+#: mcomix/preferences_dialog.py:702 mcomix/preferences_dialog.py:748
 #: mcomix/library/book_area.py:249
 msgid "Ascending"
 msgstr "Ascendent"
 
-#: mcomix/preferences_dialog.py:697 mcomix/preferences_dialog.py:743
+#: mcomix/preferences_dialog.py:703 mcomix/preferences_dialog.py:749
 #: mcomix/library/book_area.py:250
 msgid "Descending"
 msgstr "Descendent"
 
-#: mcomix/preferences_dialog.py:705
+#: mcomix/preferences_dialog.py:711
 msgid ""
 "Files will be opened and displayed according to the sort order specified "
 "here. This option does not affect ordering within archives."
@@ -2284,19 +2313,19 @@ msgstr ""
 "Els fitxers s'obriran i es mostraran en l'ordre que indiqueu aquí. Aquesta "
 "opció no afecta l'ordre dins dels arxius."
 
-#: mcomix/preferences_dialog.py:734
+#: mcomix/preferences_dialog.py:740
 msgid "Natural order"
 msgstr "Ordre natural"
 
-#: mcomix/preferences_dialog.py:735
+#: mcomix/preferences_dialog.py:741
 msgid "Literal order"
 msgstr "Ordre literal"
 
-#: mcomix/preferences_dialog.py:736
+#: mcomix/preferences_dialog.py:742
 msgid "GLib order"
 msgstr "Ordre de GLib"
 
-#: mcomix/preferences_dialog.py:751
+#: mcomix/preferences_dialog.py:757
 msgid ""
 "Files within archives will be sorted according to the order specified here. "
 "Natural order will sort numbered files based on their natural order, i.e. 1, "
@@ -2312,7 +2341,7 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 219
-#: mcomix/preferences_dialog.py:790
+#: mcomix/preferences_dialog.py:796
 msgid ""
 "Add information about all files opened from within MComix to the shared "
 "recent files list."
@@ -2322,11 +2351,11 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 214
-#: mcomix/preferences_dialog.py:810
+#: mcomix/preferences_dialog.py:816
 msgid "Delete information about recently opened files?"
 msgstr "Voleu suprimir la informació sobre els fitxers oberts recentment?"
 
-#: mcomix/preferences_dialog.py:811
+#: mcomix/preferences_dialog.py:817
 msgid ""
 "This will remove all entries from the \"Recent\" menu, and clear information "
 "about last read pages."
@@ -2334,19 +2363,19 @@ msgstr ""
 "Això traurà totes les entrades del menú «Recents» i esborrarà la informació "
 "sobre les darreres pàgines llegides."
 
-#: mcomix/preferences_dialog.py:824
+#: mcomix/preferences_dialog.py:830
 msgid "Normal (fast)"
 msgstr "Normal (ràpid)"
 
-#: mcomix/preferences_dialog.py:825
+#: mcomix/preferences_dialog.py:831
 msgid "Bilinear"
 msgstr "Bilineal"
 
-#: mcomix/preferences_dialog.py:826
+#: mcomix/preferences_dialog.py:832
 msgid "Hyperbolic (slow)"
 msgstr "Hiperbòlic (lent)"
 
-#: mcomix/preferences_dialog.py:832
+#: mcomix/preferences_dialog.py:838
 msgid ""
 "Changes how images are scaled. Slower algorithms result in higher quality "
 "resizing, but longer page loading times."
@@ -2354,17 +2383,17 @@ msgstr ""
 "Canvia com s'escalen les imatges. Els algorismes més lents donen més "
 "qualitat, però les pàgines triguen més a carregar-se."
 
-#: mcomix/preferences_dialog.py:850 mcomix/library/book_area.py:257
+#: mcomix/preferences_dialog.py:856 mcomix/library/book_area.py:257
 msgid "Normal"
 msgstr "Normal"
 
-#: mcomix/preferences_dialog.py:856
+#: mcomix/preferences_dialog.py:862
 msgid "Controls how animated images should be displayed."
 msgstr "Determina com es mostren les imatges animades."
 
 #
 # File: src/preferences.py, line: 295
-#: mcomix/preferences_dialog.py:900
+#: mcomix/preferences_dialog.py:906
 msgid ""
 "Treat all files found within archives, that have one of these file endings, "
 "as comments."
@@ -3495,14 +3524,7 @@ msgid ""
 msgstr ""
 "Els llibres triats es trauran de la biblioteca i es mouran a la paperera."
 
-#: mcomix/library/book_area.py:747
-#, python-format
-msgid "%d book could not be moved to the trash."
-msgid_plural "%d books could not be moved to the trash."
-msgstr[0] "No s'ha pogut moure %d llibre a la paperera."
-msgstr[1] "No s'han pogut moure %d llibres a la paperera."
-
-#: mcomix/library/book_area.py:791
+#: mcomix/library/book_area.py:804
 #, python-format
 msgid "Remove the bookmarks in the deleted book?"
 msgid_plural "Remove the bookmarks in the %(count)d deleted books?"

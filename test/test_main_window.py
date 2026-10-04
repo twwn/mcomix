@@ -1372,31 +1372,10 @@ class MainWindowTest(MComixTest):
                          [name.split('-', 1)[1]
                           for name in os.listdir(self.trash_dir)])
 
-    def test_a_file_the_trash_refuses_stays_and_says_so(self):
-        """It is not deleted for good instead, which is not what the
-        reader agreed to."""
-        source = self._movable_book()
-
-        def refuse(path):
-            raise GLib.Error('There is no trash here')
-
-        with unittest.mock.patch.object(tools, 'move_to_trash', refuse):
-            self.window.file_actions._delete_answered(Response.OK, source)
-            self._pump()
-        self.assertTrue(os.path.isfile(source))
-        said = [(dialog._primary.get_text(), dialog._secondary.get_text())
-                for dialog in self._delete_dialogs()]
-        for dialog in self._delete_dialogs():
-            dialog.destroy()
-        self._pump()
-        self.assertIn(('Could not move "Movable.cbz" to the trash',
-                       'There is no trash here'), said)
-
-    def test_the_message_about_a_refused_trash_can_be_closed(self):
-        """It came up with no button at all, on a book in /tmp, which
-        GLib will not put in the trash from a tmpfs."""
-        source = self._movable_book()
-
+    def _refused_by_the_trash(self, source):
+        """Delete <source> with a trash that will not take it, as GLib's
+        will not from a bind-mounted folder or a tmpfs, and return the
+        question that follows."""
         def refuse(path):
             raise GLib.Error('Trashing on system internal mounts is not '
                              'supported')
@@ -1405,18 +1384,74 @@ class MainWindowTest(MComixTest):
             self.window.file_actions._delete_answered(Response.OK, source)
             self._pump()
         dialogs = self._delete_dialogs()
-        try:
-            self.assertEqual(len(dialogs), 1)
-            closes = dialogs[0].get_widget_for_response(Response.CLOSE)
-            self.assertIsNotNone(closes, 'the message has no button')
-            closes.emit('clicked')
+        self.addCleanup(self._pump)
+        for dialog in dialogs:
+            self.addCleanup(dialog.destroy)
+        self.assertEqual(len(dialogs), 1, 'nothing was said')
+        return dialogs[0]
+
+    def test_a_file_the_trash_refuses_is_offered_for_deleting_for_good(self):
+        """The message came up with no button at all, and the file
+        could not be deleted from MComix.  A file browser offers to
+        delete it at once."""
+        source = self._movable_book()
+        dialog = self._refused_by_the_trash(source)
+        self.assertTrue(os.path.isfile(source),
+                        'the file went before the answer')
+        self.assertEqual('Could not move "Movable.cbz" to the trash',
+                         dialog._primary.get_text())
+        self.assertEqual('Trashing on system internal mounts is not '
+                         'supported\n\nDelete it permanently instead? It '
+                         'cannot be restored.', dialog._secondary.get_text())
+        keeps = dialog.get_widget_for_response(Response.CANCEL)
+        deletes = dialog.get_widget_for_response(Response.OK)
+        self.assertIs(dialog.get_default_widget(), keeps,
+                      'Enter would delete the file for good')
+        self.assertTrue(deletes.has_css_class('destructive-action'))
+
+    def test_turning_down_the_offer_keeps_the_file(self):
+        source = self._movable_book()
+        dialog = self._refused_by_the_trash(source)
+        with unittest.mock.patch.object(
+                self.window.uimanager.recent, 'remove_path') as forgotten:
+            dialog.get_widget_for_response(Response.CANCEL).emit('clicked')
             self._pump()
-            self.assertEqual(self._delete_dialogs(), [],
-                             'the button did not close the message')
-        finally:
-            for dialog in self._delete_dialogs():
-                dialog.destroy()
+        self.assertTrue(os.path.isfile(source))
+        forgotten.assert_not_called()
+        self.assertEqual(self._delete_dialogs(), [],
+                         'the button did not close the message')
+
+    def test_taking_the_offer_deletes_the_file_and_forgets_it(self):
+        source = self._movable_book()
+        dialog = self._refused_by_the_trash(source)
+        with unittest.mock.patch.object(
+                self.window.uimanager.recent, 'remove_path') as forgotten:
+            dialog.get_widget_for_response(Response.OK).emit('clicked')
             self._pump()
+        self.assertFalse(os.path.exists(source))
+        self.assertEqual(os.listdir(self.trash_dir)
+                         if os.path.isdir(self.trash_dir) else [], [])
+        forgotten.assert_called_once_with(source)
+
+    def test_a_file_that_cannot_be_deleted_either_says_so(self):
+        source = self._movable_book()
+        dialog = self._refused_by_the_trash(source)
+        with unittest.mock.patch.object(
+                os, 'remove', side_effect=PermissionError(
+                    13, 'Permission denied', source)):
+            dialog.get_widget_for_response(Response.OK).emit('clicked')
+            self._pump()
+        self.assertTrue(os.path.isfile(source))
+        said = self._delete_dialogs()
+        for message in said:
+            self.addCleanup(message.destroy)
+        self.assertEqual([('Could not delete "Movable.cbz"',
+                           'Permission denied')],
+                         [(message._primary.get_text(),
+                           message._secondary.get_text())
+                          for message in said])
+        self.assertIsNotNone(said[0].get_widget_for_response(Response.CLOSE),
+                             'the message has no button')
 
     def test_keeping_the_bookmarks_of_a_deleted_file_keeps_them(self):
         source = self._movable_book()

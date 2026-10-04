@@ -16,6 +16,7 @@ from .test_theme import background_of
 from mcomix import bookmark_backend
 from mcomix import bookmark_menu_item
 from mcomix import constants
+from mcomix import file_actions
 from mcomix import message_dialog
 from mcomix import process
 from mcomix.dialog import Response
@@ -101,13 +102,15 @@ class _Recent:
         self.removed.append(path)
 
 
-class _OpenBook:
+class _OpenBook(file_actions.FileActions):
 
     """Stands in for the main window's file handler and file actions:
     the book it has open, and whether its unwritten changes were
-    forgotten."""
+    forgotten.  The offer to delete what the trash refused is the real
+    one; the library gives its own window as the parent."""
 
     def __init__(self):
+        super().__init__(None)
         self.path = None
         self.forgotten = False
 
@@ -639,9 +642,43 @@ class DeleteFromDiskTest(MComixTest):
         file, so the trash refuses it as it would a file on a file
         system with no trash."""
         self.area._remove_answered(Response.YES)
+        pump()
+        offers = self._dialogs()
+        self.assertEqual(1, len(offers), 'nothing was offered')
+        offers[0].get_widget_for_response(Response.CANCEL).emit('clicked')
+        pump()
         self.assertTrue(self.library.messages, 'the library said nothing')
         self.assertEqual('1 book could not be moved to the trash.',
                          self.library.messages[-1])
+
+    def test_a_book_the_trash_refuses_can_be_deleted_for_good(self):
+        """GLib keeps no trash on a bind-mounted folder, and the library
+        could then only say the book had not gone."""
+        path = os.path.join(self.tmp_dir, 'deletable.cbz')
+        with open(path, 'wb') as handle:
+            handle.write(b'not really a book')
+        self.area._covers.set_items([book_area._BookItem(_Book(1, path))])
+        self.area._covers.selection.select_all()
+
+        def refuse(path):
+            raise GLib.Error('Trashing on system internal mounts is not '
+                             'supported')
+
+        with unittest.mock.patch.object(book_area.tools, 'move_to_trash',
+                                        refuse):
+            self.area._remove_answered(Response.YES)
+        pump()
+        offers = self._dialogs()
+        self.assertEqual(1, len(offers), 'nothing was offered')
+        self.assertTrue(os.path.isfile(path), 'the book went unasked')
+        self.assertEqual('Could not move "deletable.cbz" to the trash',
+                         offers[0]._primary.get_text())
+        offers[0].get_widget_for_response(Response.OK).emit('clicked')
+        pump()
+        self.assertFalse(os.path.exists(path))
+        self.assertEqual([], [message for message in self.library.messages
+                              if 'trash' in message])
+        self.assertIn(path, self.library.recent.removed)
 
     def _bookmark_store(self):
         # MComixTest redirects DATA_DIR without creating it, and the
