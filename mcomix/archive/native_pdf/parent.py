@@ -13,6 +13,10 @@ class FitzArchive(archive_base.BaseArchive):
 
     # Concurrent calls to extract welcome!
     support_concurrent_extractions = True
+    # Each extraction thread has a worker process of its own (see
+    # FitzProcessWrangler), and one with PyMuPDF loaded and a book open
+    # came to about 125 MB (proportional set size, at 44451e29).
+    extraction_thread_memory = 130 * 2**20
 
     def __init__(self, archive: str) -> None:
         """Initialize the object, first as a BaseArchive."""

@@ -17,6 +17,8 @@ from . import MComixTest, get_testfile_path, wait_for
 
 from mcomix import archive_extractor
 from mcomix import log
+from mcomix import tools
+from mcomix.preferences import prefs
 
 
 class _ExtractorTest(MComixTest):
@@ -119,6 +121,31 @@ class ExtractionTest(_ExtractorTest):
         self._extract([self.MEMBERS[0]])
         self.extractor.set_files(self.MEMBERS)
         self.assertNotIn(self.MEMBERS[0], self.extractor.get_files())
+
+
+class ThreadCountTest(_ExtractorTest):
+
+    """The archive says what each of its extraction threads costs."""
+
+    def _counted(self):
+        with unittest.mock.patch.object(
+                archive_extractor.tools, 'thread_count',
+                wraps=tools.thread_count) as counted:
+            self.extractor.set_files([self.MEMBERS[0]])
+            self.extractor.extract()
+        return counted
+
+    def test_a_thread_of_the_zip_reader_costs_nothing_more(self):
+        self._counted().assert_called_once_with(
+            prefs['max extract threads'], 0)
+
+    def test_a_thread_with_a_process_of_its_own_is_counted_with_it(self):
+        with unittest.mock.patch.object(
+                self.extractor._opened_archive, 'extraction_thread_memory',
+                130 * 2**20):
+            counted = self._counted()
+        counted.assert_called_once_with(
+            prefs['max extract threads'], 130 * 2**20)
 
 
 class LateExtractionTest(_ExtractorTest):

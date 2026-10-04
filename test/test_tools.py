@@ -274,6 +274,68 @@ class TestThreadCount(unittest.TestCase):
         with self._available(None):
             self.assertEqual(1, tools.thread_count(0))
 
+    def _memory(self, gigabytes):
+        return unittest.mock.patch.object(
+            tools, 'physical_memory',
+            return_value=None if gigabytes is None else gigabytes * 2**30)
+
+    def test_threads_that_cost_memory_take_a_sixteenth_of_it(self):
+        """A thread with a process of its own, as the PDF reader's
+        have, cost 3 GB for one book when there was one per
+        processor."""
+        for gigabytes, expected in ((8, 4), (16, 8), (64, 24)):
+            with self.subTest(gigabytes=gigabytes), self._available(24), \
+                    self._memory(gigabytes):
+                self.assertEqual(expected, tools.thread_count(0, 128 * 2**20))
+
+    def test_threads_that_cost_more_than_the_share_still_get_one(self):
+        with self._available(24), self._memory(1):
+            self.assertEqual(1, tools.thread_count(0, 2**30))
+
+    def test_threads_that_cost_nothing_follow_the_processors_alone(self):
+        with self._available(24), self._memory(1):
+            self.assertEqual(24, tools.thread_count(0))
+
+    def test_an_unknown_memory_leaves_the_processors(self):
+        with self._available(24), self._memory(None):
+            self.assertEqual(24, tools.thread_count(0, 128 * 2**20))
+
+    def test_a_chosen_number_is_kept_whatever_each_thread_costs(self):
+        with self._available(24), self._memory(1):
+            self.assertEqual(20, tools.thread_count(20, 2**30))
+
+
+class TestPhysicalMemory(unittest.TestCase):
+
+    @unittest.skipIf(sys.platform == 'win32', 'the POSIX call')
+    def test_this_machine_says_how_much_it_has(self):
+        memory = tools.physical_memory()
+        self.assertIsNotNone(memory)
+        self.assertGreater(memory, 2**20)
+
+    def test_an_unanswered_question_is_no_answer(self):
+        with unittest.mock.patch.object(os, 'sysconf', return_value=-1, create=True):
+            if sys.platform != 'win32':
+                self.assertIsNone(tools.physical_memory())
+
+    def _windows(self, answer, total):
+        """Ask as Windows is asked, with GlobalMemoryStatusEx answering
+        <answer> and filling in <total> bytes."""
+        def global_memory_status(pointer):
+            pointer._obj.ullTotalPhys = total
+            return answer
+        windll = unittest.mock.Mock()
+        windll.kernel32.GlobalMemoryStatusEx.side_effect = global_memory_status
+        with unittest.mock.patch.object(sys, 'platform', 'win32'), \
+                unittest.mock.patch('ctypes.windll', windll, create=True):
+            return tools.physical_memory()
+
+    def test_windows_is_asked_for_its_memory_status(self):
+        self.assertEqual(16 * 2**30, self._windows(1, 16 * 2**30))
+
+    def test_a_windows_call_that_fails_is_no_answer(self):
+        self.assertIsNone(self._windows(0, 16 * 2**30))
+
 
 class TestNumberOfDigits(unittest.TestCase):
 

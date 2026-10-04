@@ -21,6 +21,9 @@ class BaseArchive:
 
     # True if concurrent calls to extract is supported.
     support_concurrent_extractions = False
+    #: The memory, in bytes, that each extraction thread costs besides
+    #: the thread: 0, unless each thread drives a process of its own.
+    extraction_thread_memory = 0
 
     def __init__(self, archive: str) -> None:
         assert isinstance(archive, str), "File should be an Unicode string."

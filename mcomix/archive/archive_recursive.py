@@ -111,6 +111,10 @@ class RecursiveArchive(archive_base.BaseArchive):
                 supported = False
                 break
         self.support_concurrent_extractions = supported
+        # What a thread costs is what the costliest part's threads do.
+        self.extraction_thread_memory = max(
+            (archive.extraction_thread_memory
+             for archive in self._archive_list), default=0)
 
     def iter_contents(self) -> Iterator[str]:
         """Yield every entry, listing the nesting on the first call."""

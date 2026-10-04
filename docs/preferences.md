@@ -73,7 +73,7 @@ Scaling mode | "Normal (fast)", "Bilinear" or "Hyperbolic (slow)": slower means 
 
 Option | Explanation
 -------|------------
-Maximum number of concurrent extraction threads | For formats more than one thread can unpack: ZIP, PDF, and those unpacked by an outside program, such as 7z. 0, the default, is one per processor.
+Maximum number of concurrent extraction threads | For formats more than one thread can unpack: ZIP, PDF, and those unpacked by an outside program, such as 7z. 0, the default, is one per processor. Each PDF thread runs a process of its own of about 130 MB, so for PDFs 0 also keeps to a sixteenth of the memory.
 Maximum number of concurrent thumbnail threads | Read at start. 0, the default, is one per processor.
 Store thumbnails for opened files | In the freedesktop.org thumbnail directory that file managers and other programs share.
 Maximum number of pages to store in the cache | 7 by default. -1 caches the whole book; a large number can run MComix out of memory.

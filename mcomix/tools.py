@@ -2,6 +2,7 @@
 
 import bisect
 import contextlib
+import ctypes
 import gc
 import itertools
 import math
@@ -200,22 +201,68 @@ def format_byte_size(n: int) -> str:
     return GLib.format_size(n)
 
 
-def thread_count(chosen: int) -> int:
+def physical_memory() -> int | None:
+    """The bytes of physical memory, or None where it cannot be told."""
+    if sys.platform == 'win32':
+        class MemoryStatus(ctypes.Structure):
+            _fields_ = [('dwLength', ctypes.c_ulong),
+                        ('dwMemoryLoad', ctypes.c_ulong),
+                        ('ullTotalPhys', ctypes.c_ulonglong),
+                        ('ullAvailPhys', ctypes.c_ulonglong),
+                        ('ullTotalPageFile', ctypes.c_ulonglong),
+                        ('ullAvailPageFile', ctypes.c_ulonglong),
+                        ('ullTotalVirtual', ctypes.c_ulonglong),
+                        ('ullAvailVirtual', ctypes.c_ulonglong),
+                        ('ullAvailExtendedVirtual', ctypes.c_ulonglong)]
+
+        status = MemoryStatus()
+        status.dwLength = ctypes.sizeof(status)
+        if not ctypes.windll.kernel32.GlobalMemoryStatusEx(
+                ctypes.byref(status)):
+            return None
+        return int(status.ullTotalPhys) or None
+    try:
+        pages = os.sysconf('SC_PHYS_PAGES')
+        page_size = os.sysconf('SC_PAGE_SIZE')
+    except (AttributeError, ValueError, OSError):
+        return None
+    if pages <= 0 or page_size <= 0:
+        return None
+    return pages * page_size
+
+
+#: The share of the physical memory the automatic thread count lets
+#: the threads of one pool take, where each costs memory of its own.
+THREAD_MEMORY_SHARE = 16
+
+
+def thread_count(chosen: int, memory_each: int = 0) -> int:
     """How many worker threads a preference of <chosen> threads means.
 
     A positive number is taken as it is.  0, the default, is the
     automatic setting: one thread for each processor this process may
-    run on.  There is no ceiling on purpose.  The pools start a thread
-    only when there is an order for it, the thumbnails are made only
-    for the rows on screen and a book has only so many pages, so the
-    work bounds the count before the processors do.  A machine with
-    more processors has the memory to go with them, and faster ones
-    make each page cheaper, which wants fewer threads rather than more.
-    Measured on 24 processors (at b91ee04e): thumbnails of 120 PNG
-    pages of 1800 by 2700 took 2985 ms with one thread, 448 ms with 8
-    and 253 ms with 24; those of small JPEG pages, where the GIL is
-    what the threads wait for, 64 ms for 240 with 8 and 158 ms with 24,
-    under half a millisecond a thumbnail.
+    run on, and where each thread costs <memory_each> bytes besides,
+    no more than fit in a sixteenth of the physical memory.
+
+    A thread itself costs next to nothing, and there is no ceiling on
+    the processors on purpose: the pools start a thread only when there
+    is an order for it, the thumbnails are made only for the rows on
+    screen and a book has only so many pages.  Measured with 4, 8, 16
+    and 24 of one machine's processors (at 44451e29), thumbnails of PNG
+    pages and unpacking a ZIP or a 7z were fastest, or within 0.02 s of
+    it, with one thread per processor.  Thumbnails of small JPEG pages,
+    where the GIL is what the threads wait for, were fastest with 4 to 6
+    threads however many processors there were, but lost under half a
+    millisecond a thumbnail with more.
+
+    What does cost memory is a thread that drives a process of its
+    own, as each of the PDF reader's does: its own Python and PyMuPDF,
+    about 130 MB, so that one per processor took 3 GB on 24 processors
+    for one book.  How many of those are worth having depends on the
+    book - a PDF whose pages are drawn kept gaining up to one per
+    processor, one whose pages are pictures to copy out was fastest
+    with 2 to 8 - so the bound is the memory they take, which is the
+    same on every machine.
     """
     if chosen > 0:
         return chosen
@@ -226,7 +273,13 @@ def thread_count(chosen: int) -> int:
         available = len(os.sched_getaffinity(0))
     else:
         available = os.cpu_count()
-    return max(1, available or 1)
+    count = max(1, available or 1)
+    if memory_each > 0:
+        memory = physical_memory()
+        if memory is not None:
+            count = min(count, max(
+                1, memory // THREAD_MEMORY_SHARE // memory_each))
+    return count
 
 
 def garbage_collect() -> None:

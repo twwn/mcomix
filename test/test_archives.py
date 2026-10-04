@@ -299,6 +299,28 @@ class RecursiveArchiveCloseTest(MComixTest):
         self.assertIsNone(recursive._main_archive.zip.fp)
 
 
+class ExtractionThreadMemoryTest(MComixTest):
+
+    def test_a_pdf_reader_thread_carries_its_worker_process(self):
+        from mcomix.archive.native_pdf import parent
+        self.assertGreater(parent.FitzArchive.extraction_thread_memory, 0)
+
+    def test_nested_archives_cost_what_the_costliest_part_does(self):
+        path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        recursive = archive_recursive.RecursiveArchive(
+            zip.ZipArchive(path), os.path.join(self.tmp_dir, 'extracted'))
+        try:
+            recursive.list_contents()
+            self.assertEqual(0, recursive.extraction_thread_memory)
+            costly = unittest.mock.Mock(support_concurrent_extractions=True,
+                                        extraction_thread_memory=7)
+            recursive._archive_list.append(costly)
+            recursive._check_concurrent_extraction_support()
+            self.assertEqual(7, recursive.extraction_thread_memory)
+        finally:
+            recursive.close()
+
+
 class UnreadableInnerArchiveTest(MComixTest):
 
     """A book holding a file named as an archive that is none: its own
