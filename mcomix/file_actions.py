@@ -916,7 +916,8 @@ class FileActions:
             tools.move_to_trash(path)
         except GLib.Error as error:
             log.error('Could not move %s to the trash: %s', path, error.message)
-            dialog = message_dialog.MessageDialog(self._window)
+            dialog = message_dialog.MessageDialog(
+                self._window, buttons=Gtk.ButtonsType.CLOSE)
             dialog.set_text(
                 _('Could not move "%s" to the trash') % os.path.basename(path),
                 error.message)

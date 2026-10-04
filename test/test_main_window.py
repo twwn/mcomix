@@ -1392,6 +1392,32 @@ class MainWindowTest(MComixTest):
         self.assertIn(('Could not move "Movable.cbz" to the trash',
                        'There is no trash here'), said)
 
+    def test_the_message_about_a_refused_trash_can_be_closed(self):
+        """It came up with no button at all, on a book in /tmp, which
+        GLib will not put in the trash from a tmpfs."""
+        source = self._movable_book()
+
+        def refuse(path):
+            raise GLib.Error('Trashing on system internal mounts is not '
+                             'supported')
+
+        with unittest.mock.patch.object(tools, 'move_to_trash', refuse):
+            self.window.file_actions._delete_answered(Response.OK, source)
+            self._pump()
+        dialogs = self._delete_dialogs()
+        try:
+            self.assertEqual(len(dialogs), 1)
+            closes = dialogs[0].get_widget_for_response(Response.CLOSE)
+            self.assertIsNotNone(closes, 'the message has no button')
+            closes.emit('clicked')
+            self._pump()
+            self.assertEqual(self._delete_dialogs(), [],
+                             'the button did not close the message')
+        finally:
+            for dialog in self._delete_dialogs():
+                dialog.destroy()
+            self._pump()
+
     def test_keeping_the_bookmarks_of_a_deleted_file_keeps_them(self):
         source = self._movable_book()
         store = self._bookmark_store()
