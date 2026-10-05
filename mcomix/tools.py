@@ -190,6 +190,43 @@ def move_to_trash(path: str) -> None:
     Gio.File.new_for_path(path).trash(None)
 
 
+def trash_refuses(path: str) -> bool:
+    """Whether move_to_trash() is certain to refuse <path>, found out
+    without trying.
+
+    GLib moves a file on the home folder's device to the home trash, and
+    any other to a trash at the top of its own mount, unless it counts
+    that mount as internal to the system: a tmpfs, the root file system,
+    and every mount whose root is not "/", which takes in a folder
+    bind-mounted from another partition.  That is GLib's own rule
+    (g_local_file_trash()), read here through the same calls.  A refusal
+    it does not foresee, such as a mount whose trash folder cannot be
+    made, still raises from move_to_trash(); where the rule cannot be
+    read - on Windows, or a GLib older than 2.80 - nothing is foreseen.
+    """
+    if sys.platform == 'win32':
+        return False
+    try:
+        import gi
+        gi.require_version('GioUnix', '2.0')
+        from gi.repository import GioUnix
+    except (ImportError, ValueError):
+        return False
+    try:
+        device = os.lstat(path).st_dev
+        if device == os.stat(GLib.get_home_dir()).st_dev:
+            return False
+        # The top of the mount: the last folder up on the same device.
+        top = os.path.dirname(os.path.abspath(path))
+        while (parent := os.path.dirname(top)) != top \
+                and os.lstat(parent).st_dev == device:
+            top = parent
+    except OSError:
+        return False
+    entry, _changed = GioUnix.mount_entry_at(top)
+    return entry is None or entry.is_system_internal()
+
+
 def format_byte_size(n: int) -> str:
     """<n> bytes, written as GTK writes a size: in powers of 1000, kB
     and MB, in GLib's words for them.

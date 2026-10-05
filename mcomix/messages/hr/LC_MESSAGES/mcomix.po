@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: comix 4.0.1\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-04 15:26+0200\n"
+"POT-Creation-Date: 2026-10-05 16:51+0200\n"
 "PO-Revision-Date: 2008-12-13 18:00+0100\n"
 "Last-Translator: Adrian C. <anrxc@sysphere.org>\n"
 "Language-Team: Croatian\n"
@@ -59,8 +59,8 @@ msgstr "! Nije moguće pročitati %s"
 
 #
 # File: src/comment.py, line: 53
-#: mcomix/archive_packer.py:176 mcomix/file_actions.py:1040
-#: mcomix/library/book_area.py:744
+#: mcomix/archive_packer.py:176 mcomix/file_actions.py:1059
+#: mcomix/library/book_area.py:782
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! Nije moguće obrisati %(file)s: %(error)s"
@@ -84,23 +84,26 @@ msgid "! Could not parse bookmarks file %s"
 msgstr "! Nije moguće obraditi datoteku oznaka %s"
 
 #: mcomix/bookmark_backend.py:372 mcomix/message_dialog.py:28
+#: mcomix/library/book_area.py:714
 msgid "_Yes"
 msgstr "_Da"
 
 #
 # File: src/ui.py, line: 69
 #: mcomix/bookmark_backend.py:373 mcomix/message_dialog.py:27
+#: mcomix/library/book_area.py:711
 msgid "_No"
 msgstr "_Ne"
 
 #
 # File: src/preferences.py, line: 230
 #: mcomix/bookmark_backend.py:374 mcomix/edit_dialog.py:59
-#: mcomix/file_actions.py:859 mcomix/file_actions.py:1023
+#: mcomix/file_actions.py:869 mcomix/file_actions.py:1042
 #: mcomix/file_chooser_base_dialog.py:187
 #: mcomix/file_chooser_base_dialog.py:192
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:32
+#: mcomix/library/book_area.py:711
 msgid "_Cancel"
 msgstr "O_dustani"
 
@@ -206,7 +209,7 @@ msgstr "Ukloni oznake ove _knjige..."
 msgid "_Edit Bookmarks..."
 msgstr "_Uredi oznake..."
 
-#: mcomix/bookmark_menu.py:197 mcomix/file_actions.py:1080
+#: mcomix/bookmark_menu.py:197 mcomix/file_actions.py:1099
 #, python-format
 msgid "Remove the bookmarks in \"%s\"?"
 msgstr "Ukloniti oznake u „%s”?"
@@ -460,7 +463,7 @@ msgstr "_Invertiraj boje slike"
 msgid "Invert (negate) image colors."
 msgstr "Invertira (negira) boje slike."
 
-#: mcomix/file_actions.py:303 mcomix/file_actions.py:1154
+#: mcomix/file_actions.py:303 mcomix/file_actions.py:1173
 msgid "A file of that name is there already."
 msgstr "Datoteka tog imena već je ondje."
 
@@ -520,7 +523,7 @@ msgstr "Spremi stranicu kao"
 msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! Nije moguće spremiti %(file)s u %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:822 mcomix/file_actions.py:1156
+#: mcomix/file_actions.py:822 mcomix/file_actions.py:1175
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "Ondje nema dovoljno mjesta: datoteka je %s."
@@ -530,34 +533,38 @@ msgstr "Ondje nema dovoljno mjesta: datoteka je %s."
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "Nije moguće spremiti „%(file)s” u „%(directory)s”"
 
-#: mcomix/file_actions.py:857
+#: mcomix/file_actions.py:859
+msgid "There is no trash for this folder, so it cannot be restored."
+msgstr "Ovaj direktorij nema smeće pa se neće moći vratiti."
+
+#: mcomix/file_actions.py:867
 #, python-format
 msgid "Delete \"%s\"?"
 msgstr "Obrisati „%s”?"
 
-#: mcomix/file_actions.py:858
+#: mcomix/file_actions.py:868
 msgid "The file is moved to the trash."
 msgstr "Datoteka se premješta u smeće."
 
-#: mcomix/file_actions.py:860
+#: mcomix/file_actions.py:870
 msgid "_Move to Trash"
 msgstr "_Premjesti u smeće"
 
-#: mcomix/file_actions.py:890
+#: mcomix/file_actions.py:900
+msgid "It does not go to the trash and cannot be restored."
+msgstr "Ne premješta se u smeće i neće se moći vratiti."
+
+#: mcomix/file_actions.py:908
 #, python-format
 msgid "Delete \"%s\" permanently?"
 msgstr "Trajno obrisati „%s”?"
 
-#: mcomix/file_actions.py:891
-msgid "It does not go to the trash and cannot be restored."
-msgstr "Ne premješta se u smeće i neće se moći vratiti."
-
-#: mcomix/file_actions.py:996
+#: mcomix/file_actions.py:1015
 #, python-format
 msgid "Could not move \"%s\" to the trash"
 msgstr "Nije moguće premjestiti „%s” u smeće"
 
-#: mcomix/file_actions.py:1000 mcomix/library/book_area.py:754
+#: mcomix/file_actions.py:1019 mcomix/library/book_area.py:794
 #, python-format
 msgid "%d book could not be moved to the trash."
 msgid_plural "%d books could not be moved to the trash."
@@ -565,23 +572,23 @@ msgstr[0] "%d knjiga nije premještena u smeće."
 msgstr[1] "%d knjige nisu premještene u smeće."
 msgstr[2] "%d knjiga nije premješteno u smeće."
 
-#: mcomix/file_actions.py:1004
+#: mcomix/file_actions.py:1023
 msgid "Delete it permanently instead? It cannot be restored."
 msgid_plural "Delete them permanently instead? They cannot be restored."
 msgstr[0] "Umjesto toga trajno obrisati? Neće se moći vratiti."
 msgstr[1] "Umjesto toga trajno obrisati? Neće se moći vratiti."
 msgstr[2] "Umjesto toga trajno obrisati? Neće se moći vratiti."
 
-#: mcomix/file_actions.py:1024
+#: mcomix/file_actions.py:1043 mcomix/library/book_area.py:713
 msgid "_Delete Permanently"
 msgstr "_Obriši trajno"
 
-#: mcomix/file_actions.py:1055
+#: mcomix/file_actions.py:1074
 #, python-format
 msgid "Could not delete \"%s\""
 msgstr "Nije moguće obrisati „%s”"
 
-#: mcomix/file_actions.py:1076
+#: mcomix/file_actions.py:1095
 #, python-format
 msgid "The file is gone, and its %d bookmark cannot be opened any more."
 msgid_plural ""
@@ -590,12 +597,12 @@ msgstr[0] "Datoteke više nema i njezina %d oznaka se više ne može otvoriti."
 msgstr[1] "Datoteke više nema i njezine %d oznake se više ne mogu otvoriti."
 msgstr[2] "Datoteke više nema i njezinih %d oznaka se više ne može otvoriti."
 
-#: mcomix/file_actions.py:1150
+#: mcomix/file_actions.py:1169
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr "! Nije moguće premjestiti %(file)s u %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:1162
+#: mcomix/file_actions.py:1181
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "Nije moguće premjestiti „%(file)s” u „%(directory)s”"
@@ -3523,16 +3530,24 @@ msgstr[2] "Iz biblioteke je uklonjeno %d knjiga."
 
 #
 # File: src/library.py, line: 597
-#: mcomix/library/book_area.py:714
+#: mcomix/library/book_area.py:726 mcomix/library/book_area.py:734
 msgid "Remove books from the library?"
 msgstr "Obrisati knjige iz biblioteke?"
 
-#: mcomix/library/book_area.py:715
+#: mcomix/library/book_area.py:727
+msgid ""
+"The selected books will be removed from the library. Any in a folder with no "
+"trash is deleted permanently and cannot be restored."
+msgstr ""
+"Odabrane knjige bit će uklonjene iz biblioteke. One u direktoriju bez smeća "
+"bit će trajno obrisane i neće se moći vratiti."
+
+#: mcomix/library/book_area.py:735
 msgid ""
 "The selected books will be removed from the library and moved to the trash."
 msgstr "Odabrane knjige bit će uklonjene iz biblioteke i premještene u smeće."
 
-#: mcomix/library/book_area.py:804
+#: mcomix/library/book_area.py:845
 #, python-format
 msgid "Remove the bookmarks in the deleted book?"
 msgid_plural "Remove the bookmarks in the %(count)d deleted books?"

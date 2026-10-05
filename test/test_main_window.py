@@ -379,8 +379,11 @@ class MainWindowTest(MComixTest):
             self.assertIsNotNone(cancel, 'the dialog offers no way out')
             self.assertIs(dialog.get_default_widget(), cancel,
                           'Enter would delete the file')
-            self.assertTrue(deletes.has_css_class('destructive-action'),
+            # Red is for what cannot be taken back; what goes to the
+            # trash can be.
+            self.assertTrue(deletes.has_css_class('suggested-action'),
                             'the deleting button is drawn as an ordinary one')
+            self.assertFalse(deletes.has_css_class('destructive-action'))
         finally:
             # Never answered: answering it would delete the copy, and a
             # dialog left standing is answered by the next test that
@@ -1510,6 +1513,70 @@ class MainWindowTest(MComixTest):
         self.assertTrue(os.path.isfile(source))
         self.assertEqual(self.window.filehandler.get_path_to_base(), source,
                          'the book was closed for nothing')
+
+    def _asked_where_the_trash_refuses(self, source):
+        """Press Delete on <source> where the trash is known to refuse
+        it, and return the question."""
+        with unittest.mock.patch.object(tools, 'trash_refuses',
+                                        return_value=True):
+            self.window.file_actions.delete()
+            self._pump()
+        dialogs = self._delete_dialogs()
+        self.addCleanup(self._pump)
+        for dialog in dialogs:
+            self.addCleanup(dialog.destroy)
+        self.assertEqual(len(dialogs), 1, 'nothing was asked')
+        return dialogs[0]
+
+    def test_where_the_trash_refuses_delete_asks_to_delete_for_good(self):
+        """It offered the trash, closed the book, and only then said the
+        trash had refused, with a second question."""
+        source = self._movable_book()
+        dialog = self._asked_where_the_trash_refuses(source)
+        self.assertEqual(('Delete "Movable.cbz" permanently?',
+                          'There is no trash for this folder, so it cannot '
+                          'be restored.'),
+                         (dialog._primary.get_text(),
+                          dialog._secondary.get_text()))
+        self.assertEqual(self.window.filehandler.get_path_to_base(), source,
+                         'the book was closed before the answer')
+        self.assertIs(dialog.get_default_widget(),
+                      dialog.get_widget_for_response(Response.CANCEL),
+                      'Enter would delete the file for good')
+        self.assertTrue(dialog.get_widget_for_response(Response.OK)
+                        .has_css_class('destructive-action'))
+        self.assertIsNone(dialog.dialog_id,
+                          'the answer could be given for good')
+
+    def test_where_the_trash_refuses_yes_deletes_without_trying_it(self):
+        source = self._movable_book()
+        dialog = self._asked_where_the_trash_refuses(source)
+        with unittest.mock.patch.object(tools, 'move_to_trash') as trash:
+            dialog.get_widget_for_response(Response.OK).emit('clicked')
+            self._pump()
+        trash.assert_not_called()
+        self.assertFalse(os.path.exists(source))
+        self.assertEqual(self._delete_dialogs(), [],
+                         'a second question followed the first')
+
+    def test_where_the_trash_refuses_no_leaves_the_book_open(self):
+        source = self._movable_book()
+        dialog = self._asked_where_the_trash_refuses(source)
+        dialog.get_widget_for_response(Response.CANCEL).emit('clicked')
+        self._pump()
+        self.assertTrue(os.path.isfile(source))
+        self.assertEqual(self.window.filehandler.get_path_to_base(), source,
+                         'the book was closed for nothing')
+
+    def test_a_remembered_delete_still_asks_where_the_trash_refuses(self):
+        """"Do not ask again" was said of moving to the trash."""
+        prefs['stored dialog choices'][
+            message_dialog.RememberedDialog.DELETE_OPENED_FILE] = Response.OK
+        self.addCleanup(prefs['stored dialog choices'].pop,
+                        message_dialog.RememberedDialog.DELETE_OPENED_FILE)
+        source = self._movable_book()
+        self._asked_where_the_trash_refuses(source)
+        self.assertTrue(os.path.isfile(source), 'the file went unasked')
 
     def test_shift_delete_removes_the_picked_out_page_as_delete_does(self):
         """Pages are not files of their own until the book is written."""

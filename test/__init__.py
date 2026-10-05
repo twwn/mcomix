@@ -290,6 +290,14 @@ def _move_to_test_trash(path: str) -> None:
 
 tools.move_to_trash = _move_to_test_trash
 
+#: tools.trash_refuses() as MComix has it, for the tests of it.
+real_trash_refuses = tools.trash_refuses
+# Whether GLib would refuse a test's file depends on where the checkout
+# and the home folder are mounted on the machine running the suite, and
+# the test trash above takes anything; a test that wants the refusal
+# foreseen patches this.
+tools.trash_refuses = lambda path: False
+
 # Start the way run.py starts.
 
 # GLib.set_prgname() is what names the program to GLib: the window class

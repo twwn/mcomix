@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 1.00-SVN\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-04 15:26+0200\n"
+"POT-Creation-Date: 2026-10-05 16:51+0200\n"
 "PO-Revision-Date: 2012-08-16 13:10+0900\n"
 "Last-Translator: Toshiharu Kudoh <toshi.kd2@gmail.com>\n"
 "Language-Team: Japanese\n"
@@ -57,8 +57,8 @@ msgstr "! 展開エラーです: %s"
 msgid "! Could not read %s"
 msgstr "! %s を読めませんでした"
 
-#: mcomix/archive_packer.py:176 mcomix/file_actions.py:1040
-#: mcomix/library/book_area.py:744
+#: mcomix/archive_packer.py:176 mcomix/file_actions.py:1059
+#: mcomix/library/book_area.py:782
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! %(file)s を削除できませんでした: %(error)s"
@@ -82,19 +82,22 @@ msgid "! Could not parse bookmarks file %s"
 msgstr "! ブックマークファイル %s をパースできませんでした"
 
 #: mcomix/bookmark_backend.py:372 mcomix/message_dialog.py:28
+#: mcomix/library/book_area.py:714
 msgid "_Yes"
 msgstr "はい(_Y)"
 
 #: mcomix/bookmark_backend.py:373 mcomix/message_dialog.py:27
+#: mcomix/library/book_area.py:711
 msgid "_No"
 msgstr "いいえ(_N)"
 
 #: mcomix/bookmark_backend.py:374 mcomix/edit_dialog.py:59
-#: mcomix/file_actions.py:859 mcomix/file_actions.py:1023
+#: mcomix/file_actions.py:869 mcomix/file_actions.py:1042
 #: mcomix/file_chooser_base_dialog.py:187
 #: mcomix/file_chooser_base_dialog.py:192
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:32
+#: mcomix/library/book_area.py:711
 msgid "_Cancel"
 msgstr "キャンセル(_C)"
 
@@ -184,7 +187,7 @@ msgstr "この本のブックマークを削除(_R)..."
 msgid "_Edit Bookmarks..."
 msgstr "ブックマークの編集(_E)..."
 
-#: mcomix/bookmark_menu.py:197 mcomix/file_actions.py:1080
+#: mcomix/bookmark_menu.py:197 mcomix/file_actions.py:1099
 #, python-format
 msgid "Remove the bookmarks in \"%s\"?"
 msgstr "\"%s\" のブックマークを削除しますか?"
@@ -392,7 +395,7 @@ msgstr "画像の色を反転(_I)"
 msgid "Invert (negate) image colors."
 msgstr "画像の色を反転（ネガ）します。"
 
-#: mcomix/file_actions.py:303 mcomix/file_actions.py:1154
+#: mcomix/file_actions.py:303 mcomix/file_actions.py:1173
 msgid "A file of that name is there already."
 msgstr "同じ名前のファイルがすでにあります。"
 
@@ -450,7 +453,7 @@ msgstr "別名でページを保存"
 msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! %(file)s を %(directory)s に保存できませんでした: %(error)s"
 
-#: mcomix/file_actions.py:822 mcomix/file_actions.py:1156
+#: mcomix/file_actions.py:822 mcomix/file_actions.py:1175
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "空き容量が足りません: ファイルサイズは %s です。"
@@ -460,66 +463,70 @@ msgstr "空き容量が足りません: ファイルサイズは %s です。"
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "\"%(file)s\" を \"%(directory)s\" に保存できませんでした"
 
-#: mcomix/file_actions.py:857
+#: mcomix/file_actions.py:859
+msgid "There is no trash for this folder, so it cannot be restored."
+msgstr "このディレクトリーにはゴミ箱がないため、元に戻すことはできません。"
+
+#: mcomix/file_actions.py:867
 #, python-format
 msgid "Delete \"%s\"?"
 msgstr "\"%s\" を消去しますか?"
 
-#: mcomix/file_actions.py:858
+#: mcomix/file_actions.py:868
 msgid "The file is moved to the trash."
 msgstr "ファイルはゴミ箱へ移動されます。"
 
-#: mcomix/file_actions.py:860
+#: mcomix/file_actions.py:870
 msgid "_Move to Trash"
 msgstr "ゴミ箱へ移動する(_M)"
 
-#: mcomix/file_actions.py:890
+#: mcomix/file_actions.py:900
+msgid "It does not go to the trash and cannot be restored."
+msgstr "ゴミ箱へは移動されず、元に戻すことはできません。"
+
+#: mcomix/file_actions.py:908
 #, python-format
 msgid "Delete \"%s\" permanently?"
 msgstr "\"%s\" を完全に削除しますか?"
 
-#: mcomix/file_actions.py:891
-msgid "It does not go to the trash and cannot be restored."
-msgstr "ゴミ箱へは移動されず、元に戻すことはできません。"
-
-#: mcomix/file_actions.py:996
+#: mcomix/file_actions.py:1015
 #, python-format
 msgid "Could not move \"%s\" to the trash"
 msgstr "\"%s\" をゴミ箱へ移動できませんでした"
 
-#: mcomix/file_actions.py:1000 mcomix/library/book_area.py:754
+#: mcomix/file_actions.py:1019 mcomix/library/book_area.py:794
 #, python-format
 msgid "%d book could not be moved to the trash."
 msgid_plural "%d books could not be moved to the trash."
 msgstr[0] "%d 個の本をゴミ箱へ移動できませんでした。"
 
-#: mcomix/file_actions.py:1004
+#: mcomix/file_actions.py:1023
 msgid "Delete it permanently instead? It cannot be restored."
 msgid_plural "Delete them permanently instead? They cannot be restored."
 msgstr[0] "代わりに完全に削除しますか? 元に戻すことはできません。"
 
-#: mcomix/file_actions.py:1024
+#: mcomix/file_actions.py:1043 mcomix/library/book_area.py:713
 msgid "_Delete Permanently"
 msgstr "完全に削除(_D)"
 
-#: mcomix/file_actions.py:1055
+#: mcomix/file_actions.py:1074
 #, python-format
 msgid "Could not delete \"%s\""
 msgstr "\"%s\" を削除できませんでした"
 
-#: mcomix/file_actions.py:1076
+#: mcomix/file_actions.py:1095
 #, python-format
 msgid "The file is gone, and its %d bookmark cannot be opened any more."
 msgid_plural ""
 "The file is gone, and its %d bookmarks cannot be opened any more."
 msgstr[0] "ファイルは削除され、その %d 個のブックマークはもう開けません。"
 
-#: mcomix/file_actions.py:1150
+#: mcomix/file_actions.py:1169
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr "! %(file)s を %(directory)s に移動できませんでした: %(error)s"
 
-#: mcomix/file_actions.py:1162
+#: mcomix/file_actions.py:1181
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "\"%(file)s\" を \"%(directory)s\" に移動できませんでした"
@@ -2976,16 +2983,24 @@ msgid "Removed %d book from the library."
 msgid_plural "Removed %d books from the library."
 msgstr[0] "%d 個の本がライブラリーから削除されました。"
 
-#: mcomix/library/book_area.py:714
+#: mcomix/library/book_area.py:726 mcomix/library/book_area.py:734
 msgid "Remove books from the library?"
 msgstr "ライブラリーから本を削除しますか?"
 
-#: mcomix/library/book_area.py:715
+#: mcomix/library/book_area.py:727
+msgid ""
+"The selected books will be removed from the library. Any in a folder with no "
+"trash is deleted permanently and cannot be restored."
+msgstr ""
+"選択された本はライブラリーから削除されます。ゴミ箱のないディレクトリーにある"
+"本は完全に削除され、元に戻すことはできません。"
+
+#: mcomix/library/book_area.py:735
 msgid ""
 "The selected books will be removed from the library and moved to the trash."
 msgstr "選択された本はライブラリーから削除され、ゴミ箱へ移動されます。"
 
-#: mcomix/library/book_area.py:804
+#: mcomix/library/book_area.py:845
 #, python-format
 msgid "Remove the bookmarks in the deleted book?"
 msgid_plural "Remove the bookmarks in the %(count)d deleted books?"

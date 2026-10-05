@@ -343,3 +343,76 @@ class TestNumberOfDigits(unittest.TestCase):
         """log10 of it would raise."""
         self.assertEqual(1, tools.number_of_digits(0))
         self.assertEqual(3, tools.number_of_digits(-120))
+
+
+def _gio_unix():
+    """GLib's GioUnix, where this GLib has it (2.80 on, not Windows)."""
+    try:
+        import gi
+        gi.require_version('GioUnix', '2.0')
+        from gi.repository import GioUnix
+    except (ImportError, ValueError):
+        return None
+    return GioUnix
+
+
+@unittest.skipIf(_gio_unix() is None, 'GLib has no GioUnix here')
+class TestTrashRefuses(unittest.TestCase):
+
+    """Whether GLib's trash will take a file, found out without trying:
+    a file in a folder bind-mounted from another partition was offered
+    to the trash, refused, and only then offered for deleting for good,
+    once the book had been closed."""
+
+    def setUp(self):
+        from test import real_trash_refuses
+        self.trash_refuses = real_trash_refuses
+        self.folder = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, self.folder)
+        self.path = os.path.join(self.folder, 'book.cbz')
+        with open(self.path, 'wb') as handle:
+            handle.write(b'not really a book')
+
+    def _mount_top(self):
+        top = self.folder
+        while not os.path.ismount(top):
+            top = os.path.dirname(top)
+        return top
+
+    def _elsewhere(self, entry):
+        """Put the home folder on another device, and have GLib find
+        <entry> as the mount the file is on."""
+        home = unittest.mock.patch.object(tools.GLib, 'get_home_dir',
+                                          return_value='/proc')
+        lookup = unittest.mock.patch.object(
+            _gio_unix(), 'mount_entry_at', return_value=(entry, 0))
+        return home, lookup
+
+    def test_a_file_on_the_home_folder_s_device_goes_to_its_trash(self):
+        with unittest.mock.patch.object(tools.GLib, 'get_home_dir',
+                                        return_value=self.folder):
+            self.assertFalse(self.trash_refuses(self.path))
+
+    def test_a_mount_glib_counts_as_internal_has_no_trash(self):
+        entry = unittest.mock.Mock()
+        entry.is_system_internal.return_value = True
+        home, lookup = self._elsewhere(entry)
+        with home, lookup as found:
+            self.assertTrue(self.trash_refuses(self.path))
+        found.assert_called_once_with(self._mount_top())
+
+    def test_any_other_mount_keeps_a_trash_of_its_own(self):
+        entry = unittest.mock.Mock()
+        entry.is_system_internal.return_value = False
+        home, lookup = self._elsewhere(entry)
+        with home, lookup:
+            self.assertFalse(self.trash_refuses(self.path))
+
+    def test_a_mount_glib_does_not_know_has_no_trash(self):
+        home, lookup = self._elsewhere(None)
+        with home, lookup:
+            self.assertTrue(self.trash_refuses(self.path))
+
+    def test_a_file_that_is_not_there_is_left_to_the_trash_to_refuse(self):
+        self.assertFalse(self.trash_refuses(
+            os.path.join(self.folder, 'gone.cbz')))

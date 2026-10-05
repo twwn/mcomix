@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 0.90.4\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-04 15:26+0200\n"
+"POT-Creation-Date: 2026-10-05 16:51+0200\n"
 "PO-Revision-Date: 2018-02-24 08:43+0100\n"
 "Last-Translator: Jonatan Nyberg <jonatan@autistici.org>\n"
 "Language-Team: Swedish <LL@li.org>\n"
@@ -60,8 +60,8 @@ msgstr "! Kunde inte läsa %s"
 
 #
 # File: src/comment.py, line: 53
-#: mcomix/archive_packer.py:176 mcomix/file_actions.py:1040
-#: mcomix/library/book_area.py:744
+#: mcomix/archive_packer.py:176 mcomix/file_actions.py:1059
+#: mcomix/library/book_area.py:782
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! Kunde inte ta bort %(file)s: %(error)s"
@@ -89,23 +89,26 @@ msgid "! Could not parse bookmarks file %s"
 msgstr "! Kunde inte parsa bokmärkesfil %s"
 
 #: mcomix/bookmark_backend.py:372 mcomix/message_dialog.py:28
+#: mcomix/library/book_area.py:714
 msgid "_Yes"
 msgstr "_Ja"
 
 #
 # File: src/ui.py, line: 69
 #: mcomix/bookmark_backend.py:373 mcomix/message_dialog.py:27
+#: mcomix/library/book_area.py:711
 msgid "_No"
 msgstr "_Nej"
 
 #
 # File: src/preferences.py, line: 230
 #: mcomix/bookmark_backend.py:374 mcomix/edit_dialog.py:59
-#: mcomix/file_actions.py:859 mcomix/file_actions.py:1023
+#: mcomix/file_actions.py:869 mcomix/file_actions.py:1042
 #: mcomix/file_chooser_base_dialog.py:187
 #: mcomix/file_chooser_base_dialog.py:192
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:32
+#: mcomix/library/book_area.py:711
 msgid "_Cancel"
 msgstr "_Avbryt"
 
@@ -214,7 +217,7 @@ msgstr "_Ta bort bokmärkena i den här boken..."
 msgid "_Edit Bookmarks..."
 msgstr "_Redigera bokmärken..."
 
-#: mcomix/bookmark_menu.py:197 mcomix/file_actions.py:1080
+#: mcomix/bookmark_menu.py:197 mcomix/file_actions.py:1099
 #, python-format
 msgid "Remove the bookmarks in \"%s\"?"
 msgstr "Ta bort bokmärkena i \"%s\"?"
@@ -468,7 +471,7 @@ msgstr "_Invertera bildfärger"
 msgid "Invert (negate) image colors."
 msgstr "Invertera (negera) bildfärgerna."
 
-#: mcomix/file_actions.py:303 mcomix/file_actions.py:1154
+#: mcomix/file_actions.py:303 mcomix/file_actions.py:1173
 msgid "A file of that name is there already."
 msgstr "Det finns redan en fil med det namnet där."
 
@@ -531,7 +534,7 @@ msgstr "Spara sidan som"
 msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! Kunde inte spara %(file)s till %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:822 mcomix/file_actions.py:1156
+#: mcomix/file_actions.py:822 mcomix/file_actions.py:1175
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "Det finns inte tillräckligt med plats där: filen är %s."
@@ -541,56 +544,61 @@ msgstr "Det finns inte tillräckligt med plats där: filen är %s."
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "Kunde inte spara \"%(file)s\" till \"%(directory)s\""
 
-#: mcomix/file_actions.py:857
+#: mcomix/file_actions.py:859
+msgid "There is no trash for this folder, so it cannot be restored."
+msgstr ""
+"Den här katalogen har ingen papperskorg, så filen kan inte återställas."
+
+#: mcomix/file_actions.py:867
 #, python-format
 msgid "Delete \"%s\"?"
 msgstr "Ta bort \"%s\"?"
 
-#: mcomix/file_actions.py:858
+#: mcomix/file_actions.py:868
 msgid "The file is moved to the trash."
 msgstr "Filen flyttas till papperskorgen."
 
-#: mcomix/file_actions.py:860
+#: mcomix/file_actions.py:870
 msgid "_Move to Trash"
 msgstr "_Flytta till papperskorgen"
 
-#: mcomix/file_actions.py:890
+#: mcomix/file_actions.py:900
+msgid "It does not go to the trash and cannot be restored."
+msgstr "Filen flyttas inte till papperskorgen och kan inte återställas."
+
+#: mcomix/file_actions.py:908
 #, python-format
 msgid "Delete \"%s\" permanently?"
 msgstr "Ta bort \"%s\" permanent?"
 
-#: mcomix/file_actions.py:891
-msgid "It does not go to the trash and cannot be restored."
-msgstr "Filen flyttas inte till papperskorgen och kan inte återställas."
-
-#: mcomix/file_actions.py:996
+#: mcomix/file_actions.py:1015
 #, python-format
 msgid "Could not move \"%s\" to the trash"
 msgstr "Kunde inte flytta \"%s\" till papperskorgen"
 
-#: mcomix/file_actions.py:1000 mcomix/library/book_area.py:754
+#: mcomix/file_actions.py:1019 mcomix/library/book_area.py:794
 #, python-format
 msgid "%d book could not be moved to the trash."
 msgid_plural "%d books could not be moved to the trash."
 msgstr[0] "Kunde inte flytta %d bok till papperskorgen."
 msgstr[1] "Kunde inte flytta %d böcker till papperskorgen."
 
-#: mcomix/file_actions.py:1004
+#: mcomix/file_actions.py:1023
 msgid "Delete it permanently instead? It cannot be restored."
 msgid_plural "Delete them permanently instead? They cannot be restored."
 msgstr[0] "Ta bort den permanent i stället? Den kan inte återställas."
 msgstr[1] "Ta bort dem permanent i stället? De kan inte återställas."
 
-#: mcomix/file_actions.py:1024
+#: mcomix/file_actions.py:1043 mcomix/library/book_area.py:713
 msgid "_Delete Permanently"
 msgstr "_Ta bort permanent"
 
-#: mcomix/file_actions.py:1055
+#: mcomix/file_actions.py:1074
 #, python-format
 msgid "Could not delete \"%s\""
 msgstr "Kunde inte ta bort \"%s\""
 
-#: mcomix/file_actions.py:1076
+#: mcomix/file_actions.py:1095
 #, python-format
 msgid "The file is gone, and its %d bookmark cannot be opened any more."
 msgid_plural ""
@@ -598,12 +606,12 @@ msgid_plural ""
 msgstr[0] "Filen är borta, och dess %d bokmärke kan inte längre öppnas."
 msgstr[1] "Filen är borta, och dess %d bokmärken kan inte längre öppnas."
 
-#: mcomix/file_actions.py:1150
+#: mcomix/file_actions.py:1169
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr "! Kunde inte flytta %(file)s till %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:1162
+#: mcomix/file_actions.py:1181
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "Kunde inte flytta \"%(file)s\" till \"%(directory)s\""
@@ -3548,17 +3556,25 @@ msgstr[1] "Tog bort %d böcker från biblioteket."
 
 #
 # File: src/library.py, line: 597
-#: mcomix/library/book_area.py:714
+#: mcomix/library/book_area.py:726 mcomix/library/book_area.py:734
 msgid "Remove books from the library?"
 msgstr "Ta bort böcker från biblioteket?"
 
-#: mcomix/library/book_area.py:715
+#: mcomix/library/book_area.py:727
+msgid ""
+"The selected books will be removed from the library. Any in a folder with no "
+"trash is deleted permanently and cannot be restored."
+msgstr ""
+"De valda böckerna tas bort från biblioteket. Böcker i en katalog utan "
+"papperskorg tas bort permanent och kan inte återställas."
+
+#: mcomix/library/book_area.py:735
 msgid ""
 "The selected books will be removed from the library and moved to the trash."
 msgstr ""
 "De valda böckerna tas bort från biblioteket och flyttas till papperskorgen."
 
-#: mcomix/library/book_area.py:804
+#: mcomix/library/book_area.py:845
 #, python-format
 msgid "Remove the bookmarks in the deleted book?"
 msgid_plural "Remove the bookmarks in the %(count)d deleted books?"

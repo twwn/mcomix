@@ -631,8 +631,73 @@ class DeleteFromDiskTest(MComixTest):
         self.assertIsNotNone(keeps, 'the dialog offers no way out')
         self.assertIs(dialog.get_default_widget(), keeps,
                       'Enter would delete the books')
-        self.assertTrue(deletes.has_css_class('destructive-action'),
+        self.assertTrue(deletes.has_css_class('suggested-action'),
                         'the deleting button is drawn as an ordinary one')
+        self.assertFalse(deletes.has_css_class('destructive-action'),
+                         'what goes to the trash is drawn as lost for good')
+
+    def _deletable(self):
+        path = os.path.join(self.tmp_dir, 'deletable.cbz')
+        with open(path, 'wb') as handle:
+            handle.write(b'not really a book')
+        self.area._covers.set_items([book_area._BookItem(_Book(1, path))])
+        self.area._covers.selection.select_all()
+        return path
+
+    def _asked_where_the_trash_refuses(self):
+        with unittest.mock.patch.object(book_area.tools, 'trash_refuses',
+                                        return_value=True):
+            self.area._completely_remove_book()
+            pump()
+        dialogs = self._dialogs()
+        self.assertEqual(1, len(dialogs), 'nothing asked before deleting')
+        return dialogs[0]
+
+    def test_where_the_trash_refuses_it_asks_to_delete_for_good(self):
+        """It asked to move the books to the trash, and offered to
+        delete them for good only once the trash had refused."""
+        self._deletable()
+        dialog = self._asked_where_the_trash_refuses()
+        self.assertEqual('The selected books will be removed from the '
+                         'library. Any in a folder with no trash is deleted '
+                         'permanently and cannot be restored.',
+                         dialog._secondary.get_text())
+        keeps = dialog.get_widget_for_response(Response.CANCEL)
+        deletes = dialog.get_widget_for_response(Response.OK)
+        self.assertEqual(('_Cancel', '_Delete Permanently'),
+                         (keeps.get_label(), deletes.get_label()))
+        self.assertIs(dialog.get_default_widget(), keeps,
+                      'Enter would delete the books')
+        self.assertTrue(deletes.has_css_class('destructive-action'))
+        self.assertIsNone(dialog.dialog_id,
+                          'the answer could be given for good')
+
+    def test_where_the_trash_refuses_yes_deletes_without_trying_it(self):
+        path = self._deletable()
+        dialog = self._asked_where_the_trash_refuses()
+        with unittest.mock.patch.object(book_area.tools, 'trash_refuses',
+                                        return_value=True), \
+                unittest.mock.patch.object(book_area.tools,
+                                           'move_to_trash') as trash:
+            dialog.get_widget_for_response(Response.OK).emit('clicked')
+            pump()
+        trash.assert_not_called()
+        self.assertFalse(os.path.exists(path))
+        self.assertEqual([], self._dialogs(),
+                         'a second question followed the first')
+        self.assertIn(path, self.library.recent.removed)
+
+    def test_a_remembered_yes_still_asks_where_the_trash_refuses(self):
+        """The answer given for good was to move books to the trash."""
+        prefs['stored dialog choices'][message_dialog.RememberedDialog
+                                       .LIBRARY_REMOVE_BOOK_FROM_DISK] = \
+            Response.YES
+        self.addCleanup(prefs['stored dialog choices'].pop,
+                        message_dialog.RememberedDialog
+                        .LIBRARY_REMOVE_BOOK_FROM_DISK)
+        path = self._deletable()
+        self._asked_where_the_trash_refuses()
+        self.assertTrue(os.path.isfile(path), 'the book went unasked')
 
 
     def test_a_book_that_could_not_be_deleted_from_disk_says_so(self):

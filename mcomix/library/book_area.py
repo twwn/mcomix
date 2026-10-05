@@ -698,16 +698,38 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
     def _completely_remove_book(self, *args: object) -> None:
         """Remove the currently selected books from the library and the
         hard drive, once the reader has said yes.
+
+        Where the trash will not take one of them, as GLib's will not
+        from a folder bind-mounted from another partition, the question
+        says so before anything is done, and asks to delete for good:
+        the answer to that is never remembered.
         """
+        permanently = any(tools.trash_refuses(item.path)
+                          for item in self._selected_items())
+        if permanently:
+            choice_dialog = message_dialog.MessageDialog(
+                self._library, buttons=Gtk.ButtonsType.NONE)
+            self._library.main_window.file_actions \
+                .add_delete_permanently_buttons(choice_dialog)
+            choice_dialog.set_text(
+                _('Remove books from the library?'),
+                _('The selected books will be removed from the library. '
+                  'Any in a folder with no trash is deleted permanently '
+                  'and cannot be restored.'))
+            choice_dialog.run_async(lambda response: self._remove_answered(
+                Response.YES if response == Response.OK else Response.NO,
+                permanently=True))
+            return
         choice_dialog = message_dialog.MessageDialog(
             self._library, buttons=Gtk.ButtonsType.YES_NO)
-        # These books are deleted from the disk, so Enter must not
-        # be what does it; the button that does is drawn as the
-        # destructive action it is.
+        # These books are deleted from the disk, so Enter must not be
+        # what does it.  They go to the trash, from where they can be
+        # restored, so the button that does it is the suggested action
+        # rather than the destructive red of deleting for good.
         choice_dialog.set_default_response(Response.NO)
         deletes = choice_dialog.get_widget_for_response(Response.YES)
         if deletes is not None:
-            deletes.add_css_class('destructive-action')
+            deletes.add_css_class('suggested-action')
         choice_dialog.set_should_remember_choice(
             message_dialog.RememberedDialog.LIBRARY_REMOVE_BOOK_FROM_DISK)
         choice_dialog.set_text(
@@ -717,8 +739,14 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         )
         choice_dialog.run_async(self._remove_answered)
 
-    def _remove_answered(self, response: int) -> None:
-        """Delete the selected books once the confirmation has come back."""
+    def _remove_answered(self, response: int,
+                         permanently: bool = False) -> None:
+        """Delete the selected books once the confirmation has come back.
+
+        <permanently> says the reader was asked to delete for good the
+        books the trash will not take, and those are not offered to the
+        trash first.
+        """
         # the user has told us they definitely want to delete the book
         if response == Response.YES:
 
@@ -729,6 +757,18 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
             # Remove books from library
             self._remove_books_from_library()
 
+            file_actions = self._library.main_window.file_actions
+            kept: list[str] = []
+            if permanently:
+                for_good = [path for path in paths
+                            if tools.trash_refuses(path)]
+                deleted = file_actions.delete_files_permanently(
+                    for_good, parent=self._library)
+                kept = [path for path in for_good if path not in deleted]
+                trashed = [path for path in paths if path not in for_good]
+            else:
+                trashed = paths
+
             # Into the trash.  A file that will not go - one on a file
             # system with no trash, inside a directory that cannot be
             # written to - was logged and nothing more, and the book had
@@ -736,7 +776,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
             # was gone while it was still there.  It is offered to be
             # deleted permanently instead, as the window's delete does.
             refused: dict[str, str] = {}
-            for book_path in paths:
+            for book_path in trashed:
                 try:
                     tools.move_to_trash(book_path)
                 except GLib.Error as error:
@@ -744,21 +784,24 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
                     log.error(_('! Could not remove %(file)s: %(error)s'),
                               {'file': book_path, 'error': error.message})
             if not refused:
-                self._books_deleted(paths)
+                self._books_deleted([path for path in paths
+                                     if path not in kept])
                 return
 
             def answered(deleted: list[str]) -> None:
-                kept = [path for path in refused if path not in deleted]
-                if kept:
+                not_trashed = [path for path in refused
+                               if path not in deleted]
+                if not_trashed:
                     message = i18n.get_translation().ngettext(
                         '%d book could not be moved to the trash.',
                         '%d books could not be moved to the trash.',
-                        len(kept))
-                    self._library.set_status_message(message % len(kept))
+                        len(not_trashed))
+                    self._library.set_status_message(
+                        message % len(not_trashed))
                 self._books_deleted([path for path in paths
-                                     if path not in kept])
+                                     if path not in kept + not_trashed])
 
-            self._library.main_window.file_actions.offer_to_delete_permanently(
+            file_actions.offer_to_delete_permanently(
                 refused, answered, parent=self._library)
 
     def _books_deleted(self, gone: "Sequence[str]") -> None:

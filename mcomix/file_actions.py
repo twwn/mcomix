@@ -849,6 +849,16 @@ class FileActions:
         if current_file is None:
             # The menu entry is insensitive without a file open.
             return
+        if tools.trash_refuses(current_file):
+            # Offering the trash for a file it will not take only puts
+            # a second question after the first, once the book has
+            # already been closed: the question is the one Shift+Delete
+            # asks, as a file browser asks it, saying why.
+            self._ask_to_delete_permanently(
+                current_file,
+                _('There is no trash for this folder, so it cannot be '
+                  'restored.'))
+            return
         dialog = message_dialog.MessageDialog(
                 self._window, modal=True, buttons=Gtk.ButtonsType.NONE)
         dialog.set_should_remember_choice(
@@ -858,13 +868,14 @@ class FileActions:
                 _('The file is moved to the trash.'))
         dialog.add_button(_('_Cancel'), Response.CANCEL)
         dialog.add_button(_('_Move to Trash'), Response.OK)
-        # Enter must not delete a file.  A confirmation defaults to the
-        # answer that changes nothing, and the one that does not is
-        # drawn as the destructive action it is.
+        # Enter must not delete a file, so a confirmation defaults to
+        # the answer that changes nothing.  What can be taken back out
+        # of the trash is drawn as the suggested action, apart from the
+        # destructive red of deleting for good.
         dialog.set_default_response(Response.CANCEL)
-        deletes = dialog.get_widget_for_response(Response.OK)
-        if deletes is not None:
-            deletes.add_css_class('destructive-action')
+        trashes = dialog.get_widget_for_response(Response.OK)
+        if trashes is not None:
+            trashes.add_css_class('suggested-action')
         dialog.run_async(lambda response: self._delete_answered(response, current_file))
 
     def delete_permanently(self, *args: object) -> None:
@@ -884,20 +895,26 @@ class FileActions:
         current_file = self._window.imagehandler.get_real_path()
         if current_file is None:
             return
+        self._ask_to_delete_permanently(
+            current_file,
+            _('It does not go to the trash and cannot be restored.'))
+
+    def _ask_to_delete_permanently(self, path: str, why: str) -> None:
+        """Ask whether to delete <path> for good, saying <why> it does
+        not go to the trash, and delete it if the answer is yes."""
         dialog = message_dialog.MessageDialog(
             self._window, modal=True, buttons=Gtk.ButtonsType.NONE)
         dialog.set_text(
-            _('Delete "%s" permanently?') % os.path.basename(current_file),
-            _('It does not go to the trash and cannot be restored.'))
-        self._add_delete_permanently_buttons(dialog)
+            _('Delete "%s" permanently?') % os.path.basename(path), why)
+        self.add_delete_permanently_buttons(dialog)
         dialog.run_async(lambda response: self._delete_answered(
-            response, current_file, self._remove_permanently))
+            response, path, self._remove_permanently))
 
     def _remove_permanently(self, path: str,
                             then: "Callable[[], None]") -> None:
         """Delete <path> for good, then run <then>."""
         if os.path.isfile(path):
-            self._delete_permanently([path])
+            self.delete_files_permanently([path])
         then()
 
     def _delete_answered(
@@ -960,7 +977,9 @@ class FileActions:
 
         Where the trash will not take the file, the reader is offered to
         delete it permanently instead, and <then> runs once that has
-        been answered.
+        been answered.  delete() asks that up front wherever
+        tools.trash_refuses() foresees the refusal, so this is for one
+        it did not, such as a mount whose trash folder cannot be made.
         """
         if not os.path.isfile(path):
             then()
@@ -1006,18 +1025,18 @@ class FileActions:
             len(refused))
         reasons = '\n'.join(dict.fromkeys(refused.values()))
         dialog.set_text(title, '%s\n\n%s' % (reasons, question))
-        self._add_delete_permanently_buttons(dialog)
+        self.add_delete_permanently_buttons(dialog)
 
         def answered(response: int) -> None:
             deleted = []
             if response == Response.OK:
-                deleted = self._delete_permanently(list(refused), parent)
+                deleted = self.delete_files_permanently(list(refused), parent)
             then(deleted)
 
         dialog.run_async(answered)
 
     @staticmethod
-    def _add_delete_permanently_buttons(
+    def add_delete_permanently_buttons(
             dialog: message_dialog.MessageDialog) -> None:
         """Cancel, the default, and the destructive Delete Permanently."""
         dialog.add_button(_('_Cancel'), Response.CANCEL)
@@ -1027,8 +1046,9 @@ class FileActions:
         if deletes is not None:
             deletes.add_css_class('destructive-action')
 
-    def _delete_permanently(self, paths: "Iterable[str]",
-                            parent: "Gtk.Window | None" = None) -> list[str]:
+    def delete_files_permanently(self, paths: "Iterable[str]",
+                                 parent: "Gtk.Window | None" = None
+                                 ) -> list[str]:
         """Delete <paths> for good, say which could not be, and return
         those that were."""
         deleted = []
