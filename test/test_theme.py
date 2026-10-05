@@ -408,7 +408,7 @@ class LibadwaitaColoursTest(MComixTest):
 def _border_nodes(window, colours=False):
     """Every border node painted when <window> is drawn, as the widths of
     its four sides - how an outline comes out of the renderer - or, with
-    <colours>, as the colours of its four sides."""
+    <colours>, as those widths paired with the colours of the sides."""
     if gi.version_info < (3, 48):
         raise unittest.SkipTest('PyGObject %s cannot read render nodes'
                                 % gi.__version__)
@@ -423,8 +423,9 @@ def _border_nodes(window, colours=False):
             return
         kind = node.get_node_type()
         if kind == Gsk.RenderNodeType.BORDER_NODE:
-            found.append(tuple(node.get_colors()) if colours
-                         else tuple(node.get_widths()))
+            widths = tuple(node.get_widths())
+            found.append((widths, tuple(node.get_colors())) if colours
+                         else widths)
         if kind == Gsk.RenderNodeType.CONTAINER_NODE:
             for index in range(node.get_n_children()):
                 walk(node.get_child(index))
@@ -495,8 +496,11 @@ class PageMarkTest(MComixTest):
         """Delete takes it out of the book for good, and the button that
         deletes for good is red; the outline was the accent's blue."""
         window = self._drawn(theme.PICKED_OUT_CLASS)
-        sides = [side for node in _border_nodes(window, colours=True)
-                 for side in node if side.alpha > 0]
+        # The outline's own width: on Windows the window's decorations
+        # draw a border of their own, a pixel wide and nearly clear.
+        sides = [side for widths, colours in _border_nodes(window,
+                                                           colours=True)
+                 if widths == (4, 4, 4, 4) for side in colours]
         self.assertTrue(sides, 'nothing outlined the page')
         for side in sides:
             self.assertGreater(side.red, 0.6, side.to_string())
