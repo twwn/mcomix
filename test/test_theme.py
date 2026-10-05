@@ -405,9 +405,10 @@ class LibadwaitaColoursTest(MComixTest):
 # vim: expandtab:sw=4:ts=4
 
 
-def _border_nodes(window):
+def _border_nodes(window, colours=False):
     """Every border node painted when <window> is drawn, as the widths of
-    its four sides - how an outline comes out of the renderer."""
+    its four sides - how an outline comes out of the renderer - or, with
+    <colours>, as the colours of its four sides."""
     if gi.version_info < (3, 48):
         raise unittest.SkipTest('PyGObject %s cannot read render nodes'
                                 % gi.__version__)
@@ -422,7 +423,8 @@ def _border_nodes(window):
             return
         kind = node.get_node_type()
         if kind == Gsk.RenderNodeType.BORDER_NODE:
-            found.append(tuple(node.get_widths()))
+            found.append(tuple(node.get_colors()) if colours
+                         else tuple(node.get_widths()))
         if kind == Gsk.RenderNodeType.CONTAINER_NODE:
             for index in range(node.get_n_children()):
                 walk(node.get_child(index))
@@ -454,7 +456,8 @@ class PageMarkTest(MComixTest):
     it, and a page picked out looked like any other.
     """
 
-    def test_a_picked_out_page_is_outlined_whatever_the_colour_scheme(self):
+    def _drawn(self, *classes):
+        """A window holding a page with <classes>, drawn."""
         from gi.repository import Gdk as _Gdk
         prefs['colour scheme'] = theme.SYSTEM
         theme.follow_theme()
@@ -464,19 +467,38 @@ class PageMarkTest(MComixTest):
                 b'\xff' * 64), 16)
         picture.set_paintable(texture)
         picture.set_size_request(40, 40)
-        picture.add_css_class(theme.PICKED_OUT_CLASS)
+        for css_class in classes:
+            picture.add_css_class(css_class)
         window = Gtk.Window()
         window.set_child(picture)
         window.set_default_size(60, 60)
         window.present()
-        try:
-            self.assertTrue(_border_nodes(window),
-                            'nothing outlined the page')
-        finally:
-            window.destroy()
-            # Off the display again: it is shared by every test that
-            # runs after this one in the same worker.
-            if theme._marks is not None:
-                Gtk.StyleContext.remove_provider_for_display(
-                    _Gdk.Display.get_default(), theme._marks)
-                theme._marks = None
+        self.addCleanup(self._take_down, window)
+        return window
+
+    @staticmethod
+    def _take_down(window):
+        from gi.repository import Gdk as _Gdk
+        window.destroy()
+        # Off the display again: it is shared by every test that runs
+        # after this one in the same worker.
+        if theme._marks is not None:
+            Gtk.StyleContext.remove_provider_for_display(
+                _Gdk.Display.get_default(), theme._marks)
+            theme._marks = None
+
+    def test_a_picked_out_page_is_outlined_whatever_the_colour_scheme(self):
+        window = self._drawn(theme.PICKED_OUT_CLASS)
+        self.assertTrue(_border_nodes(window), 'nothing outlined the page')
+
+    def test_a_picked_out_page_is_outlined_in_red(self):
+        """Delete takes it out of the book for good, and the button that
+        deletes for good is red; the outline was the accent's blue."""
+        window = self._drawn(theme.PICKED_OUT_CLASS)
+        sides = [side for node in _border_nodes(window, colours=True)
+                 for side in node if side.alpha > 0]
+        self.assertTrue(sides, 'nothing outlined the page')
+        for side in sides:
+            self.assertGreater(side.red, 0.6, side.to_string())
+            self.assertLess(side.green, 0.4, side.to_string())
+            self.assertLess(side.blue, 0.4, side.to_string())

@@ -17,7 +17,7 @@ The archive on disk is untouched until the changes are written.
 - CTRL+SHIFT and a click marks a page, drawn with a dashed outline; the next such click swaps the two. Clicking the marked page again unmarks it.
   In double page mode, the same keys drag one page onto the other.
 - "Delete page", in the page's menu, removes that page; "Edit → Undo" puts it back.
-- CTRL and a click picks a page out (outlined, in the thumbnails too); again puts it back.
+- CTRL and a click picks a page out (outlined in red, in the thumbnails too); again puts it back.
   Escape, or "Put back pages picked out" in the Edit and page menus, puts back all of them.
   Delete removes every page picked out, and opens the archive editor with them selected.
 

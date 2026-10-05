@@ -88,9 +88,17 @@ picture.mcomix-selected-page, picture.mcomix-marked-page {
     outline-offset: -4px;
 }
 
-/* What tells the two apart at a glance, the rest being shared: the
-   page marked to be swapped is dashed.  A page can be both at once,
-   and is then drawn dashed, since this comes second. */
+/* What tells the two apart at a glance, the rest being shared.  A page
+   picked out is one Delete takes out of the book for good, so it is in
+   the red of the button that deletes for good, and the same twice over
+   for a theme without the colour.  The page marked to be swapped is
+   dashed.  A page can be both at once, and is then drawn red and
+   dashed. */
+picture.mcomix-selected-page {
+    outline-color: rgb(224, 27, 36);
+    outline-color: @destructive_bg_color;
+}
+
 picture.mcomix-marked-page {
     outline-style: dashed;
 }
