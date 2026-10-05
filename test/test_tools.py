@@ -3,8 +3,10 @@ import os
 import shutil
 import sys
 import tempfile
+import types
 import unittest
 import unittest.mock
+import warnings
 
 from mcomix import tools
 
@@ -345,24 +347,17 @@ class TestNumberOfDigits(unittest.TestCase):
         self.assertEqual(3, tools.number_of_digits(-120))
 
 
-def _gio_unix():
-    """GLib's GioUnix, where this GLib has it (2.80 on, not Windows)."""
-    try:
-        import gi
-        gi.require_version('GioUnix', '2.0')
-        from gi.repository import GioUnix
-    except (ImportError, ValueError):
-        return None
-    return GioUnix
-
-
-@unittest.skipIf(_gio_unix() is None, 'GLib has no GioUnix here')
+@unittest.skipIf(sys.platform == 'win32', 'Windows foresees no refusal')
 class TestTrashRefuses(unittest.TestCase):
 
     """Whether GLib's trash will take a file, found out without trying:
     a file in a folder bind-mounted from another partition was offered
     to the trash, refused, and only then offered for deleting for good,
-    once the book had been closed."""
+    once the book had been closed.
+
+    GLib is stood in for by both shapes its calls have had, so that the
+    test does not depend on the GLib it runs on: the floors job's, 2.80,
+    has only the names 2.84 deprecated."""
 
     def setUp(self):
         from test import real_trash_refuses
@@ -379,40 +374,74 @@ class TestTrashRefuses(unittest.TestCase):
             top = os.path.dirname(top)
         return top
 
-    def _elsewhere(self, entry):
-        """Put the home folder on another device, and have GLib find
-        <entry> as the mount the file is on."""
-        home = unittest.mock.patch.object(tools.GLib, 'get_home_dir',
-                                          return_value='/proc')
-        lookup = unittest.mock.patch.object(
-            _gio_unix(), 'mount_entry_at', return_value=(entry, 0))
-        return home, lookup
-
-    def test_a_file_on_the_home_folder_s_device_goes_to_its_trash(self):
-        with unittest.mock.patch.object(tools.GLib, 'get_home_dir',
-                                        return_value=self.folder):
-            self.assertFalse(self.trash_refuses(self.path))
-
-    def test_a_mount_glib_counts_as_internal_has_no_trash(self):
+    @staticmethod
+    def _entry():
+        """A mount entry, as GLib 2.84 hands one over."""
         entry = unittest.mock.Mock()
         entry.is_system_internal.return_value = True
-        home, lookup = self._elsewhere(entry)
-        with home, lookup as found:
-            self.assertTrue(self.trash_refuses(self.path))
-        found.assert_called_once_with(self._mount_top())
+        return entry
+
+    @staticmethod
+    def _glib(entry, old=False, internal=True):
+        """GioUnix as GLib 2.84 has it, or as 2.80 to 2.83 had it."""
+        if old:
+            return types.SimpleNamespace(
+                mount_at=unittest.mock.Mock(return_value=(entry, 0)),
+                mount_is_system_internal=unittest.mock.Mock(
+                    return_value=internal))
+        return types.SimpleNamespace(
+            mount_entry_at=unittest.mock.Mock(return_value=(entry, 0)))
+
+    def _refuses(self, glib, home='/proc'):
+        """Ask about the file with <glib> as GioUnix, and the home
+        folder at <home>: /proc is never the file's device."""
+        with unittest.mock.patch.object(tools, '_gio_unix',
+                                        return_value=glib), \
+                unittest.mock.patch.object(tools.GLib, 'get_home_dir',
+                                           return_value=home):
+            return self.trash_refuses(self.path)
+
+    def test_a_file_on_the_home_folder_s_device_goes_to_its_trash(self):
+        glib = self._glib(self._entry())
+        self.assertFalse(self._refuses(glib, home=self.folder))
+        glib.mount_entry_at.assert_not_called()
+
+    def test_a_mount_glib_counts_as_internal_has_no_trash(self):
+        glib = self._glib(self._entry())
+        self.assertTrue(self._refuses(glib))
+        glib.mount_entry_at.assert_called_once_with(self._mount_top())
 
     def test_any_other_mount_keeps_a_trash_of_its_own(self):
-        entry = unittest.mock.Mock()
+        entry = self._entry()
         entry.is_system_internal.return_value = False
-        home, lookup = self._elsewhere(entry)
-        with home, lookup:
-            self.assertFalse(self.trash_refuses(self.path))
+        self.assertFalse(self._refuses(self._glib(entry)))
 
     def test_a_mount_glib_does_not_know_has_no_trash(self):
-        home, lookup = self._elsewhere(None)
-        with home, lookup:
-            self.assertTrue(self.trash_refuses(self.path))
+        self.assertTrue(self._refuses(self._glib(None)))
+
+    def test_glib_before_2_84_is_asked_by_the_old_names(self):
+        entry = object()
+        glib = self._glib(entry, old=True)
+        self.assertTrue(self._refuses(glib))
+        glib.mount_at.assert_called_once_with(self._mount_top())
+        glib.mount_is_system_internal.assert_called_once_with(entry)
+        self.assertFalse(self._refuses(
+            self._glib(entry, old=True, internal=False)))
+        self.assertTrue(self._refuses(self._glib(None, old=True)))
+
+    def test_without_gio_unix_nothing_is_foreseen(self):
+        self.assertFalse(self._refuses(None))
 
     def test_a_file_that_is_not_there_is_left_to_the_trash_to_refuse(self):
-        self.assertFalse(self.trash_refuses(
-            os.path.join(self.folder, 'gone.cbz')))
+        self.path = os.path.join(self.folder, 'gone.cbz')
+        self.assertFalse(self._refuses(self._glib(self._entry())))
+
+    def test_the_glib_installed_here_answers_without_a_warning(self):
+        """The calls themselves, on whichever GLib this is: a name it
+        does not have, or one it deprecates, shows up here."""
+        glib = tools._gio_unix()
+        if glib is None:
+            self.skipTest('GLib has no GioUnix here')
+        with warnings.catch_warnings():
+            warnings.simplefilter('error')
+            self.assertIsInstance(tools._mount_has_no_trash(glib, '/'), bool)

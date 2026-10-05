@@ -11,6 +11,7 @@ import os
 import re
 import sys
 import tempfile
+import types
 from functools import reduce
 from collections.abc import Collection, Iterable, Iterator, Mapping, Sequence
 from typing import Any, IO, Protocol, TypeVar
@@ -204,13 +205,8 @@ def trash_refuses(path: str) -> bool:
     made, still raises from move_to_trash(); where the rule cannot be
     read - on Windows, or a GLib older than 2.80 - nothing is foreseen.
     """
-    if sys.platform == 'win32':
-        return False
-    try:
-        import gi
-        gi.require_version('GioUnix', '2.0')
-        from gi.repository import GioUnix
-    except (ImportError, ValueError):
+    gio_unix = _gio_unix()
+    if gio_unix is None:
         return False
     try:
         device = os.lstat(path).st_dev
@@ -223,8 +219,36 @@ def trash_refuses(path: str) -> bool:
             top = parent
     except OSError:
         return False
-    entry, _changed = GioUnix.mount_entry_at(top)
-    return entry is None or entry.is_system_internal()
+    return _mount_has_no_trash(gio_unix, top)
+
+
+def _gio_unix() -> "types.ModuleType | None":
+    """GLib's GioUnix, where there is one: GLib 2.80 on, not Windows."""
+    if sys.platform == 'win32':
+        return None
+    try:
+        import gi
+        gi.require_version('GioUnix', '2.0')
+        from gi.repository import GioUnix
+    except (ImportError, ValueError):
+        return None
+    return GioUnix
+
+
+def _mount_has_no_trash(gio_unix: types.ModuleType, top: str) -> bool:
+    """Whether GLib keeps no trash on the mount at <top>.
+
+    GLib 2.84 renamed the calls that say so, g_unix_mount_at() to
+    g_unix_mount_entry_at() and so on, and the old names warn as
+    deprecated from then on; 2.80 to 2.83, Ubuntu 24.04's among them,
+    have only the old ones.  A mount GLib does not know of has no trash
+    either.
+    """
+    if hasattr(gio_unix, 'mount_entry_at'):
+        entry, _changed = gio_unix.mount_entry_at(top)
+        return entry is None or bool(entry.is_system_internal())
+    entry, _changed = gio_unix.mount_at(top)
+    return entry is None or bool(gio_unix.mount_is_system_internal(entry))
 
 
 def format_byte_size(n: int) -> str:
