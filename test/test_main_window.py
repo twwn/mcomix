@@ -1424,6 +1424,59 @@ class MainWindowTest(MComixTest):
         self.assertEqual(self._delete_dialogs(), [],
                          'the button did not close the message')
 
+    def test_turning_down_the_offer_leaves_the_book_open(self):
+        """The book was closed, and the next one opened, before the
+        trash had been tried: turning the offer down kept the file but
+        not the place in it."""
+        later = os.path.join(self.tmp_dir, 'Next.cbz')
+        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), later)
+        source = self._movable_book()
+        self.window.set_page(3)
+        self._pump()
+        dialog = self._refused_by_the_trash(source)
+        self.assertEqual(self.window.filehandler.get_path_to_base(), source,
+                         'the book was left before the answer')
+        dialog.get_widget_for_response(Response.CANCEL).emit('clicked')
+        self._pump()
+        self.assertEqual(self.window.filehandler.get_path_to_base(), source)
+        self.assertEqual(self.window.imagehandler.get_current_page(), 3)
+
+    def test_taking_the_offer_opens_the_next_archive(self):
+        later = os.path.join(self.tmp_dir, 'Next.cbz')
+        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), later)
+        source = self._movable_book()
+        dialog = self._refused_by_the_trash(source)
+        dialog.get_widget_for_response(Response.OK).emit('clicked')
+        self._pump()
+        self.assertFalse(os.path.exists(source))
+        self.assertEqual(self.window.filehandler.get_path_to_base(), later)
+
+    def test_deleting_an_archive_opens_the_next_in_its_folder(self):
+        later = os.path.join(self.tmp_dir, 'Next.cbz')
+        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), later)
+        source = self._movable_book()
+        self.window.file_actions._delete_answered(Response.OK, source)
+        self._pump()
+        self.assertFalse(os.path.exists(source))
+        self.assertEqual(self.window.filehandler.get_path_to_base(), later)
+
+    def test_deleting_the_last_archive_opens_the_one_before(self):
+        earlier = os.path.join(self.tmp_dir, 'Earlier.cbz')
+        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'),
+                    earlier)
+        source = self._movable_book()
+        self.window.file_actions._delete_answered(Response.OK, source)
+        self._pump()
+        self.assertFalse(os.path.exists(source))
+        self.assertEqual(self.window.filehandler.get_path_to_base(), earlier)
+
+    def test_deleting_the_only_archive_closes_it(self):
+        source = self._movable_book()
+        self.window.file_actions._delete_answered(Response.OK, source)
+        self._pump()
+        self.assertFalse(os.path.exists(source))
+        self.assertFalse(self.window.filehandler.file_loaded)
+
     def test_taking_the_offer_deletes_the_file_and_forgets_it(self):
         source = self._movable_book()
         dialog = self._refused_by_the_trash(source)

@@ -12,6 +12,7 @@ popup menu was opened over, and for nothing else.
 import errno
 import os
 import shutil
+import sys
 
 from gi.repository import GLib, Gtk
 
@@ -924,44 +925,37 @@ class FileActions:
         """Delete <current_file> if the confirmation came back positive.
 
         <remove> takes the file away and then runs what it is given;
-        moving it to the trash, unless another is named.
+        moving it to the trash, unless another is named.  The book is
+        left only once its file is gone: where the trash refuses it and
+        the reader turns down deleting it for good, they are still
+        reading it, on the page they were on.
         """
+        if result != Response.OK:
+            return
         remove = remove or self._trash
-        if result == Response.OK:
-            # The file is going, and with it whatever was waiting to be
-            # written into it: nothing below is to stop and offer to
-            # write the book back over an archive about to be deleted.
-            self.forget_changes()
-            # Go to next page/archive, and delete current file
-            if self._window.filehandler.archive_type is not None:
-                self._window.filehandler.last_read_page.clear_page(current_file)
+        if sys.platform == 'win32':
+            # Windows neither trashes nor deletes a file that is open,
+            # and the extractor holds the archive open until every
+            # member is out.
+            self._window.filehandler.release_archive()
+        remove(current_file, lambda: self._leave_deleted(current_file))
 
-                next_opened = self._window.filehandler.open_next_archive()
-                if not next_opened:
-                    next_opened = self._window.filehandler.open_previous_archive()
-                if not next_opened:
-                    self._window.filehandler.close_file()
-
-                remove(current_file,
-                       lambda: self._file_deleted(current_file))
-            else:
-                if self._window.imagehandler.get_number_of_pages() > 1:
-                    # Open the next/previous file
-                    if self._window.imagehandler.get_current_page() >= self._window.imagehandler.get_number_of_pages():
-                        self._window.flip_page(-1)
-                    else:
-                        self._window.flip_page(+1)
-
-                    def refresh() -> None:
-                        """List the directory again, without the file."""
-                        self._window.filehandler.refresh_file()
-                        self._file_deleted(current_file)
-
-                    remove(current_file, refresh)
-                else:
-                    self._window.filehandler.close_file()
-                    remove(current_file,
-                           lambda: self._file_deleted(current_file))
+    def _leave_deleted(self, path: str) -> None:
+        """Go on from the book whose file was at <path>, if it is gone:
+        to the file nearest to it in its folder, the next or else the
+        one before, or nowhere where there is none."""
+        if os.path.exists(path):
+            return
+        # Whatever was waiting to be written into the file went with
+        # it: nothing is to offer to write the book back over it.
+        self.forget_changes()
+        nearest = self._window.filehandler.nearest_in_folder(
+            os.path.abspath(path))
+        if nearest is None:
+            self._window.filehandler.close_file()
+        else:
+            self._window.filehandler.open_file(nearest, keep_fileprovider=True)
+        self._file_deleted(path)
 
     def _file_deleted(self, path: str) -> None:
         """Forget <path> wherever MComix kept it, if it is gone."""

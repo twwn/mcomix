@@ -43,6 +43,7 @@ The archive on disk is untouched until the changes are written.
 - Each offer can be answered for good, and that answer also stands on the way out. Take it back under "Prompts answered for good" in the preferences.
 - Nothing is asked when every change was undone, or when MComix deleted the archive.
 - Deleting the open file takes it out of the recent files and the library. Bookmarks in it are asked about first.
+- Once the file is gone, the next one in its folder opens, or the last one. A file that could not be deleted stays open, on the same page.
 
 ## Saved archives
 

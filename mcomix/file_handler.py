@@ -154,7 +154,7 @@ class FileHandler:
             current_file = os.path.abspath(real_path)
             start_member = None
             if not os.path.exists(current_file):
-                nearest = self._nearest_in_folder(current_file)
+                nearest = self.nearest_in_folder(current_file)
                 if nearest is not None:
                     self.open_file(nearest, keep_fileprovider=True)
                     return
@@ -169,7 +169,7 @@ class FileHandler:
             self.open_file(current_file, start_page, keep_fileprovider=True,
                            start_member=start_member)
 
-    def _nearest_in_folder(self, gone: str) -> str | None:
+    def nearest_in_folder(self, gone: str) -> str | None:
         """The file of the open book's kind that is nearest to <gone> in
         its folder's order, or None where there is none."""
         mode = (file_provider.FileProvider.ARCHIVES
