@@ -9,7 +9,17 @@ from mcomix import constants
 from mcomix.preferences import prefs
 from mcomix.i18n import _
 
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
+
+
+def join_pages(texts: Iterable[str]) -> str:
+    """One field from the values of the two pages of a double page,
+    in the order they are given.
+
+    A middle dot rather than a comma: the date has a comma of its own,
+    and two dates joined by another read as four parts.
+    """
+    return ' \u00b7 '.join(texts)
 
 
 def format_page_number(pages: Sequence[int], total: int) -> str:
@@ -232,7 +242,7 @@ class Statusbar(Gtk.Box, widgets.Releasable):
         scale and whether scaling was done irrespective of aspect ratio,
         resulting in a distorted image.
         """
-        self._resolution = ', '.join(
+        self._resolution = join_pages(
             '%dx%d (%.1f%%%s)' % (width, height, scale * 100.0,
                                   '*' if distorted else '')
             for width, height, scale, distorted in dimensions)

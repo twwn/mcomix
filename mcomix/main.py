@@ -696,7 +696,7 @@ class MainWindow(Gtk.Window):
                 return info
             if self.is_manga_mode:
                 info = (info[1], info[0])
-            return ", ".join(info)
+            return status.join_pages(info)
 
         filename = make_status(self.imagehandler.get_page_filename(double=double))
         filesize = make_status(self.imagehandler.get_page_filesize(double=double))
@@ -726,7 +726,7 @@ class MainWindow(Gtk.Window):
             if modified is not None:
                 dates.append(time.strftime('%Y-%m-%d, %H:%M:%S',
                                            time.localtime(modified)))
-        return ', '.join(dates)
+        return status.join_pages(dates)
 
     def arrive_at_end(self, page: int) -> None:
         """Note that the book was opened at <page>, its last but one, to

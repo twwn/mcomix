@@ -85,6 +85,14 @@ class StatusbarTextTest(MComixTest):
         self.bar.update()
         self.assertEqual('1 / 10', self._text())
 
+    def test_the_two_pages_of_a_field_are_parted_by_a_dot(self):
+        """Not by a comma, which the date has one of: two dates read as
+        "2024-05-01, 12:00:00, 2024-05-02, 12:00:00"."""
+        self.bar.set_resolution(((800, 600, 1.0, False),
+                                 (640, 480, 0.5, False)))
+        self.assertEqual('800x600 (100.0%) \u00b7 640x480 (50.0%)',
+                         self.bar._resolution)
+
     def test_the_page_field_lists_the_pages_in_the_order_it_was_given(self):
         """The pages on screen are handed over in reading order, which
         is right to left in manga mode, so the field lists them as they

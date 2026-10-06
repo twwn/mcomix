@@ -1309,10 +1309,10 @@ class MainWindowTest(MComixTest):
         for day, path in enumerate(paths, 1):
             when = time.mktime((2024, 5, day, 12, 0, 0, 0, 0, -1))
             os.utime(path, (when, when))
-        self.assertEqual('2024-05-01, 12:00:00, 2024-05-02, 12:00:00',
+        self.assertEqual('2024-05-01, 12:00:00 \u00b7 2024-05-02, 12:00:00',
                          self.window._modified_status(True))
         self.window.is_manga_mode = True
-        self.assertEqual('2024-05-02, 12:00:00, 2024-05-01, 12:00:00',
+        self.assertEqual('2024-05-02, 12:00:00 \u00b7 2024-05-01, 12:00:00',
                          self.window._modified_status(True))
 
     def _counter_in_fullscreen(self, wanted):
@@ -3936,7 +3936,7 @@ class MainWindowTest(MComixTest):
             self.assertEqual('3,2 / 4', self.window.statusbar.get_page_number())
             self.assertIn('[3,2 / 4]', self.window.get_title())
             self.assertEqual(
-                ', '.join(reversed(
+                ' \u00b7 '.join(reversed(
                     [os.path.basename(self.window.imagehandler
                                       .get_path_to_page(page))
                      for page in (2, 3)])),
