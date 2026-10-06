@@ -450,7 +450,7 @@ class AnArchiveThatCannotBeListedTest(_WindowTest):
         message = 'Could not read %s' % os.path.basename(path)
         shown.assert_called_once_with(message)
         self.assertEqual(message,
-                         self.window.statusbar.status.get_text().strip())
+                         self.window.statusbar.message.get_text())
         # Nothing claims to be open: no Close, no page menus.
         self.assertFalse(self.handler.file_loaded)
         self.assertEqual(0, self.window.imagehandler.get_number_of_pages())

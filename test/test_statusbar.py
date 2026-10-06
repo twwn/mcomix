@@ -2,16 +2,25 @@
 
 The bar used to hold a Gtk.Statusbar, deprecated as of GTK 4.10, whose
 message stack it never used: every write popped context 0 and pushed the
-whole line back. These pin the text a label now carries.
+whole line back.  It then was one label joining the fields with "|",
+and now is a label per field.  These pin what the labels carry.
 """
 
 from gi.repository import Gtk
 
-from . import MComixTest, pump
+from . import MComixTest, pump, wait_for
 
 from mcomix import constants
 from mcomix import status
 from mcomix.preferences import prefs
+
+
+def shown_text(bar):
+    """What <bar> shows: its message, or its fields joined by " | "."""
+    if bar.message.get_visible():
+        return bar.message.get_text()
+    return ' | '.join(field.get_text() for field in bar._fields.values()
+                      if field.get_visible())
 
 
 class StatusbarTextTest(MComixTest):
@@ -29,7 +38,7 @@ class StatusbarTextTest(MComixTest):
         super().tearDown()
 
     def _text(self):
-        return self.bar.status.get_text().strip()
+        return shown_text(self.bar)
 
     def test_a_message_is_shown_as_it_was_given(self):
         self.bar.set_message('Could not open the archive')
@@ -115,3 +124,100 @@ class StatusbarHeightTest(MComixTest):
             bar.update()
             heights.add(bar.measure(Gtk.Orientation.VERTICAL, -1)[1])
         self.assertEqual(1, len(heights), heights)
+
+
+class StatusbarLayoutTest(MComixTest):
+
+    """Where the fields stand.  Joined into one line, every field moved
+    whenever one before it changed width: the page number gaining a
+    digit, a shorter file name moving the size after it, and the
+    interface font's digits are not all as wide as one another."""
+
+    def setUp(self):
+        super().setUp()
+        prefs['statusbar fields'] = (constants.STATUS_PAGE
+                                     | constants.STATUS_FILENAME
+                                     | constants.STATUS_FILESIZE)
+        self.bar = status.Statusbar()
+        self.window = Gtk.Window()
+        self.window.set_default_size(900, -1)
+        self.window.set_child(self.bar)
+        self.window.present()
+        self.bar.set_root('Book.cbz')
+
+    def tearDown(self):
+        self.window.destroy()
+        super().tearDown()
+
+    def _show(self, pages, filename, size='1.2 MiB'):
+        self.bar.set_page_number(pages, 120)
+        self.bar.set_filename(filename)
+        self.bar.set_filesize(size)
+        self.bar.update()
+        self.assertTrue(wait_for(self._laid_out, seconds=5))
+
+    def _laid_out(self):
+        """Whether every field shown has been given the room it asks
+        for, which happens at the next frame."""
+        return all(
+            field.get_width() == field.measure(
+                Gtk.Orientation.HORIZONTAL, -1)[1]
+            for field in self.bar._fields.values() if field.get_visible())
+
+    def _x(self, bit):
+        found, bounds = self.bar._fields[bit].compute_bounds(self.bar)
+        self.assertTrue(found)
+        return bounds.get_x()
+
+    def test_a_page_number_with_more_digits_moves_nothing(self):
+        places = set()
+        for page in (1, 9, 10, 88, 111):
+            self._show([page], 'page.jpg')
+            places.add(self._x(constants.STATUS_FILENAME))
+        self.assertEqual(1, len(places), places)
+
+    def test_a_shorter_file_name_does_not_move_the_size(self):
+        places = set()
+        for filename in ('a very long file name of a page.jpg', 'p.jpg',
+                         'a very long file name of a page.jpg'):
+            self._show([1], filename)
+            places.add(self._x(constants.STATUS_FILESIZE))
+        self.assertEqual(1, len(places), places)
+
+    def test_another_book_lets_go_of_the_room_held(self):
+        self._show([1], 'a very long file name of a page.jpg')
+        self._show([1], 'p.jpg')
+        held = self._x(constants.STATUS_FILESIZE)
+        self.bar.set_root('Another book.cbz')
+        self._show([1], 'p.jpg')
+        self.assertLess(self._x(constants.STATUS_FILESIZE), held)
+
+    def test_one_separator_stands_between_each_two_fields(self):
+        self._show([1], 'page.jpg', size='')
+        separators = [bit for bit, separator in self.bar._separators.items()
+                      if separator.get_visible()]
+        self.assertEqual([constants.STATUS_FILENAME], separators)
+
+    def test_the_bar_does_not_hold_the_window_wide(self):
+        """Each field gives way where the window is narrower than the
+        bar, as the one line did."""
+        prefs['statusbar fields'] = 127
+        self.bar.set_resolution(((1200, 1800, 0.453, False),))
+        self.bar.set_date('2024-05-06, 07:08:09')
+        self.bar.set_page_number([1], 120)
+        self.bar.set_filename('a very long file name of a page.jpg')
+        self.bar.update()
+        minimum, natural = self.bar.measure(Gtk.Orientation.HORIZONTAL, -1)[:2]
+        self.assertLess(minimum, natural / 2)
+
+    def test_every_digit_is_as_wide_as_any_other(self):
+        """In the interface font "1111" was 24 pixels wide and "8888"
+        37, so a number grew and shrank as its digits changed."""
+        field = self.bar._fields[constants.STATUS_PAGE]
+        field.set_visible(True)
+        widths = set()
+        for text in ('1111', '8888', '0000'):
+            field.set_text(text)
+            widths.add(field.measure(Gtk.Orientation.HORIZONTAL, -1)[1])
+            field.let_go()
+        self.assertEqual(1, len(widths), widths)

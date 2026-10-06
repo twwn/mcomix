@@ -21,32 +21,112 @@ def format_page_number(pages: Sequence[int], total: int) -> str:
     return '%s / %d' % (','.join('%d' % page for page in pages), total)
 
 
+class _Field(Gtk.Label):
+
+    """One field of the status bar.
+
+    It asks for at least the room of the widest text it has been told
+    to hold, so that a page whose number, size or name is shorter than
+    the last one's does not move the fields after it.  It only asks:
+    where the window is too narrow for the whole bar, it gives way and
+    is ellipsized.
+    """
+
+    __gtype_name__ = 'MComixStatusField'
+
+    def __init__(self, name: bool, tabular: bool) -> None:
+        """A field holding a <name>, cut short in the middle where it
+        does not fit so that its end stays, or a number, aligned to its
+        end so that the digits that change are the ones that move;
+        <tabular> gives every digit the same width."""
+        super().__init__()
+        if tabular:
+            attributes = Pango.AttrList()
+            attributes.insert(Pango.attr_font_features_new('tnum=1'))
+            self.set_attributes(attributes)
+        self.set_xalign(0 if name else 1)
+        self.set_ellipsize(Pango.EllipsizeMode.MIDDLE if name
+                           else Pango.EllipsizeMode.END)
+        self._held = 0
+
+    def hold(self, text: str) -> None:
+        """Keep room for <text>, from now until let_go()."""
+        layout = self.create_pango_layout(text)
+        layout.set_attributes(self.get_attributes())
+        width = layout.get_pixel_size()[0]
+        if width > self._held:
+            self._held = width
+            self.queue_resize()
+
+    def let_go(self) -> None:
+        """Forget the room held, for a book whose texts are new."""
+        if self._held:
+            self._held = 0
+            self.queue_resize()
+
+    def do_measure(self, orientation: Gtk.Orientation,
+                   for_size: int) -> tuple[int, int, int, int]:
+        minimum, natural, minimum_baseline, natural_baseline = (
+            Gtk.Label.do_measure(self, orientation, for_size))
+        if orientation == Gtk.Orientation.HORIZONTAL:
+            natural = max(natural, self._held)
+        return minimum, natural, minimum_baseline, natural_baseline
+
+
 class Statusbar(Gtk.Box, widgets.Releasable):
 
     """The status bar along the bottom of the window.
 
-    It was a Gtk.EventBox, which existed so that a widget without a window
-    of its own could receive button events.  GTK4 has no such thing:
-    every widget can take events, through a controller.
+    One label per field, rather than one line joining them with "|":
+    the line moved every field after one whose text changed width, and
+    cut off the last fields first where it was too long.  Each field
+    now keeps the width of the widest text it has shown in the book,
+    and the window gives way in the longest of them.
     """
 
-    SPACING = 5
+    #: The room, in pixels, at either end of the bar and either side
+    #: of a separator.
+    SPACING = 16
 
     def __init__(self) -> None:
         super().__init__()
 
         self._loading = True
 
-        # Status text, page number, file number, resolution, path, filename, filesize
-        # Gtk.Statusbar is deprecated as of GTK 4.10, and its message stack
-        # was never used here: every write popped context 0 and pushed the
-        # whole line back. A label says the same thing.
-        self.status = Gtk.Label()
-        self.status.set_xalign(0)
-        self.status.set_hexpand(True)
-        self.status.set_ellipsize(Pango.EllipsizeMode.END)
-        self.status.connect('realize', self._keep_one_height)
-        self.append(self.status)
+        # Gtk.Statusbar is deprecated as of GTK 4.10, and its message
+        # stack was never used here.  A message, such as an error,
+        # takes the place of the fields until they are next updated.
+        self.message = Gtk.Label()
+        self.message.set_xalign(0)
+        self.message.set_hexpand(True)
+        self.message.set_ellipsize(Pango.EllipsizeMode.END)
+        self.message.set_margin_start(self.SPACING)
+        self.message.set_margin_end(self.SPACING)
+        self.message.set_visible(False)
+        self.append(self.message)
+
+        #: The label of each field, and the separator before it, by
+        #: the field's bit.
+        self._fields: dict[int, _Field] = {}
+        self._separators: dict[int, Gtk.Separator] = {}
+        fields = Gtk.Box()
+        fields.set_hexpand(True)
+        fields.set_margin_start(self.SPACING)
+        fields.set_margin_end(self.SPACING)
+        for name, label, bit in self.FIELDS:
+            separator = Gtk.Separator(orientation=Gtk.Orientation.VERTICAL)
+            separator.set_margin_start(self.SPACING)
+            separator.set_margin_end(self.SPACING)
+            separator.set_visible(False)
+            fields.append(separator)
+            self._separators[bit] = separator
+            field = _Field(name in self._NAMES, name in self._TABULAR)
+            field.set_visible(False)
+            fields.append(field)
+            self._fields[bit] = field
+        self._field_box = fields
+        self.append(fields)
+        self.connect('realize', self._keep_one_height)
 
         # Create popup menu for enabling/disabling status boxes.
         #: The action behind each field's tick, by field name.  Kept
@@ -64,7 +144,10 @@ class Statusbar(Gtk.Box, widgets.Releasable):
 
         # Default status information
         self._page_info = ''
+        #: The widest text the page field can hold in this book.
+        self._page_widest = ''
         self._file_info = ''
+        self._file_widest = ''
         self._resolution = ''
         self._root = ''
         self._filename = ''
@@ -82,8 +165,8 @@ class Statusbar(Gtk.Box, widgets.Releasable):
     #: measured for the height every line of the status bar is given.
     _TALLEST_LINE = 'Ag \u6f22\u5b57 \ud55c\uae00 \u0639\u0631\u0628\u064a'
 
-    def _keep_one_height(self, label: Gtk.Label) -> None:
-        """Make the status line as tall as its tallest script needs.
+    def _keep_one_height(self, bar: Gtk.Widget) -> None:
+        """Make the status bar as tall as its tallest script needs.
 
         Pango takes a character the interface font lacks from a fallback
         font, whose lines can be taller: a file name in Japanese or
@@ -91,8 +174,8 @@ class Statusbar(Gtk.Box, widgets.Releasable):
         area above it moved and rescaled the page at every file whose
         name was in another script (upstream bug 148).
         """
-        layout = label.create_pango_layout(self._TALLEST_LINE)
-        label.set_size_request(-1, layout.get_pixel_size()[1])
+        layout = bar.create_pango_layout(self._TALLEST_LINE)
+        bar.set_size_request(-1, layout.get_pixel_size()[1])
 
     def release(self) -> None:
         """Let go of the field actions once the window has closed.
@@ -105,14 +188,19 @@ class Statusbar(Gtk.Box, widgets.Releasable):
         self._field_toggles.clear()
 
     def set_message(self, message: str) -> None:
-        """Set a specific message (such as an error message) on the statusbar,
-        replacing whatever was there earlier.
+        """Show <message> (such as an error message) in place of the
+        fields, replacing whatever was there earlier.
         """
-        self.status.set_text(" " * Statusbar.SPACING + message)
+        self.message.set_text(message)
+        self.message.set_visible(True)
+        self._field_box.set_visible(False)
 
     def set_page_number(self, pages: Sequence[int], total: int) -> None:
         """Update the page number, from the pages on screen."""
         self._page_info = format_page_number(pages, total)
+        # Every digit is as wide as any other, so the widest number of
+        # this many pages is the total's.
+        self._page_widest = format_page_number([total] * len(pages), total)
 
     def get_page_number(self) -> str:
         """Returns the bar's page information."""
@@ -123,8 +211,9 @@ class Statusbar(Gtk.Box, widgets.Releasable):
         files loaded)."""
         if total > 0:
             self._file_info = '(%d / %d)' % (fileno, total)
+            self._file_widest = '(%d / %d)' % (total, total)
         else:
-            self._file_info = ''
+            self._file_info = self._file_widest = ''
 
     def get_file_number(self) -> str:
         """ Returns the bar's file information."""
@@ -146,8 +235,16 @@ class Statusbar(Gtk.Box, widgets.Releasable):
             for width, height, scale, distorted in dimensions)
 
     def set_root(self, root: str) -> None:
-        """Set the name of the root (directory or archive)."""
-        self._root = i18n.to_display_string(i18n.to_unicode(root))
+        """Set the name of the root (directory or archive).
+
+        Another root is another book, whose fields hold widths of their
+        own.
+        """
+        root = i18n.to_display_string(i18n.to_unicode(root))
+        if root != self._root:
+            for field in self._fields.values():
+                field.let_go()
+        self._root = root
 
     def set_filename(self, filename: str) -> None:
         """Update the filename."""
@@ -170,36 +267,36 @@ class Statusbar(Gtk.Box, widgets.Releasable):
 
     def update(self) -> None:
         """Set the statusbar to display the current state."""
-
-        space = " " * Statusbar.SPACING
+        self.message.set_visible(False)
+        self._field_box.set_visible(True)
+        widest = {constants.STATUS_PAGE: self._page_widest,
+                  constants.STATUS_FILENUMBER: self._file_widest}
         # Only the fields that have something to say: before a book is
         # open none of them has, and the bar was a row of bare
         # separators; a file whose size is not known left one in the
         # middle of the line.
-        text = (space + "|" + space).join(
-            field for field in self._get_status_text() if field)
-        self.status.set_text(space + text)
+        shown_before = False
+        for bit, text in self._field_texts():
+            field = self._fields[bit]
+            shown = bool(prefs['statusbar fields'] & bit and text)
+            field.set_text(text if shown else '')
+            field.set_visible(shown)
+            self._separators[bit].set_visible(shown and shown_before)
+            if shown:
+                field.hold(text)
+                if bit in widest:
+                    field.hold(widest[bit])
+            shown_before = shown_before or shown
 
-    def _get_status_text(self) -> list[str]:
-        """ Returns an array of text fields that should be displayed. """
-        fields = []
-
-        if prefs['statusbar fields'] & constants.STATUS_PAGE:
-            fields.append(self._page_info)
-        if prefs['statusbar fields'] & constants.STATUS_FILENUMBER:
-            fields.append(self._file_info)
-        if prefs['statusbar fields'] & constants.STATUS_RESOLUTION:
-            fields.append(self._resolution)
-        if prefs['statusbar fields'] & constants.STATUS_PATH:
-            fields.append(self._root)
-        if prefs['statusbar fields'] & constants.STATUS_FILENAME:
-            fields.append(self._filename)
-        if prefs['statusbar fields'] & constants.STATUS_FILESIZE:
-            fields.append(self._filesize)
-        if prefs['statusbar fields'] & constants.STATUS_DATE:
-            fields.append(self._date)
-
-        return fields
+    def _field_texts(self) -> list[tuple[int, str]]:
+        """The text of every field, by its bit, in the bar's order."""
+        return [(constants.STATUS_PAGE, self._page_info),
+                (constants.STATUS_FILENUMBER, self._file_info),
+                (constants.STATUS_RESOLUTION, self._resolution),
+                (constants.STATUS_PATH, self._root),
+                (constants.STATUS_FILENAME, self._filename),
+                (constants.STATUS_FILESIZE, self._filesize),
+                (constants.STATUS_DATE, self._date)]
 
     #: The fields the popup offers, and the bit each one stands for.
     FIELDS = (('pagenumber', _('Show page numbers'), constants.STATUS_PAGE),
@@ -209,6 +306,15 @@ class Statusbar(Gtk.Box, widgets.Releasable):
               ('filename', _('Show filename'), constants.STATUS_FILENAME),
               ('filesize', _('Show filesize'), constants.STATUS_FILESIZE),
               ('date', _('Show date modified'), constants.STATUS_DATE))
+
+    #: The fields that hold a name rather than a number.
+    _NAMES = ('rootpath', 'filename')
+    #: The fields whose digits are set all as wide as one another: in
+    #: the interface font "1111" was 24 pixels wide and "8888" 37, so
+    #: the page number grew and shrank as it counted.  Not the names
+    #: or the date: the font's tabular forms space out the hyphens and
+    #: colons too, and the date, last on the line, moves nothing.
+    _TABULAR = ('pagenumber', 'filenumber', 'resolution', 'filesize')
 
     def _create_fields_menu(self) -> Gtk.PopoverMenu:
         """Build the right-click menu that picks which fields are shown."""
