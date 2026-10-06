@@ -1215,6 +1215,17 @@ class MainWindowTest(MComixTest):
         self.assertEqual(self.window.imagehandler.get_current_page(), 2)
         self.assertEqual(self.window.selected_pages, set())
 
+    def test_a_plain_click_turns_no_page_where_that_is_turned_off(self):
+        """A click to focus the window or to take hold of the page
+        turned it (upstream patch 53).  SHIFT and a click is asked for
+        on purpose, and still turns."""
+        prefs['flip with click'] = False
+        pages = len(self._ready())
+        self._click()
+        self.assertEqual(1, self._page())
+        self._button(1, Gdk.ModifierType.SHIFT_MASK)
+        self.assertEqual(min(11, pages), self._page())
+
     def test_a_click_that_raises_the_window_does_not_turn_the_page(self):
         """The focus comes back before the click that brought it, and
         the release was told apart from a page turn by where the press

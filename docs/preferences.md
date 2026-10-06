@@ -37,6 +37,7 @@ Option | Explanation
 -------|------------
 Use smart scrolling | Space and the mouse wheel follow a comic page's reading order: sideways, down, sideways again. A page that cannot scroll sideways, as in "Fit to width", scrolls down only.
 Flip pages when scrolling off the edges of the page | Scrolling past a page's end, with the wheel or the arrow keys, turns it.
+Flip pages with a left click | A left click on the page turns to the next one. Off, it does nothing; SHIFT+LeftMouse and ALT+RightMouse still turn pages.
 Skip pages that cannot be shown | Turn past a page that is damaged or unreadable, the way you were going, instead of showing the broken-image icon. Past the last page that can be shown, a turn opens the next book, as from the last page. The thumbnail bar leaves them out once their thumbnails are made. Off by default. In double page mode its partner is shown alone.
 Number of pixels to scroll per arrow key press | 50 by default.
 Number of pixels to scroll per mouse wheel turn | 50 by default.

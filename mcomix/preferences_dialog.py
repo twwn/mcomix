@@ -236,6 +236,11 @@ class _PreferencesDialog(Dialog):
             _('Flip pages when scrolling "off the page" with the scroll wheel or with the arrow keys. It takes n consecutive "steps" with the scroll wheel or the arrow keys for the pages to be flipped.')))
 
         page.add_row(self._create_pref_check_button(
+            _('Flip pages with a left click'),
+            'flip with click',
+            _('A left click on the page turns to the next one. Clicks with SHIFT or ALT turn pages either way.')))
+
+        page.add_row(self._create_pref_check_button(
             _('Skip pages that cannot be shown'),
             'skip broken pages',
             _('Turn past a page whose image is damaged or cannot be read, instead of showing the broken-image icon in its place.')))

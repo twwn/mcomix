@@ -757,7 +757,7 @@ class EventHandler:
                     self._window.select_page(self._window.page_at(x, y))
                 elif state & Gdk.ModifierType.SHIFT_MASK:
                     self._flip_page(10)
-                else:
+                elif prefs['flip with click']:
                     self._flip_page(1)
 
             elif self._is_swap_gesture(state) \
