@@ -271,6 +271,12 @@ class _PreferencesDialog(Dialog):
                          1, 1, 100, 1, 3, 0,
                          _('Set the number of "steps" needed to flip to the next or previous page.  Less steps will allow for very fast page turning but you might find yourself accidentally turning pages.')))
 
+        page.add_row(Gtk.Label(label=_('Milliseconds to ignore the wheel after it turns a page:')),
+                     self._create_pref_spinner(
+                         'wheel pause after page turn',
+                         1, 0, 2000, 50, 250, 0,
+                         _('Keeps a fast wheel from turning several pages at once. 0 ignores nothing.')))
+
         page.new_section(_('Between books'))
 
         page.add_row(self._create_pref_check_button(

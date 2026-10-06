@@ -36,6 +36,11 @@ class EventHandler:
         self._extra_scroll_events = 0
         #: If True, increment _extra_scroll_events before switching pages
         self._scroll_protection = False
+        #: Page turns so far, which tells a wheel event that turned one.
+        self._turns = 0
+        #: The event time, in milliseconds, of the last wheel event that
+        #: turned the page.
+        self._wheel_turned_at: int | None = None
 
     def register_controllers(self, window: 'main.MainWindow',
                              page_area: Gtk.Widget) -> None:
@@ -629,6 +634,17 @@ class EventHandler:
         if state & Gdk.ModifierType.BUTTON2_MASK:
             return Gdk.EVENT_PROPAGATE
 
+        # A wheel that spins on by itself turned page after page.  The
+        # times are the events' own rather than the clock's, so that the
+        # turns queued up while the new page was loading are ignored as
+        # well; they wrap round every 49 days.
+        when = controller.get_current_event_time()
+        pause = prefs['wheel pause after page turn']
+        if pause and self._wheel_turned_at is not None \
+                and (when - self._wheel_turned_at) % 2**32 < pause:
+            return Gdk.EVENT_STOP
+        turns = self._turns
+
         self._scroll_protection = True
         pixels = prefs['number of pixels to scroll per mouse wheel event']
 
@@ -652,6 +668,8 @@ class EventHandler:
             # is scroll_with_flipping()'s to work out.
             self.scroll_with_flipping(pixels if delta_x > 0 else -pixels, 0)
 
+        if self._turns != turns:
+            self._wheel_turned_at = when
         return Gdk.EVENT_STOP
 
     def mouse_press_event(self, gesture: Gtk.GestureClick, n_press: int,
@@ -1023,6 +1041,7 @@ class EventHandler:
         one.
         """
         self._extra_scroll_events = 0
+        self._turns += 1
         self._window.flip_page(number_of_pages, single_step=single_step)
 
     def _left_right_page_progress(self, number_of_pages: int = 1,

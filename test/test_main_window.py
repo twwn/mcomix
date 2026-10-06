@@ -905,11 +905,15 @@ class MainWindowTest(MComixTest):
         else; the deltas arrive as arguments.
         """
 
-        def __init__(self, state=0):
+        def __init__(self, state=0, time=0):
             self._state = state
+            self._time = time
 
         def get_current_event_state(self):
             return self._state
+
+        def get_current_event_time(self):
+            return self._time
 
     #: A motion controller tells a handler the same as a scroll one.
     _Motion = _Scroll
@@ -1119,6 +1123,40 @@ class MainWindowTest(MComixTest):
         pixels = prefs['number of pixels to scroll per mouse wheel event']
         self.assertEqual([('scroll_with_flipping', (0, pixels))],
                          self._wheel_dispatch(1, 1))
+
+    def _wheel_turns(self, times):
+        """How many of the wheel turns down at event <times> turned the
+        page, on a page with nothing left to scroll."""
+        prefs['smart scroll'] = False
+        turned = []
+        with unittest.mock.patch.object(
+                self.window, 'flip_page',
+                side_effect=lambda pages, **kwargs: turned.append(pages)), \
+                unittest.mock.patch.object(self.window, 'scroll',
+                                           return_value=False), \
+                unittest.mock.patch.object(self.window, 'is_scrollable',
+                                           return_value=False):
+            for when in times:
+                self.window.event_handler.scroll_wheel_event(
+                    self._Scroll(time=when), 0, 1)
+        return len(turned)
+
+    def test_the_wheel_is_ignored_for_a_moment_after_it_turns_the_page(self):
+        """A wheel that spins on by itself turned page after page
+        (upstream bug 36)."""
+        prefs['wheel pause after page turn'] = 300
+        # 1000 turns, 1100 and 1299 are ignored, 1300 turns, 1350 is
+        # ignored, 1700 turns.
+        self.assertEqual(
+            3, self._wheel_turns((1000, 1100, 1299, 1300, 1350, 1700)))
+
+    def test_without_a_pause_every_turn_of_the_wheel_turns_the_page(self):
+        prefs['wheel pause after page turn'] = 0
+        self.assertEqual(4, self._wheel_turns((1000, 1001, 1002, 1003)))
+
+    def test_the_pause_holds_across_the_event_clock_wrapping_round(self):
+        prefs['wheel pause after page turn'] = 300
+        self.assertEqual(1, self._wheel_turns((2**32 - 100, 50)))
 
     def test_a_wheel_event_that_reports_no_movement_does_nothing(self):
         self.assertEqual([], self._wheel_dispatch(0, 0))

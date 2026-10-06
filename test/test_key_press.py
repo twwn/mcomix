@@ -395,10 +395,14 @@ class SmartScrollKeysTest(_ScrollablePageTest):
 
 class _Scroll:
 
-    """What a scroll controller tells the wheel handler: the modifiers."""
+    """What a scroll controller tells the wheel handler: the modifiers
+    and the time."""
 
     def get_current_event_state(self):
         return Gdk.ModifierType(0)
+
+    def get_current_event_time(self):
+        return 0
 
 
 class SidewaysWheelTest(_ScrollablePageTest):
