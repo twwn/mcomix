@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-06 16:39+0200\n"
+"POT-Creation-Date: 2026-10-06 16:41+0200\n"
 "PO-Revision-Date: 2006-09-27 10:18+0200\n"
 "Last-Translator: Paul Chatzidimitriou <paulmedic555@gmail.com>\n"
 "Language-Team: \n"
@@ -2054,10 +2054,12 @@ msgstr "Μέγιστος αριθμός ταυτόχρονων νημάτων α
 #: mcomix/preferences_dialog.py:419
 msgid ""
 "Set the maximum number of concurrent threads for formats that support it. A "
-"value of 0 uses one thread for each processor."
+"value of 0 uses one thread for each processor. For PDFs, 0 also keeps within "
+"a sixteenth of the memory."
 msgstr ""
 "Ορίζει τον μέγιστο αριθμό ταυτόχρονων νημάτων για τις μορφές που το "
-"υποστηρίζουν. Η τιμή 0 χρησιμοποιεί ένα νήμα για κάθε επεξεργαστή."
+"υποστηρίζουν. Η τιμή 0 χρησιμοποιεί ένα νήμα για κάθε επεξεργαστή. Για τα "
+"PDF, το 0 περιορίζεται επίσης στο ένα δέκατο έκτο της μνήμης."
 
 #: mcomix/preferences_dialog.py:421
 msgid "Maximum number of concurrent thumbnail threads:"
@@ -3744,6 +3746,13 @@ msgstr "Με τους υποκαταλόγους"
 #: mcomix/library/watchlist.py:81
 msgid "Automatically scan for new books when library is _opened"
 msgstr "Αυτόματη αναζήτηση νέων βιβλίων κατά το άν_οιγμα της βιβλιοθήκης"
+
+#~ msgid ""
+#~ "Set the maximum number of concurrent threads for formats that support it. "
+#~ "A value of 0 uses one thread for each processor."
+#~ msgstr ""
+#~ "Ορίζει τον μέγιστο αριθμό ταυτόχρονων νημάτων για τις μορφές που το "
+#~ "υποστηρίζουν. Η τιμή 0 χρησιμοποιεί ένα νήμα για κάθε επεξεργαστή."
 
 #~ msgid ""
 #~ "Set the maximum number of concurrent threads for formats that support it."

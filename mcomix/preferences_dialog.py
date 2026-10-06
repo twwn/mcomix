@@ -416,7 +416,7 @@ class _PreferencesDialog(Dialog):
                      self._create_pref_spinner(
                          'max extract threads',
                          1, 0, max_threads, 1, 4, 0,
-                         _('Set the maximum number of concurrent threads for formats that support it. A value of 0 uses one thread for each processor.')))
+                         _('Set the maximum number of concurrent threads for formats that support it. A value of 0 uses one thread for each processor. For PDFs, 0 also keeps within a sixteenth of the memory.')))
 
         page.add_row(Gtk.Label(label=_('Maximum number of concurrent thumbnail threads:')),
                      self._create_pref_spinner(

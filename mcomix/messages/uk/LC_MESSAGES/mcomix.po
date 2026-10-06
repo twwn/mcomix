@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-06 16:39+0200\n"
+"POT-Creation-Date: 2026-10-06 16:41+0200\n"
 "PO-Revision-Date: 2009-05-04 23:52+0300\n"
 "Last-Translator: Oleksandr Zaiats <ai@eth0.net.ua>\n"
 "Language-Team: \n"
@@ -1790,10 +1790,12 @@ msgstr "Найбільша кількість одночасних потокі�
 #: mcomix/preferences_dialog.py:419
 msgid ""
 "Set the maximum number of concurrent threads for formats that support it. A "
-"value of 0 uses one thread for each processor."
+"value of 0 uses one thread for each processor. For PDFs, 0 also keeps within "
+"a sixteenth of the memory."
 msgstr ""
 "Задає найбільшу кількість одночасних потоків для форматів, які це "
-"підтримують. Значення 0 задає один потік на кожен процесор."
+"підтримують. Значення 0 задає один потік на кожен процесор. Для PDF значення "
+"0 також не виходить за шістнадцяту частину пам'яті."
 
 #: mcomix/preferences_dialog.py:421
 msgid "Maximum number of concurrent thumbnail threads:"
@@ -3227,6 +3229,13 @@ msgstr "З підкаталогами"
 #: mcomix/library/watchlist.py:81
 msgid "Automatically scan for new books when library is _opened"
 msgstr "Автоматично шукати нові книжки при _відкритті бібліотеки"
+
+#~ msgid ""
+#~ "Set the maximum number of concurrent threads for formats that support it. "
+#~ "A value of 0 uses one thread for each processor."
+#~ msgstr ""
+#~ "Задає найбільшу кількість одночасних потоків для форматів, які це "
+#~ "підтримують. Значення 0 задає один потік на кожен процесор."
 
 #~ msgid ""
 #~ "Set the maximum number of concurrent threads for formats that support it."

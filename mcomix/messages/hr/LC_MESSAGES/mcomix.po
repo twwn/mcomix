@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: comix 4.0.1\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-06 16:39+0200\n"
+"POT-Creation-Date: 2026-10-06 16:41+0200\n"
 "PO-Revision-Date: 2008-12-13 18:00+0100\n"
 "Last-Translator: Adrian C. <anrxc@sysphere.org>\n"
 "Language-Team: Croatian\n"
@@ -2111,10 +2111,12 @@ msgstr "Najveći broj istodobnih dretvi raspakiravanja:"
 #: mcomix/preferences_dialog.py:419
 msgid ""
 "Set the maximum number of concurrent threads for formats that support it. A "
-"value of 0 uses one thread for each processor."
+"value of 0 uses one thread for each processor. For PDFs, 0 also keeps within "
+"a sixteenth of the memory."
 msgstr ""
 "Postavlja najveći broj istodobnih dretvi za formate koji to podržavaju. "
-"Vrijednost 0 koristi jednu dretvu za svaki procesor."
+"Vrijednost 0 koristi jednu dretvu za svaki procesor. Za PDF-ove se 0 također "
+"drži šesnaestine memorije."
 
 #
 # File: src/thumbremover.py, line: 65
@@ -3803,6 +3805,13 @@ msgstr "S poddirektorijima"
 #: mcomix/library/watchlist.py:81
 msgid "Automatically scan for new books when library is _opened"
 msgstr "Automatski traži nove knjige pri _otvaranju biblioteke"
+
+#~ msgid ""
+#~ "Set the maximum number of concurrent threads for formats that support it. "
+#~ "A value of 0 uses one thread for each processor."
+#~ msgstr ""
+#~ "Postavlja najveći broj istodobnih dretvi za formate koji to podržavaju. "
+#~ "Vrijednost 0 koristi jednu dretvu za svaki procesor."
 
 #~ msgid ""
 #~ "Set the maximum number of concurrent threads for formats that support it."

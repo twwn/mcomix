@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Comix 3.2\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-06 16:39+0200\n"
+"POT-Creation-Date: 2026-10-06 16:41+0200\n"
 "PO-Revision-Date: 2009-01-25 22:33+0100\n"
 "Last-Translator: Carles Escrig i Royo <simkin@ono.com>\n"
 "Language-Team: CA <gentoo@softcatala.net>\n"
@@ -2109,10 +2109,12 @@ msgstr "Nombre màxim de fils d'extracció concurrents:"
 #: mcomix/preferences_dialog.py:419
 msgid ""
 "Set the maximum number of concurrent threads for formats that support it. A "
-"value of 0 uses one thread for each processor."
+"value of 0 uses one thread for each processor. For PDFs, 0 also keeps within "
+"a sixteenth of the memory."
 msgstr ""
 "Estableix el nombre màxim de fils concurrents per als formats que ho "
-"admeten. Un valor de 0 fa servir un fil per a cada processador."
+"admeten. Un valor de 0 fa servir un fil per a cada processador. Per als PDF, "
+"0 també es limita a una setzena part de la memòria."
 
 #
 # File: src/thumbremover.py, line: 65
@@ -3808,6 +3810,13 @@ msgstr "Amb subdirectoris"
 #: mcomix/library/watchlist.py:81
 msgid "Automatically scan for new books when library is _opened"
 msgstr "Cerca automàticament llibres nous en _obrir la biblioteca"
+
+#~ msgid ""
+#~ "Set the maximum number of concurrent threads for formats that support it. "
+#~ "A value of 0 uses one thread for each processor."
+#~ msgstr ""
+#~ "Estableix el nombre màxim de fils concurrents per als formats que ho "
+#~ "admeten. Un valor de 0 fa servir un fil per a cada processador."
 
 #~ msgid ""
 #~ "Set the maximum number of concurrent threads for formats that support it."

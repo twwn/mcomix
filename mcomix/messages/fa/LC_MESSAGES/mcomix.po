@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: comix 3.6.4\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-06 16:39+0200\n"
+"POT-Creation-Date: 2026-10-06 16:41+0200\n"
 "PO-Revision-Date: 2008-05-21 12:40+0330\n"
 "Last-Translator: Meelad Zakaria <meelad@farsiweb.info>\n"
 "Language-Team: Persian \n"
@@ -2022,10 +2022,12 @@ msgstr "بیشینهٔ شمار رشته‌های هم‌زمان استخراج
 #: mcomix/preferences_dialog.py:419
 msgid ""
 "Set the maximum number of concurrent threads for formats that support it. A "
-"value of 0 uses one thread for each processor."
+"value of 0 uses one thread for each processor. For PDFs, 0 also keeps within "
+"a sixteenth of the memory."
 msgstr ""
 "بیشینهٔ شمار رشته‌های هم‌زمان را برای قالب‌هایی که پشتیبانی می‌کنند تعیین می‌کند. "
-"مقدار ۰ برای هر پردازنده یک رشته به کار می‌برد."
+"مقدار ۰ برای هر پردازنده یک رشته به کار می‌برد. برای PDF، مقدار ۰ از "
+"یک‌شانزدهم حافظه هم فراتر نمی‌رود."
 
 #: mcomix/preferences_dialog.py:421
 msgid "Maximum number of concurrent thumbnail threads:"
@@ -3681,6 +3683,13 @@ msgstr "همراه با زیرشاخه‌ها"
 #: mcomix/library/watchlist.py:81
 msgid "Automatically scan for new books when library is _opened"
 msgstr "پویش خودکار کتاب‌های تازه هنگام _گشودن کتاب‌خانه"
+
+#~ msgid ""
+#~ "Set the maximum number of concurrent threads for formats that support it. "
+#~ "A value of 0 uses one thread for each processor."
+#~ msgstr ""
+#~ "بیشینهٔ شمار رشته‌های هم‌زمان را برای قالب‌هایی که پشتیبانی می‌کنند تعیین "
+#~ "می‌کند. مقدار ۰ برای هر پردازنده یک رشته به کار می‌برد."
 
 #~ msgid ""
 #~ "Set the maximum number of concurrent threads for formats that support it."

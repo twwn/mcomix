@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-06 16:39+0200\n"
+"POT-Creation-Date: 2026-10-06 16:41+0200\n"
 "PO-Revision-Date: 2009-02-02 14:19+0100\n"
 "Last-Translator: Dariusz Jakoniuk <pipaceliny@gmail.com>\n"
 "Language-Team: \n"
@@ -2122,10 +2122,12 @@ msgstr "Maksymalna liczba równoczesnych wątków rozpakowywania:"
 #: mcomix/preferences_dialog.py:419
 msgid ""
 "Set the maximum number of concurrent threads for formats that support it. A "
-"value of 0 uses one thread for each processor."
+"value of 0 uses one thread for each processor. For PDFs, 0 also keeps within "
+"a sixteenth of the memory."
 msgstr ""
 "Ustawia maksymalną liczbę równoczesnych wątków dla formatów, które to "
-"obsługują. Wartość 0 używa jednego wątku na każdy procesor."
+"obsługują. Wartość 0 używa jednego wątku na każdy procesor. Dla plików PDF 0 "
+"mieści się też w jednej szesnastej pamięci."
 
 #
 # File: src/thumbremover.py, line: 65
@@ -3813,6 +3815,13 @@ msgstr "Z podkatalogami"
 #: mcomix/library/watchlist.py:81
 msgid "Automatically scan for new books when library is _opened"
 msgstr "Automatycznie szukaj nowych książek przy _otwarciu biblioteki"
+
+#~ msgid ""
+#~ "Set the maximum number of concurrent threads for formats that support it. "
+#~ "A value of 0 uses one thread for each processor."
+#~ msgstr ""
+#~ "Ustawia maksymalną liczbę równoczesnych wątków dla formatów, które to "
+#~ "obsługują. Wartość 0 używa jednego wątku na każdy procesor."
 
 #~ msgid ""
 #~ "Set the maximum number of concurrent threads for formats that support it."

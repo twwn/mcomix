@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-06 16:39+0200\n"
+"POT-Creation-Date: 2026-10-06 16:41+0200\n"
 "PO-Revision-Date: 2009-01-25 21:54+0100\n"
 "Last-Translator: Jan Nekvasil <jan.nekvasil@gmail.com>\n"
 "Language-Team: \n"
@@ -2106,10 +2106,12 @@ msgstr "Maximální počet souběžných vláken rozbalování:"
 #: mcomix/preferences_dialog.py:419
 msgid ""
 "Set the maximum number of concurrent threads for formats that support it. A "
-"value of 0 uses one thread for each processor."
+"value of 0 uses one thread for each processor. For PDFs, 0 also keeps within "
+"a sixteenth of the memory."
 msgstr ""
 "Nastaví maximální počet souběžných vláken pro formáty, které to podporují. "
-"Hodnota 0 použije jedno vlákno pro každý procesor."
+"Hodnota 0 použije jedno vlákno pro každý procesor. U PDF se 0 navíc drží v "
+"šestnáctině paměti."
 
 #
 # File: src/thumbremover.py, line: 65
@@ -3793,6 +3795,13 @@ msgstr "S podadresáři"
 #: mcomix/library/watchlist.py:81
 msgid "Automatically scan for new books when library is _opened"
 msgstr "Automaticky hledat nové knihy při _otevření knihovny"
+
+#~ msgid ""
+#~ "Set the maximum number of concurrent threads for formats that support it. "
+#~ "A value of 0 uses one thread for each processor."
+#~ msgstr ""
+#~ "Nastaví maximální počet souběžných vláken pro formáty, které to "
+#~ "podporují. Hodnota 0 použije jedno vlákno pro každý procesor."
 
 #~ msgid ""
 #~ "Set the maximum number of concurrent threads for formats that support it."
