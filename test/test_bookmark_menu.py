@@ -164,6 +164,17 @@ class BookmarksMenuTest(MComixTest):
             self.window.imagehandler.path = path
         self.store.add_current_to_bookmarks()
 
+    def test_books_of_one_name_are_listed_with_their_folders(self):
+        """Every chapter of a series kept a folder per volume was listed
+        as "chapter_01" (upstream feature request 90)."""
+        self._bookmark(3, '/comics/Series A/chapter_01.cbz')
+        self._bookmark(5, '/comics/Series B/chapter_01.cbz')
+        self.menu.refresh()
+        listed = self._sections()[-1]
+        self.assertEqual(
+            sorted(['Series A/book, (3 / 20)', 'Series B/book, (5 / 20)']),
+            sorted(label.replace('_', '') for label in listed))
+
     # -- A second bookmark in the same book --------------------------------
 
     def _pages(self):

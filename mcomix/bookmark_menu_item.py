@@ -59,9 +59,22 @@ class _Bookmark:
         self._window = None
         self._file_handler = None
 
-    def get_label(self) -> str:
-        """The text the menu shows for this bookmark."""
-        return str(self)
+    def get_label(self, folders: str = '') -> str:
+        """The text the menu shows for this bookmark, its name after
+        <folders>, the part of its folder that tells it apart from
+        another book of the same name."""
+        if not folders:
+            return str(self)
+        return '%s/%s, (%d / %d)' % (folders, self._name, self._page,
+                                     self._numpages)
+
+    def get_name(self) -> str:
+        """The book's name, as the bookmark shows it."""
+        return self._name
+
+    def get_path(self) -> str:
+        """The file the bookmark is in: the archive, or the picture."""
+        return self._path
 
     def get_icon_name(self) -> str:
         """The icon that goes with it: an archive, or a loose image."""

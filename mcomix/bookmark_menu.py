@@ -12,6 +12,7 @@ from mcomix import widgets
 from mcomix.i18n import _
 from mcomix.dialog import Response
 
+from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -111,9 +112,11 @@ class BookmarksMenu:
 
         if self._bookmarks:
             listed = Gio.Menu()
+            folders = telling_folders(self._bookmarks)
             for position, bookmark in enumerate(self._bookmarks):
                 entry = Gio.MenuItem.new(
-                    widgets.menu_label(bookmark.get_label()), None)
+                    widgets.menu_label(bookmark.get_label(folders[position])),
+                    None)
                 entry.set_action_and_target_value(
                     '%s.open' % self.ACTION_PREFIX, GLib.Variant('i', position))
                 listed.append_item(entry)
@@ -218,5 +221,44 @@ class BookmarksMenu:
         """
         widgets.simple_action(self._actions, 'add').set_enabled(loaded)
         self._update_remove()
+
+def telling_folders(
+        bookmarks: "Sequence[bookmark_menu_item._Bookmark]") -> list[str]:
+    """For each of <bookmarks>, the folders to show before its name.
+
+    Books are named by their file, and a series kept as one folder per
+    volume names every chapter alike: the menu listed "chapter_01" for
+    each of them (upstream feature request 90).  Where two books of one
+    name are in different places, each is given as many of the folders
+    it is in, the nearest last, as it takes to tell them apart; any
+    other bookmark is given none.  Bookmarks of one book, at different
+    pages, are told apart by their pages already.
+    """
+    folders = [''] * len(bookmarks)
+    by_name: dict[str, list[int]] = {}
+    for index, bookmark in enumerate(bookmarks):
+        by_name.setdefault(bookmark.get_name(), []).append(index)
+    for name, indices in by_name.items():
+        parents = {}
+        for index in indices:
+            path = os.path.normpath(bookmarks[index].get_path())
+            parts = os.path.dirname(path).split(os.sep)
+            # A bookmark in a folder of pictures is named after the
+            # folder, which is the last part already.
+            if parts and parts[-1] == name:
+                parts = parts[:-1]
+            parents[index] = [part for part in parts if part]
+        if len({tuple(parts) for parts in parents.values()}) < 2:
+            continue
+        depth = 1
+        deepest = max(len(parts) for parts in parents.values())
+        while depth < deepest:
+            shown = {tuple(parents[index][-depth:]) for index in indices}
+            if len(shown) == len({tuple(parts) for parts in parents.values()}):
+                break
+            depth += 1
+        for index in indices:
+            folders[index] = '/'.join(parents[index][-depth:])
+    return folders
 
 # vim: expandtab:sw=4:ts=4

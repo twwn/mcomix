@@ -95,6 +95,7 @@ No mode scales a small page up unless "View → Stretch small images" is on.
 - Picking an entry in "File → Recent" or the "Bookmarks" menu closes the book and opens the one picked.
 - A bookmark in the open book only turns to its page, keeping pages picked out and the undo history.
 - A bookmark finds its page by the page's file, wherever sorting the archive has put it.
+- Books of the same name in different folders are listed with as much of their folder as tells them apart: "Series A/chapter_01.cbz".
 - A middle click on an entry starts a second MComix on it, at the bookmark's page.
 - CTRL+D adds a bookmark; CTRL+B edits them.
 - "Bookmarks → Remove this book's bookmarks..." removes the open book's, after asking.
