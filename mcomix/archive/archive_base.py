@@ -24,6 +24,11 @@ class BaseArchive:
     #: The memory, in bytes, that each extraction thread costs besides
     #: the thread: 0, unless each thread drives a process of its own.
     extraction_thread_memory = 0
+    #: The program or Python module this handler needs, by the name the
+    #: reader would install it under; None for a format Python reads
+    #: itself.  Named to a reader whose MComix has no handler for an
+    #: archive.
+    helper: str | None = None
 
     def __init__(self, archive: str) -> None:
         assert isinstance(archive, str), "File should be an Unicode string."

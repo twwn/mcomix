@@ -207,3 +207,46 @@ class DescribeTest(MComixTest):
                 path = get_testfile_path('archives', name)
                 self.assertEqual(described, archive_tools.describe(
                     path, archive_tools.archive_mime_type(path)))
+
+
+class CannotOpenTest(MComixTest):
+    """What a reader is told about an archive that no installed handler
+    opens.  It said "Non-supported archive format" of a RAR on a system
+    with no unrar, which left them to guess what to install (upstream
+    forum topic d6af396b68)."""
+
+    def test_the_message_names_what_the_format_needs(self):
+        for name, said in (
+                ('04-7Z-Normal.7z',
+                 'Could not open 04-7Z-Normal.7z: it needs 7z.'),
+                ('03-RAR-Normal.rar',
+                 'Could not open 03-RAR-Normal.rar: it needs unrar or 7z.'),
+                ('Flat.lha', 'Could not open Flat.lha: it needs 7z or lha.')):
+            with self.subTest(name):
+                self.assertEqual(said, archive_tools.cannot_open(
+                    get_testfile_path('archives', name)))
+
+    def test_a_pdf_needs_pymupdf_or_mutool(self):
+        self.assertEqual(
+            'Could not open book.pdf: it needs PyMuPDF or mutool.',
+            archive_tools.cannot_open(os.path.join('nowhere', 'book.pdf'),
+                                      constants.PDF))
+
+    def test_a_file_of_no_known_format_is_said_to_be_unsupported(self):
+        path = os.path.join(self.tmp_dir, 'notes.txt')
+        with open(path, 'w') as fp:
+            fp.write('nothing an archive handler reads')
+        self.assertEqual('Non-supported archive format: notes.txt',
+                         archive_tools.cannot_open(path))
+
+    def test_every_format_without_a_handler_of_its_own_names_one(self):
+        """A handler added without a helper would leave its format with
+        the message that names nothing."""
+        for archive_type in archive_tools._HANDLERS:
+            with self.subTest(archive_type):
+                if archive_type in (constants.ZIP, constants.TAR,
+                                    constants.GZIP, constants.BZIP2,
+                                    constants.MOBI):
+                    self.assertEqual([], archive_tools.helpers(archive_type))
+                else:
+                    self.assertTrue(archive_tools.helpers(archive_type))

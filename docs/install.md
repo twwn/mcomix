@@ -59,6 +59,8 @@ The [UnRAR library](https://www.rarlab.com/rar_add.htm) (`libunrar.so` or `UnRAR
 
 The Windows packages include everything but `lha` and `unzip`, which `7z` stands in for.
 
+Opening a file whose program is missing says which one it needs.
+
 ## Develop
 
 See [Development](development.md).

@@ -16,6 +16,7 @@ import unittest.mock
 from . import MComixTest, get_testfile_path, wait_for
 
 from mcomix import archive_extractor
+from mcomix import archive_tools
 from mcomix import log
 from mcomix import tools
 from mcomix.preferences import prefs
@@ -66,6 +67,19 @@ class ExtractorSetupTest(_ExtractorTest):
         with self.assertRaises(archive_extractor.ArchiveException):
             archive_extractor.Extractor().setup(not_an_archive,
                                                 self.destination)
+
+    def test_an_archive_with_no_handler_names_what_it_needs(self):
+        """The reader is told what to install, not only that the format
+        is not supported."""
+        with unittest.mock.patch.object(archive_tools, '_get_handler',
+                                        return_value=None):
+            with self.assertRaises(archive_extractor.ArchiveException) \
+                    as raised:
+                archive_extractor.Extractor().setup(
+                    get_testfile_path('archives', '04-7Z-Normal.7z'),
+                    self.destination)
+        self.assertEqual('Could not open 04-7Z-Normal.7z: it needs 7z.',
+                         str(raised.exception))
 
     def test_a_listing_that_fails_names_the_archive(self):
         """The worker thread's message named the method and the error,

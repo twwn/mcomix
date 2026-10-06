@@ -31,6 +31,8 @@ _BYTES_CODE_PAGE = '-mcp=28591'
 class SevenZipArchive(archive_base.ExternalExecutableArchive):
     """ 7z file extractor using the 7z executable. """
 
+    helper = '7z'
+
     #: Which part of a listing the parser is in: the block describing the
     #: archive, the entries between the two rows of dashes, and whatever
     #: 7z prints after them.

@@ -43,6 +43,8 @@ class DisabledFitzArchive(DisabledArchive):
     Logged under its own name when archive_tools passes it over, which
     says what it stands for."""
 
+    helper = 'PyMuPDF'
+
 
 def module_version(module: object) -> str:
     """Return the version of the PyMuPDF <module>, as a string.

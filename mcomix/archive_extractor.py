@@ -17,7 +17,6 @@ without unpacking the other hundred and ninety-nine first.
 """
 
 
-import os
 import threading
 import traceback
 
@@ -96,7 +95,7 @@ class Extractor:
         self._extracted = set()
         self._archive = archive_tools.get_recursive_archive_handler(src, dst, type=type)
         if self._archive is None:
-            msg = _('Non-supported archive format: %s') % os.path.basename(src)
+            msg = archive_tools.cannot_open(src, type)
             log.warning(msg)
             raise ArchiveException(msg)
 

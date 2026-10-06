@@ -26,6 +26,8 @@ class RarArchive(archive_base.BaseArchive):
 
     # Nope! Not a good idea...
     support_concurrent_extractions = False
+    # The library and the program are both UnRAR.
+    helper = 'unrar'
 
     class _OpenMode:
         """ Rar open mode """

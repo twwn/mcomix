@@ -14,6 +14,8 @@ from mcomix.archive import archive_base
 class RarArchive(archive_base.ExternalExecutableArchive):
     """ RAR file extractor using the unrar/rar executable. """
 
+    helper = 'unrar'
+
     #: Which part of a listing the parser is in: the block describing
     #: the archive, then the entries themselves.
     STATE_HEADER, STATE_LISTING = 1, 2

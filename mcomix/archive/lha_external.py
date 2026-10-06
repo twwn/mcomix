@@ -10,6 +10,8 @@ from mcomix.archive import archive_base
 class LhaArchive(archive_base.ExternalExecutableArchive):
     """ LHA file extractor using the lha executable. """
 
+    helper = 'lha'
+
     def _get_executable(self) -> str | None:
         return LhaArchive._find_lha_executable()
 

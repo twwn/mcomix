@@ -83,6 +83,7 @@ class PdfArchive(archive_base.BaseArchive):
     why several may be in flight at once.
     """
 
+    helper = 'mutool'
     # Concurrent calls to extract welcome!
     support_concurrent_extractions = True
 

@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix zh_TW\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-05 16:51+0200\n"
+"POT-Creation-Date: 2026-10-06 16:21+0200\n"
 "PO-Revision-Date: 2013-07-05 21:37+0800\n"
 "Last-Translator: Wayne Su <mstarmstar@hotmail.com>\n"
 "Language-Team: \n"
@@ -46,23 +46,18 @@ msgstr "%s 依據 GNU 的 GPL 相關條款提供授權。"
 msgid "A copy of this license can be obtained from %s"
 msgstr "可以在 %s 取得授權協定的複製本"
 
-#: mcomix/archive_extractor.py:99
-#, python-format
-msgid "Non-supported archive format: %s"
-msgstr "不支援的壓縮檔格式：%s"
-
-#: mcomix/archive_extractor.py:333 mcomix/archive_extractor.py:358
+#: mcomix/archive_extractor.py:332 mcomix/archive_extractor.py:357
 #, python-format
 msgid "! Extraction error: %s"
 msgstr "！ 解壓縮錯誤：%s"
 
-#: mcomix/archive_extractor.py:382 mcomix/archive_tools.py:190
+#: mcomix/archive_extractor.py:381 mcomix/archive_tools.py:220
 #, python-format
 msgid "! Could not read %s"
 msgstr "！ 無法讀取 %s"
 
-#: mcomix/archive_packer.py:176 mcomix/file_actions.py:1059
-#: mcomix/library/book_area.py:782
+#: mcomix/archive_packer.py:176 mcomix/file_actions.py:1054
+#: mcomix/library/book_area.py:784
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "！ 無法移除 %(file)s：%(error)s"
@@ -79,28 +74,40 @@ msgid ""
 msgstr ""
 "！ 無法將檔案 %(sourcefile)s 加入壓縮檔 %(archivefile)s 中，正在取消..."
 
+#: mcomix/archive_tools.py:110
+#, python-format
+msgid "Could not open %(file)s: it needs %(program)s."
+msgstr "無法開啟 %(file)s：需要 %(program)s。"
+
+#: mcomix/archive_tools.py:114
+#, python-format
+msgid "Could not open %(file)s: it needs %(first)s or %(second)s."
+msgstr "無法開啟 %(file)s：需要 %(first)s 或 %(second)s。"
+
+#: mcomix/archive_tools.py:117
+#, python-format
+msgid "Non-supported archive format: %s"
+msgstr "不支援的壓縮檔格式：%s"
+
 #: mcomix/bookmark_backend.py:297
 #, python-format
 msgid "! Could not parse bookmarks file %s"
 msgstr "！ 無法解析書籤檔 %s"
 
 #: mcomix/bookmark_backend.py:372 mcomix/message_dialog.py:28
-#: mcomix/library/book_area.py:714
 msgid "_Yes"
 msgstr "是(_Y)"
 
 #: mcomix/bookmark_backend.py:373 mcomix/message_dialog.py:27
-#: mcomix/library/book_area.py:711
 msgid "_No"
 msgstr "否(_N)"
 
 #: mcomix/bookmark_backend.py:374 mcomix/edit_dialog.py:59
-#: mcomix/file_actions.py:869 mcomix/file_actions.py:1042
+#: mcomix/file_actions.py:870 mcomix/file_actions.py:1036
 #: mcomix/file_chooser_base_dialog.py:187
 #: mcomix/file_chooser_base_dialog.py:192
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:32
-#: mcomix/library/book_area.py:711
 msgid "_Cancel"
 msgstr "取消(_C)"
 
@@ -186,7 +193,7 @@ msgstr "刪除這本書的書籤(_R)..."
 msgid "_Edit Bookmarks..."
 msgstr "編輯書籤(_E)..."
 
-#: mcomix/bookmark_menu.py:197 mcomix/file_actions.py:1099
+#: mcomix/bookmark_menu.py:197 mcomix/file_actions.py:1094
 #, python-format
 msgid "Remove the bookmarks in \"%s\"?"
 msgstr "刪除「%s」中的書籤？"
@@ -280,16 +287,16 @@ msgstr "圖片"
 msgid "Comment files"
 msgstr "註解檔"
 
-#: mcomix/edit_dialog.py:243 mcomix/file_actions.py:671
+#: mcomix/edit_dialog.py:243 mcomix/file_actions.py:672
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "！ 無法儲存壓縮檔 %(archivefile)s：%(error)s"
 
-#: mcomix/edit_dialog.py:256 mcomix/file_actions.py:676
+#: mcomix/edit_dialog.py:256 mcomix/file_actions.py:677
 msgid "The new archive could not be saved!"
 msgstr "無法儲存新壓縮檔！"
 
-#: mcomix/edit_dialog.py:257 mcomix/file_actions.py:677
+#: mcomix/edit_dialog.py:257 mcomix/file_actions.py:678
 msgid "The original files have not been removed."
 msgstr "原始檔案沒有被移除。"
 
@@ -343,8 +350,8 @@ msgstr "還原(_R)"
 msgid "Go back to the saved values."
 msgstr "回到已儲存的值。"
 
-#: mcomix/enhance_dialog.py:39 mcomix/file_actions.py:582
-#: mcomix/file_actions.py:625 mcomix/file_chooser_base_dialog.py:193
+#: mcomix/enhance_dialog.py:39 mcomix/file_actions.py:583
+#: mcomix/file_actions.py:626 mcomix/file_chooser_base_dialog.py:193
 #: mcomix/openwith.py:355
 msgid "_Save"
 msgstr "儲存(_S)"
@@ -392,136 +399,136 @@ msgstr "反轉圖片色彩(_I)"
 msgid "Invert (negate) image colors."
 msgstr "反轉（負片）圖片的色彩。"
 
-#: mcomix/file_actions.py:303 mcomix/file_actions.py:1173
+#: mcomix/file_actions.py:304 mcomix/file_actions.py:1168
 msgid "A file of that name is there already."
 msgstr "那裡已經有同名的檔案。"
 
-#: mcomix/file_actions.py:367
+#: mcomix/file_actions.py:368
 #, python-format
 msgid "Page %(number)d is called \"%(name)s\" already."
 msgstr "第 %(number)d 頁已經叫「%(name)s」。"
 
-#: mcomix/file_actions.py:372
+#: mcomix/file_actions.py:373
 msgid "Rename page?"
 msgstr "重新命名頁面？"
 
-#: mcomix/file_actions.py:373
+#: mcomix/file_actions.py:374
 msgid "Please enter a new name for this page."
 msgstr "請輸入這一頁的新名稱。"
 
-#: mcomix/file_actions.py:578
+#: mcomix/file_actions.py:579
 #, python-format
 msgid "Write \"%s\" again before closing it?"
 msgstr "關閉前重新寫入「%s」嗎？"
 
-#: mcomix/file_actions.py:579
+#: mcomix/file_actions.py:580
 msgid ""
 "The book has changes that the archive on disk does not hold. They are lost "
 "when it closes."
 msgstr "本書有磁碟上的壓縮檔中沒有的變更。關閉後這些變更將遺失。"
 
-#: mcomix/file_actions.py:581
+#: mcomix/file_actions.py:582
 msgid "_Close without saving"
 msgstr "不儲存並關閉(_C)"
 
-#: mcomix/file_actions.py:620
+#: mcomix/file_actions.py:621
 #, python-format
 msgid "Write \"%s\" again now?"
 msgstr "現在重新寫入「%s」嗎？"
 
-#: mcomix/file_actions.py:621
+#: mcomix/file_actions.py:622
 msgid ""
 "The archive on disk will be replaced by the book as it stands: the pages it "
 "holds now, in the order and under the names it shows."
 msgstr "磁碟上的壓縮檔將被替換為目前的書：現在的頁面，按顯示的順序和名稱寫入。"
 
-#: mcomix/file_actions.py:624
+#: mcomix/file_actions.py:625
 msgid "_Not now"
 msgstr "暫不(_N)"
 
-#: mcomix/file_actions.py:777
+#: mcomix/file_actions.py:778
 msgid "Save page as"
 msgstr "頁面另存為"
 
-#: mcomix/file_actions.py:818
+#: mcomix/file_actions.py:819
 #, python-format
 msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "！ 無法將 %(file)s 儲存到 %(directory)s：%(error)s"
 
-#: mcomix/file_actions.py:822 mcomix/file_actions.py:1175
+#: mcomix/file_actions.py:823 mcomix/file_actions.py:1170
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "那裡空間不足：檔案大小為 %s。"
 
-#: mcomix/file_actions.py:828
+#: mcomix/file_actions.py:829
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "無法將 \"%(file)s\" 儲存到 \"%(directory)s\""
 
-#: mcomix/file_actions.py:859
+#: mcomix/file_actions.py:860
 msgid "There is no trash for this folder, so it cannot be restored."
 msgstr "此目錄沒有垃圾桶，刪除後無法復原。"
 
-#: mcomix/file_actions.py:867
+#: mcomix/file_actions.py:868
 #, python-format
 msgid "Delete \"%s\"?"
 msgstr "要刪除 %s ？"
 
-#: mcomix/file_actions.py:868
+#: mcomix/file_actions.py:869
 msgid "The file is moved to the trash."
 msgstr "檔案將丟進垃圾桶。"
 
-#: mcomix/file_actions.py:870
+#: mcomix/file_actions.py:871
 msgid "_Move to Trash"
 msgstr "丟進垃圾桶(_M)"
 
-#: mcomix/file_actions.py:900
+#: mcomix/file_actions.py:901
 msgid "It does not go to the trash and cannot be restored."
 msgstr "檔案不會丟進垃圾桶，刪除後無法復原。"
 
-#: mcomix/file_actions.py:908
+#: mcomix/file_actions.py:909
 #, python-format
 msgid "Delete \"%s\" permanently?"
 msgstr "要永久刪除 %s ？"
 
-#: mcomix/file_actions.py:1015
+#: mcomix/file_actions.py:1009
 #, python-format
 msgid "Could not move \"%s\" to the trash"
 msgstr "無法將 \"%s\" 丟進垃圾桶"
 
-#: mcomix/file_actions.py:1019 mcomix/library/book_area.py:794
+#: mcomix/file_actions.py:1013 mcomix/library/book_area.py:796
 #, python-format
 msgid "%d book could not be moved to the trash."
 msgid_plural "%d books could not be moved to the trash."
 msgstr[0] "無法將 %d 本書丟進垃圾桶。"
 
-#: mcomix/file_actions.py:1023
+#: mcomix/file_actions.py:1017
 msgid "Delete it permanently instead? It cannot be restored."
 msgid_plural "Delete them permanently instead? They cannot be restored."
 msgstr[0] "改為永久刪除嗎？刪除後無法復原。"
 
-#: mcomix/file_actions.py:1043 mcomix/library/book_area.py:713
+#: mcomix/file_actions.py:1037
 msgid "_Delete Permanently"
 msgstr "永久刪除(_D)"
 
-#: mcomix/file_actions.py:1074
+#: mcomix/file_actions.py:1069
 #, python-format
 msgid "Could not delete \"%s\""
 msgstr "無法刪除 \"%s\""
 
-#: mcomix/file_actions.py:1095
+#: mcomix/file_actions.py:1090
 #, python-format
 msgid "The file is gone, and its %d bookmark cannot be opened any more."
 msgid_plural ""
 "The file is gone, and its %d bookmarks cannot be opened any more."
 msgstr[0] "檔案已刪除，其中的 %d 個書籤無法再開啟。"
 
-#: mcomix/file_actions.py:1169
+#: mcomix/file_actions.py:1164
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr "！ 無法將 %(file)s 移動到 %(directory)s：%(error)s"
 
-#: mcomix/file_actions.py:1181
+#: mcomix/file_actions.py:1176
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "無法將 \"%(file)s\" 移動到 \"%(directory)s\""
@@ -2705,7 +2712,7 @@ msgstr "這個壓縮檔有密碼保護："
 msgid "Please enter the password to continue:"
 msgstr "請輸入密碼才能繼續："
 
-#: mcomix/archive/sevenzip_external.py:294
+#: mcomix/archive/sevenzip_external.py:296
 #, python-format
 msgid "Extraction of %(archivefile)s might have failed: %(error)s"
 msgstr "%(archivefile)s 的解壓縮可能失敗了：%(error)s"
@@ -2915,23 +2922,23 @@ msgid "Removed %d book from the library."
 msgid_plural "Removed %d books from the library."
 msgstr[0] "已經從這個書庫移除 %d 本書。"
 
-#: mcomix/library/book_area.py:726 mcomix/library/book_area.py:734
+#: mcomix/library/book_area.py:715 mcomix/library/book_area.py:736
 msgid "Remove books from the library?"
 msgstr "從這個書庫移除書籍？"
 
-#: mcomix/library/book_area.py:727
+#: mcomix/library/book_area.py:716
 msgid ""
 "The selected books will be removed from the library. Any in a folder with no "
 "trash is deleted permanently and cannot be restored."
 msgstr ""
 "這些書將從書庫中移除。位於沒有垃圾桶之目錄中的書將被永久刪除，無法復原。"
 
-#: mcomix/library/book_area.py:735
+#: mcomix/library/book_area.py:737
 msgid ""
 "The selected books will be removed from the library and moved to the trash."
 msgstr "這些書將從書庫中移除並丟進垃圾桶。"
 
-#: mcomix/library/book_area.py:845
+#: mcomix/library/book_area.py:847
 #, python-format
 msgid "Remove the bookmarks in the deleted book?"
 msgid_plural "Remove the bookmarks in the %(count)d deleted books?"

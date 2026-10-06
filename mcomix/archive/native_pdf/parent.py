@@ -11,6 +11,7 @@ from collections.abc import Iterable, Iterator
 class FitzArchive(archive_base.BaseArchive):
     """PDF file reader/extractor using PyMuPDF."""
 
+    helper = 'PyMuPDF'
     # Concurrent calls to extract welcome!
     support_concurrent_extractions = True
     # Each extraction thread has a worker process of its own (see

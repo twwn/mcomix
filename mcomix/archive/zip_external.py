@@ -11,6 +11,8 @@ from mcomix.archive import archive_base
 class ZipArchive(archive_base.ExternalExecutableArchive):
     """ ZIP file extractor using unzip executable. """
 
+    helper = 'unzip'
+
     def _get_executable(self) -> str | None:
         return ZipArchive._find_unzip_executable()
 

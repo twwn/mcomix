@@ -87,6 +87,36 @@ def _get_handler(archive_type: int) -> type[archive_base.BaseArchive] | None:
     return None
 
 
+def helpers(archive_type: int) -> list[str]:
+    """The programs or Python modules that would open an archive of
+    <archive_type>, best first, each named once; empty for a format
+    Python reads itself."""
+    return list(dict.fromkeys(
+        handler.helper for handler in _HANDLERS[archive_type]
+        if handler.helper is not None))
+
+
+def cannot_open(path: str, archive_type: int | None = None) -> str:
+    """Why the archive <path>, which no installed handler opens, cannot
+    be opened, for the reader: the program or module it needs.
+
+    <archive_type> is worked out from the file where it is not given.
+    """
+    if archive_type is None:
+        archive_type = archive_mime_type(path)
+    names = helpers(archive_type) if archive_type is not None else []
+    name = os.path.basename(path)
+    if len(names) == 1:
+        return _('Could not open %(file)s: it needs %(program)s.') % {
+            'file': name, 'program': names[0]}
+    if names:
+        # No format has more than two, and the second is the fallback.
+        return _('Could not open %(file)s: it needs %(first)s or '
+                 '%(second)s.') % {
+            'file': name, 'first': names[0], 'second': names[1]}
+    return _('Non-supported archive format: %s') % name
+
+
 def _is_available(archive_type: int) -> bool:
     """ Return True if a handler supporting the <archive_type> format is available """
     return _get_handler(archive_type) is not None
