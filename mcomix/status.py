@@ -69,6 +69,7 @@ class Statusbar(Gtk.Box, widgets.Releasable):
         self._root = ''
         self._filename = ''
         self._filesize = ''
+        self._date = ''
         #: The full path of the file being read, which no field shows
         #: whole; "Copy path" copies it.
         self._path = ''
@@ -157,6 +158,10 @@ class Statusbar(Gtk.Box, widgets.Releasable):
         the picture on screen in a folder."""
         self._path = path or ''
 
+    def set_date(self, date: str) -> None:
+        """Update the date the file being read was last modified."""
+        self._date = date
+
     def set_filesize(self, size: str | None) -> None:
         """Update the filesize."""
         if size is None:
@@ -191,6 +196,8 @@ class Statusbar(Gtk.Box, widgets.Releasable):
             fields.append(self._filename)
         if prefs['statusbar fields'] & constants.STATUS_FILESIZE:
             fields.append(self._filesize)
+        if prefs['statusbar fields'] & constants.STATUS_DATE:
+            fields.append(self._date)
 
         return fields
 
@@ -200,7 +207,8 @@ class Statusbar(Gtk.Box, widgets.Releasable):
               ('resolution', _('Show resolution'), constants.STATUS_RESOLUTION),
               ('rootpath', _('Show path'), constants.STATUS_PATH),
               ('filename', _('Show filename'), constants.STATUS_FILENAME),
-              ('filesize', _('Show filesize'), constants.STATUS_FILESIZE))
+              ('filesize', _('Show filesize'), constants.STATUS_FILESIZE),
+              ('date', _('Show date modified'), constants.STATUS_DATE))
 
     def _create_fields_menu(self) -> Gtk.PopoverMenu:
         """Build the right-click menu that picks which fields are shown."""

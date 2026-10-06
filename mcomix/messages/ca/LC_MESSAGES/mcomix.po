@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Comix 3.2\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-06 17:06+0200\n"
+"POT-Creation-Date: 2026-10-06 17:16+0200\n"
 "PO-Revision-Date: 2009-01-25 22:33+0100\n"
 "Last-Translator: Carles Escrig i Royo <simkin@ono.com>\n"
 "Language-Team: CA <gentoo@softcatala.net>\n"
@@ -161,7 +161,7 @@ msgstr "Edició dels marcadors"
 msgid "C_lear bookmarks..."
 msgstr "Esborra _tots els marcadors..."
 
-#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1006 mcomix/openwith.py:337
+#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1035 mcomix/openwith.py:337
 #: mcomix/library/collection_area.py:149 mcomix/library/watchlist.py:64
 msgid "_Remove"
 msgstr "E_limina"
@@ -189,7 +189,7 @@ msgstr "Nom"
 
 #
 # File: src/bookmark.py, line: 256
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1640
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1669
 #: mcomix/library/control_area.py:148
 msgid "Page"
 msgstr "Pàgina"
@@ -1298,14 +1298,14 @@ msgstr "No s'han pogut carregar les dreceres: %s"
 msgid "! Could not remove file \"%s\""
 msgstr "! No s'ha pogut suprimir el fitxer «%s»"
 
-#: mcomix/main.py:999
+#: mcomix/main.py:1028
 #, python-format
 msgid "Remove the page picked out of \"%s\"?"
 msgid_plural "Remove the pages picked out of \"%s\"?"
 msgstr[0] "Voleu treure la pàgina triada de «%s»?"
 msgstr[1] "Voleu treure les pàgines triades de «%s»?"
 
-#: mcomix/main.py:1002
+#: mcomix/main.py:1031
 msgid ""
 "They are taken out of the archive on disk, which is written again at once. "
 "Leaving the book without removing them forgets which pages they were."
@@ -1313,13 +1313,13 @@ msgstr ""
 "Es treuen de l'arxiu del disc, que s'escriu de nou de seguida. Si deixeu el "
 "llibre sense treure-les, s'oblidarà quines pàgines eren."
 
-#: mcomix/main.py:1005
+#: mcomix/main.py:1034
 msgid "_Keep them"
 msgstr "Man_té-les"
 
 #
 # File: src/main.py, line: 666
-#: mcomix/main.py:1462
+#: mcomix/main.py:1491
 msgid "SLIDESHOW"
 msgstr "PRESENTACIÓ"
 
@@ -2675,35 +2675,39 @@ msgstr "No s'ha trobat cap versió de Python Imaging Library al sistema."
 msgid "Stop slideshow"
 msgstr "Atura la projecció"
 
-#: mcomix/status.py:198
+#: mcomix/status.py:205
 msgid "Show page numbers"
 msgstr "Mostra els números de pàgina"
 
-#: mcomix/status.py:199
+#: mcomix/status.py:206
 msgid "Show file numbers"
 msgstr "Mostra els números de fitxer"
 
-#: mcomix/status.py:200
+#: mcomix/status.py:207
 msgid "Show resolution"
 msgstr "Mostra la resolució"
 
-#: mcomix/status.py:201
+#: mcomix/status.py:208
 msgid "Show path"
 msgstr "Mostra el camí"
 
-#: mcomix/status.py:202
+#: mcomix/status.py:209
 msgid "Show filename"
 msgstr "Mostra el nom del fitxer"
 
-#: mcomix/status.py:203
+#: mcomix/status.py:210
 msgid "Show filesize"
 msgstr "Mostra la mida del fitxer"
 
-#: mcomix/status.py:231
+#: mcomix/status.py:211
+msgid "Show date modified"
+msgstr "Mostra la data de modificació"
+
+#: mcomix/status.py:239
 msgid "Copy file name"
 msgstr "Copia el nom del fitxer"
 
-#: mcomix/status.py:232
+#: mcomix/status.py:240
 msgid "Copy path"
 msgstr "Copia el camí"
 

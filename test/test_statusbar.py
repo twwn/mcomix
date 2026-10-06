@@ -45,6 +45,15 @@ class StatusbarTextTest(MComixTest):
         self.bar.set_message('')
         self.assertEqual(self._text(), '')
 
+    def test_the_date_is_shown_only_when_asked_for(self):
+        self.bar.set_page_number([3], 12)
+        self.bar.set_date('2024-05-06, 07:08:09')
+        self.bar.update()
+        self.assertNotIn('2024-05-06', self._text())
+        prefs['statusbar fields'] |= constants.STATUS_DATE
+        self.bar.update()
+        self.assertIn('2024-05-06, 07:08:09', self._text())
+
     def test_update_shows_the_fields_the_preference_asks_for(self):
         self.bar.set_page_number([3], 12)
         self.bar.set_filename('page-003.jpg')

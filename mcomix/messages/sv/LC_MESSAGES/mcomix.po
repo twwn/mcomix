@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 0.90.4\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-06 17:06+0200\n"
+"POT-Creation-Date: 2026-10-06 17:16+0200\n"
 "PO-Revision-Date: 2018-02-24 08:43+0100\n"
 "Last-Translator: Jonatan Nyberg <jonatan@autistici.org>\n"
 "Language-Team: Swedish <LL@li.org>\n"
@@ -168,7 +168,7 @@ msgstr "Redigera bokmärken"
 msgid "C_lear bookmarks..."
 msgstr "Tö_m alla bokmärken..."
 
-#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1006 mcomix/openwith.py:337
+#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1035 mcomix/openwith.py:337
 #: mcomix/library/collection_area.py:149 mcomix/library/watchlist.py:64
 msgid "_Remove"
 msgstr "_Ta bort"
@@ -196,7 +196,7 @@ msgstr "Namn"
 
 #
 # File: src/bookmark.py, line: 256
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1640
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1669
 #: mcomix/library/control_area.py:148
 msgid "Page"
 msgstr "Sida"
@@ -1315,14 +1315,14 @@ msgstr "Det gick inte att läsa tangentbindningar: %s"
 msgid "! Could not remove file \"%s\""
 msgstr "Kunde inte ta bort filen \"%s\""
 
-#: mcomix/main.py:999
+#: mcomix/main.py:1028
 #, python-format
 msgid "Remove the page picked out of \"%s\"?"
 msgid_plural "Remove the pages picked out of \"%s\"?"
 msgstr[0] "Ta bort den valda sidan ur \"%s\"?"
 msgstr[1] "Ta bort de valda sidorna ur \"%s\"?"
 
-#: mcomix/main.py:1002
+#: mcomix/main.py:1031
 msgid ""
 "They are taken out of the archive on disk, which is written again at once. "
 "Leaving the book without removing them forgets which pages they were."
@@ -1330,13 +1330,13 @@ msgstr ""
 "De tas ur arkivet på disken, som skrivs igen med detsamma. Att lämna boken "
 "utan att ta bort dem gör att det glöms vilka sidor det var."
 
-#: mcomix/main.py:1005
+#: mcomix/main.py:1034
 msgid "_Keep them"
 msgstr "_Behåll"
 
 #
 # File: src/main.py, line: 666
-#: mcomix/main.py:1462
+#: mcomix/main.py:1491
 msgid "SLIDESHOW"
 msgstr "BILDSPEL"
 
@@ -2676,35 +2676,39 @@ msgstr "Ingen version av Python Imaging Library funnet på ditt system."
 msgid "Stop slideshow"
 msgstr "Stoppa bildspel"
 
-#: mcomix/status.py:198
+#: mcomix/status.py:205
 msgid "Show page numbers"
 msgstr "Visa sidnummer"
 
-#: mcomix/status.py:199
+#: mcomix/status.py:206
 msgid "Show file numbers"
 msgstr "Visa filnummer"
 
-#: mcomix/status.py:200
+#: mcomix/status.py:207
 msgid "Show resolution"
 msgstr "Visa upplösning"
 
-#: mcomix/status.py:201
+#: mcomix/status.py:208
 msgid "Show path"
 msgstr "Visa sökväg"
 
-#: mcomix/status.py:202
+#: mcomix/status.py:209
 msgid "Show filename"
 msgstr "Visa filnamn"
 
-#: mcomix/status.py:203
+#: mcomix/status.py:210
 msgid "Show filesize"
 msgstr "Visa filstorlek"
 
-#: mcomix/status.py:231
+#: mcomix/status.py:211
+msgid "Show date modified"
+msgstr "Visa ändringsdatum"
+
+#: mcomix/status.py:239
 msgid "Copy file name"
 msgstr "Kopiera filnamn"
 
-#: mcomix/status.py:232
+#: mcomix/status.py:240
 msgid "Copy path"
 msgstr "Kopiera sökväg"
 

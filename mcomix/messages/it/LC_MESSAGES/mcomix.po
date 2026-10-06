@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-06 17:06+0200\n"
+"POT-Creation-Date: 2026-10-06 17:16+0200\n"
 "PO-Revision-Date: 2013-04-26 18:00+0100\n"
 "Last-Translator: Giovanni Scafora <giovanni@archlinux.org>\n"
 "Language-Team: Arch Linux Italian Team <giovanni@archlinux.org>\n"
@@ -151,7 +151,7 @@ msgstr "Modifica i segnalibri"
 msgid "C_lear bookmarks..."
 msgstr "Cance_lla i segnalibri..."
 
-#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1006 mcomix/openwith.py:337
+#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1035 mcomix/openwith.py:337
 #: mcomix/library/collection_area.py:149 mcomix/library/watchlist.py:64
 msgid "_Remove"
 msgstr "_Rimuovi"
@@ -172,7 +172,7 @@ msgstr "Tipo"
 msgid "Name"
 msgstr "Nome"
 
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1640
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1669
 #: mcomix/library/control_area.py:148
 msgid "Page"
 msgstr "Pagina"
@@ -1106,14 +1106,14 @@ msgstr "Impossibile caricare le associazioni dei tasti: %s"
 msgid "! Could not remove file \"%s\""
 msgstr "! Impossibile rimuovere il file \"%s\""
 
-#: mcomix/main.py:999
+#: mcomix/main.py:1028
 #, python-format
 msgid "Remove the page picked out of \"%s\"?"
 msgid_plural "Remove the pages picked out of \"%s\"?"
 msgstr[0] "Rimuovere la pagina scelta da «%s»?"
 msgstr[1] "Rimuovere le pagine scelte da «%s»?"
 
-#: mcomix/main.py:1002
+#: mcomix/main.py:1031
 msgid ""
 "They are taken out of the archive on disk, which is written again at once. "
 "Leaving the book without removing them forgets which pages they were."
@@ -1121,11 +1121,11 @@ msgstr ""
 "Vengono tolte dall'archivio su disco, che viene riscritto subito. Lasciare "
 "il libro senza rimuoverle fa dimenticare quali pagine erano."
 
-#: mcomix/main.py:1005
+#: mcomix/main.py:1034
 msgid "_Keep them"
 msgstr "_Mantieni"
 
-#: mcomix/main.py:1462
+#: mcomix/main.py:1491
 msgid "SLIDESHOW"
 msgstr "PRESENTAZIONE"
 
@@ -2330,35 +2330,39 @@ msgstr ""
 msgid "Stop slideshow"
 msgstr "Ferma la presentazione"
 
-#: mcomix/status.py:198
+#: mcomix/status.py:205
 msgid "Show page numbers"
 msgstr "Mostra i numeri delle pagine"
 
-#: mcomix/status.py:199
+#: mcomix/status.py:206
 msgid "Show file numbers"
 msgstr "Mostra i numeri dei file"
 
-#: mcomix/status.py:200
+#: mcomix/status.py:207
 msgid "Show resolution"
 msgstr "Mostra la risoluzione"
 
-#: mcomix/status.py:201
+#: mcomix/status.py:208
 msgid "Show path"
 msgstr "Mostra il percorso"
 
-#: mcomix/status.py:202
+#: mcomix/status.py:209
 msgid "Show filename"
 msgstr "Mostra il nome del file"
 
-#: mcomix/status.py:203
+#: mcomix/status.py:210
 msgid "Show filesize"
 msgstr "Mostra la dimensione del file"
 
-#: mcomix/status.py:231
+#: mcomix/status.py:211
+msgid "Show date modified"
+msgstr "Mostra la data di modifica"
+
+#: mcomix/status.py:239
 msgid "Copy file name"
 msgstr "Copia il nome del file"
 
-#: mcomix/status.py:232
+#: mcomix/status.py:240
 msgid "Copy path"
 msgstr "Copia il percorso"
 

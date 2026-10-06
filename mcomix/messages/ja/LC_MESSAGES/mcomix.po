@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 1.00-SVN\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-06 17:06+0200\n"
+"POT-Creation-Date: 2026-10-06 17:16+0200\n"
 "PO-Revision-Date: 2012-08-16 13:10+0900\n"
 "Last-Translator: Toshiharu Kudoh <toshi.kd2@gmail.com>\n"
 "Language-Team: Japanese\n"
@@ -149,7 +149,7 @@ msgstr "ブックマークの編集"
 msgid "C_lear bookmarks..."
 msgstr "ブックマークの消去(_L)..."
 
-#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1006 mcomix/openwith.py:337
+#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1035 mcomix/openwith.py:337
 #: mcomix/library/collection_area.py:149 mcomix/library/watchlist.py:64
 msgid "_Remove"
 msgstr "削除(_R)"
@@ -170,7 +170,7 @@ msgstr "種類"
 msgid "Name"
 msgstr "名前"
 
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1640
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1669
 #: mcomix/library/control_area.py:148
 msgid "Page"
 msgstr "ページ"
@@ -1092,13 +1092,13 @@ msgstr "キーバインディングを読めませんでした: %s"
 msgid "! Could not remove file \"%s\""
 msgstr "! ファイル \"%s\" を削除できませんでした"
 
-#: mcomix/main.py:999
+#: mcomix/main.py:1028
 #, python-format
 msgid "Remove the page picked out of \"%s\"?"
 msgid_plural "Remove the pages picked out of \"%s\"?"
 msgstr[0] "選んだページを「%s」から取り除きますか？"
 
-#: mcomix/main.py:1002
+#: mcomix/main.py:1031
 msgid ""
 "They are taken out of the archive on disk, which is written again at once. "
 "Leaving the book without removing them forgets which pages they were."
@@ -1106,11 +1106,11 @@ msgstr ""
 "ディスク上の書庫から取り除かれ、書庫はすぐに書き直されます。取り除かずに本を"
 "離れると、どのページだったかは忘れられます。"
 
-#: mcomix/main.py:1005
+#: mcomix/main.py:1034
 msgid "_Keep them"
 msgstr "残す(_K)"
 
-#: mcomix/main.py:1462
+#: mcomix/main.py:1491
 msgid "SLIDESHOW"
 msgstr "SLIDESHOW"
 
@@ -2288,35 +2288,39 @@ msgstr ""
 msgid "Stop slideshow"
 msgstr "スライドショーを止める"
 
-#: mcomix/status.py:198
+#: mcomix/status.py:205
 msgid "Show page numbers"
 msgstr "ページ数を表示"
 
-#: mcomix/status.py:199
+#: mcomix/status.py:206
 msgid "Show file numbers"
 msgstr "ファイル数を表示"
 
-#: mcomix/status.py:200
+#: mcomix/status.py:207
 msgid "Show resolution"
 msgstr "解像度を表示"
 
-#: mcomix/status.py:201
+#: mcomix/status.py:208
 msgid "Show path"
 msgstr "パスを表示"
 
-#: mcomix/status.py:202
+#: mcomix/status.py:209
 msgid "Show filename"
 msgstr "ファイル名を表示"
 
-#: mcomix/status.py:203
+#: mcomix/status.py:210
 msgid "Show filesize"
 msgstr "ファイルサイズを表示"
 
-#: mcomix/status.py:231
+#: mcomix/status.py:211
+msgid "Show date modified"
+msgstr "更新日時を表示"
+
+#: mcomix/status.py:239
 msgid "Copy file name"
 msgstr "ファイル名をコピー"
 
-#: mcomix/status.py:232
+#: mcomix/status.py:240
 msgid "Copy path"
 msgstr "パスをコピー"
 

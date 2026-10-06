@@ -1282,6 +1282,26 @@ class MainWindowTest(MComixTest):
         self.assertEqual(self.window.imagehandler.get_real_path(),
                          self.window.statusbar._path)
 
+    def test_an_archive_is_dated_by_its_own_file(self):
+        """A page unpacked from it is only as old as the unpacking
+        (upstream feature request 94)."""
+        source = self._movable_book()
+        when = time.mktime((2024, 5, 6, 7, 8, 9, 0, 0, -1))
+        os.utime(source, (when, when))
+        self.window._update_page_information()
+        self.assertEqual('2024-05-06, 07:08:09', self.window.statusbar._date)
+
+    def test_two_pictures_of_a_folder_are_dated_each(self):
+        paths = self._folder_book(2)
+        for day, path in enumerate(paths, 1):
+            when = time.mktime((2024, 5, day, 12, 0, 0, 0, 0, -1))
+            os.utime(path, (when, when))
+        self.assertEqual('2024-05-01, 12:00:00, 2024-05-02, 12:00:00',
+                         self.window._modified_status(True))
+        self.window.is_manga_mode = True
+        self.assertEqual('2024-05-02, 12:00:00, 2024-05-01, 12:00:00',
+                         self.window._modified_status(True))
+
     def test_quit_and_save_keeps_the_file_of_the_page(self):
         """What an older MComix reads of it - the file and the index of
         the page - comes first and is unchanged."""

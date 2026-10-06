@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-06 17:06+0200\n"
+"POT-Creation-Date: 2026-10-06 17:16+0200\n"
 "PO-Revision-Date: 2009-01-25 21:54+0100\n"
 "Last-Translator: Jan Nekvasil <jan.nekvasil@gmail.com>\n"
 "Language-Team: \n"
@@ -161,7 +161,7 @@ msgstr "Úprava záložek"
 msgid "C_lear bookmarks..."
 msgstr "_Vymazat záložky…"
 
-#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1006 mcomix/openwith.py:337
+#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1035 mcomix/openwith.py:337
 #: mcomix/library/collection_area.py:149 mcomix/library/watchlist.py:64
 msgid "_Remove"
 msgstr "Odst_ranit"
@@ -189,7 +189,7 @@ msgstr "Jméno"
 
 #
 # File: src/bookmark.py, line: 256
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1640
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1669
 #: mcomix/library/control_area.py:148
 msgid "Page"
 msgstr "Strana"
@@ -1301,7 +1301,7 @@ msgstr "Nepodařilo se načíst klávesové zkratky: %s"
 msgid "! Could not remove file \"%s\""
 msgstr "! Nepodařilo se smazat soubor „%s“"
 
-#: mcomix/main.py:999
+#: mcomix/main.py:1028
 #, python-format
 msgid "Remove the page picked out of \"%s\"?"
 msgid_plural "Remove the pages picked out of \"%s\"?"
@@ -1309,7 +1309,7 @@ msgstr[0] "Odebrat vybranou stránku z „%s“?"
 msgstr[1] "Odebrat vybrané stránky z „%s“?"
 msgstr[2] "Odebrat vybrané stránky z „%s“?"
 
-#: mcomix/main.py:1002
+#: mcomix/main.py:1031
 msgid ""
 "They are taken out of the archive on disk, which is written again at once. "
 "Leaving the book without removing them forgets which pages they were."
@@ -1317,13 +1317,13 @@ msgstr ""
 "Budou odebrány z archivu na disku, který se ihned zapíše znovu. Opustíte-li "
 "knihu bez jejich odebrání, zapomene se, které stránky to byly."
 
-#: mcomix/main.py:1005
+#: mcomix/main.py:1034
 msgid "_Keep them"
 msgstr "Po_nechat"
 
 #
 # File: src/main.py, line: 666
-#: mcomix/main.py:1462
+#: mcomix/main.py:1491
 msgid "SLIDESHOW"
 msgstr "PROMÍTÁNÍ OBRÁZKŮ"
 
@@ -2667,35 +2667,39 @@ msgstr "V systému nebyla nalezena žádná verze Python Imaging Library."
 msgid "Stop slideshow"
 msgstr "Zastavit promítání"
 
-#: mcomix/status.py:198
+#: mcomix/status.py:205
 msgid "Show page numbers"
 msgstr "Zobrazovat čísla stran"
 
-#: mcomix/status.py:199
+#: mcomix/status.py:206
 msgid "Show file numbers"
 msgstr "Zobrazovat čísla souborů"
 
-#: mcomix/status.py:200
+#: mcomix/status.py:207
 msgid "Show resolution"
 msgstr "Zobrazovat rozlišení"
 
-#: mcomix/status.py:201
+#: mcomix/status.py:208
 msgid "Show path"
 msgstr "Zobrazovat cestu"
 
-#: mcomix/status.py:202
+#: mcomix/status.py:209
 msgid "Show filename"
 msgstr "Zobrazovat název souboru"
 
-#: mcomix/status.py:203
+#: mcomix/status.py:210
 msgid "Show filesize"
 msgstr "Zobrazovat velikost souboru"
 
-#: mcomix/status.py:231
+#: mcomix/status.py:211
+msgid "Show date modified"
+msgstr "Zobrazovat datum změny"
+
+#: mcomix/status.py:239
 msgid "Copy file name"
 msgstr "Kopírovat název souboru"
 
-#: mcomix/status.py:232
+#: mcomix/status.py:240
 msgid "Copy path"
 msgstr "Kopírovat cestu"
 

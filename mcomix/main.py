@@ -3,6 +3,7 @@
 import math
 import os
 import threading
+import time
 
 from gi.repository import Gdk, GdkPixbuf, Gtk, GLib
 
@@ -703,8 +704,36 @@ class MainWindow(Gtk.Window):
         self.statusbar.set_root(self.filehandler.get_base_filename())
         self.statusbar.set_filesize(filesize)
         self.statusbar.set_path(self.imagehandler.get_real_path())
+        self.statusbar.set_date(self._modified_status(double))
         self.statusbar.update()
         self.update_title()
+
+    def _modified_status(self, double: bool) -> str:
+        """When the file being read was last changed, for the status
+        bar (upstream feature request 94).
+
+        The file is the archive in a book that is one, since a page
+        unpacked from it is as old as the unpacking; in a folder it is
+        each picture on screen, in reading order.
+        """
+        if self.filehandler.archive_type is not None:
+            paths = [self.filehandler.get_path_to_base()]
+        else:
+            page = self.imagehandler.get_current_page()
+            paths = [self.imagehandler.get_path_to_page(page)]
+            if double:
+                paths.append(self.imagehandler.get_path_to_page(page + 1))
+                if self.is_manga_mode:
+                    paths.reverse()
+        dates = []
+        for path in paths:
+            try:
+                modified = os.stat(path).st_mtime if path else None
+            except OSError:
+                modified = None
+            dates.append('' if modified is None else time.strftime(
+                '%Y-%m-%d, %H:%M:%S', time.localtime(modified)))
+        return ', '.join(date for date in dates if date)
 
     def arrive_at_end(self, page: int) -> None:
         """Note that the book was opened at <page>, its last but one, to
