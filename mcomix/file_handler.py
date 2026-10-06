@@ -198,18 +198,16 @@ class FileHandler:
         handler that does not read them out); the unpacked file only
         tells when it was unpacked.  In a folder it is the picture's.
         """
+        path = self._window.imagehandler.get_path_to_page(page)
         if self.archive_type is not None:
-            # By the name the extractor listed it under, which is
-            # written with the system's separator; page_member()
-            # writes "/" everywhere, and on Windows found no date.
-            member = self.page_member(page)
-            date = (self._extractor.member_date(member.replace('/', os.sep))
+            # By the name the extractor listed the page under, which
+            # is what it keeps the date by.
+            member = self._name_table.get(path) if path is not None else None
+            date = (self._extractor.member_date(member)
                     if member is not None else None)
             if date is not None:
                 return date
             path = self.get_path_to_base()
-        else:
-            path = self._window.imagehandler.get_path_to_page(page)
         if path is None:
             return None
         try:
