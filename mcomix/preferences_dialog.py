@@ -330,6 +330,11 @@ class _PreferencesDialog(Dialog):
             _('Automatically hide all toolbars in fullscreen'),
             'hide all in fullscreen', None))
 
+        page.add_row(self._create_pref_check_button(
+            _('Show the page number in fullscreen'),
+            'page counter in fullscreen',
+            _('The pages on screen and the number of pages, in the lower right corner.')))
+
         page.new_section(_('Double page mode'))
 
         page.add_row(self._create_pref_check_button(
@@ -1015,6 +1020,9 @@ class _PreferencesDialog(Dialog):
         elif (preference == 'hide all in fullscreen' and
               self._window.is_fullscreen()):
             self._window.draw_image()
+
+        elif preference == 'page counter in fullscreen':
+            self._window.page_counter.update()
 
         elif preference == 'show page numbers on thumbnails':
             self._window.thumbnailsidebar.toggle_page_numbers_visible()

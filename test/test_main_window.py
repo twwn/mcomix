@@ -1315,6 +1315,35 @@ class MainWindowTest(MComixTest):
         self.assertEqual('2024-05-02, 12:00:00, 2024-05-01, 12:00:00',
                          self.window._modified_status(True))
 
+    def _counter_in_fullscreen(self, wanted):
+        prefs['page counter in fullscreen'] = wanted
+        pages = len(self._ready())
+        with unittest.mock.patch.object(self.window, 'is_fullscreen',
+                                        return_value=True):
+            self.window.set_page(3)
+            self._pump()
+        return pages
+
+    def test_fullscreen_can_show_the_page_number_in_a_corner(self):
+        """The status bar is hidden in fullscreen, and the OSD comes on
+        Tab only (upstream feature request 81)."""
+        pages = self._counter_in_fullscreen(True)
+        self.assertEqual('3 / %d' % pages, self.window.page_counter.text())
+        draw = self.window.page_area._overlays['page counter']
+        draw(Gtk.Snapshot())
+
+    def test_the_page_number_is_off_unless_asked_for(self):
+        self._counter_in_fullscreen(False)
+        self.assertNotIn('page counter', self.window.page_area._overlays)
+
+    def test_the_page_number_goes_with_fullscreen(self):
+        self._counter_in_fullscreen(True)
+        with unittest.mock.patch.object(self.window, 'is_fullscreen',
+                                        return_value=False):
+            self.window.page_counter.update()
+        self.assertNotIn('page counter', self.window.page_area._overlays)
+        self.assertEqual('', self.window.page_counter.text())
+
     def test_quit_and_save_keeps_the_file_of_the_page(self):
         """What an older MComix reads of it - the file and the index of
         the page - comes first and is unchanged."""

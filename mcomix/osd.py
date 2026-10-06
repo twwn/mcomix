@@ -6,6 +6,8 @@ from gi.repository import GLib, Graphene, Gtk
 from gi.repository import Pango, PangoCairo
 
 from mcomix import image_tools
+from mcomix import status
+from mcomix.preferences import prefs
 
 from typing import TYPE_CHECKING
 
@@ -153,5 +155,72 @@ class OnScreenDisplay:
             PangoCairo.show_layout(cr, layout)
 
         self._window.page_area.set_overlay(self._OVERLAY, draw)
+
+class PageCounter:
+
+    """The pages on screen and the book's length, in the corner of the
+    view while the window fills the screen (upstream feature request
+    81), where the status bar is hidden and the OSD only comes on Tab.
+
+    Drawn as an overlay on the canvas, which draws overlays after
+    moving them by how far the view is scrolled: the position is worked
+    out at each draw, from the scroll offset then, so the counter stays
+    in the corner as the page scrolls under it.
+    """
+
+    #: What the counter is called among the canvas' overlays.
+    _OVERLAY = 'page counter'
+    #: Pixels between the counter and the edges of the view.
+    _MARGIN = 12
+
+    def __init__(self, window: "main.MainWindow") -> None:
+        self._window = window
+        self._text = ''
+
+    def update(self) -> None:
+        """Show the counter, or take it away, as the window now asks."""
+        window = self._window
+        pages = window.displayed_pages() if window.filehandler.file_loaded \
+            else []
+        if not (prefs['page counter in fullscreen'] and pages
+                and window.is_fullscreen()):
+            self._text = ''
+            window.page_area.set_overlay(self._OVERLAY, None)
+            return
+        text = status.format_page_number(
+            pages, window.imagehandler.get_number_of_pages())
+        if text == self._text:
+            return
+        self._text = text
+        layout = window.page_area.create_pango_layout(text)
+        window.page_area.set_overlay(
+            self._OVERLAY, lambda snapshot: self._draw(snapshot, layout))
+
+    def text(self) -> str:
+        """What the counter says, or nothing while it is not shown."""
+        return self._text
+
+    def _draw(self, snapshot: Gtk.Snapshot, layout: Pango.Layout) -> None:
+        """Draw <layout>, white on a dark box, in the lower right corner
+        of what is on screen now."""
+        width, height = layout.get_pixel_size()
+        view_width, view_height = self._window.get_visible_area_size()
+        offset_x, offset_y = self._window.scroll_offset()
+        pad = 6
+        rect = (int(offset_x) + view_width - width - 2 * pad - self._MARGIN,
+                int(offset_y) + view_height - height - 2 * pad - self._MARGIN,
+                width + 2 * pad, height + 2 * pad)
+        bounds = Graphene.Rect()
+        bounds.init(*rect)
+        cr = snapshot.append_cairo(bounds)
+        black = image_tools.RGBA_BLACK
+        cr.set_source_rgba(black.red, black.green, black.blue, 0.6)
+        cr.rectangle(*rect)
+        cr.fill()
+        white = image_tools.RGBA_WHITE
+        cr.set_source_rgb(white.red, white.green, white.blue)
+        cr.move_to(rect[0] + pad, rect[1] + pad)
+        PangoCairo.update_layout(cr, layout)
+        PangoCairo.show_layout(cr, layout)
 
 # vim: expandtab:sw=4:ts=4

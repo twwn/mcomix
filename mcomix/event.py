@@ -123,6 +123,7 @@ class EventHandler:
             else:
                 redraw = not self._window.restore_window_geometry()
             self._window.update_toggles_sensitivity()
+            self._window.page_counter.update()
             # The right-click menu offers the way out only while there
             # is one to take.
             self._window.actiongroup.get_action('leave_fullscreen') \

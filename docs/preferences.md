@@ -58,6 +58,7 @@ Option | Explanation
 -------|------------
 Use fullscreen by default |
 Automatically hide all toolbars in fullscreen | Menu bar, toolbar, status bar, thumbnails and scrollbars go away in fullscreen.
+Show the page number in fullscreen | The pages on screen and the number of pages, in the lower right corner. Off by default.
 Flip two pages in double page mode | Turn two pages at a time while two are shown. CTRL with PageUp or PageDown always turns one.
 Show only one page where appropriate | When double page mode shows one page: "Never", "Only for title pages" (the cover), "Only for wide images", or "Always" (both).
 Page auto-resizing | How two pages of different sizes are fitted side by side: "Prefer same scale", "Prefer same size" or "Fit to same size".

@@ -159,6 +159,7 @@ class MainWindow(Gtk.Window):
         self.enhancer = enhance_backend.ImageEnhancer(self)
         self.lens = lens.MagnifyingLens(self)
         self.osd = osd.OnScreenDisplay(self)
+        self.page_counter = osd.PageCounter(self)
         self.zoom = zoom.ZoomModel()
         self.uimanager = ui.MainUI(self)
         self.menubar = self.uimanager.menubar
@@ -705,6 +706,7 @@ class MainWindow(Gtk.Window):
         self.statusbar.set_filesize(filesize)
         self.statusbar.set_path(self.imagehandler.get_real_path())
         self.statusbar.set_date(self._modified_status(double))
+        self.page_counter.update()
         self.statusbar.update()
         self.update_title()
 
@@ -1400,6 +1402,7 @@ class MainWindow(Gtk.Window):
             i.set_visible(False)
         for i in self.images:
             i.clear()
+        self.page_counter.update()
         self._show_scrollbars([False] * len(self._scroll))
         self.layout = layout.create_dummy_layout()
         self.page_area.set_content_size(*self.layout.get_union_box().get_size())
