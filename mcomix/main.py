@@ -1090,6 +1090,14 @@ class MainWindow(Gtk.Window):
     def page_select(self, *args: object) -> None:
         pageselect.Pageselector(self)
 
+    def toggle_animation(self, *args: object) -> None:
+        """Pause the animated pages on screen, or let them go on where
+        every one of them is paused already."""
+        animating = [image for image in self.images if image.is_animating()]
+        paused = not all(image.is_paused() for image in animating)
+        for image in animating:
+            image.set_paused(paused)
+
     def rotate_90(self, *args: object) -> None:
         prefs['rotation'] = tools.compile_rotations(prefs['rotation'], 90)
         self.draw_image()

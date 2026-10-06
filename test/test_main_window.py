@@ -3779,6 +3779,23 @@ class MainWindowTest(MComixTest):
         self.assertEqual(self.window.uimanager.popup.props.flags,
                          Gtk.PopoverMenuFlags.NESTED)
 
+    def test_p_pauses_and_resumes_the_animated_page(self):
+        """Upstream feature request 11.  A still page beside it, in
+        double page mode, has nothing to pause and is left alone."""
+        image, still = self.window.images
+        self.addCleanup(image.clear)
+        self.addCleanup(still.clear)
+        image.show_pixbuf(image_tools.load_pixbuf(
+            get_testfile_path('images', 'animated.gif')))
+        still.show_pixbuf(image_tools.load_pixbuf(
+            get_testfile_path('images', 'blue.png')))
+        manager = keybindings.keybinding_manager(self.window)
+        manager.execute(keybindings.parse_accelerator('p'))
+        self.assertTrue(image.is_paused())
+        self.assertFalse(still.is_animating())
+        manager.execute(keybindings.parse_accelerator('p'))
+        self.assertFalse(image.is_paused())
+
     def test_quitting_does_not_wait_for_the_page_that_is_animating(self):
         """An animated page is decoded by a daemon thread which runs
         until the page it draws is replaced or cleared.  Quitting waited
@@ -3792,9 +3809,9 @@ class MainWindowTest(MComixTest):
         self.assertIsNotNone(image._worker, 'nothing is decoding the page')
         # Stop the decoder anyway if quitting does wait for it, so that a
         # regression fails this test rather than hanging the whole suite.
-        # Setting the event is what asks the thread to go, and it is the
-        # one part of the widget another thread may touch.
-        watchdog = threading.Timer(10.0, image._stopping.set)
+        # Stopping the playback is what asks the thread to go, and it is
+        # the one part of the widget another thread may touch.
+        watchdog = threading.Timer(10.0, image._playback.stop)
         # And nothing waits for the watchdog itself, which is a thread
         # like any other and would be the next thing quitting waits for.
         watchdog.daemon = True

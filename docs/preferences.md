@@ -80,4 +80,4 @@ Maximum number of pages to store in the cache | 7 by default. -1 caches the whol
 Magnifying lens size (in pixels) | The side of the square lens. 200 by default.
 Magnification factor | 2 by default.
 Comment extensions | Which files in an archive count as comments. txt, nfo and xml by default.
-Animation mode | "Normal" plays an animated image; "Never" shows its first frame.
+Animation mode | "Normal" plays an animated image; "Never" shows its first frame. P pauses and resumes the one on screen.

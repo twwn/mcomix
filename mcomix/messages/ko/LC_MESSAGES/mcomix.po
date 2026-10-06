@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-06 16:26+0200\n"
+"POT-Creation-Date: 2026-10-06 16:32+0200\n"
 "PO-Revision-Date: 2018-05-10 22:46+0900\n"
 "Last-Translator: Minho Jeung <jeungmh@gmail.com>\n"
 "Language-Team: \n"
@@ -164,7 +164,7 @@ msgstr "유형"
 msgid "Name"
 msgstr "이름"
 
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1592
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1600
 #: mcomix/library/control_area.py:148
 msgid "Page"
 msgstr "페이지"
@@ -260,7 +260,7 @@ msgstr "파일 이름을 변경하시겠습니까?"
 msgid "Please enter a new name for this file."
 msgstr "이 파일의 새 이름을 입력하세요."
 
-#: mcomix/edit_dialog.py:58 mcomix/keybindings.py:153
+#: mcomix/edit_dialog.py:58 mcomix/keybindings.py:155
 msgid "Edit archive"
 msgstr "압축파일 편집"
 
@@ -328,7 +328,7 @@ msgstr "쪽 이름 변경(_N)..."
 msgid "Select _All"
 msgstr "모두 선택(_A)"
 
-#: mcomix/enhance_dialog.py:28 mcomix/keybindings.py:155
+#: mcomix/enhance_dialog.py:28 mcomix/keybindings.py:157
 msgid "Enhance image"
 msgstr "이미지 보정"
 
@@ -541,7 +541,7 @@ msgid "%d page"
 msgid_plural "%d pages"
 msgstr[0] "%d 페이지"
 
-#: mcomix/file_chooser_base_dialog.py:186 mcomix/keybindings.py:154
+#: mcomix/file_chooser_base_dialog.py:186 mcomix/keybindings.py:156
 msgid "Open"
 msgstr "열기"
 
@@ -923,7 +923,7 @@ msgstr "전체화면에서 나가기"
 #: mcomix/keybindings.py:129 mcomix/keybindings.py:130
 #: mcomix/keybindings.py:131 mcomix/keybindings.py:132
 #: mcomix/keybindings.py:133 mcomix/keybindings.py:134
-#: mcomix/preferences_dialog.py:131
+#: mcomix/keybindings.py:136 mcomix/preferences_dialog.py:131
 msgid "User interface"
 msgstr "사용자 인터페이스"
 
@@ -971,107 +971,111 @@ msgstr "모두 숨김(I)"
 msgid "Start slideshow"
 msgstr "슬라이드쇼 시작"
 
-#: mcomix/keybindings.py:137
+#: mcomix/keybindings.py:135
+msgid "Pause or resume animation"
+msgstr "애니메이션 일시 정지 또는 다시 재생"
+
+#: mcomix/keybindings.py:139
 msgid "Delete"
 msgstr "삭제"
 
-#: mcomix/keybindings.py:137 mcomix/keybindings.py:139
-#: mcomix/keybindings.py:140 mcomix/keybindings.py:143
-#: mcomix/keybindings.py:144 mcomix/keybindings.py:145
+#: mcomix/keybindings.py:139 mcomix/keybindings.py:141
+#: mcomix/keybindings.py:142 mcomix/keybindings.py:145
 #: mcomix/keybindings.py:146 mcomix/keybindings.py:147
-#: mcomix/keybindings.py:149 mcomix/keybindings.py:150
-#: mcomix/keybindings.py:151 mcomix/keybindings.py:153
-#: mcomix/keybindings.py:154 mcomix/keybindings.py:155
+#: mcomix/keybindings.py:148 mcomix/keybindings.py:149
+#: mcomix/keybindings.py:151 mcomix/keybindings.py:152
+#: mcomix/keybindings.py:153 mcomix/keybindings.py:155
 #: mcomix/keybindings.py:156 mcomix/keybindings.py:157
+#: mcomix/keybindings.py:158 mcomix/keybindings.py:159
 msgid "File"
 msgstr "파일"
 
-#: mcomix/keybindings.py:138
+#: mcomix/keybindings.py:140
 msgid "Delete permanently"
 msgstr "영구히 삭제"
 
-#: mcomix/keybindings.py:140
+#: mcomix/keybindings.py:142
 msgid "Rename page"
 msgstr "쪽 이름 변경"
 
-#: mcomix/keybindings.py:141
+#: mcomix/keybindings.py:143
 msgid "Undo"
 msgstr "실행 취소"
 
-#: mcomix/keybindings.py:141 mcomix/keybindings.py:142
+#: mcomix/keybindings.py:143 mcomix/keybindings.py:144
 msgid "Edit"
 msgstr "편집"
 
-#: mcomix/keybindings.py:142
+#: mcomix/keybindings.py:144
 msgid "Redo"
 msgstr "다시 실행"
 
-#: mcomix/keybindings.py:143
+#: mcomix/keybindings.py:145
 msgid "Refresh"
 msgstr "새로 고침"
 
-#: mcomix/keybindings.py:144
+#: mcomix/keybindings.py:146
 msgid "Close"
 msgstr "닫기"
 
-#: mcomix/keybindings.py:145
+#: mcomix/keybindings.py:147
 msgid "Quit"
 msgstr "종료"
 
-#: mcomix/keybindings.py:146
+#: mcomix/keybindings.py:148
 msgid "Save and quit"
 msgstr "저장하고 종료"
 
-#: mcomix/keybindings.py:147
+#: mcomix/keybindings.py:149
 msgid "Save As"
 msgstr "다른 이름으로 저장"
 
-#: mcomix/keybindings.py:149
+#: mcomix/keybindings.py:151
 msgid "Archive comments"
 msgstr "압축파일 주석"
 
-#: mcomix/keybindings.py:150 mcomix/properties_dialog.py:36
+#: mcomix/keybindings.py:152 mcomix/properties_dialog.py:36
 msgid "Properties"
 msgstr "등록정보"
 
-#: mcomix/keybindings.py:151 mcomix/preferences_dialog.py:69
+#: mcomix/keybindings.py:153 mcomix/preferences_dialog.py:69
 msgid "Preferences"
 msgstr "환경설정"
 
-#: mcomix/keybindings.py:156 mcomix/library/main_dialog.py:55
+#: mcomix/keybindings.py:158 mcomix/library/main_dialog.py:55
 msgid "Library"
 msgstr "라이브러리"
 
-#: mcomix/keybindings.py:157 mcomix/ui.py:527
+#: mcomix/keybindings.py:159 mcomix/ui.py:527
 msgid "Invert image colors"
 msgstr "이미지 색 반전"
 
-#: mcomix/keybindings.py:160
+#: mcomix/keybindings.py:162
 msgid "Add bookmark"
 msgstr "책갈피 추가"
 
-#: mcomix/keybindings.py:160 mcomix/keybindings.py:161
+#: mcomix/keybindings.py:162 mcomix/keybindings.py:163
 msgid "Bookmarks"
 msgstr "책갈피"
 
-#: mcomix/keybindings.py:161
+#: mcomix/keybindings.py:163
 msgid "Edit bookmarks"
 msgstr "책갈피 편집"
 
-#: mcomix/keybindings.py:169 mcomix/openwith.py:558
+#: mcomix/keybindings.py:171 mcomix/openwith.py:558
 msgid "Command"
 msgstr "명령어"
 
-#: mcomix/keybindings.py:170
+#: mcomix/keybindings.py:172
 msgid "External commands"
 msgstr "외부 명령"
 
-#: mcomix/keybindings.py:247
+#: mcomix/keybindings.py:249
 #, python-format
 msgid "Keybinding for \"%(action)s\" overrides hotkey for another action."
 msgstr "\"%(action)s\"에 할당한 키는 다른 동작의 단축키보다 우선 동작합니다."
 
-#: mcomix/keybindings.py:435 mcomix/keybindings.py:443
+#: mcomix/keybindings.py:437 mcomix/keybindings.py:445
 #, python-format
 msgid "Couldn't load keybindings: %s"
 msgstr "키 설정을 불러오지 못했습니다: %s"
@@ -1099,7 +1103,7 @@ msgstr ""
 msgid "_Keep them"
 msgstr "유지(_K)"
 
-#: mcomix/main.py:1414
+#: mcomix/main.py:1422
 msgid "SLIDESHOW"
 msgstr "슬라이드쇼"
 
@@ -1318,7 +1322,7 @@ msgstr ""
 "편집한 외부 명령어 목록이 저장되지 않았습니다. \"예\" 를 누르면 저장하고 \"아"
 "니오\" 를 누르면 버립니다."
 
-#: mcomix/page_image.py:170
+#: mcomix/page_image.py:243
 #, python-format
 msgid "! Could not draw the next frame: %s"
 msgstr "! 다음 프레임을 그릴 수 없습니다: %s"

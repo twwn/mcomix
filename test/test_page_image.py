@@ -199,6 +199,70 @@ class PageImageTest(MComixTest):
             out.extend(b'\x00' * (stride - pixbuf.get_width() * 4))
         return bytes(out)
 
+    # -- Pausing an animated page (upstream feature request 11) ---------
+
+    def _frames_of(self, paintable):
+        frames = []
+        paintable.connect('invalidate-contents',
+                          lambda *args: frames.append(1))
+        return frames
+
+    def test_a_paused_animation_draws_no_more_frames(self):
+        self.image.show_pixbuf(
+            image_tools.load_pixbuf(get_image_path('animated.gif')))
+        self.assertTrue(self.image.is_animating())
+        self.image.set_paused(True)
+        self.assertTrue(self.image.is_paused())
+        # A frame already handed to the main loop may still arrive.
+        pump()
+        frames = self._frames_of(self.image.get_paintable())
+        wait_for(lambda: bool(frames), seconds=1)
+        self.assertEqual([], frames, 'a paused animation went on')
+
+    def test_a_resumed_animation_goes_on(self):
+        self.image.show_pixbuf(
+            image_tools.load_pixbuf(get_image_path('animated.gif')))
+        self.image.set_paused(True)
+        pump()
+        frames = self._frames_of(self.image.get_paintable())
+        self.image.set_paused(False)
+        self.assertFalse(self.image.is_paused())
+        wait_for(lambda: bool(frames))
+        self.assertTrue(frames, 'the animation stayed paused')
+
+    def test_the_same_page_drawn_again_stays_paused(self):
+        """A zoom or a resize draws the page again, which is no reason
+        for it to start running."""
+        pixbuf = image_tools.load_pixbuf(get_image_path('animated.gif'))
+        self.image.show_pixbuf(pixbuf)
+        self.image.set_paused(True)
+        self.image.show_pixbuf(pixbuf, (64, 48))
+        self.assertTrue(self.image.is_paused())
+
+    def test_another_page_starts_running(self):
+        self.image.show_pixbuf(
+            image_tools.load_pixbuf(get_image_path('animated.gif')))
+        self.image.set_paused(True)
+        self.image.show_pixbuf(
+            image_tools.load_pixbuf(get_image_path('blue.png')))
+        self.assertFalse(self.image.is_animating())
+        self.image.show_pixbuf(
+            image_tools.load_pixbuf(get_image_path('animated.gif')))
+        self.assertFalse(self.image.is_paused())
+
+    def test_stopping_a_paused_animation_ends_its_thread(self):
+        self.image.show_pixbuf(
+            image_tools.load_pixbuf(get_image_path('animated.gif')))
+        self.image.set_paused(True)
+        worker = self.image._worker
+        # Long enough for the decoder to have parked on the pause, which
+        # is where a stop that did not wake it would leave it.
+        time.sleep(0.5)
+        self.image.clear()
+        worker.join(5)
+        self.assertFalse(worker.is_alive(),
+                         'a paused decoder did not notice the stop')
+
 
 class _SlowFrames(animation.Frames):
 

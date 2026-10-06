@@ -132,6 +132,8 @@ BINDING_INFO: "dict[str, dict[str, str]]" = {
     'thumbnails': {'title': _('Thumbnails'), 'group': _('User interface')},
     'hide_all': {'title': _('Hide all'), 'group': _('User interface')},
     'slideshow': {'title': _('Start slideshow'), 'group': _('User interface')},
+    'pause_animation': {'title': _('Pause or resume animation'),
+                        'group': _('User interface')},
 
     # File operations
     'delete': {'title': _('Delete'), 'group': _('File')},

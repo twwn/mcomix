@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: mcomix 0.99\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-06 16:26+0200\n"
+"POT-Creation-Date: 2026-10-06 16:32+0200\n"
 "PO-Revision-Date: 2013-01-07 22:51+0200\n"
 "Last-Translator: Isratine Citizen <genghiskhan@gmx.ca>\n"
 "Language-Team: Hebrew <eliz@gnu.org>\n"
@@ -169,7 +169,7 @@ msgstr "טיפוס"
 msgid "Name"
 msgstr "שם"
 
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1592
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1600
 #: mcomix/library/control_area.py:148
 msgid "Page"
 msgstr "עמוד"
@@ -268,7 +268,7 @@ msgstr "לשנות שם קובץ?"
 msgid "Please enter a new name for this file."
 msgstr "נא להזין שם חדש עבור קובץ זה."
 
-#: mcomix/edit_dialog.py:58 mcomix/keybindings.py:153
+#: mcomix/edit_dialog.py:58 mcomix/keybindings.py:155
 msgid "Edit archive"
 msgstr "עריכת ארכיון"
 
@@ -336,7 +336,7 @@ msgstr "_שינוי שם עמוד..."
 msgid "Select _All"
 msgstr "בחירת ה_כול"
 
-#: mcomix/enhance_dialog.py:28 mcomix/keybindings.py:155
+#: mcomix/enhance_dialog.py:28 mcomix/keybindings.py:157
 msgid "Enhance image"
 msgstr "שיפור תמונה"
 
@@ -554,7 +554,7 @@ msgid_plural "%d pages"
 msgstr[0] "%d עמוד"
 msgstr[1] "%d עמודים"
 
-#: mcomix/file_chooser_base_dialog.py:186 mcomix/keybindings.py:154
+#: mcomix/file_chooser_base_dialog.py:186 mcomix/keybindings.py:156
 msgid "Open"
 msgstr "פתיחה"
 
@@ -941,7 +941,7 @@ msgstr "צא ממסך מלא"
 #: mcomix/keybindings.py:129 mcomix/keybindings.py:130
 #: mcomix/keybindings.py:131 mcomix/keybindings.py:132
 #: mcomix/keybindings.py:133 mcomix/keybindings.py:134
-#: mcomix/preferences_dialog.py:131
+#: mcomix/keybindings.py:136 mcomix/preferences_dialog.py:131
 msgid "User interface"
 msgstr "ממשק משתמש"
 
@@ -989,107 +989,111 @@ msgstr "הסתרת הכל"
 msgid "Start slideshow"
 msgstr "התחל מצגת"
 
-#: mcomix/keybindings.py:137
+#: mcomix/keybindings.py:135
+msgid "Pause or resume animation"
+msgstr "השהיה או המשך של הנפשה"
+
+#: mcomix/keybindings.py:139
 msgid "Delete"
 msgstr "מחיקה"
 
-#: mcomix/keybindings.py:137 mcomix/keybindings.py:139
-#: mcomix/keybindings.py:140 mcomix/keybindings.py:143
-#: mcomix/keybindings.py:144 mcomix/keybindings.py:145
+#: mcomix/keybindings.py:139 mcomix/keybindings.py:141
+#: mcomix/keybindings.py:142 mcomix/keybindings.py:145
 #: mcomix/keybindings.py:146 mcomix/keybindings.py:147
-#: mcomix/keybindings.py:149 mcomix/keybindings.py:150
-#: mcomix/keybindings.py:151 mcomix/keybindings.py:153
-#: mcomix/keybindings.py:154 mcomix/keybindings.py:155
+#: mcomix/keybindings.py:148 mcomix/keybindings.py:149
+#: mcomix/keybindings.py:151 mcomix/keybindings.py:152
+#: mcomix/keybindings.py:153 mcomix/keybindings.py:155
 #: mcomix/keybindings.py:156 mcomix/keybindings.py:157
+#: mcomix/keybindings.py:158 mcomix/keybindings.py:159
 msgid "File"
 msgstr "קובץ"
 
-#: mcomix/keybindings.py:138
+#: mcomix/keybindings.py:140
 msgid "Delete permanently"
 msgstr "מחיקה לצמיתות"
 
-#: mcomix/keybindings.py:140
+#: mcomix/keybindings.py:142
 msgid "Rename page"
 msgstr "שינוי שם עמוד"
 
-#: mcomix/keybindings.py:141
+#: mcomix/keybindings.py:143
 msgid "Undo"
 msgstr "ביטול"
 
-#: mcomix/keybindings.py:141 mcomix/keybindings.py:142
+#: mcomix/keybindings.py:143 mcomix/keybindings.py:144
 msgid "Edit"
 msgstr "עריכה"
 
-#: mcomix/keybindings.py:142
+#: mcomix/keybindings.py:144
 msgid "Redo"
 msgstr "ביצוע חוזר"
 
-#: mcomix/keybindings.py:143
+#: mcomix/keybindings.py:145
 msgid "Refresh"
 msgstr "רענון"
 
-#: mcomix/keybindings.py:144
+#: mcomix/keybindings.py:146
 msgid "Close"
 msgstr "סגירה"
 
-#: mcomix/keybindings.py:145
+#: mcomix/keybindings.py:147
 msgid "Quit"
 msgstr "יציאה"
 
-#: mcomix/keybindings.py:146
+#: mcomix/keybindings.py:148
 msgid "Save and quit"
 msgstr "שמירה ויציאה"
 
-#: mcomix/keybindings.py:147
+#: mcomix/keybindings.py:149
 msgid "Save As"
 msgstr "שמירה בשם"
 
-#: mcomix/keybindings.py:149
+#: mcomix/keybindings.py:151
 msgid "Archive comments"
 msgstr "הערות הארכיון"
 
-#: mcomix/keybindings.py:150 mcomix/properties_dialog.py:36
+#: mcomix/keybindings.py:152 mcomix/properties_dialog.py:36
 msgid "Properties"
 msgstr "מאפיינים"
 
-#: mcomix/keybindings.py:151 mcomix/preferences_dialog.py:69
+#: mcomix/keybindings.py:153 mcomix/preferences_dialog.py:69
 msgid "Preferences"
 msgstr "העדפות"
 
-#: mcomix/keybindings.py:156 mcomix/library/main_dialog.py:55
+#: mcomix/keybindings.py:158 mcomix/library/main_dialog.py:55
 msgid "Library"
 msgstr "ספרייה"
 
-#: mcomix/keybindings.py:157 mcomix/ui.py:527
+#: mcomix/keybindings.py:159 mcomix/ui.py:527
 msgid "Invert image colors"
 msgstr "היפוך צבעי התמונה"
 
-#: mcomix/keybindings.py:160
+#: mcomix/keybindings.py:162
 msgid "Add bookmark"
 msgstr "הוסף סימנייה"
 
-#: mcomix/keybindings.py:160 mcomix/keybindings.py:161
+#: mcomix/keybindings.py:162 mcomix/keybindings.py:163
 msgid "Bookmarks"
 msgstr "סימניות"
 
-#: mcomix/keybindings.py:161
+#: mcomix/keybindings.py:163
 msgid "Edit bookmarks"
 msgstr "עריכת סימניות"
 
-#: mcomix/keybindings.py:169 mcomix/openwith.py:558
+#: mcomix/keybindings.py:171 mcomix/openwith.py:558
 msgid "Command"
 msgstr "פקודה"
 
-#: mcomix/keybindings.py:170
+#: mcomix/keybindings.py:172
 msgid "External commands"
 msgstr "פקודות חיצוניות"
 
-#: mcomix/keybindings.py:247
+#: mcomix/keybindings.py:249
 #, python-format
 msgid "Keybinding for \"%(action)s\" overrides hotkey for another action."
 msgstr "צירוף המקשים עבור \"%(action)s\" דורס את הקיצור של פעולה אחרת."
 
-#: mcomix/keybindings.py:435 mcomix/keybindings.py:443
+#: mcomix/keybindings.py:437 mcomix/keybindings.py:445
 #, python-format
 msgid "Couldn't load keybindings: %s"
 msgstr "לא ניתן לטעון את צירופי המקשים: %s"
@@ -1118,7 +1122,7 @@ msgstr ""
 msgid "_Keep them"
 msgstr "_להשאיר"
 
-#: mcomix/main.py:1414
+#: mcomix/main.py:1422
 msgid "SLIDESHOW"
 msgstr "מצגת"
 
@@ -1337,7 +1341,7 @@ msgstr ""
 "ברשימת הפקודות החיצוניות יש שינויים שטרם נשמרו. לחצו \"כן\" כדי לשמור את כל "
 "השינויים, או \"לא\" כדי לוותר עליהם."
 
-#: mcomix/page_image.py:170
+#: mcomix/page_image.py:243
 #, python-format
 msgid "! Could not draw the next frame: %s"
 msgstr "! לא ניתן היה לצייר את הפריים הבא: %s"

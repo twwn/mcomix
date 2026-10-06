@@ -64,6 +64,54 @@ class _AnimationPaintable(GObject.GObject, Gdk.Paintable):  # type: ignore[misc]
             self._texture.snapshot(snapshot, width, height)
 
 
+class _Playback:
+
+    """Whether the frames of one animation go on: running, paused, or
+    stopped for good.
+
+    The main thread pauses and stops it; the thread decoding the frames
+    waits on it, and a pause or a stop reaches that thread at once
+    rather than after the frame it was waiting out.
+    """
+
+    def __init__(self) -> None:
+        self._condition = threading.Condition()
+        self._stopped = False
+        self.paused = False
+
+    def is_stopped(self) -> bool:
+        # Read without the lock: it only ever goes from False to True.
+        return self._stopped
+
+    def stop(self) -> None:
+        with self._condition:
+            self._stopped = True
+            self._condition.notify_all()
+
+    def set_paused(self, paused: bool) -> None:
+        with self._condition:
+            self.paused = paused
+            self._condition.notify_all()
+
+    def wait_until(self, due: float) -> float | None:
+        """Wait until <due>, later by however long the animation is
+        paused meanwhile, so that the frame on screen keeps what was left
+        of its time.  The time it waited until, or None if the animation
+        was stopped instead."""
+        with self._condition:
+            while not self._stopped:
+                if self.paused:
+                    since = time.monotonic()
+                    self._condition.wait()
+                    due += time.monotonic() - since
+                    continue
+                left = due - time.monotonic()
+                if left <= 0:
+                    return due
+                self._condition.wait(left)
+            return None
+
+
 class PageImage(Gtk.Picture):
 
     """Draws one page, animated or not.
@@ -80,8 +128,10 @@ class PageImage(Gtk.Picture):
         # A page is drawn at its own size, on a canvas that scrolls over
         # it, rather than shrunk to whatever room happens to be left.
         self.set_can_shrink(False)
-        #: Told to stop, and the thread it is told to.
-        self._stopping: threading.Event | None = None
+        #: Told to pause or stop, and the thread it is told to.
+        self._playback: _Playback | None = None
+        #: The file the animation on screen comes from.
+        self._path: str | None = None
         self._worker: threading.Thread | None = None
         #: What draws the frames, while there are frames to draw.
         self._animation: _AnimationPaintable | None = None
@@ -100,8 +150,11 @@ class PageImage(Gtk.Picture):
         answering to a name of the base class's with a signature the base
         class does not have.
         """
-        self._stop()
         path = image_tools.animation_path(pixbuf)
+        # The same page drawn again, at another size or zoom, stays
+        # paused; another page starts running.
+        paused = path is not None and path == self._path and self.is_paused()
+        self._stop()
         if path is not None:
             # <pixbuf> is the first frame; the rest are read from the
             # file it came out of.
@@ -117,7 +170,7 @@ class PageImage(Gtk.Picture):
             # but itself does not keep the frame clock going, which then
             # runs at one frame a second.
             self.set_paintable(self._animation)
-            self._start(path)
+            self._start(path, paused)
             return
         self.set_paintable(image_tools.pixbuf_to_texture(pixbuf))
 
@@ -126,16 +179,31 @@ class PageImage(Gtk.Picture):
         self._stop()
         self.set_paintable(None)
 
+    def is_animating(self) -> bool:
+        """Whether the page on screen is an animation, paused or not."""
+        return self._playback is not None
+
+    def is_paused(self) -> bool:
+        """Whether the animation on screen is paused."""
+        return self._playback is not None and self._playback.paused
+
+    def set_paused(self, paused: bool) -> None:
+        """Pause the animation on screen at the frame it shows, or let it
+        go on from there.  The next page shown starts running."""
+        if self._playback is not None:
+            self._playback.set_paused(paused)
+
     def _stop(self) -> None:
-        if self._stopping is not None:
+        if self._playback is not None:
             # The thread notices and goes; nothing waits for it, and
             # whatever it hands over afterwards is thrown away.
-            self._stopping.set()
-            self._stopping = None
+            self._playback.stop()
+            self._playback = None
             self._worker = None
         self._animation = None
+        self._path = None
 
-    def _start(self, path: str) -> None:
+    def _start(self, path: str, paused: bool) -> None:
         """Decode the frames somewhere other than the main thread.
 
         Decoding one frame of a page-sized animation costs more than the
@@ -145,25 +213,30 @@ class PageImage(Gtk.Picture):
         with nothing but handing the finished texture to the paintable.
         """
         frames = animation.frames(path)
-        self._stopping = threading.Event()
+        self._path = path
+        self._playback = _Playback()
+        self._playback.set_paused(paused)
         self._worker = threading.Thread(target=self._decode,
                                         args=(frames, self._animation,
-                                              self._stopping),
+                                              self._playback),
                                         name='animation')
         self._worker.daemon = True
         self._worker.start()
 
     def _decode(self, frames: animation.Frames,
                 paintable: _AnimationPaintable,
-                stopping: threading.Event) -> None:
+                playback: _Playback) -> None:
         """Hand <paintable> a frame at a time until asked to stop."""
         due = time.monotonic()
-        while not stopping.is_set():
-            if not frames.ahead and self._wait(stopping, due):
+        while not playback.is_stopped():
+            if not frames.ahead:
                 # This decoder is only ever asked for the frame that
                 # belongs on screen now, so the wait has to come first
                 # and the frame is late by however long it takes.
-                return
+                waited = playback.wait_until(due)
+                if waited is None:
+                    return
+                due = waited
             try:
                 texture, delay = frames.next()
             except Exception as error:
@@ -172,11 +245,14 @@ class PageImage(Gtk.Picture):
             if delay <= 0:
                 # The end of an animation that does not go round again.
                 return
-            if frames.ahead and self._wait(stopping, due):
+            if frames.ahead:
+                waited = playback.wait_until(due)
+                if waited is None:
+                    return
+                due = waited
+            if playback.is_stopped():
                 return
-            if stopping.is_set():
-                return
-            GLib.idle_add(self._show_frame, paintable, texture, stopping)
+            GLib.idle_add(self._show_frame, paintable, texture, playback)
             # Frame times are counted from where the last frame was due
             # rather than from now, so that a decode that took too long
             # is not paid for twice; a page that cannot keep up at all
@@ -184,16 +260,10 @@ class PageImage(Gtk.Picture):
             due = max(time.monotonic(),
                       due + max(animation.MINIMUM_DELAY, delay) / 1000.0)
 
-    @staticmethod
-    def _wait(stopping: threading.Event, due: float) -> bool:
-        """Wait until <due>.  True if the animation was stopped instead."""
-        return stopping.wait(max(0.0, due - time.monotonic()))
-
     def _show_frame(self, paintable: _AnimationPaintable,
-                    texture: Gdk.Texture,
-                    stopping: threading.Event) -> bool:
+                    texture: Gdk.Texture, playback: _Playback) -> bool:
         """Put a decoded frame on screen, if it is still wanted."""
-        if not stopping.is_set() and paintable is self._animation:
+        if not playback.is_stopped() and paintable is self._animation:
             paintable.set_texture(texture)
         return GLib.SOURCE_REMOVE
 

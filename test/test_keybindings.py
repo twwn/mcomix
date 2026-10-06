@@ -492,6 +492,7 @@ class DocumentedKeyBindingsTest(MComixTest):
         'Toggle double page mode': 'double_page',
         'Toggle manga mode': 'manga_mode',
         'Toggle slideshow mode': 'slideshow',
+        'Pause or resume an animated page': 'pause_animation',
         'Best fit mode': 'best_fit_mode',
         'Fit to width mode': 'fit_width_mode',
         'Fit to height mode': 'fit_height_mode',
