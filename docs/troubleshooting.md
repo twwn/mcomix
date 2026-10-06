@@ -49,6 +49,9 @@ Thumbnails of books and images | `~/.cache/thumbnails`, shared with other progra
 
 On Linux, `XDG_CONFIG_HOME`, `XDG_DATA_HOME` and `XDG_CACHE_HOME` move these.
 
+A library MComix cannot read (`library.db`) is renamed `library.db.broken`, and an empty one is started.
+One it cannot open at all is left alone; the library then lasts until MComix quits.
+
 To start over, quit MComix and delete `preferences.conf`, `keybindings.conf`, or the whole folder.
 Without quitting: "Clear dialog choices" in the preferences asks every question again, and "Reset keys" on the Shortcuts tab puts back the default keys.
 

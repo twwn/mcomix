@@ -1923,3 +1923,61 @@ class EncryptedBookTest(LibraryDatabaseTest):
                 self.assertTrue(self.library.add_book(path))
                 self.assertIsNotNone(self.library.get_book_by_path(path))
         self.assertEqual([], self.asked)
+
+
+class UnreadableDatabaseTest(LibraryDatabaseTest):
+
+    """A library.db SQLite would not read stopped MComix before it had a
+    window: the file handler opens the library as the window is built
+    (upstream forum topic 768ea634)."""
+
+    def _write(self, content):
+        with open(constants.LIBRARY_DATABASE_PATH, 'wb') as fp:
+            fp.write(content)
+
+    def test_a_file_that_is_not_a_database_is_kept_and_replaced(self):
+        self._write(b'not a database ' * 512)
+        with self.assertLogs('mcomix', level='ERROR'):
+            library = backend.LibraryBackend()
+        try:
+            self.assertTrue(library._table_exists('book'))
+            self.assertEqual([], library.get_books_in_collection())
+        finally:
+            library.close()
+        with open(constants.LIBRARY_DATABASE_PATH + '.broken', 'rb') as fp:
+            self.assertTrue(fp.read().startswith(b'not a database'))
+        # The new file is a library of its own, which the next start
+        # opens without a word.
+        backend.LibraryBackend().close()
+
+    def test_a_damaged_database_is_kept_and_replaced(self):
+        """A file whose header is SQLite's and whose pages are not."""
+        library = backend.LibraryBackend()
+        library.close()
+        with open(constants.LIBRARY_DATABASE_PATH, 'r+b') as fp:
+            fp.seek(100)
+            fp.write(b'\xff' * 4000)
+        with self.assertLogs('mcomix', level='ERROR'):
+            library = backend.LibraryBackend()
+        try:
+            self.assertTrue(library._table_exists('book'))
+        finally:
+            library.close()
+        self.assertTrue(os.path.isfile(
+            constants.LIBRARY_DATABASE_PATH + '.broken'))
+
+    def test_a_database_that_cannot_be_opened_is_left_alone(self):
+        """Nothing is wrong with what is in the way, so nothing is
+        moved, and the library lasts as long as MComix runs."""
+        os.makedirs(constants.LIBRARY_DATABASE_PATH)
+        with self.assertLogs('mcomix', level='ERROR'):
+            library = backend.LibraryBackend()
+        try:
+            library.add_collection('Kept in memory')
+            self.assertIsNotNone(
+                library.get_collection_by_name('Kept in memory'))
+        finally:
+            library.close()
+        self.assertTrue(os.path.isdir(constants.LIBRARY_DATABASE_PATH))
+        self.assertFalse(os.path.exists(
+            constants.LIBRARY_DATABASE_PATH + '.broken'))

@@ -60,18 +60,6 @@ class _LibraryBackend:
     DB_VERSION = 10
 
     def __init__(self) -> None:
-
-        def row_factory(cursor: dbapi2.Cursor, row: tuple[Any, ...]) -> Any:  # type: ignore[explicit-any]  # a row holds whatever the query selected
-            """Return rows as sequences only when they have more than
-            one element.
-            """
-            if len(row) == 1:
-                return row[0]
-            return row
-
-        self._con = dbapi2.connect(constants.LIBRARY_DATABASE_PATH,
-                                   check_same_thread=False, isolation_level=None)
-        self._con.row_factory = row_factory
         #: Held from running a statement to closing its cursor.  Threads
         #: other than the main one read the library through this same
         #: connection - the cover workers ask each book for the page it
@@ -89,8 +77,69 @@ class _LibraryBackend:
 
         self.watchlist = backend_types._WatchList(self)
 
-        version = self._library_version()
-        self._upgrade_database(version, _LibraryBackend.DB_VERSION)
+        connection = None
+        try:
+            connection = self._con = self._connect(
+                constants.LIBRARY_DATABASE_PATH)
+            self._upgrade_database(self._library_version(),
+                                   _LibraryBackend.DB_VERSION)
+        except dbapi2.DatabaseError as error:
+            if connection is not None:
+                connection.close()
+            self._open_another(error)
+
+    @staticmethod
+    def _connect(path: str) -> dbapi2.Connection:
+        """A connection to the database at <path>, which answers a row
+        of one column with the value alone."""
+
+        def row_factory(cursor: dbapi2.Cursor, row: tuple[Any, ...]) -> Any:  # type: ignore[explicit-any]  # a row holds whatever the query selected
+            """Return rows as sequences only when they have more than
+            one element.
+            """
+            if len(row) == 1:
+                return row[0]
+            return row
+
+        connection = dbapi2.connect(path, check_same_thread=False,
+                                    isolation_level=None)
+        connection.row_factory = row_factory
+        return connection
+
+    def _open_another(self, error: dbapi2.DatabaseError) -> None:
+        """Go on with another library in place of the file that could
+        not be read, which raised <error>.
+
+        The library is opened by the file handler as the main window is
+        built, so a library.db SQLite would not read stopped MComix
+        before it had a window (upstream forum topic 768ea634).  A file
+        that is not a database, or a damaged one, is kept beside as
+        library.db.broken, as an unreadable preferences file is, and a
+        new library is started in its place.  Any other error - a file
+        that cannot be opened at all, or is locked - leaves the file
+        alone, and the library is kept in memory until MComix quits.
+        """
+        path = constants.LIBRARY_DATABASE_PATH
+        if error.sqlite_errorname in ('SQLITE_NOTADB', 'SQLITE_CORRUPT'):
+            broken = path + '.broken'
+            try:
+                os.replace(path, broken)
+            except OSError as move_error:
+                log.error('The library database cannot be read (%s), '
+                          'nor kept as %s: %s', error, broken, move_error)
+            else:
+                log.error('The library database cannot be read (%s), and '
+                          'is kept as %s', error, broken)
+                self._con = self._connect(path)
+                self._upgrade_database(self._library_version(),
+                                       _LibraryBackend.DB_VERSION)
+                return
+        else:
+            log.error('The library database cannot be opened (%s); the '
+                      'library is kept in memory until MComix quits', error)
+        self._con = self._connect(':memory:')
+        self._upgrade_database(self._library_version(),
+                               _LibraryBackend.DB_VERSION)
 
     def get_books_in_collection(self, collection: int | None = None) -> list[int]:
         """Return a sequence with all the books in <collection>, or *ALL*
