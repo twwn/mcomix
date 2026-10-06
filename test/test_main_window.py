@@ -1079,6 +1079,26 @@ class MainWindowTest(MComixTest):
         self.assertEqual([(1, True), (-1, True), (-1, True), (1, True)],
                          turned)
 
+    def test_shift_alt_and_an_arrow_turn_ten_pages_the_way_it_points(self):
+        """ALT and an arrow turn the page the way the arrow points, and
+        SHIFT+ALT and an arrow turned ten pages forward on Right and back
+        on Left whichever way the book reads (upstream bug 57).  The
+        page keys still go forward and back."""
+        manager = keybindings.keybinding_manager(self.window)
+        turned = []
+        # The window's, not the handler's: the page keys were registered
+        # with the handler's _flip_page itself, which a patch of the
+        # attribute does not reach.
+        with unittest.mock.patch.object(
+                self.window, 'flip_page',
+                side_effect=lambda pages, **kwargs: turned.append(pages)):
+            for manga in (False, True):
+                self.window.is_manga_mode = manga
+                for key in ('<Shift><Alt>Right', '<Shift><Alt>Left',
+                            '<Shift>Page_Down', '<Shift>Page_Up'):
+                    manager.execute(keybindings.parse_accelerator(key))
+        self.assertEqual([10, -10, 10, -10, -10, 10, 10, -10], turned)
+
     def test_a_sideways_turn_scrolls_across_either_way(self):
         """Sideways scrolls across, and turns the page at the side;
         which way the turn goes depends on the book, which

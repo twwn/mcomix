@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 0.90.4\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-06 16:21+0200\n"
+"POT-Creation-Date: 2026-10-06 16:26+0200\n"
 "PO-Revision-Date: 2018-02-24 08:43+0100\n"
 "Last-Translator: Jonatan Nyberg <jonatan@autistici.org>\n"
 "Language-Team: Swedish <LL@li.org>\n"
@@ -309,7 +309,7 @@ msgstr "Ange ett nytt namn för den här filen."
 
 #
 # File: src/edit.py, line: 28
-#: mcomix/edit_dialog.py:58 mcomix/keybindings.py:151
+#: mcomix/edit_dialog.py:58 mcomix/keybindings.py:153
 msgid "Edit archive"
 msgstr "Redigera arkiv"
 
@@ -393,7 +393,7 @@ msgstr "Markera _allt"
 
 #
 # File: src/enhance.py, line: 51
-#: mcomix/enhance_dialog.py:28 mcomix/keybindings.py:153
+#: mcomix/enhance_dialog.py:28 mcomix/keybindings.py:155
 msgid "Enhance image"
 msgstr "Förbättra bild"
 
@@ -634,7 +634,7 @@ msgstr[1] "%d sidor"
 #
 # File: src/filechooser.py, line: 35
 # File: src/library.py, line: 489
-#: mcomix/file_chooser_base_dialog.py:186 mcomix/keybindings.py:152
+#: mcomix/file_chooser_base_dialog.py:186 mcomix/keybindings.py:154
 msgid "Open"
 msgstr "Öppna"
 
@@ -780,10 +780,10 @@ msgstr "Föregående sida"
 #: mcomix/keybindings.py:45 mcomix/keybindings.py:46 mcomix/keybindings.py:47
 #: mcomix/keybindings.py:48 mcomix/keybindings.py:49 mcomix/keybindings.py:50
 #: mcomix/keybindings.py:51 mcomix/keybindings.py:52 mcomix/keybindings.py:53
-#: mcomix/keybindings.py:54 mcomix/keybindings.py:56 mcomix/keybindings.py:57
-#: mcomix/keybindings.py:58 mcomix/keybindings.py:60 mcomix/keybindings.py:61
-#: mcomix/keybindings.py:62 mcomix/keybindings.py:63
-#: mcomix/preferences_dialog.py:98
+#: mcomix/keybindings.py:54 mcomix/keybindings.py:55 mcomix/keybindings.py:56
+#: mcomix/keybindings.py:58 mcomix/keybindings.py:59 mcomix/keybindings.py:60
+#: mcomix/keybindings.py:62 mcomix/keybindings.py:63 mcomix/keybindings.py:64
+#: mcomix/keybindings.py:65 mcomix/preferences_dialog.py:98
 msgid "Navigation"
 msgstr "Navigering"
 
@@ -816,482 +816,490 @@ msgstr "Sida åt vänster"
 msgid "Page to the right"
 msgstr "Sida åt höger"
 
+#: mcomix/keybindings.py:51
+msgid "10 pages to the left"
+msgstr "Tio sidor åt vänster"
+
+#: mcomix/keybindings.py:52
+msgid "10 pages to the right"
+msgstr "Tio sidor åt höger"
+
 #
 # File: src/ui.py, line: 284
-#: mcomix/keybindings.py:51
+#: mcomix/keybindings.py:53
 msgid "Previous single page"
 msgstr "Föregående sida (alltid en sida)"
 
 #
 # File: src/ui.py, line: 285
-#: mcomix/keybindings.py:52
+#: mcomix/keybindings.py:54
 msgid "Next single page"
 msgstr "Nästa sida (alltid en sida)"
 
-#: mcomix/keybindings.py:53
+#: mcomix/keybindings.py:55
 msgid "Single page to the left"
 msgstr "En sida åt vänster"
 
-#: mcomix/keybindings.py:54
+#: mcomix/keybindings.py:56
 msgid "Single page to the right"
 msgstr "En sida åt höger"
 
 #
 # File: src/ui.py, line: 282
-#: mcomix/keybindings.py:56 mcomix/ui.py:460
+#: mcomix/keybindings.py:58 mcomix/ui.py:460
 msgid "First page"
 msgstr "Första sidan"
 
 #
 # File: src/ui.py, line: 286
-#: mcomix/keybindings.py:57 mcomix/ui.py:461
+#: mcomix/keybindings.py:59 mcomix/ui.py:461
 msgid "Last page"
 msgstr "Sista sidan"
 
-#: mcomix/keybindings.py:58
+#: mcomix/keybindings.py:60
 msgid "Go to page"
 msgstr "Gå till sida"
 
 #
 # File: src/edit.py, line: 28
-#: mcomix/keybindings.py:60 mcomix/ui.py:465
+#: mcomix/keybindings.py:62 mcomix/ui.py:465
 msgid "Next archive"
 msgstr "Nästa arkiv"
 
 #
 # File: src/ui.py, line: 284
-#: mcomix/keybindings.py:61 mcomix/ui.py:466
+#: mcomix/keybindings.py:63 mcomix/ui.py:466
 msgid "Previous archive"
 msgstr "Föregående arkiv"
 
-#: mcomix/keybindings.py:62 mcomix/ui.py:467
+#: mcomix/keybindings.py:64 mcomix/ui.py:467
 msgid "Next directory"
 msgstr "Nästa katalog"
 
-#: mcomix/keybindings.py:63 mcomix/ui.py:468
+#: mcomix/keybindings.py:65 mcomix/ui.py:468
 msgid "Previous directory"
 msgstr "Föregående katalog"
 
-#: mcomix/keybindings.py:66
+#: mcomix/keybindings.py:68
 msgid "Align bottom left"
 msgstr "Rulla till nedre vänstra"
 
 #
 # File: src/preferences.py, line: 167
-#: mcomix/keybindings.py:66 mcomix/keybindings.py:67 mcomix/keybindings.py:68
-#: mcomix/keybindings.py:70 mcomix/keybindings.py:71 mcomix/keybindings.py:72
-#: mcomix/keybindings.py:74 mcomix/keybindings.py:75 mcomix/keybindings.py:76
-#: mcomix/keybindings.py:78 mcomix/keybindings.py:79 mcomix/keybindings.py:80
-#: mcomix/keybindings.py:81 mcomix/keybindings.py:83 mcomix/keybindings.py:84
+#: mcomix/keybindings.py:68 mcomix/keybindings.py:69 mcomix/keybindings.py:70
+#: mcomix/keybindings.py:72 mcomix/keybindings.py:73 mcomix/keybindings.py:74
+#: mcomix/keybindings.py:76 mcomix/keybindings.py:77 mcomix/keybindings.py:78
+#: mcomix/keybindings.py:80 mcomix/keybindings.py:81 mcomix/keybindings.py:82
+#: mcomix/keybindings.py:83 mcomix/keybindings.py:85 mcomix/keybindings.py:86
 #: mcomix/preferences_dialog.py:224
 msgid "Scroll"
 msgstr "Scrollning"
 
-#: mcomix/keybindings.py:67
+#: mcomix/keybindings.py:69
 msgid "Align bottom center"
 msgstr "Rulla till botten centrum"
 
-#: mcomix/keybindings.py:68
+#: mcomix/keybindings.py:70
 msgid "Align bottom right"
 msgstr "Rulla till botten höger"
 
-#: mcomix/keybindings.py:70
+#: mcomix/keybindings.py:72
 msgid "Align middle left"
 msgstr "Rulla till mellan vänster"
 
-#: mcomix/keybindings.py:71
+#: mcomix/keybindings.py:73
 msgid "Align center"
 msgstr "Rulla till centrum"
 
-#: mcomix/keybindings.py:72
+#: mcomix/keybindings.py:74
 msgid "Align middle right"
 msgstr "Rulla till mellan höger"
 
-#: mcomix/keybindings.py:74
+#: mcomix/keybindings.py:76
 msgid "Align top left"
 msgstr "Rulla till toppen vänster"
 
-#: mcomix/keybindings.py:75
+#: mcomix/keybindings.py:77
 msgid "Align top center"
 msgstr "Rulla till toppen centrum"
 
-#: mcomix/keybindings.py:76
+#: mcomix/keybindings.py:78
 msgid "Align top right"
 msgstr "Rulla till toppen höger"
 
-#: mcomix/keybindings.py:78
+#: mcomix/keybindings.py:80
 msgid "Scroll down"
 msgstr "Rulla nedåt"
 
-#: mcomix/keybindings.py:79
+#: mcomix/keybindings.py:81
 msgid "Scroll up"
 msgstr "Rulla uppåt"
 
-#: mcomix/keybindings.py:80
+#: mcomix/keybindings.py:82
 msgid "Scroll right"
 msgstr "Rulla höger"
 
-#: mcomix/keybindings.py:81
+#: mcomix/keybindings.py:83
 msgid "Scroll left"
 msgstr "Rulla vänster"
 
-#: mcomix/keybindings.py:83
+#: mcomix/keybindings.py:85
 msgid "Smart scroll up"
 msgstr "Smart rulla uppåt"
 
-#: mcomix/keybindings.py:84
+#: mcomix/keybindings.py:86
 msgid "Smart scroll down"
 msgstr "Smart rulla nedåt"
 
-#: mcomix/keybindings.py:87
+#: mcomix/keybindings.py:89
 msgid "Zoom in"
 msgstr "Zooma in"
 
 #
 # File: src/ui.py, line: 42
-#: mcomix/keybindings.py:87 mcomix/keybindings.py:88 mcomix/keybindings.py:89
+#: mcomix/keybindings.py:89 mcomix/keybindings.py:90 mcomix/keybindings.py:91
 msgid "Zoom"
 msgstr "Zooma"
 
-#: mcomix/keybindings.py:88
+#: mcomix/keybindings.py:90
 msgid "Zoom out"
 msgstr "Zooma ut"
 
-#: mcomix/keybindings.py:89
+#: mcomix/keybindings.py:91
 msgid "Normal size"
 msgstr "Normal storlek"
 
 #
 # File: src/ui.py, line: 93
-#: mcomix/keybindings.py:91
+#: mcomix/keybindings.py:93
 msgid "Keep transformation"
 msgstr "Behåll transformation"
 
 #
 # File: src/ui.py, line: 93
-#: mcomix/keybindings.py:91 mcomix/keybindings.py:92 mcomix/keybindings.py:93
-#: mcomix/keybindings.py:94 mcomix/keybindings.py:95 mcomix/keybindings.py:96
-#: mcomix/keybindings.py:97
+#: mcomix/keybindings.py:93 mcomix/keybindings.py:94 mcomix/keybindings.py:95
+#: mcomix/keybindings.py:96 mcomix/keybindings.py:97 mcomix/keybindings.py:98
+#: mcomix/keybindings.py:99
 msgid "Transformation"
 msgstr "Transformation"
 
 #
 # File: src/ui.py, line: 52
-#: mcomix/keybindings.py:92 mcomix/keybindings.py:99 mcomix/keybindings.py:101
+#: mcomix/keybindings.py:94 mcomix/keybindings.py:101 mcomix/keybindings.py:103
 msgid "Rotate 90° CW"
 msgstr "Rotera 90 grader medurs"
 
 #
 # File: src/ui.py, line: 54
-#: mcomix/keybindings.py:93
+#: mcomix/keybindings.py:95
 msgid "Rotate 180°"
 msgstr "Rotera 180 grader"
 
 #
 # File: src/ui.py, line: 56
-#: mcomix/keybindings.py:94 mcomix/keybindings.py:100 mcomix/keybindings.py:102
+#: mcomix/keybindings.py:96 mcomix/keybindings.py:102 mcomix/keybindings.py:104
 msgid "Rotate 90° CCW"
 msgstr "Rotera 90 grader moturs"
 
 #
 # File: src/ui.py, line: 58
-#: mcomix/keybindings.py:95
+#: mcomix/keybindings.py:97
 msgid "Flip horizontally"
 msgstr "Spegelvänd horisontellt"
 
 #
 # File: src/ui.py, line: 60
-#: mcomix/keybindings.py:96
+#: mcomix/keybindings.py:98
 msgid "Flip vertically"
 msgstr "Spegelvänd vertikalt"
 
-#: mcomix/keybindings.py:97
+#: mcomix/keybindings.py:99
 msgid "Never autorotate"
 msgstr "Rotera aldrig automatiskt"
 
-#: mcomix/keybindings.py:99 mcomix/keybindings.py:100
+#: mcomix/keybindings.py:101 mcomix/keybindings.py:102
 msgid "Autorotate by width"
 msgstr "Rotera automatiskt efter bredd"
 
-#: mcomix/keybindings.py:101 mcomix/keybindings.py:102
+#: mcomix/keybindings.py:103 mcomix/keybindings.py:104
 msgid "Autorotate by height"
 msgstr "Rotera automatiskt efter höjd"
 
 #
 # File: src/preferences.py, line: 177
 # File: src/ui.py, line: 296
-#: mcomix/keybindings.py:104 mcomix/preferences_dialog.py:317 mcomix/ui.py:511
+#: mcomix/keybindings.py:106 mcomix/preferences_dialog.py:317 mcomix/ui.py:511
 msgid "Double page mode"
 msgstr "Dubbelsidesläge"
 
 #
 # File: src/preferences.py, line: 263
 # File: src/ui.py, line: 290
-#: mcomix/keybindings.py:104 mcomix/keybindings.py:105
 #: mcomix/keybindings.py:106 mcomix/keybindings.py:107
-#: mcomix/keybindings.py:109 mcomix/keybindings.py:110
-#: mcomix/keybindings.py:112 mcomix/keybindings.py:113
+#: mcomix/keybindings.py:108 mcomix/keybindings.py:109
+#: mcomix/keybindings.py:111 mcomix/keybindings.py:112
 #: mcomix/keybindings.py:114 mcomix/keybindings.py:115
-#: mcomix/keybindings.py:116
+#: mcomix/keybindings.py:116 mcomix/keybindings.py:117
+#: mcomix/keybindings.py:118
 msgid "View mode"
 msgstr "Visningsläge"
 
-#: mcomix/keybindings.py:105
+#: mcomix/keybindings.py:107
 msgid "Title page alone"
 msgstr "Titelsida ensam"
 
 #
 # File: src/ui.py, line: 297
-#: mcomix/keybindings.py:106 mcomix/ui.py:519
+#: mcomix/keybindings.py:108 mcomix/ui.py:519
 msgid "Manga mode"
 msgstr "Mangaläge"
 
-#: mcomix/keybindings.py:107 mcomix/ui.py:520
+#: mcomix/keybindings.py:109 mcomix/ui.py:520
 msgid "Invert smart scroll"
 msgstr "Vänd smart rullning"
 
 #
 # File: src/ui.py, line: 298
-#: mcomix/keybindings.py:109 mcomix/ui.py:524
+#: mcomix/keybindings.py:111 mcomix/ui.py:524
 msgid "Magnifying lens"
 msgstr "Förstoringsglas"
 
-#: mcomix/keybindings.py:110 mcomix/ui.py:525
+#: mcomix/keybindings.py:112 mcomix/ui.py:525
 msgid "Stretch small images"
 msgstr "Sträck ut små bilder"
 
 #
 # File: src/preferences.py, line: 262
 # File: src/ui.py, line: 288
-#: mcomix/keybindings.py:112 mcomix/ui.py:532
+#: mcomix/keybindings.py:114 mcomix/ui.py:532
 msgid "Best fit mode"
 msgstr "Bästa anpassningsläge"
 
 #
 # File: src/preferences.py, line: 263
 # File: src/ui.py, line: 290
-#: mcomix/keybindings.py:113 mcomix/ui.py:533
+#: mcomix/keybindings.py:115 mcomix/ui.py:533
 msgid "Fit width mode"
 msgstr "Breddanpassningsläge"
 
 #
 # File: src/preferences.py, line: 264
 # File: src/ui.py, line: 292
-#: mcomix/keybindings.py:114 mcomix/ui.py:534
+#: mcomix/keybindings.py:116 mcomix/ui.py:534
 msgid "Fit height mode"
 msgstr "Höjdanpassningsläge"
 
 #
 # File: src/ui.py, line: 103
-#: mcomix/keybindings.py:115
+#: mcomix/keybindings.py:117
 msgid "Fit size mode"
 msgstr "Anpassa storleksläge"
 
 #
 # File: src/preferences.py, line: 265
 # File: src/ui.py, line: 294
-#: mcomix/keybindings.py:116 mcomix/ui.py:536
+#: mcomix/keybindings.py:118 mcomix/ui.py:536
 msgid "Manual zoom mode"
 msgstr "Manuellt zoomläge"
 
-#: mcomix/keybindings.py:119 mcomix/ui.py:473
+#: mcomix/keybindings.py:121 mcomix/ui.py:473
 msgid "Leave fullscreen"
 msgstr "Avsluta fullskärm"
 
-#: mcomix/keybindings.py:119 mcomix/keybindings.py:121
-#: mcomix/keybindings.py:122 mcomix/keybindings.py:123
+#: mcomix/keybindings.py:121 mcomix/keybindings.py:123
 #: mcomix/keybindings.py:124 mcomix/keybindings.py:125
-#: mcomix/keybindings.py:127 mcomix/keybindings.py:128
+#: mcomix/keybindings.py:126 mcomix/keybindings.py:127
 #: mcomix/keybindings.py:129 mcomix/keybindings.py:130
 #: mcomix/keybindings.py:131 mcomix/keybindings.py:132
+#: mcomix/keybindings.py:133 mcomix/keybindings.py:134
 #: mcomix/preferences_dialog.py:131
 msgid "User interface"
 msgstr "Användargränssnitt"
 
-#: mcomix/keybindings.py:121
+#: mcomix/keybindings.py:123
 msgid "OSD panel"
 msgstr "Visa OSD-panelen"
 
-#: mcomix/keybindings.py:122
+#: mcomix/keybindings.py:124
 msgid "Minimize"
 msgstr "Minimera"
 
 #
 # File: src/preferences.py, line: 271
-#: mcomix/keybindings.py:123 mcomix/preferences_dialog.py:307
+#: mcomix/keybindings.py:125 mcomix/preferences_dialog.py:307
 msgid "Fullscreen"
 msgstr "Helskärm"
 
-#: mcomix/keybindings.py:124
+#: mcomix/keybindings.py:126
 msgid "Toolbar"
 msgstr "Verktygsrad"
 
-#: mcomix/keybindings.py:125
+#: mcomix/keybindings.py:127
 msgid "Menubar"
 msgstr "Menyrad"
 
-#: mcomix/keybindings.py:126
+#: mcomix/keybindings.py:128
 msgid "Context menu"
 msgstr "Snabbmeny"
 
 #
 # File: src/ui.py, line: 83
-#: mcomix/keybindings.py:128
+#: mcomix/keybindings.py:130
 msgid "Statusbar"
 msgstr "Statusrad"
 
 #
 # File: src/ui.py, line: 85
-#: mcomix/keybindings.py:129
+#: mcomix/keybindings.py:131
 msgid "Scrollbars"
 msgstr "Rullningslister"
 
 #
 # File: src/preferences.py, line: 109
-#: mcomix/keybindings.py:130 mcomix/preferences_dialog.py:150
+#: mcomix/keybindings.py:132 mcomix/preferences_dialog.py:150
 msgid "Thumbnails"
 msgstr "Miniatyrbilder"
 
 #
 # File: src/ui.py, line: 89
-#: mcomix/keybindings.py:131
+#: mcomix/keybindings.py:133
 msgid "Hide all"
 msgstr "Göm alla"
 
 #
 # File: src/preferences.py, line: 279
-#: mcomix/keybindings.py:132 mcomix/slideshow.py:54 mcomix/ui.py:523
+#: mcomix/keybindings.py:134 mcomix/slideshow.py:54 mcomix/ui.py:523
 msgid "Start slideshow"
 msgstr "Starta bildspel"
 
-#: mcomix/keybindings.py:135
+#: mcomix/keybindings.py:137
 msgid "Delete"
 msgstr "Ta bort"
 
 #
 # File: src/preferences.py, line: 196
-#: mcomix/keybindings.py:135 mcomix/keybindings.py:137
-#: mcomix/keybindings.py:138 mcomix/keybindings.py:141
-#: mcomix/keybindings.py:142 mcomix/keybindings.py:143
+#: mcomix/keybindings.py:137 mcomix/keybindings.py:139
+#: mcomix/keybindings.py:140 mcomix/keybindings.py:143
 #: mcomix/keybindings.py:144 mcomix/keybindings.py:145
-#: mcomix/keybindings.py:147 mcomix/keybindings.py:148
-#: mcomix/keybindings.py:149 mcomix/keybindings.py:151
-#: mcomix/keybindings.py:152 mcomix/keybindings.py:153
+#: mcomix/keybindings.py:146 mcomix/keybindings.py:147
+#: mcomix/keybindings.py:149 mcomix/keybindings.py:150
+#: mcomix/keybindings.py:151 mcomix/keybindings.py:153
 #: mcomix/keybindings.py:154 mcomix/keybindings.py:155
+#: mcomix/keybindings.py:156 mcomix/keybindings.py:157
 msgid "File"
 msgstr "Fil"
 
-#: mcomix/keybindings.py:136
+#: mcomix/keybindings.py:138
 msgid "Delete permanently"
 msgstr "Ta bort permanent"
 
-#: mcomix/keybindings.py:138
+#: mcomix/keybindings.py:140
 msgid "Rename page"
 msgstr "Döp om sidan"
 
-#: mcomix/keybindings.py:139
+#: mcomix/keybindings.py:141
 msgid "Undo"
 msgstr "Ångra"
 
-#: mcomix/keybindings.py:139 mcomix/keybindings.py:140
+#: mcomix/keybindings.py:141 mcomix/keybindings.py:142
 msgid "Edit"
 msgstr "Redigera"
 
-#: mcomix/keybindings.py:140
+#: mcomix/keybindings.py:142
 msgid "Redo"
 msgstr "Gör om"
 
 #
 # File: src/edit.py, line: 51
-#: mcomix/keybindings.py:141
+#: mcomix/keybindings.py:143
 msgid "Refresh"
 msgstr "Uppdatera"
 
 #
 # File: src/ui.py, line: 48
-#: mcomix/keybindings.py:142
+#: mcomix/keybindings.py:144
 msgid "Close"
 msgstr "Stäng"
 
 #
 # File: src/ui.py, line: 50
-#: mcomix/keybindings.py:143
+#: mcomix/keybindings.py:145
 msgid "Quit"
 msgstr "Avsluta"
 
-#: mcomix/keybindings.py:144
+#: mcomix/keybindings.py:146
 msgid "Save and quit"
 msgstr "Spara och avsluta"
 
-#: mcomix/keybindings.py:145
+#: mcomix/keybindings.py:147
 msgid "Save As"
 msgstr "Spara som"
 
 #
 # File: src/properties.py, line: 135
-#: mcomix/keybindings.py:147
+#: mcomix/keybindings.py:149
 msgid "Archive comments"
 msgstr "Arkiv kommentarer"
 
 #
 # File: src/properties.py, line: 89
-#: mcomix/keybindings.py:148 mcomix/properties_dialog.py:36
+#: mcomix/keybindings.py:150 mcomix/properties_dialog.py:36
 msgid "Properties"
 msgstr "Egenskaper"
 
 #
 # File: src/preferences.py, line: 78
-#: mcomix/keybindings.py:149 mcomix/preferences_dialog.py:69
+#: mcomix/keybindings.py:151 mcomix/preferences_dialog.py:69
 msgid "Preferences"
 msgstr "Inställningar"
 
 #
 # File: src/library.py, line: 38
-#: mcomix/keybindings.py:154 mcomix/library/main_dialog.py:55
+#: mcomix/keybindings.py:156 mcomix/library/main_dialog.py:55
 msgid "Library"
 msgstr "Bibliotek"
 
-#: mcomix/keybindings.py:155 mcomix/ui.py:527
+#: mcomix/keybindings.py:157 mcomix/ui.py:527
 msgid "Invert image colors"
 msgstr "Invertera bildfärger"
 
 #
 # File: src/bookmark.py, line: 27
-#: mcomix/keybindings.py:158
+#: mcomix/keybindings.py:160
 msgid "Add bookmark"
 msgstr "Lägg till bokmärke"
 
 #
 # File: src/ui.py, line: 64
-#: mcomix/keybindings.py:158 mcomix/keybindings.py:159
+#: mcomix/keybindings.py:160 mcomix/keybindings.py:161
 msgid "Bookmarks"
 msgstr "Bokmärken"
 
-#: mcomix/keybindings.py:159
+#: mcomix/keybindings.py:161
 msgid "Edit bookmarks"
 msgstr "Redigera bokmärken"
 
 #
 # File: src/comment.py, line: 16
 # File: src/preferences.py, line: 288
-#: mcomix/keybindings.py:167 mcomix/openwith.py:558
+#: mcomix/keybindings.py:169 mcomix/openwith.py:558
 msgid "Command"
 msgstr "Kommando"
 
 #
 # File: src/bookmark.py, line: 229
-#: mcomix/keybindings.py:168
+#: mcomix/keybindings.py:170
 msgid "External commands"
 msgstr "Externa kommandon"
 
-#: mcomix/keybindings.py:245
+#: mcomix/keybindings.py:247
 #, python-format
 msgid "Keybinding for \"%(action)s\" overrides hotkey for another action."
 msgstr ""
 "Tangentbindning för \"%(action)s\" åsidosätter snabbtangent för en annan "
 "åtgärd."
 
-#: mcomix/keybindings.py:430 mcomix/keybindings.py:438
+#: mcomix/keybindings.py:435 mcomix/keybindings.py:443
 #, python-format
 msgid "Couldn't load keybindings: %s"
 msgstr "Det gick inte att läsa tangentbindningar: %s"

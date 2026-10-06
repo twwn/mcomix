@@ -48,6 +48,8 @@ BINDING_INFO: "dict[str, dict[str, str]]" = {
     'next_page_ff': {'title': _('Forward 10 pages'), 'group': _('Navigation')},
     'previous_page_dynamic': {'title': _('Page to the left'), 'group': _('Navigation')},
     'next_page_dynamic': {'title': _('Page to the right'), 'group': _('Navigation')},
+    'previous_page_ff_dynamic': {'title': _('10 pages to the left'), 'group': _('Navigation')},
+    'next_page_ff_dynamic': {'title': _('10 pages to the right'), 'group': _('Navigation')},
     'previous_page_singlestep': {'title': _('Previous single page'), 'group': _('Navigation')},
     'next_page_singlestep': {'title': _('Next single page'), 'group': _('Navigation')},
     'previous_page_singlestep_dynamic': {'title': _('Single page to the left'), 'group': _('Navigation')},
@@ -261,17 +263,20 @@ class _KeybindingManager:
         action, once every action has been registered with its keys.
 
         The key is taken off the action that held it, as edit_accel()
-        takes it, and goes on the end of the new action's list, which
+        takes it - and only off the action the move names, where it
+        names one - and goes on the end of the new action's list, which
         keeps its own keys.  Done after registering rather than while
         reading the file: an action with nothing stored takes its
         defaults only where its list is empty.
         """
         moved = False
         while preferences.keybinding_moves:
-            name, accelerator = preferences.keybinding_moves.pop(0)
+            name, accelerator, only_from = \
+                preferences.keybinding_moves.pop(0)
             binding = parse_accelerator(accelerator)
             holder = self._binding_to_action.get(binding)
-            if holder == name:
+            if holder == name or (only_from is not None
+                                  and holder != only_from):
                 continue
             if holder is not None:
                 self._action_to_bindings[holder].remove(binding)

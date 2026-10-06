@@ -27,12 +27,16 @@ from mcomix import tools
 #:   4: "max extract threads" no longer carries the old default of 1.
 #:   5: "escape quits" is gone: Escape is a key binding of Quit instead.
 #:   6: "max threads" no longer carries MComix 3's default of 3.
-CONFIG_FORMAT_VERSION = 6
+#:   7: SHIFT+ALT and the arrows move to the ten-page turns that follow
+#:      manga mode.
+CONFIG_FORMAT_VERSION = 7
 
 #: Keys a step of _migrate_preferences() has given to another action, as
-#: (action, accelerator): the key bindings are read after the
-#: preferences, and take these over once every action has its keys.
-keybinding_moves: list[tuple[str, str]] = []
+#: (action, accelerator, holder): the key bindings are read after the
+#: preferences, and take these over once every action has its keys.  A
+#: key is taken only from <holder>, where one is named, so that a key
+#: the reader has bound elsewhere stays where they put it.
+keybinding_moves: list[tuple[str, str, str | None]] = []
 
 #: The key the version above is stored under.  It lives among the
 #: preferences rather than wrapping them, so the file stays a flat mapping.
@@ -500,7 +504,18 @@ def _migrate_preferences(saved_prefs: dict[str, object]) -> None:
         # "Escape key closes program" is what binding Escape to Quit
         # does, and the key bindings are where a key's action is set.
         if saved_prefs.pop('escape quits', False) is True:
-            keybinding_moves.append(('quit', 'Escape'))
+            keybinding_moves.append(('quit', 'Escape', None))
+
+    if version < 7:
+        # The ten-page turns on SHIFT+ALT and the arrows ignored manga
+        # mode (upstream bug 57), and have actions of their own now.  A
+        # keybindings.conf written before keeps the keys on the old
+        # actions, where the new ones cannot take them as defaults.
+        keybinding_moves.append(
+            ('previous_page_ff_dynamic', '<Shift><Alt>Left',
+             'previous_page_ff'))
+        keybinding_moves.append(
+            ('next_page_ff_dynamic', '<Shift><Alt>Right', 'next_page_ff'))
 
     if version < 6:
         # Three thumbnail threads was MComix 3's default, written into

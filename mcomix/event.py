@@ -164,11 +164,21 @@ class EventHandler:
                          kwargs={'number_of_pages': 1, 'single_step': True})
 
         manager.register('previous_page_ff',
-                         ['<Shift>Page_Up', '<Shift>KP_Page_Up', '<Shift>BackSpace', '<Shift><Alt>Left'],
+                         ['<Shift>Page_Up', '<Shift>KP_Page_Up', '<Shift>BackSpace'],
                          self._flip_page, kwargs={'number_of_pages': -10})
         manager.register('next_page_ff',
-                         ['<Shift>Page_Down', '<Shift>KP_Page_Down', '<Shift><Alt>Right'],
+                         ['<Shift>Page_Down', '<Shift>KP_Page_Down'],
                          self._flip_page, kwargs={'number_of_pages': 10})
+        # Ten pages in the direction on screen, as ALT and the arrows
+        # turn one (upstream bug 57).
+        manager.register('previous_page_ff_dynamic',
+                         ['<Shift><Alt>Left'],
+                         self._left_right_page_progress,
+                         kwargs={'number_of_pages': -10})
+        manager.register('next_page_ff_dynamic',
+                         ['<Shift><Alt>Right'],
+                         self._left_right_page_progress,
+                         kwargs={'number_of_pages': 10})
 
         manager.register('first_page',
                          ['Home', 'KP_Home'],

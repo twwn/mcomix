@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 0.90.4\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-06 16:21+0200\n"
+"POT-Creation-Date: 2026-10-06 16:26+0200\n"
 "PO-Revision-Date: 2016-01-10 18:09+0200\n"
 "Last-Translator: Ulyanich Michael <ulianich_mihail@ukr.net>\n"
 "Language-Team: Russian <kde-russian@lists.kde.ru>\n"
@@ -312,7 +312,7 @@ msgstr "Пожалуйста, введите новое имя для этого
 
 #
 # File: src/edit.py, line: 28
-#: mcomix/edit_dialog.py:58 mcomix/keybindings.py:151
+#: mcomix/edit_dialog.py:58 mcomix/keybindings.py:153
 msgid "Edit archive"
 msgstr "Редактировать архив"
 
@@ -395,7 +395,7 @@ msgstr "Выделить вс_ё"
 
 #
 # File: src/enhance.py, line: 51
-#: mcomix/enhance_dialog.py:28 mcomix/keybindings.py:153
+#: mcomix/enhance_dialog.py:28 mcomix/keybindings.py:155
 msgid "Enhance image"
 msgstr "Улучшение изображения"
 
@@ -640,7 +640,7 @@ msgstr[2] "%d страниц"
 #
 # File: src/filechooser.py, line: 35
 # File: src/library.py, line: 489
-#: mcomix/file_chooser_base_dialog.py:186 mcomix/keybindings.py:152
+#: mcomix/file_chooser_base_dialog.py:186 mcomix/keybindings.py:154
 msgid "Open"
 msgstr "Открыть"
 
@@ -785,10 +785,10 @@ msgstr "Предыдущая страница"
 #: mcomix/keybindings.py:45 mcomix/keybindings.py:46 mcomix/keybindings.py:47
 #: mcomix/keybindings.py:48 mcomix/keybindings.py:49 mcomix/keybindings.py:50
 #: mcomix/keybindings.py:51 mcomix/keybindings.py:52 mcomix/keybindings.py:53
-#: mcomix/keybindings.py:54 mcomix/keybindings.py:56 mcomix/keybindings.py:57
-#: mcomix/keybindings.py:58 mcomix/keybindings.py:60 mcomix/keybindings.py:61
-#: mcomix/keybindings.py:62 mcomix/keybindings.py:63
-#: mcomix/preferences_dialog.py:98
+#: mcomix/keybindings.py:54 mcomix/keybindings.py:55 mcomix/keybindings.py:56
+#: mcomix/keybindings.py:58 mcomix/keybindings.py:59 mcomix/keybindings.py:60
+#: mcomix/keybindings.py:62 mcomix/keybindings.py:63 mcomix/keybindings.py:64
+#: mcomix/keybindings.py:65 mcomix/preferences_dialog.py:98
 msgid "Navigation"
 msgstr "Навигация"
 
@@ -821,481 +821,489 @@ msgstr "Страница слева"
 msgid "Page to the right"
 msgstr "Страница справа"
 
+#: mcomix/keybindings.py:51
+msgid "10 pages to the left"
+msgstr "10 страниц влево"
+
+#: mcomix/keybindings.py:52
+msgid "10 pages to the right"
+msgstr "10 страниц вправо"
+
 #
 # File: src/ui.py, line: 284
-#: mcomix/keybindings.py:51
+#: mcomix/keybindings.py:53
 msgid "Previous single page"
 msgstr "Предыдущая страница (всегда одна страница)"
 
 #
 # File: src/ui.py, line: 285
-#: mcomix/keybindings.py:52
+#: mcomix/keybindings.py:54
 msgid "Next single page"
 msgstr "Следующая страница (всегда одна страница)"
 
-#: mcomix/keybindings.py:53
+#: mcomix/keybindings.py:55
 msgid "Single page to the left"
 msgstr "Одна страница влево"
 
-#: mcomix/keybindings.py:54
+#: mcomix/keybindings.py:56
 msgid "Single page to the right"
 msgstr "Одна страница вправо"
 
 #
 # File: src/ui.py, line: 282
-#: mcomix/keybindings.py:56 mcomix/ui.py:460
+#: mcomix/keybindings.py:58 mcomix/ui.py:460
 msgid "First page"
 msgstr "Первая страница"
 
 #
 # File: src/ui.py, line: 286
-#: mcomix/keybindings.py:57 mcomix/ui.py:461
+#: mcomix/keybindings.py:59 mcomix/ui.py:461
 msgid "Last page"
 msgstr "Последняя страница"
 
-#: mcomix/keybindings.py:58
+#: mcomix/keybindings.py:60
 msgid "Go to page"
 msgstr "Перейти на страницу"
 
 #
 # File: src/edit.py, line: 28
-#: mcomix/keybindings.py:60 mcomix/ui.py:465
+#: mcomix/keybindings.py:62 mcomix/ui.py:465
 msgid "Next archive"
 msgstr "Следующий архив"
 
 #
 # File: src/ui.py, line: 284
-#: mcomix/keybindings.py:61 mcomix/ui.py:466
+#: mcomix/keybindings.py:63 mcomix/ui.py:466
 msgid "Previous archive"
 msgstr "Предыдущий архив"
 
-#: mcomix/keybindings.py:62 mcomix/ui.py:467
+#: mcomix/keybindings.py:64 mcomix/ui.py:467
 msgid "Next directory"
 msgstr "Следующий каталог"
 
-#: mcomix/keybindings.py:63 mcomix/ui.py:468
+#: mcomix/keybindings.py:65 mcomix/ui.py:468
 msgid "Previous directory"
 msgstr "Предыдущий каталог"
 
-#: mcomix/keybindings.py:66
+#: mcomix/keybindings.py:68
 msgid "Align bottom left"
 msgstr "Выровнять по левому нижнему углу"
 
 #
 # File: src/preferences.py, line: 167
-#: mcomix/keybindings.py:66 mcomix/keybindings.py:67 mcomix/keybindings.py:68
-#: mcomix/keybindings.py:70 mcomix/keybindings.py:71 mcomix/keybindings.py:72
-#: mcomix/keybindings.py:74 mcomix/keybindings.py:75 mcomix/keybindings.py:76
-#: mcomix/keybindings.py:78 mcomix/keybindings.py:79 mcomix/keybindings.py:80
-#: mcomix/keybindings.py:81 mcomix/keybindings.py:83 mcomix/keybindings.py:84
+#: mcomix/keybindings.py:68 mcomix/keybindings.py:69 mcomix/keybindings.py:70
+#: mcomix/keybindings.py:72 mcomix/keybindings.py:73 mcomix/keybindings.py:74
+#: mcomix/keybindings.py:76 mcomix/keybindings.py:77 mcomix/keybindings.py:78
+#: mcomix/keybindings.py:80 mcomix/keybindings.py:81 mcomix/keybindings.py:82
+#: mcomix/keybindings.py:83 mcomix/keybindings.py:85 mcomix/keybindings.py:86
 #: mcomix/preferences_dialog.py:224
 msgid "Scroll"
 msgstr "Прокрутка"
 
-#: mcomix/keybindings.py:67
+#: mcomix/keybindings.py:69
 msgid "Align bottom center"
 msgstr "Выровнять по центру снизу"
 
-#: mcomix/keybindings.py:68
+#: mcomix/keybindings.py:70
 msgid "Align bottom right"
 msgstr "Выровнять по правому нижнему углу"
 
-#: mcomix/keybindings.py:70
+#: mcomix/keybindings.py:72
 msgid "Align middle left"
 msgstr "Выровнять по левому краю посередине"
 
-#: mcomix/keybindings.py:71
+#: mcomix/keybindings.py:73
 msgid "Align center"
 msgstr "Выровнять по центру"
 
-#: mcomix/keybindings.py:72
+#: mcomix/keybindings.py:74
 msgid "Align middle right"
 msgstr "Выровнять по правому краю посередине"
 
-#: mcomix/keybindings.py:74
+#: mcomix/keybindings.py:76
 msgid "Align top left"
 msgstr "Выровнять по левому верхнему углу"
 
-#: mcomix/keybindings.py:75
+#: mcomix/keybindings.py:77
 msgid "Align top center"
 msgstr "Выровнять по центру сверху"
 
-#: mcomix/keybindings.py:76
+#: mcomix/keybindings.py:78
 msgid "Align top right"
 msgstr "Выровнять по правому верхнему углу"
 
-#: mcomix/keybindings.py:78
+#: mcomix/keybindings.py:80
 msgid "Scroll down"
 msgstr "Прокрутить вниз"
 
-#: mcomix/keybindings.py:79
+#: mcomix/keybindings.py:81
 msgid "Scroll up"
 msgstr "Прокрутить вверх"
 
-#: mcomix/keybindings.py:80
+#: mcomix/keybindings.py:82
 msgid "Scroll right"
 msgstr "Прокрутить вправо"
 
-#: mcomix/keybindings.py:81
+#: mcomix/keybindings.py:83
 msgid "Scroll left"
 msgstr "Прокрутить влево"
 
-#: mcomix/keybindings.py:83
+#: mcomix/keybindings.py:85
 msgid "Smart scroll up"
 msgstr "Умная прокрутка вверх"
 
-#: mcomix/keybindings.py:84
+#: mcomix/keybindings.py:86
 msgid "Smart scroll down"
 msgstr "Умная прокрутка вниз"
 
-#: mcomix/keybindings.py:87
+#: mcomix/keybindings.py:89
 msgid "Zoom in"
 msgstr "Увеличить масштаб"
 
 #
 # File: src/ui.py, line: 42
-#: mcomix/keybindings.py:87 mcomix/keybindings.py:88 mcomix/keybindings.py:89
+#: mcomix/keybindings.py:89 mcomix/keybindings.py:90 mcomix/keybindings.py:91
 msgid "Zoom"
 msgstr "Масштаб"
 
-#: mcomix/keybindings.py:88
+#: mcomix/keybindings.py:90
 msgid "Zoom out"
 msgstr "Уменьшить масштаб"
 
-#: mcomix/keybindings.py:89
+#: mcomix/keybindings.py:91
 msgid "Normal size"
 msgstr "Нормальный размер"
 
 #
 # File: src/ui.py, line: 93
-#: mcomix/keybindings.py:91
+#: mcomix/keybindings.py:93
 msgid "Keep transformation"
 msgstr "Сохранить преобразования"
 
 #
 # File: src/ui.py, line: 93
-#: mcomix/keybindings.py:91 mcomix/keybindings.py:92 mcomix/keybindings.py:93
-#: mcomix/keybindings.py:94 mcomix/keybindings.py:95 mcomix/keybindings.py:96
-#: mcomix/keybindings.py:97
+#: mcomix/keybindings.py:93 mcomix/keybindings.py:94 mcomix/keybindings.py:95
+#: mcomix/keybindings.py:96 mcomix/keybindings.py:97 mcomix/keybindings.py:98
+#: mcomix/keybindings.py:99
 msgid "Transformation"
 msgstr "Преобразование"
 
 #
 # File: src/ui.py, line: 52
-#: mcomix/keybindings.py:92 mcomix/keybindings.py:99 mcomix/keybindings.py:101
+#: mcomix/keybindings.py:94 mcomix/keybindings.py:101 mcomix/keybindings.py:103
 msgid "Rotate 90° CW"
 msgstr "Повернуть на 90 градусов по _часовой стрелке"
 
 #
 # File: src/ui.py, line: 54
-#: mcomix/keybindings.py:93
+#: mcomix/keybindings.py:95
 msgid "Rotate 180°"
 msgstr "П_овернуть на 180 градусов"
 
 #
 # File: src/ui.py, line: 56
-#: mcomix/keybindings.py:94 mcomix/keybindings.py:100 mcomix/keybindings.py:102
+#: mcomix/keybindings.py:96 mcomix/keybindings.py:102 mcomix/keybindings.py:104
 msgid "Rotate 90° CCW"
 msgstr "Повернуть на 90 градусов _против часовой стрелки"
 
 #
 # File: src/ui.py, line: 58
-#: mcomix/keybindings.py:95
+#: mcomix/keybindings.py:97
 msgid "Flip horizontally"
 msgstr "Отразить по _горизонтали"
 
 #
 # File: src/ui.py, line: 60
-#: mcomix/keybindings.py:96
+#: mcomix/keybindings.py:98
 msgid "Flip vertically"
 msgstr "Отразить по _вертикали"
 
-#: mcomix/keybindings.py:97
+#: mcomix/keybindings.py:99
 msgid "Never autorotate"
 msgstr "Никогда не разворачивать автоматически"
 
-#: mcomix/keybindings.py:99 mcomix/keybindings.py:100
+#: mcomix/keybindings.py:101 mcomix/keybindings.py:102
 msgid "Autorotate by width"
 msgstr "Автоповорот по ширине"
 
-#: mcomix/keybindings.py:101 mcomix/keybindings.py:102
+#: mcomix/keybindings.py:103 mcomix/keybindings.py:104
 msgid "Autorotate by height"
 msgstr "Автоповорот по высоте"
 
 #
 # File: src/preferences.py, line: 177
 # File: src/ui.py, line: 296
-#: mcomix/keybindings.py:104 mcomix/preferences_dialog.py:317 mcomix/ui.py:511
+#: mcomix/keybindings.py:106 mcomix/preferences_dialog.py:317 mcomix/ui.py:511
 msgid "Double page mode"
 msgstr "Двухстраничный режим"
 
 #
 # File: src/preferences.py, line: 263
 # File: src/ui.py, line: 290
-#: mcomix/keybindings.py:104 mcomix/keybindings.py:105
 #: mcomix/keybindings.py:106 mcomix/keybindings.py:107
-#: mcomix/keybindings.py:109 mcomix/keybindings.py:110
-#: mcomix/keybindings.py:112 mcomix/keybindings.py:113
+#: mcomix/keybindings.py:108 mcomix/keybindings.py:109
+#: mcomix/keybindings.py:111 mcomix/keybindings.py:112
 #: mcomix/keybindings.py:114 mcomix/keybindings.py:115
-#: mcomix/keybindings.py:116
+#: mcomix/keybindings.py:116 mcomix/keybindings.py:117
+#: mcomix/keybindings.py:118
 msgid "View mode"
 msgstr "Режим просмотра"
 
-#: mcomix/keybindings.py:105
+#: mcomix/keybindings.py:107
 msgid "Title page alone"
 msgstr "Титульная страница отдельно"
 
 #
 # File: src/ui.py, line: 297
-#: mcomix/keybindings.py:106 mcomix/ui.py:519
+#: mcomix/keybindings.py:108 mcomix/ui.py:519
 msgid "Manga mode"
 msgstr "Режим манги"
 
-#: mcomix/keybindings.py:107 mcomix/ui.py:520
+#: mcomix/keybindings.py:109 mcomix/ui.py:520
 msgid "Invert smart scroll"
 msgstr "Обратить умную прокрутку"
 
 #
 # File: src/ui.py, line: 298
-#: mcomix/keybindings.py:109 mcomix/ui.py:524
+#: mcomix/keybindings.py:111 mcomix/ui.py:524
 msgid "Magnifying lens"
 msgstr "Лупа"
 
-#: mcomix/keybindings.py:110 mcomix/ui.py:525
+#: mcomix/keybindings.py:112 mcomix/ui.py:525
 msgid "Stretch small images"
 msgstr "Растягивать маленькие изображения"
 
 #
 # File: src/preferences.py, line: 262
 # File: src/ui.py, line: 288
-#: mcomix/keybindings.py:112 mcomix/ui.py:532
+#: mcomix/keybindings.py:114 mcomix/ui.py:532
 msgid "Best fit mode"
 msgstr "Наилучший режим масштабирования"
 
 #
 # File: src/preferences.py, line: 263
 # File: src/ui.py, line: 290
-#: mcomix/keybindings.py:113 mcomix/ui.py:533
+#: mcomix/keybindings.py:115 mcomix/ui.py:533
 msgid "Fit width mode"
 msgstr "Растянуть по ширине"
 
 #
 # File: src/preferences.py, line: 264
 # File: src/ui.py, line: 292
-#: mcomix/keybindings.py:114 mcomix/ui.py:534
+#: mcomix/keybindings.py:116 mcomix/ui.py:534
 msgid "Fit height mode"
 msgstr "Растянуть по высоте"
 
 #
 # File: src/ui.py, line: 103
-#: mcomix/keybindings.py:115
+#: mcomix/keybindings.py:117
 msgid "Fit size mode"
 msgstr "Реальный размер"
 
 #
 # File: src/preferences.py, line: 265
 # File: src/ui.py, line: 294
-#: mcomix/keybindings.py:116 mcomix/ui.py:536
+#: mcomix/keybindings.py:118 mcomix/ui.py:536
 msgid "Manual zoom mode"
 msgstr "Ручное масштабирование"
 
-#: mcomix/keybindings.py:119 mcomix/ui.py:473
+#: mcomix/keybindings.py:121 mcomix/ui.py:473
 msgid "Leave fullscreen"
 msgstr "Выйти из полноэкранного режима"
 
-#: mcomix/keybindings.py:119 mcomix/keybindings.py:121
-#: mcomix/keybindings.py:122 mcomix/keybindings.py:123
+#: mcomix/keybindings.py:121 mcomix/keybindings.py:123
 #: mcomix/keybindings.py:124 mcomix/keybindings.py:125
-#: mcomix/keybindings.py:127 mcomix/keybindings.py:128
+#: mcomix/keybindings.py:126 mcomix/keybindings.py:127
 #: mcomix/keybindings.py:129 mcomix/keybindings.py:130
 #: mcomix/keybindings.py:131 mcomix/keybindings.py:132
+#: mcomix/keybindings.py:133 mcomix/keybindings.py:134
 #: mcomix/preferences_dialog.py:131
 msgid "User interface"
 msgstr "Пользовательский интерфейс"
 
-#: mcomix/keybindings.py:121
+#: mcomix/keybindings.py:123
 msgid "OSD panel"
 msgstr "Экранная панель"
 
-#: mcomix/keybindings.py:122
+#: mcomix/keybindings.py:124
 msgid "Minimize"
 msgstr "Свернуть"
 
 #
 # File: src/preferences.py, line: 271
-#: mcomix/keybindings.py:123 mcomix/preferences_dialog.py:307
+#: mcomix/keybindings.py:125 mcomix/preferences_dialog.py:307
 msgid "Fullscreen"
 msgstr "Полноэкранный режим"
 
-#: mcomix/keybindings.py:124
+#: mcomix/keybindings.py:126
 msgid "Toolbar"
 msgstr "Панель инструментов"
 
-#: mcomix/keybindings.py:125
+#: mcomix/keybindings.py:127
 msgid "Menubar"
 msgstr "Меню"
 
-#: mcomix/keybindings.py:126
+#: mcomix/keybindings.py:128
 msgid "Context menu"
 msgstr "Контекстное меню"
 
 #
 # File: src/ui.py, line: 83
-#: mcomix/keybindings.py:128
+#: mcomix/keybindings.py:130
 msgid "Statusbar"
 msgstr "Строка состояния"
 
 #
 # File: src/ui.py, line: 85
-#: mcomix/keybindings.py:129
+#: mcomix/keybindings.py:131
 msgid "Scrollbars"
 msgstr "Скроллеры"
 
 #
 # File: src/preferences.py, line: 109
-#: mcomix/keybindings.py:130 mcomix/preferences_dialog.py:150
+#: mcomix/keybindings.py:132 mcomix/preferences_dialog.py:150
 msgid "Thumbnails"
 msgstr "Миниатюры"
 
 #
 # File: src/ui.py, line: 89
-#: mcomix/keybindings.py:131
+#: mcomix/keybindings.py:133
 msgid "Hide all"
 msgstr "Скрыть всё"
 
 #
 # File: src/preferences.py, line: 279
-#: mcomix/keybindings.py:132 mcomix/slideshow.py:54 mcomix/ui.py:523
+#: mcomix/keybindings.py:134 mcomix/slideshow.py:54 mcomix/ui.py:523
 msgid "Start slideshow"
 msgstr "Начать слайдшоу"
 
-#: mcomix/keybindings.py:135
+#: mcomix/keybindings.py:137
 msgid "Delete"
 msgstr "Удалить"
 
 #
 # File: src/preferences.py, line: 196
-#: mcomix/keybindings.py:135 mcomix/keybindings.py:137
-#: mcomix/keybindings.py:138 mcomix/keybindings.py:141
-#: mcomix/keybindings.py:142 mcomix/keybindings.py:143
+#: mcomix/keybindings.py:137 mcomix/keybindings.py:139
+#: mcomix/keybindings.py:140 mcomix/keybindings.py:143
 #: mcomix/keybindings.py:144 mcomix/keybindings.py:145
-#: mcomix/keybindings.py:147 mcomix/keybindings.py:148
-#: mcomix/keybindings.py:149 mcomix/keybindings.py:151
-#: mcomix/keybindings.py:152 mcomix/keybindings.py:153
+#: mcomix/keybindings.py:146 mcomix/keybindings.py:147
+#: mcomix/keybindings.py:149 mcomix/keybindings.py:150
+#: mcomix/keybindings.py:151 mcomix/keybindings.py:153
 #: mcomix/keybindings.py:154 mcomix/keybindings.py:155
+#: mcomix/keybindings.py:156 mcomix/keybindings.py:157
 msgid "File"
 msgstr "Файл"
 
-#: mcomix/keybindings.py:136
+#: mcomix/keybindings.py:138
 msgid "Delete permanently"
 msgstr "Удалить безвозвратно"
 
-#: mcomix/keybindings.py:138
+#: mcomix/keybindings.py:140
 msgid "Rename page"
 msgstr "Переименовать страницу"
 
-#: mcomix/keybindings.py:139
+#: mcomix/keybindings.py:141
 msgid "Undo"
 msgstr "Отменить"
 
-#: mcomix/keybindings.py:139 mcomix/keybindings.py:140
+#: mcomix/keybindings.py:141 mcomix/keybindings.py:142
 msgid "Edit"
 msgstr "Правка"
 
-#: mcomix/keybindings.py:140
+#: mcomix/keybindings.py:142
 msgid "Redo"
 msgstr "Вернуть"
 
 #
 # File: src/edit.py, line: 51
-#: mcomix/keybindings.py:141
+#: mcomix/keybindings.py:143
 msgid "Refresh"
 msgstr "Обновить"
 
 #
 # File: src/ui.py, line: 48
-#: mcomix/keybindings.py:142
+#: mcomix/keybindings.py:144
 msgid "Close"
 msgstr "Закрыть"
 
 #
 # File: src/ui.py, line: 50
-#: mcomix/keybindings.py:143
+#: mcomix/keybindings.py:145
 msgid "Quit"
 msgstr "Выйти"
 
-#: mcomix/keybindings.py:144
+#: mcomix/keybindings.py:146
 msgid "Save and quit"
 msgstr "Сохранить и выйти"
 
-#: mcomix/keybindings.py:145
+#: mcomix/keybindings.py:147
 msgid "Save As"
 msgstr "Сохранить как..."
 
 #
 # File: src/properties.py, line: 135
-#: mcomix/keybindings.py:147
+#: mcomix/keybindings.py:149
 msgid "Archive comments"
 msgstr "Комментарии архива"
 
 #
 # File: src/properties.py, line: 89
-#: mcomix/keybindings.py:148 mcomix/properties_dialog.py:36
+#: mcomix/keybindings.py:150 mcomix/properties_dialog.py:36
 msgid "Properties"
 msgstr "Свойства"
 
 #
 # File: src/preferences.py, line: 78
-#: mcomix/keybindings.py:149 mcomix/preferences_dialog.py:69
+#: mcomix/keybindings.py:151 mcomix/preferences_dialog.py:69
 msgid "Preferences"
 msgstr "Параметры"
 
 #
 # File: src/library.py, line: 38
-#: mcomix/keybindings.py:154 mcomix/library/main_dialog.py:55
+#: mcomix/keybindings.py:156 mcomix/library/main_dialog.py:55
 msgid "Library"
 msgstr "Библиотека"
 
-#: mcomix/keybindings.py:155 mcomix/ui.py:527
+#: mcomix/keybindings.py:157 mcomix/ui.py:527
 msgid "Invert image colors"
 msgstr "Инвертировать цвета изображения"
 
 #
 # File: src/bookmark.py, line: 27
-#: mcomix/keybindings.py:158
+#: mcomix/keybindings.py:160
 msgid "Add bookmark"
 msgstr "Добавить закладку"
 
 #
 # File: src/ui.py, line: 64
-#: mcomix/keybindings.py:158 mcomix/keybindings.py:159
+#: mcomix/keybindings.py:160 mcomix/keybindings.py:161
 msgid "Bookmarks"
 msgstr "Закладки"
 
-#: mcomix/keybindings.py:159
+#: mcomix/keybindings.py:161
 msgid "Edit bookmarks"
 msgstr "Редактировать закладки"
 
 #
 # File: src/comment.py, line: 16
 # File: src/preferences.py, line: 288
-#: mcomix/keybindings.py:167 mcomix/openwith.py:558
+#: mcomix/keybindings.py:169 mcomix/openwith.py:558
 msgid "Command"
 msgstr "Команда"
 
 #
 # File: src/bookmark.py, line: 229
-#: mcomix/keybindings.py:168
+#: mcomix/keybindings.py:170
 msgid "External commands"
 msgstr "Внешние команды"
 
-#: mcomix/keybindings.py:245
+#: mcomix/keybindings.py:247
 #, python-format
 msgid "Keybinding for \"%(action)s\" overrides hotkey for another action."
 msgstr ""
 "Комбинация клавиш для «%(action)s» перекрывает комбинацию другого действия."
 
-#: mcomix/keybindings.py:430 mcomix/keybindings.py:438
+#: mcomix/keybindings.py:435 mcomix/keybindings.py:443
 #, python-format
 msgid "Couldn't load keybindings: %s"
 msgstr "Не удалось загрузить комбинации клавиш: %s"

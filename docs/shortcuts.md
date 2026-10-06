@@ -16,8 +16,10 @@ Next page | PageDown, KeyPadPageDown, LeftMouse
 Previous page | PageUp, KeyPadPageUp, Backspace, BackMouse, ALT+RightMouse
 Page to the right | ALT+Right
 Page to the left | ALT+Left
-Forward ten pages | SHIFT+PageDown, SHIFT+KeyPadPageDown, SHIFT+ALT+Right, SHIFT+LeftMouse
-Back ten pages | SHIFT+PageUp, SHIFT+KeyPadPageUp, SHIFT+Backspace, SHIFT+ALT+Left, SHIFT+RightMouse
+Forward ten pages | SHIFT+PageDown, SHIFT+KeyPadPageDown, SHIFT+LeftMouse
+Back ten pages | SHIFT+PageUp, SHIFT+KeyPadPageUp, SHIFT+Backspace, SHIFT+RightMouse
+Ten pages to the right | SHIFT+ALT+Right
+Ten pages to the left | SHIFT+ALT+Left
 Forward only one page (in double page mode) | CTRL+PageDown, CTRL+KeyPadPageDown
 Go back only one page (in double page mode) | CTRL+PageUp, CTRL+KeyPadPageUp, CTRL+Backspace
 One page to the right (in double page mode) | CTRL+Right, CTRL+KeyPadRight

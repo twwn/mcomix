@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-06 16:21+0200\n"
+"POT-Creation-Date: 2026-10-06 16:26+0200\n"
 "PO-Revision-Date: 2006-09-27 10:18+0200\n"
 "Last-Translator: Paul Chatzidimitriou <paulmedic555@gmail.com>\n"
 "Language-Team: \n"
@@ -297,7 +297,7 @@ msgstr "Δώστε ένα νέο όνομα για αυτό το αρχείο."
 
 #
 # File: src/edit.py, line: 28
-#: mcomix/edit_dialog.py:58 mcomix/keybindings.py:151
+#: mcomix/edit_dialog.py:58 mcomix/keybindings.py:153
 msgid "Edit archive"
 msgstr "Επεξεργασία αρχείου"
 
@@ -378,7 +378,7 @@ msgstr "Επιλογή ό_λων"
 
 #
 # File: src/enhance.py, line: 51
-#: mcomix/enhance_dialog.py:28 mcomix/keybindings.py:153
+#: mcomix/enhance_dialog.py:28 mcomix/keybindings.py:155
 msgid "Enhance image"
 msgstr "Βελτίωση εικόνας"
 
@@ -617,7 +617,7 @@ msgstr[1] "%d σελίδες"
 #
 # File: src/filechooser.py, line: 35
 # File: src/library.py, line: 489
-#: mcomix/file_chooser_base_dialog.py:186 mcomix/keybindings.py:152
+#: mcomix/file_chooser_base_dialog.py:186 mcomix/keybindings.py:154
 msgid "Open"
 msgstr "Άνοιγμα"
 
@@ -756,10 +756,10 @@ msgstr "Προηγούμενη σελίδα"
 #: mcomix/keybindings.py:45 mcomix/keybindings.py:46 mcomix/keybindings.py:47
 #: mcomix/keybindings.py:48 mcomix/keybindings.py:49 mcomix/keybindings.py:50
 #: mcomix/keybindings.py:51 mcomix/keybindings.py:52 mcomix/keybindings.py:53
-#: mcomix/keybindings.py:54 mcomix/keybindings.py:56 mcomix/keybindings.py:57
-#: mcomix/keybindings.py:58 mcomix/keybindings.py:60 mcomix/keybindings.py:61
-#: mcomix/keybindings.py:62 mcomix/keybindings.py:63
-#: mcomix/preferences_dialog.py:98
+#: mcomix/keybindings.py:54 mcomix/keybindings.py:55 mcomix/keybindings.py:56
+#: mcomix/keybindings.py:58 mcomix/keybindings.py:59 mcomix/keybindings.py:60
+#: mcomix/keybindings.py:62 mcomix/keybindings.py:63 mcomix/keybindings.py:64
+#: mcomix/keybindings.py:65 mcomix/preferences_dialog.py:98
 msgid "Navigation"
 msgstr "Πλοήγηση"
 
@@ -790,479 +790,487 @@ msgstr "Σελίδα αριστερά"
 msgid "Page to the right"
 msgstr "Σελίδα δεξιά"
 
+#: mcomix/keybindings.py:51
+msgid "10 pages to the left"
+msgstr "10 σελίδες αριστερά"
+
+#: mcomix/keybindings.py:52
+msgid "10 pages to the right"
+msgstr "10 σελίδες δεξιά"
+
 #
 # File: src/ui.py, line: 284
-#: mcomix/keybindings.py:51
+#: mcomix/keybindings.py:53
 msgid "Previous single page"
 msgstr "Προηγούμενη μονή σελίδα"
 
 #
 # File: src/ui.py, line: 285
-#: mcomix/keybindings.py:52
+#: mcomix/keybindings.py:54
 msgid "Next single page"
 msgstr "Επόμενη μονή σελίδα"
 
-#: mcomix/keybindings.py:53
+#: mcomix/keybindings.py:55
 msgid "Single page to the left"
 msgstr "Μονή σελίδα αριστερά"
 
-#: mcomix/keybindings.py:54
+#: mcomix/keybindings.py:56
 msgid "Single page to the right"
 msgstr "Μονή σελίδα δεξιά"
 
 #
 # File: src/ui.py, line: 282
-#: mcomix/keybindings.py:56 mcomix/ui.py:460
+#: mcomix/keybindings.py:58 mcomix/ui.py:460
 msgid "First page"
 msgstr "Πρώτη σελίδα"
 
 #
 # File: src/ui.py, line: 286
-#: mcomix/keybindings.py:57 mcomix/ui.py:461
+#: mcomix/keybindings.py:59 mcomix/ui.py:461
 msgid "Last page"
 msgstr "Τελευταία σελίδα"
 
 #
-#: mcomix/keybindings.py:58
+#: mcomix/keybindings.py:60
 msgid "Go to page"
 msgstr "Μετάβαση σε σελίδα"
 
 #
-#: mcomix/keybindings.py:60 mcomix/ui.py:465
+#: mcomix/keybindings.py:62 mcomix/ui.py:465
 msgid "Next archive"
 msgstr "Επόμενο αρχείο"
 
 #
 # File: src/ui.py, line: 284
-#: mcomix/keybindings.py:61 mcomix/ui.py:466
+#: mcomix/keybindings.py:63 mcomix/ui.py:466
 msgid "Previous archive"
 msgstr "Προηγούμενο αρχείο"
 
-#: mcomix/keybindings.py:62 mcomix/ui.py:467
+#: mcomix/keybindings.py:64 mcomix/ui.py:467
 msgid "Next directory"
 msgstr "Επόμενος κατάλογος"
 
-#: mcomix/keybindings.py:63 mcomix/ui.py:468
+#: mcomix/keybindings.py:65 mcomix/ui.py:468
 msgid "Previous directory"
 msgstr "Προηγούμενος κατάλογος"
 
-#: mcomix/keybindings.py:66
+#: mcomix/keybindings.py:68
 msgid "Align bottom left"
 msgstr "Στοίχιση κάτω αριστερά"
 
 #
 # File: src/preferences.py, line: 167
-#: mcomix/keybindings.py:66 mcomix/keybindings.py:67 mcomix/keybindings.py:68
-#: mcomix/keybindings.py:70 mcomix/keybindings.py:71 mcomix/keybindings.py:72
-#: mcomix/keybindings.py:74 mcomix/keybindings.py:75 mcomix/keybindings.py:76
-#: mcomix/keybindings.py:78 mcomix/keybindings.py:79 mcomix/keybindings.py:80
-#: mcomix/keybindings.py:81 mcomix/keybindings.py:83 mcomix/keybindings.py:84
+#: mcomix/keybindings.py:68 mcomix/keybindings.py:69 mcomix/keybindings.py:70
+#: mcomix/keybindings.py:72 mcomix/keybindings.py:73 mcomix/keybindings.py:74
+#: mcomix/keybindings.py:76 mcomix/keybindings.py:77 mcomix/keybindings.py:78
+#: mcomix/keybindings.py:80 mcomix/keybindings.py:81 mcomix/keybindings.py:82
+#: mcomix/keybindings.py:83 mcomix/keybindings.py:85 mcomix/keybindings.py:86
 #: mcomix/preferences_dialog.py:224
 msgid "Scroll"
 msgstr "Κύλιση"
 
-#: mcomix/keybindings.py:67
+#: mcomix/keybindings.py:69
 msgid "Align bottom center"
 msgstr "Στοίχιση κάτω στο κέντρο"
 
-#: mcomix/keybindings.py:68
+#: mcomix/keybindings.py:70
 msgid "Align bottom right"
 msgstr "Στοίχιση κάτω δεξιά"
 
-#: mcomix/keybindings.py:70
+#: mcomix/keybindings.py:72
 msgid "Align middle left"
 msgstr "Στοίχιση στη μέση αριστερά"
 
-#: mcomix/keybindings.py:71
+#: mcomix/keybindings.py:73
 msgid "Align center"
 msgstr "Στοίχιση στο κέντρο"
 
-#: mcomix/keybindings.py:72
+#: mcomix/keybindings.py:74
 msgid "Align middle right"
 msgstr "Στοίχιση στη μέση δεξιά"
 
-#: mcomix/keybindings.py:74
+#: mcomix/keybindings.py:76
 msgid "Align top left"
 msgstr "Στοίχιση πάνω αριστερά"
 
-#: mcomix/keybindings.py:75
+#: mcomix/keybindings.py:77
 msgid "Align top center"
 msgstr "Στοίχιση πάνω στο κέντρο"
 
-#: mcomix/keybindings.py:76
+#: mcomix/keybindings.py:78
 msgid "Align top right"
 msgstr "Στοίχιση πάνω δεξιά"
 
-#: mcomix/keybindings.py:78
+#: mcomix/keybindings.py:80
 msgid "Scroll down"
 msgstr "Κύλιση προς τα κάτω"
 
-#: mcomix/keybindings.py:79
+#: mcomix/keybindings.py:81
 msgid "Scroll up"
 msgstr "Κύλιση προς τα πάνω"
 
-#: mcomix/keybindings.py:80
+#: mcomix/keybindings.py:82
 msgid "Scroll right"
 msgstr "Κύλιση δεξιά"
 
-#: mcomix/keybindings.py:81
+#: mcomix/keybindings.py:83
 msgid "Scroll left"
 msgstr "Κύλιση αριστερά"
 
-#: mcomix/keybindings.py:83
+#: mcomix/keybindings.py:85
 msgid "Smart scroll up"
 msgstr "Έξυπνη κύλιση προς τα πάνω"
 
-#: mcomix/keybindings.py:84
+#: mcomix/keybindings.py:86
 msgid "Smart scroll down"
 msgstr "Έξυπνη κύλιση προς τα κάτω"
 
-#: mcomix/keybindings.py:87
+#: mcomix/keybindings.py:89
 msgid "Zoom in"
 msgstr "Μεγέθυνση"
 
 #
-#: mcomix/keybindings.py:87 mcomix/keybindings.py:88 mcomix/keybindings.py:89
+#: mcomix/keybindings.py:89 mcomix/keybindings.py:90 mcomix/keybindings.py:91
 msgid "Zoom"
 msgstr "Ζουμ"
 
-#: mcomix/keybindings.py:88
+#: mcomix/keybindings.py:90
 msgid "Zoom out"
 msgstr "Σμίκρυνση"
 
-#: mcomix/keybindings.py:89
+#: mcomix/keybindings.py:91
 msgid "Normal size"
 msgstr "Κανονικό μέγεθος"
 
 #
 # File: src/ui.py, line: 93
-#: mcomix/keybindings.py:91
+#: mcomix/keybindings.py:93
 msgid "Keep transformation"
 msgstr "Διατήρηση μετασχηματισμού"
 
 #
 # File: src/ui.py, line: 93
-#: mcomix/keybindings.py:91 mcomix/keybindings.py:92 mcomix/keybindings.py:93
-#: mcomix/keybindings.py:94 mcomix/keybindings.py:95 mcomix/keybindings.py:96
-#: mcomix/keybindings.py:97
+#: mcomix/keybindings.py:93 mcomix/keybindings.py:94 mcomix/keybindings.py:95
+#: mcomix/keybindings.py:96 mcomix/keybindings.py:97 mcomix/keybindings.py:98
+#: mcomix/keybindings.py:99
 msgid "Transformation"
 msgstr "Μετασχηματισμός"
 
 #
 # File: src/ui.py, line: 52
-#: mcomix/keybindings.py:92 mcomix/keybindings.py:99 mcomix/keybindings.py:101
+#: mcomix/keybindings.py:94 mcomix/keybindings.py:101 mcomix/keybindings.py:103
 msgid "Rotate 90° CW"
 msgstr "Περιστροφή 90° δεξιόστροφα"
 
 #
 # File: src/ui.py, line: 54
-#: mcomix/keybindings.py:93
+#: mcomix/keybindings.py:95
 msgid "Rotate 180°"
 msgstr "Περιστροφή 180°"
 
 #
 # File: src/ui.py, line: 56
-#: mcomix/keybindings.py:94 mcomix/keybindings.py:100 mcomix/keybindings.py:102
+#: mcomix/keybindings.py:96 mcomix/keybindings.py:102 mcomix/keybindings.py:104
 msgid "Rotate 90° CCW"
 msgstr "Περιστροφή 90° αριστερόστροφα"
 
 #
 # File: src/ui.py, line: 58
-#: mcomix/keybindings.py:95
+#: mcomix/keybindings.py:97
 msgid "Flip horizontally"
 msgstr "Οριζόντια αναστροφή"
 
 #
 # File: src/ui.py, line: 60
-#: mcomix/keybindings.py:96
+#: mcomix/keybindings.py:98
 msgid "Flip vertically"
 msgstr "Κατακόρυφη αναστροφή"
 
-#: mcomix/keybindings.py:97
+#: mcomix/keybindings.py:99
 msgid "Never autorotate"
 msgstr "Ποτέ αυτόματη περιστροφή"
 
 #
-#: mcomix/keybindings.py:99 mcomix/keybindings.py:100
+#: mcomix/keybindings.py:101 mcomix/keybindings.py:102
 msgid "Autorotate by width"
 msgstr "Αυτόματη περιστροφή κατά πλάτος"
 
 #
-#: mcomix/keybindings.py:101 mcomix/keybindings.py:102
+#: mcomix/keybindings.py:103 mcomix/keybindings.py:104
 msgid "Autorotate by height"
 msgstr "Αυτόματη περιστροφή καθ’ ύψος"
 
 #
 # File: src/preferences.py, line: 177
 # File: src/ui.py, line: 296
-#: mcomix/keybindings.py:104 mcomix/preferences_dialog.py:317 mcomix/ui.py:511
+#: mcomix/keybindings.py:106 mcomix/preferences_dialog.py:317 mcomix/ui.py:511
 msgid "Double page mode"
 msgstr "Προβολή διπλής σελίδας"
 
 #
 # File: src/preferences.py, line: 263
 # File: src/ui.py, line: 290
-#: mcomix/keybindings.py:104 mcomix/keybindings.py:105
 #: mcomix/keybindings.py:106 mcomix/keybindings.py:107
-#: mcomix/keybindings.py:109 mcomix/keybindings.py:110
-#: mcomix/keybindings.py:112 mcomix/keybindings.py:113
+#: mcomix/keybindings.py:108 mcomix/keybindings.py:109
+#: mcomix/keybindings.py:111 mcomix/keybindings.py:112
 #: mcomix/keybindings.py:114 mcomix/keybindings.py:115
-#: mcomix/keybindings.py:116
+#: mcomix/keybindings.py:116 mcomix/keybindings.py:117
+#: mcomix/keybindings.py:118
 msgid "View mode"
 msgstr "Λειτουργία προβολής"
 
-#: mcomix/keybindings.py:105
+#: mcomix/keybindings.py:107
 msgid "Title page alone"
 msgstr "Σελίδα τίτλου μόνη"
 
 #
 # File: src/ui.py, line: 297
-#: mcomix/keybindings.py:106 mcomix/ui.py:519
+#: mcomix/keybindings.py:108 mcomix/ui.py:519
 msgid "Manga mode"
 msgstr "Προβολή Magna"
 
-#: mcomix/keybindings.py:107 mcomix/ui.py:520
+#: mcomix/keybindings.py:109 mcomix/ui.py:520
 msgid "Invert smart scroll"
 msgstr "Αντιστροφή έξυπνης κύλισης"
 
 #
 # File: src/ui.py, line: 298
-#: mcomix/keybindings.py:109 mcomix/ui.py:524
+#: mcomix/keybindings.py:111 mcomix/ui.py:524
 msgid "Magnifying lens"
 msgstr "Μεγενθυτικοί φακοί"
 
 #
-#: mcomix/keybindings.py:110 mcomix/ui.py:525
+#: mcomix/keybindings.py:112 mcomix/ui.py:525
 msgid "Stretch small images"
 msgstr "Τέντωμα μικρών εικόνων"
 
 #
 # File: src/preferences.py, line: 262
 # File: src/ui.py, line: 288
-#: mcomix/keybindings.py:112 mcomix/ui.py:532
+#: mcomix/keybindings.py:114 mcomix/ui.py:532
 msgid "Best fit mode"
 msgstr "Λειτουργία βέλτιστης προσαρμογής"
 
 #
 # File: src/preferences.py, line: 263
 # File: src/ui.py, line: 290
-#: mcomix/keybindings.py:113 mcomix/ui.py:533
+#: mcomix/keybindings.py:115 mcomix/ui.py:533
 msgid "Fit width mode"
 msgstr "Προσαρμοζμένη κατά πλάτος προβολή"
 
 #
 # File: src/preferences.py, line: 264
 # File: src/ui.py, line: 292
-#: mcomix/keybindings.py:114 mcomix/ui.py:534
+#: mcomix/keybindings.py:116 mcomix/ui.py:534
 msgid "Fit height mode"
 msgstr "Προσαρμοζμένη κατά ύψος προβολή"
 
 #
 # File: src/ui.py, line: 103
-#: mcomix/keybindings.py:115
+#: mcomix/keybindings.py:117
 msgid "Fit size mode"
 msgstr "Λειτουργία προσαρμογής στο μέγεθος"
 
 #
 # File: src/preferences.py, line: 265
 # File: src/ui.py, line: 294
-#: mcomix/keybindings.py:116 mcomix/ui.py:536
+#: mcomix/keybindings.py:118 mcomix/ui.py:536
 msgid "Manual zoom mode"
 msgstr "Χειροκίνητη προβολή ζουμ"
 
-#: mcomix/keybindings.py:119 mcomix/ui.py:473
+#: mcomix/keybindings.py:121 mcomix/ui.py:473
 msgid "Leave fullscreen"
 msgstr "Έξοδος από την πλήρη οθόνη"
 
-#: mcomix/keybindings.py:119 mcomix/keybindings.py:121
-#: mcomix/keybindings.py:122 mcomix/keybindings.py:123
+#: mcomix/keybindings.py:121 mcomix/keybindings.py:123
 #: mcomix/keybindings.py:124 mcomix/keybindings.py:125
-#: mcomix/keybindings.py:127 mcomix/keybindings.py:128
+#: mcomix/keybindings.py:126 mcomix/keybindings.py:127
 #: mcomix/keybindings.py:129 mcomix/keybindings.py:130
 #: mcomix/keybindings.py:131 mcomix/keybindings.py:132
+#: mcomix/keybindings.py:133 mcomix/keybindings.py:134
 #: mcomix/preferences_dialog.py:131
 msgid "User interface"
 msgstr "Περιβάλλον χρήστη"
 
-#: mcomix/keybindings.py:121
+#: mcomix/keybindings.py:123
 msgid "OSD panel"
 msgstr "Πίνακας οθόνης"
 
-#: mcomix/keybindings.py:122
+#: mcomix/keybindings.py:124
 msgid "Minimize"
 msgstr "Ελαχιστοποίηση"
 
 #
 # File: src/preferences.py, line: 271
-#: mcomix/keybindings.py:123 mcomix/preferences_dialog.py:307
+#: mcomix/keybindings.py:125 mcomix/preferences_dialog.py:307
 msgid "Fullscreen"
 msgstr "Πλήρης οθόνη"
 
-#: mcomix/keybindings.py:124
+#: mcomix/keybindings.py:126
 msgid "Toolbar"
 msgstr "Εργαλειοθήκη"
 
-#: mcomix/keybindings.py:125
+#: mcomix/keybindings.py:127
 msgid "Menubar"
 msgstr "Μενού"
 
-#: mcomix/keybindings.py:126
+#: mcomix/keybindings.py:128
 msgid "Context menu"
 msgstr "Μενού περιβάλλοντος"
 
 #
 # File: src/ui.py, line: 83
-#: mcomix/keybindings.py:128
+#: mcomix/keybindings.py:130
 msgid "Statusbar"
 msgstr "Γραμμή κατάστασης"
 
 #
 # File: src/ui.py, line: 85
-#: mcomix/keybindings.py:129
+#: mcomix/keybindings.py:131
 msgid "Scrollbars"
 msgstr "Γραμμές κύλισης"
 
 #
 # File: src/preferences.py, line: 109
-#: mcomix/keybindings.py:130 mcomix/preferences_dialog.py:150
+#: mcomix/keybindings.py:132 mcomix/preferences_dialog.py:150
 msgid "Thumbnails"
 msgstr "Προεπισκοπήσεις"
 
 #
 # File: src/ui.py, line: 89
-#: mcomix/keybindings.py:131
+#: mcomix/keybindings.py:133
 msgid "Hide all"
 msgstr "Απόκρυψη όλων"
 
 #
 # File: src/preferences.py, line: 279
-#: mcomix/keybindings.py:132 mcomix/slideshow.py:54 mcomix/ui.py:523
+#: mcomix/keybindings.py:134 mcomix/slideshow.py:54 mcomix/ui.py:523
 msgid "Start slideshow"
 msgstr "Έναρξη προβολής εναλλαγής"
 
-#: mcomix/keybindings.py:135
+#: mcomix/keybindings.py:137
 msgid "Delete"
 msgstr "Διαγραφή"
 
 #
 # File: src/ui.py, line: 67
-#: mcomix/keybindings.py:135 mcomix/keybindings.py:137
-#: mcomix/keybindings.py:138 mcomix/keybindings.py:141
-#: mcomix/keybindings.py:142 mcomix/keybindings.py:143
+#: mcomix/keybindings.py:137 mcomix/keybindings.py:139
+#: mcomix/keybindings.py:140 mcomix/keybindings.py:143
 #: mcomix/keybindings.py:144 mcomix/keybindings.py:145
-#: mcomix/keybindings.py:147 mcomix/keybindings.py:148
-#: mcomix/keybindings.py:149 mcomix/keybindings.py:151
-#: mcomix/keybindings.py:152 mcomix/keybindings.py:153
+#: mcomix/keybindings.py:146 mcomix/keybindings.py:147
+#: mcomix/keybindings.py:149 mcomix/keybindings.py:150
+#: mcomix/keybindings.py:151 mcomix/keybindings.py:153
 #: mcomix/keybindings.py:154 mcomix/keybindings.py:155
+#: mcomix/keybindings.py:156 mcomix/keybindings.py:157
 msgid "File"
 msgstr "Αρχείο"
 
-#: mcomix/keybindings.py:136
+#: mcomix/keybindings.py:138
 msgid "Delete permanently"
 msgstr "Οριστική διαγραφή"
 
-#: mcomix/keybindings.py:138
+#: mcomix/keybindings.py:140
 msgid "Rename page"
 msgstr "Μετονομασία σελίδας"
 
-#: mcomix/keybindings.py:139
+#: mcomix/keybindings.py:141
 msgid "Undo"
 msgstr "Αναίρεση"
 
-#: mcomix/keybindings.py:139 mcomix/keybindings.py:140
+#: mcomix/keybindings.py:141 mcomix/keybindings.py:142
 msgid "Edit"
 msgstr "Επεξεργασία"
 
-#: mcomix/keybindings.py:140
+#: mcomix/keybindings.py:142
 msgid "Redo"
 msgstr "Επανάληψη"
 
 #
-#: mcomix/keybindings.py:141
+#: mcomix/keybindings.py:143
 msgid "Refresh"
 msgstr "Ανανέωση"
 
 #
 # File: src/ui.py, line: 48
-#: mcomix/keybindings.py:142
+#: mcomix/keybindings.py:144
 msgid "Close"
 msgstr "Κλείσιμο"
 
 #
 # File: src/ui.py, line: 50
-#: mcomix/keybindings.py:143
+#: mcomix/keybindings.py:145
 msgid "Quit"
 msgstr "Έξοδος"
 
-#: mcomix/keybindings.py:144
+#: mcomix/keybindings.py:146
 msgid "Save and quit"
 msgstr "Αποθήκευση και έξοδος"
 
-#: mcomix/keybindings.py:145
+#: mcomix/keybindings.py:147
 msgid "Save As"
 msgstr "Αποθήκευση ως"
 
 #
-#: mcomix/keybindings.py:147
+#: mcomix/keybindings.py:149
 msgid "Archive comments"
 msgstr "Σχόλια του αρχείου"
 
 #
 # File: src/properties.py, line: 89
-#: mcomix/keybindings.py:148 mcomix/properties_dialog.py:36
+#: mcomix/keybindings.py:150 mcomix/properties_dialog.py:36
 msgid "Properties"
 msgstr "Ιδιότητες"
 
 #
 # File: src/preferences.py, line: 78
-#: mcomix/keybindings.py:149 mcomix/preferences_dialog.py:69
+#: mcomix/keybindings.py:151 mcomix/preferences_dialog.py:69
 msgid "Preferences"
 msgstr "Προτιμήσεις"
 
 #
 # File: src/library.py, line: 38
-#: mcomix/keybindings.py:154 mcomix/library/main_dialog.py:55
+#: mcomix/keybindings.py:156 mcomix/library/main_dialog.py:55
 msgid "Library"
 msgstr "Βιβλιοθήκη"
 
-#: mcomix/keybindings.py:155 mcomix/ui.py:527
+#: mcomix/keybindings.py:157 mcomix/ui.py:527
 msgid "Invert image colors"
 msgstr "Αντιστροφή χρωμάτων εικόνας"
 
 #
 # File: src/bookmark.py, line: 27
-#: mcomix/keybindings.py:158
+#: mcomix/keybindings.py:160
 msgid "Add bookmark"
 msgstr "Προσθήκη σελιδοδείκτη"
 
 #
 # File: src/ui.py, line: 64
-#: mcomix/keybindings.py:158 mcomix/keybindings.py:159
+#: mcomix/keybindings.py:160 mcomix/keybindings.py:161
 msgid "Bookmarks"
 msgstr "Σελιδοδείκτες"
 
-#: mcomix/keybindings.py:159
+#: mcomix/keybindings.py:161
 msgid "Edit bookmarks"
 msgstr "Επεξεργασία σελιδοδεικτών"
 
 #
-#: mcomix/keybindings.py:167 mcomix/openwith.py:558
+#: mcomix/keybindings.py:169 mcomix/openwith.py:558
 msgid "Command"
 msgstr "Εντολή"
 
 #
 # File: src/bookmark.py, line: 229
-#: mcomix/keybindings.py:168
+#: mcomix/keybindings.py:170
 msgid "External commands"
 msgstr "Εξωτερικές εντολές"
 
-#: mcomix/keybindings.py:245
+#: mcomix/keybindings.py:247
 #, python-format
 msgid "Keybinding for \"%(action)s\" overrides hotkey for another action."
 msgstr ""
 "Η συντόμευση για «%(action)s» υπερισχύει της συντόμευσης άλλης ενέργειας."
 
-#: mcomix/keybindings.py:430 mcomix/keybindings.py:438
+#: mcomix/keybindings.py:435 mcomix/keybindings.py:443
 #, python-format
 msgid "Couldn't load keybindings: %s"
 msgstr "Δεν ήταν δυνατή η φόρτωση των συντομεύσεων: %s"

@@ -302,18 +302,46 @@ class MigratePreferencesTest(MComixTest):
         key bindings say now; a file from before format 5 that had it on
         hands Escape to Quit."""
         self.addCleanup(preferences.keybinding_moves.clear)
-        for stored, moves in ((True, [('quit', 'Escape')]), (False, [])):
+        for stored, moves in ((True, [('quit', 'Escape', None)]),
+                              (False, [])):
             with self.subTest(stored=stored):
                 preferences.keybinding_moves.clear()
                 self._write({_FORMAT_VERSION_KEY: 4, 'escape quits': stored})
                 preferences.read_preferences_file()
-                self.assertEqual(moves, preferences.keybinding_moves)
+                self.assertEqual(moves, [move for move in
+                                         preferences.keybinding_moves
+                                         if move[0] == 'quit'])
                 self.assertNotIn('escape quits', prefs)
 
-    def test_a_file_at_format_5_moves_no_key(self) -> None:
+    def test_a_file_at_format_5_moves_no_key_but_the_ten_page_turns(
+            self) -> None:
         self.addCleanup(preferences.keybinding_moves.clear)
         preferences.keybinding_moves.clear()
         self._write({_FORMAT_VERSION_KEY: 5, 'escape quits': True})
+        preferences.read_preferences_file()
+        self.assertEqual(['previous_page_ff_dynamic', 'next_page_ff_dynamic'],
+                         [move[0] for move in preferences.keybinding_moves])
+
+    def test_the_ten_page_turns_move_to_the_ones_that_follow_manga_mode(
+            self) -> None:
+        """SHIFT+ALT and the arrows turned ten pages forward on Right
+        whichever way the book reads (upstream bug 57).  A file from
+        before format 7 hands them to the actions that follow manga
+        mode, from the ones that held them by default."""
+        self.addCleanup(preferences.keybinding_moves.clear)
+        preferences.keybinding_moves.clear()
+        self._write({_FORMAT_VERSION_KEY: 6})
+        preferences.read_preferences_file()
+        self.assertEqual(
+            [('previous_page_ff_dynamic', '<Shift><Alt>Left',
+              'previous_page_ff'),
+             ('next_page_ff_dynamic', '<Shift><Alt>Right', 'next_page_ff')],
+            preferences.keybinding_moves)
+
+    def test_a_file_at_format_7_moves_no_key(self) -> None:
+        self.addCleanup(preferences.keybinding_moves.clear)
+        preferences.keybinding_moves.clear()
+        self._write({_FORMAT_VERSION_KEY: 7})
         preferences.read_preferences_file()
         self.assertEqual([], preferences.keybinding_moves)
 

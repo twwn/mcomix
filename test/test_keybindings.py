@@ -119,7 +119,7 @@ class StoredKeybindingsTest(MComixTest):
         Quit on Ctrl+Q by default, and Escape moved to Quit."""
         from mcomix import preferences
         self.addCleanup(preferences.keybinding_moves.clear)
-        preferences.keybinding_moves[:] = [('quit', 'Escape')]
+        preferences.keybinding_moves[:] = [('quit', 'Escape', None)]
         with open(constants.KEYBINDINGS_CONF_PATH, 'w') as fp:
             json.dump(stored, fp)
         manager = keybindings._KeybindingManager(_StubWindow())
@@ -150,6 +150,44 @@ class StoredKeybindingsTest(MComixTest):
         manager = self._escape_manager({'quit': ['Escape']})
         self.assertEqual([keybindings.parse_accelerator('Escape')],
                          manager.get_bindings_for_action('quit'))
+
+    def _ten_page_manager(self, stored):
+        """A manager over <stored> with SHIFT+ALT+Left moved, as format 7
+        moves it, from Back 10 pages to 10 pages to the left."""
+        from mcomix import preferences
+        self.addCleanup(preferences.keybinding_moves.clear)
+        preferences.keybinding_moves[:] = [
+            ('previous_page_ff_dynamic', '<Shift><Alt>Left',
+             'previous_page_ff')]
+        with open(constants.KEYBINDINGS_CONF_PATH, 'w') as fp:
+            json.dump(stored, fp)
+        manager = keybindings._KeybindingManager(_StubWindow())
+        for action, default in (
+                ('previous_page_ff', '<Shift>Page_Up'),
+                ('zoom_in', 'plus'),
+                ('previous_page_ff_dynamic', '<Shift><Alt>Left')):
+            manager.register(action, [default], lambda: None)
+        manager.take_over_moved_keys()
+        return manager
+
+    def test_a_key_moves_off_the_action_that_held_it_by_default(self):
+        left = keybindings.parse_accelerator('<Shift><Alt>Left')
+        manager = self._ten_page_manager(
+            {'previous_page_ff': ['<Shift>Page_Up', '<Shift><Alt>Left'],
+             'zoom_in': ['plus']})
+        self.assertEqual(
+            [left], manager.get_bindings_for_action('previous_page_ff_dynamic'))
+        self.assertEqual([keybindings.parse_accelerator('<Shift>Page_Up')],
+                         manager.get_bindings_for_action('previous_page_ff'))
+
+    def test_a_key_the_reader_bound_elsewhere_stays_there(self):
+        left = keybindings.parse_accelerator('<Shift><Alt>Left')
+        manager = self._ten_page_manager(
+            {'previous_page_ff': ['<Shift>Page_Up'],
+             'zoom_in': ['plus', '<Shift><Alt>Left']})
+        self.assertIn(left, manager.get_bindings_for_action('zoom_in'))
+        self.assertEqual(
+            [], manager.get_bindings_for_action('previous_page_ff_dynamic'))
 
     def test_a_file_of_the_wrong_shape_leaves_the_defaults(self):
         """Any JSON that was not an object of lists of names stopped
@@ -427,6 +465,8 @@ class DocumentedKeyBindingsTest(MComixTest):
         'Page to the right': 'next_page_dynamic',
         'Page to the left': 'previous_page_dynamic',
         'Back ten pages': 'previous_page_ff',
+        'Ten pages to the right': 'next_page_ff_dynamic',
+        'Ten pages to the left': 'previous_page_ff_dynamic',
         'Forward only one page (in double page mode)': 'next_page_singlestep',
         'One page to the right (in double page mode)':
             'next_page_singlestep_dynamic',
