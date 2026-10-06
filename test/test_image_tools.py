@@ -1340,3 +1340,41 @@ class WebPDecoderTest(MComixTest):
             with self.subTest(name=name):
                 _pixbuf, asked_gdk = self._loaded(self._saved(name))
                 self.assertTrue(asked_gdk)
+
+
+class AvifThroughPluginTest(unittest.TestCase):
+
+    """pillow-avif-plugin stands in where Pillow cannot read AVIF itself
+    (upstream patch 60)."""
+
+    def _ask(self, pillow_reads, plugin_installed):
+        imported = []
+
+        def check_module(name):
+            if pillow_reads is None:
+                raise ValueError('Unknown module %s' % name)
+            return pillow_reads
+
+        def import_module(name):
+            imported.append(name)
+            if not plugin_installed:
+                raise ImportError(name)
+
+        with unittest.mock.patch.object(image_tools.features, 'check_module',
+                                        check_module), \
+                unittest.mock.patch.object(image_tools.importlib,
+                                           'import_module', import_module):
+            answer = image_tools._avif_through_plugin()
+        return answer, imported
+
+    def test_a_pillow_that_reads_avif_is_left_alone(self):
+        self.assertEqual((False, []), self._ask(True, True))
+
+    def test_a_pillow_built_without_libavif_takes_the_plugin(self):
+        self.assertEqual((True, ['pillow_avif']), self._ask(False, True))
+
+    def test_a_pillow_older_than_avif_takes_the_plugin(self):
+        self.assertEqual((True, ['pillow_avif']), self._ask(None, True))
+
+    def test_without_the_plugin_nothing_changes(self):
+        self.assertEqual((False, ['pillow_avif']), self._ask(None, False))

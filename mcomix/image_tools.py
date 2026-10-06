@@ -1,10 +1,12 @@
 """image_tools.py - Various image manipulations."""
 
 import functools
+import importlib
 import operator
 import os
 from gi.repository import GLib, GdkPixbuf, Gdk, Gtk
 import PIL
+from PIL import features
 from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageEnhance
@@ -1235,6 +1237,32 @@ def get_supported_formats() -> dict[str, tuple[set[str], set[str]]]:
 
     return supported_formats
 
+
+def _avif_through_plugin() -> bool:
+    """Teach Pillow AVIF through pillow-avif-plugin where Pillow cannot
+    read it itself and the plugin is installed, and say whether it did.
+
+    Pillow reads AVIF from 11.3 on, where it was built with libavif; an
+    older one does not know the format at all.  Importing the plugin is
+    what registers it (upstream patch 60).  Without either, an AVIF page
+    is still opened wherever gdk-pixbuf has a loader for it, glycin's
+    for one.
+    """
+    try:
+        if features.check_module('avif'):
+            return False
+    except ValueError:
+        # "Unknown module": a Pillow from before AVIF was its own.
+        pass
+    try:
+        importlib.import_module('pillow_avif')
+    except ImportError:
+        return False
+    return True
+
+
+if _avif_through_plugin():
+    log.debug('AVIF is read through pillow-avif-plugin')
 
 # Set supported image extensions regexp from list of supported formats.
 # Only used internally.
