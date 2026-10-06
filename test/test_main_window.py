@@ -1154,6 +1154,19 @@ class MainWindowTest(MComixTest):
         prefs['wheel pause after page turn'] = 0
         self.assertEqual(4, self._wheel_turns((1000, 1001, 1002, 1003)))
 
+    def test_a_page_that_fits_turns_on_every_notch_by_default(self):
+        prefs['wheel pause after page turn'] = 0
+        prefs['number of key presses before page turn'] = 3
+        self.assertEqual(6, self._wheel_turns(range(1000, 1006)))
+
+    def test_the_steps_can_be_counted_on_a_page_that_fits_as_well(self):
+        """A wheel that turns several notches at a time went through a
+        page that fits the window per notch (upstream bug 145)."""
+        prefs['wheel pause after page turn'] = 0
+        prefs['number of key presses before page turn'] = 3
+        prefs['steps also when page fits'] = True
+        self.assertEqual(2, self._wheel_turns(range(1000, 1006)))
+
     def test_the_pause_holds_across_the_event_clock_wrapping_round(self):
         prefs['wheel pause after page turn'] = 300
         self.assertEqual(1, self._wheel_turns((2**32 - 100, 50)))

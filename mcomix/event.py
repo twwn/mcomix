@@ -970,7 +970,8 @@ class EventHandler:
         "number of key presses before page turn" says before the page
         turns, so that scrolling down to the bottom does not run
         straight on into the next page.  A page that does not scroll at
-        all has no end to overshoot and turns on the first attempt.
+        all has no end to overshoot and turns on the first attempt,
+        unless "steps also when page fits" says otherwise.
 
         What arms the protection is a wheel event, or one of the plain
         scroll bindings.  A key press clears it before anything is
@@ -988,7 +989,7 @@ class EventHandler:
 
         if (not self._scroll_protection
                 or self._extra_scroll_events >= prefs['number of key presses before page turn'] - 1
-                or not self._window.is_scrollable()):
+                or self._fits_and_turns_at_once()):
 
             self._flip_page(1)
             return True
@@ -1013,13 +1014,21 @@ class EventHandler:
 
         if (not self._scroll_protection
                 or self._extra_scroll_events <= -prefs['number of key presses before page turn'] + 1
-                or not self._window.is_scrollable()):
+                or self._fits_and_turns_at_once()):
 
             self._flip_page(-1)
             return True
 
         self._extra_scroll_events = min(-1, self._extra_scroll_events - 1)
         return False
+
+    def _fits_and_turns_at_once(self) -> bool:
+        """Whether the page fits the window, and so turns on the first
+        attempt: it has no end to overshoot.  "Count the steps also when
+        the page fits" asks for the count there as well, for a wheel
+        that turns several notches at a time (upstream bug 145)."""
+        return (not self._window.is_scrollable()
+                and not prefs['steps also when page fits'])
 
     def reset_extra_scroll_events(self) -> None:
         """Forget the scrolls past the edge of the page counted so far.

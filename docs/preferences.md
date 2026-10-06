@@ -43,6 +43,7 @@ Number of pixels to scroll per arrow key press | 50 by default.
 Number of pixels to scroll per mouse wheel turn | 50 by default.
 Fraction of page to scroll per space key press (in percent) | 50 by default.
 Number of "steps" to take before flipping the page | Scrolls past a page's end before it turns, so reaching the bottom does not turn it by accident. 3 by default, at least 1.
+Count the steps also when the page fits | A page that fits the window turns on the first step past it. With this, it takes as many steps as the line above says. Off by default.
 Milliseconds to ignore the wheel after it turns a page | Keeps a wheel that spins on from turning several pages. 0, by default, ignores nothing.
 Automatically open the next archive | Past the last page, open the next archive in the directory; past the first, the previous one. A RAR book in volumes (name.part1.rar, name.part2.rar, …) counts as one, opened from its first volume.
 Automatically open next directory | Past the last book in the directory, open the next directory with a book; past the first, the previous one. The walk stays on the shelf: the directory above the one the book was opened from by hand. It visits the shelf's directories and the ones in those, each before the ones in it, in natural order. It skips directories with no book, and does not go into a linked directory. Archives follow an archive and loose pictures follow pictures. A directory with none of that kind opens its other kind.
