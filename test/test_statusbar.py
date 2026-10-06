@@ -221,3 +221,20 @@ class StatusbarLayoutTest(MComixTest):
             widths.add(field.measure(Gtk.Orientation.HORIZONTAL, -1)[1])
             field.let_go()
         self.assertEqual(1, len(widths), widths)
+
+    def test_a_field_s_text_is_centred_in_the_room_it_holds(self):
+        """The page field holds the room of "120 / 120" from the first
+        page; "1 / 120" stands in the middle of it, as wide a gap on
+        either side."""
+        self._show([1], 'page.jpg')
+        field = self.bar._fields[constants.STATUS_PAGE]
+        snapshot = Gtk.Snapshot()
+        Gtk.WidgetPaintable(widget=field).snapshot(
+            snapshot, field.get_width(), field.get_height())
+        drawn = snapshot.to_node().get_bounds()
+        before = drawn.get_x()
+        after = field.get_width() - drawn.get_x() - drawn.get_width()
+        # What is drawn is the glyphs' ink, whose edges stand a little
+        # inside the text's own width.
+        self.assertGreater(before, 3)
+        self.assertLessEqual(abs(before - after), 2, (before, after))

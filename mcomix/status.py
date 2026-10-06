@@ -35,16 +35,16 @@ class _Field(Gtk.Label):
     __gtype_name__ = 'MComixStatusField'
 
     def __init__(self, name: bool, tabular: bool) -> None:
-        """A field holding a <name>, cut short in the middle where it
-        does not fit so that its end stays, or a number, aligned to its
-        end so that the digits that change are the ones that move;
-        <tabular> gives every digit the same width."""
+        """A field whose text is centred in the room it holds; a
+        <name> is cut short in the middle where it does not fit, so
+        that its end stays, and <tabular> gives every digit the same
+        width."""
         super().__init__()
         if tabular:
             attributes = Pango.AttrList()
             attributes.insert(Pango.attr_font_features_new('tnum=1'))
             self.set_attributes(attributes)
-        self.set_xalign(0 if name else 1)
+        self.set_xalign(0.5)
         self.set_ellipsize(Pango.EllipsizeMode.MIDDLE if name
                            else Pango.EllipsizeMode.END)
         self._held = 0
@@ -77,11 +77,12 @@ class Statusbar(Gtk.Box, widgets.Releasable):
 
     """The status bar along the bottom of the window.
 
-    One label per field, rather than one line joining them with "|":
-    the line moved every field after one whose text changed width, and
-    cut off the last fields first where it was too long.  Each field
-    now keeps the width of the widest text it has shown in the book,
-    and the window gives way in the longest of them.
+    One label per field, with a line between each two, rather than one
+    line of text joining them with "|", which moved every field after
+    one whose text changed width, and cut off the last fields first
+    where it was too long.  Each field keeps the width of the widest
+    text it has shown in the book, its text centred in it, and the
+    window gives way in the longest of them.
     """
 
     #: The room, in pixels, at either end of the bar and either side
