@@ -95,6 +95,7 @@ class TarArchive(archive_base.NonUnicodeArchive):
                 # listing does not offer them.
                 continue
             members.append(info.name)
+            self._dates[info.name] = float(info.mtime)
         decode = archive_base.surrogate_name_decoder(members)
         self._contents = []
         for member in members:

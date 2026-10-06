@@ -1,5 +1,6 @@
 """ Unicode-aware wrapper for zipfile.ZipFile. """
 
+import datetime
 import os
 import struct
 import zipfile
@@ -107,6 +108,13 @@ class ZipArchive(archive_base.NonUnicodeArchive):
                 # can extract - opening one for writing raises - so the
                 # listing does not offer them.
                 continue
+            # Local time, as a zip keeps it: no zone is recorded.
+            year, month, day, hour, minute, second = info.date_time
+            try:
+                self._dates[info.filename] = datetime.datetime(
+                    year, month, day, hour, minute, second).timestamp()
+            except (ValueError, OverflowError, OSError):
+                pass
             if _named_in_utf8(info):
                 yield self._unicode_filename(info.filename)
             else:

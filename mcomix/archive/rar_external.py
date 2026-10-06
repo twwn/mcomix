@@ -130,6 +130,10 @@ class RarArchive(archive_base.ExternalExecutableArchive):
                 self._pending_size = int(line[6:])
             if line.startswith('Ratio: '):
                 self._pending_continued = line[7:] in ('<--', '<->')
+            if line.startswith('mtime: ') and self._pending is not None:
+                date = archive_base.local_timestamp(line[7:])
+                if date is not None:
+                    self._dates[self._pending] = date
             if line.startswith('Flags: '):
                 flags = line[7:].split()
                 if 'solid' in flags:

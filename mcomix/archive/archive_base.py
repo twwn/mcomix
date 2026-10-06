@@ -1,9 +1,12 @@
 """ Base class for unified handling of various archive formats. Used for simplifying
 extraction and adding new archive formats. """
 
+import calendar
+import datetime
 import os
 import sys
 import threading
+import time
 from collections.abc import Callable, Iterable, Iterator, Sequence
 from typing import IO
 
@@ -36,6 +39,11 @@ class BaseArchive:
         self.archive = archive
         self._password: str | None = None
         self._event = threading.Event()
+        #: When each member was last modified, as the archive records
+        #: it, in seconds since the epoch: filled in while listing, by
+        #: the name the format itself gives the member, by the handlers
+        #: whose format keeps a date.
+        self._dates: dict[str, float] = {}
         if self.support_concurrent_extractions:
             # When multiple concurrent extractions are supported,
             # we need a lock to handle concurent calls to _get_password.
@@ -75,6 +83,12 @@ class BaseArchive:
             wanted.remove(filename)
             if not wanted:
                 break
+
+    def member_date(self, name: str) -> float | None:
+        """When member <name>, as the listing gave it, was last
+        modified, in seconds since the epoch: None where the format
+        keeps no date, or the listing has not reached the member."""
+        return self._dates.get(name)
 
     def close(self) -> None:
         """ Closes the archive and releases held resources. """
@@ -261,6 +275,50 @@ class NonUnicodeArchive(BaseArchive):
         """ Map Unicode filename back to original archive name.  Names that
         were never listed have no mapping, and stand for themselves. """
         return self.unicode_mapping.get(filename, filename)
+
+    def member_date(self, name: str) -> float | None:
+        """As BaseArchive.member_date(), whose dates are kept by the
+        name inside the archive rather than the one listed."""
+        return self._dates.get(self._original_filename(name))
+
+
+def local_timestamp(text: str) -> float | None:
+    """The time "YYYY-MM-DD HH:MM:SS" in <text>, local time as archivers
+    print it, in seconds since the epoch; anything after the seconds
+    (a fraction) is left out.  None for text that is not such a time."""
+    try:
+        return datetime.datetime.strptime(
+            text.strip()[:19], '%Y-%m-%d %H:%M:%S').timestamp()
+    except (ValueError, OverflowError, OSError):
+        return None
+
+
+def today_shifted_timestamp(text: str) -> float | None:
+    """The time "YYYY-MM-DD HH:MM:SS" in <text>, as 7z prints a time
+    the archive keeps in UTC: moved into local time by the offset from
+    UTC in force now, rather than the one in force on that date, so a
+    date in winter came out an hour late in summer.  In seconds since
+    the epoch; None for text that is not such a time."""
+    try:
+        shown = datetime.datetime.strptime(text.strip()[:19],
+                                           '%Y-%m-%d %H:%M:%S')
+    except ValueError:
+        return None
+    offset = time.localtime().tm_gmtoff
+    return calendar.timegm(shown.timetuple()) - offset
+
+
+def dos_timestamp(packed: int) -> float | None:
+    """The time a DOS date and time packed into 32 bits stand for, the
+    date in the high half, local time, in seconds since the epoch.  None
+    where the fields are not a time."""
+    date, clock = packed >> 16, packed & 0xFFFF
+    try:
+        return datetime.datetime(
+            (date >> 9) + 1980, (date >> 5) & 15, date & 31,
+            clock >> 11, (clock >> 5) & 63, (clock & 31) * 2).timestamp()
+    except (ValueError, OverflowError, OSError):
+        return None
 
 
 def utf8_environment() -> dict[str, str] | None:

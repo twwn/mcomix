@@ -187,6 +187,32 @@ class FileHandler:
         index = placed.index(gone)
         return files[min(index, len(files) - 1)]
 
+    def page_date(self, page: int) -> float | None:
+        """When the picture of <page> was last modified, in seconds since
+        the epoch, or None where that cannot be told.
+
+        In an archive it is the date the archive records for the
+        picture, as an image viewer would show it, and the archive's
+        own where the format keeps none (a PDF's pages, a MOBI's, or a
+        handler that does not read them out); the unpacked file only
+        tells when it was unpacked.  In a folder it is the picture's.
+        """
+        if self.archive_type is not None:
+            member = self.page_member(page)
+            date = (self._extractor.member_date(member)
+                    if member is not None else None)
+            if date is not None:
+                return date
+            path = self.get_path_to_base()
+        else:
+            path = self._window.imagehandler.get_path_to_page(page)
+        if path is None:
+            return None
+        try:
+            return os.stat(path).st_mtime
+        except OSError:
+            return None
+
     def page_member(self, page: int) -> str | None:
         """The name within the open archive of the file of <page>, or
         None where no archive is open or the page has no file.

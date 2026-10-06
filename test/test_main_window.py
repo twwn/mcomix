@@ -1282,13 +1282,26 @@ class MainWindowTest(MComixTest):
         self.assertEqual(self.window.imagehandler.get_real_path(),
                          self.window.statusbar._path)
 
-    def test_an_archive_is_dated_by_its_own_file(self):
-        """A page unpacked from it is only as old as the unpacking
-        (upstream feature request 94)."""
+    def test_a_page_of_an_archive_is_dated_as_the_archive_records_it(self):
+        """As an image viewer would date the picture: the page unpacked
+        from the archive is only as old as the unpacking (upstream
+        feature request 94)."""
+        source = self._movable_book()
+        member = self.window.filehandler.page_member(1)
+        with zipfile.ZipFile(source) as archive:
+            recorded = archive.getinfo(member).date_time
+        self.window._update_page_information()
+        self.assertEqual(time.strftime('%Y-%m-%d, %H:%M:%S', recorded + (0, 0, -1)),
+                         self.window.statusbar._date)
+
+    def test_an_archive_that_records_no_date_is_dated_by_its_file(self):
         source = self._movable_book()
         when = time.mktime((2024, 5, 6, 7, 8, 9, 0, 0, -1))
         os.utime(source, (when, when))
-        self.window._update_page_information()
+        with unittest.mock.patch.object(
+                self.window.filehandler._extractor, 'member_date',
+                return_value=None):
+            self.window._update_page_information()
         self.assertEqual('2024-05-06, 07:08:09', self.window.statusbar._date)
 
     def test_two_pictures_of_a_folder_are_dated_each(self):

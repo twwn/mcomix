@@ -245,6 +245,13 @@ class Extractor:
         """
         pass
 
+    def member_date(self, name: str) -> float | None:
+        """When member <name> was last modified, as the archive records
+        it, in seconds since the epoch; None where it records nothing,
+        or no archive is open."""
+        archive = self._archive
+        return None if archive is None else archive.member_date(name)
+
     def close(self) -> None:
         """Stop the threads and close the archive.
 

@@ -116,6 +116,14 @@ class RecursiveArchive(archive_base.BaseArchive):
             (archive.extraction_thread_memory
              for archive in self._archive_list), default=0)
 
+    def member_date(self, name: str) -> float | None:
+        """The date the archive that holds <name> records for it."""
+        entry = self._entry_mapping.get(name)
+        if entry is None:
+            return None
+        archive, inner = entry
+        return archive.member_date(inner)
+
     def iter_contents(self) -> Iterator[str]:
         """Yield every entry, listing the nesting on the first call."""
         if self._contents_listed:

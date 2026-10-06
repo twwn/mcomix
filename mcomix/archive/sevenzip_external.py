@@ -168,6 +168,15 @@ class SevenZipArchive(archive_base.ExternalExecutableArchive):
                 # nothing is read past just as harmlessly, since no one
                 # asks for a directory.
                 self._contents.append((self._path, int(line[7:])))
+            elif line.startswith('Modified = '):
+                # A zip keeps its times as the local time they were
+                # written at, which 7z prints as it is; every other
+                # format 7z reads here keeps UTC.
+                date = (archive_base.local_timestamp(line[11:])
+                        if self._is_zip else
+                        archive_base.today_shifted_timestamp(line[11:]))
+                if date is not None:
+                    self._dates[self._path] = date
             elif line == 'Encrypted = +':
                 self._is_encrypted = True
             elif (line.startswith('Characteristics = ') and self._is_zip

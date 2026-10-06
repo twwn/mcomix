@@ -185,6 +185,9 @@ class RarArchive(archive_base.BaseArchive):
                     # one listed in the volume before; skip past it.
                     self._process()
                     continue
+                date = archive_base.dos_timestamp(self._headerdata.FileTime)
+                if date is not None:
+                    self._dates[filename] = date
                 yield filename
                 # Skip to the next entry if we're still on the same name
                 # (extract may have been called by iter_extract).
