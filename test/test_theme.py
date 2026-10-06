@@ -483,10 +483,10 @@ class PageMarkTest(MComixTest):
         window.destroy()
         # Off the display again: it is shared by every test that runs
         # after this one in the same worker.
-        if theme._marks is not None:
+        if theme._own_styles is not None:
             Gtk.StyleContext.remove_provider_for_display(
-                _Gdk.Display.get_default(), theme._marks)
-            theme._marks = None
+                _Gdk.Display.get_default(), theme._own_styles)
+            theme._own_styles = None
 
     def test_a_picked_out_page_is_outlined_whatever_the_colour_scheme(self):
         window = self._drawn(theme.PICKED_OUT_CLASS)

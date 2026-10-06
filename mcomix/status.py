@@ -3,6 +3,7 @@
 from gi.repository import Gdk, Gio, GLib, Gtk, Pango
 
 from mcomix import i18n
+from mcomix import theme
 from mcomix import widgets
 from mcomix import constants
 from mcomix.preferences import prefs
@@ -116,6 +117,7 @@ class Statusbar(Gtk.Box, widgets.Releasable):
         fields.set_margin_end(self.SPACING)
         for name, label, bit in self.FIELDS:
             separator = Gtk.Separator(orientation=Gtk.Orientation.VERTICAL)
+            separator.add_css_class(theme.STATUS_SEPARATOR_CLASS)
             separator.set_margin_start(self.SPACING)
             separator.set_margin_end(self.SPACING)
             separator.set_visible(False)

@@ -6,12 +6,13 @@ whole line back.  It then was one label joining the fields with "|",
 and now is a label per field.  These pin what the labels carry.
 """
 
-from gi.repository import Gtk
+from gi.repository import Gdk, Gsk, Gtk
 
 from . import MComixTest, pump, wait_for
 
 from mcomix import constants
 from mcomix import status
+from mcomix import theme
 from mcomix.preferences import prefs
 
 
@@ -238,3 +239,31 @@ class StatusbarLayoutTest(MComixTest):
         # inside the text's own width.
         self.assertGreater(before, 3)
         self.assertLessEqual(abs(before - after), 2, (before, after))
+
+    def test_the_line_between_two_fields_is_half_the_text_s_colour(self):
+        """Adwaita draws a separator in 15 per cent of its text colour,
+        which in a dark theme left nothing visible between the fields;
+        half shows in light, dark and black."""
+        theme.show_own_styles()
+        self.addCleanup(self._remove_own_styles)
+        self._show([1], 'page.jpg')
+        separator = next(separator
+                         for separator in self.bar._separators.values()
+                         if separator.get_visible())
+        snapshot = Gtk.Snapshot()
+        Gtk.WidgetPaintable(widget=separator).snapshot(
+            snapshot, separator.get_width(), separator.get_height())
+        node = snapshot.to_node()
+        self.assertIsInstance(node, Gsk.ColorNode)
+        drawn = node.get_color()
+        text = self.bar._fields[constants.STATUS_PAGE].get_color()
+        self.assertEqual((text.red, text.green, text.blue),
+                         (drawn.red, drawn.green, drawn.blue))
+        self.assertAlmostEqual(text.alpha / 2, drawn.alpha, places=2)
+
+    @staticmethod
+    def _remove_own_styles():
+        if theme._own_styles is not None:
+            Gtk.StyleContext.remove_provider_for_display(
+                Gdk.Display.get_default(), theme._own_styles)
+            theme._own_styles = None

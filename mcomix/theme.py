@@ -104,6 +104,20 @@ picture.mcomix-marked-page {
 }
 '''
 
+#: The CSS class on the lines between the status bar's fields.
+STATUS_SEPARATOR_CLASS = 'mcomix-status-separator'
+
+#: The lines between the status bar's fields.  Adwaita draws a
+#: separator in 15 per cent of the colour of the text beside it, which
+#: in a dark theme left the fields with nothing visible between them.
+#: Half that colour shows in light, dark and black alike, and in
+#: whatever colours a desktop theme sets.
+_STATUS_SEPARATORS = '''
+separator.mcomix-status-separator {
+    background-color: alpha(currentColor, 0.5);
+}
+'''
+
 #: How MComix may be painted.  "System" is whatever the desktop says;
 #: the rest override it, and black is a dark theme whose backgrounds are
 #: no light at all, which is what an OLED screen shows them as.
@@ -159,8 +173,9 @@ _BLACKENED = (
 _provider = None
 #: The provider that states a scheme's colours, while one is stated.
 _stated: "Gtk.CssProvider | None" = None
-#: The provider that draws the outline round marked pages.
-_marks: "Gtk.CssProvider | None" = None
+#: The provider of MComix' own rules: the outline round marked pages,
+#: the status bar's separators.
+_own_styles: "Gtk.CssProvider | None" = None
 #: Whether libadwaita is running, which decides who answers for the
 #: light and the dark.
 _started = False
@@ -176,27 +191,28 @@ def follow_theme() -> None:
     below maps what the theme states onto the widgets plain GTK4
     styles - less thorough, but better than ignoring the theme.
     """
-    show_page_marks()
+    show_own_styles()
     if not _start_libadwaita():
         follow_palette()
     apply_colour_scheme()
 
 
-def show_page_marks(display: "Gdk.Display | None" = None) -> None:
-    """Draw the outline round pages picked out or marked to swap.
+def show_own_styles(display: "Gdk.Display | None" = None) -> None:
+    """Draw the outline round pages picked out or marked to swap, and
+    the lines between the status bar's fields.
 
     At application priority, as the palette is, so that a user's own
     stylesheet can still draw them differently.  Once per display.
     """
-    global _marks
+    global _own_styles
     if display is None:
         display = Gdk.Display.get_default()
-    if display is None or _marks is not None:
+    if display is None or _own_styles is not None:
         return
-    _marks = Gtk.CssProvider()
-    _marks.load_from_string(_PAGE_MARKS)
+    _own_styles = Gtk.CssProvider()
+    _own_styles.load_from_string(_PAGE_MARKS + _STATUS_SEPARATORS)
     Gtk.StyleContext.add_provider_for_display(
-        display, _marks, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+        display, _own_styles, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
 
 def apply_colour_scheme(scheme: str | None = None) -> None:
