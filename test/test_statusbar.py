@@ -6,6 +6,9 @@ whole line back.  It then was one label joining the fields with "|",
 and now is a label per field.  These pin what the labels carry.
 """
 
+import unittest
+
+import gi
 from gi.repository import Gdk, Gsk, Gtk
 
 from . import MComixTest, pump, wait_for
@@ -14,6 +17,21 @@ from mcomix import constants
 from mcomix import status
 from mcomix import theme
 from mcomix.preferences import prefs
+
+
+def drawn(widget):
+    """The render node <widget> is drawn as, at its allocated size."""
+    if gi.version_info < (3, 48):
+        # A render node is a fundamental type, and PyGObject hands those
+        # to Python only from 3.48 on: 3.46 raises "No means to translate
+        # argument or return value for 'GskTextNode'" (test_theme.py
+        # skips for the same reason).
+        raise unittest.SkipTest('PyGObject %s cannot read render nodes'
+                                % gi.__version__)
+    snapshot = Gtk.Snapshot()
+    Gtk.WidgetPaintable(widget=widget).snapshot(
+        snapshot, widget.get_width(), widget.get_height())
+    return snapshot.to_node()
 
 
 def shown_text(bar):
@@ -237,12 +255,9 @@ class StatusbarLayoutTest(MComixTest):
         either side."""
         self._show([1], 'page.jpg')
         field = self.bar._fields[constants.STATUS_PAGE]
-        snapshot = Gtk.Snapshot()
-        Gtk.WidgetPaintable(widget=field).snapshot(
-            snapshot, field.get_width(), field.get_height())
-        drawn = snapshot.to_node().get_bounds()
-        before = drawn.get_x()
-        after = field.get_width() - drawn.get_x() - drawn.get_width()
+        ink = drawn(field).get_bounds()
+        before = ink.get_x()
+        after = field.get_width() - ink.get_x() - ink.get_width()
         # What is drawn is the glyphs' ink, whose edges stand a little
         # inside the text's own width.
         self.assertGreater(before, 3)
@@ -258,16 +273,13 @@ class StatusbarLayoutTest(MComixTest):
         separator = next(separator
                          for separator in self.bar._separators.values()
                          if separator.get_visible())
-        snapshot = Gtk.Snapshot()
-        Gtk.WidgetPaintable(widget=separator).snapshot(
-            snapshot, separator.get_width(), separator.get_height())
-        node = snapshot.to_node()
+        node = drawn(separator)
         self.assertIsInstance(node, Gsk.ColorNode)
-        drawn = node.get_color()
+        colour = node.get_color()
         text = self.bar._fields[constants.STATUS_PAGE].get_color()
         self.assertEqual((text.red, text.green, text.blue),
-                         (drawn.red, drawn.green, drawn.blue))
-        self.assertAlmostEqual(text.alpha / 2, drawn.alpha, places=2)
+                         (colour.red, colour.green, colour.blue))
+        self.assertAlmostEqual(text.alpha / 2, colour.alpha, places=2)
 
     @staticmethod
     def _remove_own_styles():
