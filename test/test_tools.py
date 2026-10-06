@@ -309,8 +309,10 @@ class TestThreadCount(unittest.TestCase):
 
 class TestPhysicalMemory(unittest.TestCase):
 
-    @unittest.skipIf(sys.platform == 'win32', 'the POSIX call')
     def test_this_machine_says_how_much_it_has(self):
+        """The real call, on Windows as well: the structure handed to
+        GlobalMemoryStatusEx is only ever checked against Windows
+        itself, a stand-in fills in whatever it is given."""
         memory = tools.physical_memory()
         self.assertIsNotNone(memory)
         self.assertGreater(memory, 2**20)
