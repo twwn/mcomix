@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Comix 4.0.3\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-06 17:03+0200\n"
+"POT-Creation-Date: 2026-10-06 17:06+0200\n"
 "PO-Revision-Date: 2009-01-26 19:34+0100\n"
 "Last-Translator: Ernő Drabik <drerno@gmail.com>\n"
 "Language-Team: \n"
@@ -142,7 +142,7 @@ msgstr "Könyvjelzők szerkesztése"
 msgid "C_lear bookmarks..."
 msgstr "Könyvjelzők _törlése..."
 
-#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1005 mcomix/openwith.py:337
+#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1006 mcomix/openwith.py:337
 #: mcomix/library/collection_area.py:149 mcomix/library/watchlist.py:64
 msgid "_Remove"
 msgstr "_Eltávolítás"
@@ -163,7 +163,7 @@ msgstr "Típus"
 msgid "Name"
 msgstr "Név"
 
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1639
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1640
 #: mcomix/library/control_area.py:148
 msgid "Page"
 msgstr "Oldal"
@@ -1097,14 +1097,14 @@ msgstr "Nem sikerült betölteni a gyorsbillentyűket: %s"
 msgid "! Could not remove file \"%s\""
 msgstr "! Nem sikerült törölni a(z) „%s” fájlt"
 
-#: mcomix/main.py:998
+#: mcomix/main.py:999
 #, python-format
 msgid "Remove the page picked out of \"%s\"?"
 msgid_plural "Remove the pages picked out of \"%s\"?"
 msgstr[0] "Eltávolítja a kijelölt oldalt ebből: „%s”?"
 msgstr[1] "Eltávolítja a kijelölt oldalakat ebből: „%s”?"
 
-#: mcomix/main.py:1001
+#: mcomix/main.py:1002
 msgid ""
 "They are taken out of the archive on disk, which is written again at once. "
 "Leaving the book without removing them forgets which pages they were."
@@ -1113,11 +1113,11 @@ msgstr ""
 "eltávolításuk nélkül hagyja el a könyvet, feledésbe merül, mely oldalak "
 "voltak azok."
 
-#: mcomix/main.py:1004
+#: mcomix/main.py:1005
 msgid "_Keep them"
 msgstr "Meg_tartás"
 
-#: mcomix/main.py:1461
+#: mcomix/main.py:1462
 msgid "SLIDESHOW"
 msgstr "Diavetítés"
 
@@ -2305,29 +2305,37 @@ msgstr ""
 msgid "Stop slideshow"
 msgstr "Diavetítés leállítása"
 
-#: mcomix/status.py:190
+#: mcomix/status.py:198
 msgid "Show page numbers"
 msgstr "Oldalszámok megjelenítése"
 
-#: mcomix/status.py:191
+#: mcomix/status.py:199
 msgid "Show file numbers"
 msgstr "Fájlszámok megjelenítése"
 
-#: mcomix/status.py:192
+#: mcomix/status.py:200
 msgid "Show resolution"
 msgstr "Felbontás megjelenítése"
 
-#: mcomix/status.py:193
+#: mcomix/status.py:201
 msgid "Show path"
 msgstr "Útvonal megjelenítése"
 
-#: mcomix/status.py:194
+#: mcomix/status.py:202
 msgid "Show filename"
 msgstr "Fájlnév megjelenítése"
 
-#: mcomix/status.py:195
+#: mcomix/status.py:203
 msgid "Show filesize"
 msgstr "Fájlméret megjelenítése"
+
+#: mcomix/status.py:231
+msgid "Copy file name"
+msgstr "Fájlnév másolása"
+
+#: mcomix/status.py:232
+msgid "Copy path"
+msgstr "Útvonal másolása"
 
 #: mcomix/strings.py:9 mcomix/strings.py:18
 msgid "ZIP archive"

@@ -8,6 +8,7 @@
 
 - Menu bar and toolbar at the top, page thumbnails on the left, the page in the middle, status bar at the bottom.
 - "View → Toolbars" shows or hides the menubar, toolbar, statusbar, scrollbars and thumbnails.
+- Right-clicking the status bar picks the fields it shows, and copies the file name or the full path of the file being read.
 - "Hide all", in the same menu or the I key, puts them all away at once.
 - Fullscreen, the F key, hides them too while "Automatically hide all toolbars in fullscreen" is set.
 - Escape leaves fullscreen, and so does "Leave fullscreen" at the top of the right-click menu.

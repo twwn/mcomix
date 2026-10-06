@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 1.2.1\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-06 17:03+0200\n"
+"POT-Creation-Date: 2026-10-06 17:06+0200\n"
 "PO-Revision-Date: 2016-09-18 15:30+0300\n"
 "Last-Translator: Zygimantus <zygimantus@gmail.com>\n"
 "Language-Team: \n"
@@ -148,7 +148,7 @@ msgstr "Žymelių keitimas"
 msgid "C_lear bookmarks..."
 msgstr "Iš_valyti žymeles..."
 
-#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1005 mcomix/openwith.py:337
+#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1006 mcomix/openwith.py:337
 #: mcomix/library/collection_area.py:149 mcomix/library/watchlist.py:64
 msgid "_Remove"
 msgstr "Pa_šalinti"
@@ -169,7 +169,7 @@ msgstr "Tipas"
 msgid "Name"
 msgstr "Pavadinimas"
 
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1639
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1640
 #: mcomix/library/control_area.py:148
 msgid "Page"
 msgstr "Puslapis"
@@ -1100,7 +1100,7 @@ msgstr "Nepavyko įkelti sparčiųjų klavišų kombinacijų: %s"
 msgid "! Could not remove file \"%s\""
 msgstr "! Nepavyko pašalinti failo „%s“"
 
-#: mcomix/main.py:998
+#: mcomix/main.py:999
 #, python-format
 msgid "Remove the page picked out of \"%s\"?"
 msgid_plural "Remove the pages picked out of \"%s\"?"
@@ -1108,7 +1108,7 @@ msgstr[0] "Pašalinti pasirinktą puslapį iš „%s“?"
 msgstr[1] "Pašalinti pasirinktus puslapius iš „%s“?"
 msgstr[2] "Pašalinti pasirinktus puslapius iš „%s“?"
 
-#: mcomix/main.py:1001
+#: mcomix/main.py:1002
 msgid ""
 "They are taken out of the archive on disk, which is written again at once. "
 "Leaving the book without removing them forgets which pages they were."
@@ -1116,11 +1116,11 @@ msgstr ""
 "Jie pašalinami iš archyvo diske, kuris iškart įrašomas iš naujo. Palikus "
 "knygą jų nepašalinus, pamirštama, kurie puslapiai tai buvo."
 
-#: mcomix/main.py:1004
+#: mcomix/main.py:1005
 msgid "_Keep them"
 msgstr "_Palikti"
 
-#: mcomix/main.py:1461
+#: mcomix/main.py:1462
 msgid "SLIDESHOW"
 msgstr "SKAIDRIŲ RODYMAS"
 
@@ -2297,29 +2297,37 @@ msgstr "Sistemoje nerasta jokios Python Imaging Library versijos."
 msgid "Stop slideshow"
 msgstr "Stabdyti skaidrių rodymą"
 
-#: mcomix/status.py:190
+#: mcomix/status.py:198
 msgid "Show page numbers"
 msgstr "Rodyti puslapių numerius"
 
-#: mcomix/status.py:191
+#: mcomix/status.py:199
 msgid "Show file numbers"
 msgstr "Rodyti failų numerius"
 
-#: mcomix/status.py:192
+#: mcomix/status.py:200
 msgid "Show resolution"
 msgstr "Rodyti skiriamąją gebą"
 
-#: mcomix/status.py:193
+#: mcomix/status.py:201
 msgid "Show path"
 msgstr "Rodyti kelią"
 
-#: mcomix/status.py:194
+#: mcomix/status.py:202
 msgid "Show filename"
 msgstr "Rodyti failo pavadinimą"
 
-#: mcomix/status.py:195
+#: mcomix/status.py:203
 msgid "Show filesize"
 msgstr "Rodyti failo dydį"
+
+#: mcomix/status.py:231
+msgid "Copy file name"
+msgstr "Kopijuoti failo pavadinimą"
+
+#: mcomix/status.py:232
+msgid "Copy path"
+msgstr "Kopijuoti kelią"
 
 #: mcomix/strings.py:9 mcomix/strings.py:18
 msgid "ZIP archive"

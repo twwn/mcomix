@@ -1,6 +1,6 @@
 """status.py - Statusbar for main window."""
 
-from gi.repository import Gio, GLib, Gtk, Pango
+from gi.repository import Gdk, Gio, GLib, Gtk, Pango
 
 from mcomix import i18n
 from mcomix import widgets
@@ -69,6 +69,9 @@ class Statusbar(Gtk.Box, widgets.Releasable):
         self._root = ''
         self._filename = ''
         self._filesize = ''
+        #: The full path of the file being read, which no field shows
+        #: whole; "Copy path" copies it.
+        self._path = ''
         self._update_sensitivity()
         self.set_visible(True)
 
@@ -149,6 +152,11 @@ class Statusbar(Gtk.Box, widgets.Releasable):
         """Update the filename."""
         self._filename = i18n.to_display_string(i18n.to_unicode(filename))
 
+    def set_path(self, path: str | None) -> None:
+        """Note the full path of the file being read: the archive, or
+        the picture on screen in a folder."""
+        self._path = path or ''
+
     def set_filesize(self, size: str | None) -> None:
         """Update the filesize."""
         if size is None:
@@ -197,16 +205,45 @@ class Statusbar(Gtk.Box, widgets.Releasable):
     def _create_fields_menu(self) -> Gtk.PopoverMenu:
         """Build the right-click menu that picks which fields are shown."""
         self._field_actions = Gio.SimpleActionGroup()
-        model = Gio.Menu()
+        fields = Gio.Menu()
         for name, label, bit in self.FIELDS:
             action = Gio.SimpleAction.new_stateful(
                 name, None, GLib.Variant('b', bool(prefs['statusbar fields'] & bit)))
             action.connect('change-state', self.toggle_status_visibility, bit)
             self._field_actions.add_action(action)
             self._field_toggles[name] = action
-            model.append(label, 'statusbar.%s' % name)
+            fields.append(label, 'statusbar.%s' % name)
+        # What the bar shows, to paste elsewhere (upstream feature
+        # request 14).
+        copies = Gio.Menu()
+        for name, label in self.COPIES:
+            action = Gio.SimpleAction.new(name, None)
+            action.connect('activate', self._copy, name)
+            self._field_actions.add_action(action)
+            copies.append(label, 'statusbar.%s' % name)
+        model = Gio.Menu()
+        model.append_section(None, fields)
+        model.append_section(None, copies)
         self.insert_action_group('statusbar', self._field_actions)
         return Gtk.PopoverMenu.new_from_model(model)
+
+    #: The entries that copy what the bar knows of the file being read.
+    COPIES = (('copy-filename', _('Copy file name')),
+              ('copy-path', _('Copy path')))
+
+    def _copied_text(self, name: str) -> str:
+        """What the entry <name> of COPIES copies: the file name as the
+        bar shows it, both of a double page's, or the full path."""
+        return self._filename if name == 'copy-filename' else self._path
+
+    def _copy(self, action: Gio.SimpleAction, parameter: object,
+              name: str) -> None:
+        self._put_on_clipboard(self._copied_text(name))
+
+    @staticmethod
+    def _put_on_clipboard(text: str) -> None:
+        widgets.display().get_clipboard().set_content(
+            Gdk.ContentProvider.new_for_value(text))
 
     def toggle_status_visibility(self, action: Gio.SimpleAction,
                                  value: GLib.Variant, bit: int) -> None:
@@ -229,6 +266,9 @@ class Statusbar(Gtk.Box, widgets.Releasable):
         """ Triggered when a mouse button is released to open the context
         menu. """
         if gesture.get_current_button() == 3:
+            for name, label in self.COPIES:
+                widgets.simple_action(self._field_actions, name).set_enabled(
+                    bool(self._copied_text(name)))
             widgets.popup_at(self._fields_menu, self, x, y)
 
     def _update_sensitivity(self) -> None:

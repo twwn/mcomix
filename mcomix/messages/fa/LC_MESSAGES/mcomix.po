@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: comix 3.6.4\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-06 17:03+0200\n"
+"POT-Creation-Date: 2026-10-06 17:06+0200\n"
 "PO-Revision-Date: 2008-05-21 12:40+0330\n"
 "Last-Translator: Meelad Zakaria <meelad@farsiweb.info>\n"
 "Language-Team: Persian \n"
@@ -153,7 +153,7 @@ msgstr "ویرایش نشانک‌ها"
 msgid "C_lear bookmarks..."
 msgstr "_پاک کردن نشانک‌ها..."
 
-#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1005 mcomix/openwith.py:337
+#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1006 mcomix/openwith.py:337
 #: mcomix/library/collection_area.py:149 mcomix/library/watchlist.py:64
 msgid "_Remove"
 msgstr "_برداشتن"
@@ -181,7 +181,7 @@ msgstr "نام"
 
 #
 # File: src/bookmark.py, line: 256
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1639
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1640
 #: mcomix/library/control_area.py:148
 msgid "Page"
 msgstr "صفحه"
@@ -1272,14 +1272,14 @@ msgstr "بار کردن میان‌برها ممکن نشد: %s"
 msgid "! Could not remove file \"%s\""
 msgstr "! برداشتن پروندهٔ «%s» ممکن نشد"
 
-#: mcomix/main.py:998
+#: mcomix/main.py:999
 #, python-format
 msgid "Remove the page picked out of \"%s\"?"
 msgid_plural "Remove the pages picked out of \"%s\"?"
 msgstr[0] "صفحهٔ گزیده از «%s» حذف شود؟"
 msgstr[1] "صفحه‌های گزیده از «%s» حذف شوند؟"
 
-#: mcomix/main.py:1001
+#: mcomix/main.py:1002
 msgid ""
 "They are taken out of the archive on disk, which is written again at once. "
 "Leaving the book without removing them forgets which pages they were."
@@ -1287,13 +1287,13 @@ msgstr ""
 "آن‌ها از بایگانی روی دیسک برداشته می‌شوند و بایگانی بی‌درنگ دوباره نوشته می‌شود. "
 "اگر کتاب را بدون حذف آن‌ها ترک کنید، فراموش می‌شود که کدام صفحه‌ها بودند."
 
-#: mcomix/main.py:1004
+#: mcomix/main.py:1005
 msgid "_Keep them"
 msgstr "_نگه‌داشتن"
 
 #
 # File: src/main.py, line: 666
-#: mcomix/main.py:1461
+#: mcomix/main.py:1462
 msgid "SLIDESHOW"
 msgstr "نمایش اسلایدی"
 
@@ -2574,29 +2574,37 @@ msgstr "هیچ نسخه‌ای از Python Imaging Library در سامانهٔ �
 msgid "Stop slideshow"
 msgstr "توقف نمایش اسلایدی"
 
-#: mcomix/status.py:190
+#: mcomix/status.py:198
 msgid "Show page numbers"
 msgstr "نمایش شمارهٔ صفحه"
 
-#: mcomix/status.py:191
+#: mcomix/status.py:199
 msgid "Show file numbers"
 msgstr "نمایش شمارهٔ پرونده"
 
-#: mcomix/status.py:192
+#: mcomix/status.py:200
 msgid "Show resolution"
 msgstr "نمایش تفکیک‌پذیری"
 
-#: mcomix/status.py:193
+#: mcomix/status.py:201
 msgid "Show path"
 msgstr "نمایش مسیر"
 
-#: mcomix/status.py:194
+#: mcomix/status.py:202
 msgid "Show filename"
 msgstr "نمایش نام پرونده"
 
-#: mcomix/status.py:195
+#: mcomix/status.py:203
 msgid "Show filesize"
 msgstr "نمایش اندازهٔ پرونده"
+
+#: mcomix/status.py:231
+msgid "Copy file name"
+msgstr "رونوشت نام پرونده"
+
+#: mcomix/status.py:232
+msgid "Copy path"
+msgstr "رونوشت مسیر"
 
 #
 # File: src/archive.py, line: 301

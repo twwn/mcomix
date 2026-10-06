@@ -1,6 +1,8 @@
 """ Tests for the status bar's right-click menu, which picks the fields
 it shows. """
 
+import unittest.mock
+
 from gi.repository import GLib, Gtk
 
 from . import MComixTest
@@ -64,3 +66,44 @@ class StatusbarFieldsMenuTest(MComixTest):
                          before | constants.STATUS_RESOLUTION)
 
 # vim: expandtab:sw=4:ts=4
+
+
+class StatusbarCopyTest(MComixTest):
+
+    """Copying what the bar knows of the file being read (upstream
+    feature request 14)."""
+
+    def setUp(self):
+        super().setUp()
+        self.bar = status.Statusbar()
+        self.window = Gtk.Window()
+        self.window.set_child(self.bar)
+        self.copied = []
+        patcher = unittest.mock.patch.object(
+            self.bar, '_put_on_clipboard', self.copied.append)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def tearDown(self):
+        self.window.destroy()
+        super().tearDown()
+
+    def test_the_file_name_is_copied_as_the_bar_shows_it(self):
+        self.bar.set_filename('02.jpg, 03.jpg')
+        self.bar._field_actions.activate_action('copy-filename', None)
+        self.assertEqual(['02.jpg, 03.jpg'], self.copied)
+
+    def test_the_path_is_the_whole_one(self):
+        self.bar.set_path('/books/Some Book.cbz')
+        self.bar._field_actions.activate_action('copy-path', None)
+        self.assertEqual(['/books/Some Book.cbz'], self.copied)
+
+    def test_nothing_to_copy_leaves_the_entry_insensitive(self):
+        self.bar.set_filename('01.jpg')
+        gesture = unittest.mock.Mock()
+        gesture.get_current_button.return_value = 3
+        with unittest.mock.patch('mcomix.widgets.popup_at'):
+            self.bar._button_released(gesture, 1, 0, 0)
+        actions = self.bar._field_actions
+        self.assertTrue(actions.lookup_action('copy-filename').get_enabled())
+        self.assertFalse(actions.lookup_action('copy-path').get_enabled())

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-06 17:03+0200\n"
+"POT-Creation-Date: 2026-10-06 17:06+0200\n"
 "PO-Revision-Date: 2009-05-04 23:52+0300\n"
 "Last-Translator: Oleksandr Zaiats <ai@eth0.net.ua>\n"
 "Language-Team: \n"
@@ -145,7 +145,7 @@ msgstr "Редагування закладок"
 msgid "C_lear bookmarks..."
 msgstr "_Видалити закладки…"
 
-#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1005 mcomix/openwith.py:337
+#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1006 mcomix/openwith.py:337
 #: mcomix/library/collection_area.py:149 mcomix/library/watchlist.py:64
 msgid "_Remove"
 msgstr "Ви_лучити"
@@ -166,7 +166,7 @@ msgstr "Тип"
 msgid "Name"
 msgstr "Ім’я"
 
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1639
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1640
 #: mcomix/library/control_area.py:148
 msgid "Page"
 msgstr "Сторінка"
@@ -1098,7 +1098,7 @@ msgstr "Не вдалося завантажити сполучення клав
 msgid "! Could not remove file \"%s\""
 msgstr "! Не вдалося видалити файл \"%s\""
 
-#: mcomix/main.py:998
+#: mcomix/main.py:999
 #, python-format
 msgid "Remove the page picked out of \"%s\"?"
 msgid_plural "Remove the pages picked out of \"%s\"?"
@@ -1106,7 +1106,7 @@ msgstr[0] "Вилучити вибрану сторінку з «%s»?"
 msgstr[1] "Вилучити вибрані сторінки з «%s»?"
 msgstr[2] "Вилучити вибрані сторінки з «%s»?"
 
-#: mcomix/main.py:1001
+#: mcomix/main.py:1002
 msgid ""
 "They are taken out of the archive on disk, which is written again at once. "
 "Leaving the book without removing them forgets which pages they were."
@@ -1114,11 +1114,11 @@ msgstr ""
 "Їх вилучають з архіву на диску, який одразу записується заново. Якщо "
 "покинути книгу, не вилучивши їх, буде забуто, які це були сторінки."
 
-#: mcomix/main.py:1004
+#: mcomix/main.py:1005
 msgid "_Keep them"
 msgstr "Зали_шити"
 
-#: mcomix/main.py:1461
+#: mcomix/main.py:1462
 msgid "SLIDESHOW"
 msgstr "СЛАЙДШОУ"
 
@@ -2297,29 +2297,37 @@ msgstr "У системі не знайдено жодної версії Python
 msgid "Stop slideshow"
 msgstr "Зупинити слайдшоу"
 
-#: mcomix/status.py:190
+#: mcomix/status.py:198
 msgid "Show page numbers"
 msgstr "Показувати номери сторінок"
 
-#: mcomix/status.py:191
+#: mcomix/status.py:199
 msgid "Show file numbers"
 msgstr "Показувати номери файлів"
 
-#: mcomix/status.py:192
+#: mcomix/status.py:200
 msgid "Show resolution"
 msgstr "Показувати роздільність"
 
-#: mcomix/status.py:193
+#: mcomix/status.py:201
 msgid "Show path"
 msgstr "Показувати шлях"
 
-#: mcomix/status.py:194
+#: mcomix/status.py:202
 msgid "Show filename"
 msgstr "Показувати назву файла"
 
-#: mcomix/status.py:195
+#: mcomix/status.py:203
 msgid "Show filesize"
 msgstr "Показувати розмір файла"
+
+#: mcomix/status.py:231
+msgid "Copy file name"
+msgstr "Копіювати назву файла"
+
+#: mcomix/status.py:232
+msgid "Copy path"
+msgstr "Копіювати шлях"
 
 #: mcomix/strings.py:9 mcomix/strings.py:18
 msgid "ZIP archive"

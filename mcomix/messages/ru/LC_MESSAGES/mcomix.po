@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 0.90.4\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-06 17:03+0200\n"
+"POT-Creation-Date: 2026-10-06 17:06+0200\n"
 "PO-Revision-Date: 2016-01-10 18:09+0200\n"
 "Last-Translator: Ulyanich Michael <ulianich_mihail@ukr.net>\n"
 "Language-Team: Russian <kde-russian@lists.kde.ru>\n"
@@ -171,7 +171,7 @@ msgstr "Редактировать закладки"
 msgid "C_lear bookmarks..."
 msgstr "_Очистить закладки..."
 
-#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1005 mcomix/openwith.py:337
+#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1006 mcomix/openwith.py:337
 #: mcomix/library/collection_area.py:149 mcomix/library/watchlist.py:64
 msgid "_Remove"
 msgstr "_Удалить"
@@ -199,7 +199,7 @@ msgstr "Имя"
 
 #
 # File: src/bookmark.py, line: 256
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1639
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1640
 #: mcomix/library/control_area.py:148
 msgid "Page"
 msgstr "Страница"
@@ -1319,7 +1319,7 @@ msgstr "Не удалось загрузить комбинации клавиш
 msgid "! Could not remove file \"%s\""
 msgstr "! Не удалось удалить файл \"%s\""
 
-#: mcomix/main.py:998
+#: mcomix/main.py:999
 #, python-format
 msgid "Remove the page picked out of \"%s\"?"
 msgid_plural "Remove the pages picked out of \"%s\"?"
@@ -1327,7 +1327,7 @@ msgstr[0] "Убрать выбранную страницу из «%s»?"
 msgstr[1] "Убрать выбранные страницы из «%s»?"
 msgstr[2] "Убрать выбранные страницы из «%s»?"
 
-#: mcomix/main.py:1001
+#: mcomix/main.py:1002
 msgid ""
 "They are taken out of the archive on disk, which is written again at once. "
 "Leaving the book without removing them forgets which pages they were."
@@ -1335,13 +1335,13 @@ msgstr ""
 "Они убираются из архива на диске, который тут же записывается заново. Если "
 "покинуть книгу, не убрав их, будет забыто, какие это были страницы."
 
-#: mcomix/main.py:1004
+#: mcomix/main.py:1005
 msgid "_Keep them"
 msgstr "Оста_вить"
 
 #
 # File: src/main.py, line: 666
-#: mcomix/main.py:1461
+#: mcomix/main.py:1462
 msgid "SLIDESHOW"
 msgstr "СЛАЙДШОУ"
 
@@ -2692,29 +2692,37 @@ msgstr "Не найдена библиотека PIL"
 msgid "Stop slideshow"
 msgstr "Остановить слайдшоу"
 
-#: mcomix/status.py:190
+#: mcomix/status.py:198
 msgid "Show page numbers"
 msgstr "Показывать номера страниц"
 
-#: mcomix/status.py:191
+#: mcomix/status.py:199
 msgid "Show file numbers"
 msgstr "Показывать номера файлов"
 
-#: mcomix/status.py:192
+#: mcomix/status.py:200
 msgid "Show resolution"
 msgstr "Показывать разрешение"
 
-#: mcomix/status.py:193
+#: mcomix/status.py:201
 msgid "Show path"
 msgstr "Показывать путь"
 
-#: mcomix/status.py:194
+#: mcomix/status.py:202
 msgid "Show filename"
 msgstr "Показывать имя файла"
 
-#: mcomix/status.py:195
+#: mcomix/status.py:203
 msgid "Show filesize"
 msgstr "Показывать размер файла"
+
+#: mcomix/status.py:231
+msgid "Copy file name"
+msgstr "Копировать имя файла"
+
+#: mcomix/status.py:232
+msgid "Copy path"
+msgstr "Копировать путь"
 
 #
 # File: src/archive.py, line: 301

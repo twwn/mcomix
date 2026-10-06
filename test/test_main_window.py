@@ -1277,6 +1277,11 @@ class MainWindowTest(MComixTest):
         self.assertNotEqual(first, self.window._position_source,
                             'the second turn did not restart the wait')
 
+    def test_the_status_bar_knows_the_path_to_copy(self):
+        self._ready()
+        self.assertEqual(self.window.imagehandler.get_real_path(),
+                         self.window.statusbar._path)
+
     def test_quit_and_save_keeps_the_file_of_the_page(self):
         """What an older MComix reads of it - the file and the index of
         the page - comes first and is unchanged."""

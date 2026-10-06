@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-06 17:03+0200\n"
+"POT-Creation-Date: 2026-10-06 17:06+0200\n"
 "PO-Revision-Date: 2006-09-27 10:18+0200\n"
 "Last-Translator: Paul Chatzidimitriou <paulmedic555@gmail.com>\n"
 "Language-Team: \n"
@@ -158,7 +158,7 @@ msgstr "Επεξεργασία σελιδοδεικτών"
 msgid "C_lear bookmarks..."
 msgstr "Εκκα_θάριση σελιδοδεικτών..."
 
-#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1005 mcomix/openwith.py:337
+#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1006 mcomix/openwith.py:337
 #: mcomix/library/collection_area.py:149 mcomix/library/watchlist.py:64
 msgid "_Remove"
 msgstr "Α_φαίρεση"
@@ -186,7 +186,7 @@ msgstr "Όνομα"
 
 #
 # File: src/bookmark.py, line: 256
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1639
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1640
 #: mcomix/library/control_area.py:148
 msgid "Page"
 msgstr "Σελίδα"
@@ -1284,14 +1284,14 @@ msgstr "Δεν ήταν δυνατή η φόρτωση των συντομεύσ
 msgid "! Could not remove file \"%s\""
 msgstr "! Δεν ήταν δυνατή η αφαίρεση του αρχείου «%s»"
 
-#: mcomix/main.py:998
+#: mcomix/main.py:999
 #, python-format
 msgid "Remove the page picked out of \"%s\"?"
 msgid_plural "Remove the pages picked out of \"%s\"?"
 msgstr[0] "Αφαίρεση της επιλεγμένης σελίδας από το «%s»;"
 msgstr[1] "Αφαίρεση των επιλεγμένων σελίδων από το «%s»;"
 
-#: mcomix/main.py:1001
+#: mcomix/main.py:1002
 msgid ""
 "They are taken out of the archive on disk, which is written again at once. "
 "Leaving the book without removing them forgets which pages they were."
@@ -1299,13 +1299,13 @@ msgstr ""
 "Αφαιρούνται από το αρχείο στον δίσκο, το οποίο γράφεται ξανά αμέσως. Αν "
 "φύγετε από το βιβλίο χωρίς να τις αφαιρέσετε, ξεχνιέται ποιες σελίδες ήταν."
 
-#: mcomix/main.py:1004
+#: mcomix/main.py:1005
 msgid "_Keep them"
 msgstr "_Διατήρηση"
 
 #
 # File: src/main.py, line: 666
-#: mcomix/main.py:1461
+#: mcomix/main.py:1462
 msgid "SLIDESHOW"
 msgstr "ΠΡΟΒΟΛΗ ΕΝΑΛΛΑΓΗΣ"
 
@@ -2618,29 +2618,37 @@ msgstr "Δεν βρέθηκε καμία έκδοση της Python Imaging Libr
 msgid "Stop slideshow"
 msgstr "Διακοπή προβολής εναλλαγής"
 
-#: mcomix/status.py:190
+#: mcomix/status.py:198
 msgid "Show page numbers"
 msgstr "Εμφάνιση αριθμών σελίδας"
 
-#: mcomix/status.py:191
+#: mcomix/status.py:199
 msgid "Show file numbers"
 msgstr "Εμφάνιση αριθμών αρχείου"
 
-#: mcomix/status.py:192
+#: mcomix/status.py:200
 msgid "Show resolution"
 msgstr "Εμφάνιση ανάλυσης"
 
-#: mcomix/status.py:193
+#: mcomix/status.py:201
 msgid "Show path"
 msgstr "Εμφάνιση διαδρομής"
 
-#: mcomix/status.py:194
+#: mcomix/status.py:202
 msgid "Show filename"
 msgstr "Εμφάνιση ονόματος αρχείου"
 
-#: mcomix/status.py:195
+#: mcomix/status.py:203
 msgid "Show filesize"
 msgstr "Εμφάνιση μεγέθους αρχείου"
+
+#: mcomix/status.py:231
+msgid "Copy file name"
+msgstr "Αντιγραφή ονόματος αρχείου"
+
+#: mcomix/status.py:232
+msgid "Copy path"
+msgstr "Αντιγραφή διαδρομής"
 
 #
 # File: src/archive.py, line: 301
