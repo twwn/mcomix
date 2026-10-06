@@ -1234,6 +1234,36 @@ class MainWindowTest(MComixTest):
         self.assertEqual('images/02-JPG-RGB.jpg',
                          prefs['member of last file'])
 
+    def test_the_reading_position_is_stored_once_the_pages_stop(self):
+        """It was stored on closing the book and on quitting only, so a
+        crash or a kill lost the session's reading (upstream feature
+        request 47)."""
+        prefs['auto load last file'] = True
+        self._ready()
+        path = self.window.imagehandler.get_real_path()
+        self.window.set_page(3)
+        self._pump()
+        self.assertIsNotNone(self.window._position_source,
+                             'nothing is waiting to store the page')
+        self.assertIsNone(self.window.filehandler.last_read_page
+                          .get_page(path), 'stored before the pages stopped')
+        self.window._keep_reading_position()
+        self.assertEqual(3, self.window.filehandler.last_read_page
+                         .get_page(path))
+        self.assertEqual(path, prefs['path to last file'])
+        self.assertEqual(3, prefs['page of last file'])
+
+    def test_a_run_of_page_turns_waits_for_the_last(self):
+        self._ready()
+        self.window.set_page(2)
+        self._pump()
+        first = self.window._position_source
+        self.window.set_page(3)
+        self._pump()
+        self.assertIsNotNone(self.window._position_source)
+        self.assertNotEqual(first, self.window._position_source,
+                            'the second turn did not restart the wait')
+
     def test_quit_and_save_keeps_the_file_of_the_page(self):
         """What an older MComix reads of it - the file and the index of
         the page - comes first and is unchanged."""

@@ -105,6 +105,9 @@ class MainWindow(Gtk.Window):
         self._waiting_for_redraw = False
         #: The idle that will run _draw_image(), while one is queued.
         self._redraw_source: int | None = None
+        #: The timeout that will run _keep_reading_position(), while one
+        #: is counting down.
+        self._position_source: int | None = None
         #: Where the redraw that is pending was asked to scroll to.
         self._pending_scroll_to: int | None = None
         #: The page the reader last turned to, the page they turned from,
@@ -812,6 +815,42 @@ class MainWindow(Gtk.Window):
         self._draw_selection()
         self.thumbnailsidebar.load_thumbnails()
         self._update_page_information()
+        # Once the pages stop turning: a run of turns is one write.
+        if self._position_source is not None:
+            GLib.source_remove(self._position_source)
+        self._position_source = GLib.timeout_add_seconds(
+            _POSITION_DELAY_S, self._keep_reading_position)
+
+    def _keep_reading_position(self) -> bool:
+        """Store where the book is being read, as closing it and quitting
+        do.
+
+        Those were the only times it was stored, so a crash, a kill or a
+        power cut lost the whole session's reading: the book reopened at
+        the page it had been opened at (upstream feature request 47).
+        """
+        self._position_source = None
+        self.filehandler.update_last_read_page()
+        self._remember_last_file()
+        return GLib.SOURCE_REMOVE
+
+    def _remember_last_file(self) -> None:
+        """Note the book and page on screen for "auto load last file",
+        or that there is none to load.  The preferences write it out."""
+        if prefs['auto load last file'] and self.filehandler.file_loaded:
+            prefs['path to last file'] = \
+                self.imagehandler.get_real_path() or ''
+            page = self.imagehandler.get_current_page()
+            prefs['page of last file'] = page
+            # The file of that page within an archive, which finds it
+            # again however the archive is sorted by then.
+            prefs['member of last file'] = \
+                self.filehandler.page_member(page) or ''
+
+        else:
+            prefs['path to last file'] = ''
+            prefs['page of last file'] = 1
+            prefs['member of last file'] = ''
 
     def pages_replaced(self, image_files: list[str], page: int = 1) -> None:
         """Show the open book with <image_files> as its pages, at <page>.
@@ -1761,6 +1800,9 @@ class MainWindow(Gtk.Window):
             # cleared page area, and hold the window until it ran.
             GLib.source_remove(self._redraw_source)
             self._redraw_source = None
+        if self._position_source is not None:
+            GLib.source_remove(self._position_source)
+            self._position_source = None
         widgets.release(self)
         self.page_area.clear()
         self.uimanager.release()
@@ -1797,21 +1839,7 @@ class MainWindow(Gtk.Window):
         if _main_loop.is_running():
             _main_loop.quit()
 
-        if prefs['auto load last file'] and self.filehandler.file_loaded:
-            prefs['path to last file'] = \
-                self.imagehandler.get_real_path() or ''
-            page = self.imagehandler.get_current_page()
-            prefs['page of last file'] = page
-            # The file of that page within an archive, which finds it
-            # again however the archive is sorted by then.
-            prefs['member of last file'] = \
-                self.filehandler.page_member(page) or ''
-
-        else:
-            prefs['path to last file'] = ''
-            prefs['page of last file'] = 1
-            prefs['member of last file'] = ''
-
+        self._remember_last_file()
         self.write_config_files()
 
         # Whatever was to be done about a book with unwritten changes
@@ -1844,6 +1872,9 @@ class MainWindow(Gtk.Window):
             log.debug('Waiting for thread %s to finish before exit', thread)
             thread.join()
 
+
+#: Seconds after the last page turn that the reading position is stored.
+_POSITION_DELAY_S = 2
 
 #: The loop the program runs in, on GLib's default main context,
 #: which is the one GTK dispatches its events on.
