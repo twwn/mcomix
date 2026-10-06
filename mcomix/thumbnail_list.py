@@ -387,6 +387,11 @@ class _ThumbnailViewBase(widgets.Releasable):
         if found:
             self.store.items_changed(position, 1, 1)
 
+    def redraw_item(self, item: ThumbnailItem) -> None:
+        """Make <item>'s thumbnail again, after something drawn on it
+        has changed.  The one on screen stays until the new one comes."""
+        self._ask_for(item)
+
     def remove_items(self, items: Iterable[ThumbnailItem]) -> None:
         """Drop <items>, wherever the store happens to hold them."""
         for item in items:

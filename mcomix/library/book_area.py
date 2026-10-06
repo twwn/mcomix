@@ -172,6 +172,12 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
             ('open-keep-library', _('Open _without closing library'),
              _('Opens the selected books, but keeps the library window open.'),
              self.open_selected_book_noclose),
+            ('mark-read', _('_Mark as read'),
+             _('Marks the selected books as read to the end.'),
+             self._mark_read),
+            ('mark-unread', _('Mark as u_nread'),
+             _('Forgets the page the selected books were left at.'),
+             self._mark_unread),
             ('add', _('_Add...'),
              _('Add more books to the library.'),
              lambda *args: file_chooser_library_dialog.open_library_filechooser_dialog(
@@ -232,7 +238,8 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         model.append_section(None, heading)
 
         entries = self._menu_entries()
-        for group in (entries[0:2], entries[2:3], entries[3:7], entries[7:8]):
+        for group in (entries[0:2], entries[2:4], entries[4:5], entries[5:9],
+                      entries[9:10]):
             section = Gio.Menu()
             for name, label, tooltip, handler in group:
                 section.append(label, 'books.' + name)
@@ -414,6 +421,33 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
     def open_selected_book_noclose(self, *args: object) -> None:
         """Open the currently selected book, keeping the library open."""
         self._open_books(True)
+
+    def _mark_read(self, *args: object) -> None:
+        """Store the last page as where the selected books were left,
+        which is what puts the tick on a cover."""
+        self._mark_books(True)
+
+    def _mark_unread(self, *args: object) -> None:
+        """Forget where the selected books were left, tick and all."""
+        self._mark_books(False)
+
+    def _mark_books(self, read: bool) -> None:
+        """Mark the selected books read to the end, or not read at all
+        (upstream feature request 59).  A book whose pages were never
+        counted has no last page to store, and is left as it is."""
+        selected = self._selected_items()
+        backend = self._library.backend
+        with backend.transaction():
+            for item in selected:
+                book = backend.get_book_by_id(item.uid)
+                if book is None:
+                    continue
+                if not read:
+                    book.set_last_read_page(None)
+                elif book.pages > 0:
+                    book.set_last_read_page(book.pages)
+        for item in selected:
+            self._covers.redraw_item(item)
 
     def set_sort_order(self) -> None:
         """ Orders the covers by the "lib sort key" and "lib sort
@@ -913,7 +947,8 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         collection = self._library.collection_area.get_current_collection()
         is_collection_all = collection == constants.COLLECTION_ALL
 
-        for action in ('open', 'open-keep-library', 'remove-from-library',
+        for action in ('open', 'open-keep-library', 'mark-read',
+                       'mark-unread', 'remove-from-library',
                        'completely-remove'):
             self._set_sensitive(action, books_selected)
 

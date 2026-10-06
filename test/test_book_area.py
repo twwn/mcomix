@@ -1310,3 +1310,66 @@ class OpenAndClickTest(MComixTest):
                                         return_value=1):
             self.area._button_press(self._Gesture(), 1, 5.0, 5.0)
         self.assertEqual([0, 1, 2], self.area._covers.get_selected_positions())
+
+
+class _MarkingLibrary:
+
+    """A library window over the real backend, for what the menu
+    writes into it."""
+
+    def __init__(self):
+        from mcomix.library import backend
+        self.backend = backend.LibraryBackend()
+        self.control_area = _ControlArea()
+        self.collection_area = _CollectionArea()
+
+
+class MarkReadTest(MComixTest):
+
+    """"Mark as read" and "Mark as unread" in the covers' menu (upstream
+    feature request 59).  A book is shown read, with a tick, when the
+    page it was left at is its last."""
+
+    def setUp(self):
+        super().setUp()
+        from . import get_testfile_path
+        self.library = _MarkingLibrary()
+        self.addCleanup(self.library.backend.close)
+        self.assertTrue(self.library.backend.add_book(
+            get_testfile_path('archives', '01-ZIP-Normal.zip')))
+        self.book = self.library.backend.get_book_by_path(
+            get_testfile_path('archives', '01-ZIP-Normal.zip'))
+        self.area = book_area._BookArea(self.library)
+        self.addCleanup(self.area.close)
+        self.area._covers.set_items([book_area._BookItem(self.book)])
+        self.area._covers.selection.select_all()
+        self.redrawn = []
+        patcher = unittest.mock.patch.object(
+            self.area._covers, 'redraw_item',
+            side_effect=lambda item: self.redrawn.append(item.uid))
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def _page(self):
+        return self.library.backend.get_book_by_id(
+            self.book.id).get_last_read_page()
+
+    def test_marking_read_stores_the_last_page_and_redraws_the_cover(self):
+        self.assertGreater(self.book.pages, 1)
+        self.area._mark_read()
+        self.assertEqual(self.book.pages, self._page())
+        self.assertEqual([self.book.id], self.redrawn)
+
+    def test_marking_unread_forgets_the_page(self):
+        self.book.set_last_read_page(2)
+        self.area._mark_unread()
+        self.assertIsNone(self._page())
+        self.assertEqual([self.book.id], self.redrawn)
+
+    def test_the_entries_need_a_book_selected(self):
+        self.area._covers.selection.unselect_all()
+        with unittest.mock.patch('mcomix.widgets.popup_at'):
+            self.area._popup_book_menu()
+        for name in ('mark-read', 'mark-unread'):
+            self.assertFalse(self.area._popup_actions.lookup_action(name)
+                             .get_enabled(), name)
