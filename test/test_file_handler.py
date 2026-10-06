@@ -7,6 +7,7 @@ import shutil
 import sys
 import threading
 import unittest
+import time
 import zipfile
 from unittest import mock
 
@@ -1290,3 +1291,26 @@ class CommentExtensionsTest(MComixTest):
         pattern = self._pattern_for('a.b')
         self.assertTrue(pattern.search('notes.a.b'))
         self.assertFalse(pattern.search('notes.axb'))
+
+
+class APageIsDatedAsItsArchiveRecordsItTest(_WindowTest):
+
+    """The date the status bar shows for a page of an archive is the one
+    the archive keeps for it (upstream feature request 94).  It was
+    looked up by the page's name written with "/", and the handlers
+    list names with the system's separator: on Windows every page was
+    dated by the archive file instead."""
+
+    def test_the_member_date_is_found(self):
+        source = os.path.join(self.tmp_dir, 'Book.cbz')
+        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), source)
+        self.handler.open_file(source)
+        self.assertTrue(wait_for(
+            lambda: self.handler.file_loaded
+            and self.window.imagehandler.get_number_of_pages() > 2,
+            seconds=20))
+        member = self.handler.page_member(1)
+        with zipfile.ZipFile(source) as archive:
+            recorded = time.mktime(
+                archive.getinfo(member).date_time + (0, 0, -1))
+        self.assertEqual(recorded, self.handler.page_date(1))

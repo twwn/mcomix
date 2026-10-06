@@ -6,6 +6,7 @@ Each format keeps the date its own way: a zip as local time, a tarball
 and a 7z as UTC, a RAR (to the library) as a DOS time.
 """
 
+import os
 import tarfile
 import time
 import unittest
@@ -21,6 +22,8 @@ from mcomix.archive import tar
 from mcomix.archive import zip
 
 PAGE = 'images/01-JPG-Indexed.jpg'
+#: The same member as a handler lists it, with the system's separator.
+LISTED = PAGE.replace('/', os.sep)
 
 
 def _archive(name):
@@ -40,6 +43,7 @@ def _tar_date(name, member=PAGE):
 class MemberDateTest(MComixTest):
 
     def _date(self, handler, member=PAGE):
+        member = member.replace('/', os.sep)
         try:
             names = list(handler.iter_contents())
             self.assertIn(member, names)
@@ -96,7 +100,7 @@ class MemberDateTest(MComixTest):
     def test_a_member_never_listed_has_no_date(self):
         handler = zip.ZipArchive(_archive('01-ZIP-Normal.zip'))
         try:
-            self.assertIsNone(handler.member_date(PAGE))
+            self.assertIsNone(handler.member_date(LISTED))
         finally:
             handler.close()
 

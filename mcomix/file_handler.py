@@ -199,8 +199,11 @@ class FileHandler:
         tells when it was unpacked.  In a folder it is the picture's.
         """
         if self.archive_type is not None:
+            # By the name the extractor listed it under, which is
+            # written with the system's separator; page_member()
+            # writes "/" everywhere, and on Windows found no date.
             member = self.page_member(page)
-            date = (self._extractor.member_date(member)
+            date = (self._extractor.member_date(member.replace('/', os.sep))
                     if member is not None else None)
             if date is not None:
                 return date
