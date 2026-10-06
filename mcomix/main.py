@@ -2,6 +2,7 @@
 
 import math
 import os
+import random
 import threading
 import time
 
@@ -1150,6 +1151,15 @@ class MainWindow(Gtk.Window):
 
     def page_select(self, *args: object) -> None:
         pageselect.Pageselector(self)
+
+    def random_page(self, *args: object) -> None:
+        """Turn to a page picked at random, never the one on screen."""
+        number_of_pages = self.imagehandler.get_number_of_pages()
+        current = self.imagehandler.get_current_page()
+        others = [page for page in range(1, number_of_pages + 1)
+                  if page != current]
+        if others:
+            self.set_page(random.choice(others))
 
     def toggle_animation(self, *args: object) -> None:
         """Pause the animated pages on screen, or let them go on where

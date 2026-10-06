@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Comix 3.2\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-06 17:31+0200\n"
+"POT-Creation-Date: 2026-10-06 17:39+0200\n"
 "PO-Revision-Date: 2009-01-25 22:33+0100\n"
 "Last-Translator: Carles Escrig i Royo <simkin@ono.com>\n"
 "Language-Team: CA <gentoo@softcatala.net>\n"
@@ -157,11 +157,11 @@ msgstr "Edició dels marcadors"
 
 #
 # File: src/bookmark.py, line: 31
-#: mcomix/bookmark_dialog.py:32 mcomix/bookmark_menu.py:43
+#: mcomix/bookmark_dialog.py:32 mcomix/bookmark_menu.py:44
 msgid "C_lear bookmarks..."
 msgstr "Esborra _tots els marcadors..."
 
-#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1027 mcomix/openwith.py:337
+#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1028 mcomix/openwith.py:337
 #: mcomix/library/collection_area.py:149 mcomix/library/watchlist.py:64
 msgid "_Remove"
 msgstr "E_limina"
@@ -189,7 +189,7 @@ msgstr "Nom"
 
 #
 # File: src/bookmark.py, line: 256
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1662
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1672
 #: mcomix/library/control_area.py:148
 msgid "Page"
 msgstr "Pàgina"
@@ -205,19 +205,19 @@ msgstr "Ubicació"
 msgid "Added"
 msgstr "Afegit"
 
-#: mcomix/bookmark_menu.py:40
+#: mcomix/bookmark_menu.py:41
 msgid "Add _Bookmark"
 msgstr "Afegeix un _marcador"
 
-#: mcomix/bookmark_menu.py:41
+#: mcomix/bookmark_menu.py:42
 msgid "_Remove this book's bookmarks..."
 msgstr "_Suprimeix els marcadors d'aquest llibre..."
 
-#: mcomix/bookmark_menu.py:42
+#: mcomix/bookmark_menu.py:43
 msgid "_Edit Bookmarks..."
 msgstr "_Edita els marcadors..."
 
-#: mcomix/bookmark_menu.py:197 mcomix/file_actions.py:1094
+#: mcomix/bookmark_menu.py:200 mcomix/file_actions.py:1094
 #, python-format
 msgid "Remove the bookmarks in \"%s\"?"
 msgstr "Voleu suprimir els marcadors de «%s»?"
@@ -240,7 +240,7 @@ msgstr "Comentaris"
 
 #
 # File: src/comment.py, line: 53
-#: mcomix/comment_dialog.py:134 mcomix/file_handler.py:623
+#: mcomix/comment_dialog.py:134 mcomix/file_handler.py:624
 #, python-format
 msgid "Could not read %s"
 msgstr "No s'ha pogut llegir %s"
@@ -302,7 +302,7 @@ msgstr "Introduïu un nom nou per a aquest fitxer."
 
 #
 # File: src/edit.py, line: 28
-#: mcomix/edit_dialog.py:58 mcomix/keybindings.py:155
+#: mcomix/edit_dialog.py:58 mcomix/keybindings.py:158
 msgid "Edit archive"
 msgstr "Edita l'arxiu"
 
@@ -385,7 +385,7 @@ msgstr "Seleccion_a-ho tot"
 
 #
 # File: src/enhance.py, line: 51
-#: mcomix/enhance_dialog.py:28 mcomix/keybindings.py:157
+#: mcomix/enhance_dialog.py:28 mcomix/keybindings.py:160
 msgid "Enhance image"
 msgstr "Millora la imatge"
 
@@ -621,7 +621,7 @@ msgstr[1] "%d pàgines"
 #
 # File: src/filechooser.py, line: 35
 # File: src/library.py, line: 489
-#: mcomix/file_chooser_base_dialog.py:186 mcomix/keybindings.py:156
+#: mcomix/file_chooser_base_dialog.py:186 mcomix/keybindings.py:159
 msgid "Open"
 msgstr "Obre"
 
@@ -695,32 +695,32 @@ msgstr "_Afegeix"
 
 #
 # File: src/filehandler.py, line: 285
-#: mcomix/file_handler.py:344
+#: mcomix/file_handler.py:345
 #, python-format
 msgid "No images in '%s'"
 msgstr "No hi ha imatges a '%s'"
 
 #
 # File: src/filehandler.py, line: 213
-#: mcomix/file_handler.py:531
+#: mcomix/file_handler.py:532
 #, python-format
 msgid "Could not open %s: No such file."
 msgstr "No s'ha pogut obrir %s: No existeix el fitxer."
 
 #
 # File: src/filehandler.py, line: 217
-#: mcomix/file_handler.py:534 mcomix/file_provider.py:253
+#: mcomix/file_handler.py:535 mcomix/file_provider.py:253
 #: mcomix/file_provider.py:333
 #, python-format
 msgid "Could not open %s: Permission denied."
 msgstr "No s'ha pogut obrir %s: S'ha denegat el permís."
 
-#: mcomix/file_handler.py:706
+#: mcomix/file_handler.py:707
 #, python-format
 msgid "Continue reading from page %d?"
 msgstr "Voleu continuar llegint des de la pàgina %d?"
 
-#: mcomix/file_handler.py:707
+#: mcomix/file_handler.py:708
 #, python-format
 msgid ""
 "You stopped reading here on %(date)s, %(time)s. If you choose \"Yes\", "
@@ -731,7 +731,7 @@ msgstr ""
 "lectura continuarà a la pàgina %(page)d. Altrament es carregarà la primera "
 "pàgina."
 
-#: mcomix/file_handler.py:1203
+#: mcomix/file_handler.py:1220
 #, python-format
 msgid ""
 "! Corrupt file \"%s\", deleting it; the last file read will not be reopened."
@@ -767,7 +767,8 @@ msgstr "Pàgina anterior"
 #: mcomix/keybindings.py:54 mcomix/keybindings.py:55 mcomix/keybindings.py:56
 #: mcomix/keybindings.py:58 mcomix/keybindings.py:59 mcomix/keybindings.py:60
 #: mcomix/keybindings.py:62 mcomix/keybindings.py:63 mcomix/keybindings.py:64
-#: mcomix/keybindings.py:65 mcomix/preferences_dialog.py:98
+#: mcomix/keybindings.py:66 mcomix/keybindings.py:67 mcomix/keybindings.py:68
+#: mcomix/preferences_dialog.py:98
 msgid "Navigation"
 msgstr "Navegació"
 
@@ -857,438 +858,446 @@ msgstr "Arxiu següent"
 msgid "Previous archive"
 msgstr "Arxiu anterior"
 
-#: mcomix/keybindings.py:64 mcomix/ui.py:467
+#: mcomix/keybindings.py:64
+msgid "Random page"
+msgstr "Pàgina a l'atzar"
+
+#: mcomix/keybindings.py:65
+msgid "Random archive in the folder"
+msgstr "Arxiu a l'atzar de la carpeta"
+
+#: mcomix/keybindings.py:67 mcomix/ui.py:467
 msgid "Next directory"
 msgstr "Directori següent"
 
-#: mcomix/keybindings.py:65 mcomix/ui.py:468
+#: mcomix/keybindings.py:68 mcomix/ui.py:468
 msgid "Previous directory"
 msgstr "Directori anterior"
 
-#: mcomix/keybindings.py:68
+#: mcomix/keybindings.py:71
 msgid "Align bottom left"
 msgstr "Alinea a baix a l'esquerra"
 
 #
 # File: src/preferences.py, line: 167
-#: mcomix/keybindings.py:68 mcomix/keybindings.py:69 mcomix/keybindings.py:70
-#: mcomix/keybindings.py:72 mcomix/keybindings.py:73 mcomix/keybindings.py:74
-#: mcomix/keybindings.py:76 mcomix/keybindings.py:77 mcomix/keybindings.py:78
-#: mcomix/keybindings.py:80 mcomix/keybindings.py:81 mcomix/keybindings.py:82
-#: mcomix/keybindings.py:83 mcomix/keybindings.py:85 mcomix/keybindings.py:86
+#: mcomix/keybindings.py:71 mcomix/keybindings.py:72 mcomix/keybindings.py:73
+#: mcomix/keybindings.py:75 mcomix/keybindings.py:76 mcomix/keybindings.py:77
+#: mcomix/keybindings.py:79 mcomix/keybindings.py:80 mcomix/keybindings.py:81
+#: mcomix/keybindings.py:83 mcomix/keybindings.py:84 mcomix/keybindings.py:85
+#: mcomix/keybindings.py:86 mcomix/keybindings.py:88 mcomix/keybindings.py:89
 #: mcomix/preferences_dialog.py:224
 msgid "Scroll"
 msgstr "Desplaçament"
 
-#: mcomix/keybindings.py:69
+#: mcomix/keybindings.py:72
 msgid "Align bottom center"
 msgstr "Alinea a baix al centre"
 
-#: mcomix/keybindings.py:70
+#: mcomix/keybindings.py:73
 msgid "Align bottom right"
 msgstr "Alinea a baix a la dreta"
 
-#: mcomix/keybindings.py:72
+#: mcomix/keybindings.py:75
 msgid "Align middle left"
 msgstr "Alinea al mig a l'esquerra"
 
-#: mcomix/keybindings.py:73
+#: mcomix/keybindings.py:76
 msgid "Align center"
 msgstr "Alinea al centre"
 
-#: mcomix/keybindings.py:74
+#: mcomix/keybindings.py:77
 msgid "Align middle right"
 msgstr "Alinea al mig a la dreta"
 
-#: mcomix/keybindings.py:76
+#: mcomix/keybindings.py:79
 msgid "Align top left"
 msgstr "Alinea a dalt a l'esquerra"
 
-#: mcomix/keybindings.py:77
+#: mcomix/keybindings.py:80
 msgid "Align top center"
 msgstr "Alinea a dalt al centre"
 
-#: mcomix/keybindings.py:78
+#: mcomix/keybindings.py:81
 msgid "Align top right"
 msgstr "Alinea a dalt a la dreta"
 
-#: mcomix/keybindings.py:80
+#: mcomix/keybindings.py:83
 msgid "Scroll down"
 msgstr "Desplaça avall"
 
-#: mcomix/keybindings.py:81
+#: mcomix/keybindings.py:84
 msgid "Scroll up"
 msgstr "Desplaça amunt"
 
-#: mcomix/keybindings.py:82
+#: mcomix/keybindings.py:85
 msgid "Scroll right"
 msgstr "Desplaça a la dreta"
 
-#: mcomix/keybindings.py:83
+#: mcomix/keybindings.py:86
 msgid "Scroll left"
 msgstr "Desplaça a l'esquerra"
 
-#: mcomix/keybindings.py:85
+#: mcomix/keybindings.py:88
 msgid "Smart scroll up"
 msgstr "Desplaçament intel·ligent amunt"
 
-#: mcomix/keybindings.py:86
+#: mcomix/keybindings.py:89
 msgid "Smart scroll down"
 msgstr "Desplaçament intel·ligent avall"
 
-#: mcomix/keybindings.py:89
+#: mcomix/keybindings.py:92
 msgid "Zoom in"
 msgstr "Amplia"
 
 #
 # File: src/ui.py, line: 42
-#: mcomix/keybindings.py:89 mcomix/keybindings.py:90 mcomix/keybindings.py:91
+#: mcomix/keybindings.py:92 mcomix/keybindings.py:93 mcomix/keybindings.py:94
 msgid "Zoom"
 msgstr "Ampliació"
 
-#: mcomix/keybindings.py:90
+#: mcomix/keybindings.py:93
 msgid "Zoom out"
 msgstr "Redueix"
 
-#: mcomix/keybindings.py:91
+#: mcomix/keybindings.py:94
 msgid "Normal size"
 msgstr "Mida normal"
 
 #
 # File: src/ui.py, line: 93
-#: mcomix/keybindings.py:93
+#: mcomix/keybindings.py:96
 msgid "Keep transformation"
 msgstr "Conservació de la transformació"
 
 #
 # File: src/ui.py, line: 93
-#: mcomix/keybindings.py:93 mcomix/keybindings.py:94 mcomix/keybindings.py:95
 #: mcomix/keybindings.py:96 mcomix/keybindings.py:97 mcomix/keybindings.py:98
-#: mcomix/keybindings.py:99
+#: mcomix/keybindings.py:99 mcomix/keybindings.py:100 mcomix/keybindings.py:101
+#: mcomix/keybindings.py:102
 msgid "Transformation"
 msgstr "Transformació"
 
 #
 # File: src/ui.py, line: 52
-#: mcomix/keybindings.py:94 mcomix/keybindings.py:101 mcomix/keybindings.py:103
+#: mcomix/keybindings.py:97 mcomix/keybindings.py:104 mcomix/keybindings.py:106
 msgid "Rotate 90° CW"
 msgstr "Gira 90° en sentit horari"
 
 #
 # File: src/ui.py, line: 54
-#: mcomix/keybindings.py:95
+#: mcomix/keybindings.py:98
 msgid "Rotate 180°"
 msgstr "Gira 180°"
 
 #
 # File: src/ui.py, line: 56
-#: mcomix/keybindings.py:96 mcomix/keybindings.py:102 mcomix/keybindings.py:104
+#: mcomix/keybindings.py:99 mcomix/keybindings.py:105 mcomix/keybindings.py:107
 msgid "Rotate 90° CCW"
 msgstr "Gira 90° en sentit antihorari"
 
 #
 # File: src/ui.py, line: 58
-#: mcomix/keybindings.py:97
+#: mcomix/keybindings.py:100
 msgid "Flip horizontally"
 msgstr "Capgira horitzontalment"
 
 #
 # File: src/ui.py, line: 60
-#: mcomix/keybindings.py:98
+#: mcomix/keybindings.py:101
 msgid "Flip vertically"
 msgstr "Capgira verticalment"
 
-#: mcomix/keybindings.py:99
+#: mcomix/keybindings.py:102
 msgid "Never autorotate"
 msgstr "No giris mai automàticament"
 
-#: mcomix/keybindings.py:101 mcomix/keybindings.py:102
+#: mcomix/keybindings.py:104 mcomix/keybindings.py:105
 msgid "Autorotate by width"
 msgstr "Gir automàtic per amplada"
 
-#: mcomix/keybindings.py:103 mcomix/keybindings.py:104
+#: mcomix/keybindings.py:106 mcomix/keybindings.py:107
 msgid "Autorotate by height"
 msgstr "Gir automàtic per alçada"
 
 #
 # File: src/preferences.py, line: 177
 # File: src/ui.py, line: 296
-#: mcomix/keybindings.py:106 mcomix/preferences_dialog.py:338 mcomix/ui.py:511
+#: mcomix/keybindings.py:109 mcomix/preferences_dialog.py:338 mcomix/ui.py:511
 msgid "Double page mode"
 msgstr "Mode de doble pàgina"
 
 #
 # File: src/preferences.py, line: 263
 # File: src/ui.py, line: 290
-#: mcomix/keybindings.py:106 mcomix/keybindings.py:107
-#: mcomix/keybindings.py:108 mcomix/keybindings.py:109
+#: mcomix/keybindings.py:109 mcomix/keybindings.py:110
 #: mcomix/keybindings.py:111 mcomix/keybindings.py:112
 #: mcomix/keybindings.py:114 mcomix/keybindings.py:115
-#: mcomix/keybindings.py:116 mcomix/keybindings.py:117
-#: mcomix/keybindings.py:118
+#: mcomix/keybindings.py:117 mcomix/keybindings.py:118
+#: mcomix/keybindings.py:119 mcomix/keybindings.py:120
+#: mcomix/keybindings.py:121
 msgid "View mode"
 msgstr "Mode de visualització"
 
-#: mcomix/keybindings.py:107
+#: mcomix/keybindings.py:110
 msgid "Title page alone"
 msgstr "Pàgina de títol sola"
 
 #
 # File: src/ui.py, line: 297
-#: mcomix/keybindings.py:108 mcomix/ui.py:519
+#: mcomix/keybindings.py:111 mcomix/ui.py:519
 msgid "Manga mode"
 msgstr "Mode manga"
 
-#: mcomix/keybindings.py:109 mcomix/ui.py:520
+#: mcomix/keybindings.py:112 mcomix/ui.py:520
 msgid "Invert smart scroll"
 msgstr "Inversió del desplaçament intel·ligent"
 
 #
 # File: src/ui.py, line: 298
-#: mcomix/keybindings.py:111 mcomix/ui.py:524
+#: mcomix/keybindings.py:114 mcomix/ui.py:524
 msgid "Magnifying lens"
 msgstr "Lupa"
 
-#: mcomix/keybindings.py:112 mcomix/ui.py:525
+#: mcomix/keybindings.py:115 mcomix/ui.py:525
 msgid "Stretch small images"
 msgstr "Ampliació de les imatges petites"
 
 #
 # File: src/preferences.py, line: 262
 # File: src/ui.py, line: 288
-#: mcomix/keybindings.py:114 mcomix/ui.py:532
+#: mcomix/keybindings.py:117 mcomix/ui.py:532
 msgid "Best fit mode"
 msgstr "Millor encaix"
 
 #
 # File: src/preferences.py, line: 263
 # File: src/ui.py, line: 290
-#: mcomix/keybindings.py:115 mcomix/ui.py:533
+#: mcomix/keybindings.py:118 mcomix/ui.py:533
 msgid "Fit width mode"
 msgstr "Ajusta a l'amplada"
 
 #
 # File: src/preferences.py, line: 264
 # File: src/ui.py, line: 292
-#: mcomix/keybindings.py:116 mcomix/ui.py:534
+#: mcomix/keybindings.py:119 mcomix/ui.py:534
 msgid "Fit height mode"
 msgstr "Ajusta a l'alçada"
 
 #
 # File: src/ui.py, line: 103
-#: mcomix/keybindings.py:117
+#: mcomix/keybindings.py:120
 msgid "Fit size mode"
 msgstr "Mode d'ajust a la mida"
 
 #
 # File: src/preferences.py, line: 265
 # File: src/ui.py, line: 294
-#: mcomix/keybindings.py:118 mcomix/ui.py:536
+#: mcomix/keybindings.py:121 mcomix/ui.py:536
 msgid "Manual zoom mode"
 msgstr "Zoom manual"
 
-#: mcomix/keybindings.py:121 mcomix/ui.py:473
+#: mcomix/keybindings.py:124 mcomix/ui.py:473
 msgid "Leave fullscreen"
 msgstr "Surt de la pantalla completa"
 
-#: mcomix/keybindings.py:121 mcomix/keybindings.py:123
-#: mcomix/keybindings.py:124 mcomix/keybindings.py:125
-#: mcomix/keybindings.py:126 mcomix/keybindings.py:127
+#: mcomix/keybindings.py:124 mcomix/keybindings.py:126
+#: mcomix/keybindings.py:127 mcomix/keybindings.py:128
 #: mcomix/keybindings.py:129 mcomix/keybindings.py:130
-#: mcomix/keybindings.py:131 mcomix/keybindings.py:132
-#: mcomix/keybindings.py:133 mcomix/keybindings.py:134
-#: mcomix/keybindings.py:136 mcomix/preferences_dialog.py:131
+#: mcomix/keybindings.py:132 mcomix/keybindings.py:133
+#: mcomix/keybindings.py:134 mcomix/keybindings.py:135
+#: mcomix/keybindings.py:136 mcomix/keybindings.py:137
+#: mcomix/keybindings.py:139 mcomix/preferences_dialog.py:131
 msgid "User interface"
 msgstr "Interfície d'usuari"
 
-#: mcomix/keybindings.py:123
+#: mcomix/keybindings.py:126
 msgid "OSD panel"
 msgstr "Plafó en pantalla"
 
-#: mcomix/keybindings.py:124
+#: mcomix/keybindings.py:127
 msgid "Minimize"
 msgstr "Minimitza"
 
 #
 # File: src/preferences.py, line: 271
-#: mcomix/keybindings.py:125 mcomix/preferences_dialog.py:323
+#: mcomix/keybindings.py:128 mcomix/preferences_dialog.py:323
 msgid "Fullscreen"
 msgstr "Pantalla completa"
 
-#: mcomix/keybindings.py:126
+#: mcomix/keybindings.py:129
 msgid "Toolbar"
 msgstr "Barra d'eines"
 
-#: mcomix/keybindings.py:127
+#: mcomix/keybindings.py:130
 msgid "Menubar"
 msgstr "Barra de menú"
 
-#: mcomix/keybindings.py:128
+#: mcomix/keybindings.py:131
 msgid "Context menu"
 msgstr "Menú contextual"
 
 #
 # File: src/ui.py, line: 83
-#: mcomix/keybindings.py:130
+#: mcomix/keybindings.py:133
 msgid "Statusbar"
 msgstr "Barra d'estat"
 
 #
 # File: src/ui.py, line: 85
-#: mcomix/keybindings.py:131
+#: mcomix/keybindings.py:134
 msgid "Scrollbars"
 msgstr "Barres de desplaçament"
 
 #
 # File: src/preferences.py, line: 109
-#: mcomix/keybindings.py:132 mcomix/preferences_dialog.py:150
+#: mcomix/keybindings.py:135 mcomix/preferences_dialog.py:150
 msgid "Thumbnails"
 msgstr "Miniatures"
 
 #
 # File: src/ui.py, line: 89
-#: mcomix/keybindings.py:133
+#: mcomix/keybindings.py:136
 msgid "Hide all"
 msgstr "Amaga-ho tot"
 
 #
 # File: src/preferences.py, line: 279
-#: mcomix/keybindings.py:134 mcomix/slideshow.py:54 mcomix/ui.py:523
+#: mcomix/keybindings.py:137 mcomix/slideshow.py:54 mcomix/ui.py:523
 msgid "Start slideshow"
 msgstr "Inicia la projecció"
 
-#: mcomix/keybindings.py:135
+#: mcomix/keybindings.py:138
 msgid "Pause or resume animation"
 msgstr "Posa en pausa o reprèn l'animació"
 
-#: mcomix/keybindings.py:139
+#: mcomix/keybindings.py:142
 msgid "Delete"
 msgstr "Suprimeix"
 
 #
 # File: src/preferences.py, line: 196
-#: mcomix/keybindings.py:139 mcomix/keybindings.py:141
-#: mcomix/keybindings.py:142 mcomix/keybindings.py:145
-#: mcomix/keybindings.py:146 mcomix/keybindings.py:147
-#: mcomix/keybindings.py:148 mcomix/keybindings.py:149
+#: mcomix/keybindings.py:142 mcomix/keybindings.py:144
+#: mcomix/keybindings.py:145 mcomix/keybindings.py:148
+#: mcomix/keybindings.py:149 mcomix/keybindings.py:150
 #: mcomix/keybindings.py:151 mcomix/keybindings.py:152
-#: mcomix/keybindings.py:153 mcomix/keybindings.py:155
-#: mcomix/keybindings.py:156 mcomix/keybindings.py:157
-#: mcomix/keybindings.py:158 mcomix/keybindings.py:159
+#: mcomix/keybindings.py:154 mcomix/keybindings.py:155
+#: mcomix/keybindings.py:156 mcomix/keybindings.py:158
+#: mcomix/keybindings.py:159 mcomix/keybindings.py:160
+#: mcomix/keybindings.py:161 mcomix/keybindings.py:162
 msgid "File"
 msgstr "Fitxer"
 
-#: mcomix/keybindings.py:140
+#: mcomix/keybindings.py:143
 msgid "Delete permanently"
 msgstr "Suprimeix definitivament"
 
-#: mcomix/keybindings.py:142
+#: mcomix/keybindings.py:145
 msgid "Rename page"
 msgstr "Reanomena la pàgina"
 
-#: mcomix/keybindings.py:143
+#: mcomix/keybindings.py:146
 msgid "Undo"
 msgstr "Desfés"
 
-#: mcomix/keybindings.py:143 mcomix/keybindings.py:144
+#: mcomix/keybindings.py:146 mcomix/keybindings.py:147
 msgid "Edit"
 msgstr "Edició"
 
-#: mcomix/keybindings.py:144
+#: mcomix/keybindings.py:147
 msgid "Redo"
 msgstr "Refés"
 
 #
 # File: src/edit.py, line: 51
-#: mcomix/keybindings.py:145
+#: mcomix/keybindings.py:148
 msgid "Refresh"
 msgstr "Actualitza"
 
 #
 # File: src/ui.py, line: 48
-#: mcomix/keybindings.py:146
+#: mcomix/keybindings.py:149
 msgid "Close"
 msgstr "Tanca"
 
 #
 # File: src/ui.py, line: 50
-#: mcomix/keybindings.py:147
+#: mcomix/keybindings.py:150
 msgid "Quit"
 msgstr "Surt"
 
-#: mcomix/keybindings.py:148
+#: mcomix/keybindings.py:151
 msgid "Save and quit"
 msgstr "Desa i surt"
 
 #
 # File: src/filechooser.py, line: 39
-#: mcomix/keybindings.py:149
+#: mcomix/keybindings.py:152
 msgid "Save As"
 msgstr "Anomena i desa"
 
 #
 # File: src/properties.py, line: 135
-#: mcomix/keybindings.py:151
+#: mcomix/keybindings.py:154
 msgid "Archive comments"
 msgstr "Comentaris de l'arxiu"
 
 #
 # File: src/properties.py, line: 89
-#: mcomix/keybindings.py:152 mcomix/properties_dialog.py:36
+#: mcomix/keybindings.py:155 mcomix/properties_dialog.py:36
 msgid "Properties"
 msgstr "Propietats"
 
 #
 # File: src/preferences.py, line: 78
-#: mcomix/keybindings.py:153 mcomix/preferences_dialog.py:69
+#: mcomix/keybindings.py:156 mcomix/preferences_dialog.py:69
 msgid "Preferences"
 msgstr "Preferències"
 
 #
 # File: src/library.py, line: 38
-#: mcomix/keybindings.py:158 mcomix/library/main_dialog.py:55
+#: mcomix/keybindings.py:161 mcomix/library/main_dialog.py:55
 msgid "Library"
 msgstr "Biblioteca"
 
-#: mcomix/keybindings.py:159 mcomix/ui.py:527
+#: mcomix/keybindings.py:162 mcomix/ui.py:527
 msgid "Invert image colors"
 msgstr "Inversió dels colors de la imatge"
 
 #
 # File: src/bookmark.py, line: 27
-#: mcomix/keybindings.py:162
+#: mcomix/keybindings.py:165
 msgid "Add bookmark"
 msgstr "Afegeix un marcador"
 
 #
 # File: src/ui.py, line: 64
-#: mcomix/keybindings.py:162 mcomix/keybindings.py:163
+#: mcomix/keybindings.py:165 mcomix/keybindings.py:166
 msgid "Bookmarks"
 msgstr "Marcadors"
 
-#: mcomix/keybindings.py:163
+#: mcomix/keybindings.py:166
 msgid "Edit bookmarks"
 msgstr "Edició dels marcadors"
 
 #
 # File: src/comment.py, line: 16
 # File: src/preferences.py, line: 288
-#: mcomix/keybindings.py:171 mcomix/openwith.py:558
+#: mcomix/keybindings.py:174 mcomix/openwith.py:558
 msgid "Command"
 msgstr "Ordre"
 
 #
 # File: src/bookmark.py, line: 229
-#: mcomix/keybindings.py:172
+#: mcomix/keybindings.py:175
 msgid "External commands"
 msgstr "Ordres externes"
 
-#: mcomix/keybindings.py:249
+#: mcomix/keybindings.py:252
 #, python-format
 msgid "Keybinding for \"%(action)s\" overrides hotkey for another action."
 msgstr "La drecera de «%(action)s» anul·la la d'una altra acció."
 
-#: mcomix/keybindings.py:437 mcomix/keybindings.py:445
+#: mcomix/keybindings.py:440 mcomix/keybindings.py:448
 #, python-format
 msgid "Couldn't load keybindings: %s"
 msgstr "No s'han pogut carregar les dreceres: %s"
@@ -1298,14 +1307,14 @@ msgstr "No s'han pogut carregar les dreceres: %s"
 msgid "! Could not remove file \"%s\""
 msgstr "! No s'ha pogut suprimir el fitxer «%s»"
 
-#: mcomix/main.py:1020
+#: mcomix/main.py:1021
 #, python-format
 msgid "Remove the page picked out of \"%s\"?"
 msgid_plural "Remove the pages picked out of \"%s\"?"
 msgstr[0] "Voleu treure la pàgina triada de «%s»?"
 msgstr[1] "Voleu treure les pàgines triades de «%s»?"
 
-#: mcomix/main.py:1023
+#: mcomix/main.py:1024
 msgid ""
 "They are taken out of the archive on disk, which is written again at once. "
 "Leaving the book without removing them forgets which pages they were."
@@ -1313,13 +1322,13 @@ msgstr ""
 "Es treuen de l'arxiu del disc, que s'escriu de nou de seguida. Si deixeu el "
 "llibre sense treure-les, s'oblidarà quines pàgines eren."
 
-#: mcomix/main.py:1026
+#: mcomix/main.py:1027
 msgid "_Keep them"
 msgstr "Man_té-les"
 
 #
 # File: src/main.py, line: 666
-#: mcomix/main.py:1484
+#: mcomix/main.py:1494
 msgid "SLIDESHOW"
 msgstr "PRESENTACIÓ"
 

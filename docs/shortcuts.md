@@ -113,7 +113,7 @@ Execute first, second, ... external command (see [External commands](external-co
 - Delete removes the pages picked out with CTRL+LeftMouse; with none picked out, it asks before moving the file to the trash.
 - SHIFT+Delete asks before deleting the file permanently, without the trash; pages picked out are removed as Delete removes them.
 - Where the trash would refuse the file, Delete asks to delete it permanently instead. GLib keeps no trash on a folder bind-mounted from another partition, or on a tmpfs such as /tmp.
-- No key until given one: Rotate 180°, Flip horizontally, Flip vertically, Never autorotate, the two rotations under "Autorotate by width" and the two under "Autorotate by height", Toolbar, Statusbar, Scrollbars and Edit archive.
+- No key until given one: Rotate 180°, Flip horizontally, Flip vertically, Never autorotate, the two rotations under "Autorotate by width" and the two under "Autorotate by height", Toolbar, Statusbar, Scrollbars, Edit archive, Random page and Random archive in the folder.
 
 ## Changing keys
 

@@ -27,6 +27,7 @@ import os
 import shutil
 import tempfile
 import threading
+import random
 import re
 import pickle
 from gi.repository import GLib, Gtk
@@ -942,6 +943,22 @@ class FileHandler:
                  if not archive_tools.is_later_volume(path)]
         return bool(files) and \
             files[end] == os.path.abspath(self._base_path or '')
+
+    def open_random_archive(self, *args: object) -> bool:
+        """Open an archive picked at random from the open archive's folder,
+        never the open one, and say whether one was.  The later volumes
+        of RAR sets are left out, as the archive keys leave them out."""
+        if self.archive_type is None:
+            return False
+        current = os.path.abspath(self._base_path or '')
+        files = [path for path in self._opened_provider.list_files(
+                     file_provider.FileProvider.ARCHIVES)
+                 if path != current
+                 and not archive_tools.is_later_volume(path)]
+        if not files:
+            return False
+        self.open_file(random.choice(files), keep_fileprovider=True)
+        return True
 
     def open_next_directory(self, *args: object) -> bool:
         """Open the first book in the next directory on the shelf that

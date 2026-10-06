@@ -61,6 +61,9 @@ BINDING_INFO: "dict[str, dict[str, str]]" = {
 
     'next_archive': {'title': _('Next archive'), 'group': _('Navigation')},
     'previous_archive': {'title': _('Previous archive'), 'group': _('Navigation')},
+    'random_page': {'title': _('Random page'), 'group': _('Navigation')},
+    'random_archive': {'title': _('Random archive in the folder'),
+                       'group': _('Navigation')},
     'next_directory': {'title': _('Next directory'), 'group': _('Navigation')},
     'previous_directory': {'title': _('Previous directory'), 'group': _('Navigation')},
 

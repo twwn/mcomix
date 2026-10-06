@@ -1344,6 +1344,40 @@ class MainWindowTest(MComixTest):
         self.assertNotIn('page counter', self.window.page_area._overlays)
         self.assertEqual('', self.window.page_counter.text())
 
+    def test_a_random_page_is_never_the_one_on_screen(self):
+        """Upstream feature request 96."""
+        pages = len(self._ready())
+        offered = []
+        with unittest.mock.patch(
+                'mcomix.main.random.choice',
+                side_effect=lambda choices: offered.append(choices) or choices[-1]):
+            self.window.random_page()
+        self._pump()
+        self.assertEqual(list(range(2, pages + 1)), offered[0])
+        self.assertEqual(pages, self._page())
+
+    def test_a_random_archive_is_another_in_the_folder(self):
+        """Upstream feature request 121."""
+        for name in ('Earlier.cbz', 'Later.cbz'):
+            shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'),
+                        os.path.join(self.tmp_dir, name))
+        source = self._movable_book()
+        offered = []
+        with unittest.mock.patch(
+                'mcomix.file_handler.random.choice',
+                side_effect=lambda choices: offered.append(choices) or choices[0]):
+            self.assertTrue(self.window.filehandler.open_random_archive())
+        self._pump()
+        self.assertEqual(
+            sorted(os.path.join(self.tmp_dir, name)
+                   for name in ('Earlier.cbz', 'Later.cbz')),
+            sorted(offered[0]))
+        self.assertNotEqual(source, self.window.filehandler.get_path_to_base())
+
+    def test_no_other_archive_opens_nothing(self):
+        self._movable_book()
+        self.assertFalse(self.window.filehandler.open_random_archive())
+
     def test_quit_and_save_keeps_the_file_of_the_page(self):
         """What an older MComix reads of it - the file and the index of
         the page - comes first and is unchanged."""

@@ -410,6 +410,12 @@ class EventHandler:
                          ['<control><shift>P'],
                          self._window.filehandler.previous_archive)
 
+        # Upstream feature requests 96 and 121.  No key of their own:
+        # the reader gives them one in the Shortcuts tab.
+        manager.register('random_page', [], self._window.random_page)
+        manager.register('random_archive', [],
+                         self._window.filehandler.open_random_archive)
+
         manager.register('next_directory',
                          ['<control>N'],
                          self._window.filehandler.open_next_directory)
