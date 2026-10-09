@@ -7,6 +7,7 @@ times. A Gtk.ListView binds a row when it comes on screen, and that is
 now what says which thumbnails to make.
 """
 
+import datetime
 import os
 import unittest.mock
 
@@ -287,5 +288,39 @@ class ThumbnailSidebarTest(MComixTest):
         self.window.mark_for_swap(3)
         pump()
         self.assertEqual([3], self._outlined(theme.MARKED_CLASS))
+
+    def _badged(self):
+        return [item.uid for item in self._items() if item.badge is not None]
+
+    def _bookmark(self, page):
+        from mcomix import bookmark_backend
+        store = bookmark_backend.BookmarksStore
+        self.addCleanup(setattr, store, '_bookmarks', [])
+        self.window.set_page(page)
+        pump()
+        store.add_current_to_bookmarks()
+        return store
+
+    def test_a_bookmarked_page_has_a_badge_in_the_sidebar(self):
+        self._ready()
+        store = self._bookmark(2)
+        self.assertEqual([2], self._badged())
+        store.remove_bookmark(store.get_bookmarks()[0])
+        self.assertEqual([], self._badged())
+
+    def test_a_page_bookmarked_before_the_sidebar_was_filled_has_its_badge(self):
+        self._bookmark(3)
+        self._ready()
+        self.assertEqual([3], self._badged())
+
+    def test_a_bookmark_of_another_book_puts_no_badge_here(self):
+        from mcomix import bookmark_backend
+        store = bookmark_backend.BookmarksStore
+        self.addCleanup(setattr, store, '_bookmarks', [])
+        self._ready()
+        store.add_bookmark_by_values(
+            'other', get_testfile_path('archives', '02-TAR-Normal.tar'), 2,
+            4, constants.TAR, datetime.datetime.now())
+        self.assertEqual([], self._badged())
 
 # vim: expandtab:sw=4:ts=4

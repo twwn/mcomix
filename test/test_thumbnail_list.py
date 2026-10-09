@@ -108,6 +108,39 @@ class ThumbnailListViewTest(MComixTest):
         self.assertTrue([p for p in paintables if p is not None],
                         'no row on screen is showing anything')
 
+    def _first_cell(self):
+        """The cell showing the first row, once its thumbnail is there."""
+        self._fill()
+        item = self.view.store.get_item(0)
+        self.assertTrue(wait_for(lambda: item.thumbnail is not None,
+                                 seconds=10))
+        self._settle()
+        for cell in self.view._each_cell():
+            if cell.position == 0:
+                return item, cell
+        self.fail('the first row is not on screen')
+
+    def test_a_badge_is_drawn_on_the_thumbnail_and_taken_off_again(self):
+        item, cell = self._first_cell()
+        badge = item.thumbnail
+        item.badge = badge
+        shown = cell.picture.get_paintable()
+        self.assertIsInstance(shown, thumbnail_list._Badged)
+        self.assertIs(shown.thumbnail, item.thumbnail)
+        item.badge = None
+        self.assertIs(cell.picture.get_paintable(), item.thumbnail)
+
+    def test_a_badged_thumbnail_takes_up_the_room_of_the_thumbnail(self):
+        """The badge goes on the picture: the picture is laid out as it
+        would be without it."""
+        item, cell = self._first_cell()
+        item.badge = item.thumbnail
+        shown = cell.picture.get_paintable()
+        self.assertEqual((item.thumbnail.get_width(),
+                          item.thumbnail.get_height()),
+                         (shown.get_intrinsic_width(),
+                          shown.get_intrinsic_height()))
+
     def test_nothing_is_asked_for_before_there_are_rows(self):
         pump(100)
         self.assertEqual(self.asked, [])

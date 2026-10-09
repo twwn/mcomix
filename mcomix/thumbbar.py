@@ -1,12 +1,17 @@
 """thumbbar.py - Thumbnail sidebar for main window."""
 
-from gi.repository import Gdk, Gio, GLib, Gtk
+import functools
+import os
+
+from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk
 
 from mcomix.preferences import prefs
 
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
+from mcomix import bookmark_backend
 from mcomix import image_tools
+from mcomix import log
 from mcomix import preview
 from mcomix import theme
 from mcomix import thumbnail_list
@@ -14,8 +19,24 @@ from mcomix import tools
 from mcomix import widgets
 
 if TYPE_CHECKING:
-    from gi.repository import GdkPixbuf
     from mcomix import main
+
+#: The badge on the thumbnail of a page a bookmark marks.
+_BOOKMARK_BADGE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                    'images', 'bookmark-badge.svg')
+
+
+@functools.lru_cache(maxsize=4)
+def _bookmark_badge(height: int) -> Gdk.Texture | None:
+    """The bookmark badge, drawn <height> pixels tall from its SVG, or
+    None where gdk-pixbuf has no SVG loader to draw it with."""
+    try:
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(_BOOKMARK_BADGE_FILE,
+                                                        -1, height)
+    except GLib.Error as error:
+        log.debug('Could not draw %s: %s', _BOOKMARK_BADGE_FILE, error.message)
+        return None
+    return None if pixbuf is None else image_tools.pixbuf_to_texture(pixbuf)
 
 
 class ThumbnailSidebar(Gtk.ScrolledWindow, widgets.Releasable):
@@ -90,6 +111,11 @@ class ThumbnailSidebar(Gtk.ScrolledWindow, widgets.Releasable):
         self._window.page_changed += self._on_page_change
         self._window.imagehandler.page_available += self._on_page_available
         self._window.filehandler.file_closed += self._forget_broken
+        store = bookmark_backend.BookmarksStore
+        store.add_bookmark += self._bookmarks_changed
+        store.remove_bookmark += self._bookmarks_changed
+        store.replace_bookmark += self._bookmarks_changed
+        store.clear_bookmarks += self._bookmarks_changed
 
     def release(self) -> None:
         """Take the list off the sidebar once the window has closed.
@@ -99,6 +125,11 @@ class ThumbnailSidebar(Gtk.ScrolledWindow, widgets.Releasable):
         holds the sidebar's methods it was handed - and through them
         the window.
         """
+        store = bookmark_backend.BookmarksStore
+        store.add_bookmark -= self._bookmarks_changed
+        store.remove_bookmark -= self._bookmarks_changed
+        store.replace_bookmark -= self._bookmarks_changed
+        store.clear_bookmarks -= self._bookmarks_changed
         self.set_child(None)
 
     def toggle_page_numbers_visible(self) -> None:
@@ -242,6 +273,7 @@ class ThumbnailSidebar(Gtk.ScrolledWindow, widgets.Releasable):
             range(1, self._window.imagehandler.get_number_of_pages() + 1))
 
         self._loaded = True
+        self._mark_bookmarks()
 
         # The row for the page on screen, asked of the image handler
         # rather than remembered: clear() drops every row, so it has no
@@ -274,6 +306,25 @@ class ThumbnailSidebar(Gtk.ScrolledWindow, widgets.Releasable):
             pixbuf = image_tools.add_border(pixbuf, self._BORDER_SIZE)
 
         return pixbuf
+
+    def _bookmarks_changed(self, *args: object) -> None:
+        self._mark_bookmarks()
+
+    def _mark_bookmarks(self) -> None:
+        """Badge the thumbnails of the pages a bookmark marks, and only
+        those."""
+        if not self._loaded:
+            return
+        marked = bookmark_backend.BookmarksStore.pages_marked()
+        badge = (_bookmark_badge(max(self._thumbnail_size // 4, 8))
+                 if marked else None)
+        store = self._list.store
+        for position in range(store.get_n_items()):
+            item = store.get_item(position)
+            assert item is not None
+            wanted = badge if item.uid in marked else None
+            if item.badge is not wanted:
+                item.badge = wanted
 
     def _select_page(self, page: int, scroll: bool = True) -> None:
         """Select the row of <page>, the page being read.

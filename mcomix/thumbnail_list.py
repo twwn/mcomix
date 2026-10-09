@@ -1,6 +1,6 @@
 """thumbnail_list.py - Thumbnails that are made as their rows come on screen."""
 
-from gi.repository import Gdk, GdkPixbuf, Gio, GLib, GObject, Gtk, Pango
+from gi.repository import Gdk, GdkPixbuf, Gio, GLib, GObject, Graphene, Gtk, Pango
 
 from mcomix import image_tools
 from mcomix import theme
@@ -23,12 +23,14 @@ class ThumbnailItem(GObject.Object):
     number for the sidebar, a path or a book id elsewhere.  The
     thumbnail is a property rather than a plain attribute so that a row
     which is already on screen redraws itself when the worker thread
-    that was making one finishes.
+    that was making one finishes.  So is the badge drawn on it, which
+    comes and goes without the thumbnail being made again.
     """
 
     __gtype_name__ = 'MComixThumbnailItem'
 
     thumbnail = GObject.Property(type=Gdk.Texture)
+    badge = GObject.Property(type=Gdk.Texture)
 
     def __init__(self, uid: Any, label: str = '', tooltip: str = '') -> None:  # type: ignore[explicit-any]  # the view does not care what a uid is
         super().__init__()
@@ -37,6 +39,56 @@ class ThumbnailItem(GObject.Object):
         self.label = label
         #: What it says when the pointer rests on it.
         self.tooltip = tooltip
+
+
+# pygobject-stubs declares props on GObject.Object and on the
+# interface base with signatures that do not match.
+class _Badged(GObject.Object, Gdk.Paintable):  # type: ignore[misc]
+
+    """A thumbnail with a badge hanging from its top edge, at the right.
+
+    Drawn over the thumbnail rather than into it, so that the badge
+    comes and goes without the thumbnail being made again.  A paintable
+    rather than a widget laid over the cell: a thumbnail narrower than
+    its cell is drawn in the middle of it, and the badge goes on the
+    corner of the picture, not of the cell.
+    """
+
+    __gtype_name__ = 'MComixBadgedThumbnail'
+
+    def __init__(self, thumbnail: Gdk.Texture, badge: Gdk.Texture) -> None:
+        super().__init__()
+        self.thumbnail = thumbnail
+        self.badge = badge
+
+    def do_get_intrinsic_width(self) -> int:
+        return self.thumbnail.get_width()
+
+    def do_get_intrinsic_height(self) -> int:
+        return self.thumbnail.get_height()
+
+    def do_snapshot(self, snapshot: Gtk.Snapshot, width: float,
+                    height: float) -> None:
+        self.thumbnail.snapshot(snapshot, width, height)
+        # Never more than a third of the picture's width, which only a
+        # picture far wider than it is tall leaves it short of.
+        scale = min(1.0, width / 3 / self.badge.get_width())
+        badge_width = self.badge.get_width() * scale
+        badge_height = self.badge.get_height() * scale
+        snapshot.save()
+        snapshot.translate(Graphene.Point().init(
+            width - badge_width * 1.25, 0))
+        self.badge.snapshot(snapshot, badge_width, badge_height)
+        snapshot.restore()
+
+
+def _shown(item: ThumbnailItem) -> Gdk.Paintable | None:
+    """What a cell draws for <item>: its thumbnail, and its badge on it."""
+    thumbnail = cast("Gdk.Texture | None", item.thumbnail)
+    badge = cast("Gdk.Texture | None", item.badge)
+    if thumbnail is None or badge is None:
+        return thumbnail
+    return _Badged(thumbnail, badge)
 
 
 class _ThumbnailCell(Gtk.Box):
@@ -70,7 +122,7 @@ class _ThumbnailCell(Gtk.Box):
             self.picture.set_vexpand(True)
             self.append(self.picture)
             self.append(self.label)
-        #: The notify::thumbnail handler while this cell is bound.
+        #: The handler of the item's notify while this cell is bound.
         self.handler: int | None = None
         #: The list item this cell is the child of, which is what knows
         #: where it sits.  Set once, when the cell is built: a list item
@@ -188,9 +240,9 @@ class _ThumbnailViewBase(widgets.Releasable):
         item = cast(ThumbnailItem, list_item.get_item())
         cell.label.set_text(item.label)
         cell.set_tooltip_text(item.tooltip or None)
-        cell.picture.set_paintable(item.thumbnail)
-        cell.handler = item.connect('notify::thumbnail',
-                                    self._thumbnail_arrived, cell)
+        cell.picture.set_paintable(_shown(item))
+        # The thumbnail and the badge are the only properties there are.
+        cell.handler = item.connect('notify', self._thumbnail_arrived, cell)
         self._bound.add(item)
         if self.style_cell is not None:
             self.style_cell(cell.picture, list_item.get_position())
@@ -221,7 +273,7 @@ class _ThumbnailViewBase(widgets.Releasable):
     def _thumbnail_arrived(self, item: ThumbnailItem,
                            parameter: GObject.ParamSpec,
                            cell: _ThumbnailCell) -> None:
-        cell.picture.set_paintable(item.thumbnail)
+        cell.picture.set_paintable(_shown(item))
 
     def _size_cell(self, cell: _ThumbnailCell) -> None:
         cell.picture.set_size_request(self._thumbnail_width,

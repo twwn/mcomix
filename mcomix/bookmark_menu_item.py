@@ -101,18 +101,33 @@ class _Bookmark:
 
         if self._file_handler is None or self._window is None:
             raise ValueError('The bookmark has no window to open in.')
-        if self._file_handler.archive_type is None:
-            files = self._window.imagehandler.get_image_files()
-            if self._path in files:
-                self._window.set_page(files.index(self._path) + 1)
-                return
-        elif self._file_handler.get_path_to_base() == self._path:
-            page = (self._file_handler.page_of_member(self._member)
-                    if self._member is not None else None)
-            self._window.set_page(page or self._page)
+        page = self.page_in_open_book()
+        if page is not None:
+            self._window.set_page(page)
             return
         self._file_handler.open_file(self._path, self._page,
                                      start_member=self._member)
+
+    def page_in_open_book(self) -> int | None:
+        """The page this bookmark marks in the book open in its window,
+        or None where that book is not the one open.
+
+        Found as load() describes: in a folder of images by the file of
+        the page, in an archive by the name of that file within it where
+        the bookmark knows it, and by the number otherwise.
+        """
+        if self._file_handler is None or self._window is None:
+            return None
+        if self._file_handler.archive_type is None:
+            files = self._window.imagehandler.get_image_files()
+            if self._path in files:
+                return files.index(self._path) + 1
+            return None
+        if self._file_handler.get_path_to_base() != self._path:
+            return None
+        page = (self._file_handler.page_of_member(self._member)
+                if self._member is not None else None)
+        return page or self._page
 
     def open_in_new_instance(self) -> None:
         """Open the file and page in an MComix of its own.

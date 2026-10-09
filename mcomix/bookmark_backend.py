@@ -113,6 +113,12 @@ class _BookmarksStore:
         return [bookmark for bookmark in self._bookmarks
                 if bookmark.same_path(path)]
 
+    def pages_marked(self) -> set[int]:
+        """The pages of the book open in the window that a bookmark
+        marks."""
+        pages = (bookmark.page_in_open_book() for bookmark in self._bookmarks)
+        return {page for page in pages if page is not None}
+
     def remove_for_path(self, path: str) -> None:
         """Remove every bookmark that marks a page of the file at <path>.
 
