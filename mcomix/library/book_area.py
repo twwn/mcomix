@@ -23,6 +23,7 @@ from mcomix import constants
 from mcomix import preview
 from mcomix import process
 from mcomix import icons
+from mcomix import theme
 from mcomix import widgets
 from mcomix import bookmark_backend
 from mcomix import i18n
@@ -52,7 +53,7 @@ def _paint_black(display: Gdk.Display, css_class: str) -> None:
     provider = Gtk.CssProvider()
     provider.load_from_string('.%s { background-color: black; }' % css_class)
     Gtk.StyleContext.add_provider_for_display(
-        display, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+        display, provider, theme.VIEW_COLOUR_PRIORITY)
 
 
 class _BookItem(thumbnail_list.ThumbnailItem):

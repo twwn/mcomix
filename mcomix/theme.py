@@ -68,6 +68,13 @@ notebook > stack, .toolbar, actionbar > revealer > box {
 }
 '''
 
+#: Where a rule painting one of MComix' own views in the colour it was
+#: given goes: the thumbnail bar in the colour the preferences name,
+#: the library's covers on black.  Above the palette, which a colour
+#: scheme other than the system's states above the user's stylesheet,
+#: and whose rule for every view would otherwise paint over them.
+VIEW_COLOUR_PRIORITY = Gtk.STYLE_PROVIDER_PRIORITY_USER + 2
+
 #: The outline round a page a reader has picked out or marked, in the
 #: main view and in the thumbnail bar.  Not part of the palette, which
 #: is loaded only where MComix states colours of its own: with

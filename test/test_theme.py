@@ -23,8 +23,12 @@ from mcomix import theme
 from mcomix.preferences import prefs
 
 
-def background_of(window):
+def background_of(window, topmost=False):
     """The colour <window> is actually painted in.
+
+    The widest colour painted, or with <topmost> the last painted of the
+    widest: a view that fills the window is painted over the window's
+    own background, which is just as wide.
 
     Waiting on the window's own size rather than for a fixed interval:
     the frame clock may not have run within one under load, and a window
@@ -52,6 +56,7 @@ def background_of(window):
         if kind == Gsk.RenderNodeType.COLOR_NODE:
             size = node.get_bounds().size
             widest.append((size.width * size.height,
+                           len(widest) if topmost else 0,
                            node.get_color().to_string()))
         if kind == Gsk.RenderNodeType.CONTAINER_NODE:
             for index in range(node.get_n_children()):
@@ -70,7 +75,7 @@ def background_of(window):
         if widest:
             break
         wait_for(lambda: False, seconds=0.05)
-    return max(widest)[1] if widest else None
+    return max(widest)[2] if widest else None
 
 
 class PaletteTest(MComixTest):
@@ -506,3 +511,53 @@ class PageMarkTest(MComixTest):
             self.assertGreater(side.red, 0.6, side.to_string())
             self.assertLess(side.green, 0.4, side.to_string())
             self.assertLess(side.blue, 0.4, side.to_string())
+
+
+class ViewColourTest(MComixTest):
+
+    """The colours MComix was told to paint its own views in.
+
+    A colour scheme other than the system's states the palette above the
+    application's rules, and its rule for every view named the theme's
+    view colour: the thumbnail bar kept the colour chosen for it only
+    behind its rows, and was white below them in the light scheme.
+    """
+
+    _COLOUR = [1 / 255, 2 / 255, 3 / 255, 1.0]
+
+    def setUp(self):
+        super().setUp()
+        self.addCleanup(theme.apply_colour_scheme, theme.SYSTEM)
+        self.window = Gtk.Window()
+        self.window.set_default_size(200, 200)
+        self.addCleanup(self.window.destroy)
+
+    def _painted(self, view):
+        """What <view>, filling the window, is painted in, per scheme."""
+        self.window.set_child(view)
+        self.window.present()
+        painted = {}
+        for scheme in (theme.LIGHT, theme.DARK, theme.BLACK):
+            theme.apply_colour_scheme(scheme)
+            view.queue_draw()
+            painted[scheme] = background_of(self.window, topmost=True)
+        return painted
+
+    def test_the_thumbnail_bar_keeps_its_colour_whatever_the_scheme(self):
+        from mcomix import image_tools, thumbnail_list
+        view = thumbnail_list.ThumbnailListView()
+        view.set_background(self._COLOUR,
+                            image_tools.text_color_for_background_color(
+                                self._COLOUR))
+        for scheme, colour in self._painted(view).items():
+            self.assertEqual(colour, 'rgb(1,2,3)', scheme)
+
+    def test_the_library_covers_stay_on_black_whatever_the_scheme(self):
+        from mcomix import thumbnail_list
+        from mcomix.library import book_area
+        view = thumbnail_list.ThumbnailGridView()
+        view.add_css_class(book_area._BookArea._BLACK_CSS_CLASS)
+        book_area._paint_black(view.get_display(),
+                               book_area._BookArea._BLACK_CSS_CLASS)
+        for scheme, colour in self._painted(view).items():
+            self.assertEqual(colour, 'rgb(0,0,0)', scheme)

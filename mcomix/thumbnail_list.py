@@ -3,6 +3,7 @@
 from gi.repository import Gdk, GdkPixbuf, Gio, GLib, GObject, Gtk, Pango
 
 from mcomix import image_tools
+from mcomix import theme
 from mcomix import tools
 from mcomix import widgets
 from mcomix.preferences import prefs
@@ -275,8 +276,7 @@ class _ThumbnailViewBase(widgets.Releasable):
             provider = self._colour_provider = Gtk.CssProvider()
             widget.add_css_class(self.CSS_CLASS)
             Gtk.StyleContext.add_provider_for_display(
-                widget.get_display(), provider,
-                Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+                widget.get_display(), provider, theme.VIEW_COLOUR_PRIORITY)
         provider.load_from_string(
             '.%(name)s, .%(name)s > child, .%(name)s > row'
             ' { background: %(background)s; color: %(text)s; }'
