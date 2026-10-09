@@ -2865,6 +2865,44 @@ class MainWindowTest(MComixTest):
             self.window.popup.popdown()
             self._pump()
 
+    def _menubar_item(self, action):
+        """The menu bar's item for win.<action>, as (model, index)."""
+        def find(model):
+            for index in range(model.get_n_items()):
+                named = model.get_item_attribute_value(
+                    index, Gio.MENU_ATTRIBUTE_ACTION, None)
+                if named is not None and named.get_string() == action:
+                    return model, index
+                for link in (Gio.MENU_LINK_SECTION, Gio.MENU_LINK_SUBMENU):
+                    child = model.get_item_link(index, link)
+                    found = child is not None and find(child)
+                    if found:
+                        return found
+            return None
+        return find(self.window.uimanager.menubar.get_menu_model())
+
+    def test_the_file_menu_offers_to_delete_permanently(self):
+        """SHIFT+Delete deleted for good with no menu item to show it
+        could, beside the menu's Delete."""
+        found = self._menubar_item('win.delete-permanently')
+        self.assertIsNotNone(found, 'no menu item')
+        model, index = found
+        accelerator = model.get_item_attribute_value(index, 'accel', None)
+        self.assertEqual('<Shift>Delete',
+                         accelerator.get_string() if accelerator else None)
+        action = self.window.actiongroup.get_action('delete_permanently')
+        self.assertTrue(action.get_sensitive())
+        with unittest.mock.patch.object(
+                self.window.file_actions,
+                '_ask_to_delete_permanently') as asked:
+            action.activate()
+        self.assertEqual(self.window.imagehandler.get_real_path(),
+                         asked.call_args.args[0])
+        self.window.filehandler.close_file()
+        self._pump()
+        self.assertFalse(action.get_sensitive(),
+                         'enabled with nothing open to delete')
+
     def test_the_right_click_menu_offers_to_delete_a_page(self):
         self.assertIn('win.delete-page-popup',
                       self._menu_actions(self.window.uimanager.popup
