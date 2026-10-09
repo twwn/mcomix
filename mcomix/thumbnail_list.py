@@ -380,6 +380,15 @@ class _ThumbnailViewBase(widgets.Releasable):
         for cell in list(self._cells):
             widgets.cut_handlers(cell)
 
+    def position_at(self, x: float, y: float) -> int:
+        """The position of the entry under (<x>, <y>), or -1 if none is."""
+        picked = cast(Gtk.Widget, self).pick(x, y, Gtk.PickFlags.DEFAULT)
+        while picked is not None and not isinstance(picked, _ThumbnailCell):
+            picked = picked.get_parent()
+        if picked is None:
+            return -1
+        return picked.position
+
     def refresh(self) -> None:
         """Ask again for the thumbnails the cells on screen are missing.
 
@@ -725,14 +734,5 @@ class ThumbnailGridView(Gtk.GridView, _ThumbnailViewBase):
         self.remove_items([item for item in
                            (self.get_item(position) for position in positions)
                            if item is not None])
-
-    def position_at(self, x: float, y: float) -> int:
-        """The position of the entry under (<x>, <y>), or -1 if none is."""
-        picked = self.pick(x, y, Gtk.PickFlags.DEFAULT)
-        while picked is not None and not isinstance(picked, _ThumbnailCell):
-            picked = picked.get_parent()
-        if picked is None:
-            return -1
-        return picked.position
 
 # vim: expandtab:sw=4:ts=4

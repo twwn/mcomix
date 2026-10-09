@@ -104,6 +104,13 @@ class ThumbnailSidebar(Gtk.ScrolledWindow, widgets.Releasable):
         clicks.connect('pressed', self._mouse_press_event)
         self._list.add_controller(clicks)
 
+        # A right click on a thumbnail opens the page menu for its page,
+        # as one on the page itself does.
+        menu_clicks = Gtk.GestureClick()
+        menu_clicks.set_button(Gdk.BUTTON_SECONDARY)
+        menu_clicks.connect('pressed', self._menu_click)
+        self._list.add_controller(menu_clicks)
+
         self.set_child(self._list)
         self.change_thumbnail_background_color(prefs['thumb bg colour'])
         self.set_visible(True)
@@ -360,6 +367,14 @@ class ThumbnailSidebar(Gtk.ScrolledWindow, widgets.Releasable):
             # more than likely have many pages open and are simply trying
             # to give mcomix focus again
             gesture.set_state(Gtk.EventSequenceState.CLAIMED)
+
+    def _menu_click(self, gesture: Gtk.GestureClick, n_press: int,
+                    x: float, y: float) -> None:
+        page = self._list.page_at(self._list.position_at(x, y))
+        if page is None:
+            return
+        gesture.set_state(Gtk.EventSequenceState.CLAIMED)
+        self._window.show_page_menu(self._list, x, y, page)
 
     def _drag_prepare(self, source: Gtk.DragSource, x: float,
                       y: float) -> "Gdk.ContentProvider | None":

@@ -1650,6 +1650,22 @@ class MainWindow(Gtk.Window):
                 return current + offset
         return None
 
+    def show_page_menu(self, widget: Gtk.Widget, x: float, y: float,
+                       page: int | None) -> None:
+        """Open the right-click menu at <x>, <y> on <widget>, for <page>.
+
+        Which page the menu stands on is worth knowing by the time it
+        is answered: two of them are on screen in double page mode, a
+        thumbnail stands for any page of the book, and the pointer has
+        moved to the menu by then.  None where it was opened over no
+        page.
+        """
+        self.popup_page = page
+        self.actiongroup.get_action('remove_bookmark_popup').set_sensitive(
+            page is not None
+            and page in bookmark_backend.BookmarksStore.pages_marked())
+        widgets.popup_at(self.popup, widget, x, y)
+
 
     def show_info_panel(self) -> None:
         """ Shows an OSD displaying information about the current page. """

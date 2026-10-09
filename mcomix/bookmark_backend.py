@@ -119,6 +119,12 @@ class _BookmarksStore:
         pages = (bookmark.page_in_open_book() for bookmark in self._bookmarks)
         return {page for page in pages if page is not None}
 
+    def remove_for_page(self, page: int) -> None:
+        """Remove every bookmark that marks <page> of the open book."""
+        for bookmark in list(self._bookmarks):
+            if bookmark.page_in_open_book() == page:
+                self.remove_bookmark(bookmark)
+
     def remove_for_path(self, path: str) -> None:
         """Remove every bookmark that marks a page of the file at <path>.
 

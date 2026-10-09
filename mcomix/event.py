@@ -5,7 +5,6 @@ from gi.repository import Gdk, Gtk
 
 from mcomix.preferences import prefs
 from mcomix import constants
-from mcomix import widgets
 from mcomix import keybindings
 from mcomix import openwith
 
@@ -615,11 +614,10 @@ class EventHandler:
         the page it acts on is the one on screen rather than the one
         under the pointer.
         """
-        self._window.popup_page = \
-            self._window.imagehandler.get_current_page()
         area = self._window.page_area
-        widgets.popup_at(self._window.popup, area,
-                         area.get_width() / 2, area.get_height() / 2)
+        self._window.show_page_menu(
+            area, area.get_width() / 2, area.get_height() / 2,
+            self._window.imagehandler.get_current_page())
 
     def scroll_wheel_event(self, controller: Gtk.EventControllerScroll,
                            delta_x: float, delta_y: float) -> bool:
@@ -720,14 +718,11 @@ class EventHandler:
               not state & Gdk.ModifierType.ALT_MASK and
               not state & Gdk.ModifierType.SHIFT_MASK):
             self._window.cursor_handler.set_cursor_type(constants.NORMAL_CURSOR)
-            # Which page the menu stands on is worth knowing by the time
-            # it is answered: two of them are on screen in double page
-            # mode, and the pointer has moved to the menu by then.
-            self._window.popup_page = self._window.page_at(x, y)
             # A gesture that fires is on a widget; the window is where
             # the popup is parented anyway.
             over = gesture.get_widget() or self._window
-            widgets.popup_at(self._window.popup, over, x, y)
+            self._window.show_page_menu(over, x, y,
+                                        self._window.page_at(x, y))
 
         elif button == 8:
             # The thumb button marked "back".  A book has no history to

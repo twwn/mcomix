@@ -289,13 +289,20 @@ class ThumbnailSidebarTest(MComixTest):
         pump()
         self.assertEqual([3], self._outlined(theme.MARKED_CLASS))
 
+    def _no_bookmarks(self):
+        """An empty store, then and after: it is one for the process,
+        and another test's bookmarks of the same book would show."""
+        from mcomix import bookmark_backend
+        store = bookmark_backend.BookmarksStore
+        store._bookmarks = []
+        self.addCleanup(setattr, store, '_bookmarks', [])
+        return store
+
     def _badged(self):
         return [item.uid for item in self._items() if item.badge is not None]
 
     def _bookmark(self, page):
-        from mcomix import bookmark_backend
-        store = bookmark_backend.BookmarksStore
-        self.addCleanup(setattr, store, '_bookmarks', [])
+        store = self._no_bookmarks()
         self.window.set_page(page)
         pump()
         store.add_current_to_bookmarks()
@@ -314,13 +321,62 @@ class ThumbnailSidebarTest(MComixTest):
         self.assertEqual([3], self._badged())
 
     def test_a_bookmark_of_another_book_puts_no_badge_here(self):
-        from mcomix import bookmark_backend
-        store = bookmark_backend.BookmarksStore
-        self.addCleanup(setattr, store, '_bookmarks', [])
+        store = self._no_bookmarks()
         self._ready()
         store.add_bookmark_by_values(
             'other', get_testfile_path('archives', '02-TAR-Normal.tar'), 2,
             4, constants.TAR, datetime.datetime.now())
         self.assertEqual([], self._badged())
+
+    def _menu_for(self, page):
+        """Open the page menu for <page>, as a right click does, and
+        close it again at the end of the test."""
+        self.addCleanup(self.window.popup.popdown)
+        self.window.show_page_menu(self.window.page_area, 1, 1, page)
+        return self.window.actiongroup.get_action('remove_bookmark_popup')
+
+    def test_the_page_menu_offers_to_remove_the_bookmark_of_its_page(self):
+        self._ready()
+        store = self._bookmark(2)
+        self.window.set_page(1)
+        pump()
+        self.assertFalse(self._menu_for(1).get_sensitive())
+        self.assertFalse(self._menu_for(None).get_sensitive())
+        action = self._menu_for(2)
+        self.assertTrue(action.get_sensitive())
+        action.activate()
+        self.assertEqual([], store.get_bookmarks())
+        self.assertEqual([], self._badged())
+
+    def test_removing_one_page_s_bookmark_keeps_the_others(self):
+        self._ready()
+        store = self._bookmark(3)
+        # Added as it stands: a second one through the menu would ask
+        # whether to replace the first.
+        store.add_bookmark_by_values(
+            'kept', store.get_bookmarks()[0].get_path(), 2, self._pages(),
+            constants.ZIP, datetime.datetime.now())
+        self._menu_for(3).activate()
+        self.assertEqual([2], self._badged())
+
+    def test_a_right_click_on_a_thumbnail_opens_the_menu_for_its_page(self):
+        self._ready()
+        gesture = unittest.mock.Mock()
+        with unittest.mock.patch.object(self.sidebar._list, 'position_at',
+                                        return_value=2), \
+                unittest.mock.patch.object(self.window,
+                                           'show_page_menu') as shown:
+            self.sidebar._menu_click(gesture, 1, 10, 20)
+        shown.assert_called_once_with(self.sidebar._list, 10, 20, 3)
+
+    def test_a_right_click_beside_the_thumbnails_opens_nothing(self):
+        self._ready()
+        with unittest.mock.patch.object(self.sidebar._list, 'position_at',
+                                        return_value=-1), \
+                unittest.mock.patch.object(self.window,
+                                           'show_page_menu') as shown:
+            self.sidebar._menu_click(unittest.mock.Mock(), 1, 10, 20)
+        shown.assert_not_called()
+
 
 # vim: expandtab:sw=4:ts=4

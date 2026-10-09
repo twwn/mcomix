@@ -100,6 +100,8 @@ No mode scales a small page up unless "View → Stretch small images" is on.
 - A middle click on an entry starts a second MComix on it, at the bookmark's page.
 - CTRL+D adds a bookmark; CTRL+B edits them.
 - A bookmarked page has an orange ribbon on its thumbnail in the sidebar.
+- "Remove bookmark", in the page's right-click menu, removes that page's bookmark. It shows only on a bookmarked page.
+- Right-clicking a thumbnail in the sidebar opens the right-click menu for its page.
 - "Bookmarks → Remove this book's bookmarks..." removes the open book's, after asking.
 
 ## Command line

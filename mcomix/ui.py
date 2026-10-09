@@ -6,6 +6,7 @@ from gi.repository import Gio, GLib, Gtk
 from collections.abc import Callable, Sequence
 from typing import NamedTuple, Protocol, TYPE_CHECKING
 
+from mcomix import bookmark_backend
 from mcomix import bookmark_menu
 from mcomix import move_menu
 from mcomix import openwith_menu
@@ -355,7 +356,7 @@ _MENUBAR = (
 
 #: The actions whose menu items are left out while they are disabled
 #: rather than greyed out.
-_HIDDEN_WHEN_DISABLED = frozenset({'leave_fullscreen'})
+_HIDDEN_WHEN_DISABLED = frozenset({'leave_fullscreen', 'remove_bookmark_popup'})
 
 #: The right-click menu.
 _POPUP = (
@@ -379,7 +380,7 @@ _POPUP = (
                          ('menu_toolbars', ('menubar', 'toolbar', 'statusbar',
                                             'scrollbar', 'thumbnails', None,
                                             'hide_all')))),
-    'menu_bookmarks_popup',
+    'menu_bookmarks_popup', 'remove_bookmark_popup',
     None,
     'open', 'menu_recent', 'library',
     None,
@@ -446,6 +447,9 @@ class MainUI:
             _Entry('delete_page_popup', 'edit-delete', _('_Delete page'),
                    _('Removes the page the menu was opened over from the book. The archive on disk is not changed until it is saved.'),
                    window.file_actions.delete_popup_page),
+            _Entry('remove_bookmark_popup', 'edit-delete', _('_Remove bookmark'),
+                   _('Removes the bookmark of the page the menu was opened over.'),
+                   _action_lambda(self._remove_popup_bookmark)),
             _Entry('unpick_pages', 'edit-clear', _('Pu_t back pages picked out'),
                    _('Puts back every page picked out with CTRL and a click.'),
                    window.clear_selection),
@@ -646,6 +650,11 @@ class MainUI:
         for menu in (self.bookmarks, self.recent, self._openwith,
                      self.move_to):
             menu.release()
+
+    def _remove_popup_bookmark(self) -> None:
+        page = self._window.popup_page
+        if page is not None:
+            bookmark_backend.BookmarksStore.remove_for_page(page)
 
     def _leave_fullscreen(self) -> None:
         """Turn the fullscreen toggle off, which leaves fullscreen."""
