@@ -246,7 +246,8 @@ class FileHandler:
 
     def open_file(self, path: str | list[str], start_page: int = 0,
                   keep_fileprovider: bool = False,
-                  start_member: str | None = None) -> bool:
+                  start_member: str | None = None,
+                  listed: Sequence[str] | None = None) -> bool:
         """Open the file pointed to by <path>.
 
         If <start_page> is 0 we show the first page, or the last read page
@@ -254,6 +255,10 @@ class FileHandler:
         and if it is negative we show the last image.  <start_member>, the
         name of a file within an archive, is opened in preference to any
         of those where the archive still has it.
+
+        <listed> is where the book was picked from, such as the books
+        the library shows, in the order shown: Next and Previous archive
+        walk those instead of the book's folder.
 
         Return True if the file is successfully loaded.  A book with
         changes that have not been written is asked about first, and
@@ -263,17 +268,18 @@ class FileHandler:
         """
         def open_it() -> None:
             self._open_file(path, start_page, keep_fileprovider,
-                            start_member)
+                            start_member, listed)
 
         if self._window.file_actions.has_unsaved_changes():
             self._window.file_actions.before_closing(open_it)
             return True
         return self._open_file(path, start_page, keep_fileprovider,
-                               start_member)
+                               start_member, listed)
 
     def _open_file(self, path: str | list[str], start_page: int = 0,
                    keep_fileprovider: bool = False,
-                   start_member: str | None = None) -> bool:
+                   start_member: str | None = None,
+                   listed: Sequence[str] | None = None) -> bool:
         """Open <path>, the book that was open having been dealt with."""
 
         self._close()
@@ -284,6 +290,10 @@ class FileHandler:
             path = archive_tools.first_volume(path) or path
 
         try:
+            if listed is not None and isinstance(path, str):
+                self._file_provider = file_provider.PreDefinedFileProvider(
+                    listed)
+                keep_fileprovider = True
             path = self._initialize_fileprovider(path, keep_fileprovider)
         except ValueError as ex:
             self._window.statusbar.set_message(str(ex))

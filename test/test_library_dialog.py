@@ -438,6 +438,67 @@ class _OneBookTest(_LibraryWindowTest):
         lastread.set_page(self.path, page)
 
 
+class LibraryWalkTest(_LibraryWindowTest):
+
+    """A book opened from the library: Next and Previous archive walk the
+    books the library shows, in the order shown, not the book's folder
+    (upstream bug 42)."""
+
+    def setUp(self):
+        super().setUp()
+        prefs['last library collection'] = constants.COLLECTION_ALL
+        source = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        self.paths = {}
+        for name in ('first/one.zip', 'first/two.zip', 'second/three.zip'):
+            path = os.path.join(self.tmp_dir, name)
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            shutil.copyfile(source, path)
+            self.paths[name] = path
+        self.dialog = self._open()
+        # first/two.zip is beside first/one.zip in its folder, but not in
+        # the library.
+        for name in ('first/one.zip', 'second/three.zip'):
+            self.dialog.backend.add_book(self.paths[name])
+        self.dialog.book_area.display_covers(constants.COLLECTION_ALL)
+        pump()
+
+    def _open_from_library(self, name):
+        book = self.dialog.backend.get_book_by_path(self.paths[name])
+        self.dialog.open_book([book.id])
+        self._wait_for(name)
+
+    def _wait_for(self, name):
+        handler = self.window.filehandler
+        self.assertTrue(wait_for(
+            lambda: handler.file_loaded
+            and handler.get_path_to_base() == self.paths[name],
+            seconds=20), handler.get_path_to_base())
+
+    def test_next_archive_goes_to_the_next_book_shown(self):
+        self._open_from_library('first/one.zip')
+        self.assertTrue(self.window.filehandler.open_next_archive())
+        self._wait_for('second/three.zip')
+
+    def test_previous_archive_comes_back_the_same_way(self):
+        self._open_from_library('second/three.zip')
+        self.assertTrue(self.window.filehandler.open_previous_archive())
+        self._wait_for('first/one.zip')
+
+    def test_the_last_book_shown_has_no_next(self):
+        self._open_from_library('second/three.zip')
+        self.assertFalse(self.window.filehandler.open_next_archive())
+
+    def test_the_file_number_counts_the_books_shown(self):
+        self._open_from_library('second/three.zip')
+        self.assertEqual((2, 2), self.window.filehandler.get_file_number())
+
+    def test_a_book_opened_from_its_folder_still_walks_the_folder(self):
+        self.window.filehandler.open_file(self.paths['first/one.zip'])
+        self._wait_for('first/one.zip')
+        self.assertTrue(self.window.filehandler.open_next_archive())
+        self._wait_for('first/two.zip')
+
+
 class ReloadCoversTest(_OneBookTest):
 
     """load_covers(), which a new cover size and the Exif and enhance

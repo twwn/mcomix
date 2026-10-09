@@ -33,6 +33,7 @@ A book is an archive in any format MComix opens; folders cannot be added.
 - "Copy" puts a single book's path and cover on the clipboard.
 - "Sort" orders by name, full path, file size or date added; "Cover size" sets how large covers are drawn.
 - A middle click on a cover starts a second MComix on that book.
+- A book opened from the library is one of the books shown. The next and previous archive are the next and previous of those, in the order shown, not of its folder. Past the last one shown there is no next.
 - A RAR book in volumes is added as its first volume; the others are left out.
 - An encrypted book is added without asking its password. Its cover is a padlock; the password is asked when it is opened.
 

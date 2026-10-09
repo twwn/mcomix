@@ -400,6 +400,10 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         item = self._item_at(position)
         return None if item is None else item.uid
 
+    def shown_paths(self) -> list[str]:
+        """The path of every book shown, in the order shown."""
+        return [item.path for item in self._each_item()]
+
     def remove_books(self, book_ids: Iterable[int]) -> None:
         """Remove the books with <book_ids> from the _BookArea."""
         wanted = set(book_ids)
