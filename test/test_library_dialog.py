@@ -450,7 +450,9 @@ class LibraryWalkTest(_LibraryWindowTest):
         source = get_testfile_path('archives', '01-ZIP-Normal.zip')
         self.paths = {}
         for name in ('first/one.zip', 'first/two.zip', 'second/three.zip'):
-            path = os.path.join(self.tmp_dir, name)
+            # Joined a part at a time: the handler's paths have Windows'
+            # separators there, and "/" would never compare equal.
+            path = os.path.join(self.tmp_dir, *name.split('/'))
             os.makedirs(os.path.dirname(path), exist_ok=True)
             shutil.copyfile(source, path)
             self.paths[name] = path

@@ -23,12 +23,14 @@ from mcomix import theme
 from mcomix.preferences import prefs
 
 
-def background_of(window, topmost=False):
+def background_of(window, covering=None):
     """The colour <window> is actually painted in.
 
-    The widest colour painted, or with <topmost> the last painted of the
-    widest: a view that fills the window is painted over the window's
-    own background, which is just as wide.
+    The widest colour painted; with <covering>, a widget in <window>,
+    the last colour painted at least as wide as that widget, which is
+    the widget's own background unless something is drawn over it.  The
+    window's background is as wide as a widget that fills it, and on
+    Windows its decorations are wider still.
 
     Waiting on the window's own size rather than for a fixed interval:
     the frame clock may not have run within one under load, and a window
@@ -56,8 +58,8 @@ def background_of(window, topmost=False):
         if kind == Gsk.RenderNodeType.COLOR_NODE:
             size = node.get_bounds().size
             widest.append((size.width * size.height,
-                           len(widest) if topmost else 0,
                            node.get_color().to_string()))
+            painted.append(widest[-1])
         if kind == Gsk.RenderNodeType.CONTAINER_NODE:
             for index in range(node.get_n_children()):
                 walk(node.get_child(index))
@@ -67,15 +69,21 @@ def background_of(window, topmost=False):
             except TypeError:
                 pass
 
+    painted = []
     for _ in range(20):
         widest.clear()
+        painted.clear()
         snapshot = Gtk.Snapshot()
         paintable.snapshot(snapshot, window.get_width(), window.get_height())
         walk(snapshot.to_node())
         if widest:
             break
         wait_for(lambda: False, seconds=0.05)
-    return max(widest)[2] if widest else None
+    if covering is not None:
+        area = covering.get_width() * covering.get_height()
+        wide = [colour for size, colour in painted if size >= area]
+        return wide[-1] if wide else None
+    return max(widest)[1] if widest else None
 
 
 class PaletteTest(MComixTest):
@@ -521,6 +529,9 @@ class ViewColourTest(MComixTest):
     application's rules, and its rule for every view named the theme's
     view colour: the thumbnail bar kept the colour chosen for it only
     behind its rows, and was white below them in the light scheme.
+    Where libadwaita is running it answers for the light and the dark
+    itself, and only pitch black states a palette, so that scheme is
+    the one that tells in every process.
     """
 
     _COLOUR = [1 / 255, 2 / 255, 3 / 255, 1.0]
@@ -540,7 +551,10 @@ class ViewColourTest(MComixTest):
         for scheme in (theme.LIGHT, theme.DARK, theme.BLACK):
             theme.apply_colour_scheme(scheme)
             view.queue_draw()
-            painted[scheme] = background_of(self.window, topmost=True)
+            # The new style is worked out on the next frame; a snapshot
+            # taken before it shows the scheme before.
+            wait_for(lambda: False, seconds=0.2)
+            painted[scheme] = background_of(self.window, covering=view)
         return painted
 
     def test_the_thumbnail_bar_keeps_its_colour_whatever_the_scheme(self):
