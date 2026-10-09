@@ -10,7 +10,9 @@ the user would, and checks that nothing is left holding it.
 
 import gc
 import os
+import threading
 import types
+import unittest.mock
 import weakref
 
 from gi.repository import Gtk
@@ -194,6 +196,46 @@ class MainWindowDialogsFreedTest(MComixTest):
     def test_open_with_editor(self):
         self.assertFreedOnClose(
             lambda: self.window.activate_action('openwith.edit', None))
+
+    def _freed_while_previewing(self, previewed, owner, slow):
+        """The file chooser, closed while a preview of <previewed> waits
+        on <owner>.<slow>, which the preview's thread is stuck in."""
+        from mcomix import file_chooser_base_dialog as base
+        release = threading.Event()
+        real = getattr(owner, slow)
+
+        def stuck(*args):
+            release.wait(10)
+            return real(*args)
+
+        def preview_first(dialog):
+            dialog._previewed = previewed
+            dialog._update_preview()
+
+        self.addCleanup(release.set)
+        with unittest.mock.patch.object(owner, slow, stuck):
+            def activate():
+                self._ui_action('open')()
+                pump()
+                for window in Gtk.Window.list_toplevels():
+                    if isinstance(window, base._BaseFileChooserDialog):
+                        preview_first(window)
+            self.assertFreedOnClose(activate)
+
+    def test_a_file_chooser_closed_while_a_file_is_looked_into(self):
+        """A file slow to look into, as one on a network share is, kept
+        the closed chooser alive until the thread finding its details
+        was done: the floors job on CI caught it once."""
+        from mcomix import file_chooser_base_dialog
+        self._freed_while_previewing(
+            get_testfile_path('images', 'red.png'),
+            file_chooser_base_dialog, 'file_details')
+
+    def test_a_file_chooser_closed_while_a_folder_is_looked_into(self):
+        from mcomix import file_provider
+        self._freed_while_previewing(
+            get_testfile_path('images'),
+            file_provider.OrderedFileProvider, 'list_files')
 
     def _open_library(self):
         return self._opened_by(self._ui_action('library'))

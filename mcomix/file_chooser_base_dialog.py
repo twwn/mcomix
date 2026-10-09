@@ -4,6 +4,7 @@ import os
 import shutil
 import tempfile
 import threading
+import weakref
 from gi.repository import Gdk, Gio, GLib, GObject, Gtk, Pango
 
 from collections.abc import Iterable, Iterator, Sequence
@@ -142,6 +143,55 @@ def _add_extensions(ffilter: Gtk.FileFilter, extensions: Iterable[str]) -> None:
     for extension in sorted(extensions):
         ffilter.add_suffix(extension)
 
+
+
+# The functions below run on threads of their own while the preview waits,
+# and hold the dialog by a weak reference: a file or a folder that is
+# slow to look into kept a closed dialog alive until it had been, and
+# then the idle that handed the answer over with it.
+
+def _find_details(dialog: "weakref.ref[_BaseFileChooserDialog]",
+                  path: str) -> None:
+    """Find out file_details() of <path> for <dialog>."""
+    details = file_details(path)
+    GLib.idle_add(_details_found, dialog, path, details)
+
+
+def _details_found(dialog: "weakref.ref[_BaseFileChooserDialog]",
+                   path: str, details: str) -> bool:
+    found = dialog()
+    if found is not None:
+        found._details_found(path, details)
+    return GLib.SOURCE_REMOVE
+
+
+def _find_folder_cover(dialog: "weakref.ref[_BaseFileChooserDialog]",
+                       folder: str, pixels: int) -> None:
+    """Find the first picture in <folder>, the page a folder opened as a
+    book starts on, and make its thumbnail <pixels> wide for <dialog>:
+    the folder may be large, or far away."""
+    try:
+        pictures = file_provider.OrderedFileProvider(folder).list_files(
+            file_provider.FileProvider.IMAGES)
+    except ValueError:
+        # Gone since it was selected.
+        pictures = []
+    if not pictures:
+        return
+    thumbnailer = thumbnail_tools.Thumbnailer(size=(pixels, pixels))
+    pixbuf = thumbnailer.thumbnail(pictures[0])
+    GLib.idle_add(_folder_cover_found, dialog, folder, pictures[0], pixbuf,
+                  len(pictures))
+
+
+def _folder_cover_found(dialog: "weakref.ref[_BaseFileChooserDialog]",
+                        folder: str, cover: str,
+                        pixbuf: "GdkPixbuf.Pixbuf | None",
+                        pages: int) -> bool:
+    found = dialog()
+    if found is not None:
+        found._folder_cover_found(folder, cover, pixbuf, pages)
+    return GLib.SOURCE_REMOVE
 
 class _BaseFileChooserDialog(Dialog):
 
@@ -755,15 +805,17 @@ class _BaseFileChooserDialog(Dialog):
                 archive_support=True)
             thumbnailer.thumbnail_finished += self._preview_thumbnail_finished
             thumbnailer.thumbnail(path, threaded=True)
-            thread = threading.Thread(target=self._find_details, args=(path,))
+            thread = threading.Thread(target=_find_details,
+                                      args=(weakref.ref(self), path))
             thread.name += '-preview-details'
             thread.daemon = True
             thread.start()
         else:
             self._clear_preview()
             if path and os.path.isdir(path):
-                thread = threading.Thread(target=self._find_folder_cover,
-                                          args=(path,))
+                thread = threading.Thread(
+                    target=_find_folder_cover,
+                    args=(weakref.ref(self), path, self._preview_pixels))
                 thread.name += '-preview-folder'
                 thread.daemon = True
                 thread.start()
@@ -774,24 +826,6 @@ class _BaseFileChooserDialog(Dialog):
         self._namelabel.set_text('')
         self._sizelabel.set_text('')
         self._detailslabel.set_text('')
-
-    def _find_folder_cover(self, folder: str) -> None:
-        """Find the first picture in <folder>, the page a folder opened
-        as a book starts on, and make its thumbnail, on a thread of its
-        own: the folder may be large, or far away."""
-        try:
-            pictures = file_provider.OrderedFileProvider(folder).list_files(
-                file_provider.FileProvider.IMAGES)
-        except ValueError:
-            # Gone since it was selected.
-            pictures = []
-        if not pictures:
-            return
-        thumbnailer = thumbnail_tools.Thumbnailer(
-            size=(self._preview_pixels, self._preview_pixels))
-        pixbuf = thumbnailer.thumbnail(pictures[0])
-        GLib.idle_add(self._folder_cover_found, folder, pictures[0], pixbuf,
-                      len(pictures))
 
     def _folder_cover_found(self, folder: str, cover: str,
                             pixbuf: "GdkPixbuf.Pixbuf | None",
@@ -812,11 +846,6 @@ class _BaseFileChooserDialog(Dialog):
         self._detailslabel.set_text(i18n.get_translation().ngettext(
             '%d page', '%d pages', pages) % pages)
         return GLib.SOURCE_REMOVE
-
-    def _find_details(self, path: str) -> None:
-        """Find out file_details() of <path>, on a thread of its own."""
-        details = file_details(path)
-        GLib.idle_add(self._details_found, path, details)
 
     def _details_found(self, path: str, details: str) -> bool:
         """Keep what was found out about <path>, and show it if <path> is
