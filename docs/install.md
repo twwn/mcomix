@@ -10,6 +10,8 @@ Every [release](https://github.com/twwn/mcomix/releases) has two downloads, each
 - the **MSI installer** (needs administrator rights);
 - the **portable zip**, `mcomix-win64-<version>.zip`: extract it anywhere and run `MComix.exe`.
 
+Both need 64-bit Windows 10 or 11.
+
 Or, with [Chocolatey](https://chocolatey.org/install):
 
 ```powershell
@@ -43,6 +45,8 @@ python3 -m venv --system-site-packages ~/mcomix-venv
 - [Python 3.12](https://www.python.org/) or newer
 - [GTK 4](https://www.gtk.org/), [PyGObject](https://pygobject.readthedocs.io/) 3.46.0 or newer, [pycairo](https://github.com/pygobject/pycairo) 1.25.0 or newer
 - [Pillow](https://pypi.org/project/Pillow/) 10.1.0 or newer
+
+Pages are read by Pillow, and by GTK's image loaders (gdk-pixbuf, or glycin) where Pillow cannot. A format either of them reads opens: JPEG, PNG, GIF, WebP, BMP and TIFF everywhere; JPEG XL, HEIF and others where a loader for them is installed.
 
 Optional; programs are found on the `PATH`:
 
