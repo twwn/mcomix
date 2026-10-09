@@ -1087,6 +1087,27 @@ def is_image_file(path: str) -> bool:
     return _SUPPORTED_IMAGE_REGEX.search(path) is not None
 
 
+def is_picture_file(path: str) -> bool:
+    """Return True if the file at <path> is a picture MComix can read.
+
+    A name with an extension is decided by it, as is_image_file()
+    decides, so that listing a folder opens none of its files.  A name
+    with none is a picture if Pillow knows what it holds: some
+    programs save pages without one (upstream patch 29).
+    """
+    if is_image_file(path):
+        return True
+    if os.path.splitext(path)[1] or not os.path.isfile(path):
+        return False
+    try:
+        with Image.open(path) as image:
+            return image.format in get_supported_formats()
+    except Exception:
+        # Not a picture, or not one Pillow can read; Pillow says so in
+        # more ways than an OSError.
+        return False
+
+
 def convert_rgba_to_rgba8int(colour: Sequence[float]) -> int:
     """Return <colour> as the packed integer GdkPixbuf.Pixbuf.fill() takes.
 

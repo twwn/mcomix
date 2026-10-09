@@ -241,7 +241,7 @@ class OrderedFileProvider(FileProvider):
 
         should_accept: Callable[[str], bool]
         if mode == FileProvider.IMAGES:
-            should_accept = image_tools.is_image_file
+            should_accept = image_tools.is_picture_file
         elif mode == FileProvider.ARCHIVES:
             should_accept = archive_tools.is_archive_file
         else:
@@ -368,7 +368,7 @@ class PreDefinedFileProvider(FileProvider):
                 provider = OrderedFileProvider(file)
                 for mode, listed in self.__files.items():
                     listed.extend(provider.list_files(mode))
-            elif image_tools.is_image_file(file):
+            elif image_tools.is_picture_file(file):
                 self.__files[FileProvider.IMAGES].append(os.path.abspath(file))
             elif archive_tools.is_archive_file(file):
                 self.__files[FileProvider.ARCHIVES].append(os.path.abspath(file))

@@ -405,6 +405,22 @@ class _WindowTest(MComixTest):
         super().tearDown()
 
 
+class AnExtensionlessPictureTest(_WindowTest):
+
+    """A picture with no extension, opened by itself, is shown."""
+
+    def test_it_opens_as_a_page_of_its_folder(self):
+        folder = os.path.join(self.tmp_dir, 'book')
+        os.mkdir(folder)
+        for name in ('cover', 'page'):
+            shutil.copyfile(get_testfile_path('images', 'red.png'),
+                            os.path.join(folder, name))
+        self.assertTrue(self.handler.open_file(os.path.join(folder, 'page')))
+        self.assertTrue(wait_for(
+            lambda: self.window.imagehandler.get_number_of_pages() == 2))
+        self.assertEqual(2, self.window.imagehandler.get_current_page())
+
+
 class AnArchiveThatWillNotOpenTest(_WindowTest):
 
     """An archive the extractor refuses - a format with no handler

@@ -209,6 +209,42 @@ class SortFilesTest(MComixTest):
                     FileProvider.sort_files(ordered)
                     self.assertEqual(expected, ordered)
 
+class ExtensionlessPictureTest(MComixTest):
+
+    """A picture saved without an extension is a page of its folder
+    (upstream patch 29).  Only a name with no extension is opened to
+    see what it holds: one with an extension is decided by it."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.folder = os.path.join(self.tmp_dir, 'book')
+        os.mkdir(self.folder)
+        red = get_testfile_path('images', 'red.png')
+        for name in ('page2', 'page1.png', 'page3'):
+            shutil.copyfile(red, os.path.join(self.folder, name))
+        with open(os.path.join(self.folder, 'README'), 'w') as text:
+            text.write('Not a picture.\n')
+        # A picture under an extension MComix does not read stays out:
+        # the name decides.
+        shutil.copyfile(red, os.path.join(self.folder, 'notes.txt'))
+        os.mkdir(os.path.join(self.folder, 'extras'))
+
+    def _listed(self, provider):
+        return [os.path.basename(path) for path in
+                provider.list_files(FileProvider.IMAGES)]
+
+    def test_the_folder_lists_them_in_order_with_the_others(self) -> None:
+        provider = OrderedFileProvider(os.path.join(self.folder, 'page2'))
+        self.assertEqual(['page1.png', 'page2', 'page3'],
+                         self._listed(provider))
+
+    def test_a_list_of_files_takes_them_as_pictures(self) -> None:
+        provider = PreDefinedFileProvider(
+            [os.path.join(self.folder, name)
+             for name in ('page3', 'README', 'notes.txt')])
+        self.assertEqual(['page3'], self._listed(provider))
+
+
 class PreDefinedFileProviderTest(MComixTest):
 
     """The provider for a list of files, as the command line hands one
