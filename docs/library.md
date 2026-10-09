@@ -5,7 +5,7 @@ A book is an archive in any format MComix opens; folders cannot be added.
 
 ![Library window](images/mcomix-library.png)
 
-<sub>One cover is from "The Potion of Flight", episode 1 of [Pepper&Carrot](https://www.peppercarrot.com/) by David Revoy, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), scaled down.</sub>
+<sub>The covers are from "The Potion of Flight", episode 1 of [Pepper&Carrot](https://www.peppercarrot.com/) by David Revoy, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), scaled down.</sub>
 
 ## Collections
 
