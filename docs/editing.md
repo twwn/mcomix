@@ -6,6 +6,8 @@ The archive on disk is untouched until the changes are written.
 ## In the main window
 
 - "Copy page", in the page's right-click menu, copies that page as an image and as its file's path. "Edit → Copy" copies the view: both pages, joined, in double page mode.
+- "Save As", in the page's right-click menu, saves that page to a file of its own.
+- A thumbnail dragged from the sidebar to a file manager copies that page's file there.
 - "Rename page...", in the page's menu or F2, names the page for the next save.
   - The name replaces the whole old one; the entry picks out everything but the extension.
   - A name without an extension keeps the old extension.
