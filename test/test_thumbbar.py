@@ -290,12 +290,22 @@ class ThumbnailSidebarTest(MComixTest):
         self.assertEqual([3], self._outlined(theme.MARKED_CLASS))
 
     def _no_bookmarks(self):
-        """An empty store, then and after: it is one for the process,
-        and another test's bookmarks of the same book would show."""
+        """An empty store, then and after, answering to this window.
+
+        The store is one for the process.  Another test's bookmarks of
+        the same book would show, and a test that built a bookmarks menu
+        on a stand-in window leaves the store attached to that one: the
+        store then ignores this window, a bookmark made here marks the
+        stand-in's page, and nothing here is marked.  Which tests run
+        before this one on an xdist worker decides whether that happens.
+        """
         from mcomix import bookmark_backend
         store = bookmark_backend.BookmarksStore
         store._bookmarks = []
         self.addCleanup(setattr, store, '_bookmarks', [])
+        store._initialized = False
+        store.initialize(self.window)
+        self.addCleanup(store.forget, self.window)
         return store
 
     def _badged(self):
