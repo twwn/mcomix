@@ -76,9 +76,13 @@ class Extractor:
             raise ArchiveException('the extractor has not been set up')
         return self._archive
 
-    def setup(self, src: str, dst: str,
-              type: int | None = None) -> threading.Condition:
+    def setup(self, src: str, dst: str, type: int | None = None,
+              unpacked: Iterable[str] = ()) -> threading.Condition:
         """Open the archive <src> and unpack it into <dst> from now on.
+
+        <unpacked> names the files <dst> holds already, from the last
+        time this archive was open: they are ready from the start, and
+        only the rest is unpacked.
 
         Returns the Condition that is notified after each file lands, so
         that a caller can wait on one becoming ready; is_ready() is what
@@ -92,7 +96,7 @@ class Extractor:
         """
         self._dst = dst
         self._files = []
-        self._extracted = set()
+        self._extracted = set(unpacked)
         self._archive = archive_tools.get_recursive_archive_handler(src, dst, type=type)
         if self._archive is None:
             msg = archive_tools.cannot_open(src, type)
@@ -151,6 +155,12 @@ class Extractor:
                 return
             if self._extract_started:
                 self.extract()
+
+    def unpacked(self) -> frozenset[str]:
+        """The files that are on disk, whole, by their names in the
+        archive.  One the threads were stopped over is not among them."""
+        with self._condition:
+            return frozenset(self._extracted)
 
     def is_ready(self, name: str) -> bool:
         """Return True if the file <name> in the extractor's file list
@@ -392,6 +402,9 @@ class Extractor:
             raise
         with self._condition:
             self._files = files
+            # What was unpacked the last time is ready only where the
+            # archive still lists it.
+            self._extracted.intersection_update(files)
             self._contents_listed = True
         self.contents_listed(self, files)
 

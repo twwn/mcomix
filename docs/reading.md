@@ -38,6 +38,7 @@
 - Several files picked at once open as one book of just those.
 - CTRL+SHIFT+N and CTRL+SHIFT+P open the next and previous archive in the folder. Past its last archive they go on into the next folder, as "Automatically open next directory" in the [preferences](preferences.md) describes, while that is on.
 - For a book opened from the [library](library.md), they open the next and previous of the books it shows, and stop at the last.
+- The unpacked pages of the two books closed last are kept until MComix closes, so going back to one does not unpack it again. They are dropped sooner where they would take more than half the free room in the folder books are unpacked in, and not kept for a book whose pages were changed or handed to an outside program.
 - CTRL+N and CTRL+P open the next and previous folder with a book, the same way.
 - CTRL+SHIFT+R reloads the book. If its file has been deleted, the next one in its folder opens instead, or the last one.
 - An encrypted archive asks for its password. MComix keeps it in memory until it closes, so reopening the book does not ask again. It is never written to disk, and forgotten when a page will not unpack with it.

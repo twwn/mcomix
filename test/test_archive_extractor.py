@@ -137,6 +137,47 @@ class ExtractionTest(_ExtractorTest):
         self.assertNotIn(self.MEMBERS[0], self.extractor.get_files())
 
 
+class AlreadyUnpackedTest(_ExtractorTest):
+
+    """An extractor set up over a directory that holds some of the
+    archive's files from the last time it was open."""
+
+    def setUp(self):
+        super().setUp()
+        self.extractor.close()
+        self.extractor = archive_extractor.Extractor()
+        self.condition = self.extractor.setup(
+            get_testfile_path('archives', '01-ZIP-Normal.zip'),
+            self.destination,
+            unpacked=list(self.MEMBERS[:2]) + ['images/gone.jpg'])
+        self.assertTrue(wait_for(lambda: self.extractor.get_files() is not None,
+                                 seconds=20))
+
+    def test_what_was_unpacked_is_ready_and_the_rest_is_not(self):
+        for name in self.MEMBERS:
+            with self.subTest(name=name):
+                self.assertEqual(name in self.MEMBERS[:2],
+                                 self.extractor.is_ready(name))
+
+    def test_a_file_the_archive_no_longer_lists_is_not_ready(self):
+        self.assertFalse(self.extractor.is_ready('images/gone.jpg'))
+        self.assertEqual(frozenset(self.MEMBERS[:2]),
+                         self.extractor.unpacked())
+
+    def test_only_the_rest_is_unpacked(self):
+        self.extractor.set_files(self.MEMBERS)
+        self.assertEqual(list(self.MEMBERS[2:]), self.extractor.get_files())
+        self.extractor.extract()
+        self.assertTrue(wait_for(
+            lambda: self.extractor.unpacked() == frozenset(self.MEMBERS),
+            seconds=20))
+        # Nothing wrote the two that were said to be there.
+        self.assertEqual(sorted(os.path.basename(name)
+                                for name in self.MEMBERS[2:]),
+                         sorted(os.listdir(
+                             os.path.join(self.destination, 'images'))))
+
+
 class ThreadCountTest(_ExtractorTest):
 
     """The archive says what each of its extraction threads costs."""

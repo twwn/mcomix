@@ -82,6 +82,9 @@ class OpenWithCommand:
             window.osd.show(_("'%s' is disabled for archives.") % self.get_label())
             return
 
+        # What the command does to the unpacked pages is not known.
+        window.filehandler.unpacked_pages_changed()
+
         try:
             # The command's directory is the command's own: changing
             # MComix' working directory for it would change it for every

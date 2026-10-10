@@ -86,6 +86,11 @@ class FileActions:
         self._close_offer_answered = False
         self._waiting_close = None
 
+    def pages_untouched(self) -> bool:
+        """Whether nothing has been done to the pages of the open book:
+        none taken out, moved or renamed, and none of it taken back."""
+        return not (self._undone or self._redone or self._page_names)
+
     def page_names(self) -> dict[str, str]:
         """The name each renamed page is to be written under, by path."""
         return dict(self._page_names)

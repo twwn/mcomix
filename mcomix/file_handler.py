@@ -47,8 +47,9 @@ from mcomix.library import backend
 from mcomix import i18n
 from mcomix.i18n import _
 
+from collections import OrderedDict
 from collections.abc import Iterable, Sequence
-from typing import TYPE_CHECKING
+from typing import NamedTuple, TYPE_CHECKING
 
 if TYPE_CHECKING:
     # main imports this module, so the window it is handed can only be
@@ -57,6 +58,24 @@ if TYPE_CHECKING:
 from mcomix.dialog import Response
 
 from collections.abc import Callable
+
+
+#: How many closed books keep their unpacked pages: the one before and
+#: the one after the book being read, which is where Next and Previous
+#: archive lead back to (upstream feature request 129).
+KEPT_BOOKS = 2
+
+
+class _Unpacked(NamedTuple):
+
+    """The pages of a closed book, left where they were unpacked."""
+
+    #: The temporary directory the book was unpacked into.
+    directory: str
+    #: The files in it that were whole, by their names in the archive.
+    members: frozenset[str]
+    #: What they take on disk, in bytes.
+    size: int
 
 
 def unpack_folder() -> str | None:
@@ -101,6 +120,18 @@ class FileHandler:
         self._base_path: str | None = None
         #: Temporary directory used for extracting archives.
         self._tmp_dir: str | None = None
+        #: The open archive as it was when it was opened: its path, the
+        #: time it was last written and its size.  None for a book that
+        #: is no archive, and for one whose file could not be asked.
+        self._archive_stamp: "tuple[str, int, int] | None" = None
+        #: Whether the unpacked pages are still what the archive holds.
+        self._pages_as_unpacked = True
+        #: The unpacked pages of the books closed last, by what each
+        #: archive was when it was opened, the oldest first.  False once
+        #: the window is closing, when nothing more is kept.
+        self._kept: "OrderedDict[tuple[str, int, int], _Unpacked]" = \
+            OrderedDict()
+        self._keeping = True
         #: Set when the file is closed, so that a thread waiting on an
         #: extraction gives up instead of waiting for a file that is no
         #: longer coming.
@@ -395,6 +426,12 @@ class FileHandler:
                 else:
                     current_image_index = 0
             else:
+                # The pages kept from the last time the book was open
+                # are there already, and no extraction will say so.
+                kept = [path for path, name in self._name_table.items()
+                        if self._extractor.is_ready(name)]
+                if kept:
+                    self.file_available(kept)
                 last_image_index = self._get_index_for_page(self._start_page,
                                                             len(image_files),
                                                             current_file)
@@ -440,6 +477,11 @@ class FileHandler:
                 self.write_fileinfo_file()
             else:
                 self._extractor.extract()
+                if self._extractor.get_files() == []:
+                    # Every member was unpacked the last time the book
+                    # was open: the archive is let go at once, as
+                    # _extracted_file() lets it go after the last one.
+                    self._extractor.close()
                 if last_image_index == current_image_index:
                     self.write_fileinfo_file()
                 else:
@@ -499,6 +541,7 @@ class FileHandler:
                     self._stop_waiting = True
                     self._archive_condition.notify_all()
                 self._extractor.close()
+                self._put_away()
             self._window.imagehandler.cleanup()
             self.file_loaded = False
             self.file_loading = False
@@ -591,16 +634,108 @@ class FileHandler:
         later question about a file cannot find a half-open archive.
         """
 
-        self._tmp_dir = tempfile.mkdtemp(prefix='mcomix.', suffix=os.sep,
-                                         dir=unpack_folder())
         self._base_path = path
+        self._archive_stamp = self._stamp(path)
+        self._pages_as_unpacked = True
+        kept = self._kept.pop(self._archive_stamp, None) \
+            if self._archive_stamp is not None else None
+        # The pages of the file that was here before it was written
+        # again are of no book any more.
+        for stamp in [stamp for stamp in self._kept if stamp[0] == path]:
+            self.thread_delete(self._kept.pop(stamp).directory)
+        if kept is None:
+            self._tmp_dir = tempfile.mkdtemp(prefix='mcomix.', suffix=os.sep,
+                                             dir=unpack_folder())
+            unpacked: set[str] = set()
+        else:
+            # The book was open a moment ago and its archive is as it
+            # was: what was unpacked then is not unpacked again.  Only
+            # what is still there, a temporary folder being one that
+            # other programs tidy.
+            self._tmp_dir = kept.directory
+            unpacked = {
+                member for member in kept.members if os.path.isfile(
+                    os.path.join(kept.directory, os.path.normpath(member)))}
         try:
             self._condition = self._extractor.setup(self._base_path,
                                                     self._tmp_dir,
-                                                    self.archive_type)
+                                                    self.archive_type,
+                                                    unpacked)
         except Exception:
             self._condition = None
             raise
+
+    @staticmethod
+    def _stamp(path: str) -> "tuple[str, int, int] | None":
+        """What tells the archive at <path> from the same file once it
+        has been written again, or None where the file cannot be asked."""
+        try:
+            status = os.stat(path)
+        except OSError:
+            return None
+        return os.path.abspath(path), status.st_mtime_ns, status.st_size
+
+    def unpacked_pages_changed(self) -> None:
+        """Say that the unpacked pages may no longer be what the archive
+        holds - an outside program has been run on them - so that they
+        are not kept for the next time the book is opened."""
+        self._pages_as_unpacked = False
+
+    def _put_away(self) -> None:
+        """Keep the unpacked pages of the archive that is closing, for
+        the next time it is opened in this session.
+
+        Going back to the book before, or on again to the one just
+        left, unpacked the whole archive a second time, into a new
+        directory, while the first was being deleted (upstream feature
+        request 129).  The pages are kept where the archive is the file
+        it was when it was opened and nothing has touched them: no page
+        was taken out, moved or renamed, and no outside program run.
+        Otherwise the directory is left for _close() to delete.
+        """
+        directory, stamp = self._tmp_dir, self._archive_stamp
+        self._archive_stamp = None
+        if not self._keeping or directory is None or stamp is None \
+                or self._condition is None or not self._pages_as_unpacked \
+                or not self._window.file_actions.pages_untouched() \
+                or stamp != self._stamp(stamp[0]):
+            return
+        members = self._extractor.unpacked()
+        if not members:
+            return
+        self._tmp_dir = None
+        self._kept[stamp] = _Unpacked(directory, members,
+                                      tools.directory_size(directory))
+        self._trim_kept()
+
+    def _trim_kept(self) -> None:
+        """Delete the oldest of the kept pages while there are more
+        books of them than KEPT_BOOKS, or while they take more than
+        half of what would be free without them.
+
+        A temporary folder is often memory, and a book of a thousand
+        pages a gigabyte of it: what is kept for a reader who may come
+        back is not to be what the next book has no room for.
+        """
+        while self._kept:
+            kept = sum(book.size for book in self._kept.values())
+            newest = next(reversed(self._kept.values()))
+            try:
+                free = shutil.disk_usage(newest.directory).free
+            except OSError:
+                free = kept
+            if len(self._kept) <= KEPT_BOOKS and kept <= (free + kept) // 2:
+                break
+            _stamp, oldest = self._kept.popitem(last=False)
+            self.thread_delete(oldest.directory)
+
+    def discard_kept_pages(self) -> None:
+        """Delete the unpacked pages of every closed book, and keep none
+        from now on: the window is closing."""
+        self._keeping = False
+        while self._kept:
+            _stamp, book = self._kept.popitem()
+            self.thread_delete(book.directory)
 
     def _listed_contents(self, archive: archive_extractor.Extractor,
                          files: list[str]) -> None:

@@ -2084,6 +2084,7 @@ class MainWindow(Gtk.Window):
         # question raised from here would never be answered.
         self.file_actions.forget_changes()
         edit_dialog.close_dialog()
+        self.filehandler.discard_kept_pages()
         self.filehandler.close_file()
         library = main_dialog.get_dialog()
         if library is not None:

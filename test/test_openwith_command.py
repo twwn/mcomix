@@ -45,6 +45,12 @@ class _StubFileHandler:
     def get_base_filename(self):
         return ''
 
+    #: Whether a command has been run on the pages.
+    pages_changed = False
+
+    def unpacked_pages_changed(self):
+        self.pages_changed = True
+
 
 class _StubWindow:
 
@@ -178,6 +184,17 @@ class ExecuteTest(MComixTest):
             ['viewer', 'page.jpg'], stdout=openwith.process.NULL,
             workdir=self.tmp_dir)
         self.assertEqual([], self.window.osd.shown)
+
+    def test_a_command_run_leaves_the_pages_not_known_to_be_the_archive_s(self):
+        """What it did to the unpacked files is not known, so they are
+        not kept for the next time the book is opened; one that is kept
+        from archives and never ran has done nothing."""
+        self.window.filehandler.archive_type = 1
+        self._command('editor', disabled_for_archives=True).execute(
+            self.window)
+        self.assertFalse(self.window.filehandler.pages_changed)
+        self._command('viewer %f').execute(self.window)
+        self.assertTrue(self.window.filehandler.pages_changed)
 
     def test_a_directory_that_is_not_there_is_not_run_in(self):
         self._command('viewer', cwd='/no/such/directory').execute(self.window)

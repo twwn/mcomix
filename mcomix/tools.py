@@ -459,6 +459,19 @@ def relocated(path: str, old_folder: str, new_folder: str) -> "str | None":
     return folder_prefix(new_folder) + path[len(old):]
 
 
+def directory_size(path: str) -> int:
+    """How many bytes the files under <path> hold, by their own sizes.
+    A file that cannot be asked counts as nothing."""
+    total = 0
+    for folder, _folders, files in os.walk(path):
+        for name in files:
+            try:
+                total += os.lstat(os.path.join(folder, name)).st_size
+            except OSError:
+                pass
+    return total
+
+
 def replaced_path(path: str) -> str:
     """The file to rename a new version over, to replace <path>.
 

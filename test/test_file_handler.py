@@ -22,6 +22,7 @@ from mcomix import file_handler
 from mcomix import icons
 from mcomix import main
 from mcomix import message_dialog
+from mcomix import tools
 from mcomix.dialog import Response
 from mcomix.preferences import prefs
 
@@ -781,6 +782,142 @@ class AnUnpackedArchiveIsLetGoTest(_WindowTest):
         self.window.set_page(pages)
         pump()
         self.assertEqual(pages, self.window.imagehandler.get_current_page())
+
+
+class UnpackedPagesKeptTest(_WindowTest):
+
+    """Going back to the book before, or on again to the one just left,
+    unpacked the whole archive a second time into a new directory while
+    the first was being deleted (upstream feature request 129)."""
+
+    def setUp(self):
+        super().setUp()
+        self.books = []
+        for name in ('1.cbz', '2.cbz', '3.cbz', '4.cbz'):
+            book = os.path.join(self.tmp_dir, name)
+            shutil.copy2(get_testfile_path('archives', '01-ZIP-Normal.zip'),
+                         book)
+            self.books.append(book)
+
+    def _open(self, number):
+        """Open book <number>, wait until every page of it is on disk,
+        and say where that is."""
+        self.assertTrue(self.handler.open_file(self.books[number - 1]))
+        self.assertTrue(wait_for(
+            lambda: self.handler.file_loaded
+            and self.handler._extractor.get_files() == []
+            and self.window.imagehandler.page_is_available(), seconds=20),
+            'book %d was never unpacked' % number)
+        return self.handler._tmp_dir
+
+    def _gone(self, directory):
+        return wait_for(lambda: not os.path.exists(directory))
+
+    def test_a_book_gone_back_to_is_not_unpacked_again(self):
+        first = self._open(1)
+        pages = sorted(os.listdir(first))
+        self._open(2)
+        with mock.patch.object(
+                archive_extractor.Extractor, '_extraction_finished',
+                autospec=True) as unpacked:
+            self.assertEqual(first, self._open(1))
+        unpacked.assert_not_called()
+        self.assertEqual(pages, sorted(os.listdir(first)))
+        # And its pages are there to be shown.
+        last = self.window.imagehandler.get_number_of_pages()
+        self.assertGreater(last, 2)
+        self.window.set_page(last)
+        pump()
+        self.assertTrue(self.window.imagehandler.page_is_available(last))
+
+    def test_the_archive_gone_back_to_is_let_go_at_once(self):
+        """Nothing more is read from it, as once its last member is
+        out: Windows moves and deletes no file that is open."""
+        self._open(1)
+        self._open(2)
+        self._open(1)
+        self.assertEqual([], _descriptors_on(self.books[0]))
+
+    def test_a_book_written_since_is_unpacked_anew(self):
+        first = self._open(1)
+        self._open(2)
+        status = os.stat(self.books[0])
+        os.utime(self.books[0], ns=(status.st_atime_ns,
+                                    status.st_mtime_ns + 2_000_000_000))
+        self.assertNotEqual(first, self._open(1))
+        self.assertTrue(self._gone(first))
+
+    def test_a_book_written_while_it_was_open_is_not_kept(self):
+        """Its pages are those of a file that is no longer there, and
+        nothing would ever ask for them again."""
+        first = self._open(1)
+        status = os.stat(self.books[0])
+        os.utime(self.books[0], ns=(status.st_atime_ns,
+                                    status.st_mtime_ns + 2_000_000_000))
+        self._open(2)
+        self.assertTrue(self._gone(first))
+        self.assertEqual(0, len(self.handler._kept))
+
+    def test_pages_that_were_changed_are_not_kept(self):
+        """A page taken out, moved or renamed, or an outside program
+        run on the unpacked files: what is on disk is then not known to
+        be what the archive holds."""
+        first = self._open(1)
+        # What a page taken out and put back with Undo leaves: nothing
+        # to write, and a book that has been worked on.
+        self.window.file_actions._redone.append(
+            self.window.imagehandler.get_image_files())
+        self.assertFalse(self.window.file_actions.pages_untouched())
+        self._open(2)
+        self.assertTrue(self._gone(first))
+
+        second = self.handler._tmp_dir
+        self.handler.unpacked_pages_changed()
+        self.assertNotEqual(first, self._open(1))
+        self.assertTrue(self._gone(second))
+
+    def test_a_page_that_has_gone_from_the_folder_is_unpacked_again(self):
+        """A temporary folder is one other programs tidy."""
+        first = self._open(1)
+        page = self.window.imagehandler.get_path_to_page(1)
+        self._open(2)
+        os.remove(page)
+        self.assertEqual(first, self._open(1))
+        self.assertTrue(os.path.isfile(page))
+
+    def test_the_two_books_closed_last_are_kept_and_no_more(self):
+        first, second, third = self._open(1), self._open(2), self._open(3)
+        self._open(4)
+        self.assertTrue(self._gone(first))
+        self.assertTrue(os.path.isdir(second))
+        self.assertTrue(os.path.isdir(third))
+        self.assertEqual(file_handler.KEPT_BOOKS, len(self.handler._kept))
+
+    def test_they_are_not_kept_at_the_cost_of_the_room_left(self):
+        """A temporary folder is often memory: kept pages may take half
+        of what would be free without them, and no more."""
+        first = self._open(1)
+        size = tools.directory_size(first)
+        self.assertGreater(size, 0)
+        usage = shutil.disk_usage(first)
+        for free, kept in ((size, True), (size - 1, False)):
+            with self.subTest(free=free):
+                with mock.patch.object(
+                        file_handler.shutil, 'disk_usage',
+                        return_value=usage._replace(free=free)):
+                    self._open(2)
+                self.assertEqual(kept, os.path.isdir(first)
+                                 and bool(self.handler._kept))
+                first = self._open(1)
+
+    def test_closing_the_window_keeps_none(self):
+        first, second = self._open(1), self._open(2)
+        self.handler.discard_kept_pages()
+        self.assertTrue(self._gone(first))
+        self.handler.close_file()
+        pump()
+        self.assertTrue(self._gone(second))
+        self.assertEqual(0, len(self.handler._kept))
 
 
 class ABookOpenedAtItsEndTest(_WindowTest):
