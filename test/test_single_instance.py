@@ -55,6 +55,18 @@ print(json.dumps(instance.hand_over(
 '''
 
 
+def _keep_the_environment(test):
+    """Put the environment back when <test> is over.
+
+    On Windows a SingleInstance sets the address of the session bus for
+    the process where none is set, and the process here is a worker
+    that runs every later test.
+    """
+    patcher = unittest.mock.patch.dict(os.environ)
+    patcher.start()
+    test.addCleanup(patcher.stop)
+
+
 @unittest.skipIf(sys.platform == 'win32' or not shutil.which('dbus-daemon'),
                  'needs a session bus to start')
 class HandOverTest(MComixTest):
@@ -141,6 +153,7 @@ class ServeTest(MComixTest):
 
     def setUp(self):
         super().setUp()
+        _keep_the_environment(self)
         self.instance = single_instance.SingleInstance(
             'io.github.twwn.mcomix.Test%d' % os.getpid())
         self.calls = []
@@ -200,6 +213,17 @@ class ServeTest(MComixTest):
             single_instance.SingleInstance(name)
             self.assertNotIn('DBUS_SESSION_BUS_ADDRESS', os.environ)
 
+    def test_the_address_it_set_does_not_outlive_the_test(self):
+        before = os.environ.get('DBUS_SESSION_BUS_ADDRESS')
+
+        class Inner(unittest.TestCase):
+            def runTest(inner):
+                _keep_the_environment(inner)
+                os.environ['DBUS_SESSION_BUS_ADDRESS'] = 'autolaunch:'
+
+        self.assertTrue(Inner().run().wasSuccessful())
+        self.assertEqual(before, os.environ.get('DBUS_SESSION_BUS_ADDRESS'))
+
     def test_the_flatpak_goes_by_its_own_name(self):
         with unittest.mock.patch.dict(os.environ, {'FLATPAK_ID': 'io.x.App'}):
             self.assertEqual('io.x.App', single_instance.application_id())
@@ -212,6 +236,10 @@ class ServeTest(MComixTest):
 class StartTest(MComixTest):
 
     """Whether an MComix that is starting asks at all."""
+
+    def setUp(self):
+        super().setUp()
+        _keep_the_environment(self)
 
     def _asks(self, *arguments):
         opts, _args = run.parse_arguments(list(arguments))
