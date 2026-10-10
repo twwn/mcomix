@@ -132,6 +132,32 @@ class SmartScrollTest(unittest.TestCase):
         self.assertFalse(result.has_page_abreast_left(False))
         self.assertTrue(result.has_page_abreast_left(True))
 
+    def test_one_picture_of_two_facing_pages_is_read_as_two(self):
+        """A scan of a spread is one Box, and the window says it stands
+        for two pages (the sample files of upstream feature request
+        124)."""
+        result = layout.FiniteLayout(
+            [[200, 300]], [False], (200, 100),
+            constants.MANGA_ORIENTATION, 0, False,
+            constants.DISTRIBUTION_AXIS, constants.ALIGNMENT_AXIS)
+        self.assertEqual(1, result.pages_abreast())
+        result.spread_pages = 2
+        result.scroll_to_predefined((constants.SCROLL_TO_START,) * 2,
+                                    constants.FIRST_INDEX)
+        self.assertEqual(2, result.pages_abreast())
+        self._steps(result, 3)
+        self.assertTrue(result.has_page_abreast_left(False))
+        result.read_next_page_abreast(False)
+        self.assertEqual((0, 0),
+                         tuple(result.get_viewport_box().get_position()))
+        self._steps(result, 3)
+        self.assertFalse(result.has_page_abreast_left(False))
+        # Turned back to, it is on its second page.
+        result.reading_pass = 0
+        result.scroll_to_predefined((constants.SCROLL_TO_END,) * 2,
+                                    constants.LAST_INDEX)
+        self.assertTrue(result.has_page_abreast_left(True))
+
     def test_pages_that_scrolling_tells_apart_are_not_read_twice(self):
         for name, result in (
                 ('fits', self._spread(viewport=(200, 300))),

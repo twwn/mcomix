@@ -35,7 +35,7 @@ Prompts answered for good | Every prompt whose answer can be remembered, with it
 
 Option | Explanation
 -------|------------
-Use smart scrolling | Space and the mouse wheel follow a comic page's reading order: sideways, down, sideways again. A page that cannot scroll sideways, as in "Fit to width", scrolls down only. Two pages side by side that scroll down only are read one after the other: the second from its top once the first is at its bottom.
+Use smart scrolling | Space and the mouse wheel follow a comic page's reading order: sideways, down, sideways again. A page that cannot scroll sideways, as in "Fit to width", scrolls down only. Two pages side by side that scroll down only are read one after the other: the second from its top once the first is at its bottom. A wide page shown alone in double page mode counts as two.
 Flip pages when scrolling off the edges of the page | Scrolling past a page's end, with the wheel or the arrow keys, turns it.
 Flip pages with a left click | A left click on the page turns to the next one. Off, it does nothing; SHIFT+LeftMouse and ALT+RightMouse still turn pages, and a double click enters or leaves fullscreen.
 Where a click lands | With the one above. "Anywhere: the next page", the default. "Halves": the left half turns back, the right half forward. "Thirds": the left third back, the right third forward, the middle third enters or leaves fullscreen, for touch screens. Manga mode swaps left and right.

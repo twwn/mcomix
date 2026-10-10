@@ -111,6 +111,9 @@ class FiniteLayout:  # 2D only
         #: Which of the pages standing side by side is being read, where
         #: scrolling cannot tell: see pages_abreast().
         self.reading_pass = 0
+        #: How many pages the content stands for, where that is more
+        #: than its Boxes: a single scan of two facing pages is two.
+        self.spread_pages: int | None = None
         self._reset(content_sizes, content_distorted, viewport_size, orientation,
                     spacing, wrap_individually, distribution_axis, alignment_axis)
 
@@ -185,7 +188,7 @@ class FiniteLayout:  # 2D only
         elif index == constants.LAST_INDEX:
             # Arrived at from the page after it, so the last of the
             # pages side by side is the one being read.
-            self.reading_pass = len(self.content_boxes) - 1
+            self.reading_pass = self._pages() - 1
         if index is None:
             index = self.get_current_index()
         if not self.wrap_individually:
@@ -206,11 +209,12 @@ class FiniteLayout:  # 2D only
         Two pages side by side that fit the window's width and not its
         height scroll as one: down, and that is the end of them.  They
         are read as two all the same, the first to its bottom and then
-        the second from its top (upstream feature request 124).  One
-        wherever scrolling already tells the pages apart, or there is
-        nothing to scroll.
+        the second from its top (upstream feature request 124).  So is
+        one picture holding both pages, which the window says through
+        <spread_pages>.  One wherever scrolling already tells the pages
+        apart, or there is nothing to scroll.
         """
-        if self.wrap_individually or len(self.content_boxes) < 2:
+        if self.wrap_individually or self._pages() < 2:
             return 1
         across = self._distribution_axis
         along = 1 - across  # 2D only
@@ -218,7 +222,10 @@ class FiniteLayout:  # 2D only
         union = self.union_box.get_size()
         if union[across] > viewport[across] or union[along] <= viewport[along]:
             return 1
-        return len(self.content_boxes)
+        return self._pages()
+
+    def _pages(self) -> int:
+        return self.spread_pages or len(self.content_boxes)
 
     def _page_abreast_after(self, backwards: bool) -> "int | None":
         abreast = self.pages_abreast()

@@ -1080,6 +1080,29 @@ class MainWindowTest(MComixTest):
         prefs['number of key presses before page turn'] = 3
         return self.window.event_handler
 
+    def test_a_wide_page_alone_in_double_page_mode_counts_as_a_spread(self):
+        """One picture of two facing pages is what double page mode
+        shows alone, and it is read as the two pages it holds."""
+        def laid_out(name):
+            self.window.filehandler.open_file(
+                get_testfile_path('images', name))
+            self.assertTrue(wait_for(
+                lambda: self.window.imagehandler.get_number_of_pages() > 2
+                and os.path.basename(
+                    self.window.imagehandler.get_path_to_page() or '') == name
+                and not self.window._waiting_for_redraw
+                and len(self.window.layout.get_content_boxes()) == 1,
+                seconds=20), name)
+            return self.window.layout.spread_pages
+
+        self.assertIsNone(laid_out('landscape-no-exif.png'),
+                          'read twice with one page to a view')
+        self.window.actiongroup.get_action('double_page').activate()
+        try:
+            self.assertEqual(2, laid_out('landscape-no-exif.png'))
+        finally:
+            prefs['default double page'] = False
+
     def test_space_reads_the_second_page_of_a_spread_before_turning(self):
         """Two pages side by side that fit the window's width scroll
         down only, and the bottom of the first was followed by the next

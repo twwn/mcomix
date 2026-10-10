@@ -53,7 +53,7 @@ Show magnifying lens | L, MiddleMouse
 Show OSD panel | TAB, ForwardMouse
 
 - The wheel scrolls smartly only with "Use smart scrolling" on; otherwise by a fixed number of pixels.
-- Two pages side by side that scroll down only: smart scrolling reads the first to its bottom, then the second from its top. The wheel waits there as it does before a page turn.
+- Two pages side by side that scroll down only: smart scrolling reads the first to its bottom, then the second from its top. The wheel waits there as it does before a page turn. A wide page shown alone in double page mode is read the same way.
 - Tilted, or swiped sideways on a touchpad, it scrolls across a wide page and turns it at the side, like the arrow keys.
 
 ## The view

@@ -612,6 +612,12 @@ class MainWindow(Gtk.Window):
                 self.thumbnailsidebar.change_thumbnail_background_color(
                     bg_colour, dynamic=True)
 
+            if (pixbuf_count == 1 and prefs['default double page']
+                    and size_list[0][distribution_axis]
+                    > size_list[0][alignment_axis]):
+                # A page wider than high, alone in double page mode, is
+                # a scan of two facing pages, and is read as two.
+                self.layout.spread_pages = 2
             content_size = self.layout.get_union_box().get_size()
             if scroll_to is None:
                 # The same pages again, so the one of a spread that was
