@@ -1,3 +1,4 @@
+import statistics
 import time
 
 from gi.repository import Gdk, GdkPixbuf, Gtk
@@ -145,8 +146,8 @@ class PageImageTest(MComixTest):
         # to last, so thirty frames a second came out as fifteen; with
         # the wait counted from when the frame was due, decoding it is
         # paid for once rather than twice.
-        cost = delay = 30
-        frames = _SlowFrames(cost, delay)
+        delay = 40
+        frames = _SlowFrames(50, delay)
         original = animation.frames
         animation.frames = lambda *args: frames
         try:
@@ -156,14 +157,24 @@ class PageImageTest(MComixTest):
             drawn = []
             self.image.get_paintable().connect(
                 'invalidate-contents', lambda *args: drawn.append(1))
-            # A second of 30 ms frames is 33 of them when the decode
-            # comes out of the frame's own time, and 16 when it is
-            # added to it - which is what this measured before.
-            wait_for(lambda: len(drawn) >= 25, seconds=1)
+            wait_for(lambda: len(frames.started) > 10, seconds=3)
         finally:
             animation.frames = original
-        self.assertGreaterEqual(
-            len(drawn), 25,
+        started, costs = list(frames.started), list(frames.costs)
+        self.assertGreater(len(started), 10, 'the page did not animate')
+        self.assertTrue(drawn, 'no frame reached the page')
+        # From one decode starting to the next, against what the decode
+        # itself took as measured here: 50 ms against 50, and 90 with
+        # the frame waited out first.  Not a count of frames drawn in a
+        # second by the clock, which a slow machine lowers whatever the
+        # page does: held to 25 of 33, it came to 23 on the Windows
+        # runner.  The decode is the longer of the two, so the wait for
+        # the frame is over when it ends and no timer comes into it.
+        period = statistics.median(
+            later - sooner for sooner, later in zip(started, started[1:]))
+        cost = statistics.median(costs)
+        self.assertLess(
+            period, cost + delay / 2000,
             'the page paid for decoding each frame on top of showing it')
 
     def assertTextureMatches(self, texture, pixbuf):
@@ -322,12 +333,18 @@ class _SlowFrames(animation.Frames):
     def __init__(self, cost, delay):
         self._cost = cost
         self._delay = delay
+        #: When each decode began and how long it took, in seconds.
+        self.started = []
+        self.costs = []
         pixbuf = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, False, 8, 4, 4)
         pixbuf.fill(0)
         self._texture = image_tools.pixbuf_to_texture(pixbuf)
 
     def next(self):
+        began = time.perf_counter()
         time.sleep(self._cost / 1000.0)
+        self.started.append(began)
+        self.costs.append(time.perf_counter() - began)
         return self._texture, self._delay
 
 # vim: expandtab:sw=4:ts=4
