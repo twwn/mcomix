@@ -208,6 +208,9 @@ class ThumbnailSidebar(Gtk.ScrolledWindow, widgets.Releasable):
                 self.refilter()
         return GLib.SOURCE_REMOVE
 
+    #: How faint the thumbnail of a page marked to be passed over is.
+    _SKIPPED_OPACITY = 0.35
+
     def _style_cell(self, picture: Gtk.Picture, row: int) -> None:
         """Outline the thumbnail of a page picked out or marked to swap,
         as the main view outlines the page itself."""
@@ -220,6 +223,12 @@ class ThumbnailSidebar(Gtk.ScrolledWindow, widgets.Releasable):
                 picture.add_css_class(css_class)
             else:
                 picture.remove_css_class(css_class)
+        # A page marked to be passed over stays in the list, where the
+        # mark can be taken off, and is drawn faint.
+        picture.set_opacity(
+            self._SKIPPED_OPACITY
+            if page is not None and self._window.imagehandler.is_skipped(page)
+            else 1.0)
 
     def restyle(self) -> None:
         """Outline again the thumbnails of the pages picked out or marked,

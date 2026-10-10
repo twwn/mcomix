@@ -367,8 +367,8 @@ _POPUP = (
     # The menu is opened on a page, so what is done to that page leads
     # (upstream feature requests 98 and 105).
     'copy_page_popup', 'extract_page_popup',
-    'rename_page_popup', 'delete_page_popup', 'remove_bookmark_popup',
-    'unpick_pages',
+    'rename_page_popup', 'delete_page_popup', 'skip_page_popup',
+    'remove_bookmark_popup', 'unpick_pages',
     None,
     ('menu_go_popup', ('next_page', 'previous_page', 'go_to',
                        'first_page', 'last_page', None,
@@ -525,6 +525,9 @@ class MainUI:
             _Entry('fullscreen', 'view-fullscreen-symbolic', _('_Fullscreen'), _('Fullscreen mode'), window.change_fullscreen),
             _Entry('double_page', 'view-dual-symbolic', _('_Double page mode'), _('Double page mode'), window.change_double_page),
             _Entry('title_page_alone', None, _('_Title page alone'), None, window.change_title_page_alone),
+            _Entry('skip_page_popup', None, _('Skip this page'),
+                   _('Passes this page over when the pages are turned. The book is not changed.'),
+                   window.change_skip_page),
             _Entry('toolbar', None, _('_Toolbar'), None, window.change_toolbar_visibility),
             _Entry('menubar', None, _('_Menubar'), None, window.change_menubar_visibility),
             _Entry('statusbar', None, _('St_atusbar'), None, window.change_statusbar_visibility),
@@ -781,6 +784,7 @@ class MainUI:
                    'extract_page_popup',
                    'copy_page_popup',
                    'rename_page_popup',
+                   'skip_page_popup',
                    'delete_page_popup',
                    'undo',
                    'redo',

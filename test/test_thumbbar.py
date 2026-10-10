@@ -271,6 +271,27 @@ class ThumbnailSidebarTest(MComixTest):
             seconds=20))
         pump()
 
+    def _faint(self):
+        return sorted(cell.position + 1
+                      for cell in self.sidebar._list._each_cell()
+                      if cell.position >= 0
+                      and cell.picture.get_opacity() < 1)
+
+    def test_a_page_to_be_skipped_keeps_a_faint_thumbnail(self):
+        """The thumbnail is where the mark is taken off again, so the
+        page stays in the list."""
+        self._ready()
+        self.assertEqual([], self._faint())
+        toggle = unittest.mock.Mock()
+        for marked, faint in ((True, [2]), (False, [])):
+            toggle.get_active.return_value = marked
+            self.window.popup_page = 2
+            self.window.change_skip_page(toggle)
+            pump()
+            self.assertEqual(faint, self._faint())
+            self.assertEqual(self._pages(),
+                             len(list(self.sidebar._list._each_cell())))
+
     def test_a_page_picked_out_is_outlined_in_the_sidebar(self):
         from mcomix import theme
         self._ready()

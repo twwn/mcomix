@@ -13,6 +13,7 @@ from mcomix import thumbnail_tools
 from mcomix import constants
 from mcomix import callback
 from mcomix import log
+from mcomix import page_marks
 from mcomix.worker_thread import WorkerThread
 
 from collections.abc import Iterable
@@ -205,7 +206,8 @@ class ImageHandler:
         preference is set, and one of the two images that should normally
         be displayed has a width that exceeds its height), or if currently
         on the first page.  With "skip broken pages" set, also where one
-        of the two has been read and would not load.
+        of the two has been read and would not load, and always where
+        one of the two is marked to be passed over.
         """
         if page is None:
             page = self.get_current_page()
@@ -222,6 +224,13 @@ class ImageHandler:
             # beside it can be turned past.
             return True
 
+        if (prefs['default double page']
+                and page < self.get_number_of_pages()
+                and (self.is_skipped(page) or self.is_skipped(page + 1))):
+            # Shown on its own for the same reason: the page beside it
+            # is one the reader has marked to be passed over.
+            return True
+
         if (not prefs['default double page'] or
                 not prefs['virtual double page for fitting images'] & constants.SHOW_DOUBLE_AS_ONE_WIDE or
                 page == self.get_number_of_pages()):
@@ -234,6 +243,15 @@ class ImageHandler:
                 return True
 
         return False
+
+    def is_skipped(self, page: int) -> bool:
+        """Whether the reader has marked <page> to be passed over when
+        the pages are turned (page_marks.SKIP)."""
+        if not self._window.filehandler.file_loaded:
+            return False
+        identity = self._window.filehandler.page_identity(page)
+        return identity is not None and page_marks.marked(
+            *identity, page_marks.SKIP)
 
     def is_broken(self, page: int) -> bool:
         """Whether <page> has been read, and would not load.

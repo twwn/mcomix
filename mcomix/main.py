@@ -38,6 +38,7 @@ from mcomix import bookmark_backend
 from mcomix import message_dialog
 from mcomix import callback
 from mcomix.library import backend, main_dialog
+from mcomix import page_marks
 from mcomix import page_rotations
 from mcomix import tools
 from mcomix import box
@@ -479,14 +480,20 @@ class MainWindow(Gtk.Window):
             # the room there is, whatever size it was read at: it is
             # drawn again at the size it is laid out at, below.
             missing = [image_tools.is_missing_image(x) for x in pixbuf_list]
-            if prefs['skip broken pages'] and not self._skip_gave_up and (
-                    missing[0] or (any(missing) and not self.displayed_double())):
+            # A page the reader has marked to be passed over is turned
+            # past as one that would not load is.
+            passed_over = self.imagehandler.is_skipped(
+                self.imagehandler.get_current_page())
+            if not self._skip_gave_up and (passed_over or (
+                    prefs['skip broken pages'] and (
+                        missing[0]
+                        or (any(missing) and not self.displayed_double())))):
                 # Unless the reader would rather not see it.  A first
                 # page that would not load is turned past; a second one
                 # leaves the first on its own, now that it has been read
                 # and get_virtual_double_page() knows it for what it is.
                 self._waiting_for_redraw = False
-                if missing[0]:
+                if passed_over or missing[0]:
                     self._skip_broken_page()
                 else:
                     self.draw_image(scroll_to=scroll_to)
@@ -1735,6 +1742,33 @@ class MainWindow(Gtk.Window):
                 return current + offset
         return None
 
+    def change_skip_page(self, toggleaction: "ui.Action") -> None:
+        """Mark the page the right-click menu was opened over to be
+        passed over when the pages are turned, or take the mark off.
+
+        The page on screen where the menu was opened over none.  The
+        book is not changed: the mark is kept apart from it
+        (page_marks), and the page keeps its place and its thumbnail,
+        which is where the mark is taken off again.
+        """
+        if not self.filehandler.file_loaded:
+            return
+        current = self.imagehandler.get_current_page()
+        page = self.popup_page if self.popup_page is not None else current
+        identity = self.filehandler.page_identity(page)
+        if identity is None:
+            return
+        page_marks.mark(*identity, page_marks.SKIP, toggleaction.get_active())
+        self.thumbnailsidebar.restyle()
+        # Marked while on screen, the page is turned past at once, the
+        # way the reader was going; at an end of the book the search
+        # turns round rather than opening the next book.
+        self._skip_origin = current
+        self._skip_turning = False
+        self._skip_reversed = False
+        self._skip_gave_up = False
+        self.draw_image()
+
     def show_page_menu(self, widget: Gtk.Widget, x: float, y: float,
                        page: int | None) -> None:
         """Open the right-click menu at <x>, <y> on <widget>, for <page>.
@@ -1746,6 +1780,10 @@ class MainWindow(Gtk.Window):
         page.
         """
         self.popup_page = page
+        self.actiongroup.get_action('skip_page_popup').show_active(
+            self.imagehandler.is_skipped(
+                page if page is not None
+                else self.imagehandler.get_current_page()))
         self.actiongroup.get_action('remove_bookmark_popup').set_sensitive(
             page is not None
             and page in bookmark_backend.BookmarksStore.pages_marked())

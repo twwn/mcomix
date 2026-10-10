@@ -23,6 +23,8 @@
 - The right-click menu leads with what can be done to the page it was opened on. It leaves out what cannot be done there.
 - "File → Properties" describes the page and its archive, with series, issue, title and writer from a ComicInfo.xml.
 - "File → Open containing folder" shows the open file in the file manager. The right-click menu has it too.
+- "Skip this page", in the page's right-click menu, passes an advertisement or a blank page over when the pages are turned. The book is not changed.
+  The page keeps its thumbnail, drawn faint; untick "Skip this page" there to read it again.
 - "Move to", in the page's right-click menu, moves the open file or archive to another folder.
   Its place in the library, last page, bookmarks and recent-files entry follow it.
 

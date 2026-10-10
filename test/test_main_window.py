@@ -3110,6 +3110,82 @@ class MainWindowTest(MComixTest):
     def _page(self):
         return self.window.imagehandler.get_current_page()
 
+    def _turned_to(self, page):
+        self.assertTrue(
+            wait_for(lambda: self._page() == page
+                     and not self.window._waiting_for_redraw, seconds=10),
+            'on page %d, not %d' % (self._page(), page))
+
+    def test_a_page_marked_to_be_skipped_is_turned_past(self):
+        """An advertisement or a blank side could only be taken out of
+        the book, which changes the archive (upstream merge request
+        10)."""
+        pages = self._ready()
+        self._turned_to(1)
+        skip = self.window.actiongroup.get_action('skip_page_popup')
+        self.window.show_page_menu(self.window.page_area, 1, 1, 2)
+        self.window.uimanager.popup.popdown()
+        self.assertFalse(skip.get_active())
+        skip.set_active(True)
+        self.assertTrue(self.window.imagehandler.is_skipped(2))
+        self.assertTrue(os.path.isfile(
+            os.path.join(constants.DATA_DIR, 'page_marks.json')))
+        # The book itself is as it was.
+        self.assertEqual(pages, self._pages())
+        self.assertFalse(self.window.file_actions.has_unsaved_changes())
+
+        self.window.flip_page(+1)
+        self._turned_to(3)
+        self.window.flip_page(-1)
+        self._turned_to(1)
+        # Going to it is passed on the way the reader went.
+        self.window.set_page(2)
+        self._turned_to(3)
+
+        # The menu shows the mark, and takes it off again.
+        self.window.show_page_menu(self.window.page_area, 1, 1, 2)
+        self.window.uimanager.popup.popdown()
+        self.assertTrue(skip.get_active())
+        skip.set_active(False)
+        self.assertFalse(self.window.imagehandler.is_skipped(2))
+        self.window.flip_page(-1)
+        self._turned_to(2)
+
+    def test_the_page_on_screen_marked_to_be_skipped_is_left_at_once(self):
+        pages = len(self._ready())
+        self.window.set_page(2)
+        self._turned_to(2)
+        skip = self.window.actiongroup.get_action('skip_page_popup')
+        # Opened on the background: the page on screen is meant.
+        self.window.show_page_menu(self.window.page_area, 1, 1, None)
+        self.window.uimanager.popup.popdown()
+        skip.set_active(True)
+        self._turned_to(3)
+        self.assertTrue(self.window.imagehandler.is_skipped(2))
+        # At the end of the book the search turns round, and stays in
+        # the book.
+        self.window.set_page(pages)
+        self._turned_to(pages)
+        self.window.show_page_menu(self.window.page_area, 1, 1, None)
+        self.window.uimanager.popup.popdown()
+        with unittest.mock.patch.object(self.window, 'next_book') as left:
+            skip.set_active(True)
+            self._turned_to(pages - 1)
+        left.assert_not_called()
+
+    def test_a_page_beside_one_to_be_skipped_stands_alone(self):
+        self._ready()
+        self.window.popup_page = 3
+        self.window.actiongroup.get_action('skip_page_popup').set_active(True)
+        prefs['default double page'] = True
+        try:
+            handler = self.window.imagehandler
+            self.assertTrue(handler.get_virtual_double_page(2))
+            self.assertTrue(handler.get_virtual_double_page(3))
+            self.assertFalse(handler.get_virtual_double_page(4))
+        finally:
+            prefs['default double page'] = False
+
     def test_the_first_and_last_page_actions_go_there(self):
         pages = len(self._ready())
         self.window.set_page(2)
@@ -4476,9 +4552,9 @@ class MainWindowTest(MComixTest):
         self.assertEqual(
             ['win.leave-fullscreen', 'win.copy-page-popup',
              'win.extract-page-popup', 'win.rename-page-popup',
-             'win.delete-page-popup', 'win.remove-bookmark-popup',
-             'win.unpick-pages', None],
-            actions[:8])
+             'win.delete-page-popup', 'win.skip-page-popup',
+             'win.remove-bookmark-popup', 'win.unpick-pages', None],
+            actions[:9])
 
     def test_the_right_click_menu_leaves_out_what_cannot_be_done(self):
         """A greyed item says the menu could do it somewhere else; this
@@ -4495,7 +4571,8 @@ class MainWindowTest(MComixTest):
 
         group = self.window.actiongroup
         page_items = ('copy_page_popup', 'extract_page_popup',
-                      'rename_page_popup', 'delete_page_popup')
+                      'rename_page_popup', 'delete_page_popup',
+                      'skip_page_popup')
         self._ready()
         for name in page_items:
             self.assertTrue(group.get_action(name).get_sensitive(), name)
