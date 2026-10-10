@@ -104,6 +104,7 @@ Zooming, or resizing the window, keeps the middle of the view on the same part o
 - A bookmark finds its page by the page's file, wherever sorting the archive has put it.
 - Books of the same name in different folders are listed with as much of their folder as tells them apart: "Series A/chapter_01.cbz".
 - A middle click on an entry starts a second MComix on it, at the bookmark's page.
+- "Clear List", at the bottom of "File → Recent", empties it. Other programs' recent files stay.
 - CTRL+D adds a bookmark; CTRL+B edits them.
 - A bookmarked page has an orange ribbon on its thumbnail in the sidebar.
 - "Remove bookmark", in the page's right-click menu, removes that page's bookmark. It shows only on a bookmarked page.

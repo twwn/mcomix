@@ -97,10 +97,21 @@ class RecentFilesMenuTest(MComixTest):
         return path
 
     def _labels(self, menu):
-        """The entries the menu offers, read from its model."""
+        """The entries the menu offers, read from its model: the files,
+        without the section below them that clears the list."""
         model = menu.model
         return [model.get_item_attribute_value(index, 'label').get_string()
-                for index in range(model.get_n_items())]
+                for index in range(model.get_n_items())
+                if model.get_item_link(index, Gio.MENU_LINK_SECTION) is None]
+
+    def _clear_entry(self, menu):
+        """The label and the action of the entry below the files."""
+        model = menu.model
+        last = model.get_n_items() - 1
+        section = model.get_item_link(last, Gio.MENU_LINK_SECTION)
+        self.assertIsNotNone(section, 'no section below the files')
+        return (section.get_item_attribute_value(0, 'label').get_string(),
+                section.get_item_attribute_value(0, 'action').get_string())
 
     def test_a_supported_file_is_offered(self):
         self._add('book.cbz')
@@ -244,6 +255,31 @@ class RecentFilesMenuTest(MComixTest):
             [Gio.File.new_for_path(notes).get_uri()],
             [info.get_uri() for info in self.manager.get_items()])
         self.assertEqual(0, menu.count())
+
+    def test_the_list_can_be_cleared_from_the_menu(self):
+        """Clearing it took switching "Store information about recently
+        opened files" to "Never" and back (a review on SourceForge)."""
+        notes = self._add('notes.txt', mime_type='text/plain')
+        self._add('book.cbz')
+        menu = recent.RecentFilesMenu(None, self.window)
+        label, action = self._clear_entry(menu)
+        self.assertEqual('_Clear List', label)
+        self.assertEqual('recent.clear', action)
+        clear = menu._actions.lookup_action(recent.RecentFilesMenu.CLEAR_ACTION)
+        self.assertTrue(clear.get_enabled())
+
+        clear.activate(None)
+
+        self.assertEqual(
+            [Gio.File.new_for_path(notes).get_uri()],
+            [info.get_uri() for info in self.manager.get_items()])
+        self.assertEqual(0, menu.count())
+
+    def test_an_empty_list_cannot_be_cleared(self):
+        menu = recent.RecentFilesMenu(None, self.window)
+        self._clear_entry(menu)
+        clear = menu._actions.lookup_action(recent.RecentFilesMenu.CLEAR_ACTION)
+        self.assertFalse(clear.get_enabled())
 
     def test_the_menu_follows_the_list(self):
         menu = recent.RecentFilesMenu(None, self.window)

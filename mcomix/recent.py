@@ -47,6 +47,7 @@ class RecentFilesMenu:
     #: Where this menu's action lives, as menu items address it.
     ACTION_PREFIX = 'recent'
     OPEN_ACTION = 'open'
+    CLEAR_ACTION = 'clear'
 
     #: How many entries to show, which is what Gtk.RecentChooserMenu did.
     _LIMIT = 10
@@ -72,6 +73,10 @@ class RecentFilesMenu:
                                            GLib.VariantType.new('s'))
         open_action.connect('activate', self._open_activated)
         self._actions.add_action(open_action)
+        self._clear_action = Gio.SimpleAction.new(self.CLEAR_ACTION, None)
+        self._clear_action.connect('activate',
+                                   lambda *args: self.remove_all())
+        self._actions.add_action(self._clear_action)
         if window is not None:
             window.insert_action_group(self.ACTION_PREFIX, self._actions)
 
@@ -149,6 +154,14 @@ class RecentFilesMenu:
                 self._actions.add_action(empty)
             self.model.append(_('No entries found'),
                               '%s.nothing' % self.ACTION_PREFIX)
+
+        # Below the files, as GTK's own recent files menu had it, and
+        # only to be picked while there is something to clear.
+        self._clear_action.set_enabled(bool(items))
+        clear = Gio.Menu()
+        clear.append(_('_Clear List'),
+                     '%s.%s' % (self.ACTION_PREFIX, self.CLEAR_ACTION))
+        self.model.append_section(None, clear)
 
     def _open_activated(self, action: Gio.SimpleAction,
                         target: GLib.Variant) -> None:
