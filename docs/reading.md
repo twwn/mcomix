@@ -126,6 +126,7 @@ Zooming, or resizing the window, keeps the middle of the view on the same part o
 
 - `mcomix book.cbz` opens a book; `mcomix --page 42 book.cbz` opens it at page 42.
 - `-f`, `-d` and `-m` start in fullscreen, double page and manga mode; `-l` with the library open.
+- `--new-window` opens a window of its own where "Open files in the window that is already open" is set in the [preferences](preferences.md).
 - `mcomix -W debug -o mcomix.log` writes a log: see [Troubleshooting](troubleshooting.md#logs).
 - `mcomix --help` lists the other options.
 

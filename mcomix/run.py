@@ -4,6 +4,7 @@ import os
 import signal
 import sys
 import types
+from typing import TYPE_CHECKING
 
 
 if __name__ == '__main__':
@@ -19,6 +20,9 @@ from mcomix import (
     preferences,
 )
 from mcomix.version_tools import Version
+
+if TYPE_CHECKING:
+    from mcomix import single_instance
 
 #: Lowest Pillow release MComix starts with: the one pyproject.toml requires
 #: and the suite is run against, which test_run.py checks agree.
@@ -68,6 +72,8 @@ def parse_arguments(argv: list[str]) -> tuple[argparse.Namespace, list[str]]:
     # starts.  Not for a reader to type, so not in the help.
     parser.add_argument('--page-member', dest='page_member',
                         help=argparse.SUPPRESS)
+    parser.add_argument('--new-window', dest='new_window', action='store_true',
+                        help=_('Open a window of its own, whatever the preferences say about the window that is already open.'))
 
     viewmodes = parser.add_argument_group(_('View modes'))
     viewmodes.add_argument('-f', '--fullscreen', dest='fullscreen', action='store_true',
@@ -218,6 +224,24 @@ def what_to_open(opts: argparse.Namespace, args: list[str]
     return open_path, open_page, open_member
 
 
+def single_instance_for(opts: argparse.Namespace
+                        ) -> "single_instance.SingleInstance | None":
+    """What to ask the session bus for a running MComix with, where
+    "Open files in the window that is already open" says to ask.
+
+    None where it is not asked: the preference is off, --new-window
+    was given, or there is no PyGObject to ask with, which
+    setup_dependencies() reports in its own time.
+    """
+    if opts.new_window or not preferences.prefs['single instance']:
+        return None
+    try:
+        from mcomix import single_instance
+    except (ImportError, ValueError):
+        return None
+    return single_instance.SingleInstance()
+
+
 def make_directories() -> None:
     """Make the directories MComix keeps its data and settings in.
 
@@ -257,6 +281,13 @@ def run() -> None:
     if opts.language_code:
         i18n.install_gettext(opts.language_code)
 
+    # Before GTK is loaded and a window built: an MComix that only has
+    # files to pass on is there to save the wait for both.
+    instance = single_instance_for(opts)
+    if instance is not None \
+            and instance.hand_over(args, opts.page, opts.page_member):
+        return
+
     setup_dependencies()
 
     from gi.repository import GLib
@@ -285,6 +316,8 @@ def run() -> None:
                              open_path=open_path, open_page=open_page,
                              open_member=open_member)
     main.set_main_window(window)
+    if instance is not None:
+        instance.serve(window.open_from_outside, window.present)
 
     if sys.platform != 'win32':
         # Add a SIGCHLD handler to reap zombie processes. Signals coalesce,

@@ -853,6 +853,16 @@ class MainWindow(Gtk.Window):
         self.statusbar.set_file_number(number, count)
         self.statusbar.update()
 
+    def open_from_outside(self, paths: list[str], page: int = 0,
+                          member: str | None = None) -> None:
+        """Open <paths>, which an MComix started just now was given and
+        handed on to this one, and come forward with them: one file as
+        the book it is, several as a book of just those.  <page> and
+        <member> say where to open it, as on the command line."""
+        self.filehandler.open_file(paths[0] if len(paths) == 1 else paths,
+                                   page, start_member=member)
+        self.present()
+
     def _on_file_closed(self) -> None:
         """Follow a book being closed: empty the window and the sidebar."""
         # All of them stand against the pages of the book that is

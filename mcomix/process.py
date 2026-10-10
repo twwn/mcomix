@@ -249,7 +249,9 @@ def launch_mcomix(path: "str | None" = None, page: int = 0,
     preferences say to open; a page without a file to find it in is
     nothing to pass on.
     """
-    command = mcomix_command()
+    # A window of its own is what was asked for, whatever "single
+    # instance" would do with a file opened from outside.
+    command = mcomix_command() + ['--new-window']
     if path is not None:
         if page:
             command += ['--page', str(page)]

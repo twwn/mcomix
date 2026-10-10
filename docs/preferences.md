@@ -26,6 +26,7 @@ Option | Explanation
 -------|------------
 Automatically open the last viewed file on startup | Started without a file, reopen the one open last, at the picture that was shown. After "Save and quit" this happens regardless.
 Open the library on startup | As `-l` does: the library comes up beside the window, to pick the book there.
+Open files in the window that is already open | A book opened from a file manager or a command line goes to the MComix that is running, which opens it and comes forward; no second one starts. Off by default: each book gets a window. Read at start. A middle click on a bookmark, a recent file or a library cover still opens a window of its own, as `--new-window` does. Needs a D-Bus session bus.
 Store information about recently opened files | "Always" keeps File → Recent and each book's last page, which the library's "Recent" collection lists. Switching to "Never" offers to clear both. The page is stored two seconds after the last page turn, so a crash loses no more than that.
 Save As opens at the last directory saved into | Instead of the book's own directory.
 Save an edited archive in the format it was opened in | Write it back as the ZIP, tar, 7z or RAR it was read as. 7z and RAR need the `7z` and `rar` programs, which MComix does not install; a format it cannot write is saved as ZIP.

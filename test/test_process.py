@@ -215,11 +215,21 @@ class LaunchTest(MComixTest):
             self.assertEqual(process.mcomix_command(), [sys.executable])
 
     @unittest.skipIf(sys.platform == 'win32', 'Win32Popen is used there')
+    def test_it_is_started_for_a_window_of_its_own(self):
+        """A middle click asks for a second window; with "Open files in
+        the window that is already open" set, an MComix started plainly
+        would hand the file back to the window it was clicked in."""
+        with self._as_main('mcomix.__main__'):
+            process.launch_mcomix('/books/one.cbz')
+        self.assertIn('--new-window', self.spawned[0])
+
+    @unittest.skipIf(sys.platform == 'win32', 'Win32Popen is used there')
     def test_the_file_is_the_last_argument(self):
         with self._as_main('mcomix.__main__'):
             process.launch_mcomix('/books/one.cbz')
         self.assertEqual(self.spawned,
-                         [[sys.executable, '-m', 'mcomix', '/books/one.cbz']])
+                         [[sys.executable, '-m', 'mcomix', '--new-window',
+                           '/books/one.cbz']])
 
     @unittest.skipIf(sys.platform == 'win32', 'Win32Popen is used there')
     def test_a_page_is_passed_on(self):
@@ -228,7 +238,8 @@ class LaunchTest(MComixTest):
         with self._as_main('mcomix.__main__'):
             process.launch_mcomix('/books/one.cbz', 7)
         self.assertEqual(self.spawned, [[sys.executable, '-m', 'mcomix',
-                                         '--page', '7', '/books/one.cbz']])
+                                         '--new-window', '--page', '7',
+                                         '/books/one.cbz']])
 
     @unittest.skipIf(sys.platform == 'win32', 'Win32Popen is used there')
     def test_the_file_of_the_page_is_passed_on(self):
@@ -238,7 +249,7 @@ class LaunchTest(MComixTest):
         with self._as_main('mcomix.__main__'):
             process.launch_mcomix('/books/one.cbz', 7, 'pages/07.jpg')
         self.assertEqual(self.spawned, [[
-            sys.executable, '-m', 'mcomix', '--page', '7',
+            sys.executable, '-m', 'mcomix', '--new-window', '--page', '7',
             '--page-member', 'pages/07.jpg', '/books/one.cbz']])
 
     @unittest.skipIf(sys.platform == 'win32', 'Win32Popen is used there')
@@ -247,7 +258,8 @@ class LaunchTest(MComixTest):
         the new program to read the preferences for what to open."""
         with self._as_main('mcomix.__main__'):
             process.launch_mcomix(None, 3)
-        self.assertEqual(self.spawned, [[sys.executable, '-m', 'mcomix']])
+        self.assertEqual(self.spawned, [[sys.executable, '-m', 'mcomix',
+                                         '--new-window']])
 
     @unittest.skipIf(sys.platform == 'win32', 'Win32Popen is used there')
     def test_no_page_means_no_page_argument(self):

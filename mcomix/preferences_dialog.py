@@ -194,6 +194,11 @@ class _PreferencesDialog(Dialog):
             _('Open the library on startup'),
             'open library on startup', None))
 
+        page.add_row(self._create_pref_check_button(
+            _('Open files in the window that is already open'),
+            'single instance',
+            _('A book opened from a file manager or a command line goes to the MComix that is running, instead of starting another. Takes effect when MComix is next started.')))
+
         page.add_row(Gtk.Label(label=_('Store information about recently opened files:')),
                      self._create_store_recent_combobox())
 

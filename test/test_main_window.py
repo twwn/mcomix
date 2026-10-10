@@ -3153,6 +3153,28 @@ class MainWindowTest(MComixTest):
         self.window.flip_page(-1)
         self._turned_to(2)
 
+    def test_files_handed_over_by_another_mcomix_are_opened_and_shown(self):
+        """What a second MComix does with its command line where "Open
+        files in the window that is already open" is set."""
+        self._ready()
+        book = os.path.join(self.tmp_dir, 'Handed over.cbz')
+        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), book)
+        with unittest.mock.patch.object(self.window, 'present') as shown:
+            self.window.open_from_outside([book], 2)
+        shown.assert_called_once_with()
+        self.assertTrue(wait_for(
+            lambda: self.window.filehandler.get_path_to_base() == book
+            and self.window.imagehandler.get_current_page() == 2, seconds=20))
+
+        # Several are one book of just those, as on the command line.
+        pictures = [get_testfile_path('images', name)
+                    for name in ('01-JPG-Indexed.jpg', '02-JPG-RGB.jpg')]
+        with unittest.mock.patch.object(self.window, 'present'):
+            self.window.open_from_outside(pictures)
+        self.assertTrue(wait_for(
+            lambda: self.window.imagehandler.get_image_files() == pictures,
+            seconds=20))
+
     def test_a_page_is_made_its_book_s_cover_in_the_library(self):
         """The cover was the picture the file names pointed to and no
         other; a book whose first picture is a banner could only be
