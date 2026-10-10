@@ -10,7 +10,7 @@ import os
 import pickle
 from unittest import mock
 
-from . import MComixTest
+from . import MComixTest, fresh_bookmarks_store
 
 from mcomix import bookmark_backend
 from mcomix import bookmark_menu_item
@@ -372,3 +372,29 @@ class MovedBookTest(MComixTest):
         finally:
             del self.store.write_bookmarks_file
         self.assertEqual(written, [])
+
+
+class StoreBetweenTestsTest(MComixTest):
+
+    """The store is one for the process: what a test left in it, and
+    the window it left it on, were there for every later test on the
+    worker.  With the suite on eight workers 301 of 4015 tests ended
+    with bookmarks in it, most of them another test's."""
+
+    def test_a_test_starts_with_no_bookmarks_and_no_window(self):
+        os.makedirs(constants.DATA_DIR, exist_ok=True)
+        store = bookmark_backend.BookmarksStore
+        window = mock.Mock()
+        store.initialize(window)
+        store.add_bookmark(bookmark_menu_item._Bookmark(
+            window, window.filehandler, 'a.cbz',
+            os.path.abspath('/books/a.cbz'), 2, 4, None,
+            datetime.datetime(2026, 1, 1)))
+        # The next test has a directory of its own, with no file in it.
+        os.remove(constants.BOOKMARK_PICKLE_PATH)
+
+        fresh_bookmarks_store()
+
+        self.assertEqual([], store.get_bookmarks())
+        self.assertIsNone(store._window)
+        self.assertFalse(store._initialized)

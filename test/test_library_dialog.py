@@ -1119,11 +1119,9 @@ class RelocateBooksTest(_LibraryWindowTest):
         shelf = backend.get_collection_by_name('Shelf').id
         backend.add_book_to_collection(book.id, shelf)
         store = bookmark_backend.BookmarksStore
-        marked = bookmark_menu_item._Bookmark(
+        store.add_bookmark(bookmark_menu_item._Bookmark(
             self.window, self.window.filehandler, 'b.cbz', old_b, 2, 4,
-            None, datetime.datetime(2026, 1, 1))
-        store.add_bookmark(marked)
-        self.addCleanup(store.remove_for_path, new_b)
+            None, datetime.datetime(2026, 1, 1)))
         page_marks.mark(old_a, 'p02.jpg', page_marks.SKIP, True)
         page_rotations.remember(old_b, 'p03.jpg', 90)
         self._move()
@@ -1139,11 +1137,8 @@ class RelocateBooksTest(_LibraryWindowTest):
         self.assertIsNotNone(backend.get_book_by_path(new_b))
         self.assertEqual([book.id], backend.get_books_in_collection(shelf))
         self.assertIn('Books relocated: 2', self.dialog._statusbar.get_text())
-        # By its name: the store is the program's one, and may hold
-        # what another test left in it.
-        self.assertEqual([new_b], [bookmark._path
-                                   for bookmark in store.get_bookmarks()
-                                   if bookmark._name == 'b.cbz'])
+        self.assertEqual([new_b],
+                         [bookmark._path for bookmark in store.get_bookmarks()])
         self.assertTrue(page_marks.marked(new_a, 'p02.jpg', page_marks.SKIP))
         self.assertEqual(90, page_rotations.rotation(new_b, 'p03.jpg'))
         for path in (new_a, new_b):

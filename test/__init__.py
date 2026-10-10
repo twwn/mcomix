@@ -382,6 +382,22 @@ def _wait_for_deletions():
             thread.join(10)
 
 
+def fresh_bookmarks_store():
+    """Have the bookmarks store read its file again, which for a test
+    that has just been given its own directories is no file at all.
+
+    The store is one for the process and reads the file once, when it
+    is imported.  The bookmarks a test added were there for every later
+    test on the worker, as was the window of a test that never closed
+    one through terminate_program(): a real window built later was not
+    taken, the store having one, and its bookmarks went on opening in a
+    window that had been destroyed.
+    """
+    backend = sys.modules.get('mcomix.bookmark_backend')
+    if backend is not None:
+        backend.BookmarksStore.__init__()
+
+
 class MComixTest(unittest.TestCase):
 
     #: Global state setUp() overwrites and tearDown() has to put back.
@@ -501,6 +517,7 @@ class MComixTest(unittest.TestCase):
         constants.BOOKMARK_PICKLE_PATH = os.path.join(constants.DATA_DIR, 'bookmarks.pickle')
         constants.FILEINFO_PICKLE_PATH = os.path.join(constants.DATA_DIR, 'file.pickle')
         constants.PREFERENCE_PICKLE_PATH = os.path.join(constants.CONFIG_DIR, 'preferences.pickle')
+        fresh_bookmarks_store()
         # Reset preferences to default, and with them the baseline a
         # write is measured against: a test starts as an instance that
         # has just read a file holding exactly the defaults.
