@@ -410,11 +410,13 @@ def _get_unrar_dll() -> ctypes.CDLL | None:
     # Load libunrar.so on UNIX
     else:
         # find_library on UNIX uses various mechanisms to determine the path
-        # of a library, so one could assume the library is not installed
-        # when find_library fails.  Never the current directory: that is
-        # wherever MComix was started from, and a libunrar.so found there
-        # would run as MComix.
-        candidates = (ctypes.util.find_library("unrar") or '/usr/lib64/libunrar.so',)
+        # of a library, but answers only for one with a soname, and
+        # libunrar's own makefile builds it without one; the Flatpak's is
+        # then found where the Flatpak puts it.  Never the current
+        # directory: that is wherever MComix was started from, and a
+        # libunrar.so found there would run as MComix.
+        candidates = (ctypes.util.find_library("unrar") or '/usr/lib64/libunrar.so',
+                      '/app/lib/libunrar.so')
         loader = ctypes.cdll
 
     for candidate in candidates:

@@ -1,0 +1,77 @@
+name: Flatpak
+
+# Builds the Flatpak of a release, io.github.twwn.mcomix, from the tag
+# pushed, and keeps the bundle as the run's artifact.  Then, once the
+# app is on Flathub, it moves Flathub's manifest to the tag by opening a
+# pull request there; that job does nothing but say why where its secret
+# is not set.
+#
+#   Flathub     a pull request to flathub/io.github.twwn.mcomix.  Secret
+#               FLATHUB_TOKEN: a token that can push branches to that
+#               repository and open pull requests on it.  The repository
+#               exists only once the app has been accepted: submit it the
+#               first time by hand, as flathub.org's submission guide
+#               says, with the manifest
+#               "python3 flatpak/flathub_manifest.py <tag> <commit>"
+#               writes.
+
+on:
+  push:
+    tags:
+      - "[0-9][0-9].[0-9][0-9]"
+      - "[0-9][0-9].[0-9][0-9].[0-9]*"
+
+permissions:
+  contents: read
+
+env:
+  TAG: ${{ github.ref_name }}
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:gnome-51
+      options: --privileged
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          manifest-path: flatpak/io.github.twwn.mcomix.yml
+          bundle: mcomix-${{ github.ref_name }}.flatpak
+          cache-key: flatpak-builder-${{ github.sha }}
+
+  flathub:
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      FLATHUB_TOKEN: ${{ secrets.FLATHUB_TOKEN }}
+    steps:
+      - name: Without a token there is nothing to submit
+        if: env.FLATHUB_TOKEN == ''
+        run: echo "::notice::FLATHUB_TOKEN is not set; no Flathub pull request was opened."
+      - uses: actions/checkout@v7
+        if: env.FLATHUB_TOKEN != ''
+        with:
+          persist-credentials: false
+      - name: Open the pull request that moves Flathub to the tag
+        if: env.FLATHUB_TOKEN != ''
+        env:
+          GH_TOKEN: ${{ secrets.FLATHUB_TOKEN }}
+        run: |
+          python3 flatpak/flathub_manifest.py "$TAG" "$GITHUB_SHA" > "$RUNNER_TEMP/io.github.twwn.mcomix.yml"
+          git clone "https://x-access-token:${FLATHUB_TOKEN}@github.com/flathub/io.github.twwn.mcomix.git" "$RUNNER_TEMP/flathub"
+          cd "$RUNNER_TEMP/flathub"
+          git switch -c "update-$TAG"
+          cp "$RUNNER_TEMP/io.github.twwn.mcomix.yml" io.github.twwn.mcomix.yml
+          git -c user.name="github-actions[bot]" \
+              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit -am "Update to $TAG"
+          git push origin "update-$TAG"
+          gh pr create --repo flathub/io.github.twwn.mcomix --head "update-$TAG" \
+            --title "Update to $TAG" \
+            --body "MComix $TAG: https://github.com/twwn/mcomix/releases/tag/$TAG"

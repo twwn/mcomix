@@ -83,6 +83,7 @@ Workflow | Runs | Does
 `tests.yml` | Every push to `main`, every pull request, Mondays; not for a change to `artwork/` alone | The three checks on Python 3.12 and the newest Python, on Ubuntu 26.04 (GTK 4.22); the tests again on the oldest dependency versions `pyproject.toml` allows, on Ubuntu 24.04 (GTK 4.14).
 `codeql.yml` | A push to `main` or a pull request that changes Python code or a workflow, Mondays | Code scanning of the Python code and the workflows.
 `release.yml` | A version tag, a pull request that changes the build, Mondays | Builds and tests the release files: see [Releasing](releasing.md).
+`flatpak.yml` | A version tag | Builds the Flatpak, and moves Flathub to the tag once its secret is set: see [Releasing](releasing.md#flatpak).
 `pages.yml` | A push to `main` that changes a page | Publishes the manual on [GitHub Pages](https://twwn.github.io/mcomix/).
 `release-notes.yml` | A push to `main` that changes `ChangeLog.md` | Makes each published release's notes its `ChangeLog.md` section again.
 `windows-tests.yml` | Every push to `main`, by hand | The tests on Windows, in MSYS2's UCRT64 environment, as the Windows packages are built.

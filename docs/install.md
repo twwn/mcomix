@@ -38,6 +38,20 @@ python3 -m venv --system-site-packages ~/mcomix-venv
 - `[fileformats]` adds PyMuPDF (PDF) and chardet (non-UTF-8 names); leave it out to go without.
 - To start it as `mcomix`: `ln -s ~/mcomix-venv/bin/mcomix ~/.local/bin/`, where `~/.local/bin` is on the `PATH`.
 - Desktop integration: copy the source archive's `share` folder (desktop file, icons, MIME types, AppStream metadata, man page) to `/usr/local/share`. pip neither installs nor removes it. The desktop file starts `mcomix`, so it needs the link above.
+
+### Flatpak
+
+This version is not on Flathub yet. It builds as a Flatpak with id `io.github.twwn.mcomix`, beside Flathub's `net.sourceforge.mcomix`, the original MComix 3.
+In the source tree, with [flatpak-builder](https://docs.flatpak.org/en/latest/flatpak-builder.html) and Flathub set up for the user:
+
+```bash
+flatpak-builder --user --install-deps-from=flathub --install --force-clean build-dir flatpak/io.github.twwn.mcomix.yml
+flatpak run io.github.twwn.mcomix
+```
+
+- It brings 7-Zip, UnRAR, DjVuLibre, PyMuPDF and chardet along: every format opens.
+- It sees the Documents, Downloads, Pictures and Desktop folders and removable media; more with `flatpak override --user --filesystem=<folder> io.github.twwn.mcomix`.
+- Its preferences and library are kept apart, in `~/.var/app/io.github.twwn.mcomix`.
 - Uninstall: delete `~/mcomix-venv` and the link. Your settings stay: see [Settings and data](troubleshooting.md#settings-and-data).
 
 ## Requirements

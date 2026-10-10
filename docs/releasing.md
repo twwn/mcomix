@@ -48,6 +48,20 @@ Secret | For
 - Chocolatey: pushes `mcomix-gtk`. Packages are moderated, so the version appears some time later. (`mcomix` there is the original MComix 3.)
 - winget: opens a pull request with the new version. winget only updates a package it has: submit the first version by hand, with `komac new` or `wingetcreate new`, under the identifier in the repository variable `WINGET_IDENTIFIER` (`twwn.MComix` where it is not set). `MComix.MComix` is the original MComix 3.
 
+### Flatpak
+
+`.github/workflows/flatpak.yml` runs on a version tag.
+It builds the Flatpak, `io.github.twwn.mcomix`, from `flatpak/io.github.twwn.mcomix.yml`, and keeps `mcomix-<version>.flatpak` with the run.
+Then it opens a pull request on [flathub/io.github.twwn.mcomix](https://github.com/flathub/io.github.twwn.mcomix) that moves Flathub's manifest to the tag; without the secret it is skipped with a notice:
+
+Secret | For
+-------|----
+`FLATHUB_TOKEN` | A token that can push branches to flathub/io.github.twwn.mcomix and open pull requests on it.
+
+- That repository exists only once Flathub has accepted the app. Submit it the first time by hand, as [Flathub's guide](https://docs.flathub.org/docs/for-app-authors/submission) says.
+- `python3 flatpak/flathub_manifest.py <version> <commit>` writes the manifest for Flathub: the same file, with MComix fetched from the tag instead of built from the tree.
+- The name stays MComix; only the id tells it from Flathub's `net.sourceforge.mcomix`, the original MComix 3.
+
 ## Building by hand
 
 The same steps, without GitHub Actions.

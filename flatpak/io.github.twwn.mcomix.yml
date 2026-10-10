@@ -1,0 +1,180 @@
+# The Flatpak of this fork.  Its id is io.github.twwn.mcomix: Flathub's
+# net.sourceforge.mcomix is the original MComix 3, and the name it shows
+# stays MComix.  This copy builds the tree it sits in; the copy for
+# Flathub, which builds a release tag, is written from it by
+# flatpak/flathub_manifest.py.
+#
+#   flatpak-builder --user --install-deps-from=flathub --install --force-clean build-dir flatpak/io.github.twwn.mcomix.yml
+#   flatpak run io.github.twwn.mcomix
+
+app-id: io.github.twwn.mcomix
+runtime: org.gnome.Platform
+runtime-version: '51'
+sdk: org.gnome.Sdk
+command: mcomix
+rename-icon: mcomix
+rename-desktop-file: mcomix.desktop
+finish-args:
+  - --share=ipc
+  - --socket=fallback-x11
+  - --socket=wayland
+  - --device=dri
+  - --env=TMPDIR=/var/tmp
+  # MComix embeds its own file chooser rather than asking the portal for
+  # one, so the places books are kept have to be open to it.
+  - --filesystem=xdg-documents
+  - --filesystem=xdg-download
+  - --filesystem=xdg-pictures
+  - --filesystem=xdg-desktop
+  - --filesystem=/media
+  - --filesystem=/run/media
+
+cleanup:
+  - /include
+  - /lib/pkgconfig
+  - '*.la'
+  - '*.a'
+  - /share/man
+
+modules:
+  # 7z files, and ZIP, LHA, xz and lzma files Python cannot read.
+  - name: 7-zip
+    buildsystem: simple
+    build-commands:
+      # Without -Werror: a newer GCC than 7-Zip's own warns where it did
+      # not, and the build stopped there.
+      - make -C CPP/7zip/Bundles/Alone2 -j ${FLATPAK_BUILDER_N_JOBS} -f ../../cmpl_gcc.mak
+        CFLAGS_WARN_WALL="-Wall -Wextra"
+      - install -Dm755 CPP/7zip/Bundles/Alone2/b/g/7zz ${FLATPAK_DEST}/bin/7z
+    sources:
+      - type: git
+        url: https://github.com/ip7z/7zip.git
+        tag: '26.01'
+        commit: 8c63d71ff886bda90c86db28466287f977374237
+        x-checker-data:
+          type: git
+          tag-pattern: ^([\d.]+)$
+
+  # RAR files, through the library and, as a fallback, the program.
+  - name: unrar
+    buildsystem: simple
+    build-commands:
+      - make -j ${FLATPAK_BUILDER_N_JOBS} unrar
+      - install -Dm755 unrar ${FLATPAK_DEST}/bin/unrar
+      - make clean
+      - make -j ${FLATPAK_BUILDER_N_JOBS} lib
+      - install -Dm755 libunrar.so ${FLATPAK_DEST}/lib/libunrar.so
+    sources:
+      - type: archive
+        url: https://www.rarlab.com/rar/unrarsrc-7.3.1.tar.gz
+        sha256: 634900842a3737d9cc15bbcc71d4c74cc713437e0bca296a573424fe5f2660ab
+        x-checker-data:
+          type: html
+          url: https://www.rarlab.com/rar_add.htm
+          version-pattern: unrarsrc-([\d.]+)\.tar\.gz
+          url-template: https://www.rarlab.com/rar/unrarsrc-$version.tar.gz
+
+  # DjVu files: ddjvu and djvused.
+  - name: djvulibre
+    config-opts:
+      - --disable-desktopfiles
+    sources:
+      - type: archive
+        url: https://downloads.sourceforge.net/project/djvu/DjVuLibre/3.5.30/djvulibre-3.5.30.tar.gz
+        sha256: ee5e457d4cfebe566f94b99e5e3d3cc7f5c79ddb741c2ac2ba2e456f00329644
+        x-checker-data:
+          type: anitya
+          project-id: 10159
+          stable-only: true
+          url-template: https://downloads.sourceforge.net/project/djvu/DjVuLibre/$version/djvulibre-$version.tar.gz
+
+  # Pillow's build needs it, and nothing after.
+  - name: python3-pybind11
+    buildsystem: simple
+    build-commands:
+      - pip3 install --verbose --exists-action=i --no-index --find-links="file://${PWD}"
+        --prefix=${FLATPAK_DEST} "pybind11" --no-build-isolation
+    cleanup:
+      - '*'
+    sources:
+      - type: file
+        url: https://files.pythonhosted.org/packages/33/fd/8762f7ee3e4e4be6d1d846cffb4916dd9bb02b2f800d3603718a0efe494c/pybind11-3.1.0-py3-none-any.whl
+        sha256: b8488090f8acffbcb6b5d6a85571a6827a0a2981ffb75e5a0b27b87c4a6b7dd0
+        x-checker-data:
+          type: pypi
+          name: pybind11
+          packagetype: bdist_wheel
+
+  - name: python3-Pillow
+    buildsystem: simple
+    build-commands:
+      - pip3 install --verbose --exists-action=i --no-index --find-links="file://${PWD}"
+        --prefix=${FLATPAK_DEST} "Pillow" --no-build-isolation
+    sources:
+      - type: file
+        url: https://files.pythonhosted.org/packages/1c/3d/bb7fca845737cf9d7dbde16ed1843984665ff2e0a518f5db43e77ec540b9/pillow-12.3.0.tar.gz
+        sha256: 3b8182a766685eaa002637e28b4ec8d6b18819a0c71f579bf0dbaa5830297cce
+        x-checker-data:
+          type: pypi
+          name: Pillow
+
+  # Guesses the encoding of names and comments that are not UTF-8.
+  - name: python3-chardet
+    buildsystem: simple
+    build-commands:
+      - pip3 install --verbose --exists-action=i --no-index --find-links="file://${PWD}"
+        --prefix=${FLATPAK_DEST} "chardet" --no-build-isolation
+    sources:
+      - type: file
+        url: https://files.pythonhosted.org/packages/cf/6e/5a0b348fa4cd7847567a28c6e697ccf58391960bfd13a6e7473ee23ca2f2/chardet-7.6.0-py3-none-any.whl
+        sha256: 4076d795897ce45239825956a1334e134322ecc4bfe84dbb12acd5390de0fbc1
+        x-checker-data:
+          type: pypi
+          name: chardet
+          packagetype: bdist_wheel
+
+  # PDF files.
+  - name: python3-PyMuPDF
+    buildsystem: simple
+    build-commands:
+      - pip3 install --verbose --exists-action=i --no-index --find-links="file://${PWD}"
+        --prefix=${FLATPAK_DEST} "PyMuPDF" --no-build-isolation
+    cleanup:
+      - /lib/python*/site-packages/pymupdf/mupdf-devel
+    sources:
+      - type: file
+        url: https://files.pythonhosted.org/packages/c7/06/dace3e27af26690cb20bead80dbac42941b0841eb689b8aabbd67dde16f0/pymupdf-1.28.2-cp310-abi3-manylinux_2_28_x86_64.whl
+        sha256: 397d6715c1f0df7548a92d0afd8ce370fc48fa47aeefac16be2bc04a16a8227f
+        only-arches:
+          - x86_64
+      - type: file
+        url: https://files.pythonhosted.org/packages/d2/86/4a68f080b71b46802178346af46486e1697508e760855ff5f3b218a6dff7/pymupdf-1.28.2-cp310-abi3-manylinux_2_28_aarch64.whl
+        sha256: 3050a233dde1211efe89ada74e2add6238436434159f46097a1423aad2842545
+        only-arches:
+          - aarch64
+
+  - name: mcomix
+    buildsystem: simple
+    build-commands:
+      - pip3 install --verbose --exists-action=i --no-index --no-deps
+        --prefix=${FLATPAK_DEST} --no-build-isolation .
+      - mkdir -p ${FLATPAK_DEST}/share
+      - cp -a share/applications share/icons share/mime -t ${FLATPAK_DEST}/share/
+      # Only what is named after the app id leaves the sandbox.
+      - mv ${FLATPAK_DEST}/share/mime/packages/mcomix.xml ${FLATPAK_DEST}/share/mime/packages/${FLATPAK_ID}.xml
+      # The component takes the app id here, rather than through
+      # rename-appdata-file, which would add net.sourceforge.mcomix, the
+      # original MComix, as an id this one provides.
+      - install -d ${FLATPAK_DEST}/share/metainfo
+      - sed -e "s|<id>net.sourceforge.mcomix</id>|<id>${FLATPAK_ID}</id>|"
+        -e "s|>mcomix.desktop</launchable>|>${FLATPAK_ID}.desktop</launchable>|"
+        share/metainfo/mcomix.metainfo.xml > ${FLATPAK_DEST}/share/metainfo/${FLATPAK_ID}.metainfo.xml
+    sources:
+      - type: dir
+        path: ..
+        skip:
+          - .flatpak-builder
+          - build-dir
+          - test
+          - .claude
+          - .git

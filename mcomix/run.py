@@ -174,6 +174,16 @@ def shows_library(opts: argparse.Namespace) -> bool:
     return bool(opts.library or preferences.prefs['open library on startup'])
 
 
+def program_name() -> str:
+    """The name the program goes by on the desktop.
+
+    The window class is taken from it, and it is what a desktop matches
+    the window to its launcher by.  In the Flatpak the launcher is named
+    after the app id rather than after MComix.
+    """
+    return os.environ.get('FLATPAK_ID') or constants.APPNAME
+
+
 def what_to_open(opts: argparse.Namespace, args: list[str]
                  ) -> "tuple[str | list[str] | None, int, str | None]":
     """The file or files to open at start, the page to open at, and the
@@ -265,8 +275,7 @@ def run() -> None:
 
     apply_layout_direction()
 
-    # The window class is taken from the program name.
-    GLib.set_prgname(constants.APPNAME)
+    GLib.set_prgname(program_name())
 
     from mcomix import main
     window = main.MainWindow(fullscreen=opts.fullscreen, is_slideshow=opts.slideshow,

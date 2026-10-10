@@ -190,6 +190,32 @@ class UnrarLibraryTest(MComixTest):
                          [])
 
 
+class FlatpakUnrarTest(MComixTest):
+
+    def test_the_flatpak_s_libunrar_is_tried(self):
+        """libunrar's makefile gives the library no soname, so
+        find_library() does not answer for the one the Flatpak builds."""
+        import ctypes
+        import sys
+        import unittest.mock
+        from mcomix.archive import rar
+        if sys.platform == 'win32':
+            self.skipTest('Windows searches for DLLs by its own rules')
+        tried = []
+
+        def load(path):
+            tried.append(path)
+            raise OSError('not loaded')
+
+        rar._get_unrar_dll.cache_clear()
+        self.addCleanup(rar._get_unrar_dll.cache_clear)
+        with unittest.mock.patch('ctypes.util.find_library',
+                                 return_value=None), \
+                unittest.mock.patch.object(ctypes.cdll, 'LoadLibrary', load):
+            rar._get_unrar_dll()
+        self.assertIn('/app/lib/libunrar.so', tried)
+
+
 class DescribeTest(MComixTest):
 
     def test_a_tarball_is_described_by_its_compression(self):
