@@ -14,7 +14,7 @@ import os
 import shutil
 import sys
 
-from gi.repository import GLib, Gtk
+from gi.repository import Gio, GLib, Gtk
 
 from mcomix import archive_packer
 from mcomix import bookmark_backend
@@ -730,6 +730,48 @@ class FileActions:
         page = self._window.popup_page
         self._save_pages([page] if page is not None
                          else self._window.displayed_pages())
+
+    def open_containing_folder(self, *args: object) -> None:
+        """Show the open file in the file manager: the archive, or the
+        picture being read where the book is a folder of them."""
+        self._show_in_folder(self._window.imagehandler.get_real_path())
+
+    def open_popup_containing_folder(self, *args: object) -> None:
+        """Show the file the right-click menu was opened over.
+
+        A page of an archive has no file of its own to show, so the
+        archive is what is shown.  In a folder of pictures it is the
+        page the menu stands on, and the page being read where the menu
+        was opened on the background.
+        """
+        page = self._window.popup_page
+        if page is None or self._window.filehandler.archive_type is not None:
+            self.open_containing_folder()
+            return
+        self._show_in_folder(self._window.imagehandler.get_path_to_page(page))
+
+    def _show_in_folder(self, path: "str | None") -> None:
+        if path is None:
+            # The menu entry is insensitive without a file open.
+            return
+        launcher = Gtk.FileLauncher.new(Gio.File.new_for_path(path))
+        launcher.open_containing_folder(
+            self._window, None,
+            lambda _source, result: self._shown_in_folder(launcher, result))
+
+    def _shown_in_folder(self, launcher: Gtk.FileLauncher,
+                         result: Gio.AsyncResult) -> None:
+        try:
+            launcher.open_containing_folder_finish(result)
+        except GLib.Error as error:
+            # Where a portal asks which program to use, turning the
+            # question down is an answer, not a failure.
+            if any(error.matches(Gtk.dialog_error_quark(), code)
+                   for code in (Gtk.DialogError.DISMISSED,
+                                Gtk.DialogError.CANCELLED)):
+                return
+            self._window.osd.show(_('Could not show the folder: %s')
+                                  % error.message)
 
     def delete_popup_page(self, *args: object) -> None:
         """Take the page the right-click menu was opened over out.

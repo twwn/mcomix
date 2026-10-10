@@ -160,6 +160,7 @@ BINDING_INFO: "dict[str, dict[str, str]]" = {
     'preferences': {'title': _('Preferences'), 'group': _('File')},
 
     'edit_archive': {'title': _('Edit archive'), 'group': _('File')},
+    'open_containing_folder': {'title': _('Open containing folder'), 'group': _('File')},
     'open': {'title': _('Open'), 'group': _('File')},
     'enhance_image': {'title': _('Enhance image'), 'group': _('File')},
     'library': {'title': _('Library'), 'group': _('File')},

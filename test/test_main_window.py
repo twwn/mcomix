@@ -3153,6 +3153,70 @@ class MainWindowTest(MComixTest):
         self.assertFalse(action.get_sensitive(),
                          'enabled with nothing open to delete')
 
+    def test_the_open_file_is_shown_in_the_file_manager(self):
+        """Nothing led from the book being read to the folder it is in
+        (upstream feature request 14)."""
+        self.assertIsNotNone(
+            self._menubar_item('win.open-containing-folder'), 'no menu item')
+        self.assertIn('win.open-containing-folder-popup',
+                      self._menu_actions(self.window.uimanager.popup
+                                         .get_menu_model()))
+        action = self.window.actiongroup.get_action('open_containing_folder')
+        popup = self.window.actiongroup.get_action(
+            'open_containing_folder_popup')
+        self._ready()
+        self.assertTrue(action.get_sensitive())
+        self.assertTrue(popup.get_sensitive())
+        archive = self.window.filehandler.get_path_to_base()
+
+        def shown(run):
+            with unittest.mock.patch.object(
+                    file_actions.Gtk, 'FileLauncher') as launcher:
+                run()
+            (shown_file,), _ = launcher.new.call_args
+            self.assertIs(
+                self.window,
+                launcher.new.return_value.open_containing_folder
+                .call_args.args[0])
+            return shown_file.get_path()
+
+        self.assertEqual(archive, shown(action.activate))
+        # A page of an archive is a file in a temporary folder, which
+        # is not where the reader keeps the book.
+        self.window.popup_page = 2
+        self.assertEqual(archive, shown(popup.activate))
+        # In a folder of pictures every page is a file of its own.
+        with unittest.mock.patch.object(
+                self.window.filehandler, 'archive_type', None), \
+                unittest.mock.patch.object(
+                    self.window.imagehandler, 'get_path_to_page',
+                    lambda page=None: '/pictures/%s.png' % page):
+            self.assertEqual('/pictures/2.png', shown(popup.activate))
+            self.window.popup_page = None
+            self.assertEqual('/pictures/None.png', shown(popup.activate))
+
+        self.window.filehandler.close_file()
+        self._pump()
+        self.assertFalse(action.get_sensitive(),
+                         'enabled with nothing open to show')
+        self.assertFalse(popup.get_sensitive())
+
+    def test_a_file_manager_that_does_not_answer_is_reported(self):
+        launcher = unittest.mock.Mock()
+        launcher.open_containing_folder_finish.side_effect = \
+            GLib.Error.new_literal(Gtk.dialog_error_quark(), 'turned down',
+                                   Gtk.DialogError.DISMISSED)
+        with unittest.mock.patch.object(self.window.osd, 'show') as told:
+            self.window.file_actions._shown_in_folder(launcher, None)
+            # Turning the portal's question down is an answer.
+            told.assert_not_called()
+            launcher.open_containing_folder_finish.side_effect = \
+                GLib.Error.new_literal(Gtk.dialog_error_quark(),
+                                       'no file manager',
+                                       Gtk.DialogError.FAILED)
+            self.window.file_actions._shown_in_folder(launcher, None)
+        self.assertIn('no file manager', told.call_args.args[0])
+
     def test_the_right_click_menu_offers_to_delete_a_page(self):
         self.assertIn('win.delete-page-popup',
                       self._menu_actions(self.window.uimanager.popup

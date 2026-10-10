@@ -439,6 +439,10 @@ class EventHandler:
                          [],
                          self._window.actiongroup.get_action('edit_archive').activate)
 
+        manager.register('open_containing_folder',
+                         [],
+                         self._window.actiongroup.get_action('open_containing_folder').activate)
+
         manager.register('open',
                          ['<Control>O'],
                          self._window.actiongroup.get_action('open').activate)

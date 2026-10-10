@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 0.93\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-10 13:52+0200\n"
+"POT-Creation-Date: 2026-10-10 14:11+0200\n"
 "PO-Revision-Date: 2015-04-05 08:54+0100\n"
 "Last-Translator: Benoit Pierre <benoit.pierre@gmail.com>\n"
 "Language-Team: \n"
@@ -51,7 +51,7 @@ msgstr "Erreur d'extraction : %s"
 msgid "! Could not read %s"
 msgstr "! Impossible de lire %s"
 
-#: mcomix/archive_packer.py:176 mcomix/file_actions.py:1054
+#: mcomix/archive_packer.py:176 mcomix/file_actions.py:1096
 #: mcomix/library/book_area.py:833
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
@@ -99,7 +99,7 @@ msgid "_No"
 msgstr "_Non"
 
 #: mcomix/bookmark_backend.py:386 mcomix/edit_dialog.py:59
-#: mcomix/file_actions.py:870 mcomix/file_actions.py:1036
+#: mcomix/file_actions.py:912 mcomix/file_actions.py:1078
 #: mcomix/file_chooser_base_dialog.py:237
 #: mcomix/file_chooser_base_dialog.py:242
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
@@ -155,7 +155,7 @@ msgstr "_Effacer"
 
 #: mcomix/bookmark_dialog.py:34 mcomix/comment_dialog.py:29
 #: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:74
-#: mcomix/properties_dialog.py:37 mcomix/ui.py:481
+#: mcomix/properties_dialog.py:37 mcomix/ui.py:487
 #: mcomix/library/watchlist.py:41
 msgid "_Close"
 msgstr "_Fermer"
@@ -195,7 +195,7 @@ msgstr "Supprimer les signets de ce _livre…"
 msgid "_Edit Bookmarks..."
 msgstr "_Éditer les signets…"
 
-#: mcomix/bookmark_menu.py:200 mcomix/file_actions.py:1094
+#: mcomix/bookmark_menu.py:200 mcomix/file_actions.py:1136
 #, python-format
 msgid "Remove the bookmarks in \"%s\"?"
 msgstr "Supprimer les signets de « %s » ?"
@@ -239,12 +239,12 @@ msgid "Remove from archive"
 msgstr "Effacer de l'archive"
 
 #: mcomix/edit_comment_area.py:122 mcomix/edit_image_area.py:116
-#: mcomix/ui.py:458
+#: mcomix/ui.py:464
 msgid "_Undo"
 msgstr "Ann_uler"
 
 #: mcomix/edit_comment_area.py:123 mcomix/edit_image_area.py:117
-#: mcomix/ui.py:461
+#: mcomix/ui.py:467
 msgid "_Redo"
 msgstr "_Rétablir"
 
@@ -274,7 +274,7 @@ msgstr "Éditer l'archive"
 msgid "A_pply"
 msgstr "A_ppliquer"
 
-#: mcomix/edit_dialog.py:76 mcomix/ui.py:490 mcomix/ui.py:491
+#: mcomix/edit_dialog.py:76 mcomix/ui.py:496 mcomix/ui.py:497
 msgid "Save _As"
 msgstr "_Enregistrer sous…"
 
@@ -327,7 +327,7 @@ msgstr "_Continuer l’édition"
 msgid "_Close the book"
 msgstr "_Fermer le livre"
 
-#: mcomix/edit_image_area.py:111 mcomix/ui.py:446
+#: mcomix/edit_image_area.py:111 mcomix/ui.py:452
 msgid "Re_name page..."
 msgstr "Reno_mmer la page..."
 
@@ -335,7 +335,7 @@ msgstr "Reno_mmer la page..."
 msgid "Select _All"
 msgstr "_Tout sélectionner"
 
-#: mcomix/enhance_dialog.py:40 mcomix/keybindings.py:164
+#: mcomix/enhance_dialog.py:40 mcomix/keybindings.py:165
 msgid "Enhance image"
 msgstr "Amélioration de l'image"
 
@@ -414,7 +414,7 @@ msgstr ""
 "Ajustement automatique du contraste (clarté et obscurité), séparément pour "
 "chaque couleur."
 
-#: mcomix/enhance_dialog.py:124 mcomix/ui.py:533
+#: mcomix/enhance_dialog.py:124 mcomix/ui.py:539
 msgid "_Invert image colors"
 msgstr "_Inverser les couleurs de l'image"
 
@@ -422,7 +422,7 @@ msgstr "_Inverser les couleurs de l'image"
 msgid "Invert (negate) image colors."
 msgstr "Inverse (négatif) les couleurs de l'image."
 
-#: mcomix/file_actions.py:304 mcomix/file_actions.py:1168
+#: mcomix/file_actions.py:304 mcomix/file_actions.py:1210
 msgid "A file of that name is there already."
 msgstr "Un fichier de ce nom s'y trouve déjà."
 
@@ -473,67 +473,72 @@ msgstr ""
 msgid "_Not now"
 msgstr "Pas _maintenant"
 
-#: mcomix/file_actions.py:778
+#: mcomix/file_actions.py:773
+#, python-format
+msgid "Could not show the folder: %s"
+msgstr "Impossible d'afficher le répertoire : %s"
+
+#: mcomix/file_actions.py:820
 msgid "Save page as"
 msgstr "Enregistrer la page sous"
 
-#: mcomix/file_actions.py:819 mcomix/page_rotations.py:67
+#: mcomix/file_actions.py:861 mcomix/page_rotations.py:67
 #, python-format
 msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! Impossible d'enregistrer %(file)s dans %(directory)s : %(error)s"
 
-#: mcomix/file_actions.py:823 mcomix/file_actions.py:1170
+#: mcomix/file_actions.py:865 mcomix/file_actions.py:1212
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "Il n'y a pas assez de place : le fichier fait %s."
 
-#: mcomix/file_actions.py:829
+#: mcomix/file_actions.py:871
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "Impossible d'enregistrer « %(file)s » dans « %(directory)s »"
 
-#: mcomix/file_actions.py:860
+#: mcomix/file_actions.py:902
 msgid "There is no trash for this folder, so it cannot be restored."
 msgstr ""
 "Ce répertoire n'a pas de corbeille, le fichier ne pourra donc pas être "
 "restauré."
 
-#: mcomix/file_actions.py:868
+#: mcomix/file_actions.py:910
 #, python-format
 msgid "Delete \"%s\"?"
 msgstr "Supprimer \"%s\" ?"
 
-#: mcomix/file_actions.py:869
+#: mcomix/file_actions.py:911
 msgid "The file is moved to the trash."
 msgstr "Le fichier est mis à la corbeille."
 
-#: mcomix/file_actions.py:871
+#: mcomix/file_actions.py:913
 msgid "_Move to Trash"
 msgstr "_Mettre à la corbeille"
 
-#: mcomix/file_actions.py:901
+#: mcomix/file_actions.py:943
 msgid "It does not go to the trash and cannot be restored."
 msgstr ""
 "Le fichier n'est pas mis à la corbeille et ne pourra pas être restauré."
 
-#: mcomix/file_actions.py:909
+#: mcomix/file_actions.py:951
 #, python-format
 msgid "Delete \"%s\" permanently?"
 msgstr "Supprimer \"%s\" définitivement ?"
 
-#: mcomix/file_actions.py:1009
+#: mcomix/file_actions.py:1051
 #, python-format
 msgid "Could not move \"%s\" to the trash"
 msgstr "Impossible de mettre « %s » à la corbeille"
 
-#: mcomix/file_actions.py:1013 mcomix/library/book_area.py:845
+#: mcomix/file_actions.py:1055 mcomix/library/book_area.py:845
 #, python-format
 msgid "%d book could not be moved to the trash."
 msgid_plural "%d books could not be moved to the trash."
 msgstr[0] "%d livre n'a pas pu être mis à la corbeille."
 msgstr[1] "%d livres n'ont pas pu être mis à la corbeille."
 
-#: mcomix/file_actions.py:1017
+#: mcomix/file_actions.py:1059
 msgid "Delete it permanently instead? It cannot be restored."
 msgid_plural "Delete them permanently instead? They cannot be restored."
 msgstr[0] ""
@@ -541,16 +546,16 @@ msgstr[0] ""
 msgstr[1] ""
 "Les supprimer définitivement à la place ? Ils ne pourront pas être restaurés."
 
-#: mcomix/file_actions.py:1037
+#: mcomix/file_actions.py:1079
 msgid "_Delete Permanently"
 msgstr "_Supprimer définitivement"
 
-#: mcomix/file_actions.py:1069
+#: mcomix/file_actions.py:1111
 #, python-format
 msgid "Could not delete \"%s\""
 msgstr "Impossible de supprimer « %s »"
 
-#: mcomix/file_actions.py:1090
+#: mcomix/file_actions.py:1132
 #, python-format
 msgid "The file is gone, and its %d bookmark cannot be opened any more."
 msgid_plural ""
@@ -559,12 +564,12 @@ msgstr[0] "Le fichier a disparu, et son %d signet ne peut plus être ouvert."
 msgstr[1] ""
 "Le fichier a disparu, et ses %d signets ne peuvent plus être ouverts."
 
-#: mcomix/file_actions.py:1164
+#: mcomix/file_actions.py:1206
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr "! Impossible de déplacer %(file)s vers %(directory)s : %(error)s"
 
-#: mcomix/file_actions.py:1176
+#: mcomix/file_actions.py:1218
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "Impossible de déplacer « %(file)s » vers « %(directory)s »"
@@ -577,7 +582,7 @@ msgid_plural "%d pages"
 msgstr[0] "%d page"
 msgstr[1] "%d pages"
 
-#: mcomix/file_chooser_base_dialog.py:236 mcomix/keybindings.py:163
+#: mcomix/file_chooser_base_dialog.py:236 mcomix/keybindings.py:164
 msgid "Open"
 msgstr "Ouvrir"
 
@@ -689,7 +694,7 @@ msgstr "Type de fichier inconnu"
 msgid "Key %d"
 msgstr "Touche %d"
 
-#: mcomix/keybindings.py:45 mcomix/ui.py:465
+#: mcomix/keybindings.py:45 mcomix/ui.py:471
 msgid "Previous page"
 msgstr "Page précédente"
 
@@ -704,7 +709,7 @@ msgstr "Page précédente"
 msgid "Navigation"
 msgstr "Navigation"
 
-#: mcomix/keybindings.py:46 mcomix/ui.py:464
+#: mcomix/keybindings.py:46 mcomix/ui.py:470
 msgid "Next page"
 msgstr "Page suivante"
 
@@ -748,11 +753,11 @@ msgstr "Une seule page vers la gauche"
 msgid "Single page to the right"
 msgstr "Une seule page vers la droite"
 
-#: mcomix/keybindings.py:58 mcomix/ui.py:466
+#: mcomix/keybindings.py:58 mcomix/ui.py:472
 msgid "First page"
 msgstr "Première page"
 
-#: mcomix/keybindings.py:59 mcomix/ui.py:467
+#: mcomix/keybindings.py:59 mcomix/ui.py:473
 msgid "Last page"
 msgstr "Dernière page"
 
@@ -760,11 +765,11 @@ msgstr "Dernière page"
 msgid "Go to page"
 msgstr "Aller à la page..."
 
-#: mcomix/keybindings.py:62 mcomix/ui.py:471
+#: mcomix/keybindings.py:62 mcomix/ui.py:477
 msgid "Next archive"
 msgstr "Archive suivante"
 
-#: mcomix/keybindings.py:63 mcomix/ui.py:472
+#: mcomix/keybindings.py:63 mcomix/ui.py:478
 msgid "Previous archive"
 msgstr "Archive précédente"
 
@@ -776,11 +781,11 @@ msgstr "Page au hasard"
 msgid "Random archive in the folder"
 msgstr "Archive au hasard dans le dossier"
 
-#: mcomix/keybindings.py:67 mcomix/ui.py:473
+#: mcomix/keybindings.py:67 mcomix/ui.py:479
 msgid "Next directory"
 msgstr "Répertoire suivant"
 
-#: mcomix/keybindings.py:68 mcomix/ui.py:474
+#: mcomix/keybindings.py:68 mcomix/ui.py:480
 msgid "Previous directory"
 msgstr "Répertoire précédent"
 
@@ -911,7 +916,7 @@ msgstr "Rotation automatique basée sur la largeur"
 msgid "Autorotate by height"
 msgstr "Rotation automatique basée sur la hauteur"
 
-#: mcomix/keybindings.py:109 mcomix/preferences_dialog.py:340 mcomix/ui.py:517
+#: mcomix/keybindings.py:109 mcomix/preferences_dialog.py:340 mcomix/ui.py:523
 msgid "Double page mode"
 msgstr "Mode double page"
 
@@ -928,31 +933,31 @@ msgstr "Modes d'affichage"
 msgid "Title page alone"
 msgstr "Page titre seule"
 
-#: mcomix/keybindings.py:111 mcomix/ui.py:525
+#: mcomix/keybindings.py:111 mcomix/ui.py:531
 msgid "Manga mode"
 msgstr "Mode manga"
 
-#: mcomix/keybindings.py:112 mcomix/ui.py:526
+#: mcomix/keybindings.py:112 mcomix/ui.py:532
 msgid "Invert smart scroll"
 msgstr "Inversion du défilement intelligent"
 
-#: mcomix/keybindings.py:114 mcomix/ui.py:530
+#: mcomix/keybindings.py:114 mcomix/ui.py:536
 msgid "Magnifying lens"
 msgstr "Loupe"
 
-#: mcomix/keybindings.py:115 mcomix/ui.py:531
+#: mcomix/keybindings.py:115 mcomix/ui.py:537
 msgid "Stretch small images"
 msgstr "Étirer les petites images"
 
-#: mcomix/keybindings.py:117 mcomix/ui.py:538
+#: mcomix/keybindings.py:117 mcomix/ui.py:544
 msgid "Best fit mode"
 msgstr "Taille idéale"
 
-#: mcomix/keybindings.py:118 mcomix/ui.py:539
+#: mcomix/keybindings.py:118 mcomix/ui.py:545
 msgid "Fit width mode"
 msgstr "Ajuster à la largeur"
 
-#: mcomix/keybindings.py:119 mcomix/ui.py:540
+#: mcomix/keybindings.py:119 mcomix/ui.py:546
 msgid "Fit height mode"
 msgstr "Ajuster à la hauteur"
 
@@ -960,11 +965,11 @@ msgstr "Ajuster à la hauteur"
 msgid "Fit size mode"
 msgstr "Adapter à une taille fixe"
 
-#: mcomix/keybindings.py:121 mcomix/ui.py:542
+#: mcomix/keybindings.py:121 mcomix/ui.py:548
 msgid "Manual zoom mode"
 msgstr "Zoom manuel"
 
-#: mcomix/keybindings.py:124 mcomix/ui.py:479
+#: mcomix/keybindings.py:124 mcomix/ui.py:485
 msgid "Leave fullscreen"
 msgstr "Quitter le mode plein écran"
 
@@ -1020,7 +1025,7 @@ msgstr "Vignettes"
 msgid "Hide all"
 msgstr "Tout masquer"
 
-#: mcomix/keybindings.py:137 mcomix/slideshow.py:54 mcomix/ui.py:529
+#: mcomix/keybindings.py:137 mcomix/slideshow.py:54 mcomix/ui.py:535
 msgid "Start slideshow"
 msgstr "Démarre le diaporama"
 
@@ -1048,6 +1053,7 @@ msgstr "Supprimer"
 #: mcomix/keybindings.py:160 mcomix/keybindings.py:162
 #: mcomix/keybindings.py:163 mcomix/keybindings.py:164
 #: mcomix/keybindings.py:165 mcomix/keybindings.py:166
+#: mcomix/keybindings.py:167
 msgid "File"
 msgstr "Fichier"
 
@@ -1103,42 +1109,46 @@ msgstr "Propriétés"
 msgid "Preferences"
 msgstr "Préférences"
 
-#: mcomix/keybindings.py:165 mcomix/library/main_dialog.py:55
+#: mcomix/keybindings.py:163 mcomix/ui.py:446 mcomix/ui.py:449
+msgid "Open containing folder"
+msgstr "Ouvrir le répertoire parent"
+
+#: mcomix/keybindings.py:166 mcomix/library/main_dialog.py:55
 msgid "Library"
 msgstr "Bibliothèque"
 
-#: mcomix/keybindings.py:166 mcomix/ui.py:533
+#: mcomix/keybindings.py:167 mcomix/ui.py:539
 msgid "Invert image colors"
 msgstr "Inverser les couleurs de l'image"
 
-#: mcomix/keybindings.py:169
+#: mcomix/keybindings.py:170
 msgid "Add bookmark"
 msgstr "Ajouter un signet"
 
-#: mcomix/keybindings.py:169 mcomix/keybindings.py:170
+#: mcomix/keybindings.py:170 mcomix/keybindings.py:171
 msgid "Bookmarks"
 msgstr "Signets"
 
-#: mcomix/keybindings.py:170
+#: mcomix/keybindings.py:171
 msgid "Edit bookmarks"
 msgstr "Éditer les signets"
 
-#: mcomix/keybindings.py:178 mcomix/openwith.py:558
+#: mcomix/keybindings.py:179 mcomix/openwith.py:558
 msgid "Command"
 msgstr "Commande"
 
-#: mcomix/keybindings.py:179
+#: mcomix/keybindings.py:180
 msgid "External commands"
 msgstr "Commandes externes"
 
-#: mcomix/keybindings.py:256
+#: mcomix/keybindings.py:257
 #, python-format
 msgid "Keybinding for \"%(action)s\" overrides hotkey for another action."
 msgstr ""
 "Le raccourci pour \"%(action)s\" remplace le raccourci clavier d'une autre "
 "action."
 
-#: mcomix/keybindings.py:444 mcomix/keybindings.py:452
+#: mcomix/keybindings.py:445 mcomix/keybindings.py:453
 #, python-format
 msgid "Couldn't load keybindings: %s"
 msgstr "Impossible de charger les raccourcis clavier : %s"
@@ -1404,11 +1414,11 @@ msgstr ""
 msgid "! Could not draw the next frame: %s"
 msgstr "! Impossible d'afficher l'image suivante : %s"
 
-#: mcomix/pageselect.py:29 mcomix/ui.py:468
+#: mcomix/pageselect.py:29 mcomix/ui.py:474
 msgid "Go to page..."
 msgstr "Aller à la page…"
 
-#: mcomix/pageselect.py:31 mcomix/ui.py:506 mcomix/ui.py:507
+#: mcomix/pageselect.py:31 mcomix/ui.py:512 mcomix/ui.py:513
 msgid "_Go"
 msgstr "A_ller à"
 
@@ -1792,7 +1802,7 @@ msgstr "Redimensionnement automatique des pages :"
 msgid "Space between two pages (in pixels):"
 msgstr "Espace entre deux pages (en pixels) :"
 
-#: mcomix/preferences_dialog.py:358 mcomix/ui.py:541
+#: mcomix/preferences_dialog.py:358 mcomix/ui.py:547
 msgid "Fit to size mode"
 msgstr "Adapter à une taille fixe"
 
@@ -2052,7 +2062,7 @@ msgstr ""
 
 #: mcomix/preferences_dialog.py:673 mcomix/preferences_dialog.py:822
 #: mcomix/preferences_dialog.py:904 mcomix/preferences_dialog.py:967
-#: mcomix/ui.py:547
+#: mcomix/ui.py:553
 msgid "Never"
 msgstr "Jamais"
 
@@ -2721,15 +2731,19 @@ msgstr "_Supprimer"
 msgid "Deletes the current file or archive from disk."
 msgstr "Supprime le fichier ou l'archive courant du disque"
 
-#: mcomix/ui.py:447
+#: mcomix/ui.py:447 mcomix/ui.py:450
+msgid "Shows the open file in the file manager."
+msgstr "Affiche le fichier ouvert dans le gestionnaire de fichiers."
+
+#: mcomix/ui.py:453
 msgid "Renames the page the menu was opened over."
 msgstr "Renomme la page sur laquelle le menu a été ouvert."
 
-#: mcomix/ui.py:449
+#: mcomix/ui.py:455
 msgid "_Delete page"
 msgstr "S_upprimer la page"
 
-#: mcomix/ui.py:450
+#: mcomix/ui.py:456
 msgid ""
 "Removes the page the menu was opened over from the book. The archive on disk "
 "is not changed until it is saved."
@@ -2737,308 +2751,308 @@ msgstr ""
 "Retire du livre la page sur laquelle le menu a été ouvert. L'archive sur le "
 "disque n'est pas modifiée tant qu'elle n'est pas enregistrée."
 
-#: mcomix/ui.py:452
+#: mcomix/ui.py:458
 msgid "_Remove bookmark"
 msgstr "Suppr_imer le signet"
 
-#: mcomix/ui.py:453
+#: mcomix/ui.py:459
 msgid "Removes the bookmark of the page the menu was opened over."
 msgstr "Supprime le signet de la page sur laquelle le menu a été ouvert."
 
-#: mcomix/ui.py:455
+#: mcomix/ui.py:461
 msgid "Pu_t back pages picked out"
 msgstr "Déséle_ctionner les pages"
 
-#: mcomix/ui.py:456
+#: mcomix/ui.py:462
 msgid "Puts back every page picked out with CTRL and a click."
 msgstr "Désélectionne toutes les pages sélectionnées avec Ctrl et un clic."
 
-#: mcomix/ui.py:459
+#: mcomix/ui.py:465
 msgid "Takes back the last page removed from the book."
 msgstr "Récupère la dernière page retirée du livre."
 
-#: mcomix/ui.py:462
+#: mcomix/ui.py:468
 msgid "Removes again the page the last undo brought back."
 msgstr "Retire de nouveau la page que la dernière annulation avait récupérée."
 
-#: mcomix/ui.py:464
+#: mcomix/ui.py:470
 msgid "_Next page"
 msgstr "Page _suivante"
 
-#: mcomix/ui.py:465
+#: mcomix/ui.py:471
 msgid "_Previous page"
 msgstr "Page _précédente"
 
-#: mcomix/ui.py:466
+#: mcomix/ui.py:472
 msgid "_First page"
 msgstr "P_remière page"
 
-#: mcomix/ui.py:467
+#: mcomix/ui.py:473
 msgid "_Last page"
 msgstr "_Dernière page"
 
-#: mcomix/ui.py:468
+#: mcomix/ui.py:474
 msgid "_Go to page..."
 msgstr "_Aller à la page…"
 
-#: mcomix/ui.py:469
+#: mcomix/ui.py:475
 msgid "Re_fresh"
 msgstr "Act_ualiser"
 
-#: mcomix/ui.py:469
+#: mcomix/ui.py:475
 msgid "Reloads the currently opened files or archive."
 msgstr "Recharge le fichier ou l'archive courant."
 
-#: mcomix/ui.py:471
+#: mcomix/ui.py:477
 msgid "Next _archive"
 msgstr "Archive sui_vante"
 
-#: mcomix/ui.py:472
+#: mcomix/ui.py:478
 msgid "Previous a_rchive"
 msgstr "Archive pré_cédente"
 
-#: mcomix/ui.py:475
+#: mcomix/ui.py:481
 msgid "Zoom _In"
 msgstr "Zoom a_vant"
 
-#: mcomix/ui.py:476
+#: mcomix/ui.py:482
 msgid "Zoom _Out"
 msgstr "Zoom a_rrière"
 
-#: mcomix/ui.py:477
+#: mcomix/ui.py:483
 msgid "_Normal Size"
 msgstr "Taille _normale"
 
-#: mcomix/ui.py:478
+#: mcomix/ui.py:484
 msgid "Mi_nimize"
 msgstr "Mi_nimiser"
 
-#: mcomix/ui.py:481
+#: mcomix/ui.py:487
 msgid "Closes all opened files."
 msgstr "Ferme tous les fichiers ouverts."
 
-#: mcomix/ui.py:482
+#: mcomix/ui.py:488
 msgid "_Quit"
 msgstr "_Quitter"
 
-#: mcomix/ui.py:483
+#: mcomix/ui.py:489
 msgid "_Save and quit"
 msgstr "Enre_gistrer et quitter"
 
-#: mcomix/ui.py:483
+#: mcomix/ui.py:489
 msgid ""
 "Quits and restores the currently opened file next time the program starts."
 msgstr "Quitte et rouvre le fichier actuellement ouvert au prochain lancement."
 
-#: mcomix/ui.py:485 mcomix/ui.py:548 mcomix/ui.py:550
+#: mcomix/ui.py:491 mcomix/ui.py:554 mcomix/ui.py:556
 msgid "_Rotate 90° CW"
 msgstr "Rotation de 90 degrés sens _horaire"
 
-#: mcomix/ui.py:486
+#: mcomix/ui.py:492
 msgid "Rotate _180°"
 msgstr "Rotation de 180 de_grés"
 
-#: mcomix/ui.py:487 mcomix/ui.py:549 mcomix/ui.py:551
+#: mcomix/ui.py:493 mcomix/ui.py:555 mcomix/ui.py:557
 msgid "Rotat_e 90° CCW"
 msgstr "Rotation de 90 degrés sens _anti-horaire"
 
-#: mcomix/ui.py:488
+#: mcomix/ui.py:494
 msgid "Fli_p horizontally"
 msgstr "Miroir h_orizontal"
 
-#: mcomix/ui.py:489
+#: mcomix/ui.py:495
 msgid "Flip _vertically"
 msgstr "Miroir _vertical"
 
-#: mcomix/ui.py:491
+#: mcomix/ui.py:497
 msgid "Saves the page the menu was opened over."
 msgstr "Enregistre la page sur laquelle le menu a été ouvert."
 
-#: mcomix/ui.py:493
+#: mcomix/ui.py:499
 msgid "_Zoom"
 msgstr "_Zoom"
 
-#: mcomix/ui.py:494
+#: mcomix/ui.py:500
 msgid "_Recent"
 msgstr "Fichiers _récents"
 
-#: mcomix/ui.py:495 mcomix/ui.py:496
+#: mcomix/ui.py:501 mcomix/ui.py:502
 msgid "_Bookmarks"
 msgstr "_Signets"
 
-#: mcomix/ui.py:497
+#: mcomix/ui.py:503
 msgid "T_oolbars"
 msgstr "Barre d'ou_tils"
 
-#: mcomix/ui.py:498
+#: mcomix/ui.py:504
 msgid "_Edit"
 msgstr "É_dition"
 
-#: mcomix/ui.py:499 mcomix/ui.py:500
+#: mcomix/ui.py:505 mcomix/ui.py:506
 msgid "Open _with"
 msgstr "Ou_vrir avec"
 
-#: mcomix/ui.py:501
+#: mcomix/ui.py:507
 msgid "_Move to"
 msgstr "_Déplacer vers"
 
-#: mcomix/ui.py:502
+#: mcomix/ui.py:508
 msgid "Moves the file, or the archive the page is in, to another folder."
 msgstr ""
 "Déplace le fichier, ou l'archive contenant la page, vers un autre répertoire."
 
-#: mcomix/ui.py:503
+#: mcomix/ui.py:509
 msgid "_File"
 msgstr "_Fichier"
 
-#: mcomix/ui.py:504 mcomix/ui.py:505
+#: mcomix/ui.py:510 mcomix/ui.py:511
 msgid "_View"
 msgstr "_Affichage"
 
-#: mcomix/ui.py:508
+#: mcomix/ui.py:514
 msgid "_Tools"
 msgstr "_Outils"
 
-#: mcomix/ui.py:509
+#: mcomix/ui.py:515
 msgid "_Transform image"
 msgstr "Tra_nsformer l'image"
 
-#: mcomix/ui.py:510
+#: mcomix/ui.py:516
 msgid "_Auto-rotate image"
 msgstr "_Rotation automatique des images"
 
-#: mcomix/ui.py:511
+#: mcomix/ui.py:517
 msgid "...when width exceeds height"
 msgstr "… lorsque que la largeur est plus grande que la hauteur"
 
-#: mcomix/ui.py:512
+#: mcomix/ui.py:518
 msgid "...when height exceeds width"
 msgstr "… lorsque que la hauteur est plus grande que la largeur"
 
-#: mcomix/ui.py:516
+#: mcomix/ui.py:522
 msgid "_Fullscreen"
 msgstr "_Plein écran"
 
-#: mcomix/ui.py:516
+#: mcomix/ui.py:522
 msgid "Fullscreen mode"
 msgstr "Mode plein écran"
 
-#: mcomix/ui.py:517
+#: mcomix/ui.py:523
 msgid "_Double page mode"
 msgstr "_Double page"
 
-#: mcomix/ui.py:518
+#: mcomix/ui.py:524
 msgid "_Title page alone"
 msgstr "Page titre _seule"
 
-#: mcomix/ui.py:519
+#: mcomix/ui.py:525
 msgid "_Toolbar"
 msgstr "Barre d'_outils"
 
-#: mcomix/ui.py:520
+#: mcomix/ui.py:526
 msgid "_Menubar"
 msgstr "Barre de _menus"
 
-#: mcomix/ui.py:521
+#: mcomix/ui.py:527
 msgid "St_atusbar"
 msgstr "Barre d'_état"
 
 # Do not remove extra blank space at the end of the fr translation. It is needed before ":".
-#: mcomix/ui.py:522
+#: mcomix/ui.py:528
 msgid "S_crollbars"
 msgstr "Barres de _défilement"
 
-#: mcomix/ui.py:523
+#: mcomix/ui.py:529
 msgid "Th_umbnails"
 msgstr "_Vignettes"
 
-#: mcomix/ui.py:524
+#: mcomix/ui.py:530
 msgid "H_ide all"
 msgstr "Tout mas_quer"
 
-#: mcomix/ui.py:525
+#: mcomix/ui.py:531
 msgid "_Manga mode"
 msgstr "_Manga"
 
-#: mcomix/ui.py:526
+#: mcomix/ui.py:532
 msgid "Invert smart scrolling direction."
 msgstr "Inverse la direction du défilement intelligent."
 
-#: mcomix/ui.py:527
+#: mcomix/ui.py:533
 msgid "_Keep transformation"
 msgstr "Mémoriser la _transformation"
 
-#: mcomix/ui.py:527
+#: mcomix/ui.py:533
 msgid "Keeps the currently selected transformation for the next pages."
 msgstr ""
 "Conserve la transformation actuellement sélectionnée pour les prochaines "
 "pages."
 
-#: mcomix/ui.py:529
+#: mcomix/ui.py:535
 msgid "Start slid_eshow"
 msgstr "Démarrer le d_iaporama"
 
-#: mcomix/ui.py:530
+#: mcomix/ui.py:536
 msgid "Magnifying _lens"
 msgstr "_Loupe"
 
-#: mcomix/ui.py:531
+#: mcomix/ui.py:537
 msgid "Stretch images to fit to the screen, depending on zoom mode."
 msgstr "Étire les images pour les adapter à l'écran, selon le mode zoom."
 
-#: mcomix/ui.py:538
+#: mcomix/ui.py:544
 msgid "_Best fit mode"
 msgstr "Ajuster l'image à la _fenêtre"
 
-#: mcomix/ui.py:539
+#: mcomix/ui.py:545
 msgid "Fit _width mode"
 msgstr "Adapter à la lar_geur"
 
-#: mcomix/ui.py:540
+#: mcomix/ui.py:546
 msgid "Fit _height mode"
 msgstr "Adapter à la _hauteur"
 
-#: mcomix/ui.py:541
+#: mcomix/ui.py:547
 msgid "Fit _size mode"
 msgstr "Adapter _à une taille fixe"
 
-#: mcomix/ui.py:542
+#: mcomix/ui.py:548
 msgid "M_anual zoom mode"
 msgstr "Zoom m_anuel"
 
-#: mcomix/ui.py:555
+#: mcomix/ui.py:561
 msgid "A_bout"
 msgstr "_À propos"
 
-#: mcomix/ui.py:558
+#: mcomix/ui.py:564
 msgid "Co_mments..."
 msgstr "Co_mmentaires…"
 
-#: mcomix/ui.py:561
+#: mcomix/ui.py:567
 msgid "Proper_ties"
 msgstr "_Propriétés"
 
-#: mcomix/ui.py:564
+#: mcomix/ui.py:570
 msgid "_Preferences"
 msgstr "Préfére_nces"
 
-#: mcomix/ui.py:568
+#: mcomix/ui.py:574
 msgid "_Edit archive..."
 msgstr "_Éditer l'archive…"
 
-#: mcomix/ui.py:568
+#: mcomix/ui.py:574
 msgid "Opens the archive editor."
 msgstr "Ouvre l'éditeur d'archive."
 
-#: mcomix/ui.py:570
+#: mcomix/ui.py:576
 msgid "_Open..."
 msgstr "_Ouvrir…"
 
-#: mcomix/ui.py:571
+#: mcomix/ui.py:577
 msgid "Enha_nce image..."
 msgstr "Am_élioration de l'image…"
 
-#: mcomix/ui.py:574
+#: mcomix/ui.py:580
 msgid "_Library..."
 msgstr "_Bibliothèque…"
 

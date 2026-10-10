@@ -20,6 +20,7 @@
 - [Keyboard and mouse](shortcuts.md) lists every binding.
 - L, or the middle mouse button, shows a magnifying lens.
 - "File → Properties" describes the page and its archive, with series, issue, title and writer from a ComicInfo.xml.
+- "File → Open containing folder" shows the open file in the file manager. The right-click menu has it too.
 - "Move to", in the page's right-click menu, moves the open file or archive to another folder.
   Its place in the library, last page, bookmarks and recent-files entry follow it.
 
