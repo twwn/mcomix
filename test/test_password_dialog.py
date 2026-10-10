@@ -1,12 +1,15 @@
 """ Tests for the password prompt, which is asked for by a thread that is
 not the one that can show it. """
 
+import os
 import threading
+import unittest.mock
 
 from gi.repository import GLib, Gtk
 
-from . import MComixTest, get_testfile_path, pump as _pump
+from . import MComixTest, get_testfile_path, pump as _pump, wait_for
 
+from mcomix import archive_extractor
 from mcomix import message_dialog
 from mcomix.archive import password as archive_password
 from mcomix.archive import zip as zip_archive
@@ -181,5 +184,71 @@ class PasswordDialogTest(MComixTest):
         self.assertNotIn('error', listed, str(listed.get('error')))
         self.assertEqual(sorted(listed['names']),
                          ['arg.jpeg', 'bar.jpg', 'foo.JPG', 'meh.png'])
+
+
+class SessionPasswordTest(MComixTest):
+
+    """A password typed once is kept in memory until MComix closes, so
+    that reopening an encrypted book does not ask again (upstream feature
+    request 110), and dropped when a page will not unpack with it."""
+
+    ARCHIVE = get_testfile_path('archives', 'Encrypted.zip')
+    MEMBER = 'arg.jpeg'
+
+    def setUp(self):
+        super().setUp()
+        self.asked = []
+        self.answer = 'password'
+
+        def ask(archive, on_password):
+            self.asked.append(archive)
+            on_password(self.answer)
+
+        patcher = unittest.mock.patch.object(
+            archive_password, 'ask_for_password', ask)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def _extract_with_a_new_archive(self):
+        archive = zip_archive.ZipArchive(self.ARCHIVE)
+        self.addCleanup(archive.close)
+        archive.list_contents()
+        archive.extract(self.MEMBER, self.tmp_dir)
+        return os.path.join(self.tmp_dir, self.MEMBER)
+
+    def test_reopening_the_book_does_not_ask_again(self):
+        self.assertTrue(os.path.isfile(self._extract_with_a_new_archive()))
+        os.remove(os.path.join(self.tmp_dir, self.MEMBER))
+        self.assertTrue(os.path.isfile(self._extract_with_a_new_archive()))
+        self.assertEqual([self.ARCHIVE], self.asked)
+
+    def test_what_works_unasked_does_not_use_it(self):
+        """A thumbnail of an encrypted book would put its pages in the
+        desktop's shared cache."""
+        self._extract_with_a_new_archive()
+        archive = zip_archive.ZipArchive(self.ARCHIVE)
+        self.addCleanup(archive.close)
+        with archive_password.never_asked():
+            self.assertEqual('', archive._get_password())
+        self.assertEqual('password', archive_password.remembered(self.ARCHIVE))
+
+    def test_a_page_that_will_not_unpack_forgets_it(self):
+        self.answer = 'wrong'
+        destination = os.path.join(self.tmp_dir, 'extracted')
+        os.makedirs(destination)
+        extractor = archive_extractor.Extractor()
+        extractor.setup(self.ARCHIVE, destination)
+        self.addCleanup(extractor.close)
+        self.assertTrue(wait_for(lambda: extractor.get_files() is not None,
+                                 seconds=20))
+        extractor.set_files([self.MEMBER])
+        extractor.extract()
+        self.assertTrue(wait_for(lambda: extractor.is_ready(self.MEMBER),
+                                 seconds=20))
+        self.assertEqual([self.ARCHIVE], self.asked)
+        self.assertIsNone(archive_password.remembered(self.ARCHIVE))
+        self.answer = 'password'
+        self.assertTrue(os.path.isfile(self._extract_with_a_new_archive()))
+        self.assertEqual([self.ARCHIVE, self.ARCHIVE], self.asked)
 
 # vim: expandtab:sw=4:ts=4

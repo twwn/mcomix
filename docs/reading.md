@@ -34,7 +34,7 @@
 - For a book opened from the [library](library.md), they open the next and previous of the books it shows, and stop at the last.
 - CTRL+N and CTRL+P open the next and previous folder with a book, the same way.
 - CTRL+SHIFT+R reloads the book. If its file has been deleted, the next one in its folder opens instead, or the last one.
-- An encrypted archive asks for its password.
+- An encrypted archive asks for its password. MComix keeps it in memory until it closes, so reopening the book does not ask again. It is never written to disk, and forgotten when a page will not unpack with it.
 - A RAR book in volumes (name.part1.rar, name.part2.rar, …) is read from its first volume.
   Opening any other volume opens the whole book from name.part1.rar, if it is there.
 

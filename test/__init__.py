@@ -404,6 +404,10 @@ class MComixTest(unittest.TestCase):
             self.__class__.__name__,
             self._testMethodName))
         self.tmp_dir = tempfile.mkdtemp(dir=_TMP_ROOT, prefix='%s.' % name)
+        # The passwords typed this session are the process's: one typed
+        # in an earlier test would answer the next test's prompt.
+        from mcomix.archive import password as archive_password
+        archive_password._remembered.clear()
         #: What the test moved to the trash: see _move_to_test_trash().
         self.trash_dir = os.path.join(self.tmp_dir, 'trash')
         _test_trash[:] = [self.trash_dir]

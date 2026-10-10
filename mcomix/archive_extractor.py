@@ -338,6 +338,7 @@ class Extractor:
             # kept whoever waited on it parked until the book was closed.
             log.error(_('! Extraction error: %s'), ex)
             log.debug('Traceback:\n%s', traceback.format_exc())
+            self._opened_archive.forget_password()
             if self._extract_thread.must_stop():
                 return
             with self._condition:
@@ -363,6 +364,7 @@ class Extractor:
             # waiting for good.
             log.error(_('! Extraction error: %s'), ex)
             log.debug('Traceback:\n%s', traceback.format_exc())
+            self._opened_archive.forget_password()
 
         if self._extract_thread.must_stop():
             return

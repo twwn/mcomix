@@ -1,6 +1,7 @@
 """The prompt that asks for an encrypted archive's password."""
 
 import contextlib
+import os
 import threading
 
 from gi.repository import Gtk
@@ -55,6 +56,32 @@ def withheld_here() -> bool:
         return False
     withheld.wanted = True
     return True
+
+
+#: The passwords typed this session, by the archive's absolute path:
+#: kept in memory alone, never written anywhere, so that reopening an
+#: encrypted book does not ask again (upstream feature request 110).
+_remembered: dict[str, str] = {}
+_remembered_lock = threading.Lock()
+
+
+def remembered(archive: str) -> str | None:
+    """The password typed for <archive> this session, if one was."""
+    with _remembered_lock:
+        return _remembered.get(os.path.abspath(archive))
+
+
+def remember(archive: str, password: str) -> None:
+    """Keep <password> for <archive> until MComix closes."""
+    with _remembered_lock:
+        _remembered[os.path.abspath(archive)] = password
+
+
+def forget(archive: str) -> None:
+    """Drop what was kept for <archive>: a page would not unpack with it,
+    and the next opening should ask rather than try it again."""
+    with _remembered_lock:
+        _remembered.pop(os.path.abspath(archive), None)
 
 
 def ask_for_password(archive: str,

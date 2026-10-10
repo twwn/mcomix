@@ -154,9 +154,18 @@ class BaseArchive:
 
         def got_password(password: str | None) -> None:
             self._password = password if password is not None else ""
+            if self._password:
+                archive_password.remember(self.archive, self._password)
             self._event.set()
 
         archive_password.ask_for_password(self.archive, got_password)
+
+    def forget_password(self) -> None:
+        """Forget the password kept for this archive, if it used one:
+        something would not unpack, and a wrong password kept for the
+        session would leave the book unreadable until MComix closed."""
+        if self._password:
+            archive_password.forget(self.archive)
 
     def _get_password(self) -> str:
         """ Returns the password for this archive, asking for it once if it
@@ -166,7 +175,15 @@ class BaseArchive:
         answer is no password, which is not remembered: a prompt the
         reader does ask for, by opening the book, still comes. """
         if self._password is None and archive_password.withheld_here():
+            # A password typed earlier is not used either: what works
+            # through archives unasked - thumbnails, the library - would
+            # write the pages of an encrypted book to a shared cache.
             return ''
+        if self._password is None:
+            remembered = archive_password.remembered(self.archive)
+            if remembered is not None:
+                self._password = remembered
+                return remembered
         ask_for_password = self._password is None
         # Don't trigger concurrent password dialogs.
         if ask_for_password and self.support_concurrent_extractions:

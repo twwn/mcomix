@@ -208,6 +208,10 @@ class RecursiveArchive(archive_base.BaseArchive):
                 return True
         return False
 
+    def forget_password(self) -> None:
+        for archive in self._archive_list:
+            archive.forget_password()
+
     def close(self) -> None:
         """Close every archive in the nesting."""
         archives = list(self._archive_list)
