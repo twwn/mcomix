@@ -210,7 +210,7 @@ def what_to_open(opts: argparse.Namespace, args: list[str]
 
     elif preferences.prefs['auto load last file'] \
             and preferences.prefs['path to last file'] \
-            and os.path.isfile(preferences.prefs['path to last file']):
+            and os.path.exists(preferences.prefs['path to last file']):
         open_path = preferences.prefs['path to last file']
         open_page = preferences.prefs['page of last file']
         open_member = preferences.prefs['member of last file'] or None

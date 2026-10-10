@@ -129,6 +129,17 @@ class PreferencesDialogTest(MComixTest):
         remade.assert_called_once_with()
         self.assertEqual(prefs['auto rotate from exif'], button.get_active())
 
+    def test_reading_folders_with_the_ones_in_them_reopens_the_book(self):
+        """The folder that is open gains or loses the pictures of the
+        folders in it at once, not when it is next opened."""
+        dialog = self._open()
+        button = Gtk.CheckButton(active=True)
+        with unittest.mock.patch.object(self.window.filehandler,
+                                        'refresh_file') as reopened:
+            dialog._check_button_cb(button, 'open folder tree as one book')
+        reopened.assert_called_once_with()
+        self.assertTrue(prefs['open folder tree as one book'])
+
     def test_turning_pages_by_their_metadata_forgets_the_drawn_covers(self):
         """The library's covers are kept as they were drawn, turned or
         not; with the library closed, the next one opened would have

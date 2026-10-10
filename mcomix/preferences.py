@@ -71,6 +71,7 @@ Preferences = TypedDict('Preferences', {
     'auto open next directory': bool,
     'open first file in prev archive': bool,
     'open first file in prev directory': bool,
+    'open folder tree as one book': bool,
     'sort by': int,
     'sort order': int,
     'sort archive by': int,
@@ -221,6 +222,7 @@ _DEFAULTS: Preferences = {
     'auto open next directory': True,
     'open first file in prev archive': False,
     'open first file in prev directory': False,
+    'open folder tree as one book': False,
     'sort by': constants.SORT_NAME,  # Normal files obtained by directory listing
     'sort order': constants.SORT_ASCENDING,
     'sort archive by': constants.SORT_NAME,  # Files in archives

@@ -926,14 +926,13 @@ class MainWindow(Gtk.Window):
         """Note the book and page on screen for "auto load last file",
         or that there is none to load.  The preferences write it out."""
         if prefs['auto load last file'] and self.filehandler.file_loaded:
-            prefs['path to last file'] = \
-                self.imagehandler.get_real_path() or ''
-            page = self.imagehandler.get_current_page()
-            prefs['page of last file'] = page
+            path, member = self.filehandler.resume_point()
+            prefs['path to last file'] = path or ''
+            prefs['page of last file'] = self.imagehandler.get_current_page()
             # The file of that page within an archive, which finds it
-            # again however the archive is sorted by then.
-            prefs['member of last file'] = \
-                self.filehandler.page_member(page) or ''
+            # again however the archive is sorted by then, or a
+            # picture's path below the folder it was read as part of.
+            prefs['member of last file'] = member or ''
 
         else:
             prefs['path to last file'] = ''

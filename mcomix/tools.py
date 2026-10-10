@@ -172,6 +172,19 @@ def get_thumbnail_directory() -> str:
     return os.path.join(cache_dir, 'normal')
 
 
+def names_below(folder: str, path: str) -> list[str] | None:
+    """The names that lead from <folder> down to <path>, the last of
+    them <path>'s own, or None where <path> is not below <folder>."""
+    try:
+        names = os.path.relpath(path, folder).split(os.sep)
+    except ValueError:
+        # On another drive, which no folder reaches.
+        return None
+    if names[0] in (os.pardir, os.curdir):
+        return None
+    return names
+
+
 def number_of_digits(n: int) -> int:
     if n == 0:
         return 1

@@ -689,6 +689,12 @@ class _BaseFileChooserDialog(Dialog):
     def should_open_recursive(self) -> bool:
         return False
 
+    def folder_opens_as_itself(self, folder: str,
+                               ffilter: "Gtk.FileFilter | None") -> bool:
+        """Whether <folder>, the one thing chosen, is handed on as the
+        folder rather than as the files in it that <ffilter> shows."""
+        return False
+
     def _activated(self, gesture: Gtk.GestureClick, n_press: int,
                    x: float, y: float) -> None:
         """Confirm the dialog when a file is double clicked."""
@@ -699,7 +705,8 @@ class _BaseFileChooserDialog(Dialog):
         """Work out what was chosen and hand it to files_chosen().
 
         A directory among the chosen paths is walked for the files it
-        holds, so what goes out is always files.  Anything but OK is an
+        holds, so what goes out is files, unless folder_opens_as_itself()
+        says the one directory chosen goes out.  Anything but OK is an
         empty list, and a Save that would overwrite goes through a
         confirmation first, so files_chosen() may be called from the
         answer to that rather than from here.
@@ -719,7 +726,10 @@ class _BaseFileChooserDialog(Dialog):
             filter = self.filechooser.get_filter()
             paths = []
             for path in chosen:
-                if os.path.isdir(path):
+                if (len(chosen) == 1 and os.path.isdir(path)
+                        and self.folder_opens_as_itself(path, filter)):
+                    paths.append(path)
+                elif os.path.isdir(path):
                     subdir_files = list(self.collect_files_from_subdir(path, filter,
                                                                        self.should_open_recursive()))
                     file_provider.FileProvider.sort_files(subdir_files)

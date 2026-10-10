@@ -214,7 +214,13 @@ class FileHandler:
                 start_member = self.page_member(start_page)
             else:
                 start_page = 0
-            self.open_file(current_file, start_page, keep_fileprovider=True,
+            # A picture its folder no longer lists - one in a folder
+            # below, with the folders in it no longer read as part of
+            # it - is opened in its own folder.
+            keep = (self.archive_type is not None or current_file in
+                    self._opened_provider.list_files(
+                        file_provider.FileProvider.IMAGES))
+            self.open_file(current_file, start_page, keep_fileprovider=keep,
                            start_member=start_member)
 
     def nearest_in_folder(self, gone: str) -> str | None:
@@ -227,6 +233,12 @@ class FileHandler:
                  if path != gone and not archive_tools.is_later_volume(path)]
         if not files:
             return None
+        # A folder read with the folders in it is sorted folder by
+        # folder: the nearest is one from the folder <gone> was in,
+        # where that holds another.
+        folder = os.path.dirname(gone)
+        files = [path for path in files
+                 if os.path.dirname(path) == folder] or files
         # Where <gone> would be listed: sorted in among the rest, by a
         # key that may read the file, which then counts as empty and
         # old.
@@ -354,6 +366,7 @@ class FileHandler:
                     listed)
                 keep_fileprovider = True
             path = self._initialize_fileprovider(path, keep_fileprovider)
+            path, start_member = self._book_in_folder(path, start_member)
         except ValueError as ex:
             self._window.statusbar.set_message(str(ex))
             self._window.osd.show(str(ex))
@@ -604,6 +617,62 @@ class FileHandler:
                 self._file_provider = file_provider.get_file_provider([path])
 
             return path
+
+    def _book_in_folder(self, path: str, start_member: str | None
+                        ) -> tuple[str, str | None]:
+        """What opening <path> opens, and what is left of <start_member>.
+
+        A folder opened at <start_member>, a picture's path below it
+        written with "/", is that picture opened in the folder: how a
+        page in a folder below the one opened is found again (see
+        resume_point()).  Where the folder does not list the picture,
+        the folders in it being no longer read with it, the picture is
+        opened in its own folder.
+
+        A folder with no pictures and some archives is its first
+        archive, as walking into it would open it.  Anything else is
+        itself.
+        """
+        if not os.path.isdir(path):
+            # Which may be a name that is not there, and no provider.
+            return path, start_member
+        provider = self._opened_provider
+        pictures = provider.list_files(file_provider.FileProvider.IMAGES)
+        if start_member is not None:
+            picture = os.path.normpath(
+                os.path.join(path, *start_member.split('/')))
+            if os.path.isfile(picture):
+                if picture not in pictures:
+                    self._file_provider = file_provider.OrderedFileProvider(
+                        picture)
+                return picture, None
+        if not pictures:
+            for archive in provider.list_files(
+                    file_provider.FileProvider.ARCHIVES):
+                if not archive_tools.is_later_volume(archive):
+                    return archive, None
+        return path, start_member
+
+    def resume_point(self) -> tuple[str | None, str | None]:
+        """What reopens the book at the page on screen: a path to open
+        and the start_member to open it at.
+
+        An archive and the name of the page's file within it, or a
+        picture and nothing.  A picture in a folder below the one that
+        was opened, read as part of it, is that folder and the picture's
+        path below it written with "/": opened by itself, the picture
+        would bring only its own folder with it.
+        """
+        path = self._window.imagehandler.get_real_path()
+        member = self.page_member(self._window.imagehandler.get_current_page())
+        if (path is None or self.archive_type is not None or not isinstance(
+                self._file_provider, file_provider.OrderedFileProvider)):
+            return path, member
+        folder = self._file_provider.get_directory()
+        below = tools.names_below(folder, path)
+        if below is None or len(below) < 2:
+            return path, member
+        return folder, '/'.join(below)
 
     def _check_access(self, path: str) -> str | None:
         """Return why <path> cannot be opened, or None if it can.
@@ -1022,6 +1091,12 @@ class FileHandler:
         path = self._window.imagehandler.get_path_to_page()
         return os.path.dirname(path) if path is not None else None
 
+    def get_book_folder(self) -> str | None:
+        """The folder that was opened, for a book of loose pictures: the
+        one they are in, or one above it that is read with the folders
+        in it.  None for an archive and with no book open."""
+        return self._base_path if self.archive_type is None else None
+
     def get_base_filename(self) -> str:
         """Return the filename of the current base (archive filename or
         directory name), or the empty string where there is no base yet.
@@ -1357,7 +1432,7 @@ class FileHandler:
         """Write current open file information."""
 
         if self.file_loaded:
-            path = self._window.imagehandler.get_real_path()
+            path, member = self.resume_point()
             page = self._window.imagehandler.get_current_page()
             current_file_info = [path, page - 1]
 
@@ -1367,8 +1442,7 @@ class FileHandler:
                 # its own after the pair, which an older MComix stops
                 # short of: it finds the page however the archive is
                 # sorted by the time the file is read.
-                pickle.dump(self.page_member(page), config,
-                            pickle.HIGHEST_PROTOCOL)
+                pickle.dump(member, config, pickle.HIGHEST_PROTOCOL)
 
     def read_fileinfo_file(self) -> "tuple[str, int, str | None] | None":
         """The file and page index a "quit and save" left off at, and

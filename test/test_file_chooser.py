@@ -419,18 +419,9 @@ class FileChooserTest(MComixTest):
         self.dialog._activated(None, 2, 0.0, 0.0)
         self.assertEqual([path], chosen)
 
-    def test_a_folder_chosen_hands_on_the_files_in_it(self):
-        """In order, and only those the filter on show lets through."""
-        folder = os.path.join(self.tmp_dir, 'book')
-        os.makedirs(folder)
-        # Enough pages that the order the folder lists them in is not
-        # the natural one by chance.
-        pages = ['page %d.png' % number for number in range(1, 13)]
-        for name in reversed(pages[::2] + pages[1::2]):
-            shutil.copy(get_testfile_path('images', 'blue.png'),
-                        os.path.join(folder, name))
-        with open(os.path.join(folder, 'notes.txt'), 'w') as notes:
-            notes.write('Scanned at 600 dpi.\n')
+    def _choose_folder(self, folder, filter_name):
+        """ What the dialog hands on when <folder> is chosen with the
+        filter called <filter_name> on show. """
         chosen = []
         self.dialog.files_chosen = chosen.extend
         self._select(folder)
@@ -438,10 +429,75 @@ class FileChooserTest(MComixTest):
         # set_file() is given a folder.
         self.dialog.filechooser.set_filter(next(
             f for f in self.dialog.list_filters()
-            if f.get_name() == 'All images'))
+            if f.get_name() == filter_name))
         self.dialog.response(Response.OK)
+        return chosen
+
+    def _folder_of(self, *names):
+        folder = os.path.join(self.tmp_dir, 'book')
+        for name in names:
+            path = os.path.join(folder, *name.split('/'))
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            source = (get_testfile_path('archives', '01-ZIP-Normal.zip')
+                      if name.endswith('.zip') else
+                      get_testfile_path('images', '01-JPG-Indexed.jpg')
+                      if name.endswith('.jpg') else
+                      get_testfile_path('images', 'blue.png'))
+            shutil.copy(source, path)
+        return folder
+
+    def test_a_folder_chosen_hands_on_the_files_the_filter_shows(self):
+        """In order, and only those the filter on show lets through,
+        where it hides some of the folder's pictures."""
+        # Enough pages that the order the folder lists them in is not
+        # the natural one by chance.
+        pages = ['page %d.png' % number for number in range(1, 13)]
+        folder = self._folder_of(
+            *reversed(pages[::2] + pages[1::2]), 'page 13.jpg')
+        with open(os.path.join(folder, 'notes.txt'), 'w') as notes:
+            notes.write('Scanned at 600 dpi.\n')
+        png = next(f.get_name() for f in self.dialog.list_filters()
+                   if 'png' in f.get_name().lower())
         self.assertEqual([os.path.join(folder, name) for name in pages],
-                         chosen)
+                         self._choose_folder(folder, png))
+
+    def test_a_folder_chosen_is_handed_on_as_the_folder(self):
+        """It went out as its files: a fixed list, which a page turn
+        past its end did not leave for the next folder, though it did
+        where the folder held one picture."""
+        folder = self._folder_of('1.png', '2.png', 'notes.zip')
+        self.assertEqual([folder], self._choose_folder(folder, 'All images'))
+        self.assertEqual([folder], self._choose_folder(folder, 'All files'))
+
+    def test_a_folder_of_archives_is_handed_on_as_the_folder(self):
+        folder = self._folder_of('1.zip', '2.zip')
+        self.assertEqual([folder], self._choose_folder(folder, 'All files'))
+        self.assertEqual([folder],
+                         self._choose_folder(folder, 'All archives'))
+        self.assertEqual([], self._choose_folder(folder, 'All images'))
+
+    def test_a_folder_that_holds_only_folders_opens_with_them(self):
+        """Nothing was handed on, and nothing opened."""
+        folder = self._folder_of('Vol 1/1.png', 'Vol 2/1.png')
+        self.assertEqual([], self._choose_folder(folder, 'All images'))
+        prefs['open folder tree as one book'] = True
+        self.assertEqual([folder], self._choose_folder(folder, 'All images'))
+
+    def test_a_folder_chosen_opens_and_walks_on(self):
+        folder = self._folder_of('1.png', '2.png')
+        beside = os.path.join(self.tmp_dir, 'book 2')
+        os.makedirs(beside)
+        shutil.copy(get_testfile_path('images', 'blue.png'),
+                    os.path.join(beside, '1.png'))
+        self._select(folder)
+        self.dialog.response(Response.OK)
+        handler = self.window.filehandler
+        self.assertTrue(wait_for(
+            lambda: self.window.imagehandler.get_number_of_pages() == 2))
+        self.assertTrue(handler.open_next_directory())
+        self.assertTrue(wait_for(
+            lambda: self.window.imagehandler.get_image_files()
+            == [os.path.join(beside, '1.png')]))
 
     def test_a_selected_file_is_previewed(self):
         # The thumbnail arrives on a worker thread, and the callback that

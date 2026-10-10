@@ -578,6 +578,14 @@ class ImageHandler:
                 os.path.basename(os.path.dirname(img_file)),
                 os.path.basename(img_file)
             )
+            # A picture in a folder below the one that was opened is
+            # named from that one down: its own folder's name says
+            # little where every volume has a "Chapter 1".
+            folder = self._window.filehandler.get_book_folder()
+            below = (tools.names_below(folder, img_file)
+                     if folder is not None else None)
+            if folder is not None and below is not None and len(below) > 2:
+                name = os.path.join(os.path.basename(folder), *below)
         else:
             name = ''
 

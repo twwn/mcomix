@@ -406,6 +406,209 @@ class _WindowTest(MComixTest):
         super().tearDown()
 
 
+class AFolderTreeAsOneBookTest(_WindowTest):
+
+    """ A folder read with the folders in it: what opens, what the
+    walk takes for one book, and how a page in it is found again. """
+
+    PAGES = ['cover.jpg',
+             'Vol 1/Ch 1/1.jpg', 'Vol 1/Ch 1/2.jpg', 'Vol 1/Ch 2/1.jpg',
+             'Vol 2/Ch 1/1.jpg', 'Vol 2/Ch 1/2.jpg']
+
+    def setUp(self):
+        super().setUp()
+        self.root = os.path.join(self.tmp_dir, 'shelf')
+        self.manga = os.path.join(self.root, 'Manga')
+        for name in self.PAGES:
+            self._put('Manga/' + name)
+        self._put('Other/1.jpg')
+        prefs['open folder tree as one book'] = True
+
+    def _put(self, name):
+        """ Copies a test image to <name>, a path below the shelf
+        written with "/", and returns its path. """
+        path = os.path.join(self.root, *name.split('/'))
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        shutil.copy(get_testfile_path('images', '01-JPG-Indexed.jpg'), path)
+        return path
+
+    def _page(self, name):
+        return os.path.join(self.manga, *name.split('/'))
+
+    def _open(self, path, **kwargs):
+        self.handler.open_file(path, **kwargs)
+        self.assertTrue(wait_for(lambda: self.handler.file_loaded
+                                 and not self.handler.file_loading),
+                        "'%s' never finished opening" % path)
+
+    def _pages(self):
+        """ The pages of the open book, as paths below the shelf. """
+        return [os.path.relpath(path, self.root).replace(os.sep, '/')
+                for path in self.window.imagehandler.get_image_files()]
+
+    def _shown(self):
+        return self.window.imagehandler.get_path_to_page()
+
+    def test_the_folder_opens_with_the_pictures_of_the_folders_in_it(self):
+        self._open(self.manga)
+        self.assertEqual(['Manga/' + name for name in self.PAGES],
+                         self._pages())
+        self.assertEqual(self._page('cover.jpg'), self._shown())
+
+    def test_without_the_preference_it_opens_with_its_own(self):
+        prefs['open folder tree as one book'] = False
+        self._open(self.manga)
+        self.assertEqual(['Manga/cover.jpg'], self._pages())
+
+    def test_the_walk_takes_the_tree_for_one_book(self):
+        """Past the tree comes the next folder on the shelf, not the
+        folders of the tree once more, and back from there the last
+        page of the whole tree."""
+        self._open(self.manga)
+        self.assertTrue(self.handler.open_next_directory())
+        self.assertTrue(wait_for(
+            lambda: self._pages() == ['Other/1.jpg']))
+        self.assertTrue(self.handler.open_previous_directory())
+        self.assertTrue(wait_for(lambda: len(self._pages()) == 6))
+        self.assertEqual(self._page('Vol 2/Ch 1/2.jpg'), self._shown())
+        self.assertFalse(self.handler.open_previous_directory())
+
+    def test_a_page_below_the_folder_is_found_again_by_the_folder(self):
+        self._open(self.manga)
+        self.window.set_page(5)
+        self.assertEqual((self.manga, 'Vol 2/Ch 1/1.jpg'),
+                         self.handler.resume_point())
+        self.window.set_page(1)
+        self.assertEqual((self._page('cover.jpg'), None),
+                         self.handler.resume_point())
+
+    def test_a_folder_opened_alone_is_found_again_by_its_picture(self):
+        prefs['open folder tree as one book'] = False
+        picture = self._page('Vol 2/Ch 1/2.jpg')
+        self._open(picture)
+        self.assertEqual((picture, None), self.handler.resume_point())
+
+    def test_a_list_of_pictures_is_found_again_by_its_picture(self):
+        """A list names no folder that could be opened in its place."""
+        pictures = [self._page('cover.jpg'), self._page('Vol 1/Ch 1/1.jpg')]
+        self._open(pictures)
+        self.window.set_page(2)
+        self.assertEqual((pictures[1], None), self.handler.resume_point())
+
+    def test_the_folder_opens_at_the_page_it_was_left_on(self):
+        self._open(self.manga, start_member='Vol 2/Ch 1/1.jpg')
+        self.assertEqual(6, self.window.imagehandler.get_number_of_pages())
+        self.assertEqual(self._page('Vol 2/Ch 1/1.jpg'), self._shown())
+        self.assertEqual(5, self.window.imagehandler.get_current_page())
+
+    def test_with_the_preference_off_again_the_page_opens_in_its_folder(self):
+        prefs['open folder tree as one book'] = False
+        self._open(self.manga, start_member='Vol 2/Ch 1/2.jpg')
+        self.assertEqual(['Manga/Vol 2/Ch 1/1.jpg', 'Manga/Vol 2/Ch 1/2.jpg'],
+                         self._pages())
+        self.assertEqual(self._page('Vol 2/Ch 1/2.jpg'), self._shown())
+        # And the walk is the one from that folder.
+        self.assertEqual(os.path.dirname(self._shown()),
+                         self.handler._file_provider.get_directory())
+
+    def test_a_page_that_has_gone_leaves_the_folder_to_open(self):
+        self._open(self.manga, start_member='Vol 9/1.jpg')
+        self.assertEqual(6, self.window.imagehandler.get_number_of_pages())
+        self.assertEqual(self._page('cover.jpg'), self._shown())
+
+    def test_save_and_quit_writes_the_folder_and_the_page(self):
+        self._open(self.manga)
+        self.window.set_page(3)
+        self.handler.write_fileinfo_file()
+        self.assertEqual((self.manga, 2, 'Vol 1/Ch 1/2.jpg'),
+                         self.handler.read_fileinfo_file())
+
+    def test_the_last_file_is_the_folder_and_the_page(self):
+        prefs['auto load last file'] = True
+        self._open(self.manga)
+        self.window.set_page(4)
+        self.window._remember_last_file()
+        self.assertEqual(self.manga, prefs['path to last file'])
+        self.assertEqual('Vol 1/Ch 2/1.jpg', prefs['member of last file'])
+        import argparse
+        from mcomix import run
+        self.assertEqual(
+            (self.manga, 4, 'Vol 1/Ch 2/1.jpg'),
+            run.what_to_open(argparse.Namespace(page=None), []))
+
+    def test_the_title_names_the_page_from_the_folder_down(self):
+        self._open(self.manga)
+        self.window.set_page(5)
+        self.assertEqual(
+            os.path.join('Manga', 'Vol 2', 'Ch 1', '1.jpg'),
+            self.window.imagehandler.get_pretty_current_filename())
+        self.window.set_page(1)
+        self.assertEqual(
+            os.path.join('Manga', 'cover.jpg'),
+            self.window.imagehandler.get_pretty_current_filename())
+        self._open(self._page('Vol 2/Ch 1/1.jpg'))
+        self.assertEqual(
+            os.path.join('Ch 1', '1.jpg'),
+            self.window.imagehandler.get_pretty_current_filename())
+
+    def test_turning_the_preference_off_keeps_the_page(self):
+        """The folder no longer lists the picture on screen, which used
+        to be exchanged for the folder's first."""
+        self._open(self.manga)
+        self.window.set_page(6)
+        prefs['open folder tree as one book'] = False
+        self.handler.refresh_file()
+        self.assertTrue(wait_for(lambda: len(self._pages()) == 2))
+        self.assertEqual(self._page('Vol 2/Ch 1/2.jpg'), self._shown())
+
+    def test_turning_the_preference_on_keeps_the_page(self):
+        prefs['open folder tree as one book'] = False
+        self._open(self._page('cover.jpg'))
+        prefs['open folder tree as one book'] = True
+        self.handler.refresh_file()
+        self.assertTrue(wait_for(lambda: len(self._pages()) == 6))
+        self.assertEqual(self._page('cover.jpg'), self._shown())
+
+    def test_a_picture_that_went_gives_way_to_one_from_its_folder(self):
+        self._open(self.manga)
+        gone = self._page('Vol 1/Ch 1/2.jpg')
+        self.assertEqual(self._page('Vol 1/Ch 1/1.jpg'),
+                         self.handler.nearest_in_folder(gone))
+        os.remove(gone)
+        self.assertEqual(self._page('Vol 1/Ch 1/1.jpg'),
+                         self.handler.nearest_in_folder(gone))
+
+    def test_a_folder_of_archives_opens_its_first(self):
+        """Opened as a folder it showed "No images", with the archives
+        a page turn away."""
+        prefs['open folder tree as one book'] = False
+        folder = os.path.join(self.root, 'Books')
+        os.makedirs(folder)
+        archives = []
+        for name in ('b.zip', 'a.zip'):
+            archives.append(os.path.join(folder, name))
+            shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'),
+                        archives[-1])
+        self.handler.open_file(folder)
+        self.assertTrue(wait_for(
+            lambda: self.window.imagehandler.get_number_of_pages() == 4))
+        self.assertEqual(archives[1], self.handler.get_path_to_base())
+        self.assertTrue(self.handler.open_next_archive())
+        self.assertTrue(wait_for(
+            lambda: self.handler.get_path_to_base() == archives[0]))
+
+    def test_a_tree_of_archives_opens_its_first(self):
+        folder = os.path.join(self.root, 'Series')
+        archive = os.path.join(folder, 'Volume 1', 'a.zip')
+        os.makedirs(os.path.dirname(archive))
+        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'),
+                    archive)
+        self.handler.open_file(folder)
+        self.assertTrue(wait_for(
+            lambda: self.window.imagehandler.get_number_of_pages() == 4))
+        self.assertEqual(archive, self.handler.get_path_to_base())
+
+
 class UnpackFolderTest(_WindowTest):
 
     """Where a book is unpacked (upstream feature request 114)."""

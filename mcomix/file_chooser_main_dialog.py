@@ -1,10 +1,11 @@
 """file_chooser_main_dialog.py - Custom FileChooserDialog implementations."""
 
 
-from gi.repository import Gio
+from gi.repository import Gio, Gtk
 
 from mcomix.preferences import prefs
 from mcomix import file_chooser_base_dialog
+from mcomix import file_provider
 
 from typing import TYPE_CHECKING
 
@@ -35,6 +36,31 @@ class _MainFileChooserDialog(file_chooser_base_dialog._BaseFileChooserDialog):
                 prefs['last filter in main filechooser']])
         except IndexError:
             self.filechooser.set_filter(filters[0])
+
+    def folder_opens_as_itself(self, folder: str,
+                               ffilter: "Gtk.FileFilter | None") -> bool:
+        """A folder chosen by itself is opened as the folder, as one
+        named on the command line is: the book is listed afresh as it
+        is read, a page turn past its end walks on to the folder beside
+        it, and the folders in it are read with it where the
+        preferences say so.
+
+        Only where that opens what the chooser showed: the filter hides
+        none of the files that make the book, the folder's pictures or,
+        where it has none, its archives.  Otherwise the files it does
+        show are opened, and no others.
+        """
+        try:
+            provider = file_provider.OrderedFileProvider(folder)
+        except ValueError:
+            # Gone since it was chosen.
+            return False
+        for mode in (file_provider.FileProvider.IMAGES,
+                     file_provider.FileProvider.ARCHIVES):
+            book = provider.list_files(mode)
+            if book:
+                return all(self._matches(ffilter, path) for path in book)
+        return False
 
     def files_chosen(self, paths: list[str]) -> None:
         if paths:

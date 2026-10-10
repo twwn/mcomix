@@ -169,6 +169,153 @@ class OrderedFileProviderTest(MComixTest):
         self.assertEqual(provider.list_files(), list(reversed(ascending)))
 
 
+class AFolderReadWithTheFoldersInItTest(MComixTest):
+
+    """ The "open folder tree as one book" preference: a folder is
+    listed with the folders in it, and the walk steps over whole
+    trees. """
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.root = os.path.join(self.tmp_dir, 'shelf')
+
+    def _touch(self, *names: str) -> list[str]:
+        """Make an empty file at each of <names>, paths below the shelf
+        written with "/", and return their absolute paths."""
+        paths = []
+        for name in names:
+            path = os.path.join(self.root, *name.split('/'))
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            with open(path, 'wb'):
+                pass
+            paths.append(path)
+        return paths
+
+    def _listed(self, folder: str, mode: int = FileProvider.IMAGES) -> list[str]:
+        """What <folder> on the shelf lists, as paths below the shelf
+        written with "/"."""
+        provider = OrderedFileProvider(os.path.join(self.root, folder))
+        return [os.path.relpath(path, self.root).replace(os.sep, '/')
+                for path in provider.list_files(mode)]
+
+    def _walk(self, provider: OrderedFileProvider, step) -> list[str]:
+        visited = [os.path.relpath(provider.get_directory(), self.root)]
+        while step(provider):
+            visited.append(os.path.relpath(provider.get_directory(), self.root)
+                           .replace(os.sep, '/'))
+        return visited
+
+    def test_without_the_preference_a_folder_lists_its_own_files(self) -> None:
+        self._touch('Manga/cover.jpg', 'Manga/Vol 1/1.jpg')
+        self.assertEqual(['Manga/cover.jpg'], self._listed('Manga'))
+
+    def test_each_folder_comes_before_the_ones_in_it(self) -> None:
+        prefs['open folder tree as one book'] = True
+        self._touch('Manga/Vol 2/Ch 1/1.jpg', 'Manga/Vol 10/1.jpg',
+                    'Manga/Vol 2/2.jpg', 'Manga/Vol 2/1.jpg',
+                    'Manga/zz.jpg', 'Manga/Vol 2/Ch 1/2.jpg',
+                    'Manga/Vol 1/Ch 2/1.jpg', 'Manga/Vol 1/Ch 1/1.jpg')
+        self.assertEqual(
+            ['Manga/zz.jpg',
+             'Manga/Vol 1/Ch 1/1.jpg', 'Manga/Vol 1/Ch 2/1.jpg',
+             'Manga/Vol 2/1.jpg', 'Manga/Vol 2/2.jpg',
+             'Manga/Vol 2/Ch 1/1.jpg', 'Manga/Vol 2/Ch 1/2.jpg',
+             'Manga/Vol 10/1.jpg'],
+            self._listed('Manga'))
+
+    def test_the_tree_ends_two_levels_down(self) -> None:
+        prefs['open folder tree as one book'] = True
+        self._touch('a/1.jpg', 'a/b/2.jpg', 'a/b/c/3.jpg', 'a/b/c/d/4.jpg')
+        self.assertEqual(['a/1.jpg', 'a/b/2.jpg', 'a/b/c/3.jpg'],
+                         self._listed('a'))
+        self.assertEqual(file_provider.TREE_DEPTH, 2)
+
+    def test_archives_are_listed_as_a_tree_too(self) -> None:
+        prefs['open folder tree as one book'] = True
+        self._touch('a/2.zip', 'a/1.jpg', 'a/b/1.cbz', 'a/b/1.jpg')
+        self.assertEqual(['a/2.zip', 'a/b/1.cbz'],
+                         self._listed('a', FileProvider.ARCHIVES))
+        self.assertEqual(['a/1.jpg', 'a/b/1.jpg'], self._listed('a'))
+
+    def test_a_descending_order_turns_each_folder_not_the_tree(self) -> None:
+        prefs['open folder tree as one book'] = True
+        prefs['sort order'] = constants.SORT_DESCENDING
+        self._touch('a/1.jpg', 'a/2.jpg', 'a/b/1.jpg', 'a/b/2.jpg',
+                    'a/c/1.jpg')
+        self.assertEqual(['a/2.jpg', 'a/1.jpg', 'a/b/2.jpg', 'a/b/1.jpg',
+                          'a/c/1.jpg'], self._listed('a'))
+
+    def test_a_hidden_folder_is_left_out(self) -> None:
+        prefs['open folder tree as one book'] = True
+        self._touch('a/1.jpg', 'a/.thumbnails/1.jpg', 'a/b/2.jpg')
+        self.assertEqual(['a/1.jpg', 'a/b/2.jpg'], self._listed('a'))
+
+    def test_a_linked_folder_is_not_gone_into(self) -> None:
+        prefs['open folder tree as one book'] = True
+        self._touch('a/1.jpg', 'elsewhere/2.jpg')
+        try:
+            os.symlink(os.path.join(self.root, 'elsewhere'),
+                       os.path.join(self.root, 'a', 'link'),
+                       target_is_directory=True)
+        except (OSError, NotImplementedError):
+            self.skipTest('no symbolic links here')
+        self.assertEqual(['a/1.jpg'], self._listed('a'))
+
+    def test_a_folder_that_cannot_be_read_leaves_the_rest_listed(self) -> None:
+        prefs['open folder tree as one book'] = True
+        self._touch('a/1.jpg', 'a/b/2.jpg', 'a/c/3.jpg')
+        locked = os.path.join(self.root, 'a', 'b')
+        real_listdir = os.listdir
+
+        def listdir(path):
+            if path == locked:
+                raise PermissionError(13, 'Permission denied', path)
+            return real_listdir(path)
+
+        with mock.patch('os.listdir', listdir):
+            with self.assertLogs('mcomix', level='WARNING'):
+                self.assertEqual(['a/1.jpg', 'a/c/3.jpg'], self._listed('a'))
+
+    def test_a_folder_named_in_a_list_is_listed_as_a_tree(self) -> None:
+        prefs['open folder tree as one book'] = True
+        listed = self._touch('a/1.jpg', 'a/b/2.jpg')
+        provider = PreDefinedFileProvider(
+            [os.path.join(self.root, 'a'), *self._touch('z.jpg')])
+        self.assertEqual(listed + [os.path.join(self.root, 'z.jpg')],
+                         provider.list_files(FileProvider.IMAGES))
+
+    def test_the_walk_steps_over_whole_trees(self) -> None:
+        """Each folder on the shelf is a book with the folders in it, so
+        the walk does not open those one by one as well."""
+        self._touch('a/a1/1.jpg', 'a/a2/1.jpg', 'b/b1/1.jpg', 'c/1.jpg')
+        provider = OrderedFileProvider(os.path.join(self.root, 'a'))
+        self.assertEqual(
+            ['a', 'a/a1', 'a/a2', 'b', 'b/b1', 'c'],
+            self._walk(OrderedFileProvider(os.path.join(self.root, 'a')),
+                       OrderedFileProvider.next_directory))
+        prefs['open folder tree as one book'] = True
+        self.assertEqual(['a', 'b', 'c'], self._walk(
+            provider, OrderedFileProvider.next_directory))
+        self.assertEqual(['c', 'b', 'a'], self._walk(
+            provider, OrderedFileProvider.previous_directory))
+
+    def test_the_walk_leaves_a_folder_it_no_longer_visits(self) -> None:
+        """Walked into b/b1 before the preference was turned on, the
+        book is left from b, the folder the walk now steps over."""
+        self._touch('a/1.jpg', 'b/b1/1.jpg', 'c/1.jpg')
+        for step, expected in ((OrderedFileProvider.next_directory, 'c'),
+                               (OrderedFileProvider.previous_directory, 'a')):
+            prefs['open folder tree as one book'] = False
+            provider = OrderedFileProvider(os.path.join(self.root, 'b'))
+            self.assertTrue(provider.next_directory())
+            self.assertEqual(os.path.join(self.root, 'b', 'b1'),
+                             provider.get_directory())
+            prefs['open folder tree as one book'] = True
+            self.assertTrue(step(provider))
+            self.assertEqual(os.path.join(self.root, expected),
+                             provider.get_directory())
+
+
 class SortFilesTest(MComixTest):
 
     """FileProvider.sort_files() is called on its own by the file chooser,

@@ -313,6 +313,11 @@ class _PreferencesDialog(Dialog):
             'open first file in prev directory',
             _('Automatically open the first file of the previous directory when navigating to it, instead of opening the last file of the previous directory.')))
 
+        page.add_row(self._create_pref_check_button(
+            _('Open a folder with the folders in it as one book'),
+            'open folder tree as one book',
+            _('The files of the folders in a folder, two levels down, follow its own. The next directory is then the one beside it.')))
+
         page.new_section(_('File order'))
 
         page.add_row(Gtk.Label(label=_('Sort files and directories by:')),
@@ -1094,6 +1099,11 @@ class _PreferencesDialog(Dialog):
         """Callback for all checkbutton-type preferences."""
 
         preferences.set_by_name(preference, button.get_active())
+
+        if preference == 'open folder tree as one book':
+            # The folder that is open gains or loses the pictures of
+            # the folders in it.
+            self._window.filehandler.refresh_file()
 
         if preference == 'smart bg':
 

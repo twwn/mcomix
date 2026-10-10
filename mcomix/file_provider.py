@@ -78,7 +78,7 @@ def get_file_provider(filelist: Sequence[str]) -> 'FileProvider | None':
             provider = PreDefinedFileProvider(filelist)
 
     elif (preferences.prefs['auto load last file']
-          and os.path.isfile(preferences.prefs['path to last file'])):
+          and os.path.exists(preferences.prefs['path to last file'])):
         provider = OrderedFileProvider(preferences.prefs['path to last file'])
 
     else:
@@ -186,6 +186,10 @@ class FileProvider:
 #: the shelf's own directories, and the ones in those.
 SHELF_DEPTH = 2
 
+#: How far below a directory its tree goes, where a directory is read
+#: with the directories in it: those, and the ones in them.
+TREE_DEPTH = 2
+
 
 class OrderedFileProvider(FileProvider):
     """Every file in one directory, and the directories around it.
@@ -202,6 +206,14 @@ class OrderedFileProvider(FileProvider):
     never climbs above the shelf, and does not go into a directory that
     is a symbolic link, which may lead anywhere, though such a directory
     is visited itself.
+
+    With the "open folder tree as one book" preference a directory is
+    listed with the directories in it, TREE_DEPTH levels down: its own
+    files, then those of each directory in it, in natural order, every
+    directory before the ones in it.  Hidden directories and symbolic
+    links to directories are left out.  The walk then steps over the
+    shelf's own directories only, the ones in them being part of the
+    book each of them is.
     """
 
     def __init__(self, file_or_directory: str) -> None:
@@ -236,7 +248,9 @@ class OrderedFileProvider(FileProvider):
 
         Empty where the directory cannot be read, which is reported and
         then treated as a directory holding nothing: the reader is left
-        where they were rather than with a book that half opened.
+        where they were rather than with a book that half opened.  A
+        directory of the tree that cannot be read is reported too, and
+        the rest of the tree listed.
         """
 
         should_accept: Callable[[str], bool]
@@ -247,18 +261,36 @@ class OrderedFileProvider(FileProvider):
         else:
             should_accept = _every_file
 
-        try:
-            entries = os.listdir(self.base_dir)
-        except OSError:
-            log.warning('! ' + _('Could not open %s: Permission denied.'), self.base_dir)
-            return []
-
-        files = [path for path in
-                 (os.path.join(self.base_dir, entry) for entry in entries)
-                 if should_accept(path)]
-        FileProvider.sort_files(files)
-
+        files: list[str] = []
+        depth = (TREE_DEPTH if preferences.prefs['open folder tree as one book']
+                 else 0)
+        self.__list_into(files, self.base_dir, should_accept, depth)
         return files
+
+    def __list_into(self, files: list[str], directory: str,
+                    should_accept: Callable[[str], bool], depth: int) -> None:
+        """Add to <files> what <directory> holds that <should_accept>
+        takes, sorted, and then the same of the directories in it,
+        <depth> levels down."""
+
+        try:
+            entries = os.listdir(directory)
+        except OSError:
+            log.warning('! ' + _('Could not open %s: Permission denied.'), directory)
+            return
+
+        paths = [os.path.join(directory, entry) for entry in entries]
+        found = [path for path in paths if should_accept(path)]
+        FileProvider.sort_files(found)
+        files.extend(found)
+
+        if depth > 0:
+            below = [path for path, entry in zip(paths, entries)
+                     if not entry.startswith('.')
+                     and os.path.isdir(path) and not os.path.islink(path)]
+            tools.alphanumeric_sort(below)
+            for path in below:
+                self.__list_into(files, path, should_accept, depth - 1)
 
     def next_directory(self, accept: "Callable[[], bool] | None" = None
                        ) -> bool:
@@ -283,15 +315,20 @@ class OrderedFileProvider(FileProvider):
         """
 
         directories = self.__shelf_directories()
-        try:
-            index = directories.index(self.base_dir)
-        except ValueError:
-            # The directory is not on the shelf: it is the root of the
-            # file system, which is its own shelf, or it was removed
-            # while it was open.
-            return False
+        position = self.base_dir
+        while position not in directories:
+            # A directory the walk does not visit: one below those it
+            # steps over, since the preference that says how far down it
+            # goes changed, which is left from the one above it that is
+            # visited.  With none, this is the root of the file system,
+            # which is its own shelf, or it was removed while it was
+            # open.
+            parent = os.path.dirname(position)
+            if position == self.shelf or parent == position:
+                return False
+            position = parent
         start = self.base_dir
-        index += step
+        index = directories.index(position) + step
         while 0 <= index < len(directories):
             self.base_dir = directories[index]
             if accept is None or accept():
@@ -302,7 +339,8 @@ class OrderedFileProvider(FileProvider):
 
     def __shelf_directories(self) -> list[str]:
         """Every directory on the shelf, in the order the walk visits
-        them: depth first, in natural order, SHELF_DEPTH levels deep.
+        them: depth first, in natural order, SHELF_DEPTH levels deep, or
+        the shelf's own only where each is read with the ones in it.
 
         Empty where the shelf cannot be read, which leaves the caller
         where it was.  A directory below it that cannot be read is
@@ -312,11 +350,13 @@ class OrderedFileProvider(FileProvider):
         if self.base_dir == self.shelf:
             return []
         walk: list[str] = []
+        levels = (1 if preferences.prefs['open folder tree as one book']
+                  else SHELF_DEPTH)
 
         def visit(directory: str, depth: int) -> None:
             for child in self.__directories_in(directory):
                 walk.append(child)
-                if depth < SHELF_DEPTH and not os.path.islink(child):
+                if depth < levels and not os.path.islink(child):
                     visit(child, depth + 1)
 
         visit(self.shelf, 1)

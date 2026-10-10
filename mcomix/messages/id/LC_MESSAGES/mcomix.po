@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Comix-4.0.1\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-10 19:57+0200\n"
+"POT-Creation-Date: 2026-10-10 20:49+0200\n"
 "PO-Revision-Date: 2008-12-13 21:23+0700\n"
 "Last-Translator: Andhika Padmawan <andhika.padmawan@gmail.com>\n"
 "Language-Team: Indonesia <id@li.org>\n"
@@ -160,7 +160,7 @@ msgstr "Sunting bookmark"
 msgid "C_lear bookmarks..."
 msgstr "Ha_pus bookmark..."
 
-#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1093 mcomix/openwith.py:340
+#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1092 mcomix/openwith.py:340
 #: mcomix/library/collection_area.py:154 mcomix/library/watchlist.py:64
 msgid "_Remove"
 msgstr "_Hapus"
@@ -188,7 +188,7 @@ msgstr "Nama"
 
 #
 # File: src/bookmark.py, line: 256
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1882
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1881
 #: mcomix/library/control_area.py:152
 msgid "Page"
 msgstr "Halaman"
@@ -241,13 +241,13 @@ msgstr "Pintasan baru..."
 #
 # File: src/comment.py, line: 16
 # File: src/preferences.py, line: 288
-#: mcomix/comment_dialog.py:28 mcomix/preferences_dialog.py:478
+#: mcomix/comment_dialog.py:28 mcomix/preferences_dialog.py:483
 msgid "Comments"
 msgstr "Komentar"
 
 #
 # File: src/comment.py, line: 53
-#: mcomix/comment_dialog.py:134 mcomix/file_handler.py:799
+#: mcomix/comment_dialog.py:134 mcomix/file_handler.py:868
 #, python-format
 msgid "Could not read %s"
 msgstr "Tak dapat membaca %s"
@@ -640,7 +640,7 @@ msgstr "! Tidak dapat memindahkan %(file)s ke %(directory)s: %(error)s"
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "Tidak dapat memindahkan \"%(file)s\" ke \"%(directory)s\""
 
-#: mcomix/file_chooser_base_dialog.py:76 mcomix/file_chooser_base_dialog.py:847
+#: mcomix/file_chooser_base_dialog.py:76 mcomix/file_chooser_base_dialog.py:857
 #: mcomix/properties_dialog.py:137 mcomix/library/control_area.py:155
 #, python-format
 msgid "%d page"
@@ -700,14 +700,14 @@ msgstr "Gambar %s"
 
 #
 # File: src/filechooser.py, line: 125
-#: mcomix/file_chooser_base_dialog.py:745
+#: mcomix/file_chooser_base_dialog.py:755
 #, python-format
 msgid "A file named '%s' already exists. Do you want to replace it?"
 msgstr "Berkas bernama '%s' telah ada. Anda ingin menggantinya?"
 
 #
 # File: src/filechooser.py, line: 128
-#: mcomix/file_chooser_base_dialog.py:747
+#: mcomix/file_chooser_base_dialog.py:757
 msgid "Replacing it will overwrite its contents."
 msgstr "Mengganti berkas akan menimpa isinya."
 
@@ -729,32 +729,32 @@ msgstr "! Tidak dapat membongkar ke %s; folder sementara dipakai."
 
 #
 # File: src/filehandler.py, line: 285
-#: mcomix/file_handler.py:415
+#: mcomix/file_handler.py:428
 #, python-format
 msgid "No images in '%s'"
 msgstr "Tak ada citra di '%s'"
 
 #
 # File: src/filehandler.py, line: 213
-#: mcomix/file_handler.py:614
+#: mcomix/file_handler.py:683
 #, python-format
 msgid "Could not open %s: No such file."
 msgstr "Tak dapat membuka %s: Tak ada berkas."
 
 #
 # File: src/filehandler.py, line: 217
-#: mcomix/file_handler.py:617 mcomix/file_provider.py:253
-#: mcomix/file_provider.py:333
+#: mcomix/file_handler.py:686 mcomix/file_provider.py:279
+#: mcomix/file_provider.py:373
 #, python-format
 msgid "Could not open %s: Permission denied."
 msgstr "Tak dapat membuka %s: Hak akses ditolak."
 
-#: mcomix/file_handler.py:882
+#: mcomix/file_handler.py:951
 #, python-format
 msgid "Continue reading from page %d?"
 msgstr "Lanjutkan membaca dari halaman %d?"
 
-#: mcomix/file_handler.py:883
+#: mcomix/file_handler.py:952
 #, python-format
 msgid ""
 "You stopped reading here on %(date)s, %(time)s. If you choose \"Yes\", "
@@ -765,7 +765,7 @@ msgstr ""
 "pembacaan dilanjutkan pada halaman %(page)d. Jika tidak, halaman pertama "
 "yang dimuat."
 
-#: mcomix/file_handler.py:1395
+#: mcomix/file_handler.py:1469
 #, python-format
 msgid ""
 "! Corrupt file \"%s\", deleting it; the last file read will not be reopened."
@@ -773,7 +773,7 @@ msgstr ""
 "! Berkas \"%s\" rusak dan akan dihapus; berkas terakhir yang dibaca tidak "
 "akan dibuka kembali."
 
-#: mcomix/file_provider.py:226
+#: mcomix/file_provider.py:238
 #, python-format
 msgid "Invalid path: '%s'"
 msgstr "Lokasi tidak sah: \"%s\""
@@ -1056,7 +1056,7 @@ msgstr "Putar otomatis menurut tinggi"
 #
 # File: src/preferences.py, line: 177
 # File: src/ui.py, line: 296
-#: mcomix/keybindings.py:109 mcomix/preferences_dialog.py:345 mcomix/ui.py:527
+#: mcomix/keybindings.py:109 mcomix/preferences_dialog.py:350 mcomix/ui.py:527
 msgid "Double page mode"
 msgstr "Mode halaman ganda"
 
@@ -1155,7 +1155,7 @@ msgstr "Minimalkan"
 
 #
 # File: src/preferences.py, line: 271
-#: mcomix/keybindings.py:128 mcomix/preferences_dialog.py:332
+#: mcomix/keybindings.py:128 mcomix/preferences_dialog.py:337
 msgid "Fullscreen"
 msgstr "Layar Penuh"
 
@@ -1355,13 +1355,13 @@ msgstr "Tidak dapat memuat pintasan: %s"
 msgid "! Could not remove file \"%s\""
 msgstr "! Tidak dapat menghapus berkas \"%s\""
 
-#: mcomix/main.py:1086
+#: mcomix/main.py:1085
 #, python-format
 msgid "Remove the page picked out of \"%s\"?"
 msgid_plural "Remove the pages picked out of \"%s\"?"
 msgstr[0] "Hapus halaman yang dipilih dari \"%s\"?"
 
-#: mcomix/main.py:1089
+#: mcomix/main.py:1088
 msgid ""
 "They are taken out of the archive on disk, which is written again at once. "
 "Leaving the book without removing them forgets which pages they were."
@@ -1369,18 +1369,18 @@ msgstr ""
 "Halaman itu dikeluarkan dari arsip di diska, yang langsung ditulis ulang. "
 "Meninggalkan buku tanpa menghapusnya akan melupakan halaman mana saja itu."
 
-#: mcomix/main.py:1092
+#: mcomix/main.py:1091
 msgid "_Keep them"
 msgstr "_Pertahankan"
 
-#: mcomix/main.py:1254
+#: mcomix/main.py:1253
 #, python-format
 msgid "Animation speed: %s"
 msgstr "Kecepatan animasi: %s"
 
 #
 # File: src/main.py, line: 666
-#: mcomix/main.py:1598
+#: mcomix/main.py:1597
 msgid "SLIDESHOW"
 msgstr "SALINDIA"
 
@@ -2040,116 +2040,129 @@ msgstr ""
 "Saat berpindah ke direktori sebelumnya, membuka berkas pertamanya secara "
 "otomatis, bukan berkas terakhirnya."
 
-#: mcomix/preferences_dialog.py:316
+#: mcomix/preferences_dialog.py:317
+msgid "Open a folder with the folders in it as one book"
+msgstr "Buka folder beserta folder di dalamnya sebagai satu buku"
+
+#: mcomix/preferences_dialog.py:319
+msgid ""
+"The files of the folders in a folder, two levels down, follow its own. The "
+"next directory is then the one beside it."
+msgstr ""
+"Berkas dari folder-folder di dalam sebuah folder, hingga dua tingkat ke "
+"bawah, menyusul berkasnya sendiri. Direktori berikutnya adalah yang di "
+"sebelahnya."
+
+#: mcomix/preferences_dialog.py:321
 msgid "File order"
 msgstr "Urutan berkas"
 
-#: mcomix/preferences_dialog.py:318
+#: mcomix/preferences_dialog.py:323
 msgid "Sort files and directories by:"
 msgstr "Urutkan berkas dan direktori menurut:"
 
 #
 # File: src/filechooser.py, line: 86
-#: mcomix/preferences_dialog.py:321
+#: mcomix/preferences_dialog.py:326
 msgid "Sort archives by:"
 msgstr "Urutkan arsip menurut:"
 
 #
 # File: src/preferences.py, line: 250
-#: mcomix/preferences_dialog.py:335
+#: mcomix/preferences_dialog.py:340
 msgid "Use fullscreen by default"
 msgstr "Gunakan layar penuh secara bawaan"
 
 #
 # File: src/preferences.py, line: 273
-#: mcomix/preferences_dialog.py:339
+#: mcomix/preferences_dialog.py:344
 msgid "Automatically hide all toolbars in fullscreen"
 msgstr "Sembunyikan semua bilah secara otomatis dalam layar penuh"
 
-#: mcomix/preferences_dialog.py:342
+#: mcomix/preferences_dialog.py:347
 msgid "Page number in fullscreen:"
 msgstr "Nomor halaman dalam layar penuh:"
 
 #
 # File: src/preferences.py, line: 179
-#: mcomix/preferences_dialog.py:348
+#: mcomix/preferences_dialog.py:353
 msgid "Flip two pages in double page mode"
 msgstr "Balik dua halaman dalam mode halaman ganda"
 
 #
 # File: src/preferences.py, line: 184
-#: mcomix/preferences_dialog.py:350
+#: mcomix/preferences_dialog.py:355
 msgid ""
 "Flip two pages, instead of one, each time we flip pages in double page mode."
 msgstr ""
 "Lipat dua halaman, ketimbang satu, tiap kali kami menggulung dalam mode "
 "halaman ganda."
 
-#: mcomix/preferences_dialog.py:352
+#: mcomix/preferences_dialog.py:357
 msgid "Show only one page where appropriate:"
 msgstr "Tampilkan hanya satu halaman bila sesuai:"
 
-#: mcomix/preferences_dialog.py:355
+#: mcomix/preferences_dialog.py:360
 msgid "Page auto-resizing:"
 msgstr "Pengubahan ukuran halaman otomatis:"
 
 #
 # File: src/preferences.py, line: 280
-#: mcomix/preferences_dialog.py:358
+#: mcomix/preferences_dialog.py:363
 msgid "Space between two pages (in pixels):"
 msgstr "Jarak antara dua halaman (dalam piksel):"
 
 #
 # File: src/preferences.py, line: 263
 # File: src/ui.py, line: 290
-#: mcomix/preferences_dialog.py:363 mcomix/ui.py:560
+#: mcomix/preferences_dialog.py:368 mcomix/ui.py:560
 msgid "Fit to size mode"
 msgstr "Mode penyesuaian ke ukuran"
 
 #
 # File: src/ui.py, line: 103
-#: mcomix/preferences_dialog.py:365
+#: mcomix/preferences_dialog.py:370
 msgid "Fixed width for wide pages:"
 msgstr "Lebar tetap untuk halaman lebar:"
 
 #
 # File: src/preferences.py, line: 264
 # File: src/ui.py, line: 292
-#: mcomix/preferences_dialog.py:370
+#: mcomix/preferences_dialog.py:375
 msgid "Fixed height for wide pages:"
 msgstr "Tinggi tetap untuk halaman lebar:"
 
 #
 # File: src/ui.py, line: 103
-#: mcomix/preferences_dialog.py:375
+#: mcomix/preferences_dialog.py:380
 msgid "Fixed width for other pages:"
 msgstr "Lebar tetap untuk halaman lainnya:"
 
 #
 # File: src/ui.py, line: 103
-#: mcomix/preferences_dialog.py:380
+#: mcomix/preferences_dialog.py:385
 msgid "Fixed height for other pages:"
 msgstr "Tinggi tetap untuk halaman lainnya:"
 
 #
 # File: src/preferences.py, line: 279
-#: mcomix/preferences_dialog.py:385
+#: mcomix/preferences_dialog.py:390
 msgid "Slideshow"
 msgstr "Presentasi"
 
 #
 # File: src/preferences.py, line: 280
-#: mcomix/preferences_dialog.py:387
+#: mcomix/preferences_dialog.py:392
 msgid "Slideshow delay (in seconds):"
 msgstr "Jeda presentasi (dalam detik):"
 
 #
 # File: src/preferences.py, line: 280
-#: mcomix/preferences_dialog.py:392
+#: mcomix/preferences_dialog.py:397
 msgid "Slideshow step (in pixels):"
 msgstr "Langkah presentasi (dalam piksel):"
 
-#: mcomix/preferences_dialog.py:396
+#: mcomix/preferences_dialog.py:401
 msgid ""
 "Specify the number of pixels to scroll while in slideshow mode. A positive "
 "value will scroll forward, a negative value will scroll backwards, and a "
@@ -2161,24 +2174,24 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 198
-#: mcomix/preferences_dialog.py:399
+#: mcomix/preferences_dialog.py:404
 msgid "During a slideshow automatically open the next archive"
 msgstr "Selama presentasi, buka arsip berikutnya secara otomatis"
 
-#: mcomix/preferences_dialog.py:401
+#: mcomix/preferences_dialog.py:406
 msgid ""
 "While in slideshow mode allow the next archive to automatically be opened."
 msgstr "Memungkinkan arsip berikutnya terbuka otomatis dalam mode presentasi."
 
-#: mcomix/preferences_dialog.py:403
+#: mcomix/preferences_dialog.py:408
 msgid "Rotation"
 msgstr "Perputaran"
 
-#: mcomix/preferences_dialog.py:406
+#: mcomix/preferences_dialog.py:411
 msgid "Automatically rotate images according to their metadata"
 msgstr "Putar gambar secara otomatis menurut metadatanya"
 
-#: mcomix/preferences_dialog.py:408
+#: mcomix/preferences_dialog.py:413
 msgid ""
 "Automatically rotate images when an orientation is specified in the image "
 "metadata, such as in an Exif tag."
@@ -2188,33 +2201,33 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 143
-#: mcomix/preferences_dialog.py:410
+#: mcomix/preferences_dialog.py:415
 msgid "Image quality"
 msgstr "Kualitas gambar"
 
 #
 # File: src/ui.py, line: 297
-#: mcomix/preferences_dialog.py:412
+#: mcomix/preferences_dialog.py:417
 msgid "Scaling mode"
 msgstr "Mode penskalaan"
 
-#: mcomix/preferences_dialog.py:415
+#: mcomix/preferences_dialog.py:420
 msgid "Screen colour profile:"
 msgstr "Profil warna layar:"
 
-#: mcomix/preferences_dialog.py:418
+#: mcomix/preferences_dialog.py:423
 msgid "Rendering intent:"
 msgstr "Maksud perenderan:"
 
-#: mcomix/preferences_dialog.py:430
+#: mcomix/preferences_dialog.py:435
 msgid "Extraction and cache"
 msgstr "Ekstraksi dan singgahan"
 
-#: mcomix/preferences_dialog.py:438
+#: mcomix/preferences_dialog.py:443
 msgid "Maximum number of concurrent extraction threads:"
 msgstr "Jumlah maksimum utas ekstraksi serentak:"
 
-#: mcomix/preferences_dialog.py:442
+#: mcomix/preferences_dialog.py:447
 msgid ""
 "Set the maximum number of concurrent threads for formats that support it. A "
 "value of 0 uses one thread for each processor. For PDFs, 0 also keeps within "
@@ -2226,11 +2239,11 @@ msgstr ""
 
 #
 # File: src/thumbremover.py, line: 65
-#: mcomix/preferences_dialog.py:444
+#: mcomix/preferences_dialog.py:449
 msgid "Maximum number of concurrent thumbnail threads:"
 msgstr "Jumlah maksimum utas serentak untuk miniatur gambar:"
 
-#: mcomix/preferences_dialog.py:448
+#: mcomix/preferences_dialog.py:453
 msgid ""
 "Set the maximum number of concurrent threads used to generate thumbnails. A "
 "value of 0 uses one thread for each processor. Takes effect the next time "
@@ -2240,19 +2253,19 @@ msgstr ""
 "Nilai 0 memakai satu utas untuk setiap prosesor. Berlaku saat MComix "
 "dijalankan berikutnya."
 
-#: mcomix/preferences_dialog.py:450
+#: mcomix/preferences_dialog.py:455
 msgid "Unpack books in:"
 msgstr "Bongkar buku ke:"
 
 #
 # File: src/preferences.py, line: 222
-#: mcomix/preferences_dialog.py:454
+#: mcomix/preferences_dialog.py:459
 msgid "Store thumbnails for opened files"
 msgstr "Simpan miniatur gambar untuk berkas yang dibuka"
 
 #
 # File: src/preferences.py, line: 227
-#: mcomix/preferences_dialog.py:456
+#: mcomix/preferences_dialog.py:461
 msgid ""
 "Store thumbnails for opened files according to the freedesktop.org "
 "specification. These thumbnails are shared by many other applications, such "
@@ -2262,11 +2275,11 @@ msgstr ""
 "freedesktop.org. Miniatur ini dikongsikan oleh banyak aplikasi lain, seperti "
 "kebanyakan manajer berkas."
 
-#: mcomix/preferences_dialog.py:458
+#: mcomix/preferences_dialog.py:463
 msgid "Maximum number of pages to store in the cache:"
 msgstr "Jumlah maksimum halaman yang disimpan dalam singgahan:"
 
-#: mcomix/preferences_dialog.py:462
+#: mcomix/preferences_dialog.py:467
 msgid ""
 "Set the max number of pages to cache. A value of -1 will cache the entire "
 "archive."
@@ -2276,19 +2289,19 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 124
-#: mcomix/preferences_dialog.py:464
+#: mcomix/preferences_dialog.py:469
 msgid "Magnifying Lens"
 msgstr "Lensa Pembesar"
 
 #
 # File: src/preferences.py, line: 125
-#: mcomix/preferences_dialog.py:466
+#: mcomix/preferences_dialog.py:471
 msgid "Magnifying lens size (in pixels):"
 msgstr "Ukuran lensa pembesar (dalam piksel):"
 
 #
 # File: src/preferences.py, line: 131
-#: mcomix/preferences_dialog.py:470
+#: mcomix/preferences_dialog.py:475
 msgid ""
 "Set the size of the magnifying lens. It is a square with a side of this many "
 "pixels."
@@ -2298,45 +2311,45 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 133
-#: mcomix/preferences_dialog.py:472
+#: mcomix/preferences_dialog.py:477
 msgid "Magnification factor:"
 msgstr "Faktor pembesaran:"
 
 #
 # File: src/preferences.py, line: 140
-#: mcomix/preferences_dialog.py:476
+#: mcomix/preferences_dialog.py:481
 msgid "Set the magnification factor of the magnifying lens."
 msgstr "Atur faktor pembesaran dari lensa pembesar."
 
 #
 # File: src/preferences.py, line: 289
-#: mcomix/preferences_dialog.py:480
+#: mcomix/preferences_dialog.py:485
 msgid "Comment extensions:"
 msgstr "Ekstensi berkas komentar:"
 
 #
 # File: src/enhance.py, line: 51
-#: mcomix/preferences_dialog.py:483
+#: mcomix/preferences_dialog.py:488
 msgid "Animated images"
 msgstr "Gambar beranimasi"
 
-#: mcomix/preferences_dialog.py:485
+#: mcomix/preferences_dialog.py:490
 msgid "Animation mode:"
 msgstr "Mode animasi:"
 
-#: mcomix/preferences_dialog.py:506
+#: mcomix/preferences_dialog.py:511
 msgid "_Reset keys"
 msgstr "_Kembalikan tombol"
 
-#: mcomix/preferences_dialog.py:508
+#: mcomix/preferences_dialog.py:513
 msgid "Resets all keyboard shortcuts to their default values."
 msgstr "Mengembalikan semua pintasan papan ketik ke nilai bawaannya."
 
-#: mcomix/preferences_dialog.py:511
+#: mcomix/preferences_dialog.py:516
 msgid "Clear _dialog choices"
 msgstr "Hapus pilihan _dialog"
 
-#: mcomix/preferences_dialog.py:513
+#: mcomix/preferences_dialog.py:518
 msgid ""
 "Clears all dialog choices that you have previously chosen not to be asked "
 "again."
@@ -2344,11 +2357,11 @@ msgstr ""
 "Menghapus semua jawaban dialog yang sebelumnya Anda pilih untuk tidak "
 "ditanyakan lagi."
 
-#: mcomix/preferences_dialog.py:548
+#: mcomix/preferences_dialog.py:553
 msgid "Ask every time"
 msgstr "Tanya setiap kali"
 
-#: mcomix/preferences_dialog.py:553
+#: mcomix/preferences_dialog.py:558
 msgid ""
 "What MComix answers this prompt with instead of asking. This is what the "
 "prompt's \"Do not ask again\" box sets."
@@ -2357,27 +2370,27 @@ msgstr ""
 "Inilah yang diatur oleh kotak \"Jangan tanya lagi.\" pada pertanyaan itu "
 "sendiri."
 
-#: mcomix/preferences_dialog.py:575
+#: mcomix/preferences_dialog.py:580
 msgid "Auto-detect (Default)"
 msgstr "Deteksi otomatis (bawaan)"
 
-#: mcomix/preferences_dialog.py:617
+#: mcomix/preferences_dialog.py:622
 msgid "Follow the system"
 msgstr "Ikuti sistem"
 
-#: mcomix/preferences_dialog.py:618
+#: mcomix/preferences_dialog.py:623
 msgid "Light"
 msgstr "Terang"
 
-#: mcomix/preferences_dialog.py:619
+#: mcomix/preferences_dialog.py:624
 msgid "Dark"
 msgstr "Gelap"
 
-#: mcomix/preferences_dialog.py:620
+#: mcomix/preferences_dialog.py:625
 msgid "Pitch black"
 msgstr "Hitam pekat"
 
-#: mcomix/preferences_dialog.py:626
+#: mcomix/preferences_dialog.py:631
 msgid ""
 "How MComix itself is painted, whatever the desktop asks for. Pitch black is "
 "the dark theme with black backgrounds, which a screen that lights its pixels "
@@ -2387,11 +2400,11 @@ msgstr ""
 "adalah tema gelap dengan latar hitam, yang pada layar yang menyalakan "
 "pikselnya satu per satu tampak sama sekali tanpa cahaya."
 
-#: mcomix/preferences_dialog.py:663
+#: mcomix/preferences_dialog.py:668
 msgid "Restart MComix in the language you picked?"
 msgstr "Mulai ulang MComix dalam bahasa yang Anda pilih?"
 
-#: mcomix/preferences_dialog.py:664
+#: mcomix/preferences_dialog.py:669
 msgid ""
 "MComix is translated as it starts, so most of the interface stays in the "
 "language it started in until it is started again. The book being read, its "
@@ -2401,26 +2414,26 @@ msgstr ""
 "tetap dalam bahasa saat dijalankan sampai dijalankan kembali. Buku yang "
 "sedang dibaca, halamannya, dan ukuran jendela tetap dipertahankan."
 
-#: mcomix/preferences_dialog.py:678 mcomix/preferences_dialog.py:827
-#: mcomix/preferences_dialog.py:909 mcomix/preferences_dialog.py:972
+#: mcomix/preferences_dialog.py:683 mcomix/preferences_dialog.py:832
+#: mcomix/preferences_dialog.py:914 mcomix/preferences_dialog.py:977
 #: mcomix/ui.py:566
 msgid "Never"
 msgstr "Tidak pernah"
 
-#: mcomix/preferences_dialog.py:679
+#: mcomix/preferences_dialog.py:684
 msgid "Only for title pages"
 msgstr "Hanya untuk halaman judul"
 
-#: mcomix/preferences_dialog.py:680
+#: mcomix/preferences_dialog.py:685
 msgid "Only for wide images"
 msgstr "Hanya untuk gambar lebar"
 
-#: mcomix/preferences_dialog.py:681 mcomix/preferences_dialog.py:828
-#: mcomix/preferences_dialog.py:910
+#: mcomix/preferences_dialog.py:686 mcomix/preferences_dialog.py:833
+#: mcomix/preferences_dialog.py:915
 msgid "Always"
 msgstr "Selalu"
 
-#: mcomix/preferences_dialog.py:688
+#: mcomix/preferences_dialog.py:693
 msgid ""
 "When showing the first page of an archive, or an image's width exceeds its "
 "height, only a single page will be displayed."
@@ -2430,58 +2443,58 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 78
-#: mcomix/preferences_dialog.py:706
+#: mcomix/preferences_dialog.py:711
 msgid "Prefer same scale"
 msgstr "Utamakan skala yang sama"
 
 #
 # File: src/preferences.py, line: 78
-#: mcomix/preferences_dialog.py:707
+#: mcomix/preferences_dialog.py:712
 msgid "Prefer same size"
 msgstr "Utamakan ukuran yang sama"
 
 #
 # File: src/preferences.py, line: 263
 # File: src/ui.py, line: 290
-#: mcomix/preferences_dialog.py:708
+#: mcomix/preferences_dialog.py:713
 msgid "Fit to same size"
 msgstr "Sesuaikan ke ukuran yang sama"
 
-#: mcomix/preferences_dialog.py:715
+#: mcomix/preferences_dialog.py:720
 msgid "Maintain relative size or fit to same size."
 msgstr "Mempertahankan ukuran relatif atau menyesuaikan ke ukuran yang sama."
 
-#: mcomix/preferences_dialog.py:729 mcomix/preferences_dialog.py:776
+#: mcomix/preferences_dialog.py:734 mcomix/preferences_dialog.py:781
 msgid "No sorting"
 msgstr "Tanpa pengurutan"
 
-#: mcomix/preferences_dialog.py:730
+#: mcomix/preferences_dialog.py:735
 msgid "File name"
 msgstr "Nama berkas"
 
-#: mcomix/preferences_dialog.py:731
+#: mcomix/preferences_dialog.py:736
 msgid "File name (GLib)"
 msgstr "Nama berkas (GLib)"
 
-#: mcomix/preferences_dialog.py:732 mcomix/library/book_area.py:256
+#: mcomix/preferences_dialog.py:737 mcomix/library/book_area.py:256
 msgid "File size"
 msgstr "Ukuran berkas"
 
-#: mcomix/preferences_dialog.py:733
+#: mcomix/preferences_dialog.py:738
 msgid "Last modified"
 msgstr "Waktu perubahan"
 
-#: mcomix/preferences_dialog.py:739 mcomix/preferences_dialog.py:785
+#: mcomix/preferences_dialog.py:744 mcomix/preferences_dialog.py:790
 #: mcomix/library/book_area.py:260
 msgid "Ascending"
 msgstr "Menaik"
 
-#: mcomix/preferences_dialog.py:740 mcomix/preferences_dialog.py:786
+#: mcomix/preferences_dialog.py:745 mcomix/preferences_dialog.py:791
 #: mcomix/library/book_area.py:261
 msgid "Descending"
 msgstr "Menurun"
 
-#: mcomix/preferences_dialog.py:748
+#: mcomix/preferences_dialog.py:753
 msgid ""
 "Files will be opened and displayed according to the sort order specified "
 "here. This option does not affect ordering within archives."
@@ -2489,19 +2502,19 @@ msgstr ""
 "Berkas akan dibuka dan ditampilkan menurut urutan yang ditentukan di sini. "
 "Pilihan ini tidak memengaruhi urutan di dalam arsip."
 
-#: mcomix/preferences_dialog.py:777
+#: mcomix/preferences_dialog.py:782
 msgid "Natural order"
 msgstr "Urutan alami"
 
-#: mcomix/preferences_dialog.py:778
+#: mcomix/preferences_dialog.py:783
 msgid "Literal order"
 msgstr "Urutan harfiah"
 
-#: mcomix/preferences_dialog.py:779
+#: mcomix/preferences_dialog.py:784
 msgid "GLib order"
 msgstr "Urutan GLib"
 
-#: mcomix/preferences_dialog.py:794
+#: mcomix/preferences_dialog.py:799
 msgid ""
 "Files within archives will be sorted according to the order specified here. "
 "Natural order will sort numbered files based on their natural order, i.e. 1, "
@@ -2517,7 +2530,7 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 219
-#: mcomix/preferences_dialog.py:833
+#: mcomix/preferences_dialog.py:838
 msgid ""
 "Add information about all files opened from within MComix to the shared "
 "recent files list."
@@ -2527,11 +2540,11 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 214
-#: mcomix/preferences_dialog.py:853
+#: mcomix/preferences_dialog.py:858
 msgid "Delete information about recently opened files?"
 msgstr "Hapus informasi tentang berkas yang baru dibuka?"
 
-#: mcomix/preferences_dialog.py:854
+#: mcomix/preferences_dialog.py:859
 msgid ""
 "This will remove all entries from the \"Recent\" menu, and clear information "
 "about last read pages."
@@ -2539,19 +2552,19 @@ msgstr ""
 "Ini akan menghapus semua entri dari menu \"Terkini\" dan membersihkan "
 "informasi tentang halaman terakhir yang dibaca."
 
-#: mcomix/preferences_dialog.py:867
+#: mcomix/preferences_dialog.py:872
 msgid "Normal (fast)"
 msgstr "Normal (cepat)"
 
-#: mcomix/preferences_dialog.py:868
+#: mcomix/preferences_dialog.py:873
 msgid "Bilinear"
 msgstr "Bilinear"
 
-#: mcomix/preferences_dialog.py:869
+#: mcomix/preferences_dialog.py:874
 msgid "Hyperbolic (slow)"
 msgstr "Hiperbolik (lambat)"
 
-#: mcomix/preferences_dialog.py:875
+#: mcomix/preferences_dialog.py:880
 msgid ""
 "Changes how images are scaled. Slower algorithms result in higher quality "
 "resizing, but longer page loading times."
@@ -2559,19 +2572,19 @@ msgstr ""
 "Mengubah cara gambar diskalakan. Algoritme yang lebih lambat memberi "
 "kualitas lebih baik, tetapi halaman lebih lama dimuat."
 
-#: mcomix/preferences_dialog.py:892
+#: mcomix/preferences_dialog.py:897
 msgid "Anywhere: the next page"
 msgstr "Di mana saja: halaman berikutnya"
 
-#: mcomix/preferences_dialog.py:893
+#: mcomix/preferences_dialog.py:898
 msgid "Halves: back and forward"
 msgstr "Separuh: mundur dan maju"
 
-#: mcomix/preferences_dialog.py:894
+#: mcomix/preferences_dialog.py:899
 msgid "Thirds: back, fullscreen, forward"
 msgstr "Sepertiga: mundur, layar penuh, maju"
 
-#: mcomix/preferences_dialog.py:902
+#: mcomix/preferences_dialog.py:907
 msgid ""
 "With \"Flip pages with a left click\": the left half or third of the page "
 "turns back and the right one forward; the middle third enters or leaves "
@@ -2581,19 +2594,19 @@ msgstr ""
 "halaman mundur dan yang kanan maju; sepertiga tengah masuk atau keluar layar "
 "penuh. Dalam mode manga kiri dan kanan bertukar."
 
-#: mcomix/preferences_dialog.py:911
+#: mcomix/preferences_dialog.py:916
 msgid "For a few seconds after a page turn"
 msgstr "Beberapa detik setelah halaman dibalik"
 
-#: mcomix/preferences_dialog.py:916
+#: mcomix/preferences_dialog.py:921
 msgid "The pages on screen and the number of pages, in the lower right corner."
 msgstr "Halaman di layar dan jumlah halaman, di pojok kanan bawah."
 
-#: mcomix/preferences_dialog.py:932
+#: mcomix/preferences_dialog.py:937
 msgid "None"
 msgstr "Nihil"
 
-#: mcomix/preferences_dialog.py:934
+#: mcomix/preferences_dialog.py:939
 msgid ""
 "The ICC profile of the screen, such as one made by calibrating it. Pages are "
 "converted into it from sRGB. Leave it empty where the desktop already "
@@ -2603,23 +2616,23 @@ msgstr ""
 "dikonversi ke profil itu dari sRGB. Biarkan kosong bila desktop sudah "
 "mengonversi untuk layar."
 
-#: mcomix/preferences_dialog.py:952
+#: mcomix/preferences_dialog.py:957
 msgid "Perceptual"
 msgstr "Persepsi"
 
-#: mcomix/preferences_dialog.py:953
+#: mcomix/preferences_dialog.py:958
 msgid "Relative colorimetric"
 msgstr "Kolorimetrik relatif"
 
-#: mcomix/preferences_dialog.py:954
+#: mcomix/preferences_dialog.py:959
 msgid "Saturation"
 msgstr "Saturasi"
 
-#: mcomix/preferences_dialog.py:955
+#: mcomix/preferences_dialog.py:960
 msgid "Absolute colorimetric"
 msgstr "Kolorimetrik absolut"
 
-#: mcomix/preferences_dialog.py:966
+#: mcomix/preferences_dialog.py:971
 msgid ""
 "How colours the screen cannot show are brought within its range, when a "
 "screen colour profile is set. Perceptual keeps the colours in proportion; "
@@ -2630,19 +2643,19 @@ msgstr ""
 "warna; kolorimetrik relatif menjaga persis warna yang dapat ditampilkan "
 "layar."
 
-#: mcomix/preferences_dialog.py:973 mcomix/library/book_area.py:268
+#: mcomix/preferences_dialog.py:978 mcomix/library/book_area.py:268
 msgid "Normal"
 msgstr "Normal"
 
-#: mcomix/preferences_dialog.py:979
+#: mcomix/preferences_dialog.py:984
 msgid "Controls how animated images should be displayed."
 msgstr "Menentukan cara gambar beranimasi ditampilkan."
 
-#: mcomix/preferences_dialog.py:1019
+#: mcomix/preferences_dialog.py:1024
 msgid "The temporary folder"
 msgstr "Folder sementara"
 
-#: mcomix/preferences_dialog.py:1021
+#: mcomix/preferences_dialog.py:1026
 msgid ""
 "The folder archives are unpacked into while they are read, such as a RAM "
 "disk. Empty, the system's temporary folder. Takes effect with the next book "
@@ -2653,7 +2666,7 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 295
-#: mcomix/preferences_dialog.py:1042
+#: mcomix/preferences_dialog.py:1047
 msgid ""
 "Treat all files found within archives, that have one of these file endings, "
 "as comments."
