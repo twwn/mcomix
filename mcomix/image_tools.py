@@ -20,7 +20,10 @@ from mcomix import tools
 from mcomix.i18n import _
 
 from collections.abc import Callable, Sequence
-from typing import Any
+from typing import Any, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from PIL import ImageCms
 
 PIL_VERSION = ('Pillow', PIL.__version__)
 
@@ -475,6 +478,61 @@ def _in_srgb(image: Image.Image) -> Image.Image:
     if 'exif' in image.info:
         converted.info['exif'] = image.info['exif']
     return converted
+
+
+@functools.lru_cache(maxsize=4)
+def _screen_transform(path: str, stamp: int | None, intent: int,
+                      mode: str) -> "ImageCms.ImageCmsTransform | None":
+    """The conversion from sRGB into the profile at <path> for pictures
+    in <mode>, or None where there is none to be had.
+
+    Kept, since building one reads the file and costs about a
+    millisecond, where every page drawn needs it.  <stamp>, the file's
+    modification time, is there to build it again after the file
+    changes; a profile that cannot be read is logged once, not on every
+    page.
+    """
+    try:
+        from PIL import ImageCms
+    except ImportError:
+        return None
+    try:
+        return ImageCms.buildTransform(
+            ImageCms.createProfile('sRGB'), path, mode, mode,
+            ImageCms.Intent(intent))
+    except (ImageCms.PyCMSError, OSError, ValueError) as error:
+        log.warning(_('! Could not read %s'), path)
+        log.debug('No conversion into %s: %s', path, error)
+        return None
+
+
+def to_screen(pixbuf: GdkPixbuf.Pixbuf, profile: str,
+              intent: int) -> GdkPixbuf.Pixbuf:
+    """<pixbuf> converted from sRGB into the screen's colour profile,
+    the ICC file at <profile>, by the rendering <intent>, a value of
+    PIL.ImageCms.Intent (upstream feature request 128).
+
+    Every page is in sRGB by the time it is drawn - glycin converts by
+    the picture's own profile, and _in_srgb() does where PIL reads -
+    and a screen that shows other colours for the same numbers needs
+    them converted once more.  Returned as it is without a profile,
+    without LittleCMS, or with a file that is no profile of a screen.
+    """
+    if not profile:
+        return pixbuf
+    try:
+        stamp: int | None = os.stat(profile).st_mtime_ns
+    except OSError:
+        stamp = None
+    mode = 'RGBA' if pixbuf.get_has_alpha() else 'RGB'
+    transform = _screen_transform(profile, stamp, intent, mode)
+    if transform is None:
+        return pixbuf
+    from PIL import ImageCms
+    converted = ImageCms.applyTransform(pixbuf_to_pil(pixbuf), transform)
+    if converted is None:
+        return pixbuf
+    return pil_to_pixbuf(converted)
 
 
 def pil_to_pixbuf(im: Image.Image,

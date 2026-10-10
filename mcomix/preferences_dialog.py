@@ -410,6 +410,12 @@ class _PreferencesDialog(Dialog):
         page.add_row(Gtk.Label(label=_('Scaling mode')),
                      self._create_scaling_quality_combobox())
 
+        page.add_row(Gtk.Label(label=_('Screen colour profile:')),
+                     self._create_screen_profile_entry())
+
+        page.add_row(Gtk.Label(label=_('Rendering intent:')),
+                     self._create_rendering_intent_combobox())
+
         return page
 
     def _init_advanced_tab(self) -> preferences_page._PreferencePage:
@@ -877,6 +883,49 @@ class _PreferencesDialog(Dialog):
 
         if value != last_value:
             self._window.draw_image()
+
+    def _create_screen_profile_entry(self) -> Gtk.Entry:
+        """The ICC file of the screen, typed in: empty is none, and the
+        pages are drawn in sRGB as they come."""
+        entry = Gtk.Entry()
+        entry.set_size_request(200, -1)
+        entry.set_text(prefs['screen profile'])
+        entry.set_placeholder_text(_('None'))
+        entry.set_tooltip_text(
+            _('The ICC profile of the screen, such as one made by calibrating it. Pages are converted into it from sRGB. Leave it empty where the desktop already converts for the screen.'))
+
+        def store(*args: object) -> None:
+            value = entry.get_text().strip()
+            if value != prefs['screen profile']:
+                prefs['screen profile'] = value
+                self._window.enhancer.signal_update()
+
+        entry.connect('activate', store)
+        focus = Gtk.EventControllerFocus()
+        focus.connect('leave', store)
+        entry.add_controller(focus)
+        return entry
+
+    def _create_rendering_intent_combobox(self) -> "widgets.Chooser[int]":
+        """How the conversion into the screen's profile treats colours
+        the screen cannot show: the values of PIL.ImageCms.Intent."""
+        items = (
+                (_('Perceptual'), 0),
+                (_('Relative colorimetric'), 1),
+                (_('Saturation'), 2),
+                (_('Absolute colorimetric'), 3))
+
+        def changed(box: "widgets.Chooser[int]") -> None:
+            value = box.get_value()
+            if value != prefs['rendering intent']:
+                prefs['rendering intent'] = value
+                if prefs['screen profile']:
+                    self._window.enhancer.signal_update()
+
+        box = self._create_combobox(items, prefs['rendering intent'], changed)
+        box.set_tooltip_text(
+            _('How colours the screen cannot show are brought within its range, when a screen colour profile is set. Perceptual keeps the colours in proportion; relative colorimetric keeps those the screen can show exact.'))
+        return box
 
     def _create_animation_mode_combobox(self) -> "widgets.Chooser[int]":
         """ Creates combo box for animation mode """

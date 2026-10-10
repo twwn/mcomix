@@ -649,6 +649,27 @@ class PreferenceCallbacksTest(MComixTest):
                 self.assertEqual(called, self._choose(callback, value))
                 self.assertEqual(value, prefs[preference])
 
+    def test_a_screen_profile_typed_in_is_stored_and_redraws_once(self):
+        entry = self.dialog._create_screen_profile_entry()
+        with unittest.mock.patch.object(
+                self.window.enhancer, 'signal_update') as update:
+            entry.set_text(' /a/screen.icc ')
+            entry.emit('activate')
+            entry.emit('activate')
+        self.assertEqual('/a/screen.icc', prefs['screen profile'])
+        update.assert_called_once_with()
+
+    def test_the_rendering_intent_redraws_only_where_a_profile_is_set(self):
+        prefs['rendering intent'] = 0
+        box = self.dialog._create_rendering_intent_combobox()
+        for profile, intent, calls in (('', 1, 0), ('/a/screen.icc', 3, 1)):
+            prefs['screen profile'] = profile
+            with self.subTest(profile=profile), unittest.mock.patch.object(
+                    self.window.enhancer, 'signal_update') as update:
+                box.set_selected(intent)
+                self.assertEqual(intent, prefs['rendering intent'])
+                self.assertEqual(calls, update.call_count)
+
     def test_a_colour_scheme_repaints_the_page_and_the_thumbnails(self):
         """They are painted from a colour, not from the style sheet the
         scheme changes."""

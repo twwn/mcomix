@@ -61,7 +61,7 @@ flatpak run io.github.twwn.mcomix
 - [Pillow](https://pypi.org/project/Pillow/) 10.1.0 or newer
 
 Pages are read by Pillow, and by GTK's image loaders (gdk-pixbuf, or glycin) where Pillow cannot. A format either of them reads opens: JPEG, PNG, GIF, WebP, BMP and TIFF everywhere; JPEG XL, HEIF and others where a loader for them is installed.
-A page with a colour profile, a CMYK scan included, is shown converted into sRGB.
+A page with a colour profile, a CMYK scan included, is shown converted into sRGB, or into the screen's profile where the preferences name one.
 
 Optional; programs are found on the `PATH`:
 

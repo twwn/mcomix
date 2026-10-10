@@ -73,6 +73,8 @@ Slideshow step (in pixels) | How far each slideshow step scrolls: forward if pos
 During a slideshow automatically open the next archive |
 Automatically rotate images according to their metadata | Such as an Exif orientation tag. Thumbnails, the file chooser's preview and library covers turn the same way. Thumbnails in the desktop's shared store stay upright, as other programs expect.
 Scaling mode | "Normal (fast)", "Bilinear" or "Hyperbolic (slow)": slower means better quality. "Bilinear" by default.
+Screen colour profile | The path of the screen's ICC profile, such as one made by calibrating it. Pages are converted into it from sRGB, thumbnails and the lens included; animated pages are not. Empty, the default, converts nothing. Leave it empty where the desktop already applies the screen's profile.
+Rendering intent | How colours the screen cannot show are fitted in: "Perceptual" (the default), "Relative colorimetric", "Saturation" or "Absolute colorimetric". Only with a screen colour profile.
 
 ## Advanced tab
 

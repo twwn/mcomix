@@ -1,6 +1,7 @@
 import binascii
 import os
 import shutil
+import struct
 import tempfile
 import unittest
 import unittest.mock
@@ -990,6 +991,118 @@ class InSrgbTest(MComixTest):
         converted = image_tools._in_srgb(im)
         self.assertIsNot(im, converted)
         self.assertEqual(im.info['exif'], converted.info.get('exif'))
+
+
+def screen_profile(white=(0.85, 1.0, 0.6)):
+    """An ICC profile of a screen: Adobe RGB primaries, gamma 2.2, and
+    a white of <white> unlike sRGB's, so that the absolute colorimetric
+    intent converts differently from the others.  Built here because
+    Pillow makes none but sRGB, and a profile file on the system is not
+    there in every CI job."""
+    def s15(value):
+        return struct.pack('>i', round(value * 65536))
+
+    def xyz(x, y, z):
+        return b'XYZ \0\0\0\0' + s15(x) + s15(y) + s15(z)
+
+    curve = b'curv\0\0\0\0' + struct.pack('>IH', 1, round(2.2 * 256))
+    description = (b'desc\0\0\0\0' + struct.pack('>I', 5) + b'Test\0'
+                   + b'\0' * 8 + b'\0' * 3 + b'\0' * 67)
+    tags = ((b'desc', description), (b'wtpt', xyz(*white)),
+            (b'rXYZ', xyz(0.6097, 0.3111, 0.0195)),
+            (b'gXYZ', xyz(0.2053, 0.6257, 0.0609)),
+            (b'bXYZ', xyz(0.1492, 0.0632, 0.7446)),
+            (b'rTRC', curve), (b'gTRC', curve), (b'bTRC', curve),
+            (b'cprt', b'text\0\0\0\0none\0'))
+    offset = 128 + 4 + 12 * len(tags)
+    table = body = b''
+    for signature, data in tags:
+        data += b'\0' * (-len(data) % 4)
+        table += signature + struct.pack('>II', offset + len(body), len(data))
+        body += data
+    header = (struct.pack('>I', offset + len(body)) + b'\0' * 4
+              + bytes((4, 0x30, 0, 0)) + b'mntrRGB XYZ ' + b'\0' * 12
+              + b'acsp' + b'\0' * 28 + s15(0.9642) + s15(1.0) + s15(0.8249)
+              + b'\0' * 48)
+    return header + struct.pack('>I', len(tags)) + table + body
+
+
+class ToScreenTest(MComixTest):
+
+    """A page converted from sRGB into the screen's colour profile
+    (upstream feature request 128)."""
+
+    def setUp(self):
+        super().setUp()
+        image_tools._screen_transform.cache_clear()
+        self.addCleanup(image_tools._screen_transform.cache_clear)
+        self.profile = os.path.join(self.tmp_dir, 'screen.icc')
+        with open(self.profile, 'wb') as fp:
+            fp.write(screen_profile())
+
+    def _expected(self, colour, intent):
+        from PIL import ImageCms
+        return ImageCms.profileToProfile(
+            Image.new('RGB', (1, 1), colour), ImageCms.createProfile('sRGB'),
+            self.profile, renderingIntent=ImageCms.Intent(intent),
+            outputMode='RGB').getpixel((0, 0))
+
+    def test_the_page_comes_out_in_the_screens_colours(self):
+        pixbuf = image_tools.pil_to_pixbuf(Image.new('RGB', (4, 4), (200, 30, 30)))
+        for intent in (0, 3):
+            with self.subTest(intent=intent):
+                converted = image_tools.to_screen(pixbuf, self.profile, intent)
+                self.assertEqual(self._expected((200, 30, 30), intent),
+                                 tuple(converted.get_pixels()[:3]))
+        self.assertNotEqual(self._expected((200, 30, 30), 0),
+                            self._expected((200, 30, 30), 3))
+
+    def test_transparency_is_kept(self):
+        pixbuf = image_tools.pil_to_pixbuf(
+            Image.new('RGBA', (4, 4), (200, 30, 30, 77)))
+        converted = image_tools.to_screen(pixbuf, self.profile, 0)
+        self.assertTrue(converted.get_has_alpha())
+        self.assertEqual(self._expected((200, 30, 30), 0) + (77,),
+                         tuple(converted.get_pixels()[:4]))
+
+    def test_without_a_profile_the_page_is_left_as_it_is(self):
+        pixbuf = image_tools.pil_to_pixbuf(Image.new('RGB', (4, 4), (200, 30, 30)))
+        self.assertIs(pixbuf, image_tools.to_screen(pixbuf, '', 0))
+
+    def test_a_profile_that_cannot_be_read_leaves_the_page_and_says_so_once(self):
+        pixbuf = image_tools.pil_to_pixbuf(Image.new('RGB', (4, 4), (200, 30, 30)))
+        for path in (os.path.join(self.tmp_dir, 'gone.icc'), self.tmp_dir):
+            with self.subTest(path=path), \
+                    self.assertLogs('mcomix', 'WARNING') as logged:
+                self.assertIs(pixbuf, image_tools.to_screen(pixbuf, path, 0))
+                self.assertIs(pixbuf, image_tools.to_screen(pixbuf, path, 0))
+            self.assertEqual(1, len(logged.records))
+
+    def test_a_profile_changed_on_disk_is_read_again(self):
+        pixbuf = image_tools.pil_to_pixbuf(Image.new('RGB', (4, 4), (200, 30, 30)))
+        before = tuple(image_tools.to_screen(pixbuf, self.profile, 3).get_pixels()[:3])
+        with open(self.profile, 'wb') as fp:
+            fp.write(screen_profile(white=(0.9642, 1.0, 0.8249)))
+        os.utime(self.profile, ns=(1, 1))
+        after = tuple(image_tools.to_screen(pixbuf, self.profile, 3).get_pixels()[:3])
+        self.assertNotEqual(before, after)
+        self.assertEqual(self._expected((200, 30, 30), 3), after)
+
+    def test_the_enhancer_converts_after_enhancing(self):
+        """The enhancements work on sRGB values; what the screen gets
+        is the enhanced page in its own colours."""
+        from mcomix import enhance_backend
+        enhancer = enhance_backend.ImageEnhancer(unittest.mock.Mock())
+        enhancer.invert_color = True
+        pixbuf = image_tools.pil_to_pixbuf(Image.new('RGB', (4, 4), (200, 30, 30)))
+        prefs['screen profile'] = self.profile
+        prefs['rendering intent'] = 0
+        shown = enhancer.enhance(pixbuf)
+        self.assertEqual(self._expected((55, 225, 225), 0),
+                         tuple(shown.get_pixels()[:3]))
+        prefs['screen profile'] = ''
+        self.assertEqual((55, 225, 225),
+                         tuple(enhancer.enhance(pixbuf).get_pixels()[:3]))
 
 
 class MissingImageIconTest(MComixTest):

@@ -150,6 +150,8 @@ Preferences = TypedDict('Preferences', {
     'max extract threads': int,
     'unpack folder': str,
     'scaling quality': int,
+    'screen profile': str,
+    'rendering intent': int,
     'fit to size width wide': int,
     'fit to size height wide': int,
     'fit to size width other': int,
@@ -299,6 +301,9 @@ _DEFAULTS: Preferences = {
     'max extract threads': 0,
     'unpack folder': '',
     'scaling quality': 2,  # GdkPixbuf.InterpType.BILINEAR
+    # An ICC file pages are converted into for the screen; '' is none.
+    'screen profile': '',
+    'rendering intent': 0,  # PIL.ImageCms.Intent.PERCEPTUAL
     'fit to size width wide': 3790,
     'fit to size height wide': 960,
     'fit to size width other': 1450,

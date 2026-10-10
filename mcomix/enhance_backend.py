@@ -32,17 +32,23 @@ class ImageEnhancer:
         self.invert_color = prefs['invert color']
 
     def enhance(self, pixbuf: GdkPixbuf.Pixbuf) -> GdkPixbuf.Pixbuf:
-        """Return an "enhanced" version of <pixbuf>."""
+        """Return an "enhanced" version of <pixbuf>.
+
+        Converted into the screen's colour profile last, where the
+        preferences name one, since the enhancements work on the sRGB
+        values every page arrives in.
+        """
 
         if (self.brightness != 1.0 or self.contrast != 1.0 or
                 self.saturation != 1.0 or self.sharpness != 1.0 or
                 self.gamma != 1.0 or self.autocontrast or self.invert_color):
 
-            return image_tools.enhance(pixbuf, self.brightness, self.contrast,
-                                       self.saturation, self.sharpness, self.autocontrast,
-                                       self.invert_color, gamma=self.gamma)
+            pixbuf = image_tools.enhance(pixbuf, self.brightness, self.contrast,
+                                         self.saturation, self.sharpness, self.autocontrast,
+                                         self.invert_color, gamma=self.gamma)
 
-        return pixbuf
+        return image_tools.to_screen(pixbuf, prefs['screen profile'],
+                                     prefs['rendering intent'])
 
     @callback.Callback
     def signal_update(self) -> None:
