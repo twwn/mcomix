@@ -144,6 +144,43 @@ class CollectionAreaTest(MComixTest):
         self.area._list.expand_to(self._collection_row(self.inner))
         self.assertIn(self.inner, self._shown())
 
+    def test_collections_nest_to_any_depth(self):
+        """Upstream feature request 111 asks for collections in a
+        hierarchy "regardless of level deep": a collection dropped on
+        one that is itself inside another goes under it, shows there,
+        and its books are among those of every collection above it."""
+        self.area._list.expand_to(self._collection_row(self.inner))
+        self._settle()
+        self.area._list.select_row(self._row_for(self.manga))
+        self.assertTrue(self.area._drag_data_received(
+            None, '%s:%d' % (constants.LIBRARY_DRAG_COLLECTION, self.manga),
+            *self._middle_of(self.inner)))
+        self.assertEqual(self.inner,
+                         self.backend.get_supercollection(self.manga))
+        deeper = self.backend.add_collection('Deeper')
+        self.backend.add_collection_to_collection(deeper, self.manga)
+        self.area.display_collections()
+
+        row = self._collection_row(self.comics)
+        for collection in (self.inner, self.manga, deeper):
+            row, = [child for child in row.children
+                    if child.collection == collection]
+        self.assertEqual([], row.children)
+        self.assertEqual(
+            sorted([self.inner, self.manga, deeper]),
+            sorted(self.backend.get_all_collections_in_collection(
+                self.comics)))
+
+        # A book four levels down is one of the top collection's.
+        self.backend._con.execute(
+            'insert into book (id, name, path, pages, format, size)'
+            " values (1, 'a.cbz', ?, 20, 1, 1)",
+            (os.path.abspath('/books/a.cbz'),))
+        self.backend._con.execute(
+            'insert into contain (collection, book) values (?, 1)', (deeper,))
+        self.assertEqual([1],
+                         self.backend.get_books_in_collection(self.comics))
+
     def _collection_row(self, collection):
         def walk(rows):
             for row in rows:
