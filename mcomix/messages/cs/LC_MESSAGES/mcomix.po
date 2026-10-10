@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-10 08:45+0200\n"
+"POT-Creation-Date: 2026-10-10 08:48+0200\n"
 "PO-Revision-Date: 2009-01-25 21:54+0100\n"
 "Last-Translator: Jan Nekvasil <jan.nekvasil@gmail.com>\n"
 "Language-Team: \n"
@@ -232,13 +232,13 @@ msgstr "Nová zkratka..."
 #
 # File: src/comment.py, line: 16
 # File: src/preferences.py, line: 288
-#: mcomix/comment_dialog.py:28 mcomix/preferences_dialog.py:467
+#: mcomix/comment_dialog.py:28 mcomix/preferences_dialog.py:470
 msgid "Comments"
 msgstr "Komentáře"
 
 #
 # File: src/comment.py, line: 53
-#: mcomix/comment_dialog.py:134 mcomix/file_handler.py:635
+#: mcomix/comment_dialog.py:134 mcomix/file_handler.py:652
 #, python-format
 msgid "Could not read %s"
 msgstr "%s nelze načíst"
@@ -699,34 +699,39 @@ msgstr "Přidat knihy"
 msgid "_Add"
 msgstr "Při_dat"
 
+#: mcomix/file_handler.py:73
+#, python-format
+msgid "! Could not unpack into %s; the temporary folder is used instead."
+msgstr "! Do %s nelze rozbalit; použije se dočasná složka."
+
 #
 # File: src/filehandler.py, line: 285
-#: mcomix/file_handler.py:356
+#: mcomix/file_handler.py:372
 #, python-format
 msgid "No images in '%s'"
 msgstr "„%s“ neobsahuje žádné obrázky"
 
 #
 # File: src/filehandler.py, line: 213
-#: mcomix/file_handler.py:543
+#: mcomix/file_handler.py:559
 #, python-format
 msgid "Could not open %s: No such file."
 msgstr "Nelze otevřít %s: Soubor neexistuje."
 
 #
 # File: src/filehandler.py, line: 217
-#: mcomix/file_handler.py:546 mcomix/file_provider.py:253
+#: mcomix/file_handler.py:562 mcomix/file_provider.py:253
 #: mcomix/file_provider.py:333
 #, python-format
 msgid "Could not open %s: Permission denied."
 msgstr "Nelze otevřít %s: Přístup odmítnut."
 
-#: mcomix/file_handler.py:718
+#: mcomix/file_handler.py:735
 #, python-format
 msgid "Continue reading from page %d?"
 msgstr "Pokračovat ve čtení od strany %d?"
 
-#: mcomix/file_handler.py:719
+#: mcomix/file_handler.py:736
 #, python-format
 msgid ""
 "You stopped reading here on %(date)s, %(time)s. If you choose \"Yes\", "
@@ -736,7 +741,7 @@ msgstr ""
 "Čtení jste zde přerušili %(date)s v %(time)s. Zvolíte-li „Ano“, čtení bude "
 "pokračovat od strany %(page)d. Jinak se načte první strana."
 
-#: mcomix/file_handler.py:1231
+#: mcomix/file_handler.py:1248
 #, python-format
 msgid ""
 "! Corrupt file \"%s\", deleting it; the last file read will not be reopened."
@@ -2172,15 +2177,19 @@ msgstr ""
 "použije jedno vlákno pro každý procesor. Projeví se při příštím spuštění "
 "MComixu."
 
+#: mcomix/preferences_dialog.py:442
+msgid "Unpack books in:"
+msgstr "Rozbalovat knihy do:"
+
 #
 # File: src/preferences.py, line: 222
-#: mcomix/preferences_dialog.py:443
+#: mcomix/preferences_dialog.py:446
 msgid "Store thumbnails for opened files"
 msgstr "Uchovávat náhledy otevřených souborů"
 
 #
 # File: src/preferences.py, line: 227
-#: mcomix/preferences_dialog.py:445
+#: mcomix/preferences_dialog.py:448
 msgid ""
 "Store thumbnails for opened files according to the freedesktop.org "
 "specification. These thumbnails are shared by many other applications, such "
@@ -2190,11 +2199,11 @@ msgstr ""
 "freedesktop.org. Tyto náhledy jsou používány mnoha jinými aplikacemi, jako "
 "například většinou správců souborů."
 
-#: mcomix/preferences_dialog.py:447
+#: mcomix/preferences_dialog.py:450
 msgid "Maximum number of pages to store in the cache:"
 msgstr "Maximální počet stran uchovávaných v mezipaměti:"
 
-#: mcomix/preferences_dialog.py:451
+#: mcomix/preferences_dialog.py:454
 msgid ""
 "Set the max number of pages to cache. A value of -1 will cache the entire "
 "archive."
@@ -2203,19 +2212,19 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 124
-#: mcomix/preferences_dialog.py:453
+#: mcomix/preferences_dialog.py:456
 msgid "Magnifying Lens"
 msgstr "Lupa"
 
 #
 # File: src/preferences.py, line: 125
-#: mcomix/preferences_dialog.py:455
+#: mcomix/preferences_dialog.py:458
 msgid "Magnifying lens size (in pixels):"
 msgstr "Velikost lupy (v pixelech):"
 
 #
 # File: src/preferences.py, line: 131
-#: mcomix/preferences_dialog.py:459
+#: mcomix/preferences_dialog.py:462
 msgid ""
 "Set the size of the magnifying lens. It is a square with a side of this many "
 "pixels."
@@ -2224,45 +2233,45 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 133
-#: mcomix/preferences_dialog.py:461
+#: mcomix/preferences_dialog.py:464
 msgid "Magnification factor:"
 msgstr "Míra zvětšení:"
 
 #
 # File: src/preferences.py, line: 140
-#: mcomix/preferences_dialog.py:465
+#: mcomix/preferences_dialog.py:468
 msgid "Set the magnification factor of the magnifying lens."
 msgstr "Nastavit úroveň zvětšení lupy."
 
 #
 # File: src/preferences.py, line: 289
-#: mcomix/preferences_dialog.py:469
+#: mcomix/preferences_dialog.py:472
 msgid "Comment extensions:"
 msgstr "Přípony souborů s komentáři:"
 
 #
 # File: src/enhance.py, line: 51
-#: mcomix/preferences_dialog.py:472
+#: mcomix/preferences_dialog.py:475
 msgid "Animated images"
 msgstr "Animované obrázky"
 
-#: mcomix/preferences_dialog.py:474
+#: mcomix/preferences_dialog.py:477
 msgid "Animation mode:"
 msgstr "Režim animace:"
 
-#: mcomix/preferences_dialog.py:495
+#: mcomix/preferences_dialog.py:498
 msgid "_Reset keys"
 msgstr "_Obnovit klávesy"
 
-#: mcomix/preferences_dialog.py:497
+#: mcomix/preferences_dialog.py:500
 msgid "Resets all keyboard shortcuts to their default values."
 msgstr "Obnoví všem klávesovým zkratkám výchozí hodnoty."
 
-#: mcomix/preferences_dialog.py:500
+#: mcomix/preferences_dialog.py:503
 msgid "Clear _dialog choices"
 msgstr "Vymazat volby v _dialozích"
 
-#: mcomix/preferences_dialog.py:502
+#: mcomix/preferences_dialog.py:505
 msgid ""
 "Clears all dialog choices that you have previously chosen not to be asked "
 "again."
@@ -2270,11 +2279,11 @@ msgstr ""
 "Vymaže všechny odpovědi v dialozích, u kterých jste zvolili, že se MComix už "
 "nemá ptát."
 
-#: mcomix/preferences_dialog.py:537
+#: mcomix/preferences_dialog.py:540
 msgid "Ask every time"
 msgstr "Zeptat se pokaždé"
 
-#: mcomix/preferences_dialog.py:542
+#: mcomix/preferences_dialog.py:545
 msgid ""
 "What MComix answers this prompt with instead of asking. This is what the "
 "prompt's \"Do not ask again\" box sets."
@@ -2282,27 +2291,27 @@ msgstr ""
 "Odpověď, kterou MComix na tento dotaz dá místo toho, aby jej položil. "
 "Nastavuje ji políčko „Příště se neptat.“ v samotném dotazu."
 
-#: mcomix/preferences_dialog.py:564
+#: mcomix/preferences_dialog.py:567
 msgid "Auto-detect (Default)"
 msgstr "Zjistit automaticky (výchozí)"
 
-#: mcomix/preferences_dialog.py:606
+#: mcomix/preferences_dialog.py:609
 msgid "Follow the system"
 msgstr "Podle systému"
 
-#: mcomix/preferences_dialog.py:607
+#: mcomix/preferences_dialog.py:610
 msgid "Light"
 msgstr "Světlé"
 
-#: mcomix/preferences_dialog.py:608
+#: mcomix/preferences_dialog.py:611
 msgid "Dark"
 msgstr "Tmavé"
 
-#: mcomix/preferences_dialog.py:609
+#: mcomix/preferences_dialog.py:612
 msgid "Pitch black"
 msgstr "Úplně černý"
 
-#: mcomix/preferences_dialog.py:615
+#: mcomix/preferences_dialog.py:618
 msgid ""
 "How MComix itself is painted, whatever the desktop asks for. Pitch black is "
 "the dark theme with black backgrounds, which a screen that lights its pixels "
@@ -2312,11 +2321,11 @@ msgstr ""
 "prostředí. Úplně černý je tmavý motiv s černým pozadím, které obrazovka "
 "rozsvěcující pixely po jednom zobrazí jako naprostou tmu."
 
-#: mcomix/preferences_dialog.py:652
+#: mcomix/preferences_dialog.py:655
 msgid "Restart MComix in the language you picked?"
 msgstr "Restartovat MComix ve zvoleném jazyce?"
 
-#: mcomix/preferences_dialog.py:653
+#: mcomix/preferences_dialog.py:656
 msgid ""
 "MComix is translated as it starts, so most of the interface stays in the "
 "language it started in until it is started again. The book being read, its "
@@ -2326,24 +2335,24 @@ msgstr ""
 "kterém byl spuštěn, dokud jej nespustíte znovu. Čtená kniha, její stránka i "
 "velikost okna zůstanou zachovány."
 
-#: mcomix/preferences_dialog.py:667 mcomix/preferences_dialog.py:816
-#: mcomix/preferences_dialog.py:881 mcomix/ui.py:547
+#: mcomix/preferences_dialog.py:670 mcomix/preferences_dialog.py:819
+#: mcomix/preferences_dialog.py:884 mcomix/ui.py:547
 msgid "Never"
 msgstr "Nikdy"
 
-#: mcomix/preferences_dialog.py:668
+#: mcomix/preferences_dialog.py:671
 msgid "Only for title pages"
 msgstr "Jen pro titulní strany"
 
-#: mcomix/preferences_dialog.py:669
+#: mcomix/preferences_dialog.py:672
 msgid "Only for wide images"
 msgstr "Jen pro široké obrázky"
 
-#: mcomix/preferences_dialog.py:670 mcomix/preferences_dialog.py:817
+#: mcomix/preferences_dialog.py:673 mcomix/preferences_dialog.py:820
 msgid "Always"
 msgstr "Vždy"
 
-#: mcomix/preferences_dialog.py:677
+#: mcomix/preferences_dialog.py:680
 msgid ""
 "When showing the first page of an archive, or an image's width exceeds its "
 "height, only a single page will be displayed."
@@ -2353,58 +2362,58 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 78
-#: mcomix/preferences_dialog.py:695
+#: mcomix/preferences_dialog.py:698
 msgid "Prefer same scale"
 msgstr "Upřednostnit stejné měřítko"
 
 #
 # File: src/preferences.py, line: 78
-#: mcomix/preferences_dialog.py:696
+#: mcomix/preferences_dialog.py:699
 msgid "Prefer same size"
 msgstr "Upřednostnit stejnou velikost"
 
 #
 # File: src/preferences.py, line: 263
 # File: src/ui.py, line: 290
-#: mcomix/preferences_dialog.py:697
+#: mcomix/preferences_dialog.py:700
 msgid "Fit to same size"
 msgstr "Přizpůsobit stejné velikosti"
 
-#: mcomix/preferences_dialog.py:704
+#: mcomix/preferences_dialog.py:707
 msgid "Maintain relative size or fit to same size."
 msgstr "Zachová relativní velikost nebo přizpůsobí stejné velikosti."
 
-#: mcomix/preferences_dialog.py:718 mcomix/preferences_dialog.py:765
+#: mcomix/preferences_dialog.py:721 mcomix/preferences_dialog.py:768
 msgid "No sorting"
 msgstr "Bez řazení"
 
-#: mcomix/preferences_dialog.py:719
+#: mcomix/preferences_dialog.py:722
 msgid "File name"
 msgstr "Názvu souboru"
 
-#: mcomix/preferences_dialog.py:720
+#: mcomix/preferences_dialog.py:723
 msgid "File name (GLib)"
 msgstr "Názvu souboru (GLib)"
 
-#: mcomix/preferences_dialog.py:721 mcomix/library/book_area.py:255
+#: mcomix/preferences_dialog.py:724 mcomix/library/book_area.py:255
 msgid "File size"
 msgstr "Velikosti souboru"
 
-#: mcomix/preferences_dialog.py:722
+#: mcomix/preferences_dialog.py:725
 msgid "Last modified"
 msgstr "Času změny"
 
-#: mcomix/preferences_dialog.py:728 mcomix/preferences_dialog.py:774
+#: mcomix/preferences_dialog.py:731 mcomix/preferences_dialog.py:777
 #: mcomix/library/book_area.py:259
 msgid "Ascending"
 msgstr "Vzestupně"
 
-#: mcomix/preferences_dialog.py:729 mcomix/preferences_dialog.py:775
+#: mcomix/preferences_dialog.py:732 mcomix/preferences_dialog.py:778
 #: mcomix/library/book_area.py:260
 msgid "Descending"
 msgstr "Sestupně"
 
-#: mcomix/preferences_dialog.py:737
+#: mcomix/preferences_dialog.py:740
 msgid ""
 "Files will be opened and displayed according to the sort order specified "
 "here. This option does not affect ordering within archives."
@@ -2412,19 +2421,19 @@ msgstr ""
 "Soubory se budou otevírat a zobrazovat v pořadí určeném zde. Tato volba "
 "neovlivňuje pořadí uvnitř archivů."
 
-#: mcomix/preferences_dialog.py:766
+#: mcomix/preferences_dialog.py:769
 msgid "Natural order"
 msgstr "Přirozené pořadí"
 
-#: mcomix/preferences_dialog.py:767
+#: mcomix/preferences_dialog.py:770
 msgid "Literal order"
 msgstr "Doslovné pořadí"
 
-#: mcomix/preferences_dialog.py:768
+#: mcomix/preferences_dialog.py:771
 msgid "GLib order"
 msgstr "Pořadí GLib"
 
-#: mcomix/preferences_dialog.py:783
+#: mcomix/preferences_dialog.py:786
 msgid ""
 "Files within archives will be sorted according to the order specified here. "
 "Natural order will sort numbered files based on their natural order, i.e. 1, "
@@ -2440,7 +2449,7 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 219
-#: mcomix/preferences_dialog.py:822
+#: mcomix/preferences_dialog.py:825
 msgid ""
 "Add information about all files opened from within MComix to the shared "
 "recent files list."
@@ -2450,11 +2459,11 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 214
-#: mcomix/preferences_dialog.py:842
+#: mcomix/preferences_dialog.py:845
 msgid "Delete information about recently opened files?"
 msgstr "Smazat informace o nedávno otevřených souborech?"
 
-#: mcomix/preferences_dialog.py:843
+#: mcomix/preferences_dialog.py:846
 msgid ""
 "This will remove all entries from the \"Recent\" menu, and clear information "
 "about last read pages."
@@ -2462,19 +2471,19 @@ msgstr ""
 "Tím se odstraní všechny položky z nabídky „Nedávné“ a informace o naposledy "
 "čtených stranách."
 
-#: mcomix/preferences_dialog.py:856
+#: mcomix/preferences_dialog.py:859
 msgid "Normal (fast)"
 msgstr "Normální (rychlé)"
 
-#: mcomix/preferences_dialog.py:857
+#: mcomix/preferences_dialog.py:860
 msgid "Bilinear"
 msgstr "Bilineární"
 
-#: mcomix/preferences_dialog.py:858
+#: mcomix/preferences_dialog.py:861
 msgid "Hyperbolic (slow)"
 msgstr "Hyperbolické (pomalé)"
 
-#: mcomix/preferences_dialog.py:864
+#: mcomix/preferences_dialog.py:867
 msgid ""
 "Changes how images are scaled. Slower algorithms result in higher quality "
 "resizing, but longer page loading times."
@@ -2482,17 +2491,30 @@ msgstr ""
 "Mění způsob škálování obrázků. Pomalejší algoritmy dávají vyšší kvalitu, ale "
 "strany se načítají déle."
 
-#: mcomix/preferences_dialog.py:882 mcomix/library/book_area.py:267
+#: mcomix/preferences_dialog.py:885 mcomix/library/book_area.py:267
 msgid "Normal"
 msgstr "Normální"
 
-#: mcomix/preferences_dialog.py:888
+#: mcomix/preferences_dialog.py:891
 msgid "Controls how animated images should be displayed."
 msgstr "Určuje, jak se mají zobrazovat animované obrázky."
 
+#: mcomix/preferences_dialog.py:931
+msgid "The temporary folder"
+msgstr "Dočasná složka"
+
+#: mcomix/preferences_dialog.py:933
+msgid ""
+"The folder archives are unpacked into while they are read, such as a RAM "
+"disk. Empty, the system's temporary folder. Takes effect with the next book "
+"opened."
+msgstr ""
+"Složka, do které se archivy při čtení rozbalují, například RAM disk. Prázdné "
+"znamená dočasnou složku systému. Platí od příští otevřené knihy."
+
 #
 # File: src/preferences.py, line: 295
-#: mcomix/preferences_dialog.py:932
+#: mcomix/preferences_dialog.py:954
 msgid ""
 "Treat all files found within archives, that have one of these file endings, "
 "as comments."

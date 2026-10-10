@@ -59,6 +59,22 @@ from mcomix.dialog import Response
 from collections.abc import Callable
 
 
+def unpack_folder() -> str | None:
+    """The folder a book is unpacked into: the one the preference "unpack
+    folder" names, or None for the system's temporary folder (upstream
+    feature request 114, which wanted a RAM disk).  A folder that has
+    gone, or cannot be written to, is passed over with a warning rather
+    than leaving the book unopened."""
+    folder: str = prefs['unpack folder']
+    if not folder:
+        return None
+    if os.path.isdir(folder) and os.access(folder, os.W_OK | os.X_OK):
+        return folder
+    log.warning(_('! Could not unpack into %s; the temporary folder is used instead.'),
+                folder)
+    return None
+
+
 class FileHandler:
 
     """The FileHandler keeps track of the actual files/archives opened.
@@ -563,7 +579,8 @@ class FileHandler:
         later question about a file cannot find a half-open archive.
         """
 
-        self._tmp_dir = tempfile.mkdtemp(prefix='mcomix.', suffix=os.sep)
+        self._tmp_dir = tempfile.mkdtemp(prefix='mcomix.', suffix=os.sep,
+                                         dir=unpack_folder())
         self._base_path = path
         try:
             self._condition = self._extractor.setup(self._base_path,

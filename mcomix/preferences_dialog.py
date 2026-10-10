@@ -439,6 +439,9 @@ class _PreferencesDialog(Dialog):
                          1, 0, max_threads, 1, 4, 0,
                          _('Set the maximum number of concurrent threads used to generate thumbnails. A value of 0 uses one thread for each processor. Takes effect the next time MComix is started.')))
 
+        page.add_row(Gtk.Label(label=_('Unpack books in:')),
+                     self._create_unpack_folder_entry())
+
         page.add_row(self._create_pref_check_button(
             _('Store thumbnails for opened files'),
             'create thumbnails',
@@ -918,6 +921,25 @@ class _PreferencesDialog(Dialog):
             box.connect_changed(change_callback)
 
         return box
+
+    def _create_unpack_folder_entry(self) -> Gtk.Entry:
+        """Where books are unpacked, typed in: empty is the system's
+        temporary folder.  Read when a book is opened."""
+        entry = Gtk.Entry()
+        entry.set_size_request(200, -1)
+        entry.set_text(prefs['unpack folder'])
+        entry.set_placeholder_text(_('The temporary folder'))
+        entry.set_tooltip_text(
+            _('The folder archives are unpacked into while they are read, such as a RAM disk. Empty, the system\'s temporary folder. Takes effect with the next book opened.'))
+
+        def store(*args: object) -> None:
+            prefs['unpack folder'] = entry.get_text().strip()
+
+        entry.connect('activate', store)
+        focus = Gtk.EventControllerFocus()
+        focus.connect('leave', store)
+        entry.add_controller(focus)
+        return entry
 
     def _create_extensions_entry(self) -> Gtk.Entry:
         entry = Gtk.Entry()

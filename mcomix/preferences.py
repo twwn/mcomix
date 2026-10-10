@@ -148,6 +148,7 @@ Preferences = TypedDict('Preferences', {
     'statusbar fields': int,
     'max threads': int,
     'max extract threads': int,
+    'unpack folder': str,
     'scaling quality': int,
     'fit to size width wide': int,
     'fit to size height wide': int,
@@ -296,6 +297,7 @@ _DEFAULTS: Preferences = {
     # 0 is the automatic setting: tools.thread_count() says what it means.
     'max threads': 0,
     'max extract threads': 0,
+    'unpack folder': '',
     'scaling quality': 2,  # GdkPixbuf.InterpType.BILINEAR
     'fit to size width wide': 3790,
     'fit to size height wide': 960,

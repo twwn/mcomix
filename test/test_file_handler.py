@@ -405,6 +405,39 @@ class _WindowTest(MComixTest):
         super().tearDown()
 
 
+class UnpackFolderTest(_WindowTest):
+
+    """Where a book is unpacked (upstream feature request 114)."""
+
+    def test_by_default_it_is_the_temporary_folder(self):
+        from mcomix import file_handler
+        prefs['unpack folder'] = ''
+        self.assertIsNone(file_handler.unpack_folder())
+
+    def test_a_book_is_unpacked_into_the_folder_named(self):
+        folder = os.path.join(self.tmp_dir, 'ramdisk')
+        os.mkdir(folder)
+        prefs['unpack folder'] = folder
+        self.assertTrue(self.handler.open_file(
+            get_testfile_path('archives', '01-ZIP-Normal.zip')))
+        self.assertTrue(wait_for(
+            lambda: self.window.imagehandler.get_number_of_pages() > 0))
+        self.assertEqual(folder, os.path.dirname(
+            self.handler._tmp_dir.rstrip(os.sep)))
+        self.assertTrue(os.listdir(folder))
+
+    def test_a_folder_that_has_gone_is_passed_over(self):
+        from mcomix import file_handler
+        prefs['unpack folder'] = os.path.join(self.tmp_dir, 'gone')
+        with mock.patch.object(file_handler.log, 'warning') as warned:
+            self.assertIsNone(file_handler.unpack_folder())
+        warned.assert_called_once()
+        self.assertTrue(self.handler.open_file(
+            get_testfile_path('archives', '01-ZIP-Normal.zip')))
+        self.assertTrue(wait_for(
+            lambda: self.window.imagehandler.get_number_of_pages() > 0))
+
+
 class AnExtensionlessPictureTest(_WindowTest):
 
     """A picture with no extension, opened by itself, is shown."""
