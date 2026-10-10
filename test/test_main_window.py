@@ -30,6 +30,7 @@ from mcomix import file_chooser_simple_dialog as simple_chooser
 from mcomix import icons
 from mcomix import image_tools
 from mcomix import keybindings
+from mcomix import layout
 from mcomix import file_actions
 from mcomix import file_mover
 from mcomix import main
@@ -1038,6 +1039,70 @@ class MainWindowTest(MComixTest):
                         return_value=0) as scrolled:
                 handler._smart_scrolling(small_step, False)
             self.assertEqual(cap, scrolled.call_args.args[0])
+
+    def _smart_steps_over_a_spread(self, steps, backwards=False):
+        """What <steps> smart scrolling steps do: where the view is
+        after each, or the page turn it asked for."""
+        handler = self.window.event_handler
+        done = []
+        with unittest.mock.patch.object(handler, '_flip_page') as flipped, \
+                unittest.mock.patch.object(
+                    self.window, 'update_layout_position'), \
+                unittest.mock.patch.object(
+                    self.window, 'update_viewport_position'), \
+                unittest.mock.patch.object(
+                    self.window, 'displayed_page_count', return_value=2), \
+                unittest.mock.patch.object(
+                    self.window, 'get_visible_area_size',
+                    return_value=(200, 100)):
+            for _ in range(steps):
+                handler._smart_scrolling(None, backwards)
+                if flipped.called:
+                    done.append('turn %+d' % flipped.call_args.args[0])
+                    flipped.reset_mock()
+                else:
+                    done.append(self.window.layout.get_viewport_box()
+                                .get_position()[1])
+        return done
+
+    def _spread_that_scrolls_down_only(self):
+        self._ready()
+        spread = layout.FiniteLayout(
+            [[100, 300], [100, 300]], [False, False], (200, 100),
+            constants.MANGA_ORIENTATION, 0, False,
+            constants.DISTRIBUTION_AXIS, constants.ALIGNMENT_AXIS)
+        spread.scroll_to_predefined((constants.SCROLL_TO_START,) * 2,
+                                    constants.FIRST_INDEX)
+        self.window.layout = spread
+        prefs['smart scroll percentage'] = 1.0
+        prefs['flip with wheel'] = True
+        prefs['number of key presses before page turn'] = 3
+        return self.window.event_handler
+
+    def test_space_reads_the_second_page_of_a_spread_before_turning(self):
+        """Two pages side by side that fit the window's width scroll
+        down only, and the bottom of the first was followed by the next
+        spread (upstream feature request 124)."""
+        handler = self._spread_that_scrolls_down_only()
+        handler._scroll_protection = False
+        self.assertEqual([100, 200, 0, 100, 200, 'turn +1'],
+                         self._smart_steps_over_a_spread(6))
+        self.assertEqual([100, 0, 200, 100, 0, 'turn -1'],
+                         self._smart_steps_over_a_spread(6, backwards=True))
+
+    def test_the_wheel_waits_before_the_second_page_as_before_a_turn(self):
+        handler = self._spread_that_scrolls_down_only()
+        handler._scroll_protection = True
+        self.assertEqual([100, 200, 200, 200, 0, 100, 200, 200, 200,
+                          'turn +1'],
+                         self._smart_steps_over_a_spread(10))
+
+    def test_the_second_page_is_read_where_the_wheel_turns_no_pages(self):
+        handler = self._spread_that_scrolls_down_only()
+        handler._scroll_protection = False
+        prefs['flip with wheel'] = False
+        self.assertEqual([100, 200, 0, 100, 200, 200],
+                         self._smart_steps_over_a_spread(6))
 
     def test_control_and_the_wheel_zooms_rather_than_scrolling(self):
         for smart in (False, True):

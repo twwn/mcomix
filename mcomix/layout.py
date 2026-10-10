@@ -107,6 +107,10 @@ class FiniteLayout:  # 2D only
         self.orientation: Sequence[int]
         self.dirty_current_index: bool
         self.wrap_individually = wrap_individually
+        self._distribution_axis = distribution_axis
+        #: Which of the pages standing side by side is being read, where
+        #: scrolling cannot tell: see pages_abreast().
+        self.reading_pass = 0
         self._reset(content_sizes, content_distorted, viewport_size, orientation,
                     spacing, wrap_individually, distribution_axis, alignment_axis)
 
@@ -176,6 +180,12 @@ class FiniteLayout:  # 2D only
         its pages individually has only the union box, and uses it
         whatever the index says.
         """
+        if index == constants.FIRST_INDEX:
+            self.reading_pass = 0
+        elif index == constants.LAST_INDEX:
+            # Arrived at from the page after it, so the last of the
+            # pages side by side is the one being read.
+            self.reading_pass = len(self.content_boxes) - 1
         if index is None:
             index = self.get_current_index()
         if not self.wrap_individually:
@@ -188,6 +198,48 @@ class FiniteLayout:  # 2D only
             current_box = self.wrapper_boxes[index]
         self.set_viewport_position(self.scroller.scroll_to_predefined(
             current_box, self.viewport_box, self.orientation, destination))
+
+    def pages_abreast(self) -> int:
+        """How many pages have to be read one after the other although
+        the viewport shows them all at once.
+
+        Two pages side by side that fit the window's width and not its
+        height scroll as one: down, and that is the end of them.  They
+        are read as two all the same, the first to its bottom and then
+        the second from its top (upstream feature request 124).  One
+        wherever scrolling already tells the pages apart, or there is
+        nothing to scroll.
+        """
+        if self.wrap_individually or len(self.content_boxes) < 2:
+            return 1
+        across = self._distribution_axis
+        along = 1 - across  # 2D only
+        viewport = self.viewport_box.get_size()
+        union = self.union_box.get_size()
+        if union[across] > viewport[across] or union[along] <= viewport[along]:
+            return 1
+        return len(self.content_boxes)
+
+    def _page_abreast_after(self, backwards: bool) -> "int | None":
+        abreast = self.pages_abreast()
+        after = min(self.reading_pass, abreast - 1) + (-1 if backwards else 1)
+        return after if 0 <= after < abreast else None
+
+    def has_page_abreast_left(self, backwards: bool) -> bool:
+        """Whether another of the pages side by side is still to be
+        read once scroll_smartly() has run off the end of them."""
+        return self._page_abreast_after(backwards) is not None
+
+    def read_next_page_abreast(self, backwards: bool) -> None:
+        """Go on to the next of the pages side by side: back to the
+        edge the reader starts a page from."""
+        after = self._page_abreast_after(backwards)
+        if after is None:
+            return
+        self.reading_pass = after
+        direction = tools.vector_opposite(self.orientation) if backwards \
+            else self.orientation
+        self.scroll_to_predefined(tools.vector_opposite(direction))
 
     def get_content_boxes(self) -> list[box.Box]:
         """The Boxes the pages are drawn in, in the order laid out."""

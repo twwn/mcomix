@@ -89,6 +89,64 @@ class SmartScrollTest(unittest.TestCase):
                           (-1, (0, 0))],
                          self._steps(result, 6, backwards=True))
 
+    def _spread(self, viewport=(200, 100), wrap_individually=False):
+        """Two pages side by side in a window as wide as both."""
+        result = layout.FiniteLayout(
+            [[100, 300], [100, 300]], [False, False], viewport,
+            constants.WESTERN_ORIENTATION, 0, wrap_individually,
+            constants.DISTRIBUTION_AXIS, constants.ALIGNMENT_AXIS)
+        result.scroll_to_predefined((constants.SCROLL_TO_START,) * 2,
+                                    constants.FIRST_INDEX)
+        return result
+
+    def test_a_spread_that_only_scrolls_down_is_read_a_page_at_a_time(self):
+        """Its two pages scrolled as one, so the bottom of the first was
+        followed by the next spread and the second page's top was never
+        on screen again (upstream feature request 124)."""
+        result = self._spread()
+        self.assertEqual(2, result.pages_abreast())
+        self.assertEqual([(0, 100), (0, 200), (0, 200)],
+                         [position for _, position in self._steps(result, 3)])
+        self.assertTrue(result.has_page_abreast_left(False))
+        self.assertFalse(result.has_page_abreast_left(True))
+        result.read_next_page_abreast(False)
+        self.assertEqual((0, 0),
+                         tuple(result.get_viewport_box().get_position()))
+        self.assertEqual([(0, 100), (0, 200), (0, 200)],
+                         [position for _, position in self._steps(result, 3)])
+        self.assertFalse(result.has_page_abreast_left(False),
+                         'a third page was found in a spread of two')
+        # And back the way it came: up the second page, then the first
+        # from its bottom.
+        self._steps(result, 2, backwards=True)
+        self.assertTrue(result.has_page_abreast_left(True))
+        result.read_next_page_abreast(True)
+        self.assertEqual((0, 200),
+                         tuple(result.get_viewport_box().get_position()))
+        self.assertFalse(result.has_page_abreast_left(True))
+
+    def test_a_spread_turned_back_to_is_on_its_last_page(self):
+        result = self._spread()
+        result.scroll_to_predefined((constants.SCROLL_TO_END,) * 2,
+                                    constants.LAST_INDEX)
+        self.assertFalse(result.has_page_abreast_left(False))
+        self.assertTrue(result.has_page_abreast_left(True))
+
+    def test_pages_that_scrolling_tells_apart_are_not_read_twice(self):
+        for name, result in (
+                ('fits', self._spread(viewport=(200, 300))),
+                ('scrolls sideways only', self._spread(viewport=(100, 300))),
+                ('wrapped page by page',
+                 self._spread(viewport=(100, 100), wrap_individually=True))):
+            with self.subTest(name):
+                self.assertEqual(1, result.pages_abreast())
+                # Arriving from the page after it does not leave a page
+                # to go back to either.
+                result.scroll_to_predefined((constants.SCROLL_TO_END,) * 2,
+                                            constants.LAST_INDEX)
+                self.assertFalse(result.has_page_abreast_left(False))
+                self.assertFalse(result.has_page_abreast_left(True))
+
     def test_a_spread_is_read_across_both_pages_a_row_at_a_time(self):
         """The answer is the page the window has reached, which for a
         spread was the one it had left."""

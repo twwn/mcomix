@@ -998,13 +998,13 @@ class EventHandler:
             max_scroll, backwards, axis_map)
 
         if new_index == -1:
-            self._previous_page_with_protection()
+            self._previous_page_with_protection(abreast=True)
         elif new_index == self._window.displayed_page_count():
-            self._next_page_with_protection()
+            self._next_page_with_protection(abreast=True)
         else:
             self._window.update_viewport_position()
 
-    def _next_page_with_protection(self) -> bool:
+    def _next_page_with_protection(self, abreast: bool = False) -> bool:
         """Advance a page, unless the reader should scroll on first.
 
         Returns True when the page was turned.
@@ -1027,9 +1027,15 @@ class EventHandler:
         The count of attempts is signed - forwards counts up and
         backwards counts down - and changing direction restarts it
         rather than working off what was counted the other way.
+
+        <abreast> is what smart scrolling passes: where the other page
+        of a spread is still to be read, the step that would have
+        turned goes to that page instead, "flip with wheel" or not,
+        since it leaves the reader on the pages already on screen.
         """
 
-        if not prefs['flip with wheel']:
+        abreast = abreast and self._window.layout.has_page_abreast_left(False)
+        if not prefs['flip with wheel'] and not abreast:
             self._extra_scroll_events = 0
             return False
 
@@ -1037,6 +1043,9 @@ class EventHandler:
                 or self._extra_scroll_events >= prefs['number of key presses before page turn'] - 1
                 or self._fits_and_turns_at_once()):
 
+            if abreast:
+                self._read_page_abreast(False)
+                return False
             self._flip_page(1)
             return True
 
@@ -1046,7 +1055,7 @@ class EventHandler:
         self._extra_scroll_events = max(1, self._extra_scroll_events + 1)
         return False
 
-    def _previous_page_with_protection(self) -> bool:
+    def _previous_page_with_protection(self, abreast: bool = False) -> bool:
         """Go back a page, unless the reader should scroll on first.
 
         The mirror image of _next_page_with_protection(), which explains
@@ -1054,7 +1063,8 @@ class EventHandler:
         direction.  Returns True when the page was turned.
         """
 
-        if not prefs['flip with wheel']:
+        abreast = abreast and self._window.layout.has_page_abreast_left(True)
+        if not prefs['flip with wheel'] and not abreast:
             self._extra_scroll_events = 0
             return False
 
@@ -1062,11 +1072,28 @@ class EventHandler:
                 or self._extra_scroll_events <= -prefs['number of key presses before page turn'] + 1
                 or self._fits_and_turns_at_once()):
 
+            if abreast:
+                self._read_page_abreast(True)
+                return False
             self._flip_page(-1)
             return True
 
         self._extra_scroll_events = min(-1, self._extra_scroll_events - 1)
         return False
+
+    def _read_page_abreast(self, backwards: bool) -> None:
+        """Go on to the other page of a spread that scrolls as one.
+
+        Smart scrolling follows the order a comic is read in, and two
+        pages side by side that only scroll up and down are read one
+        after the other: the bottom of the first is followed by the top
+        of the second, not by the next spread (upstream feature request
+        124).  It waits behind the same protection a page turn does,
+        since for a wheel it is as much of a jump.
+        """
+        self._extra_scroll_events = 0
+        self._window.layout.read_next_page_abreast(backwards)
+        self._window.update_viewport_position()
 
     def _fits_and_turns_at_once(self) -> bool:
         """Whether the page fits the window, and so turns on the first

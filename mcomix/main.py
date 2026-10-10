@@ -534,6 +534,7 @@ class MainWindow(Gtk.Window):
             if prefs['horizontal flip'] and not tools.rotation_swaps_axes(rotation):
                 orientation = tools.vector_opposite(orientation)
 
+            reading_pass = self.layout.reading_pass
             self.layout = layout.FiniteLayout.create_finite_layout(
                 pixbuf_count, orientation, self._spacing, distribution_axis,
                 alignment_axis, self._show_scrollbars, self.get_visible_area_size,
@@ -608,6 +609,9 @@ class MainWindow(Gtk.Window):
 
             content_size = self.layout.get_union_box().get_size()
             if scroll_to is None:
+                # The same pages again, so the one of a spread that was
+                # being read still is.
+                self.layout.reading_pass = reading_pass
                 # The same pages at another size - a zoom, a resized
                 # window - keep the middle of the view where it was in
                 # them, rather than the top left corner's pixels
