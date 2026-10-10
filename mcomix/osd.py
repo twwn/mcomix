@@ -7,6 +7,7 @@ from gi.repository import Pango, PangoCairo
 
 from mcomix import image_tools
 from mcomix import status
+from mcomix.i18n import _
 from mcomix.preferences import prefs
 
 from typing import TYPE_CHECKING
@@ -257,5 +258,99 @@ class PageCounter:
         cr.move_to(rect[0] + pad, rect[1] + pad)
         PangoCairo.update_layout(cr, layout)
         PangoCairo.show_layout(cr, layout)
+
+
+class LeaveFullscreenButton:
+
+    """A button in the corner of the view that leaves fullscreen, there
+    while the mouse moves and for a moment after (upstream feature
+    requests 86 and 135).
+
+    The menu bar and the tool bar are hidden while the window fills the
+    screen, which left a reader holding only the mouse with the
+    right-click menu as the one way out.  The button comes and goes with
+    the pointer, which hides itself after the same delay.
+    """
+
+    #: Milliseconds the button stays once the pointer rests: as long as
+    #: the pointer itself does (CursorHandler.HIDE_DELAY).
+    HIDE_DELAY = 2000
+    #: Pixels between the button and the edges of the view.
+    _MARGIN = 12
+
+    def __init__(self, window: "main.MainWindow") -> None:
+        self._window = window
+        self._timeout_event: int | None = None
+        #: Whether the pointer is on the button, which keeps it there.
+        self._inside = False
+        button = Gtk.Button.new_from_icon_name('view-restore-symbolic')
+        button.set_tooltip_text(_('Leave fullscreen'))
+        button.add_css_class('osd')
+        button.add_css_class('circular')
+        button.set_halign(Gtk.Align.END)
+        button.set_valign(Gtk.Align.START)
+        button.set_margin_top(self._MARGIN)
+        button.set_margin_end(self._MARGIN)
+        # The keys are the page area's, and a click on the button must
+        # not take them from it.
+        button.set_focusable(False)
+        button.set_focus_on_click(False)
+        button.set_visible(False)
+        button.connect('clicked', self._clicked)
+        motion = Gtk.EventControllerMotion()
+        motion.connect('enter', self._entered)
+        motion.connect('leave', self._left)
+        button.add_controller(motion)
+        #: The button, for the window to lay over the page area.
+        self.widget = button
+
+    def pointer_moved(self) -> None:
+        """Show the button for a while, where there is a fullscreen to
+        leave."""
+        if not self._window.is_fullscreen():
+            return
+        self.widget.set_visible(True)
+        self._stop_timer()
+        self._timeout_event = GLib.timeout_add(self.HIDE_DELAY, self._time_up)
+
+    def update(self) -> None:
+        """Take the button away once the window no longer fills the
+        screen."""
+        if not self._window.is_fullscreen():
+            self._hide()
+
+    def release(self) -> None:
+        """Stop the timer, for a window that is going."""
+        self._stop_timer()
+
+    def _clicked(self, button: Gtk.Button) -> None:
+        self._hide()
+        self._window.actiongroup.get_action('leave_fullscreen').activate()
+
+    def _entered(self, controller: Gtk.EventControllerMotion,
+                 x: float, y: float) -> None:
+        self._inside = True
+
+    def _left(self, controller: Gtk.EventControllerMotion) -> None:
+        self._inside = False
+        # The pointer is over the page again or outside the window, and
+        # only the first of the two would say so.
+        self.pointer_moved()
+
+    def _time_up(self) -> bool:
+        self._timeout_event = None
+        if not self._inside:
+            self._hide()
+        return GLib.SOURCE_REMOVE  # The timer that called this is done.
+
+    def _hide(self) -> None:
+        self._stop_timer()
+        self._inside = False
+        self.widget.set_visible(False)
+
+    def _stop_timer(self) -> None:
+        if self._timeout_event is not None:
+            GLib.source_remove(self._timeout_event)
+            self._timeout_event = None
 
 # vim: expandtab:sw=4:ts=4

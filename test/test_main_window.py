@@ -37,6 +37,7 @@ from mcomix import main
 from mcomix import message_dialog
 from mcomix import rename_dialog
 from mcomix import tools
+from mcomix import ui
 from mcomix import widgets
 from mcomix.dialog import Response
 from mcomix.library import backend
@@ -1380,6 +1381,50 @@ class MainWindowTest(MComixTest):
         self.window.is_manga_mode = True
         self.assertEqual('2024-05-02, 12:00:00 \u00b7 2024-05-01, 12:00:00',
                          self.window._modified_status(True))
+
+    def test_moving_the_mouse_in_fullscreen_offers_the_way_out(self):
+        """The menu bar and the tool bar are hidden there, and the
+        right-click menu was the only way out for a reader holding only
+        the mouse (upstream feature requests 86 and 135)."""
+        self._ready()
+        offer = self.window.leave_fullscreen_button
+        button = offer.widget
+        controller = unittest.mock.Mock()
+        controller.get_current_event_state.return_value = 0
+        move = self.window.event_handler.mouse_move_event
+        move(controller, 10.0, 10.0)
+        self.assertFalse(button.get_visible(),
+                         'offered in a window, which has its tool bar')
+        with unittest.mock.patch.object(self.window, 'is_fullscreen',
+                                        return_value=True):
+            move(controller, 11.0, 10.0)
+            self.assertTrue(button.get_visible())
+            # It lies over the page area and takes no keys from it.
+            self.assertIs(button.get_parent(),
+                          self.window.page_area.get_parent())
+            self.assertFalse(button.get_focusable())
+            # The pointer resting on the button keeps it.
+            offer._entered(None, 1.0, 1.0)
+            offer._time_up()
+            self.assertTrue(button.get_visible())
+            offer._left(None)
+            offer._time_up()
+            self.assertFalse(button.get_visible(),
+                             'still there after the pointer came to rest')
+            move(controller, 12.0, 10.0)
+            with unittest.mock.patch.object(ui.Action, 'activate',
+                                            autospec=True) as activated:
+                button.emit('clicked')
+            self.assertEqual(
+                'win.leave-fullscreen',
+                activated.call_args.args[0].detailed('win')[0])
+            self.assertFalse(button.get_visible())
+            move(controller, 13.0, 10.0)
+            self.assertTrue(button.get_visible())
+        # Back in a window, by whatever way.
+        offer.update()
+        self.assertFalse(button.get_visible())
+        self.assertIsNone(offer._timeout_event, 'a timer left running')
 
     def _counter_in_fullscreen(self, wanted):
         prefs['page counter'] = wanted

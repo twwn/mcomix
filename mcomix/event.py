@@ -123,6 +123,7 @@ class EventHandler:
                 redraw = not self._window.restore_window_geometry()
             self._window.update_toggles_sensitivity()
             self._window.page_counter.update()
+            self._window.leave_fullscreen_button.update()
             # The right-click menu offers the way out only while there
             # is one to take.
             self._window.actiongroup.get_action('leave_fullscreen') \
@@ -870,6 +871,7 @@ class EventHandler:
         # while a modal dialog is up.  There is no hook on the whole
         # event stream to do better with.
         self._window.cursor_handler.refresh()
+        self._window.leave_fullscreen_button.pointer_moved()
 
         state = controller.get_current_event_state()
         if not state & Gdk.ModifierType.BUTTON1_MASK:

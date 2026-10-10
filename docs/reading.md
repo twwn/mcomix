@@ -14,6 +14,7 @@
 - "Hide all", in the same menu or the I key, puts them all away at once.
 - Fullscreen, the F key, hides them too while "Automatically hide all toolbars in fullscreen" is set.
 - Escape leaves fullscreen, and so does "Leave fullscreen" at the top of the right-click menu.
+- Moving the mouse in fullscreen shows a button in the upper right corner that leaves it too. It goes again when the mouse rests.
 - Where "Flip pages with a left click" is off, a double click on the page enters or leaves fullscreen.
 - The arrow keys scroll the page; PageDown and PageUp turn it.
 - Space and the mouse wheel scroll in reading order: across, down, across again, then to the next page.

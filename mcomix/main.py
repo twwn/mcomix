@@ -164,6 +164,11 @@ class MainWindow(Gtk.Window):
         #: What the animated pages are played at: see faster_animation().
         self.animation_speed = 1.0
         self.page_counter = osd.PageCounter(self)
+        self.leave_fullscreen_button = osd.LeaveFullscreenButton(self)
+        # The button lies over the page area, in its upper right corner.
+        page_overlay = Gtk.Overlay()
+        page_overlay.set_child(self.page_area)
+        page_overlay.add_overlay(self.leave_fullscreen_button.widget)
         self.zoom = zoom.ZoomModel()
         self.uimanager = ui.MainUI(self)
         self.menubar = self.uimanager.menubar
@@ -206,7 +211,7 @@ class MainWindow(Gtk.Window):
                 (self.menubar,                            0, 0, 3, 1, False, False),
                 (self.toolbar,                            0, 1, 3, 1, False, False),
                 (self.thumbnailsidebar,                   0, 2, 1, 3, False, True),
-                (self.page_area,                          1, 2, 1, 1, True,  True),
+                (page_overlay,                            1, 2, 1, 1, True,  True),
                 (self._scroll[constants.PageAxis.HEIGHT], 2, 2, 1, 1, False, False),
                 (self._scroll[constants.PageAxis.WIDTH],  1, 4, 1, 1, False, False),
                 (self.statusbar,                          0, 5, 3, 1, False, False),
@@ -1930,6 +1935,7 @@ class MainWindow(Gtk.Window):
         self.page_area.clear()
         self.uimanager.release()
         self.cursor_handler.release()
+        self.leave_fullscreen_button.release()
         self.lens.release()
         bookmark_backend.BookmarksStore.forget(self)
         keybindings.forget(self)
