@@ -1398,10 +1398,20 @@ class MainWindowTest(MComixTest):
         self.assertEqual(self.window.selected_pages, set())
 
     def _settled(self):
-        """Pump until the canvas has been allocated for what was drawn."""
-        for _ in range(20):
+        """Pump until the canvas has been allocated for what was drawn:
+        its adjustments span the content it was given."""
+        area = self.window.page_area
+
+        def spans():
             self._pump()
-            wait_for(lambda: False, seconds=0.02)
+            width, height = area.get_content_size()
+            across, down = area.get_hadjustment(), area.get_vadjustment()
+            return (not self.window._waiting_for_redraw
+                    and across.get_upper() == max(width, across.get_page_size())
+                    and down.get_upper() == max(height, down.get_page_size()))
+
+        self.assertTrue(wait_for(spans, seconds=5))
+        self._pump()
 
     def _view_middle(self):
         """The middle of the view, as a fraction of the content's size."""
