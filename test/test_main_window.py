@@ -1344,6 +1344,40 @@ class MainWindowTest(MComixTest):
         self.assertNotIn('page counter', self.window.page_area._overlays)
         self.assertEqual('', self.window.page_counter.text())
 
+    def test_the_page_number_can_go_after_a_page_turn(self):
+        """As CDisplayEx shows it: on a page turn, for a few seconds
+        (the comment of 2026-10-09 on upstream feature request 81)."""
+        prefs['page counter fades'] = True
+        pages = self._counter_in_fullscreen(True)
+        counter = self.window.page_counter
+        self.assertEqual('3 / %d' % pages, counter.text())
+        self.assertIsNotNone(counter._timeout_event)
+
+        counter._time_up()
+        self.assertNotIn('page counter', self.window.page_area._overlays)
+        self.assertEqual('', counter.text())
+
+        # The same pages drawn again, as a zoom draws them, leave it off.
+        with unittest.mock.patch.object(self.window, 'is_fullscreen',
+                                        return_value=True):
+            counter.update()
+            self.assertEqual('', counter.text())
+            self.window.set_page(4)
+            self._pump()
+        self.assertEqual('4 / %d' % pages, counter.text())
+        self.assertIsNotNone(counter._timeout_event)
+
+    def test_the_page_number_stays_unless_it_is_to_go(self):
+        self._counter_in_fullscreen(True)
+        self.assertIsNone(self.window.page_counter._timeout_event)
+
+    def test_leaving_fullscreen_stops_the_timer(self):
+        """A timer left running would hold the window after it closed."""
+        prefs['page counter fades'] = True
+        self._counter_in_fullscreen(True)
+        self.window.page_counter.update()
+        self.assertIsNone(self.window.page_counter._timeout_event)
+
     def test_a_random_page_is_never_the_one_on_screen(self):
         """Upstream feature request 96."""
         pages = len(self._ready())

@@ -172,33 +172,66 @@ class PageCounter:
     _OVERLAY = 'page counter'
     #: Pixels between the counter and the edges of the view.
     _MARGIN = 12
+    #: Seconds the counter stays after a page turn, where it is set to go.
+    TIMEOUT = 3
 
     def __init__(self, window: "main.MainWindow") -> None:
         self._window = window
         self._text = ''
+        self._shown = False
+        self._timeout_event: int | None = None
 
-    def update(self) -> None:
-        """Show the counter, or take it away, as the window now asks."""
+    def update(self, again: bool = False) -> None:
+        """Show the counter, or take it away, as the window now asks.
+
+        Where "page counter fades" is set, it shows when the pages on
+        screen change and goes again TIMEOUT seconds later, as CDisplayEx
+        does it (the comment of 2026-10-09 on feature request 81); a
+        redraw of the same pages does not bring it back.  <again> shows
+        it whatever it said before, for the preferences that change.
+        """
         window = self._window
         pages = window.displayed_pages() if window.filehandler.file_loaded \
             else []
         if not (prefs['page counter in fullscreen'] and pages
                 and window.is_fullscreen()):
             self._text = ''
-            window.page_area.set_overlay(self._OVERLAY, None)
+            self._hide()
             return
         text = status.format_page_number(
             pages, window.imagehandler.get_number_of_pages())
-        if text == self._text:
+        if text == self._text and not again:
             return
         self._text = text
         layout = window.page_area.create_pango_layout(text)
         window.page_area.set_overlay(
             self._OVERLAY, lambda snapshot: self._draw(snapshot, layout))
+        self._shown = True
+        self._stop_timer()
+        if prefs['page counter fades']:
+            self._timeout_event = GLib.timeout_add_seconds(
+                self.TIMEOUT, self._time_up)
 
     def text(self) -> str:
         """What the counter says, or nothing while it is not shown."""
-        return self._text
+        return self._text if self._shown else ''
+
+    def _time_up(self) -> bool:
+        self._timeout_event = None
+        self._hide()
+        return GLib.SOURCE_REMOVE  # The timer that called this is done.
+
+    def _hide(self) -> None:
+        """Take the counter off the page, keeping what it said, so that
+        the same pages drawn again do not put it back."""
+        self._stop_timer()
+        self._shown = False
+        self._window.page_area.set_overlay(self._OVERLAY, None)
+
+    def _stop_timer(self) -> None:
+        if self._timeout_event is not None:
+            GLib.source_remove(self._timeout_event)
+            self._timeout_event = None
 
     def _draw(self, snapshot: Gtk.Snapshot, layout: Pango.Layout) -> None:
         """Draw <layout>, white on a dark box, in the lower right corner

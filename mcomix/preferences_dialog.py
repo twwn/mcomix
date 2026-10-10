@@ -340,6 +340,11 @@ class _PreferencesDialog(Dialog):
             'page counter in fullscreen',
             _('The pages on screen and the number of pages, in the lower right corner.')))
 
+        page.add_row(self._create_pref_check_button(
+            _('Hide the page number again after a few seconds'),
+            'page counter fades',
+            _('The page number shows when the page turns and goes after three seconds.')))
+
         page.new_section(_('Double page mode'))
 
         page.add_row(self._create_pref_check_button(
@@ -1097,8 +1102,8 @@ class _PreferencesDialog(Dialog):
               self._window.is_fullscreen()):
             self._window.draw_image()
 
-        elif preference == 'page counter in fullscreen':
-            self._window.page_counter.update()
+        elif preference in ('page counter in fullscreen', 'page counter fades'):
+            self._window.page_counter.update(again=True)
 
         elif preference == 'show page numbers on thumbnails':
             self._window.thumbnailsidebar.toggle_page_numbers_visible()
