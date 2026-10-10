@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 1.2.1\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-10 18:56+0200\n"
+"POT-Creation-Date: 2026-10-10 19:18+0200\n"
 "PO-Revision-Date: 2016-09-18 15:30+0300\n"
 "Last-Translator: Zygimantus <zygimantus@gmail.com>\n"
 "Language-Team: \n"
@@ -55,7 +55,7 @@ msgid "! Could not read %s"
 msgstr "! Nepavyko perskaityti %s"
 
 #: mcomix/archive_packer.py:176 mcomix/file_actions.py:1098
-#: mcomix/library/book_area.py:833
+#: mcomix/library/book_area.py:843
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! Nepavyko pašalinti %(file)s: %(error)s"
@@ -157,7 +157,7 @@ msgstr "Pa_šalinti"
 
 #: mcomix/bookmark_dialog.py:34 mcomix/comment_dialog.py:29
 #: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:74
-#: mcomix/properties_dialog.py:37 mcomix/ui.py:490
+#: mcomix/properties_dialog.py:37 mcomix/ui.py:491
 #: mcomix/library/watchlist.py:41
 msgid "_Close"
 msgstr "Už_daryti"
@@ -171,7 +171,7 @@ msgstr "Tipas"
 msgid "Name"
 msgstr "Pavadinimas"
 
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1835
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1872
 #: mcomix/library/control_area.py:152
 msgid "Page"
 msgstr "Puslapis"
@@ -248,12 +248,12 @@ msgid "Remove from archive"
 msgstr "Pašalinti iš archyvo"
 
 #: mcomix/edit_comment_area.py:122 mcomix/edit_image_area.py:116
-#: mcomix/ui.py:467
+#: mcomix/ui.py:468
 msgid "_Undo"
 msgstr "_Atšaukti"
 
 #: mcomix/edit_comment_area.py:123 mcomix/edit_image_area.py:117
-#: mcomix/ui.py:470
+#: mcomix/ui.py:471
 msgid "_Redo"
 msgstr "A_tstatyti"
 
@@ -283,7 +283,7 @@ msgstr "Keisti archyvą"
 msgid "A_pply"
 msgstr "_Pritaikyti"
 
-#: mcomix/edit_dialog.py:76 mcomix/ui.py:499 mcomix/ui.py:500
+#: mcomix/edit_dialog.py:76 mcomix/ui.py:500 mcomix/ui.py:501
 msgid "Save _As"
 msgstr "Įrašyti t_aip"
 
@@ -336,7 +336,7 @@ msgstr "_Tęsti redagavimą"
 msgid "_Close the book"
 msgstr "_Užverti knygą"
 
-#: mcomix/edit_image_area.py:111 mcomix/ui.py:455
+#: mcomix/edit_image_area.py:111 mcomix/ui.py:456
 msgid "Re_name page..."
 msgstr "Pervad_inti puslapį..."
 
@@ -423,7 +423,7 @@ msgstr ""
 "Automatiškai derina kontrastą (ir šviesumą, ir tamsumą) atskirai kiekvienai "
 "spalvų juostai."
 
-#: mcomix/enhance_dialog.py:124 mcomix/ui.py:548
+#: mcomix/enhance_dialog.py:124 mcomix/ui.py:552
 msgid "_Invert image colors"
 msgstr "_Invertuoti paveikslėlio spalvas"
 
@@ -537,7 +537,7 @@ msgstr "Ištrinti „%s“ negrįžtamai?"
 msgid "Could not move \"%s\" to the trash"
 msgstr "Nepavyko perkelti „%s“ į šiukšlinę"
 
-#: mcomix/file_actions.py:1057 mcomix/library/book_area.py:845
+#: mcomix/file_actions.py:1057 mcomix/library/book_area.py:855
 #, python-format
 msgid "%d book could not be moved to the trash."
 msgid_plural "%d books could not be moved to the trash."
@@ -570,7 +570,7 @@ msgstr[0] "Failo nebėra, o %d jo žymelės nebegalima atverti."
 msgstr[1] "Failo nebėra, o %d jo žymelių nebegalima atverti."
 msgstr[2] "Failo nebėra, o %d jo žymelių nebegalima atverti."
 
-#: mcomix/file_actions.py:1214 mcomix/thumbnail_tools.py:199
+#: mcomix/file_actions.py:1214 mcomix/thumbnail_tools.py:210
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr "! Nepavyko perkelti %(file)s į %(directory)s: %(error)s"
@@ -593,7 +593,7 @@ msgstr[2] "%d puslapių"
 msgid "Open"
 msgstr "Atverti"
 
-#: mcomix/file_chooser_base_dialog.py:238 mcomix/library/book_area.py:172
+#: mcomix/file_chooser_base_dialog.py:238 mcomix/library/book_area.py:173
 msgid "_Open"
 msgstr "_Atverti"
 
@@ -699,7 +699,7 @@ msgstr "Nežinomas failo tipas"
 msgid "Key %d"
 msgstr "Raktas %d"
 
-#: mcomix/keybindings.py:45 mcomix/ui.py:474
+#: mcomix/keybindings.py:45 mcomix/ui.py:475
 msgid "Previous page"
 msgstr "Ankstesnis puslapis"
 
@@ -714,7 +714,7 @@ msgstr "Ankstesnis puslapis"
 msgid "Navigation"
 msgstr "Navigacija"
 
-#: mcomix/keybindings.py:46 mcomix/ui.py:473
+#: mcomix/keybindings.py:46 mcomix/ui.py:474
 msgid "Next page"
 msgstr "Kitas puslapis"
 
@@ -758,11 +758,11 @@ msgstr "Pavienis puslapis kairėje"
 msgid "Single page to the right"
 msgstr "Pavienis puslapis dešinėje"
 
-#: mcomix/keybindings.py:58 mcomix/ui.py:475
+#: mcomix/keybindings.py:58 mcomix/ui.py:476
 msgid "First page"
 msgstr "Pirmas puslapis"
 
-#: mcomix/keybindings.py:59 mcomix/ui.py:476
+#: mcomix/keybindings.py:59 mcomix/ui.py:477
 msgid "Last page"
 msgstr "Paskutinis puslapis"
 
@@ -770,11 +770,11 @@ msgstr "Paskutinis puslapis"
 msgid "Go to page"
 msgstr "Eiti į puslapį"
 
-#: mcomix/keybindings.py:62 mcomix/ui.py:480
+#: mcomix/keybindings.py:62 mcomix/ui.py:481
 msgid "Next archive"
 msgstr "Kitas archyvas"
 
-#: mcomix/keybindings.py:63 mcomix/ui.py:481
+#: mcomix/keybindings.py:63 mcomix/ui.py:482
 msgid "Previous archive"
 msgstr "Ankstesnis archyvas"
 
@@ -786,11 +786,11 @@ msgstr "Atsitiktinis puslapis"
 msgid "Random archive in the folder"
 msgstr "Atsitiktinis archyvas aplanke"
 
-#: mcomix/keybindings.py:67 mcomix/ui.py:482
+#: mcomix/keybindings.py:67 mcomix/ui.py:483
 msgid "Next directory"
 msgstr "Kita direktorija"
 
-#: mcomix/keybindings.py:68 mcomix/ui.py:483
+#: mcomix/keybindings.py:68 mcomix/ui.py:484
 msgid "Previous directory"
 msgstr "Buvusi direktorija"
 
@@ -921,7 +921,7 @@ msgstr "Automatinis pasukimas pagal plotį"
 msgid "Autorotate by height"
 msgstr "Automatinis pasukimas pagal aukštį"
 
-#: mcomix/keybindings.py:109 mcomix/preferences_dialog.py:340 mcomix/ui.py:526
+#: mcomix/keybindings.py:109 mcomix/preferences_dialog.py:340 mcomix/ui.py:527
 msgid "Double page mode"
 msgstr "Dviejų puslapių veiksena"
 
@@ -938,31 +938,31 @@ msgstr "Rodymo veiksena"
 msgid "Title page alone"
 msgstr "Antraštinis puslapis atskirai"
 
-#: mcomix/keybindings.py:111 mcomix/ui.py:540
+#: mcomix/keybindings.py:111 mcomix/ui.py:544
 msgid "Manga mode"
 msgstr "Mangos veiksena"
 
-#: mcomix/keybindings.py:112 mcomix/ui.py:541
+#: mcomix/keybindings.py:112 mcomix/ui.py:545
 msgid "Invert smart scroll"
 msgstr "Sumanaus slinkimo apvertimas"
 
-#: mcomix/keybindings.py:114 mcomix/ui.py:545
+#: mcomix/keybindings.py:114 mcomix/ui.py:549
 msgid "Magnifying lens"
 msgstr "Padidinimo stiklas"
 
-#: mcomix/keybindings.py:115 mcomix/ui.py:546
+#: mcomix/keybindings.py:115 mcomix/ui.py:550
 msgid "Stretch small images"
 msgstr "Mažų paveikslėlių ištempimas"
 
-#: mcomix/keybindings.py:117 mcomix/ui.py:553
+#: mcomix/keybindings.py:117 mcomix/ui.py:557
 msgid "Best fit mode"
 msgstr "Geriausio talpinimo veiksena"
 
-#: mcomix/keybindings.py:118 mcomix/ui.py:554
+#: mcomix/keybindings.py:118 mcomix/ui.py:558
 msgid "Fit width mode"
 msgstr "Talpinimo pagal plotį veiksena"
 
-#: mcomix/keybindings.py:119 mcomix/ui.py:555
+#: mcomix/keybindings.py:119 mcomix/ui.py:559
 msgid "Fit height mode"
 msgstr "Talpinimo pagal aukštį veiksena"
 
@@ -970,11 +970,11 @@ msgstr "Talpinimo pagal aukštį veiksena"
 msgid "Fit size mode"
 msgstr "Talpinimo pagal dydį veiksena"
 
-#: mcomix/keybindings.py:121 mcomix/ui.py:557
+#: mcomix/keybindings.py:121 mcomix/ui.py:561
 msgid "Manual zoom mode"
 msgstr "Rankinio mastelio veiksena"
 
-#: mcomix/keybindings.py:124 mcomix/osd.py:287 mcomix/ui.py:488
+#: mcomix/keybindings.py:124 mcomix/osd.py:287 mcomix/ui.py:489
 msgid "Leave fullscreen"
 msgstr "Išeiti iš viso ekrano"
 
@@ -1029,7 +1029,7 @@ msgstr "Miniatiūros"
 msgid "Hide all"
 msgstr "Slėpti viską"
 
-#: mcomix/keybindings.py:137 mcomix/slideshow.py:54 mcomix/ui.py:544
+#: mcomix/keybindings.py:137 mcomix/slideshow.py:54 mcomix/ui.py:548
 msgid "Start slideshow"
 msgstr "Pradėti skaidrių rodymą"
 
@@ -1061,7 +1061,7 @@ msgstr "Ištrinti"
 msgid "File"
 msgstr "Failas"
 
-#: mcomix/keybindings.py:147 mcomix/ui.py:447
+#: mcomix/keybindings.py:147 mcomix/ui.py:448
 msgid "Delete permanently"
 msgstr "Ištrinti negrįžtamai"
 
@@ -1113,7 +1113,7 @@ msgstr "Savybės"
 msgid "Preferences"
 msgstr "Nustatymai"
 
-#: mcomix/keybindings.py:163 mcomix/ui.py:449 mcomix/ui.py:452
+#: mcomix/keybindings.py:163 mcomix/ui.py:450 mcomix/ui.py:453
 msgid "Open containing folder"
 msgstr "Atverti talpinantį aplanką"
 
@@ -1121,7 +1121,7 @@ msgstr "Atverti talpinantį aplanką"
 msgid "Library"
 msgstr "Biblioteka"
 
-#: mcomix/keybindings.py:167 mcomix/ui.py:548
+#: mcomix/keybindings.py:167 mcomix/ui.py:552
 msgid "Invert image colors"
 msgstr "Paveikslėlio spalvų invertavimas"
 
@@ -1155,7 +1155,7 @@ msgstr "Sparčioji kombinacija „%(action)s“ perrašo kito veiksmo kombinacij
 msgid "Couldn't load keybindings: %s"
 msgstr "Nepavyko įkelti sparčiųjų klavišų kombinacijų: %s"
 
-#: mcomix/last_read_page.py:255 mcomix/thumbnail_tools.py:180
+#: mcomix/last_read_page.py:255 mcomix/thumbnail_tools.py:191
 #, python-format
 msgid "! Could not remove file \"%s\""
 msgstr "! Nepavyko pašalinti failo „%s“"
@@ -1409,11 +1409,11 @@ msgstr ""
 msgid "! Could not draw the next frame: %s"
 msgstr "! Nepavyko nupiešti kito kadro: %s"
 
-#: mcomix/pageselect.py:29 mcomix/ui.py:477
+#: mcomix/pageselect.py:29 mcomix/ui.py:478
 msgid "Go to page..."
 msgstr "Eiti į puslapį..."
 
-#: mcomix/pageselect.py:31 mcomix/ui.py:515 mcomix/ui.py:516
+#: mcomix/pageselect.py:31 mcomix/ui.py:516 mcomix/ui.py:517
 msgid "_Go"
 msgstr "_Eiti"
 
@@ -1784,7 +1784,7 @@ msgstr "Automatinis puslapių dydžio keitimas:"
 msgid "Space between two pages (in pixels):"
 msgstr "Tarpas tarp dviejų puslapių (pikseliais):"
 
-#: mcomix/preferences_dialog.py:358 mcomix/ui.py:556
+#: mcomix/preferences_dialog.py:358 mcomix/ui.py:560
 msgid "Fit to size mode"
 msgstr "Talpinimo pagal dydį veiksena"
 
@@ -2044,7 +2044,7 @@ msgstr ""
 
 #: mcomix/preferences_dialog.py:673 mcomix/preferences_dialog.py:822
 #: mcomix/preferences_dialog.py:904 mcomix/preferences_dialog.py:967
-#: mcomix/ui.py:562
+#: mcomix/ui.py:566
 msgid "Never"
 msgstr "Niekada"
 
@@ -2097,7 +2097,7 @@ msgstr "Failo pavadinimas"
 msgid "File name (GLib)"
 msgstr "Failo pavadinimą (GLib)"
 
-#: mcomix/preferences_dialog.py:727 mcomix/library/book_area.py:255
+#: mcomix/preferences_dialog.py:727 mcomix/library/book_area.py:256
 msgid "File size"
 msgstr "Failo dydis"
 
@@ -2106,12 +2106,12 @@ msgid "Last modified"
 msgstr "Keitimo laiką"
 
 #: mcomix/preferences_dialog.py:734 mcomix/preferences_dialog.py:780
-#: mcomix/library/book_area.py:259
+#: mcomix/library/book_area.py:260
 msgid "Ascending"
 msgstr "Didėjančiai"
 
 #: mcomix/preferences_dialog.py:735 mcomix/preferences_dialog.py:781
-#: mcomix/library/book_area.py:260
+#: mcomix/library/book_area.py:261
 msgid "Descending"
 msgstr "Mažėjančiai"
 
@@ -2260,7 +2260,7 @@ msgstr ""
 "nustatytas ekrano spalvų profilis. Suvokimo išlaiko spalvų santykius; "
 "santykinis kolorimetrinis tiksliai išlaiko tas, kurias ekranas gali parodyti."
 
-#: mcomix/preferences_dialog.py:968 mcomix/library/book_area.py:267
+#: mcomix/preferences_dialog.py:968 mcomix/library/book_area.py:268
 msgid "Normal"
 msgstr "Normalus"
 
@@ -2671,48 +2671,48 @@ msgstr "Piktogramų dizainas"
 msgid "Vector icon"
 msgstr "Vektorinė piktograma"
 
-#: mcomix/thumbnail_tools.py:357
+#: mcomix/thumbnail_tools.py:368
 #, python-format
 msgid "! Could not save thumbnail \"%(thumbpath)s\": %(error)s"
 msgstr "! Nepavyko išsaugoti miniatiūros „%(thumbpath)s“: %(error)s"
 
-#: mcomix/ui.py:440 mcomix/library/book_area.py:200
+#: mcomix/ui.py:441 mcomix/library/book_area.py:201
 msgid "_Copy"
 msgstr "Kopij_uoti"
 
-#: mcomix/ui.py:440
+#: mcomix/ui.py:441
 msgid "Copies the current page to clipboard."
 msgstr "Nukopijuoja esamą puslapį į iškarpinę."
 
-#: mcomix/ui.py:442
+#: mcomix/ui.py:443
 msgid "_Copy page"
 msgstr "Kopij_uoti puslapį"
 
-#: mcomix/ui.py:443
+#: mcomix/ui.py:444
 msgid "Copies the page the menu was opened over to the clipboard."
 msgstr "Nukopijuoja į iškarpinę puslapį, virš kurio buvo atvertas meniu."
 
-#: mcomix/ui.py:445
+#: mcomix/ui.py:446
 msgid "_Delete"
 msgstr "_Ištrinti"
 
-#: mcomix/ui.py:445
+#: mcomix/ui.py:446
 msgid "Deletes the current file or archive from disk."
 msgstr "Ištrina esamą failą ar archyvą iš disko."
 
-#: mcomix/ui.py:450 mcomix/ui.py:453
+#: mcomix/ui.py:451 mcomix/ui.py:454
 msgid "Shows the open file in the file manager."
 msgstr "Parodo atvertą failą failų tvarkyklėje."
 
-#: mcomix/ui.py:456
+#: mcomix/ui.py:457
 msgid "Renames the page the menu was opened over."
 msgstr "Pervadina puslapį, virš kurio buvo atvertas meniu."
 
-#: mcomix/ui.py:458
+#: mcomix/ui.py:459
 msgid "_Delete page"
 msgstr "Ša_linti puslapį"
 
-#: mcomix/ui.py:459
+#: mcomix/ui.py:460
 msgid ""
 "Removes the page the menu was opened over from the book. The archive on disk "
 "is not changed until it is saved."
@@ -2720,213 +2720,213 @@ msgstr ""
 "Pašalina iš knygos puslapį, virš kurio buvo atvertas meniu. Archyvas diske "
 "nekeičiamas, kol nėra įrašomas."
 
-#: mcomix/ui.py:461
+#: mcomix/ui.py:462
 msgid "_Remove bookmark"
 msgstr "Pašalin_ti žymelę"
 
-#: mcomix/ui.py:462
+#: mcomix/ui.py:463
 msgid "Removes the bookmark of the page the menu was opened over."
 msgstr "Pašalina puslapio, virš kurio buvo atvertas meniu, žymelę."
 
-#: mcomix/ui.py:464
+#: mcomix/ui.py:465
 msgid "Pu_t back pages picked out"
 msgstr "Atšaukti puslapi_ų pasirinkimą"
 
-#: mcomix/ui.py:465
+#: mcomix/ui.py:466
 msgid "Puts back every page picked out with CTRL and a click."
 msgstr "Atšaukia visų su CTRL ir spustelėjimu pasirinktų puslapių pasirinkimą."
 
-#: mcomix/ui.py:468
+#: mcomix/ui.py:469
 msgid "Takes back the last page removed from the book."
 msgstr "Grąžina paskutinį iš knygos pašalintą puslapį."
 
-#: mcomix/ui.py:471
+#: mcomix/ui.py:472
 msgid "Removes again the page the last undo brought back."
 msgstr "Vėl pašalina puslapį, kurį grąžino paskutinis atšaukimas."
 
-#: mcomix/ui.py:473
+#: mcomix/ui.py:474
 msgid "_Next page"
 msgstr "_Kitas puslapis"
 
-#: mcomix/ui.py:474
+#: mcomix/ui.py:475
 msgid "_Previous page"
 msgstr "_Ankstesnis puslapis"
 
-#: mcomix/ui.py:475
+#: mcomix/ui.py:476
 msgid "_First page"
 msgstr "_Pirmas puslapis"
 
-#: mcomix/ui.py:476
+#: mcomix/ui.py:477
 msgid "_Last page"
 msgstr "Paskuti_nis puslapis"
 
-#: mcomix/ui.py:477
+#: mcomix/ui.py:478
 msgid "_Go to page..."
 msgstr "_Eiti į puslapį..."
 
-#: mcomix/ui.py:478
+#: mcomix/ui.py:479
 msgid "Re_fresh"
 msgstr "Atna_ujinti"
 
-#: mcomix/ui.py:478
+#: mcomix/ui.py:479
 msgid "Reloads the currently opened files or archive."
 msgstr "Iš naujo įkelia atvertus failus ar archyvą."
 
-#: mcomix/ui.py:480
+#: mcomix/ui.py:481
 msgid "Next _archive"
 msgstr "Kitas arch_yvas"
 
-#: mcomix/ui.py:481
+#: mcomix/ui.py:482
 msgid "Previous a_rchive"
 msgstr "Ankstesnis a_rchyvas"
 
-#: mcomix/ui.py:484
+#: mcomix/ui.py:485
 msgid "Zoom _In"
 msgstr "Pri_artinti"
 
-#: mcomix/ui.py:485
+#: mcomix/ui.py:486
 msgid "Zoom _Out"
 msgstr "Ati_tolinti"
 
-#: mcomix/ui.py:486
+#: mcomix/ui.py:487
 msgid "_Normal Size"
 msgstr "_Normalus dydis"
 
-#: mcomix/ui.py:487
+#: mcomix/ui.py:488
 msgid "Mi_nimize"
 msgstr "Su_mažinti"
 
-#: mcomix/ui.py:490
+#: mcomix/ui.py:491
 msgid "Closes all opened files."
 msgstr "Užveria visus atvertus failus."
 
-#: mcomix/ui.py:491
+#: mcomix/ui.py:492
 msgid "_Quit"
 msgstr "I_šeiti"
 
-#: mcomix/ui.py:492
+#: mcomix/ui.py:493
 msgid "_Save and quit"
 msgstr "Išsau_goti ir išeiti"
 
-#: mcomix/ui.py:492
+#: mcomix/ui.py:493
 msgid ""
 "Quits and restores the currently opened file next time the program starts."
 msgstr "Išeina ir kitą kartą paleidus programą atkuria atvertą failą."
 
-#: mcomix/ui.py:494 mcomix/ui.py:563 mcomix/ui.py:565
+#: mcomix/ui.py:495 mcomix/ui.py:567 mcomix/ui.py:569
 msgid "_Rotate 90° CW"
 msgstr "_Pasukti 90° pagal laikrodžio rodyklę"
 
-#: mcomix/ui.py:495
+#: mcomix/ui.py:496
 msgid "Rotate _180°"
 msgstr "Pasukti _180°"
 
-#: mcomix/ui.py:496 mcomix/ui.py:564 mcomix/ui.py:566
+#: mcomix/ui.py:497 mcomix/ui.py:568 mcomix/ui.py:570
 msgid "Rotat_e 90° CCW"
 msgstr "Pasukti 90° prieš laikrodžio rodykl_ę"
 
-#: mcomix/ui.py:497
+#: mcomix/ui.py:498
 msgid "Fli_p horizontally"
 msgstr "Apversti _horizontaliai"
 
-#: mcomix/ui.py:498
+#: mcomix/ui.py:499
 msgid "Flip _vertically"
 msgstr "Apversti _vertikaliai"
 
-#: mcomix/ui.py:500
+#: mcomix/ui.py:501
 msgid "Saves the page the menu was opened over."
 msgstr "Išsaugo puslapį, virš kurio buvo atvertas meniu."
 
-#: mcomix/ui.py:502
+#: mcomix/ui.py:503
 msgid "_Zoom"
 msgstr "M_astelis"
 
-#: mcomix/ui.py:503
+#: mcomix/ui.py:504
 msgid "_Recent"
 msgstr "_Naujausi"
 
-#: mcomix/ui.py:504 mcomix/ui.py:505
+#: mcomix/ui.py:505 mcomix/ui.py:506
 msgid "_Bookmarks"
 msgstr "_Žymelės"
 
-#: mcomix/ui.py:506
+#: mcomix/ui.py:507
 msgid "T_oolbars"
 msgstr "Įrankių _juostos"
 
-#: mcomix/ui.py:507
+#: mcomix/ui.py:508
 msgid "_Edit"
 msgstr "_Keisti"
 
-#: mcomix/ui.py:508 mcomix/ui.py:509
+#: mcomix/ui.py:509 mcomix/ui.py:510
 msgid "Open _with"
 msgstr "Atverti _su"
 
-#: mcomix/ui.py:510
+#: mcomix/ui.py:511
 msgid "_Move to"
 msgstr "_Perkelti į"
 
-#: mcomix/ui.py:511
+#: mcomix/ui.py:512
 msgid "Moves the file, or the archive the page is in, to another folder."
 msgstr "Perkelia failą arba archyvą, kuriame yra puslapis, į kitą aplanką."
 
-#: mcomix/ui.py:512
+#: mcomix/ui.py:513
 msgid "_File"
 msgstr "_Failas"
 
-#: mcomix/ui.py:513 mcomix/ui.py:514
+#: mcomix/ui.py:514 mcomix/ui.py:515
 msgid "_View"
 msgstr "_Rodymas"
 
-#: mcomix/ui.py:517
+#: mcomix/ui.py:518
 msgid "_Tools"
 msgstr "_Įrankiai"
 
-#: mcomix/ui.py:518
+#: mcomix/ui.py:519
 msgid "_Transform image"
 msgstr "_Transformuoti paveikslėlį"
 
-#: mcomix/ui.py:519
+#: mcomix/ui.py:520
 msgid "_Auto-rotate image"
 msgstr "_Automatiškai pasukti paveikslėlį"
 
-#: mcomix/ui.py:520
+#: mcomix/ui.py:521
 msgid "...when width exceeds height"
 msgstr "...kai plotis viršija aukštį"
 
-#: mcomix/ui.py:521
+#: mcomix/ui.py:522
 msgid "...when height exceeds width"
 msgstr "...kai aukštis viršija plotį"
 
-#: mcomix/ui.py:525
+#: mcomix/ui.py:526
 msgid "_Fullscreen"
 msgstr "Pilnas e_kranas"
 
-#: mcomix/ui.py:525
+#: mcomix/ui.py:526
 msgid "Fullscreen mode"
 msgstr "Viso ekrano veiksena"
 
-#: mcomix/ui.py:526
+#: mcomix/ui.py:527
 msgid "_Double page mode"
 msgstr "_Dviejų puslapių veiksena"
 
-#: mcomix/ui.py:527
+#: mcomix/ui.py:528
 msgid "_Title page alone"
 msgstr "Antraštinis _puslapis atskirai"
 
-#: mcomix/ui.py:528
+#: mcomix/ui.py:529
 msgid "Skip this page"
 msgstr "Praleisti šį puslapį"
 
-#: mcomix/ui.py:529
+#: mcomix/ui.py:530
 msgid ""
 "Passes this page over when the pages are turned. The book is not changed."
 msgstr "Verčiant puslapius šis puslapis praleidžiamas. Knyga nekeičiama."
 
-#: mcomix/ui.py:531
+#: mcomix/ui.py:532
 msgid "Show this page alone"
 msgstr "Rodyti šį puslapį atskirai"
 
-#: mcomix/ui.py:532
+#: mcomix/ui.py:533
 msgid ""
 "Shows this page on its own in double page mode. The pages after it pair up "
 "anew."
@@ -2934,111 +2934,120 @@ msgstr ""
 "Dviejų puslapių veiksenoje šis puslapis rodomas atskirai. Tolesni puslapiai "
 "suporuojami iš naujo."
 
-#: mcomix/ui.py:534
+#: mcomix/ui.py:535
+msgid "Cover in the library"
+msgstr "Viršelis bibliotekoje"
+
+#: mcomix/ui.py:536
+msgid ""
+"Shows this page as the book's cover in the library. The book is not changed."
+msgstr "Rodo šį puslapį kaip knygos viršelį bibliotekoje. Knyga nekeičiama."
+
+#: mcomix/ui.py:538
 msgid "_Toolbar"
 msgstr "Į_rankių juosta"
 
-#: mcomix/ui.py:535
+#: mcomix/ui.py:539
 msgid "_Menubar"
 msgstr "_Meniu juosta"
 
-#: mcomix/ui.py:536
+#: mcomix/ui.py:540
 msgid "St_atusbar"
 msgstr "_Būsenos juosta"
 
-#: mcomix/ui.py:537
+#: mcomix/ui.py:541
 msgid "S_crollbars"
 msgstr "S_lankjuostės"
 
-#: mcomix/ui.py:538
+#: mcomix/ui.py:542
 msgid "Th_umbnails"
 msgstr "Miniat_ūros"
 
-#: mcomix/ui.py:539
+#: mcomix/ui.py:543
 msgid "H_ide all"
 msgstr "Slėpti _viską"
 
-#: mcomix/ui.py:540
+#: mcomix/ui.py:544
 msgid "_Manga mode"
 msgstr "_Mangos veiksena"
 
-#: mcomix/ui.py:541
+#: mcomix/ui.py:545
 msgid "Invert smart scrolling direction."
 msgstr "Apverčia sumanaus slinkimo kryptį."
 
-#: mcomix/ui.py:542
+#: mcomix/ui.py:546
 msgid "_Keep transformation"
 msgstr "Iš_laikyti transformaciją"
 
-#: mcomix/ui.py:542
+#: mcomix/ui.py:546
 msgid "Keeps the currently selected transformation for the next pages."
 msgstr "Išlaiko pasirinktą transformaciją kitiems puslapiams."
 
-#: mcomix/ui.py:544
+#: mcomix/ui.py:548
 msgid "Start slid_eshow"
 msgstr "Pradėti _skaidrių rodymą"
 
-#: mcomix/ui.py:545
+#: mcomix/ui.py:549
 msgid "Magnifying _lens"
 msgstr "Didinamasis stik_las"
 
-#: mcomix/ui.py:546
+#: mcomix/ui.py:550
 msgid "Stretch images to fit to the screen, depending on zoom mode."
 msgstr "Ištempia paveikslėlius iki ekrano dydžio pagal mastelio veikseną."
 
-#: mcomix/ui.py:553
+#: mcomix/ui.py:557
 msgid "_Best fit mode"
 msgstr "_Geriausio talpinimo veiksena"
 
-#: mcomix/ui.py:554
+#: mcomix/ui.py:558
 msgid "Fit _width mode"
 msgstr "Talpinimo pagal _plotį veiksena"
 
-#: mcomix/ui.py:555
+#: mcomix/ui.py:559
 msgid "Fit _height mode"
 msgstr "Talpinimo pagal _aukštį veiksena"
 
-#: mcomix/ui.py:556
+#: mcomix/ui.py:560
 msgid "Fit _size mode"
 msgstr "Talpinimo pagal dyd_į veiksena"
 
-#: mcomix/ui.py:557
+#: mcomix/ui.py:561
 msgid "M_anual zoom mode"
 msgstr "Ra_nkinio mastelio veiksena"
 
-#: mcomix/ui.py:570
+#: mcomix/ui.py:574
 msgid "A_bout"
 msgstr "A_pie"
 
-#: mcomix/ui.py:573
+#: mcomix/ui.py:577
 msgid "Co_mments..."
 msgstr "Ko_mentarai"
 
-#: mcomix/ui.py:576
+#: mcomix/ui.py:580
 msgid "Proper_ties"
 msgstr "Sav_ybės"
 
-#: mcomix/ui.py:579
+#: mcomix/ui.py:583
 msgid "_Preferences"
 msgstr "Nustat_ymai"
 
-#: mcomix/ui.py:583
+#: mcomix/ui.py:587
 msgid "_Edit archive..."
 msgstr "_Keisti archyvą..."
 
-#: mcomix/ui.py:583
+#: mcomix/ui.py:587
 msgid "Opens the archive editor."
 msgstr "Atveria archyvo rengyklę."
 
-#: mcomix/ui.py:585
+#: mcomix/ui.py:589
 msgid "_Open..."
 msgstr "At_verti..."
 
-#: mcomix/ui.py:586
+#: mcomix/ui.py:590
 msgid "Enha_nce image..."
 msgstr "Pag_erinti paveikslėlį..."
 
-#: mcomix/ui.py:589
+#: mcomix/ui.py:593
 msgid "_Library..."
 msgstr "_Biblioteka..."
 
@@ -3088,55 +3097,55 @@ msgstr "Pridėtos knygos:"
 msgid "Adding '%s'..."
 msgstr "Pridedama „%s“..."
 
-#: mcomix/library/backend.py:272
+#: mcomix/library/backend.py:273
 #, python-format
 msgid "! Non-existent book #%i"
 msgstr "! Knygos #%i nėra"
 
-#: mcomix/library/backend.py:310
+#: mcomix/library/backend.py:312
 #, python-format
 msgid "! Could not get cover for book \"%s\""
 msgstr "! Nepavyko gauti knygos „%s“ viršelio"
 
-#: mcomix/library/backend.py:358 mcomix/library/backend.py:375
-#: mcomix/library/backend.py:388 mcomix/library/backend.py:416
+#: mcomix/library/backend.py:398 mcomix/library/backend.py:415
+#: mcomix/library/backend.py:428 mcomix/library/backend.py:456
 msgid "Recent"
 msgstr "Naujausios"
 
-#: mcomix/library/backend.py:495 mcomix/library/backend.py:542
+#: mcomix/library/backend.py:535 mcomix/library/backend.py:582
 #, python-format
 msgid "! Could not add book \"%s\" to the library"
 msgstr "! Nepavyko pridėti knygos „%s“ į biblioteką"
 
-#: mcomix/library/backend.py:571 mcomix/library/backend.py:639
+#: mcomix/library/backend.py:611 mcomix/library/backend.py:679
 #, python-format
 msgid "! Could not move book \"%s\" in the library"
 msgstr "! Nepavyko perkelti knygos „%s“ bibliotekoje"
 
-#: mcomix/library/backend.py:689
+#: mcomix/library/backend.py:729
 #, python-format
 msgid "! Could not add collection \"%s\""
 msgstr "! Nepavyko pridėti kolekcijos „%s“"
 
-#: mcomix/library/backend.py:721
+#: mcomix/library/backend.py:761
 #, python-format
 msgid "! Could not add book %(book)s to collection %(collection)s"
 msgstr "! Nepavyko pridėti knygos %(book)s į kolekciją %(collection)s"
 
-#: mcomix/library/backend.py:748
+#: mcomix/library/backend.py:788
 #, python-format
 msgid "! Could not rename collection to \"%s\""
 msgstr "! Nepavyko pervadinti kolekcijos į „%s“"
 
-#: mcomix/library/backend.py:765 mcomix/library/backend.py:767
+#: mcomix/library/backend.py:805 mcomix/library/backend.py:807
 msgid "(Copy)"
 msgstr "(kopija)"
 
-#: mcomix/library/backend.py:1022
+#: mcomix/library/backend.py:1062
 msgid "Could not determine library database version!"
 msgstr "Nepavyko nustatyti bibliotekos duomenų bazės versijos!"
 
-#: mcomix/library/backend.py:1072
+#: mcomix/library/backend.py:1112
 #, python-format
 msgid "Upgrading library database version from %(from)d to %(to)d."
 msgstr "Bibliotekos duomenų bazės versija atnaujinama iš %(from)d į %(to)d."
@@ -3150,127 +3159,127 @@ msgstr "Visos knygos"
 msgid "! Could not scan for new books: %s"
 msgstr "! Nepavyko ieškoti naujų knygų: %s"
 
-#: mcomix/library/book_area.py:173
+#: mcomix/library/book_area.py:174
 msgid "Opens the selected books for viewing."
 msgstr "Atveria pasirinktas knygas skaityti."
 
-#: mcomix/library/book_area.py:175
+#: mcomix/library/book_area.py:176
 msgid "Open _without closing library"
 msgstr "Atverti _neuždarant bibliotekos"
 
-#: mcomix/library/book_area.py:176
+#: mcomix/library/book_area.py:177
 msgid "Opens the selected books, but keeps the library window open."
 msgstr "Atveria pasirinktas knygas, bet palieka bibliotekos langą atvertą."
 
-#: mcomix/library/book_area.py:178
+#: mcomix/library/book_area.py:179
 msgid "_Mark as read"
 msgstr "_Žymėti kaip perskaitytą"
 
-#: mcomix/library/book_area.py:179
+#: mcomix/library/book_area.py:180
 msgid "Marks the selected books as read to the end."
 msgstr "Pažymi pasirinktas knygas kaip perskaitytas iki galo."
 
-#: mcomix/library/book_area.py:181
+#: mcomix/library/book_area.py:182
 msgid "Mark as u_nread"
 msgstr "Ž_ymėti kaip neperskaitytą"
 
-#: mcomix/library/book_area.py:182
+#: mcomix/library/book_area.py:183
 msgid "Forgets the page the selected books were left at."
 msgstr "Pamiršta puslapį, kuriame pasirinktos knygos buvo paliktos."
 
-#: mcomix/library/book_area.py:184 mcomix/library/collection_area.py:137
+#: mcomix/library/book_area.py:185 mcomix/library/collection_area.py:137
 msgid "_Add..."
 msgstr "_Pridėti..."
 
-#: mcomix/library/book_area.py:185 mcomix/library/collection_area.py:138
+#: mcomix/library/book_area.py:186 mcomix/library/collection_area.py:138
 msgid "Add more books to the library."
 msgstr "Pridėti į biblioteką daugiau knygų."
 
-#: mcomix/library/book_area.py:188
+#: mcomix/library/book_area.py:189
 msgid "Remove _from this collection"
 msgstr "Pašalinti iš šios _kolekcijos"
 
-#: mcomix/library/book_area.py:189
+#: mcomix/library/book_area.py:190
 msgid "Removes the selected books from the current collection."
 msgstr "Pašalina pasirinktas knygas iš esamos kolekcijos."
 
-#: mcomix/library/book_area.py:191
+#: mcomix/library/book_area.py:192
 msgid "Remove from the _library"
 msgstr "Pašalinti iš _bibliotekos"
 
-#: mcomix/library/book_area.py:192
+#: mcomix/library/book_area.py:193
 msgid "Completely removes the selected books from the library."
 msgstr "Visiškai pašalina pasirinktas knygas iš bibliotekos."
 
-#: mcomix/library/book_area.py:194
+#: mcomix/library/book_area.py:195
 msgid "_Remove and move to the trash"
 msgstr "Pašalinti ir perkelti į _šiukšlinę"
 
-#: mcomix/library/book_area.py:195
+#: mcomix/library/book_area.py:196
 msgid "Deletes the selected books from disk."
 msgstr "Ištrina pasirinktą knygą iš disko."
 
-#: mcomix/library/book_area.py:197 mcomix/library/collection_area.py:148
+#: mcomix/library/book_area.py:198 mcomix/library/collection_area.py:148
 msgid "Clean _up"
 msgstr "Iš_valyti"
 
-#: mcomix/library/book_area.py:198 mcomix/library/collection_area.py:149
+#: mcomix/library/book_area.py:199 mcomix/library/collection_area.py:149
 msgid "Removes no longer existent books from the collection."
 msgstr "Pašalina iš kolekcijos nebeegzistuojančias knygas."
 
-#: mcomix/library/book_area.py:201
+#: mcomix/library/book_area.py:202
 msgid "Copies the selected book's path to clipboard."
 msgstr "Nukopijuoja pasirinktos knygos kelią į iškarpinę."
 
-#: mcomix/library/book_area.py:240
+#: mcomix/library/book_area.py:241
 msgid "Library books"
 msgstr "Bibliotekos knygos"
 
-#: mcomix/library/book_area.py:253
+#: mcomix/library/book_area.py:254
 msgid "Book name"
 msgstr "Knygos pavadinimas"
 
-#: mcomix/library/book_area.py:254
+#: mcomix/library/book_area.py:255
 msgid "Full path"
 msgstr "Pilnas kelias"
 
-#: mcomix/library/book_area.py:256
+#: mcomix/library/book_area.py:257
 msgid "Date added"
 msgstr "Pridėjimo data"
 
-#: mcomix/library/book_area.py:265
+#: mcomix/library/book_area.py:266
 msgid "Huge"
 msgstr "Milžiniškas"
 
-#: mcomix/library/book_area.py:266
+#: mcomix/library/book_area.py:267
 msgid "Large"
 msgstr "Didelis"
 
-#: mcomix/library/book_area.py:268
+#: mcomix/library/book_area.py:269
 msgid "Small"
 msgstr "Mažas"
 
-#: mcomix/library/book_area.py:269
+#: mcomix/library/book_area.py:270
 msgid "Tiny"
 msgstr "Mažiukas"
 
-#: mcomix/library/book_area.py:273
+#: mcomix/library/book_area.py:274
 msgid "Custom..."
 msgstr "Pasirinktas..."
 
-#: mcomix/library/book_area.py:277
+#: mcomix/library/book_area.py:278
 msgid "_Sort"
 msgstr "_Rūšiuoti"
 
-#: mcomix/library/book_area.py:278
+#: mcomix/library/book_area.py:279
 msgid "Cover si_ze"
 msgstr "Viršelio _dydis"
 
-#: mcomix/library/book_area.py:545
+#: mcomix/library/book_area.py:555
 msgid "Set library cover size"
 msgstr "Nustatyti bibliotekos viršelių dydį"
 
-#: mcomix/library/book_area.py:719
+#: mcomix/library/book_area.py:729
 #, python-format
 msgid "Removed %(num)d book from '%(collection)s'."
 msgid_plural "Removed %(num)d books from '%(collection)s'."
@@ -3278,7 +3287,7 @@ msgstr[0] "Iš „%(collection)s“ pašalinta %(num)d knyga."
 msgstr[1] "Iš „%(collection)s“ pašalintos %(num)d knygos."
 msgstr[2] "Iš „%(collection)s“ pašalinta %(num)d knygų."
 
-#: mcomix/library/book_area.py:742 mcomix/library/collection_area.py:305
+#: mcomix/library/book_area.py:752 mcomix/library/collection_area.py:305
 #, python-format
 msgid "Removed %d book from the library."
 msgid_plural "Removed %d books from the library."
@@ -3286,11 +3295,11 @@ msgstr[0] "Iš bibliotekos pašalinta %d knyga."
 msgstr[1] "Iš bibliotekos pašalintos %d knygos."
 msgstr[2] "Iš bibliotekos pašalinta %d knygų."
 
-#: mcomix/library/book_area.py:764 mcomix/library/book_area.py:785
+#: mcomix/library/book_area.py:774 mcomix/library/book_area.py:795
 msgid "Remove books from the library?"
 msgstr "Pašalinti knygas iš bibliotekos?"
 
-#: mcomix/library/book_area.py:765
+#: mcomix/library/book_area.py:775
 msgid ""
 "The selected books will be removed from the library. Any in a folder with no "
 "trash is deleted permanently and cannot be restored."
@@ -3298,13 +3307,13 @@ msgstr ""
 "Pasirinktos knygos bus pašalintos iš bibliotekos. Esančios aplanke be "
 "šiukšlinės bus ištrintos visam laikui ir jų nebus galima atkurti."
 
-#: mcomix/library/book_area.py:786
+#: mcomix/library/book_area.py:796
 msgid ""
 "The selected books will be removed from the library and moved to the trash."
 msgstr ""
 "Pasirinktos knygos bus pašalintos iš bibliotekos ir perkeltos į šiukšlinę."
 
-#: mcomix/library/book_area.py:896
+#: mcomix/library/book_area.py:906
 #, python-format
 msgid "Remove the bookmarks in the deleted book?"
 msgid_plural "Remove the bookmarks in the %(count)d deleted books?"
@@ -3361,51 +3370,51 @@ msgstr "Įveskite naujos kolekcijos pavadinimą."
 msgid "Could not add a new collection called '%s'."
 msgstr "Nepavyko pridėti naujos kolekcijos pavadinimu „%s“."
 
-#: mcomix/library/collection_area.py:293 mcomix/library/collection_area.py:387
+#: mcomix/library/collection_area.py:293 mcomix/library/collection_area.py:391
 msgid "A collection by that name already exists."
 msgstr "Kolekcija tokiu pavadinimu jau yra."
 
-#: mcomix/library/collection_area.py:355
+#: mcomix/library/collection_area.py:359
 msgid "Rename collection?"
 msgstr "Pervadinti kolekciją?"
 
-#: mcomix/library/collection_area.py:356
+#: mcomix/library/collection_area.py:360
 msgid "Please enter a new name for the selected collection."
 msgstr "Įveskite naują pasirinktos kolekcijos pavadinimą."
 
-#: mcomix/library/collection_area.py:383
+#: mcomix/library/collection_area.py:387
 #, python-format
 msgid "Could not change the name to '%s'."
 msgstr "Nepavyko pakeisti pavadinimo į „%s“."
 
-#: mcomix/library/collection_area.py:399
+#: mcomix/library/collection_area.py:403
 msgid "Could not duplicate collection."
 msgstr "Nepavyko dublikuoti kolekcijos."
 
-#: mcomix/library/collection_area.py:593
+#: mcomix/library/collection_area.py:597
 msgid "Root"
 msgstr "Šaknis"
 
-#: mcomix/library/collection_area.py:596
+#: mcomix/library/collection_area.py:600
 #, python-format
 msgid ""
 "Put the collection '%(subcollection)s' in the collection "
 "'%(supercollection)s'."
 msgstr "Įdėti kolekciją „%(subcollection)s“ į kolekciją „%(supercollection)s“."
 
-#: mcomix/library/collection_area.py:612
+#: mcomix/library/collection_area.py:616
 #, python-format
 msgid "Add books to '%s'."
 msgstr "Pridėti knygų į „%s“."
 
-#: mcomix/library/collection_area.py:615
+#: mcomix/library/collection_area.py:619
 #, python-format
 msgid ""
 "Copy books from '%(source collection)s' to '%(destination collection)s'."
 msgstr ""
 "Kopijuoti knygas iš „%(source collection)s“ į „%(destination collection)s“."
 
-#: mcomix/library/collection_area.py:622
+#: mcomix/library/collection_area.py:626
 #, python-format
 msgid ""
 "Move books from '%(source collection)s' to '%(destination collection)s'."
@@ -3495,23 +3504,23 @@ msgstr "Aplanke '%s' nebuvo rasta naujų knygų."
 msgid "Books relocated: %d"
 msgstr "Knygų su nauja vieta: %d"
 
-#: mcomix/library/relocate_dialog.py:60
+#: mcomix/library/relocate_dialog.py:61
 msgid "Relocate books?"
 msgstr "Nurodyti naują knygų vietą?"
 
-#: mcomix/library/relocate_dialog.py:66
+#: mcomix/library/relocate_dialog.py:67
 msgid "The books were in:"
 msgstr "Knygos buvo aplanke:"
 
-#: mcomix/library/relocate_dialog.py:67
+#: mcomix/library/relocate_dialog.py:68
 msgid "They are now in:"
 msgstr "Dabar jos yra aplanke:"
 
-#: mcomix/library/relocate_dialog.py:69 mcomix/library/relocate_dialog.py:118
+#: mcomix/library/relocate_dialog.py:70 mcomix/library/relocate_dialog.py:119
 msgid "Select a Folder"
 msgstr "Pasirinkite aplanką"
 
-#: mcomix/library/relocate_dialog.py:83
+#: mcomix/library/relocate_dialog.py:84
 msgid ""
 "Tells the library where a folder of books has been moved to. The books keep "
 "their collections, their bookmarks and the pages they were read to."

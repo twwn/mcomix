@@ -25,6 +25,7 @@ from mcomix import thumbnail_tools
 from mcomix import log
 from mcomix import callback
 from mcomix.library import backend_types
+from mcomix.library import pixbuf_cache
 from mcomix import i18n
 from mcomix.i18n import _
 # Only for importing legacy data from last-read module
@@ -57,7 +58,7 @@ class _LibraryBackend:
 
     #: Current version of the library database structure.
     # See method _upgrade_database() for changes between versions.
-    DB_VERSION = 10
+    DB_VERSION = 11
 
     def __init__(self) -> None:
         #: Held from running a statement to closing its cursor.  Threads
@@ -303,12 +304,51 @@ class _LibraryBackend:
                                                   archive_support=True,
                                                   size=(constants.MAX_LIBRARY_COVER_SIZE,
                                                         constants.MAX_LIBRARY_COVER_SIZE),
-                                                  cover_orientation_required=True)
+                                                  cover_orientation_required=True,
+                                                  cover=self.get_chosen_cover(path))
         thumb = thumbnailer.thumbnail(path)
 
         if thumb is None:
             log.warning(_('! Could not get cover for book "%s"'), path)
         return thumb
+
+    def get_chosen_cover(self, path: str) -> str | None:
+        """The picture the reader chose as the cover of the book at
+        <path>, as FileHandler.page_member() names it, or None where
+        the cover is the one guessed or the library has no such book."""
+        path = os.path.abspath(path)
+        if not backend_types.storable(path):
+            return None
+        cover: str | None = self.fetchone(
+            'select cover from Book where path = ?', (path,))
+        return cover
+
+    def set_chosen_cover(self, path: str, member: str | None) -> bool:
+        """Make the picture called <member> within the book at <path>
+        its cover in the library, or go back to the guessed one where
+        <member> is None.  False where the library has no such book.
+
+        The book is not changed (upstream feature request 65 asks for
+        archives kept to the checksum).  The cover stored and the one
+        the library last drew are of the picture that was the cover,
+        and both go.
+        """
+        path = os.path.abspath(path)
+        if not backend_types.storable(path):
+            return False
+        if not self.execute('update Book set cover = ? where path = ?',
+                            (member, path)):
+            return False
+        self._covers().delete(path)
+        pixbuf_cache.get_pixbuf_cache().invalidate(path)
+        self.book_cover_changed(path)
+        return True
+
+    @callback.Callback
+    def book_cover_changed(self, path: str) -> None:
+        """Called when set_chosen_cover() has given the book at <path>
+        another cover, for whatever is showing the old one."""
+        pass
 
     def get_all_collections_in_collection(self, collection: int) -> list[int]:
         """Return every collection under <collection>, including the
@@ -1177,6 +1217,18 @@ class _LibraryBackend:
                     self._con.execute(
                         '''alter table recent add column member text''')
 
+            if 10 in upgrades:
+                # The picture the reader chose as a book's cover, by its
+                # name within the archive (upstream feature request
+                # 65).  As with the column above: an older MComix
+                # leaves it alone and labels the file with its own
+                # version, so it is added only where it is missing.
+                columns = [row[1] for row in self._con.execute(
+                    '''pragma table_info(book)''').fetchall()]
+                if 'cover' not in columns:
+                    self._con.execute(
+                        '''alter table book add column cover text''')
+
             self._con.execute('''update info set value = ? where key = 'version' ''',
                               (str(_LibraryBackend.DB_VERSION),))
 
@@ -1188,7 +1240,8 @@ class _LibraryBackend:
             pages integer,
             format integer,
             size integer,
-            added datetime default current_timestamp)''')
+            added datetime default current_timestamp,
+            cover text)''')
 
     def _create_table_collection(self) -> None:
         self._con.execute('''create table if not exists collection (

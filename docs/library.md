@@ -36,6 +36,7 @@ A book is an archive in any format MComix opens; folders cannot be added.
 
 - The search field shows the books whose name or path contains its text, case aside, once Enter is pressed.
 - A book's cover is its first picture, or the first one named "cover" or "front". Pictures named "credit" or "banner" are passed over.
+- To choose another, open the book, right-click the page and tick "Cover in the library". The book is not changed. Untick it there to go back.
 - A book read to its last page has a tick on its cover.
 - "Mark as read" in the books' right-click menu gives the selected books the tick; "Mark as unread" takes it away, with the page they were left at.
 - The line under the covers gives the selected book's folder, size, page count, and the page it was left on or when it was finished.

@@ -47,6 +47,7 @@ class _Backend:
 
     book_added = _Event()
     book_added_to_collection = _Event()
+    book_cover_changed = _Event()
 
     def __init__(self):
         #: The book ids remove_book() was given.

@@ -100,7 +100,8 @@ class Thumbnailer:
                  size: tuple[int, int] | None = None,
                  force_recreation: bool = False,
                  archive_support: bool = False,
-                 cover_orientation_required: bool = False) -> None:
+                 cover_orientation_required: bool = False,
+                 cover: str | None = None) -> None:
         """
         <dst_dir> set the thumbnailer's storage directory.
 
@@ -123,6 +124,11 @@ class Thumbnailer:
         an archive is made again where it does not say how its cover was
         turned: a store only MComix writes to, such as the library's,
         then comes to say so for every cover.
+
+        <cover> names the picture an archive's thumbnail is made of, as
+        FileHandler.page_member() names a page, where the reader chose
+        one; the archive's cover is guessed where it is None, or names
+        a picture the archive no longer holds.
         """
         self.dst_dir = dst_dir
         if store_on_disk is None:
@@ -138,6 +144,7 @@ class Thumbnailer:
         self.force_recreation = force_recreation
         self.archive_support = archive_support
         self.cover_orientation_required = cover_orientation_required
+        self.cover = cover
 
     def thumbnail(self, filepath: str, threaded: bool = False) -> "GdkPixbuf.Pixbuf | None":
         """ Returns a thumbnail pixbuf for <filepath>, transparently handling
@@ -225,7 +232,7 @@ class Thumbnailer:
                     return None, None
                 cleanup.append(archive.close)
                 files = archive.list_contents()
-                wanted = self._guess_cover(files)
+                wanted = self._chosen_cover(files) or self._guess_cover(files)
                 if wanted is None:
                     return None, None
 
@@ -487,6 +494,17 @@ class Thumbnailer:
         """
         md5hash = md5(uri.encode('utf-8')).hexdigest()
         return os.path.join(self.dst_dir, md5hash + '.png')
+
+    def _chosen_cover(self, files: Iterable[str]) -> str | None:
+        """The filename within <files> that is the picture the reader
+        chose as the cover, or None where none was chosen or the one
+        chosen is not among them."""
+        if self.cover is None:
+            return None
+        return next((name for name in files
+                     if os.path.normpath(name).replace(os.sep, '/')
+                     == self.cover and image_tools.is_image_file(name)),
+                    None)
 
     def _guess_cover(self, files: Iterable[str]) -> str | None:
         """Return the filename within <files> that is the most likely to be the

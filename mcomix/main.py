@@ -1767,6 +1767,33 @@ class MainWindow(Gtk.Window):
         """
         self._mark_popup_page(page_marks.ALONE, toggleaction.get_active())
 
+    def change_library_cover(self, toggleaction: "ui.Action") -> None:
+        """Make the page the right-click menu was opened over the cover
+        of its book in the library, or go back to the cover the library
+        guessed (upstream feature request 65).
+
+        The book is not changed, and has to be one the library holds:
+        the item is left out of the menu for any other.
+        """
+        chosen = self._popup_book_page()
+        if chosen is not None:
+            path, member = chosen
+            backend.LibraryBackend().set_chosen_cover(
+                path, member if toggleaction.get_active() else None)
+
+    def _popup_book_page(self) -> "tuple[str, str] | None":
+        """The archive and the name within it of the page the
+        right-click menu was opened over, the page on screen where it
+        was opened over none.  None where the open book is no archive."""
+        if not self.filehandler.file_loaded:
+            return None
+        page = self.popup_page if self.popup_page is not None \
+            else self.imagehandler.get_current_page()
+        identity = self.filehandler.page_identity(page)
+        if identity is None or not identity[1]:
+            return None
+        return identity
+
     def _mark_popup_page(self, mark: str, on: bool) -> bool:
         """Put <mark> on the page the right-click menu was opened over,
         the page on screen where it was opened over none, or take it
@@ -1811,6 +1838,16 @@ class MainWindow(Gtk.Window):
         self.actiongroup.get_action('remove_bookmark_popup').set_sensitive(
             page is not None
             and page in bookmark_backend.BookmarksStore.pages_marked())
+        # A cover is chosen for a book the library holds, and no other.
+        cover = self.actiongroup.get_action('library_cover_popup')
+        chosen = self._popup_book_page()
+        library = backend.LibraryBackend()
+        held = chosen is not None \
+            and library.get_book_by_path(chosen[0]) is not None
+        cover.set_sensitive(held)
+        cover.show_active(
+            held and chosen is not None
+            and library.get_chosen_cover(chosen[0]) == chosen[1])
         widgets.popup_at(self.popup, widget, x, y)
 
 

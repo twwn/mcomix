@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Comix 3.2\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-10 18:56+0200\n"
+"POT-Creation-Date: 2026-10-10 19:18+0200\n"
 "PO-Revision-Date: 2009-01-25 22:33+0100\n"
 "Last-Translator: Carles Escrig i Royo <simkin@ono.com>\n"
 "Language-Team: CA <gentoo@softcatala.net>\n"
@@ -56,7 +56,7 @@ msgstr "! No s'ha pogut llegir %s"
 #
 # File: src/comment.py, line: 53
 #: mcomix/archive_packer.py:176 mcomix/file_actions.py:1098
-#: mcomix/library/book_area.py:833
+#: mcomix/library/book_area.py:843
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! No s'ha pogut suprimir %(file)s: %(error)s"
@@ -170,7 +170,7 @@ msgstr "E_limina"
 # File: src/ui.py, line: 48
 #: mcomix/bookmark_dialog.py:34 mcomix/comment_dialog.py:29
 #: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:74
-#: mcomix/properties_dialog.py:37 mcomix/ui.py:490
+#: mcomix/properties_dialog.py:37 mcomix/ui.py:491
 #: mcomix/library/watchlist.py:41
 msgid "_Close"
 msgstr "Tan_ca"
@@ -189,7 +189,7 @@ msgstr "Nom"
 
 #
 # File: src/bookmark.py, line: 256
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1835
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1872
 #: mcomix/library/control_area.py:152
 msgid "Page"
 msgstr "Pàgina"
@@ -281,12 +281,12 @@ msgid "Remove from archive"
 msgstr "Suprimeix del fitxer"
 
 #: mcomix/edit_comment_area.py:122 mcomix/edit_image_area.py:116
-#: mcomix/ui.py:467
+#: mcomix/ui.py:468
 msgid "_Undo"
 msgstr "_Desfés"
 
 #: mcomix/edit_comment_area.py:123 mcomix/edit_image_area.py:117
-#: mcomix/ui.py:470
+#: mcomix/ui.py:471
 msgid "_Redo"
 msgstr "_Refés"
 
@@ -318,7 +318,7 @@ msgstr "Edita l'arxiu"
 msgid "A_pply"
 msgstr "A_plica"
 
-#: mcomix/edit_dialog.py:76 mcomix/ui.py:499 mcomix/ui.py:500
+#: mcomix/edit_dialog.py:76 mcomix/ui.py:500 mcomix/ui.py:501
 msgid "Save _As"
 msgstr "_Anomena i desa"
 
@@ -383,7 +383,7 @@ msgstr "_Continua editant"
 msgid "_Close the book"
 msgstr "Tanca el _llibre"
 
-#: mcomix/edit_image_area.py:111 mcomix/ui.py:455
+#: mcomix/edit_image_area.py:111 mcomix/ui.py:456
 msgid "Re_name page..."
 msgstr "Rea_nomena la pàgina..."
 
@@ -486,7 +486,7 @@ msgstr ""
 "Ajusta automàticament el contrast (tant la claror com la foscor), de manera "
 "independent per a cada banda de color."
 
-#: mcomix/enhance_dialog.py:124 mcomix/ui.py:548
+#: mcomix/enhance_dialog.py:124 mcomix/ui.py:552
 msgid "_Invert image colors"
 msgstr "_Inverteix els colors de la imatge"
 
@@ -600,7 +600,7 @@ msgstr "Voleu suprimir «%s» definitivament?"
 msgid "Could not move \"%s\" to the trash"
 msgstr "No s'ha pogut moure «%s» a la paperera"
 
-#: mcomix/file_actions.py:1057 mcomix/library/book_area.py:845
+#: mcomix/file_actions.py:1057 mcomix/library/book_area.py:855
 #, python-format
 msgid "%d book could not be moved to the trash."
 msgid_plural "%d books could not be moved to the trash."
@@ -630,7 +630,7 @@ msgid_plural ""
 msgstr[0] "El fitxer ja no hi és, i el seu %d marcador no es pot obrir."
 msgstr[1] "El fitxer ja no hi és, i els seus %d marcadors no es poden obrir."
 
-#: mcomix/file_actions.py:1214 mcomix/thumbnail_tools.py:199
+#: mcomix/file_actions.py:1214 mcomix/thumbnail_tools.py:210
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr "! No s'ha pogut moure %(file)s a %(directory)s: %(error)s"
@@ -655,7 +655,7 @@ msgstr[1] "%d pàgines"
 msgid "Open"
 msgstr "Obre"
 
-#: mcomix/file_chooser_base_dialog.py:238 mcomix/library/book_area.py:172
+#: mcomix/file_chooser_base_dialog.py:238 mcomix/library/book_area.py:173
 msgid "_Open"
 msgstr "_Obre"
 
@@ -792,7 +792,7 @@ msgstr "Tecla %d"
 
 #
 # File: src/ui.py, line: 284
-#: mcomix/keybindings.py:45 mcomix/ui.py:474
+#: mcomix/keybindings.py:45 mcomix/ui.py:475
 msgid "Previous page"
 msgstr "Pàgina anterior"
 
@@ -809,7 +809,7 @@ msgstr "Navegació"
 
 #
 # File: src/ui.py, line: 285
-#: mcomix/keybindings.py:46 mcomix/ui.py:473
+#: mcomix/keybindings.py:46 mcomix/ui.py:474
 msgid "Next page"
 msgstr "Pàgina següent"
 
@@ -865,13 +865,13 @@ msgstr "Pàgina individual a la dreta"
 
 #
 # File: src/ui.py, line: 282
-#: mcomix/keybindings.py:58 mcomix/ui.py:475
+#: mcomix/keybindings.py:58 mcomix/ui.py:476
 msgid "First page"
 msgstr "Primera pàgina"
 
 #
 # File: src/ui.py, line: 286
-#: mcomix/keybindings.py:59 mcomix/ui.py:476
+#: mcomix/keybindings.py:59 mcomix/ui.py:477
 msgid "Last page"
 msgstr "Última pàgina"
 
@@ -883,13 +883,13 @@ msgstr "Vés a la pàgina"
 
 #
 # File: src/edit.py, line: 28
-#: mcomix/keybindings.py:62 mcomix/ui.py:480
+#: mcomix/keybindings.py:62 mcomix/ui.py:481
 msgid "Next archive"
 msgstr "Arxiu següent"
 
 #
 # File: src/ui.py, line: 284
-#: mcomix/keybindings.py:63 mcomix/ui.py:481
+#: mcomix/keybindings.py:63 mcomix/ui.py:482
 msgid "Previous archive"
 msgstr "Arxiu anterior"
 
@@ -901,11 +901,11 @@ msgstr "Pàgina a l'atzar"
 msgid "Random archive in the folder"
 msgstr "Arxiu a l'atzar de la carpeta"
 
-#: mcomix/keybindings.py:67 mcomix/ui.py:482
+#: mcomix/keybindings.py:67 mcomix/ui.py:483
 msgid "Next directory"
 msgstr "Directori següent"
 
-#: mcomix/keybindings.py:68 mcomix/ui.py:483
+#: mcomix/keybindings.py:68 mcomix/ui.py:484
 msgid "Previous directory"
 msgstr "Directori anterior"
 
@@ -1057,7 +1057,7 @@ msgstr "Gir automàtic per alçada"
 #
 # File: src/preferences.py, line: 177
 # File: src/ui.py, line: 296
-#: mcomix/keybindings.py:109 mcomix/preferences_dialog.py:340 mcomix/ui.py:526
+#: mcomix/keybindings.py:109 mcomix/preferences_dialog.py:340 mcomix/ui.py:527
 msgid "Double page mode"
 msgstr "Mode de doble pàgina"
 
@@ -1079,42 +1079,42 @@ msgstr "Pàgina de títol sola"
 
 #
 # File: src/ui.py, line: 297
-#: mcomix/keybindings.py:111 mcomix/ui.py:540
+#: mcomix/keybindings.py:111 mcomix/ui.py:544
 msgid "Manga mode"
 msgstr "Mode manga"
 
-#: mcomix/keybindings.py:112 mcomix/ui.py:541
+#: mcomix/keybindings.py:112 mcomix/ui.py:545
 msgid "Invert smart scroll"
 msgstr "Inversió del desplaçament intel·ligent"
 
 #
 # File: src/ui.py, line: 298
-#: mcomix/keybindings.py:114 mcomix/ui.py:545
+#: mcomix/keybindings.py:114 mcomix/ui.py:549
 msgid "Magnifying lens"
 msgstr "Lupa"
 
-#: mcomix/keybindings.py:115 mcomix/ui.py:546
+#: mcomix/keybindings.py:115 mcomix/ui.py:550
 msgid "Stretch small images"
 msgstr "Ampliació de les imatges petites"
 
 #
 # File: src/preferences.py, line: 262
 # File: src/ui.py, line: 288
-#: mcomix/keybindings.py:117 mcomix/ui.py:553
+#: mcomix/keybindings.py:117 mcomix/ui.py:557
 msgid "Best fit mode"
 msgstr "Millor encaix"
 
 #
 # File: src/preferences.py, line: 263
 # File: src/ui.py, line: 290
-#: mcomix/keybindings.py:118 mcomix/ui.py:554
+#: mcomix/keybindings.py:118 mcomix/ui.py:558
 msgid "Fit width mode"
 msgstr "Ajusta a l'amplada"
 
 #
 # File: src/preferences.py, line: 264
 # File: src/ui.py, line: 292
-#: mcomix/keybindings.py:119 mcomix/ui.py:555
+#: mcomix/keybindings.py:119 mcomix/ui.py:559
 msgid "Fit height mode"
 msgstr "Ajusta a l'alçada"
 
@@ -1127,11 +1127,11 @@ msgstr "Mode d'ajust a la mida"
 #
 # File: src/preferences.py, line: 265
 # File: src/ui.py, line: 294
-#: mcomix/keybindings.py:121 mcomix/ui.py:557
+#: mcomix/keybindings.py:121 mcomix/ui.py:561
 msgid "Manual zoom mode"
 msgstr "Zoom manual"
 
-#: mcomix/keybindings.py:124 mcomix/osd.py:287 mcomix/ui.py:488
+#: mcomix/keybindings.py:124 mcomix/osd.py:287 mcomix/ui.py:489
 msgid "Leave fullscreen"
 msgstr "Surt de la pantalla completa"
 
@@ -1198,7 +1198,7 @@ msgstr "Amaga-ho tot"
 
 #
 # File: src/preferences.py, line: 279
-#: mcomix/keybindings.py:137 mcomix/slideshow.py:54 mcomix/ui.py:544
+#: mcomix/keybindings.py:137 mcomix/slideshow.py:54 mcomix/ui.py:548
 msgid "Start slideshow"
 msgstr "Inicia la projecció"
 
@@ -1232,7 +1232,7 @@ msgstr "Suprimeix"
 msgid "File"
 msgstr "Fitxer"
 
-#: mcomix/keybindings.py:147 mcomix/ui.py:447
+#: mcomix/keybindings.py:147 mcomix/ui.py:448
 msgid "Delete permanently"
 msgstr "Suprimeix definitivament"
 
@@ -1298,7 +1298,7 @@ msgstr "Propietats"
 msgid "Preferences"
 msgstr "Preferències"
 
-#: mcomix/keybindings.py:163 mcomix/ui.py:449 mcomix/ui.py:452
+#: mcomix/keybindings.py:163 mcomix/ui.py:450 mcomix/ui.py:453
 msgid "Open containing folder"
 msgstr "Obre la carpeta contenidora"
 
@@ -1308,7 +1308,7 @@ msgstr "Obre la carpeta contenidora"
 msgid "Library"
 msgstr "Biblioteca"
 
-#: mcomix/keybindings.py:167 mcomix/ui.py:548
+#: mcomix/keybindings.py:167 mcomix/ui.py:552
 msgid "Invert image colors"
 msgstr "Inversió dels colors de la imatge"
 
@@ -1351,7 +1351,7 @@ msgstr "La drecera de «%(action)s» anul·la la d'una altra acció."
 msgid "Couldn't load keybindings: %s"
 msgstr "No s'han pogut carregar les dreceres: %s"
 
-#: mcomix/last_read_page.py:255 mcomix/thumbnail_tools.py:180
+#: mcomix/last_read_page.py:255 mcomix/thumbnail_tools.py:191
 #, python-format
 msgid "! Could not remove file \"%s\""
 msgstr "! No s'ha pogut suprimir el fitxer «%s»"
@@ -1633,13 +1633,13 @@ msgstr ""
 msgid "! Could not draw the next frame: %s"
 msgstr "! No s'ha pogut dibuixar el fotograma següent: %s"
 
-#: mcomix/pageselect.py:29 mcomix/ui.py:477
+#: mcomix/pageselect.py:29 mcomix/ui.py:478
 msgid "Go to page..."
 msgstr "Vés a la pàgina..."
 
 #
 # File: src/ui.py, line: 69
-#: mcomix/pageselect.py:31 mcomix/ui.py:515 mcomix/ui.py:516
+#: mcomix/pageselect.py:31 mcomix/ui.py:516 mcomix/ui.py:517
 msgid "_Go"
 msgstr "Vé_s"
 
@@ -2084,7 +2084,7 @@ msgstr "Espai entre dues pàgines (en píxels):"
 #
 # File: src/preferences.py, line: 263
 # File: src/ui.py, line: 290
-#: mcomix/preferences_dialog.py:358 mcomix/ui.py:556
+#: mcomix/preferences_dialog.py:358 mcomix/ui.py:560
 msgid "Fit to size mode"
 msgstr "Mode d'ajust a la mida"
 
@@ -2387,7 +2387,7 @@ msgstr ""
 
 #: mcomix/preferences_dialog.py:673 mcomix/preferences_dialog.py:822
 #: mcomix/preferences_dialog.py:904 mcomix/preferences_dialog.py:967
-#: mcomix/ui.py:562
+#: mcomix/ui.py:566
 msgid "Never"
 msgstr "Mai"
 
@@ -2447,7 +2447,7 @@ msgstr "Nom del fitxer"
 msgid "File name (GLib)"
 msgstr "Nom del fitxer (GLib)"
 
-#: mcomix/preferences_dialog.py:727 mcomix/library/book_area.py:255
+#: mcomix/preferences_dialog.py:727 mcomix/library/book_area.py:256
 msgid "File size"
 msgstr "Mida del fitxer"
 
@@ -2456,12 +2456,12 @@ msgid "Last modified"
 msgstr "Data de modificació"
 
 #: mcomix/preferences_dialog.py:734 mcomix/preferences_dialog.py:780
-#: mcomix/library/book_area.py:259
+#: mcomix/library/book_area.py:260
 msgid "Ascending"
 msgstr "Ascendent"
 
 #: mcomix/preferences_dialog.py:735 mcomix/preferences_dialog.py:781
-#: mcomix/library/book_area.py:260
+#: mcomix/library/book_area.py:261
 msgid "Descending"
 msgstr "Descendent"
 
@@ -2616,7 +2616,7 @@ msgstr ""
 "proporció; mètrica de color relativa manté exactes els que la pantalla pot "
 "mostrar."
 
-#: mcomix/preferences_dialog.py:968 mcomix/library/book_area.py:267
+#: mcomix/preferences_dialog.py:968 mcomix/library/book_area.py:268
 msgid "Normal"
 msgstr "Normal"
 
@@ -3108,7 +3108,7 @@ msgstr "Disseny d'icones"
 msgid "Vector icon"
 msgstr "Icona vectorial"
 
-#: mcomix/thumbnail_tools.py:357
+#: mcomix/thumbnail_tools.py:368
 #, python-format
 msgid "! Could not save thumbnail \"%(thumbpath)s\": %(error)s"
 msgstr "! No s'ha pogut desar la miniatura «%(thumbpath)s»: %(error)s"
@@ -3116,43 +3116,43 @@ msgstr "! No s'ha pogut desar la miniatura «%(thumbpath)s»: %(error)s"
 #
 # File: src/librarybackend.py, line: 272
 # File: src/librarybackend.py, line: 274
-#: mcomix/ui.py:440 mcomix/library/book_area.py:200
+#: mcomix/ui.py:441 mcomix/library/book_area.py:201
 msgid "_Copy"
 msgstr "Co_pia"
 
-#: mcomix/ui.py:440
+#: mcomix/ui.py:441
 msgid "Copies the current page to clipboard."
 msgstr "Copia la pàgina actual al porta-retalls."
 
-#: mcomix/ui.py:442
+#: mcomix/ui.py:443
 msgid "_Copy page"
 msgstr "Copia la pà_gina"
 
-#: mcomix/ui.py:443
+#: mcomix/ui.py:444
 msgid "Copies the page the menu was opened over to the clipboard."
 msgstr "Copia al porta-retalls la pàgina sobre la qual s'ha obert el menú."
 
-#: mcomix/ui.py:445
+#: mcomix/ui.py:446
 msgid "_Delete"
 msgstr "_Suprimeix"
 
-#: mcomix/ui.py:445
+#: mcomix/ui.py:446
 msgid "Deletes the current file or archive from disk."
 msgstr "Suprimeix del disc el fitxer o arxiu actual."
 
-#: mcomix/ui.py:450 mcomix/ui.py:453
+#: mcomix/ui.py:451 mcomix/ui.py:454
 msgid "Shows the open file in the file manager."
 msgstr "Mostra el fitxer obert al gestor de fitxers."
 
-#: mcomix/ui.py:456
+#: mcomix/ui.py:457
 msgid "Renames the page the menu was opened over."
 msgstr "Reanomena la pàgina sobre la qual s'ha obert el menú."
 
-#: mcomix/ui.py:458
+#: mcomix/ui.py:459
 msgid "_Delete page"
 msgstr "Suprimeix la _pàgina"
 
-#: mcomix/ui.py:459
+#: mcomix/ui.py:460
 msgid ""
 "Removes the page the menu was opened over from the book. The archive on disk "
 "is not changed until it is saved."
@@ -3160,105 +3160,105 @@ msgstr ""
 "Treu del llibre la pàgina sobre la qual s'ha obert el menú. L'arxiu del disc "
 "no canvia fins que es desa."
 
-#: mcomix/ui.py:461
+#: mcomix/ui.py:462
 msgid "_Remove bookmark"
 msgstr "Suprimeix el marca_dor"
 
-#: mcomix/ui.py:462
+#: mcomix/ui.py:463
 msgid "Removes the bookmark of the page the menu was opened over."
 msgstr "Suprimeix el marcador de la pàgina sobre la qual s'ha obert el menú."
 
-#: mcomix/ui.py:464
+#: mcomix/ui.py:465
 msgid "Pu_t back pages picked out"
 msgstr "A_llibera les pàgines triades"
 
-#: mcomix/ui.py:465
+#: mcomix/ui.py:466
 msgid "Puts back every page picked out with CTRL and a click."
 msgstr "Allibera totes les pàgines triades amb CTRL i un clic."
 
-#: mcomix/ui.py:468
+#: mcomix/ui.py:469
 msgid "Takes back the last page removed from the book."
 msgstr "Recupera l'última pàgina treta del llibre."
 
-#: mcomix/ui.py:471
+#: mcomix/ui.py:472
 msgid "Removes again the page the last undo brought back."
 msgstr "Torna a treure la pàgina que l'última acció de desfer ha recuperat."
 
 #
 # File: src/ui.py, line: 34
-#: mcomix/ui.py:473
+#: mcomix/ui.py:474
 msgid "_Next page"
 msgstr "Pàgi_na següent"
 
 #
 # File: src/ui.py, line: 36
-#: mcomix/ui.py:474
+#: mcomix/ui.py:475
 msgid "_Previous page"
 msgstr "_Pàgina anterior"
 
 #
 # File: src/ui.py, line: 38
-#: mcomix/ui.py:475
+#: mcomix/ui.py:476
 msgid "_First page"
 msgstr "Pr_imera pàgina"
 
 #
 # File: src/ui.py, line: 40
-#: mcomix/ui.py:476
+#: mcomix/ui.py:477
 msgid "_Last page"
 msgstr "Ú_ltima pàgina"
 
-#: mcomix/ui.py:477
+#: mcomix/ui.py:478
 msgid "_Go to page..."
 msgstr "_Vés a la pàgina..."
 
-#: mcomix/ui.py:478
+#: mcomix/ui.py:479
 msgid "Re_fresh"
 msgstr "Ac_tualitza"
 
-#: mcomix/ui.py:478
+#: mcomix/ui.py:479
 msgid "Reloads the currently opened files or archive."
 msgstr "Torna a carregar els fitxers o l'arxiu oberts."
 
-#: mcomix/ui.py:480
+#: mcomix/ui.py:481
 msgid "Next _archive"
 msgstr "Arxiu _següent"
 
-#: mcomix/ui.py:481
+#: mcomix/ui.py:482
 msgid "Previous a_rchive"
 msgstr "A_rxiu anterior"
 
-#: mcomix/ui.py:484
+#: mcomix/ui.py:485
 msgid "Zoom _In"
 msgstr "_Amplia"
 
-#: mcomix/ui.py:485
+#: mcomix/ui.py:486
 msgid "Zoom _Out"
 msgstr "_Redueix"
 
-#: mcomix/ui.py:486
+#: mcomix/ui.py:487
 msgid "_Normal Size"
 msgstr "Mida _normal"
 
-#: mcomix/ui.py:487
+#: mcomix/ui.py:488
 msgid "Mi_nimize"
 msgstr "Mi_nimitza"
 
-#: mcomix/ui.py:490
+#: mcomix/ui.py:491
 msgid "Closes all opened files."
 msgstr "Tanca tots els fitxers oberts."
 
 #
 # File: src/ui.py, line: 50
-#: mcomix/ui.py:491
+#: mcomix/ui.py:492
 msgid "_Quit"
 msgstr "I_x"
 
-#: mcomix/ui.py:492
+#: mcomix/ui.py:493
 msgid "_Save and quit"
 msgstr "_Desa i surt"
 
-#: mcomix/ui.py:492
+#: mcomix/ui.py:493
 msgid ""
 "Quits and restores the currently opened file next time the program starts."
 msgstr ""
@@ -3266,147 +3266,147 @@ msgstr ""
 
 #
 # File: src/ui.py, line: 52
-#: mcomix/ui.py:494 mcomix/ui.py:563 mcomix/ui.py:565
+#: mcomix/ui.py:495 mcomix/ui.py:567 mcomix/ui.py:569
 msgid "_Rotate 90° CW"
 msgstr "_Rota 90 graus a la dreta"
 
 #
 # File: src/ui.py, line: 54
-#: mcomix/ui.py:495
+#: mcomix/ui.py:496
 msgid "Rotate _180°"
 msgstr "Rota 180 _graus"
 
 #
 # File: src/ui.py, line: 56
-#: mcomix/ui.py:496 mcomix/ui.py:564 mcomix/ui.py:566
+#: mcomix/ui.py:497 mcomix/ui.py:568 mcomix/ui.py:570
 msgid "Rotat_e 90° CCW"
 msgstr "Rota 90 graus a l'_esquerra"
 
 #
 # File: src/ui.py, line: 58
-#: mcomix/ui.py:497
+#: mcomix/ui.py:498
 msgid "Fli_p horizontally"
 msgstr "Inverteix _horitzontalment"
 
 #
 # File: src/ui.py, line: 60
-#: mcomix/ui.py:498
+#: mcomix/ui.py:499
 msgid "Flip _vertically"
 msgstr "Inverteix _verticalment"
 
-#: mcomix/ui.py:500
+#: mcomix/ui.py:501
 msgid "Saves the page the menu was opened over."
 msgstr "Desa la pàgina sobre la qual s'ha obert el menú."
 
-#: mcomix/ui.py:502
+#: mcomix/ui.py:503
 msgid "_Zoom"
 msgstr "Amplia_ció"
 
-#: mcomix/ui.py:503
+#: mcomix/ui.py:504
 msgid "_Recent"
 msgstr "_Recents"
 
 #
 # File: src/ui.py, line: 64
-#: mcomix/ui.py:504 mcomix/ui.py:505
+#: mcomix/ui.py:505 mcomix/ui.py:506
 msgid "_Bookmarks"
 msgstr "_Marcadors"
 
 #
 # File: src/ui.py, line: 65
-#: mcomix/ui.py:506
+#: mcomix/ui.py:507
 msgid "T_oolbars"
 msgstr "Barres d'_eines"
 
 #
 # File: src/ui.py, line: 66
-#: mcomix/ui.py:507
+#: mcomix/ui.py:508
 msgid "_Edit"
 msgstr "_Edita"
 
 #
 # File: src/ui.py, line: 63
-#: mcomix/ui.py:508 mcomix/ui.py:509
+#: mcomix/ui.py:509 mcomix/ui.py:510
 msgid "Open _with"
 msgstr "Obr_e amb"
 
-#: mcomix/ui.py:510
+#: mcomix/ui.py:511
 msgid "_Move to"
 msgstr "Mo_u a"
 
-#: mcomix/ui.py:511
+#: mcomix/ui.py:512
 msgid "Moves the file, or the archive the page is in, to another folder."
 msgstr "Mou el fitxer, o l'arxiu on és la pàgina, a una altra carpeta."
 
 #
 # File: src/ui.py, line: 67
-#: mcomix/ui.py:512
+#: mcomix/ui.py:513
 msgid "_File"
 msgstr "_Fitxer"
 
 #
 # File: src/ui.py, line: 68
-#: mcomix/ui.py:513 mcomix/ui.py:514
+#: mcomix/ui.py:514 mcomix/ui.py:515
 msgid "_View"
 msgstr "_Visualitza"
 
 #
 # File: src/ui.py, line: 79
-#: mcomix/ui.py:517
+#: mcomix/ui.py:518
 msgid "_Tools"
 msgstr "E_ines"
 
-#: mcomix/ui.py:518
+#: mcomix/ui.py:519
 msgid "_Transform image"
 msgstr "_Transforma la imatge"
 
-#: mcomix/ui.py:519
+#: mcomix/ui.py:520
 msgid "_Auto-rotate image"
 msgstr "Gira _automàticament la imatge"
 
-#: mcomix/ui.py:520
+#: mcomix/ui.py:521
 msgid "...when width exceeds height"
 msgstr "...quan l'amplada superi l'alçada"
 
-#: mcomix/ui.py:521
+#: mcomix/ui.py:522
 msgid "...when height exceeds width"
 msgstr "...quan l'alçada superi l'amplada"
 
 #
 # File: src/ui.py, line: 75
-#: mcomix/ui.py:525
+#: mcomix/ui.py:526
 msgid "_Fullscreen"
 msgstr "_Pantalla completa"
 
-#: mcomix/ui.py:525
+#: mcomix/ui.py:526
 msgid "Fullscreen mode"
 msgstr "Mode de pantalla completa"
 
 #
 # File: src/ui.py, line: 77
-#: mcomix/ui.py:526
+#: mcomix/ui.py:527
 msgid "_Double page mode"
 msgstr "_Doble pàgina"
 
-#: mcomix/ui.py:527
+#: mcomix/ui.py:528
 msgid "_Title page alone"
 msgstr "Pàgina de _títol sola"
 
-#: mcomix/ui.py:528
+#: mcomix/ui.py:529
 msgid "Skip this page"
 msgstr "Omet aquesta pàgina"
 
-#: mcomix/ui.py:529
+#: mcomix/ui.py:530
 msgid ""
 "Passes this page over when the pages are turned. The book is not changed."
 msgstr ""
 "Passa per alt aquesta pàgina en girar les pàgines. El llibre no es modifica."
 
-#: mcomix/ui.py:531
+#: mcomix/ui.py:532
 msgid "Show this page alone"
 msgstr "Mostra aquesta pàgina sola"
 
-#: mcomix/ui.py:532
+#: mcomix/ui.py:533
 msgid ""
 "Shows this page on its own in double page mode. The pages after it pair up "
 "anew."
@@ -3414,152 +3414,163 @@ msgstr ""
 "Mostra aquesta pàgina sola en el mode de doble pàgina. Les pàgines següents "
 "es tornen a aparellar."
 
+#: mcomix/ui.py:535
+msgid "Cover in the library"
+msgstr "Coberta a la biblioteca"
+
+#: mcomix/ui.py:536
+msgid ""
+"Shows this page as the book's cover in the library. The book is not changed."
+msgstr ""
+"Mostra aquesta pàgina com a coberta del llibre a la biblioteca. El llibre no "
+"es modifica."
+
 #
 # File: src/ui.py, line: 79
-#: mcomix/ui.py:534
+#: mcomix/ui.py:538
 msgid "_Toolbar"
 msgstr "_Barra d'eines"
 
 #
 # File: src/ui.py, line: 81
-#: mcomix/ui.py:535
+#: mcomix/ui.py:539
 msgid "_Menubar"
 msgstr "Barra de m_enú"
 
 #
 # File: src/ui.py, line: 83
-#: mcomix/ui.py:536
+#: mcomix/ui.py:540
 msgid "St_atusbar"
 msgstr "B_arra d'estat"
 
 #
 # File: src/ui.py, line: 85
-#: mcomix/ui.py:537
+#: mcomix/ui.py:541
 msgid "S_crollbars"
 msgstr "Barres de _desplaçament"
 
 #
 # File: src/ui.py, line: 87
-#: mcomix/ui.py:538
+#: mcomix/ui.py:542
 msgid "Th_umbnails"
 msgstr "Miniat_ures"
 
 #
 # File: src/ui.py, line: 89
-#: mcomix/ui.py:539
+#: mcomix/ui.py:543
 msgid "H_ide all"
 msgstr "Amaga-ho _tot"
 
 #
 # File: src/ui.py, line: 91
-#: mcomix/ui.py:540
+#: mcomix/ui.py:544
 msgid "_Manga mode"
 msgstr "_Mode manga"
 
-#: mcomix/ui.py:541
+#: mcomix/ui.py:545
 msgid "Invert smart scrolling direction."
 msgstr "Inverteix la direcció del desplaçament intel·ligent."
 
 #
 # File: src/ui.py, line: 93
-#: mcomix/ui.py:542
+#: mcomix/ui.py:546
 msgid "_Keep transformation"
 msgstr "_Manté la transformació"
 
-#: mcomix/ui.py:542
+#: mcomix/ui.py:546
 msgid "Keeps the currently selected transformation for the next pages."
 msgstr "Conserva la transformació triada per a les pàgines següents."
 
 #
 # File: src/ui.py, line: 95
-#: mcomix/ui.py:544
+#: mcomix/ui.py:548
 msgid "Start slid_eshow"
 msgstr "_Inicia la projecció"
 
 #
 # File: src/ui.py, line: 97
-#: mcomix/ui.py:545
+#: mcomix/ui.py:549
 msgid "Magnifying _lens"
 msgstr "L_upa"
 
-#: mcomix/ui.py:546
+#: mcomix/ui.py:550
 msgid "Stretch images to fit to the screen, depending on zoom mode."
 msgstr ""
 "Amplia les imatges fins a la mida de la pantalla, segons el mode d'ampliació."
 
 #
 # File: src/ui.py, line: 101
-#: mcomix/ui.py:553
+#: mcomix/ui.py:557
 msgid "_Best fit mode"
 msgstr "Millor ajus_t"
 
 #
 # File: src/ui.py, line: 103
-#: mcomix/ui.py:554
+#: mcomix/ui.py:558
 msgid "Fit _width mode"
 msgstr "A_justa a l'amplada"
 
 #
 # File: src/ui.py, line: 105
-#: mcomix/ui.py:555
+#: mcomix/ui.py:559
 msgid "Fit _height mode"
 msgstr "Ajusta a l'al_çada"
 
 #
 # File: src/ui.py, line: 103
-#: mcomix/ui.py:556
+#: mcomix/ui.py:560
 msgid "Fit _size mode"
 msgstr "M_ode d'ajust a la mida"
 
 #
 # File: src/ui.py, line: 107
-#: mcomix/ui.py:557
+#: mcomix/ui.py:561
 msgid "M_anual zoom mode"
 msgstr "Zoom m_anual"
 
 #
 # File: src/ui.py, line: 113
-#: mcomix/ui.py:570
+#: mcomix/ui.py:574
 msgid "A_bout"
 msgstr "_Quant a"
 
-#: mcomix/ui.py:573
+#: mcomix/ui.py:577
 msgid "Co_mments..."
 msgstr "Co_mentaris..."
 
-#: mcomix/ui.py:576
+#: mcomix/ui.py:580
 msgid "Proper_ties"
 msgstr "_Propietats"
 
 #
 # File: src/ui.py, line: 128
-#: mcomix/ui.py:579
+#: mcomix/ui.py:583
 msgid "_Preferences"
 msgstr "Pre_ferències"
 
 #
 # File: src/ui.py, line: 117
-#: mcomix/ui.py:583
+#: mcomix/ui.py:587
 msgid "_Edit archive..."
 msgstr "Ed_ita l'arxiu..."
 
-#: mcomix/ui.py:583
+#: mcomix/ui.py:587
 msgid "Opens the archive editor."
 msgstr "Obre l'editor de l'arxiu."
 
 #
 # File: src/ui.py, line: 119
-#: mcomix/ui.py:585
+#: mcomix/ui.py:589
 msgid "_Open..."
 msgstr "_Obre..."
 
-#: mcomix/ui.py:586
+#: mcomix/ui.py:590
 msgid "Enha_nce image..."
 msgstr "Mi_llora la imatge..."
 
 #
 # File: src/ui.py, line: 132
-#: mcomix/ui.py:589
+#: mcomix/ui.py:593
 msgid "_Library..."
 msgstr "_Biblioteca..."
 
@@ -3617,43 +3628,43 @@ msgstr "Llibres afegits:"
 msgid "Adding '%s'..."
 msgstr "Afegint '%s'..."
 
-#: mcomix/library/backend.py:272
+#: mcomix/library/backend.py:273
 #, python-format
 msgid "! Non-existent book #%i"
 msgstr "! El llibre #%i no existeix"
 
-#: mcomix/library/backend.py:310
+#: mcomix/library/backend.py:312
 #, python-format
 msgid "! Could not get cover for book \"%s\""
 msgstr "! No s'ha pogut obtenir la coberta del llibre «%s»"
 
-#: mcomix/library/backend.py:358 mcomix/library/backend.py:375
-#: mcomix/library/backend.py:388 mcomix/library/backend.py:416
+#: mcomix/library/backend.py:398 mcomix/library/backend.py:415
+#: mcomix/library/backend.py:428 mcomix/library/backend.py:456
 msgid "Recent"
 msgstr "Utilitzats recentment"
 
-#: mcomix/library/backend.py:495 mcomix/library/backend.py:542
+#: mcomix/library/backend.py:535 mcomix/library/backend.py:582
 #, python-format
 msgid "! Could not add book \"%s\" to the library"
 msgstr "! No s'ha pogut afegir el llibre «%s» a la biblioteca"
 
-#: mcomix/library/backend.py:571 mcomix/library/backend.py:639
+#: mcomix/library/backend.py:611 mcomix/library/backend.py:679
 #, python-format
 msgid "! Could not move book \"%s\" in the library"
 msgstr "! No s'ha pogut moure el llibre «%s» a la biblioteca"
 
-#: mcomix/library/backend.py:689
+#: mcomix/library/backend.py:729
 #, python-format
 msgid "! Could not add collection \"%s\""
 msgstr "! No s'ha pogut afegir la col·lecció «%s»"
 
-#: mcomix/library/backend.py:721
+#: mcomix/library/backend.py:761
 #, python-format
 msgid "! Could not add book %(book)s to collection %(collection)s"
 msgstr ""
 "! No s'ha pogut afegir el llibre %(book)s a la col·lecció %(collection)s"
 
-#: mcomix/library/backend.py:748
+#: mcomix/library/backend.py:788
 #, python-format
 msgid "! Could not rename collection to \"%s\""
 msgstr "! No s'ha pogut canviar el nom de la col·lecció a «%s»"
@@ -3661,16 +3672,16 @@ msgstr "! No s'ha pogut canviar el nom de la col·lecció a «%s»"
 #
 # File: src/librarybackend.py, line: 272
 # File: src/librarybackend.py, line: 274
-#: mcomix/library/backend.py:765 mcomix/library/backend.py:767
+#: mcomix/library/backend.py:805 mcomix/library/backend.py:807
 msgid "(Copy)"
 msgstr "(Copia)"
 
-#: mcomix/library/backend.py:1022
+#: mcomix/library/backend.py:1062
 msgid "Could not determine library database version!"
 msgstr ""
 "No s'ha pogut determinar la versió de la base de dades de la biblioteca!"
 
-#: mcomix/library/backend.py:1072
+#: mcomix/library/backend.py:1112
 #, python-format
 msgid "Upgrading library database version from %(from)d to %(to)d."
 msgstr ""
@@ -3688,141 +3699,141 @@ msgstr "Tots els llibres"
 msgid "! Could not scan for new books: %s"
 msgstr "! No s'han pogut cercar llibres nous: %s"
 
-#: mcomix/library/book_area.py:173
+#: mcomix/library/book_area.py:174
 msgid "Opens the selected books for viewing."
 msgstr "Obre els llibres triats per a visualitzar-los."
 
-#: mcomix/library/book_area.py:175
+#: mcomix/library/book_area.py:176
 msgid "Open _without closing library"
 msgstr "Obre _sense tancar la biblioteca"
 
-#: mcomix/library/book_area.py:176
+#: mcomix/library/book_area.py:177
 msgid "Opens the selected books, but keeps the library window open."
 msgstr ""
 "Obre els llibres triats, però manté oberta la finestra de la biblioteca."
 
-#: mcomix/library/book_area.py:178
+#: mcomix/library/book_area.py:179
 msgid "_Mark as read"
 msgstr "_Marca com a llegit"
 
-#: mcomix/library/book_area.py:179
+#: mcomix/library/book_area.py:180
 msgid "Marks the selected books as read to the end."
 msgstr "Marca els llibres seleccionats com a llegits fins al final."
 
-#: mcomix/library/book_area.py:181
+#: mcomix/library/book_area.py:182
 msgid "Mark as u_nread"
 msgstr "Marca com a _no llegit"
 
-#: mcomix/library/book_area.py:182
+#: mcomix/library/book_area.py:183
 msgid "Forgets the page the selected books were left at."
 msgstr "Oblida la pàgina on s'havien deixat els llibres seleccionats."
 
-#: mcomix/library/book_area.py:184 mcomix/library/collection_area.py:137
+#: mcomix/library/book_area.py:185 mcomix/library/collection_area.py:137
 msgid "_Add..."
 msgstr "_Afegeix..."
 
 #
 # File: src/library.py, line: 793
-#: mcomix/library/book_area.py:185 mcomix/library/collection_area.py:138
+#: mcomix/library/book_area.py:186 mcomix/library/collection_area.py:138
 msgid "Add more books to the library."
 msgstr "Afegeix més llibres a la biblioteca."
 
-#: mcomix/library/book_area.py:188
+#: mcomix/library/book_area.py:189
 msgid "Remove _from this collection"
 msgstr "Treu d'aquesta _col·lecció"
 
-#: mcomix/library/book_area.py:189
+#: mcomix/library/book_area.py:190
 msgid "Removes the selected books from the current collection."
 msgstr "Treu els llibres triats de la col·lecció actual."
 
-#: mcomix/library/book_area.py:191
+#: mcomix/library/book_area.py:192
 msgid "Remove from the _library"
 msgstr "Treu de la _biblioteca"
 
-#: mcomix/library/book_area.py:192
+#: mcomix/library/book_area.py:193
 msgid "Completely removes the selected books from the library."
 msgstr "Treu del tot els llibres triats de la biblioteca."
 
-#: mcomix/library/book_area.py:194
+#: mcomix/library/book_area.py:195
 msgid "_Remove and move to the trash"
 msgstr "_Treu i mou a la paperera"
 
-#: mcomix/library/book_area.py:195
+#: mcomix/library/book_area.py:196
 msgid "Deletes the selected books from disk."
 msgstr "Suprimeix del disc els llibres triats."
 
-#: mcomix/library/book_area.py:197 mcomix/library/collection_area.py:148
+#: mcomix/library/book_area.py:198 mcomix/library/collection_area.py:148
 msgid "Clean _up"
 msgstr "N_eteja"
 
-#: mcomix/library/book_area.py:198 mcomix/library/collection_area.py:149
+#: mcomix/library/book_area.py:199 mcomix/library/collection_area.py:149
 msgid "Removes no longer existent books from the collection."
 msgstr "Treu de la col·lecció els llibres que ja no existeixen."
 
 #
 # File: src/library.py, line: 806
-#: mcomix/library/book_area.py:201
+#: mcomix/library/book_area.py:202
 msgid "Copies the selected book's path to clipboard."
 msgstr "Copia el camí del llibre triat al porta-retalls."
 
-#: mcomix/library/book_area.py:240
+#: mcomix/library/book_area.py:241
 msgid "Library books"
 msgstr "Llibres de la biblioteca"
 
-#: mcomix/library/book_area.py:253
+#: mcomix/library/book_area.py:254
 msgid "Book name"
 msgstr "Nom del llibre"
 
-#: mcomix/library/book_area.py:254
+#: mcomix/library/book_area.py:255
 msgid "Full path"
 msgstr "Camí complet"
 
-#: mcomix/library/book_area.py:256
+#: mcomix/library/book_area.py:257
 msgid "Date added"
 msgstr "Data d'afegiment"
 
-#: mcomix/library/book_area.py:265
+#: mcomix/library/book_area.py:266
 msgid "Huge"
 msgstr "Enorme"
 
-#: mcomix/library/book_area.py:266
+#: mcomix/library/book_area.py:267
 msgid "Large"
 msgstr "Gran"
 
-#: mcomix/library/book_area.py:268
+#: mcomix/library/book_area.py:269
 msgid "Small"
 msgstr "Petita"
 
-#: mcomix/library/book_area.py:269
+#: mcomix/library/book_area.py:270
 msgid "Tiny"
 msgstr "Diminuta"
 
-#: mcomix/library/book_area.py:273
+#: mcomix/library/book_area.py:274
 msgid "Custom..."
 msgstr "Personalitzada..."
 
-#: mcomix/library/book_area.py:277
+#: mcomix/library/book_area.py:278
 msgid "_Sort"
 msgstr "Or_dena"
 
-#: mcomix/library/book_area.py:278
+#: mcomix/library/book_area.py:279
 msgid "Cover si_ze"
 msgstr "Mida de les cobe_rtes"
 
-#: mcomix/library/book_area.py:545
+#: mcomix/library/book_area.py:555
 msgid "Set library cover size"
 msgstr "Estableix la mida de les cobertes a la biblioteca"
 
 #
 # File: src/library.py, line: 588
-#: mcomix/library/book_area.py:719
+#: mcomix/library/book_area.py:729
 #, python-format
 msgid "Removed %(num)d book from '%(collection)s'."
 msgid_plural "Removed %(num)d books from '%(collection)s'."
 msgstr[0] "S'ha tret %(num)d llibre de «%(collection)s»."
 msgstr[1] "S'han tret %(num)d llibres de «%(collection)s»."
 
-#: mcomix/library/book_area.py:742 mcomix/library/collection_area.py:305
+#: mcomix/library/book_area.py:752 mcomix/library/collection_area.py:305
 #, python-format
 msgid "Removed %d book from the library."
 msgid_plural "Removed %d books from the library."
@@ -3831,11 +3842,11 @@ msgstr[1] "S'han tret %d llibres de la biblioteca."
 
 #
 # File: src/library.py, line: 597
-#: mcomix/library/book_area.py:764 mcomix/library/book_area.py:785
+#: mcomix/library/book_area.py:774 mcomix/library/book_area.py:795
 msgid "Remove books from the library?"
 msgstr "Voleu esborrar els llibres de la biblioteca?"
 
-#: mcomix/library/book_area.py:765
+#: mcomix/library/book_area.py:775
 msgid ""
 "The selected books will be removed from the library. Any in a folder with no "
 "trash is deleted permanently and cannot be restored."
@@ -3843,13 +3854,13 @@ msgstr ""
 "Els llibres triats es trauran de la biblioteca. Els que siguin en una "
 "carpeta sense paperera se suprimiran definitivament i no es podran recuperar."
 
-#: mcomix/library/book_area.py:786
+#: mcomix/library/book_area.py:796
 msgid ""
 "The selected books will be removed from the library and moved to the trash."
 msgstr ""
 "Els llibres triats es trauran de la biblioteca i es mouran a la paperera."
 
-#: mcomix/library/book_area.py:896
+#: mcomix/library/book_area.py:906
 #, python-format
 msgid "Remove the bookmarks in the deleted book?"
 msgid_plural "Remove the bookmarks in the %(count)d deleted books?"
@@ -3916,44 +3927,44 @@ msgstr "No s'ha pogut afegir una nova col·lecció amb el nom '%s'."
 #
 # File: src/library.py, line: 275
 # File: src/library.py, line: 881
-#: mcomix/library/collection_area.py:293 mcomix/library/collection_area.py:387
+#: mcomix/library/collection_area.py:293 mcomix/library/collection_area.py:391
 msgid "A collection by that name already exists."
 msgstr "Ja existeix una col·lecció amb aquest nom."
 
 #
 # File: src/library.py, line: 251
-#: mcomix/library/collection_area.py:355
+#: mcomix/library/collection_area.py:359
 msgid "Rename collection?"
 msgstr "Voleu reanomenar la col·lecció?"
 
 #
 # File: src/library.py, line: 253
-#: mcomix/library/collection_area.py:356
+#: mcomix/library/collection_area.py:360
 msgid "Please enter a new name for the selected collection."
 msgstr "Introduïu un nom nou per a la col·lecció seleccionada."
 
 #
 # File: src/library.py, line: 271
-#: mcomix/library/collection_area.py:383
+#: mcomix/library/collection_area.py:387
 #, python-format
 msgid "Could not change the name to '%s'."
 msgstr "No s'ha pogut canviar el nom a '%s'."
 
 #
 # File: src/library.py, line: 285
-#: mcomix/library/collection_area.py:399
+#: mcomix/library/collection_area.py:403
 msgid "Could not duplicate collection."
 msgstr "No s'ha pogut duplicar la col·lecció."
 
 #
 # File: src/library.py, line: 382
-#: mcomix/library/collection_area.py:593
+#: mcomix/library/collection_area.py:597
 msgid "Root"
 msgstr "Arrel"
 
 #
 # File: src/library.py, line: 386
-#: mcomix/library/collection_area.py:596
+#: mcomix/library/collection_area.py:600
 #, python-format
 msgid ""
 "Put the collection '%(subcollection)s' in the collection "
@@ -3964,12 +3975,12 @@ msgstr ""
 
 #
 # File: src/library.py, line: 407
-#: mcomix/library/collection_area.py:612
+#: mcomix/library/collection_area.py:616
 #, python-format
 msgid "Add books to '%s'."
 msgstr "Afegeix llibres a '%s'."
 
-#: mcomix/library/collection_area.py:615
+#: mcomix/library/collection_area.py:619
 #, python-format
 msgid ""
 "Copy books from '%(source collection)s' to '%(destination collection)s'."
@@ -3978,7 +3989,7 @@ msgstr ""
 
 #
 # File: src/library.py, line: 411
-#: mcomix/library/collection_area.py:622
+#: mcomix/library/collection_area.py:626
 #, python-format
 msgid ""
 "Move books from '%(source collection)s' to '%(destination collection)s'."
@@ -4075,23 +4086,23 @@ msgstr "No s'ha trobat cap llibre nou al directori «%s»."
 msgid "Books relocated: %d"
 msgstr "Llibres reubicats: %d"
 
-#: mcomix/library/relocate_dialog.py:60
+#: mcomix/library/relocate_dialog.py:61
 msgid "Relocate books?"
 msgstr "Voleu reubicar els llibres?"
 
-#: mcomix/library/relocate_dialog.py:66
+#: mcomix/library/relocate_dialog.py:67
 msgid "The books were in:"
 msgstr "Els llibres eren a:"
 
-#: mcomix/library/relocate_dialog.py:67
+#: mcomix/library/relocate_dialog.py:68
 msgid "They are now in:"
 msgstr "Ara són a:"
 
-#: mcomix/library/relocate_dialog.py:69 mcomix/library/relocate_dialog.py:118
+#: mcomix/library/relocate_dialog.py:70 mcomix/library/relocate_dialog.py:119
 msgid "Select a Folder"
 msgstr "Selecciona una carpeta"
 
-#: mcomix/library/relocate_dialog.py:83
+#: mcomix/library/relocate_dialog.py:84
 msgid ""
 "Tells the library where a folder of books has been moved to. The books keep "
 "their collections, their bookmarks and the pages they were read to."

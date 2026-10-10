@@ -531,6 +531,29 @@ class ReloadCoversTest(_OneBookTest):
         shown.assert_called_once_with(constants.COLLECTION_ALL)
 
 
+class ChosenCoverShownTest(_OneBookTest):
+
+    """A cover chosen while the library is open is drawn again there."""
+
+    def test_the_cover_on_show_is_drawn_again(self):
+        self.dialog.book_area.stop_update()
+        covers = self.dialog.book_area._covers
+        with unittest.mock.patch.object(covers, 'redraw_item') as redrawn:
+            self.assertTrue(self.dialog.backend.set_chosen_cover(
+                self.path, 'images/02.jpg'))
+        item, = redrawn.call_args.args
+        self.assertEqual(self.path, item.path)
+
+    def test_a_closed_library_draws_nothing(self):
+        area = self.dialog.book_area
+        self.dialog.close()
+        pump()
+        with unittest.mock.patch.object(area, '_each_item') as looked:
+            main_dialog.library_backend.LibraryBackend().set_chosen_cover(
+                self.path, None)
+        looked.assert_not_called()
+
+
 class MissingBooksTest(_LibraryWindowTest):
 
     """Books whose files have gone can be taken out of the library from

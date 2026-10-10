@@ -3153,6 +3153,58 @@ class MainWindowTest(MComixTest):
         self.window.flip_page(-1)
         self._turned_to(2)
 
+    def test_a_page_is_made_its_book_s_cover_in_the_library(self):
+        """The cover was the picture the file names pointed to and no
+        other; a book whose first picture is a banner could only be
+        given another by rewriting the archive (upstream feature
+        request 65)."""
+        self._ready()
+        self._turned_to(1)
+        cover = self.window.actiongroup.get_action('library_cover_popup')
+        library = backend.LibraryBackend()
+        path, member = self.window.filehandler.page_identity(2)
+
+        def menu_on(page):
+            self.window.show_page_menu(self.window.page_area, 1, 1, page)
+            self.window.uimanager.popup.popdown()
+
+        # Left out for a book the library does not hold.
+        menu_on(2)
+        self.assertFalse(cover.get_sensitive())
+
+        self.assertTrue(library.add_book(path))
+        menu_on(2)
+        self.assertTrue(cover.get_sensitive())
+        self.assertFalse(cover.get_active())
+        cover.set_active(True)
+        self.assertEqual(member, library.get_chosen_cover(path))
+        # The book itself is as it was.
+        self.assertFalse(self.window.file_actions.has_unsaved_changes())
+
+        # The menu shows the tick on that page and on no other.
+        menu_on(3)
+        self.assertFalse(cover.get_active())
+        self.assertEqual(member, library.get_chosen_cover(path))
+        menu_on(2)
+        self.assertTrue(cover.get_active())
+
+        # Another page takes its place, and unticking that one goes
+        # back to the cover the library guessed.
+        menu_on(3)
+        cover.set_active(True)
+        self.assertEqual(self.window.filehandler.page_identity(3)[1],
+                         library.get_chosen_cover(path))
+        menu_on(3)
+        cover.set_active(False)
+        self.assertIsNone(library.get_chosen_cover(path))
+
+        # A picture in a folder is no book of the library's.
+        with unittest.mock.patch.object(
+                self.window.filehandler, 'page_identity',
+                return_value=(path, '')):
+            menu_on(2)
+            self.assertFalse(cover.get_sensitive())
+
     def test_the_page_on_screen_marked_to_be_skipped_is_left_at_once(self):
         pages = len(self._ready())
         self.window.set_page(2)
@@ -4625,9 +4677,9 @@ class MainWindowTest(MComixTest):
             ['win.leave-fullscreen', 'win.copy-page-popup',
              'win.extract-page-popup', 'win.rename-page-popup',
              'win.delete-page-popup', 'win.skip-page-popup',
-             'win.page-alone-popup', 'win.remove-bookmark-popup',
-             'win.unpick-pages', None],
-            actions[:10])
+             'win.page-alone-popup', 'win.library-cover-popup',
+             'win.remove-bookmark-popup', 'win.unpick-pages', None],
+            actions[:11])
 
     def test_the_right_click_menu_leaves_out_what_cannot_be_done(self):
         """A greyed item says the menu could do it somewhere else; this

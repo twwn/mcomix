@@ -89,6 +89,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
 
         self._library.backend.book_added += self._new_book_in_library
         self._library.backend.book_added_to_collection += self._new_book_added
+        self._library.backend.book_cover_changed += self._cover_changed
 
         self.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
 
@@ -299,6 +300,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         # from then on.
         self._library.backend.book_added -= self._new_book_in_library
         self._library.backend.book_added_to_collection -= self._new_book_added
+        self._library.backend.book_cover_changed -= self._cover_changed
 
         # Unselect first, or closing with several books selected sends a
         # selection-changed for each one that goes.
@@ -333,6 +335,14 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         """ Adds a cover to the grid for each of <books>. """
         for book in books:
             self._covers.append_item(_BookItem(book))
+
+    def _cover_changed(self, path: str) -> None:
+        """Bound to the backend's book_cover_changed: draws the cover of
+        the book at <path> again where it is on show, the reader having
+        chosen another page for it."""
+        for item in self._each_item():
+            if item.path == path:
+                self._covers.redraw_item(item)
 
     def _new_book_in_library(self, book: 'backend_types._Book') -> None:
         """Bound to the backend's book_added: draws the cover of <book>,

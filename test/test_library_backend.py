@@ -2,6 +2,7 @@
 
 import datetime
 import inspect
+import io
 import os
 import re
 import shutil
@@ -9,8 +10,11 @@ import tempfile
 import threading
 import unittest
 import unittest.mock
+import zipfile
 
 from sqlite3 import dbapi2
+
+import PIL.Image
 
 from . import get_testfile_path, posix_byte_names
 
@@ -21,6 +25,7 @@ from mcomix.i18n import _
 from mcomix import last_read_page
 from mcomix.library import backend
 from mcomix.library import backend_types
+from mcomix.library import pixbuf_cache
 from mcomix.archive import password as archive_password
 
 
@@ -128,12 +133,14 @@ class LibraryDatabaseTest(unittest.TestCase):
                     column=column, recursive=recursive))
         # Version 5 added the recent table and the collection that goes
         # with it; version 7 stopped translating that collection's name.
+        # Version 10 added the name of the page a book was left on.
         if version >= 5:
             connection.execute(
                 'create table recent ('
                 ' book integer primary key,'
                 ' page integer,'
-                ' time_set datetime)')
+                ' time_set datetime%s)'
+                % (', member text' if version >= 10 else ''))
             connection.execute(
                 'insert into collection (id, name) values (?, ?)',
                 (constants.COLLECTION_RECENT,
@@ -455,6 +462,25 @@ class UpgradeFromEveryVersionTest(LibraryDatabaseTest):
             "select value from info where key = 'version'").fetchone()
         self.assertEqual(int(held), backend._LibraryBackend.DB_VERSION)
         self._done(library)
+
+    def test_every_version_can_keep_a_chosen_cover(self):
+        """Version 11 added the column that holds the picture the reader
+        chose as a book's cover; an older MComix that opened the file
+        since has left it there and written its own version back."""
+        for version in self._versions():
+            with self.subTest(version=version):
+                library = self._upgraded(version)
+                columns = [row[1] for row in library._con.execute(
+                    'pragma table_info(book)').fetchall()]
+                self.assertEqual(1, columns.count('cover'))
+                self.assertTrue(library.set_chosen_cover(_A_BOOK, 'p02.jpg'))
+                library._con.execute(
+                    "update info set value = '10' where key = 'version'")
+                self._done(library)
+                backend._backend = None
+                library = backend.LibraryBackend()
+                self.assertEqual('p02.jpg', library.get_chosen_cover(_A_BOOK))
+                self._done(library)
 
     def test_a_watched_directory_survives_every_version_that_had_one(self):
         for version in self._versions(2):
@@ -1312,6 +1338,96 @@ class MovedBookTest(LibraryDatabaseTest):
         self.assertIsNotNone(self.backend.get_book_by_path(self.path))
         self.assertNotEqual(self.backend.get_book_by_path(other).id,
                             self.book.id)
+
+
+class ChosenCoverTest(LibraryDatabaseTest):
+
+    """The cover of a book was the picture its file names pointed to and
+    no other: a book whose first picture is not its cover could only be
+    given another by rewriting the archive (upstream feature request
+    65)."""
+
+    COLOURS = {'a.png': (200, 0, 0), 'b.png': (0, 0, 200)}
+
+    def setUp(self):
+        super().setUp()
+        self.backend = backend.LibraryBackend()
+        self.path = os.path.join(self.tmp_dir, 'book.zip')
+        with zipfile.ZipFile(self.path, 'w') as book:
+            for name, colour in self.COLOURS.items():
+                page = io.BytesIO()
+                PIL.Image.new('RGB', (60, 80), colour).save(page, 'PNG')
+                book.writestr(name, page.getvalue())
+        self.assertTrue(self.backend.add_book(self.path))
+
+    def tearDown(self):
+        self.backend.close()
+        super().tearDown()
+
+    def _cover(self):
+        """The name of the page whose colour the book's cover has."""
+        cover = self.backend.get_book_thumbnail(self.path)
+        pixel = tuple(cover.get_pixels()[:3])
+        return next(name for name, colour in self.COLOURS.items()
+                    if colour == pixel)
+
+    def test_the_cover_is_the_picture_chosen(self):
+        self.assertEqual('a.png', self._cover())
+        self.assertIsNone(self.backend.get_chosen_cover(self.path))
+
+        self.assertTrue(self.backend.set_chosen_cover(self.path, 'b.png'))
+
+        self.assertEqual('b.png', self.backend.get_chosen_cover(self.path))
+        self.assertEqual('b.png', self._cover())
+        self.assertEqual(1, len(os.listdir(constants.LIBRARY_COVERS_PATH)))
+
+    def test_choosing_none_goes_back_to_the_one_guessed(self):
+        self.backend.set_chosen_cover(self.path, 'b.png')
+        self.assertEqual('b.png', self._cover())
+        self.assertTrue(self.backend.set_chosen_cover(self.path, None))
+        self.assertEqual('a.png', self._cover())
+
+    def test_a_picture_the_book_no_longer_holds_is_not_its_cover(self):
+        self.backend.set_chosen_cover(self.path, 'gone.png')
+        self.assertEqual('a.png', self._cover())
+
+    def test_the_cover_the_library_last_drew_is_dropped(self):
+        cache = pixbuf_cache.get_pixbuf_cache()
+        cache.add(self.path, self.backend.get_book_thumbnail(self.path))
+        self.addCleanup(cache.invalidate, self.path)
+        self.backend.set_chosen_cover(self.path, 'b.png')
+        self.assertIsNone(cache.get(self.path))
+
+    def test_whatever_shows_the_cover_is_told(self):
+        told = []
+
+        def listener(path):
+            told.append(path)
+
+        self.backend.book_cover_changed += listener
+        self.backend.set_chosen_cover(self.path, 'b.png')
+        self.backend.book_cover_changed -= listener
+        self.assertEqual([self.path], told)
+
+    def test_a_book_the_library_does_not_hold_has_no_cover_to_choose(self):
+        other = os.path.join(self.tmp_dir, 'other.zip')
+        self.assertFalse(self.backend.set_chosen_cover(other, 'b.png'))
+        self.assertIsNone(self.backend.get_chosen_cover(other))
+
+    def test_the_cover_follows_a_book_that_is_moved(self):
+        moved = os.path.join(self.tmp_dir, 'moved.zip')
+        self.backend.set_chosen_cover(self.path, 'b.png')
+        shutil.move(self.path, moved)
+        self.backend.update_book_path(self.path, moved)
+        self.assertEqual('b.png', self.backend.get_chosen_cover(moved))
+
+    def test_the_cover_is_found_by_the_index_on_the_path(self):
+        for statement in ('select cover from Book where path = ?',
+                          'update Book set cover = ? where path = ?'):
+            plan = self._plan(self.backend._con, statement,
+                              (self.path,) * statement.count('?'))
+            self.assertIn('SEARCH', plan)
+            self.assertNotIn('SCAN', plan)
 
 
 class RelocatedShelfTest(LibraryDatabaseTest):
