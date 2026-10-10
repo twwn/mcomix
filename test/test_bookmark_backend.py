@@ -8,6 +8,7 @@ write therefore re-reads the file and merges what it finds.
 import datetime
 import os
 import pickle
+from unittest import mock
 
 from . import MComixTest
 
@@ -277,6 +278,32 @@ class NoteRecordTest(MComixTest):
             [('/shelf/b.cbz', 'the fight starts')],
             [(bookmark._path, bookmark.get_note())
              for bookmark in self.store._bookmarks])
+
+    def test_bookmarks_follow_a_folder_of_books_that_is_moved(self):
+        """A bookmark of a book moved from outside could not be put
+        right (upstream feature request 102)."""
+        old = os.path.abspath(os.path.join(os.sep, 'books'))
+        new = os.path.abspath(os.path.join(os.sep, 'shelf'))
+        elsewhere = os.path.abspath(os.path.join(os.sep, 'books-old', 'c.cbz'))
+        self.store._bookmarks = [
+            self._noted(2, 'kept', os.path.join(old, 'a.cbz')),
+            self._noted(3, '', os.path.join(old, 'sub', 'b.cbz')),
+            self._noted(4, '', elsewhere)]
+        with mock.patch.object(
+                self.store, 'write_bookmarks_file',
+                wraps=self.store.write_bookmarks_file) as written:
+            self.assertEqual(2, self.store.relocate(old, new))
+        self.assertEqual(1, written.call_count)
+        bookmarks, _mtime = self.store.load_bookmarks()
+        self.assertEqual(
+            [(os.path.join(new, 'a.cbz'), 2, 'kept', 'p02.jpg'),
+             (os.path.join(new, 'sub', 'b.cbz'), 3, '', 'p03.jpg'),
+             (elsewhere, 4, '', 'p04.jpg')],
+            [(bookmark._path, bookmark._page, bookmark.get_note(),
+              bookmark.get_member()) for bookmark in bookmarks])
+        with mock.patch.object(self.store, 'write_bookmarks_file') as written:
+            self.assertEqual(0, self.store.relocate(old, new))
+        written.assert_not_called()
 
     def test_the_menu_shows_the_note_after_the_page(self):
         self.assertEqual('book, (2 / 20): the fight starts',

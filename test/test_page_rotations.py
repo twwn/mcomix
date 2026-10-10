@@ -31,6 +31,20 @@ class PageRotationsTest(MComixTest):
         with open(self._file(), encoding='utf-8') as fd:
             self.assertEqual(['/shelf/a.cbz'], list(json.load(fd)))
 
+    def test_it_follows_a_folder_of_books_that_is_moved(self):
+        old = os.path.abspath(os.path.join(os.sep, 'books'))
+        new = os.path.abspath(os.path.join(os.sep, 'shelf'))
+        inside = os.path.join(old, 'sub', 'a.cbz')
+        outside = os.path.abspath(os.path.join(os.sep, 'books-old', 'b.cbz'))
+        page_rotations.remember(inside, 'p02.jpg', 90)
+        page_rotations.remember(outside, 'p02.jpg', 90)
+        self.assertEqual(1, page_rotations.relocate(old, new))
+        page_rotations._loaded = None
+        self.assertTrue(page_rotations.rotation(os.path.join(new, 'sub', 'a.cbz'), 'p02.jpg'))
+        self.assertFalse(page_rotations.rotation(inside, 'p02.jpg'))
+        self.assertTrue(page_rotations.rotation(outside, 'p02.jpg'))
+        self.assertEqual(0, page_rotations.relocate(old, new))
+
     def test_it_is_read_back_from_the_file(self):
         page_rotations.remember('/books/a.cbz', 'p02.jpg', 270)
         page_rotations._loaded = None

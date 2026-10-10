@@ -15,6 +15,7 @@ from sqlite3 import dbapi2
 from . import get_testfile_path, posix_byte_names
 
 from mcomix import constants
+from mcomix import tools
 from mcomix.i18n import _
 from mcomix import last_read_page
 from mcomix.library import backend
@@ -1287,6 +1288,132 @@ class MovedBookTest(LibraryDatabaseTest):
         self.assertIsNotNone(self.backend.get_book_by_path(self.path))
         self.assertNotEqual(self.backend.get_book_by_path(other).id,
                             self.book.id)
+
+
+class RelocatedShelfTest(LibraryDatabaseTest):
+
+    """A folder of books moved or renamed outside MComix left every one
+    of them in the library under a path with no file at it (upstream
+    feature requests 56 and 122)."""
+
+    def setUp(self):
+        super().setUp()
+        self.backend = backend.LibraryBackend()
+        self.old = os.path.join(self.tmp_dir, 'shelf')
+        self.new = os.path.join(self.tmp_dir, 'elsewhere', 'comics')
+        self.ids = {}
+        for number, parts in enumerate((
+                ('shelf', 'a.cbz'), ('shelf', 'sub', 'b.cbz'),
+                ('shelf-old', 'c.cbz'), ('100%_x', 'd.cbz'),
+                ('100abcx', 'e.cbz')), start=1):
+            path = os.path.join(self.tmp_dir, *parts)
+            self.backend._con.execute(
+                'insert into book (id, name, path, pages, format, size)'
+                ' values (?, ?, ?, 20, 1, 1)', (number, parts[-1], path))
+            self.ids[parts[-1]] = number
+
+    def tearDown(self):
+        self.backend.close()
+        super().tearDown()
+
+    def _paths(self):
+        return {name: os.path.relpath(path, self.tmp_dir).split(os.sep)
+                for name, path in self.backend._con.execute(
+                    'select name, path from book').fetchall()}
+
+    def test_every_book_under_the_folder_follows_it(self):
+        self.assertEqual(2, self.backend.relocate(self.old, self.new))
+        self.assertEqual(
+            {'a.cbz': ['elsewhere', 'comics', 'a.cbz'],
+             'b.cbz': ['elsewhere', 'comics', 'sub', 'b.cbz'],
+             # A folder whose name only starts the same is another folder.
+             'c.cbz': ['shelf-old', 'c.cbz'],
+             'd.cbz': ['100%_x', 'd.cbz'], 'e.cbz': ['100abcx', 'e.cbz']},
+            self._paths())
+
+    def test_what_hangs_off_a_book_comes_with_it(self):
+        self.backend._con.execute(
+            "insert into collection (id, name) values (7, 'Shelf')")
+        self.backend._con.execute(
+            'insert into contain (collection, book) values (7, 1)')
+        self.backend._con.execute(
+            'insert into recent (book, page, time_set) values'
+            " (1, 12, '2026-01-01 00:00:00')")
+        self.backend.relocate(self.old, self.new)
+        moved = self.backend.get_book_by_path(
+            os.path.join(self.new, 'a.cbz'))
+        self.assertEqual(1, moved.id)
+        self.assertEqual([7], self.backend._con.execute(
+            'select collection from contain where book = 1').fetchall())
+        self.assertEqual([12], self.backend._con.execute(
+            'select page from recent where book = 1').fetchall())
+
+    def test_a_folder_name_is_not_read_as_a_pattern(self):
+        """% and _ are what LIKE matches anything with."""
+        self.assertEqual(1, self.backend.relocate(
+            os.path.join(self.tmp_dir, '100%_x'), self.new))
+        self.assertEqual(['100abcx', 'e.cbz'], self._paths()['e.cbz'])
+        self.assertEqual(['elsewhere', 'comics', 'd.cbz'],
+                         self._paths()['d.cbz'])
+
+    def test_a_book_the_library_holds_there_already_keeps_its_row(self):
+        self.backend._con.execute(
+            'insert into book (id, name, path, pages, format, size)'
+            " values (9, 'a.cbz', ?, 20, 1, 1)",
+            (os.path.join(self.new, 'a.cbz'),))
+        self.assertEqual(1, self.backend.relocate(self.old, self.new))
+        self.assertEqual(
+            [(1, os.path.join(self.old, 'a.cbz')),
+             (9, os.path.join(self.new, 'a.cbz'))],
+            self.backend._con.execute(
+                "select id, path from book where name = 'a.cbz'"
+                ' order by id').fetchall())
+
+    def test_the_watched_folders_follow_too(self):
+        for path in (self.old, os.path.join(self.old, 'sub'),
+                     os.path.join(self.tmp_dir, 'shelf-old')):
+            self.backend._con.execute(
+                'insert into watchlist (path, collection, recursive)'
+                ' values (?, null, 1)', (path,))
+        self.backend.relocate(self.old, self.new)
+        self.assertEqual(
+            sorted([self.new, os.path.join(self.new, 'sub'),
+                    os.path.join(self.tmp_dir, 'shelf-old')]),
+            sorted(path for path in self.backend._con.execute(
+                'select path from watchlist').fetchall()))
+
+    def test_nothing_to_follow_follows_nothing(self):
+        self.assertEqual(0, self.backend.relocate(self.old, self.old))
+        self.assertEqual(0, self.backend.relocate(
+            os.path.join(self.tmp_dir, 'nowhere'), self.new))
+        self.assertEqual(['shelf', 'a.cbz'], self._paths()['a.cbz'])
+
+    def test_the_books_are_found_by_the_index_on_their_paths(self):
+        old = tools.folder_prefix(self.old)
+        plan = self._plan(
+            self.backend._con,
+            'update or ignore Book set path = ? || substr(path, ?)'
+            ' where path >= ? and path < ?',
+            ('x', len(old) + 1, old, old[:-1] + chr(ord(old[-1]) + 1)))
+        self.assertIn('SEARCH', plan)
+        self.assertNotIn('SCAN', plan)
+
+
+class RelocatedPathTest(unittest.TestCase):
+
+    def test_a_path_in_the_folder_is_in_the_new_one(self):
+        old = os.path.join(os.sep, 'comics')
+        new = os.path.join(os.sep, 'mnt', 'shelf')
+        self.assertEqual(
+            os.path.abspath(os.path.join(new, 'sub', 'a.cbz')),
+            tools.relocated(os.path.abspath(os.path.join(old, 'sub', 'a.cbz')),
+                            old, new))
+        for elsewhere in (os.path.join(os.sep, 'comics-old', 'a.cbz'),
+                          os.path.join(os.sep, 'comics'),
+                          os.path.join(os.sep, 'other', 'comics', 'a.cbz')):
+            self.assertIsNone(
+                tools.relocated(os.path.abspath(elsewhere), old, new),
+                elsewhere)
 
 
 class RemovedBookTest(LibraryDatabaseTest):

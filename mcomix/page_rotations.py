@@ -71,6 +71,21 @@ def follow(old: str, new: str) -> None:
         _save(pages)
 
 
+def relocate(old_folder: str, new_folder: str) -> int:
+    """Keep the turns of every book in <old_folder> for it in
+    <new_folder>, where the folder has been moved to, and say how many
+    books that was."""
+    pages = _pages()
+    moved = {book: target for book in pages
+             if (target := tools.relocated(book, old_folder, new_folder))
+             is not None and target not in pages}
+    for book, target in moved.items():
+        pages[target] = pages.pop(book)
+    if moved:
+        _save(pages)
+    return len(moved)
+
+
 def _save(pages: dict[str, dict[str, int]]) -> None:
     path = _path()
     try:

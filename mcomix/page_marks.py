@@ -100,6 +100,21 @@ def follow(old: str, new: str) -> None:
         _save(books)
 
 
+def relocate(old_folder: str, new_folder: str) -> int:
+    """Keep the marks of every book in <old_folder> for it in
+    <new_folder>, where the folder has been moved to, and say how many
+    books that was."""
+    books = _books()
+    moved = {book: target for book in books
+             if (target := tools.relocated(book, old_folder, new_folder))
+             is not None and target not in books}
+    for book, target in moved.items():
+        books[target] = books.pop(book)
+    if moved:
+        _save(books)
+    return len(moved)
+
+
 def _save(books: dict[str, dict[str, list[str]]]) -> None:
     path = _path()
     try:

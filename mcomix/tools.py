@@ -442,6 +442,23 @@ def formats_to_regex(
         itertools.chain.from_iterable([e[1] for e in formats.values()])) + r'$', re.I)
 
 
+def folder_prefix(folder: str) -> str:
+    """<folder> as what the path of everything in it starts with: with
+    the separator after it, which keeps "/comics" from taking in
+    "/comics-old"."""
+    folder = os.path.abspath(folder)
+    return folder if folder.endswith(os.sep) else folder + os.sep
+
+
+def relocated(path: str, old_folder: str, new_folder: str) -> "str | None":
+    """Where <path> is now that <old_folder> is <new_folder>, or None
+    where it was not in <old_folder>."""
+    old = folder_prefix(old_folder)
+    if not path.startswith(old):
+        return None
+    return folder_prefix(new_folder) + path[len(old):]
+
+
 def replaced_path(path: str) -> str:
     """The file to rename a new version over, to replace <path>.
 

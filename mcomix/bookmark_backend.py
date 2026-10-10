@@ -159,6 +159,28 @@ class _BookmarksStore:
                 note=bookmark.get_note()))
 
     @callback.Callback
+    def relocate(self, old_folder: str, new_folder: str) -> int:
+        """Follow every bookmark of a book in <old_folder> to
+        <new_folder>, where the folder has been moved to, and say how
+        many bookmarks that was (upstream feature request 102).  One
+        write for all of them, and none where there were none."""
+        moved = 0
+        for position, bookmark in enumerate(self._bookmarks):
+            target = tools.relocated(bookmark.get_path(), old_folder,
+                                     new_folder)
+            if target is None:
+                continue
+            name, _path, page, numpages, archive_type, added = bookmark.pack()
+            self._bookmarks[position] = bookmark_menu_item._Bookmark(
+                self._window, self._file_handler, name, target, page,
+                numpages, archive_type, added, member=bookmark.get_member(),
+                note=bookmark.get_note())
+            moved += 1
+        if moved:
+            self.write_bookmarks_file()
+        return moved
+
+    @callback.Callback
     def set_bookmark_order(self,
                            order: list[bookmark_menu_item._Bookmark]) -> None:
         """Put the stored bookmarks into <order>.

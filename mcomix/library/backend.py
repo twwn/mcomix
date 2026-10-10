@@ -572,6 +572,52 @@ class _LibraryBackend:
             log.error(_('! Could not move book "%s" in the library'), old_path)
             return False
 
+    def relocate(self, old_folder: str, new_folder: str) -> int:
+        """Follow every book kept in <old_folder>, at any depth, to
+        <new_folder>, and say how many books that was.
+
+        For a shelf that was moved or renamed outside MComix (upstream
+        feature requests 56 and 122): the library holds each book by its
+        path, so every one of them pointed at a file that was not there,
+        and removing and adding them again loses their collections and
+        the pages they were read to.  Those hang off the row's id and
+        come with it, as in update_book_path().
+
+        A book whose new path the library holds already keeps its row
+        where it was: the path column is unique, and the row there is
+        not this book's to replace.  The watched folders under
+        <old_folder> are followed as well.
+        """
+        old = tools.folder_prefix(old_folder)
+        new = tools.folder_prefix(new_folder)
+        if old == new or not (backend_types.storable(old)
+                              and backend_types.storable(new)):
+            return 0
+        # Every path that starts with <old> and no other, as a range
+        # the index on the column answers: the separator's successor
+        # ends it.  A LIKE would read the folder's own % and _ as its
+        # wildcards and every row of the table besides.
+        end = old[:-1] + chr(ord(old[-1]) + 1)
+        try:
+            with self.transaction():
+                moved = self.execute(
+                    '''update or ignore Book set path = ? || substr(path, ?)
+                    where path >= ? and path < ?''',
+                    (new, len(old) + 1, old, end))
+                self.execute(
+                    '''update or ignore watchlist
+                    set path = ? || substr(path, ?)
+                    where path >= ? and path < ?''',
+                    (new, len(old) + 1, old, end))
+                self.execute(
+                    '''update or ignore watchlist set path = ?
+                    where path = ?''', (new[:-1] or new, old[:-1] or old))
+        except dbapi2.Error:
+            log.error(_('! Could not move book "%s" in the library'),
+                      old_folder)
+            return 0
+        return moved
+
     @callback.Callback
     def book_added(self, book: backend_types._Book) -> None:
         """Called when add_book() has put a book in the library that was

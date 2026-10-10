@@ -47,6 +47,20 @@ class PageMarksTest(MComixTest):
         with open(self._file(), encoding='utf-8') as fd:
             self.assertEqual(['/shelf/a.cbz'], list(json.load(fd)))
 
+    def test_it_follows_a_folder_of_books_that_is_moved(self):
+        old = os.path.abspath(os.path.join(os.sep, 'books'))
+        new = os.path.abspath(os.path.join(os.sep, 'shelf'))
+        inside = os.path.join(old, 'sub', 'a.cbz')
+        outside = os.path.abspath(os.path.join(os.sep, 'books-old', 'b.cbz'))
+        page_marks.mark(inside, 'p02.jpg', page_marks.SKIP, True)
+        page_marks.mark(outside, 'p02.jpg', page_marks.SKIP, True)
+        self.assertEqual(1, page_marks.relocate(old, new))
+        page_marks._loaded = None
+        self.assertTrue(page_marks.marked(os.path.join(new, 'sub', 'a.cbz'), 'p02.jpg', page_marks.SKIP))
+        self.assertFalse(page_marks.marked(inside, 'p02.jpg', page_marks.SKIP))
+        self.assertTrue(page_marks.marked(outside, 'p02.jpg', page_marks.SKIP))
+        self.assertEqual(0, page_marks.relocate(old, new))
+
     def test_it_is_read_back_from_the_file(self):
         page_marks.mark('/books/a.cbz', 'p02.jpg', page_marks.SKIP, True)
         page_marks._loaded = None
