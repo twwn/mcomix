@@ -3173,6 +3173,53 @@ class MainWindowTest(MComixTest):
             self._turned_to(pages - 1)
         left.assert_not_called()
 
+    def _views(self):
+        """The pages shown together, turning forward through the book
+        in double page mode."""
+        handler = self.window.imagehandler
+        last = handler.get_number_of_pages()
+        self.assertTrue(wait_for(
+            lambda: all(handler.page_is_available(page)
+                        for page in range(1, last + 1)), seconds=20))
+        views, page = [], 1
+        while page <= last:
+            alone = page == last or handler.get_virtual_double_page(page)
+            views.append((page,) if alone else (page, page + 1))
+            page += 1 if alone else 2
+        return views
+
+    def test_a_page_marked_to_stand_alone_puts_the_pairs_after_it_in_step(self):
+        """Which pages stand side by side follows from where the pairing
+        started, so a book whose spreads fell on two views stayed out of
+        step to its end (the "temporary double page" of upstream merge
+        request 10)."""
+        self._ready()
+        alone = self.window.actiongroup.get_action('page_alone_popup')
+        self.assertFalse(alone.get_sensitive(),
+                         'offered with one page to a view')
+        self.window.actiongroup.get_action('double_page').activate()
+        try:
+            self.assertTrue(alone.get_sensitive())
+            self.assertEqual([(1,), (2, 3), (4,)], self._views())
+            self.window.show_page_menu(self.window.page_area, 1, 1, 2)
+            self.window.uimanager.popup.popdown()
+            self.assertFalse(alone.get_active())
+            alone.set_active(True)
+            self.assertTrue(self.window.imagehandler.stands_alone(2))
+            self.assertEqual([(1,), (2,), (3, 4)], self._views())
+            # Turning back pairs the pages as turning forward did.
+            self.assertEqual(2, self.window._previous_spread(3))
+            self.assertEqual(1, self.window._previous_spread(2))
+            self.assertEqual(3, self.window.imagehandler.spread_start(4))
+            # The menu shows the mark, and takes it off again.
+            self.window.show_page_menu(self.window.page_area, 1, 1, 2)
+            self.window.uimanager.popup.popdown()
+            self.assertTrue(alone.get_active())
+            alone.set_active(False)
+            self.assertEqual([(1,), (2, 3), (4,)], self._views())
+        finally:
+            prefs['default double page'] = False
+
     def test_a_page_beside_one_to_be_skipped_stands_alone(self):
         self._ready()
         self.window.popup_page = 3
@@ -4553,8 +4600,9 @@ class MainWindowTest(MComixTest):
             ['win.leave-fullscreen', 'win.copy-page-popup',
              'win.extract-page-popup', 'win.rename-page-popup',
              'win.delete-page-popup', 'win.skip-page-popup',
-             'win.remove-bookmark-popup', 'win.unpick-pages', None],
-            actions[:9])
+             'win.page-alone-popup', 'win.remove-bookmark-popup',
+             'win.unpick-pages', None],
+            actions[:10])
 
     def test_the_right_click_menu_leaves_out_what_cannot_be_done(self):
         """A greyed item says the menu could do it somewhere else; this

@@ -71,6 +71,7 @@ Zooming, or resizing the window, keeps the middle of the view on the same part o
 - "View → Title page alone" turns the cover's half of that on or off, for a book that pairs wrongly with it. Its key can be set under Shortcuts.
 - Pages turn two at a time; turning back shows the same pairs as forward.
 - CTRL with PageDown or PageUp turns one page, which shifts the pairing by one.
+- "Show this page alone", in the page's right-click menu, shifts it for good: that page stands alone in this book, and the pages after it pair up anew.
 - Manga mode, the M key, lays out and scrolls pages from right to left.
 
 ## Slideshow

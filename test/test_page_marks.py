@@ -25,6 +25,15 @@ class PageMarksTest(MComixTest):
         self.assertTrue(page_marks.any_marked('/books/a.cbz', page_marks.SKIP))
         self.assertFalse(page_marks.any_marked('/books/b.cbz', page_marks.SKIP))
 
+    def test_a_page_carries_each_of_its_marks_apart(self):
+        page_marks.mark('/books/a.cbz', 'p02.jpg', page_marks.SKIP, True)
+        page_marks.mark('/books/a.cbz', 'p02.jpg', page_marks.ALONE, True)
+        page_marks.mark('/books/a.cbz', 'p02.jpg', page_marks.SKIP, False)
+        self.assertFalse(
+            page_marks.marked('/books/a.cbz', 'p02.jpg', page_marks.SKIP))
+        self.assertTrue(
+            page_marks.marked('/books/a.cbz', 'p02.jpg', page_marks.ALONE))
+
     def test_it_is_read_back_from_the_file(self):
         page_marks.mark('/books/a.cbz', 'p02.jpg', page_marks.SKIP, True)
         page_marks._loaded = None

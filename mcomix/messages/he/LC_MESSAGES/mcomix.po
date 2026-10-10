@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: mcomix 0.99\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-10 14:51+0200\n"
+"POT-Creation-Date: 2026-10-10 14:58+0200\n"
 "PO-Revision-Date: 2013-01-07 22:51+0200\n"
 "Last-Translator: Isratine Citizen <genghiskhan@gmx.ca>\n"
 "Language-Team: Hebrew <eliz@gnu.org>\n"
@@ -48,7 +48,7 @@ msgid "! Extraction error: %s"
 msgstr "! שגיאת חילוץ: %s"
 
 #: mcomix/archive_extractor.py:390 mcomix/archive_tools.py:235
-#: mcomix/image_tools.py:504 mcomix/page_marks.py:57
+#: mcomix/image_tools.py:504 mcomix/page_marks.py:60
 #: mcomix/page_rotations.py:40
 #, python-format
 msgid "! Could not read %s"
@@ -170,7 +170,7 @@ msgstr "טיפוס"
 msgid "Name"
 msgstr "שם"
 
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1811
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1835
 #: mcomix/library/control_area.py:152
 msgid "Page"
 msgstr "עמוד"
@@ -414,7 +414,7 @@ msgid ""
 msgstr ""
 "התאם ניגודיות (הן אפילה והן בהירות) אוטומטית, באופן נפרד עבור כל פס צבע."
 
-#: mcomix/enhance_dialog.py:124 mcomix/ui.py:545
+#: mcomix/enhance_dialog.py:124 mcomix/ui.py:548
 msgid "_Invert image colors"
 msgstr "ה_יפוך צבעי התמונה"
 
@@ -480,7 +480,7 @@ msgstr "לא ניתן להציג את המדור: %s"
 msgid "Save page as"
 msgstr "שמירת עמוד בשם"
 
-#: mcomix/file_actions.py:861 mcomix/page_marks.py:93
+#: mcomix/file_actions.py:861 mcomix/page_marks.py:96
 #: mcomix/page_rotations.py:67
 #, python-format
 msgid "! Could not save %(file)s to %(directory)s: %(error)s"
@@ -929,32 +929,32 @@ msgid "Title page alone"
 msgstr "עמוד שער לבדו"
 
 # Tranlated to: Manga mode (Japanese comic brochure)
-#: mcomix/keybindings.py:111 mcomix/ui.py:537
+#: mcomix/keybindings.py:111 mcomix/ui.py:540
 msgid "Manga mode"
 msgstr "מצב מנגה (חוברת קומיקס יפנית)"
 
-#: mcomix/keybindings.py:112 mcomix/ui.py:538
+#: mcomix/keybindings.py:112 mcomix/ui.py:541
 msgid "Invert smart scroll"
 msgstr "היפוך גלילה חכמה"
 
-#: mcomix/keybindings.py:114 mcomix/ui.py:542
+#: mcomix/keybindings.py:114 mcomix/ui.py:545
 msgid "Magnifying lens"
 msgstr "עדשת מגדלת"
 
-#: mcomix/keybindings.py:115 mcomix/ui.py:543
+#: mcomix/keybindings.py:115 mcomix/ui.py:546
 msgid "Stretch small images"
 msgstr "מתח תמונות קטנות"
 
 # ההתאמה הטובה ביותר
-#: mcomix/keybindings.py:117 mcomix/ui.py:550
+#: mcomix/keybindings.py:117 mcomix/ui.py:553
 msgid "Best fit mode"
 msgstr "מצב התאמה מיטבית"
 
-#: mcomix/keybindings.py:118 mcomix/ui.py:551
+#: mcomix/keybindings.py:118 mcomix/ui.py:554
 msgid "Fit width mode"
 msgstr "מצב התאמה לרוחב"
 
-#: mcomix/keybindings.py:119 mcomix/ui.py:552
+#: mcomix/keybindings.py:119 mcomix/ui.py:555
 msgid "Fit height mode"
 msgstr "מצב התאמה לגובה"
 
@@ -962,7 +962,7 @@ msgstr "מצב התאמה לגובה"
 msgid "Fit size mode"
 msgstr "מצב התאמה לגודל"
 
-#: mcomix/keybindings.py:121 mcomix/ui.py:554
+#: mcomix/keybindings.py:121 mcomix/ui.py:557
 msgid "Manual zoom mode"
 msgstr "מצב זום ידני"
 
@@ -1021,7 +1021,7 @@ msgstr "תמונות־ציפורן"
 msgid "Hide all"
 msgstr "הסתרת הכל"
 
-#: mcomix/keybindings.py:137 mcomix/slideshow.py:54 mcomix/ui.py:541
+#: mcomix/keybindings.py:137 mcomix/slideshow.py:54 mcomix/ui.py:544
 msgid "Start slideshow"
 msgstr "התחל מצגת"
 
@@ -1113,7 +1113,7 @@ msgstr "פתיחת המדור המכיל"
 msgid "Library"
 msgstr "ספרייה"
 
-#: mcomix/keybindings.py:167 mcomix/ui.py:545
+#: mcomix/keybindings.py:167 mcomix/ui.py:548
 msgid "Invert image colors"
 msgstr "היפוך צבעי התמונה"
 
@@ -1176,7 +1176,7 @@ msgstr "_להשאיר"
 msgid "Animation speed: %s"
 msgstr "מהירות ההנפשה: %s"
 
-#: mcomix/main.py:1586
+#: mcomix/main.py:1588
 msgid "SLIDESHOW"
 msgstr "מצגת"
 
@@ -1780,7 +1780,7 @@ msgstr "שינוי גודל אוטומטי של עמודים:"
 msgid "Space between two pages (in pixels):"
 msgstr "רווח בין שני עמודים (בפיקסלים):"
 
-#: mcomix/preferences_dialog.py:358 mcomix/ui.py:553
+#: mcomix/preferences_dialog.py:358 mcomix/ui.py:556
 msgid "Fit to size mode"
 msgstr "מצב התאמה לגודל"
 
@@ -2036,7 +2036,7 @@ msgstr ""
 
 #: mcomix/preferences_dialog.py:673 mcomix/preferences_dialog.py:822
 #: mcomix/preferences_dialog.py:904 mcomix/preferences_dialog.py:967
-#: mcomix/ui.py:559
+#: mcomix/ui.py:562
 msgid "Never"
 msgstr "לעולם לא"
 
@@ -2812,7 +2812,7 @@ msgid ""
 msgstr "יציאה ושחזור הקובץ שפתוח כעת בפעם הבאה בה התוכנית תופעל."
 
 # ימינה
-#: mcomix/ui.py:494 mcomix/ui.py:560 mcomix/ui.py:562
+#: mcomix/ui.py:494 mcomix/ui.py:563 mcomix/ui.py:565
 msgid "_Rotate 90° CW"
 msgstr "סיבוב 90 מעלות _עם כיוון השעון"
 
@@ -2821,7 +2821,7 @@ msgid "Rotate _180°"
 msgstr "_סיבוב 180 מעלות"
 
 # שמאלה
-#: mcomix/ui.py:496 mcomix/ui.py:561 mcomix/ui.py:563
+#: mcomix/ui.py:496 mcomix/ui.py:564 mcomix/ui.py:566
 msgid "Rotat_e 90° CCW"
 msgstr "סיבוב 90 מעלות _נגד כיוון השעון"
 
@@ -2925,111 +2925,121 @@ msgid ""
 msgstr "דילוג על עמוד זה בעת דפדוף. הספר אינו משתנה."
 
 #: mcomix/ui.py:531
+msgid "Show this page alone"
+msgstr "הצגת עמוד זה לבדו"
+
+#: mcomix/ui.py:532
+msgid ""
+"Shows this page on its own in double page mode. The pages after it pair up "
+"anew."
+msgstr "הצגת עמוד זה לבדו במצב עמוד כפול. העמודים שאחריו מזווגים מחדש."
+
+#: mcomix/ui.py:534
 msgid "_Toolbar"
 msgstr "סרגל _כלים"
 
-#: mcomix/ui.py:532
+#: mcomix/ui.py:535
 msgid "_Menubar"
 msgstr "שורת _תפריט"
 
-#: mcomix/ui.py:533
+#: mcomix/ui.py:536
 msgid "St_atusbar"
 msgstr "שורת _מצב"
 
-#: mcomix/ui.py:534
+#: mcomix/ui.py:537
 msgid "S_crollbars"
 msgstr "סרגלי _גלילה"
 
-#: mcomix/ui.py:535
+#: mcomix/ui.py:538
 msgid "Th_umbnails"
 msgstr "תמונות־_ציפורן"
 
-#: mcomix/ui.py:536
+#: mcomix/ui.py:539
 msgid "H_ide all"
 msgstr "ה_סתרת הכול"
 
-#: mcomix/ui.py:537
+#: mcomix/ui.py:540
 msgid "_Manga mode"
 msgstr "מצב _מנגה"
 
-#: mcomix/ui.py:538
+#: mcomix/ui.py:541
 msgid "Invert smart scrolling direction."
 msgstr "היפוך כיוון גלילה חכמה."
 
-#: mcomix/ui.py:539
+#: mcomix/ui.py:542
 msgid "_Keep transformation"
 msgstr "ש_מירת השינויים"
 
-#: mcomix/ui.py:539
+#: mcomix/ui.py:542
 msgid "Keeps the currently selected transformation for the next pages."
 msgstr "השארת השינוי הנבחר הנוכחי עבור בעמודים הבאים."
 
-#: mcomix/ui.py:541
+#: mcomix/ui.py:544
 msgid "Start slid_eshow"
 msgstr "ה_תחלת מצגת"
 
-#: mcomix/ui.py:542
+#: mcomix/ui.py:545
 msgid "Magnifying _lens"
 msgstr "_עדשת מגדלת"
 
-#: mcomix/ui.py:543
+#: mcomix/ui.py:546
 msgid "Stretch images to fit to the screen, depending on zoom mode."
 msgstr "מתח תמונות כדי התאמה למסך, תלוי במצב זום."
 
 # מצב ההתאמה ה_טובה ביותר
-#: mcomix/ui.py:550
+#: mcomix/ui.py:553
 msgid "_Best fit mode"
 msgstr "מצב התאמה מי_טבית"
 
-#: mcomix/ui.py:551
+#: mcomix/ui.py:554
 msgid "Fit _width mode"
 msgstr "מצב התאמה ל_רוחב"
 
-#: mcomix/ui.py:552
+#: mcomix/ui.py:555
 msgid "Fit _height mode"
 msgstr "מצב התאמה ל_גובה"
 
-#: mcomix/ui.py:553
+#: mcomix/ui.py:556
 msgid "Fit _size mode"
 msgstr "מצב _התאמה לגודל"
 
-#: mcomix/ui.py:554
+#: mcomix/ui.py:557
 msgid "M_anual zoom mode"
 msgstr "מצב זום י_דני"
 
-#: mcomix/ui.py:567
+#: mcomix/ui.py:570
 msgid "A_bout"
 msgstr "א_ודות"
 
-#: mcomix/ui.py:570
+#: mcomix/ui.py:573
 msgid "Co_mments..."
 msgstr "הע_רות"
 
-#: mcomix/ui.py:573
+#: mcomix/ui.py:576
 msgid "Proper_ties"
 msgstr "מאפ_יינים"
 
-#: mcomix/ui.py:576
+#: mcomix/ui.py:579
 msgid "_Preferences"
 msgstr "הע_דפות"
 
-#: mcomix/ui.py:580
+#: mcomix/ui.py:583
 msgid "_Edit archive..."
 msgstr "ער_יכת ארכיון..."
 
-#: mcomix/ui.py:580
+#: mcomix/ui.py:583
 msgid "Opens the archive editor."
 msgstr "פתיחת עורך הארכיון."
 
-#: mcomix/ui.py:582
+#: mcomix/ui.py:585
 msgid "_Open..."
 msgstr "_פתיחה..."
 
-#: mcomix/ui.py:583
+#: mcomix/ui.py:586
 msgid "Enha_nce image..."
 msgstr "ש_יפור תמונה..."
 
-#: mcomix/ui.py:586
+#: mcomix/ui.py:589
 msgid "_Library..."
 msgstr "ספריי_ה..."
 

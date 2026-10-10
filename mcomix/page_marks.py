@@ -1,9 +1,10 @@
 """page_marks.py - What a reader has said of single pages of a book.
 
 A page to pass over when turning the pages, such as an advertisement
-or a blank side.  The marks are kept apart from the book, which is not
-changed by them, under the names page_identity() gives: the archive and
-the file's name within it.
+or a blank side, and a page to show on its own where two are shown side
+by side.  The marks are kept apart from the book, which is not changed
+by them, under the names page_identity() gives: the archive and the
+file's name within it.
 """
 
 import json
@@ -16,9 +17,11 @@ from mcomix.i18n import _
 
 #: The page is passed over when the pages are turned.
 SKIP = 'skip'
+#: The page is shown on its own in double page mode, as a wide page is.
+ALONE = 'alone'
 
 #: Every mark there is; anything else in the file is dropped on reading.
-_MARKS = frozenset({SKIP})
+_MARKS = frozenset({SKIP, ALONE})
 
 #: What has been read from or written to the file, with the file's path:
 #: the data folder is read when the store is first used, not at import.

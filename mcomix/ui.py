@@ -368,7 +368,7 @@ _POPUP = (
     # (upstream feature requests 98 and 105).
     'copy_page_popup', 'extract_page_popup',
     'rename_page_popup', 'delete_page_popup', 'skip_page_popup',
-    'remove_bookmark_popup', 'unpick_pages',
+    'page_alone_popup', 'remove_bookmark_popup', 'unpick_pages',
     None,
     ('menu_go_popup', ('next_page', 'previous_page', 'go_to',
                        'first_page', 'last_page', None,
@@ -528,6 +528,9 @@ class MainUI:
             _Entry('skip_page_popup', None, _('Skip this page'),
                    _('Passes this page over when the pages are turned. The book is not changed.'),
                    window.change_skip_page),
+            _Entry('page_alone_popup', None, _('Show this page alone'),
+                   _('Shows this page on its own in double page mode. The pages after it pair up anew.'),
+                   window.change_page_alone),
             _Entry('toolbar', None, _('_Toolbar'), None, window.change_toolbar_visibility),
             _Entry('menubar', None, _('_Menubar'), None, window.change_menubar_visibility),
             _Entry('statusbar', None, _('St_atusbar'), None, window.change_statusbar_visibility),
@@ -830,6 +833,10 @@ class MainUI:
 
         for name in comment:
             self._actions.get_action(name).set_sensitive(comment_sensitive)
+
+        # A page stands alone only where two are shown side by side.
+        self._actions.get_action('page_alone_popup').set_sensitive(
+            general_sensitive and bool(prefs['default double page']))
 
         # Only pages that were picked out can be put back.
         self._actions.get_action('unpick_pages').set_sensitive(

@@ -207,7 +207,7 @@ class ImageHandler:
         be displayed has a width that exceeds its height), or if currently
         on the first page.  With "skip broken pages" set, also where one
         of the two has been read and would not load, and always where
-        one of the two is marked to be passed over.
+        one of the two is marked to be passed over or to stand alone.
         """
         if page is None:
             page = self.get_current_page()
@@ -226,9 +226,10 @@ class ImageHandler:
 
         if (prefs['default double page']
                 and page < self.get_number_of_pages()
-                and (self.is_skipped(page) or self.is_skipped(page + 1))):
+                and (self._is_marked(page) or self._is_marked(page + 1))):
             # Shown on its own for the same reason: the page beside it
-            # is one the reader has marked to be passed over.
+            # is one the reader has marked to be passed over, or one of
+            # the two is marked to stand alone.
             return True
 
         if (not prefs['default double page'] or
@@ -252,6 +253,25 @@ class ImageHandler:
         identity = self._window.filehandler.page_identity(page)
         return identity is not None and page_marks.marked(
             *identity, page_marks.SKIP)
+
+    def stands_alone(self, page: int) -> bool:
+        """Whether the reader has marked <page> to be shown on its own
+        in double page mode (page_marks.ALONE)."""
+        if not self._window.filehandler.file_loaded:
+            return False
+        identity = self._window.filehandler.page_identity(page)
+        return identity is not None and page_marks.marked(
+            *identity, page_marks.ALONE)
+
+    def _is_marked(self, page: int) -> bool:
+        """Whether a mark of the reader's keeps <page> out of a pair."""
+        return self.is_skipped(page) or self.stands_alone(page)
+
+    def _starts_pairing_anew(self, page: int) -> bool:
+        """Whether <page> is never the second of a pair, so that the
+        pages after it are paired from the one that follows: a wide
+        page, or one the reader has marked."""
+        return self._is_wide(page) or self._is_marked(page)
 
     def is_broken(self, page: int) -> bool:
         """Whether <page> has been read, and would not load.
@@ -280,20 +300,20 @@ class ImageHandler:
 
         Which pages are shown together depends on where the pairing
         started, so this pairs forward from the nearest page that starts
-        a spread whatever came before it: the first page, a wide page -
-        always shown on its own - or the page after one.  None where a
-        page on the way has not been extracted yet, so that nothing is
-        known of its size.
+        a spread whatever came before it: the first page, a wide page or
+        one the reader has marked - always shown on its own - or the
+        page after one.  None where a page on the way has not been
+        extracted yet, so that nothing is known of its size.
         """
         if not self.page_is_available(page):
             return None
-        if self._is_wide(page):
+        if self._starts_pairing_anew(page):
             return page
         start = page
         while start > 1:
             if not self.page_is_available(start - 1):
                 return None
-            if self._is_wide(start - 1):
+            if self._starts_pairing_anew(start - 1):
                 break
             start -= 1
         # Every page from <start> to <page> is narrow, so they are paired

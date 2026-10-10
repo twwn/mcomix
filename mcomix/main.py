@@ -1284,6 +1284,8 @@ class MainWindow(Gtk.Window):
     def change_double_page(self, toggleaction: "ui.Action") -> None:
         """Show one page at a time or two, and redraw either way."""
         prefs['default double page'] = toggleaction.get_active()
+        # "Show this page alone" is offered only where two are shown.
+        self.uimanager.set_sensitivities()
         self._update_page_information()
         self.draw_image()
 
@@ -1751,23 +1753,43 @@ class MainWindow(Gtk.Window):
         (page_marks), and the page keeps its place and its thumbnail,
         which is where the mark is taken off again.
         """
+        if self._mark_popup_page(page_marks.SKIP, toggleaction.get_active()):
+            self.thumbnailsidebar.restyle()
+
+    def change_page_alone(self, toggleaction: "ui.Action") -> None:
+        """Mark the page the right-click menu was opened over to be
+        shown on its own in double page mode, or take the mark off.
+
+        Which pages stand side by side follows from where the pairing
+        started, and a book whose spreads fall on two views is out of
+        step by one page.  A page that stands alone puts every pair
+        after it back in step, as a wide page does.
+        """
+        self._mark_popup_page(page_marks.ALONE, toggleaction.get_active())
+
+    def _mark_popup_page(self, mark: str, on: bool) -> bool:
+        """Put <mark> on the page the right-click menu was opened over,
+        the page on screen where it was opened over none, or take it
+        off, and draw the book as it now reads.  False where there was
+        no page to mark."""
         if not self.filehandler.file_loaded:
-            return
+            return False
         current = self.imagehandler.get_current_page()
         page = self.popup_page if self.popup_page is not None else current
         identity = self.filehandler.page_identity(page)
         if identity is None:
-            return
-        page_marks.mark(*identity, page_marks.SKIP, toggleaction.get_active())
-        self.thumbnailsidebar.restyle()
-        # Marked while on screen, the page is turned past at once, the
-        # way the reader was going; at an end of the book the search
-        # turns round rather than opening the next book.
+            return False
+        page_marks.mark(*identity, mark, on)
+        # A page marked to be passed over while on screen is turned
+        # past at once, the way the reader was going; at an end of the
+        # book the search turns round rather than opening the next book.
         self._skip_origin = current
         self._skip_turning = False
         self._skip_reversed = False
         self._skip_gave_up = False
+        self._update_page_information()
         self.draw_image()
+        return True
 
     def show_page_menu(self, widget: Gtk.Widget, x: float, y: float,
                        page: int | None) -> None:
@@ -1780,10 +1802,12 @@ class MainWindow(Gtk.Window):
         page.
         """
         self.popup_page = page
+        meant = page if page is not None \
+            else self.imagehandler.get_current_page()
         self.actiongroup.get_action('skip_page_popup').show_active(
-            self.imagehandler.is_skipped(
-                page if page is not None
-                else self.imagehandler.get_current_page()))
+            self.imagehandler.is_skipped(meant))
+        self.actiongroup.get_action('page_alone_popup').show_active(
+            self.imagehandler.stands_alone(meant))
         self.actiongroup.get_action('remove_bookmark_popup').set_sensitive(
             page is not None
             and page in bookmark_backend.BookmarksStore.pages_marked())
