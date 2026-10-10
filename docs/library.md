@@ -16,10 +16,21 @@ A book is an archive in any format MComix opens; folders cannot be added.
 - Hold CTRL while dragging to copy them instead: they stay in the collection on show as well.
 - "Recent" holds the books that are read, not books dragged onto it.
 - "Add..." and books dropped from a file manager go into the collection on show; under "All books" or "Recent" they join no collection.
-- Right-clicking a collection offers "New", "Add...", "Rename", "Duplicate", "Clean up" and "Remove".
+- Right-clicking a collection offers "Add...", "New", "Rename", "Duplicate", "Clean up", "Relocate..." and "Remove".
   - "Duplicate" makes a copy beside it, holding every book it shows.
   - "Clean up" drops books whose files are gone.
+  - "Relocate..." follows a folder of books that was moved or renamed outside MComix; see below.
   - "Remove" keeps the books in the library, and moves the collections under it to the top.
+
+## A folder that moved
+
+- The library holds a book by its path. A folder moved or renamed outside MComix leaves its books without their files.
+- "Relocate...", in the collections' right-click menu, asks for the folder the books were in and the folder they are in now.
+- Every book the library holds under the old folder follows, at any depth, whichever collection it is in.
+- The books keep their collections, covers, bookmarks, the page they were left at, and the pages skipped, shown alone or turned.
+- Watched folders under the old folder follow too.
+- Where the missing books share one folder and no book in it is left, that folder is filled in.
+- A book the library already holds at the new place stays where it was.
 
 ## Books
 

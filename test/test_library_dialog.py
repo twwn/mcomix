@@ -7,6 +7,7 @@ with no sqlite, which the plain "from sqlite3 import dbapi2" in the
 backend made unreachable.
 """
 
+import datetime
 import gettext
 import os
 import shutil
@@ -18,6 +19,8 @@ from gi.repository import GdkPixbuf, Gio, GLib, Gtk
 
 from . import MComixTest, get_testfile_path, pump, wait_for
 
+from mcomix import bookmark_backend
+from mcomix import bookmark_menu_item
 from mcomix import column_list
 from mcomix import constants
 from mcomix import i18n
@@ -25,12 +28,16 @@ from mcomix import icons
 from mcomix import last_read_page
 from mcomix import main
 from mcomix import message_dialog
+from mcomix import page_marks
+from mcomix import page_rotations
+from mcomix import thumbnail_tools
 from mcomix import widgets
 from mcomix.dialog import Response
 from mcomix.library import backend_types
 from mcomix.library import book_area
 from mcomix.library import collection_area
 from mcomix.library import main_dialog
+from mcomix.library import relocate_dialog
 from mcomix.library import watchlist
 from mcomix.preferences import prefs
 from mcomix import tools
@@ -1018,3 +1025,200 @@ class CollectionMenuTest(_LibraryWindowTest):
             dialog.collection_area._duplicate_collection()
         self.assertIn('Could not duplicate collection.',
                       dialog._statusbar.get_text())
+
+
+class RelocateBooksTest(_LibraryWindowTest):
+
+    """"Relocate..." in the collections' menu: a folder of books moved
+    or renamed outside MComix left every one of them in the library
+    with no file, and nothing but removing and adding them again, less
+    their collections and the pages they were read to, brought them
+    back (upstream feature requests 122, 56 and 102)."""
+
+    def setUp(self):
+        super().setUp()
+        prefs['last library collection'] = constants.COLLECTION_ALL
+        self.dialog = self._open()
+        # The covers are drawn here, on this thread: a worker still
+        # drawing one would be reading a file the test is moving.
+        self.dialog.book_area.stop_update()
+        self.old = os.path.join(self.tmp_dir, 'shelf')
+        self.new = os.path.join(self.tmp_dir, 'elsewhere', 'comics')
+        self.names = [('a.cbz',), ('sub', 'b.cbz')]
+        for name in self.names:
+            book = os.path.join(self.old, *name)
+            os.makedirs(os.path.dirname(book), exist_ok=True)
+            shutil.copy2(get_testfile_path('archives', '01-ZIP-Normal.zip'),
+                         book)
+            self.dialog.backend.add_book(book)
+            self.assertIsNotNone(self.dialog.backend.get_book_thumbnail(book))
+        self.dialog.book_area.stop_update()
+        self.covers = thumbnail_tools.Thumbnailer(
+            dst_dir=constants.LIBRARY_COVERS_PATH)
+
+    def _books(self, folder):
+        return [os.path.join(folder, *name) for name in self.names]
+
+    def _move(self):
+        os.makedirs(os.path.dirname(self.new))
+        os.rename(self.old, self.new)
+
+    def _ask(self):
+        widgets.simple_action(self.dialog.collection_area._popup_actions,
+                              'relocate').activate(None)
+        pump()
+        prompts = [window for window in Gtk.Window.list_toplevels()
+                   if isinstance(window, relocate_dialog.RelocateDialog)
+                   and window.get_visible()]
+        self.assertEqual(1, len(prompts))
+        self.addCleanup(self._dismiss, prompts[0])
+        return prompts[0]
+
+    @staticmethod
+    def _dismiss(prompt):
+        if prompt.get_visible():
+            prompt.response(Response.CANCEL)
+            pump()
+
+    @staticmethod
+    def _offers_ok(prompt):
+        return prompt.get_widget_for_response(Response.OK).get_sensitive()
+
+    def test_it_is_offered_over_every_row_and_over_none(self):
+        area = self.dialog.collection_area
+        for collection in (None, constants.COLLECTION_ALL,
+                           constants.COLLECTION_RECENT):
+            area._popup_collection_menu(collection)
+            self.assertTrue(widgets.simple_action(
+                area._popup_actions, 'relocate').get_enabled(), collection)
+            area._collection_menu.popdown()
+        pump()
+
+    def test_the_folder_that_has_gone_is_offered_as_the_old_one(self):
+        self._move()
+        prompt = self._ask()
+        self.assertEqual(self.old, prompt._old.get_text())
+        self.assertEqual('', prompt._new.get_text())
+        self.assertFalse(self._offers_ok(prompt))
+
+    def test_no_folder_is_offered_while_no_book_is_gone(self):
+        self.assertEqual('', self._ask()._old.get_text())
+
+    def test_no_folder_is_offered_that_still_holds_a_book(self):
+        """Relocating takes every book under the folder with it, the
+        ones whose files are there as well."""
+        os.remove(self._books(self.old)[0])
+        self.assertEqual('', self._ask()._old.get_text())
+
+    def test_ok_follows_everything_that_names_the_books(self):
+        backend = self.dialog.backend
+        old_a, old_b = self._books(self.old)
+        new_a, new_b = self._books(self.new)
+        book = backend.get_book_by_path(old_a)
+        backend.add_collection('Shelf')
+        shelf = backend.get_collection_by_name('Shelf').id
+        backend.add_book_to_collection(book.id, shelf)
+        store = bookmark_backend.BookmarksStore
+        marked = bookmark_menu_item._Bookmark(
+            self.window, self.window.filehandler, 'b.cbz', old_b, 2, 4,
+            None, datetime.datetime(2026, 1, 1))
+        store.add_bookmark(marked)
+        self.addCleanup(store.remove_for_path, new_b)
+        page_marks.mark(old_a, 'p02.jpg', page_marks.SKIP, True)
+        page_rotations.remember(old_b, 'p03.jpg', 90)
+        self._move()
+
+        prompt = self._ask()
+        prompt._new.set_text('  %s ' % self.new)
+        self.assertTrue(self._offers_ok(prompt))
+        prompt.response(Response.OK)
+
+        self.assertFalse(prompt.get_visible())
+        self.assertIsNone(backend.get_book_by_path(old_a))
+        self.assertEqual(book.id, backend.get_book_by_path(new_a).id)
+        self.assertIsNotNone(backend.get_book_by_path(new_b))
+        self.assertEqual([book.id], backend.get_books_in_collection(shelf))
+        self.assertIn('Books relocated: 2', self.dialog._statusbar.get_text())
+        # By its name: the store is the program's one, and may hold
+        # what another test left in it.
+        self.assertEqual([new_b], [bookmark._path
+                                   for bookmark in store.get_bookmarks()
+                                   if bookmark._name == 'b.cbz'])
+        self.assertTrue(page_marks.marked(new_a, 'p02.jpg', page_marks.SKIP))
+        self.assertEqual(90, page_rotations.rotation(new_b, 'p03.jpg'))
+        for path in (new_a, new_b):
+            self.assertTrue(os.path.isfile(
+                self.covers._path_to_thumbpath(path)), path)
+        self.assertEqual(2, len(os.listdir(constants.LIBRARY_COVERS_PATH)))
+
+        # And the covers are drawn again, of the books where they are.
+        self.assertTrue(wait_for(
+            lambda: sorted(self.dialog.book_area.shown_paths())
+            == [new_a, new_b]))
+        self.dialog.book_area.stop_update()
+
+    def test_cancel_follows_nothing(self):
+        self._move()
+        prompt = self._ask()
+        prompt._new.set_text(self.new)
+        prompt.response(Response.CANCEL)
+        pump()
+        for path in self._books(self.old):
+            self.assertIsNotNone(self.dialog.backend.get_book_by_path(path))
+
+    def test_ok_wants_two_folders_and_the_new_one_there(self):
+        self._move()
+        prompt = self._ask()
+        for old, new, offered in (
+                (self.old, self.new, True),
+                (self.old, os.path.join(self.new, 'a.cbz'), False),
+                (self.old, os.path.join(self.tmp_dir, 'nowhere'), False),
+                (self.old, '', False), ('', self.new, False),
+                ('shelf', self.new, False),
+                (self.new + os.sep, self.new, False)):
+            prompt._old.set_text(old)
+            prompt._new.set_text(new)
+            self.assertEqual(offered, self._offers_ok(prompt), (old, new))
+
+    def test_a_folder_named_from_the_home_directory_is_read_as_one(self):
+        prompt = self._ask()
+        prompt._old.set_text('~/shelf')
+        self.assertEqual(os.path.join(os.path.expanduser('~'), 'shelf'),
+                         prompt.folders()[0])
+
+    class _FolderDialog:
+
+        """Stands in for the Gtk.FileDialog, answering with <folder>, or
+        raising as a dismissed one does."""
+
+        def __init__(self, folder):
+            self._folder = folder
+
+        def select_folder_finish(self, result):
+            if self._folder is None:
+                raise GLib.Error('dismissed')
+            return Gio.File.new_for_path(self._folder)
+
+    def test_a_folder_chosen_is_written_as_the_new_one(self):
+        self._move()
+        prompt = self._ask()
+        prompt._folder_chosen(self._FolderDialog(self.new), None)
+        self.assertEqual(self.new, prompt._new.get_text())
+        self.assertTrue(self._offers_ok(prompt))
+
+    def test_a_dismissed_chooser_leaves_what_was_typed(self):
+        prompt = self._ask()
+        prompt._new.set_text('typed')
+        prompt._folder_chosen(self._FolderDialog(None), None)
+        self.assertEqual('typed', prompt._new.get_text())
+
+    def test_the_chooser_opens_over_the_question_at_the_folder_typed(self):
+        self._move()
+        prompt = self._ask()
+        prompt._new.set_text(self.new)
+        with unittest.mock.patch.object(Gtk, 'FileDialog') as chooser:
+            prompt._browse()
+        chooser.return_value.select_folder.assert_called_once_with(
+            prompt, None, prompt._folder_chosen)
+        shown, = chooser.return_value.set_initial_folder.call_args.args
+        self.assertEqual(self.new, shown.get_path())

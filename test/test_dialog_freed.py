@@ -27,6 +27,7 @@ from mcomix import main
 from mcomix import message_dialog
 from mcomix.library import add_progress_dialog
 from mcomix.library import main_dialog
+from mcomix.library import relocate_dialog
 from mcomix.library import watchlist
 
 
@@ -253,6 +254,14 @@ class MainWindowDialogsFreedTest(MComixTest):
         library = self._open_library()
         try:
             self.assertFreedOnClose(lambda: watchlist.WatchListDialog(library))
+        finally:
+            library.close()
+
+    def test_the_question_of_where_a_folder_of_books_went(self):
+        library = self._open_library()
+        try:
+            self.assertFreedOnClose(
+                lambda: relocate_dialog.RelocateDialog(library))
         finally:
             library.close()
 

@@ -2,10 +2,10 @@
 
 The collections of the library as a tree under a bold "All books" row,
 with the popup menu that adds, renames, duplicates, cleans and removes
-one.  Selecting a row is what tells the book area which collection to
-show.  It is also a drop target twice over: for books dragged from the
-book area, and for another collection dragged onto the one it is to sit
-under.
+one, and relocates a folder of books.  Selecting a row is what tells
+the book area which collection to show.  It is also a drop target twice
+over: for books dragged from the book area, and for another collection
+dragged onto the one it is to sit under.
 """
 
 import weakref
@@ -22,6 +22,7 @@ from mcomix import file_chooser_library_dialog
 from mcomix import message_dialog
 from mcomix.i18n import _
 from mcomix.dialog import Response
+from mcomix.library import relocate_dialog
 
 from collections.abc import Iterator
 if TYPE_CHECKING:
@@ -147,6 +148,9 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable):
             ('cleanup', _('Clean _up'),
              _('Removes no longer existent books from the collection.'),
              self._clean_collection),
+            ('relocate', _('Relocate...'),
+             relocate_dialog.RelocateDialog.explanation(),
+             self._relocate_books),
             ('remove', _('_Remove'),
              _('Deletes the selected collection.'), self._remove_collection),
         )
@@ -329,6 +333,10 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable):
 
         self.clean_collection(collection)
 
+    def _relocate_books(self, *args: object) -> None:
+        """ Menu item hook to ask where a folder of books has gone. """
+        relocate_dialog.RelocateDialog(self._library)
+
     def _remove_collection(self, *args: object) -> None:
         """Remove the currently selected collection from the library."""
         collection = self.get_current_collection()
@@ -418,7 +426,9 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable):
         built-in "All books" and "Recent" rows, and over no collection
         at all - which is what a right click on empty space gives, and
         the only thing adding books and cleaning up are off over.
-        Creating a collection is always offered. """
+        Creating a collection and relocating a folder of books, which
+        is about the library and no one collection, are always
+        offered. """
 
         is_collection_all = collection in (constants.COLLECTION_ALL, constants.COLLECTION_RECENT)
 
