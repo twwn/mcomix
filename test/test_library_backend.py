@@ -1382,6 +1382,29 @@ class RelocatedShelfTest(LibraryDatabaseTest):
             sorted(path for path in self.backend._con.execute(
                 'select path from watchlist').fetchall()))
 
+    def test_a_book_follows_to_where_another_has_just_been(self):
+        """Into a folder of its own, or out of one into the folder
+        above.  Taken in the order of their ids, the book that came to a
+        place before the one there had left it stayed behind."""
+        sub = os.path.join(self.old, 'sub')
+        deeper = os.path.join(sub, 'sub')
+        for old, new, before, after in (
+                (self.old, sub, {6: self.old, 7: sub}, {6: sub, 7: deeper}),
+                (sub, self.old, {6: deeper, 7: sub}, {6: sub, 7: self.old})):
+            with self.subTest(old=old, new=new):
+                self.backend._con.execute('delete from book')
+                for number, folder in before.items():
+                    self.backend._con.execute(
+                        'insert into book (id, name, path, pages, format,'
+                        " size) values (?, 'x.cbz', ?, 20, 1, 1)",
+                        (number, os.path.join(folder, 'x.cbz')))
+                self.assertEqual(2, self.backend.relocate(old, new))
+                self.assertEqual(
+                    {number: os.path.join(folder, 'x.cbz')
+                     for number, folder in after.items()},
+                    dict(self.backend._con.execute(
+                        'select id, path from book').fetchall()))
+
     def test_nothing_to_follow_follows_nothing(self):
         self.assertEqual(0, self.backend.relocate(self.old, self.old))
         self.assertEqual(0, self.backend.relocate(
@@ -1392,9 +1415,8 @@ class RelocatedShelfTest(LibraryDatabaseTest):
         old = tools.folder_prefix(self.old)
         plan = self._plan(
             self.backend._con,
-            'update or ignore Book set path = ? || substr(path, ?)'
-            ' where path >= ? and path < ?',
-            ('x', len(old) + 1, old, old[:-1] + chr(ord(old[-1]) + 1)))
+            'select id, path from Book where path >= ? and path < ?',
+            (old, old[:-1] + chr(ord(old[-1]) + 1)))
         self.assertIn('SEARCH', plan)
         self.assertNotIn('SCAN', plan)
 

@@ -600,10 +600,22 @@ class _LibraryBackend:
         end = old[:-1] + chr(ord(old[-1]) + 1)
         try:
             with self.transaction():
-                moved = self.execute(
-                    '''update or ignore Book set path = ? || substr(path, ?)
-                    where path >= ? and path < ?''',
-                    (new, len(old) + 1, old, end))
+                books = self.fetchall(
+                    'select id, path from Book where path >= ? and path < ?',
+                    (old, end))
+                # A book at a time rather than the lot in one statement,
+                # which takes them in the order of their ids: where one
+                # folder is inside the other, the place a book goes to
+                # can be the place another has yet to leave, and that
+                # one has to go first.  It is the one with the longer
+                # path going down, and the shorter coming up.
+                books.sort(key=lambda book: len(book[1]),
+                           reverse=new.startswith(old))
+                moved = 0
+                for book, path in books:
+                    moved += self.execute(
+                        'update or ignore Book set path = ? where id = ?',
+                        (new + path[len(old):], book))
                 self.execute(
                     '''update or ignore watchlist
                     set path = ? || substr(path, ?)
