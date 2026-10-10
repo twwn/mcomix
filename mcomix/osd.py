@@ -174,6 +174,8 @@ class PageCounter:
     _MARGIN = 12
     #: Seconds the counter stays after a page turn, where it is set to go.
     TIMEOUT = 3
+    #: What 'page counter' says: never, always, or after a page turn.
+    NEVER, ALWAYS, AFTER_TURN = 0, 1, 2
 
     def __init__(self, window: "main.MainWindow") -> None:
         self._window = window
@@ -184,7 +186,7 @@ class PageCounter:
     def update(self, again: bool = False) -> None:
         """Show the counter, or take it away, as the window now asks.
 
-        Where "page counter fades" is set, it shows when the pages on
+        Where 'page counter' is AFTER_TURN, it shows when the pages on
         screen change and goes again TIMEOUT seconds later, as CDisplayEx
         does it (the comment of 2026-10-09 on feature request 81); a
         redraw of the same pages does not bring it back.  <again> shows
@@ -193,7 +195,7 @@ class PageCounter:
         window = self._window
         pages = window.displayed_pages() if window.filehandler.file_loaded \
             else []
-        if not (prefs['page counter in fullscreen'] and pages
+        if not (prefs['page counter'] != self.NEVER and pages
                 and window.is_fullscreen()):
             self._text = ''
             self._hide()
@@ -208,7 +210,7 @@ class PageCounter:
             self._OVERLAY, lambda snapshot: self._draw(snapshot, layout))
         self._shown = True
         self._stop_timer()
-        if prefs['page counter fades']:
+        if prefs['page counter'] == self.AFTER_TURN:
             self._timeout_event = GLib.timeout_add_seconds(
                 self.TIMEOUT, self._time_up)
 

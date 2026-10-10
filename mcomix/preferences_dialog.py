@@ -13,6 +13,7 @@ from mcomix import preferences_page
 from mcomix import widgets
 from mcomix import constants
 from mcomix import image_tools
+from mcomix import osd
 from mcomix import tools
 from mcomix import message_dialog
 from mcomix import keybindings
@@ -335,15 +336,8 @@ class _PreferencesDialog(Dialog):
             _('Automatically hide all toolbars in fullscreen'),
             'hide all in fullscreen', None))
 
-        page.add_row(self._create_pref_check_button(
-            _('Show the page number in fullscreen'),
-            'page counter in fullscreen',
-            _('The pages on screen and the number of pages, in the lower right corner.')))
-
-        page.add_row(self._create_pref_check_button(
-            _('Hide the page number again after a few seconds'),
-            'page counter fades',
-            _('The page number shows when the page turns and goes after three seconds.')))
+        page.add_row(Gtk.Label(label=_('Page number in fullscreen:')),
+                     self._create_page_counter_combobox())
 
         page.new_section(_('Double page mode'))
 
@@ -889,6 +883,27 @@ class _PreferencesDialog(Dialog):
         if value != last_value:
             self._window.draw_image()
 
+    def _create_page_counter_combobox(self) -> "widgets.Chooser[int]":
+        """Whether fullscreen shows the page number in a corner: never,
+        always, or for a few seconds after each page turn."""
+        items = (
+                (_('Never'), osd.PageCounter.NEVER),
+                (_('Always'), osd.PageCounter.ALWAYS),
+                (_('For a few seconds after a page turn'),
+                 osd.PageCounter.AFTER_TURN))
+        box = self._create_combobox(items, prefs['page counter'],
+                                    self._page_counter_changed_cb)
+        box.set_tooltip_text(
+            _('The pages on screen and the number of pages, in the lower right corner.'))
+        return box
+
+    def _page_counter_changed_cb(self, combobox: "widgets.Chooser[int]",
+                                 *args: object) -> None:
+        value = combobox.get_value()
+        if value != prefs['page counter']:
+            prefs['page counter'] = value
+            self._window.page_counter.update(again=True)
+
     def _create_screen_profile_entry(self) -> Gtk.Entry:
         """The ICC file of the screen, typed in: empty is none, and the
         pages are drawn in sRGB as they come."""
@@ -1101,9 +1116,6 @@ class _PreferencesDialog(Dialog):
         elif (preference == 'hide all in fullscreen' and
               self._window.is_fullscreen()):
             self._window.draw_image()
-
-        elif preference in ('page counter in fullscreen', 'page counter fades'):
-            self._window.page_counter.update(again=True)
 
         elif preference == 'show page numbers on thumbnails':
             self._window.thumbnailsidebar.toggle_page_numbers_visible()

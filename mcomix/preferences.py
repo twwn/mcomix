@@ -29,7 +29,9 @@ from mcomix import tools
 #:   6: "max threads" no longer carries MComix 3's default of 3.
 #:   7: SHIFT+ALT and the arrows move to the ten-page turns that follow
 #:      manga mode.
-CONFIG_FORMAT_VERSION = 7
+#:   8: "page counter in fullscreen", on or off, is "page counter", one
+#:      of three.
+CONFIG_FORMAT_VERSION = 8
 
 #: Keys a step of _migrate_preferences() has given to another action, as
 #: (action, accelerator, holder): the key bindings are read after the
@@ -105,8 +107,7 @@ Preferences = TypedDict('Preferences', {
     'store recent file info': bool,
     'hide all': bool,
     'hide all in fullscreen': bool,
-    'page counter in fullscreen': bool,
-    'page counter fades': bool,
+    'page counter': int,
     'path of last browsed in filechooser': str,
     'store last saved in directory': bool,
     'path of last saved in filechooser': str,
@@ -255,8 +256,8 @@ _DEFAULTS: Preferences = {
     'store recent file info': True,
     'hide all': False,
     'hide all in fullscreen': True,
-    'page counter in fullscreen': False,
-    'page counter fades': False,
+    # Off, always, or after a page turn: osd.PageCounter has the names.
+    'page counter': 0,
     'path of last browsed in filechooser': constants.HOME_DIR,
     'store last saved in directory': True,
     'path of last saved in filechooser': constants.HOME_DIR,
@@ -547,6 +548,13 @@ def _migrate_preferences(saved_prefs: dict[str, object]) -> None:
         # the default now, as format 4 found of the extraction threads.
         if saved_prefs.get('max threads') == 3:
             del saved_prefs['max threads']
+
+    if version < 8:
+        # Two check buttons, one under the other, became one dropdown.
+        shown = saved_prefs.pop('page counter in fullscreen', False)
+        fades = saved_prefs.pop('page counter fades', False)
+        if shown is True:
+            saved_prefs['page counter'] = 2 if fades is True else 1
 
     saved_prefs[_FORMAT_VERSION_KEY] = CONFIG_FORMAT_VERSION
 

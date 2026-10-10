@@ -23,6 +23,7 @@ from . import MComixTest, get_testfile_path, hold_open, pump, wait_for
 from mcomix import archive_packer
 from mcomix import bookmark_backend
 from mcomix import constants
+from mcomix import osd
 from mcomix import dialog as dialog_module
 from mcomix import edit_dialog
 from mcomix import file_chooser_simple_dialog as simple_chooser
@@ -1316,7 +1317,7 @@ class MainWindowTest(MComixTest):
                          self.window._modified_status(True))
 
     def _counter_in_fullscreen(self, wanted):
-        prefs['page counter in fullscreen'] = wanted
+        prefs['page counter'] = wanted
         pages = len(self._ready())
         with unittest.mock.patch.object(self.window, 'is_fullscreen',
                                         return_value=True):
@@ -1327,17 +1328,17 @@ class MainWindowTest(MComixTest):
     def test_fullscreen_can_show_the_page_number_in_a_corner(self):
         """The status bar is hidden in fullscreen, and the OSD comes on
         Tab only (upstream feature request 81)."""
-        pages = self._counter_in_fullscreen(True)
+        pages = self._counter_in_fullscreen(osd.PageCounter.ALWAYS)
         self.assertEqual('3 / %d' % pages, self.window.page_counter.text())
         draw = self.window.page_area._overlays['page counter']
         draw(Gtk.Snapshot())
 
     def test_the_page_number_is_off_unless_asked_for(self):
-        self._counter_in_fullscreen(False)
+        self._counter_in_fullscreen(osd.PageCounter.NEVER)
         self.assertNotIn('page counter', self.window.page_area._overlays)
 
     def test_the_page_number_goes_with_fullscreen(self):
-        self._counter_in_fullscreen(True)
+        self._counter_in_fullscreen(osd.PageCounter.ALWAYS)
         with unittest.mock.patch.object(self.window, 'is_fullscreen',
                                         return_value=False):
             self.window.page_counter.update()
@@ -1347,8 +1348,7 @@ class MainWindowTest(MComixTest):
     def test_the_page_number_can_go_after_a_page_turn(self):
         """As CDisplayEx shows it: on a page turn, for a few seconds
         (the comment of 2026-10-09 on upstream feature request 81)."""
-        prefs['page counter fades'] = True
-        pages = self._counter_in_fullscreen(True)
+        pages = self._counter_in_fullscreen(osd.PageCounter.AFTER_TURN)
         counter = self.window.page_counter
         self.assertEqual('3 / %d' % pages, counter.text())
         self.assertIsNotNone(counter._timeout_event)
@@ -1368,13 +1368,12 @@ class MainWindowTest(MComixTest):
         self.assertIsNotNone(counter._timeout_event)
 
     def test_the_page_number_stays_unless_it_is_to_go(self):
-        self._counter_in_fullscreen(True)
+        self._counter_in_fullscreen(osd.PageCounter.ALWAYS)
         self.assertIsNone(self.window.page_counter._timeout_event)
 
     def test_leaving_fullscreen_stops_the_timer(self):
         """A timer left running would hold the window after it closed."""
-        prefs['page counter fades'] = True
-        self._counter_in_fullscreen(True)
+        self._counter_in_fullscreen(osd.PageCounter.AFTER_TURN)
         self.window.page_counter.update()
         self.assertIsNone(self.window.page_counter._timeout_event)
 

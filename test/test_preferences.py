@@ -345,6 +345,23 @@ class MigratePreferencesTest(MComixTest):
         preferences.read_preferences_file()
         self.assertEqual([], preferences.keybinding_moves)
 
+    def test_the_two_page_counter_buttons_become_one_choice(self) -> None:
+        """"Show the page number in fullscreen" and the check button
+        under it became one dropdown, 'page counter'."""
+        for stored, read in (({'page counter in fullscreen': True}, 1),
+                             ({'page counter in fullscreen': True,
+                               'page counter fades': True}, 2),
+                             ({'page counter in fullscreen': False,
+                               'page counter fades': True}, 0),
+                             ({}, 0)):
+            with self.subTest(stored=stored):
+                self._write({_FORMAT_VERSION_KEY: 7, **stored})
+                prefs['page counter'] = 0
+                preferences.read_preferences_file()
+                self.assertEqual(read, prefs['page counter'])
+                self.assertNotIn('page counter in fullscreen', prefs)
+                self.assertNotIn('page counter fades', prefs)
+
     def test_a_version_that_is_not_a_number_is_taken_as_the_oldest(self) -> None:
         """The version comes out of the file like everything else in it,
         so it can be anything a hand edit or a half-written file left

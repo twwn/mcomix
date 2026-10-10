@@ -649,6 +649,16 @@ class PreferenceCallbacksTest(MComixTest):
                 self.assertEqual(called, self._choose(callback, value))
                 self.assertEqual(value, prefs[preference])
 
+    def test_the_page_number_choice_is_stored_and_shown_again(self):
+        prefs['page counter'] = 0
+        box = self.dialog._create_page_counter_combobox()
+        with unittest.mock.patch.object(
+                self.window.page_counter, 'update') as update:
+            box.set_selected(2)
+            box.set_selected(2)
+        self.assertEqual(2, prefs['page counter'])
+        update.assert_called_once_with(again=True)
+
     def test_a_screen_profile_typed_in_is_stored_and_redraws_once(self):
         entry = self.dialog._create_screen_profile_entry()
         with unittest.mock.patch.object(
