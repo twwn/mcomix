@@ -1559,7 +1559,7 @@ class MainWindowTest(MComixTest):
 
     def test_with_click_halves_the_left_half_turns_back(self):
         """Upstream feature request 103."""
-        prefs['click halves'] = True
+        prefs['click zones'] = constants.CLICK_HALVES
         self._ready()
         self.window.set_page(3)
         self._pump()
@@ -1569,7 +1569,7 @@ class MainWindowTest(MComixTest):
         self.assertEqual(3, self._page())
 
     def test_in_manga_mode_the_halves_change_places(self):
-        prefs['click halves'] = True
+        prefs['click zones'] = constants.CLICK_HALVES
         self._ready()
         self.window.set_page(3)
         self.window.actiongroup.get_action('manga_mode').activate()
@@ -1579,6 +1579,36 @@ class MainWindowTest(MComixTest):
         self.assertEqual(2, self._page())
         self._click_at(0.25)
         self.assertEqual(3, self._page())
+
+    def test_with_thirds_the_middle_one_toggles_fullscreen(self):
+        """For touch screens (upstream feature request 91): the left
+        third turns back, the right forward, the middle enters or
+        leaves fullscreen."""
+        prefs['click zones'] = constants.CLICK_THIRDS
+        self._ready()
+        self.window.set_page(3)
+        self._pump()
+        fullscreen = self.window.actiongroup.get_action('fullscreen')
+        with unittest.mock.patch.object(fullscreen, 'activate') as activate:
+            self._click_at(0.5)
+            self.assertEqual(3, self._page())
+            activate.assert_called_once_with()
+            self._click_at(0.2)
+            self.assertEqual(2, self._page())
+            self._click_at(0.4)
+            self.assertEqual(2, self._page())
+            self._click_at(0.8)
+            self.assertEqual(3, self._page())
+        self.assertEqual(2, activate.call_count)
+
+    def test_a_double_click_on_the_middle_third_toggles_once(self):
+        prefs['click zones'] = constants.CLICK_THIRDS
+        self._ready()
+        fullscreen = self.window.actiongroup.get_action('fullscreen')
+        with unittest.mock.patch.object(fullscreen, 'activate') as activate:
+            self._double_click()
+        activate.assert_called_once_with()
+        self.assertEqual(1, self._page())
 
     def test_without_click_halves_both_halves_turn_forward(self):
         self._ready()

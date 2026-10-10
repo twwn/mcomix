@@ -241,10 +241,8 @@ class _PreferencesDialog(Dialog):
             'flip with click',
             _('A left click on the page turns to the next one. Clicks with SHIFT or ALT turn pages either way.')))
 
-        page.add_row(self._create_pref_check_button(
-            _('A click on the left half turns back'),
-            'click halves',
-            _('With "Flip pages with a left click", the left half of the page turns back and the right half forward. In manga mode it is the other way round.')))
+        page.add_row(Gtk.Label(label=_('Where a click lands:')),
+                     self._create_click_zones_combobox())
 
         page.add_row(self._create_pref_check_button(
             _('Skip pages that cannot be shown'),
@@ -882,6 +880,22 @@ class _PreferencesDialog(Dialog):
 
         if value != last_value:
             self._window.draw_image()
+
+    def _create_click_zones_combobox(self) -> "widgets.Chooser[int]":
+        """What a left click turns by where it lands on the page."""
+        items = (
+                (_('Anywhere: the next page'), constants.CLICK_FORWARD),
+                (_('Halves: back and forward'), constants.CLICK_HALVES),
+                (_('Thirds: back, fullscreen, forward'),
+                 constants.CLICK_THIRDS))
+
+        def changed(box: "widgets.Chooser[int]") -> None:
+            prefs['click zones'] = box.get_value()
+
+        box = self._create_combobox(items, prefs['click zones'], changed)
+        box.set_tooltip_text(
+            _('With "Flip pages with a left click": the left half or third of the page turns back and the right one forward; the middle third enters or leaves fullscreen. In manga mode left and right change places.'))
+        return box
 
     def _create_page_counter_combobox(self) -> "widgets.Chooser[int]":
         """Whether fullscreen shows the page number in a corner: never,

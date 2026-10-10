@@ -786,7 +786,14 @@ class EventHandler:
                 elif state & Gdk.ModifierType.SHIFT_MASK:
                     self._flip_page(10)
                 elif prefs['flip with click']:
-                    self._flip_page(self._click_direction(x))
+                    direction = self._click_direction(x)
+                    if direction:
+                        self._flip_page(direction)
+                    elif n_press == 1:
+                        # The middle third: the second click of a
+                        # double one would only undo the first.
+                        self._window.actiongroup.get_action(
+                            'fullscreen').activate()
                 elif n_press == 2:
                     # A double click enters or leaves fullscreen, as in
                     # an image viewer (upstream feature request 86) -
@@ -814,12 +821,19 @@ class EventHandler:
 
     def _click_direction(self, x: float) -> int:
         """The way a plain click at <x> on the page area turns: forward,
-        or, with "click halves" set, back on the half the book is read
-        from - the left, the right in manga mode (upstream feature
-        request 103)."""
-        if not prefs['click halves']:
+        or, with 'click zones' set to the halves, back on the half the
+        book is read from - the left, the right in manga mode (upstream
+        feature request 103).  With the thirds, 0 for the middle one,
+        which enters or leaves fullscreen instead, as touch screen
+        readers have it (upstream feature request 91)."""
+        zones = prefs['click zones']
+        if zones == constants.CLICK_FORWARD:
             return 1
-        back = x < self._window.page_area.get_width() / 2
+        width = self._window.page_area.get_width()
+        if zones == constants.CLICK_THIRDS:
+            if width / 3 <= x < width * 2 / 3:
+                return 0
+        back = x < width / 2
         if self._window.is_manga_mode:
             back = not back
         return -1 if back else 1

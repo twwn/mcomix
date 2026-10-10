@@ -56,6 +56,11 @@ UNION_INDEX = -2
 
 ANIMATION_DISABLED, ANIMATION_NORMAL = list(range(2))
 
+#: What a left click on the page turns, by where it lands ('click zones'):
+#: the whole page forward; the half the book is read from back; the
+#: thirds, with the middle one entering or leaving fullscreen.
+CLICK_FORWARD, CLICK_HALVES, CLICK_THIRDS = list(range(3))
+
 ZIP, RAR, TAR, GZIP, BZIP2, XZ, PDF, SEVENZIP, LHA, ZIP_EXTERNAL, MOBI, DJVU = list(range(12))
 NORMAL_CURSOR, GRAB_CURSOR, WAIT_CURSOR, NO_CURSOR = list(range(4))
 #: The two collections the library shows that are not rows in its

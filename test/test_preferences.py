@@ -362,6 +362,15 @@ class MigratePreferencesTest(MComixTest):
                 self.assertNotIn('page counter in fullscreen', prefs)
                 self.assertNotIn('page counter fades', prefs)
 
+    def test_the_halves_become_one_of_the_click_zones(self) -> None:
+        for stored, read in ((True, 1), (False, 0)):
+            with self.subTest(stored=stored):
+                self._write({_FORMAT_VERSION_KEY: 8, 'click halves': stored})
+                prefs['click zones'] = 0
+                preferences.read_preferences_file()
+                self.assertEqual(read, prefs['click zones'])
+                self.assertNotIn('click halves', prefs)
+
     def test_a_version_that_is_not_a_number_is_taken_as_the_oldest(self) -> None:
         """The version comes out of the file like everything else in it,
         so it can be anything a hand edit or a half-written file left

@@ -31,7 +31,8 @@ from mcomix import tools
 #:      manga mode.
 #:   8: "page counter in fullscreen", on or off, is "page counter", one
 #:      of three.
-CONFIG_FORMAT_VERSION = 8
+#:   9: "click halves", on or off, is "click zones", one of three.
+CONFIG_FORMAT_VERSION = 9
 
 #: Keys a step of _migrate_preferences() has given to another action, as
 #: (action, accelerator, holder): the key bindings are read after the
@@ -103,7 +104,7 @@ Preferences = TypedDict('Preferences', {
     'smart scroll percentage': float,
     'flip with wheel': bool,
     'flip with click': bool,
-    'click halves': bool,
+    'click zones': int,
     'store recent file info': bool,
     'hide all': bool,
     'hide all in fullscreen': bool,
@@ -252,7 +253,7 @@ _DEFAULTS: Preferences = {
     'smart scroll percentage': 0.5,
     'flip with wheel': True,
     'flip with click': True,
-    'click halves': False,
+    'click zones': 0,  # constants.CLICK_FORWARD
     'store recent file info': True,
     'hide all': False,
     'hide all in fullscreen': True,
@@ -555,6 +556,11 @@ def _migrate_preferences(saved_prefs: dict[str, object]) -> None:
         fades = saved_prefs.pop('page counter fades', False)
         if shown is True:
             saved_prefs['page counter'] = 2 if fades is True else 1
+
+    if version < 9:
+        # The halves became one choice of three, beside the thirds.
+        if saved_prefs.pop('click halves', False) is True:
+            saved_prefs['click zones'] = 1
 
     saved_prefs[_FORMAT_VERSION_KEY] = CONFIG_FORMAT_VERSION
 
