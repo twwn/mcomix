@@ -836,7 +836,12 @@ class UnpackedPagesKeptTest(_WindowTest):
         self._open(1)
         self._open(2)
         self._open(1)
-        self.assertEqual([], _descriptors_on(self.books[0]))
+        self.assertIsNone(self.handler._extractor._archive)
+        # Read from /proc, which Windows does not have - and which Wine
+        # shows a Windows Python all the same, so that this passed there
+        # and failed on Windows itself.
+        if os.path.isdir('/proc/self/fd') and sys.platform != 'win32':
+            self.assertEqual([], _descriptors_on(self.books[0]))
 
     def test_a_book_written_since_is_unpacked_anew(self):
         first = self._open(1)
