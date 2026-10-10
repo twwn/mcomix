@@ -1397,6 +1397,48 @@ class MainWindowTest(MComixTest):
         self.assertEqual(self.window.imagehandler.get_current_page(), 2)
         self.assertEqual(self.window.selected_pages, set())
 
+    def _settled(self):
+        """Pump until the canvas has been allocated for what was drawn."""
+        for _ in range(20):
+            self._pump()
+            wait_for(lambda: False, seconds=0.02)
+
+    def _view_middle(self):
+        """The middle of the view, as a fraction of the content's size."""
+        area = self.window.page_area
+        x, y = area.get_position()
+        width, height = area.get_content_size()
+        return ((x + area.get_hadjustment().get_page_size() / 2) / width,
+                (y + area.get_vadjustment().get_page_size() / 2) / height)
+
+    def test_a_zoom_keeps_the_middle_of_the_view_where_it_was(self):
+        """Upstream feature request 74: zooming in or out jumped to
+        another part of the page, the scroll position kept in pixels."""
+        self.window.filehandler.open_file(get_testfile_path(
+            'pepper-and-carrot',
+            'Pepper-and-Carrot_E01_The-Potion-of-Flight.cbz'), 2)
+        self.assertTrue(wait_for(
+            lambda: self.window.imagehandler.get_current_page() == 2
+            and self.window.imagehandler.page_is_available(), seconds=20))
+        self.window.actiongroup.get_action('fit_manual_mode').activate()
+        for _ in range(4):
+            self.window.manual_zoom_in()
+        self._settled()
+        area = self.window.page_area
+        width, height = area.get_content_size()
+        self.assertGreater(height, area.get_vadjustment().get_page_size() * 2,
+                           'the page does not scroll')
+        area.scroll_to(width / 3, height / 2)
+        self._settled()
+        before = self._view_middle()
+        self.window.manual_zoom_in()
+        self._settled()
+        self.assertNotEqual((width, height), area.get_content_size())
+        after = self._view_middle()
+        for was, now in zip(before, after):
+            self.assertAlmostEqual(was, now, delta=0.02,
+                                   msg=(before, after))
+
     def test_a_page_turned_by_hand_is_turned_again_when_shown_again(self):
         """Upstream feature request 32: a book read upright with its
         sideways pages turned, page by page, which were upright again

@@ -56,6 +56,8 @@ Manual zoom | A | No scaling.
 
 No mode scales a small page up unless "View → Stretch small images" is on.
 
+Zooming, or resizing the window, keeps the middle of the view on the same part of the page.
+
 ## Double page and manga mode
 
 - Double page mode, the D key, shows two pages side by side, so a spread reads as one.

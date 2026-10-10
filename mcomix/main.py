@@ -604,7 +604,18 @@ class MainWindow(Gtk.Window):
                 self.thumbnailsidebar.change_thumbnail_background_color(
                     bg_colour, dynamic=True)
 
-            self.page_area.set_content_size(*(self.layout.get_union_box().get_size()))
+            content_size = self.layout.get_union_box().get_size()
+            if scroll_to is None:
+                # The same pages at another size - a zoom, a resized
+                # window - keep the middle of the view where it was in
+                # them, rather than the top left corner's pixels
+                # (upstream feature request 74).
+                kept = self._relative_position(content_size)
+            else:
+                kept = None
+            self.page_area.set_content_size(*content_size)
+            if kept is not None:
+                self.page_area.scroll_to(*kept)
             for i in range(pixbuf_count):
                 self.page_area.move(self.images[i],
                                        *content_boxes[i].get_position())
@@ -653,6 +664,23 @@ class MainWindow(Gtk.Window):
         self._waiting_for_redraw = False
 
         return False
+
+    def _relative_position(self, new_size: "Sequence[int]"
+                           ) -> "tuple[float, float] | None":
+        """Where to scroll content of <new_size> to so that the middle of
+        the view is the same part of it as of the content shown now, or
+        None where the size is not changing or nothing was shown."""
+        old_size = self.page_area.get_content_size()
+        if tuple(old_size) == tuple(new_size) or not all(old_size):
+            return None
+        position = self.page_area.get_position()
+        kept = []
+        for axis, adjustment in enumerate((self.page_area.get_hadjustment(),
+                                           self.page_area.get_vadjustment())):
+            view = adjustment.get_page_size()
+            middle = (position[axis] + view / 2) / max(old_size[axis], view)
+            kept.append(max(0.0, middle * max(new_size[axis], view) - view / 2))
+        return kept[0], kept[1]
 
     @staticmethod
     def _edge_colour(pixbufs: Sequence[GdkPixbuf.Pixbuf],
