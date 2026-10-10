@@ -25,7 +25,7 @@
 ## Opening books
 
 - CTRL+O opens a file chooser; dropping files on the page opens them too.
-- An archive, PDF or AZW3 file opens as one book. RAR, 7z, LHA and PDF need a helper: see [Install](install.md#requirements).
+- An archive, PDF, DjVu or AZW3 file opens as one book. RAR, 7z, LHA, PDF and DjVu need a helper: see [Install](install.md#requirements).
 - An image opens with every image in its folder; a folder opens its images.
 - A picture whose name has no extension counts as an image: MComix reads what the file holds. One with an extension it does not read is left out.
 - Several files picked at once open as one book of just those.

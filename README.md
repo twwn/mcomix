@@ -13,7 +13,7 @@
 
 ## Highlights
 
-- **Opens everything** – images, folders, CBZ/ZIP, CBR/RAR (split volumes too), CB7/7z, CBT/tar, LHA, PDF and AZW3.
+- **Opens everything** – images, folders, CBZ/ZIP, CBR/RAR (split volumes too), CB7/7z, CBT/tar, LHA, PDF, DjVu and AZW3.
 - **Reads your way** – single or double page, manga right-to-left, fit to width, height or both, and smart scrolling that walks a page in reading order.
 - **Edits books** – rename, reorder, swap and delete pages while reading, with undo, and write the archive back in its own format with a ComicInfo.xml.
 - **Library** – collections, covers, reading progress and watched folders.

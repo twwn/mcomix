@@ -18,6 +18,7 @@ from mcomix.archive import (
     mobi,
     pdf_multi,
     pdf_external,
+    djvu_external,
     rar,
     rar_external,
     sevenzip_external,
@@ -73,6 +74,9 @@ _HANDLERS: dict[int, tuple[type[archive_base.BaseArchive], ...]] = {
     ),
     constants.MOBI: (
         mobi.MobiArchive,
+    ),
+    constants.DJVU: (
+        djvu_external.DjvuArchive,
     ),
 }
 
@@ -142,6 +146,10 @@ def mobi_available() -> bool:
     return _is_available(constants.MOBI)
 
 
+def djvu_available() -> bool:
+    return _is_available(constants.DJVU)
+
+
 @functools.cache
 def get_supported_formats() -> dict[str, tuple[set[str], set[str]]]:
     """ Return the archive formats a handler is installed for, as a mapping
@@ -155,6 +163,7 @@ def get_supported_formats() -> dict[str, tuple[set[str], set[str]]]:
         ('LHA', constants.LHA_FORMATS, lha_available()),
         ('PDF', constants.PDF_FORMATS, pdf_available()),
         ('MobiPocket', constants.MOBI_FORMATS, mobi_available()),
+        ('DjVu', constants.DJVU_FORMATS, djvu_available()),
     ):
         if is_available:
             supported_formats[name] = (set(formats[0]), set(formats[1]))
@@ -189,7 +198,7 @@ def archive_mime_type(path: str) -> int | None:
                     return constants.ZIP_EXTERNAL
 
             with open(path, 'rb') as fd:
-                magic = fd.read(5)
+                magic = fd.read(16)
                 fd.seek(60)
                 magic2 = fd.read(8)
 
@@ -215,6 +224,12 @@ def archive_mime_type(path: str) -> int | None:
 
             if magic2 == b'BOOKMOBI':
                 return constants.MOBI
+
+            # One page, or several bundled; an indirect document's index
+            # names its pages' files and holds no page itself.
+            if magic[0:8] == b'AT&TFORM' and magic[12:16] in (b'DJVU',
+                                                              b'DJVM'):
+                return constants.DJVU
 
     except Exception:
         log.warning(_('! Could not read %s'), path)

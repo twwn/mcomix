@@ -56,7 +56,7 @@ UNION_INDEX = -2
 
 ANIMATION_DISABLED, ANIMATION_NORMAL = list(range(2))
 
-ZIP, RAR, TAR, GZIP, BZIP2, XZ, PDF, SEVENZIP, LHA, ZIP_EXTERNAL, MOBI = list(range(11))
+ZIP, RAR, TAR, GZIP, BZIP2, XZ, PDF, SEVENZIP, LHA, ZIP_EXTERNAL, MOBI, DJVU = list(range(12))
 NORMAL_CURSOR, GRAB_CURSOR, WAIT_CURSOR, NO_CURSOR = list(range(4))
 #: The two collections the library shows that are not rows in its
 #: database.  "All books" is not a collection at all - it stands for the
@@ -118,6 +118,9 @@ PDF_FORMATS = (
 MOBI_FORMATS = (
         ('application/vnd.amazon.mobi8-ebook',),
         ('azw3',))
+DJVU_FORMATS = (
+        ('image/vnd.djvu', 'image/x-djvu'),
+        ('djvu', 'djv'))
 
 IMAGEIO_GDKPIXBUF, IMAGEIO_PIL = list(range(2))
 
