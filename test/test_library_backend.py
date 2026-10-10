@@ -15,6 +15,7 @@ from sqlite3 import dbapi2
 from . import get_testfile_path, posix_byte_names
 
 from mcomix import constants
+from mcomix import thumbnail_tools
 from mcomix import tools
 from mcomix.i18n import _
 from mcomix import last_read_page
@@ -1235,9 +1236,9 @@ class MovedBookTest(LibraryDatabaseTest):
 
     The library stores a book by its path, so a move that left the row
     alone would point it at a file that is not there any more - and
-    everything that hangs off the row's id, the thumbnail, the
-    collections it is in and the page it was read to, would be lost with
-    it.
+    what hangs off the row's id, the collections it is in and the page
+    it was read to, would be lost with it.  The cover is stored under
+    the path instead, and follows on its own.
     """
 
     def setUp(self):
@@ -1267,6 +1268,29 @@ class MovedBookTest(LibraryDatabaseTest):
 
         self.assertEqual(self.backend.get_book_by_path(moved).name,
                          'elsewhere.zip')
+
+    def test_the_cover_follows_the_file(self):
+        """The cover is stored under a name made of the book's path: the
+        one drawn before the move was left where nothing looks for it or
+        removes it, and the archive was opened for another."""
+        book = os.path.join(self.tmp_dir, 'book.zip')
+        moved = os.path.join(self.tmp_dir, 'moved.zip')
+        shutil.copy2(self.path, book)
+        self.assertTrue(self.backend.add_book(book))
+        self.assertIsNotNone(self.backend.get_book_thumbnail(book))
+        covers = os.listdir(constants.LIBRARY_COVERS_PATH)
+        self.assertEqual(1, len(covers))
+        shutil.move(book, moved)
+
+        self.assertTrue(self.backend.update_book_path(book, moved))
+
+        with unittest.mock.patch.object(
+                thumbnail_tools.Thumbnailer, '_create_thumbnail') as drawn:
+            self.assertIsNotNone(self.backend.get_book_thumbnail(moved))
+        drawn.assert_not_called()
+        kept = os.listdir(constants.LIBRARY_COVERS_PATH)
+        self.assertEqual(1, len(kept))
+        self.assertNotEqual(covers, kept)
 
     def test_a_book_that_is_not_in_the_library_moves_nothing(self):
         self.assertFalse(self.backend.update_book_path('/nowhere/book.zip',
@@ -1382,6 +1406,35 @@ class RelocatedShelfTest(LibraryDatabaseTest):
             sorted(path for path in self.backend._con.execute(
                 'select path from watchlist').fetchall()))
 
+    def _draw_covers(self):
+        """Something stored as the cover of every book, saying whose."""
+        covers = thumbnail_tools.Thumbnailer(
+            dst_dir=constants.LIBRARY_COVERS_PATH)
+        os.makedirs(constants.LIBRARY_COVERS_PATH, exist_ok=True)
+        for book, path in self.backend._con.execute(
+                'select id, path from book').fetchall():
+            with open(covers._path_to_thumbpath(path), 'w') as cover:
+                cover.write(str(book))
+        return covers
+
+    def _covers_by_book(self, covers):
+        """What is stored as the cover of each book where it is now."""
+        found = {}
+        for book, path in self.backend._con.execute(
+                'select id, path from book').fetchall():
+            with open(covers._path_to_thumbpath(path)) as cover:
+                found[book] = cover.read()
+        return found
+
+    def test_the_covers_follow_their_books(self):
+        """They are stored under names made of the paths, so every one
+        was left behind and drawn again from its archive."""
+        covers = self._draw_covers()
+        self.assertEqual(2, self.backend.relocate(self.old, self.new))
+        self.assertEqual({book: str(book) for book in range(1, 6)},
+                         self._covers_by_book(covers))
+        self.assertEqual(5, len(os.listdir(constants.LIBRARY_COVERS_PATH)))
+
     def test_a_book_follows_to_where_another_has_just_been(self):
         """Into a folder of its own, or out of one into the folder
         above.  Taken in the order of their ids, the book that came to a
@@ -1398,12 +1451,16 @@ class RelocatedShelfTest(LibraryDatabaseTest):
                         'insert into book (id, name, path, pages, format,'
                         " size) values (?, 'x.cbz', ?, 20, 1, 1)",
                         (number, os.path.join(folder, 'x.cbz')))
+                covers = self._draw_covers()
                 self.assertEqual(2, self.backend.relocate(old, new))
                 self.assertEqual(
                     {number: os.path.join(folder, 'x.cbz')
                      for number, folder in after.items()},
                     dict(self.backend._con.execute(
                         'select id, path from book').fetchall()))
+                # And its cover is not put over one that has yet to go.
+                self.assertEqual({6: '6', 7: '7'},
+                                 self._covers_by_book(covers))
 
     def test_nothing_to_follow_follows_nothing(self):
         self.assertEqual(0, self.backend.relocate(self.old, self.old))

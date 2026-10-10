@@ -547,9 +547,9 @@ class _LibraryBackend:
 
         The library stores a book by its path, so a book MComix has
         moved itself would otherwise be left pointing at a file that is
-        not there any more.  Its thumbnail, its collections and where it
-        was last read all hang off the row's id, so all of them come
-        with it.
+        not there any more.  Its collections and where it was last read
+        hang off the row's id, so they come with it; its cover is stored
+        under a name made of the path, and is moved to the new one's.
 
         Returns whether a row was moved: False if the book was not in
         the library, and False if a row holds <new_path> already - the
@@ -567,10 +567,18 @@ class _LibraryBackend:
             changed = self.execute('''update Book set path = ?, name = ?
                 where path = ?''', (new_path, os.path.basename(new_path),
                                     old_path))
-            return changed > 0
         except dbapi2.Error:
             log.error(_('! Could not move book "%s" in the library'), old_path)
             return False
+        if changed > 0:
+            self._covers().follow(old_path, new_path)
+        return changed > 0
+
+    @staticmethod
+    def _covers() -> thumbnail_tools.Thumbnailer:
+        """What keeps the covers of the library's books."""
+        return thumbnail_tools.Thumbnailer(
+            dst_dir=constants.LIBRARY_COVERS_PATH)
 
     def relocate(self, old_folder: str, new_folder: str) -> int:
         """Follow every book kept in <old_folder>, at any depth, to
@@ -586,7 +594,8 @@ class _LibraryBackend:
         A book whose new path the library holds already keeps its row
         where it was: the path column is unique, and the row there is
         not this book's to replace.  The watched folders under
-        <old_folder> are followed as well.
+        <old_folder> are followed as well, and the covers of the books
+        that moved, which are stored under names made of their paths.
         """
         old = tools.folder_prefix(old_folder)
         new = tools.folder_prefix(new_folder)
@@ -611,11 +620,13 @@ class _LibraryBackend:
                 # path going down, and the shorter coming up.
                 books.sort(key=lambda book: len(book[1]),
                            reverse=new.startswith(old))
-                moved = 0
+                followed = []
                 for book, path in books:
-                    moved += self.execute(
-                        'update or ignore Book set path = ? where id = ?',
-                        (new + path[len(old):], book))
+                    target = new + path[len(old):]
+                    if self.execute(
+                            'update or ignore Book set path = ? where id = ?',
+                            (target, book)):
+                        followed.append((path, target))
                 self.execute(
                     '''update or ignore watchlist
                     set path = ? || substr(path, ?)
@@ -628,7 +639,11 @@ class _LibraryBackend:
             log.error(_('! Could not move book "%s" in the library'),
                       old_folder)
             return 0
-        return moved
+        # In the same order, and for the same reason.
+        covers = self._covers()
+        for path, target in followed:
+            covers.follow(path, target)
+        return len(followed)
 
     @callback.Callback
     def book_added(self, book: backend_types._Book) -> None:
@@ -786,8 +801,7 @@ class _LibraryBackend:
         """Remove the <book> from the library."""
         path = self.get_book_path(book)
         if path is not None:
-            thumbnailer = thumbnail_tools.Thumbnailer(dst_dir=constants.LIBRARY_COVERS_PATH)
-            thumbnailer.delete(path)
+            self._covers().delete(path)
         self.execute('delete from Book where id = ?', (book,))
         self.execute('delete from Contain where book = ?', (book,))
         # A book's id is its sqlite rowid, which is handed out again as

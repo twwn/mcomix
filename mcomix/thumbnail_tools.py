@@ -180,6 +180,26 @@ class Thumbnailer:
                 log.error(_("! Could not remove file \"%s\""), thumbpath)
                 log.error(error)
 
+    def follow(self, old_path: str, new_path: str) -> None:
+        """Keep the thumbnail stored for <old_path> for <new_path>, where
+        the file has been moved to.
+
+        A thumbnail is stored under a name made of its file's path, so
+        one left where it was is never looked at again and never
+        removed, and the file is thumbnailed a second time where it is
+        now - for a book, by opening the archive.  The modification time
+        is what tells a stored thumbnail from a stale one, and a move
+        keeps it."""
+        stored = self._path_to_thumbpath(old_path)
+        if not os.path.isfile(stored):
+            return
+        try:
+            os.replace(stored, self._path_to_thumbpath(new_path))
+        except OSError as error:
+            log.error(_('! Could not move %(file)s to %(directory)s: %(error)s'),
+                      {'file': stored, 'directory': self.dst_dir,
+                       'error': error})
+
     def _create_thumbnail_pixbuf(self, filepath: str) \
             -> "tuple[GdkPixbuf.Pixbuf | None, dict[str, str] | None]":
         """ Creates a thumbnail pixbuf from <filepath>, and returns it as a
