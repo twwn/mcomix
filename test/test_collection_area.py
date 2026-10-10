@@ -370,6 +370,38 @@ class CollectionAreaTest(MComixTest):
             0, self.area._drag_motion(_StubDrop('%s:0' % (
                 constants.LIBRARY_DRAG_BOOKS,)), x, y))
 
+    def test_books_dragged_with_ctrl_are_copied(self):
+        """Upstream feature request 67: a drag moved books, and filing a
+        book in a second collection took dragging it out of "All books"
+        and finding it there."""
+        self.backend.add_book_to_collection(6, self.comics)
+        self.area._list.select_row(self._row_for(self.comics))
+        target = _StubDrop('%s:6' % (constants.LIBRARY_DRAG_BOOKS,),
+                           Gdk.DragAction.COPY)
+        x, y = self._middle_of(self.manga)
+        self.assertEqual(Gdk.DragAction.COPY,
+                         self.area._drag_motion(target, x, y))
+        self.assertTrue(self.area._drag_data_received(
+            target, target.get_value(), x, y))
+        within = set(self.backend.fetchall(
+            'select collection from contain where book = 6'))
+        self.assertTrue({self.comics, self.manga} <= within, within)
+        self.assertEqual(self.library.book_area.removed, [])
+
+    def test_books_dragged_without_ctrl_are_moved(self):
+        self.backend.add_book_to_collection(6, self.comics)
+        self.area._list.select_row(self._row_for(self.comics))
+        target = _StubDrop('%s:6' % (constants.LIBRARY_DRAG_BOOKS,))
+        x, y = self._middle_of(self.manga)
+        self.assertEqual(Gdk.DragAction.MOVE,
+                         self.area._drag_motion(target, x, y))
+        self.assertTrue(self.area._drag_data_received(
+            target, target.get_value(), x, y))
+        within = set(self.backend.fetchall(
+            'select collection from contain where book = 6'))
+        self.assertNotIn(self.comics, within)
+        self.assertIn(self.manga, within)
+
     def test_books_moved_into_a_collection_under_it_keep_their_covers(self):
         """The covers of "Comics" include those of "Inner", filed under
         it, so books moved from one to the other are still on show; the
@@ -527,12 +559,21 @@ class _StubDragSource:
 
 class _StubDrop:
 
-    """Stands in for the Gtk.DropTarget a motion handler is told about."""
+    """Stands in for the Gtk.DropTarget a motion handler is told about,
+    and for the Gdk.Drop it holds: <actions> are what the drag leaves
+    to choose from, COPY alone while CTRL is held."""
 
-    def __init__(self, value):
+    def __init__(self, value, actions=Gdk.DragAction.MOVE | Gdk.DragAction.COPY):
         self._value = value
+        self._actions = actions
 
     def get_value(self):
         return self._value
+
+    def get_current_drop(self):
+        return self
+
+    def get_actions(self):
+        return self._actions
 
 # vim: expandtab:sw=4:ts=4

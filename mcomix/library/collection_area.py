@@ -84,7 +84,8 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable):
         # drop target answers for one type.  Preloading is what makes the
         # dragged text readable while it is still only being hovered,
         # which is when the drop has to be accepted or refused.
-        self._drop_target = Gtk.DropTarget.new(str, Gdk.DragAction.MOVE)
+        self._drop_target = Gtk.DropTarget.new(
+            str, Gdk.DragAction.MOVE | Gdk.DragAction.COPY)
         self._drop_target.set_preload(True)
         self._drop_target.connect('motion', self._drag_motion)
         self._drop_target.connect('drop', self._drag_data_received)
@@ -486,9 +487,11 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable):
             books = [self._library.book_area.get_book_at_path(position)
                      for position in positions]
             # Books dragged out of "All books" are filed rather than
-            # moved, and so are books dragged with no collection shown.
+            # moved, and so are books dragged with no collection shown,
+            # or copied with CTRL.
             move_from = (src_collection if src_collection is not None
-                         and src_collection != constants.COLLECTION_ALL else None)
+                         and src_collection != constants.COLLECTION_ALL
+                         and not self._copying(target) else None)
             # Two writes a book: as transactions of their own, a few
             # hundred books held the window up for seconds.
             with self._library.backend.transaction():
@@ -601,6 +604,13 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable):
             dest_name = self._collection_name(dest_collection)
             if src_collection == constants.COLLECTION_ALL:
                 message = _("Add books to '%s'.") % dest_name
+            elif self._copying(target):
+                src_name = self._collection_name(src_collection)
+                message = (_("Copy books from '%(source collection)s' to '%(destination collection)s'.") %
+                           {'source collection': src_name,
+                            'destination collection': dest_name})
+                self._library.set_status_message(message)
+                return Gdk.DragAction.COPY
             else:
                 src_name = self._collection_name(src_collection)
                 message = (_("Move books from '%(source collection)s' to '%(destination collection)s'.") %
@@ -608,6 +618,18 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable):
                             'destination collection': dest_name})
         self._library.set_status_message(message)
         return Gdk.DragAction.MOVE
+
+    @staticmethod
+    def _copying(target: "Gtk.DropTarget | None") -> bool:
+        """Whether the books being dropped are to be copied rather than
+        moved: CTRL held while dragging leaves GTK only the copy to offer
+        (upstream feature request 67)."""
+        drop = target.get_current_drop() if target is not None else None
+        if drop is None:
+            return False
+        actions = drop.get_actions()
+        return bool(actions & Gdk.DragAction.COPY
+                    and not actions & Gdk.DragAction.MOVE)
 
     def _refuse_drop(self) -> Gdk.DragAction:
         """Take no drop where the pointer is, and clear the status

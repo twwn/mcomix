@@ -13,6 +13,7 @@ A book is an archive in any format MComix opens; folders cannot be added.
 - "All books" holds every book.
 - Drag a collection onto another to file it there.
 - Drag books onto a collection to move them there from the collection on show; from "All books" they are added and stay where they were.
+- Hold CTRL while dragging to copy them instead: they stay in the collection on show as well.
 - "Recent" holds the books that are read, not books dragged onto it.
 - "Add..." and books dropped from a file manager go into the collection on show; under "All books" or "Recent" they join no collection.
 - Right-clicking a collection offers "New", "Add...", "Rename", "Duplicate", "Clean up" and "Remove".

@@ -125,7 +125,9 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         # model drag destination; controllers do both, and a drop target
         # answers for one type - so the files come to one of their own.
         drag = Gtk.DragSource()
-        drag.set_actions(Gdk.DragAction.MOVE)
+        # CTRL while dragging copies the books into a collection rather
+        # than moving them there; GTK narrows the actions to COPY then.
+        drag.set_actions(Gdk.DragAction.MOVE | Gdk.DragAction.COPY)
         drag.connect('prepare', self._drag_prepare)
         drag.connect('drag-begin', self._drag_begin)
         self._covers.add_controller(drag)
