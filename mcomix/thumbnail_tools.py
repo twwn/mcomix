@@ -47,6 +47,10 @@ _ORIENTATION_KEY = 'tEXt::X-MComix::Orientation'
 #: is not.
 _UPRIGHT_KEY = 'tEXt::X-MComix::Upright'
 
+#: A file name that says the picture is not the book's cover: "credit"
+#: anywhere in it, or "banner" however its letters are spaced out.
+_NOT_A_COVER = re.compile(r'credit|' + r'[\W_]*'.join('banner'), re.I)
+
 
 def _upright(pixbuf: "GdkPixbuf.Pixbuf") -> "GdkPixbuf.Pixbuf":
     """<pixbuf>, just loaded, turned by the Exif orientation the loader
@@ -488,12 +492,17 @@ class Thumbnailer:
         """Return the filename within <files> that is the most likely to be the
         cover of an archive using some simple heuristics.
         """
-        # Ignore MacOSX meta files, and credit files if possible.
-        named = (filename for filename in files
-                 if '__MACOSX' not in os.path.normpath(filename).split(os.sep)
-                 and 'credit' not in os.path.split(filename)[1].lower())
-
-        images = [name for name in named if image_tools.is_image_file(name)]
+        # Ignore MacOSX meta files.
+        images = [name for name in files
+                  if '__MACOSX' not in os.path.normpath(name).split(os.sep)
+                  and image_tools.is_image_file(name)]
+        # And the pages a scan is given by whoever passed it on, which
+        # sort before the cover: the credits, and the banner upstream
+        # feature request 65 names, also written "banne r" and
+        # "ban_ner".  Not where that leaves nothing: a book whose every
+        # page is called so has a cover all the same.
+        images = [name for name in images
+                  if not _NOT_A_COVER.search(os.path.split(name)[1])] or images
 
         tools.alphanumeric_sort(images)
 

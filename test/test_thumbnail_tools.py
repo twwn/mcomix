@@ -131,6 +131,22 @@ class CoverGuessTest(MComixTest):
             'back cover.jpg', '__MACOSX/._cover.jpg', 'credits-cover.jpg',
             'notes.txt', '02.jpg', '10.jpg'))
 
+    def test_a_banner_before_the_first_page_is_passed_over(self):
+        """Upstream feature request 65: the scanners' banner sorts first
+        and was every such book's cover, the real one being second."""
+        for banner in ('000 banner.jpg', 'Banne r.png', 'ban_ner.jpg',
+                       'a/B-A-N-N-E-R.gif'):
+            self.assertEqual('001.jpg',
+                             self._guess(banner, '001.jpg', '002.jpg'), banner)
+
+    def test_a_book_of_nothing_but_banners_or_credits_has_a_cover(self):
+        """A filter that takes every page leaves the first of them: the
+        credits filter gave such a book no cover at all."""
+        self.assertEqual('Banner 01.jpg',
+                         self._guess('Banner 02.jpg', 'Banner 01.jpg'))
+        self.assertEqual('credit-1.jpg',
+                         self._guess('credit-2.jpg', 'credit-1.jpg'))
+
     def test_without_a_named_cover_the_first_page_in_reading_order(self):
         self.assertEqual('2.jpg', self._guess('10.jpg', '2.jpg', 'notes.txt'))
 
