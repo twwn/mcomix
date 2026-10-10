@@ -354,16 +354,22 @@ _MENUBAR = (
                                         'keep_transformation')))),
 )
 
-#: The actions whose menu items are left out while they are disabled
-#: rather than greyed out.
-_HIDDEN_WHEN_DISABLED = frozenset({'leave_fullscreen', 'remove_bookmark_popup'})
-
-#: The right-click menu.
+#: The right-click menu.  An item of its top level that is disabled is
+#: left out rather than greyed: the menu is opened on something, and
+#: says what can be done there.  Its submenus keep every item in its
+#: place.
 _POPUP = (
     # Shown only while the window fills the screen: the item under
     # View, two levels down, was the only way out with the mouse
     # (upstream feature requests 86 and 135).
     'leave_fullscreen',
+    None,
+    # The menu is opened on a page, so what is done to that page leads
+    # (upstream feature requests 98 and 105).
+    'copy_page_popup', 'extract_page_popup',
+    'rename_page_popup', 'delete_page_popup', 'remove_bookmark_popup',
+    'unpick_pages',
+    None,
     ('menu_go_popup', ('next_page', 'previous_page', 'go_to',
                        'first_page', 'last_page', None,
                        'next_archive', 'previous_archive', None,
@@ -380,12 +386,9 @@ _POPUP = (
                          ('menu_toolbars', ('menubar', 'toolbar', 'statusbar',
                                             'scrollbar', 'thumbnails', None,
                                             'hide_all')))),
-    'menu_bookmarks_popup', 'remove_bookmark_popup',
+    'menu_bookmarks_popup',
     None,
     'open', 'menu_recent', 'library',
-    None,
-    'copy_page_popup', 'extract_page_popup',
-    'rename_page_popup', 'delete_page_popup', 'unpick_pages',
     None,
     'menu_move_to_popup',
     None,
@@ -596,7 +599,7 @@ class MainUI:
         # the top level would be laid out to fit "Previous archive" and its
         # accelerator, three pages down.
         self.popup = Gtk.PopoverMenu.new_from_model_full(
-            self._build(_POPUP), Gtk.PopoverMenuFlags.NESTED)
+            self._build(_POPUP, hide_disabled=True), Gtk.PopoverMenuFlags.NESTED)
         self.popup.set_parent(window)
         self.toolbar = self._build_toolbar()
 
@@ -637,7 +640,7 @@ class MainUI:
     def _rebuild_menus(self) -> bool:
         self._rebuild_pending = None
         self.menubar.set_menu_model(self._build(_MENUBAR))
-        self.popup.set_menu_model(self._build(_POPUP))
+        self.popup.set_menu_model(self._build(_POPUP, hide_disabled=True))
         # The bookmarks menu builds its fixed entries itself.
         self.bookmarks.refresh()
         # A new model is a new set of popovers below the two roots.
@@ -683,12 +686,17 @@ class MainUI:
                 'menu_bookmarks_popup': self.bookmarks.model,
                 'menu_move_to_popup': self.move_to.model}.get(name)
 
-    def _build(self, layout: _Layout) -> Gio.Menu:
+    def _build(self, layout: _Layout,
+               hide_disabled: bool = False) -> Gio.Menu:
         """Turn one of the layouts below into a Gio.Menu.
 
         A layout is a sequence of action names, with None where the XML
         this replaces had a separator - a menu model says that by starting
         a new section - and a (name, sub-layout) pair for a submenu.
+
+        <hide_disabled> leaves an item of the top level out while its
+        action is disabled, which is the right-click menu's way; the
+        items of a submenu are greyed as everywhere else.
         """
         model = Gio.Menu()
         section = Gio.Menu()
@@ -711,7 +719,7 @@ class MainUI:
             entry = Gio.MenuItem.new(self._actions.label(item), None)
             detailed, target = self._actions.detailed(item)
             entry.set_action_and_target_value(detailed, target)
-            if item in _HIDDEN_WHEN_DISABLED:
+            if hide_disabled:
                 entry.set_attribute_value('hidden-when',
                                           GLib.Variant('s', 'action-disabled'))
             accelerator = self._accelerators.get(item)
@@ -771,8 +779,9 @@ class MainUI:
                    'edit_archive',
                    'extract_page',
                    'extract_page_popup',
+                   'copy_page_popup',
+                   'rename_page_popup',
                    'delete_page_popup',
-                   'unpick_pages',
                    'undo',
                    'redo',
                    'save_and_quit',
@@ -817,6 +826,10 @@ class MainUI:
 
         for name in comment:
             self._actions.get_action(name).set_sensitive(comment_sensitive)
+
+        # Only pages that were picked out can be put back.
+        self._actions.get_action('unpick_pages').set_sensitive(
+            general_sensitive and bool(self._window.selected_pages))
 
         self.bookmarks.set_sensitive(general_sensitive)
 

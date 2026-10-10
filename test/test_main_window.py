@@ -4429,6 +4429,67 @@ class MainWindowTest(MComixTest):
                         MainWindowTest._menu_actions(child))
         return actions
 
+    def _popup_top_level(self):
+        """The right-click menu's own items, in order: for each its
+        action (None for a submenu) and what hides it."""
+        model = self.window.uimanager.popup.get_menu_model()
+        items = []
+        for number in range(model.get_n_items()):
+            section = model.get_item_link(number, Gio.MENU_LINK_SECTION)
+            for index in range(section.get_n_items()):
+                action = section.get_item_attribute_value(
+                    index, Gio.MENU_ATTRIBUTE_ACTION, None)
+                hidden = section.get_item_attribute_value(
+                    index, 'hidden-when', None)
+                items.append((action.get_string() if action else None,
+                              hidden.get_string() if hidden else None))
+        return items
+
+    def test_the_right_click_menu_leads_with_the_page_it_was_opened_on(self):
+        """It opened with three submenus of the menu bar, and what can
+        be done to the page stood eleven items down (upstream feature
+        requests 98 and 105)."""
+        actions = [action for action, _ in self._popup_top_level()]
+        self.assertEqual(
+            ['win.leave-fullscreen', 'win.copy-page-popup',
+             'win.extract-page-popup', 'win.rename-page-popup',
+             'win.delete-page-popup', 'win.remove-bookmark-popup',
+             'win.unpick-pages', None],
+            actions[:8])
+
+    def test_the_right_click_menu_leaves_out_what_cannot_be_done(self):
+        """A greyed item says the menu could do it somewhere else; this
+        menu is opened on what it acts on."""
+        for action, hidden in self._popup_top_level():
+            if action is not None:
+                self.assertEqual('action-disabled', hidden, action)
+        # A submenu keeps every item in its place, greyed or not.
+        model = self.window.uimanager.popup.get_menu_model()
+        go = model.get_item_link(2, Gio.MENU_LINK_SECTION).get_item_link(
+            0, Gio.MENU_LINK_SUBMENU)
+        self.assertIsNone(go.get_item_link(0, Gio.MENU_LINK_SECTION)
+                          .get_item_attribute_value(0, 'hidden-when', None))
+
+        group = self.window.actiongroup
+        page_items = ('copy_page_popup', 'extract_page_popup',
+                      'rename_page_popup', 'delete_page_popup')
+        self._ready()
+        for name in page_items:
+            self.assertTrue(group.get_action(name).get_sensitive(), name)
+        # Nothing is picked out, so nothing can be put back.
+        unpick = group.get_action('unpick_pages')
+        self.assertFalse(unpick.get_sensitive())
+        self.window.select_page(2)
+        self.assertTrue(unpick.get_sensitive())
+        self.window.clear_selection()
+        self.assertFalse(unpick.get_sensitive())
+        # And with no book there is no page to act on.
+        self.window.filehandler.close_file()
+        self._pump()
+        for name in page_items + ('edit_archive', 'close',
+                                  'open_containing_folder_popup'):
+            self.assertFalse(group.get_action(name).get_sensitive(), name)
+
     def test_the_popup_menu_opens_its_submenus_as_menus_of_their_own(self):
         """A sliding Gtk.PopoverMenu keeps every submenu page in one
         stack and is as wide as the widest item on any of them, so the

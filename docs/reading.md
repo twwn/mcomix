@@ -20,6 +20,7 @@
 - Space and the mouse wheel scroll in reading order: across, down, across again, then to the next page.
 - [Keyboard and mouse](shortcuts.md) lists every binding.
 - L, or the middle mouse button, shows a magnifying lens.
+- The right-click menu leads with what can be done to the page it was opened on. It leaves out what cannot be done there.
 - "File → Properties" describes the page and its archive, with series, issue, title and writer from a ComicInfo.xml.
 - "File → Open containing folder" shows the open file in the file manager. The right-click menu has it too.
 - "Move to", in the page's right-click menu, moves the open file or archive to another folder.
