@@ -1582,6 +1582,35 @@ class MainWindowTest(MComixTest):
         self._button(1, Gdk.ModifierType.SHIFT_MASK)
         self.assertEqual(min(11, pages), self._page())
 
+    def _double_click(self):
+        x = self.window.page_area.get_width() / 2
+        y = self.window.page_area.get_height() / 2
+        self.window.was_out_of_focus = False
+        handler = self.window.event_handler
+        for presses in (1, 2):
+            handler.mouse_press_event(self._Click(1), presses, x, y)
+            handler.mouse_release_event(self._Click(1), presses, x, y)
+        self._pump()
+
+    def test_a_double_click_toggles_fullscreen_where_a_click_does_not_turn(self):
+        """As in an image viewer (upstream feature request 86); upstream
+        turned it down because the first click turns the page."""
+        prefs['flip with click'] = False
+        self._ready()
+        fullscreen = self.window.actiongroup.get_action('fullscreen')
+        with unittest.mock.patch.object(fullscreen, 'activate') as activate:
+            self._double_click()
+        activate.assert_called_once_with()
+        self.assertEqual(1, self._page())
+
+    def test_a_double_click_turns_two_pages_where_a_click_turns_one(self):
+        self._ready()
+        fullscreen = self.window.actiongroup.get_action('fullscreen')
+        with unittest.mock.patch.object(fullscreen, 'activate') as activate:
+            self._double_click()
+        activate.assert_not_called()
+        self.assertEqual(3, self._page())
+
     def test_a_click_that_raises_the_window_does_not_turn_the_page(self):
         """The focus comes back before the click that brought it, and
         the release was told apart from a page turn by where the press

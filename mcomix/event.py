@@ -779,6 +779,12 @@ class EventHandler:
                     self._flip_page(10)
                 elif prefs['flip with click']:
                     self._flip_page(self._click_direction(x))
+                elif n_press == 2:
+                    # A double click enters or leaves fullscreen, as in
+                    # an image viewer (upstream feature request 86) -
+                    # only where a click does not turn the page, which
+                    # the first click of the two would have done.
+                    self._window.actiongroup.get_action('fullscreen').activate()
 
             elif self._is_swap_gesture(state) \
                     and not self._window.was_out_of_focus:

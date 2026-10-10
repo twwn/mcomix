@@ -34,7 +34,7 @@ Previous directory | CTRL+P
 
 In manga mode the page to the right is the previous one, the page to the left the next. PageDown and PageUp always go forward and back.
 
-A plain LeftMouse turns no page where "Flip pages with a left click" is off, under Navigation in the preferences.
+A plain LeftMouse turns no page where "Flip pages with a left click" is off, under Navigation in the preferences. A double LeftMouse then enters or leaves fullscreen.
 
 ## Reading and scrolling
 
