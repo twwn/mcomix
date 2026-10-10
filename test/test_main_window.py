@@ -1397,6 +1397,44 @@ class MainWindowTest(MComixTest):
         self.assertEqual(self.window.imagehandler.get_current_page(), 2)
         self.assertEqual(self.window.selected_pages, set())
 
+    def _click_at(self, fraction):
+        """A plain left click <fraction> of the way across the page area."""
+        x = self.window.page_area.get_width() * fraction
+        y = self.window.page_area.get_height() / 2
+        self.window.was_out_of_focus = False
+        handler = self.window.event_handler
+        handler.mouse_press_event(self._Click(1), 1, x, y)
+        handler.mouse_release_event(self._Click(1), 1, x, y)
+        self._pump()
+
+    def test_with_click_halves_the_left_half_turns_back(self):
+        """Upstream feature request 103."""
+        prefs['click halves'] = True
+        self._ready()
+        self.window.set_page(3)
+        self._pump()
+        self._click_at(0.25)
+        self.assertEqual(2, self._page())
+        self._click_at(0.75)
+        self.assertEqual(3, self._page())
+
+    def test_in_manga_mode_the_halves_change_places(self):
+        prefs['click halves'] = True
+        self._ready()
+        self.window.set_page(3)
+        self.window.actiongroup.get_action('manga_mode').activate()
+        self._pump()
+        self.assertTrue(self.window.is_manga_mode)
+        self._click_at(0.75)
+        self.assertEqual(2, self._page())
+        self._click_at(0.25)
+        self.assertEqual(3, self._page())
+
+    def test_without_click_halves_both_halves_turn_forward(self):
+        self._ready()
+        self._click_at(0.25)
+        self.assertEqual(2, self._page())
+
     def test_a_plain_click_turns_no_page_where_that_is_turned_off(self):
         """A click to focus the window or to take hold of the page
         turned it (upstream patch 53).  SHIFT and a click is asked for

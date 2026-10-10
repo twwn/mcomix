@@ -778,7 +778,7 @@ class EventHandler:
                 elif state & Gdk.ModifierType.SHIFT_MASK:
                     self._flip_page(10)
                 elif prefs['flip with click']:
-                    self._flip_page(1)
+                    self._flip_page(self._click_direction(x))
 
             elif self._is_swap_gesture(state) \
                     and not self._window.was_out_of_focus:
@@ -797,6 +797,18 @@ class EventHandler:
                 self._flip_page(-1)
             elif state & Gdk.ModifierType.SHIFT_MASK:
                 self._flip_page(-10)
+
+    def _click_direction(self, x: float) -> int:
+        """The way a plain click at <x> on the page area turns: forward,
+        or, with "click halves" set, back on the half the book is read
+        from - the left, the right in manga mode (upstream feature
+        request 103)."""
+        if not prefs['click halves']:
+            return 1
+        back = x < self._window.page_area.get_width() / 2
+        if self._window.is_manga_mode:
+            back = not back
+        return -1 if back else 1
 
     @staticmethod
     def _is_swap_gesture(state: Gdk.ModifierType) -> bool:

@@ -241,6 +241,11 @@ class _PreferencesDialog(Dialog):
             _('A left click on the page turns to the next one. Clicks with SHIFT or ALT turn pages either way.')))
 
         page.add_row(self._create_pref_check_button(
+            _('A click on the left half turns back'),
+            'click halves',
+            _('With "Flip pages with a left click", the left half of the page turns back and the right half forward. In manga mode it is the other way round.')))
+
+        page.add_row(self._create_pref_check_button(
             _('Skip pages that cannot be shown'),
             'skip broken pages',
             _('Turn past a page whose image is damaged or cannot be read, instead of showing the broken-image icon in its place.')))
