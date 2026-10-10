@@ -1201,8 +1201,10 @@ class RelocateBooksTest(_LibraryWindowTest):
     def test_a_folder_named_from_the_home_directory_is_read_as_one(self):
         prompt = self._ask()
         prompt._old.set_text('~/shelf')
+        # Normalised, as relocate() reads it: on Windows the home
+        # directory comes with backslashes and the rest as typed.
         self.assertEqual(os.path.join(os.path.expanduser('~'), 'shelf'),
-                         prompt.folders()[0])
+                         os.path.normpath(prompt.folders()[0]))
 
     class _FolderDialog:
 

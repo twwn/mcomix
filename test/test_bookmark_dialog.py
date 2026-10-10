@@ -416,7 +416,13 @@ class BookmarksDialogTest(MComixTest):
             return [row.bookmark._path
                     for row in self.dialog._list.each_stored_row()]
 
-        old, new = os.path.abspath('/tmp'), os.path.abspath('/elsewhere')
+        # Folders as the system writes them, which on Windows is with a
+        # drive: the fixture's paths have none, and are in no folder
+        # that relocate() could be told of there.
+        old, new = os.path.abspath('/shelf'), os.path.abspath('/elsewhere')
+        for name in ('alpha', 'beta', 'gamma'):
+            self.store.update_path('/tmp/%s.cbz' % name,
+                                   os.path.join(old, '%s.cbz' % name))
         self.assertEqual(3, self.store.relocate(old, new))
         moved = [os.path.join(new, '%s.cbz' % name)
                  for name in ('gamma', 'beta', 'alpha')]
