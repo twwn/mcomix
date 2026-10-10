@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 1.00-SVN\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-10 10:05+0200\n"
+"POT-Creation-Date: 2026-10-10 13:37+0200\n"
 "PO-Revision-Date: 2012-08-16 13:10+0900\n"
 "Last-Translator: Toshiharu Kudoh <toshi.kd2@gmail.com>\n"
 "Language-Team: Japanese\n"
@@ -335,76 +335,86 @@ msgstr "ページの名前を変更(_N)..."
 msgid "Select _All"
 msgstr "すべて選択(_A)"
 
-#: mcomix/enhance_dialog.py:37 mcomix/keybindings.py:160
+#: mcomix/enhance_dialog.py:40 mcomix/keybindings.py:160
 msgid "Enhance image"
 msgstr "画像の調整"
 
-#: mcomix/enhance_dialog.py:41
+#: mcomix/enhance_dialog.py:44
 msgid "R_eset"
 msgstr "リセット(_E)"
 
-#: mcomix/enhance_dialog.py:42
+#: mcomix/enhance_dialog.py:45
 msgid "Show the pages as they are, without enhancement."
 msgstr "ページを補正せずにそのまま表示します。"
 
-#: mcomix/enhance_dialog.py:45
+#: mcomix/enhance_dialog.py:48
 msgid "_Revert"
 msgstr "元に戻す(_R)"
 
-#: mcomix/enhance_dialog.py:46
+#: mcomix/enhance_dialog.py:49
 msgid "Go back to the saved values."
 msgstr "保存した値に戻します。"
 
-#: mcomix/enhance_dialog.py:48 mcomix/file_actions.py:583
+#: mcomix/enhance_dialog.py:51 mcomix/file_actions.py:583
 #: mcomix/file_actions.py:626 mcomix/file_chooser_base_dialog.py:243
 #: mcomix/openwith.py:355
 msgid "_Save"
 msgstr "保存(_S)"
 
-#: mcomix/enhance_dialog.py:49
+#: mcomix/enhance_dialog.py:52
 msgid "Save the selected values as default for future files."
 msgstr "将来のファイルのデフォルトとして選択された値を保存します。"
 
-#: mcomix/enhance_dialog.py:51 mcomix/message_dialog.py:24
+#: mcomix/enhance_dialog.py:54 mcomix/message_dialog.py:24
 #: mcomix/message_dialog.py:30
 msgid "_OK"
 msgstr "OK(_O)"
 
-#: mcomix/enhance_dialog.py:96
+#: mcomix/enhance_dialog.py:76
+msgid "_Logarithmic scale"
+msgstr "対数目盛(_L)"
+
+#: mcomix/enhance_dialog.py:78
+msgid ""
+"Draw the histogram on a logarithmic scale, where colours few pixels have "
+"still show."
+msgstr "ヒストグラムを対数目盛で描きます。ピクセル数の少ない色も見えます。"
+
+#: mcomix/enhance_dialog.py:106
 msgid "_Brightness:"
 msgstr "明度(_B):"
 
-#: mcomix/enhance_dialog.py:97
+#: mcomix/enhance_dialog.py:107
 msgid "_Contrast:"
 msgstr "コントラスト(_C):"
 
-#: mcomix/enhance_dialog.py:98
+#: mcomix/enhance_dialog.py:108
 msgid "Sat_uration:"
 msgstr "彩度(_U):"
 
-#: mcomix/enhance_dialog.py:99
+#: mcomix/enhance_dialog.py:109
 msgid "S_harpness:"
 msgstr "シャープネス(_H):"
 
-#: mcomix/enhance_dialog.py:102
+#: mcomix/enhance_dialog.py:112
 msgid "_Gamma:"
 msgstr "ガンマ(_G):"
 
-#: mcomix/enhance_dialog.py:107
+#: mcomix/enhance_dialog.py:117
 msgid "_Automatically adjust contrast"
 msgstr "コントラストを自動調節する(_A)"
 
-#: mcomix/enhance_dialog.py:109
+#: mcomix/enhance_dialog.py:119
 msgid ""
 "Automatically adjust contrast (both lightness and darkness), separately for "
 "each colour band."
 msgstr "各々のカラーバンド毎にコントラスト（明度と暗度）を自動調節します。"
 
-#: mcomix/enhance_dialog.py:114 mcomix/ui.py:533
+#: mcomix/enhance_dialog.py:124 mcomix/ui.py:533
 msgid "_Invert image colors"
 msgstr "画像の色を反転(_I)"
 
-#: mcomix/enhance_dialog.py:116
+#: mcomix/enhance_dialog.py:126
 msgid "Invert (negate) image colors."
 msgstr "画像の色を反転（ネガ）します。"
 

@@ -33,6 +33,9 @@ class _EnhanceImageDialog(Dialog):
     an ImageEnhancer.
     """
 
+    #: The longest side of the page the histogram is counted on.
+    _HISTOGRAM_SOURCE_SIZE = 512
+
     def __init__(self, window: "main.MainWindow") -> None:
         super().__init__(title=_('Enhance image'), transient_for=window)
 
@@ -69,6 +72,13 @@ class _EnhanceImageDialog(Dialog):
         self._hist_image.set_content_fit(Gtk.ContentFit.SCALE_DOWN)
         self._hist_image.set_size_request(262, 170)
         widgets.pack(vbox, self._hist_image, True, True, 0)
+        self._logarithmic_button = \
+            Gtk.CheckButton.new_with_mnemonic(_('_Logarithmic scale'))
+        self._logarithmic_button.set_tooltip_text(
+            _('Draw the histogram on a logarithmic scale, where colours few pixels have still show.'))
+        self._logarithmic_button.set_active(prefs['histogram logarithmic'])
+        self._logarithmic_button.connect('toggled', self._logarithmic_toggled)
+        widgets.pack(vbox, self._logarithmic_button, False, False, 0)
         widgets.pack(vbox, Gtk.Separator.new(Gtk.Orientation.HORIZONTAL), True, True, 0)
 
         hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 4)
@@ -164,6 +174,12 @@ class _EnhanceImageDialog(Dialog):
         self._block = True
         self._invert_color_button.set_active(self._enhancer.invert_color)
         self._block = False
+        # The histogram is of the page as enhanced, which just changed.
+        self._on_page_change()
+
+    def _logarithmic_toggled(self, button: Gtk.CheckButton) -> None:
+        prefs['histogram logarithmic'] = button.get_active()
+        self._on_page_change()
 
     def _on_book_close(self) -> None:
         self.clear_histogram()
@@ -175,8 +191,16 @@ class _EnhanceImageDialog(Dialog):
         # The histogram describes the current page alone, even when a
         # second one is shown beside it: the enhancements it drives are
         # applied to both, and two histograms would not say which.
-        pixbuf = self._window.imagehandler.get_pixbufs(1)[0]
-        self.draw_histogram(pixbuf)
+        # And of the page as the enhancements leave it, which is what
+        # the sliders are moved to judge (upstream feature request 70);
+        # a page cut down to the histogram's own width first, since a
+        # count of each colour hardly changes with the size and the
+        # sliders redraw it as they move.
+        pixbuf = image_tools.fit_in_rectangle(
+            self._window.imagehandler.get_pixbufs(1)[0],
+            self._HISTOGRAM_SOURCE_SIZE, self._HISTOGRAM_SOURCE_SIZE,
+            scaling_quality=GdkPixbuf.InterpType.BILINEAR)
+        self.draw_histogram(self._enhancer.enhanced(pixbuf))
 
     def _on_page_available(self, page_number: int) -> None:
         current_page_number = self._window.imagehandler.get_current_page()
@@ -185,7 +209,8 @@ class _EnhanceImageDialog(Dialog):
 
     def draw_histogram(self, pixbuf: GdkPixbuf.Pixbuf) -> None:
         """Draw a histogram representing <pixbuf> in the dialog."""
-        histogram_pixbuf = histogram.draw_histogram(pixbuf)
+        histogram_pixbuf = histogram.draw_histogram(
+            pixbuf, logarithmic=prefs['histogram logarithmic'])
         self._hist_image.set_paintable(
             image_tools.pixbuf_to_texture(histogram_pixbuf))
 

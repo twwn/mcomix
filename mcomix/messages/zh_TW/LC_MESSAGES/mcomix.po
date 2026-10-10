@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix zh_TW\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-10 10:05+0200\n"
+"POT-Creation-Date: 2026-10-10 13:37+0200\n"
 "PO-Revision-Date: 2013-07-05 21:37+0800\n"
 "Last-Translator: Wayne Su <mstarmstar@hotmail.com>\n"
 "Language-Team: \n"
@@ -332,76 +332,86 @@ msgstr "重新命名頁面(_N)..."
 msgid "Select _All"
 msgstr "全選(_A)"
 
-#: mcomix/enhance_dialog.py:37 mcomix/keybindings.py:160
+#: mcomix/enhance_dialog.py:40 mcomix/keybindings.py:160
 msgid "Enhance image"
 msgstr "強化圖片"
 
-#: mcomix/enhance_dialog.py:41
+#: mcomix/enhance_dialog.py:44
 msgid "R_eset"
 msgstr "重設(_E)"
 
-#: mcomix/enhance_dialog.py:42
+#: mcomix/enhance_dialog.py:45
 msgid "Show the pages as they are, without enhancement."
 msgstr "依原樣顯示頁面，不做增強。"
 
-#: mcomix/enhance_dialog.py:45
+#: mcomix/enhance_dialog.py:48
 msgid "_Revert"
 msgstr "還原(_R)"
 
-#: mcomix/enhance_dialog.py:46
+#: mcomix/enhance_dialog.py:49
 msgid "Go back to the saved values."
 msgstr "回到已儲存的值。"
 
-#: mcomix/enhance_dialog.py:48 mcomix/file_actions.py:583
+#: mcomix/enhance_dialog.py:51 mcomix/file_actions.py:583
 #: mcomix/file_actions.py:626 mcomix/file_chooser_base_dialog.py:243
 #: mcomix/openwith.py:355
 msgid "_Save"
 msgstr "儲存(_S)"
 
-#: mcomix/enhance_dialog.py:49
+#: mcomix/enhance_dialog.py:52
 msgid "Save the selected values as default for future files."
 msgstr "儲存選取的數值當以後檔案的預設值。"
 
-#: mcomix/enhance_dialog.py:51 mcomix/message_dialog.py:24
+#: mcomix/enhance_dialog.py:54 mcomix/message_dialog.py:24
 #: mcomix/message_dialog.py:30
 msgid "_OK"
 msgstr "確定(_O)"
 
-#: mcomix/enhance_dialog.py:96
+#: mcomix/enhance_dialog.py:76
+msgid "_Logarithmic scale"
+msgstr "對數刻度(_L)"
+
+#: mcomix/enhance_dialog.py:78
+msgid ""
+"Draw the histogram on a logarithmic scale, where colours few pixels have "
+"still show."
+msgstr "以對數刻度繪製直方圖，像素很少的顏色也能看到。"
+
+#: mcomix/enhance_dialog.py:106
 msgid "_Brightness:"
 msgstr "亮度(_B)："
 
-#: mcomix/enhance_dialog.py:97
+#: mcomix/enhance_dialog.py:107
 msgid "_Contrast:"
 msgstr "對比(_C)："
 
-#: mcomix/enhance_dialog.py:98
+#: mcomix/enhance_dialog.py:108
 msgid "Sat_uration:"
 msgstr "飽和度(_U)："
 
-#: mcomix/enhance_dialog.py:99
+#: mcomix/enhance_dialog.py:109
 msgid "S_harpness:"
 msgstr "清晰度(_H)："
 
-#: mcomix/enhance_dialog.py:102
+#: mcomix/enhance_dialog.py:112
 msgid "_Gamma:"
 msgstr "伽瑪(_G)："
 
-#: mcomix/enhance_dialog.py:107
+#: mcomix/enhance_dialog.py:117
 msgid "_Automatically adjust contrast"
 msgstr "自動調整對比(_A)"
 
-#: mcomix/enhance_dialog.py:109
+#: mcomix/enhance_dialog.py:119
 msgid ""
 "Automatically adjust contrast (both lightness and darkness), separately for "
 "each colour band."
 msgstr "分別為每個色頻自動調整明暗對比。"
 
-#: mcomix/enhance_dialog.py:114 mcomix/ui.py:533
+#: mcomix/enhance_dialog.py:124 mcomix/ui.py:533
 msgid "_Invert image colors"
 msgstr "反轉圖片色彩(_I)"
 
-#: mcomix/enhance_dialog.py:116
+#: mcomix/enhance_dialog.py:126
 msgid "Invert (negate) image colors."
 msgstr "反轉（負片）圖片的色彩。"
 

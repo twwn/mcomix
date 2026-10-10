@@ -1,5 +1,7 @@
 """histogram.py - Draw histograms (RGB) from pixbufs."""
 
+import math
+
 import PIL.Image as Image
 import PIL.ImageOps as ImageOps
 
@@ -15,21 +17,27 @@ type Rgb = tuple[int, int, int]
 
 
 def draw_histogram(pixbuf: GdkPixbuf.Pixbuf, height: int = 170,
-                   fill: int = 170) -> GdkPixbuf.Pixbuf:
+                   fill: int = 170,
+                   logarithmic: bool = False) -> GdkPixbuf.Pixbuf:
     """Draw a histogram from <pixbuf> and return it as another pixbuf.
 
     The returned pixbuf will be 262x<height> px.
 
     The value of <fill> determines the colour intensity of the filled graphs,
-    valid values are between 0 and 255.
+    valid values are between 0 and 255.  <logarithmic> draws the counts
+    on a logarithmic scale, where the few pixels of a colour still show
+    beside a page that is mostly white (upstream feature request 70).
     """
     im = Image.new('RGB', (258, height - 4), (30, 30, 30))
-    hist_data = image_tools.pixbuf_to_pil(pixbuf).histogram()
-    maximum = max(hist_data[:768] + [1])
+    counts: list[float] = list(
+        image_tools.pixbuf_to_pil(pixbuf).histogram()[:768])
+    if logarithmic:
+        counts = [math.log1p(count) for count in counts]
+    maximum = max(counts + [1])
     y_scale = float(height - 6) / maximum
-    r = [int(hist_data[n] * y_scale) for n in range(256)]
-    g = [int(hist_data[n] * y_scale) for n in range(256, 512)]
-    b = [int(hist_data[n] * y_scale) for n in range(512, 768)]
+    r = [int(counts[n] * y_scale) for n in range(256)]
+    g = [int(counts[n] * y_scale) for n in range(256, 512)]
+    b = [int(counts[n] * y_scale) for n in range(512, 768)]
     pixels = im.load()
     # An image made in memory is loaded already, so there is always
     # something to reach its pixels through.

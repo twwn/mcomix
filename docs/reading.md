@@ -76,13 +76,14 @@ Zooming, or resizing the window, keeps the middle of the view on the same part o
 
 ## Enhancing the image
 
-"Tools → Enhance image...", the E key, sets brightness, contrast, saturation, sharpness and gamma, beside a histogram of the page.
+"Tools → Enhance image...", the E key, sets brightness, contrast, saturation, sharpness and gamma, beside a histogram of the page as enhanced.
 
 - Gamma runs from 0.5 to 2. Above 1 it lightens the middle tones, below 1 it darkens them. Black and white stay as they are.
 - "Automatically adjust contrast" stretches each colour band to the page.
 - "Invert image colors", also CTRL+I, shows the negative.
 - Changes show at once on the pages, thumbnails, magnifying lens and library covers, for every book, until MComix closes.
 - "Reset" takes every enhancement off, without saving.
+- "Logarithmic scale" draws the histogram so that colours few pixels have still show.
 - "Save" keeps the values for the next start; "Revert" goes back to the saved ones; "OK" closes the dialog.
 - CTRL+I is kept for the next start straight away.
 

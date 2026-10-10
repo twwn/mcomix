@@ -193,11 +193,65 @@ class EnhanceDialogTest(MComixTest):
         self.assertTrue(prefs['auto contrast'])
 
 
+    def _drawn(self, change):
+        enhance_dialog.open_dialog(None, self.window)
+        pump()
+        with mock.patch.object(histogram, 'draw_histogram',
+                               wraps=histogram.draw_histogram) as drawn:
+            change(enhance_dialog._dialog)
+            pump()
+        return drawn
+
+    def test_moving_a_slider_draws_the_page_as_enhanced(self):
+        from mcomix import image_tools
+        drawn = self._drawn(
+            lambda dialog: dialog._invert_color_button.set_active(True))
+        self.assertEqual(1, drawn.call_count)
+        shown = image_tools.pixbuf_to_pil(drawn.call_args.args[0])
+        page = image_tools.pixbuf_to_pil(image_tools.fit_in_rectangle(
+            self.window.imagehandler.get_pixbufs(1)[0], 512, 512))
+        # Inverted, each colour's count moves to the other end.
+        counts = page.convert('RGB').histogram()
+        inverted = [count for band in range(3)
+                    for count in reversed(counts[band * 256:(band + 1) * 256])]
+        self.assertNotEqual(counts, inverted)
+        self.assertEqual(inverted, shown.convert('RGB').histogram())
+
+    def test_the_logarithmic_scale_is_kept_and_drawn(self):
+        prefs['histogram logarithmic'] = False
+        drawn = self._drawn(
+            lambda dialog: dialog._logarithmic_button.set_active(True))
+        self.assertTrue(prefs['histogram logarithmic'])
+        self.assertEqual(1, drawn.call_count)
+        self.assertTrue(drawn.call_args.kwargs['logarithmic'])
+
 def widgets_in(box):
     """The children of <box>, in order."""
     child = box.get_first_child()
     while child is not None:
         yield child
         child = child.get_next_sibling()
+
+class LogarithmicHistogramTest(MComixTest):
+
+    def test_a_colour_few_pixels_have_still_shows(self):
+        from PIL import Image
+        from mcomix import image_tools
+        im = Image.new('RGB', (100, 100), (255, 255, 255))
+        im.putpixel((0, 0), (0, 0, 0))
+        pixbuf = image_tools.pil_to_pixbuf(im)
+
+        def column_of_black(logarithmic):
+            drawn = image_tools.pixbuf_to_pil(
+                histogram.draw_histogram(pixbuf, logarithmic=logarithmic))
+            # The bar for 0 is the histogram's first column inside its
+            # two-pixel frame; count what was drawn above the floor.
+            return sum(1 for y in range(drawn.height)
+                       if drawn.getpixel((3, y)) not in ((30, 30, 30),
+                                                         (80, 80, 80),
+                                                         (0, 0, 0)))
+
+        self.assertEqual(0, column_of_black(False))
+        self.assertGreater(column_of_black(True), 5)
 
 # vim: expandtab:sw=4:ts=4

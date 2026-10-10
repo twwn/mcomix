@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-10 10:05+0200\n"
+"POT-Creation-Date: 2026-10-10 13:37+0200\n"
 "PO-Revision-Date: 2006-09-27 10:18+0200\n"
 "Last-Translator: Paul Chatzidimitriou <paulmedic555@gmail.com>\n"
 "Language-Team: \n"
@@ -377,77 +377,89 @@ msgstr "Επιλογή ό_λων"
 
 #
 # File: src/enhance.py, line: 51
-#: mcomix/enhance_dialog.py:37 mcomix/keybindings.py:160
+#: mcomix/enhance_dialog.py:40 mcomix/keybindings.py:160
 msgid "Enhance image"
 msgstr "Βελτίωση εικόνας"
 
-#: mcomix/enhance_dialog.py:41
+#: mcomix/enhance_dialog.py:44
 msgid "R_eset"
 msgstr "Μη_δενισμός"
 
-#: mcomix/enhance_dialog.py:42
+#: mcomix/enhance_dialog.py:45
 msgid "Show the pages as they are, without enhancement."
 msgstr "Εμφάνιση των σελίδων όπως είναι, χωρίς βελτίωση."
 
-#: mcomix/enhance_dialog.py:45
+#: mcomix/enhance_dialog.py:48
 msgid "_Revert"
 msgstr "_Επαναφορά"
 
-#: mcomix/enhance_dialog.py:46
+#: mcomix/enhance_dialog.py:49
 msgid "Go back to the saved values."
 msgstr "Επιστροφή στις αποθηκευμένες τιμές."
 
-#: mcomix/enhance_dialog.py:48 mcomix/file_actions.py:583
+#: mcomix/enhance_dialog.py:51 mcomix/file_actions.py:583
 #: mcomix/file_actions.py:626 mcomix/file_chooser_base_dialog.py:243
 #: mcomix/openwith.py:355
 msgid "_Save"
 msgstr "Απ_οθήκευση"
 
-#: mcomix/enhance_dialog.py:49
+#: mcomix/enhance_dialog.py:52
 msgid "Save the selected values as default for future files."
 msgstr "Αποθήκευση των επιλεγμένων τιμών ως προεπιλογή για τα επόμενα αρχεία."
 
-#: mcomix/enhance_dialog.py:51 mcomix/message_dialog.py:24
+#: mcomix/enhance_dialog.py:54 mcomix/message_dialog.py:24
 #: mcomix/message_dialog.py:30
 msgid "_OK"
 msgstr "Εντά_ξει"
 
+#: mcomix/enhance_dialog.py:76
+msgid "_Logarithmic scale"
+msgstr "_Λογαριθμική κλίμακα"
+
+#: mcomix/enhance_dialog.py:78
+msgid ""
+"Draw the histogram on a logarithmic scale, where colours few pixels have "
+"still show."
+msgstr ""
+"Σχεδίαση του ιστογράμματος σε λογαριθμική κλίμακα, όπου φαίνονται και "
+"χρώματα με λίγα εικονοστοιχεία."
+
 #
 # File: src/enhance.py, line: 79
-#: mcomix/enhance_dialog.py:96
+#: mcomix/enhance_dialog.py:106
 msgid "_Brightness:"
 msgstr "_Φωτεινότητα:"
 
 #
 # File: src/enhance.py, line: 90
-#: mcomix/enhance_dialog.py:97
+#: mcomix/enhance_dialog.py:107
 msgid "_Contrast:"
 msgstr "_Αντίθεση:"
 
 #
 # File: src/enhance.py, line: 101
-#: mcomix/enhance_dialog.py:98
+#: mcomix/enhance_dialog.py:108
 msgid "Sat_uration:"
 msgstr "_Κορεσμός:"
 
 #
 # File: src/enhance.py, line: 112
-#: mcomix/enhance_dialog.py:99
+#: mcomix/enhance_dialog.py:109
 msgid "S_harpness:"
 msgstr "Ε_υκρίνεια:"
 
-#: mcomix/enhance_dialog.py:102
+#: mcomix/enhance_dialog.py:112
 msgid "_Gamma:"
 msgstr "_Γάμμα:"
 
 #
-#: mcomix/enhance_dialog.py:107
+#: mcomix/enhance_dialog.py:117
 msgid "_Automatically adjust contrast"
 msgstr "Αυτόματη _ρύθμιση αντίθεσης"
 
 #
 # File: src/enhance.py, line: 128
-#: mcomix/enhance_dialog.py:109
+#: mcomix/enhance_dialog.py:119
 msgid ""
 "Automatically adjust contrast (both lightness and darkness), separately for "
 "each colour band."
@@ -455,11 +467,11 @@ msgstr ""
 "Ρυθμίζει αυτόματα την αντίθεση (φωτεινότητα και σκοτεινότητα) ξεχωριστά για "
 "κάθε κανάλι χρώματος."
 
-#: mcomix/enhance_dialog.py:114 mcomix/ui.py:533
+#: mcomix/enhance_dialog.py:124 mcomix/ui.py:533
 msgid "_Invert image colors"
 msgstr "Αντιστροφή _χρωμάτων εικόνας"
 
-#: mcomix/enhance_dialog.py:116
+#: mcomix/enhance_dialog.py:126
 msgid "Invert (negate) image colors."
 msgstr "Αντιστρέφει τα χρώματα της εικόνας."
 
