@@ -848,10 +848,13 @@ def load_pixbuf_data(imgdata: bytes) -> GdkPixbuf.Pixbuf:
 def enhance(pixbuf: GdkPixbuf.Pixbuf, brightness: float = 1.0,
             contrast: float = 1.0, saturation: float = 1.0,
             sharpness: float = 1.0, autocontrast: bool = False,
-            invert_color: bool = False) -> GdkPixbuf.Pixbuf:
+            invert_color: bool = False,
+            gamma: float = 1.0) -> GdkPixbuf.Pixbuf:
     """Return a modified pixbuf from <pixbuf> where the enhancement operations
     corresponding to each argument has been performed. A value of 1.0 means
     no change. If <autocontrast> is True it overrides the <contrast> value.
+    A <gamma> above 1.0 lightens the middle tones and below darkens them,
+    leaving black and white as they are (upstream feature request 70).
 
     Transparency is kept as it is: ImageOps.autocontrast() and
     ImageOps.invert() take no image with an alpha channel, and
@@ -863,6 +866,10 @@ def enhance(pixbuf: GdkPixbuf.Pixbuf, brightness: float = 1.0,
         im = im.convert('RGB')
     if brightness != 1.0:
         im = ImageEnhance.Brightness(im).enhance(brightness)
+    if gamma != 1.0:
+        curve = [round(255 * (value / 255) ** (1 / gamma))
+                 for value in range(256)]
+        im = im.point(curve * len(im.getbands()))
     if autocontrast:
         im = ImageOps.autocontrast(im, cutoff=0.1)
     elif contrast != 1.0:

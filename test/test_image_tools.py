@@ -826,6 +826,41 @@ class EnhanceTest(MComixTest):
         self.assertEqual(0, im.getpixel((1, 1))[3])
 
 
+class GammaTest(MComixTest):
+
+    """Gamma bends the middle tones and leaves black and white where
+    they are (upstream feature request 70)."""
+
+    def _grey(self, level, mode='RGB'):
+        colour = (level,) * 3 + ((255,) if mode == 'RGBA' else ())
+        return image_tools.pil_to_pixbuf(Image.new(mode, (2, 2), colour))
+
+    def _enhanced(self, level, gamma, mode='RGB'):
+        return image_tools.pixbuf_to_pil(
+            image_tools.enhance(self._grey(level, mode), gamma=gamma))
+
+    def test_above_one_it_lightens_the_middle_tones(self):
+        # 128/255 to the power 1/2: 0.709, 181 of 255.
+        self.assertEqual((181, 181, 181), self._enhanced(128, 2.0).getpixel((0, 0)))
+
+    def test_below_one_it_darkens_them(self):
+        # To the power 2: 0.252, 64 of 255.
+        self.assertEqual((64, 64, 64), self._enhanced(128, 0.5).getpixel((0, 0)))
+
+    def test_black_and_white_stay(self):
+        for level in (0, 255):
+            for gamma in (0.5, 2.0):
+                self.assertEqual((level,) * 3,
+                                 self._enhanced(level, gamma).getpixel((0, 0)))
+
+    def test_one_changes_nothing(self):
+        self.assertEqual((128, 128, 128), self._enhanced(128, 1.0).getpixel((0, 0)))
+
+    def test_the_alpha_channel_is_left_alone(self):
+        self.assertEqual((181, 181, 181, 255),
+                         self._enhanced(128, 2.0, 'RGBA').getpixel((0, 0)))
+
+
 class EnhanceSlidersTest(MComixTest):
 
     """What the contrast, saturation and sharpness sliders do, each

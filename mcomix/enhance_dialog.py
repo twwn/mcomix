@@ -1,5 +1,7 @@
 """enhance_dialog.py - Image enhancement dialog."""
 
+import math
+
 from gi.repository import GdkPixbuf, Gio, Gtk
 from . import histogram
 
@@ -16,6 +18,13 @@ if TYPE_CHECKING:
     from mcomix import main
 
 _dialog: "_EnhanceImageDialog | None" = None
+
+
+def _gamma_position(gamma: float) -> float:
+    """Where the gamma scale stands for <gamma>: its logarithm, so that
+    0.5 and 2 lie as far either side of 1, and within the scale's -1 to
+    1 whatever a hand-edited preferences file holds."""
+    return min(1.0, max(-1.0, math.log2(gamma))) if gamma > 0 else -1.0
 
 
 class _EnhanceImageDialog(Dialog):
@@ -88,6 +97,9 @@ class _EnhanceImageDialog(Dialog):
         self._contrast_scale = _create_scale(_('_Contrast:'))
         self._saturation_scale = _create_scale(_('Sat_uration:'))
         self._sharpness_scale = _create_scale(_('S_harpness:'))
+        # Gamma is a ratio: the scale's -1 to 1 is 0.5 to 2, even steps
+        # either side of 1.
+        self._gamma_scale = _create_scale(_('_Gamma:'))
 
         widgets.pack(vbox, Gtk.Separator.new(Gtk.Orientation.HORIZONTAL), True, True, 0)
 
@@ -110,6 +122,7 @@ class _EnhanceImageDialog(Dialog):
         self._contrast_scale.set_value(self._enhancer.contrast - 1)
         self._saturation_scale.set_value(self._enhancer.saturation - 1)
         self._sharpness_scale.set_value(self._enhancer.sharpness - 1)
+        self._gamma_scale.set_value(_gamma_position(self._enhancer.gamma))
         self._autocontrast_button.set_active(self._enhancer.autocontrast)
         self._invert_color_button.set_active(self._enhancer.invert_color)
         self._block = False
@@ -188,6 +201,7 @@ class _EnhanceImageDialog(Dialog):
         self._enhancer.contrast = self._contrast_scale.get_value() + 1
         self._enhancer.saturation = self._saturation_scale.get_value() + 1
         self._enhancer.sharpness = self._sharpness_scale.get_value() + 1
+        self._enhancer.gamma = 2 ** self._gamma_scale.get_value()
         self._enhancer.autocontrast = self._autocontrast_button.get_active()
         self._contrast_scale.set_sensitive(
             not self._autocontrast_button.get_active())
@@ -212,24 +226,28 @@ class _EnhanceImageDialog(Dialog):
             prefs['contrast'] = self._enhancer.contrast
             prefs['saturation'] = self._enhancer.saturation
             prefs['sharpness'] = self._enhancer.sharpness
+            prefs['gamma'] = self._enhancer.gamma
             prefs['auto contrast'] = self._enhancer.autocontrast
             prefs['invert color'] = self._enhancer.invert_color
 
         elif response == Response.REJECT:
             self._show_values(prefs['brightness'], prefs['contrast'],
                               prefs['saturation'], prefs['sharpness'],
-                              prefs['auto contrast'], prefs['invert color'])
+                              prefs['auto contrast'], prefs['invert color'],
+                              prefs['gamma'])
 
     def _reset(self, *args: object) -> None:
         """Take every enhancement off, without saving: "Revert" goes
         back to what was saved, which is not this once it has been."""
-        self._show_values(1.0, 1.0, 1.0, 1.0, False, False)
+        self._show_values(1.0, 1.0, 1.0, 1.0, False, False, 1.0)
 
     def _show_values(self, brightness: float, contrast: float,
                      saturation: float, sharpness: float,
-                     autocontrast: bool, invert_color: bool) -> None:
+                     autocontrast: bool, invert_color: bool,
+                     gamma: float) -> None:
         """Set the controls to these values, and the pages with them."""
         self._block = True
+        self._gamma_scale.set_value(_gamma_position(gamma))
         self._brightness_scale.set_value(brightness - 1.0)
         self._contrast_scale.set_value(contrast - 1.0)
         self._saturation_scale.set_value(saturation - 1.0)

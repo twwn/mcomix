@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: comix.HEAD\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-10 02:08+0200\n"
+"POT-Creation-Date: 2026-10-10 08:36+0200\n"
 "PO-Revision-Date: 2012-09-06 18:00+0100\n"
 "Last-Translator: Carlos Feliu <carlos.feliu.holguera@gmail.com>\n"
 "Language-Team: Spanish <traductores@es.gnome.org>\n"
@@ -393,78 +393,82 @@ msgstr "Seleccionar _todo"
 
 #
 # File: src/enhance.py, line: 51
-#: mcomix/enhance_dialog.py:28 mcomix/keybindings.py:160
+#: mcomix/enhance_dialog.py:37 mcomix/keybindings.py:160
 msgid "Enhance image"
 msgstr "Mejorar la imagen"
 
-#: mcomix/enhance_dialog.py:32
+#: mcomix/enhance_dialog.py:41
 msgid "R_eset"
 msgstr "Res_tablecer"
 
-#: mcomix/enhance_dialog.py:33
+#: mcomix/enhance_dialog.py:42
 msgid "Show the pages as they are, without enhancement."
 msgstr "Mostrar las páginas tal como son, sin mejoras."
 
-#: mcomix/enhance_dialog.py:36
+#: mcomix/enhance_dialog.py:45
 msgid "_Revert"
 msgstr "_Revertir"
 
-#: mcomix/enhance_dialog.py:37
+#: mcomix/enhance_dialog.py:46
 msgid "Go back to the saved values."
 msgstr "Volver a los valores guardados."
 
 #
 # File: src/filechooser.py, line: 39
-#: mcomix/enhance_dialog.py:39 mcomix/file_actions.py:583
+#: mcomix/enhance_dialog.py:48 mcomix/file_actions.py:583
 #: mcomix/file_actions.py:626 mcomix/file_chooser_base_dialog.py:243
 #: mcomix/openwith.py:355
 msgid "_Save"
 msgstr "_Guardar"
 
-#: mcomix/enhance_dialog.py:40
+#: mcomix/enhance_dialog.py:49
 msgid "Save the selected values as default for future files."
 msgstr ""
 "Guardar los valores seleccionados como valores por defecto para archivos "
 "futuros."
 
-#: mcomix/enhance_dialog.py:42 mcomix/message_dialog.py:24
+#: mcomix/enhance_dialog.py:51 mcomix/message_dialog.py:24
 #: mcomix/message_dialog.py:30
 msgid "_OK"
 msgstr "_Aceptar"
 
 #
 # File: src/enhance.py, line: 79
-#: mcomix/enhance_dialog.py:87
+#: mcomix/enhance_dialog.py:96
 msgid "_Brightness:"
 msgstr "_Brillo:"
 
 #
 # File: src/enhance.py, line: 90
-#: mcomix/enhance_dialog.py:88
+#: mcomix/enhance_dialog.py:97
 msgid "_Contrast:"
 msgstr "_Contraste:"
 
 #
 # File: src/enhance.py, line: 101
-#: mcomix/enhance_dialog.py:89
+#: mcomix/enhance_dialog.py:98
 msgid "Sat_uration:"
 msgstr "_Saturación:"
 
 #
 # File: src/enhance.py, line: 112
-#: mcomix/enhance_dialog.py:90
+#: mcomix/enhance_dialog.py:99
 msgid "S_harpness:"
 msgstr "E_nfoque:"
 
+#: mcomix/enhance_dialog.py:102
+msgid "_Gamma:"
+msgstr "Ga_mma:"
+
 #
 # File: src/enhance.py, line: 126
-#: mcomix/enhance_dialog.py:95
+#: mcomix/enhance_dialog.py:107
 msgid "_Automatically adjust contrast"
 msgstr "A_justar el contraste automáticamente"
 
 #
 # File: src/enhance.py, line: 128
-#: mcomix/enhance_dialog.py:97
+#: mcomix/enhance_dialog.py:109
 msgid ""
 "Automatically adjust contrast (both lightness and darkness), separately for "
 "each colour band."
@@ -472,11 +476,11 @@ msgstr ""
 "Ajusta el contraste automáticamente, tanto las partes claras como las "
 "oscuras, para cada banda de color por separado."
 
-#: mcomix/enhance_dialog.py:102 mcomix/ui.py:533
+#: mcomix/enhance_dialog.py:114 mcomix/ui.py:533
 msgid "_Invert image colors"
 msgstr "_Invertir los colores de la imagen"
 
-#: mcomix/enhance_dialog.py:104
+#: mcomix/enhance_dialog.py:116
 msgid "Invert (negate) image colors."
 msgstr "Invierte (niega) los colores de la imagen."
 
@@ -754,7 +758,7 @@ msgstr "Ruta no válida: '%s'"
 
 #
 # File: src/filehandler.py, line: 411
-#: mcomix/image_tools.py:1184
+#: mcomix/image_tools.py:1191
 msgid "Unknown filetype"
 msgstr "Tipo de archivo desconocido"
 
@@ -2689,39 +2693,39 @@ msgstr ""
 msgid "Stop slideshow"
 msgstr "Detener diapositivas"
 
-#: mcomix/status.py:315
+#: mcomix/status.py:319
 msgid "Show page numbers"
 msgstr "Mostrar números de página"
 
-#: mcomix/status.py:316
+#: mcomix/status.py:320
 msgid "Show file numbers"
 msgstr "Mostrar números de archivo"
 
-#: mcomix/status.py:317
+#: mcomix/status.py:321
 msgid "Show resolution"
 msgstr "Mostrar resolución"
 
-#: mcomix/status.py:318
+#: mcomix/status.py:322
 msgid "Show path"
 msgstr "Mostrar ruta"
 
-#: mcomix/status.py:319
+#: mcomix/status.py:323
 msgid "Show filename"
 msgstr "Mostrar nombre de archivo"
 
-#: mcomix/status.py:320
+#: mcomix/status.py:324
 msgid "Show filesize"
 msgstr "Mostrar el tamaño del archivo"
 
-#: mcomix/status.py:321
+#: mcomix/status.py:325
 msgid "Show date modified"
 msgstr "Mostrar la fecha de modificación"
 
-#: mcomix/status.py:358
+#: mcomix/status.py:362
 msgid "Copy file name"
 msgstr "Copiar nombre de archivo"
 
-#: mcomix/status.py:359
+#: mcomix/status.py:363
 msgid "Copy path"
 msgstr "Copiar ruta"
 

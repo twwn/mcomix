@@ -27,6 +27,7 @@ class ImageEnhancer:
         self.contrast = prefs['contrast']
         self.saturation = prefs['saturation']
         self.sharpness = prefs['sharpness']
+        self.gamma = prefs['gamma']
         self.autocontrast = prefs['auto contrast']
         self.invert_color = prefs['invert color']
 
@@ -35,11 +36,11 @@ class ImageEnhancer:
 
         if (self.brightness != 1.0 or self.contrast != 1.0 or
                 self.saturation != 1.0 or self.sharpness != 1.0 or
-                self.autocontrast or self.invert_color):
+                self.gamma != 1.0 or self.autocontrast or self.invert_color):
 
             return image_tools.enhance(pixbuf, self.brightness, self.contrast,
                                        self.saturation, self.sharpness, self.autocontrast,
-                                       self.invert_color)
+                                       self.invert_color, gamma=self.gamma)
 
         return pixbuf
 

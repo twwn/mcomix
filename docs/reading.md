@@ -73,8 +73,9 @@ No mode scales a small page up unless "View → Stretch small images" is on.
 
 ## Enhancing the image
 
-"Tools → Enhance image...", the E key, sets brightness, contrast, saturation and sharpness, beside a histogram of the page.
+"Tools → Enhance image...", the E key, sets brightness, contrast, saturation, sharpness and gamma, beside a histogram of the page.
 
+- Gamma runs from 0.5 to 2. Above 1 it lightens the middle tones, below 1 it darkens them. Black and white stay as they are.
 - "Automatically adjust contrast" stretches each colour band to the page.
 - "Invert image colors", also CTRL+I, shows the negative.
 - Changes show at once on the pages, thumbnails, magnifying lens and library covers, for every book, until MComix closes.

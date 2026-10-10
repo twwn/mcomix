@@ -128,6 +128,21 @@ class EnhanceDialogTest(MComixTest):
         self.assertTrue(
             self.window.actiongroup.get_action('invert_color').get_active())
 
+    def test_the_gamma_slider_sets_a_ratio_either_side_of_one(self):
+        """The slider runs -1 to 1, as the others do; gamma is 2 to that
+        power, so that halving and doubling lie as far from 1."""
+        enhance_dialog.open_dialog(None, self.window)
+        pump()
+        dialog = enhance_dialog._dialog
+        for position, gamma in ((1.0, 2.0), (-1.0, 0.5), (0.0, 1.0)):
+            dialog._gamma_scale.set_value(position)
+            pump()
+            self.assertEqual(gamma, self.window.enhancer.gamma)
+        dialog._gamma_scale.set_value(1.0)
+        dialog.response(Response.APPLY)
+        pump()
+        self.assertEqual(2.0, prefs['gamma'])
+
     def test_revert_goes_back_to_the_values_last_saved(self):
         enhance_dialog.open_dialog(None, self.window)
         pump()
@@ -155,6 +170,7 @@ class EnhanceDialogTest(MComixTest):
         dialog = enhance_dialog._dialog
         dialog._brightness_scale.set_value(0.5)
         dialog._autocontrast_button.set_active(True)
+        dialog._gamma_scale.set_value(-1.0)
         dialog.response(Response.APPLY)
         dialog._invert_color_button.set_active(True)
         pump()
@@ -163,10 +179,12 @@ class EnhanceDialogTest(MComixTest):
         reset.emit('clicked')
         pump()
         enhancer = self.window.enhancer
-        self.assertEqual((1.0, 1.0, 1.0, 1.0, False, False),
+        self.assertEqual((1.0, 1.0, 1.0, 1.0, False, False, 1.0),
                          (enhancer.brightness, enhancer.contrast,
                           enhancer.saturation, enhancer.sharpness,
-                          enhancer.autocontrast, enhancer.invert_color))
+                          enhancer.autocontrast, enhancer.invert_color,
+                          enhancer.gamma))
+        self.assertEqual(0.0, dialog._gamma_scale.get_value())
         self.assertEqual(0.0, dialog._brightness_scale.get_value())
         self.assertFalse(dialog._autocontrast_button.get_active())
         self.assertFalse(

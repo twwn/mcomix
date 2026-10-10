@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: mcomix 0.99\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-10 02:08+0200\n"
+"POT-Creation-Date: 2026-10-10 08:36+0200\n"
 "PO-Revision-Date: 2013-01-07 22:51+0200\n"
 "Last-Translator: Isratine Citizen <genghiskhan@gmx.ca>\n"
 "Language-Team: Hebrew <eliz@gnu.org>\n"
@@ -335,74 +335,78 @@ msgstr "_שינוי שם עמוד..."
 msgid "Select _All"
 msgstr "בחירת ה_כול"
 
-#: mcomix/enhance_dialog.py:28 mcomix/keybindings.py:160
+#: mcomix/enhance_dialog.py:37 mcomix/keybindings.py:160
 msgid "Enhance image"
 msgstr "שיפור תמונה"
 
-#: mcomix/enhance_dialog.py:32
+#: mcomix/enhance_dialog.py:41
 msgid "R_eset"
 msgstr "אי_פוס"
 
-#: mcomix/enhance_dialog.py:33
+#: mcomix/enhance_dialog.py:42
 msgid "Show the pages as they are, without enhancement."
 msgstr "הצגת הדפים כפי שהם, ללא שיפור."
 
-#: mcomix/enhance_dialog.py:36
+#: mcomix/enhance_dialog.py:45
 msgid "_Revert"
 msgstr "ה_חזרה"
 
-#: mcomix/enhance_dialog.py:37
+#: mcomix/enhance_dialog.py:46
 msgid "Go back to the saved values."
 msgstr "חזרה לערכים השמורים."
 
-#: mcomix/enhance_dialog.py:39 mcomix/file_actions.py:583
+#: mcomix/enhance_dialog.py:48 mcomix/file_actions.py:583
 #: mcomix/file_actions.py:626 mcomix/file_chooser_base_dialog.py:243
 #: mcomix/openwith.py:355
 msgid "_Save"
 msgstr "_שמירה"
 
-#: mcomix/enhance_dialog.py:40
+#: mcomix/enhance_dialog.py:49
 msgid "Save the selected values as default for future files."
 msgstr "שמור את הערך הנבחר כערך משתמט (ברירת מחדל) עבור קבצים עתידיים."
 
-#: mcomix/enhance_dialog.py:42 mcomix/message_dialog.py:24
+#: mcomix/enhance_dialog.py:51 mcomix/message_dialog.py:24
 #: mcomix/message_dialog.py:30
 msgid "_OK"
 msgstr "_אישור"
 
-#: mcomix/enhance_dialog.py:87
+#: mcomix/enhance_dialog.py:96
 msgid "_Brightness:"
 msgstr "_בהירות:"
 
-#: mcomix/enhance_dialog.py:88
+#: mcomix/enhance_dialog.py:97
 msgid "_Contrast:"
 msgstr "_ניגודיות:"
 
-#: mcomix/enhance_dialog.py:89
+#: mcomix/enhance_dialog.py:98
 msgid "Sat_uration:"
 msgstr "_רוויה:"
 
-#: mcomix/enhance_dialog.py:90
+#: mcomix/enhance_dialog.py:99
 msgid "S_harpness:"
 msgstr "ח_דות:"
 
-#: mcomix/enhance_dialog.py:95
+#: mcomix/enhance_dialog.py:102
+msgid "_Gamma:"
+msgstr "_גאמה:"
+
+#: mcomix/enhance_dialog.py:107
 msgid "_Automatically adjust contrast"
 msgstr "_התאם ניגודיות אוטומטית"
 
 # עבור כל ערוץ/רצועת
-#: mcomix/enhance_dialog.py:97
+#: mcomix/enhance_dialog.py:109
 msgid ""
 "Automatically adjust contrast (both lightness and darkness), separately for "
 "each colour band."
 msgstr ""
 "התאם ניגודיות (הן אפילה והן בהירות) אוטומטית, באופן נפרד עבור כל פס צבע."
 
-#: mcomix/enhance_dialog.py:102 mcomix/ui.py:533
+#: mcomix/enhance_dialog.py:114 mcomix/ui.py:533
 msgid "_Invert image colors"
 msgstr "ה_יפוך צבעי התמונה"
 
-#: mcomix/enhance_dialog.py:104
+#: mcomix/enhance_dialog.py:116
 msgid "Invert (negate) image colors."
 msgstr "הופך (מנגיד) את צבעי התמונה."
 
@@ -651,7 +655,7 @@ msgstr "! הקובץ \"%s\" פגום, והוא נמחק; הקובץ האחרון
 msgid "Invalid path: '%s'"
 msgstr "נתיב שגוי: '%s'"
 
-#: mcomix/image_tools.py:1184
+#: mcomix/image_tools.py:1191
 msgid "Unknown filetype"
 msgstr "טיפוס קובץ לא מוכר"
 
@@ -2322,39 +2326,39 @@ msgstr "לא נמצאה במערכת שום גרסה של Python Imaging Library
 msgid "Stop slideshow"
 msgstr "הפסק מצגת"
 
-#: mcomix/status.py:315
+#: mcomix/status.py:319
 msgid "Show page numbers"
 msgstr "הצג מספרי עמוד"
 
-#: mcomix/status.py:316
+#: mcomix/status.py:320
 msgid "Show file numbers"
 msgstr "הצג מספרי קבצים"
 
-#: mcomix/status.py:317
+#: mcomix/status.py:321
 msgid "Show resolution"
 msgstr "הצג רזולוציה"
 
-#: mcomix/status.py:318
+#: mcomix/status.py:322
 msgid "Show path"
 msgstr "הצג נתיב"
 
-#: mcomix/status.py:319
+#: mcomix/status.py:323
 msgid "Show filename"
 msgstr "הצג שם קובץ"
 
-#: mcomix/status.py:320
+#: mcomix/status.py:324
 msgid "Show filesize"
 msgstr "הצגת גודל הקובץ"
 
-#: mcomix/status.py:321
+#: mcomix/status.py:325
 msgid "Show date modified"
 msgstr "הצגת תאריך השינוי"
 
-#: mcomix/status.py:358
+#: mcomix/status.py:362
 msgid "Copy file name"
 msgstr "העתק שם קובץ"
 
-#: mcomix/status.py:359
+#: mcomix/status.py:363
 msgid "Copy path"
 msgstr "העתק נתיב"
 
