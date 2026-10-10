@@ -2891,6 +2891,9 @@ class MainWindowTest(MComixTest):
         self.assertEqual('<Shift>Delete',
                          accelerator.get_string() if accelerator else None)
         action = self.window.actiongroup.get_action('delete_permanently')
+        # The book is listed on a thread of its own, and the item turns
+        # sensitive once it is open.
+        self._ready()
         self.assertTrue(action.get_sensitive())
         with unittest.mock.patch.object(
                 self.window.file_actions,
