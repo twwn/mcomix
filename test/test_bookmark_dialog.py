@@ -407,6 +407,27 @@ class BookmarksDialogTest(MComixTest):
         self.assertEqual(self._names(), ['delta'])
         self.assertTrue(self.dialog._clear_button.get_sensitive())
 
+    def test_a_relocated_folder_s_bookmarks_are_listed_where_they_are(self):
+        """The rows held the bookmarks they were made of, and closing
+        the dialog hands the store its rows' bookmarks as the order to
+        keep: the folder's bookmarks went back to where the books had
+        been."""
+        def listed():
+            return [row.bookmark._path
+                    for row in self.dialog._list.each_stored_row()]
+
+        old, new = os.path.abspath('/tmp'), os.path.abspath('/elsewhere')
+        self.assertEqual(3, self.store.relocate(old, new))
+        moved = [os.path.join(new, '%s.cbz' % name)
+                 for name in ('gamma', 'beta', 'alpha')]
+        self.assertEqual(moved, listed())
+        self.assertEqual(self._names(), ['gamma', 'beta', 'alpha'])
+
+        self.dialog._close()
+        pump()
+        self.assertEqual(moved[::-1], [bookmark._path for bookmark
+                                       in self.store.get_bookmarks()])
+
     def test_a_closed_dialog_no_longer_follows_the_store(self):
         """The store keeps the callbacks it is given, so a dialog that
         does not take them back is one the store still talks to."""

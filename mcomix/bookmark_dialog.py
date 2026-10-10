@@ -124,6 +124,7 @@ class _BookmarksDialog(Dialog):
         self._bookmarks_store.remove_bookmark += self._bookmark_removed
         self._bookmarks_store.replace_bookmark += self._bookmark_replaced
         self._bookmarks_store.clear_bookmarks += self._bookmarks_cleared
+        self._bookmarks_store.relocate += self._bookmarks_relocated
 
         self.set_visible(True)
 
@@ -199,6 +200,19 @@ class _BookmarksDialog(Dialog):
     def _bookmarks_cleared(self) -> None:
         """Empty the list, the store having been emptied."""
         self._list.clear()
+        self._store_changed()
+
+    def _bookmarks_relocated(self, *args: object) -> None:
+        """List the bookmarks again, a folder of their books having been
+        moved.
+
+        The store holds a new bookmark in the place of every one that
+        followed its book, and the rows held the ones they were made
+        of - which closing the dialog hands back to the store as the
+        order to keep, and with it the paths the books had left."""
+        self._list.clear()
+        for bookmark in self._bookmarks_store.get_bookmarks():
+            self._add_bookmark(bookmark)
         self._store_changed()
 
     def _store_changed(self) -> None:
@@ -320,6 +334,7 @@ class _BookmarksDialog(Dialog):
         self._bookmarks_store.remove_bookmark -= self._bookmark_removed
         self._bookmarks_store.replace_bookmark -= self._bookmark_replaced
         self._bookmarks_store.clear_bookmarks -= self._bookmarks_cleared
+        self._bookmarks_store.relocate -= self._bookmarks_relocated
 
         ordering = [row.bookmark for row in self._list.each_stored_row()]
         ordering.reverse()
