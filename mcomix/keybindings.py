@@ -137,6 +137,10 @@ BINDING_INFO: "dict[str, dict[str, str]]" = {
     'slideshow': {'title': _('Start slideshow'), 'group': _('User interface')},
     'pause_animation': {'title': _('Pause or resume animation'),
                         'group': _('User interface')},
+    'faster_animation': {'title': _('Play animation faster'),
+                         'group': _('User interface')},
+    'slower_animation': {'title': _('Play animation slower'),
+                         'group': _('User interface')},
 
     # File operations
     'delete': {'title': _('Delete'), 'group': _('File')},

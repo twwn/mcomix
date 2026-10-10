@@ -532,6 +532,14 @@ class EventHandler:
                          ['p'],
                          self._window.toggle_animation)
 
+        manager.register('faster_animation',
+                         ['bracketright'],
+                         self._window.faster_animation)
+
+        manager.register('slower_animation',
+                         ['bracketleft'],
+                         self._window.slower_animation)
+
         # Execute external command. Bind keys from 1 to 9 to commands 1 to 9.
         for i in range(1, 10):
             manager.register('execute_command_%d' % i, ['%d' % i],

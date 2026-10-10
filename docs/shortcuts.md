@@ -65,6 +65,8 @@ Toggle double page mode | D
 Toggle manga mode | M
 Toggle slideshow mode | CTRL+S
 Pause or resume an animated page | P
+Play an animated page faster | ]
+Play an animated page slower | [
 Best fit mode | B
 Fit to width mode | W
 Fit to height mode | H

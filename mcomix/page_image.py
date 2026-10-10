@@ -78,6 +78,8 @@ class _Playback:
         self._condition = threading.Condition()
         self._stopped = False
         self.paused = False
+        #: How many times as fast as the file says the frames come.
+        self.speed = 1.0
 
     def is_stopped(self) -> bool:
         # Read without the lock: it only ever goes from False to True.
@@ -135,6 +137,8 @@ class PageImage(Gtk.Picture):
         self._worker: threading.Thread | None = None
         #: What draws the frames, while there are frames to draw.
         self._animation: _AnimationPaintable | None = None
+        #: What set_speed() asked for, which a page shown later keeps.
+        self._speed = 1.0
 
     def show_pixbuf(self, pixbuf: GdkPixbuf.Pixbuf,
                     size: Sequence[float] | None = None) -> None:
@@ -183,6 +187,13 @@ class PageImage(Gtk.Picture):
         """Whether the page on screen is an animation, paused or not."""
         return self._playback is not None
 
+    def set_speed(self, speed: float) -> None:
+        """Play this page's animation, and those it shows later, <speed>
+        times as fast as their files say (upstream feature request 11)."""
+        self._speed = speed
+        if self._playback is not None:
+            self._playback.speed = speed
+
     def is_paused(self) -> bool:
         """Whether the animation on screen is paused."""
         return self._playback is not None and self._playback.paused
@@ -216,6 +227,7 @@ class PageImage(Gtk.Picture):
         self._path = path
         self._playback = _Playback()
         self._playback.set_paused(paused)
+        self._playback.speed = self._speed
         self._worker = threading.Thread(target=self._decode,
                                         args=(frames, self._animation,
                                               self._playback),
@@ -258,7 +270,8 @@ class PageImage(Gtk.Picture):
             # is not paid for twice; a page that cannot keep up at all
             # starts counting again rather than running up a debt.
             due = max(time.monotonic(),
-                      due + max(animation.MINIMUM_DELAY, delay) / 1000.0)
+                      due + max(animation.MINIMUM_DELAY, delay)
+                      / 1000.0 / playback.speed)
 
     def _show_frame(self, paintable: _AnimationPaintable,
                     texture: Gdk.Texture, playback: _Playback) -> bool:

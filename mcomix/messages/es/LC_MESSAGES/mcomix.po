@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: comix.HEAD\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-10 13:40+0200\n"
+"POT-Creation-Date: 2026-10-10 13:49+0200\n"
 "PO-Revision-Date: 2012-09-06 18:00+0100\n"
 "Last-Translator: Carlos Feliu <carlos.feliu.holguera@gmail.com>\n"
 "Language-Team: Spanish <traductores@es.gnome.org>\n"
@@ -46,12 +46,12 @@ msgstr "%s utiliza la licencia general pública GNU."
 msgid "A copy of this license can be obtained from %s"
 msgstr "Una copia de esta licencia puede ser obtenida en %s"
 
-#: mcomix/archive_extractor.py:339 mcomix/archive_extractor.py:364
+#: mcomix/archive_extractor.py:339 mcomix/archive_extractor.py:365
 #, python-format
 msgid "! Extraction error: %s"
 msgstr "! Error de extración: %s"
 
-#: mcomix/archive_extractor.py:388 mcomix/archive_tools.py:235
+#: mcomix/archive_extractor.py:390 mcomix/archive_tools.py:235
 #: mcomix/image_tools.py:504 mcomix/page_rotations.py:40
 #, python-format
 msgid "! Could not read %s"
@@ -168,7 +168,7 @@ msgstr "Editar marcadores"
 msgid "C_lear bookmarks..."
 msgstr "_Quitar los marcadores..."
 
-#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1059 mcomix/openwith.py:337
+#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1061 mcomix/openwith.py:337
 #: mcomix/library/collection_area.py:150 mcomix/library/watchlist.py:64
 msgid "_Remove"
 msgstr "_Eliminar"
@@ -196,7 +196,7 @@ msgstr "Nombre"
 
 #
 # File: src/bookmark.py, line: 256
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1736
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1758
 #: mcomix/library/control_area.py:152
 msgid "Page"
 msgstr "Página"
@@ -310,7 +310,7 @@ msgstr "Ingrese un nombre nuevo para este archivo."
 
 #
 # File: src/edit.py, line: 28
-#: mcomix/edit_dialog.py:58 mcomix/keybindings.py:158
+#: mcomix/edit_dialog.py:58 mcomix/keybindings.py:162
 msgid "Edit archive"
 msgstr "Editar archivador"
 
@@ -394,7 +394,7 @@ msgstr "Seleccionar _todo"
 
 #
 # File: src/enhance.py, line: 51
-#: mcomix/enhance_dialog.py:40 mcomix/keybindings.py:160
+#: mcomix/enhance_dialog.py:40 mcomix/keybindings.py:164
 msgid "Enhance image"
 msgstr "Mejorar la imagen"
 
@@ -649,7 +649,7 @@ msgstr[1] "%d páginas"
 #
 # File: src/filechooser.py, line: 35
 # File: src/library.py, line: 489
-#: mcomix/file_chooser_base_dialog.py:236 mcomix/keybindings.py:159
+#: mcomix/file_chooser_base_dialog.py:236 mcomix/keybindings.py:163
 msgid "Open"
 msgstr "Abrir"
 
@@ -1127,7 +1127,8 @@ msgstr "Salir de pantalla completa"
 #: mcomix/keybindings.py:132 mcomix/keybindings.py:133
 #: mcomix/keybindings.py:134 mcomix/keybindings.py:135
 #: mcomix/keybindings.py:136 mcomix/keybindings.py:137
-#: mcomix/keybindings.py:139 mcomix/preferences_dialog.py:132
+#: mcomix/keybindings.py:139 mcomix/keybindings.py:141
+#: mcomix/keybindings.py:143 mcomix/preferences_dialog.py:132
 msgid "User interface"
 msgstr "Interfaz de usuario"
 
@@ -1191,130 +1192,138 @@ msgstr "Empezar diapositivas"
 msgid "Pause or resume animation"
 msgstr "Pausar o reanudar la animación"
 
+#: mcomix/keybindings.py:140
+msgid "Play animation faster"
+msgstr "Reproducir la animación más rápido"
+
 #: mcomix/keybindings.py:142
+msgid "Play animation slower"
+msgstr "Reproducir la animación más despacio"
+
+#: mcomix/keybindings.py:146
 msgid "Delete"
 msgstr "Eliminar"
 
 #
 # File: src/preferences.py, line: 196
-#: mcomix/keybindings.py:142 mcomix/keybindings.py:144
-#: mcomix/keybindings.py:145 mcomix/keybindings.py:148
-#: mcomix/keybindings.py:149 mcomix/keybindings.py:150
-#: mcomix/keybindings.py:151 mcomix/keybindings.py:152
-#: mcomix/keybindings.py:154 mcomix/keybindings.py:155
-#: mcomix/keybindings.py:156 mcomix/keybindings.py:158
-#: mcomix/keybindings.py:159 mcomix/keybindings.py:160
-#: mcomix/keybindings.py:161 mcomix/keybindings.py:162
+#: mcomix/keybindings.py:146 mcomix/keybindings.py:148
+#: mcomix/keybindings.py:149 mcomix/keybindings.py:152
+#: mcomix/keybindings.py:153 mcomix/keybindings.py:154
+#: mcomix/keybindings.py:155 mcomix/keybindings.py:156
+#: mcomix/keybindings.py:158 mcomix/keybindings.py:159
+#: mcomix/keybindings.py:160 mcomix/keybindings.py:162
+#: mcomix/keybindings.py:163 mcomix/keybindings.py:164
+#: mcomix/keybindings.py:165 mcomix/keybindings.py:166
 msgid "File"
 msgstr "Archivo"
 
-#: mcomix/keybindings.py:143 mcomix/ui.py:444
+#: mcomix/keybindings.py:147 mcomix/ui.py:444
 msgid "Delete permanently"
 msgstr "Eliminar permanentemente"
 
-#: mcomix/keybindings.py:145
+#: mcomix/keybindings.py:149
 msgid "Rename page"
 msgstr "Renombrar página"
 
-#: mcomix/keybindings.py:146
+#: mcomix/keybindings.py:150
 msgid "Undo"
 msgstr "Deshacer"
 
-#: mcomix/keybindings.py:146 mcomix/keybindings.py:147
+#: mcomix/keybindings.py:150 mcomix/keybindings.py:151
 msgid "Edit"
 msgstr "Editar"
 
-#: mcomix/keybindings.py:147
+#: mcomix/keybindings.py:151
 msgid "Redo"
 msgstr "Rehacer"
 
-#: mcomix/keybindings.py:148
+#: mcomix/keybindings.py:152
 msgid "Refresh"
 msgstr "Refrescar"
 
 #
 # File: src/ui.py, line: 48
-#: mcomix/keybindings.py:149
+#: mcomix/keybindings.py:153
 msgid "Close"
 msgstr "Cerrar"
 
 #
 # File: src/ui.py, line: 50
-#: mcomix/keybindings.py:150
+#: mcomix/keybindings.py:154
 msgid "Quit"
 msgstr "Salir"
 
-#: mcomix/keybindings.py:151
+#: mcomix/keybindings.py:155
 msgid "Save and quit"
 msgstr "Guardar y salir"
 
-#: mcomix/keybindings.py:152
+#: mcomix/keybindings.py:156
 msgid "Save As"
 msgstr "Guardar como"
 
 #
 # File: src/properties.py, line: 135
-#: mcomix/keybindings.py:154
+#: mcomix/keybindings.py:158
 msgid "Archive comments"
 msgstr "Comentarios del archivador"
 
 #
 # File: src/properties.py, line: 89
-#: mcomix/keybindings.py:155 mcomix/properties_dialog.py:36
+#: mcomix/keybindings.py:159 mcomix/properties_dialog.py:36
 msgid "Properties"
 msgstr "Propiedades"
 
 #
 # File: src/preferences.py, line: 78
-#: mcomix/keybindings.py:156 mcomix/preferences_dialog.py:70
+#: mcomix/keybindings.py:160 mcomix/preferences_dialog.py:70
 msgid "Preferences"
 msgstr "Preferencias"
 
 #
 # File: src/library.py, line: 38
-#: mcomix/keybindings.py:161 mcomix/library/main_dialog.py:55
+#: mcomix/keybindings.py:165 mcomix/library/main_dialog.py:55
 msgid "Library"
 msgstr "Biblioteca"
 
-#: mcomix/keybindings.py:162 mcomix/ui.py:533
+#: mcomix/keybindings.py:166 mcomix/ui.py:533
 msgid "Invert image colors"
 msgstr "Invertir los colores de la imagen"
 
 #
 # File: src/bookmark.py, line: 27
-#: mcomix/keybindings.py:165
+#: mcomix/keybindings.py:169
 msgid "Add bookmark"
 msgstr "Añadir marcador"
 
 #
 # File: src/ui.py, line: 64
-#: mcomix/keybindings.py:165 mcomix/keybindings.py:166
+#: mcomix/keybindings.py:169 mcomix/keybindings.py:170
 msgid "Bookmarks"
 msgstr "Marcadores"
 
-#: mcomix/keybindings.py:166
+#: mcomix/keybindings.py:170
 msgid "Edit bookmarks"
 msgstr "Editar marcadores"
 
 #
 # File: src/comment.py, line: 16
 # File: src/preferences.py, line: 288
-#: mcomix/keybindings.py:174 mcomix/openwith.py:558
+#: mcomix/keybindings.py:178 mcomix/openwith.py:558
 msgid "Command"
 msgstr "Orden"
 
-#: mcomix/keybindings.py:175
+#: mcomix/keybindings.py:179
 msgid "External commands"
 msgstr "Órdenes externas"
 
-#: mcomix/keybindings.py:252
+#: mcomix/keybindings.py:256
 #, python-format
 msgid "Keybinding for \"%(action)s\" overrides hotkey for another action."
 msgstr ""
 "La combinación de teclas para \"%(action)s\" anula la hotkey para otra "
 "acción."
 
-#: mcomix/keybindings.py:440 mcomix/keybindings.py:448
+#: mcomix/keybindings.py:444 mcomix/keybindings.py:452
 #, python-format
 msgid "Couldn't load keybindings: %s"
 msgstr "No se pudieron cargar las combinaciones de teclas: %s"
@@ -1324,14 +1333,14 @@ msgstr "No se pudieron cargar las combinaciones de teclas: %s"
 msgid "! Could not remove file \"%s\""
 msgstr "!  No se pudo eliminar  el archivo \"%s\""
 
-#: mcomix/main.py:1052
+#: mcomix/main.py:1054
 #, python-format
 msgid "Remove the page picked out of \"%s\"?"
 msgid_plural "Remove the pages picked out of \"%s\"?"
 msgstr[0] "¿Quitar la página elegida de «%s»?"
 msgstr[1] "¿Quitar las páginas elegidas de «%s»?"
 
-#: mcomix/main.py:1055
+#: mcomix/main.py:1057
 msgid ""
 "They are taken out of the archive on disk, which is written again at once. "
 "Leaving the book without removing them forgets which pages they were."
@@ -1339,13 +1348,18 @@ msgstr ""
 "Se quitan del archivo del disco, que se escribe de nuevo enseguida. Si deja "
 "el libro sin quitarlas, se olvidará qué páginas eran."
 
-#: mcomix/main.py:1058
+#: mcomix/main.py:1060
 msgid "_Keep them"
 msgstr "_Conservarlas"
 
+#: mcomix/main.py:1222
+#, python-format
+msgid "Animation speed: %s"
+msgstr "Velocidad de la animación: %s"
+
 #
 # File: src/main.py, line: 666
-#: mcomix/main.py:1542
+#: mcomix/main.py:1564
 msgid "SLIDESHOW"
 msgstr "DIAPOSITIVAS"
 
@@ -1585,7 +1599,7 @@ msgstr ""
 
 #
 # File: src/library.py, line: 271
-#: mcomix/page_image.py:243
+#: mcomix/page_image.py:255
 #, python-format
 msgid "! Could not draw the next frame: %s"
 msgstr "! No se pudo dibujar el fotograma siguiente: %s"
@@ -3494,11 +3508,11 @@ msgstr "_Biblioteca..."
 msgid "! Worker thread processing %(function)r failed: %(error)s"
 msgstr "! Falló el hilo de trabajo que procesaba %(function)r: %(error)s"
 
-#: mcomix/archive/password.py:71
+#: mcomix/archive/password.py:98
 msgid "The archive is password-protected:"
 msgstr "El archivador está protegido por contraseña:"
 
-#: mcomix/archive/password.py:73
+#: mcomix/archive/password.py:100
 msgid "Please enter the password to continue:"
 msgstr "Introduzca la contraseña para continuar:"
 

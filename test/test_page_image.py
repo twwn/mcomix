@@ -264,6 +264,55 @@ class PageImageTest(MComixTest):
                          'a paused decoder did not notice the stop')
 
 
+class AnimationSpeedTest(MComixTest):
+
+    """Animated pages played faster or slower (upstream feature request
+    11): a frame's time divided by the speed."""
+
+    def _dues(self, speed, frames=4):
+        """When the decoder asks for each of <frames> frames of 400 ms,
+        with the page set to <speed>, and waiting costing nothing."""
+        from mcomix import page_image
+
+        class Frames(animation.Frames):
+            ahead = True
+
+            def next(self):
+                return object(), 400
+
+        image = PageImage()
+        image.set_speed(speed)
+        playback = page_image._Playback()
+        playback.speed = image._speed
+        dues = []
+
+        def wait_until(due):
+            dues.append(due)
+            if len(dues) == frames:
+                playback.stop()
+                return None
+            return due
+
+        playback.wait_until = wait_until
+        image._decode(Frames(), None, playback)
+        pump()
+        return [round(later - earlier, 3)
+                for earlier, later in zip(dues, dues[1:])]
+
+    def test_a_faster_page_waits_less_for_each_frame(self):
+        self.assertEqual([0.4] * 3, self._dues(1.0))
+        self.assertEqual([0.1] * 3, self._dues(4.0))
+        self.assertEqual([1.6] * 3, self._dues(0.25))
+
+    def test_a_page_shown_later_keeps_the_speed(self):
+        image = PageImage()
+        image.set_speed(2.0)
+        image.show_pixbuf(
+            image_tools.load_pixbuf(get_image_path('animated.gif')))
+        self.addCleanup(image.clear)
+        self.assertEqual(2.0, image._playback.speed)
+
+
 class _SlowFrames(animation.Frames):
 
     """A decoder that takes about as long as the frame it decodes."""

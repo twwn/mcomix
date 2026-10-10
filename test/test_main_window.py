@@ -1377,6 +1377,21 @@ class MainWindowTest(MComixTest):
         self.window.page_counter.update()
         self.assertIsNone(self.window.page_counter._timeout_event)
 
+    def test_the_animation_speed_steps_and_stops_at_its_ends(self):
+        """] and [ (upstream feature request 11)."""
+        shown = []
+        with unittest.mock.patch.object(self.window.osd, 'show',
+                                        shown.append):
+            for _ in range(5):
+                self.window.faster_animation()
+            self.assertEqual(4.0, self.window.animation_speed)
+            for _ in range(3):
+                self.window.slower_animation()
+        self.assertEqual(0.5, self.window.animation_speed)
+        self.assertEqual([0.5, 0.5], [image._speed
+                                      for image in self.window.images])
+        self.assertEqual('Animation speed: 0.5\u00d7', shown[-1])
+
     def test_a_random_page_is_never_the_one_on_screen(self):
         """Upstream feature request 96."""
         pages = len(self._ready())

@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 1.00-SVN\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-10 13:40+0200\n"
+"POT-Creation-Date: 2026-10-10 13:49+0200\n"
 "PO-Revision-Date: 2012-08-16 13:10+0900\n"
 "Last-Translator: Toshiharu Kudoh <toshi.kd2@gmail.com>\n"
 "Language-Team: Japanese\n"
@@ -42,12 +42,12 @@ msgstr "%s は GNU General Public License の下でライセンスされてい�
 msgid "A copy of this license can be obtained from %s"
 msgstr "このライセンスの複製は %s から入手できます"
 
-#: mcomix/archive_extractor.py:339 mcomix/archive_extractor.py:364
+#: mcomix/archive_extractor.py:339 mcomix/archive_extractor.py:365
 #, python-format
 msgid "! Extraction error: %s"
 msgstr "! 展開エラーです: %s"
 
-#: mcomix/archive_extractor.py:388 mcomix/archive_tools.py:235
+#: mcomix/archive_extractor.py:390 mcomix/archive_tools.py:235
 #: mcomix/image_tools.py:504 mcomix/page_rotations.py:40
 #, python-format
 msgid "! Could not read %s"
@@ -150,7 +150,7 @@ msgstr "ブックマークの編集"
 msgid "C_lear bookmarks..."
 msgstr "ブックマークの消去(_L)..."
 
-#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1059 mcomix/openwith.py:337
+#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1061 mcomix/openwith.py:337
 #: mcomix/library/collection_area.py:150 mcomix/library/watchlist.py:64
 msgid "_Remove"
 msgstr "削除(_R)"
@@ -171,7 +171,7 @@ msgstr "種類"
 msgid "Name"
 msgstr "名前"
 
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1736
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:1758
 #: mcomix/library/control_area.py:152
 msgid "Page"
 msgstr "ページ"
@@ -267,7 +267,7 @@ msgstr "ファイルの名前を変更しますか?"
 msgid "Please enter a new name for this file."
 msgstr "このファイルの新しい名前を入力してください。"
 
-#: mcomix/edit_dialog.py:58 mcomix/keybindings.py:158
+#: mcomix/edit_dialog.py:58 mcomix/keybindings.py:162
 msgid "Edit archive"
 msgstr "アーカイブファイルを編集"
 
@@ -335,7 +335,7 @@ msgstr "ページの名前を変更(_N)..."
 msgid "Select _All"
 msgstr "すべて選択(_A)"
 
-#: mcomix/enhance_dialog.py:40 mcomix/keybindings.py:160
+#: mcomix/enhance_dialog.py:40 mcomix/keybindings.py:164
 msgid "Enhance image"
 msgstr "画像の調整"
 
@@ -561,7 +561,7 @@ msgid "%d page"
 msgid_plural "%d pages"
 msgstr[0] "%d ページ"
 
-#: mcomix/file_chooser_base_dialog.py:236 mcomix/keybindings.py:159
+#: mcomix/file_chooser_base_dialog.py:236 mcomix/keybindings.py:163
 msgid "Open"
 msgstr "開く"
 
@@ -957,7 +957,8 @@ msgstr "全画面表示から退出"
 #: mcomix/keybindings.py:132 mcomix/keybindings.py:133
 #: mcomix/keybindings.py:134 mcomix/keybindings.py:135
 #: mcomix/keybindings.py:136 mcomix/keybindings.py:137
-#: mcomix/keybindings.py:139 mcomix/preferences_dialog.py:132
+#: mcomix/keybindings.py:139 mcomix/keybindings.py:141
+#: mcomix/keybindings.py:143 mcomix/preferences_dialog.py:132
 msgid "User interface"
 msgstr "ユーザーインターフェース"
 
@@ -1009,109 +1010,117 @@ msgstr "スライドショーを動かす"
 msgid "Pause or resume animation"
 msgstr "アニメーションの一時停止/再開"
 
+#: mcomix/keybindings.py:140
+msgid "Play animation faster"
+msgstr "アニメーションを速く再生"
+
 #: mcomix/keybindings.py:142
+msgid "Play animation slower"
+msgstr "アニメーションを遅く再生"
+
+#: mcomix/keybindings.py:146
 msgid "Delete"
 msgstr "削除"
 
-#: mcomix/keybindings.py:142 mcomix/keybindings.py:144
-#: mcomix/keybindings.py:145 mcomix/keybindings.py:148
-#: mcomix/keybindings.py:149 mcomix/keybindings.py:150
-#: mcomix/keybindings.py:151 mcomix/keybindings.py:152
-#: mcomix/keybindings.py:154 mcomix/keybindings.py:155
-#: mcomix/keybindings.py:156 mcomix/keybindings.py:158
-#: mcomix/keybindings.py:159 mcomix/keybindings.py:160
-#: mcomix/keybindings.py:161 mcomix/keybindings.py:162
+#: mcomix/keybindings.py:146 mcomix/keybindings.py:148
+#: mcomix/keybindings.py:149 mcomix/keybindings.py:152
+#: mcomix/keybindings.py:153 mcomix/keybindings.py:154
+#: mcomix/keybindings.py:155 mcomix/keybindings.py:156
+#: mcomix/keybindings.py:158 mcomix/keybindings.py:159
+#: mcomix/keybindings.py:160 mcomix/keybindings.py:162
+#: mcomix/keybindings.py:163 mcomix/keybindings.py:164
+#: mcomix/keybindings.py:165 mcomix/keybindings.py:166
 msgid "File"
 msgstr "ファイル"
 
-#: mcomix/keybindings.py:143 mcomix/ui.py:444
+#: mcomix/keybindings.py:147 mcomix/ui.py:444
 msgid "Delete permanently"
 msgstr "完全に削除"
 
-#: mcomix/keybindings.py:145
+#: mcomix/keybindings.py:149
 msgid "Rename page"
 msgstr "ページの名前を変更"
 
-#: mcomix/keybindings.py:146
+#: mcomix/keybindings.py:150
 msgid "Undo"
 msgstr "元に戻す"
 
-#: mcomix/keybindings.py:146 mcomix/keybindings.py:147
+#: mcomix/keybindings.py:150 mcomix/keybindings.py:151
 msgid "Edit"
 msgstr "編集"
 
-#: mcomix/keybindings.py:147
+#: mcomix/keybindings.py:151
 msgid "Redo"
 msgstr "やり直す"
 
-#: mcomix/keybindings.py:148
+#: mcomix/keybindings.py:152
 msgid "Refresh"
 msgstr "再読み込み"
 
-#: mcomix/keybindings.py:149
+#: mcomix/keybindings.py:153
 msgid "Close"
 msgstr "閉じる"
 
-#: mcomix/keybindings.py:150
+#: mcomix/keybindings.py:154
 msgid "Quit"
 msgstr "終了"
 
-#: mcomix/keybindings.py:151
+#: mcomix/keybindings.py:155
 msgid "Save and quit"
 msgstr "保存して終了"
 
-#: mcomix/keybindings.py:152
+#: mcomix/keybindings.py:156
 msgid "Save As"
 msgstr "別名で保存"
 
-#: mcomix/keybindings.py:154
+#: mcomix/keybindings.py:158
 msgid "Archive comments"
 msgstr "アーカイブファイルのコメント"
 
-#: mcomix/keybindings.py:155 mcomix/properties_dialog.py:36
+#: mcomix/keybindings.py:159 mcomix/properties_dialog.py:36
 msgid "Properties"
 msgstr "プロパティー"
 
-#: mcomix/keybindings.py:156 mcomix/preferences_dialog.py:70
+#: mcomix/keybindings.py:160 mcomix/preferences_dialog.py:70
 msgid "Preferences"
 msgstr "設定"
 
-#: mcomix/keybindings.py:161 mcomix/library/main_dialog.py:55
+#: mcomix/keybindings.py:165 mcomix/library/main_dialog.py:55
 msgid "Library"
 msgstr "ライブラリー"
 
-#: mcomix/keybindings.py:162 mcomix/ui.py:533
+#: mcomix/keybindings.py:166 mcomix/ui.py:533
 msgid "Invert image colors"
 msgstr "画像の色を反転"
 
-#: mcomix/keybindings.py:165
+#: mcomix/keybindings.py:169
 msgid "Add bookmark"
 msgstr "ブックマークに追加"
 
-#: mcomix/keybindings.py:165 mcomix/keybindings.py:166
+#: mcomix/keybindings.py:169 mcomix/keybindings.py:170
 msgid "Bookmarks"
 msgstr "ブックマーク"
 
-#: mcomix/keybindings.py:166
+#: mcomix/keybindings.py:170
 msgid "Edit bookmarks"
 msgstr "ブックマークの編集"
 
-#: mcomix/keybindings.py:174 mcomix/openwith.py:558
+#: mcomix/keybindings.py:178 mcomix/openwith.py:558
 msgid "Command"
 msgstr "コマンド"
 
-#: mcomix/keybindings.py:175
+#: mcomix/keybindings.py:179
 msgid "External commands"
 msgstr "外部コマンド"
 
-#: mcomix/keybindings.py:252
+#: mcomix/keybindings.py:256
 #, python-format
 msgid "Keybinding for \"%(action)s\" overrides hotkey for another action."
 msgstr ""
 "\"%(action)s\" のキーバインディングは他のアクションのホットキーをオーバーライ"
 "ドします。"
 
-#: mcomix/keybindings.py:440 mcomix/keybindings.py:448
+#: mcomix/keybindings.py:444 mcomix/keybindings.py:452
 #, python-format
 msgid "Couldn't load keybindings: %s"
 msgstr "キーバインディングを読めませんでした: %s"
@@ -1121,13 +1130,13 @@ msgstr "キーバインディングを読めませんでした: %s"
 msgid "! Could not remove file \"%s\""
 msgstr "! ファイル \"%s\" を削除できませんでした"
 
-#: mcomix/main.py:1052
+#: mcomix/main.py:1054
 #, python-format
 msgid "Remove the page picked out of \"%s\"?"
 msgid_plural "Remove the pages picked out of \"%s\"?"
 msgstr[0] "選んだページを「%s」から取り除きますか？"
 
-#: mcomix/main.py:1055
+#: mcomix/main.py:1057
 msgid ""
 "They are taken out of the archive on disk, which is written again at once. "
 "Leaving the book without removing them forgets which pages they were."
@@ -1135,11 +1144,16 @@ msgstr ""
 "ディスク上の書庫から取り除かれ、書庫はすぐに書き直されます。取り除かずに本を"
 "離れると、どのページだったかは忘れられます。"
 
-#: mcomix/main.py:1058
+#: mcomix/main.py:1060
 msgid "_Keep them"
 msgstr "残す(_K)"
 
-#: mcomix/main.py:1542
+#: mcomix/main.py:1222
+#, python-format
+msgid "Animation speed: %s"
+msgstr "アニメーション速度: %s"
+
+#: mcomix/main.py:1564
 msgid "SLIDESHOW"
 msgstr "SLIDESHOW"
 
@@ -1360,7 +1374,7 @@ msgstr ""
 "外部コマンドの一覧にまだ保存されていない変更があります。全ての変更を保存する"
 "には「はい」を、破棄するには「いいえ」を押してください。"
 
-#: mcomix/page_image.py:243
+#: mcomix/page_image.py:255
 #, python-format
 msgid "! Could not draw the next frame: %s"
 msgstr "! 次のフレームを描画できませんでした: %s"
@@ -2967,11 +2981,11 @@ msgstr "ライブラリー(_L)..."
 msgid "! Worker thread processing %(function)r failed: %(error)s"
 msgstr "! %(function)r を処理していたワーカースレッドが失敗しました: %(error)s"
 
-#: mcomix/archive/password.py:71
+#: mcomix/archive/password.py:98
 msgid "The archive is password-protected:"
 msgstr "このアーカイブファイルはパスワードで保護されています:"
 
-#: mcomix/archive/password.py:73
+#: mcomix/archive/password.py:100
 msgid "Please enter the password to continue:"
 msgstr "続行するにはパスワードを入力してください:"
 

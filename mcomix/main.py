@@ -161,6 +161,8 @@ class MainWindow(Gtk.Window):
         self.enhancer = enhance_backend.ImageEnhancer(self)
         self.lens = lens.MagnifyingLens(self)
         self.osd = osd.OnScreenDisplay(self)
+        #: What the animated pages are played at: see faster_animation().
+        self.animation_speed = 1.0
         self.page_counter = osd.PageCounter(self)
         self.zoom = zoom.ZoomModel()
         self.uimanager = ui.MainUI(self)
@@ -1199,6 +1201,26 @@ class MainWindow(Gtk.Window):
         paused = not all(image.is_paused() for image in animating)
         for image in animating:
             image.set_paused(paused)
+
+    #: The speeds an animation steps through, as times its own.
+    ANIMATION_SPEEDS = (0.25, 0.5, 1.0, 2.0, 4.0)
+
+    def faster_animation(self, *args: object) -> None:
+        """Play animated pages a step faster (upstream feature request
+        11), from now until MComix closes."""
+        self._step_animation_speed(+1)
+
+    def slower_animation(self, *args: object) -> None:
+        self._step_animation_speed(-1)
+
+    def _step_animation_speed(self, step: int) -> None:
+        speeds = self.ANIMATION_SPEEDS
+        index = speeds.index(self.animation_speed) + step
+        self.animation_speed = speeds[max(0, min(len(speeds) - 1, index))]
+        for image in self.images:
+            image.set_speed(self.animation_speed)
+        self.osd.show(_('Animation speed: %s')
+                      % ('%g\u00d7' % self.animation_speed))
 
     def rotate_90(self, *args: object) -> None:
         self._rotate(90)
