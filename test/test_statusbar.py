@@ -59,6 +59,21 @@ class StatusbarTextTest(MComixTest):
     def _text(self):
         return shown_text(self.bar)
 
+    def test_a_field_reports_no_baseline_across_its_width(self):
+        """GTK expects -1, -1 for the baselines of a horizontal measure
+        and warned "reported a horizontal baseline" for every field: the
+        label's own measure, chained through PyGObject, answers 0."""
+        field = status._Field(True, True)
+        field.set_text('page-001.jpg')
+        field.hold('a much longer name than that.jpg')
+        minimum, natural, minimum_baseline, natural_baseline = (
+            field.do_measure(Gtk.Orientation.HORIZONTAL, -1))
+        self.assertEqual((-1, -1), (minimum_baseline, natural_baseline))
+        self.assertGreater(natural, minimum)
+        # Across its height a line of text has one.
+        self.assertGreater(
+            field.do_measure(Gtk.Orientation.VERTICAL, -1)[2], 0)
+
     def test_a_message_is_shown_as_it_was_given(self):
         self.bar.set_message('Could not open the archive')
         self.assertEqual(self._text(), 'Could not open the archive')

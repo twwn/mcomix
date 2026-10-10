@@ -80,7 +80,11 @@ class _Field(Gtk.Label):
         minimum, natural, minimum_baseline, natural_baseline = (
             Gtk.Label.do_measure(self, orientation, for_size))
         if orientation == Gtk.Orientation.HORIZONTAL:
-            natural = max(natural, self._held)
+            # Gtk.Label leaves the baselines alone across a width, and
+            # through PyGObject alone means 0 rather than the -1 for
+            # "none" GTK expects: it warned "reported a horizontal
+            # baseline" for every field.
+            return minimum, max(natural, self._held), -1, -1
         return minimum, natural, minimum_baseline, natural_baseline
 
 
