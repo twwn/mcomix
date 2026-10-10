@@ -147,6 +147,8 @@ def hexdump(data, group_size=4):
 
 #: Ghostscript's copy of the Adobe RGB (1998) profile, where it is installed.
 _ADOBE_RGB_PROFILE = '/usr/share/ghostscript/iccprofiles/a98.icc'
+#: Ghostscript's default CMYK profile, where it is installed.
+_CMYK_PROFILE = '/usr/share/ghostscript/iccprofiles/default_cmyk.icc'
 
 
 class ImageToolsTest(MComixTest):
@@ -791,6 +793,51 @@ class ImageToolsTest(MComixTest):
                     % (image, scaling_quality, 'checker' if checker_bg else 'white')
                 )
                 self.assertImagesEqual(result, expected, msg=msg)
+
+
+class CmykJpegTest(MComixTest):
+
+    """A JPEG stored in CMYK with a colour profile, as print scans come
+    (upstream feature requests 137 and 128).  gdk-pixbuf, glycin among
+    its loaders, turned it into RGB without its profile, so the page was
+    shown in other colours than its thumbnail, which PIL had read."""
+
+    def _write(self, profile=True):
+        path = os.path.join(self.tmp_dir, 'cmyk.jpg')
+        options = {}
+        if profile:
+            with open(_CMYK_PROFILE, 'rb') as fp:
+                options['icc_profile'] = fp.read()
+        # Process red: no cyan or black, all magenta and yellow.
+        Image.new('CMYK', (64, 64), (0, 255, 255, 0)).save(
+            path, quality=95, **options)
+        return path
+
+    @unittest.skipUnless(os.path.isfile(_CMYK_PROFILE),
+                         'needs a CMYK colour profile')
+    def test_the_page_comes_out_as_its_thumbnail_does(self):
+        path = self._write()
+        page = image_tools.pixbuf_to_pil(
+            image_tools.load_pixbuf(path)).getpixel((32, 32))
+        thumbnail = image_tools.pixbuf_to_pil(
+            image_tools.load_pixbuf_size(path, 32, 32)).getpixel((16, 16))
+        for got, want in zip(page, thumbnail):
+            self.assertAlmostEqual(got, want, delta=3, msg=(page, thumbnail))
+        # Converted by the profile: a printed red is not the screen's.
+        self.assertLess(page[0], 250, page)
+        self.assertGreater(page[1], 15, page)
+
+    def test_without_a_profile_it_is_read_as_before(self):
+        path = self._write(profile=False)
+        self.assertEqual((255, 0, 0), image_tools.pixbuf_to_pil(
+            image_tools.load_pixbuf(path)).getpixel((32, 32)))
+
+    def test_other_jpegs_are_not_taken_for_cmyk(self):
+        self.assertFalse(image_tools._is_cmyk_jpeg(
+            get_image_path('02-JPG-RGB.jpg')))
+        self.assertFalse(image_tools._is_cmyk_jpeg(
+            get_image_path('blue.png')))
+        self.assertTrue(image_tools._is_cmyk_jpeg(self._write(profile=False)))
 
 
 class EnhanceTest(MComixTest):

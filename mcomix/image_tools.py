@@ -710,13 +710,30 @@ def _is_lossy_webp(path: str) -> bool:
             and head[12:16] != b'VP8L')
 
 
+def _is_cmyk_jpeg(path: str) -> bool:
+    """Whether <path> is a JPEG stored in CMYK, which gdk-pixbuf turns
+    into RGB without its colour profile (glycin among its loaders); PIL
+    reads the profile, and _in_srgb() converts by it.  Only the header
+    is read, and only of a file that starts as a JPEG does."""
+    try:
+        with open(path, 'rb') as fp:
+            if fp.read(3) != b'\xff\xd8\xff':
+                return False
+        with Image.open(path) as image:
+            return image.mode == 'CMYK'
+    except Exception:
+        # Not a picture PIL reads, which gdk-pixbuf may still.
+        return False
+
+
 def load_pixbuf(path: str) -> GdkPixbuf.Pixbuf:
     """The whole picture at <path>, at the size it was stored at.
 
     gdk-pixbuf first and PIL after it, since between them they read more
     than either does alone; the last error is raised where neither could
     read the file.  A lossy WebP goes to PIL first, which is faster at
-    it.  A picture that animates carries the path it came
+    it, and so does a CMYK JPEG, which PIL converts by its colour
+    profile.  A picture that animates carries the path it came
     from, because only its first frame is here and whoever draws the
     rest needs the file back.
     """
@@ -733,7 +750,7 @@ def load_pixbuf(path: str) -> GdkPixbuf.Pixbuf:
     attempts = [(constants.IMAGEIO_GDKPIXBUF,
                  lambda: GdkPixbuf.Pixbuf.new_from_file(path)),
                 (constants.IMAGEIO_PIL, by_pil)]
-    if _is_lossy_webp(path):
+    if _is_lossy_webp(path) or _is_cmyk_jpeg(path):
         attempts.reverse()
     pixbuf = _first_provider_that_loads(attempts, path)
     if prefs['animation mode'] != constants.ANIMATION_DISABLED \
