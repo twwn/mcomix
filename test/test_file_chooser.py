@@ -448,18 +448,21 @@ class FileChooserTest(MComixTest):
 
     def test_a_folder_chosen_hands_on_the_files_the_filter_shows(self):
         """In order, and only those the filter on show lets through,
-        where it hides some of the folder's pictures."""
-        # Enough pages that the order the folder lists them in is not
+        where it hides the pictures that make the folder's book."""
+        # Enough books that the order the folder lists them in is not
         # the natural one by chance.
-        pages = ['page %d.png' % number for number in range(1, 13)]
+        books = ['book %d.zip' % number for number in range(1, 13)]
+        # The filter is one of another kind of file altogether.  One
+        # image format's filter over a picture of another would not do:
+        # GLib on Windows takes every type the registry calls an image
+        # for any other, so a PNG filter shows a JPEG there, and "All
+        # images" shows a picture with no extension.
         folder = self._folder_of(
-            *reversed(pages[::2] + pages[1::2]), 'page 13.jpg')
+            *reversed(books[::2] + books[1::2]), 'cover.png')
         with open(os.path.join(folder, 'notes.txt'), 'w') as notes:
             notes.write('Scanned at 600 dpi.\n')
-        png = next(f.get_name() for f in self.dialog.list_filters()
-                   if 'png' in f.get_name().lower())
-        self.assertEqual([os.path.join(folder, name) for name in pages],
-                         self._choose_folder(folder, png))
+        self.assertEqual([os.path.join(folder, name) for name in books],
+                         self._choose_folder(folder, 'All archives'))
 
     def test_a_folder_chosen_is_handed_on_as_the_folder(self):
         """It went out as its files: a fixed list, which a page turn
