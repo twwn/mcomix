@@ -21,7 +21,7 @@ from mcomix import i18n
 from mcomix.i18n import _
 
 from collections.abc import Sequence
-from typing import Any, TYPE_CHECKING
+from typing import Any, NamedTuple, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from mcomix.library.backend import _LibraryBackend
@@ -96,6 +96,36 @@ class _BackendObject:
         self._backend = backend
 
 
+def parse_time(text: str) -> datetime.datetime:
+    """A time the recent table keeps as text, in whichever of the two
+    formats it was written in.
+
+    A time that falls on a whole second is written without a fractional
+    part, by isoformat() and by the sqlite3 adapter that used to write
+    these rows alike.
+    """
+    try:
+        return datetime.datetime.strptime(text, '%Y-%m-%d %H:%M:%S.%f')
+    except ValueError:
+        return datetime.datetime.strptime(text, '%Y-%m-%d %H:%M:%S')
+
+
+class ReadingStatistics(NamedTuple):
+
+    """What has been read of a set of books (upstream feature request 46)."""
+
+    #: How many books there are.
+    books: int
+    #: How many of them were left past their first page.
+    started: int
+    #: How many of those were read to their last page.
+    finished: int
+    #: The pages read: up to the page each book was left on.
+    pages_read: int
+    #: When the last of them was read, or None if none was.
+    last_read: datetime.datetime | None
+
+
 class _Book(_BackendObject):
     """One book in the library: a row of the book table."""
 
@@ -152,20 +182,13 @@ class _Book(_BackendObject):
         """When this book was last read, or None if it has no row in the
         recent table.
 
-        The time is stored as text, and comes back through whichever of
-        the two formats below it was written in.
+        The time is stored as text; parse_time() reads it.
         """
         date = self.get_backend().fetchone(
             """SELECT time_set FROM recent WHERE book = ?""", (self.id,))
 
         if date:
-            try:
-                return datetime.datetime.strptime(date, '%Y-%m-%d %H:%M:%S.%f')
-            except ValueError:
-                # A time that falls on a whole second is written without
-                # a fractional part, by isoformat() below and by the
-                # sqlite3 adapter that used to write these rows alike.
-                return datetime.datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
+            return parse_time(date)
         else:
             return None
 

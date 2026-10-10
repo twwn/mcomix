@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-10 02:02+0200\n"
+"POT-Creation-Date: 2026-10-10 02:08+0200\n"
 "PO-Revision-Date: 2009-02-02 14:19+0100\n"
 "Last-Translator: Dariusz Jakoniuk <pipaceliny@gmail.com>\n"
 "Language-Team: \n"
@@ -55,7 +55,7 @@ msgstr "! Nie udało się odczytać %s"
 #
 # File: src/comment.py, line: 53
 #: mcomix/archive_packer.py:176 mcomix/file_actions.py:1054
-#: mcomix/library/book_area.py:823
+#: mcomix/library/book_area.py:831
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! Nie udało się usunąć %(file)s: %(error)s"
@@ -191,7 +191,7 @@ msgstr "Imię"
 #
 # File: src/bookmark.py, line: 256
 #: mcomix/bookmark_dialog.py:67 mcomix/main.py:1688
-#: mcomix/library/control_area.py:148
+#: mcomix/library/control_area.py:152
 msgid "Page"
 msgstr "Strona"
 
@@ -574,7 +574,7 @@ msgstr "Usunąć trwale \"%s\"?"
 msgid "Could not move \"%s\" to the trash"
 msgstr "Nie udało się przenieść \"%s\" do kosza"
 
-#: mcomix/file_actions.py:1013 mcomix/library/book_area.py:835
+#: mcomix/file_actions.py:1013 mcomix/library/book_area.py:843
 #, python-format
 msgid "%d book could not be moved to the trash."
 msgid_plural "%d books could not be moved to the trash."
@@ -618,7 +618,7 @@ msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "Nie udało się przenieść \"%(file)s\" do \"%(directory)s\""
 
 #: mcomix/file_chooser_base_dialog.py:76 mcomix/file_chooser_base_dialog.py:847
-#: mcomix/properties_dialog.py:137 mcomix/library/control_area.py:151
+#: mcomix/properties_dialog.py:137 mcomix/library/control_area.py:155
 #, python-format
 msgid "%d page"
 msgid_plural "%d pages"
@@ -3440,42 +3440,42 @@ msgstr "Dodane książki:"
 msgid "Adding '%s'..."
 msgstr "Dodawanie „%s“…"
 
-#: mcomix/library/backend.py:241
+#: mcomix/library/backend.py:272
 #, python-format
 msgid "! Non-existent book #%i"
 msgstr "! Nieistniejąca książka #%i"
 
-#: mcomix/library/backend.py:279
+#: mcomix/library/backend.py:310
 #, python-format
 msgid "! Could not get cover for book \"%s\""
 msgstr "! Nie udało się pobrać okładki książki \"%s\""
 
-#: mcomix/library/backend.py:327 mcomix/library/backend.py:344
-#: mcomix/library/backend.py:357 mcomix/library/backend.py:385
+#: mcomix/library/backend.py:358 mcomix/library/backend.py:375
+#: mcomix/library/backend.py:388 mcomix/library/backend.py:416
 msgid "Recent"
 msgstr "Ostatnio używane"
 
-#: mcomix/library/backend.py:464 mcomix/library/backend.py:511
+#: mcomix/library/backend.py:495 mcomix/library/backend.py:542
 #, python-format
 msgid "! Could not add book \"%s\" to the library"
 msgstr "! Nie udało się dodać książki \"%s\" do biblioteki"
 
-#: mcomix/library/backend.py:541
+#: mcomix/library/backend.py:572
 #, python-format
 msgid "! Could not move book \"%s\" in the library"
 msgstr "! Nie udało się przenieść książki \"%s\" w bibliotece"
 
-#: mcomix/library/backend.py:585
+#: mcomix/library/backend.py:616
 #, python-format
 msgid "! Could not add collection \"%s\""
 msgstr "! Nie udało się dodać kolekcji \"%s\""
 
-#: mcomix/library/backend.py:617
+#: mcomix/library/backend.py:648
 #, python-format
 msgid "! Could not add book %(book)s to collection %(collection)s"
 msgstr "! Nie udało się dodać książki %(book)s do kolekcji %(collection)s"
 
-#: mcomix/library/backend.py:644
+#: mcomix/library/backend.py:675
 #, python-format
 msgid "! Could not rename collection to \"%s\""
 msgstr "! Nie udało się zmienić nazwy kolekcji na \"%s\""
@@ -3483,26 +3483,26 @@ msgstr "! Nie udało się zmienić nazwy kolekcji na \"%s\""
 #
 # File: src/librarybackend.py, line: 272
 # File: src/librarybackend.py, line: 274
-#: mcomix/library/backend.py:661 mcomix/library/backend.py:663
+#: mcomix/library/backend.py:692 mcomix/library/backend.py:694
 msgid "(Copy)"
 msgstr "(Kopia)"
 
-#: mcomix/library/backend.py:919
+#: mcomix/library/backend.py:950
 msgid "Could not determine library database version!"
 msgstr "Nie udało się ustalić wersji bazy danych biblioteki!"
 
-#: mcomix/library/backend.py:969
+#: mcomix/library/backend.py:1000
 #, python-format
 msgid "Upgrading library database version from %(from)d to %(to)d."
 msgstr "Aktualizacja wersji bazy danych biblioteki z %(from)d do %(to)d."
 
 #
 # File: src/library.py, line: 202
-#: mcomix/library/backend_types.py:364 mcomix/library/collection_area.py:222
+#: mcomix/library/backend_types.py:387 mcomix/library/collection_area.py:222
 msgid "All books"
 msgstr "Wszystkie książki"
 
-#: mcomix/library/backend_types.py:510
+#: mcomix/library/backend_types.py:533
 #, python-format
 msgid "! Could not scan for new books: %s"
 msgstr "! Nie udało się wyszukać nowych książek: %s"
@@ -3627,13 +3627,13 @@ msgstr "_Sortuj"
 msgid "Cover si_ze"
 msgstr "Roz_miar okładek"
 
-#: mcomix/library/book_area.py:535
+#: mcomix/library/book_area.py:543
 msgid "Set library cover size"
 msgstr "Ustaw rozmiar okładek w bibliotece"
 
 #
 # File: src/library.py, line: 588
-#: mcomix/library/book_area.py:709
+#: mcomix/library/book_area.py:717
 #, python-format
 msgid "Removed %(num)d book from '%(collection)s'."
 msgid_plural "Removed %(num)d books from '%(collection)s'."
@@ -3641,7 +3641,7 @@ msgstr[0] "Usunięto %(num)d książkę z \"%(collection)s\"."
 msgstr[1] "Usunięto %(num)d książki z \"%(collection)s\"."
 msgstr[2] "Usunięto %(num)d książek z \"%(collection)s\"."
 
-#: mcomix/library/book_area.py:732 mcomix/library/collection_area.py:300
+#: mcomix/library/book_area.py:740 mcomix/library/collection_area.py:300
 #, python-format
 msgid "Removed %d book from the library."
 msgid_plural "Removed %d books from the library."
@@ -3651,11 +3651,11 @@ msgstr[2] "Usunięto %d książek z biblioteki."
 
 #
 # File: src/library.py, line: 597
-#: mcomix/library/book_area.py:754 mcomix/library/book_area.py:775
+#: mcomix/library/book_area.py:762 mcomix/library/book_area.py:783
 msgid "Remove books from the library?"
 msgstr "Usuń książki z biblioteki?"
 
-#: mcomix/library/book_area.py:755
+#: mcomix/library/book_area.py:763
 msgid ""
 "The selected books will be removed from the library. Any in a folder with no "
 "trash is deleted permanently and cannot be restored."
@@ -3663,12 +3663,12 @@ msgstr ""
 "Wybrane książki zostaną usunięte z biblioteki. Te w katalogu bez kosza "
 "zostaną trwale usunięte i nie będzie można ich przywrócić."
 
-#: mcomix/library/book_area.py:776
+#: mcomix/library/book_area.py:784
 msgid ""
 "The selected books will be removed from the library and moved to the trash."
 msgstr "Wybrane książki zostaną usunięte z biblioteki i przeniesione do kosza."
 
-#: mcomix/library/book_area.py:886
+#: mcomix/library/book_area.py:894
 #, python-format
 msgid "Remove the bookmarks in the deleted book?"
 msgid_plural "Remove the bookmarks in the %(count)d deleted books?"
@@ -3828,10 +3828,33 @@ msgstr "Otwórz _wybrane"
 msgid "Open the selected book."
 msgstr "Otwórz zaznaczoną książkę."
 
-#: mcomix/library/control_area.py:158
+#: mcomix/library/control_area.py:162
 #, python-format
 msgid "Finished reading on %(date)s, %(time)s"
 msgstr "Przeczytano %(date)s o %(time)s"
+
+#: mcomix/library/control_area.py:183
+#, python-format
+msgid "%d book"
+msgid_plural "%d books"
+msgstr[0] "%d książka"
+msgstr[1] "%d książki"
+msgstr[2] "%d książek"
+
+#: mcomix/library/control_area.py:185
+#, python-format
+msgid "Started: %(started)d, finished: %(finished)d"
+msgstr "Rozpoczęte: %(started)d, przeczytane: %(finished)d"
+
+#: mcomix/library/control_area.py:187
+#, python-format
+msgid "Pages read: %d"
+msgstr "Przeczytane strony: %d"
+
+#: mcomix/library/control_area.py:189
+#, python-format
+msgid "last read on %(date)s, %(time)s"
+msgstr "ostatnio czytano %(date)s o %(time)s"
 
 #: mcomix/library/main_dialog.py:134
 msgid "Scanning for new books..."

@@ -318,6 +318,10 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
             return
         books = collection.get_books(self._library.filter_string)
         self._covers.set_items(_BookItem(book) for book in books)
+        # Nothing is selected in a collection just shown, and the info
+        # box speaks for the books on show.
+        self._library.control_area.update_info(
+            self._covers.get_selected_positions())
 
     def stop_update(self) -> None:
         """Signal that the updating of book covers should stop."""
@@ -399,6 +403,10 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         """Return the book ID of the cover shown at <position>."""
         item = self._item_at(position)
         return None if item is None else item.uid
+
+    def shown_ids(self) -> list[int]:
+        """The id of every book shown, in the order shown."""
+        return [item.uid for item in self._each_item()]
 
     def shown_paths(self) -> list[str]:
         """The path of every book shown, in the order shown."""

@@ -117,8 +117,12 @@ class _ControlArea(Gtk.Box):
 
     def update_info(self, selected: Sequence[int]) -> None:
         """Update the info box using the currently <selected> books from
-        the _BookArea.
+        the _BookArea, or, with none selected, tell what has been read of
+        the books on show.
         """
+        if not selected:
+            self._show_statistics()
+            return
 
         book = None
         if selected:
@@ -165,6 +169,27 @@ class _ControlArea(Gtk.Box):
             self._dirlabel.set_text(i18n.to_unicode(dir_path))
         else:
             self._dirlabel.set_text('')
+
+    def _show_statistics(self) -> None:
+        """Say how many books are on show, how many of them were started
+        and finished, how many pages were read and when the last of them
+        was (upstream feature request 46)."""
+        self._open_button.set_sensitive(False)
+        self._namelabel.set_has_tooltip(False)
+        library = self._library
+        stats = library.backend.reading_statistics(
+            library.book_area.shown_ids())
+        self._namelabel.set_text(i18n.get_translation().ngettext(
+            '%d book', '%d books', stats.books) % stats.books)
+        self._filelabel.set_text(
+            _('Started: %(started)d, finished: %(finished)d') % {
+                'started': stats.started, 'finished': stats.finished})
+        read = [_('Pages read: %d') % stats.pages_read]
+        if stats.last_read is not None:
+            read.append(_('last read on %(date)s, %(time)s') % {
+                'date': stats.last_read.strftime('%x'),
+                'time': stats.last_read.strftime('%X')})
+        self._dirlabel.set_text(', '.join(read))
 
     def _filter_books(self, entry: Gtk.Entry, *args: object) -> None:
         """Display only the books in the current collection whose name or

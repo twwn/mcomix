@@ -664,14 +664,39 @@ class BookInfoTest(_OneBookTest):
         self.assertTrue(info._filelabel.get_text().startswith(
             '4 pages, %s, Finished reading on ' % self._size()))
 
-    def test_selecting_nothing_empties_the_line(self):
+    def test_selecting_nothing_tells_what_was_read_of_the_books_shown(self):
+        """Upstream feature request 46: with no book selected, the box
+        speaks for the books on show rather than standing empty."""
         info = self._select()
         self.dialog.book_area._covers.unselect_all()
         pump()
-        self.assertEqual('', info._namelabel.get_text())
-        self.assertEqual('', info._filelabel.get_text())
-        self.assertEqual('', info._dirlabel.get_text())
+        self.assertEqual('1 book', info._namelabel.get_text())
+        self.assertEqual('Started: 0, finished: 0', info._filelabel.get_text())
+        self.assertEqual('Pages read: 0', info._dirlabel.get_text())
         self.assertFalse(info._open_button.get_sensitive())
+
+    def test_a_book_left_part_read_counts_as_started_with_its_pages(self):
+        self._left_on(3)
+        info = self.dialog.control_area
+        self.dialog.book_area._covers.unselect_all()
+        info.update_info([])
+        self.assertEqual('Started: 1, finished: 0', info._filelabel.get_text())
+        self.assertTrue(info._dirlabel.get_text().startswith(
+            'Pages read: 3, last read on '), info._dirlabel.get_text())
+
+    def test_only_the_books_asked_about_are_counted(self):
+        """The recent table holds every book read; the box speaks for
+        the ones on show, which a search or a collection narrows."""
+        self._left_on(3)
+        stats = self.dialog.backend.reading_statistics([])
+        self.assertEqual((0, 0, 0, 0, None), tuple(stats))
+
+    def test_a_book_read_to_its_last_page_counts_as_finished(self):
+        self._left_on(4)
+        info = self.dialog.control_area
+        info.update_info([])
+        self.assertEqual('Started: 1, finished: 1', info._filelabel.get_text())
+        self.assertTrue(info._dirlabel.get_text().startswith('Pages read: 4,'))
 
 
 class OpenFromLibraryTest(_LibraryWindowTest):

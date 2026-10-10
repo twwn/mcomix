@@ -14,7 +14,7 @@ import contextlib
 import os
 import threading
 
-from collections.abc import Iterator, Sequence
+from collections.abc import Iterable, Iterator, Sequence
 from typing import Any, TYPE_CHECKING
 
 from mcomix import archive_tools
@@ -216,6 +216,37 @@ class _LibraryBackend:
             return backend_types._Book(*book)
         else:
             return None
+
+    def reading_statistics(self, books: "Iterable[int]"
+                           ) -> backend_types.ReadingStatistics:
+        """What has been read of <books>, given by id.
+
+        One statement over the recent table, which holds a row for each
+        book left past its first page, joined to the book table for the
+        page count by its key; the books asked about are picked out here
+        rather than in SQL, since "All books" may name tens of
+        thousands.
+        """
+        wanted = set(books)
+        started = finished = pages_read = 0
+        # The times are kept as ISO text, which sorts as the times do,
+        # so only the newest is parsed.
+        last_read = ''
+        for book, page, time_set, pages in self.fetchall(
+                '''select recent.book, recent.page, recent.time_set,
+                          book.pages
+                   from recent join book on book.id = recent.book'''):
+            if book not in wanted:
+                continue
+            started += 1
+            if pages and page >= pages:
+                finished += 1
+            pages_read += min(page, pages) if pages else page
+            if time_set and time_set > last_read:
+                last_read = time_set
+        return backend_types.ReadingStatistics(
+            len(wanted), started, finished, pages_read,
+            backend_types.parse_time(last_read) if last_read else None)
 
     def get_book_cover(self, book: int) -> "GdkPixbuf.Pixbuf | None":
         """Return a pixbuf with a thumbnail of the cover of <book>, or
