@@ -114,6 +114,7 @@ Zooming, or resizing the window, keeps the middle of the view on the same part o
 - A middle click on an entry starts a second MComix on it, at the bookmark's page.
 - "Clear List", at the bottom of "File → Recent", empties it. Other programs' recent files stay.
 - CTRL+D adds a bookmark; CTRL+B edits them.
+- In "Edit bookmarks", the "Note" field under the list takes a few words on the selected bookmark. The menu shows them after the page.
 - A bookmarked page has an orange ribbon on its thumbnail in the sidebar.
 - "Remove bookmark", in the page's right-click menu, removes that page's bookmark. It shows only on a bookmarked page.
 - Right-clicking a thumbnail in the sidebar opens the right-click menu for its page.

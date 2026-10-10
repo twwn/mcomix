@@ -28,7 +28,7 @@ class _Bookmark:
                  name: str, path: str, page: int, numpages: int,
                  archive_type: int | None,
                  date_added: datetime.datetime,
-                 member: str | None = None) -> None:
+                 member: str | None = None, note: str = '') -> None:
 
         self._name = name
         self._path = path
@@ -43,6 +43,9 @@ class _Bookmark:
         #: None for a loose image, whose path is its file, and for a
         #: bookmark made before this was kept.
         self._member = member
+        #: A few words of the reader's own to find the page again by
+        #: (upstream feature request 138); empty for none.
+        self._note = note
 
     def attach(self, window: 'main.MainWindow') -> None:
         """Open in <window> from now on.
@@ -63,10 +66,9 @@ class _Bookmark:
         """The text the menu shows for this bookmark, its name after
         <folders>, the part of its folder that tells it apart from
         another book of the same name."""
-        if not folders:
-            return str(self)
-        return '%s/%s, (%d / %d)' % (folders, self._name, self._page,
-                                     self._numpages)
+        label = str(self) if not folders else '%s/%s, (%d / %d)' % (
+            folders, self._name, self._page, self._numpages)
+        return '%s: %s' % (label, self._note) if self._note else label
 
     def get_name(self) -> str:
         """The book's name, as the bookmark shows it."""
@@ -158,7 +160,17 @@ class _Bookmark:
             page='%d / %d' % (self._page, self._numpages),
             path=i18n.to_display_string(self._path),
             added=self._date_added.strftime("%x %X"),
+            note=self._note,
             bookmark=self)
+
+    def get_note(self) -> str:
+        """The reader's note on the page, empty for none.  Kept beside
+        pack()'s tuple, as get_member() is and for the same reason."""
+        return self._note
+
+    def set_note(self, note: str) -> None:
+        """Take <note> as the note; the store is what writes it down."""
+        self._note = note
 
     def get_member(self) -> str | None:
         """The name within the archive of the file of the page, if known.

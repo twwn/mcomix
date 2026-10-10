@@ -71,6 +71,8 @@ class _BookmarksDialog(Dialog):
         # TRANSLATORS: "Added" as in "Date Added"
         self._list.add_text_column(
             _('Added'), 'added', sort_key=self._sort_key('_date_added'))
+        self._list.add_text_column(
+            _('Note'), 'note', sort_key=lambda row: row.note.casefold())
 
         # Right-clicking any heading offers the rest; Location starts
         # out hidden because there is rarely room for it beside the
@@ -78,6 +80,23 @@ class _BookmarksDialog(Dialog):
         self._list.offer_column_chooser(
             hidden=prefs['hidden bookmark columns'],
             changed=self._remember_columns)
+
+        # A few words on the selected bookmark, to find the page again
+        # by (upstream feature request 138).  Under the list rather
+        # than in it: a double click on a row opens the bookmark.
+        self._note = Gtk.Entry()
+        self._note.set_placeholder_text(_('A note on the selected bookmark'))
+        self._note.set_hexpand(True)
+        self._note.connect('activate', self._note_entered)
+        #: The row the entry is showing the note of.
+        self._noted: "column_list.Row | None" = None
+        note_label = Gtk.Label(label=_('Note'))
+        note_label.set_mnemonic_widget(self._note)
+        note_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        widgets.set_border(note_row, 6)
+        note_row.append(note_label)
+        note_row.append(self._note)
+        widgets.pack(self.get_content_area(), note_row, False, False, 0)
 
         self.set_default_size(600, 450)
 
@@ -196,8 +215,31 @@ class _BookmarksDialog(Dialog):
         nothing when it is pressed - which is what the "open with"
         editor's own Remove does.
         """
-        self.set_response_sensitive(constants.RESPONSE_REMOVE,
-                                    self._list.get_selected_row() is not None)
+        row = self._list.get_selected_row()
+        self.set_response_sensitive(constants.RESPONSE_REMOVE, row is not None)
+        if row is not self._noted:
+            # What was typed for the bookmark being left is kept.
+            self._keep_note()
+            self._noted = row
+            self._note.set_text(row.note if row is not None else '')
+        self._note.set_sensitive(row is not None)
+
+    def _note_entered(self, entry: Gtk.Entry) -> None:
+        self._keep_note()
+
+    def _keep_note(self) -> None:
+        """Store what the entry says as the note of the bookmark it is
+        showing, where that has changed and the bookmark is still
+        listed."""
+        row = self._noted
+        if row is None or self._row_for(row.bookmark) is not row:
+            return
+        note = self._note.get_text().strip()
+        if note == row.note:
+            return
+        row.note = note
+        row.changed()
+        self._bookmarks_store.set_note(row.bookmark, note)
 
     def _remove_selected(self) -> None:
         """Remove the selected bookmark from the dialog and the store.
@@ -273,6 +315,7 @@ class _BookmarksDialog(Dialog):
         list shows the newest bookmark first and the store keeps it
         last, so the one is the other reversed.
         """
+        self._keep_note()
         self._bookmarks_store.add_bookmark -= self._bookmark_added
         self._bookmarks_store.remove_bookmark -= self._bookmark_removed
         self._bookmarks_store.replace_bookmark -= self._bookmark_replaced

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 2.0.0\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-10 14:58+0200\n"
+"POT-Creation-Date: 2026-10-10 15:11+0200\n"
 "PO-Revision-Date: 2024-01-21 19:55+0100\n"
 "Last-Translator: Moritz Brunner <oddegamra@gmx.org>\n"
 "Language-Team: \n"
@@ -57,7 +57,7 @@ msgstr "! Extraktions-Fehler: %s"
 msgid "! Could not read %s"
 msgstr "! %s kann nicht gelesen werden"
 
-#: mcomix/archive_packer.py:176 mcomix/file_actions.py:1096
+#: mcomix/archive_packer.py:176 mcomix/file_actions.py:1098
 #: mcomix/library/book_area.py:833
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
@@ -92,21 +92,21 @@ msgstr ""
 msgid "Non-supported archive format: %s"
 msgstr "Nicht unterstütztes Archiv-Format: %s"
 
-#: mcomix/bookmark_backend.py:309
+#: mcomix/bookmark_backend.py:328
 #, python-format
 msgid "! Could not parse bookmarks file %s"
 msgstr "! Lesezeichen-Speicher %s kann nicht gelesen werden"
 
-#: mcomix/bookmark_backend.py:384 mcomix/message_dialog.py:28
+#: mcomix/bookmark_backend.py:406 mcomix/message_dialog.py:28
 msgid "_Yes"
 msgstr "_Ja"
 
-#: mcomix/bookmark_backend.py:385 mcomix/message_dialog.py:27
+#: mcomix/bookmark_backend.py:407 mcomix/message_dialog.py:27
 msgid "_No"
 msgstr "_Nein"
 
-#: mcomix/bookmark_backend.py:386 mcomix/edit_dialog.py:59
-#: mcomix/file_actions.py:912 mcomix/file_actions.py:1078
+#: mcomix/bookmark_backend.py:408 mcomix/edit_dialog.py:59
+#: mcomix/file_actions.py:914 mcomix/file_actions.py:1080
 #: mcomix/file_chooser_base_dialog.py:237
 #: mcomix/file_chooser_base_dialog.py:242
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
@@ -114,14 +114,14 @@ msgstr "_Nein"
 msgid "_Cancel"
 msgstr "_Abbrechen"
 
-#: mcomix/bookmark_backend.py:394
+#: mcomix/bookmark_backend.py:416
 #, python-format
 msgid "Replace existing bookmark on page %s?"
 msgid_plural "Replace existing bookmarks on pages %s?"
 msgstr[0] "Existierendes Lesezeichen auf Seite %s ersetzen?"
 msgstr[1] "Existierende Lesezeichen auf den Seiten %s ersetzen?"
 
-#: mcomix/bookmark_backend.py:399
+#: mcomix/bookmark_backend.py:421
 #, python-format
 msgid ""
 "The current book already contains marked pages. Do you want to replace them "
@@ -130,7 +130,7 @@ msgstr ""
 "Das geöffnete Buch enthält bereits markierte Seiten. Wollen Sie diese mit "
 "einem neuen Lesezeichen auf Seite %d ersetzen?"
 
-#: mcomix/bookmark_backend.py:402
+#: mcomix/bookmark_backend.py:424
 msgid ""
 "Selecting \"No\" will create a new bookmark without affecting the other "
 "bookmarks."
@@ -138,11 +138,11 @@ msgstr ""
 "\"Nein\" erzeugt ein neues Lesezeichen, ohne die anderen Lesezeichen zu "
 "beeinflussen."
 
-#: mcomix/bookmark_backend.py:422
+#: mcomix/bookmark_backend.py:444
 msgid "Clear all bookmarks?"
 msgstr "Alle Lesezeichen löschen?"
 
-#: mcomix/bookmark_backend.py:423
+#: mcomix/bookmark_backend.py:445
 msgid ""
 "All stored bookmarks will be removed. Are you sure that you want to continue?"
 msgstr ""
@@ -191,6 +191,14 @@ msgstr "Ort"
 msgid "Added"
 msgstr "Hinzugefügt"
 
+#: mcomix/bookmark_dialog.py:75 mcomix/bookmark_dialog.py:93
+msgid "Note"
+msgstr "Notiz"
+
+#: mcomix/bookmark_dialog.py:88
+msgid "A note on the selected bookmark"
+msgstr "Eine Notiz zum ausgewählten Lesezeichen"
+
 #: mcomix/bookmark_menu.py:41
 msgid "Add _Bookmark"
 msgstr "_Lesezeichen hinzufügen"
@@ -203,7 +211,7 @@ msgstr "Lesezeichen dieses Buches _entfernen..."
 msgid "_Edit Bookmarks..."
 msgstr "Lesezeichen _bearbeiten..."
 
-#: mcomix/bookmark_menu.py:200 mcomix/file_actions.py:1136
+#: mcomix/bookmark_menu.py:202 mcomix/file_actions.py:1138
 #, python-format
 msgid "Remove the bookmarks in \"%s\"?"
 msgstr "Die Lesezeichen in \"%s\" entfernen?"
@@ -298,16 +306,16 @@ msgstr "Bilder"
 msgid "Comment files"
 msgstr "Kommentare"
 
-#: mcomix/edit_dialog.py:243 mcomix/file_actions.py:672
+#: mcomix/edit_dialog.py:243 mcomix/file_actions.py:674
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! Konnte das Archiv %(archivefile)s nicht speichern: %(error)s"
 
-#: mcomix/edit_dialog.py:256 mcomix/file_actions.py:677
+#: mcomix/edit_dialog.py:256 mcomix/file_actions.py:679
 msgid "The new archive could not be saved!"
 msgstr "Das neue Archiv konnte nicht gespeichert werden!"
 
-#: mcomix/edit_dialog.py:257 mcomix/file_actions.py:678
+#: mcomix/edit_dialog.py:257 mcomix/file_actions.py:680
 msgid "The original files have not been removed."
 msgstr "Die Originaldateien wurden nicht entfernt."
 
@@ -363,8 +371,8 @@ msgstr "_Zurücksetzen"
 msgid "Go back to the saved values."
 msgstr "Zu den gespeicherten Werten zurückkehren."
 
-#: mcomix/enhance_dialog.py:51 mcomix/file_actions.py:583
-#: mcomix/file_actions.py:626 mcomix/file_chooser_base_dialog.py:243
+#: mcomix/enhance_dialog.py:51 mcomix/file_actions.py:585
+#: mcomix/file_actions.py:628 mcomix/file_chooser_base_dialog.py:243
 #: mcomix/openwith.py:355
 msgid "_Save"
 msgstr "_Speichern"
@@ -430,29 +438,29 @@ msgstr "Farben _invertieren"
 msgid "Invert (negate) image colors."
 msgstr "Farben invertieren (umkehren)."
 
-#: mcomix/file_actions.py:304 mcomix/file_actions.py:1210
+#: mcomix/file_actions.py:306 mcomix/file_actions.py:1218
 msgid "A file of that name is there already."
 msgstr "Eine Datei dieses Namens ist dort bereits."
 
-#: mcomix/file_actions.py:368
+#: mcomix/file_actions.py:370
 #, python-format
 msgid "Page %(number)d is called \"%(name)s\" already."
 msgstr "Seite %(number)d heißt bereits „%(name)s“."
 
-#: mcomix/file_actions.py:373
+#: mcomix/file_actions.py:375
 msgid "Rename page?"
 msgstr "Seite umbenennen?"
 
-#: mcomix/file_actions.py:374
+#: mcomix/file_actions.py:376
 msgid "Please enter a new name for this page."
 msgstr "Bitte geben Sie einen neuen Namen für diese Seite ein."
 
-#: mcomix/file_actions.py:579
+#: mcomix/file_actions.py:581
 #, python-format
 msgid "Write \"%s\" again before closing it?"
 msgstr "„%s“ vor dem Schließen neu schreiben?"
 
-#: mcomix/file_actions.py:580
+#: mcomix/file_actions.py:582
 msgid ""
 "The book has changes that the archive on disk does not hold. They are lost "
 "when it closes."
@@ -460,16 +468,16 @@ msgstr ""
 "Das Buch hat Änderungen, die das Archiv auf der Festplatte nicht enthält. "
 "Beim Schließen gehen sie verloren."
 
-#: mcomix/file_actions.py:582
+#: mcomix/file_actions.py:584
 msgid "_Close without saving"
 msgstr "Schl_ießen ohne zu speichern"
 
-#: mcomix/file_actions.py:621
+#: mcomix/file_actions.py:623
 #, python-format
 msgid "Write \"%s\" again now?"
 msgstr "„%s“ jetzt neu schreiben?"
 
-#: mcomix/file_actions.py:622
+#: mcomix/file_actions.py:624
 msgid ""
 "The archive on disk will be replaced by the book as it stands: the pages it "
 "holds now, in the order and under the names it shows."
@@ -478,78 +486,78 @@ msgstr ""
 "ersetzt: die Seiten, die es jetzt hat, in der Reihenfolge und unter den "
 "Namen, die es zeigt."
 
-#: mcomix/file_actions.py:625
+#: mcomix/file_actions.py:627
 msgid "_Not now"
 msgstr "_Jetzt nicht"
 
-#: mcomix/file_actions.py:773
+#: mcomix/file_actions.py:775
 #, python-format
 msgid "Could not show the folder: %s"
 msgstr "Konnte Verzeichnis nicht anzeigen: %s"
 
-#: mcomix/file_actions.py:820
+#: mcomix/file_actions.py:822
 msgid "Save page as"
 msgstr "Seite speichern als"
 
-#: mcomix/file_actions.py:861 mcomix/page_marks.py:96
-#: mcomix/page_rotations.py:67
+#: mcomix/file_actions.py:863 mcomix/page_marks.py:110
+#: mcomix/page_rotations.py:81
 #, python-format
 msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! Konnte %(file)s nicht in %(directory)s speichern: %(error)s"
 
-#: mcomix/file_actions.py:865 mcomix/file_actions.py:1212
+#: mcomix/file_actions.py:867 mcomix/file_actions.py:1220
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "Dort ist nicht genug Platz: die Datei ist %s groß."
 
-#: mcomix/file_actions.py:871
+#: mcomix/file_actions.py:873
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "\"%(file)s\" konnte nicht in \"%(directory)s\" gespeichert werden"
 
-#: mcomix/file_actions.py:902
+#: mcomix/file_actions.py:904
 msgid "There is no trash for this folder, so it cannot be restored."
 msgstr ""
 "Für dieses Verzeichnis gibt es keinen Papierkorb, daher lässt sich die Datei "
 "nicht wiederherstellen."
 
-#: mcomix/file_actions.py:910
+#: mcomix/file_actions.py:912
 #, python-format
 msgid "Delete \"%s\"?"
 msgstr "\"%s\" löschen?"
 
-#: mcomix/file_actions.py:911
+#: mcomix/file_actions.py:913
 msgid "The file is moved to the trash."
 msgstr "Die Datei wird in den Papierkorb verschoben."
 
-#: mcomix/file_actions.py:913
+#: mcomix/file_actions.py:915
 msgid "_Move to Trash"
 msgstr "In den _Papierkorb verschieben"
 
-#: mcomix/file_actions.py:943
+#: mcomix/file_actions.py:945
 msgid "It does not go to the trash and cannot be restored."
 msgstr ""
 "Die Datei wird nicht in den Papierkorb verschoben und lässt sich nicht "
 "wiederherstellen."
 
-#: mcomix/file_actions.py:951
+#: mcomix/file_actions.py:953
 #, python-format
 msgid "Delete \"%s\" permanently?"
 msgstr "\"%s\" dauerhaft löschen?"
 
-#: mcomix/file_actions.py:1051
+#: mcomix/file_actions.py:1053
 #, python-format
 msgid "Could not move \"%s\" to the trash"
 msgstr "\"%s\" konnte nicht in den Papierkorb verschoben werden"
 
-#: mcomix/file_actions.py:1055 mcomix/library/book_area.py:845
+#: mcomix/file_actions.py:1057 mcomix/library/book_area.py:845
 #, python-format
 msgid "%d book could not be moved to the trash."
 msgid_plural "%d books could not be moved to the trash."
 msgstr[0] "%d Buch konnte nicht in den Papierkorb verschoben werden."
 msgstr[1] "%d Bücher konnten nicht in den Papierkorb verschoben werden."
 
-#: mcomix/file_actions.py:1059
+#: mcomix/file_actions.py:1061
 msgid "Delete it permanently instead? It cannot be restored."
 msgid_plural "Delete them permanently instead? They cannot be restored."
 msgstr[0] ""
@@ -558,16 +566,16 @@ msgstr[1] ""
 "Stattdessen dauerhaft löschen? Die Dateien lassen sich nicht "
 "wiederherstellen."
 
-#: mcomix/file_actions.py:1079
+#: mcomix/file_actions.py:1081
 msgid "_Delete Permanently"
 msgstr "_Dauerhaft löschen"
 
-#: mcomix/file_actions.py:1111
+#: mcomix/file_actions.py:1113
 #, python-format
 msgid "Could not delete \"%s\""
 msgstr "\"%s\" konnte nicht gelöscht werden"
 
-#: mcomix/file_actions.py:1132
+#: mcomix/file_actions.py:1134
 #, python-format
 msgid "The file is gone, and its %d bookmark cannot be opened any more."
 msgid_plural ""
@@ -577,12 +585,12 @@ msgstr[0] ""
 msgstr[1] ""
 "Die Datei ist fort, und ihre %d Lesezeichen lassen sich nicht mehr öffnen."
 
-#: mcomix/file_actions.py:1206
+#: mcomix/file_actions.py:1214
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr "! Konnte %(file)s nicht nach %(directory)s verschieben: %(error)s"
 
-#: mcomix/file_actions.py:1218
+#: mcomix/file_actions.py:1226
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "\"%(file)s\" konnte nicht nach \"%(directory)s\" verschoben werden"

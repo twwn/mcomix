@@ -201,6 +201,91 @@ class MemberRecordTest(MComixTest):
         bookmark_menu_item._Bookmark(None, None, *packs[0])
 
 
+class NoteRecordTest(MComixTest):
+
+    """The reader's note on each bookmark is stored in a record after
+    the names, which an older MComix reading the file stops short of
+    (upstream feature request 138)."""
+
+    def setUp(self):
+        super().setUp()
+        os.makedirs(constants.DATA_DIR, exist_ok=True)
+        self.store = bookmark_backend.BookmarksStore
+        self.store._initialized = False
+        self.store._bookmarks = []
+        self.store._bookmarks_mtime = 0
+
+    _bookmark = MergeTest._bookmark
+    _write_pickle = MergeTest._write_pickle
+
+    def _noted(self, page, note, path='/books/b.cbz'):
+        return bookmark_menu_item._Bookmark(
+            None, None, 'book', path, page, 20, 1,
+            datetime.datetime(2026, 1, 1), member='p%02d.jpg' % page,
+            note=note)
+
+    def test_the_notes_come_back_with_their_bookmarks(self):
+        self.store._bookmarks = [self._noted(2, 'the fight starts'),
+                                 self._noted(3, '')]
+        self.store.write_bookmarks_file(merge=False)
+        bookmarks, _mtime = self.store.load_bookmarks()
+        self.assertEqual(['the fight starts', ''],
+                         [bookmark.get_note() for bookmark in bookmarks])
+        self.assertEqual(['p02.jpg', 'p03.jpg'],
+                         [bookmark.get_member() for bookmark in bookmarks])
+
+    def test_a_note_is_written_when_it_is_given(self):
+        self.store._bookmarks = [self._noted(2, '')]
+        self.store.set_note(self.store._bookmarks[0], '  the fight starts ')
+        bookmarks, _mtime = self.store.load_bookmarks()
+        self.assertEqual(['the fight starts'],
+                         [bookmark.get_note() for bookmark in bookmarks])
+
+    def test_a_file_without_notes_has_none(self):
+        """One an older MComix wrote, with or without the names."""
+        self._write_pickle([self._bookmark(2), self._bookmark(3)])
+        bookmarks, _mtime = self.store.load_bookmarks()
+        self.assertEqual(['', ''],
+                         [bookmark.get_note() for bookmark in bookmarks])
+        with open(constants.BOOKMARK_PICKLE_PATH, 'ab') as fd:
+            pickle.dump(['a.jpg', 'b.jpg'], fd)
+        bookmarks, _mtime = self.store.load_bookmarks()
+        self.assertEqual(['', ''],
+                         [bookmark.get_note() for bookmark in bookmarks])
+        self.assertEqual(['a.jpg', 'b.jpg'],
+                         [bookmark.get_member() for bookmark in bookmarks])
+
+    def test_notes_that_are_not_a_note_each_are_dropped(self):
+        self.store._bookmarks = [self._noted(2, 'kept'), self._noted(3, '')]
+        self.store.write_bookmarks_file(merge=False)
+        with open(constants.BOOKMARK_PICKLE_PATH, 'rb') as fd:
+            records = [pickle.load(fd) for _ in range(3)]
+        for notes, read in ((['only one'], ['', '']),
+                            ([3, 'second'], ['', 'second']),
+                            ('ab', ['', ''])):
+            with open(constants.BOOKMARK_PICKLE_PATH, 'wb') as fd:
+                for record in records + [notes]:
+                    pickle.dump(record, fd)
+            bookmarks, _mtime = self.store.load_bookmarks()
+            self.assertEqual(read,
+                             [bookmark.get_note() for bookmark in bookmarks])
+
+    def test_the_note_follows_a_book_that_is_moved(self):
+        self.store._bookmarks = [self._noted(2, 'the fight starts')]
+        self.store.update_path('/books/b.cbz', '/shelf/b.cbz')
+        self.assertEqual(
+            [('/shelf/b.cbz', 'the fight starts')],
+            [(bookmark._path, bookmark.get_note())
+             for bookmark in self.store._bookmarks])
+
+    def test_the_menu_shows_the_note_after_the_page(self):
+        self.assertEqual('book, (2 / 20): the fight starts',
+                         self._noted(2, 'the fight starts').get_label())
+        self.assertEqual('shelf/book, (2 / 20): the fight starts',
+                         self._noted(2, 'the fight starts').get_label('shelf'))
+        self.assertEqual('book, (2 / 20)', self._noted(2, '').get_label())
+
+
 class MovedBookTest(MComixTest):
 
     """A bookmark holds the path of the file it marks, so a book moved

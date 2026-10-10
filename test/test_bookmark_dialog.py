@@ -98,6 +98,55 @@ class BookmarksDialogTest(MComixTest):
         self.assertEqual(row.path, '/tmp/gamma.cbz')
         self.assertEqual(row.icon, 'mcomix-image')
 
+    def test_a_note_is_given_to_the_selected_bookmark(self):
+        """Only the file's name told one bookmark from the next
+        (upstream feature request 138)."""
+        entry = self.dialog._note
+        self.assertFalse(entry.get_sensitive(), 'a note on nothing')
+        self.dialog._list.select_only(0)
+        pump()
+        self.assertTrue(entry.get_sensitive())
+        self.assertEqual('', entry.get_text())
+        entry.set_text(' where the fight starts ')
+        entry.emit('activate')
+        row = self.dialog._list.get_row(0)
+        self.assertEqual('where the fight starts', row.note)
+        self.assertEqual('where the fight starts', row.bookmark.get_note())
+        stored, _mtime = self.store.load_bookmarks()
+        self.assertEqual(
+            {'gamma': 'where the fight starts', 'beta': '', 'alpha': ''},
+            {bookmark.get_name(): bookmark.get_note() for bookmark in stored})
+
+    def test_a_note_typed_is_kept_when_the_selection_moves_on(self):
+        self.dialog._list.select_only(0)
+        pump()
+        self.dialog._note.set_text('first')
+        self.dialog._list.select_only(1)
+        pump()
+        self.assertEqual('', self.dialog._note.get_text())
+        self.assertEqual('first', self.dialog._list.get_row(0).note)
+        self.dialog._note.set_text('second')
+        # Closing keeps what was typed last, and the order as it was.
+        order = [bookmark.get_name() for bookmark in self.store._bookmarks]
+        self.dialog.response(Response.CLOSE)
+        pump()
+        self.assertEqual(
+            {'gamma': 'first', 'beta': 'second', 'alpha': ''},
+            {bookmark.get_name(): bookmark.get_note()
+             for bookmark in self.store._bookmarks})
+        self.assertEqual(order, [bookmark.get_name()
+                                 for bookmark in self.store._bookmarks])
+
+    def test_an_unchanged_note_writes_nothing(self):
+        self.dialog._list.select_only(0)
+        pump()
+        with mock.patch.object(
+                self.store, 'write_bookmarks_file') as written:
+            self.dialog._note.emit('activate')
+            self.dialog._list.select_only(1)
+            pump()
+        written.assert_not_called()
+
     def test_an_archive_and_a_loose_image_get_different_icons(self):
         archived = self._bookmark('zip', 4, archive_type=0).to_row()
         self.assertEqual(archived.icon, 'mcomix-archive')
@@ -436,10 +485,10 @@ class BookmarksDialogTest(MComixTest):
     def test_the_last_column_left_cannot_be_hidden_as_well(self):
         # The menu hangs off the headings, and a list with no columns
         # has none: hiding the last would take away the way back.
-        for attr in ('icon', 'page', 'added'):
+        for attr in ('icon', 'page', 'added', 'note'):
             self._toggle(attr)
         self.assertEqual(['name'], [attr for attr in ('icon', 'name', 'page',
-                                                      'path', 'added')
+                                                      'path', 'added', 'note')
                                     if attr not in
                                     self.dialog._list.hidden_columns()])
         self._toggle('name')

@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Comix-4.0.1\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-10 14:58+0200\n"
+"POT-Creation-Date: 2026-10-10 15:11+0200\n"
 "PO-Revision-Date: 2008-12-13 21:23+0700\n"
 "Last-Translator: Andhika Padmawan <andhika.padmawan@gmail.com>\n"
 "Language-Team: Indonesia <id@li.org>\n"
@@ -56,7 +56,7 @@ msgstr "! Tidak dapat membaca %s"
 
 #
 # File: src/comment.py, line: 53
-#: mcomix/archive_packer.py:176 mcomix/file_actions.py:1096
+#: mcomix/archive_packer.py:176 mcomix/file_actions.py:1098
 #: mcomix/library/book_area.py:833
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
@@ -90,25 +90,25 @@ msgstr "Tak dapat membuka %(file)s: perlu %(first)s atau %(second)s."
 msgid "Non-supported archive format: %s"
 msgstr "Format arsip tidak didukung: %s"
 
-#: mcomix/bookmark_backend.py:309
+#: mcomix/bookmark_backend.py:328
 #, python-format
 msgid "! Could not parse bookmarks file %s"
 msgstr "! Tidak dapat mengurai berkas bookmark %s"
 
-#: mcomix/bookmark_backend.py:384 mcomix/message_dialog.py:28
+#: mcomix/bookmark_backend.py:406 mcomix/message_dialog.py:28
 msgid "_Yes"
 msgstr "_Ya"
 
 #
 # File: src/ui.py, line: 69
-#: mcomix/bookmark_backend.py:385 mcomix/message_dialog.py:27
+#: mcomix/bookmark_backend.py:407 mcomix/message_dialog.py:27
 msgid "_No"
 msgstr "_Tidak"
 
 #
 # File: src/preferences.py, line: 230
-#: mcomix/bookmark_backend.py:386 mcomix/edit_dialog.py:59
-#: mcomix/file_actions.py:912 mcomix/file_actions.py:1078
+#: mcomix/bookmark_backend.py:408 mcomix/edit_dialog.py:59
+#: mcomix/file_actions.py:914 mcomix/file_actions.py:1080
 #: mcomix/file_chooser_base_dialog.py:237
 #: mcomix/file_chooser_base_dialog.py:242
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
@@ -116,13 +116,13 @@ msgstr "_Tidak"
 msgid "_Cancel"
 msgstr "Ba_tal"
 
-#: mcomix/bookmark_backend.py:394
+#: mcomix/bookmark_backend.py:416
 #, python-format
 msgid "Replace existing bookmark on page %s?"
 msgid_plural "Replace existing bookmarks on pages %s?"
 msgstr[0] "Ganti bookmark yang ada pada halaman %s?"
 
-#: mcomix/bookmark_backend.py:399
+#: mcomix/bookmark_backend.py:421
 #, python-format
 msgid ""
 "The current book already contains marked pages. Do you want to replace them "
@@ -131,7 +131,7 @@ msgstr ""
 "Buku ini sudah memuat halaman yang ditandai. Gantikah dengan bookmark baru "
 "pada halaman %d?"
 
-#: mcomix/bookmark_backend.py:402
+#: mcomix/bookmark_backend.py:424
 msgid ""
 "Selecting \"No\" will create a new bookmark without affecting the other "
 "bookmarks."
@@ -139,13 +139,13 @@ msgstr "Memilih \"Tidak\" membuat bookmark baru tanpa mengubah yang lain."
 
 #
 # File: src/bookmark.py, line: 31
-#: mcomix/bookmark_backend.py:422
+#: mcomix/bookmark_backend.py:444
 msgid "Clear all bookmarks?"
 msgstr "Hapus semua bookmark?"
 
 #
 # File: src/bookmark.py, line: 79
-#: mcomix/bookmark_backend.py:423
+#: mcomix/bookmark_backend.py:445
 msgid ""
 "All stored bookmarks will be removed. Are you sure that you want to continue?"
 msgstr "Semua bookmark tersimpan akan dihapus. Anda yakin ingin melanjutkan?"
@@ -204,6 +204,14 @@ msgstr "Lokasi"
 msgid "Added"
 msgstr "Ditambahkan"
 
+#: mcomix/bookmark_dialog.py:75 mcomix/bookmark_dialog.py:93
+msgid "Note"
+msgstr "Catatan"
+
+#: mcomix/bookmark_dialog.py:88
+msgid "A note on the selected bookmark"
+msgstr "Catatan untuk bookmark yang dipilih"
+
 #: mcomix/bookmark_menu.py:41
 msgid "Add _Bookmark"
 msgstr "Tambah _bookmark"
@@ -216,7 +224,7 @@ msgstr "_Hapus bookmark buku ini..."
 msgid "_Edit Bookmarks..."
 msgstr "_Sunting bookmark..."
 
-#: mcomix/bookmark_menu.py:200 mcomix/file_actions.py:1136
+#: mcomix/bookmark_menu.py:202 mcomix/file_actions.py:1138
 #, python-format
 msgid "Remove the bookmarks in \"%s\"?"
 msgstr "Hapus bookmark dalam \"%s\"?"
@@ -332,20 +340,20 @@ msgstr "Berkas komentar"
 
 #
 # File: src/library.py, line: 271
-#: mcomix/edit_dialog.py:243 mcomix/file_actions.py:672
+#: mcomix/edit_dialog.py:243 mcomix/file_actions.py:674
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! Tidak dapat menyimpan arsip %(archivefile)s: %(error)s"
 
 #
 # File: src/edit.py, line: 99
-#: mcomix/edit_dialog.py:256 mcomix/file_actions.py:677
+#: mcomix/edit_dialog.py:256 mcomix/file_actions.py:679
 msgid "The new archive could not be saved!"
 msgstr "Berkas baru tak dapat disimpan!"
 
 #
 # File: src/edit.py, line: 101
-#: mcomix/edit_dialog.py:257 mcomix/file_actions.py:678
+#: mcomix/edit_dialog.py:257 mcomix/file_actions.py:680
 msgid "The original files have not been removed."
 msgstr "Berkas asli belum dihapus."
 
@@ -407,8 +415,8 @@ msgstr "Kembali ke nilai yang tersimpan."
 
 #
 # File: src/filechooser.py, line: 39
-#: mcomix/enhance_dialog.py:51 mcomix/file_actions.py:583
-#: mcomix/file_actions.py:626 mcomix/file_chooser_base_dialog.py:243
+#: mcomix/enhance_dialog.py:51 mcomix/file_actions.py:585
+#: mcomix/file_actions.py:628 mcomix/file_chooser_base_dialog.py:243
 #: mcomix/openwith.py:355
 msgid "_Save"
 msgstr "_Simpan"
@@ -486,29 +494,29 @@ msgstr "_Balik warna gambar"
 msgid "Invert (negate) image colors."
 msgstr "Membalik (menegasikan) warna gambar."
 
-#: mcomix/file_actions.py:304 mcomix/file_actions.py:1210
+#: mcomix/file_actions.py:306 mcomix/file_actions.py:1218
 msgid "A file of that name is there already."
 msgstr "Berkas dengan nama itu sudah ada di sana."
 
-#: mcomix/file_actions.py:368
+#: mcomix/file_actions.py:370
 #, python-format
 msgid "Page %(number)d is called \"%(name)s\" already."
 msgstr "Halaman %(number)d sudah bernama \"%(name)s\"."
 
-#: mcomix/file_actions.py:373
+#: mcomix/file_actions.py:375
 msgid "Rename page?"
 msgstr "Ganti nama halaman?"
 
-#: mcomix/file_actions.py:374
+#: mcomix/file_actions.py:376
 msgid "Please enter a new name for this page."
 msgstr "Silakan masukkan nama baru untuk halaman ini."
 
-#: mcomix/file_actions.py:579
+#: mcomix/file_actions.py:581
 #, python-format
 msgid "Write \"%s\" again before closing it?"
 msgstr "Tulis ulang \"%s\" sebelum menutupnya?"
 
-#: mcomix/file_actions.py:580
+#: mcomix/file_actions.py:582
 msgid ""
 "The book has changes that the archive on disk does not hold. They are lost "
 "when it closes."
@@ -516,16 +524,16 @@ msgstr ""
 "Buku ini memiliki perubahan yang tidak ada dalam arsip di diska. Perubahan "
 "itu hilang saat ditutup."
 
-#: mcomix/file_actions.py:582
+#: mcomix/file_actions.py:584
 msgid "_Close without saving"
 msgstr "Tutup _tanpa menyimpan"
 
-#: mcomix/file_actions.py:621
+#: mcomix/file_actions.py:623
 #, python-format
 msgid "Write \"%s\" again now?"
 msgstr "Tulis ulang \"%s\" sekarang?"
 
-#: mcomix/file_actions.py:622
+#: mcomix/file_actions.py:624
 msgid ""
 "The archive on disk will be replaced by the book as it stands: the pages it "
 "holds now, in the order and under the names it shows."
@@ -533,88 +541,88 @@ msgstr ""
 "Arsip di diska akan diganti dengan buku sebagaimana adanya: halaman yang "
 "dimilikinya sekarang, dalam urutan dan dengan nama yang ditampilkan."
 
-#: mcomix/file_actions.py:625
+#: mcomix/file_actions.py:627
 msgid "_Not now"
 msgstr "_Nanti saja"
 
-#: mcomix/file_actions.py:773
+#: mcomix/file_actions.py:775
 #, python-format
 msgid "Could not show the folder: %s"
 msgstr "Tidak dapat menampilkan direktori: %s"
 
-#: mcomix/file_actions.py:820
+#: mcomix/file_actions.py:822
 msgid "Save page as"
 msgstr "Simpan halaman sebagai"
 
-#: mcomix/file_actions.py:861 mcomix/page_marks.py:96
-#: mcomix/page_rotations.py:67
+#: mcomix/file_actions.py:863 mcomix/page_marks.py:110
+#: mcomix/page_rotations.py:81
 #, python-format
 msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! Tidak dapat menyimpan %(file)s ke %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:865 mcomix/file_actions.py:1212
+#: mcomix/file_actions.py:867 mcomix/file_actions.py:1220
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "Ruang di sana tidak cukup: berkas berukuran %s."
 
-#: mcomix/file_actions.py:871
+#: mcomix/file_actions.py:873
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "Tidak dapat menyimpan \"%(file)s\" ke \"%(directory)s\""
 
-#: mcomix/file_actions.py:902
+#: mcomix/file_actions.py:904
 msgid "There is no trash for this folder, so it cannot be restored."
 msgstr ""
 "Direktori ini tidak memiliki Tong Sampah, jadi berkas tidak dapat dipulihkan."
 
-#: mcomix/file_actions.py:910
+#: mcomix/file_actions.py:912
 #, python-format
 msgid "Delete \"%s\"?"
 msgstr "Hapus \"%s\"?"
 
-#: mcomix/file_actions.py:911
+#: mcomix/file_actions.py:913
 msgid "The file is moved to the trash."
 msgstr "Berkas dipindahkan ke Tong Sampah."
 
-#: mcomix/file_actions.py:913
+#: mcomix/file_actions.py:915
 msgid "_Move to Trash"
 msgstr "Pindahkan ke Tong Sa_mpah"
 
-#: mcomix/file_actions.py:943
+#: mcomix/file_actions.py:945
 msgid "It does not go to the trash and cannot be restored."
 msgstr "Berkas tidak dipindahkan ke Tong Sampah dan tidak dapat dipulihkan."
 
-#: mcomix/file_actions.py:951
+#: mcomix/file_actions.py:953
 #, python-format
 msgid "Delete \"%s\" permanently?"
 msgstr "Hapus \"%s\" secara permanen?"
 
-#: mcomix/file_actions.py:1051
+#: mcomix/file_actions.py:1053
 #, python-format
 msgid "Could not move \"%s\" to the trash"
 msgstr "Tidak dapat memindahkan \"%s\" ke Tong Sampah"
 
-#: mcomix/file_actions.py:1055 mcomix/library/book_area.py:845
+#: mcomix/file_actions.py:1057 mcomix/library/book_area.py:845
 #, python-format
 msgid "%d book could not be moved to the trash."
 msgid_plural "%d books could not be moved to the trash."
 msgstr[0] "%d buku tidak dapat dipindahkan ke Tong Sampah."
 
-#: mcomix/file_actions.py:1059
+#: mcomix/file_actions.py:1061
 msgid "Delete it permanently instead? It cannot be restored."
 msgid_plural "Delete them permanently instead? They cannot be restored."
 msgstr[0] "Hapus secara permanen saja? Tidak dapat dipulihkan."
 
-#: mcomix/file_actions.py:1079
+#: mcomix/file_actions.py:1081
 msgid "_Delete Permanently"
 msgstr "_Hapus Permanen"
 
-#: mcomix/file_actions.py:1111
+#: mcomix/file_actions.py:1113
 #, python-format
 msgid "Could not delete \"%s\""
 msgstr "Tidak dapat menghapus \"%s\""
 
-#: mcomix/file_actions.py:1132
+#: mcomix/file_actions.py:1134
 #, python-format
 msgid "The file is gone, and its %d bookmark cannot be opened any more."
 msgid_plural ""
@@ -622,12 +630,12 @@ msgid_plural ""
 msgstr[0] ""
 "Berkas sudah tidak ada, dan %d bookmark di dalamnya tidak dapat dibuka lagi."
 
-#: mcomix/file_actions.py:1206
+#: mcomix/file_actions.py:1214
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr "! Tidak dapat memindahkan %(file)s ke %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:1218
+#: mcomix/file_actions.py:1226
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "Tidak dapat memindahkan \"%(file)s\" ke \"%(directory)s\""

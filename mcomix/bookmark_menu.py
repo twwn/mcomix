@@ -74,6 +74,7 @@ class BookmarksMenu:
         store.replace_bookmark += self._changed
         store.clear_bookmarks += self._changed
         store.set_bookmark_order += self._changed
+        store.set_note += self._changed
 
     def _changed(self, *args: object) -> None:
         self._rebuild()
@@ -86,6 +87,7 @@ class BookmarksMenu:
         store.replace_bookmark -= self._changed
         store.clear_bookmarks -= self._changed
         store.set_bookmark_order -= self._changed
+        store.set_note -= self._changed
         widgets.empty_action_group(self._actions)
 
     def _rebuild(self) -> None:

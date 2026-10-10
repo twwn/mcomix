@@ -80,11 +80,12 @@ class _BookmarksStore:
     def add_bookmark_by_values(self, name: str, path: str, page: int, numpages: int,
                                archive_type: int | None,
                                date_added: datetime.datetime,
-                               member: str | None = None) -> None:
+                               member: str | None = None,
+                               note: str = '') -> None:
         """Create a bookmark and add it to the list."""
         bookmark = bookmark_menu_item._Bookmark(self._window, self._file_handler,
                                                 i18n.to_display_string(name), path, page, numpages, archive_type, date_added,
-                                                member=member)
+                                                member=member, note=note)
 
         self.add_bookmark(bookmark)
 
@@ -105,6 +106,13 @@ class _BookmarksStore:
                          new: bookmark_menu_item._Bookmark) -> None:
         """Put <new> where <old> stands in the list."""
         self._bookmarks[self._bookmarks.index(old)] = new
+        self.write_bookmarks_file()
+
+    @callback.Callback
+    def set_note(self, bookmark: bookmark_menu_item._Bookmark,
+                 note: str) -> None:
+        """Keep <note> as what the reader says of <bookmark>."""
+        bookmark.set_note(note.strip())
         self.write_bookmarks_file()
 
     def bookmarks_for_path(self, path: str
@@ -147,7 +155,8 @@ class _BookmarksStore:
             name, _path, page, numpages, archive_type, added = bookmark.pack()
             self.replace_bookmark(bookmark, bookmark_menu_item._Bookmark(
                 self._window, self._file_handler, name, new_path, page,
-                numpages, archive_type, added, member=bookmark.get_member()))
+                numpages, archive_type, added, member=bookmark.get_member(),
+                note=bookmark.get_note()))
 
     @callback.Callback
     def set_bookmark_order(self,
@@ -289,11 +298,20 @@ class _BookmarksStore:
                         members = pickle.load(fd)
                     except EOFError:
                         members = []
+                    # And the reader's note on each, in a record after
+                    # that one, for the same reason.
+                    try:
+                        notes = pickle.load(fd)
+                    except EOFError:
+                        notes = []
                 if (not isinstance(members, list)
                         or len(members) != len(packs)):
                     members = [None] * len(packs)
+                if (not isinstance(notes, list)
+                        or len(notes) != len(packs)):
+                    notes = [''] * len(packs)
 
-                for pack, member in zip(packs, members):
+                for pack, member, note in zip(packs, members, notes):
                     # Handle old bookmarks without date_added attribute
                     if len(pack) == 5:
                         pack = pack + (datetime.datetime.now(),)
@@ -302,7 +320,8 @@ class _BookmarksStore:
                     bookmark = bookmark_menu_item._Bookmark(
                         self._window, self._file_handler, name, book_path, page,
                         numpages, archive_type, added,
-                        member=member if isinstance(member, str) else None)
+                        member=member if isinstance(member, str) else None,
+                        note=note if isinstance(note, str) else '')
                     bookmarks.append(bookmark)
 
             except Exception:
@@ -360,6 +379,9 @@ class _BookmarksStore:
             packs = [bookmark.pack() for bookmark in self._bookmarks]
             pickle.dump(packs, fd, pickle.HIGHEST_PROTOCOL)
             pickle.dump([bookmark.get_member()
+                         for bookmark in self._bookmarks],
+                        fd, pickle.HIGHEST_PROTOCOL)
+            pickle.dump([bookmark.get_note()
                          for bookmark in self._bookmarks],
                         fd, pickle.HIGHEST_PROTOCOL)
 
