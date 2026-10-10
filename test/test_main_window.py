@@ -3251,14 +3251,19 @@ class MainWindowTest(MComixTest):
         self.window.popup_page = 2
         self.assertEqual(archive, shown(popup.activate))
         # In a folder of pictures every page is a file of its own.
+        # Named beside the archive: a Gio.File answers with the path as
+        # the system writes it, so one spelt with "/" comes back with
+        # "\\" on Windows.
+        def picture(page=None):
+            return os.path.join(os.path.dirname(archive), '%s.png' % page)
+
         with unittest.mock.patch.object(
                 self.window.filehandler, 'archive_type', None), \
                 unittest.mock.patch.object(
-                    self.window.imagehandler, 'get_path_to_page',
-                    lambda page=None: '/pictures/%s.png' % page):
-            self.assertEqual('/pictures/2.png', shown(popup.activate))
+                    self.window.imagehandler, 'get_path_to_page', picture):
+            self.assertEqual(picture(2), shown(popup.activate))
             self.window.popup_page = None
-            self.assertEqual('/pictures/None.png', shown(popup.activate))
+            self.assertEqual(picture(None), shown(popup.activate))
 
         self.window.filehandler.close_file()
         self._pump()
