@@ -34,6 +34,19 @@ class PageMarksTest(MComixTest):
         self.assertTrue(
             page_marks.marked('/books/a.cbz', 'p02.jpg', page_marks.ALONE))
 
+    def test_it_follows_a_book_that_is_moved(self):
+        page_marks.mark('/books/a.cbz', 'p02.jpg', page_marks.SKIP, True)
+        page_marks.follow('/books/a.cbz', '/shelf/a.cbz')
+        page_marks._loaded = None
+        self.assertTrue(
+            page_marks.marked('/shelf/a.cbz', 'p02.jpg', page_marks.SKIP))
+        self.assertFalse(
+            page_marks.marked('/books/a.cbz', 'p02.jpg', page_marks.SKIP))
+        # A book nothing was said of leaves the file as it is.
+        page_marks.follow('/books/b.cbz', '/shelf/b.cbz')
+        with open(self._file(), encoding='utf-8') as fd:
+            self.assertEqual(['/shelf/a.cbz'], list(json.load(fd)))
+
     def test_it_is_read_back_from_the_file(self):
         page_marks.mark('/books/a.cbz', 'p02.jpg', page_marks.SKIP, True)
         page_marks._loaded = None

@@ -20,6 +20,17 @@ class PageRotationsTest(MComixTest):
         self.assertEqual(0, page_rotations.rotation('/books/a.cbz', 'p03.jpg'))
         self.assertEqual(0, page_rotations.rotation('/books/b.cbz', 'p02.jpg'))
 
+    def test_it_follows_a_book_that_is_moved(self):
+        page_rotations.remember('/books/a.cbz', 'p02.jpg', 90)
+        page_rotations.follow('/books/a.cbz', '/shelf/a.cbz')
+        page_rotations._loaded = None
+        self.assertEqual(90, page_rotations.rotation('/shelf/a.cbz', 'p02.jpg'))
+        self.assertEqual(0, page_rotations.rotation('/books/a.cbz', 'p02.jpg'))
+        # A book nothing was said of leaves the file as it is.
+        page_rotations.follow('/books/b.cbz', '/shelf/b.cbz')
+        with open(self._file(), encoding='utf-8') as fd:
+            self.assertEqual(['/shelf/a.cbz'], list(json.load(fd)))
+
     def test_it_is_read_back_from_the_file(self):
         page_rotations.remember('/books/a.cbz', 'p02.jpg', 270)
         page_rotations._loaded = None

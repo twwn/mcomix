@@ -24,6 +24,8 @@ from mcomix import archive_packer
 from mcomix import bookmark_backend
 from mcomix import constants
 from mcomix import osd
+from mcomix import page_rotations
+from mcomix import page_marks
 from mcomix import dialog as dialog_module
 from mcomix import edit_dialog
 from mcomix import file_chooser_simple_dialog as simple_chooser
@@ -3668,6 +3670,29 @@ class MainWindowTest(MComixTest):
         moved = os.path.join(destination, 'Movable.cbz')
         self.assertEqual([bookmark._path
                           for bookmark in store.get_bookmarks()], [moved])
+
+    def test_what_was_said_of_its_pages_follows_a_book_that_is_moved(self):
+        """A page turned upright, or marked to be skipped, is kept by
+        the path of its book, and the book moved out from under it: the
+        page came back on its side, and was read again."""
+        source = self._movable_book()
+        destination = os.path.join(self.tmp_dir, 'destination')
+        os.makedirs(destination)
+        identity = self.window.filehandler.page_identity(2)
+        self.assertEqual(os.path.abspath(source), identity[0])
+        page_rotations.remember(*identity, 90)
+        page_marks.mark(*identity, page_marks.SKIP, True)
+
+        self.window.file_actions.move_current_file(destination)
+        self._pump()
+
+        moved = os.path.join(destination, 'Movable.cbz')
+        self.assertEqual(90, page_rotations.rotation(moved, identity[1]))
+        self.assertTrue(
+            page_marks.marked(moved, identity[1], page_marks.SKIP))
+        # And nothing is left behind for a book that takes its place.
+        self.assertEqual(0, page_rotations.rotation(*identity))
+        self.assertFalse(page_marks.marked(*identity, page_marks.SKIP))
 
     def test_the_recent_list_lets_go_of_the_path_a_book_has_left(self):
         """The book is opened again where it landed, which records that.

@@ -87,6 +87,20 @@ def mark(book: str, page: str, mark: str, on: bool) -> None:
         pages.pop(page, None)
     if not pages:
         del books[book]
+    _save(books)
+
+
+def follow(old: str, new: str) -> None:
+    """Keep the marks of the book at <old> for it at <new>, where it
+    has been moved to."""
+    books = _books()
+    pages = books.pop(old, None)
+    if pages is not None:
+        books[new] = pages
+        _save(books)
+
+
+def _save(books: dict[str, dict[str, list[str]]]) -> None:
     path = _path()
     try:
         os.makedirs(os.path.dirname(path), exist_ok=True)

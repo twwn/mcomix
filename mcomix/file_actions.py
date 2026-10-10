@@ -25,6 +25,8 @@ from mcomix import file_mover
 from mcomix import i18n
 from mcomix import log
 from mcomix import message_dialog
+from mcomix import page_marks
+from mcomix import page_rotations
 from mcomix import rename_dialog
 from mcomix import tools
 from mcomix.dialog import Response
@@ -1167,7 +1169,8 @@ class FileActions:
         page being read is the page that comes back, which is what makes
         this different from moving the file from outside and opening it
         afresh.  Where the old path is recorded it is brought forward -
-        the library holds one, and so does the store of last read pages.
+        the library holds one, and so do the bookmarks, the store of
+        last read pages, and the turns and marks given to single pages.
         """
         current_file = self._window.imagehandler.get_real_path()
         if current_file is None:
@@ -1185,6 +1188,11 @@ class FileActions:
         self._window.uimanager.move_to.remember(directory)
         backend.LibraryBackend().update_book_path(current_file, target)
         bookmark_backend.BookmarksStore.update_path(current_file, target)
+        # The turns and the marks the reader gave its pages are kept by
+        # the book's path as well.
+        old, new = os.path.abspath(current_file), os.path.abspath(target)
+        page_rotations.follow(old, new)
+        page_marks.follow(old, new)
         # The book is about to be opened where it landed, which records
         # that; the entry for where it was would open nothing.
         self._window.uimanager.recent.remove_path(current_file)

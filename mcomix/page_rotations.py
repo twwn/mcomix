@@ -58,6 +58,20 @@ def remember(book: str, page: str, degrees: int) -> None:
         turns.pop(page, None)
         if not turns:
             del pages[book]
+    _save(pages)
+
+
+def follow(old: str, new: str) -> None:
+    """Keep the turns of the book at <old> for it at <new>, where it
+    has been moved to."""
+    pages = _pages()
+    turns = pages.pop(old, None)
+    if turns is not None:
+        pages[new] = turns
+        _save(pages)
+
+
+def _save(pages: dict[str, dict[str, int]]) -> None:
     path = _path()
     try:
         os.makedirs(os.path.dirname(path), exist_ok=True)
