@@ -247,6 +247,18 @@ class FileHandler:
             return None
         return os.path.relpath(path, self._tmp_dir).replace(os.sep, '/')
 
+    def page_identity(self, page: int) -> "tuple[str, str] | None":
+        """What names <page> for as long as its picture is where it is:
+        the archive and the file's name within it, or the picture's own
+        path and nothing.  None where the page has no file."""
+        member = self.page_member(page)
+        if member is not None and self._base_path is not None:
+            return os.path.abspath(self._base_path), member
+        if self.archive_type is not None:
+            return None
+        path = self._window.imagehandler.get_path_to_page(page)
+        return (os.path.abspath(path), '') if path is not None else None
+
     def _extracted_path(self, member: str) -> str:
         """Where <member>, as page_member() names it, is extracted to."""
         return os.path.join(self._tmp_dir or '', os.path.normpath(member))

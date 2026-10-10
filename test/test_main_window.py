@@ -1397,6 +1397,56 @@ class MainWindowTest(MComixTest):
         self.assertEqual(self.window.imagehandler.get_current_page(), 2)
         self.assertEqual(self.window.selected_pages, set())
 
+    def test_a_page_turned_by_hand_is_turned_again_when_shown_again(self):
+        """Upstream feature request 32: a book read upright with its
+        sideways pages turned, page by page, which were upright again
+        each time they came round."""
+        self._ready()
+        self.window.set_page(2)
+        self._pump()
+        self.window.rotate_90()
+        self.assertEqual(90, prefs['rotation'])
+        self.window.set_page(3)
+        self._pump()
+        self.assertEqual(0, prefs['rotation'])
+        self.window.set_page(2)
+        self._pump()
+        self.assertEqual(90, prefs['rotation'])
+        self.window.rotate_270()
+        self.window.set_page(3)
+        self.window.set_page(2)
+        self._pump()
+        self.assertEqual(0, prefs['rotation'], 'turned back upright, forgotten')
+
+    def test_the_turn_outlasts_the_book_being_closed(self):
+        self._ready()
+        self.window.set_page(2)
+        self._pump()
+        self.window.rotate_180()
+        path = self.window.filehandler.get_path_to_base()
+        self.window.filehandler.close_file()
+        self._pump()
+        self.window.filehandler.open_file(path, 2)
+        self.assertTrue(wait_for(
+            lambda: self.window.imagehandler.get_current_page() == 2
+            and self.window.filehandler.file_loaded, seconds=20))
+        self._pump()
+        self.assertEqual(180, prefs['rotation'])
+
+    def test_keep_transformation_turns_every_page_and_remembers_none(self):
+        self._ready()
+        self.window.actiongroup.get_action('keep_transformation').activate()
+        self.window.set_page(2)
+        self._pump()
+        self.window.rotate_90()
+        self.window.set_page(3)
+        self._pump()
+        self.assertEqual(90, prefs['rotation'])
+        self.window.actiongroup.get_action('keep_transformation').activate()
+        self.window.set_page(2)
+        self._pump()
+        self.assertEqual(0, prefs['rotation'])
+
     def _click_at(self, fraction):
         """A plain left click <fraction> of the way across the page area."""
         x = self.window.page_area.get_width() * fraction

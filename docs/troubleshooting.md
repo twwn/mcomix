@@ -44,7 +44,7 @@ If that helps, set `GSK_RENDERER=cairo` in your environment for good, and mentio
 What | Linux | Windows
 -----|-------|--------
 Preferences (`preferences.conf`), keys (`keybindings.conf`) | `~/.config/mcomix` | `%APPDATA%\MComix`
-Library, bookmarks, last pages, library covers | `~/.local/share/mcomix` | `%APPDATA%\MComix`
+Library, bookmarks, last pages, page turns, library covers | `~/.local/share/mcomix` | `%APPDATA%\MComix`
 Thumbnails of books and images | `~/.cache/thumbnails`, shared with other programs | `%APPDATA%\MComix\.thumbnails`
 
 On Linux, `XDG_CONFIG_HOME`, `XDG_DATA_HOME` and `XDG_CACHE_HOME` move these.

@@ -38,6 +38,7 @@ from mcomix import bookmark_backend
 from mcomix import message_dialog
 from mcomix import callback
 from mcomix.library import backend, main_dialog
+from mcomix import page_rotations
 from mcomix import tools
 from mcomix import box
 from mcomix import layout
@@ -819,7 +820,9 @@ class MainWindow(Gtk.Window):
         image with a new size or whatever).
         """
         if not prefs['keep transformation']:
-            prefs['rotation'] = 0
+            # A page turned by hand is shown turned again (upstream
+            # feature request 32); the first of two pages decides.
+            prefs['rotation'] = self._remembered_rotation()
             prefs['horizontal flip'] = False
             prefs['vertical flip'] = False
 
@@ -1170,16 +1173,33 @@ class MainWindow(Gtk.Window):
             image.set_paused(paused)
 
     def rotate_90(self, *args: object) -> None:
-        prefs['rotation'] = tools.compile_rotations(prefs['rotation'], 90)
-        self.draw_image()
+        self._rotate(90)
 
     def rotate_180(self, *args: object) -> None:
-        prefs['rotation'] = tools.compile_rotations(prefs['rotation'], 180)
-        self.draw_image()
+        self._rotate(180)
 
     def rotate_270(self, *args: object) -> None:
-        prefs['rotation'] = tools.compile_rotations(prefs['rotation'], 270)
+        self._rotate(270)
+
+    def _rotate(self, degrees: int) -> None:
+        """Turn the pages on screen <degrees> further clockwise, and
+        remember the turn for them, unless every page is being turned
+        alike with "Keep transformation"."""
+        prefs['rotation'] = tools.compile_rotations(prefs['rotation'], degrees)
+        if not prefs['keep transformation'] and self.filehandler.file_loaded:
+            for page in self.displayed_pages():
+                identity = self.filehandler.page_identity(page)
+                if identity is not None:
+                    page_rotations.remember(*identity, prefs['rotation'])
         self.draw_image()
+
+    def _remembered_rotation(self) -> int:
+        """The turn remembered for the page on screen, 0 for none."""
+        if not self.filehandler.file_loaded:
+            return 0
+        identity = self.filehandler.page_identity(
+            self.imagehandler.get_current_page())
+        return page_rotations.rotation(*identity) if identity else 0
 
     def flip_horizontally(self, *args: object) -> None:
         prefs['horizontal flip'] = not prefs['horizontal flip']

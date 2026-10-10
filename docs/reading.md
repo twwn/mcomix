@@ -89,7 +89,8 @@ No mode scales a small page up unless "View → Stretch small images" is on.
 
 - Turns the page 90° clockwise (R), anticlockwise (SHIFT+R) or 180°, and flips it horizontally or vertically.
 - In double page mode both pages turn together.
-- The next page is shown upright again, unless "Keep transformation" (K) is on: then every page gets the same turn, also after a restart.
+- A page turned by hand is shown turned again whenever it comes round, also after a restart. Turning it back upright forgets it.
+- Other pages are shown upright, unless "Keep transformation" (K) is on: then every page gets the same turn, also after a restart, and none is remembered on its own.
 - "Auto-rotate image" turns every page taller than wide, or wider than tall, 90° either way, until set back to "Never".
   It goes by what is shown: two pages side by side count as one wide page. It adds to a turn given by hand.
 - Images whose metadata, such as an Exif tag, says which way up they go are turned that way while "Automatically rotate images according to their metadata" is set.
