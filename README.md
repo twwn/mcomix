@@ -46,7 +46,7 @@ python3 -m venv --system-site-packages ~/mcomix-venv
 
 - [Reading](docs/reading.md) – opening books, fit modes, double page and manga, slideshow
 - [Editing books](docs/editing.md) – rename, reorder and delete pages; save archives
-- [Library](docs/library.md) – collections, covers, watched folders
+- [Library](docs/library.md) – collections, reading lists, covers, watched folders
 - [Preferences](docs/preferences.md) · [Keyboard and mouse](docs/shortcuts.md) · [External commands](docs/external-commands.md)
 - [Troubleshooting](docs/troubleshooting.md) – logs, common problems, reporting a bug
 - [Changelog](ChangeLog.md) – what changed, release by release

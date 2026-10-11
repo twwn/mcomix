@@ -47,11 +47,24 @@ A book is an archive in any format MComix opens; folders cannot be added.
   - "Remove from the library".
   - "Remove and move to the trash": the only one that touches the files. They can be restored from the trash. Where the trash would refuse one, MComix asks to delete it permanently instead. It also takes them out of the recent files and asks about their bookmarks.
 - "Copy" puts a single book's path and cover on the clipboard.
-- "Sort" orders by name, full path, file size or date added; "Cover size" sets how large covers are drawn.
+- "Sort" orders by name, full path, file size, date added or by hand; "Cover size" sets how large covers are drawn.
 - A middle click on a cover starts a second MComix on that book.
 - A book opened from the library is one of the books shown. The next and previous archive are the next and previous of those, in the order shown, not of its folder. Past the last one shown there is no next.
 - A RAR book in volumes is added as its first volume; the others are left out.
 - An encrypted book is added without asking its password. Its cover is a padlock; the password is asked when it is opened.
+
+## Reading lists
+
+- A collection is a reading list once its books are put in order by hand.
+- Choose "Sort", "By hand" in the books' right-click menu, then drag a cover onto another: it takes that cover's place.
+- Dropped past the last cover, it goes last. Several selected covers move together.
+- ALT+Left and ALT+Right move the selected books one place.
+- Books nobody has placed follow the placed ones, by path. So does a book added later.
+- The order is the collection's own: a book in two collections has a place in each.
+- "All books" and "Recent" keep no order, and under another sort a drag between covers does nothing.
+- Books of a collection under it follow, by path. They are put in order in their own collection.
+- Opened from the library, the books are read in that order: the next archive is the next cover.
+- "Duplicate" keeps the order.
 
 ## Watched folders
 

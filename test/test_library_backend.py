@@ -98,7 +98,10 @@ class LibraryDatabaseTest(unittest.TestCase):
             ' pages integer,'
             ' format integer,'
             ' size integer,'
-            ' added {added})'.format(column=column, added=added))
+            ' added {added}{cover})'.format(
+                column=column, added=added,
+                # Version 11 added the cover the reader chose.
+                cover=', cover text' if version >= 11 else ''))
         connection.execute(
             'create table collection ('
             ' id integer primary key,'
@@ -480,6 +483,26 @@ class UpgradeFromEveryVersionTest(LibraryDatabaseTest):
                 backend._backend = None
                 library = backend.LibraryBackend()
                 self.assertEqual('p02.jpg', library.get_chosen_cover(_A_BOOK))
+                self._done(library)
+
+    def test_every_version_can_keep_an_order_set_by_hand(self):
+        """Version 12 added the column that holds a book's place in
+        its collection; an older MComix that opened the file since has
+        left it there and written its own version back."""
+        for version in self._versions():
+            with self.subTest(version=version):
+                library = self._upgraded(version)
+                columns = [row[1] for row in library._con.execute(
+                    'pragma table_info(contain)').fetchall()]
+                self.assertEqual(1, columns.count('position'))
+                self.assertEqual({}, library.get_book_positions(1))
+                library.set_collection_order(1, [1])
+                library._con.execute(
+                    "update info set value = '11' where key = 'version'")
+                self._done(library)
+                backend._backend = None
+                library = backend.LibraryBackend()
+                self.assertEqual({1: 0}, library.get_book_positions(1))
                 self._done(library)
 
     def test_a_watched_directory_survives_every_version_that_had_one(self):
@@ -1428,6 +1451,129 @@ class ChosenCoverTest(LibraryDatabaseTest):
                               (self.path,) * statement.count('?'))
             self.assertIn('SEARCH', plan)
             self.assertNotIn('SCAN', plan)
+
+
+class CollectionOrderTest(LibraryDatabaseTest):
+
+    """A collection's books are kept in an order set by hand: a reading
+    list (upstream feature request 19).
+
+    The place is a column of the contain row, so it is the collection's
+    own and goes with the row when the book leaves.
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.library = backend.LibraryBackend()
+        self.shelf = self.library.add_collection('Shelf')
+        self.two, self.ten, self.one = (
+            self._book_in(name, self.shelf)
+            for name in ('Volume 2', 'Volume 10', 'Volume 1'))
+
+    def tearDown(self):
+        self.library.close()
+        super().tearDown()
+
+    def _book_in(self, name, collection):
+        """File a book called <name> in <collection>, and answer its id."""
+        path = os.path.abspath('/does/not/exist/%s.cbz' % name)
+        self.library._con.execute(
+            '''insert into book (name, path, pages, format, size)
+               values (?, ?, ?, ?, ?)''', (name, path, 20, 1, 1))
+        book = self.library.get_book_by_path(path).id
+        self.library.add_book_to_collection(book, collection)
+        return book
+
+    def test_books_nobody_placed_go_by_their_paths(self):
+        self.assertEqual([self.one, self.two, self.ten],
+                         self.library.get_collection_order(self.shelf))
+        self.assertEqual({}, self.library.get_book_positions(self.shelf))
+
+    def test_an_order_set_is_the_order_read(self):
+        order = [self.ten, self.one, self.two]
+        self.library.set_collection_order(self.shelf, order)
+        self.assertEqual(order, self.library.get_collection_order(self.shelf))
+        self.assertEqual({self.ten: 0, self.one: 1, self.two: 2},
+                         self.library.get_book_positions(self.shelf))
+
+    def test_a_book_filed_later_follows_the_placed_ones(self):
+        self.library.set_collection_order(
+            self.shelf, [self.ten, self.two, self.one])
+        late = self._book_in('A late one', self.shelf)
+        later = self._book_in('A later one', self.shelf)
+        self.assertEqual([self.ten, self.two, self.one, late, later],
+                         self.library.get_collection_order(self.shelf))
+
+    def test_a_book_taken_out_and_filed_again_has_lost_its_place(self):
+        self.library.set_collection_order(
+            self.shelf, [self.ten, self.two, self.one])
+        self.library.remove_book_from_collection(self.ten, self.shelf)
+        self.assertEqual([self.two, self.one],
+                         self.library.get_collection_order(self.shelf))
+        self.library.add_book_to_collection(self.ten, self.shelf)
+        self.assertEqual([self.two, self.one, self.ten],
+                         self.library.get_collection_order(self.shelf))
+
+    def test_a_book_the_collection_does_not_hold_is_passed_over(self):
+        other = self.library.add_collection('Other')
+        stranger = self._book_in('Stranger', other)
+        self.library.set_collection_order(
+            self.shelf, [stranger, self.ten, self.one, self.two])
+        self.assertEqual([self.ten, self.one, self.two],
+                         self.library.get_collection_order(self.shelf))
+        self.assertEqual({}, self.library.get_book_positions(other))
+        self.assertEqual(
+            [(other, stranger)], self.library.fetchall(
+                'select collection, book from Contain where book = ?',
+                (stranger,)))
+
+    def test_each_collection_keeps_its_own_order(self):
+        other = self.library.add_collection('Other')
+        for book in (self.one, self.two, self.ten):
+            self.library.add_book_to_collection(book, other)
+        self.library.set_collection_order(
+            self.shelf, [self.ten, self.two, self.one])
+        self.library.set_collection_order(
+            other, [self.two, self.one, self.ten])
+        self.assertEqual([self.ten, self.two, self.one],
+                         self.library.get_collection_order(self.shelf))
+        self.assertEqual([self.two, self.one, self.ten],
+                         self.library.get_collection_order(other))
+
+    def test_the_books_of_a_collection_under_it_have_no_place_in_it(self):
+        inner = self.library.add_collection('Inner')
+        self.library.add_collection_to_collection(inner, self.shelf)
+        below = self._book_in('Below', inner)
+        self.assertNotIn(below, self.library.get_collection_order(self.shelf))
+        self.assertEqual([below], self.library.get_collection_order(inner))
+
+    def test_a_copy_of_the_collection_keeps_the_order(self):
+        inner = self.library.add_collection('Inner')
+        self.library.add_collection_to_collection(inner, self.shelf)
+        below = self._book_in('Below', inner)
+        order = [self.ten, self.one, self.two]
+        self.library.set_collection_order(self.shelf, order)
+        self.assertTrue(self.library.duplicate_collection(self.shelf))
+        copy = self.library.get_collection_by_name('Shelf (Copy)').id
+        self.assertEqual(order + [below],
+                         self.library.get_collection_order(copy))
+        self.assertEqual({self.ten: 0, self.one: 1, self.two: 2},
+                         self.library.get_book_positions(copy))
+
+    def test_the_order_is_read_and_written_by_the_key(self):
+        for statement, parameters in (
+                ('''select book, position from Contain
+                    where collection = ? and position is not null''',
+                 (self.shelf,)),
+                ('''select Book.id, Contain.position, Book.path
+                    from Contain join Book on Book.id = Contain.book
+                    where Contain.collection = ?''', (self.shelf,)),
+                ('''update Contain set position = ?
+                    where collection = ? and book = ?''',
+                 (0, self.shelf, self.one))):
+            plan = self._plan(self.library._con, statement, parameters)
+            self.assertIn('SEARCH', plan)
+            self.assertNotIn('SCAN', plan, msg=plan)
 
 
 class RelocatedShelfTest(LibraryDatabaseTest):

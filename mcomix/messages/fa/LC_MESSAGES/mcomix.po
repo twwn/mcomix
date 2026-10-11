@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: comix 3.6.4\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-10 20:49+0200\n"
+"POT-Creation-Date: 2026-10-11 08:27+0200\n"
 "PO-Revision-Date: 2008-05-21 12:40+0330\n"
 "Last-Translator: Meelad Zakaria <meelad@farsiweb.info>\n"
 "Language-Team: Persian \n"
@@ -54,7 +54,7 @@ msgstr "! خواندن %s ممکن نشد"
 
 #
 #: mcomix/archive_packer.py:176 mcomix/file_actions.py:1103
-#: mcomix/library/book_area.py:843
+#: mcomix/library/book_area.py:866
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! برداشتن %(file)s ممکن نشد: %(error)s"
@@ -583,7 +583,7 @@ msgstr "«%s» برای همیشه حذف شود؟"
 msgid "Could not move \"%s\" to the trash"
 msgstr "انتقال «%s» به زباله‌دان ممکن نشد"
 
-#: mcomix/file_actions.py:1062 mcomix/library/book_area.py:855
+#: mcomix/file_actions.py:1062 mcomix/library/book_area.py:878
 #, python-format
 msgid "%d book could not be moved to the trash."
 msgid_plural "%d books could not be moved to the trash."
@@ -638,7 +638,7 @@ msgstr[1] "%d صفحه"
 msgid "Open"
 msgstr "باز کردن"
 
-#: mcomix/file_chooser_base_dialog.py:238 mcomix/library/book_area.py:173
+#: mcomix/file_chooser_base_dialog.py:238 mcomix/library/book_area.py:182
 msgid "_Open"
 msgstr "_گشودن"
 
@@ -2373,7 +2373,7 @@ msgstr "نام پرونده"
 msgid "File name (GLib)"
 msgstr "نام پرونده (GLib)"
 
-#: mcomix/preferences_dialog.py:737 mcomix/library/book_area.py:256
+#: mcomix/preferences_dialog.py:737 mcomix/library/book_area.py:265
 msgid "File size"
 msgstr "اندازهٔ پرونده"
 
@@ -2382,12 +2382,12 @@ msgid "Last modified"
 msgstr "زمان تغییر"
 
 #: mcomix/preferences_dialog.py:744 mcomix/preferences_dialog.py:790
-#: mcomix/library/book_area.py:260
+#: mcomix/library/book_area.py:270
 msgid "Ascending"
 msgstr "صعودی"
 
 #: mcomix/preferences_dialog.py:745 mcomix/preferences_dialog.py:791
-#: mcomix/library/book_area.py:261
+#: mcomix/library/book_area.py:271
 msgid "Descending"
 msgstr "نزولی"
 
@@ -2537,7 +2537,7 @@ msgstr ""
 "نمایهٔ رنگی صفحه‌نمایش تنظیم شده است. ادراکی تناسب رنگ‌ها را نگه می‌دارد؛ سنجش "
 "رنگ نسبی رنگ‌هایی را که صفحه‌نمایش می‌تواند نشان دهد دقیق نگه می‌دارد."
 
-#: mcomix/preferences_dialog.py:978 mcomix/library/book_area.py:268
+#: mcomix/preferences_dialog.py:978 mcomix/library/book_area.py:278
 msgid "Normal"
 msgstr "عادی"
 
@@ -3037,7 +3037,7 @@ msgstr "نقشک برداری"
 msgid "! Could not save thumbnail \"%(thumbpath)s\": %(error)s"
 msgstr "! ذخیرهٔ مسطورهٔ «%(thumbpath)s» ممکن نشد: %(error)s"
 
-#: mcomix/ui.py:441 mcomix/library/book_area.py:201
+#: mcomix/ui.py:441 mcomix/library/book_area.py:210
 msgid "_Copy"
 msgstr "_رونوشت"
 
@@ -3588,11 +3588,11 @@ msgstr "! تغییر نام مجموعه به «%s» ممکن نشد"
 msgid "(Copy)"
 msgstr "(رونوشت)"
 
-#: mcomix/library/backend.py:1062
+#: mcomix/library/backend.py:1104
 msgid "Could not determine library database version!"
 msgstr "تعیین نسخهٔ پایگاه دادهٔ کتاب‌خانه ممکن نشد!"
 
-#: mcomix/library/backend.py:1112
+#: mcomix/library/backend.py:1154
 #, python-format
 msgid "Upgrading library database version from %(from)d to %(to)d."
 msgstr "ارتقای نسخهٔ پایگاه دادهٔ کتاب‌خانه از %(from)d به %(to)d."
@@ -3608,136 +3608,140 @@ msgstr "همهٔ کتاب‌ها"
 msgid "! Could not scan for new books: %s"
 msgstr "! پویش کتاب‌های تازه ممکن نشد: %s"
 
-#: mcomix/library/book_area.py:174
+#: mcomix/library/book_area.py:183
 msgid "Opens the selected books for viewing."
 msgstr "کتاب‌های برگزیده را برای خواندن می‌گشاید."
 
-#: mcomix/library/book_area.py:176
+#: mcomix/library/book_area.py:185
 msgid "Open _without closing library"
 msgstr "گشودن _بدون بستن کتاب‌خانه"
 
-#: mcomix/library/book_area.py:177
+#: mcomix/library/book_area.py:186
 msgid "Opens the selected books, but keeps the library window open."
 msgstr "کتاب‌های برگزیده را می‌گشاید، اما پنجرهٔ کتاب‌خانه را باز نگه می‌دارد."
 
-#: mcomix/library/book_area.py:179
+#: mcomix/library/book_area.py:188
 msgid "_Mark as read"
 msgstr "علامت‌گذاری به‌عنوان _خوانده‌شده"
 
-#: mcomix/library/book_area.py:180
+#: mcomix/library/book_area.py:189
 msgid "Marks the selected books as read to the end."
 msgstr "کتاب‌های گزیده را تا پایان خوانده‌شده علامت می‌زند."
 
-#: mcomix/library/book_area.py:182
+#: mcomix/library/book_area.py:191
 msgid "Mark as u_nread"
 msgstr "علامت‌گذاری به‌عنوان _نخوانده"
 
-#: mcomix/library/book_area.py:183
+#: mcomix/library/book_area.py:192
 msgid "Forgets the page the selected books were left at."
 msgstr "صفحه‌ای را که کتاب‌های گزیده در آن رها شده بودند فراموش می‌کند."
 
-#: mcomix/library/book_area.py:185 mcomix/library/collection_area.py:137
+#: mcomix/library/book_area.py:194 mcomix/library/collection_area.py:137
 msgid "_Add..."
 msgstr "_افزودن..."
 
 #
 # File: src/library.py, line: 793
-#: mcomix/library/book_area.py:186 mcomix/library/collection_area.py:138
+#: mcomix/library/book_area.py:195 mcomix/library/collection_area.py:138
 msgid "Add more books to the library."
 msgstr "افزودن کتاب‌های بیشتر به کتاب‌خانه."
 
-#: mcomix/library/book_area.py:189
+#: mcomix/library/book_area.py:198
 msgid "Remove _from this collection"
 msgstr "برداشتن از این _مجموعه"
 
-#: mcomix/library/book_area.py:190
+#: mcomix/library/book_area.py:199
 msgid "Removes the selected books from the current collection."
 msgstr "کتاب‌های برگزیده را از مجموعهٔ کنونی برمی‌دارد."
 
-#: mcomix/library/book_area.py:192
+#: mcomix/library/book_area.py:201
 msgid "Remove from the _library"
 msgstr "برداشتن از _کتاب‌خانه"
 
-#: mcomix/library/book_area.py:193
+#: mcomix/library/book_area.py:202
 msgid "Completely removes the selected books from the library."
 msgstr "کتاب‌های برگزیده را به‌کلی از کتاب‌خانه برمی‌دارد."
 
-#: mcomix/library/book_area.py:195
+#: mcomix/library/book_area.py:204
 msgid "_Remove and move to the trash"
 msgstr "برداشتن و انتقال به _زباله‌دان"
 
-#: mcomix/library/book_area.py:196
+#: mcomix/library/book_area.py:205
 msgid "Deletes the selected books from disk."
 msgstr "کتاب‌های برگزیده را از دیسک حذف می‌کند."
 
-#: mcomix/library/book_area.py:198 mcomix/library/collection_area.py:148
+#: mcomix/library/book_area.py:207 mcomix/library/collection_area.py:148
 msgid "Clean _up"
 msgstr "_پاک‌سازی"
 
-#: mcomix/library/book_area.py:199 mcomix/library/collection_area.py:149
+#: mcomix/library/book_area.py:208 mcomix/library/collection_area.py:149
 msgid "Removes no longer existent books from the collection."
 msgstr "کتاب‌هایی را که دیگر وجود ندارند از مجموعه برمی‌دارد."
 
-#: mcomix/library/book_area.py:202
+#: mcomix/library/book_area.py:211
 msgid "Copies the selected book's path to clipboard."
 msgstr "مسیر کتاب برگزیده را در تخته‌گیره رونوشت می‌کند."
 
-#: mcomix/library/book_area.py:241
+#: mcomix/library/book_area.py:250
 msgid "Library books"
 msgstr "کتاب‌های کتاب‌خانه"
 
-#: mcomix/library/book_area.py:254
+#: mcomix/library/book_area.py:263
 msgid "Book name"
 msgstr "نام کتاب"
 
-#: mcomix/library/book_area.py:255
+#: mcomix/library/book_area.py:264
 msgid "Full path"
 msgstr "مسیر کامل"
 
-#: mcomix/library/book_area.py:257
+#: mcomix/library/book_area.py:266
 msgid "Date added"
 msgstr "تاریخ افزودن"
 
-#: mcomix/library/book_area.py:266
+#: mcomix/library/book_area.py:267
+msgid "By hand"
+msgstr "دستی"
+
+#: mcomix/library/book_area.py:276
 msgid "Huge"
 msgstr "بسیار بزرگ"
 
-#: mcomix/library/book_area.py:267
+#: mcomix/library/book_area.py:277
 msgid "Large"
 msgstr "بزرگ"
 
-#: mcomix/library/book_area.py:269
+#: mcomix/library/book_area.py:279
 msgid "Small"
 msgstr "کوچک"
 
-#: mcomix/library/book_area.py:270
+#: mcomix/library/book_area.py:280
 msgid "Tiny"
 msgstr "بسیار کوچک"
 
-#: mcomix/library/book_area.py:274
+#: mcomix/library/book_area.py:284
 msgid "Custom..."
 msgstr "سفارشی..."
 
-#: mcomix/library/book_area.py:278
+#: mcomix/library/book_area.py:288
 msgid "_Sort"
 msgstr "_چینش"
 
-#: mcomix/library/book_area.py:279
+#: mcomix/library/book_area.py:289
 msgid "Cover si_ze"
 msgstr "اندازهٔ _جلد"
 
-#: mcomix/library/book_area.py:555
+#: mcomix/library/book_area.py:578
 msgid "Set library cover size"
 msgstr "اندازهٔ جلدها در کتاب‌خانه را تعیین می‌کند"
 
-#: mcomix/library/book_area.py:729
+#: mcomix/library/book_area.py:752
 #, python-format
 msgid "Removed %(num)d book from '%(collection)s'."
 msgid_plural "Removed %(num)d books from '%(collection)s'."
 msgstr[0] "%(num)d کتاب از «%(collection)s» برداشته شد."
 msgstr[1] "%(num)d کتاب از «%(collection)s» برداشته شدند."
 
-#: mcomix/library/book_area.py:752 mcomix/library/collection_area.py:305
+#: mcomix/library/book_area.py:775 mcomix/library/collection_area.py:305
 #, python-format
 msgid "Removed %d book from the library."
 msgid_plural "Removed %d books from the library."
@@ -3746,11 +3750,11 @@ msgstr[1] "%d کتاب از کتاب‌خانه برداشته شدند."
 
 #
 # File: src/library.py, line: 597
-#: mcomix/library/book_area.py:774 mcomix/library/book_area.py:795
+#: mcomix/library/book_area.py:797 mcomix/library/book_area.py:818
 msgid "Remove books from the library?"
 msgstr "کتاب‌ها از کتاب‌خانه برداشته شوند؟"
 
-#: mcomix/library/book_area.py:775
+#: mcomix/library/book_area.py:798
 msgid ""
 "The selected books will be removed from the library. Any in a folder with no "
 "trash is deleted permanently and cannot be restored."
@@ -3758,12 +3762,12 @@ msgstr ""
 "کتاب‌های برگزیده از کتاب‌خانه برداشته می‌شوند. هر کدام که در شاخه‌ای بی زباله‌دان "
 "باشد برای همیشه پاک می‌شود و دیگر بازیابی نمی‌شود."
 
-#: mcomix/library/book_area.py:796
+#: mcomix/library/book_area.py:819
 msgid ""
 "The selected books will be removed from the library and moved to the trash."
 msgstr "کتاب‌های برگزیده از کتاب‌خانه برداشته و به زباله‌دان منتقل می‌شوند."
 
-#: mcomix/library/book_area.py:906
+#: mcomix/library/book_area.py:929
 #, python-format
 msgid "Remove the bookmarks in the deleted book?"
 msgid_plural "Remove the bookmarks in the %(count)d deleted books?"

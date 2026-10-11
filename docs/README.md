@@ -9,7 +9,7 @@
 
 - [Reading](reading.md): the window, opening books, fit modes, double page and manga, slideshow, rotating, enhancing.
 - [Editing books](editing.md): rename, reorder, swap and delete pages; save archives.
-- [Library](library.md): collections, covers, watched folders.
+- [Library](library.md): collections, reading lists, covers, watched folders.
 - [Preferences](preferences.md): every option.
 - [Keyboard and mouse](shortcuts.md): every binding, and how to change them.
 - [External commands](external-commands.md): run your own programs on the open file.

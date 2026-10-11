@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 0.90.4\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-10 20:49+0200\n"
+"POT-Creation-Date: 2026-10-11 08:27+0200\n"
 "PO-Revision-Date: 2016-01-10 18:09+0200\n"
 "Last-Translator: Ulyanich Michael <ulianich_mihail@ukr.net>\n"
 "Language-Team: Russian <kde-russian@lists.kde.ru>\n"
@@ -59,7 +59,7 @@ msgstr "! Невозможно прочитать %s"
 #
 # File: src/comment.py, line: 53
 #: mcomix/archive_packer.py:176 mcomix/file_actions.py:1103
-#: mcomix/library/book_area.py:843
+#: mcomix/library/book_area.py:866
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! Не удалось удалить %(file)s: %(error)s"
@@ -615,7 +615,7 @@ msgstr "Удалить \"%s\" безвозвратно?"
 msgid "Could not move \"%s\" to the trash"
 msgstr "Не удалось переместить «%s» в корзину"
 
-#: mcomix/file_actions.py:1062 mcomix/library/book_area.py:855
+#: mcomix/file_actions.py:1062 mcomix/library/book_area.py:878
 #, python-format
 msgid "%d book could not be moved to the trash."
 msgid_plural "%d books could not be moved to the trash."
@@ -677,7 +677,7 @@ msgstr "Открыть"
 #
 # File: src/filechooser.py, line: 35
 # File: src/library.py, line: 489
-#: mcomix/file_chooser_base_dialog.py:238 mcomix/library/book_area.py:173
+#: mcomix/file_chooser_base_dialog.py:238 mcomix/library/book_area.py:182
 msgid "_Open"
 msgstr "_Открыть"
 
@@ -2487,7 +2487,7 @@ msgstr "Имя файла"
 msgid "File name (GLib)"
 msgstr "Имя файла (GLib)"
 
-#: mcomix/preferences_dialog.py:737 mcomix/library/book_area.py:256
+#: mcomix/preferences_dialog.py:737 mcomix/library/book_area.py:265
 msgid "File size"
 msgstr "Размер файла"
 
@@ -2496,12 +2496,12 @@ msgid "Last modified"
 msgstr "По времени изменения"
 
 #: mcomix/preferences_dialog.py:744 mcomix/preferences_dialog.py:790
-#: mcomix/library/book_area.py:260
+#: mcomix/library/book_area.py:270
 msgid "Ascending"
 msgstr "По возрастанию"
 
 #: mcomix/preferences_dialog.py:745 mcomix/preferences_dialog.py:791
-#: mcomix/library/book_area.py:261
+#: mcomix/library/book_area.py:271
 msgid "Descending"
 msgstr "По убыванию"
 
@@ -2655,7 +2655,7 @@ msgstr ""
 "относительная колориметрическая точно сохраняет те, которые экран может "
 "показать."
 
-#: mcomix/preferences_dialog.py:978 mcomix/library/book_area.py:268
+#: mcomix/preferences_dialog.py:978 mcomix/library/book_area.py:278
 msgid "Normal"
 msgstr "Обычный"
 
@@ -3163,7 +3163,7 @@ msgstr "! Не удалось сохранить миниатюру «%(thumbpat
 #
 # File: src/librarybackend.py, line: 272
 # File: src/librarybackend.py, line: 274
-#: mcomix/ui.py:441 mcomix/library/book_area.py:201
+#: mcomix/ui.py:441 mcomix/library/book_area.py:210
 msgid "_Copy"
 msgstr "_Копировать"
 
@@ -3741,11 +3741,11 @@ msgstr "! Невозможно переименовать коллекцию н�
 msgid "(Copy)"
 msgstr "(Копия)"
 
-#: mcomix/library/backend.py:1062
+#: mcomix/library/backend.py:1104
 msgid "Could not determine library database version!"
 msgstr "Не удалось определить версию базы данных библиотеки!"
 
-#: mcomix/library/backend.py:1112
+#: mcomix/library/backend.py:1154
 #, python-format
 msgid "Upgrading library database version from %(from)d to %(to)d."
 msgstr "Обновление версии базы данных библиотеки с %(from)d до %(to)d."
@@ -3761,137 +3761,141 @@ msgstr "Все книги"
 msgid "! Could not scan for new books: %s"
 msgstr "! Невозможно выполнить поиск новых книг: %s"
 
-#: mcomix/library/book_area.py:174
+#: mcomix/library/book_area.py:183
 msgid "Opens the selected books for viewing."
 msgstr "Открывает выбранные книги для просмотра."
 
-#: mcomix/library/book_area.py:176
+#: mcomix/library/book_area.py:185
 msgid "Open _without closing library"
 msgstr "Открыть, _не закрывая библиотеку"
 
-#: mcomix/library/book_area.py:177
+#: mcomix/library/book_area.py:186
 msgid "Opens the selected books, but keeps the library window open."
 msgstr "Открывает выбранные книги, оставляя окно библиотеки открытым."
 
-#: mcomix/library/book_area.py:179
+#: mcomix/library/book_area.py:188
 msgid "_Mark as read"
 msgstr "Отметить как _прочитанное"
 
-#: mcomix/library/book_area.py:180
+#: mcomix/library/book_area.py:189
 msgid "Marks the selected books as read to the end."
 msgstr "Отмечает выбранные книги как прочитанные до конца."
 
-#: mcomix/library/book_area.py:182
+#: mcomix/library/book_area.py:191
 msgid "Mark as u_nread"
 msgstr "От_метить как непрочитанное"
 
-#: mcomix/library/book_area.py:183
+#: mcomix/library/book_area.py:192
 msgid "Forgets the page the selected books were left at."
 msgstr "Забывает страницу, на которой были оставлены выбранные книги."
 
-#: mcomix/library/book_area.py:185 mcomix/library/collection_area.py:137
+#: mcomix/library/book_area.py:194 mcomix/library/collection_area.py:137
 msgid "_Add..."
 msgstr "_Добавить..."
 
 #
 # File: src/library.py, line: 793
-#: mcomix/library/book_area.py:186 mcomix/library/collection_area.py:138
+#: mcomix/library/book_area.py:195 mcomix/library/collection_area.py:138
 msgid "Add more books to the library."
 msgstr "Добавить еще книг в библиотеку."
 
 #
 # File: src/library.py, line: 492
-#: mcomix/library/book_area.py:189
+#: mcomix/library/book_area.py:198
 msgid "Remove _from this collection"
 msgstr "Удалит_ь из коллекции"
 
-#: mcomix/library/book_area.py:190
+#: mcomix/library/book_area.py:199
 msgid "Removes the selected books from the current collection."
 msgstr "Убирает выбранные книги из текущей коллекции."
 
 #
 # File: src/library.py, line: 495
-#: mcomix/library/book_area.py:192
+#: mcomix/library/book_area.py:201
 msgid "Remove from the _library"
 msgstr "Удали_ть из библиотеки"
 
-#: mcomix/library/book_area.py:193
+#: mcomix/library/book_area.py:202
 msgid "Completely removes the selected books from the library."
 msgstr "Полностью удаляет выбранные книги из библиотеки."
 
-#: mcomix/library/book_area.py:195
+#: mcomix/library/book_area.py:204
 msgid "_Remove and move to the trash"
 msgstr "_Убрать и переместить в корзину"
 
-#: mcomix/library/book_area.py:196
+#: mcomix/library/book_area.py:205
 msgid "Deletes the selected books from disk."
 msgstr "Удаляет выбранные книги с диска."
 
-#: mcomix/library/book_area.py:198 mcomix/library/collection_area.py:148
+#: mcomix/library/book_area.py:207 mcomix/library/collection_area.py:148
 msgid "Clean _up"
 msgstr "О_чистить"
 
-#: mcomix/library/book_area.py:199 mcomix/library/collection_area.py:149
+#: mcomix/library/book_area.py:208 mcomix/library/collection_area.py:149
 msgid "Removes no longer existent books from the collection."
 msgstr "Убирает из коллекции книги, которых больше нет."
 
 #
 # File: src/library.py, line: 806
-#: mcomix/library/book_area.py:202
+#: mcomix/library/book_area.py:211
 msgid "Copies the selected book's path to clipboard."
 msgstr "Копирует путь к выбранной книге в буфер обмена."
 
-#: mcomix/library/book_area.py:241
+#: mcomix/library/book_area.py:250
 msgid "Library books"
 msgstr "Книги библиотеки"
 
-#: mcomix/library/book_area.py:254
+#: mcomix/library/book_area.py:263
 msgid "Book name"
 msgstr "Название книги"
 
-#: mcomix/library/book_area.py:255
+#: mcomix/library/book_area.py:264
 msgid "Full path"
 msgstr "Полный путь"
 
-#: mcomix/library/book_area.py:257
+#: mcomix/library/book_area.py:266
 msgid "Date added"
 msgstr "Дата добавления"
 
-#: mcomix/library/book_area.py:266
+#: mcomix/library/book_area.py:267
+msgid "By hand"
+msgstr "Вручную"
+
+#: mcomix/library/book_area.py:276
 msgid "Huge"
 msgstr "Огромный"
 
-#: mcomix/library/book_area.py:267
+#: mcomix/library/book_area.py:277
 msgid "Large"
 msgstr "Большой"
 
-#: mcomix/library/book_area.py:269
+#: mcomix/library/book_area.py:279
 msgid "Small"
 msgstr "Маленький"
 
-#: mcomix/library/book_area.py:270
+#: mcomix/library/book_area.py:280
 msgid "Tiny"
 msgstr "Крошечный"
 
-#: mcomix/library/book_area.py:274
+#: mcomix/library/book_area.py:284
 msgid "Custom..."
 msgstr "Другой..."
 
-#: mcomix/library/book_area.py:278
+#: mcomix/library/book_area.py:288
 msgid "_Sort"
 msgstr "_Сортировка"
 
-#: mcomix/library/book_area.py:279
+#: mcomix/library/book_area.py:289
 msgid "Cover si_ze"
 msgstr "Размер о_бложек"
 
-#: mcomix/library/book_area.py:555
+#: mcomix/library/book_area.py:578
 msgid "Set library cover size"
 msgstr "Задать размер обложек в библиотеке"
 
 #
 # File: src/library.py, line: 588
-#: mcomix/library/book_area.py:729
+#: mcomix/library/book_area.py:752
 #, python-format
 msgid "Removed %(num)d book from '%(collection)s'."
 msgid_plural "Removed %(num)d books from '%(collection)s'."
@@ -3899,7 +3903,7 @@ msgstr[0] "Из «%(collection)s» удалена %(num)d книга."
 msgstr[1] "Из «%(collection)s» удалено %(num)d книги."
 msgstr[2] "Из «%(collection)s» удалено %(num)d книг."
 
-#: mcomix/library/book_area.py:752 mcomix/library/collection_area.py:305
+#: mcomix/library/book_area.py:775 mcomix/library/collection_area.py:305
 #, python-format
 msgid "Removed %d book from the library."
 msgid_plural "Removed %d books from the library."
@@ -3909,11 +3913,11 @@ msgstr[2] "Из библиотеки удалено %d книг."
 
 #
 # File: src/library.py, line: 597
-#: mcomix/library/book_area.py:774 mcomix/library/book_area.py:795
+#: mcomix/library/book_area.py:797 mcomix/library/book_area.py:818
 msgid "Remove books from the library?"
 msgstr "Удалить книги из библиотеки?"
 
-#: mcomix/library/book_area.py:775
+#: mcomix/library/book_area.py:798
 msgid ""
 "The selected books will be removed from the library. Any in a folder with no "
 "trash is deleted permanently and cannot be restored."
@@ -3921,12 +3925,12 @@ msgstr ""
 "Выбранные книги будут убраны из библиотеки. Книги из каталога без корзины "
 "будут удалены навсегда, и восстановить их будет нельзя."
 
-#: mcomix/library/book_area.py:796
+#: mcomix/library/book_area.py:819
 msgid ""
 "The selected books will be removed from the library and moved to the trash."
 msgstr "Выбранные книги будут убраны из библиотеки и перемещены в корзину."
 
-#: mcomix/library/book_area.py:906
+#: mcomix/library/book_area.py:929
 #, python-format
 msgid "Remove the bookmarks in the deleted book?"
 msgid_plural "Remove the bookmarks in the %(count)d deleted books?"

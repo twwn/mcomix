@@ -67,6 +67,9 @@ class _BookItem(thumbnail_list.ThumbnailItem):
         self.path = book.path
         self.size = book.size
         self.added = book.added
+        #: The place the book was given by hand in the collection on
+        #: show, or None if it has none there.
+        self.position: int | None = None
 
 
 class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
@@ -136,6 +139,12 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         drop = Gtk.DropTarget.new(Gdk.FileList, Gdk.DragAction.COPY)
         drop.connect('drop', self._drag_data_received)
         self._covers.add_controller(drop)
+        # The books dragged out come back as well: dropped on another
+        # cover, they are placed beside it in the order kept by hand.
+        place = Gtk.DropTarget.new(str, Gdk.DragAction.MOVE)
+        place.connect('accept', self._accepts_books)
+        place.connect('drop', self._books_dropped)
+        self._covers.add_controller(place)
         self.set_child(self._covers)
 
         self._popup_actions = Gio.SimpleActionGroup()
@@ -254,7 +263,8 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         radio(by, ((_('Book name'), constants.SORT_NAME),
                    (_('Full path'), constants.SORT_PATH),
                    (_('File size'), constants.SORT_SIZE),
-                   (_('Date added'), constants.SORT_LAST_MODIFIED)), 'sort-key')
+                   (_('Date added'), constants.SORT_LAST_MODIFIED),
+                   (_('By hand'), constants.SORT_HAND)), 'sort-key')
         sort_menu.append_section(None, by)
         order = Gio.Menu()
         radio(order, ((_('Ascending'), constants.SORT_ASCENDING),
@@ -321,11 +331,20 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
             self._covers.set_items(())
             return
         books = collection.get_books(self._library.filter_string)
-        self._covers.set_items(_BookItem(book) for book in books)
+        items = [_BookItem(book) for book in books]
+        self._place(items, collection_id)
+        self._covers.set_items(items)
         # Nothing is selected in a collection just shown, and the info
         # box speaks for the books on show.
         self._library.control_area.update_info(
             self._covers.get_selected_positions())
+
+    def _place(self, items: Iterable[_BookItem], collection: int) -> None:
+        """Give each of <items> the place its book has in the order
+        <collection> was put in by hand."""
+        positions = self._library.backend.get_book_positions(collection)
+        for item in items:
+            item.position = positions.get(item.uid)
 
     def stop_update(self) -> None:
         """Signal that the updating of book covers should stop."""
@@ -492,8 +511,9 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
     @staticmethod
     def _compare_books(key: int, left: _BookItem, right: _BookItem) -> int:
         """Order two covers by <key>, one of the SORT_ constants: the
-        name of the file, its size, the date the book was added, or else
-        the whole path.
+        name of the file, its size, the date the book was added, the
+        place it was given by hand, or else the whole path.  A book with
+        no place by hand comes after those that have one.
 
         Covers the key cannot tell apart - books added in one go, each
         series' "Volume 1" - are put in order by their paths, rather than
@@ -508,6 +528,9 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
             answer = tools.cmp(left.size, right.size)
         elif key == constants.SORT_LAST_MODIFIED:
             answer = tools.cmp(left.added, right.added)
+        elif key == constants.SORT_HAND:
+            answer = tools.cmp((left.position is None, left.position or 0),
+                               (right.position is None, right.position or 0))
         if answer:
             return answer
         return tools.cmp(tools.AlphanumericSortKey(left.path),
@@ -1011,7 +1034,106 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         if widgets.menu_key(keyval, state):
             self._popup_book_menu()
             return Gdk.EVENT_STOP
+        if state & Gdk.ModifierType.ALT_MASK \
+                and keyval in (Gdk.KEY_Left, Gdk.KEY_Right):
+            # Towards the start of the row is earlier, whichever side a
+            # row starts on.
+            earlier = Gdk.KEY_Right \
+                if self.get_direction() == Gtk.TextDirection.RTL \
+                else Gdk.KEY_Left
+            if self._move_selected(-1 if keyval == earlier else 1):
+                return Gdk.EVENT_STOP
         return Gdk.EVENT_PROPAGATE
+
+    def _move_selected(self, step: int) -> bool:
+        """Move the selected books one place earlier (<step> -1) or
+        later (1) in the order kept by hand: past the cover shown before
+        the first of them, or after the last.  Says whether they moved."""
+        selected = [item.uid for item in self._selected_items()]
+        if not selected:
+            return False
+        shown = self.shown_ids()
+        beside = shown.index(selected[0]) - 1 if step < 0 \
+            else shown.index(selected[-1]) + 1
+        if not 0 <= beside < len(shown):
+            return False
+        return self._place_books(selected, shown[beside])
+
+    def _accepts_books(self, target: Gtk.DropTarget, drop: Gdk.Drop) -> bool:
+        """Whether <drop> can be books of this library: only a drag
+        that began in this MComix is.
+
+        A file manager offers its files as text too, and a target that
+        took that text would take the drop from the one above that adds
+        the files to the library.
+        """
+        return drop.get_drag() is not None
+
+    def _books_dropped(self, target: Gtk.DropTarget, value: str,
+                       x: float, y: float) -> bool:
+        """Place the books dragged from this area beside the cover they
+        were dropped on, or last where they were dropped on none."""
+        prefix = constants.LIBRARY_DRAG_BOOKS + ':'
+        if not isinstance(value, str) or not value.startswith(prefix):
+            return False
+        try:
+            positions = [int(position)
+                         for position in value[len(prefix):].split(',')]
+        except ValueError:
+            return False
+        books = [book for book in map(self.get_book_at_path, positions)
+                 if book is not None]
+        return self._place_books(
+            books, self.get_book_at_path(self._covers.position_at(x, y)))
+
+    def _place_books(self, books: "Sequence[int]", beside: int | None) -> bool:
+        """Put <books>, which are ids, beside the book <beside> in the
+        order the collection on show is kept in by hand, and say whether
+        anything moved.
+
+        They go after <beside> when they come from before it and before
+        it when they come from after, as a dragged entry takes the place
+        of the one it is dropped on; with no <beside>, or one the
+        collection does not itself hold, they go last.  Several keep the
+        order they were shown in.  Nothing moves unless the covers are
+        sorted by hand, and "All books" and "Recent" have no order to
+        keep: only a collection does, for the books filed in it itself.
+        """
+        collection = self._library.collection_area.get_current_collection()
+        if prefs['lib sort key'] != constants.SORT_HAND or collection is None:
+            return False
+        backend = self._library.backend
+        # The whole collection, not the covers on show, which a filter
+        # may have narrowed; turned round where the covers are, so that
+        # "before" and "after" mean what the reader sees.
+        descending = prefs['lib sort order'] == constants.SORT_DESCENDING
+        order = backend.get_collection_order(collection)
+        if descending:
+            order.reverse()
+        wanted = set(books)
+        moved = [book for book in order if book in wanted]
+        if not moved or beside in wanted:
+            return False
+        rest = [book for book in order if book not in wanted]
+        if beside is None or beside not in rest:
+            placed = rest + moved
+        else:
+            after = order.index(moved[0]) < order.index(beside)
+            at = rest.index(beside) + (1 if after else 0)
+            placed = rest[:at] + moved + rest[at:]
+        if placed == order:
+            return False
+        if descending:
+            placed.reverse()
+        backend.set_collection_order(collection, placed)
+
+        self._place(self._each_item(), collection)
+        self.set_sort_order()
+        # The selection is of positions, which now hold other covers.
+        self._covers.select_positions(
+            position for position, item in enumerate(self._each_item())
+            if item.uid in wanted)
+        return True
 
     def _drag_prepare(self, source: Gtk.DragSource, x: float,
                       y: float) -> "Gdk.ContentProvider | None":

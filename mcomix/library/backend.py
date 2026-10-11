@@ -58,7 +58,7 @@ class _LibraryBackend:
 
     #: Current version of the library database structure.
     # See method _upgrade_database() for changes between versions.
-    DB_VERSION = 11
+    DB_VERSION = 12
 
     def __init__(self) -> None:
         #: Held from running a statement to closing its cursor.  Threads
@@ -814,11 +814,53 @@ class _LibraryBackend:
             supercollection = self.get_supercollection(collection)
             if supercollection is not None:
                 self.add_collection_to_collection(copy, supercollection)
+            # The collection's own books first, with the places they
+            # were given by hand; the books of those under it have none
+            # in it, and get none in the copy.
+            self.execute('''insert into Contain (collection, book, position)
+                select ?, book, position from Contain
+                where collection = ?''', (copy, collection))
             self.execute('''insert or ignore into Contain (collection, book)
                 select ?, book from Contain
                 where collection in (%s)''' % ','.join('?' * len(shown)),
                          [copy] + shown)
         return True
+
+    def get_book_positions(self, collection: int) -> dict[int, int]:
+        """The place of each book <collection> itself holds that has
+        been given one by hand, by the book's id.
+
+        A book nobody has placed is not in the answer, and neither is a
+        book of a collection under this one.
+        """
+        return dict(self.fetchall('''select book, position from Contain
+            where collection = ? and position is not null''', (collection,)))
+
+    def get_collection_order(self, collection: int) -> list[int]:
+        """The ids of the books <collection> itself holds, in the order
+        they were put in by hand.
+
+        The books nobody has placed - every book, until the first is
+        moved - follow the placed ones, by their paths, which is where
+        the library's covers show them.
+        """
+        rows = self.fetchall('''select Book.id, Contain.position, Book.path
+            from Contain join Book on Book.id = Contain.book
+            where Contain.collection = ?''', (collection,))
+        rows.sort(key=lambda row: (row[1] is None, row[1] or 0,
+                                   tools.AlphanumericSortKey(row[2])))
+        return [row[0] for row in rows]
+
+    def set_collection_order(self, collection: int,
+                             books: Sequence[int]) -> None:
+        """Place the books of <collection> in the order of <books>,
+        which are ids.  An id the collection does not hold is passed
+        over: it has no row to keep a place in."""
+        with self.transaction():
+            for position, book in enumerate(books):
+                self.execute('''update Contain set position = ?
+                    where collection = ? and book = ?''',
+                             (position, collection, book))
 
     def clean_collection(self, collection: int | None = None) -> int:
         """ Removes files from <collection> that no longer exist. If <collection>
@@ -1229,6 +1271,18 @@ class _LibraryBackend:
                     self._con.execute(
                         '''alter table book add column cover text''')
 
+            if 11 in upgrades:
+                # The place of a book in the order its collection was
+                # put in by hand, a reading list (upstream feature
+                # request 19).  Null for a book nobody has placed.  As
+                # with the two columns above, it is added only where an
+                # older MComix has not left it there already.
+                columns = [row[1] for row in self._con.execute(
+                    '''pragma table_info(contain)''').fetchall()]
+                if 'position' not in columns:
+                    self._con.execute(
+                        '''alter table contain add column position integer''')
+
             self._con.execute('''update info set value = ? where key = 'version' ''',
                               (str(_LibraryBackend.DB_VERSION),))
 
@@ -1253,6 +1307,7 @@ class _LibraryBackend:
         self._con.execute('''create table if not exists contain (
             collection integer not null,
             book integer not null,
+            position integer,
             primary key (collection, book))''')
         self._create_index_contain_book()
 

@@ -15,7 +15,7 @@ import threading
 import types
 import unittest.mock
 
-from gi.repository import GdkPixbuf, Gio, GLib, Gtk
+from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk
 
 from . import MComixTest, get_testfile_path, pump, wait_for
 
@@ -506,6 +506,254 @@ class LibraryWalkTest(_LibraryWindowTest):
         self._wait_for('first/one.zip')
         self.assertTrue(self.window.filehandler.open_next_archive())
         self._wait_for('first/two.zip')
+
+
+class ReadingListTest(_LibraryWindowTest):
+
+    """A collection whose books are put in order by hand, and read in
+    that order (upstream feature request 19).
+
+    Sorted "By hand", the covers stand in the places the collection
+    keeps; a cover dragged onto another, or moved with Alt and an arrow,
+    takes a new place, and Next archive walks the covers as shown.
+    """
+
+    NAMES = ('1.zip', '2.zip', '3.zip', '4.zip')
+
+    def setUp(self):
+        super().setUp()
+        prefs['last library collection'] = constants.COLLECTION_ALL
+        prefs['lib sort key'] = constants.SORT_HAND
+        prefs['lib sort order'] = constants.SORT_ASCENDING
+        source = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        self.dialog = self._open()
+        self.area = self.dialog.book_area
+        self.backend = self.dialog.backend
+        self.list = self.backend.add_collection('List')
+        self.paths = {}
+        for name in self.NAMES:
+            path = os.path.join(self.tmp_dir, name)
+            shutil.copyfile(source, path)
+            self.paths[name] = path
+            self.backend.add_book(path, self.list)
+        self._show(self.list)
+
+    def _show(self, collection):
+        prefs['last library collection'] = collection
+        self.dialog.collection_area.display_collections()
+        pump()
+        self.assertEqual(
+            collection, self.dialog.collection_area.get_current_collection())
+        self.area.display_covers(collection)
+        # Nothing here looks at a cover, and a worker drawing one would
+        # be waited for by every change of what is shown.
+        self.area.stop_update()
+
+    def _shown(self):
+        return ''.join(os.path.basename(path)[0]
+                       for path in self.area.shown_paths())
+
+    def _kept(self):
+        """The order the collection keeps, whatever the covers show."""
+        return ''.join(os.path.basename(self.backend.get_book_path(book))[0]
+                       for book in self.backend.get_collection_order(
+                           self.list))
+
+    def _selected(self):
+        return ''.join(os.path.basename(item.path)[0]
+                       for item in self.area._selected_items())
+
+    def _drop(self, dragged, onto):
+        """Drag the covers at the positions <dragged> onto the cover at
+        the position <onto>, or onto no cover if that is -1."""
+        value = '%s:%s' % (constants.LIBRARY_DRAG_BOOKS,
+                           ','.join(str(position) for position in dragged))
+        with unittest.mock.patch.object(self.area._covers, 'position_at',
+                                        return_value=onto):
+            return self.area._books_dropped(None, value, 5.0, 5.0)
+
+    def _alt(self, key):
+        return self.area._key_press(None, key, 0, Gdk.ModifierType.ALT_MASK)
+
+    def test_books_nobody_placed_are_shown_by_their_paths(self):
+        self.assertEqual('1234', self._shown())
+        self.assertEqual({}, self.backend.get_book_positions(self.list))
+
+    def test_a_cover_dropped_on_a_later_one_goes_after_it(self):
+        self.assertTrue(self._drop([0], 2))
+        self.assertEqual('2314', self._shown())
+        self.assertEqual('2314', self._kept())
+
+    def test_a_cover_dropped_on_an_earlier_one_goes_before_it(self):
+        self.assertTrue(self._drop([3], 1))
+        self.assertEqual('1423', self._shown())
+
+    def test_several_covers_keep_their_order_among_themselves(self):
+        self.assertTrue(self._drop([0, 2], 3))
+        self.assertEqual('2413', self._shown())
+
+    def test_a_cover_dropped_on_no_cover_goes_last(self):
+        self.assertTrue(self._drop([1], -1))
+        self.assertEqual('1342', self._shown())
+
+    def test_the_covers_moved_stay_selected(self):
+        self.area._covers.select_positions([0, 1])
+        self.assertTrue(self._drop([0, 1], 3))
+        self.assertEqual('3412', self._shown())
+        self.assertEqual('12', self._selected())
+
+    def test_a_cover_dropped_on_itself_stays(self):
+        self.assertFalse(self._drop([1], 1))
+        self.assertFalse(self._drop([1, 2], 2))
+        self.assertEqual({}, self.backend.get_book_positions(self.list))
+
+    def test_the_order_is_there_when_the_collection_is_shown_again(self):
+        self._drop([0], 3)
+        self._show(constants.COLLECTION_ALL)
+        self._show(self.list)
+        self.assertEqual('2341', self._shown())
+
+    def test_descending_shows_and_moves_the_other_way_round(self):
+        self._drop([0], 3)
+        prefs['lib sort order'] = constants.SORT_DESCENDING
+        self.area.set_sort_order()
+        self.assertEqual('1432', self._shown())
+        # The first cover shown onto the third: after it, as shown.
+        self.assertTrue(self._drop([0], 2))
+        self.assertEqual('4312', self._shown())
+        self.assertEqual('2134', self._kept())
+
+    def test_under_a_filter_the_books_hidden_keep_their_places(self):
+        os.rename(self.paths['2.zip'],
+                  os.path.join(self.tmp_dir, '2 other.zip'))
+        self.backend.update_book_path(
+            self.paths['2.zip'], os.path.join(self.tmp_dir, '2 other.zip'))
+        self.dialog.filter_string = 'other'
+        self._show(self.list)
+        self.assertEqual('2', self._shown())
+        self.dialog.filter_string = None
+        self._show(self.list)
+        self._drop([3], 0)
+        self.assertEqual('4123', self._shown())
+        self.dialog.filter_string = '.zip'
+        self._show(self.list)
+        hidden = self.backend.get_book_by_path(
+            os.path.join(self.tmp_dir, '2 other.zip')).id
+        self.area.remove_books([hidden])
+        self.assertEqual('413', self._shown())
+        # Onto the last cover shown; the hidden book stays between.
+        self.assertTrue(self._drop([0], 2))
+        self.assertEqual('1234', self._kept())
+
+    def test_nothing_moves_under_another_sort(self):
+        prefs['lib sort key'] = constants.SORT_NAME
+        self.area.set_sort_order()
+        self.assertFalse(self._drop([0], 2))
+        self.assertEqual('1234', self._shown())
+        self.assertEqual({}, self.backend.get_book_positions(self.list))
+
+    def test_all_books_keep_no_order(self):
+        self._show(constants.COLLECTION_ALL)
+        self.assertEqual('1234', self._shown())
+        self.assertFalse(self._drop([0], 2))
+        self.assertEqual('1234', self._shown())
+        self.assertEqual(
+            [], self.backend.fetchall(
+                'select book from Contain where position is not null'))
+
+    def test_what_is_dropped_has_to_be_books(self):
+        for value in ('collection:1', 'books:x', 'file:///tmp/1.zip'):
+            with self.subTest(value=value), unittest.mock.patch.object(
+                    self.area._covers, 'position_at', return_value=2):
+                self.assertFalse(
+                    self.area._books_dropped(None, value, 5.0, 5.0))
+        self.assertEqual('1234', self._shown())
+
+    def test_only_a_drag_from_this_program_is_taken_for_books(self):
+        """A file manager offers its files as text as well, and that
+        drop belongs to the target that adds them to the library."""
+        ours = types.SimpleNamespace(get_drag=lambda: object())
+        theirs = types.SimpleNamespace(get_drag=lambda: None)
+        self.assertTrue(self.area._accepts_books(None, ours))
+        self.assertFalse(self.area._accepts_books(None, theirs))
+
+    def test_a_book_of_a_collection_under_it_follows_and_stays_there(self):
+        inner = self.backend.add_collection('Inner')
+        self.backend.add_collection_to_collection(inner, self.list)
+        path = os.path.join(self.tmp_dir, '0.zip')
+        shutil.copyfile(self.paths['1.zip'], path)
+        self.backend.add_book(path, inner)
+        self._show(self.list)
+        # Nothing has a place yet, so every book goes by its path.
+        self.assertEqual('01234', self._shown())
+        self.assertTrue(self._drop([2], 1))
+        self.assertEqual('21340', self._shown())
+        self.assertFalse(self._drop([4], 0))
+        # Dropped on it, a book of the list goes last among the list's.
+        self.assertTrue(self._drop([0], 4))
+        self.assertEqual('13420', self._shown())
+
+    def test_alt_and_an_arrow_move_the_selected_cover_one_place(self):
+        self.area._covers.select_only(1)
+        self.assertEqual(Gdk.EVENT_STOP, self._alt(Gdk.KEY_Right))
+        self.assertEqual('1324', self._shown())
+        self.assertEqual('2', self._selected())
+        self.assertEqual(Gdk.EVENT_STOP, self._alt(Gdk.KEY_Left))
+        self.assertEqual(Gdk.EVENT_STOP, self._alt(Gdk.KEY_Left))
+        self.assertEqual('2134', self._shown())
+        self.assertEqual('2', self._selected())
+
+    def test_at_either_end_the_arrow_is_left_to_the_view(self):
+        self.area._covers.select_only(0)
+        self.assertEqual(Gdk.EVENT_PROPAGATE, self._alt(Gdk.KEY_Left))
+        self.area._covers.select_only(3)
+        self.assertEqual(Gdk.EVENT_PROPAGATE, self._alt(Gdk.KEY_Right))
+        self.area._covers.unselect_all()
+        self.assertEqual(Gdk.EVENT_PROPAGATE, self._alt(Gdk.KEY_Right))
+        self.assertEqual({}, self.backend.get_book_positions(self.list))
+
+    def test_where_rows_start_on_the_right_the_arrows_change_sides(self):
+        self.area.set_direction(Gtk.TextDirection.RTL)
+        self.area._covers.select_only(1)
+        self.assertEqual(Gdk.EVENT_STOP, self._alt(Gdk.KEY_Left))
+        self.assertEqual('1324', self._shown())
+
+    def test_an_arrow_alone_moves_nothing(self):
+        self.area._covers.select_only(1)
+        self.assertEqual(Gdk.EVENT_PROPAGATE, self.area._key_press(
+            None, Gdk.KEY_Right, 0, Gdk.ModifierType(0)))
+        self.assertEqual('1234', self._shown())
+
+    def test_the_sort_menu_offers_the_order_by_hand(self):
+        self._drop([0], 3)
+        actions = self.area._popup_actions
+        actions.change_action_state(
+            'sort-key', GLib.Variant('i', constants.SORT_PATH))
+        self.assertEqual('1234', self._shown())
+        actions.change_action_state(
+            'sort-key', GLib.Variant('i', constants.SORT_HAND))
+        self.assertEqual(constants.SORT_HAND, prefs['lib sort key'])
+        self.assertEqual('2341', self._shown())
+
+    def test_next_archive_reads_the_list_in_its_order(self):
+        self._drop([0], 3)
+        self.assertEqual('2341', self._shown())
+        handler = self.window.filehandler
+
+        def reading(name):
+            return wait_for(
+                lambda: handler.file_loaded
+                and handler.get_path_to_base() == self.paths[name],
+                seconds=20)
+
+        book = self.backend.get_book_by_path(self.paths['4.zip'])
+        self.dialog.open_book([book.id])
+        self.assertTrue(reading('4.zip'), handler.get_path_to_base())
+        self.assertTrue(handler.open_next_archive())
+        self.assertTrue(reading('1.zip'), handler.get_path_to_base())
+        self.assertFalse(handler.open_next_archive())
+        self.assertTrue(handler.open_previous_archive())
+        self.assertTrue(reading('4.zip'), handler.get_path_to_base())
 
 
 class ReloadCoversTest(_OneBookTest):
