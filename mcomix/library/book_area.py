@@ -1015,7 +1015,17 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
 
     def _drag_prepare(self, source: Gtk.DragSource, x: float,
                       y: float) -> "Gdk.ContentProvider | None":
-        """Offer the books being dragged, as the positions of their covers."""
+        """Offer the books being dragged, as the positions of their covers.
+
+        A drag that begins on a cover outside the selection is of that
+        cover, which it selects, as a right click on it does: GTK
+        selects a cover when the button is let go, so the cover a drag
+        began on was left behind and the covers selected before it went
+        in its place - or nothing, where none was.
+        """
+        under = self._covers.position_at(x, y)
+        if under >= 0 and under not in self._covers.get_selected_positions():
+            self._covers.select_only(under)
         positions = self._covers.get_selected_positions()
         if not positions:
             return None

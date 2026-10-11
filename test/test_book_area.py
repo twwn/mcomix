@@ -1029,6 +1029,46 @@ class DragIconTest(MComixTest):
         area._covers.selection.unselect_all()
         self.assertIsNone(area._drag_prepare(None, 0.0, 0.0))
 
+    def _dragged_from(self, area, position):
+        """What a drag beginning over the cover at <position> offers,
+        or None if it offers nothing."""
+        with unittest.mock.patch.object(
+                Gdk.ContentProvider, 'new_for_value',
+                wraps=Gdk.ContentProvider.new_for_value) as made, \
+                unittest.mock.patch.object(area._covers, 'position_at',
+                                           return_value=position):
+            if area._drag_prepare(None, 5.0, 5.0) is None:
+                return None
+        return made.call_args.args[0]
+
+    def test_a_drag_from_a_cover_not_selected_is_of_that_cover(self):
+        """GTK selects a cover when the button is let go, not when it
+        is pressed: with nothing selected the drag offered nothing, and
+        with other covers selected it took those and left the one under
+        the pointer behind."""
+        area = self._area(3)
+        area._covers.unselect_all()
+        self.assertEqual('%s:1' % constants.LIBRARY_DRAG_BOOKS,
+                         self._dragged_from(area, 1))
+        self.assertEqual([1], area._covers.get_selected_positions())
+        self.assertEqual('%s:2' % constants.LIBRARY_DRAG_BOOKS,
+                         self._dragged_from(area, 2))
+        self.assertEqual([2], area._covers.get_selected_positions())
+
+    def test_a_drag_from_a_selected_cover_takes_the_others_along(self):
+        area = self._area(3)
+        self.assertEqual('%s:0,1,2' % constants.LIBRARY_DRAG_BOOKS,
+                         self._dragged_from(area, 1))
+        self.assertEqual([0, 1, 2], area._covers.get_selected_positions())
+
+    def test_a_drag_from_between_the_covers_is_of_the_selection(self):
+        area = self._area(3)
+        area._covers.select_only(2)
+        self.assertEqual('%s:2' % constants.LIBRARY_DRAG_BOOKS,
+                         self._dragged_from(area, -1))
+        area._covers.unselect_all()
+        self.assertIsNone(self._dragged_from(area, -1))
+
     def test_a_cover_a_pixel_across_still_has_an_icon(self):
         """Half of one pixel is none, and a pixbuf cannot be scaled to
         no width: the icon was not made and the drag began with an
