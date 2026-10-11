@@ -8,7 +8,7 @@ import types
 import unittest.mock
 import warnings
 
-from gi.repository import Gdk, GLib, Gtk
+from gi.repository import Gdk, GdkPixbuf, GLib, Gtk
 
 from . import MComixTest, hold_open, pump, wait_for
 from .test_theme import background_of
@@ -975,8 +975,15 @@ class DragIconTest(MComixTest):
     Gdk.Texture.new_for_pixbuf(), deprecated in GTK 4.20.
     """
 
+    def setUp(self):
+        super().setUp()
+        #: Every library an area was made over: an area holds its
+        #: library only weakly, and is closed when the test is over.
+        self.libraries = []
+
     def _area(self, books):
         self.library = _CoverlessLibrary()
+        self.libraries.append(self.library)
         area = book_area._BookArea(self.library)
         area._covers.set_items(
             book_area._BookItem(_Book(index, '/books/%d.cbz' % index))
@@ -1021,6 +1028,23 @@ class DragIconTest(MComixTest):
             '%s:0,2' % constants.LIBRARY_DRAG_BOOKS)
         area._covers.selection.unselect_all()
         self.assertIsNone(area._drag_prepare(None, 0.0, 0.0))
+
+    def test_a_cover_a_pixel_across_still_has_an_icon(self):
+        """Half of one pixel is none, and a pixbuf cannot be scaled to
+        no width: the icon was not made and the drag began with an
+        AssertionError.  A page a pixel across has such a cover."""
+        for width, height in ((1, 1), (1, 300), (300, 1)):
+            for books in (1, 3):
+                with self.subTest(width=width, height=height, books=books):
+                    thin = GdkPixbuf.Pixbuf.new(
+                        GdkPixbuf.Colorspace.RGB, True, 8, width, height)
+                    thin.fill(0x336699FF)
+                    with unittest.mock.patch.object(
+                            _CoverlessBackend, 'get_book_cover',
+                            return_value=thin):
+                        icons = self._icon_for(books)
+                    self.assertEqual(1, len(icons))
+                    self.assertIsInstance(icons[0], Gdk.Texture)
 
     def test_one_book_has_an_icon(self):
         icons = self._icon_for(1)

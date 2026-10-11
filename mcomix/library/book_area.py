@@ -1042,8 +1042,10 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
             or image_tools.missing_image_icon(constants.MAX_LIBRARY_COVER_SIZE,
                                               constants.MAX_LIBRARY_COVER_SIZE)
 
-        halved = cover.scale_simple(max(0, cover.get_width() // 2),
-                                    max(0, cover.get_height() // 2),
+        # At least a pixel each way: the cover of a page a pixel wide or
+        # high halves to nothing, which cannot be scaled to.
+        halved = cover.scale_simple(max(1, cover.get_width() // 2),
+                                    max(1, cover.get_height() // 2),
                                     image_tools.scaling_quality_preference())
         assert halved is not None, 'the drag cursor could not be scaled'
         cover = image_tools.add_border(halved, 1, 0xFFFFFFFF)
