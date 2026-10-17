@@ -591,19 +591,46 @@ class MainWindowTest(MComixTest):
         self.assertEqual({name: False for name in self._TOGGLES},
                          self._toggles_usable())
         drawn.assert_called_once_with()
-        with unittest.mock.patch.object(
-                self.window, 'restore_window_geometry',
-                return_value=False), \
-                unittest.mock.patch.object(self.window,
-                                           'draw_image') as drawn:
-            self._state_changes_to(False)
-            self._pump()
+        drawn = self._draws_on_going_back(restored=False)
         self.assertFalse(self.window.was_fullscreen)
         self.assertEqual({name: True for name in self._TOGGLES},
                          self._toggles_usable())
         # The size it went back to is the size it had, so there is no
         # resize to redraw it.
-        drawn.assert_called_once_with()
+        self.assertEqual([unittest.mock.call()], drawn)
+
+    def _draws_on_going_back(self, restored):
+        """Leave fullscreen, with restore_window_geometry() answering
+        <restored>, and return the redraws asked for once the windowing
+        system had finished putting the window back.
+
+        Only those: in the same turns of the main loop a page the
+        extractor hands over late is redrawn, and so is a page area the
+        returning bars made smaller, and how many of those land there
+        depends on how fast the machine is (the Windows runner met both).
+        """
+        drawn = []
+        ran = []
+        idle = self.window._restore_geometry_idle
+
+        def counted():
+            before = len(self.window.draw_image.call_args_list)
+            try:
+                return idle()
+            finally:
+                ran.append(True)
+                drawn.extend(self.window.draw_image.call_args_list[before:])
+
+        with unittest.mock.patch.object(
+                self.window, 'restore_window_geometry',
+                return_value=restored), \
+                unittest.mock.patch.object(self.window, 'draw_image'), \
+                unittest.mock.patch.object(
+                    self.window, '_restore_geometry_idle', counted):
+            self._state_changes_to(False)
+            self._pump()
+        self.assertEqual([True], ran, 'the size was never given back')
+        return drawn
 
     def _bars_shown(self, fullscreen):
         """Which of the menu bar, the status bar and the tool bar the
@@ -633,14 +660,7 @@ class MainWindowTest(MComixTest):
 
     def test_going_back_to_a_new_size_leaves_the_redraw_to_the_resize(self):
         self._state_changes_to(True)
-        with unittest.mock.patch.object(
-                self.window, 'restore_window_geometry',
-                return_value=True), \
-                unittest.mock.patch.object(self.window,
-                                           'draw_image') as drawn:
-            self._state_changes_to(False)
-            self._pump()
-        drawn.assert_not_called()
+        self.assertEqual([], self._draws_on_going_back(restored=True))
 
     def test_going_back_waits_for_the_windowing_system_to_finish(self):
         """On Windows the notification that fullscreen has ended comes
