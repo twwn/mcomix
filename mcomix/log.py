@@ -35,8 +35,11 @@ class _Formatter(logging.Formatter):
 # Set up default logger.
 __logger = logging.getLogger('mcomix')
 __logger.setLevel(WARNING)
+# Milliseconds: the steps of a start are logged as they begin, and
+# most of them take less than a second.
 __formatter = _Formatter(
-    '%(asctime)s [%(threadName)s] %(levelname)s: %(message)s', '%H:%M:%S')
+    '%(asctime)s.%(msecs)03d [%(threadName)s] %(levelname)s: %(message)s',
+    '%H:%M:%S')
 # A build without a console - MComix.exe on Windows - has no standard
 # output at all, and a handler writing to none fails on every line.
 if not __logger.handlers and sys.stdout is not None:

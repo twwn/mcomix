@@ -73,6 +73,15 @@ class LogFileTest(unittest.TestCase):
         self.assertNotIn('the time before', written)
         self.assertRegex(written, r'DEBUG: Page 1 is available')
 
+    def test_a_line_carries_the_time_to_the_millisecond(self):
+        """The steps of a start are logged as they begin, and most of
+        them take less than a second: to the second, a log of a slow
+        start could not say which step took the time."""
+        mcomix.log.log_to_file(self.path)
+        mcomix.log.debug('Started')
+        self.assertRegex(self._written(),
+                         r'^\d\d:\d\d:\d\d\.\d{3} \[MainThread\] DEBUG: Started$')
+
     def test_what_nothing_caught_is_logged_with_its_traceback(self):
         self.addCleanup(setattr, sys, 'excepthook', sys.excepthook)
         self.addCleanup(setattr, threading, 'excepthook', threading.excepthook)

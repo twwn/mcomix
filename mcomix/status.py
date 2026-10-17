@@ -3,6 +3,7 @@
 from gi.repository import Gdk, Gio, GLib, Gtk, Pango
 
 from mcomix import i18n
+from mcomix import log
 from mcomix import theme
 from mcomix import widgets
 from mcomix import constants
@@ -193,8 +194,12 @@ class Statusbar(Gtk.Box, widgets.Releasable):
         area above it moved and rescaled the page at every file whose
         name was in another script (upstream bug 148).
         """
+        # Logged for a slow start: the fallback fonts are loaded here.
+        log.debug("Measuring the status bar's tallest line")
         layout = bar.create_pango_layout(self._TALLEST_LINE)
-        bar.set_size_request(-1, layout.get_pixel_size()[1])
+        height = layout.get_pixel_size()[1]
+        log.debug('The status bar is %d pixels high', height)
+        bar.set_size_request(-1, height)
 
     def release(self) -> None:
         """Let go of the field actions once the window has closed.

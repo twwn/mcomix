@@ -365,7 +365,11 @@ class MainWindow(Gtk.Window):
 
         self.uimanager.set_sensitivities()
         self.restore_window_geometry()
+        log.debug('Showing the main window')
         self.present()
+        renderer = self.get_renderer()
+        if renderer is not None:
+            log.debug('Drawing with %s', type(renderer).__name__)
 
         if prefs['default fullscreen'] or fullscreen:
             toggleaction = self.actiongroup.get_action('fullscreen')

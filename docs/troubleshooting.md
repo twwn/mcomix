@@ -36,7 +36,7 @@ If that helps, set `GSK_RENDERER=cairo` in your environment for good, and mentio
 ## MComix takes long to start
 
 Start it with a log, as above, at `-W debug`.
-Each step of the start is logged with the time: the session bus (where "Open files in the window that is already open" is on), GTK, the main window, "Started".
+Each step of the start is logged as it begins, to the millisecond: the session bus (where "Open files in the window that is already open" is on), GTK, building the main window, showing it, the fonts of the status bar, "Started".
 On Windows the first line says how long the process ran before Python started: that time goes to Windows loading MComix' files, an antivirus scanning them for instance.
 Attach the log to a bug report.
 
