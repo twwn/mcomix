@@ -6,7 +6,7 @@ import os
 from mcomix import tools
 
 APPNAME = 'MComix'
-VERSION = '26.09'
+VERSION = '26.10'
 #: The manual: docs/ in the tree, as GitHub Pages publishes it.
 MANUAL_URL = 'https://twwn.github.io/mcomix/docs/'
 

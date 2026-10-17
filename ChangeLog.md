@@ -1,3 +1,152 @@
+# MComix 26.10
+## Release date: 2026-10-17
+
+### New
+
+- Continuous mode, "View → Continuous mode" or V: the book as one strip, its pages one below the other with no gap, for webtoons and other long strips ([feature request 126](https://sourceforge.net/p/mcomix/feature-requests/126/), [feature request 123](https://sourceforge.net/p/mcomix/feature-requests/123/)).
+- In continuous mode, zooming changes the strip's width, and a page turn scrolls by the window's height.
+- A book of long strips opens in continuous mode by itself. "Open long strips in continuous mode", on the Display tab, turns that off.
+- Reading lists: "Sort", "By hand" puts a collection's books in order by dragging covers, or with ALT+Left and ALT+Right ([feature request 19](https://sourceforge.net/p/mcomix/feature-requests/19/)).
+- A book opened from the library goes on to the next book the library shows, not the next in its folder ([bug 42](https://sourceforge.net/p/mcomix/bugs/42/)). It still does after a restart that reopens it.
+- "Open a folder with the folders in it as one book", under Navigation: `Series/Volume/Chapter` opened at `Series` is one book ([feature request 97](https://sourceforge.net/p/mcomix/feature-requests/97/), [feature request 104](https://sourceforge.net/p/mcomix/feature-requests/104/)).
+- "Open files in the window that is already open", under Behaviour: a book opened from a file manager goes to the running MComix. `--new-window` opens a window of its own ([feature request 130](https://sourceforge.net/p/mcomix/feature-requests/130/)).
+- "Relocate...", in the library's collection menu, follows a folder of books moved or renamed outside MComix, with their collections, covers, bookmarks and last pages ([feature request 122](https://sourceforge.net/p/mcomix/feature-requests/122/), [feature request 56](https://sourceforge.net/p/mcomix/feature-requests/56/), [feature request 102](https://sourceforge.net/p/mcomix/feature-requests/102/)).
+- "Cover in the library", in the page's right-click menu, makes that page the book's cover in the library ([feature request 65](https://sourceforge.net/p/mcomix/feature-requests/65/)).
+- "Skip this page", in the right-click menu, passes a page over when turning, without changing the book ([merge request 10](https://sourceforge.net/p/mcomix/git/merge-requests/10/)).
+- "Show this page alone", in the right-click menu in double page mode, keeps a page on its own, so the pages after it pair up anew ([merge request 10](https://sourceforge.net/p/mcomix/git/merge-requests/10/)).
+- A page turned by hand is shown turned again when it comes round ([feature request 32](https://sourceforge.net/p/mcomix/feature-requests/32/)).
+- Deleting a book or page moves it to the trash where there is one ([feature request 107](https://sourceforge.net/p/mcomix/feature-requests/107/)).
+- Shift+Delete, and "Delete permanently" in the File menu, delete the open file for good after asking.
+- Where the trash would refuse a file, such as one in a bind-mounted folder, Delete asks to delete it permanently instead.
+- The right-click menu leads with what can be done to its page, and leaves out what cannot ([feature request 105](https://sourceforge.net/p/mcomix/feature-requests/105/), [feature request 98](https://sourceforge.net/p/mcomix/feature-requests/98/)).
+- A right click on a thumbnail opens the page menu for that page.
+- "Leave fullscreen" at the top of the page's menu while fullscreen ([feature request 135](https://sourceforge.net/p/mcomix/feature-requests/135/), [feature request 86](https://sourceforge.net/p/mcomix/feature-requests/86/)).
+- Moving the mouse in fullscreen shows a button in the upper right corner that leaves it ([feature request 135](https://sourceforge.net/p/mcomix/feature-requests/135/)).
+- Where "Flip pages with a left click" is off, a double click enters or leaves fullscreen ([feature request 86](https://sourceforge.net/p/mcomix/feature-requests/86/)).
+- "Where a click lands", under Navigation: halves, or thirds whose middle enters or leaves fullscreen, for touch screens ([feature request 103](https://sourceforge.net/p/mcomix/feature-requests/103/), [feature request 91](https://sourceforge.net/p/mcomix/feature-requests/91/)).
+- "Flip pages with a left click", under Navigation, can stop a plain click from turning the page ([patch 53](https://sourceforge.net/p/mcomix/patches/53/)).
+- The wheel can be ignored for a moment after it turns a page, so a fast wheel does not turn several ([bug 36](https://sourceforge.net/p/mcomix/bugs/36/)).
+- "Count the steps also when the page fits", under Navigation ([bug 145](https://sourceforge.net/p/mcomix/bugs/145/)).
+- CTRL with Left or Right turns a single page in double page mode, the way the arrow points ([feature request 134](https://sourceforge.net/p/mcomix/feature-requests/134/)).
+- SHIFT+ALT+Left and SHIFT+ALT+Right turn ten pages ([bug 57](https://sourceforge.net/p/mcomix/bugs/57/)).
+- View → "Title page alone" switches whether the cover stands alone in double page mode ([feature request 132](https://sourceforge.net/p/mcomix/feature-requests/132/)).
+- Smart scrolling reads two pages side by side one after the other where they scroll down only. A wide page alone in double page mode is read the same way ([feature request 124](https://sourceforge.net/p/mcomix/feature-requests/124/)).
+- Zooming or resizing keeps the middle of the view on the same part of the page ([feature request 74](https://sourceforge.net/p/mcomix/feature-requests/74/)).
+- "Random page" and "Random archive in the folder", keyless until given one in the Shortcuts tab ([feature request 96](https://sourceforge.net/p/mcomix/feature-requests/96/), [feature request 121](https://sourceforge.net/p/mcomix/feature-requests/121/)).
+- Next book and Previous book (Ctrl+Shift+N, Ctrl+Shift+P) cross into the neighbouring folder while "Go on into the next folder" is on.
+- The walk to the next folder passes over folders with no book, and stays on the shelf the book was opened from.
+- An animated page can be paused with P, and played faster or slower with ] and [ ([feature request 11](https://sourceforge.net/p/mcomix/feature-requests/11/)).
+- A bookmark can carry a note: "Edit bookmarks" has a "Note" field, and the menu shows it ([feature request 138](https://sourceforge.net/p/mcomix/feature-requests/138/)).
+- A bookmarked page has an orange ribbon on its thumbnail ([patch 24](https://sourceforge.net/p/mcomix/patches/24/)).
+- "Remove bookmark" in the page menu, and "Remove this book's bookmarks..." in the Bookmarks menu ([patch 24](https://sourceforge.net/p/mcomix/patches/24/), [feature request 17](https://sourceforge.net/p/mcomix/feature-requests/17/)).
+- The Bookmarks menu shows enough of the folder to tell same-named books apart ([feature request 90](https://sourceforge.net/p/mcomix/feature-requests/90/)).
+- Library: "Mark as read" and "Mark as unread" in the book menu ([feature request 59](https://sourceforge.net/p/mcomix/feature-requests/59/)).
+- Library: with no book selected, it counts the books on show: started, finished, pages read, last read ([feature request 46](https://sourceforge.net/p/mcomix/feature-requests/46/)).
+- Library: CTRL while dragging books onto a collection copies them ([feature request 67](https://sourceforge.net/p/mcomix/feature-requests/67/)).
+- Library: collections are sorted naturally, "Vol 2" before "Vol 10" ([feature request 84](https://sourceforge.net/p/mcomix/feature-requests/84/)).
+- Preferences: "Open the library on startup" ([feature request 100](https://sourceforge.net/p/mcomix/feature-requests/100/)).
+- Preferences: a Navigation tab.
+- Preferences: each tab holds one subject. Fullscreen is under Appearance, startup under Behaviour, page turning and the slideshow under Navigation, images and the lens under Display.
+- Preferences: the folder books are unpacked into, such as a RAM disk ([feature request 114](https://sourceforge.net/p/mcomix/feature-requests/114/)).
+- Preferences: a screen colour profile and a rendering intent ([feature request 128](https://sourceforge.net/p/mcomix/feature-requests/128/)).
+- Pages with a colour profile, CMYK scans included, are shown in sRGB ([feature request 137](https://sourceforge.net/p/mcomix/feature-requests/137/), [feature request 128](https://sourceforge.net/p/mcomix/feature-requests/128/)).
+- Enhance dialog: Gamma, a histogram of the page as enhanced, and "Logarithmic scale" ([feature request 70](https://sourceforge.net/p/mcomix/feature-requests/70/)).
+- Enhance dialog: "Reset" takes every enhancement off without saving ([bug 70](https://sourceforge.net/p/mcomix/bugs/70/)).
+- "Page number in fullscreen" keeps the page number in a corner, always or for a few seconds after a turn ([feature request 81](https://sourceforge.net/p/mcomix/feature-requests/81/)).
+- The status bar's right-click menu copies the file name or the full path ([feature request 14](https://sourceforge.net/p/mcomix/feature-requests/14/)).
+- "Show date modified" in the status bar's menu: each picture's date, as the archive records it ([feature request 94](https://sourceforge.net/p/mcomix/feature-requests/94/)).
+- "File → Open containing folder" shows the open file in the file manager ([feature request 14](https://sourceforge.net/p/mcomix/feature-requests/14/)).
+- "Clear List" at the bottom of File → Recent.
+- An encrypted book's password is kept until MComix closes ([feature request 110](https://sourceforge.net/p/mcomix/feature-requests/110/)).
+- The reading position is stored two seconds after the last page turn, so a crash no longer loses it ([feature request 47](https://sourceforge.net/p/mcomix/feature-requests/47/)).
+- The unpacked pages of the two books closed last are kept, so going back does not unpack again ([feature request 129](https://sourceforge.net/p/mcomix/feature-requests/129/)).
+- DjVu books open through DjVuLibre where it is installed ([feature request 50](https://sourceforge.net/p/mcomix/feature-requests/50/)).
+- AVIF pages with an older Pillow, through pillow-avif-plugin ([patch 60](https://sourceforge.net/p/mcomix/patches/60/)).
+- A picture saved without an extension is a page of its folder ([patch 29](https://sourceforge.net/p/mcomix/patches/29/)).
+- Open with has %n, the archive's name without its extension ([bug 108](https://sourceforge.net/p/mcomix/bugs/108/)).
+- An archive no installed program opens says which one it needs ([forum topic d6af396b68](https://sourceforge.net/p/mcomix/discussion/1199430/thread/d6af396b68/)).
+- The extraction and thumbnail thread counts default to one per processor; the ceiling of 16 is gone.
+- A Flatpak, io.github.twwn.mcomix, with every format, attached to the release; not on Flathub yet ([feature request 119](https://sourceforge.net/p/mcomix/feature-requests/119/)).
+- The manual is published on GitHub Pages.
+- Help menu: the manual (F1), the keyboard shortcuts (CTRL+?) and About.
+- An Image menu in place of Tools: rotations, flips, auto-rotation, keep transformation, invert colours and enhance. The right-click menu has it too.
+- Two fingers spread or pinched on a touchpad or touch screen zoom.
+- Pages, thumbnails, library covers, previews and the lens stay sharp on a screen scaled above 100 per cent.
+- Library: "Open containing folder" in the books' menu.
+- A tool bar button for continuous mode.
+
+### Changes
+
+- Shorter preference labels, such as "Arrow key step" and "Reopen the last book read".
+- "Remember recently opened files" is a check box.
+- Menus: "Save page as...", "Next book", "Next folder", "Rotate 90° clockwise". Comments moved to File.
+- The Shortcuts tab groups the keys as the menus do.
+- Preferences: "Sort pages inside an archive by" names what the old "Sort archives by" sorted.
+- Archive editor: Import comes first and Apply last.
+- The library's watch list says folder, not directory.
+
+### Faster
+
+- Lossy WebP pages decode in half the time ([bug 160](https://sourceforge.net/p/mcomix/bugs/160/)).
+- A continuous strip scales only the page that comes into view, not every page at each boundary.
+- PDF reader processes are kept to a sixteenth of the memory, about 130 MB each.
+
+### Windows
+
+- Closing a window no longer crashes MComix.
+- Leaving fullscreen from a maximized window no longer crashes MComix.
+- Renaming or replacing a page of a folder of images no longer fails while its thumbnail is read.
+- A page fitted to the height, or scrolled to its bottom, is no longer one title bar off.
+- An open book no longer keeps its archive locked once it is unpacked.
+- Each page of an archive is dated by its own date, not the archive's.
+- A PNG turned by its Exif data is shown turned.
+- The package can hand books to an MComix already running.
+
+### Fixes
+
+- Zips that also store names in a Unicode Path field open again.
+- An archive that cannot be read says so in the status bar, and is named in the log.
+- A preference changed after the settings folder was removed is still saved.
+- A keybindings file with a typo is kept as keybindings.conf.broken, not overwritten ([bug 155](https://sourceforge.net/p/mcomix/bugs/155/)).
+- A library database MComix cannot read is kept as library.db.broken, and MComix starts ([forum topic 768ea634](https://sourceforge.net/p/mcomix/discussion/1199430/thread/768ea634/)).
+- Walking from loose pictures into a folder with only archives opens its first archive ([bug 83](https://sourceforge.net/p/mcomix/bugs/83/)).
+- A folder that holds archives and no images opens its first archive.
+- A folder chosen in the Open dialog opens as that folder.
+- Going back into the previous book shows the bottom of its last page ([bug 70](https://sourceforge.net/p/mcomix/bugs/70/)).
+- Going back into a book in double page mode shows its last page when one of the last two is wide ([bug 95](https://sourceforge.net/p/mcomix/bugs/95/)).
+- The lens no longer stays up after another button is pressed ([bug 70](https://sourceforge.net/p/mcomix/bugs/70/)).
+- Refresh on a book whose file was deleted opens the next file in its folder ([bug 70](https://sourceforge.net/p/mcomix/bugs/70/)).
+- The file chooser previews a folder by its first picture ([bug 70](https://sourceforge.net/p/mcomix/bugs/70/)).
+- "Escape key closes program" is gone: bind Escape to Quit in the shortcuts. A setting that was on carries over ([bug 70](https://sourceforge.net/p/mcomix/bugs/70/)).
+- The shortcut editor takes the arrow keys and Tab ([support request 27](https://sourceforge.net/p/mcomix/support-requests/27/)).
+- The status bar keeps its height for file names in other scripts ([bug 148](https://sourceforge.net/p/mcomix/bugs/148/)).
+- The status bar's fields no longer move at every page turn, their text is centred, and the lines between them show in the dark scheme.
+- Two pages' values in the status bar are joined by " · ".
+- The application icons are square ([bug 159](https://sourceforge.net/p/mcomix/bugs/159/)).
+- The window has its icon without share/icons installed.
+- The thumbnail bar is no longer white below its pages in the light scheme.
+- A page picked out for deletion is outlined in red.
+- Delete works on GLib 2.80 to 2.83.
+- Pressing Next book while MComix asks whether to save no longer closes the book before the answer.
+- Turning down a permanent delete keeps the book open on its page.
+- When several books could not be deleted, the message counts them.
+- A book written back over its archive keeps its marks, turns, bookmarks and chosen cover.
+- A page taken out before a save no longer leaves its bookmark or cover to another page.
+- A book moved with "Move to" keeps the turns of its pages and its library cover.
+- A picture named "banner" is no longer taken for the cover ([feature request 65](https://sourceforge.net/p/mcomix/feature-requests/65/)).
+- The right-click menu of a window with no book no longer offers "Move to" and "Open with".
+- The thumbnail bar shows bookmarks that "Relocate..." moved to the open book.
+- A drag from a library cover outside the selection takes that book.
+- A collection dragged in the library is the one under the pointer.
+- Dragging a library book with a one-pixel cover no longer raises an error.
+- A scroll bar dragged right after a page was drawn no longer springs back.
+- A continuous strip with a page turned by Exif, or turned on its side in a wide window, no longer stops at its first page.
+- Zooming a continuous strip as it moves on keeps the place being read.
+- A folder read with its folders is reopened, and listed among the recent files, as the folder.
+- The preference tabs no longer spread their sections down the window.
+- Go to page opens large enough for its preview, with Cancel before Go.
+- Properties shows permissions as -rw-r--r--, not 0o644.
+
 # MComix 26.09
 ## Release date: 2026-09-26
 
