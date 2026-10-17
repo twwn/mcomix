@@ -46,6 +46,31 @@ class FileMoverTest(MComixTest):
         with open(taken, 'rb') as handle:
             self.assertEqual(handle.read(), b'something else')
 
+    def test_a_file_held_open_for_a_moment_is_moved_once(self):
+        """Windows refuses to rename or remove a file something is
+        reading, as the thumbnail bar reads a loose page.  shutil.move()
+        took a refused rename for a move across file systems: it copied
+        the book, failed to remove the original, and left it in both."""
+        held = PermissionError(13, 'The process cannot access the file '
+                               'because it is being used by another process')
+        held.winerror = 32
+        rename, unlink = os.rename, os.unlink
+        refusals = {'rename': [held], 'unlink': [held]}
+
+        def refused_once(name, real):
+            def call(*args, **kwargs):
+                if refusals[name]:
+                    raise refusals[name].pop()
+                return real(*args, **kwargs)
+            return call
+
+        with unittest.mock.patch('os.rename', refused_once('rename', rename)), \
+                unittest.mock.patch('os.unlink', refused_once('unlink', unlink)):
+            moved = file_mover.move_file(self.book, self.target)
+
+        self.assertTrue(os.path.isfile(moved))
+        self.assertEqual(os.listdir(self.source), [])
+
     def test_a_file_and_the_directory_beside_it_share_a_file_system(self):
         self.assertTrue(file_mover.same_file_system(self.book, self.target))
 

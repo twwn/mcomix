@@ -5,6 +5,8 @@ import errno
 import os
 import shutil
 
+from mcomix import portability
+
 
 def same_file_system(path: str, directory: str) -> bool:
     """Whether <path> and <directory> live on the same file system.
@@ -47,7 +49,14 @@ def move_file(path: str, directory: str) -> str:
     if os.path.lexists(target):
         raise FileExistsError(errno.EEXIST, os.strerror(errno.EEXIST), target)
     check_room_for(path, directory)
-    shutil.move(path, target)
+    if same_file_system(path, directory):
+        # A rename, which Windows refuses for a moment while something
+        # reads the file.  shutil.move() would answer that by copying
+        # the file and then failing to remove the original, leaving the
+        # book in both places.
+        portability.rename_once_closed(os.rename, path, target)
+    else:
+        shutil.move(path, target)
     return target
 
 # vim: expandtab:sw=4:ts=4
