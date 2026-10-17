@@ -3,6 +3,8 @@
 import ctypes
 import locale
 import sys
+import time
+from collections.abc import Callable
 
 from mcomix import constants
 
@@ -57,6 +59,35 @@ def seconds_since_process_start() -> float | None:
         kernel32.GetSystemTimeAsFileTime(ctypes.byref(now))
         return (now.value - created.value) / 10_000_000
     return None
+
+
+# What Windows answers a rename of a file that is open, in this process
+# or another: ERROR_SHARING_VIOLATION, and ERROR_ACCESS_DENIED from
+# os.replace() over one.
+_WINDOWS_ERRORS_OF_AN_OPEN_FILE = frozenset((5, 32))
+# The seconds waited before each attempt after the first: under one in all.
+_WAITS_FOR_AN_OPEN_FILE = (0.01, 0.02, 0.05, 0.1, 0.2, 0.4)
+
+
+def rename_once_closed(rename: Callable[[str, str], None], source: str,
+                       target: str) -> None:
+    """Rename <source> to <target> with <rename>, os.rename or os.replace.
+
+    Windows refuses to rename a file that something has open, where
+    Linux lets it go.  The thumbnail bar reading a page again, a virus
+    scanner or Explorer's preview holds a file for a moment, so the
+    rename is tried again for up to a second, and then fails as its
+    last attempt does.
+    """
+    for wait in _WAITS_FOR_AN_OPEN_FILE:
+        try:
+            rename(source, target)
+            return
+        except PermissionError as error:
+            if getattr(error, "winerror", None) not in _WINDOWS_ERRORS_OF_AN_OPEN_FILE:
+                raise
+        time.sleep(wait)
+    rename(source, target)
 
 
 def is_system_ui_dark_themed() -> constants.SystemThemeLightness:

@@ -4473,6 +4473,42 @@ class MainWindowTest(MComixTest):
                          [os.path.join(directory, '1.png'),
                           os.path.join(directory, '2.png')])
 
+    def _held_open_once(self, name):
+        """A stand-in for os.<name> that Windows' answer to a file
+        something has open refuses once, before it renames."""
+        real = getattr(os, name)
+        held = PermissionError(13, 'The process cannot access the file '
+                               'because it is being used by another process')
+        held.winerror = 32
+        answers = [held]
+
+        def rename(source, target):
+            if answers:
+                raise answers.pop()
+            real(source, target)
+        return unittest.mock.patch('os.' + name, side_effect=rename)
+
+    def test_a_page_held_open_for_a_moment_is_still_replaced(self):
+        """The thumbnail bar reads the pages again as the page whose
+        name is taken leaves the book, and Windows refuses to rename a
+        file that is being read: the Windows CI failed the test above
+        on it, logging "being used by another process"."""
+        directory = self._loose_book('replace-held')
+        with self._held_open_once('replace'):
+            self.assertTrue(
+                self.window.file_actions.replace_page_named(1, '1.png'))
+        self._pump()
+        self.assertEqual(sorted(os.listdir(directory)), ['1.png', '2.png'])
+
+    def test_a_page_held_open_for_a_moment_is_still_renamed(self):
+        directory = self._loose_book('rename-held')
+        with self._held_open_once('rename'):
+            self.assertIsNotNone(
+                self.window.file_actions.rename_page(1, 'Cover.png'))
+        self._pump()
+        self.assertEqual(sorted(os.listdir(directory)),
+                         ['1.png', '2.png', 'Cover.png'])
+
     # -- Swapping two pages -----------------------------------------------
 
     def test_marking_a_page_and_another_swaps_the_two(self):

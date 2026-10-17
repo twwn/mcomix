@@ -27,6 +27,7 @@ from mcomix import log
 from mcomix import message_dialog
 from mcomix import page_marks
 from mcomix import page_rotations
+from mcomix import portability
 from mcomix import rename_dialog
 from mcomix import tools
 from mcomix.dialog import Response
@@ -222,13 +223,13 @@ class FileActions:
         target = os.path.join(os.path.dirname(path), name)
         other_target = os.path.join(os.path.dirname(other), held)
         try:
-            os.rename(other, aside)
+            portability.rename_once_closed(os.rename, other, aside)
         except OSError as error:
             log.error('Could not rename %s: %r', other, error)
             return False
         try:
-            os.rename(path, target)
-            os.rename(aside, other_target)
+            portability.rename_once_closed(os.rename, path, target)
+            portability.rename_once_closed(os.rename, aside, other_target)
         except OSError as error:
             log.error('Could not swap the names of %s and %s: %s',
                       path, other, error)
@@ -240,7 +241,7 @@ class FileActions:
             # name, and has to leave it before that can go back.
             for source, back in ((target, path), (aside, other)):
                 if os.path.lexists(source) and not os.path.lexists(back):
-                    os.rename(source, back)
+                    portability.rename_once_closed(os.rename, source, back)
             return False
         self._paths_changed(listing, {path: target, other: other_target})
         self._show_pages(listing,
@@ -260,7 +261,7 @@ class FileActions:
         if not self.remove_pages({holder}):
             return False
         try:
-            os.replace(path, target)
+            portability.rename_once_closed(os.replace, path, target)
         except OSError as error:
             log.error('Could not rename %s: %r', path, error)
             # The page that was taken out to make room for the name is
@@ -312,7 +313,7 @@ class FileActions:
             dialog.run_async(lambda response: None)
             return None
         try:
-            os.rename(path, target)
+            portability.rename_once_closed(os.rename, path, target)
         except OSError as error:
             # Not translated, as image_handler's own failures are not:
             # what it says is a file system error to whoever reads the

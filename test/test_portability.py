@@ -122,6 +122,56 @@ class ProcessAgeTest(MComixTest):
         with unittest.mock.patch('sys.platform', 'linux'):
             self.assertIsNone(portability.seconds_since_process_start())
 
+class RenameOnceClosedTest(MComixTest):
+
+    """A rename Windows refuses because the file is open is tried again."""
+
+    def _refusal(self, winerror):
+        error = PermissionError(13, 'Permission denied')
+        if winerror is not None:
+            error.winerror = winerror
+        return error
+
+    def _rename(self, *answers):
+        rename = unittest.mock.Mock(side_effect=answers)
+        with unittest.mock.patch('time.sleep') as sleep:
+            try:
+                portability.rename_once_closed(rename, 'a', 'b')
+            finally:
+                self.calls = rename.call_count
+                self.waits = [call.args[0] for call in sleep.call_args_list]
+
+    def test_a_sharing_violation_is_waited_out(self):
+        self._rename(self._refusal(32), self._refusal(32), None)
+        self.assertEqual(3, self.calls)
+        self.assertEqual([0.01, 0.02], self.waits)
+
+    def test_access_denied_over_an_open_file_is_waited_out(self):
+        self._rename(self._refusal(5), None)
+        self.assertEqual(2, self.calls)
+
+    def test_a_file_that_stays_open_fails_after_a_second_at_most(self):
+        with self.assertRaises(PermissionError):
+            self._rename(*[self._refusal(32)] * 7)
+        self.assertEqual(7, self.calls)
+        self.assertLess(sum(self.waits), 1)
+
+    def test_a_refusal_without_a_windows_error_is_not_tried_again(self):
+        with self.assertRaises(PermissionError):
+            self._rename(self._refusal(None), None)
+        self.assertEqual(1, self.calls)
+
+    def test_other_windows_errors_are_not_tried_again(self):
+        with self.assertRaises(PermissionError):
+            self._rename(self._refusal(1314), None)
+        self.assertEqual(1, self.calls)
+
+    def test_other_errors_are_not_tried_again(self):
+        with self.assertRaises(FileNotFoundError):
+            self._rename(FileNotFoundError(2, 'No such file'), None)
+        self.assertEqual(1, self.calls)
+
+
 @unittest.skipIf(sys.platform == 'win32',
                  "Windows' colour scheme comes from the registry")
 class ColourSchemeTest(MComixTest):
