@@ -42,6 +42,9 @@ The second says how long MComix' own modules took to load, GLib's libraries amon
 Each step also says how much processor time MComix had used.
 Far less processor time than time taken means MComix waited: for the disk, or for an antivirus, which scans in a process of its own.
 About as much means the processor was busy with MComix: a slow or emulated one, as on Windows on Arm.
+On Windows 11, Smart App Control checks every file of a program that is not signed, and MComix' package is not.
+Windows may then say it scans MComix before it opens.
+A log of such a start shows little processor time against a long wait.
 Attach the log to a bug report.
 
 ## Wrong version
