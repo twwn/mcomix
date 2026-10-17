@@ -5085,12 +5085,13 @@ class StartLogTest(MComixTest):
             pump()
         messages = [record.getMessage() for record in logged.records]
         steps = [message for message in messages
-                 if message == 'Showing the main window'
+                 if message.startswith('Showing the main window')
                  or message.startswith('Drawing with ')
                  or message.startswith('Measuring the status bar')
                  or message.startswith('The status bar is ')]
         self.assertEqual(4, len(steps), messages)
-        self.assertEqual('Showing the main window', steps[0])
+        self.assertRegex(
+            steps[0], r'^Showing the main window \(\d+\.\d s of CPU so far\)$')
         self.assertRegex(steps[1], r'^Drawing with \w*Renderer$')
         self.assertRegex(steps[3], r'^The status bar is \d+ pixels high$')
 

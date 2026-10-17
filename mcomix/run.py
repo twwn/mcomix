@@ -279,8 +279,10 @@ def run() -> None:
     since_start = portability.seconds_since_process_start()
     if since_start is not None:
         loading = time.monotonic() - mcomix.started
-        log.debug('Python started %.1f s after the process', since_start - loading)
-        log.debug("MComix' modules and settings took %.1f s to load", loading)
+        log.debug('Python started %.1f s after the process (%.1f s of CPU)',
+                  since_start - loading, mcomix.started_on_cpu)
+        log.debug("MComix' modules and settings took %.1f s to load (%.1f s of CPU)",
+                  loading, time.process_time() - mcomix.started_on_cpu)
 
     # Reconfigure stdout to replace characters that cannot be printed
     if hasattr(sys.stdout, 'reconfigure'):
@@ -300,7 +302,7 @@ def run() -> None:
             log.debug('Handed the files to the running MComix')
             return
 
-    log.debug('Loading GTK')
+    log.debug('Loading GTK (%.1f s of CPU so far)', time.process_time())
     setup_dependencies()
 
     from gi.repository import GLib
@@ -321,7 +323,7 @@ def run() -> None:
 
     GLib.set_prgname(program_name())
 
-    log.debug('Building the main window')
+    log.debug('Building the main window (%.1f s of CPU so far)', time.process_time())
     from mcomix import main
     window = main.MainWindow(fullscreen=opts.fullscreen, is_slideshow=opts.slideshow,
                              show_library=shows_library(opts),
@@ -350,7 +352,7 @@ def run() -> None:
         signal.signal(sig, lambda signum, stack: GLib.idle_add(window.terminate_program))
 
     def started() -> bool:
-        log.debug('Started')
+        log.debug('Started (%.1f s of CPU so far)', time.process_time())
         return GLib.SOURCE_REMOVE
 
     GLib.idle_add(started)

@@ -339,7 +339,7 @@ class StartTest(MComixTest):
             with self.assertRaises(Stop):
                 run.run()
         self.assertEqual(['Looking for a running MComix on the session bus',
-                          'Loading GTK'],
+                          'Loading GTK (%.1f s of CPU so far)'],
                          [call.args[0] for call in debug.call_args_list])
 
     def test_the_wait_before_python_is_told_from_loading_the_modules(self):
@@ -363,6 +363,9 @@ class StartTest(MComixTest):
                 unittest.mock.patch.object(run.mcomix, 'started', 100.0), \
                 unittest.mock.patch.object(run.time, 'monotonic',
                                            return_value=108.0), \
+                unittest.mock.patch.object(run.mcomix, 'started_on_cpu', 0.5), \
+                unittest.mock.patch.object(run.time, 'process_time',
+                                           return_value=2.0), \
                 unittest.mock.patch.object(run, 'single_instance_for',
                                            return_value=None), \
                 unittest.mock.patch.object(run, 'setup_dependencies',
@@ -370,6 +373,8 @@ class StartTest(MComixTest):
             with self.assertRaises(Stop):
                 run.run()
         self.assertEqual(
-            [('Python started %.1f s after the process', 22.0),
-             ("MComix' modules and settings took %.1f s to load", 8.0)],
+            [('Python started %.1f s after the process (%.1f s of CPU)',
+              22.0, 0.5),
+             ("MComix' modules and settings took %.1f s to load (%.1f s of CPU)",
+              8.0, 1.5)],
             [call.args for call in debug.call_args_list[:2]])

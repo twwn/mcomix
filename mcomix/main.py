@@ -365,7 +365,7 @@ class MainWindow(Gtk.Window):
 
         self.uimanager.set_sensitivities()
         self.restore_window_geometry()
-        log.debug('Showing the main window')
+        log.debug('Showing the main window (%.1f s of CPU so far)', time.process_time())
         self.present()
         renderer = self.get_renderer()
         if renderer is not None:

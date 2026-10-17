@@ -39,6 +39,9 @@ Start it with a log, as above, at `-W debug`.
 Each step of the start is logged as it begins, to the millisecond: the session bus (where "Open files in the window that is already open" is on), GTK, building the main window, showing it, the fonts of the status bar, "Started".
 On Windows the first line says how long the process ran before Python started: that time goes to Windows loading MComix' files, an antivirus scanning them for instance.
 The second says how long MComix' own modules took to load, GLib's libraries among them.
+Each step also says how much processor time MComix had used.
+Far less processor time than time taken means MComix waited: for the disk, or for an antivirus, which scans in a process of its own.
+About as much means the processor was busy with MComix: a slow or emulated one, as on Windows on Arm.
 Attach the log to a bug report.
 
 ## Wrong version
