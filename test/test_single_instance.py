@@ -341,3 +341,35 @@ class StartTest(MComixTest):
         self.assertEqual(['Looking for a running MComix on the session bus',
                           'Loading GTK'],
                          [call.args[0] for call in debug.call_args_list])
+
+    def test_the_wait_before_python_is_told_from_loading_the_modules(self):
+        """The first line of a Windows log said Python started 22.8 s
+        after the process, but it was written once MComix' modules had
+        loaded, GLib's libraries with them: the figure held both."""
+        class Stop(Exception):
+            pass
+
+        with unittest.mock.patch.object(sys, 'argv', ['mcomix']), \
+                unittest.mock.patch.object(
+                    run.preferences, 'read_preferences_file'), \
+                unittest.mock.patch.object(i18n, 'install_gettext'), \
+                unittest.mock.patch.object(sys, 'stdout'), \
+                unittest.mock.patch.object(run.log, 'setLevel'), \
+                unittest.mock.patch.object(run.log, 'log_uncaught_exceptions'), \
+                unittest.mock.patch.object(run.log, 'debug') as debug, \
+                unittest.mock.patch.object(
+                    run.portability, 'seconds_since_process_start',
+                    return_value=30.0), \
+                unittest.mock.patch.object(run.mcomix, 'started', 100.0), \
+                unittest.mock.patch.object(run.time, 'monotonic',
+                                           return_value=108.0), \
+                unittest.mock.patch.object(run, 'single_instance_for',
+                                           return_value=None), \
+                unittest.mock.patch.object(run, 'setup_dependencies',
+                                           side_effect=Stop):
+            with self.assertRaises(Stop):
+                run.run()
+        self.assertEqual(
+            [('Python started %.1f s after the process', 22.0),
+             ("MComix' modules and settings took %.1f s to load", 8.0)],
+            [call.args for call in debug.call_args_list[:2]])

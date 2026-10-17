@@ -3,6 +3,7 @@ import argparse
 import os
 import signal
 import sys
+import time
 import types
 from typing import TYPE_CHECKING
 
@@ -14,6 +15,7 @@ if __name__ == '__main__':
 
 # These modules must not depend on GTK, Pillow,
 # or any other optional libraries.
+import mcomix
 from mcomix import (
     constants,
     log,
@@ -276,7 +278,9 @@ def run() -> None:
     log.log_uncaught_exceptions()
     since_start = portability.seconds_since_process_start()
     if since_start is not None:
-        log.debug('Python started %.1f s after the process', since_start)
+        loading = time.monotonic() - mcomix.started
+        log.debug('Python started %.1f s after the process', since_start - loading)
+        log.debug("MComix' modules and settings took %.1f s to load", loading)
 
     # Reconfigure stdout to replace characters that cannot be printed
     if hasattr(sys.stdout, 'reconfigure'):
