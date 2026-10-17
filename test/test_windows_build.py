@@ -8,6 +8,7 @@ that reads it here.
 """
 
 import ast
+import hashlib
 import os
 import pathlib
 import shutil
@@ -153,6 +154,38 @@ class SpecDataTest(MComixTest):
         hidden = self._run_spec()['Analysis']['hiddenimports']
         self.assertIn('cairo', hidden)
         self.assertIn('gi._gi_cairo', hidden)
+
+    def test_openssl_is_left_out(self):
+        """PyGObject imports asyncio, asyncio imports ssl where it can,
+        and hashlib prefers _hashlib: packed, they loaded libssl and
+        libcrypto at every start, 6 MB for Windows to scan."""
+        excluded = self._run_spec()['Analysis']['excludes']
+        self.assertLessEqual({'ssl', '_ssl', '_hashlib'}, set(excluded))
+
+    def test_mcomix_loads_without_openssl(self):
+        """What the bundle has without them: every module the start
+        imports, and the md5 thumbnails are named by."""
+        home = os.path.join(self.tmp_dir, 'no-openssl')
+        env = dict(os.environ, HOME=home, PYTHONPATH=os.path.dirname(WIN32))
+        for name in ('CONFIG', 'DATA', 'CACHE', 'STATE'):
+            env['XDG_%s_HOME' % name] = os.path.join(home, name.lower())
+        script = (
+            "import sys\n"
+            "for name in ('ssl', '_ssl', '_hashlib'):\n"
+            "    sys.modules[name] = None\n"
+            "import gi\n"
+            "gi.require_version('Gtk', '4.0')\n"
+            "gi.require_version('Gdk', '4.0')\n"
+            "import asyncio\n"
+            "from mcomix import archive_tools, image_tools, main, run\n"
+            "from mcomix import thumbnail_tools\n"
+            "print(thumbnail_tools.md5(b'mcomix').hexdigest())\n")
+        done = subprocess.run([sys.executable, '-c', script], env=env,
+                              cwd=self.tmp_dir, capture_output=True,
+                              text=True, timeout=30)
+        self.assertEqual(0, done.returncode, done.stderr)
+        self.assertEqual(hashlib.md5(b'mcomix').hexdigest() + '\n',
+                         done.stdout)
 
     def test_mcomix_exe_is_the_one_executable(self):
         """Without a console, as the desktop starts it; -W debug -o FILE

@@ -70,7 +70,14 @@ a = Analysis(['../mcomixstarter.py'],
                  },
              },
              runtime_hooks=[],
-             excludes=[],
+             # Nothing in MComix speaks TLS or needs OpenSSL's hashes, but
+             # PyGObject imports asyncio, which imports ssl if it can, and
+             # hashlib prefers _hashlib: left in, every start loaded
+             # libcrypto and libssl, 6 MB that Windows' antivirus and
+             # Smart App Control check before the window can show.
+             # Without them asyncio leaves TLS out and hashlib uses its
+             # own md5, which is all the thumbnails need.
+             excludes=['ssl', '_ssl', '_hashlib'],
              # The code in an archive inside the executable: as .pyc files
              # beside it, it takes some 8 MB more unpacked, in 1,800 files.
              noarchive=False)
