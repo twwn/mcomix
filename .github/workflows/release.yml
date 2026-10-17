@@ -1,13 +1,16 @@
 name: Release
 
-# Builds the source archive and the Windows zip and installer.
+# Builds the source archive, the Windows zip and installer, and the
+# Flatpak bundle.
 #
 # From a tag - pushed, or chosen under "Use workflow from" when run by
 # hand - it is a release: the tag has to be VERSION in
 # mcomix/constants.py, the built MComix has to start, and then the
 # GitHub release is published with the files, their checksums
 # and build provenance, and the tag's ChangeLog.md section as its notes,
-# and publish.yml puts it out to Chocolatey and winget.  A draft release
+# and publish.yml puts it out to Chocolatey, winget and Flathub.  The
+# Flatpak is built alongside, and attached where it built; a release
+# goes out without it rather than not at all.  A draft release
 # of the tag is replaced; a published one is left alone, and has to be
 # deleted by hand (keeping the tag) before the tag can be released again.
 #
@@ -24,6 +27,7 @@ on:
   pull_request:
     paths:
       - "win32/**"
+      - "flatpak/**"
       - "tools/source_archive.py"
       - "mcomixstarter.py"
       - "pyproject.toml"
@@ -270,10 +274,34 @@ jobs:
           if-no-files-found: error
           retention-days: ${{ needs.setup.outputs.release == 'true' && 30 || 14 }}
 
+  flatpak:
+    name: Flatpak bundle
+    needs: setup
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:gnome-51
+      options: --privileged
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      # Uploads the bundle as the run's artifact itself.
+      - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          manifest-path: flatpak/io.github.twwn.mcomix.yml
+          bundle: mcomix-${{ needs.setup.outputs.version }}.flatpak
+          cache-key: flatpak-builder-${{ github.sha }}
+
   release:
     name: Publish the GitHub release
-    needs: [setup, source, windows]
-    if: needs.setup.outputs.release == 'true'
+    needs: [setup, source, windows, flatpak]
+    # Without the Flatpak, but never without the source archive and the
+    # Windows packages.
+    if: >-
+      always() && needs.setup.outputs.release == 'true'
+      && needs.source.result == 'success'
+      && needs.windows.result == 'success'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
@@ -290,6 +318,10 @@ jobs:
         run: |
           mkdir release
           mv artifacts/source/*.tar.xz artifacts/windows/* release/
+          find artifacts -name 'mcomix-*.flatpak' -exec mv -t release/ {} +
+          if ! ls release/*.flatpak > /dev/null 2>&1; then
+            echo "::warning::The Flatpak did not build; the release goes out without it."
+          fi
           (cd release && sha256sum -- * > SHA256SUMS)
           cat release/SHA256SUMS
       # Anyone can check with "gh attestation verify <file> --repo <this
@@ -317,13 +349,16 @@ jobs:
 
   # A release published with the workflow's own token starts no other
   # workflow, so the package managers are called from here, handed the
-  # two secrets they use and no others.
+  # three secrets they use and no others.
   publish:
     name: Put it out
     needs: [setup, release]
+    # A failed Flatpak, upstream of the release, would skip this too.
+    if: always() && needs.release.result == 'success'
     uses: ./.github/workflows/publish.yml
     with:
       tag: ${{ needs.setup.outputs.version }}
     secrets:
       CHOCOLATEY_API_KEY: ${{ secrets.CHOCOLATEY_API_KEY }}
       WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
+      FLATHUB_TOKEN: ${{ secrets.FLATHUB_TOKEN }}

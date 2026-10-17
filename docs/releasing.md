@@ -22,9 +22,10 @@ The tag starts the release workflow. The rest is automatic.
 `.github/workflows/release.yml`, on a version tag:
 
 1. Checks that the tag is `VERSION` in `mcomix/constants.py`.
-2. Builds the source archive on Linux, and the Windows zip and MSI installer in MSYS2.
+2. Builds the source archive on Linux, the Windows zip and MSI installer in MSYS2, and the [Flatpak](#flatpak) bundle.
 3. Starts the built `MComix.exe` on a PDF and on a missing book; any error fails the run.
-4. Publishes the GitHub release: the three files, a `SHA256SUMS` file, and the release's `ChangeLog.md` section as its notes.
+4. Publishes the GitHub release: the four files, a `SHA256SUMS` file, and the release's `ChangeLog.md` section as its notes.
+   A Flatpak that failed to build is left out with a warning; the release goes out without it.
 5. Attests each file's build provenance: `gh attestation verify <file> --repo twwn/mcomix` proves it was built there, from the tag.
 6. Runs `.github/workflows/publish.yml`: the [packages](#packages).
 
@@ -50,9 +51,8 @@ Secret | For
 
 ### Flatpak
 
-`.github/workflows/flatpak.yml` runs on a version tag.
-It builds the Flatpak, `io.github.twwn.mcomix`, from `flatpak/io.github.twwn.mcomix.yml`, and keeps `mcomix-<version>.flatpak` with the run.
-Then it opens a pull request on [flathub/io.github.twwn.mcomix](https://github.com/flathub/io.github.twwn.mcomix) that moves Flathub's manifest to the tag; without the secret it is skipped with a notice:
+The release workflow builds the Flatpak, `io.github.twwn.mcomix`, from `flatpak/io.github.twwn.mcomix.yml`, and attaches `mcomix-<version>.flatpak` to the release.
+`publish.yml` then opens a pull request on [flathub/io.github.twwn.mcomix](https://github.com/flathub/io.github.twwn.mcomix) that moves Flathub's manifest to the tag; without the secret it is skipped with a notice:
 
 Secret | For
 -------|----
@@ -116,10 +116,19 @@ python win32/build_msi.py
 
 It also writes the installer's SHA-256 to `win32/tools/checksum.sha256` and the version to `win32/tools/release.txt`, for the Chocolatey package.
 
+### Flatpak bundle
+
+With [flatpak-builder](https://docs.flatpak.org/en/latest/flatpak-builder.html) and Flathub set up for the user:
+
+```bash
+flatpak-builder --user --install-deps-from=flathub --force-clean --repo=repo build-dir flatpak/io.github.twwn.mcomix.yml
+flatpak build-bundle repo dist/mcomix-<version>.flatpak io.github.twwn.mcomix --runtime-repo=https://flathub.org/repo/flathub.flatpakrepo
+```
+
 ### GitHub release
 
 Draft a release from the tag, named `MComix <version>`, with the release's section of `ChangeLog.md` as its notes.
-Attach `mcomix-<version>.tar.xz`, `mcomix-win64-<version>.zip` and `mcomix-win64-<version>.msi`.
+Attach `mcomix-<version>.tar.xz`, `mcomix-win64-<version>.zip`, `mcomix-win64-<version>.msi` and `mcomix-<version>.flatpak`.
 The Chocolatey package downloads the MSI from exactly that release, under exactly that name.
 
 ### Chocolatey package
