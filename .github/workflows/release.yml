@@ -318,7 +318,7 @@ jobs:
         run: |
           mkdir release
           mv artifacts/source/*.tar.xz artifacts/windows/* release/
-          find artifacts -name 'mcomix-*.flatpak' -exec mv -t release/ {} +
+          find artifacts -type f -name 'mcomix-*.flatpak' -exec mv -t release/ {} +
           if ! ls release/*.flatpak > /dev/null 2>&1; then
             echo "::warning::The Flatpak did not build; the release goes out without it."
           fi
