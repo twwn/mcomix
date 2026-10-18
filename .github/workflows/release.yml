@@ -7,8 +7,9 @@ name: Release
 # hand - it is a release: the tag has to be VERSION in
 # mcomix/constants.py, the built MComix has to start, and then the
 # GitHub release is published with the files, their checksums
-# and build provenance, and the tag's ChangeLog.md section as its notes,
-# and publish.yml puts it out to Chocolatey and winget.  The
+# and build provenance, and the tag's ChangeLog.md section as its notes;
+# then publish.yml puts it out to Chocolatey and winget, and the pypi job
+# to PyPI.  The
 # Flatpak is built alongside, and attached where it built; a release
 # goes out without it rather than not at all.  A draft release
 # of the tag is replaced; a published one is left alone, and has to be
@@ -113,6 +114,15 @@ jobs:
         with:
           name: source
           path: dist/mcomix-*.tar.xz
+          if-no-files-found: error
+          retention-days: ${{ needs.setup.outputs.release == 'true' && 30 || 14 }}
+      # What PyPI takes: the sdist as .tar.gz, named as Python's
+      # packaging normalises the version, and a wheel.
+      - run: python -m build --outdir pypi
+      - uses: actions/upload-artifact@v7
+        with:
+          name: pypi
+          path: pypi/mcomix-*
           if-no-files-found: error
           retention-days: ${{ needs.setup.outputs.release == 'true' && 30 || 14 }}
 
@@ -361,3 +371,32 @@ jobs:
     secrets:
       CHOCOLATEY_API_KEY: ${{ secrets.CHOCOLATEY_API_KEY }}
       WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
+
+  # PyPI checks this job's OpenID Connect token against the trusted
+  # publisher set up for the project: this file, the environment pypi.
+  # No secret is stored anywhere, and PyPI takes nothing from a
+  # reusable workflow, so the job is here rather than in publish.yml.
+  # The repository variable PYPI_PUBLISH turns it on once PyPI is set
+  # up.  PyPI never takes a file twice: a release made again from a
+  # moved tag fails here, and PyPI keeps the files it has.
+  pypi:
+    name: Publish on PyPI
+    needs: [setup, release]
+    if: >-
+      always() && needs.release.result == 'success'
+      && vars.PYPI_PUBLISH == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment:
+      name: pypi
+      url: https://pypi.org/project/mcomix/
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: pypi
+          path: dist
+      # Pinned to a commit, as it publishes; Dependabot moves the pin
+      # along with the action's releases.
+      - uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2

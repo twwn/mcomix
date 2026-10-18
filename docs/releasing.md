@@ -28,6 +28,7 @@ The tag starts the release workflow. The rest is automatic.
    A Flatpak that failed to build is left out with a warning; the release goes out without it.
 5. Attests each file's build provenance: `gh attestation verify <file> --repo twwn/mcomix` proves it was built there, from the tag.
 6. Runs `.github/workflows/publish.yml`: the [packages](#packages).
+7. Uploads the sdist and wheel to [PyPI](#pypi), once it is set up.
 
 - To release a tag again, after moving it: push it again (`git push -f origin 26.10`), or run the workflow from the Actions tab, from the tag ("Use workflow from", Tags).
   A draft release is replaced. A published one is not: delete it by hand first, keeping the tag.
@@ -76,6 +77,20 @@ The job pushes `mcomix-gtk`. Packages are moderated, so the version appears some
 5. Submit the first version by hand: winget only updates a package it has. Use `komac new` or `wingetcreate new`, under the identifier in the repository variable `WINGET_IDENTIFIER` (`twwn.MComix` where it is not set). `MComix.MComix` is the original MComix 3.
 
 The job then opens a pull request with each new version. Renew the token before it expires.
+
+### PyPI
+
+The release workflow's `pypi` job uploads `mcomix-<version>.tar.gz` and the wheel with [trusted publishing](https://docs.pypi.org/trusted-publishers/): PyPI accepts the job's short-lived OpenID Connect token, and no secret is stored anywhere.
+It runs only where the repository variable `PYPI_PUBLISH` is `true`.
+
+1. Register at [pypi.org](https://pypi.org/account/register/), with two-factor authentication.
+2. Your account, Publishing, Add a new pending publisher, GitHub: project `mcomix`, owner `twwn`, repository `mcomix`, workflow `release.yml`, environment `pypi`.
+3. In the repository's Settings, Environments: create `pypi`, set up as [the others](#setting-up-the-environments), without a secret.
+4. Set the repository variable `PYPI_PUBLISH` to `true`.
+
+The first upload creates the project.
+- PyPI never takes a file twice. A release made again from a moved tag fails at this job; PyPI keeps the first files.
+- PyPI spells the version as Python's packaging does: 26.09 becomes 26.9.
 
 ### Flatpak
 
