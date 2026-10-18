@@ -39,27 +39,50 @@ The tag starts the release workflow. The rest is automatic.
 ## Packages
 
 `publish.yml` runs after the release workflow, for a release published by hand, and by hand, given the tag.
-Each package needs a repository secret, and is skipped with a notice without it:
+Each package has a [GitHub environment](https://docs.github.com/en/actions/how-tos/deploy/configure-and-manage-deployments/manage-environments) of its own, which holds its secret.
+Only that package's job can read it. Without the secret the job is skipped with a notice.
 
-Secret | For
--------|----
-`CHOCOLATEY_API_KEY` | An API key of the Chocolatey account `win32/mcomix.nuspec` names as its owner.
-`WINGET_TOKEN` | A classic token with the `public_repo` scope, of an account with a fork of [microsoft/winget-pkgs](https://github.com/microsoft/winget-pkgs).
+Environment | Secret | For
+------------|--------|----
+`chocolatey` | `CHOCOLATEY_API_KEY` | An API key of the Chocolatey account `win32/mcomix.nuspec` names as its owner.
+`winget` | `WINGET_TOKEN` | A classic token with the `public_repo` scope, of the account whose fork of [microsoft/winget-pkgs](https://github.com/microsoft/winget-pkgs) opens the pull request.
 
-- Chocolatey: pushes `mcomix-gtk`. Packages are moderated, so the version appears some time later. (`mcomix` there is the original MComix 3.)
-- winget: opens a pull request with the new version. winget only updates a package it has: submit the first version by hand, with `komac new` or `wingetcreate new`, under the identifier in the repository variable `WINGET_IDENTIFIER` (`twwn.MComix` where it is not set). `MComix.MComix` is the original MComix 3.
+### Setting up the environments
+
+Once, in the repository's Settings, Environments, for each of the two:
+
+1. New environment, named as in the table.
+2. Deployment branches and tags: Selected branches and tags. Add the tag rule `[0-9][0-9].[0-9][0-9]*`, and nothing else.
+   A run by hand then has to start from the tag ("Use workflow from", Tags).
+3. Optional: Required reviewers, yourself. Each run then waits for your approval before it can read the secret.
+4. Environment secrets: add the secret.
+
+Never add these secrets as repository secrets: every workflow could read them.
+
+### Chocolatey
+
+1. Sign in at [community.chocolatey.org](https://community.chocolatey.org/account/Register), as the owner the nuspec names.
+2. Account: copy the API key. It can push every package of the account: keep it in the environment only.
+3. A new key, after a leak or a change of hands: Account, Regenerate. Then replace the secret.
+
+The job pushes `mcomix-gtk`. Packages are moderated, so the version appears some time later. (`mcomix` there is the original MComix 3.)
+
+### winget
+
+1. Make a separate GitHub account for the bot, with two-factor authentication. A classic token reaches every public repository its account can write to: this account can write to its fork alone.
+2. Fork [microsoft/winget-pkgs](https://github.com/microsoft/winget-pkgs) to it.
+3. Under that account: Settings, Developer settings, Tokens (classic). Scope `public_repo` only, with an expiry date. Fine-grained tokens cannot open a pull request on another owner's repository.
+4. Store it as `WINGET_TOKEN` in the `winget` environment. Set the repository variable `WINGET_FORK_USER` to the bot's name.
+5. Submit the first version by hand: winget only updates a package it has. Use `komac new` or `wingetcreate new`, under the identifier in the repository variable `WINGET_IDENTIFIER` (`twwn.MComix` where it is not set). `MComix.MComix` is the original MComix 3.
+
+The job then opens a pull request with each new version. Renew the token before it expires.
 
 ### Flatpak
 
 The release workflow builds the Flatpak, `io.github.twwn.mcomix`, from `flatpak/io.github.twwn.mcomix.yml`, and attaches `mcomix-<version>.flatpak` to the release.
-`publish.yml` then opens a pull request on [flathub/io.github.twwn.mcomix](https://github.com/flathub/io.github.twwn.mcomix) that moves Flathub's manifest to the tag; without the secret it is skipped with a notice:
 
-Secret | For
--------|----
-`FLATHUB_TOKEN` | A token that can push branches to flathub/io.github.twwn.mcomix and open pull requests on it.
-
-- That repository exists only once Flathub has accepted the app. Submit it the first time by hand, as [Flathub's guide](https://docs.flathub.org/docs/for-app-authors/submission) says.
-- `python3 flatpak/flathub_manifest.py <version> <commit>` writes the manifest for Flathub: the same file, with MComix fetched from the tag instead of built from the tree.
+- Flathub lists an app once its submission is accepted: [Flathub's guide](https://docs.flathub.org/docs/for-app-authors/submission) has the steps, [its requirements](https://docs.flathub.org/docs/for-app-authors/requirements) the rules the manifest must meet.
+- After that, no secret is needed. Flathub's own checker reads the `x-checker-data` of the manifest's MComix source every two hours, and opens the pull request for a new tag on [flathub/io.github.twwn.mcomix](https://github.com/flathub/io.github.twwn.mcomix). Merging it publishes the update.
 - The name stays MComix; only the id tells it from Flathub's `net.sourceforge.mcomix`, the original MComix 3.
 
 ## Building by hand

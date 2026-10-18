@@ -8,7 +8,7 @@ name: Release
 # mcomix/constants.py, the built MComix has to start, and then the
 # GitHub release is published with the files, their checksums
 # and build provenance, and the tag's ChangeLog.md section as its notes,
-# and publish.yml puts it out to Chocolatey, winget and Flathub.  The
+# and publish.yml puts it out to Chocolatey and winget.  The
 # Flatpak is built alongside, and attached where it built; a release
 # goes out without it rather than not at all.  A draft release
 # of the tag is replaced; a published one is left alone, and has to be
@@ -349,7 +349,7 @@ jobs:
 
   # A release published with the workflow's own token starts no other
   # workflow, so the package managers are called from here, handed the
-  # three secrets they use and no others.
+  # two secrets they use and no others.
   publish:
     name: Put it out
     needs: [setup, release]
@@ -361,4 +361,3 @@ jobs:
     secrets:
       CHOCOLATEY_API_KEY: ${{ secrets.CHOCOLATEY_API_KEY }}
       WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
-      FLATHUB_TOKEN: ${{ secrets.FLATHUB_TOKEN }}

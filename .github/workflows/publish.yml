@@ -2,28 +2,30 @@ name: Publish
 
 # Puts a published release out to the package managers: called
 # by release.yml once it has published one, run by GitHub when a release
-# is published by hand, or run by hand, given the tag.  Each job does
-# nothing but say why where its secret is not set.
+# is published by hand, or run by hand, given the tag.  Each job runs in
+# a GitHub environment of its own, which holds its secret: no other job
+# can read it, and the environment's rules can hold the job for approval
+# and limit it to release tags.  A job whose secret is not set does
+# nothing but say so.
 #
 #   Chocolatey  the package mcomix-gtk, which downloads the release's MSI.
-#               Secret CHOCOLATEY_API_KEY: an API key of the account
-#               win32/mcomix.nuspec names as its owner.
-#   winget      a pull request to microsoft/winget-pkgs.  Secret
-#               WINGET_TOKEN: a classic token with public_repo, of an
-#               account with a fork of microsoft/winget-pkgs.  The
-#               package has to be there once before this can update it:
-#               submit the first version by hand, with
-#               "komac new" or "wingetcreate new".  The identifier is the
-#               repository variable WINGET_IDENTIFIER, twwn.MComix where
-#               it is not set.
-#   Flathub     a pull request to flathub/io.github.twwn.mcomix that
-#               moves its manifest to the tag.  Secret FLATHUB_TOKEN: a
-#               token that can push branches to that repository and open
-#               pull requests on it.  The repository exists only once the
-#               app has been accepted: submit it the first time by hand,
-#               as flathub.org's submission guide says, with the manifest
-#               "python3 flatpak/flathub_manifest.py <tag> <commit>"
-#               writes.
+#               Environment chocolatey, secret CHOCOLATEY_API_KEY: an
+#               API key of the account win32/mcomix.nuspec names as its
+#               owner.
+#   winget      a pull request to microsoft/winget-pkgs.  Environment
+#               winget, secret WINGET_TOKEN: a classic token with
+#               public_repo, of the account whose fork of
+#               microsoft/winget-pkgs the pull request comes from: the
+#               repository variable WINGET_FORK_USER, the repository's
+#               owner where it is not set.  The package has to be there
+#               once before this can update it: submit the first version
+#               by hand, with "komac new" or "wingetcreate new".  The
+#               identifier is the repository variable WINGET_IDENTIFIER,
+#               twwn.MComix where it is not set.
+#
+# Flathub needs nothing here: its own checker reads the x-checker-data
+# of the manifest's MComix source, and opens the pull request for a new
+# tag itself.
 
 on:
   release:
@@ -38,8 +40,6 @@ on:
       CHOCOLATEY_API_KEY:
         required: false
       WINGET_TOKEN:
-        required: false
-      FLATHUB_TOKEN:
         required: false
   workflow_dispatch:
     inputs:
@@ -56,6 +56,7 @@ env:
 jobs:
   chocolatey:
     runs-on: windows-2025
+    environment: chocolatey
     timeout-minutes: 15
     env:
       CHOCOLATEY_API_KEY: ${{ secrets.CHOCOLATEY_API_KEY }}
@@ -91,6 +92,7 @@ jobs:
 
   winget:
     runs-on: windows-2025
+    environment: winget
     timeout-minutes: 15
     env:
       WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
@@ -107,36 +109,6 @@ jobs:
           identifier: ${{ vars.WINGET_IDENTIFIER || 'twwn.MComix' }}
           release-tag: ${{ env.TAG }}
           installers-regex: '\.msi$'
+          fork-user: ${{ vars.WINGET_FORK_USER || github.repository_owner }}
           token: ${{ env.WINGET_TOKEN }}
 
-  flathub:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    env:
-      FLATHUB_TOKEN: ${{ secrets.FLATHUB_TOKEN }}
-    steps:
-      - name: Without a token there is nothing to submit
-        if: env.FLATHUB_TOKEN == ''
-        run: echo "::notice::FLATHUB_TOKEN is not set; no Flathub pull request was opened."
-      - uses: actions/checkout@v7
-        if: env.FLATHUB_TOKEN != ''
-        with:
-          persist-credentials: false
-          ref: ${{ env.TAG }}
-      - name: Open the pull request that moves Flathub to the tag
-        if: env.FLATHUB_TOKEN != ''
-        env:
-          GH_TOKEN: ${{ secrets.FLATHUB_TOKEN }}
-        run: |
-          python3 flatpak/flathub_manifest.py "$TAG" "$(git rev-parse HEAD)" > "$RUNNER_TEMP/io.github.twwn.mcomix.yml"
-          git clone "https://x-access-token:${FLATHUB_TOKEN}@github.com/flathub/io.github.twwn.mcomix.git" "$RUNNER_TEMP/flathub"
-          cd "$RUNNER_TEMP/flathub"
-          git switch -c "update-$TAG"
-          cp "$RUNNER_TEMP/io.github.twwn.mcomix.yml" io.github.twwn.mcomix.yml
-          git -c user.name="github-actions[bot]" \
-              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
-              commit -am "Update to $TAG"
-          git push origin "update-$TAG"
-          gh pr create --repo flathub/io.github.twwn.mcomix --head "update-$TAG" \
-            --title "Update to $TAG" \
-            --body "MComix $TAG: https://github.com/twwn/mcomix/releases/tag/$TAG"
