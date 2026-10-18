@@ -583,54 +583,10 @@ class MainWindow(Gtk.Window):
                         size_list[i] = [max(1, round(width * room / height)),
                                         room]
 
-            # A list from the start: the rotation handling below turns
-            # it around and negates it, both of which give back a list.
-            orientation = list(constants.MANGA_ORIENTATION
-                               if self.is_manga_mode
-                               else constants.WESTERN_ORIENTATION)
-
-            # Rotation handling:
-            # - apply Exif rotation on individual images
-            # - apply automatic rotation (size based) on whole page
-            # - apply manual rotation on whole page
-            if prefs['auto rotate from exif']:
-                rotation_list = [image_tools.get_implied_rotation(pixbuf)
-                                 for pixbuf in pixbuf_list]
-            else:
-                rotation_list = [0] * len(pixbuf_list)
-            virtual_size = [0, 0]
-            for i in range(pixbuf_count):
-                if tools.rotation_swaps_axes(rotation_list[i]):
-                    size_list[i].reverse()
-                size = size_list[i]
-                virtual_size[distribution_axis] += size[distribution_axis]
-                virtual_size[alignment_axis] = max(virtual_size[alignment_axis],
-                                                   size[alignment_axis])
-            # A strip is as high as its pages together, which says
-            # nothing about which way up it reads.
-            rotation = tools.compile_rotations(
-                0 if continuous else image_tools.get_size_rotation(*virtual_size),
-                prefs['rotation'])
-            if tools.rotation_swaps_axes(rotation):
-                distribution_axis, alignment_axis = alignment_axis, distribution_axis
-                orientation.reverse()  # 2D only
-                for i in range(pixbuf_count):
-                    if do_not_transform[i]:
-                        continue
-                    size_list[i].reverse()  # 2D only
-            if rotation in (180, 270):
-                orientation = tools.vector_opposite(orientation)
-            for i in range(pixbuf_count):
-                rotation_list[i] = tools.compile_rotations(rotation_list[i], rotation)
-            if prefs['vertical flip'] and tools.rotation_swaps_axes(rotation):
-                orientation = tools.vector_opposite(orientation)
-            if prefs['horizontal flip'] and not tools.rotation_swaps_axes(rotation):
-                orientation = tools.vector_opposite(orientation)
-
-            if continuous:
-                # Turned, each page is turned where it stands: the strip
-                # still reads from its first page on, down or across.
-                orientation = list(constants.WESTERN_ORIENTATION)
+            distribution_axis, alignment_axis, orientation, rotation_list = \
+                self._orient_pages(pixbuf_list, size_list, do_not_transform,
+                                   continuous, distribution_axis,
+                                   alignment_axis)
 
             def strip_sizes(room: list[int]) -> tuple[list[list[int]], list[bool]]:
                 """Every page of the strip at the strip's width, and as
@@ -844,6 +800,72 @@ class MainWindow(Gtk.Window):
         self._waiting_for_redraw = False
 
         return False
+
+    def _orient_pages(self, pixbuf_list: list[GdkPixbuf.Pixbuf],
+                      size_list: list[list[int]],
+                      do_not_transform: list[bool], continuous: bool,
+                      distribution_axis: constants.PageAxis,
+                      alignment_axis: constants.PageAxis
+                      ) -> tuple[constants.PageAxis, constants.PageAxis,
+                                 list[int], list[int]]:
+        """Which way the pages shown are turned, and which way they read.
+
+        Returns the distribution and alignment axes, which a rotation
+        that swaps width for height swaps; the orientation the layout
+        reads the pages in; and each page's rotation, its Exif tag's
+        and the whole spread's together.  The sizes in <size_list> are
+        turned in place to match.  _draw_image() only, which has read
+        the pages and their sizes."""
+        pixbuf_count = len(pixbuf_list)
+        # A list from the start: the rotation handling below turns
+        # it around and negates it, both of which give back a list.
+        orientation = list(constants.MANGA_ORIENTATION
+                           if self.is_manga_mode
+                           else constants.WESTERN_ORIENTATION)
+
+        # Rotation handling:
+        # - apply Exif rotation on individual images
+        # - apply automatic rotation (size based) on whole page
+        # - apply manual rotation on whole page
+        if prefs['auto rotate from exif']:
+            rotation_list = [image_tools.get_implied_rotation(pixbuf)
+                             for pixbuf in pixbuf_list]
+        else:
+            rotation_list = [0] * len(pixbuf_list)
+        virtual_size = [0, 0]
+        for i in range(pixbuf_count):
+            if tools.rotation_swaps_axes(rotation_list[i]):
+                size_list[i].reverse()
+            size = size_list[i]
+            virtual_size[distribution_axis] += size[distribution_axis]
+            virtual_size[alignment_axis] = max(virtual_size[alignment_axis],
+                                               size[alignment_axis])
+        # A strip is as high as its pages together, which says
+        # nothing about which way up it reads.
+        rotation = tools.compile_rotations(
+            0 if continuous else image_tools.get_size_rotation(*virtual_size),
+            prefs['rotation'])
+        if tools.rotation_swaps_axes(rotation):
+            distribution_axis, alignment_axis = alignment_axis, distribution_axis
+            orientation.reverse()  # 2D only
+            for i in range(pixbuf_count):
+                if do_not_transform[i]:
+                    continue
+                size_list[i].reverse()  # 2D only
+        if rotation in (180, 270):
+            orientation = tools.vector_opposite(orientation)
+        for i in range(pixbuf_count):
+            rotation_list[i] = tools.compile_rotations(rotation_list[i], rotation)
+        if prefs['vertical flip'] and tools.rotation_swaps_axes(rotation):
+            orientation = tools.vector_opposite(orientation)
+        if prefs['horizontal flip'] and not tools.rotation_swaps_axes(rotation):
+            orientation = tools.vector_opposite(orientation)
+
+        if continuous:
+            # Turned, each page is turned where it stands: the strip
+            # still reads from its first page on, down or across.
+            orientation = list(constants.WESTERN_ORIENTATION)
+        return distribution_axis, alignment_axis, orientation, rotation_list
 
     def _relative_position(self, new_size: "Sequence[int]"
                            ) -> "tuple[float, float] | None":
