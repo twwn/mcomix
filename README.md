@@ -5,9 +5,9 @@
 [![Tests](https://github.com/twwn/mcomix/actions/workflows/tests.yml/badge.svg)](https://github.com/twwn/mcomix/actions/workflows/tests.yml)
 [![Latest release](https://img.shields.io/github/v/release/twwn/mcomix?sort=date)](https://github.com/twwn/mcomix/releases/latest)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue)](https://www.python.org/)
-[![License: GPL v2+](https://img.shields.io/badge/license-GPL%20v2%2B-green)](COPYING)
+[![License: GPL v2+](https://img.shields.io/badge/license-GPL%20v2%2B-green)](https://github.com/twwn/mcomix/blob/main/COPYING)
 
-![MComix' main window](docs/images/mcomix-mainwindow.png)
+![MComix' main window](https://raw.githubusercontent.com/twwn/mcomix/main/docs/images/mcomix-mainwindow.png)
 
 <sub>Shown: "The Potion of Flight", episode 1 of [Pepper&Carrot](https://www.peppercarrot.com/) by David Revoy, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), scaled down.</sub>
 
@@ -37,21 +37,21 @@ python3 -m venv --system-site-packages ~/mcomix-venv
 ~/mcomix-venv/bin/mcomix
 ```
 
-[Install](docs/install.md) has the details: optional helpers (unrar, 7z, MuPDF), desktop integration, uninstalling.
+[Install](https://github.com/twwn/mcomix/blob/main/docs/install.md) has the details: optional helpers (unrar, 7z, MuPDF), desktop integration, uninstalling.
 
 > [!NOTE]
 > The `mcomix` packages in Linux distributions, Flathub, WinGet and Scoop are the original MComix 3 on GTK 3, not this version.
 
 ## Documentation
 
-- [Reading](docs/reading.md) – opening books, fit modes, double page and manga, slideshow
-- [Editing books](docs/editing.md) – rename, reorder and delete pages; save archives
-- [Library](docs/library.md) – collections, reading lists, covers, watched folders
-- [Preferences](docs/preferences.md) · [Keyboard and mouse](docs/shortcuts.md) · [External commands](docs/external-commands.md)
-- [Troubleshooting](docs/troubleshooting.md) – logs, common problems, reporting a bug
-- [Changelog](ChangeLog.md) – what changed, release by release
+- [Reading](https://github.com/twwn/mcomix/blob/main/docs/reading.md) – opening books, fit modes, double page and manga, slideshow
+- [Editing books](https://github.com/twwn/mcomix/blob/main/docs/editing.md) – rename, reorder and delete pages; save archives
+- [Library](https://github.com/twwn/mcomix/blob/main/docs/library.md) – collections, reading lists, covers, watched folders
+- [Preferences](https://github.com/twwn/mcomix/blob/main/docs/preferences.md) · [Keyboard and mouse](https://github.com/twwn/mcomix/blob/main/docs/shortcuts.md) · [External commands](https://github.com/twwn/mcomix/blob/main/docs/external-commands.md)
+- [Troubleshooting](https://github.com/twwn/mcomix/blob/main/docs/troubleshooting.md) – logs, common problems, reporting a bug
+- [Changelog](https://github.com/twwn/mcomix/blob/main/ChangeLog.md) – what changed, release by release
 
-All pages: [docs](docs/README.md).
+All pages: [docs](https://github.com/twwn/mcomix/blob/main/docs/README.md).
 
 ## About this fork
 
@@ -65,7 +65,7 @@ The GTK 4 port is offered back upstream.
 
 ## Contributing
 
-Issues and pull requests are welcome: see [Contributing](CONTRIBUTING.md) and [Development](docs/development.md).
+Issues and pull requests are welcome: see [Contributing](https://github.com/twwn/mcomix/blob/main/CONTRIBUTING.md) and [Development](https://github.com/twwn/mcomix/blob/main/docs/development.md).
 Questions go to [Discussions](https://github.com/twwn/mcomix/discussions).
 
 ## Credits
@@ -74,4 +74,4 @@ Comix was created by Pontus Ekberg; thanks to him and to everyone who has contri
 
 ## License
 
-[GPL v2](COPYING) or any later version.
+[GPL v2](https://github.com/twwn/mcomix/blob/main/COPYING) or any later version.
