@@ -64,6 +64,17 @@ class _ScalingData:
     current_size: int = 0
     ideal_vol: float = 0.0
 
+    def plan_next_step(self, axis: int) -> None:
+        """Work out what taking this box one pixel smaller along <axis>
+        than current_size would cost, or mark it as unable to shrink."""
+        self.can_be_downscaled = self.current_size > 1
+        if self.can_be_downscaled:
+            self.forced_scale = tools.div(self.current_size - 1,
+                                          self.size[axis])
+            self.forced_vol_err = tools.relerr(
+                tools.volume(_scale_image_size(self.size, self.forced_scale)),
+                self.ideal_vol)
+
 
 class ZoomModel:
     """ Handles zoom and fit modes. """
@@ -363,21 +374,12 @@ class ZoomModel:
             dummy_approx = _round_nonempty((ideal[axis],))[0]
             local_scale = tools.div(dummy_approx, this_size[axis])
             total_axis_size += dummy_approx
-            can_be_downscaled = dummy_approx > 1
-            if can_be_downscaled:
-                forced_size = dummy_approx - 1
-                forced_scale = tools.div(forced_size, this_size[axis])
-                forced_approx = _scale_image_size(this_size, forced_scale)
-                forced_vol_err = tools.relerr(tools.volume(forced_approx), ideal_vol)
-            else:
-                # Never read while can_be_downscaled is False; the same
-                # standing values a box that is not scaled at all takes.
-                forced_scale = IDENTITY_ZOOM
-                forced_vol_err = 0.0
-            scaling_data.append(_ScalingData(
-                local_scale, ideal, can_be_downscaled,
-                forced_scale, forced_vol_err,
-                this_size, dummy_approx, ideal_vol))
+            # The step stays at the standing values a box that is not
+            # scaled at all takes where the box cannot shrink.
+            data = _ScalingData(local_scale, ideal, False, IDENTITY_ZOOM, 0.0,
+                                this_size, dummy_approx, ideal_vol)
+            data.plan_next_step(axis)
+            scaling_data.append(data)
         # Now we need to find at most total_axis_size - max_size occasions to
         # scale down some tuples so the whole thing would fit into max_size. If
         # we are lucky, there will be no gaps at the end (or at least fewer gaps
@@ -420,14 +422,7 @@ class ZoomModel:
                 # that cannot be made smaller at all - one already a
                 # pixel wide - leaves the rest to make up the whole
                 # difference.
-                d.can_be_downscaled = d.current_size > 1
-                if d.can_be_downscaled:
-                    d.forced_scale = tools.div(d.current_size - 1,
-                                               d.size[axis])
-                    d.forced_vol_err = tools.relerr(
-                        tools.volume(_scale_image_size(d.size,
-                                                       d.forced_scale)),
-                        d.ideal_vol)
+                d.plan_next_step(axis)
                 total_axis_size -= 1
                 dirty = True
         # Where the loop leaves total_axis_size below max_size, the tuples
