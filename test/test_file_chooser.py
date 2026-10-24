@@ -409,6 +409,32 @@ class FileChooserTest(MComixTest):
         self.assertEqual(os.path.realpath(constants.HOME_DIR),
                          os.path.realpath(self._reopened_in()))
 
+    def test_it_opens_on_the_file_last_chosen(self):
+        prefs['store recent file info'] = True
+        path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        self._choose(path)
+        self.assertEqual(os.path.dirname(path), self._reopened_in())
+        chosen = self.dialog.filechooser.get_file()
+        self.assertEqual(path, chosen.get_path() if chosen else None)
+
+    def test_without_a_file_history_it_forgets_the_file_last_chosen(self):
+        """With "Store information about recently opened files" off,
+        the next chooser opened on the book chosen last, which the
+        reader may have closed so as not to leave it on show."""
+        prefs['store recent file info'] = False
+        path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        self._choose(path)
+        self.assertEqual(os.path.realpath(constants.HOME_DIR),
+                         os.path.realpath(self._reopened_in()))
+
+    def test_a_file_chosen_before_the_history_was_turned_off_is_forgotten(self):
+        prefs['store recent file info'] = True
+        path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        self._choose(path)
+        prefs['store recent file info'] = False
+        self.assertEqual(os.path.realpath(constants.HOME_DIR),
+                         os.path.realpath(self._reopened_in()))
+
     def test_a_double_click_on_a_file_opens_it(self):
         chosen = []
         self.dialog.files_chosen = chosen.extend

@@ -30,7 +30,7 @@ Option | Explanation
 Reopen the last book read | Started without a file, reopen the one open last, at the picture that was shown. After "Save and quit" this happens regardless.
 Open the library on startup | As `-l` does: the library comes up beside the window, to pick the book there.
 Open files in the window that is already open | A book opened from a file manager or a command line goes to the MComix that is running, which opens it and comes forward; no second one starts. Off by default: each book gets a window. Read at start. A middle click on a bookmark, a recent file or a library cover still opens a window of its own, as `--new-window` does. Needs a D-Bus session bus.
-Remember recently opened files | Keeps File → Recent and each book's last page, which the library's "Recent" collection lists. On by default. Turning it off offers to clear both. The page is stored two seconds after the last page turn, so a crash loses no more than that.
+Remember recently opened files | Keeps File → Recent and each book's last page, which the library's "Recent" collection lists. On by default. Turning it off offers to clear both. Off, the file chooser opens in the home folder rather than on the file chosen last. The page is stored two seconds after the last page turn, so a crash loses no more than that.
 Save page as opens at the last folder saved into | Instead of the book's own directory.
 Save an edited archive in the format it was opened in | Write it back as the ZIP, tar, 7z or RAR it was read as. 7z and RAR need the `7z` and `rar` programs, which MComix does not install; a format it cannot write is saved as ZIP.
 Comment file extensions | Which files in an archive count as comments. txt, nfo and xml by default.

@@ -310,7 +310,10 @@ class _BaseFileChooserDialog(Dialog):
 
         try:
             current_file = self._current_file()
-            last_file = self.__class__._last_activated_file
+            # The file chosen last is part of the file history, and is
+            # forgotten with it.
+            last_file = self.__class__._last_activated_file \
+                if prefs['store recent file info'] else None
 
             # Where the caller said, if it said.  It has to be settled
             # here rather than afterwards: the chooser loads whatever
@@ -786,15 +789,16 @@ class _BaseFileChooserDialog(Dialog):
 
     def _files_accepted(self, paths: list[str], first_path: str) -> None:
         """Hand the chosen <paths> on, once nothing is left to confirm."""
-        # Do not store path if the user chose not to keep a file history
+        # Neither the folder nor the file is kept if the user chose not
+        # to keep a file history.
         if prefs['store recent file info']:
             prefs['path of last browsed in filechooser'] = \
                 widgets.chooser_folder(self.filechooser) or constants.HOME_DIR
+            self.__class__._last_activated_file = first_path
         else:
             prefs['path of last browsed in filechooser'] = \
                 constants.HOME_DIR
-
-        self.__class__._last_activated_file = first_path
+            self.__class__._last_activated_file = None
         self.files_chosen(paths)
         self._destroyed = True
 
