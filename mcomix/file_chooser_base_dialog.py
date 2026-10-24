@@ -284,54 +284,8 @@ class _BaseFileChooserDialog(Dialog):
 
         self._walk_from_search_into_the_list()
 
-        self._preview_size, self._preview_pixels = preview_size(self)
-        preview_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 10)
-        preview_box.set_size_request(self._preview_size + 22, -1)
-        # The preview and what it says about the file sit together in
-        # the middle of the column, rather than filling it.
-        preview_box.set_valign(Gtk.Align.CENTER)
-        widgets.set_border(preview_box, 6)
-        # A Gtk.Image draws whatever it is given at an icon size; a
-        # picture draws it at its own.
-        self._preview_image = Gtk.Picture()
-        self._preview_image.set_size_request(self._preview_size,
-                                             self._preview_size)
-        # A picture scales what it holds to whatever room it is given,
-        # which blurs a thumbnail and makes it grow and shrink with the
-        # dialog.  SCALE_DOWN never draws above the real size, and the
-        # alignments keep the box from handing it any more room.
-        self._preview_image.set_content_fit(Gtk.ContentFit.SCALE_DOWN)
-        self._preview_image.set_halign(Gtk.Align.CENTER)
-        self._preview_image.set_valign(Gtk.Align.CENTER)
-        widgets.pack(preview_box, self._preview_image, False, False, 0)
-
-        pango_scale_small = (1 / 1.2)
-
-        self._namelabel = labels.FormattedLabel(weight=Pango.Weight.BOLD,
-                                                scale=pango_scale_small)
-        self._namelabel.set_ellipsize(Pango.EllipsizeMode.MIDDLE)
-        widgets.pack(preview_box, self._namelabel, False, False, 0)
-
-        self._sizelabel = labels.FormattedLabel(scale=pango_scale_small)
-        self._sizelabel.set_ellipsize(Pango.EllipsizeMode.MIDDLE)
-        widgets.pack(preview_box, self._sizelabel, False, False, 0)
-
-        # A picture's size in pixels, a book's page count and kind.
-        self._detailslabel = labels.FormattedLabel(scale=pango_scale_small)
-        self._detailslabel.set_ellipsize(Pango.EllipsizeMode.END)
-        widgets.pack(preview_box, self._detailslabel, False, False, 0)
-        #: The file the details were found out for, and what they are.
-        self._details: tuple[str, str] | None = None
-
-        # An ellipsized label still asks for room enough for all of its
-        # text, so the column - and with it the file list beside it -
-        # moved every time the name under the preview changed.  Holding
-        # the labels to a width stops that.
-        for label in (self._namelabel, self._sizelabel, self._detailslabel):
-            label.set_max_width_chars(_PREVIEW_LABEL_WIDTH)
-            label.set_width_chars(_PREVIEW_LABEL_WIDTH)
-        preview_box.set_visible(True)
-        widgets.pack(chooser_row, preview_box, False, False, 0, end=True)
+        widgets.pack(chooser_row, self._build_preview_column(),
+                     False, False, 0, end=True)
 
         # And no update-preview signal to hear either, so ask it what is
         # selected every so often.  It is one property read; the timer
@@ -385,6 +339,58 @@ class _BaseFileChooserDialog(Dialog):
             log.debug(ex)
 
         self.set_visible(True)
+
+    def _build_preview_column(self) -> Gtk.Box:
+        """The column beside the file list: the preview and, under it,
+        the name, size and details of the file selected."""
+        self._preview_size, self._preview_pixels = preview_size(self)
+        preview_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 10)
+        preview_box.set_size_request(self._preview_size + 22, -1)
+        # The preview and what it says about the file sit together in
+        # the middle of the column, rather than filling it.
+        preview_box.set_valign(Gtk.Align.CENTER)
+        widgets.set_border(preview_box, 6)
+        # A Gtk.Image draws whatever it is given at an icon size; a
+        # picture draws it at its own.
+        self._preview_image = Gtk.Picture()
+        self._preview_image.set_size_request(self._preview_size,
+                                             self._preview_size)
+        # A picture scales what it holds to whatever room it is given,
+        # which blurs a thumbnail and makes it grow and shrink with the
+        # dialog.  SCALE_DOWN never draws above the real size, and the
+        # alignments keep the box from handing it any more room.
+        self._preview_image.set_content_fit(Gtk.ContentFit.SCALE_DOWN)
+        self._preview_image.set_halign(Gtk.Align.CENTER)
+        self._preview_image.set_valign(Gtk.Align.CENTER)
+        widgets.pack(preview_box, self._preview_image, False, False, 0)
+
+        pango_scale_small = (1 / 1.2)
+
+        self._namelabel = labels.FormattedLabel(weight=Pango.Weight.BOLD,
+                                                scale=pango_scale_small)
+        self._namelabel.set_ellipsize(Pango.EllipsizeMode.MIDDLE)
+        widgets.pack(preview_box, self._namelabel, False, False, 0)
+
+        self._sizelabel = labels.FormattedLabel(scale=pango_scale_small)
+        self._sizelabel.set_ellipsize(Pango.EllipsizeMode.MIDDLE)
+        widgets.pack(preview_box, self._sizelabel, False, False, 0)
+
+        # A picture's size in pixels, a book's page count and kind.
+        self._detailslabel = labels.FormattedLabel(scale=pango_scale_small)
+        self._detailslabel.set_ellipsize(Pango.EllipsizeMode.END)
+        widgets.pack(preview_box, self._detailslabel, False, False, 0)
+        #: The file the details were found out for, and what they are.
+        self._details: tuple[str, str] | None = None
+
+        # An ellipsized label still asks for room enough for all of its
+        # text, so the column - and with it the file list beside it -
+        # moved every time the name under the preview changed.  Holding
+        # the labels to a width stops that.
+        for label in (self._namelabel, self._sizelabel, self._detailslabel):
+            label.set_max_width_chars(_PREVIEW_LABEL_WIDTH)
+            label.set_width_chars(_PREVIEW_LABEL_WIDTH)
+        preview_box.set_visible(True)
+        return preview_box
 
     def _widen_the_places(self, *args: object) -> None:
         """Give the places on the left room for their own names.
