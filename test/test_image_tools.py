@@ -570,6 +570,24 @@ class ImageToolsTest(MComixTest):
                              msg='get_implied_rotation_from_file(%s) failed: %u instead of %u'
                              % (image, rotation, image.rotation))
 
+    def test_get_size_rotation_follows_the_auto_rotate_setting(self):
+        """Each setting turns only the pages of its own shape, and a
+        square page under none of them."""
+        wide, tall, square = (300, 200), (200, 300), (200, 200)
+        expected = {
+            constants.AUTOROTATE_NEVER: (0, 0, 0),
+            constants.AUTOROTATE_WIDTH_90: (90, 0, 0),
+            constants.AUTOROTATE_WIDTH_270: (270, 0, 0),
+            constants.AUTOROTATE_HEIGHT_90: (0, 90, 0),
+            constants.AUTOROTATE_HEIGHT_270: (0, 270, 0),
+        }
+        for setting, rotations in expected.items():
+            prefs['auto rotate depending on size'] = setting
+            with self.subTest(setting=setting):
+                self.assertEqual(rotations, tuple(
+                    image_tools.get_size_rotation(*size)
+                    for size in (wide, tall, square)))
+
     def test_get_implied_rotation_from_file_invalid(self):
         self.assertEqual(image_tools.get_implied_rotation_from_file(os.devnull), 0)
 
