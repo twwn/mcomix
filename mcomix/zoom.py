@@ -172,20 +172,8 @@ class ZoomModel:
         # the integer sizes that came in.
         working_sizes: Sequence[Sequence[float]] = image_sizes
         if prefer_same_size:
-            # Preprocessing step: scale all images to the same size
-            image_boxes = [box.Box(s) for s in image_sizes]
-            # Scale up to the same size if this is allowed, otherwise scale down.
-            if scale_up:
-                # Scale up to union.
-                pre_limits = box.Box.bounding_box(image_boxes).get_size()
-            else:
-                # Scale down to intersection.
-                pre_limits = reduce(box.Box.intersect, image_boxes, image_boxes[0]).get_size()
-            working_sizes = [
-                size if fixed
-                else tuple(tools.scale(size, ZoomModel._preferred_scale(
-                    size, pre_limits, distribution_axis)))
-                for size, fixed in zip(image_sizes, do_not_transform)]
+            working_sizes = ZoomModel._scaled_to_one_size(
+                image_sizes, distribution_axis, do_not_transform, scale_up)
         union_size = _union_size(working_sizes, distribution_axis)
         limits = ZoomModel._calc_limits(union_size, screen_size, self._fitmode,
                                         scale_up)
@@ -220,29 +208,64 @@ class ZoomModel:
                for size, scale in zip(working_sizes, res_scales)]
         distorted = [False] * len(res)
         if prefer_same_size and fit_same_size:
-            # While the algorithm so far tries hard to keep the aspect ratios of the
-            # original images, in extreme cases, it is not possible to both keep aspect
-            # ratios as well as make the images fit to the same size, especially after
-            # applying user_scale. In those cases, we will make them fit.
-            # Simple approach: For each dimension, we fit each image to either the
-            # minimum size (if scale_up is false) or maximum size (if scale_up is true)
-            # of all images, given the scaled sizes computed so far.
-            # The extreme is None for the distribution axis, which is
-            # not forced, and when there is nothing to measure.
-            furthest = max if scale_up else min
-            extremes: list[int | None] = [
-                None if axis == distribution_axis or not res
-                else furthest(row[axis] for row in res)
-                for axis in range(len(limits))]
-            for axis, extreme in enumerate(extremes):
-                if extreme is None:
-                    continue
-                for index, (row, fixed) in enumerate(zip(res,
-                                                         do_not_transform)):
-                    if row[axis] != extreme and not fixed:
-                        row[axis] = extreme
-                        distorted[index] = True
+            ZoomModel._force_one_size(res, distorted, len(limits),
+                                      distribution_axis, do_not_transform,
+                                      scale_up)
         return (res, distorted)
+
+    @staticmethod
+    def _scaled_to_one_size(image_sizes: Sequence[Sequence[int]],
+                            distribution_axis: constants.PageAxis,
+                            do_not_transform: list[bool],
+                            scale_up: bool) -> list[Sequence[float]]:
+        """<image_sizes> scaled to one another, keeping their aspect
+        ratios: up to the box that holds them all where enlarging is
+        allowed, down to the box they all cover where it is not.  A page
+        marked in <do_not_transform> keeps its size."""
+        image_boxes = [box.Box(s) for s in image_sizes]
+        # Scale up to the same size if this is allowed, otherwise scale down.
+        if scale_up:
+            # Scale up to union.
+            pre_limits = box.Box.bounding_box(image_boxes).get_size()
+        else:
+            # Scale down to intersection.
+            pre_limits = reduce(box.Box.intersect, image_boxes, image_boxes[0]).get_size()
+        return [
+            size if fixed
+            else tuple(tools.scale(size, ZoomModel._preferred_scale(
+                size, pre_limits, distribution_axis)))
+            for size, fixed in zip(image_sizes, do_not_transform)]
+
+    @staticmethod
+    def _force_one_size(res: list[list[int]], distorted: list[bool],
+                        axes: int, distribution_axis: constants.PageAxis,
+                        do_not_transform: list[bool], scale_up: bool) -> None:
+        """Force every page of <res> to one size on each of <axes> but the
+        distribution axis, and mark in <distorted> those it stretched.
+
+        While the algorithm so far tries hard to keep the aspect ratios of
+        the original images, in extreme cases it is not possible both to
+        keep aspect ratios and to make the images fit to the same size,
+        especially after applying the reader's zoom.  In those cases they
+        are made to fit: on each axis every page goes to the largest size
+        any came out at where enlarging is allowed, and to the smallest
+        where it is not.
+        """
+        # The extreme is None for the distribution axis, which is
+        # not forced, and when there is nothing to measure.
+        furthest = max if scale_up else min
+        extremes: list[int | None] = [
+            None if axis == distribution_axis or not res
+            else furthest(row[axis] for row in res)
+            for axis in range(axes)]
+        for axis, extreme in enumerate(extremes):
+            if extreme is None:
+                continue
+            for index, (row, fixed) in enumerate(zip(res,
+                                                     do_not_transform)):
+                if row[axis] != extreme and not fixed:
+                    row[axis] = extreme
+                    distorted[index] = True
 
     @staticmethod
     def _preferred_scale(image_size: Sequence[float],
