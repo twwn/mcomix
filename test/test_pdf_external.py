@@ -9,24 +9,24 @@ from mcomix.archive import pdf_external
 from . import MComixTest
 
 try:
-    import fitz
+    import pymupdf
 except ImportError:
-    fitz = None
+    pymupdf = None
 
 
 def _write_pdf(path, pages):
     """Write a PDF of <pages> pages, each holding one image."""
-    document = fitz.open()
+    document = pymupdf.open()
     for _ in range(pages):
         page = document.new_page()
-        page.insert_image(fitz.Rect(0, 0, 200, 300),
-                          pixmap=fitz.Pixmap(fitz.csRGB, fitz.IRect(0, 0, 200, 300)))
+        page.insert_image(pymupdf.Rect(0, 0, 200, 300),
+                          pixmap=pymupdf.Pixmap(pymupdf.csRGB, pymupdf.IRect(0, 0, 200, 300)))
     document.save(path)
     document.close()
 
 
 @unittest.skipUnless(pdf_external.PdfArchive.is_available(), 'MuPDF not installed')
-@unittest.skipIf(fitz is None, 'PyMuPDF is needed to write the test document')
+@unittest.skipIf(pymupdf is None, 'PyMuPDF is needed to write the test document')
 class PdfExternalTest(MComixTest):
 
     """The handler shells out to mutool, so the version it found decides
