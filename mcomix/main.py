@@ -684,28 +684,8 @@ class MainWindow(Gtk.Window):
                 if not left_out[i]:
                     self.images[i].show_pixbuf(pixbuf_list[i], scaled_sizes[i])
 
-            scales = tuple(map(lambda x, y: math.sqrt(tools.div(
-                tools.volume(x), tools.volume(y))), scaled_sizes, size_list))
-
-            resolutions = tuple(map(lambda sz, sc, ds: sz + [sc, ds], size_list,
-                                    scales, self.layout.get_content_distorted()))
-            if continuous:
-                # Of the page being read, the one at the top.
-                resolutions = resolutions[:1]
-            elif self.is_manga_mode:
-                resolutions = tuple(reversed(resolutions))
-            self.statusbar.set_resolution(resolutions)
-            self.statusbar.update()
-
-            smartbg = prefs['smart bg']
-            smartthumbbg = prefs['smart thumb bg'] and prefs['show thumbnails']
-            if smartbg or smartthumbbg:
-                bg_colour = self._edge_colour(pixbuf_list, content_boxes)
-            if smartbg:
-                self.set_bg_colour(bg_colour, dynamic=True)
-            if smartthumbbg:
-                self.thumbnailsidebar.change_thumbnail_background_color(
-                    bg_colour, dynamic=True)
+            self._show_resolutions(size_list, scaled_sizes, continuous)
+            self._follow_page_colours(pixbuf_list, content_boxes)
 
             if (pixbuf_count == 1 and self.is_double_page
                     and size_list[0][distribution_axis]
@@ -806,6 +786,37 @@ class MainWindow(Gtk.Window):
         self._waiting_for_redraw = False
 
         return False
+
+    def _show_resolutions(self, size_list: list[list[int]],
+                          scaled_sizes: list[tuple[int, ...]],
+                          continuous: bool) -> None:
+        """Put the size each page has and is drawn at in the statusbar."""
+        scales = tuple(map(lambda x, y: math.sqrt(tools.div(
+            tools.volume(x), tools.volume(y))), scaled_sizes, size_list))
+
+        resolutions = tuple(map(lambda sz, sc, ds: sz + [sc, ds], size_list,
+                                scales, self.layout.get_content_distorted()))
+        if continuous:
+            # Of the page being read, the one at the top.
+            resolutions = resolutions[:1]
+        elif self.is_manga_mode:
+            resolutions = tuple(reversed(resolutions))
+        self.statusbar.set_resolution(resolutions)
+        self.statusbar.update()
+
+    def _follow_page_colours(self, pixbuf_list: list[GdkPixbuf.Pixbuf],
+                             content_boxes: list[box.Box]) -> None:
+        """Colour the background, and the thumbnail bar's, after the
+        edges of the pages, where the preferences ask for it."""
+        smartbg = prefs['smart bg']
+        smartthumbbg = prefs['smart thumb bg'] and prefs['show thumbnails']
+        if smartbg or smartthumbbg:
+            bg_colour = self._edge_colour(pixbuf_list, content_boxes)
+        if smartbg:
+            self.set_bg_colour(bg_colour, dynamic=True)
+        if smartthumbbg:
+            self.thumbnailsidebar.change_thumbnail_background_color(
+                bg_colour, dynamic=True)
 
     def _orient_pages(self, pixbuf_list: list[GdkPixbuf.Pixbuf],
                       size_list: list[list[int]],
