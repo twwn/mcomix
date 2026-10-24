@@ -103,6 +103,18 @@ class RequiredVersionTest(unittest.TestCase):
         self.assertEqual('1.24.10', version)
         self.assertFalse({'pymupdf', 'fitz'} & set(imported), imported)
 
+    def test_the_version_is_read_under_every_distribution_name(self):
+        """Arch Linux installs PyMuPDF 2.0 as pymupdf-lite: its version
+        is read from that name's metadata, still without loading it."""
+        def version(name):
+            if name != 'pymupdf-lite':
+                raise metadata.PackageNotFoundError(name)
+            return '2.0'
+        with mock.patch('importlib.metadata.version', side_effect=version):
+            imported, found = self._imports_during(pdf_multi.installed_version)
+        self.assertEqual('2.0', found)
+        self.assertFalse({'pymupdf', 'fitz'} & set(imported), imported)
+
     def test_a_release_too_old_is_never_loaded(self):
         with mock.patch('importlib.metadata.version', return_value='1.23.5'):
             imported, handler = self._imports_during(pdf_multi.load_handler)

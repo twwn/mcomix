@@ -59,6 +59,12 @@ def module_version(module: object) -> str:
     return str(getattr(module, "__version__", None) or getattr(module, "VersionBind", "0"))
 
 
+#: The names PyMuPDF is installed under.  PyPI's is PyMuPDF; Arch Linux
+#: packages PyMuPDF 2.0 as the distribution pymupdf-lite, which provides
+#: the same pymupdf and fitz modules.
+PYMUPDF_DISTRIBUTIONS = ("PyMuPDF", "pymupdf-lite")
+
+
 def installed_version() -> str | None:
     """Return the version of the PyMuPDF that is installed, or None.
 
@@ -67,10 +73,11 @@ def installed_version() -> str | None:
     Only a PyMuPDF that came without its metadata - a frozen build, say -
     is imported to be asked.
     """
-    try:
-        return metadata.version("PyMuPDF")
-    except metadata.PackageNotFoundError:
-        pass
+    for distribution in PYMUPDF_DISTRIBUTIONS:
+        try:
+            return metadata.version(distribution)
+        except metadata.PackageNotFoundError:
+            pass
     try:
         import pymupdf
     except ImportError:
