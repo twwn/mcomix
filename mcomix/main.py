@@ -258,42 +258,7 @@ class MainWindow(Gtk.Window):
             child.set_vexpand(vexpand)
             grid.attach(child, column, row, width, height)
 
-        if prefs['default double page'] or double_page:
-            self.actiongroup.get_action('double_page').activate()
-
-        if prefs['default manga mode'] or manga_mode:
-            self.actiongroup.get_action('manga_mode').activate()
-
-        if prefs['continuous mode']:
-            self.actiongroup.get_action('continuous_mode').activate()
-
-        # Determine zoom mode. If zoom_mode is passed, it overrides
-        # the zoom mode preference.
-        zoom_actions = {constants.ZoomMode.BEST: 'best_fit_mode',
-                        constants.ZoomMode.WIDTH: 'fit_width_mode',
-                        constants.ZoomMode.HEIGHT: 'fit_height_mode',
-                        constants.ZoomMode.SIZE: 'fit_size_mode',
-                        constants.ZoomMode.MANUAL: 'fit_manual_mode'}
-
-        if zoom_mode is not None:
-            zoom_action = zoom_actions[zoom_mode]
-        else:
-            zoom_action = zoom_actions[constants.ZoomMode(prefs['zoom mode'])]
-
-        self.actiongroup.get_action(zoom_action).activate()
-
-        if prefs['stretch']:
-            self.actiongroup.get_action('stretch').activate()
-
-        if prefs['invert smart scroll']:
-            self.actiongroup.get_action('invert_scroll').activate()
-
-        if prefs['keep transformation']:
-            self.actiongroup.get_action('keep_transformation').activate()
-        else:
-            prefs['rotation'] = 0
-            prefs['vertical flip'] = False
-            prefs['horizontal flip'] = False
+        self._activate_view_modes(double_page, manga_mode, zoom_mode)
 
         # List of "toggles" that can be shown/hidden by the user.
         self._toggle_list = (
@@ -403,6 +368,47 @@ class MainWindow(Gtk.Window):
             self.actiongroup.get_action('library').activate()
 
         self.cursor_handler.auto_hide_on()
+
+    def _activate_view_modes(self, double_page: bool, manga_mode: bool,
+                             zoom_mode: "constants.ZoomMode | None") -> None:
+        """Turn on the page layout, zoom and transformation modes the
+        preferences and the command line ask for."""
+        if prefs['default double page'] or double_page:
+            self.actiongroup.get_action('double_page').activate()
+
+        if prefs['default manga mode'] or manga_mode:
+            self.actiongroup.get_action('manga_mode').activate()
+
+        if prefs['continuous mode']:
+            self.actiongroup.get_action('continuous_mode').activate()
+
+        # Determine zoom mode. If zoom_mode is passed, it overrides
+        # the zoom mode preference.
+        zoom_actions = {constants.ZoomMode.BEST: 'best_fit_mode',
+                        constants.ZoomMode.WIDTH: 'fit_width_mode',
+                        constants.ZoomMode.HEIGHT: 'fit_height_mode',
+                        constants.ZoomMode.SIZE: 'fit_size_mode',
+                        constants.ZoomMode.MANUAL: 'fit_manual_mode'}
+
+        if zoom_mode is not None:
+            zoom_action = zoom_actions[zoom_mode]
+        else:
+            zoom_action = zoom_actions[constants.ZoomMode(prefs['zoom mode'])]
+
+        self.actiongroup.get_action(zoom_action).activate()
+
+        if prefs['stretch']:
+            self.actiongroup.get_action('stretch').activate()
+
+        if prefs['invert smart scroll']:
+            self.actiongroup.get_action('invert_scroll').activate()
+
+        if prefs['keep transformation']:
+            self.actiongroup.get_action('keep_transformation').activate()
+        else:
+            prefs['rotation'] = 0
+            prefs['vertical flip'] = False
+            prefs['horizontal flip'] = False
 
     def gained_focus(self, *args: object) -> None:
         """Note that the window has the focus again.
