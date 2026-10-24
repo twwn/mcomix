@@ -10,6 +10,7 @@ import errno
 import os
 import pickle
 import shutil
+import sys
 import threading
 import zipfile
 import time
@@ -3767,6 +3768,44 @@ class MainWindowTest(MComixTest):
                                                     'Movable.cbz')))
         self.assertFalse(os.path.exists(source))
         self.assertEqual([], held)
+
+    def _held_when_deleted(self, permanently):
+        """Delete the archive as MComix does on Windows, and answer with
+        the descriptors that held it as it went."""
+        source = self._movable_book()
+        held = []
+        trash, remove = tools.move_to_trash, os.remove
+
+        def trashing(path):
+            held.extend(_descriptors_on(path))
+            trash(path)
+
+        def removing(path):
+            held.extend(_descriptors_on(path))
+            remove(path)
+
+        actions = self.window.file_actions
+        with unittest.mock.patch.object(sys, 'platform', 'win32'), \
+                unittest.mock.patch.object(tools, 'move_to_trash', trashing), \
+                unittest.mock.patch.object(file_actions.os, 'remove', removing):
+            actions._delete_answered(
+                Response.OK, source,
+                actions._remove_permanently if permanently else None)
+        self._pump()
+        self.assertFalse(os.path.exists(source))
+        return held
+
+    @unittest.skipUnless(os.path.isdir('/proc/self/fd'),
+                         'the open descriptors are read from /proc')
+    def test_nothing_holds_the_archive_open_when_it_is_trashed(self):
+        """Windows neither trashes nor deletes a file that is open, and
+        the extractor holds the archive open while the book is."""
+        self.assertEqual([], self._held_when_deleted(permanently=False))
+
+    @unittest.skipUnless(os.path.isdir('/proc/self/fd'),
+                         'the open descriptors are read from /proc')
+    def test_nothing_holds_the_archive_open_when_it_is_deleted(self):
+        self.assertEqual([], self._held_when_deleted(permanently=True))
 
     def _move_refused(self, destination):
         """Move the book into <destination>, which will not take it, and
