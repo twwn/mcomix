@@ -302,88 +302,88 @@ class MagnifyingLens:
             [list(x) for x in zip(*(map(calc_1d, tp(ref_pos), tp(csize),
                                         src_pixbuf_size, tp(lens_size), tp(lens_scale))))]
 
-        if min(dest_lens_size) > 0:
-            # Using GdkPixbuf.Pixbuf.scale here so we do not need to worry about
-            # interpolation issues when close to the edges. Also, one can exploit it
-            # later to only recompute the parts of the lens where the content might
-            # have changed.
-            if any(flips) or any(axis_flip):
-                # Unfortunately, GdkPixbuf does not seem to provide an API for applying
-                # arbitrary matrix transforms the same way, which is why we need to
-                # apply inefficient workarounds.
+        if min(dest_lens_size) <= 0:
+            # There is either no image to be drawn at all, or it is out
+            # of range.
+            return
 
-                # keep track of (mirrored) reference point
-                refpos_tracking = list(mapped_ref_pos_int)
-                for i, s in enumerate(axis_flip):
-                    if s:
-                        # Subtracting the remainder keeps a lens with an odd number
-                        # of pixels centered at the (mirrored) reference point.
-                        refpos_tracking[i] = mapped_size[i] - refpos_tracking[i] - lens_size_2r[i]
-                refpos_tracking = tools.vector_sub(refpos_tracking, lens_size_2q)
+        # Using GdkPixbuf.Pixbuf.scale here so we do not need to worry about
+        # interpolation issues when close to the edges. Also, one can exploit it
+        # later to only recompute the parts of the lens where the content might
+        # have changed.
+        if any(flips) or any(axis_flip):
+            # Unfortunately, GdkPixbuf does not seem to provide an API for applying
+            # arbitrary matrix transforms the same way, which is why we need to
+            # apply inefficient workarounds.
 
-                # write to temporary buffer
-                tempbuf = GdkPixbuf.Pixbuf.new(srcbuf.get_colorspace(),
-                                               srcbuf.get_has_alpha(), srcbuf.get_bits_per_sample(), *dest_lens_size)
-                assert tempbuf is not None, 'the lens buffer could not be allocated'
-                temp_lens_box = box.Box.intersect(box.Box(lens_size, position=refpos_tracking),
-                                                  box.Box(mapped_size))
-                temp_x, temp_y = tools.vector_opposite(
-                    temp_lens_box.get_position())
-                srcbuf.scale(tempbuf, 0, 0, dest_lens_size[0], dest_lens_size[1],
-                             temp_x, temp_y,
-                             applied_source_scale[0], applied_source_scale[1],
-                             interpolation)  # 2D only
+            # keep track of (mirrored) reference point
+            refpos_tracking = list(mapped_ref_pos_int)
+            for i, s in enumerate(axis_flip):
+                if s:
+                    # Subtracting the remainder keeps a lens with an odd number
+                    # of pixels centered at the (mirrored) reference point.
+                    refpos_tracking[i] = mapped_size[i] - refpos_tracking[i] - lens_size_2r[i]
+            refpos_tracking = tools.vector_sub(refpos_tracking, lens_size_2q)
 
-                # apply all necessary transforms to temporary buffer
-                tempbuf = image_tools.rotate_pixbuf(tempbuf, rotation)
-                for i, f in enumerate(flips):
-                    if f:
-                        tempbuf = image_tools.flip_pixbuf(tempbuf, i)
+            # write to temporary buffer
+            tempbuf = GdkPixbuf.Pixbuf.new(srcbuf.get_colorspace(),
+                                           srcbuf.get_has_alpha(), srcbuf.get_bits_per_sample(), *dest_lens_size)
+            assert tempbuf is not None, 'the lens buffer could not be allocated'
+            temp_lens_box = box.Box.intersect(box.Box(lens_size, position=refpos_tracking),
+                                              box.Box(mapped_size))
+            temp_x, temp_y = tools.vector_opposite(
+                temp_lens_box.get_position())
+            srcbuf.scale(tempbuf, 0, 0, dest_lens_size[0], dest_lens_size[1],
+                         temp_x, temp_y,
+                         applied_source_scale[0], applied_source_scale[1],
+                         interpolation)  # 2D only
 
-                # Not sure whether it should be inverse axis remapping instead of
-                # forward, but in 2D, there is no difference anyway.
-                # 2D only, and spelled out rather than starred: the
-                # destination arguments of both calls below are followed
-                # by more of them, which a starred vector cannot express.
-                dest_x, dest_y = tp(dest_lens_offset)
-                dest_width, dest_height = tp(dest_lens_size)
+            # apply all necessary transforms to temporary buffer
+            tempbuf = image_tools.rotate_pixbuf(tempbuf, rotation)
+            for i, f in enumerate(flips):
+                if f:
+                    tempbuf = image_tools.flip_pixbuf(tempbuf, i)
 
-                # copy result from temporary buffer to actual lens buffer
-                if composite_color_args is None:
-                    tempbuf.copy_area(0, 0, dest_width, dest_height, dstbuf,
-                                      dest_x, dest_y)
-                else:
-                    check_x, check_y = tools.vector_add(tp(dest_lens_offset),
-                                                        check_offset)
-                    tempbuf.composite_color(dstbuf, dest_x, dest_y,
-                                            dest_width, dest_height, dest_x, dest_y, 1, 1,
-                                            GdkPixbuf.InterpType.NEAREST, 255, check_x, check_y,
-                                            *composite_color_args)
+            # Not sure whether it should be inverse axis remapping instead of
+            # forward, but in 2D, there is no difference anyway.
+            # 2D only, and spelled out rather than starred: the
+            # destination arguments of both calls below are followed
+            # by more of them, which a starred vector cannot express.
+            dest_x, dest_y = tp(dest_lens_offset)
+            dest_width, dest_height = tp(dest_lens_size)
+
+            # copy result from temporary buffer to actual lens buffer
+            if composite_color_args is None:
+                tempbuf.copy_area(0, 0, dest_width, dest_height, dstbuf,
+                                  dest_x, dest_y)
             else:
-                # no workaround needed
-                # 2D only, and spelled out rather than starred: the
-                # destination arguments are followed by more of them,
-                # which a starred vector cannot express.
-                if composite_color_args is None:
-                    srcbuf.scale(dstbuf, dest_lens_offset[0], dest_lens_offset[1],
-                                 dest_lens_size[0], dest_lens_size[1],
-                                 neg_mapped_lens_pos[0], neg_mapped_lens_pos[1],
-                                 applied_source_scale[0], applied_source_scale[1],
-                                 interpolation)
-                else:
-                    check_x, check_y = tools.vector_add(dest_lens_offset,
-                                                        check_offset)
-                    srcbuf.composite_color(dstbuf,
-                                           dest_lens_offset[0], dest_lens_offset[1],
-                                           dest_lens_size[0], dest_lens_size[1],
-                                           neg_mapped_lens_pos[0], neg_mapped_lens_pos[1],
-                                           applied_source_scale[0], applied_source_scale[1],
-                                           interpolation, 255, check_x, check_y,
-                                           *composite_color_args)
+                check_x, check_y = tools.vector_add(tp(dest_lens_offset),
+                                                    check_offset)
+                tempbuf.composite_color(dstbuf, dest_x, dest_y,
+                                        dest_width, dest_height, dest_x, dest_y, 1, 1,
+                                        GdkPixbuf.InterpType.NEAREST, 255, check_x, check_y,
+                                        *composite_color_args)
         else:
-            # If we are here, there is either no image to be drawn at all, or it is
-            # out of range.
-            pass
+            # no workaround needed
+            # 2D only, and spelled out rather than starred: the
+            # destination arguments are followed by more of them,
+            # which a starred vector cannot express.
+            if composite_color_args is None:
+                srcbuf.scale(dstbuf, dest_lens_offset[0], dest_lens_offset[1],
+                             dest_lens_size[0], dest_lens_size[1],
+                             neg_mapped_lens_pos[0], neg_mapped_lens_pos[1],
+                             applied_source_scale[0], applied_source_scale[1],
+                             interpolation)
+            else:
+                check_x, check_y = tools.vector_add(dest_lens_offset,
+                                                    check_offset)
+                srcbuf.composite_color(dstbuf,
+                                       dest_lens_offset[0], dest_lens_offset[1],
+                                       dest_lens_size[0], dest_lens_size[1],
+                                       neg_mapped_lens_pos[0], neg_mapped_lens_pos[1],
+                                       applied_source_scale[0], applied_source_scale[1],
+                                       interpolation, 255, check_x, check_y,
+                                       *composite_color_args)
 
 
 # vim: expandtab:sw=4:ts=4
