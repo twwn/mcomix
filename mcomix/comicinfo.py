@@ -67,6 +67,23 @@ def carried(carried_files: Mapping[str, str]) -> "tuple[str, str] | None":
     return None
 
 
+def reads_right_to_left(path: str) -> bool:
+    """Whether the ComicInfo.xml at <path> says its comic is read right
+    to left: Manga is YesAndRightToLeft.  Plain Yes says the comic is a
+    manga and nothing about its direction, so it is not taken for one;
+    a file that cannot be read says nothing either."""
+    try:
+        with open(path, 'rb') as handle:
+            document = handle.read(LARGEST + 1)
+    except OSError:
+        return False
+    if len(document) > LARGEST:
+        return False
+    root = _parse(document)
+    return root is not None and \
+        (root.findtext('Manga') or '').strip() == 'YesAndRightToLeft'
+
+
 def _page_element(number: int, path: str) -> ElementTree.Element:
     """The <Page> entry for the <number>th page, which is at <path>.
 

@@ -10,6 +10,7 @@ import weakref
 from gi.repository import Gdk, GdkPixbuf, Gtk, GLib
 
 from mcomix import canvas
+from mcomix import comicinfo
 from mcomix import constants
 from mcomix import cursor_handler
 from mcomix import i18n
@@ -103,6 +104,11 @@ class MainWindow(Gtk.Window):
         #: What the reader set the mode to by hand for a book of long
         #: strips, which holds for that book and no longer.
         self._strip_override: "bool | None" = None
+        #: The open book's ComicInfo.xml while it is being extracted to
+        #: be read for its direction, and whether it said right to left
+        #: (_look_for_direction()).
+        self._awaited_comicinfo: str | None = None
+        self._manga_told = False
         #: Which end of the page the last turn arrived at, for a draw
         #: that has to show the page anew from there.
         self._arrived_at = constants.SCROLL_TO_START
@@ -186,6 +192,7 @@ class MainWindow(Gtk.Window):
         self.filehandler = file_handler.FileHandler(self)
         self.filehandler.file_closed += self._on_file_closed
         self.filehandler.file_opened += self._on_file_opened
+        self.filehandler.file_available += self._on_comicinfo_available
         self.imagehandler = image_handler.ImageHandler(self)
         self.imagehandler.page_available += self._page_available
         self.thumbnailsidebar = thumbbar.ThumbnailSidebar(self)
@@ -1053,6 +1060,40 @@ class MainWindow(Gtk.Window):
         number, count = self.filehandler.get_file_number()
         self.statusbar.set_file_number(number, count)
         self.statusbar.update()
+        self._look_for_direction()
+
+    def _look_for_direction(self) -> None:
+        """Read a book right to left where its ComicInfo.xml says it is
+        read so, as other readers do, though manga mode is off: for that
+        book only, as a book of long strips puts itself in continuous
+        mode.  The file is asked for at the front of the queue and read
+        when it is out (_on_comicinfo_available())."""
+        if self.is_manga_mode:
+            return
+        carried = comicinfo.carried(self.filehandler.get_member_names())
+        if carried is None:
+            return
+        path = carried[0]
+        if self.filehandler.file_is_available(path):
+            self._follow_comicinfo(path)
+        else:
+            self._awaited_comicinfo = path
+            self.filehandler.ask_for_files([path])
+
+    def _on_comicinfo_available(self, paths: Sequence[str]) -> None:
+        if self._awaited_comicinfo is not None \
+                and self._awaited_comicinfo in paths:
+            path, self._awaited_comicinfo = self._awaited_comicinfo, None
+            self._follow_comicinfo(path)
+
+    def _follow_comicinfo(self, path: str) -> None:
+        if self.is_manga_mode or not comicinfo.reads_right_to_left(path):
+            return
+        self._manga_told = True
+        self.is_manga_mode = True
+        self.actiongroup.get_action('manga_mode').show_active(True)
+        self._update_page_information()
+        self.draw_image()
 
     def open_from_outside(self, paths: list[str], page: int = 0,
                           member: str | None = None) -> None:
@@ -1072,6 +1113,7 @@ class MainWindow(Gtk.Window):
         self.selected_pages = set()
         self.swap_page = None
         self._forget_strip()
+        self._forget_direction()
         self.file_actions.forget_changes()
         self.lens.file_changed()
         self.clear()
@@ -1569,13 +1611,25 @@ class MainWindow(Gtk.Window):
         prefs['virtual double page for fitting images'] = value
         self.draw_image()
 
+    def _forget_direction(self) -> None:
+        """The book whose ComicInfo.xml set its direction is going: the
+        next one reads the way the reader chose."""
+        self._awaited_comicinfo = None
+        if self._manga_told:
+            self._manga_told = False
+            self.is_manga_mode = bool(prefs['default manga mode'])
+            self.actiongroup.get_action('manga_mode').show_active(
+                self.is_manga_mode)
+
     def change_manga_mode(self, toggleaction: "ui.Action") -> None:
         """Read right to left or left to right.
 
         Which way round a double page goes, and which way the arrow keys
-        turn, both follow from this.
+        turn, both follow from this.  For a book whose ComicInfo.xml set
+        the direction, the change is for that book alone.
         """
-        prefs['default manga mode'] = toggleaction.get_active()
+        if not self._manga_told:
+            prefs['default manga mode'] = toggleaction.get_active()
         self.is_manga_mode = toggleaction.get_active()
         self._update_page_information()
         self.draw_image()
