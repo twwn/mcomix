@@ -6,7 +6,9 @@ canvas the box is drawn on, so both can be exercised without one.
 """
 
 import types
+import unittest
 
+import gi
 from gi.repository import Gdk, Graphene, Gsk, Gtk
 from gi.repository import Pango
 
@@ -71,6 +73,14 @@ class DrawTest(MComixTest):
     def _rendered(self, text, rect, size=(200, 100)):
         """Draw the OSD of <text> at <rect>, render it over a <size>
         field of grey, and answer with the rendered texture."""
+        if gi.version_info < (3, 48):
+            # Rendering takes the snapshot's render node, a fundamental
+            # type, which PyGObject hands to Python only from 3.48 on:
+            # 3.46, the floor, raises "No means to translate argument or
+            # return value for 'GskContainerNode'" (test_statusbar.py
+            # skips for the same reason).
+            raise unittest.SkipTest('PyGObject %s cannot read render nodes'
+                                    % gi.__version__)
         overlays = {}
         page_area = types.SimpleNamespace(
             set_overlay=lambda name, draw: overlays.__setitem__(name, draw))
