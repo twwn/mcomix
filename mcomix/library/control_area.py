@@ -77,7 +77,8 @@ class _ControlArea(Gtk.Box):
         label = Gtk.Label(label=_('_Search:'))
         label.set_use_underline(True)
         widgets.pack(hbox, label, False, False, 0)
-        search_entry = Gtk.Entry()
+        #: The search field, which CTRL+F in the library window focuses.
+        self.search_entry = search_entry = Gtk.Entry()
         search_entry.connect('activate', self._filter_books)
         search_entry.set_tooltip_text(
             _('Display only those books that have the specified text string '

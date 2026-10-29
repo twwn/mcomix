@@ -2,6 +2,7 @@
 
 The library, CTRL+L, files books in collections and shows their covers.
 A book is an archive in any format MComix opens; folders cannot be added.
+Escape hides the window; CTRL+W closes it.
 
 ![Library window](images/mcomix-library.png)
 
@@ -36,7 +37,7 @@ A book is an archive in any format MComix opens; folders cannot be added.
 
 ## Books
 
-- The search field shows the books whose name or path contains its text, case aside, once Enter is pressed.
+- The search field shows the books whose name or path contains its text, case aside, once Enter is pressed. CTRL+F goes to it.
 - A book's cover is its first picture, or the first one named "cover" or "front". Pictures named "credit" or "banner" are passed over.
 - To choose another, open the book, right-click the page and tick "Cover in the library". The book is not changed. Untick it there to go back.
 - A book read to its last page has a tick on its cover.

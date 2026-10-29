@@ -118,6 +118,34 @@ class LibraryDialogTest(_LibraryWindowTest):
         main_dialog._close_dialog()
         self.assertEqual(focus_when_unrealized, [None])
 
+    def _press(self, dialog, keyval, state=Gdk.ModifierType.CONTROL_MASK):
+        return dialog._key_press_event(None, keyval, 0, state)
+
+    def test_control_w_closes_the_library_as_its_close_button_does(self):
+        dialog = self._open()
+        with unittest.mock.patch.object(
+                dialog, 'close', wraps=dialog.close) as closed:
+            self.assertEqual(Gdk.EVENT_STOP, self._press(dialog, Gdk.KEY_w))
+        closed.assert_called_once_with()
+        self.assertIsNone(main_dialog.get_dialog())
+
+    def test_control_f_goes_to_the_search_field(self):
+        dialog = self._open()
+        dialog.present()
+        dialog.book_area.grab_focus()
+        pump()
+        self.assertEqual(Gdk.EVENT_STOP, self._press(dialog, Gdk.KEY_f))
+        self.assertTrue(dialog.control_area.search_entry.has_focus()
+                        or dialog.get_focus().get_parent()
+                        is dialog.control_area.search_entry)
+
+    def test_a_plain_w_or_f_is_left_to_the_focused_widget(self):
+        dialog = self._open()
+        for keyval in (Gdk.KEY_w, Gdk.KEY_f):
+            self.assertEqual(Gdk.EVENT_PROPAGATE, self._press(
+                dialog, keyval, Gdk.ModifierType(0)))
+        self.assertIs(dialog, main_dialog.get_dialog())
+
     def test_the_window_carries_the_three_areas(self):
         dialog = self._open()
         self.assertIsNotNone(dialog.book_area)

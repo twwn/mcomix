@@ -252,11 +252,20 @@ class _LibraryDialog(Gtk.Window):
     def _key_press_event(self, controller: Gtk.EventControllerKey,
                          keyval: int, keycode: int,
                          state: Gdk.ModifierType) -> bool:
-        """ Handle key press events for closing the library on Escape press. """
+        """Escape hides the library; CTRL+W closes it, as the window's
+        close button does; CTRL+F goes to the search field."""
 
         if keyval == Gdk.KEY_Escape:
             self.set_visible(False)
             return Gdk.EVENT_STOP
+        if state & Gdk.ModifierType.CONTROL_MASK:
+            key = Gdk.keyval_to_lower(keyval)
+            if key == Gdk.KEY_w:
+                self.close()
+                return Gdk.EVENT_STOP
+            if key == Gdk.KEY_f:
+                self.control_area.search_entry.grab_focus()
+                return Gdk.EVENT_STOP
         return Gdk.EVENT_PROPAGATE
 
 
