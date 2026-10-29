@@ -46,7 +46,8 @@ A book is an archive in any format MComix opens; folders cannot be added.
   - "Remove from this collection".
   - "Remove from the library".
   - "Remove and move to the trash": the only one that touches the files. They can be restored from the trash. Where the trash would refuse one, MComix asks to delete it permanently instead. It also takes them out of the recent files and asks about their bookmarks.
-- "Copy" puts a single book's path and cover on the clipboard.
+- "Copy", or CTRL+C, puts a single book's path and cover on the clipboard.
+- Delete takes the selected books out of the collection on show, as "Remove from this collection" does. Under "All books" it does nothing.
 - "Open containing folder" shows a single book in the file manager.
 - "Sort" orders by name, full path, file size, date added or by hand; "Cover size" sets how large covers are drawn.
 - A middle click on a cover starts a second MComix on that book.

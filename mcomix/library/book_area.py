@@ -180,6 +180,10 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         assert library is not None, 'the library window is gone'
         return library
 
+    #: The keys _key_press() answers for a popup entry, shown beside it.
+    _MENU_KEYS = {'remove-from-collection': 'Delete',
+                  'copy-to-clipboard': '<Control>c'}
+
     #: The popup's plain entries: action name, label, tooltip, handler.
     def _menu_entries(self) -> "tuple[tuple[str, str, str, Callable[..., None]], ...]":  # type: ignore[explicit-any]  # the menu items differ in what their handlers take
         return (
@@ -256,7 +260,11 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
                                (None, entries[5:9]), (None, entries[9:11])):
             section = Gio.Menu()
             for name, label, tooltip, handler in group:
-                section.append(label, 'books.' + name)
+                item = Gio.MenuItem.new(label, 'books.' + name)
+                if name in self._MENU_KEYS:
+                    item.set_attribute_value(
+                        'accel', GLib.Variant('s', self._MENU_KEYS[name]))
+                section.append_item(item)
             model.append_section(heading, section)
 
         sort_menu = Gio.Menu()
@@ -1093,6 +1101,10 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         """Handle key presses on the _BookArea."""
         if keyval == Gdk.KEY_Delete:
             self._remove_books_from_collection()
+            return Gdk.EVENT_STOP
+        if state & Gdk.ModifierType.CONTROL_MASK \
+                and Gdk.keyval_to_lower(keyval) == Gdk.KEY_c:
+            self._copy_selected()
             return Gdk.EVENT_STOP
         # A GTK4 widget has no popup-menu signal, so the keys that
         # asked for a menu through it are heard here.

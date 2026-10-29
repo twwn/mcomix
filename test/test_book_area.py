@@ -8,7 +8,7 @@ import types
 import unittest.mock
 import warnings
 
-from gi.repository import Gdk, GdkPixbuf, GLib, Gtk
+from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk
 
 from . import MComixTest, hold_open, pump, wait_for
 from .test_theme import background_of
@@ -1309,6 +1309,32 @@ class MenuKeyTest(MComixTest):
         self.assertEqual(Gdk.EVENT_PROPAGATE,
                          self._press(Gdk.KEY_F10, Gdk.ModifierType(0)))
         self.assertFalse(self.area._book_menu.get_visible())
+
+    def test_control_c_copies_the_selected_book(self):
+        """The menu's "Copy" had no key; CTRL+C is the one every
+        file manager gives it."""
+        with unittest.mock.patch.object(self.area, '_copy_selected') \
+                as copied:
+            self.assertEqual(Gdk.EVENT_STOP, self._press(
+                Gdk.KEY_c, Gdk.ModifierType.CONTROL_MASK))
+            self.assertEqual(Gdk.EVENT_PROPAGATE, self._press(
+                Gdk.KEY_c, Gdk.ModifierType(0)))
+        copied.assert_called_once_with()
+
+    def test_the_menu_shows_the_keys_the_area_answers(self):
+        accels = {}
+        sections = self.area._book_menu.get_menu_model()
+        for i in range(sections.get_n_items()):
+            section = sections.get_item_link(i, Gio.MENU_LINK_SECTION)
+            for j in range(section.get_n_items()):
+                action = section.get_item_attribute_value(
+                    j, Gio.MENU_ATTRIBUTE_ACTION, GLib.VariantType('s'))
+                accel = section.get_item_attribute_value(
+                    j, 'accel', GLib.VariantType('s'))
+                if action is not None and accel is not None:
+                    accels[action.get_string()] = accel.get_string()
+        self.assertEqual({'books.remove-from-collection': 'Delete',
+                          'books.copy-to-clipboard': '<Control>c'}, accels)
 
 
 class OpenAndClickTest(MComixTest):
