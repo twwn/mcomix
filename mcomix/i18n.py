@@ -1,6 +1,8 @@
 """ i18n.py - Encoding and translation handler."""
 
+import functools
 import gettext
+import importlib.util
 import io
 import locale
 import os
@@ -8,15 +10,6 @@ import pkgutil
 import re
 import sys
 from collections.abc import Sequence
-
-try:
-    import chardet
-except ImportError:
-    chardet = None  # type: ignore[assignment]
-
-#: Which chardet this is: 7 was written anew, and reads its confidence
-#: differently.
-_CHARDET_MAJOR = int(chardet.__version__.split('.')[0]) if chardet else 0
 
 from mcomix import preferences
 from mcomix import portability
@@ -42,6 +35,14 @@ _language_preference = 'auto'
 _RTL_LANGUAGES = frozenset(('fa', 'he'))
 
 
+@functools.cache
+def _have_chardet() -> bool:
+    """Whether chardet is installed.  It is imported only when a name
+    or comment needs its guess: importing it took about a sixth of the
+    time MComix took to import its main window."""
+    return importlib.util.find_spec('chardet') is not None
+
+
 def guess_encoding(data: bytes, sure: bool = False) -> str | None:
     """The encoding chardet, where it is installed, reads <data> in.
 
@@ -57,15 +58,18 @@ def guess_encoding(data: bytes, sure: bool = False) -> str | None:
     came at 0.01 to 0.43, and some it read wrong at 0.027 - so a guess
     from it is taken as it is.
     """
-    if not chardet:
+    if not _have_chardet():
         return None
+    import chardet
     era = getattr(chardet, 'EncodingEra', None)
     if era is not None:
         guessed = chardet.detect(data, encoding_era=era.MODERN_WEB)
     else:
         guessed = chardet.detect(data)
     encoding = guessed['encoding']
-    if (sure and encoding is not None and _CHARDET_MAJOR < 7
+    # chardet 7 was written anew, and reads its confidence differently.
+    if (sure and encoding is not None
+            and int(chardet.__version__.split('.')[0]) < 7
             and guessed['confidence'] < 0.5):
         return None
     return encoding

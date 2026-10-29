@@ -4,6 +4,8 @@ import glob
 import locale
 import os
 import re
+import subprocess
+import sys
 import unittest.mock
 
 from gi.repository import Gtk
@@ -41,6 +43,25 @@ RTL_LANGUAGES = frozenset((
 #: written in more than one script: pa_Arab reads right to left where
 #: pa does not.
 RTL_SCRIPTS = frozenset(('Adlm', 'Arab', 'Hebr', 'Nkoo', 'Syrc', 'Thaa'))
+
+
+class StartUpImportTest(MComixTest):
+
+    def test_chardet_waits_until_a_guess_is_wanted(self):
+        """Importing chardet took about a sixth of the time importing
+        the main window took; only names and comments that are not
+        UTF-8 need it."""
+        home = self.tmp_dir
+        environment = dict(
+            os.environ, HOME=home, APPDATA=home, LOCALAPPDATA=home,
+            XDG_CONFIG_HOME=home, XDG_DATA_HOME=home, XDG_CACHE_HOME=home)
+        result = subprocess.run(
+            [sys.executable, '-c',
+             'import sys, mcomix.main; print("chardet" in sys.modules)'],
+            capture_output=True, text=True, timeout=30, env=environment,
+            cwd=os.path.dirname(os.path.dirname(i18n.__file__)))
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertEqual('False', result.stdout.splitlines()[-1])
 
 
 class LanguageTest(MComixTest):
