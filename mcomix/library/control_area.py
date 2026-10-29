@@ -213,6 +213,15 @@ class _ControlArea(Gtk.Box):
         self._filter_books(entry)
         return GLib.SOURCE_REMOVE
 
+    def clear_search(self) -> bool:
+        """Empty a search field that holds text and show every book of
+        the collection again, at once.  Answers whether there was any."""
+        if not self.search_entry.get_text():
+            return False
+        self.search_entry.set_text('')
+        self._filter_books(self.search_entry)
+        return True
+
     def _cancel_pending_filter(self, *args: object) -> None:
         if self._pending_filter:
             GLib.source_remove(self._pending_filter)

@@ -2,7 +2,7 @@
 
 The library, CTRL+L, files books in collections and shows their covers.
 A book is an archive in any format MComix opens; folders cannot be added.
-Escape hides the window; CTRL+W closes it.
+Escape hides the window; CTRL+W closes it. In the search field, Escape first empties the search.
 
 ![Library window](images/mcomix-library.png)
 

@@ -191,6 +191,35 @@ class LibraryDialogTest(_LibraryWindowTest):
         pump()
         self.assertFalse(control._pending_filter)
 
+    def test_escape_in_a_search_empties_it_before_it_hides_the_library(self):
+        dialog = self._open()
+        dialog.present()
+        entry = dialog.control_area.search_entry
+        entry.set_text('night')
+        entry.emit('activate')
+        entry.grab_focus()
+        pump()
+        self.assertEqual('night', dialog.filter_string)
+        none = Gdk.ModifierType(0)
+        self.assertEqual(Gdk.EVENT_STOP,
+                         self._press(dialog, Gdk.KEY_Escape, none))
+        self.assertEqual('', entry.get_text())
+        self.assertIsNone(dialog.filter_string)
+        self.assertTrue(dialog.get_visible(), 'the library was hidden')
+        self._press(dialog, Gdk.KEY_Escape, none)
+        self.assertFalse(dialog.get_visible())
+
+    def test_escape_with_the_covers_focused_hides_the_library(self):
+        """A search left in the field is kept: the focus is elsewhere."""
+        dialog = self._open()
+        dialog.present()
+        dialog.control_area.search_entry.set_text('night')
+        dialog.book_area.grab_focus()
+        pump()
+        self._press(dialog, Gdk.KEY_Escape, Gdk.ModifierType(0))
+        self.assertFalse(dialog.get_visible())
+        self.assertEqual('night', dialog.control_area.search_entry.get_text())
+
     def test_the_window_carries_the_three_areas(self):
         dialog = self._open()
         self.assertIsNotNone(dialog.book_area)

@@ -253,9 +253,16 @@ class _LibraryDialog(Gtk.Window):
                          keyval: int, keycode: int,
                          state: Gdk.ModifierType) -> bool:
         """Escape hides the library; CTRL+W closes it, as the window's
-        close button does; CTRL+F goes to the search field."""
+        close button does; CTRL+F goes to the search field.  In a search
+        field that holds text, Escape empties it first, as a search
+        field does elsewhere."""
 
         if keyval == Gdk.KEY_Escape:
+            focus = self.get_focus()
+            entry = self.control_area.search_entry
+            if focus is not None and (focus is entry or focus.is_ancestor(entry)) \
+                    and self.control_area.clear_search():
+                return Gdk.EVENT_STOP
             self.set_visible(False)
             return Gdk.EVENT_STOP
         if state & Gdk.ModifierType.CONTROL_MASK:
