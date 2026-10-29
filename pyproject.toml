@@ -131,3 +131,13 @@ untyped_calls_exclude = [
 disallow_any_explicit = true
 
 # Everything --strict turns on is on.
+
+# MComix uses no Qt, but Pillow's annotations reach PIL.ImageQt, which
+# imports PyQt6 where it is installed, and PyQt6 6.12's own QtGui.pyi
+# does not parse ("'/' parameter must appear before '*' parameter"),
+# which stopped mypy before it looked at MComix.  A stub is read
+# whatever follow_imports says, so the module that leads to it is the
+# one not followed.
+[[tool.mypy.overrides]]
+module = ["PIL.ImageQt"]
+follow_imports = "skip"
