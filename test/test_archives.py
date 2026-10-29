@@ -1110,6 +1110,31 @@ xfail_list = [
     ('LhaExternalUnicode', 'test_list_contents'),
 ]
 
+def _unrar_skips_star_names() -> bool:
+    """Whether libunrar leaves out a member whose name holds a '*'.
+
+    Since 7.3.2 it reports success for such a member and writes nothing,
+    the same with a destination name, a destination folder, or the data
+    handed to the callback; what the program sees is a missing file. """
+    if 'win32' == sys.platform or not rar.RarArchive.is_available():
+        return False
+    archive = rar.RarArchive(get_testfile_path('archives', 'GlobEntries.rar'))
+    with tempfile.TemporaryDirectory() as dest_dir:
+        try:
+            archive.extract('*oo.JPG', dest_dir)
+        finally:
+            archive.close()
+        return not os.path.isfile(os.path.join(dest_dir, '*oo.JPG'))
+
+
+if _unrar_skips_star_names():
+    xfail_list.extend([
+        ('RarDllGlobEntries', 'test_iter_extract'),
+        ('RarDllGlobEntries', 'test_extract'),
+        ('RarDllSolidGlobEntries', 'test_iter_extract'),
+        ('RarDllSolidGlobEntries', 'test_extract'),
+    ])
+
 if 'win32' == sys.platform:
     xfail_list.extend([
         # Bug...
