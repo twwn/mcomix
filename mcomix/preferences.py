@@ -32,13 +32,17 @@ from mcomix import tools
 #:   8: "page counter in fullscreen", on or off, is "page counter", one
 #:      of three.
 #:   9: "click halves", on or off, is "click zones", one of three.
-CONFIG_FORMAT_VERSION = 9
+#:  10: CTRL with Plus, Equal and Minus zooms, as in other programs,
+#:      where the reader has not bound those keys elsewhere.
+CONFIG_FORMAT_VERSION = 10
 
 #: Keys a step of _migrate_preferences() has given to another action, as
 #: (action, accelerator, holder): the key bindings are read after the
 #: preferences, and take these over once every action has its keys.  A
 #: key is taken only from <holder>, where one is named, so that a key
-#: the reader has bound elsewhere stays where they put it.
+#: the reader has bound elsewhere stays where they put it.  A holder of
+#: '' gives the key only where no action holds it: a new default for an
+#: action the file already lists.
 keybinding_moves: list[tuple[str, str, str | None]] = []
 
 #: The key the version above is stored under.  It lives among the
@@ -571,6 +575,16 @@ def _migrate_preferences(saved_prefs: dict[str, object]) -> None:
         # The halves became one choice of three, beside the thirds.
         if saved_prefs.pop('click halves', False) is True:
             saved_prefs['click zones'] = 1
+
+    if version < 10:
+        # New defaults of actions every keybindings.conf lists, which
+        # an action takes only where its list is empty.
+        for action, accelerators in (
+                ('zoom_in', ('<Control>plus', '<Control>equal',
+                             '<Control>KP_Add')),
+                ('zoom_out', ('<Control>minus', '<Control>KP_Subtract'))):
+            keybinding_moves.extend(
+                (action, accelerator, '') for accelerator in accelerators)
 
     saved_prefs[_FORMAT_VERSION_KEY] = CONFIG_FORMAT_VERSION
 

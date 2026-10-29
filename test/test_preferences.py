@@ -320,7 +320,23 @@ class MigratePreferencesTest(MComixTest):
         self._write({_FORMAT_VERSION_KEY: 5, 'escape quits': True})
         preferences.read_preferences_file()
         self.assertEqual(['previous_page_ff_dynamic', 'next_page_ff_dynamic'],
-                         [move[0] for move in preferences.keybinding_moves])
+                         [move[0] for move in preferences.keybinding_moves
+                          if move[2] != ''])
+
+    def test_a_file_before_format_10_gives_the_zoom_keys_ctrl(
+            self) -> None:
+        """Only where the keys are free: a holder of '' takes them off
+        no action."""
+        self.addCleanup(preferences.keybinding_moves.clear)
+        preferences.keybinding_moves.clear()
+        self._write({_FORMAT_VERSION_KEY: 9})
+        preferences.read_preferences_file()
+        self.assertEqual(
+            [('zoom_in', '<Control>plus', ''), ('zoom_in', '<Control>equal', ''),
+             ('zoom_in', '<Control>KP_Add', ''),
+             ('zoom_out', '<Control>minus', ''),
+             ('zoom_out', '<Control>KP_Subtract', '')],
+            preferences.keybinding_moves)
 
     def test_the_ten_page_turns_move_to_the_ones_that_follow_manga_mode(
             self) -> None:
@@ -336,12 +352,12 @@ class MigratePreferencesTest(MComixTest):
             [('previous_page_ff_dynamic', '<Shift><Alt>Left',
               'previous_page_ff'),
              ('next_page_ff_dynamic', '<Shift><Alt>Right', 'next_page_ff')],
-            preferences.keybinding_moves)
+            [move for move in preferences.keybinding_moves if move[2] != ''])
 
-    def test_a_file_at_format_7_moves_no_key(self) -> None:
+    def test_a_file_at_format_10_moves_no_key(self) -> None:
         self.addCleanup(preferences.keybinding_moves.clear)
         preferences.keybinding_moves.clear()
-        self._write({_FORMAT_VERSION_KEY: 7})
+        self._write({_FORMAT_VERSION_KEY: 10})
         preferences.read_preferences_file()
         self.assertEqual([], preferences.keybinding_moves)
 

@@ -189,6 +189,38 @@ class StoredKeybindingsTest(MComixTest):
         self.assertEqual(
             [], manager.get_bindings_for_action('previous_page_ff_dynamic'))
 
+    def _new_default_manager(self, stored):
+        """A manager over <stored> with CTRL+Plus given to Zoom in as
+        a new default, as format 10 gives it."""
+        from mcomix import preferences
+        self.addCleanup(preferences.keybinding_moves.clear)
+        preferences.keybinding_moves[:] = [('zoom_in', '<Control>plus', '')]
+        with open(constants.KEYBINDINGS_CONF_PATH, 'w') as fp:
+            json.dump(stored, fp)
+        manager = keybindings._KeybindingManager(_StubWindow())
+        for action, default in (('zoom_in', 'plus'),
+                                ('slideshow', '<Control>S')):
+            manager.register(action, [default], lambda: None)
+        manager.take_over_moved_keys()
+        return manager
+
+    def test_a_new_default_joins_the_keys_a_file_lists(self):
+        """Every keybindings.conf lists Zoom in, which therefore never
+        took a default added later."""
+        manager = self._new_default_manager(
+            {'zoom_in': ['plus'], 'slideshow': ['<Control>S']})
+        self.assertEqual(
+            [keybindings.parse_accelerator(key)
+             for key in ('plus', '<Control>plus')],
+            manager.get_bindings_for_action('zoom_in'))
+
+    def test_a_new_default_the_reader_bound_elsewhere_stays_there(self):
+        plus = keybindings.parse_accelerator('<Control>plus')
+        manager = self._new_default_manager(
+            {'zoom_in': ['plus'], 'slideshow': ['<Control>plus']})
+        self.assertEqual([plus], manager.get_bindings_for_action('slideshow'))
+        self.assertNotIn(plus, manager.get_bindings_for_action('zoom_in'))
+
     def test_a_file_of_the_wrong_shape_leaves_the_defaults(self):
         """Any JSON that was not an object of lists of names stopped
         MComix before it had a window, and a name where a list belongs

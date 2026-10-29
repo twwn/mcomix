@@ -319,10 +319,12 @@ class EventHandler:
 
         # Zooming commands for manual zoom mode
         manager.register('zoom_in',
-                         ['plus', 'KP_Add', 'equal'],
+                         ['plus', 'KP_Add', 'equal', '<Control>plus',
+                          '<Control>equal', '<Control>KP_Add'],
                          self._window.actiongroup.get_action('zoom_in').activate)
         manager.register('zoom_out',
-                         ['minus', 'KP_Subtract'],
+                         ['minus', 'KP_Subtract', '<Control>minus',
+                          '<Control>KP_Subtract'],
                          self._window.actiongroup.get_action('zoom_out').activate)
         manager.register('zoom_original',
                          ['<Control>0', 'KP_0'],

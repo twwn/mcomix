@@ -118,6 +118,17 @@ class KeyPressTest(_KeyPressWindowTest):
             with self.subTest(keyval=Gdk.keyval_name(keyval)):
                 self.assertEqual(Gdk.EVENT_STOP, self._press(keyval))
 
+    def test_control_equal_and_minus_zoom_as_in_other_programs(self):
+        manager = keybindings.keybinding_manager(self.window)
+        control = Gdk.ModifierType.CONTROL_MASK
+        for keyval, action in ((Gdk.KEY_equal, 'zoom_in'),
+                               (Gdk.KEY_minus, 'zoom_out')):
+            self.executed.clear()
+            self._press(keyval, control)
+            self.assertEqual([(keyval, control)], self.executed)
+            self.assertIn((keyval, control),
+                          manager.get_bindings_for_action(action))
+
     def test_other_keys_go_on_to_the_focused_widget(self):
         self.assertEqual(Gdk.EVENT_PROPAGATE, self._press(Gdk.KEY_n))
 

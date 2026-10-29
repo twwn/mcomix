@@ -290,8 +290,13 @@ class _KeybindingManager:
                 preferences.keybinding_moves.pop(0)
             binding = parse_accelerator(accelerator)
             holder = self._binding_to_action.get(binding)
-            if holder == name or (only_from is not None
-                                  and holder != only_from):
+            if holder == name:
+                continue
+            if only_from == '':
+                # A new default: it goes only where the key is free.
+                if holder is not None:
+                    continue
+            elif only_from is not None and holder != only_from:
                 continue
             if holder is not None:
                 self._action_to_bindings[holder].remove(binding)

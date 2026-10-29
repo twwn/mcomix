@@ -76,8 +76,8 @@ Fit to height mode | H
 Fixed size mode | S
 Manual zoom mode | A
 Stretch small images | Y
-Zoom in | Plus, KeyPadAdd, Equal, CTRL+MouseWheelUp
-Zoom out | Minus, KeyPadSubtract, CTRL+MouseWheelDown
+Zoom in | Plus, KeyPadAdd, Equal, CTRL+Plus, CTRL+Equal, CTRL+KeyPadAdd, CTRL+MouseWheelUp
+Zoom out | Minus, KeyPadSubtract, CTRL+Minus, CTRL+KeyPadSubtract, CTRL+MouseWheelDown
 Reset zoom | CTRL+0, KeyPad0
 Rotate 90 degrees clockwise | R
 Rotate 90 degrees anticlockwise | SHIFT+R
