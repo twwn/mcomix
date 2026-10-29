@@ -414,8 +414,12 @@ class FileChooserTest(MComixTest):
         path = get_testfile_path('archives', '01-ZIP-Normal.zip')
         self._choose(path)
         self.assertEqual(os.path.dirname(path), self._reopened_in())
-        chosen = self.dialog.filechooser.get_file()
-        self.assertEqual(path, chosen.get_path() if chosen else None)
+        # GTK selects the file once the folder has loaded, after the
+        # folder is set: the Windows runner read it before that, once
+        # in four runs.
+        self.assertTrue(wait_for(
+            lambda: self.dialog.filechooser.get_file() is not None))
+        self.assertEqual(path, self.dialog.filechooser.get_file().get_path())
 
     def test_without_a_file_history_it_forgets_the_file_last_chosen(self):
         """With "Store information about recently opened files" off,
