@@ -134,6 +134,9 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable):
         assert library is not None, 'the library window is gone'
         return library
 
+    #: The keys _key_press() answers for a popup entry, shown beside it.
+    _MENU_KEYS = {'rename': 'F2', 'remove': 'Delete'}
+
     def _create_popup_menu(self) -> Gtk.PopoverMenu:
         """Build the right-click menu for the collection list."""
         entries = (
@@ -167,17 +170,16 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable):
         # The heading is the label of the first section, which a GTK 4
         # popover draws as a title over it.
         model = Gio.Menu()
-        adding = Gio.Menu()
-        adding.append(entries[0][1], 'collections.add')
-        model.append_section(_('Library collections'), adding)
-        creating = Gio.Menu()
-        for entry in entries[1:4]:
-            creating.append(entry[1], 'collections.%s' % entry[0])
-        model.append_section(None, creating)
-        removing = Gio.Menu()
-        for entry in entries[4:]:
-            removing.append(entry[1], 'collections.%s' % entry[0])
-        model.append_section(None, removing)
+        for heading, group in ((_('Library collections'), entries[0:1]),
+                               (None, entries[1:4]), (None, entries[4:])):
+            section = Gio.Menu()
+            for name, label, _tooltip, _handler in group:
+                item = Gio.MenuItem.new(label, 'collections.' + name)
+                if name in self._MENU_KEYS:
+                    item.set_attribute_value(
+                        'accel', GLib.Variant('s', self._MENU_KEYS[name]))
+                section.append_item(item)
+            model.append_section(heading, section)
 
         menu = Gtk.PopoverMenu.new_from_model(model)
         return menu
@@ -345,7 +347,10 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable):
     def _rename_collection(self, *args: object) -> None:
         """Rename the currently selected collection, using a dialog."""
         collection = self.get_current_collection()
-        if collection is None:
+        # The menu offers no renaming over the built-in rows; F2 is
+        # heard over them too.
+        if collection is None or collection in (
+                constants.COLLECTION_ALL, constants.COLLECTION_RECENT):
             return
         old_name = self._collection_name(collection)
         rename_dialog = message_dialog.MessageDialog(
@@ -445,6 +450,9 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable):
         """Handle key presses on the _CollectionArea."""
         if keyval == Gdk.KEY_Delete:
             self._remove_collection()
+            return Gdk.EVENT_STOP
+        if keyval == Gdk.KEY_F2:
+            self._rename_collection()
             return Gdk.EVENT_STOP
         # A GTK4 widget has no popup-menu signal, so the keys that
         # asked for a menu through it are heard here.

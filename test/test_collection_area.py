@@ -12,7 +12,7 @@ Gtk.DropTarget, since a real drag needs a pointer no test has.
 import os
 import unittest.mock
 
-from gi.repository import Gdk, Gtk
+from gi.repository import Gdk, Gio, GLib, Gtk
 
 from . import MComixTest, hold_open, pump
 
@@ -276,6 +276,47 @@ class CollectionAreaTest(MComixTest):
             self._row_for(constants.COLLECTION_ALL))
         self.area._remove_collection()
         self.assertIn(constants.COLLECTION_ALL, self._shown())
+
+    def _dialogs_opened_by(self, keyval):
+        """The message dialogs <keyval> pressed on the area puts up."""
+        before = set(Gtk.Window.list_toplevels())
+        self.assertEqual(Gdk.EVENT_STOP, self.area._key_press(
+            None, keyval, 0, Gdk.ModifierType(0)))
+        opened = [window for window in
+                  set(Gtk.Window.list_toplevels()) - before
+                  if isinstance(window, message_dialog.MessageDialog)]
+        # A dialog left standing is answered by whichever test next
+        # goes looking for one.
+        self.addCleanup(pump)
+        for dialog in opened:
+            self.addCleanup(dialog.destroy)
+        return opened
+
+    def test_f2_asks_what_to_rename_the_selected_collection_to(self):
+        """F2 renames, as it does a file in a file manager."""
+        self.area._list.select_row(self._row_for(self.manga))
+        self.assertEqual(1, len(self._dialogs_opened_by(Gdk.KEY_F2)))
+
+    def test_f2_over_all_books_asks_nothing(self):
+        """The menu offers no renaming over a built-in row."""
+        self.area._list.select_row(
+            self._row_for(constants.COLLECTION_ALL))
+        self.assertEqual([], self._dialogs_opened_by(Gdk.KEY_F2))
+
+    def test_the_menu_shows_the_keys_the_area_answers(self):
+        accels = {}
+        sections = self.area._collection_menu.get_menu_model()
+        for i in range(sections.get_n_items()):
+            section = sections.get_item_link(i, Gio.MENU_LINK_SECTION)
+            for j in range(section.get_n_items()):
+                action = section.get_item_attribute_value(
+                    j, Gio.MENU_ATTRIBUTE_ACTION, GLib.VariantType('s'))
+                accel = section.get_item_attribute_value(
+                    j, 'accel', GLib.VariantType('s'))
+                if action is not None and accel is not None:
+                    accels[action.get_string()] = accel.get_string()
+        self.assertEqual({'collections.rename': 'F2',
+                          'collections.remove': 'Delete'}, accels)
 
     def test_duplicating_a_collection_adds_another_one(self):
         before = len(self._shown())

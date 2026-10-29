@@ -22,6 +22,7 @@ A book is an archive in any format MComix opens; folders cannot be added.
   - "Clean up" drops books whose files are gone.
   - "Relocate..." follows a folder of books that was moved or renamed outside MComix; see below.
   - "Remove" keeps the books in the library, and moves the collections under it to the top.
+  - F2 renames the selected collection; Delete removes it.
 
 ## A folder that moved
 
