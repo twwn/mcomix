@@ -116,6 +116,20 @@ class WindowDirectionTest(MComixTest):
         self.assertFalse(window.is_manga_mode)
         self.assertFalse(self._manga_action().get_active())
 
+    def test_the_next_book_of_a_right_to_left_series_reads_so_too(self):
+        """Closing the first book puts the reader's choice back, and the
+        next one's ComicInfo.xml is read for itself."""
+        first = self._book('01.cbz', 'YesAndRightToLeft')
+        second = self._book('02.cbz', 'YesAndRightToLeft')
+        window = self._open(first)
+        self.assertTrue(wait_for(lambda: window.is_manga_mode, seconds=10))
+        self.assertTrue(window.filehandler.open_next_archive())
+        self.assertTrue(wait_for(
+            lambda: window.filehandler.get_path_to_base() == second
+            and window.is_manga_mode, seconds=10),
+            'the second book was not read right to left')
+        self.assertFalse(prefs['default manga mode'])
+
     def test_turning_it_off_and_on_holds_for_that_book_alone(self):
         window = self._open(self._book('Right.cbz', 'YesAndRightToLeft'))
         self.assertTrue(wait_for(lambda: window.is_manga_mode, seconds=10))
