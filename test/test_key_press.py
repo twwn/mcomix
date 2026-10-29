@@ -125,7 +125,12 @@ class KeyPressTest(_KeyPressWindowTest):
                                (Gdk.KEY_minus, 'zoom_out')):
             self.executed.clear()
             self._press(keyval, control)
-            self.assertEqual([(keyval, control)], self.executed)
+            # Which key types the character is the keymap's to say: on
+            # Windows the first key for '-' is the keypad's, which turns
+            # into KP_Subtract, as bound as the other.
+            self.assertEqual(1, len(self.executed))
+            self.assertIn(self.executed[0],
+                          manager.get_bindings_for_action(action))
             self.assertIn((keyval, control),
                           manager.get_bindings_for_action(action))
 
