@@ -42,13 +42,14 @@ class PasswordDialogTest(MComixTest):
         pump()
         super().tearDown()
 
-    def _wait_for_prompt(self, rounds=400):
-        for _ in range(rounds):
-            pump()
-            prompts = visible_prompts()
-            if prompts:
-                return prompts[0]
-        self.fail('no password prompt appeared')
+    def _wait_for_prompt(self):
+        """The prompt, once a worker thread has asked for it.  By time,
+        not by turns of the main loop: a turn with nothing pending
+        returns at once, and four hundred of them were over before a
+        slow Windows runner's worker had asked."""
+        if not wait_for(lambda: bool(visible_prompts()), seconds=10):
+            self.fail('no password prompt appeared')
+        return visible_prompts()[0]
 
     def _entry_in(self, widget):
         """Find the password entry. GTK4 has no Gtk.Container to ask for
@@ -175,10 +176,7 @@ class PasswordDialogTest(MComixTest):
         self._entry_in(prompt).set_text('password')
         prompt.response(Response.OK)
 
-        for _ in range(400):
-            pump()
-            if listed:
-                break
+        wait_for(lambda: bool(listed), seconds=10)
         worker.join(timeout=10)
         self.assertFalse(worker.is_alive(), 'the listing thread never resumed')
         self.assertNotIn('error', listed, str(listed.get('error')))
