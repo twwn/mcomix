@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Comix 4.0.3\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-17 10:09+0200\n"
+"POT-Creation-Date: 2026-10-29 22:58+0100\n"
 "PO-Revision-Date: 2009-01-26 19:34+0100\n"
 "Last-Translator: Ernő Drabik <drerno@gmail.com>\n"
 "Language-Team: \n"
@@ -47,7 +47,7 @@ msgstr "! Kibontási hiba: %s"
 msgid "! Could not read %s"
 msgstr "! Nem sikerült beolvasni: %s"
 
-#: mcomix/archive_packer.py:183 mcomix/file_actions.py:1136
+#: mcomix/archive_packer.py:183 mcomix/file_actions.py:1137
 #: mcomix/library/book_area.py:922
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
@@ -96,7 +96,7 @@ msgid "_No"
 msgstr "_Nem"
 
 #: mcomix/bookmark_backend.py:460 mcomix/edit_dialog.py:64
-#: mcomix/file_actions.py:952 mcomix/file_actions.py:1118
+#: mcomix/file_actions.py:953 mcomix/file_actions.py:1119
 #: mcomix/file_chooser_base_dialog.py:237
 #: mcomix/file_chooser_base_dialog.py:242
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
@@ -144,7 +144,7 @@ msgstr "Könyvjelzők szerkesztése"
 msgid "C_lear bookmarks..."
 msgstr "Könyvjelzők _törlése..."
 
-#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1290 mcomix/openwith.py:340
+#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1336 mcomix/openwith.py:340
 #: mcomix/library/collection_area.py:157 mcomix/library/watchlist.py:64
 msgid "_Remove"
 msgstr "_Eltávolítás"
@@ -165,7 +165,7 @@ msgstr "Típus"
 msgid "Name"
 msgstr "Név"
 
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:2379
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:2425
 #: mcomix/library/control_area.py:152
 msgid "Page"
 msgstr "Oldal"
@@ -198,7 +198,7 @@ msgstr "A könyv könyvjelzőinek _eltávolítása..."
 msgid "_Edit bookmarks..."
 msgstr "Könyvjelzők s_zerkesztése..."
 
-#: mcomix/bookmark_menu.py:204 mcomix/file_actions.py:1182
+#: mcomix/bookmark_menu.py:204 mcomix/file_actions.py:1183
 #, python-format
 msgid "Remove the bookmarks in \"%s\"?"
 msgstr "Eltávolítja a(z) „%s” könyvjelzőit?"
@@ -269,7 +269,7 @@ msgstr "Átnevezi a fájlt?"
 msgid "Please enter a new name for this file."
 msgstr "Adja meg a fájl új nevét."
 
-#: mcomix/edit_dialog.py:58 mcomix/keybindings.py:166
+#: mcomix/edit_dialog.py:58 mcomix/keybindings.py:167
 msgid "Edit archive"
 msgstr "Archívum szerkesztése"
 
@@ -293,16 +293,16 @@ msgstr "Képek"
 msgid "Comment files"
 msgstr "Megjegyzésfájlok"
 
-#: mcomix/edit_dialog.py:252 mcomix/file_actions.py:680
+#: mcomix/edit_dialog.py:252 mcomix/file_actions.py:681
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! Nem sikerült menteni a(z) %(archivefile)s archívumot: %(error)s"
 
-#: mcomix/edit_dialog.py:265 mcomix/file_actions.py:685
+#: mcomix/edit_dialog.py:265 mcomix/file_actions.py:686
 msgid "The new archive could not be saved!"
 msgstr "Nem lehet elmenteni az új arhívumot!"
 
-#: mcomix/edit_dialog.py:266 mcomix/file_actions.py:686
+#: mcomix/edit_dialog.py:266 mcomix/file_actions.py:687
 msgid "The original files have not been removed."
 msgstr "Az eredeti fájlok megmaradtak."
 
@@ -338,7 +338,7 @@ msgstr "Új név me_gadása..."
 msgid "Select _All"
 msgstr "Ö_sszes kijelölése"
 
-#: mcomix/enhance_dialog.py:40 mcomix/keybindings.py:169
+#: mcomix/enhance_dialog.py:40 mcomix/keybindings.py:170
 msgid "Enhance image"
 msgstr "Kép kiemelése"
 
@@ -358,8 +358,8 @@ msgstr "_Visszaállítás"
 msgid "Go back to the saved values."
 msgstr "Vissza a mentett értékekhez."
 
-#: mcomix/enhance_dialog.py:51 mcomix/file_actions.py:590
-#: mcomix/file_actions.py:633 mcomix/file_chooser_base_dialog.py:243
+#: mcomix/enhance_dialog.py:51 mcomix/file_actions.py:591
+#: mcomix/file_actions.py:634 mcomix/file_chooser_base_dialog.py:243
 #: mcomix/openwith.py:358
 msgid "_Save"
 msgstr "M_entés"
@@ -425,29 +425,29 @@ msgstr "A kép színeinek _invertálása"
 msgid "Invert (negate) image colors."
 msgstr "Invertálja (negálja) a kép színeit."
 
-#: mcomix/file_actions.py:311 mcomix/file_actions.py:1262
+#: mcomix/file_actions.py:312 mcomix/file_actions.py:1263
 msgid "A file of that name is there already."
 msgstr "Már van ott ilyen nevű fájl."
 
-#: mcomix/file_actions.py:375
+#: mcomix/file_actions.py:376
 #, python-format
 msgid "Page %(number)d is called \"%(name)s\" already."
 msgstr "A(z) %(number)d. oldal neve már „%(name)s”."
 
-#: mcomix/file_actions.py:380
+#: mcomix/file_actions.py:381
 msgid "Rename page?"
 msgstr "Átnevezi az oldalt?"
 
-#: mcomix/file_actions.py:381
+#: mcomix/file_actions.py:382
 msgid "Please enter a new name for this page."
 msgstr "Adja meg az oldal új nevét."
 
-#: mcomix/file_actions.py:586
+#: mcomix/file_actions.py:587
 #, python-format
 msgid "Write \"%s\" again before closing it?"
 msgstr "Újraírja a következőt bezárás előtt: „%s”?"
 
-#: mcomix/file_actions.py:587
+#: mcomix/file_actions.py:588
 msgid ""
 "The book has changes that the archive on disk does not hold. They are lost "
 "when it closes."
@@ -455,16 +455,16 @@ msgstr ""
 "A könyvben olyan változások vannak, amelyeket a lemezen lévő archívum nem "
 "tartalmaz. Bezáráskor elvesznek."
 
-#: mcomix/file_actions.py:589
+#: mcomix/file_actions.py:590
 msgid "_Close without saving"
 msgstr "_Bezárás mentés nélkül"
 
-#: mcomix/file_actions.py:628
+#: mcomix/file_actions.py:629
 #, python-format
 msgid "Write \"%s\" again now?"
 msgstr "Újraírja most a következőt: „%s”?"
 
-#: mcomix/file_actions.py:629
+#: mcomix/file_actions.py:630
 msgid ""
 "The archive on disk will be replaced by the book as it stands: the pages it "
 "holds now, in the order and under the names it shows."
@@ -472,97 +472,97 @@ msgstr ""
 "A lemezen lévő archívumot a könyv jelenlegi állapota váltja fel: a most "
 "meglévő oldalai, abban a sorrendben és azokkal a nevekkel, amelyeket mutat."
 
-#: mcomix/file_actions.py:632
+#: mcomix/file_actions.py:633
 msgid "_Not now"
 msgstr "Most _ne"
 
-#: mcomix/file_actions.py:813
+#: mcomix/file_actions.py:814
 #, python-format
 msgid "Could not show the folder: %s"
 msgstr "Nem sikerült megjeleníteni a mappát: %s"
 
-#: mcomix/file_actions.py:860 mcomix/keybindings.py:160
+#: mcomix/file_actions.py:861 mcomix/keybindings.py:161
 msgid "Save page as"
 msgstr "Oldal mentése másként"
 
-#: mcomix/file_actions.py:901 mcomix/page_marks.py:153
+#: mcomix/file_actions.py:902 mcomix/page_marks.py:153
 #: mcomix/page_rotations.py:124
 #, python-format
 msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr ""
 "! Nem sikerült menteni a(z) %(file)s fájlt ide: %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:905 mcomix/file_actions.py:1264
+#: mcomix/file_actions.py:906 mcomix/file_actions.py:1265
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "Nincs ott elég hely: a fájl %s."
 
-#: mcomix/file_actions.py:911
+#: mcomix/file_actions.py:912
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "Nem sikerült menteni: „%(file)s” ide: „%(directory)s”"
 
-#: mcomix/file_actions.py:942
+#: mcomix/file_actions.py:943
 msgid "There is no trash for this folder, so it cannot be restored."
 msgstr "Ehhez a mappához nincs Kuka, ezért nem lehet visszaállítani."
 
-#: mcomix/file_actions.py:950
+#: mcomix/file_actions.py:951
 #, python-format
 msgid "Delete \"%s\"?"
 msgstr "Törli ezt: „%s”?"
 
-#: mcomix/file_actions.py:951
+#: mcomix/file_actions.py:952
 msgid "The file is moved to the trash."
 msgstr "A fájl a Kukába kerül."
 
-#: mcomix/file_actions.py:953
+#: mcomix/file_actions.py:954
 msgid "_Move to Trash"
 msgstr "Á_thelyezés a Kukába"
 
-#: mcomix/file_actions.py:983
+#: mcomix/file_actions.py:984
 msgid "It does not go to the trash and cannot be restored."
 msgstr "Nem kerül a Kukába, és nem lehet visszaállítani."
 
-#: mcomix/file_actions.py:991
+#: mcomix/file_actions.py:992
 #, python-format
 msgid "Delete \"%s\" permanently?"
 msgstr "Véglegesen törli ezt: „%s”?"
 
-#: mcomix/file_actions.py:1091
+#: mcomix/file_actions.py:1092
 #, python-format
 msgid "Could not move \"%s\" to the trash"
 msgstr "Nem sikerült a Kukába helyezni: „%s”"
 
-#: mcomix/file_actions.py:1095 mcomix/library/book_area.py:934
+#: mcomix/file_actions.py:1096 mcomix/library/book_area.py:934
 #, python-format
 msgid "%d book could not be moved to the trash."
 msgid_plural "%d books could not be moved to the trash."
 msgstr[0] "%d könyvet nem sikerült a Kukába helyezni."
 msgstr[1] "%d könyvet nem sikerült a Kukába helyezni."
 
-#: mcomix/file_actions.py:1099
+#: mcomix/file_actions.py:1100
 msgid "Delete it permanently instead? It cannot be restored."
 msgid_plural "Delete them permanently instead? They cannot be restored."
 msgstr[0] "Inkább véglegesen törli? Nem lehet visszaállítani."
 msgstr[1] "Inkább véglegesen törli őket? Nem lehet visszaállítani őket."
 
-#: mcomix/file_actions.py:1119
+#: mcomix/file_actions.py:1120
 msgid "_Delete Permanently"
 msgstr "_Végleges törlés"
 
-#: mcomix/file_actions.py:1146
+#: mcomix/file_actions.py:1147
 #, python-format
 msgid "Could not delete \"%s\""
 msgstr "Nem sikerült törölni: „%s”"
 
-#: mcomix/file_actions.py:1152
+#: mcomix/file_actions.py:1153
 #, python-format
 msgid "%d book could not be deleted."
 msgid_plural "%d books could not be deleted."
 msgstr[0] "%d könyvet nem sikerült törölni."
 msgstr[1] "%d könyvet nem sikerült törölni."
 
-#: mcomix/file_actions.py:1178
+#: mcomix/file_actions.py:1179
 #, python-format
 msgid "The file is gone, and its %d bookmark cannot be opened any more."
 msgid_plural ""
@@ -570,18 +570,18 @@ msgid_plural ""
 msgstr[0] "A fájl eltűnt, és a benne lévő %d könyvjelző már nem nyitható meg."
 msgstr[1] "A fájl eltűnt, és a benne lévő %d könyvjelző már nem nyitható meg."
 
-#: mcomix/file_actions.py:1258 mcomix/thumbnail_tools.py:210
+#: mcomix/file_actions.py:1259 mcomix/thumbnail_tools.py:210
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr ""
 "! Nem sikerült áthelyezni a(z) %(file)s fájlt ide: %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:1270
+#: mcomix/file_actions.py:1271
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "Nem sikerült áthelyezni: „%(file)s” ide: „%(directory)s”"
 
-#: mcomix/file_chooser_base_dialog.py:76 mcomix/file_chooser_base_dialog.py:857
+#: mcomix/file_chooser_base_dialog.py:76 mcomix/file_chooser_base_dialog.py:867
 #: mcomix/properties_dialog.py:137 mcomix/library/control_area.py:155
 #, python-format
 msgid "%d page"
@@ -589,7 +589,7 @@ msgid_plural "%d pages"
 msgstr[0] "%d oldal"
 msgstr[1] "%d oldal"
 
-#: mcomix/file_chooser_base_dialog.py:236 mcomix/keybindings.py:168
+#: mcomix/file_chooser_base_dialog.py:236 mcomix/keybindings.py:169
 msgid "Open"
 msgstr "Megnyitás"
 
@@ -601,34 +601,34 @@ msgstr "_Megnyitás"
 msgid "Save"
 msgstr "Mentés"
 
-#: mcomix/file_chooser_base_dialog.py:355
+#: mcomix/file_chooser_base_dialog.py:309
 msgid "All files"
 msgstr "Minden fájl"
 
-#: mcomix/file_chooser_base_dialog.py:612
+#: mcomix/file_chooser_base_dialog.py:621
 msgid "All archives"
 msgstr "Minden archívum"
 
-#: mcomix/file_chooser_base_dialog.py:612
+#: mcomix/file_chooser_base_dialog.py:621
 #, python-format
 msgid "%s archives"
 msgstr "%s archívumok"
 
-#: mcomix/file_chooser_base_dialog.py:618
+#: mcomix/file_chooser_base_dialog.py:627
 msgid "All images"
 msgstr "Minden kép"
 
-#: mcomix/file_chooser_base_dialog.py:618
+#: mcomix/file_chooser_base_dialog.py:627
 #, python-format
 msgid "%s images"
 msgstr "%s képek"
 
-#: mcomix/file_chooser_base_dialog.py:755
+#: mcomix/file_chooser_base_dialog.py:764
 #, python-format
 msgid "A file named '%s' already exists. Do you want to replace it?"
 msgstr "A megadott nevű állomány már létezik: '%s'. Akarja a cserét?"
 
-#: mcomix/file_chooser_base_dialog.py:757
+#: mcomix/file_chooser_base_dialog.py:766
 msgid "Replacing it will overwrite its contents."
 msgstr "A csere felülírja az eredeti tartalmat."
 
@@ -886,8 +886,8 @@ msgstr "Az átalakítás megtartása"
 
 #: mcomix/keybindings.py:96 mcomix/keybindings.py:97 mcomix/keybindings.py:98
 #: mcomix/keybindings.py:99 mcomix/keybindings.py:100 mcomix/keybindings.py:101
-#: mcomix/keybindings.py:102 mcomix/keybindings.py:169
-#: mcomix/keybindings.py:171 mcomix/properties_dialog.py:51 mcomix/ui.py:520
+#: mcomix/keybindings.py:102 mcomix/keybindings.py:170
+#: mcomix/keybindings.py:172 mcomix/properties_dialog.py:51 mcomix/ui.py:520
 msgid "Image"
 msgstr "Kép"
 
@@ -1065,12 +1065,12 @@ msgid "Delete"
 msgstr "Törlés"
 
 #: mcomix/keybindings.py:150 mcomix/keybindings.py:152
-#: mcomix/keybindings.py:153 mcomix/keybindings.py:156
-#: mcomix/keybindings.py:157 mcomix/keybindings.py:158
-#: mcomix/keybindings.py:159 mcomix/keybindings.py:160
-#: mcomix/keybindings.py:162 mcomix/keybindings.py:163
-#: mcomix/keybindings.py:167 mcomix/keybindings.py:168
-#: mcomix/keybindings.py:170
+#: mcomix/keybindings.py:153 mcomix/keybindings.py:157
+#: mcomix/keybindings.py:158 mcomix/keybindings.py:159
+#: mcomix/keybindings.py:160 mcomix/keybindings.py:161
+#: mcomix/keybindings.py:163 mcomix/keybindings.py:164
+#: mcomix/keybindings.py:168 mcomix/keybindings.py:169
+#: mcomix/keybindings.py:171
 msgid "File"
 msgstr "Fájl"
 
@@ -1087,7 +1087,8 @@ msgid "Undo"
 msgstr "Visszavonás"
 
 #: mcomix/keybindings.py:154 mcomix/keybindings.py:155
-#: mcomix/keybindings.py:164 mcomix/keybindings.py:166
+#: mcomix/keybindings.py:156 mcomix/keybindings.py:165
+#: mcomix/keybindings.py:167
 msgid "Edit"
 msgstr "Szerkesztés"
 
@@ -1096,74 +1097,78 @@ msgid "Redo"
 msgstr "Újra"
 
 #: mcomix/keybindings.py:156
+msgid "Copy"
+msgstr "Másolás"
+
+#: mcomix/keybindings.py:157
 msgid "Refresh"
 msgstr "Frissítés"
 
-#: mcomix/keybindings.py:157
+#: mcomix/keybindings.py:158
 msgid "Close"
 msgstr "Bezárás"
 
-#: mcomix/keybindings.py:158
+#: mcomix/keybindings.py:159
 msgid "Quit"
 msgstr "Kilépés"
 
-#: mcomix/keybindings.py:159
+#: mcomix/keybindings.py:160
 msgid "Save and quit"
 msgstr "Mentés és kilépés"
 
-#: mcomix/keybindings.py:162
+#: mcomix/keybindings.py:163
 msgid "Archive comments"
 msgstr "Az archívum megjegyzései"
 
-#: mcomix/keybindings.py:163 mcomix/properties_dialog.py:36
+#: mcomix/keybindings.py:164 mcomix/properties_dialog.py:36
 msgid "Properties"
 msgstr "Tulajdonságok"
 
-#: mcomix/keybindings.py:164 mcomix/preferences_dialog.py:70
+#: mcomix/keybindings.py:165 mcomix/preferences_dialog.py:70
 msgid "Preferences"
 msgstr "Beállítások"
 
-#: mcomix/keybindings.py:167 mcomix/ui.py:449 mcomix/ui.py:452
+#: mcomix/keybindings.py:168 mcomix/ui.py:449 mcomix/ui.py:452
 #: mcomix/library/book_area.py:217
 msgid "Open containing folder"
 msgstr "Tartalmazó mappa megnyitása"
 
-#: mcomix/keybindings.py:170 mcomix/library/main_dialog.py:58
+#: mcomix/keybindings.py:171 mcomix/library/main_dialog.py:58
 msgid "Library"
 msgstr "Könyvtár"
 
-#: mcomix/keybindings.py:171 mcomix/ui.py:557
+#: mcomix/keybindings.py:172 mcomix/ui.py:557
 msgid "Invert image colors"
 msgstr "A kép színeinek invertálása"
 
-#: mcomix/keybindings.py:174
+#: mcomix/keybindings.py:175
 msgid "Add bookmark"
 msgstr "Könyvjelző hozzáadása"
 
-#: mcomix/keybindings.py:174 mcomix/keybindings.py:175
+#: mcomix/keybindings.py:175 mcomix/keybindings.py:176
 msgid "Bookmarks"
 msgstr "Könyvjelzők"
 
-#: mcomix/keybindings.py:175
+#: mcomix/keybindings.py:176
 msgid "Edit bookmarks"
 msgstr "Könyvjelzők szerkesztése"
 
-#: mcomix/keybindings.py:183 mcomix/openwith.py:561
+#: mcomix/keybindings.py:184 mcomix/openwith.py:561
 msgid "Command"
 msgstr "Parancs"
 
-#: mcomix/keybindings.py:184
+#: mcomix/keybindings.py:185
 msgid "External commands"
 msgstr "Külső parancsok"
 
-#: mcomix/keybindings.py:261
+#: mcomix/keybindings.py:262
 #, python-format
 msgid "Keybinding for \"%(action)s\" overrides hotkey for another action."
 msgstr ""
 "A(z) „%(action)s” gyorsbillentyűje felülírja egy másik művelet "
 "gyorsbillentyűjét."
 
-#: mcomix/keybindings.py:449 mcomix/keybindings.py:457
+#: mcomix/keybindings.py:450 mcomix/keybindings.py:458
 #, python-format
 msgid "Couldn't load keybindings: %s"
 msgstr "Nem sikerült betölteni a gyorsbillentyűket: %s"
@@ -1173,14 +1178,14 @@ msgstr "Nem sikerült betölteni a gyorsbillentyűket: %s"
 msgid "! Could not remove file \"%s\""
 msgstr "! Nem sikerült törölni a(z) „%s” fájlt"
 
-#: mcomix/main.py:1283
+#: mcomix/main.py:1329
 #, python-format
 msgid "Remove the page picked out of \"%s\"?"
 msgid_plural "Remove the pages picked out of \"%s\"?"
 msgstr[0] "Eltávolítja a kijelölt oldalt ebből: „%s”?"
 msgstr[1] "Eltávolítja a kijelölt oldalakat ebből: „%s”?"
 
-#: mcomix/main.py:1286
+#: mcomix/main.py:1332
 msgid ""
 "They are taken out of the archive on disk, which is written again at once. "
 "Leaving the book without removing them forgets which pages they were."
@@ -1189,16 +1194,16 @@ msgstr ""
 "eltávolításuk nélkül hagyja el a könyvet, feledésbe merül, mely oldalak "
 "voltak azok."
 
-#: mcomix/main.py:1289
+#: mcomix/main.py:1335
 msgid "_Keep them"
 msgstr "Meg_tartás"
 
-#: mcomix/main.py:1455
+#: mcomix/main.py:1501
 #, python-format
 msgid "Animation speed: %s"
 msgstr "Animáció sebessége: %s"
 
-#: mcomix/main.py:2085
+#: mcomix/main.py:2131
 msgid "SLIDESHOW"
 msgstr "Diavetítés"
 
@@ -2387,39 +2392,39 @@ msgstr "Nevek _cseréje"
 msgid "_Replace"
 msgstr "C_sere"
 
-#: mcomix/run.py:53
+#: mcomix/run.py:56
 msgid "[OPTION...] [PATH]"
 msgstr "[KAPCSOLÓ...] [ÚTVONAL]"
 
-#: mcomix/run.py:54
+#: mcomix/run.py:57
 msgid "View images and comic book archives."
 msgstr "Képek és képregényarchívumok megtekintése."
 
-#: mcomix/run.py:57
+#: mcomix/run.py:60
 msgid "Show this help and exit."
 msgstr "Megjeleníti ezt a súgót, majd kilép."
 
-#: mcomix/run.py:59
+#: mcomix/run.py:62
 msgid "Start the application in slideshow mode."
 msgstr "Az alkalmazás indítása diavetítés módban."
 
-#: mcomix/run.py:61
+#: mcomix/run.py:64
 msgid "Show the library on startup."
 msgstr "A könyvtár megjelenítése induláskor."
 
-#: mcomix/run.py:64
+#: mcomix/run.py:67
 msgid "Show the version number and exit."
 msgstr "Megjeleníti a verziószámot, majd kilép."
 
-#: mcomix/run.py:66
+#: mcomix/run.py:69
 msgid "Temporarily override the interface language."
 msgstr "Ideiglenesen felülírja a felület nyelvét."
 
-#: mcomix/run.py:68
+#: mcomix/run.py:71
 msgid "Open the file at the given page."
 msgstr "Megnyitja a fájlt a megadott oldalon."
 
-#: mcomix/run.py:76
+#: mcomix/run.py:79
 msgid ""
 "Open a window of its own, whatever the preferences say about the window that "
 "is already open."
@@ -2427,87 +2432,87 @@ msgstr ""
 "Saját ablakot nyit, bármit mondanak is a beállítások a már nyitva lévő "
 "ablakról."
 
-#: mcomix/run.py:78
+#: mcomix/run.py:81
 msgid "View modes"
 msgstr "Nézetmódok"
 
-#: mcomix/run.py:80
+#: mcomix/run.py:83
 msgid "Start the application in fullscreen mode."
 msgstr "Az alkalmazás indítása teljes képernyős módban."
 
-#: mcomix/run.py:82
+#: mcomix/run.py:85
 msgid "Start the application in manga mode."
 msgstr "Az alkalmazás indítása manga módban."
 
-#: mcomix/run.py:84
+#: mcomix/run.py:87
 msgid "Start the application in double page mode."
 msgstr "Az alkalmazás indítása kétoldalas módban."
 
-#: mcomix/run.py:86
+#: mcomix/run.py:89
 msgid "Zoom modes"
 msgstr "Nagyítási módok"
 
-#: mcomix/run.py:89
+#: mcomix/run.py:92
 msgid "Start the application with zoom set to best fit mode."
 msgstr "Az alkalmazás indítása a legjobb illeszkedés nagyítási móddal."
 
-#: mcomix/run.py:92
+#: mcomix/run.py:95
 msgid "Start the application with zoom set to fit width."
 msgstr "Az alkalmazás indítása a szélességhez igazító nagyítási móddal."
 
-#: mcomix/run.py:95
+#: mcomix/run.py:98
 msgid "Start the application with zoom set to fit height."
 msgstr "Az alkalmazás indítása a magassághoz igazító nagyítási móddal."
 
-#: mcomix/run.py:97
+#: mcomix/run.py:100
 msgid "Debug options"
 msgstr "Hibakeresési kapcsolók"
 
-#: mcomix/run.py:101
+#: mcomix/run.py:104
 msgid "Sets the desired output log level."
 msgstr "Beállítja a napló kívánt részletességét."
 
-#: mcomix/run.py:104
+#: mcomix/run.py:107
 msgid "Writes the log to FILE as well."
 msgstr "A naplót a FILE fájlba is kiírja."
 
-#: mcomix/run.py:139
+#: mcomix/run.py:142
 msgid ""
 "You do not have the required versions of GTK 4.0 and PyGObject installed."
 msgstr "Nincs telepítve a GTK 4.0 és a PyGObject szükséges verziója."
 
-#: mcomix/run.py:143
+#: mcomix/run.py:146
 msgid "No version of GObject was found on your system."
 msgstr "A rendszeren nem található a GObject egyetlen verziója sem."
 
-#: mcomix/run.py:144
+#: mcomix/run.py:147
 msgid "This error might be caused by missing GTK+ libraries."
 msgstr "Ezt a hibát hiányzó GTK+ programkönyvtárak okozhatják."
 
-#: mcomix/run.py:151
+#: mcomix/run.py:154
 msgid ""
 "You don't have the required version of the Python Imaging Library Fork "
 "(Pillow) installed."
 msgstr ""
 "Nincs telepítve a Python Imaging Library Fork (Pillow) szükséges verziója."
 
-#: mcomix/run.py:152
+#: mcomix/run.py:155
 #, python-format
 msgid "Installed Pillow version is: %s"
 msgstr "A telepített Pillow verziója: %s"
 
-#: mcomix/run.py:153
+#: mcomix/run.py:156
 #, python-format
 msgid "Required Pillow version is: %s or higher"
 msgstr "A szükséges Pillow verziója: %s vagy újabb"
 
-#: mcomix/run.py:157
+#: mcomix/run.py:160
 #, python-format
 msgid "Python Imaging Library Fork (Pillow) %s or higher is required."
 msgstr ""
 "A Python Imaging Library Fork (Pillow) %s vagy újabb verziója szükséges."
 
-#: mcomix/run.py:158
+#: mcomix/run.py:161
 msgid "No version of the Python Imaging Library was found on your system."
 msgstr ""
 "A rendszeren nem található a Python Imaging Library egyetlen verziója sem."
@@ -2516,39 +2521,39 @@ msgstr ""
 msgid "Stop slideshow"
 msgstr "Diavetítés leállítása"
 
-#: mcomix/status.py:321
+#: mcomix/status.py:326
 msgid "Show page numbers"
 msgstr "Oldalszámok megjelenítése"
 
-#: mcomix/status.py:322
+#: mcomix/status.py:327
 msgid "Show file numbers"
 msgstr "Fájlszámok megjelenítése"
 
-#: mcomix/status.py:323
+#: mcomix/status.py:328
 msgid "Show resolution"
 msgstr "Felbontás megjelenítése"
 
-#: mcomix/status.py:324
+#: mcomix/status.py:329
 msgid "Show path"
 msgstr "Útvonal megjelenítése"
 
-#: mcomix/status.py:325
+#: mcomix/status.py:330
 msgid "Show filename"
 msgstr "Fájlnév megjelenítése"
 
-#: mcomix/status.py:326
+#: mcomix/status.py:331
 msgid "Show filesize"
 msgstr "Fájlméret megjelenítése"
 
-#: mcomix/status.py:327
+#: mcomix/status.py:332
 msgid "Show date modified"
 msgstr "Módosítás dátumának megjelenítése"
 
-#: mcomix/status.py:364
+#: mcomix/status.py:369
 msgid "Copy file name"
 msgstr "Fájlnév másolása"
 
-#: mcomix/status.py:365
+#: mcomix/status.py:370
 msgid "Copy path"
 msgstr "Útvonal másolása"
 

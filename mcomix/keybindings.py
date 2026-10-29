@@ -153,6 +153,7 @@ BINDING_INFO: "dict[str, dict[str, str]]" = {
     'rename_page': {'title': _('Rename page'), 'group': _('File')},
     'undo': {'title': _('Undo'), 'group': _('Edit')},
     'redo': {'title': _('Redo'), 'group': _('Edit')},
+    'copy_page': {'title': _('Copy'), 'group': _('Edit')},
     'refresh_archive': {'title': _('Refresh'), 'group': _('File')},
     'close': {'title': _('Close'), 'group': _('File')},
     'quit': {'title': _('Quit'), 'group': _('File')},

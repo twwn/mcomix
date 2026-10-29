@@ -109,6 +109,7 @@ Delete the file permanently | SHIFT+Delete
 Rename page | F2
 Undo | CTRL+Z
 Redo | CTRL+Y, CTRL+SHIFT+Z
+Copy the page, or both pages in double page mode | CTRL+C
 Add bookmark | CTRL+D
 Edit bookmarks | CTRL+B
 Open the page's menu | RightMouse, Menu, SHIFT+F10

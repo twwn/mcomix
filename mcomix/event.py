@@ -414,6 +414,10 @@ class EventHandler:
                          ['<Control>y', '<Control><Shift>z'],
                          self._window.file_actions.redo)
 
+        manager.register('copy_page',
+                         ['<Control>c'],
+                         self._window.clipboard.copy_page)
+
         manager.register('extract_page',
                          ['<Control><Shift>s'],
                          self._window.file_actions.extract_page)

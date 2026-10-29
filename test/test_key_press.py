@@ -13,6 +13,7 @@ from gi.repository import Gdk
 
 from . import MComixTest, get_testfile_path, pump, wait_for
 
+from mcomix import clipboard
 from mcomix import constants
 from mcomix import icons
 from mcomix import keybindings
@@ -149,6 +150,30 @@ class EscapeTest(_KeyPressWindowTest):
         self.window.selected_pages = set()
         self._press(Gdk.KEY_Escape)
         self.assertEqual([(Gdk.KEY_Escape, 0)], self.executed)
+
+
+class CopyKeyTest(_KeyPressWindowTest):
+
+    """CTRL+C copies the view, as "Edit, Copy" does.  GTK 3 gave the
+    menu item that key from its stock item; the port to GTK 4 left the
+    item with no key at all."""
+
+    def setUp(self):
+        # event.py registers the bound method, so the class is patched
+        # before the window registers it.
+        patcher = unittest.mock.patch.object(
+            clipboard.Clipboard, 'copy_page', autospec=True)
+        self.copy_page = patcher.start()
+        self.addCleanup(patcher.stop)
+        super().setUp()
+
+    def test_control_c_copies_the_page(self):
+        self._press(Gdk.KEY_c, Gdk.ModifierType.CONTROL_MASK)
+        self.copy_page.assert_called_once()
+
+    def test_the_menu_item_shows_the_key(self):
+        self.assertEqual('<Control>c',
+                         self.window.uimanager.accelerator('copy_page'))
 
 
 class _ScrollablePageTest(_KeyPressWindowTest):
