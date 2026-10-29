@@ -180,6 +180,19 @@ class DescribeTest(MComixTest):
                            '<Title>The Long Night</Title><Number>3</Number>'
                            '<Series>Night Watch</Series></ComicInfo>'))
 
+    def test_volume_year_artist_and_publisher_are_read_too(self):
+        """Other comic readers show them; Properties showed the first
+        four alone."""
+        self.assertEqual(
+            [('Series', 'Night Watch'), ('Volume', '2'), ('Number', '3'),
+             ('Year', '1998'), ('Writer', 'A. Writer'),
+             ('Penciller', 'B. Artist'), ('Publisher', 'Vertigo')],
+            self._describe('<ComicInfo><Publisher>Vertigo</Publisher>'
+                           '<Penciller>B. Artist</Penciller>'
+                           '<Writer>A. Writer</Writer><Year>1998</Year>'
+                           '<Number>3</Number><Volume>2</Volume>'
+                           '<Series>Night Watch</Series></ComicInfo>'))
+
     def test_a_field_that_is_missing_or_blank_is_left_out(self):
         self.assertEqual(
             [('Series', 'Night Watch')],
@@ -238,7 +251,8 @@ class SampleComicTest(MComixTest):
                 path = archive.extract(comicinfo.NAME, directory)
             self.assertEqual([('Series', 'Pepper&Carrot'), ('Number', '1'),
                               ('Title', 'The Potion of Flight'),
-                              ('Writer', 'David Revoy')],
+                              ('Year', '2014'), ('Writer', 'David Revoy'),
+                              ('Penciller', 'David Revoy')],
                              comicinfo.describe(path))
             with open(path, encoding='utf-8') as fp:
                 document = fp.read()

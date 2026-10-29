@@ -166,6 +166,13 @@ class _PropertiesDialog(Dialog):
             'Number': _('Number'),
             'Title': _('Title'),
             'Writer': _('Writer'),
+            # TRANSLATORS: Which volume of its series a comic is, as the
+            # archive's ComicInfo.xml gives it.
+            'Volume': _('Volume'),
+            'Year': _('Year'),
+            # TRANSLATORS: Who drew the comic: ComicInfo.xml's Penciller.
+            'Penciller': _('Artist'),
+            'Publisher': _('Publisher'),
         }
         return [(labels[field], text)
                 for field, text in comicinfo.describe(path)]

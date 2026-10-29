@@ -29,9 +29,10 @@ from collections.abc import Mapping, Sequence
 NAME = 'ComicInfo.xml'
 
 #: The fields describe() reads, in the order a reader looks for them:
-#: which series, which issue of it, what this one is called, and who
-#: wrote it.
-DESCRIBED = ('Series', 'Number', 'Title', 'Writer')
+#: which series, which volume and issue of it, what this one is called
+#: and when it came out, who wrote and drew it, and who published it.
+DESCRIBED = ('Series', 'Volume', 'Number', 'Title', 'Year', 'Writer',
+             'Penciller', 'Publisher')
 
 #: The most describe() reads, in bytes.  A ComicInfo.xml runs to a few
 #: kilobytes even with the page list of a long book; a file far larger

@@ -196,7 +196,9 @@ class PropertiesDialogTest(MComixTest):
             '<?xml version="1.0" encoding="utf-8"?>'
             '<ComicInfo><Title>The Long Night</Title>'
             '<Series>Night Watch</Series><Number>3</Number>'
-            '<Writer>A. Writer</Writer></ComicInfo>'))
+            '<Writer>A. Writer</Writer><Volume>2</Volume><Year>1998</Year>'
+            '<Penciller>B. Artist</Penciller><Publisher>Vertigo</Publisher>'
+            '</ComicInfo>'))
         page = dialog._archive_page
         self.assertTrue(
             wait_for(lambda: 'Night Watch' in self._texts(page), seconds=10),
@@ -204,7 +206,9 @@ class PropertiesDialogTest(MComixTest):
         texts = self._texts(page)
         for label, value in (('Series:', 'Night Watch'), ('Number:', '3'),
                              ('Title:', 'The Long Night'),
-                             ('Writer:', 'A. Writer')):
+                             ('Writer:', 'A. Writer'), ('Volume:', '2'),
+                             ('Year:', '1998'), ('Artist:', 'B. Artist'),
+                             ('Publisher:', 'Vertigo')):
             self.assertIn(label, texts)
             self.assertIn(value, texts)
         # What the file on disk is still follows what the comic is.
