@@ -2,7 +2,7 @@
 
 ## Get started
 
-- [Install](install.md): Windows installer, zip or Chocolatey; Linux from source.
+- [Install](install.md): Windows installer or zip; Linux from source or Flatpak bundle.
 - [Troubleshooting](troubleshooting.md): logs, common problems, reporting a bug.
 
 ## Use

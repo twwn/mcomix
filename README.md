@@ -23,11 +23,8 @@
 
 ## Install
 
-**Windows** – grab the MSI installer or the portable zip from the [latest release](https://github.com/twwn/mcomix/releases/latest), or use Chocolatey:
-
-```powershell
-choco install mcomix-gtk
-```
+**Windows** – grab the MSI installer or the portable zip from the [latest release](https://github.com/twwn/mcomix/releases/latest).
+Neither is code-signed yet: SmartScreen may warn on the first start ("More info", then "Run anyway").
 
 **Linux** – install GTK 4 and PyGObject from your distribution, download the source archive from the [latest release](https://github.com/twwn/mcomix/releases/latest), then:
 
@@ -37,7 +34,20 @@ python3 -m venv --system-site-packages ~/mcomix-venv
 ~/mcomix-venv/bin/mcomix
 ```
 
+Or install `mcomix-<version>.flatpak` from the same release: see [Flatpak](https://github.com/twwn/mcomix/blob/main/docs/install.md#flatpak).
+
 [Install](https://github.com/twwn/mcomix/blob/main/docs/install.md) has the details: optional helpers (unrar, 7z, MuPDF), desktop integration, uninstalling.
+
+### Not available yet
+
+The release page is the only source for now.
+These channels are prepared, but not live:
+
+- **Chocolatey** (`mcomix-gtk`) – not published yet.
+- **WinGet** – not submitted yet.
+- **Flathub** – not submitted yet; each release attaches the Flatpak bundle instead.
+- **PyPI** – not published yet; install from the release's source archive.
+- **Windows code signing** – the MSI and `MComix.exe` are unsigned; signing through the SignPath Foundation is pending.
 
 > [!NOTE]
 > The `mcomix` packages in Linux distributions, Flathub, WinGet and Scoop are the original MComix 3 on GTK 3, not this version.

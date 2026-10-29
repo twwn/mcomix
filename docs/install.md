@@ -12,11 +12,10 @@ Every [release](https://github.com/twwn/mcomix/releases) has two downloads, each
 
 Both need 64-bit Windows 10 or 11.
 
-Or, with [Chocolatey](https://chocolatey.org/install):
+Neither is code-signed yet.
+SmartScreen may warn on the first start: "More info", then "Run anyway".
 
-```powershell
-choco install -y mcomix-gtk
-```
+Chocolatey (`mcomix-gtk`) and WinGet packages are prepared, but not published yet.
 
 Uninstalling keeps your preferences, library and bookmarks in `%APPDATA%\MComix`; delete that folder to remove them too.
 
@@ -42,7 +41,7 @@ python3 -m venv --system-site-packages ~/mcomix-venv
 
 ### Flatpak
 
-This version is not on Flathub yet. Its Flatpak has the id `io.github.twwn.mcomix`, beside Flathub's `net.sourceforge.mcomix`, the original MComix 3.
+This version is not on Flathub yet: it has not been submitted. Its Flatpak has the id `io.github.twwn.mcomix`, beside Flathub's `net.sourceforge.mcomix`, the original MComix 3.
 Every [release](https://github.com/twwn/mcomix/releases) has it as `mcomix-<version>.flatpak`. With Flathub set up for the user, which provides the GNOME runtime it needs:
 
 ```bash
