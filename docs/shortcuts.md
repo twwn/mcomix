@@ -100,7 +100,7 @@ Archive comments | C
 Properties | ALT+Return
 Enhance image | E
 Save currently opened image | CTRL+SHIFT+S
-Reload currently opened directory or archive | CTRL+SHIFT+R
+Reload currently opened directory or archive | CTRL+SHIFT+R, F5
 Pick a page out, or put it back | CTRL+LeftMouse
 Mark a page to swap, or swap it with the marked one | CTRL+SHIFT+LeftMouse
 Swap two pages side by side | CTRL+SHIFT+LeftMouse dragged onto the other page

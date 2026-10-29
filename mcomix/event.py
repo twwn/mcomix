@@ -425,7 +425,7 @@ class EventHandler:
                          self._window.file_actions.extract_page)
 
         manager.register('refresh_archive',
-                         ['<control><shift>R'],
+                         ['<control><shift>R', 'F5'],
                          self._window.filehandler.refresh_file)
 
         manager.register('next_archive',

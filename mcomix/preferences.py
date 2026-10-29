@@ -34,7 +34,9 @@ from mcomix import tools
 #:   9: "click halves", on or off, is "click zones", one of three.
 #:  10: CTRL with Plus, Equal and Minus zooms, as in other programs,
 #:      where the reader has not bound those keys elsewhere.
-CONFIG_FORMAT_VERSION = 10
+#:  11: F5 refreshes, as in file managers and browsers, where the
+#:      reader has not bound it elsewhere.
+CONFIG_FORMAT_VERSION = 11
 
 #: Keys a step of _migrate_preferences() has given to another action, as
 #: (action, accelerator, holder): the key bindings are read after the
@@ -585,6 +587,9 @@ def _migrate_preferences(saved_prefs: dict[str, object]) -> None:
                 ('zoom_out', ('<Control>minus', '<Control>KP_Subtract'))):
             keybinding_moves.extend(
                 (action, accelerator, '') for accelerator in accelerators)
+
+    if version < 11:
+        keybinding_moves.append(('refresh_archive', 'F5', ''))
 
     saved_prefs[_FORMAT_VERSION_KEY] = CONFIG_FORMAT_VERSION
 

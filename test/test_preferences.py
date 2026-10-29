@@ -335,8 +335,17 @@ class MigratePreferencesTest(MComixTest):
             [('zoom_in', '<Control>plus', ''), ('zoom_in', '<Control>equal', ''),
              ('zoom_in', '<Control>KP_Add', ''),
              ('zoom_out', '<Control>minus', ''),
-             ('zoom_out', '<Control>KP_Subtract', '')],
+             ('zoom_out', '<Control>KP_Subtract', ''),
+             ('refresh_archive', 'F5', '')],
             preferences.keybinding_moves)
+
+    def test_a_file_at_format_10_gives_f5_to_refresh(self) -> None:
+        self.addCleanup(preferences.keybinding_moves.clear)
+        preferences.keybinding_moves.clear()
+        self._write({_FORMAT_VERSION_KEY: 10})
+        preferences.read_preferences_file()
+        self.assertEqual([('refresh_archive', 'F5', '')],
+                         preferences.keybinding_moves)
 
     def test_the_ten_page_turns_move_to_the_ones_that_follow_manga_mode(
             self) -> None:
@@ -354,10 +363,10 @@ class MigratePreferencesTest(MComixTest):
              ('next_page_ff_dynamic', '<Shift><Alt>Right', 'next_page_ff')],
             [move for move in preferences.keybinding_moves if move[2] != ''])
 
-    def test_a_file_at_format_10_moves_no_key(self) -> None:
+    def test_a_file_at_format_11_moves_no_key(self) -> None:
         self.addCleanup(preferences.keybinding_moves.clear)
         preferences.keybinding_moves.clear()
-        self._write({_FORMAT_VERSION_KEY: 10})
+        self._write({_FORMAT_VERSION_KEY: 11})
         preferences.read_preferences_file()
         self.assertEqual([], preferences.keybinding_moves)
 

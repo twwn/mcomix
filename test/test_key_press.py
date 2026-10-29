@@ -129,6 +129,13 @@ class KeyPressTest(_KeyPressWindowTest):
             self.assertIn((keyval, control),
                           manager.get_bindings_for_action(action))
 
+    def test_f5_refreshes_as_in_file_managers(self):
+        manager = keybindings.keybinding_manager(self.window)
+        self._press(Gdk.KEY_F5)
+        self.assertEqual([(Gdk.KEY_F5, 0)], self.executed)
+        self.assertIn((Gdk.KEY_F5, 0),
+                      manager.get_bindings_for_action('refresh_archive'))
+
     def test_other_keys_go_on_to_the_focused_widget(self):
         self.assertEqual(Gdk.EVENT_PROPAGATE, self._press(Gdk.KEY_n))
 
