@@ -37,6 +37,8 @@ class _ControlArea(Gtk.Box):
         widgets.set_border(self, 10)
 
         self._library_ref = weakref.ref(library)
+        #: The search typed but not yet run, while the typing goes on.
+        self._pending_filter = 0
 
         borderbox = Gtk.Frame()
         borderbox.set_size_request(350, -1)
@@ -80,6 +82,8 @@ class _ControlArea(Gtk.Box):
         #: The search field, which CTRL+F in the library window focuses.
         self.search_entry = search_entry = Gtk.Entry()
         search_entry.connect('activate', self._filter_books)
+        search_entry.connect('changed', self._search_typed)
+        search_entry.connect('unrealize', self._cancel_pending_filter)
         search_entry.set_tooltip_text(
             _('Display only those books that have the specified text string '
               'in their full path. The search is not case sensitive.'))
@@ -192,11 +196,34 @@ class _ControlArea(Gtk.Box):
                 'time': stats.last_read.strftime('%X')})
         self._dirlabel.set_text(', '.join(read))
 
+    #: How long typing has to pause before the books shown follow it.
+    SEARCH_DELAY_MS = 300
+
+    def _search_typed(self, entry: Gtk.Entry) -> None:
+        """Filter the books once the typing pauses, as a file manager's
+        search does: a query per keystroke would run on every letter of
+        a word, over a library of tens of thousands of books.  Enter
+        still filters at once."""
+        self._cancel_pending_filter()
+        self._pending_filter = GLib.timeout_add(
+            self.SEARCH_DELAY_MS, self._run_pending_filter, entry)
+
+    def _run_pending_filter(self, entry: Gtk.Entry) -> bool:
+        self._pending_filter = 0
+        self._filter_books(entry)
+        return GLib.SOURCE_REMOVE
+
+    def _cancel_pending_filter(self, *args: object) -> None:
+        if self._pending_filter:
+            GLib.source_remove(self._pending_filter)
+            self._pending_filter = 0
+
     def _filter_books(self, entry: Gtk.Entry, *args: object) -> None:
         """Display only the books in the current collection whose name or
         path contains the string in the Gtk.Entry. The string is not
         case-sensitive.
         """
+        self._cancel_pending_filter()
         self._library.filter_string = entry.get_text()
         if not self._library.filter_string:
             self._library.filter_string = None

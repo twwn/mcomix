@@ -146,6 +146,51 @@ class LibraryDialogTest(_LibraryWindowTest):
                 dialog, keyval, Gdk.ModifierType(0)))
         self.assertIs(dialog, main_dialog.get_dialog())
 
+    def test_the_search_follows_the_typing_once_it_pauses(self):
+        """Books were filtered only on Enter.  Each keystroke now waits
+        for the next; the books follow once the typing pauses."""
+        dialog = self._open()
+        entry = dialog.control_area.search_entry
+        # Run from the idle queue, where a true answer, as a bare mock
+        # gives, would have it run again for ever.
+        with unittest.mock.patch.object(
+                dialog.book_area, 'display_covers',
+                return_value=False) as shown:
+            entry.set_text('nig')
+            entry.set_text('night')
+            # Synchronously nothing yet: the search waits for a pause.
+            self.assertIsNone(dialog.filter_string)
+            self.assertTrue(wait_for(
+                lambda: dialog.filter_string == 'night', seconds=3))
+            pump()
+            wait_for(lambda: False, seconds=0.5)
+        self.assertEqual(1, shown.call_count,
+                         'the books were filtered more than once')
+
+    def test_enter_searches_at_once_and_the_pause_adds_nothing(self):
+        dialog = self._open()
+        entry = dialog.control_area.search_entry
+        # Run from the idle queue, where a true answer, as a bare mock
+        # gives, would have it run again for ever.
+        with unittest.mock.patch.object(
+                dialog.book_area, 'display_covers',
+                return_value=False) as shown:
+            entry.set_text('night')
+            entry.emit('activate')
+            self.assertEqual('night', dialog.filter_string)
+            wait_for(lambda: False, seconds=0.6)
+        self.assertEqual(1, shown.call_count)
+
+    def test_a_search_typed_as_the_library_closes_is_dropped(self):
+        dialog = self._open()
+        entry = dialog.control_area.search_entry
+        entry.set_text('night')
+        self.assertTrue(dialog.control_area._pending_filter)
+        control = dialog.control_area
+        dialog.close()
+        pump()
+        self.assertFalse(control._pending_filter)
+
     def test_the_window_carries_the_three_areas(self):
         dialog = self._open()
         self.assertIsNotNone(dialog.book_area)
