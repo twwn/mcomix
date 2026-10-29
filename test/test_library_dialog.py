@@ -846,6 +846,12 @@ class MissingBooksTest(_LibraryWindowTest):
         dialog.backend.add_book(path)
         dialog.book_area.display_covers(constants.COLLECTION_ALL)
         pump()
+        # The cover is read from the book on a worker thread; Windows
+        # refuses to delete a file that is still open (WinError 32).
+        self.assertTrue(wait_for(
+            lambda: [item.thumbnail is not None for item in
+                     dialog.book_area._covers.each_item()] == [True],
+            seconds=5), 'the cover was never drawn')
         os.remove(path)
         self.assertEqual(constants.COLLECTION_ALL,
                          dialog.collection_area.get_current_collection())
