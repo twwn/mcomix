@@ -1,6 +1,6 @@
 """pageselect.py - The dialog window for the page selector."""
 
-from gi.repository import Gtk
+from gi.repository import Gdk, Gtk
 
 from mcomix.dialog import Dialog
 from mcomix import image_tools
@@ -54,6 +54,14 @@ class Pageselector(Dialog):
         self._page_spinner.connect('changed', self._page_text_changed)
         self._page_spinner.set_activates_default(True)
         self._page_spinner.set_numeric(True)
+        # GTK 4.24's spin button spends the first Enter after a number is
+        # typed on taking the number in, and only a second one reaches
+        # Go.  Here the number typed is the page to go to, so one Enter
+        # takes it in and goes.
+        keys = Gtk.EventControllerKey()
+        keys.set_propagation_phase(Gtk.PropagationPhase.CAPTURE)
+        keys.connect('key-pressed', self._enter_pressed)
+        self._page_spinner.add_controller(keys)
         self._pages_label = Gtk.Label(label=_(' of %s') % self._number_of_pages)
         self._pages_label.set_xalign(0)
         self._pages_label.set_yalign(0.5)
@@ -137,6 +145,19 @@ class Pageselector(Dialog):
             page = int(control.get_text())
             if page > 0 and page <= self._number_of_pages:
                 control.set_value(page)
+
+    #: The keys that answer the dialog from the page number.
+    _ENTER_KEYS = (Gdk.KEY_Return, Gdk.KEY_KP_Enter, Gdk.KEY_ISO_Enter)
+
+    def _enter_pressed(self, controller: Gtk.EventControllerKey,
+                       keyval: int, keycode: int,
+                       state: Gdk.ModifierType) -> bool:
+        """Go to the page typed, past the last page to the last one."""
+        if keyval not in self._ENTER_KEYS:
+            return Gdk.EVENT_PROPAGATE
+        self._page_spinner.update()
+        self.response(Response.OK)
+        return Gdk.EVENT_STOP
 
     def _stop_thumbnailing(self, *args: object) -> None:
         self._thread.stop()

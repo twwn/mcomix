@@ -6,8 +6,9 @@ extractor has not reached yet.
 """
 
 import os
+from unittest import mock
 
-from gi.repository import Gtk
+from gi.repository import Gdk, Gtk
 
 from . import MComixTest, get_testfile_path, pump, wait_for
 
@@ -120,6 +121,40 @@ class PageselectTest(MComixTest):
                 self._type(text)
                 self.assertEqual(
                     1, self.dialog._selector_adjustment.get_value())
+
+    def _press(self, keyval):
+        """Press <keyval> in the page number, as GTK hands it over:
+        to the controllers that look before the number's own text does."""
+        spinner = self.dialog._page_spinner
+        for controller in spinner.observe_controllers():
+            if isinstance(controller, Gtk.EventControllerKey) and \
+                    controller.get_propagation_phase() == \
+                    Gtk.PropagationPhase.CAPTURE:
+                return controller.emit('key-pressed', keyval, 0, 0)
+        self.fail('nothing on the page number looks at its keys')
+
+    def test_one_enter_goes_to_the_page_typed(self):
+        """GTK 4.24's spin button took the first Enter after typing for
+        itself, and Go answered only a second one."""
+        for keyval in (Gdk.KEY_Return, Gdk.KEY_KP_Enter):
+            with self.subTest(key=Gdk.keyval_name(keyval)):
+                self.dialog = pageselect.Pageselector(self.window)
+                with mock.patch.object(self.window, 'set_page') as set_page:
+                    self.dialog._page_spinner.set_text('3')
+                    self.assertTrue(self._press(keyval))
+                set_page.assert_called_once_with(3)
+
+    def test_enter_on_a_number_past_the_last_page_goes_to_the_last(self):
+        with mock.patch.object(self.window, 'set_page') as set_page:
+            self.dialog._page_spinner.set_text('99')
+            self._press(Gdk.KEY_Return)
+        set_page.assert_called_once_with(
+            self.window.imagehandler.get_number_of_pages())
+
+    def test_other_keys_are_left_to_the_page_number(self):
+        with mock.patch.object(self.window, 'set_page') as set_page:
+            self.assertFalse(self._press(Gdk.KEY_Up))
+        set_page.assert_not_called()
 
     def test_moving_the_selector_previews_the_page_it_is_moved_to(self):
         self.dialog._selector_adjustment.set_value(2)
