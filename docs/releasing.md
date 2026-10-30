@@ -138,6 +138,8 @@ Folder | Files | From
 `7z` | `7z.exe`, `7z.dll`, `License.txt` | [7-Zip](https://www.7-zip.org/download.html)
 `unrar` | `UnRAR64.dll`, `license.txt` | [RARLAB](https://www.rarlab.com/rar_add.htm)
 
+`win32/fetch_unrar.ps1 -Destination ../mcomix-other/unrar` fetches the newest UnRAR.dll that is not a beta, as the release workflow does, and prints its version.
+
 There is no `mutool`: PyMuPDF carries its own MuPDF, and a second one would add 47 MB.
 
 In a UCRT64 shell in the checkout, build `dist/MComix` and `dist/mcomix-win64-<version>.zip`:

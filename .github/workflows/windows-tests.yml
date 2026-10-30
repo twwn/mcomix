@@ -79,17 +79,28 @@ jobs:
         with:
           path: ${{ runner.temp }}\msys64
           key: ${{ steps.msys2-cache.outputs.cache-primary-key }}
-      # From PowerShell, with UCRT64's programs and the runner's 7-Zip on
-      # the path and nothing else of MSYS2's, and without MSYSTEM, which
-      # makes MSYS2's Python write paths with "/": MComix.exe runs that
-      # way, started from Explorer.  setup-msys2 sets MSYSTEM for every
-      # step after it, this one included, so it is taken out here.  The
-      # tree restored from the cache is the same one, at the same place.
+      # UnRAR64.dll, which the Windows packages carry and MComix.exe
+      # loads: without it every test of the RAR handlers was skipped
+      # here.  A download that fails leaves them skipped, as before,
+      # rather than failing the run.
+      - name: Fetch UnRAR.dll
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          $unrar = ./win32/fetch_unrar.ps1 -Destination "$env:RUNNER_TEMP\unrar"
+          "The tests load UnRAR.dll $unrar." | Out-File -Append -Encoding utf8 $env:GITHUB_STEP_SUMMARY
+      # From PowerShell, with UCRT64's programs, UnRAR64.dll and the
+      # runner's 7-Zip on the path and nothing else of MSYS2's, and
+      # without MSYSTEM, which makes MSYS2's Python write paths with "/":
+      # MComix.exe runs that way, started from Explorer.  setup-msys2 sets
+      # MSYSTEM for every step after it, this one included, so it is
+      # taken out here.  The tree restored from the cache is the same
+      # one, at the same place.
       - name: pytest
         shell: pwsh
         run: |
           Remove-Item Env:MSYSTEM -ErrorAction SilentlyContinue
-          $env:PATH = "$env:RUNNER_TEMP\msys64\ucrt64\bin;$env:PATH;$env:ProgramFiles\7-Zip"
+          $env:PATH = "$env:RUNNER_TEMP\msys64\ucrt64\bin;$env:RUNNER_TEMP\unrar;$env:PATH;$env:ProgramFiles\7-Zip"
           python -c "import os, sys; print(sys.executable, repr(os.sep), sorted(k for k in os.environ if k.upper().startswith(('MSYS', 'MINGW')))); assert os.sep == '\\'"
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           python -m pytest test/ -q -n auto -rfEs --durations=30 --junitxml=pytest.xml

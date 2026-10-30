@@ -329,4 +329,59 @@ class ChocolateyPackageTest(MComixTest):
             'https://github.com/twwn/mcomix/releases/download/26.09/'
             'mcomix-win64-26.09.msi', result.stdout.strip())
 
+
+@unittest.skipUnless(shutil.which('pwsh'), 'PowerShell is not installed')
+class FetchUnrarTest(MComixTest):
+
+    """win32/fetch_unrar.ps1, which the release workflow fetches the
+    bundled UnRAR.dll with and the Windows tests the one they load: the
+    newest release RARLAB has, never the beta its page links to."""
+
+    def _fetch(self, linked, present):
+        """Run the script against a page linking <linked>, with the
+        installers <present> there to download, and 7-Zip played by a
+        script that writes the two files it is asked for."""
+        work = pathlib.Path(self.tmp_dir)
+        (work / '7z.ps1').write_text(
+            "$to = ($args | Where-Object { $_ -like '-o*' }).Substring(2)\n"
+            "Set-Content (Join-Path $to 'UnRAR64.dll') 'dll'\n"
+            "Set-Content (Join-Path $to 'license.txt') 'license'\n")
+        script = pathlib.Path(__file__).parent.parent / 'win32' / 'fetch_unrar.ps1'
+        (work / 'run.ps1').write_text(
+            "$fakePage = '<a href=\"rar/%s\">UnRAR.dll</a>'\n"
+            "$fakePresent = @(%s)\n"
+            "function Invoke-WebRequest {\n"
+            "  param([Parameter(Position = 0)] [string] $Uri, [string] $OutFile)\n"
+            "  if ($Uri.EndsWith('rar_add.htm')) { return [pscustomobject]@{ Content = $fakePage } }\n"
+            "  if ($fakePresent -notcontains $Uri) { throw \"404 $Uri\" }\n"
+            "  Set-Content -Path $OutFile -Value 'installer'\n"
+            "}\n"
+            "& '%s' -Destination '%s' -SevenZip '%s'\n"
+            % (linked,
+               ', '.join("'https://www.rarlab.com/rar/%s'" % name
+                         for name in present),
+               script, work / 'unrar', work / '7z.ps1'))
+        return subprocess.run(
+            ['pwsh', '-NoProfile', '-File', str(work / 'run.ps1')],
+            capture_output=True, text=True, timeout=60)
+
+    def test_below_a_beta_the_newest_release_is_fetched(self):
+        result = self._fetch('unrardll-724b1.exe', ['unrardll-722.exe'])
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertEqual('7.22', result.stdout.strip())
+        unrar = pathlib.Path(self.tmp_dir) / 'unrar'
+        self.assertEqual(['UnRAR64.dll', 'license.txt'],
+                         sorted(path.name for path in unrar.iterdir()))
+
+    def test_a_release_linked_is_the_one_fetched(self):
+        result = self._fetch('unrardll-723.exe', ['unrardll-723.exe',
+                                                  'unrardll-722.exe'])
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertEqual('7.23', result.stdout.strip())
+
+    def test_no_release_to_fetch_fails(self):
+        result = self._fetch('unrardll-724b1.exe', [])
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn('No released UnRAR.dll', result.stderr + result.stdout)
+
 # vim: expandtab:sw=4:ts=4

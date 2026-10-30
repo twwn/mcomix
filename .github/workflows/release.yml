@@ -165,34 +165,18 @@ jobs:
             mingw-w64-ucrt-x86_64-python-pip
             mingw-w64-ucrt-x86_64-python-pymupdf
             mingw-w64-ucrt-x86_64-pyinstaller
-      # 7-Zip is the runner's, which its image keeps current.  RARLAB
-      # links its newest UnRAR.dll from rar_add.htm, a beta as often as
-      # not; the newest release below a beta is looked for by number.
+      # 7-Zip is the runner's, which its image keeps current; UnRAR.dll
+      # is RARLAB's newest release, as win32/fetch_unrar.ps1 finds it.
       - name: Fetch 7-Zip and UnRAR.dll into ../mcomix-other
         shell: pwsh
         run: |
           $sevenzip = "$env:ProgramFiles/7-Zip/7z.exe"
           $other = Join-Path (Split-Path $PWD) 'mcomix-other'
-          New-Item -ItemType Directory -Force "$other/7z", "$other/unrar" | Out-Null
+          New-Item -ItemType Directory -Force "$other/7z" | Out-Null
           Copy-Item "$env:ProgramFiles/7-Zip/7z.exe", "$env:ProgramFiles/7-Zip/7z.dll", "$env:ProgramFiles/7-Zip/License.txt" "$other/7z"
-          $page = (Invoke-WebRequest 'https://www.rarlab.com/rar_add.htm').Content
-          if ($page -notmatch 'rar/unrardll-(\d+)(b\d+)?\.exe') { throw 'rar_add.htm links no UnRAR.dll' }
-          $linked = $Matches[0]
-          $number = [int]$Matches[1]
-          $candidates = if ($Matches[2]) { ($number - 1)..($number - 30) } else { @($number) }
-          $unrar = $null
-          foreach ($candidate in $candidates) {
-            try {
-              Invoke-WebRequest "https://www.rarlab.com/rar/unrardll-$candidate.exe" -OutFile unrardll.exe
-              $unrar = $candidate
-              break
-            } catch { }
-          }
-          if (-not $unrar) { throw "No released UnRAR.dll below the one rar_add.htm links, $linked" }
-          & $sevenzip e unrardll.exe x64/UnRAR64.dll license.txt "-o$other/unrar" -y
-          Remove-Item unrardll.exe
+          $unrar = ./win32/fetch_unrar.ps1 -Destination "$other/unrar" -SevenZip $sevenzip
           $sevenzipVersion = (& $sevenzip | Select-Object -Skip 1 -First 1).Trim()
-          "UNRAR_VERSION=$($unrar.ToString().Insert(1, '.'))" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
+          "UNRAR_VERSION=$unrar" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
           "SEVENZIP_VERSION=$sevenzipVersion" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
       # WiX 3's tools run from where they are unpacked; nothing has to
       # be installed.  WiX 3 has had its last release, 3.14.1.
