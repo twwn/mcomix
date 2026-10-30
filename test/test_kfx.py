@@ -16,9 +16,11 @@ from .test_file_handler import _WindowTest
 from .test_ion import Annotated, dumps
 
 from mcomix import archive_tools
+from mcomix import comicinfo
 from mcomix import constants
 from mcomix.archive import kfx
 from mcomix.archive.ion import Symbol
+from mcomix.preferences import prefs
 
 # The symbols of YJ_symbols the books below use.
 NAMELESS = Symbol(348)
@@ -27,6 +29,7 @@ SECTION, STORYLINE, STYLE, BOOK_METADATA = 260, 259, 157, 490
 CONTAINER, IMAGE, ZOOM_TARGET = Symbol(270), Symbol(271), Symbol(439)
 SCALE_FIT, PAGE_SPREAD = Symbol(326), Symbol(437)
 JPG, PNG, JXR = Symbol(285), Symbol(284), Symbol(548)
+RIGHT_TO_LEFT, VERTICAL_RIGHT_TO_LEFT = Symbol(375), Symbol(559)
 
 #: The max_id of the YJ_symbols import: the highest symbol ID it
 #: reaches, the system symbols counted.  The book's own symbols follow.
@@ -70,9 +73,9 @@ class Book:
         payload = value if isinstance(value, bytes) else dumps(value)
         self.entities.append((type, name, payload))
 
-    def reading_order(self, *sections, source=DOCUMENT_DATA):
+    def reading_order(self, *sections, source=DOCUMENT_DATA, fields=()):
         self.add(source, None, {169: [{178: Symbol(351), 170: [
-            self.symbol(section) for section in sections]}]})
+            self.symbol(section) for section in sections]}], **dict(fields)})
 
     def resource(self, name, location, size=(8, 12), format=JPG, fields=()):
         """The external resource <name>, whose bytes are at <location>,
@@ -95,11 +98,12 @@ class Book:
         self.resource('e%d' % number, 'rsrc%d' % number)
         self.add(RAW_MEDIA, 'rsrc%d' % number, data)
 
-    def comic(self, *pages):
+    def comic(self, *pages, document=()):
         """A comic of <pages>, pictures in reading order, each its own
         page, resource and bytes; the last picture's bytes the last
-        entity."""
-        self.reading_order(*('c%d' % number for number in range(len(pages))))
+        entity.  <document> adds to the document data."""
+        self.reading_order(*('c%d' % number for number in range(len(pages))),
+                           fields=document)
         for number, data in enumerate(pages):
             self.picture_page(number, data)
         return self
@@ -352,6 +356,53 @@ class KfxTest(MComixTest):
         data = data.replace(imported, bytes.fromhex('88 2f 80 00'))
         self.assertEqual(['page00001.jpg'], self.open(data).list_contents())
 
+    def comic_info(self, archive):
+        """The ComicInfo.xml <archive> lists, written out."""
+        self.assertEqual(comicinfo.NAME, archive.list_contents()[-1])
+        destination = os.path.join(self.tmp_dir, 'out')
+        archive.extract(comicinfo.NAME, destination)
+        return os.path.join(destination, comicinfo.NAME)
+
+    def test_what_the_book_says_of_itself(self):
+        """The book's title, authors, publisher and year, and that it
+        reads right to left, are listed as a ComicInfo.xml, which is
+        what MComix reads them from."""
+        book = Book().comic(picture(), document={192: RIGHT_TO_LEFT})
+        book.add(BOOK_METADATA, None, {491: [
+            {495: 'kindle_capability_metadata', 258: [
+                {492: 'yj_fixed_layout', 307: 1}]},
+            {495: 'kindle_title_metadata', 258: [
+                {492: key, 307: value} for key, value in (
+                    ('title', 'Night Watch'), ('author', 'Ann Author'),
+                    ('author', 'Bo Artist'), ('publisher', 'Press'),
+                    ('issue_date', '2021-03-04'), ('cover_image', 'e0'))]}]})
+        path = self.comic_info(self.open(book.container()))
+        self.assertEqual([('Title', 'Night Watch'), ('Year', '2021'),
+                          ('Writer', 'Ann Author, Bo Artist'),
+                          ('Publisher', 'Press')],
+                         comicinfo.describe(path))
+        with open(path, encoding='utf-8') as fp:
+            self.assertIn('<Title>Night Watch</Title><Year>2021</Year>'
+                          '<Writer>Ann Author, Bo Artist</Writer>'
+                          '<Publisher>Press</Publisher>'
+                          '<Manga>YesAndRightToLeft</Manga>', fp.read())
+        self.assertTrue(comicinfo.reads_right_to_left(path))
+
+    def test_older_books_and_vertical_writing(self):
+        """An older book keeps its title and authors in its metadata, the
+        authors joined by "&"; vertical lines from the right read right
+        to left too."""
+        book = Book().comic(picture(), document={560: VERTICAL_RIGHT_TO_LEFT})
+        book.add(METADATA, None, {153: 'Old', 222: 'Ann & Bo'})
+        path = self.comic_info(self.open(book.container()))
+        self.assertEqual([('Title', 'Old'), ('Writer', 'Ann, Bo')],
+                         comicinfo.describe(path))
+        self.assertTrue(comicinfo.reads_right_to_left(path))
+        book = Book().comic(picture(), document={192: Symbol(376)})
+        book.add(METADATA, None, {153: 'Left to right'})
+        path = self.comic_info(self.open(book.container()))
+        self.assertFalse(comicinfo.reads_right_to_left(path))
+
     def test_drm(self):
         """A book wrapped in DRM, or whose container says it is
         encrypted, is refused, and the reader is told why; entities that
@@ -394,6 +445,16 @@ class KfxBookTest(_WindowTest):
             lambda: self.window.imagehandler.get_number_of_pages() == 2,
             seconds=20))
         self.assertEqual(constants.KFX, self.handler.archive_type)
+
+    def test_a_book_read_right_to_left_opens_in_manga_mode(self):
+        prefs['default manga mode'] = False
+        path = os.path.join(self.tmp_dir, 'book.kfx')
+        with open(path, 'wb') as fp:
+            fp.write(Book().comic(picture(), picture(),
+                                  document={192: RIGHT_TO_LEFT}).container())
+        self.assertTrue(self.handler.open_file(path))
+        self.assertTrue(wait_for(lambda: self.window.is_manga_mode, seconds=20),
+                        'the book was not read right to left')
 
     def test_drm_is_named_to_the_reader(self):
         path = os.path.join(self.tmp_dir, 'book.kfx')

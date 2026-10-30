@@ -26,9 +26,11 @@ import struct
 import threading
 from collections.abc import Iterator
 from typing import IO, NamedTuple
+from xml.etree import ElementTree
 
 from PIL import Image
 
+from mcomix import comicinfo
 from mcomix import log
 from mcomix.archive import archive_base
 from mcomix.archive import ion
@@ -61,6 +63,7 @@ _STORYLINE = 259
 _STYLE = 157
 _STRUCTURE = 608
 _PREVIEW_IMAGES = 387
+_BOOK_METADATA = 490
 _NAMELESS = 348
 # The reading order, and the elements of a page.
 _READING_ORDERS = 169
@@ -84,6 +87,15 @@ _VARIANTS = 635
 _TILES = 636
 _TILE_WIDTH, _TILE_HEIGHT = 637, 638
 _TILE_PADDING = 797
+# Which way the book reads.
+_DIRECTION, _RIGHT_TO_LEFT = 192, 375
+_WRITING_MODE, _VERTICAL_RIGHT_TO_LEFT = 560, 559
+# What the book says of itself: categories of key and value pairs, or
+# in older books fields of the metadata.
+_CATEGORISED_METADATA = 491
+_CATEGORY, _ENTRIES = 495, 258
+_KEY, _VALUE = 492, 307
+_TITLE, _AUTHOR, _PUBLISHER = 153, 222, 232
 
 #: The formats of picture shown as they are stored, and the extension
 #: each is listed under.
@@ -518,6 +530,59 @@ class _Book:
         return _Picture('png', width, height, None, rows,
                         (tile_width, tile_height), padding)
 
+    def comic_info(self) -> bytes | None:
+        """What the book says of itself, as a ComicInfo.xml: its title,
+        authors, publisher and year, and whether it reads right to left;
+        None where it says none of it.
+
+        MComix reads a ComicInfo.xml for the book's properties, and opens
+        a book whose file says it reads right to left in manga mode.  A
+        book reads right to left where its document data says so, or
+        its writing runs in vertical lines from the right.
+        """
+        entries: dict[str, list[object]] = {}
+        categories = self.value(_BOOK_METADATA, None).get(_CATEGORISED_METADATA)
+        for category in categories if isinstance(categories, list) else ():
+            if not isinstance(category, dict) \
+                    or category.get(_CATEGORY) != 'kindle_title_metadata':
+                continue
+            pairs = category.get(_ENTRIES)
+            for pair in pairs if isinstance(pairs, list) else ():
+                if isinstance(pair, dict) and isinstance(pair.get(_KEY), str):
+                    entries.setdefault(str(pair[_KEY]), []).append(pair.get(_VALUE))
+        # Older books keep it in fields of their metadata, the authors
+        # in one, joined by "&".
+        older = self.value(_METADATA, None)
+        for key, field in (('title', _TITLE), ('author', _AUTHOR),
+                           ('publisher', _PUBLISHER)):
+            if key not in entries and isinstance(older.get(field), str):
+                value = str(older[field])
+                entries[key] = list(value.split('&')) if key == 'author' \
+                    else [value]
+
+        def text(key: str) -> list[str]:
+            return [value.strip() for value in entries.get(key, ())
+                    if isinstance(value, str) and value.strip()]
+
+        # In the order ComicInfo's schema puts them in.
+        root = ElementTree.Element('ComicInfo')
+        for element, texts in (('Title', text('title')[:1]),
+                               ('Year', [date[:4] for date in text('issue_date')[:1]
+                                         if date[:4].isdigit()]),
+                               ('Writer', text('author')),
+                               ('Publisher', text('publisher')[:1])):
+            if texts:
+                ElementTree.SubElement(root, element).text = ', '.join(texts)
+        document = self.value(_DOCUMENT_DATA, None)
+        if document.get(_DIRECTION) == _RIGHT_TO_LEFT \
+                or document.get(_WRITING_MODE) == _VERTICAL_RIGHT_TO_LEFT:
+            ElementTree.SubElement(root, 'Manga').text = 'YesAndRightToLeft'
+        if not len(root):
+            return None
+        written: bytes = ElementTree.tostring(root, encoding='utf-8',
+                                              xml_declaration=True)
+        return written
+
     def tiled(self, picture: _Picture) -> Image.Image:
         """The picture whose tiles <picture> names, put together.
 
@@ -554,7 +619,8 @@ class _Book:
 class KfxArchive(archive_base.BaseArchive):
 
     """The pictures of a KFX book's pages, as though they were an
-    archive's: page00001.jpg on, in reading order.
+    archive's: page00001.jpg on, in reading order, then a ComicInfo.xml
+    of what the book says of itself, where it says anything.
 
     The book stays open for as long as the handler does, and a page is
     read out of it as it is asked for.  A page whose picture is cut into
@@ -575,23 +641,31 @@ class KfxArchive(archive_base.BaseArchive):
                 _('Could not open %s: it is not a Kindle book MComix can read.')
                 % name) from None
         self._pages: dict[str, _Picture] | None = None
+        self._comic_info: bytes | None = None
 
     def _listed(self) -> dict[str, _Picture]:
         if self._pages is None:
             pictures = self._book.pictures()
+            self._comic_info = self._book.comic_info()
             self._pages = {'page%05d.%s' % (number, picture.extension): picture
                            for number, picture in enumerate(pictures, 1)}
         return self._pages
 
     def iter_contents(self) -> Iterator[str]:
         yield from self._listed()
+        if self._comic_info is not None:
+            yield comicinfo.NAME
 
     def extract(self, filename: str, destination_dir: str) -> None:
         """Extract <filename> from the archive to <destination_dir>."""
         picture = self._listed().get(filename)
+        destination_path = os.path.join(destination_dir, filename)
+        if filename == comicinfo.NAME and self._comic_info is not None:
+            with self._create_file(destination_path) as new:
+                new.write(self._comic_info)
+            return
         if picture is None:
             return
-        destination_path = os.path.join(destination_dir, filename)
         if picture.location is not None:
             data = self._book.payload(_RAW_MEDIA, picture.location)
             if data is None:
