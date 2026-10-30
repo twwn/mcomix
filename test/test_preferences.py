@@ -6,6 +6,8 @@ import shutil
 import pickle
 import stat
 
+from gi.repository import GdkPixbuf
+
 from . import MComixTest, default_prefs, wait_for
 
 from mcomix import constants
@@ -551,6 +553,59 @@ class WritePreferencesFileTest(MComixTest):
             stored = json.load(config_file)
         self.assertEqual(stored['lens size'], 222)
         self.assertEqual(stored['thumbnail size'], 250)
+
+    def _stored(self):
+        with open(constants.PREFERENCE_PATH, 'r') as config_file:
+            return json.load(config_file)
+
+    def test_a_scaling_quality_of_pillow_s_is_one_an_older_mcomix_reads(self) -> None:
+        """Lanczos and Bicubic are 5 and 4, which no gdk-pixbuf
+        interpolation type is: an older MComix reading them under
+        "scaling quality" raised "5 is not a valid InterpType" on every
+        page.  The file holds bilinear there, and the choice beside it."""
+        for quality in (constants.SCALING_BICUBIC, constants.SCALING_LANCZOS):
+            with self.subTest(quality=quality):
+                prefs['scaling quality'] = 1
+                preferences.write_preferences_file()
+                prefs['scaling quality'] = quality
+                preferences.write_preferences_file()
+                stored = self._stored()
+                self.assertEqual(GdkPixbuf.InterpType.BILINEAR,
+                                 GdkPixbuf.InterpType(stored['scaling quality']))
+                self.assertEqual(quality, stored['pillow scaling quality'])
+                prefs['scaling quality'] = 1
+                preferences.read_preferences_file()
+                self.assertEqual(quality, prefs['scaling quality'])
+
+    def test_a_scaling_quality_an_older_mcomix_chose_since_wins(self) -> None:
+        prefs['scaling quality'] = 1
+        preferences.write_preferences_file()
+        prefs['scaling quality'] = constants.SCALING_LANCZOS
+        preferences.write_preferences_file()
+        older = self._stored()
+        self.assertIn('pillow scaling quality', older)
+        older['scaling quality'] = int(GdkPixbuf.InterpType.TILES)
+        with open(constants.PREFERENCE_PATH, 'w') as config_file:
+            json.dump(older, config_file)
+        preferences.read_preferences_file()
+        self.assertEqual(GdkPixbuf.InterpType.TILES, prefs['scaling quality'])
+        # And the next write takes the stale choice out of the file.
+        prefs['lens size'] = 321
+        preferences.write_preferences_file()
+        self.assertNotIn('pillow scaling quality', self._stored())
+
+    def test_another_preference_written_keeps_the_pillow_choice(self) -> None:
+        prefs['scaling quality'] = 1
+        preferences.write_preferences_file()
+        prefs['scaling quality'] = constants.SCALING_BICUBIC
+        preferences.write_preferences_file()
+        preferences.read_preferences_file()
+        prefs['lens size'] = 321
+        preferences.write_preferences_file()
+        stored = self._stored()
+        self.assertEqual((2, constants.SCALING_BICUBIC),
+                         (stored['scaling quality'],
+                          stored['pillow scaling quality']))
 
     def test_a_second_write_does_not_put_back_what_the_first_wrote(self) -> None:
         """What this instance has changed is measured against the file as

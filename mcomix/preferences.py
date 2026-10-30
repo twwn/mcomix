@@ -603,6 +603,36 @@ def _migrate_preferences(saved_prefs: dict[str, object]) -> None:
     saved_prefs[_FORMAT_VERSION_KEY] = CONFIG_FORMAT_VERSION
 
 
+#: Where the file keeps a scaling quality of Pillow's.  Under "scaling
+#: quality" itself every MComix before Pillow's filters came reads a
+#: gdk-pixbuf interpolation type, and one of those raised "5 is not a
+#: valid InterpType" on every page it drew; so "scaling quality" holds
+#: bilinear for them, and this key the choice, which they leave alone.
+_PILLOW_SCALING_KEY = 'pillow scaling quality'
+#: GdkPixbuf.InterpType.BILINEAR, what an older MComix scales with.
+_OLDER_SCALING_QUALITY = 2
+
+
+def _take_pillow_scaling(saved_prefs: dict[str, object]) -> None:
+    """Bring the file's Pillow scaling quality into "scaling quality",
+    in place.  Only beside the bilinear it is written with: an older
+    MComix that chose another quality since has the last word."""
+    pillow = saved_prefs.pop(_PILLOW_SCALING_KEY, None)
+    if (pillow in (constants.SCALING_BICUBIC, constants.SCALING_LANCZOS)
+            and saved_prefs.get('scaling quality')
+            == _OLDER_SCALING_QUALITY):
+        saved_prefs['scaling quality'] = pillow
+
+
+def _store_pillow_scaling(stored: dict[str, object]) -> None:
+    """The file's form of a Pillow scaling quality, in place: bilinear
+    under "scaling quality", and the choice under its own key."""
+    quality = stored.get('scaling quality')
+    if quality in (constants.SCALING_BICUBIC, constants.SCALING_LANCZOS):
+        stored['scaling quality'] = _OLDER_SCALING_QUALITY
+        stored[_PILLOW_SCALING_KEY] = quality
+
+
 def read_preferences_file() -> None:
     """Read preferences data from disk."""
 
@@ -646,6 +676,7 @@ def read_preferences_file() -> None:
 
     if saved_prefs:
         _migrate_preferences(saved_prefs)
+        _take_pillow_scaling(saved_prefs)
         # A file written by a later MComix, or edited by hand, can name
         # preferences this one has never heard of; those are left where
         # they are rather than taken in.
@@ -729,6 +760,7 @@ def _stored_preferences() -> dict[str, object]:
     if not isinstance(stored, dict):
         return {}
     _migrate_preferences(stored)
+    _take_pillow_scaling(stored)
     return stored
 
 
@@ -758,6 +790,7 @@ def write_preferences_file() -> None:
     cancel_scheduled_write()
     stored = _stored_preferences()
     stored.update(_changed_here())
+    _store_pillow_scaling(stored)
     # Whoever wrote the file last says what format it is in.
     stored[_FORMAT_VERSION_KEY] = CONFIG_FORMAT_VERSION
     # Made at start-up, but it may have gone since.
