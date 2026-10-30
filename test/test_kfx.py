@@ -30,6 +30,7 @@ from mcomix.preferences import prefs
 # The symbols of YJ_symbols the books below use.
 NAMELESS = Symbol(348)
 RAW_MEDIA, EXTERNAL_RESOURCE, DOCUMENT_DATA, METADATA = 417, 164, 538, 258
+CONTAINER_ENTITY_MAP = 419
 SECTION, STORYLINE, STYLE, BOOK_METADATA = 260, 259, 157, 490
 CONTAINER, IMAGE, ZOOM_TARGET = Symbol(270), Symbol(271), Symbol(439)
 SCALE_FIT, PAGE_SPREAD = Symbol(326), Symbol(437)
@@ -133,12 +134,15 @@ class Book:
         return self
 
     def container(self, container_id='CR!TEST', info=None, symbols=True,
-                  entity_info=None):
-        """The book as one container.  <info> and <entity_info> add to
-        or replace what the container info and each entity's say."""
+                  entity_info=None, types=None):
+        """The book as one container, or the part of it of <types>.
+        <info> and <entity_info> add to or replace what the container
+        info and each entity's say."""
         index = b''
         data = b''
         for type, name, payload in self.entities:
+            if types is not None and type not in types:
+                continue
             header = dumps({410: 0, 411: 0, **(entity_info or {})})
             entity = (b'ENTY' + struct.pack('<HI', 1, 10 + len(header))
                       + header + payload)
@@ -162,6 +166,26 @@ class Book:
         header = b'CONT' + struct.pack('<HIII', 2, start, info_start,
                                        len(container_info))
         return header + index + table + container_info + trailer + data
+
+
+#: The parts a book is split into, by the entities each holds.
+MAIN_TYPES = (DOCUMENT_DATA, SECTION, STORYLINE)
+METADATA_TYPES = (BOOK_METADATA, CONTAINER_ENTITY_MAP, EXTERNAL_RESOURCE)
+RESOURCE_TYPES = (RAW_MEDIA,)
+
+
+def split_book(pages, main='CR!MAIN', metadata='CR!META', resources='CR!RES'):
+    """A comic of <pages>, as Amazon delivers one: its main container,
+    its metadata container, whose map names the other two, and its
+    resource container, which has no symbol table of its own."""
+    book = Book().comic(*pages)
+    book.add(BOOK_METADATA, None, {491: []})
+    book.add(CONTAINER_ENTITY_MAP, None, {252: [
+        {155: main, 181: [book.symbol('c0')]},
+        {155: resources, 181: [book.symbol('rsrc0')]}]})
+    return (book.container(main, types=MAIN_TYPES),
+            book.container(metadata, types=METADATA_TYPES),
+            book.container(resources, types=RESOURCE_TYPES, symbols=False))
 
 
 class KfxTest(MComixTest):
@@ -543,3 +567,105 @@ class KfxBookTest(_WindowTest):
         self.assertFalse(self.handler.open_file(path))
         self.assertEqual('Could not open book.kfx: it is protected by DRM.',
                          self.window.statusbar.message.get_text())
+
+
+class SplitBookTest(MComixTest):
+
+    """A book in several files, as a Kindle or one of the Kindle apps
+    keeps one, opened from any of them."""
+
+    def write(self, files):
+        """Write <files>, a path under tmp_dir for each content."""
+        for name, data in files.items():
+            path = os.path.join(self.tmp_dir, *name.split('/'))
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            with open(path, 'wb') as fp:
+                fp.write(data)
+
+    def pages(self, name):
+        """The pages of the book opened from <name>."""
+        archive = kfx.KfxArchive(os.path.join(self.tmp_dir, *name.split('/')))
+        self.addCleanup(archive.close)
+        names = archive.list_contents()
+        destination = os.path.join(self.tmp_dir, 'out', name)
+        pages = []
+        for page in names:
+            archive.extract(page, destination)
+            with open(os.path.join(destination, page), 'rb') as fp:
+                pages.append(fp.read())
+        return pages
+
+    def test_a_kindle(self):
+        """The main container in documents, the others in the .sdr
+        folder named after it: opened from any of the three."""
+        pages = [picture((n + 1, 1)) for n in range(3)]
+        main, metadata, resources = split_book(pages)
+        self.write({'Book_B000000001.kfx': main,
+                    'Book_B000000001.sdr/assets/metadata.kfx': metadata,
+                    'Book_B000000001.sdr/assets/attachables/CR!RES.kfx': resources,
+                    'Book_B000000001.sdr/assets/voucher': b'licence',
+                    'Book_B000000001.sdr/Book_B000000001.sdr.yjr': b'state'})
+        for name in ('Book_B000000001.kfx',
+                     'Book_B000000001.sdr/assets/metadata.kfx',
+                     'Book_B000000001.sdr/assets/attachables/CR!RES.kfx'):
+            with self.subTest(name):
+                self.assertEqual(pages, self.pages(name))
+
+    def test_kindle_for_pc(self):
+        """All three in one folder, named as Kindle for PC names them."""
+        pages = [picture((n + 1, 1)) for n in range(2)]
+        main, metadata, resources = split_book(pages)
+        self.write({'B000000001_EBOK/B000000001_EBOK.azw': main,
+                    'B000000001_EBOK/CR!META.azw.md': metadata,
+                    'B000000001_EBOK/CR!RES.azw.res': resources})
+        self.assertEqual(pages, self.pages('B000000001_EBOK/B000000001_EBOK.azw'))
+        self.assertEqual(pages, self.pages('B000000001_EBOK/CR!META.azw.md'))
+
+    def test_other_books_beside_it(self):
+        """Two books split in one folder each keep to their own parts:
+        the map says which they are."""
+        first = split_book([picture((1, 1))])
+        second = split_book([picture((2, 1)), picture((3, 1))], 'CR!MAIN2',
+                            'CR!META2', 'CR!RES2')
+        self.write(dict(zip(('first.kfx', 'first-meta.kfx', 'first-res.kfx',
+                             'second.kfx', 'second-meta.kfx', 'second-res.kfx'),
+                            first + second)))
+        self.assertEqual([picture((1, 1))], self.pages('first.kfx'))
+        self.assertEqual([picture((2, 1)), picture((3, 1))],
+                         self.pages('second-res.kfx'))
+
+    def test_a_book_of_one_container_looks_no_further(self):
+        """A book in one container is that container, whatever lies
+        beside it."""
+        main, metadata, resources = split_book([picture((1, 1))])
+        # Its own picture, e0 as the split book's is, but at another
+        # location: joined to the split one, e0 would be the split one's.
+        whole = Book()
+        whole.page('c0', 'e0')
+        whole.resource('e0', 'w0')
+        whole.add(RAW_MEDIA, 'w0', picture((5, 1)))
+        whole.reading_order('c0')
+        self.write({'whole.kfx': whole.container('CR!MAIN'),
+                    'meta.kfx': metadata, 'res.kfx': resources})
+        self.assertEqual([picture((5, 1))], self.pages('whole.kfx'))
+
+    def test_drm(self):
+        """A book whose main container is wrapped in DRM is refused,
+        opened from a part that is not, as is one whose missing part has
+        a voucher beside it.  Without either, what is there is shown."""
+        main, metadata, resources = split_book([picture((1, 1))])
+        cases = (
+            ({'meta.kfx': metadata, 'res.kfx': resources,
+              'main.kfx': kfx.DRM_SIGNATURE + bytes(100)}, True),
+            ({'meta.kfx': metadata, 'res.kfx': resources, 'voucher': b''}, True),
+            ({'meta.kfx': metadata, 'res.kfx': resources}, False),
+        )
+        for number, (files, refused) in enumerate(cases):
+            with self.subTest(files=sorted(files)):
+                folder = 'book%d' % number
+                self.write({folder + '/' + name: data for name, data in files.items()})
+                if refused:
+                    with self.assertRaisesRegex(kfx.UnpackException, 'DRM'):
+                        self.pages(folder + '/meta.kfx')
+                else:
+                    self.assertEqual([picture((1, 1))], self.pages(folder + '/meta.kfx'))

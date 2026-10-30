@@ -10,6 +10,12 @@ the text of.  A comic's pages are the sections of its reading order;
 each draws one picture, or two for a spread, and a picture may be
 stored in several resolutions, and cut into tiles.
 
+A book is in one container as Calibre keeps it; as Amazon delivers it,
+in several files: a main container with the reading order, one of
+metadata whose container entity map names the book's containers, and
+containers that hold only pictures' bytes, beside each other or in a
+folder named after the main one with .sdr.
+
 Written for issue #50, under the GPL v2 or later, from a description of
 the format in prose and from Amazon's public Ion specification, by a
 reader of neither the KFX Input plugin nor any other KFX reader's code.
@@ -66,6 +72,8 @@ _STORYLINE = 259
 _STYLE = 157
 _STRUCTURE = 608
 _PREVIEW_IMAGES = 387
+_CONTAINER_ENTITY_MAP = 419
+_CONTAINER_LIST, _ID = 252, 155
 _BOOK_METADATA = 490
 _NAMELESS = 348
 # The reading order, and the elements of a page.
@@ -358,6 +366,29 @@ class _Container:
         if symbols_start is not None and symbols_length > 0:
             self.symbols = _SymbolTable(self._ion(symbols_start, symbols_length))
 
+    def holds(self, *types: int) -> bool:
+        """Whether the container holds an entity of each of <types>."""
+        held = {entity.type for entity in self.entities}
+        return all(kind in held for kind in types)
+
+    def book_ids(self) -> set[str] | None:
+        """The IDs of the containers of the book, as the container
+        entity map this one holds lists them, which need not include
+        this one; None where it holds no map."""
+        for entity in self.entities:
+            if entity.type == _CONTAINER_ENTITY_MAP:
+                try:
+                    entity_map = ion.loads(self.payload(entity))
+                except (_Protected, _Unreadable, ion.IonError):
+                    return None
+                listed = entity_map.get(_CONTAINER_LIST) \
+                    if isinstance(entity_map, dict) else None
+                return {container[_ID] for container in
+                        (listed if isinstance(listed, list) else ())
+                        if isinstance(container, dict)
+                        and isinstance(container.get(_ID), str)}
+        return None
+
     def payload(self, entity: _Entity) -> bytes:
         """What <entity> holds, without its header: "ENTY", a version,
         the header's length, and an Ion struct saying whether what
@@ -377,6 +408,115 @@ class _Container:
             if info.get(_COMPRESSION) not in (0, None):
                 raise _Unreadable('compressed')
         return data[header_length:]
+
+
+#: The extensions of the files a book is kept in, split or not.
+_PART_EXTENSIONS = ('.kfx', '.azw', '.azw8', '.azw9', '.md', '.res', '.yj')
+
+
+def _is_part(name: str) -> bool:
+    """Whether the file <name> may be part of a book: not the index of
+    the iOS app's books, an SQLite database, and not what macOS leaves
+    beside a file on a foreign disk."""
+    return name.lower().endswith(_PART_EXTENSIONS) \
+        and not name.startswith('._') and name.lower() != 'bookmanifest.kfx'
+
+
+def _is_voucher(name: str) -> bool:
+    """Whether the file <name> is a voucher: the licence of a book
+    delivered with DRM."""
+    return name.lower() == 'voucher' or name.lower().endswith('.voucher')
+
+
+def _beside(path: str) -> list[str]:
+    """The files the other parts of the book whose part <path> is may
+    be, and its voucher.
+
+    A Kindle keeps the main container in documents, and the others
+    in the folder named after it with .sdr, under assets; the apps keep
+    them all in one folder.  Opened from within the .sdr folder, the
+    book is that folder and the main container beside it.
+    """
+    path = os.path.abspath(path)
+    folder = os.path.dirname(path)
+    stem = os.path.splitext(os.path.basename(path))[0]
+    sdr = os.path.join(folder, stem + '.sdr')
+    ancestor = folder
+    while not ancestor.lower().endswith('.sdr') \
+            and os.path.dirname(ancestor) != ancestor:
+        ancestor = os.path.dirname(ancestor)
+    found: list[str] = []
+    if os.path.isdir(sdr) or ancestor.lower().endswith('.sdr'):
+        if not os.path.isdir(sdr):
+            sdr = ancestor
+            main = os.path.basename(sdr)[:-len('.sdr')]
+            with os.scandir(os.path.dirname(sdr)) as entries:
+                found.extend(entry.path for entry in entries if entry.is_file()
+                             and os.path.splitext(entry.name)[0] == main)
+        for root, _folders, files in os.walk(sdr):
+            found.extend(os.path.join(root, name) for name in files)
+    else:
+        for subfolder in ('', 'assets', 'attachables',
+                          os.path.join('assets', 'attachables')):
+            try:
+                with os.scandir(os.path.join(folder, subfolder)) as entries:
+                    found.extend(entry.path for entry in entries if entry.is_file())
+            except OSError:
+                continue
+    return sorted(name for name in found
+                  if os.path.normcase(name) != os.path.normcase(path))
+
+
+def _containers(path: str) -> list[_Container]:
+    """The containers of the book whose part <path> is, the one with
+    the container entity map first: its symbol table names what the
+    containers without one hold.
+
+    A container that holds the reading order, the pictures' descriptions
+    and their bytes is a book of its own.  Another is joined by the
+    files beside it that the map names, the map found in the container
+    itself or in one that names it: a folder of other books gives none
+    of theirs.  A book whose map names a container that is not there,
+    where one beside it is wrapped in DRM or a voucher is, is refused.
+    """
+    opened = _Container(path)
+    if opened.holds(_SECTION, _EXTERNAL_RESOURCE, _RAW_MEDIA):
+        return [opened]
+    others: list[_Container] = []
+    try:
+        protected = voucher = False
+        for candidate in _beside(path):
+            name = os.path.basename(candidate)
+            if _is_voucher(name):
+                voucher = True
+            elif _is_part(name):
+                try:
+                    others.append(_Container(candidate))
+                except _Protected:
+                    protected = True
+                except (_Unreadable, ion.IonError, struct.error, OSError) as error:
+                    log.debug('KFX %s: %s', candidate, error)
+        for holder in [opened] + others:
+            ids = holder.book_ids()
+            if ids is not None and (holder is opened or opened.id in ids):
+                break
+        else:
+            return [opened]
+        book = [holder] + [container for container in [opened] + others
+                           if container is not holder and container.id in ids]
+        missing = ids - {container.id for container in book}
+        if missing and (protected or voucher):
+            raise _Protected()
+        if missing:
+            log.warning('KFX %s: no container %s', path, ', '.join(sorted(missing)))
+    except BaseException:
+        for container in [opened] + others:
+            container.close()
+        raise
+    for container in others:
+        if container not in book:
+            container.close()
+    return book
 
 
 class _Picture(NamedTuple):
@@ -698,7 +838,7 @@ class KfxArchive(archive_base.BaseArchive):
         super().__init__(archive)
         name = os.path.basename(archive)
         try:
-            self._book = _Book([_Container(archive)])
+            self._book = _Book(_containers(archive))
         except _Protected:
             raise UnpackException(
                 _('Could not open %s: it is protected by DRM.') % name) from None
