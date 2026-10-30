@@ -80,8 +80,11 @@ jobs:
         run: python -m flake8 --select=F mcomix/ test/
       - name: mypy
         run: python -m mypy mcomix
+      # -rs lists why each skipped test was skipped: with -q alone a run
+      # said only how many, and a tool missing from the runner skipped
+      # hundreds of tests unseen.
       - name: pytest
-        run: xvfb-run -a python -m pytest test/ -q -n auto
+        run: xvfb-run -a python -m pytest test/ -q -n auto -rs
 
   floors:
     # The lowest versions pyproject.toml declares, built with pip against
@@ -129,4 +132,4 @@ jobs:
           python -m pip install -r floors.txt pytest pytest-xdist
           python -m pip install --no-deps -e .
       - name: pytest
-        run: xvfb-run -a python -m pytest test/ -q -n auto
+        run: xvfb-run -a python -m pytest test/ -q -n auto -rs
