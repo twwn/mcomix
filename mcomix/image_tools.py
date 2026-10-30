@@ -2,6 +2,7 @@
 
 import functools
 import importlib
+import math
 import operator
 import os
 from gi.repository import GLib, GdkPixbuf, Gdk, Gtk
@@ -11,6 +12,7 @@ from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageEnhance
 from PIL import ImageOps
+from concurrent.futures import ThreadPoolExecutor
 from io import BytesIO
 
 from mcomix.preferences import prefs
@@ -326,13 +328,8 @@ def fit_in_rectangle(src: GdkPixbuf.Pixbuf, width: int, height: int,
     if pil_filter is not None and (width, height) != (src_width, src_height):
         # Pillow scales an alpha channel premultiplied, as gdk-pixbuf
         # does; the background goes in below, at the size reached.
-        # Past a third, the reducing gap has Pillow average whole blocks
-        # of pixels first and filter only the last threefold: a
-        # 6000x9000 page took 143 ms to fit 800x1200 rather than 313,
-        # and drew stripes too fine for the screen at half a percent
-        # of their contrast rather than none.
-        src = pil_to_pixbuf(pixbuf_to_pil(src).resize(
-            (width, height), pil_filter, reducing_gap=3.0))
+        src = pil_to_pixbuf(_resized(pixbuf_to_pil(src), (width, height),
+                                     pil_filter))
         src_width, src_height = width, height
 
     if src.get_has_alpha():
@@ -602,6 +599,76 @@ _PIL_FILTERS = {
     constants.SCALING_BICUBIC: Image.Resampling.BICUBIC,
     constants.SCALING_LANCZOS: Image.Resampling.LANCZOS,
 }
+
+
+#: How far the kernel of each of _PIL_FILTERS reaches, in pixels of the
+#: picture where it is enlarged and of the result where it is reduced.
+_PIL_SUPPORT = {
+    Image.Resampling.BICUBIC: 2.0,
+    Image.Resampling.LANCZOS: 3.0,
+}
+
+#: Most bands _resized() cuts a picture into, and the fewest rows of the
+#: result each has.  Eight bands took a 2400x3400 page to 1008x1428 in
+#: 16 ms where one took 63; twelve and sixteen, on 24 processors, were
+#: no faster, since every band crops its rows first.
+_MAX_BANDS = 8
+_MIN_BAND_ROWS = 64
+
+
+def _resized(im: Image.Image, size: tuple[int, int],
+             pil_filter: Image.Resampling) -> Image.Image:
+    """<im> scaled to <size> with <pil_filter>.
+
+    Past a third, it is first averaged in whole blocks of pixels, as
+    Pillow's reducing gap of 3 does, and filtered only the last
+    threefold: a 6000x9000 page took 143 ms rather than 313 to fit
+    800x1200, and drew stripes too fine for the screen at half a percent
+    of their contrast rather than none.
+
+    The rest is cut into bands of rows, each scaled on a thread of its
+    own: Pillow lets go of the GIL while it scales.  Every band is
+    scaled from a crop of the rows its kernel reaches, not from a box
+    in the whole picture: Pillow chooses which of its two passes runs
+    first by the height of the picture against that of the result, and
+    a band of the whole page ran the other pass first, which rounds
+    differently.  The bands then come out as the whole would have, give
+    or take one level.
+    """
+    width, height = size
+    if im.mode == 'RGBA':
+        # Premultiplied, once, rather than in every band: Image.resize()
+        # converts an RGBA picture to RGBa and back by itself.
+        return _resized(im.convert('RGBa'), size, pil_filter).convert('RGBA')
+    box_width, box_height = float(im.width), float(im.height)
+    factor_x = int(im.width / width / 3.0) or 1
+    factor_y = int(im.height / height / 3.0) or 1
+    if factor_x > 1 or factor_y > 1:
+        im = im.reduce((factor_x, factor_y))
+        box_width /= factor_x
+        box_height /= factor_y
+    bands = min(tools.thread_count(0), _MAX_BANDS, height // _MIN_BAND_ROWS)
+    if bands < 2:
+        return im.resize(size, pil_filter, box=(0, 0, box_width, box_height))
+    ratio = box_height / height
+    margin = math.ceil(_PIL_SUPPORT[pil_filter] * max(1.0, ratio)) + 1
+    edges = [height * band // bands for band in range(bands + 1)]
+
+    def band(index: int) -> Image.Image:
+        top, bottom = edges[index] * ratio, edges[index + 1] * ratio
+        first = max(0, math.floor(top) - margin)
+        last = min(im.height, math.ceil(bottom) + margin)
+        rows = im.crop((0, first, im.width, last))
+        return rows.resize((width, edges[index + 1] - edges[index]),
+                           pil_filter,
+                           box=(0, top - first, box_width, bottom - first))
+
+    im.load()
+    result = Image.new(im.mode, size)
+    with ThreadPoolExecutor(bands) as pool:
+        for top, part in zip(edges, pool.map(band, range(bands))):
+            result.paste(part, (0, top))
+    return result
 
 
 def _interpolation(scaling_quality: int) -> GdkPixbuf.InterpType:

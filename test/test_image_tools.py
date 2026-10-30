@@ -10,7 +10,7 @@ import unittest.mock
 from gi.repository import Gdk, GdkPixbuf, GLib
 
 from collections import namedtuple
-from PIL import Image, ImageDraw
+from PIL import Image, ImageChops, ImageDraw
 from io import BytesIO
 from difflib import unified_diff
 
@@ -884,6 +884,36 @@ class PillowScalingTest(MComixTest):
         lanczos = constants.SCALING_LANCZOS
         self.assertLess(self._contrast(self._stripes(11.7), lanczos), 3)
         self.assertGreater(self._contrast(self._stripes(41.7), lanczos), 93)
+
+    def test_scaled_in_bands_as_in_one_piece(self):
+        """A page is scaled in bands of rows on threads of their own;
+        put back together they are what Pillow scales in one piece,
+        give or take one level, at the seams too."""
+        page = Image.new('L', (1200, 1700), 255)
+        draw = ImageDraw.Draw(page)
+        for line in range(0, 1700, 7):
+            draw.line([(0, line), (1200, 1700 - line)], fill=0,
+                      width=1 + line % 3)
+        page = page.convert('RGB')
+        for scaling_quality, pil_filter, size in (
+                (constants.SCALING_LANCZOS, Image.Resampling.LANCZOS,
+                 (504, 714)),
+                (constants.SCALING_LANCZOS, Image.Resampling.LANCZOS,
+                 (1900, 2692)),
+                (constants.SCALING_BICUBIC, Image.Resampling.BICUBIC,
+                 (504, 714))):
+            with self.subTest(scaling_quality=scaling_quality, size=size), \
+                    unittest.mock.patch.object(image_tools.tools,
+                                               'thread_count',
+                                               return_value=8):
+                scaled = image_tools.fit_in_rectangle(
+                    image_tools.pil_to_pixbuf(page), *size, scale_up=True,
+                    keep_ratio=False, scaling_quality=scaling_quality)
+                whole = page.resize(size, pil_filter, reducing_gap=3.0)
+                difference = ImageChops.difference(
+                    image_tools.pixbuf_to_pil(scaled), whole)
+                self.assertLessEqual(max(high for low, high
+                                         in difference.getextrema()), 1)
 
     def test_a_transparent_edge_leaves_no_dark_fringe(self):
         """The alpha channel is scaled premultiplied, then composited:
