@@ -14,7 +14,8 @@
 ## Highlights
 
 - **Opens everything** – images, folders, CBZ/ZIP, CBR/RAR (split volumes too), CB7/7z, CBT/tar, LHA, PDF, DjVu and AZW3.
-- **Reads your way** – single or double page, manga right-to-left, fit to width, height or both, and smart scrolling that walks a page in reading order.
+- **Reads your way** – single or double page, one continuous strip for webtoons, manga right-to-left, fit to width, height or both, and smart scrolling that walks a page in reading order.
+- **Sharp pages** – Lanczos scaling with no moiré on screentones, and the plain margins of scans cropped away.
 - **Edits books** – rename, reorder, swap and delete pages while reading, with undo, and write the archive back in its own format with a ComicInfo.xml.
 - **Library** – collections, covers, reading progress and watched folders.
 - **Looks at home** – follows your light or dark theme, with a pitch-black variant for OLED screens.
