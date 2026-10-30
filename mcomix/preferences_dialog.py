@@ -523,6 +523,13 @@ class _PreferencesDialog(Dialog):
             self.reset_button.set_sensitive(bool(prefs['stored dialog choices']))
 
     def _response(self, dialog: Dialog, response: int) -> None:
+        if response != constants.RESPONSE_REVERT_TO_DEFAULT:
+            # A number or a folder typed into a field is taken in when
+            # the field loses the focus, and closing the window took
+            # none from it: what was typed and left for Close, Escape or
+            # the window's close button was lost.
+            self.set_focus(None)
+
         if response == Response.CLOSE:
             _close_dialog()
 

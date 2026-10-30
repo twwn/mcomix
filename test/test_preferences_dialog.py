@@ -88,6 +88,53 @@ class PreferencesDialogTest(MComixTest):
                          bounds['space between two pages'])
         self.assertEqual(100, preferences_dialog.LARGEST_PAGE_GAP)
 
+    def _typed_and_closed(self, factory, make, typed, response):
+        """Type <typed> into the field <factory> makes, as a reader does,
+        without Enter or Tab, and answer the dialog with <response>."""
+        made = []
+        original = getattr(preferences_dialog._PreferencesDialog, factory)
+
+        def record(dialog, *args):
+            field = original(dialog, *args)
+            if make(args):
+                made.append(field)
+            return field
+
+        with unittest.mock.patch.object(
+                preferences_dialog._PreferencesDialog, factory, record):
+            dialog = self._open()
+        field, = made
+        notebook = dialog.notebook
+        for number in range(notebook.get_n_pages()):
+            if field.is_ancestor(notebook.get_nth_page(number)):
+                notebook.set_current_page(number)
+        pump()
+        field.grab_focus()
+        field.set_text(typed)
+        pump()
+        dialog.response(response)
+        pump()
+
+    def test_a_number_typed_and_left_is_kept_when_the_dialog_closes(self):
+        """A spinner takes a typed number in when it loses the focus,
+        and closing the window took the focus from nothing."""
+        for response in (Response.CLOSE, Response.DELETE_EVENT):
+            with self.subTest(response=response):
+                prefs['thumbnail size'] = 80
+                self._typed_and_closed(
+                    '_create_pref_spinner',
+                    lambda args: args[0] == 'thumbnail size', '123',
+                    response)
+                self.assertEqual(123, prefs['thumbnail size'])
+                self.dialog.destroy()
+
+    def test_a_folder_typed_and_left_is_kept_when_the_dialog_closes(self):
+        prefs['unpack folder'] = ''
+        folder = os.path.join(self.tmp_dir, 'unpacked')
+        self._typed_and_closed('_create_unpack_folder_entry',
+                               lambda args: True, folder, Response.CLOSE)
+        self.assertEqual(folder, prefs['unpack folder'])
+
     def _background_buttons(self):
         """The two buttons of the Background section, in the order they
         are shown: the fixed colour, then the one off the page."""
