@@ -12,7 +12,7 @@ import os
 import shutil
 import unittest.mock
 
-from gi.repository import Gtk
+from gi.repository import GdkPixbuf, Gtk
 
 from . import MComixTest, get_testfile_path, pump
 
@@ -678,6 +678,18 @@ class PreferenceCallbacksTest(MComixTest):
                             button, None, 'thumb bg colour')))
                 self.assertEqual([1.0, 0.5, 0.25, 1.0],
                                  prefs['thumb bg colour'])
+
+    def test_every_scaling_quality_is_offered(self):
+        """Nearest neighbour, for pixel art, and Pillow's two filters,
+        beside gdk-pixbuf's fast and bilinear scaling."""
+        for value in (int(GdkPixbuf.InterpType.NEAREST),
+                      int(GdkPixbuf.InterpType.TILES),
+                      int(GdkPixbuf.InterpType.BILINEAR),
+                      constants.SCALING_BICUBIC, constants.SCALING_LANCZOS):
+            with self.subTest(value=value):
+                prefs['scaling quality'] = value
+                chooser = self.dialog._create_scaling_quality_combobox()
+                self.assertEqual(value, chooser.get_value())
 
     def test_the_double_page_choice_is_stored_and_redrawn(self):
         chooser = unittest.mock.Mock()

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-30 15:48+0100\n"
+"POT-Creation-Date: 2026-10-30 16:09+0100\n"
 "PO-Revision-Date: 2018-05-10 22:46+0900\n"
 "Last-Translator: Minho Jeung <jeungmh@gmail.com>\n"
 "Language-Team: \n"
@@ -43,7 +43,7 @@ msgid "! Extraction error: %s"
 msgstr "! 압축 해제 에러: %s"
 
 #: mcomix/archive_extractor.py:400 mcomix/archive_tools.py:235
-#: mcomix/image_tools.py:517 mcomix/page_marks.py:62
+#: mcomix/image_tools.py:518 mcomix/page_marks.py:62
 #: mcomix/page_rotations.py:42
 #, python-format
 msgid "! Could not read %s"
@@ -679,7 +679,7 @@ msgstr ""
 msgid "Invalid path: '%s'"
 msgstr "유효하지 않은 경로: '%s'"
 
-#: mcomix/image_tools.py:1319
+#: mcomix/image_tools.py:1390
 msgid "Unknown filetype"
 msgstr "알 수 없는 파일 형식"
 
@@ -2050,8 +2050,8 @@ msgstr ""
 "할 때의 언어로 남아 있습니다. 읽고 있는 책과 페이지, 창 크기는 그대로 유지됩"
 "니다."
 
-#: mcomix/preferences_dialog.py:694 mcomix/preferences_dialog.py:911
-#: mcomix/preferences_dialog.py:974 mcomix/ui.py:571
+#: mcomix/preferences_dialog.py:694 mcomix/preferences_dialog.py:912
+#: mcomix/preferences_dialog.py:975 mcomix/ui.py:571
 msgid "Never"
 msgstr "하지 않음"
 
@@ -2063,7 +2063,7 @@ msgstr "타이틀 페이지만"
 msgid "Only for wide images"
 msgstr "가로길이가 넓은 이미지만"
 
-#: mcomix/preferences_dialog.py:697 mcomix/preferences_dialog.py:912
+#: mcomix/preferences_dialog.py:697 mcomix/preferences_dialog.py:913
 msgid "Always"
 msgstr "항상"
 
@@ -2171,22 +2171,26 @@ msgstr ""
 "를 지웁니다."
 
 #: mcomix/preferences_dialog.py:868
+msgid "Nearest (pixel art)"
+msgstr "최근접 이웃(픽셀 아트)"
+
+#: mcomix/preferences_dialog.py:869
 msgid "Normal (fast)"
 msgstr "노멀(빠름)"
 
-#: mcomix/preferences_dialog.py:869
+#: mcomix/preferences_dialog.py:870
 msgid "Bilinear"
 msgstr "바이리니어"
 
-#: mcomix/preferences_dialog.py:870
+#: mcomix/preferences_dialog.py:871
 msgid "Bicubic"
 msgstr "바이큐빅"
 
-#: mcomix/preferences_dialog.py:871
+#: mcomix/preferences_dialog.py:872
 msgid "Lanczos (slow)"
 msgstr "란초스(느림)"
 
-#: mcomix/preferences_dialog.py:877
+#: mcomix/preferences_dialog.py:878
 msgid ""
 "Changes how images are scaled. Slower algorithms result in higher quality "
 "resizing, but longer page loading times."
@@ -2194,19 +2198,19 @@ msgstr ""
 "이미지 확대 방법을 변경합니다. \n"
 "느린 알고리즘은 좋은 이미지 품질을 보장하지만 시간이 오래 걸립니다."
 
-#: mcomix/preferences_dialog.py:894
+#: mcomix/preferences_dialog.py:895
 msgid "Anywhere: the next page"
 msgstr "어디든: 다음 페이지"
 
-#: mcomix/preferences_dialog.py:895
+#: mcomix/preferences_dialog.py:896
 msgid "Halves: back and forward"
 msgstr "절반: 뒤로와 앞으로"
 
-#: mcomix/preferences_dialog.py:896
+#: mcomix/preferences_dialog.py:897
 msgid "Thirds: back, fullscreen, forward"
 msgstr "삼등분: 뒤로, 전체화면, 앞으로"
 
-#: mcomix/preferences_dialog.py:904
+#: mcomix/preferences_dialog.py:905
 msgid ""
 "With \"Flip pages with a left click\": the left half or third of the page "
 "turns back and the right one forward; the middle third enters or leaves "
@@ -2216,19 +2220,19 @@ msgstr ""
 "은 뒤로, 오른쪽은 앞으로 넘기고, 가운데 삼분의 일은 전체화면을 켜거나 끕니"
 "다. 만화 모드에서는 왼쪽과 오른쪽이 바뀝니다."
 
-#: mcomix/preferences_dialog.py:913
+#: mcomix/preferences_dialog.py:914
 msgid "For a few seconds after a page turn"
 msgstr "페이지를 넘긴 뒤 몇 초 동안"
 
-#: mcomix/preferences_dialog.py:918
+#: mcomix/preferences_dialog.py:919
 msgid "The pages on screen and the number of pages, in the lower right corner."
 msgstr "화면의 페이지와 전체 페이지 수를 오른쪽 아래 구석에 표시합니다."
 
-#: mcomix/preferences_dialog.py:934
+#: mcomix/preferences_dialog.py:935
 msgid "None"
 msgstr "없음"
 
-#: mcomix/preferences_dialog.py:936
+#: mcomix/preferences_dialog.py:937
 msgid ""
 "The ICC profile of the screen, such as one made by calibrating it. Pages are "
 "converted into it from sRGB. Leave it empty where the desktop already "
@@ -2237,23 +2241,23 @@ msgstr ""
 "화면의 ICC 프로파일(보정으로 만든 프로파일 등). 페이지는 sRGB에서 이 프로파일"
 "로 변환됩니다. 데스크톱이 이미 화면에 맞게 변환하는 경우 비워 두십시오."
 
-#: mcomix/preferences_dialog.py:954
+#: mcomix/preferences_dialog.py:955
 msgid "Perceptual"
 msgstr "지각적"
 
-#: mcomix/preferences_dialog.py:955
+#: mcomix/preferences_dialog.py:956
 msgid "Relative colorimetric"
 msgstr "상대 비색계"
 
-#: mcomix/preferences_dialog.py:956
+#: mcomix/preferences_dialog.py:957
 msgid "Saturation"
 msgstr "채도"
 
-#: mcomix/preferences_dialog.py:957
+#: mcomix/preferences_dialog.py:958
 msgid "Absolute colorimetric"
 msgstr "절대 비색계"
 
-#: mcomix/preferences_dialog.py:968
+#: mcomix/preferences_dialog.py:969
 msgid ""
 "How colours the screen cannot show are brought within its range, when a "
 "screen colour profile is set. Perceptual keeps the colours in proportion; "
@@ -2263,19 +2267,19 @@ msgstr ""
 "가져오는 방식입니다. 지각적은 색의 비율을 유지하고, 상대 비색계는 화면이 표시"
 "할 수 있는 색을 정확히 유지합니다."
 
-#: mcomix/preferences_dialog.py:975 mcomix/library/book_area.py:291
+#: mcomix/preferences_dialog.py:976 mcomix/library/book_area.py:291
 msgid "Normal"
 msgstr "노멀"
 
-#: mcomix/preferences_dialog.py:981
+#: mcomix/preferences_dialog.py:982
 msgid "Controls how animated images should be displayed."
 msgstr "애니메이션 이미지가 어떻게 출력될지 결정합니다."
 
-#: mcomix/preferences_dialog.py:1021
+#: mcomix/preferences_dialog.py:1022
 msgid "The temporary folder"
 msgstr "임시 폴더"
 
-#: mcomix/preferences_dialog.py:1023
+#: mcomix/preferences_dialog.py:1024
 msgid ""
 "The folder archives are unpacked into while they are read, such as a RAM "
 "disk. Empty, the system's temporary folder. Takes effect with the next book "
@@ -2284,7 +2288,7 @@ msgstr ""
 "읽는 동안 압축 파일을 푸는 폴더(예: RAM 디스크). 비워 두면 시스템 임시 폴더. "
 "다음에 여는 책부터 적용됩니다."
 
-#: mcomix/preferences_dialog.py:1044
+#: mcomix/preferences_dialog.py:1045
 msgid ""
 "Treat all files found within archives, that have one of these file endings, "
 "as comments."

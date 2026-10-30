@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 0.93\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-30 15:48+0100\n"
+"POT-Creation-Date: 2026-10-30 16:09+0100\n"
 "PO-Revision-Date: 2015-04-05 08:54+0100\n"
 "Last-Translator: Benoit Pierre <benoit.pierre@gmail.com>\n"
 "Language-Team: \n"
@@ -46,7 +46,7 @@ msgid "! Extraction error: %s"
 msgstr "Erreur d'extraction : %s"
 
 #: mcomix/archive_extractor.py:400 mcomix/archive_tools.py:235
-#: mcomix/image_tools.py:517 mcomix/page_marks.py:62
+#: mcomix/image_tools.py:518 mcomix/page_marks.py:62
 #: mcomix/page_rotations.py:42
 #, python-format
 msgid "! Could not read %s"
@@ -702,7 +702,7 @@ msgstr ""
 msgid "Invalid path: '%s'"
 msgstr "Emplacement non valide : '%s'"
 
-#: mcomix/image_tools.py:1319
+#: mcomix/image_tools.py:1390
 msgid "Unknown filetype"
 msgstr "Type de fichier inconnu"
 
@@ -2117,8 +2117,8 @@ msgstr ""
 "donc dans la langue de démarrage jusqu'au prochain lancement. Le livre en "
 "cours de lecture, sa page et la taille de la fenêtre sont conservés."
 
-#: mcomix/preferences_dialog.py:694 mcomix/preferences_dialog.py:911
-#: mcomix/preferences_dialog.py:974 mcomix/ui.py:571
+#: mcomix/preferences_dialog.py:694 mcomix/preferences_dialog.py:912
+#: mcomix/preferences_dialog.py:975 mcomix/ui.py:571
 msgid "Never"
 msgstr "Jamais"
 
@@ -2130,7 +2130,7 @@ msgstr "Uniquement pour les pages titres"
 msgid "Only for wide images"
 msgstr "Uniquement pour les grandes images"
 
-#: mcomix/preferences_dialog.py:697 mcomix/preferences_dialog.py:912
+#: mcomix/preferences_dialog.py:697 mcomix/preferences_dialog.py:913
 msgid "Always"
 msgstr "Toujours"
 
@@ -2235,22 +2235,26 @@ msgstr ""
 "et supprimer les informations sur les dernières pages lues."
 
 #: mcomix/preferences_dialog.py:868
+msgid "Nearest (pixel art)"
+msgstr "Plus proche voisin (pixel art)"
+
+#: mcomix/preferences_dialog.py:869
 msgid "Normal (fast)"
 msgstr "Normale (rapide)"
 
-#: mcomix/preferences_dialog.py:869
+#: mcomix/preferences_dialog.py:870
 msgid "Bilinear"
 msgstr "Bilinéaire"
 
-#: mcomix/preferences_dialog.py:870
+#: mcomix/preferences_dialog.py:871
 msgid "Bicubic"
 msgstr "Bicubique"
 
-#: mcomix/preferences_dialog.py:871
+#: mcomix/preferences_dialog.py:872
 msgid "Lanczos (slow)"
 msgstr "Lanczos (lent)"
 
-#: mcomix/preferences_dialog.py:877
+#: mcomix/preferences_dialog.py:878
 msgid ""
 "Changes how images are scaled. Slower algorithms result in higher quality "
 "resizing, but longer page loading times."
@@ -2259,19 +2263,19 @@ msgstr ""
 "lents offrent un meilleur rendu, mais le chargement des images s'en trouve "
 "ralenti."
 
-#: mcomix/preferences_dialog.py:894
+#: mcomix/preferences_dialog.py:895
 msgid "Anywhere: the next page"
 msgstr "N'importe où : la page suivante"
 
-#: mcomix/preferences_dialog.py:895
+#: mcomix/preferences_dialog.py:896
 msgid "Halves: back and forward"
 msgstr "Moitiés : arrière et avant"
 
-#: mcomix/preferences_dialog.py:896
+#: mcomix/preferences_dialog.py:897
 msgid "Thirds: back, fullscreen, forward"
 msgstr "Tiers : arrière, plein écran, avant"
 
-#: mcomix/preferences_dialog.py:904
+#: mcomix/preferences_dialog.py:905
 msgid ""
 "With \"Flip pages with a left click\": the left half or third of the page "
 "turns back and the right one forward; the middle third enters or leaves "
@@ -2281,20 +2285,20 @@ msgstr ""
 "de la page revient en arrière et le droit avance ; le tiers du milieu entre "
 "en plein écran ou en sort. En mode manga, gauche et droite s'inversent."
 
-#: mcomix/preferences_dialog.py:913
+#: mcomix/preferences_dialog.py:914
 msgid "For a few seconds after a page turn"
 msgstr "Quelques secondes après chaque page tournée"
 
-#: mcomix/preferences_dialog.py:918
+#: mcomix/preferences_dialog.py:919
 msgid "The pages on screen and the number of pages, in the lower right corner."
 msgstr ""
 "Les pages affichées et le nombre de pages, dans le coin inférieur droit."
 
-#: mcomix/preferences_dialog.py:934
+#: mcomix/preferences_dialog.py:935
 msgid "None"
 msgstr "Aucun"
 
-#: mcomix/preferences_dialog.py:936
+#: mcomix/preferences_dialog.py:937
 msgid ""
 "The ICC profile of the screen, such as one made by calibrating it. Pages are "
 "converted into it from sRGB. Leave it empty where the desktop already "
@@ -2304,23 +2308,23 @@ msgstr ""
 "sont converties depuis sRGB. Laissez vide si le bureau convertit déjà pour "
 "l'écran."
 
-#: mcomix/preferences_dialog.py:954
+#: mcomix/preferences_dialog.py:955
 msgid "Perceptual"
 msgstr "Perceptuel"
 
-#: mcomix/preferences_dialog.py:955
+#: mcomix/preferences_dialog.py:956
 msgid "Relative colorimetric"
 msgstr "Colorimétrie relative"
 
-#: mcomix/preferences_dialog.py:956
+#: mcomix/preferences_dialog.py:957
 msgid "Saturation"
 msgstr "Saturation"
 
-#: mcomix/preferences_dialog.py:957
+#: mcomix/preferences_dialog.py:958
 msgid "Absolute colorimetric"
 msgstr "Colorimétrie absolue"
 
-#: mcomix/preferences_dialog.py:968
+#: mcomix/preferences_dialog.py:969
 msgid ""
 "How colours the screen cannot show are brought within its range, when a "
 "screen colour profile is set. Perceptual keeps the colours in proportion; "
@@ -2331,19 +2335,19 @@ msgstr ""
 "les couleurs en proportion ; colorimétrie relative garde exactes celles que "
 "l'écran peut afficher."
 
-#: mcomix/preferences_dialog.py:975 mcomix/library/book_area.py:291
+#: mcomix/preferences_dialog.py:976 mcomix/library/book_area.py:291
 msgid "Normal"
 msgstr "Normale"
 
-#: mcomix/preferences_dialog.py:981
+#: mcomix/preferences_dialog.py:982
 msgid "Controls how animated images should be displayed."
 msgstr "Détermine la façon dont les images animées sont affichées."
 
-#: mcomix/preferences_dialog.py:1021
+#: mcomix/preferences_dialog.py:1022
 msgid "The temporary folder"
 msgstr "Le dossier temporaire"
 
-#: mcomix/preferences_dialog.py:1023
+#: mcomix/preferences_dialog.py:1024
 msgid ""
 "The folder archives are unpacked into while they are read, such as a RAM "
 "disk. Empty, the system's temporary folder. Takes effect with the next book "
@@ -2353,7 +2357,7 @@ msgstr ""
 "exemple un disque RAM. Vide : le dossier temporaire du système. S'applique "
 "au prochain livre ouvert."
 
-#: mcomix/preferences_dialog.py:1044
+#: mcomix/preferences_dialog.py:1045
 msgid ""
 "Treat all files found within archives, that have one of these file endings, "
 "as comments."

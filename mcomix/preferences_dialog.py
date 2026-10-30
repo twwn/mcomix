@@ -865,6 +865,7 @@ class _PreferencesDialog(Dialog):
     def _create_scaling_quality_combobox(self) -> "widgets.Chooser[int]":
         """ Creates combo box for image scaling quality """
         items = (
+                (_('Nearest (pixel art)'), int(GdkPixbuf.InterpType.NEAREST)),
                 (_('Normal (fast)'), int(GdkPixbuf.InterpType.TILES)),
                 (_('Bilinear'), int(GdkPixbuf.InterpType.BILINEAR)),
                 (_('Bicubic'), constants.SCALING_BICUBIC),

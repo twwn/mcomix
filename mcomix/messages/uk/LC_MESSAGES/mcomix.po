@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-30 15:48+0100\n"
+"POT-Creation-Date: 2026-10-30 16:09+0100\n"
 "PO-Revision-Date: 2009-05-04 23:52+0300\n"
 "Last-Translator: Oleksandr Zaiats <ai@eth0.net.ua>\n"
 "Language-Team: \n"
@@ -44,7 +44,7 @@ msgid "! Extraction error: %s"
 msgstr "! Помилка розпакування: %s"
 
 #: mcomix/archive_extractor.py:400 mcomix/archive_tools.py:235
-#: mcomix/image_tools.py:517 mcomix/page_marks.py:62
+#: mcomix/image_tools.py:518 mcomix/page_marks.py:62
 #: mcomix/page_rotations.py:42
 #, python-format
 msgid "! Could not read %s"
@@ -696,7 +696,7 @@ msgstr ""
 msgid "Invalid path: '%s'"
 msgstr "Неправильний шлях: «%s»"
 
-#: mcomix/image_tools.py:1319
+#: mcomix/image_tools.py:1390
 msgid "Unknown filetype"
 msgstr "Невідомий тип файлу"
 
@@ -2089,8 +2089,8 @@ msgstr ""
 "лишається мовою, якою його було запущено, доки його не буде запущено знову. "
 "Книга, яку читають, її сторінка та розмір вікна зберігаються."
 
-#: mcomix/preferences_dialog.py:694 mcomix/preferences_dialog.py:911
-#: mcomix/preferences_dialog.py:974 mcomix/ui.py:571
+#: mcomix/preferences_dialog.py:694 mcomix/preferences_dialog.py:912
+#: mcomix/preferences_dialog.py:975 mcomix/ui.py:571
 msgid "Never"
 msgstr "Ніколи"
 
@@ -2102,7 +2102,7 @@ msgstr "Лише для титульних сторінок"
 msgid "Only for wide images"
 msgstr "Лише для широких зображень"
 
-#: mcomix/preferences_dialog.py:697 mcomix/preferences_dialog.py:912
+#: mcomix/preferences_dialog.py:697 mcomix/preferences_dialog.py:913
 msgid "Always"
 msgstr "Завжди"
 
@@ -2207,22 +2207,26 @@ msgstr ""
 "сторінки."
 
 #: mcomix/preferences_dialog.py:868
+msgid "Nearest (pixel art)"
+msgstr "Найближчий сусід (піксель-арт)"
+
+#: mcomix/preferences_dialog.py:869
 msgid "Normal (fast)"
 msgstr "Звичайний (швидкий)"
 
-#: mcomix/preferences_dialog.py:869
+#: mcomix/preferences_dialog.py:870
 msgid "Bilinear"
 msgstr "Білінійний"
 
-#: mcomix/preferences_dialog.py:870
+#: mcomix/preferences_dialog.py:871
 msgid "Bicubic"
 msgstr "Бікубічний"
 
-#: mcomix/preferences_dialog.py:871
+#: mcomix/preferences_dialog.py:872
 msgid "Lanczos (slow)"
 msgstr "Ланцош (повільний)"
 
-#: mcomix/preferences_dialog.py:877
+#: mcomix/preferences_dialog.py:878
 msgid ""
 "Changes how images are scaled. Slower algorithms result in higher quality "
 "resizing, but longer page loading times."
@@ -2230,19 +2234,19 @@ msgstr ""
 "Змінює спосіб масштабування зображень. Повільніші алгоритми дають кращу "
 "якість, але сторінки завантажуються довше."
 
-#: mcomix/preferences_dialog.py:894
+#: mcomix/preferences_dialog.py:895
 msgid "Anywhere: the next page"
 msgstr "Будь-де: наступна сторінка"
 
-#: mcomix/preferences_dialog.py:895
+#: mcomix/preferences_dialog.py:896
 msgid "Halves: back and forward"
 msgstr "Половини: назад і вперед"
 
-#: mcomix/preferences_dialog.py:896
+#: mcomix/preferences_dialog.py:897
 msgid "Thirds: back, fullscreen, forward"
 msgstr "Третини: назад, повний екран, вперед"
 
-#: mcomix/preferences_dialog.py:904
+#: mcomix/preferences_dialog.py:905
 msgid ""
 "With \"Flip pages with a left click\": the left half or third of the page "
 "turns back and the right one forward; the middle third enters or leaves "
@@ -2252,19 +2256,19 @@ msgstr ""
 "назад, права — вперед; середня третина вмикає чи вимикає повноекранний "
 "режим. У режимі манґи ліва й права сторони міняються місцями."
 
-#: mcomix/preferences_dialog.py:913
+#: mcomix/preferences_dialog.py:914
 msgid "For a few seconds after a page turn"
 msgstr "Кілька секунд після гортання"
 
-#: mcomix/preferences_dialog.py:918
+#: mcomix/preferences_dialog.py:919
 msgid "The pages on screen and the number of pages, in the lower right corner."
 msgstr "Сторінки на екрані й кількість сторінок, у правому нижньому куті."
 
-#: mcomix/preferences_dialog.py:934
+#: mcomix/preferences_dialog.py:935
 msgid "None"
 msgstr "Немає"
 
-#: mcomix/preferences_dialog.py:936
+#: mcomix/preferences_dialog.py:937
 msgid ""
 "The ICC profile of the screen, such as one made by calibrating it. Pages are "
 "converted into it from sRGB. Leave it empty where the desktop already "
@@ -2274,23 +2278,23 @@ msgstr ""
 "перетворюються в нього з sRGB. Залиште порожнім, якщо стільниця вже "
 "перетворює кольори для екрана."
 
-#: mcomix/preferences_dialog.py:954
+#: mcomix/preferences_dialog.py:955
 msgid "Perceptual"
 msgstr "Придатне для сприйняття"
 
-#: mcomix/preferences_dialog.py:955
+#: mcomix/preferences_dialog.py:956
 msgid "Relative colorimetric"
 msgstr "Відносне колориметричне"
 
-#: mcomix/preferences_dialog.py:956
+#: mcomix/preferences_dialog.py:957
 msgid "Saturation"
 msgstr "Насиченість"
 
-#: mcomix/preferences_dialog.py:957
+#: mcomix/preferences_dialog.py:958
 msgid "Absolute colorimetric"
 msgstr "Абсолютне колориметричне"
 
-#: mcomix/preferences_dialog.py:968
+#: mcomix/preferences_dialog.py:969
 msgid ""
 "How colours the screen cannot show are brought within its range, when a "
 "screen colour profile is set. Perceptual keeps the colours in proportion; "
@@ -2301,19 +2305,19 @@ msgstr ""
 "співвідношення кольорів; відносне колориметричне точно зберігає ті, які "
 "екран може показати."
 
-#: mcomix/preferences_dialog.py:975 mcomix/library/book_area.py:291
+#: mcomix/preferences_dialog.py:976 mcomix/library/book_area.py:291
 msgid "Normal"
 msgstr "Звичайний"
 
-#: mcomix/preferences_dialog.py:981
+#: mcomix/preferences_dialog.py:982
 msgid "Controls how animated images should be displayed."
 msgstr "Визначає, як показувати анімовані зображення."
 
-#: mcomix/preferences_dialog.py:1021
+#: mcomix/preferences_dialog.py:1022
 msgid "The temporary folder"
 msgstr "Тимчасова тека"
 
-#: mcomix/preferences_dialog.py:1023
+#: mcomix/preferences_dialog.py:1024
 msgid ""
 "The folder archives are unpacked into while they are read, such as a RAM "
 "disk. Empty, the system's temporary folder. Takes effect with the next book "
@@ -2322,7 +2326,7 @@ msgstr ""
 "Тека, до якої розпаковуються архіви під час читання, наприклад RAM-диск. "
 "Порожньо — тимчасова тека системи. Діє з наступної відкритої книжки."
 
-#: mcomix/preferences_dialog.py:1044
+#: mcomix/preferences_dialog.py:1045
 msgid ""
 "Treat all files found within archives, that have one of these file endings, "
 "as comments."

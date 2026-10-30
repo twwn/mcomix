@@ -948,6 +948,16 @@ class PillowScalingTest(MComixTest):
         self.assertEqual((255, 0, 0), turned.getpixel((20, 10)))
         self.assertEqual((0, 0, 255), turned.getpixel((20, 110)))
 
+    def test_pixel_art_keeps_its_pixels_with_nearest(self):
+        art = Image.new('RGB', (3, 2), (255, 255, 255))
+        art.putpixel((1, 0), (255, 0, 0))
+        art.putpixel((2, 1), (0, 0, 255))
+        enlarged = image_tools.pixbuf_to_pil(image_tools.fit_in_rectangle(
+            image_tools.pil_to_pixbuf(art), 12, 8, scale_up=True,
+            scaling_quality=int(GdkPixbuf.InterpType.NEAREST)))
+        self.assertEqual(art.resize((12, 8), Image.Resampling.NEAREST)
+                         .tobytes(), enlarged.tobytes())
+
     def test_gdk_pixbuf_scales_bilinearly_where_pillow_cannot(self):
         """The lens and a drag's cover scale with gdk-pixbuf, which has
         no Lanczos; nor a number no MComix wrote."""
