@@ -332,7 +332,7 @@ _VIEW = ('fullscreen', None,
          'best_fit_mode', 'fit_width_mode', 'fit_height_mode',
          'fit_size_mode', 'fit_manual_mode', None,
          ('menu_zoom', ('zoom_in', 'zoom_out', 'zoom_original')),
-         'stretch', None,
+         'stretch', 'crop_borders', None,
          'lens', 'slideshow', None,
          ('menu_toolbars', ('menubar', 'toolbar', 'statusbar',
                             'scrollbar', 'thumbnails', None,
@@ -554,6 +554,8 @@ class MainUI:
             _Entry('lens', 'edit-find-symbolic', _('Magnifying _lens'), _('Magnifying lens'), window.lens.toggle),
             _Entry('stretch', None, _('Stretch small images'), _('Stretch images to fit to the screen, depending on zoom mode.'),
                    window.change_stretch),
+            _Entry('crop_borders', None, _('Crop borders'), _('Cut off the plain margins around each page.'),
+                   window.change_crop_borders),
             _Entry('invert_color', None, _('_Invert image colors'), _('Invert image colors'), window.change_invert_color)])
 
         # Note: Don't change the default value for the radio buttons unless

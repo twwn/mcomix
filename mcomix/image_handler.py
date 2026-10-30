@@ -111,6 +111,10 @@ class ImageHandler:
             return image_tools.missing_page()
         try:
             pixbuf = image_tools.load_pixbuf((image_files or [])[index])
+            if prefs['crop borders']:
+                # Looked at here, on the caching thread, rather than
+                # when the page is first drawn.
+                image_tools.without_borders(pixbuf)
             tools.garbage_collect()
         except Exception as e:
             log.error('Could not load pixbuf for page %u: %r', index + 1, e)
@@ -143,6 +147,16 @@ class ImageHandler:
         for i in range(number_of_bufs):
             result.append(self._get_pixbuf(self._current_image_index + i))
         return result
+
+    def get_shown_pixbufs(self, number_of_bufs: int
+                          ) -> list[GdkPixbuf.Pixbuf]:
+        """get_pixbufs(), with the plain margins cut off where "crop
+        borders" is on: what the pages are drawn, magnified and measured
+        from.  What is copied or saved is the page as it is."""
+        pixbufs = self.get_pixbufs(number_of_bufs)
+        if not prefs['crop borders']:
+            return pixbufs
+        return [image_tools.without_borders(pixbuf) for pixbuf in pixbufs]
 
     def do_cacheing(self) -> None:
         """Make sure that the correct pixbufs are stored in cache. These

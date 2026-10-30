@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-30 16:09+0100\n"
+"POT-Creation-Date: 2026-10-30 16:20+0100\n"
 "PO-Revision-Date: 2009-05-04 23:52+0300\n"
 "Last-Translator: Oleksandr Zaiats <ai@eth0.net.ua>\n"
 "Language-Team: \n"
@@ -147,7 +147,7 @@ msgstr "Редагування закладок"
 msgid "C_lear bookmarks..."
 msgstr "_Видалити закладки…"
 
-#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1378 mcomix/openwith.py:340
+#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1381 mcomix/openwith.py:340
 #: mcomix/library/collection_area.py:160 mcomix/library/watchlist.py:69
 msgid "_Remove"
 msgstr "Ви_лучити"
@@ -168,7 +168,7 @@ msgstr "Тип"
 msgid "Name"
 msgstr "Ім’я"
 
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:2479
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:2488
 #: mcomix/library/control_area.py:157
 msgid "Page"
 msgstr "Сторінка"
@@ -272,7 +272,7 @@ msgstr "Перейменувати файл?"
 msgid "Please enter a new name for this file."
 msgstr "Будь ласка введіть нове ім’я для цього файлу."
 
-#: mcomix/edit_dialog.py:58 mcomix/keybindings.py:167
+#: mcomix/edit_dialog.py:58 mcomix/keybindings.py:168
 msgid "Edit archive"
 msgstr "Редагувати архів"
 
@@ -341,7 +341,7 @@ msgstr "Перей_менувати сторінку..."
 msgid "Select _All"
 msgstr "Виді_лити все"
 
-#: mcomix/enhance_dialog.py:40 mcomix/keybindings.py:170
+#: mcomix/enhance_dialog.py:40 mcomix/keybindings.py:171
 msgid "Enhance image"
 msgstr "Покращення зображення"
 
@@ -420,7 +420,7 @@ msgstr ""
 "Автоматично підлаштувати контраст (світлі та темні ділянки), окремо для "
 "кожної колірної смуги."
 
-#: mcomix/enhance_dialog.py:124 mcomix/ui.py:557
+#: mcomix/enhance_dialog.py:124 mcomix/ui.py:559
 msgid "_Invert image colors"
 msgstr "_Інвертувати кольори зображення"
 
@@ -484,7 +484,7 @@ msgstr "Не _зараз"
 msgid "Could not show the folder: %s"
 msgstr "Не вдалося показати каталог: %s"
 
-#: mcomix/file_actions.py:861 mcomix/keybindings.py:161
+#: mcomix/file_actions.py:861 mcomix/keybindings.py:162
 msgid "Save page as"
 msgstr "Зберегти сторінку як"
 
@@ -595,7 +595,7 @@ msgstr[0] "%d сторінка"
 msgstr[1] "%d сторінки"
 msgstr[2] "%d сторінок"
 
-#: mcomix/file_chooser_base_dialog.py:236 mcomix/keybindings.py:169
+#: mcomix/file_chooser_base_dialog.py:236 mcomix/keybindings.py:170
 msgid "Open"
 msgstr "Відкрити"
 
@@ -696,7 +696,7 @@ msgstr ""
 msgid "Invalid path: '%s'"
 msgstr "Неправильний шлях: «%s»"
 
-#: mcomix/image_tools.py:1390
+#: mcomix/image_tools.py:1481
 msgid "Unknown filetype"
 msgstr "Невідомий тип файлу"
 
@@ -891,8 +891,8 @@ msgstr "Збереження перетворення"
 
 #: mcomix/keybindings.py:96 mcomix/keybindings.py:97 mcomix/keybindings.py:98
 #: mcomix/keybindings.py:99 mcomix/keybindings.py:100 mcomix/keybindings.py:101
-#: mcomix/keybindings.py:102 mcomix/keybindings.py:170
-#: mcomix/keybindings.py:172 mcomix/properties_dialog.py:51 mcomix/ui.py:520
+#: mcomix/keybindings.py:102 mcomix/keybindings.py:171
+#: mcomix/keybindings.py:173 mcomix/properties_dialog.py:51 mcomix/ui.py:520
 msgid "Image"
 msgstr "Зображення"
 
@@ -935,9 +935,9 @@ msgstr "Двосторінковий режим"
 #: mcomix/keybindings.py:109 mcomix/keybindings.py:110
 #: mcomix/keybindings.py:111 mcomix/keybindings.py:112
 #: mcomix/keybindings.py:115 mcomix/keybindings.py:116
-#: mcomix/keybindings.py:118 mcomix/keybindings.py:119
+#: mcomix/keybindings.py:117 mcomix/keybindings.py:119
 #: mcomix/keybindings.py:120 mcomix/keybindings.py:121
-#: mcomix/keybindings.py:122
+#: mcomix/keybindings.py:122 mcomix/keybindings.py:123
 msgid "View mode"
 msgstr "Режим перегляду"
 
@@ -965,213 +965,217 @@ msgstr "Збільшуюче Скло"
 msgid "Stretch small images"
 msgstr "Розтягування малих зображень"
 
-#: mcomix/keybindings.py:118 mcomix/ui.py:562
+#: mcomix/keybindings.py:117 mcomix/ui.py:557
+msgid "Crop borders"
+msgstr "Обрізання полів"
+
+#: mcomix/keybindings.py:119 mcomix/ui.py:564
 msgid "Best fit mode"
 msgstr "Найкращій масштаб"
 
-#: mcomix/keybindings.py:119 mcomix/ui.py:563
+#: mcomix/keybindings.py:120 mcomix/ui.py:565
 msgid "Fit width mode"
 msgstr "Прилаштувати за шириною"
 
-#: mcomix/keybindings.py:120 mcomix/ui.py:564
+#: mcomix/keybindings.py:121 mcomix/ui.py:566
 msgid "Fit height mode"
 msgstr "Пришалтувати за висотою"
 
-#: mcomix/keybindings.py:121
+#: mcomix/keybindings.py:122
 msgid "Fit size mode"
 msgstr "Режим припасування розміру"
 
-#: mcomix/keybindings.py:122 mcomix/ui.py:566
+#: mcomix/keybindings.py:123 mcomix/ui.py:568
 msgid "Manual zoom mode"
 msgstr "Ручне масштабування"
 
-#: mcomix/keybindings.py:125 mcomix/osd.py:287 mcomix/ui.py:487
+#: mcomix/keybindings.py:126 mcomix/osd.py:287 mcomix/ui.py:487
 msgid "Leave fullscreen"
 msgstr "Вийти з повноекранного режиму"
 
-#: mcomix/keybindings.py:125 mcomix/keybindings.py:127
-#: mcomix/keybindings.py:128 mcomix/keybindings.py:129
-#: mcomix/keybindings.py:131 mcomix/keybindings.py:132
-#: mcomix/keybindings.py:133 mcomix/keybindings.py:134
-#: mcomix/keybindings.py:136 mcomix/keybindings.py:137
-#: mcomix/keybindings.py:138 mcomix/keybindings.py:139
-#: mcomix/keybindings.py:140 mcomix/keybindings.py:141
-#: mcomix/keybindings.py:143 mcomix/keybindings.py:145
-#: mcomix/keybindings.py:147 mcomix/preferences_dialog.py:132
+#: mcomix/keybindings.py:126 mcomix/keybindings.py:128
+#: mcomix/keybindings.py:129 mcomix/keybindings.py:130
+#: mcomix/keybindings.py:132 mcomix/keybindings.py:133
+#: mcomix/keybindings.py:134 mcomix/keybindings.py:135
+#: mcomix/keybindings.py:137 mcomix/keybindings.py:138
+#: mcomix/keybindings.py:139 mcomix/keybindings.py:140
+#: mcomix/keybindings.py:141 mcomix/keybindings.py:142
+#: mcomix/keybindings.py:144 mcomix/keybindings.py:146
+#: mcomix/keybindings.py:148 mcomix/preferences_dialog.py:132
 msgid "User interface"
 msgstr "Інтерфейс користувача"
 
-#: mcomix/keybindings.py:127
+#: mcomix/keybindings.py:128
 msgid "OSD panel"
 msgstr "Екранна панель"
 
-#: mcomix/keybindings.py:128
+#: mcomix/keybindings.py:129
 msgid "Minimize"
 msgstr "Згорнути"
 
-#: mcomix/keybindings.py:129
+#: mcomix/keybindings.py:130
 msgid "Manual"
 msgstr "Посібник"
 
-#: mcomix/keybindings.py:130
+#: mcomix/keybindings.py:131
 msgid "Keyboard shortcuts"
 msgstr "Клавіатурні скорочення"
 
-#: mcomix/keybindings.py:132 mcomix/preferences_dialog.py:176
+#: mcomix/keybindings.py:133 mcomix/preferences_dialog.py:176
 msgid "Fullscreen"
 msgstr "Повноекранний режим"
 
-#: mcomix/keybindings.py:133
+#: mcomix/keybindings.py:134
 msgid "Toolbar"
 msgstr "Панелі"
 
-#: mcomix/keybindings.py:134
+#: mcomix/keybindings.py:135
 msgid "Menubar"
 msgstr "Меню"
 
-#: mcomix/keybindings.py:135
+#: mcomix/keybindings.py:136
 msgid "Context menu"
 msgstr "Контекстне меню"
 
-#: mcomix/keybindings.py:137
+#: mcomix/keybindings.py:138
 msgid "Statusbar"
 msgstr "Рядок стану"
 
-#: mcomix/keybindings.py:138
+#: mcomix/keybindings.py:139
 msgid "Scrollbars"
 msgstr "Смуги прокручування"
 
-#: mcomix/keybindings.py:139 mcomix/preferences_dialog.py:156
+#: mcomix/keybindings.py:140 mcomix/preferences_dialog.py:156
 msgid "Thumbnails"
 msgstr "Мініатюри"
 
-#: mcomix/keybindings.py:140
+#: mcomix/keybindings.py:141
 msgid "Hide all"
 msgstr "Сховати все"
 
-#: mcomix/keybindings.py:141 mcomix/slideshow.py:54 mcomix/ui.py:553
+#: mcomix/keybindings.py:142 mcomix/slideshow.py:54 mcomix/ui.py:553
 msgid "Start slideshow"
 msgstr "Почати слайдшоу"
 
-#: mcomix/keybindings.py:142
+#: mcomix/keybindings.py:143
 msgid "Pause or resume animation"
 msgstr "Призупинити або продовжити анімацію"
 
-#: mcomix/keybindings.py:144
+#: mcomix/keybindings.py:145
 msgid "Play animation faster"
 msgstr "Відтворювати анімацію швидше"
 
-#: mcomix/keybindings.py:146
+#: mcomix/keybindings.py:147
 msgid "Play animation slower"
 msgstr "Відтворювати анімацію повільніше"
 
-#: mcomix/keybindings.py:150
+#: mcomix/keybindings.py:151
 msgid "Delete"
 msgstr "Вилучити"
 
-#: mcomix/keybindings.py:150 mcomix/keybindings.py:152
-#: mcomix/keybindings.py:153 mcomix/keybindings.py:157
-#: mcomix/keybindings.py:158 mcomix/keybindings.py:159
-#: mcomix/keybindings.py:160 mcomix/keybindings.py:161
-#: mcomix/keybindings.py:163 mcomix/keybindings.py:164
-#: mcomix/keybindings.py:168 mcomix/keybindings.py:169
-#: mcomix/keybindings.py:171
+#: mcomix/keybindings.py:151 mcomix/keybindings.py:153
+#: mcomix/keybindings.py:154 mcomix/keybindings.py:158
+#: mcomix/keybindings.py:159 mcomix/keybindings.py:160
+#: mcomix/keybindings.py:161 mcomix/keybindings.py:162
+#: mcomix/keybindings.py:164 mcomix/keybindings.py:165
+#: mcomix/keybindings.py:169 mcomix/keybindings.py:170
+#: mcomix/keybindings.py:172
 msgid "File"
 msgstr "Файл"
 
-#: mcomix/keybindings.py:151 mcomix/ui.py:447
+#: mcomix/keybindings.py:152 mcomix/ui.py:447
 msgid "Delete permanently"
 msgstr "Вилучити остаточно"
 
-#: mcomix/keybindings.py:153
+#: mcomix/keybindings.py:154
 msgid "Rename page"
 msgstr "Перейменувати сторінку"
 
-#: mcomix/keybindings.py:154
+#: mcomix/keybindings.py:155
 msgid "Undo"
 msgstr "Скасувати"
 
-#: mcomix/keybindings.py:154 mcomix/keybindings.py:155
-#: mcomix/keybindings.py:156 mcomix/keybindings.py:165
-#: mcomix/keybindings.py:167
+#: mcomix/keybindings.py:155 mcomix/keybindings.py:156
+#: mcomix/keybindings.py:157 mcomix/keybindings.py:166
+#: mcomix/keybindings.py:168
 msgid "Edit"
 msgstr "Зміни"
 
-#: mcomix/keybindings.py:155
+#: mcomix/keybindings.py:156
 msgid "Redo"
 msgstr "Повторити"
 
-#: mcomix/keybindings.py:156
+#: mcomix/keybindings.py:157
 msgid "Copy"
 msgstr "Копіювати"
 
-#: mcomix/keybindings.py:157
+#: mcomix/keybindings.py:158
 msgid "Refresh"
 msgstr "Оновити"
 
-#: mcomix/keybindings.py:158
+#: mcomix/keybindings.py:159
 msgid "Close"
 msgstr "Закрити"
 
-#: mcomix/keybindings.py:159
+#: mcomix/keybindings.py:160
 msgid "Quit"
 msgstr "Вийти"
 
-#: mcomix/keybindings.py:160
+#: mcomix/keybindings.py:161
 msgid "Save and quit"
 msgstr "Зберегти і вийти"
 
-#: mcomix/keybindings.py:163
+#: mcomix/keybindings.py:164
 msgid "Archive comments"
 msgstr "Коментарі архіву"
 
-#: mcomix/keybindings.py:164 mcomix/properties_dialog.py:36
+#: mcomix/keybindings.py:165 mcomix/properties_dialog.py:36
 msgid "Properties"
 msgstr "Властивості"
 
-#: mcomix/keybindings.py:165 mcomix/preferences_dialog.py:70
+#: mcomix/keybindings.py:166 mcomix/preferences_dialog.py:70
 msgid "Preferences"
 msgstr "Параметри"
 
-#: mcomix/keybindings.py:168 mcomix/ui.py:449 mcomix/ui.py:452
+#: mcomix/keybindings.py:169 mcomix/ui.py:449 mcomix/ui.py:452
 #: mcomix/library/book_area.py:224
 msgid "Open containing folder"
 msgstr "Відкрити каталог із файлом"
 
-#: mcomix/keybindings.py:171 mcomix/library/main_dialog.py:58
+#: mcomix/keybindings.py:172 mcomix/library/main_dialog.py:58
 msgid "Library"
 msgstr "Бібліотека"
 
-#: mcomix/keybindings.py:172 mcomix/ui.py:557
+#: mcomix/keybindings.py:173 mcomix/ui.py:559
 msgid "Invert image colors"
 msgstr "Інвертування кольорів зображення"
 
-#: mcomix/keybindings.py:175
+#: mcomix/keybindings.py:176
 msgid "Add bookmark"
 msgstr "Додати закладку"
 
-#: mcomix/keybindings.py:175 mcomix/keybindings.py:176
+#: mcomix/keybindings.py:176 mcomix/keybindings.py:177
 msgid "Bookmarks"
 msgstr "Закладки"
 
-#: mcomix/keybindings.py:176
+#: mcomix/keybindings.py:177
 msgid "Edit bookmarks"
 msgstr "Редагування закладок"
 
-#: mcomix/keybindings.py:184 mcomix/openwith.py:561
+#: mcomix/keybindings.py:185 mcomix/openwith.py:561
 msgid "Command"
 msgstr "Команда"
 
-#: mcomix/keybindings.py:185
+#: mcomix/keybindings.py:186
 msgid "External commands"
 msgstr "Зовнішні команди"
 
-#: mcomix/keybindings.py:262
+#: mcomix/keybindings.py:263
 #, python-format
 msgid "Keybinding for \"%(action)s\" overrides hotkey for another action."
 msgstr "Сполучення клавіш для «%(action)s» перекриває сполучення іншої дії."
 
-#: mcomix/keybindings.py:455 mcomix/keybindings.py:463
+#: mcomix/keybindings.py:456 mcomix/keybindings.py:464
 #, python-format
 msgid "Couldn't load keybindings: %s"
 msgstr "Не вдалося завантажити сполучення клавіш: %s"
@@ -1181,7 +1185,7 @@ msgstr "Не вдалося завантажити сполучення клав
 msgid "! Could not remove file \"%s\""
 msgstr "! Не вдалося видалити файл \"%s\""
 
-#: mcomix/main.py:1371
+#: mcomix/main.py:1374
 #, python-format
 msgid "Remove the page picked out of \"%s\"?"
 msgid_plural "Remove the pages picked out of \"%s\"?"
@@ -1189,7 +1193,7 @@ msgstr[0] "Вилучити вибрану сторінку з «%s»?"
 msgstr[1] "Вилучити вибрані сторінки з «%s»?"
 msgstr[2] "Вилучити вибрані сторінки з «%s»?"
 
-#: mcomix/main.py:1374
+#: mcomix/main.py:1377
 msgid ""
 "They are taken out of the archive on disk, which is written again at once. "
 "Leaving the book without removing them forgets which pages they were."
@@ -1197,16 +1201,16 @@ msgstr ""
 "Їх вилучають з архіву на диску, який одразу записується заново. Якщо "
 "покинути книгу, не вилучивши їх, буде забуто, які це були сторінки."
 
-#: mcomix/main.py:1377
+#: mcomix/main.py:1380
 msgid "_Keep them"
 msgstr "Зали_шити"
 
-#: mcomix/main.py:1543
+#: mcomix/main.py:1546
 #, python-format
 msgid "Animation speed: %s"
 msgstr "Швидкість анімації: %s"
 
-#: mcomix/main.py:2185
+#: mcomix/main.py:2194
 msgid "SLIDESHOW"
 msgstr "СЛАЙДШОУ"
 
@@ -1888,7 +1892,7 @@ msgstr ""
 "ширину, показується в неперервному режимі. Меню «Вигляд» вимикає його для "
 "цієї книги."
 
-#: mcomix/preferences_dialog.py:400 mcomix/ui.py:565
+#: mcomix/preferences_dialog.py:400 mcomix/ui.py:567
 msgid "Fit to size mode"
 msgstr "Режим припасування до розміру"
 
@@ -2090,7 +2094,7 @@ msgstr ""
 "Книга, яку читають, її сторінка та розмір вікна зберігаються."
 
 #: mcomix/preferences_dialog.py:694 mcomix/preferences_dialog.py:912
-#: mcomix/preferences_dialog.py:975 mcomix/ui.py:571
+#: mcomix/preferences_dialog.py:975 mcomix/ui.py:573
 msgid "Never"
 msgstr "Ніколи"
 
@@ -2881,7 +2885,7 @@ msgid ""
 "Quits and restores the currently opened file next time the program starts."
 msgstr "Виходить і відновлює відкритий файл при наступному запуску програми."
 
-#: mcomix/ui.py:493 mcomix/ui.py:572 mcomix/ui.py:574
+#: mcomix/ui.py:493 mcomix/ui.py:574 mcomix/ui.py:576
 msgid "_Rotate 90° clockwise"
 msgstr "Обернути на 90° _за годинниковою стрілкою"
 
@@ -2889,7 +2893,7 @@ msgstr "Обернути на 90° _за годинниковою стрілко
 msgid "Rotate _180°"
 msgstr "_Обернути на 180°"
 
-#: mcomix/ui.py:495 mcomix/ui.py:573 mcomix/ui.py:575
+#: mcomix/ui.py:495 mcomix/ui.py:575 mcomix/ui.py:577
 msgid "Rotat_e 90° anticlockwise"
 msgstr "Обернути на 90° п_роти годинникової стрілки"
 
@@ -3077,67 +3081,71 @@ msgstr "_Збільшуюче скло"
 msgid "Stretch images to fit to the screen, depending on zoom mode."
 msgstr "Розтягує зображення до розміру екрана залежно від режиму масштабу."
 
-#: mcomix/ui.py:562
+#: mcomix/ui.py:557
+msgid "Cut off the plain margins around each page."
+msgstr "Обрізає однотонні поля навколо кожної сторінки."
+
+#: mcomix/ui.py:564
 msgid "_Best fit mode"
 msgstr "_Найкращій масштаб"
 
-#: mcomix/ui.py:563
+#: mcomix/ui.py:565
 msgid "Fit _width mode"
 msgstr "Пришалтувати за _шириною"
 
-#: mcomix/ui.py:564
+#: mcomix/ui.py:566
 msgid "Fit _height mode"
 msgstr "Пришалтувати за _висотою"
 
-#: mcomix/ui.py:565
+#: mcomix/ui.py:567
 msgid "Fit _size mode"
 msgstr "Режим припасування _розміру"
 
-#: mcomix/ui.py:566
+#: mcomix/ui.py:568
 msgid "M_anual zoom mode"
 msgstr "Р_учне масштабування"
 
-#: mcomix/ui.py:579
+#: mcomix/ui.py:581
 msgid "A_bout"
 msgstr "_Про програму"
 
-#: mcomix/ui.py:582
+#: mcomix/ui.py:584
 msgid "Co_mments..."
 msgstr "Ко_ментарі..."
 
-#: mcomix/ui.py:585
+#: mcomix/ui.py:587
 msgid "Proper_ties"
 msgstr "В_ластивості"
 
-#: mcomix/ui.py:588
+#: mcomix/ui.py:590
 msgid "_Preferences"
 msgstr "_Параметри"
 
-#: mcomix/ui.py:589
+#: mcomix/ui.py:591
 msgid "_Keyboard shortcuts"
 msgstr "_Клавіатурні скорочення"
 
-#: mcomix/ui.py:594
+#: mcomix/ui.py:596
 msgid "_Edit archive..."
 msgstr "_Редагувати архів…"
 
-#: mcomix/ui.py:594
+#: mcomix/ui.py:596
 msgid "Opens the archive editor."
 msgstr "Відкриває редактор архіву."
 
-#: mcomix/ui.py:596
+#: mcomix/ui.py:598
 msgid "_Open..."
 msgstr "Ві_дкрити…"
 
-#: mcomix/ui.py:597
+#: mcomix/ui.py:599
 msgid "Enha_nce image..."
 msgstr "По_кращити зображення..."
 
-#: mcomix/ui.py:600
+#: mcomix/ui.py:602
 msgid "_Library..."
 msgstr "_Бібліотека…"
 
-#: mcomix/ui.py:704
+#: mcomix/ui.py:706
 #, python-format
 msgid "Could not open the manual: %s"
 msgstr "Не вдалося відкрити посібник: %s"

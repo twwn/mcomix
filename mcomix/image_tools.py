@@ -22,7 +22,7 @@ from mcomix import tools
 from mcomix.i18n import _
 
 from collections.abc import Callable, Sequence
-from typing import Any, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
     from PIL import ImageCms
@@ -733,6 +733,97 @@ def file_animates(path: str) -> bool:
 def is_missing_image(pixbuf: GdkPixbuf.Pixbuf) -> bool:
     """Whether <pixbuf> is what a page that would not load was read as."""
     return bool(getattr(pixbuf, MISSING_IMAGE, False))
+
+
+#: Where border_box() keeps what it found on the pixbuf it looked at,
+#: and without_borders() what it cut out of it.
+_BORDER_BOX = 'mcomix_border_box'
+_WITHOUT_BORDERS = 'mcomix_without_borders'
+
+#: How far, in grey levels, a pixel may be from the margin's own grey
+#: and still be margin: JPEG noise and paper texture, averaged over the
+#: blocks border_box() looks at, stay well inside it.
+_BORDER_TOLERANCE = 40
+
+#: The least of each side's length a page is cropped to.  A page that
+#: is mostly blank - a line of text, a small signature - is shown as it
+#: is rather than enlarged to whatever is on it.
+_BORDER_MIN_SHARE = 0.5
+
+
+def border_box(pixbuf: GdkPixbuf.Pixbuf) -> tuple[int, int, int, int]:
+    """The part of <pixbuf> inside its plain margins, as (left, top,
+    right, bottom), or the whole of it where there are none to cut.
+
+    The margin is what is of one grey with the page's corners, the
+    middle two of the four taken: a corner the drawing reaches into is
+    outvoted.  The page is looked at in blocks of a few hundredths of
+    its side, which averages the noise of a scan away; the box keeps
+    one block more than it found on every side.  An axis that would
+    lose more than half of its length is left whole.
+
+    Kept on the pixbuf, so that each page is looked at once.
+    """
+    known = getattr(pixbuf, _BORDER_BOX, None)
+    if known is not None:
+        return cast("tuple[int, int, int, int]", known)
+    width, height = pixbuf.get_width(), pixbuf.get_height()
+    box = (0, 0, width, height)
+    block = max(1, min(width, height) // 400)
+    if min(width, height) >= 3 * block:
+        small = _allocated(pixbuf.scale_simple(
+            max(1, width // block), max(1, height // block),
+            GdkPixbuf.InterpType.BILINEAR))
+        grey = pixbuf_to_pil(small).convert('L')
+        last_x, last_y = grey.width - 1, grey.height - 1
+        corners = sorted(cast(int, grey.getpixel(corner)) for corner in (
+            (0, 0), (last_x, 0), (0, last_y), (last_x, last_y)))
+        margin = (corners[1] + corners[2]) // 2
+        found = grey.point(
+            lambda value: 255 if abs(value - margin) > _BORDER_TOLERANCE
+            else 0).getbbox()
+        if found is not None:
+            # The block more on each side also takes in the pixels past
+            # the last whole block, where the drawing reaches the edge.
+            left, top, right, bottom = (
+                min(side, max(0, (value + offset) * block))
+                for value, offset, side in zip(
+                    found, (-1, -1, 1, 1), (width, height, width, height)))
+            if right - left >= width * _BORDER_MIN_SHARE:
+                box = (left, box[1], right, box[3])
+            if bottom - top >= height * _BORDER_MIN_SHARE:
+                box = (box[0], top, box[2], bottom)
+    setattr(pixbuf, _BORDER_BOX, box)
+    return box
+
+
+def without_borders(pixbuf: GdkPixbuf.Pixbuf) -> GdkPixbuf.Pixbuf:
+    """<pixbuf> with its plain margins cut off (border_box()), sharing
+    its pixels.  A moving page and one that would not load stay as they
+    are; the cut page keeps the Exif turn of the whole one.
+
+    The same page asked again answers with the same pixbuf, which is
+    what MainWindow keeps a strip's scaled pages by.
+    """
+    if is_animation(pixbuf) or is_missing_image(pixbuf):
+        return pixbuf
+    known = getattr(pixbuf, _WITHOUT_BORDERS, None)
+    if known is not None:
+        return cast(GdkPixbuf.Pixbuf, known)
+    left, top, right, bottom = border_box(pixbuf)
+    cropped = pixbuf
+    if (left, top, right, bottom) != (0, 0, pixbuf.get_width(),
+                                      pixbuf.get_height()):
+        cropped = pixbuf.new_subpixbuf(left, top, right - left,
+                                       bottom - top)
+        rotation = get_implied_rotation(pixbuf)
+        if rotation:
+            setattr(cropped, 'orientation', next(
+                orientation
+                for orientation, angle in _IMPLIED_ROTATION.items()
+                if angle == rotation))
+    setattr(pixbuf, _WITHOUT_BORDERS, cropped)
+    return cropped
 
 
 def _glycin_animates(path: str) -> bool:

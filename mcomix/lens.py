@@ -218,7 +218,7 @@ class MagnifyingLens:
             return [int(round(side * scale)) for side in vector]
 
         cb = self._window.layout.get_content_boxes()
-        source_pixbufs = self._window.imagehandler.get_pixbufs(len(cb))
+        source_pixbufs = self._window.imagehandler.get_shown_pixbufs(len(cb))
         transforms = self._window.transforms
         lens_scale = (prefs['lens magnification'],) * 2  # 2D only
         opaque = prefs['checkered bg for transparent images'] or not any(

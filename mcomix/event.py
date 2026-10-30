@@ -317,6 +317,10 @@ class EventHandler:
                          ['y'],
                          self._window.actiongroup.get_action('stretch').activate)
 
+        manager.register('crop_borders',
+                         ['o'],
+                         self._window.actiongroup.get_action('crop_borders').activate)
+
         # Zooming commands for manual zoom mode
         manager.register('zoom_in',
                          ['plus', 'KP_Add', 'equal', '<Control>plus',

@@ -532,6 +532,7 @@ class DocumentedKeyBindingsTest(MComixTest):
         'Fixed size mode': 'fit_size_mode',
         'Manual zoom mode': 'fit_manual_mode',
         'Stretch small images': 'stretch',
+        'Crop borders': 'crop_borders',
         'Zoom in': 'zoom_in',
         'Zoom out': 'zoom_out',
         'Reset zoom': 'zoom_original',

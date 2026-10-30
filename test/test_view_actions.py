@@ -8,6 +8,8 @@ page is shown at.
 
 import os
 
+from PIL import Image, ImageDraw
+
 from . import MComixTest, get_testfile_path, pump, wait_for
 
 from mcomix import constants
@@ -140,6 +142,34 @@ class ViewActionsTest(MComixTest):
         self._activate('stretch')
         self.assertFalse(prefs['stretch'])
         self.assertEqual((100, 100), self._shown_size())
+
+    def test_cropping_the_borders_draws_only_what_is_inside_them(self):
+        """A page of 800 by 800 with a drawing of 500 by 700 in white
+        margins fills a box of 400 by 400 whole until its margins are
+        cut off, and as high as the box after."""
+        book = os.path.join(self.tmp_dir, 'book')
+        os.mkdir(book)
+        for name in ('1.png', '2.png'):
+            page = Image.new('RGB', (800, 800), 'white')
+            ImageDraw.Draw(page).rectangle((150, 50, 649, 749), fill='navy')
+            page.save(os.path.join(book, name))
+        prefs['crop borders'] = False
+        prefs['fit to size width other'] = 400
+        prefs['fit to size height other'] = 400
+        self.window.filehandler.open_file(os.path.join(book, '1.png'))
+        self.assertTrue(wait_for(
+            lambda: self.window.imagehandler.get_number_of_pages() == 2))
+        pump()
+        self._activate('fit_size_mode')
+        self.assertEqual((400, 400), self._shown_size())
+        self._activate('crop_borders')
+        self.assertTrue(prefs['crop borders'])
+        width, height = self._shown_size()
+        self.assertEqual(400, height)
+        self.assertAlmostEqual(286, width, delta=3)
+        self._activate('crop_borders')
+        self.assertFalse(prefs['crop borders'])
+        self.assertEqual((400, 400), self._shown_size())
 
     def test_zooming_in_and_out_and_back_to_the_original_size(self):
         self._open('blue.png')

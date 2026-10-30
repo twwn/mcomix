@@ -114,6 +114,7 @@ BINDING_INFO: "dict[str, dict[str, str]]" = {
 
     'lens': {'title': _('Magnifying lens'), 'group': _('View mode')},
     'stretch': {'title': _('Stretch small images'), 'group': _('View mode')},
+    'crop_borders': {'title': _('Crop borders'), 'group': _('View mode')},
 
     'best_fit_mode': {'title': _('Best fit mode'), 'group': _('View mode')},
     'fit_width_mode': {'title': _('Fit width mode'), 'group': _('View mode')},

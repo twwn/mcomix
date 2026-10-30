@@ -66,6 +66,8 @@ Manual zoom | A | No scaling.
 
 No mode scales a small page up unless "View → Stretch small images" is on.
 
+"View → Crop borders" (O) cuts the plain margins off each page, so the drawing fills more of the window. A margin is what is of one grey with the page's corners. A page that would lose more than half its width or height that way keeps that side whole. Animated pages are not cropped. The lens shows the cropped page; copying and saving a page take it whole.
+
 On a screen scaled above 100 per cent, such as 200 or 150 per cent, pages, the magnifying lens, the thumbnails of the sidebar and the archive editor, and the library's covers are made with the screen's own pixels, so they stay sharp.
 
 Zooming, or resizing the window, keeps the middle of the view on the same part of the page.

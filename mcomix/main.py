@@ -407,6 +407,9 @@ class MainWindow(Gtk.Window):
         if prefs['stretch']:
             self.actiongroup.get_action('stretch').activate()
 
+        if prefs['crop borders']:
+            self.actiongroup.get_action('crop_borders').activate()
+
         if prefs['invert smart scroll']:
             self.actiongroup.get_action('invert_scroll').activate()
 
@@ -551,7 +554,7 @@ class MainWindow(Gtk.Window):
                     self.images.append(image)
                     self.page_area.put(image, 0, 0)
             pixbuf_count = self.displayed_page_count()
-            pixbuf_list = list(self.imagehandler.get_pixbufs(pixbuf_count))
+            pixbuf_list = list(self.imagehandler.get_shown_pixbufs(pixbuf_count))
             do_not_transform = [image_tools.is_animation(x) for x in pixbuf_list]
             size_list = [[pixbuf.get_width(), pixbuf.get_height()]
                          for pixbuf in pixbuf_list]
@@ -1713,6 +1716,12 @@ class MainWindow(Gtk.Window):
         """ Toggles stretching small images. """
         prefs['stretch'] = toggleaction.get_active()
         self.zoom.set_scale_up(prefs['stretch'])
+        self.draw_image()
+
+    def change_crop_borders(self, toggleaction: "ui.Action",
+                            *args: object) -> None:
+        """Toggles cutting the plain margins off the pages."""
+        prefs['crop borders'] = toggleaction.get_active()
         self.draw_image()
 
     def change_toolbar_visibility(self, toggleaction: "ui.Action") -> None:

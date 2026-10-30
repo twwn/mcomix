@@ -76,6 +76,7 @@ Fit to height mode | H
 Fixed size mode | S
 Manual zoom mode | A
 Stretch small images | Y
+Crop borders | O
 Zoom in | Plus, KeyPadAdd, Equal, CTRL+Plus, CTRL+Equal, CTRL+KeyPadAdd, CTRL+MouseWheelUp
 Zoom out | Minus, KeyPadSubtract, CTRL+Minus, CTRL+KeyPadSubtract, CTRL+MouseWheelDown
 Reset zoom | CTRL+0, KeyPad0

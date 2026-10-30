@@ -197,7 +197,7 @@ class _EnhanceImageDialog(Dialog):
         # count of each colour hardly changes with the size and the
         # sliders redraw it as they move.
         pixbuf = image_tools.fit_in_rectangle(
-            self._window.imagehandler.get_pixbufs(1)[0],
+            self._window.imagehandler.get_shown_pixbufs(1)[0],
             self._HISTOGRAM_SOURCE_SIZE, self._HISTOGRAM_SOURCE_SIZE,
             scaling_quality=GdkPixbuf.InterpType.BILINEAR)
         self.draw_histogram(self._enhancer.enhanced(pixbuf))

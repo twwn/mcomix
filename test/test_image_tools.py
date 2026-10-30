@@ -972,6 +972,79 @@ class PillowScalingTest(MComixTest):
                          image_tools.scaling_quality_preference())
 
 
+class BorderTest(MComixTest):
+
+    """Cutting the plain margins off a page ("crop borders")."""
+
+    def _page(self, size=(1200, 1700), margin='white', art=(90, 120, 1110, 1580),
+              colour=(30, 30, 30), quality=75):
+        """A scanned page: <art> drawn on <margin>, saved as a JPEG."""
+        page = Image.new('RGB', size, margin)
+        draw = ImageDraw.Draw(page)
+        draw.rectangle(art, outline=colour, width=4)
+        for line in range(art[1], art[3], 40):
+            draw.line((art[0], line, art[2], min(art[3], line + 30)),
+                      fill=colour, width=2)
+        data = BytesIO()
+        page.save(data, 'JPEG', quality=quality)
+        return image_tools.pil_to_pixbuf(Image.open(data).convert('RGB'))
+
+    def test_the_margins_of_a_scan_are_found_within_a_block(self):
+        pixbuf = self._page()
+        left, top, right, bottom = image_tools.border_box(pixbuf)
+        # One block of the page's side in 400 more than the drawing, on
+        # every side: 3 pixels here.
+        for found, drawn in ((left, 90), (top, 120)):
+            self.assertLessEqual(found, drawn)
+            self.assertGreaterEqual(found, drawn - 6)
+        for found, drawn in ((right, 1111), (bottom, 1581)):
+            self.assertGreaterEqual(found, drawn)
+            self.assertLessEqual(found, drawn + 6)
+        cropped = image_tools.without_borders(pixbuf)
+        self.assertEqual((right - left, bottom - top),
+                         (cropped.get_width(), cropped.get_height()))
+        self.assertIs(cropped, image_tools.without_borders(pixbuf))
+
+    def test_black_margins_and_a_corner_the_drawing_reaches(self):
+        pixbuf = self._page(margin='black', colour=(240, 240, 240))
+        self.assertLessEqual(image_tools.border_box(pixbuf)[0], 90)
+        self.assertGreater(image_tools.border_box(pixbuf)[0], 80)
+        # A drawing in the top left corner outvotes nothing: the other
+        # three corners are margin.
+        page = Image.new('RGB', (1200, 1700), 'white')
+        ImageDraw.Draw(page).rectangle((0, 0, 1110, 1580), fill='navy')
+        left, top, right, bottom = image_tools.border_box(
+            image_tools.pil_to_pixbuf(page))
+        self.assertEqual((0, 0), (left, top))
+        self.assertAlmostEqual(1111, right, delta=6)
+        self.assertAlmostEqual(1581, bottom, delta=6)
+        # And one reaching the bottom right keeps the pixels there that
+        # do not make a whole block: 1201 is not a multiple of 3.
+        page = Image.new('RGB', (1201, 1700), 'white')
+        ImageDraw.Draw(page).rectangle((90, 120, 1200, 1699), fill='navy')
+        self.assertEqual((1201, 1700), image_tools.border_box(
+            image_tools.pil_to_pixbuf(page))[2:])
+
+    def test_a_page_without_margins_or_mostly_blank_is_left_whole(self):
+        gradient = image_tools.pil_to_pixbuf(
+            Image.linear_gradient('L').resize((1200, 1700)).convert('RGB'))
+        for pixbuf in (gradient, self._page(art=(500, 800, 700, 900))):
+            with self.subTest():
+                self.assertEqual((0, 0, 1200, 1700),
+                                 image_tools.border_box(pixbuf))
+                self.assertIs(pixbuf, image_tools.without_borders(pixbuf))
+
+    def test_the_cut_page_is_turned_as_the_whole_one(self):
+        pixbuf = self._page()
+        setattr(pixbuf, 'orientation', '6')
+        self.assertEqual(90, image_tools.get_implied_rotation(
+            image_tools.without_borders(pixbuf)))
+
+    def test_a_moving_page_is_not_cut(self):
+        animation = image_tools.load_pixbuf(get_image_path('animated.gif'))
+        self.assertIs(animation, image_tools.without_borders(animation))
+
+
 class CmykJpegTest(MComixTest):
 
     """A JPEG stored in CMYK with a colour profile, as print scans come
