@@ -8,7 +8,7 @@ knows whether the question about unsaved changes has been answered.
 
 from unittest import mock
 
-from gi.repository import Gtk
+from gi.repository import Gdk, Gtk
 
 from . import MComixTest, pump
 
@@ -332,6 +332,22 @@ class OpenWithEditorTest(MComixTest):
         self.assertEqual(1, len(prompts), 'the edit was dropped unasked')
         prompts[0].response(Response.NO)
         pump()
+
+    def _press(self, keyval):
+        return self.editor._key_pressed(None, keyval, 0, Gdk.ModifierType(0))
+
+    def test_delete_removes_the_selected_command(self):
+        """As Remove does, and as Delete does in the watch list."""
+        self.editor._command_list.select_only(0)
+        self.assertTrue(self._press(Gdk.KEY_Delete))
+        self.assertEqual(self._labels(), ['-', 'Shell'])
+        self.assertTrue(self.editor._changed)
+
+    def test_delete_in_a_cell_being_edited_is_the_text_s(self):
+        self.editor._command_list.select_only(0)
+        self._typing_into_a_command('gedit %F')
+        self.assertFalse(self._press(Gdk.KEY_Delete))
+        self.assertEqual(self._labels(), ['Editor', '-', 'Shell'])
 
     def test_closing_an_unchanged_editor_asks_nothing(self):
         self.editor.response(Response.DELETE_EVENT)

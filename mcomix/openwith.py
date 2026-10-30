@@ -3,7 +3,7 @@ import operator
 import sys
 import os
 import re
-from gi.repository import Gtk
+from gi.repository import Gdk, Gtk
 
 from mcomix.dialog import Dialog
 from mcomix import column_list
@@ -578,6 +578,23 @@ class OpenWithEditor(Dialog):
             for command in self._openwith.get_commands())
 
         self._command_list.set_reorderable(True)
+
+        # Delete takes the selected command off the list, as Remove does
+        # and as Delete does in the other lists MComix edits.
+        keys = Gtk.EventControllerKey()
+        keys.connect('key-pressed', self._key_pressed)
+        self._command_list.add_controller(keys)
+
+    def _key_pressed(self, controller: Gtk.EventControllerKey,
+                     keyval: int, keycode: int,
+                     state: Gdk.ModifierType) -> bool:
+        if keyval not in (Gdk.KEY_Delete, Gdk.KEY_KP_Delete):
+            return Gdk.EVENT_PROPAGATE
+        if isinstance(self.get_focus(), Gtk.Text):
+            # A cell being edited: the key is the text's.
+            return Gdk.EVENT_PROPAGATE
+        self._remove_command(self._remove_button)
+        return Gdk.EVENT_STOP
 
     def _rewrote(self, attr: str) -> "Callable[[column_list.Row, str], None]":
         """ Answer an edit of the <attr> field of a row. """

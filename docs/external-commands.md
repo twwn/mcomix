@@ -11,6 +11,7 @@ Run programs of your choosing on the open file: an image editor for a page, a fi
 
 - "Add" adds a command; "Add separator" a divider line in the menu.
 - "Remove", "Up" and "Down" act on the selected row; rows can also be dragged.
+- Delete removes the selected row too, unless a field of it is being edited.
 - "Preview" shows the selected command as it would run on the open page, and says so if the program or working directory is missing.
 - "Run command" runs it. "Save" keeps the list; closing with unsaved changes asks first.
 
