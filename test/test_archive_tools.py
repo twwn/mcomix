@@ -129,13 +129,16 @@ class ArchiveToolsTest(MComixTest):
         self.assertEqual(archive_tools.archive_mime_type(path), constants.TAR)
 
     def test_the_formats_with_no_fixture_are_told_by_their_first_bytes(self):
-        """PDF, MOBI, and a single file compressed with xz or lzma that
-        is not a tarball: test/files/archives holds none of them."""
+        """PDF, MOBI, KFX, and a single file compressed with xz or lzma
+        that is not a tarball: test/files/archives holds none of them.  A
+        KFX book wrapped in DRM is one too, for its handler to refuse."""
         page = b'not a tarball, only what was compressed'
         for name, content, expected in (
                 ('book.pdf', b'%PDF-1.4\n%\xe2\xe3\xcf\xd3\n', constants.PDF),
                 ('book.mobi', bytes(60) + b'BOOKMOBI' + bytes(8),
                  constants.MOBI),
+                ('book.kfx', b'CONT\x02\x00' + bytes(12), constants.KFX),
+                ('book.azw', b'\xeaDRMION\xee' + bytes(10), constants.KFX),
                 ('page.xz', lzma.compress(page), constants.XZ),
                 ('page.lzma', lzma.compress(page, format=lzma.FORMAT_ALONE),
                  constants.XZ)):
@@ -272,7 +275,7 @@ class CannotOpenTest(MComixTest):
             with self.subTest(archive_type):
                 if archive_type in (constants.ZIP, constants.TAR,
                                     constants.GZIP, constants.BZIP2,
-                                    constants.MOBI):
+                                    constants.MOBI, constants.KFX):
                     self.assertEqual([], archive_tools.helpers(archive_type))
                 else:
                     self.assertTrue(archive_tools.helpers(archive_type))

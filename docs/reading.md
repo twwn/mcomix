@@ -32,7 +32,8 @@
 ## Opening books
 
 - CTRL+O opens a file chooser; dropping files on the page opens them too.
-- An archive, PDF, DjVu or AZW3 file opens as one book. RAR, 7z, LHA, PDF and DjVu need a helper: see [Install](install.md#requirements).
+- An archive, PDF, DjVu, AZW3 or KFX file opens as one book. RAR, 7z, LHA, PDF and DjVu need a helper: see [Install](install.md#requirements).
+- A Kindle book in KFX shows its pages in the book's reading order, each at the largest size the book holds its picture in; a picture stored in tiles is put back together. A book with DRM does not open.
 - An image opens with every image in its folder; a folder opens its images.
 - A folder with no images opens its first archive.
 - With "Open a folder with the folders in it as one book" in the [preferences](preferences.md), a folder opens with the images of the folders in it as well. The title names each page from that folder down. Reopened by "Reopen the last book read" or "Save and quit", the book is that folder again; a bookmark opens the folder its page is in.

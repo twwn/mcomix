@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: comix 4.0.1\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-30 16:20+0100\n"
+"POT-Creation-Date: 2026-10-30 22:01+0100\n"
 "PO-Revision-Date: 2008-12-13 18:00+0100\n"
 "Last-Translator: Adrian C. <anrxc@sysphere.org>\n"
 "Language-Team: Croatian\n"
@@ -24,11 +24,11 @@ msgstr "%s je preglednik slika osmišljen posebno za stripove."
 
 #: mcomix/about_dialog.py:39
 msgid ""
-"It reads ZIP, RAR, 7z, tar and LHA archives, PDF, DjVu and AZW3 files, as "
-"well as plain image files."
+"It reads ZIP, RAR, 7z, tar and LHA archives, PDF, DjVu, AZW3 and KFX files, "
+"as well as plain image files."
 msgstr ""
-"Čita ZIP, RAR, 7z, tar i LHA arhive, PDF, DjVu i AZW3 datoteke, kao i obične "
-"grafičke datoteke."
+"Čita ZIP, RAR, 7z, tar i LHA arhive, PDF, DjVu, AZW3 i KFX datoteke, kao i "
+"obične grafičke datoteke."
 
 #: mcomix/about_dialog.py:43
 #, python-format
@@ -45,7 +45,7 @@ msgstr "Primjerak ove licence možete dobiti na %s"
 msgid "! Extraction error: %s"
 msgstr "! Greška pri raspakiravanju: %s"
 
-#: mcomix/archive_extractor.py:400 mcomix/archive_tools.py:235
+#: mcomix/archive_extractor.py:400 mcomix/archive_tools.py:245
 #: mcomix/image_tools.py:518 mcomix/page_marks.py:62
 #: mcomix/page_rotations.py:42
 #, python-format
@@ -73,17 +73,17 @@ msgstr ""
 "! Nije moguće dodati datoteku %(sourcefile)s u arhivu %(archivefile)s, "
 "prekidam..."
 
-#: mcomix/archive_tools.py:114
+#: mcomix/archive_tools.py:118
 #, python-format
 msgid "Could not open %(file)s: it needs %(program)s."
 msgstr "Nemoguće otvoriti %(file)s: potreban je %(program)s."
 
-#: mcomix/archive_tools.py:118
+#: mcomix/archive_tools.py:122
 #, python-format
 msgid "Could not open %(file)s: it needs %(first)s or %(second)s."
 msgstr "Nemoguće otvoriti %(file)s: potreban je %(first)s ili %(second)s."
 
-#: mcomix/archive_tools.py:121
+#: mcomix/archive_tools.py:125
 #, python-format
 msgid "Non-supported archive format: %s"
 msgstr "Nepodržani format arhive: %s"
@@ -160,7 +160,7 @@ msgstr "Uređivanje oznaka"
 msgid "C_lear bookmarks..."
 msgstr "_Očisti oznake..."
 
-#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1381 mcomix/openwith.py:340
+#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1398 mcomix/openwith.py:340
 #: mcomix/library/collection_area.py:160 mcomix/library/watchlist.py:69
 msgid "_Remove"
 msgstr "_Ukloni"
@@ -188,7 +188,7 @@ msgstr "Ime"
 
 #
 # File: src/bookmark.py, line: 256
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:2488
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:2505
 #: mcomix/library/control_area.py:157
 msgid "Page"
 msgstr "Stranica"
@@ -795,7 +795,7 @@ msgstr "Neispravna putanja: „%s”"
 
 #
 # File: src/filehandler.py, line: 411
-#: mcomix/image_tools.py:1481
+#: mcomix/image_tools.py:1500
 msgid "Unknown filetype"
 msgstr "Nepoznat tip datoteke"
 
@@ -1379,7 +1379,7 @@ msgstr "Nije moguće učitati prečace: %s"
 msgid "! Could not remove file \"%s\""
 msgstr "! Nije moguće obrisati datoteku „%s”"
 
-#: mcomix/main.py:1374
+#: mcomix/main.py:1391
 #, python-format
 msgid "Remove the page picked out of \"%s\"?"
 msgid_plural "Remove the pages picked out of \"%s\"?"
@@ -1387,7 +1387,7 @@ msgstr[0] "Ukloniti odabranu stranicu iz „%s“?"
 msgstr[1] "Ukloniti odabrane stranice iz „%s“?"
 msgstr[2] "Ukloniti odabrane stranice iz „%s“?"
 
-#: mcomix/main.py:1377
+#: mcomix/main.py:1394
 msgid ""
 "They are taken out of the archive on disk, which is written again at once. "
 "Leaving the book without removing them forgets which pages they were."
@@ -1395,18 +1395,18 @@ msgstr ""
 "Uklanjaju se iz arhiva na disku, koji se odmah ponovno zapisuje. Napustite "
 "li knjigu bez njihova uklanjanja, zaboravit će se koje su stranice bile."
 
-#: mcomix/main.py:1380
+#: mcomix/main.py:1397
 msgid "_Keep them"
 msgstr "Za_drži"
 
-#: mcomix/main.py:1546
+#: mcomix/main.py:1563
 #, python-format
 msgid "Animation speed: %s"
 msgstr "Brzina animacije: %s"
 
 #
 # File: src/main.py, line: 666
-#: mcomix/main.py:2194
+#: mcomix/main.py:2211
 msgid "SLIDESHOW"
 msgstr "PREZENTACIJA"
 
@@ -1651,7 +1651,7 @@ msgstr ""
 
 #
 # File: src/library.py, line: 271
-#: mcomix/page_image.py:270
+#: mcomix/page_image.py:279
 #, python-format
 msgid "! Could not draw the next frame: %s"
 msgstr "! Nije moguće iscrtati sljedeći okvir: %s"
@@ -2965,168 +2965,172 @@ msgstr "MobiPocket e-knjiga"
 msgid "DjVu document"
 msgstr "DjVu dokument"
 
-#: mcomix/strings.py:24
+#: mcomix/strings.py:21
+msgid "Kindle KFX ebook"
+msgstr "Kindle KFX e-knjiga"
+
+#: mcomix/strings.py:25
 msgid "Original vision/developer of Comix"
 msgstr "Izvorna zamisao i autor Comixa"
 
-#: mcomix/strings.py:25 mcomix/strings.py:26 mcomix/strings.py:27
-#: mcomix/strings.py:28
+#: mcomix/strings.py:26 mcomix/strings.py:27 mcomix/strings.py:28
+#: mcomix/strings.py:29
 msgid "MComix developer"
 msgstr "Razvijatelj MComixa"
 
 #
 # File: src/about.py, line: 77
-#: mcomix/strings.py:31 mcomix/strings.py:32 mcomix/strings.py:33
-#: mcomix/strings.py:34
+#: mcomix/strings.py:32 mcomix/strings.py:33 mcomix/strings.py:34
+#: mcomix/strings.py:35
 msgid "Simplified Chinese translation"
 msgstr "Pojednostavljeni kineski prijevod"
 
 #
 # File: src/about.py, line: 78
-#: mcomix/strings.py:35 mcomix/strings.py:36
+#: mcomix/strings.py:36 mcomix/strings.py:37
 msgid "Spanish translation"
 msgstr "Španjolski prijevod"
 
 #
 # File: src/about.py, line: 79
-#: mcomix/strings.py:37
+#: mcomix/strings.py:38
 msgid "Brazilian Portuguese translation"
 msgstr "Brazilsko portugalski prijevod"
 
 #
 # File: src/about.py, line: 81
-#: mcomix/strings.py:38
+#: mcomix/strings.py:39
 msgid "German translation and Nautilus thumbnailer"
 msgstr "Njemački prijevod i Nautilus-ov program za prikazivanje sličica"
 
 #
 # File: src/about.py, line: 94
-#: mcomix/strings.py:39
+#: mcomix/strings.py:40
 msgid "German translation"
 msgstr "Njemački prijevod"
 
 #
 # File: src/about.py, line: 82
-#: mcomix/strings.py:40 mcomix/strings.py:41 mcomix/strings.py:42
+#: mcomix/strings.py:41 mcomix/strings.py:42 mcomix/strings.py:43
 msgid "Italian translation"
 msgstr "Talijanski prijevod"
 
 #
 # File: src/about.py, line: 83
-#: mcomix/strings.py:43
+#: mcomix/strings.py:44
 msgid "Dutch translation"
 msgstr "Nizozemski prijevod"
 
 #
 # File: src/about.py, line: 84
-#: mcomix/strings.py:44 mcomix/strings.py:45 mcomix/strings.py:46
-#: mcomix/strings.py:47
+#: mcomix/strings.py:45 mcomix/strings.py:46 mcomix/strings.py:47
+#: mcomix/strings.py:48
 msgid "French translation"
 msgstr "Francuski prijevod"
 
-#: mcomix/strings.py:48 mcomix/strings.py:49
+#: mcomix/strings.py:49 mcomix/strings.py:50
 msgid "Polish translation"
 msgstr "Poljski prijevod"
 
 #
 # File: src/about.py, line: 86
-#: mcomix/strings.py:50
+#: mcomix/strings.py:51
 msgid "Greek translation"
 msgstr "Grčki prijevod"
 
 #
 # File: src/about.py, line: 87
-#: mcomix/strings.py:51
+#: mcomix/strings.py:52
 msgid "Catalan translation"
 msgstr "Katalonski prijevod"
 
 #
 # File: src/about.py, line: 88
-#: mcomix/strings.py:52 mcomix/strings.py:53
+#: mcomix/strings.py:53 mcomix/strings.py:54
 msgid "Traditional Chinese translation"
 msgstr "Tradicionalni kineski prijevod"
 
 #
 # File: src/about.py, line: 89
-#: mcomix/strings.py:54 mcomix/strings.py:55 mcomix/strings.py:56
+#: mcomix/strings.py:55 mcomix/strings.py:56 mcomix/strings.py:57
 msgid "Japanese translation"
 msgstr "Japanski prijevod"
 
 #
 # File: src/about.py, line: 90
-#: mcomix/strings.py:57
+#: mcomix/strings.py:58
 msgid "Hungarian translation"
 msgstr "Mađarski prijevod"
 
 #
 # File: src/about.py, line: 91
-#: mcomix/strings.py:58 mcomix/strings.py:59
+#: mcomix/strings.py:59 mcomix/strings.py:60
 msgid "Russian translation"
 msgstr "Ruski prijevod"
 
 #
 # File: src/about.py, line: 92
-#: mcomix/strings.py:60
+#: mcomix/strings.py:61
 msgid "Croatian translation"
 msgstr "Hrvatski prijevod"
 
 #
 # File: src/about.py, line: 93
-#: mcomix/strings.py:61 mcomix/strings.py:62 mcomix/strings.py:63
+#: mcomix/strings.py:62 mcomix/strings.py:63 mcomix/strings.py:64
 msgid "Korean translation"
 msgstr "Korejski prijevod"
 
 #
 # File: src/about.py, line: 94
-#: mcomix/strings.py:64
+#: mcomix/strings.py:65
 msgid "Persian translation"
 msgstr "Perzijski prijevod"
 
 #
 # File: src/about.py, line: 95
-#: mcomix/strings.py:65
+#: mcomix/strings.py:66
 msgid "Indonesian translation"
 msgstr "Indoneški prijevod"
 
 #
 # File: src/about.py, line: 96
-#: mcomix/strings.py:66
+#: mcomix/strings.py:67
 msgid "Czech translation"
 msgstr "Češki prijevod"
 
-#: mcomix/strings.py:67
+#: mcomix/strings.py:68
 msgid "Ukrainian translation"
 msgstr "Ukrajinski prijevod"
 
 #
 # File: src/about.py, line: 82
-#: mcomix/strings.py:68
+#: mcomix/strings.py:69
 msgid "Galician translation"
 msgstr "Galicijski prijevod"
 
-#: mcomix/strings.py:69 mcomix/strings.py:70
+#: mcomix/strings.py:70 mcomix/strings.py:71
 msgid "Swedish translation"
 msgstr "Švedski prijevod"
 
 #
 # File: src/about.py, line: 86
-#: mcomix/strings.py:71
+#: mcomix/strings.py:72
 msgid "Hebrew translation"
 msgstr "Hebrejski prijevod"
 
 #
 # File: src/about.py, line: 82
-#: mcomix/strings.py:72
+#: mcomix/strings.py:73
 msgid "Lithuanian translation"
 msgstr "Litavski prijevod"
 
 #
 # File: src/about.py, line: 97
-#: mcomix/strings.py:75
+#: mcomix/strings.py:76
 msgid "Icon design"
 msgstr "Dizajn ikona"
 
-#: mcomix/strings.py:76
+#: mcomix/strings.py:77
 msgid "Vector icon"
 msgstr "Vektorska ikona"
 
@@ -3621,6 +3625,16 @@ msgstr "Nije moguće otvoriti priručnik: %s"
 #, python-format
 msgid "! Worker thread processing %(function)r failed: %(error)s"
 msgstr "! Radna dretva koja je obrađivala %(function)r nije uspjela: %(error)s"
+
+#: mcomix/archive/kfx.py:571
+#, python-format
+msgid "Could not open %s: it is protected by DRM."
+msgstr "Nemoguće otvoriti %s: zaštićena je DRM-om."
+
+#: mcomix/archive/kfx.py:575
+#, python-format
+msgid "Could not open %s: it is not a Kindle book MComix can read."
+msgstr "Nemoguće otvoriti %s: nije Kindle knjiga koju MComix može čitati."
 
 #: mcomix/archive/password.py:98
 msgid "The archive is password-protected:"
@@ -4188,6 +4202,13 @@ msgstr "S poddirektorijima"
 #: mcomix/library/watchlist.py:86
 msgid "Automatically scan for new books when library is _opened"
 msgstr "Automatski traži nove knjige pri _otvaranju biblioteke"
+
+#~ msgid ""
+#~ "It reads ZIP, RAR, 7z, tar and LHA archives, PDF, DjVu and AZW3 files, as "
+#~ "well as plain image files."
+#~ msgstr ""
+#~ "Čita ZIP, RAR, 7z, tar i LHA arhive, PDF, DjVu i AZW3 datoteke, kao i "
+#~ "obične grafičke datoteke."
 
 #~ msgid "Hyperbolic (slow)"
 #~ msgstr "Hiperbolično (sporo)"

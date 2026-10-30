@@ -19,6 +19,7 @@ from mcomix.archive import (
     pdf_multi,
     pdf_external,
     djvu_external,
+    kfx,
     rar,
     rar_external,
     sevenzip_external,
@@ -77,6 +78,9 @@ _HANDLERS: dict[int, tuple[type[archive_base.BaseArchive], ...]] = {
     ),
     constants.DJVU: (
         djvu_external.DjvuArchive,
+    ),
+    constants.KFX: (
+        kfx.KfxArchive,
     ),
 }
 
@@ -164,6 +168,7 @@ def get_supported_formats() -> dict[str, tuple[set[str], set[str]]]:
         ('PDF', constants.PDF_FORMATS, pdf_available()),
         ('MobiPocket', constants.MOBI_FORMATS, mobi_available()),
         ('DjVu', constants.DJVU_FORMATS, djvu_available()),
+        ('KFX', constants.KFX_FORMATS, True),
     ):
         if is_available:
             supported_formats[name] = (set(formats[0]), set(formats[1]))
@@ -224,6 +229,11 @@ def archive_mime_type(path: str) -> int | None:
 
             if magic2 == b'BOOKMOBI':
                 return constants.MOBI
+
+            # A Kindle book, or the part of one that holds its pages;
+            # wrapped in DRM, it is a KFX book its handler refuses.
+            if magic.startswith((kfx.CONTAINER_SIGNATURE, kfx.DRM_SIGNATURE)):
+                return constants.KFX
 
             # One page, or several bundled; an indirect document's index
             # names its pages' files and holds no page itself.
