@@ -932,8 +932,9 @@ class PillowScalingTest(MComixTest):
                 composited = image_tools.pixbuf_to_pil(scaled)
                 self.assertEqual((255, 255),
                                  composited.getchannel('A').getextrema())
-                row = composited.convert('RGB').crop((0, 7, 38, 8))
-                for red, green, blue in row.getdata():
+                row = composited.convert('RGB')
+                for red, green, blue in (row.getpixel((x, 7))
+                                         for x in range(38)):
                     self.assertGreaterEqual(red, 250)
                     self.assertAlmostEqual(green, blue, delta=2)
 
