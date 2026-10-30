@@ -11,7 +11,7 @@ It is offered only while there is a directory to scan.
 """
 
 import os
-from gi.repository import Gio, Gtk, GLib
+from gi.repository import Gdk, Gio, Gtk, GLib
 
 from mcomix.library import backend_types
 from mcomix.dialog import Dialog
@@ -58,6 +58,11 @@ class WatchListDialog(Dialog):
                                      self._recursive_changed_cb)
         self.connect_while_open(self._list.selection, 'selection-changed',
                                 self._item_selected_cb)
+        # Delete takes the selected folder off the list, as Remove does
+        # and as Delete does in the bookmarks and the library.
+        keys = Gtk.EventControllerKey()
+        keys.connect('key-pressed', self._key_pressed)
+        self._list.add_controller(keys)
 
         add_button = Gtk.Button.new_with_mnemonic(_('_Add'))
         add_button.connect('clicked', self._add_cb)
@@ -227,6 +232,14 @@ class WatchListDialog(Dialog):
             entry.remove()
             self._list.remove_row(row)
             self._update_scan_button()
+
+    def _key_pressed(self, controller: Gtk.EventControllerKey,
+                     keyval: int, keycode: int,
+                     state: Gdk.ModifierType) -> bool:
+        if keyval in (Gdk.KEY_Delete, Gdk.KEY_KP_Delete):
+            self._remove_cb(self._remove_button)
+            return Gdk.EVENT_STOP
+        return Gdk.EVENT_PROPAGATE
 
     def _item_selected_cb(self, selection: Gtk.SelectionModel,
                           *args: object) -> None:

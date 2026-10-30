@@ -9,7 +9,7 @@ edited.
 
 import os
 
-from gi.repository import Gio, GLib, Gtk
+from gi.repository import Gdk, Gio, GLib, Gtk
 
 from . import MComixTest, pump
 
@@ -206,6 +206,27 @@ class WatchListDialogTest(MComixTest):
              for entry in self.backend.watchlist.get_watchlist()],
             [directory for directory in self.watched
              if directory != row.directory])
+
+    def _press(self, keyval):
+        for controller in self.dialog._list.observe_controllers():
+            if isinstance(controller, Gtk.EventControllerKey):
+                return controller.emit('key-pressed', keyval, 0, 0)
+        self.fail('nothing on the list looks at its keys')
+
+    def test_delete_removes_the_selected_directory(self):
+        """As Delete does in the bookmarks dialog and the library."""
+        for keyval in (Gdk.KEY_Delete, Gdk.KEY_KP_Delete):
+            with self.subTest(key=Gdk.keyval_name(keyval)):
+                row = self.dialog._list.get_row(0)
+                self.dialog._list.select_only(0)
+                self.assertTrue(self._press(keyval))
+                self.assertNotIn(row.directory, self._directories())
+        self.assertEqual([], self.backend.watchlist.get_watchlist())
+
+    def test_other_keys_are_left_to_the_list(self):
+        self.dialog._list.select_only(0)
+        self.assertFalse(self._press(Gdk.KEY_Down))
+        self.assertEqual(self._directories(), sorted(self.watched))
 
     def test_removing_with_nothing_selected_removes_nothing(self):
         self.dialog._list.unselect_all()
