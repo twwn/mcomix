@@ -1048,8 +1048,8 @@ def load_pixbuf_size(path: str, width: int, height: int) -> GdkPixbuf.Pixbuf:
     smaller than the box is left at its own size.  Both loaders are
     asked to do the scaling as they decode, which is what makes this
     cheaper than loading the whole picture and scaling it afterwards,
-    and the result is fitted again at the end because neither of them
-    promises the exact size asked for.
+    and the result is fitted again at the end, with Lanczos, from no
+    more than twice the size asked for.
 
     A JPEG goes to PIL first.  Its draft() lets libjpeg decode at an
     eighth, a quarter or a half of the size, which gdk-pixbuf does too,
@@ -1094,7 +1094,10 @@ def load_pixbuf_size(path: str, width: int, height: int) -> GdkPixbuf.Pixbuf:
             # Fit the box to the image rather than scaling the image up,
             # here and in the fit_in_rectangle() call below.
             width, height = image_width, image_height
-        return GdkPixbuf.Pixbuf.new_from_file_at_size(path, width, height)
+        # Twice the box, which Lanczos then halves: gdk-pixbuf's own
+        # scaling to the box drew the stripes of a screentone as moiré.
+        return GdkPixbuf.Pixbuf.new_from_file_at_size(
+            path, min(image_width, 2 * width), min(image_height, 2 * height))
 
     def by_pil() -> GdkPixbuf.Pixbuf:
         image = Image.open(path)
@@ -1107,8 +1110,11 @@ def load_pixbuf_size(path: str, width: int, height: int) -> GdkPixbuf.Pixbuf:
         attempts.reverse()
     pixbuf = _first_provider_that_loads(
         attempts, '%s at size %s' % (path, (width, height)))
+    # Lanczos, whatever the page is drawn with: the loaders' own scaling
+    # leaves a thumbnail of fine stripes as moiré at a third of their
+    # contrast, and a picture this small costs Lanczos a millisecond.
     fitted = fit_in_rectangle(pixbuf, width, height,
-                              scaling_quality=GdkPixbuf.InterpType.BILINEAR)
+                              scaling_quality=constants.SCALING_LANCZOS)
     if fitted is not pixbuf:
         # Scaling makes a new pixbuf, which knows nothing of the Exif
         # orientation the loader found; PIL's draft() nearly always

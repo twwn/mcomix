@@ -1046,6 +1046,27 @@ class BorderTest(MComixTest):
         self.assertIs(animation, image_tools.without_borders(animation))
 
 
+class ThumbnailMoireTest(MComixTest):
+
+    """A thumbnail of a page of screentones: stripes far finer than the
+    thumbnail can show, which should come out as plain grey."""
+
+    def test_fine_stripes_come_out_grey(self):
+        row = bytes(round(127.5 + 100 * math.sin(2 * math.pi * x / 30))
+                    for x in range(2400))
+        page = Image.frombytes('L', (2400, 1), row).resize((2400, 3400))
+        for name in ('stripes.png', 'stripes.jpg'):
+            with self.subTest(name=name):
+                path = os.path.join(self.tmp_dir, name)
+                page.convert('RGB').save(path, quality=95)
+                thumbnail = image_tools.pixbuf_to_pil(
+                    image_tools.load_pixbuf_size(path, 160, 160)).convert('L')
+                self.assertEqual(160, thumbnail.height)
+                low, high = thumbnail.crop(
+                    (3, 80, thumbnail.width - 3, 81)).getextrema()
+                self.assertLess(high - low, 8)
+
+
 class CmykJpegTest(MComixTest):
 
     """A JPEG stored in CMYK with a colour profile, as print scans come
