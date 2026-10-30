@@ -149,7 +149,7 @@ jobs:
           persist-credentials: false
       # The packages docs/releasing.md lists, at MSYS2's newest; the path
       # is inherited so that WiX, fetched below, is found.
-      - uses: msys2/setup-msys2@66cd2cce69caa17b53920067426061ca1de3a884 # v2.32.0
+      - uses: msys2/setup-msys2@ec48f7c5447b3140e2b088413ae3a55687bccb6e # v2.33.0
         with:
           msystem: UCRT64
           update: true
@@ -408,4 +408,4 @@ jobs:
           path: dist
       # It publishes: like every action here it runs the commit it is
       # pinned to, which only a pull request of Dependabot's moves.
-      - uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
+      - uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # v1.14.3
