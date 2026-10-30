@@ -313,14 +313,16 @@ class CoverOrderTest(MComixTest):
              _Book(2, '/a/alpha.cbz', size=10, added='2001'),
              _Book(3, '/c/mid.cbz', size=20, added='2002'))
 
-    def _order(self, key, ascending=True):
+    def _order(self, key, ascending=True, read=None):
         prefs['lib sort key'] = key
         prefs['lib sort order'] = (constants.SORT_ASCENDING if ascending
                                    else constants.SORT_DESCENDING)
         self.library = _Library()
         area = book_area._BookArea(self.library)
-        area._covers.set_items(
-            book_area._BookItem(book) for book in self.BOOKS)
+        items = [book_area._BookItem(book) for book in self.BOOKS]
+        for item in items:
+            item.read = (read or {}).get(item.uid)
+        area._covers.set_items(items)
         area.set_sort_order()
         order = [item.uid for item in area._covers.each_item()]
         area.close()
@@ -337,6 +339,17 @@ class CoverOrderTest(MComixTest):
 
     def test_by_date_added(self):
         self.assertEqual(self._order(constants.SORT_LAST_MODIFIED), [2, 3, 1])
+
+    def test_by_last_read_newest_first_descending(self):
+        read = {1: '2026-10-01 10:00:00', 2: '2026-10-29 09:00:00'}
+        self.assertEqual(
+            self._order(constants.SORT_LAST_READ, ascending=False, read=read),
+            [2, 1, 3])
+
+    def test_a_book_never_read_comes_last_either_way(self):
+        read = {1: '2026-10-01 10:00:00', 2: '2026-10-29 09:00:00'}
+        self.assertEqual(
+            self._order(constants.SORT_LAST_READ, read=read), [1, 2, 3])
 
     def test_descending_is_the_other_way_round(self):
         self.assertEqual(self._order(constants.SORT_SIZE, ascending=False),

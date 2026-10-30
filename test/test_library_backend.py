@@ -1787,6 +1787,15 @@ class RemovedBookTest(LibraryDatabaseTest):
         return self.library._con.execute(
             'select book, page from recent order by book').fetchall()
 
+    def test_last_read_times_name_the_books_read_and_no_other(self):
+        read = self._add_book('read')
+        self._add_book('unread')
+        when = datetime.datetime(2026, 10, 29, 9, 30)
+        self.library.get_book_by_id(read).set_last_read_page(7, when)
+        times = self.library.last_read_times()
+        self.assertEqual([read], list(times))
+        self.assertTrue(times[read].startswith('2026-10-29'), times)
+
     def test_removing_a_book_forgets_the_page_it_was_read_to(self):
         book = self._add_book('read')
         self.library.get_book_by_id(book).set_last_read_page(7)

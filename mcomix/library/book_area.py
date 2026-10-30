@@ -70,6 +70,9 @@ class _BookItem(thumbnail_list.ThumbnailItem):
         #: The place the book was given by hand in the collection on
         #: show, or None if it has none there.
         self.position: int | None = None
+        #: When the book was last read, an ISO timestamp, or None if it
+        #: never was.
+        self.read: str | None = None
 
 
 class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
@@ -273,6 +276,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
                    (_('Full path'), constants.SORT_PATH),
                    (_('File size'), constants.SORT_SIZE),
                    (_('Date added'), constants.SORT_LAST_MODIFIED),
+                   (_('Last read'), constants.SORT_LAST_READ),
                    (_('By hand'), constants.SORT_HAND)), 'sort-key')
         sort_menu.append_section(None, by)
         order = Gio.Menu()
@@ -342,6 +346,9 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
             return
         books = collection.get_books(self._library.filter_string)
         items = [_BookItem(book) for book in books]
+        read = self._library.backend.last_read_times()
+        for item in items:
+            item.read = read.get(item.uid)
         self._place(items, collection_id)
         self._covers.set_items(items)
         # Nothing is selected in a collection just shown, and the info
@@ -514,8 +521,13 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         # Python's collector cannot see it, and a closure over the area
         # would keep the area alive once the library window is closed.
         def compare(left: object, right: object, _data: object) -> int:
-            answer = _BookArea._compare_books(key, cast(_BookItem, left),
-                                              cast(_BookItem, right))
+            first, second = cast(_BookItem, left), cast(_BookItem, right)
+            if key == constants.SORT_LAST_READ \
+                    and (first.read is None) != (second.read is None):
+                # Books never read come last, whichever way the order
+                # runs: they have no time to sort by.
+                return 1 if first.read is None else -1
+            answer = _BookArea._compare_books(key, first, second)
             return answer if ascending else -answer
 
         self._covers.set_sorter(Gtk.CustomSorter.new(compare))
@@ -523,8 +535,9 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
     @staticmethod
     def _compare_books(key: int, left: _BookItem, right: _BookItem) -> int:
         """Order two covers by <key>, one of the SORT_ constants: the
-        name of the file, its size, the date the book was added, the
-        place it was given by hand, or else the whole path.  A book with
+        name of the file, its size, the date the book was added, when it
+        was last read, the place it was given by hand, or else the whole
+        path.  A book with
         no place by hand comes after those that have one.
 
         Covers the key cannot tell apart - books added in one go, each
@@ -540,6 +553,8 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
             answer = tools.cmp(left.size, right.size)
         elif key == constants.SORT_LAST_MODIFIED:
             answer = tools.cmp(left.added, right.added)
+        elif key == constants.SORT_LAST_READ:
+            answer = tools.cmp(left.read or '', right.read or '')
         elif key == constants.SORT_HAND:
             answer = tools.cmp((left.position is None, left.position or 0),
                                (right.position is None, right.position or 0))

@@ -52,7 +52,7 @@ Escape hides the window; CTRL+W closes it. In the search field, Escape first emp
 - "Copy", or CTRL+C, puts a single book's path and cover on the clipboard.
 - Delete takes the selected books out of the collection on show, as "Remove from this collection" does. Under "All books" it does nothing.
 - "Open containing folder" shows a single book in the file manager.
-- "Sort" orders by name, full path, file size, date added or by hand; "Cover size" sets how large covers are drawn.
+- "Sort" orders by name, full path, file size, date added, last read or by hand; "Cover size" sets how large covers are drawn. Books never read come last under "Last read"; "Descending" puts the latest read first.
 - A middle click on a cover starts a second MComix on that book.
 - A book opened from the library is one of the books shown. The next and previous archive are the next and previous of those, in the order shown, not of its folder. Past the last one shown there is no next.
 - Reopened at the next start, by "Reopen the last book read" or "Save and quit", it still walks those books. Opened any other way, a book walks its folder.

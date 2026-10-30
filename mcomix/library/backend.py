@@ -218,6 +218,12 @@ class _LibraryBackend:
         else:
             return None
 
+    def last_read_times(self) -> dict[int, str]:
+        """When each book read was last read, by book id, as the recent
+        table stores it: an ISO timestamp, which sorts as it reads."""
+        return {book: time_set for book, time_set in self.fetchall(
+            'select book, time_set from recent where time_set is not null')}
+
     def reading_statistics(self, books: "Iterable[int]"
                            ) -> backend_types.ReadingStatistics:
         """What has been read of <books>, given by id.
