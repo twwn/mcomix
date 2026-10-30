@@ -36,7 +36,7 @@ from mcomix import tools
 #:      where the reader has not bound those keys elsewhere.
 #:  11: F5 refreshes, as in file managers and browsers, where the
 #:      reader has not bound it elsewhere.
-CONFIG_FORMAT_VERSION = 11
+CONFIG_FORMAT_VERSION = 12
 
 #: Keys a step of _migrate_preferences() has given to another action, as
 #: (action, accelerator, holder): the key bindings are read after the
@@ -590,6 +590,13 @@ def _migrate_preferences(saved_prefs: dict[str, object]) -> None:
 
     if version < 11:
         keybinding_moves.append(('refresh_archive', 'F5', ''))
+
+    if version < 12:
+        # "Hyperbolic (slow)" gave way to Pillow's Lanczos, which is both
+        # sharper and freer of moiré: who chose the slow and best then
+        # gets the slow and best now.
+        if saved_prefs.get('scaling quality') == 3:
+            saved_prefs['scaling quality'] = constants.SCALING_LANCZOS
 
     saved_prefs[_FORMAT_VERSION_KEY] = CONFIG_FORMAT_VERSION
 

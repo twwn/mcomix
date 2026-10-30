@@ -396,6 +396,20 @@ class MigratePreferencesTest(MComixTest):
                 self.assertEqual(read, prefs['click zones'])
                 self.assertNotIn('click halves', prefs)
 
+    def test_hyperbolic_scaling_becomes_lanczos(self) -> None:
+        """"Hyperbolic (slow)" left the choices; whoever picked it scales
+        with Lanczos, the slow and sharp choice now.  A file of format 12
+        holding a 3 was written by hand and keeps it."""
+        for version, stored, read in ((11, 3, constants.SCALING_LANCZOS),
+                                      (11, 1, 1),
+                                      (12, 3, 3)):
+            with self.subTest(version=version, stored=stored):
+                self._write({_FORMAT_VERSION_KEY: version,
+                             'scaling quality': stored})
+                prefs['scaling quality'] = 2
+                preferences.read_preferences_file()
+                self.assertEqual(read, prefs['scaling quality'])
+
     def test_a_version_that_is_not_a_number_is_taken_as_the_oldest(self) -> None:
         """The version comes out of the file like everything else in it,
         so it can be anything a hand edit or a half-written file left

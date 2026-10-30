@@ -1,5 +1,6 @@
 import binascii
 import os
+import math
 import shutil
 import struct
 import tempfile
@@ -790,7 +791,7 @@ class ImageToolsTest(MComixTest):
         ):
             input = image_tools.load_pixbuf(get_image_path(image))
             width, height = input.get_width(), input.get_height()
-            for scaling_quality in range(4):
+            for scaling_quality in range(constants.SCALING_LANCZOS + 1):
                 prefs['scaling quality'] = scaling_quality
                 result = image_tools.fit_in_rectangle(input, width, height,
                                                       scaling_quality=scaling_quality)
@@ -821,7 +822,7 @@ class ImageToolsTest(MComixTest):
                 checker_bg if use_checker_bg else white_bg,
                 control
             )
-            for scaling_quality in range(4):
+            for scaling_quality in range(constants.SCALING_LANCZOS + 1):
                 prefs['scaling quality'] = scaling_quality
                 result = image_tools.fit_in_rectangle(image_tools.pil_to_pixbuf(control),
                                                       width, height,
@@ -832,6 +833,95 @@ class ImageToolsTest(MComixTest):
                     % (image, scaling_quality, 'checker' if checker_bg else 'white')
                 )
                 self.assertImagesEqual(result, expected, msg=msg)
+
+
+class PillowScalingTest(MComixTest):
+
+    """The scaling qualities gdk-pixbuf has no interpolation for, which
+    Pillow scales with."""
+
+    WIDTH, HEIGHT = 1200, 40
+    #: What a page is scaled to: 42% of its width.
+    SCALED = 504
+
+    def _stripes(self, period):
+        """Vertical stripes <period> pixels apart, of contrast 200."""
+        row = bytes(round(127.5 + 100 * math.sin(2 * math.pi * x / period))
+                    for x in range(self.WIDTH))
+        grey = Image.frombytes('L', (self.WIDTH, 1), row)
+        return image_tools.pil_to_pixbuf(
+            grey.resize((self.WIDTH, self.HEIGHT)).convert('RGB'))
+
+    def _contrast(self, pixbuf, scaling_quality):
+        """Half the range of the grey <pixbuf> is scaled to, past the
+        edges the filters see beyond."""
+        scaled = image_tools.fit_in_rectangle(
+            pixbuf, self.SCALED, -1, scaling_quality=scaling_quality)
+        self.assertEqual(self.SCALED, scaled.get_width())
+        row = image_tools.pixbuf_to_pil(scaled).convert('L').crop(
+            (8, 8, self.SCALED - 8, 9))
+        low, high = row.getextrema()
+        return (high - low) / 2
+
+    def test_lanczos_draws_no_moire_and_keeps_what_the_screen_can_show(self):
+        """Stripes finer than the screen can show became moiré at a
+        third of their contrast, scaled bilinearly; those it can show
+        lost some of theirs."""
+        bilinear = int(GdkPixbuf.InterpType.BILINEAR)
+        lanczos = constants.SCALING_LANCZOS
+        fine, coarse = self._stripes(3.3), self._stripes(12)
+        self.assertGreater(self._contrast(fine, bilinear), 20)
+        self.assertLess(self._contrast(fine, lanczos), 5)
+        self.assertLess(self._contrast(coarse, bilinear), 95)
+        self.assertGreater(self._contrast(coarse, lanczos), 97)
+        self.assertLess(self._contrast(fine, constants.SCALING_BICUBIC),
+                        self._contrast(fine, bilinear))
+
+    def test_a_transparent_edge_leaves_no_dark_fringe(self):
+        """The alpha channel is scaled premultiplied, then composited:
+        the transparent black beside a red half does not darken it."""
+        prefs['checkered bg for transparent images'] = False
+        im = Image.new('RGBA', (100, 40), (0, 0, 0, 0))
+        im.paste((255, 0, 0, 255), (50, 0, 100, 40))
+        for scaling_quality in (constants.SCALING_BICUBIC,
+                                constants.SCALING_LANCZOS):
+            with self.subTest(scaling_quality=scaling_quality):
+                scaled = image_tools.fit_in_rectangle(
+                    image_tools.pil_to_pixbuf(im), 38, 15, keep_ratio=False,
+                    scaling_quality=scaling_quality)
+                self.assertEqual((38, 15), (scaled.get_width(),
+                                            scaled.get_height()))
+                composited = image_tools.pixbuf_to_pil(scaled)
+                self.assertEqual((255, 255),
+                                 composited.getchannel('A').getextrema())
+                row = composited.convert('RGB').crop((0, 7, 38, 8))
+                for red, green, blue in row.getdata():
+                    self.assertGreaterEqual(red, 250)
+                    self.assertAlmostEqual(green, blue, delta=2)
+
+    def test_turned_after_it_is_scaled(self):
+        im = Image.new('RGB', (300, 100), (0, 0, 255))
+        im.paste((255, 0, 0), (0, 0, 150, 100))
+        scaled = image_tools.fit_in_rectangle(
+            image_tools.pil_to_pixbuf(im), 40, 120, rotation=90,
+            scaling_quality=constants.SCALING_LANCZOS)
+        self.assertEqual((40, 120), (scaled.get_width(), scaled.get_height()))
+        turned = image_tools.pixbuf_to_pil(scaled)
+        self.assertEqual((255, 0, 0), turned.getpixel((20, 10)))
+        self.assertEqual((0, 0, 255), turned.getpixel((20, 110)))
+
+    def test_gdk_pixbuf_scales_bilinearly_where_pillow_cannot(self):
+        """The lens and a drag's cover scale with gdk-pixbuf, which has
+        no Lanczos; nor a number no MComix wrote."""
+        for value in (constants.SCALING_BICUBIC, constants.SCALING_LANCZOS,
+                      17, -1):
+            with self.subTest(value=value):
+                prefs['scaling quality'] = value
+                self.assertEqual(GdkPixbuf.InterpType.BILINEAR,
+                                 image_tools.scaling_quality_preference())
+        prefs['scaling quality'] = 3
+        self.assertEqual(GdkPixbuf.InterpType.HYPER,
+                         image_tools.scaling_quality_preference())
 
 
 class CmykJpegTest(MComixTest):

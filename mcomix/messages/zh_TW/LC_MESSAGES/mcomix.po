@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix zh_TW\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-30 01:04+0100\n"
+"POT-Creation-Date: 2026-10-30 15:48+0100\n"
 "PO-Revision-Date: 2013-07-05 21:37+0800\n"
 "Last-Translator: Wayne Su <mstarmstar@hotmail.com>\n"
 "Language-Team: \n"
@@ -53,7 +53,7 @@ msgid "! Extraction error: %s"
 msgstr "！ 解壓縮錯誤：%s"
 
 #: mcomix/archive_extractor.py:400 mcomix/archive_tools.py:235
-#: mcomix/image_tools.py:504 mcomix/page_marks.py:62
+#: mcomix/image_tools.py:517 mcomix/page_marks.py:62
 #: mcomix/page_rotations.py:42
 #, python-format
 msgid "! Could not read %s"
@@ -151,7 +151,7 @@ msgid "C_lear bookmarks..."
 msgstr "清除書籤...(_L)"
 
 #: mcomix/bookmark_dialog.py:33 mcomix/main.py:1378 mcomix/openwith.py:340
-#: mcomix/library/collection_area.py:160 mcomix/library/watchlist.py:64
+#: mcomix/library/collection_area.py:160 mcomix/library/watchlist.py:69
 msgid "_Remove"
 msgstr "移除(_R)"
 
@@ -625,7 +625,7 @@ msgid "Add books"
 msgstr "新增書籍"
 
 #: mcomix/file_chooser_library_dialog.py:43 mcomix/openwith.py:336
-#: mcomix/library/watchlist.py:62
+#: mcomix/library/watchlist.py:67
 msgid "_Add"
 msgstr "加入(_A)..."
 
@@ -676,7 +676,7 @@ msgstr "！ 檔案 %s 損壞，正在刪除；上次閱讀的檔案將不會重�
 msgid "Invalid path: '%s'"
 msgstr "不正確的路徑：%s"
 
-#: mcomix/image_tools.py:1282
+#: mcomix/image_tools.py:1319
 msgid "Unknown filetype"
 msgstr "不明的檔案類型"
 
@@ -1391,11 +1391,11 @@ msgstr "工作目錄"
 msgid "Disabled in archives"
 msgstr "不用於壓縮檔"
 
-#: mcomix/openwith.py:619
+#: mcomix/openwith.py:639
 msgid "Save changes to commands?"
 msgstr "儲存指令變更？"
 
-#: mcomix/openwith.py:620
+#: mcomix/openwith.py:640
 msgid ""
 "You have made changes to the list of external commands that have not been "
 "saved yet. Press \"Yes\" to save all changes, or \"No\" to discard them."
@@ -1412,7 +1412,7 @@ msgstr "！ 無法繪製下一個影格：%s"
 msgid "_Go"
 msgstr "前往(_G)"
 
-#: mcomix/pageselect.py:57
+#: mcomix/pageselect.py:65
 #, python-format
 msgid " of %s"
 msgstr " / %s"
@@ -1965,11 +1965,11 @@ msgid ""
 "again."
 msgstr "清除你之前已選過的確認選項，不要再重問。"
 
-#: mcomix/preferences_dialog.py:557
+#: mcomix/preferences_dialog.py:564
 msgid "Ask every time"
 msgstr "每次都詢問"
 
-#: mcomix/preferences_dialog.py:562
+#: mcomix/preferences_dialog.py:569
 msgid ""
 "What MComix answers this prompt with instead of asking. This is what the "
 "prompt's \"Do not ask again\" box sets."
@@ -1977,27 +1977,27 @@ msgstr ""
 "MComix 用來代替詢問的答案。這正是詢問視窗上「不要再問了」核取方塊所設定的內"
 "容。"
 
-#: mcomix/preferences_dialog.py:584
+#: mcomix/preferences_dialog.py:591
 msgid "Auto-detect (Default)"
 msgstr "自動偵測 (預設)"
 
-#: mcomix/preferences_dialog.py:626
+#: mcomix/preferences_dialog.py:633
 msgid "Follow the system"
 msgstr "跟隨系統"
 
-#: mcomix/preferences_dialog.py:627
+#: mcomix/preferences_dialog.py:634
 msgid "Light"
 msgstr "淺色"
 
-#: mcomix/preferences_dialog.py:628
+#: mcomix/preferences_dialog.py:635
 msgid "Dark"
 msgstr "深色"
 
-#: mcomix/preferences_dialog.py:629
+#: mcomix/preferences_dialog.py:636
 msgid "Pitch black"
 msgstr "純黑"
 
-#: mcomix/preferences_dialog.py:635
+#: mcomix/preferences_dialog.py:642
 msgid ""
 "How MComix itself is painted, whatever the desktop asks for. Pitch black is "
 "the dark theme with black backgrounds, which a screen that lights its pixels "
@@ -2006,11 +2006,11 @@ msgstr ""
 "不論桌面環境如何要求，MComix 自身要如何繪製。純黑是背景為黑色的深色佈景主題，"
 "逐一點亮像素的螢幕顯示它時完全不發光。"
 
-#: mcomix/preferences_dialog.py:672
+#: mcomix/preferences_dialog.py:679
 msgid "Restart MComix in the language you picked?"
 msgstr "以所選語言重新啟動 MComix？"
 
-#: mcomix/preferences_dialog.py:673
+#: mcomix/preferences_dialog.py:680
 msgid ""
 "MComix is translated as it starts, so most of the interface stays in the "
 "language it started in until it is started again. The book being read, its "
@@ -2019,76 +2019,76 @@ msgstr ""
 "MComix 在啟動時載入翻譯，因此在重新啟動之前，介面大部分仍會保持啟動時的語言。"
 "正在閱讀的書籍、所在頁面與視窗大小都會保留。"
 
-#: mcomix/preferences_dialog.py:687 mcomix/preferences_dialog.py:903
-#: mcomix/preferences_dialog.py:966 mcomix/ui.py:571
+#: mcomix/preferences_dialog.py:694 mcomix/preferences_dialog.py:911
+#: mcomix/preferences_dialog.py:974 mcomix/ui.py:571
 msgid "Never"
 msgstr "永遠不要"
 
-#: mcomix/preferences_dialog.py:688
+#: mcomix/preferences_dialog.py:695
 msgid "Only for title pages"
 msgstr "只限第一頁"
 
-#: mcomix/preferences_dialog.py:689
+#: mcomix/preferences_dialog.py:696
 msgid "Only for wide images"
 msgstr "只限較寬的圖片"
 
-#: mcomix/preferences_dialog.py:690 mcomix/preferences_dialog.py:904
+#: mcomix/preferences_dialog.py:697 mcomix/preferences_dialog.py:912
 msgid "Always"
 msgstr "永遠都要"
 
-#: mcomix/preferences_dialog.py:697
+#: mcomix/preferences_dialog.py:704
 msgid ""
 "When showing the first page of an archive, or an image's width exceeds its "
 "height, only a single page will be displayed."
 msgstr "遇到壓縮檔的第一頁或比較寬的圖片時，只會單獨顯示一頁。"
 
-#: mcomix/preferences_dialog.py:715
+#: mcomix/preferences_dialog.py:722
 msgid "Prefer same scale"
 msgstr "優先採用相同比例"
 
-#: mcomix/preferences_dialog.py:716
+#: mcomix/preferences_dialog.py:723
 msgid "Prefer same size"
 msgstr "優先採用相同大小"
 
-#: mcomix/preferences_dialog.py:717
+#: mcomix/preferences_dialog.py:724
 msgid "Fit to same size"
 msgstr "符合相同大小"
 
-#: mcomix/preferences_dialog.py:724
+#: mcomix/preferences_dialog.py:731
 msgid "Maintain relative size or fit to same size."
 msgstr "維持相對大小，或調整成相同大小。"
 
-#: mcomix/preferences_dialog.py:738 mcomix/preferences_dialog.py:785
+#: mcomix/preferences_dialog.py:745 mcomix/preferences_dialog.py:792
 msgid "No sorting"
 msgstr "不排序"
 
-#: mcomix/preferences_dialog.py:739
+#: mcomix/preferences_dialog.py:746
 msgid "File name"
 msgstr "檔案名稱"
 
-#: mcomix/preferences_dialog.py:740
+#: mcomix/preferences_dialog.py:747
 msgid "File name (GLib)"
 msgstr "檔案名稱（GLib）"
 
-#: mcomix/preferences_dialog.py:741 mcomix/library/book_area.py:277
+#: mcomix/preferences_dialog.py:748 mcomix/library/book_area.py:277
 msgid "File size"
 msgstr "檔案大小"
 
-#: mcomix/preferences_dialog.py:742
+#: mcomix/preferences_dialog.py:749
 msgid "Last modified"
 msgstr "最後修改時間"
 
-#: mcomix/preferences_dialog.py:748 mcomix/preferences_dialog.py:794
+#: mcomix/preferences_dialog.py:755 mcomix/preferences_dialog.py:801
 #: mcomix/library/book_area.py:283
 msgid "Ascending"
 msgstr "遞增"
 
-#: mcomix/preferences_dialog.py:749 mcomix/preferences_dialog.py:795
+#: mcomix/preferences_dialog.py:756 mcomix/preferences_dialog.py:802
 #: mcomix/library/book_area.py:284
 msgid "Descending"
 msgstr "遞減"
 
-#: mcomix/preferences_dialog.py:757
+#: mcomix/preferences_dialog.py:764
 msgid ""
 "Files will be opened and displayed according to the sort order specified "
 "here. This option does not affect ordering within archives."
@@ -2096,19 +2096,19 @@ msgstr ""
 "檔案開啟與顯示的順序都會依據這裏的設定決定，但不會影響到壓縮檔裏面原本的檔案"
 "順序。"
 
-#: mcomix/preferences_dialog.py:786
+#: mcomix/preferences_dialog.py:793
 msgid "Natural order"
 msgstr "自然順序"
 
-#: mcomix/preferences_dialog.py:787
+#: mcomix/preferences_dialog.py:794
 msgid "Literal order"
 msgstr "文字順序"
 
-#: mcomix/preferences_dialog.py:788
+#: mcomix/preferences_dialog.py:795
 msgid "GLib order"
 msgstr "GLib 順序"
 
-#: mcomix/preferences_dialog.py:803
+#: mcomix/preferences_dialog.py:810
 msgid ""
 "Files within archives will be sorted according to the order specified here. "
 "Natural order will sort numbered files based on their natural order, i.e. 1, "
@@ -2120,49 +2120,53 @@ msgstr ""
 "的檔案，即 1、2、……、10；文字順序則使用標準 C 排序，即 1、2、34、5。GLib 順序"
 "使用 GLib/GTK 產生的排序鍵排列檔案，許多其他 GTK 程式也採用這個順序。"
 
-#: mcomix/preferences_dialog.py:847
+#: mcomix/preferences_dialog.py:854
 msgid "Delete information about recently opened files?"
 msgstr "要刪除「最近開啟過的檔案」資訊？"
 
-#: mcomix/preferences_dialog.py:848
+#: mcomix/preferences_dialog.py:855
 msgid ""
 "This will remove all entries from the \"Recent\" menu, and clear information "
 "about last read pages."
 msgstr ""
 "這樣將會移除「最近開啟過的檔案」選單裏的項目、並清除最後讀取頁數的資訊。"
 
-#: mcomix/preferences_dialog.py:861
+#: mcomix/preferences_dialog.py:868
 msgid "Normal (fast)"
 msgstr "正常 (快)"
 
-#: mcomix/preferences_dialog.py:862
+#: mcomix/preferences_dialog.py:869
 msgid "Bilinear"
 msgstr "雙線性"
 
-#: mcomix/preferences_dialog.py:863
-msgid "Hyperbolic (slow)"
-msgstr "雙曲線 (慢)"
+#: mcomix/preferences_dialog.py:870
+msgid "Bicubic"
+msgstr "雙立方"
 
-#: mcomix/preferences_dialog.py:869
+#: mcomix/preferences_dialog.py:871
+msgid "Lanczos (slow)"
+msgstr "Lanczos (慢)"
+
+#: mcomix/preferences_dialog.py:877
 msgid ""
 "Changes how images are scaled. Slower algorithms result in higher quality "
 "resizing, but longer page loading times."
 msgstr ""
 "變更圖片縮放設定：較慢的演算法可以有較高品質，但頁面載入時間也會比較久。"
 
-#: mcomix/preferences_dialog.py:886
+#: mcomix/preferences_dialog.py:894
 msgid "Anywhere: the next page"
 msgstr "任意位置：下一頁"
 
-#: mcomix/preferences_dialog.py:887
+#: mcomix/preferences_dialog.py:895
 msgid "Halves: back and forward"
 msgstr "兩半：後退與前進"
 
-#: mcomix/preferences_dialog.py:888
+#: mcomix/preferences_dialog.py:896
 msgid "Thirds: back, fullscreen, forward"
 msgstr "三等分：後退、全螢幕、前進"
 
-#: mcomix/preferences_dialog.py:896
+#: mcomix/preferences_dialog.py:904
 msgid ""
 "With \"Flip pages with a left click\": the left half or third of the page "
 "turns back and the right one forward; the middle third enters or leaves "
@@ -2171,19 +2175,19 @@ msgstr ""
 "搭配「左鍵單擊翻頁」：頁面左半或左三分之一後退，右側前進；中間三分之一進入或"
 "離開全螢幕。漫畫模式下左右互換。"
 
-#: mcomix/preferences_dialog.py:905
+#: mcomix/preferences_dialog.py:913
 msgid "For a few seconds after a page turn"
 msgstr "翻頁後顯示幾秒鐘"
 
-#: mcomix/preferences_dialog.py:910
+#: mcomix/preferences_dialog.py:918
 msgid "The pages on screen and the number of pages, in the lower right corner."
 msgstr "在右下角顯示螢幕上的頁面和總頁數。"
 
-#: mcomix/preferences_dialog.py:926
+#: mcomix/preferences_dialog.py:934
 msgid "None"
 msgstr "無"
 
-#: mcomix/preferences_dialog.py:928
+#: mcomix/preferences_dialog.py:936
 msgid ""
 "The ICC profile of the screen, such as one made by calibrating it. Pages are "
 "converted into it from sRGB. Leave it empty where the desktop already "
@@ -2192,23 +2196,23 @@ msgstr ""
 "螢幕的 ICC 描述檔，例如校正螢幕時產生的檔案。頁面會從 sRGB 轉換到此描述檔。若"
 "桌面環境已為螢幕轉換，請留空。"
 
-#: mcomix/preferences_dialog.py:946
+#: mcomix/preferences_dialog.py:954
 msgid "Perceptual"
 msgstr "感知轉換"
 
-#: mcomix/preferences_dialog.py:947
+#: mcomix/preferences_dialog.py:955
 msgid "Relative colorimetric"
 msgstr "相對色度轉換"
 
-#: mcomix/preferences_dialog.py:948
+#: mcomix/preferences_dialog.py:956
 msgid "Saturation"
 msgstr "飽和度轉換"
 
-#: mcomix/preferences_dialog.py:949
+#: mcomix/preferences_dialog.py:957
 msgid "Absolute colorimetric"
 msgstr "絕對色度轉換"
 
-#: mcomix/preferences_dialog.py:960
+#: mcomix/preferences_dialog.py:968
 msgid ""
 "How colours the screen cannot show are brought within its range, when a "
 "screen colour profile is set. Perceptual keeps the colours in proportion; "
@@ -2217,19 +2221,19 @@ msgstr ""
 "設定螢幕色彩描述檔時，螢幕無法顯示的顏色如何納入其範圍。感知轉換保持顏色之間"
 "的比例；相對色度轉換準確保留螢幕能顯示的顏色。"
 
-#: mcomix/preferences_dialog.py:967 mcomix/library/book_area.py:291
+#: mcomix/preferences_dialog.py:975 mcomix/library/book_area.py:291
 msgid "Normal"
 msgstr "正常"
 
-#: mcomix/preferences_dialog.py:973
+#: mcomix/preferences_dialog.py:981
 msgid "Controls how animated images should be displayed."
 msgstr "控制動畫圖片的顯示方式。"
 
-#: mcomix/preferences_dialog.py:1013
+#: mcomix/preferences_dialog.py:1021
 msgid "The temporary folder"
 msgstr "暫存資料夾"
 
-#: mcomix/preferences_dialog.py:1015
+#: mcomix/preferences_dialog.py:1023
 msgid ""
 "The folder archives are unpacked into while they are read, such as a RAM "
 "disk. Empty, the system's temporary folder. Takes effect with the next book "
@@ -2238,7 +2242,7 @@ msgstr ""
 "閱讀時解壓縮封存檔的資料夾，例如 RAM 磁碟。留空則使用系統暫存資料夾。從下一本"
 "開啟的書開始生效。"
 
-#: mcomix/preferences_dialog.py:1036
+#: mcomix/preferences_dialog.py:1044
 msgid ""
 "Treat all files found within archives, that have one of these file endings, "
 "as comments."
@@ -3535,9 +3539,12 @@ msgstr "書集"
 msgid "With subfolders"
 msgstr "含子目錄"
 
-#: mcomix/library/watchlist.py:81
+#: mcomix/library/watchlist.py:86
 msgid "Automatically scan for new books when library is _opened"
 msgstr "書庫開啟時自動搜尋新書(_O)"
+
+#~ msgid "Hyperbolic (slow)"
+#~ msgstr "雙曲線 (慢)"
 
 #~ msgid "Save As"
 #~ msgstr "另存為"

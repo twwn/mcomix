@@ -867,7 +867,8 @@ class _PreferencesDialog(Dialog):
         items = (
                 (_('Normal (fast)'), int(GdkPixbuf.InterpType.TILES)),
                 (_('Bilinear'), int(GdkPixbuf.InterpType.BILINEAR)),
-                (_('Hyperbolic (slow)'), int(GdkPixbuf.InterpType.HYPER)))
+                (_('Bicubic'), constants.SCALING_BICUBIC),
+                (_('Lanczos (slow)'), constants.SCALING_LANCZOS))
 
         selection = prefs['scaling quality']
 

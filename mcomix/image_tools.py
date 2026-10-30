@@ -264,7 +264,7 @@ def fit_pixbuf_to_rectangle(src: GdkPixbuf.Pixbuf, rect: Sequence[int],
 def fit_in_rectangle(src: GdkPixbuf.Pixbuf, width: int, height: int,
                      keep_ratio: bool = True, scale_up: bool = False,
                      rotation: int = 0,
-                     scaling_quality: GdkPixbuf.InterpType | None = None
+                     scaling_quality: int | None = None
                      ) -> GdkPixbuf.Pixbuf:
     """Scale (and return) a pixbuf so that it fits in a rectangle with
     dimensions <width> x <height>. A negative <width> or <height>
@@ -280,6 +280,9 @@ def fit_in_rectangle(src: GdkPixbuf.Pixbuf, width: int, height: int,
 
     If <keep_ratio> is True, the image ratio is kept, and the result
     dimensions may be smaller than the target dimensions.
+
+    <scaling_quality> is a value of the "scaling quality" preference,
+    which is what is used when it is None.
 
     A pixbuf with an alpha channel is composited onto a background
     first - the grey chequerboard, or plain white, as the "checkered bg
@@ -308,7 +311,8 @@ def fit_in_rectangle(src: GdkPixbuf.Pixbuf, width: int, height: int,
         width, height = height, width
 
     if scaling_quality is None:
-        scaling_quality = scaling_quality_preference()
+        scaling_quality = prefs['scaling quality']
+    interpolation = _interpolation(scaling_quality)
 
     src_width = src.get_width()
     src_height = src.get_height()
@@ -318,17 +322,25 @@ def fit_in_rectangle(src: GdkPixbuf.Pixbuf, width: int, height: int,
                                      keep_ratio=keep_ratio,
                                      scale_up=scale_up)
 
+    pil_filter = _PIL_FILTERS.get(scaling_quality)
+    if pil_filter is not None and (width, height) != (src_width, src_height):
+        # Pillow scales an alpha channel premultiplied, as gdk-pixbuf
+        # does; the background goes in below, at the size reached.
+        src = pil_to_pixbuf(pixbuf_to_pil(src).resize((width, height),
+                                                      pil_filter))
+        src_width, src_height = width, height
+
     if src.get_has_alpha():
         composite_color_args = get_composite_color_args(0
                                                         if prefs['checkered bg for transparent images'] else 1)
         if width == src_width and height == src_height:
             # Using anything other than nearest interpolation will result in a
             # modified image if no resizing takes place (even if it's opaque).
-            scaling_quality = GdkPixbuf.InterpType.NEAREST
+            interpolation = GdkPixbuf.InterpType.NEAREST
         src = _allocated(src.composite_color_simple(
-            width, height, scaling_quality, 255, *composite_color_args))
+            width, height, interpolation, 255, *composite_color_args))
     elif width != src_width or height != src_height:
-        src = _allocated(src.scale_simple(width, height, scaling_quality))
+        src = _allocated(src.scale_simple(width, height, interpolation))
 
     src = rotate_pixbuf(src, rotation)
 
@@ -576,14 +588,38 @@ def pixbuf_to_pil(pixbuf: GdkPixbuf.Pixbuf) -> Image.Image:
     return im
 
 
+#: The "scaling quality" choices gdk-pixbuf has no interpolation for.
+#: Scaling a page to 42% of its width, Lanczos kept stripes the screen
+#: can still show at all of their contrast where bilinear kept 92%, and
+#: left nothing of stripes too fine for the screen, which bilinear drew
+#: as moiré at a third of theirs.
+_PIL_FILTERS = {
+    constants.SCALING_BICUBIC: Image.Resampling.BICUBIC,
+    constants.SCALING_LANCZOS: Image.Resampling.LANCZOS,
+}
+
+
+def _interpolation(scaling_quality: int) -> GdkPixbuf.InterpType:
+    """The gdk-pixbuf interpolation type for a value of the "scaling
+    quality" preference: itself, or bilinear for one gdk-pixbuf has none
+    for, Pillow's filters or a number no MComix wrote."""
+    try:
+        return GdkPixbuf.InterpType(scaling_quality)
+    except ValueError:
+        return GdkPixbuf.InterpType.BILINEAR
+
+
 def scaling_quality_preference() -> GdkPixbuf.InterpType:
-    """How the scaling quality preference says pages should be scaled.
+    """How the scaling quality preference says pages should be scaled,
+    where only gdk-pixbuf scales them: the lens, and the cover a drag
+    out of the library carries, which scale with offsets as they
+    composite.
 
     The preference holds a plain number, because that is what survives a
     trip through the preferences file; every gdk-pixbuf call that scales
     wants the member it stands for.
     """
-    return GdkPixbuf.InterpType(prefs['scaling quality'])
+    return _interpolation(prefs['scaling quality'])
 
 
 #: What load_pixbuf() writes the file a moving page came from under.
