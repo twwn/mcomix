@@ -60,7 +60,10 @@ jobs:
       # glycin, which gdk-pixbuf decodes through here; without them the
       # tests of animations read through glycin were skipped.
       # djvulibre-bin holds ddjvu and djvused, which read a DjVu book,
-      # and c44 and djvm, which its tests write one with.
+      # and c44 and djvm, which its tests write one with.  unrar,
+      # libunrar5t64 and rar (multiverse) and lhasa, whose lha is the
+      # name MComix looks for, are what the RAR and LHA tests read and
+      # write with: without them 528 of those tests were skipped.
       - name: Install GTK 4 and the tools the tests call
         run: |
           sudo apt-get update
@@ -69,6 +72,7 @@ jobs:
             gir1.2-gly-2 gir1.2-glygtk4-2 \
             libcairo2-dev pkg-config xvfb xauth gettext \
             7zip unzip mupdf-tools djvulibre-bin \
+            unrar libunrar5t64 rar lhasa \
             librsvg2-common adwaita-icon-theme
       - name: Install MComix and its development dependencies
         run: python -m pip install -e '.[dev,fileformats]' mypy flake8
@@ -100,7 +104,7 @@ jobs:
       # the icons as files, which a desktop has and this install did not
       # bring: without them the picture for a page that would not load
       # was the theme's square icon, and a finished book's cover had no
-      # tick.
+      # tick.  The RAR and LHA tools as in the gates.
       - name: Install GTK 4 and the tools the tests call
         run: |
           sudo apt-get update
@@ -108,6 +112,7 @@ jobs:
             gir1.2-gtk-4.0 gir1.2-adw-1 libgirepository1.0-dev \
             libcairo2-dev pkg-config xvfb xauth gettext \
             7zip unzip mupdf-tools djvulibre-bin \
+            unrar libunrar5t64 rar lhasa \
             librsvg2-common adwaita-icon-theme
       # Each lower bound in pyproject.toml, made the version to install.
       - name: Install the dependency floors and MComix
