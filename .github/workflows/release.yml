@@ -287,12 +287,17 @@ jobs:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      # Uploads the bundle as the run's artifact itself.
+      # Uploads the bundle as the run's artifact itself.  flatpak-builder's
+      # state is cached under the action's own key, the manifest's hash,
+      # and an older one is restored where the manifest changed; a key
+      # of the commit never matched the prefix it restores by, so each
+      # build started afresh and left 130 MB behind.  A release builds
+      # without the cache, from nothing a test build left.
       - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
         with:
           manifest-path: flatpak/io.github.twwn.mcomix.yml
           bundle: mcomix-${{ needs.setup.outputs.version }}.flatpak
-          cache-key: flatpak-builder-${{ github.sha }}
+          cache: ${{ github.ref_type != 'tag' }}
 
   release:
     name: Publish the GitHub release
