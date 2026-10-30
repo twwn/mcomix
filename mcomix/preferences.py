@@ -322,7 +322,7 @@ _DEFAULTS: Preferences = {
     'max threads': 0,
     'max extract threads': 0,
     'unpack folder': '',
-    'scaling quality': 2,  # GdkPixbuf.InterpType.BILINEAR
+    'scaling quality': constants.SCALING_LANCZOS,
     # An ICC file pages are converted into for the screen; '' is none.
     'screen profile': '',
     'rendering intent': 0,  # PIL.ImageCms.Intent.PERCEPTUAL
