@@ -35,7 +35,7 @@ jobs:
     runs-on: windows-2025
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       # The installed MSYS2 tree is kept for a week, under a key that
@@ -50,7 +50,7 @@ jobs:
         run: echo "week=$(date -u +%G-W%V)" >> "$GITHUB_OUTPUT"
       - name: Restore MSYS2
         id: msys2-cache
-        uses: actions/cache/restore@v6
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ runner.temp }}\msys64
           key: msys2-ucrt64-${{ hashFiles('.github/workflows/windows-tests.yml') }}-${{ steps.week.outputs.week }}
@@ -75,7 +75,7 @@ jobs:
             mingw-w64-ucrt-x86_64-gettext-tools
       - name: Keep MSYS2
         if: steps.msys2-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v6
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ runner.temp }}\msys64
           key: ${{ steps.msys2-cache.outputs.cache-primary-key }}
@@ -104,7 +104,7 @@ jobs:
           python -c "import os, sys; print(sys.executable, repr(os.sep), sorted(k for k in os.environ if k.upper().startswith(('MSYS', 'MINGW')))); assert os.sep == '\\'"
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           python -m pytest test/ -q -n auto -rfEs --durations=30 --junitxml=pytest.xml
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: pytest

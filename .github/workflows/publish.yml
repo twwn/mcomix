@@ -67,7 +67,7 @@ jobs:
       - name: Without an API key there is nothing to push
         if: env.CHOCOLATEY_API_KEY == ''
         run: echo "::notice::CHOCOLATEY_API_KEY is not set; the Chocolatey package was not pushed."
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         if: env.CHOCOLATEY_API_KEY != ''
         with:
           persist-credentials: false
@@ -101,8 +101,8 @@ jobs:
         if: env.WINGET_TOKEN == ''
         shell: pwsh
         run: echo "::notice::WINGET_TOKEN is not set; no winget pull request was opened."
-      # Pinned to a commit, as it is handed a token; Dependabot moves the
-      # pin along with the action's releases.
+      # Handed a token: like every action here it runs the commit it is
+      # pinned to, which only a pull request of Dependabot's moves.
       - uses: vedantmgoyal9/winget-releaser@4ffc7888bffd451b357355dc214d43bb9f23917e # v2
         if: env.WINGET_TOKEN != ''
         with:

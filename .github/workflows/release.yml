@@ -63,7 +63,7 @@ jobs:
       version: ${{ steps.what.outputs.version }}
       release: ${{ steps.what.outputs.release }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - name: A release, or a test build
@@ -96,7 +96,7 @@ jobs:
             echo "::error::ChangeLog.md has no section headed \"# MComix $VERSION\""
             exit 1
           fi
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: steps.what.outputs.release == 'true'
         with:
           name: notes
@@ -108,16 +108,16 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-python@v7
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.x"
       - run: |
           python -m pip install build
           python tools/source_archive.py
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: source
           path: dist/mcomix-*.tar.xz
@@ -126,7 +126,7 @@ jobs:
       # What PyPI takes: the sdist as .tar.gz, named as Python's
       # packaging normalises the version, and a wheel.
       - run: python -m build --outdir pypi
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: pypi
           path: pypi/mcomix-*
@@ -144,7 +144,7 @@ jobs:
       run:
         shell: msys2 {0}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       # The packages docs/releasing.md lists, at MSYS2's newest; the path
@@ -266,7 +266,7 @@ jobs:
               mingw-w64-ucrt-x86_64-python-pillow mingw-w64-ucrt-x86_64-python-pymupdf \
               mingw-w64-ucrt-x86_64-pyinstaller | sed 's/^mingw-w64-ucrt-x86_64-/- /'
           } >> "$GITHUB_STEP_SUMMARY"
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: windows
           path: |
@@ -284,7 +284,7 @@ jobs:
       image: ghcr.io/flathub-infra/flatpak-github-actions:gnome-51
       options: --privileged
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       # Uploads the bundle as the run's artifact itself.  flatpak-builder's
@@ -293,7 +293,7 @@ jobs:
       # of the commit never matched the prefix it restores by, so each
       # build started afresh and left 130 MB behind.  A release builds
       # without the cache, from nothing a test build left.
-      - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+      - uses: flatpak/flatpak-github-actions/flatpak-builder@79327416609af08178ad73b352877e51450790b3 # v6.8
         with:
           manifest-path: flatpak/io.github.twwn.mcomix.yml
           bundle: mcomix-${{ needs.setup.outputs.version }}.flatpak
@@ -317,7 +317,7 @@ jobs:
     env:
       TAG: ${{ needs.setup.outputs.version }}
     steps:
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           path: artifacts
       - name: Gather the files and their checksums
@@ -332,7 +332,7 @@ jobs:
           cat release/SHA256SUMS
       # Anyone can check with "gh attestation verify <file> --repo <this
       # repository>" that a file was built here, from this tag.
-      - uses: actions/attest-build-provenance@v4
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
           subject-path: "release/mcomix-*"
       - name: Publish the release, in place of a draft of it
@@ -389,10 +389,10 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: pypi
           path: dist
-      # Pinned to a commit, as it publishes; Dependabot moves the pin
-      # along with the action's releases.
+      # It publishes: like every action here it runs the commit it is
+      # pinned to, which only a pull request of Dependabot's moves.
       - uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2

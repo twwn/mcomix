@@ -1,6 +1,8 @@
-# Keeps the actions the workflows use at their current major version:
-# an action left behind runs on a Node the runners are dropping, and
-# says so in every run's log.
+# Keeps the actions the workflows use at their current version: an
+# action left behind runs on a Node the runners are dropping, and says
+# so in every run's log.  Every action is pinned to a commit, with its
+# version in a comment beside it, so that a tag moved upstream changes
+# nothing here; Dependabot moves the commit and the comment together.
 version: 2
 updates:
   - package-ecosystem: github-actions
