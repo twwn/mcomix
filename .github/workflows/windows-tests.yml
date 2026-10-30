@@ -8,7 +8,7 @@ name: Windows tests
 # On every push to main, as tests.yml, and by hand: a run takes about
 # six and a half minutes, two of them setting up MSYS2 when its cache
 # below misses.  A push that changes only the manual is left to
-# tests.yml, which checks the manual on Linux.
+# docs.yml, which checks the manual on Linux.
 
 on:
   push:
@@ -17,6 +17,10 @@ on:
       - "artwork/**"
       - "docs/**"
       - "*.md"
+      - ".github/PULL_REQUEST_TEMPLATE.md"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/DISCUSSION_TEMPLATE/**"
+      - ".github/dependabot.yml"
   workflow_dispatch:
 
 permissions:

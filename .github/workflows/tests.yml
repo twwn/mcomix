@@ -5,16 +5,32 @@ name: Tests
 # moved under the suite shows as a failed Monday run.  A tag is a commit
 # main has already tested.
 #
-# The tests read nearly every file in the repository - the manual, the
-# workflows, the packaging - so the one thing a change can touch without
-# them is the icon's artwork source.
+# The tests read nearly every file in the repository - the workflows,
+# the packaging, the manual.  A change to the icon's artwork source
+# alone touches none of it, and a change to the manual alone touches
+# only what docs.yml runs: test/test_wiki.py and test/test_keybindings.py,
+# on one Python, in a minute rather than three jobs of four.
 
 on:
   push:
     branches: [main]
-    paths-ignore: ["artwork/**"]
+    paths-ignore:
+      - "artwork/**"
+      - "docs/**"
+      - "*.md"
+      - ".github/PULL_REQUEST_TEMPLATE.md"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/DISCUSSION_TEMPLATE/**"
+      - ".github/dependabot.yml"
   pull_request:
-    paths-ignore: ["artwork/**"]
+    paths-ignore:
+      - "artwork/**"
+      - "docs/**"
+      - "*.md"
+      - ".github/PULL_REQUEST_TEMPLATE.md"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/DISCUSSION_TEMPLATE/**"
+      - ".github/dependabot.yml"
   schedule:
     - cron: "43 4 * * 1"
   workflow_dispatch:
