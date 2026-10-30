@@ -224,19 +224,32 @@ jobs:
           foreach ($path in 'mutool.exe', 'MComix.Console.exe') {
             if (Test-Path (Join-Path $bundle $path)) { throw "The bundle carries $path again" }
           }
+          # What each run has written so far, read while it runs.
+          function Read-Run($files) {
+            (@($files) | Where-Object { Test-Path $_ } | ForEach-Object { Get-Content $_ -Raw }) -join "`n"
+          }
+          # Each run is watched until the line that says it got where it
+          # should, or a traceback, for a minute at most; then a few
+          # seconds more, for the frame the on-screen display is drawn in
+          # and anything that goes wrong after.  A fixed twenty seconds
+          # each was both too long and, for a slow start, too short.
           $failed = $false
           foreach ($run in @(
-              @{ Name = 'pdf'; Book = "$env:RUNNER_TEMP\smoke.pdf"; Expect = 'Page 1 is available' },
-              @{ Name = 'missing'; Book = "$env:RUNNER_TEMP\not-there.cbz"; Expect = $null })) {
+              @{ Name = 'pdf'; Book = "$env:RUNNER_TEMP\smoke.pdf"; Expect = 'Page 1 is available'; Until = 'Page 1 is available' },
+              @{ Name = 'missing'; Book = "$env:RUNNER_TEMP\not-there.cbz"; Expect = $null; Until = 'Showing the main window' })) {
             $out = Join-Path $env:RUNNER_TEMP "$($run.Name).out"
             $err = Join-Path $env:RUNNER_TEMP "$($run.Name).err"
             $log = Join-Path $env:RUNNER_TEMP "$($run.Name).log"
             Start-Process (Join-Path $bundle 'MComix.exe') -ArgumentList '-W', 'debug', '-o', $log, $run.Book `
               -RedirectStandardOutput $out -RedirectStandardError $err
-            Start-Sleep -Seconds 20
+            $deadline = (Get-Date).AddSeconds(60)
+            while ((Get-Date) -lt $deadline -and (Read-Run $out, $err, $log) -notmatch "$($run.Until)|Traceback") {
+              Start-Sleep -Milliseconds 500
+            }
+            Start-Sleep -Seconds 5
             Get-Process -Name 'MComix*' -ErrorAction SilentlyContinue | Stop-Process -Force
             Start-Sleep -Seconds 2
-            $text = (@($out, $err, $log) | Where-Object { Test-Path $_ } | ForEach-Object { Get-Content $_ -Raw }) -join "`n"
+            $text = Read-Run $out, $err, $log
             Write-Output "::group::$($run.Name)"
             Write-Output $text
             Write-Output '::endgroup::'
