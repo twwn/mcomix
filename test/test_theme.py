@@ -202,9 +202,30 @@ class PaletteTest(MComixTest):
         for scheme, dark in ((theme.DARK, True), (theme.LIGHT, False),
                              (theme.BLACK, True)):
             theme.apply_colour_scheme(scheme)
-            self.assertEqual(
-                settings.get_property('gtk-application-prefer-dark-theme'),
-                dark, 'the %s scheme' % scheme)
+            if hasattr(Gtk, 'InterfaceColorScheme'):
+                asked = settings.get_property('gtk-interface-color-scheme')
+                self.assertEqual(asked, Gtk.InterfaceColorScheme.DARK
+                                 if dark else Gtk.InterfaceColorScheme.LIGHT,
+                                 'the %s scheme' % scheme)
+            else:
+                self.assertEqual(
+                    settings.get_property('gtk-application-prefer-dark-theme'),
+                    dark, 'the %s scheme' % scheme)
+
+    def test_asking_for_the_dark_prints_no_warning(self):
+        """GTK 4.20 deprecated gtk-application-prefer-dark-theme, and
+        printed "Use GtkSettings:gtk-interface-color-scheme instead"
+        each time MComix set it."""
+        if not hasattr(Gtk, 'InterfaceColorScheme'):
+            self.skipTest('GTK before 4.20 has only the older property')
+        settings = Gtk.Settings.get_default()
+        with unittest.mock.patch.object(
+                settings, 'set_property',
+                wraps=settings.set_property) as set_property:
+            for scheme in (theme.DARK, theme.LIGHT):
+                theme.apply_colour_scheme(scheme)
+        names = [call.args[0] for call in set_property.call_args_list]
+        self.assertNotIn('gtk-application-prefer-dark-theme', names)
 
     def test_pitch_black_reaches_the_page_behind_the_picture(self):
         # The largest thing on the screen, and the one the preference

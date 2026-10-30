@@ -267,7 +267,15 @@ def _prefer_dark(scheme: str) -> None:
         dark = lightness == constants.SystemThemeLightness.DARK
     else:
         dark = scheme != LIGHT
-    settings.set_property('gtk-application-prefer-dark-theme', dark)
+    if hasattr(Gtk, 'InterfaceColorScheme'):
+        # GTK 4.20 and later: the older property still works there but
+        # prints a warning every time it is set.
+        settings.set_property(
+            'gtk-interface-color-scheme',
+            Gtk.InterfaceColorScheme.DARK if dark
+            else Gtk.InterfaceColorScheme.LIGHT)
+    else:
+        settings.set_property('gtk-application-prefer-dark-theme', dark)
 
 
 def _definitions(scheme: str) -> dict[str, str]:
