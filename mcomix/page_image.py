@@ -254,6 +254,15 @@ class PageImage(Gtk.Picture):
                 paintable: _AnimationPaintable,
                 playback: _Playback) -> None:
         """Hand <paintable> a frame at a time until asked to stop."""
+        try:
+            self._play(frames, paintable, playback)
+        finally:
+            frames.close()
+
+    def _play(self, frames: animation.Frames,
+              paintable: _AnimationPaintable,
+              playback: _Playback) -> None:
+        """The body of _decode(), which closes <frames> after it."""
         due = time.monotonic()
         while not playback.is_stopped():
             if not frames.ahead:

@@ -38,6 +38,9 @@ class Frames:
         """
         raise NotImplementedError
 
+    def close(self) -> None:
+        """Let go of whatever the frames are read from."""
+
 
 class _PillowFrames(Frames):
 
@@ -62,8 +65,14 @@ class _PillowFrames(Frames):
         self._image = Image.open(path)
         self._frames = getattr(self._image, 'n_frames', 1)
         if self._frames < 2:
+            self._image.close()
             raise ValueError('%s holds a single picture' % path)
         self._index = -1
+
+    def close(self) -> None:
+        # Left to the collector, the file stayed open until the thread
+        # that drew the frames was gone, and Python warned of it.
+        self._image.close()
 
     def next(self) -> tuple[Gdk.Texture, int]:
         self._index = (self._index + 1) % self._frames

@@ -95,6 +95,14 @@ class PageImageTest(MComixTest):
         self.assertEqual((paintable.get_intrinsic_width(),
                           paintable.get_intrinsic_height()), (64, 48))
 
+    def test_the_frames_are_closed_when_the_animation_stops(self):
+        frames = unittest.mock.Mock(spec=animation.Frames)
+        frames.ahead = True
+        playback = unittest.mock.Mock()
+        playback.is_stopped.return_value = True
+        self.image._decode(frames, None, playback)
+        frames.close.assert_called_once_with()
+
     def test_a_page_with_no_size_is_left_alone(self):
         pixbuf = image_tools.load_pixbuf(get_image_path('blue.png'))
         self.image.show_pixbuf(pixbuf)

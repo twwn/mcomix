@@ -7,6 +7,9 @@ glycin - the decoder gdk-pixbuf itself hands to - decodes the rest, and
 the deprecated iterator is left for a tree that has neither.
 """
 
+import gc
+import warnings
+
 from . import MComixTest, get_testfile_path
 
 from mcomix import animation
@@ -24,6 +27,7 @@ class FramesTest(MComixTest):
         # time over shared memory, far too slowly to keep up with a page
         # that is really a video.
         frames = animation.frames(get_image_path('animated.webp'))
+        self.addCleanup(frames.close)
         self.assertIsInstance(frames, animation._PillowFrames)
         self.assertTrue(frames.ahead,
                         'the next frame cannot be decoded before it is due')
@@ -33,11 +37,13 @@ class FramesTest(MComixTest):
         # delay in as it decodes, so reading it before the pixels are
         # asked for gives the frame before's.
         frames = animation.frames(get_image_path('animated.webp'))
+        self.addCleanup(frames.close)
         self.assertEqual([frames.next()[1] for _ in range(5)],
                          [120, 120, 40, 80, 40])
 
     def test_an_animation_goes_round_again(self):
         frames = animation.frames(get_image_path('animated.webp'))
+        self.addCleanup(frames.close)
         first = frames.next()[1]
         for _ in range(4):
             frames.next()
@@ -48,6 +54,7 @@ class FramesTest(MComixTest):
         # A GIF written with a delay of zero means "as fast as you
         # like"; taking it at its word plays it ten times too fast.
         frames = animation.frames(get_image_path('no-delay.gif'))
+        self.addCleanup(frames.close)
         self.assertEqual(frames.next()[1], animation.DEFAULT_DELAY)
 
     def test_a_page_that_is_one_picture_has_no_frames_to_decode(self):
@@ -61,6 +68,24 @@ class FramesTest(MComixTest):
         frames = animation.frames(get_image_path('blue.png'))
         self.assertNotIsInstance(frames, animation._PillowFrames)
         self.assertLessEqual(frames.next()[1], 0)
+
+    def test_closing_lets_go_of_the_file(self):
+        frames = animation.frames(get_image_path('animated.gif'))
+        stream = frames._image.fp
+        self.assertFalse(stream.closed)
+        frames.close()
+        self.assertTrue(stream.closed)
+
+    def test_a_single_picture_is_not_left_open(self):
+        """Pillow opens a still picture before it can count its one
+        frame; the file was left for the collector to close."""
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter('always', ResourceWarning)
+            with self.assertRaises(ValueError):
+                animation._PillowFrames(get_image_path('blue.png'))
+            gc.collect()
+        self.assertEqual([], [str(warning.message) for warning in caught
+                              if warning.category is ResourceWarning])
 
     def test_a_page_that_is_not_there_at_all_says_so(self):
         self.assertRaises(Exception, animation.frames,
