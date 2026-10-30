@@ -649,6 +649,23 @@ class ColumnListView(Gtk.ColumnView, widgets.Releasable):
 
         return self._add_column(title, _EditableCell, bind, expand, attr, None)
 
+    def finish_editing(self) -> None:
+        """Take in the text of a cell still being edited.
+
+        A Gtk.EditableLabel answers on Enter, and on nothing else that a
+        dialog's buttons do: a click on Save took the focus from it and
+        left it editing, so the text typed into it was never handed on.
+        """
+        def walk(widget: Gtk.Widget) -> None:
+            child = widget.get_first_child()
+            while child is not None:
+                if isinstance(child, _EditableCell) and child.get_editing():
+                    child.stop_editing(True)
+                else:
+                    walk(child)
+                child = child.get_next_sibling()
+        walk(self)
+
     def add_icon_column(self, title: str, attr: str,
                         expand: bool = False,
                         sort_key: "Callable[[Row], tools.SupportsLessThan] | None" = None) \

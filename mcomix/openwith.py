@@ -609,6 +609,9 @@ class OpenWithEditor(Dialog):
         screen while the question about unsaved changes is asked, so
         that the prompt stands over the list it asks about.
         """
+        # A command still being edited is part of what is saved, or of
+        # what the question about unsaved changes asks about.
+        self._command_list.finish_editing()
         if response == Response.ACCEPT:
             # The Save button is only enabled if all commands are valid
             self.save()

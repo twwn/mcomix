@@ -13,6 +13,7 @@ from gi.repository import Gtk
 from . import MComixTest, pump
 
 from mcomix import callback
+from mcomix import column_list
 from mcomix import openwith
 from mcomix.dialog import Response
 from mcomix.preferences import prefs
@@ -292,6 +293,45 @@ class OpenWithEditorTest(MComixTest):
         self.assertEqual([], self._prompts())
         self.assertFalse(self.editor.get_visible())
         self.assertEqual(prefs['openwith commands'][0][1], 'kate %F')
+
+    def _typing_into_a_command(self, text):
+        """Start editing the first command's cell and type <text> into
+        it, without Enter: what a reader does before reaching for Save."""
+        cells = []
+
+        def walk(widget):
+            child = widget.get_first_child()
+            while child is not None:
+                if isinstance(child, column_list._EditableCell) and \
+                        child.get_text() == 'gedit %F':
+                    cells.append(child)
+                walk(child)
+                child = child.get_next_sibling()
+
+        walk(self.editor)
+        cell, = cells
+        cell.start_editing()
+        cell.set_text(text)
+        pump()
+        self.assertTrue(cell.get_editing())
+        self.assertFalse(self.editor._changed)
+
+    def test_save_keeps_a_command_still_being_edited(self):
+        """A click on Save left the cell editing and saved the command
+        as it was before (seen with real clicks)."""
+        self._typing_into_a_command('kate %F')
+        self.editor.response(Response.ACCEPT)
+        pump()
+        self.assertEqual(prefs['openwith commands'][0][1], 'kate %F')
+
+    def test_closing_asks_about_a_command_still_being_edited(self):
+        self._typing_into_a_command('kate %F')
+        self.editor.response(Response.DELETE_EVENT)
+        pump()
+        prompts = self._prompts()
+        self.assertEqual(1, len(prompts), 'the edit was dropped unasked')
+        prompts[0].response(Response.NO)
+        pump()
 
     def test_closing_an_unchanged_editor_asks_nothing(self):
         self.editor.response(Response.DELETE_EVENT)
