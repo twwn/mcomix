@@ -43,6 +43,13 @@ on:
 permissions:
   contents: read
 
+# An explicit bash runs with -o pipefail, which the runner's default
+# bash -e leaves out: a failed command at the head of a pipe went
+# unnoticed when what it fed succeeded.
+defaults:
+  run:
+    shell: bash
+
 concurrency:
   group: release-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
