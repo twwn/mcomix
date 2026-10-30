@@ -423,6 +423,13 @@ class _AccelCell(Gtk.Button, _Cell):
         keys = Gtk.EventControllerKey()
         keys.connect('key-pressed', self._pressed)
         self.add_controller(keys)
+        # Left for another cell or anywhere else, a cell stops waiting,
+        # as a Gtk.CellRendererAccel stopped editing: otherwise it went
+        # on showing the hint in place of its shortcut, and took the
+        # next key pressed once the focus came back to it.
+        focus = Gtk.EventControllerFocus()
+        focus.connect('leave', self._left)
+        self.add_controller(focus)
         #: Told the row and the new accelerator, or None to clear it.
         self.rebind: "Callable[[Row, str | None], None] | None" = None
 
@@ -433,6 +440,11 @@ class _AccelCell(Gtk.Button, _Cell):
         self.label.props.disabled_text = _ASK_FOR_ONE_HINT
         self.label.props.accelerator = ''
         self.set_tooltip_text(None)
+
+    def _left(self, controller: Gtk.EventControllerFocus) -> None:
+        if self.capturing:
+            self.capturing = False
+            self._show()
 
     def _pressed(self, controller: Gtk.EventControllerKey, keyval: int,
                  keycode: int, state: Gdk.ModifierType) -> bool:

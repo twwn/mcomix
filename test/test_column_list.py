@@ -477,6 +477,54 @@ class ColumnListViewTest(MComixTest):
             window.destroy()
             pump()
 
+    def test_a_cell_left_waiting_for_a_shortcut_stops_waiting(self):
+        """A cell clicked and then left - for another cell, or anywhere
+        else - went on showing "New accelerator..." in place of its
+        shortcut, and the next key pressed when the focus came back to
+        it became the shortcut.  A Gtk.CellRendererAccel stopped editing
+        when the focus left it."""
+        view = column_list.ColumnListView()
+        rebound = []
+        view.add_accel_column('Key', 'key',
+                              lambda row, accel: rebound.append((row, accel)))
+        rows = [column_list.Row(key='<Control>a'),
+                column_list.Row(key='<Control>b')]
+        view.set_rows(rows)
+        window = Gtk.Window()
+        window.set_child(view)
+        window.present()
+        try:
+            for _ in range(20):
+                pump()
+                view.allocate(400, 300, -1, None)
+            cells = []
+
+            def walk(widget):
+                child = widget.get_first_child()
+                while child is not None:
+                    if isinstance(child, column_list._AccelCell):
+                        cells.append(child)
+                    walk(child)
+                    child = child.get_next_sibling()
+
+            walk(view)
+            self.assertEqual(2, len(cells))
+            first, second = sorted(cells, key=lambda cell: cell.accelerator)
+            first.grab_focus()
+            first.emit('clicked')
+            self.assertTrue(first.capturing)
+            second.grab_focus()
+            pump()
+            self.assertFalse(first.capturing)
+            self.assertEqual('', first.label.props.disabled_text)
+            self.assertEqual('<Control>a', first.label.props.accelerator)
+            self.assertFalse(first._pressed(
+                None, Gdk.KEY_x, 0, Gdk.ModifierType.CONTROL_MASK))
+            self.assertEqual([], rebound)
+        finally:
+            window.destroy()
+            pump()
+
     def test_a_row_that_takes_no_shortcut_holds_the_column_open_anyway(self):
         """A group heading stands over the actions under it and has no
         shortcut of its own, so its cell is empty and cannot be pressed.
