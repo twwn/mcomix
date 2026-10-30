@@ -9,7 +9,7 @@ one, and answering which row is under the pointer.
 
 import unittest.mock
 
-from gi.repository import Gdk, Gtk, Pango
+from gi.repository import Gdk, Graphene, Gtk, Pango
 
 from . import MComixTest, pump
 
@@ -521,6 +521,62 @@ class ColumnListViewTest(MComixTest):
             self.assertFalse(first._pressed(
                 None, Gdk.KEY_x, 0, Gdk.ModifierType.CONTROL_MASK))
             self.assertEqual([], rebound)
+        finally:
+            window.destroy()
+            pump()
+
+    def test_a_press_on_a_cell_that_takes_clicks_selects_its_row(self):
+        """Text rewritten in place and a check box each take the click
+        for themselves, so a row of nothing else could not be selected
+        with the mouse (the Open with editor, seen with real clicks)."""
+        view = column_list.ColumnListView()
+        view.add_editable_column('Name', 'name', lambda row, text: None)
+        view.add_toggle_column('On', 'on', lambda row, value: None)
+        view.set_rows([column_list.Row(name='one', on=False),
+                       column_list.Row(name='two', on=False)])
+        window = Gtk.Window()
+        window.set_child(view)
+        window.present()
+
+        class Press:
+            def __init__(self, state=0):
+                self.state = Gdk.ModifierType(state)
+
+            def get_current_event_state(self):
+                return self.state
+
+        try:
+            for _ in range(20):
+                pump()
+                view.allocate(400, 300, -1, None)
+            cells = []
+
+            def walk(widget):
+                child = widget.get_first_child()
+                while child is not None:
+                    if isinstance(child, (column_list._EditableCell,
+                                          column_list._ToggleCell)) \
+                            and child.row is not None \
+                            and child.row.name == 'two':
+                        cells.append(child)
+                    walk(child)
+                    child = child.get_next_sibling()
+
+            walk(view)
+            self.assertEqual(2, len(cells))
+            for cell in cells:
+                with self.subTest(cell=type(cell).__name__):
+                    view.unselect_all()
+                    ok, point = cell.compute_point(
+                        view, Graphene.Point().init(2, 2))
+                    self.assertTrue(ok)
+                    view._pressed_on_cell(Press(), 1, point.x, point.y)
+                    self.assertEqual([1], view.get_selected_positions())
+            # Ctrl or Shift held: adding to a selection is the row's.
+            view.unselect_all()
+            view._pressed_on_cell(Press(Gdk.ModifierType.CONTROL_MASK), 1,
+                                  point.x, point.y)
+            self.assertEqual([], view.get_selected_positions())
         finally:
             window.destroy()
             pump()

@@ -548,6 +548,36 @@ class ColumnListView(Gtk.ColumnView, widgets.Releasable):
         self._search_controller: Gtk.EventControllerKey | None = None
         self._search_typed_so_far = ''
         self._search_at = 0
+        # A cell that answers a click itself - text rewritten in place,
+        # a check box, a choice, a shortcut - kept the click from the
+        # row, so a row made of nothing else could not be selected with
+        # the mouse at all: the Open with editor's Remove, Up and Down
+        # stayed off whatever command was clicked.  Looking before the
+        # cells do, and taking nothing from them, the press selects the
+        # row it lands on as well.
+        press = Gtk.GestureClick()
+        press.set_propagation_phase(Gtk.PropagationPhase.CAPTURE)
+        press.connect('pressed', self._pressed_on_cell)
+        self.add_controller(press)
+
+    def _pressed_on_cell(self, gesture: Gtk.GestureClick, presses: int,
+                         x: float, y: float) -> None:
+        """Select the row of a cell that takes clicks for itself."""
+        if gesture.get_current_event_state() & (
+                Gdk.ModifierType.CONTROL_MASK | Gdk.ModifierType.SHIFT_MASK):
+            # Adding to a selection is the row's own business.
+            return
+        widget = self.pick(x, y, Gtk.PickFlags.DEFAULT)
+        while widget is not None and widget is not self \
+                and not isinstance(widget, _Cell):
+            widget = widget.get_parent()
+        claiming: tuple[type, ...] = (_EditableCell, _ToggleCell,
+                                      _ChoiceCell, _AccelCell)
+        if not isinstance(widget, claiming):
+            return
+        row = getattr(widget, 'row', None)
+        if row is not None and row not in self.get_selected_rows():
+            self.select_row(row)
 
     def release(self) -> None:
         """Unbind every row and drop every column, once the window is closed.
