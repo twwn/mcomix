@@ -14,6 +14,7 @@ from . import MComixTest, get_testfile_path, pump, wait_for
 
 from mcomix import constants
 from mcomix import icons
+from mcomix import image_tools
 from mcomix import keybindings
 from mcomix import main
 from mcomix.preferences import prefs
@@ -170,6 +171,27 @@ class ViewActionsTest(MComixTest):
         self._activate('crop_borders')
         self.assertFalse(prefs['crop borders'])
         self.assertEqual((400, 400), self._shown_size())
+
+    def test_the_borders_are_found_as_a_page_is_cached(self):
+        """With "crop borders" on, the caching thread looks at each page
+        it loads, so that drawing it does not have to."""
+        book = os.path.join(self.tmp_dir, 'book')
+        os.mkdir(book)
+        for name in ('1.png', '2.png', '3.png'):
+            page = Image.new('RGB', (800, 800), 'white')
+            ImageDraw.Draw(page).rectangle((150, 50, 649, 749), fill='navy')
+            page.save(os.path.join(book, name))
+        prefs['crop borders'] = True
+        handler = self.window.imagehandler
+        self.window.filehandler.open_file(os.path.join(book, '1.png'))
+        self.assertTrue(wait_for(
+            lambda: handler.get_number_of_pages() == 3))
+        # The page after the one shown is read ahead, on the thread.
+        self.assertTrue(wait_for(lambda: 1 in handler._raw_pixbufs))
+        ahead = handler._raw_pixbufs[1]
+        cut = getattr(ahead, image_tools._WITHOUT_BORDERS, None)
+        self.assertIsNotNone(cut)
+        self.assertLess(cut.get_width(), 800)
 
     def test_zooming_in_and_out_and_back_to_the_original_size(self):
         self._open('blue.png')
