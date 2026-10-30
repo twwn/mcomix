@@ -5,7 +5,7 @@ The archive on disk is untouched until the changes are written.
 
 ## In the main window
 
-- "Copy page", in the page's right-click menu, copies that page as an image and as its file's path. "Edit → Copy" copies the view: both pages, joined, in double page mode.
+- "Copy page", in the page's right-click menu, copies that page as an image and as its file's path. "Edit → Copy", or CTRL+C, copies the view: both pages, joined, in double page mode.
 - "Save page as...", in the page's right-click menu and the File menu, saves that page to a file of its own.
 - A thumbnail dragged from the sidebar to a file manager copies that page's file there.
 - "Rename page...", in the page's menu or F2, names the page for the next save.
@@ -29,7 +29,7 @@ The archive on disk is untouched until the changes are written.
 
 - "Images" shows the pages as thumbnails; drag them into another order.
 - "Comment files" lists the text files that came with them.
-- "Remove from archive", in either list's right-click menu, takes out what is selected.
+- "Remove from archive", in either list's right-click menu, or Delete, takes out what is selected.
 - "Rename page..." or F2 names the selected page; "Rename file..." or F2 names a comment file.
 - "Import" adds images from disk.
 - CTRL+Z undoes, CTRL+Y or CTRL+SHIFT+Z redoes.
