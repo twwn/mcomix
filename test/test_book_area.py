@@ -1375,6 +1375,16 @@ class OpenAndClickTest(MComixTest):
         self.area.open_selected_book()
         self.assertEqual([([1], False)], self.opened)
 
+    def test_enter_on_one_of_several_picked_out_opens_them_all(self):
+        self.area._covers.selection.select_all()
+        self.area._covers.emit('activate', 1)
+        self.assertEqual([([0, 1, 2], False)], self.opened)
+
+    def test_enter_on_a_cover_not_picked_out_opens_that_one(self):
+        self.area._covers.select_only(2)
+        self.area._covers.emit('activate', 0)
+        self.assertEqual([([0], False)], self.opened)
+
     def test_or_with_it_left_open(self):
         self.area._covers.select_only(2)
         self.area.open_selected_book_noclose()

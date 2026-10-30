@@ -769,7 +769,14 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
 
     def _book_activated(self, covers: thumbnail_list.ThumbnailGridView,
                         position: int) -> None:
-        """Open the book whose cover is shown at <position>."""
+        """Open the book whose cover is shown at <position>: Enter or a
+        double click.  A cover among several picked out opens them all,
+        as "Open" in the menu does and Enter in a file manager; a double
+        click picks out its cover alone first, so it opens that one."""
+        selected = self._covers.get_selected_positions()
+        if position in selected and len(selected) > 1:
+            self._open_books(False)
+            return
         book = self.get_book_at_path(position)
         if book is None:
             return
