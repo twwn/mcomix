@@ -220,6 +220,39 @@ class LibraryDialogTest(_LibraryWindowTest):
         self.assertFalse(dialog.get_visible())
         self.assertEqual('night', dialog.control_area.search_entry.get_text())
 
+    def _type_over_the_covers(self, dialog, keyval, state=0):
+        return dialog.book_area._key_press(
+            None, keyval, 0, Gdk.ModifierType(state))
+
+    def test_a_letter_typed_over_the_covers_begins_a_search(self):
+        """As a file manager does: the search field takes the focus and
+        the letter, and the next letters follow it there."""
+        dialog = self._open()
+        dialog.present()
+        dialog.book_area.grab_focus()
+        pump()
+        entry = dialog.control_area.search_entry
+        self.assertEqual(Gdk.EVENT_STOP,
+                         self._type_over_the_covers(dialog, Gdk.KEY_n))
+        self.assertEqual('n', entry.get_text())
+        self.assertTrue(entry.has_focus()
+                        or dialog.get_focus().get_parent() is entry)
+        self.assertEqual(1, entry.get_position())
+        self.assertTrue(dialog.control_area._pending_filter)
+
+    def test_keys_that_are_not_letters_stay_with_the_covers(self):
+        dialog = self._open()
+        entry = dialog.control_area.search_entry
+        for keyval, state in ((Gdk.KEY_space, 0), (Gdk.KEY_Return, 0),
+                              (Gdk.KEY_Down, 0),
+                              (Gdk.KEY_a, Gdk.ModifierType.CONTROL_MASK),
+                              (Gdk.KEY_n, Gdk.ModifierType.ALT_MASK)):
+            with self.subTest(key=Gdk.keyval_name(keyval), state=state):
+                self.assertEqual(Gdk.EVENT_PROPAGATE,
+                                 self._type_over_the_covers(
+                                     dialog, keyval, state))
+        self.assertEqual('', entry.get_text())
+
     def test_the_window_carries_the_three_areas(self):
         dialog = self._open()
         self.assertIsNotNone(dialog.book_area)

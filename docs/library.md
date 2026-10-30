@@ -38,6 +38,7 @@ Escape hides the window; CTRL+W closes it. In the search field, Escape first emp
 ## Books
 
 - The search field shows the books whose name or path contains its text, case aside, as soon as the typing pauses, or at once on Enter. CTRL+F goes to it.
+- Typing a letter or digit over the covers starts a search with it.
 - A book's cover is its first picture, or the first one named "cover" or "front". Pictures named "credit" or "banner" are passed over.
 - To choose another, open the book, right-click the page and tick "Cover in the library". The book is not changed. Untick it there to go back.
 - A book read to its last page has a tick on its cover.

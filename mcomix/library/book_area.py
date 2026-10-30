@@ -1142,7 +1142,26 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
                 else Gdk.KEY_Left
             if self._move_selected(-1 if keyval == earlier else 1):
                 return Gdk.EVENT_STOP
+        if self._type_into_search(keyval, state):
+            return Gdk.EVENT_STOP
         return Gdk.EVENT_PROPAGATE
+
+    def _type_into_search(self, keyval: int,
+                          state: Gdk.ModifierType) -> bool:
+        """Begin a search with a letter typed over the covers, as a file
+        manager does: the search field takes the focus and the letter.
+        Says whether it did."""
+        if state & (Gdk.ModifierType.CONTROL_MASK | Gdk.ModifierType.ALT_MASK
+                    | Gdk.ModifierType.SUPER_MASK):
+            return False
+        character = chr(Gdk.keyval_to_unicode(keyval) or 0)
+        if not character.isprintable() or character.isspace():
+            return False
+        entry = self._library.control_area.search_entry
+        entry.set_text(entry.get_text() + character)
+        entry.grab_focus_without_selecting()
+        entry.set_position(-1)
+        return True
 
     def _move_selected(self, step: int) -> bool:
         """Move the selected books one place earlier (<step> -1) or

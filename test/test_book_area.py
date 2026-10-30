@@ -1327,12 +1327,14 @@ class MenuKeyTest(MComixTest):
         """The menu's "Copy" had no key; CTRL+C is the one every
         file manager gives it."""
         with unittest.mock.patch.object(self.area, '_copy_selected') \
-                as copied:
+                as copied, unittest.mock.patch.object(
+                    self.area, '_type_into_search') as typed:
             self.assertEqual(Gdk.EVENT_STOP, self._press(
                 Gdk.KEY_c, Gdk.ModifierType.CONTROL_MASK))
-            self.assertEqual(Gdk.EVENT_PROPAGATE, self._press(
-                Gdk.KEY_c, Gdk.ModifierType(0)))
+            # A plain c begins a search instead.
+            self._press(Gdk.KEY_c, Gdk.ModifierType(0))
         copied.assert_called_once_with()
+        typed.assert_called_once_with(Gdk.KEY_c, Gdk.ModifierType(0))
 
     def test_the_menu_shows_the_keys_the_area_answers(self):
         accels = {}
