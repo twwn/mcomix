@@ -877,6 +877,14 @@ class PillowScalingTest(MComixTest):
         self.assertLess(self._contrast(fine, constants.SCALING_BICUBIC),
                         self._contrast(fine, bilinear))
 
+    def test_far_smaller_still_draws_no_moire(self):
+        """A page scaled to an eighth is averaged in blocks before it
+        is filtered, which must not bring the moiré back."""
+        self.WIDTH, self.HEIGHT, self.SCALED = 6000, 200, 720
+        lanczos = constants.SCALING_LANCZOS
+        self.assertLess(self._contrast(self._stripes(11.7), lanczos), 3)
+        self.assertGreater(self._contrast(self._stripes(41.7), lanczos), 93)
+
     def test_a_transparent_edge_leaves_no_dark_fringe(self):
         """The alpha channel is scaled premultiplied, then composited:
         the transparent black beside a red half does not darken it."""

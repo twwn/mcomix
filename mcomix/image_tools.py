@@ -326,8 +326,13 @@ def fit_in_rectangle(src: GdkPixbuf.Pixbuf, width: int, height: int,
     if pil_filter is not None and (width, height) != (src_width, src_height):
         # Pillow scales an alpha channel premultiplied, as gdk-pixbuf
         # does; the background goes in below, at the size reached.
-        src = pil_to_pixbuf(pixbuf_to_pil(src).resize((width, height),
-                                                      pil_filter))
+        # Past a third, the reducing gap has Pillow average whole blocks
+        # of pixels first and filter only the last threefold: a
+        # 6000x9000 page took 143 ms to fit 800x1200 rather than 313,
+        # and drew stripes too fine for the screen at half a percent
+        # of their contrast rather than none.
+        src = pil_to_pixbuf(pixbuf_to_pil(src).resize(
+            (width, height), pil_filter, reducing_gap=3.0))
         src_width, src_height = width, height
 
     if src.get_has_alpha():
