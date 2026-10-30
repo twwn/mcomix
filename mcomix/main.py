@@ -558,6 +558,12 @@ class MainWindow(Gtk.Window):
             do_not_transform = [image_tools.is_animation(x) for x in pixbuf_list]
             size_list = [[pixbuf.get_width(), pixbuf.get_height()]
                          for pixbuf in pixbuf_list]
+            # What the status bar says a page cut by "crop borders" is:
+            # the size of the picture, not of what is drawn of it.
+            whole_sizes = [list(image_tools.whole_size(pixbuf))
+                           if image_tools.whole_size(pixbuf) != tuple(size)
+                           else None
+                           for pixbuf, size in zip(pixbuf_list, size_list)]
             # A page that would not load stands in as a page as tall as
             # the room there is, whatever size it was read at: it is
             # drawn again at the size it is laid out at, below.
@@ -694,7 +700,14 @@ class MainWindow(Gtk.Window):
                 if not left_out[i]:
                     self.images[i].show_pixbuf(pixbuf_list[i], scaled_sizes[i])
 
-            self._show_resolutions(size_list, scaled_sizes, continuous)
+            self._show_resolutions(size_list, scaled_sizes, continuous,
+                                   [size if whole is None
+                                    else whole[::-1]
+                                    if tools.rotation_swaps_axes(rotation)
+                                    else whole
+                                    for size, whole, rotation in zip(
+                                        size_list, whole_sizes,
+                                        rotation_list)])
             self._follow_page_colours(pixbuf_list, content_boxes)
 
             if (pixbuf_count == 1 and self.is_double_page
@@ -799,12 +812,16 @@ class MainWindow(Gtk.Window):
 
     def _show_resolutions(self, size_list: list[list[int]],
                           scaled_sizes: list[tuple[int, ...]],
-                          continuous: bool) -> None:
-        """Put the size each page has and is drawn at in the statusbar."""
+                          continuous: bool,
+                          shown_sizes: list[list[int]]) -> None:
+        """Put the size each page has and is drawn at in the statusbar.
+
+        The scale is that of <size_list>, what was drawn of each page;
+        the size shown is <shown_sizes>', the picture's."""
         scales = tuple(map(lambda x, y: math.sqrt(tools.div(
             tools.volume(x), tools.volume(y))), scaled_sizes, size_list))
 
-        resolutions = tuple(map(lambda sz, sc, ds: sz + [sc, ds], size_list,
+        resolutions = tuple(map(lambda sz, sc, ds: sz + [sc, ds], shown_sizes,
                                 scales, self.layout.get_content_distorted()))
         if continuous:
             # Of the page being read, the one at the top.

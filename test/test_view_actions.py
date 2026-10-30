@@ -168,9 +168,34 @@ class ViewActionsTest(MComixTest):
         width, height = self._shown_size()
         self.assertEqual(400, height)
         self.assertAlmostEqual(286, width, delta=3)
+        # The status bar goes on giving the picture's size, at the scale
+        # what is left of it is drawn at.
+        resolution = self.window.statusbar._resolution
+        self.assertTrue(resolution.startswith('800x800 ('), resolution)
+        self.assertAlmostEqual(
+            100 * (width * height / (504 * 704)) ** 0.5,
+            float(resolution[len('800x800 ('):-2]), delta=1)
         self._activate('crop_borders')
         self.assertFalse(prefs['crop borders'])
         self.assertEqual((400, 400), self._shown_size())
+
+    def test_a_cropped_page_turned_gives_its_size_turned(self):
+        book = os.path.join(self.tmp_dir, 'book')
+        os.mkdir(book)
+        for name in ('1.png', '2.png'):
+            page = Image.new('RGB', (600, 800), 'white')
+            ImageDraw.Draw(page).rectangle((100, 100, 499, 699), fill='navy')
+            page.save(os.path.join(book, name))
+        prefs['crop borders'] = True
+        self.window.filehandler.open_file(os.path.join(book, '1.png'))
+        self.assertTrue(wait_for(
+            lambda: self.window.imagehandler.get_number_of_pages() == 2))
+        pump()
+        self.assertTrue(self.window.statusbar._resolution.startswith(
+            '600x800 ('), self.window.statusbar._resolution)
+        self._activate('rotate_90')
+        self.assertTrue(self.window.statusbar._resolution.startswith(
+            '800x600 ('), self.window.statusbar._resolution)
 
     def test_the_borders_are_found_as_a_page_is_cached(self):
         """With "crop borders" on, the caching thread looks at each page

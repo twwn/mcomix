@@ -736,9 +736,11 @@ def is_missing_image(pixbuf: GdkPixbuf.Pixbuf) -> bool:
 
 
 #: Where border_box() keeps what it found on the pixbuf it looked at,
-#: and without_borders() what it cut out of it.
+#: and without_borders() what it cut out of it, and on the cut page
+#: the size of the whole one.
 _BORDER_BOX = 'mcomix_border_box'
 _WITHOUT_BORDERS = 'mcomix_without_borders'
+_WHOLE_SIZE = 'mcomix_whole_size'
 
 #: How far, in grey levels, a pixel may be from the margin's own grey
 #: and still be margin: JPEG noise and paper texture, averaged over the
@@ -816,6 +818,8 @@ def without_borders(pixbuf: GdkPixbuf.Pixbuf) -> GdkPixbuf.Pixbuf:
                                       pixbuf.get_height()):
         cropped = pixbuf.new_subpixbuf(left, top, right - left,
                                        bottom - top)
+        setattr(cropped, _WHOLE_SIZE,
+                (pixbuf.get_width(), pixbuf.get_height()))
         rotation = get_implied_rotation(pixbuf)
         if rotation:
             setattr(cropped, 'orientation', next(
@@ -824,6 +828,15 @@ def without_borders(pixbuf: GdkPixbuf.Pixbuf) -> GdkPixbuf.Pixbuf:
                 if angle == rotation))
     setattr(pixbuf, _WITHOUT_BORDERS, cropped)
     return cropped
+
+
+def whole_size(pixbuf: GdkPixbuf.Pixbuf) -> tuple[int, int]:
+    """The size of the page <pixbuf> is: its own, or where it was cut
+    out of one by without_borders(), that one's."""
+    known = getattr(pixbuf, _WHOLE_SIZE, None)
+    if known is not None:
+        return cast("tuple[int, int]", known)
+    return pixbuf.get_width(), pixbuf.get_height()
 
 
 def _glycin_animates(path: str) -> bool:
