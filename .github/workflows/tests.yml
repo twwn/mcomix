@@ -83,7 +83,9 @@ jobs:
       # glycin, which gdk-pixbuf decodes through here; without them the
       # tests of animations read through glycin were skipped.
       # djvulibre-bin holds ddjvu and djvused, which read a DjVu book,
-      # and c44 and djvm, which its tests write one with.  unrar,
+      # and c44 and djvm, which its tests write one with; libjxr-tools
+      # holds JxrDecApp, which decodes a KFX book's JPEG XR pictures,
+      # and JxrEncApp, which its tests write them with.  unrar,
       # libunrar5t64 and rar (multiverse) and lhasa, whose lha is the
       # name MComix looks for, are what the RAR and LHA tests read and
       # write with: without them 528 of those tests were skipped.
@@ -94,7 +96,7 @@ jobs:
             gir1.2-gtk-4.0 gir1.2-adw-1 libgirepository-2.0-dev \
             gir1.2-gly-2 gir1.2-glygtk4-2 \
             libcairo2-dev pkg-config xvfb xauth gettext \
-            7zip unzip mupdf-tools djvulibre-bin \
+            7zip unzip mupdf-tools djvulibre-bin libjxr-tools \
             unrar libunrar5t64 rar lhasa \
             librsvg2-common adwaita-icon-theme
       - name: Install MComix and its development dependencies
@@ -137,7 +139,7 @@ jobs:
           sudo apt-get install -y --no-install-recommends \
             gir1.2-gtk-4.0 gir1.2-adw-1 libgirepository1.0-dev \
             libcairo2-dev pkg-config xvfb xauth gettext \
-            7zip unzip mupdf-tools djvulibre-bin \
+            7zip unzip mupdf-tools djvulibre-bin libjxr-tools \
             unrar libunrar5t64 rar lhasa \
             librsvg2-common adwaita-icon-theme
       # Each lower bound in pyproject.toml, made the version to install.

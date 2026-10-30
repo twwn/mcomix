@@ -80,12 +80,13 @@ The [UnRAR library](https://www.rarlab.com/rar_add.htm) (`libunrar.so` or `UnRAR
 `7z` | 7z files; ZIP, LHA, xz and lzma files Python cannot read; RAR as a last resort.
 `lha` | LHA files, without `7z`.
 `ddjvu` and `djvused` from [DjVuLibre](https://djvu.sourceforge.net/) | DjVu files.
+`JxrDecApp` from jxrlib | Pictures a KFX book keeps in JPEG XR, its larger ones as often as not. Without it, a smaller one in JPEG or PNG is shown.
 `unzip` | ZIP files Python cannot read, without `7z`.
 `xz` | Writes an edited `.tar.xz` book on every core, not one.
 [chardet](https://pypi.org/project/chardet/) | Guesses the encoding of file names and comments that are not UTF-8.
 [pillow-avif-plugin](https://pypi.org/project/pillow-avif-plugin/) | AVIF pages, where Pillow is older than 11.3 or was built without libavif, and gdk-pixbuf has no AVIF loader.
 
-The Windows packages include everything but `lha` and `unzip`, which `7z` stands in for, and DjVuLibre.
+The Windows packages include everything but `lha` and `unzip`, which `7z` stands in for, DjVuLibre and jxrlib.
 
 Opening a file whose program is missing says which one it needs.
 

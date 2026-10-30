@@ -20,9 +20,11 @@ reader needs.
 A book with DRM is refused: its pages cannot be read.
 """
 
+import functools
 import io
 import os
 import struct
+import tempfile
 import threading
 from collections.abc import Iterator
 from typing import IO, NamedTuple
@@ -32,6 +34,7 @@ from PIL import Image
 
 from mcomix import comicinfo
 from mcomix import log
+from mcomix import process
 from mcomix.archive import archive_base
 from mcomix.archive import ion
 from mcomix.archive.ion import Symbol
@@ -100,6 +103,10 @@ _TITLE, _AUTHOR, _PUBLISHER = 153, 222, 232
 #: The formats of picture shown as they are stored, and the extension
 #: each is listed under.
 _EXTENSIONS = {285: 'jpg', 284: 'png', 286: 'gif'}
+#: JPEG XR, in which books keep their larger resolutions as often as
+#: not.  Neither Pillow nor GTK reads it: jxrlib's JxrDecApp decodes it
+#: to a TIFF, where it is installed.
+_JPEG_XR = 548
 
 #: The YJ_symbols ID the first symbol of a document's own table has
 #: where the table does not say, which no book seen does: the one after
@@ -118,6 +125,62 @@ class _Protected(Exception):
 
 class _Unreadable(Exception):
     """The container is damaged, or not one this module reads."""
+
+
+@functools.cache
+def _jxr_decoder() -> str | None:
+    """JxrDecApp, or None where it is not installed."""
+    decoder = process.find_executable(('JxrDecApp',))
+    if decoder is None:
+        log.debug('JxrDecApp executable not found')
+    return decoder
+
+
+def _extension(stored_as: object) -> str | None:
+    """The extension a picture stored as format <stored_as> is listed
+    under, where it can be shown: a JPEG XR one as the TIFF it is
+    decoded to."""
+    if stored_as == _JPEG_XR:
+        return 'tif' if _jxr_decoder() is not None else None
+    return _EXTENSIONS.get(stored_as) if isinstance(stored_as, int) else None
+
+
+def _decode_jpeg_xr(data: bytes, destination: str) -> None:
+    """Write the JPEG XR picture <data> to <destination> as a TIFF.
+
+    JxrDecApp reads only a file whose name ends in .jxr, so <data> is
+    written to one beside <destination> first; the TIFF has the pixel
+    format of the picture, 8-bit grey or colour in a comic.
+    """
+    decoder = _jxr_decoder()
+    if decoder is None:
+        raise _Unreadable('JxrDecApp is not installed')
+    folder = os.path.dirname(os.path.abspath(destination))
+    handle, source = tempfile.mkstemp(suffix='.jxr', dir=folder)
+    try:
+        with os.fdopen(handle, 'wb') as written:
+            written.write(data)
+        # Absolute paths: one that began with "-" would be an option.
+        if not process.call([decoder, '-i', source,
+                             '-o', os.path.abspath(destination)]):
+            raise _Unreadable('JxrDecApp could not decode it')
+    finally:
+        os.unlink(source)
+
+
+def _open_picture(data: bytes, stored_as: int, folder: str) -> Image.Image:
+    """The picture <data>, stored as format <stored_as>, read whole;
+    a JPEG XR one is decoded in <folder>."""
+    if stored_as != _JPEG_XR:
+        return Image.open(io.BytesIO(data))
+    handle, decoded = tempfile.mkstemp(suffix='.tif', dir=folder)
+    os.close(handle)
+    try:
+        _decode_jpeg_xr(data, decoded)
+        with open(decoded, 'rb') as fp:
+            return Image.open(io.BytesIO(fp.read()))
+    finally:
+        os.unlink(decoded)
 
 
 def _integer(value: object) -> int | None:
@@ -318,10 +381,12 @@ class _Container:
 
 class _Picture(NamedTuple):
     """One resolution of a page's picture, which can be shown: stored
-    whole under <location>, or cut into the <tiles> named, rows of them
-    from the top, each <tile_size> large but for the last in a row or
-    column, and overlapping the next by <padding> pixels."""
+    as format <stored_as>, whole under <location>, or cut into the
+    <tiles> named, rows of them from the top, each <tile_size> large but
+    for the last in a row or column, and overlapping the next by
+    <padding> pixels."""
     extension: str
+    stored_as: int
     width: int
     height: int
     location: str | None
@@ -501,8 +566,8 @@ class _Book:
         can be shown.  The tiles of a variant have to be there, every
         one; a tile missing from the picture a page names leaves a gap."""
         stored_as = resource.get(_FORMAT)
-        extension = _EXTENSIONS.get(stored_as) if isinstance(stored_as, int) else None
-        if extension is None:
+        extension = _extension(stored_as)
+        if extension is None or not isinstance(stored_as, int):
             return None
         width = _integer(resource.get(_RESOURCE_WIDTH, resource.get(_FIXED_WIDTH))) or 0
         height = _integer(resource.get(_RESOURCE_HEIGHT, resource.get(_FIXED_HEIGHT))) or 0
@@ -510,7 +575,7 @@ class _Book:
         if isinstance(location, str):
             if not self.has(_RAW_MEDIA, location):
                 return None
-            return _Picture(extension, width, height, location)
+            return _Picture(extension, stored_as, width, height, location)
         tiles = resource.get(_TILES)
         tile_width = _integer(resource.get(_TILE_WIDTH)) or 0
         tile_height = _integer(resource.get(_TILE_HEIGHT)) or 0
@@ -527,7 +592,7 @@ class _Book:
         present = [self.has(_RAW_MEDIA, tile) for row in rows for tile in row]
         if not any(present) or not primary and not all(present):
             return None
-        return _Picture('png', width, height, None, rows,
+        return _Picture('png', stored_as, width, height, None, rows,
                         (tile_width, tile_height), padding)
 
     def comic_info(self) -> bytes | None:
@@ -583,8 +648,9 @@ class _Book:
                                               xml_declaration=True)
         return written
 
-    def tiled(self, picture: _Picture) -> Image.Image:
-        """The picture whose tiles <picture> names, put together.
+    def tiled(self, picture: _Picture, folder: str) -> Image.Image:
+        """The picture whose tiles <picture> names, put together; tiles
+        in JPEG XR are decoded in <folder>.
 
         A tile is its cell of the grid with up to <padding> pixels of
         the cells around it on each side, where there are cells: the
@@ -599,7 +665,7 @@ class _Book:
                 data = self.payload(_RAW_MEDIA, location)
                 if data is None:
                     continue
-                tile = Image.open(io.BytesIO(data))
+                tile = _open_picture(data, picture.stored_as, folder)
                 if canvas is None:
                     mode = 'L' if tile.mode == 'L' else 'RGB'
                     canvas = Image.new(mode, (picture.width, picture.height), 'white')
@@ -624,7 +690,8 @@ class KfxArchive(archive_base.BaseArchive):
 
     The book stays open for as long as the handler does, and a page is
     read out of it as it is asked for.  A page whose picture is cut into
-    tiles is put together and listed as a PNG.
+    tiles is put together and listed as a PNG; one in JPEG XR is
+    decoded and listed as a TIFF.
     """
 
     def __init__(self, archive: str) -> None:
@@ -666,14 +733,18 @@ class KfxArchive(archive_base.BaseArchive):
             return
         if picture is None:
             return
+        self._create_directory(destination_dir)
         if picture.location is not None:
             data = self._book.payload(_RAW_MEDIA, picture.location)
             if data is None:
                 return
+            if picture.stored_as == _JPEG_XR:
+                _decode_jpeg_xr(data, destination_path)
+                return
             with self._create_file(destination_path) as new:
                 new.write(data)
         else:
-            image = self._book.tiled(picture)
+            image = self._book.tiled(picture, destination_dir)
             with self._create_file(destination_path) as new:
                 image.save(new, 'PNG', compress_level=1)
 

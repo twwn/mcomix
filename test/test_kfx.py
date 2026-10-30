@@ -7,7 +7,12 @@ written by test_ion.dumps(), and pictures made by Pillow.
 
 import io
 import os
+import shutil
 import struct
+import subprocess
+import tempfile
+import unittest
+from unittest import mock
 
 from PIL import Image, ImageChops
 
@@ -41,6 +46,25 @@ def picture(size=(8, 12), colour=(200, 30, 90), format='JPEG', image=None):
     data = io.BytesIO()
     (image or Image.new('RGB', size, colour)).save(data, format)
     return data.getvalue()
+
+
+def jpeg_xr(image):
+    """<image> encoded losslessly as JPEG XR by jxrlib's JxrEncApp,
+    which reads a BMP of colour and a PNM of grey."""
+    with tempfile.TemporaryDirectory() as folder:
+        source = os.path.join(folder, 'in.bmp' if image.mode == 'RGB' else 'in.pnm')
+        image.save(source)
+        encoded = os.path.join(folder, 'out.jxr')
+        subprocess.run([shutil.which('JxrEncApp'), '-i', source, '-o', encoded,
+                        '-q', '1'], check=True, stdout=subprocess.DEVNULL)
+        with open(encoded, 'rb') as fp:
+            return fp.read()
+
+
+#: Where jxrlib is not installed, the tests of JPEG XR are skipped.
+with_jxrlib = unittest.skipUnless(
+    shutil.which('JxrEncApp') and shutil.which('JxrDecApp'),
+    'jxrlib (JxrEncApp and JxrDecApp) is not installed')
 
 
 def gradient(width, height):
@@ -264,7 +288,8 @@ class KfxTest(MComixTest):
         """Of a picture's resolutions, the one larger than the rest in
         both width and height is shown; one larger in one only, one
         whose bytes are not there, and one in a format not shown (JPEG
-        XR) are passed over."""
+        XR, without JxrDecApp) are passed over."""
+        self.without_jxrlib()
         book = Book()
         book.page('c0', 'e0')
         book.resource('e0', 'small', fields={635: [
@@ -280,10 +305,18 @@ class KfxTest(MComixTest):
         self.assertEqual(picture(colour=(3, 0, 0)),
                          self.extracted(archive, 'page00001.jpg'))
 
-    def tiled(self, padding, primary=False, missing=()):
+    def without_jxrlib(self):
+        """Look for JxrDecApp where there is none, for this test."""
+        patch = mock.patch.object(kfx, '_jxr_decoder', lambda: None)
+        patch.start()
+        self.addCleanup(patch.stop)
+
+    def tiled(self, padding, primary=False, missing=(), stored_as=PNG,
+              encode=lambda image: picture(image=image, format='PNG')):
         """A comic of one page whose picture, 23 by 17, is cut into tiles
         of 10 by 6 overlapping by <padding>, the resolution shown or
-        the page's own; and the picture."""
+        the page's own; and the picture.  The tiles are <stored_as>,
+        each written by <encode>."""
         image = gradient(23, 17)
         width, height, size = 23, 17, (10, 6)
         book = Book()
@@ -296,18 +329,19 @@ class KfxTest(MComixTest):
                        min(left + size[0] + padding, width),
                        min(top + size[1] + padding, height))
                 if name not in missing:
-                    book.add(RAW_MEDIA, name, picture(
-                        image=image.crop(box), format='PNG'))
+                    book.add(RAW_MEDIA, name, encode(image.crop(box)))
                 row.append(name)
             rows.append(row)
         tiles = {636: rows, 637: size[0], 638: size[1], 797: padding}
         book.page('c0', 'e0')
         if primary:
-            book.resource('e0', None, size=(width, height), format=PNG, fields=tiles)
+            book.resource('e0', None, size=(width, height), format=stored_as,
+                          fields=tiles)
         else:
             book.resource('e0', 'small', format=PNG, fields={635: [book.symbol('big')]})
             book.add(RAW_MEDIA, 'small', picture(format='PNG'))
-            book.resource('big', None, size=(width, height), format=PNG, fields=tiles)
+            book.resource('big', None, size=(width, height), format=stored_as,
+                          fields=tiles)
         book.reading_order('c0')
         return self.open(book.container()), image
 
@@ -336,6 +370,52 @@ class KfxTest(MComixTest):
         shown = Image.open(io.BytesIO(self.extracted(archive, 'page00001.png')))
         self.assertEqual((10, 6, 20, 12), ImageChops.difference(
             image, shown.convert('RGB')).getbbox())
+
+    @with_jxrlib
+    def test_jpeg_xr(self):
+        """With JxrDecApp installed, a resolution in JPEG XR is shown
+        like any other, decoded to a TIFF; a picture in grey stays in
+        grey."""
+        for image in (gradient(30, 40), gradient(30, 40).convert('L')):
+            with self.subTest(mode=image.mode):
+                book = Book()
+                book.page('c0', 'e0')
+                book.resource('e0', 'small', fields={635: [book.symbol('xr')]})
+                book.add(RAW_MEDIA, 'small', picture())
+                book.resource('xr', 'xr', size=(30, 40), format=JXR)
+                book.add(RAW_MEDIA, 'xr', jpeg_xr(image))
+                book.reading_order('c0')
+                archive = self.open(book.container())
+                self.assertEqual(['page00001.tif'], archive.list_contents())
+                shown = Image.open(io.BytesIO(
+                    self.extracted(archive, 'page00001.tif')))
+                self.assertEqual(image.mode, shown.mode)
+                self.assertIsNone(ImageChops.difference(image, shown).getbbox())
+                self.assertEqual(['page00001.tif'],
+                                 os.listdir(os.path.join(self.tmp_dir, 'out')))
+
+    @with_jxrlib
+    def test_jpeg_xr_tiles(self):
+        archive, image = self.tiled(2, stored_as=JXR, encode=jpeg_xr)
+        self.assertEqual(['page00001.png'], archive.list_contents())
+        shown = Image.open(io.BytesIO(self.extracted(archive, 'page00001.png')))
+        self.assertIsNone(ImageChops.difference(image, shown.convert('RGB')).getbbox())
+        self.assertEqual(['page00001.png'],
+                         os.listdir(os.path.join(self.tmp_dir, 'out')))
+
+    def test_jpeg_xr_without_jxrlib(self):
+        """Without JxrDecApp, a page whose picture is in JPEG XR alone,
+        whole or in tiles, is left out."""
+        self.without_jxrlib()
+        book = Book()
+        book.page('c0', 'e0')
+        book.resource('e0', 'xr', format=JXR)
+        book.add(RAW_MEDIA, 'xr', b'II\xbc\x01')
+        book.reading_order('c0')
+        self.assertEqual([], self.open(book.container()).list_contents())
+        archive, _image = self.tiled(0, primary=True, stored_as=JXR,
+                                     encode=lambda image: b'II\xbc\x01')
+        self.assertEqual([], archive.list_contents())
 
     def test_symbol_tables(self):
         """The book's own symbols follow the YJ_symbols import, wherever

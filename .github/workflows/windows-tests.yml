@@ -54,7 +54,9 @@ jobs:
         with:
           path: ${{ runner.temp }}\msys64
           key: msys2-ucrt64-${{ hashFiles('.github/workflows/windows-tests.yml') }}-${{ steps.week.outputs.week }}
-      # The packages release.yml builds with, and pytest.
+      # The packages release.yml builds with, pytest, and jxrlib, whose
+      # JxrEncApp and JxrDecApp the tests of a KFX book's JPEG XR
+      # pictures write and read them with.
       - uses: msys2/setup-msys2@ec48f7c5447b3140e2b088413ae3a55687bccb6e # v2.33.0
         if: steps.msys2-cache.outputs.cache-hit != 'true'
         with:
@@ -66,6 +68,7 @@ jobs:
             mingw-w64-ucrt-x86_64-adwaita-icon-theme
             mingw-w64-ucrt-x86_64-libadwaita
             mingw-w64-ucrt-x86_64-libjxl
+            mingw-w64-ucrt-x86_64-jxrlib
             mingw-w64-ucrt-x86_64-python
             mingw-w64-ucrt-x86_64-python-gobject
             mingw-w64-ucrt-x86_64-python-pillow
