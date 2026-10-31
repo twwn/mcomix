@@ -17,7 +17,7 @@ from . import MComixTest
 
 FUZZ = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                     'fuzz')
-TARGETS = ('ion', 'kfx', 'epub', 'comicinfo')
+TARGETS = ('ion', 'kfx', 'epub', 'comicinfo', 'mobi', 'sniff')
 
 
 def _load(target):
@@ -77,6 +77,12 @@ class FuzzTargetTest(MComixTest):
 
     def test_comicinfo(self):
         self._run('comicinfo')
+
+    def test_mobi(self):
+        self._run('mobi')
+
+    def test_sniff(self):
+        self._run('sniff')
 
     def test_every_target_is_run_here(self):
         found = sorted(name[len('fuzz_'):-len('.py')] for name in os.listdir(FUZZ)

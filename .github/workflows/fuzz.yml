@@ -1,9 +1,10 @@
 name: Fuzzing
 
 # The fuzz targets in fuzz/ under Atheris: the readers MComix runs on
-# whatever file it is handed - Ion and KFX, EPUB, ComicInfo.xml - fed
-# inputs libFuzzer mutates from the seeds in fuzz/corpus/ and the inputs
-# that failed before, in fuzz/regressions/.  An exception a target's
+# whatever file it is handed - Ion and KFX, EPUB, MOBI, ComicInfo.xml,
+# and the sniffing of formats and volume headers every listed file
+# goes through - fed inputs libFuzzer mutates from the seeds in
+# fuzz/corpus/ and the inputs that failed before, in fuzz/regressions/.  An exception a target's
 # contract does not allow, a hang or memory without bound fails the
 # run, and the input is kept as its artifact: fix the reader, and put
 # the input in fuzz/regressions/<target>/, which the suite replays
@@ -24,7 +25,9 @@ on:
       - "mcomix/archive/ion.py"
       - "mcomix/archive/kfx.py"
       - "mcomix/archive/epub.py"
+      - "mcomix/archive/mobi.py"
       - "mcomix/archive/archive_base.py"
+      - "mcomix/archive_tools.py"
       - "mcomix/comicinfo.py"
       - "fuzz/**"
       - ".github/requirements/fuzz.txt"
@@ -34,7 +37,9 @@ on:
       - "mcomix/archive/ion.py"
       - "mcomix/archive/kfx.py"
       - "mcomix/archive/epub.py"
+      - "mcomix/archive/mobi.py"
       - "mcomix/archive/archive_base.py"
+      - "mcomix/archive_tools.py"
       - "mcomix/comicinfo.py"
       - "fuzz/**"
       - ".github/requirements/fuzz.txt"
@@ -64,7 +69,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [ion, kfx, epub, comicinfo]
+        target: [ion, kfx, epub, mobi, comicinfo, sniff]
     env:
       TARGET: ${{ matrix.target }}
       SECONDS_EACH: ${{ github.event_name == 'schedule' && '600' || '60' }}

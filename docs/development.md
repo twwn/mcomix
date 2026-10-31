@@ -79,7 +79,7 @@ Translate the desktop entry's `GenericName`, `Comment` and `Keywords` in `share/
 
 ## Fuzzing
 
-`fuzz/` holds [Atheris](https://github.com/google/atheris) targets for the readers MComix runs on whatever file it is handed: `fuzz_ion.py` (the Ion inside KFX books), `fuzz_kfx.py`, `fuzz_epub.py` and `fuzz_comicinfo.py`.
+`fuzz/` holds [Atheris](https://github.com/google/atheris) targets for the readers MComix runs on whatever file it is handed: `fuzz_ion.py` (the Ion inside KFX books), `fuzz_kfx.py`, `fuzz_epub.py`, `fuzz_mobi.py`, `fuzz_comicinfo.py`, and `fuzz_sniff.py` (telling a file's format and reading RAR and KFX volume headers, which every file in a listed folder goes through).
 Each states what its reader may raise; anything else, a hang or memory without bound is a finding.
 Atheris has wheels for Python 3.12 to 3.14 and needs the GTK bindings MComix imports, so a virtual environment on the system's Python does:
 

@@ -20,7 +20,7 @@ import zipfile
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
-from test import test_epub, test_ion, test_kfx  # noqa: E402
+from test import test_epub, test_ion, test_kfx, test_mobi  # noqa: E402
 from test.test_ion import Annotated, dumps  # noqa: E402
 from test.test_kfx import Book, picture  # noqa: E402
 
@@ -177,7 +177,30 @@ def comicinfo_seeds():
     write('comicinfo', 'other-root', '<?xml version="1.0"?><Book><Title>x</Title></Book>')
 
 
+def mobi_seeds():
+    write('mobi', 'pictures', test_mobi._book(
+        [test_mobi._image('JPEG'), test_mobi._image('PNG'), test_mobi._image('GIF'),
+         b'FONT not a picture', test_mobi._image('BMP')]))
+    write('mobi', 'encrypted', test_mobi._book([test_mobi._image('JPEG')], crypto_type=2))
+    write('mobi', 'not-mobi', test_mobi._book([test_mobi._image('PNG')], ident=b'TEXtREAd'))
+
+
+def sniff_seeds():
+    archives = os.path.join(ROOT, 'test', 'files', 'archives')
+    for name in ('Multivolume.part2.rar', 'Multivolume.part1.rar', 'RAR4.rar',
+                 'RAR5.rar', '01-ZIP-Normal.zip'):
+        with open(os.path.join(archives, name), 'rb') as fp:
+            write('sniff', name, fp.read(4096))
+    write('sniff', 'kfx-part', test_kfx.split_book([picture()])[1])
+    write('sniff', 'pdf', b'%PDF-1.7\n%\xe2\xe3\xcf\xd3\n')
+    write('sniff', 'djvu', b'AT&TFORM\x00\x00\x00\x10DJVUINFO')
+    write('sniff', 'lha', b'\x1e\x00-lh5-')
+    write('sniff', 'tar', b'name.jpg' + bytes(92) + b'0000644\x00' + bytes(149) + b'ustar\x0000')
+
+
 if __name__ == '__main__':
+    mobi_seeds()
+    sniff_seeds()
     ion_seeds()
     kfx_seeds()
     epub_seeds()
