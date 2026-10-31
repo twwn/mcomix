@@ -6,6 +6,7 @@
 [![Latest release](https://img.shields.io/github/v/release/twwn/mcomix?sort=date)](https://github.com/twwn/mcomix/releases/latest)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue)](https://www.python.org/)
 [![License: GPL v2+](https://img.shields.io/badge/license-GPL%20v2%2B-green)](https://github.com/twwn/mcomix/blob/main/COPYING)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/twwn/mcomix/badge)](https://scorecard.dev/viewer/?uri=github.com/twwn/mcomix)
 
 ![MComix' main window](https://raw.githubusercontent.com/twwn/mcomix/main/docs/images/mcomix-mainwindow.png)
 
