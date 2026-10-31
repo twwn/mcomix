@@ -1,5 +1,6 @@
 """ The parts of portability.py that differ between desktops. """
 
+import locale
 import os
 import sys
 import unittest.mock
@@ -62,6 +63,32 @@ class DefaultLocaleTest(MComixTest):
 
     def test_the_c_locale_is_reported_as_c(self):
         self.assertEqual('C', self._locale('C'))
+        self.assertEqual('C', self._locale('C.UTF-8'))
+
+    def test_an_empty_first_language_is_passed_over(self):
+        self.assertEqual('de_DE', self._locale(':de'))
+
+    def test_a_modifier_is_left_out(self):
+        self.assertEqual('sr_RS', self._locale('sr_RS@latin'))
+        self.assertEqual('de_DE', self._locale('de_DE@euro'))
+
+    def test_the_variables_are_read_in_gettext_s_order(self):
+        environment = {'LANGUAGE': '', 'LC_ALL': '', 'LC_MESSAGES': 'fr_FR.UTF-8',
+                       'LANG': 'de_DE.UTF-8'}
+        with unittest.mock.patch.dict(os.environ, environment):
+            self.assertEqual('fr_FR', portability.get_default_locale())
+            del os.environ['LC_MESSAGES']
+            self.assertEqual('de_DE', portability.get_default_locale())
+            del os.environ['LANG']
+            self.assertEqual('C', portability.get_default_locale())
+
+    def test_python_s_getdefaultlocale_is_not_needed(self):
+        """Pythons 3.12 and 3.13, the floor among them, warn that
+        locale.getdefaultlocale() is to be removed; the CI's jobs on 3.12
+        printed the warning."""
+        with unittest.mock.patch.dict(locale.__dict__):
+            del locale.getdefaultlocale
+            self.assertEqual('de_DE', self._locale('de'))
 
 
 class WindowsDefaultLocaleTest(MComixTest):

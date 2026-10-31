@@ -2,6 +2,7 @@
 
 import ctypes
 import locale
+import os
 import sys
 import time
 from collections.abc import Callable
@@ -17,6 +18,11 @@ def invalid_filesystem_chars() -> str:
         return ""
 
 
+#: The variables that name the language of messages, in the order
+#: gettext reads them.
+_LANGUAGE_VARIABLES = ("LANGUAGE", "LC_ALL", "LC_MESSAGES", "LANG")
+
+
 def get_default_locale() -> str:
     """Gets the user's default locale."""
     if sys.platform == "win32":
@@ -25,18 +31,25 @@ def get_default_locale() -> str:
         # Python's table leaves out some of the languages Windows can be
         # displayed in, such as K'iche' (0x0486).
         return locale.windows_locale.get(code, "C")
+    # What locale.getdefaultlocale() did with these variables, which
+    # Pythons 3.12 and 3.13 warn is to be removed: the first that is set,
+    # of LANGUAGE its first language, made a full name by
+    # locale.normalize() and taken without its encoding and modifier.
+    for variable in _LANGUAGE_VARIABLES:
+        value = os.environ.get(variable, "")
+        if variable == "LANGUAGE":
+            value = next((name for name in value.split(":") if name), "")
+        if value:
+            break
     else:
-        try:
-            lang = locale.getdefaultlocale(
-                ("LANGUAGE", "LC_ALL", "LC_MESSAGES", "LANG"))[0]
-        except ValueError:
-            # A name locale.normalize() has no entry for, such as the
-            # BCP 47 shaped zh_Hans_CN. Nothing better than "C" is known.
-            return "C"
-        if lang:
-            return str(lang)
-        else:
-            return "C"
+        return "C"
+    name = locale.normalize(value).partition("@")[0]
+    if "." in name:
+        return name.partition(".")[0]
+    # Either "C" itself, or a name locale.normalize() has no entry for,
+    # such as the BCP 47 shaped zh_Hans_CN. Nothing better than "C" is
+    # known.
+    return "C"
 
 
 def seconds_since_process_start() -> float | None:
