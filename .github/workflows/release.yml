@@ -15,16 +15,27 @@ name: Release
 # of the tag is replaced; a published one is left alone, and has to be
 # deleted by hand (keeping the tag) before the tag can be released again.
 #
-# From a branch - every Monday, on a pull request that touches the
-# build, or by hand - it builds the same files and keeps them as
-# the run's artifacts: a build to try, and the early warning that MSYS2
-# or a download has moved under the build before a release finds out.
+# From a branch - every Monday, on a push to main or a pull request
+# that touches the build, or by hand - it builds the same files and
+# keeps them as the run's artifacts: a build to try, and the early
+# warning that MSYS2 or a download has moved under the build before a
+# release finds out.  Changes to the build reach main as pushes, not
+# pull requests, so the paths below are watched on both; GitHub does
+# not apply them to a pushed tag, which always builds.
 
 on:
   push:
     tags:
       - "[0-9][0-9].[0-9][0-9]"
       - "[0-9][0-9].[0-9][0-9].[0-9]*"
+    branches: [main]
+    paths:
+      - "win32/**"
+      - "flatpak/**"
+      - "tools/source_archive.py"
+      - "mcomixstarter.py"
+      - "pyproject.toml"
+      - ".github/workflows/release.yml"
   pull_request:
     paths:
       - "win32/**"

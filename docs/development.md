@@ -83,7 +83,7 @@ Workflow | Runs | Does
 `tests.yml` | Every push to `main`, every pull request, Mondays; not for a change to the manual or `artwork/` alone | The three checks on Python 3.12 and the newest Python, on Ubuntu 26.04 (GTK 4.22); the tests again on the oldest dependency versions `pyproject.toml` allows, on Ubuntu 24.04 (GTK 4.14).
 `docs.yml` | A push to `main` or a pull request that changes the manual, a Markdown file or an issue form | The manual's own tests, `test_wiki.py` and `test_keybindings.py`.
 `codeql.yml` | A push to `main` or a pull request that changes Python code or a workflow, Mondays | Code scanning of the Python code and the workflows.
-`release.yml` | A version tag, a pull request that changes the build, Mondays | Builds and tests the release files: see [Releasing](releasing.md).
+`release.yml` | A version tag, a push to `main` or a pull request that changes the build, Mondays | Builds and tests the release files: see [Releasing](releasing.md).
 `pages.yml` | A push to `main` that changes a page | Publishes the manual on [GitHub Pages](https://twwn.github.io/mcomix/).
 `release-notes.yml` | A push to `main` that changes `ChangeLog.md` | Makes each published release's notes its `ChangeLog.md` section again.
 `windows-tests.yml` | Every push to `main` that changes more than the manual, by hand | The tests on Windows, in MSYS2's UCRT64 environment, as the Windows packages are built, with the UnRAR.dll they carry. The installed environment is cached for a week.
