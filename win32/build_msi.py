@@ -31,6 +31,26 @@ CHECKSUM_PATH = pathlib.Path("win32/tools/checksum.sha256")
 RELEASE_PATH = pathlib.Path("win32/tools/release.txt")
 
 
+#: The books Explorer offers MComix for under "Open with", and Settings,
+#: Default apps, lists it for: the comic book extensions and the
+#: documents MComix reads as books.  ZIP, RAR, 7z and tar archives in
+#: general are left out, as share/applications/mcomix.desktop leaves them
+#: out on Linux: most of them are not books.  Nothing is taken over:
+#: whatever opens these files on a double-click goes on opening them
+#: until the user chooses MComix.
+FILE_TYPES = ('cbz', 'cbr', 'cb7', 'cbt', 'cbp', 'pdf', 'djvu', 'djv',
+              'azw3', 'kfx')
+
+#: The programmatic identifier the extensions above are registered with.
+PROG_ID = 'MComix.Book'
+
+#: The component that holds those registry values.  A component whose
+#: key path is under HKMU - HKLM for an installation for everyone, HKCU
+#: otherwise - cannot have its GUID generated, and the GUID has to stay
+#: the same from one release to the next.
+FILE_TYPES_GUID = '2F173368-49E5-45E2-8EAD-9591C19855FF'
+
+
 class IdType(enum.Enum):
     Directory = 1
     Component = 2
@@ -180,6 +200,54 @@ def generate_xml_entries_for_path(
         components_xml.append("</DirectoryRef>")
 
 
+def generate_file_types_component() -> list[str]:
+    """The component that registers MComix for FILE_TYPES, as WiX XML.
+
+    The program is registered under PROG_ID, which each extension's
+    OpenWithProgids names - that puts MComix in Explorer's "Open with"
+    - and under Capabilities, which RegisteredApplications points
+    Settings, Default apps, at.  None of the extensions' own default
+    values is written, so no association is changed.  MComix.exe is
+    the file of that name in the bundle, MComix_exe.f, as the shortcut
+    in win32/msi/mcomix.wxs names it.
+    """
+    command = '&quot;[#MComix_exe.f]&quot; &quot;%1&quot;'
+    capabilities = r'Software\MComix\Capabilities'
+    classes = r'Software\Classes'
+
+    def value(key: str, name: str | None, data: str,
+              key_path: bool = False) -> str:
+        attributes = ["Root='HKMU'", f"Key='{key}'"]
+        if name is not None:
+            attributes.append(f"Name='{name}'")
+        attributes += ["Type='string'", f"Value='{data}'"]
+        if key_path:
+            attributes.append("KeyPath='yes'")
+        return f"{INDENT_ONELEVEL*2}<RegistryValue {' '.join(attributes)} />"
+
+    lines = [
+        "<DirectoryRef Id='INSTALLDIR'>",
+        f"{INDENT_ONELEVEL}<Component Id='FileTypes.c' Guid='{FILE_TYPES_GUID}'>",
+        value(capabilities, 'ApplicationName', 'MComix', key_path=True),
+        value(capabilities, 'ApplicationDescription',
+              'A comic and manga reader.'),
+        value(r'Software\RegisteredApplications', 'MComix', capabilities),
+        value(f'{classes}\\{PROG_ID}', None, 'Comic book'),
+        value(f'{classes}\\{PROG_ID}\\DefaultIcon', None,
+              '&quot;[#MComix_exe.f]&quot;,0'),
+        value(f'{classes}\\{PROG_ID}\\shell\\open\\command', None, command),
+    ]
+    for extension in FILE_TYPES:
+        lines.append(value(f'{capabilities}\\FileAssociations',
+                           f'.{extension}', PROG_ID))
+        # The shell reads only the value's name; its data is ignored,
+        # and WiX takes no empty string.
+        lines.append(value(f'{classes}\\.{extension}\\OpenWithProgids',
+                           PROG_ID, 'MComix'))
+    lines += [f"{INDENT_ONELEVEL}</Component>", "</DirectoryRef>"]
+    return lines
+
+
 def generate_wix_fileset(releasedir: pathlib.Path) -> str:
     """Create the WiX fragment XML content that contains all files in a single
     ComponentGroup called APPLICATIONFILES."""
@@ -212,7 +280,7 @@ def generate_wix_fileset(releasedir: pathlib.Path) -> str:
     )
 
     dirs = "\n".join(dirs_xml)
-    components = "\n".join(components_xml)
+    components = "\n".join(components_xml + generate_file_types_component())
     compgroups = "\n".join(compgroup_xml)
 
     final_xml = f"""<?xml version='1.0' encoding='utf-8'?>

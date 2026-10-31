@@ -367,6 +367,22 @@ class InstallerTest(MComixTest):
         tree = ElementTree.parse(os.path.join(WIN32, 'msi', 'mcomix.wxs'))
         return tree.getroot().find(_WIX + 'Product')
 
+    def _file_types(self):
+        """The registry values of the file types component, as (key,
+        name, value) - name None for a key's default value."""
+        from xml.etree import ElementTree
+        fragment = ElementTree.fromstring(
+            '<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">%s</Wix>'
+            % '\n'.join(build_msi.generate_file_types_component()))
+        component = fragment.find('.//%sComponent' % _WIX)
+        self.assertEqual('FileTypes.c', component.get('Id'))
+        values = component.findall(_WIX + 'RegistryValue')
+        for value in values:
+            # HKLM for an installation for everyone, HKCU otherwise.
+            self.assertEqual('HKMU', value.get('Root'))
+        return component, [(value.get('Key'), value.get('Name'),
+                            value.get('Value')) for value in values]
+
     def test_each_build_is_a_product_found_by_its_upgrade_code(self):
         """With one product code for every version, the next version's
         installer refused to run over the last one ("Another version of
@@ -381,6 +397,60 @@ class InstallerTest(MComixTest):
         # A release replaced under its tag is built as the same version.
         self.assertEqual('yes', upgrade.get('AllowSameVersionUpgrades'))
         self.assertTrue(upgrade.get('DowngradeErrorMessage'))
+
+    def test_the_file_types_are_installed_with_mcomix(self):
+        references = {ref.get('Id') for ref in
+                      self._product().iter(_WIX + 'ComponentRef')}
+        self.assertIn('FileTypes.c', references)
+        component, _values = self._file_types()
+        # The GUID of a component under HKMU cannot be generated, and
+        # has to stay the same from one release to the next.
+        self.assertEqual(build_msi.FILE_TYPES_GUID, component.get('Guid'))
+        self.assertRegex(component.get('Guid'),
+                         r'^[0-9A-F]{8}(-[0-9A-F]{4}){3}-[0-9A-F]{12}$')
+
+    def test_the_file_types_are_books_mcomix_opens(self):
+        from mcomix import constants
+        extensions = set()
+        for formats in (constants.ZIP_FORMATS, constants.RAR_FORMATS,
+                        constants.TAR_FORMATS, constants.SZIP_FORMATS,
+                        constants.PDF_FORMATS, constants.DJVU_FORMATS,
+                        constants.MOBI_FORMATS, constants.KFX_FORMATS):
+            extensions.update(formats[1])
+        self.assertEqual(set(), set(build_msi.FILE_TYPES) - extensions)
+        # Archives in general are not offered, as on Linux.
+        for extension in ('zip', 'rar', '7z', 'tar'):
+            self.assertNotIn(extension, build_msi.FILE_TYPES)
+
+    def test_mcomix_is_offered_for_each_type_and_takes_none_over(self):
+        _component, values = self._file_types()
+        capabilities = 'Software\\MComix\\Capabilities'
+        for extension in build_msi.FILE_TYPES:
+            with self.subTest(extension=extension):
+                self.assertIn(('Software\\Classes\\.%s\\OpenWithProgids'
+                               % extension, build_msi.PROG_ID, 'MComix'),
+                              values)
+                self.assertIn((capabilities + '\\FileAssociations',
+                               '.' + extension, build_msi.PROG_ID), values)
+                # The extension's default value is what opens it on a
+                # double-click; it is never written.
+                self.assertNotIn('Software\\Classes\\.' + extension,
+                                 [key for key, _name, _value in values])
+        self.assertIn(('Software\\RegisteredApplications', 'MComix',
+                       capabilities), values)
+
+    def test_the_book_type_opens_mcomix_exe_on_the_file(self):
+        _component, values = self._file_types()
+        command = 'Software\\Classes\\%s\\shell\\open\\command' % (
+            build_msi.PROG_ID)
+        self.assertIn((command, None, '"[#MComix_exe.f]" "%1"'), values)
+
+    def test_mcomix_exe_has_the_file_id_the_installer_names(self):
+        root = pathlib.PurePath('dist/MComix')
+        self.assertEqual('MComix_exe.f', build_msi.generate_id_from_string(
+            root / 'MComix.exe', root, build_msi.IdType.File))
+        shortcut = self._product().find('.//%sShortcut' % _WIX)
+        self.assertEqual('[!MComix_exe.f]', shortcut.get('Target'))
 
 
 class ChocolateyPackageTest(MComixTest):
