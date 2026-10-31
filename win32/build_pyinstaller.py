@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
+import datetime
+import json
 import os
 import pathlib
+import re
 import shutil
 import string
 import subprocess
 import sys
+import typing
+import uuid
 import zipfile
 
 # Patch import path to be able to import the mcomix module
@@ -174,42 +179,190 @@ _KNOWN_LICENCES = ('cairo', 'fontconfig', 'freetype', 'gdk-pixbuf2', 'glib2',
                    'python-pymupdf')
 
 
-def bundled_licences(bundle: pathlib.Path, prefix: pathlib.Path) -> list[str]:
-    """The licence folders, under <prefix>/share/licenses, of the MSYS2
-    packages whose files <bundle> carries.
+def _desc_fields(text: str) -> dict[str, list[str]]:
+    """The fields of a package's desc file in MSYS2's package database:
+    %NAME%, %VERSION%, %URL%, %LICENSE% and the rest, each the lines up
+    to the blank one after it."""
+    fields: dict[str, list[str]] = {}
+    key = None
+    for line in text.splitlines():
+        if len(line) > 2 and line.startswith('%') and line.endswith('%'):
+            key = line[1:-1]
+            fields[key] = []
+        elif not line:
+            key = None
+        elif key is not None:
+            fields[key].append(line)
+    return fields
+
+
+class _Package(typing.NamedTuple):
+    """An MSYS2 package, as its entry in the package database has it."""
+
+    fields: dict[str, list[str]]
+    #: Its folders under <prefix>/share/licenses.
+    licences: frozenset[str]
+
+
+def bundled_packages(bundle: pathlib.Path,
+                     prefix: pathlib.Path) -> "dict[str, _Package] | None":
+    """The MSYS2 packages whose files <bundle> carries, by name; None
+    where there is no package database.
 
     MSYS2 keeps a package database, as pacman does anywhere, one level up
     from the environment's prefix: var/lib/pacman/local/<package>/files
     lists every file a package installed, its licence folder among them
     - share/licenses/gtk4 for gtk4, share/licenses/python3.14 for python.
     A file of the bundle is known by its name, and only a name one package
-    alone installs counts. Without the database, the licences of the
-    libraries MComix itself uses.
+    alone installs counts.
     """
     local = prefix.parent / 'var' / 'lib' / 'pacman' / 'local'
     if not local.is_dir():
-        return list(_KNOWN_LICENCES)
+        return None
     owners: dict[str, str | None] = {}
-    licences: dict[str, set[str]] = {}
+    packages: dict[str, _Package] = {}
     for package in local.iterdir():
         try:
             desc = (package / 'desc').read_text(encoding='utf-8')
             files = (package / 'files').read_text(encoding='utf-8')
         except OSError:
             continue
-        name = desc.split('%NAME%\n', 1)[-1].split('\n', 1)[0]
+        fields = _desc_fields(desc)
+        name = (fields.get('NAME') or [''])[0]
+        licences = set()
         listed = files.split('%FILES%\n', 1)[-1].split('\n\n', 1)[0]
         for path in listed.splitlines():
             parts = path.split('/')
             if parts[:3] == [prefix.name, 'share', 'licenses'] and len(parts) > 4:
-                licences.setdefault(name, set()).add(parts[3])
+                licences.add(parts[3])
             if path and not path.endswith('/'):
                 key = parts[-1].lower()
                 # A name two packages install says nothing of either.
                 owners[key] = name if owners.get(key, name) == name else None
+        packages[name] = _Package(fields, frozenset(licences))
     found = {owner for path in bundle.rglob('*') if path.is_file()
              for owner in [owners.get(path.name.lower())] if owner}
-    return sorted(set().union(*(licences.get(name, set()) for name in found)))
+    return {name: packages[name] for name in sorted(found)}
+
+
+def bundled_licences(bundle: pathlib.Path, prefix: pathlib.Path) -> list[str]:
+    """The licence folders, under <prefix>/share/licenses, of the MSYS2
+    packages whose files <bundle> carries (bundled_packages()).  Without
+    the package database, the licences of the libraries MComix itself
+    uses."""
+    packages = bundled_packages(bundle, prefix)
+    if packages is None:
+        return list(_KNOWN_LICENCES)
+    return sorted(set().union(*(package.licences
+                                for package in packages.values())))
+
+
+def spdx_licence(entries: list[str]) -> str:
+    """An SPDX licence expression of a package's %LICENSE% lines.
+
+    MSYS2 writes nearly every licence as "spdx:<expression>"; the few
+    written otherwise ("custom", "GPL", "BSD") become LicenseRef-<name>,
+    which the document then lists among the licences it found but could
+    not name.
+    """
+    terms = []
+    for entry in entries:
+        if entry.startswith('spdx:'):
+            term = entry[len('spdx:'):].strip()
+        else:
+            term = 'LicenseRef-' + (re.sub(r'[^A-Za-z0-9.-]+', '-', entry).strip('-')
+                                    or 'unknown')
+        if term:
+            terms.append('(%s)' % term if ' ' in term and len(entries) > 1
+                         else term)
+    return ' AND '.join(terms) or 'NOASSERTION'
+
+
+def _spdx_id(name: str) -> str:
+    return 'SPDXRef-Package-' + re.sub(r'[^A-Za-z0-9.-]+', '-', name)
+
+
+def write_sbom(path: pathlib.Path, bundle: pathlib.Path, prefix: pathlib.Path,
+               version: str, others: list[tuple[str, str, str, str]]) -> None:
+    """Write to <path> an SPDX 2.3 document of what the Windows bundle
+    carries: MComix <version>, the MSYS2 packages whose files are in
+    <bundle> (bundled_packages()), and <others>, each (name, version,
+    licence expression, URL), the programs fetched from elsewhere.
+    Without MSYS2's package database the document names MComix and the
+    others alone.
+    """
+    def package(name: str, version: str, licence: str, url: str,
+                supplier: str) -> dict[str, object]:
+        entry: dict[str, object] = {
+            'name': name,
+            'SPDXID': _spdx_id(name),
+            'downloadLocation': url or 'NOASSERTION',
+            'filesAnalyzed': False,
+            'licenseConcluded': 'NOASSERTION',
+            'licenseDeclared': licence or 'NOASSERTION',
+            'copyrightText': 'NOASSERTION',
+            'supplier': supplier,
+        }
+        if version:
+            entry['versionInfo'] = version
+        return entry
+
+    packages = [package('MComix', version, 'GPL-2.0-or-later',
+                        'https://github.com/twwn/mcomix', 'Organization: The MComix Team')]
+    for name, msys2 in (bundled_packages(bundle, prefix) or {}).items():
+        fields = msys2.fields
+        packages.append(package(name, (fields.get('VERSION') or [''])[0],
+                                spdx_licence(fields.get('LICENSE', [])),
+                                (fields.get('URL') or [''])[0],
+                                'Organization: MSYS2'))
+    for name, other_version, licence, url in others:
+        packages.append(package(name, other_version, licence, url, 'NOASSERTION'))
+
+    references = sorted({ref for entry in packages
+                         for ref in re.findall(r'LicenseRef-[A-Za-z0-9.-]+',
+                                               str(entry['licenseDeclared']))})
+    document = {
+        'spdxVersion': 'SPDX-2.3',
+        'dataLicense': 'CC0-1.0',
+        'SPDXID': 'SPDXRef-DOCUMENT',
+        'name': f'mcomix-win64-{version}',
+        'documentNamespace': f'https://github.com/twwn/mcomix/spdx/mcomix-win64-{version}-{uuid.uuid4()}',
+        'creationInfo': {
+            'created': datetime.datetime.now(datetime.UTC).strftime('%Y-%m-%dT%H:%M:%SZ'),
+            'creators': ['Tool: win32/build_pyinstaller.py'],
+        },
+        'packages': packages,
+        'relationships': [{'spdxElementId': 'SPDXRef-DOCUMENT',
+                           'relationshipType': 'DESCRIBES',
+                           'relatedSpdxElement': packages[0]['SPDXID']}]
+        + [{'spdxElementId': packages[0]['SPDXID'],
+            'relationshipType': 'CONTAINS',
+            'relatedSpdxElement': entry['SPDXID']} for entry in packages[1:]],
+    }
+    if references:
+        document['hasExtractedLicensingInfos'] = [
+            {'licenseId': reference,
+             'name': reference[len('LicenseRef-'):],
+             'extractedText': 'A licence its package does not name by an SPDX '
+                              'identifier; its text is in licenses/ in the bundle.'}
+            for reference in references]
+    path.write_text(json.dumps(document, indent=2) + '\n', encoding='utf-8')
+
+
+def _fetched_programs() -> list[tuple[str, str, str, str]]:
+    """UnRAR.dll and 7-Zip, which release.yml fetches and names in
+    UNRAR_VERSION ("7.23") and SEVENZIP_VERSION (7-Zip's banner)."""
+    programs = []
+    if os.path.isfile('dist/MComix/UnRAR64.dll'):
+        programs.append(('UnRAR.dll', os.environ.get('UNRAR_VERSION', ''),
+                         'LicenseRef-UnRAR', 'https://www.rarlab.com/rar_add.htm'))
+    if os.path.isfile('dist/MComix/7z.exe'):
+        banner = re.search(r'7-Zip(?: \(\w\))? ([\d.]+)',
+                           os.environ.get('SEVENZIP_VERSION', ''))
+        programs.append(('7-Zip', banner.group(1) if banner else '',
+                         'LGPL-2.1-or-later AND BSD-3-Clause AND LicenseRef-unRAR-restriction',
+                         'https://www.7-zip.org/'))
+    return programs
 
 
 def create_release_archive() -> None:
@@ -236,5 +389,10 @@ if __name__ == '__main__':
 
     copy_other_files()
     create_release_archive()
+    # Beside the zip and the installer, not in them: the release carries
+    # it, and attests it as the SBOM of both.
+    write_sbom(pathlib.Path(f'dist/sbom-win64-{constants.VERSION}.spdx.json'),
+               pathlib.Path('dist/MComix'), pathlib.Path(sys.prefix),
+               constants.VERSION, _fetched_programs())
 
 # vim: expandtab:sw=4:ts=4

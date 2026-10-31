@@ -379,6 +379,9 @@ jobs:
               mingw-w64-ucrt-x86_64-python mingw-w64-ucrt-x86_64-python-gobject \
               mingw-w64-ucrt-x86_64-python-pillow mingw-w64-ucrt-x86_64-python-pymupdf \
               mingw-w64-ucrt-x86_64-pyinstaller mingw-w64-ucrt-x86_64-jxrlib | sed 's/^mingw-w64-ucrt-x86_64-/- /'
+            echo
+            python -c "import json, sys; print(len(json.load(open(sys.argv[1]))['packages']), 'packages in', sys.argv[1])" \
+              "dist/sbom-win64-$VERSION.spdx.json"
           } >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
@@ -386,6 +389,7 @@ jobs:
           path: |
             dist/mcomix-win64-*.zip
             dist/mcomix-win64-*.msi
+            dist/sbom-win64-*.spdx.json
           if-no-files-found: error
           retention-days: ${{ needs.setup.outputs.release == 'true' && 30 || 14 }}
 
@@ -491,6 +495,15 @@ jobs:
       - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
           subject-path: "release/mcomix-*"
+      # And what the Windows packages carry: win32/build_pyinstaller.py
+      # writes an SPDX document of the MSYS2 packages whose files are in
+      # the bundle, UnRAR.dll and 7-Zip, which goes out beside them and
+      # is attested as the SBOM of both ("gh attestation verify <file>
+      # --repo <this repository> --predicate-type https://spdx.dev/Document/v2.3").
+      - uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
+        with:
+          subject-path: "release/mcomix-win64-*"
+          sbom-path: release/sbom-win64-${{ env.TAG }}.spdx.json
       - name: Publish the release, in place of a draft of it
         env:
           GH_TOKEN: ${{ github.token }}

@@ -25,9 +25,10 @@ The tag starts the release workflow. The rest is automatic.
 2. Builds the source archive on Linux, the Windows zip and MSI installer in MSYS2, and the [Flatpak](#flatpak) bundle for x86_64 and aarch64, each on a runner of its architecture.
 3. Starts the built `MComix.exe` on a PDF and on a missing book; any error fails the run.
    Installs the MSI over the newest published release's, which it has to replace, starts the installed MComix on the PDF, and uninstalls it.
-4. Publishes the GitHub release: the five files, a `SHA256SUMS` file, and the release's `ChangeLog.md` section as its notes.
+4. Publishes the GitHub release: the five files, `sbom-win64-<version>.spdx.json`, a `SHA256SUMS` file, and the release's `ChangeLog.md` section as its notes.
    A Flatpak that failed to build is left out with a warning; the release goes out without it.
 5. Attests each file's build provenance: `gh attestation verify <file> --repo twwn/mcomix` proves it was built there, from the tag.
+   The SPDX file lists what the Windows packages carry - the MSYS2 packages whose files are in the bundle, UnRAR.dll and 7-Zip, with versions and licences - and is attested as their SBOM (`--predicate-type https://spdx.dev/Document/v2.3`).
 6. Runs `.github/workflows/publish.yml`: the [packages](#packages).
 7. Uploads the sdist and wheel to [PyPI](#pypi), once it is set up.
 
@@ -152,7 +153,7 @@ Folder | Files | From
 
 There is no `mutool`: PyMuPDF carries its own MuPDF, and a second one would add 47 MB.
 
-In a UCRT64 shell in the checkout, build `dist/MComix` and `dist/mcomix-win64-<version>.zip`:
+In a UCRT64 shell in the checkout, build `dist/MComix`, `dist/mcomix-win64-<version>.zip` and its SBOM, `dist/sbom-win64-<version>.spdx.json`:
 
 ```bash
 python win32/build_pyinstaller.py

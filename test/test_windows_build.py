@@ -273,6 +273,125 @@ class BundledLicencesTest(MComixTest):
         self.assertIn('python-pymupdf', licences)
 
 
+class SbomTest(MComixTest):
+
+    """The SPDX document the release carries of the Windows bundle: the
+    MSYS2 packages whose files it holds, as for their licences, and the
+    programs fetched from elsewhere."""
+
+    def _database(self):
+        root = pathlib.Path(self.tmp_dir) / 'msys64'
+        for name, version, licences, files in (
+                ('mingw-w64-ucrt-x86_64-gtk4', '4.24.1-1',
+                 ['spdx:LGPL-2.1-or-later'], ['ucrt64/bin/libgtk-4-1.dll']),
+                ('mingw-w64-ucrt-x86_64-jxrlib', '1.1-4', ['custom'],
+                 ['ucrt64/bin/libjpegxr.dll']),
+                ('mingw-w64-ucrt-x86_64-sqlite3', '3.50.0-1', ['spdx:blessing'],
+                 ['ucrt64/bin/libsqlite3-0.dll'])):
+            entry = root / 'var' / 'lib' / 'pacman' / 'local' / ('%s-%s' % (name, version))
+            entry.mkdir(parents=True)
+            (entry / 'desc').write_text(
+                '%%NAME%%\n%s\n\n%%VERSION%%\n%s\n\n%%URL%%\nhttps://example.org/%s\n\n'
+                '%%LICENSE%%\n%s\n\n%%ARCH%%\nany\n' % (name, version, name, '\n'.join(licences)))
+            (entry / 'files').write_text('%FILES%\n' + ''.join(f + '\n' for f in files) + '\n')
+        bundle = pathlib.Path(self.tmp_dir) / 'MComix'
+        (bundle / '_internal').mkdir(parents=True)
+        (bundle / '_internal' / 'libgtk-4-1.dll').write_text('')
+        # Beside MComix.exe, where JxrDecApp loads it from.
+        (bundle / 'libjpegxr.dll').write_text('')
+        return bundle, root / 'ucrt64'
+
+    def _document(self, bundle, prefix, others=()):
+        import json
+        path = pathlib.Path(self.tmp_dir) / 'sbom.spdx.json'
+        build_pyinstaller.write_sbom(path, bundle, prefix, '26.11', list(others))
+        return json.loads(path.read_text(encoding='utf-8'))
+
+    def test_it_names_mcomix_and_the_packages_in_the_bundle(self):
+        bundle, prefix = self._database()
+        document = self._document(bundle, prefix, [
+            ('UnRAR.dll', '7.23', 'LicenseRef-UnRAR', 'https://www.rarlab.com/rar_add.htm')])
+        self.assertEqual('SPDX-2.3', document['spdxVersion'])
+        packages = {entry['name']: entry for entry in document['packages']}
+        # sqlite3 has no file in the bundle.
+        self.assertEqual(['MComix', 'mingw-w64-ucrt-x86_64-gtk4',
+                          'mingw-w64-ucrt-x86_64-jxrlib', 'UnRAR.dll'],
+                         [entry['name'] for entry in document['packages']])
+        self.assertEqual('26.11', packages['MComix']['versionInfo'])
+        self.assertEqual('GPL-2.0-or-later', packages['MComix']['licenseDeclared'])
+        gtk = packages['mingw-w64-ucrt-x86_64-gtk4']
+        self.assertEqual('4.24.1-1', gtk['versionInfo'])
+        self.assertEqual('LGPL-2.1-or-later', gtk['licenseDeclared'])
+        self.assertEqual('https://example.org/mingw-w64-ucrt-x86_64-gtk4',
+                         gtk['downloadLocation'])
+        self.assertEqual('Organization: MSYS2', gtk['supplier'])
+        self.assertEqual('7.23', packages['UnRAR.dll']['versionInfo'])
+
+    def test_mcomix_contains_each_package(self):
+        bundle, prefix = self._database()
+        document = self._document(bundle, prefix)
+        ids = [entry['SPDXID'] for entry in document['packages']]
+        self.assertEqual(len(ids), len(set(ids)))
+        for spdx_id in ids:
+            self.assertRegex(spdx_id, r'^SPDXRef-[A-Za-z0-9.-]+$')
+        relationships = {(rel['spdxElementId'], rel['relationshipType'],
+                          rel['relatedSpdxElement'])
+                         for rel in document['relationships']}
+        self.assertIn(('SPDXRef-DOCUMENT', 'DESCRIBES', ids[0]), relationships)
+        for spdx_id in ids[1:]:
+            self.assertIn((ids[0], 'CONTAINS', spdx_id), relationships)
+
+    def test_a_licence_without_an_spdx_identifier_is_listed(self):
+        """A LicenseRef the document uses has to be defined in it."""
+        bundle, prefix = self._database()
+        document = self._document(bundle, prefix)
+        packages = {entry['name']: entry for entry in document['packages']}
+        self.assertEqual('LicenseRef-custom',
+                         packages['mingw-w64-ucrt-x86_64-jxrlib']['licenseDeclared'])
+        self.assertEqual(['LicenseRef-custom'],
+                         [info['licenseId'] for info in
+                          document['hasExtractedLicensingInfos']])
+
+    def test_without_a_package_database_mcomix_and_the_others(self):
+        bundle = pathlib.Path(self.tmp_dir) / 'MComix'
+        bundle.mkdir()
+        document = self._document(bundle, pathlib.Path(self.tmp_dir) / 'nowhere',
+                                  [('7-Zip', '26.05', 'LGPL-2.1-or-later', '')])
+        self.assertEqual(['MComix', '7-Zip'],
+                         [entry['name'] for entry in document['packages']])
+        self.assertEqual('NOASSERTION', document['packages'][1]['downloadLocation'])
+
+    def test_licence_expressions(self):
+        self.assertEqual('MIT', build_pyinstaller.spdx_licence(['spdx:MIT']))
+        self.assertEqual('(MIT OR Apache-2.0) AND BSD-3-Clause',
+                         build_pyinstaller.spdx_licence(
+                             ['spdx:MIT OR Apache-2.0', 'spdx:BSD-3-Clause']))
+        self.assertEqual('MIT OR Apache-2.0',
+                         build_pyinstaller.spdx_licence(['spdx:MIT OR Apache-2.0']))
+        self.assertEqual('LicenseRef-GPL2 AND LicenseRef-custom-foo',
+                         build_pyinstaller.spdx_licence(['GPL2', 'custom:foo']))
+        self.assertEqual('NOASSERTION', build_pyinstaller.spdx_licence([]))
+
+    def test_the_fetched_programs_are_named_with_their_versions(self):
+        bundle = pathlib.Path(self.tmp_dir) / 'dist' / 'MComix'
+        bundle.mkdir(parents=True)
+        for name in ('UnRAR64.dll', '7z.exe'):
+            (bundle / name).write_text('')
+        environment = {'UNRAR_VERSION': '7.23',
+                       'SEVENZIP_VERSION': '7-Zip 26.05 (x64) : Copyright (c) '
+                                           '1999-2026 Igor Pavlov : 2026-10-21'}
+        cwd = os.getcwd()
+        with unittest.mock.patch.dict(os.environ, environment):
+            # The bundle is found where the build leaves it, under dist/.
+            os.chdir(self.tmp_dir)
+            try:
+                programs = build_pyinstaller._fetched_programs()
+            finally:
+                os.chdir(cwd)
+        self.assertEqual([('UnRAR.dll', '7.23'), ('7-Zip', '26.05')],
+                         [(name, version) for name, version, _l, _u in programs])
+
+
 class OtherFilesTest(MComixTest):
 
     """What the build adds to dist/MComix beside what PyInstaller froze."""
