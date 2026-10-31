@@ -93,7 +93,9 @@ def _parse(archive: zipfile.ZipFile, name: str) -> ElementTree.Element | None:
             return None
         return ElementTree.fromstring(archive.read(info))
     except (KeyError, ElementTree.ParseError, zipfile.BadZipFile,
-            RuntimeError, NotImplementedError, OSError, ValueError) as error:
+            RuntimeError, NotImplementedError, OSError, ValueError,
+            LookupError) as error:
+        # LookupError: an encoding declared that Python has no codec of.
         log.debug('EPUB member %s: %s', name, error)
         return None
 

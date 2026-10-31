@@ -19,6 +19,7 @@ removed has made its count untrue.
 """
 
 import os
+import re
 import xml.etree.ElementTree as ElementTree
 
 from mcomix import image_tools
@@ -155,6 +156,30 @@ def _describes(root: ElementTree.Element, page_count: int) -> bool:
     return listed is None or len(listed.findall('Page')) == page_count
 
 
+#: The encoding an XML declaration names.
+_DECLARED_ENCODING = re.compile(
+    rb'\s*<\?xml\s[^>]*?encoding\s*=\s*["\']([A-Za-z0-9._-]+)["\'][^>]*\?>')
+
+
+def _fromstring(document: bytes) -> ElementTree.Element:
+    """The root of the XML <document>, in whatever encoding it declares.
+
+    expat reads UTF-8, UTF-16 and the single-byte encodings, and refuses
+    one of several bytes a character - Shift_JIS, GB2312, Big5, EUC-JP,
+    UTF-7 - with "multi-byte encodings are not supported".  Such a
+    document is decoded with Python's codec of that name, and its text
+    parsed without the declaration.
+    """
+    try:
+        return ElementTree.fromstring(document)
+    except ValueError:
+        declared = _DECLARED_ENCODING.match(document)
+        if declared is None:
+            raise
+        text = document[declared.end():].decode(declared.group(1).decode('ascii'))
+        return ElementTree.fromstring(text)
+
+
 def _parse(existing: bytes) -> "ElementTree.Element | None":
     """The root of <existing>, or None if it is not a ComicInfo.xml.
 
@@ -163,10 +188,13 @@ def _parse(existing: bytes) -> "ElementTree.Element | None":
     whatever it was, it was not saying how many pages the book has.
     """
     try:
-        root = ElementTree.fromstring(existing)
-    except (ElementTree.ParseError, LookupError):
+        root = _fromstring(existing)
+    except (ElementTree.ParseError, LookupError, ValueError):
         # LookupError: the document declares an encoding Python's codecs
         # have no name for, which expat hands on rather than refusing.
+        # ValueError: one whose codec does not decode it
+        # (UnicodeDecodeError), or one expat refuses with nothing
+        # declared.
         return None
     return root if root.tag == 'ComicInfo' else None
 

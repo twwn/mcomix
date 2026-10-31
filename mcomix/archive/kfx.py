@@ -851,7 +851,14 @@ class _Book:
                 data = self.payload(_RAW_MEDIA, location)
                 if data is None:
                     continue
-                tile = _open_picture(data, picture.stored_as, folder)
+                try:
+                    tile = _open_picture(data, picture.stored_as, folder)
+                    tile.load()
+                except (OSError, ValueError, Image.DecompressionBombError) as error:
+                    # Bytes no decoder reads leave a gap, as a tile not
+                    # there does (UnidentifiedImageError is an OSError).
+                    log.debug('KFX tile %s: %s', location, error)
+                    continue
                 if canvas is None:
                     mode = 'L' if tile.mode == 'L' else 'RGB'
                     canvas = Image.new(mode, (picture.width, picture.height), 'white')
@@ -898,8 +905,11 @@ class KfxArchive(archive_base.BaseArchive):
             if isinstance(error, _Protected):
                 raise UnpackException(
                     _('Could not open %s: it is protected by DRM.') % name) from None
+            # NotImplementedError and RuntimeError: a KFX-ZIP of a ZIP
+            # version or a feature zipfile does not read, or encrypted.
             if isinstance(error, (_Unreadable, ion.IonError, struct.error,
-                                  zipfile.BadZipFile)):
+                                  zipfile.BadZipFile, NotImplementedError,
+                                  RuntimeError)):
                 log.debug('KFX %s: %s', archive, error)
                 raise UnpackException(
                     _('Could not open %s: it is not a Kindle book MComix can read.')

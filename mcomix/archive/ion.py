@@ -117,8 +117,15 @@ def _decimal(data: bytes, pos: int, end: int) -> decimal.Decimal:
     exponent, a VarInt, then its coefficient, an Int."""
     exponent, pos = _var_int(data, pos, end)
     negative, coefficient = _int(data[pos:end])
-    digits = tuple(int(digit) for digit in str(coefficient))
-    return decimal.Decimal((int(negative), digits, exponent))
+    try:
+        digits = tuple(int(digit) for digit in str(coefficient))
+        return decimal.Decimal((int(negative), digits, exponent))
+    except (OverflowError, ValueError, decimal.DecimalException):
+        # An exponent past what the decimal module takes (OverflowError
+        # past a C long, InvalidOperation past its context), or a
+        # coefficient of more digits than int() turns into a string
+        # (4300 by default): no book holds one.
+        raise IonError('decimal out of range') from None
 
 
 def _value(data: bytes, pos: int, end: int, depth: int) -> tuple[object, int]:
