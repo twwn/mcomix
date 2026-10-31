@@ -210,16 +210,22 @@ class IonTest(unittest.TestCase):
         takes, or whose coefficient has more digits than int() turns
         into a string, raised OverflowError, InvalidOperation or
         ValueError, past the KFX handler's guard for IonError; the
-        fuzzer found both (fuzz/fuzz_ion.py)."""
+        fuzzer found both (fuzz/fuzz_ion.py).  Each is IonError now, or
+        a Decimal where the decimal module takes it: Python 3.15's takes
+        exponents that 3.14's refuses."""
         coefficient = (1 << 16000).to_bytes(2001, 'big')
         for representation in (
-                # Exponents of 2**63 (OverflowError) and of 10**18
-                # (InvalidOperation), coefficient 1.
+                # Exponents of 2**63 (OverflowError up to 3.14) and of
+                # 10**18 (InvalidOperation up to 3.14), coefficient 1.
                 _var_int(2 ** 63) + b'\x01', _var_int(10 ** 18) + b'\x01',
                 # A coefficient of 4817 digits.
                 b'\x80' + coefficient):
-            with self.subTest(len(representation)), self.assertRaises(IonError):
-                ion.loads(ion.VERSION_MARKER + _typed(0x5, representation))
+            with self.subTest(len(representation)):
+                try:
+                    value = ion.loads(ion.VERSION_MARKER + _typed(0x5, representation))
+                except IonError:
+                    continue
+                self.assertIsInstance(value, decimal.Decimal)
 
     def test_one_value(self):
         """A stream holds exactly one value: none, two, or no version
