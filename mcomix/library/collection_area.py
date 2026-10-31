@@ -9,7 +9,6 @@ dragged onto the one it is to sit under.
 """
 
 import weakref
-from xml.sax.saxutils import escape as xmlescape
 from gi.repository import Gdk, Gio, GLib, Gtk
 from typing import TYPE_CHECKING
 
@@ -214,14 +213,14 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable):
         tree = self._library.backend.get_collection_tree()
 
         def _rows_under(supercoll: int | None) -> list[column_list.Row]:
-            return [column_list.Row(name=xmlescape(name), collection=coll,
+            return [column_list.Row(name=GLib.markup_escape_text(name), collection=coll,
                                     children=_rows_under(coll))
                     for coll, name in tree.get(supercoll, ())]
 
         expanded_collections = [row.collection
                                 for row in self._list.expanded_rows()]
         rows = [column_list.Row(
-            name='<b>%s</b>' % xmlescape(_('All books')),
+            name='<b>%s</b>' % GLib.markup_escape_text(_('All books')),
             collection=constants.COLLECTION_ALL, children=[])]
         rows.extend(_rows_under(None))
         self._list.set_rows(rows)

@@ -15,7 +15,7 @@ import threading
 import types
 import unittest.mock
 
-from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk
+from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk, Pango
 
 from . import MComixTest, get_testfile_path, pump, wait_for
 
@@ -1681,6 +1681,17 @@ class CollectionMenuTest(_LibraryWindowTest):
         dialog.collection_area._rename_answered(Response.OK, box, 'Shelf')
         self.assertEqual('Box', dialog.backend.get_collection_name(box))
         self.assertIn('already exists', dialog._statusbar.get_text())
+
+    def test_a_collection_name_is_shown_as_typed_whatever_it_holds(self):
+        # The tree's names are Pango markup: one that holds markup's own
+        # characters is escaped, and must read back as it was typed.
+        dialog = self._open()
+        name = 'Tom & "Jerry" <1>\'s'
+        dialog.backend.add_collection(name)
+        dialog.collection_area.display_collections()
+        rows = [row for row in dialog.collection_area._list.each_row()
+                if row.collection == self._id(dialog, name)]
+        self.assertEqual(name, Pango.parse_markup(rows[0].name, -1, '\0')[2])
 
     def test_a_duplicate_that_fails_is_said_so(self):
         dialog = self._open()
