@@ -46,7 +46,7 @@ python3 -m venv --system-site-packages ~/mcomix-venv
 ### Flatpak
 
 This version is not on Flathub yet: it has not been submitted. Its Flatpak has the id `io.github.twwn.mcomix`, beside Flathub's `net.sourceforge.mcomix`, the original MComix 3.
-Every [release](https://github.com/twwn/mcomix/releases) has it as `mcomix-<version>.flatpak`. With Flathub set up for the user, which provides the GNOME runtime it needs:
+Every [release](https://github.com/twwn/mcomix/releases) has it as `mcomix-<version>.flatpak`, and for 64-bit ARM as `mcomix-<version>-aarch64.flatpak`. With Flathub set up for the user, which provides the GNOME runtime it needs:
 
 ```bash
 flatpak install --user mcomix-<version>.flatpak

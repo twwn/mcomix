@@ -373,28 +373,70 @@ jobs:
           retention-days: ${{ needs.setup.outputs.release == 'true' && 30 || 14 }}
 
   flatpak:
-    name: Flatpak bundle
+    name: Flatpak bundle (${{ matrix.arch }})
     needs: setup
-    runs-on: ubuntu-24.04
+    # Each architecture on a runner of its own: GitHub's ARM runners are
+    # free for public repositories, where emulating aarch64 under QEMU
+    # would take hours.  The x86_64 bundle keeps the name it has always
+    # had; a failed one leaves the other.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86_64
+            runner: ubuntu-24.04
+            suffix: ""
+          - arch: aarch64
+            runner: ubuntu-24.04-arm
+            suffix: "-aarch64"
+    runs-on: ${{ matrix.runner }}
     timeout-minutes: 60
+    # GNOME 51's Platform and Sdk with flatpak-builder and Flathub's
+    # linter, for amd64 and arm64: ghcr.io/flathub-infra/
+    # flatpak-github-actions:gnome-51, pinned by digest as the actions
+    # are by commit, since it runs privileged and builds a release file.
+    # Move it with the runtime-version of the manifest.
     container:
-      image: ghcr.io/flathub-infra/flatpak-github-actions:gnome-51
+      image: ghcr.io/flathub-infra/flatpak-github-actions@sha256:78d969b18225ae107ca29497bf09c4a3f791e5f1838a9a912a529d0024fb6210
       options: --privileged
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       # Uploads the bundle as the run's artifact itself.  flatpak-builder's
-      # state is cached under the action's own key, the manifest's hash,
-      # and an older one is restored where the manifest changed; a key
-      # of the commit never matched the prefix it restores by, so each
-      # build started afresh and left 130 MB behind.  A release builds
-      # without the cache, from nothing a test build left.
+      # state is cached under the action's own key, the architecture and
+      # the manifest's hash, and an older one is restored where the
+      # manifest changed; a key of the commit never matched the prefix it
+      # restores by, so each build started afresh and left 130 MB behind.
+      # A release builds without the cache, from nothing a test build
+      # left.
       - uses: flatpak/flatpak-github-actions/flatpak-builder@79327416609af08178ad73b352877e51450790b3 # v6.8
         with:
           manifest-path: flatpak/io.github.twwn.mcomix.yml
-          bundle: mcomix-${{ needs.setup.outputs.version }}.flatpak
+          bundle: mcomix-${{ needs.setup.outputs.version }}${{ matrix.suffix }}.flatpak
+          arch: ${{ matrix.arch }}
           cache: ${{ github.ref_type != 'tag' }}
+      # What Flathub's linter says of the manifest and of the built
+      # repository, for the submission to Flathub: in the run's summary,
+      # never failing the build, since some of its rules are Flathub's
+      # alone (an app not on Flathub has none of its exceptions).
+      - name: What Flathub's linter says
+        if: matrix.arch == 'x86_64'
+        continue-on-error: true
+        run: |
+          lint=$(command -v flatpak-builder-lint || echo /app/bin/flatpak-builder-lint)
+          {
+            echo "### flatpak-builder-lint"
+            for what in "manifest flatpak/io.github.twwn.mcomix.yml" "repo repo"; do
+              echo
+              echo "\`$what\`:"
+              echo
+              echo '```json'
+              # shellcheck disable=SC2086 # the kind and the path, two words
+              "$lint" $what 2>&1 || true
+              echo '```'
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
 
   release:
     name: Publish the GitHub release

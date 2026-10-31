@@ -35,7 +35,7 @@ python3 -m venv --system-site-packages ~/mcomix-venv
 ~/mcomix-venv/bin/mcomix
 ```
 
-Or install `mcomix-<version>.flatpak` from the same release: see [Flatpak](https://github.com/twwn/mcomix/blob/main/docs/install.md#flatpak).
+Or install `mcomix-<version>.flatpak` (`-aarch64.flatpak` for 64-bit ARM) from the same release: see [Flatpak](https://github.com/twwn/mcomix/blob/main/docs/install.md#flatpak).
 
 [Install](https://github.com/twwn/mcomix/blob/main/docs/install.md) has the details: optional helpers (unrar, 7z, MuPDF), desktop integration, uninstalling.
 

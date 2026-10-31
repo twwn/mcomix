@@ -22,10 +22,10 @@ The tag starts the release workflow. The rest is automatic.
 `.github/workflows/release.yml`, on a version tag:
 
 1. Checks that the tag is `VERSION` in `mcomix/constants.py`.
-2. Builds the source archive on Linux, the Windows zip and MSI installer in MSYS2, and the [Flatpak](#flatpak) bundle.
+2. Builds the source archive on Linux, the Windows zip and MSI installer in MSYS2, and the [Flatpak](#flatpak) bundle for x86_64 and aarch64, each on a runner of its architecture.
 3. Starts the built `MComix.exe` on a PDF and on a missing book; any error fails the run.
    Installs the MSI over the newest published release's, which it has to replace, starts the installed MComix on the PDF, and uninstalls it.
-4. Publishes the GitHub release: the four files, a `SHA256SUMS` file, and the release's `ChangeLog.md` section as its notes.
+4. Publishes the GitHub release: the five files, a `SHA256SUMS` file, and the release's `ChangeLog.md` section as its notes.
    A Flatpak that failed to build is left out with a warning; the release goes out without it.
 5. Attests each file's build provenance: `gh attestation verify <file> --repo twwn/mcomix` proves it was built there, from the tag.
 6. Runs `.github/workflows/publish.yml`: the [packages](#packages).
@@ -95,7 +95,8 @@ The first upload creates the project.
 
 ### Flatpak
 
-The release workflow builds the Flatpak, `io.github.twwn.mcomix`, from `flatpak/io.github.twwn.mcomix.yml`, and attaches `mcomix-<version>.flatpak` to the release.
+The release workflow builds the Flatpak, `io.github.twwn.mcomix`, from `flatpak/io.github.twwn.mcomix.yml`, and attaches `mcomix-<version>.flatpak` and `mcomix-<version>-aarch64.flatpak` to the release.
+The run's summary has what Flathub's linter, `flatpak-builder-lint`, says of the manifest and the build; it never fails the build.
 
 - Flathub lists an app once its submission is accepted: [Flathub's guide](https://docs.flathub.org/docs/for-app-authors/submission) has the steps, [its requirements](https://docs.flathub.org/docs/for-app-authors/requirements) the rules the manifest must meet.
 - After that, no secret is needed. Flathub's own checker reads the `x-checker-data` of the manifest's MComix source every two hours, and opens the pull request for a new tag on [flathub/io.github.twwn.mcomix](https://github.com/flathub/io.github.twwn.mcomix). Merging it publishes the update.
@@ -176,7 +177,7 @@ flatpak build-bundle repo dist/mcomix-<version>.flatpak io.github.twwn.mcomix --
 ### GitHub release
 
 Draft a release from the tag, named `MComix <version>`, with the release's section of `ChangeLog.md` as its notes.
-Attach `mcomix-<version>.tar.xz`, `mcomix-win64-<version>.zip`, `mcomix-win64-<version>.msi` and `mcomix-<version>.flatpak`.
+Attach `mcomix-<version>.tar.xz`, `mcomix-win64-<version>.zip`, `mcomix-win64-<version>.msi`, `mcomix-<version>.flatpak` and, built on a 64-bit ARM machine, `mcomix-<version>-aarch64.flatpak`.
 The Chocolatey package downloads the MSI from exactly that release, under exactly that name.
 
 ### Chocolatey package
