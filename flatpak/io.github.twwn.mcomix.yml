@@ -88,6 +88,23 @@ modules:
           stable-only: true
           url-template: https://downloads.sourceforge.net/project/djvu/DjVuLibre/$version/djvulibre-$version.tar.gz
 
+  # The pictures a KFX book keeps in JPEG XR: JxrDecApp, linked against
+  # jxrlib's libraries statically.
+  - name: jxrlib
+    buildsystem: simple
+    build-commands:
+      - make -j ${FLATPAK_BUILDER_N_JOBS} "$(pwd)/build/JxrDecApp"
+      - install -Dm755 build/JxrDecApp ${FLATPAK_DEST}/bin/JxrDecApp
+      - install -Dm644 LICENSE ${FLATPAK_DEST}/share/licenses/jxrlib/LICENSE
+    sources:
+      - type: git
+        url: https://github.com/mircomir/jxrlib.git
+        tag: '1.4.4'
+        commit: ddda911f389362fc33ba3babf223ce912f3cc909
+        x-checker-data:
+          type: git
+          tag-pattern: ^([\d.]+)$
+
   # Pillow's build needs it, and nothing after.
   - name: python3-pybind11
     buildsystem: simple

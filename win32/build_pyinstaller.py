@@ -31,6 +31,7 @@ having to play around with relative path names.
            pacman -Sy \
                mingw-w64-ucrt-x86_64-gtk4 \
                mingw-w64-ucrt-x86_64-adwaita-icon-theme \
+               mingw-w64-ucrt-x86_64-jxrlib \
                mingw-w64-ucrt-x86_64-libadwaita \
                mingw-w64-ucrt-x86_64-libjxl \
                mingw-w64-ucrt-x86_64-python \
@@ -46,7 +47,8 @@ having to play around with relative path names.
        build that ships without it follows only what plain GTK4 can be
        told.  libjxl is the loader for the JPEG XL files the open dialog
        offers to filter for, and adwaita-icon-theme holds the icons the
-       toolbar and menus name.  pyinstaller is MSYS2's own build of
+       toolbar and menus name.  jxrlib's JxrDecApp shows the pictures
+       a KFX book keeps in JPEG XR.  pyinstaller is MSYS2's own build of
        PyInstaller, which pip would otherwise have to build for this
        Python.
 
@@ -124,6 +126,11 @@ def win32_newline(source: str, dest: str) -> None:
     to_fp.close()
 
 
+#: The files of MSYS2's jxrlib the bundle carries: the decoder and the
+#: libraries it is linked against.
+JXRLIB_FILES = ('JxrDecApp.exe', 'libjxrglue.dll', 'libjpegxr.dll')
+
+
 def copy_other_files() -> None:
     """ Copy other relevant files into dist directory. """
     print("Copying misc files into dist directory...")
@@ -139,6 +146,15 @@ def copy_other_files() -> None:
         shutil.copy('../mcomix-other/7z/7z.exe', 'dist/MComix/7z.exe')
         shutil.copy('../mcomix-other/7z/7z.dll', 'dist/MComix/7z.dll')
         win32_newline('../mcomix-other/7z/License.txt', 'dist/MComix/licenses/7z/License.txt')
+
+    # JxrDecApp beside MComix.exe, where MComix looks for programs, with
+    # the two DLLs of jxrlib's it loads from its own folder.  MSYS2's
+    # package carries no licence, so jxrlib's is kept beside this file.
+    msys2_bin = os.path.join(sys.prefix, 'bin')
+    if os.path.isfile(os.path.join(msys2_bin, 'JxrDecApp.exe')):
+        for name in JXRLIB_FILES:
+            shutil.copy(os.path.join(msys2_bin, name), os.path.join('dist/MComix', name))
+        win32_newline('win32/jxrlib-license.txt', 'dist/MComix/licenses/jxrlib/LICENSE.txt')
 
     # Where MSYS2's packages keep their licences: beside the Python
     # running this, whichever MSYS2 environment it is.

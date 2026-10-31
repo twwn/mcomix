@@ -56,7 +56,7 @@ flatpak-builder --user --install-deps-from=flathub --install --force-clean build
 flatpak run io.github.twwn.mcomix
 ```
 
-- It brings 7-Zip, UnRAR, DjVuLibre, PyMuPDF and chardet along: every format opens.
+- It brings 7-Zip, UnRAR, DjVuLibre, jxrlib, PyMuPDF and chardet along: every format opens.
 - It sees the Documents, Downloads, Pictures and Desktop folders and removable media; more with `flatpak override --user --filesystem=<folder> io.github.twwn.mcomix`.
 - Its preferences and library are kept apart, in `~/.var/app/io.github.twwn.mcomix`.
 - Uninstall: `flatpak uninstall --user io.github.twwn.mcomix`. Add `--delete-data` to remove its settings too.
@@ -86,7 +86,7 @@ The [UnRAR library](https://www.rarlab.com/rar_add.htm) (`libunrar.so` or `UnRAR
 [chardet](https://pypi.org/project/chardet/) | Guesses the encoding of file names and comments that are not UTF-8.
 [pillow-avif-plugin](https://pypi.org/project/pillow-avif-plugin/) | AVIF pages, where Pillow is older than 11.3 or was built without libavif, and gdk-pixbuf has no AVIF loader.
 
-The Windows packages include everything but `lha` and `unzip`, which `7z` stands in for, DjVuLibre and jxrlib.
+The Windows packages include everything but `lha` and `unzip`, which `7z` stands in for, and DjVuLibre.
 
 Opening a file whose program is missing says which one it needs.
 

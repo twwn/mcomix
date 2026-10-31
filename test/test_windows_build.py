@@ -273,6 +273,64 @@ class BundledLicencesTest(MComixTest):
         self.assertIn('python-pymupdf', licences)
 
 
+class OtherFilesTest(MComixTest):
+
+    """What the build adds to dist/MComix beside what PyInstaller froze."""
+
+    def test_jxrlib_s_decoder_goes_beside_mcomix_exe(self):
+        """MComix looks for programs in its own folder, and Windows for
+        the DLLs a program loads in the program's: the decoder and its
+        two libraries go there, with jxrlib's licence."""
+        checkout = pathlib.Path(self.tmp_dir) / 'checkout'
+        for name in ('ChangeLog.md', 'README.md', 'COPYING',
+                     'win32/jxrlib-license.txt'):
+            (checkout / name).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy(os.path.join(os.path.dirname(WIN32), name),
+                        checkout / name)
+        prefix = pathlib.Path(self.tmp_dir) / 'msys64' / 'ucrt64'
+        (prefix / 'bin').mkdir(parents=True)
+        for name in build_pyinstaller.JXRLIB_FILES + ('JxrEncApp.exe',):
+            (prefix / 'bin' / name).write_bytes(name.encode())
+        (checkout / 'dist' / 'MComix' / '_internal').mkdir(parents=True)
+        cwd = os.getcwd()
+        os.chdir(checkout)
+        try:
+            with unittest.mock.patch.object(sys, 'prefix', str(prefix)):
+                build_pyinstaller.copy_other_files()
+        finally:
+            os.chdir(cwd)
+        bundle = checkout / 'dist' / 'MComix'
+        self.assertEqual(
+            ['JxrDecApp.exe', 'libjpegxr.dll', 'libjxrglue.dll'],
+            sorted(path.name for path in bundle.iterdir()
+                   if path.name.startswith(('Jxr', 'libj'))))
+        self.assertEqual(b'libjxrglue.dll',
+                         (bundle / 'libjxrglue.dll').read_bytes())
+        self.assertIn('Copyright © Microsoft Corp.', (
+            bundle / 'licenses' / 'jxrlib' / 'LICENSE.txt').read_text(
+                encoding='utf-8'))
+
+    def test_without_jxrlib_the_bundle_goes_without(self):
+        checkout = pathlib.Path(self.tmp_dir) / 'checkout'
+        for name in ('ChangeLog.md', 'README.md', 'COPYING'):
+            (checkout / name).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy(os.path.join(os.path.dirname(WIN32), name),
+                        checkout / name)
+        (checkout / 'dist' / 'MComix').mkdir(parents=True)
+        cwd = os.getcwd()
+        os.chdir(checkout)
+        try:
+            with unittest.mock.patch.object(
+                    sys, 'prefix', str(pathlib.Path(self.tmp_dir) / 'none')):
+                build_pyinstaller.copy_other_files()
+        finally:
+            os.chdir(cwd)
+        self.assertFalse((checkout / 'dist' / 'MComix'
+                          / 'JxrDecApp.exe').exists())
+        self.assertFalse((checkout / 'dist' / 'MComix' / 'licenses'
+                          / 'jxrlib').exists())
+
+
 class FrozenEntryTest(MComixTest):
 
     """mcomixstarter.py, the script the Windows build freezes."""

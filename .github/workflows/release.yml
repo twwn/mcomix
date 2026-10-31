@@ -157,6 +157,7 @@ jobs:
           install: >-
             mingw-w64-ucrt-x86_64-gtk4
             mingw-w64-ucrt-x86_64-adwaita-icon-theme
+            mingw-w64-ucrt-x86_64-jxrlib
             mingw-w64-ucrt-x86_64-libadwaita
             mingw-w64-ucrt-x86_64-libjxl
             mingw-w64-ucrt-x86_64-python
@@ -215,7 +216,7 @@ jobs:
           APPDATA: ${{ runner.temp }}\appdata
         run: |
           $bundle = Resolve-Path dist/MComix
-          foreach ($path in 'MComix.exe', 'UnRAR64.dll', '7z.exe',
+          foreach ($path in 'MComix.exe', 'UnRAR64.dll', '7z.exe', 'JxrDecApp.exe',
                             '_internal/share/icons/Adwaita/index.theme',
                             '_internal/share/locale/de/LC_MESSAGES/gtk40.mo',
                             '_internal/cairo') {
@@ -277,7 +278,7 @@ jobs:
             pacman -Q mingw-w64-ucrt-x86_64-gtk4 mingw-w64-ucrt-x86_64-libadwaita \
               mingw-w64-ucrt-x86_64-python mingw-w64-ucrt-x86_64-python-gobject \
               mingw-w64-ucrt-x86_64-python-pillow mingw-w64-ucrt-x86_64-python-pymupdf \
-              mingw-w64-ucrt-x86_64-pyinstaller | sed 's/^mingw-w64-ucrt-x86_64-/- /'
+              mingw-w64-ucrt-x86_64-pyinstaller mingw-w64-ucrt-x86_64-jxrlib | sed 's/^mingw-w64-ucrt-x86_64-/- /'
           } >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:

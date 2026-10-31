@@ -120,6 +120,7 @@ Build in [MSYS2](https://www.msys2.org/)'s UCRT64 environment, the one MSYS2 bui
 
 - `mingw-w64-ucrt-x86_64-gtk4`
 - `mingw-w64-ucrt-x86_64-adwaita-icon-theme`
+- `mingw-w64-ucrt-x86_64-jxrlib`
 - `mingw-w64-ucrt-x86_64-libadwaita`
 - `mingw-w64-ucrt-x86_64-libjxl`
 - `mingw-w64-ucrt-x86_64-python`
@@ -139,6 +140,8 @@ Folder | Files | From
 `unrar` | `UnRAR64.dll`, `license.txt` | [RARLAB](https://www.rarlab.com/rar_add.htm)
 
 `win32/fetch_unrar.ps1 -Destination ../mcomix-other/unrar` fetches the newest UnRAR.dll that is not a beta, as the release workflow does, and prints its version.
+
+`JxrDecApp.exe`, which shows the pictures a KFX book keeps in JPEG XR, comes from MSYS2's jxrlib with its two DLLs, and goes beside `MComix.exe`; its licence is `win32/jxrlib-license.txt`, since the package carries none.
 
 There is no `mutool`: PyMuPDF carries its own MuPDF, and a second one would add 47 MB.
 
