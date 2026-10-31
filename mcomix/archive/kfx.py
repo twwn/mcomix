@@ -36,7 +36,6 @@ import threading
 import zipfile
 from collections.abc import Iterator
 from typing import IO, NamedTuple
-from xml.etree import ElementTree
 
 from PIL import Image
 
@@ -826,24 +825,14 @@ class _Book:
             return [value.strip() for value in entries.get(key, ())
                     if isinstance(value, str) and value.strip()]
 
-        # In the order ComicInfo's schema puts them in.
-        root = ElementTree.Element('ComicInfo')
-        for element, texts in (('Title', text('title')[:1]),
-                               ('Year', [date[:4] for date in text('issue_date')[:1]
-                                         if date[:4].isdigit()]),
-                               ('Writer', text('author')),
-                               ('Publisher', text('publisher')[:1])):
-            if texts:
-                ElementTree.SubElement(root, element).text = ', '.join(texts)
         document = self.value(_DOCUMENT_DATA, None)
-        if document.get(_DIRECTION) == _RIGHT_TO_LEFT \
-                or document.get(_WRITING_MODE) == _VERTICAL_RIGHT_TO_LEFT:
-            ElementTree.SubElement(root, 'Manga').text = 'YesAndRightToLeft'
-        if not len(root):
-            return None
-        written: bytes = ElementTree.tostring(root, encoding='utf-8',
-                                              xml_declaration=True)
-        return written
+        return comicinfo.of_book(
+            next(iter(text('title')), None),
+            next((date[:4] for date in text('issue_date')[:1]), None),
+            text('author'),
+            next(iter(text('publisher')), None),
+            document.get(_DIRECTION) == _RIGHT_TO_LEFT
+            or document.get(_WRITING_MODE) == _VERTICAL_RIGHT_TO_LEFT)
 
     def tiled(self, picture: _Picture, folder: str) -> Image.Image:
         """The picture whose tiles <picture> names, put together; tiles
