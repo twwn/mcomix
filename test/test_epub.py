@@ -251,6 +251,19 @@ class EpubTest(MComixTest):
         self.extracted(archive, 'outside.png')
         self.assertFalse(os.path.exists(os.path.join(self.tmp_dir, 'outside.png')))
 
+    def test_a_document_in_an_encoding_python_has_no_codec_for(self):
+        """expat hands the declared encoding to Python's codecs, and an
+        unknown one raised LookupError out of the handler
+        (fuzz/fuzz_epub.py): such a package document is one that does
+        not parse, and the pictures are listed by their names."""
+        book = Book().page('p1', 'a.png')
+        book.package_written = False
+        book.extra[book.package] = (
+            b'<?xml version="1.0" encoding="x-unknown"?><package/>')
+        names = self.open(book).list_contents()
+        self.assertEqual(['OEBPS/images/a.png'],
+                         [name.replace(os.sep, '/') for name in names])
+
     def test_a_book_of_text_alone_has_no_pages(self):
         book = Book().add('t.xhtml', xhtml('<p>Words</p>'),
                           'application/xhtml+xml', spine=True)

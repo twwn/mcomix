@@ -215,6 +215,29 @@ class DescribeTest(MComixTest):
             b'<?xml version="1.0" encoding="x-unknown"?>'
             b'<ComicInfo><Series>S</Series></ComicInfo>'))
 
+    def test_a_file_in_a_multi_byte_encoding_is_read(self):
+        """expat reads UTF-8, UTF-16 and single-byte encodings, and
+        refused Shift_JIS and the other encodings of several bytes a
+        character with ValueError - out of describe(), on the main
+        thread; the fuzzer found it (fuzz/fuzz_comicinfo.py).  Such a
+        file is decoded with Python's codec."""
+        for encoding, title in (('shift_jis', '進撃'), ('gb2312', '进击'),
+                                ('big5', '進擊'), ('euc-kr', '진격'),
+                                ('utf-7', 'Night')):
+            with self.subTest(encoding):
+                document = ('<?xml version="1.0" encoding="%s"?>\n'
+                            '<ComicInfo><Title>%s</Title>'
+                            '<Manga>YesAndRightToLeft</Manga></ComicInfo>'
+                            % (encoding, title)).encode(encoding)
+                self.assertEqual([('Title', title)], self._describe(document))
+                self.assertTrue(comicinfo.reads_right_to_left(
+                    os.path.join(self.tmp_dir, 'ComicInfo.xml')))
+
+    def test_a_file_its_declared_codec_does_not_decode_describes_nothing(self):
+        self.assertEqual([], self._describe(
+            b'<?xml version="1.0" encoding="shift_jis"?>\n'
+            b'<ComicInfo><Title>\x82</Title></ComicInfo>'))
+
     def test_a_document_that_is_not_a_comicinfo_describes_nothing(self):
         self.assertEqual([], self._describe('<Book><Series>Other</Series></Book>'))
 

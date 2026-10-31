@@ -953,7 +953,13 @@ class KfxArchive(archive_base.BaseArchive):
             with self._create_file(destination_path) as new:
                 new.write(data)
         else:
-            image = self._book.tiled(picture, destination_dir)
+            try:
+                image = self._book.tiled(picture, destination_dir)
+            except _Unreadable as error:
+                # No tile there, or none that decodes: the page has no
+                # picture, as one whose bytes are not there.
+                log.debug('KFX %s: %s', filename, error)
+                return
             with self._create_file(destination_path) as new:
                 image.save(new, 'PNG', compress_level=1)
 

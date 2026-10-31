@@ -547,6 +547,46 @@ class KfxTest(MComixTest):
         self.assertEqual(['page00001.jpg'], archive.list_contents())
 
 
+    def test_a_kfx_zip_zipfile_cannot_read(self):
+        """A ZIP of a version zipfile does not read raised
+        NotImplementedError past the handler (fuzz/fuzz_kfx.py found
+        it); it is a book MComix cannot read."""
+        data = io.BytesIO()
+        with zipfile.ZipFile(data, 'w') as archive:
+            archive.writestr('CR!TEST.kfx', Book().comic(picture()).container())
+        data = bytearray(data.getvalue())
+        directory = data.rindex(b'PK\x01\x02')
+        # "Version needed to extract" in the central directory: 23.6,
+        # as the fuzzer wrote it; zipfile reads up to 6.3.
+        struct.pack_into('<H', data, directory + 6, 236)
+        with self.assertRaisesRegex(kfx.UnpackException, 'not a Kindle book'):
+            kfx.KfxArchive(self.write(bytes(data)))
+
+    def test_tiles_no_decoder_reads(self):
+        """A tile whose bytes are no picture failed the whole page with
+        UnidentifiedImageError (fuzz/fuzz_kfx.py); it leaves a gap, as a
+        missing tile does.  A picture none of whose tiles decodes is no
+        picture: the page is left out, as one whose bytes are not
+        there."""
+        encoded = []
+
+        def first_garbled(image):
+            encoded.append(image)
+            if len(encoded) == 1:
+                return b'not a picture'
+            return picture(image=image, format='PNG')
+
+        archive, image = self.tiled(0, primary=True, encode=first_garbled)
+        shown = Image.open(io.BytesIO(self.extracted(archive, 'page00001.png')))
+        self.assertEqual((0, 0, 10, 6), ImageChops.difference(
+            image, shown.convert('RGB')).getbbox())
+        archive, _image = self.tiled(0, primary=True,
+                                     encode=lambda image: b'not a picture')
+        destination = os.path.join(self.tmp_dir, 'none')
+        archive.extract('page00001.png', destination)
+        self.assertFalse(os.path.exists(os.path.join(destination, 'page00001.png')))
+
+
 class KfxBookTest(_WindowTest):
 
     def test_it_opens_as_a_book_of_its_pages(self):

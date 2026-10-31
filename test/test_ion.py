@@ -205,6 +205,22 @@ class IonTest(unittest.TestCase):
             with self.subTest(hexadecimal), self.assertRaises(IonError):
                 ion.loads(_stream(hexadecimal))
 
+    def test_decimals_out_of_range(self):
+        """A decimal whose exponent is past what the decimal module
+        takes, or whose coefficient has more digits than int() turns
+        into a string, raised OverflowError, InvalidOperation or
+        ValueError, past the KFX handler's guard for IonError; the
+        fuzzer found both (fuzz/fuzz_ion.py)."""
+        coefficient = (1 << 16000).to_bytes(2001, 'big')
+        for representation in (
+                # Exponents of 2**63 (OverflowError) and of 10**18
+                # (InvalidOperation), coefficient 1.
+                _var_int(2 ** 63) + b'\x01', _var_int(10 ** 18) + b'\x01',
+                # A coefficient of 4817 digits.
+                b'\x80' + coefficient):
+            with self.subTest(len(representation)), self.assertRaises(IonError):
+                ion.loads(ion.VERSION_MARKER + _typed(0x5, representation))
+
     def test_one_value(self):
         """A stream holds exactly one value: none, two, or no version
         marker at all is refused.  Another version marker between the
