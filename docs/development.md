@@ -77,6 +77,22 @@ done
 A new language: copy the template to `mcomix/messages/<code>/LC_MESSAGES/mcomix.po`, translate it, run the script, and add the language to the list in `mcomix/preferences_dialog.py`.
 Translate the desktop entry's `GenericName`, `Comment` and `Keywords` in `share/applications/mcomix.desktop`, and the summary and each paragraph of the description in `share/metainfo/mcomix.metainfo.xml`, too: `test/test_desktop_entry.py` checks that both speak every language there is a catalogue for.
 
+## Fuzzing
+
+`fuzz/` holds [Atheris](https://github.com/google/atheris) targets for the readers MComix runs on whatever file it is handed: `fuzz_ion.py` (the Ion inside KFX books), `fuzz_kfx.py`, `fuzz_epub.py` and `fuzz_comicinfo.py`.
+Each states what its reader may raise; anything else, a hang or memory without bound is a finding.
+Atheris has wheels for Python 3.12 to 3.14 and needs the GTK bindings MComix imports, so a virtual environment on the system's Python does:
+
+```bash
+python3 -m venv --system-site-packages ~/fuzz-venv
+~/fuzz-venv/bin/pip install --require-hashes -r .github/requirements/fuzz.txt
+mkdir -p /tmp/fuzz-kfx
+~/fuzz-venv/bin/python fuzz/fuzz_kfx.py /tmp/fuzz-kfx fuzz/corpus/kfx fuzz/regressions/kfx -max_total_time=300
+```
+
+- `fuzz/corpus/<target>/` are the seeds, which `fuzz/make_seeds.py` writes from the test suite's builders.
+- An input that failed goes in `fuzz/regressions/<target>/` with the fix: `test/test_fuzz_targets.py` runs every target over its seeds and its regressions, without Atheris.
+
 ## Continuous integration
 
 Workflow | Runs | Does
@@ -90,5 +106,6 @@ Workflow | Runs | Does
 `windows-tests.yml` | Every push to `main` and every pull request that changes more than the manual, by hand | The tests on Windows, in MSYS2's UCRT64 environment, as the Windows packages are built, with the UnRAR.dll they carry. The installed environment is cached for a week.
 `workflows.yml` | A push to `main` or a pull request that changes a workflow, Mondays | Lints the workflows: actionlint, with shellcheck over their scripts, and zizmor, with its online audits.
 `scorecard.yml` | A push to `main` that changes `.github/`, Mondays | [OpenSSF Scorecard](https://scorecard.dev/viewer/?uri=github.com/twwn/mcomix)'s supply-chain checks; findings under the Security tab, the result behind the badge on the front page.
+`fuzz.yml` | A push to `main` or a pull request that changes a fuzzed reader or `fuzz/`; Mondays, by hand | The [fuzz targets](#fuzzing), a minute each, ten on Mondays from the corpus the last run grew; a failing input is kept as the run's artifact.
 `flatpak-updates.yml` | Mondays, by hand | Checks the Flatpak's modules against their newest releases: see [Releasing](releasing.md#flatpak).
 Dependabot | Monthly | Pull requests updating the actions the workflows use, and the tools they install with pip (build, twine, zizmor), pinned with their hashes in `.github/requirements/`.

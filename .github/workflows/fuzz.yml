@@ -1,0 +1,111 @@
+name: Fuzzing
+
+# The fuzz targets in fuzz/ under Atheris: the readers MComix runs on
+# whatever file it is handed - Ion and KFX, EPUB, ComicInfo.xml - fed
+# inputs libFuzzer mutates from the seeds in fuzz/corpus/ and the inputs
+# that failed before, in fuzz/regressions/.  An exception a target's
+# contract does not allow, a hang or memory without bound fails the
+# run, and the input is kept as its artifact: fix the reader, and put
+# the input in fuzz/regressions/<target>/, which the suite replays
+# (test/test_fuzz_targets.py).
+#
+# A minute each on a push to main or a pull request that changes a
+# reader or the targets; ten each every Monday, from the corpus the
+# last run grew; and by hand.
+#
+# Ubuntu 26.04's own Python 3.14 with its GTK 4 bindings, which MComix
+# imports, and Atheris, pinned with its hashes, which has wheels for
+# 3.12 to 3.14: setup-python's newest has none.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "mcomix/archive/ion.py"
+      - "mcomix/archive/kfx.py"
+      - "mcomix/archive/epub.py"
+      - "mcomix/archive/archive_base.py"
+      - "mcomix/comicinfo.py"
+      - "fuzz/**"
+      - ".github/requirements/fuzz.txt"
+      - ".github/workflows/fuzz.yml"
+  pull_request:
+    paths:
+      - "mcomix/archive/ion.py"
+      - "mcomix/archive/kfx.py"
+      - "mcomix/archive/epub.py"
+      - "mcomix/archive/archive_base.py"
+      - "mcomix/comicinfo.py"
+      - "fuzz/**"
+      - ".github/requirements/fuzz.txt"
+      - ".github/workflows/fuzz.yml"
+  schedule:
+    - cron: "51 2 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# An explicit bash runs with -o pipefail, which the runner's default
+# bash -e leaves out.
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: fuzz-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  fuzz:
+    name: Fuzz ${{ matrix.target }}
+    runs-on: ubuntu-26.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [ion, kfx, epub, comicinfo]
+    env:
+      TARGET: ${{ matrix.target }}
+      SECONDS_EACH: ${{ github.event_name == 'schedule' && '600' || '60' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Python with GTK 4, and Atheris
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            python3-venv python3-gi python3-gi-cairo python3-cairo python3-pil \
+            gir1.2-gtk-4.0
+          python3 -m venv --system-site-packages "$RUNNER_TEMP/fuzz"
+          "$RUNNER_TEMP/fuzz/bin/python" -m pip install --require-hashes -r .github/requirements/fuzz.txt
+      # What the last run on main grew from the seeds, kept under a key of
+      # its own each run and found again by the prefix.
+      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: fuzz-work/${{ matrix.target }}
+          key: fuzz-${{ matrix.target }}-${{ github.run_id }}
+          restore-keys: fuzz-${{ matrix.target }}-
+      - name: Fuzz
+        run: |
+          mkdir -p "fuzz-work/$TARGET" crashes
+          corpora=("fuzz-work/$TARGET" "fuzz/corpus/$TARGET")
+          if [ -d "fuzz/regressions/$TARGET" ]; then
+            corpora+=("fuzz/regressions/$TARGET")
+          fi
+          "$RUNNER_TEMP/fuzz/bin/python" "fuzz/fuzz_$TARGET.py" "${corpora[@]}" \
+            -max_total_time="$SECONDS_EACH" -timeout=10 -rss_limit_mb=2048 \
+            -artifact_prefix=crashes/ -print_final_stats=1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: failure()
+        with:
+          name: crashes-${{ matrix.target }}
+          path: crashes/
+          retention-days: 30
+      # Not from a pull request, whose corpus is its own.
+      - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        if: always() && github.event_name != 'pull_request'
+        with:
+          path: fuzz-work/${{ matrix.target }}
+          key: fuzz-${{ matrix.target }}-${{ github.run_id }}

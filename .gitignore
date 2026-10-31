@@ -27,3 +27,13 @@ test/tmp/
 
 # Virtual environment, as docs/development.md sets one up
 .venv/
+
+# What a fuzzing run from the top of the checkout leaves there: the
+# corpus it grew (fuzz.yml's fuzz-work/) and the inputs that failed, if
+# no -artifact_prefix sends them elsewhere.  Anchored, so that an input
+# put in fuzz/regressions/ is not ignored.
+/fuzz-work/
+/crash-*
+/timeout-*
+/oom-*
+/slow-unit-*
