@@ -5,14 +5,25 @@ name: Windows tests
 # gates cannot see a bug that only Windows has, such as the one about
 # loading libunrar from the directory MComix starts in.
 #
-# On every push to main, as tests.yml, and by hand: a run takes about
-# six and a half minutes, two of them setting up MSYS2 when its cache
-# below misses.  A push that changes only the manual is left to
-# docs.yml, which checks the manual on Linux.
+# On every push to main and every pull request, as tests.yml, and by
+# hand: a run takes about six and a half minutes, two of them setting
+# up MSYS2 when its cache below misses.  A pull request is mostly
+# Dependabot's, moving the actions this workflow runs too.  A change
+# to the manual alone is left to docs.yml, which checks the manual on
+# Linux.
 
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - "artwork/**"
+      - "docs/**"
+      - "*.md"
+      - ".github/PULL_REQUEST_TEMPLATE.md"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/DISCUSSION_TEMPLATE/**"
+      - ".github/dependabot.yml"
+  pull_request:
     paths-ignore:
       - "artwork/**"
       - "docs/**"
