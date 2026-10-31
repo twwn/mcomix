@@ -137,6 +137,23 @@ jobs:
       # What PyPI takes: the sdist as .tar.gz, named as Python's
       # packaging normalises the version, and a wheel.
       - run: python -m build --outdir pypi
+      # What PyPI would refuse, found here rather than by the first upload,
+      # which cannot be taken back: metadata it does not take, a README
+      # it cannot render.  And a wheel short of a file Git has under
+      # mcomix/ - a picture, a catalogue - which would install a MComix
+      # that fails when it reaches for it.
+      - name: Check the sdist and the wheel
+        run: |
+          python -m pip install twine==7.0.0
+          python -m twine check --strict pypi/mcomix-*
+          git ls-files mcomix | sort > tracked.txt
+          python -m zipfile -l pypi/mcomix-*.whl | awk 'NR > 1 && $1 ~ /^mcomix\// { print $1 }' | sort > packed.txt
+          if missing=$(comm -23 tracked.txt packed.txt) && [ -n "$missing" ]; then
+            echo "::error::The wheel leaves out files of mcomix/:"
+            echo "$missing"
+            exit 1
+          fi
+          echo "The wheel carries all $(wc -l < tracked.txt) files Git has under mcomix/."
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: pypi

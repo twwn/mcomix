@@ -90,6 +90,7 @@ It runs only where the repository variable `PYPI_PUBLISH` is `true`.
 4. Set the repository variable `PYPI_PUBLISH` to `true`.
 
 The first upload creates the project.
+- Every build, a test build too, checks both files with `twine check --strict`, and that the wheel carries every file Git has under `mcomix/`.
 - PyPI never takes a file twice. A release made again from a moved tag fails at this job; PyPI keeps the first files.
 - PyPI spells the version as Python's packaging does: 26.09 becomes 26.9.
 
