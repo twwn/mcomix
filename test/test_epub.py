@@ -189,6 +189,18 @@ class EpubTest(MComixTest):
         self.assertEqual(book.files['images/My Page.png'],
                          self.extracted(archive, 'page00001.png'))
 
+    def test_references_from_the_root_and_fragments_alone(self):
+        """A reference written from the container's root names its member
+        from there; one that is a fragment alone names no picture."""
+        book = Book()
+        book.add('images/a.png', picture(), 'image/png')
+        book.add('p.xhtml', xhtml('<img src="#top"/><img src="/OEBPS/images/a.png"/>'),
+                 'application/xhtml+xml', spine=True)
+        archive = self.open(book)
+        self.assertEqual(['page00001.png'], archive.list_contents()[:1])
+        self.assertEqual(book.files['OEBPS/images/a.png'],
+                         self.extracted(archive, 'page00001.png'))
+
     def test_what_the_book_says_of_itself(self):
         """Its title, authors, publisher and year in a ComicInfo.xml, and
         a book that turns its pages from right to left read so."""
