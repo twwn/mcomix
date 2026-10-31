@@ -49,8 +49,8 @@ modules:
     sources:
       - type: git
         url: https://github.com/ip7z/7zip.git
-        tag: '26.01'
-        commit: 8c63d71ff886bda90c86db28466287f977374237
+        tag: '26.05'
+        commit: b88c6bc09339de32f7d18bbab900686b244f42ba
         x-checker-data:
           type: git
           tag-pattern: ^([\d.]+)$
@@ -58,7 +58,12 @@ modules:
   # RAR files, through the library and, as a fallback, the program.
   - name: unrar
     buildsystem: simple
+    # rar_add.htm, which the checker reads, links RARLAB's newest source,
+    # a beta as often as not: unrarsrc-7.3.1 was RAR 7.30 beta 1.  The
+    # Windows build takes the newest release below a beta
+    # (win32/fetch_unrar.ps1); here a beta stops the build.
     build-commands:
+      - test "$(sed -n 's/^#define RARVER_BETA *//p' version.hpp)" = 0
       - make -j ${FLATPAK_BUILDER_N_JOBS} unrar
       - install -Dm755 unrar ${FLATPAK_DEST}/bin/unrar
       - make clean
@@ -66,8 +71,8 @@ modules:
       - install -Dm755 libunrar.so ${FLATPAK_DEST}/lib/libunrar.so
     sources:
       - type: archive
-        url: https://www.rarlab.com/rar/unrarsrc-7.3.1.tar.gz
-        sha256: 634900842a3737d9cc15bbcc71d4c74cc713437e0bca296a573424fe5f2660ab
+        url: https://www.rarlab.com/rar/unrarsrc-7.2.7.tar.gz
+        sha256: 01d903a7dcf413cb2925696d7796e48e38d471f79bfe7ef3ad2aebf6c12dbefd
         x-checker-data:
           type: html
           url: https://www.rarlab.com/rar_add.htm
@@ -129,8 +134,8 @@ modules:
         --prefix=${FLATPAK_DEST} "Pillow" --no-build-isolation
     sources:
       - type: file
-        url: https://files.pythonhosted.org/packages/1c/3d/bb7fca845737cf9d7dbde16ed1843984665ff2e0a518f5db43e77ec540b9/pillow-12.3.0.tar.gz
-        sha256: 3b8182a766685eaa002637e28b4ec8d6b18819a0c71f579bf0dbaa5830297cce
+        url: https://files.pythonhosted.org/packages/ce/a4/9cc30690a394a8305e8be4c9036aa16d0dfddadd09079860b582f562496d/pillow-13.0.0.tar.gz
+        sha256: cdcd1ba258178f7356d74170c9a81ba4eab6a5d55748bc402a5a2a6fe6be3510
         x-checker-data:
           type: pypi
           name: Pillow
@@ -143,8 +148,8 @@ modules:
         --prefix=${FLATPAK_DEST} "chardet" --no-build-isolation
     sources:
       - type: file
-        url: https://files.pythonhosted.org/packages/cf/6e/5a0b348fa4cd7847567a28c6e697ccf58391960bfd13a6e7473ee23ca2f2/chardet-7.6.0-py3-none-any.whl
-        sha256: 4076d795897ce45239825956a1334e134322ecc4bfe84dbb12acd5390de0fbc1
+        url: https://files.pythonhosted.org/packages/cc/75/88a3eb36264375ff951bd2f9397c409727ab6aa6a18e1bd933851571d421/chardet-7.7.0-py3-none-any.whl
+        sha256: 11cf9b719ea3675a2a7d8a3071bbe4d7ea24b26bfe39a51588d515ddd05cacad
         x-checker-data:
           type: pypi
           name: chardet
@@ -153,20 +158,23 @@ modules:
   # PDF files.
   - name: python3-PyMuPDF
     buildsystem: simple
+    # PyMuPDF 2.0 requires onnxruntime, numpy, networkx, PyYAML, psutil,
+    # tabulate, pymupdf-layout and pymupdf4llm, for its layout analysis;
+    # the module itself imports none of them, and MComix uses none.
     build-commands:
       - pip3 install --verbose --exists-action=i --no-index --find-links="file://${PWD}"
-        --prefix=${FLATPAK_DEST} "PyMuPDF" --no-build-isolation
+        --prefix=${FLATPAK_DEST} "PyMuPDF" --no-build-isolation --no-deps
     cleanup:
       - /lib/python*/site-packages/pymupdf/mupdf-devel
     sources:
       - type: file
-        url: https://files.pythonhosted.org/packages/c7/06/dace3e27af26690cb20bead80dbac42941b0841eb689b8aabbd67dde16f0/pymupdf-1.28.2-cp310-abi3-manylinux_2_28_x86_64.whl
-        sha256: 397d6715c1f0df7548a92d0afd8ce370fc48fa47aeefac16be2bc04a16a8227f
+        url: https://files.pythonhosted.org/packages/f6/fc/cbdf76a9b9bdacc50e9ef3099cca4c8bb9a369be033abfd0c0097ba4e8ef/pymupdf-2.0-cp311-abi3-manylinux_2_28_x86_64.whl
+        sha256: f92e8a7ae92c7b1cbffcbe8764166ab1234e0a37b07549f5951e7739241d34f0
         only-arches:
           - x86_64
       - type: file
-        url: https://files.pythonhosted.org/packages/d2/86/4a68f080b71b46802178346af46486e1697508e760855ff5f3b218a6dff7/pymupdf-1.28.2-cp310-abi3-manylinux_2_28_aarch64.whl
-        sha256: 3050a233dde1211efe89ada74e2add6238436434159f46097a1423aad2842545
+        url: https://files.pythonhosted.org/packages/45/4c/79c020bec68b7f70ca7e423fb2969a9dc64a5b5cc7e512bd2281f2ae7719/pymupdf-2.0-cp311-abi3-manylinux_2_28_aarch64.whl
+        sha256: c9faff6d6ec5882e934a21893917f2c460bbc79f3645318e1f8d726990ab4580
         only-arches:
           - aarch64
 

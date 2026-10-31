@@ -69,6 +69,25 @@ class ManifestTest(MComixTest):
         self.assertGreaterEqual(Version(versions.pop()),
                                 Version(pdf_multi.PYMUPDF_VERSION_REQUIRED))
 
+    def test_its_pymupdf_comes_without_the_layout_analysis(self):
+        """PyMuPDF 2.0 requires onnxruntime, numpy, networkx and the rest
+        of its layout analysis, which pip, given only the wheel, could
+        not find; the module imports none of them."""
+        module = re.search(r'(?ms)^  - name: python3-PyMuPDF\n.*?^    sources:',
+                           _manifest()).group(0)
+        self.assertIn('--no-deps', module)
+
+    def test_its_unrar_is_a_release_not_a_beta(self):
+        """The checker reads rar_add.htm, which links RARLAB's newest
+        source, a beta as often as not: unrarsrc-7.3.1, which the
+        manifest had, was RAR 7.30 beta 1.  A beta stops the build."""
+        module = re.search(r'(?ms)^  - name: unrar\n.*?^    sources:',
+                           _manifest()).group(0)
+        build = re.search(r'(?ms)^    build-commands:\n(.*)', module).group(1)
+        self.assertTrue(build.lstrip().startswith(
+            '''- test "$(sed -n 's/^#define RARVER_BETA *//p' version.hpp)" = 0'''),
+            build)
+
     def test_every_downloaded_source_carries_a_checksum(self):
         sources = re.findall(r'^      - type: (?:file|archive)\n((?:        .*\n)+)',
                              _manifest(), re.MULTILINE)
