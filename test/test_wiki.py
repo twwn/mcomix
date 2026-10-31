@@ -373,6 +373,28 @@ class DependenciesTest(unittest.TestCase):
                          'the floor moved; the page needs the new one')
         self.assertIn('Python 3.12', self.page)
 
+    def test_the_tests_run_on_each_python_the_classifiers_name(self):
+        """tests.yml ran on 3.12 and "3.x", the newest release; when that
+        became 3.15, the 3.13 and 3.14 the classifiers name were tested
+        nowhere.  Each named version is in the matrix by number, but the
+        newest, which "3.x" stands for, and development.md says so."""
+        named = sorted(
+            (classifier.rpartition(' :: ')[2]
+             for classifier in self.project['project']['classifiers']
+             if re.fullmatch(r'Programming Language :: Python :: 3\.\d+',
+                             classifier)),
+            key=lambda version: tuple(map(int, version.split('.'))))
+        with open(os.path.join(ROOT, '.github', 'workflows', 'tests.yml'),
+                  encoding='utf-8') as fp:
+            matrix = re.search(r'python-version: \[(.*)\]', fp.read())
+        self.assertIsNotNone(matrix)
+        versions = re.findall(r'"([\d.x]+)"', matrix.group(1))
+        self.assertIn('3.x', versions)
+        self.assertEqual(named[:-1], [v for v in versions if v != '3.x'])
+        self.assertEqual('3.12', named[0])
+        self.assertIn('Python %s and the newest Python'
+                      % ', '.join(named[:-1]), read_page('development.md'))
+
     def test_the_page_asks_for_the_versions_the_project_requires(self):
         """The floor has to appear somewhere on the page, which is enough:
         raising one leaves the old number behind and fails this, and the

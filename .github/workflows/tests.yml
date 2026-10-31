@@ -64,8 +64,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # The floor requires-python sets, and the newest release.
-        python-version: ["3.12", "3.x"]
+        # Every Python pyproject.toml's classifiers name, from the floor
+        # requires-python sets, and the newest release, which "3.x" is
+        # and which moves on its own: when it became 3.15, no job was
+        # left on 3.13 or 3.14.
+        python-version: ["3.12", "3.13", "3.14", "3.x"]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -107,9 +110,16 @@ jobs:
         run: python -m mypy mcomix
       # -rs lists why each skipped test was skipped: with -q alone a run
       # said only how many, and a tool missing from the runner skipped
-      # hundreds of tests unseen.
+      # hundreds of tests unseen.  The JUnit report has each skip's and
+      # failure's message, which the log has as counts.
       - name: pytest
-        run: xvfb-run -a python -m pytest test/ -q -n auto -rs
+        run: xvfb-run -a python -m pytest test/ -q -n auto -rs --junitxml=pytest.xml
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: pytest-${{ matrix.python-version }}
+          path: pytest.xml
+          retention-days: 14
 
   floors:
     # The lowest versions pyproject.toml declares, built with pip against
@@ -157,4 +167,10 @@ jobs:
           python -m pip install -r floors.txt pytest pytest-xdist
           python -m pip install --no-deps -e .
       - name: pytest
-        run: xvfb-run -a python -m pytest test/ -q -n auto -rs
+        run: xvfb-run -a python -m pytest test/ -q -n auto -rs --junitxml=pytest.xml
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: pytest-floors
+          path: pytest.xml
+          retention-days: 14

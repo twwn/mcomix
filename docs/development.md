@@ -80,7 +80,7 @@ A new language: copy the template to `mcomix/messages/<code>/LC_MESSAGES/mcomix.
 
 Workflow | Runs | Does
 ---------|------|-----
-`tests.yml` | Every push to `main`, every pull request, Mondays; not for a change to the manual or `artwork/` alone | The three checks on Python 3.12 and the newest Python, on Ubuntu 26.04 (GTK 4.22); the tests again on the oldest dependency versions `pyproject.toml` allows, on Ubuntu 24.04 (GTK 4.14).
+`tests.yml` | Every push to `main`, every pull request, Mondays; not for a change to the manual or `artwork/` alone | The three checks on Python 3.12, 3.13, 3.14 and the newest Python, on Ubuntu 26.04 (GTK 4.22); the tests again on the oldest dependency versions `pyproject.toml` allows, on Ubuntu 24.04 (GTK 4.14).
 `docs.yml` | A push to `main` or a pull request that changes the manual, a Markdown file or an issue form | The manual's own tests, `test_wiki.py` and `test_keybindings.py`.
 `codeql.yml` | A push to `main` or a pull request that changes Python code or a workflow, Mondays | Code scanning of the Python code and the workflows.
 `release.yml` | A version tag, a push to `main` or a pull request that changes the build, Mondays | Builds and tests the release files: see [Releasing](releasing.md).
