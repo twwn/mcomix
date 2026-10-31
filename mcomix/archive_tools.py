@@ -19,6 +19,7 @@ from mcomix.archive import (
     pdf_multi,
     pdf_external,
     djvu_external,
+    epub,
     kfx,
     rar,
     rar_external,
@@ -81,6 +82,9 @@ _HANDLERS: dict[int, tuple[type[archive_base.BaseArchive], ...]] = {
     ),
     constants.KFX: (
         kfx.KfxArchive,
+    ),
+    constants.EPUB: (
+        epub.EpubArchive,
     ),
 }
 
@@ -169,6 +173,7 @@ def get_supported_formats() -> dict[str, tuple[set[str], set[str]]]:
         ('MobiPocket', constants.MOBI_FORMATS, mobi_available()),
         ('DjVu', constants.DJVU_FORMATS, djvu_available()),
         ('KFX', constants.KFX_FORMATS, True),
+        ('EPUB', constants.EPUB_FORMATS, True),
     ):
         if is_available:
             supported_formats[name] = (set(formats[0]), set(formats[1]))
@@ -199,6 +204,8 @@ def archive_mime_type(path: str) -> int | None:
             if zipfile.is_zipfile(path):
                 if kfx.is_kfx_zip(path):
                     return constants.KFX
+                if epub.is_epub(path):
+                    return constants.EPUB
                 if zip.is_py_supported_zipfile(path):
                     return constants.ZIP
                 else:

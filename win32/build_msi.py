@@ -39,7 +39,7 @@ RELEASE_PATH = pathlib.Path("win32/tools/release.txt")
 #: whatever opens these files on a double-click goes on opening them
 #: until the user chooses MComix.
 FILE_TYPES = ('cbz', 'cbr', 'cb7', 'cbt', 'cbp', 'pdf', 'djvu', 'djv',
-              'azw3', 'kfx')
+              'epub', 'azw3', 'kfx')
 
 #: The programmatic identifier the extensions above are registered with.
 PROG_ID = 'MComix.Book'

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-30 22:01+0100\n"
+"POT-Creation-Date: 2026-10-31 15:24+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Marcelo Góes <vanquirius@gentoo.org>\n"
 "Language-Team: \n"
@@ -21,11 +21,11 @@ msgstr ""
 
 #: mcomix/about_dialog.py:39
 msgid ""
-"It reads ZIP, RAR, 7z, tar and LHA archives, PDF, DjVu, AZW3 and KFX files, "
-"as well as plain image files."
+"It reads ZIP, RAR, 7z, tar and LHA archives, PDF, DjVu, EPUB, AZW3 and KFX "
+"files, as well as plain image files."
 msgstr ""
 "Ele lê arquivos compactados ZIP, RAR, 7z, tar e LHA, arquivos PDF, DjVu, "
-"AZW3 e KFX, bem como imagens normais."
+"EPUB, AZW3 e KFX, bem como imagens normais."
 
 #: mcomix/about_dialog.py:43
 #, python-format
@@ -42,7 +42,7 @@ msgstr "Uma cópia desta licença pode ser obtida em %s"
 msgid "! Extraction error: %s"
 msgstr "! Erro de extração: %s"
 
-#: mcomix/archive_extractor.py:400 mcomix/archive_tools.py:245
+#: mcomix/archive_extractor.py:400 mcomix/archive_tools.py:254
 #: mcomix/image_tools.py:518 mcomix/page_marks.py:62
 #: mcomix/page_rotations.py:42
 #, python-format
@@ -68,17 +68,17 @@ msgstr ""
 "! Não foi possível adicionar o arquivo %(sourcefile)s ao arquivo "
 "%(archivefile)s, cancelando..."
 
-#: mcomix/archive_tools.py:118
+#: mcomix/archive_tools.py:122
 #, python-format
 msgid "Could not open %(file)s: it needs %(program)s."
 msgstr "Impossível abrir %(file)s: requer %(program)s."
 
-#: mcomix/archive_tools.py:122
+#: mcomix/archive_tools.py:126
 #, python-format
 msgid "Could not open %(file)s: it needs %(first)s or %(second)s."
 msgstr "Impossível abrir %(file)s: requer %(first)s ou %(second)s."
 
-#: mcomix/archive_tools.py:125
+#: mcomix/archive_tools.py:129
 #, python-format
 msgid "Non-supported archive format: %s"
 msgstr "Formato de arquivo não suportado: %s"
@@ -2634,122 +2634,126 @@ msgstr "Documento DjVu"
 msgid "Kindle KFX ebook"
 msgstr "Livro eletrônico Kindle KFX"
 
-#: mcomix/strings.py:25
+#: mcomix/strings.py:22
+msgid "EPUB ebook"
+msgstr "Livro eletrônico EPUB"
+
+#: mcomix/strings.py:26
 msgid "Original vision/developer of Comix"
 msgstr "Ideia original e autor do Comix"
 
-#: mcomix/strings.py:26 mcomix/strings.py:27 mcomix/strings.py:28
-#: mcomix/strings.py:29
+#: mcomix/strings.py:27 mcomix/strings.py:28 mcomix/strings.py:29
+#: mcomix/strings.py:30
 msgid "MComix developer"
 msgstr "Desenvolvedor do MComix"
 
-#: mcomix/strings.py:32 mcomix/strings.py:33 mcomix/strings.py:34
-#: mcomix/strings.py:35
+#: mcomix/strings.py:33 mcomix/strings.py:34 mcomix/strings.py:35
+#: mcomix/strings.py:36
 msgid "Simplified Chinese translation"
 msgstr "Tradução para chinês simplificado"
 
-#: mcomix/strings.py:36 mcomix/strings.py:37
+#: mcomix/strings.py:37 mcomix/strings.py:38
 msgid "Spanish translation"
 msgstr "Tradução para espanhol"
 
-#: mcomix/strings.py:38
+#: mcomix/strings.py:39
 msgid "Brazilian Portuguese translation"
 msgstr "Tradução para português do Brasil"
 
-#: mcomix/strings.py:39
+#: mcomix/strings.py:40
 msgid "German translation and Nautilus thumbnailer"
 msgstr "Tradução para alemão e thumbnailer do Nautilus"
 
-#: mcomix/strings.py:40
+#: mcomix/strings.py:41
 msgid "German translation"
 msgstr "Tradução para alemão"
 
-#: mcomix/strings.py:41 mcomix/strings.py:42 mcomix/strings.py:43
+#: mcomix/strings.py:42 mcomix/strings.py:43 mcomix/strings.py:44
 msgid "Italian translation"
 msgstr "Tradução para italiano"
 
-#: mcomix/strings.py:44
+#: mcomix/strings.py:45
 msgid "Dutch translation"
 msgstr "Tradução para holandês"
 
-#: mcomix/strings.py:45 mcomix/strings.py:46 mcomix/strings.py:47
-#: mcomix/strings.py:48
+#: mcomix/strings.py:46 mcomix/strings.py:47 mcomix/strings.py:48
+#: mcomix/strings.py:49
 msgid "French translation"
 msgstr "Tradução para francês"
 
-#: mcomix/strings.py:49 mcomix/strings.py:50
+#: mcomix/strings.py:50 mcomix/strings.py:51
 msgid "Polish translation"
 msgstr "Tradução para polonês"
 
-#: mcomix/strings.py:51
+#: mcomix/strings.py:52
 msgid "Greek translation"
 msgstr "Tradução para grego"
 
-#: mcomix/strings.py:52
+#: mcomix/strings.py:53
 msgid "Catalan translation"
 msgstr "Tradução para catalão"
 
-#: mcomix/strings.py:53 mcomix/strings.py:54
+#: mcomix/strings.py:54 mcomix/strings.py:55
 msgid "Traditional Chinese translation"
 msgstr "Tradução para chinês tradicional"
 
-#: mcomix/strings.py:55 mcomix/strings.py:56 mcomix/strings.py:57
+#: mcomix/strings.py:56 mcomix/strings.py:57 mcomix/strings.py:58
 msgid "Japanese translation"
 msgstr "Tradução para japonês"
 
-#: mcomix/strings.py:58
+#: mcomix/strings.py:59
 msgid "Hungarian translation"
 msgstr "Tradução para húngaro"
 
-#: mcomix/strings.py:59 mcomix/strings.py:60
+#: mcomix/strings.py:60 mcomix/strings.py:61
 msgid "Russian translation"
 msgstr "Tradução para russo"
 
-#: mcomix/strings.py:61
+#: mcomix/strings.py:62
 msgid "Croatian translation"
 msgstr "Tradução para croata"
 
-#: mcomix/strings.py:62 mcomix/strings.py:63 mcomix/strings.py:64
+#: mcomix/strings.py:63 mcomix/strings.py:64 mcomix/strings.py:65
 msgid "Korean translation"
 msgstr "Tradução para coreano"
 
-#: mcomix/strings.py:65
+#: mcomix/strings.py:66
 msgid "Persian translation"
 msgstr "Tradução para persa"
 
-#: mcomix/strings.py:66
+#: mcomix/strings.py:67
 msgid "Indonesian translation"
 msgstr "Tradução para língua indonésia"
 
-#: mcomix/strings.py:67
+#: mcomix/strings.py:68
 msgid "Czech translation"
 msgstr "Tradução para checo"
 
-#: mcomix/strings.py:68
+#: mcomix/strings.py:69
 msgid "Ukrainian translation"
 msgstr "Tradução para ucraniano"
 
-#: mcomix/strings.py:69
+#: mcomix/strings.py:70
 msgid "Galician translation"
 msgstr "Tradução para galego"
 
-#: mcomix/strings.py:70 mcomix/strings.py:71
+#: mcomix/strings.py:71 mcomix/strings.py:72
 msgid "Swedish translation"
 msgstr "Tradução para sueco"
 
-#: mcomix/strings.py:72
+#: mcomix/strings.py:73
 msgid "Hebrew translation"
 msgstr "Tradução para hebraico"
 
-#: mcomix/strings.py:73
+#: mcomix/strings.py:74
 msgid "Lithuanian translation"
 msgstr "Tradução para lituano"
 
-#: mcomix/strings.py:76
+#: mcomix/strings.py:77
 msgid "Icon design"
 msgstr "Desenho dos ícones"
 
-#: mcomix/strings.py:77
+#: mcomix/strings.py:78
 msgid "Vector icon"
 msgstr "Ícone vetorial"
 
@@ -3167,12 +3171,12 @@ msgstr "Não foi possível abrir o manual: %s"
 msgid "! Worker thread processing %(function)r failed: %(error)s"
 msgstr "! A thread de trabalho que processava %(function)r falhou: %(error)s"
 
-#: mcomix/archive/kfx.py:571
+#: mcomix/archive/epub.py:231 mcomix/archive/kfx.py:900
 #, python-format
 msgid "Could not open %s: it is protected by DRM."
 msgstr "Impossível abrir %s: está protegido por DRM."
 
-#: mcomix/archive/kfx.py:575
+#: mcomix/archive/kfx.py:905
 #, python-format
 msgid "Could not open %s: it is not a Kindle book MComix can read."
 msgstr "Impossível abrir %s: não é um livro Kindle que o MComix consiga ler."
@@ -3190,7 +3194,7 @@ msgstr "Digite a senha para continuar:"
 msgid "Extraction of %(archivefile)s might have failed: %(error)s"
 msgstr "A extração de %(archivefile)s pode ter falhado: %(error)s"
 
-#: mcomix/archive/zip.py:136
+#: mcomix/archive/zip.py:155
 #, python-format
 msgid ""
 "%(filename)s's extracted size is %(actual_size)d bytes, but should be "

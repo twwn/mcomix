@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix zh_TW\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-30 22:01+0100\n"
+"POT-Creation-Date: 2026-10-31 15:24+0100\n"
 "PO-Revision-Date: 2013-07-05 21:37+0800\n"
 "Last-Translator: Wayne Su <mstarmstar@hotmail.com>\n"
 "Language-Team: \n"
@@ -31,11 +31,11 @@ msgstr "%s 是特別設計適用於漫畫書籍的看圖程式。"
 
 #: mcomix/about_dialog.py:39
 msgid ""
-"It reads ZIP, RAR, 7z, tar and LHA archives, PDF, DjVu, AZW3 and KFX files, "
-"as well as plain image files."
+"It reads ZIP, RAR, 7z, tar and LHA archives, PDF, DjVu, EPUB, AZW3 and KFX "
+"files, as well as plain image files."
 msgstr ""
-"可以讀取 ZIP、RAR、7z、TAR、LHA 壓縮檔，PDF、DjVu、AZW3、KFX 檔案，以及一般圖"
-"片檔。"
+"可以讀取 ZIP、RAR、7z、TAR、LHA 壓縮檔，PDF、DjVu、EPUB、AZW3、KFX 檔案，以及"
+"一般圖片檔。"
 
 #: mcomix/about_dialog.py:43
 #, python-format
@@ -52,7 +52,7 @@ msgstr "可以在 %s 取得授權協定的複製本"
 msgid "! Extraction error: %s"
 msgstr "！ 解壓縮錯誤：%s"
 
-#: mcomix/archive_extractor.py:400 mcomix/archive_tools.py:245
+#: mcomix/archive_extractor.py:400 mcomix/archive_tools.py:254
 #: mcomix/image_tools.py:518 mcomix/page_marks.py:62
 #: mcomix/page_rotations.py:42
 #, python-format
@@ -77,17 +77,17 @@ msgid ""
 msgstr ""
 "！ 無法將檔案 %(sourcefile)s 加入壓縮檔 %(archivefile)s 中，正在取消..."
 
-#: mcomix/archive_tools.py:118
+#: mcomix/archive_tools.py:122
 #, python-format
 msgid "Could not open %(file)s: it needs %(program)s."
 msgstr "無法開啟 %(file)s：需要 %(program)s。"
 
-#: mcomix/archive_tools.py:122
+#: mcomix/archive_tools.py:126
 #, python-format
 msgid "Could not open %(file)s: it needs %(first)s or %(second)s."
 msgstr "無法開啟 %(file)s：需要 %(first)s 或 %(second)s。"
 
-#: mcomix/archive_tools.py:125
+#: mcomix/archive_tools.py:129
 #, python-format
 msgid "Non-supported archive format: %s"
 msgstr "不支援的壓縮檔格式：%s"
@@ -2543,122 +2543,126 @@ msgstr "DjVu 文件"
 msgid "Kindle KFX ebook"
 msgstr "Kindle KFX 電子書"
 
-#: mcomix/strings.py:25
+#: mcomix/strings.py:22
+msgid "EPUB ebook"
+msgstr "EPUB 電子書"
+
+#: mcomix/strings.py:26
 msgid "Original vision/developer of Comix"
 msgstr "Comix 的原始設計開發者"
 
-#: mcomix/strings.py:26 mcomix/strings.py:27 mcomix/strings.py:28
-#: mcomix/strings.py:29
+#: mcomix/strings.py:27 mcomix/strings.py:28 mcomix/strings.py:29
+#: mcomix/strings.py:30
 msgid "MComix developer"
 msgstr "MComix 開發者"
 
-#: mcomix/strings.py:32 mcomix/strings.py:33 mcomix/strings.py:34
-#: mcomix/strings.py:35
+#: mcomix/strings.py:33 mcomix/strings.py:34 mcomix/strings.py:35
+#: mcomix/strings.py:36
 msgid "Simplified Chinese translation"
 msgstr "簡體中文翻譯"
 
-#: mcomix/strings.py:36 mcomix/strings.py:37
+#: mcomix/strings.py:37 mcomix/strings.py:38
 msgid "Spanish translation"
 msgstr "西班牙文翻譯"
 
-#: mcomix/strings.py:38
+#: mcomix/strings.py:39
 msgid "Brazilian Portuguese translation"
 msgstr "巴西葡萄牙文翻譯"
 
-#: mcomix/strings.py:39
+#: mcomix/strings.py:40
 msgid "German translation and Nautilus thumbnailer"
 msgstr "德文翻譯與 Nautilus 預覽縮圖功能作者"
 
-#: mcomix/strings.py:40
+#: mcomix/strings.py:41
 msgid "German translation"
 msgstr "德文翻譯"
 
-#: mcomix/strings.py:41 mcomix/strings.py:42 mcomix/strings.py:43
+#: mcomix/strings.py:42 mcomix/strings.py:43 mcomix/strings.py:44
 msgid "Italian translation"
 msgstr "義大利文翻譯"
 
-#: mcomix/strings.py:44
+#: mcomix/strings.py:45
 msgid "Dutch translation"
 msgstr "荷蘭文翻譯"
 
-#: mcomix/strings.py:45 mcomix/strings.py:46 mcomix/strings.py:47
-#: mcomix/strings.py:48
+#: mcomix/strings.py:46 mcomix/strings.py:47 mcomix/strings.py:48
+#: mcomix/strings.py:49
 msgid "French translation"
 msgstr "法文翻譯"
 
-#: mcomix/strings.py:49 mcomix/strings.py:50
+#: mcomix/strings.py:50 mcomix/strings.py:51
 msgid "Polish translation"
 msgstr "波蘭文翻譯"
 
-#: mcomix/strings.py:51
+#: mcomix/strings.py:52
 msgid "Greek translation"
 msgstr "希臘文翻譯"
 
-#: mcomix/strings.py:52
+#: mcomix/strings.py:53
 msgid "Catalan translation"
 msgstr "加泰羅尼亞文翻譯"
 
-#: mcomix/strings.py:53 mcomix/strings.py:54
+#: mcomix/strings.py:54 mcomix/strings.py:55
 msgid "Traditional Chinese translation"
 msgstr "正體中文翻譯"
 
-#: mcomix/strings.py:55 mcomix/strings.py:56 mcomix/strings.py:57
+#: mcomix/strings.py:56 mcomix/strings.py:57 mcomix/strings.py:58
 msgid "Japanese translation"
 msgstr "日文翻譯"
 
-#: mcomix/strings.py:58
+#: mcomix/strings.py:59
 msgid "Hungarian translation"
 msgstr "匈牙利文翻譯"
 
-#: mcomix/strings.py:59 mcomix/strings.py:60
+#: mcomix/strings.py:60 mcomix/strings.py:61
 msgid "Russian translation"
 msgstr "俄文翻譯"
 
-#: mcomix/strings.py:61
+#: mcomix/strings.py:62
 msgid "Croatian translation"
 msgstr "克羅埃西亞文翻譯"
 
-#: mcomix/strings.py:62 mcomix/strings.py:63 mcomix/strings.py:64
+#: mcomix/strings.py:63 mcomix/strings.py:64 mcomix/strings.py:65
 msgid "Korean translation"
 msgstr "韓文翻譯"
 
-#: mcomix/strings.py:65
+#: mcomix/strings.py:66
 msgid "Persian translation"
 msgstr "波斯文翻譯"
 
-#: mcomix/strings.py:66
+#: mcomix/strings.py:67
 msgid "Indonesian translation"
 msgstr "印尼文翻譯"
 
-#: mcomix/strings.py:67
+#: mcomix/strings.py:68
 msgid "Czech translation"
 msgstr "捷克文翻譯"
 
-#: mcomix/strings.py:68
+#: mcomix/strings.py:69
 msgid "Ukrainian translation"
 msgstr "烏克蘭文翻譯"
 
-#: mcomix/strings.py:69
+#: mcomix/strings.py:70
 msgid "Galician translation"
 msgstr "加里西亞文翻譯"
 
-#: mcomix/strings.py:70 mcomix/strings.py:71
+#: mcomix/strings.py:71 mcomix/strings.py:72
 msgid "Swedish translation"
 msgstr "瑞典文翻譯"
 
-#: mcomix/strings.py:72
+#: mcomix/strings.py:73
 msgid "Hebrew translation"
 msgstr "希伯來文翻譯"
 
-#: mcomix/strings.py:73
+#: mcomix/strings.py:74
 msgid "Lithuanian translation"
 msgstr "立陶宛文翻譯"
 
-#: mcomix/strings.py:76
+#: mcomix/strings.py:77
 msgid "Icon design"
 msgstr "圖示設計"
 
-#: mcomix/strings.py:77
+#: mcomix/strings.py:78
 msgid "Vector icon"
 msgstr "向量圖示"
 
@@ -3068,12 +3072,12 @@ msgstr "無法開啟使用手冊：%s"
 msgid "! Worker thread processing %(function)r failed: %(error)s"
 msgstr "！ 工作執行緒處理 %(function)r 失敗：%(error)s"
 
-#: mcomix/archive/kfx.py:571
+#: mcomix/archive/epub.py:231 mcomix/archive/kfx.py:900
 #, python-format
 msgid "Could not open %s: it is protected by DRM."
 msgstr "無法開啟 %s：受 DRM 保護。"
 
-#: mcomix/archive/kfx.py:575
+#: mcomix/archive/kfx.py:905
 #, python-format
 msgid "Could not open %s: it is not a Kindle book MComix can read."
 msgstr "無法開啟 %s：不是 MComix 能讀取的 Kindle 書籍。"
@@ -3091,7 +3095,7 @@ msgstr "請輸入密碼才能繼續："
 msgid "Extraction of %(archivefile)s might have failed: %(error)s"
 msgstr "%(archivefile)s 的解壓縮可能失敗了：%(error)s"
 
-#: mcomix/archive/zip.py:136
+#: mcomix/archive/zip.py:155
 #, python-format
 msgid ""
 "%(filename)s's extracted size is %(actual_size)d bytes, but should be "

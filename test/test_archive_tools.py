@@ -276,7 +276,8 @@ class CannotOpenTest(MComixTest):
             with self.subTest(archive_type):
                 if archive_type in (constants.ZIP, constants.TAR,
                                     constants.GZIP, constants.BZIP2,
-                                    constants.MOBI, constants.KFX):
+                                    constants.MOBI, constants.KFX,
+                                    constants.EPUB):
                     self.assertEqual([], archive_tools.helpers(archive_type))
                 else:
                     self.assertTrue(archive_tools.helpers(archive_type))

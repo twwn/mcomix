@@ -534,7 +534,8 @@ class InstallerTest(MComixTest):
         for formats in (constants.ZIP_FORMATS, constants.RAR_FORMATS,
                         constants.TAR_FORMATS, constants.SZIP_FORMATS,
                         constants.PDF_FORMATS, constants.DJVU_FORMATS,
-                        constants.MOBI_FORMATS, constants.KFX_FORMATS):
+                        constants.MOBI_FORMATS, constants.KFX_FORMATS,
+                        constants.EPUB_FORMATS):
             extensions.update(formats[1])
         self.assertEqual(set(), set(build_msi.FILE_TYPES) - extensions)
         # Archives in general are not offered, as on Linux.

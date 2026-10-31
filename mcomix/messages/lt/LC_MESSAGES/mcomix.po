@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 1.2.1\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-30 22:01+0100\n"
+"POT-Creation-Date: 2026-10-31 15:24+0100\n"
 "PO-Revision-Date: 2016-09-18 15:30+0300\n"
 "Last-Translator: Zygimantus <zygimantus@gmail.com>\n"
 "Language-Team: \n"
@@ -26,11 +26,11 @@ msgstr "%s yra paveikslėlių žiūryklė, sukurta būtent komiksams."
 
 #: mcomix/about_dialog.py:39
 msgid ""
-"It reads ZIP, RAR, 7z, tar and LHA archives, PDF, DjVu, AZW3 and KFX files, "
-"as well as plain image files."
+"It reads ZIP, RAR, 7z, tar and LHA archives, PDF, DjVu, EPUB, AZW3 and KFX "
+"files, as well as plain image files."
 msgstr ""
-"Ji skaito ZIP, RAR, 7z, tar ir LHA archyvus, PDF, DjVu, AZW3 ir KFX failus "
-"bei paprastus paveikslėlių failus."
+"Ji skaito ZIP, RAR, 7z, tar ir LHA archyvus, PDF, DjVu, EPUB, AZW3 ir KFX "
+"failus bei paprastus paveikslėlių failus."
 
 #: mcomix/about_dialog.py:43
 #, python-format
@@ -47,7 +47,7 @@ msgstr "Šios licencijos kopiją galima gauti iš %s"
 msgid "! Extraction error: %s"
 msgstr "! Išpakavimo klaida: %s"
 
-#: mcomix/archive_extractor.py:400 mcomix/archive_tools.py:245
+#: mcomix/archive_extractor.py:400 mcomix/archive_tools.py:254
 #: mcomix/image_tools.py:518 mcomix/page_marks.py:62
 #: mcomix/page_rotations.py:42
 #, python-format
@@ -73,17 +73,17 @@ msgstr ""
 "! Nepavyko pridėti failo %(sourcefile)s į archyvą %(archivefile)s, "
 "nutraukiama..."
 
-#: mcomix/archive_tools.py:118
+#: mcomix/archive_tools.py:122
 #, python-format
 msgid "Could not open %(file)s: it needs %(program)s."
 msgstr "Nepavyko atverti %(file)s: reikia %(program)s."
 
-#: mcomix/archive_tools.py:122
+#: mcomix/archive_tools.py:126
 #, python-format
 msgid "Could not open %(file)s: it needs %(first)s or %(second)s."
 msgstr "Nepavyko atverti %(file)s: reikia %(first)s arba %(second)s."
 
-#: mcomix/archive_tools.py:125
+#: mcomix/archive_tools.py:129
 #, python-format
 msgid "Non-supported archive format: %s"
 msgstr "Nepalaikomas archyvo formatas: %s"
@@ -2626,122 +2626,126 @@ msgstr "DjVu dokumentas"
 msgid "Kindle KFX ebook"
 msgstr "Kindle KFX el. knyga"
 
-#: mcomix/strings.py:25
+#: mcomix/strings.py:22
+msgid "EPUB ebook"
+msgstr "EPUB el. knyga"
+
+#: mcomix/strings.py:26
 msgid "Original vision/developer of Comix"
 msgstr "Pradinė Comix idėja ir autorius"
 
-#: mcomix/strings.py:26 mcomix/strings.py:27 mcomix/strings.py:28
-#: mcomix/strings.py:29
+#: mcomix/strings.py:27 mcomix/strings.py:28 mcomix/strings.py:29
+#: mcomix/strings.py:30
 msgid "MComix developer"
 msgstr "MComix kūrėjas"
 
-#: mcomix/strings.py:32 mcomix/strings.py:33 mcomix/strings.py:34
-#: mcomix/strings.py:35
+#: mcomix/strings.py:33 mcomix/strings.py:34 mcomix/strings.py:35
+#: mcomix/strings.py:36
 msgid "Simplified Chinese translation"
 msgstr "Vertimas į supaprastintą kinų kalbą"
 
-#: mcomix/strings.py:36 mcomix/strings.py:37
+#: mcomix/strings.py:37 mcomix/strings.py:38
 msgid "Spanish translation"
 msgstr "Vertimas į ispanų kalbą"
 
-#: mcomix/strings.py:38
+#: mcomix/strings.py:39
 msgid "Brazilian Portuguese translation"
 msgstr "Vertimas į Brazilijos portugalų kalbą"
 
-#: mcomix/strings.py:39
+#: mcomix/strings.py:40
 msgid "German translation and Nautilus thumbnailer"
 msgstr "Vertimas į vokiečių kalbą ir Nautilus miniatiūrų kūrėjas"
 
-#: mcomix/strings.py:40
+#: mcomix/strings.py:41
 msgid "German translation"
 msgstr "Vertimas į vokiečių kalbą"
 
-#: mcomix/strings.py:41 mcomix/strings.py:42 mcomix/strings.py:43
+#: mcomix/strings.py:42 mcomix/strings.py:43 mcomix/strings.py:44
 msgid "Italian translation"
 msgstr "Vertimas į italų kalbą"
 
-#: mcomix/strings.py:44
+#: mcomix/strings.py:45
 msgid "Dutch translation"
 msgstr "Vertimas į olandų kalbą"
 
-#: mcomix/strings.py:45 mcomix/strings.py:46 mcomix/strings.py:47
-#: mcomix/strings.py:48
+#: mcomix/strings.py:46 mcomix/strings.py:47 mcomix/strings.py:48
+#: mcomix/strings.py:49
 msgid "French translation"
 msgstr "Vertimas į prancūzų kalbą"
 
-#: mcomix/strings.py:49 mcomix/strings.py:50
+#: mcomix/strings.py:50 mcomix/strings.py:51
 msgid "Polish translation"
 msgstr "Vertimas į lenkų kalbą"
 
-#: mcomix/strings.py:51
+#: mcomix/strings.py:52
 msgid "Greek translation"
 msgstr "Vertimas į graikų kalbą"
 
-#: mcomix/strings.py:52
+#: mcomix/strings.py:53
 msgid "Catalan translation"
 msgstr "Vertimas į katalonų kalbą"
 
-#: mcomix/strings.py:53 mcomix/strings.py:54
+#: mcomix/strings.py:54 mcomix/strings.py:55
 msgid "Traditional Chinese translation"
 msgstr "Vertimas į tradicinę kinų kalbą"
 
-#: mcomix/strings.py:55 mcomix/strings.py:56 mcomix/strings.py:57
+#: mcomix/strings.py:56 mcomix/strings.py:57 mcomix/strings.py:58
 msgid "Japanese translation"
 msgstr "Vertimas į japonų kalbą"
 
-#: mcomix/strings.py:58
+#: mcomix/strings.py:59
 msgid "Hungarian translation"
 msgstr "Vertimas į vengrų kalbą"
 
-#: mcomix/strings.py:59 mcomix/strings.py:60
+#: mcomix/strings.py:60 mcomix/strings.py:61
 msgid "Russian translation"
 msgstr "Vertimas į rusų kalbą"
 
-#: mcomix/strings.py:61
+#: mcomix/strings.py:62
 msgid "Croatian translation"
 msgstr "Vertimas į kroatų kalbą"
 
-#: mcomix/strings.py:62 mcomix/strings.py:63 mcomix/strings.py:64
+#: mcomix/strings.py:63 mcomix/strings.py:64 mcomix/strings.py:65
 msgid "Korean translation"
 msgstr "Vertimas į korėjiečių kalbą"
 
-#: mcomix/strings.py:65
+#: mcomix/strings.py:66
 msgid "Persian translation"
 msgstr "Vertimas į persų kalbą"
 
-#: mcomix/strings.py:66
+#: mcomix/strings.py:67
 msgid "Indonesian translation"
 msgstr "Vertimas į indoneziečių kalbą"
 
-#: mcomix/strings.py:67
+#: mcomix/strings.py:68
 msgid "Czech translation"
 msgstr "Vertimas į čekų kalbą"
 
-#: mcomix/strings.py:68
+#: mcomix/strings.py:69
 msgid "Ukrainian translation"
 msgstr "Vertimas į ukrainiečių kalbą"
 
-#: mcomix/strings.py:69
+#: mcomix/strings.py:70
 msgid "Galician translation"
 msgstr "Vertimas į galisų kalbą"
 
-#: mcomix/strings.py:70 mcomix/strings.py:71
+#: mcomix/strings.py:71 mcomix/strings.py:72
 msgid "Swedish translation"
 msgstr "Vertimas į švedų kalbą"
 
-#: mcomix/strings.py:72
+#: mcomix/strings.py:73
 msgid "Hebrew translation"
 msgstr "Vertimas į hebrajų kalbą"
 
-#: mcomix/strings.py:73
+#: mcomix/strings.py:74
 msgid "Lithuanian translation"
 msgstr "Vertimas į lietuvių kalbą"
 
-#: mcomix/strings.py:76
+#: mcomix/strings.py:77
 msgid "Icon design"
 msgstr "Piktogramų dizainas"
 
-#: mcomix/strings.py:77
+#: mcomix/strings.py:78
 msgid "Vector icon"
 msgstr "Vektorinė piktograma"
 
@@ -3155,12 +3159,12 @@ msgstr "Nepavyko atverti vadovo: %s"
 msgid "! Worker thread processing %(function)r failed: %(error)s"
 msgstr "! Darbinė gija, apdorojusi %(function)r, nepavyko: %(error)s"
 
-#: mcomix/archive/kfx.py:571
+#: mcomix/archive/epub.py:231 mcomix/archive/kfx.py:900
 #, python-format
 msgid "Could not open %s: it is protected by DRM."
 msgstr "Nepavyko atverti %s: ji apsaugota DRM."
 
-#: mcomix/archive/kfx.py:575
+#: mcomix/archive/kfx.py:905
 #, python-format
 msgid "Could not open %s: it is not a Kindle book MComix can read."
 msgstr ""
@@ -3179,7 +3183,7 @@ msgstr "Norėdami tęsti, įveskite slaptažodį:"
 msgid "Extraction of %(archivefile)s might have failed: %(error)s"
 msgstr "%(archivefile)s išpakavimas galėjo nepavykti: %(error)s"
 
-#: mcomix/archive/zip.py:136
+#: mcomix/archive/zip.py:155
 #, python-format
 msgid ""
 "%(filename)s's extracted size is %(actual_size)d bytes, but should be "

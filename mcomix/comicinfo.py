@@ -59,7 +59,7 @@ def of_book(title: str | None, year: str | None, writers: Sequence[str],
     year it came out, its authors and its publisher, and whether it
     reads right to left; None where it says none of it.
 
-    A handler of ebooks lists one beside the pages of a book that
+    The KFX and EPUB handlers list one beside the pages of a book that
     carries no ComicInfo.xml of its own, since MComix reads the file for
     the book's properties, and opens a book whose file says Manga
     YesAndRightToLeft in manga mode.  The fields go in the order the

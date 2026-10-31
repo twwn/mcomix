@@ -17,7 +17,7 @@ SmartScreen may warn on the first start: "More info", then "Run anyway".
 
 Chocolatey (`mcomix-gtk`) and WinGet packages are prepared, but not published yet.
 
-The installer puts MComix in Explorer's "Open with" for comic books (CBZ, CBR, CB7, CBT), PDF, DjVu and Kindle books (AZW3, KFX), and in Settings, Default apps, where it can be made the default.
+The installer puts MComix in Explorer's "Open with" for comic books (CBZ, CBR, CB7, CBT), PDF, DjVu, EPUB and Kindle books (AZW3, KFX), and in Settings, Default apps, where it can be made the default.
 It changes no default itself.
 A newer version's installer replaces the installed one.
 

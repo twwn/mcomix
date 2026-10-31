@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 0.90.4\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-30 22:01+0100\n"
+"POT-Creation-Date: 2026-10-31 15:24+0100\n"
 "PO-Revision-Date: 2018-02-24 08:43+0100\n"
 "Last-Translator: Jonatan Nyberg <jonatan@autistici.org>\n"
 "Language-Team: Swedish <LL@li.org>\n"
@@ -23,11 +23,11 @@ msgstr "%s är en bildvisare speciellt utformad för att hantera serietidningar.
 
 #: mcomix/about_dialog.py:39
 msgid ""
-"It reads ZIP, RAR, 7z, tar and LHA archives, PDF, DjVu, AZW3 and KFX files, "
-"as well as plain image files."
+"It reads ZIP, RAR, 7z, tar and LHA archives, PDF, DjVu, EPUB, AZW3 and KFX "
+"files, as well as plain image files."
 msgstr ""
-"Den läser ZIP-, RAR-, 7z-, tar- och LHA-arkiv, PDF-, DjVu-, AZW3- och KFX-"
-"filer samt vanliga bildfiler."
+"Den läser ZIP-, RAR-, 7z-, tar- och LHA-arkiv, PDF-, DjVu-, EPUB-, AZW3- och "
+"KFX-filer samt vanliga bildfiler."
 
 #: mcomix/about_dialog.py:43
 #, python-format
@@ -46,7 +46,7 @@ msgstr "! Extraktionsfel: %s"
 
 #
 # File: src/comment.py, line: 53
-#: mcomix/archive_extractor.py:400 mcomix/archive_tools.py:245
+#: mcomix/archive_extractor.py:400 mcomix/archive_tools.py:254
 #: mcomix/image_tools.py:518 mcomix/page_marks.py:62
 #: mcomix/page_rotations.py:42
 #, python-format
@@ -76,17 +76,17 @@ msgstr ""
 "! Kunde inte lägga till fil %(sourcefile)s till arkiv %(archivefile)s, "
 "avbryter..."
 
-#: mcomix/archive_tools.py:118
+#: mcomix/archive_tools.py:122
 #, python-format
 msgid "Could not open %(file)s: it needs %(program)s."
 msgstr "Kunde inte öppna %(file)s: %(program)s behövs."
 
-#: mcomix/archive_tools.py:122
+#: mcomix/archive_tools.py:126
 #, python-format
 msgid "Could not open %(file)s: it needs %(first)s or %(second)s."
 msgstr "Kunde inte öppna %(file)s: %(first)s eller %(second)s behövs."
 
-#: mcomix/archive_tools.py:125
+#: mcomix/archive_tools.py:129
 #, python-format
 msgid "Non-supported archive format: %s"
 msgstr "Arkivformat som inte stöds: %s"
@@ -2976,168 +2976,172 @@ msgstr "DjVu-dokument"
 msgid "Kindle KFX ebook"
 msgstr "Kindle KFX-e-bok"
 
-#: mcomix/strings.py:25
+#: mcomix/strings.py:22
+msgid "EPUB ebook"
+msgstr "EPUB-e-bok"
+
+#: mcomix/strings.py:26
 msgid "Original vision/developer of Comix"
 msgstr "Första utvecklaren av Comix"
 
-#: mcomix/strings.py:26 mcomix/strings.py:27 mcomix/strings.py:28
-#: mcomix/strings.py:29
+#: mcomix/strings.py:27 mcomix/strings.py:28 mcomix/strings.py:29
+#: mcomix/strings.py:30
 msgid "MComix developer"
 msgstr "MComix utvecklare"
 
 #
 # File: src/about.py, line: 77
-#: mcomix/strings.py:32 mcomix/strings.py:33 mcomix/strings.py:34
-#: mcomix/strings.py:35
+#: mcomix/strings.py:33 mcomix/strings.py:34 mcomix/strings.py:35
+#: mcomix/strings.py:36
 msgid "Simplified Chinese translation"
 msgstr "Förenklad kinesisk översättning"
 
 #
 # File: src/about.py, line: 78
-#: mcomix/strings.py:36 mcomix/strings.py:37
+#: mcomix/strings.py:37 mcomix/strings.py:38
 msgid "Spanish translation"
 msgstr "Spansk översättning"
 
 #
 # File: src/about.py, line: 79
-#: mcomix/strings.py:38
+#: mcomix/strings.py:39
 msgid "Brazilian Portuguese translation"
 msgstr "Brasiliansk-portugisisk översättning"
 
 #
 # File: src/about.py, line: 81
-#: mcomix/strings.py:39
+#: mcomix/strings.py:40
 msgid "German translation and Nautilus thumbnailer"
 msgstr "Tysk översättning och miniatyrbildsskapare för Nautilus"
 
 #
 # File: src/about.py, line: 94
-#: mcomix/strings.py:40
+#: mcomix/strings.py:41
 msgid "German translation"
 msgstr "Tysk översättning"
 
 #
 # File: src/about.py, line: 82
-#: mcomix/strings.py:41 mcomix/strings.py:42 mcomix/strings.py:43
+#: mcomix/strings.py:42 mcomix/strings.py:43 mcomix/strings.py:44
 msgid "Italian translation"
 msgstr "Italiensk översättning"
 
 #
 # File: src/about.py, line: 83
-#: mcomix/strings.py:44
+#: mcomix/strings.py:45
 msgid "Dutch translation"
 msgstr "Nederländsk översättning"
 
 #
 # File: src/about.py, line: 84
-#: mcomix/strings.py:45 mcomix/strings.py:46 mcomix/strings.py:47
-#: mcomix/strings.py:48
+#: mcomix/strings.py:46 mcomix/strings.py:47 mcomix/strings.py:48
+#: mcomix/strings.py:49
 msgid "French translation"
 msgstr "Fransk översättning"
 
-#: mcomix/strings.py:49 mcomix/strings.py:50
+#: mcomix/strings.py:50 mcomix/strings.py:51
 msgid "Polish translation"
 msgstr "Polsk översättning"
 
 #
 # File: src/about.py, line: 86
-#: mcomix/strings.py:51
+#: mcomix/strings.py:52
 msgid "Greek translation"
 msgstr "Grekisk översättning"
 
 #
 # File: src/about.py, line: 87
-#: mcomix/strings.py:52
+#: mcomix/strings.py:53
 msgid "Catalan translation"
 msgstr "Katalansk översättning"
 
 #
 # File: src/about.py, line: 88
-#: mcomix/strings.py:53 mcomix/strings.py:54
+#: mcomix/strings.py:54 mcomix/strings.py:55
 msgid "Traditional Chinese translation"
 msgstr "Traditionell kinesisk översättning"
 
 #
 # File: src/about.py, line: 89
-#: mcomix/strings.py:55 mcomix/strings.py:56 mcomix/strings.py:57
+#: mcomix/strings.py:56 mcomix/strings.py:57 mcomix/strings.py:58
 msgid "Japanese translation"
 msgstr "Japansk översättning"
 
 #
 # File: src/about.py, line: 90
-#: mcomix/strings.py:58
+#: mcomix/strings.py:59
 msgid "Hungarian translation"
 msgstr "Ungersk översättning"
 
 #
 # File: src/about.py, line: 91
-#: mcomix/strings.py:59 mcomix/strings.py:60
+#: mcomix/strings.py:60 mcomix/strings.py:61
 msgid "Russian translation"
 msgstr "Rysk översättning"
 
 #
 # File: src/about.py, line: 92
-#: mcomix/strings.py:61
+#: mcomix/strings.py:62
 msgid "Croatian translation"
 msgstr "Kroatisk översättning"
 
 #
 # File: src/about.py, line: 93
-#: mcomix/strings.py:62 mcomix/strings.py:63 mcomix/strings.py:64
+#: mcomix/strings.py:63 mcomix/strings.py:64 mcomix/strings.py:65
 msgid "Korean translation"
 msgstr "Koreansk översättning"
 
 #
 # File: src/about.py, line: 94
-#: mcomix/strings.py:65
+#: mcomix/strings.py:66
 msgid "Persian translation"
 msgstr "Persisk översättning"
 
 #
 # File: src/about.py, line: 95
-#: mcomix/strings.py:66
+#: mcomix/strings.py:67
 msgid "Indonesian translation"
 msgstr "Indonesisk översättning"
 
 #
 # File: src/about.py, line: 96
-#: mcomix/strings.py:67
+#: mcomix/strings.py:68
 msgid "Czech translation"
 msgstr "Tjeckisk översättning"
 
-#: mcomix/strings.py:68
+#: mcomix/strings.py:69
 msgid "Ukrainian translation"
 msgstr "Ukrainsk översättning"
 
 #
 # File: src/about.py, line: 82
-#: mcomix/strings.py:69
+#: mcomix/strings.py:70
 msgid "Galician translation"
 msgstr "Galicisk översättning"
 
-#: mcomix/strings.py:70 mcomix/strings.py:71
+#: mcomix/strings.py:71 mcomix/strings.py:72
 msgid "Swedish translation"
 msgstr "Svensk översättning"
 
 #
 # File: src/about.py, line: 86
-#: mcomix/strings.py:72
+#: mcomix/strings.py:73
 msgid "Hebrew translation"
 msgstr "Hebreisk översättning"
 
 #
 # File: src/about.py, line: 82
-#: mcomix/strings.py:73
+#: mcomix/strings.py:74
 msgid "Lithuanian translation"
 msgstr "Litauisk översättning"
 
 #
 # File: src/about.py, line: 97
-#: mcomix/strings.py:76
+#: mcomix/strings.py:77
 msgid "Icon design"
 msgstr "Ikondesign"
 
-#: mcomix/strings.py:77
+#: mcomix/strings.py:78
 msgid "Vector icon"
 msgstr "Vektorikon"
 
@@ -3640,12 +3644,12 @@ msgstr "Kunde inte öppna handboken: %s"
 msgid "! Worker thread processing %(function)r failed: %(error)s"
 msgstr "! Arbetstråd bearbetning %(function)r misslyckades: %(error)s"
 
-#: mcomix/archive/kfx.py:571
+#: mcomix/archive/epub.py:231 mcomix/archive/kfx.py:900
 #, python-format
 msgid "Could not open %s: it is protected by DRM."
 msgstr "Kunde inte öppna %s: den är skyddad med DRM."
 
-#: mcomix/archive/kfx.py:575
+#: mcomix/archive/kfx.py:905
 #, python-format
 msgid "Could not open %s: it is not a Kindle book MComix can read."
 msgstr "Kunde inte öppna %s: den är inte en Kindle-bok som MComix kan läsa."
@@ -3665,7 +3669,7 @@ msgstr "Ange lösenordet för att fortsätta:"
 msgid "Extraction of %(archivefile)s might have failed: %(error)s"
 msgstr "Uppackningen av %(archivefile)s kan ha misslyckats: %(error)s"
 
-#: mcomix/archive/zip.py:136
+#: mcomix/archive/zip.py:155
 #, python-format
 msgid ""
 "%(filename)s's extracted size is %(actual_size)d bytes, but should be "

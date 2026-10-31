@@ -79,7 +79,7 @@ CLICK_FORWARD, CLICK_HALVES, CLICK_THIRDS = list(range(3))
 #: gdk-pixbuf interpolation types (0-3) the preference holds otherwise.
 SCALING_BICUBIC, SCALING_LANCZOS = 4, 5
 
-ZIP, RAR, TAR, GZIP, BZIP2, XZ, PDF, SEVENZIP, LHA, ZIP_EXTERNAL, MOBI, DJVU, KFX = list(range(13))
+ZIP, RAR, TAR, GZIP, BZIP2, XZ, PDF, SEVENZIP, LHA, ZIP_EXTERNAL, MOBI, DJVU, KFX, EPUB = list(range(14))
 NORMAL_CURSOR, GRAB_CURSOR, WAIT_CURSOR, NO_CURSOR = list(range(4))
 #: The two collections the library shows that are not rows in its
 #: database.  "All books" is not a collection at all - it stands for the
@@ -152,6 +152,9 @@ DJVU_FORMATS = (
 KFX_FORMATS = (
         ('application/vnd.amazon.mobi8-ebook',),
         ('kfx', 'kfx-zip'))
+EPUB_FORMATS = (
+        ('application/epub+zip',),
+        ('epub',))
 
 IMAGEIO_GDKPIXBUF, IMAGEIO_PIL = list(range(2))
 

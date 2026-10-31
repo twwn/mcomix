@@ -2,7 +2,7 @@
     This file should only be imported after gettext has been correctly initialized
     and installed in the global namespace. """
 
-from mcomix.constants import ZIP, RAR, TAR, GZIP, BZIP2, XZ, PDF, SEVENZIP, LHA, ZIP_EXTERNAL, MOBI, DJVU, KFX
+from mcomix.constants import ZIP, RAR, TAR, GZIP, BZIP2, XZ, PDF, SEVENZIP, LHA, ZIP_EXTERNAL, MOBI, DJVU, KFX, EPUB
 from mcomix.i18n import _
 
 ARCHIVE_DESCRIPTIONS = {
@@ -19,6 +19,7 @@ ARCHIVE_DESCRIPTIONS = {
                         MOBI: _('MobiPocket ebook'),
                         DJVU: _('DjVu document'),
                         KFX: _('Kindle KFX ebook'),
+                        EPUB: _('EPUB ebook'),
                        }
 
 AUTHORS = (
