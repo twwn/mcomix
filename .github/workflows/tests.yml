@@ -92,6 +92,9 @@ jobs:
       # libunrar5t64 and rar (multiverse) and lhasa, whose lha is the
       # name MComix looks for, are what the RAR and LHA tests read and
       # write with: without them 528 of those tests were skipped.
+      # appstream and desktop-file-utils validate the metainfo and the
+      # desktop entry as distributions and Flathub do; here alone, not
+      # under the floors, since the checkers' age is not a floor.
       - name: Install GTK 4 and the tools the tests call
         run: |
           sudo apt-get update
@@ -101,7 +104,8 @@ jobs:
             libcairo2-dev pkg-config xvfb xauth gettext \
             7zip unzip mupdf-tools djvulibre-bin libjxr-tools \
             unrar libunrar5t64 rar lhasa \
-            librsvg2-common adwaita-icon-theme
+            librsvg2-common adwaita-icon-theme \
+            appstream desktop-file-utils
       - name: Install MComix and its development dependencies
         run: python -m pip install -e '.[dev,fileformats]' mypy flake8
       - name: pyflakes

@@ -3,6 +3,7 @@
 import os
 import shutil
 import stat
+import subprocess
 import sys
 import tempfile
 import time
@@ -65,5 +66,53 @@ class DesktopEntryTest(unittest.TestCase):
         time.sleep(0.3)
         with open(launches) as handle:
             self.assertEqual(['2'], handle.read().split())
+
+
+_METAINFO = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                         'share', 'metainfo', 'mcomix.metainfo.xml')
+
+
+class ValidatorsTest(unittest.TestCase):
+
+    """The entry and the AppStream metainfo, as the desktops' own
+    checkers read them: desktop-file-validate (desktop-file-utils) and
+    appstreamcli (appstream), which distributions and Flathub run on
+    what they ship.  Neither ran anywhere before."""
+
+    def _run(self, *command):
+        result = subprocess.run(command, capture_output=True, text=True,
+                                env=dict(os.environ, LC_ALL='C'), timeout=60)
+        return result.returncode, (result.stdout + result.stderr).strip()
+
+    @unittest.skipUnless(shutil.which('desktop-file-validate'),
+                         'desktop-file-utils is not installed')
+    def test_the_desktop_entry_validates(self):
+        self.assertEqual((0, ''), self._run('desktop-file-validate', _ENTRY))
+
+    @unittest.skipUnless(shutil.which('appstreamcli'),
+                         'appstream is not installed')
+    def test_the_metainfo_validates(self):
+        code, output = self._run('appstreamcli', 'validate', '--no-net',
+                                 _METAINFO)
+        self.assertEqual(0, code, output)
+
+    @unittest.skipUnless(shutil.which('appstreamcli'),
+                         'appstream is not installed')
+    def test_the_metainfo_the_flatpak_installs_validates(self):
+        """The manifest rewrites the component id and the launchable;
+        the copy it installs is validated as it is written."""
+        with open(_METAINFO, encoding='utf-8') as fp:
+            text = fp.read()
+        flatpak_id = 'io.github.twwn.mcomix'
+        text = text.replace('<id>net.sourceforge.mcomix</id>',
+                            '<id>%s</id>' % flatpak_id)
+        text = text.replace('>mcomix.desktop</launchable>',
+                            '>%s.desktop</launchable>' % flatpak_id)
+        path = os.path.join(tempfile.mkdtemp(), flatpak_id + '.metainfo.xml')
+        self.addCleanup(shutil.rmtree, os.path.dirname(path), True)
+        with open(path, 'w', encoding='utf-8') as fp:
+            fp.write(text)
+        code, output = self._run('appstreamcli', 'validate', '--no-net', path)
+        self.assertEqual(0, code, output)
 
 # vim: expandtab:sw=4:ts=4
