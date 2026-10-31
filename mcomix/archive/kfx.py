@@ -598,6 +598,55 @@ def _summary(path: str) -> _PartSummary | None:
     return _part_summary(path, stat.st_size, stat.st_mtime_ns)
 
 
+#: The folders _beside() looks in for the other parts of a book kept in
+#: one folder, as the apps keep them, relative to it.
+_PART_FOLDERS = ('', 'assets', 'attachables', os.path.join('assets', 'attachables'))
+
+
+class _FolderIndex(NamedTuple):
+    """The parts in a folder, by container ID, and by the IDs their maps
+    name, for is_later_part() to look up rather than read every part
+    beside the one it is asked about."""
+
+    by_id: dict[str, list[str]]
+    named_by: dict[str, list[str]]
+
+
+@functools.lru_cache(maxsize=64)
+def _folder_index(folder: str, _stamp: tuple[int, ...]) -> _FolderIndex:
+    """The index of the parts in <folder> and its _PART_FOLDERS; kept
+    while their modification times, <_stamp>, are the same, which a
+    file added, removed or renamed in one of them changes."""
+    by_id: dict[str, list[str]] = {}
+    named_by: dict[str, list[str]] = {}
+    for subfolder in _PART_FOLDERS:
+        try:
+            with os.scandir(os.path.join(folder, subfolder)) as entries:
+                paths = [entry.path for entry in entries if entry.is_file()
+                         and _is_part(entry.name) and not _is_voucher(entry.name)]
+        except OSError:
+            continue
+        for path in paths:
+            summary = _summary(path)
+            if summary is None:
+                continue
+            if summary.id is not None:
+                by_id.setdefault(summary.id, []).append(path)
+            for named in summary.book_ids or ():
+                named_by.setdefault(named, []).append(path)
+    return _FolderIndex(by_id, named_by)
+
+
+def _folder_stamp(folder: str) -> tuple[int, ...]:
+    stamp = []
+    for subfolder in _PART_FOLDERS:
+        try:
+            stamp.append(os.stat(os.path.join(folder, subfolder)).st_mtime_ns)
+        except OSError:
+            stamp.append(0)
+    return tuple(stamp)
+
+
 def is_later_part(path: str) -> bool:
     """Whether the KFX container at <path> is a part of a book kept in
     several files other than the one with its pages.
@@ -609,9 +658,32 @@ def is_later_part(path: str) -> bool:
     is read in stands for it, as the first volume does for a RAR set.
     A part is a later one only where that part is found beside it, as
     the book's map names it; a container that cannot be read is not.
+
+    In a folder of the apps' kind, which may hold the parts of a
+    thousand books, the parts are looked up in an index of the folder
+    made once; a Kindle's .sdr folder holds one book's, and is read.
     """
     opened = _summary(path)
     if opened is None or opened.has_sections:
+        return False
+    path = os.path.abspath(path)
+    folder = os.path.dirname(path)
+    stem = os.path.splitext(os.path.basename(path))[0]
+    in_sdr = os.path.isdir(os.path.join(folder, stem + '.sdr')) or any(
+        part.lower().endswith('.sdr') for part in folder.split(os.sep))
+    if not in_sdr:
+        index = _folder_index(folder, _folder_stamp(folder))
+        holders = [path] if opened.book_ids is not None else []
+        holders += index.named_by.get(opened.id or '', [])
+        for holder_path in holders:
+            holder = opened if holder_path == path else _summary(holder_path)
+            if holder is None or holder.book_ids is None:
+                continue
+            return any(os.path.normcase(other) != os.path.normcase(path)
+                       and (summary := _summary(other)) is not None
+                       and summary.has_sections
+                       for named in holder.book_ids
+                       for other in index.by_id.get(named, []))
         return False
     parts = [opened]
     for candidate in _beside(path):

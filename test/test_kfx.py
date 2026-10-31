@@ -776,6 +776,28 @@ class SplitBookTest(MComixTest):
                 self.assertEqual(later, archive_tools.is_later_volume(
                     os.path.join(self.tmp_dir, *name.split('/'))))
 
+    def test_the_folder_is_read_again_when_a_part_comes_or_goes(self):
+        """A folder of the apps' kind is indexed once, not read again
+        for each part, and the index follows a part copied in or taken
+        away; a Kindle's .sdr folder is read as before."""
+        main, metadata, resources = split_book([picture()])
+        self.write({'apps/CR!META.kfx': metadata, 'apps/CR!RES.kfx': resources})
+        meta = os.path.join(self.tmp_dir, 'apps', 'CR!META.kfx')
+        self.assertFalse(archive_tools.is_later_volume(meta))
+        self.write({'apps/CR!MAIN.kfx': main})
+        self.assertTrue(archive_tools.is_later_volume(meta))
+        os.remove(os.path.join(self.tmp_dir, 'apps', 'CR!MAIN.kfx'))
+        self.assertFalse(archive_tools.is_later_volume(meta))
+        self.write({'Book_B1.kfx': main,
+                    'Book_B1.sdr/assets/metadata.kfx': metadata,
+                    'Book_B1.sdr/assets/attachables/CR!RES.kfx': resources})
+        for name, later in (('Book_B1.kfx', False),
+                            ('Book_B1.sdr/assets/metadata.kfx', True),
+                            ('Book_B1.sdr/assets/attachables/CR!RES.kfx', True)):
+            with self.subTest(name):
+                self.assertEqual(later, archive_tools.is_later_volume(
+                    os.path.join(self.tmp_dir, *name.split('/'))))
+
     def test_a_book_of_one_container_looks_no_further(self):
         """A book in one container is that container, whatever lies
         beside it."""
