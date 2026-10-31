@@ -151,7 +151,7 @@ DJVU_FORMATS = (
 #: shared-mime-info gives KFX books the type of AZW3 ones.
 KFX_FORMATS = (
         ('application/vnd.amazon.mobi8-ebook',),
-        ('kfx',))
+        ('kfx', 'kfx-zip'))
 
 IMAGEIO_GDKPIXBUF, IMAGEIO_PIL = list(range(2))
 

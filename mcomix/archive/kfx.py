@@ -14,7 +14,8 @@ A book is in one container as Calibre keeps it; as Amazon delivers it,
 in several files: a main container with the reading order, one of
 metadata whose container entity map names the book's containers, and
 containers that hold only pictures' bytes, beside each other or in a
-folder named after the main one with .sdr.
+folder named after the main one with .sdr.  A KFX-ZIP, which the KFX
+Input plugin gathers a book's files into, holds them side by side.
 
 Written for issue #50, under the GPL v2 or later, from a description of
 the format in prose and from Amazon's public Ion specification, by a
@@ -32,6 +33,7 @@ import os
 import struct
 import tempfile
 import threading
+import zipfile
 from collections.abc import Iterator
 from typing import IO, NamedTuple
 from xml.etree import ElementTree
@@ -39,6 +41,7 @@ from xml.etree import ElementTree
 from PIL import Image
 
 from mcomix import comicinfo
+from mcomix import image_tools
 from mcomix import log
 from mcomix import process
 from mcomix.archive import archive_base
@@ -281,12 +284,13 @@ class _Entity(NamedTuple):
 class _Container:
 
     """One KFX container: its header read, its entities listed, and the
-    file kept open for them to be read from."""
+    file kept open for them to be read from: the file at <path>, or
+    <file>, a member of a KFX-ZIP, which <path> then names."""
 
-    def __init__(self, path: str) -> None:
+    def __init__(self, path: str, file: IO[bytes] | None = None) -> None:
         self.path = path
         self._lock = threading.Lock()
-        self._file: IO[bytes] | None = open(path, 'rb')
+        self._file: IO[bytes] | None = file if file is not None else open(path, 'rb')
         try:
             self._read_header()
         except BaseException:
@@ -325,7 +329,7 @@ class _Container:
         it is, from where the entities begin.
         """
         assert self._file is not None
-        size = os.fstat(self._file.fileno()).st_size
+        size = self._file.seek(0, os.SEEK_END)
         header = self.read(0, 18)
         if header.startswith(DRM_SIGNATURE):
             raise _Protected()
@@ -465,6 +469,59 @@ def _beside(path: str) -> list[str]:
                 continue
     return sorted(name for name in found
                   if os.path.normcase(name) != os.path.normcase(path))
+
+
+def is_kfx_zip(path: str) -> bool:
+    """Whether the ZIP archive at <path> is a KFX-ZIP: no page in it,
+    and a file that is a container, or one wrapped in DRM.
+
+    The KFX Input plugin gathers the files of a book into one, flattened
+    to their names, with no list of them: each is told by its name and
+    its first bytes.
+    """
+    try:
+        with zipfile.ZipFile(path) as archive:
+            names = [name for name in archive.namelist()
+                     if not name.endswith('/')]
+            if any(image_tools.is_image_file(name) for name in names):
+                return False
+            for name in names:
+                if _is_part(os.path.basename(name)):
+                    with archive.open(name) as member:
+                        if member.read(len(DRM_SIGNATURE)).startswith(
+                                (CONTAINER_SIGNATURE, DRM_SIGNATURE)):
+                            return True
+    except (OSError, zipfile.BadZipFile, RuntimeError, NotImplementedError):
+        pass
+    return False
+
+
+def _zipped_containers(archive: zipfile.ZipFile, path: str) -> list[_Container]:
+    """The containers of the KFX-ZIP <archive>, at <path>: those of one
+    book, the one with the container entity map first.
+
+    The plugin leaves a book in a KFX-ZIP where it cannot join its
+    parts into one container, a part wrapped in DRM above all: such a
+    part refuses the book.
+    """
+    containers: list[_Container] = []
+    try:
+        for name in sorted(archive.namelist()):
+            if not _is_part(os.path.basename(name)):
+                continue
+            try:
+                containers.append(_Container('%s/%s' % (path, name), archive.open(name)))
+            except (_Unreadable, ion.IonError, struct.error, zipfile.BadZipFile,
+                    RuntimeError, NotImplementedError) as error:
+                log.debug('KFX %s/%s: %s', path, name, error)
+        if not containers:
+            raise _Unreadable('no container')
+    except BaseException:
+        for container in containers:
+            container.close()
+        raise
+    containers.sort(key=lambda container: container.book_ids() is None)
+    return containers
 
 
 def _containers(path: str) -> list[_Container]:
@@ -837,16 +894,29 @@ class KfxArchive(archive_base.BaseArchive):
     def __init__(self, archive: str) -> None:
         super().__init__(archive)
         name = os.path.basename(archive)
+        self._zip: zipfile.ZipFile | None = None
         try:
-            self._book = _Book(_containers(archive))
-        except _Protected:
-            raise UnpackException(
-                _('Could not open %s: it is protected by DRM.') % name) from None
-        except (_Unreadable, ion.IonError, struct.error) as error:
-            log.debug('KFX %s: %s', archive, error)
-            raise UnpackException(
-                _('Could not open %s: it is not a Kindle book MComix can read.')
-                % name) from None
+            with open(archive, 'rb') as fp:
+                head = fp.read(len(DRM_SIGNATURE))
+            if head.startswith((CONTAINER_SIGNATURE, DRM_SIGNATURE)):
+                containers = _containers(archive)
+            else:
+                self._zip = zipfile.ZipFile(archive)
+                containers = _zipped_containers(self._zip, archive)
+        except BaseException as error:
+            if self._zip is not None:
+                self._zip.close()
+            if isinstance(error, _Protected):
+                raise UnpackException(
+                    _('Could not open %s: it is protected by DRM.') % name) from None
+            if isinstance(error, (_Unreadable, ion.IonError, struct.error,
+                                  zipfile.BadZipFile)):
+                log.debug('KFX %s: %s', archive, error)
+                raise UnpackException(
+                    _('Could not open %s: it is not a Kindle book MComix can read.')
+                    % name) from None
+            raise
+        self._book = _Book(containers)
         self._pages: dict[str, _Picture] | None = None
         self._comic_info: bytes | None = None
 
@@ -891,3 +961,5 @@ class KfxArchive(archive_base.BaseArchive):
     def close(self) -> None:
         for container in self._book.containers:
             container.close()
+        if self._zip is not None:
+            self._zip.close()

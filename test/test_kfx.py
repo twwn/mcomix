@@ -12,6 +12,7 @@ import struct
 import subprocess
 import tempfile
 import unittest
+import zipfile
 from unittest import mock
 
 from PIL import Image, ImageChops
@@ -174,16 +175,24 @@ METADATA_TYPES = (BOOK_METADATA, CONTAINER_ENTITY_MAP, EXTERNAL_RESOURCE)
 RESOURCE_TYPES = (RAW_MEDIA,)
 
 
-def split_book(pages, main='CR!MAIN', metadata='CR!META', resources='CR!RES'):
+def split_book(pages, main='CR!MAIN', metadata='CR!META', resources='CR!RES',
+               numbered_apart=False):
     """A comic of <pages>, as Amazon delivers one: its main container,
     its metadata container, whose map names the other two, and its
-    resource container, which has no symbol table of its own."""
+    resource container, which has no symbol table of its own and names
+    its entities by the metadata container's.  <numbered_apart> numbers
+    the main container's own symbols differently from the others'."""
     book = Book().comic(*pages)
     book.add(BOOK_METADATA, None, {491: []})
     book.add(CONTAINER_ENTITY_MAP, None, {252: [
         {155: main, 181: [book.symbol('c0')]},
         {155: resources, 181: [book.symbol('rsrc0')]}]})
-    return (book.container(main, types=MAIN_TYPES),
+    main_book = book
+    if numbered_apart:
+        main_book = Book()
+        main_book.symbol('numbered apart')
+        main_book.comic(*pages)
+    return (main_book.container(main, types=MAIN_TYPES),
             book.container(metadata, types=METADATA_TYPES),
             book.container(resources, types=RESOURCE_TYPES, symbols=False))
 
@@ -621,6 +630,17 @@ class SplitBookTest(MComixTest):
         self.assertEqual(pages, self.pages('B000000001_EBOK/B000000001_EBOK.azw'))
         self.assertEqual(pages, self.pages('B000000001_EBOK/CR!META.azw.md'))
 
+    def test_parts_numbered_apart(self):
+        """A container without a symbol table of its own names its
+        entities by the metadata container's, which need not number
+        them as the main container numbers its own."""
+        pages = [picture((n + 1, 1)) for n in range(2)]
+        main, metadata, resources = split_book(pages, numbered_apart=True)
+        self.write({'apart/A.kfx': main, 'apart/M.kfx': metadata,
+                    'apart/R.kfx': resources})
+        self.assertEqual(pages, self.pages('apart/A.kfx'))
+        self.assertEqual(pages, self.pages('apart/M.kfx'))
+
     def test_other_books_beside_it(self):
         """Two books split in one folder each keep to their own parts:
         the map says which they are."""
@@ -669,3 +689,72 @@ class SplitBookTest(MComixTest):
                         self.pages(folder + '/meta.kfx')
                 else:
                     self.assertEqual([picture((1, 1))], self.pages(folder + '/meta.kfx'))
+
+
+class KfxZipTest(MComixTest):
+
+    """A KFX-ZIP: the files of a book, gathered into a ZIP archive by the
+    KFX Input plugin, flattened to their names."""
+
+    def zipped(self, files, compression=zipfile.ZIP_STORED, name='book.kfx-zip'):
+        path = os.path.join(self.tmp_dir, name)
+        with zipfile.ZipFile(path, 'w', compression) as archive:
+            for member, data in files.items():
+                archive.writestr(member, data)
+        return path
+
+    def pages(self, path):
+        self.assertEqual(constants.KFX, archive_tools.archive_mime_type(path))
+        archive = kfx.KfxArchive(path)
+        self.addCleanup(archive.close)
+        destination = os.path.join(self.tmp_dir, 'out')
+        pages = []
+        for page in archive.list_contents():
+            archive.extract(page, destination)
+            with open(os.path.join(destination, page), 'rb') as fp:
+                pages.append(fp.read())
+        return pages
+
+    def test_a_split_book(self):
+        """The parts of a book, named as Kindle for PC names them, the
+        voucher beside them, stored or compressed: the book in order."""
+        pages = [picture((n + 1, 1)) for n in range(3)]
+        main, metadata, resources = split_book(pages)
+        files = {'B000000001_EBOK.azw': main, 'CR!META.azw.md': metadata,
+                 'CR!RES.azw.res': resources, 'B000000001_EBOK.voucher': b''}
+        for compression in (zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED):
+            with self.subTest(compression=compression):
+                self.assertEqual(pages, self.pages(self.zipped(files, compression)))
+        # The main container listed first, numbering its own symbols
+        # apart from the metadata container, by whose the resource
+        # container's entities are named.
+        main, metadata, resources = split_book(pages, numbered_apart=True)
+        self.assertEqual(pages, self.pages(self.zipped(
+            {'A.azw': main, 'M.azw.md': metadata, 'R.azw.res': resources})))
+
+    def test_a_book_of_one_container(self):
+        pages = [picture((1, 1)), picture((2, 1))]
+        self.assertEqual(pages, self.pages(self.zipped(
+            {'book.kfx': Book().comic(*pages).container()}, name='book.zip')))
+
+    def test_drm(self):
+        """A part wrapped in DRM refuses the book: the plugin leaves a
+        book in a KFX-ZIP where it could not join it into one file."""
+        main, metadata, resources = split_book([picture()])
+        path = self.zipped({'Book_B000000001.kfx': kfx.DRM_SIGNATURE + bytes(100),
+                            'metadata.kfx': metadata, 'CR!RES.kfx': resources,
+                            'voucher': b''})
+        self.assertEqual(constants.KFX, archive_tools.archive_mime_type(path))
+        with self.assertRaisesRegex(kfx.UnpackException,
+                                    'book.kfx-zip: it is protected by DRM'):
+            kfx.KfxArchive(path)
+
+    def test_a_comic_that_carries_a_kfx_book_is_a_zip(self):
+        """A ZIP with pages in it is a comic, whatever else it holds; one
+        whose .kfx file is not a container is no KFX-ZIP."""
+        book = Book().comic(picture()).container()
+        for files in ({'01.jpg': picture(), 'extra.kfx': book},
+                      {'notes.kfx': b'not a container'}):
+            with self.subTest(sorted(files)):
+                self.assertEqual(constants.ZIP, archive_tools.archive_mime_type(
+                    self.zipped(files, name='comic.cbz')))

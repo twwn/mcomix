@@ -197,6 +197,8 @@ def archive_mime_type(path: str) -> int | None:
                 return None
 
             if zipfile.is_zipfile(path):
+                if kfx.is_kfx_zip(path):
+                    return constants.KFX
                 if zip.is_py_supported_zipfile(path):
                     return constants.ZIP
                 else:
