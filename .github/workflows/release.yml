@@ -500,6 +500,7 @@ jobs:
       # Anyone can check with "gh attestation verify <file> --repo <this
       # repository>" that a file was built here, from this tag.
       - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        id: provenance
         with:
           subject-path: "release/mcomix-*"
       # And what the Windows packages carry: win32/build_pyinstaller.py
@@ -508,9 +509,23 @@ jobs:
       # is attested as the SBOM of both ("gh attestation verify <file>
       # --repo <this repository> --predicate-type https://spdx.dev/Document/v2.3").
       - uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
+        id: sbom
         with:
           subject-path: "release/mcomix-win64-*"
           sbom-path: release/sbom-win64-${{ env.TAG }}.spdx.json
+      # Both attestations go out with the release as Sigstore bundles too,
+      # so that a file can be checked without asking GitHub for its
+      # attestation ("gh attestation verify <file> --repo <this
+      # repository> --bundle mcomix-<version>.sigstore.json"), and so
+      # that the release says it is signed to those who look for a
+      # signature beside its files, as OpenSSF Scorecard does.
+      - name: The attestations, as files of the release
+        env:
+          PROVENANCE: ${{ steps.provenance.outputs.bundle-path }}
+          SBOM_ATTESTATION: ${{ steps.sbom.outputs.bundle-path }}
+        run: |
+          cp "$PROVENANCE" "release/mcomix-$TAG.sigstore.json"
+          cp "$SBOM_ATTESTATION" "release/sbom-win64-$TAG.sigstore.json"
       - name: Publish the release, in place of a draft of it
         env:
           GH_TOKEN: ${{ github.token }}

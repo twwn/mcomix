@@ -28,6 +28,7 @@ The tag starts the release workflow. The rest is automatic.
 4. Publishes the GitHub release: the five files, `sbom-win64-<version>.spdx.json`, a `SHA256SUMS` file, and the release's `ChangeLog.md` section as its notes.
    A Flatpak that failed to build is left out with a warning; the release goes out without it.
 5. Attests each file's build provenance: `gh attestation verify <file> --repo twwn/mcomix` proves it was built there, from the tag.
+   Both attestations go out with the release too, as `mcomix-<version>.sigstore.json` and `sbom-win64-<version>.sigstore.json`: `gh attestation verify <file> --repo twwn/mcomix --bundle mcomix-<version>.sigstore.json` checks a file against the bundle.
    The SPDX file lists what the Windows packages carry - the MSYS2 packages whose files are in the bundle, UnRAR.dll and 7-Zip, with versions and licences - and is attested as their SBOM (`--predicate-type https://spdx.dev/Document/v2.3`).
 6. Runs `.github/workflows/publish.yml`: the [packages](#packages).
 7. Uploads the sdist and wheel to [PyPI](#pypi), once it is set up.
