@@ -100,6 +100,10 @@ The release workflow builds the Flatpak, `io.github.twwn.mcomix`, from `flatpak/
 - Flathub lists an app once its submission is accepted: [Flathub's guide](https://docs.flathub.org/docs/for-app-authors/submission) has the steps, [its requirements](https://docs.flathub.org/docs/for-app-authors/requirements) the rules the manifest must meet.
 - After that, no secret is needed. Flathub's own checker reads the `x-checker-data` of the manifest's MComix source every two hours, and opens the pull request for a new tag on [flathub/io.github.twwn.mcomix](https://github.com/flathub/io.github.twwn.mcomix). Merging it publishes the update.
 - The name stays MComix; only the id tells it from Flathub's `net.sourceforge.mcomix`, the original MComix 3.
+- `.github/workflows/flatpak-updates.yml` runs that checker over the other modules every Monday: 7-Zip, unrar, DjVuLibre, jxrlib, Pillow, chardet and PyMuPDF.
+  A newer release fails the run, and its summary lists it.
+  With a token it opens a pull request instead: create the environment `flatpak-updates` as [above](#setting-up-the-environments), with the branch `main` in place of the tag rule, and give it the secret `FLATPAK_UPDATES_TOKEN`, a fine-grained token for this repository alone with Contents and Pull requests, read and write.
+  An unrar beta, which RARLAB's page links as often as not, is left out until its release is there.
 
 ## Building by hand
 

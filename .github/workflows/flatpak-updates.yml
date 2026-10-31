@@ -1,0 +1,118 @@
+name: Flatpak updates
+
+# Whether each module of the Flatpak is at its newest release: every
+# Monday, and by hand.  Flathub's checker reads the x-checker-data of
+# each source in flatpak/io.github.twwn.mcomix.yml and writes the new
+# version and its checksum in, but Flathub runs it only for repositories
+# under github.com/flathub, and nothing had moved five of the eight
+# modules for months.
+#
+# Without a token, newer releases fail the run, and its summary lists
+# them.  With the secret FLATPAK_UPDATES_TOKEN in the environment
+# flatpak-updates - a fine-grained token for this repository alone, with
+# Contents and Pull requests read and write - the run opens a pull
+# request with them instead, or updates the one it opened before, which
+# release.yml then builds.  The workflow's own token will not do: a pull
+# request it opens starts no workflow, and the repository does not let
+# Actions open pull requests.
+
+on:
+  schedule:
+    - cron: "37 5 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# An explicit bash runs with -o pipefail, which the runner's default
+# bash -e leaves out.
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: flatpak-updates
+  cancel-in-progress: false
+
+jobs:
+  check:
+    name: The Flatpak's modules
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    environment: flatpak-updates
+    env:
+      MANIFEST: flatpak/io.github.twwn.mcomix.yml
+      TOKEN: ${{ secrets.FLATPAK_UPDATES_TOKEN }}
+      # The checker's image, pinned as the actions are: a digest of
+      # ghcr.io/flathub/flatpak-external-data-checker:latest.
+      CHECKER: ghcr.io/flathub/flatpak-external-data-checker@sha256:36f9d912709af3e40e6c7f3075a1a4c0a1c0e7b68cebbd6b9f1e5c449dd32536
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # It edits the manifest only: it neither commits nor opens
+      # anything.  A source whose URL is broken fails the step.
+      - name: The newest releases, written into the manifest
+        run: |
+          docker run --rm --user "$(id -u):$(id -g)" --env HOME=/tmp \
+            --volume "$PWD:$PWD" --workdir "$PWD" "$CHECKER" --edit-only "$MANIFEST"
+      # rar_add.htm links RARLAB's newest unrar source, a beta as often as
+      # not, which the unrar module refuses to build: a beta is left out
+      # until its release is there.
+      - name: An unrar beta waits for its release
+        run: |
+          if git diff -U0 -- "$MANIFEST" | grep -q '^+.*unrarsrc-'; then
+            url=$(sed -n 's|^ *url: \(https://www\.rarlab\.com/rar/unrarsrc-[0-9.]*\.tar\.gz\)$|\1|p' "$MANIFEST")
+            beta=$(curl -sSfL "$url" | tar -xzO --wildcards '*/version.hpp' | sed -n 's/^#define RARVER_BETA *//p')
+            if [ "$beta" != 0 ]; then
+              echo "::notice::$url is a beta ($beta); the manifest keeps its unrar."
+              git show "HEAD:$MANIFEST" > old.yml
+              python3 - "$MANIFEST" old.yml <<'EOF'
+          import re, sys
+          block = re.compile(r'(?ms)^  - name: unrar\n.*?(?=^  - name: )')
+          new, old = (open(path, encoding='utf-8').read() for path in sys.argv[1:])
+          with open(sys.argv[1], 'w', encoding='utf-8') as fp:
+              fp.write(block.sub(lambda match: block.search(old).group(0), new, count=1))
+          EOF
+              rm old.yml
+            fi
+          fi
+      - name: What is newer
+        id: changes
+        run: |
+          if git diff --quiet -- "$MANIFEST"; then
+            echo "Every module of the Flatpak is at its newest release." >> "$GITHUB_STEP_SUMMARY"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            {
+              echo "### Newer releases of the Flatpak's modules"
+              echo
+              echo '```diff'
+              git diff -U0 -- "$MANIFEST" | grep '^[-+] '
+              echo '```'
+            } | tee changes.md >> "$GITHUB_STEP_SUMMARY"
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Without a token there is no pull request to open
+        if: steps.changes.outputs.changed == 'true' && env.TOKEN == ''
+        run: |
+          echo "::error::Newer releases of the Flatpak's modules are out; the run's summary lists them. FLATPAK_UPDATES_TOKEN is not set, so no pull request was opened."
+          exit 1
+      - name: A pull request with the newer releases
+        if: steps.changes.outputs.changed == 'true' && env.TOKEN != ''
+        env:
+          GH_TOKEN: ${{ secrets.FLATPAK_UPDATES_TOKEN }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git switch -c flatpak-updates
+          git commit -q -F - -- "$MANIFEST" <<EOF
+          build: the Flatpak's modules move to their newest releases
+
+          $(git diff -U0 -- "$MANIFEST" | grep '^[-+] ')
+          EOF
+          git push --force "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" flatpak-updates
+          if [ -z "$(gh pr list --repo "$GITHUB_REPOSITORY" --head flatpak-updates --state open --json number --jq '.[].number')" ]; then
+            gh pr create --repo "$GITHUB_REPOSITORY" --base main --head flatpak-updates \
+              --title "build: the Flatpak's modules move to their newest releases" --body-file changes.md
+          fi
