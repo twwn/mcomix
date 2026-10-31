@@ -352,6 +352,37 @@ class FrozenEntryTest(MComixTest):
                          calls)
 
 
+#: The namespace of WiX 3's source files.
+_WIX = '{http://schemas.microsoft.com/wix/2006/wi}'
+
+
+class InstallerTest(MComixTest):
+
+    """The MSI: what win32/msi/mcomix.wxs and the fragment
+    win32/build_msi.py writes beside it say, read here since WiX itself
+    runs only on Windows."""
+
+    def _product(self):
+        from xml.etree import ElementTree
+        tree = ElementTree.parse(os.path.join(WIN32, 'msi', 'mcomix.wxs'))
+        return tree.getroot().find(_WIX + 'Product')
+
+    def test_each_build_is_a_product_found_by_its_upgrade_code(self):
+        """With one product code for every version, the next version's
+        installer refused to run over the last one ("Another version of
+        this product is already installed"), and Chocolatey and winget
+        could not update it."""
+        product = self._product()
+        self.assertEqual('*', product.get('Id'))
+        self.assertEqual('A6486632-9E26-428B-8AA3-40B183C35892',
+                         product.get('UpgradeCode'))
+        upgrade = product.find(_WIX + 'MajorUpgrade')
+        self.assertIsNotNone(upgrade)
+        # A release replaced under its tag is built as the same version.
+        self.assertEqual('yes', upgrade.get('AllowSameVersionUpgrades'))
+        self.assertTrue(upgrade.get('DowngradeErrorMessage'))
+
+
 class ChocolateyPackageTest(MComixTest):
 
     """What win32/build_msi.py leaves beside chocolateyinstall.ps1, and

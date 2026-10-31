@@ -1,12 +1,23 @@
 <?xml version='1.0' encoding='utf-8'?>
 <Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
   <Product Name='MComix' Manufacturer='The MComix Team'
-    Id='8DCEC39D-B849-4BA0-B06F-73C83206914A'
+    Id='*'
     UpgradeCode='A6486632-9E26-428B-8AA3-40B183C35892'
     Language='1033' Version='$(var.VERSION)'>
 
     <Package Id='*' Manufacturer='The MComix Team' Compressed='yes'
       Description='MComix is a user-friendly, customizable image viewer.' />
+
+    <!-- Each build is a product of its own, found by the upgrade code:
+         installing it takes out the MComix that is there, of an older
+         version or the same one - a release replaced under its tag is
+         built again as the same version - and refuses to replace a
+         newer one.  Up to 26.10 every installer had the product code
+         8DCEC39D-B849-4BA0-B06F-73C83206914A, so the next version
+         failed with "Another version of this product is already
+         installed"; those installations carry this upgrade code too. -->
+    <MajorUpgrade AllowSameVersionUpgrades='yes'
+      DowngradeErrorMessage='A newer version of MComix is already installed.' />
 
     <Media Id='1' EmbedCab='yes' Cabinet='mcomix.cab' />
 
