@@ -41,9 +41,13 @@ class Sectionizer:
     def __init__(self, f: IO[bytes]) -> None:
         self.f = f
         header = self.f.read(78)
+        if len(header) < 78:
+            raise UnpackException('not a Palm database')
         self.ident = header[0x3C:0x3C+8]
         self.num_sections, = struct.unpack_from('>H', header, 76)
         sections = self.f.read(self.num_sections*8)
+        if len(sections) < self.num_sections * 8:
+            raise UnpackException('record index cut short')
         self.sections = struct.unpack_from('>%dL' % (self.num_sections*2), sections, 0)[::2] + (0x7fffffff, )
 
     def load_section(self, section: int, limit: int = 0x7fffffff) -> bytes:
@@ -53,7 +57,13 @@ class Sectionizer:
         end of the last one is known like every other one's: it is where
         the next begins.
         """
+        if not 0 <= section < self.num_sections:
+            return b''
         before, after = self.sections[section:section+2]
+        # Offsets out of order are a damaged index: a negative length
+        # would read to the end of the file.
+        if after < before:
+            return b''
         self.f.seek(before)
         if limit > after - before:
             limit = after - before
@@ -77,6 +87,8 @@ class MobiArchive(archive_base.NonUnicodeArchive):
             if self.sect.ident != b'BOOKMOBI':
                 raise UnpackException('invalid file format')
             self.header = self.sect.load_section(0)
+            if len(self.header) < 0x70:
+                raise UnpackException('MOBI header cut short')
             self.crypto_type, = struct.unpack_from('>H', self.header, 0xC)
             if self.crypto_type != 0:
                 raise UnpackException('file is encrypted')

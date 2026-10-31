@@ -116,6 +116,24 @@ class MobiArchiveTest(MComixTest):
         with self.assertRaises(mobi.UnpackException):
             self._open(_book(self.resources, ident=b'TEXtREAd'))
 
+    def test_a_damaged_book_is_refused_or_read_as_far_as_it_goes(self):
+        """A file cut short in its Palm header, its record index or its
+        MOBI header raised struct.error rather than UnpackException; an
+        index whose offsets go backwards read a negative length, which
+        is the rest of the file.  The fuzzer found the first with an
+        empty file (fuzz/fuzz_mobi.py)."""
+        book = _book([self.jpeg])
+        for broken in (b'', book[:50], book[:80], book[:96]):
+            with self.subTest(len(broken)), self.assertRaises(mobi.UnpackException):
+                self._open(broken)
+        # The PNG record's offset made 0: the JPEG record before it ends
+        # before it starts, and was read to the end of the file as a
+        # picture of the JPEG and the PNG together.
+        damaged = bytearray(_book([self.jpeg, self.png]))
+        struct.pack_into('>L', damaged, 78 + 8 * 3, 0)
+        archive = self._open(bytes(damaged))
+        self.assertEqual([], archive.list_contents())
+
     def test_refuses_an_encrypted_book(self):
         with self.assertRaises(mobi.UnpackException):
             self._open(_book(self.resources, crypto_type=2))
