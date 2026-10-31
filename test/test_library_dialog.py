@@ -512,6 +512,22 @@ class FolderWatchTest(_LibraryWindowTest):
             self._arrive(folder)
             self.assertFalse(wait_for(lambda: scan.called, seconds=1))
 
+    def test_a_library_destroyed_without_close_stops_watching(self):
+        """_close_dialog() destroys the window without close().  A scan
+        still pending then ran on the closed database, during whatever
+        test came next on the CI's floors and Windows jobs (Tests
+        41211974279, Windows tests 41211974270), whose GLib reported a
+        copied book once more after the test that copied it."""
+        folder = self._watched()
+        dialog = self._open_watching((folder, False))
+        watcher = dialog._watcher
+        with unittest.mock.patch.object(watcher, '_scan') as scan:
+            watcher._later()
+            main_dialog._close_dialog()
+            pump()
+            self.assertEqual([], watcher.folders)
+            self.assertFalse(wait_for(lambda: scan.called, seconds=1))
+
     def test_an_edited_watch_list_is_watched_as_it_now_stands(self):
         dialog = self._open()
         folder = self._watched()

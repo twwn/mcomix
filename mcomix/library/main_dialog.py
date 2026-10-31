@@ -86,6 +86,13 @@ class _LibraryDialog(Gtk.Window):
         self._scans_running = 0
         #: Watches the watched folders while the window is open.
         self._watcher = folder_watcher.FolderWatcher(self.scan_for_new_files)
+        # Whichever way the window goes: close() stops it too, but
+        # _close_dialog() destroys the window without close(), and a
+        # monitor left running would scan a closed database.  GTK 4
+        # emits 'destroy' only when the window is disposed, which the
+        # watcher's own references put off; destroying it unrealizes it
+        # at once.
+        self.connect('unrealize', self._stop_watching)
         self.watch_folders()
 
         grid = Gtk.Grid()
@@ -154,6 +161,9 @@ class _LibraryDialog(Gtk.Window):
                                  in self.backend.watchlist.get_watchlist()])
         else:
             self._watcher.stop()
+
+    def _stop_watching(self, *args: object) -> None:
+        self._watcher.stop()
 
     def _scan_finished(self) -> None:
         """Bound to the watch list's scan_finished: a walk is over.

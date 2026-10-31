@@ -149,7 +149,8 @@ class FolderWatcher:
 
     def _due(self) -> bool:
         self._pending = None
-        self._scan()
+        if self._monitors:
+            self._scan()
         return GLib.SOURCE_REMOVE
 
 # vim: expandtab:sw=4:ts=4
