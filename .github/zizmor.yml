@@ -1,0 +1,9 @@
+# zizmor's configuration, which it finds here by itself; workflows.yml
+# runs it over .github/ on every change to a workflow.
+rules:
+  # It asks for "$/..." in place of "./..." when release.yml calls
+  # publish.yml, a syntax actionlint does not know; "./" is what
+  # GitHub's documentation gives for a reusable workflow in the same
+  # repository.
+  self-repository:
+    disable: true

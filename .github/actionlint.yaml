@@ -1,0 +1,7 @@
+# actionlint's configuration, which it finds here by itself; workflows.yml
+# runs it over the workflows on every change to one.
+self-hosted-runner:
+  # Not self-hosted: GitHub's Ubuntu 26.04 image, which actionlint 1.7.12
+  # predates and would call an unknown label.
+  labels:
+    - ubuntu-26.04

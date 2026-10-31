@@ -87,5 +87,6 @@ Workflow | Runs | Does
 `pages.yml` | A push to `main` that changes a page | Publishes the manual on [GitHub Pages](https://twwn.github.io/mcomix/).
 `release-notes.yml` | A push to `main` that changes `ChangeLog.md` | Makes each published release's notes its `ChangeLog.md` section again.
 `windows-tests.yml` | Every push to `main` and every pull request that changes more than the manual, by hand | The tests on Windows, in MSYS2's UCRT64 environment, as the Windows packages are built, with the UnRAR.dll they carry. The installed environment is cached for a week.
+`workflows.yml` | A push to `main` or a pull request that changes a workflow, Mondays | Lints the workflows: actionlint, with shellcheck over their scripts, and zizmor, with its online audits.
 `flatpak-updates.yml` | Mondays, by hand | Checks the Flatpak's modules against their newest releases: see [Releasing](releasing.md#flatpak).
 Dependabot | Monthly | Pull requests updating the actions the workflows use.

@@ -1,0 +1,77 @@
+name: Workflows
+
+# The workflows checked as they were checked by hand before each change
+# to one: actionlint, which reads the expressions and, through
+# shellcheck, every bash script in a run step; and zizmor, which
+# audits them for security, here with its online audits too - commits
+# an action is pinned to that are not in the action's repository, and
+# versions with known advisories - which need a token.  On a push or
+# pull request that changes a workflow or the linters' configuration,
+# and every Monday, for advisories published since.  Their
+# configuration is .github/actionlint.yaml and .github/zizmor.yml.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/**"
+      - ".github/dependabot.yml"
+      - ".github/actionlint.yaml"
+      - ".github/zizmor.yml"
+  pull_request:
+    paths:
+      - ".github/workflows/**"
+      - ".github/dependabot.yml"
+      - ".github/actionlint.yaml"
+      - ".github/zizmor.yml"
+  schedule:
+    - cron: "11 4 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# An explicit bash runs with -o pipefail, which the runner's default
+# bash -e leaves out.
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: workflows-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  actionlint:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # Built by the runner's Go from the tagged module, which Go checks
+      # against its checksum database; shellcheck is the runner's.
+      - name: actionlint, with shellcheck over the run steps
+        run: |
+          go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+          shellcheck --version | sed -n 2p
+          "$(go env GOPATH)/bin/actionlint" -color
+
+  zizmor:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.x"
+      # Each finding is an annotation on the line it is about; any finding
+      # fails the run.
+      - name: zizmor, with its online audits
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python -m pip install zizmor==1.31.1
+          zizmor --format=github .github/
