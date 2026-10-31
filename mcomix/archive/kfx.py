@@ -118,6 +118,15 @@ _EXTENSIONS = {285: 'jpg', 284: 'png', 286: 'gif'}
 #: to a TIFF, where it is installed.
 _JPEG_XR = 548
 
+#: Past this, an offset or a length is in no file (2**62: one that
+#: seek() still takes on every system).
+_LARGEST_OFFSET = 2 ** 62
+
+#: How reading a container fails, other than with what it holds: a
+#: member of a KFX-ZIP is decompressed as it is read, and a damaged one
+#: fails in each of these ways, as can a file that cannot be read.
+_READ_ERRORS = archive_base.ZIP_MEMBER_ERRORS
+
 #: The YJ_symbols ID the first symbol of a document's own table has
 #: where the table does not say, which no book seen does: the one after
 #: Ion's system symbols.
@@ -291,6 +300,12 @@ class _Container:
         self._lock = threading.Lock()
         self._file: IO[bytes] | None = file if file is not None else open(path, 'rb')
         try:
+            #: How long the file is, past which nothing is read.  A member
+            #: of a KFX-ZIP is decompressed to the end to tell.
+            try:
+                self._size = self._file.seek(0, os.SEEK_END)
+            except _READ_ERRORS as error:
+                raise _Unreadable(str(error)) from None
             self._read_header()
         except BaseException:
             self.close()
@@ -299,11 +314,22 @@ class _Container:
     def read(self, start: int, length: int) -> bytes:
         """The <length> bytes from <start> on, or fewer where the file
         ends first."""
+        # Offsets and lengths are the book's, read out of its Ion: one
+        # past what a file can be is no place in this one, and seek()
+        # would raise OverflowError or ValueError on it.
+        if not 0 <= start <= _LARGEST_OFFSET or not 0 <= length <= _LARGEST_OFFSET:
+            raise _Unreadable('outside the file')
+        # read() makes room for all it is asked for before it reads: a
+        # length the book makes up would take the memory of the machine.
+        length = min(length, max(self._size - start, 0))
         with self._lock:
             if self._file is None:
                 raise _Unreadable('closed')
-            self._file.seek(start)
-            return self._file.read(length)
+            try:
+                self._file.seek(start)
+                return self._file.read(length)
+            except _READ_ERRORS as error:
+                raise _Unreadable(str(error)) from None
 
     def close(self) -> None:
         if self._file is not None:
@@ -328,7 +354,7 @@ class _Container:
         it is, from where the entities begin.
         """
         assert self._file is not None
-        size = self._file.seek(0, os.SEEK_END)
+        size = self._size
         header = self.read(0, 18)
         if header.startswith(DRM_SIGNATURE):
             raise _Protected()
@@ -397,7 +423,8 @@ class _Container:
         the header's length, and an Ion struct saying whether what
         follows is compressed or encrypted."""
         data = self.read(entity.start, entity.length)
-        if len(data) != entity.length or not data.startswith(_ENTITY_SIGNATURE):
+        if len(data) != entity.length or len(data) < 10 \
+                or not data.startswith(_ENTITY_SIGNATURE):
             raise _Unreadable('entity')
         header_length, = struct.unpack_from('<I', data, 6)
         if not 10 <= header_length <= len(data):
@@ -510,8 +537,12 @@ def _zipped_containers(archive: zipfile.ZipFile, path: str) -> list[_Container]:
                 continue
             try:
                 containers.append(_Container('%s/%s' % (path, name), archive.open(name)))
-            except (_Unreadable, ion.IonError, struct.error, zipfile.BadZipFile,
-                    RuntimeError, NotImplementedError) as error:
+            except (_Unreadable, struct.error, zipfile.BadZipFile, RuntimeError,
+                    NotImplementedError, OSError, EOFError, ValueError) as error:
+                # OSError and EOFError: a member whose header or data
+                # the archive's directory puts past its end or before
+                # its start; ValueError, besides IonError: one whose
+                # header names it in bytes that do not decode.
                 log.debug('KFX %s/%s: %s', path, name, error)
         if not containers:
             raise _Unreadable('no container')
@@ -624,12 +655,19 @@ class _Book:
                 if kind == type and name is not None]
 
     def payload(self, type: int, name: str | None) -> bytes | None:
-        """What the entity of <type> named <name> holds, as it stands."""
+        """What the entity of <type> named <name> holds, as it stands;
+        None where there is no such entity, or it cannot be read, as
+        the pictures' callers take a picture whose bytes are not there."""
         found = self._entities.get((type, name))
         if found is None:
             return None
         container, entity = found
-        return container.payload(entity)
+        try:
+            return container.payload(entity)
+        except (_Protected, _Unreadable, ion.IonError) as error:
+            log.warning('KFX entity $%d %s of %s: %s', type, name,
+                        container.path, error)
+            return None
 
     def value(self, type: int, name: str | None) -> dict[int, object]:
         """The struct the entity of <type> named <name> holds, with the
@@ -854,9 +892,12 @@ class _Book:
                 try:
                     tile = _open_picture(data, picture.stored_as, folder)
                     tile.load()
-                except (OSError, ValueError, Image.DecompressionBombError) as error:
+                except (OSError, ValueError, SyntaxError, EOFError, struct.error,
+                        Image.DecompressionBombError) as error:
                     # Bytes no decoder reads leave a gap, as a tile not
-                    # there does (UnidentifiedImageError is an OSError).
+                    # there does.  Pillow fails on them in all these
+                    # ways: UnidentifiedImageError is an OSError, and a
+                    # broken PNG chunk a SyntaxError.
                     log.debug('KFX tile %s: %s', location, error)
                     continue
                 if canvas is None:
@@ -897,7 +938,14 @@ class KfxArchive(archive_base.BaseArchive):
             if head.startswith((CONTAINER_SIGNATURE, DRM_SIGNATURE)):
                 containers = _containers(archive)
             else:
-                self._zip = zipfile.ZipFile(archive)
+                try:
+                    self._zip = zipfile.ZipFile(archive)
+                except (zipfile.BadZipFile, NotImplementedError, RuntimeError,
+                        OSError, EOFError, ValueError) as error:
+                    # Every way zipfile fails on a damaged directory: a
+                    # version or a feature it does not read, an offset
+                    # out of the file, a name that does not decode.
+                    raise _Unreadable(str(error)) from None
                 containers = _zipped_containers(self._zip, archive)
         except BaseException as error:
             if self._zip is not None:
@@ -905,11 +953,7 @@ class KfxArchive(archive_base.BaseArchive):
             if isinstance(error, _Protected):
                 raise UnpackException(
                     _('Could not open %s: it is protected by DRM.') % name) from None
-            # NotImplementedError and RuntimeError: a KFX-ZIP of a ZIP
-            # version or a feature zipfile does not read, or encrypted.
-            if isinstance(error, (_Unreadable, ion.IonError, struct.error,
-                                  zipfile.BadZipFile, NotImplementedError,
-                                  RuntimeError)):
+            if isinstance(error, (_Unreadable, ion.IonError, struct.error)):
                 log.debug('KFX %s: %s', archive, error)
                 raise UnpackException(
                     _('Could not open %s: it is not a Kindle book MComix can read.')

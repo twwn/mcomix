@@ -22,8 +22,6 @@ import atheris
 with atheris.instrument_imports(include=['mcomix']):
     from mcomix.archive import kfx
 
-kfx._jxr_decoder = lambda: None
-
 FOLDER = tempfile.mkdtemp(prefix='mcomix-fuzz-kfx-')
 BOOK = os.path.join(FOLDER, 'book', 'book.kfx')
 OUT = os.path.join(FOLDER, 'out')
@@ -46,5 +44,6 @@ def TestOneInput(data: bytes) -> None:
 
 
 if __name__ == '__main__':
+    kfx._jxr_decoder = lambda: None
     atheris.Setup(sys.argv, TestOneInput)
     atheris.Fuzz()

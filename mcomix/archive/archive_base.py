@@ -3,10 +3,13 @@ extraction and adding new archive formats. """
 
 import calendar
 import datetime
+import lzma
 import os
 import sys
 import threading
 import time
+import zipfile
+import zlib
 from collections.abc import Callable, Iterable, Iterator, Sequence
 from typing import IO
 
@@ -15,6 +18,24 @@ from mcomix import i18n
 from mcomix import process
 from mcomix import callback
 from mcomix.archive import password as archive_password
+
+
+def _zip_member_errors() -> tuple[type[Exception], ...]:
+    errors: list[type[Exception]] = [
+        OSError, EOFError, zipfile.BadZipFile, zlib.error, lzma.LZMAError]
+    zstd = getattr(zipfile, 'zstd', None)
+    if zstd is not None:
+        errors.append(zstd.ZstdError)
+    return tuple(errors)
+
+
+#: How zipfile fails reading a damaged member of a ZIP archive, which it
+#: decompresses as it reads: zlib.error for deflate, OSError for bzip2,
+#: LZMAError, and from Python 3.14 ZstdError; BadZipFile for a CRC that
+#: does not match, EOFError for data cut short.  The handlers that read
+#: the documents in a ZIP themselves (KFX-ZIP, EPUB) take any of them
+#: for a member they cannot read.
+ZIP_MEMBER_ERRORS = _zip_member_errors()
 
 
 class BaseArchive:

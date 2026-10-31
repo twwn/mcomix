@@ -92,9 +92,8 @@ def _parse(archive: zipfile.ZipFile, name: str) -> ElementTree.Element | None:
             log.debug('EPUB member %s: %d bytes, not read', name, info.file_size)
             return None
         return ElementTree.fromstring(archive.read(info))
-    except (KeyError, ElementTree.ParseError, zipfile.BadZipFile,
-            RuntimeError, NotImplementedError, OSError, ValueError,
-            LookupError) as error:
+    except (KeyError, ElementTree.ParseError, RuntimeError, NotImplementedError,
+            ValueError, LookupError) + archive_base.ZIP_MEMBER_ERRORS as error:
         # LookupError: an encoding declared that Python has no codec of.
         log.debug('EPUB member %s: %s', name, error)
         return None
@@ -280,7 +279,12 @@ class EpubArchive(archive_base.BaseArchive):
             return
         if member is None:
             return
-        data = self._zip.read(member)
+        try:
+            data = self._zip.read(member)
+        except archive_base.ZIP_MEMBER_ERRORS + (RuntimeError, NotImplementedError) as error:
+            # A damaged page is one not there.
+            log.debug('EPUB member %s: %s', member, error)
+            return
         with self._create_file(destination_path) as new:
             new.write(data)
 
