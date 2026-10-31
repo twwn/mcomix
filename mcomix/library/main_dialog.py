@@ -21,6 +21,7 @@ from mcomix import file_chooser_library_dialog
 from mcomix import status
 from mcomix import widgets
 from mcomix.library import backend as library_backend
+from mcomix.library import folder_watcher
 from mcomix.library import book_area as library_book_area
 from mcomix.library import collection_area as library_collection_area
 from mcomix.library import control_area as library_control_area
@@ -83,6 +84,9 @@ class _LibraryDialog(Gtk.Window):
         #: opened with is still running, and the pointer goes back to
         #: normal when the last of them is over, not the first.
         self._scans_running = 0
+        #: Watches the watched folders while the window is open.
+        self._watcher = folder_watcher.FolderWatcher(self.scan_for_new_files)
+        self.watch_folders()
 
         grid = Gtk.Grid()
         for child, column, row, width, height, hexpand, vexpand in (
@@ -138,6 +142,18 @@ class _LibraryDialog(Gtk.Window):
             self._scans_running += 1
             self.set_busy(True)
             self.backend.watchlist.scan_for_new_files()
+
+    def watch_folders(self) -> None:
+        """Watch the folders of the watch list for books arriving, as
+        it now stands, where the scan at the library's opening is on;
+        watch nothing where it is off.  A book copied in while the
+        library is open is then added as the scan at its opening would
+        have added it."""
+        if prefs['scan for new books on library startup']:
+            self._watcher.start([(entry.directory, entry.recursive) for entry
+                                 in self.backend.watchlist.get_watchlist()])
+        else:
+            self._watcher.stop()
 
     def _scan_finished(self) -> None:
         """Bound to the watch list's scan_finished: a walk is over.
@@ -206,6 +222,7 @@ class _LibraryDialog(Gtk.Window):
         if self.get_width() and self.get_height():
             prefs['lib window width'] = self.get_width()
             prefs['lib window height'] = self.get_height()
+        self._watcher.stop()
         self.backend.watchlist.new_files_found -= self._new_files_found
         self.backend.watchlist.scan_finished -= self._scan_finished
         self.book_area.stop_update()

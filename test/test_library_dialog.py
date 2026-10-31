@@ -38,6 +38,7 @@ from mcomix.dialog import Response
 from mcomix.library import backend_types
 from mcomix.library import book_area
 from mcomix.library import collection_area
+from mcomix.library import folder_watcher
 from mcomix.library import main_dialog
 from mcomix.library import relocate_dialog
 from mcomix.library import watchlist
@@ -390,6 +391,137 @@ class WatchListScanTest(_LibraryWindowTest):
             watch_list.response(Response.CLOSE)
             pump()
         scan.assert_not_called()
+
+
+class FolderWatchTest(_LibraryWindowTest):
+
+    """The watched folders, watched while the library is open: a book
+    copied in was added only at the next scan, when the library was
+    opened again or by hand."""
+
+    def setUp(self):
+        super().setUp()
+        delay = unittest.mock.patch.object(folder_watcher, 'DELAY', 0.1)
+        delay.start()
+        self.addCleanup(delay.stop)
+        prefs['scan for new books on library startup'] = True
+
+    def _watched(self, name='watched'):
+        directory = os.path.normpath(os.path.join(self.tmp_dir, name))
+        os.makedirs(directory, exist_ok=True)
+        return directory
+
+    def _open_watching(self, *folders):
+        """The library, opened on a database that watches <folders>,
+        (folder, with subfolders) each."""
+        dialog = self._open()
+        for folder, recursive in folders:
+            dialog.backend.watchlist.add_directory(folder)
+            dialog.backend.watchlist.get_watchlist_entry(folder).set_recursive(recursive)
+        dialog.watch_folders()
+        expected = sorted(folder for folder, _recursive in folders)
+        self.assertTrue(wait_for(lambda: expected == [
+            f for f in dialog._watcher.folders if f in expected], seconds=10))
+        return dialog
+
+    def _arrive(self, folder, name='new.cbz'):
+        """Copy a book into <folder>, as a file manager would: written,
+        then closed."""
+        path = os.path.join(folder, name)
+        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), path)
+        return path
+
+    def test_a_book_copied_in_is_added(self):
+        folder = self._watched()
+        dialog = self._open_watching((folder, False))
+        path = self._arrive(folder)
+        self.assertTrue(wait_for(
+            lambda: dialog.backend.get_book_by_path(path) is not None, seconds=20),
+            'the book copied into a watched folder was not added')
+
+    def test_a_book_in_a_new_subfolder_is_added_where_subfolders_are_watched(self):
+        folder = self._watched()
+        dialog = self._open_watching((folder, True))
+        subfolder = os.path.join(folder, 'series')
+        os.makedirs(subfolder)
+        self.assertTrue(wait_for(lambda: subfolder in dialog._watcher.folders,
+                                 seconds=10), 'the new subfolder is not watched')
+        path = self._arrive(subfolder)
+        self.assertTrue(wait_for(
+            lambda: dialog.backend.get_book_by_path(path) is not None, seconds=20))
+
+    def test_a_subfolder_is_not_watched_where_subfolders_are_not(self):
+        folder = self._watched()
+        dialog = self._open_watching((folder, False))
+        os.makedirs(os.path.join(folder, 'series'))
+        pump()
+        self.assertEqual([folder], dialog._watcher.folders)
+
+    def test_no_more_folders_than_the_limit_are_watched(self):
+        """Each is an inotify watch, of which a user has a few thousand
+        for every program together."""
+        folder = self._watched()
+        for name in ('a', 'b', 'c', 'd'):
+            os.makedirs(os.path.join(folder, name))
+        with unittest.mock.patch.object(folder_watcher, 'LIMIT', 3):
+            dialog = self._open()
+            dialog.backend.watchlist.add_directory(folder)
+            dialog.backend.watchlist.get_watchlist_entry(folder).set_recursive(True)
+            dialog.watch_folders()
+            self.assertTrue(wait_for(lambda: len(dialog._watcher.folders) == 3,
+                                     seconds=10))
+            os.makedirs(os.path.join(folder, 'e'))
+            pump()
+            self.assertEqual(3, len(dialog._watcher.folders))
+            self.assertIn(folder, dialog._watcher.folders)
+
+    def test_a_batch_of_books_is_one_scan(self):
+        folder = self._watched()
+        dialog = self._open_watching((folder, False))
+        with unittest.mock.patch.object(folder_watcher, 'DELAY', 0.5), \
+                unittest.mock.patch.object(dialog._watcher, '_scan') as scan:
+            for number in range(3):
+                self._arrive(folder, 'book%d.cbz' % number)
+            self.assertTrue(wait_for(lambda: scan.called, seconds=10))
+            pump()
+        scan.assert_called_once_with()
+
+    def test_what_is_no_book_scans_nothing(self):
+        folder = self._watched()
+        dialog = self._open_watching((folder, False))
+        with unittest.mock.patch.object(dialog._watcher, '_scan') as scan:
+            with open(os.path.join(folder, 'notes.txt'), 'w') as fp:
+                fp.write('x')
+            self.assertFalse(wait_for(lambda: scan.called, seconds=1))
+
+    def test_nothing_is_watched_with_the_scan_at_opening_off(self):
+        folder = self._watched()
+        dialog = self._open_watching((folder, False))
+        prefs['scan for new books on library startup'] = False
+        dialog.watch_folders()
+        self.assertEqual([], dialog._watcher.folders)
+
+    def test_closing_the_library_stops_watching(self):
+        folder = self._watched()
+        dialog = self._open_watching((folder, False))
+        watcher = dialog._watcher
+        dialog.close()
+        pump()
+        self.assertEqual([], watcher.folders)
+        with unittest.mock.patch.object(watcher, '_scan') as scan:
+            self._arrive(folder)
+            self.assertFalse(wait_for(lambda: scan.called, seconds=1))
+
+    def test_an_edited_watch_list_is_watched_as_it_now_stands(self):
+        dialog = self._open()
+        folder = self._watched()
+        watch_list = watchlist.WatchListDialog(dialog)
+        self.addCleanup(watch_list.destroy)
+        dialog.backend.watchlist.add_directory(folder)
+        watch_list._changed = True
+        watch_list.response(Response.CLOSE)
+        self.assertTrue(wait_for(lambda: dialog._watcher.folders == [folder],
+                                 seconds=10))
 
 
 class LibraryScanCursorTest(_LibraryWindowTest):

@@ -26,9 +26,13 @@ class _StubLibrary(Gtk.Window):
         super().__init__()
         self.backend = library_backend
         self.scans = 0
+        self.watches = 0
 
     def scan_for_new_files(self):
         self.scans += 1
+
+    def watch_folders(self):
+        self.watches += 1
 
 
 class WatchListDialogTest(MComixTest):

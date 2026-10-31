@@ -252,6 +252,9 @@ class WatchListDialog(Dialog):
                               *args: object) -> None:
         """ Toggles automatic library book scanning. """
         prefs['scan for new books on library startup'] = checkbox.get_active()
+        # The folders are watched while the library is open under the
+        # same setting.
+        self.library.watch_folders()
 
     def _response_cb(self, dialog: Dialog, response: int,
                      *args: object) -> None:
@@ -267,11 +270,14 @@ class WatchListDialog(Dialog):
         close button leave exactly as much to scan for as Close does.
         """
         if response == WatchListDialog.RESPONSE_SCANNOW:
+            if self._changed:
+                self.library.watch_folders()
             self._changed = False
             self.library.scan_for_new_files()
             return
         self.destroy()
         if self._changed:
+            self.library.watch_folders()
             self.library.scan_for_new_files()
 
 
