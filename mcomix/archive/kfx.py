@@ -30,6 +30,7 @@ A book with DRM is refused: its pages cannot be read.
 import functools
 import io
 import os
+import shutil
 import struct
 import tempfile
 import threading
@@ -117,6 +118,11 @@ _EXTENSIONS = {285: 'jpg', 284: 'png', 286: 'gif'}
 #: not.  Neither Pillow nor GTK reads it: jxrlib's JxrDecApp decodes it
 #: to a TIFF, where it is installed.
 _JPEG_XR = 548
+#: A page of an embedded PDF (print replicas, and comics made from PDFs):
+#: the location names a whole PDF, and page_index the page in it.
+#: MComix' own PDF handlers render it, where one is installed.
+_PDF = 565
+_PAGE_INDEX = 564
 
 #: Past this, an offset or a length is in no file (2**62: one that
 #: seek() still takes on every system).
@@ -161,6 +167,10 @@ def _extension(stored_as: object) -> str | None:
     decoded to."""
     if stored_as == _JPEG_XR:
         return 'tif' if _jxr_decoder() is not None else None
+    if stored_as == _PDF:
+        # archive_tools imports this module.
+        from mcomix import archive_tools
+        return 'png' if archive_tools.pdf_available() else None
     return _EXTENSIONS.get(stored_as) if isinstance(stored_as, int) else None
 
 
@@ -684,6 +694,8 @@ class _Picture(NamedTuple):
     tiles: list[list[str]] | None = None
     tile_size: tuple[int, int] = (0, 0)
     padding: int = 0
+    #: The page of the PDF <location> holds, for a picture stored as one.
+    page: int = 0
 
 
 class _Book:
@@ -873,7 +885,9 @@ class _Book:
         if isinstance(location, str):
             if not self.has(_RAW_MEDIA, location):
                 return None
-            return _Picture(extension, stored_as, width, height, location)
+            page = max(_integer(resource.get(_PAGE_INDEX)) or 0, 0) \
+                if stored_as == _PDF else 0
+            return _Picture(extension, stored_as, width, height, location, page=page)
         tiles = resource.get(_TILES)
         tile_width = _integer(resource.get(_TILE_WIDTH)) or 0
         tile_height = _integer(resource.get(_TILE_HEIGHT)) or 0
@@ -1026,6 +1040,12 @@ class KfxArchive(archive_base.BaseArchive):
         self._book = _Book(containers)
         self._pages: dict[str, _Picture] | None = None
         self._comic_info: bytes | None = None
+        #: The embedded PDFs pages are rendered from: each written once
+        #: into a folder of the handler's own, opened with MComix' PDF
+        #: handler, and listed, by location.
+        self._pdfs: dict[str, tuple[archive_base.BaseArchive, list[str]] | None] = {}
+        self._pdf_folder: str | None = None
+        self._pdf_lock = threading.Lock()
 
     def _listed(self) -> dict[str, _Picture]:
         if self._pages is None:
@@ -1058,6 +1078,10 @@ class KfxArchive(archive_base.BaseArchive):
             if picture.stored_as == _JPEG_XR:
                 _decode_jpeg_xr(data, destination_path)
                 return
+            if picture.stored_as == _PDF:
+                self._render_pdf_page(picture.location, data, picture.page,
+                                      destination_path)
+                return
             with self._create_file(destination_path) as new:
                 new.write(data)
         else:
@@ -1071,8 +1095,43 @@ class KfxArchive(archive_base.BaseArchive):
             with self._create_file(destination_path) as new:
                 image.save(new, 'PNG', compress_level=1)
 
+    def _render_pdf_page(self, location: str, data: bytes, page: int,
+                         destination_path: str) -> None:
+        """Render page <page> of the PDF <data>, the entity at
+        <location>, to <destination_path>, with the PDF handler MComix
+        reads PDF files with: the native one, in its worker processes,
+        or MuPDF's mutool.  A page the PDF does not have is left out."""
+        from mcomix import archive_tools
+        from mcomix import constants
+        with self._pdf_lock:
+            if location not in self._pdfs:
+                if self._pdf_folder is None:
+                    self._pdf_folder = tempfile.mkdtemp(prefix='mcomix-kfx-pdf-')
+                path = os.path.join(self._pdf_folder, '%d.pdf' % len(self._pdfs))
+                with open(path, 'wb') as pdf:
+                    pdf.write(data)
+                handler = archive_tools.get_archive_handler(path, constants.PDF)
+                self._pdfs[location] = None if handler is None \
+                    else (handler, handler.list_contents())
+            opened = self._pdfs[location]
+        if opened is None or not 0 <= page < len(opened[1]):
+            log.debug('KFX: no page %d in the PDF at %s', page, location)
+            return
+        handler, names = opened
+        assert self._pdf_folder is not None
+        rendered = os.path.join(self._pdf_folder, 'pages')
+        handler.extract(names[page], rendered)
+        os.replace(os.path.join(rendered, names[page]), destination_path)
+
     def close(self) -> None:
         for container in self._book.containers:
             container.close()
         if self._zip is not None:
             self._zip.close()
+        for opened in self._pdfs.values():
+            if opened is not None:
+                opened[0].close()
+        self._pdfs.clear()
+        if self._pdf_folder is not None:
+            shutil.rmtree(self._pdf_folder, ignore_errors=True)
+            self._pdf_folder = None

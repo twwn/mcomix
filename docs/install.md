@@ -79,7 +79,7 @@ Optional; programs are found on the `PATH`:
 Package or program | Adds
 -------------------|-----
 [libadwaita](https://gnome.pages.gitlab.gnome.org/libadwaita/) | Follows the desktop's GTK 4 theme fully. Without it, as far as plain GTK 4 can.
-[PyMuPDF](https://pypi.org/project/PyMuPDF/) 1.24.7 or newer, or `mutool` from [MuPDF](https://mupdf.com/) | PDF files.
+[PyMuPDF](https://pypi.org/project/PyMuPDF/) 1.24.7 or newer, or `mutool` from [MuPDF](https://mupdf.com/) | PDF files, and the pages of a KFX book kept as pages of a PDF (print replicas).
 The [UnRAR library](https://www.rarlab.com/rar_add.htm) (`libunrar.so` or `UnRAR64.dll`), or the `unrar` or `rar` program | RAR files. `unrar-free` is not used.
 `7z` | 7z files; ZIP files with Deflate64, PPMd or AES members; LHA, xz and lzma files Python cannot read; RAR as a last resort.
 `lha` | LHA files, without `7z`.

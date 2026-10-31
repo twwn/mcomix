@@ -35,7 +35,7 @@ CONTAINER_ENTITY_MAP = 419
 SECTION, STORYLINE, STYLE, BOOK_METADATA = 260, 259, 157, 490
 CONTAINER, IMAGE, ZOOM_TARGET = Symbol(270), Symbol(271), Symbol(439)
 SCALE_FIT, PAGE_SPREAD = Symbol(326), Symbol(437)
-JPG, PNG, JXR = Symbol(285), Symbol(284), Symbol(548)
+JPG, PNG, JXR, PDF = Symbol(285), Symbol(284), Symbol(548), Symbol(565)
 RIGHT_TO_LEFT, VERTICAL_RIGHT_TO_LEFT = Symbol(375), Symbol(559)
 
 #: The max_id of the YJ_symbols import: the highest symbol ID it
@@ -435,6 +435,62 @@ class KfxTest(MComixTest):
         self.assertIsNone(ImageChops.difference(image, shown.convert('RGB')).getbbox())
         self.assertEqual(['page00001.png'],
                          os.listdir(os.path.join(self.tmp_dir, 'out')))
+
+    def _pdf_book(self):
+        """A book of three pages that are pages of one embedded PDF, the
+        second, the first and a fourth it does not have, which Pillow
+        writes: pages of 20 by 30 and 40 by 50 points."""
+        pdf = io.BytesIO()
+        first, second = Image.new('RGB', (20, 30), 'red'), Image.new('RGB', (40, 50), 'blue')
+        first.save(pdf, 'PDF', resolution=72, save_all=True, append_images=[second])
+        book = Book()
+        book.add(RAW_MEDIA, 'replica', pdf.getvalue())
+        for number, page in enumerate((1, 0, 3)):
+            book.page('c%d' % number, 'p%d' % number)
+            book.resource('p%d' % number, 'replica', size=(20, 30), format=PDF,
+                          fields={564: page})
+        book.reading_order('c0', 'c1', 'c2')
+        return book.container()
+
+    @unittest.skipUnless(archive_tools.pdf_available(),
+                         'neither PyMuPDF nor MuPDF is installed')
+    def test_pages_of_an_embedded_pdf(self):
+        """Print replicas, and comics made from PDFs, keep their pages as
+        pages of an embedded PDF, which were passed over: such a book
+        showed nothing.  They are rendered with MComix' own PDF handler;
+        a page the PDF does not have is left out, and the PDF is written
+        out once and taken away with the book."""
+        archive = kfx.KfxArchive(self.write(self._pdf_book()))
+        self.assertEqual(['page00001.png', 'page00002.png', 'page00003.png'],
+                         archive.list_contents())
+        sizes = []
+        for name in ('page00001.png', 'page00002.png'):
+            page = Image.open(io.BytesIO(self.extracted(archive, name)))
+            sizes.append(page.size)
+            self.assertEqual({'blue' if name == 'page00001.png' else 'red'},
+                             {self._colour(page.convert('RGB').getpixel((2, 2)))})
+        # The second page is the larger one, at whatever resolution the
+        # handler renders: both ways round in proportion.
+        self.assertGreater(sizes[0][0], sizes[1][0])
+        destination = os.path.join(self.tmp_dir, 'none')
+        archive.extract('page00003.png', destination)
+        self.assertFalse(os.path.exists(os.path.join(destination, 'page00003.png')))
+        folder = archive._pdf_folder
+        self.assertTrue(os.path.isdir(folder))
+        archive.close()
+        self.assertFalse(os.path.exists(folder))
+
+    @staticmethod
+    def _colour(pixel):
+        red, green, blue = pixel
+        return 'red' if red > 200 and blue < 60 else 'blue' if blue > 200 and red < 60 else pixel
+
+    def test_pages_of_an_embedded_pdf_without_a_pdf_handler(self):
+        """Without PyMuPDF or MuPDF they are passed over, as before: a
+        format that needs a program is offered only where it is there."""
+        with unittest.mock.patch.object(archive_tools, 'pdf_available', lambda: False):
+            archive = self.open(self._pdf_book())
+            self.assertEqual([], archive.list_contents())
 
     def test_jpeg_xr_without_jxrlib(self):
         """Without JxrDecApp, a page whose picture is in JPEG XR alone,

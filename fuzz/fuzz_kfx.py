@@ -6,8 +6,9 @@ containers.  Opening it raises UnpackException or nothing, which the
 file handler shows as "not a Kindle book MComix can read" or "protected
 by DRM"; a book that opened lists its pages without raising, and each
 page comes out without raising.  Any other exception, a hang or memory
-without bound is a finding.  JPEG XR is not decoded: that runs
-jxrlib's program, which is not MComix'.
+without bound is a finding.  JPEG XR is not decoded, nor a page of
+an embedded PDF rendered: those run jxrlib's program and MComix' PDF
+handler, which have targets or fuzzers of their own.
 """
 
 import os
@@ -20,6 +21,7 @@ import _setup  # noqa: F401  # the path and the folders, before MComix
 import atheris
 
 with atheris.instrument_imports(include=['mcomix']):
+    from mcomix import archive_tools
     from mcomix.archive import kfx
 
 FOLDER = tempfile.mkdtemp(prefix='mcomix-fuzz-kfx-')
@@ -45,5 +47,6 @@ def TestOneInput(data: bytes) -> None:
 
 if __name__ == '__main__':
     kfx._jxr_decoder = lambda: None
+    archive_tools.pdf_available = lambda: False
     atheris.Setup(sys.argv, TestOneInput)
     atheris.Fuzz()

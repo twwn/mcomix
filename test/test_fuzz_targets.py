@@ -65,10 +65,13 @@ class FuzzTargetTest(MComixTest):
         self._run('ion')
 
     def test_kfx(self):
-        # JPEG XR is jxrlib's program to decode, not MComix', as the
-        # target leaves it out when it fuzzes.
+        # JPEG XR is jxrlib's program to decode, and a page of an
+        # embedded PDF the PDF handler's to render, as the target leaves
+        # them out when it fuzzes.
+        from mcomix import archive_tools
         from mcomix.archive import kfx
-        with unittest.mock.patch.object(kfx, '_jxr_decoder', lambda: None):
+        with unittest.mock.patch.object(kfx, '_jxr_decoder', lambda: None), \
+                unittest.mock.patch.object(archive_tools, 'pdf_available', lambda: False):
             inputs = self._run('kfx')
         self.assertTrue(any(name.startswith('regressions/') for name, _ in inputs))
 
