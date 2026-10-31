@@ -75,6 +75,7 @@ done
 ```
 
 A new language: copy the template to `mcomix/messages/<code>/LC_MESSAGES/mcomix.po`, translate it, run the script, and add the language to the list in `mcomix/preferences_dialog.py`.
+Translate the desktop entry's `GenericName`, `Comment` and `Keywords` in `share/applications/mcomix.desktop`, and the summary and each paragraph of the description in `share/metainfo/mcomix.metainfo.xml`, too: `test/test_desktop_entry.py` checks that both speak every language there is a catalogue for.
 
 ## Continuous integration
 

@@ -1,6 +1,7 @@
 """ The desktop entry, which file managers read to start MComix. """
 
 import os
+import re
 import shutil
 import stat
 import subprocess
@@ -114,5 +115,87 @@ class ValidatorsTest(unittest.TestCase):
             fp.write(text)
         code, output = self._run('appstreamcli', 'validate', '--no-net', path)
         self.assertEqual(0, code, output)
+
+
+_MESSAGES = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                         'mcomix', 'messages')
+
+
+def _languages():
+    """The languages MComix has a catalogue for."""
+    return sorted(name for name in os.listdir(_MESSAGES)
+                  if os.path.isfile(os.path.join(_MESSAGES, name, 'LC_MESSAGES',
+                                                 'mcomix.po')))
+
+
+class TranslatedEntriesTest(unittest.TestCase):
+
+    """What file managers, menus and software centres show of MComix,
+    in each language MComix speaks.  The entry had its generic name in
+    four languages and its comment in seven, the metainfo its summary
+    and description in English alone, of 24 catalogues."""
+
+    def setUp(self):
+        with open(_ENTRY, encoding='utf-8') as fp:
+            self.entry = fp.read()
+        with open(_METAINFO, encoding='utf-8') as fp:
+            self.metainfo = fp.read()
+
+    def test_there_are_catalogues_to_compare_with(self):
+        self.assertGreater(len(_languages()), 20)
+
+    def test_the_entry_speaks_each_language(self):
+        for language in _languages():
+            with self.subTest(language=language):
+                for key in ('GenericName', 'Comment', 'Keywords'):
+                    self.assertRegex(self.entry, r'(?m)^%s\[%s\]=\S'
+                                     % (key, re.escape(language)))
+
+    def test_the_metainfo_speaks_each_language(self):
+        from xml.etree import ElementTree
+        root = ElementTree.fromstring(self.metainfo)
+        lang = '{http://www.w3.org/XML/1998/namespace}lang'
+        summaries = {element.get(lang) for element in root.findall('summary')}
+        paragraphs = [element.get(lang)
+                      for element in root.find('description').findall('p')]
+        english = paragraphs.count(None)
+        self.assertGreater(english, 0)
+        for language in _languages():
+            with self.subTest(language=language):
+                self.assertIn(language, summaries)
+                self.assertEqual(english, paragraphs.count(language))
+
+    def test_the_entry_offers_mcomix_for_each_kind_of_book(self):
+        """For every type MComix reads as a book; ZIP, RAR, 7z and tar
+        archives in general are left out, most of them being no book."""
+        from mcomix import constants
+        listed = set(re.search(r'(?m)^MimeType=(.*)$', self.entry).group(1)
+                     .strip(';').split(';'))
+        archives = {'application/x-zip', 'application/zip',
+                    'application/x-zip-compressed', 'application/x-rar',
+                    'application/x-7z-compressed', 'application/x-tar',
+                    'application/x-gzip', 'application/x-bzip2'}
+        for name in dir(constants):
+            if name.endswith('_FORMATS'):
+                with self.subTest(formats=name):
+                    self.assertEqual(set(), set(getattr(constants, name)[0])
+                                     - listed - archives)
+        self.assertEqual(set(), archives & listed)
+
+    def test_each_calver_release_links_its_page(self):
+        """A software centre shows what changed in a release from its
+        details link."""
+        from xml.etree import ElementTree
+        root = ElementTree.fromstring(self.metainfo)
+        releases = root.find('releases').findall('release')
+        calver = [release for release in releases
+                  if re.fullmatch(r'\d\d\.\d\d(\.\d+)?', release.get('version'))]
+        self.assertTrue(calver)
+        for release in calver:
+            with self.subTest(version=release.get('version')):
+                url = release.find('url')
+                self.assertEqual('details', url.get('type'))
+                self.assertEqual('https://github.com/twwn/mcomix/releases/tag/'
+                                 + release.get('version'), url.text)
 
 # vim: expandtab:sw=4:ts=4
