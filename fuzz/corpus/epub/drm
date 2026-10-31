@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>
+--8<--
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="id"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>A comic</dc:title><dc:creator>Ann Author</dc:creator><dc:publisher>Press</dc:publisher><dc:date>2021-05-04</dc:date><dc:identifier id="id">urn:uuid:1</dc:identifier></metadata><manifest><item id="p1" href="p1.xhtml" media-type="application/xhtml+xml"/><item id="p2" href="p2.svg" media-type="image/svg+xml"/><item id="a" href="images/a.png" media-type="image/png"/><item id="b" href="images/b.jpg" media-type="image/jpeg"/></manifest><spine page-progression-direction="rtl"><itemref idref="p1"/><itemref idref="p2"/><itemref idref="b" linear="no"/></spine></package>
+--8<--
+<?xml version="1.0" encoding="utf-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops"><head><title>p</title></head><body><div><img src="images/a.png#x"/></div><p><img src="images/b.jpg"/></p></body></html>
+--8<--
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 40 60"><image width="40" height="60" xlink:href="images/b.jpg"/></svg>
+--8<--
+<encryption xmlns="urn:oasis:names:tc:opendocument:xmlns:container" xmlns:enc="http://www.w3.org/2001/04/xmlenc#"><enc:EncryptedData><enc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#aes128-cbc"/><enc:CipherData><enc:CipherReference URI="OEBPS/fonts/f.otf"/></enc:CipherData></enc:EncryptedData></encryption>
