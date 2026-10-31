@@ -34,7 +34,7 @@
 - CTRL+O opens a file chooser; dropping files on the page opens them too.
 - An archive, PDF, DjVu, EPUB, AZW3 or KFX file opens as one book. RAR, 7z, LHA, PDF and DjVu need a helper: see [Install](install.md#requirements).
 - A Kindle book in KFX shows its pages in the book's reading order, each at the largest size the book holds its picture in; a picture stored in tiles is put back together, and one in JPEG XR is shown where `JxrDecApp` is installed (see [Install](install.md#requirements)). A book with DRM does not open.
-  A book kept in several files, as a Kindle or the Kindle apps keep one, opens from any of them: the others are found beside it, or in the `.sdr` folder named after the main one. So does a KFX-ZIP, which Calibre's KFX Input plugin gathers such files into.
+  A book kept in several files, as a Kindle or the Kindle apps keep one, opens from any of them: the others are found beside it, or in the `.sdr` folder named after the main one. A folder of such parts lists the book once, as the part with its pages, and so does a watched folder in the library. So does a KFX-ZIP, which Calibre's KFX Input plugin gathers such files into.
   A KFX book that reads right to left opens in manga mode, and "File → Properties" gives its title, year, authors and publisher. It lists them as a ComicInfo.xml.
 - An EPUB shows the pictures of its pages in the order of its spine, whatever they are called: a comic or manga made into an EPUB, fixed-layout from a store or converted from a CBZ. A chapter of text alone is no page, and an EPUB of text alone has none. A book with DRM does not open.
   An EPUB whose pages turn from right to left opens in manga mode, and "File → Properties" gives its title, year, authors and publisher, as for KFX.

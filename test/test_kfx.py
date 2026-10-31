@@ -694,6 +694,32 @@ class SplitBookTest(MComixTest):
         self.assertEqual([picture((2, 1)), picture((3, 1))],
                          self.pages('second-res.kfx'))
 
+    def test_only_the_part_with_the_pages_is_a_book_in_a_folder(self):
+        """Every part opens the whole book, so a folder of a book's parts
+        listed it once for each, and a watched folder added each to the
+        library.  The parts other than the one with the pages are later
+        volumes, as those of a RAR set are; a single-container book, a
+        part whose main container is not beside it and two books in one
+        folder are told apart."""
+        self.write(dict(zip(('apps/CR!MAIN.kfx', 'apps/CR!META.kfx', 'apps/CR!RES.kfx'),
+                            split_book([picture()]))))
+        self.write(dict(zip(('two/first.kfx', 'two/first-meta.kfx',
+                             'two/second.kfx', 'two/second-res.kfx'),
+                            split_book([picture()])[:2]
+                            + split_book([picture()], 'CR!MAIN2', 'CR!META2',
+                                         'CR!RES2')[::2])))
+        self.write({'alone/meta.kfx': split_book([picture()])[1],
+                    'whole/book.kfx': Book().comic(picture()).container(),
+                    'whole/other.kfx': Book().comic(picture()).container()})
+        for name, later in (('apps/CR!MAIN.kfx', False), ('apps/CR!META.kfx', True),
+                            ('apps/CR!RES.kfx', True), ('two/first.kfx', False),
+                            ('two/first-meta.kfx', True), ('two/second.kfx', False),
+                            ('two/second-res.kfx', False), ('alone/meta.kfx', False),
+                            ('whole/book.kfx', False), ('whole/other.kfx', False)):
+            with self.subTest(name):
+                self.assertEqual(later, archive_tools.is_later_volume(
+                    os.path.join(self.tmp_dir, *name.split('/'))))
+
     def test_a_book_of_one_container_looks_no_further(self):
         """A book in one container is that container, whatever lies
         beside it."""

@@ -554,6 +554,70 @@ def _zipped_containers(archive: zipfile.ZipFile, path: str) -> list[_Container]:
     return containers
 
 
+class _PartSummary(NamedTuple):
+    """What is_later_part() needs of a container: its ID, whether it
+    holds sections, and the IDs its map names, if it has one."""
+
+    id: str | None
+    has_sections: bool
+    book_ids: frozenset[str] | None
+
+
+@functools.lru_cache(maxsize=4096)
+def _part_summary(path: str, _size: int, _mtime: int) -> _PartSummary | None:
+    """The summary of the container at <path>, None where it cannot be
+    read; kept for as long as the file's size and time are the same,
+    so that a folder of parts is read once, not once for each part."""
+    try:
+        container = _Container(path)
+    except (_Protected, _Unreadable, ion.IonError, struct.error, OSError):
+        return None
+    try:
+        ids = container.book_ids()
+        return _PartSummary(container.id, container.holds(_SECTION),
+                            None if ids is None else frozenset(ids))
+    finally:
+        container.close()
+
+
+def _summary(path: str) -> _PartSummary | None:
+    try:
+        stat = os.stat(path)
+    except OSError:
+        return None
+    return _part_summary(path, stat.st_size, stat.st_mtime_ns)
+
+
+def is_later_part(path: str) -> bool:
+    """Whether the KFX container at <path> is a part of a book kept in
+    several files other than the one with its pages.
+
+    Any part opens the whole book (_containers()), so a folder of a
+    book's parts, as the Android and iOS apps and Kindle for PC keep
+    them under .kfx names, listed the book once for each, and a watched
+    folder added each to the library.  The part whose sections the book
+    is read in stands for it, as the first volume does for a RAR set.
+    A part is a later one only where that part is found beside it, as
+    the book's map names it; a container that cannot be read is not.
+    """
+    opened = _summary(path)
+    if opened is None or opened.has_sections:
+        return False
+    parts = [opened]
+    for candidate in _beside(path):
+        name = os.path.basename(candidate)
+        if _is_part(name) and not _is_voucher(name):
+            summary = _summary(candidate)
+            if summary is not None:
+                parts.append(summary)
+    for holder in parts:
+        ids = holder.book_ids
+        if ids is not None and (holder is opened or opened.id in ids):
+            return any(part is not opened and part.id in ids and part.has_sections
+                       for part in parts)
+    return False
+
+
 def _containers(path: str) -> list[_Container]:
     """The containers of the book whose part <path> is, the one with
     the container entity map first: its symbol table names what the

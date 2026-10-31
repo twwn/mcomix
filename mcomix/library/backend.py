@@ -522,7 +522,8 @@ class _LibraryBackend:
             # by itself: what it lists is the rest of the set from the
             # middle of a page on.
             log.info('Not adding "%s" to the library: it is a later '
-                     'volume of a RAR set', i18n.to_display_string(path))
+                     'volume of a RAR set, or a part of a KFX book other '
+                     'than its main one', i18n.to_display_string(path))
             return False
         name = os.path.basename(path)
         # The library lists what it is given, and what a watched

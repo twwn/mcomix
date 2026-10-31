@@ -321,8 +321,11 @@ def is_later_volume(path: str) -> bool:
 
     Such a file is not a book: opened on its own it lists what is left
     from the volume before, and the set is read from its first volume,
-    which the archive handlers follow through the rest.  Only RAR sets
-    are recognised; a file that cannot be read is not a later volume.
+    which the archive handlers follow through the rest.  The parts of a
+    KFX book kept in several files count too: each opens the whole
+    book, which the part with its pages stands for
+    (kfx.is_later_part()).  A file that cannot be read is not a later
+    volume.
     """
     if not is_archive_file(path):
         return False
@@ -331,6 +334,8 @@ def is_later_volume(path: str) -> bool:
             head = archive.read(32)
     except OSError:
         return False
+    if head.startswith(kfx.CONTAINER_SIGNATURE):
+        return kfx.is_later_part(path)
     return _is_later_rar_volume(head)
 
 
