@@ -13,12 +13,31 @@ from mcomix.archive import archive_base
 from mcomix.i18n import _
 
 
+def _methods_python_reads() -> frozenset[int]:
+    """The compression methods this Python's zipfile reads: stored and
+    deflated always, bzip2 and LZMA where Python was built with bz2 and
+    lzma, as nearly every build is, and Zstandard from Python 3.14 on,
+    where compression.zstd is there.  zipfile names each module it found,
+    and None for one it did not."""
+    methods = {zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED}
+    if getattr(zipfile, 'bz2', None) is not None:
+        methods.add(zipfile.ZIP_BZIP2)
+    if getattr(zipfile, 'lzma', None) is not None:
+        methods.add(zipfile.ZIP_LZMA)
+    zstandard: int | None = getattr(zipfile, 'ZIP_ZSTANDARD', None)
+    if zstandard is not None and getattr(zipfile, 'zstd', None) is not None:
+        methods.add(zstandard)
+    return frozenset(methods)
+
+
 def is_py_supported_zipfile(path: str) -> bool:
-    """Check if a given zipfile has all internal files stored with Python supported compression
-    """
+    """Whether Python's zipfile reads every member of the ZIP file at
+    <path>.  A member compressed otherwise - Deflate64, PPMd, AES
+    encryption (method 99) - leaves the whole file to 7-Zip."""
+    readable = _methods_python_reads()
     with zipfile.ZipFile(path, 'r') as zip_file:
         for file_info in zip_file.infolist():
-            if file_info.compress_type not in (zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED):
+            if file_info.compress_type not in readable:
                 return False
     return True
 

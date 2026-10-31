@@ -12,7 +12,8 @@ from mcomix import constants
 _EXTENSION_TO_MIME_TYPES = {
     'cbz': constants.ZIP,
     'zip': constants.ZIP,
-    'zip.bz2': constants.ZIP_EXTERNAL,
+    # ZIP files of bzip2 members, which Python's zipfile reads itself.
+    'zip.bz2': constants.ZIP,
     'rar': constants.RAR,
     # The volumes of Multivolume.rar: each starts with the RAR signature.
     'part1.rar': constants.RAR,

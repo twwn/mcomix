@@ -81,11 +81,11 @@ Package or program | Adds
 [libadwaita](https://gnome.pages.gitlab.gnome.org/libadwaita/) | Follows the desktop's GTK 4 theme fully. Without it, as far as plain GTK 4 can.
 [PyMuPDF](https://pypi.org/project/PyMuPDF/) 1.24.7 or newer, or `mutool` from [MuPDF](https://mupdf.com/) | PDF files.
 The [UnRAR library](https://www.rarlab.com/rar_add.htm) (`libunrar.so` or `UnRAR64.dll`), or the `unrar` or `rar` program | RAR files. `unrar-free` is not used.
-`7z` | 7z files; ZIP, LHA, xz and lzma files Python cannot read; RAR as a last resort.
+`7z` | 7z files; ZIP files with Deflate64, PPMd or AES members; LHA, xz and lzma files Python cannot read; RAR as a last resort.
 `lha` | LHA files, without `7z`.
 `ddjvu` and `djvused` from [DjVuLibre](https://djvu.sourceforge.net/) | DjVu files.
 `JxrDecApp` from jxrlib | Pictures a KFX book keeps in JPEG XR, its larger ones as often as not. Without it, a smaller one in JPEG or PNG is shown.
-`unzip` | ZIP files Python cannot read, without `7z`.
+`unzip` | ZIP files Python cannot read, without `7z`. Stored, deflated, bzip2 and LZMA members Python reads itself, and Zstandard from Python 3.14 on.
 `xz` | Writes an edited `.tar.xz` book on every core, not one.
 [chardet](https://pypi.org/project/chardet/) | Guesses the encoding of file names and comments that are not UTF-8.
 [pillow-avif-plugin](https://pypi.org/project/pillow-avif-plugin/) | AVIF pages, where Pillow is older than 11.3 or was built without libavif, and gdk-pixbuf has no AVIF loader.

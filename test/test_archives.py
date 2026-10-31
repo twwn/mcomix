@@ -22,6 +22,8 @@ try:
 except ImportError:
     chardet = None
 
+from mcomix import archive_tools
+from mcomix import constants
 from mcomix import process
 from mcomix.archive import (
     archive_base,
@@ -445,6 +447,66 @@ class ZipConcurrentExtractionTest(MComixTest):
         for name, data in contents.items():
             with open(os.path.join(destination, name), 'rb') as extracted:
                 self.assertEqual(data, extracted.read(), name)
+
+
+class ZipCompressionMethodTest(MComixTest):
+
+    """Which ZIP files Python's zipfile reads itself.  Only stored and
+    deflated members were taken; a ZIP with bzip2, LZMA or Zstandard
+    members, which zipfile reads too, went to 7-Zip, and where 7-Zip is
+    not installed did not open at all."""
+
+    def _book(self, method):
+        path = os.path.join(self.tmp_dir, 'book-%d.zip' % method)
+        with zipfile.ZipFile(path, 'w', method) as book:
+            book.writestr('01.png', b'one' * 1000)
+            book.writestr('02.png', b'two' * 1000)
+        return path
+
+    def _read_natively(self, method):
+        path = self._book(method)
+        self.assertEqual(constants.ZIP, archive_tools.archive_mime_type(path))
+        archive = zip.ZipArchive(path)
+        destination = os.path.join(self.tmp_dir, 'out-%d' % method)
+        try:
+            for name in archive.list_contents():
+                archive.extract(name, destination)
+        finally:
+            archive.close()
+        with open(os.path.join(destination, '02.png'), 'rb') as page:
+            self.assertEqual(b'two' * 1000, page.read())
+
+    def test_bzip2_members_are_read_natively(self):
+        self._read_natively(zipfile.ZIP_BZIP2)
+
+    def test_lzma_members_are_read_natively(self):
+        self._read_natively(zipfile.ZIP_LZMA)
+
+    @unittest.skipUnless(getattr(zipfile, 'ZIP_ZSTANDARD', None) is not None
+                         and getattr(zipfile, 'zstd', None) is not None,
+                         'this Python has no Zstandard (3.14 brought it)')
+    def test_zstandard_members_are_read_natively(self):
+        self._read_natively(zipfile.ZIP_ZSTANDARD)
+
+    def test_a_method_zipfile_does_not_read_is_left_to_7_zip(self):
+        """Deflate64 (method 9), which Windows' own ZIP folders write
+        past 2 GB: the method in both headers of a stored member made 9."""
+        path = self._book(zipfile.ZIP_STORED)
+        with open(path, 'rb') as fp:
+            data = bytearray(fp.read())
+        for signature, offset in ((b'PK\x03\x04', 8), (b'PK\x01\x02', 10)):
+            for match in re.finditer(re.escape(signature), bytes(data)):
+                struct.pack_into('<H', data, match.start() + offset, 9)
+        with open(path, 'wb') as fp:
+            fp.write(data)
+        self.assertEqual(constants.ZIP_EXTERNAL,
+                         archive_tools.archive_mime_type(path))
+
+    def test_a_python_without_bz2_leaves_bzip2_to_7_zip(self):
+        path = self._book(zipfile.ZIP_BZIP2)
+        with unittest.mock.patch.object(zipfile, 'bz2', None):
+            self.assertEqual(constants.ZIP_EXTERNAL,
+                             archive_tools.archive_mime_type(path))
 
 
 class ZipLegacyNameTest(MComixTest):
