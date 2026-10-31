@@ -273,6 +273,78 @@ jobs:
             }
           }
           if ($failed) { exit 1 }
+      # The installer as a user meets it: run over the newest published
+      # release's, which it has to replace - up to 26.10 every installer
+      # had the same product code, and the next one refused to run over
+      # it - then the installed MComix started, then uninstalled.  A test
+      # build of the version already released replaces it as a release
+      # moved to a new commit does.
+      - name: Install over the last release, start it, uninstall
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          APPDATA: ${{ runner.temp }}\appdata
+        run: |
+          $logs = Join-Path $env:RUNNER_TEMP 'msi'
+          New-Item -ItemType Directory -Force $logs | Out-Null
+          function Invoke-Msi([string[]]$arguments, [string]$log) {
+            $all = $arguments + @('/qn', '/norestart', '/l*v', (Join-Path $logs $log))
+            $code = (Start-Process msiexec.exe -ArgumentList $all -Wait -PassThru).ExitCode
+            if ($code -notin 0, 3010) { throw "msiexec $($arguments -join ' ') ended with $code; see the msi artifact" }
+          }
+          # Every MComix in Programs and Features, for everyone and for this user.
+          function Get-Installed {
+            @('HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*',
+              'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*') |
+              ForEach-Object { Get-ItemProperty $_ -ErrorAction SilentlyContinue } |
+              Where-Object { $_.DisplayName -eq 'MComix' }
+          }
+          $previous = gh release view --repo $env:GITHUB_REPOSITORY --json tagName --jq .tagName
+          if ($LASTEXITCODE -eq 0 -and $previous) {
+            gh release download $previous --repo $env:GITHUB_REPOSITORY --pattern "mcomix-win64-$previous.msi" --dir $logs
+          }
+          if ($LASTEXITCODE -eq 0 -and $previous) {
+            Invoke-Msi @('/i', (Join-Path $logs "mcomix-win64-$previous.msi")) 'previous.log'
+            Write-Output "Installed MComix ${previous}: $((Get-Installed).DisplayVersion)"
+          } else {
+            Write-Output '::notice::No published installer to install over.'
+            # The runner ends the step with the last exit code a program left.
+            $global:LASTEXITCODE = 0
+          }
+          Invoke-Msi @('/i', (Resolve-Path "dist/mcomix-win64-$env:VERSION.msi")) 'install.log'
+          $installed = @(Get-Installed)
+          if ($installed.Count -ne 1) { throw "$($installed.Count) MComix in Programs and Features after the install" }
+          Write-Output "Installed $($installed[0].DisplayVersion) at $($installed[0].InstallLocation)"
+          $exe = Join-Path $env:ProgramFiles 'MComix\MComix.exe'
+          if (-not (Test-Path $exe)) { throw "No $exe" }
+          if (-not (Get-ItemProperty 'Registry::HKEY_CLASSES_ROOT\.cbz\OpenWithProgids' -Name 'MComix.Book' -ErrorAction SilentlyContinue)) {
+            throw 'MComix is not offered for .cbz files'
+          }
+          $log = Join-Path $logs 'installed.log'
+          Start-Process $exe -ArgumentList '-W', 'debug', '-o', $log, "$env:RUNNER_TEMP\smoke.pdf"
+          $deadline = (Get-Date).AddSeconds(60)
+          while ((Get-Date) -lt $deadline -and -not ((Test-Path $log) -and (Get-Content $log -Raw) -match 'Page 1 is available|Traceback')) {
+            Start-Sleep -Milliseconds 500
+          }
+          Get-Process -Name 'MComix*' -ErrorAction SilentlyContinue | Stop-Process -Force
+          Start-Sleep -Seconds 2
+          $text = if (Test-Path $log) { Get-Content $log -Raw } else { '' }
+          if ($text -notmatch 'Page 1 is available' -or $text -match 'Traceback') {
+            Write-Output $text
+            throw 'The installed MComix did not show the PDF'
+          }
+          Invoke-Msi @('/x', (Resolve-Path "dist/mcomix-win64-$env:VERSION.msi")) 'uninstall.log'
+          if (@(Get-Installed).Count -ne 0) { throw 'MComix is still installed after the uninstall' }
+          if (Test-Path $exe) { throw "$exe is still there after the uninstall" }
+          if (Get-ItemProperty 'Registry::HKEY_CLASSES_ROOT\.cbz\OpenWithProgids' -Name 'MComix.Book' -ErrorAction SilentlyContinue) {
+            throw 'MComix is still offered for .cbz files after the uninstall'
+          }
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: failure()
+        with:
+          name: msi-logs
+          path: ${{ runner.temp }}/msi/*.log
+          retention-days: 14
       - name: Say what was built
         run: |
           {

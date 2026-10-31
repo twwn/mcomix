@@ -24,6 +24,7 @@ The tag starts the release workflow. The rest is automatic.
 1. Checks that the tag is `VERSION` in `mcomix/constants.py`.
 2. Builds the source archive on Linux, the Windows zip and MSI installer in MSYS2, and the [Flatpak](#flatpak) bundle.
 3. Starts the built `MComix.exe` on a PDF and on a missing book; any error fails the run.
+   Installs the MSI over the newest published release's, which it has to replace, starts the installed MComix on the PDF, and uninstalls it.
 4. Publishes the GitHub release: the four files, a `SHA256SUMS` file, and the release's `ChangeLog.md` section as its notes.
    A Flatpak that failed to build is left out with a warning; the release goes out without it.
 5. Attests each file's build provenance: `gh attestation verify <file> --repo twwn/mcomix` proves it was built there, from the tag.
