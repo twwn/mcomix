@@ -453,6 +453,8 @@ jobs:
         continue-on-error: true
         run: |
           lint=$(command -v flatpak-builder-lint || echo /app/bin/flatpak-builder-lint)
+          # Into the log as well, which "gh run view --log" reads; the
+          # summary is the web page's alone.
           {
             echo "### flatpak-builder-lint"
             for what in "manifest flatpak/io.github.twwn.mcomix.yml" "repo repo"; do
@@ -464,7 +466,7 @@ jobs:
               "$lint" $what 2>&1 || true
               echo '```'
             done
-          } >> "$GITHUB_STEP_SUMMARY"
+          } | tee -a "$GITHUB_STEP_SUMMARY"
 
   release:
     name: Publish the GitHub release
