@@ -3,6 +3,12 @@
 # so in every run's log.  Every action is pinned to a commit, with its
 # version in a comment beside it, so that a tag moved upstream changes
 # nothing here; Dependabot moves the commit and the comment together.
+#
+# And the tools the workflows install with pip - build, twine, zizmor -
+# pinned with their hashes in .github/requirements/*.txt, which
+# "uv pip compile --universal --python-version 3.12 --generate-hashes"
+# writes from the .in file beside each.  pyproject.toml's floors are
+# not Dependabot's to raise, and nothing here points it there.
 version: 2
 updates:
   - package-ecosystem: github-actions
@@ -15,4 +21,13 @@ updates:
       default-days: 7
     groups:
       actions:
+        patterns: ["*"]
+  - package-ecosystem: pip
+    directory: /.github/requirements
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
+    groups:
+      tools:
         patterns: ["*"]

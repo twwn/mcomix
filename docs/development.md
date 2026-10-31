@@ -91,4 +91,4 @@ Workflow | Runs | Does
 `workflows.yml` | A push to `main` or a pull request that changes a workflow, Mondays | Lints the workflows: actionlint, with shellcheck over their scripts, and zizmor, with its online audits.
 `scorecard.yml` | A push to `main` that changes `.github/`, Mondays | [OpenSSF Scorecard](https://scorecard.dev/viewer/?uri=github.com/twwn/mcomix)'s supply-chain checks; findings under the Security tab, the result behind the badge on the front page.
 `flatpak-updates.yml` | Mondays, by hand | Checks the Flatpak's modules against their newest releases: see [Releasing](releasing.md#flatpak).
-Dependabot | Monthly | Pull requests updating the actions the workflows use.
+Dependabot | Monthly | Pull requests updating the actions the workflows use, and the tools they install with pip (build, twine, zizmor), pinned with their hashes in `.github/requirements/`.
