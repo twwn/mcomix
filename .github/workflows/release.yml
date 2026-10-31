@@ -140,13 +140,16 @@ jobs:
       # What PyPI would refuse, found here rather than by the first upload,
       # which cannot be taken back: metadata it does not take, a README
       # it cannot render.  And a wheel short of a file Git has under
-      # mcomix/ - a picture, a catalogue - which would install a MComix
-      # that fails when it reaches for it.
+      # mcomix/ - a picture, a compiled catalogue - which would install a
+      # MComix that fails when it reaches for it.  The catalogues'
+      # sources, the .po files and the template, are not packaged
+      # (MANIFEST.in takes the .mo files alone), and are left out of
+      # the comparison.
       - name: Check the sdist and the wheel
         run: |
           python -m pip install twine==7.0.0
           python -m twine check --strict pypi/mcomix-*
-          git ls-files mcomix | sort > tracked.txt
+          git ls-files mcomix | grep -v -E '\.pot?$' | sort > tracked.txt
           python -m zipfile -l pypi/mcomix-*.whl | awk 'NR > 1 && $1 ~ /^mcomix\// { print $1 }' | sort > packed.txt
           if missing=$(comm -23 tracked.txt packed.txt) && [ -n "$missing" ]; then
             echo "::error::The wheel leaves out files of mcomix/:"
