@@ -134,6 +134,7 @@ Build in [MSYS2](https://www.msys2.org/)'s UCRT64 environment, the one MSYS2 bui
 - `mingw-w64-ucrt-x86_64-libjxl`
 - `mingw-w64-ucrt-x86_64-python`
 - `mingw-w64-ucrt-x86_64-python-gobject`
+- `mingw-w64-ucrt-x86_64-python-pefile`
 - `mingw-w64-ucrt-x86_64-python-pillow`
 - `mingw-w64-ucrt-x86_64-python-pip`
 - `mingw-w64-ucrt-x86_64-python-pymupdf`
@@ -158,6 +159,12 @@ In a UCRT64 shell in the checkout, build `dist/MComix`, `dist/mcomix-win64-<vers
 
 ```bash
 python win32/build_pyinstaller.py
+```
+
+Check that every DLL a file of the bundle imports, the image loaders' included, is in the bundle or is one of Windows' own; it names each one that is not:
+
+```bash
+python win32/check_imports.py dist/MComix
 ```
 
 Then, with the [WiX Toolset](https://wixtoolset.org/docs/wix3/) version 3 on the `PATH`, build `dist/mcomix-win64-<version>.msi`:

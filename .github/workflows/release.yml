@@ -197,6 +197,7 @@ jobs:
             mingw-w64-ucrt-x86_64-libjxl
             mingw-w64-ucrt-x86_64-python
             mingw-w64-ucrt-x86_64-python-gobject
+            mingw-w64-ucrt-x86_64-python-pefile
             mingw-w64-ucrt-x86_64-python-pillow
             mingw-w64-ucrt-x86_64-python-pip
             mingw-w64-ucrt-x86_64-python-pymupdf
@@ -226,6 +227,11 @@ jobs:
           $wix | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
       - name: Build dist/MComix and the zip
         run: python win32/build_pyinstaller.py
+      # The smoke run below loads what a PDF needs, and no more: a DLL
+      # that only one image format's gdk-pixbuf loader imports (JPEG XL's
+      # libjxl, SVG's librsvg) could be missing without it noticing.
+      - name: Every DLL the bundle imports is in it or in Windows
+        run: python win32/check_imports.py dist/MComix
       - name: Build the MSI installer
         run: |
           python win32/build_msi.py

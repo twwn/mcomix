@@ -8,7 +8,9 @@ that reads it here.
 """
 
 import ast
+import contextlib
 import hashlib
+import io
 import os
 import pathlib
 import shutil
@@ -25,6 +27,7 @@ sys.path.insert(0, WIN32)
 try:
     import build_msi
     import build_pyinstaller
+    import check_imports
 finally:
     sys.path.remove(WIN32)
 
@@ -448,6 +451,103 @@ class OtherFilesTest(MComixTest):
                           / 'JxrDecApp.exe').exists())
         self.assertFalse((checkout / 'dist' / 'MComix' / 'licenses'
                           / 'jxrlib').exists())
+
+
+class CheckImportsTest(MComixTest):
+
+    """win32/check_imports.py, which fails the release build on a DLL
+    that a file of the bundle imports and nothing provides."""
+
+    def test_the_bundle_api_sets_and_windows_provide(self):
+        importers = {'libtiff-6.dll': {'_internal/libgtk-4-1.dll'},
+                     'KERNEL32.dll': {'MComix.exe'},
+                     'api-ms-win-crt-heap-l1-1-0.dll': {'MComix.exe'},
+                     'ext-ms-win-ntuser-window-l1-1-0.dll': {'x.dll'}}
+        self.assertEqual([], check_imports.unresolved(
+            {'libtiff-6.dll'}, importers,
+            check_imports.system_dlls(['Kernel32.dll'])))
+
+    def test_names_compare_without_case(self):
+        self.assertEqual([], check_imports.unresolved(
+            {'libjxl.dll'}, {'LibJXL.DLL': {'loaders/jxl.dll'}}, set()))
+
+    def test_a_dll_only_a_loader_imports_is_missed(self):
+        """What a smoke run that opens a PDF never loads."""
+        importers = {'libjxl_threads.dll': {
+            '_internal/lib/gdk-pixbuf/loaders/libpixbufloader-jxl.dll'}}
+        self.assertEqual(['libjxl_threads.dll'], check_imports.unresolved(
+            {'libjxl.dll'}, importers, set()))
+
+    def test_the_visual_c_runtimes_are_not_windows_own(self):
+        """A runner has them in System32, a fresh Windows does not."""
+        system = check_imports.system_dlls([
+            'vcruntime140.dll', 'VCRUNTIME140_1.dll', 'msvcp140.dll',
+            'msvcr120.dll', 'concrt140.dll', 'vcomp140.dll',
+            'mfc140u.dll', 'd3dx9_43.dll', 'ucrtbased.dll',
+            'msvcrt.dll', 'mfcore.dll', 'mfplat.dll', 'ucrtbase.dll',
+            'd3d11.dll', 'user32.dll'])
+        self.assertEqual({'msvcrt.dll', 'mfcore.dll', 'mfplat.dll',
+                          'ucrtbase.dll', 'd3d11.dll', 'user32.dll'},
+                         system)
+
+    def _main(self, provided, importers):
+        system = pathlib.Path(self.tmp_dir) / 'System32'
+        system.mkdir()
+        (system / 'KERNEL32.dll').write_bytes(b'')
+        output = io.StringIO()
+        with unittest.mock.patch.object(
+                check_imports, 'read_imports',
+                return_value=(provided, importers)), \
+                contextlib.redirect_stdout(output):
+            status = check_imports.main(['dist/MComix', str(system)])
+        return status, output.getvalue()
+
+    def test_a_complete_bundle_passes(self):
+        status, output = self._main(
+            {'mcomix.exe'}, {'kernel32.dll': {'MComix.exe'}})
+        self.assertEqual(0, status)
+        self.assertNotIn('::error::', output)
+
+    def test_a_missing_dll_fails_the_build_naming_its_importers(self):
+        status, output = self._main(
+            {'mcomix.exe'},
+            {'kernel32.dll': {'MComix.exe'},
+             'librsvg-2-2.dll': {'b/pixbufloader_svg.dll', 'a/other.dll'}})
+        self.assertEqual(1, status)
+        self.assertIn('::error::librsvg-2-2.dll is imported by '
+                      'a/other.dll, b/pixbufloader_svg.dll', output)
+        self.assertNotIn('kernel32', output.split('\n', 1)[1])
+
+    @unittest.skipUnless(sys.platform == 'win32', 'Windows has PE files')
+    def test_a_real_bundle_s_imports_are_read(self):
+        """Python's own executable and DLL, copied into a folder of
+        their own, as the build would bundle them."""
+        try:
+            import pefile  # noqa: F401
+        except ImportError:
+            self.skipTest('pefile is not installed')
+        bundle = pathlib.Path(self.tmp_dir) / 'bundle'
+        (bundle / '_internal').mkdir(parents=True)
+        python_dll = next(pathlib.Path(sys.executable).parent.glob(
+            'libpython3.*.dll'))
+        shutil.copy(sys.executable, bundle / 'python.exe')
+        system = check_imports.system_dlls(os.listdir(
+            os.path.join(os.environ['SystemRoot'], 'System32')))
+        name = python_dll.name.lower()
+        provided, importers = check_imports.read_imports(str(bundle))
+        self.assertEqual({'python.exe'}, provided)
+        self.assertEqual({'python.exe'}, importers[name])
+        self.assertIn('kernel32.dll', importers)
+        self.assertIn(name, check_imports.unresolved(
+            provided, importers, system))
+        shutil.copy(python_dll, bundle / '_internal' / python_dll.name)
+        provided, importers = check_imports.read_imports(str(bundle))
+        self.assertIn(os.path.join('_internal', python_dll.name),
+                      importers['kernel32.dll'])
+        self.assertNotIn(name, check_imports.unresolved(
+            provided, importers, system))
+        self.assertNotIn('kernel32.dll', check_imports.unresolved(
+            provided, importers, system))
 
 
 class FrozenEntryTest(MComixTest):

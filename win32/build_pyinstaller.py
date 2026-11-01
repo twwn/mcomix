@@ -41,6 +41,7 @@ having to play around with relative path names.
                mingw-w64-ucrt-x86_64-libjxl \
                mingw-w64-ucrt-x86_64-python \
                mingw-w64-ucrt-x86_64-python-gobject \
+               mingw-w64-ucrt-x86_64-python-pefile \
                mingw-w64-ucrt-x86_64-python-pillow \
                mingw-w64-ucrt-x86_64-python-pip \
                mingw-w64-ucrt-x86_64-python-pymupdf \
@@ -55,7 +56,8 @@ having to play around with relative path names.
        toolbar and menus name.  jxrlib's JxrDecApp shows the pictures
        a KFX book keeps in JPEG XR.  pyinstaller is MSYS2's own build of
        PyInstaller, which pip would otherwise have to build for this
-       Python.
+       Python.  python-pefile is not packed: win32/check_imports.py
+       reads the bundle's DLL imports with it.
 
        docs/releasing.md and .github/workflows/release.yml list the
        same packages, and a test holds the three lists to each other.
