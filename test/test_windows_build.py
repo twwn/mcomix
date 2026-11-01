@@ -763,4 +763,82 @@ class FetchUnrarTest(MComixTest):
         self.assertNotEqual(0, result.returncode)
         self.assertIn('No released UnRAR.dll', result.stderr + result.stdout)
 
+
+@unittest.skipUnless(shutil.which('pwsh'), 'PowerShell is not installed')
+class FetchSevenZipTest(MComixTest):
+
+    """win32/fetch_7zip.ps1, which the release workflow fetches the
+    bundled 7-Zip with: the newest release on GitHub, checked against the
+    SHA-256 GitHub gives, not the runner's, which can be a release
+    behind."""
+
+    INSTALLER = b'installer'
+    # Whatever GitHub calls its latest release; nothing in the script
+    # knows a version.
+    TAG = '31.07'
+    X64 = '7z3107-x64.exe'
+
+    def _fetch(self, assets, digest=None):
+        """Run the script against a latest release TAG with the assets
+        named <assets>, each carrying <digest> (the installer's own where
+        None), and 7-Zip played by a script that writes the three files
+        it is asked for."""
+        work = pathlib.Path(self.tmp_dir)
+        if digest is None:
+            digest = 'sha256:' + hashlib.sha256(self.INSTALLER).hexdigest()
+        (work / '7z.ps1').write_text(
+            "$to = ($args | Where-Object { $_ -like '-o*' }).Substring(2)\n"
+            "foreach ($name in '7z.exe', '7z.dll', 'License.txt') {\n"
+            "  Set-Content (Join-Path $to $name) $name\n"
+            "}\n")
+        script = pathlib.Path(__file__).parent.parent / 'win32' / 'fetch_7zip.ps1'
+        (work / 'run.ps1').write_text(
+            "$fakeAssets = @(%s)\n"
+            "function Invoke-RestMethod {\n"
+            "  param([Parameter(Position = 0)] [string] $Uri, $Headers)\n"
+            "  if (-not $Uri.EndsWith('/repos/ip7z/7zip/releases/latest')) { throw \"404 $Uri\" }\n"
+            "  [pscustomobject]@{ tag_name = '%s'; assets = $fakeAssets }\n"
+            "}\n"
+            "function Invoke-WebRequest {\n"
+            "  param([Parameter(Position = 0)] [string] $Uri, [string] $OutFile)\n"
+            "  if ($Uri -ne 'https://github.com/ip7z/7zip/releases/download/%s/%s') { throw \"404 $Uri\" }\n"
+            "  [IO.File]::WriteAllText($OutFile, '%s')\n"
+            "}\n"
+            "& '%s' -Destination '%s' -SevenZip '%s' -Token ''\n"
+            % (', '.join(
+                "[pscustomobject]@{ name = '%s'; digest = '%s'; "
+                "browser_download_url = 'https://github.com/ip7z/7zip/"
+                "releases/download/%s/%s' }" % (name, digest, self.TAG, name)
+                for name in assets),
+               self.TAG, self.TAG, self.X64,
+               self.INSTALLER.decode(), script, work / '7z', work / '7z.ps1'))
+        return subprocess.run(
+            ['pwsh', '-NoProfile', '-File', str(work / 'run.ps1')],
+            capture_output=True, text=True, timeout=60)
+
+    def test_the_x64_installer_of_the_latest_release_is_unpacked(self):
+        result = self._fetch(['7z3107.exe', self.X64,
+                              '7z3107-x64.msi', '7z3107-arm64.exe'])
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertEqual(self.TAG, result.stdout.strip())
+        self.assertEqual(['7z.dll', '7z.exe', 'License.txt'],
+                         sorted(path.name for path in
+                                (pathlib.Path(self.tmp_dir) / '7z').iterdir()))
+
+    def test_an_installer_not_as_github_hashed_it_is_refused(self):
+        result = self._fetch([self.X64], 'sha256:' + '0' * 64)
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn('GitHub gives', result.stderr + result.stdout)
+        self.assertFalse((pathlib.Path(self.tmp_dir) / '7z').exists())
+
+    def test_an_installer_without_a_digest_is_refused(self):
+        result = self._fetch([self.X64], '')
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn('no SHA-256', result.stderr + result.stdout)
+
+    def test_a_release_without_an_x64_installer_fails(self):
+        result = self._fetch(['7z3107.exe', '7z3107-arm64.exe'])
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn('no single x64 installer', result.stderr + result.stdout)
+
 # vim: expandtab:sw=4:ts=4

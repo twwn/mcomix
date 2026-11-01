@@ -202,17 +202,20 @@ jobs:
             mingw-w64-ucrt-x86_64-python-pip
             mingw-w64-ucrt-x86_64-python-pymupdf
             mingw-w64-ucrt-x86_64-pyinstaller
-      # 7-Zip is the runner's, which its image keeps current; UnRAR.dll
-      # is RARLAB's newest release, as win32/fetch_unrar.ps1 finds it.
+      # 7-Zip is its newest release, as win32/fetch_7zip.ps1 finds it, not
+      # the runner's, which its image can leave a release behind; UnRAR.dll
+      # is RARLAB's newest release, as win32/fetch_unrar.ps1 finds it.  The
+      # runner's 7-Zip unpacks both installers.
       - name: Fetch 7-Zip and UnRAR.dll into ../mcomix-other
         shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           $sevenzip = "$env:ProgramFiles/7-Zip/7z.exe"
           $other = Join-Path (Split-Path $PWD) 'mcomix-other'
-          New-Item -ItemType Directory -Force "$other/7z" | Out-Null
-          Copy-Item "$env:ProgramFiles/7-Zip/7z.exe", "$env:ProgramFiles/7-Zip/7z.dll", "$env:ProgramFiles/7-Zip/License.txt" "$other/7z"
+          ./win32/fetch_7zip.ps1 -Destination "$other/7z" -SevenZip $sevenzip | Out-Null
           $unrar = ./win32/fetch_unrar.ps1 -Destination "$other/unrar" -SevenZip $sevenzip
-          $sevenzipVersion = (& $sevenzip | Select-Object -Skip 1 -First 1).Trim()
+          $sevenzipVersion = (& "$other/7z/7z.exe" | Select-Object -Skip 1 -First 1).Trim()
           "UNRAR_VERSION=$unrar" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
           "SEVENZIP_VERSION=$sevenzipVersion" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
       # WiX 3's tools run from where they are unpacked; nothing has to
