@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 0.93\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-31 15:24+0100\n"
+"POT-Creation-Date: 2026-11-01 12:45+0100\n"
 "PO-Revision-Date: 2015-04-05 08:54+0100\n"
 "Last-Translator: Benoit Pierre <benoit.pierre@gmail.com>\n"
 "Language-Team: \n"
@@ -149,8 +149,8 @@ msgstr "Éditer les signets"
 msgid "C_lear bookmarks..."
 msgstr "Effacer tous les _signets…"
 
-#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1398 mcomix/openwith.py:340
-#: mcomix/library/collection_area.py:160 mcomix/library/watchlist.py:69
+#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1400 mcomix/openwith.py:340
+#: mcomix/library/collection_area.py:159 mcomix/library/watchlist.py:69
 msgid "_Remove"
 msgstr "_Effacer"
 
@@ -170,7 +170,7 @@ msgstr "Type"
 msgid "Name"
 msgstr "Nom"
 
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:2505
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:2509
 #: mcomix/library/control_area.py:157
 msgid "Page"
 msgstr "Page"
@@ -1149,7 +1149,7 @@ msgstr "Préférences"
 msgid "Open containing folder"
 msgstr "Ouvrir le répertoire parent"
 
-#: mcomix/keybindings.py:172 mcomix/library/main_dialog.py:58
+#: mcomix/keybindings.py:172 mcomix/library/main_dialog.py:59
 msgid "Library"
 msgstr "Bibliothèque"
 
@@ -1194,14 +1194,14 @@ msgstr "Impossible de charger les raccourcis clavier : %s"
 msgid "! Could not remove file \"%s\""
 msgstr "! Impossible de supprimer \"%s\""
 
-#: mcomix/main.py:1391
+#: mcomix/main.py:1393
 #, python-format
 msgid "Remove the page picked out of \"%s\"?"
 msgid_plural "Remove the pages picked out of \"%s\"?"
 msgstr[0] "Retirer la page sélectionnée de « %s » ?"
 msgstr[1] "Retirer les pages sélectionnées de « %s » ?"
 
-#: mcomix/main.py:1394
+#: mcomix/main.py:1396
 msgid ""
 "They are taken out of the archive on disk, which is written again at once. "
 "Leaving the book without removing them forgets which pages they were."
@@ -1210,16 +1210,16 @@ msgstr ""
 "Quitter le livre sans les retirer fait oublier de quelles pages il "
 "s'agissait."
 
-#: mcomix/main.py:1397
+#: mcomix/main.py:1399
 msgid "_Keep them"
 msgstr "Les _garder"
 
-#: mcomix/main.py:1563
+#: mcomix/main.py:1565
 #, python-format
 msgid "Animation speed: %s"
 msgstr "Vitesse de l'animation : %s"
 
-#: mcomix/main.py:2211
+#: mcomix/main.py:2213
 msgid "SLIDESHOW"
 msgstr "DIAPORAMA"
 
@@ -3208,12 +3208,12 @@ msgstr "Impossible d'ouvrir le manuel : %s"
 msgid "! Worker thread processing %(function)r failed: %(error)s"
 msgstr "! Échec du fil d'exécution qui traitait %(function)r : %(error)s"
 
-#: mcomix/archive/epub.py:231 mcomix/archive/kfx.py:900
+#: mcomix/archive/epub.py:232 mcomix/archive/kfx.py:1105
 #, python-format
 msgid "Could not open %s: it is protected by DRM."
 msgstr "Impossible d'ouvrir %s : il est protégé par DRM."
 
-#: mcomix/archive/kfx.py:905
+#: mcomix/archive/kfx.py:1109
 #, python-format
 msgid "Could not open %s: it is not a Kindle book MComix can read."
 msgstr ""
@@ -3275,50 +3275,50 @@ msgstr "! Impossible de charger la couverture de '%s'"
 msgid "Recent"
 msgstr "Fichiers récents"
 
-#: mcomix/library/backend.py:542 mcomix/library/backend.py:589
+#: mcomix/library/backend.py:543 mcomix/library/backend.py:590
 #, python-format
 msgid "! Could not add book \"%s\" to the library"
 msgstr "! Impossible d'ajouter %s à la bibliothèque"
 
-#: mcomix/library/backend.py:618 mcomix/library/backend.py:686
+#: mcomix/library/backend.py:619 mcomix/library/backend.py:687
 #, python-format
 msgid "! Could not move book \"%s\" in the library"
 msgstr "! Impossible de déplacer le livre « %s » dans la bibliothèque"
 
-#: mcomix/library/backend.py:736
+#: mcomix/library/backend.py:737
 #, python-format
 msgid "! Could not add collection \"%s\""
 msgstr "! Impossible d'ajouter la collection \"%s\""
 
-#: mcomix/library/backend.py:768
+#: mcomix/library/backend.py:769
 #, python-format
 msgid "! Could not add book %(book)s to collection %(collection)s"
 msgstr ""
 "! Impossible d'ajouter le livre %(book)s à la collection %(collection)s"
 
-#: mcomix/library/backend.py:795
+#: mcomix/library/backend.py:796
 #, python-format
 msgid "! Could not rename collection to \"%s\""
 msgstr "! Impossible de renommer la collection en \"%s\""
 
-#: mcomix/library/backend.py:812 mcomix/library/backend.py:814
+#: mcomix/library/backend.py:813 mcomix/library/backend.py:815
 msgid "(Copy)"
 msgstr "(Copie)"
 
-#: mcomix/library/backend.py:1111
+#: mcomix/library/backend.py:1112
 msgid "Could not determine library database version!"
 msgstr ""
 "Impossible de déterminer la version de la base de données de la "
 "bibliothèque !"
 
-#: mcomix/library/backend.py:1161
+#: mcomix/library/backend.py:1162
 #, python-format
 msgid "Upgrading library database version from %(from)d to %(to)d."
 msgstr ""
 "Mise à jour de la version de la base de données de la bibliothèque de "
 "%(from)d vers %(to)d."
 
-#: mcomix/library/backend_types.py:387 mcomix/library/collection_area.py:224
+#: mcomix/library/backend_types.py:387 mcomix/library/collection_area.py:223
 msgid "All books"
 msgstr "Tous les livres"
 
@@ -3357,11 +3357,11 @@ msgstr "Marquer comme non l_u"
 msgid "Forgets the page the selected books were left at."
 msgstr "Oublie la page à laquelle les livres sélectionnés ont été laissés."
 
-#: mcomix/library/book_area.py:205 mcomix/library/collection_area.py:143
+#: mcomix/library/book_area.py:205 mcomix/library/collection_area.py:142
 msgid "_Add..."
 msgstr "_Ajouter…"
 
-#: mcomix/library/book_area.py:206 mcomix/library/collection_area.py:144
+#: mcomix/library/book_area.py:206 mcomix/library/collection_area.py:143
 msgid "Add more books to the library."
 msgstr "Ajoute plus de livres à la bibliothèque."
 
@@ -3389,11 +3389,11 @@ msgstr "_Effacer et mettre à la corbeille"
 msgid "Deletes the selected books from disk."
 msgstr "Supprime les livres sélectionnés du disque."
 
-#: mcomix/library/book_area.py:218 mcomix/library/collection_area.py:154
+#: mcomix/library/book_area.py:218 mcomix/library/collection_area.py:153
 msgid "Clean _up"
 msgstr "_Nettoyer"
 
-#: mcomix/library/book_area.py:219 mcomix/library/collection_area.py:155
+#: mcomix/library/book_area.py:219 mcomix/library/collection_area.py:154
 msgid "Removes no longer existent books from the collection."
 msgstr "Efface de la collection les livres qui n'existent plus."
 
@@ -3468,7 +3468,7 @@ msgid_plural "Removed %(num)d books from '%(collection)s'."
 msgstr[0] "Suppression de %(num)d livre de '%(collection)s'."
 msgstr[1] "Suppression de %(num)d livres de '%(collection)s'."
 
-#: mcomix/library/book_area.py:861 mcomix/library/collection_area.py:302
+#: mcomix/library/book_area.py:861 mcomix/library/collection_area.py:301
 #, python-format
 msgid "Removed %d book from the library."
 msgid_plural "Removed %d books from the library."
@@ -3502,81 +3502,81 @@ msgid_plural "Remove the bookmarks in the %(count)d deleted books?"
 msgstr[0] "Supprimer les signets du livre supprimé ?"
 msgstr[1] "Supprimer les signets des %(count)d livres supprimés ?"
 
-#: mcomix/library/collection_area.py:147
+#: mcomix/library/collection_area.py:146
 msgid "New"
 msgstr "_Nouveau"
 
-#: mcomix/library/collection_area.py:148
+#: mcomix/library/collection_area.py:147
 msgid "Add a new empty collection."
 msgstr "Ajouter une nouvelle collection vide."
 
-#: mcomix/library/collection_area.py:149
+#: mcomix/library/collection_area.py:148
 msgid "Re_name"
 msgstr "_Renommer"
 
-#: mcomix/library/collection_area.py:150
+#: mcomix/library/collection_area.py:149
 msgid "Renames the selected collection."
 msgstr "Renomme la collection sélectionnée."
 
-#: mcomix/library/collection_area.py:151
+#: mcomix/library/collection_area.py:150
 msgid "_Duplicate"
 msgstr "Dupli_quer"
 
-#: mcomix/library/collection_area.py:152
+#: mcomix/library/collection_area.py:151
 msgid "Creates a duplicate of the selected collection."
 msgstr "Crée un double de la collection sélectionnée."
 
-#: mcomix/library/collection_area.py:157
+#: mcomix/library/collection_area.py:156
 msgid "Relocate..."
 msgstr "Relocaliser..."
 
-#: mcomix/library/collection_area.py:161
+#: mcomix/library/collection_area.py:160
 msgid "Deletes the selected collection."
 msgstr "Supprime la collection sélectionnée."
 
-#: mcomix/library/collection_area.py:173
+#: mcomix/library/collection_area.py:172
 msgid "Library collections"
 msgstr "Collections de la bibliothèque"
 
-#: mcomix/library/collection_area.py:253
+#: mcomix/library/collection_area.py:252
 msgid "Add new collection?"
 msgstr "Ajouter une nouvelle collection ?"
 
-#: mcomix/library/collection_area.py:254
+#: mcomix/library/collection_area.py:253
 msgid "Please enter a name for the new collection."
 msgstr "Veuillez saisir un nom pour la nouvelle collection."
 
-#: mcomix/library/collection_area.py:285
+#: mcomix/library/collection_area.py:284
 #, python-format
 msgid "Could not add a new collection called '%s'."
 msgstr "Impossible d'ajouter une nouvelle collection appelée '%s'."
 
-#: mcomix/library/collection_area.py:290 mcomix/library/collection_area.py:391
+#: mcomix/library/collection_area.py:289 mcomix/library/collection_area.py:390
 msgid "A collection by that name already exists."
 msgstr "Une collection de ce nom existe déjà."
 
-#: mcomix/library/collection_area.py:359
+#: mcomix/library/collection_area.py:358
 msgid "Rename collection?"
 msgstr "Renommer la collection ?"
 
-#: mcomix/library/collection_area.py:360
+#: mcomix/library/collection_area.py:359
 msgid "Please enter a new name for the selected collection."
 msgstr "Veuillez saisir un nouveau nom pour la collection sélectionnée."
 
-#: mcomix/library/collection_area.py:387
+#: mcomix/library/collection_area.py:386
 #, python-format
 msgid "Could not change the name to '%s'."
 msgstr "Impossible de changer le nom en '%s'."
 
-#: mcomix/library/collection_area.py:403
+#: mcomix/library/collection_area.py:402
 msgid "Could not duplicate collection."
 msgstr "Impossible de dupliquer la collection"
 
-#: mcomix/library/collection_area.py:614
+#: mcomix/library/collection_area.py:613
 msgid "Root"
 msgstr "Racine"
 
-#: mcomix/library/collection_area.py:617
+#: mcomix/library/collection_area.py:616
 #, python-format
 msgid ""
 "Put the collection '%(subcollection)s' in the collection "
@@ -3585,12 +3585,12 @@ msgstr ""
 "Déplacer la collection '%(subcollection)s' dans la collection "
 "'%(supercollection)s'."
 
-#: mcomix/library/collection_area.py:633
+#: mcomix/library/collection_area.py:632
 #, python-format
 msgid "Add books to '%s'."
 msgstr "Ajouter des livres à '%s'."
 
-#: mcomix/library/collection_area.py:636
+#: mcomix/library/collection_area.py:635
 #, python-format
 msgid ""
 "Copy books from '%(source collection)s' to '%(destination collection)s'."
@@ -3598,7 +3598,7 @@ msgstr ""
 "Copier les livres de '%(source collection)s' vers "
 "'%(destination collection)s'."
 
-#: mcomix/library/collection_area.py:643
+#: mcomix/library/collection_area.py:642
 #, python-format
 msgid ""
 "Move books from '%(source collection)s' to '%(destination collection)s'."
@@ -3661,17 +3661,17 @@ msgstr "Pages lues : %d"
 msgid "last read on %(date)s, %(time)s"
 msgstr "dernière lecture le %(date)s, %(time)s"
 
-#: mcomix/library/main_dialog.py:137
+#: mcomix/library/main_dialog.py:148
 msgid "Scanning for new books..."
 msgstr "Recherche de nouvelles archives…"
 
-#: mcomix/library/main_dialog.py:180
+#: mcomix/library/main_dialog.py:206
 #, python-format
 msgid "Added new book '%(bookname)s' from folder '%(directory)s'."
 msgstr ""
 "Nouveau livre '%(bookname)s' ajouté depuis le répertoire '%(directory)s'."
 
-#: mcomix/library/main_dialog.py:187
+#: mcomix/library/main_dialog.py:213
 #, python-format
 msgid "Added %(count)d new book from folder '%(directory)s'."
 msgid_plural "Added %(count)d new books from folder '%(directory)s'."
@@ -3680,12 +3680,12 @@ msgstr[0] ""
 msgstr[1] ""
 "%(count)d nouveaux livres ajoutés depuis le répertoire '%(directory)s'."
 
-#: mcomix/library/main_dialog.py:195
+#: mcomix/library/main_dialog.py:221
 #, python-format
 msgid "No new books found in folder '%s'."
 msgstr "Pas de nouveau livre trouvé dans le répertoire '%s'."
 
-#: mcomix/library/main_dialog.py:246
+#: mcomix/library/main_dialog.py:273
 #, python-format
 msgid "Books relocated: %d"
 msgstr "Livres relocalisés : %d"

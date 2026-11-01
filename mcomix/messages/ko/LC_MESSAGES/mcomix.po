@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-31 15:24+0100\n"
+"POT-Creation-Date: 2026-11-01 12:45+0100\n"
 "PO-Revision-Date: 2018-05-10 22:46+0900\n"
 "Last-Translator: Minho Jeung <jeungmh@gmail.com>\n"
 "Language-Team: \n"
@@ -145,8 +145,8 @@ msgstr "책갈피 편집"
 msgid "C_lear bookmarks..."
 msgstr "책갈피 모두 지우기...(_L)"
 
-#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1398 mcomix/openwith.py:340
-#: mcomix/library/collection_area.py:160 mcomix/library/watchlist.py:69
+#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1400 mcomix/openwith.py:340
+#: mcomix/library/collection_area.py:159 mcomix/library/watchlist.py:69
 msgid "_Remove"
 msgstr "제거(_R)"
 
@@ -166,7 +166,7 @@ msgstr "유형"
 msgid "Name"
 msgstr "이름"
 
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:2505
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:2509
 #: mcomix/library/control_area.py:157
 msgid "Page"
 msgstr "페이지"
@@ -1125,7 +1125,7 @@ msgstr "환경설정"
 msgid "Open containing folder"
 msgstr "포함하는 디렉토리 열기"
 
-#: mcomix/keybindings.py:172 mcomix/library/main_dialog.py:58
+#: mcomix/keybindings.py:172 mcomix/library/main_dialog.py:59
 msgid "Library"
 msgstr "라이브러리"
 
@@ -1168,13 +1168,13 @@ msgstr "키 설정을 불러오지 못했습니다: %s"
 msgid "! Could not remove file \"%s\""
 msgstr "! 다음 파일을 제거할 수 없습니다: \"%s\""
 
-#: mcomix/main.py:1391
+#: mcomix/main.py:1393
 #, python-format
 msgid "Remove the page picked out of \"%s\"?"
 msgid_plural "Remove the pages picked out of \"%s\"?"
 msgstr[0] "선택한 쪽을 \"%s\"에서 제거할까요?"
 
-#: mcomix/main.py:1394
+#: mcomix/main.py:1396
 msgid ""
 "They are taken out of the archive on disk, which is written again at once. "
 "Leaving the book without removing them forgets which pages they were."
@@ -1182,16 +1182,16 @@ msgstr ""
 "디스크의 압축 파일에서 빠지고 압축 파일은 즉시 다시 쓰입니다. 제거하지 않고 "
 "책을 떠나면 어느 쪽이었는지 잊힙니다."
 
-#: mcomix/main.py:1397
+#: mcomix/main.py:1399
 msgid "_Keep them"
 msgstr "유지(_K)"
 
-#: mcomix/main.py:1563
+#: mcomix/main.py:1565
 #, python-format
 msgid "Animation speed: %s"
 msgstr "애니메이션 속도: %s"
 
-#: mcomix/main.py:2211
+#: mcomix/main.py:2213
 msgid "SLIDESHOW"
 msgstr "슬라이드쇼"
 
@@ -3120,12 +3120,12 @@ msgstr "설명서를 열 수 없습니다: %s"
 msgid "! Worker thread processing %(function)r failed: %(error)s"
 msgstr "! %(function)r을(를) 처리하던 작업 스레드 실패: %(error)s"
 
-#: mcomix/archive/epub.py:231 mcomix/archive/kfx.py:900
+#: mcomix/archive/epub.py:232 mcomix/archive/kfx.py:1105
 #, python-format
 msgid "Could not open %s: it is protected by DRM."
 msgstr "%s을(를) 열 수 없습니다: DRM으로 보호되어 있습니다."
 
-#: mcomix/archive/kfx.py:905
+#: mcomix/archive/kfx.py:1109
 #, python-format
 msgid "Could not open %s: it is not a Kindle book MComix can read."
 msgstr "%s을(를) 열 수 없습니다: MComix가 읽을 수 있는 Kindle 책이 아닙니다."
@@ -3187,45 +3187,45 @@ msgstr "! 다음 책의 커버 이미지를 얻지 못했습니다: \"%s\""
 msgid "Recent"
 msgstr "최근 파일"
 
-#: mcomix/library/backend.py:542 mcomix/library/backend.py:589
+#: mcomix/library/backend.py:543 mcomix/library/backend.py:590
 #, python-format
 msgid "! Could not add book \"%s\" to the library"
 msgstr "! 책 \"%s\" 을 라이브러리에 추가하지 못했습니다"
 
-#: mcomix/library/backend.py:618 mcomix/library/backend.py:686
+#: mcomix/library/backend.py:619 mcomix/library/backend.py:687
 #, python-format
 msgid "! Could not move book \"%s\" in the library"
 msgstr "! 라이브러리의 책 \"%s\"을(를) 이동할 수 없습니다"
 
-#: mcomix/library/backend.py:736
+#: mcomix/library/backend.py:737
 #, python-format
 msgid "! Could not add collection \"%s\""
 msgstr "! 모음집을 추가하지 못했습니다: \"%s\""
 
-#: mcomix/library/backend.py:768
+#: mcomix/library/backend.py:769
 #, python-format
 msgid "! Could not add book %(book)s to collection %(collection)s"
 msgstr "! 책 %(book)s 을 모음집 %(collection)s 에 추가하지 못했습니다"
 
-#: mcomix/library/backend.py:795
+#: mcomix/library/backend.py:796
 #, python-format
 msgid "! Could not rename collection to \"%s\""
 msgstr "! 모음집 이름을 다음으로 변경하지 못했습니다: \"%s\""
 
-#: mcomix/library/backend.py:812 mcomix/library/backend.py:814
+#: mcomix/library/backend.py:813 mcomix/library/backend.py:815
 msgid "(Copy)"
 msgstr "(Copy)"
 
-#: mcomix/library/backend.py:1111
+#: mcomix/library/backend.py:1112
 msgid "Could not determine library database version!"
 msgstr "라이브러리 데이터베이스 버전을 특정할 수 없습니다!"
 
-#: mcomix/library/backend.py:1161
+#: mcomix/library/backend.py:1162
 #, python-format
 msgid "Upgrading library database version from %(from)d to %(to)d."
 msgstr "라이브러리 버전을 %(from)d 에서 %(to)d 으로 업그레이드합니다."
 
-#: mcomix/library/backend_types.py:387 mcomix/library/collection_area.py:224
+#: mcomix/library/backend_types.py:387 mcomix/library/collection_area.py:223
 msgid "All books"
 msgstr "모든 책"
 
@@ -3263,11 +3263,11 @@ msgstr "읽지 않음으로 표시(_N)"
 msgid "Forgets the page the selected books were left at."
 msgstr "선택한 책을 읽다 멈춘 페이지를 잊습니다."
 
-#: mcomix/library/book_area.py:205 mcomix/library/collection_area.py:143
+#: mcomix/library/book_area.py:205 mcomix/library/collection_area.py:142
 msgid "_Add..."
 msgstr "추가(_A)"
 
-#: mcomix/library/book_area.py:206 mcomix/library/collection_area.py:144
+#: mcomix/library/book_area.py:206 mcomix/library/collection_area.py:143
 msgid "Add more books to the library."
 msgstr "라이브러리에 더 많은 책 추가."
 
@@ -3295,11 +3295,11 @@ msgstr "제거하고 휴지통으로 옮기기(_R)"
 msgid "Deletes the selected books from disk."
 msgstr "선택된 책들을 디스크에서 삭제."
 
-#: mcomix/library/book_area.py:218 mcomix/library/collection_area.py:154
+#: mcomix/library/book_area.py:218 mcomix/library/collection_area.py:153
 msgid "Clean _up"
 msgstr "정리(_U)"
 
-#: mcomix/library/book_area.py:219 mcomix/library/collection_area.py:155
+#: mcomix/library/book_area.py:219 mcomix/library/collection_area.py:154
 msgid "Removes no longer existent books from the collection."
 msgstr "더 이상 존재하지 않는 책을 모음집에서 제거합니다."
 
@@ -3373,7 +3373,7 @@ msgid "Removed %(num)d book from '%(collection)s'."
 msgid_plural "Removed %(num)d books from '%(collection)s'."
 msgstr[0] "'%(collection)s' 에서 %(num)d  책 제거."
 
-#: mcomix/library/book_area.py:861 mcomix/library/collection_area.py:302
+#: mcomix/library/book_area.py:861 mcomix/library/collection_area.py:301
 #, python-format
 msgid "Removed %d book from the library."
 msgid_plural "Removed %d books from the library."
@@ -3402,100 +3402,100 @@ msgid "Remove the bookmarks in the deleted book?"
 msgid_plural "Remove the bookmarks in the %(count)d deleted books?"
 msgstr[0] "삭제한 책 %(count)d권의 책갈피도 제거할까요?"
 
-#: mcomix/library/collection_area.py:147
+#: mcomix/library/collection_area.py:146
 msgid "New"
 msgstr "새로"
 
-#: mcomix/library/collection_area.py:148
+#: mcomix/library/collection_area.py:147
 msgid "Add a new empty collection."
 msgstr "비어있는 새 모음집 추가."
 
-#: mcomix/library/collection_area.py:149
+#: mcomix/library/collection_area.py:148
 msgid "Re_name"
 msgstr "이름 변경(_N)"
 
-#: mcomix/library/collection_area.py:150
+#: mcomix/library/collection_area.py:149
 msgid "Renames the selected collection."
 msgstr "선택된 모음집 이름 변경."
 
-#: mcomix/library/collection_area.py:151
+#: mcomix/library/collection_area.py:150
 msgid "_Duplicate"
 msgstr "복제(_D)"
 
-#: mcomix/library/collection_area.py:152
+#: mcomix/library/collection_area.py:151
 msgid "Creates a duplicate of the selected collection."
 msgstr "선택된 모음집의 복제본을 만듭니다."
 
-#: mcomix/library/collection_area.py:157
+#: mcomix/library/collection_area.py:156
 msgid "Relocate..."
 msgstr "위치 변경..."
 
-#: mcomix/library/collection_area.py:161
+#: mcomix/library/collection_area.py:160
 msgid "Deletes the selected collection."
 msgstr "선택된 모음집 제거."
 
-#: mcomix/library/collection_area.py:173
+#: mcomix/library/collection_area.py:172
 msgid "Library collections"
 msgstr "라이브러리 모음집"
 
-#: mcomix/library/collection_area.py:253
+#: mcomix/library/collection_area.py:252
 msgid "Add new collection?"
 msgstr "새 모음집을 추가합니까?"
 
-#: mcomix/library/collection_area.py:254
+#: mcomix/library/collection_area.py:253
 msgid "Please enter a name for the new collection."
 msgstr "새 모음집의 이름을 입력해주세요."
 
-#: mcomix/library/collection_area.py:285
+#: mcomix/library/collection_area.py:284
 #, python-format
 msgid "Could not add a new collection called '%s'."
 msgstr "새 모음집을 추가하지 못했습니다: '%s'."
 
-#: mcomix/library/collection_area.py:290 mcomix/library/collection_area.py:391
+#: mcomix/library/collection_area.py:289 mcomix/library/collection_area.py:390
 msgid "A collection by that name already exists."
 msgstr "같은 이름의 모음집이 존재합니다."
 
-#: mcomix/library/collection_area.py:359
+#: mcomix/library/collection_area.py:358
 msgid "Rename collection?"
 msgstr "모음집 이름을 변경하시겠습니까?"
 
-#: mcomix/library/collection_area.py:360
+#: mcomix/library/collection_area.py:359
 msgid "Please enter a new name for the selected collection."
 msgstr "선택된 모음집에 대한 새 이름을 입력하세요."
 
-#: mcomix/library/collection_area.py:387
+#: mcomix/library/collection_area.py:386
 #, python-format
 msgid "Could not change the name to '%s'."
 msgstr "이름을 변경하지 못했습니다. '%s'."
 
-#: mcomix/library/collection_area.py:403
+#: mcomix/library/collection_area.py:402
 msgid "Could not duplicate collection."
 msgstr "모음집을 복제하지 못했습니다."
 
-#: mcomix/library/collection_area.py:614
+#: mcomix/library/collection_area.py:613
 msgid "Root"
 msgstr "관리자"
 
-#: mcomix/library/collection_area.py:617
+#: mcomix/library/collection_area.py:616
 #, python-format
 msgid ""
 "Put the collection '%(subcollection)s' in the collection "
 "'%(supercollection)s'."
 msgstr "'%(subcollection)s' 모음집을 '%(supercollection)s' 모음집에 넣기."
 
-#: mcomix/library/collection_area.py:633
+#: mcomix/library/collection_area.py:632
 #, python-format
 msgid "Add books to '%s'."
 msgstr "책 추가 '%s'."
 
-#: mcomix/library/collection_area.py:636
+#: mcomix/library/collection_area.py:635
 #, python-format
 msgid ""
 "Copy books from '%(source collection)s' to '%(destination collection)s'."
 msgstr ""
 "'%(source collection)s' 에서 '%(destination collection)s' 으로 책 복사."
 
-#: mcomix/library/collection_area.py:643
+#: mcomix/library/collection_area.py:642
 #, python-format
 msgid ""
 "Move books from '%(source collection)s' to '%(destination collection)s'."
@@ -3556,27 +3556,27 @@ msgstr "읽은 페이지: %d"
 msgid "last read on %(date)s, %(time)s"
 msgstr "마지막으로 읽은 때: %(date)s, %(time)s"
 
-#: mcomix/library/main_dialog.py:137
+#: mcomix/library/main_dialog.py:148
 msgid "Scanning for new books..."
 msgstr "새 책 검색..."
 
-#: mcomix/library/main_dialog.py:180
+#: mcomix/library/main_dialog.py:206
 #, python-format
 msgid "Added new book '%(bookname)s' from folder '%(directory)s'."
 msgstr "새 책 '%(bookname)s'을 디렉토리 '%(directory)s'에서 추가했습니다."
 
-#: mcomix/library/main_dialog.py:187
+#: mcomix/library/main_dialog.py:213
 #, python-format
 msgid "Added %(count)d new book from folder '%(directory)s'."
 msgid_plural "Added %(count)d new books from folder '%(directory)s'."
 msgstr[0] "새 책 %(count)d 권을 디렉토리 '%(directory)s'에서 추가했습니다."
 
-#: mcomix/library/main_dialog.py:195
+#: mcomix/library/main_dialog.py:221
 #, python-format
 msgid "No new books found in folder '%s'."
 msgstr "디렉토리 '%s'에서 새 책을 찾지 못했습니다."
 
-#: mcomix/library/main_dialog.py:246
+#: mcomix/library/main_dialog.py:273
 #, python-format
 msgid "Books relocated: %d"
 msgstr "위치가 변경된 책: %d"

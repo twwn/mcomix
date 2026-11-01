@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Comix 4.0.3\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-31 15:24+0100\n"
+"POT-Creation-Date: 2026-11-01 12:45+0100\n"
 "PO-Revision-Date: 2009-01-26 19:34+0100\n"
 "Last-Translator: Ernő Drabik <drerno@gmail.com>\n"
 "Language-Team: \n"
@@ -144,8 +144,8 @@ msgstr "Könyvjelzők szerkesztése"
 msgid "C_lear bookmarks..."
 msgstr "Könyvjelzők _törlése..."
 
-#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1398 mcomix/openwith.py:340
-#: mcomix/library/collection_area.py:160 mcomix/library/watchlist.py:69
+#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1400 mcomix/openwith.py:340
+#: mcomix/library/collection_area.py:159 mcomix/library/watchlist.py:69
 msgid "_Remove"
 msgstr "_Eltávolítás"
 
@@ -165,7 +165,7 @@ msgstr "Típus"
 msgid "Name"
 msgstr "Név"
 
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:2505
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:2509
 #: mcomix/library/control_area.py:157
 msgid "Page"
 msgstr "Oldal"
@@ -1137,7 +1137,7 @@ msgstr "Beállítások"
 msgid "Open containing folder"
 msgstr "Tartalmazó mappa megnyitása"
 
-#: mcomix/keybindings.py:172 mcomix/library/main_dialog.py:58
+#: mcomix/keybindings.py:172 mcomix/library/main_dialog.py:59
 msgid "Library"
 msgstr "Könyvtár"
 
@@ -1182,14 +1182,14 @@ msgstr "Nem sikerült betölteni a gyorsbillentyűket: %s"
 msgid "! Could not remove file \"%s\""
 msgstr "! Nem sikerült törölni a(z) „%s” fájlt"
 
-#: mcomix/main.py:1391
+#: mcomix/main.py:1393
 #, python-format
 msgid "Remove the page picked out of \"%s\"?"
 msgid_plural "Remove the pages picked out of \"%s\"?"
 msgstr[0] "Eltávolítja a kijelölt oldalt ebből: „%s”?"
 msgstr[1] "Eltávolítja a kijelölt oldalakat ebből: „%s”?"
 
-#: mcomix/main.py:1394
+#: mcomix/main.py:1396
 msgid ""
 "They are taken out of the archive on disk, which is written again at once. "
 "Leaving the book without removing them forgets which pages they were."
@@ -1198,16 +1198,16 @@ msgstr ""
 "eltávolításuk nélkül hagyja el a könyvet, feledésbe merül, mely oldalak "
 "voltak azok."
 
-#: mcomix/main.py:1397
+#: mcomix/main.py:1399
 msgid "_Keep them"
 msgstr "Meg_tartás"
 
-#: mcomix/main.py:1563
+#: mcomix/main.py:1565
 #, python-format
 msgid "Animation speed: %s"
 msgstr "Animáció sebessége: %s"
 
-#: mcomix/main.py:2211
+#: mcomix/main.py:2213
 msgid "SLIDESHOW"
 msgstr "Diavetítés"
 
@@ -3178,12 +3178,12 @@ msgid "! Worker thread processing %(function)r failed: %(error)s"
 msgstr ""
 "! A(z) %(function)r feldolgozását végző munkaszál meghiúsult: %(error)s"
 
-#: mcomix/archive/epub.py:231 mcomix/archive/kfx.py:900
+#: mcomix/archive/epub.py:232 mcomix/archive/kfx.py:1105
 #, python-format
 msgid "Could not open %s: it is protected by DRM."
 msgstr "%s-t nem lehet megnyitni: DRM védi."
 
-#: mcomix/archive/kfx.py:905
+#: mcomix/archive/kfx.py:1109
 #, python-format
 msgid "Could not open %s: it is not a Kindle book MComix can read."
 msgstr ""
@@ -3246,48 +3246,48 @@ msgstr "! Nem sikerült lekérni a(z) „%s” könyv borítóját"
 msgid "Recent"
 msgstr "Legutóbbi"
 
-#: mcomix/library/backend.py:542 mcomix/library/backend.py:589
+#: mcomix/library/backend.py:543 mcomix/library/backend.py:590
 #, python-format
 msgid "! Could not add book \"%s\" to the library"
 msgstr "! Nem sikerült hozzáadni a(z) „%s” könyvet a könyvtárhoz"
 
-#: mcomix/library/backend.py:618 mcomix/library/backend.py:686
+#: mcomix/library/backend.py:619 mcomix/library/backend.py:687
 #, python-format
 msgid "! Could not move book \"%s\" in the library"
 msgstr "! Nem sikerült áthelyezni a(z) „%s” könyvet a könyvtárban"
 
-#: mcomix/library/backend.py:736
+#: mcomix/library/backend.py:737
 #, python-format
 msgid "! Could not add collection \"%s\""
 msgstr "! Nem sikerült hozzáadni a(z) „%s” gyűjteményt"
 
-#: mcomix/library/backend.py:768
+#: mcomix/library/backend.py:769
 #, python-format
 msgid "! Could not add book %(book)s to collection %(collection)s"
 msgstr ""
 "! Nem sikerült hozzáadni a(z) %(book)s könyvet a(z) %(collection)s "
 "gyűjteményhez"
 
-#: mcomix/library/backend.py:795
+#: mcomix/library/backend.py:796
 #, python-format
 msgid "! Could not rename collection to \"%s\""
 msgstr "! Nem sikerült átnevezni a gyűjteményt erre: „%s”"
 
-#: mcomix/library/backend.py:812 mcomix/library/backend.py:814
+#: mcomix/library/backend.py:813 mcomix/library/backend.py:815
 msgid "(Copy)"
 msgstr "(Másolás)"
 
-#: mcomix/library/backend.py:1111
+#: mcomix/library/backend.py:1112
 msgid "Could not determine library database version!"
 msgstr "Nem sikerült megállapítani a könyvtár adatbázisának verzióját!"
 
-#: mcomix/library/backend.py:1161
+#: mcomix/library/backend.py:1162
 #, python-format
 msgid "Upgrading library database version from %(from)d to %(to)d."
 msgstr ""
 "A könyvtár adatbázisának frissítése %(from)d verzióról %(to)d verzióra."
 
-#: mcomix/library/backend_types.py:387 mcomix/library/collection_area.py:224
+#: mcomix/library/backend_types.py:387 mcomix/library/collection_area.py:223
 msgid "All books"
 msgstr "Minden könyv"
 
@@ -3325,11 +3325,11 @@ msgstr "Megjelölés olvasatla_nként"
 msgid "Forgets the page the selected books were left at."
 msgstr "Elfelejti az oldalt, ahol a kijelölt könyveket abbahagyták."
 
-#: mcomix/library/book_area.py:205 mcomix/library/collection_area.py:143
+#: mcomix/library/book_area.py:205 mcomix/library/collection_area.py:142
 msgid "_Add..."
 msgstr "Hozzá_adás..."
 
-#: mcomix/library/book_area.py:206 mcomix/library/collection_area.py:144
+#: mcomix/library/book_area.py:206 mcomix/library/collection_area.py:143
 msgid "Add more books to the library."
 msgstr "Több könyv hozzáadása a könyvtárhoz."
 
@@ -3357,11 +3357,11 @@ msgstr "Eltávolítás és át_helyezés a Kukába"
 msgid "Deletes the selected books from disk."
 msgstr "Törli a lemezről a kiválasztott könyveket."
 
-#: mcomix/library/book_area.py:218 mcomix/library/collection_area.py:154
+#: mcomix/library/book_area.py:218 mcomix/library/collection_area.py:153
 msgid "Clean _up"
 msgstr "T_isztítás"
 
-#: mcomix/library/book_area.py:219 mcomix/library/collection_area.py:155
+#: mcomix/library/book_area.py:219 mcomix/library/collection_area.py:154
 msgid "Removes no longer existent books from the collection."
 msgstr "Eltávolítja a gyűjteményből a már nem létező könyveket."
 
@@ -3436,7 +3436,7 @@ msgid_plural "Removed %(num)d books from '%(collection)s'."
 msgstr[0] "%(num)d könyv eltávolítva innen: „%(collection)s”."
 msgstr[1] "%(num)d könyv eltávolítva innen: „%(collection)s”."
 
-#: mcomix/library/book_area.py:861 mcomix/library/collection_area.py:302
+#: mcomix/library/book_area.py:861 mcomix/library/collection_area.py:301
 #, python-format
 msgid "Removed %d book from the library."
 msgid_plural "Removed %d books from the library."
@@ -3469,81 +3469,81 @@ msgid_plural "Remove the bookmarks in the %(count)d deleted books?"
 msgstr[0] "Eltávolítja a törölt könyv könyvjelzőit?"
 msgstr[1] "Eltávolítja a(z) %(count)d törölt könyv könyvjelzőit?"
 
-#: mcomix/library/collection_area.py:147
+#: mcomix/library/collection_area.py:146
 msgid "New"
 msgstr "Új"
 
-#: mcomix/library/collection_area.py:148
+#: mcomix/library/collection_area.py:147
 msgid "Add a new empty collection."
 msgstr "Új, üres gyűjtemény hozzáadása."
 
-#: mcomix/library/collection_area.py:149
+#: mcomix/library/collection_area.py:148
 msgid "Re_name"
 msgstr "Át_nevezés"
 
-#: mcomix/library/collection_area.py:150
+#: mcomix/library/collection_area.py:149
 msgid "Renames the selected collection."
 msgstr "Átnevezi a kiválasztott gyűjteményt."
 
-#: mcomix/library/collection_area.py:151
+#: mcomix/library/collection_area.py:150
 msgid "_Duplicate"
 msgstr "_Duplikálás"
 
-#: mcomix/library/collection_area.py:152
+#: mcomix/library/collection_area.py:151
 msgid "Creates a duplicate of the selected collection."
 msgstr "Másolatot készít a kiválasztott gyűjteményről."
 
-#: mcomix/library/collection_area.py:157
+#: mcomix/library/collection_area.py:156
 msgid "Relocate..."
 msgstr "Könyvek új helye..."
 
-#: mcomix/library/collection_area.py:161
+#: mcomix/library/collection_area.py:160
 msgid "Deletes the selected collection."
 msgstr "Törli a kiválasztott gyűjteményt."
 
-#: mcomix/library/collection_area.py:173
+#: mcomix/library/collection_area.py:172
 msgid "Library collections"
 msgstr "A könyvtár gyűjteményei"
 
-#: mcomix/library/collection_area.py:253
+#: mcomix/library/collection_area.py:252
 msgid "Add new collection?"
 msgstr "Új gyűjtemény hozzáadása?"
 
-#: mcomix/library/collection_area.py:254
+#: mcomix/library/collection_area.py:253
 msgid "Please enter a name for the new collection."
 msgstr "Adja meg az új gyűjtemény nevét."
 
-#: mcomix/library/collection_area.py:285
+#: mcomix/library/collection_area.py:284
 #, python-format
 msgid "Could not add a new collection called '%s'."
 msgstr "Nem lehetett hozzáadni a '%s' nevű gyűjteményt."
 
-#: mcomix/library/collection_area.py:290 mcomix/library/collection_area.py:391
+#: mcomix/library/collection_area.py:289 mcomix/library/collection_area.py:390
 msgid "A collection by that name already exists."
 msgstr "A megadott nevű gyűjtemény már létezik."
 
-#: mcomix/library/collection_area.py:359
+#: mcomix/library/collection_area.py:358
 msgid "Rename collection?"
 msgstr "Átnevezi a gyűjteményt?"
 
-#: mcomix/library/collection_area.py:360
+#: mcomix/library/collection_area.py:359
 msgid "Please enter a new name for the selected collection."
 msgstr "Adja meg a kiválasztott gyűjtemény új nevét."
 
-#: mcomix/library/collection_area.py:387
+#: mcomix/library/collection_area.py:386
 #, python-format
 msgid "Could not change the name to '%s'."
 msgstr "A nevet nem lehet megváltoztatni a következőre: '%s'."
 
-#: mcomix/library/collection_area.py:403
+#: mcomix/library/collection_area.py:402
 msgid "Could not duplicate collection."
 msgstr "A gyűjteményt nem lehet duplikálni."
 
-#: mcomix/library/collection_area.py:614
+#: mcomix/library/collection_area.py:613
 msgid "Root"
 msgstr "Alapkönyvtár"
 
-#: mcomix/library/collection_area.py:617
+#: mcomix/library/collection_area.py:616
 #, python-format
 msgid ""
 "Put the collection '%(subcollection)s' in the collection "
@@ -3552,12 +3552,12 @@ msgstr ""
 "A '%(subcollection)s' gyűjtemény áthelyezése a következőbe: "
 "'%(supercollection)s'."
 
-#: mcomix/library/collection_area.py:633
+#: mcomix/library/collection_area.py:632
 #, python-format
 msgid "Add books to '%s'."
 msgstr "Könyvek hozzáadása a következőhöz: '%s'."
 
-#: mcomix/library/collection_area.py:636
+#: mcomix/library/collection_area.py:635
 #, python-format
 msgid ""
 "Copy books from '%(source collection)s' to '%(destination collection)s'."
@@ -3565,7 +3565,7 @@ msgstr ""
 "Könyvek másolása innen: '%(source collection)s' ide: "
 "'%(destination collection)s'."
 
-#: mcomix/library/collection_area.py:643
+#: mcomix/library/collection_area.py:642
 #, python-format
 msgid ""
 "Move books from '%(source collection)s' to '%(destination collection)s'."
@@ -3628,28 +3628,28 @@ msgstr "Elolvasott oldalak: %d"
 msgid "last read on %(date)s, %(time)s"
 msgstr "utoljára olvasva: %(date)s, %(time)s"
 
-#: mcomix/library/main_dialog.py:137
+#: mcomix/library/main_dialog.py:148
 msgid "Scanning for new books..."
 msgstr "Új könyvek keresése..."
 
-#: mcomix/library/main_dialog.py:180
+#: mcomix/library/main_dialog.py:206
 #, python-format
 msgid "Added new book '%(bookname)s' from folder '%(directory)s'."
 msgstr "Új könyv hozzáadva: „%(bookname)s” a(z) „%(directory)s” mappából."
 
-#: mcomix/library/main_dialog.py:187
+#: mcomix/library/main_dialog.py:213
 #, python-format
 msgid "Added %(count)d new book from folder '%(directory)s'."
 msgid_plural "Added %(count)d new books from folder '%(directory)s'."
 msgstr[0] "%(count)d új könyv hozzáadva a(z) „%(directory)s” mappából."
 msgstr[1] "%(count)d új könyv hozzáadva a(z) „%(directory)s” mappából."
 
-#: mcomix/library/main_dialog.py:195
+#: mcomix/library/main_dialog.py:221
 #, python-format
 msgid "No new books found in folder '%s'."
 msgstr "Nem található új könyv a(z) „%s” mappában."
 
-#: mcomix/library/main_dialog.py:246
+#: mcomix/library/main_dialog.py:273
 #, python-format
 msgid "Books relocated: %d"
 msgstr "Új helyre követett könyvek: %d"

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Comix 4.0.1\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-10-31 15:24+0100\n"
+"POT-Creation-Date: 2026-11-01 12:45+0100\n"
 "PO-Revision-Date: 2009-01-28 13:36+0800\n"
 "Last-Translator: Xie Yanbo <xieyanbo@gmail.com>\n"
 "Language-Team: Xie Yanbo <xieyanbo@gmail.com>\n"
@@ -155,8 +155,8 @@ msgstr "编辑书签"
 msgid "C_lear bookmarks..."
 msgstr "清空书签(_L)..."
 
-#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1398 mcomix/openwith.py:340
-#: mcomix/library/collection_area.py:160 mcomix/library/watchlist.py:69
+#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1400 mcomix/openwith.py:340
+#: mcomix/library/collection_area.py:159 mcomix/library/watchlist.py:69
 msgid "_Remove"
 msgstr "删除(_R)"
 
@@ -176,7 +176,7 @@ msgstr "输入"
 msgid "Name"
 msgstr "名称"
 
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:2505
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:2509
 #: mcomix/library/control_area.py:157
 msgid "Page"
 msgstr "页面"
@@ -1130,7 +1130,7 @@ msgstr "首选项"
 msgid "Open containing folder"
 msgstr "打开所在目录"
 
-#: mcomix/keybindings.py:172 mcomix/library/main_dialog.py:58
+#: mcomix/keybindings.py:172 mcomix/library/main_dialog.py:59
 msgid "Library"
 msgstr "收藏库"
 
@@ -1175,13 +1175,13 @@ msgstr "无法加载快捷键设置：%s"
 msgid "! Could not remove file \"%s\""
 msgstr "！ 无法删除文件 %s"
 
-#: mcomix/main.py:1391
+#: mcomix/main.py:1393
 #, python-format
 msgid "Remove the page picked out of \"%s\"?"
 msgid_plural "Remove the pages picked out of \"%s\"?"
 msgstr[0] "从“%s”中移除选中的页面吗？"
 
-#: mcomix/main.py:1394
+#: mcomix/main.py:1396
 msgid ""
 "They are taken out of the archive on disk, which is written again at once. "
 "Leaving the book without removing them forgets which pages they were."
@@ -1189,16 +1189,16 @@ msgstr ""
 "它们会从磁盘上的压缩包中取出，压缩包随即重新写入。不移除就离开这本书，将忘记"
 "那是哪些页面。"
 
-#: mcomix/main.py:1397
+#: mcomix/main.py:1399
 msgid "_Keep them"
 msgstr "保留(_K)"
 
-#: mcomix/main.py:1563
+#: mcomix/main.py:1565
 #, python-format
 msgid "Animation speed: %s"
 msgstr "动画速度：%s"
 
-#: mcomix/main.py:2211
+#: mcomix/main.py:2213
 msgid "SLIDESHOW"
 msgstr "幻灯片播放"
 
@@ -3083,12 +3083,12 @@ msgstr "无法打开手册：%s"
 msgid "! Worker thread processing %(function)r failed: %(error)s"
 msgstr "！工作线程调用 %(function)r 失败：%(error)s"
 
-#: mcomix/archive/epub.py:231 mcomix/archive/kfx.py:900
+#: mcomix/archive/epub.py:232 mcomix/archive/kfx.py:1105
 #, python-format
 msgid "Could not open %s: it is protected by DRM."
 msgstr "无法打开%s：它受 DRM 保护。"
 
-#: mcomix/archive/kfx.py:905
+#: mcomix/archive/kfx.py:1109
 #, python-format
 msgid "Could not open %s: it is not a Kindle book MComix can read."
 msgstr "无法打开%s：它不是 MComix 能读取的 Kindle 书。"
@@ -3148,45 +3148,45 @@ msgstr "！ 无法获取“%s”的封页"
 msgid "Recent"
 msgstr "最近打开的"
 
-#: mcomix/library/backend.py:542 mcomix/library/backend.py:589
+#: mcomix/library/backend.py:543 mcomix/library/backend.py:590
 #, python-format
 msgid "! Could not add book \"%s\" to the library"
 msgstr "！ 无法将“%s”添加到收藏库"
 
-#: mcomix/library/backend.py:618 mcomix/library/backend.py:686
+#: mcomix/library/backend.py:619 mcomix/library/backend.py:687
 #, python-format
 msgid "! Could not move book \"%s\" in the library"
 msgstr "! 无法在库中移动书籍 \"%s\""
 
-#: mcomix/library/backend.py:736
+#: mcomix/library/backend.py:737
 #, python-format
 msgid "! Could not add collection \"%s\""
 msgstr "！ 无法添加收藏库“%s”"
 
-#: mcomix/library/backend.py:768
+#: mcomix/library/backend.py:769
 #, python-format
 msgid "! Could not add book %(book)s to collection %(collection)s"
 msgstr "！ 无法将“%(book)s”添加到“%(collection)s”收藏库"
 
-#: mcomix/library/backend.py:795
+#: mcomix/library/backend.py:796
 #, python-format
 msgid "! Could not rename collection to \"%s\""
 msgstr "！ 无法将收藏库重命名为“%s”"
 
-#: mcomix/library/backend.py:812 mcomix/library/backend.py:814
+#: mcomix/library/backend.py:813 mcomix/library/backend.py:815
 msgid "(Copy)"
 msgstr "(复制)"
 
-#: mcomix/library/backend.py:1111
+#: mcomix/library/backend.py:1112
 msgid "Could not determine library database version!"
 msgstr "无法确定收藏库的数据库版本！"
 
-#: mcomix/library/backend.py:1161
+#: mcomix/library/backend.py:1162
 #, python-format
 msgid "Upgrading library database version from %(from)d to %(to)d."
 msgstr "将收藏库数据库版本从 %(from)d 升级到 %(to)d 。"
 
-#: mcomix/library/backend_types.py:387 mcomix/library/collection_area.py:224
+#: mcomix/library/backend_types.py:387 mcomix/library/collection_area.py:223
 msgid "All books"
 msgstr "所有书籍"
 
@@ -3223,11 +3223,11 @@ msgstr "标记为未读(_N)"
 msgid "Forgets the page the selected books were left at."
 msgstr "忘记所选图书上次停留的页面。"
 
-#: mcomix/library/book_area.py:205 mcomix/library/collection_area.py:143
+#: mcomix/library/book_area.py:205 mcomix/library/collection_area.py:142
 msgid "_Add..."
 msgstr "添加(_A)..."
 
-#: mcomix/library/book_area.py:206 mcomix/library/collection_area.py:144
+#: mcomix/library/book_area.py:206 mcomix/library/collection_area.py:143
 msgid "Add more books to the library."
 msgstr "添加更多书到收藏库。"
 
@@ -3255,11 +3255,11 @@ msgstr "删除并移动到回收站(_R)"
 msgid "Deletes the selected books from disk."
 msgstr "从硬盘上删除选中的书。"
 
-#: mcomix/library/book_area.py:218 mcomix/library/collection_area.py:154
+#: mcomix/library/book_area.py:218 mcomix/library/collection_area.py:153
 msgid "Clean _up"
 msgstr "清除(_U)"
 
-#: mcomix/library/book_area.py:219 mcomix/library/collection_area.py:155
+#: mcomix/library/book_area.py:219 mcomix/library/collection_area.py:154
 msgid "Removes no longer existent books from the collection."
 msgstr "从该收藏中删除已经不存在的书。"
 
@@ -3333,7 +3333,7 @@ msgid "Removed %(num)d book from '%(collection)s'."
 msgid_plural "Removed %(num)d books from '%(collection)s'."
 msgstr[0] "从“%(collection)s”中删除了%(num)d本书。"
 
-#: mcomix/library/book_area.py:861 mcomix/library/collection_area.py:302
+#: mcomix/library/book_area.py:861 mcomix/library/collection_area.py:301
 #, python-format
 msgid "Removed %d book from the library."
 msgid_plural "Removed %d books from the library."
@@ -3361,99 +3361,99 @@ msgid "Remove the bookmarks in the deleted book?"
 msgid_plural "Remove the bookmarks in the %(count)d deleted books?"
 msgstr[0] "删除已删除的 %(count)d 本书中的书签？"
 
-#: mcomix/library/collection_area.py:147
+#: mcomix/library/collection_area.py:146
 msgid "New"
 msgstr "新增"
 
-#: mcomix/library/collection_area.py:148
+#: mcomix/library/collection_area.py:147
 msgid "Add a new empty collection."
 msgstr "添加一个空的收藏。"
 
-#: mcomix/library/collection_area.py:149
+#: mcomix/library/collection_area.py:148
 msgid "Re_name"
 msgstr "重命名(_N)"
 
-#: mcomix/library/collection_area.py:150
+#: mcomix/library/collection_area.py:149
 msgid "Renames the selected collection."
 msgstr "重命名选中的收藏。"
 
-#: mcomix/library/collection_area.py:151
+#: mcomix/library/collection_area.py:150
 msgid "_Duplicate"
 msgstr "副本(_D)"
 
-#: mcomix/library/collection_area.py:152
+#: mcomix/library/collection_area.py:151
 msgid "Creates a duplicate of the selected collection."
 msgstr "为选中的收藏创建一个副本。"
 
-#: mcomix/library/collection_area.py:157
+#: mcomix/library/collection_area.py:156
 msgid "Relocate..."
 msgstr "重新定位..."
 
-#: mcomix/library/collection_area.py:161
+#: mcomix/library/collection_area.py:160
 msgid "Deletes the selected collection."
 msgstr "删除选中的收藏。"
 
-#: mcomix/library/collection_area.py:173
+#: mcomix/library/collection_area.py:172
 msgid "Library collections"
 msgstr "收藏库的收藏"
 
-#: mcomix/library/collection_area.py:253
+#: mcomix/library/collection_area.py:252
 msgid "Add new collection?"
 msgstr "添加新的收藏？"
 
-#: mcomix/library/collection_area.py:254
+#: mcomix/library/collection_area.py:253
 msgid "Please enter a name for the new collection."
 msgstr "请输入新收藏的名称。"
 
-#: mcomix/library/collection_area.py:285
+#: mcomix/library/collection_area.py:284
 #, python-format
 msgid "Could not add a new collection called '%s'."
 msgstr "无法添加名为“%s”的新收藏。"
 
-#: mcomix/library/collection_area.py:290 mcomix/library/collection_area.py:391
+#: mcomix/library/collection_area.py:289 mcomix/library/collection_area.py:390
 msgid "A collection by that name already exists."
 msgstr "已经存在使用该名称的收藏。"
 
-#: mcomix/library/collection_area.py:359
+#: mcomix/library/collection_area.py:358
 msgid "Rename collection?"
 msgstr "重命名收藏？"
 
-#: mcomix/library/collection_area.py:360
+#: mcomix/library/collection_area.py:359
 msgid "Please enter a new name for the selected collection."
 msgstr "请输入选中的收藏的新名称。"
 
-#: mcomix/library/collection_area.py:387
+#: mcomix/library/collection_area.py:386
 #, python-format
 msgid "Could not change the name to '%s'."
 msgstr "无法修改名称为“%s”。"
 
-#: mcomix/library/collection_area.py:403
+#: mcomix/library/collection_area.py:402
 msgid "Could not duplicate collection."
 msgstr "无法创建收藏的副本。"
 
-#: mcomix/library/collection_area.py:614
+#: mcomix/library/collection_area.py:613
 msgid "Root"
 msgstr "根"
 
-#: mcomix/library/collection_area.py:617
+#: mcomix/library/collection_area.py:616
 #, python-format
 msgid ""
 "Put the collection '%(subcollection)s' in the collection "
 "'%(supercollection)s'."
 msgstr "把收藏“%(subcollection)s”放入收藏“%(supercollection)s”中。"
 
-#: mcomix/library/collection_area.py:633
+#: mcomix/library/collection_area.py:632
 #, python-format
 msgid "Add books to '%s'."
 msgstr "添加书到“%s”中。"
 
-#: mcomix/library/collection_area.py:636
+#: mcomix/library/collection_area.py:635
 #, python-format
 msgid ""
 "Copy books from '%(source collection)s' to '%(destination collection)s'."
 msgstr "把书从“%(source collection)s”复制到“%(destination collection)s”。"
 
-#: mcomix/library/collection_area.py:643
+#: mcomix/library/collection_area.py:642
 #, python-format
 msgid ""
 "Move books from '%(source collection)s' to '%(destination collection)s'."
@@ -3511,27 +3511,27 @@ msgstr "已读页数: %d"
 msgid "last read on %(date)s, %(time)s"
 msgstr "最近阅读于 %(date)s, %(time)s"
 
-#: mcomix/library/main_dialog.py:137
+#: mcomix/library/main_dialog.py:148
 msgid "Scanning for new books..."
 msgstr "正在扫描新书..."
 
-#: mcomix/library/main_dialog.py:180
+#: mcomix/library/main_dialog.py:206
 #, python-format
 msgid "Added new book '%(bookname)s' from folder '%(directory)s'."
 msgstr "已从 %(directory)s 目录下添加新书 %(bookname)s。"
 
-#: mcomix/library/main_dialog.py:187
+#: mcomix/library/main_dialog.py:213
 #, python-format
 msgid "Added %(count)d new book from folder '%(directory)s'."
 msgid_plural "Added %(count)d new books from folder '%(directory)s'."
 msgstr[0] "已从 %(directory)s 目录下添加 %(count)d 本新书。"
 
-#: mcomix/library/main_dialog.py:195
+#: mcomix/library/main_dialog.py:221
 #, python-format
 msgid "No new books found in folder '%s'."
 msgstr "在 %s 目录下没有找到新书。"
 
-#: mcomix/library/main_dialog.py:246
+#: mcomix/library/main_dialog.py:273
 #, python-format
 msgid "Books relocated: %d"
 msgstr "已重新定位的书：%d"

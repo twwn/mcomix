@@ -1,3 +1,79 @@
+# MComix 26.11
+## Release date: 2026-11-01
+
+### New
+
+- "View → Crop borders", or O, cuts the plain margins off each page, so the drawing fills more of the window.
+- "Scaling quality" offers Lanczos and Bicubic. Lanczos keeps fine lines sharp and draws no moiré from screentones.
+- Lanczos is the default scaling quality. "Bilinear" turns pages faster on a slow computer.
+- "Hyperbolic" left the scaling qualities; who chose it scales with Lanczos.
+- An older MComix sharing the preferences reads Lanczos or Bicubic as Bilinear, and keeps drawing pages.
+- "Nearest (pixel art)" among the scaling qualities enlarges each pixel to a square.
+- Thumbnails and library covers are scaled with Lanczos too, so screentones show no moiré there.
+- Kindle KFX books open: their pages in reading order, each at the largest size the book holds. A book with DRM does not open.
+- A KFX manga opens in manga mode, and "File → Properties" gives a KFX book's title, year, authors and publisher.
+- A KFX book's pictures in JPEG XR are shown where jxrlib's JxrDecApp is installed.
+- A KFX book kept in several files, as a Kindle or the Kindle apps keep one, opens from any of them.
+- A KFX-ZIP, which Calibre's KFX Input plugin gathers a book's files into, opens as that book.
+- A book whose ComicInfo.xml says it reads right to left opens in manga mode.
+- Properties shows a comic's volume, year, artist and publisher from its ComicInfo.xml.
+- EPUB books open, their pages in the order of the book; one that reads right to left opens in manga mode.
+- A KFX book whose pages are pages of an embedded PDF, such as a print replica, shows them where PDF files can be read.
+- The Windows packages and the Flatpak bring jxrlib along, so a KFX book's JPEG XR pictures show without installing anything.
+- A ComicInfo.xml in Shift_JIS, GB2312, Big5, EUC-KR or another multi-byte encoding is read.
+- A ZIP whose pages are compressed with bzip2, LZMA or (Python 3.14) Zstandard opens without 7-Zip.
+- Menus and software centres describe MComix in all 24 of its languages.
+- A Flatpak for 64-bit ARM comes with each release.
+
+### Library
+
+- The search follows the typing.
+- Typing over the covers begins a search.
+- Escape empties the search before it hides the window.
+- The covers can be sorted by when they were last read.
+- Delete takes the selected folder off the watch list.
+- A book copied into a watched folder is added while the library is open.
+- A folder of a split KFX book's parts lists the book once, quickly even with a thousand books in it.
+
+### Keys
+
+- F5 reloads the book, as in file managers and browsers.
+- CTRL+Plus and CTRL+Minus zoom, as in other programs.
+- CTRL+C copies the page again, as Edit → Copy did before GTK 4.
+- In the library: CTRL+C copies the selected book, CTRL+F goes to the search, CTRL+W closes the window, F2 renames the selected collection.
+- Delete takes the selected command out of the "Open with" editor.
+
+### Faster
+
+- Lanczos and Bicubic scale on several threads: a page turn with Lanczos took 10 ms here rather than 18.
+- Very large pages are averaged in blocks before Lanczos: twice as fast for a 6000x9000 scan.
+- A page turn no longer restyles every thumbnail in the bar.
+- chardet is loaded only when a text's encoding has to be guessed, which shortens the start.
+
+### Windows
+
+- The package leaves out OpenSSL, which MComix never used: four files and 6 MB fewer to load and scan at each start.
+- "Move to" no longer leaves a page in both folders when Windows holds the file for a moment.
+- An animated page's file is let go as soon as it stops playing, rather than whenever Python collects it.
+- The installer replaces an older MComix instead of refusing to run over it.
+- The installer offers MComix in Explorer's "Open with" for comic books, PDF, DjVu, EPUB and Kindle books.
+- The release carries an SBOM of what the Windows packages hold, and Sigstore bundles of its attestations.
+- The packages carry 7-Zip's newest release, 26.05, with its fixes for vulnerabilities.
+
+### Fixes
+
+- With "Remember recently opened files" off, the Open dialog no longer opens on the book chosen last.
+- PyMuPDF installed as pymupdf-lite (Arch Linux's 2.0) is no longer loaded into MComix' own process.
+- Enter on one of several books picked out in the library opens that one alone.
+- "Go to page" no longer needs Enter twice after a number is typed.
+- Preferences keeps a number or folder typed just before the window is closed.
+- A shortcut cell waiting for a key stops waiting when left.
+- Save in the "Open with" editor keeps a command still being edited.
+- A row of the "Open with" editor can be selected with the mouse.
+- Choosing light or dark no longer prints a GTK warning on GTK 4.20 and later.
+- A damaged KFX or EPUB book is refused with a message, and a damaged page left out, instead of failing with an internal error.
+- A damaged MOBI book is refused with a message instead of an internal error.
+
 # MComix 26.10
 ## Release date: 2026-10-17
 
