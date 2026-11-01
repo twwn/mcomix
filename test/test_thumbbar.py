@@ -304,6 +304,23 @@ class ThumbnailSidebarTest(MComixTest):
         self.window.clear_selection()
         self.assertEqual([], self._outlined(theme.PICKED_OUT_CLASS))
 
+    def test_a_page_turn_leaves_the_thumbnails_styled_as_they_were(self):
+        """What the bar outlines does not depend on the page on screen,
+        and styling every cell again cost each turn about a millisecond
+        in a book of sixty pages."""
+        from mcomix import theme
+        self._ready()
+        self.window.select_page(3)
+        pump()
+        style_cell = unittest.mock.Mock(wraps=self.sidebar._list.style_cell)
+        with unittest.mock.patch.object(self.sidebar._list, 'style_cell',
+                                        style_cell):
+            self.window.set_page(2)
+            pump()
+        self.assertEqual(2, self.window.imagehandler.get_current_page())
+        self.assertEqual([], style_cell.call_args_list)
+        self.assertEqual([3], self._outlined(theme.PICKED_OUT_CLASS))
+
     def test_the_page_marked_to_swap_is_outlined_in_the_sidebar(self):
         from mcomix import theme
         self._ready()

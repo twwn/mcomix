@@ -1205,8 +1205,10 @@ class MainWindow(Gtk.Window):
     def page_changed(self) -> None:
         """ Called on page change. """
         # The pages picked out stay picked out through a page turn; it
-        # is which of them are on screen that has changed.
-        self._draw_selection()
+        # is which of them are on screen that has changed.  The
+        # thumbnail bar outlines them wherever they are, so its cells
+        # stay as they are.
+        self._draw_selection(thumbnails=False)
         self.thumbnailsidebar.load_thumbnails()
         self._update_page_information()
         # Once the pages stop turning: a run of turns is one write.
@@ -2333,8 +2335,9 @@ class MainWindow(Gtk.Window):
         self._draw_selection()
         self.uimanager.set_sensitivities()
 
-    def _draw_selection(self) -> None:
-        """Outline the page widgets showing a picked-out or marked page.
+    def _draw_selection(self, thumbnails: bool = True) -> None:
+        """Outline the page widgets showing a picked-out or marked page,
+        and with <thumbnails> their thumbnails too.
 
         A page picked out to be removed and a page marked to be swapped
         are drawn differently, and a page can be both.
@@ -2351,7 +2354,8 @@ class MainWindow(Gtk.Window):
                 else:
                     image.remove_css_class(css_class)
         # The thumbnail bar outlines them wherever they are in the book.
-        self.thumbnailsidebar.restyle()
+        if thumbnails:
+            self.thumbnailsidebar.restyle()
 
     def page_at(self, x: float, y: float) -> "int | None":
         """The number of the page drawn at <x>, <y> on the page area.
