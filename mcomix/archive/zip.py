@@ -1,6 +1,7 @@
 """ Unicode-aware wrapper for zipfile.ZipFile. """
 
 import datetime
+import itertools
 import os
 import struct
 import zipfile
@@ -108,49 +109,82 @@ class ZipArchive(archive_base.NonUnicodeArchive):
     def __init__(self, archive: str) -> None:
         super().__init__(archive)
         self.zip = zipfile.ZipFile(archive, 'r')
+        #: The member each listed name stands for.  A zip can hold two
+        #: members of one name, which zipfile finds only the later of by
+        #: name; the record of each is what reads the right one.
+        self._members: dict[str, zipfile.ZipInfo] = {}
 
     def iter_contents(self) -> Iterator[str]:
         """Yield the name of every member.
 
         The password is asked for here rather than at the first read, so
         that a reader who declines is not asked again per page.
+
+        Two members that would be listed under one name, as the same
+        name twice or two that come out the same once made safe to
+        write, are both pages, and a page is a file: the later ones are
+        listed as name~2.jpg, which sorts after name.jpg.
         """
         if self._has_encryption():
             self.zip.setpassword(i18n.to_utf8(self._get_password()))
 
-        infos = self.zip.infolist()
+        infos = [info for info in self.zip.infolist()
+                 # A zip records the directories its files are in as
+                 # entries of their own.  They are not members anything
+                 # can extract - opening one for writing raises - so the
+                 # listing does not offer them.
+                 if not info.is_dir()]
         legacy = _legacy_name_decoder(infos)
-        for info in infos:
-            if info.is_dir():
-                # A zip records the directories its files are in as
-                # entries of their own.  They are not members anything
-                # can extract - opening one for writing raises - so the
-                # listing does not offer them.
-                continue
+        listed = [self._unicode_filename(info.filename) if _named_in_utf8(info)
+                  # Listed under the name it was written in, and extracted
+                  # under the one zipfile knows it by.
+                  else self._unicode_filename(info.filename, legacy)
+                  for info in infos]
+        taken = set(listed)
+        members: dict[str, zipfile.ZipInfo] = {}
+        for info, name in zip(infos, listed):
+            if name in members:
+                name = self._next_free_name(name, taken)
+                taken.add(name)
+            members[name] = info
             # Local time, as a zip keeps it: no zone is recorded.
             year, month, day, hour, minute, second = info.date_time
             try:
-                self._dates[info.filename] = datetime.datetime(
+                self._dates[name] = datetime.datetime(
                     year, month, day, hour, minute, second).timestamp()
             except (ValueError, OverflowError, OSError):
                 pass
-            if _named_in_utf8(info):
-                yield self._unicode_filename(info.filename)
-            else:
-                # Listed under the name it was written in, and extracted
-                # under the one zipfile knows it by.
-                yield self._unicode_filename(info.filename, legacy)
+        self._members = members
+        yield from members
+
+    @staticmethod
+    def _next_free_name(name: str, taken: set[str]) -> str:
+        """The first of name~2.jpg, name~3.jpg and on that nothing holds."""
+        folder, file_name = os.path.split(name)
+        stem, extension = os.path.splitext(file_name)
+        for number in itertools.count(2):
+            free = os.path.join(folder, archive_base.fit_name(
+                '%s~%d%s' % (stem, number, extension)))
+            if free not in taken:
+                return free
+        raise AssertionError('itertools.count() does not end')
+
+    def member_date(self, name: str) -> float | None:
+        """When the member listed as <name> was last modified."""
+        return self._dates.get(name)
 
     def extract(self, filename: str, destination_dir: str) -> None:
         """Write member <filename> into <destination_dir>."""
-        original_filename = self._original_filename(filename)
+        zipinfo: zipfile.ZipInfo | str = self._members.get(
+            filename, self._original_filename(filename))
         # Read before creating the destination, so a member that cannot be
         # read does not leave an empty file behind.
-        content = self.zip.read(original_filename)
+        content = self.zip.read(zipinfo)
         with self._create_file(os.path.join(destination_dir, filename)) as new:
             new.write(content)
 
-        zipinfo = self.zip.getinfo(original_filename)
+        if isinstance(zipinfo, str):
+            zipinfo = self.zip.getinfo(zipinfo)
         if len(content) != zipinfo.file_size:
             log.warning(_('%(filename)s\'s extracted size is %(actual_size)d bytes,'
                           ' but should be %(expected_size)d bytes.'

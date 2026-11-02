@@ -10,8 +10,10 @@ import subprocess
 import sys
 import tarfile
 import tempfile
+import time
 import unittest
 import unittest.mock
+import warnings
 import zipfile
 import zlib
 
@@ -448,6 +450,62 @@ class ZipConcurrentExtractionTest(MComixTest):
         for name, data in contents.items():
             with open(os.path.join(destination, name), 'rb') as extracted:
                 self.assertEqual(data, extracted.read(), name)
+
+
+class ZipSameNameTest(MComixTest):
+    """A zip can hold two members of one name, and both are pages."""
+
+    def _book(self, *members):
+        path = os.path.join(self.tmp_dir, 'book.zip')
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore', UserWarning)  # "Duplicate name"
+            with zipfile.ZipFile(path, 'w') as book:
+                for name, content, date in members:
+                    book.writestr(zipfile.ZipInfo(name, date), content)
+        handler = zip.ZipArchive(path)
+        self.addCleanup(handler.close)
+        return handler
+
+    def _extracted(self, handler, name):
+        destination = os.path.join(self.tmp_dir, 'extracted')
+        handler.extract(name, destination)
+        with open(os.path.join(destination, name), 'rb') as page:
+            return page.read()
+
+    def test_each_page_shows_its_own_picture(self):
+        handler = self._book(('a/p.jpg', b'first', (2001, 1, 1, 0, 0, 0)),
+                             ('a/p.jpg', b'second', (2002, 2, 2, 0, 0, 0)),
+                             ('a/q.jpg', b'other', (2003, 3, 3, 0, 0, 0)))
+        names = list(handler.iter_contents())
+        first, second = os.path.join('a', 'p.jpg'), os.path.join('a', 'p~2.jpg')
+        self.assertEqual([first, second, os.path.join('a', 'q.jpg')], names)
+        self.assertEqual(b'first', self._extracted(handler, first))
+        self.assertEqual(b'second', self._extracted(handler, second))
+        self.assertEqual(time.mktime((2001, 1, 1, 0, 0, 0, 0, 0, -1)),
+                         handler.member_date(first))
+        self.assertEqual(time.mktime((2002, 2, 2, 0, 0, 0, 0, 0, -1)),
+                         handler.member_date(second))
+
+    def test_they_read_in_the_order_they_are_stored(self):
+        handler = self._book(('p.jpg', b'first', (2001, 1, 1, 0, 0, 0)),
+                             ('p.jpg', b'second', (2002, 2, 2, 0, 0, 0)))
+        names = list(handler.iter_contents())
+        tools.alphanumeric_sort(names)
+        self.assertEqual(['p.jpg', 'p~2.jpg'], names)
+
+    def test_the_second_name_passes_over_one_that_is_taken(self):
+        handler = self._book(('p.jpg', b'first', (2001, 1, 1, 0, 0, 0)),
+                             ('p.jpg', b'second', (2002, 2, 2, 0, 0, 0)),
+                             ('p~2.jpg', b'third', (2003, 3, 3, 0, 0, 0)))
+        names = list(handler.iter_contents())
+        self.assertEqual(['p.jpg', 'p~3.jpg', 'p~2.jpg'], names)
+        self.assertEqual(b'second', self._extracted(handler, 'p~3.jpg'))
+        self.assertEqual(b'third', self._extracted(handler, 'p~2.jpg'))
+
+    def test_a_listing_read_twice_says_the_same(self):
+        handler = self._book(('p.jpg', b'first', (2001, 1, 1, 0, 0, 0)),
+                             ('p.jpg', b'second', (2002, 2, 2, 0, 0, 0)))
+        self.assertEqual(handler.list_contents(), handler.list_contents())
 
 
 class ZipCompressionMethodTest(MComixTest):
