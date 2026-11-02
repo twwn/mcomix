@@ -7,8 +7,8 @@ name: Flatpak updates
 # under github.com/flathub, and nothing had moved five of the eight
 # modules for months.
 #
-# Without a token, newer releases fail the run, and its summary lists
-# them.  With the secret FLATPAK_UPDATES_TOKEN in the environment
+# Without a token, the run lists newer releases in its summary and a
+# notice, and succeeds.  With the secret FLATPAK_UPDATES_TOKEN in the environment
 # flatpak-updates - a fine-grained token for this repository alone, with
 # Contents and Pull requests read and write - the run opens a pull
 # request with them instead, or updates the one it opened before, which
@@ -103,8 +103,7 @@ jobs:
       - name: Without a token there is no pull request to open
         if: steps.changes.outputs.changed == 'true' && env.TOKEN == ''
         run: |
-          echo "::error::Newer releases of the Flatpak's modules are out; the run's summary lists them. FLATPAK_UPDATES_TOKEN is not set, so no pull request was opened."
-          exit 1
+          echo "::notice::Newer releases of the Flatpak's modules are out; the run's summary lists them. FLATPAK_UPDATES_TOKEN is not set, so no pull request was opened."
       - name: A pull request with the newer releases
         if: steps.changes.outputs.changed == 'true' && env.TOKEN != ''
         env:
