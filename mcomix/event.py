@@ -16,6 +16,12 @@ if TYPE_CHECKING:
     from mcomix import main
 
 
+def is_swap_gesture(state: Gdk.ModifierType) -> bool:
+    """Whether <state> is the modifiers a swap is asked for with."""
+    return bool(state & Gdk.ModifierType.CONTROL_MASK
+                and state & Gdk.ModifierType.SHIFT_MASK)
+
+
 class EventHandler:
 
     def __init__(self, window: 'main.MainWindow') -> None:
@@ -816,7 +822,7 @@ class EventHandler:
                     y == self._pressed_pointer_pos_y and \
                     not self._window.was_out_of_focus:
 
-                if self._is_swap_gesture(state):
+                if is_swap_gesture(state):
                     # Marking a page to swap with another, which is the
                     # picking-out gesture with something added: the two
                     # are the two ways of naming a page with the mouse.
@@ -844,7 +850,7 @@ class EventHandler:
                     # the first click of the two would have done.
                     self._window.actiongroup.get_action('fullscreen').activate()
 
-            elif self._is_swap_gesture(state) \
+            elif is_swap_gesture(state) \
                     and not self._window.was_out_of_focus:
                 # The same two pages, named by dragging one onto the
                 # other rather than by clicking each in turn, which is
@@ -881,12 +887,6 @@ class EventHandler:
             back = not back
         return -1 if back else 1
 
-    @staticmethod
-    def _is_swap_gesture(state: Gdk.ModifierType) -> bool:
-        """Whether <state> is the modifiers a swap is asked for with."""
-        return bool(state & Gdk.ModifierType.CONTROL_MASK
-                    and state & Gdk.ModifierType.SHIFT_MASK)
-
     def _swap_dragged(self, x: float, y: float) -> None:
         """Swap the page the drag started on with the one it ended on.
 
@@ -914,7 +914,7 @@ class EventHandler:
         state = controller.get_current_event_state()
         if not state & Gdk.ModifierType.BUTTON1_MASK:
             return
-        if self._is_swap_gesture(state):
+        if is_swap_gesture(state):
             # A page being dragged onto another is not the view being
             # dragged about: the pages have to stay where they are for
             # the drag to end on the one it was aimed at.

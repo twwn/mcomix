@@ -10,6 +10,7 @@ from mcomix.preferences import prefs
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 from mcomix import bookmark_backend
+from mcomix import event
 from mcomix import image_tools
 from mcomix import log
 from mcomix import preview
@@ -54,6 +55,8 @@ class ThumbnailSidebar(Gtk.ScrolledWindow, widgets.Releasable):
         self._loaded = False
         #: The page being read, whose row is the one selected
         self._selected_page = 1
+        #: The page Ctrl was pressed on, until the button comes up
+        self._pressed_page: int | None = None
         #: The files behind the pages whose thumbnails would not load,
         #: which "skip broken pages" leaves out of the list
         self._broken: set[str] = set()
@@ -102,6 +105,7 @@ class ThumbnailSidebar(Gtk.ScrolledWindow, widgets.Releasable):
         clicks.set_button(0)
         clicks.set_propagation_phase(Gtk.PropagationPhase.CAPTURE)
         clicks.connect('pressed', self._mouse_press_event)
+        clicks.connect('released', self._mouse_release_event)
         self._list.add_controller(clicks)
 
         # A right click on a thumbnail opens the page menu for its page,
@@ -380,12 +384,40 @@ class ThumbnailSidebar(Gtk.ScrolledWindow, widgets.Releasable):
 
     def _mouse_press_event(self, gesture: Gtk.GestureClick, n_press: int,
                            x: float, y: float) -> None:
+        self._pressed_page = None
         if self._window.was_out_of_focus:
             # if the window was out of focus and the user clicks on
             # the thumbbar then do not select that page because they
             # more than likely have many pages open and are simply trying
             # to give mcomix focus again
             gesture.set_state(Gtk.EventSequenceState.CLAIMED)
+        elif (gesture.get_current_button() == Gdk.BUTTON_PRIMARY
+              and gesture.get_current_event_state()
+              & Gdk.ModifierType.CONTROL_MASK):
+            # Naming a page, as on the page itself, not turning to it:
+            # claimed here, the row never hears of the click.  Done when
+            # the button comes up, as the page area does, since the
+            # swap can be a drag.
+            gesture.set_state(Gtk.EventSequenceState.CLAIMED)
+            self._pressed_page = self._list.page_at(
+                self._list.position_at(x, y))
+
+    def _mouse_release_event(self, gesture: Gtk.GestureClick, n_press: int,
+                             x: float, y: float) -> None:
+        """Pick a page out, or mark or swap it, as the same keys and a
+        click on the page itself do."""
+        pressed, self._pressed_page = self._pressed_page, None
+        if pressed is None:
+            return
+        page = self._list.page_at(self._list.position_at(x, y))
+        state = gesture.get_current_event_state()
+        if event.is_swap_gesture(state):
+            if page == pressed:
+                self._window.mark_for_swap(page)
+            elif page is not None:
+                self._window.file_actions.swap_pages(pressed, page)
+        elif state & Gdk.ModifierType.CONTROL_MASK and page == pressed:
+            self._window.select_page(page)
 
     def _menu_click(self, gesture: Gtk.GestureClick, n_press: int,
                     x: float, y: float) -> None:

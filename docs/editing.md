@@ -16,10 +16,10 @@ The archive on disk is untouched until the changes are written.
 - A name another page holds is flagged in the dialog, with two choices:
   - "Swap the names": that page gets this page's old name.
   - "Replace": this page gets the name, and the other page leaves the book. In a folder of images its file is written over.
-- CTRL+SHIFT and a click marks a page, drawn with a dashed outline; the next such click swaps the two. Clicking the marked page again unmarks it.
-  In double page mode, the same keys drag one page onto the other.
+- CTRL+SHIFT and a click, on a page or its thumbnail, marks that page, drawn with a dashed outline; the next such click swaps the two. Clicking the marked page again unmarks it.
+  The same keys drag one page onto the other, in double page mode or among the thumbnails.
 - "Delete page", in the page's menu, removes that page; "Edit → Undo" puts it back.
-- CTRL and a click picks a page out (outlined in red, in the thumbnails too); again puts it back.
+- CTRL and a click, on a page or its thumbnail, picks that page out (outlined in red, in the thumbnails too); again puts it back.
   Escape, or "Put back pages picked out" in the Edit and page menus, puts back all of them.
   Delete removes every page picked out, and opens the archive editor with them selected.
 

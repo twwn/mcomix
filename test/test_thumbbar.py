@@ -189,6 +189,65 @@ class ThumbnailSidebarTest(MComixTest):
         self.sidebar._mouse_press_event(gesture, 1, 0, 0)
         gesture.set_state.assert_not_called()
 
+    def _click(self, state, pressed=1, released=None):
+        """Press on the row of page <pressed> and let go on the row of
+        <released>, the same one unless said, with <state> held."""
+        self.window.was_out_of_focus = False
+        gesture = unittest.mock.Mock()
+        gesture.get_current_button.return_value = Gdk.BUTTON_PRIMARY
+        gesture.get_current_event_state.return_value = state
+        rows = {page: self.sidebar._list.row_of(page)
+                for page in (pressed, released or pressed)}
+        with unittest.mock.patch.object(self.sidebar._list, 'position_at',
+                                        return_value=rows[pressed]):
+            self.sidebar._mouse_press_event(gesture, 1, 0, 0)
+        with unittest.mock.patch.object(
+                self.sidebar._list, 'position_at',
+                return_value=rows[released or pressed]):
+            self.sidebar._mouse_release_event(gesture, 1, 0, 0)
+        return gesture
+
+    def test_ctrl_and_a_click_picks_a_thumbnails_page_out_and_turns_nothing(self):
+        self.assertTrue(wait_for(lambda: self._items()))
+        gesture = self._click(Gdk.ModifierType.CONTROL_MASK, 2)
+        gesture.set_state.assert_called_once_with(
+            Gtk.EventSequenceState.CLAIMED)
+        self.assertEqual({2}, self.window.selected_pages)
+        self.assertEqual(1, self.window.imagehandler.get_current_page())
+        self._click(Gdk.ModifierType.CONTROL_MASK, 2)
+        self.assertEqual(set(), self.window.selected_pages)
+
+    def test_ctrl_shift_and_two_clicks_swap_two_thumbnails_pages(self):
+        self.assertTrue(wait_for(lambda: self._items()))
+        swap = Gdk.ModifierType.CONTROL_MASK | Gdk.ModifierType.SHIFT_MASK
+        self._click(swap, 2)
+        self.assertEqual(2, self.window.swap_page)
+        with unittest.mock.patch.object(self.window.file_actions,
+                                        'swap_pages') as swapped:
+            self._click(swap, 3)
+        swapped.assert_called_once_with(2, 3)
+        self.assertIsNone(self.window.swap_page)
+
+    def test_ctrl_shift_and_a_drag_swaps_two_thumbnails_pages(self):
+        self.assertTrue(wait_for(lambda: self._items()))
+        swap = Gdk.ModifierType.CONTROL_MASK | Gdk.ModifierType.SHIFT_MASK
+        with unittest.mock.patch.object(self.window.file_actions,
+                                        'swap_pages') as swapped:
+            self._click(swap, 1, 3)
+        swapped.assert_called_once_with(1, 3)
+        self.assertIsNone(self.window.swap_page)
+
+    def test_ctrl_and_a_drag_picks_nothing_out(self):
+        self.assertTrue(wait_for(lambda: self._items()))
+        self._click(Gdk.ModifierType.CONTROL_MASK, 1, 3)
+        self.assertEqual(set(), self.window.selected_pages)
+
+    def test_a_plain_click_is_left_to_the_row(self):
+        self.assertTrue(wait_for(lambda: self._items()))
+        gesture = self._click(Gdk.ModifierType(0), 2)
+        gesture.set_state.assert_not_called()
+        self.assertEqual(set(), self.window.selected_pages)
+
     def test_page_numbers_are_shown_only_when_the_preference_says_so(self):
         prefs['show page numbers on thumbnails'] = False
         self.sidebar.toggle_page_numbers_visible()
