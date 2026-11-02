@@ -1236,16 +1236,20 @@ def _unrar_skips_star_names() -> bool:
 
     Since 7.3.2 it reports success for such a member and writes nothing,
     the same with a destination name, a destination folder, or the data
-    handed to the callback; what the program sees is a missing file. """
-    if 'win32' == sys.platform or not rar.RarArchive.is_available():
+    handed to the callback; what the program sees is a missing file.
+    Windows lists the member as '_oo.JPG', since no file there can hold a
+    '*', and the build it loads follows RARLAB's releases, so it is asked
+    as well. """
+    if not rar.RarArchive.is_available():
         return False
     archive = rar.RarArchive(get_testfile_path('archives', 'GlobEntries.rar'))
+    name = archive._replace_invalid_filesystem_chars('*oo.JPG')
     with tempfile.TemporaryDirectory() as dest_dir:
         try:
-            archive.extract('*oo.JPG', dest_dir)
+            archive.extract(name, dest_dir)
         finally:
             archive.close()
-        return not os.path.isfile(os.path.join(dest_dir, '*oo.JPG'))
+        return not os.path.isfile(os.path.join(dest_dir, name))
 
 
 if _unrar_skips_star_names():
@@ -1258,15 +1262,6 @@ if _unrar_skips_star_names():
 
 if 'win32' == sys.platform:
     xfail_list.extend([
-        # Bug...
-        ('RarDllGlobEntries', 'test_iter_contents'),
-        ('RarDllGlobEntries', 'test_list_contents'),
-        ('RarDllGlobEntries', 'test_iter_extract'),
-        ('RarDllGlobEntries', 'test_extract'),
-        ('RarDllSolidGlobEntries', 'test_iter_contents'),
-        ('RarDllSolidGlobEntries', 'test_list_contents'),
-        ('RarDllSolidGlobEntries', 'test_iter_extract'),
-        ('RarDllSolidGlobEntries', 'test_extract'),
         # Not supported by 7z executable...
         ('7zExternalLhaUnicode', 'test_iter_contents'),
         ('7zExternalLhaUnicode', 'test_list_contents'),
