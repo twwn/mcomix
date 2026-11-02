@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: comix.HEAD\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-01 12:45+0100\n"
+"POT-Creation-Date: 2026-11-02 23:13+0100\n"
 "PO-Revision-Date: 2012-09-06 18:00+0100\n"
 "Last-Translator: Carlos Feliu <carlos.feliu.holguera@gmail.com>\n"
 "Language-Team: Spanish <traductores@es.gnome.org>\n"
@@ -785,7 +785,7 @@ msgstr ""
 "Dejó de leer aquí en %(date)s, %(time)s. Si elige \"Yes\", la lectura se "
 "reanudará en la página %(page)d. Si no es así, se cargará la primera página."
 
-#: mcomix/file_handler.py:1560
+#: mcomix/file_handler.py:1566
 #, python-format
 msgid ""
 "! Corrupt file \"%s\", deleting it; the last file read will not be reopened."
@@ -3662,7 +3662,7 @@ msgstr "Introduzca la contraseña para continuar:"
 msgid "Extraction of %(archivefile)s might have failed: %(error)s"
 msgstr "La extracción de %(archivefile)s puede haber fallado: %(error)s"
 
-#: mcomix/archive/zip.py:155
+#: mcomix/archive/zip.py:189
 #, python-format
 msgid ""
 "%(filename)s's extracted size is %(actual_size)d bytes, but should be "
@@ -3673,25 +3673,32 @@ msgstr ""
 "debería ser de %(expected_size)d bytes. El archivador puede estar corrupto o "
 "en un formato no soportado."
 
+#: mcomix/library/add_progress_dialog.py:43
+#, python-format
+msgid "Could not add %(count)d book to the library: %(names)s"
+msgid_plural "Could not add %(count)d books to the library: %(names)s"
+msgstr[0] "No se pudo añadir %(count)d libro a la biblioteca: %(names)s"
+msgstr[1] "No se pudieron añadir %(count)d libros a la biblioteca: %(names)s"
+
 #
 # File: src/library.py, line: 910
-#: mcomix/library/add_progress_dialog.py:37
+#: mcomix/library/add_progress_dialog.py:58
 msgid "Adding books"
 msgstr "Agregando libros"
 
-#: mcomix/library/add_progress_dialog.py:38
+#: mcomix/library/add_progress_dialog.py:59
 msgid "_Stop"
 msgstr "_Detener"
 
 #
 # File: src/library.py, line: 930
-#: mcomix/library/add_progress_dialog.py:59
+#: mcomix/library/add_progress_dialog.py:80
 msgid "Added books:"
 msgstr "Libros agregados:"
 
 #
 # File: src/library.py, line: 952
-#: mcomix/library/add_progress_dialog.py:99
+#: mcomix/library/add_progress_dialog.py:125
 #, python-format
 msgid "Adding '%s'..."
 msgstr "Agregando '%s'..."

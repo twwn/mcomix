@@ -275,6 +275,16 @@ class LibraryDialogTest(_LibraryWindowTest):
         self.assertIsNone(main_dialog._dialog)
         self.assertIsNot(self._open(), first)
 
+    def test_a_book_that_cannot_be_read_is_named_in_the_status_bar(self):
+        dialog = self._open()
+        damaged = os.path.join(self.tmp_dir, 'bad.cbz')
+        with open(damaged, 'wb') as book:
+            book.write(b'not a book')
+        dialog.add_books([damaged])
+        pump()
+        self.assertIn('Could not add 1 book to the library: bad.cbz',
+                      dialog._statusbar.get_text())
+
     def test_a_closed_library_is_not_told_about_books_filed_later(self):
         """The cover view stayed subscribed to the backend, which outlives
         the window, and put a cover in its grid for every book filed

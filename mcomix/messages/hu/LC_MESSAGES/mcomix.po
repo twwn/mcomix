@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Comix 4.0.3\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-01 12:45+0100\n"
+"POT-Creation-Date: 2026-11-02 23:13+0100\n"
 "PO-Revision-Date: 2009-01-26 19:34+0100\n"
 "Last-Translator: Ernő Drabik <drerno@gmail.com>\n"
 "Language-Team: \n"
@@ -678,7 +678,7 @@ msgstr ""
 "választásakor az olvasás a %(page)d. oldalon folytatódik, egyébként az első "
 "oldal töltődik be."
 
-#: mcomix/file_handler.py:1560
+#: mcomix/file_handler.py:1566
 #, python-format
 msgid ""
 "! Corrupt file \"%s\", deleting it; the last file read will not be reopened."
@@ -3203,7 +3203,7 @@ msgstr "A folytatáshoz adja meg a jelszót:"
 msgid "Extraction of %(archivefile)s might have failed: %(error)s"
 msgstr "A(z) %(archivefile)s kibontása meghiúsulhatott: %(error)s"
 
-#: mcomix/archive/zip.py:155
+#: mcomix/archive/zip.py:189
 #, python-format
 msgid ""
 "%(filename)s's extracted size is %(actual_size)d bytes, but should be "
@@ -3214,19 +3214,26 @@ msgstr ""
 "%(expected_size)d bájtnak kellene lennie. Az archívum sérült lehet, vagy nem "
 "támogatott formátumú."
 
-#: mcomix/library/add_progress_dialog.py:37
+#: mcomix/library/add_progress_dialog.py:43
+#, python-format
+msgid "Could not add %(count)d book to the library: %(names)s"
+msgid_plural "Could not add %(count)d books to the library: %(names)s"
+msgstr[0] "%(count)d könyvet nem sikerült hozzáadni a könyvtárhoz: %(names)s"
+msgstr[1] "%(count)d könyvet nem sikerült hozzáadni a könyvtárhoz: %(names)s"
+
+#: mcomix/library/add_progress_dialog.py:58
 msgid "Adding books"
 msgstr "Könyvek hozzáadása"
 
-#: mcomix/library/add_progress_dialog.py:38
+#: mcomix/library/add_progress_dialog.py:59
 msgid "_Stop"
 msgstr "_Leállítás"
 
-#: mcomix/library/add_progress_dialog.py:59
+#: mcomix/library/add_progress_dialog.py:80
 msgid "Added books:"
 msgstr "Hozzáadott könyvek:"
 
-#: mcomix/library/add_progress_dialog.py:99
+#: mcomix/library/add_progress_dialog.py:125
 #, python-format
 msgid "Adding '%s'..."
 msgstr "Hozzáadás '%s'..."

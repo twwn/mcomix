@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-01 12:45+0100\n"
+"POT-Creation-Date: 2026-11-02 23:13+0100\n"
 "PO-Revision-Date: 2006-10-15 21:30+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -760,7 +760,7 @@ msgstr ""
 "gaat het lezen verder op pagina %(page)d. Anders wordt de eerste pagina "
 "geladen."
 
-#: mcomix/file_handler.py:1560
+#: mcomix/file_handler.py:1566
 #, python-format
 msgid ""
 "! Corrupt file \"%s\", deleting it; the last file read will not be reopened."
@@ -3606,7 +3606,7 @@ msgstr "Voer het wachtwoord in om verder te gaan:"
 msgid "Extraction of %(archivefile)s might have failed: %(error)s"
 msgstr "Het uitpakken van %(archivefile)s is mogelijk mislukt: %(error)s"
 
-#: mcomix/archive/zip.py:155
+#: mcomix/archive/zip.py:189
 #, python-format
 msgid ""
 "%(filename)s's extracted size is %(actual_size)d bytes, but should be "
@@ -3617,24 +3617,33 @@ msgstr ""
 "%(expected_size)d bytes moeten zijn. Het archief is mogelijk beschadigd of "
 "van een niet-ondersteund formaat."
 
+#: mcomix/library/add_progress_dialog.py:43
+#, python-format
+msgid "Could not add %(count)d book to the library: %(names)s"
+msgid_plural "Could not add %(count)d books to the library: %(names)s"
+msgstr[0] ""
+"%(count)d boek kon niet aan de bibliotheek worden toegevoegd: %(names)s"
+msgstr[1] ""
+"%(count)d boeken konden niet aan de bibliotheek worden toegevoegd: %(names)s"
+
 #
 # File: src/library.py, line: 910
-#: mcomix/library/add_progress_dialog.py:37
+#: mcomix/library/add_progress_dialog.py:58
 msgid "Adding books"
 msgstr "Boeken toevoegen"
 
-#: mcomix/library/add_progress_dialog.py:38
+#: mcomix/library/add_progress_dialog.py:59
 msgid "_Stop"
 msgstr "_Stoppen"
 
 #
-#: mcomix/library/add_progress_dialog.py:59
+#: mcomix/library/add_progress_dialog.py:80
 msgid "Added books:"
 msgstr "Toegevoegde boeken:"
 
 #
 # File: src/library.py, line: 952
-#: mcomix/library/add_progress_dialog.py:99
+#: mcomix/library/add_progress_dialog.py:125
 #, python-format
 msgid "Adding '%s'..."
 msgstr "\"%s\" toevoegen..."

@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix zh_TW\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-01 12:45+0100\n"
+"POT-Creation-Date: 2026-11-02 23:13+0100\n"
 "PO-Revision-Date: 2013-07-05 21:37+0800\n"
 "Last-Translator: Wayne Su <mstarmstar@hotmail.com>\n"
 "Language-Team: \n"
@@ -665,7 +665,7 @@ msgstr ""
 "你在 %(date)s %(time)s 時讀到這裏就停了。如果你選「是」，可以從第 %(page)d 頁"
 "開始讀；否則就會載入第一頁。"
 
-#: mcomix/file_handler.py:1560
+#: mcomix/file_handler.py:1566
 #, python-format
 msgid ""
 "! Corrupt file \"%s\", deleting it; the last file read will not be reopened."
@@ -3095,7 +3095,7 @@ msgstr "請輸入密碼才能繼續："
 msgid "Extraction of %(archivefile)s might have failed: %(error)s"
 msgstr "%(archivefile)s 的解壓縮可能失敗了：%(error)s"
 
-#: mcomix/archive/zip.py:155
+#: mcomix/archive/zip.py:189
 #, python-format
 msgid ""
 "%(filename)s's extracted size is %(actual_size)d bytes, but should be "
@@ -3105,19 +3105,25 @@ msgstr ""
 "%(filename)s 的大小是 %(actual_size)dB，但應該是 %(expected_size)dB 才對。這"
 "個壓縮檔可能有損壞或是不支援的格式。"
 
-#: mcomix/library/add_progress_dialog.py:37
+#: mcomix/library/add_progress_dialog.py:43
+#, python-format
+msgid "Could not add %(count)d book to the library: %(names)s"
+msgid_plural "Could not add %(count)d books to the library: %(names)s"
+msgstr[0] "無法將 %(count)d 本書加入書庫：%(names)s"
+
+#: mcomix/library/add_progress_dialog.py:58
 msgid "Adding books"
 msgstr "正在加入書籍"
 
-#: mcomix/library/add_progress_dialog.py:38
+#: mcomix/library/add_progress_dialog.py:59
 msgid "_Stop"
 msgstr "停止(_S)"
 
-#: mcomix/library/add_progress_dialog.py:59
+#: mcomix/library/add_progress_dialog.py:80
 msgid "Added books:"
 msgstr "已經加入的書籍："
 
-#: mcomix/library/add_progress_dialog.py:99
+#: mcomix/library/add_progress_dialog.py:125
 #, python-format
 msgid "Adding '%s'..."
 msgstr "正在加入 %s ..."

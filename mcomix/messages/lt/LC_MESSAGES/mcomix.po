@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 1.2.1\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-01 12:45+0100\n"
+"POT-Creation-Date: 2026-11-02 23:13+0100\n"
 "PO-Revision-Date: 2016-09-18 15:30+0300\n"
 "Last-Translator: Zygimantus <zygimantus@gmail.com>\n"
 "Language-Team: \n"
@@ -685,7 +685,7 @@ msgstr ""
 "Skaitymą čia nutraukėte %(date)s %(time)s. Pasirinkus „Taip“ skaitymas bus "
 "tęsiamas %(page)d puslapyje. Kitu atveju bus įkeltas pirmas puslapis."
 
-#: mcomix/file_handler.py:1560
+#: mcomix/file_handler.py:1566
 #, python-format
 msgid ""
 "! Corrupt file \"%s\", deleting it; the last file read will not be reopened."
@@ -3183,7 +3183,7 @@ msgstr "Norėdami tęsti, įveskite slaptažodį:"
 msgid "Extraction of %(archivefile)s might have failed: %(error)s"
 msgstr "%(archivefile)s išpakavimas galėjo nepavykti: %(error)s"
 
-#: mcomix/archive/zip.py:155
+#: mcomix/archive/zip.py:189
 #, python-format
 msgid ""
 "%(filename)s's extracted size is %(actual_size)d bytes, but should be "
@@ -3194,19 +3194,27 @@ msgstr ""
 "%(expected_size)d baitų. Archyvas gali būti sugadintas arba nepalaikomo "
 "formato."
 
-#: mcomix/library/add_progress_dialog.py:37
+#: mcomix/library/add_progress_dialog.py:43
+#, python-format
+msgid "Could not add %(count)d book to the library: %(names)s"
+msgid_plural "Could not add %(count)d books to the library: %(names)s"
+msgstr[0] "Į biblioteką nepavyko įtraukti %(count)d knygos: %(names)s"
+msgstr[1] "Į biblioteką nepavyko įtraukti %(count)d knygų: %(names)s"
+msgstr[2] "Į biblioteką nepavyko įtraukti %(count)d knygų: %(names)s"
+
+#: mcomix/library/add_progress_dialog.py:58
 msgid "Adding books"
 msgstr "Knygų pridėjimas"
 
-#: mcomix/library/add_progress_dialog.py:38
+#: mcomix/library/add_progress_dialog.py:59
 msgid "_Stop"
 msgstr "_Sustabdyti"
 
-#: mcomix/library/add_progress_dialog.py:59
+#: mcomix/library/add_progress_dialog.py:80
 msgid "Added books:"
 msgstr "Pridėtos knygos:"
 
-#: mcomix/library/add_progress_dialog.py:99
+#: mcomix/library/add_progress_dialog.py:125
 #, python-format
 msgid "Adding '%s'..."
 msgstr "Pridedama „%s“..."

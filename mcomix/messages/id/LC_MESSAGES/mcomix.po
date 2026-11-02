@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Comix-4.0.1\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-01 12:45+0100\n"
+"POT-Creation-Date: 2026-11-02 23:13+0100\n"
 "PO-Revision-Date: 2008-12-13 21:23+0700\n"
 "Last-Translator: Andhika Padmawan <andhika.padmawan@gmail.com>\n"
 "Language-Team: Indonesia <id@li.org>\n"
@@ -773,7 +773,7 @@ msgstr ""
 "pembacaan dilanjutkan pada halaman %(page)d. Jika tidak, halaman pertama "
 "yang dimuat."
 
-#: mcomix/file_handler.py:1560
+#: mcomix/file_handler.py:1566
 #, python-format
 msgid ""
 "! Corrupt file \"%s\", deleting it; the last file read will not be reopened."
@@ -3655,7 +3655,7 @@ msgstr "Masukkan kata sandi untuk melanjutkan:"
 msgid "Extraction of %(archivefile)s might have failed: %(error)s"
 msgstr "Ekstraksi %(archivefile)s mungkin gagal: %(error)s"
 
-#: mcomix/archive/zip.py:155
+#: mcomix/archive/zip.py:189
 #, python-format
 msgid ""
 "%(filename)s's extracted size is %(actual_size)d bytes, but should be "
@@ -3666,25 +3666,31 @@ msgstr ""
 "seharusnya %(expected_size)d bita. Arsip mungkin rusak atau dalam format "
 "yang tidak didukung."
 
+#: mcomix/library/add_progress_dialog.py:43
+#, python-format
+msgid "Could not add %(count)d book to the library: %(names)s"
+msgid_plural "Could not add %(count)d books to the library: %(names)s"
+msgstr[0] "%(count)d buku tidak dapat ditambahkan ke perpustakaan: %(names)s"
+
 #
 # File: src/library.py, line: 910
-#: mcomix/library/add_progress_dialog.py:37
+#: mcomix/library/add_progress_dialog.py:58
 msgid "Adding books"
 msgstr "Menambah buku"
 
-#: mcomix/library/add_progress_dialog.py:38
+#: mcomix/library/add_progress_dialog.py:59
 msgid "_Stop"
 msgstr "_Hentikan"
 
 #
 # File: src/library.py, line: 930
-#: mcomix/library/add_progress_dialog.py:59
+#: mcomix/library/add_progress_dialog.py:80
 msgid "Added books:"
 msgstr "Buku yang ditambahkan:"
 
 #
 # File: src/library.py, line: 952
-#: mcomix/library/add_progress_dialog.py:99
+#: mcomix/library/add_progress_dialog.py:125
 #, python-format
 msgid "Adding '%s'..."
 msgstr "Menambah '%s'..."

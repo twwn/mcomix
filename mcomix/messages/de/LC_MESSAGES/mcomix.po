@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 2.0.0\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-01 12:45+0100\n"
+"POT-Creation-Date: 2026-11-02 23:13+0100\n"
 "PO-Revision-Date: 2024-01-21 19:55+0100\n"
 "Last-Translator: Moritz Brunner <oddegamra@gmx.org>\n"
 "Language-Team: \n"
@@ -700,7 +700,7 @@ msgstr ""
 "\"Ja\" wählen, wird Seite %(page)d geöffnet. Ansonsten wird die erste Seite "
 "geladen."
 
-#: mcomix/file_handler.py:1560
+#: mcomix/file_handler.py:1566
 #, python-format
 msgid ""
 "! Corrupt file \"%s\", deleting it; the last file read will not be reopened."
@@ -3249,7 +3249,7 @@ msgstr ""
 "Entpacken des Archivs %(archivefile)s wahrscheinlich fehlgeschlagen: "
 "%(error)s"
 
-#: mcomix/archive/zip.py:155
+#: mcomix/archive/zip.py:189
 #, python-format
 msgid ""
 "%(filename)s's extracted size is %(actual_size)d bytes, but should be "
@@ -3260,19 +3260,28 @@ msgstr ""
 "%(expected_size)d Bytes sein. Das Archiv könnte korrupt oder in einem nicht "
 "unterstützten Format sein."
 
-#: mcomix/library/add_progress_dialog.py:37
+#: mcomix/library/add_progress_dialog.py:43
+#, python-format
+msgid "Could not add %(count)d book to the library: %(names)s"
+msgid_plural "Could not add %(count)d books to the library: %(names)s"
+msgstr[0] ""
+"%(count)d Buch konnte nicht zur Bibliothek hinzugefügt werden: %(names)s"
+msgstr[1] ""
+"%(count)d Bücher konnten nicht zur Bibliothek hinzugefügt werden: %(names)s"
+
+#: mcomix/library/add_progress_dialog.py:58
 msgid "Adding books"
 msgstr "Bücher hinzufügen"
 
-#: mcomix/library/add_progress_dialog.py:38
+#: mcomix/library/add_progress_dialog.py:59
 msgid "_Stop"
 msgstr "_Stopp"
 
-#: mcomix/library/add_progress_dialog.py:59
+#: mcomix/library/add_progress_dialog.py:80
 msgid "Added books:"
 msgstr "Hinzugefügte Bücher:"
 
-#: mcomix/library/add_progress_dialog.py:99
+#: mcomix/library/add_progress_dialog.py:125
 #, python-format
 msgid "Adding '%s'..."
 msgstr "Füge »%s« hinzu ..."

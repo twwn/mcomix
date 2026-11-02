@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-01 12:45+0100\n"
+"POT-Creation-Date: 2026-11-02 23:13+0100\n"
 "PO-Revision-Date: 2013-04-26 18:00+0100\n"
 "Last-Translator: Giovanni Scafora <giovanni@archlinux.org>\n"
 "Language-Team: Arch Linux Italian Team <giovanni@archlinux.org>\n"
@@ -689,7 +689,7 @@ msgstr ""
 "la lettura riprenderà dalla pagina %(page)d. Altrimenti, sarà caricata la "
 "prima pagina."
 
-#: mcomix/file_handler.py:1560
+#: mcomix/file_handler.py:1566
 #, python-format
 msgid ""
 "! Corrupt file \"%s\", deleting it; the last file read will not be reopened."
@@ -3231,7 +3231,7 @@ msgstr "Digitare la password per continuare:"
 msgid "Extraction of %(archivefile)s might have failed: %(error)s"
 msgstr "L'estrazione di %(archivefile)s potrebbe essere fallita: %(error)s"
 
-#: mcomix/archive/zip.py:155
+#: mcomix/archive/zip.py:189
 #, python-format
 msgid ""
 "%(filename)s's extracted size is %(actual_size)d bytes, but should be "
@@ -3242,19 +3242,26 @@ msgstr ""
 "dovrebbe essere di %(expected_size)d byte. L'archivio potrebbe essere "
 "corrotto oppure è un formato non supportato."
 
-#: mcomix/library/add_progress_dialog.py:37
+#: mcomix/library/add_progress_dialog.py:43
+#, python-format
+msgid "Could not add %(count)d book to the library: %(names)s"
+msgid_plural "Could not add %(count)d books to the library: %(names)s"
+msgstr[0] "Impossibile aggiungere %(count)d libro alla libreria: %(names)s"
+msgstr[1] "Impossibile aggiungere %(count)d libri alla libreria: %(names)s"
+
+#: mcomix/library/add_progress_dialog.py:58
 msgid "Adding books"
 msgstr "Aggiungi libri"
 
-#: mcomix/library/add_progress_dialog.py:38
+#: mcomix/library/add_progress_dialog.py:59
 msgid "_Stop"
 msgstr "_Ferma"
 
-#: mcomix/library/add_progress_dialog.py:59
+#: mcomix/library/add_progress_dialog.py:80
 msgid "Added books:"
 msgstr "Libri aggiunti:"
 
-#: mcomix/library/add_progress_dialog.py:99
+#: mcomix/library/add_progress_dialog.py:125
 #, python-format
 msgid "Adding '%s'..."
 msgstr "Aggiunta di '%s' in corso..."

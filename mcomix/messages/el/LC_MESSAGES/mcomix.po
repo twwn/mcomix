@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-01 12:45+0100\n"
+"POT-Creation-Date: 2026-11-02 23:13+0100\n"
 "PO-Revision-Date: 2006-09-27 10:18+0200\n"
 "Last-Translator: Paul Chatzidimitriou <paulmedic555@gmail.com>\n"
 "Language-Team: \n"
@@ -765,7 +765,7 @@ msgstr ""
 "ανάγνωση θα συνεχιστεί στη σελίδα %(page)d. Αλλιώς θα φορτωθεί η πρώτη "
 "σελίδα."
 
-#: mcomix/file_handler.py:1560
+#: mcomix/file_handler.py:1566
 #, python-format
 msgid ""
 "! Corrupt file \"%s\", deleting it; the last file read will not be reopened."
@@ -3620,7 +3620,7 @@ msgstr "Δώστε τον κωδικό πρόσβασης για να συνεχ
 msgid "Extraction of %(archivefile)s might have failed: %(error)s"
 msgstr "Η αποσυμπίεση του %(archivefile)s ίσως απέτυχε: %(error)s"
 
-#: mcomix/archive/zip.py:155
+#: mcomix/archive/zip.py:189
 #, python-format
 msgid ""
 "%(filename)s's extracted size is %(actual_size)d bytes, but should be "
@@ -3631,24 +3631,33 @@ msgstr ""
 "θα έπρεπε να είναι %(expected_size)d bytes. Το αρχείο μπορεί να είναι "
 "κατεστραμμένο ή σε μη υποστηριζόμενη μορφή."
 
+#: mcomix/library/add_progress_dialog.py:43
+#, python-format
+msgid "Could not add %(count)d book to the library: %(names)s"
+msgid_plural "Could not add %(count)d books to the library: %(names)s"
+msgstr[0] ""
+"Δεν ήταν δυνατή η προσθήκη %(count)d βιβλίου στη βιβλιοθήκη: %(names)s"
+msgstr[1] ""
+"Δεν ήταν δυνατή η προσθήκη %(count)d βιβλίων στη βιβλιοθήκη: %(names)s"
+
 #
 # File: src/library.py, line: 910
-#: mcomix/library/add_progress_dialog.py:37
+#: mcomix/library/add_progress_dialog.py:58
 msgid "Adding books"
 msgstr "Προσθήκη βιβλίων"
 
-#: mcomix/library/add_progress_dialog.py:38
+#: mcomix/library/add_progress_dialog.py:59
 msgid "_Stop"
 msgstr "_Διακοπή"
 
 #
-#: mcomix/library/add_progress_dialog.py:59
+#: mcomix/library/add_progress_dialog.py:80
 msgid "Added books:"
 msgstr "Βιβλία που προστέθηκαν:"
 
 #
 # File: src/library.py, line: 952
-#: mcomix/library/add_progress_dialog.py:99
+#: mcomix/library/add_progress_dialog.py:125
 #, python-format
 msgid "Adding '%s'..."
 msgstr "Προσθήκη του «%s»..."

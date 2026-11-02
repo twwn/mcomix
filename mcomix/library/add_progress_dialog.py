@@ -6,10 +6,14 @@ between iterations of the main loop rather than in a thread, so the Stop
 button is what interrupts it.
 """
 
+import os
+
 from gi.repository import GLib, Gtk
 from gi.repository import Pango
 
 from mcomix.dialog import Dialog
+from mcomix import archive_tools
+from mcomix import i18n
 from mcomix import labels
 from mcomix import widgets
 from mcomix.i18n import _
@@ -22,6 +26,23 @@ if TYPE_CHECKING:
     from mcomix.library import main_dialog
 
 _dialog = None
+
+#: How many of the books not added the status bar names.
+_NAMES_SHOWN = 3
+
+
+def _not_added_message(paths: Sequence[str]) -> str:
+    """What the status bar says about the books at <paths>, which were
+    not added: the reader is told, not only the log, and by name, since
+    the book itself is what they have to look at."""
+    names = ', '.join(i18n.to_display_string(os.path.basename(path))
+                      for path in paths[:_NAMES_SHOWN])
+    if len(paths) > _NAMES_SHOWN:
+        names += ', …'
+    return i18n.get_translation().ngettext(
+        'Could not add %(count)d book to the library: %(names)s',
+        'Could not add %(count)d books to the library: %(names)s',
+        len(paths)) % {'count': len(paths), 'names': names}
 
 
 class _AddLibraryProgressDialog(Dialog):
@@ -88,6 +109,7 @@ class _AddLibraryProgressDialog(Dialog):
         # against 39ms this way, on the kind of disk a library lives on.
         # Stopping part way still keeps what was added, since the
         # context manager commits on the way out either way.
+        not_added = []
         with library.backend.transaction():
             for path in paths:
 
@@ -95,6 +117,10 @@ class _AddLibraryProgressDialog(Dialog):
                     total_added += 1
 
                     number_label.set_text('%d / %d' % (total_added, total_paths_int))
+                elif not archive_tools.is_later_volume(path):
+                    # A later volume is left out on purpose: its set is
+                    # read through the first, so nothing is missing.
+                    not_added.append(path)
 
                 added_label.set_text(_("Adding '%s'...") % path)
                 bar.set_fraction(total_added / total_paths_float)
@@ -104,9 +130,12 @@ class _AddLibraryProgressDialog(Dialog):
                     context.iteration(False)
 
                 if self._destroy:
-                    return
+                    break
 
-        self._response()
+        if not_added:
+            library.set_status_message(_not_added_message(not_added))
+        if not self._destroy:
+            self._response()
 
     def _response(self, *args: object) -> None:
         self._destroy = True

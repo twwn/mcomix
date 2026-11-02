@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-01 12:45+0100\n"
+"POT-Creation-Date: 2026-11-02 23:13+0100\n"
 "PO-Revision-Date: 2009-01-25 21:54+0100\n"
 "Last-Translator: Jan Nekvasil <jan.nekvasil@gmail.com>\n"
 "Language-Team: \n"
@@ -779,7 +779,7 @@ msgstr ""
 "Čtení jste zde přerušili %(date)s v %(time)s. Zvolíte-li „Ano“, čtení bude "
 "pokračovat od strany %(page)d. Jinak se načte první strana."
 
-#: mcomix/file_handler.py:1560
+#: mcomix/file_handler.py:1566
 #, python-format
 msgid ""
 "! Corrupt file \"%s\", deleting it; the last file read will not be reopened."
@@ -3639,7 +3639,7 @@ msgstr "Pro pokračování zadejte heslo:"
 msgid "Extraction of %(archivefile)s might have failed: %(error)s"
 msgstr "Rozbalení %(archivefile)s se možná nezdařilo: %(error)s"
 
-#: mcomix/archive/zip.py:155
+#: mcomix/archive/zip.py:189
 #, python-format
 msgid ""
 "%(filename)s's extracted size is %(actual_size)d bytes, but should be "
@@ -3650,25 +3650,33 @@ msgstr ""
 "%(expected_size)d bajtů. Archiv může být poškozený nebo v nepodporovaném "
 "formátu."
 
+#: mcomix/library/add_progress_dialog.py:43
+#, python-format
+msgid "Could not add %(count)d book to the library: %(names)s"
+msgid_plural "Could not add %(count)d books to the library: %(names)s"
+msgstr[0] "Do knihovny se nepodařilo přidat %(count)d knihu: %(names)s"
+msgstr[1] "Do knihovny se nepodařilo přidat %(count)d knihy: %(names)s"
+msgstr[2] "Do knihovny se nepodařilo přidat %(count)d knih: %(names)s"
+
 #
 # File: src/library.py, line: 910
-#: mcomix/library/add_progress_dialog.py:37
+#: mcomix/library/add_progress_dialog.py:58
 msgid "Adding books"
 msgstr "Přidávají se knihy"
 
-#: mcomix/library/add_progress_dialog.py:38
+#: mcomix/library/add_progress_dialog.py:59
 msgid "_Stop"
 msgstr "_Zastavit"
 
 #
 # File: src/library.py, line: 930
-#: mcomix/library/add_progress_dialog.py:59
+#: mcomix/library/add_progress_dialog.py:80
 msgid "Added books:"
 msgstr "Přidané knihy:"
 
 #
 # File: src/library.py, line: 952
-#: mcomix/library/add_progress_dialog.py:99
+#: mcomix/library/add_progress_dialog.py:125
 #, python-format
 msgid "Adding '%s'..."
 msgstr "Přidává se „%s“…"

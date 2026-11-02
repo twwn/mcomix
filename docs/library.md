@@ -57,6 +57,7 @@ Escape hides the window; CTRL+W closes it. In the search field, Escape first emp
 - A middle click on a cover starts a second MComix on that book.
 - A book opened from the library is one of the books shown. The next and previous archive are the next and previous of those, in the order shown, not of its folder. Past the last one shown there is no next.
 - Reopened at the next start, by "Reopen the last book read" or "Save and quit", it still walks those books. Opened any other way, a book walks its folder.
+- A book that cannot be read is not added. The status bar names it.
 - A RAR book in volumes is added as its first volume; the others are left out.
 - An encrypted book is added without asking its password. Its cover is a padlock; the password is asked when it is opened.
 

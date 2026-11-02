@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-01 12:45+0100\n"
+"POT-Creation-Date: 2026-11-02 23:13+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Marcelo Góes <vanquirius@gentoo.org>\n"
 "Language-Team: \n"
@@ -675,7 +675,7 @@ msgstr ""
 "Deixou de ler aquí o %(date)s ás %(time)s. Se escolle «Si», a lectura "
 "seguirá na páxina %(page)d. Se non, cargarase a primeira páxina."
 
-#: mcomix/file_handler.py:1560
+#: mcomix/file_handler.py:1566
 #, python-format
 msgid ""
 "! Corrupt file \"%s\", deleting it; the last file read will not be reopened."
@@ -3186,7 +3186,7 @@ msgstr "Introduza o contrasinal para continuar:"
 msgid "Extraction of %(archivefile)s might have failed: %(error)s"
 msgstr "É posible que fallase a extracción de %(archivefile)s: %(error)s"
 
-#: mcomix/archive/zip.py:155
+#: mcomix/archive/zip.py:189
 #, python-format
 msgid ""
 "%(filename)s's extracted size is %(actual_size)d bytes, but should be "
@@ -3197,19 +3197,26 @@ msgstr ""
 "ser de %(expected_size)d bytes. Pode que o arquivo estea danado ou nun "
 "formato non admitido."
 
-#: mcomix/library/add_progress_dialog.py:37
+#: mcomix/library/add_progress_dialog.py:43
+#, python-format
+msgid "Could not add %(count)d book to the library: %(names)s"
+msgid_plural "Could not add %(count)d books to the library: %(names)s"
+msgstr[0] "Non se puido engadir %(count)d libro á biblioteca: %(names)s"
+msgstr[1] "Non se puideron engadir %(count)d libros á biblioteca: %(names)s"
+
+#: mcomix/library/add_progress_dialog.py:58
 msgid "Adding books"
 msgstr "Engadindo libros."
 
-#: mcomix/library/add_progress_dialog.py:38
+#: mcomix/library/add_progress_dialog.py:59
 msgid "_Stop"
 msgstr "De_ter"
 
-#: mcomix/library/add_progress_dialog.py:59
+#: mcomix/library/add_progress_dialog.py:80
 msgid "Added books:"
 msgstr "Libros engadidos:"
 
-#: mcomix/library/add_progress_dialog.py:99
+#: mcomix/library/add_progress_dialog.py:125
 #, python-format
 msgid "Adding '%s'..."
 msgstr "Engadindo '%s'..."

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-01 12:45+0100\n"
+"POT-Creation-Date: 2026-11-02 23:13+0100\n"
 "PO-Revision-Date: 2018-05-10 22:46+0900\n"
 "Last-Translator: Minho Jeung <jeungmh@gmail.com>\n"
 "Language-Team: \n"
@@ -666,7 +666,7 @@ msgstr ""
 "\"네\"를 선택하면 %(page)d 페이지로 돌아갑니다. \n"
 "아니면 첫 페이지를 불러옵니다."
 
-#: mcomix/file_handler.py:1560
+#: mcomix/file_handler.py:1566
 #, python-format
 msgid ""
 "! Corrupt file \"%s\", deleting it; the last file read will not be reopened."
@@ -3143,7 +3143,7 @@ msgstr "계속하려면 비밀번호를 입력하세요:"
 msgid "Extraction of %(archivefile)s might have failed: %(error)s"
 msgstr "%(archivefile)s의 압축 해제가 실패했을 수 있습니다: %(error)s"
 
-#: mcomix/archive/zip.py:155
+#: mcomix/archive/zip.py:189
 #, python-format
 msgid ""
 "%(filename)s's extracted size is %(actual_size)d bytes, but should be "
@@ -3155,19 +3155,25 @@ msgstr ""
 "%(expected_size)d 바이트여야 합니다. 이 압축 파일은 손상되었거나 지원되지 않"
 "는 파일 형식입니다."
 
-#: mcomix/library/add_progress_dialog.py:37
+#: mcomix/library/add_progress_dialog.py:43
+#, python-format
+msgid "Could not add %(count)d book to the library: %(names)s"
+msgid_plural "Could not add %(count)d books to the library: %(names)s"
+msgstr[0] "%(count)d 권의 책을 라이브러리에 추가할 수 없습니다: %(names)s"
+
+#: mcomix/library/add_progress_dialog.py:58
 msgid "Adding books"
 msgstr "책 추가"
 
-#: mcomix/library/add_progress_dialog.py:38
+#: mcomix/library/add_progress_dialog.py:59
 msgid "_Stop"
 msgstr "중지(_S)"
 
-#: mcomix/library/add_progress_dialog.py:59
+#: mcomix/library/add_progress_dialog.py:80
 msgid "Added books:"
 msgstr "책 추가:"
 
-#: mcomix/library/add_progress_dialog.py:99
+#: mcomix/library/add_progress_dialog.py:125
 #, python-format
 msgid "Adding '%s'..."
 msgstr "추가 '%s'..."
