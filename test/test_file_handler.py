@@ -335,6 +335,26 @@ class DirectoryWalkTest(MComixTest):
         self.assertTrue(self.handler.open_previous_archive())
         self.assertEqual(first, self._opened_file())
 
+    def test_the_later_volumes_of_a_rar_set_are_not_counted_as_books(self):
+        """The counter says how many books the archive keys can reach:
+        a set in three volumes and one archive more are two."""
+        first = self._put_rar_set('b')
+        after = os.path.join(self.root, 'b', 'z.cbz')
+        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), after)
+        self._open(first)
+        self.assertEqual((1, 2), self.handler.get_file_number())
+        self._open(after)
+        self.assertEqual((2, 2), self.handler.get_file_number())
+
+    def test_a_later_volume_open_without_its_first_is_counted(self):
+        """Nothing else stands for the book being read, and the counter
+        does not say it is somewhere it is not."""
+        self._put_rar_set('b')
+        os.remove(os.path.join(self.root, 'b', 'Multivolume.part1.rar'))
+        second = os.path.join(self.root, 'b', 'Multivolume.part2.rar')
+        self._open(second)
+        self.assertEqual((1, 1), self.handler.get_file_number())
+
     def test_a_later_volume_opened_by_hand_opens_the_whole_book(self):
         """From the file chooser, the command line or Recent: what the
         reader wants is the book, not its rest from the middle of a

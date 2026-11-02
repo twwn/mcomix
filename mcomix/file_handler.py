@@ -1059,11 +1059,17 @@ class FileHandler:
         self._base_path = self._opened_provider.get_directory()
 
     def get_file_number(self) -> tuple[int, int]:
+        """The open archive's place among its folder's books, and how
+        many there are.  The later volumes of a RAR set are not books,
+        as the archive keys take them, unless one is what is open: its
+        first volume is gone.  (0, 0) for loose images."""
         if self.archive_type is None:
             # No file numbers for images.
             return 0, 0
-        file_list = self._opened_provider.list_files(
-            file_provider.FileProvider.ARCHIVES)
+        file_list = [path for path in self._opened_provider.list_files(
+                         file_provider.FileProvider.ARCHIVES)
+                     if path == self._current_file
+                     or not archive_tools.is_later_volume(path)]
         if self._current_file in file_list:
             current_index = file_list.index(self._current_file)
         else:
