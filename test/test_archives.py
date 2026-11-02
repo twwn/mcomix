@@ -1341,6 +1341,49 @@ class DirectoryEntryTest(MComixTest):
                     archive.close()
 
 
+def _stored_rar(path, members):
+    """Write a RAR 4 archive to <path> holding <members>, (name, bytes)
+    pairs, stored, under exactly those names: rar itself will not write
+    one with "../" in its name."""
+
+    def block(body):
+        return struct.pack('<H', zlib.crc32(body) & 0xffff) + body
+
+    out = b'Rar!\x1a\x07\x00' + block(
+        b'\x73' + struct.pack('<HH', 0, 13) + bytes(6))
+    for name, data in members:
+        encoded = name.encode('utf-8')
+        out += block(b'\x74' + struct.pack('<HH', 0x8000, 32 + len(encoded))
+                     + struct.pack('<IIBIIBBHI', len(data), len(data), 3,
+                                   zlib.crc32(data), 0x5a210000, 29, 0x30,
+                                   len(encoded), 0o100644)
+                     + encoded) + data
+    out += block(b'\x7b' + struct.pack('<HH', 0x4000, 7))
+    with open(path, 'wb') as archive:
+        archive.write(out)
+
+
+@unittest.skipUnless(rar.RarArchive.is_available(), 'libunrar is not here')
+class RarLibraryMemberNameTest(MComixTest):
+
+    def test_a_name_cannot_write_outside_the_destination(self):
+        book = os.path.join(self.tmp_dir, 'book.rar')
+        _stored_rar(book, [('../../escaped.txt', b'out'),
+                           ('page.jpg', b'in')])
+        destination = os.path.join(self.tmp_dir, 'a', 'b', 'destination')
+        os.makedirs(destination)
+        handler = rar.RarArchive(book)
+        self.addCleanup(handler.close)
+        names = list(handler.iter_contents())
+        self.assertEqual(['escaped.txt', 'page.jpg'], names)
+        for name in names:
+            handler.extract(name, destination)
+        self.assertFalse(os.path.exists(
+            os.path.join(self.tmp_dir, 'a', 'escaped.txt')))
+        with open(os.path.join(destination, 'escaped.txt'), 'rb') as landed:
+            self.assertEqual(b'out', landed.read())
+
+
 class MultiVolumeRarTest(MComixTest):
 
     """A book packed in volumes: Multivolume.part1.rar to part3.rar,

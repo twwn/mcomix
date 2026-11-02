@@ -294,11 +294,19 @@ class RarArchive(archive_base.BaseArchive):
         raise exc
 
     def _read_header(self) -> str:
-        """ Read the next entry's header, and return the name it names. """
+        """ Read the next entry's header, and return the name it is
+        listed under.
+
+        The name in the header is whatever the archive says, and the
+        library writes to the path it is given without looking at it,
+        so "../" in a name has to go here: it would write outside the
+        directory being extracted to.
+        """
         self._current_filename = None
         errorcode = self._unrar.RARReadHeaderEx(self._handle, ctypes.byref(self._headerdata))
         self._check_errorcode(errorcode)
-        self._current_filename = str(self._headerdata.FileNameW)
+        self._current_filename = self._replace_invalid_filesystem_chars(
+            str(self._headerdata.FileNameW))
         return self._current_filename
 
     def _process(self, dest: ctypes.c_wchar_p | None = None) -> None:
