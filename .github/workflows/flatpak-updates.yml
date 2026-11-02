@@ -56,6 +56,13 @@ jobs:
         run: |
           docker run --rm --user "$(id -u):$(id -g)" --env HOME=/tmp \
             --volume "$PWD:$PWD" --workdir "$PWD" "$CHECKER" --edit-only "$MANIFEST"
+      # With one new value it writes the whole manifest over in its own
+      # style, which would read as newer releases below.
+      - name: Only the new values, in the manifest's own format
+        run: |
+          git show "HEAD:$MANIFEST" > old.yml
+          python3 flatpak/keep_manifest_format.py old.yml "$MANIFEST"
+          rm old.yml
       # rar_add.htm links RARLAB's newest unrar source, a beta as often as
       # not, which the unrar module refuses to build: a beta is left out
       # until its release is there.

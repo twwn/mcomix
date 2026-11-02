@@ -108,6 +108,7 @@ The run's summary has what Flathub's linter, `flatpak-builder-lint`, says of the
   A newer release fails the run, and its summary lists it.
   With a token it opens a pull request instead: create the environment `flatpak-updates` as [above](#setting-up-the-environments), with the branch `main` in place of the tag rule, and give it the secret `FLATPAK_UPDATES_TOKEN`, a fine-grained token for this repository alone with Contents and Pull requests, read and write.
   An unrar beta, which RARLAB's page links as often as not, is left out until its release is there.
+  The checker rewrites the whole manifest in its own style; `flatpak/keep_manifest_format.py` keeps only its new values.
 
 ## Building by hand
 

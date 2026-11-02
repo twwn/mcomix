@@ -9,6 +9,7 @@ import os
 import re
 import subprocess
 import sys
+import tempfile
 import unittest.mock
 
 from . import MComixTest
@@ -24,6 +25,7 @@ COMMIT = '0123456789abcdef0123456789abcdef01234567'
 
 sys.path.insert(0, os.path.dirname(SCRIPT))
 import flathub_manifest  # noqa: E402
+import keep_manifest_format  # noqa: E402
 sys.path.pop(0)
 
 
@@ -132,6 +134,83 @@ class FlathubManifestTest(MComixTest):
         self.assertEqual(
             flathub_manifest.flathub_manifest(_manifest(), '26.10', COMMIT),
             written)
+
+
+class KeepManifestFormatTest(MComixTest):
+    """What flatpak-updates.yml does to the checker's manifest."""
+
+    # A source and a command of the manifest, and the same two as ruamel.yaml
+    # writes them in flatpak-external-data-checker's settings.
+    OLD = (
+        "      - make -C Bundles/Alone2 -j ${FLATPAK_BUILDER_N_JOBS} -f ../../cmpl_gcc.mak\n"
+        "        CFLAGS_WARN_WALL=\"-Wall -Wextra\"\n"
+        "    sources:\n"
+        "      # The checker's comment stays.\n"
+        "      - type: git\n"
+        "        tag: '1.4.4'\n"
+        "        commit: ddda911\n"
+        "        url-query: '.urls[] | select(.filename | test(\"-x86_64\\\\.whl$\")) | .url'\n"
+        "        url: https://files.pythonhosted.org/packages/33/fd/8762f7ee3e4e4be6d1d846cffb4916dd9bb02b2f800d3603718a0efe494c/a-1.whl\n")
+    REWRITTEN = (
+        "      - make -C Bundles/Alone2 -j ${FLATPAK_BUILDER_N_JOBS} -f \n"
+        "        ../../cmpl_gcc.mak CFLAGS_WARN_WALL=\"-Wall -Wextra\"\n"
+        "    sources:\n"
+        "      # The checker's comment stays.\n"
+        "      - type: git\n"
+        "        tag: 1.4.4\n"
+        "        commit: ddda911\n"
+        "        url-query: .urls[] | select(.filename | \n"
+        "          test(\"-x86_64\\\\.whl$\")) | .url\n"
+        "        url: \n"
+        "          https://files.pythonhosted.org/packages/33/fd/8762f7ee3e4e4be6d1d846cffb4916dd9bb02b2f800d3603718a0efe494c/a-1.whl\n")
+
+    def test_a_rewrite_with_no_new_value_leaves_nothing(self):
+        self.assertEqual(
+            self.OLD, keep_manifest_format.keep_format(self.OLD, self.REWRITTEN))
+
+    def test_a_new_value_is_all_that_changes(self):
+        kept = keep_manifest_format.keep_format(
+            self.OLD, self.REWRITTEN.replace('ddda911', 'abc1234'))
+        self.assertEqual(self.OLD.replace('ddda911', 'abc1234'), kept)
+
+    def test_a_new_value_stays_in_its_quotes(self):
+        kept = keep_manifest_format.keep_format(
+            self.OLD, self.REWRITTEN.replace('tag: 1.4.4', 'tag: 1.4.5'))
+        self.assertEqual(self.OLD.replace("'1.4.4'", "'1.4.5'"), kept)
+
+    def test_a_new_value_where_the_checker_kept_the_quotes(self):
+        kept = keep_manifest_format.keep_format(
+            "tag: '26.05'\n", "tag: '26.06'\n")
+        self.assertEqual("tag: '26.06'\n", kept)
+
+    def test_more_than_new_values_stays_as_the_checker_wrote_it(self):
+        rewritten = self.REWRITTEN + '        size: 1234\n'
+        self.assertEqual(
+            rewritten, keep_manifest_format.keep_format(self.OLD, rewritten))
+
+    def test_the_manifest_comes_through_a_rewrite_unchanged(self):
+        text = _manifest()
+        rewritten = re.sub(r'(?m)^( *)url: ', r'\1url: \n\1  ', text)
+        rewritten = rewritten.replace(" --prefix=", "\n  --prefix=")
+        rewritten = rewritten.replace("tag: '1.4.4'", 'tag: 1.4.4')
+        self.assertNotEqual(text, rewritten)
+        self.assertEqual(
+            text, keep_manifest_format.keep_format(text, rewritten))
+
+    def test_the_script_overwrites_what_the_checker_wrote(self):
+        with tempfile.TemporaryDirectory() as folder:
+            old = os.path.join(folder, 'old.yml')
+            new = os.path.join(folder, 'new.yml')
+            for path, text in ((old, self.OLD), (new, self.REWRITTEN)):
+                with open(path, 'w', encoding='utf-8', newline='\n') as written:
+                    written.write(text)
+            subprocess.run(
+                [sys.executable,
+                 os.path.join(ROOT, 'flatpak', 'keep_manifest_format.py'),
+                 old, new],
+                check=True)
+            with open(new, encoding='utf-8') as written:
+                self.assertEqual(self.OLD, written.read())
 
 
 class ProgramNameTest(MComixTest):
