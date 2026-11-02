@@ -6,6 +6,7 @@ Each format keeps the date its own way: a zip as local time, a tarball
 and a 7z as UTC, a RAR (to the library) as a DOS time.
 """
 
+import datetime
 import os
 import tarfile
 import time
@@ -15,11 +16,13 @@ import zipfile
 from . import MComixTest, get_testfile_path
 
 from mcomix.archive import archive_base
+from mcomix.archive import lha_external
 from mcomix.archive import rar
 from mcomix.archive import rar_external
 from mcomix.archive import sevenzip_external
 from mcomix.archive import tar
 from mcomix.archive import zip
+from mcomix.archive import zip_external
 
 PAGE = 'images/01-JPG-Indexed.jpg'
 #: The same member as a handler lists it, with the system's separator.
@@ -38,6 +41,63 @@ def _zip_date(name, member=PAGE):
 def _tar_date(name, member=PAGE):
     with tarfile.open(_archive(name)) as archive:
         return float(archive.getmember(member).mtime)
+
+
+class ListedByProgramTest(MComixTest):
+    """lha prints a date in a table, and unzip in a second listing."""
+
+    @unittest.skipUnless(lha_external.LhaArchive.is_available(), 'no lha')
+    def test_lha_dates_a_member_by_its_listing(self):
+        archive = lha_external.LhaArchive(_archive('Flat.lha'))
+        self.addCleanup(archive.close)
+        self.assertIn('arg.jpeg', archive.list_contents())
+        self.assertEqual(datetime.datetime(2015, 4, 12).timestamp(),
+                         archive.member_date('arg.jpeg'))
+
+    def _lha_line(self, date):
+        archive = lha_external.LhaArchive('unused.lha')
+        self.assertEqual('p.jpg', archive._parse_list_output_line(
+            '-rw-------  1000/1000  1 100.0%% %s p.jpg' % date))
+        return archive.member_date('p.jpg')
+
+    def _months_time(self, moment):
+        months = lha_external.LhaArchive._MONTHS
+        return '%s %2d %02d:%02d' % (months[moment.month - 1], moment.day,
+                                     moment.hour, moment.minute)
+
+    def test_lha_takes_a_recent_date_as_the_last_one_gone_by(self):
+        recent = (datetime.datetime.now() - datetime.timedelta(days=10)
+                  ).replace(second=0, microsecond=0)
+        self.assertEqual(recent.timestamp(),
+                         self._lha_line(self._months_time(recent)))
+
+    def test_lha_puts_a_date_ahead_of_now_in_the_year_before(self):
+        ahead = (datetime.datetime.now() + datetime.timedelta(days=10)
+                 ).replace(second=0, microsecond=0)
+        if (ahead.month, ahead.day) == (2, 29):
+            self.skipTest('no such day the year before')
+        self.assertEqual(ahead.replace(year=ahead.year - 1).timestamp(),
+                         self._lha_line(self._months_time(ahead)))
+
+    def test_lha_leaves_out_a_date_it_cannot_read(self):
+        self.assertIsNone(self._lha_line('Foo 12  2015'))
+        self.assertIsNone(self._lha_line('Feb 31  2015'))
+
+    @unittest.skipUnless(zip_external.ZipArchive.is_available(), 'no unzip')
+    def test_unzip_dates_a_member_by_its_second_listing(self):
+        path = os.path.join(self.tmp_dir, 'book.zip')
+        names = {'plain.jpg': (2011, 1, 7, 14, 1, 40),
+                 'with space.jpg': (2012, 2, 8, 15, 2, 42),
+                 'bracket [1].jpg': (2013, 3, 9, 16, 3, 44)}
+        with zipfile.ZipFile(path, 'w') as book:
+            for name, date in names.items():
+                book.writestr(zipfile.ZipInfo(name, date), b'page')
+        archive = zip_external.ZipArchive(path)
+        self.addCleanup(archive.close)
+        self.assertEqual(sorted(names), sorted(archive.list_contents()))
+        for name, date in names.items():
+            self.assertEqual(time.mktime(date + (0, 0, -1)),
+                             archive.member_date(name), name)
 
 
 class MemberDateTest(MComixTest):

@@ -1,5 +1,6 @@
 """ LHA archive extractor. """
 
+import datetime
 import functools
 import re
 
@@ -20,7 +21,11 @@ class LhaArchive(archive_base.ExternalExecutableArchive):
     #: permissions, owner, size, ratio, a three part timestamp, then the name,
     #: which may itself contain spaces.
     _LIST_LINE_RE = re.compile(
-        r'^\S+\s+\S+\s+\d+\s+[\d.]+%\s+\S+\s+\d+\s+\S+\s+(.+)$')
+        r'^\S+\s+\S+\s+\d+\s+[\d.]+%\s+(\S+)\s+(\d+)\s+(\S+)\s+(.+)$')
+
+    #: The months of a listing, in English whatever the locale.
+    _MONTHS = ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+               'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')
 
     def _get_list_arguments(self) -> list[str]:
         # The command letter and its options have to be a single argument,
@@ -41,7 +46,36 @@ class LhaArchive(archive_base.ExternalExecutableArchive):
         match = self._LIST_LINE_RE.match(line)
         if match is None or line.startswith('d'):
             return None
-        return match.group(1)
+        month, day, year_or_time, name = match.groups()
+        date = self._listed_date(month, int(day), year_or_time)
+        if date is not None:
+            self._dates[name] = date
+        return name
+
+    @classmethod
+    def _listed_date(cls, month: str, day: int,
+                     year_or_time: str) -> float | None:
+        """The time a listing's "Apr 12  2015" or "Nov  2 21:20" stands
+        for, local time, in seconds since the epoch; None for anything
+        else.  The second form, for a recent file, names no year: it is
+        the last such date that is not in the future, a day allowed for
+        a clock or a time zone apart."""
+        if month not in cls._MONTHS:
+            return None
+        number = cls._MONTHS.index(month) + 1
+        try:
+            if ':' not in year_or_time:
+                return datetime.datetime(int(year_or_time), number,
+                                         day).timestamp()
+            hour, minute = year_or_time.split(':')
+            now = datetime.datetime.now()
+            date = datetime.datetime(now.year, number, day,
+                                     int(hour), int(minute))
+            if date > now + datetime.timedelta(days=1):
+                date = date.replace(year=now.year - 1)
+            return date.timestamp()
+        except (ValueError, OverflowError, OSError):
+            return None
 
     @staticmethod
     @functools.cache
