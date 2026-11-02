@@ -25,6 +25,7 @@ except ImportError:
 from mcomix import archive_tools
 from mcomix import constants
 from mcomix import process
+from mcomix import tools
 from mcomix.archive import (
     archive_base,
     archive_recursive,
@@ -1382,6 +1383,104 @@ class RarLibraryMemberNameTest(MComixTest):
             os.path.join(self.tmp_dir, 'a', 'escaped.txt')))
         with open(os.path.join(destination, 'escaped.txt'), 'rb') as landed:
             self.assertEqual(b'out', landed.read())
+
+
+class FitNameTest(unittest.TestCase):
+
+    LONG = '\u6f2b\u753b' * 60
+
+    def test_a_name_that_fits_is_left_alone(self):
+        name = 'a' * 251 + '.jpg'
+        self.assertEqual(name, archive_base.fit_name(name))
+
+    def test_a_name_too_long_fits_and_keeps_its_extension(self):
+        fitted = archive_base.fit_name(self.LONG + '.jpg')
+        self.assertLessEqual(len(fitted.encode('utf-8')), 255)
+        self.assertTrue(fitted.endswith('.jpg'))
+        self.assertTrue(fitted.startswith(self.LONG[:40]))
+
+    def test_the_same_name_comes_out_the_same_and_two_stay_two(self):
+        one, other = self.LONG + 'a.jpg', self.LONG + 'b.jpg'
+        self.assertEqual(archive_base.fit_name(one), archive_base.fit_name(one))
+        self.assertNotEqual(archive_base.fit_name(one),
+                            archive_base.fit_name(other))
+
+    def test_pages_stay_in_order(self):
+        names = ['%s %d.jpg' % (self.LONG, page) for page in (9, 10, 11, 100)]
+        fitted = [archive_base.fit_name(name) for name in names]
+        shuffled = list(reversed(fitted))
+        tools.alphanumeric_sort(shuffled)
+        self.assertEqual(fitted, shuffled)
+
+    def test_a_dot_far_from_the_end_is_no_extension(self):
+        fitted = archive_base.fit_name('a.' + 'b' * 300)
+        self.assertLessEqual(len(fitted.encode('utf-8')), 255)
+        self.assertTrue(fitted.startswith('a.bbb'))
+
+    def test_bytes_no_encoding_could_read_still_fit(self):
+        fitted = archive_base.fit_name('\udcff' * 200 + '.jpg')
+        self.assertLessEqual(
+            len(fitted.encode('utf-8', 'surrogatepass')), 255)
+
+
+@unittest.skipIf(sys.platform == 'win32',
+                 'a name this long also passes the limit on a whole path')
+class LongMemberNameTest(MComixTest):
+    """A name no file can have still has to come out as a page."""
+
+    PAGE = '\u6f2b\u753b' * 60 + '.jpg'
+    FOLDER = 'd' * 300
+    CONTENT = b'the page'
+
+    def _reads_back(self, handler):
+        self.addCleanup(handler.close)
+        names = list(handler.iter_contents())
+        self.assertEqual(1, len(names))
+        for part in names[0].split(os.sep):
+            self.assertLessEqual(len(part.encode('utf-8')), 255)
+        destination = os.path.join(self.tmp_dir, 'destination')
+        handler.extract(names[0], destination)
+        with open(os.path.join(destination, names[0]), 'rb') as page:
+            self.assertEqual(self.CONTENT, page.read())
+
+    def _zip(self):
+        path = os.path.join(self.tmp_dir, 'book.zip')
+        with zipfile.ZipFile(path, 'w') as book:
+            book.writestr(self.FOLDER + '/' + self.PAGE, self.CONTENT)
+        return path
+
+    def _rar(self):
+        path = os.path.join(self.tmp_dir, 'book.rar')
+        _stored_rar(path, [(self.PAGE, self.CONTENT)])
+        return path
+
+    def test_zip(self):
+        self._reads_back(zip.ZipArchive(self._zip()))
+
+    def test_tar(self):
+        path = os.path.join(self.tmp_dir, 'book.tar')
+        with tarfile.open(path, 'w') as book:
+            info = tarfile.TarInfo(self.FOLDER + '/' + self.PAGE)
+            info.size = len(self.CONTENT)
+            book.addfile(info, io.BytesIO(self.CONTENT))
+        self._reads_back(tar.TarArchive(path))
+
+    @unittest.skipUnless(rar.RarArchive.is_available(), 'libunrar is not here')
+    def test_rar_by_its_library(self):
+        self._reads_back(rar.RarArchive(self._rar()))
+
+    @unittest.skipUnless(rar_external.RarArchive.is_available(), 'no unrar here')
+    def test_rar_by_unrar(self):
+        self._reads_back(rar_external.RarArchive(self._rar()))
+
+    @unittest.skipUnless(sevenzip_external.SevenZipArchive.is_available(),
+                         'no 7z here')
+    def test_zip_by_7z(self):
+        self._reads_back(sevenzip_external.SevenZipArchive(self._zip()))
+
+    @unittest.skipUnless(zip_external.ZipArchive.is_available(), 'no unzip here')
+    def test_zip_by_unzip(self):
+        self._reads_back(zip_external.ZipArchive(self._zip()))
 
 
 class MultiVolumeRarTest(MComixTest):

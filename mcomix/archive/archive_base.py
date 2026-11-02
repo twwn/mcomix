@@ -5,6 +5,7 @@ import calendar
 import datetime
 import lzma
 import os
+import re
 import sys
 import threading
 import time
@@ -36,6 +37,46 @@ def _zip_member_errors() -> tuple[type[Exception], ...]:
 #: the documents in a ZIP themselves (KFX-ZIP, EPUB) take any of them
 #: for a member they cannot read.
 ZIP_MEMBER_ERRORS = _zip_member_errors()
+
+
+#: The longest name a file can have, in bytes of UTF-8: what Linux' file
+#: systems allow, and never more than Windows' 255 UTF-16 units.
+_LONGEST_NAME = 255
+#: Of a name shortened, the most bytes the numbers left out may take.
+_NUMBERS_KEPT = 48
+#: A longer "extension" is the end of the name that happens to follow a dot.
+_LONGEST_EXTENSION = 16
+
+
+def fit_name(name: str) -> str:
+    """<name>, one part of a path, cut to what a file system can hold.
+
+    An archive can hold a name no file can have, as 90 Japanese
+    characters already are, and a page has to be a file to be read.
+
+    The same name always comes out the same, as bookmarks and the last
+    page read need.  The name has to go on saying what the page is:
+    the extension for what kind of file it is, the start for the reader,
+    and the numbers from the part cut out for the order, since the end
+    of a long name is what tells its pages apart.  The checksum keeps
+    two names apart that differ only in what was cut out.
+    """
+    encoded = name.encode('utf-8', 'surrogatepass')
+    if len(encoded) <= _LONGEST_NAME:
+        return name
+    stem, extension = os.path.splitext(name)
+    if len(extension.encode('utf-8', 'surrogatepass')) > _LONGEST_EXTENSION:
+        stem, extension = name, ''
+    checksum = '~%08x' % zlib.crc32(encoded)
+    # Two tildes, the numbers and the checksum after the start of the
+    # name; a cut through a character drops what is left of it, which
+    # only leaves the name shorter.
+    room = (_LONGEST_NAME - len(checksum) - 1 - _NUMBERS_KEPT
+            - len(extension.encode('utf-8', 'surrogatepass')))
+    start = stem.encode('utf-8', 'surrogatepass')[:room].decode('utf-8', 'ignore')
+    numbers = ' '.join(re.findall(r'\d+', stem[len(start):])).encode(
+        'utf-8')[-_NUMBERS_KEPT:].decode('utf-8', 'ignore')
+    return '%s~%s%s%s' % (start, numbers, checksum, extension)
 
 
 class BaseArchive:
@@ -129,7 +170,8 @@ class BaseArchive:
 
     def _replace_invalid_filesystem_chars(self, filename: str) -> str:
         """ Replaces characters in <filename> that cannot be saved to the disk
-        with underscore and returns the cleaned-up name. """
+        with underscore, and shortens any part too long to be a file's
+        name (fit_name()), and returns the cleaned-up name. """
 
         unsafe_chars = portability.invalid_filesystem_chars()
         translation_table = {}
@@ -146,7 +188,7 @@ class BaseArchive:
         # and separators here, as it strips a set of characters rather than
         # a prefix, and would eat the leading dot of names like ".foo.jpg".
         normalized = os.path.splitdrive(os.path.normpath(new_name))[1]
-        return os.sep.join(part for part in normalized.split(os.sep)
+        return os.sep.join(fit_name(part) for part in normalized.split(os.sep)
                            if part not in ('', os.curdir, os.pardir))
 
     def _create_directory(self, directory: str) -> None:
