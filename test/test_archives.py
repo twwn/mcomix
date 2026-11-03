@@ -1398,16 +1398,17 @@ class DirectoryEntryTest(MComixTest):
 def _stored_rar(path, members):
     """Write a RAR 4 archive to <path> holding <members>, (name, bytes)
     pairs, stored, under exactly those names: rar itself will not write
-    one with "../" in its name."""
+    one with "../" in its name.  A third item is the block's flags."""
 
     def block(body):
         return struct.pack('<H', zlib.crc32(body) & 0xffff) + body
 
     out = b'Rar!\x1a\x07\x00' + block(
         b'\x73' + struct.pack('<HH', 0, 13) + bytes(6))
-    for name, data in members:
+    for name, data, *flags in members:
         encoded = name.encode('utf-8')
-        out += block(b'\x74' + struct.pack('<HH', 0x8000, 32 + len(encoded))
+        out += block(b'\x74' + struct.pack('<HH', flags[0] if flags else 0x8000,
+                                           32 + len(encoded))
                      + struct.pack('<IIBIIBBHI', len(data), len(data), 3,
                                    zlib.crc32(data), 0x5a210000, 29, 0x30,
                                    len(encoded), 0o100644)
@@ -1436,6 +1437,57 @@ class RarLibraryMemberNameTest(MComixTest):
             os.path.join(self.tmp_dir, 'a', 'escaped.txt')))
         with open(os.path.join(destination, 'escaped.txt'), 'rb') as landed:
             self.assertEqual(b'out', landed.read())
+
+    def _extracted(self, names, handler):
+        """What each of <names> holds once extracted, each to a folder of
+        its own, so that one landing on another could not hide."""
+        pictures = {}
+        for number, name in enumerate(names):
+            folder = os.path.join(self.tmp_dir, 'out%d' % number)
+            handler.extract(name, folder)
+            with open(os.path.join(folder, name), 'rb') as landed:
+                pictures[name] = landed.read()
+        return pictures
+
+    def test_two_members_of_one_listed_name_each_keep_their_picture(self):
+        book = os.path.join(self.tmp_dir, 'book.rar')
+        _stored_rar(book, [('a.jpg', b'first'),
+                           ('../a.jpg', b'second'),
+                           ('a.jpg', b'third'),
+                           ('b.jpg', b'fourth')])
+        handler = rar.RarArchive(book)
+        self.addCleanup(handler.close)
+        names = list(handler.iter_contents())
+        self.assertEqual(['a.jpg', 'a~2.jpg', 'a~3.jpg', 'b.jpg'], names)
+        expected = {'a.jpg': b'first', 'a~2.jpg': b'second',
+                    'a~3.jpg': b'third', 'b.jpg': b'fourth'}
+        self.assertEqual(expected, self._extracted(names, handler))
+        # Out of order: the handle goes back to the start of the archive,
+        # and the names have to come out the same on the second pass.
+        self.assertEqual(expected, self._extracted(names[::-1], handler))
+        self.assertEqual(names, list(handler.iter_contents()))
+
+    def test_a_later_member_keeps_a_name_the_earlier_ones_left_free(self):
+        book = os.path.join(self.tmp_dir, 'book.rar')
+        _stored_rar(book, [('a.jpg', b'first'),
+                           ('a.jpg', b'second'),
+                           ('a~2.jpg', b'third')])
+        handler = rar.RarArchive(book)
+        self.addCleanup(handler.close)
+        names = list(handler.iter_contents())
+        self.assertEqual(3, len(set(names)))
+        self.assertEqual({b'first', b'second', b'third'},
+                         set(self._extracted(names, handler).values()))
+
+    def test_the_rest_of_a_member_from_a_volume_before_takes_no_name(self):
+        book = os.path.join(self.tmp_dir, 'book.rar')
+        _stored_rar(book, [('a.jpg', b'rest', 0x8001),
+                           ('a.jpg', b'whole')])
+        handler = rar.RarArchive(book)
+        self.addCleanup(handler.close)
+        names = list(handler.iter_contents())
+        self.assertEqual(['a.jpg'], names)
+        self.assertEqual({'a.jpg': b'whole'}, self._extracted(names, handler))
 
 
 class FitNameTest(unittest.TestCase):

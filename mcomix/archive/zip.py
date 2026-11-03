@@ -1,7 +1,6 @@
 """ Unicode-aware wrapper for zipfile.ZipFile. """
 
 import datetime
-import itertools
 import os
 import struct
 import zipfile
@@ -156,18 +155,6 @@ class ZipArchive(archive_base.NonUnicodeArchive):
                 pass
         self._members = members
         yield from members
-
-    @staticmethod
-    def _next_free_name(name: str, taken: set[str]) -> str:
-        """The first of name~2.jpg, name~3.jpg and on that nothing holds."""
-        folder, file_name = os.path.split(name)
-        stem, extension = os.path.splitext(file_name)
-        for number in itertools.count(2):
-            free = os.path.join(folder, archive_base.fit_name(
-                '%s~%d%s' % (stem, number, extension)))
-            if free not in taken:
-                return free
-        raise AssertionError('itertools.count() does not end')
 
     def member_date(self, name: str) -> float | None:
         """When the member listed as <name> was last modified."""

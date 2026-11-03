@@ -3,6 +3,7 @@ extraction and adding new archive formats. """
 
 import calendar
 import datetime
+import itertools
 import lzma
 import os
 import re
@@ -190,6 +191,18 @@ class BaseArchive:
         normalized = os.path.splitdrive(os.path.normpath(new_name))[1]
         return os.sep.join(fit_name(part) for part in normalized.split(os.sep)
                            if part not in ('', os.curdir, os.pardir))
+
+    @staticmethod
+    def _next_free_name(name: str, taken: set[str]) -> str:
+        """The first of name~2.jpg, name~3.jpg and on that nothing holds."""
+        folder, file_name = os.path.split(name)
+        stem, extension = os.path.splitext(file_name)
+        for number in itertools.count(2):
+            free = os.path.join(folder, fit_name(
+                '%s~%d%s' % (stem, number, extension)))
+            if free not in taken:
+                return free
+        raise AssertionError('itertools.count() does not end')
 
     def _create_directory(self, directory: str) -> None:
         """ Recursively create a directory if it doesn't exist yet.

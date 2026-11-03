@@ -143,6 +143,8 @@ class RarArchive(archive_base.BaseArchive):
         # Information about the current file will be stored in this structure
         self._headerdata = RarArchive._RARHeaderDataEx()
         self._current_filename: str | None = None
+        # The names members have been listed under since the handle opened.
+        self._names_read: set[str] = set()
 
         # Set up function prototypes.
         # Mandatory since pointers get truncated on x64 otherwise!
@@ -178,11 +180,7 @@ class RarArchive(archive_base.BaseArchive):
                 filename = self._read_header()
                 if self._headerdata.Flags & RarArchive._HeaderFlag.RHDF_SOLID:
                     self._is_solid = True
-                if self._header_is_directory() or (
-                        self._headerdata.Flags
-                        & RarArchive._HeaderFlag.RHDF_SPLITBEFORE):
-                    # Not a member anything can extract, or the rest of
-                    # one listed in the volume before; skip past it.
+                if not self._header_is_member():
                     self._process()
                     continue
                 date = archive_base.dos_timestamp(self._headerdata.FileTime)
@@ -200,6 +198,14 @@ class RarArchive(archive_base.BaseArchive):
             pass
         finally:
             self._close()
+
+    def _header_is_member(self) -> bool:
+        """Whether the header just read names something to list: neither
+        a directory, which nothing can extract, nor the rest of a member
+        listed in the volume before."""
+        return not (self._header_is_directory()
+                    or self._headerdata.Flags
+                    & RarArchive._HeaderFlag.RHDF_SPLITBEFORE)
 
     #: The unrar HostOS values whose file attributes are DOS attributes
     #: rather than a Unix mode: MS-DOS, OS/2 and Win32.
@@ -230,7 +236,7 @@ class RarArchive(archive_base.BaseArchive):
         while True:
             # Check if the current entry matches the requested file.
             if self._current_filename is not None:
-                if (self._current_filename == filename):
+                if self._current_filename == filename and self._header_is_member():
                     # It's the entry we're looking for, extract it.
                     dest = ctypes.c_wchar_p(os.path.join(destination_dir, filename))
                     self._process(dest)
@@ -261,6 +267,7 @@ class RarArchive(archive_base.BaseArchive):
     def _open(self) -> None:
         """ Open rar handle for extraction. """
         self._callback_function = UNRARCALLBACK(self._unrar_callback)
+        self._names_read = set()
         archivedata = RarArchive._RAROpenArchiveDataEx(ArcNameW=self.archive,
                                                        OpenMode=RarArchive._OpenMode.RAR_OM_EXTRACT,
                                                        Callback=self._callback_function,
@@ -301,13 +308,24 @@ class RarArchive(archive_base.BaseArchive):
         library writes to the path it is given without looking at it,
         so "../" in a name has to go here: it would write outside the
         directory being extracted to.
+
+        Two members that come out under one name, as the same name twice
+        or two that are the same once made safe to write, are both pages,
+        and a page is a file: the later ones are listed as name~2.jpg.
+        The archive is only ever read from its start, so each pass gives
+        each member the same name.
         """
         self._current_filename = None
         errorcode = self._unrar.RARReadHeaderEx(self._handle, ctypes.byref(self._headerdata))
         self._check_errorcode(errorcode)
-        self._current_filename = self._replace_invalid_filesystem_chars(
+        name = self._replace_invalid_filesystem_chars(
             str(self._headerdata.FileNameW))
-        return self._current_filename
+        if self._header_is_member():
+            if name in self._names_read:
+                name = self._next_free_name(name, self._names_read)
+            self._names_read.add(name)
+        self._current_filename = name
+        return name
 
     def _process(self, dest: ctypes.c_wchar_p | None = None) -> None:
         """ Process current entry: extract or skip it. """
