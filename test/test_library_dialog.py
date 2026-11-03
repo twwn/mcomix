@@ -749,8 +749,14 @@ class CoverInFlightTest(_OneBookTest):
         return next(iter(self.dialog.book_area._covers.each_item()))
 
     def _cover_made(self):
-        self.assertTrue(wait_for(lambda: self._item().thumbnail is not None,
-                                 seconds=10))
+        """Wait for the cover, and for its worker to have done with it: the
+        worker hands the cover over before it takes the order off its list,
+        and until then a new order for this book is dropped as a duplicate."""
+        covers = self.dialog.book_area._covers
+        self.assertTrue(wait_for(
+            lambda: (self._item().thumbnail is not None
+                     and not covers._thread._orders_set),
+            seconds=10))
         pump()
 
     def _with_a_cover_in_flight(self, meanwhile):
