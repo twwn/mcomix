@@ -46,6 +46,30 @@ class SlideshowTest(MComixTest):
         return (button.get_child().get_icon_name(),
                 button.get_tooltip_text())
 
+    def test_closing_the_book_ends_it(self):
+        """It went on with no book, its toggle out of reach, and turned
+        the pages of whichever book was opened next."""
+        self.action.set_active(True)
+        self.window.filehandler.close_file()
+        pump()
+        self.assertFalse(self.slideshow.is_running())
+        self.assertFalse(self.action.get_active())
+        self.assertEqual('media-playback-start-symbolic', self._button()[0])
+        self.window.filehandler.open_file(
+            get_testfile_path('archives', '01-ZIP-Normal.zip'))
+        self.assertTrue(wait_for(lambda: self.window.filehandler.file_loaded))
+        self.assertFalse(self.slideshow.is_running())
+        self.assertNotIn('SLIDESHOW', self.window.get_title())
+
+    def test_a_book_opened_over_the_last_keeps_it_going(self):
+        """Which is how it goes on to the next book."""
+        self.action.set_active(True)
+        self.window.filehandler.open_file(
+            get_testfile_path('archives', '01-ZIP-Normal.zip'))
+        self.assertTrue(wait_for(lambda: self.window.filehandler.file_loaded))
+        self.assertTrue(self.slideshow.is_running())
+        self.assertTrue(self.action.get_active())
+
     def test_starting_and_stopping_says_so_on_the_button(self):
         self.action.set_active(True)
         self.assertTrue(self.slideshow.is_running())

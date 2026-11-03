@@ -64,6 +64,11 @@ class Slideshow:
         cast(Gtk.Image, button.get_child()).set_from_icon_name(icon_name)
         button.set_tooltip_text(tooltip)
 
+    def stop(self) -> None:
+        """End a running slideshow, as its toggle does."""
+        if self._running:
+            self._window.actiongroup.get_action('slideshow').set_active(False)
+
     def is_running(self) -> bool:
         """Return True if a slideshow is currently running."""
         return self._running

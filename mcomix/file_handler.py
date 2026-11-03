@@ -620,9 +620,17 @@ class FileHandler:
         offered to the reader to write first: closing is what throws
         those changes away, and the offer made at the change itself may
         have been turned down by a reader who meant to go on editing.
+
+        A slideshow ends here: with no book its toggle cannot be reached,
+        and it would start turning the pages of whichever book came next.
+        It goes on when one book is opened over another, which does not
+        come through here, since that is how it reaches the next book.
         """
-        self._window.file_actions.before_closing(
-            lambda: self._close(close_provider=True))
+        def close() -> None:
+            self._window.slideshow.stop()
+            self._close(close_provider=True)
+
+        self._window.file_actions.before_closing(close)
 
     def _close(self, close_provider: bool = False) -> None:
         """Run tasks for "closing" the currently opened file(s)."""

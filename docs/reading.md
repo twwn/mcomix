@@ -116,6 +116,7 @@ Two fingers spread apart or pinched together on a touchpad or a touch screen zoo
 - CTRL+S starts it. It works like pressing the Down arrow at intervals.
 - By default it scrolls 50 pixels every three seconds.
 - A delay of 0.05 seconds with a step of 1 pixel scrolls smoothly. Both are preferences.
+- Closing the book ends it.
 
 ## Enhancing the image
 

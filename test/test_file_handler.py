@@ -1622,6 +1622,7 @@ class CloseWakesWaitersTest(MComixTest):
             self.cursor_handler = \
                 CloseWakesWaitersTest._StubCursorHandler()
             self.file_actions = CloseWakesWaitersTest._StubFileActions()
+            self.slideshow = types.SimpleNamespace(stop=lambda: None)
 
     PAGE = '/book/page.png'
 
