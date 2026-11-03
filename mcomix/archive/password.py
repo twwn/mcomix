@@ -77,6 +77,14 @@ def remember(archive: str, password: str) -> None:
         _remembered[os.path.abspath(archive)] = password
 
 
+def follow(old: str, new: str) -> None:
+    """Keep what was kept for the archive at <old> for it at <new>, where
+    it has been moved to."""
+    with _remembered_lock:
+        if old in _remembered:
+            _remembered[new] = _remembered.pop(old)
+
+
 def forget(archive: str) -> None:
     """Drop what was kept for <archive>: a page would not unpack with it,
     and the next opening should ask rather than try it again."""

@@ -30,6 +30,7 @@ from mcomix import page_rotations
 from mcomix import portability
 from mcomix import rename_dialog
 from mcomix import tools
+from mcomix.archive import password as archive_password
 from mcomix.dialog import Response
 from mcomix.i18n import _
 from mcomix.library import backend
@@ -1215,7 +1216,8 @@ class FileActions:
         this different from moving the file from outside and opening it
         afresh.  Where the old path is recorded it is brought forward -
         the library holds one, and so do the bookmarks, the store of
-        last read pages, and the turns and marks given to single pages.
+        last read pages, the turns and marks given to single pages, and
+        the password typed for it this session.
         """
         current_file = self._window.imagehandler.get_real_path()
         if current_file is None:
@@ -1238,6 +1240,7 @@ class FileActions:
         old, new = os.path.abspath(current_file), os.path.abspath(target)
         page_rotations.follow(old, new)
         page_marks.follow(old, new)
+        archive_password.follow(old, new)
         # The book is about to be opened where it landed, which records
         # that; the entry for where it was would open nothing.
         self._window.uimanager.recent.remove_path(current_file)

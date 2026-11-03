@@ -43,6 +43,7 @@ from mcomix import rename_dialog
 from mcomix import tools
 from mcomix import ui
 from mcomix import widgets
+from mcomix.archive import password as archive_password
 from mcomix.dialog import Response
 from mcomix.library import backend
 from mcomix.preferences import prefs
@@ -99,6 +100,35 @@ class MainWindowTest(MComixTest):
 
     def _pump(self, rounds=2000):
         pump(rounds)
+
+    def test_a_book_moved_keeps_the_password_typed_for_it(self):
+        """As it keeps its marks and its place in the library: the move
+        reopens it, and asked again as if it were another book."""
+        handler = self.window.filehandler
+        book = os.path.join(self.tmp_dir, 'Secret.zip')
+        shutil.copy(get_testfile_path('archives', 'Encrypted.zip'), book)
+        destination = os.path.join(self.tmp_dir, 'moved')
+        os.makedirs(destination)
+        asked = []
+
+        def ask(archive, on_password):
+            asked.append(archive)
+            on_password('password')
+
+        def opened():
+            return (not handler.file_loading
+                    and self.window.imagehandler.page_is_available())
+
+        with unittest.mock.patch.object(archive_password, 'ask_for_password', ask):
+            handler.open_file(book)
+            self.assertTrue(wait_for(opened, seconds=20))
+            self.window.file_actions.move_current_file(destination)
+            self.assertTrue(wait_for(opened, seconds=20))
+            self._pump()
+        self.assertEqual(os.path.join(destination, 'Secret.zip'),
+                         handler.get_path_to_base())
+        self.assertEqual([book], asked)
+        self.assertIsNone(archive_password.remembered(book))
 
     def test_a_quit_that_cannot_write_its_files_still_ends(self):
         """A full disk or a read-only home made the first write raise
