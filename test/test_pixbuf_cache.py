@@ -12,6 +12,18 @@ class PixbufCacheTest(unittest.TestCase):
         self.assertEqual(cache.get('a'), 1)
         self.assertIsNone(cache.get('b'))
 
+    def test_what_was_begun_before_an_invalidation_is_not_stored(self) -> None:
+        for invalidate in ('a', None):
+            cache = _PixbufCache(3)
+            begun_at = cache.generation()
+            cache.add('old', 1, begun_at)
+            self.assertEqual(cache.get('old'), 1)
+            cache.invalidate(invalidate) if invalidate else cache.invalidate_all()
+            cache.add('a', 1, begun_at)
+            self.assertIsNone(cache.get('a'))
+            cache.add('a', 2, cache.generation())
+            self.assertEqual(cache.get('a'), 2)
+
     def test_never_grows_past_its_size(self) -> None:
         cache = _PixbufCache(3)
         for n in range(10):

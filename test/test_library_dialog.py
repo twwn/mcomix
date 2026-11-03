@@ -741,6 +741,68 @@ class _OneBookTest(_LibraryWindowTest):
         lastread.set_page(self.path, page)
 
 
+class CoverInFlightTest(_OneBookTest):
+
+    """A cover a worker is making when what it should look like changes."""
+
+    def _item(self):
+        return next(iter(self.dialog.book_area._covers.each_item()))
+
+    def _cover_made(self):
+        self.assertTrue(wait_for(lambda: self._item().thumbnail is not None,
+                                 seconds=10))
+        pump()
+
+    def _with_a_cover_in_flight(self, meanwhile):
+        """Run <meanwhile> with a worker parked in reading the cover."""
+        area = self.dialog.book_area
+        self._cover_made()
+        area._cache.invalidate_all()
+        entered, go_on = threading.Event(), threading.Event()
+        self.addCleanup(go_on.set)
+        read = self.dialog.backend.get_book_thumbnail
+
+        def parked(path):
+            entered.set()
+            go_on.wait(10)
+            return read(path)
+
+        with unittest.mock.patch.object(self.dialog.backend,
+                                        'get_book_thumbnail', parked):
+            area._covers.redraw_item(self._item())
+            self.assertTrue(wait_for(entered.is_set, seconds=10))
+            meanwhile()
+            go_on.set()
+            pump()
+            self._cover_made()
+
+    def test_a_cover_begun_at_the_old_size_is_not_kept(self):
+        """It was stored once the cache had been emptied, and the new
+        size then found it there: half the size of its cell, until it
+        was next invalidated or evicted."""
+        area = self.dialog.book_area
+        prefs['library cover size'] = 100
+        area.load_covers()
+        pump()
+
+        def larger():
+            prefs['library cover size'] = 200
+            area.load_covers()
+
+        self._with_a_cover_in_flight(larger)
+        wanted = area._pixbuf_size()[0]
+        self.assertLessEqual(abs(self._item().thumbnail.get_width() - wanted), 4)
+
+    def test_a_cover_invalidated_while_it_is_made_is_not_kept(self):
+        """A new cover chosen for the book, say."""
+        area = self.dialog.book_area
+        self._with_a_cover_in_flight(
+            lambda: area._cache.invalidate(self.path))
+        # Which waits for the worker to have done with it.
+        area._covers.stop_update()
+        self.assertIsNone(area._cache.get(self.path))
+
+
 class LibraryWalkTest(_LibraryWindowTest):
 
     """A book opened from the library: Next and Previous archive walk the

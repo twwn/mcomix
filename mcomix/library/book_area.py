@@ -744,6 +744,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         # may evict the entry in between, and get() would then return None.
         # The view's scale, which it records on the cover it is made for.
         scale = self._covers.device_scale
+        begun_at = self._cache.generation()
         pixbuf = self._cache.get(book.path)
         if pixbuf is None:
             width, height = self._pixbuf_size(border_size=0, scale=scale)
@@ -760,7 +761,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
                 pixbuf = image_tools.fit_in_rectangle(
                     image_tools.turned_as_shown(thumbnail, book.path),
                     width, height, scale_up=True)
-            self._cache.add(book.path, pixbuf)
+            self._cache.add(book.path, pixbuf, begun_at)
 
         pixbuf = self._library.main_window.enhancer.enhance(pixbuf)
         pixbuf = image_tools.add_border(pixbuf, max(1, round(scale)),
