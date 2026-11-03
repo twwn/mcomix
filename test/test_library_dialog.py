@@ -761,10 +761,14 @@ class CoverInFlightTest(_OneBookTest):
         entered, go_on = threading.Event(), threading.Event()
         self.addCleanup(go_on.set)
         read = self.dialog.backend.get_book_thumbnail
+        self.cover_read = threading.Event()
+        self.reads = []
 
         def parked(path):
+            self.reads.append(path)
             entered.set()
             go_on.wait(10)
+            self.cover_read.set()
             return read(path)
 
         with unittest.mock.patch.object(self.dialog.backend,
@@ -801,6 +805,34 @@ class CoverInFlightTest(_OneBookTest):
         # Which waits for the worker to have done with it.
         area._covers.stop_update()
         self.assertIsNone(area._cache.get(self.path))
+
+    def test_showing_other_books_does_not_wait_for_the_cover(self):
+        """A collection chosen or a letter typed in the search box: the
+        window stood still until the cover was read, five seconds of it
+        for one deep in a 400 MB solid archive."""
+        area = self.dialog.book_area
+
+        def other_books():
+            area.display_covers(constants.COLLECTION_ALL)
+            self.assertFalse(self.cover_read.is_set(),
+                             'the main thread waited for the cover')
+
+        self._with_a_cover_in_flight(other_books)
+
+    def test_a_book_shown_again_does_not_have_its_cover_read_again(self):
+        """Not waiting for the read must not mean starting another: eight
+        letters typed read that archive eight times at once."""
+        area = self.dialog.book_area
+
+        def letters_typed():
+            for _letter in range(3):
+                area.display_covers(constants.COLLECTION_ALL)
+            # Time for a second read to begin, where nothing stops it.
+            wait_for(lambda: len(self.reads) > 1, seconds=0.5)
+
+        self._with_a_cover_in_flight(letters_typed)
+        area._covers.stop_update()
+        self.assertEqual(self.reads, [self.path])
 
 
 class LibraryWalkTest(_LibraryWindowTest):

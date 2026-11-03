@@ -10,6 +10,7 @@ that hands books to the collection tree.
 
 import functools
 import os
+import threading
 import weakref
 from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk
 import PIL.Image as Image
@@ -94,6 +95,10 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
 
         self._library_ref = weakref.ref(library)
         self._cache = get_pixbuf_cache()
+        #: The paths of the books whose covers a worker is reading, and
+        #: what the others wait on for one to be done.
+        self._being_read: set[str] = set()
+        self._reading = threading.Condition()
 
         self._library.backend.book_added += self._new_book_in_library
         self._library.backend.book_added_to_collection += self._new_book_added
@@ -732,21 +737,30 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
                    mask=shape.getchannel('A'))
         return image_tools.pil_to_pixbuf(mark)
 
-    def _get_pixbuf(self, uid: int) -> GdkPixbuf.Pixbuf:
-        """ Get or create the thumbnail for the selected book <uid>. """
-        assert isinstance(uid, int)
-        book = self._library.backend.get_book_by_id(uid)
-        if book is None:
-            # The book went while its cover was being drawn.
-            return image_tools.missing_image_icon(*self._pixbuf_size(
-                border_size=0, scale=self._covers.device_scale))
-        # One lookup rather than exists() plus get(): another worker thread
-        # may evict the entry in between, and get() would then return None.
-        # The view's scale, which it records on the cover it is made for.
-        scale = self._covers.device_scale
-        begun_at = self._cache.generation()
-        pixbuf = self._cache.get(book.path)
-        if pixbuf is None:
+    def _cover_of(self, book: 'backend_types._Book',
+                  scale: float) -> GdkPixbuf.Pixbuf:
+        """The cover of <book> at the size the covers are, from the cache
+        or read from the book.
+
+        One read of a book at a time.  Showing other books does not wait
+        for a cover being read, so a book can be asked for again while
+        its cover still is, once for every letter typed in the search
+        box: eight letters started eight reads of a 400 MB solid archive
+        at once, of five seconds each.  The later ones wait for the
+        first, and find what it left in the cache.
+        """
+        with self._reading:
+            while book.path in self._being_read:
+                self._reading.wait()
+            begun_at = self._cache.generation()
+            # One lookup rather than exists() plus get(): another worker
+            # thread may evict the entry in between, and get() would then
+            # return None.
+            pixbuf = self._cache.get(book.path)
+            if pixbuf is not None:
+                return pixbuf
+            self._being_read.add(book.path)
+        try:
             width, height = self._pixbuf_size(border_size=0, scale=scale)
             try:
                 thumbnail = self._library.backend.get_book_thumbnail(book.path)
@@ -762,6 +776,23 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
                     image_tools.turned_as_shown(thumbnail, book.path),
                     width, height, scale_up=True)
             self._cache.add(book.path, pixbuf, begun_at)
+            return pixbuf
+        finally:
+            with self._reading:
+                self._being_read.discard(book.path)
+                self._reading.notify_all()
+
+    def _get_pixbuf(self, uid: int) -> GdkPixbuf.Pixbuf:
+        """ Get or create the thumbnail for the selected book <uid>. """
+        assert isinstance(uid, int)
+        book = self._library.backend.get_book_by_id(uid)
+        if book is None:
+            # The book went while its cover was being drawn.
+            return image_tools.missing_image_icon(*self._pixbuf_size(
+                border_size=0, scale=self._covers.device_scale))
+        # The view's scale, which it records on the cover it is made for.
+        scale = self._covers.device_scale
+        pixbuf = self._cover_of(book, scale)
 
         pixbuf = self._library.main_window.enhancer.enhance(pixbuf)
         pixbuf = image_tools.add_border(pixbuf, max(1, round(scale)),

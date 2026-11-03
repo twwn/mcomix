@@ -351,9 +351,17 @@ class _ThumbnailViewBase(widgets.Releasable):
     # -- The entries themselves -------------------------------------------
 
     def set_items(self, items: Iterable[ThumbnailItem]) -> None:
-        """Show <items>, replacing whatever was there."""
-        self.stop_update()
+        """Show <items>, replacing whatever was there.
+
+        The thumbnails still waiting to be made go with the entries they
+        were for.  One being made is not waited for: this runs on the
+        main thread, for every letter typed in the library's search box,
+        and a cover deep in a solid archive takes seconds.  It finishes
+        on an entry that is no longer shown, and its worker then turns
+        to the new ones.
+        """
         items = list(items)
+        self._thread.clear_orders()
         # Before the splice, not after it: the cells that fit on screen
         # are bound from inside it, and a stopped view turns away every
         # thumbnail those cells ask for.

@@ -11,6 +11,8 @@ a two hundred row model, so nothing below asserts that only what is on
 screen is asked for.
 """
 
+import threading
+
 from gi.repository import GdkPixbuf, Gtk
 
 from . import MComixTest, pump, wait_for
@@ -154,6 +156,33 @@ class ThumbnailListViewTest(MComixTest):
         pump(100)
         self.assertEqual(len(self.asked), asked,
                          'a stopped list went on making thumbnails')
+
+    def test_new_entries_do_not_wait_for_a_thumbnail_being_made(self):
+        """They are set on the main thread, so the window stood still for
+        as long as it took.  What was only waiting goes with its entry."""
+        self.view._thread._max_threads = 1
+        entered, go_on, done = (threading.Event() for _ in range(3))
+        self.addCleanup(go_on.set)
+
+        def parked(uid):
+            entered.set()
+            go_on.wait(10)
+            done.set()
+            return self._generate(uid)
+
+        self.view.generate_thumbnail = parked
+        self._fill()
+        self.assertTrue(wait_for(entered.is_set, seconds=10))
+        fresh = [thumbnail_list.ThumbnailItem(uid)
+                 for uid in range(self.ROWS + 1, 2 * self.ROWS + 1)]
+        self.view.set_items(fresh)
+        self.assertFalse(done.is_set(), 'the main thread waited for it')
+        go_on.set()
+        self._settle()
+        self.assertTrue(wait_for(lambda: fresh[0].thumbnail is not None,
+                                 seconds=10))
+        self.assertEqual(len([uid for uid in self.asked if uid <= self.ROWS]),
+                         1, 'thumbnails of the old entries went on being made')
 
     def test_clearing_empties_the_store(self):
         self._fill()
