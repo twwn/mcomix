@@ -182,6 +182,8 @@ class FileHandler:
         #: extraction gives up instead of waiting for a file that is no
         #: longer coming.
         self._stop_waiting = False
+        #: The prompt asking whether to resume, until it is answered.
+        self._resume_prompt: message_dialog.MessageDialog | None = None
         #: List of comment files inside of the currently opened archive.
         self._comment_files: list[str] = []
         #: The members of the open archive that are neither pages nor
@@ -638,6 +640,12 @@ class FileHandler:
             if close_provider:
                 self._file_provider = None
             self.update_last_read_page()
+            # Another book can be opened with the prompt up, handed over
+            # by a second MComix or reached by a slideshow, and its
+            # answer would turn that book to this one's page.
+            if self._resume_prompt is not None:
+                self._resume_prompt.destroy()
+                self._resume_prompt = None
             if self.archive_type is not None:
                 # Wake whatever is parked in wait_on_file() before the
                 # extractor stops.  The only notify_all() there is fires
@@ -1052,7 +1060,15 @@ class FileHandler:
               'If you choose "Yes", reading will resume on page %(page)d. Otherwise, '
               'the first page will be loaded.') % {'date': read_date.date().strftime("%x"),
                                                    'time': read_date.time().strftime("%X"), 'page': last_read_page})
-        dialog.run_async(lambda response: on_answer(response == Response.YES))
+        self._resume_prompt = dialog
+
+        def answered(response: int) -> None:
+            # A prompt taken down by _close() is about a book that went.
+            if self._resume_prompt is dialog:
+                self._resume_prompt = None
+                on_answer(response == Response.YES)
+
+        dialog.run_async(answered)
 
     def _open_image_files(self) -> None:
         """Note the directory the loose image files sit in.

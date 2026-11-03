@@ -1019,6 +1019,31 @@ class RememberedResumeAnswerTest(MComixTest):
     def test_answering_no_stays_at_the_front(self):
         self.assertEqual(1, self._answer_the_prompt(Response.NO))
 
+    def _prompts(self):
+        return [window for window in Gtk.Window.list_toplevels()
+                if isinstance(window, message_dialog.MessageDialog)
+                and window.get_transient_for() is self.window]
+
+    def test_a_book_opened_over_the_prompt_takes_it_down(self):
+        """A second MComix can hand a book over with the prompt up, and
+        a "yes" then turned that book to the page of the one asked about."""
+        self._open_and_settle()
+        self.assertEqual(1, len(self._prompts()))
+        other = os.path.join(self.tmp_dir, 'other.zip')
+        shutil.copy(self.archive, other)
+        self.handler.open_file(other)
+        self.assertTrue(wait_for(lambda: self.handler.file_loaded and
+                                 self.window.imagehandler.get_number_of_pages() > 0))
+        pump()
+        self.assertEqual([], self._prompts())
+        self.assertEqual(1, self.window.imagehandler.get_current_page())
+
+    def test_closing_the_book_takes_the_prompt_down(self):
+        self._open_and_settle()
+        self.handler.close_file()
+        pump()
+        self.assertEqual([], self._prompts())
+
 
 class ExtractionOrderTest(MComixTest):
 
