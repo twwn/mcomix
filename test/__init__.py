@@ -369,16 +369,18 @@ def _make_writable_and_retry(function, path, error):
         time.sleep(0.02)
 
 
-def _wait_for_deletions():
-    """Let the threads FileHandler.thread_delete() started finish.
+def wait_for_deletions():
+    """Let the threads that remove a temporary directory of their own finish.
 
     Closing a book removes its temporary directory, which lies in the
-    test's own, from a thread of its own.  Python 3.12's shutil.rmtree()
-    raises FileNotFoundError for an entry that thread removed first, so
-    the test's removal and the book's may not overlap.
+    test's own, from a thread FileHandler.thread_delete() started, and a
+    file chooser's preview of a book does the same with what it unpacked
+    the book into.  Python 3.12's shutil.rmtree() raises FileNotFoundError
+    for an entry such a thread removed first, so the test's removal and
+    theirs may not overlap.
     """
     for thread in threading.enumerate():
-        if thread.name.endswith('-delete'):
+        if thread.name.endswith(('-delete', '-preview-details', '-thumbnailer')):
             thread.join(10)
 
 
@@ -608,7 +610,7 @@ class MComixTest(unittest.TestCase):
         # Leave the temporary directory behind for post-mortem analysis
         # when the test did not pass.
         if not self._test_failed():
-            _wait_for_deletions()
+            wait_for_deletions()
             shutil.rmtree(self.tmp_dir, onexc=_make_writable_and_retry)
 
     def _test_failed(self):

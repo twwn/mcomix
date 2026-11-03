@@ -1,14 +1,18 @@
 """ The file chooser dialog, which GTK4 leaves MComix to assemble. """
 
+import glob
 import os
 import shutil
+import tempfile
+import threading
 import types
 import unittest.mock
 
 from gi.repository import Gdk, Gio, GLib, Gtk
 
-from . import MComixTest, get_testfile_path, pump, wait_for
+from . import MComixTest, get_testfile_path, pump, wait_for, wait_for_deletions
 
+from mcomix import archive_tools
 from mcomix import constants
 from mcomix import icons
 from mcomix import image_tools
@@ -544,6 +548,36 @@ class FileChooserTest(MComixTest):
         self.assertEqual(self.dialog._namelabel.get_text(), 'blue.png')
         self.assertTrue(self.dialog._sizelabel.get_text(),
                         'the preview says no file size')
+
+    def test_a_books_preview_is_done_with_its_folders_for_the_test_to_go(self):
+        """The preview of a book unpacks it into temporary folders, which
+        lie in the test's own directory, and removes them from threads of
+        its own.  Python 3.12's shutil.rmtree() raises FileNotFoundError
+        for an entry such a thread removed first, as it did on CI for a
+        test that closed its chooser with such a preview under way."""
+        real = archive_tools.get_recursive_archive_handler
+        unpacking = []
+        release = threading.Event()
+        self.addCleanup(release.set)
+
+        def slow(*args, **kwargs):
+            unpacking.append(args)
+            release.wait(10)
+            return real(*args, **kwargs)
+
+        self.dialog._stop_previewing()
+        self.dialog._previewed = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        with unittest.mock.patch.object(
+                archive_tools, 'get_recursive_archive_handler', slow):
+            self.dialog._update_preview()
+            self.assertTrue(wait_for(lambda: unpacking, seconds=10),
+                            'the preview did not unpack the book')
+            timer = threading.Timer(0.1, release.set)
+            timer.start()
+            wait_for_deletions()
+            timer.join()
+        self.assertEqual(
+            [], glob.glob(os.path.join(tempfile.gettempdir(), 'mcomix_*')))
 
     def test_choosing_a_folder_after_a_file_clears_the_preview(self):
         """Driven through what the selection poll calls rather than
