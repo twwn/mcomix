@@ -582,6 +582,8 @@ class FileHandler:
                         self._window.imagehandler.set_resume_page(None)
                         if goto_last_read_page:
                             self._window.set_page(last_image_index + 1)
+                        else:
+                            self.update_last_read_page()
                         self.write_fileinfo_file()
 
                     self._ask_goto_last_read_page(
@@ -1603,6 +1605,12 @@ class FileHandler:
     def update_last_read_page(self) -> None:
         """ Stores the currently viewed page. """
         if self.archive_type is None or not self.file_loaded:
+            return
+        if self._resume_prompt is not None:
+            # The front of the book is on show while the prompt waits,
+            # which says nothing about where it is being read.  Storing
+            # it would throw away the page being offered, should MComix
+            # be killed before the prompt is answered.
             return
 
         archive_path = self.get_path_to_base()

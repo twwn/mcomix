@@ -1038,6 +1038,23 @@ class RememberedResumeAnswerTest(MComixTest):
         self.assertEqual([], self._prompts())
         self.assertEqual(1, self.window.imagehandler.get_current_page())
 
+    def test_the_page_offered_stays_stored_until_the_prompt_is_answered(self):
+        """The timer that stores the reading position saw the front of
+        the book and cleared the record, so a reader who was slow to
+        answer and then lost MComix lost the page without saying no."""
+        self._open_and_settle()
+        self.window._keep_reading_position()
+        self.assertEqual(3, self.handler.last_read_page.get_page(self.archive))
+        self.handler.close_file()
+        pump()
+        self.assertEqual(3, self.handler.last_read_page.get_page(self.archive))
+
+    def test_a_no_clears_the_page_offered(self):
+        self._open_and_settle()
+        self._prompts()[0].response(Response.NO)
+        pump()
+        self.assertIsNone(self.handler.last_read_page.get_page(self.archive))
+
     def test_closing_the_book_takes_the_prompt_down(self):
         self._open_and_settle()
         self.handler.close_file()
