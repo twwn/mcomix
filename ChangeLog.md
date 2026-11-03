@@ -1,3 +1,23 @@
+# MComix 26.11.1
+## Release date: 2026-11-03
+
+### Security
+
+- A crafted RAR read through the UnRAR library could write or overwrite files outside the temporary folder.
+
+### New
+
+- Ctrl+click and the swap gesture work on the sidebar's thumbnails, as they do on the page.
+
+### Fixes
+
+- On Windows, a RAR page with `*` or `?` in its name, read through the UnRAR library, now shows.
+- The archive counter no longer counts the later volumes of a RAR set as books.
+- A page whose name is too long for a file (about 85 Japanese characters) now shows.
+- Two pages of one name in a ZIP each show their own picture.
+- "Add books" names in the library's status bar the books it could not add.
+- A page read through lha or unzip shows its own date in the status bar.
+
 # MComix 26.11
 ## Release date: 2026-11-01
 
