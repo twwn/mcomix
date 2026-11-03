@@ -8,7 +8,7 @@ import threading
 import types
 import unittest.mock
 
-from gi.repository import Gdk, Gio, GLib, Gtk
+from gi.repository import Gdk, Gio, GLib, Graphene, Gtk
 
 from . import MComixTest, get_testfile_path, pump, wait_for, wait_for_deletions
 
@@ -443,15 +443,72 @@ class FileChooserTest(MComixTest):
         self.assertEqual(os.path.realpath(constants.HOME_DIR),
                          os.path.realpath(self._reopened_in()))
 
+    def _widgets_in(self, widget):
+        child = widget.get_first_child()
+        while child is not None:
+            yield child
+            yield from self._widgets_in(child)
+            child = child.get_next_sibling()
+
+    def _point_on(self, widget, near_its_end=False):
+        """A point of <widget>, in the chooser's coordinates, as the
+        gesture that hears a double click is given it."""
+        found, point = widget.compute_point(self.dialog.filechooser, Graphene.Point().init(
+            widget.get_width() / 2,
+            widget.get_height() - 2 if near_its_end else widget.get_height() / 2))
+        self.assertTrue(found)
+        return point.x, point.y
+
+    def _row_of(self, name):
+        """The row of the list that shows the file called <name>."""
+        def row():
+            for widget in self._widgets_in(self.dialog._listing):
+                if isinstance(widget, Gtk.Inscription) and widget.get_text() == name:
+                    while widget.get_css_name() != 'row':
+                        widget = widget.get_parent()
+                    return widget
+            return None
+        self.assertTrue(wait_for(row))
+        return row()
+
+    def _book_selected(self):
+        """A folder with one book, which is selected, and the book."""
+        path = os.path.join(self.tmp_dir, 'book.zip')
+        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), path)
+        self._select(path)
+        return path
+
     def test_a_double_click_on_a_file_opens_it(self):
         chosen = []
         self.dialog.files_chosen = chosen.extend
-        path = get_testfile_path('archives', '01-ZIP-Normal.zip')
-        self._select(path)
-        self.dialog._activated(None, 1, 0.0, 0.0)
+        path = self._book_selected()
+        x, y = self._point_on(self._row_of('book.zip'))
+        self.dialog._activated(None, 1, x, y)
         self.assertEqual([], chosen, 'a single click opened the file')
-        self.dialog._activated(None, 2, 0.0, 0.0)
+        self.dialog._activated(None, 2, x, y)
         self.assertEqual([path], chosen)
+
+    def test_a_double_click_anywhere_else_answers_nothing(self):
+        """The gesture is on the whole chooser, so a quick double click
+        on a place in the sidebar took whatever the chooser had to say
+        then, and when saving wrote the page into the folder being left."""
+        chosen = []
+        self.dialog.files_chosen = chosen.extend
+        self._book_selected()
+        row = self._row_of('book.zip')
+        widgets_in = list(self._widgets_in(self.dialog.filechooser))
+        place = next(widget for widget in widgets_in
+                     if isinstance(widget, Gtk.ListBoxRow) and widget.get_mapped())
+        heading = next(widget for widget in self._widgets_in(self.dialog._listing)
+                       if widget.get_css_name() == 'button')
+        for name, widget, near_its_end in (('a place', place, False),
+                                           ('a heading', heading, False),
+                                           ('below the rows', row.get_parent(), True)):
+            with self.subTest(name):
+                x, y = self._point_on(widget, near_its_end)
+                self.assertIsNotNone(self.dialog.filechooser.get_file())
+                self.dialog._activated(None, 2, x, y)
+                self.assertEqual([], chosen)
 
     def _choose_folder(self, folder, filter_name):
         """ What the dialog hands on when <folder> is chosen with the

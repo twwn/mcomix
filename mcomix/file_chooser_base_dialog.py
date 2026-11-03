@@ -707,8 +707,28 @@ class _BaseFileChooserDialog(Dialog):
     def _activated(self, gesture: Gtk.GestureClick, n_press: int,
                    x: float, y: float) -> None:
         """Confirm the dialog when a file is double clicked."""
-        if n_press == 2 and self.filechooser.get_file() is not None:
+        if (n_press == 2 and self._on_a_row_of_the_list(x, y)
+                and self.filechooser.get_file() is not None):
             self._response(self, Response.OK)
+
+    def _on_a_row_of_the_list(self, x: float, y: float) -> bool:
+        """Whether a point of the chooser lies on a row of its list.
+
+        The gesture that hears a double click is on the whole chooser,
+        so it hears one on a place in the sidebar or beside the rows as
+        well, where get_file() answers with what was selected before or,
+        when saving, the folder on show and the name typed.  A chooser
+        whose list could not be found has only that gesture to go by.
+        """
+        if self._listing is None:
+            return True
+        widget = self.filechooser.pick(x, y, Gtk.PickFlags.DEFAULT)
+        while widget is not None and widget is not self._listing:
+            # Its class is private, so it goes by its CSS name.
+            if widget.get_css_name() == 'row':
+                return widget.is_ancestor(self._listing)
+            widget = widget.get_parent()
+        return False
 
     def _response(self, widget: Gtk.Widget, response: int) -> None:
         """Work out what was chosen and hand it to files_chosen().
