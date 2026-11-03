@@ -261,6 +261,10 @@ class EpubArchive(archive_base.BaseArchive):
                     pages[comicinfo.NAME] = carried[0]
                 else:
                     self._comic_info = book.comic_info
+                for name, member in pages.items():
+                    date = archive_base.zip_member_date(self._zip.getinfo(member))
+                    if date is not None:
+                        self._dates[name] = date
                 self._pages = pages
             return self._pages
 

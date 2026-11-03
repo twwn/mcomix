@@ -7,6 +7,7 @@ package document, and the package's manifest and spine.
 
 import io
 import os
+import time
 import zipfile
 
 from PIL import Image
@@ -124,6 +125,24 @@ class EpubTest(MComixTest):
         archive.extract(name, destination)
         with open(os.path.join(destination, name), 'rb') as fp:
             return fp.read()
+
+    def test_a_page_has_the_date_its_member_was_stored_with(self):
+        """An EPUB is a ZIP, so the status bar has a date for each page
+        and need not fall back on the date of the book."""
+        archive = self.open(Book().page('p1', 'a.png'))
+        name = next(archive.iter_contents())
+        stored = archive._zip.getinfo(archive._listed()[name]).date_time
+        self.assertEqual(time.mktime(stored + (0, 0, -1)), archive.member_date(name))
+
+    def test_a_page_of_a_book_with_no_spine_has_its_date_too(self):
+        path = os.path.join(self.tmp_dir, 'plain.epub')
+        with zipfile.ZipFile(path, 'w') as book:
+            book.writestr('mimetype', epub.MIMETYPE)
+            book.writestr(zipfile.ZipInfo('OEBPS/a.png', (2001, 2, 3, 4, 5, 6)), b'x')
+        archive = epub.EpubArchive(path)
+        self.addCleanup(archive.close)
+        self.assertEqual(time.mktime((2001, 2, 3, 4, 5, 6, 0, 0, -1)),
+                         archive.member_date(next(archive.iter_contents())))
 
     def test_an_epub_is_told_by_its_mimetype(self):
         book = Book().page('p1', 'a.png')

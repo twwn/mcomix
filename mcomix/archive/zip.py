@@ -1,6 +1,5 @@
 """ Unicode-aware wrapper for zipfile.ZipFile. """
 
-import datetime
 import os
 import struct
 import zipfile
@@ -146,13 +145,9 @@ class ZipArchive(archive_base.NonUnicodeArchive):
                 name = self._next_free_name(name, taken)
                 taken.add(name)
             members[name] = info
-            # Local time, as a zip keeps it: no zone is recorded.
-            year, month, day, hour, minute, second = info.date_time
-            try:
-                self._dates[name] = datetime.datetime(
-                    year, month, day, hour, minute, second).timestamp()
-            except (ValueError, OverflowError, OSError):
-                pass
+            date = archive_base.zip_member_date(info)
+            if date is not None:
+                self._dates[name] = date
         self._members = members
         yield from members
 

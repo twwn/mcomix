@@ -40,6 +40,16 @@ def _zip_member_errors() -> tuple[type[Exception], ...]:
 ZIP_MEMBER_ERRORS = _zip_member_errors()
 
 
+def zip_member_date(info: zipfile.ZipInfo) -> float | None:
+    """When a ZIP's member was last modified, in seconds since the epoch,
+    or None for a date no calendar has.  It is local time, as a ZIP keeps
+    it: no zone is recorded."""
+    try:
+        return datetime.datetime(*info.date_time).timestamp()
+    except (ValueError, OverflowError, OSError):
+        return None
+
+
 #: The longest name a file can have, in bytes of UTF-8: what Linux' file
 #: systems allow, and never more than Windows' 255 UTF-16 units.
 _LONGEST_NAME = 255
