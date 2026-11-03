@@ -100,6 +100,29 @@ class MainWindowTest(MComixTest):
     def _pump(self, rounds=2000):
         pump(rounds)
 
+    def test_a_quit_that_cannot_write_its_files_still_ends(self):
+        """A full disk or a read-only home made the first write raise
+        out of terminate_program(), before it closed the book or waited
+        for anything: the window went and the process stayed."""
+        self.assertTrue(wait_for(lambda: self.window.filehandler.file_loaded))
+        refused = PermissionError(13, 'Permission denied')
+        with unittest.mock.patch.object(
+                self.window.filehandler, 'write_fileinfo_file',
+                side_effect=refused), \
+                unittest.mock.patch.object(
+                    main.preferences, 'write_preferences_file',
+                    side_effect=refused), \
+                unittest.mock.patch.object(
+                    main.bookmark_backend.BookmarksStore, 'write_bookmarks_file',
+                    side_effect=refused) as bookmarks, \
+                unittest.mock.patch.object(
+                    main.keybindings.keybinding_manager(self.window), 'save',
+                    side_effect=refused) as keys:
+            self.window.terminate_program()
+        bookmarks.assert_called_once_with()
+        keys.assert_called_once_with()
+        self.assertFalse(self.window.filehandler.file_loaded)
+
     def test_the_window_lets_go_of_the_focus_before_its_surface(self):
         # See DialogTest's test of the same name: the text field holding
         # the focus on Windows only stops filtering the window's

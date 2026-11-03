@@ -2520,13 +2520,23 @@ class MainWindow(Gtk.Window):
         super().minimize()
 
     def write_config_files(self) -> None:
-        """Write out everything that is kept between sessions."""
-        self.filehandler.write_fileinfo_file()
-        preferences.write_preferences_file()
-        bookmark_backend.BookmarksStore.write_bookmarks_file()
+        """Write out everything that is kept between sessions.
 
-        # Write keyboard accelerator map
-        keybindings.keybinding_manager(self).save()
+        A full disk or a read-only home refuses these, each on its own.
+        This runs on the way out, with the window gone: an error raised
+        here would skip the rest of terminate_program(), and without its
+        joins and its close of the book the worker threads keep the
+        process alive with nothing on screen.
+        """
+        for write in (self.filehandler.write_fileinfo_file,
+                      preferences.write_preferences_file,
+                      bookmark_backend.BookmarksStore.write_bookmarks_file,
+                      # The keyboard accelerator map
+                      keybindings.keybinding_manager(self).save):
+            try:
+                write()
+            except OSError as error:
+                log.error('! Could not keep this session\'s changes: %s', error)
 
     def save_and_terminate_program(self, *args: object) -> None:
         """Quit, and open this book at this page next time.
