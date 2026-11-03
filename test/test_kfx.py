@@ -815,6 +815,20 @@ class SplitBookTest(MComixTest):
         os.utime(folder, ns=(written, written))
         self.assertFalse(archive_tools.is_later_volume(meta))
 
+    def test_a_part_that_could_not_be_opened_is_tried_again(self):
+        """A scanner or a copy can hold a file for a moment, and a change of
+        its permissions leaves its time as it was: what is remembered for
+        as long as the file stays the same is what the file holds, not
+        that it could not be opened."""
+        main, metadata, resources = split_book([picture()])
+        self.write({'apps/CR!MAIN.kfx': main, 'apps/CR!META.kfx': metadata,
+                    'apps/CR!RES.kfx': resources})
+        meta = os.path.join(self.tmp_dir, 'apps', 'CR!META.kfx')
+        with mock.patch.object(kfx, 'open', create=True,
+                               side_effect=PermissionError(13, 'in use')):
+            self.assertFalse(archive_tools.is_later_volume(meta))
+        self.assertTrue(archive_tools.is_later_volume(meta))
+
     def test_a_folder_left_alone_is_indexed_once(self):
         """Past the tick the index is kept, for every part of the folder,
         and read again when the folder's time moves."""

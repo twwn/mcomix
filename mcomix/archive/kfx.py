@@ -576,12 +576,14 @@ class _PartSummary(NamedTuple):
 
 @functools.lru_cache(maxsize=4096)
 def _part_summary(path: str, _size: int, _mtime: int) -> _PartSummary | None:
-    """The summary of the container at <path>, None where it cannot be
-    read; kept for as long as the file's size and time are the same,
-    so that a folder of parts is read once, not once for each part."""
+    """The summary of the container at <path>, None where what it holds
+    cannot be read; kept for as long as the file's size and time are the
+    same, so that a folder of parts is read once, not once for each part.
+    A file that cannot be opened raises OSError, which is not kept: being
+    held for a moment or a change of permissions leaves the file as it was."""
     try:
         container = _Container(path)
-    except (_Protected, _Unreadable, ion.IonError, struct.error, OSError):
+    except (_Protected, _Unreadable, ion.IonError, struct.error):
         return None
     try:
         ids = container.book_ids()
@@ -594,9 +596,9 @@ def _part_summary(path: str, _size: int, _mtime: int) -> _PartSummary | None:
 def _summary(path: str) -> _PartSummary | None:
     try:
         stat = os.stat(path)
+        return _part_summary(path, stat.st_size, stat.st_mtime_ns)
     except OSError:
         return None
-    return _part_summary(path, stat.st_size, stat.st_mtime_ns)
 
 
 #: The folders _beside() looks in for the other parts of a book kept in
