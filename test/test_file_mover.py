@@ -103,4 +103,43 @@ class FileMoverTest(MComixTest):
 
         self.assertTrue(os.path.isfile(moved))
 
+    def _move_across_with(self, name, stand_in):
+        """Move the book as across file systems, with <stand_in> for the
+        function called <name>."""
+        crossing = OSError(errno.EXDEV, os.strerror(errno.EXDEV))
+        with unittest.mock.patch.object(file_mover, 'same_file_system',
+                                        return_value=False), \
+                unittest.mock.patch('shutil.disk_usage',
+                                    return_value=types.SimpleNamespace(free=4096)), \
+                unittest.mock.patch('os.rename', side_effect=crossing), \
+                unittest.mock.patch(name, stand_in), \
+                self.assertRaises(OSError):
+            file_mover.move_file(self.book, self.target)
+
+    def test_an_original_that_will_not_go_leaves_no_copy(self):
+        """A folder that can be read and not written to, on another file
+        system: the copy stayed behind, and a second try was told its
+        name was taken."""
+        unlink = os.unlink
+
+        def refused(path, **kwargs):
+            if path == self.book:
+                raise PermissionError(errno.EACCES, os.strerror(errno.EACCES), path)
+            unlink(path, **kwargs)
+
+        self._move_across_with('os.unlink', refused)
+        self.assertTrue(os.path.isfile(self.book))
+        self.assertEqual([], os.listdir(self.target))
+
+    def test_a_copy_that_fails_leaves_no_part_of_it(self):
+        def half_written(source, destination, **kwargs):
+            with open(destination, 'wb') as handle:
+                handle.write(b'x')
+            raise OSError(errno.EIO, os.strerror(errno.EIO), destination)
+
+        # Windows copies with an API of its own, so the whole move stands in.
+        self._move_across_with('shutil.move', half_written)
+        self.assertTrue(os.path.isfile(self.book))
+        self.assertEqual([], os.listdir(self.target))
+
 # vim: expandtab:sw=4:ts=4

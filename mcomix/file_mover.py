@@ -1,6 +1,7 @@
 """file_mover.py - Moving the opened file, or the archive it is in,
 into another directory."""
 
+import contextlib
 import errno
 import os
 import shutil
@@ -56,7 +57,23 @@ def move_file(path: str, directory: str) -> str:
         # book in both places.
         portability.rename_once_closed(os.rename, path, target)
     else:
-        shutil.move(path, target)
+        _move_across_file_systems(path, target)
     return target
+
+
+def _move_across_file_systems(path: str, target: str) -> None:
+    """Copy <path> to <target>, which is free, and remove the original.
+
+    Either step can fail, the removal for a folder that can be read and
+    not written to.  shutil.move() then leaves the copy behind, half a
+    file if the copying failed, and a second try finds its name taken.
+    """
+    try:
+        shutil.move(path, target)
+    except OSError:
+        if os.path.lexists(path):
+            with contextlib.suppress(OSError):
+                os.unlink(target)
+        raise
 
 # vim: expandtab:sw=4:ts=4
