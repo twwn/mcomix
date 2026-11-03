@@ -34,6 +34,7 @@ import shutil
 import struct
 import tempfile
 import threading
+import time
 import zipfile
 from collections.abc import Iterator
 from typing import IO, NamedTuple
@@ -612,11 +613,14 @@ class _FolderIndex(NamedTuple):
     named_by: dict[str, list[str]]
 
 
-@functools.lru_cache(maxsize=64)
-def _folder_index(folder: str, _stamp: tuple[int, ...]) -> _FolderIndex:
-    """The index of the parts in <folder> and its _PART_FOLDERS; kept
-    while their modification times, <_stamp>, are the same, which a
-    file added, removed or renamed in one of them changes."""
+#: How long a change to a folder can go without moving its modification
+#: time: the time is the file system's clock, which ticks about every
+#: 16 ms on Windows and every 2 s on FAT.
+_FOLDER_TIME_TICK_NS = 2_000_000_000
+
+
+def _read_folder_index(folder: str) -> _FolderIndex:
+    """The index of the parts in <folder> and its _PART_FOLDERS."""
     by_id: dict[str, list[str]] = {}
     named_by: dict[str, list[str]] = {}
     for subfolder in _PART_FOLDERS:
@@ -647,6 +651,23 @@ def _folder_stamp(folder: str) -> tuple[int, ...]:
     return tuple(stamp)
 
 
+@functools.lru_cache(maxsize=64)
+def _kept_folder_index(folder: str, _stamp: tuple[int, ...]) -> _FolderIndex:
+    return _read_folder_index(folder)
+
+
+def _folder_index(folder: str) -> _FolderIndex:
+    """The index of <folder>; kept while the modification times of it and
+    its _PART_FOLDERS are the same, which a file added, removed or renamed
+    in one of them changes, but only once they are older than a tick of
+    the clock: until then, another change can leave them as they are."""
+    stamp = _folder_stamp(folder)
+    now = time.time_ns()
+    if any(abs(now - changed) < _FOLDER_TIME_TICK_NS for changed in stamp):
+        return _read_folder_index(folder)
+    return _kept_folder_index(folder, stamp)
+
+
 def is_later_part(path: str) -> bool:
     """Whether the KFX container at <path> is a part of a book kept in
     several files other than the one with its pages.
@@ -672,7 +693,7 @@ def is_later_part(path: str) -> bool:
     in_sdr = os.path.isdir(os.path.join(folder, stem + '.sdr')) or any(
         part.lower().endswith('.sdr') for part in folder.split(os.sep))
     if not in_sdr:
-        index = _folder_index(folder, _folder_stamp(folder))
+        index = _folder_index(folder)
         holders = [path] if opened.book_ids is not None else []
         holders += index.named_by.get(opened.id or '', [])
         for holder_path in holders:

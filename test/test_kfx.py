@@ -798,6 +798,45 @@ class SplitBookTest(MComixTest):
                 self.assertEqual(later, archive_tools.is_later_volume(
                     os.path.join(self.tmp_dir, *name.split('/'))))
 
+    def test_a_part_that_leaves_the_folder_s_time_as_it_was_is_seen(self):
+        """A file system's clock ticks: about every 16 ms on Windows, every
+        2 s on FAT.  A part copied in within the tick of the last change
+        leaves the folder's time as it was."""
+        main, metadata, resources = split_book([picture()])
+        self.write({'apps/CR!META.kfx': metadata, 'apps/CR!RES.kfx': resources})
+        folder = os.path.join(self.tmp_dir, 'apps')
+        meta = os.path.join(folder, 'CR!META.kfx')
+        written = os.stat(folder).st_mtime_ns
+        self.assertFalse(archive_tools.is_later_volume(meta))
+        self.write({'apps/CR!MAIN.kfx': main})
+        os.utime(folder, ns=(written, written))
+        self.assertTrue(archive_tools.is_later_volume(meta))
+        os.remove(os.path.join(folder, 'CR!MAIN.kfx'))
+        os.utime(folder, ns=(written, written))
+        self.assertFalse(archive_tools.is_later_volume(meta))
+
+    def test_a_folder_left_alone_is_indexed_once(self):
+        """Past the tick the index is kept, for every part of the folder,
+        and read again when the folder's time moves."""
+        main, metadata, resources = split_book([picture()])
+        self.write({'apps/CR!MAIN.kfx': main, 'apps/CR!META.kfx': metadata,
+                    'apps/CR!RES.kfx': resources})
+        folder = os.path.join(self.tmp_dir, 'apps')
+        meta = os.path.join(folder, 'CR!META.kfx')
+        res = os.path.join(folder, 'CR!RES.kfx')
+        written = os.stat(folder).st_mtime_ns - 3_600_000_000_000
+        os.utime(folder, ns=(written, written))
+        with mock.patch.object(kfx, '_read_folder_index',
+                               wraps=kfx._read_folder_index) as read:
+            self.assertTrue(archive_tools.is_later_volume(meta))
+            self.assertTrue(archive_tools.is_later_volume(res))
+            self.assertTrue(archive_tools.is_later_volume(meta))
+            self.assertEqual(1, read.call_count)
+            written += 1_000_000_000
+            os.utime(folder, ns=(written, written))
+            self.assertTrue(archive_tools.is_later_volume(meta))
+            self.assertEqual(2, read.call_count)
+
     def test_a_book_of_one_container_looks_no_further(self):
         """A book in one container is that container, whatever lies
         beside it."""
