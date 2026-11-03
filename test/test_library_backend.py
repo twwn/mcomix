@@ -1404,6 +1404,38 @@ class ChosenCoverTest(LibraryDatabaseTest):
         self.assertEqual('b.png', self._cover())
         self.assertEqual(1, len(os.listdir(constants.LIBRARY_COVERS_PATH)))
 
+    def test_a_cover_being_made_as_another_is_chosen_does_not_stay(self):
+        """The read in flight stored the old picture after the choice had
+        deleted what was stored, and every later read found it there."""
+        made, go_on = threading.Event(), threading.Event()
+        self.addCleanup(go_on.set)
+        make = thumbnail_tools.Thumbnailer._create_thumbnail_pixbuf
+        answers = []
+
+        def parked(thumbnailer, filepath):
+            answer = make(thumbnailer, filepath)
+            made.set()
+            go_on.wait(10)
+            return answer
+
+        def reader():
+            answers.append(self.backend.get_book_thumbnail(self.path))
+
+        with unittest.mock.patch.object(thumbnail_tools.Thumbnailer,
+                                        '_create_thumbnail_pixbuf', parked):
+            thread = threading.Thread(target=reader)
+            thread.start()
+            self.assertTrue(made.wait(10))
+            self.assertTrue(self.backend.set_chosen_cover(self.path, 'b.png'))
+            go_on.set()
+            thread.join(10)
+        self.assertFalse(thread.is_alive())
+
+        # What is kept, and what the reader was given, which goes on screen.
+        self.assertEqual('b.png', self._cover())
+        self.assertEqual(self.COLOURS['b.png'],
+                         tuple(answers[0].get_pixels()[:3]))
+
     def test_choosing_none_goes_back_to_the_one_guessed(self):
         self.backend.set_chosen_cover(self.path, 'b.png')
         self.assertEqual('b.png', self._cover())

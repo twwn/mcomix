@@ -303,16 +303,24 @@ class _LibraryBackend:
         """ Returns a pixbuf with a thumbnail of the cover of the book at <path>,
         or None, if no thumbnail could be generated. """
 
-        # Use the maximum image size allowed by the library, so that thumbnails
-        # might be downscaled, but never need to be upscaled (and look ugly).
-        thumbnailer = thumbnail_tools.Thumbnailer(dst_dir=constants.LIBRARY_COVERS_PATH,
-                                                  store_on_disk=True,
-                                                  archive_support=True,
-                                                  size=(constants.MAX_LIBRARY_COVER_SIZE,
-                                                        constants.MAX_LIBRARY_COVER_SIZE),
-                                                  cover_orientation_required=True,
-                                                  cover=self.get_chosen_cover(path))
-        thumb = thumbnailer.thumbnail(path)
+        while True:
+            cover = self.get_chosen_cover(path)
+            # Use the maximum image size allowed by the library, so that thumbnails
+            # might be downscaled, but never need to be upscaled (and look ugly).
+            thumbnailer = thumbnail_tools.Thumbnailer(dst_dir=constants.LIBRARY_COVERS_PATH,
+                                                      store_on_disk=True,
+                                                      archive_support=True,
+                                                      size=(constants.MAX_LIBRARY_COVER_SIZE,
+                                                            constants.MAX_LIBRARY_COVER_SIZE),
+                                                      cover_orientation_required=True,
+                                                      cover=cover)
+            thumb = thumbnailer.thumbnail(path)
+            if self.get_chosen_cover(path) == cover:
+                break
+            # Another picture was chosen during that read, on the main
+            # thread, whose delete of the stored cover may have come before
+            # this read stored the old one.
+            thumbnailer.delete(path)
 
         if thumb is None:
             log.warning(_('! Could not get cover for book "%s"'), path)
