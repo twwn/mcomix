@@ -2,6 +2,7 @@
 
 from gi.repository import Gio, GLib
 
+from collections.abc import Callable, Sequence
 from typing import TYPE_CHECKING
 
 from mcomix import openwith
@@ -15,6 +16,29 @@ if TYPE_CHECKING:
 _openwith_manager = openwith.OpenWithManager()
 # Reference to the edit dialog (to keep only one instance)
 _openwith_edit_diag = None
+
+
+def append_commands(model: Gio.Menu,
+                    commands: "Sequence[openwith.OpenWithCommand]",
+                    address: "Callable[[Gio.MenuItem, int], None]") -> None:
+    """Add <commands> to <model>, each entry made to run its command by
+    <address>, which is given the entry and the command's position.
+
+    A separator in the command list starts a new section, which is how a
+    menu model spells the same thing.
+    """
+    section = Gio.Menu()
+    for position, command in enumerate(commands):
+        if command.is_separator():
+            if section.get_n_items():
+                model.append_section(None, section)
+            section = Gio.Menu()
+            continue
+        entry = Gio.MenuItem.new(widgets.menu_label(command.get_label()), None)
+        address(entry, position)
+        section.append_item(entry)
+    if section.get_n_items():
+        model.append_section(None, section)
 
 
 class OpenWithMenu:
@@ -61,22 +85,11 @@ class OpenWithMenu:
         self._commands = self._openwith_manager.get_commands()
         self.model.remove_all()
 
-        # A separator in the command list starts a new section, which is
-        # how a menu model spells the same thing.
-        section = Gio.Menu()
-        for position, command in enumerate(self._commands):
-            if command.is_separator():
-                if section.get_n_items():
-                    self.model.append_section(None, section)
-                section = Gio.Menu()
-                continue
-            entry = Gio.MenuItem.new(
-                widgets.menu_label(command.get_label()), None)
+        def address(entry: Gio.MenuItem, position: int) -> None:
             entry.set_action_and_target_value('%s.run' % self.ACTION_PREFIX,
                                               GLib.Variant('i', position))
-            section.append_item(entry)
-        if section.get_n_items():
-            self.model.append_section(None, section)
+
+        append_commands(self.model, self._commands, address)
 
         editing = Gio.Menu()
         editing.append(_('_Edit commands'), '%s.edit' % self.ACTION_PREFIX)

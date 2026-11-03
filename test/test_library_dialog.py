@@ -29,6 +29,7 @@ from mcomix import icons
 from mcomix import last_read_page
 from mcomix import main
 from mcomix import message_dialog
+from mcomix import openwith
 from mcomix import page_marks
 from mcomix import page_rotations
 from mcomix import thumbnail_list
@@ -1453,6 +1454,117 @@ class ShowInFolderTest(_OneBookTest):
             area._popup_book_menu()
         self.assertTrue(actions.lookup_action(
             'open-containing-folder').get_enabled())
+
+
+class OpenWithTest(_OneBookTest):
+
+    """"Open with" in the menu over the covers, which the main window had
+    and the library did not."""
+
+    COMMANDS = [('View', 'viewer %A', '', False),
+                ('-', '', '', False),
+                ('Edit page', 'editor %F', '', False),
+                ('Off in archives', 'other %A', '', True)]
+
+    def setUp(self):
+        super().setUp()
+        patcher = unittest.mock.patch.object(openwith.process, 'popen')
+        self.popen = patcher.start()
+        self.addCleanup(patcher.stop)
+        platform = unittest.mock.patch.object(openwith.sys, 'platform', 'linux')
+        platform.start()
+        self.addCleanup(platform.stop)
+        prefs['openwith commands'] = self.COMMANDS
+        self.area = self.dialog.book_area
+
+    def _popup(self):
+        with unittest.mock.patch.object(widgets, 'popup_at'):
+            self.area._popup_book_menu()
+
+    def _submenu(self):
+        """The submenu's sections, each the labels and actions of its
+        entries; None without a submenu."""
+        section = self.area._open_with_section
+        if not section.get_n_items():
+            return None
+        submenu = section.get_item_link(0, Gio.MENU_LINK_SUBMENU)
+        found = []
+        for index in range(submenu.get_n_items()):
+            entries = submenu.get_item_link(index, Gio.MENU_LINK_SECTION)
+            found.append([
+                (entries.get_item_attribute_value(
+                    position, Gio.MENU_ATTRIBUTE_LABEL).get_string(),
+                 entries.get_item_attribute_value(
+                     position, Gio.MENU_ATTRIBUTE_ACTION).get_string())
+                for position in range(entries.get_n_items())])
+        return found
+
+    def _enabled(self, name):
+        return self.area._popup_actions.lookup_action(name).get_enabled()
+
+    def test_the_menu_lists_the_commands_in_their_sections(self):
+        self.area._covers.select_only(0)
+        pump()
+        self._popup()
+        self.assertEqual(
+            [[('View', 'books.open-with-0')],
+             [('Edit page', 'books.open-with-2'),
+              ('Off in archives', 'books.open-with-3')]],
+            self._submenu())
+
+    def test_only_a_command_that_can_run_on_a_book_can_be_chosen(self):
+        self.area._covers.select_only(0)
+        pump()
+        self._popup()
+        self.assertTrue(self._enabled('open-with-0'))
+        self.assertFalse(self._enabled('open-with-2'))
+        self.assertFalse(self._enabled('open-with-3'))
+
+    def test_with_no_book_selected_none_can_be_chosen(self):
+        self.area._covers.unselect_all()
+        pump()
+        self._popup()
+        self.assertFalse(self._enabled('open-with-0'))
+
+    def test_with_no_commands_set_up_there_is_no_submenu(self):
+        for commands in ([], [('-', '', '', False)]):
+            with self.subTest(commands=commands):
+                prefs['openwith commands'] = commands
+                self._popup()
+                self.assertIsNone(self._submenu())
+
+    def test_a_command_edited_since_is_what_the_menu_offers(self):
+        self.area._covers.select_only(0)
+        pump()
+        self._popup()
+        prefs['openwith commands'] = [('New', 'new %A', '', False)]
+        self._popup()
+        self.assertEqual([[('New', 'books.open-with-0')]], self._submenu())
+        self.assertIsNone(
+            self.area._popup_actions.lookup_action('open-with-3'))
+        self.area._popup_actions.activate_action('open-with-0', None)
+        self.assertEqual(['new', self.path], self.popen.call_args.args[0])
+
+    def test_it_runs_once_for_each_book_selected(self):
+        other = get_testfile_path('archives', '02-TAR-Normal.tar')
+        self.dialog.backend.add_book(other)
+        self.area.display_covers(constants.COLLECTION_ALL)
+        pump()
+        self.area._covers.select_all()
+        pump()
+        self._popup()
+        self.area._popup_actions.activate_action('open-with-0', None)
+        self.assertCountEqual(
+            [['viewer', self.path], ['viewer', other]],
+            [call.args[0] for call in self.popen.call_args_list])
+
+    def test_what_goes_wrong_is_said_in_the_status_bar(self):
+        self.popen.side_effect = OSError('no such program')
+        self.area._covers.select_only(0)
+        pump()
+        self._popup()
+        self.area._popup_actions.activate_action('open-with-0', None)
+        self.assertIn('no such program', self.dialog._statusbar.get_text())
 
 
 class AddBooksTest(_LibraryWindowTest):

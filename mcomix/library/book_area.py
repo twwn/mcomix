@@ -29,6 +29,8 @@ from mcomix import bookmark_backend
 from mcomix import i18n
 from mcomix import log
 from mcomix import message_dialog
+from mcomix import openwith
+from mcomix import openwith_menu
 from mcomix import tools
 from mcomix.library.pixbuf_cache import get_pixbuf_cache
 from mcomix.i18n import _
@@ -228,6 +230,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
 
     def _create_popup_menu(self) -> Gtk.PopoverMenu:
         """Build the right-click menu for the book list."""
+        self._command_actions: list[str] = []
         for name, label, tooltip, handler in self._menu_entries():
             action = Gio.SimpleAction.new(name, None)
             action.connect('activate', handler)
@@ -269,6 +272,11 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
                         'accel', GLib.Variant('s', self._MENU_KEYS[name]))
                 section.append_item(item)
             model.append_section(heading, section)
+
+        # Filled each time the menu opens: the commands are edited in the
+        # main window, and which can run depends on the books selected.
+        self._open_with_section = Gio.Menu()
+        model.append_section(None, self._open_with_section)
 
         sort_menu = Gio.Menu()
         by = Gio.Menu()
@@ -1100,8 +1108,44 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
                             books_selected and not is_collection_all)
         self._set_sensitive('copy-to-clipboard', len(selected) == 1)
         self._set_sensitive('open-containing-folder', len(selected) == 1)
+        self._offer_commands(selected[0].path if selected else None)
 
         widgets.popup_at(self._book_menu, over or self, x, y)
+
+    def _offer_commands(self, book: str | None) -> None:
+        """Put the external commands in the menu, those that can run on
+        <book> enabled.  Whether one can depends on which variables it
+        uses, not on the book, so one of the books selected answers for
+        them all."""
+        for name in self._command_actions:
+            self._popup_actions.remove_action(name)
+        self._command_actions = []
+        self._open_with_section.remove_all()
+
+        commands = openwith.OpenWithManager().get_commands()
+        if all(command.is_separator() for command in commands):
+            return
+
+        def address(entry: Gio.MenuItem, position: int) -> None:
+            command = commands[position]
+            name = 'open-with-%d' % position
+            action = Gio.SimpleAction.new(name, None)
+            action.set_enabled(
+                book is not None and command.can_run_on_book(book))
+            action.connect('activate', self._run_command, command)
+            self._popup_actions.add_action(action)
+            self._command_actions.append(name)
+            entry.set_action_and_target_value('books.' + name, None)
+
+        submenu = Gio.Menu()
+        openwith_menu.append_commands(submenu, commands, address)
+        self._open_with_section.append_submenu(_('Open with'), submenu)
+
+    def _run_command(self, action: Gio.SimpleAction, parameter: None,
+                     command: openwith.OpenWithCommand) -> None:
+        """Run <command> once for each book selected."""
+        for item in self._selected_items():
+            command.execute_on_book(item.path, self._library.set_status_message)
 
     def _clean_up(self, *args: object) -> None:
         """Take the books of the collection on show whose files have

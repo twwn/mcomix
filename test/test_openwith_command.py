@@ -216,6 +216,77 @@ class ExecuteTest(MComixTest):
         self.assertIn('No such file', self.window.osd.shown[0])
 
 
+class BookInTheLibraryTest(MComixTest):
+
+    """A command run on a book of the library, which is an archive that
+    is not open."""
+
+    PATH = os.path.join(os.sep, 'books', 'shelf', 'comic.zip')
+
+    def setUp(self):
+        super().setUp()
+        patcher = mock.patch.object(openwith.process, 'popen')
+        self.popen = patcher.start()
+        self.addCleanup(patcher.stop)
+        platform = mock.patch.object(openwith.sys, 'platform', 'linux')
+        platform.start()
+        self.addCleanup(platform.stop)
+
+    @staticmethod
+    def _command(command, cwd='', disabled_for_archives=False, label='Viewer'):
+        return openwith.OpenWithCommand(label, command, cwd,
+                                        disabled_for_archives)
+
+    def test_what_names_the_book_names_it(self):
+        folder = os.path.dirname(self.PATH)
+        for variable, expected in (('A', self.PATH), ('a', 'comic.zip'),
+                                   ('n', 'comic'), ('C', folder),
+                                   ('c', 'shelf'), ('B', self.PATH),
+                                   ('b', 'comic.zip'), ('S', folder),
+                                   ('s', 'shelf')):
+            with self.subTest(variable=variable):
+                self.popen.reset_mock()
+                command = self._command('viewer %' + variable)
+                self.assertTrue(command.can_run_on_book(self.PATH))
+                command.execute_on_book(self.PATH, self.fail)
+                self.assertEqual(['viewer', expected],
+                                 self.popen.call_args.args[0])
+
+    def test_what_names_a_page_cannot_run(self):
+        for variable in 'FfDd':
+            with self.subTest(variable=variable):
+                self.assertFalse(self._command(
+                    'viewer %' + variable).can_run_on_book(self.PATH))
+
+    def test_a_working_directory_naming_a_page_cannot_run(self):
+        self.assertFalse(self._command(
+            'viewer', cwd='%D').can_run_on_book(self.PATH))
+
+    def test_a_command_disabled_in_archives_cannot_run(self):
+        self.assertFalse(self._command(
+            'viewer %A', disabled_for_archives=True).can_run_on_book(self.PATH))
+
+    def test_a_separator_or_nothing_typed_cannot_run(self):
+        self.assertFalse(self._command('', label='-').can_run_on_book(self.PATH))
+        self.assertFalse(self._command('').can_run_on_book(self.PATH))
+
+    def test_a_broken_command_line_cannot_run(self):
+        self.assertFalse(self._command('viewer "%A').can_run_on_book(self.PATH))
+
+    def test_it_runs_in_the_directory_the_command_names(self):
+        command = self._command('viewer', cwd=self.tmp_dir)
+        command.execute_on_book(self.PATH, self.fail)
+        self.assertEqual(self.tmp_dir, self.popen.call_args.kwargs['workdir'])
+
+    def test_what_goes_wrong_is_reported(self):
+        self.popen.side_effect = OSError('no such program')
+        reported = []
+        self._command('viewer %A').execute_on_book(self.PATH, reported.append)
+        self.assertEqual(1, len(reported))
+        self.assertIn('Viewer', reported[0])
+        self.assertIn('no such program', reported[0])
+
+
 class _StubArchiveHandler(_StubFileHandler):
 
     archive_type = 'zip'

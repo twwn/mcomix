@@ -4,6 +4,7 @@ Run programs of your choosing on the open file: an image editor for a page, a fi
 
 - "File → Open with" lists them; its "Edit commands" sets them up.
 - Keys 1 to 9 run the first nine.
+- "Open with" in the library's right-click menu runs one on the selected books, once for each. See [From the library](#from-the-library).
 
 ## Add and edit commands
 
@@ -30,6 +31,13 @@ Label | Command | Disabled in archives
 ------|---------|---------------------
 Edit in GIMP | `gimp %F` | Yes: edits to an unpacked page would be lost.
 Show the book's folder | `xdg-open %S` (Linux), `explorer %S` (Windows) | No
+
+## From the library
+
+A book in the library is an archive that is not open, so a command run on one has no page to name.
+
+- `%A`, `%a`, `%n`, `%C`, `%c`, `%B`, `%b`, `%S` and `%s` name the book, as they do an open archive.
+- A command using `%F`, `%f`, `%D` or `%d` cannot be chosen there, nor can one marked "Disabled in archives".
 
 ## Variables
 

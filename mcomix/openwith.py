@@ -16,7 +16,7 @@ from mcomix import i18n
 from mcomix.i18n import _
 
 from collections.abc import Callable, Sequence
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Protocol
 
 if TYPE_CHECKING:
     from mcomix import main
@@ -28,6 +28,87 @@ NO_FILE_CONTEXT, IMAGE_FILE_CONTEXT, ARCHIVE_CONTEXT = 0, 1, 2
 
 class OpenWithException(Exception):
     pass
+
+
+class _Subject(Protocol):
+
+    """What the variables of a command stand for."""
+
+    def context_type(self) -> int:
+        """Which of the *_CONTEXT flags hold."""
+        ...
+
+    def base_path(self) -> str | None:
+        """The path of the book, or None where there is none."""
+        ...
+
+    def base_filename(self) -> str:
+        """The name of the book."""
+        ...
+
+    def page_path(self) -> str | None:
+        """The path of the page, or None where there is none."""
+        ...
+
+    def page_filename(self) -> object:
+        """The name of the page, which is not a string where there is none."""
+        ...
+
+
+class _WindowSubject:
+
+    """What is open in the main window."""
+
+    def __init__(self, window: 'main.MainWindow') -> None:
+        self._window = window
+
+    def context_type(self) -> int:
+        context = 0
+        if not self._window.filehandler.file_loaded:
+            context = NO_FILE_CONTEXT  # no file loaded
+        elif self._window.filehandler.archive_type is not None:
+            context = IMAGE_FILE_CONTEXT | ARCHIVE_CONTEXT  # archive loaded
+        else:
+            context = IMAGE_FILE_CONTEXT  # image loaded (no archive)
+        if not self._window.imagehandler.get_current_page():
+            context &= ~IMAGE_FILE_CONTEXT  # empty archive
+        return context
+
+    def base_path(self) -> str | None:
+        return self._window.filehandler.get_path_to_base()
+
+    def base_filename(self) -> str:
+        return self._window.filehandler.get_base_filename()
+
+    def page_path(self) -> str | None:
+        return self._window.imagehandler.get_path_to_page()
+
+    def page_filename(self) -> object:
+        return self._window.imagehandler.get_page_filename()
+
+
+class _BookSubject:
+
+    """A book in the library, which is an archive that is not open: %B
+    and %S name it as they do an open one, and it has no page to name."""
+
+    def __init__(self, path: str) -> None:
+        self._path = path
+
+    def context_type(self) -> int:
+        return IMAGE_FILE_CONTEXT | ARCHIVE_CONTEXT
+
+    def base_path(self) -> str | None:
+        return self._path
+
+    def base_filename(self) -> str:
+        return os.path.basename(self._path)
+
+    def page_path(self) -> str | None:
+        return None
+
+    def page_filename(self) -> object:
+        return None
 
 
 class OpenWithManager:
@@ -84,26 +165,47 @@ class OpenWithCommand:
 
         # What the command does to the unpacked pages is not known.
         window.filehandler.unpacked_pages_changed()
+        self._run(_WindowSubject(window), window.osd.show)
 
+    def can_run_on_book(self, path: str) -> bool:
+        """Whether the command can run on the library's book at <path>:
+        it has no page to name, and being an archive it is what "Disabled
+        in archives" keeps the command from."""
+        if self.is_separator() or self.is_disabled_for_archives():
+            return False
+        subject = _BookSubject(path)
+        try:
+            self._valid_workdir(subject)
+            return bool(self._parse(subject))
+        except OpenWithException:
+            return False
+
+    def execute_on_book(self, path: str, report: Callable[[str], None]) -> None:
+        """Run the command on the library's book at <path>, and hand what
+        went wrong, if anything did, to <report>."""
+        self._run(_BookSubject(path), report)
+
+    def _run(self, subject: _Subject, report: Callable[[str], None]) -> None:
+        """Spawn a new process for <subject>, and hand <report> the reason
+        if that fails."""
         try:
             # The command's directory is the command's own: changing
             # MComix' working directory for it would change it for every
             # thread MComix runs as well.
-            workdir = self.parse(window, text=self.get_cwd())[0] \
-                if self.is_valid_workdir(window) else None
+            workdir = self._parse(subject, self.get_cwd())[0] \
+                if self._valid_workdir(subject) else None
 
             # The command runs on its own from here; on Unix the SIGCHLD
             # handler installed in run.py collects it once it exits.
-            args = self.parse(window)
+            args = self._parse(subject)
             if sys.platform == 'win32':
                 process.Win32Popen(args, workdir)
             else:
                 process.popen(args, stdout=process.NULL, workdir=workdir)
 
         except Exception as e:
-            text = _("Could not run command %(cmdlabel)s: %(exception)s") % \
-                {'cmdlabel': self.get_label(), 'exception': str(e)}
-            window.osd.show(text)
+            report(_("Could not run command %(cmdlabel)s: %(exception)s") %
+                   {'cmdlabel': self.get_label(), 'exception': str(e)})
 
     def is_executable(self, window: 'main.MainWindow') -> bool:
         """ Check if a name is executable. This name can be either
@@ -125,11 +227,15 @@ class OpenWithCommand:
     def is_valid_workdir(self, window: 'main.MainWindow',
                          allow_empty: bool = False) -> bool:
         """ Check if the working directory is valid. """
+        return self._valid_workdir(_WindowSubject(window), allow_empty)
+
+    def _valid_workdir(self, subject: _Subject,
+                       allow_empty: bool = False) -> bool:
         cwd = self.get_cwd().strip()
         if not cwd:
             return allow_empty
 
-        args = self.parse(window, text=cwd)
+        args = self._parse(subject, cwd)
         if len(args) > 1:
             return False
 
@@ -143,15 +249,18 @@ class OpenWithCommand:
         """ Parses the command string and replaces special characters
         with their respective variable contents. Returns a list of
         arguments. """
+        return self._parse(_WindowSubject(window), text)
+
+    def _parse(self, subject: _Subject, text: str = '') -> list[str]:
         if not text:
             text = self.get_command()
         if not text.strip():
             raise OpenWithException(_('Command line is empty.'))
 
-        return self._commandline_to_arguments(text, window,
-                                              self._get_context_type(window))
+        return self._commandline_to_arguments(text, subject,
+                                              subject.context_type())
 
-    def _commandline_to_arguments(self, line: str, window: 'main.MainWindow',
+    def _commandline_to_arguments(self, line: str, subject: _Subject,
                                   context_type: int) -> list[str]:
         """ Split <line> into the arguments to pass to Popen.
 
@@ -191,7 +300,7 @@ class OpenWithCommand:
                     # a doubled one would be read as the start of a name.
                     buf += c
                 else:
-                    buf += self._expand_variable(c, window, context_type)
+                    buf += self._expand_variable(c, subject, context_type)
                 escape = False
             elif c == ' ' or c == '\t':
                 if quote:
@@ -222,7 +331,7 @@ class OpenWithCommand:
             result.append(buf + expanded())
         return result
 
-    def _expand_variable(self, identifier: str, window: 'main.MainWindow',
+    def _expand_variable(self, identifier: str, subject: _Subject,
                          context_type: int) -> str:
         """ Replaces variables with their respective file
         or archive path. """
@@ -240,14 +349,14 @@ class OpenWithCommand:
         # turned into the complaint this method raises for everything
         # else it cannot do before it can reach os.path.
         def base_path() -> str:
-            answer = window.filehandler.get_path_to_base()
+            answer = subject.base_path()
             if answer is None:
                 raise OpenWithException(
                     _("File-related variables can only be used for files."))
             return answer
 
         def page_path() -> str:
-            answer = window.imagehandler.get_path_to_page()
+            answer = subject.page_path()
             if answer is None:
                 raise OpenWithException(
                     _("File-related variables can only be used for files."))
@@ -256,15 +365,15 @@ class OpenWithCommand:
         if identifier == '/':
             return os.path.sep
         elif identifier == 'a':
-            return window.filehandler.get_base_filename()
+            return subject.base_filename()
         elif identifier == 'n':
             # The archive's name without its last extension, for a
             # command that names what it writes after the book.
-            return os.path.splitext(window.filehandler.get_base_filename())[0]
+            return os.path.splitext(subject.base_filename())[0]
         elif identifier == 'd':
             return os.path.basename(os.path.dirname(page_path()))
         elif identifier == 'f':
-            name = window.imagehandler.get_page_filename()
+            name = subject.page_filename()
             if not isinstance(name, str):
                 raise OpenWithException(
                     _("File-related variables can only be used for files."))
@@ -273,7 +382,7 @@ class OpenWithCommand:
             return os.path.basename(os.path.dirname(base_path()))
         elif identifier == 'b':
             if (context_type & ARCHIVE_CONTEXT):
-                return window.filehandler.get_base_filename()  # same as %a
+                return subject.base_filename()  # same as %a
             else:
                 return os.path.basename(os.path.dirname(page_path()))  # same as %d
         elif identifier == 's':
@@ -302,18 +411,6 @@ class OpenWithCommand:
         else:
             raise OpenWithException(
                 _("Invalid escape sequence: %%%s") % identifier)
-
-    def _get_context_type(self, window: 'main.MainWindow') -> int:
-        context = 0
-        if not window.filehandler.file_loaded:
-            context = NO_FILE_CONTEXT  # no file loaded
-        elif window.filehandler.archive_type is not None:
-            context = IMAGE_FILE_CONTEXT | ARCHIVE_CONTEXT  # archive loaded
-        else:
-            context = IMAGE_FILE_CONTEXT  # image loaded (no archive)
-        if not window.imagehandler.get_current_page():
-            context &= ~IMAGE_FILE_CONTEXT  # empty archive
-        return context
 
 
 class OpenWithEditor(Dialog):
