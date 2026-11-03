@@ -2269,7 +2269,8 @@ class MainWindowTest(MComixTest):
     def test_shift_delete_is_the_key_for_deleting_permanently(self):
         """As in a file browser."""
         manager = keybindings.keybinding_manager(self.window)
-        self.assertEqual([keybindings.parse_accelerator('<Shift>Delete')],
+        self.assertEqual([keybindings.parse_accelerator('<Shift>Delete'),
+                          keybindings.parse_accelerator('<Shift>KP_Delete')],
                          manager.get_bindings_for_action('delete_permanently'))
 
     def test_deleting_permanently_asks_first(self):

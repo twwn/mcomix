@@ -469,6 +469,12 @@ class ColumnListViewTest(MComixTest):
             self.assertTrue(cell._pressed(None, Gdk.KEY_BackSpace, 0,
                                           Gdk.ModifierType(0)))
             self.assertEqual(rebound[-1], (row, None))
+            # As does the keypad's Delete, which is not a key to bind.
+            del rebound[1:]
+            cell.emit('clicked')
+            self.assertTrue(cell._pressed(None, Gdk.KEY_KP_Delete, 0,
+                                          Gdk.ModifierType(0)))
+            self.assertEqual(rebound[-1], (row, None))
             cell.emit('clicked')
             self.assertTrue(cell._pressed(None, Gdk.KEY_Escape, 0,
                                           Gdk.ModifierType(0)))

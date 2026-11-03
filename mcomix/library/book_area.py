@@ -1165,7 +1165,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
                    keyval: int, keycode: int,
                    state: Gdk.ModifierType) -> bool:
         """Handle key presses on the _BookArea."""
-        if keyval == Gdk.KEY_Delete:
+        if keyval in (Gdk.KEY_Delete, Gdk.KEY_KP_Delete):
             self._remove_books_from_collection()
             return Gdk.EVENT_STOP
         if state & Gdk.ModifierType.CONTROL_MASK \

@@ -166,6 +166,14 @@ class CommentAreaTest(MComixTest):
             Gdk.EVENT_STOP)
         self.assertEqual(self.area.get_file_listing(), self.paths[1:])
 
+    def test_the_keypad_delete_removes_it_too(self):
+        self.area.fetch_comments()
+        self.area._list.select_only(0)
+        self.assertEqual(
+            self.area._key_press(None, Gdk.KEY_KP_Delete, 0, 0),
+            Gdk.EVENT_STOP)
+        self.assertEqual(self.area.get_file_listing(), self.paths[1:])
+
     # -- Renaming a comment file ------------------------------------------
 
     def _asked_for_a_name(self, row=0):

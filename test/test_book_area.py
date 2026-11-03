@@ -943,6 +943,13 @@ class RemovalTransactionTest(MComixTest):
         self.assertEqual([(0, 7), (1, 7), (2, 7)],
                          sorted(library.backend.removed))
 
+    def test_the_keypad_delete_does_it_too(self):
+        area, library = self._area(refuse=False)
+        self.assertEqual(Gdk.EVENT_STOP, area._key_press(
+            None, Gdk.KEY_KP_Delete, 0, Gdk.ModifierType(0)))
+        self.assertEqual([(0, 7), (1, 7), (2, 7)],
+                         sorted(library.backend.removed))
+
     def test_a_book_still_filed_under_the_collection_keeps_its_cover(self):
         """The covers of a collection include the books of the ones
         under it, so a book taken out of it but filed in one of those as

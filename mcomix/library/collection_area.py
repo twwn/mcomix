@@ -447,7 +447,7 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable):
                    keyval: int, keycode: int,
                    state: Gdk.ModifierType) -> bool:
         """Handle key presses on the _CollectionArea."""
-        if keyval == Gdk.KEY_Delete:
+        if keyval in (Gdk.KEY_Delete, Gdk.KEY_KP_Delete):
             self._remove_collection()
             return Gdk.EVENT_STOP
         if keyval == Gdk.KEY_F2:

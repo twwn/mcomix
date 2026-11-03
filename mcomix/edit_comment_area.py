@@ -288,7 +288,7 @@ class _CommentArea(Gtk.Box, widgets.Releasable):
     def _key_press(self, controller: Gtk.EventControllerKey, keyval: int,
                    keycode: int, state: Gdk.ModifierType) -> bool:
         """Handle key presses on the area."""
-        if keyval == Gdk.KEY_Delete:
+        if keyval in (Gdk.KEY_Delete, Gdk.KEY_KP_Delete):
             self._remove_file()
             return Gdk.EVENT_STOP
         if keyval == Gdk.KEY_F2:

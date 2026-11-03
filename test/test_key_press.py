@@ -134,6 +134,20 @@ class KeyPressTest(_KeyPressWindowTest):
             self.assertIn((keyval, control),
                           manager.get_bindings_for_action(action))
 
+    def test_the_keypad_has_the_keys_its_twins_have(self):
+        """With NumLock off the keypad sends keys of its own, and the
+        arrows turned the page with CTRL and not with ALT."""
+        manager = keybindings.keybinding_manager(self.window)
+        for action, key in (('delete', 'KP_Delete'),
+                            ('delete_permanently', '<Shift>KP_Delete'),
+                            ('previous_page_dynamic', '<Alt>KP_Left'),
+                            ('next_page_dynamic', '<Alt>KP_Right'),
+                            ('previous_page_ff_dynamic', '<Shift><Alt>KP_Left'),
+                            ('next_page_ff_dynamic', '<Shift><Alt>KP_Right')):
+            with self.subTest(key):
+                self.assertIn(keybindings.parse_accelerator(key),
+                              manager.get_bindings_for_action(action))
+
     def test_f5_refreshes_as_in_file_managers(self):
         manager = keybindings.keybinding_manager(self.window)
         self._press(Gdk.KEY_F5)

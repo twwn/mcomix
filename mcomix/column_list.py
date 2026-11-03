@@ -454,7 +454,7 @@ class _AccelCell(Gtk.Button, _Cell):
             self.capturing = False
             self._show()
             return True
-        if keyval in (Gdk.KEY_BackSpace, Gdk.KEY_Delete):
+        if keyval in (Gdk.KEY_BackSpace, Gdk.KEY_Delete, Gdk.KEY_KP_Delete):
             self.capturing = False
             if self.rebind is not None and self.row is not None:
                 self.rebind(self.row, None)

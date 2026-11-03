@@ -174,10 +174,10 @@ class EventHandler:
                          ['<Ctrl>Page_Down', '<Ctrl>KP_Page_Down'],
                          self._flip_page, kwargs={'number_of_pages': 1, 'single_step': True})
         manager.register('previous_page_dynamic',
-                         ['<Alt>Left'],
+                         ['<Alt>Left', '<Alt>KP_Left'],
                          self._left_right_page_progress, kwargs={'number_of_pages': -1})
         manager.register('next_page_dynamic',
-                         ['<Alt>Right'],
+                         ['<Alt>Right', '<Alt>KP_Right'],
                          self._left_right_page_progress, kwargs={'number_of_pages': 1})
 
         # One page in the direction on screen, as ALT and the arrows turn
@@ -200,11 +200,11 @@ class EventHandler:
         # Ten pages in the direction on screen, as ALT and the arrows
         # turn one (upstream bug 57).
         manager.register('previous_page_ff_dynamic',
-                         ['<Shift><Alt>Left'],
+                         ['<Shift><Alt>Left', '<Shift><Alt>KP_Left'],
                          self._left_right_page_progress,
                          kwargs={'number_of_pages': -10})
         manager.register('next_page_ff_dynamic',
-                         ['<Shift><Alt>Right'],
+                         ['<Shift><Alt>Right', '<Shift><Alt>KP_Right'],
                          self._left_right_page_progress,
                          kwargs={'number_of_pages': 10})
 
@@ -407,11 +407,11 @@ class EventHandler:
                          self._window.save_and_terminate_program)
 
         manager.register('delete',
-                         ['Delete'],
+                         ['Delete', 'KP_Delete'],
                          self._window.file_actions.delete)
 
         manager.register('delete_permanently',
-                         ['<Shift>Delete'],
+                         ['<Shift>Delete', '<Shift>KP_Delete'],
                          self._window.file_actions.delete_permanently)
 
         manager.register('rename_page',

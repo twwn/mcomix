@@ -313,7 +313,7 @@ class _BookmarksDialog(Dialog):
                          keyval: int, keycode: int,
                          state: Gdk.ModifierType) -> bool:
 
-        if keyval == Gdk.KEY_Delete:
+        if keyval in (Gdk.KEY_Delete, Gdk.KEY_KP_Delete):
             self._remove_selected()
             return Gdk.EVENT_STOP
         return Gdk.EVENT_PROPAGATE

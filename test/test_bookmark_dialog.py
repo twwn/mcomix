@@ -215,6 +215,13 @@ class BookmarksDialogTest(MComixTest):
             Gdk.EVENT_STOP)
         self.assertEqual(self._names(), ['gamma', 'alpha'])
 
+    def test_the_keypad_delete_removes_it_too(self):
+        self.dialog._list.select_only(1)
+        self.assertEqual(
+            self.dialog._key_press_event(None, Gdk.KEY_KP_Delete, 0, 0),
+            Gdk.EVENT_STOP)
+        self.assertEqual(self._names(), ['gamma', 'alpha'])
+
     # -- Opening ----------------------------------------------------------
 
     def _dialogs(self):

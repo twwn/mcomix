@@ -725,6 +725,16 @@ class EditArchiveDialogTest(MComixTest):
             None, Gdk.KEY_Delete, 0, Gdk.ModifierType(0)))
         self.assertEqual(before[1:], self._pages())
 
+    def test_the_keypad_delete_removes_the_page_too(self):
+        self.dialog._load_original_files()
+        pump()
+        before = self._pages()
+        area = self.dialog._image_area
+        area._grid.select_only(0)
+        self.assertEqual(Gdk.EVENT_STOP, area._key_press(
+            None, Gdk.KEY_KP_Delete, 0, Gdk.ModifierType(0)))
+        self.assertEqual(before[1:], self._pages())
+
     def test_with_nothing_or_two_selected_there_is_nothing_to_act_on(self):
         """Removing needs a page picked out, and renaming exactly one."""
         self.dialog._load_original_files()

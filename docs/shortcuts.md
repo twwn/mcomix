@@ -15,12 +15,12 @@ Open library | CTRL+L
 Close file | CTRL+W
 Next page | PageDown, KeyPadPageDown, LeftMouse
 Previous page | PageUp, KeyPadPageUp, Backspace, BackMouse, ALT+RightMouse
-Page to the right | ALT+Right
-Page to the left | ALT+Left
+Page to the right | ALT+Right, ALT+KeyPadRight
+Page to the left | ALT+Left, ALT+KeyPadLeft
 Forward ten pages | SHIFT+PageDown, SHIFT+KeyPadPageDown, SHIFT+LeftMouse
 Back ten pages | SHIFT+PageUp, SHIFT+KeyPadPageUp, SHIFT+Backspace, SHIFT+RightMouse
-Ten pages to the right | SHIFT+ALT+Right
-Ten pages to the left | SHIFT+ALT+Left
+Ten pages to the right | SHIFT+ALT+Right, SHIFT+ALT+KeyPadRight
+Ten pages to the left | SHIFT+ALT+Left, SHIFT+ALT+KeyPadLeft
 Forward only one page (in double page mode) | CTRL+PageDown, CTRL+KeyPadPageDown
 Go back only one page (in double page mode) | CTRL+PageUp, CTRL+KeyPadPageUp, CTRL+Backspace
 One page to the right (in double page mode) | CTRL+Right, CTRL+KeyPadRight
@@ -105,8 +105,8 @@ Reload currently opened directory or archive | CTRL+SHIFT+R, F5
 Pick a page out, or put it back | CTRL+LeftMouse
 Mark a page to swap, or swap it with the marked one | CTRL+SHIFT+LeftMouse
 Swap two pages side by side | CTRL+SHIFT+LeftMouse dragged onto the other page
-Delete the page or the file | Delete
-Delete the file permanently | SHIFT+Delete
+Delete the page or the file | Delete, KeyPadDelete
+Delete the file permanently | SHIFT+Delete, SHIFT+KeyPadDelete
 Rename page | F2
 Undo | CTRL+Z
 Redo | CTRL+Y, CTRL+SHIFT+Z
