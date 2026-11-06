@@ -131,7 +131,10 @@ class FolderWatcher:
         if path is None:
             return
         if event in _APPEARED and os.path.isdir(path):
-            if any(path == root or path.startswith(root + os.sep)
+            # join(root, '') ends in one separator, also where the root
+            # is one already: '/' or 'D:\\', whose subfolders root +
+            # os.sep never matched.
+            if any(path == root or path.startswith(os.path.join(root, ''))
                    for root in self._recursive):
                 for subfolder, _subfolders, _files in os.walk(path):
                     self._watch(subfolder)

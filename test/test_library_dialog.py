@@ -551,6 +551,24 @@ class FolderWatchTest(_LibraryWindowTest):
                                  seconds=10))
 
 
+class FolderWatcherRootTest(MComixTest):
+
+    def test_a_new_subfolder_of_a_drive_root_is_watched(self):
+        """A watched folder that is a whole drive, D:\\ or /: what ends in
+        a separator already took a second one, which no path below it
+        starts with, and its new subfolders went unwatched."""
+        watched: list[str] = []
+        watcher = folder_watcher.FolderWatcher(lambda: None)
+        watcher._watch = watched.append
+        watcher._later = lambda: None
+        arrived = os.path.join(self.tmp_dir, 'New')
+        os.mkdir(arrived)
+        watcher._recursive = [os.path.abspath(os.sep)]
+        watcher._changed(None, Gio.File.new_for_path(arrived), None,
+                         Gio.FileMonitorEvent.CREATED)
+        self.assertEqual([arrived], watched)
+
+
 class LibraryScanCursorTest(_LibraryWindowTest):
 
     """The pointer over the library while the watch list is scanned.
