@@ -8,6 +8,8 @@ purpose - and get_file_provider() picks one.
 """
 
 import os
+import stat
+import sys
 from gi.repository import GLib
 
 from mcomix import image_tools
@@ -285,8 +287,8 @@ class OrderedFileProvider(FileProvider):
         files.extend(found)
 
         if depth > 0:
-            below = [path for path, entry in zip(paths, entries)
-                     if not entry.startswith('.')
+            below = [path for path in paths
+                     if not _hidden_folder(path)
                      and os.path.isdir(path) and not os.path.islink(path)]
             tools.alphanumeric_sort(below)
             for path in below:
@@ -353,8 +355,15 @@ class OrderedFileProvider(FileProvider):
         levels = (1 if preferences.prefs['open folder tree as one book']
                   else SHELF_DEPTH)
 
+        # A hidden folder is passed over, except the one the book is in
+        # and those it is in: a book opened there still walks on.
+        here = os.path.join(self.base_dir, '')
+
         def visit(directory: str, depth: int) -> None:
             for child in self.__directories_in(directory):
+                if _hidden_folder(child) \
+                        and not here.startswith(os.path.join(child, '')):
+                    continue
                 walk.append(child)
                 if depth < levels and not os.path.islink(child):
                     visit(child, depth + 1)
@@ -379,6 +388,29 @@ class OrderedFileProvider(FileProvider):
 
         tools.alphanumeric_sort(directories)
         return directories
+
+
+def _hidden_folder(path: str) -> bool:
+    """Whether the folder at <path> is one a file manager hides, which
+    neither the walk to the next folder nor a folder tree read as one
+    book goes into.
+
+    A name starting with a dot, and on Windows a folder marked hidden or
+    system: a book in D:\\Comics has D:\\ as its shelf, and the walk
+    went into the recycle bin, whose deleted books are archives like
+    any other, and into System Volume Information, which it may not
+    read.
+    """
+    if os.path.basename(path).startswith('.'):
+        return True
+    if sys.platform == 'win32':
+        try:
+            attributes = os.stat(path, follow_symlinks=False).st_file_attributes
+        except OSError:
+            return False
+        return bool(attributes & (stat.FILE_ATTRIBUTE_HIDDEN
+                                  | stat.FILE_ATTRIBUTE_SYSTEM))
+    return False
 
 
 class PreDefinedFileProvider(FileProvider):

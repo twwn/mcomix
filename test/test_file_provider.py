@@ -1,6 +1,7 @@
 import itertools
 import os
 import shutil
+import sys
 import tempfile
 from unittest import mock
 
@@ -99,6 +100,36 @@ class OrderedFileProviderTest(MComixTest):
         provider = self._provider('b')
         self.assertEqual(self._walk(provider, OrderedFileProvider.next_directory),
                          ['b', 'b2', 'c'])
+
+    def _hide(self, name: str) -> None:
+        """Make <name> on the shelf a folder a file manager hides: on
+        Windows its name does not say so, the attribute does."""
+        os.mkdir(os.path.join(self.root, name))
+        if sys.platform == 'win32':
+            import ctypes
+            ctypes.windll.kernel32.SetFileAttributesW(
+                os.path.join(self.root, name), 0x2 | 0x4)
+
+    def test_hidden_folders_on_the_shelf_are_passed_over(self) -> None:
+        """The shelf of a book in D:\\Comics is D:\\, where the walk went
+        into the recycle bin; on Linux into .cache and .local."""
+        self._hide('.cache')
+        if sys.platform == 'win32':
+            self._hide('$RECYCLE.BIN')
+        provider = self._provider('c')
+        self.assertEqual(
+            self._walk(provider, OrderedFileProvider.previous_directory),
+            ['c', 'b', 'a'])
+
+    def test_a_book_in_a_hidden_folder_still_walks(self) -> None:
+        self._hide('.hidden')
+        provider = self._provider('.hidden')
+        self.assertEqual(self._walk(provider, OrderedFileProvider.next_directory),
+                         ['.hidden', 'a', 'b', 'c'])
+        provider = self._provider('b')
+        self.assertEqual(
+            self._walk(provider, OrderedFileProvider.previous_directory),
+            ['b', 'a'])
 
     def test_directories_not_accepted_are_passed_over(self) -> None:
         provider = self._provider('a')
