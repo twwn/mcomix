@@ -872,6 +872,29 @@ class SevenZipTarAtLegacyPathTest(MComixTest):
             archive.close()
 
 
+class TarUpdatedMemberTest(MComixTest):
+
+    """A name stored twice in a tarball, as "tar -r" leaves a page it
+    updated: listed twice, both pages showed the later version."""
+
+    def test_the_later_version_is_one_page(self):
+        path = os.path.join(self.tmp_dir, 'updated.tar')
+        with tarfile.open(path, 'w') as archive:
+            for name, content in (('01.png', b'old'), ('02.png', b'two'),
+                                  ('01.png', b'new')):
+                info = tarfile.TarInfo(name)
+                info.size = len(content)
+                archive.addfile(info, io.BytesIO(content))
+        handler = tar.TarArchive(path)
+        try:
+            self.assertEqual(['01.png', '02.png'], handler.list_contents())
+            handler.extract('01.png', self.tmp_dir)
+        finally:
+            handler.close()
+        with open(os.path.join(self.tmp_dir, '01.png'), 'rb') as page:
+            self.assertEqual(b'new', page.read())
+
+
 class TarLegacyNameTest(MComixTest):
 
     """Names a tarball stores in something other than UTF-8.

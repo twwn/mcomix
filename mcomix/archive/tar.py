@@ -96,6 +96,11 @@ class TarArchive(archive_base.NonUnicodeArchive):
                 continue
             members.append(info.name)
             self._dates[info.name] = float(info.mtime)
+        # A name stored twice is a file updated in place: "tar -r" and
+        # "tar -u" append the new version, and the later member is what
+        # tar extracts and what extractfile() hands out by that name.
+        # Listed twice, it showed the new version as two pages.
+        members = list(dict.fromkeys(members))
         decode = archive_base.surrogate_name_decoder(members)
         self._contents = []
         for member in members:
