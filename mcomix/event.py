@@ -1159,7 +1159,8 @@ class EventHandler:
 
         They turn the page once there are as many as the preference
         'number of key presses before page turn' asks for, so a change
-        to that number starts the count again.
+        to that number starts the count again, and so does every page
+        change, whatever made it.
         """
         self._extra_scroll_events = 0
 

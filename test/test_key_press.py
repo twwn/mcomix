@@ -358,6 +358,24 @@ class ArrowKeysTest(_ScrollablePageTest):
         self._down()
         self.assertEqual((self.page + 1, 0), self._where())
 
+    def test_a_turn_from_the_menu_forgets_the_presses_counted(self):
+        """Presses at the bottom of a page count towards its turn; the
+        menu, the tool bar or a thumbnail turning it instead left them
+        counted, and the next page turned at the first press past its
+        bottom."""
+        while self._where()[1] < self._bottom():
+            self._down()
+        for _ in range(self.PRESSES - 1):
+            self._down()
+        self.window.actiongroup.get_action('next_page').activate()
+        self._settle()
+        self.assertEqual((self.page + 1, 0), self._where())
+        # Dragged to its bottom by the scroll bar, which counts nothing.
+        self.window._vadjust.set_value(self._bottom())
+        self._down()
+        self.assertEqual(self.page + 1, self._where()[0],
+                         'the presses counted on the page before turned it')
+
     def test_up_at_the_top_goes_back_to_the_bottom_of_the_page_before(self):
         for _ in range(self.PRESSES):
             self._press(Gdk.KEY_Up)

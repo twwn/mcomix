@@ -1211,6 +1211,11 @@ class MainWindow(Gtk.Window):
         self._draw_selection(thumbnails=False)
         self.thumbnailsidebar.load_thumbnails()
         self._update_page_information()
+        # Scrolls past the edge were counted against the page that was
+        # shown; the menu, the toolbar, a thumbnail or Go to page turn
+        # it as well as the keys do, and the count left over turned the
+        # new page early.
+        self.event_handler.reset_extra_scroll_events()
         # Once the pages stop turning: a run of turns is one write.
         if self._position_source is not None:
             GLib.source_remove(self._position_source)
