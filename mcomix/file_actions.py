@@ -82,6 +82,10 @@ class FileActions:
         self._waiting_close: "Callable[[], None] | None" = None
         #: Whether the last save_archive() was stopped by the reader.
         self._save_stopped = False
+        #: The pages and their given names as the last save wrote them,
+        #: which is what the archive on disk holds since; None before
+        #: the book has been saved.
+        self._written_as: "tuple[list[str], dict[str, str]] | None" = None
 
     def forget_changes(self) -> None:
         """Drop the undo stack, which belongs to the book that is going."""
@@ -90,6 +94,7 @@ class FileActions:
         self._page_names.clear()
         self._close_offer_answered = False
         self._waiting_close = None
+        self._written_as = None
 
     def pages_untouched(self) -> bool:
         """Whether nothing has been done to the pages of the open book:
@@ -526,13 +531,19 @@ class FileActions:
         whose changes have all been taken back - the first listing the
         undo stack kept is the book as it was opened, and the stack is
         empty once everything has been undone.
+
+        Once the book has been saved, the archive holds what was
+        written, and that is what the book is held against: undoing a
+        change after the save is a change of its own.
         """
         if self.writeable_archive_type() is None:
             return False
+        listing = self._window.imagehandler.get_image_files()
+        if self._written_as is not None:
+            return self._written_as != (listing, self._page_names)
         if self._page_names:
             return True
-        return bool(self._undone) and \
-            self._window.imagehandler.get_image_files() != self._undone[0]
+        return bool(self._undone) and listing != self._undone[0]
 
     def before_closing(self, then: "Callable[[], None]") -> None:
         """Offer to write the book out if it has changes, then run <then>.
@@ -711,6 +722,7 @@ class FileActions:
                 page_names=self._page_names,
                 waiting=save_progress.waiting(self._window, path))
             self.pages_written(path, written)
+            self._written_as = (image_files, dict(self._page_names))
         except archive_packer.Cancelled:
             # The archive on disk is the one that was there: nothing
             # went wrong to tell the reader about.

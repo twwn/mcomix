@@ -2739,6 +2739,42 @@ class MainWindowTest(MComixTest):
         self.assertEqual(os.stat(source).st_mode, mode,
                          'the archive came back with different permissions')
 
+    def test_a_book_just_saved_has_nothing_left_to_save(self):
+        """The archive on disk holds the book as it stands once it is
+        written, so closing it has nothing to offer: it asked "Write
+        again before closing?" all the same, and called the archive it
+        had just written one that did not hold the changes."""
+        source = os.path.join(self.tmp_dir, 'Book.cbz')
+        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), source)
+        self.window.filehandler.open_file(source)
+        self.assertTrue(
+            wait_for(lambda: self.window.imagehandler
+                     .get_number_of_pages() > 2, seconds=20),
+            'the copied archive never listed its pages')
+        actions = self.window.file_actions
+        self.window.select_page(1)
+        with self._quietly():
+            actions.delete_page()
+        self._pump()
+        self.assertTrue(actions.has_unsaved_changes())
+        self.assertTrue(actions.save_archive(), 'the save failed')
+        self.assertFalse(actions.has_unsaved_changes(),
+                         'the book just written is still to be saved')
+
+        # Taking the change back after the save is a change from what
+        # the archive holds now, and doing it again is none.
+        self.assertTrue(actions.undo())
+        self.assertTrue(actions.has_unsaved_changes())
+        self.assertTrue(actions.redo())
+        self.assertFalse(actions.has_unsaved_changes())
+
+        closed = []
+        with unittest.mock.patch.object(
+                message_dialog.MessageDialog, 'run_async',
+                lambda dialog, answered: self.fail(dialog.get_title())):
+            actions.before_closing(lambda: closed.append(True))
+        self.assertEqual([True], closed)
+
     @unittest.skipUnless(os.path.isdir('/proc/self/fd'),
                          'the open descriptors are read from /proc')
     def test_nothing_holds_the_archive_open_when_it_is_written_over(self):

@@ -97,16 +97,6 @@ class LongSaveTest(MComixTest):
             return GLib.SOURCE_REMOVE
         GLib.timeout_add(20, look)
 
-    def _answer_what_the_close_asks(self):
-        """A saved book is still asked about on closing (a lead of its
-        own): answer that it may close."""
-        def answer():
-            for dialog in self._message_dialogs():
-                dialog.response(Response.NO)
-            return GLib.SOURCE_CONTINUE
-        source = GLib.timeout_add(20, answer)
-        self.addCleanup(GLib.source_remove, source)
-
     def _message_dialogs(self):
         return [window for window in Gtk.Window.list_toplevels()
                 if isinstance(window, message_dialog.MessageDialog)
@@ -179,7 +169,6 @@ class LongSaveTest(MComixTest):
         self._while_saving(step)
         self.assertTrue(self.window.file_actions.save_archive())
         self.assertEqual([True], seen, 'the book closed under the save')
-        self._answer_what_the_close_asks()
         self.assertTrue(wait_for(
             lambda: not self.window.filehandler.file_loaded))
 
@@ -197,7 +186,6 @@ class LongSaveTest(MComixTest):
         self._while_saving(step)
         self.assertTrue(self.window.file_actions.save_archive())
         self.assertEqual([self.book], seen, 'the book closed under the save')
-        self._answer_what_the_close_asks()
         self.assertTrue(wait_for(
             lambda: self.window.filehandler.get_path_to_base() == other,
             seconds=10))
