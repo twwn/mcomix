@@ -44,6 +44,7 @@ The archive on disk is untouched until the changes are written.
 - A change not yet written is offered again on the way out: closing the book, opening another (also by turning past the last page), and quitting.
 - Each offer can be answered for good, and that answer also stands on the way out. Take it back under "Prompts answered for good" in the preferences.
 - Nothing is asked when every change was undone, or when MComix deleted the archive.
+- A save that takes more than half a second shows its progress, and "Cancel" stops it. The archive on disk is then left as it was, and the changes stay to be written later. Cancelling a save made on the way out keeps the book open. A book closed or opened meanwhile waits for the save.
 - Deleting the open file takes it out of the recent files and the library. Bookmarks in it are asked about first.
 - Once the file is gone, the next one in its folder opens, or the last one. A file that could not be deleted stays open, on the same page.
 

@@ -29,6 +29,7 @@ from mcomix import page_marks
 from mcomix import page_rotations
 from mcomix import portability
 from mcomix import rename_dialog
+from mcomix import save_progress
 from mcomix import tools
 from mcomix.archive import password as archive_password
 from mcomix.dialog import Response
@@ -79,6 +80,8 @@ class FileActions:
         self._close_offer_answered = False
         #: The close waiting for that answer while the offer is out.
         self._waiting_close: "Callable[[], None] | None" = None
+        #: Whether the last save_archive() was stopped by the reader.
+        self._save_stopped = False
 
     def forget_changes(self) -> None:
         """Drop the undo stack, which belongs to the book that is going."""
@@ -561,6 +564,12 @@ class FileActions:
         if self._waiting_close is not None:
             self._waiting_close = then
             return
+        if save_progress.saving():
+            # The book's pages are being packed from where they were
+            # extracted to, and closing it removes them.  A close the
+            # save itself is part of waits above, as the offer's own.
+            save_progress.after_saving(lambda: self.before_closing(then))
+            return
         if self._close_offer_answered:
             then()
             return
@@ -616,9 +625,17 @@ class FileActions:
 
     def _closing_answered(self, response: int,
                           then: "Callable[[], None]") -> None:
-        """Write the book out if that is the answer, then close it."""
-        if response == Response.YES:
-            self.save_archive()
+        """Write the book out if that is the answer, then close it.
+
+        A save the reader stops stops the close as well: they have just
+        said to keep the archive as it was, and closing would throw away
+        the changes they asked to have written.
+        """
+        if response == Response.YES and not self.save_archive() \
+                and self._save_stopped:
+            self._close_offer_answered = False
+            self._waiting_close = None
+            return
         then()
 
     def offer_to_save(self) -> None:
@@ -654,13 +671,17 @@ class FileActions:
             self.save_archive()
 
     def save_archive(self) -> bool:
-        """Write the open book over the archive it came from.
+        """Write the open book over the archive it came from, and
+        answer whether it was written.
 
         Every page is waited for first: one that is not out of the
         archive yet cannot be written into the new one, and once the old
         archive has been replaced the name it would have been read under
-        is no longer in it.
+        is no longer in it.  A save that takes longer than a moment can
+        be stopped from the dialog it puts up (mcomix.save_progress),
+        which _save_stopped then says.
         """
+        self._save_stopped = False
         archive_type = self.writeable_archive_type()
         path = self._window.filehandler.get_path_to_base()
         if archive_type is None or path is None:
@@ -687,8 +708,14 @@ class FileActions:
                 path, image_files, comment_files,
                 carried_files=carried_files,
                 archive_type=archive_type, permissions_from=path,
-                page_names=self._page_names)
+                page_names=self._page_names,
+                waiting=save_progress.waiting(self._window, path))
             self.pages_written(path, written)
+        except archive_packer.Cancelled:
+            # The archive on disk is the one that was there: nothing
+            # went wrong to tell the reader about.
+            self._save_stopped = True
+            return False
         except OSError as error:
             log.error(_('! Could not save the archive %(archivefile)s: '
                         '%(error)s'),

@@ -9,6 +9,7 @@ import os
 import shutil
 import sys
 import tarfile
+import threading
 import unittest
 import unittest.mock
 import zipfile
@@ -561,6 +562,103 @@ class WriteArchiveTest(MComixTest):
         with open(self.archive, 'rb') as fp:
             self.assertEqual(before, fp.read())
         self.assertEqual(['packed.cbz'], os.listdir(self.directory))
+
+
+
+class StoppingTest(MComixTest):
+
+    """A save is written on a thread that can be told to stop, and that
+    says how far it has got.  Stopped, it leaves the archive that was
+    there as it was, and nothing of its own beside it."""
+
+    def setUp(self):
+        super().setUp()
+        self.pages = [get_testfile_path('images', name)
+                      for name in ('01-JPG-Indexed.jpg', '02-JPG-RGB.jpg',
+                                   '03-PNG-RGB.png')]
+        self.directory = os.path.join(self.tmp_dir, 'books')
+        os.makedirs(self.directory)
+        self.archive = os.path.join(self.directory, 'packed.cbz')
+        self.go_on = threading.Event()
+        add = archive_packer._ZipWriter.add
+
+        def held_add(writer, path, name):
+            self.assertTrue(self.go_on.wait(10), 'never let go on')
+            add(writer, path, name)
+
+        patcher = unittest.mock.patch.object(archive_packer._ZipWriter,
+                                             'add', held_add)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        self.addCleanup(self.go_on.set)
+
+    def test_a_packer_stopped_leaves_off_and_removes_what_it_wrote(self):
+        packer = archive_packer.Packer(self.pages, [], self.archive, 'Comic')
+        packer.pack()
+        self.assertFalse(packer.finished(0.05))
+        packer.stop()
+        self.go_on.set()
+        self.assertFalse(packer.wait())
+        self.assertTrue(packer.stopped)
+        self.assertLess(packer.progress()[0], 3,
+                        'every file went in after the stop')
+        self.assertFalse(os.path.exists(self.archive))
+
+    def test_the_progress_counts_the_files_written_of_all_there_are(self):
+        packer = archive_packer.Packer(self.pages, [], self.archive, 'Comic')
+        self.assertEqual((0, 0), packer.progress())
+        packer.pack()
+        self.go_on.set()
+        self.assertTrue(packer.wait())
+        self.assertTrue(packer.finished())
+        self.assertEqual((3, 3), packer.progress())
+
+    def test_a_save_stopped_keeps_the_archive_that_was_there(self):
+        self.go_on.set()
+        archive_packer.write_archive(self.archive, self.pages[:1], [])
+        with open(self.archive, 'rb') as fp:
+            before = fp.read()
+        self.go_on.clear()
+        seen = []
+
+        def stop(packer):
+            seen.append(packer)
+            packer.stop()
+            self.go_on.set()
+
+        with self.assertRaises(archive_packer.Cancelled):
+            archive_packer.write_archive(self.archive, self.pages, [],
+                                         waiting=stop)
+        self.assertEqual(1, len(seen))
+        self.assertTrue(seen[0].finished(), 'the packer was not waited for')
+        with open(self.archive, 'rb') as fp:
+            self.assertEqual(before, fp.read())
+        self.assertEqual(['packed.cbz'], os.listdir(self.directory))
+
+    def test_one_stopped_after_its_last_file_is_stopped_all_the_same(self):
+        """The 7z and RAR writers do all their work in their last step,
+        which cannot be broken off: a stop that comes in during it still
+        means the old archive is kept."""
+        self.go_on.set()
+        archive_packer.write_archive(self.archive, self.pages[:1], [])
+        with open(self.archive, 'rb') as fp:
+            before = fp.read()
+
+        def stop_late(packer):
+            self.assertTrue(packer.finished(10))
+            packer.stop()
+
+        with self.assertRaises(archive_packer.Cancelled):
+            archive_packer.write_archive(self.archive, self.pages, [],
+                                         waiting=stop_late)
+        with open(self.archive, 'rb') as fp:
+            self.assertEqual(before, fp.read())
+        self.assertEqual(['packed.cbz'], os.listdir(self.directory))
+
+    def test_a_cancelled_save_is_no_error(self):
+        """Callers tell the reader of an OSError that the archive could
+        not be saved, which a save they stopped themselves was not."""
+        self.assertFalse(issubclass(archive_packer.Cancelled, OSError))
 
 
 # vim: expandtab:sw=4:ts=4

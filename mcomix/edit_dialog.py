@@ -19,6 +19,7 @@ from mcomix import widgets
 from mcomix import constants
 from mcomix import message_dialog
 from mcomix import preview
+from mcomix import save_progress
 from mcomix.i18n import _
 from mcomix.dialog import Response
 
@@ -236,7 +237,9 @@ class _EditArchiveDialog(Dialog):
                 page_names=self._window.file_actions.page_names(),
                 # A comment file is renamed in this editor and nowhere
                 # else, so the list itself says what each is called.
-                comment_names=self._comment_area.file_names())
+                comment_names=self._comment_area.file_names(),
+                waiting=save_progress.waiting(self, archive_path,
+                                              also=(self._window,)))
             saved = True
             book = self.file_handler.get_path_to_base()
             if (self.file_handler.archive_type is not None
@@ -248,6 +251,11 @@ class _EditArchiveDialog(Dialog):
                 # the book back.  Written anywhere else it is another
                 # book, which starts with nothing kept for it.
                 self._window.file_actions.pages_written(book, written)
+        except archive_packer.Cancelled:
+            # Stopped by the reader, who goes on editing: nothing went
+            # wrong to tell them about.
+            self.set_sensitive(True)
+            return
         except OSError as error:
             log.error(_('! Could not save the archive %(archivefile)s: '
                         '%(error)s'),

@@ -7,7 +7,7 @@ import tarfile
 import tempfile
 import zipfile
 import threading
-from collections.abc import Iterable, Iterator, Mapping, Sequence
+from collections.abc import Callable, Iterable, Iterator, Mapping, Sequence
 
 from mcomix import comicinfo
 from mcomix import constants
@@ -15,6 +15,16 @@ from mcomix import log
 from mcomix import process
 from mcomix import tools
 from mcomix.i18n import _
+
+
+class Cancelled(Exception):
+
+    """The reader stopped a save before the archive was replaced.
+
+    Not an OSError: nothing failed, and a caller that tells the reader
+    the archive could not be saved has nothing to tell them here.  The
+    archive on disk is the one that was there before.
+    """
 
 
 def check_room_for(files: "Iterable[str]", archive_path: str) -> None:
@@ -90,7 +100,8 @@ def write_archive(archive_path: str, image_files: Sequence[str],
                   archive_type: int = constants.ZIP,
                   permissions_from: "str | None" = None,
                   page_names: "Mapping[str, str] | None" = None,
-                  comment_names: "Mapping[str, str] | None" = None
+                  comment_names: "Mapping[str, str] | None" = None,
+                  waiting: "Callable[[Packer], None] | None" = None
                   ) -> dict[str, str]:
     """Write an archive of those files at <archive_path>, and answer
     with the name each page was written under, by its path.
@@ -110,8 +121,14 @@ def write_archive(archive_path: str, image_files: Sequence[str],
     comic archive to every other reader and not merely a ZIP of
     pictures.  See mcomix.comicinfo for what goes in it.
 
-    Raises OSError if anything on the way fails, having left nothing
-    behind: everything here writes to the directory the archive is in -
+    <waiting>, where it is given, is called with the Packer once it
+    has started, and returns when it likes: what it does in the
+    meantime - show how far the writing is, keep the windows drawn,
+    stop the Packer - is the caller's.  The Packer is waited for after
+    it returns either way.
+
+    Raises Cancelled where the Packer was stopped, and OSError if
+    anything on the way fails, having left nothing behind in both: everything here writes to the directory the archive is in -
     the temporary file, the rename, the permissions - and any of it can.
     """
     # Through a symbolic link to the book it stands for.
@@ -151,7 +168,17 @@ def write_archive(archive_path: str, image_files: Sequence[str],
                         page_names=page_names,
                         comment_names=comment_names)
         packer.pack()
-        if not packer.wait():
+        try:
+            if waiting is not None:
+                waiting(packer)
+        finally:
+            packed = packer.wait()
+        # Stopped after the last file went in is stopped as well: the
+        # reader said not to write it, and the old archive is still
+        # there to keep.
+        if packer.stopped:
+            raise Cancelled()
+        if not packed:
             raise OSError('the archive could not be packed')
 
         if permissions_from is not None and os.path.exists(permissions_from):
@@ -488,6 +515,11 @@ class Packer:
     waits, so the thread is not left running - it is deliberately not a
     daemon, since a half-written archive is worse than a slow exit.
 
+    In between, progress() says how many of the files are in, and
+    stop() has the thread leave off before the next one, removing what
+    it wrote.  A file being written is finished first, and so is the
+    last step of a 7z or a RAR, which is one run of the program.
+
     Which formats can be written is make_writer()'s business rather than
     this class': ZIP, tar, and 7z or RAR where those programs are
     installed.
@@ -540,6 +572,11 @@ class Packer:
         self._archive_type = archive_type
         self._pack_thread: threading.Thread | None = None
         self._packing_successful = False
+        self._stop = threading.Event()
+        # Written by the thread, read by whoever shows the progress; a
+        # read between two writes is a moment out of date, nothing worse.
+        self._files_written = 0
+        self._files_to_write = 0
 
     def pack(self) -> None:
         """Pack all the files in the file lists into the archive."""
@@ -556,6 +593,28 @@ class Packer:
             self._pack_thread.join()
 
         return self._packing_successful
+
+    def finished(self, timeout: float = 0) -> bool:
+        """Whether the thread is done, having waited up to <timeout>
+        seconds for it."""
+        if self._pack_thread is None:
+            return True
+        self._pack_thread.join(timeout)
+        return not self._pack_thread.is_alive()
+
+    def stop(self) -> None:
+        """Have the thread leave off before the next file."""
+        self._stop.set()
+
+    @property
+    def stopped(self) -> bool:
+        """Whether stop() was called."""
+        return self._stop.is_set()
+
+    def progress(self) -> tuple[int, int]:
+        """How many files are written, out of how many; (0, 0) before
+        the thread has counted them."""
+        return self._files_written, self._files_to_write
 
     def _files_to_pack(self) -> "Iterator[tuple[str, str]]":
         """Every file to write, as (path, the name it is written under).
@@ -617,7 +676,12 @@ class Packer:
             return
 
         try:
-            for path, name in self._files_to_pack():
+            files = list(self._files_to_pack())
+            self._files_to_write = len(files)
+            for path, name in files:
+                if self._stop.is_set():
+                    log.debug('Stopped writing "%s"', self._archive_path)
+                    break
                 try:
                     archive.add(path, name)
                 except Exception:
@@ -626,6 +690,7 @@ class Packer:
                               {"sourcefile": path,
                                "archivefile": self._archive_path})
                     break
+                self._files_written += 1
             else:
                 archive.close()
                 self._packing_successful = True

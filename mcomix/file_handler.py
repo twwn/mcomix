@@ -44,6 +44,7 @@ from mcomix import callback
 from mcomix import log
 from mcomix import last_read_page
 from mcomix import message_dialog
+from mcomix import save_progress
 from mcomix.library import backend
 from mcomix import i18n
 from mcomix.i18n import _
@@ -410,7 +411,10 @@ class FileHandler:
             self._open_file(path, start_page, keep_fileprovider,
                             start_member, listed)
 
-        if self._window.file_actions.has_unsaved_changes():
+        # While the book is being written out its pages are read from
+        # where they were extracted, and only before_closing() waits.
+        if (self._window.file_actions.has_unsaved_changes()
+                or save_progress.saving()):
             self._window.file_actions.before_closing(open_it)
             return True
         return self._open_file(path, start_page, keep_fileprovider,
