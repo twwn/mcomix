@@ -337,7 +337,7 @@ class EventHandler:
                           '<Control>KP_Subtract'],
                          self._window.actiongroup.get_action('zoom_out').activate)
         manager.register('zoom_original',
-                         ['<Control>0', 'KP_0'],
+                         ['<Control>0', 'KP_0', '<Control>KP_0'],
                          self._window.actiongroup.get_action('zoom_original').activate)
 
         manager.register('rotate_90',
@@ -465,7 +465,7 @@ class EventHandler:
                          self._window.actiongroup.get_action('comments').activate)
 
         manager.register('properties',
-                         ['<Alt>Return'],
+                         ['<Alt>Return', '<Alt>KP_Enter'],
                          self._window.actiongroup.get_action('properties').activate)
 
         manager.register('preferences',

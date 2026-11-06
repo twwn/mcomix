@@ -79,7 +79,7 @@ Stretch small images | Y
 Crop borders | O
 Zoom in | Plus, KeyPadAdd, Equal, CTRL+Plus, CTRL+Equal, CTRL+KeyPadAdd, CTRL+MouseWheelUp
 Zoom out | Minus, KeyPadSubtract, CTRL+Minus, CTRL+KeyPadSubtract, CTRL+MouseWheelDown
-Reset zoom | CTRL+0, KeyPad0
+Reset zoom | CTRL+0, KeyPad0, CTRL+KeyPad0
 Rotate 90 degrees clockwise | R
 Rotate 90 degrees anticlockwise | SHIFT+R
 Keep transformation between pages | K
@@ -98,7 +98,7 @@ Preferences | F12
 Manual | F1
 Keyboard shortcuts | CTRL+?
 Archive comments | C
-Properties | ALT+Return
+Properties | ALT+Return, ALT+KeyPadEnter
 Enhance image | E
 Save currently opened image | CTRL+SHIFT+S
 Reload currently opened directory or archive | CTRL+SHIFT+R, F5

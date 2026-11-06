@@ -9,7 +9,7 @@ These go through the X server's own keymap, as a real key press does.
 import os
 import unittest.mock
 
-from gi.repository import Gdk
+from gi.repository import Gdk, Gtk
 
 from . import MComixTest, get_testfile_path, pump, wait_for
 
@@ -147,6 +147,29 @@ class KeyPressTest(_KeyPressWindowTest):
             with self.subTest(key):
                 self.assertIn(keybindings.parse_accelerator(key),
                               manager.get_bindings_for_action(action))
+
+    def test_every_key_with_a_keypad_twin_has_it_bound_alike(self):
+        """Read off the whole table rather than listed: CTRL with the
+        keypad's 0 and ALT with its Enter did nothing while CTRL+0 and
+        ALT+Return reset the zoom and showed the properties. The keypad's
+        1 to 9 scroll, which the digits above the letters do not."""
+        twins = {'Return': 'KP_Enter', 'Page_Up': 'KP_Page_Up',
+                 'Page_Down': 'KP_Page_Down', 'Home': 'KP_Home',
+                 'End': 'KP_End', 'Left': 'KP_Left', 'Right': 'KP_Right',
+                 'Up': 'KP_Up', 'Down': 'KP_Down', 'Delete': 'KP_Delete',
+                 'plus': 'KP_Add', 'minus': 'KP_Subtract', '0': 'KP_0'}
+        manager = keybindings.keybinding_manager(self.window)
+        table = manager._binding_to_action
+        unlike = []
+        for (keyval, modifiers), action in table.items():
+            twin = twins.get(Gdk.keyval_name(keyval))
+            if twin is None:
+                continue
+            other = table.get((Gdk.keyval_from_name(twin), modifiers))
+            if other != action:
+                unlike.append((Gtk.accelerator_name(keyval, modifiers),
+                               action, other))
+        self.assertEqual([], sorted(unlike))
 
     def test_f5_refreshes_as_in_file_managers(self):
         manager = keybindings.keybinding_manager(self.window)
