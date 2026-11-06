@@ -201,6 +201,23 @@ def archive_mime_type(path: str) -> int | None:
             if not os.access(path, os.R_OK):
                 return None
 
+            with open(path, 'rb') as fd:
+                magic = fd.read(16)
+                fd.seek(60)
+                magic2 = fd.read(8)
+
+            # The signatures first: zipfile.is_zipfile() looks for the
+            # end of a zip's directory in the last 64 KB of the file, and
+            # finds it in a tar, RAR or 7z whose last member is a zip
+            # stored as it is - a series packed as one cbz per volume -
+            # which then opened as that one volume. A zip starts with
+            # "PK", or with the program a self-extracting one runs, which
+            # no signature below matches.
+            if not magic.startswith(b'PK'):
+                found = _type_by_signature(path, magic, magic2)
+                if found is not None:
+                    return found
+
             if zipfile.is_zipfile(path):
                 if kfx.is_kfx_zip(path):
                     return constants.KFX
@@ -211,47 +228,48 @@ def archive_mime_type(path: str) -> int | None:
                 else:
                     return constants.ZIP_EXTERNAL
 
-            with open(path, 'rb') as fd:
-                magic = fd.read(16)
-                fd.seek(60)
-                magic2 = fd.read(8)
-
-            mode = tar.open_mode(magic)
-            if _is_tarfile(path, mode):
-                return _TAR_MODE_TYPES[mode]
-
-            if magic[0:4] == b'Rar!':
-                return constants.RAR
-
-            if magic[0:4] == b'7z\xBC\xAF':
-                return constants.SEVENZIP
-
-            # Headers for TAR-XZ and TAR-LZMA that aren't supported by tarfile
-            if magic[0:5] == b'\xFD7zXZ' or magic[0:5] == b']\x00\x00\x80\x00':
-                return constants.XZ
-
-            if magic[2:4] == b'-l':
-                return constants.LHA
-
-            if magic[0:4] == b'%PDF':
-                return constants.PDF
-
-            if magic2 == b'BOOKMOBI':
-                return constants.MOBI
-
-            # A Kindle book, or the part of one that holds its pages;
-            # wrapped in DRM, it is a KFX book its handler refuses.
-            if magic.startswith((kfx.CONTAINER_SIGNATURE, kfx.DRM_SIGNATURE)):
-                return constants.KFX
-
-            # One page, or several bundled; an indirect document's index
-            # names its pages' files and holds no page itself.
-            if magic[0:8] == b'AT&TFORM' and magic[12:16] in (b'DJVU',
-                                                              b'DJVM'):
-                return constants.DJVU
-
     except Exception:
         log.warning(_('! Could not read %s'), path)
+
+    return None
+
+
+def _type_by_signature(path: str, magic: bytes, magic2: bytes) -> int | None:
+    """The archive type that <magic>, the first 16 bytes of the file at
+    <path>, and <magic2>, the 8 at offset 60, say it is, or None."""
+    mode = tar.open_mode(magic)
+    if _is_tarfile(path, mode):
+        return _TAR_MODE_TYPES[mode]
+
+    if magic[0:4] == b'Rar!':
+        return constants.RAR
+
+    if magic[0:4] == b'7z\xBC\xAF':
+        return constants.SEVENZIP
+
+    # Headers for TAR-XZ and TAR-LZMA that aren't supported by tarfile
+    if magic[0:5] == b'\xFD7zXZ' or magic[0:5] == b']\x00\x00\x80\x00':
+        return constants.XZ
+
+    if magic[2:4] == b'-l':
+        return constants.LHA
+
+    if magic[0:4] == b'%PDF':
+        return constants.PDF
+
+    if magic2 == b'BOOKMOBI':
+        return constants.MOBI
+
+    # A Kindle book, or the part of one that holds its pages;
+    # wrapped in DRM, it is a KFX book its handler refuses.
+    if magic.startswith((kfx.CONTAINER_SIGNATURE, kfx.DRM_SIGNATURE)):
+        return constants.KFX
+
+    # One page, or several bundled; an indirect document's index
+    # names its pages' files and holds no page itself.
+    if magic[0:8] == b'AT&TFORM' and magic[12:16] in (b'DJVU',
+                                                      b'DJVM'):
+        return constants.DJVU
 
     return None
 

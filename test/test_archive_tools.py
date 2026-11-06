@@ -1,4 +1,5 @@
 
+import io
 import lzma
 import os
 import tarfile
@@ -160,6 +161,47 @@ class ArchiveToolsTest(MComixTest):
         with open(path, 'wb') as broken:
             broken.write(b'\0' * (tarfile.RECORDSIZE * 8))
         self.assertIsNone(archive_tools.archive_mime_type(path))
+
+
+class NestedZipTypeTest(MComixTest):
+
+    """An archive whose last member is a zip stored as it is: zipfile.
+    is_zipfile() finds that zip's directory near the end of the file,
+    and the whole archive was typed as the zip, so only its last volume
+    showed."""
+
+    def _volume(self):
+        volume = io.BytesIO()
+        with zipfile.ZipFile(volume, 'w') as book:
+            book.write(get_testfile_path('images', '03-PNG-RGB.png'),
+                       '01.png')
+        return volume.getvalue()
+
+    def test_a_tar_of_cbz_volumes_is_a_tar(self):
+        path = os.path.join(self.tmp_dir, 'series.tar')
+        with tarfile.open(path, 'w') as series:
+            for name in ('vol1.cbz', 'vol2.cbz'):
+                data = self._volume()
+                info = tarfile.TarInfo(name)
+                info.size = len(data)
+                series.addfile(info, io.BytesIO(data))
+        self.assertEqual(constants.TAR, archive_tools.archive_mime_type(path))
+
+    def test_a_signature_goes_before_a_zip_found_at_the_end(self):
+        for signature, expected in ((b'Rar!\x1a\x07\x00', constants.RAR),
+                                    (b'7z\xbc\xaf\x27\x1c', constants.SEVENZIP)):
+            path = os.path.join(self.tmp_dir, 'series')
+            with open(path, 'wb') as series:
+                series.write(signature + bytes(100) + self._volume())
+            self.assertEqual(expected, archive_tools.archive_mime_type(path))
+
+    def test_a_zip_behind_a_program_is_still_a_zip(self):
+        """A self-extracting zip starts with the program that unpacks
+        it, not with "PK"."""
+        path = os.path.join(self.tmp_dir, 'book.exe')
+        with open(path, 'wb') as book:
+            book.write(b'MZ' + bytes(1000) + self._volume())
+        self.assertEqual(constants.ZIP, archive_tools.archive_mime_type(path))
 
 
 class FinderFileTest(MComixTest):
