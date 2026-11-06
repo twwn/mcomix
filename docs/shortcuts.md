@@ -71,9 +71,9 @@ Pause or resume an animated page | P
 Play an animated page faster | ]
 Play an animated page slower | [
 Best fit mode | B
-Fit to width mode | W
-Fit to height mode | H
-Fixed size mode | S
+Fit width mode | W
+Fit height mode | H
+Fit size mode | S
 Manual zoom mode | A
 Stretch small images | Y
 Crop borders | O
