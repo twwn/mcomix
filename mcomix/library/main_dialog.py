@@ -235,7 +235,6 @@ class _LibraryDialog(Gtk.Window):
         self._watcher.stop()
         self.backend.watchlist.new_files_found -= self._new_files_found
         self.backend.watchlist.scan_finished -= self._scan_finished
-        self.book_area.stop_update()
         self.book_area.close()
         file_chooser_library_dialog.close_library_filechooser_dialog()
         _close_dialog()

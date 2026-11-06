@@ -2770,7 +2770,6 @@ class MainWindow(Gtk.Window):
         library = main_dialog.get_dialog()
         if library is not None:
             library.close()
-        backend.LibraryBackend().close()
 
         # Wait for the threads that are still doing work which has to
         # finish - extracting, packing, deleting - before the process
@@ -2787,6 +2786,11 @@ class MainWindow(Gtk.Window):
                 continue
             log.debug('Waiting for thread %s to finish before exit', thread)
             thread.join()
+        # After the threads, not before: the library window's cover
+        # workers are not waited for when it closes, and one still
+        # reading a cover asks the library for the book's last page -
+        # of a backend that, closed, LibraryBackend() would open again.
+        backend.LibraryBackend().close()
 
 
 #: Seconds after the last page turn that the reading position is stored.

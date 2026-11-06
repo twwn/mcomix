@@ -384,6 +384,17 @@ class _ThumbnailViewBase(widgets.Releasable):
         self._updates_stopped = True
         self._thread.stop()
 
+    def retire(self) -> None:
+        """Stop making thumbnails for good, and ignore the ones still
+        coming, without waiting for the one being made.
+
+        For a view whose thumbnails come from something that outlives
+        it, such as the library's covers, which the library backend
+        reads: the read in flight ends on its own.
+        """
+        self._updates_stopped = True
+        self._thread.retire()
+
     def release(self) -> None:
         """Stop, unbind every cell and drop the factory, once the window
         is closed.

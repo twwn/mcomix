@@ -329,7 +329,11 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
     def close(self) -> None:
         """Run clean-up tasks for the _BookArea prior to closing."""
 
-        self.stop_update()
+        # Not waited for: a cover deep in a solid archive takes seconds,
+        # and the window would hang that long on its way out. The read
+        # needs only the backend and the cover cache, which outlive the
+        # window, and keeps what it made there for the next one.
+        self._covers.retire()
         # The backend outlives the library window, and holds the area
         # only weakly - but a closed area is not collected, and one left
         # listening would put a cover in its grid for every book filed

@@ -841,6 +841,71 @@ class CoverInFlightTest(_OneBookTest):
         self.assertEqual(self.reads, [self.path])
 
 
+    def test_closing_the_window_does_not_wait_for_the_cover(self):
+        """close() joined the worker: five seconds for a cover deep in a
+        400 MB solid archive, with the window frozen on its way out."""
+        area = self.dialog.book_area
+        self._cover_made()
+        area._cache.invalidate_all()
+        entered, go_on, done = (threading.Event(), threading.Event(),
+                                threading.Event())
+        self.addCleanup(go_on.set)
+        read = self.dialog.backend.get_book_thumbnail
+        failures, workers = [], []
+
+        def parked(path):
+            workers.append(threading.current_thread())
+            entered.set()
+            go_on.wait(10)
+            try:
+                return read(path)
+            finally:
+                done.set()
+
+        with unittest.mock.patch.object(self.dialog.backend,
+                                        'get_book_thumbnail', parked), \
+                unittest.mock.patch.object(threading, 'excepthook',
+                                           failures.append):
+            area._covers.redraw_item(self._item())
+            self.assertTrue(wait_for(entered.is_set, seconds=10))
+            self.dialog.close()
+            self.assertFalse(done.is_set(),
+                             'closing the window waited for the cover')
+            go_on.set()
+            # The worker finishes its order and ends, rather than parking
+            # for orders that will never come.
+            self.assertTrue(wait_for(
+                lambda: not any(t.is_alive() for t in workers), seconds=10))
+        self.assertTrue(done.is_set())
+        self.assertEqual([], failures)
+
+
+    def test_quitting_with_a_cover_in_flight_leaves_the_library_closed(self):
+        """The worker closing the window let go of went on to ask for the
+        book's last page after quitting had closed the library, which
+        opened the database again; tearDown() fails on that."""
+        area = self.dialog.book_area
+        self._cover_made()
+        area._cache.invalidate_all()
+        entered, go_on = threading.Event(), threading.Event()
+        read = self.dialog.backend.get_book_thumbnail
+
+        def parked(path):
+            entered.set()
+            go_on.wait(10)
+            return read(path)
+
+        with unittest.mock.patch.object(self.dialog.backend,
+                                        'get_book_thumbnail', parked):
+            area._covers.redraw_item(self._item())
+            self.assertTrue(wait_for(entered.is_set, seconds=10))
+        self.dialog.close()
+        # Let go once quitting has begun, which tearDown() does.
+        later = threading.Timer(0.3, go_on.set)
+        later.daemon = True
+        later.start()
+
+
 class LibraryWalkTest(_LibraryWindowTest):
 
     """A book opened from the library: Next and Previous archive walk the

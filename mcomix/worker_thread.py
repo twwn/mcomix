@@ -34,6 +34,8 @@ class WorkerThread(Generic[Order]):
         self._sort_orders = sort_orders
         self._unique_orders = unique_orders
         self._stop = False
+        #: Set for good by retire(): the pool takes no more orders.
+        self._retired = False
         self._threads: list[threading.Thread] = []
         # Queue of orders waiting for processing.
         self._orders_queue: list[Order] = []
@@ -70,7 +72,9 @@ class WorkerThread(Generic[Order]):
         while True:
             with self._condition:
                 if order_uid is not None:
-                    self._orders_set.remove(order_uid)
+                    # Gone already where retire() or a stop() after it
+                    # emptied the set while this order was processed.
+                    self._orders_set.discard(order_uid)
                 while not self._stop and not self._orders_queue:
                     self._condition.wait()
                 if self._stop:
@@ -106,6 +110,8 @@ class WorkerThread(Generic[Order]):
     def append_order(self, order: Order) -> None:
         """Append work order to the thread orders queue."""
         with self._condition:
+            if self._retired:
+                return
             if self._unique_orders:
                 order_uid = self._order_uid(order)
                 if order_uid in self._orders_set:
@@ -121,6 +127,8 @@ class WorkerThread(Generic[Order]):
     def extend_orders(self, orders_list: Iterable[Order]) -> None:
         """Append work orders to the thread orders queue."""
         with self._condition:
+            if self._retired:
+                return
             orders_list = list(orders_list)
             if self._unique_orders:
                 nb_added = 0
@@ -150,9 +158,27 @@ class WorkerThread(Generic[Order]):
         for thread in self._threads:
             thread.join()
         self._threads = []
-        self._stop = False
+        self._stop = self._retired
         self._orders_queue = []
         if self._unique_orders:
             self._orders_set.clear()
+
+    def retire(self) -> None:
+        """Stop the worker threads for good, without waiting for them.
+
+        A thread busy with an order finishes it and ends; the orders
+        waiting are dropped, and later ones are refused. For an owner
+        that goes away while what its orders use outlives it, so that
+        nothing has to wait for a slow order to end. stop() joins, and
+        resets the shared stop flag after the join, so a pool that is to
+        be used again cannot be let go of like this.
+        """
+        with self._condition:
+            self._retired = True
+            self._stop = True
+            self._orders_queue = []
+            self._orders_set.clear()
+            self._condition.notify_all()
+        self._threads = []
 
 # vim: expandtab:sw=4:ts=4
