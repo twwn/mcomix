@@ -507,6 +507,33 @@ class ZipSameNameTest(MComixTest):
                              ('p.jpg', b'second', (2002, 2, 2, 0, 0, 0)))
         self.assertEqual(handler.list_contents(), handler.list_contents())
 
+    def test_names_that_differ_only_in_case_are_two_files(self):
+        """Windows and macOS take Page1.jpg and page1.jpg for one file:
+        unpacked there, the second was written over the first, and both
+        pages showed the second."""
+        date = (2001, 1, 1, 0, 0, 0)
+        with unittest.mock.patch.object(archive_base, '_CASE_BLIND', True):
+            handler = self._book(('Page1.jpg', b'upper', date),
+                                 ('page1.jpg', b'lower', date))
+            names = list(handler.iter_contents())
+            self.assertEqual(['Page1.jpg', 'page1~2.jpg'], names)
+            self.assertEqual(names, list(handler.iter_contents()))
+        self.assertEqual(b'upper', self._extracted(handler, 'Page1.jpg'))
+        self.assertEqual(b'lower', self._extracted(handler, 'page1~2.jpg'))
+
+    def test_a_page_named_as_a_windows_device_is_given_another_name(self):
+        """CON.jpg or aux.png is a device on Windows, never a file:
+        such a page could not be unpacked there."""
+        date = (2001, 1, 1, 0, 0, 0)
+        with unittest.mock.patch.object(archive_base, '_DEVICES_NAMED', True):
+            handler = self._book(('CON.jpg', b'one', date),
+                                 ('a/aux.png', b'two', date),
+                                 ('console.jpg', b'three', date))
+            names = list(handler.iter_contents())
+        self.assertEqual(['_CON.jpg', os.path.join('a', '_aux.png'),
+                          'console.jpg'], names)
+        self.assertEqual(b'one', self._extracted(handler, '_CON.jpg'))
+
 
 class ZipCompressionMethodTest(MComixTest):
 
@@ -893,6 +920,29 @@ class TarUpdatedMemberTest(MComixTest):
             handler.close()
         with open(os.path.join(self.tmp_dir, '01.png'), 'rb') as page:
             self.assertEqual(b'new', page.read())
+
+
+class TarCaseBlindTest(MComixTest):
+
+    def test_names_that_differ_only_in_case_are_two_pages(self):
+        path = os.path.join(self.tmp_dir, 'case.tar')
+        with tarfile.open(path, 'w') as archive:
+            for name, content in (('Page1.png', b'upper'),
+                                  ('page1.png', b'lower')):
+                info = tarfile.TarInfo(name)
+                info.size = len(content)
+                archive.addfile(info, io.BytesIO(content))
+        with unittest.mock.patch.object(archive_base, '_CASE_BLIND', True):
+            handler = tar.TarArchive(path)
+            self.addCleanup(handler.close)
+            names = handler.list_contents()
+        self.assertEqual(['Page1.png', 'page1~2.png'], names)
+        for name, content in (('Page1.png', b'upper'),
+                              ('page1~2.png', b'lower')):
+            folder = os.path.join(self.tmp_dir, name)
+            handler.extract(name, folder)
+            with open(os.path.join(folder, name), 'rb') as page:
+                self.assertEqual(content, page.read())
 
 
 class TarLegacyNameTest(MComixTest):
@@ -1489,6 +1539,17 @@ class RarLibraryMemberNameTest(MComixTest):
         # and the names have to come out the same on the second pass.
         self.assertEqual(expected, self._extracted(names[::-1], handler))
         self.assertEqual(names, list(handler.iter_contents()))
+
+    def test_names_that_differ_only_in_case_each_keep_their_picture(self):
+        book = os.path.join(self.tmp_dir, 'book.rar')
+        _stored_rar(book, [('Page1.jpg', b'upper'), ('page1.jpg', b'lower')])
+        with unittest.mock.patch.object(archive_base, '_CASE_BLIND', True):
+            handler = rar.RarArchive(book)
+            self.addCleanup(handler.close)
+            names = list(handler.iter_contents())
+            self.assertEqual(['Page1.jpg', 'page1~2.jpg'], names)
+            self.assertEqual({'Page1.jpg': b'upper', 'page1~2.jpg': b'lower'},
+                             self._extracted(names, handler))
 
     def test_a_later_member_keeps_a_name_the_earlier_ones_left_free(self):
         book = os.path.join(self.tmp_dir, 'book.rar')

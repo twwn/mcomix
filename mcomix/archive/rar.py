@@ -309,8 +309,9 @@ class RarArchive(archive_base.BaseArchive):
         so "../" in a name has to go here: it would write outside the
         directory being extracted to.
 
-        Two members that come out under one name, as the same name twice
-        or two that are the same once made safe to write, are both pages,
+        Two members that come out under one name, as the same name twice,
+        two that are the same once made safe to write, or two that differ
+        only in case where the file system ignores case, are both pages,
         and a page is a file: the later ones are listed as name~2.jpg.
         The archive is only ever read from its start, so each pass gives
         each member the same name.
@@ -321,9 +322,9 @@ class RarArchive(archive_base.BaseArchive):
         name = self._replace_invalid_filesystem_chars(
             str(self._headerdata.FileNameW))
         if self._header_is_member():
-            if name in self._names_read:
+            if archive_base.file_key(name) in self._names_read:
                 name = self._next_free_name(name, self._names_read)
-            self._names_read.add(name)
+            self._names_read.add(archive_base.file_key(name))
         self._current_filename = name
         return name
 

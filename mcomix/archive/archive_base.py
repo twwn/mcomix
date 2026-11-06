@@ -59,6 +59,28 @@ _NUMBERS_KEPT = 48
 _LONGEST_EXTENSION = 16
 
 
+#: Whether the file system that pages are unpacked to takes two names
+#: that differ only in case for one file, as Windows' and macOS' do
+#: unless told otherwise.
+_CASE_BLIND = sys.platform in ('win32', 'darwin')
+
+#: Whether the file system keeps the names of devices, as Windows does.
+_DEVICES_NAMED = sys.platform == 'win32'
+
+#: The names Windows keeps for devices, with or without an extension:
+#: a page called CON.jpg or aux.png cannot be a file there.
+_DEVICE_NAMES = frozenset(
+    ['CON', 'PRN', 'AUX', 'NUL', 'CONIN$', 'CONOUT$']
+    + ['%s%s' % (port, number) for port in ('COM', 'LPT')
+       for number in '123456789\u00b9\u00b2\u00b3'])
+
+
+def file_key(name: str) -> str:
+    """<name> as the file system tells files apart: two names with the
+    same key are one file once unpacked."""
+    return name.casefold() if _CASE_BLIND else name
+
+
 def fit_name(name: str) -> str:
     """<name>, one part of a path, cut to what a file system can hold.
 
@@ -199,18 +221,26 @@ class BaseArchive:
         # and separators here, as it strips a set of characters rather than
         # a prefix, and would eat the leading dot of names like ".foo.jpg".
         normalized = os.path.splitdrive(os.path.normpath(new_name))[1]
-        return os.sep.join(fit_name(part) for part in normalized.split(os.sep)
-                           if part not in ('', os.curdir, os.pardir))
+        parts = [fit_name(part) for part in normalized.split(os.sep)
+                 if part not in ('', os.curdir, os.pardir)]
+        if _DEVICES_NAMED:
+            parts = ['_' + part
+                     if part.split('.')[0].rstrip(' ').upper() in _DEVICE_NAMES
+                     else part for part in parts]
+        return os.sep.join(parts)
 
     @staticmethod
     def _next_free_name(name: str, taken: set[str]) -> str:
-        """The first of name~2.jpg, name~3.jpg and on that nothing holds."""
+        """The first of name~2.jpg, name~3.jpg and on that nothing holds.
+
+        <taken> holds the file_key() of each name given out.
+        """
         folder, file_name = os.path.split(name)
         stem, extension = os.path.splitext(file_name)
         for number in itertools.count(2):
             free = os.path.join(folder, fit_name(
                 '%s~%d%s' % (stem, number, extension)))
-            if free not in taken:
+            if file_key(free) not in taken:
                 return free
         raise AssertionError('itertools.count() does not end')
 
@@ -363,14 +393,29 @@ class NonUnicodeArchive(BaseArchive):
         super().__init__(archive)
         # Maps Unicode names to regular names as expected by the original archive format
         self.unicode_mapping: dict[str, str] = {}
+        #: The name each member was listed under, and the file_key()s
+        #: of those names: two members whose names come out as one file
+        #: - the same in another case where the file system ignores
+        #: case, or once made safe to write - are both pages.
+        self._listed_as: dict[str, str] = {}
+        self._keys_listed: set[str] = set()
 
     def _unicode_filename(self, filename: str,
                           conversion_func: Callable[[str], str] = i18n.to_unicode) -> str:
         """ Instead of returning archive members directly, map each filename through
         this function first to convert them to Unicode. """
 
+        if filename in self._listed_as:
+            return self._listed_as[filename]
         unicode_name = conversion_func(filename)
         safe_name = self._replace_invalid_filesystem_chars(unicode_name)
+        if file_key(safe_name) in self._keys_listed:
+            # Page1.jpg beside page1.jpg on Windows: unpacked under
+            # one name, the second written over the first, both pages
+            # showed the second.
+            safe_name = self._next_free_name(safe_name, self._keys_listed)
+        self._keys_listed.add(file_key(safe_name))
+        self._listed_as[filename] = safe_name
         self.unicode_mapping[safe_name] = filename
         return safe_name
 

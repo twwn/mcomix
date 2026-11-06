@@ -138,12 +138,12 @@ class ZipArchive(archive_base.NonUnicodeArchive):
                   # under the one zipfile knows it by.
                   else self._unicode_filename(info.filename, legacy)
                   for info in infos]
-        taken = set(listed)
+        taken = {archive_base.file_key(name) for name in listed}
         members: dict[str, zipfile.ZipInfo] = {}
         for info, name in zip(infos, listed):
             if name in members:
                 name = self._next_free_name(name, taken)
-                taken.add(name)
+                taken.add(archive_base.file_key(name))
             members[name] = info
             date = archive_base.zip_member_date(info)
             if date is not None:
