@@ -321,6 +321,13 @@ class _LibraryBackend:
             # thread, whose delete of the stored cover may have come before
             # this read stored the old one.
             thumbnailer.delete(path)
+        if self.get_book_by_path(path) is None:
+            # The book left the library, or moved within it, during that
+            # read. remove_book() and update_book_path() take the stored
+            # cover with them, and one stored after them belongs to no
+            # book. They change the row first, so one of the two always
+            # sees the other's work.
+            thumbnailer.delete(path)
 
         if thumb is None:
             log.warning(_('! Could not get cover for book "%s"'), path)
@@ -898,9 +905,11 @@ class _LibraryBackend:
     def remove_book(self, book: int) -> None:
         """Remove the <book> from the library."""
         path = self.get_book_path(book)
+        # The row goes before the cover, which get_book_thumbnail() relies
+        # on: a read in flight that stores after this checks for the row.
+        self.execute('delete from Book where id = ?', (book,))
         if path is not None:
             self._covers().delete(path)
-        self.execute('delete from Book where id = ?', (book,))
         self.execute('delete from Contain where book = ?', (book,))
         # A book's id is its sqlite rowid, which is handed out again as
         # soon as the highest row is free, so a page left behind here

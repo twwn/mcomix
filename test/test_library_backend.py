@@ -1436,6 +1436,50 @@ class ChosenCoverTest(LibraryDatabaseTest):
         self.assertEqual(self.COLOURS['b.png'],
                          tuple(answers[0].get_pixels()[:3]))
 
+    def _while_the_cover_is_read(self, act):
+        """Run <act> while another thread reads the book's cover, between
+        the read and the store of what it read."""
+        made, go_on = threading.Event(), threading.Event()
+        self.addCleanup(go_on.set)
+        make = thumbnail_tools.Thumbnailer._create_thumbnail_pixbuf
+
+        def parked(thumbnailer, filepath):
+            answer = make(thumbnailer, filepath)
+            made.set()
+            go_on.wait(10)
+            return answer
+
+        thread = threading.Thread(
+            target=self.backend.get_book_thumbnail, args=(self.path,))
+        with unittest.mock.patch.object(thumbnail_tools.Thumbnailer,
+                                        '_create_thumbnail_pixbuf', parked):
+            thread.start()
+            self.assertTrue(made.wait(10))
+            act()
+            go_on.set()
+            thread.join(10)
+        self.assertFalse(thread.is_alive())
+
+    def test_a_cover_being_made_as_its_book_is_removed_is_not_kept(self):
+        """The read stored the cover after remove_book() had deleted it,
+        a file in the covers folder that no book names."""
+        book = self.backend.get_book_by_path(self.path)
+        self._while_the_cover_is_read(
+            lambda: self.backend.remove_book(book.id))
+        self.assertEqual([], os.listdir(constants.LIBRARY_COVERS_PATH))
+
+    def test_a_cover_being_made_as_its_book_moves_is_not_kept(self):
+        moved = os.path.join(self.tmp_dir, 'moved.zip')
+
+        def move():
+            os.rename(self.path, moved)
+            self.assertTrue(self.backend.update_book_path(self.path, moved))
+
+        self._while_the_cover_is_read(move)
+        self.assertEqual([], os.listdir(constants.LIBRARY_COVERS_PATH))
+        self.backend.get_book_thumbnail(moved)
+        self.assertEqual(1, len(os.listdir(constants.LIBRARY_COVERS_PATH)))
+
     def test_choosing_none_goes_back_to_the_one_guessed(self):
         self.backend.set_chosen_cover(self.path, 'b.png')
         self.assertEqual('b.png', self._cover())
