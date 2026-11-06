@@ -21,7 +21,7 @@ The archive on disk is untouched until the changes are written.
 - "Delete page", in the page's menu, removes that page; "Edit → Undo" puts it back.
 - CTRL and a click, on a page or its thumbnail, picks that page out (outlined in red, in the thumbnails too); again puts it back.
   Escape, or "Put back pages picked out" in the Edit and page menus, puts back all of them.
-  Delete removes every page picked out, and opens the archive editor with them selected.
+  Delete removes every page picked out at once; "Edit → Undo" puts them back.
 
 ## The archive editor
 
