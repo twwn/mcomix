@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: comix 3.6.4\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-03 13:20+0100\n"
+"POT-Creation-Date: 2026-11-06 16:06+0100\n"
 "PO-Revision-Date: 2008-05-21 12:40+0330\n"
 "Last-Translator: Meelad Zakaria <meelad@farsiweb.info>\n"
 "Language-Team: Persian \n"
@@ -45,7 +45,7 @@ msgstr "نسخه‌ای از این پروانه را می‌توان از %s گ
 msgid "! Extraction error: %s"
 msgstr "! خطای استخراج: %s"
 
-#: mcomix/archive_extractor.py:400 mcomix/archive_tools.py:254
+#: mcomix/archive_extractor.py:400 mcomix/archive_tools.py:232
 #: mcomix/image_tools.py:518 mcomix/page_marks.py:62
 #: mcomix/page_rotations.py:42
 #, python-format
@@ -53,8 +53,8 @@ msgid "! Could not read %s"
 msgstr "! خواندن %s ممکن نشد"
 
 #
-#: mcomix/archive_packer.py:183 mcomix/file_actions.py:1137
-#: mcomix/library/book_area.py:960
+#: mcomix/archive_packer.py:183 mcomix/file_actions.py:1149
+#: mcomix/library/book_area.py:996
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! برداشتن %(file)s ممکن نشد: %(error)s"
@@ -102,7 +102,7 @@ msgid "_No"
 msgstr "_خیر"
 
 #: mcomix/bookmark_backend.py:460 mcomix/edit_dialog.py:64
-#: mcomix/file_actions.py:953 mcomix/file_actions.py:1119
+#: mcomix/file_actions.py:965 mcomix/file_actions.py:1131
 #: mcomix/file_chooser_base_dialog.py:237
 #: mcomix/file_chooser_base_dialog.py:242
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
@@ -217,7 +217,7 @@ msgstr "_حذف نشانک‌های این کتاب..."
 msgid "_Edit bookmarks..."
 msgstr "_ویرایش نشانک‌ها..."
 
-#: mcomix/bookmark_menu.py:204 mcomix/file_actions.py:1183
+#: mcomix/bookmark_menu.py:204 mcomix/file_actions.py:1195
 #, python-format
 msgid "Remove the bookmarks in \"%s\"?"
 msgstr "نشانک‌های «%s» حذف شوند؟"
@@ -240,7 +240,7 @@ msgstr "توضیحات"
 
 #
 # File: src/comment.py, line: 53
-#: mcomix/comment_dialog.py:134 mcomix/file_handler.py:959
+#: mcomix/comment_dialog.py:134 mcomix/file_handler.py:977
 #, python-format
 msgid "Could not read %s"
 msgstr "خواندن %s ممکن نشد"
@@ -328,20 +328,20 @@ msgid "Comment files"
 msgstr "پرونده‌های توضیح"
 
 #
-#: mcomix/edit_dialog.py:252 mcomix/file_actions.py:681
+#: mcomix/edit_dialog.py:252 mcomix/file_actions.py:693
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! ذخیرهٔ بایگانی %(archivefile)s ممکن نشد: %(error)s"
 
 #
 # File: src/edit.py, line: 99
-#: mcomix/edit_dialog.py:265 mcomix/file_actions.py:686
+#: mcomix/edit_dialog.py:265 mcomix/file_actions.py:698
 msgid "The new archive could not be saved!"
 msgstr "ذخیرهٔ بایگانی جدید ممکن نشد!"
 
 #
 # File: src/edit.py, line: 101
-#: mcomix/edit_dialog.py:266 mcomix/file_actions.py:687
+#: mcomix/edit_dialog.py:266 mcomix/file_actions.py:699
 msgid "The original files have not been removed."
 msgstr "پرونده‌های اصلی برداشته نشده‌اند."
 
@@ -400,8 +400,8 @@ msgstr "باز_گشت"
 msgid "Go back to the saved values."
 msgstr "بازگشت به مقادیر ذخیره‌شده."
 
-#: mcomix/enhance_dialog.py:51 mcomix/file_actions.py:591
-#: mcomix/file_actions.py:634 mcomix/file_chooser_base_dialog.py:243
+#: mcomix/enhance_dialog.py:51 mcomix/file_actions.py:603
+#: mcomix/file_actions.py:646 mcomix/file_chooser_base_dialog.py:243
 #: mcomix/openwith.py:455
 msgid "_Save"
 msgstr "_ذخیره"
@@ -477,45 +477,50 @@ msgstr "_وارونه کردن رنگ‌های تصویر"
 msgid "Invert (negate) image colors."
 msgstr "رنگ‌های تصویر را وارونه می‌کند."
 
-#: mcomix/file_actions.py:312 mcomix/file_actions.py:1263
+#: mcomix/file_actions.py:312 mcomix/file_actions.py:1277
 msgid "A file of that name is there already."
 msgstr "پرونده‌ای با این نام از پیش آنجاست."
 
-#: mcomix/file_actions.py:376
+#: mcomix/file_actions.py:337
+#, python-format
+msgid "Could not rename \"%s\""
+msgstr "تغییر نام «%s» ممکن نشد"
+
+#: mcomix/file_actions.py:388
 #, python-format
 msgid "Page %(number)d is called \"%(name)s\" already."
 msgstr "صفحهٔ %(number)d از پیش «%(name)s» نام دارد."
 
-#: mcomix/file_actions.py:381
+#: mcomix/file_actions.py:393
 msgid "Rename page?"
 msgstr "نام صفحه تغییر کند؟"
 
-#: mcomix/file_actions.py:382
+#: mcomix/file_actions.py:394
 msgid "Please enter a new name for this page."
 msgstr "برای این صفحه نام تازه‌ای وارد کنید."
 
-#: mcomix/file_actions.py:587
+#: mcomix/file_actions.py:599
 #, python-format
 msgid "Write \"%s\" again before closing it?"
 msgstr "«%s» پیش از بستن دوباره نوشته شود؟"
 
-#: mcomix/file_actions.py:588
+#: mcomix/file_actions.py:600
 msgid ""
 "The book has changes that the archive on disk does not hold. They are lost "
 "when it closes."
 msgstr ""
 "کتاب تغییرهایی دارد که بایگانی روی دیسک آن‌ها را ندارد. با بستن از دست می‌روند."
 
-#: mcomix/file_actions.py:590
+#: mcomix/file_actions.py:602
 msgid "_Close without saving"
 msgstr "ب_ستن بدون ذخیره"
 
-#: mcomix/file_actions.py:629
+#: mcomix/file_actions.py:641
 #, python-format
 msgid "Write \"%s\" again now?"
 msgstr "«%s» همین حالا دوباره نوشته شود؟"
 
-#: mcomix/file_actions.py:630
+#: mcomix/file_actions.py:642
 msgid ""
 "The archive on disk will be replaced by the book as it stands: the pages it "
 "holds now, in the order and under the names it shows."
@@ -523,96 +528,96 @@ msgstr ""
 "بایگانی روی دیسک با کتاب به شکل کنونی آن جایگزین می‌شود: صفحه‌هایی که اکنون "
 "دارد، به همان ترتیب و با همان نام‌هایی که نشان می‌دهد."
 
-#: mcomix/file_actions.py:633
+#: mcomix/file_actions.py:645
 msgid "_Not now"
 msgstr "_حالا نه"
 
-#: mcomix/file_actions.py:814
+#: mcomix/file_actions.py:826
 #, python-format
 msgid "Could not show the folder: %s"
 msgstr "نمایش شاخه ممکن نشد: %s"
 
-#: mcomix/file_actions.py:861 mcomix/keybindings.py:162
+#: mcomix/file_actions.py:873 mcomix/keybindings.py:162
 msgid "Save page as"
 msgstr "ذخیرهٔ صفحه به نام"
 
-#: mcomix/file_actions.py:902 mcomix/page_marks.py:153
+#: mcomix/file_actions.py:914 mcomix/page_marks.py:153
 #: mcomix/page_rotations.py:124
 #, python-format
 msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! ذخیرهٔ %(file)s در %(directory)s ممکن نشد: %(error)s"
 
-#: mcomix/file_actions.py:906 mcomix/file_actions.py:1265
+#: mcomix/file_actions.py:918 mcomix/file_actions.py:1279
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "آنجا فضای کافی نیست: اندازهٔ پرونده %s است."
 
-#: mcomix/file_actions.py:912
+#: mcomix/file_actions.py:924
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "ذخیرهٔ «%(file)s» در «%(directory)s» ممکن نشد"
 
-#: mcomix/file_actions.py:943
+#: mcomix/file_actions.py:955
 msgid "There is no trash for this folder, so it cannot be restored."
 msgstr "این شاخه زباله‌دان ندارد، پس دیگر بازیابی نمی‌شود."
 
-#: mcomix/file_actions.py:951
+#: mcomix/file_actions.py:963
 #, python-format
 msgid "Delete \"%s\"?"
 msgstr "«%s» حذف شود؟"
 
-#: mcomix/file_actions.py:952
+#: mcomix/file_actions.py:964
 msgid "The file is moved to the trash."
 msgstr "پرونده به زباله‌دان منتقل می‌شود."
 
-#: mcomix/file_actions.py:954
+#: mcomix/file_actions.py:966
 msgid "_Move to Trash"
 msgstr "_انتقال به زباله‌دان"
 
-#: mcomix/file_actions.py:984
+#: mcomix/file_actions.py:996
 msgid "It does not go to the trash and cannot be restored."
 msgstr "به زباله‌دان منتقل نمی‌شود و دیگر بازیابی نمی‌شود."
 
-#: mcomix/file_actions.py:992
+#: mcomix/file_actions.py:1004
 #, python-format
 msgid "Delete \"%s\" permanently?"
 msgstr "«%s» برای همیشه حذف شود؟"
 
-#: mcomix/file_actions.py:1092
+#: mcomix/file_actions.py:1104
 #, python-format
 msgid "Could not move \"%s\" to the trash"
 msgstr "انتقال «%s» به زباله‌دان ممکن نشد"
 
-#: mcomix/file_actions.py:1096 mcomix/library/book_area.py:972
+#: mcomix/file_actions.py:1108 mcomix/library/book_area.py:1008
 #, python-format
 msgid "%d book could not be moved to the trash."
 msgid_plural "%d books could not be moved to the trash."
 msgstr[0] "%d کتاب به زباله‌دان منتقل نشد."
 msgstr[1] "%d کتاب به زباله‌دان منتقل نشدند."
 
-#: mcomix/file_actions.py:1100
+#: mcomix/file_actions.py:1112
 msgid "Delete it permanently instead? It cannot be restored."
 msgid_plural "Delete them permanently instead? They cannot be restored."
 msgstr[0] "به‌جای آن برای همیشه حذف شود؟ دیگر بازیابی نمی‌شود."
 msgstr[1] "به‌جای آن برای همیشه حذف شوند؟ دیگر بازیابی نمی‌شوند."
 
-#: mcomix/file_actions.py:1120
+#: mcomix/file_actions.py:1132
 msgid "_Delete Permanently"
 msgstr "_حذف همیشگی"
 
-#: mcomix/file_actions.py:1147
+#: mcomix/file_actions.py:1159
 #, python-format
 msgid "Could not delete \"%s\""
 msgstr "حذف «%s» ممکن نشد"
 
-#: mcomix/file_actions.py:1153
+#: mcomix/file_actions.py:1165
 #, python-format
 msgid "%d book could not be deleted."
 msgid_plural "%d books could not be deleted."
 msgstr[0] "%d کتاب حذف نشد."
 msgstr[1] "%d کتاب حذف نشدند."
 
-#: mcomix/file_actions.py:1179
+#: mcomix/file_actions.py:1191
 #, python-format
 msgid "The file is gone, and its %d bookmark cannot be opened any more."
 msgid_plural ""
@@ -620,17 +625,17 @@ msgid_plural ""
 msgstr[0] "پرونده از بین رفته و %d نشانک آن دیگر گشوده نمی‌شود."
 msgstr[1] "پرونده از بین رفته و %d نشانک آن دیگر گشوده نمی‌شوند."
 
-#: mcomix/file_actions.py:1259 mcomix/thumbnail_tools.py:210
+#: mcomix/file_actions.py:1273 mcomix/thumbnail_tools.py:210
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr "! انتقال %(file)s به %(directory)s ممکن نشد: %(error)s"
 
-#: mcomix/file_actions.py:1271
+#: mcomix/file_actions.py:1285
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "انتقال «%(file)s» به «%(directory)s» ممکن نشد"
 
-#: mcomix/file_chooser_base_dialog.py:76 mcomix/file_chooser_base_dialog.py:867
+#: mcomix/file_chooser_base_dialog.py:76 mcomix/file_chooser_base_dialog.py:887
 #: mcomix/properties_dialog.py:137 mcomix/library/control_area.py:160
 #, python-format
 msgid "%d page"
@@ -645,7 +650,7 @@ msgstr[1] "%d صفحه"
 msgid "Open"
 msgstr "باز کردن"
 
-#: mcomix/file_chooser_base_dialog.py:238 mcomix/library/book_area.py:195
+#: mcomix/file_chooser_base_dialog.py:238 mcomix/library/book_area.py:200
 msgid "_Open"
 msgstr "_گشودن"
 
@@ -689,14 +694,14 @@ msgstr "تصاویر %s"
 
 #
 # File: src/filechooser.py, line: 125
-#: mcomix/file_chooser_base_dialog.py:764
+#: mcomix/file_chooser_base_dialog.py:784
 #, python-format
 msgid "A file named '%s' already exists. Do you want to replace it?"
 msgstr "پرونده‌ای با نام «%s» هم‌اکنون وجود دارد. آیا می‌خواهید جایگزینش کنید؟"
 
 #
 # File: src/filechooser.py, line: 128
-#: mcomix/file_chooser_base_dialog.py:766
+#: mcomix/file_chooser_base_dialog.py:786
 msgid "Replacing it will overwrite its contents."
 msgstr "جایگزینی، محتوای آن را بازنویسی می‌کند."
 
@@ -716,32 +721,32 @@ msgstr "! باز کردن در %s ممکن نشد؛ پوشهٔ موقت به ک�
 
 #
 # File: src/filehandler.py, line: 285
-#: mcomix/file_handler.py:502
+#: mcomix/file_handler.py:504
 #, python-format
 msgid "No images in '%s'"
 msgstr "هیچ تصویری در «%s» نیست"
 
 #
 # File: src/filehandler.py, line: 213
-#: mcomix/file_handler.py:774
+#: mcomix/file_handler.py:792
 #, python-format
 msgid "Could not open %s: No such file."
 msgstr "گشودن %s ممکن نشد: چنین پرونده‌ای وجود ندارد."
 
 #
 # File: src/filehandler.py, line: 217
-#: mcomix/file_handler.py:777 mcomix/file_provider.py:279
-#: mcomix/file_provider.py:373
+#: mcomix/file_handler.py:795 mcomix/file_provider.py:281
+#: mcomix/file_provider.py:382
 #, python-format
 msgid "Could not open %s: Permission denied."
 msgstr "گشودن %s ممکن نشد: اجازه داده نشد."
 
-#: mcomix/file_handler.py:1042
+#: mcomix/file_handler.py:1060
 #, python-format
 msgid "Continue reading from page %d?"
 msgstr "خواندن از صفحهٔ %d ادامه یابد؟"
 
-#: mcomix/file_handler.py:1043
+#: mcomix/file_handler.py:1061
 #, python-format
 msgid ""
 "You stopped reading here on %(date)s, %(time)s. If you choose \"Yes\", "
@@ -752,7 +757,7 @@ msgstr ""
 "برگزینید، خواندن از صفحهٔ %(page)d پی گرفته می‌شود. در غیر این صورت نخستین "
 "صفحه بار می‌شود."
 
-#: mcomix/file_handler.py:1566
+#: mcomix/file_handler.py:1592
 #, python-format
 msgid ""
 "! Corrupt file \"%s\", deleting it; the last file read will not be reopened."
@@ -760,7 +765,7 @@ msgstr ""
 "! پروندهٔ «%s» خراب است و حذف می‌شود؛ آخرین پروندهٔ خوانده‌شده دوباره گشوده "
 "نخواهد شد."
 
-#: mcomix/file_provider.py:238
+#: mcomix/file_provider.py:240
 #, python-format
 msgid "Invalid path: '%s'"
 msgstr "مسیر نامعتبر: «%s»"
@@ -1292,7 +1297,7 @@ msgid "Preferences"
 msgstr "ترجیحات"
 
 #: mcomix/keybindings.py:169 mcomix/ui.py:449 mcomix/ui.py:452
-#: mcomix/library/book_area.py:226
+#: mcomix/library/book_area.py:231
 msgid "Open containing folder"
 msgstr "گشودن شاخهٔ دربرگیرنده"
 
@@ -2364,7 +2369,7 @@ msgstr "نام پرونده"
 msgid "File name (GLib)"
 msgstr "نام پرونده (GLib)"
 
-#: mcomix/preferences_dialog.py:748 mcomix/library/book_area.py:285
+#: mcomix/preferences_dialog.py:748 mcomix/library/book_area.py:290
 msgid "File size"
 msgstr "اندازهٔ پرونده"
 
@@ -2373,12 +2378,12 @@ msgid "Last modified"
 msgstr "زمان تغییر"
 
 #: mcomix/preferences_dialog.py:755 mcomix/preferences_dialog.py:801
-#: mcomix/library/book_area.py:291
+#: mcomix/library/book_area.py:296
 msgid "Ascending"
 msgstr "صعودی"
 
 #: mcomix/preferences_dialog.py:756 mcomix/preferences_dialog.py:802
-#: mcomix/library/book_area.py:292
+#: mcomix/library/book_area.py:297
 msgid "Descending"
 msgstr "نزولی"
 
@@ -2528,7 +2533,7 @@ msgstr ""
 "نمایهٔ رنگی صفحه‌نمایش تنظیم شده است. ادراکی تناسب رنگ‌ها را نگه می‌دارد؛ سنجش "
 "رنگ نسبی رنگ‌هایی را که صفحه‌نمایش می‌تواند نشان دهد دقیق نگه می‌دارد."
 
-#: mcomix/preferences_dialog.py:976 mcomix/library/book_area.py:299
+#: mcomix/preferences_dialog.py:976 mcomix/library/book_area.py:304
 msgid "Normal"
 msgstr "عادی"
 
@@ -3049,7 +3054,7 @@ msgstr "نقشک برداری"
 msgid "! Could not save thumbnail \"%(thumbpath)s\": %(error)s"
 msgstr "! ذخیرهٔ مسطورهٔ «%(thumbpath)s» ممکن نشد: %(error)s"
 
-#: mcomix/ui.py:440 mcomix/library/book_area.py:223
+#: mcomix/ui.py:440 mcomix/library/book_area.py:228
 msgid "_Copy"
 msgstr "_رونوشت"
 
@@ -3528,26 +3533,26 @@ msgstr "ک_تاب‌خانه..."
 msgid "Could not open the manual: %s"
 msgstr "باز کردن راهنمای برنامه ممکن نشد: %s"
 
-#: mcomix/worker_thread.py:84
+#: mcomix/worker_thread.py:88
 #, python-format
 msgid "! Worker thread processing %(function)r failed: %(error)s"
 msgstr "! رشتهٔ کارگری که %(function)r را پردازش می‌کرد شکست خورد: %(error)s"
 
-#: mcomix/archive/epub.py:232 mcomix/archive/kfx.py:1105
+#: mcomix/archive/epub.py:232 mcomix/archive/kfx.py:1128
 #, python-format
 msgid "Could not open %s: it is protected by DRM."
 msgstr "گشودن %s ممکن نشد: با DRM محافظت شده است."
 
-#: mcomix/archive/kfx.py:1109
+#: mcomix/archive/kfx.py:1132
 #, python-format
 msgid "Could not open %s: it is not a Kindle book MComix can read."
 msgstr "گشودن %s ممکن نشد: کتاب Kindle ای نیست که MComix بتواند بخواند."
 
-#: mcomix/archive/password.py:98
+#: mcomix/archive/password.py:106
 msgid "The archive is password-protected:"
 msgstr "این بایگانی با گذرواژه محافظت می‌شود:"
 
-#: mcomix/archive/password.py:100
+#: mcomix/archive/password.py:108
 msgid "Please enter the password to continue:"
 msgstr "برای ادامه گذرواژه را وارد کنید:"
 
@@ -3556,7 +3561,7 @@ msgstr "برای ادامه گذرواژه را وارد کنید:"
 msgid "Extraction of %(archivefile)s might have failed: %(error)s"
 msgstr "استخراج %(archivefile)s شاید شکست خورده باشد: %(error)s"
 
-#: mcomix/archive/zip.py:176
+#: mcomix/archive/zip.py:171
 #, python-format
 msgid ""
 "%(filename)s's extracted size is %(actual_size)d bytes, but should be "
@@ -3600,37 +3605,37 @@ msgstr "افزودن «%s»..."
 msgid "! Non-existent book #%i"
 msgstr "! کتاب #%i وجود ندارد"
 
-#: mcomix/library/backend.py:318
+#: mcomix/library/backend.py:333
 #, python-format
 msgid "! Could not get cover for book \"%s\""
 msgstr "! گرفتن جلد کتاب «%s» ممکن نشد"
 
-#: mcomix/library/backend.py:404 mcomix/library/backend.py:421
-#: mcomix/library/backend.py:434 mcomix/library/backend.py:463
+#: mcomix/library/backend.py:419 mcomix/library/backend.py:436
+#: mcomix/library/backend.py:449 mcomix/library/backend.py:478
 msgid "Recent"
 msgstr "موارد اخیر"
 
-#: mcomix/library/backend.py:543 mcomix/library/backend.py:590
+#: mcomix/library/backend.py:558 mcomix/library/backend.py:605
 #, python-format
 msgid "! Could not add book \"%s\" to the library"
 msgstr "! افزودن کتاب «%s» به کتاب‌خانه ممکن نشد"
 
-#: mcomix/library/backend.py:619 mcomix/library/backend.py:687
+#: mcomix/library/backend.py:634 mcomix/library/backend.py:702
 #, python-format
 msgid "! Could not move book \"%s\" in the library"
 msgstr "! انتقال کتاب «%s» در کتابخانه ممکن نشد"
 
-#: mcomix/library/backend.py:737
+#: mcomix/library/backend.py:752
 #, python-format
 msgid "! Could not add collection \"%s\""
 msgstr "! افزودن مجموعهٔ «%s» ممکن نشد"
 
-#: mcomix/library/backend.py:769
+#: mcomix/library/backend.py:784
 #, python-format
 msgid "! Could not add book %(book)s to collection %(collection)s"
 msgstr "! افزودن کتاب %(book)s به مجموعهٔ %(collection)s ممکن نشد"
 
-#: mcomix/library/backend.py:796
+#: mcomix/library/backend.py:811
 #, python-format
 msgid "! Could not rename collection to \"%s\""
 msgstr "! تغییر نام مجموعه به «%s» ممکن نشد"
@@ -3638,15 +3643,15 @@ msgstr "! تغییر نام مجموعه به «%s» ممکن نشد"
 #
 # File: src/librarybackend.py, line: 272
 # File: src/librarybackend.py, line: 274
-#: mcomix/library/backend.py:813 mcomix/library/backend.py:815
+#: mcomix/library/backend.py:828 mcomix/library/backend.py:830
 msgid "(Copy)"
 msgstr "(رونوشت)"
 
-#: mcomix/library/backend.py:1112
+#: mcomix/library/backend.py:1129
 msgid "Could not determine library database version!"
 msgstr "تعیین نسخهٔ پایگاه دادهٔ کتاب‌خانه ممکن نشد!"
 
-#: mcomix/library/backend.py:1162
+#: mcomix/library/backend.py:1179
 #, python-format
 msgid "Upgrading library database version from %(from)d to %(to)d."
 msgstr "ارتقای نسخهٔ پایگاه دادهٔ کتاب‌خانه از %(from)d به %(to)d."
@@ -3662,148 +3667,148 @@ msgstr "همهٔ کتاب‌ها"
 msgid "! Could not scan for new books: %s"
 msgstr "! پویش کتاب‌های تازه ممکن نشد: %s"
 
-#: mcomix/library/book_area.py:196
+#: mcomix/library/book_area.py:201
 msgid "Opens the selected books for viewing."
 msgstr "کتاب‌های برگزیده را برای خواندن می‌گشاید."
 
-#: mcomix/library/book_area.py:198
+#: mcomix/library/book_area.py:203
 msgid "Open _without closing library"
 msgstr "گشودن _بدون بستن کتاب‌خانه"
 
-#: mcomix/library/book_area.py:199
+#: mcomix/library/book_area.py:204
 msgid "Opens the selected books, but keeps the library window open."
 msgstr "کتاب‌های برگزیده را می‌گشاید، اما پنجرهٔ کتاب‌خانه را باز نگه می‌دارد."
 
-#: mcomix/library/book_area.py:201
+#: mcomix/library/book_area.py:206
 msgid "_Mark as read"
 msgstr "علامت‌گذاری به‌عنوان _خوانده‌شده"
 
-#: mcomix/library/book_area.py:202
+#: mcomix/library/book_area.py:207
 msgid "Marks the selected books as read to the end."
 msgstr "کتاب‌های گزیده را تا پایان خوانده‌شده علامت می‌زند."
 
-#: mcomix/library/book_area.py:204
+#: mcomix/library/book_area.py:209
 msgid "Mark as u_nread"
 msgstr "علامت‌گذاری به‌عنوان _نخوانده"
 
-#: mcomix/library/book_area.py:205
+#: mcomix/library/book_area.py:210
 msgid "Forgets the page the selected books were left at."
 msgstr "صفحه‌ای را که کتاب‌های گزیده در آن رها شده بودند فراموش می‌کند."
 
-#: mcomix/library/book_area.py:207 mcomix/library/collection_area.py:142
+#: mcomix/library/book_area.py:212 mcomix/library/collection_area.py:142
 msgid "_Add..."
 msgstr "_افزودن..."
 
 #
 # File: src/library.py, line: 793
-#: mcomix/library/book_area.py:208 mcomix/library/collection_area.py:143
+#: mcomix/library/book_area.py:213 mcomix/library/collection_area.py:143
 msgid "Add more books to the library."
 msgstr "افزودن کتاب‌های بیشتر به کتاب‌خانه."
 
-#: mcomix/library/book_area.py:211
+#: mcomix/library/book_area.py:216
 msgid "Remove _from this collection"
 msgstr "برداشتن از این _مجموعه"
 
-#: mcomix/library/book_area.py:212
+#: mcomix/library/book_area.py:217
 msgid "Removes the selected books from the current collection."
 msgstr "کتاب‌های برگزیده را از مجموعهٔ کنونی برمی‌دارد."
 
-#: mcomix/library/book_area.py:214
+#: mcomix/library/book_area.py:219
 msgid "Remove from the _library"
 msgstr "برداشتن از _کتاب‌خانه"
 
-#: mcomix/library/book_area.py:215
+#: mcomix/library/book_area.py:220
 msgid "Completely removes the selected books from the library."
 msgstr "کتاب‌های برگزیده را به‌کلی از کتاب‌خانه برمی‌دارد."
 
-#: mcomix/library/book_area.py:217
+#: mcomix/library/book_area.py:222
 msgid "_Remove and move to the trash"
 msgstr "برداشتن و انتقال به _زباله‌دان"
 
-#: mcomix/library/book_area.py:218
+#: mcomix/library/book_area.py:223
 msgid "Deletes the selected books from disk."
 msgstr "کتاب‌های برگزیده را از دیسک حذف می‌کند."
 
-#: mcomix/library/book_area.py:220 mcomix/library/collection_area.py:153
+#: mcomix/library/book_area.py:225 mcomix/library/collection_area.py:153
 msgid "Clean _up"
 msgstr "_پاک‌سازی"
 
-#: mcomix/library/book_area.py:221 mcomix/library/collection_area.py:154
+#: mcomix/library/book_area.py:226 mcomix/library/collection_area.py:154
 msgid "Removes no longer existent books from the collection."
 msgstr "کتاب‌هایی را که دیگر وجود ندارند از مجموعه برمی‌دارد."
 
-#: mcomix/library/book_area.py:224
+#: mcomix/library/book_area.py:229
 msgid "Copies the selected book's path to clipboard."
 msgstr "مسیر کتاب برگزیده را در تخته‌گیره رونوشت می‌کند."
 
-#: mcomix/library/book_area.py:227
+#: mcomix/library/book_area.py:232
 msgid "Shows the selected book in the file manager."
 msgstr "کتاب گزیده را در مدیر پرونده‌ها نشان می‌دهد."
 
-#: mcomix/library/book_area.py:264
+#: mcomix/library/book_area.py:269
 msgid "Library books"
 msgstr "کتاب‌های کتاب‌خانه"
 
-#: mcomix/library/book_area.py:283
+#: mcomix/library/book_area.py:288
 msgid "Book name"
 msgstr "نام کتاب"
 
-#: mcomix/library/book_area.py:284
+#: mcomix/library/book_area.py:289
 msgid "Full path"
 msgstr "مسیر کامل"
 
-#: mcomix/library/book_area.py:286
+#: mcomix/library/book_area.py:291
 msgid "Date added"
 msgstr "تاریخ افزودن"
 
-#: mcomix/library/book_area.py:287
+#: mcomix/library/book_area.py:292
 msgid "Last read"
 msgstr "آخرین خواندن"
 
-#: mcomix/library/book_area.py:288
+#: mcomix/library/book_area.py:293
 msgid "By hand"
 msgstr "دستی"
 
-#: mcomix/library/book_area.py:297
+#: mcomix/library/book_area.py:302
 msgid "Huge"
 msgstr "بسیار بزرگ"
 
-#: mcomix/library/book_area.py:298
+#: mcomix/library/book_area.py:303
 msgid "Large"
 msgstr "بزرگ"
 
-#: mcomix/library/book_area.py:300
+#: mcomix/library/book_area.py:305
 msgid "Small"
 msgstr "کوچک"
 
-#: mcomix/library/book_area.py:301
+#: mcomix/library/book_area.py:306
 msgid "Tiny"
 msgstr "بسیار کوچک"
 
-#: mcomix/library/book_area.py:305
+#: mcomix/library/book_area.py:310
 msgid "Custom..."
 msgstr "سفارشی..."
 
-#: mcomix/library/book_area.py:309
+#: mcomix/library/book_area.py:314
 msgid "_Sort"
 msgstr "_چینش"
 
-#: mcomix/library/book_area.py:310
+#: mcomix/library/book_area.py:315
 msgid "Cover si_ze"
 msgstr "اندازهٔ _جلد"
 
-#: mcomix/library/book_area.py:641
+#: mcomix/library/book_area.py:650
 msgid "Set library cover size"
 msgstr "اندازهٔ جلدها در کتاب‌خانه را تعیین می‌کند"
 
-#: mcomix/library/book_area.py:846
+#: mcomix/library/book_area.py:882
 #, python-format
 msgid "Removed %(num)d book from '%(collection)s'."
 msgid_plural "Removed %(num)d books from '%(collection)s'."
 msgstr[0] "%(num)d کتاب از «%(collection)s» برداشته شد."
 msgstr[1] "%(num)d کتاب از «%(collection)s» برداشته شدند."
 
-#: mcomix/library/book_area.py:869 mcomix/library/collection_area.py:301
+#: mcomix/library/book_area.py:905 mcomix/library/collection_area.py:301
 #, python-format
 msgid "Removed %d book from the library."
 msgid_plural "Removed %d books from the library."
@@ -3812,11 +3817,11 @@ msgstr[1] "%d کتاب از کتاب‌خانه برداشته شدند."
 
 #
 # File: src/library.py, line: 597
-#: mcomix/library/book_area.py:891 mcomix/library/book_area.py:912
+#: mcomix/library/book_area.py:927 mcomix/library/book_area.py:948
 msgid "Remove books from the library?"
 msgstr "کتاب‌ها از کتاب‌خانه برداشته شوند؟"
 
-#: mcomix/library/book_area.py:892
+#: mcomix/library/book_area.py:928
 msgid ""
 "The selected books will be removed from the library. Any in a folder with no "
 "trash is deleted permanently and cannot be restored."
@@ -3824,19 +3829,19 @@ msgstr ""
 "کتاب‌های برگزیده از کتاب‌خانه برداشته می‌شوند. هر کدام که در شاخه‌ای بی زباله‌دان "
 "باشد برای همیشه پاک می‌شود و دیگر بازیابی نمی‌شود."
 
-#: mcomix/library/book_area.py:913
+#: mcomix/library/book_area.py:949
 msgid ""
 "The selected books will be removed from the library and moved to the trash."
 msgstr "کتاب‌های برگزیده از کتاب‌خانه برداشته و به زباله‌دان منتقل می‌شوند."
 
-#: mcomix/library/book_area.py:1023
+#: mcomix/library/book_area.py:1059
 #, python-format
 msgid "Remove the bookmarks in the deleted book?"
 msgid_plural "Remove the bookmarks in the %(count)d deleted books?"
 msgstr[0] "نشانک‌های کتاب حذف‌شده هم حذف شوند؟"
 msgstr[1] "نشانک‌های %(count)d کتاب حذف‌شده هم حذف شوند؟"
 
-#: mcomix/library/book_area.py:1142
+#: mcomix/library/book_area.py:1178
 msgid "Open with"
 msgstr "گشودن با"
 
@@ -4047,7 +4052,7 @@ msgstr[1] "%(count)d کتاب تازه از شاخهٔ «%(directory)s» افز�
 msgid "No new books found in folder '%s'."
 msgstr "هیچ کتاب تازه‌ای در شاخهٔ «%s» یافت نشد."
 
-#: mcomix/library/main_dialog.py:273
+#: mcomix/library/main_dialog.py:272
 #, python-format
 msgid "Books relocated: %d"
 msgstr "کتاب‌های جابه‌جاشده: %d"

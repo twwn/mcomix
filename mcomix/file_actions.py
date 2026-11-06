@@ -226,14 +226,12 @@ class FileActions:
         try:
             portability.rename_once_closed(os.rename, other, aside)
         except OSError as error:
-            log.error('Could not rename %s: %r', other, error)
+            self._rename_failed(other, error)
             return False
         try:
             portability.rename_once_closed(os.rename, path, target)
             portability.rename_once_closed(os.rename, aside, other_target)
         except OSError as error:
-            log.error('Could not swap the names of %s and %s: %s',
-                      path, other, error)
             # The file taken out of the way goes back under its own
             # name, whichever of the two renames failed: a page whose
             # file is called something no listing knows is a page that
@@ -243,6 +241,7 @@ class FileActions:
             for source, back in ((target, path), (aside, other)):
                 if os.path.lexists(source) and not os.path.lexists(back):
                     portability.rename_once_closed(os.rename, source, back)
+            self._rename_failed(path, error)
             return False
         self._paths_changed(listing, {path: target, other: other_target})
         self._show_pages(listing,
@@ -264,10 +263,10 @@ class FileActions:
         try:
             portability.rename_once_closed(os.replace, path, target)
         except OSError as error:
-            log.error('Could not rename %s: %r', path, error)
             # The page that was taken out to make room for the name is
             # put back, the name having gone nowhere.
             self.undo()
+            self._rename_failed(path, error)
             return False
         listing = self._window.imagehandler.get_image_files()
         self._paths_changed(listing, {path: target})
@@ -316,16 +315,28 @@ class FileActions:
         try:
             portability.rename_once_closed(os.rename, path, target)
         except OSError as error:
-            # Not translated, as image_handler's own failures are not:
-            # what it says is a file system error to whoever reads the
-            # log, and the reader has been told by the page not moving.
-            log.error('Could not rename %s: %r', path, error)
+            self._rename_failed(path, error)
             return None
         listing = self._window.imagehandler.get_image_files()
         self._paths_changed(listing, {path: target})
         self._show_pages(listing,
                          self._window.imagehandler.get_current_page())
         return name
+
+    def _rename_failed(self, path: str, error: OSError) -> None:
+        """Say why the file at <path> kept its name.
+
+        Most often a folder the reader may not write to, or a file
+        another program holds open on Windows: the page keeping its
+        name said nothing of why, and the log is not where the reader
+        looks.
+        """
+        log.error('Could not rename %s: %r', path, error)
+        dialog = message_dialog.MessageDialog(
+            self._window, buttons=Gtk.ButtonsType.CLOSE)
+        dialog.set_text(_('Could not rename "%s"') % os.path.basename(path),
+                        str(error))
+        dialog.run_async(lambda response: None)
 
     def rename_popup_page(self, *args: object) -> None:
         """Ask what to call the page the right-click menu was opened over.

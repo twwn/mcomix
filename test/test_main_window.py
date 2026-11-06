@@ -4496,7 +4496,20 @@ class MainWindowTest(MComixTest):
                 unittest.mock.patch('os.rename', _rename):
             self.assertFalse(
                 self.window.file_actions.swap_page_names(1, '1.png'))
+        self._assert_told_once()
         return sorted(os.listdir(directory))
+
+    def _assert_told_once(self):
+        """Assert that one message said why the name did not change,
+        and close it.  The log alone had said so, and a reader renaming
+        a page in a folder they may not write to saw nothing happen."""
+        self._pump()
+        dialogs = self._delete_dialogs()
+        self.assertEqual(len(dialogs), 1,
+                         'nothing said why the name did not change')
+        for dialog in dialogs:
+            dialog.destroy()
+        self._pump()
 
     def test_a_swap_whose_last_rename_fails_puts_both_files_back(self):
         """The file put aside went back only when its own name was free,
@@ -4539,7 +4552,7 @@ class MainWindowTest(MComixTest):
                 unittest.mock.patch('os.replace', side_effect=refused):
             self.assertFalse(
                 self.window.file_actions.replace_page_named(1, '1.png'))
-        self._pump()
+        self._assert_told_once()
         self.assertEqual(before, sorted(os.listdir(directory)))
         self.assertEqual(pages, self._pages())
 
@@ -4550,7 +4563,7 @@ class MainWindowTest(MComixTest):
         with unittest.mock.patch('os.rename', side_effect=refused):
             self.assertIsNone(
                 self.window.file_actions.rename_page(1, 'Cover.png'))
-        self._pump()
+        self._assert_told_once()
         self.assertEqual(before, sorted(os.listdir(directory)))
         self.assertEqual('0.png', self.window.file_actions.page_name(1))
 
