@@ -510,9 +510,8 @@ class Thumbnailer:
         """Return the filename within <files> that is the most likely to be the
         cover of an archive using some simple heuristics.
         """
-        # Ignore MacOSX meta files.
         images = [name for name in files
-                  if '__MACOSX' not in os.path.normpath(name).split(os.sep)
+                  if not archive_tools.is_finder_file(name)
                   and image_tools.is_image_file(name)]
         # And the pages a scan is given by whoever passed it on, which
         # sort before the cover: the credits, and the banner upstream

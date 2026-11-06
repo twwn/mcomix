@@ -115,7 +115,7 @@ def _count_pages(path: str, mime: int) -> int | None:
             return None
         return len([name for name in names
                     if image_tools.is_image_file(name)
-                    and '__MACOSX' not in os.path.normpath(name).split(os.sep)])
+                    and not archive_tools.is_finder_file(name)])
     except Exception as error:
         log.debug('Could not count the pages of "%s": %s', path, error)
         return None

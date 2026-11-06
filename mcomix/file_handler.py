@@ -924,8 +924,7 @@ class FileHandler:
 
         archive_images = [image for image in files
                           if image_tools.is_image_file(image)
-                          # Remove MacOS meta files from image list
-                          and '__MACOSX' not in os.path.normpath(image).split(os.sep)]
+                          and not archive_tools.is_finder_file(image)]
 
         self._sort_archive_images(archive_images)
         # An archive is being listed, so it was extracted somewhere.
@@ -933,7 +932,9 @@ class FileHandler:
         image_files = [os.path.join(tmp_dir, f)
                        for f in archive_images]
 
-        comment_files = list(filter(self._comment_re.search, files))
+        comment_files = [name for name in files
+                         if self._comment_re.search(name)
+                         and not archive_tools.is_finder_file(name)]
         tools.alphanumeric_sort(comment_files)
         self._comment_files = [os.path.join(tmp_dir, f)
                                for f in comment_files]
@@ -949,8 +950,7 @@ class FileHandler:
         other_files = [name for name in files
                        if name not in accounted
                        and not name.endswith('/')
-                       and '__MACOSX' not in
-                       os.path.normpath(name).split(os.sep)]
+                       and not archive_tools.is_finder_file(name)]
         self._other_files = [os.path.join(tmp_dir, f) for f in other_files]
 
         self._name_table = dict(list(zip(image_files, archive_images)))

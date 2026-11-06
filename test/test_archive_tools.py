@@ -2,6 +2,7 @@
 import lzma
 import os
 import tarfile
+import zipfile
 
 from . import MComixTest, get_testfile_path
 
@@ -159,6 +160,33 @@ class ArchiveToolsTest(MComixTest):
         with open(path, 'wb') as broken:
             broken.write(b'\0' * (tarfile.RECORDSIZE * 8))
         self.assertIsNone(archive_tools.archive_mime_type(path))
+
+
+class FinderFileTest(MComixTest):
+
+    """What macOS writes beside a book is no part of it (archive_tools.
+    is_finder_file)."""
+
+    def test_the_files_macos_writes_are_told_apart(self):
+        for name in ('__MACOSX/pages/._01.png', '._01.png', 'pages/._01.png',
+                     '__MACOSX/info.txt'):
+            self.assertTrue(archive_tools.is_finder_file(name), name)
+        for name in ('01.png', 'pages/01.png', '.hidden.png', 'a._b.png',
+                     '_01.png', 'MACOSX/01.png'):
+            self.assertFalse(archive_tools.is_finder_file(name), name)
+
+    def test_they_are_not_counted_as_pages(self):
+        """A zip made on macOS with zip or bsdtar counted every page
+        twice in the library and the file chooser."""
+        path = os.path.join(self.tmp_dir, 'book.cbz')
+        page = get_testfile_path('images', '03-PNG-RGB.png')
+        with zipfile.ZipFile(path, 'w') as book:
+            for number in (1, 2):
+                book.writestr('._%02d.png' % number, b'\0\5\26\7')
+                book.write(page, '%02d.png' % number)
+            book.write(page, '__MACOSX/._01.png')
+        self.assertEqual((constants.ZIP, 2),
+                         archive_tools.get_archive_info(path)[:2])
 
 
 class UnrarLibraryTest(MComixTest):

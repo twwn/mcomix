@@ -1075,6 +1075,9 @@ class SavedArchiveContentsTest(MComixTest):
             book.writestr('info.txt', 'read me')
             book.writestr('extra/notes.md', 'notes')
             book.writestr('__MACOSX/._notes.md', 'junk')
+            # Beside the page, as bsdtar and zip on macOS leave them.
+            book.writestr('pages/._01.png', 'junk')
+            book.writestr('._info.txt', 'junk')
         self.window = main.MainWindow(open_path=self.source)
         main.set_main_window(self.window)
         self.assertTrue(wait_for(
@@ -1145,6 +1148,13 @@ class SavedArchiveContentsTest(MComixTest):
         of the pages as well."""
         self.assertEqual([name for name in self._saved()
                           if '__MACOSX' in name], [])
+
+    def test_the_files_a_mac_leaves_beside_the_pages_are_no_pages(self):
+        """An AppleDouble file of a zip made with zip or bsdtar on macOS
+        sorted first, so page 1 was a picture that could not be read."""
+        self.assertEqual(3, self.window.imagehandler.get_number_of_pages())
+        self.assertEqual([name for name in self._saved()
+                          if os.path.basename(name).startswith('._')], [])
 
     def test_a_comment_file_is_written_once_and_not_carried_as_well(self):
         self.assertEqual(self._saved().count('ComicInfo.xml'), 1)

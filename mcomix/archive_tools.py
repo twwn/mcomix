@@ -416,6 +416,20 @@ def _is_tarfile(path: str, mode: tar.ReadMode) -> bool:
         return False
 
 
+def is_finder_file(name: str) -> bool:
+    """Whether <name>, a member of an archive, is a file macOS writes
+    beside the book's own rather than part of it.
+
+    The Finder puts what other file systems cannot hold - extended
+    attributes, resource forks - in an AppleDouble file named "._" and
+    the name of the file it describes. Its own archiver gathers them in
+    a __MACOSX folder; bsdtar and zip on macOS leave them beside each
+    file, where they look like pages that cannot be read.
+    """
+    parts = os.path.normpath(name).split(os.sep)
+    return '__MACOSX' in parts or parts[-1].startswith('._')
+
+
 def get_archive_info(path: str) -> tuple[int, int, int] | None:
     """Return a tuple (mime, num_pages, size) with info about the archive
     at <path>, or None if <path> doesn't point to a supported archive.
@@ -438,7 +452,9 @@ def get_archive_info(path: str) -> tuple[int, int, int] | None:
         cleanup.append(archive.close)
 
         files = archive.list_contents()
-        num_pages = len(list(filter(image_tools.is_image_file, files)))
+        num_pages = len([name for name in files
+                         if image_tools.is_image_file(name)
+                         and not is_finder_file(name)])
         size = os.stat(path).st_size
 
         return (mime, num_pages, size)

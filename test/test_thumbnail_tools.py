@@ -128,7 +128,8 @@ class CoverGuessTest(MComixTest):
 
     def test_the_back_cover_the_credits_and_a_mac_s_files_are_passed_over(self):
         self.assertEqual('02.jpg', self._guess(
-            'back cover.jpg', '__MACOSX/._cover.jpg', 'credits-cover.jpg',
+            'back cover.jpg', '__MACOSX/._cover.jpg', '._01.jpg',
+            'credits-cover.jpg',
             'notes.txt', '02.jpg', '10.jpg'))
 
     def test_a_banner_before_the_first_page_is_passed_over(self):
