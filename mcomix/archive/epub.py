@@ -45,6 +45,8 @@ _XHTML = '{http://www.w3.org/1999/xhtml}'
 _SVG = '{http://www.w3.org/2000/svg}'
 _XLINK = '{http://www.w3.org/1999/xlink}'
 _ENC = '{http://www.w3.org/2001/04/xmlenc#}'
+_OPS = '{http://www.idpf.org/2007/ops}'
+_NCX = '{http://www.daisy.org/z3986/2005/ncx/}'
 
 #: The spine documents a page's picture is looked for in.
 _DOCUMENTS = ('application/xhtml+xml', 'text/html', 'image/svg+xml')
@@ -146,13 +148,19 @@ class _Book:
         if package is None:
             return
         manifest: dict[str, tuple[str, str]] = {}
+        navigation = ''
         for item in package.iter(_OPF + 'item'):
             identifier, href = item.get('id'), item.get('href')
             if identifier and href:
                 manifest[identifier] = (_resolve(package_path, href),
                                         item.get('media-type', ''))
+                if 'nav' in (item.get('properties') or '').split():
+                    navigation = manifest[identifier][0]
         members = set(archive.namelist())
-        seen = set()
+        seen: dict[str, int] = {}
+        #: The first picture each spine document shows, by its index:
+        #: where a chapter that begins with the document begins.
+        starts: dict[str, int] = {}
         spine = package.find(_OPF + 'spine')
         for itemref in spine.iter(_OPF + 'itemref') if spine is not None else ():
             if itemref.get('linear', 'yes') == 'no':
@@ -169,8 +177,26 @@ class _Book:
             for picture in references:
                 if picture in members and picture not in seen \
                         and image_tools.is_image_file(picture):
-                    seen.add(picture)
+                    seen[picture] = len(self.pictures)
                     self.pictures.append(picture)
+                if picture in seen:
+                    starts.setdefault(path, seen[picture])
+        # An EPUB 3 book has a navigation document; an EPUB 2 one, and
+        # many EPUB 3 ones beside it, an NCX, which the spine names.
+        entries: list[tuple[str, str]] = []
+        if navigation:
+            document = _parse(archive, navigation)
+            if document is not None:
+                entries = [(title, _resolve(navigation, reference))
+                           for title, reference in _navigation(document)]
+        if not entries and spine is not None:
+            ncx = manifest.get(spine.get('toc', ''), ('', ''))[0]
+            document = _parse(archive, ncx) if ncx else None
+            if document is not None:
+                entries = [(title, _resolve(ncx, reference))
+                           for title, reference in _ncx(document)]
+        bookmarks = [(starts.get(target, seen.get(target, -1)), title)
+                     for title, target in entries]
         right_to_left = spine is not None \
             and spine.get('page-progression-direction') == 'rtl'
         metadata = package.find(_OPF + 'metadata')
@@ -186,7 +212,32 @@ class _Book:
             next((date[:4] for date in texts('date')[:1]), None),
             texts('creator'),
             next(iter(texts('publisher')), None),
-            right_to_left)
+            right_to_left, len(self.pictures), bookmarks)
+
+
+def _navigation(document: ElementTree.Element) -> Iterator[tuple[str, str]]:
+    """The (title, reference) entries of an EPUB 3 navigation document's
+    table of contents, in its order: the links of the nav element whose
+    epub:type is toc, nested lists and all."""
+    for nav in document.iter(_XHTML + 'nav'):
+        if 'toc' not in (nav.get(_OPS + 'type') or '').split():
+            continue
+        for link in nav.iter(_XHTML + 'a'):
+            reference = link.get('href')
+            if reference:
+                yield ''.join(link.itertext()), reference
+        return
+
+
+def _ncx(document: ElementTree.Element) -> Iterator[tuple[str, str]]:
+    """The (title, reference) entries of an EPUB 2 NCX's navigation map,
+    in its order, nested points and all."""
+    for point in document.iter(_NCX + 'navPoint'):
+        content = point.find(_NCX + 'content')
+        reference = content.get('src') if content is not None else None
+        if reference:
+            yield point.findtext(_NCX + 'navLabel/' + _NCX + 'text') or '', \
+                reference
 
 
 def _encrypted(archive: zipfile.ZipFile) -> bool:

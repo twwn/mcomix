@@ -55,10 +55,14 @@ _NAMESPACES = {
 
 
 def of_book(title: str | None, year: str | None, writers: Sequence[str],
-            publisher: str | None, right_to_left: bool) -> bytes | None:
+            publisher: str | None, right_to_left: bool,
+            page_count: int = 0,
+            bookmarks: Sequence[tuple[int, str]] = ()) -> bytes | None:
     """A ComicInfo.xml of what an ebook says of itself: its title, the
-    year it came out, its authors and its publisher, and whether it
-    reads right to left; None where it says none of it.
+    year it came out, its authors and its publisher, whether it reads
+    right to left, and the chapters of its table of contents, as
+    (page, title) pairs of <page_count> pages counted from zero; None
+    where it says none of it.
 
     The KFX and EPUB handlers list one beside the pages of a book that
     carries no ComicInfo.xml of its own, since MComix reads the file for
@@ -75,6 +79,16 @@ def of_book(title: str | None, year: str | None, writers: Sequence[str],
             ElementTree.SubElement(root, element).text = text
     if right_to_left:
         ElementTree.SubElement(root, 'Manga').text = 'YesAndRightToLeft'
+    bookmarks = [(page, ' '.join(text.split())) for page, text in bookmarks
+                 if 0 <= page < page_count and text.strip()]
+    if bookmarks:
+        # The count is what tells a reader that the positions are this
+        # book's (chapters()).
+        ElementTree.SubElement(root, 'PageCount').text = str(page_count)
+        pages = ElementTree.SubElement(root, 'Pages')
+        for page, text in bookmarks:
+            ElementTree.SubElement(pages, 'Page', Image=str(page),
+                                   Bookmark=text)
     if not len(root):
         return None
     written: bytes = ElementTree.tostring(root, encoding='utf-8',

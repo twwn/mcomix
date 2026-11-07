@@ -56,6 +56,8 @@ class Book:
                          '<dc:identifier id="id">urn:uuid:1</dc:identifier>'
                          '<dc:language>en</dc:language>')
         self.direction = None
+        #: The id of the NCX item the spine names, if any.
+        self.toc = None
         self.extra = {}
         #: Whether the package document is written where the container
         #: says it is.
@@ -80,13 +82,18 @@ class Book:
         return self
 
     def write(self, path, mimetype=epub.MIMETYPE):
-        manifest = ''.join('<item id="%s" href="%s" media-type="%s"/>' % item
-                           for item in self.items)
+        manifest = ''.join(
+            '<item id="%s" href="%s" media-type="%s"%s/>' % (
+                item[:3] + ((' properties="%s"' % item[3]) if len(item) > 3
+                            else '',))
+            for item in self.items)
         spine = ''.join('<itemref idref="%s"%s/>' % (identifier, '' if linear
                                                      else ' linear="no"')
                         for identifier, linear in self.spine)
         direction = (' page-progression-direction="%s"' % self.direction
                      if self.direction else '')
+        if self.toc:
+            direction += ' toc="%s"' % self.toc
         package = (
             '<?xml version="1.0" encoding="utf-8"?>\n'
             '<package xmlns="http://www.idpf.org/2007/opf" version="3.0" '
@@ -238,6 +245,50 @@ class EpubTest(MComixTest):
         book.direction = 'ltr'
         self.extracted(self.open(book, name='ltr.epub'), comicinfo.NAME)
         self.assertFalse(comicinfo.reads_right_to_left(path))
+
+    def _chapters(self, book, name='book.epub'):
+        archive = self.open(book, name=name)
+        self.extracted(archive, comicinfo.NAME)
+        pages = [entry for entry in archive.list_contents()
+                 if entry != comicinfo.NAME]
+        return comicinfo.chapters(
+            os.path.join(self.tmp_dir, 'out', comicinfo.NAME), len(pages))
+
+    def test_the_navigation_document_names_the_chapters(self):
+        """A chapter starts on the first picture of the document its link
+        points at, fragment or not; a link to a page of text alone, with
+        no picture, names no chapter."""
+        book = Book().page('p1', 'a.png').page('p2', 'b.png').page('p3', 'c.png')
+        book.add('notes.xhtml', xhtml('<p>Notes</p>'), 'application/xhtml+xml',
+                 spine=True)
+        book.add('nav.xhtml', xhtml(
+            '<nav xmlns:epub="http://www.idpf.org/2007/ops" epub:type="landmarks">'
+            '<ol><li><a href="p3.xhtml">Not this one</a></li></ol></nav>'
+            '<nav xmlns:epub="http://www.idpf.org/2007/ops" epub:type="toc">'
+            '<ol><li><a href="p1.xhtml">Cover</a></li>'
+            '<li><a href="p2.xhtml#top"><span>Chapter</span> 1</a>'
+            '<ol><li><a href="images/c.png">Part two</a></li></ol></li>'
+            '<li><a href="notes.xhtml">Notes</a></li></ol></nav>'),
+            'application/xhtml+xml')
+        book.items[-1] += ('nav',)
+        self.assertEqual([('Cover', 1), ('Chapter 1', 2), ('Part two', 3)],
+                         self._chapters(book))
+
+    def test_an_ncx_names_them_where_there_is_no_navigation_document(self):
+        book = Book().page('p1', 'a.png').page('p2', 'b.png')
+        book.add('toc.ncx', (
+            '<?xml version="1.0"?><ncx xmlns="http://www.daisy.org/z3986/2005/ncx/"'
+            ' version="2005-1"><navMap>'
+            '<navPoint id="n1"><navLabel><text>Start</text></navLabel>'
+            '<content src="p1.xhtml"/>'
+            '<navPoint id="n2"><navLabel><text>Later</text></navLabel>'
+            '<content src="p2.xhtml"/></navPoint></navPoint>'
+            '</navMap></ncx>'), 'application/x-dtbncx+xml')
+        book.toc = book.items[-1][0]
+        self.assertEqual([('Start', 1), ('Later', 2)], self._chapters(book))
+
+    def test_a_book_without_a_table_of_contents_names_no_chapters(self):
+        self.assertEqual([], self._chapters(Book().page('p1', 'a.png')))
 
     def test_a_comicinfo_the_book_carries_is_listed_as_it_is(self):
         book = Book().page('p1', 'a.png')
