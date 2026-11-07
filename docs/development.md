@@ -40,6 +40,8 @@ Path | What
 `share/` | Desktop file, icons, MIME types, AppStream metadata, man page.
 `artwork/` | The icon's source, and the Makefile that draws every size from it: see its [README](../artwork/README.md).
 `win32/` | The Windows build, the MSI installer and the Chocolatey package.
+`flatpak/` | The Flatpak's manifest, and the scripts that write the Flathub manifest from it and keep its format: see [Releasing](releasing.md#flatpak).
+`fuzz/` | The [fuzz targets](#fuzzing) and their seeds.
 `mcomixstarter.py` | The script the Windows build freezes into `MComix.exe`.
 `tools/` | `source_archive.py`, which builds the source archive: see [Releasing](releasing.md#source-archive).
 `.github/` | The [workflows](#continuous-integration), issue forms, pull request template and Dependabot's settings.

@@ -86,4 +86,4 @@ Escape hides the window; CTRL+W closes it. In the search field, Escape first emp
 
 - While "Remember recently opened files" is on, every archive opened joins the "Recent" collection with the page it was left at.
 - That page is remembered by its picture, so re-sorting the archive does not move it.
-- "Never" stops this, and offers to clear what is kept.
+- Turning it off stops this, and offers to clear what is kept.

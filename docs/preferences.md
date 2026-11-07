@@ -40,7 +40,7 @@ Prompts answered for good | Every prompt whose answer can be remembered, with it
 
 Option | Explanation
 -------|------------
-Use smart scrolling | Space and the mouse wheel follow a comic page's reading order: sideways, down, sideways again. A page that cannot scroll sideways, as in "Fit to width", scrolls down only. Two pages side by side that scroll down only are read one after the other: the second from its top once the first is at its bottom. A wide page shown alone in double page mode counts as two.
+Use smart scrolling | Space and the mouse wheel follow a comic page's reading order: sideways, down, sideways again. A page that cannot scroll sideways, as in "Fit width mode", scrolls down only. Two pages side by side that scroll down only are read one after the other: the second from its top once the first is at its bottom. A wide page shown alone in double page mode counts as two.
 Arrow key step (in pixels) | 50 by default.
 Mouse wheel step (in pixels) | 50 by default.
 Space key step (in percent of the page) | 50 by default.
@@ -71,7 +71,7 @@ Show a page alone | When double page mode shows one page: "Never", "Only for tit
 Page auto-resizing | How two pages of different sizes are fitted side by side: "Prefer same scale", "Prefer same size" or "Fit to same size".
 Space between two pages (in pixels) | 0 to 100; 2 by default.
 Open long strips in continuous mode | A book most of whose first six pages are at least twice as high as wide opens in [continuous mode](reading.md#continuous-mode). On by default. "View → Continuous mode" turns the mode off for that book alone.
-Fixed width for wide pages | "Fit to size" gives wide pages, such as spreads, a size of their own. 3790 by default.
+Fixed width for wide pages | "Fit size mode" gives wide pages, such as spreads, a size of their own. 3790 by default.
 Fixed height for wide pages | 960 by default.
 Fixed width for other pages | 1450 by default.
 Fixed height for other pages | 1800 by default.

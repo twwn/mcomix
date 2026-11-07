@@ -65,5 +65,5 @@ The archive on disk is untouched until the changes are written.
 ## ComicInfo.xml
 
 - Every archive MComix saves carries a ComicInfo.xml, the metadata file comic readers agree on.
-- MComix writes two fields: PageCount and Pages, the number of pages and the size of each, so other readers can lay the book out before decoding it.
+- MComix writes two fields: PageCount and Pages, the number of pages and the size of each, so other readers can lay the book out before decoding it. Pages marks the first page as the front cover.
 - An archive's existing ComicInfo.xml keeps every other field.
