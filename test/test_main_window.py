@@ -1780,9 +1780,12 @@ class MainWindowTest(MComixTest):
             return ((x + pointer[0]) / across, (y + pointer[1]) / down)
 
         handler = self.window.event_handler
-        handler.mouse_move_event(self._Motion(), *pointer)
         for delta in (-1, 1, 1):
             before = under_pointer()
+            # Moved before every turn: Xvfb's own pointer, in the middle
+            # of the screen, enters the window or moves over it while
+            # the redraws are pumped, and is then where the zoom is about.
+            handler.mouse_move_event(self._Motion(), *pointer)
             handler.scroll_wheel_event(
                 self._Scroll(Gdk.ModifierType.CONTROL_MASK), 0, delta)
             self._settled()
