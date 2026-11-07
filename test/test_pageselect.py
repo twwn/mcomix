@@ -6,6 +6,7 @@ extractor has not reached yet.
 """
 
 import os
+import zipfile
 from unittest import mock
 
 from gi.repository import Gdk, Gtk
@@ -186,3 +187,102 @@ class PageselectTest(MComixTest):
 
 
 # vim: expandtab:sw=4:ts=4
+
+
+class ChapterTest(MComixTest):
+
+    """A book whose ComicInfo.xml names chapters is gone through by them
+    in Go to page."""
+
+    _COMICINFO = (
+        '<ComicInfo><PageCount>4</PageCount><Pages>'
+        '<Page Image="0" Bookmark="Prologue"/><Page Image="1"/>'
+        '<Page Image="2" Bookmark="The Night"/><Page Image="3"/>'
+        '</Pages></ComicInfo>')
+
+    def _open(self, comicinfo_xml):
+        path = os.path.join(self.tmp_dir, 'book.cbz')
+        with zipfile.ZipFile(get_testfile_path(
+                'archives', '01-ZIP-Normal.zip')) as source, \
+                zipfile.ZipFile(path, 'w') as book:
+            for name in source.namelist():
+                if name.endswith(('.jpg', '.png')):
+                    book.writestr(name, source.read(name))
+            if comicinfo_xml is not None:
+                book.writestr('ComicInfo.xml', comicinfo_xml)
+        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
+                          constants.THUMBNAIL_PATH):
+            os.makedirs(directory, exist_ok=True)
+        icons.load_icons()
+        self.window = main.MainWindow(open_path=path)
+        main.set_main_window(self.window)
+        self.assertTrue(wait_for(
+            lambda: self.window.imagehandler.get_number_of_pages() == 4,
+            seconds=20))
+        self.assertTrue(wait_for(
+            lambda: all(self.window.filehandler.file_is_available(member)
+                        for member in self.window.filehandler.get_member_names()),
+            seconds=20))
+        self.dialog = pageselect.Pageselector(self.window)
+        pump()
+
+    def tearDown(self):
+        self.dialog._stop_thumbnailing()
+        for window in Gtk.Window.list_toplevels():
+            if window.get_visible() and window is not self.window:
+                window.destroy()
+        self.window.terminate_program()
+        self.window.destroy()
+        main.set_main_window(None)
+        pump()
+        super().tearDown()
+
+    def _titles(self):
+        listed = self.dialog._chapter_list
+        return [listed.get_string(index) for index in range(listed.get_n_items())]
+
+    def test_the_chapters_are_listed_and_choosing_one_goes_to_its_page(self):
+        self._open(self._COMICINFO)
+        selector = self.dialog._chapter_selector
+        self.assertTrue(selector.get_visible())
+        self.assertEqual(['Prologue', 'The Night'], self._titles())
+        selector.set_selected(1)
+        self.assertEqual(3, self.dialog._selector_adjustment.get_value())
+        self.dialog.response(Response.OK)
+        pump()
+        self.assertEqual(3, self.window.imagehandler.get_current_page())
+
+    def test_the_list_shows_the_chapter_of_the_page_chosen(self):
+        self._open(self._COMICINFO)
+        selector = self.dialog._chapter_selector
+        adjustment = self.dialog._selector_adjustment
+        for page, chapter in ((4, 1), (2, 0), (3, 1), (1, 0)):
+            adjustment.set_value(page)
+            self.assertEqual(chapter, selector.get_selected(), page)
+            self.assertEqual(page, adjustment.get_value(),
+                             'following the page moved it')
+
+    def test_a_book_without_a_comicinfo_shows_no_list(self):
+        self._open(None)
+        self.assertFalse(self.dialog._chapter_selector.get_visible())
+
+    def test_a_comicinfo_without_bookmarks_shows_no_list(self):
+        self._open('<ComicInfo><Title>T</Title></ComicInfo>')
+        self.assertFalse(self.dialog._chapter_selector.get_visible())
+
+    def test_the_chapters_wait_for_a_comicinfo_not_out_yet(self):
+        with mock.patch.object(main.MainWindow, '_look_for_direction'):
+            self._open(self._COMICINFO)
+        self.dialog.destroy()
+        pump()
+        filehandler = self.window.filehandler
+        path = next(path for path, name in filehandler.get_member_names().items()
+                    if name == 'ComicInfo.xml')
+        with mock.patch.object(filehandler, 'file_is_available',
+                               return_value=False), \
+                mock.patch.object(filehandler, 'ask_for_files') as asked:
+            self.dialog = pageselect.Pageselector(self.window)
+        asked.assert_called_once_with([path])
+        self.assertFalse(self.dialog._chapter_selector.get_visible())
+        filehandler.file_available([path])
+        self.assertTrue(self.dialog._chapter_selector.get_visible())

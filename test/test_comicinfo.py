@@ -252,6 +252,56 @@ class DescribeTest(MComixTest):
             + b'</ComicInfo>'))
 
 
+class ChaptersTest(MComixTest):
+
+    """The chapters chapters() finds in a ComicInfo.xml's page list."""
+
+    def _chapters(self, document, page_count=4):
+        path = os.path.join(self.tmp_dir, 'ComicInfo.xml')
+        with open(path, 'w', encoding='utf-8') as handle:
+            handle.write(document)
+        return comicinfo.chapters(path, page_count)
+
+    def test_bookmarks_name_chapters_on_pages_counted_from_one(self):
+        self.assertEqual(
+            [('Prologue', 1), ('The Night', 3)],
+            self._chapters(
+                '<ComicInfo><PageCount>4</PageCount><Pages>'
+                '<Page Image="2" Bookmark=" The \n Night "/>'
+                '<Page Image="0" Bookmark="Prologue" Type="FrontCover"/>'
+                '<Page Image="1"/><Page Image="3" Bookmark=""/>'
+                '</Pages></ComicInfo>'))
+
+    def test_the_page_entries_count_where_there_is_no_page_count(self):
+        document = ('<ComicInfo><Pages><Page Image="0"/><Page Image="1"'
+                    ' Bookmark="Two"/>%s</Pages></ComicInfo>')
+        self.assertEqual([('Two', 2)], self._chapters(
+            document % '<Page Image="2"/><Page Image="3"/>'))
+        self.assertEqual([], self._chapters(document % ''))
+
+    def test_a_file_written_for_other_pages_names_none(self):
+        """Image is a position, and on another set of pages it is the
+        position of another page."""
+        self.assertEqual([], self._chapters(
+            '<ComicInfo><PageCount>5</PageCount><Pages>'
+            '<Page Image="2" Bookmark="Three"/></Pages></ComicInfo>'))
+
+    def test_entries_past_the_book_or_without_a_position_are_left(self):
+        self.assertEqual([('One', 1)], self._chapters(
+            '<ComicInfo><PageCount>4</PageCount><Pages>'
+            '<Page Image="0" Bookmark="One"/><Page Image="9" Bookmark="Far"/>'
+            '<Page Image="-1" Bookmark="Before"/><Page Bookmark="Nowhere"/>'
+            '<Page Image="x" Bookmark="Odd"/></Pages></ComicInfo>'))
+
+    def test_no_file_no_list_or_no_comicinfo_names_none(self):
+        self.assertEqual([], self._chapters('<ComicInfo/>'))
+        self.assertEqual([], self._chapters('<Other><Pages><Page Image="0"'
+                                            ' Bookmark="A"/></Pages></Other>'))
+        self.assertEqual([], self._chapters('not xml'))
+        self.assertEqual([], comicinfo.chapters(
+            os.path.join(self.tmp_dir, 'missing.xml'), 4))
+
+
 class SampleComicTest(MComixTest):
 
     """test/files/pepper-and-carrot, the one book with real pages.

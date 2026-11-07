@@ -114,6 +114,51 @@ def reads_right_to_left(path: str) -> bool:
         (root.findtext('Manga') or '').strip() == 'YesAndRightToLeft'
 
 
+def chapters(path: str, page_count: int) -> list[tuple[str, int]]:
+    """The chapters the ComicInfo.xml at <path> names, as (title, page)
+    pairs in the order of their pages, pages counted from one.
+
+    A chapter is a Page entry with a Bookmark, as ComicRack writes one
+    and other readers show it.  The entries address pages by Image, a
+    position in the book counted from zero, so they are believed only
+    where the file counts as many pages as the book has: PageCount, or
+    failing that the Page entries themselves.  A file that counts
+    otherwise was written for another set of pages, and its chapters
+    would land on the wrong ones.
+    """
+    try:
+        with open(path, 'rb') as handle:
+            document = handle.read(LARGEST + 1)
+    except OSError:
+        return []
+    if len(document) > LARGEST:
+        return []
+    root = _parse(document)
+    listed = None if root is None else root.find('Pages')
+    if root is None or listed is None:
+        return []
+    entries = listed.findall('Page')
+    counted = root.findtext('PageCount')
+    try:
+        count = int(counted.strip()) if counted is not None else len(entries)
+    except ValueError:
+        return []
+    if count != page_count:
+        return []
+    found = []
+    for entry in entries:
+        title = ' '.join((entry.get('Bookmark') or '').split())
+        try:
+            image = int(entry.get('Image', ''))
+        except ValueError:
+            continue
+        if title and 0 <= image < page_count:
+            found.append((image + 1, title))
+    # Stable, so that two chapters starting on one page keep their order.
+    found.sort(key=lambda chapter: chapter[0])
+    return [(title, page) for page, title in found]
+
+
 def _page_element(number: int, path: str) -> ElementTree.Element:
     """The <Page> entry for the <number>th page, which is at <path>.
 

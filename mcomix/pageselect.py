@@ -3,6 +3,7 @@
 from gi.repository import Gdk, Gtk
 
 from mcomix.dialog import Dialog
+from mcomix import comicinfo
 from mcomix import image_tools
 from mcomix import widgets
 from mcomix.preferences import prefs
@@ -11,6 +12,7 @@ from mcomix import callback
 from mcomix.i18n import _
 from mcomix.dialog import Response
 
+from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -91,7 +93,22 @@ class Pageselector(Dialog):
         widgets.pack(selection_box, self._page_spinner, True, True, 0)
         widgets.pack(selection_box, self._pages_label, False, False, 0, end=True)
 
+        # The chapters the book names, where it names any, to go to by
+        # their titles; hidden until then.
+        self._chapters: list[tuple[str, int]] = []
+        self._chapter_list = Gtk.StringList()
+        self._chapter_selector = Gtk.DropDown.new(self._chapter_list, None)
+        widgets.set_border(self._chapter_selector, 5)
+        self._chapter_selector.set_visible(False)
+        #: Set while the list follows the page, which is no choice made.
+        self._following_page = False
+        #: Where the book's ComicInfo.xml is extracted to, while the
+        #: chapters wait for it to come out; None otherwise.
+        self._awaited_comicinfo: str | None = None
+
         widgets.pack(self.get_content_area(), preview_box, True, True, 0)
+        widgets.pack(self.get_content_area(), self._chapter_selector,
+                     False, False, 0)
         widgets.pack(self.get_content_area(), selection_box, False, False, 0, end=True)
         self.set_visible(True)
 
@@ -121,12 +138,71 @@ class Pageselector(Dialog):
         self.connect('notify::default-height', self._size_changed_cb)
         self._update_thumbnail(int(self._selector_adjustment.props.value))
         self._window.imagehandler.page_available += self._page_available
+        self._window.filehandler.file_available += self._file_available
+        self._look_for_chapters()
+        self._chapter_selector.connect('notify::selected',
+                                       self._chapter_chosen)
+
+    def _look_for_chapters(self) -> None:
+        """List the chapters the book's ComicInfo.xml names, asking for
+        the file first where it is not out yet."""
+        filehandler = self._window.filehandler
+        carried = comicinfo.carried(filehandler.get_member_names())
+        if carried is None:
+            return
+        path = carried[0]
+        if not filehandler.file_is_available(path):
+            self._awaited_comicinfo = path
+            filehandler.ask_for_files([path])
+            return
+        self._awaited_comicinfo = None
+        self._chapters = comicinfo.chapters(path, self._number_of_pages)
+        if not self._chapters:
+            return
+        self._following_page = True
+        try:
+            self._chapter_list.splice(0, self._chapter_list.get_n_items(),
+                                      [title for title, _page in self._chapters])
+            self._follow_page()
+        finally:
+            self._following_page = False
+        self._chapter_selector.set_visible(True)
+
+    def _file_available(self, paths: Sequence[str]) -> None:
+        if self._awaited_comicinfo is not None \
+                and self._awaited_comicinfo in paths:
+            self._look_for_chapters()
+
+    def _follow_page(self) -> None:
+        """Show the chapter the page chosen is in: the last to start at
+        or before it, or the first before the first has begun."""
+        if not self._chapters:
+            return
+        page = int(self._selector_adjustment.props.value)
+        current = 0
+        for index, (_title, start) in enumerate(self._chapters):
+            if start <= page:
+                current = index
+        if self._chapter_selector.get_selected() != current:
+            self._following_page = True
+            try:
+                self._chapter_selector.set_selected(current)
+            finally:
+                self._following_page = False
+
+    def _chapter_chosen(self, *args: object) -> None:
+        if self._following_page:
+            return
+        index = self._chapter_selector.get_selected()
+        if 0 <= index < len(self._chapters):
+            self._selector_adjustment.set_value(self._chapters[index][1])
 
     def _cb_value_changed(self, *args: object) -> None:
         """ Called whenever the spinbox value changes. Updates the preview thumbnail. """
         page = int(self._selector_adjustment.props.value)
         if page != self._thumbnail_page:
             self._update_thumbnail(page)
+        self._follow_page()
 
     def _size_changed_cb(self, *args: object) -> None:
         # Window cannot be scaled down unless the size request is reset
@@ -161,6 +237,7 @@ class Pageselector(Dialog):
 
     def _stop_thumbnailing(self, *args: object) -> None:
         self._thread.stop()
+        self._window.filehandler.file_available -= self._file_available
 
     def _response(self, widget: Gtk.Widget, event: int,
                   *args: object) -> None:
