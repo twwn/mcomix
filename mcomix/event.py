@@ -33,6 +33,10 @@ class EventHandler:
         self._last_pointer_pos_y = 0.0
         self._pressed_pointer_pos_x = 0.0
         self._pressed_pointer_pos_y = 0.0
+        #: Where the pointer is over the page area, in its own pixels,
+        #: or None before it has been seen there: what CTRL and the wheel
+        #: zoom about.
+        self._hover: tuple[float, float] | None = None
         #: Set by a press that brought the window back into focus, which
         #: its release must not answer.
         self._raising_click = False
@@ -69,7 +73,9 @@ class EventHandler:
         page_area.add_controller(clicks)
 
         motion = Gtk.EventControllerMotion()
+        motion.connect('enter', self._pointer_entered)
         motion.connect('motion', self.mouse_move_event)
+        motion.connect('leave', self._pointer_left)
         page_area.add_controller(motion)
 
         scroll = Gtk.EventControllerScroll()
@@ -713,10 +719,12 @@ class EventHandler:
         if delta_y:
             down = delta_y > 0
             if state & Gdk.ModifierType.CONTROL_MASK:
+                # About the point under the pointer, as image viewers
+                # do, so that the detail aimed at stays in view.
                 if down:
-                    self._window.manual_zoom_out()
+                    self._window.manual_zoom_out(anchor=self._hover)
                 else:
-                    self._window.manual_zoom_in()
+                    self._window.manual_zoom_in(anchor=self._hover)
             elif prefs['smart scroll']:
                 if down:
                     self._smart_scroll_down(pixels)
@@ -910,6 +918,7 @@ class EventHandler:
         # event stream to do better with.
         self._window.cursor_handler.refresh()
         self._window.leave_fullscreen_button.pointer_moved()
+        self._hover = (x, y)
 
         state = controller.get_current_event_state()
         if not state & Gdk.ModifierType.BUTTON1_MASK:
@@ -924,6 +933,13 @@ class EventHandler:
                             self._last_pointer_pos_y - y)
         self._last_pointer_pos_x = x
         self._last_pointer_pos_y = y
+
+    def _pointer_entered(self, controller: Gtk.EventControllerMotion,
+                         x: float, y: float) -> None:
+        self._hover = (x, y)
+
+    def _pointer_left(self, controller: Gtk.EventControllerMotion) -> None:
+        self._hover = None
 
     def drag_n_drop_event(self, target: Gtk.DropTarget,
                           value: Gdk.FileList, x: float,

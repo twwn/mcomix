@@ -155,6 +155,9 @@ class MainWindow(Gtk.Window):
         self._geometry_source: int | None = None
         #: Where the redraw that is pending was asked to scroll to.
         self._pending_scroll_to: int | None = None
+        #: The point of the view, in its pixels, that the zoom the
+        #: pending redraw draws is about, or None for the middle.
+        self._zoom_anchor: tuple[float, float] | None = None
         #: The page the reader last turned to, the page they turned from,
         #: and which way that went, for _skip_broken_page(); whether it
         #: was a turn of a page, which past an end of the book opens the
@@ -527,6 +530,8 @@ class MainWindow(Gtk.Window):
         self._redraw_source = None
         scroll_to = self._pending_scroll_to
         self._pending_scroll_to = None
+        anchor = self._zoom_anchor
+        self._zoom_anchor = None
         shift = self._strip_shift
         self._strip_shift = None
 
@@ -730,7 +735,14 @@ class MainWindow(Gtk.Window):
                 ratio = 1.0
                 if self._strip_across not in (0, across):
                     ratio = across / self._strip_across
-                    kept = (kept[0] * ratio, kept[1] * ratio)
+                    moved = [kept[0] * ratio, kept[1] * ratio]
+                    if anchor is not None:
+                        # CTRL and the wheel: the part of the strip
+                        # under the pointer stays under it instead.
+                        at = anchor[distribution_axis]
+                        moved[distribution_axis] = max(
+                            0.0, (kept[distribution_axis] + at) * ratio - at)
+                    kept = (moved[0], moved[1])
                 if shift is not None:
                     # The pages put on top push what was showing down
                     # by their height; the pages dropped from the top
@@ -751,7 +763,7 @@ class MainWindow(Gtk.Window):
                 # window - keep the middle of the view where it was in
                 # them, rather than the top left corner's pixels
                 # (upstream feature request 74).
-                kept = self._relative_position(content_size)
+                kept = self._relative_position(content_size, anchor)
             # A page turn starts the strip anew, at whatever width.
             self._strip_across = \
                 scaled_sizes[0][alignment_axis] if continuous else 0
@@ -911,11 +923,13 @@ class MainWindow(Gtk.Window):
             orientation = list(constants.WESTERN_ORIENTATION)
         return distribution_axis, alignment_axis, orientation, rotation_list
 
-    def _relative_position(self, new_size: "Sequence[int]"
+    def _relative_position(self, new_size: "Sequence[int]",
+                           anchor: "tuple[float, float] | None" = None
                            ) -> "tuple[float, float] | None":
-        """Where to scroll content of <new_size> to so that the middle of
-        the view is the same part of it as of the content shown now, or
-        None where the size is not changing or nothing was shown."""
+        """Where to scroll content of <new_size> to so that the point
+        <anchor> of the view, in its pixels, or else its middle, is the
+        same part of it as of the content shown now, or None where the
+        size is not changing or nothing was shown."""
         old_size = self.page_area.get_content_size()
         if tuple(old_size) == tuple(new_size) or not all(old_size):
             return None
@@ -924,8 +938,10 @@ class MainWindow(Gtk.Window):
         for axis, adjustment in enumerate((self.page_area.get_hadjustment(),
                                            self.page_area.get_vadjustment())):
             view = adjustment.get_page_size()
-            middle = (position[axis] + view / 2) / max(old_size[axis], view)
-            kept.append(max(0.0, middle * max(new_size[axis], view) - view / 2))
+            at = view / 2 if anchor is None else \
+                min(max(anchor[axis], 0.0), view)
+            point = (position[axis] + at) / max(old_size[axis], view)
+            kept.append(max(0.0, point * max(new_size[axis], view) - at))
         return kept[0], kept[1]
 
     @staticmethod
@@ -1775,7 +1791,11 @@ class MainWindow(Gtk.Window):
         """
         prefs['keep transformation'] = toggleaction.get_active()
 
-    def manual_zoom_in(self, *args: object) -> None:
+    def manual_zoom_in(self, *args: object,
+                       anchor: tuple[float, float] | None = None) -> None:
+        """Zoom in about <anchor>, a point of the view in its pixels, or
+        about the middle of the view."""
+        self._zoom_anchor = anchor
         if self.is_continuous:
             self._set_strip_width(prefs['continuous width']
                                   + constants.CONTINUOUS_WIDTH_STEP)
@@ -1783,7 +1803,10 @@ class MainWindow(Gtk.Window):
             self.zoom.zoom_in()
         self.draw_image()
 
-    def manual_zoom_out(self, *args: object) -> None:
+    def manual_zoom_out(self, *args: object,
+                        anchor: tuple[float, float] | None = None) -> None:
+        """Zoom out about <anchor>, as manual_zoom_in() zooms in."""
+        self._zoom_anchor = anchor
         if self.is_continuous:
             self._set_strip_width(prefs['continuous width']
                                   - constants.CONTINUOUS_WIDTH_STEP)

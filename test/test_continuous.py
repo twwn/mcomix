@@ -509,6 +509,16 @@ class WidthTest(_StripTest):
         self._redraw()
         self.assertEqual(60, self.window.page_area.get_position()[1])
 
+    def test_control_and_the_wheel_keep_the_part_under_the_pointer(self):
+        prefs['continuous width'] = 50
+        self._redraw()
+        self.window.scroll(0, 100)
+        self.window.manual_zoom_in(anchor=(10, 150))
+        self._redraw()
+        self.assertEqual(60, prefs['continuous width'])
+        # 250 of the strip under the pointer, 300 of it at 1.2 times.
+        self.assertEqual(150, self.window.page_area.get_position()[1])
+
     def test_the_fit_modes_are_not_offered_in_a_strip(self):
         self.window.uimanager.set_sensitivities()
         actions = self.window.actiongroup

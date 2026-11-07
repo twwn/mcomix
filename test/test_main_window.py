@@ -1126,7 +1126,8 @@ class MainWindowTest(MComixTest):
             for name in ('manual_zoom_in', 'manual_zoom_out'):
                 patches.enter_context(unittest.mock.patch.object(
                     self.window, name,
-                    side_effect=lambda _name=name: reached.append((_name, ()))))
+                    side_effect=lambda _name=name, **_: reached.append(
+                        (_name, ()))))
             handler.scroll_wheel_event(self._Scroll(state), delta_x, delta_y)
         return reached
 
@@ -1749,6 +1750,48 @@ class MainWindowTest(MComixTest):
         for was, now in zip(before, after):
             self.assertAlmostEqual(was, now, delta=0.02,
                                    msg=(before, after))
+
+    def test_control_and_the_wheel_zoom_about_the_pointer(self):
+        """The point under the pointer stays under it, as in an image
+        viewer, rather than the page growing about the middle of the
+        view and taking the detail aimed at away."""
+        self.window.filehandler.open_file(get_testfile_path(
+            'pepper-and-carrot',
+            'Pepper-and-Carrot_E01_The-Potion-of-Flight.cbz'), 2)
+        self.assertTrue(wait_for(
+            lambda: self.window.imagehandler.get_current_page() == 2
+            and self.window.imagehandler.page_is_available(), seconds=20))
+        self.window.actiongroup.get_action('fit_manual_mode').activate()
+        for _ in range(4):
+            self.window.manual_zoom_in()
+        self._settled()
+        area = self.window.page_area
+        width, height = area.get_content_size()
+        view = (area.get_hadjustment().get_page_size(),
+                area.get_vadjustment().get_page_size())
+        self.assertGreater(height, view[1] * 2, 'the page does not scroll')
+        area.scroll_to(width / 3, height / 2)
+        self._settled()
+        pointer = (view[0] / 5, view[1] * 4 / 5)
+
+        def under_pointer():
+            x, y = area.get_position()
+            across, down = area.get_content_size()
+            return ((x + pointer[0]) / across, (y + pointer[1]) / down)
+
+        handler = self.window.event_handler
+        handler.mouse_move_event(self._Motion(), *pointer)
+        for delta in (-1, 1, 1):
+            before = under_pointer()
+            handler.scroll_wheel_event(
+                self._Scroll(Gdk.ModifierType.CONTROL_MASK), 0, delta)
+            self._settled()
+            self.assertNotEqual((width, height), area.get_content_size())
+            after = under_pointer()
+            for was, now in zip(before, after):
+                self.assertAlmostEqual(was, now, delta=0.01,
+                                       msg=(delta, before, after))
+            width, height = area.get_content_size()
 
     def test_a_page_turned_by_hand_is_turned_again_when_shown_again(self):
         """Upstream feature request 32: a book read upright with its

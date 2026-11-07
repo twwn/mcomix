@@ -75,7 +75,8 @@ No mode scales a small page up unless "View → Stretch small images" is on.
 
 On a screen scaled above 100 per cent, such as 200 or 150 per cent, pages, the magnifying lens, the thumbnails of the sidebar and the archive editor, and the library's covers are made with the screen's own pixels, so they stay sharp.
 
-Zooming, or resizing the window, keeps the middle of the view on the same part of the page.
+Zooming with the keys or the menu, or resizing the window, keeps the middle of the view on the same part of the page.
+CTRL and the mouse wheel zoom about the pointer: the part of the page under it stays under it.
 
 Two fingers spread apart or pinched together on a touchpad or a touch screen zoom in or out, in the steps the zoom keys take; in continuous mode they widen or narrow the strip.
 
@@ -109,6 +110,7 @@ Two fingers spread apart or pinched together on a touchpad or a touch screen zoo
 - Pages are not turned by their shape in it.
 - The strip is half the window wide to begin with, every page at that width.
 - Zoom in and zoom out change the width by a tenth of the window, from a tenth of it to twice its width. Reset zoom goes back to half.
+- Zooming keeps the top of the view on the same part of the strip; CTRL and the mouse wheel keep the part under the pointer instead.
 - That width is kept for strips alone. The fit modes are not offered, and the zoom of other books is not changed.
 
 ## Slideshow
