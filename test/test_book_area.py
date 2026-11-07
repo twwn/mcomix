@@ -714,6 +714,33 @@ class DeleteFromDiskTest(MComixTest):
         self.assertTrue(os.path.isfile(path), 'the book went unasked')
 
 
+    def test_on_windows_the_open_book_lets_go_of_its_archive_first(self):
+        """Windows neither trashes nor deletes a file that is open, and
+        the main window holds the open book's archive open until every
+        member is out: the trash refused it, and then the delete for
+        good the reader was offered.  The window's own delete lets go of
+        the archive first; the library's did not."""
+        path = self._deletable()
+        released = []
+        self.library.open_book.path = path
+        self.library.open_book.release_archive = \
+            lambda: released.append(os.path.exists(path))
+        with unittest.mock.patch.object(book_area.sys, 'platform', 'win32'):
+            self.area._remove_answered(Response.YES)
+        pump()
+        self.assertEqual([True], released,
+                         'the archive was not let go of before it went')
+
+    def test_a_book_that_is_not_open_leaves_the_open_one_alone(self):
+        path = self._deletable()
+        self.library.open_book.path = os.path.join(self.tmp_dir, 'other.cbz')
+        released = []
+        self.library.open_book.release_archive = lambda: released.append(path)
+        with unittest.mock.patch.object(book_area.sys, 'platform', 'win32'):
+            self.area._remove_answered(Response.YES)
+        pump()
+        self.assertEqual([], released)
+
     def test_a_book_that_could_not_be_deleted_from_disk_says_so(self):
         """The book leaves the library before the file goes to the
         trash, so a move that fails is the only thing that can tell the

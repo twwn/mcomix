@@ -10,6 +10,7 @@ that hands books to the collection tree.
 
 import functools
 import os
+import sys
 import threading
 import weakref
 from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk
@@ -969,7 +970,17 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
             # Remove books from library
             self._remove_books_from_library()
 
-            file_actions = self._library.main_window.file_actions
+            main_window = self._library.main_window
+            open_book = main_window.filehandler.get_path_to_base()
+            if sys.platform == 'win32' and open_book is not None \
+                    and os.path.abspath(open_book) in [
+                        os.path.abspath(path) for path in paths]:
+                # Windows neither trashes nor deletes a file that is
+                # open, and the extractor holds the open book's archive
+                # open until every member is out, as the window's own
+                # delete knows.
+                main_window.filehandler.release_archive()
+            file_actions = main_window.file_actions
             kept: list[str] = []
             if permanently:
                 for_good = [path for path in paths
