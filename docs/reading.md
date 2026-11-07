@@ -168,6 +168,8 @@ The "Image" menu, which the right-click menu has too:
 
 - `mcomix book.cbz` opens a book; `mcomix --page 42 book.cbz` opens it at page 42.
 - `-f`, `-d` and `-m` start in fullscreen, double page and manga mode; `-l` with the library open.
+- `-b`, `-w` and `-h` start with the zoom set to best fit, fit width or fit height.
+- These are for that start only: the next one opens as before.
 - `--new-window` opens a window of its own where "Open files in the window that is already open" is set in the [preferences](preferences.md).
 - `mcomix -W debug -o mcomix.log` writes a log: see [Troubleshooting](troubleshooting.md#logs).
 - `mcomix --help` lists the other options.

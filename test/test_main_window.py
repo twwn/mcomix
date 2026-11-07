@@ -7,6 +7,7 @@ real window, which is where a whole class of start-up regressions hides.
 import contextlib
 import datetime
 import errno
+import json
 import os
 import pickle
 import shutil
@@ -5920,6 +5921,30 @@ class StartUpOptionsTest(MComixTest):
             with self.subTest(action=name):
                 self.assertTrue(self._active(name))
         self.assertEqual(constants.ZoomMode.WIDTH, prefs['zoom mode'])
+
+    def _written(self):
+        main.preferences.write_preferences_file()
+        with open(constants.PREFERENCE_PATH, encoding='utf-8') as handle:
+            return json.load(handle)
+
+    def test_the_command_line_options_are_for_this_start_alone(self):
+        """"mcomix -m" once made every later start read right to left,
+        and -d and -w the same for double page and the zoom: each was
+        written out as the default the toggle stands for."""
+        self._start(manga_mode=True, double_page=True,
+                    zoom_mode=constants.ZoomMode.WIDTH)
+        written = self._written()
+        for name in ('default manga mode', 'default double page',
+                     'zoom mode'):
+            with self.subTest(preference=name):
+                self.assertNotIn(name, written)
+
+    def test_a_mode_changed_after_the_start_is_kept(self):
+        self._start(zoom_mode=constants.ZoomMode.WIDTH)
+        self.window.actiongroup.get_action('fit_height_mode').activate()
+        pump()
+        self.assertEqual(constants.ZoomMode.HEIGHT,
+                         self._written()['zoom mode'])
 
     def test_a_slideshow_asked_for_starts_once_the_book_is_open(self):
         """"mcomix --slideshow book.cbz" started no slideshow: the action

@@ -384,7 +384,12 @@ class MainWindow(Gtk.Window):
     def _activate_view_modes(self, double_page: bool, manga_mode: bool,
                              zoom_mode: "constants.ZoomMode | None") -> None:
         """Turn on the page layout, zoom and transformation modes the
-        preferences and the command line ask for."""
+        preferences and the command line ask for.
+
+        Each toggle keeps its state in the preference it is the default
+        of.  What the command line asked for is for this start alone:
+        "mcomix -m" once made every later start read right to left.
+        """
         if prefs['default double page'] or double_page:
             self.actiongroup.get_action('double_page').activate()
 
@@ -424,6 +429,12 @@ class MainWindow(Gtk.Window):
             prefs['rotation'] = 0
             prefs['vertical flip'] = False
             prefs['horizontal flip'] = False
+
+        preferences.for_this_session(*[
+            name for name, asked in (('default double page', double_page),
+                                     ('default manga mode', manga_mode),
+                                     ('zoom mode', zoom_mode is not None))
+            if asked])
 
     def gained_focus(self, *args: object) -> None:
         """Note that the window has the focus again.

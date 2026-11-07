@@ -764,6 +764,20 @@ def _stored_preferences() -> dict[str, object]:
     return stored
 
 
+def for_this_session(*names: str) -> None:
+    """Take what <names> hold now for what was read, so that they are
+    written out only if they change again.
+
+    For a value asked for once rather than chosen: "mcomix -m" starts
+    in manga mode, and manga mode is what the toggle writes to the
+    default for every later start.  A preference the baseline does not
+    name is left as it is (_changed_here()).
+    """
+    for name in names:
+        if name in _as_read:
+            _as_read[name] = copy.deepcopy(by_name(name))
+
+
 def _changed_here() -> dict[str, object]:
     """The preferences this instance has changed since it read them.
 
