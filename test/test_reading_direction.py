@@ -1,12 +1,20 @@
-"""A book whose ComicInfo.xml says it is read right to left.
+"""Which way round a book is read.
 
-Other readers open such a book in manga mode; MComix read it left to
-right unless the reader turned manga mode on, which then held for every
-book after it.  The book now puts itself in manga mode, for itself
-alone, as a book of long strips puts itself in continuous mode.
+A book whose ComicInfo.xml says it is read right to left: other readers
+open such a book in manga mode; MComix read it left to right unless the
+reader turned manga mode on, which then held for every book after it.
+The book now puts itself in manga mode, for itself alone, as a book of
+long strips puts itself in continuous mode.
+
+A book the reader set either way: it was read the way the toggle was
+last set, so a shelf of manga beside western comics read every other
+book the wrong way round.  The book now keeps the direction it was set
+to, and reads so when it is opened again.
 """
 
+import json
 import os
+import shutil
 import zipfile
 
 from . import MComixTest, get_testfile_path, pump, wait_for
@@ -15,6 +23,7 @@ from mcomix import comicinfo
 from mcomix import constants
 from mcomix import icons
 from mcomix import main
+from mcomix import reading_directions
 from mcomix.preferences import prefs
 
 
@@ -49,6 +58,59 @@ class ReadsRightToLeftTest(MComixTest):
                     self._file(text)))
         self.assertFalse(comicinfo.reads_right_to_left(
             os.path.join(self.tmp_dir, 'missing.xml')))
+
+
+class StoreTest(MComixTest):
+
+    def setUp(self):
+        super().setUp()
+        self.book = os.path.join(self.tmp_dir, 'Book.cbz')
+
+    def _file(self):
+        return os.path.join(constants.DATA_DIR, 'reading_directions.json')
+
+    def _reload(self):
+        reading_directions._loaded = None
+
+    def test_a_direction_is_kept_across_a_start(self):
+        self.assertIsNone(reading_directions.direction(self.book))
+        reading_directions.remember(self.book, True)
+        other = os.path.join(self.tmp_dir, 'Other.cbz')
+        reading_directions.remember(other, False)
+        self._reload()
+        self.assertIs(True, reading_directions.direction(self.book))
+        self.assertIs(False, reading_directions.direction(other))
+
+    def test_what_is_not_a_direction_is_dropped_on_reading(self):
+        os.makedirs(constants.DATA_DIR, exist_ok=True)
+        with open(self._file(), 'w', encoding='utf-8') as handle:
+            json.dump({self.book: 'yes', 'other': 1, 'kept': False}, handle)
+        self.assertIsNone(reading_directions.direction(self.book))
+        self.assertIsNone(reading_directions.direction('other'))
+        self.assertIs(False, reading_directions.direction('kept'))
+
+    def test_a_file_that_is_not_json_is_read_as_none(self):
+        os.makedirs(constants.DATA_DIR, exist_ok=True)
+        with open(self._file(), 'w', encoding='utf-8') as handle:
+            handle.write('{not json')
+        self.assertIsNone(reading_directions.direction(self.book))
+        reading_directions.remember(self.book, True)
+        self._reload()
+        self.assertIs(True, reading_directions.direction(self.book))
+
+    def test_a_direction_follows_its_book_and_its_folder(self):
+        reading_directions.remember(self.book, True)
+        moved = os.path.join(self.tmp_dir, 'moved', 'Book.cbz')
+        reading_directions.follow(self.book, moved)
+        self.assertIsNone(reading_directions.direction(self.book))
+        self.assertIs(True, reading_directions.direction(moved))
+        shelf = os.path.join(self.tmp_dir, 'shelf')
+        self.assertEqual(1, reading_directions.relocate(
+            os.path.join(self.tmp_dir, 'moved'), shelf))
+        self._reload()
+        self.assertIsNone(reading_directions.direction(moved))
+        self.assertIs(True, reading_directions.direction(
+            os.path.join(shelf, 'Book.cbz')))
 
 
 class WindowDirectionTest(MComixTest):
@@ -152,3 +214,83 @@ class WindowDirectionTest(MComixTest):
         self.assertTrue(window.is_manga_mode)
         self.assertTrue(prefs['default manga mode'])
 
+    def _reopen(self, path):
+        """Open <path> in the open window, in place of its book."""
+        self.window.filehandler.open_file(path)
+        self.assertTrue(wait_for(
+            lambda: self.window.filehandler.get_path_to_base() == path
+            and self.window.imagehandler.get_number_of_pages() > 0,
+            seconds=20))
+        pump()
+
+    def test_a_book_set_by_hand_reads_so_when_opened_again(self):
+        """Manga beside a western comic: each is read the way it was set
+        though the other was set since."""
+        manga = self._book('Manga.cbz')
+        western = self._book('Western.cbz')
+        window = self._open(manga)
+        pump()
+        self._manga_action().set_active(True)
+        pump()
+        self._reopen(western)
+        # A book never set reads the way the toggle was last set.
+        self.assertTrue(window.is_manga_mode)
+        self._manga_action().set_active(False)
+        pump()
+        self.assertFalse(prefs['default manga mode'])
+        self._reopen(manga)
+        self.assertTrue(window.is_manga_mode)
+        self.assertTrue(self._manga_action().get_active())
+        self._reopen(western)
+        self.assertFalse(window.is_manga_mode)
+        self.assertFalse(self._manga_action().get_active())
+
+    def test_a_book_that_set_its_own_direction_leaves_others_alone(self):
+        """Set back on a book that reads its own way, manga mode is
+        changed for that book alone, as for a ComicInfo.xml's."""
+        manga = self._book('Manga.cbz')
+        western = self._book('Western.cbz')
+        reading_directions.remember(manga, True)
+        window = self._open(manga)
+        pump()
+        self.assertTrue(window.is_manga_mode)
+        self.assertFalse(prefs['default manga mode'])
+        self._manga_action().set_active(False)
+        pump()
+        self.assertFalse(window.is_manga_mode)
+        self._manga_action().set_active(True)
+        pump()
+        self.assertFalse(prefs['default manga mode'])
+        self._reopen(western)
+        self.assertFalse(window.is_manga_mode)
+        self.assertFalse(self._manga_action().get_active())
+
+    def test_a_comicinfo_direction_turned_off_stays_off(self):
+        right = self._book('Right.cbz', 'YesAndRightToLeft')
+        window = self._open(right)
+        self.assertTrue(wait_for(lambda: window.is_manga_mode, seconds=10))
+        self._manga_action().set_active(False)
+        pump()
+        self._reopen(self._book('Plain.cbz'))
+        self._reopen(right)
+        self._comicinfo_read()
+        self.assertFalse(window.is_manga_mode)
+        self.assertFalse(self._manga_action().get_active())
+        self.assertFalse(prefs['default manga mode'])
+
+    def test_a_folder_of_pictures_keeps_its_direction(self):
+        folder = os.path.join(self.tmp_dir, 'Folder')
+        os.makedirs(folder)
+        for page in ('01-JPG-Indexed.jpg', '02-JPG-RGB.jpg'):
+            shutil.copy(get_testfile_path('images', page), folder)
+        western = self._book('Western.cbz')
+        window = self._open(folder)
+        pump()
+        self._manga_action().set_active(True)
+        pump()
+        self.assertIs(True, reading_directions.direction(folder))
+        self._reopen(western)
+        self._manga_action().set_active(False)
+        pump()
+        self._reopen(folder)
+        self.assertTrue(window.is_manga_mode)

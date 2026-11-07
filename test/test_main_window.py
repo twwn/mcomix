@@ -28,6 +28,7 @@ from mcomix import constants
 from mcomix import osd
 from mcomix import page_rotations
 from mcomix import page_marks
+from mcomix import reading_directions
 from mcomix import dialog as dialog_module
 from mcomix import edit_dialog
 from mcomix import file_chooser_simple_dialog as simple_chooser
@@ -4031,6 +4032,7 @@ class MainWindowTest(MComixTest):
         self.assertEqual(os.path.abspath(source), identity[0])
         page_rotations.remember(*identity, 90)
         page_marks.mark(*identity, page_marks.SKIP, True)
+        reading_directions.remember(identity[0], True)
 
         self.window.file_actions.move_current_file(destination)
         self._pump()
@@ -4039,9 +4041,11 @@ class MainWindowTest(MComixTest):
         self.assertEqual(90, page_rotations.rotation(moved, identity[1]))
         self.assertTrue(
             page_marks.marked(moved, identity[1], page_marks.SKIP))
+        self.assertIs(True, reading_directions.direction(moved))
         # And nothing is left behind for a book that takes its place.
         self.assertEqual(0, page_rotations.rotation(*identity))
         self.assertFalse(page_marks.marked(*identity, page_marks.SKIP))
+        self.assertIsNone(reading_directions.direction(identity[0]))
 
     def test_the_recent_list_lets_go_of_the_path_a_book_has_left(self):
         """The book is opened again where it landed, which records that.

@@ -42,6 +42,7 @@ from mcomix import callback
 from mcomix.library import backend, main_dialog
 from mcomix import page_marks
 from mcomix import page_rotations
+from mcomix import reading_directions
 from mcomix import tools
 from mcomix import box
 from mcomix import layout
@@ -105,8 +106,9 @@ class MainWindow(Gtk.Window):
         #: strips, which holds for that book and no longer.
         self._strip_override: "bool | None" = None
         #: The open book's ComicInfo.xml while it is being extracted to
-        #: be read for its direction, and whether it said right to left
-        #: (_look_for_direction()).
+        #: be read for its direction, and whether the book itself set
+        #: the direction, by its ComicInfo.xml or by the one the reader
+        #: chose for it before (_look_for_direction()).
         self._awaited_comicinfo: str | None = None
         self._manga_told = False
         #: Which end of the page the last turn arrived at, for a draw
@@ -1099,11 +1101,20 @@ class MainWindow(Gtk.Window):
         self._look_for_direction()
 
     def _look_for_direction(self) -> None:
-        """Read a book right to left where its ComicInfo.xml says it is
-        read so, as other readers do, though manga mode is off: for that
-        book only, as a book of long strips puts itself in continuous
-        mode.  The file is asked for at the front of the queue and read
-        when it is out (_on_comicinfo_available())."""
+        """Read a book the way the reader set it to be read when it was
+        last open, whatever manga mode is now.  Read one never set right
+        to left where its ComicInfo.xml says it is read so, as other
+        readers do, though manga mode is off.  Either is for that book
+        only, as a book of long strips puts itself in continuous mode.
+        The file is asked for at the front of the queue and read when it
+        is out (_on_comicinfo_available())."""
+        book = self.filehandler.book_identity()
+        chosen = None if book is None else reading_directions.direction(book)
+        if chosen is not None:
+            self._manga_told = True
+            if chosen != self._manga_mode:
+                self._set_direction(chosen)
+            return
         if self.is_manga_mode:
             return
         carried = comicinfo.carried(self.filehandler.get_member_names())
@@ -1126,8 +1137,13 @@ class MainWindow(Gtk.Window):
         if self.is_manga_mode or not comicinfo.reads_right_to_left(path):
             return
         self._manga_told = True
-        self.is_manga_mode = True
-        self.actiongroup.get_action('manga_mode').show_active(True)
+        self._set_direction(True)
+
+    def _set_direction(self, right_to_left: bool) -> None:
+        """Read the open book right to left or left to right, without
+        changing what other books open in."""
+        self.is_manga_mode = right_to_left
+        self.actiongroup.get_action('manga_mode').show_active(right_to_left)
         self._update_page_information()
         self.draw_image()
 
@@ -1655,8 +1671,8 @@ class MainWindow(Gtk.Window):
         self.draw_image()
 
     def _forget_direction(self) -> None:
-        """The book whose ComicInfo.xml set its direction is going: the
-        next one reads the way the reader chose."""
+        """The book that set its own direction is going: the next one
+        reads the way manga mode was set for books that did not."""
         self._awaited_comicinfo = None
         if self._manga_told:
             self._manga_told = False
@@ -1668,11 +1684,18 @@ class MainWindow(Gtk.Window):
         """Read right to left or left to right.
 
         Which way round a double page goes, and which way the arrow keys
-        turn, both follow from this.  For a book whose ComicInfo.xml set
-        the direction, the change is for that book alone.
+        turn, both follow from this.  The open book keeps the direction
+        for when it is opened again (reading_directions).  Where the
+        book set its own direction, by its ComicInfo.xml or by the one
+        chosen for it before, the change is for that book alone; where
+        it read the way books do by default, books it did not set for
+        themselves read the new way too.
         """
         if not self._manga_told:
             prefs['default manga mode'] = toggleaction.get_active()
+        book = self.filehandler.book_identity()
+        if book is not None:
+            reading_directions.remember(book, toggleaction.get_active())
         self.is_manga_mode = toggleaction.get_active()
         self._update_page_information()
         self.draw_image()

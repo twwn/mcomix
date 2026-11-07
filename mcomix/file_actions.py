@@ -27,6 +27,7 @@ from mcomix import log
 from mcomix import message_dialog
 from mcomix import page_marks
 from mcomix import page_rotations
+from mcomix import reading_directions
 from mcomix import portability
 from mcomix import rename_dialog
 from mcomix import save_progress
@@ -1285,11 +1286,12 @@ class FileActions:
         self._window.uimanager.move_to.remember(directory)
         backend.LibraryBackend().update_book_path(current_file, target)
         bookmark_backend.BookmarksStore.update_path(current_file, target)
-        # The turns and the marks the reader gave its pages are kept by
-        # the book's path as well.
+        # The turns and the marks the reader gave its pages, and the
+        # direction the book was set to, are kept by its path as well.
         old, new = os.path.abspath(current_file), os.path.abspath(target)
         page_rotations.follow(old, new)
         page_marks.follow(old, new)
+        reading_directions.follow(old, new)
         archive_password.follow(old, new)
         # The book is about to be opened where it landed, which records
         # that; the entry for where it was would open nothing.

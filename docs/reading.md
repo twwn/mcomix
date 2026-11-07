@@ -90,7 +90,10 @@ Two fingers spread apart or pinched together on a touchpad or a touch screen zoo
 - CTRL with PageDown or PageUp turns one page, which shifts the pairing by one.
 - "Show this page alone", in the page's right-click menu, shifts it for good: that page stands alone in this book, and the pages after it pair up anew.
 - Manga mode, the M key, lays out and scrolls pages from right to left.
-- A book whose ComicInfo.xml gives `YesAndRightToLeft` as its Manga field opens in it by itself. Turned off there, it is off for that book only.
+- A book keeps the way it was set with M, and opens so again, whatever the books read since.
+- A book never set either way opens the way M was last set on such a book.
+- A book whose ComicInfo.xml gives `YesAndRightToLeft` as its Manga field opens in it by itself. Turned off there, it is off for that book only, and stays off.
+- So does a book that keeps its own way: M changes it for that book only.
 
 ## Continuous mode
 

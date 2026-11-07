@@ -1218,6 +1218,14 @@ class FileHandler:
         path = self._window.imagehandler.get_path_to_page()
         return os.path.dirname(path) if path is not None else None
 
+    def book_identity(self) -> str | None:
+        """What names the open book as a whole for as long as it is
+        where it is: the archive's path, or the folder of pictures that
+        was opened.  None with no book open."""
+        if not self.file_loaded or not self._base_path:
+            return None
+        return os.path.abspath(self._base_path)
+
     def get_book_folder(self) -> str | None:
         """The folder that was opened, for a book of loose pictures: the
         one they are in, or one above it that is read with the folders

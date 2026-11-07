@@ -32,6 +32,7 @@ from mcomix import message_dialog
 from mcomix import openwith
 from mcomix import page_marks
 from mcomix import page_rotations
+from mcomix import reading_directions
 from mcomix import thumbnail_list
 from mcomix import thumbnail_tools
 from mcomix import widgets
@@ -2109,6 +2110,7 @@ class RelocateBooksTest(_LibraryWindowTest):
             None, datetime.datetime(2026, 1, 1)))
         page_marks.mark(old_a, 'p02.jpg', page_marks.SKIP, True)
         page_rotations.remember(old_b, 'p03.jpg', 90)
+        reading_directions.remember(old_b, True)
         self._move()
 
         prompt = self._ask()
@@ -2126,6 +2128,8 @@ class RelocateBooksTest(_LibraryWindowTest):
                          [bookmark._path for bookmark in store.get_bookmarks()])
         self.assertTrue(page_marks.marked(new_a, 'p02.jpg', page_marks.SKIP))
         self.assertEqual(90, page_rotations.rotation(new_b, 'p03.jpg'))
+        self.assertIs(True, reading_directions.direction(new_b))
+        self.assertIsNone(reading_directions.direction(old_b))
         for path in (new_a, new_b):
             self.assertTrue(os.path.isfile(
                 self.covers._path_to_thumbpath(path)), path)

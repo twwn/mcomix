@@ -16,6 +16,7 @@ from mcomix import constants
 from mcomix import i18n
 from mcomix import page_marks
 from mcomix import page_rotations
+from mcomix import reading_directions
 from mcomix import tools
 from mcomix import file_chooser_library_dialog
 from mcomix import status
@@ -262,13 +263,15 @@ class _LibraryDialog(Gtk.Window):
 
         Everything that names a book by its path follows: the library,
         with the folders it watches and the covers it keeps, the
-        bookmarks, and the marks and turns given to pages.  The last
-        three need not be of a book the library holds.
+        bookmarks, the marks and turns given to pages, and the
+        direction a book was set to read in.  The last four need not be
+        of a book the library holds.
         """
         moved = self.backend.relocate(old_folder, new_folder)
         bookmark_backend.BookmarksStore.relocate(old_folder, new_folder)
         page_marks.relocate(old_folder, new_folder)
         page_rotations.relocate(old_folder, new_folder)
+        reading_directions.relocate(old_folder, new_folder)
         self.set_status_message(_('Books relocated: %d') % moved)
         if moved:
             GLib.idle_add(self.book_area.display_covers,
