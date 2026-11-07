@@ -1460,8 +1460,9 @@ class MainWindow(Gtk.Window):
         """Remove the pages if that is the answer, then leave the book."""
         if response == Response.YES and self.file_actions.remove_pages(
                 self.selected_pages):
-            self.file_actions.save_archive()
-        then()
+            self.file_actions.save_archive_asking(lambda saved: then())
+        else:
+            then()
 
     def _open_next_book(self) -> None:
         archive_open = self.filehandler.archive_type is not None

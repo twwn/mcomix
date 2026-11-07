@@ -169,6 +169,9 @@ class FileHandler:
         #: time it was last written and its size.  None for a book that
         #: is no archive, and for one whose file could not be asked.
         self._archive_stamp: "tuple[str, int, int] | None" = None
+        #: The open archive as MComix last wrote it, None before then:
+        #: what a save expects to find on disk.
+        self._written_stamp: "tuple[str, int, int] | None" = None
         #: Whether the unpacked pages are still what the archive holds.
         self._pages_as_unpacked = True
         #: The unpacked pages of the books closed last, by what each
@@ -822,6 +825,7 @@ class FileHandler:
 
         self._base_path = path
         self._archive_stamp = self._stamp(path)
+        self._written_stamp = None
         self._pages_as_unpacked = True
         kept = self._kept.pop(self._archive_stamp, None) \
             if self._archive_stamp is not None else None
@@ -861,6 +865,22 @@ class FileHandler:
             return None
         return os.path.abspath(path), status.st_mtime_ns, status.st_size
 
+    def archive_written(self) -> None:
+        """Say that MComix has just written the open archive itself."""
+        if self._archive_stamp is not None:
+            self._written_stamp = self._stamp(self._archive_stamp[0])
+
+    def archive_changed_outside(self) -> bool:
+        """Whether the open archive is no longer the file MComix opened
+        or last wrote: another program has written it in the meantime.
+        An archive that is gone has not changed: writing it back loses
+        nothing."""
+        expected = self._written_stamp or self._archive_stamp
+        if expected is None:
+            return False
+        now = self._stamp(expected[0])
+        return now is not None and now != expected
+
     def unpacked_pages_changed(self) -> None:
         """Say that the unpacked pages may no longer be what the archive
         holds - an outside program has been run on them - so that they
@@ -880,7 +900,7 @@ class FileHandler:
         Otherwise the directory is left for _close() to delete.
         """
         directory, stamp = self._tmp_dir, self._archive_stamp
-        self._archive_stamp = None
+        self._archive_stamp = self._written_stamp = None
         if not self._keeping or directory is None or stamp is None \
                 or self._condition is None or not self._pages_as_unpacked \
                 or not self._window.file_actions.pages_untouched() \

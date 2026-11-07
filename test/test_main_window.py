@@ -2823,6 +2823,95 @@ class MainWindowTest(MComixTest):
             actions.before_closing(lambda: closed.append(True))
         self.assertEqual([True], closed)
 
+    def _changed_book(self):
+        """A copied book with a page removed, and its archive written
+        meanwhile by another program, which added a page."""
+        source = os.path.join(self.tmp_dir, 'Book.cbz')
+        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), source)
+        self.window.filehandler.open_file(source)
+        self.assertTrue(
+            wait_for(lambda: self.window.imagehandler
+                     .get_number_of_pages() > 2, seconds=20),
+            'the copied archive never listed its pages')
+        self.window.select_page(1)
+        with self._quietly():
+            self.window.file_actions.delete_page()
+        self._pump()
+        with zipfile.ZipFile(source, 'a') as archive:
+            archive.writestr('zz-added.png', b'not read')
+        return source
+
+    def _overwrite_prompts(self):
+        return [dialog for dialog in self._delete_dialogs()
+                if dialog.dialog_id is None
+                and 'changed since' in dialog._primary.get_text()]
+
+    def _answer_overwrite(self, response):
+        """Save the changed book, answer the question it asks with
+        <response>, and say whether it was written and what it holds."""
+        source = self._changed_book()
+        told = []
+        self.window.file_actions.save_archive_asking(told.append)
+        self._pump()
+        prompts = self._overwrite_prompts()
+        self.assertEqual(1, len(prompts), 'nothing asked before writing')
+        self.assertIs(prompts[0].get_default_widget(),
+                      prompts[0].get_widget_for_response(Response.NO),
+                      'Enter writes over the other program\'s archive')
+        prompts[0].response(response)
+        self._pump()
+        self.assertEqual([], self._overwrite_prompts())
+        with zipfile.ZipFile(source) as archive:
+            return told, 'zz-added.png' in archive.namelist()
+
+    def test_an_archive_changed_meanwhile_is_not_written_over_unasked(self):
+        """The book as it was opened replaced what another program had
+        written into the archive since, with no word."""
+        told, kept = self._answer_overwrite(Response.NO)
+        self.assertEqual([False], told)
+        self.assertTrue(kept, 'the other program\'s page was lost')
+
+    def test_save_in_the_question_writes_over_it(self):
+        told, kept = self._answer_overwrite(Response.YES)
+        self.assertEqual([True], told)
+        self.assertFalse(kept)
+
+    def test_cancel_on_the_way_out_keeps_the_book_open(self):
+        self._changed_book()
+        closed = []
+        self.window.file_actions._closing_answered(
+            Response.YES, lambda: closed.append(True))
+        self._pump()
+        prompts = self._overwrite_prompts()
+        self.assertEqual(1, len(prompts), 'nothing asked before writing')
+        prompts[0].response(Response.NO)
+        self._pump()
+        self.assertEqual([], closed, 'the book closed, its changes lost')
+
+    def test_a_book_saved_twice_is_not_asked_about_its_own_save(self):
+        source = os.path.join(self.tmp_dir, 'Book.cbz')
+        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), source)
+        self.window.filehandler.open_file(source)
+        self._ready()
+        actions = self.window.file_actions
+        told = []
+        for page in (1, 1):
+            self.window.select_page(page)
+            with self._quietly():
+                actions.delete_page()
+            self._pump()
+            actions.save_archive_asking(told.append)
+            self._pump()
+            self.assertEqual([], self._overwrite_prompts())
+        self.assertEqual([True, True], told)
+
+    def test_an_archive_gone_meanwhile_is_written_back_unasked(self):
+        """Ruled: an archive deleted from outside is still offered for
+        writing back, and that loses nothing."""
+        source = self._changed_book()
+        os.unlink(source)
+        self.assertFalse(self.window.filehandler.archive_changed_outside())
+
     @unittest.skipUnless(os.path.isdir('/proc/self/fd'),
                          'the open descriptors are read from /proc')
     def test_nothing_holds_the_archive_open_when_it_is_written_over(self):

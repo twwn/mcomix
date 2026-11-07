@@ -251,6 +251,7 @@ class _EditArchiveDialog(Dialog):
                 # the book back.  Written anywhere else it is another
                 # book, which starts with nothing kept for it.
                 self._window.file_actions.pages_written(book, written)
+                self.file_handler.archive_written()
         except archive_packer.Cancelled:
             # Stopped by the reader, who goes on editing: nothing went
             # wrong to tell them about.

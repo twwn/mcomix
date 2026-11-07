@@ -643,8 +643,15 @@ class FileActions:
         said to keep the archive as it was, and closing would throw away
         the changes they asked to have written.
         """
-        if response == Response.YES and not self.save_archive() \
-                and self._save_stopped:
+        if response == Response.YES:
+            self.save_archive_asking(
+                lambda saved: self._closing_saved(saved, then))
+        else:
+            then()
+
+    def _closing_saved(self, saved: bool,
+                       then: "Callable[[], None]") -> None:
+        if not saved and self._save_stopped:
             self._close_offer_answered = False
             self._waiting_close = None
             return
@@ -680,7 +687,42 @@ class FileActions:
 
     def _save_answered(self, response: int) -> None:
         if response == Response.YES:
-            self.save_archive()
+            self.save_archive_asking(lambda saved: None)
+
+    def save_archive_asking(self, then: "Callable[[bool], None]") -> None:
+        """save_archive(), after asking first where another program has
+        written the archive since it was opened: the book as it stands
+        would replace what that program put in, with no word.  <then>
+        is told whether the archive was written; one left alone counts
+        as a save the reader stopped."""
+        path = self._window.filehandler.get_path_to_base()
+        if path is None \
+                or not self._window.filehandler.archive_changed_outside():
+            then(self.save_archive())
+            return
+        dialog = message_dialog.MessageDialog(
+            self._window, modal=True, buttons=Gtk.ButtonsType.NONE)
+        dialog.set_text(
+            _('"%s" has changed since it was opened') % os.path.basename(path),
+            _('Another program has written it. Saving replaces it with the '
+              'book as MComix shows it, and what that program changed is '
+              'lost.'))
+        dialog.add_button(_('_Cancel'), Response.NO)
+        dialog.add_button(_('_Save'), Response.YES)
+        dialog.set_default_response(Response.NO)
+        overwrites = dialog.get_widget_for_response(Response.YES)
+        if overwrites is not None:
+            overwrites.add_css_class('destructive-action')
+        dialog.run_async(lambda response: self._overwrite_answered(response,
+                                                                   then))
+
+    def _overwrite_answered(self, response: int,
+                            then: "Callable[[bool], None]") -> None:
+        if response == Response.YES:
+            then(self.save_archive())
+        else:
+            self._save_stopped = True
+            then(False)
 
     def save_archive(self) -> bool:
         """Write the open book over the archive it came from, and
@@ -724,6 +766,7 @@ class FileActions:
                 waiting=save_progress.waiting(self._window, path))
             self.pages_written(path, written)
             self._written_as = (image_files, dict(self._page_names))
+            self._window.filehandler.archive_written()
         except archive_packer.Cancelled:
             # The archive on disk is the one that was there: nothing
             # went wrong to tell the reader about.
