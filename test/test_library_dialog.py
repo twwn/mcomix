@@ -1183,6 +1183,15 @@ class ReadingListTest(_LibraryWindowTest):
         self.assertEqual('2134', self._shown())
         self.assertEqual('2', self._selected())
 
+    def test_the_keypad_arrows_move_it_too(self):
+        """ALT+KeyPadLeft and ALT+KeyPadRight turn the page in the
+        reader as ALT+Left and ALT+Right do, and moved no cover."""
+        self.area._covers.select_only(1)
+        self.assertEqual(Gdk.EVENT_STOP, self._alt(Gdk.KEY_KP_Right))
+        self.assertEqual('1324', self._shown())
+        self.assertEqual(Gdk.EVENT_STOP, self._alt(Gdk.KEY_KP_Left))
+        self.assertEqual('1234', self._shown())
+
     def test_at_either_end_the_arrow_is_left_to_the_view(self):
         self.area._covers.select_only(0)
         self.assertEqual(Gdk.EVENT_PROPAGATE, self._alt(Gdk.KEY_Left))

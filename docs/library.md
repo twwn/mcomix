@@ -66,7 +66,7 @@ Escape hides the window; CTRL+W closes it. In the search field, Escape first emp
 - A collection is a reading list once its books are put in order by hand.
 - Choose "Sort", "By hand" in the books' right-click menu, then drag a cover onto another: it takes that cover's place.
 - Dropped past the last cover, it goes last. Several selected covers move together.
-- ALT+Left and ALT+Right move the selected books one place.
+- ALT+Left and ALT+Right, or ALT+KeyPadLeft and ALT+KeyPadRight, move the selected books one place.
 - Books nobody has placed follow the placed ones, by path. So does a book added later.
 - The order is the collection's own: a book in two collections has a place in each.
 - "All books" and "Recent" keep no order, and under another sort a drag between covers does nothing.

@@ -1213,14 +1213,18 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         if widgets.menu_key(keyval, state):
             self._popup_book_menu()
             return Gdk.EVENT_STOP
+        # The keypad's arrows move a cover as the others do, as they
+        # turn the page in the reader.
+        arrow = {Gdk.KEY_KP_Left: Gdk.KEY_Left,
+                 Gdk.KEY_KP_Right: Gdk.KEY_Right}.get(keyval, keyval)
         if state & Gdk.ModifierType.ALT_MASK \
-                and keyval in (Gdk.KEY_Left, Gdk.KEY_Right):
+                and arrow in (Gdk.KEY_Left, Gdk.KEY_Right):
             # Towards the start of the row is earlier, whichever side a
             # row starts on.
             earlier = Gdk.KEY_Right \
                 if self.get_direction() == Gtk.TextDirection.RTL \
                 else Gdk.KEY_Left
-            if self._move_selected(-1 if keyval == earlier else 1):
+            if self._move_selected(-1 if arrow == earlier else 1):
                 return Gdk.EVENT_STOP
         if self._type_into_search(keyval, state):
             return Gdk.EVENT_STOP
