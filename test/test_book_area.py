@@ -121,6 +121,10 @@ class _OpenBook(file_actions.FileActions):
     def forget_changes(self):
         self.forgotten = True
 
+    def release_archive(self):
+        """What the library calls on Windows before it deletes the
+        open book."""
+
 
 class _LibraryWindow(Gtk.Window):
 
