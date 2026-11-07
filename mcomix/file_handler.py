@@ -92,8 +92,6 @@ def _keep_listed(listed: Sequence[str] | None) -> None:
             return
         os.makedirs(os.path.dirname(constants.LIBRARY_LIST_PATH),
                     exist_ok=True)
-        # ASCII, which every code page writes: a name the ANSI code page
-        # of Windows has no character for is escaped.
         with tools.atomic_write(constants.LIBRARY_LIST_PATH) as file:
             json.dump([os.path.abspath(book) for book in listed], file)
     except FileNotFoundError:

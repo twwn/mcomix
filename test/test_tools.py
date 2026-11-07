@@ -1,6 +1,7 @@
 import itertools
 import os
 import shutil
+import subprocess
 import sys
 import tempfile
 import types
@@ -147,6 +148,27 @@ class TestAtomicWrite(unittest.TestCase):
         with open(self.path, 'rb') as file:
             self.assertEqual(file.read(), b'old')
         self.assertListEqual(os.listdir(self.tmp_dir), ['preferences.conf'])
+
+    def test_text_is_written_as_utf8_whatever_the_locale(self) -> None:
+        """The stores that keep a book's path, read back as UTF-8, were
+        written in the locale's encoding: under a Windows code page or
+        LC_ALL=C a name it has no character for raised
+        UnicodeEncodeError, and one it had was written so it could not
+        be read back, dropping everything kept."""
+        script = ('import sys\n'
+                  'from mcomix import tools\n'
+                  'with tools.atomic_write(sys.argv[1]) as file:\n'
+                  '    file.write("Ast\\xe9rix \\u8868\\u7d19")\n')
+        environment = dict(os.environ, LC_ALL='C', PYTHONUTF8='0',
+                           PYTHONCOERCECLOCALE='0', PYTHONIOENCODING='')
+        root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        environment['PYTHONPATH'] = os.pathsep.join(
+            filter(None, (root, environment.get('PYTHONPATH'))))
+        subprocess.run([sys.executable, '-c', script, self.path],
+                       env=environment, check=True, timeout=60,
+                       capture_output=True)
+        with open(self.path, encoding='utf-8') as file:
+            self.assertEqual(file.read(), 'Ast\xe9rix \u8868\u7d19')
 
     @unittest.skipIf(sys.platform == 'win32', 'symbolic links need privileges')
     def test_a_linked_file_stays_linked(self) -> None:

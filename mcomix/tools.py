@@ -511,14 +511,17 @@ def atomic_write(path: str, binary: bool = False) -> "Iterator[IO[Any]]":  # typ
     that rename is atomic, concurrently running instances can neither read a
     half-written file nor leave a truncated one behind by writing at the
     same time.  A <path> that is a symbolic link is written through, see
-    replaced_path(). """
+    replaced_path().  Text is written as UTF-8, which is what it is read
+    back as: the locale's encoding, a Windows code page, has no character
+    for most of a book's possible names. """
     path = replaced_path(path)
     directory = os.path.dirname(path) or os.curdir
     fd, temp_path = tempfile.mkstemp(dir=directory,
                                      prefix=os.path.basename(path) + '.',
                                      suffix='.tmp')
     try:
-        with os.fdopen(fd, 'wb' if binary else 'w') as file:
+        with (os.fdopen(fd, 'wb') if binary
+              else os.fdopen(fd, 'w', encoding='utf-8')) as file:
             yield file
             file.flush()
             os.fsync(file.fileno())
