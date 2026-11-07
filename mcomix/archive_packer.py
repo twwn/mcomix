@@ -3,6 +3,8 @@
 import errno
 import os
 import shutil
+import stat
+import sys
 import tarfile
 import tempfile
 import zipfile
@@ -208,10 +210,26 @@ def write_archive(archive_path: str, image_files: Sequence[str],
             if leftover is None or not os.path.exists(leftover):
                 continue
             try:
-                os.unlink(leftover)
+                _unlink(leftover)
             except OSError as error:
                 log.error(_('! Could not remove %(file)s: %(error)s'),
                           {'file': leftover, 'error': error})
+
+
+def _unlink(path: str) -> None:
+    """Remove the file at <path>, read-only or not.
+
+    The temporary archive takes the old one's mode, so an archive with
+    the read-only attribute - every file copied off a CD has it - makes
+    a read-only one, which Windows refuses to replace and to remove.
+    """
+    try:
+        os.unlink(path)
+    except PermissionError:
+        if sys.platform != 'win32':
+            raise
+        os.chmod(path, stat.S_IWRITE)
+        os.unlink(path)
 
 
 class _Writer:

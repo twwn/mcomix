@@ -7,6 +7,7 @@ one of the pages has taken it.
 
 import os
 import shutil
+import stat
 import sys
 import tarfile
 import threading
@@ -565,6 +566,23 @@ class WriteArchiveTest(MComixTest):
             self._write(pages=self.pages[:1])
         self.assertEqual(['packed.cbz'], os.listdir(self.directory))
         self.assertEqual([], refusals)
+
+    def test_a_read_only_archive_leaves_no_temporary_file(self):
+        """The new archive takes the old one's mode, and Windows neither
+        replaces nor removes a read-only file: the save failed and left
+        tmp.<random>.packed.cbz beside the book, where Next archive
+        offered it as a book of its own."""
+        self._write()
+        os.chmod(self.archive, stat.S_IREAD)
+        try:
+            archive_packer.write_archive(self.archive, self.pages[:1], [],
+                                         permissions_from=self.archive)
+        except PermissionError:
+            # Windows' answer: the old archive is not written over.
+            pass
+        finally:
+            os.chmod(self.archive, stat.S_IREAD | stat.S_IWRITE)
+        self.assertEqual(['packed.cbz'], os.listdir(self.directory))
 
     def test_the_old_archive_stays_when_the_permissions_cannot_be_set(self):
         """The mode was set once the new archive had replaced the old
