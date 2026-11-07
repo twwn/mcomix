@@ -226,10 +226,11 @@ def _unlink(path: str) -> None:
     try:
         os.unlink(path)
     except PermissionError:
-        if sys.platform != 'win32':
+        if sys.platform == 'win32':
+            os.chmod(path, stat.S_IWRITE)
+            os.unlink(path)
+        else:
             raise
-        os.chmod(path, stat.S_IWRITE)
-        os.unlink(path)
 
 
 class _Writer:
