@@ -183,6 +183,40 @@ class PasswordDialogTest(MComixTest):
         self.assertEqual(sorted(listed['names']),
                          ['arg.jpeg', 'bar.jpg', 'foo.JPG', 'meh.png'])
 
+    def test_closing_the_book_with_the_prompt_up_does_not_hang(self):
+        """Closing the book, opening another or quitting joins the
+        threads unpacking it, and the listing thread was waiting for the
+        password only the main loop could deliver, while the main thread
+        waited for it: MComix hung with the prompt on screen.  The
+        prompt is taken down and the book closes as one given no
+        password."""
+        extractor = archive_extractor.Extractor()
+        destination = os.path.join(self.tmp_dir, 'unpacked')
+        extractor.setup(get_testfile_path('archives', 'Encrypted.zip'),
+                        destination)
+        self._wait_for_prompt()
+        archive = extractor._archive
+        assert archive is not None
+
+        # Fail rather than hang the suite.
+        def give_up():
+            for nested in archive._archive_list:
+                if not nested._event.is_set():
+                    nested._password = ''
+                    nested._event.set()
+            hung.append(True)
+        hung = []
+        watchdog = threading.Timer(10, give_up)
+        watchdog.start()
+        self.addCleanup(watchdog.cancel)
+
+        extractor.close()
+        self.assertFalse(hung, 'closing waited for the prompt to be answered')
+        pump()
+        self.assertEqual(visible_prompts(), [])
+        self.assertIsNone(archive_password.remembered(
+            get_testfile_path('archives', 'Encrypted.zip')))
+
 
 class SessionPasswordTest(MComixTest):
 

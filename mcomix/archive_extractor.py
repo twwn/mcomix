@@ -174,6 +174,9 @@ class Extractor:
         thread. Blocks until the extracting thread has terminated.
         """
         if self._setupped:
+            if self._archive is not None:
+                # A thread waiting for a password would never be joined.
+                self._archive.stop_waiting()
             self._list_thread.stop()
             if self._extract_started:
                 self._extract_thread.stop()

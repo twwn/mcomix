@@ -134,6 +134,9 @@ class BaseArchive:
         self.archive = archive
         self._password: str | None = None
         self._event = threading.Event()
+        #: What takes the password prompt down while it is up: see
+        #: stop_waiting().
+        self._withdraw_prompt: Callable[[], None] | None = None
         #: When each member was last modified, as the archive records
         #: it, in seconds since the epoch: filled in while listing, by
         #: the name the format itself gives the member, by the handlers
@@ -267,14 +270,42 @@ class BaseArchive:
         The dialog is not waited for here.  This runs on the main thread,
         by way of the Callback decorator, while the thread that wanted the
         password waits on <self._event> in _get_password(). """
+        if self._event.is_set():
+            # stop_waiting() answered before this turn of the main loop
+            # came: the book was closed as it was being opened.
+            return
 
         def got_password(password: str | None) -> None:
+            self._withdraw_prompt = None
             self._password = password if password is not None else ""
             if self._password:
                 archive_password.remember(self.archive, self._password)
             self._event.set()
 
-        archive_password.ask_for_password(self.archive, got_password)
+        self._withdraw_prompt = archive_password.ask_for_password(
+            self.archive, got_password)
+
+    def stop_waiting(self) -> None:
+        """Answer a password still being asked for with none, and take
+        its prompt down.
+
+        Called on the main thread before the threads working through the
+        archive are joined, as the book closes, another opens or MComix
+        quits.  A thread waiting for the password waits for the main
+        loop to deliver the reader's answer, and the main thread was
+        then waiting for that thread: MComix hung, its window gone, the
+        prompt on screen and the book's unpacked pages left behind.
+
+        The archive is not read again afterwards, so a thread that comes
+        to ask only later finds the answer given too."""
+        if self._event.is_set():
+            return
+        if self._password is None:
+            self._password = ''
+        self._event.set()
+        withdraw, self._withdraw_prompt = self._withdraw_prompt, None
+        if withdraw is not None:
+            withdraw()
 
     def forget_password(self) -> None:
         """Forget the password kept for this archive, if it used one:

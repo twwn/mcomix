@@ -212,6 +212,10 @@ class RecursiveArchive(archive_base.BaseArchive):
         for archive in self._archive_list:
             archive.forget_password()
 
+    def stop_waiting(self) -> None:
+        for archive in {*self._archive_list, self._main_archive}:
+            archive.stop_waiting()
+
     def close(self) -> None:
         """Close every archive in the nesting."""
         archives = list(self._archive_list)

@@ -93,13 +93,17 @@ def forget(archive: str) -> None:
 
 
 def ask_for_password(archive: str,
-                     on_password: Callable[[str | None], None]) -> None:
+                     on_password: Callable[[str | None], None]
+                     ) -> Callable[[], None]:
     """ Opens an input dialog to ask for the password to <archive>.
 
     Calls <on_password> with the password the user typed, or with None if
     they gave none.  It does not wait for the answer: this runs on the
     main thread, and the nested main loop Gtk.Dialog.run() waited in is
-    exactly what let a second password dialog open on top of the first."""
+    exactly what let a second password dialog open on top of the first.
+
+    Returns what takes the dialog down unanswered, for a book closed
+    while it is up: <on_password> is then never called."""
     dialog = message_dialog.MessageDialog(
             None, modal=True, buttons=Gtk.ButtonsType.OK_CANCEL)
     dialog.set_text(
@@ -130,5 +134,6 @@ def ask_for_password(archive: str,
                     else None)
 
     dialog.run_async(responded)
+    return dialog.destroy
 
 # vim: expandtab:sw=4:ts=4
