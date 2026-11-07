@@ -1,7 +1,7 @@
 # Keyboard and mouse
 
 - Menu items show their keys. The tables list every default binding, also of functions without a menu item.
-- All keys but the two bookmark ones can be changed: see the last section.
+- Every key can be changed: see the last section.
 - `KeyPad` is the numeric keypad: `KeyPadHome` is its Home key.
 - `BackMouse` and `ForwardMouse` are the mouse's thumb buttons.
 - Two fingers spread apart or pinched together on a touchpad or a touch screen zoom in or out.
