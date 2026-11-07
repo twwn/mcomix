@@ -99,6 +99,31 @@ class ThumbnailNameTest(MComixTest):
                 md5(uri.encode('utf-8')).hexdigest() + '.png',
                 os.path.basename(self._thumbnailer._path_to_thumbpath(source)))
 
+    def test_a_thumbnail_held_open_for_a_moment_is_still_stored(self):
+        """Windows refuses to replace a file something has open, as a
+        virus scanner opens the one just written: the thumbnail was not
+        stored, and was made again every time."""
+        source = os.path.join(self.tmp_dir, 'red.png')
+        shutil.copy(get_testfile_path('images', 'red.png'), source)
+        thumbnailer = thumbnail_tools.Thumbnailer(
+            dst_dir=self._thumbnailer.dst_dir, store_on_disk=True,
+            size=(128, 128))
+        held = PermissionError(13, 'The process cannot access the file '
+                               'because it is being used by another process')
+        held.winerror = 32
+        replace = os.replace
+        refusals = [held]
+
+        def refused_once(*args, **kwargs):
+            if refusals:
+                raise refusals.pop()
+            return replace(*args, **kwargs)
+
+        with unittest.mock.patch('os.replace', refused_once):
+            thumbnailer.thumbnail(source)
+        self.assertEqual([], refusals)
+        self.assertTrue(os.path.isfile(thumbnailer._path_to_thumbpath(source)))
+
     def test_the_uri_stored_with_it_is_the_file_s(self):
         source = os.path.join(self.tmp_dir, 'red (1).png')
         shutil.copy(get_testfile_path('images', 'red.png'), source)

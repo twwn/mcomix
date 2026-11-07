@@ -27,6 +27,7 @@ from mcomix import constants
 from mcomix import archive_tools
 from mcomix import tools
 from mcomix import image_tools
+from mcomix import portability
 from mcomix.archive import password as archive_password
 from mcomix import callback
 from mcomix import log
@@ -205,7 +206,8 @@ class Thumbnailer:
         if not os.path.isfile(stored):
             return
         try:
-            os.replace(stored, self._path_to_thumbpath(new_path))
+            portability.rename_once_closed(
+                os.replace, stored, self._path_to_thumbpath(new_path))
         except OSError as error:
             log.error(_('! Could not move %(file)s to %(directory)s: %(error)s'),
                       {'file': stored, 'directory': self.dst_dir,
@@ -361,7 +363,7 @@ class Thumbnailer:
             os.close(handle)
             pixbuf.savev(temporary, 'png',
                          list(tEXt_data), list(tEXt_data.values()))
-            os.replace(temporary, thumbpath)
+            portability.rename_once_closed(os.replace, temporary, thumbpath)
             temporary = None
 
         except Exception as ex:

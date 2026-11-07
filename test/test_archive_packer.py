@@ -545,6 +545,27 @@ class WriteArchiveTest(MComixTest):
             self.assertEqual(before, fp.read())
         self.assertEqual(['packed.cbz'], os.listdir(self.directory))
 
+    def test_an_archive_held_open_for_a_moment_is_still_replaced(self):
+        """Windows refuses to replace a file something has open, as a
+        virus scanner opens the archive just written: the save failed
+        with an error for the reader to try again."""
+        self._write()
+        held = PermissionError(13, 'The process cannot access the file '
+                               'because it is being used by another process')
+        held.winerror = 32
+        replace = os.replace
+        refusals = [held]
+
+        def refused_once(*args, **kwargs):
+            if refusals:
+                raise refusals.pop()
+            return replace(*args, **kwargs)
+
+        with unittest.mock.patch('os.replace', refused_once):
+            self._write(pages=self.pages[:1])
+        self.assertEqual(['packed.cbz'], os.listdir(self.directory))
+        self.assertEqual([], refusals)
+
     def test_the_old_archive_stays_when_the_permissions_cannot_be_set(self):
         """The mode was set once the new archive had replaced the old
         one, so a failure there reported a save that had not happened

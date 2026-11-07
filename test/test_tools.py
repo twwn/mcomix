@@ -149,6 +149,29 @@ class TestAtomicWrite(unittest.TestCase):
             self.assertEqual(file.read(), b'old')
         self.assertListEqual(os.listdir(self.tmp_dir), ['preferences.conf'])
 
+    def test_a_file_held_open_for_a_moment_is_still_written(self) -> None:
+        """Windows refuses to replace a file something has open, and a
+        virus scanner opens the file just written: the preferences, the
+        key bindings or a book's kept direction were lost until the
+        next write."""
+        held = PermissionError(13, 'The process cannot access the file '
+                               'because it is being used by another process')
+        held.winerror = 32
+        replace = os.replace
+        refusals = [held]
+
+        def refused_once(*args, **kwargs):
+            if refusals:
+                raise refusals.pop()
+            return replace(*args, **kwargs)
+
+        with unittest.mock.patch('os.replace', refused_once):
+            with tools.atomic_write(self.path) as file:
+                file.write('new')
+        with open(self.path) as file:
+            self.assertEqual(file.read(), 'new')
+        self.assertListEqual(os.listdir(self.tmp_dir), ['preferences.conf'])
+
     def test_text_is_written_as_utf8_whatever_the_locale(self) -> None:
         """The stores that keep a book's path, read back as UTF-8, were
         written in the locale's encoding: under a Windows code page or

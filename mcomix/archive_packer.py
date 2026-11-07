@@ -12,6 +12,7 @@ from collections.abc import Callable, Iterable, Iterator, Mapping, Sequence
 from mcomix import comicinfo
 from mcomix import constants
 from mcomix import log
+from mcomix import portability
 from mcomix import process
 from mcomix import tools
 from mcomix.i18n import _
@@ -193,7 +194,9 @@ def write_archive(archive_path: str, image_files: Sequence[str],
         # that is there fails, and a replacement that fails leaves the
         # old archive where it was.
         os.chmod(tmp_path, mode)
-        os.replace(tmp_path, archive_path)
+        # A virus scanner looks at the archive just written, and the
+        # thumbnail bar or Explorer's preview may be reading the old one.
+        portability.rename_once_closed(os.replace, tmp_path, archive_path)
         written = True
         return packer.page_names_written()
     finally:

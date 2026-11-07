@@ -533,7 +533,11 @@ def atomic_write(path: str, binary: bool = False) -> "Iterator[IO[Any]]":  # typ
         except OSError:
             pass
 
-        os.replace(temp_path, path)
+        # Here, not at the top: constants imports this module, and
+        # portability imports constants.
+        from mcomix import portability
+        # A virus scanner looks at the file just written.
+        portability.rename_once_closed(os.replace, temp_path, path)
     except BaseException:
         try:
             os.unlink(temp_path)
