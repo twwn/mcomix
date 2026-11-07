@@ -132,7 +132,8 @@ RAR_FORMATS = (
         ('rar', 'cbr'))
 TAR_FORMATS = (
         ('application/x-tar', 'application/x-gzip', 'application/x-bzip2', 'application/x-cbt'),
-        ('tar', 'gz', 'bz2', 'bzip2', 'cbt'))
+        # tarfile reads an xz compressed tarball itself, without 7z.
+        ('tar', 'gz', 'bz2', 'bzip2', 'cbt', 'tgz', 'tbz', 'tbz2', 'txz'))
 SZIP_FORMATS = (
         ('application/x-7z-compressed', 'application/x-cb7'),
         ('7z', 'cb7', 'xz', 'lzma'))

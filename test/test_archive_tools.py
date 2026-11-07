@@ -65,6 +65,13 @@ class ArchiveToolsTest(MComixTest):
             )
             self.assertEqual(archive_type, expected_type, msg=msg)
 
+    def test_a_tarball_s_short_names_are_books(self):
+        # Opened, they are read by their content; Next archive, the
+        # folder walk and the library go by the name, as for .tar.gz.
+        for name in ('A.tgz', 'A.tbz', 'A.tbz2', 'A.txz', 'A.TGZ'):
+            with self.subTest(name=name):
+                self.assertTrue(archive_tools.is_archive_file(name))
+
     def test_only_the_first_volume_of_a_rar_set_is_a_book(self):
         for part, later in ((1, False), (2, True), (3, True)):
             with self.subTest(part=part):
