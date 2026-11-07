@@ -206,6 +206,26 @@ class DirectoryWalkTest(MComixTest):
         self.assertTrue(self.handler.previous_archive())
         self.assertEqual(first, self._opened_file())
 
+    def test_a_book_typed_in_another_case_is_its_folder_s_book(self):
+        """Where case does not matter to the file system, a book typed in
+        another case (c:\\books\\a\\vol1.cbz in cmd) kept that
+        spelling: Next archive found it nowhere in its folder, and the
+        library, the last page and the bookmarks took it for a book of
+        its own."""
+        first = os.path.join(self.root, 'a', 'Vol1.cbz')
+        second = os.path.join(self.root, 'a', 'Vol2.cbz')
+        for path in (first, second):
+            shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'),
+                        path)
+        typed = os.path.join(self.root, 'A', 'VOL1.CBZ')
+        # Here too where the file system tells case apart: there the
+        # typed path names no file until it is spelled as the disk does.
+        with unittest.mock.patch.object(tools, '_CASE_BLIND', True):
+            self._open(typed)
+            self.assertEqual(first, self._opened_file())
+            self.assertTrue(self.handler.next_archive())
+            self.assertEqual(second, self._opened_file())
+
     def test_next_archive_stays_in_its_folder_where_the_walk_is_off(self):
         prefs['auto open next directory'] = False
         first = self._put_archive('a')

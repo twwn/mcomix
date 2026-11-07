@@ -214,6 +214,59 @@ class TestAtomicWrite(unittest.TestCase):
         self.assertListEqual(os.listdir(kept), ['preferences.conf'])
 
 
+class TestDiskSpelling(unittest.TestCase):
+
+    """A path as the file system spells it, where case does not matter
+    to the file system.  Tried here on whatever this one is, with case
+    taken to be blind."""
+
+    def setUp(self) -> None:
+        self.tmp_dir = os.path.realpath(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, self.tmp_dir)
+        self.book = os.path.join(self.tmp_dir, 'Comics', 'Vol1.cbz')
+        os.makedirs(os.path.dirname(self.book))
+        with open(self.book, 'wb'):
+            pass
+        patcher = unittest.mock.patch.object(tools, '_CASE_BLIND', True)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def test_each_name_is_spelled_as_its_folder_lists_it(self) -> None:
+        typed = os.path.join(self.tmp_dir, 'COMICS', 'vol1.CBZ')
+        self.assertEqual(self.book, tools.disk_spelling(typed))
+
+    def test_a_path_spelled_right_stays(self) -> None:
+        self.assertEqual(self.book, tools.disk_spelling(self.book))
+
+    def test_a_relative_path_is_made_absolute(self) -> None:
+        saved = os.getcwd()
+        os.chdir(self.tmp_dir)
+        self.addCleanup(os.chdir, saved)
+        self.assertEqual(self.book, tools.disk_spelling(
+            os.path.join('comics', 'VOL1.cbz')))
+
+    def test_what_is_not_there_stays_as_it_was_given(self) -> None:
+        typed = os.path.join(self.tmp_dir, 'COMICS', 'gone', 'Vol1.cbz')
+        self.assertEqual(os.path.join(self.tmp_dir, 'Comics', 'gone',
+                                      'Vol1.cbz'),
+                         tools.disk_spelling(typed))
+
+    @unittest.skipIf(sys.platform in ('win32', 'darwin'),
+                     'the file system takes the two names for one file')
+    def test_two_names_differing_only_in_case_are_not_guessed(self) -> None:
+        with open(os.path.join(self.tmp_dir, 'Comics', 'VOL1.cbz'), 'wb'):
+            pass
+        typed = os.path.join(self.tmp_dir, 'Comics', 'vol1.cbz')
+        self.assertEqual(typed, tools.disk_spelling(typed))
+        self.assertEqual(self.book, tools.disk_spelling(self.book))
+
+    @unittest.skipIf(sys.platform != 'win32', 'a drive letter is Windows')
+    def test_the_drive_letter_is_upper_case(self) -> None:
+        drive, rest = os.path.splitdrive(self.book)
+        self.assertEqual(self.book,
+                         tools.disk_spelling(drive.lower() + rest.upper()))
+
+
 @unittest.skipIf(sys.platform == 'win32', 'the XDG directories are for Unix')
 class TestXdgDirectories(unittest.TestCase):
 

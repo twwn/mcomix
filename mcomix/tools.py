@@ -472,6 +472,49 @@ def relocated(path: str, old_folder: str, new_folder: str) -> "str | None":
     return folder_prefix(new_folder) + path[len(old):]
 
 
+#: Whether a name typed in another case finds the same file, as on
+#: Windows and macOS unless told otherwise.
+_CASE_BLIND = sys.platform in ('win32', 'darwin')
+
+
+def disk_spelling(path: str) -> str:
+    """<path>, made absolute, as the file system spells it.
+
+    Where the case of a name does not matter to the file system, a path
+    keeps the case it was typed in: c:\\comics\\vol1.cbz in cmd opens
+    C:\\Comics\\Vol1.cbz.  Everything that keeps a book by its path
+    took that for another book - the library, the last page read, the
+    bookmarks, the thumbnail - and the open book was not found among its
+    folder's books, so Next archive did nothing.  Each name is taken as
+    its folder lists it, and a drive letter in upper case.  A name its
+    folder lists no single spelling of, and everything after it, stays
+    as it was given.  Not os.path.realpath(): that also follows links
+    and turns a mapped drive into its network path, which moves every
+    book on it.
+    """
+    path = os.path.abspath(path)
+    if not _CASE_BLIND:
+        return path
+    drive, rest = os.path.splitdrive(path)
+    if len(drive) == 2 and drive[1] == ':':
+        drive = drive.upper()
+    names = [name for name in rest.split(os.sep) if name]
+    spelled = drive + os.sep
+    for index, name in enumerate(names):
+        try:
+            listed = os.listdir(spelled)
+        except OSError:
+            return os.path.join(spelled, *names[index:])
+        if name not in listed:
+            same = [other for other in listed
+                    if other.casefold() == name.casefold()]
+            if len(same) != 1:
+                return os.path.join(spelled, *names[index:])
+            name = same[0]
+        spelled = os.path.join(spelled, name)
+    return spelled
+
+
 def directory_size(path: str) -> int:
     """How many bytes the files under <path> hold, by their own sizes.
     A file that cannot be asked counts as nothing."""

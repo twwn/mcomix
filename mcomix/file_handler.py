@@ -426,6 +426,12 @@ class FileHandler:
 
         self._close()
 
+        # A book is kept by its path, so by its one spelling of it.
+        if isinstance(path, str):
+            path = tools.disk_spelling(path)
+        else:
+            path = [tools.disk_spelling(page) for page in path]
+
         # A later volume of a RAR set is the rest of the set from the
         # middle of a page on; the book is read from its first volume.
         if isinstance(path, str):
