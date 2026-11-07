@@ -385,6 +385,44 @@ class FitzArchiveTest(MComixTest):
         with Image.open(path) as page:
             return page.size, image_tools.get_implied_rotation_from_file(path)
 
+    def _contents_and_outline(self, toc):
+        """What the handler lists for a two page PDF with the outline
+        <toc>, and the chapters of the ComicInfo.xml it lists, if any."""
+        import pymupdf
+        from mcomix import comicinfo
+        _make_pdf(self.pdf, text_page=True)
+        if toc:
+            document = pymupdf.open(self.pdf)
+            document.set_toc(toc)
+            document.saveIncr()
+            document.close()
+        archive = pdf_multi.PdfMultiArchive(self.pdf)
+        try:
+            names = list(archive.iter_contents())
+            chapters = None
+            if comicinfo.NAME in names:
+                extracted = list(archive.iter_extract(
+                    [names[0], comicinfo.NAME], self.destination))
+                self.assertEqual({names[0], comicinfo.NAME}, set(extracted))
+                chapters = comicinfo.chapters(
+                    os.path.join(self.destination, comicinfo.NAME), 2)
+        finally:
+            archive._mgr.mgr.shutdown()
+            archive.close()
+        return names, chapters
+
+    def test_the_outline_names_the_chapters_in_a_comicinfo(self):
+        names, chapters = self._contents_and_outline(
+            [[1, 'Opening', 1], [2, 'Inside it', 2], [1, 'Text', 2]])
+        self.assertEqual(3, len(names))
+        self.assertEqual([('Opening', 1), ('Inside it', 2), ('Text', 2)],
+                         chapters)
+
+    def test_a_pdf_without_an_outline_lists_its_pages_alone(self):
+        names, chapters = self._contents_and_outline([])
+        self.assertEqual(2, len(names))
+        self.assertIsNone(chapters)
+
     def test_the_page_count_is_a_number(self):
         """A call through the manager answers with a proxy for the result,
         not the result: FitzArchive logged "PDF contains %d pages" with

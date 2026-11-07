@@ -22,7 +22,7 @@
 - L, or the middle mouse button, shows a magnifying lens.
 - The right-click menu leads with what can be done to the page it was opened on. It leaves out what cannot be done there.
 - "File → Properties" describes the page and its archive, with series, volume, issue, title, year, writer, artist and publisher from a ComicInfo.xml.
-- "Go → Go to page" (G) lists the chapters a book names, where it names any, and goes to the one picked. An EPUB names them in its table of contents, a ComicInfo.xml by the bookmarks of its pages.
+- "Go → Go to page" (G) lists the chapters a book names, where it names any, and goes to the one picked. An EPUB names them in its table of contents, a PDF in its outline, a ComicInfo.xml by the bookmarks of its pages.
 - "File → Open containing folder" shows the open file in the file manager. The right-click menu has it too.
 - "Skip this page", in the page's right-click menu, passes an advertisement or a blank page over when the pages are turned. The book is not changed.
   The page keeps its thumbnail, drawn faint; untick "Skip this page" there to read it again.

@@ -71,6 +71,13 @@ class WorkerProxy(BaseProxy):
         return w.page_count()
 
     @classmethod
+    def _table_of_contents(cls) -> list[tuple[int, str]]:
+        """The (page, title) entries of the document's outline."""
+        from .child import FitzWorker
+        w = FitzWorker(cls.filename)
+        return w.table_of_contents()
+
+    @classmethod
     def _list_pages(cls) -> Iterator[str]:
         """A name for every page, as a generator the parent steps."""
         from .child import FitzWorker
@@ -98,6 +105,7 @@ class FitzManager(BaseManager):
     if TYPE_CHECKING:
         def open(self, filename: str) -> None: ...
         def page_count(self) -> BaseProxy: ...
+        def table_of_contents(self) -> BaseProxy: ...
         def iter_contents(self) -> Iterator[str]: ...
         def extract_pages(self, entries: Iterable[str],
                           save_path: str) -> Iterator[str]: ...
@@ -105,6 +113,7 @@ class FitzManager(BaseManager):
 
 FitzManager.register('open', WorkerProxy._open)
 FitzManager.register('page_count', WorkerProxy._count_pages)
+FitzManager.register('table_of_contents', WorkerProxy._table_of_contents)
 FitzManager.register('iter_contents', WorkerProxy._list_pages, proxytype=GeneratorProxy)
 FitzManager.register('extract_pages', WorkerProxy._extract_pages, proxytype=GeneratorProxy)
 
@@ -132,6 +141,12 @@ class FitzProcessWrangler(threading.local):
         proxy with %d, which raised once debug logging was on.
         """
         return cast(int, self.mgr.page_count()._getvalue())
+
+    def table_of_contents(self) -> list[tuple[int, str]]:
+        """The (page, title) entries of the document's outline, pages
+        counted from zero."""
+        return cast(list[tuple[int, str]],
+                    self.mgr.table_of_contents()._getvalue())
 
     def iter_contents(self) -> Iterator[str]:
         """Return an iterator over all the page filenames in the PDF."""

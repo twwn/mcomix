@@ -137,6 +137,16 @@ class FitzWorker:
         """How many pages the document has."""
         return int(self.doc.page_count)
 
+    def table_of_contents(self) -> list[tuple[int, str]]:
+        """The outline's entries, as (page, title) pairs, pages counted
+        from zero; an entry that points at no page is left out."""
+        try:
+            outline = self.doc.get_toc(simple=True)
+        except (AttributeError, RuntimeError, ValueError):
+            return []
+        return [(int(page) - 1, str(title)) for _level, title, page, *_rest
+                in outline if int(page) > 0]
+
     def _image_extension(self, xref: int) -> str:
         """Return the filename extension for extracted page images."""
         if self._extension is None:
