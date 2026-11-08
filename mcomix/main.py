@@ -423,6 +423,9 @@ class MainWindow(Gtk.Window):
         if prefs['invert smart scroll']:
             self.actiongroup.get_action('invert_scroll').activate()
 
+        if prefs['shuffle books']:
+            self.actiongroup.get_action('shuffle_books').activate()
+
         if prefs['keep transformation']:
             self.actiongroup.get_action('keep_transformation').activate()
         else:
@@ -1816,6 +1819,12 @@ class MainWindow(Gtk.Window):
 
     def change_hide_all(self, toggleaction: "ui.Action") -> None:
         self._update_toggle_preference('hide all', toggleaction)
+
+    def change_shuffle_books(self, toggleaction: "ui.Action") -> None:
+        """Have Next and Previous book, and the page turns past either
+        end of the book, open the folder's books in random order, or in
+        their own order again."""
+        prefs['shuffle books'] = toggleaction.get_active()
 
     def change_keep_transformation(self, toggleaction: "ui.Action") -> None:
         """Keep the rotation and flips from one page to the next, or not.

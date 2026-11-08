@@ -134,6 +134,19 @@ def unpack_folder() -> str | None:
     return None
 
 
+def _pick_at_random(files: Sequence[str], leave_out: set[str]) -> str | None:
+    """One of <files> that is not in <leave_out>, picked at random, or
+    None.  A file named as an archive that does not read as one is
+    passed over, as Next and Previous book pass it over."""
+    candidates = [path for path in files if path not in leave_out]
+    while candidates:
+        path = random.choice(candidates)
+        if archive_tools.archive_mime_type(path) is not None:
+            return path
+        candidates.remove(path)
+    return None
+
+
 class FileHandler:
 
     """The FileHandler keeps track of the actual files/archives opened.
@@ -207,6 +220,10 @@ class FileHandler:
         #: Which kind of file the walk through sibling directories is
         #: looking for, archives or images.
         self._directory_listmode = file_provider.FileProvider.IMAGES
+        #: The books "Shuffle books" has opened in this round, in the
+        #: order Next and Previous book walk them: the newest at the
+        #: end, those Previous reached past the first at the start.
+        self._shuffle_trail: list[str] = []
         #: Keeps track of the last read page in archives
         self.last_read_page = last_read_page.LastReadPage(backend.LibraryBackend())
         #: Regexp used for determining which archive files are comment files.
@@ -1296,7 +1313,12 @@ class FileHandler:
         The later volumes of a RAR set are passed over: the set is read
         from its first volume, and one of the others opened by itself
         is what is left of the set from there on.
+
+        With "Shuffle books" on, the archive is one picked at random
+        instead (see _open_shuffled_archive()).
         """
+        if prefs['shuffle books']:
+            return self._open_shuffled_archive(+1)
         if self.archive_type is not None:
 
             files = self._opened_provider.list_files(
@@ -1320,7 +1342,12 @@ class FileHandler:
         """Open the archive that comes directly before the currently loaded
         archive in that archive's directory listing, sorted alphabetically.
         Returns True if a new archive was opened, False otherwise.
+
+        With "Shuffle books" on, the archive the shuffle opened before
+        this one, or one picked at random (see _open_shuffled_archive()).
         """
+        if prefs['shuffle books']:
+            return self._open_shuffled_archive(-1)
         if self.archive_type is not None:
 
             files = self._opened_provider.list_files(
@@ -1385,6 +1412,57 @@ class FileHandler:
         if not files:
             return False
         self.open_file(random.choice(files), keep_fileprovider=True)
+        return True
+
+    def _open_shuffled_archive(self, step: int) -> bool:
+        """Next book (<step> +1) or Previous book (-1) with "Shuffle
+        books" on, and say whether a book was opened.
+
+        Next opens an archive of the folder this round has not opened
+        yet, picked at random, and Previous goes back through the ones
+        it opened, as a music player's shuffle does.  Next after
+        Previous goes forward along them again before it picks anew,
+        and Previous before the first of them picks one too.  Once
+        every archive has had its turn a new round starts, so the walk
+        never ends and never leaves the folder: only one with no other
+        archive answers False, and the caller then goes on as it would
+        past the folder's last archive.
+
+        The round belongs to the open book: one opened another way that
+        the round has not opened starts a new round from it.  A book
+        the folder no longer lists is dropped from it.
+        """
+        if self.archive_type is None:
+            return False
+        current = os.path.abspath(self._base_path or '')
+        files = [path for path in self._opened_provider.list_files(
+                     file_provider.FileProvider.ARCHIVES)
+                 if not archive_tools.is_later_volume(path)]
+        listed = set(files)
+        trail = [path for path in self._shuffle_trail
+                 if path in listed or path == current]
+        if current not in trail:
+            trail = [current]
+        target = trail.index(current) + step
+        path: str | None
+        if 0 <= target < len(trail):
+            path = trail[target]
+        else:
+            path = _pick_at_random(files, set(trail))
+            if path is None:
+                trail = [current]
+                path = _pick_at_random(files, {current})
+            if path is None:
+                self._shuffle_trail = trail
+                return False
+            if step > 0:
+                trail.append(path)
+            else:
+                trail.insert(0, path)
+        self._shuffle_trail = trail
+        start_page = 0 if step > 0 else \
+            prefs['open first file in prev archive'] - 1
+        self.open_file(path, start_page, keep_fileprovider=True)
         return True
 
     def open_next_directory(self, *args: object) -> bool:

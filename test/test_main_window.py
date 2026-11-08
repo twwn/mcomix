@@ -1682,6 +1682,91 @@ class MainWindowTest(MComixTest):
         self._movable_book()
         self.assertFalse(self.window.filehandler.open_random_archive())
 
+    def _shuffled_folder(self):
+        """The movable book and three more beside it, "Shuffle books"
+        on, and random.choice() patched to take the first it is offered
+        and note what that was."""
+        others = []
+        for name in ('a.cbz', 'b.cbz', 'c.cbz'):
+            others.append(os.path.join(self.tmp_dir, name))
+            shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'),
+                        others[-1])
+        source = self._movable_book()
+        self.window.actiongroup.get_action('shuffle_books').activate()
+        self.assertTrue(prefs['shuffle books'])
+        offered = []
+        patch = unittest.mock.patch(
+            'mcomix.file_handler.random.choice',
+            side_effect=lambda choices: offered.append(list(choices))
+            or choices[0])
+        patch.start()
+        self.addCleanup(patch.stop)
+        return source, others, offered
+
+    def _go(self, step):
+        """Next (+1) or Previous book (-1), and the book it opened."""
+        handler = self.window.filehandler
+        self.assertTrue(handler.next_archive() if step > 0
+                        else handler.previous_archive())
+        self._ready()
+        return handler.get_path_to_base()
+
+    def test_shuffle_opens_every_other_book_once_a_round(self):
+        source, others, offered = self._shuffled_folder()
+        opened = [self._go(+1) for _ in others]
+        self.assertEqual(sorted(others), sorted(opened))
+        # Each pick was among the books this round had not opened yet.
+        for picked, choices in enumerate(offered):
+            self.assertEqual(len(others) - picked, len(choices))
+            self.assertNotIn(source, choices)
+            self.assertFalse(set(opened[:picked]) & set(choices))
+        # Every book has had its turn: a new round, from the open one.
+        offered.clear()
+        self.assertNotEqual(opened[-1], self._go(+1))
+        self.assertEqual(sorted({source, *others} - {opened[-1]}),
+                         sorted(offered[0]))
+
+    def test_shuffle_previous_goes_back_the_way_it_came(self):
+        source, others, offered = self._shuffled_folder()
+        first, second = self._go(+1), self._go(+1)
+        offered.clear()
+        self.assertEqual(first, self._go(-1))
+        self.assertEqual(source, self._go(-1))
+        self.assertEqual(first, self._go(+1))
+        self.assertEqual(second, self._go(+1))
+        self.assertEqual([], offered)
+        # Before the first of them, Previous picks one not opened yet.
+        self._go(-1)
+        self._go(-1)
+        self.assertEqual(source, self.window.filehandler.get_path_to_base())
+        third = self._go(-1)
+        self.assertEqual(set(others) - {first, second}, {third})
+
+    def test_shuffle_starts_anew_from_a_book_opened_otherwise(self):
+        source, others, offered = self._shuffled_folder()
+        self._go(+1)
+        self.window.filehandler.open_file(others[-1])
+        self._ready()
+        offered.clear()
+        self._go(+1)
+        self.assertEqual(sorted({source, *others} - {others[-1]}),
+                         sorted(offered[0]))
+
+    def test_shuffle_turns_the_page_past_the_end_into_a_random_book(self):
+        source, others, offered = self._shuffled_folder()
+        self.window.last_page()
+        self._pump()
+        self.window.flip_page(+1)
+        self._ready()
+        self.assertEqual(others[0], self.window.filehandler.get_path_to_base())
+        self.assertEqual(1, len(offered))
+
+    def test_shuffle_with_no_other_book_opens_nothing(self):
+        self._movable_book()
+        prefs['shuffle books'] = True
+        self.assertFalse(self.window.filehandler.open_next_archive())
+        self.assertFalse(self.window.filehandler.open_previous_archive())
+
     def test_quit_and_save_keeps_the_file_of_the_page(self):
         """What an older MComix reads of it - the file and the index of
         the page - comes first and is unchanged."""
@@ -6069,11 +6154,12 @@ class StartUpOptionsTest(MComixTest):
 
     def test_the_preferences_that_are_toggles_are_shown_on(self):
         for preference in ('stretch', 'invert smart scroll',
-                           'keep transformation'):
+                           'keep transformation', 'shuffle books'):
             prefs[preference] = True
         prefs['rotation'] = 90
         self._start()
-        for name in ('stretch', 'invert_scroll', 'keep_transformation'):
+        for name in ('stretch', 'invert_scroll', 'keep_transformation',
+                     'shuffle_books'):
             with self.subTest(action=name):
                 self.assertTrue(self._active(name))
         self.assertEqual(90, prefs['rotation'])

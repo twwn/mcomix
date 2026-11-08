@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 1.00-SVN\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-08 11:44+0100\n"
+"POT-Creation-Date: 2026-11-08 12:26+0100\n"
 "PO-Revision-Date: 2012-08-16 13:10+0900\n"
 "Last-Translator: Toshiharu Kudoh <toshi.kd2@gmail.com>\n"
 "Language-Team: Japanese\n"
@@ -164,7 +164,7 @@ msgstr "ブックマークの編集"
 msgid "C_lear bookmarks..."
 msgstr "ブックマークの消去(_L)..."
 
-#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1448 mcomix/openwith.py:437
+#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1451 mcomix/openwith.py:437
 #: mcomix/library/collection_area.py:159 mcomix/library/watchlist.py:69
 msgid "_Remove"
 msgstr "削除(_R)"
@@ -185,7 +185,7 @@ msgstr "種類"
 msgid "Name"
 msgstr "名前"
 
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:2572
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:2581
 #: mcomix/library/control_area.py:157
 msgid "Page"
 msgstr "ページ"
@@ -236,7 +236,7 @@ msgstr "新しいショートカットキー..."
 msgid "Comments"
 msgstr "コメント"
 
-#: mcomix/comment_dialog.py:134 mcomix/file_handler.py:1006
+#: mcomix/comment_dialog.py:134 mcomix/file_handler.py:1023
 #, python-format
 msgid "Could not read %s"
 msgstr "%s を読めませんでした"
@@ -289,7 +289,7 @@ msgstr "ファイルの名前を変更しますか?"
 msgid "Please enter a new name for this file."
 msgstr "このファイルの新しい名前を入力してください。"
 
-#: mcomix/edit_dialog.py:59 mcomix/keybindings.py:168
+#: mcomix/edit_dialog.py:59 mcomix/keybindings.py:169
 msgid "Edit archive"
 msgstr "アーカイブファイルを編集"
 
@@ -357,7 +357,7 @@ msgstr "ページの名前を変更(_N)..."
 msgid "Select _All"
 msgstr "すべて選択(_A)"
 
-#: mcomix/enhance_dialog.py:40 mcomix/keybindings.py:171
+#: mcomix/enhance_dialog.py:40 mcomix/keybindings.py:172
 msgid "Enhance image"
 msgstr "画像の調整"
 
@@ -432,7 +432,7 @@ msgid ""
 "each colour band."
 msgstr "各々のカラーバンド毎にコントラスト（明度と暗度）を自動調節します。"
 
-#: mcomix/enhance_dialog.py:124 mcomix/ui.py:559
+#: mcomix/enhance_dialog.py:124 mcomix/ui.py:561
 msgid "_Invert image colors"
 msgstr "画像の色を反転(_I)"
 
@@ -512,7 +512,7 @@ msgstr ""
 msgid "Could not show the folder: %s"
 msgstr "ディレクトリーを表示できませんでした: %s"
 
-#: mcomix/file_actions.py:956 mcomix/keybindings.py:162
+#: mcomix/file_actions.py:956 mcomix/keybindings.py:163
 msgid "Save page as"
 msgstr "別名でページを保存"
 
@@ -602,7 +602,7 @@ msgid "%d page"
 msgid_plural "%d pages"
 msgstr[0] "%d ページ"
 
-#: mcomix/file_chooser_base_dialog.py:236 mcomix/keybindings.py:170
+#: mcomix/file_chooser_base_dialog.py:236 mcomix/keybindings.py:171
 msgid "Open"
 msgstr "開く"
 
@@ -659,33 +659,33 @@ msgstr "追加(_A)"
 msgid "! Could not unpack into %s; the temporary folder is used instead."
 msgstr "! %s に展開できません。一時フォルダーを使います。"
 
-#: mcomix/file_handler.py:516
+#: mcomix/file_handler.py:533
 #, python-format
 msgid "No images in '%s'"
 msgstr "'%s' の中には画像がありません"
 
-#: mcomix/file_handler.py:804
+#: mcomix/file_handler.py:821
 #, python-format
 msgid "Could not open %s: No such file."
 msgstr "'%s' を開けませんでした。ファイルが存在しません。"
 
-#: mcomix/file_handler.py:807 mcomix/file_provider.py:281
+#: mcomix/file_handler.py:824 mcomix/file_provider.py:281
 #: mcomix/file_provider.py:382
 #, python-format
 msgid "Could not open %s: Permission denied."
 msgstr "'%s' を開けませんでした。パーミッションが許可されていません。"
 
-#: mcomix/file_handler.py:1022
+#: mcomix/file_handler.py:1039
 #, python-format
 msgid "There is no room left to unpack the pages in %s."
 msgstr "%s にページを展開する空き容量がありません。"
 
-#: mcomix/file_handler.py:1106
+#: mcomix/file_handler.py:1123
 #, python-format
 msgid "Continue reading from page %d?"
 msgstr "%d ページから続けて閲覧していきますか?"
 
-#: mcomix/file_handler.py:1107
+#: mcomix/file_handler.py:1124
 #, python-format
 msgid ""
 "You stopped reading here on %(date)s, %(time)s. If you choose \"Yes\", "
@@ -696,7 +696,7 @@ msgstr ""
 "ば、閲覧を %(page)d ページで再開します。そうでなければ、最初のページが読み込"
 "まれます。"
 
-#: mcomix/file_handler.py:1646
+#: mcomix/file_handler.py:1724
 #, python-format
 msgid ""
 "! Corrupt file \"%s\", deleting it; the last file read will not be reopened."
@@ -729,7 +729,7 @@ msgstr "前のページ"
 #: mcomix/keybindings.py:58 mcomix/keybindings.py:59 mcomix/keybindings.py:60
 #: mcomix/keybindings.py:62 mcomix/keybindings.py:63 mcomix/keybindings.py:64
 #: mcomix/keybindings.py:66 mcomix/keybindings.py:67 mcomix/keybindings.py:68
-#: mcomix/preferences_dialog.py:99
+#: mcomix/keybindings.py:69 mcomix/preferences_dialog.py:99
 msgid "Navigation"
 msgstr "ナビゲーション"
 
@@ -805,392 +805,398 @@ msgstr "ランダムなページ"
 msgid "Random archive in the folder"
 msgstr "フォルダー内のランダムなアーカイブ"
 
-#: mcomix/keybindings.py:67 mcomix/ui.py:482
+#: mcomix/keybindings.py:67
+msgid "Shuffle books"
+msgstr "本をシャッフル"
+
+#: mcomix/keybindings.py:68 mcomix/ui.py:482
 msgid "Next folder"
 msgstr "次のディレクトリー"
 
-#: mcomix/keybindings.py:68 mcomix/ui.py:483
+#: mcomix/keybindings.py:69 mcomix/ui.py:483
 msgid "Previous folder"
 msgstr "前のディレクトリー"
 
-#: mcomix/keybindings.py:71
+#: mcomix/keybindings.py:72
 msgid "Align bottom left"
 msgstr "左下に配置"
 
-#: mcomix/keybindings.py:71 mcomix/keybindings.py:72 mcomix/keybindings.py:73
-#: mcomix/keybindings.py:75 mcomix/keybindings.py:76 mcomix/keybindings.py:77
-#: mcomix/keybindings.py:79 mcomix/keybindings.py:80 mcomix/keybindings.py:81
-#: mcomix/keybindings.py:83 mcomix/keybindings.py:84 mcomix/keybindings.py:85
-#: mcomix/keybindings.py:86 mcomix/keybindings.py:88 mcomix/keybindings.py:89
-#: mcomix/keybindings.py:113 mcomix/preferences_dialog.py:249
+#: mcomix/keybindings.py:72 mcomix/keybindings.py:73 mcomix/keybindings.py:74
+#: mcomix/keybindings.py:76 mcomix/keybindings.py:77 mcomix/keybindings.py:78
+#: mcomix/keybindings.py:80 mcomix/keybindings.py:81 mcomix/keybindings.py:82
+#: mcomix/keybindings.py:84 mcomix/keybindings.py:85 mcomix/keybindings.py:86
+#: mcomix/keybindings.py:87 mcomix/keybindings.py:89 mcomix/keybindings.py:90
+#: mcomix/keybindings.py:114 mcomix/preferences_dialog.py:249
 msgid "Scroll"
 msgstr "スクロール"
 
-#: mcomix/keybindings.py:72
+#: mcomix/keybindings.py:73
 msgid "Align bottom center"
 msgstr "中央下に配置"
 
-#: mcomix/keybindings.py:73
+#: mcomix/keybindings.py:74
 msgid "Align bottom right"
 msgstr "右下に配置"
 
-#: mcomix/keybindings.py:75
+#: mcomix/keybindings.py:76
 msgid "Align middle left"
 msgstr "左中央に配置"
 
-#: mcomix/keybindings.py:76
+#: mcomix/keybindings.py:77
 msgid "Align center"
 msgstr "中央に配置"
 
-#: mcomix/keybindings.py:77
+#: mcomix/keybindings.py:78
 msgid "Align middle right"
 msgstr "右中央に配置"
 
-#: mcomix/keybindings.py:79
+#: mcomix/keybindings.py:80
 msgid "Align top left"
 msgstr "左上に配置"
 
-#: mcomix/keybindings.py:80
+#: mcomix/keybindings.py:81
 msgid "Align top center"
 msgstr "中央上に配置"
 
-#: mcomix/keybindings.py:81
+#: mcomix/keybindings.py:82
 msgid "Align top right"
 msgstr "右上に配置"
 
-#: mcomix/keybindings.py:83
+#: mcomix/keybindings.py:84
 msgid "Scroll down"
 msgstr "スクロールダウン"
 
-#: mcomix/keybindings.py:84
+#: mcomix/keybindings.py:85
 msgid "Scroll up"
 msgstr "スクロールアップ"
 
-#: mcomix/keybindings.py:85
+#: mcomix/keybindings.py:86
 msgid "Scroll right"
 msgstr "右にスクロール"
 
-#: mcomix/keybindings.py:86
+#: mcomix/keybindings.py:87
 msgid "Scroll left"
 msgstr "左にスクロール"
 
-#: mcomix/keybindings.py:88
+#: mcomix/keybindings.py:89
 msgid "Smart scroll up"
 msgstr "上にスマートスクロール"
 
-#: mcomix/keybindings.py:89
+#: mcomix/keybindings.py:90
 msgid "Smart scroll down"
 msgstr "下にスマートスクロール"
 
-#: mcomix/keybindings.py:92
+#: mcomix/keybindings.py:93
 msgid "Zoom in"
 msgstr "拡大"
 
-#: mcomix/keybindings.py:92 mcomix/keybindings.py:93 mcomix/keybindings.py:94
+#: mcomix/keybindings.py:93 mcomix/keybindings.py:94 mcomix/keybindings.py:95
 msgid "Zoom"
 msgstr "ズーム"
 
-#: mcomix/keybindings.py:93
+#: mcomix/keybindings.py:94
 msgid "Zoom out"
 msgstr "縮小"
 
-#: mcomix/keybindings.py:94
+#: mcomix/keybindings.py:95
 msgid "Normal size"
 msgstr "通常サイズ"
 
-#: mcomix/keybindings.py:96
+#: mcomix/keybindings.py:97
 msgid "Keep transformation"
 msgstr "回転の状態を維持する"
 
-#: mcomix/keybindings.py:96 mcomix/keybindings.py:97 mcomix/keybindings.py:98
-#: mcomix/keybindings.py:99 mcomix/keybindings.py:100 mcomix/keybindings.py:101
-#: mcomix/keybindings.py:102 mcomix/keybindings.py:171
-#: mcomix/keybindings.py:173 mcomix/properties_dialog.py:51 mcomix/ui.py:520
+#: mcomix/keybindings.py:97 mcomix/keybindings.py:98 mcomix/keybindings.py:99
+#: mcomix/keybindings.py:100 mcomix/keybindings.py:101
+#: mcomix/keybindings.py:102 mcomix/keybindings.py:103
+#: mcomix/keybindings.py:172 mcomix/keybindings.py:174
+#: mcomix/properties_dialog.py:51 mcomix/ui.py:520
 msgid "Image"
 msgstr "画像"
 
-#: mcomix/keybindings.py:97 mcomix/keybindings.py:104 mcomix/keybindings.py:106
+#: mcomix/keybindings.py:98 mcomix/keybindings.py:105 mcomix/keybindings.py:107
 msgid "Rotate 90° clockwise"
 msgstr "右回りに90度回転"
 
-#: mcomix/keybindings.py:98
+#: mcomix/keybindings.py:99
 msgid "Rotate 180°"
 msgstr "180度回転"
 
-#: mcomix/keybindings.py:99 mcomix/keybindings.py:105 mcomix/keybindings.py:107
+#: mcomix/keybindings.py:100 mcomix/keybindings.py:106
+#: mcomix/keybindings.py:108
 msgid "Rotate 90° anticlockwise"
 msgstr "左回りに90度回転"
 
-#: mcomix/keybindings.py:100
+#: mcomix/keybindings.py:101
 msgid "Flip horizontally"
 msgstr "左右をフリップ"
 
-#: mcomix/keybindings.py:101
+#: mcomix/keybindings.py:102
 msgid "Flip vertically"
 msgstr "上下をフリップ"
 
-#: mcomix/keybindings.py:102
+#: mcomix/keybindings.py:103
 msgid "Never autorotate"
 msgstr "自動回転しない"
 
-#: mcomix/keybindings.py:104 mcomix/keybindings.py:105
+#: mcomix/keybindings.py:105 mcomix/keybindings.py:106
 msgid "Autorotate by width"
 msgstr "幅に応じて自動回転"
 
-#: mcomix/keybindings.py:106 mcomix/keybindings.py:107
+#: mcomix/keybindings.py:107 mcomix/keybindings.py:108
 msgid "Autorotate by height"
 msgstr "高さに応じて自動回転"
 
-#: mcomix/keybindings.py:109 mcomix/preferences_dialog.py:375 mcomix/ui.py:531
+#: mcomix/keybindings.py:110 mcomix/preferences_dialog.py:375 mcomix/ui.py:531
 msgid "Double page mode"
 msgstr "見開き表示"
 
-#: mcomix/keybindings.py:109 mcomix/keybindings.py:110
-#: mcomix/keybindings.py:111 mcomix/keybindings.py:112
-#: mcomix/keybindings.py:115 mcomix/keybindings.py:116
-#: mcomix/keybindings.py:117 mcomix/keybindings.py:119
-#: mcomix/keybindings.py:120 mcomix/keybindings.py:121
-#: mcomix/keybindings.py:122 mcomix/keybindings.py:123
+#: mcomix/keybindings.py:110 mcomix/keybindings.py:111
+#: mcomix/keybindings.py:112 mcomix/keybindings.py:113
+#: mcomix/keybindings.py:116 mcomix/keybindings.py:117
+#: mcomix/keybindings.py:118 mcomix/keybindings.py:120
+#: mcomix/keybindings.py:121 mcomix/keybindings.py:122
+#: mcomix/keybindings.py:123 mcomix/keybindings.py:124
 msgid "View mode"
 msgstr "表示モード"
 
-#: mcomix/keybindings.py:110
+#: mcomix/keybindings.py:111
 msgid "Title page alone"
 msgstr "タイトルページを単独で表示"
 
-#: mcomix/keybindings.py:111 mcomix/ui.py:548
+#: mcomix/keybindings.py:112 mcomix/ui.py:548
 msgid "Manga mode"
 msgstr "マンガのページ順に表示"
 
-#: mcomix/keybindings.py:112 mcomix/preferences_dialog.py:393 mcomix/ui.py:549
+#: mcomix/keybindings.py:113 mcomix/preferences_dialog.py:393 mcomix/ui.py:549
 msgid "Continuous mode"
 msgstr "連続表示"
 
-#: mcomix/keybindings.py:113 mcomix/ui.py:550
+#: mcomix/keybindings.py:114 mcomix/ui.py:550
 msgid "Invert smart scroll"
 msgstr "反対方向にスマートスクロール"
 
-#: mcomix/keybindings.py:115 mcomix/preferences_dialog.py:441 mcomix/ui.py:554
+#: mcomix/keybindings.py:116 mcomix/preferences_dialog.py:441 mcomix/ui.py:556
 msgid "Magnifying lens"
 msgstr "拡大レンズ"
 
-#: mcomix/keybindings.py:116 mcomix/ui.py:555
+#: mcomix/keybindings.py:117 mcomix/ui.py:557
 msgid "Stretch small images"
 msgstr "小さな画像を引きのばす"
 
-#: mcomix/keybindings.py:117 mcomix/ui.py:557
+#: mcomix/keybindings.py:118 mcomix/ui.py:559
 msgid "Crop borders"
 msgstr "余白を切り取る"
 
-#: mcomix/keybindings.py:119 mcomix/ui.py:564
+#: mcomix/keybindings.py:120 mcomix/ui.py:566
 msgid "Best fit mode"
 msgstr "ベストフィットモード"
 
-#: mcomix/keybindings.py:120 mcomix/ui.py:565
+#: mcomix/keybindings.py:121 mcomix/ui.py:567
 msgid "Fit width mode"
 msgstr "横幅に合わせる"
 
-#: mcomix/keybindings.py:121 mcomix/ui.py:566
+#: mcomix/keybindings.py:122 mcomix/ui.py:568
 msgid "Fit height mode"
 msgstr "高さに合わせる"
 
-#: mcomix/keybindings.py:122
+#: mcomix/keybindings.py:123
 msgid "Fit size mode"
 msgstr "サイズ合わせモード"
 
-#: mcomix/keybindings.py:123 mcomix/ui.py:568
+#: mcomix/keybindings.py:124 mcomix/ui.py:570
 msgid "Manual zoom mode"
 msgstr "手動でズームを調整する"
 
-#: mcomix/keybindings.py:126 mcomix/osd.py:287 mcomix/ui.py:487
+#: mcomix/keybindings.py:127 mcomix/osd.py:287 mcomix/ui.py:487
 msgid "Leave fullscreen"
 msgstr "全画面表示から退出"
 
-#: mcomix/keybindings.py:126 mcomix/keybindings.py:128
-#: mcomix/keybindings.py:129 mcomix/keybindings.py:130
-#: mcomix/keybindings.py:132 mcomix/keybindings.py:133
-#: mcomix/keybindings.py:134 mcomix/keybindings.py:135
-#: mcomix/keybindings.py:137 mcomix/keybindings.py:138
-#: mcomix/keybindings.py:139 mcomix/keybindings.py:140
-#: mcomix/keybindings.py:141 mcomix/keybindings.py:142
-#: mcomix/keybindings.py:144 mcomix/keybindings.py:146
-#: mcomix/keybindings.py:148 mcomix/preferences_dialog.py:132
+#: mcomix/keybindings.py:127 mcomix/keybindings.py:129
+#: mcomix/keybindings.py:130 mcomix/keybindings.py:131
+#: mcomix/keybindings.py:133 mcomix/keybindings.py:134
+#: mcomix/keybindings.py:135 mcomix/keybindings.py:136
+#: mcomix/keybindings.py:138 mcomix/keybindings.py:139
+#: mcomix/keybindings.py:140 mcomix/keybindings.py:141
+#: mcomix/keybindings.py:142 mcomix/keybindings.py:143
+#: mcomix/keybindings.py:145 mcomix/keybindings.py:147
+#: mcomix/keybindings.py:149 mcomix/preferences_dialog.py:132
 msgid "User interface"
 msgstr "ユーザーインターフェース"
 
-#: mcomix/keybindings.py:128
+#: mcomix/keybindings.py:129
 msgid "OSD panel"
 msgstr "OSD パネルを表示"
 
-#: mcomix/keybindings.py:129
+#: mcomix/keybindings.py:130
 msgid "Minimize"
 msgstr "最小化"
 
-#: mcomix/keybindings.py:130
+#: mcomix/keybindings.py:131
 msgid "Manual"
 msgstr "マニュアル"
 
-#: mcomix/keybindings.py:131
+#: mcomix/keybindings.py:132
 msgid "Keyboard shortcuts"
 msgstr "キーボードショートカット"
 
-#: mcomix/keybindings.py:133 mcomix/preferences_dialog.py:176
+#: mcomix/keybindings.py:134 mcomix/preferences_dialog.py:176
 msgid "Fullscreen"
 msgstr "全画面表示"
 
-#: mcomix/keybindings.py:134
+#: mcomix/keybindings.py:135
 msgid "Toolbar"
 msgstr "ツールバー(T)"
 
-#: mcomix/keybindings.py:135
+#: mcomix/keybindings.py:136
 msgid "Menubar"
 msgstr "メニューバー"
 
-#: mcomix/keybindings.py:136
+#: mcomix/keybindings.py:137
 msgid "Context menu"
 msgstr "コンテキストメニュー"
 
-#: mcomix/keybindings.py:138
+#: mcomix/keybindings.py:139
 msgid "Statusbar"
 msgstr "ステータスバー"
 
-#: mcomix/keybindings.py:139
+#: mcomix/keybindings.py:140
 msgid "Scrollbars"
 msgstr "スクロールバー"
 
-#: mcomix/keybindings.py:140 mcomix/preferences_dialog.py:156
+#: mcomix/keybindings.py:141 mcomix/preferences_dialog.py:156
 msgid "Thumbnails"
 msgstr "サムネイル"
 
-#: mcomix/keybindings.py:141
+#: mcomix/keybindings.py:142
 msgid "Hide all"
 msgstr "全て隠す"
 
-#: mcomix/keybindings.py:142 mcomix/slideshow.py:54 mcomix/ui.py:553
+#: mcomix/keybindings.py:143 mcomix/slideshow.py:54 mcomix/ui.py:555
 msgid "Start slideshow"
 msgstr "スライドショーを動かす"
 
-#: mcomix/keybindings.py:143
+#: mcomix/keybindings.py:144
 msgid "Pause or resume animation"
 msgstr "アニメーションの一時停止/再開"
 
-#: mcomix/keybindings.py:145
+#: mcomix/keybindings.py:146
 msgid "Play animation faster"
 msgstr "アニメーションを速く再生"
 
-#: mcomix/keybindings.py:147
+#: mcomix/keybindings.py:148
 msgid "Play animation slower"
 msgstr "アニメーションを遅く再生"
 
-#: mcomix/keybindings.py:151
+#: mcomix/keybindings.py:152
 msgid "Delete"
 msgstr "削除"
 
-#: mcomix/keybindings.py:151 mcomix/keybindings.py:153
-#: mcomix/keybindings.py:154 mcomix/keybindings.py:158
-#: mcomix/keybindings.py:159 mcomix/keybindings.py:160
-#: mcomix/keybindings.py:161 mcomix/keybindings.py:162
-#: mcomix/keybindings.py:164 mcomix/keybindings.py:165
-#: mcomix/keybindings.py:169 mcomix/keybindings.py:170
-#: mcomix/keybindings.py:172
+#: mcomix/keybindings.py:152 mcomix/keybindings.py:154
+#: mcomix/keybindings.py:155 mcomix/keybindings.py:159
+#: mcomix/keybindings.py:160 mcomix/keybindings.py:161
+#: mcomix/keybindings.py:162 mcomix/keybindings.py:163
+#: mcomix/keybindings.py:165 mcomix/keybindings.py:166
+#: mcomix/keybindings.py:170 mcomix/keybindings.py:171
+#: mcomix/keybindings.py:173
 msgid "File"
 msgstr "ファイル"
 
-#: mcomix/keybindings.py:152 mcomix/ui.py:447
+#: mcomix/keybindings.py:153 mcomix/ui.py:447
 msgid "Delete permanently"
 msgstr "完全に削除"
 
-#: mcomix/keybindings.py:154
+#: mcomix/keybindings.py:155
 msgid "Rename page"
 msgstr "ページの名前を変更"
 
-#: mcomix/keybindings.py:155
+#: mcomix/keybindings.py:156
 msgid "Undo"
 msgstr "元に戻す"
 
-#: mcomix/keybindings.py:155 mcomix/keybindings.py:156
-#: mcomix/keybindings.py:157 mcomix/keybindings.py:166
-#: mcomix/keybindings.py:168
+#: mcomix/keybindings.py:156 mcomix/keybindings.py:157
+#: mcomix/keybindings.py:158 mcomix/keybindings.py:167
+#: mcomix/keybindings.py:169
 msgid "Edit"
 msgstr "編集"
 
-#: mcomix/keybindings.py:156
+#: mcomix/keybindings.py:157
 msgid "Redo"
 msgstr "やり直す"
 
-#: mcomix/keybindings.py:157
+#: mcomix/keybindings.py:158
 msgid "Copy"
 msgstr "コピー"
 
-#: mcomix/keybindings.py:158
+#: mcomix/keybindings.py:159
 msgid "Refresh"
 msgstr "再読み込み"
 
-#: mcomix/keybindings.py:159
+#: mcomix/keybindings.py:160
 msgid "Close"
 msgstr "閉じる"
 
-#: mcomix/keybindings.py:160
+#: mcomix/keybindings.py:161
 msgid "Quit"
 msgstr "終了"
 
-#: mcomix/keybindings.py:161
+#: mcomix/keybindings.py:162
 msgid "Save and quit"
 msgstr "保存して終了"
 
-#: mcomix/keybindings.py:164
+#: mcomix/keybindings.py:165
 msgid "Archive comments"
 msgstr "アーカイブファイルのコメント"
 
-#: mcomix/keybindings.py:165 mcomix/properties_dialog.py:36
+#: mcomix/keybindings.py:166 mcomix/properties_dialog.py:36
 msgid "Properties"
 msgstr "プロパティー"
 
-#: mcomix/keybindings.py:166 mcomix/preferences_dialog.py:70
+#: mcomix/keybindings.py:167 mcomix/preferences_dialog.py:70
 msgid "Preferences"
 msgstr "設定"
 
-#: mcomix/keybindings.py:169 mcomix/ui.py:449 mcomix/ui.py:452
+#: mcomix/keybindings.py:170 mcomix/ui.py:449 mcomix/ui.py:452
 #: mcomix/library/book_area.py:232
 msgid "Open containing folder"
 msgstr "ファイルのあるディレクトリーを開く"
 
-#: mcomix/keybindings.py:172 mcomix/library/main_dialog.py:60
+#: mcomix/keybindings.py:173 mcomix/library/main_dialog.py:60
 msgid "Library"
 msgstr "ライブラリー"
 
-#: mcomix/keybindings.py:173 mcomix/ui.py:559
+#: mcomix/keybindings.py:174 mcomix/ui.py:561
 msgid "Invert image colors"
 msgstr "画像の色を反転"
 
-#: mcomix/keybindings.py:176
+#: mcomix/keybindings.py:177
 msgid "Add bookmark"
 msgstr "ブックマークに追加"
 
-#: mcomix/keybindings.py:176 mcomix/keybindings.py:177
+#: mcomix/keybindings.py:177 mcomix/keybindings.py:178
 msgid "Bookmarks"
 msgstr "ブックマーク"
 
-#: mcomix/keybindings.py:177
+#: mcomix/keybindings.py:178
 msgid "Edit bookmarks"
 msgstr "ブックマークの編集"
 
-#: mcomix/keybindings.py:185 mcomix/openwith.py:658
+#: mcomix/keybindings.py:186 mcomix/openwith.py:658
 msgid "Command"
 msgstr "コマンド"
 
-#: mcomix/keybindings.py:186
+#: mcomix/keybindings.py:187
 msgid "External commands"
 msgstr "外部コマンド"
 
-#: mcomix/keybindings.py:263
+#: mcomix/keybindings.py:264
 #, python-format
 msgid "Keybinding for \"%(action)s\" overrides hotkey for another action."
 msgstr ""
 "\"%(action)s\" のキーバインディングは他のアクションのホットキーをオーバーライ"
 "ドします。"
 
-#: mcomix/keybindings.py:456 mcomix/keybindings.py:464
+#: mcomix/keybindings.py:457 mcomix/keybindings.py:465
 #, python-format
 msgid "Couldn't load keybindings: %s"
 msgstr "キーバインディングを読めませんでした: %s"
@@ -1200,13 +1206,13 @@ msgstr "キーバインディングを読めませんでした: %s"
 msgid "! Could not remove file \"%s\""
 msgstr "! ファイル \"%s\" を削除できませんでした"
 
-#: mcomix/main.py:1441
+#: mcomix/main.py:1444
 #, python-format
 msgid "Remove the page picked out of \"%s\"?"
 msgid_plural "Remove the pages picked out of \"%s\"?"
 msgstr[0] "選んだページを「%s」から取り除きますか？"
 
-#: mcomix/main.py:1444
+#: mcomix/main.py:1447
 msgid ""
 "They are taken out of the archive on disk, which is written again at once. "
 "Leaving the book without removing them forgets which pages they were."
@@ -1214,16 +1220,16 @@ msgstr ""
 "ディスク上の書庫から取り除かれ、書庫はすぐに書き直されます。取り除かずに本を"
 "離れると、どのページだったかは忘れられます。"
 
-#: mcomix/main.py:1447
+#: mcomix/main.py:1450
 msgid "_Keep them"
 msgstr "残す(_K)"
 
-#: mcomix/main.py:1614
+#: mcomix/main.py:1617
 #, python-format
 msgid "Animation speed: %s"
 msgstr "アニメーション速度: %s"
 
-#: mcomix/main.py:2276
+#: mcomix/main.py:2285
 msgid "SLIDESHOW"
 msgstr "SLIDESHOW"
 
@@ -1895,7 +1901,7 @@ msgstr ""
 "最初の数ページの大半が幅の2倍以上の高さである本は、連続表示で表示されます。表"
 "示メニューでその本だけ解除できます。"
 
-#: mcomix/preferences_dialog.py:400 mcomix/ui.py:567
+#: mcomix/preferences_dialog.py:400 mcomix/ui.py:569
 msgid "Fit to size mode"
 msgstr "サイズ固定モード"
 
@@ -2099,7 +2105,7 @@ msgstr ""
 "ます。"
 
 #: mcomix/preferences_dialog.py:694 mcomix/preferences_dialog.py:912
-#: mcomix/preferences_dialog.py:975 mcomix/ui.py:573
+#: mcomix/preferences_dialog.py:975 mcomix/ui.py:575
 msgid "Never"
 msgstr "しない"
 
@@ -2911,7 +2917,7 @@ msgstr ""
 "次回プログラムを起動した際、現在開かれているファイルを復元するようにしてから"
 "終了します。"
 
-#: mcomix/ui.py:493 mcomix/ui.py:574 mcomix/ui.py:576
+#: mcomix/ui.py:493 mcomix/ui.py:576 mcomix/ui.py:578
 msgid "_Rotate 90° clockwise"
 msgstr "右回りに90度回転(_R)"
 
@@ -2919,7 +2925,7 @@ msgstr "右回りに90度回転(_R)"
 msgid "Rotate _180°"
 msgstr "180度回転(_G)"
 
-#: mcomix/ui.py:495 mcomix/ui.py:575 mcomix/ui.py:577
+#: mcomix/ui.py:495 mcomix/ui.py:577 mcomix/ui.py:579
 msgid "Rotat_e 90° anticlockwise"
 msgstr "左回りに90度回転(_E)"
 
@@ -3088,90 +3094,98 @@ msgid "Invert smart scrolling direction."
 msgstr "スマートスクロールの方向を反対にします。"
 
 #: mcomix/ui.py:551
+msgid "_Shuffle books"
+msgstr "本をシャッフル(_S)"
+
+#: mcomix/ui.py:551
+msgid "Next and Previous book open the books of the folder in random order."
+msgstr "「次の本」と「前の本」がフォルダー内の本をランダムな順番で開きます。"
+
+#: mcomix/ui.py:553
 msgid "_Keep transformation"
 msgstr "回転の状態を維持する(_K)"
 
-#: mcomix/ui.py:551
+#: mcomix/ui.py:553
 msgid "Keeps the currently selected transformation for the next pages."
 msgstr "現在選択された回転状態を次ページ以降も維持します。"
 
-#: mcomix/ui.py:553
+#: mcomix/ui.py:555
 msgid "Start slid_eshow"
 msgstr "スライドショーを動かす(_C)"
 
-#: mcomix/ui.py:554
+#: mcomix/ui.py:556
 msgid "Magnifying _lens"
 msgstr "拡大レンズ(_L)"
 
-#: mcomix/ui.py:555
+#: mcomix/ui.py:557
 msgid "Stretch images to fit to the screen, depending on zoom mode."
 msgstr "ズームモードに応じてスクリーンに適応するように画像を引きのばします。"
 
-#: mcomix/ui.py:557
+#: mcomix/ui.py:559
 msgid "Cut off the plain margins around each page."
 msgstr "各ページの周りの無地の余白を切り取ります。"
 
-#: mcomix/ui.py:564
+#: mcomix/ui.py:566
 msgid "_Best fit mode"
 msgstr "ベストフィットモード(_B)"
 
-#: mcomix/ui.py:565
+#: mcomix/ui.py:567
 msgid "Fit _width mode"
 msgstr "横幅に合わせる(_W)"
 
-#: mcomix/ui.py:566
+#: mcomix/ui.py:568
 msgid "Fit _height mode"
 msgstr "高さに合わせる(_H)"
 
-#: mcomix/ui.py:567
+#: mcomix/ui.py:569
 msgid "Fit _size mode"
 msgstr "フィットサイズモード(_S)"
 
-#: mcomix/ui.py:568
+#: mcomix/ui.py:570
 msgid "M_anual zoom mode"
 msgstr "手動でズームを調整する(_A)"
 
-#: mcomix/ui.py:581
+#: mcomix/ui.py:583
 msgid "A_bout"
 msgstr "MComix について(_B)"
 
-#: mcomix/ui.py:584
+#: mcomix/ui.py:586
 msgid "Co_mments..."
 msgstr "コメント(_M)..."
 
-#: mcomix/ui.py:587
+#: mcomix/ui.py:589
 msgid "Proper_ties"
 msgstr "プロパティー(_T)"
 
-#: mcomix/ui.py:590
+#: mcomix/ui.py:592
 msgid "_Preferences"
 msgstr "設定(_F)"
 
-#: mcomix/ui.py:591
+#: mcomix/ui.py:593
 msgid "_Keyboard shortcuts"
 msgstr "キーボードショートカット(_K)"
 
-#: mcomix/ui.py:596
+#: mcomix/ui.py:598
 msgid "_Edit archive..."
 msgstr "アーカイブファイルを編集(_E)"
 
-#: mcomix/ui.py:596
+#: mcomix/ui.py:598
 msgid "Opens the archive editor."
 msgstr "アーカイブファイルエディターを開きます。"
 
-#: mcomix/ui.py:598
+#: mcomix/ui.py:600
 msgid "_Open..."
 msgstr "開く(_O)"
 
-#: mcomix/ui.py:599
+#: mcomix/ui.py:601
 msgid "Enha_nce image..."
 msgstr "画像の調整(_N)"
 
-#: mcomix/ui.py:602
+#: mcomix/ui.py:604
 msgid "_Library..."
 msgstr "ライブラリー(_L)..."
 
-#: mcomix/ui.py:706
+#: mcomix/ui.py:708
 #, python-format
 msgid "Could not open the manual: %s"
 msgstr "マニュアルを開けませんでした: %s"

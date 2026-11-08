@@ -457,6 +457,8 @@ class EventHandler:
         manager.register('random_page', [], self._window.random_page)
         manager.register('random_archive', [],
                          self._window.filehandler.open_random_archive)
+        manager.register('shuffle_books', [],
+                         self._window.actiongroup.get_action('shuffle_books').activate)
 
         manager.register('next_directory',
                          ['<control>N'],

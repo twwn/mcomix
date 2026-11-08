@@ -46,6 +46,9 @@
 - Several files picked at once open as one book of just those.
 - CTRL+SHIFT+N and CTRL+SHIFT+P open the next and previous archive in the folder. Past its last archive they go on into the next folder, as "Go on into the next folder" in the [preferences](preferences.md) describes, while that is on.
 - For a book opened from the [library](library.md), they open the next and previous of the books it shows, and stop at the last.
+- With "Go → Shuffle books" on, they open the folder's archives, or the books the library shows, in random order instead, and so do page turns past either end of a book.
+  Next picks one not opened yet in this round; Previous goes back through the ones opened, and past the first picks one too.
+  Once every archive has had its turn, a new round starts. The folder is not left, unless it holds no other archive.
 - The unpacked pages of the two books closed last are kept until MComix closes, so going back to one does not unpack it again. They are dropped sooner where they would take more than half the free room in the folder books are unpacked in, and not kept for a book whose pages were changed or handed to an outside program.
 - CTRL+N and CTRL+P open the next and previous folder with a book, the same way.
 - CTRL+SHIFT+R or F5 reloads the book. If its file has been deleted, the next one in its folder opens instead, or the last one.

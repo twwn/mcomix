@@ -343,7 +343,7 @@ _VIEW = ('fullscreen', None,
 #: the wheel move through a page, so which way it goes is chosen here.
 _GO = ('next_page', 'previous_page', 'go_to',
        'first_page', 'last_page', None,
-       'next_archive', 'previous_archive', None,
+       'next_archive', 'previous_archive', 'shuffle_books', None,
        'next_directory', 'previous_directory', None,
        'invert_scroll')
 
@@ -548,6 +548,8 @@ class MainUI:
             _Entry('manga_mode', 'view-mirror-symbolic', _('_Manga mode'), _('Manga mode'), window.change_manga_mode),
             _Entry('continuous_mode', 'view-continuous-symbolic', _('_Continuous mode'), _('Continuous mode'), window.change_continuous_mode),
             _Entry('invert_scroll', 'edit-undo', _('Invert smart scroll'), _('Invert smart scrolling direction.'), window.change_invert_scroll),
+            _Entry('shuffle_books', None, _('_Shuffle books'), _('Next and Previous book open the books of the folder in random order.'),
+                   window.change_shuffle_books),
             _Entry('keep_transformation', None, _('_Keep transformation'), _('Keeps the currently selected transformation for the next pages.'),
                    window.change_keep_transformation),
             _Entry('slideshow', 'media-playback-start-symbolic', _('Start slid_eshow'), _('Start slideshow'), window.slideshow.toggle),
