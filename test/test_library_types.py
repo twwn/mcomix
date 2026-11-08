@@ -364,6 +364,37 @@ class WatchListTest(unittest.TestCase):
                          [entry.directory for entry
                           in self.library.watchlist.get_watchlist()])
 
+    def test_a_directory_that_cannot_be_listed_leaves_the_others_scanned(self):
+        """os.listdir() raised PermissionError out of the first one, and
+        the scan ended there: the directories after it never had their
+        new books found."""
+        other = os.path.join(self.tmpdir, 'more')
+        os.makedirs(other)
+        open(os.path.join(other, 'new.cbz'), 'wb').close()
+        self.library.watchlist.add_directory(other)
+        first = self.library.watchlist.get_watchlist()[0].directory
+        real = backend_types._WatchListEntry.get_new_files
+
+        def refused(entry, filelist):
+            if entry.directory == first:
+                raise PermissionError(13, 'Permission denied', first)
+            return real(entry, filelist)
+
+        found = []
+        finished = []
+        self.library.watchlist.new_files_found += \
+            lambda paths, entry: found.append(entry.directory)
+        self.library.watchlist.scan_finished += lambda: finished.append(True)
+        with mock.patch.object(backend_types._WatchListEntry,
+                               'get_new_files', refused), \
+                self.assertLogs('mcomix', 'ERROR') as logs:
+            self.library.watchlist._scan_for_new_files_thread()
+        self.assertEqual([path for path in (self.watched, other)
+                          if path != first], found)
+        self.assertEqual([True], finished)
+        self.assertEqual(1, len(logs.output))
+        self.assertIn('Permission denied', logs.output[0])
+
     def test_a_directory_that_is_not_watched_is_an_error(self):
         with self.assertRaises(ValueError):
             self.library.watchlist.get_watchlist_entry(self.tmpdir)

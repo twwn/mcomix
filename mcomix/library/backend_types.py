@@ -525,7 +525,14 @@ class _WatchList:
             # directory is watched for.
             existing_books = self.backend.get_paths_of_books_outside_recent()
             for entry in self.get_watchlist():
-                new_files = entry.get_new_files(existing_books)
+                # One directory that cannot be listed - its permissions,
+                # a share that answers EACCES - is no reason to leave
+                # the directories after it unscanned.
+                try:
+                    new_files = entry.get_new_files(existing_books)
+                except OSError as error:
+                    log.error(_('! Could not scan for new books: %s'), error)
+                    continue
                 self.new_files_found(new_files, entry)
         except Exception as error:
             # Nothing joins this thread to take an exception from it, so
