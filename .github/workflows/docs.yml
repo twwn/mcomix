@@ -2,10 +2,12 @@ name: Manual
 
 # The manual's own checks, for a push or pull request that changes the
 # manual and nothing tests.yml tests: test/test_wiki.py (links, anchors,
-# and what the pages say of the code, the packages and the workflows)
-# and test/test_keybindings.py (the keys and buttons docs/shortcuts.md
-# lists).  tests.yml leaves such a change alone and runs these two with
-# the rest for any other; a push that changes both runs both.
+# and what the pages say of the code, the packages and the workflows),
+# test/test_keybindings.py (the keys and buttons docs/shortcuts.md
+# lists) and DocumentedVariablesTest in test/test_openwith_command.py
+# (the variables docs/external-commands.md lists).  tests.yml leaves
+# such a change alone and runs these with the rest for any other; a
+# push that changes both runs both.
 
 on:
   push:
@@ -68,4 +70,6 @@ jobs:
       - name: Install MComix and pytest
         run: python -m pip install -e '.[dev]'
       - name: pytest
-        run: xvfb-run -a python -m pytest test/test_wiki.py test/test_keybindings.py -q -n auto -rs
+        run: >-
+          xvfb-run -a python -m pytest test/test_wiki.py test/test_keybindings.py
+          test/test_openwith_command.py::DocumentedVariablesTest -q -n auto -rs

@@ -301,10 +301,34 @@ class _StubArchiveHandler(_StubFileHandler):
         return os.path.basename(self._path)
 
 
+def _documented_variables():
+    """The variable tables of docs/external-commands.md: for each
+    section under "Variables", its rows, each the variable's letter
+    followed by the row's other cells."""
+    path = os.path.join(os.path.dirname(os.path.dirname(
+        os.path.abspath(__file__))), 'docs', 'external-commands.md')
+    sections = {}
+    section = None
+    with open(path, encoding='utf-8') as page:
+        for line in page:
+            line = line.strip()
+            if line.startswith('### '):
+                section = sections.setdefault(line[4:], [])
+            elif section is not None and line.startswith('%'):
+                cells = [cell.strip() for cell in line.split('|')]
+                section.append([cells[0][1:]] + cells[1:])
+    return sections
+
+
 class DocumentedVariablesTest(MComixTest):
 
-    """Every variable the manual lists, with the manual's own examples
-    (docs/external-commands.md)."""
+    """Every variable the manual lists, with the manual's own examples,
+    read from the page itself (docs/external-commands.md), so that a
+    variable added, dropped or renamed in openwith shows here."""
+
+    def setUp(self):
+        super().setUp()
+        self.page = _documented_variables()
 
     def _expand(self, variable, window):
         return openwith.OpenWithCommand(
@@ -318,40 +342,59 @@ class DocumentedVariablesTest(MComixTest):
             expanded = os.path.normpath(expanded)
         self.assertEqual(expected, expanded)
 
+    def _example(self, section, variable):
+        for row in self.page[section]:
+            if row[0] == variable:
+                return row[2]
+        self.fail('%%%s is not in the section %r' % (variable, section))
+
+    def test_the_page_lists_every_variable_and_no_other(self):
+        documented = {row[0] for rows in self.page.values() for row in rows}
+        window = _StubWindow('cats.jpg', '/tmp/extracted/cats.jpg')
+        window.filehandler = _StubArchiveHandler('/home/user/comic-2012.zip')
+        accepted = set()
+        for variable in map(chr, range(0x21, 0x7f)):
+            try:
+                self._expand(variable, window)
+            except openwith.OpenWithException:
+                continue
+            accepted.add(variable)
+        self.assertEqual(sorted(accepted), sorted(documented))
+
     def test_for_an_image_file(self):
-        window = _StubWindow('cats.jpg', '/home/user/Downloads/cats.jpg')
-        for variable, expected in (('F', '/home/user/Downloads/cats.jpg'),
-                                   ('f', 'cats.jpg'),
-                                   ('D', '/home/user/Downloads'),
-                                   ('d', 'Downloads'),
-                                   ('B', '/home/user/Downloads'),
-                                   ('b', 'Downloads'),
-                                   ('S', '/home/user'),
-                                   ('s', 'user')):
+        image = self._example('Image', 'F')
+        window = _StubWindow(os.path.basename(image), image)
+        rows = [(row[0], row[2]) for row in self.page['Image']]
+        rows += [(row[0], row[2]) for row in self.page['Book and shelf']]
+        for variable, expected in rows:
             with self.subTest(variable=variable):
                 self._assert_path(expected, self._expand(variable, window))
 
     def test_for_an_archive(self):
         window = _StubWindow('cats.jpg', '/tmp/extracted/cats.jpg')
-        window.filehandler = _StubArchiveHandler('/home/user/comic-2012.zip')
-        for variable, expected in (('A', '/home/user/comic-2012.zip'),
-                                   ('a', 'comic-2012.zip'),
-                                   ('n', 'comic-2012'),
-                                   ('C', '/home/user'),
-                                   ('c', 'user'),
-                                   ('B', '/home/user/comic-2012.zip'),
-                                   ('b', 'comic-2012.zip'),
-                                   ('S', '/home/user'),
-                                   ('s', 'user')):
+        window.filehandler = _StubArchiveHandler(
+            self._example('Archive', 'A'))
+        rows = [(row[0], row[2]) for row in self.page['Archive']]
+        rows += [(row[0], row[3]) for row in self.page['Book and shelf']]
+        for variable, expected in rows:
             with self.subTest(variable=variable):
                 self._assert_path(expected, self._expand(variable, window))
 
+    def test_the_other_variables(self):
+        window = _StubWindow('cats.jpg', '/home/user/Downloads/cats.jpg')
+        for row in self.page['Other']:
+            variable, expected = row[0], row[2]
+            if variable == '/':
+                expected = os.sep
+            with self.subTest(variable=variable):
+                self.assertEqual(expected, self._expand(variable, window))
+
     def test_archive_variables_are_refused_for_an_image_file(self):
         window = _StubWindow('cats.jpg', '/home/user/Downloads/cats.jpg')
-        for variable in 'AanCc':
-            with self.subTest(variable=variable):
+        for row in self.page['Archive']:
+            with self.subTest(variable=row[0]):
                 with self.assertRaises(openwith.OpenWithException):
-                    self._expand(variable, window)
+                    self._expand(row[0], window)
 
 
 class _StubOSD:
