@@ -406,6 +406,11 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable):
         """Handle mouse button presses on the _CollectionArea."""
 
         row = self._list.row_at(x, y)
+        # The menu's entries act on the selected collection, so the row
+        # the menu is built for has to be the selected one, as a right
+        # click on a cover selects it.
+        if row is not None:
+            self._list.select_row(row)
         self._popup_collection_menu(row.collection if row is not None
                                     else None,
                                     gesture.get_widget() or self._list, x, y)

@@ -370,6 +370,26 @@ class CollectionAreaTest(MComixTest):
                 dialog.destroy()
             pump()
 
+    def test_a_right_click_selects_the_collection_its_menu_acts_on(self):
+        """The menu is built for the row under the pointer, and its
+        entries act on the selected collection, so the click selects
+        that row first, as the cover list's does.  It left the old
+        selection alone: Remove over Manga removed Comics."""
+        self.area._list.select_row(self._row_for(self.comics))
+        # On the name: x 10 is the expander's, above the cell.
+        _, y = self._middle_of(self.manga)
+        x = 60.0
+        self.assertIs(self._row_for(self.manga), self.area._list.row_at(x, y))
+        gesture = unittest.mock.Mock()
+        gesture.get_widget.return_value = self.area._list
+        with unittest.mock.patch.object(collection_area.widgets,
+                                        'popup_at'):
+            self.area._button_press(gesture, 1, x, y)
+        self.assertEqual(self.manga, self.area.get_current_collection())
+        self._activate('remove')
+        self.assertNotIn(self.manga, self._shown())
+        self.assertIn(self.comics, self._shown())
+
     def test_the_menu_key_and_shift_f10_both_open_the_menu(self):
         """A GTK3 widget's popup-menu signal answered both keys.
 
