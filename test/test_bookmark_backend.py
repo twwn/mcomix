@@ -146,6 +146,55 @@ class MergeTest(MComixTest):
         self.assertFalse(os.path.exists(
             constants.BOOKMARK_PICKLE_PATH + '.broken'))
 
+    def _refusing_write(self):
+        """atomic_write() as on a full disk."""
+        def refused(path, binary=False):
+            raise OSError(28, 'No space left on device', path)
+        return mock.patch.object(bookmark_backend.tools, 'atomic_write',
+                                 refused)
+
+    def test_a_bookmark_the_disk_will_not_take_is_still_announced(self):
+        """The write's OSError left add_bookmark() before its listeners,
+        the menu and the dialog, were told: the bookmark was in memory
+        and nowhere on screen, and nothing said why."""
+        heard = []
+
+        def listener(bookmark):
+            heard.append(bookmark)
+
+        self.store.add_bookmark += listener
+        self.addCleanup(self.store.add_bookmark.__isub__, listener)
+        bookmark = self._bookmark(1)
+        with self._refusing_write(), \
+                self.assertLogs('mcomix', 'ERROR') as logs:
+            self.store.add_bookmark(bookmark)
+        self.assertEqual([bookmark], heard)
+        self.assertEqual([bookmark], self.store._bookmarks)
+        self.assertIn('No space left on device', logs.output[0])
+
+    def test_a_write_that_fails_is_said_on_screen(self):
+        from gi.repository import Gtk
+        from mcomix import message_dialog
+        window = Gtk.Window()
+        self.addCleanup(window.destroy)
+        self.store._window = window
+        self.addCleanup(setattr, self.store, '_window', None)
+        with self._refusing_write(), \
+                mock.patch.object(message_dialog.MessageDialog,
+                                  'run_async') as shown, \
+                self.assertLogs('mcomix', 'ERROR'):
+            self.store.add_bookmark(self._bookmark(1))
+        shown.assert_called_once()
+        for toplevel in Gtk.Window.list_toplevels():
+            if isinstance(toplevel, message_dialog.MessageDialog):
+                toplevel.destroy()
+
+    def test_quitting_still_hears_the_error(self):
+        """main.write_config_files() catches it and logs it, with the
+        window gone: no dialog there."""
+        with self._refusing_write(), self.assertRaises(OSError):
+            self.store.write_bookmarks_file()
+
     def test_clearing_writes_the_store_once(self):
         """Removing them one at a time re-pickled and fsynced the whole
         store for every bookmark."""

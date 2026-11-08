@@ -93,27 +93,27 @@ class _BookmarksStore:
     def add_bookmark(self, bookmark: bookmark_menu_item._Bookmark) -> None:
         """Add the <bookmark> to the list."""
         self._bookmarks.append(bookmark)
-        self.write_bookmarks_file()
+        self._save()
 
     @callback.Callback
     def remove_bookmark(self, bookmark: bookmark_menu_item._Bookmark) -> None:
         """Remove the <bookmark> from the list."""
         self._bookmarks.remove(bookmark)
-        self.write_bookmarks_file()
+        self._save()
 
     @callback.Callback
     def replace_bookmark(self, old: bookmark_menu_item._Bookmark,
                          new: bookmark_menu_item._Bookmark) -> None:
         """Put <new> where <old> stands in the list."""
         self._bookmarks[self._bookmarks.index(old)] = new
-        self.write_bookmarks_file()
+        self._save()
 
     @callback.Callback
     def set_note(self, bookmark: bookmark_menu_item._Bookmark,
                  note: str) -> None:
         """Keep <note> as what the reader says of <bookmark>."""
         bookmark.set_note(note.strip())
-        self.write_bookmarks_file()
+        self._save()
 
     def bookmarks_for_path(self, path: str
                            ) -> list[bookmark_menu_item._Bookmark]:
@@ -186,7 +186,7 @@ class _BookmarksStore:
                 note=bookmark.get_note())
             followed = True
         if followed:
-            self.write_bookmarks_file()
+            self._save()
 
     @callback.Callback
     def relocate(self, old_folder: str, new_folder: str) -> int:
@@ -207,7 +207,7 @@ class _BookmarksStore:
                 note=bookmark.get_note())
             moved += 1
         if moved:
-            self.write_bookmarks_file()
+            self._save()
         return moved
 
     @callback.Callback
@@ -243,7 +243,7 @@ class _BookmarksStore:
         # whole file and rebuilt the bookmarks menu.
         if ordered != self._bookmarks:
             self._bookmarks = ordered
-            self.write_bookmarks_file()
+            self._save()
 
     def add_current_to_bookmarks(self) -> None:
         """Add the currently viewed page to the list."""
@@ -306,7 +306,7 @@ class _BookmarksStore:
         another instance has added since is one of them.
         """
         self._bookmarks = []
-        self.write_bookmarks_file(merge=False)
+        self._save(merge=False)
 
     def get_bookmarks(self) -> list[bookmark_menu_item._Bookmark]:
         """Return all the bookmarks in the list."""
@@ -463,6 +463,37 @@ class _BookmarksStore:
                 constants.BOOKMARK_PICKLE_PATH).st_mtime_ns
         except OSError:
             self._bookmarks_mtime = 0
+
+    def _save(self, merge: bool = True) -> None:
+        """write_bookmarks_file() for a change the reader made, which
+        says so when the file cannot be written.
+
+        A disk that is full or a data folder that is read-only keeps the
+        change in memory only: raised, it left the change made with
+        nothing on screen, and the menu and the dialog listening to the
+        change never heard of it.  The next write tries again with
+        everything.  Quitting calls write_bookmarks_file() itself, with
+        the window gone.
+        """
+        try:
+            self.write_bookmarks_file(merge=merge)
+        except OSError as error:
+            self._write_failed(error)
+
+    def _write_failed(self, error: OSError) -> None:
+        """Say that the bookmarks file could not be written."""
+        path = constants.BOOKMARK_PICKLE_PATH
+        directory, name = os.path.split(path)
+        log.error(_('! Could not save %(file)s to %(directory)s: %(error)s'),
+                  {'file': name, 'directory': directory, 'error': error})
+        if self._window is None:
+            return
+        dialog = message_dialog.MessageDialog(
+            self._window, buttons=Gtk.ButtonsType.CLOSE)
+        dialog.set_text(_('Could not save "%(file)s" to "%(directory)s"')
+                        % {'file': name, 'directory': directory},
+                        error.strerror or str(error))
+        dialog.run_async(lambda response: None)
 
     def show_replace_bookmark_dialog(self,
                                      old_bookmarks: list[bookmark_menu_item._Bookmark],
