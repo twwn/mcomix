@@ -17,6 +17,7 @@ without unpacking the other hundred and ninety-nine first.
 """
 
 
+import errno
 import threading
 import traceback
 
@@ -30,6 +31,12 @@ from mcomix.worker_thread import WorkerThread
 from mcomix.i18n import _
 
 from collections.abc import Iterable, Sequence
+
+#: What a write answers with where the disk, or the reader's share of
+#: it, is full.  Windows has no EDQUOT.
+_NO_ROOM = frozenset(code for code in (errno.ENOSPC,
+                                       getattr(errno, 'EDQUOT', None))
+                     if code is not None)
 
 
 class Extractor:
@@ -51,6 +58,11 @@ class Extractor:
 
     def __init__(self) -> None:
         self._setupped = False
+        #: The archive setup() was last given, as unpacking_failed()
+        #: names it.
+        self._src = ''
+        #: Whether unpacking_failed() has been said for that archive.
+        self._told_no_room = False
         self._archive: archive_base.BaseArchive | None = None
         # Everything else is filled in by setup(), which raises rather
         # than leaving any of it half done; nothing here works before
@@ -95,6 +107,8 @@ class Extractor:
         contents_listed() says when it is done.
         """
         self._dst = dst
+        self._src = src
+        self._told_no_room = False
         self._files = []
         self._extracted = set(unpacked)
         self._archive = archive_tools.get_recursive_archive_handler(src, dst, type=type)
@@ -248,6 +262,28 @@ class Extractor:
         pass
 
     @callback.Callback
+    def unpacking_failed(self, extractor: 'Extractor', path: str,
+                         folder: str) -> None:
+        """Announce that the pages of the archive <path> cannot be
+        unpacked: <folder>, where they go, has no room left.
+
+        Said once for each archive set up, at the first page refused;
+        every page after it is refused for the same reason.
+        """
+        pass
+
+    def _tell_if_no_room(self, error: Exception) -> None:
+        """unpacking_failed() if <error> says the disk is full."""
+        if not (isinstance(error, OSError)
+                and error.errno in _NO_ROOM):
+            return
+        with self._condition:
+            if self._told_no_room:
+                return
+            self._told_no_room = True
+        self.unpacking_failed(self, self._src, self._dst)
+
+    @callback.Callback
     def file_extracted(self, extractor: 'Extractor',
                        filename: str) -> None:
         """Announce that <filename> is now on disk and can be read.
@@ -352,6 +388,7 @@ class Extractor:
             log.error(_('! Extraction error: %s'), ex)
             log.debug('Traceback:\n%s', traceback.format_exc())
             self._opened_archive.forget_password()
+            self._tell_if_no_room(ex)
             if self._extract_thread.must_stop():
                 return
             with self._condition:
@@ -378,6 +415,7 @@ class Extractor:
             log.error(_('! Extraction error: %s'), ex)
             log.debug('Traceback:\n%s', traceback.format_exc())
             self._opened_archive.forget_password()
+            self._tell_if_no_room(ex)
 
         if self._extract_thread.must_stop():
             return

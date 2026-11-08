@@ -1,5 +1,6 @@
 """ Walking from one directory to the next, and back again. """
 
+import errno
 import io
 import os
 import pickle
@@ -889,6 +890,42 @@ class AnArchiveThatCannotBeListedTest(_WindowTest):
         self.assertTrue(self.handler.open_file(path))
         self.assertTrue(wait_for(
             lambda: self.window.imagehandler.get_number_of_pages() > 0))
+
+
+class AFullUnpackFolderTest(_WindowTest):
+
+    """Pages that cannot be unpacked because the folder they go to is
+    full were each logged and drawn as missing, and nothing on screen
+    said why."""
+
+    def test_the_reader_is_told_once(self):
+        path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+
+        def full(archive, name, destination):
+            raise OSError(errno.ENOSPC, os.strerror(errno.ENOSPC),
+                          os.path.join(destination, name))
+
+        with mock.patch('mcomix.archive.zip.ZipArchive.extract', full), \
+                mock.patch.object(self.window.osd, 'show') as shown, \
+                mock.patch.object(archive_extractor.log, 'error'):
+            self.assertTrue(self.handler.open_file(path))
+            self.assertTrue(wait_for(lambda: shown.called, seconds=10),
+                            'nothing was said')
+            for _ in range(10):
+                pump()
+        message = ('There is no room left to unpack the pages in %s.'
+                   % os.path.dirname(os.path.normpath(
+                       self.handler._tmp_dir)))
+        shown.assert_called_once_with(message)
+        self.assertEqual(message,
+                         self.window.statusbar.message.get_text())
+
+    def test_a_book_closed_since_is_not_spoken_of(self):
+        self.handler._base_path = '/books/this one.cbz'
+        with mock.patch.object(self.window.osd, 'show') as shown:
+            self.handler._unpacking_failed(
+                self.handler._extractor, '/books/the last one.cbz', '/tmp')
+        shown.assert_not_called()
 
 
 class APathThatCannotBeOpenedTest(_WindowTest):

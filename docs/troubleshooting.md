@@ -22,6 +22,7 @@ On Windows, in PowerShell (the installer puts MComix in `C:\Program Files\MComix
 
 - RAR, 7z, LHA and PDF need a helper program or library: see [Install](install.md#requirements). The Windows packages carry them.
 - MComix does not use `unrar-free`.
+- Every page missing, and the status bar saying there is no room left to unpack: the folder books are unpacked in is full. Free room there, or choose another folder under "Unpack books in" on the preferences' Advanced tab.
 - Otherwise, run MComix with a log as above, open the book, and attach the log to a bug report.
 
 ## The window stays black, flickers or crashes at start

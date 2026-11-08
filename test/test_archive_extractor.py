@@ -9,6 +9,7 @@ reach - a file landing after the list it was on had been narrowed -
 something a test can set up.
 """
 
+import errno
 import os
 import threading
 import unittest.mock
@@ -313,6 +314,72 @@ class FailedBatchTest(_ExtractorTest):
         error.assert_called()
         self.assertTrue(os.path.isfile(os.path.join(self.destination, names[0])))
         self.assertFalse(os.path.exists(os.path.join(self.destination, names[1])))
+
+
+class NoRoomTest(_ExtractorTest):
+
+    """A folder to unpack into that is full.
+
+    Every page was logged and drawn as missing, and nothing said why:
+    unpacking_failed() is there for the window to say it, once."""
+
+    class _Refuses:
+
+        """The fixture's archive, whose writes fail with <code>."""
+
+        def __init__(self, archive, code, solid):
+            self._archive = archive
+            self._code = code
+            self._solid = solid
+
+        def __getattr__(self, name):
+            return getattr(self._archive, name)
+
+        def is_solid(self):
+            return self._solid
+
+        def extract(self, filename, destination_dir):
+            raise OSError(self._code, os.strerror(self._code),
+                          os.path.join(destination_dir, filename))
+
+        def iter_extract(self, entries, destination_dir):
+            for name in sorted(entries):
+                self.extract(name, destination_dir)
+                yield name
+
+    def _unpack(self, code, solid):
+        told = []
+
+        def heard(extractor, path, folder):
+            told.append((path, folder))
+
+        self.extractor.unpacking_failed += heard
+        self.extractor._archive = self._Refuses(
+            self.extractor._archive, code, solid)
+        names = sorted(self.MEMBERS)
+        self.extractor.set_files(names)
+        with unittest.mock.patch.object(log, 'error'):
+            self.extractor.extract()
+            self.assertTrue(
+                wait_for(lambda: all(self.extractor.is_ready(name)
+                                     for name in names), seconds=5))
+            # The answer comes back through the idle queue.
+            wait_for(lambda: told, seconds=1)
+        return told
+
+    def _assert_said_once(self, told):
+        self.assertEqual(
+            [(get_testfile_path('archives', '01-ZIP-Normal.zip'),
+              self.destination)], told)
+
+    def test_a_full_folder_is_said_once(self):
+        self._assert_said_once(self._unpack(errno.ENOSPC, False))
+
+    def test_a_full_folder_met_in_one_pass_is_said_once(self):
+        self._assert_said_once(self._unpack(errno.ENOSPC, True))
+
+    def test_another_error_is_not_said_to_be_a_full_folder(self):
+        self.assertEqual([], self._unpack(errno.EIO, False))
 
 
 class ShortBatchTest(_ExtractorTest):

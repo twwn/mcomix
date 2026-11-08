@@ -199,6 +199,7 @@ class FileHandler:
         self._extractor.file_extracted += self._extracted_file
         self._extractor.contents_listed += self._listed_contents
         self._extractor.listing_failed += self._listing_failed
+        self._extractor.unpacking_failed += self._unpacking_failed
         #: Condition to wait on when extracting archives and waiting on files.
         self._condition: threading.Condition | None = None
         #: Provides a list of available files/archives in the open directory.
@@ -1003,6 +1004,23 @@ class FileHandler:
             return
         self._close()
         message = _('Could not read %s') % os.path.basename(path)
+        self._window.statusbar.set_message(message)
+        self._window.osd.show(message)
+
+    def _unpacking_failed(self, archive: archive_extractor.Extractor,
+                          path: str, folder: str) -> None:
+        """Tell the reader why the pages of <path> show as missing: the
+        folder they are unpacked into, <folder>, is full.
+
+        Each page refused is only logged, and drawn as a missing page,
+        which says nothing of why.  The folder named is the one the
+        reader chose under "Unpack books in", or the system's temporary
+        folder, rather than the folder of this book's own inside it.
+        """
+        if path != self._base_path:
+            return
+        message = (_('There is no room left to unpack the pages in %s.')
+                   % os.path.dirname(os.path.normpath(folder)))
         self._window.statusbar.set_message(message)
         self._window.osd.show(message)
 
