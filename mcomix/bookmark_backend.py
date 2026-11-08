@@ -327,57 +327,76 @@ class _BookmarksStore:
         what file_was_modified() compares against later to tell another
         instance's write from this one's own.
 
-        A file that is not there, or one that cannot be unpickled, gives
-        back an empty list or however much of it was read: a damaged
-        bookmarks file should cost the bookmarks, not the session.
+        A file that is not there gives back an empty list.  A damaged
+        one gives back the bookmarks read before the damage, and is kept
+        beside as bookmarks.pickle.broken: the next bookmark added writes
+        the file anew, and with nothing kept every bookmark past the
+        damage would be gone for good.  A damaged bookmarks file should
+        cost the bookmarks, not the session.
         """
 
         path = constants.BOOKMARK_PICKLE_PATH
         bookmarks: list[bookmark_menu_item._Bookmark] = []
         mtime = 0
 
-        if os.path.isfile(path):
+        if not os.path.isfile(path):
+            return bookmarks, mtime
+
+        # The version record, no longer used; the bookmarks; the name
+        # within its archive of each bookmark's page; the reader's note
+        # on each.  An older MComix stops short of the last two, so a
+        # file that ends cleanly before them is whole, and only one that
+        # ends inside a record, or holds something else, is damaged.
+        records: list[object] = []
+        damaged = False
+        try:
+            mtime = os.stat(path).st_mtime_ns
+            with open(path, 'rb') as fd:
+                size = os.fstat(fd.fileno()).st_size
+                while len(records) < 4 and fd.tell() < size:
+                    records.append(pickle.load(fd))
+        except Exception:
+            damaged = True
+
+        packs = records[1] if len(records) > 1 else None
+        if not isinstance(packs, list):
+            packs = []
+            damaged = True
+        members = records[2] if len(records) > 2 else None
+        if not isinstance(members, list) or len(members) != len(packs):
+            members = [None] * len(packs)
+        notes = records[3] if len(records) > 3 else None
+        if not isinstance(notes, list) or len(notes) != len(packs):
+            notes = [''] * len(packs)
+
+        for pack, member, note in zip(packs, members, notes):
             try:
-                mtime = os.stat(path).st_mtime_ns
-                with open(path, 'rb') as fd:
-                    pickle.load(fd)  # Version record, no longer used.
-                    packs = pickle.load(fd)
-                    # The name within its archive of each bookmark's
-                    # page, in a record of its own after the bookmarks,
-                    # which an older MComix stops short of.  A file one
-                    # of those wrote has none.
-                    try:
-                        members = pickle.load(fd)
-                    except EOFError:
-                        members = []
-                    # And the reader's note on each, in a record after
-                    # that one, for the same reason.
-                    try:
-                        notes = pickle.load(fd)
-                    except EOFError:
-                        notes = []
-                if (not isinstance(members, list)
-                        or len(members) != len(packs)):
-                    members = [None] * len(packs)
-                if (not isinstance(notes, list)
-                        or len(notes) != len(packs)):
-                    notes = [''] * len(packs)
+                # Handle old bookmarks without date_added attribute
+                if len(pack) == 5:
+                    pack = pack + (datetime.datetime.now(),)
 
-                for pack, member, note in zip(packs, members, notes):
-                    # Handle old bookmarks without date_added attribute
-                    if len(pack) == 5:
-                        pack = pack + (datetime.datetime.now(),)
-
-                    name, book_path, page, numpages, archive_type, added = pack
-                    bookmark = bookmark_menu_item._Bookmark(
-                        self._window, self._file_handler, name, book_path, page,
-                        numpages, archive_type, added,
-                        member=member if isinstance(member, str) else None,
-                        note=note if isinstance(note, str) else '')
-                    bookmarks.append(bookmark)
-
+                name, book_path, page, numpages, archive_type, added = pack
+                bookmark = bookmark_menu_item._Bookmark(
+                    self._window, self._file_handler, name, book_path, page,
+                    numpages, archive_type, added,
+                    member=member if isinstance(member, str) else None,
+                    note=note if isinstance(note, str) else '')
             except Exception:
-                log.error(_('! Could not parse bookmarks file %s'), path)
+                damaged = True
+                continue
+            bookmarks.append(bookmark)
+
+        if damaged:
+            log.error(_('! Could not parse bookmarks file %s'), path)
+            broken = path + '.broken'
+            try:
+                os.replace(path, broken)
+            except OSError as error:
+                log.error('Could not keep the bookmarks file as %s: %s',
+                          broken, error)
+            else:
+                log.error('The bookmarks file is kept as %s', broken)
+                mtime = 0
 
         return bookmarks, mtime
 

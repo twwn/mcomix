@@ -106,7 +106,45 @@ class MergeTest(MComixTest):
         with mock.patch.object(log, 'error') as error:
             bookmarks, mtime = self.store.load_bookmarks()
         self.assertEqual([], bookmarks)
-        error.assert_called_once()
+        error.assert_called()
+        self.assertTrue(os.path.isfile(
+            constants.BOOKMARK_PICKLE_PATH + '.broken'))
+
+    def test_a_damaged_tail_keeps_the_bookmarks_before_it_and_the_file(self):
+        """Garbage after the bookmarks' record cost every bookmark, and
+        the next bookmark added wrote the file anew with that one alone:
+        the five were gone for good."""
+        self._write_pickle([self._bookmark(page) for page in range(1, 6)])
+        with open(constants.BOOKMARK_PICKLE_PATH, 'ab') as fd:
+            fd.write(b'\x80\x05\x95garbage')
+        damaged = open(constants.BOOKMARK_PICKLE_PATH, 'rb').read()
+        with mock.patch.object(bookmark_backend.log, 'error'):
+            bookmarks, _mtime = self.store.load_bookmarks()
+        self.assertEqual([1, 2, 3, 4, 5],
+                         [bookmark._page for bookmark in bookmarks])
+        with open(constants.BOOKMARK_PICKLE_PATH + '.broken', 'rb') as fd:
+            self.assertEqual(damaged, fd.read())
+
+    def test_a_file_cut_off_inside_the_bookmarks_is_kept(self):
+        self._write_pickle([self._bookmark(page) for page in range(1, 6)])
+        whole = open(constants.BOOKMARK_PICKLE_PATH, 'rb').read()
+        with open(constants.BOOKMARK_PICKLE_PATH, 'wb') as fd:
+            fd.write(whole[:-20])
+        with mock.patch.object(bookmark_backend.log, 'error'):
+            bookmarks, _mtime = self.store.load_bookmarks()
+        self.assertEqual([], bookmarks)
+        self.assertTrue(os.path.isfile(
+            constants.BOOKMARK_PICKLE_PATH + '.broken'))
+
+    def test_a_file_an_older_mcomix_wrote_is_whole(self):
+        """It ends after the bookmarks, with no member or note record."""
+        self._write_pickle([self._bookmark(page) for page in range(1, 3)])
+        with mock.patch.object(bookmark_backend.log, 'error') as error:
+            bookmarks, _mtime = self.store.load_bookmarks()
+        self.assertEqual([1, 2], [bookmark._page for bookmark in bookmarks])
+        error.assert_not_called()
+        self.assertFalse(os.path.exists(
+            constants.BOOKMARK_PICKLE_PATH + '.broken'))
 
     def test_clearing_writes_the_store_once(self):
         """Removing them one at a time re-pickled and fsynced the whole
