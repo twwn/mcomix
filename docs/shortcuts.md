@@ -127,7 +127,7 @@ Execute first, second, ... external command (see [External commands](external-co
 ## Changing keys
 
 - The preferences' Shortcuts tab lists every function by group, with a column per key.
-- Click a key and press the new combination. Backspace or Delete clears it; Escape keeps it.
+- Click a key and press the new combination. Backspace or Delete clears it; Escape keeps it. With SHIFT, CTRL or ALT, these keys are bound like any other.
 - A combination belongs to one function only: giving it to one takes it off any other.
 - The bindings live as JSON in `keybindings.conf`, in MComix' [settings folder](troubleshooting.md#settings-and-data). MComix rewrites it on every change and on quitting, so edit it by hand only while MComix is closed.
 - A file MComix cannot read is renamed `keybindings.conf.broken`, and the default keys are used.

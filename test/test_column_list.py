@@ -479,6 +479,21 @@ class ColumnListViewTest(MComixTest):
             self.assertTrue(cell._pressed(None, Gdk.KEY_Escape, 0,
                                           Gdk.ModifierType(0)))
             self.assertEqual(len(rebound), 2)
+            # With a modifier they are combinations like any other:
+            # MComix' own defaults include Shift+Delete, Ctrl+BackSpace
+            # and Alt+Return, which only cancelled or cleared the cell.
+            for keyval, state, name in (
+                    (Gdk.KEY_Delete, Gdk.ModifierType.SHIFT_MASK,
+                     '<Shift>Delete'),
+                    (Gdk.KEY_BackSpace, Gdk.ModifierType.CONTROL_MASK,
+                     '<Control>BackSpace'),
+                    (Gdk.KEY_Return, Gdk.ModifierType.ALT_MASK,
+                     '<Alt>Return'),
+                    (Gdk.KEY_Escape, Gdk.ModifierType.CONTROL_MASK,
+                     '<Control>Escape')):
+                cell.emit('clicked')
+                self.assertTrue(cell._pressed(None, keyval, 0, state))
+                self.assertEqual(rebound[-1], (row, name))
         finally:
             window.destroy()
             pump()

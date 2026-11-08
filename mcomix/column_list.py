@@ -450,16 +450,21 @@ class _AccelCell(Gtk.Button, _Cell):
                  keycode: int, state: Gdk.ModifierType) -> bool:
         if not self.capturing:
             return False
-        if keyval in (Gdk.KEY_Escape, Gdk.KEY_Return, Gdk.KEY_KP_Enter):
+        modifiers = state & Gtk.accelerator_get_default_mod_mask()
+        # Only bare, as a Gtk.CellRendererAccel had them: with a
+        # modifier these are combinations to bind, and MComix' own
+        # defaults include Shift+Delete, Ctrl+BackSpace and Alt+Return.
+        if not modifiers and keyval in (Gdk.KEY_Escape, Gdk.KEY_Return,
+                                        Gdk.KEY_KP_Enter):
             self.capturing = False
             self._show()
             return True
-        if keyval in (Gdk.KEY_BackSpace, Gdk.KEY_Delete, Gdk.KEY_KP_Delete):
+        if not modifiers and keyval in (Gdk.KEY_BackSpace, Gdk.KEY_Delete,
+                                        Gdk.KEY_KP_Delete):
             self.capturing = False
             if self.rebind is not None and self.row is not None:
                 self.rebind(self.row, None)
             return True
-        modifiers = state & Gtk.accelerator_get_default_mod_mask()
         if not (Gtk.accelerator_valid(keyval, modifiers)
                 or keyval in _ALSO_BINDABLE):
             # A modifier on its own, on the way to a combination.
