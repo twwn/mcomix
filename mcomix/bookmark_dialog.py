@@ -272,7 +272,14 @@ class _BookmarksDialog(Dialog):
             self._bookmarks_store.remove_bookmark(row.bookmark)
             left = self._list.store.get_n_items()
             if left:
-                self._list.select_only(min(position, left - 1))
+                position = min(position, left - 1)
+                if self._list.get_focus_child() is not None:
+                    # Delete was pressed in the list: GTK hands the
+                    # focus to the row above the one that went, and
+                    # Enter would then open that one.
+                    self._list.select_and_focus(position)
+                else:
+                    self._list.select_only(position)
 
     def _clear_all(self) -> None:
         """Remove every bookmark, once the reader has confirmed it."""

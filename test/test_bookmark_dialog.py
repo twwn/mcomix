@@ -171,6 +171,37 @@ class BookmarksDialogTest(MComixTest):
         self.dialog._remove_selected()
         self.assertEqual(self._names(), ['alpha'])
 
+    def test_delete_in_the_list_moves_the_focus_with_the_selection(self):
+        """GTK hands the focus to the row above the one removed while
+        the row below is selected, so Enter opened the wrong bookmark."""
+        self.dialog._list.select_and_focus(1)
+        for _each in range(10):
+            pump()
+        before = self.dialog._list.get_selected_row().name
+        self.assertEqual(self._focused(), before)
+        self.dialog._remove_selected()
+        for _each in range(10):
+            pump()
+        after = self.dialog._list.get_selected_row().name
+        self.assertNotEqual(after, before)
+        self.assertEqual(self._focused(), after)
+
+    def _focused(self):
+        """The name of the row the dialog's focus widget shows."""
+        focus = self.dialog.get_focus()
+        stack = [focus]
+        while stack:
+            widget = stack.pop()
+            if widget is None:
+                continue
+            row = getattr(widget, 'row', None)
+            if row is not None:
+                return row.name
+            stack.append(widget.get_first_child())
+            if widget is not focus:
+                stack.append(widget.get_next_sibling())
+        return None
+
     def test_removing_the_last_one_selects_the_one_above_it(self):
         self.dialog._list.select_only(2)
         self.dialog._remove_selected()

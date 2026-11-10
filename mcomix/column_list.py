@@ -1183,8 +1183,7 @@ class ColumnListView(Gtk.ColumnView, widgets.Releasable):
         for position, row in enumerate(self.each_row()):
             value = str(getattr(row, self._search_attribute, '')).lower()
             if value.startswith(self._search_typed_so_far):
-                self.select_only(position)
-                self.scroll_to(position, None, Gtk.ListScrollFlags.NONE, None)
+                self.select_and_focus(position)
                 return True
         return False
 
@@ -1298,6 +1297,17 @@ class ColumnListView(Gtk.ColumnView, widgets.Releasable):
     def select_only(self, position: int) -> None:
         """Select the row at <position> and nothing else."""
         self.selection.select_item(position, True)
+
+    def select_and_focus(self, position: int) -> None:
+        """Select the row at <position> alone, scroll to it and give it
+        the keyboard focus.
+
+        The focus goes with the selection, as Gtk.TreeView's cursor
+        did: Enter and the arrow keys act on the row that has the
+        focus, not on the one highlighted.
+        """
+        self.select_only(position)
+        self.scroll_to(position, None, Gtk.ListScrollFlags.FOCUS, None)
 
     def select_row(self, row: Row) -> bool:
         """Select <row>; False if it is not shown."""

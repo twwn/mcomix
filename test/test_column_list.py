@@ -322,6 +322,36 @@ class ColumnListViewTest(MComixTest):
         self.assertEqual([row.name for row in self.view.get_selected_rows()],
                          ['three'])
 
+    def test_the_row_found_by_typing_takes_the_keyboard_focus(self):
+        """Enter and the arrow keys act on the row with the focus.  It
+        stayed on the row clicked before, so Enter opened that one and
+        not the one the typing had highlighted."""
+        self.view.set_search_attribute('name')
+        # GTK moves the focus to a row only within a list that has it.
+        self.view.grab_focus()
+        self.view.select_and_focus(0)
+        self._settle()
+        self.assertEqual(self._focused(), 'one')
+        self.view._search_typed(None, ord('t'), 0, Gdk.ModifierType(0))
+        self.view._search_typed(None, ord('h'), 0, Gdk.ModifierType(0))
+        self._settle()
+        self.assertEqual(self._focused(), 'three')
+
+    def _focused(self):
+        """The name of the row the window's focus widget shows."""
+        stack = [self.window.get_focus()]
+        while stack:
+            widget = stack.pop()
+            if widget is None:
+                continue
+            row = getattr(widget, 'row', None)
+            if row is not None:
+                return row.name
+            stack.append(widget.get_first_child())
+            if widget is not self.window.get_focus():
+                stack.append(widget.get_next_sibling())
+        return None
+
     def test_typing_something_no_row_starts_with_selects_nothing(self):
         self.view.set_search_attribute('name')
         self.assertFalse(self.view._search_typed(None, ord('z'), 0,
