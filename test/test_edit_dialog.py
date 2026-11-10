@@ -1086,6 +1086,38 @@ class SavedArchiveContentsTest(MComixTest):
         self.dialog = edit_dialog._EditArchiveDialog(self.window)
         pump()
 
+    def test_a_save_ends_with_a_picture_imported_from_another_drive(self):
+        """On Windows os.path.relpath() raises ValueError for two paths
+        on different drives.  A picture imported from D: into a book
+        unpacked on C: was asked for its name within the archive after
+        the archive had been written, and the error left the editor on
+        screen, insensitive, for good."""
+        imported = os.path.join(self.tmp_dir, 'elsewhere', 'imported.png')
+        os.makedirs(os.path.dirname(imported))
+        shutil.copy(get_testfile_path('images', '03-PNG-RGB.png'), imported)
+        if not self.dialog._image_area.get_file_listing():
+            self.dialog._load_original_files()
+            pump()
+        self.dialog._import_files([imported])
+        pump()
+        real = os.path.relpath
+
+        def relpath(path, start=os.curdir):
+            if os.path.abspath(path) == imported:
+                raise ValueError("path is on mount 'D:', start on mount 'C:'")
+            return real(path, start)
+
+        with unittest.mock.patch('os.path.relpath', side_effect=relpath), \
+                unittest.mock.patch.object(edit_dialog,
+                                           'close_dialog') as closed:
+            self.dialog._pack_archive(self.source)
+            pump()
+        closed.assert_called_once_with()
+        with zipfile.ZipFile(self.source) as saved:
+            self.assertEqual(
+                len([name for name in saved.namelist()
+                     if name.endswith('.png')]), 4)
+
     def tearDown(self):
         self.dialog.destroy()
         edit_dialog.close_dialog()

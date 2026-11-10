@@ -365,7 +365,15 @@ class FileHandler:
         written = self._member_names.get(path)
         if written is not None:
             return written
-        return os.path.relpath(path, self._tmp_dir or '').replace(os.sep, '/')
+        try:
+            name = os.path.relpath(path, self._tmp_dir or '')
+        except ValueError:
+            # Windows: a picture imported from another drive than the
+            # temporary folder's has no path relative to it.  It is in
+            # no archive yet, so its own path names it until a save
+            # gives it a name there.
+            name = path
+        return name.replace(os.sep, '/')
 
     def members_written(self, names: "Mapping[str, str]") -> None:
         """The open archive was written again with each page under the
