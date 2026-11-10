@@ -1,4 +1,5 @@
 import concurrent.futures
+import errno
 import hashlib
 import io
 import locale
@@ -1510,6 +1511,42 @@ class RarLibraryMemberNameTest(MComixTest):
             os.path.join(self.tmp_dir, 'a', 'escaped.txt')))
         with open(os.path.join(destination, 'escaped.txt'), 'rb') as landed:
             self.assertEqual(b'out', landed.read())
+
+    def _refused(self, free):
+        """What extracting a page raises when libunrar answers "Write
+        error" and the folder has <free> bytes left."""
+        book = os.path.join(self.tmp_dir, 'book.rar')
+        _stored_rar(book, [('page.jpg', b'a picture')])
+        handler = rar.RarArchive(book)
+        self.addCleanup(handler.close)
+        self.assertEqual(['page.jpg'], list(handler.iter_contents()))
+        real = handler._unrar.RARProcessFileW
+
+        def process(handle, mode, path, name):
+            if name is None:
+                return real(handle, mode, path, name)
+            return rar.RarArchive._ErrorCode.ERAR_EWRITE
+
+        usage = shutil.disk_usage(self.tmp_dir)._replace(free=free)
+        with unittest.mock.patch.object(handler._unrar, 'RARProcessFileW',
+                                        process), \
+                unittest.mock.patch('shutil.disk_usage',
+                                    return_value=usage), \
+                self.assertRaises(Exception) as raised:
+            handler.extract('page.jpg', self.tmp_dir)
+        return raised.exception
+
+    def test_a_write_refused_by_a_full_folder_says_there_is_no_room(self):
+        """libunrar answers "Write error" whatever stopped the write, so
+        a CBR unpacked into a full folder showed every page missing and
+        nothing said why, as the other formats do since e4e173ae."""
+        error = self._refused(free=len(b'a picture') - 1)
+        self.assertIsInstance(error, OSError)
+        self.assertEqual(error.errno, errno.ENOSPC)
+
+    def test_a_write_refused_where_there_is_room_stays_a_write_error(self):
+        error = self._refused(free=len(b'a picture'))
+        self.assertIsInstance(error, rar.UnrarException)
 
     def _extracted(self, names, handler):
         """What each of <names> holds once extracted, each to a folder of

@@ -1,7 +1,9 @@
 """ Glue around libunrar.so/unrar.dll to extract RAR files without having to
 resort to calling rar/unrar manually. """
 
+import errno
 import functools
+import shutil
 import sys
 import os
 import ctypes
@@ -334,9 +336,28 @@ class RarArchive(archive_base.BaseArchive):
             mode = RarArchive._ProcessingMode.RAR_SKIP
         else:
             mode = RarArchive._ProcessingMode.RAR_EXTRACT
+        # Read before the call, which moves on to the next entry.
+        size = (self._headerdata.UnpSizeHigh << 32) | self._headerdata.UnpSize
         errorcode = self._unrar.RARProcessFileW(self._handle, mode, None, dest)
         self._current_filename = None
+        if (errorcode == RarArchive._ErrorCode.ERAR_EWRITE
+                and dest is not None and dest.value is not None
+                and self._no_room_for(dest.value, size)):
+            # libunrar says "Write error" whatever stopped the write.
+            # Said as the system says it, a full folder is told to the
+            # reader as it is for the other formats.
+            self._close()
+            raise OSError(errno.ENOSPC, os.strerror(errno.ENOSPC), dest.value)
         self._check_errorcode(errorcode)
+
+    @staticmethod
+    def _no_room_for(path: str, size: int) -> bool:
+        """Whether the folder of <path> has less room left than the
+        <size> bytes of a file that could not be written there."""
+        try:
+            return shutil.disk_usage(os.path.dirname(path)).free < size
+        except OSError:
+            return False
 
     def _close(self) -> None:
         """ Close the rar handle previously obtained by open. """
