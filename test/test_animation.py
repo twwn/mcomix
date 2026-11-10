@@ -8,6 +8,9 @@ the deprecated iterator is left for a tree that has neither.
 """
 
 import gc
+import os
+import shutil
+import sys
 import warnings
 
 from . import MComixTest, get_testfile_path
@@ -31,6 +34,37 @@ class FramesTest(MComixTest):
         self.assertIsInstance(frames, animation._PillowFrames)
         self.assertTrue(frames.ahead,
                         'the next frame cannot be decoded before it is due')
+
+    def test_a_page_that_plays_does_not_hold_its_file_open(self):
+        """Windows renames, moves and deletes no file that is open, so
+        an animated page of a folder could be none of the three while
+        it was on screen."""
+        for name in ('animated.gif', 'animated.webp'):
+            with self.subTest(name=name):
+                path = os.path.join(self.tmp_dir, name)
+                shutil.copy(get_image_path(name), path)
+                frames = animation.frames(path)
+                self.addCleanup(frames.close)
+                self.assertIsInstance(frames, animation._PillowFrames)
+                frames.next()
+                if sys.platform == 'linux':
+                    # Linux renames an open file, so the rename below
+                    # shows nothing here.
+                    wanted = os.stat(path)
+                    held = []
+                    for fd in os.listdir('/proc/self/fd'):
+                        try:
+                            found = os.stat('/proc/self/fd/' + fd)
+                        except OSError:
+                            continue
+                        if (found.st_dev, found.st_ino) == (wanted.st_dev,
+                                                            wanted.st_ino):
+                            held.append(fd)
+                    self.assertEqual(held, [])
+                os.rename(path, path + '.renamed')
+                os.unlink(path + '.renamed')
+                # And it plays on.
+                frames.next()
 
     def test_a_frame_lasts_as_long_as_it_says(self):
         # Which is not what the frame before it said: a WebP fills the

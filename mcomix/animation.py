@@ -1,5 +1,7 @@
 """animation.py - The frames of an animated page, one at a time."""
 
+import io
+
 from gi.repository import Gdk, GdkPixbuf, Gio, GLib
 
 from PIL import Image
@@ -62,7 +64,12 @@ class _PillowFrames(Frames):
     ahead = True
 
     def __init__(self, path: str) -> None:
-        self._image = Image.open(path)
+        # Read whole and decoded from memory.  Opened by its path, the
+        # file stayed open for as long as the page played, and Windows
+        # renames, moves and deletes no file that is open: the page on
+        # screen could be none of the three.
+        with open(path, 'rb') as file:
+            self._image = Image.open(io.BytesIO(file.read()))
         self._frames = getattr(self._image, 'n_frames', 1)
         if self._frames < 2:
             self._image.close()
