@@ -5045,6 +5045,39 @@ class MainWindowTest(MComixTest):
                          % tools.format_byte_size(os.path.getsize(page)),
                          dialogs[0]._secondary.get_text())
 
+    def test_a_save_the_disk_cannot_finish_leaves_the_old_file_whole(self):
+        """The copy went straight onto the name asked for: a disk that
+        filled part way left half a picture there, and the file the
+        reader had agreed to replace was gone as well."""
+        self._ready()
+        self.assertTrue(
+            wait_for(lambda: self.window.imagehandler.page_is_available(1),
+                     seconds=20),
+            'page 1 never came out of the archive')
+        page = self.window.imagehandler.get_path_to_page(1)
+        folder = os.path.join(self.tmp_dir, 'target')
+        os.mkdir(folder)
+        target = os.path.join(folder, 'saved.png')
+        with open(target, 'wb') as old:
+            old.write(b'what was there')
+
+        def half_a_copy(source, destination):
+            with open(destination, 'wb') as half:
+                half.write(b'half')
+            raise OSError(errno.ENOSPC, os.strerror(errno.ENOSPC))
+
+        with unittest.mock.patch.object(file_actions.shutil, 'copy2',
+                                        side_effect=half_a_copy):
+            self.window.file_actions._save_page_to(page, target)
+        self._pump()
+        dialogs = self._delete_dialogs()
+        self.assertEqual(1, len(dialogs))
+        self.addCleanup(dialogs[0].destroy)
+        self.assertEqual(os.listdir(folder), ['saved.png'],
+                         'half a copy was left behind')
+        with open(target, 'rb') as kept:
+            self.assertEqual(kept.read(), b'what was there')
+
     def test_a_page_that_was_saved_says_nothing(self):
         self._ready()
         # The listing says the page is there; the extractor says the

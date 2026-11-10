@@ -13,6 +13,7 @@ import errno
 import os
 import shutil
 import sys
+import tempfile
 
 from gi.repository import Gio, GLib, Gtk
 
@@ -978,11 +979,29 @@ class FileActions:
         cannot be written to, or one that has no room left, would
         otherwise leave the reader with a dialog that had closed and no
         page where they had asked for one.
+
+        The copy is made under a temporary name beside <target> and
+        renamed over it once it is whole.  Written straight onto
+        <target>, a copy the disk had no room to finish left half a
+        picture under the name asked for, and had already emptied the
+        file the reader had agreed to replace.
         """
         target = i18n.to_unicode(target)
+        final = tools.replaced_path(target)
+        partial = None
         try:
-            shutil.copy2(file_path, target)
+            handle, partial = tempfile.mkstemp(
+                dir=os.path.dirname(final) or os.curdir,
+                prefix=os.path.basename(final) + '.', suffix='.tmp')
+            os.close(handle)
+            shutil.copy2(file_path, partial)
+            os.replace(partial, final)
         except OSError as error:
+            if partial is not None:
+                try:
+                    os.unlink(partial)
+                except OSError:
+                    pass
             self._save_failed(file_path, target, error)
             return
 
