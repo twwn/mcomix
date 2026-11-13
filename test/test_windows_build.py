@@ -659,6 +659,13 @@ class InstallerTest(MComixTest):
         self.assertEqual('yes', upgrade.get('AllowSameVersionUpgrades'))
         self.assertTrue(upgrade.get('DowngradeErrorMessage'))
 
+    def test_the_cabinet_is_packed_with_lzx(self):
+        """WiX packs with MSZIP unless told, and the 26.11.1 installer
+        came to 98.9 MB, as large as the zip."""
+        media = self._product().find(_WIX + 'Media')
+        self.assertEqual('yes', media.get('EmbedCab'))
+        self.assertEqual('high', media.get('CompressionLevel'))
+
     def test_the_file_types_are_installed_with_mcomix(self):
         references = {ref.get('Id') for ref in
                       self._product().iter(_WIX + 'ComponentRef')}

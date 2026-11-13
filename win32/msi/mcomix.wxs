@@ -19,7 +19,11 @@
     <MajorUpgrade AllowSameVersionUpgrades='yes'
       DowngradeErrorMessage='A newer version of MComix is already installed.' />
 
-    <Media Id='1' EmbedCab='yes' Cabinet='mcomix.cab' />
+    <!-- LZX rather than WiX's default, MSZIP, which is what a zip is
+         packed with: the bundle is mostly DLLs, and the installer is
+         what Chocolatey and winget download. -->
+    <Media Id='1' EmbedCab='yes' Cabinet='mcomix.cab'
+      CompressionLevel='high' />
 
     <UIRef Id="WixUI_InstallDir" />
     <WixVariable Id="WixUILicenseRtf" Value="win32/msi/gpl-2.0.rtf" />
