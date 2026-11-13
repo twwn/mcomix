@@ -1753,13 +1753,22 @@ class CloseWakesWaitersTest(MComixTest):
         with self.handler._archive_condition:
             self.handler._stop_waiting = True
             self.handler._archive_condition.notify_all()
-        self.waiter.join(timeout=5)
+        if self.waiter.ident is not None:
+            self.waiter.join(timeout=5)
         self.handler.last_read_page.backend.close()
         super().tearDown()
 
     def _wait(self):
         self.handler.wait_on_file(self.PAGE)
         self.returned.set()
+
+    def test_a_file_that_is_no_member_is_not_waited_for(self):
+        """A picture imported into the book is in no archive yet.  Saving
+        waits on every page, and for each such picture logged 'Waiting on
+        extraction of "..." failed' with the KeyError as an error."""
+        with self.assertNoLogs('mcomix', level='ERROR'):
+            self.handler.wait_on_file('/elsewhere/imported.png')
+        self.assertFalse(self.asked.is_set())
 
     def _park_the_waiter(self):
         """Start the waiting thread and return once it is parked.

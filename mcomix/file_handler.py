@@ -1646,9 +1646,14 @@ class FileHandler:
         """
         if self.archive_type is None or path is None:
             return
+        name = self._name_table.get(path)
+        if name is None:
+            # No member of the archive: a picture imported into the book,
+            # which is where it was imported from and has nothing to
+            # wait for.
+            return
 
         try:
-            name = self._name_table[path]
             condition = self._archive_condition
             with condition:
                 while not self._extractor.is_ready(name) and not self._stop_waiting:
