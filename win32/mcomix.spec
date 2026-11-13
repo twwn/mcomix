@@ -5,6 +5,9 @@ import glob
 import os
 import shutil
 import sys
+from importlib import metadata
+
+from PyInstaller.utils.hooks import copy_metadata
 
 
 def list_files(basedir, *patterns):
@@ -27,6 +30,17 @@ added_files = [(os.path.join('..', path),
 added_files.extend([(os.path.join('..', path),
                      os.path.split(path)[0])
                     for path in list_files('mcomix/images', '*.png', '*.svg')])
+
+# PyMuPDF's record of its own version, under the names
+# mcomix/archive/pdf_multi.py asks for: PyPI's, and the one MSYS2 packs
+# it as.  MComix reads it to settle whether it can open a PDF itself;
+# where it is missing it imports PyMuPDF to ask, and every start then
+# loaded libmupdf.dll and its bindings, 67 MB, before the window showed.
+for distribution in ('PyMuPDF', 'pymupdf-lite'):
+    try:
+        added_files.extend(copy_metadata(distribution))
+    except metadata.PackageNotFoundError:
+        pass
 
 # The languages MComix speaks: the translations of GTK, GLib and
 # libadwaita are collected for these alone, as MComix' own are.

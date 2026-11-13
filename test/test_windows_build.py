@@ -18,6 +18,9 @@ import subprocess
 import sys
 import types
 import unittest.mock
+from importlib import metadata
+
+from mcomix.archive import pdf_multi
 
 from . import MComixTest
 
@@ -100,10 +103,31 @@ class SpecDataTest(MComixTest):
          'Adwaita/cursors/default', 'DATA'),
     ]
 
+    #: The distributions whose metadata PyInstaller finds, by the folder
+    #: it is in; MSYS2 has PyMuPDF under this name alone.
+    INSTALLED = {'pymupdf-lite': 'pymupdf_lite-2.0.dist-info'}
+
     def _run_spec(self):
         """Run the spec as PyInstaller does - from the top of the checkout,
         with its names defined - and answer with what it handed them."""
-        found = {'EXE': []}
+        found = {'EXE': [], 'copy_metadata': []}
+
+        def copy_metadata(name):
+            found['copy_metadata'].append(name)
+            if name not in self.INSTALLED:
+                raise metadata.PackageNotFoundError(name)
+            folder = self.INSTALLED[name]
+            return [('/ucrt64/lib/python3.14/site-packages/' + folder, folder)]
+
+        # PyInstaller itself, which only a machine that builds has.
+        hooks = types.ModuleType('PyInstaller.utils.hooks')
+        hooks.copy_metadata = copy_metadata
+        modules = unittest.mock.patch.dict(sys.modules, {
+            'PyInstaller': types.ModuleType('PyInstaller'),
+            'PyInstaller.utils': types.ModuleType('PyInstaller.utils'),
+            'PyInstaller.utils.hooks': hooks})
+        modules.start()
+        self.addCleanup(modules.stop)
 
         def analysis(*args, **kwargs):
             found['Analysis'] = kwargs
@@ -136,6 +160,24 @@ class SpecDataTest(MComixTest):
                   for filename in filenames
                   if filename.endswith(('.png', '.svg'))}
         self.assertEqual(set(), images - packed)
+
+    def test_pymupdf_is_packed_with_the_record_of_its_version(self):
+        """Without it pdf_multi.installed_version() has to import
+        PyMuPDF to learn its version, and the bundle loaded libmupdf.dll
+        and its bindings, 67 MB, at every start."""
+        found = self._run_spec()
+        self.assertEqual(list(pdf_multi.PYMUPDF_DISTRIBUTIONS),
+                         found['copy_metadata'])
+        self.assertIn(('/ucrt64/lib/python3.14/site-packages/'
+                       'pymupdf_lite-2.0.dist-info',
+                       'pymupdf_lite-2.0.dist-info'),
+                      found['Analysis']['datas'])
+
+    def test_a_build_without_pymupdf_packs_no_record_of_it(self):
+        with unittest.mock.patch.object(self, 'INSTALLED', {}):
+            datas = self._run_spec()['Analysis']['datas']
+        self.assertEqual([], [name for _, name in datas
+                              if name.endswith('.dist-info')])
 
     def test_the_gtk_hooks_are_told_this_is_gtk_4(self):
         """Left to itself, PyInstaller's GTK hook looks for GTK 3, finds
