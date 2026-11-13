@@ -714,17 +714,31 @@ def animation_path(pixbuf: GdkPixbuf.Pixbuf) -> "str | None":
     return getattr(pixbuf, ANIMATION_PATH, None)
 
 
+#: The formats whose further frames are pictures of their own rather
+#: than later moments of the first, by the name Pillow gives each: the
+#: pages of a scan (TIFF, DCX), the preview or gain map a camera puts
+#: behind its photograph (MPO, which is what Pillow opens such a JPEG
+#: as), the layers of a drawing (PSD), the pictures of a stack (IM,
+#: SPIDER, MIC).  Pillow calls every one of them animated.
+_FRAMES_NOT_IN_TIME = frozenset(
+    ('TIFF', 'DCX', 'MPO', 'PSD', 'IM', 'SPIDER', 'MIC'))
+
+
 def file_animates(path: str) -> bool:
-    """Whether <path> holds more than one frame.
+    """Whether <path> holds frames to play one after another.
 
     Pillow answers from the header, which costs a few microseconds and
     is what MComix decodes animations with anyway.  What Pillow will not
     open at all is asked of glycin, which is the decoder gdk-pixbuf
     itself hands its loaders to.
+
+    More than one frame is not enough: see _FRAMES_NOT_IN_TIME.  Such a
+    file shows its first picture, as it does in an image viewer.
     """
     try:
         with Image.open(path) as im:
-            return bool(getattr(im, 'is_animated', False))
+            return bool(getattr(im, 'is_animated', False)) \
+                and im.format not in _FRAMES_NOT_IN_TIME
     except Exception:
         pass
     return _glycin_animates(path)

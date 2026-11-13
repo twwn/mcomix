@@ -1112,6 +1112,40 @@ class CmykJpegTest(MComixTest):
         self.assertTrue(image_tools._is_cmyk_jpeg(self._write(profile=False)))
 
 
+class FramesNotInTimeTest(MComixTest):
+
+    """A file may hold several pictures that are not an animation: the
+    pages of a scanned TIFF, the preview a camera stores behind its
+    JPEG.  Pillow calls each animated, and such a page then flipped
+    through its pictures for as long as it was shown."""
+
+    def test_the_pages_of_a_tiff_are_not_an_animation(self):
+        path = os.path.join(self.tmp_dir, 'scan.tif')
+        first, *rest = [Image.new('RGB', (40, 60), colour)
+                        for colour in ('red', 'green', 'blue')]
+        first.save(path, save_all=True, append_images=rest)
+        with Image.open(path) as im:
+            self.assertEqual(im.n_frames, 3, 'the test wrote one page')
+        self.assertFalse(image_tools.file_animates(path))
+
+    def test_a_jpeg_with_a_second_picture_is_not_an_animation(self):
+        # Written by Pillow 13 as an MPO, red with green behind it:
+        # Pillow 10.1 writes one that Pillow itself does not read as one.
+        path = get_testfile_path('images', 'two-pictures.jpg')
+        with Image.open(path) as im:
+            self.assertEqual((im.format, im.n_frames), ('MPO', 2))
+        self.assertFalse(image_tools.file_animates(path))
+        pixbuf = image_tools.load_pixbuf(path)
+        self.assertFalse(image_tools.is_animation(pixbuf))
+        self.assertEqual((pixbuf.get_width(), pixbuf.get_height()), (40, 60))
+
+    def test_a_gif_and_a_webp_still_are(self):
+        for name in ('animated.gif', 'animated.webp'):
+            with self.subTest(name):
+                self.assertTrue(image_tools.file_animates(
+                    get_testfile_path('images', name)))
+
+
 class EnhanceTest(MComixTest):
 
     """The enhancements of the dialog, on a picture that has an alpha
