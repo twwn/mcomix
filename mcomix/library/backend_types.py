@@ -40,7 +40,10 @@ def _folded(text: str) -> str:
 
 def matches(filter_string: str, name: str, path: str) -> bool:
     """Whether a book called <name>, kept at <path>, passes the
-    library's filter: <filter_string> occurs in either, case aside.
+    library's filter: every word of <filter_string> occurs in either,
+    case aside.  Word by word, so that "batman 01" finds "Batman -
+    01.cbz", and a title is found without its punctuation or the words
+    in between; whatever the text found as a whole it still finds.
 
     The one place that says so.  The database calls it for every book
     (LibraryBackend registers it as mcomix_matches), and so does the
@@ -54,8 +57,9 @@ def matches(filter_string: str, name: str, path: str) -> bool:
     Called per book, it is slower than LIKE was: 28-36 ms against 3-7
     for 40,000 books, once for each pause in the typing.
     """
-    wanted = _folded(filter_string)
-    return wanted in _folded(name) or wanted in _folded(path)
+    name, path = _folded(name), _folded(path)
+    return all(word in name or word in path
+               for word in _folded(filter_string).split())
 
 
 def storable(path: str) -> bool:

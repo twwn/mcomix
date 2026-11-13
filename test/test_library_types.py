@@ -150,6 +150,30 @@ class CollectionTest(unittest.TestCase):
             [book.name for book in test_col.get_books('\xe9crit')],
             ['\xc9crit Un.zip'])
 
+    def test_a_filter_is_matched_word_by_word(self):
+        """Read as one piece of text, "batman 01" did not find "Batman -
+        01", and no title was found without its punctuation."""
+        self._books_named('Batman - 01.zip', 'Batman - 02.zip',
+                          'Pepper and Carrot 01.zip')
+        default = backend_types.DefaultCollection
+
+        for typed, found in (('batman 01', ['Batman - 01.zip']),
+                             ('01  BATMAN', ['Batman - 01.zip']),
+                             ('pepper carrot', ['Pepper and Carrot 01.zip']),
+                             ('batman -', ['Batman - 01.zip',
+                                           'Batman - 02.zip']),
+                             ('batman carrot', [])):
+            with self.subTest(typed):
+                self.assertEqual(
+                    sorted(book.name for book in default.get_books(typed)),
+                    found)
+
+    def test_a_word_may_be_in_the_folder_and_another_in_the_name(self):
+        self.assertTrue(backend_types.matches(
+            'batman 01', '01.cbz', '/books/Batman/01.cbz'))
+        self.assertFalse(backend_types.matches(
+            'batman 02', '01.cbz', '/books/Batman/01.cbz'))
+
     def test_an_accent_matches_however_it_is_stored(self):
         """A name out of a macOS archive holds a letter and its accent
         as two characters; a keyboard types one."""
