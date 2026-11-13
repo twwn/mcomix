@@ -1270,6 +1270,11 @@ class NewBookUnderAFilterTest(MComixTest):
     def test_a_name_that_matches(self):
         self.assertTrue(self._drawn('batman', 'Batman 01', '/books/Batman 01.cbz'))
 
+    def test_a_name_that_matches_in_another_script(self):
+        self.assertTrue(self._drawn(
+            '\u0432\u043e\u0439\u043d\u0430', '\u0412\u043e\u0439\u043d\u0430 01',
+            '/books/\u0412\u043e\u0439\u043d\u0430 01.cbz'))
+
     def test_a_book_filed_under_the_collection_on_show_is_drawn(self):
         """The covers of a collection include the books of the ones
         under it, but a book filed in one of those while it was on show

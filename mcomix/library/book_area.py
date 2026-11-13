@@ -34,6 +34,7 @@ from mcomix import message_dialog
 from mcomix import openwith
 from mcomix import openwith_menu
 from mcomix import tools
+from mcomix.library import backend_types
 from mcomix.library.pixbuf_cache import get_pixbuf_cache
 from mcomix.i18n import _
 from mcomix.dialog import Response
@@ -42,7 +43,6 @@ from collections.abc import Callable, Iterable, Sequence
 from typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
-    from mcomix.library import backend_types
     from mcomix.library import main_dialog
 
 
@@ -429,12 +429,10 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
             if self.is_book_displayed(book):
                 return
 
-            # Under a filter, only a book it lets through: by name or by
-            # path, and without regard to case, as the covers drawn from
-            # the database are chosen.
-            wanted = (self._library.filter_string or '').lower()
-            if (wanted in book.name.lower()
-                    or wanted in book.path.lower()):
+            # Under a filter, only a book it lets through, by the test
+            # the covers drawn from the database are chosen by.
+            if backend_types.matches(self._library.filter_string or '',
+                                     book.name, book.path):
                 self.add_books([book])
 
     def is_book_displayed(self, book: 'backend_types._Book | None') -> bool:

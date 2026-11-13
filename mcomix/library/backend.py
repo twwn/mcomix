@@ -105,6 +105,10 @@ class _LibraryBackend:
         connection = dbapi2.connect(path, check_same_thread=False,
                                     isolation_level=None)
         connection.row_factory = row_factory
+        # The library's filter, which SQLite's own LIKE cannot be: see
+        # backend_types.matches().
+        connection.create_function('mcomix_matches', 3,
+                                   backend_types.matches, deterministic=True)
         return connection
 
     def _open_another(self, error: dbapi2.DatabaseError) -> None:

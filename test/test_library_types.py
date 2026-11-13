@@ -122,8 +122,46 @@ class CollectionTest(unittest.TestCase):
                          ['Vol_01.zip'])
         self.assertEqual(default.get_books('%.zip%'), [])
 
+    def test_a_filter_finds_a_capital_of_any_script(self):
+        """SQLite's LIKE, which chose the books before, folds the case
+        of A to Z only: a filter typed in lower case found no name
+        written with any other capital."""
+        self._books_named('\xc9crit Un.zip', '\u0412\u043e\u0439\u043d\u0430.zip',
+                          'Plain.zip')
+        default = backend_types.DefaultCollection
+
+        for typed, found in (('\xe9crit', '\xc9crit Un.zip'),
+                             ('\xc9CRIT', '\xc9crit Un.zip'),
+                             ('\u0432\u043e\u0439\u043d\u0430',
+                              '\u0412\u043e\u0439\u043d\u0430.zip'),
+                             ('PLAIN', 'Plain.zip')):
+            with self.subTest(typed):
+                self.assertEqual(
+                    [book.name for book in default.get_books(typed)], [found])
+
+    def test_a_collection_filter_finds_such_a_capital_too(self):
+        self._books_named('\xc9crit Un.zip', 'Plain.zip')
+        test_col = self.library.get_collection_by_name("Test")
+        for book in backend_types.DefaultCollection.get_books():
+            if book.name.endswith('Un.zip'):
+                self.library.add_book_to_collection(book.id, test_col.id)
+
+        self.assertEqual(
+            [book.name for book in test_col.get_books('\xe9crit')],
+            ['\xc9crit Un.zip'])
+
+    def test_an_accent_matches_however_it_is_stored(self):
+        """A name out of a macOS archive holds a letter and its accent
+        as two characters; a keyboard types one."""
+        self.assertTrue(backend_types.matches(
+            '\xe9crit', 'E\u0301crit Un.zip', '/books/E\u0301crit Un.zip'))
+        self.assertTrue(backend_types.matches(
+            'e\u0301crit', '\xc9crit Un.zip', '/books/\xc9crit Un.zip'))
+        self.assertFalse(backend_types.matches(
+            'ecrit', '\xc9crit Un.zip', '/books/\xc9crit Un.zip'))
+
     def test_a_collection_filter_is_read_as_text_too(self):
-        """The collection's own query filters with a LIKE of its own."""
+        """The collection's own query filters by the same test."""
         self._books_named('50% off.zip', '50x off.zip')
         test_col = self.library.get_collection_by_name("Test")
         for book in backend_types.DefaultCollection.get_books():

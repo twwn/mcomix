@@ -12,6 +12,7 @@ import os
 import threading
 import traceback
 import datetime
+import unicodedata
 
 from mcomix import callback
 from mcomix import archive_tools
@@ -27,25 +28,34 @@ if TYPE_CHECKING:
     from mcomix.library.backend import _LibraryBackend
 
 
-#: What quotes a wildcard in the LIKE patterns below.  Every query
-#: using one names it with ESCAPE, since SQLite has no default.
-_LIKE_ESCAPE = '\\'
+def _folded(text: str) -> str:
+    """<text> as the library's filter compares it: without regard to
+    case in any script, and with an accented letter written as one
+    character whether it was stored as one or as a letter and a mark,
+    as the names out of a macOS archive are."""
+    if text.isascii():
+        return text.lower()
+    return unicodedata.normalize('NFC', text).casefold()
 
 
-def _contains(text: str) -> str:
-    """<text> as a LIKE pattern that matches wherever it occurs.
+def matches(filter_string: str, name: str, path: str) -> bool:
+    """Whether a book called <name>, kept at <path>, passes the
+    library's filter: <filter_string> occurs in either, case aside.
 
-    The library's filter is what a reader typed, not a pattern.  Put
-    into LIKE as it stands, a per-cent sign matched every book in the
-    library and an underscore matched any character at all, so filtering
-    for "50% off" or "Vol_01" answered with books that hold neither.
-    The two wildcards are quoted here, and so is the quoting character
-    itself.  The covers a filter leaves on screen are chosen in Python,
-    by a plain substring, so this is also what makes the two agree.
+    The one place that says so.  The database calls it for every book
+    (LibraryBackend registers it as mcomix_matches), and so does the
+    book area for a book added under a filter.  SQLite's LIKE did this
+    before, and folds the case of A to Z only: "écrit" did not find
+    "Écrit", nor did any lower-case Cyrillic or Greek find its capital,
+    while the book area, comparing in Python, said it should.  LIKE
+    also read a per-cent sign and an underscore as wildcards; what a
+    reader types is text, and here it is nothing else.
+
+    Called per book, it is slower than LIKE was: 28-36 ms against 3-7
+    for 40,000 books, once for each pause in the typing.
     """
-    for character in (_LIKE_ESCAPE, '%', '_'):
-        text = text.replace(character, _LIKE_ESCAPE + character)
-    return '%' + text + '%'
+    wanted = _folded(filter_string)
+    return wanted in _folded(name) or wanted in _folded(path)
 
 
 def storable(path: str) -> bool:
@@ -319,11 +329,8 @@ class _Collection(_BackendObject):
         sql_args: "list[str | int | None]" = [collection.id
                                               for collection in collections]
         if filter_string:
-            # Parenthesised: AND binds tighter than OR, so without them
-            # a matching path would answer for the whole library.
-            sql += ''' AND (book.name LIKE ? ESCAPE '\\'
-                            OR book.path LIKE ? ESCAPE '\\') '''
-            sql_args += [_contains(filter_string), _contains(filter_string)]
+            sql += ' AND mcomix_matches(?, book.name, book.path) '
+            sql_args.append(filter_string)
         sql += ' ORDER BY book.id'
 
         rows = self.get_backend().fetchall(sql, sql_args)
@@ -397,10 +404,8 @@ class _DefaultCollection(_Collection):
 
         sql_args = []
         if filter_string:
-            sql += ''' WHERE book.name LIKE ? ESCAPE '\\' '''
-            sql_args.append(_contains(filter_string))
-            sql += ''' OR book.path LIKE ? ESCAPE '\\' '''
-            sql_args.append(_contains(filter_string))
+            sql += ' WHERE mcomix_matches(?, book.name, book.path) '
+            sql_args.append(filter_string)
 
         rows = self.get_backend().fetchall(sql, sql_args)
 
