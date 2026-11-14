@@ -70,6 +70,9 @@ class Extractor:
         self._dst: str
         self._files: list[str]
         self._extracted: set[str]
+        #: Those of them that could not be unpacked: marked done so
+        #: that nobody waits for them, and not on disk, or not whole.
+        self._failed: set[str] = set()
         self._contents_listed: bool
         self._extract_started: bool
         self._condition: threading.Condition
@@ -111,6 +114,7 @@ class Extractor:
         self._told_no_room = False
         self._files = []
         self._extracted = set(unpacked)
+        self._failed = set()
         self._archive = archive_tools.get_recursive_archive_handler(src, dst, type=type)
         if self._archive is None:
             msg = archive_tools.cannot_open(src, type)
@@ -172,9 +176,10 @@ class Extractor:
 
     def unpacked(self) -> frozenset[str]:
         """The files that are on disk, whole, by their names in the
-        archive.  One the threads were stopped over is not among them."""
+        archive.  One the threads were stopped over is not among them,
+        and neither is one that could not be unpacked."""
         with self._condition:
-            return frozenset(self._extracted)
+            return frozenset(self._extracted - self._failed)
 
     def is_ready(self, name: str) -> bool:
         """Return True if the file <name> in the extractor's file list
@@ -317,8 +322,10 @@ class Extractor:
             # written over, and again when the book itself is closed.
             self._archive = None
 
-    def _extraction_finished(self, name: str) -> None:
-        """Mark <name> as unpacked and wake everything waiting for it.
+    def _extraction_finished(self, name: str, whole: bool = True) -> None:
+        """Mark <name> as unpacked and wake everything waiting for it;
+        <whole> is False for a file that could not be unpacked, which
+        is done with all the same and is not among unpacked().
 
         A name that is no longer pending is still marked and still
         announced.  set_files() may narrow the list while a file is
@@ -331,6 +338,10 @@ class Extractor:
             if name in self._files:
                 self._files.remove(name)
             self._extracted.add(name)
+            if whole:
+                self._failed.discard(name)
+            else:
+                self._failed.add(name)
             self._condition.notify_all()
         self.file_extracted(self, name)
 
@@ -375,7 +386,7 @@ class Extractor:
             if missing:
                 log.warning('! Not extracted in one pass: %s', ', '.join(missing))
             for name in missing:
-                self._extraction_finished(name)
+                self._extraction_finished(name, whole=False)
 
         except Exception as ex:
             # Logged rather than raised over, as _extract_file() does and
@@ -395,7 +406,7 @@ class Extractor:
                 missing = [name for name in files
                            if name not in self._extracted]
             for name in missing:
-                self._extraction_finished(name)
+                self._extraction_finished(name, whole=False)
 
     def _extract_file(self, name: str) -> None:
         """Extract the file named <name> to the destination directory,
@@ -403,10 +414,12 @@ class Extractor:
         returned by setup().
         """
 
+        whole = True
         try:
             self._opened_archive.extract(name, self._dst)
 
         except Exception as ex:
+            whole = False
             # A file that cannot be unpacked is logged and left out
             # rather than raised over: the page is missing either way,
             # and the window handles a missing page, where a thread that
@@ -419,7 +432,7 @@ class Extractor:
 
         if self._extract_thread.must_stop():
             return
-        self._extraction_finished(name)
+        self._extraction_finished(name, whole)
 
     def _list_contents(self, archive: archive_base.BaseArchive) -> None:
         """Read what is in <archive>, in the listing thread.

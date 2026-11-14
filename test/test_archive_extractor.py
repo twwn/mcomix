@@ -137,6 +137,29 @@ class ExtractionTest(_ExtractorTest):
         self.extractor.set_files(self.MEMBERS)
         self.assertNotIn(self.MEMBERS[0], self.extractor.get_files())
 
+    def test_a_file_that_could_not_be_unpacked_is_not_among_the_unpacked(
+            self):
+        """It is done with, so that nobody waits for it, and a book
+        gone back to unpacks it again."""
+        archive = self.extractor._opened_archive
+        real = archive.extract
+
+        def extract(name, destination):
+            if name == self.MEMBERS[1]:
+                # As a full disk leaves it: created, and empty.
+                os.makedirs(os.path.dirname(
+                    os.path.join(destination, name)), exist_ok=True)
+                open(os.path.join(destination, name), 'wb').close()
+                raise OSError(errno.ENOSPC, os.strerror(errno.ENOSPC))
+            real(name, destination)
+
+        with unittest.mock.patch.object(archive, 'extract', extract), \
+                unittest.mock.patch.object(
+                    self.extractor, 'unpacking_failed'):
+            self._extract(list(self.MEMBERS))
+        self.assertEqual(frozenset(self.MEMBERS) - {self.MEMBERS[1]},
+                         self.extractor.unpacked())
+
 
 class AlreadyUnpackedTest(_ExtractorTest):
 
