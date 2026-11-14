@@ -1489,10 +1489,17 @@ class BookInfoTest(_OneBookTest):
         self.assertEqual((0, 0, 0, 0, None), tuple(stats))
 
     def test_a_book_read_to_its_last_page_counts_as_finished(self):
+        """And no longer as started: the two numbers are those of the
+        books the choice beside the search field shows as Started and
+        as Finished, where a finished book used to count in both."""
         self._left_on(4)
         info = self.dialog.control_area
         info.update_info([])
-        self.assertEqual('Started: 1, finished: 1', info._filelabel.get_text())
+        self.assertEqual('Started: 0, finished: 1', info._filelabel.get_text())
+        states = backend_types.ReadState
+        for state, books in ((states.STARTED, 0), (states.FINISHED, 1)):
+            self.assertEqual(books, len(
+                backend_types.DefaultCollection.get_books(None, state)))
         self.assertTrue(info._dirlabel.get_text().startswith('Pages read: 4,'))
 
 

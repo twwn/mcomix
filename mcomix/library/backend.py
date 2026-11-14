@@ -249,9 +249,12 @@ class _LibraryBackend:
                    from recent join book on book.id = recent.book'''):
             if book not in wanted:
                 continue
-            started += 1
+            # As the library's choice of a reading state parts them: a
+            # book is started until it is left on its last page.
             if pages and page >= pages:
                 finished += 1
+            else:
+                started += 1
             pages_read += min(page, pages) if pages else page
             if time_set and time_set > last_read:
                 last_read = time_set

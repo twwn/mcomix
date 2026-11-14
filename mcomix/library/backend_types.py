@@ -68,8 +68,8 @@ class ReadState(enum.Enum):
     """How far a book has been read, as the library's choice beside its
     search field names it.  The three states part the books: one left
     past its first page is started until it is left on its last, and
-    finished from then on, which is what reading_statistics() counts as
-    finished and what puts the tick on a cover."""
+    finished from then on, which is how reading_statistics() counts them
+    and what puts the tick on a cover."""
 
     ANY = 'any'
     UNREAD = 'unread'
@@ -164,9 +164,10 @@ class ReadingStatistics(NamedTuple):
 
     #: How many books there are.
     books: int
-    #: How many of them were left past their first page.
+    #: How many of them were left past their first page and before
+    #: their last: ReadState.STARTED.
     started: int
-    #: How many of those were read to their last page.
+    #: How many were left on their last page: ReadState.FINISHED.
     finished: int
     #: The pages read: up to the page each book was left on.
     pages_read: int
