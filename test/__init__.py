@@ -107,6 +107,15 @@ _RECENT_STORE = Gtk.RecentManager(
     filename=os.path.join(_SESSION_TMPDIR, 'recent.xbel'))
 Gtk.RecentManager.get_default = staticmethod(lambda: _RECENT_STORE)
 
+# Keep every test off the session bus.  A slideshow asks the desktop to
+# leave the screen on (mcomix/screen_saver.py), and a test that starts
+# one would ask the desktop of whoever runs the suite.  The bus never
+# answers here; test_screen_saver.py puts one of its own in this place.
+
+from mcomix import screen_saver
+
+screen_saver._session_bus = lambda ready: None
+
 # Pin multiprocessing's temporary directory the same way.  It is worked
 # out once per process, the first time a manager or a forkserver needs a
 # socket, and it would otherwise land in the directory MComixTest gives

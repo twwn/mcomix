@@ -2,6 +2,7 @@
 
 from gi.repository import GLib, Gtk
 
+from mcomix import screen_saver
 from mcomix.preferences import prefs
 from mcomix.i18n import _
 
@@ -20,17 +21,22 @@ class Slideshow:
         self._window = window
         self._running = False
         self._id: int | None = None
+        #: Keeps the screen on while the slideshow runs: nobody touches
+        #: a key then, and the desktop would dim and lock the screen.
+        self._screen = screen_saver.ScreenHold(_('Slideshow'))
 
     def _start(self) -> None:
         if not self._running:
             self._id = GLib.timeout_add(prefs['slideshow delay'], self._next)
             self._running = True
+            self._screen.hold()
             self._window.update_title()
 
     def _stop(self) -> None:
         if self._running and self._id is not None:
             GLib.source_remove(self._id)
             self._running = False
+            self._screen.release()
             self._window.update_title()
 
     def _next(self) -> bool:

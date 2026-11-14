@@ -46,6 +46,24 @@ class SlideshowTest(MComixTest):
         return (button.get_child().get_icon_name(),
                 button.get_tooltip_text())
 
+    def test_the_screen_is_kept_on_for_as_long_as_it_runs(self):
+        """Nobody touches a key during a slideshow, so the desktop
+        dimmed and locked the screen in the middle of it."""
+        screen = self.slideshow._screen
+        self.assertFalse(screen.is_held())
+        self.action.set_active(True)
+        self.assertTrue(screen.is_held())
+        self.slideshow.update_delay()
+        self.assertTrue(screen.is_held())
+        self.action.set_active(False)
+        self.assertFalse(screen.is_held())
+
+    def test_closing_the_book_lets_the_screen_go(self):
+        self.action.set_active(True)
+        self.window.filehandler.close_file()
+        pump()
+        self.assertFalse(self.slideshow._screen.is_held())
+
     def test_closing_the_book_ends_it(self):
         """It went on with no book, its toggle out of reach, and turned
         the pages of whichever book was opened next."""
