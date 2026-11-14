@@ -92,6 +92,17 @@ class TypeTest(MComixTest):
             self.assertEqual(2, image.n_frames)
         self.assertIsNone(archive_tools.archive_mime_type(path))
 
+    def test_a_photograph_and_its_thumbnail_stay_an_image(self):
+        """Exif lays a camera's TIFF out as the photograph and then its
+        thumbnail, and has no tag that marks the thumbnail as one."""
+        self.assertIsNone(self._type('DSC_0001.TIF', [
+            Image.new('RGB', (600, 400), 'red'),
+            Image.new('RGB', (160, 120), 'red')]))
+        # Small pages are pages still, where the first is no larger.
+        self.assertEqual(constants.TIFF, self._type('stamps.tif', [
+            Image.new('RGB', (160, 120), 'red'),
+            Image.new('RGB', (160, 120), 'blue')]))
+
     def test_a_tiff_under_another_name_is_no_book(self):
         """A camera's raw file is a TIFF of several pictures too."""
         self.assertIsNone(self._type('photo.dng', _pages()))

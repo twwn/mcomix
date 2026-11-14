@@ -36,10 +36,25 @@ _MASK = 4
 _PAGE_NAME = re.compile(r'^page([0-9]+)\.tif$')
 
 
-def _is_page(image: Image.Image) -> bool:
-    """Whether the picture <image> stands at is a page of its own."""
-    kind = getattr(image, 'tag_v2', {}).get(_NEW_SUBFILE_TYPE, 0)
-    return not (isinstance(kind, int) and kind & (_REDUCED_IMAGE | _MASK))
+#: The longest side of what is taken for a preview where nothing marks
+#: it: Exif lays a camera's TIFF out as the photograph and then its
+#: thumbnail of 160 by 120, and has no tag for saying which is which.
+_PREVIEW_SIDE = 256
+
+
+def _is_page(image: Image.Image, first: tuple[int, int] | None) -> bool:
+    """Whether the picture <image> stands at is a page of its own;
+    <first> is the size of the file's first picture, None for that
+    picture itself."""
+    tags = getattr(image, 'tag_v2', {})
+    kind = tags.get(_NEW_SUBFILE_TYPE)
+    if isinstance(kind, int):
+        return not kind & (_REDUCED_IMAGE | _MASK)
+    if first is None:
+        return True
+    width, height = image.size
+    return not (max(width, height) <= _PREVIEW_SIDE
+                and width < first[0] and height < first[1])
 
 
 def _page_frames(image: Image.Image, at_most: int | None = None) \
@@ -47,14 +62,17 @@ def _page_frames(image: Image.Image, at_most: int | None = None) \
     """Which of the pictures in <image> are pages, by their position in
     the file; no more than <at_most> of them are looked for."""
     frames: list[int] = []
+    first: tuple[int, int] | None = None
     frame = 0
     while at_most is None or len(frames) < at_most:
         try:
             image.seek(frame)
         except EOFError:
             break
-        if _is_page(image):
+        if _is_page(image, first):
             frames.append(frame)
+        if first is None:
+            first = image.size
         frame += 1
     return frames
 
