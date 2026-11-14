@@ -2,7 +2,7 @@
 
 F12 opens the dialog. Six tabs: Appearance, Behaviour, Navigation, Display, Advanced, and Shortcuts, the keybinding editor ([Keyboard and mouse](shortcuts.md#changing-keys)).
 
-- Changes apply at once, except the language and the number of thumbnail threads, which are read at start.
+- Changes apply at once, except the language, the number of thumbnail threads and "Open files in the window that is already open", which are read at start.
 - Picking a language offers to restart MComix, keeping the book, page and window size. Declining keeps the choice for the next start.
 - "Clear dialog choices", beside Close, sets every prompt answered for good back to asking.
 - On the Shortcuts tab that button is "Reset keys": every key back to its default.
