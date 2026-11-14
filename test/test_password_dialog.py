@@ -12,6 +12,7 @@ from . import MComixTest, get_testfile_path, pump as _pump, wait_for
 from mcomix import archive_extractor
 from mcomix import message_dialog
 from mcomix.archive import password as archive_password
+from mcomix.archive import sevenzip_external
 from mcomix.archive import zip as zip_archive
 from mcomix.dialog import Response
 
@@ -304,5 +305,27 @@ class SessionPasswordTest(MComixTest):
         self.answer = 'password'
         self.assertTrue(os.path.isfile(self._extract_with_a_new_archive()))
         self.assertEqual([self.ARCHIVE, self.ARCHIVE], self.asked)
+
+    @unittest.skipUnless(sevenzip_external.SevenZipArchive.is_available(),
+                         'needs 7z')
+    def test_a_7z_page_that_will_not_unpack_forgets_it(self):
+        """7z says so on its way out, and writes an empty file."""
+        self.answer = 'wrong'
+        for name in ('Encrypted.7z', 'SolidEncrypted.7z'):
+            with self.subTest(name=name):
+                path = get_testfile_path('archives', name)
+                destination = os.path.join(self.tmp_dir, name)
+                os.makedirs(destination)
+                extractor = archive_extractor.Extractor()
+                extractor.setup(path, destination)
+                self.addCleanup(extractor.close)
+                self.assertTrue(wait_for(
+                    lambda: extractor.get_files() is not None, seconds=20))
+                extractor.set_files([self.MEMBER])
+                extractor.extract()
+                self.assertTrue(wait_for(
+                    lambda: extractor.is_ready(self.MEMBER), seconds=20))
+                self.assertIsNone(archive_password.remembered(path))
+                self.assertEqual(frozenset(), extractor.unpacked())
 
 # vim: expandtab:sw=4:ts=4

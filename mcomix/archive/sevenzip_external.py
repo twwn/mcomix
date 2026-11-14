@@ -28,6 +28,10 @@ _WINDOWS = sys.platform == 'win32'
 _BYTES_CODE_PAGE = '-mcp=28591'
 
 
+class ExtractionError(Exception):
+    """7z gave up on a file: what it wrote, if anything, is not it."""
+
+
 class SevenZipArchive(archive_base.ExternalExecutableArchive):
     """ 7z file extractor using the 7z executable. """
 
@@ -301,9 +305,16 @@ class SevenZipArchive(archive_base.ExternalExecutableArchive):
                     stdout=output, stderr=subprocess.PIPE,
                     creationflags=process.CREATIONFLAGS)
 
-                if proc.stderr:
+                error = proc.stderr.decode('utf-8', 'replace').strip()
+                # 1 is a warning, with the file written all the same;
+                # from 2 on the program gave up, as over a wrong
+                # password, and what it wrote is not the file.
+                if proc.returncode >= 2:
+                    raise ExtractionError('%s: %s' % (filename, error or (
+                        'exit code %d' % proc.returncode)))
+                if error:
                     log.error(_("Extraction of %(archivefile)s might have failed: %(error)s"),
-                              {'archivefile': filename, 'error': proc.stderr.decode('utf-8')})
+                              {'archivefile': filename, 'error': error})
             finally:
                 output.close()
         finally:
@@ -331,6 +342,10 @@ class SevenZipArchive(archive_base.ExternalExecutableArchive):
             wanted = set(entries)
             for filename, filesize in self._contents:
                 data = proc.stdout.read(filesize)
+                if len(data) < filesize:
+                    # The program gave up, as over a wrong password.
+                    raise ExtractionError(
+                        '%s: %d of %d bytes' % (filename, len(data), filesize))
                 if filename not in wanted:
                     continue
                 new = self._create_file(os.path.join(destination_dir, filename))
