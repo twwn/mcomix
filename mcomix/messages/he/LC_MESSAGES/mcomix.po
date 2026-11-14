@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: mcomix 0.99\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-14 10:19+0100\n"
+"POT-Creation-Date: 2026-11-14 10:56+0100\n"
 "PO-Revision-Date: 2013-01-07 22:51+0200\n"
 "Last-Translator: Isratine Citizen <genghiskhan@gmx.ca>\n"
 "Language-Team: Hebrew <eliz@gnu.org>\n"
@@ -47,7 +47,7 @@ msgstr "ניתן להשיג עותק של רישיון זה בכתובת %s"
 msgid "! Extraction error: %s"
 msgstr "! שגיאת חילוץ: %s"
 
-#: mcomix/archive_extractor.py:441 mcomix/archive_tools.py:232
+#: mcomix/archive_extractor.py:441 mcomix/archive_tools.py:240
 #: mcomix/image_tools.py:518 mcomix/page_marks.py:62
 #: mcomix/page_rotations.py:42 mcomix/reading_directions.py:47
 #, python-format
@@ -73,17 +73,17 @@ msgstr ""
 "! לא ניתן להוסיף את הקובץ %(sourcefile)s אל הארכיון %(archivefile)s, נוטש "
 "כעת..."
 
-#: mcomix/archive_tools.py:122
+#: mcomix/archive_tools.py:130
 #, python-format
 msgid "Could not open %(file)s: it needs %(program)s."
 msgstr "לא ניתן לפתוח את הקובץ ‫%(file)s: נדרש %(program)s."
 
-#: mcomix/archive_tools.py:126
+#: mcomix/archive_tools.py:134
 #, python-format
 msgid "Could not open %(file)s: it needs %(first)s or %(second)s."
 msgstr "לא ניתן לפתוח את הקובץ ‫%(file)s: נדרש %(first)s או %(second)s."
 
-#: mcomix/archive_tools.py:129
+#: mcomix/archive_tools.py:137
 #, python-format
 msgid "Non-supported archive format: %s"
 msgstr "תסדיר ארכיון שלא נתמך: %s"
@@ -1085,7 +1085,7 @@ msgstr "תמונות־ציפורן"
 msgid "Hide all"
 msgstr "הסתרת הכל"
 
-#: mcomix/keybindings.py:143 mcomix/slideshow.py:54 mcomix/ui.py:555
+#: mcomix/keybindings.py:143 mcomix/slideshow.py:60 mcomix/ui.py:555
 msgid "Start slideshow"
 msgstr "התחל מצגת"
 
@@ -1852,7 +1852,7 @@ msgstr "סדר קבצים ומדורים לפי:"
 msgid "Sort pages inside an archive by:"
 msgstr "סדר עמודים בתוך ארכיון לפי:"
 
-#: mcomix/preferences_dialog.py:349
+#: mcomix/preferences_dialog.py:349 mcomix/slideshow.py:26
 msgid "Slideshow"
 msgstr "מצגת"
 
@@ -2570,7 +2570,7 @@ msgstr "לא נמצאה במערכת שום גרסה של Python Imaging Library
 msgid "Writing \"%s\""
 msgstr "כתיבת „%s”"
 
-#: mcomix/slideshow.py:50
+#: mcomix/slideshow.py:56
 msgid "Stop slideshow"
 msgstr "הפסק מצגת"
 
@@ -2662,123 +2662,127 @@ msgstr "ספר אלקטרוני Kindle KFX"
 msgid "EPUB ebook"
 msgstr "ספר אלקטרוני EPUB"
 
-#: mcomix/strings.py:26
+#: mcomix/strings.py:23
+msgid "TIFF document"
+msgstr "מסמך TIFF"
+
+#: mcomix/strings.py:27
 msgid "Original vision/developer of Comix"
 msgstr "Comix המפתח המקורי של"
 
-#: mcomix/strings.py:27 mcomix/strings.py:28 mcomix/strings.py:29
-#: mcomix/strings.py:30
+#: mcomix/strings.py:28 mcomix/strings.py:29 mcomix/strings.py:30
+#: mcomix/strings.py:31
 msgid "MComix developer"
 msgstr "MComix ‏מפתח"
 
-#: mcomix/strings.py:33 mcomix/strings.py:34 mcomix/strings.py:35
-#: mcomix/strings.py:36
+#: mcomix/strings.py:34 mcomix/strings.py:35 mcomix/strings.py:36
+#: mcomix/strings.py:37
 msgid "Simplified Chinese translation"
 msgstr "תרגום לסינית מפושטת"
 
-#: mcomix/strings.py:37 mcomix/strings.py:38
+#: mcomix/strings.py:38 mcomix/strings.py:39
 msgid "Spanish translation"
 msgstr "תרגום לספרדית"
 
-#: mcomix/strings.py:39
+#: mcomix/strings.py:40
 msgid "Brazilian Portuguese translation"
 msgstr "תרגום לפורטוגזית ברזילאית"
 
 # Should Caja (Nautilus fork) be added as well?
-#: mcomix/strings.py:40
+#: mcomix/strings.py:41
 msgid "German translation and Nautilus thumbnailer"
 msgstr "Nautilus תרגום לגרמנית וגם מחולל תמונות־ציפורן עבור"
 
-#: mcomix/strings.py:41
+#: mcomix/strings.py:42
 msgid "German translation"
 msgstr "תרגום לגרמנית"
 
-#: mcomix/strings.py:42 mcomix/strings.py:43 mcomix/strings.py:44
+#: mcomix/strings.py:43 mcomix/strings.py:44 mcomix/strings.py:45
 msgid "Italian translation"
 msgstr "תרגום לאיטלקית"
 
-#: mcomix/strings.py:45
+#: mcomix/strings.py:46
 msgid "Dutch translation"
 msgstr "תרגום להולנדית"
 
-#: mcomix/strings.py:46 mcomix/strings.py:47 mcomix/strings.py:48
-#: mcomix/strings.py:49
+#: mcomix/strings.py:47 mcomix/strings.py:48 mcomix/strings.py:49
+#: mcomix/strings.py:50
 msgid "French translation"
 msgstr "תרגום לצרפתית"
 
-#: mcomix/strings.py:50 mcomix/strings.py:51
+#: mcomix/strings.py:51 mcomix/strings.py:52
 msgid "Polish translation"
 msgstr "תרגום לפולנית"
 
-#: mcomix/strings.py:52
+#: mcomix/strings.py:53
 msgid "Greek translation"
 msgstr "תרגום ליוונית"
 
-#: mcomix/strings.py:53
+#: mcomix/strings.py:54
 msgid "Catalan translation"
 msgstr "תרגום לקטלנית"
 
-#: mcomix/strings.py:54 mcomix/strings.py:55
+#: mcomix/strings.py:55 mcomix/strings.py:56
 msgid "Traditional Chinese translation"
 msgstr "תרגום לסינית מסורתית"
 
-#: mcomix/strings.py:56 mcomix/strings.py:57 mcomix/strings.py:58
+#: mcomix/strings.py:57 mcomix/strings.py:58 mcomix/strings.py:59
 msgid "Japanese translation"
 msgstr "תרגום ליפנית"
 
-#: mcomix/strings.py:59
+#: mcomix/strings.py:60
 msgid "Hungarian translation"
 msgstr "תרגום להונגרית"
 
-#: mcomix/strings.py:60 mcomix/strings.py:61
+#: mcomix/strings.py:61 mcomix/strings.py:62
 msgid "Russian translation"
 msgstr "תרגום לרוסית"
 
-#: mcomix/strings.py:62
+#: mcomix/strings.py:63
 msgid "Croatian translation"
 msgstr "תרגום לקרואטית"
 
-#: mcomix/strings.py:63 mcomix/strings.py:64 mcomix/strings.py:65
+#: mcomix/strings.py:64 mcomix/strings.py:65 mcomix/strings.py:66
 msgid "Korean translation"
 msgstr "תרגום לקוריאנית"
 
-#: mcomix/strings.py:66
+#: mcomix/strings.py:67
 msgid "Persian translation"
 msgstr "תרגום לפרסית"
 
-#: mcomix/strings.py:67
+#: mcomix/strings.py:68
 msgid "Indonesian translation"
 msgstr "תרגום לאינדונזית"
 
-#: mcomix/strings.py:68
+#: mcomix/strings.py:69
 msgid "Czech translation"
 msgstr "תרגום לצ'כית"
 
-#: mcomix/strings.py:69
+#: mcomix/strings.py:70
 msgid "Ukrainian translation"
 msgstr "תרגום לאוקראינית"
 
-#: mcomix/strings.py:70
+#: mcomix/strings.py:71
 msgid "Galician translation"
 msgstr "תרגום לגליציאנית"
 
-#: mcomix/strings.py:71 mcomix/strings.py:72
+#: mcomix/strings.py:72 mcomix/strings.py:73
 msgid "Swedish translation"
 msgstr "תרגום לשוודית"
 
-#: mcomix/strings.py:73
+#: mcomix/strings.py:74
 msgid "Hebrew translation"
 msgstr "תרגום לעברית"
 
-#: mcomix/strings.py:74
+#: mcomix/strings.py:75
 msgid "Lithuanian translation"
 msgstr "תרגום לליטאית"
 
-#: mcomix/strings.py:77
+#: mcomix/strings.py:78
 msgid "Icon design"
 msgstr "עיצוב צלמית"
 
-#: mcomix/strings.py:78
+#: mcomix/strings.py:79
 msgid "Vector icon"
 msgstr "צלמית וקטורית"
 
@@ -3259,66 +3263,66 @@ msgstr "חוברות שנוספו:"
 msgid "Adding '%s'..."
 msgstr "מתווספות כעת '%s'..."
 
-#: mcomix/library/backend.py:283
+#: mcomix/library/backend.py:286
 #, python-format
 msgid "! Non-existent book #%i"
 msgstr "! חוברת #%i שאינה קיימת"
 
-#: mcomix/library/backend.py:337
+#: mcomix/library/backend.py:340
 #, python-format
 msgid "! Could not get cover for book \"%s\""
 msgstr "! לא ניתן היה להשיג את העטיפה של החוברת \"%s\""
 
 # Tranlated to: Recent files
-#: mcomix/library/backend.py:423 mcomix/library/backend.py:440
-#: mcomix/library/backend.py:453 mcomix/library/backend.py:482
+#: mcomix/library/backend.py:426 mcomix/library/backend.py:443
+#: mcomix/library/backend.py:456 mcomix/library/backend.py:485
 msgid "Recent"
 msgstr "קבצים אחרונים"
 
-#: mcomix/library/backend.py:562 mcomix/library/backend.py:609
+#: mcomix/library/backend.py:565 mcomix/library/backend.py:612
 #, python-format
 msgid "! Could not add book \"%s\" to the library"
 msgstr "! לא ניתן היה להוסיף את החוברת \"%s\" לספרייה"
 
-#: mcomix/library/backend.py:638 mcomix/library/backend.py:706
+#: mcomix/library/backend.py:641 mcomix/library/backend.py:709
 #, python-format
 msgid "! Could not move book \"%s\" in the library"
 msgstr "! לא ניתן היה להעביר את הספר \"%s\" בספרייה"
 
-#: mcomix/library/backend.py:756
+#: mcomix/library/backend.py:759
 #, python-format
 msgid "! Could not add collection \"%s\""
 msgstr "! לא ניתן היה להוסיף את האוסף \"%s\""
 
-#: mcomix/library/backend.py:788
+#: mcomix/library/backend.py:791
 #, python-format
 msgid "! Could not add book %(book)s to collection %(collection)s"
 msgstr "! לא ניתן היה להוסיף את החוברת %(book)s לאוסף %(collection)s"
 
-#: mcomix/library/backend.py:815
+#: mcomix/library/backend.py:818
 #, python-format
 msgid "! Could not rename collection to \"%s\""
 msgstr "! לא ניתן היה לשנות את שם האוסף ל־\"%s\""
 
-#: mcomix/library/backend.py:832 mcomix/library/backend.py:834
+#: mcomix/library/backend.py:835 mcomix/library/backend.py:837
 msgid "(Copy)"
 msgstr "(עותק)"
 
-#: mcomix/library/backend.py:1133
+#: mcomix/library/backend.py:1136
 msgid "Could not determine library database version!"
 msgstr "לא ניתן היה לקבוע את גרסת מסד הנתונים של הספרייה!"
 
-#: mcomix/library/backend.py:1183
+#: mcomix/library/backend.py:1186
 #, python-format
 msgid "Upgrading library database version from %(from)d to %(to)d."
 msgstr "שדרוג גרסת מסד הנתונים של הספרייה מ־%(from)d ל־%(to)d."
 
-#: mcomix/library/backend_types.py:436 mcomix/library/collection_area.py:223
+#: mcomix/library/backend_types.py:437 mcomix/library/collection_area.py:223
 #: mcomix/library/control_area.py:97
 msgid "All books"
 msgstr "כל החוברות"
 
-#: mcomix/library/backend_types.py:587 mcomix/library/backend_types.py:593
+#: mcomix/library/backend_types.py:588 mcomix/library/backend_types.py:594
 #, python-format
 msgid "! Could not scan for new books: %s"
 msgstr "! לא ניתן לסרוק חוברות חדשות: %s"

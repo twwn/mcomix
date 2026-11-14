@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Comix 4.0.1\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-14 10:19+0100\n"
+"POT-Creation-Date: 2026-11-14 10:56+0100\n"
 "PO-Revision-Date: 2009-01-28 13:36+0800\n"
 "Last-Translator: Xie Yanbo <xieyanbo@gmail.com>\n"
 "Language-Team: Xie Yanbo <xieyanbo@gmail.com>\n"
@@ -50,7 +50,7 @@ msgstr "该协议的副本可从 %s 获得"
 msgid "! Extraction error: %s"
 msgstr "！ 解压缩错误：%s"
 
-#: mcomix/archive_extractor.py:441 mcomix/archive_tools.py:232
+#: mcomix/archive_extractor.py:441 mcomix/archive_tools.py:240
 #: mcomix/image_tools.py:518 mcomix/page_marks.py:62
 #: mcomix/page_rotations.py:42 mcomix/reading_directions.py:47
 #, python-format
@@ -76,17 +76,17 @@ msgid ""
 "! Could not add file %(sourcefile)s to archive %(archivefile)s, aborting..."
 msgstr "！ 无法添加文件 %(sourcefile)s 到 文件包 %(archivefile)s，取消中..."
 
-#: mcomix/archive_tools.py:122
+#: mcomix/archive_tools.py:130
 #, python-format
 msgid "Could not open %(file)s: it needs %(program)s."
 msgstr "无法打开%(file)s：需要 %(program)s。"
 
-#: mcomix/archive_tools.py:126
+#: mcomix/archive_tools.py:134
 #, python-format
 msgid "Could not open %(file)s: it needs %(first)s or %(second)s."
 msgstr "无法打开%(file)s：需要 %(first)s 或 %(second)s。"
 
-#: mcomix/archive_tools.py:129
+#: mcomix/archive_tools.py:137
 #, python-format
 msgid "Non-supported archive format: %s"
 msgstr "不支持的文件包格式：%s"
@@ -1072,7 +1072,7 @@ msgstr "缩略图"
 msgid "Hide all"
 msgstr "隐藏所有(I)"
 
-#: mcomix/keybindings.py:143 mcomix/slideshow.py:54 mcomix/ui.py:555
+#: mcomix/keybindings.py:143 mcomix/slideshow.py:60 mcomix/ui.py:555
 msgid "Start slideshow"
 msgstr "开始幻灯片放映"
 
@@ -1812,7 +1812,7 @@ msgstr "文件和目录排序依据："
 msgid "Sort pages inside an archive by:"
 msgstr "文件包内页面排序依据："
 
-#: mcomix/preferences_dialog.py:349
+#: mcomix/preferences_dialog.py:349 mcomix/slideshow.py:26
 msgid "Slideshow"
 msgstr "幻灯片放映"
 
@@ -2500,7 +2500,7 @@ msgstr "在您的系统上找不到任何版本的 Python Imaging Library。"
 msgid "Writing \"%s\""
 msgstr "正在写入“%s”"
 
-#: mcomix/slideshow.py:50
+#: mcomix/slideshow.py:56
 msgid "Stop slideshow"
 msgstr "停止幻灯片放映"
 
@@ -2592,122 +2592,126 @@ msgstr "Kindle KFX 电子书"
 msgid "EPUB ebook"
 msgstr "EPUB 电子书"
 
-#: mcomix/strings.py:26
+#: mcomix/strings.py:23
+msgid "TIFF document"
+msgstr "TIFF 文档"
+
+#: mcomix/strings.py:27
 msgid "Original vision/developer of Comix"
 msgstr "Comix的原始版本及开发者"
 
-#: mcomix/strings.py:27 mcomix/strings.py:28 mcomix/strings.py:29
-#: mcomix/strings.py:30
+#: mcomix/strings.py:28 mcomix/strings.py:29 mcomix/strings.py:30
+#: mcomix/strings.py:31
 msgid "MComix developer"
 msgstr "Mcomix开发者"
 
-#: mcomix/strings.py:33 mcomix/strings.py:34 mcomix/strings.py:35
-#: mcomix/strings.py:36
+#: mcomix/strings.py:34 mcomix/strings.py:35 mcomix/strings.py:36
+#: mcomix/strings.py:37
 msgid "Simplified Chinese translation"
 msgstr "简体中文译者"
 
-#: mcomix/strings.py:37 mcomix/strings.py:38
+#: mcomix/strings.py:38 mcomix/strings.py:39
 msgid "Spanish translation"
 msgstr "西班牙语译者"
 
-#: mcomix/strings.py:39
+#: mcomix/strings.py:40
 msgid "Brazilian Portuguese translation"
 msgstr "巴西语、葡萄牙语译者"
 
-#: mcomix/strings.py:40
+#: mcomix/strings.py:41
 msgid "German translation and Nautilus thumbnailer"
 msgstr "德语译者与 Nautilus 缩略图功能作者"
 
-#: mcomix/strings.py:41
+#: mcomix/strings.py:42
 msgid "German translation"
 msgstr "德语译者"
 
-#: mcomix/strings.py:42 mcomix/strings.py:43 mcomix/strings.py:44
+#: mcomix/strings.py:43 mcomix/strings.py:44 mcomix/strings.py:45
 msgid "Italian translation"
 msgstr "意大利语译者"
 
-#: mcomix/strings.py:45
+#: mcomix/strings.py:46
 msgid "Dutch translation"
 msgstr "荷兰语译者"
 
-#: mcomix/strings.py:46 mcomix/strings.py:47 mcomix/strings.py:48
-#: mcomix/strings.py:49
+#: mcomix/strings.py:47 mcomix/strings.py:48 mcomix/strings.py:49
+#: mcomix/strings.py:50
 msgid "French translation"
 msgstr "法语译者"
 
-#: mcomix/strings.py:50 mcomix/strings.py:51
+#: mcomix/strings.py:51 mcomix/strings.py:52
 msgid "Polish translation"
 msgstr "波兰语译者"
 
-#: mcomix/strings.py:52
+#: mcomix/strings.py:53
 msgid "Greek translation"
 msgstr "希腊语译者"
 
-#: mcomix/strings.py:53
+#: mcomix/strings.py:54
 msgid "Catalan translation"
 msgstr "加泰罗尼亚语译者"
 
-#: mcomix/strings.py:54 mcomix/strings.py:55
+#: mcomix/strings.py:55 mcomix/strings.py:56
 msgid "Traditional Chinese translation"
 msgstr "繁体中文译者"
 
-#: mcomix/strings.py:56 mcomix/strings.py:57 mcomix/strings.py:58
+#: mcomix/strings.py:57 mcomix/strings.py:58 mcomix/strings.py:59
 msgid "Japanese translation"
 msgstr "日语译者"
 
-#: mcomix/strings.py:59
+#: mcomix/strings.py:60
 msgid "Hungarian translation"
 msgstr "匈牙利语译者"
 
-#: mcomix/strings.py:60 mcomix/strings.py:61
+#: mcomix/strings.py:61 mcomix/strings.py:62
 msgid "Russian translation"
 msgstr "俄语译者"
 
-#: mcomix/strings.py:62
+#: mcomix/strings.py:63
 msgid "Croatian translation"
 msgstr "克罗地亚语译者"
 
-#: mcomix/strings.py:63 mcomix/strings.py:64 mcomix/strings.py:65
+#: mcomix/strings.py:64 mcomix/strings.py:65 mcomix/strings.py:66
 msgid "Korean translation"
 msgstr "韩语译者"
 
-#: mcomix/strings.py:66
+#: mcomix/strings.py:67
 msgid "Persian translation"
 msgstr "波斯语译者"
 
-#: mcomix/strings.py:67
+#: mcomix/strings.py:68
 msgid "Indonesian translation"
 msgstr "印尼语译者"
 
-#: mcomix/strings.py:68
+#: mcomix/strings.py:69
 msgid "Czech translation"
 msgstr "捷克语译者"
 
-#: mcomix/strings.py:69
+#: mcomix/strings.py:70
 msgid "Ukrainian translation"
 msgstr "乌克兰语译者"
 
-#: mcomix/strings.py:70
+#: mcomix/strings.py:71
 msgid "Galician translation"
 msgstr "加利西亚语译者"
 
-#: mcomix/strings.py:71 mcomix/strings.py:72
+#: mcomix/strings.py:72 mcomix/strings.py:73
 msgid "Swedish translation"
 msgstr "瑞典语译者"
 
-#: mcomix/strings.py:73
+#: mcomix/strings.py:74
 msgid "Hebrew translation"
 msgstr "希伯来语译者"
 
-#: mcomix/strings.py:74
+#: mcomix/strings.py:75
 msgid "Lithuanian translation"
 msgstr "立陶宛语译者"
 
-#: mcomix/strings.py:77
+#: mcomix/strings.py:78
 msgid "Icon design"
 msgstr "图标设计"
 
-#: mcomix/strings.py:78
+#: mcomix/strings.py:79
 msgid "Vector icon"
 msgstr "矢量图标"
 
@@ -3183,65 +3187,65 @@ msgstr "已添加的书籍："
 msgid "Adding '%s'..."
 msgstr "正在添加“%s”..."
 
-#: mcomix/library/backend.py:283
+#: mcomix/library/backend.py:286
 #, python-format
 msgid "! Non-existent book #%i"
 msgstr "！ #%i 不存在"
 
-#: mcomix/library/backend.py:337
+#: mcomix/library/backend.py:340
 #, python-format
 msgid "! Could not get cover for book \"%s\""
 msgstr "！ 无法获取“%s”的封页"
 
-#: mcomix/library/backend.py:423 mcomix/library/backend.py:440
-#: mcomix/library/backend.py:453 mcomix/library/backend.py:482
+#: mcomix/library/backend.py:426 mcomix/library/backend.py:443
+#: mcomix/library/backend.py:456 mcomix/library/backend.py:485
 msgid "Recent"
 msgstr "最近打开的"
 
-#: mcomix/library/backend.py:562 mcomix/library/backend.py:609
+#: mcomix/library/backend.py:565 mcomix/library/backend.py:612
 #, python-format
 msgid "! Could not add book \"%s\" to the library"
 msgstr "！ 无法将“%s”添加到收藏库"
 
-#: mcomix/library/backend.py:638 mcomix/library/backend.py:706
+#: mcomix/library/backend.py:641 mcomix/library/backend.py:709
 #, python-format
 msgid "! Could not move book \"%s\" in the library"
 msgstr "! 无法在库中移动书籍 \"%s\""
 
-#: mcomix/library/backend.py:756
+#: mcomix/library/backend.py:759
 #, python-format
 msgid "! Could not add collection \"%s\""
 msgstr "！ 无法添加收藏库“%s”"
 
-#: mcomix/library/backend.py:788
+#: mcomix/library/backend.py:791
 #, python-format
 msgid "! Could not add book %(book)s to collection %(collection)s"
 msgstr "！ 无法将“%(book)s”添加到“%(collection)s”收藏库"
 
-#: mcomix/library/backend.py:815
+#: mcomix/library/backend.py:818
 #, python-format
 msgid "! Could not rename collection to \"%s\""
 msgstr "！ 无法将收藏库重命名为“%s”"
 
-#: mcomix/library/backend.py:832 mcomix/library/backend.py:834
+#: mcomix/library/backend.py:835 mcomix/library/backend.py:837
 msgid "(Copy)"
 msgstr "(复制)"
 
-#: mcomix/library/backend.py:1133
+#: mcomix/library/backend.py:1136
 msgid "Could not determine library database version!"
 msgstr "无法确定收藏库的数据库版本！"
 
-#: mcomix/library/backend.py:1183
+#: mcomix/library/backend.py:1186
 #, python-format
 msgid "Upgrading library database version from %(from)d to %(to)d."
 msgstr "将收藏库数据库版本从 %(from)d 升级到 %(to)d 。"
 
-#: mcomix/library/backend_types.py:436 mcomix/library/collection_area.py:223
+#: mcomix/library/backend_types.py:437 mcomix/library/collection_area.py:223
 #: mcomix/library/control_area.py:97
 msgid "All books"
 msgstr "所有书籍"
 
-#: mcomix/library/backend_types.py:587 mcomix/library/backend_types.py:593
+#: mcomix/library/backend_types.py:588 mcomix/library/backend_types.py:594
 #, python-format
 msgid "! Could not scan for new books: %s"
 msgstr "！ 无法扫描新书：%s"

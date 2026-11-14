@@ -25,6 +25,7 @@ from mcomix.archive import (
     rar_external,
     sevenzip_external,
     tar,
+    tiff,
     zip,
     zip_external,
 )
@@ -85,6 +86,13 @@ _HANDLERS: dict[int, tuple[type[archive_base.BaseArchive], ...]] = {
     ),
     constants.EPUB: (
         epub.EpubArchive,
+    ),
+    # A TIFF of several pages.  Told by what it holds alone: no name
+    # is listed for it as an archive's, so that a folder's TIFFs are
+    # its images still, and one of several pages is a book when it is
+    # the file opened.
+    constants.TIFF: (
+        tiff.TiffArchive,
     ),
 }
 
@@ -270,6 +278,9 @@ def _type_by_signature(path: str, magic: bytes, magic2: bytes) -> int | None:
     if magic[0:8] == b'AT&TFORM' and magic[12:16] in (b'DJVU',
                                                       b'DJVM'):
         return constants.DJVU
+
+    if tiff.is_book(path, magic):
+        return constants.TIFF
 
     return None
 

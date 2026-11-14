@@ -1,6 +1,7 @@
 """Fuzz target: what MComix reads of every file in a folder it lists,
 before anything opens one - mcomix.archive_tools.archive_mime_type(),
-which tells the format by the first bytes, and is_later_volume() and
+which tells the format by the first bytes and counts a TIFF's pages,
+and is_later_volume() and
 first_volume(), which read a RAR volume's main header and a KFX part's
 container header.
 
@@ -23,8 +24,10 @@ with atheris.instrument_imports(include=['mcomix']):
 
 FOLDER = tempfile.mkdtemp(prefix='mcomix-fuzz-sniff-')
 #: The names the volume checks read a file under: a later volume of a
-#: RAR set, and a KFX part, each with the file of the other kind beside.
-NAMES = [os.path.join(FOLDER, name) for name in ('book.part2.rar', 'book.kfx')]
+#: RAR set, and a KFX part, each with the file of the other kind beside;
+#: and the name a TIFF is looked into under.
+NAMES = [os.path.join(FOLDER, name)
+         for name in ('book.part2.rar', 'book.kfx', 'book.tif')]
 
 
 def TestOneInput(data: bytes) -> None:

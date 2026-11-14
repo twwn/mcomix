@@ -24,6 +24,8 @@ from test import test_epub, test_ion, test_kfx, test_mobi  # noqa: E402
 from test.test_ion import Annotated, dumps  # noqa: E402
 from test.test_kfx import Book, picture  # noqa: E402
 
+from PIL import Image  # noqa: E402
+
 from mcomix.archive.ion import Symbol  # noqa: E402
 
 CORPUS = os.path.join(ROOT, 'fuzz', 'corpus')
@@ -196,6 +198,10 @@ def sniff_seeds():
     write('sniff', 'djvu', b'AT&TFORM\x00\x00\x00\x10DJVUINFO')
     write('sniff', 'lha', b'\x1e\x00-lh5-')
     write('sniff', 'tar', b'name.jpg' + bytes(92) + b'0000644\x00' + bytes(149) + b'ustar\x0000')
+    pages = io.BytesIO()
+    Image.new('1', (8, 8)).save(pages, format='TIFF', save_all=True,
+                                append_images=[Image.new('1', (8, 8), 1)])
+    write('sniff', 'tiff-pages', pages.getvalue())
 
 
 if __name__ == '__main__':

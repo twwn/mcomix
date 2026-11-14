@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Comix-4.0.1\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-14 10:19+0100\n"
+"POT-Creation-Date: 2026-11-14 10:56+0100\n"
 "PO-Revision-Date: 2008-12-13 21:23+0700\n"
 "Last-Translator: Andhika Padmawan <andhika.padmawan@gmail.com>\n"
 "Language-Team: Indonesia <id@li.org>\n"
@@ -47,7 +47,7 @@ msgstr "Salinan lisensi ini dapat diperoleh dari %s"
 msgid "! Extraction error: %s"
 msgstr "! Galat saat mengekstrak: %s"
 
-#: mcomix/archive_extractor.py:441 mcomix/archive_tools.py:232
+#: mcomix/archive_extractor.py:441 mcomix/archive_tools.py:240
 #: mcomix/image_tools.py:518 mcomix/page_marks.py:62
 #: mcomix/page_rotations.py:42 mcomix/reading_directions.py:47
 #, python-format
@@ -75,17 +75,17 @@ msgstr ""
 "! Tidak dapat menambahkan berkas %(sourcefile)s ke arsip %(archivefile)s, "
 "dibatalkan..."
 
-#: mcomix/archive_tools.py:122
+#: mcomix/archive_tools.py:130
 #, python-format
 msgid "Could not open %(file)s: it needs %(program)s."
 msgstr "Tak dapat membuka %(file)s: perlu %(program)s."
 
-#: mcomix/archive_tools.py:126
+#: mcomix/archive_tools.py:134
 #, python-format
 msgid "Could not open %(file)s: it needs %(first)s or %(second)s."
 msgstr "Tak dapat membuka %(file)s: perlu %(first)s atau %(second)s."
 
-#: mcomix/archive_tools.py:129
+#: mcomix/archive_tools.py:137
 #, python-format
 msgid "Non-supported archive format: %s"
 msgstr "Format arsip tidak didukung: %s"
@@ -1246,7 +1246,7 @@ msgstr "Sembunyikan semua"
 
 #
 # File: src/preferences.py, line: 279
-#: mcomix/keybindings.py:143 mcomix/slideshow.py:54 mcomix/ui.py:555
+#: mcomix/keybindings.py:143 mcomix/slideshow.py:60 mcomix/ui.py:555
 msgid "Start slideshow"
 msgstr "Mulai presentasi"
 
@@ -2122,7 +2122,7 @@ msgstr "Urutkan halaman di dalam arsip menurut:"
 
 #
 # File: src/preferences.py, line: 279
-#: mcomix/preferences_dialog.py:349
+#: mcomix/preferences_dialog.py:349 mcomix/slideshow.py:26
 msgid "Slideshow"
 msgstr "Presentasi"
 
@@ -2904,7 +2904,7 @@ msgstr "Menulis \"%s\""
 
 #
 # File: src/preferences.py, line: 279
-#: mcomix/slideshow.py:50
+#: mcomix/slideshow.py:56
 msgid "Stop slideshow"
 msgstr "Hentikan presentasi"
 
@@ -3008,168 +3008,172 @@ msgstr "Buku elektronik Kindle KFX"
 msgid "EPUB ebook"
 msgstr "Buku elektronik EPUB"
 
-#: mcomix/strings.py:26
+#: mcomix/strings.py:23
+msgid "TIFF document"
+msgstr "Dokumen TIFF"
+
+#: mcomix/strings.py:27
 msgid "Original vision/developer of Comix"
 msgstr "Gagasan asli dan pengembang Comix"
 
-#: mcomix/strings.py:27 mcomix/strings.py:28 mcomix/strings.py:29
-#: mcomix/strings.py:30
+#: mcomix/strings.py:28 mcomix/strings.py:29 mcomix/strings.py:30
+#: mcomix/strings.py:31
 msgid "MComix developer"
 msgstr "Pengembang MComix"
 
 #
 # File: src/about.py, line: 77
-#: mcomix/strings.py:33 mcomix/strings.py:34 mcomix/strings.py:35
-#: mcomix/strings.py:36
+#: mcomix/strings.py:34 mcomix/strings.py:35 mcomix/strings.py:36
+#: mcomix/strings.py:37
 msgid "Simplified Chinese translation"
 msgstr "Terjemahan bahasa China yang disederhanakan"
 
 #
 # File: src/about.py, line: 78
-#: mcomix/strings.py:37 mcomix/strings.py:38
+#: mcomix/strings.py:38 mcomix/strings.py:39
 msgid "Spanish translation"
 msgstr "Terjemahan bahasa Spanyol"
 
 #
 # File: src/about.py, line: 79
-#: mcomix/strings.py:39
+#: mcomix/strings.py:40
 msgid "Brazilian Portuguese translation"
 msgstr "Terjemahan bahasa Portugis Brasil"
 
 #
 # File: src/about.py, line: 81
-#: mcomix/strings.py:40
+#: mcomix/strings.py:41
 msgid "German translation and Nautilus thumbnailer"
 msgstr "Terjemahan bahasa Jerman dan pembuat miniatur gambar Nautilus"
 
 #
 # File: src/about.py, line: 94
-#: mcomix/strings.py:41
+#: mcomix/strings.py:42
 msgid "German translation"
 msgstr "Terjemahan bahasa Jerman"
 
 #
 # File: src/about.py, line: 82
-#: mcomix/strings.py:42 mcomix/strings.py:43 mcomix/strings.py:44
+#: mcomix/strings.py:43 mcomix/strings.py:44 mcomix/strings.py:45
 msgid "Italian translation"
 msgstr "Terjemahan bahasa Italia"
 
 #
 # File: src/about.py, line: 83
-#: mcomix/strings.py:45
+#: mcomix/strings.py:46
 msgid "Dutch translation"
 msgstr "Terjemahan bahasa Belanda"
 
 #
 # File: src/about.py, line: 84
-#: mcomix/strings.py:46 mcomix/strings.py:47 mcomix/strings.py:48
-#: mcomix/strings.py:49
+#: mcomix/strings.py:47 mcomix/strings.py:48 mcomix/strings.py:49
+#: mcomix/strings.py:50
 msgid "French translation"
 msgstr "Terjemahan bahasa Prancis"
 
-#: mcomix/strings.py:50 mcomix/strings.py:51
+#: mcomix/strings.py:51 mcomix/strings.py:52
 msgid "Polish translation"
 msgstr "Terjemahan bahasa Polandia"
 
 #
 # File: src/about.py, line: 86
-#: mcomix/strings.py:52
+#: mcomix/strings.py:53
 msgid "Greek translation"
 msgstr "Terjemahan bahasa Yunani"
 
 #
 # File: src/about.py, line: 87
-#: mcomix/strings.py:53
+#: mcomix/strings.py:54
 msgid "Catalan translation"
 msgstr "Terjemahan bahasa Catalan"
 
 #
 # File: src/about.py, line: 88
-#: mcomix/strings.py:54 mcomix/strings.py:55
+#: mcomix/strings.py:55 mcomix/strings.py:56
 msgid "Traditional Chinese translation"
 msgstr "Terjemahan bahasa China tradisional"
 
 #
 # File: src/about.py, line: 89
-#: mcomix/strings.py:56 mcomix/strings.py:57 mcomix/strings.py:58
+#: mcomix/strings.py:57 mcomix/strings.py:58 mcomix/strings.py:59
 msgid "Japanese translation"
 msgstr "Terjemahan bahasa Jepang"
 
 #
 # File: src/about.py, line: 90
-#: mcomix/strings.py:59
+#: mcomix/strings.py:60
 msgid "Hungarian translation"
 msgstr "Terjemahan bahasa Hungaria"
 
 #
 # File: src/about.py, line: 91
-#: mcomix/strings.py:60 mcomix/strings.py:61
+#: mcomix/strings.py:61 mcomix/strings.py:62
 msgid "Russian translation"
 msgstr "Terjemahan bahasa Rusia"
 
 #
 # File: src/about.py, line: 92
-#: mcomix/strings.py:62
+#: mcomix/strings.py:63
 msgid "Croatian translation"
 msgstr "Terjemahan bahasa Kroasia"
 
 #
 # File: src/about.py, line: 93
-#: mcomix/strings.py:63 mcomix/strings.py:64 mcomix/strings.py:65
+#: mcomix/strings.py:64 mcomix/strings.py:65 mcomix/strings.py:66
 msgid "Korean translation"
 msgstr "Terjemahan bahasa Korea"
 
 #
 # File: src/about.py, line: 94
-#: mcomix/strings.py:66
+#: mcomix/strings.py:67
 msgid "Persian translation"
 msgstr "Terjemahan bahasa Persia"
 
 #
 # File: src/about.py, line: 95
-#: mcomix/strings.py:67
+#: mcomix/strings.py:68
 msgid "Indonesian translation"
 msgstr "Terjemahan bahasa Indonesia"
 
 #
 # File: src/about.py, line: 96
-#: mcomix/strings.py:68
+#: mcomix/strings.py:69
 msgid "Czech translation"
 msgstr "Terjemahan bahasa Ceko"
 
-#: mcomix/strings.py:69
+#: mcomix/strings.py:70
 msgid "Ukrainian translation"
 msgstr "Terjemahan bahasa Ukraina"
 
 #
 # File: src/about.py, line: 82
-#: mcomix/strings.py:70
+#: mcomix/strings.py:71
 msgid "Galician translation"
 msgstr "Terjemahan bahasa Galisia"
 
-#: mcomix/strings.py:71 mcomix/strings.py:72
+#: mcomix/strings.py:72 mcomix/strings.py:73
 msgid "Swedish translation"
 msgstr "Terjemahan bahasa Swedia"
 
 #
 # File: src/about.py, line: 86
-#: mcomix/strings.py:73
+#: mcomix/strings.py:74
 msgid "Hebrew translation"
 msgstr "Terjemahan bahasa Ibrani"
 
 #
 # File: src/about.py, line: 82
-#: mcomix/strings.py:74
+#: mcomix/strings.py:75
 msgid "Lithuanian translation"
 msgstr "Terjemahan bahasa Lituania"
 
 #
 # File: src/about.py, line: 97
-#: mcomix/strings.py:77
+#: mcomix/strings.py:78
 msgid "Icon design"
 msgstr "Desain ikon"
 
-#: mcomix/strings.py:78
+#: mcomix/strings.py:79
 msgid "Vector icon"
 msgstr "Ikon vektor"
 
@@ -3740,42 +3744,42 @@ msgstr "Buku yang ditambahkan:"
 msgid "Adding '%s'..."
 msgstr "Menambah '%s'..."
 
-#: mcomix/library/backend.py:283
+#: mcomix/library/backend.py:286
 #, python-format
 msgid "! Non-existent book #%i"
 msgstr "! Buku #%i tidak ada"
 
-#: mcomix/library/backend.py:337
+#: mcomix/library/backend.py:340
 #, python-format
 msgid "! Could not get cover for book \"%s\""
 msgstr "! Tidak dapat mengambil sampul buku \"%s\""
 
-#: mcomix/library/backend.py:423 mcomix/library/backend.py:440
-#: mcomix/library/backend.py:453 mcomix/library/backend.py:482
+#: mcomix/library/backend.py:426 mcomix/library/backend.py:443
+#: mcomix/library/backend.py:456 mcomix/library/backend.py:485
 msgid "Recent"
 msgstr "Baru-baru Ini Dipakai"
 
-#: mcomix/library/backend.py:562 mcomix/library/backend.py:609
+#: mcomix/library/backend.py:565 mcomix/library/backend.py:612
 #, python-format
 msgid "! Could not add book \"%s\" to the library"
 msgstr "! Tidak dapat menambahkan buku \"%s\" ke perpustakaan"
 
-#: mcomix/library/backend.py:638 mcomix/library/backend.py:706
+#: mcomix/library/backend.py:641 mcomix/library/backend.py:709
 #, python-format
 msgid "! Could not move book \"%s\" in the library"
 msgstr "! Tidak dapat memindahkan buku \"%s\" di pustaka"
 
-#: mcomix/library/backend.py:756
+#: mcomix/library/backend.py:759
 #, python-format
 msgid "! Could not add collection \"%s\""
 msgstr "! Tidak dapat menambahkan koleksi \"%s\""
 
-#: mcomix/library/backend.py:788
+#: mcomix/library/backend.py:791
 #, python-format
 msgid "! Could not add book %(book)s to collection %(collection)s"
 msgstr "! Tidak dapat menambahkan buku %(book)s ke koleksi %(collection)s"
 
-#: mcomix/library/backend.py:815
+#: mcomix/library/backend.py:818
 #, python-format
 msgid "! Could not rename collection to \"%s\""
 msgstr "! Tidak dapat mengganti nama koleksi menjadi \"%s\""
@@ -3783,27 +3787,27 @@ msgstr "! Tidak dapat mengganti nama koleksi menjadi \"%s\""
 #
 # File: src/librarybackend.py, line: 272
 # File: src/librarybackend.py, line: 274
-#: mcomix/library/backend.py:832 mcomix/library/backend.py:834
+#: mcomix/library/backend.py:835 mcomix/library/backend.py:837
 msgid "(Copy)"
 msgstr "(Salin)"
 
-#: mcomix/library/backend.py:1133
+#: mcomix/library/backend.py:1136
 msgid "Could not determine library database version!"
 msgstr "Tidak dapat menentukan versi basis data perpustakaan!"
 
-#: mcomix/library/backend.py:1183
+#: mcomix/library/backend.py:1186
 #, python-format
 msgid "Upgrading library database version from %(from)d to %(to)d."
 msgstr "Memutakhirkan versi basis data perpustakaan dari %(from)d ke %(to)d."
 
 #
 # File: src/library.py, line: 202
-#: mcomix/library/backend_types.py:436 mcomix/library/collection_area.py:223
+#: mcomix/library/backend_types.py:437 mcomix/library/collection_area.py:223
 #: mcomix/library/control_area.py:97
 msgid "All books"
 msgstr "Semua buku"
 
-#: mcomix/library/backend_types.py:587 mcomix/library/backend_types.py:593
+#: mcomix/library/backend_types.py:588 mcomix/library/backend_types.py:594
 #, python-format
 msgid "! Could not scan for new books: %s"
 msgstr "! Tidak dapat mencari buku baru: %s"

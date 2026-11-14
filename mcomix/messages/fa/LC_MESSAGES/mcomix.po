@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: comix 3.6.4\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-14 10:19+0100\n"
+"POT-Creation-Date: 2026-11-14 10:56+0100\n"
 "PO-Revision-Date: 2008-05-21 12:40+0330\n"
 "Last-Translator: Meelad Zakaria <meelad@farsiweb.info>\n"
 "Language-Team: Persian \n"
@@ -45,7 +45,7 @@ msgstr "نسخه‌ای از این پروانه را می‌توان از %s گ
 msgid "! Extraction error: %s"
 msgstr "! خطای استخراج: %s"
 
-#: mcomix/archive_extractor.py:441 mcomix/archive_tools.py:232
+#: mcomix/archive_extractor.py:441 mcomix/archive_tools.py:240
 #: mcomix/image_tools.py:518 mcomix/page_marks.py:62
 #: mcomix/page_rotations.py:42 mcomix/reading_directions.py:47
 #, python-format
@@ -72,17 +72,17 @@ msgstr ""
 "! افزودن پروندهٔ %(sourcefile)s به بایگانی %(archivefile)s ممکن نشد، لغو "
 "می‌شود..."
 
-#: mcomix/archive_tools.py:122
+#: mcomix/archive_tools.py:130
 #, python-format
 msgid "Could not open %(file)s: it needs %(program)s."
 msgstr "گشودن %(file)s ممکن نشد: به %(program)s نیاز دارد."
 
-#: mcomix/archive_tools.py:126
+#: mcomix/archive_tools.py:134
 #, python-format
 msgid "Could not open %(file)s: it needs %(first)s or %(second)s."
 msgstr "گشودن %(file)s ممکن نشد: به %(first)s یا %(second)s نیاز دارد."
 
-#: mcomix/archive_tools.py:129
+#: mcomix/archive_tools.py:137
 #, python-format
 msgid "Non-supported archive format: %s"
 msgstr "قالب بایگانی پشتیبانی‌نشده: %s"
@@ -1226,7 +1226,7 @@ msgstr "نهفتن همه"
 
 #
 # File: src/preferences.py, line: 279
-#: mcomix/keybindings.py:143 mcomix/slideshow.py:54 mcomix/ui.py:555
+#: mcomix/keybindings.py:143 mcomix/slideshow.py:60 mcomix/ui.py:555
 msgid "Start slideshow"
 msgstr "آغاز نمایش اسلایدی"
 
@@ -2048,7 +2048,7 @@ msgstr "مرتب‌سازی صفحه‌های درون بایگانی بر پا�
 
 #
 # File: src/preferences.py, line: 279
-#: mcomix/preferences_dialog.py:349
+#: mcomix/preferences_dialog.py:349 mcomix/slideshow.py:26
 msgid "Slideshow"
 msgstr "نمایش اسلایدی"
 
@@ -2811,7 +2811,7 @@ msgstr "در حال نوشتن «%s»"
 
 #
 # File: src/preferences.py, line: 279
-#: mcomix/slideshow.py:50
+#: mcomix/slideshow.py:56
 msgid "Stop slideshow"
 msgstr "توقف نمایش اسلایدی"
 
@@ -2915,168 +2915,172 @@ msgstr "کتاب الکترونیکی Kindle KFX"
 msgid "EPUB ebook"
 msgstr "کتاب الکترونیکی EPUB"
 
-#: mcomix/strings.py:26
+#: mcomix/strings.py:23
+msgid "TIFF document"
+msgstr "سند TIFF"
+
+#: mcomix/strings.py:27
 msgid "Original vision/developer of Comix"
 msgstr "ایدهٔ اصلی و سازندهٔ Comix"
 
-#: mcomix/strings.py:27 mcomix/strings.py:28 mcomix/strings.py:29
-#: mcomix/strings.py:30
+#: mcomix/strings.py:28 mcomix/strings.py:29 mcomix/strings.py:30
+#: mcomix/strings.py:31
 msgid "MComix developer"
 msgstr "توسعه‌دهندهٔ MComix"
 
 #
 # File: src/about.py, line: 77
-#: mcomix/strings.py:33 mcomix/strings.py:34 mcomix/strings.py:35
-#: mcomix/strings.py:36
+#: mcomix/strings.py:34 mcomix/strings.py:35 mcomix/strings.py:36
+#: mcomix/strings.py:37
 msgid "Simplified Chinese translation"
 msgstr "ترجمهٔ چینی ساده‌شده"
 
 #
 # File: src/about.py, line: 78
-#: mcomix/strings.py:37 mcomix/strings.py:38
+#: mcomix/strings.py:38 mcomix/strings.py:39
 msgid "Spanish translation"
 msgstr "ترجمهٔ اسپانیایی"
 
 #
 # File: src/about.py, line: 79
-#: mcomix/strings.py:39
+#: mcomix/strings.py:40
 msgid "Brazilian Portuguese translation"
 msgstr "ترجمهٔ پرتغالی برزیلی"
 
 #
 # File: src/about.py, line: 81
-#: mcomix/strings.py:40
+#: mcomix/strings.py:41
 msgid "German translation and Nautilus thumbnailer"
 msgstr "ترجمهٔ آلمانی و مسطوره‌ساز ناتیلوس"
 
 #
 # File: src/about.py, line: 86
-#: mcomix/strings.py:41
+#: mcomix/strings.py:42
 msgid "German translation"
 msgstr "ترجمهٔ آلمانی"
 
 #
 # File: src/about.py, line: 82
-#: mcomix/strings.py:42 mcomix/strings.py:43 mcomix/strings.py:44
+#: mcomix/strings.py:43 mcomix/strings.py:44 mcomix/strings.py:45
 msgid "Italian translation"
 msgstr "ترجمهٔ ایتالیایی"
 
 #
 # File: src/about.py, line: 83
-#: mcomix/strings.py:45
+#: mcomix/strings.py:46
 msgid "Dutch translation"
 msgstr "ترجمهٔ هلندی"
 
 #
 # File: src/about.py, line: 84
-#: mcomix/strings.py:46 mcomix/strings.py:47 mcomix/strings.py:48
-#: mcomix/strings.py:49
+#: mcomix/strings.py:47 mcomix/strings.py:48 mcomix/strings.py:49
+#: mcomix/strings.py:50
 msgid "French translation"
 msgstr "ترجمهٔ فرانسوی"
 
-#: mcomix/strings.py:50 mcomix/strings.py:51
+#: mcomix/strings.py:51 mcomix/strings.py:52
 msgid "Polish translation"
 msgstr "ترجمهٔ لهستانی"
 
 #
 # File: src/about.py, line: 86
-#: mcomix/strings.py:52
+#: mcomix/strings.py:53
 msgid "Greek translation"
 msgstr "ترجمهٔ یونانی"
 
 #
 # File: src/about.py, line: 87
-#: mcomix/strings.py:53
+#: mcomix/strings.py:54
 msgid "Catalan translation"
 msgstr "ترجمهٔ کاتالانی"
 
 #
 # File: src/about.py, line: 88
-#: mcomix/strings.py:54 mcomix/strings.py:55
+#: mcomix/strings.py:55 mcomix/strings.py:56
 msgid "Traditional Chinese translation"
 msgstr "ترجمهٔ چینی سنتی"
 
 #
 # File: src/about.py, line: 89
-#: mcomix/strings.py:56 mcomix/strings.py:57 mcomix/strings.py:58
+#: mcomix/strings.py:57 mcomix/strings.py:58 mcomix/strings.py:59
 msgid "Japanese translation"
 msgstr "ترجمهٔ ژاپنی"
 
 #
 # File: src/about.py, line: 90
-#: mcomix/strings.py:59
+#: mcomix/strings.py:60
 msgid "Hungarian translation"
 msgstr "ترجمهٔ مجاری"
 
 #
 # File: src/about.py, line: 91
-#: mcomix/strings.py:60 mcomix/strings.py:61
+#: mcomix/strings.py:61 mcomix/strings.py:62
 msgid "Russian translation"
 msgstr "ترجمهٔ روسی"
 
 #
 # File: src/about.py, line: 92
-#: mcomix/strings.py:62
+#: mcomix/strings.py:63
 msgid "Croatian translation"
 msgstr "ترجمهٔ کرواتی"
 
 #
 # File: src/about.py, line: 93
-#: mcomix/strings.py:63 mcomix/strings.py:64 mcomix/strings.py:65
+#: mcomix/strings.py:64 mcomix/strings.py:65 mcomix/strings.py:66
 msgid "Korean translation"
 msgstr "ترجمهٔ کره‌ای"
 
 #
 # File: src/about.py, line: 94
-#: mcomix/strings.py:66
+#: mcomix/strings.py:67
 msgid "Persian translation"
 msgstr "ترجمهٔ فارسی"
 
 #
 # File: src/about.py, line: 95
-#: mcomix/strings.py:67
+#: mcomix/strings.py:68
 msgid "Indonesian translation"
 msgstr "ترجمهٔ اندونزیایی"
 
 #
 # File: src/about.py, line: 96
-#: mcomix/strings.py:68
+#: mcomix/strings.py:69
 msgid "Czech translation"
 msgstr "ترجمهٔ چکی"
 
-#: mcomix/strings.py:69
+#: mcomix/strings.py:70
 msgid "Ukrainian translation"
 msgstr "ترجمهٔ اوکراینی"
 
 #
 # File: src/about.py, line: 82
-#: mcomix/strings.py:70
+#: mcomix/strings.py:71
 msgid "Galician translation"
 msgstr "ترجمهٔ گالیسیایی"
 
-#: mcomix/strings.py:71 mcomix/strings.py:72
+#: mcomix/strings.py:72 mcomix/strings.py:73
 msgid "Swedish translation"
 msgstr "ترجمهٔ سوئدی"
 
 #
 # File: src/about.py, line: 86
-#: mcomix/strings.py:73
+#: mcomix/strings.py:74
 msgid "Hebrew translation"
 msgstr "ترجمهٔ عبری"
 
 #
 # File: src/about.py, line: 82
-#: mcomix/strings.py:74
+#: mcomix/strings.py:75
 msgid "Lithuanian translation"
 msgstr "ترجمهٔ لیتوانیایی"
 
 #
 # File: src/about.py, line: 97
-#: mcomix/strings.py:77
+#: mcomix/strings.py:78
 msgid "Icon design"
 msgstr "طراحی نقشک‌ها"
 
-#: mcomix/strings.py:78
+#: mcomix/strings.py:79
 msgid "Vector icon"
 msgstr "نقشک برداری"
 
@@ -3639,42 +3643,42 @@ msgstr "کتاب‌های افزوده‌شده:"
 msgid "Adding '%s'..."
 msgstr "افزودن «%s»..."
 
-#: mcomix/library/backend.py:283
+#: mcomix/library/backend.py:286
 #, python-format
 msgid "! Non-existent book #%i"
 msgstr "! کتاب #%i وجود ندارد"
 
-#: mcomix/library/backend.py:337
+#: mcomix/library/backend.py:340
 #, python-format
 msgid "! Could not get cover for book \"%s\""
 msgstr "! گرفتن جلد کتاب «%s» ممکن نشد"
 
-#: mcomix/library/backend.py:423 mcomix/library/backend.py:440
-#: mcomix/library/backend.py:453 mcomix/library/backend.py:482
+#: mcomix/library/backend.py:426 mcomix/library/backend.py:443
+#: mcomix/library/backend.py:456 mcomix/library/backend.py:485
 msgid "Recent"
 msgstr "موارد اخیر"
 
-#: mcomix/library/backend.py:562 mcomix/library/backend.py:609
+#: mcomix/library/backend.py:565 mcomix/library/backend.py:612
 #, python-format
 msgid "! Could not add book \"%s\" to the library"
 msgstr "! افزودن کتاب «%s» به کتاب‌خانه ممکن نشد"
 
-#: mcomix/library/backend.py:638 mcomix/library/backend.py:706
+#: mcomix/library/backend.py:641 mcomix/library/backend.py:709
 #, python-format
 msgid "! Could not move book \"%s\" in the library"
 msgstr "! انتقال کتاب «%s» در کتابخانه ممکن نشد"
 
-#: mcomix/library/backend.py:756
+#: mcomix/library/backend.py:759
 #, python-format
 msgid "! Could not add collection \"%s\""
 msgstr "! افزودن مجموعهٔ «%s» ممکن نشد"
 
-#: mcomix/library/backend.py:788
+#: mcomix/library/backend.py:791
 #, python-format
 msgid "! Could not add book %(book)s to collection %(collection)s"
 msgstr "! افزودن کتاب %(book)s به مجموعهٔ %(collection)s ممکن نشد"
 
-#: mcomix/library/backend.py:815
+#: mcomix/library/backend.py:818
 #, python-format
 msgid "! Could not rename collection to \"%s\""
 msgstr "! تغییر نام مجموعه به «%s» ممکن نشد"
@@ -3682,27 +3686,27 @@ msgstr "! تغییر نام مجموعه به «%s» ممکن نشد"
 #
 # File: src/librarybackend.py, line: 272
 # File: src/librarybackend.py, line: 274
-#: mcomix/library/backend.py:832 mcomix/library/backend.py:834
+#: mcomix/library/backend.py:835 mcomix/library/backend.py:837
 msgid "(Copy)"
 msgstr "(رونوشت)"
 
-#: mcomix/library/backend.py:1133
+#: mcomix/library/backend.py:1136
 msgid "Could not determine library database version!"
 msgstr "تعیین نسخهٔ پایگاه دادهٔ کتاب‌خانه ممکن نشد!"
 
-#: mcomix/library/backend.py:1183
+#: mcomix/library/backend.py:1186
 #, python-format
 msgid "Upgrading library database version from %(from)d to %(to)d."
 msgstr "ارتقای نسخهٔ پایگاه دادهٔ کتاب‌خانه از %(from)d به %(to)d."
 
 #
 # File: src/library.py, line: 202
-#: mcomix/library/backend_types.py:436 mcomix/library/collection_area.py:223
+#: mcomix/library/backend_types.py:437 mcomix/library/collection_area.py:223
 #: mcomix/library/control_area.py:97
 msgid "All books"
 msgstr "همهٔ کتاب‌ها"
 
-#: mcomix/library/backend_types.py:587 mcomix/library/backend_types.py:593
+#: mcomix/library/backend_types.py:588 mcomix/library/backend_types.py:594
 #, python-format
 msgid "! Could not scan for new books: %s"
 msgstr "! پویش کتاب‌های تازه ممکن نشد: %s"
