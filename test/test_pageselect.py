@@ -286,3 +286,36 @@ class ChapterTest(MComixTest):
         self.assertFalse(self.dialog._chapter_selector.get_visible())
         filehandler.file_available([path])
         self.assertTrue(self.dialog._chapter_selector.get_visible())
+
+
+class NoBookTest(MComixTest):
+
+    """The menu entry and the tool bar button are greyed with no book
+    open; the key is bound to the method itself."""
+
+    def setUp(self):
+        super().setUp()
+        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
+                          constants.THUMBNAIL_PATH):
+            os.makedirs(directory, exist_ok=True)
+        icons.load_icons()
+        self.window = main.MainWindow()
+        main.set_main_window(self.window)
+        pump()
+
+    def tearDown(self):
+        for window in Gtk.Window.list_toplevels():
+            if window.get_visible() and window is not self.window:
+                window.destroy()
+        self.window.terminate_program()
+        self.window.destroy()
+        main.set_main_window(None)
+        pump()
+        super().tearDown()
+
+    def test_nothing_opens_without_a_book(self):
+        self.window.page_select()
+        pump()
+        self.assertEqual([], [
+            window for window in Gtk.Window.list_toplevels()
+            if isinstance(window, pageselect.Pageselector)])

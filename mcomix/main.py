@@ -1578,7 +1578,10 @@ class MainWindow(Gtk.Window):
             self.set_page(number_of_pages)
 
     def page_select(self, *args: object) -> None:
-        pageselect.Pageselector(self)
+        """Open "Go to page"; with no page to go to, as before a book
+        is open, there is nothing to ask."""
+        if self.imagehandler.get_number_of_pages():
+            pageselect.Pageselector(self)
 
     def random_page(self, *args: object) -> None:
         """Turn to a page picked at random, never the one on screen."""
