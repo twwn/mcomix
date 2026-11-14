@@ -159,6 +159,18 @@ class HandlerTest(MComixTest):
         self.assertEqual((60, 40), written.size)
         self.assertEqual((0, 0, 255), written.getpixel((59, 0)))
 
+    def test_a_page_is_written_without_the_documents_tags(self):
+        """Pillow hands every tag of the file a picture is saved from
+        to libtiff, which refuses some, and with Pillow 10.1.0 took
+        the process down over IPTC keywords stored as numbers."""
+        archive = self._open(_write(
+            os.path.join(self.tmp_dir, 'scan.tif'), _pages(),
+            tiffinfo={270: 'a description', 305: 'a scanner'}))
+        archive.extract('page00002.tif', self.out)
+        with Image.open(os.path.join(self.out, 'page00002.tif')) as written:
+            self.assertNotIn(270, written.tag_v2)
+            self.assertNotIn(305, written.tag_v2)
+
     def test_previews_are_no_pages(self):
         pages = _pages()
         archive = self._open(_with_previews(

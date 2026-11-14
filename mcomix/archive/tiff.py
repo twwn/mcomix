@@ -128,14 +128,36 @@ class TiffArchive(archive_base.BaseArchive):
                     and width * height > Image.MAX_IMAGE_PIXELS:
                 raise Image.DecompressionBombError(
                     '%s: page of %dx%d pixels' % (filename, width, height))
-            # Packed without loss, whatever the document packed it
-            # with: a scan of text to a hundredth of its size, anything
-            # else to what costs the least time.
-            compression = None
-            if features.check('libtiff'):
-                compression = 'group4' if image.mode == '1' else 'tiff_lzw'
-            with self._create_file(destination_path) as new:
-                image.save(new, format='TIFF', compression=compression)
+            # A copy, which has the pixels, turned as the document says,
+            # and the colour profile, and none of the document's tags:
+            # Pillow hands every tag of the file it saves from to
+            # libtiff, which refuses some of them and has taken the
+            # process down over others.
+            page = image.copy()
+        # Packed without loss, whatever the document packed it with: a
+        # scan of text to a hundredth of its size, anything else to
+        # what costs the least time.  What libtiff will not pack that
+        # way is written as it is, and a mode TIFF cannot hold as
+        # the nearest it can.
+        packed = None
+        if features.check('libtiff'):
+            packed = 'group4' if page.mode == '1' else 'tiff_lzw'
+        attempts: list[tuple[Image.Image, str | None]] = [
+            (page, packed), (page, None)]
+        failure: Exception | None = None
+        for index in range(3):
+            try:
+                if index == 2:
+                    plain = 'RGBA' if page.has_transparency_data else 'RGB'
+                    attempts.append((page.convert(plain), None))
+                picture, compression = attempts[index]
+                with self._create_file(destination_path) as new:
+                    picture.save(new, format='TIFF', compression=compression)
+                return
+            except (OSError, ValueError, RuntimeError, KeyError) as error:
+                failure = failure or error
+        assert failure is not None
+        raise failure
 
     def close(self) -> None:
         """Let go of the file."""
