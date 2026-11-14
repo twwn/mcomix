@@ -12,6 +12,7 @@ import os
 import threading
 import traceback
 import datetime
+import enum
 import unicodedata
 
 from mcomix import callback
@@ -60,6 +61,39 @@ def matches(filter_string: str, name: str, path: str) -> bool:
     name, path = _folded(name), _folded(path)
     return all(word in name or word in path
                for word in _folded(filter_string).split())
+
+
+class ReadState(enum.Enum):
+
+    """How far a book has been read, as the library's choice beside its
+    search field names it.  The three states part the books: one left
+    past its first page is started until it is left on its last, and
+    finished from then on, which is what reading_statistics() counts as
+    finished and what puts the tick on a cover."""
+
+    ANY = 'any'
+    UNREAD = 'unread'
+    STARTED = 'started'
+    FINISHED = 'finished'
+
+
+#: True for a row of recent, beside its book, that was left on the last
+#: page.  A book whose pages were never counted cannot be finished.
+_FINISHED_SQL = '(coalesce(book.pages, 0) > 0 AND recent.page >= book.pages)'
+
+#: The condition on book that each state adds to a statement listing
+#: books.  recent holds a row for each book left past its first page,
+#: keyed by the book, so each is one search by key per book.
+_READ_STATE_SQL = {
+    ReadState.UNREAD:
+        'NOT EXISTS (SELECT 1 FROM recent WHERE recent.book = book.id)',
+    ReadState.STARTED:
+        'EXISTS (SELECT 1 FROM recent WHERE recent.book = book.id'
+        ' AND NOT %s)' % _FINISHED_SQL,
+    ReadState.FINISHED:
+        'EXISTS (SELECT 1 FROM recent WHERE recent.book = book.id'
+        ' AND %s)' % _FINISHED_SQL,
+}
 
 
 def storable(path: str) -> bool:
@@ -299,9 +333,11 @@ class _Collection(_BackendObject):
         """
         return hash(self.id)
 
-    def get_books(self, filter_string: str | None = None) -> list['_Book']:
+    def get_books(self, filter_string: str | None = None,
+                  read_state: ReadState = ReadState.ANY) -> list['_Book']:
         """ Returns all books that are part of this collection,
-        including subcollections.
+        including subcollections: every one, or the ones whose name or
+        path <filter_string> matches and that are in <read_state>.
 
         One statement over every collection at once rather than one per
         collection with the answers added together, which is what made a
@@ -335,6 +371,8 @@ class _Collection(_BackendObject):
         if filter_string:
             sql += ' AND mcomix_matches(?, book.name, book.path) '
             sql_args.append(filter_string)
+        if read_state in _READ_STATE_SQL:
+            sql += ' AND %s ' % _READ_STATE_SQL[read_state]
         sql += ' ORDER BY book.id'
 
         rows = self.get_backend().fetchall(sql, sql_args)
@@ -398,18 +436,24 @@ class _DefaultCollection(_Collection):
         self.name = _("All books")
         self.supercollection = None
 
-    def get_books(self, filter_string: str | None = None) -> list['_Book']:
+    def get_books(self, filter_string: str | None = None,
+                  read_state: ReadState = ReadState.ANY) -> list['_Book']:
         """Every book in the library, or the ones whose name or path
-        <filter_string> occurs in."""
+        <filter_string> matches and that are in <read_state>."""
         sql = '''SELECT book.id, book.name, book.path, book.pages, book.format,
                         book.size, book.added
                  FROM book
               '''
 
         sql_args = []
+        conditions = []
         if filter_string:
-            sql += ' WHERE mcomix_matches(?, book.name, book.path) '
+            conditions.append('mcomix_matches(?, book.name, book.path)')
             sql_args.append(filter_string)
+        if read_state in _READ_STATE_SQL:
+            conditions.append(_READ_STATE_SQL[read_state])
+        if conditions:
+            sql += ' WHERE %s ' % ' AND '.join(conditions)
 
         rows = self.get_backend().fetchall(sql, sql_args)
 

@@ -20,6 +20,7 @@ from mcomix import file_actions
 from mcomix import message_dialog
 from mcomix import process
 from mcomix.dialog import Response
+from mcomix.library import backend_types
 from mcomix.library import book_area
 from mcomix.preferences import prefs
 
@@ -1241,8 +1242,10 @@ class _FilteredLibrary:
 
     backend = _Backend()
 
-    def __init__(self, filter_string):
+    def __init__(self, filter_string,
+                 read_state=backend_types.ReadState.ANY):
         self.filter_string = filter_string
+        self.read_state = read_state
         self.collection_area = self
 
     def get_current_collection(self):
@@ -1255,8 +1258,9 @@ class NewBookUnderAFilterTest(MComixTest):
     lets it through - by name or by path, as the covers drawn from the
     database are."""
 
-    def _drawn(self, filter_string, name, path):
-        library = _FilteredLibrary(filter_string)
+    def _drawn(self, filter_string, name, path,
+               read_state=backend_types.ReadState.ANY):
+        library = _FilteredLibrary(filter_string, read_state)
         area = book_area._BookArea(library)
         try:
             book = _Book(1, path)
@@ -1269,6 +1273,17 @@ class NewBookUnderAFilterTest(MComixTest):
 
     def test_a_name_that_matches(self):
         self.assertTrue(self._drawn('batman', 'Batman 01', '/books/Batman 01.cbz'))
+
+    def test_a_new_book_is_unread(self):
+        """A book just added was never opened: it belongs among all
+        books and the unread ones, not the started or finished ones."""
+        states = backend_types.ReadState
+        for state, drawn in ((states.ANY, True), (states.UNREAD, True),
+                             (states.STARTED, False),
+                             (states.FINISHED, False)):
+            with self.subTest(state=state):
+                self.assertEqual(drawn, self._drawn(
+                    'batman', 'Batman 01', '/books/Batman 01.cbz', state))
 
     def test_a_name_that_matches_in_another_script(self):
         self.assertTrue(self._drawn(

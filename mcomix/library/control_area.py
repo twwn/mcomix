@@ -15,6 +15,7 @@ from gi.repository import Pango
 from mcomix import i18n
 from mcomix import labels
 from mcomix import tools
+from mcomix.library import backend_types
 from mcomix.library.watchlist import WatchListDialog
 from mcomix import widgets
 from mcomix.i18n import _
@@ -89,6 +90,17 @@ class _ControlArea(Gtk.Box):
               'in their full path. The search is not case sensitive.'))
         widgets.pack(hbox, search_entry, True, True, 6)
         label.set_mnemonic_widget(search_entry)
+
+        #: Which books the covers show by how far they were read; it
+        #: holds together with the search and across collections.
+        self.read_state_chooser = widgets.Chooser([
+            (_('All books'), backend_types.ReadState.ANY),
+            (_('Unread'), backend_types.ReadState.UNREAD),
+            (_('Started'), backend_types.ReadState.STARTED),
+            (_('Finished'), backend_types.ReadState.FINISHED),
+        ], backend_types.ReadState.ANY)
+        self.read_state_chooser.connect_changed(self._read_state_chosen)
+        widgets.pack(hbox, self.read_state_chooser, False, False, 0)
 
         # Last line of controls, containing buttons like 'Open'
         hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 10)
@@ -226,6 +238,13 @@ class _ControlArea(Gtk.Box):
         if self._pending_filter:
             GLib.source_remove(self._pending_filter)
             self._pending_filter = 0
+
+    def _read_state_chosen(
+            self, chooser: 'widgets.Chooser[backend_types.ReadState]') -> None:
+        """Show only the books in the reading state picked, among those
+        the search lets through."""
+        self._library.read_state = chooser.get_value()
+        self._filter_books(self.search_entry)
 
     def _filter_books(self, entry: Gtk.Entry, *args: object) -> None:
         """Display only the books in the current collection whose name or

@@ -22,6 +22,7 @@ from mcomix import file_chooser_library_dialog
 from mcomix import status
 from mcomix import widgets
 from mcomix.library import backend as library_backend
+from mcomix.library import backend_types
 from mcomix.library import folder_watcher
 from mcomix.library import book_area as library_book_area
 from mcomix.library import collection_area as library_collection_area
@@ -35,7 +36,6 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from mcomix import file_handler as file_handler_module
     from mcomix import main
-    from mcomix.library import backend_types
 
 _dialog: "_LibraryDialog | None" = None
 
@@ -68,6 +68,8 @@ class _LibraryDialog(Gtk.Window):
         self.connect_after('unrealize', widgets.release)
 
         self.filter_string: str | None = None
+        #: The reading state the covers are narrowed to, beside the search.
+        self.read_state = backend_types.ReadState.ANY
         self._file_handler = file_handler
         # Gtk.Statusbar is deprecated as of GTK 4.10; the one message this
         # ever shows is a label's worth.

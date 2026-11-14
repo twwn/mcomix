@@ -50,6 +50,58 @@ class CollectionTest(unittest.TestCase):
         backend._backend = None
         os.unlink(self.db)
 
+    def _read(self, name, page):
+        """Leave the book named <name> on <page>."""
+        for book in backend_types.DefaultCollection.get_books():
+            if book.name == name:
+                book.set_last_read_page(page)
+                return book
+        raise AssertionError('no book %s' % name)
+
+    def test_books_by_how_far_they_were_read(self):
+        """All four test archives hold four pages.  One is left on its
+        second, one on its last, two were never opened: each state
+        names its own books, in "All books" and in a collection, and
+        the three states together name every book once."""
+        states = backend_types.ReadState
+        self._read('01-ZIP-Normal.zip', 4)
+        self._read('02-TAR-Normal.tar', 2)
+        self._read('03-RAR-Normal.rar', 2)
+        default = backend_types.DefaultCollection
+        test_col = self.library.get_collection_by_name('Test')
+
+        def names(collection, state, typed=None):
+            return sorted(book.name
+                          for book in collection.get_books(typed, state))
+
+        self.assertEqual(names(default, states.FINISHED),
+                         ['01-ZIP-Normal.zip'])
+        self.assertEqual(names(default, states.STARTED),
+                         ['02-TAR-Normal.tar', '03-RAR-Normal.rar'])
+        self.assertEqual(names(default, states.UNREAD), ['04-7Z-Normal.7z'])
+        self.assertEqual(len(names(default, states.ANY)), 4)
+        # Test holds the RAR, and the 7z in the collection under it.
+        self.assertEqual(names(test_col, states.FINISHED), [])
+        self.assertEqual(names(test_col, states.STARTED),
+                         ['03-RAR-Normal.rar'])
+        self.assertEqual(names(test_col, states.UNREAD), ['04-7Z-Normal.7z'])
+        # Together with the search.
+        self.assertEqual(names(default, states.STARTED, 'tar'),
+                         ['02-TAR-Normal.tar'])
+        self.assertEqual(names(default, states.STARTED, 'zip'), [])
+        self.assertEqual(names(test_col, states.UNREAD, 'rar'), [])
+
+    def test_a_book_whose_pages_were_never_counted_is_not_finished(self):
+        book = self._read('01-ZIP-Normal.zip', 4)
+        self.library.execute('update book set pages = 0 where id = ?',
+                             (book.id,))
+        states = backend_types.ReadState
+        default = backend_types.DefaultCollection
+        self.assertEqual(default.get_books(None, states.FINISHED), [])
+        self.assertEqual(
+            [found.name for found in default.get_books(None, states.STARTED)],
+            ['01-ZIP-Normal.zip'])
+
     def test_get_books_default(self):
         default_col = backend_types.DefaultCollection
 
@@ -509,9 +561,12 @@ class CollectionBooksPlanTest(unittest.TestCase):
         constants.LIBRARY_DATABASE_PATH = self._saved_path
         os.unlink(self.db)
 
-    def _plan_of_get_books(self, filter_string=None):
+    def _plan_of_get_books(self, filter_string=None,
+                           read_state=backend_types.ReadState.ANY,
+                           collection=None):
         """The plan of the statement get_books() actually runs."""
-        collection = self.library.get_collection_by_id(500)
+        if collection is None:
+            collection = self.library.get_collection_by_id(500)
         statements = []
         original = self.library.fetchall
 
@@ -521,7 +576,7 @@ class CollectionBooksPlanTest(unittest.TestCase):
 
         self.library.fetchall = watched
         try:
-            collection.get_books(filter_string)
+            collection.get_books(filter_string, read_state)
         finally:
             self.library.fetchall = original
         sql, parameters = statements[-1]
@@ -542,6 +597,23 @@ class CollectionBooksPlanTest(unittest.TestCase):
         plan = self._plan_of_get_books('999')
         self.assertNotIn('TEMP B-TREE', plan,
                          'a filtered get_books() sorts them itself: %s' % plan)
+
+    def test_a_reading_state_looks_each_book_up_by_its_key(self):
+        """The reading state is read from recent, which grows with the
+        books read: one search by its key for each book, in a
+        collection and in "All books", and never a walk over it."""
+        for state in (backend_types.ReadState.UNREAD,
+                      backend_types.ReadState.STARTED,
+                      backend_types.ReadState.FINISHED):
+            for collection in (None, backend_types.DefaultCollection):
+                with self.subTest(state=state, collection=collection):
+                    plan = self._plan_of_get_books(None, state, collection)
+                    self.assertNotIn('SCAN recent', plan)
+                    # SQLite 3.54 writes "SEARCH recent EXISTS USING".
+                    self.assertRegex(
+                        plan,
+                        'SEARCH recent [A-Z -]*USING INTEGER PRIMARY KEY')
+                    self.assertNotIn('TEMP B-TREE', plan)
 
 # vim: expandtab:sw=4:ts=4
 

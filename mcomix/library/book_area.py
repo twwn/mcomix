@@ -362,7 +362,8 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
             # drawn, which the idle this runs from leaves room for.
             self._covers.set_items(())
             return
-        books = collection.get_books(self._library.filter_string)
+        books = collection.get_books(self._library.filter_string,
+                                     self._library.read_state)
         items = [_BookItem(book) for book in books]
         read = self._library.backend.last_read_times()
         for item in items:
@@ -430,9 +431,14 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
                 return
 
             # Under a filter, only a book it lets through, by the test
-            # the covers drawn from the database are chosen by.
-            if backend_types.matches(self._library.filter_string or '',
-                                     book.name, book.path):
+            # the covers drawn from the database are chosen by.  A book
+            # just added has not been read, so it is neither started
+            # nor finished.
+            if (self._library.read_state in (backend_types.ReadState.ANY,
+                                             backend_types.ReadState.UNREAD)
+                    and backend_types.matches(
+                        self._library.filter_string or '',
+                        book.name, book.path)):
                 self.add_books([book])
 
     def is_book_displayed(self, book: 'backend_types._Book | None') -> bool:

@@ -184,6 +184,30 @@ class LibraryDialogTest(_LibraryWindowTest):
             wait_for(lambda: False, seconds=0.6)
         self.assertEqual(1, shown.call_count)
 
+    def test_a_reading_state_picked_narrows_the_books_at_once(self):
+        """The choice beside the search field: picking a state shows
+        the books again, with the search as it stands, and "All books"
+        puts every one back."""
+        dialog = self._open()
+        control = dialog.control_area
+        chooser = control.read_state_chooser
+        states = backend_types.ReadState
+        self.assertIs(states.ANY, chooser.get_value())
+        control.search_entry.set_text('night')
+        control.search_entry.emit('activate')
+        with unittest.mock.patch.object(
+                dialog.book_area, 'display_covers',
+                return_value=False) as shown:
+            chooser.set_value(states.FINISHED)
+            self.assertIs(states.FINISHED, dialog.read_state)
+            self.assertEqual('night', dialog.filter_string)
+            pump()
+            self.assertEqual(1, shown.call_count)
+            chooser.set_value(states.ANY)
+            self.assertIs(states.ANY, dialog.read_state)
+            pump()
+            self.assertEqual(2, shown.call_count)
+
     def test_a_search_typed_as_the_library_closes_is_dropped(self):
         dialog = self._open()
         entry = dialog.control_area.search_entry
