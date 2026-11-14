@@ -330,6 +330,10 @@ class BaseArchive:
             remembered = archive_password.remembered(self.archive)
             if remembered is not None:
                 self._password = remembered
+                # Answered, for every later call too: a handler that
+                # wants the password for each page comes back here and
+                # would wait for an answer nobody was asked for.
+                self._event.set()
                 return remembered
         ask_for_password = self._password is None
         # Don't trigger concurrent password dialogs.

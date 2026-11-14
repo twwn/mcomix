@@ -254,6 +254,28 @@ class SessionPasswordTest(MComixTest):
         self.assertTrue(os.path.isfile(self._extract_with_a_new_archive()))
         self.assertEqual([self.ARCHIVE], self.asked)
 
+    def test_a_remembered_password_is_given_every_time_it_is_wanted(self):
+        """7z and RAR want it for each page.  The first was given it,
+        and the second waited for an answer nobody had been asked for:
+        a book gone back to showed a page or two and loaded the rest
+        for ever."""
+        self._extract_with_a_new_archive()
+        archive = zip_archive.ZipArchive(self.ARCHIVE)
+        self.addCleanup(archive.close)
+        given = []
+
+        def want_twice():
+            given.append(archive._get_password())
+            given.append(archive._get_password())
+
+        thread = threading.Thread(target=want_twice, daemon=True)
+        thread.start()
+        thread.join(5)
+        # Let a thread that waits go, whatever the outcome.
+        archive.stop_waiting()
+        self.assertEqual(['password', 'password'], given)
+        self.assertEqual([self.ARCHIVE], self.asked)
+
     def test_what_works_unasked_does_not_use_it(self):
         """A thumbnail of an encrypted book would put its pages in the
         desktop's shared cache."""
