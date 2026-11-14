@@ -228,6 +228,29 @@ class WaitGaveUp(UserWarning):
     """
 
 
+def keep_focus_within(window):
+    """Mark the widgets around <window>'s focus widget as holding the
+    focus, as they are in a window the reader types into.
+
+    Every worker draws on the one X server xvfb-run started.  When
+    another worker's window takes the keyboard there, GTK takes the
+    focus-within state and the focus children off this one's widgets,
+    and a list then moves no focus: Gtk.ListBase.scroll_to() with Gtk.ListScrollFlags.FOCUS
+    grabs the focus only in a list that has that state.  A test of
+    where the focus goes failed in about one suite run in seven for it.
+    Call this right before the step that moves the focus, with no pump
+    of the main loop in between.
+    """
+    widget = window.get_focus()
+    while widget is not None:
+        widget.set_state_flags(Gtk.StateFlags.FOCUS_WITHIN, False)
+        parent = widget.get_parent()
+        if parent is not None:
+            # What get_focus_child() answers goes with the state.
+            parent.set_focus_child(widget)
+        widget = parent
+
+
 def wait_for(predicate, seconds=5):
     """Run the main loop until <predicate> holds, or time runs out.
 

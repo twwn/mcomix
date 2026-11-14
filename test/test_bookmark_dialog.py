@@ -12,7 +12,7 @@ from unittest import mock
 
 from gi.repository import Gdk, GLib, Gtk
 
-from . import MComixTest, pump
+from . import MComixTest, keep_focus_within, pump
 
 from mcomix import bookmark_backend
 from mcomix import bookmark_dialog
@@ -174,11 +174,13 @@ class BookmarksDialogTest(MComixTest):
     def test_delete_in_the_list_moves_the_focus_with_the_selection(self):
         """GTK hands the focus to the row above the one removed while
         the row below is selected, so Enter opened the wrong bookmark."""
+        keep_focus_within(self.dialog)
         self.dialog._list.select_and_focus(1)
         for _each in range(10):
             pump()
         before = self.dialog._list.get_selected_row().name
         self.assertEqual(self._focused(), before)
+        keep_focus_within(self.dialog)
         self.dialog._remove_selected()
         for _each in range(10):
             pump()

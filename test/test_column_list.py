@@ -11,7 +11,7 @@ import unittest.mock
 
 from gi.repository import Gdk, Graphene, Gtk, Pango
 
-from . import MComixTest, pump
+from . import MComixTest, keep_focus_within, pump
 
 from mcomix import column_list
 
@@ -329,9 +329,11 @@ class ColumnListViewTest(MComixTest):
         self.view.set_search_attribute('name')
         # GTK moves the focus to a row only within a list that has it.
         self.view.grab_focus()
+        keep_focus_within(self.window)
         self.view.select_and_focus(0)
         self._settle()
         self.assertEqual(self._focused(), 'one')
+        keep_focus_within(self.window)
         self.view._search_typed(None, ord('t'), 0, Gdk.ModifierType(0))
         self.view._search_typed(None, ord('h'), 0, Gdk.ModifierType(0))
         self._settle()
