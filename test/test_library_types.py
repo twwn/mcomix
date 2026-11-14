@@ -203,17 +203,20 @@ class CollectionTest(unittest.TestCase):
             ['\xc9crit Un.zip'])
 
     def test_a_filter_is_matched_word_by_word(self):
-        """Read as one piece of text, "batman 01" did not find "Batman -
-        01", and no title was found without its punctuation."""
-        self._books_named('Batman - 01.zip', 'Batman - 02.zip',
-                          'Pepper and Carrot 01.zip')
+        """Read as one piece of text, "batman 0001" did not find "Batman
+        - 0001", and no title was found without its punctuation."""
+        # The folder is matched too, and its name is made up afresh
+        # each time: of four characters where a word of two, "01", was
+        # in it once in some hundred runs and found every book.
+        self._books_named('Batman - 0001.zip', 'Batman - 0002.zip',
+                          'Pepper and Carrot 0001.zip')
         default = backend_types.DefaultCollection
 
-        for typed, found in (('batman 01', ['Batman - 01.zip']),
-                             ('01  BATMAN', ['Batman - 01.zip']),
-                             ('pepper carrot', ['Pepper and Carrot 01.zip']),
-                             ('batman -', ['Batman - 01.zip',
-                                           'Batman - 02.zip']),
+        for typed, found in (('batman 0001', ['Batman - 0001.zip']),
+                             ('0001  BATMAN', ['Batman - 0001.zip']),
+                             ('pepper carrot', ['Pepper and Carrot 0001.zip']),
+                             ('batman -', ['Batman - 0001.zip',
+                                           'Batman - 0002.zip']),
                              ('batman carrot', [])):
             with self.subTest(typed):
                 self.assertEqual(
