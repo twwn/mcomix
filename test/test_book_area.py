@@ -1387,12 +1387,20 @@ class _CollectionArea:
         return constants.COLLECTION_ALL
 
 
+def _main_window(**more):
+    """A main window as far as the covers' menu reads it: the recent
+    files "Move to" offers the folders of."""
+    return types.SimpleNamespace(uimanager=types.SimpleNamespace(
+        recent=types.SimpleNamespace(paths=lambda: [])), **more)
+
+
 class _MenuLibrary:
 
     manages = True
     window = None
     backend = _Backend()
     collection_area = _CollectionArea()
+    main_window = _main_window()
 
 
 class MenuKeyTest(MComixTest):
@@ -1553,6 +1561,7 @@ class _MarkingLibrary:
 
     manages = True
     window = None
+    main_window = _main_window()
 
     def __init__(self):
         from mcomix.library import backend
@@ -1676,8 +1685,7 @@ class _RenamingLibrary(_MarkingLibrary):
 
     def __init__(self):
         super().__init__()
-        self.main_window = types.SimpleNamespace(
-            file_actions=unittest.mock.Mock())
+        self.main_window = _main_window(file_actions=unittest.mock.Mock())
 
 
 class RenameFromLibraryTest(MComixTest):
@@ -1727,3 +1735,57 @@ class RenameFromLibraryTest(MComixTest):
             self.assertTrue(action.get_enabled())
 
 # vim: expandtab:sw=4:ts=4
+
+
+class MoveFromLibraryTest(MComixTest):
+
+    """"Move to" in the covers' menu: the main window's submenu, for the
+    books selected."""
+
+    def setUp(self):
+        super().setUp()
+        from . import get_testfile_path
+        self.library = _RenamingLibrary()
+        self.addCleanup(self.library.backend.close)
+        self.items = []
+        for name in ('01-ZIP-Normal.zip', '02-TAR-Normal.tar'):
+            path = get_testfile_path('archives', name)
+            self.assertTrue(self.library.backend.add_book(path))
+            self.items.append(book_area._BookItem(
+                self.library.backend.get_book_by_path(path)))
+        self.area = book_area._BookArea(self.library)
+        self.addCleanup(self.area.close)
+        self.area._covers.set_items(self.items)
+        self.move = self.library.main_window.file_actions.move_books
+
+    def test_the_books_selected_are_moved_and_shown_where_they_went(self):
+        self.area._covers.selection.select_all()
+        self.area._move_selected_to('/elsewhere')
+        paths, directory, parent, moved = self.move.call_args.args
+        self.assertEqual(sorted(item.path for item in self.items),
+                         sorted(paths))
+        self.assertEqual('/elsewhere', directory)
+        moved(self.items[1].path, '/elsewhere/Moved.cbz')
+        self.assertEqual('/elsewhere/Moved.cbz', self.items[1].path)
+
+    def test_the_menu_offers_it_for_a_selection_only(self):
+        actions = self.area._move_to._actions
+        with unittest.mock.patch.object(book_area.widgets, 'popup_at'):
+            self.area._popup_book_menu()
+            self.assertFalse(actions.get_action_enabled('other'))
+            self.area._covers.selection.select_all()
+            self.area._popup_book_menu()
+            self.assertTrue(actions.get_action_enabled('other'))
+
+    def test_the_menu_holds_the_submenu(self):
+        labels = []
+        model = self.area._book_menu.get_menu_model()
+        for i in range(model.get_n_items()):
+            section = model.get_item_link(i, Gio.MENU_LINK_SECTION)
+            for j in range(section.get_n_items() if section else 0):
+                if section.get_item_link(j, Gio.MENU_LINK_SUBMENU) \
+                        is self.area._move_to.model:
+                    labels.append(section.get_item_attribute_value(
+                        j, Gio.MENU_ATTRIBUTE_LABEL,
+                        GLib.VariantType('s')).get_string())
+        self.assertEqual(['Move _to'], labels)

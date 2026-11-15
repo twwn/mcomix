@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: comix.HEAD\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-15 19:24+0100\n"
+"POT-Creation-Date: 2026-11-15 19:31+0100\n"
 "PO-Revision-Date: 2012-09-06 18:00+0100\n"
 "Last-Translator: Carlos Feliu <carlos.feliu.holguera@gmail.com>\n"
 "Language-Team: Spanish <traductores@es.gnome.org>\n"
@@ -61,7 +61,7 @@ msgstr "! No se pudo leer %s"
 #
 # File: src/comment.py, line: 53
 #: mcomix/archive_packer.py:213 mcomix/file_actions.py:1254
-#: mcomix/library/book_area.py:1056
+#: mcomix/library/book_area.py:1069
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! No se pudo eliminar %(file)s: %(error)s"
@@ -524,8 +524,8 @@ msgstr "_Invertir los colores de la imagen"
 msgid "Invert (negate) image colors."
 msgstr "Invierte (niega) los colores de la imagen."
 
-#: mcomix/file_actions.py:322 mcomix/file_actions.py:1400
-#: mcomix/file_actions.py:1524
+#: mcomix/file_actions.py:322 mcomix/file_actions.py:1449
+#: mcomix/file_actions.py:1574
 msgid "A file of that name is there already."
 msgstr "Ya existe un archivo con ese nombre."
 
@@ -603,7 +603,7 @@ msgstr "No se pudo mostrar la carpeta: %s"
 msgid "Save page as"
 msgstr "Guardar página como"
 
-#: mcomix/file_actions.py:1023 mcomix/file_actions.py:1526
+#: mcomix/file_actions.py:1023 mcomix/file_actions.py:1576
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "No hay espacio suficiente: el archivo ocupa %s."
@@ -639,7 +639,7 @@ msgstr "¿Eliminar \"%s\" permanentemente?"
 msgid "Could not move \"%s\" to the trash"
 msgstr "No se pudo mover \"%s\" a la papelera"
 
-#: mcomix/file_actions.py:1213 mcomix/library/book_area.py:1068
+#: mcomix/file_actions.py:1213 mcomix/library/book_area.py:1081
 #, python-format
 msgid "%d book could not be moved to the trash."
 msgid_plural "%d books could not be moved to the trash."
@@ -676,20 +676,21 @@ msgid_plural ""
 msgstr[0] "El archivo ya no está, y su %d marcador no se puede abrir."
 msgstr[1] "El archivo ya no está, y sus %d marcadores no se pueden abrir."
 
-#: mcomix/file_actions.py:1404
-msgid "Rename archive?"
-msgstr "¿Renombrar el archivador?"
-
-#: mcomix/file_actions.py:1405
-msgid "Please enter a new name for this archive."
-msgstr "Ingrese un nombre nuevo para este archivador."
-
-#: mcomix/file_actions.py:1520 mcomix/thumbnail_tools.py:211
+#: mcomix/file_actions.py:1403 mcomix/file_actions.py:1570
+#: mcomix/thumbnail_tools.py:211
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr "! No se pudo mover %(file)s a %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:1532
+#: mcomix/file_actions.py:1453
+msgid "Rename archive?"
+msgstr "¿Renombrar el archivador?"
+
+#: mcomix/file_actions.py:1454
+msgid "Please enter a new name for this archive."
+msgstr "Ingrese un nombre nuevo para este archivador."
+
+#: mcomix/file_actions.py:1582
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "No se pudo mover \"%(file)s\" a \"%(directory)s\""
@@ -710,7 +711,7 @@ msgstr[1] "%d páginas"
 msgid "Open"
 msgstr "Abrir"
 
-#: mcomix/file_chooser_base_dialog.py:237 mcomix/library/book_area.py:227
+#: mcomix/file_chooser_base_dialog.py:237 mcomix/library/book_area.py:234
 msgid "_Open"
 msgstr "_Abrir"
 
@@ -1364,7 +1365,7 @@ msgid "Preferences"
 msgstr "Preferencias"
 
 #: mcomix/keybindings.py:171 mcomix/ui.py:450 mcomix/ui.py:453
-#: mcomix/library/book_area.py:258
+#: mcomix/library/book_area.py:265
 msgid "Open containing folder"
 msgstr "Abrir la carpeta contenedora"
 
@@ -1536,23 +1537,23 @@ msgstr "Conservar sus marcadores"
 msgid "Do not ask again."
 msgstr "No preguntar de nuevo."
 
-#: mcomix/move_menu.py:105
+#: mcomix/move_menu.py:116
 msgid "Moved to before"
 msgstr "Destinos recientes"
 
-#: mcomix/move_menu.py:106
+#: mcomix/move_menu.py:117
 msgid "From bookmarks"
 msgstr "De los marcadores"
 
-#: mcomix/move_menu.py:107
+#: mcomix/move_menu.py:118
 msgid "Opened before"
 msgstr "Abiertas recientemente"
 
-#: mcomix/move_menu.py:126
+#: mcomix/move_menu.py:137
 msgid "Other folder..."
 msgstr "Otra carpeta..."
 
-#: mcomix/move_menu.py:189
+#: mcomix/move_menu.py:197
 msgid "Move to folder"
 msgstr "Mover a la carpeta"
 
@@ -2517,7 +2518,7 @@ msgstr "Nombre de archivo"
 msgid "File name (GLib)"
 msgstr "Nombre de archivo (GLib)"
 
-#: mcomix/preferences_dialog.py:753 mcomix/library/book_area.py:326
+#: mcomix/preferences_dialog.py:753 mcomix/library/book_area.py:339
 msgid "File size"
 msgstr "Tamaño de archivo"
 
@@ -2526,12 +2527,12 @@ msgid "Last modified"
 msgstr "Modificado por última vez"
 
 #: mcomix/preferences_dialog.py:760 mcomix/preferences_dialog.py:806
-#: mcomix/library/book_area.py:334
+#: mcomix/library/book_area.py:347
 msgid "Ascending"
 msgstr "Ascendiente"
 
 #: mcomix/preferences_dialog.py:761 mcomix/preferences_dialog.py:807
-#: mcomix/library/book_area.py:335
+#: mcomix/library/book_area.py:348
 msgid "Descending"
 msgstr "Descendiente"
 
@@ -2683,7 +2684,7 @@ msgstr ""
 "colores en proporción; colorimétrica relativa mantiene exactos los que la "
 "pantalla puede mostrar."
 
-#: mcomix/preferences_dialog.py:981 mcomix/library/book_area.py:342
+#: mcomix/preferences_dialog.py:981 mcomix/library/book_area.py:355
 msgid "Normal"
 msgstr "Normal"
 
@@ -3222,7 +3223,7 @@ msgstr "! No se puedo guardar la miniatura \"%(thumbpath)s\": %(error)s"
 #
 # File: src/librarybackend.py, line: 272
 # File: src/librarybackend.py, line: 274
-#: mcomix/ui.py:441 mcomix/library/book_area.py:255
+#: mcomix/ui.py:441 mcomix/library/book_area.py:262
 msgid "_Copy"
 msgstr "Co_piar"
 
@@ -3863,178 +3864,182 @@ msgstr "Todos los libros"
 msgid "! Could not scan for new books: %s"
 msgstr "! No se pudieron buscar nuevos libros: %s"
 
-#: mcomix/library/book_area.py:228
+#: mcomix/library/book_area.py:235
 msgid "Opens the selected books for viewing."
 msgstr "Abre los libros seleccionados para su lectura."
 
-#: mcomix/library/book_area.py:230
+#: mcomix/library/book_area.py:237
 msgid "Open _without closing library"
 msgstr "Abrir _sin cerrar la biblioteca"
 
-#: mcomix/library/book_area.py:231
+#: mcomix/library/book_area.py:238
 msgid "Opens the selected books, but keeps the library window open."
 msgstr ""
 "Abre los libros seleccionados, pero mantiene abierta la ventana de la "
 "biblioteca."
 
-#: mcomix/library/book_area.py:233
+#: mcomix/library/book_area.py:240
 msgid "_Mark as read"
 msgstr "Ma_rcar como leído"
 
-#: mcomix/library/book_area.py:234
+#: mcomix/library/book_area.py:241
 msgid "Marks the selected books as read to the end."
 msgstr "Marca los libros seleccionados como leídos hasta el final."
 
-#: mcomix/library/book_area.py:236
+#: mcomix/library/book_area.py:243
 msgid "Mark as u_nread"
 msgstr "Marcar como _no leído"
 
-#: mcomix/library/book_area.py:237
+#: mcomix/library/book_area.py:244
 msgid "Forgets the page the selected books were left at."
 msgstr "Olvida la página en la que se dejaron los libros seleccionados."
 
-#: mcomix/library/book_area.py:239 mcomix/library/collection_area.py:142
+#: mcomix/library/book_area.py:246 mcomix/library/collection_area.py:142
 msgid "_Add..."
 msgstr "Añad_ir..."
 
 #
 # File: src/library.py, line: 793
-#: mcomix/library/book_area.py:240 mcomix/library/collection_area.py:143
+#: mcomix/library/book_area.py:247 mcomix/library/collection_area.py:143
 msgid "Add more books to the library."
 msgstr "Agregar más libros a la biblioteca."
 
-#: mcomix/library/book_area.py:243
+#: mcomix/library/book_area.py:250
 msgid "Remove _from this collection"
 msgstr "Eliminar de esta _colección"
 
-#: mcomix/library/book_area.py:244
+#: mcomix/library/book_area.py:251
 msgid "Removes the selected books from the current collection."
 msgstr "Elimina los libros seleccionados de la colección actual."
 
-#: mcomix/library/book_area.py:246
+#: mcomix/library/book_area.py:253
 msgid "Remove from the _library"
 msgstr "Eliminar de la bib_lioteca"
 
-#: mcomix/library/book_area.py:247
+#: mcomix/library/book_area.py:254
 msgid "Completely removes the selected books from the library."
 msgstr "Elimina completamente los libros seleccionados de la biblioteca."
 
-#: mcomix/library/book_area.py:249
+#: mcomix/library/book_area.py:256
 msgid "_Remove and move to the trash"
 msgstr "_Eliminar y mover a la papelera"
 
-#: mcomix/library/book_area.py:250
+#: mcomix/library/book_area.py:257
 msgid "Deletes the selected books from disk."
 msgstr "Elimina los libros seleccionados en disco."
 
-#: mcomix/library/book_area.py:252 mcomix/library/collection_area.py:153
+#: mcomix/library/book_area.py:259 mcomix/library/collection_area.py:153
 msgid "Clean _up"
 msgstr "Li_mpiar"
 
-#: mcomix/library/book_area.py:253 mcomix/library/collection_area.py:154
+#: mcomix/library/book_area.py:260 mcomix/library/collection_area.py:154
 msgid "Removes no longer existent books from the collection."
 msgstr "Elimina de la colección libros ya no existentes."
 
 #
 # File: src/library.py, line: 806
-#: mcomix/library/book_area.py:256
+#: mcomix/library/book_area.py:263
 msgid "Copies the selected book's path to clipboard."
 msgstr "Copia la ruta del libro seleccionado al portapapeles."
 
-#: mcomix/library/book_area.py:259
+#: mcomix/library/book_area.py:266
 msgid "Shows the selected book in the file manager."
 msgstr "Muestra el libro seleccionado en el gestor de archivos."
 
-#: mcomix/library/book_area.py:262
+#: mcomix/library/book_area.py:269
 msgid "R_ename"
 msgstr "Renom_brar"
 
-#: mcomix/library/book_area.py:263
+#: mcomix/library/book_area.py:270
 msgid "Renames the selected book's file."
 msgstr "Cambia el nombre del archivo del libro seleccionado."
 
-#: mcomix/library/book_area.py:267
+#: mcomix/library/book_area.py:274
 msgid "_Properties"
 msgstr "Propie_dades"
 
-#: mcomix/library/book_area.py:268
+#: mcomix/library/book_area.py:275
 msgid "Describes the selected books."
 msgstr "Describe los libros seleccionados."
 
-#: mcomix/library/book_area.py:305
+#: mcomix/library/book_area.py:312
 msgid "Library books"
 msgstr "Libros de la bilbioteca"
 
-#: mcomix/library/book_area.py:324
+#: mcomix/library/book_area.py:326
+msgid "Move _to"
+msgstr "Mo_ver a"
+
+#: mcomix/library/book_area.py:337
 msgid "Book name"
 msgstr "Nombre del libro"
 
-#: mcomix/library/book_area.py:325
+#: mcomix/library/book_area.py:338
 msgid "Full path"
 msgstr "Ruta completa"
 
-#: mcomix/library/book_area.py:327
+#: mcomix/library/book_area.py:340
 msgid "Pages"
 msgstr "Páginas"
 
-#: mcomix/library/book_area.py:328 mcomix/library/book_properties.py:89
+#: mcomix/library/book_area.py:341 mcomix/library/book_properties.py:89
 msgid "Date added"
 msgstr "Fecha en la que fue añadido"
 
-#: mcomix/library/book_area.py:329
+#: mcomix/library/book_area.py:342
 msgid "Date modified"
 msgstr "Fecha de modificación"
 
-#: mcomix/library/book_area.py:330 mcomix/library/book_properties.py:93
+#: mcomix/library/book_area.py:343 mcomix/library/book_properties.py:93
 msgid "Last read"
 msgstr "Última lectura"
 
-#: mcomix/library/book_area.py:331
+#: mcomix/library/book_area.py:344
 msgid "By hand"
 msgstr "A mano"
 
-#: mcomix/library/book_area.py:340
+#: mcomix/library/book_area.py:353
 msgid "Huge"
 msgstr "Enorme"
 
-#: mcomix/library/book_area.py:341
+#: mcomix/library/book_area.py:354
 msgid "Large"
 msgstr "Grande"
 
-#: mcomix/library/book_area.py:343
+#: mcomix/library/book_area.py:356
 msgid "Small"
 msgstr "Pequeño"
 
-#: mcomix/library/book_area.py:344
+#: mcomix/library/book_area.py:357
 msgid "Tiny"
 msgstr "Diminuto"
 
-#: mcomix/library/book_area.py:348
+#: mcomix/library/book_area.py:361
 msgid "Custom..."
 msgstr "Personalizado..."
 
-#: mcomix/library/book_area.py:352
+#: mcomix/library/book_area.py:365
 msgid "_Sort"
 msgstr "_Ordenar"
 
-#: mcomix/library/book_area.py:353
+#: mcomix/library/book_area.py:366
 msgid "Cover si_ze"
 msgstr "_Tamaño de la portada"
 
-#: mcomix/library/book_area.py:700
+#: mcomix/library/book_area.py:713
 msgid "Set library cover size"
 msgstr "Fijar tamaño de portada de biblioteca"
 
 #
 # File: src/library.py, line: 588
-#: mcomix/library/book_area.py:932
+#: mcomix/library/book_area.py:945
 #, python-format
 msgid "Removed %(num)d book from '%(collection)s'."
 msgid_plural "Removed %(num)d books from '%(collection)s'."
 msgstr[0] "Se han quitado %(num)d libro(s) desde '%(collection)s'."
 msgstr[1] "Se han quitado %(num)d libro(s) desde '%(collection)s'."
 
-#: mcomix/library/book_area.py:955 mcomix/library/collection_area.py:301
+#: mcomix/library/book_area.py:968 mcomix/library/collection_area.py:301
 #, python-format
 msgid "Removed %d book from the library."
 msgid_plural "Removed %d books from the library."
@@ -4043,11 +4048,11 @@ msgstr[1] "Eliminados %d libros de la biblioteca."
 
 #
 # File: src/library.py, line: 597
-#: mcomix/library/book_area.py:977 mcomix/library/book_area.py:998
+#: mcomix/library/book_area.py:990 mcomix/library/book_area.py:1011
 msgid "Remove books from the library?"
 msgstr "¿Eliminar los libros de la biblioteca?"
 
-#: mcomix/library/book_area.py:978
+#: mcomix/library/book_area.py:991
 msgid ""
 "The selected books will be removed from the library. Any in a folder with no "
 "trash is deleted permanently and cannot be restored."
@@ -4056,21 +4061,21 @@ msgstr ""
 "una carpeta sin papelera se borrarán permanentemente y no se podrán "
 "recuperar."
 
-#: mcomix/library/book_area.py:999
+#: mcomix/library/book_area.py:1012
 msgid ""
 "The selected books will be removed from the library and moved to the trash."
 msgstr ""
 "Los libros seleccionados se eliminarán de la biblioteca y se moverán a la "
 "papelera."
 
-#: mcomix/library/book_area.py:1119
+#: mcomix/library/book_area.py:1132
 #, python-format
 msgid "Remove the bookmarks in the deleted book?"
 msgid_plural "Remove the bookmarks in the %(count)d deleted books?"
 msgstr[0] "¿Eliminar los marcadores del libro eliminado?"
 msgstr[1] "¿Eliminar los marcadores de los %(count)d libros eliminados?"
 
-#: mcomix/library/book_area.py:1270
+#: mcomix/library/book_area.py:1300
 msgid "Open with"
 msgstr "Abrir con"
 

@@ -1344,8 +1344,12 @@ class FileActions:
             return
         self.before_closing(lambda: self._move_now(directory))
 
-    def _move_now(self, directory: str) -> None:
-        """Move the book into <directory>, its changes dealt with."""
+    def _move_now(self, directory: str,
+                  parent: "Gtk.Window | None" = None,
+                  moved: "Callable[[str, str], None] | None" = None
+                  ) -> None:
+        """Move the book into <directory>, its changes dealt with;
+        <moved> is told where it was and where it went."""
         current_file = self._window.imagehandler.get_real_path()
         if current_file is None:
             return
@@ -1354,10 +1358,55 @@ class FileActions:
             target = file_mover.move_file(current_file, directory)
         except OSError as error:
             self._stayed()
-            self._move_failed(current_file, directory, error)
+            self._move_failed(current_file, directory, error, parent)
             return
         self._window.uimanager.move_to.remember(directory)
         self._book_moved(current_file, target)
+        if moved is not None:
+            moved(current_file, target)
+
+    def move_books(self, paths: "Iterable[str]", directory: str,
+                   parent: Gtk.Window,
+                   moved: "Callable[[str, str], None]") -> None:
+        """Move the books at <paths> into <directory>, as the library
+        asks; <moved> is told where each was and where it went.
+
+        What was recorded under each book's old path follows it, as for
+        the book being read (_follow()).  That one, if it is among them,
+        goes last and as "Move to" moves it: its changes offered to be
+        saved first, and reopened where it landed.  A book that will not
+        go stays where it is; the first is said why over <parent>, the
+        rest only logged, rather than a message for each of many books.
+        """
+        failed: list[tuple[str, OSError]] = []
+        is_open = None
+        went = False
+        for path in paths:
+            if self._is_open_book(path):
+                is_open = path
+                continue
+            try:
+                target = file_mover.move_file(path, directory)
+            except OSError as error:
+                failed.append((path, error))
+                continue
+            self._follow(path, target)
+            self._window.uimanager.recent.move_path(path, target)
+            went = True
+            moved(path, target)
+        if went:
+            self._window.uimanager.move_to.remember(directory)
+        if failed:
+            first, why = failed[0]
+            self._move_failed(first, directory, why, parent)
+            for path, why in failed[1:]:
+                log.error(_('! Could not move %(file)s to %(directory)s: '
+                            '%(error)s'), {'file': path,
+                                           'directory': directory,
+                                           'error': why})
+        if is_open is not None:
+            self.before_closing(lambda: self._move_now(directory, parent,
+                                                       moved))
 
     def rename_book(self, *args: object) -> None:
         """Ask what to call the archive being read, and rename it.
@@ -1510,7 +1559,8 @@ class FileActions:
         archive_password.follow(old, new)
 
     def _move_failed(self, current_file: str, directory: str,
-                     error: OSError) -> None:
+                     error: OSError,
+                     parent: "Gtk.Window | None" = None) -> None:
         """Say why <current_file> did not move into <directory>.
 
         Nothing has moved when this is called, so what the message has
@@ -1528,7 +1578,7 @@ class FileActions:
         else:
             reason = str(error)
         dialog = message_dialog.MessageDialog(
-            self._window, buttons=Gtk.ButtonsType.CLOSE)
+            parent or self._window, buttons=Gtk.ButtonsType.CLOSE)
         dialog.set_text(_('Could not move "%(file)s" to "%(directory)s"')
                         % {'file': os.path.basename(current_file),
                            'directory': directory},

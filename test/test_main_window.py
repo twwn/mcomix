@@ -4419,6 +4419,48 @@ class MainWindowTest(MComixTest):
             dialog.destroy()
         self._pump()
 
+    def test_books_the_library_moves_take_their_records_along(self):
+        """The book being read among them is reopened where it landed,
+        at its page; the others are moved where they lie, and one whose
+        name is taken at the destination stays, and is said why."""
+        source = self._movable_book()
+        self.window.set_page(3)
+        self._pump()
+        library = backend.LibraryBackend()
+        destination = os.path.join(self.tmp_dir, 'destination')
+        os.makedirs(destination)
+        others = []
+        for name in ('Other.cbz', 'Taken.cbz'):
+            other = os.path.join(self.tmp_dir, name)
+            shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'),
+                        other)
+            self.assertTrue(library.add_book(other))
+            others.append(other)
+        with open(os.path.join(destination, 'Taken.cbz'), 'wb') as handle:
+            handle.write(b'not the book')
+        self.assertTrue(library.add_book(source))
+        moved = []
+
+        self.window.file_actions.move_books(
+            [source, *others], destination, self.window,
+            lambda path, target: moved.append((path, target)))
+        self._pump()
+
+        landed = os.path.join(destination, 'Movable.cbz')
+        other = os.path.join(destination, 'Other.cbz')
+        self.assertEqual([(others[0], other), (source, landed)], moved)
+        self.assertIsNotNone(library.get_book_by_path(other))
+        self.assertIsNotNone(library.get_book_by_path(landed))
+        self.assertTrue(os.path.isfile(others[1]), 'a taken name moved')
+        self.assertEqual(len(self._delete_dialogs()), 1,
+                         'nothing said why a book did not move')
+        for dialog in self._delete_dialogs():
+            dialog.destroy()
+        self.assertTrue(wait_for(
+            lambda: self.window.imagehandler.get_current_page() == 3,
+            seconds=20), 'the book did not come back to the page being read')
+        self.assertEqual(self.window.filehandler.get_path_to_base(), landed)
+
     def test_a_book_not_being_read_is_renamed_where_it_lies(self):
         """As the library asks for it: the book being read stays open,
         and the renamed one's records follow it."""

@@ -1,9 +1,10 @@
-"""move_menu.py - The "Move to" submenu of the right-click menu."""
+"""move_menu.py - The "Move to" submenu of the right-click menus."""
 
 import os
 
 from gi.repository import Gio, GLib, Gtk
 
+from collections.abc import Callable, Sequence
 from typing import TYPE_CHECKING
 
 from mcomix import bookmark_backend
@@ -19,10 +20,10 @@ if TYPE_CHECKING:
     from mcomix import recent as recent_module
 
 
-class MoveToMenu:
+class _MoveMenu:
 
-    """The "Move to" submenu, listing the directories the file that is
-    open - or the archive it is a page of - could be moved into.
+    """A "Move to" submenu, listing the directories what is to be moved
+    could be moved into.
 
     What it keeps is a Gio.Menu model, which the right-click menu takes.
     Moving goes through one action carrying the destination as its
@@ -52,11 +53,9 @@ class MoveToMenu:
     #: middle is left out.
     _LABEL_WIDTH = 48
 
-    def __init__(self, window: "main.MainWindow",
-                 recent: "recent_module.RecentFilesMenu") -> None:
-        self._window = window
-        self._recent = recent
-
+    def __init__(self, host: Gtk.Widget) -> None:
+        """<host> is where the menu is shown, and its actions are
+        found."""
         self.model = Gio.Menu()
 
         self._actions = Gio.SimpleActionGroup()
@@ -69,15 +68,27 @@ class MoveToMenu:
         other = Gio.SimpleAction.new('other', None)
         other.connect('activate', self._other_activated)
         self._actions.add_action(other)
-        window.insert_action_group(self.ACTION_PREFIX, self._actions)
+        host.insert_action_group(self.ACTION_PREFIX, self._actions)
 
-        self._rebuild()
+    def _moving(self) -> list[str]:
+        """The files a move would move."""
+        raise NotImplementedError
 
-        # What is on offer depends on the file that is open - the
-        # directory it is in already is not a destination - so the menu
-        # is built again whenever that changes.
-        self._window.filehandler.file_opened += self._rebuild
-        self._window.filehandler.file_closed += self._rebuild
+    def _can_move(self) -> bool:
+        """Whether there is anything to move."""
+        raise NotImplementedError
+
+    def _move(self, directory: str) -> None:
+        """Move what is to be moved into <directory>."""
+        raise NotImplementedError
+
+    def _parent(self) -> Gtk.Window:
+        """The window the chooser of another folder belongs to."""
+        raise NotImplementedError
+
+    def _recently_opened(self) -> list[str]:
+        """The directories recently opened files came out of."""
+        raise NotImplementedError
 
     def release(self) -> None:
         """Let go of the closed window: see MainUI.release()."""
@@ -99,8 +110,8 @@ class MoveToMenu:
         # to, and the one the file is in already is offered nowhere:
         # moving a file to where it is would be refused as a name that
         # is taken, by itself.
-        current = self._window.imagehandler.get_real_path()
-        seen = {os.path.dirname(os.path.abspath(current))} if current else set()
+        seen = {os.path.dirname(os.path.abspath(path))
+                for path in self._moving()}
 
         sections = ((_('Moved to before'), prefs['recent move destinations']),
                     (_('From bookmarks'), self._bookmarked()),
@@ -128,11 +139,14 @@ class MoveToMenu:
 
         self._set_sensitivity()
 
+    def update(self) -> None:
+        """Offer what can be moved now, and where to."""
+        self._rebuild()
+
     def _set_sensitivity(self, *args: object) -> None:
-        """There is nothing to move until a file is open."""
-        loaded = self._window.filehandler.file_loaded
+        can_move = self._can_move()
         for name in ('move', 'other'):
-            widgets.simple_action(self._actions, name).set_enabled(loaded)
+            widgets.simple_action(self._actions, name).set_enabled(can_move)
 
     @staticmethod
     def _is_destination(directory: str) -> bool:
@@ -149,11 +163,6 @@ class MoveToMenu:
         """The directories holding bookmarked books, newest first."""
         return [bookmark.get_directory() for bookmark
                 in reversed(bookmark_backend.BookmarksStore.get_bookmarks())]
-
-    def _recently_opened(self) -> list[str]:
-        """The directories recently opened files came out of."""
-        return [os.path.dirname(path)
-                for path in self._recent.paths()]
 
     @classmethod
     def _label_for(cls, directory: str) -> str:
@@ -178,21 +187,92 @@ class MoveToMenu:
 
     def _move_activated(self, action: Gio.SimpleAction,
                         target: GLib.Variant) -> None:
-        self._window.file_actions.move_current_file(
-            os.fsdecode(bytes(target.get_bytestring())))
+        self._move(os.fsdecode(bytes(target.get_bytestring())))
 
     def _other_activated(self, *args: object) -> None:
         """Ask for a directory that is on none of the lists."""
         dialog = file_chooser_simple_dialog.SimpleFileChooserDialog(
-            Gtk.FileChooserAction.SELECT_FOLDER, self._window,
+            Gtk.FileChooserAction.SELECT_FOLDER, self._parent(),
             folder=prefs['path of last browsed in filechooser'])
         dialog.set_title(_('Move to folder'))
 
         def chosen(paths: list[str]) -> None:
             dialog.destroy()
             if paths:
-                self._window.file_actions.move_current_file(paths[0])
+                self._move(paths[0])
 
         dialog.run_async(chosen)
+
+
+class MoveToMenu(_MoveMenu):
+
+    """The main window's "Move to" submenu, for the file that is open -
+    or the archive it is a page of."""
+
+    def __init__(self, window: "main.MainWindow",
+                 recent: "recent_module.RecentFilesMenu") -> None:
+        super().__init__(window)
+        self._window = window
+        self._recent = recent
+        self._rebuild()
+        # What is on offer depends on the file that is open - the
+        # directory it is in already is not a destination - so the menu
+        # is built again whenever that changes.
+        self._window.filehandler.file_opened += self._rebuild
+        self._window.filehandler.file_closed += self._rebuild
+
+    def _moving(self) -> list[str]:
+        current = self._window.imagehandler.get_real_path()
+        return [current] if current else []
+
+    def _can_move(self) -> bool:
+        # Not until a file is open.
+        return self._window.filehandler.file_loaded
+
+    def _move(self, directory: str) -> None:
+        self._window.file_actions.move_current_file(directory)
+
+    def _parent(self) -> Gtk.Window:
+        return self._window
+
+    def _recently_opened(self) -> list[str]:
+        return [os.path.dirname(path) for path in self._recent.paths()]
+
+
+class BooksMoveToMenu(_MoveMenu):
+
+    """The same submenu over the library's covers, for the books
+    selected there rather than the file that is open.  It is built
+    each time the menu opens (update()), for the books selected then."""
+
+    def __init__(self, host: Gtk.Widget,
+                 selected: "Callable[[], Sequence[str]]",
+                 move: "Callable[[str], None]",
+                 recent: "Callable[[], Sequence[str]]") -> None:
+        """<selected> gives the paths of the books selected, <move>
+        moves them into the directory it is given, and <recent> gives
+        the paths of the files recently opened."""
+        super().__init__(host)
+        self._host = host
+        self._selected = selected
+        self._move_books = move
+        self._recent_paths = recent
+
+    def _moving(self) -> list[str]:
+        return list(self._selected())
+
+    def _can_move(self) -> bool:
+        return bool(self._selected())
+
+    def _move(self, directory: str) -> None:
+        self._move_books(directory)
+
+    def _parent(self) -> Gtk.Window:
+        root = self._host.get_root()
+        assert isinstance(root, Gtk.Window), 'the covers are in no window'
+        return root
+
+    def _recently_opened(self) -> list[str]:
+        return [os.path.dirname(path) for path in self._recent_paths()]
 
 # vim: expandtab:sw=4:ts=4

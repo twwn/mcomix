@@ -31,6 +31,7 @@ from mcomix import bookmark_backend
 from mcomix import i18n
 from mcomix import log
 from mcomix import message_dialog
+from mcomix import move_menu
 from mcomix import openwith
 from mcomix import openwith_menu
 from mcomix import tools
@@ -161,6 +162,9 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         self.set_child(self._covers)
 
         self._popup_actions = Gio.SimpleActionGroup()
+        self._move_to = move_menu.BooksMoveToMenu(
+            self, self._selected_paths, self._move_selected_to,
+            self._recent_paths)
         self._book_menu = self._create_popup_menu()
 
     def _take_drags_and_drops(self) -> None:
@@ -198,6 +202,9 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         covers it shows - alive after the window had gone.
         """
         self.insert_action_group('books', None)
+        self.insert_action_group(move_menu.BooksMoveToMenu.ACTION_PREFIX,
+                                 None)
+        self._move_to.release()
         # And the cover grid: it holds a method of this area in turn, which
         # makes another such cycle for as long as the area is its parent.
         self.set_child(None)
@@ -312,6 +319,12 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
                     item.set_attribute_value(
                         'accel', GLib.Variant('s', self._MENU_KEYS[name]))
                 section.append_item(item)
+                if name == 'rename':
+                    # The main window's, for the books selected; not
+                    # its "Mo_ve to", whose letter is taken here in
+                    # many languages.
+                    section.append_submenu(_('Move _to'),
+                                           self._move_to.model)
             model.append_section(heading, section)
 
         # Filled each time the menu opens: the commands are edited in the
@@ -1162,11 +1175,27 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         item = selected[0]
         self._library.main_window.file_actions.ask_to_rename_book(
             item.path, self._library.window,
-            lambda target: self._book_renamed(item, target))
+            lambda target: self._book_moved(item, target))
 
-    def _book_renamed(self, item: _BookItem, target: str) -> None:
-        """Show <item>'s book, renamed to <target>, where its name now
-        puts it."""
+    def _selected_paths(self) -> list[str]:
+        """The paths of the books selected."""
+        return [item.path for item in self._selected_items()]
+
+    def _recent_paths(self) -> "Sequence[str]":
+        """The paths of the files recently opened, for "Move to"."""
+        return self._library.main_window.uimanager.recent.paths()
+
+    def _move_selected_to(self, directory: str) -> None:
+        """Move the books selected into <directory>, as the main
+        window's "Move to" moves the book being read."""
+        items = {item.path: item for item in self._selected_items()}
+        self._library.main_window.file_actions.move_books(
+            list(items), directory, self._library.window,
+            lambda path, target: self._book_moved(items[path], target))
+
+    def _book_moved(self, item: _BookItem, target: str) -> None:
+        """Show <item>'s book, renamed or moved to <target>, where its
+        name now puts it."""
         # The library moved its cover to the new name.
         self._cache.invalidate(item.path)
         item.path = target
@@ -1236,6 +1265,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         self._set_sensitive('copy-to-clipboard', len(selected) == 1)
         self._set_sensitive('open-containing-folder', len(selected) == 1)
         self._set_sensitive('rename', len(selected) == 1)
+        self._move_to.update()
         self._offer_commands(selected[0].path if selected else None)
 
         widgets.popup_at(self._book_menu, over or self, x, y)

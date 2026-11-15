@@ -49,7 +49,7 @@ While no book is open, the main window shows the covers of "Recent" itself, or o
 - The line under the covers gives the selected book's folder, size, page count, and the page it was left on or when it was finished.
 - With no book selected, it counts the books on show: how many, how many of them are started and how many finished, the pages read, and when the last was read.
 - A double click or Enter opens a book. Enter on one of several books picked out opens them all as one book, as "Open" does.
-- Right-clicking the books offers "Open", "Open without closing library", "Mark as read", "Mark as unread", "Add...", "Clean up", "Copy", "Open containing folder", "Rename", "Properties", "Open with" where [external commands](external-commands.md) are set up, and three ways to take them out:
+- Right-clicking the books offers "Open", "Open without closing library", "Mark as read", "Mark as unread", "Add...", "Clean up", "Copy", "Open containing folder", "Rename", "Move to", "Properties", "Open with" where [external commands](external-commands.md) are set up, and three ways to take them out:
   - "Remove from this collection".
   - "Remove from the library".
   - "Remove and move to the trash": the only one that touches the files. They can be restored from the trash. Where the trash would refuse one, MComix asks to delete it permanently instead. It also takes them out of the recent files and asks about their bookmarks.
@@ -57,6 +57,7 @@ While no book is open, the main window shows the covers of "Recent" itself, or o
 - Delete takes the selected books out of the collection on show, as "Remove from this collection" does. Under "All books" it does nothing.
 - "Open containing folder" shows a single book in the file manager.
 - "Rename", or F2, renames a single book's file, as "Rename archive..." in the main window does: the library, bookmarks and the page it was left at follow it, and the book being read is reopened under its new name.
+- "Move to" moves the selected books into another folder, offering the folders the main window's "Move to" offers. What is recorded of each follows it, and the book being read is reopened where it landed.
 - "Properties", or ALT+Return, describes the selected book: its file, format and pages, when it was added and last read, and its collections. Several books are summed up: how many, their pages and size, how many were started and finished, and their folder where they share one.
 - "Sort" orders by name, full path, file size, pages, date added, date modified (the file's own date), last read or by hand; "Cover size" sets how large covers are drawn. Books never read come last under "Last read", and books whose file is gone under "Date modified"; "Descending" puts the latest read first.
 - A middle click on a cover starts a second MComix on that book.
