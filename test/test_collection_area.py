@@ -395,9 +395,16 @@ class CollectionAreaTest(MComixTest):
         """Enter opens or closes the row with the focus.  A right click
         left it on the row clicked before, so Enter after the menu
         expanded Comics while Manga was shown selected."""
-        self.area._list.grab_focus()
-        self.area._list.select_row(self._row_for(self.comics), focus=True)
-        self._settle_until(lambda: self._focused_collection() == self.comics)
+        # Where it starts from.  Under eight workers the window has been
+        # seen to take the focus only after a first request was spent,
+        # so it is asked for until it holds.
+        deadline = time.monotonic() + 5
+        while self._focused_collection() != self.comics \
+                and time.monotonic() < deadline:
+            self.area._list.grab_focus()
+            self.area._list.select_row(self._row_for(self.comics),
+                                       focus=True)
+            self._settle()
         self.assertEqual(self.comics, self._focused_collection())
         _, y = self._middle_of(self.manga)
         gesture = unittest.mock.Mock()
