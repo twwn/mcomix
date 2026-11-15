@@ -2005,6 +2005,14 @@ class CollectionMenuTest(_LibraryWindowTest):
         path = os.path.join(self.tmp_dir, 'gone.cbz')
         shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), path)
         dialog.backend.add_book(path)
+        pump()
+        # The covers on show take the new book in, and read its cover on
+        # a worker thread; Windows refuses to delete a file that is
+        # still open (WinError 32 on GitHub's runner).
+        self.assertTrue(wait_for(
+            lambda: [item.thumbnail is not None for item in
+                     dialog.book_area._covers.each_item()] == [True],
+            seconds=5), 'the cover was never drawn')
         os.remove(path)
         self.assertEqual(constants.COLLECTION_ALL,
                          dialog.collection_area.get_current_collection())
