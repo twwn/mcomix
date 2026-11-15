@@ -213,6 +213,17 @@ class RecentFilesMenu:
             # Could not remove item
             pass
 
+    def move_path(self, path: str, new_path: str) -> None:
+        """Follow <path>, renamed or moved to <new_path>, keeping its
+        place in the list; nothing if it is not there."""
+        if not preferences.prefs['store recent file info']:
+            return
+        try:
+            self._manager.move_item(_uri(path), _uri(new_path))
+        except GLib.GError:
+            # Not among the recent files.
+            pass
+
     def remove_all(self) -> None:
         """Take every entry the menu offers off the recently-used list.
 

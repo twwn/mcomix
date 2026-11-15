@@ -4419,6 +4419,41 @@ class MainWindowTest(MComixTest):
             dialog.destroy()
         self._pump()
 
+    def test_a_book_not_being_read_is_renamed_where_it_lies(self):
+        """As the library asks for it: the book being read stays open,
+        and the renamed one's records follow it."""
+        source = self._movable_book()
+        other = os.path.join(self.tmp_dir, 'Other.cbz')
+        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), other)
+        library = backend.LibraryBackend()
+        self.assertTrue(library.add_book(other))
+        recent = self.window.uimanager.recent
+        recent.add_path(other)
+        # Added once GIO has read what kind of file it is.
+        self.assertTrue(wait_for(lambda: recent._manager.has_item(
+            Gio.File.new_for_path(other).get_uri())))
+        told = []
+
+        def ask(parent, *, title, prompt, name, clash, answered):
+            self.assertEqual(name, 'Other.cbz')
+            answered(Response.OK, 'Renamed')
+
+        with unittest.mock.patch.object(rename_dialog, 'ask', ask):
+            self.window.file_actions.ask_to_rename_book(
+                other, self.window, told.append)
+        self._pump()
+
+        renamed = os.path.join(self.tmp_dir, 'Renamed.cbz')
+        self.assertEqual(told, [renamed])
+        self.assertTrue(os.path.isfile(renamed))
+        self.assertFalse(os.path.exists(other))
+        self.assertIsNotNone(library.get_book_by_path(renamed))
+        self.assertTrue(recent._manager.has_item(
+            Gio.File.new_for_path(renamed).get_uri()))
+        self.assertFalse(recent._manager.has_item(
+            Gio.File.new_for_path(other).get_uri()))
+        self.assertEqual(self.window.filehandler.get_path_to_base(), source)
+
     def test_a_change_not_written_is_saved_before_the_archive_is_renamed(self):
         source, before = self._movable_changed_book()
         self._remember_answer(Response.YES)

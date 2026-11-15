@@ -1466,6 +1466,7 @@ class MenuKeyTest(MComixTest):
                     accels[action.get_string()] = accel.get_string()
         self.assertEqual({'books.remove-from-collection': 'Delete',
                           'books.copy-to-clipboard': '<Control>c',
+                          'books.rename': 'F2',
                           'books.properties': '<Alt>Return'}, accels)
 
 
@@ -1667,3 +1668,62 @@ class RightClickFocusTest(MComixTest):
         wait_for(lambda: self._focused() == 2)
         self.assertEqual([2], covers.get_selected_positions())
         self.assertEqual(2, self._focused())
+
+
+class _RenamingLibrary(_MarkingLibrary):
+
+    """A library whose main window's rename is only watched."""
+
+    def __init__(self):
+        super().__init__()
+        self.main_window = types.SimpleNamespace(
+            file_actions=unittest.mock.Mock())
+
+
+class RenameFromLibraryTest(MComixTest):
+
+    """"Rename" in the covers' menu, and F2."""
+
+    def setUp(self):
+        super().setUp()
+        from . import get_testfile_path
+        self.library = _RenamingLibrary()
+        self.addCleanup(self.library.backend.close)
+        path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        self.assertTrue(self.library.backend.add_book(path))
+        self.book = self.library.backend.get_book_by_path(path)
+        self.area = book_area._BookArea(self.library)
+        self.addCleanup(self.area.close)
+        self.item = book_area._BookItem(self.book)
+        self.area._covers.set_items([self.item])
+        self.ask = self.library.main_window.file_actions.ask_to_rename_book
+
+    def test_the_book_selected_is_renamed_and_shown_under_its_new_name(self):
+        self.area._covers.selection.select_all()
+        self.area.rename_selected()
+        path, parent, renamed = self.ask.call_args.args
+        self.assertEqual(self.book.path, path)
+        renamed('/elsewhere/Renamed.cbz')
+        self.assertEqual('/elsewhere/Renamed.cbz', self.item.path)
+
+    def test_with_nothing_selected_nothing_is_renamed(self):
+        self.area.rename_selected()
+        self.ask.assert_not_called()
+
+    def test_f2_renames(self):
+        with unittest.mock.patch.object(self.area,
+                                        'rename_selected') as rename:
+            self.assertEqual(Gdk.EVENT_STOP, self.area._key_press(
+                None, Gdk.KEY_F2, 0, Gdk.ModifierType(0)))
+        rename.assert_called_once_with()
+
+    def test_the_menu_offers_it_for_one_book_only(self):
+        action = self.area._popup_actions.lookup_action('rename')
+        with unittest.mock.patch.object(book_area.widgets, 'popup_at'):
+            self.area._popup_book_menu()
+            self.assertFalse(action.get_enabled())
+            self.area._covers.selection.select_all()
+            self.area._popup_book_menu()
+            self.assertTrue(action.get_enabled())
+
+# vim: expandtab:sw=4:ts=4

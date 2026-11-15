@@ -218,6 +218,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
     #: The keys _key_press() answers for a popup entry, shown beside it.
     _MENU_KEYS = {'remove-from-collection': 'Delete',
                   'copy-to-clipboard': '<Control>c',
+                  'rename': 'F2',
                   'properties': '<Alt>Return'}
 
     #: The popup's plain entries: action name, label, tooltip, handler.
@@ -257,6 +258,10 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
             ('open-containing-folder', _('Open containing folder'),
              _('Shows the selected book in the file manager.'),
              self._show_selected_in_folder),
+            # Not the collections' "Re_name": N is "Mark as u_nread"'s here.
+            ('rename', _('R_ename'),
+             _("Renames the selected book's file."),
+             self.rename_selected),
             # Not the File menu's "Proper_ties": its letter is taken here
             # in several languages.
             ('properties', _('_Properties'),
@@ -299,7 +304,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         entries = self._menu_entries()
         for heading, group in ((_('Library books'), entries[0:2]),
                                (None, entries[2:4]), (None, entries[4:5]),
-                               (None, entries[5:9]), (None, entries[9:12])):
+                               (None, entries[5:9]), (None, entries[9:13])):
             section = Gio.Menu()
             for name, label, tooltip, handler in group:
                 item = Gio.MenuItem.new(label, 'books.' + name)
@@ -1144,6 +1149,33 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
             self._library.main_window.file_actions.show_in_folder(
                 selected[0].path, self._library.window)
 
+    def rename_selected(self, *args: object) -> None:
+        """Ask what to call the one book selected, and rename its file.
+
+        The main window renames it, so that the book being read is
+        reopened under its new name and what is recorded under the old
+        one follows it, whether it is open or not.
+        """
+        selected = self._selected_items()
+        if len(selected) != 1:
+            return
+        item = selected[0]
+        self._library.main_window.file_actions.ask_to_rename_book(
+            item.path, self._library.window,
+            lambda target: self._book_renamed(item, target))
+
+    def _book_renamed(self, item: _BookItem, target: str) -> None:
+        """Show <item>'s book, renamed to <target>, where its name now
+        puts it."""
+        # The library moved its cover to the new name.
+        self._cache.invalidate(item.path)
+        item.path = target
+        self._covers.refresh_item(item)
+        # Sorted by name, it may belong elsewhere now.
+        self.set_sort_order()
+        self._library.control_area.update_info(
+            self._covers.get_selected_positions())
+
     def _middle_click(self, gesture: Gtk.GestureClick, n_press: int,
                       x: float, y: float) -> None:
         """Open the book under the pointer in an MComix of its own.
@@ -1203,6 +1235,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
                             books_selected and not is_collection_all)
         self._set_sensitive('copy-to-clipboard', len(selected) == 1)
         self._set_sensitive('open-containing-folder', len(selected) == 1)
+        self._set_sensitive('rename', len(selected) == 1)
         self._offer_commands(selected[0].path if selected else None)
 
         widgets.popup_at(self._book_menu, over or self, x, y)
@@ -1284,6 +1317,12 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         if state & Gdk.ModifierType.CONTROL_MASK \
                 and Gdk.keyval_to_lower(keyval) == Gdk.KEY_c:
             self._copy_selected()
+            return Gdk.EVENT_STOP
+        # As a page is renamed in the main window.
+        if keyval == Gdk.KEY_F2 and not state & (
+                Gdk.ModifierType.CONTROL_MASK | Gdk.ModifierType.ALT_MASK
+                | Gdk.ModifierType.SHIFT_MASK):
+            self.rename_selected()
             return Gdk.EVENT_STOP
         # As the main window's Properties are reached.
         if state & Gdk.ModifierType.ALT_MASK \

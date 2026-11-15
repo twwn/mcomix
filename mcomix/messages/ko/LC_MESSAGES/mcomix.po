@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-15 19:13+0100\n"
+"POT-Creation-Date: 2026-11-15 19:24+0100\n"
 "PO-Revision-Date: 2018-05-10 22:46+0900\n"
 "Last-Translator: Minho Jeung <jeungmh@gmail.com>\n"
 "Language-Team: \n"
@@ -49,8 +49,8 @@ msgstr "! 압축 해제 에러: %s"
 msgid "! Could not read %s"
 msgstr "! %s을(를) 읽을 수 없습니다"
 
-#: mcomix/archive_packer.py:213 mcomix/file_actions.py:1253
-#: mcomix/library/book_area.py:1051
+#: mcomix/archive_packer.py:213 mcomix/file_actions.py:1254
+#: mcomix/library/book_area.py:1056
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! %(file)s을(를) 제거할 수 없습니다: %(error)s"
@@ -89,14 +89,14 @@ msgstr "지원하지 않는 압축 형식: %s"
 msgid "! Could not parse bookmarks file %s"
 msgstr "! 책갈피 파일 %s를 해석할 수 없습니다"
 
-#: mcomix/bookmark_backend.py:487 mcomix/file_actions.py:1018
+#: mcomix/bookmark_backend.py:487 mcomix/file_actions.py:1019
 #: mcomix/page_marks.py:153 mcomix/page_rotations.py:124
 #: mcomix/reading_directions.py:98
 #, python-format
 msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! %(file)s을(를) %(directory)s(으)로 저장할 수 없습니다: %(error)s"
 
-#: mcomix/bookmark_backend.py:493 mcomix/file_actions.py:1028
+#: mcomix/bookmark_backend.py:493 mcomix/file_actions.py:1029
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "\"%(file)s\"을(를) \"%(directory)s\"(으)로 저장할 수 없습니다"
@@ -110,8 +110,8 @@ msgid "_No"
 msgstr "아니요(_N)"
 
 #: mcomix/bookmark_backend.py:510 mcomix/edit_dialog.py:65
-#: mcomix/file_actions.py:711 mcomix/file_actions.py:1069
-#: mcomix/file_actions.py:1235 mcomix/file_chooser_base_dialog.py:236
+#: mcomix/file_actions.py:712 mcomix/file_actions.py:1070
+#: mcomix/file_actions.py:1236 mcomix/file_chooser_base_dialog.py:236
 #: mcomix/file_chooser_base_dialog.py:241
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:38
@@ -213,7 +213,7 @@ msgstr "이 책의 책갈피 제거...(_R)"
 msgid "_Edit bookmarks..."
 msgstr "책갈피 편집...(_E)"
 
-#: mcomix/bookmark_menu.py:204 mcomix/file_actions.py:1299
+#: mcomix/bookmark_menu.py:204 mcomix/file_actions.py:1300
 #, python-format
 msgid "Remove the bookmarks in \"%s\"?"
 msgstr "\"%s\"의 책갈피를 제거할까요?"
@@ -310,16 +310,16 @@ msgstr "이미지"
 msgid "Comment files"
 msgstr "주석 파일"
 
-#: mcomix/edit_dialog.py:261 mcomix/file_actions.py:777
+#: mcomix/edit_dialog.py:261 mcomix/file_actions.py:778
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! 압축 파일 %(archivefile)s을(를) 저장할 수 없습니다: %(error)s"
 
-#: mcomix/edit_dialog.py:274 mcomix/file_actions.py:782
+#: mcomix/edit_dialog.py:274 mcomix/file_actions.py:783
 msgid "The new archive could not be saved!"
 msgstr "새 압축파일을 저장할 수 없습니다!"
 
-#: mcomix/edit_dialog.py:275 mcomix/file_actions.py:783
+#: mcomix/edit_dialog.py:275 mcomix/file_actions.py:784
 msgid "The original files have not been removed."
 msgstr "원본 파일이 제거되지 않았습니다."
 
@@ -374,8 +374,8 @@ msgstr "되돌리기(_R)"
 msgid "Go back to the saved values."
 msgstr "저장된 값으로 되돌립니다."
 
-#: mcomix/enhance_dialog.py:51 mcomix/file_actions.py:625
-#: mcomix/file_actions.py:683 mcomix/file_actions.py:712
+#: mcomix/enhance_dialog.py:51 mcomix/file_actions.py:626
+#: mcomix/file_actions.py:684 mcomix/file_actions.py:713
 #: mcomix/file_chooser_base_dialog.py:242 mcomix/openwith.py:455
 msgid "_Save"
 msgstr "저장(_S)"
@@ -437,51 +437,51 @@ msgstr "이미지 색 반전(_I)"
 msgid "Invert (negate) image colors."
 msgstr "이미지 색을 반전(음화)합니다."
 
-#: mcomix/file_actions.py:322 mcomix/file_actions.py:1387
-#: mcomix/file_actions.py:1477
+#: mcomix/file_actions.py:322 mcomix/file_actions.py:1400
+#: mcomix/file_actions.py:1524
 msgid "A file of that name is there already."
 msgstr "같은 이름의 파일이 이미 있습니다."
 
-#: mcomix/file_actions.py:347
+#: mcomix/file_actions.py:348
 #, python-format
 msgid "Could not rename \"%s\""
 msgstr "\"%s\"의 이름을 바꿀 수 없습니다"
 
-#: mcomix/file_actions.py:398
+#: mcomix/file_actions.py:399
 #, python-format
 msgid "Page %(number)d is called \"%(name)s\" already."
 msgstr "%(number)d쪽의 이름이 이미 \"%(name)s\"입니다."
 
-#: mcomix/file_actions.py:403
+#: mcomix/file_actions.py:404
 msgid "Rename page?"
 msgstr "쪽 이름을 변경하시겠습니까?"
 
-#: mcomix/file_actions.py:404
+#: mcomix/file_actions.py:405
 msgid "Please enter a new name for this page."
 msgstr "이 페이지에 대한 새 이름을 입력하세요."
 
-#: mcomix/file_actions.py:621
+#: mcomix/file_actions.py:622
 #, python-format
 msgid "Write \"%s\" again before closing it?"
 msgstr "닫기 전에 \"%s\"을(를) 다시 쓸까요?"
 
-#: mcomix/file_actions.py:622
+#: mcomix/file_actions.py:623
 msgid ""
 "The book has changes that the archive on disk does not hold. They are lost "
 "when it closes."
 msgstr ""
 "책에 디스크의 압축 파일에 없는 변경 사항이 있습니다. 닫으면 사라집니다."
 
-#: mcomix/file_actions.py:624
+#: mcomix/file_actions.py:625
 msgid "_Close without saving"
 msgstr "저장하지 않고 닫기(_C)"
 
-#: mcomix/file_actions.py:678
+#: mcomix/file_actions.py:679
 #, python-format
 msgid "Write \"%s\" again now?"
 msgstr "\"%s\"을(를) 지금 다시 쓸까요?"
 
-#: mcomix/file_actions.py:679
+#: mcomix/file_actions.py:680
 msgid ""
 "The archive on disk will be replaced by the book as it stands: the pages it "
 "holds now, in the order and under the names it shows."
@@ -489,16 +489,16 @@ msgstr ""
 "디스크의 압축 파일이 현재 상태의 책으로 바뀝니다. 지금 있는 쪽이 표시된 순서"
 "와 이름으로 기록됩니다."
 
-#: mcomix/file_actions.py:682
+#: mcomix/file_actions.py:683
 msgid "_Not now"
 msgstr "지금은 안 함(_N)"
 
-#: mcomix/file_actions.py:707
+#: mcomix/file_actions.py:708
 #, python-format
 msgid "\"%s\" has changed since it was opened"
 msgstr "\"%s\"이(가) 연 뒤에 바뀌었습니다"
 
-#: mcomix/file_actions.py:708
+#: mcomix/file_actions.py:709
 msgid ""
 "Another program has written it. Saving replaces it with the book as MComix "
 "shows it, and what that program changed is lost."
@@ -506,98 +506,98 @@ msgstr ""
 "다른 프로그램이 이 파일을 썼습니다. 저장하면 MComix에 보이는 책으로 바뀌고, "
 "그 프로그램이 바꾼 내용은 사라집니다."
 
-#: mcomix/file_actions.py:910
+#: mcomix/file_actions.py:911
 #, python-format
 msgid "Could not show the folder: %s"
 msgstr "디렉토리를 표시할 수 없습니다: %s"
 
-#: mcomix/file_actions.py:957 mcomix/keybindings.py:164
+#: mcomix/file_actions.py:958 mcomix/keybindings.py:164
 msgid "Save page as"
 msgstr "페이지를 다른 이름으로 저장"
 
-#: mcomix/file_actions.py:1022 mcomix/file_actions.py:1479
+#: mcomix/file_actions.py:1023 mcomix/file_actions.py:1526
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "공간이 부족합니다: 파일 크기는 %s입니다."
 
-#: mcomix/file_actions.py:1059
+#: mcomix/file_actions.py:1060
 msgid "There is no trash for this folder, so it cannot be restored."
 msgstr "이 디렉토리에는 휴지통이 없으므로 복원할 수 없습니다."
 
-#: mcomix/file_actions.py:1067
+#: mcomix/file_actions.py:1068
 #, python-format
 msgid "Delete \"%s\"?"
 msgstr "\"%s\"을(를) 삭제합니까?"
 
-#: mcomix/file_actions.py:1068
+#: mcomix/file_actions.py:1069
 msgid "The file is moved to the trash."
 msgstr "파일을 휴지통으로 옮깁니다."
 
-#: mcomix/file_actions.py:1070
+#: mcomix/file_actions.py:1071
 msgid "_Move to Trash"
 msgstr "휴지통으로 옮기기(_M)"
 
-#: mcomix/file_actions.py:1100
+#: mcomix/file_actions.py:1101
 msgid "It does not go to the trash and cannot be restored."
 msgstr "휴지통으로 옮기지 않으며 복원할 수 없습니다."
 
-#: mcomix/file_actions.py:1108
+#: mcomix/file_actions.py:1109
 #, python-format
 msgid "Delete \"%s\" permanently?"
 msgstr "\"%s\"을(를) 영구히 삭제합니까?"
 
-#: mcomix/file_actions.py:1208
+#: mcomix/file_actions.py:1209
 #, python-format
 msgid "Could not move \"%s\" to the trash"
 msgstr "\"%s\"을(를) 휴지통으로 옮길 수 없습니다"
 
-#: mcomix/file_actions.py:1212 mcomix/library/book_area.py:1063
+#: mcomix/file_actions.py:1213 mcomix/library/book_area.py:1068
 #, python-format
 msgid "%d book could not be moved to the trash."
 msgid_plural "%d books could not be moved to the trash."
 msgstr[0] "%d 권의 책을 휴지통으로 옮길 수 없습니다."
 
-#: mcomix/file_actions.py:1216
+#: mcomix/file_actions.py:1217
 msgid "Delete it permanently instead? It cannot be restored."
 msgid_plural "Delete them permanently instead? They cannot be restored."
 msgstr[0] "대신 영구히 삭제합니까? 복원할 수 없습니다."
 
-#: mcomix/file_actions.py:1236
+#: mcomix/file_actions.py:1237
 msgid "_Delete Permanently"
 msgstr "영구히 삭제(_D)"
 
-#: mcomix/file_actions.py:1263
+#: mcomix/file_actions.py:1264
 #, python-format
 msgid "Could not delete \"%s\""
 msgstr "\"%s\"을(를) 삭제할 수 없습니다"
 
-#: mcomix/file_actions.py:1269
+#: mcomix/file_actions.py:1270
 #, python-format
 msgid "%d book could not be deleted."
 msgid_plural "%d books could not be deleted."
 msgstr[0] "%d 권의 책을 삭제할 수 없습니다."
 
-#: mcomix/file_actions.py:1295
+#: mcomix/file_actions.py:1296
 #, python-format
 msgid "The file is gone, and its %d bookmark cannot be opened any more."
 msgid_plural ""
 "The file is gone, and its %d bookmarks cannot be opened any more."
 msgstr[0] "파일이 사라져 그 안의 책갈피 %d개를 더 이상 열 수 없습니다."
 
-#: mcomix/file_actions.py:1391
+#: mcomix/file_actions.py:1404
 msgid "Rename archive?"
 msgstr "압축파일 이름을 변경하시겠습니까?"
 
-#: mcomix/file_actions.py:1392
+#: mcomix/file_actions.py:1405
 msgid "Please enter a new name for this archive."
 msgstr "이 압축파일에 대한 새 이름을 입력하세요."
 
-#: mcomix/file_actions.py:1473 mcomix/thumbnail_tools.py:211
+#: mcomix/file_actions.py:1520 mcomix/thumbnail_tools.py:211
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr "! %(file)s을(를) %(directory)s(으)로 이동할 수 없습니다: %(error)s"
 
-#: mcomix/file_actions.py:1485
+#: mcomix/file_actions.py:1532
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "\"%(file)s\"을(를) \"%(directory)s\"(으)로 이동할 수 없습니다"
@@ -614,7 +614,7 @@ msgstr[0] "%d 페이지"
 msgid "Open"
 msgstr "열기"
 
-#: mcomix/file_chooser_base_dialog.py:237 mcomix/library/book_area.py:226
+#: mcomix/file_chooser_base_dialog.py:237 mcomix/library/book_area.py:227
 msgid "_Open"
 msgstr "열기(_O)"
 
@@ -1170,7 +1170,7 @@ msgid "Preferences"
 msgstr "환경설정"
 
 #: mcomix/keybindings.py:171 mcomix/ui.py:450 mcomix/ui.py:453
-#: mcomix/library/book_area.py:257
+#: mcomix/library/book_area.py:258
 msgid "Open containing folder"
 msgstr "포함하는 디렉토리 열기"
 
@@ -2172,7 +2172,7 @@ msgstr "파일명"
 msgid "File name (GLib)"
 msgstr "파일명(GLib)"
 
-#: mcomix/preferences_dialog.py:753 mcomix/library/book_area.py:321
+#: mcomix/preferences_dialog.py:753 mcomix/library/book_area.py:326
 msgid "File size"
 msgstr "파일 크기"
 
@@ -2181,12 +2181,12 @@ msgid "Last modified"
 msgstr "수정한 날짜"
 
 #: mcomix/preferences_dialog.py:760 mcomix/preferences_dialog.py:806
-#: mcomix/library/book_area.py:329
+#: mcomix/library/book_area.py:334
 msgid "Ascending"
 msgstr "오름차순"
 
 #: mcomix/preferences_dialog.py:761 mcomix/preferences_dialog.py:807
-#: mcomix/library/book_area.py:330
+#: mcomix/library/book_area.py:335
 msgid "Descending"
 msgstr "내림차순"
 
@@ -2332,7 +2332,7 @@ msgstr ""
 "가져오는 방식입니다. 지각적은 색의 비율을 유지하고, 상대 비색계는 화면이 표시"
 "할 수 있는 색을 정확히 유지합니다."
 
-#: mcomix/preferences_dialog.py:981 mcomix/library/book_area.py:337
+#: mcomix/preferences_dialog.py:981 mcomix/library/book_area.py:342
 msgid "Normal"
 msgstr "노멀"
 
@@ -2785,7 +2785,7 @@ msgstr "벡터 아이콘"
 msgid "! Could not save thumbnail \"%(thumbpath)s\": %(error)s"
 msgstr "! 섬네일 저장 실패 \"%(thumbpath)s\": %(error)s"
 
-#: mcomix/ui.py:441 mcomix/library/book_area.py:254
+#: mcomix/ui.py:441 mcomix/library/book_area.py:255
 msgid "_Copy"
 msgstr "복사(_P)"
 
@@ -3328,172 +3328,180 @@ msgstr "모든 책"
 msgid "! Could not scan for new books: %s"
 msgstr "! 새 책을 검색할 수 없습니다: %s"
 
-#: mcomix/library/book_area.py:227
+#: mcomix/library/book_area.py:228
 msgid "Opens the selected books for viewing."
 msgstr "선택된 책들을 보기 위해 엽니다."
 
-#: mcomix/library/book_area.py:229
+#: mcomix/library/book_area.py:230
 msgid "Open _without closing library"
 msgstr "라이브러리를 닫지 않고 엽니다(_W)"
 
-#: mcomix/library/book_area.py:230
+#: mcomix/library/book_area.py:231
 msgid "Opens the selected books, but keeps the library window open."
 msgstr ""
 "선택된 책들을 보기 위해 엽니다. 그러나 라이브러리 윈도우는 연 채로 둡니다."
 
-#: mcomix/library/book_area.py:232
+#: mcomix/library/book_area.py:233
 msgid "_Mark as read"
 msgstr "읽음으로 표시(_M)"
 
-#: mcomix/library/book_area.py:233
+#: mcomix/library/book_area.py:234
 msgid "Marks the selected books as read to the end."
 msgstr "선택한 책을 끝까지 읽은 것으로 표시합니다."
 
-#: mcomix/library/book_area.py:235
+#: mcomix/library/book_area.py:236
 msgid "Mark as u_nread"
 msgstr "읽지 않음으로 표시(_N)"
 
-#: mcomix/library/book_area.py:236
+#: mcomix/library/book_area.py:237
 msgid "Forgets the page the selected books were left at."
 msgstr "선택한 책을 읽다 멈춘 페이지를 잊습니다."
 
-#: mcomix/library/book_area.py:238 mcomix/library/collection_area.py:142
+#: mcomix/library/book_area.py:239 mcomix/library/collection_area.py:142
 msgid "_Add..."
 msgstr "추가(_A)"
 
-#: mcomix/library/book_area.py:239 mcomix/library/collection_area.py:143
+#: mcomix/library/book_area.py:240 mcomix/library/collection_area.py:143
 msgid "Add more books to the library."
 msgstr "라이브러리에 더 많은 책 추가."
 
-#: mcomix/library/book_area.py:242
+#: mcomix/library/book_area.py:243
 msgid "Remove _from this collection"
 msgstr "모음집에서 제거(_C)"
 
-#: mcomix/library/book_area.py:243
+#: mcomix/library/book_area.py:244
 msgid "Removes the selected books from the current collection."
 msgstr "선택된 책들을 현재 모음집에서 제거합니다."
 
-#: mcomix/library/book_area.py:245
+#: mcomix/library/book_area.py:246
 msgid "Remove from the _library"
 msgstr "라이브러리에서 제거(_L)"
 
-#: mcomix/library/book_area.py:246
+#: mcomix/library/book_area.py:247
 msgid "Completely removes the selected books from the library."
 msgstr "선택된 책들을 라이브러리에서 완전히 제거합니다."
 
-#: mcomix/library/book_area.py:248
+#: mcomix/library/book_area.py:249
 msgid "_Remove and move to the trash"
 msgstr "제거하고 휴지통으로 옮기기(_R)"
 
-#: mcomix/library/book_area.py:249
+#: mcomix/library/book_area.py:250
 msgid "Deletes the selected books from disk."
 msgstr "선택된 책들을 디스크에서 삭제."
 
-#: mcomix/library/book_area.py:251 mcomix/library/collection_area.py:153
+#: mcomix/library/book_area.py:252 mcomix/library/collection_area.py:153
 msgid "Clean _up"
 msgstr "정리(_U)"
 
-#: mcomix/library/book_area.py:252 mcomix/library/collection_area.py:154
+#: mcomix/library/book_area.py:253 mcomix/library/collection_area.py:154
 msgid "Removes no longer existent books from the collection."
 msgstr "더 이상 존재하지 않는 책을 모음집에서 제거합니다."
 
-#: mcomix/library/book_area.py:255
+#: mcomix/library/book_area.py:256
 msgid "Copies the selected book's path to clipboard."
 msgstr "선택한 책의 경로를 클립보드에 복사."
 
-#: mcomix/library/book_area.py:258
+#: mcomix/library/book_area.py:259
 msgid "Shows the selected book in the file manager."
 msgstr "선택한 책을 파일 관리자에서 표시."
 
 #: mcomix/library/book_area.py:262
+msgid "R_ename"
+msgstr "이름 변경(_E)"
+
+#: mcomix/library/book_area.py:263
+msgid "Renames the selected book's file."
+msgstr "선택한 책의 파일 이름을 바꿉니다."
+
+#: mcomix/library/book_area.py:267
 msgid "_Properties"
 msgstr "등록정보(_T)"
 
-#: mcomix/library/book_area.py:263
+#: mcomix/library/book_area.py:268
 msgid "Describes the selected books."
 msgstr "선택한 책의 정보를 표시."
 
-#: mcomix/library/book_area.py:300
+#: mcomix/library/book_area.py:305
 msgid "Library books"
 msgstr "라이브러리 북"
 
-#: mcomix/library/book_area.py:319
+#: mcomix/library/book_area.py:324
 msgid "Book name"
 msgstr "책 이름"
 
-#: mcomix/library/book_area.py:320
+#: mcomix/library/book_area.py:325
 msgid "Full path"
 msgstr "전체 경로"
 
-#: mcomix/library/book_area.py:322
+#: mcomix/library/book_area.py:327
 msgid "Pages"
 msgstr "페이지 수"
 
-#: mcomix/library/book_area.py:323 mcomix/library/book_properties.py:89
+#: mcomix/library/book_area.py:328 mcomix/library/book_properties.py:89
 msgid "Date added"
 msgstr "추가된 날짜"
 
-#: mcomix/library/book_area.py:324
+#: mcomix/library/book_area.py:329
 msgid "Date modified"
 msgstr "수정한 날짜"
 
-#: mcomix/library/book_area.py:325 mcomix/library/book_properties.py:93
+#: mcomix/library/book_area.py:330 mcomix/library/book_properties.py:93
 msgid "Last read"
 msgstr "마지막으로 읽은 날짜"
 
-#: mcomix/library/book_area.py:326
+#: mcomix/library/book_area.py:331
 msgid "By hand"
 msgstr "수동"
 
-#: mcomix/library/book_area.py:335
+#: mcomix/library/book_area.py:340
 msgid "Huge"
 msgstr "초대형"
 
-#: mcomix/library/book_area.py:336
+#: mcomix/library/book_area.py:341
 msgid "Large"
 msgstr "대형"
 
-#: mcomix/library/book_area.py:338
+#: mcomix/library/book_area.py:343
 msgid "Small"
 msgstr "소형"
 
-#: mcomix/library/book_area.py:339
+#: mcomix/library/book_area.py:344
 msgid "Tiny"
 msgstr "최소"
 
-#: mcomix/library/book_area.py:343
+#: mcomix/library/book_area.py:348
 msgid "Custom..."
 msgstr "고유설정..."
 
-#: mcomix/library/book_area.py:347
+#: mcomix/library/book_area.py:352
 msgid "_Sort"
 msgstr "정렬(_S)"
 
-#: mcomix/library/book_area.py:348
+#: mcomix/library/book_area.py:353
 msgid "Cover si_ze"
 msgstr "커버 사이즈(_Z)"
 
-#: mcomix/library/book_area.py:695
+#: mcomix/library/book_area.py:700
 msgid "Set library cover size"
 msgstr "라이브러리 커버 사이즈 설정"
 
-#: mcomix/library/book_area.py:927
+#: mcomix/library/book_area.py:932
 #, python-format
 msgid "Removed %(num)d book from '%(collection)s'."
 msgid_plural "Removed %(num)d books from '%(collection)s'."
 msgstr[0] "'%(collection)s' 에서 %(num)d  책 제거."
 
-#: mcomix/library/book_area.py:950 mcomix/library/collection_area.py:301
+#: mcomix/library/book_area.py:955 mcomix/library/collection_area.py:301
 #, python-format
 msgid "Removed %d book from the library."
 msgid_plural "Removed %d books from the library."
 msgstr[0] "%d 권의 책을 라이브러리에서 제거했습니다."
 
-#: mcomix/library/book_area.py:972 mcomix/library/book_area.py:993
+#: mcomix/library/book_area.py:977 mcomix/library/book_area.py:998
 msgid "Remove books from the library?"
 msgstr "라이브러리에서 책을 제거하시겠습니까?"
 
-#: mcomix/library/book_area.py:973
+#: mcomix/library/book_area.py:978
 msgid ""
 "The selected books will be removed from the library. Any in a folder with no "
 "trash is deleted permanently and cannot be restored."
@@ -3501,18 +3509,18 @@ msgstr ""
 "선택한 책은 라이브러리에서 제거됩니다. 휴지통이 없는 디렉토리에 있는 책은 영"
 "구히 삭제되며 복원할 수 없습니다."
 
-#: mcomix/library/book_area.py:994
+#: mcomix/library/book_area.py:999
 msgid ""
 "The selected books will be removed from the library and moved to the trash."
 msgstr "선택한 책은 라이브러리에서 제거되고 휴지통으로 옮겨집니다."
 
-#: mcomix/library/book_area.py:1114
+#: mcomix/library/book_area.py:1119
 #, python-format
 msgid "Remove the bookmarks in the deleted book?"
 msgid_plural "Remove the bookmarks in the %(count)d deleted books?"
 msgstr[0] "삭제한 책 %(count)d권의 책갈피도 제거할까요?"
 
-#: mcomix/library/book_area.py:1237
+#: mcomix/library/book_area.py:1270
 msgid "Open with"
 msgstr "추가기능"
 

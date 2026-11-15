@@ -333,7 +333,8 @@ class FileActions:
                          self._window.imagehandler.get_current_page())
         return name
 
-    def _rename_failed(self, path: str, error: OSError) -> None:
+    def _rename_failed(self, path: str, error: OSError,
+                       parent: "Gtk.Window | None" = None) -> None:
         """Say why the file at <path> kept its name.
 
         Most often a folder the reader may not write to, or a file
@@ -343,7 +344,7 @@ class FileActions:
         """
         log.error('Could not rename %s: %r', path, error)
         dialog = message_dialog.MessageDialog(
-            self._window, buttons=Gtk.ButtonsType.CLOSE)
+            parent or self._window, buttons=Gtk.ButtonsType.CLOSE)
         dialog.set_text(_('Could not rename "%s"') % os.path.basename(path),
                         str(error))
         dialog.run_async(lambda response: None)
@@ -1362,16 +1363,28 @@ class FileActions:
         """Ask what to call the archive being read, and rename it.
 
         The page being read comes back, as after "Move to", and so does
-        everything recorded under the old name (_book_moved()).  A name
-        typed without an extension keeps the old one, as a page's does;
-        a name another file in the folder holds is refused, since a
-        rename is no way to write over a file.  A folder of images is
-        not an archive, and has its pages renamed instead.
+        everything recorded under the old name (_book_moved()).  A folder
+        of images is not an archive, and has its pages renamed instead.
         """
         filehandler = self._window.filehandler
         path = filehandler.get_path_to_base()
         if filehandler.archive_type is None or path is None:
             return
+        self.ask_to_rename_book(path, self._window)
+
+    def ask_to_rename_book(self, path: str, parent: Gtk.Window,
+                           renamed: "Callable[[str], None] | None" = None
+                           ) -> None:
+        """Ask, over <parent>, what to call the book at <path>, and
+        rename it; <renamed> is told the new path once it has one.
+
+        A name typed without an extension keeps the old one, as a
+        page's does; a name another file in the folder holds is refused,
+        since a rename is no way to write over a file.  The book being
+        read is reopened under its new name; one that is not open is
+        renamed where it lies.  Either way, what was recorded under the
+        old name follows it (_follow()).
+        """
         folder, name = os.path.split(path)
 
         def clash(typed: str) -> "rename_dialog.Clash | None":
@@ -1387,30 +1400,48 @@ class FileActions:
                 _('A file of that name is there already.'), False)
 
         rename_dialog.ask(
-            self._window,
+            parent,
             title=_('Rename archive?'),
             prompt=_('Please enter a new name for this archive.'),
             name=name, clash=clash,
             answered=lambda response, typed: self._book_rename_answered(
-                response, path, typed))
+                response, path, typed, parent, renamed))
 
-    def _book_rename_answered(self, response: int, path: str,
-                              typed: str) -> None:
-        """Rename the archive at <path> as <typed> says, if that was
-        the answer and it is still the book being read."""
-        if response != Response.OK \
-                or self._window.filehandler.get_path_to_base() != path:
+    def _is_open_book(self, path: str) -> bool:
+        """Whether <path> is the archive being read."""
+        filehandler = self._window.filehandler
+        open_book = filehandler.get_path_to_base()
+        return filehandler.archive_type is not None \
+            and open_book is not None \
+            and os.path.abspath(open_book) == os.path.abspath(path)
+
+    def _book_rename_answered(self, response: int, path: str, typed: str,
+                              parent: Gtk.Window,
+                              renamed: "Callable[[str], None] | None"
+                              ) -> None:
+        """Rename the book at <path> as <typed> says, if that was the
+        answer."""
+        if response != Response.OK:
             return
         name = rename_dialog.read(os.path.basename(path), typed)
         if name is None:
             return
-        # Its changes are written or let go first, as for a move.
-        self.before_closing(lambda: self._rename_book_now(path, name))
+        if self._is_open_book(path):
+            # Its changes are written or let go first, as for a move.
+            self.before_closing(lambda: self._rename_book_now(
+                path, name, parent, renamed))
+        else:
+            self._rename_book_now(path, name, parent, renamed)
 
-    def _rename_book_now(self, path: str, name: str) -> None:
-        """Call the archive at <path> <name>, in the folder it is in."""
+    def _rename_book_now(self, path: str, name: str,
+                         parent: "Gtk.Window | None" = None,
+                         renamed: "Callable[[str], None] | None" = None
+                         ) -> None:
+        """Call the book at <path> <name>, in the folder it is in."""
         target = os.path.join(os.path.dirname(path), name)
-        self._window.filehandler.release_archive()
+        is_open = self._is_open_book(path)
+        if is_open:
+            self._window.filehandler.release_archive()
         try:
             if os.path.lexists(target) and not _same_file_recased(path,
                                                                   target):
@@ -1420,10 +1451,18 @@ class FileActions:
             # still reads the file.
             portability.rename_once_closed(os.rename, path, target)
         except OSError as error:
-            self._stayed()
-            self._rename_failed(path, error)
+            if is_open:
+                self._stayed()
+            self._rename_failed(path, error, parent)
             return
-        self._book_moved(path, target)
+        if is_open:
+            self._book_moved(path, target)
+        else:
+            self._follow(path, target)
+            # Where it stood among the recent files, under its new name.
+            self._window.uimanager.recent.move_path(path, target)
+        if renamed is not None:
+            renamed(target)
 
     def _stayed(self) -> None:
         """The book did not go after all: the next close asks about its
@@ -1443,15 +1482,7 @@ class FileActions:
         """
         in_archive = self._window.filehandler.archive_type is not None
         page = self._window.imagehandler.get_current_page()
-        backend.LibraryBackend().update_book_path(current_file, target)
-        bookmark_backend.BookmarksStore.update_path(current_file, target)
-        # The turns and the marks the reader gave its pages, and the
-        # direction the book was set to, are kept by its path as well.
-        old, new = os.path.abspath(current_file), os.path.abspath(target)
-        page_rotations.follow(old, new)
-        page_marks.follow(old, new)
-        reading_directions.follow(old, new)
-        archive_password.follow(old, new)
+        self._follow(current_file, target)
         # The book is about to be opened where it landed, which records
         # that; the entry for where it was would open nothing.
         self._window.uimanager.recent.remove_path(current_file)
@@ -1461,6 +1492,22 @@ class FileActions:
         # Opening the book closed it first, which wrote the page being
         # read back under the path the file no longer has.
         self._window.filehandler.last_read_page.clear_page(current_file)
+
+    @staticmethod
+    def _follow(current_file: str, target: str) -> None:
+        """Bring forward what is recorded under <current_file>, which is
+        now <target>: the library's book, the bookmarks, and the store
+        of last read pages, which is the library's."""
+        backend.LibraryBackend().update_book_path(current_file, target)
+        bookmark_backend.BookmarksStore.update_path(current_file, target)
+        # The turns and the marks the reader gave its pages, and the
+        # direction the book was set to, are kept by its path as well,
+        # and so is the password typed for it this session.
+        old, new = os.path.abspath(current_file), os.path.abspath(target)
+        page_rotations.follow(old, new)
+        page_marks.follow(old, new)
+        reading_directions.follow(old, new)
+        archive_password.follow(old, new)
 
     def _move_failed(self, current_file: str, directory: str,
                      error: OSError) -> None:
