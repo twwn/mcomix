@@ -182,6 +182,34 @@ class HandlerTest(MComixTest):
             self.assertNotIn(270, written.tag_v2)
             self.assertNotIn(305, written.tag_v2)
 
+    def test_a_page_of_oblong_dots_is_written_with_square_ones(self):
+        """A fax in standard resolution has 204 dots to the inch
+        across and 98 down."""
+        pages = [Image.new('1', (204, 98), 1), Image.new('L', (98, 204), 9)]
+        pages[0].putpixel((0, 97), 0)
+        archive = self._open(_write(os.path.join(self.tmp_dir, 'fax.tif'),
+                                    pages, dpi=(204, 98)))
+        written = self._extracted(archive, 'page00001.tif')
+        self.assertEqual('1', written.mode)
+        self.assertEqual((204, 204), written.size)
+        self.assertEqual(0, written.getpixel((0, 203)))
+        self.assertEqual(
+            (98, 425), self._extracted(archive, 'page00002.tif').size)
+
+    def test_a_page_on_its_side_is_stretched_the_way_it_is_seen(self):
+        archive = self._open(_write(
+            os.path.join(self.tmp_dir, 'fax.tif'),
+            [Image.new('1', (204, 98), 1)] * 2,
+            dpi=(204, 98), tiffinfo={274: 6}))
+        self.assertEqual(
+            (204, 204), self._extracted(archive, 'page00001.tif').size)
+
+    def test_a_ratio_no_device_has_is_not_believed(self):
+        archive = self._open(_write(os.path.join(self.tmp_dir, 'odd.tif'),
+                                    _pages(), dpi=(300, 3)))
+        self.assertEqual(
+            (40, 60), self._extracted(archive, 'page00001.tif').size)
+
     def test_previews_are_no_pages(self):
         pages = _pages()
         archive = self._open(_with_previews(

@@ -33,6 +33,13 @@ _NEW_SUBFILE_TYPE = 254
 _REDUCED_IMAGE = 1
 _MASK = 4
 
+#: The tags for the dots to the unit across and down, and the most one
+#: may exceed the other by and still be believed.
+_X_RESOLUTION = 282
+_Y_RESOLUTION = 283
+_MOST_STRETCH = 4
+_ORIENTATION = 274
+
 _PAGE_NAME = re.compile(r'^page([0-9]+)\.tif$')
 
 
@@ -55,6 +62,31 @@ def _is_page(image: Image.Image, first: tuple[int, int] | None) -> bool:
     width, height = image.size
     return not (max(width, height) <= _PREVIEW_SIDE
                 and width < first[0] and height < first[1])
+
+
+def _stretch(image: Image.Image) -> tuple[float, float] | None:
+    """How far the picture <image> stands at is to be widened and
+    heightened for its dots to be square, None where they are: a fax in
+    standard resolution has 204 dots to the inch across and 98 down,
+    and shown dot for pixel is a sheet half as tall as it was."""
+    tags = getattr(image, 'tag_v2', {})
+    try:
+        across = float(tags.get(_X_RESOLUTION, 0))
+        down = float(tags.get(_Y_RESOLUTION, 0))
+    except (TypeError, ValueError, ZeroDivisionError):
+        return None
+    if across <= 0 or down <= 0:
+        return None
+    ratio = max(across, down) / min(across, down)
+    # Nearly square is square, and a ratio no device has is a mistake
+    # in the file.
+    if not 1.05 < ratio <= _MOST_STRETCH:
+        return None
+    # The tags speak of the picture as it is stored; turned onto its
+    # side, as it is read, across is down.
+    if tags.get(_ORIENTATION) in (5, 6, 7, 8):
+        across, down = down, across
+    return (1.0, ratio) if down < across else (ratio, 1.0)
 
 
 def _page_frames(image: Image.Image, at_most: int | None = None) \
@@ -142,8 +174,10 @@ class TiffArchive(archive_base.BaseArchive):
             # Pillow checks the size of the first picture alone, when
             # it opens the file.
             width, height = image.size
+            stretch = _stretch(image)
+            ratio = max(stretch) if stretch is not None else 1
             if Image.MAX_IMAGE_PIXELS is not None \
-                    and width * height > Image.MAX_IMAGE_PIXELS:
+                    and width * height * ratio > Image.MAX_IMAGE_PIXELS:
                 raise Image.DecompressionBombError(
                     '%s: page of %dx%d pixels' % (filename, width, height))
             # A copy, which has the pixels, turned as the document says,
@@ -152,6 +186,12 @@ class TiffArchive(archive_base.BaseArchive):
             # libtiff, which refuses some of them and has taken the
             # process down over others.
             page = image.copy()
+        if stretch is not None:
+            page = page.resize(
+                (round(page.width * stretch[0]),
+                 round(page.height * stretch[1])),
+                Image.Resampling.NEAREST if page.mode in ('1', 'P')
+                else Image.Resampling.BILINEAR)
         # Packed without loss, whatever the document packed it with: a
         # scan of text to a hundredth of its size, anything else to
         # what costs the least time.  What libtiff will not pack that
