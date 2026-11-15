@@ -11,7 +11,7 @@ import unittest.mock
 
 from gi.repository import Gdk, GLib, Gtk
 
-from . import MComixTest, pump
+from . import MComixTest, pump, wait_for
 
 from mcomix import edit_comment_area
 from mcomix.dialog import Response
@@ -148,6 +148,33 @@ class CommentAreaTest(MComixTest):
     def test_removing_the_selected_comment_takes_it_out_of_the_listing(self):
         self.area.fetch_comments()
         self.area._list.select_only(1)
+        self.area._remove_file()
+        self.assertEqual(self.area.get_file_listing(),
+                         [self.paths[0], self.paths[2]])
+
+    def test_a_right_click_selects_the_comment_its_menu_acts_on(self):
+        """Rename and Remove act on the selected comment, so the click
+        that opens their menu selects the row under it first, as the
+        list of pages beside it does.  It left the selection alone:
+        Remove over two.txt removed one.txt, or nothing."""
+        self.area.fetch_comments()
+        self.area._list.select_only(0)
+        second = list(self.area._list.each_row())[1]
+
+        def where():
+            return next((y for y in range(0, 300)
+                         if self.area._list.row_at(20.0, y) is second),
+                        None)
+        # The rows are laid out some turns of the main loop after they
+        # are listed.
+        self.assertTrue(wait_for(lambda: where() is not None))
+        y = where()
+        gesture = unittest.mock.Mock()
+        gesture.get_widget.return_value = self.area._list
+        with unittest.mock.patch.object(edit_comment_area.widgets,
+                                        'popup_at'):
+            self.area._button_press(gesture, 1, 60.0, y)
+        self.assertIs(second, self.area._list.get_selected_row())
         self.area._remove_file()
         self.assertEqual(self.area.get_file_listing(),
                          [self.paths[0], self.paths[2]])

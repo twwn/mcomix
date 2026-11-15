@@ -280,8 +280,15 @@ class _CommentArea(Gtk.Box, widgets.Releasable):
     def _button_press(self, gesture: Gtk.GestureClick, n_press: int,
                       x: float, y: float) -> None:
         """Handle mouse button presses on the area."""
-        if self._list.row_at(x, y) is None:
+        row = self._list.row_at(x, y)
+        if row is None:
             return
+
+        if row not in self._list.get_selected_rows():
+            # Rename and Remove act on the selected row, so the one the
+            # menu is opened over is selected first, with the focus, as
+            # in the list of pages beside this one.
+            self._list.select_row(row, focus=True)
 
         widgets.popup_at(self._popup_menu, self._list, x, y)
 
