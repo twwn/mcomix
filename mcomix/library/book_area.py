@@ -225,12 +225,13 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
 
     #: The keys _key_press() answers for a popup entry, shown beside it.
     _MENU_KEYS = {'remove-from-collection': 'Delete',
+                  'delete-permanently': '<Shift>Delete',
                   'copy-to-clipboard': '<Control>c',
                   'rename': 'F2',
                   'properties': '<Alt>Return'}
 
     #: The popup's plain entries: action name, label, tooltip, handler.
-    def _menu_entries(self) -> "tuple[tuple[str, str, str, Callable[..., None]], ...]":  # type: ignore[explicit-any]  # the menu items differ in what their handlers take
+    def _menu_entries(self) -> "tuple[tuple[str, str, str | None, Callable[..., None]], ...]":  # type: ignore[explicit-any]  # the menu items differ in what their handlers take
         return (
             ('open', _('_Open'),
              _('Opens the selected books for viewing.'),
@@ -257,6 +258,9 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
             ('completely-remove', _('_Remove and move to the trash'),
              _('Deletes the selected books from disk.'),
              self._completely_remove_book),
+            # The main window's, as SHIFT+Delete is a file manager's.
+            ('delete-permanently', _('Delete permanently'), None,
+             self.delete_permanently),
             ('cleanup', _('Clean _up'),
              _('Removes no longer existent books from the collection.'),
              self._clean_up),
@@ -312,7 +316,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         entries = self._menu_entries()
         for heading, group in ((_('Library books'), entries[0:2]),
                                (None, entries[2:4]), (None, entries[4:5]),
-                               (None, entries[5:9]), (None, entries[9:13])):
+                               (None, entries[5:10]), (None, entries[10:14])):
             section = Gio.Menu()
             for name, label, tooltip, handler in group:
                 item = Gio.MenuItem.new(label, 'books.' + name)
@@ -1016,13 +1020,42 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         )
         choice_dialog.run_async(self._remove_answered)
 
-    def _remove_answered(self, response: int,
-                         permanently: bool = False) -> None:
+    def delete_permanently(self, *args: object) -> None:
+        """Remove the selected books from the library and delete their
+        files for good, once the reader has said yes.
+
+        SHIFT+Delete, as in a file manager and the main window.  The
+        question is the main window's: Cancel is the default, and the
+        answer is never remembered.
+        """
+        selected = self._selected_items()
+        if not selected:
+            return
+        choice_dialog = message_dialog.MessageDialog(
+            self._library.window, buttons=Gtk.ButtonsType.NONE)
+        self._library.main_window.file_actions \
+            .add_delete_permanently_buttons(choice_dialog)
+        if len(selected) == 1:
+            title = _('Delete "%s" permanently?') % os.path.basename(
+                selected[0].path)
+        else:
+            title = i18n.get_translation().ngettext(
+                'Delete %d book permanently?',
+                'Delete %d books permanently?',
+                len(selected)) % len(selected)
+        choice_dialog.set_text(
+            title, _('It does not go to the trash and cannot be restored.'))
+        choice_dialog.run_async(lambda response: self._remove_answered(
+            Response.YES if response == Response.OK else Response.NO,
+            permanently=True, everything=True))
+
+    def _remove_answered(self, response: int, permanently: bool = False,
+                         everything: bool = False) -> None:
         """Delete the selected books once the confirmation has come back.
 
         <permanently> says the reader was asked to delete for good the
         books the trash will not take, and those are not offered to the
-        trash first.
+        trash first; with <everything>, every book is deleted for good.
         """
         # the user has told us they definitely want to delete the book
         if response == Response.YES:
@@ -1048,7 +1081,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
             kept: list[str] = []
             if permanently:
                 for_good = [path for path in paths
-                            if tools.trash_refuses(path)]
+                            if everything or tools.trash_refuses(path)]
                 deleted = file_actions.delete_files_permanently(
                     for_good, parent=self._library.window)
                 kept = [path for path in for_good if path not in deleted]
@@ -1259,7 +1292,8 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
 
         for action in ('open', 'open-keep-library', 'mark-read',
                        'mark-unread', 'remove-from-library',
-                       'completely-remove', 'properties'):
+                       'completely-remove', 'delete-permanently',
+                       'properties'):
             self._set_sensitive(action, books_selected)
 
         manages = self._library.manages
@@ -1352,7 +1386,10 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
                    state: Gdk.ModifierType) -> bool:
         """Handle key presses on the _BookArea."""
         if keyval in (Gdk.KEY_Delete, Gdk.KEY_KP_Delete):
-            self._remove_books_from_collection()
+            if state & Gdk.ModifierType.SHIFT_MASK:
+                self.delete_permanently()
+            else:
+                self._remove_books_from_collection()
             return Gdk.EVENT_STOP
         if state & Gdk.ModifierType.CONTROL_MASK \
                 and Gdk.keyval_to_lower(keyval) == Gdk.KEY_c:

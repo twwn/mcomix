@@ -755,6 +755,46 @@ class DeleteFromDiskTest(MComixTest):
                          'a second question followed the first')
         self.assertIn(path, self.library.recent.removed)
 
+    def test_shift_delete_asks_to_delete_for_good(self):
+        """As in a file manager and the main window: the library had no
+        way to delete a book without the trash."""
+        path = self._deletable()
+        self.assertEqual(Gdk.EVENT_STOP, self.area._key_press(
+            None, Gdk.KEY_Delete, 0, Gdk.ModifierType.SHIFT_MASK))
+        pump()
+        dialogs = self._dialogs()
+        self.assertEqual(1, len(dialogs), 'nothing asked before deleting')
+        dialog = dialogs[0]
+        self.assertEqual('Delete "deletable.cbz" permanently?',
+                         dialog._primary.get_text())
+        keeps = dialog.get_widget_for_response(Response.CANCEL)
+        self.assertIs(dialog.get_default_widget(), keeps,
+                      'Enter would delete the books')
+        self.assertIsNone(dialog.dialog_id,
+                          'the answer could be given for good')
+        with unittest.mock.patch.object(book_area.tools,
+                                        'move_to_trash') as trash:
+            dialog.get_widget_for_response(Response.OK).emit('clicked')
+            pump()
+        trash.assert_not_called()
+        self.assertFalse(os.path.exists(path))
+        self.assertIn(path, self.library.recent.removed)
+
+    def test_delete_permanently_names_how_many_books(self):
+        self.area._covers.set_items(
+            [book_area._BookItem(_Book(1, '/books/1.cbz')),
+             book_area._BookItem(_Book(2, '/books/2.cbz'))])
+        self.area._covers.selection.select_all()
+        self.area.delete_permanently()
+        pump()
+        dialog, = self._dialogs()
+        self.assertEqual('Delete 2 books permanently?',
+                         dialog._primary.get_text())
+        dialog.get_widget_for_response(Response.CANCEL).emit('clicked')
+        pump()
+        self.assertEqual([], self.library.backend.removed,
+                         'Cancel took the books out of the library')
+
     def test_a_remembered_yes_still_asks_where_the_trash_refuses(self):
         """The answer given for good was to move books to the trash."""
         prefs['stored dialog choices'][message_dialog.RememberedDialog
@@ -1474,6 +1514,7 @@ class MenuKeyTest(MComixTest):
                 if action is not None and accel is not None:
                     accels[action.get_string()] = accel.get_string()
         self.assertEqual({'books.remove-from-collection': 'Delete',
+                          'books.delete-permanently': '<Shift>Delete',
                           'books.copy-to-clipboard': '<Control>c',
                           'books.rename': 'F2',
                           'books.properties': '<Alt>Return'}, accels)

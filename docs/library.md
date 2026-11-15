@@ -50,10 +50,11 @@ While no book is open, the main window shows the covers of "Recent" itself, or o
 - With several books selected, it sums them up: how many, their pages and size together, and how many of them are started and finished.
 - With no book selected, it counts the books on show: how many, how many of them are started and how many finished, the pages read, and when the last was read.
 - A double click or Enter opens a book. Enter on one of several books picked out opens them all as one book, as "Open" does.
-- Right-clicking the books offers "Open", "Open without closing library", "Mark as read", "Mark as unread", "Add...", "Clean up", "Copy", "Open containing folder", "Rename", "Move to", "Properties", "Open with" where [external commands](external-commands.md) are set up, and three ways to take them out:
+- Right-clicking the books offers "Open", "Open without closing library", "Mark as read", "Mark as unread", "Add...", "Clean up", "Copy", "Open containing folder", "Rename", "Move to", "Properties", "Open with" where [external commands](external-commands.md) are set up, and four ways to take them out:
   - "Remove from this collection".
   - "Remove from the library".
-  - "Remove and move to the trash": the only one that touches the files. They can be restored from the trash. Where the trash would refuse one, MComix asks to delete it permanently instead. It also takes them out of the recent files and asks about their bookmarks.
+  - "Remove and move to the trash": the files go to the trash, from where they can be restored. Where the trash would refuse one, MComix asks to delete it permanently instead. It also takes them out of the recent files and asks about their bookmarks.
+  - "Delete permanently", or SHIFT+Delete: as the trash, but the files are deleted for good and cannot be restored. Cancel is the default.
 - "Copy", or CTRL+C, puts a single book's path and cover on the clipboard.
 - Delete takes the selected books out of the collection on show, as "Remove from this collection" does. Under "All books" it does nothing.
 - "Open containing folder" shows a single book in the file manager.
