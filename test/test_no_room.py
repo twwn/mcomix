@@ -12,9 +12,11 @@ from mcomix import process
 from mcomix.archive import (
     archive_base,
     djvu_external,
+    lha_external,
     pdf_external,
     rar_external,
     sevenzip_external,
+    zip_external,
 )
 
 from . import MComixTest, get_testfile_path
@@ -25,6 +27,25 @@ _Usage = collections.namedtuple('_Usage', 'total used free')
 def _room(free):
     return mock.patch.object(archive_base.shutil, 'disk_usage',
                              return_value=_Usage(10 ** 9, 10 ** 9 - free, free))
+
+
+class _FullFile:
+    """A file that was created, and takes no byte: a full disk."""
+
+    def __init__(self, real):
+        self._real = real
+
+    def write(self, data):
+        raise OSError(errno.ENOSPC, os.strerror(errno.ENOSPC))
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        self._real.close()
+
+    def __getattr__(self, name):
+        return getattr(self._real, name)
 
 
 class RoomTest(MComixTest):
@@ -78,17 +99,36 @@ class HandlerTest(MComixTest):
             except sevenzip_external.ExtractionError:
                 pass
 
+    def _written_by_a_full_disk(self, archive):
+        """unrar and lha leave as though all were well when what they
+        print finds no room; MComix does the writing, and knows."""
+        self.addCleanup(archive.close)
+        name = [name for name in archive.list_contents() if '.' in name][0]
+        create = archive._create_file
+        with mock.patch.object(
+                archive, '_create_file',
+                lambda path: _FullFile(create(path))):
+            with self.assertRaises(OSError) as raised:
+                archive.extract(name, os.path.join(self.tmp_dir, 'out'))
+        self.assertEqual(errno.ENOSPC, raised.exception.errno)
+
     @unittest.skipUnless(rar_external.RarArchive.is_available(),
                          'needs unrar')
     def test_unrar(self):
-        def make():
-            archive = rar_external.RarArchive(
-                get_testfile_path('archives', '03-RAR-Normal.rar'))
-            self.name = archive.list_contents()[0]
-            return archive
-        make().close()
-        self._both(make, self.name,
-                   mock.patch.object(process, 'call', return_value=False))
+        self._written_by_a_full_disk(rar_external.RarArchive(
+            get_testfile_path('archives', '03-RAR-Normal.rar')))
+
+    @unittest.skipUnless(lha_external.LhaArchive.is_available(),
+                         'needs lha')
+    def test_lha(self):
+        self._written_by_a_full_disk(lha_external.LhaArchive(
+            get_testfile_path('archives', 'Flat.lha')))
+
+    @unittest.skipUnless(zip_external.ZipArchive.is_available(),
+                         'needs unzip')
+    def test_unzip(self):
+        self._written_by_a_full_disk(zip_external.ZipArchive(
+            get_testfile_path('archives', '01-ZIP-Normal.zip')))
 
     @unittest.skipUnless(sevenzip_external.SevenZipArchive.is_available(),
                          'needs 7z')

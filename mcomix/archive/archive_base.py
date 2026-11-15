@@ -643,14 +643,27 @@ class ExternalExecutableArchive(NonUnicodeArchive):
         if not self.filenames_initialized:
             self.list_contents()
 
-        output = self._create_file(os.path.join(destination_dir, filename))
+        self._write_output_of(
+            [self._executable] + self._get_extract_arguments()
+            + [self.archive, self._original_filename(filename)],
+            os.path.join(destination_dir, filename))
+
+    def _write_output_of(self, command: Sequence[str], path: str) -> None:
+        """Run <command> and write what it prints to the file <path>.
+
+        Read through a pipe and written from here, rather than by the
+        program into the file: unrar and lha leave as though all were
+        well when what they print finds no room, and the page was then
+        an empty file nobody had been told of.
+        """
+        proc = process.popen(command, env=utf8_environment())
+        assert proc.stdout is not None
         try:
-            process.call([self._executable] +
-                         self._get_extract_arguments() +
-                         [self.archive, self._original_filename(filename)],
-                         stdout=output, env=utf8_environment())
+            with self._create_file(path) as output:
+                shutil.copyfileobj(proc.stdout, output)
         finally:
-            output.close()
+            proc.stdout.close()
+            proc.wait()
 
 
 class DisabledArchive(BaseArchive):
