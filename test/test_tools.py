@@ -577,6 +577,37 @@ class TestRemoveTree(unittest.TestCase):
             tools.remove_tree(tree)
         self.assertFalse(os.path.exists(tree))
 
+    def test_a_read_only_file_is_removed_on_windows(self):
+        """As Explorer removes it, once the reader has asked."""
+        path = os.path.join(self.folder, 'book.cbz')
+        with open(path, 'wb') as book:
+            book.write(b'book')
+        os.chmod(path, 0o444)
+        remove = os.remove
+
+        def refusing(name, *, dir_fd=None):
+            if not os.stat(name, dir_fd=dir_fd).st_mode & 0o200:
+                raise PermissionError(13, 'Access is denied', name)
+            remove(name, dir_fd=dir_fd)
+        with unittest.mock.patch('os.remove', side_effect=refusing), \
+                unittest.mock.patch('sys.platform', 'win32'):
+            tools.remove_file(path)
+        self.assertFalse(os.path.exists(path))
+
+    def test_a_file_refused_elsewhere_is_left_as_it_was(self):
+        """Off Windows a refusal is the folder's, and the file keeps
+        its mode."""
+        path = os.path.join(self.folder, 'book.cbz')
+        with open(path, 'wb') as book:
+            book.write(b'book')
+        os.chmod(path, 0o444)
+        refusal = PermissionError(13, 'Permission denied', path)
+        with unittest.mock.patch('os.remove', side_effect=refusal), \
+                unittest.mock.patch('sys.platform', 'linux'):
+            with self.assertRaises(PermissionError):
+                tools.remove_file(path)
+        self.assertEqual(0o444, os.stat(path).st_mode & 0o777)
+
     def test_a_folder_that_is_not_there_is_nothing_to_remove(self):
         tools.remove_tree(os.path.join(self.folder, 'gone'))
 

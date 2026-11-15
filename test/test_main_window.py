@@ -2438,6 +2438,25 @@ class MainWindowTest(MComixTest):
         self.assertNotEqual(self.window.filehandler.get_path_to_base(),
                             source, 'the deleted book is still open')
 
+    def test_a_read_only_book_is_deleted_permanently_on_windows(self):
+        """Windows refuses to remove a file with the read-only
+        attribute, which every book copied off a CD has; Explorer asks
+        and deletes it, and MComix said "Could not delete"."""
+        source = self._movable_book()
+        os.chmod(source, 0o444)
+        remove = os.remove
+
+        def refusing(name, *, dir_fd=None):
+            if not os.stat(name, dir_fd=dir_fd).st_mode & 0o200:
+                raise PermissionError(13, 'Access is denied', name)
+            remove(name, dir_fd=dir_fd)
+        dialog = self._asked_to_delete_permanently(source)
+        with unittest.mock.patch('os.remove', side_effect=refusing), \
+                unittest.mock.patch('sys.platform', 'win32'):
+            dialog.get_widget_for_response(Response.OK).emit('clicked')
+            self._pump()
+        self.assertFalse(os.path.exists(source))
+
     def test_turning_down_deleting_permanently_keeps_the_file(self):
         source = self._movable_book()
         dialog = self._asked_to_delete_permanently(source)

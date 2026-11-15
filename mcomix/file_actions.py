@@ -1248,7 +1248,7 @@ class FileActions:
         failed: dict[str, str] = {}
         for path in paths:
             try:
-                os.remove(path)
+                tools.remove_file(path)
             except OSError as error:
                 log.error(_('! Could not remove %(file)s: %(error)s'),
                           {'file': path, 'error': error.strerror or error})

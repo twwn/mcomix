@@ -530,6 +530,25 @@ def directory_size(path: str) -> int:
     return total
 
 
+def remove_file(path: str) -> None:
+    """Remove the file at <path>, read-only or not.
+
+    Windows refuses to remove a file with the read-only attribute,
+    which every file copied off a CD has and an archive written over
+    one inherits; Explorer asks and then removes it, and so does this,
+    by the reader's having asked.  Elsewhere the attribute is the
+    folder's to give, and an error is raised as it is.
+    """
+    try:
+        os.remove(path)
+    except PermissionError:
+        if sys.platform == 'win32':
+            os.chmod(path, stat.S_IWRITE)
+            os.remove(path)
+        else:
+            raise
+
+
 def remove_tree(path: str) -> None:
     """Remove the folder at <path> and all that is in it, as far as it
     can be removed.  Never raises.
