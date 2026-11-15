@@ -4290,6 +4290,82 @@ class MainWindowTest(MComixTest):
             dialog.destroy()
         self._pump()
 
+    def _movable_changed_book(self):
+        """A movable book with two pages swapped and not written."""
+        source = self._movable_book()
+        with zipfile.ZipFile(source) as archive:
+            before = archive.namelist()
+        with self._quietly():
+            self.assertTrue(self.window.file_actions.swap_pages(1, 2))
+        return source, before
+
+    def test_a_change_not_written_is_saved_before_the_book_moves(self):
+        """The offer to write the book out came once the file had moved,
+        and the save then wrote to the path the file had left: a new
+        archive stood where the old one was, and the one that moved
+        held the pages as they were."""
+        source, before = self._movable_changed_book()
+        destination = os.path.join(self.tmp_dir, 'destination')
+        os.makedirs(destination)
+        self._remember_answer(Response.YES)
+
+        self.window.file_actions.move_current_file(destination)
+        moved = os.path.join(destination, 'Movable.cbz')
+        self.assertTrue(wait_for(
+            lambda: self.window.filehandler.get_path_to_base() == moved
+            and self.window.imagehandler.get_number_of_pages() > 2,
+            seconds=20), 'the book did not open where it landed')
+        self._pump()
+
+        self.assertFalse(os.path.exists(source),
+                         'the save wrote a new archive where it was')
+        with zipfile.ZipFile(moved) as archive:
+            self.assertNotEqual(before, archive.namelist(),
+                                'the change was not written')
+
+    def test_a_save_that_is_stopped_keeps_the_book_where_it_is(self):
+        """Stopping the save says to keep the archive as it was, as it
+        does for a close."""
+        source, before = self._movable_changed_book()
+        destination = os.path.join(self.tmp_dir, 'destination')
+        os.makedirs(destination)
+        self._remember_answer(Response.YES)
+        with unittest.mock.patch.object(
+                self.window.file_actions, 'save_archive_asking',
+                side_effect=lambda then: (
+                    setattr(self.window.file_actions, '_save_stopped', True),
+                    then(False))):
+            self.window.file_actions.move_current_file(destination)
+            self._pump()
+
+        self.assertTrue(os.path.isfile(source),
+                        'the book moved though the save was stopped')
+        self.assertEqual(os.listdir(destination), [])
+
+    def test_a_move_that_fails_leaves_the_changes_to_be_asked_about(self):
+        """The answer on the way out was for a book that was leaving;
+        one that stays asks again when it is closed."""
+        source, before = self._movable_changed_book()
+        destination = os.path.join(self.tmp_dir, 'destination')
+        os.makedirs(destination)
+        with open(os.path.join(destination, 'Movable.cbz'), 'wb') as handle:
+            handle.write(b'not the book')
+        self._remember_answer(Response.NO)
+        self.window.file_actions.move_current_file(destination)
+        self._pump()
+        for dialog in self._delete_dialogs():
+            dialog.destroy()
+        self._pump()
+        self._forget_stored_answer()
+
+        self.window.filehandler.close_file()
+        self._pump()
+        try:
+            self.assertEqual(len(self._save_prompts()), 1,
+                             'the change was thrown away without a word')
+        finally:
+            self._close_prompts()
+
     def _drag(self, start, end, state):
         """Press at <start>, move, and release at <end>, holding <state>."""
         handler = self.window.event_handler

@@ -1329,25 +1329,53 @@ class FileActions:
         The book is not closed and opened again at its first page: the
         page being read is the page that comes back, which is what makes
         this different from moving the file from outside and opening it
-        afresh.  Where the old path is recorded it is brought forward -
-        the library holds one, and so do the bookmarks, the store of
-        last read pages, the turns and marks given to single pages, and
-        the password typed for it this session.
+        afresh.  Where the old path is recorded it is brought forward
+        (_book_moved()).
+
+        A book with changes its archive does not hold is offered to be
+        written first, as a close offers it, and stays where it is if
+        the save is stopped.  Offered once the file had moved, the save
+        wrote a new archive at the path it had left, and the archive
+        that moved kept the pages as they were.
         """
-        current_file = self._window.imagehandler.get_real_path()
-        if current_file is None:
+        if self._window.imagehandler.get_real_path() is None:
             # The menu entries are insensitive without a file open.
             return
-        in_archive = self._window.filehandler.archive_type is not None
-        page = self._window.imagehandler.get_current_page()
+        self.before_closing(lambda: self._move_now(directory))
+
+    def _move_now(self, directory: str) -> None:
+        """Move the book into <directory>, its changes dealt with."""
+        current_file = self._window.imagehandler.get_real_path()
+        if current_file is None:
+            return
         self._window.filehandler.release_archive()
         try:
             target = file_mover.move_file(current_file, directory)
         except OSError as error:
+            self._stayed()
             self._move_failed(current_file, directory, error)
             return
-
         self._window.uimanager.move_to.remember(directory)
+        self._book_moved(current_file, target)
+
+    def _stayed(self) -> None:
+        """The book did not go after all: the next close asks about its
+        changes again, the answer given on the way having been for a
+        book that was leaving."""
+        self._close_offer_answered = False
+        self._waiting_close = None
+
+    def _book_moved(self, current_file: str, target: str) -> None:
+        """Go on reading the book that was at <current_file> at
+        <target>, where it has just been moved or renamed to.
+
+        Where the old path is recorded it is brought forward - the
+        library holds one, and so do the bookmarks, the store of last
+        read pages, the turns and marks given to single pages, and the
+        password typed for it this session.
+        """
+        in_archive = self._window.filehandler.archive_type is not None
+        page = self._window.imagehandler.get_current_page()
         backend.LibraryBackend().update_book_path(current_file, target)
         bookmark_backend.BookmarksStore.update_path(current_file, target)
         # The turns and the marks the reader gave its pages, and the

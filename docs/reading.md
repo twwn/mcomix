@@ -29,6 +29,7 @@
 - "Cover in the library", in the same menu, makes the page the book's cover in the [library](library.md). It is offered for books the library holds.
 - "Move to", in the page's right-click menu, moves the open file or archive to another folder.
   Its place in the library, last page, bookmarks and recent-files entry follow it, and so do the turns and marks given to its pages.
+  Changes to its pages not yet written are offered to be saved first, as when it closes.
 
 ## Opening books
 
