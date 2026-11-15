@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: comix 3.6.4\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-14 10:56+0100\n"
+"POT-Creation-Date: 2026-11-15 11:30+0100\n"
 "PO-Revision-Date: 2008-05-21 12:40+0330\n"
 "Last-Translator: Meelad Zakaria <meelad@farsiweb.info>\n"
 "Language-Team: Persian \n"
@@ -40,12 +40,12 @@ msgstr "%s تحت شرایط پروانهٔ عمومی همگانی گنو من�
 msgid "A copy of this license can be obtained from %s"
 msgstr "نسخه‌ای از این پروانه را می‌توان از %s گرفت."
 
-#: mcomix/archive_extractor.py:388 mcomix/archive_extractor.py:415
+#: mcomix/archive_extractor.py:399 mcomix/archive_extractor.py:428
 #, python-format
 msgid "! Extraction error: %s"
 msgstr "! خطای استخراج: %s"
 
-#: mcomix/archive_extractor.py:441 mcomix/archive_tools.py:240
+#: mcomix/archive_extractor.py:454 mcomix/archive_tools.py:240
 #: mcomix/image_tools.py:518 mcomix/page_marks.py:62
 #: mcomix/page_rotations.py:42 mcomix/reading_directions.py:47
 #, python-format
@@ -54,7 +54,7 @@ msgstr "! خواندن %s ممکن نشد"
 
 #
 #: mcomix/archive_packer.py:215 mcomix/file_actions.py:1251
-#: mcomix/library/book_area.py:1011
+#: mcomix/library/book_area.py:1018
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! برداشتن %(file)s ممکن نشد: %(error)s"
@@ -166,7 +166,7 @@ msgstr "ویرایش نشانک‌ها"
 msgid "C_lear bookmarks..."
 msgstr "_پاک کردن نشانک‌ها..."
 
-#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1451 mcomix/openwith.py:437
+#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1482 mcomix/openwith.py:437
 #: mcomix/library/collection_area.py:159 mcomix/library/watchlist.py:69
 msgid "_Remove"
 msgstr "_برداشتن"
@@ -194,7 +194,7 @@ msgstr "نام"
 
 #
 # File: src/bookmark.py, line: 256
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:2581
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:2615
 #: mcomix/library/control_area.py:169
 msgid "Page"
 msgstr "صفحه"
@@ -331,7 +331,7 @@ msgstr "ا_عمال"
 
 #
 # File: src/edit.py, line: 50
-#: mcomix/edit_dialog.py:111 mcomix/preferences_dialog.py:422
+#: mcomix/edit_dialog.py:111 mcomix/preferences_dialog.py:427
 msgid "Images"
 msgstr "تصاویر"
 
@@ -603,7 +603,7 @@ msgstr "«%s» برای همیشه حذف شود؟"
 msgid "Could not move \"%s\" to the trash"
 msgstr "انتقال «%s» به زباله‌دان ممکن نشد"
 
-#: mcomix/file_actions.py:1210 mcomix/library/book_area.py:1023
+#: mcomix/file_actions.py:1210 mcomix/library/book_area.py:1030
 #, python-format
 msgid "%d book could not be moved to the trash."
 msgid_plural "%d books could not be moved to the trash."
@@ -665,7 +665,7 @@ msgstr[1] "%d صفحه"
 msgid "Open"
 msgstr "باز کردن"
 
-#: mcomix/file_chooser_base_dialog.py:238 mcomix/library/book_area.py:201
+#: mcomix/file_chooser_base_dialog.py:238 mcomix/library/book_area.py:208
 msgid "_Open"
 msgstr "_گشودن"
 
@@ -929,7 +929,7 @@ msgstr "تراز پایین چپ"
 #: mcomix/keybindings.py:80 mcomix/keybindings.py:81 mcomix/keybindings.py:82
 #: mcomix/keybindings.py:84 mcomix/keybindings.py:85 mcomix/keybindings.py:86
 #: mcomix/keybindings.py:87 mcomix/keybindings.py:89 mcomix/keybindings.py:90
-#: mcomix/keybindings.py:114 mcomix/preferences_dialog.py:249
+#: mcomix/keybindings.py:114 mcomix/preferences_dialog.py:254
 msgid "Scroll"
 msgstr "لغزش"
 
@@ -1067,7 +1067,7 @@ msgstr "چرخش خودکار بر پایهٔ بلندا"
 #
 # File: src/preferences.py, line: 177
 # File: src/ui.py, line: 296
-#: mcomix/keybindings.py:110 mcomix/preferences_dialog.py:375 mcomix/ui.py:531
+#: mcomix/keybindings.py:110 mcomix/preferences_dialog.py:380 mcomix/ui.py:531
 msgid "Double page mode"
 msgstr "حالت دو صفحه‌ای"
 
@@ -1093,7 +1093,7 @@ msgstr "صفحهٔ عنوان جدا"
 msgid "Manga mode"
 msgstr "حالت ژاپنی"
 
-#: mcomix/keybindings.py:113 mcomix/preferences_dialog.py:393 mcomix/ui.py:549
+#: mcomix/keybindings.py:113 mcomix/preferences_dialog.py:398 mcomix/ui.py:549
 msgid "Continuous mode"
 msgstr "حالت پیوسته"
 
@@ -1103,7 +1103,7 @@ msgstr "وارونگی لغزش هوشمند"
 
 #
 # File: src/ui.py, line: 298
-#: mcomix/keybindings.py:116 mcomix/preferences_dialog.py:441 mcomix/ui.py:556
+#: mcomix/keybindings.py:116 mcomix/preferences_dialog.py:446 mcomix/ui.py:556
 msgid "Magnifying lens"
 msgstr "ذره‌بین"
 
@@ -1323,13 +1323,13 @@ msgid "Preferences"
 msgstr "ترجیحات"
 
 #: mcomix/keybindings.py:170 mcomix/ui.py:449 mcomix/ui.py:452
-#: mcomix/library/book_area.py:232
+#: mcomix/library/book_area.py:239
 msgid "Open containing folder"
 msgstr "گشودن شاخهٔ دربرگیرنده"
 
 #
 # File: src/library.py, line: 38
-#: mcomix/keybindings.py:173 mcomix/library/main_dialog.py:60
+#: mcomix/keybindings.py:173 mcomix/library/main_dialog.py:65
 msgid "Library"
 msgstr "کتاب‌خانه"
 
@@ -1379,14 +1379,14 @@ msgstr "بار کردن میان‌برها ممکن نشد: %s"
 msgid "! Could not remove file \"%s\""
 msgstr "! برداشتن پروندهٔ «%s» ممکن نشد"
 
-#: mcomix/main.py:1444
+#: mcomix/main.py:1475
 #, python-format
 msgid "Remove the page picked out of \"%s\"?"
 msgid_plural "Remove the pages picked out of \"%s\"?"
 msgstr[0] "صفحهٔ گزیده از «%s» حذف شود؟"
 msgstr[1] "صفحه‌های گزیده از «%s» حذف شوند؟"
 
-#: mcomix/main.py:1447
+#: mcomix/main.py:1478
 msgid ""
 "They are taken out of the archive on disk, which is written again at once. "
 "Leaving the book without removing them forgets which pages they were."
@@ -1394,18 +1394,18 @@ msgstr ""
 "آن‌ها از بایگانی روی دیسک برداشته می‌شوند و بایگانی بی‌درنگ دوباره نوشته می‌شود. "
 "اگر کتاب را بدون حذف آن‌ها ترک کنید، فراموش می‌شود که کدام صفحه‌ها بودند."
 
-#: mcomix/main.py:1450
+#: mcomix/main.py:1481
 msgid "_Keep them"
 msgstr "_نگه‌داشتن"
 
-#: mcomix/main.py:1617
+#: mcomix/main.py:1651
 #, python-format
 msgid "Animation speed: %s"
 msgstr "سرعت پویانمایی: %s"
 
 #
 # File: src/main.py, line: 666
-#: mcomix/main.py:2285
+#: mcomix/main.py:2319
 msgid "SLIDESHOW"
 msgstr "نمایش اسلایدی"
 
@@ -1791,10 +1791,22 @@ msgid "Open the library on startup"
 msgstr "باز کردن کتاب‌خانه هنگام آغاز"
 
 #: mcomix/preferences_dialog.py:210
+msgid "Show the library while no book is open"
+msgstr "نمایش کتاب‌خانه تا وقتی کتابی باز نیست"
+
+#: mcomix/preferences_dialog.py:212
+msgid ""
+"The window shows the covers of the books last read, or of every book in the "
+"library, where the pages would be. A double click on one opens it."
+msgstr ""
+"پنجره به جای صفحه‌ها جلد آخرین کتاب‌های خوانده‌شده، یا همهٔ کتاب‌های کتاب‌خانه را "
+"نشان می‌دهد. دوبار کلیک روی یکی آن را باز می‌کند."
+
+#: mcomix/preferences_dialog.py:215
 msgid "Open files in the window that is already open"
 msgstr "باز کردن پرونده‌ها در پنجره‌ای که از پیش باز است"
 
-#: mcomix/preferences_dialog.py:212
+#: mcomix/preferences_dialog.py:217
 msgid ""
 "A book opened from a file manager or a command line goes to the MComix that "
 "is running, instead of starting another. Takes effect when MComix is next "
@@ -1805,15 +1817,15 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 196
-#: mcomix/preferences_dialog.py:214
+#: mcomix/preferences_dialog.py:219
 msgid "Files"
 msgstr "پرونده‌ها"
 
-#: mcomix/preferences_dialog.py:217
+#: mcomix/preferences_dialog.py:222
 msgid "Remember recently opened files"
 msgstr "به خاطر سپردن پرونده‌های اخیراً گشوده"
 
-#: mcomix/preferences_dialog.py:219
+#: mcomix/preferences_dialog.py:224
 msgid ""
 "Add information about all files opened from within MComix to the shared "
 "recent files list."
@@ -1821,21 +1833,21 @@ msgstr ""
 "اطلاعات همهٔ پرونده‌های گشوده‌شده در MComix را به فهرست مشترک پرونده‌های اخیر "
 "می‌افزاید."
 
-#: mcomix/preferences_dialog.py:221
+#: mcomix/preferences_dialog.py:226
 msgid "Save page as opens at the last folder saved into"
 msgstr "«ذخیره به نام» در آخرین شاخهٔ ذخیره گشوده می‌شود"
 
-#: mcomix/preferences_dialog.py:223
+#: mcomix/preferences_dialog.py:228
 msgid "Open the save dialog at the folder the last page was saved into."
 msgstr ""
 "محاورهٔ «ذخیره به نام» را در شاخه‌ای می‌گشاید که آخرین پرونده در آن ذخیره شده "
 "است."
 
-#: mcomix/preferences_dialog.py:226
+#: mcomix/preferences_dialog.py:231
 msgid "Save an edited archive in the format it was opened in"
 msgstr "ذخیرهٔ بایگانی ویرایش‌شده در قالبی که با آن باز شده است"
 
-#: mcomix/preferences_dialog.py:228
+#: mcomix/preferences_dialog.py:233
 msgid ""
 "Write an edited archive back as a ZIP, a tar, a 7z or a RAR, whichever it "
 "was read as. The last two need the 7z and rar programs, which MComix does "
@@ -1845,20 +1857,20 @@ msgstr ""
 "شده است. دو مورد آخر به برنامه‌های 7z و rar نیاز دارند که MComix آن‌ها را نصب "
 "نمی‌کند؛ قالبی که نتوان نوشت به شکل ZIP ذخیره می‌شود."
 
-#: mcomix/preferences_dialog.py:230
+#: mcomix/preferences_dialog.py:235
 msgid "Comment file extensions:"
 msgstr "پسوند پرونده‌های توضیح:"
 
-#: mcomix/preferences_dialog.py:233
+#: mcomix/preferences_dialog.py:238
 msgid "Prompts answered for good"
 msgstr "پرسش‌هایی که یک‌بار برای همیشه پاسخ داده شده‌اند"
 
 #
-#: mcomix/preferences_dialog.py:252
+#: mcomix/preferences_dialog.py:257
 msgid "Use smart scrolling"
 msgstr "استفاده از لغزش هوشمند"
 
-#: mcomix/preferences_dialog.py:254
+#: mcomix/preferences_dialog.py:259
 msgid ""
 "With this preference set, the space key and mouse wheel do not only scroll "
 "down or up, but also sideways and so try to follow the natural reading order "
@@ -1867,42 +1879,42 @@ msgstr ""
 "با روشن بودن این ترجیح، کلید فاصله و چرخ موشی نه تنها بالا و پایین بلکه به "
 "کناره‌ها نیز می‌لغزند تا ترتیب طبیعی خواندن کمیک را دنبال کنند."
 
-#: mcomix/preferences_dialog.py:258
+#: mcomix/preferences_dialog.py:263
 msgid "Arrow key step (in pixels):"
 msgstr "شمار پیکسل لغزش به ازای هر فشار کلید جهت‌دار:"
 
-#: mcomix/preferences_dialog.py:262
+#: mcomix/preferences_dialog.py:267
 msgid "Set the number of pixels to scroll on a page when using the arrow keys."
 msgstr "تعیین می‌کند صفحه با کلیدهای جهت‌دار چند پیکسل بلغزد."
 
-#: mcomix/preferences_dialog.py:264
+#: mcomix/preferences_dialog.py:269
 msgid "Mouse wheel step (in pixels):"
 msgstr "شمار پیکسل لغزش به ازای هر چرخش چرخ موشی:"
 
-#: mcomix/preferences_dialog.py:268
+#: mcomix/preferences_dialog.py:273
 msgid "Set the number of pixels to scroll on a page when using a mouse wheel."
 msgstr "تعیین می‌کند صفحه با چرخ موشی چند پیکسل بلغزد."
 
-#: mcomix/preferences_dialog.py:270
+#: mcomix/preferences_dialog.py:275
 msgid "Space key step (in percent of the page):"
 msgstr "کسری از صفحه که با هر فشار کلید فاصله می‌لغزد (بر حسب درصد):"
 
-#: mcomix/preferences_dialog.py:274
+#: mcomix/preferences_dialog.py:279
 msgid ""
 "Sets the percentage by which the page will be scrolled down or up when the "
 "space key is pressed."
 msgstr "تعیین می‌کند با فشار کلید فاصله، صفحه چند درصد به بالا یا پایین بلغزد."
 
-#: mcomix/preferences_dialog.py:277
+#: mcomix/preferences_dialog.py:282
 msgid "Page turning"
 msgstr "ورق زدن"
 
-#: mcomix/preferences_dialog.py:280
+#: mcomix/preferences_dialog.py:285
 msgid "Turn the page when scrolling past its edge"
 msgstr "ورق زدن هنگام لغزش از لبه‌های صفحه"
 
 #
-#: mcomix/preferences_dialog.py:282
+#: mcomix/preferences_dialog.py:287
 msgid ""
 "Flip pages when scrolling \"off the page\" with the scroll wheel or with the "
 "arrow keys. It takes n consecutive \"steps\" with the scroll wheel or the "
@@ -1911,11 +1923,11 @@ msgstr ""
 "با چرخ موشی یا کلیدهای جهت‌دار، هنگام لغزش «بیرون از صفحه» ورق می‌زند. برای "
 "ورق خوردن، n «گام» پیاپی با چرخ یا کلیدهای جهت‌دار لازم است."
 
-#: mcomix/preferences_dialog.py:284
+#: mcomix/preferences_dialog.py:289
 msgid "Steps past the edge before the page turns:"
 msgstr "شمار «گام»ها پیش از ورق خوردن صفحه:"
 
-#: mcomix/preferences_dialog.py:288
+#: mcomix/preferences_dialog.py:293
 msgid ""
 "Set the number of \"steps\" needed to flip to the next or previous page.  "
 "Less steps will allow for very fast page turning but you might find yourself "
@@ -1924,11 +1936,11 @@ msgstr ""
 "تعیین می‌کند برای رفتن به صفحهٔ بعدی یا پیشین چند «گام» لازم است. گام‌های کمتر "
 "ورق زدن را بسیار تند می‌کند، اما ورق خوردن ناخواسته هم آسان‌تر می‌شود."
 
-#: mcomix/preferences_dialog.py:291
+#: mcomix/preferences_dialog.py:296
 msgid "Count the steps also when the page fits"
 msgstr "شمردن گام‌ها حتی وقتی صفحه جا می‌شود"
 
-#: mcomix/preferences_dialog.py:293
+#: mcomix/preferences_dialog.py:298
 msgid ""
 "A page that fits the window turns on the first step past it. With this, it "
 "takes as many steps as above."
@@ -1936,35 +1948,35 @@ msgstr ""
 "صفحه‌ای که در پنجره جا می‌شود با نخستین گام فراتر از آن ورق می‌خورد. با این "
 "گزینه، به همان شمار گام بالا نیاز است."
 
-#: mcomix/preferences_dialog.py:295
+#: mcomix/preferences_dialog.py:300
 msgid "Wheel pause after a page turn (in milliseconds):"
 msgstr "میلی‌ثانیه‌هایی که چرخ موشی پس از ورق زدن نادیده گرفته می‌شود:"
 
-#: mcomix/preferences_dialog.py:299
+#: mcomix/preferences_dialog.py:304
 msgid ""
 "Keeps a fast wheel from turning several pages at once. 0 ignores nothing."
 msgstr "نمی‌گذارد چرخ تند چند صفحه را با هم ورق بزند. ۰ چیزی را نادیده نمی‌گیرد."
 
-#: mcomix/preferences_dialog.py:302
+#: mcomix/preferences_dialog.py:307
 msgid "Flip pages with a left click"
 msgstr "ورق زدن با کلیک چپ"
 
-#: mcomix/preferences_dialog.py:304
+#: mcomix/preferences_dialog.py:309
 msgid ""
 "A left click on the page turns to the next one. Clicks with SHIFT or ALT "
 "turn pages either way."
 msgstr ""
 "کلیک چپ روی صفحه به صفحهٔ بعد می‌رود. کلیک با SHIFT یا ALT در هر حال ورق می‌زند."
 
-#: mcomix/preferences_dialog.py:306
+#: mcomix/preferences_dialog.py:311
 msgid "Where a click lands:"
 msgstr "جای کلیک:"
 
-#: mcomix/preferences_dialog.py:310
+#: mcomix/preferences_dialog.py:315
 msgid "Skip pages that cannot be shown"
 msgstr "گذشتن از صفحه‌هایی که نمایش داده نمی‌شوند"
 
-#: mcomix/preferences_dialog.py:312
+#: mcomix/preferences_dialog.py:317
 msgid ""
 "Turn past a page whose image is damaged or cannot be read, instead of "
 "showing the broken-image icon in its place."
@@ -1972,15 +1984,15 @@ msgstr ""
 "گذشتن از صفحه‌ای که تصویرش آسیب دیده یا خوانده نمی‌شود، به جای نمایش نماد "
 "تصویر خراب در جای آن."
 
-#: mcomix/preferences_dialog.py:314
+#: mcomix/preferences_dialog.py:319
 msgid "Between books"
 msgstr "میان کتاب‌ها"
 
-#: mcomix/preferences_dialog.py:317
+#: mcomix/preferences_dialog.py:322
 msgid "Open the next book past the last page"
 msgstr "گشودن خودکار بایگانی بعدی"
 
-#: mcomix/preferences_dialog.py:319
+#: mcomix/preferences_dialog.py:324
 msgid ""
 "Past the last page, open the next book in the folder; past the first page, "
 "the previous one."
@@ -1988,11 +2000,11 @@ msgstr ""
 "هنگام گذشتن از آخرین صفحه، بایگانی بعدی همان شاخه را و هنگام بازگشت از "
 "نخستین صفحه، بایگانی پیشین را به‌طور خودکار می‌گشاید."
 
-#: mcomix/preferences_dialog.py:322
+#: mcomix/preferences_dialog.py:327
 msgid "Go on into the next folder"
 msgstr "گشودن خودکار شاخهٔ بعدی"
 
-#: mcomix/preferences_dialog.py:324
+#: mcomix/preferences_dialog.py:329
 msgid ""
 "Automatically open the first file in the next sibling directory when "
 "flipping past the last page of the last file in a directory, or the previous "
@@ -2002,31 +2014,31 @@ msgstr ""
 "بعدی را و هنگام بازگشت از نخستین صفحهٔ نخستین پرونده، شاخهٔ پیشین را به‌طور "
 "خودکار می‌گشاید."
 
-#: mcomix/preferences_dialog.py:327
+#: mcomix/preferences_dialog.py:332
 msgid "Open the previous book at its first page"
 msgstr "گشودن نخستین پرونده هنگام رفتن به بایگانی پیشین"
 
-#: mcomix/preferences_dialog.py:329
+#: mcomix/preferences_dialog.py:334
 msgid "Open the previous book at its first page rather than at its last."
 msgstr ""
 "هنگام رفتن به بایگانی پیشین، به جای آخرین پرونده، نخستین پروندهٔ آن را به‌طور "
 "خودکار می‌گشاید."
 
-#: mcomix/preferences_dialog.py:332
+#: mcomix/preferences_dialog.py:337
 msgid "Open the previous folder at its first page"
 msgstr "گشودن نخستین پرونده هنگام رفتن به شاخهٔ پیشین"
 
-#: mcomix/preferences_dialog.py:334
+#: mcomix/preferences_dialog.py:339
 msgid "Open the previous folder at its first page rather than at its last."
 msgstr ""
 "هنگام رفتن به شاخهٔ پیشین، به جای آخرین پرونده، نخستین پروندهٔ آن را به‌طور "
 "خودکار می‌گشاید."
 
-#: mcomix/preferences_dialog.py:337
+#: mcomix/preferences_dialog.py:342
 msgid "Open a folder with the folders in it as one book"
 msgstr "گشودن پوشه همراه با پوشه‌های درونش به‌صورت یک کتاب"
 
-#: mcomix/preferences_dialog.py:339
+#: mcomix/preferences_dialog.py:344
 msgid ""
 "The files of the folders in a folder, two levels down, follow its own. The "
 "next directory is then the one beside it."
@@ -2034,35 +2046,35 @@ msgstr ""
 "پرونده‌های پوشه‌های درون یک پوشه، تا دو سطح پایین‌تر، پس از پرونده‌های خود آن "
 "می‌آیند. شاخهٔ بعدی آنگاه شاخهٔ کناری آن است."
 
-#: mcomix/preferences_dialog.py:341
+#: mcomix/preferences_dialog.py:346
 msgid "File order"
 msgstr "ترتیب پرونده‌ها"
 
-#: mcomix/preferences_dialog.py:343
+#: mcomix/preferences_dialog.py:348
 msgid "Sort files in a folder by:"
 msgstr "مرتب‌سازی پرونده‌ها و شاخه‌ها بر پایهٔ:"
 
-#: mcomix/preferences_dialog.py:346
+#: mcomix/preferences_dialog.py:351
 msgid "Sort pages inside an archive by:"
 msgstr "مرتب‌سازی صفحه‌های درون بایگانی بر پایهٔ:"
 
 #
 # File: src/preferences.py, line: 279
-#: mcomix/preferences_dialog.py:349 mcomix/slideshow.py:26
+#: mcomix/preferences_dialog.py:354 mcomix/slideshow.py:26
 msgid "Slideshow"
 msgstr "نمایش اسلایدی"
 
 #
-#: mcomix/preferences_dialog.py:351
+#: mcomix/preferences_dialog.py:356
 msgid "Slideshow delay (in seconds):"
 msgstr "تأخیر نمایش اسلایدی (بر حسب ثانیه):"
 
 #
-#: mcomix/preferences_dialog.py:356
+#: mcomix/preferences_dialog.py:361
 msgid "Slideshow step (in pixels):"
 msgstr "گام نمایش اسلایدی (بر حسب پیکسل):"
 
-#: mcomix/preferences_dialog.py:360
+#: mcomix/preferences_dialog.py:365
 msgid ""
 "Specify the number of pixels to scroll while in slideshow mode. A positive "
 "value will scroll forward, a negative value will scroll backwards, and a "
@@ -2072,43 +2084,43 @@ msgstr ""
 "مقدار منفی به عقب می‌لغزد، و مقدار ۰ سبب می‌شود نمایش همیشه به صفحهٔ تازه‌ای "
 "برود."
 
-#: mcomix/preferences_dialog.py:363
+#: mcomix/preferences_dialog.py:368
 msgid "Let the slideshow go on to the next book"
 msgstr "در نمایش اسلایدی، بایگانی بعدی به‌طور خودکار گشوده شود"
 
-#: mcomix/preferences_dialog.py:365
+#: mcomix/preferences_dialog.py:370
 msgid "Past the last page during a slideshow, open the next book."
 msgstr "اجازه می‌دهد در حالت نمایش اسلایدی بایگانی بعدی به‌طور خودکار گشوده شود."
 
-#: mcomix/preferences_dialog.py:378
+#: mcomix/preferences_dialog.py:383
 msgid "Turn two pages at a time"
 msgstr "ورق زدن دو صفحه در حالت دوصفحه‌ای"
 
 #
 # File: src/preferences.py, line: 184
-#: mcomix/preferences_dialog.py:380
+#: mcomix/preferences_dialog.py:385
 msgid ""
 "Flip two pages, instead of one, each time we flip pages in double page mode."
 msgstr "در حالت دوصفحه‌ای هر بار به جای یک صفحه، دو صفحه ورق می‌زند."
 
-#: mcomix/preferences_dialog.py:382
+#: mcomix/preferences_dialog.py:387
 msgid "Show a page alone:"
 msgstr "نمایش تنها یک صفحه هرجا مناسب باشد:"
 
-#: mcomix/preferences_dialog.py:385
+#: mcomix/preferences_dialog.py:390
 msgid "Page auto-resizing:"
 msgstr "تغییر اندازهٔ خودکار صفحه‌ها:"
 
 #
-#: mcomix/preferences_dialog.py:388
+#: mcomix/preferences_dialog.py:393
 msgid "Space between two pages (in pixels):"
 msgstr "فاصلهٔ میان دو صفحه (بر حسب پیکسل):"
 
-#: mcomix/preferences_dialog.py:396
+#: mcomix/preferences_dialog.py:401
 msgid "Open long strips in continuous mode"
 msgstr "باز کردن نوارهای بلند در حالت پیوسته"
 
-#: mcomix/preferences_dialog.py:398
+#: mcomix/preferences_dialog.py:403
 msgid ""
 "A book most of whose first pages are at least twice as high as wide is shown "
 "in continuous mode. The View menu turns it off for that book."
@@ -2117,40 +2129,40 @@ msgstr ""
 "پیوسته نمایش داده می‌شود. منوی نما آن را برای همان کتاب خاموش می‌کند."
 
 #
-#: mcomix/preferences_dialog.py:400 mcomix/ui.py:569
+#: mcomix/preferences_dialog.py:405 mcomix/ui.py:569
 msgid "Fit to size mode"
 msgstr "حالت جا شدن در اندازه"
 
 #
 # File: src/ui.py, line: 103
-#: mcomix/preferences_dialog.py:402
+#: mcomix/preferences_dialog.py:407
 msgid "Fixed width for wide pages:"
 msgstr "پهنای ثابت برای صفحه‌های پهن:"
 
 #
 # File: src/preferences.py, line: 264
 # File: src/ui.py, line: 292
-#: mcomix/preferences_dialog.py:407
+#: mcomix/preferences_dialog.py:412
 msgid "Fixed height for wide pages:"
 msgstr "بلندای ثابت برای صفحه‌های پهن:"
 
 #
 # File: src/ui.py, line: 103
-#: mcomix/preferences_dialog.py:412
+#: mcomix/preferences_dialog.py:417
 msgid "Fixed width for other pages:"
 msgstr "پهنای ثابت برای دیگر صفحه‌ها:"
 
 #
 # File: src/ui.py, line: 103
-#: mcomix/preferences_dialog.py:417
+#: mcomix/preferences_dialog.py:422
 msgid "Fixed height for other pages:"
 msgstr "بلندای ثابت برای دیگر صفحه‌ها:"
 
-#: mcomix/preferences_dialog.py:425
+#: mcomix/preferences_dialog.py:430
 msgid "Automatically rotate images according to their metadata"
 msgstr "چرخاندن خودکار تصاویر بر پایهٔ فراداده‌هایشان"
 
-#: mcomix/preferences_dialog.py:427
+#: mcomix/preferences_dialog.py:432
 msgid ""
 "Automatically rotate images when an orientation is specified in the image "
 "metadata, such as in an Exif tag."
@@ -2158,29 +2170,29 @@ msgstr ""
 "وقتی فراداده‌های تصویر جهتی را مشخص کرده باشند، مثلاً در برچسب Exif، تصویر را "
 "به‌طور خودکار می‌چرخاند."
 
-#: mcomix/preferences_dialog.py:429
+#: mcomix/preferences_dialog.py:434
 msgid "Animation mode:"
 msgstr "حالت پویانمایی:"
 
-#: mcomix/preferences_dialog.py:432
+#: mcomix/preferences_dialog.py:437
 msgid "Scaling quality:"
 msgstr "حالت مقیاس‌بندی:"
 
-#: mcomix/preferences_dialog.py:435
+#: mcomix/preferences_dialog.py:440
 msgid "Screen colour profile:"
 msgstr "نمایهٔ رنگی صفحه‌نمایش:"
 
-#: mcomix/preferences_dialog.py:438
+#: mcomix/preferences_dialog.py:443
 msgid "Rendering intent:"
 msgstr "قصد پرداخت:"
 
-#: mcomix/preferences_dialog.py:443
+#: mcomix/preferences_dialog.py:448
 msgid "Lens size (in pixels):"
 msgstr "اندازهٔ ذره‌بین (بر حسب پیکسل):"
 
 #
 # File: src/preferences.py, line: 131
-#: mcomix/preferences_dialog.py:447
+#: mcomix/preferences_dialog.py:452
 msgid ""
 "Set the size of the magnifying lens. It is a square with a side of this many "
 "pixels."
@@ -2188,25 +2200,25 @@ msgstr ""
 "اندازهٔ ذره‌بین را تعیین می‌کند. مربعی است که هر ضلعش همین شمار پیکسل است."
 
 #
-#: mcomix/preferences_dialog.py:449
+#: mcomix/preferences_dialog.py:454
 msgid "Magnification factor:"
 msgstr "ضریب بزرگ‌نمایی:"
 
 #
 # File: src/preferences.py, line: 140
-#: mcomix/preferences_dialog.py:453
+#: mcomix/preferences_dialog.py:458
 msgid "Set the magnification factor of the magnifying lens."
 msgstr "ضریب بزرگ‌نمایی ذره‌بین را تعیین می‌کند."
 
-#: mcomix/preferences_dialog.py:463
+#: mcomix/preferences_dialog.py:468
 msgid "Extraction and cache"
 msgstr "استخراج و انباره"
 
-#: mcomix/preferences_dialog.py:471
+#: mcomix/preferences_dialog.py:476
 msgid "Extraction threads:"
 msgstr "بیشینهٔ شمار رشته‌های هم‌زمان استخراج:"
 
-#: mcomix/preferences_dialog.py:475
+#: mcomix/preferences_dialog.py:480
 msgid ""
 "Set the maximum number of concurrent threads for formats that support it. A "
 "value of 0 uses one thread for each processor. For PDFs, 0 also keeps within "
@@ -2216,11 +2228,11 @@ msgstr ""
 "مقدار ۰ برای هر پردازنده یک رشته به کار می‌برد. برای PDF، مقدار ۰ از "
 "یک‌شانزدهم حافظه هم فراتر نمی‌رود."
 
-#: mcomix/preferences_dialog.py:477
+#: mcomix/preferences_dialog.py:482
 msgid "Thumbnail threads:"
 msgstr "بیشینهٔ شمار رشته‌های هم‌زمان مسطوره‌ها:"
 
-#: mcomix/preferences_dialog.py:481
+#: mcomix/preferences_dialog.py:486
 msgid ""
 "Set the maximum number of concurrent threads used to generate thumbnails. A "
 "value of 0 uses one thread for each processor. Takes effect the next time "
@@ -2229,15 +2241,15 @@ msgstr ""
 "بیشینهٔ شمار رشته‌های هم‌زمان ساخت مسطوره‌ها را تعیین می‌کند. مقدار ۰ برای هر "
 "پردازنده یک رشته به کار می‌برد. از راه‌اندازی بعدی MComix اثر می‌گذارد."
 
-#: mcomix/preferences_dialog.py:483
+#: mcomix/preferences_dialog.py:488
 msgid "Unpack books in:"
 msgstr "باز کردن کتاب‌ها در:"
 
-#: mcomix/preferences_dialog.py:486
+#: mcomix/preferences_dialog.py:491
 msgid "Pages to keep in the cache:"
 msgstr "بیشینهٔ شمار صفحه‌های نگه‌داشته در انباره:"
 
-#: mcomix/preferences_dialog.py:490
+#: mcomix/preferences_dialog.py:495
 msgid ""
 "Set the max number of pages to cache. A value of -1 will cache the entire "
 "archive."
@@ -2246,13 +2258,13 @@ msgstr ""
 "می‌دارد."
 
 #
-#: mcomix/preferences_dialog.py:493
+#: mcomix/preferences_dialog.py:498
 msgid "Store thumbnails for opened files"
 msgstr "ذخیرهٔ مسطوره‌ها برای پرونده‌های گشوده"
 
 #
 # File: src/preferences.py, line: 227
-#: mcomix/preferences_dialog.py:495
+#: mcomix/preferences_dialog.py:500
 msgid ""
 "Store thumbnails for opened files according to the freedesktop.org "
 "specification. These thumbnails are shared by many other applications, such "
@@ -2262,30 +2274,30 @@ msgstr ""
 "بسیاری از برنامه‌های دیگر، مانند بیشتر مدیران پرونده، از همین مسطوره‌ها "
 "استفاده می‌کنند."
 
-#: mcomix/preferences_dialog.py:515
+#: mcomix/preferences_dialog.py:520
 msgid "_Reset keys"
 msgstr "_بازنشانی کلیدها"
 
-#: mcomix/preferences_dialog.py:517
+#: mcomix/preferences_dialog.py:522
 msgid "Resets all keyboard shortcuts to their default values."
 msgstr "همهٔ میان‌برهای صفحه‌کلید را به مقادیر پیش‌فرض بازمی‌گرداند."
 
-#: mcomix/preferences_dialog.py:520
+#: mcomix/preferences_dialog.py:525
 msgid "Clear _dialog choices"
 msgstr "پاک کردن گزینه‌های _محاوره‌ها"
 
-#: mcomix/preferences_dialog.py:522
+#: mcomix/preferences_dialog.py:527
 msgid ""
 "Clears all dialog choices that you have previously chosen not to be asked "
 "again."
 msgstr ""
 "همهٔ پاسخ‌های محاوره‌هایی را که پیش‌تر خواسته‌اید دیگر پرسیده نشوند پاک می‌کند."
 
-#: mcomix/preferences_dialog.py:564
+#: mcomix/preferences_dialog.py:569
 msgid "Ask every time"
 msgstr "هر بار بپرس"
 
-#: mcomix/preferences_dialog.py:569
+#: mcomix/preferences_dialog.py:574
 msgid ""
 "What MComix answers this prompt with instead of asking. This is what the "
 "prompt's \"Do not ask again\" box sets."
@@ -2293,27 +2305,27 @@ msgstr ""
 "پاسخی که MComix به جای پرسیدن به این پرسش می‌دهد. همان چیزی است که کادر «دیگر "
 "نپرس.» در خود پرسش تعیین می‌کند."
 
-#: mcomix/preferences_dialog.py:591
+#: mcomix/preferences_dialog.py:596
 msgid "Auto-detect (Default)"
 msgstr "تشخیص خودکار (پیش‌فرض)"
 
-#: mcomix/preferences_dialog.py:633
+#: mcomix/preferences_dialog.py:638
 msgid "Follow the system"
 msgstr "پیروی از سامانه"
 
-#: mcomix/preferences_dialog.py:634
+#: mcomix/preferences_dialog.py:639
 msgid "Light"
 msgstr "روشن"
 
-#: mcomix/preferences_dialog.py:635
+#: mcomix/preferences_dialog.py:640
 msgid "Dark"
 msgstr "تیره"
 
-#: mcomix/preferences_dialog.py:636
+#: mcomix/preferences_dialog.py:641
 msgid "Pitch black"
 msgstr "سیاه مطلق"
 
-#: mcomix/preferences_dialog.py:642
+#: mcomix/preferences_dialog.py:647
 msgid ""
 "How MComix itself is painted, whatever the desktop asks for. Pitch black is "
 "the dark theme with black backgrounds, which a screen that lights its pixels "
@@ -2323,11 +2335,11 @@ msgstr ""
 "زمینهٔ تیره با پس‌زمینه‌های سیاه است، که نمایشگری که پیکسل‌هایش را یکی‌یکی روشن "
 "می‌کند آن را بی‌هیچ نوری نشان می‌دهد."
 
-#: mcomix/preferences_dialog.py:679
+#: mcomix/preferences_dialog.py:684
 msgid "Restart MComix in the language you picked?"
 msgstr "MComix با زبانی که انتخاب کردید دوباره اجرا شود؟"
 
-#: mcomix/preferences_dialog.py:680
+#: mcomix/preferences_dialog.py:685
 msgid ""
 "MComix is translated as it starts, so most of the interface stays in the "
 "language it started in until it is started again. The book being read, its "
@@ -2337,24 +2349,24 @@ msgstr ""
 "دوباره به همان زبانی می‌ماند که با آن آغاز شده است. کتابی که می‌خوانید، صفحهٔ "
 "آن و اندازهٔ پنجره حفظ می‌شوند."
 
-#: mcomix/preferences_dialog.py:694 mcomix/preferences_dialog.py:912
-#: mcomix/preferences_dialog.py:975 mcomix/ui.py:575
+#: mcomix/preferences_dialog.py:699 mcomix/preferences_dialog.py:917
+#: mcomix/preferences_dialog.py:980 mcomix/ui.py:575
 msgid "Never"
 msgstr "هرگز"
 
-#: mcomix/preferences_dialog.py:695
+#: mcomix/preferences_dialog.py:700
 msgid "Only for title pages"
 msgstr "تنها برای صفحه‌های عنوان"
 
-#: mcomix/preferences_dialog.py:696
+#: mcomix/preferences_dialog.py:701
 msgid "Only for wide images"
 msgstr "تنها برای تصاویر پهن"
 
-#: mcomix/preferences_dialog.py:697 mcomix/preferences_dialog.py:913
+#: mcomix/preferences_dialog.py:702 mcomix/preferences_dialog.py:918
 msgid "Always"
 msgstr "همیشه"
 
-#: mcomix/preferences_dialog.py:704
+#: mcomix/preferences_dialog.py:709
 msgid ""
 "When showing the first page of an archive, or an image's width exceeds its "
 "height, only a single page will be displayed."
@@ -2364,56 +2376,56 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 78
-#: mcomix/preferences_dialog.py:722
+#: mcomix/preferences_dialog.py:727
 msgid "Prefer same scale"
 msgstr "ترجیح مقیاس یکسان"
 
 #
 # File: src/preferences.py, line: 78
-#: mcomix/preferences_dialog.py:723
+#: mcomix/preferences_dialog.py:728
 msgid "Prefer same size"
 msgstr "ترجیح اندازهٔ یکسان"
 
 #
-#: mcomix/preferences_dialog.py:724
+#: mcomix/preferences_dialog.py:729
 msgid "Fit to same size"
 msgstr "جا دادن در اندازهٔ یکسان"
 
-#: mcomix/preferences_dialog.py:731
+#: mcomix/preferences_dialog.py:736
 msgid "Maintain relative size or fit to same size."
 msgstr "اندازهٔ نسبی را نگه می‌دارد یا در اندازهٔ یکسان جا می‌دهد."
 
-#: mcomix/preferences_dialog.py:745 mcomix/preferences_dialog.py:792
+#: mcomix/preferences_dialog.py:750 mcomix/preferences_dialog.py:797
 msgid "No sorting"
 msgstr "بدون مرتب‌سازی"
 
-#: mcomix/preferences_dialog.py:746
+#: mcomix/preferences_dialog.py:751
 msgid "File name"
 msgstr "نام پرونده"
 
-#: mcomix/preferences_dialog.py:747
+#: mcomix/preferences_dialog.py:752
 msgid "File name (GLib)"
 msgstr "نام پرونده (GLib)"
 
-#: mcomix/preferences_dialog.py:748 mcomix/library/book_area.py:291
+#: mcomix/preferences_dialog.py:753 mcomix/library/book_area.py:298
 msgid "File size"
 msgstr "اندازهٔ پرونده"
 
-#: mcomix/preferences_dialog.py:749
+#: mcomix/preferences_dialog.py:754
 msgid "Last modified"
 msgstr "زمان تغییر"
 
-#: mcomix/preferences_dialog.py:755 mcomix/preferences_dialog.py:801
-#: mcomix/library/book_area.py:297
+#: mcomix/preferences_dialog.py:760 mcomix/preferences_dialog.py:806
+#: mcomix/library/book_area.py:304
 msgid "Ascending"
 msgstr "صعودی"
 
-#: mcomix/preferences_dialog.py:756 mcomix/preferences_dialog.py:802
-#: mcomix/library/book_area.py:298
+#: mcomix/preferences_dialog.py:761 mcomix/preferences_dialog.py:807
+#: mcomix/library/book_area.py:305
 msgid "Descending"
 msgstr "نزولی"
 
-#: mcomix/preferences_dialog.py:764
+#: mcomix/preferences_dialog.py:769
 msgid ""
 "Files will be opened and displayed according to the sort order specified "
 "here. This option does not affect ordering within archives."
@@ -2421,19 +2433,19 @@ msgstr ""
 "پرونده‌ها با ترتیبی که اینجا تعیین می‌شود گشوده و نمایش داده می‌شوند. این گزینه "
 "بر ترتیب درون بایگانی‌ها اثری ندارد."
 
-#: mcomix/preferences_dialog.py:793
+#: mcomix/preferences_dialog.py:798
 msgid "Natural order"
 msgstr "ترتیب طبیعی"
 
-#: mcomix/preferences_dialog.py:794
+#: mcomix/preferences_dialog.py:799
 msgid "Literal order"
 msgstr "ترتیب تحت‌اللفظی"
 
-#: mcomix/preferences_dialog.py:795
+#: mcomix/preferences_dialog.py:800
 msgid "GLib order"
 msgstr "ترتیب GLib"
 
-#: mcomix/preferences_dialog.py:810
+#: mcomix/preferences_dialog.py:815
 msgid ""
 "Files within archives will be sorted according to the order specified here. "
 "Natural order will sort numbered files based on their natural order, i.e. 1, "
@@ -2448,11 +2460,11 @@ msgstr ""
 "می‌سازد و بسیاری از برنامه‌های GTK دیگر هم به کار می‌برند."
 
 #
-#: mcomix/preferences_dialog.py:854
+#: mcomix/preferences_dialog.py:859
 msgid "Delete information about recently opened files?"
 msgstr "اطلاعات پرونده‌های اخیراً گشوده حذف شود؟"
 
-#: mcomix/preferences_dialog.py:855
+#: mcomix/preferences_dialog.py:860
 msgid ""
 "This will remove all entries from the \"Recent\" menu, and clear information "
 "about last read pages."
@@ -2460,29 +2472,29 @@ msgstr ""
 "این کار همهٔ مدخل‌ها را از فهرست «اخیر» برمی‌دارد و اطلاعات آخرین صفحه‌های "
 "خوانده‌شده را پاک می‌کند."
 
-#: mcomix/preferences_dialog.py:868
+#: mcomix/preferences_dialog.py:873
 msgid "Nearest (pixel art)"
 msgstr "نزدیک‌ترین همسایه (پیکسل‌آرت)"
 
 #
-#: mcomix/preferences_dialog.py:869
+#: mcomix/preferences_dialog.py:874
 msgid "Normal (fast)"
 msgstr "عادی (تند)"
 
 #
-#: mcomix/preferences_dialog.py:870
+#: mcomix/preferences_dialog.py:875
 msgid "Bilinear"
 msgstr "دوخطی"
 
-#: mcomix/preferences_dialog.py:871
+#: mcomix/preferences_dialog.py:876
 msgid "Bicubic"
 msgstr "دومکعبی"
 
-#: mcomix/preferences_dialog.py:872
+#: mcomix/preferences_dialog.py:877
 msgid "Lanczos (slow)"
 msgstr "لانچوس (کند)"
 
-#: mcomix/preferences_dialog.py:878
+#: mcomix/preferences_dialog.py:883
 msgid ""
 "Changes how images are scaled. Slower algorithms result in higher quality "
 "resizing, but longer page loading times."
@@ -2490,19 +2502,19 @@ msgstr ""
 "روش مقیاس‌بندی تصاویر را تغییر می‌دهد. الگوریتم‌های کندتر کیفیت بهتری می‌دهند، "
 "اما صفحه‌ها دیرتر بار می‌شوند."
 
-#: mcomix/preferences_dialog.py:895
+#: mcomix/preferences_dialog.py:900
 msgid "Anywhere: the next page"
 msgstr "هر جا: صفحهٔ بعد"
 
-#: mcomix/preferences_dialog.py:896
+#: mcomix/preferences_dialog.py:901
 msgid "Halves: back and forward"
 msgstr "نیمه‌ها: عقب و جلو"
 
-#: mcomix/preferences_dialog.py:897
+#: mcomix/preferences_dialog.py:902
 msgid "Thirds: back, fullscreen, forward"
 msgstr "سوم‌ها: عقب، تمام‌صفحه، جلو"
 
-#: mcomix/preferences_dialog.py:905
+#: mcomix/preferences_dialog.py:910
 msgid ""
 "With \"Flip pages with a left click\": the left half or third of the page "
 "turns back and the right one forward; the middle third enters or leaves "
@@ -2512,19 +2524,19 @@ msgstr ""
 "می‌برد؛ سوم میانی تمام‌صفحه را روشن یا خاموش می‌کند. در حالت مانگا چپ و راست "
 "جابه‌جا می‌شوند."
 
-#: mcomix/preferences_dialog.py:914
+#: mcomix/preferences_dialog.py:919
 msgid "For a few seconds after a page turn"
 msgstr "چند ثانیه پس از ورق زدن"
 
-#: mcomix/preferences_dialog.py:919
+#: mcomix/preferences_dialog.py:924
 msgid "The pages on screen and the number of pages, in the lower right corner."
 msgstr "صفحه‌های روی صفحه‌نمایش و شمار صفحه‌ها، در گوشهٔ پایین راست."
 
-#: mcomix/preferences_dialog.py:935
+#: mcomix/preferences_dialog.py:940
 msgid "None"
 msgstr "هیچ‌کدام"
 
-#: mcomix/preferences_dialog.py:937
+#: mcomix/preferences_dialog.py:942
 msgid ""
 "The ICC profile of the screen, such as one made by calibrating it. Pages are "
 "converted into it from sRGB. Leave it empty where the desktop already "
@@ -2533,23 +2545,23 @@ msgstr ""
 "نمایهٔ ICC صفحه‌نمایش، مانند نمایه‌ای که کالیبره کردن آن می‌سازد. صفحه‌ها از sRGB "
 "به آن تبدیل می‌شوند. اگر میزکار خود برای صفحه‌نمایش تبدیل می‌کند، خالی بگذارید."
 
-#: mcomix/preferences_dialog.py:955
+#: mcomix/preferences_dialog.py:960
 msgid "Perceptual"
 msgstr "ادراکی"
 
-#: mcomix/preferences_dialog.py:956
+#: mcomix/preferences_dialog.py:961
 msgid "Relative colorimetric"
 msgstr "سنجش رنگ نسبی"
 
-#: mcomix/preferences_dialog.py:957
+#: mcomix/preferences_dialog.py:962
 msgid "Saturation"
 msgstr "اشباع"
 
-#: mcomix/preferences_dialog.py:958
+#: mcomix/preferences_dialog.py:963
 msgid "Absolute colorimetric"
 msgstr "سنجش رنگ مطلق"
 
-#: mcomix/preferences_dialog.py:969
+#: mcomix/preferences_dialog.py:974
 msgid ""
 "How colours the screen cannot show are brought within its range, when a "
 "screen colour profile is set. Perceptual keeps the colours in proportion; "
@@ -2559,19 +2571,19 @@ msgstr ""
 "نمایهٔ رنگی صفحه‌نمایش تنظیم شده است. ادراکی تناسب رنگ‌ها را نگه می‌دارد؛ سنجش "
 "رنگ نسبی رنگ‌هایی را که صفحه‌نمایش می‌تواند نشان دهد دقیق نگه می‌دارد."
 
-#: mcomix/preferences_dialog.py:976 mcomix/library/book_area.py:305
+#: mcomix/preferences_dialog.py:981 mcomix/library/book_area.py:312
 msgid "Normal"
 msgstr "عادی"
 
-#: mcomix/preferences_dialog.py:982
+#: mcomix/preferences_dialog.py:987
 msgid "Controls how animated images should be displayed."
 msgstr "تعیین می‌کند تصاویر پویا چگونه نمایش داده شوند."
 
-#: mcomix/preferences_dialog.py:1022
+#: mcomix/preferences_dialog.py:1027
 msgid "The temporary folder"
 msgstr "پوشهٔ موقت"
 
-#: mcomix/preferences_dialog.py:1024
+#: mcomix/preferences_dialog.py:1029
 msgid ""
 "The folder archives are unpacked into while they are read, such as a RAM "
 "disk. Empty, the system's temporary folder. Takes effect with the next book "
@@ -2582,7 +2594,7 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 295
-#: mcomix/preferences_dialog.py:1045
+#: mcomix/preferences_dialog.py:1050
 msgid ""
 "Treat all files found within archives, that have one of these file endings, "
 "as comments."
@@ -3089,7 +3101,7 @@ msgstr "نقشک برداری"
 msgid "! Could not save thumbnail \"%(thumbpath)s\": %(error)s"
 msgstr "! ذخیرهٔ مسطورهٔ «%(thumbpath)s» ممکن نشد: %(error)s"
 
-#: mcomix/ui.py:440 mcomix/library/book_area.py:229
+#: mcomix/ui.py:440 mcomix/library/book_area.py:236
 msgid "_Copy"
 msgstr "_رونوشت"
 
@@ -3599,7 +3611,7 @@ msgstr "این بایگانی با گذرواژه محافظت می‌شود:"
 msgid "Please enter the password to continue:"
 msgstr "برای ادامه گذرواژه را وارد کنید:"
 
-#: mcomix/archive/sevenzip_external.py:305
+#: mcomix/archive/sevenzip_external.py:321
 #, python-format
 msgid "Extraction of %(archivefile)s might have failed: %(error)s"
 msgstr "استخراج %(archivefile)s شاید شکست خورده باشد: %(error)s"
@@ -3655,6 +3667,7 @@ msgstr "! گرفتن جلد کتاب «%s» ممکن نشد"
 
 #: mcomix/library/backend.py:426 mcomix/library/backend.py:443
 #: mcomix/library/backend.py:456 mcomix/library/backend.py:485
+#: mcomix/library/shelf.py:104
 msgid "Recent"
 msgstr "موارد اخیر"
 
@@ -3702,7 +3715,7 @@ msgstr "ارتقای نسخهٔ پایگاه دادهٔ کتاب‌خانه از
 #
 # File: src/library.py, line: 202
 #: mcomix/library/backend_types.py:437 mcomix/library/collection_area.py:223
-#: mcomix/library/control_area.py:97
+#: mcomix/library/control_area.py:97 mcomix/library/shelf.py:108
 msgid "All books"
 msgstr "همهٔ کتاب‌ها"
 
@@ -3711,148 +3724,148 @@ msgstr "همهٔ کتاب‌ها"
 msgid "! Could not scan for new books: %s"
 msgstr "! پویش کتاب‌های تازه ممکن نشد: %s"
 
-#: mcomix/library/book_area.py:202
+#: mcomix/library/book_area.py:209
 msgid "Opens the selected books for viewing."
 msgstr "کتاب‌های برگزیده را برای خواندن می‌گشاید."
 
-#: mcomix/library/book_area.py:204
+#: mcomix/library/book_area.py:211
 msgid "Open _without closing library"
 msgstr "گشودن _بدون بستن کتاب‌خانه"
 
-#: mcomix/library/book_area.py:205
+#: mcomix/library/book_area.py:212
 msgid "Opens the selected books, but keeps the library window open."
 msgstr "کتاب‌های برگزیده را می‌گشاید، اما پنجرهٔ کتاب‌خانه را باز نگه می‌دارد."
 
-#: mcomix/library/book_area.py:207
+#: mcomix/library/book_area.py:214
 msgid "_Mark as read"
 msgstr "علامت‌گذاری به‌عنوان _خوانده‌شده"
 
-#: mcomix/library/book_area.py:208
+#: mcomix/library/book_area.py:215
 msgid "Marks the selected books as read to the end."
 msgstr "کتاب‌های گزیده را تا پایان خوانده‌شده علامت می‌زند."
 
-#: mcomix/library/book_area.py:210
+#: mcomix/library/book_area.py:217
 msgid "Mark as u_nread"
 msgstr "علامت‌گذاری به‌عنوان _نخوانده"
 
-#: mcomix/library/book_area.py:211
+#: mcomix/library/book_area.py:218
 msgid "Forgets the page the selected books were left at."
 msgstr "صفحه‌ای را که کتاب‌های گزیده در آن رها شده بودند فراموش می‌کند."
 
-#: mcomix/library/book_area.py:213 mcomix/library/collection_area.py:142
+#: mcomix/library/book_area.py:220 mcomix/library/collection_area.py:142
 msgid "_Add..."
 msgstr "_افزودن..."
 
 #
 # File: src/library.py, line: 793
-#: mcomix/library/book_area.py:214 mcomix/library/collection_area.py:143
+#: mcomix/library/book_area.py:221 mcomix/library/collection_area.py:143
 msgid "Add more books to the library."
 msgstr "افزودن کتاب‌های بیشتر به کتاب‌خانه."
 
-#: mcomix/library/book_area.py:217
+#: mcomix/library/book_area.py:224
 msgid "Remove _from this collection"
 msgstr "برداشتن از این _مجموعه"
 
-#: mcomix/library/book_area.py:218
+#: mcomix/library/book_area.py:225
 msgid "Removes the selected books from the current collection."
 msgstr "کتاب‌های برگزیده را از مجموعهٔ کنونی برمی‌دارد."
 
-#: mcomix/library/book_area.py:220
+#: mcomix/library/book_area.py:227
 msgid "Remove from the _library"
 msgstr "برداشتن از _کتاب‌خانه"
 
-#: mcomix/library/book_area.py:221
+#: mcomix/library/book_area.py:228
 msgid "Completely removes the selected books from the library."
 msgstr "کتاب‌های برگزیده را به‌کلی از کتاب‌خانه برمی‌دارد."
 
-#: mcomix/library/book_area.py:223
+#: mcomix/library/book_area.py:230
 msgid "_Remove and move to the trash"
 msgstr "برداشتن و انتقال به _زباله‌دان"
 
-#: mcomix/library/book_area.py:224
+#: mcomix/library/book_area.py:231
 msgid "Deletes the selected books from disk."
 msgstr "کتاب‌های برگزیده را از دیسک حذف می‌کند."
 
-#: mcomix/library/book_area.py:226 mcomix/library/collection_area.py:153
+#: mcomix/library/book_area.py:233 mcomix/library/collection_area.py:153
 msgid "Clean _up"
 msgstr "_پاک‌سازی"
 
-#: mcomix/library/book_area.py:227 mcomix/library/collection_area.py:154
+#: mcomix/library/book_area.py:234 mcomix/library/collection_area.py:154
 msgid "Removes no longer existent books from the collection."
 msgstr "کتاب‌هایی را که دیگر وجود ندارند از مجموعه برمی‌دارد."
 
-#: mcomix/library/book_area.py:230
+#: mcomix/library/book_area.py:237
 msgid "Copies the selected book's path to clipboard."
 msgstr "مسیر کتاب برگزیده را در تخته‌گیره رونوشت می‌کند."
 
-#: mcomix/library/book_area.py:233
+#: mcomix/library/book_area.py:240
 msgid "Shows the selected book in the file manager."
 msgstr "کتاب گزیده را در مدیر پرونده‌ها نشان می‌دهد."
 
-#: mcomix/library/book_area.py:270
+#: mcomix/library/book_area.py:277
 msgid "Library books"
 msgstr "کتاب‌های کتاب‌خانه"
 
-#: mcomix/library/book_area.py:289
+#: mcomix/library/book_area.py:296
 msgid "Book name"
 msgstr "نام کتاب"
 
-#: mcomix/library/book_area.py:290
+#: mcomix/library/book_area.py:297
 msgid "Full path"
 msgstr "مسیر کامل"
 
-#: mcomix/library/book_area.py:292
+#: mcomix/library/book_area.py:299
 msgid "Date added"
 msgstr "تاریخ افزودن"
 
-#: mcomix/library/book_area.py:293
+#: mcomix/library/book_area.py:300
 msgid "Last read"
 msgstr "آخرین خواندن"
 
-#: mcomix/library/book_area.py:294
+#: mcomix/library/book_area.py:301
 msgid "By hand"
 msgstr "دستی"
 
-#: mcomix/library/book_area.py:303
+#: mcomix/library/book_area.py:310
 msgid "Huge"
 msgstr "بسیار بزرگ"
 
-#: mcomix/library/book_area.py:304
+#: mcomix/library/book_area.py:311
 msgid "Large"
 msgstr "بزرگ"
 
-#: mcomix/library/book_area.py:306
+#: mcomix/library/book_area.py:313
 msgid "Small"
 msgstr "کوچک"
 
-#: mcomix/library/book_area.py:307
+#: mcomix/library/book_area.py:314
 msgid "Tiny"
 msgstr "بسیار کوچک"
 
-#: mcomix/library/book_area.py:311
+#: mcomix/library/book_area.py:318
 msgid "Custom..."
 msgstr "سفارشی..."
 
-#: mcomix/library/book_area.py:315
+#: mcomix/library/book_area.py:322
 msgid "_Sort"
 msgstr "_چینش"
 
-#: mcomix/library/book_area.py:316
+#: mcomix/library/book_area.py:323
 msgid "Cover si_ze"
 msgstr "اندازهٔ _جلد"
 
-#: mcomix/library/book_area.py:655
+#: mcomix/library/book_area.py:662
 msgid "Set library cover size"
 msgstr "اندازهٔ جلدها در کتاب‌خانه را تعیین می‌کند"
 
-#: mcomix/library/book_area.py:887
+#: mcomix/library/book_area.py:894
 #, python-format
 msgid "Removed %(num)d book from '%(collection)s'."
 msgid_plural "Removed %(num)d books from '%(collection)s'."
 msgstr[0] "%(num)d کتاب از «%(collection)s» برداشته شد."
 msgstr[1] "%(num)d کتاب از «%(collection)s» برداشته شدند."
 
-#: mcomix/library/book_area.py:910 mcomix/library/collection_area.py:301
+#: mcomix/library/book_area.py:917 mcomix/library/collection_area.py:301
 #, python-format
 msgid "Removed %d book from the library."
 msgid_plural "Removed %d books from the library."
@@ -3861,11 +3874,11 @@ msgstr[1] "%d کتاب از کتاب‌خانه برداشته شدند."
 
 #
 # File: src/library.py, line: 597
-#: mcomix/library/book_area.py:932 mcomix/library/book_area.py:953
+#: mcomix/library/book_area.py:939 mcomix/library/book_area.py:960
 msgid "Remove books from the library?"
 msgstr "کتاب‌ها از کتاب‌خانه برداشته شوند؟"
 
-#: mcomix/library/book_area.py:933
+#: mcomix/library/book_area.py:940
 msgid ""
 "The selected books will be removed from the library. Any in a folder with no "
 "trash is deleted permanently and cannot be restored."
@@ -3873,19 +3886,19 @@ msgstr ""
 "کتاب‌های برگزیده از کتاب‌خانه برداشته می‌شوند. هر کدام که در شاخه‌ای بی زباله‌دان "
 "باشد برای همیشه پاک می‌شود و دیگر بازیابی نمی‌شود."
 
-#: mcomix/library/book_area.py:954
+#: mcomix/library/book_area.py:961
 msgid ""
 "The selected books will be removed from the library and moved to the trash."
 msgstr "کتاب‌های برگزیده از کتاب‌خانه برداشته و به زباله‌دان منتقل می‌شوند."
 
-#: mcomix/library/book_area.py:1074
+#: mcomix/library/book_area.py:1081
 #, python-format
 msgid "Remove the bookmarks in the deleted book?"
 msgid_plural "Remove the bookmarks in the %(count)d deleted books?"
 msgstr[0] "نشانک‌های کتاب حذف‌شده هم حذف شوند؟"
 msgstr[1] "نشانک‌های %(count)d کتاب حذف‌شده هم حذف شوند؟"
 
-#: mcomix/library/book_area.py:1193
+#: mcomix/library/book_area.py:1202
 msgid "Open with"
 msgstr "گشودن با"
 
@@ -4087,28 +4100,28 @@ msgstr "صفحه‌های خوانده‌شده: %d"
 msgid "last read on %(date)s, %(time)s"
 msgstr "آخرین خواندن در %(date)s، %(time)s"
 
-#: mcomix/library/main_dialog.py:151
+#: mcomix/library/main_dialog.py:156
 msgid "Scanning for new books..."
 msgstr "پویش کتاب‌های تازه..."
 
-#: mcomix/library/main_dialog.py:209
+#: mcomix/library/main_dialog.py:214
 #, python-format
 msgid "Added new book '%(bookname)s' from folder '%(directory)s'."
 msgstr "کتاب تازهٔ «%(bookname)s» از شاخهٔ «%(directory)s» افزوده شد."
 
-#: mcomix/library/main_dialog.py:216
+#: mcomix/library/main_dialog.py:221
 #, python-format
 msgid "Added %(count)d new book from folder '%(directory)s'."
 msgid_plural "Added %(count)d new books from folder '%(directory)s'."
 msgstr[0] "%(count)d کتاب تازه از شاخهٔ «%(directory)s» افزوده شد."
 msgstr[1] "%(count)d کتاب تازه از شاخهٔ «%(directory)s» افزوده شد."
 
-#: mcomix/library/main_dialog.py:224
+#: mcomix/library/main_dialog.py:229
 #, python-format
 msgid "No new books found in folder '%s'."
 msgstr "هیچ کتاب تازه‌ای در شاخهٔ «%s» یافت نشد."
 
-#: mcomix/library/main_dialog.py:277
+#: mcomix/library/main_dialog.py:282
 #, python-format
 msgid "Books relocated: %d"
 msgstr "کتاب‌های جابه‌جاشده: %d"
@@ -4136,6 +4149,10 @@ msgid ""
 msgstr ""
 "به کتاب‌خانه می‌گوید شاخه‌ای از کتاب‌ها به کجا منتقل شده است. کتاب‌ها مجموعه‌ها، "
 "نشانک‌ها و صفحه‌هایی را که تا آن‌جا خوانده شده‌اند نگه می‌دارند."
+
+#: mcomix/library/shelf.py:65
+msgid "The library holds no books yet. Add some in the library window."
+msgstr "کتاب‌خانه هنوز کتابی ندارد. در پنجرهٔ کتاب‌خانه چند کتاب بیفزایید."
 
 #: mcomix/library/watchlist.py:38
 msgid "Library watch list"

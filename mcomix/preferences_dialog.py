@@ -207,6 +207,11 @@ class _PreferencesDialog(Dialog):
             'open library on startup', None))
 
         page.add_row(self._create_pref_check_button(
+            _('Show the library while no book is open'),
+            'show library without book',
+            _('The window shows the covers of the books last read, or of every book in the library, where the pages would be. A double click on one opens it.')))
+
+        page.add_row(self._create_pref_check_button(
             _('Open files in the window that is already open'),
             'single instance',
             _('A book opened from a file manager or a command line goes to the MComix that is running, instead of starting another. Takes effect when MComix is next started.')))
@@ -1124,6 +1129,9 @@ class _PreferencesDialog(Dialog):
 
         elif preference == 'skip broken pages':
             self._window.thumbnailsidebar.refilter()
+
+        elif preference == 'show library without book':
+            self._window.update_shelf()
 
         elif preference == 'checkered bg for transparent images':
             self._window.draw_image()

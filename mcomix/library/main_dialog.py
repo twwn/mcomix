@@ -54,6 +54,11 @@ class _LibraryDialog(Gtk.Window):
         widgets.drop_focus_when_closed(self)
 
         self.main_window = window
+        #: The window the covers' questions are asked over.
+        self.window: Gtk.Window = self
+        #: The covers are managed here: dragged between collections,
+        #: added to, searched.  Not so where the main window shows them.
+        self.manages = True
 
         self.set_default_size(prefs['lib window width'],
                               prefs['lib window height'])

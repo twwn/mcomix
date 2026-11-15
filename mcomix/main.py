@@ -39,7 +39,7 @@ from mcomix import zoom
 from mcomix import bookmark_backend
 from mcomix import message_dialog
 from mcomix import callback
-from mcomix.library import backend, main_dialog
+from mcomix.library import backend, main_dialog, shelf
 from mcomix import page_marks
 from mcomix import page_rotations
 from mcomix import reading_directions
@@ -118,6 +118,8 @@ class MainWindow(Gtk.Window):
         #: Nones until it has been laid out at all.
         self.previous_size: tuple[int, int] | tuple[None, None] = (None, None)
         self.was_out_of_focus = False
+        #: Set once the window is being taken down for good.
+        self._terminated = False
         #: The page the right-click menu was opened over, which is what
         #: the menu's own Save As saves; None where it was opened on the
         #: background around the pages.
@@ -217,6 +219,10 @@ class MainWindow(Gtk.Window):
         page_overlay = Gtk.Overlay()
         page_overlay.set_child(self.page_area)
         page_overlay.add_overlay(self.leave_fullscreen_button.widget)
+        self._page_overlay = page_overlay
+        #: The library's covers, shown over the page area while no book
+        #: is open; made when they are first wanted.
+        self._shelf: shelf.Shelf | None = None
         self.zoom = zoom.ZoomModel()
         self.uimanager = ui.MainUI(self)
         self.menubar = self.uimanager.menubar
@@ -378,6 +384,9 @@ class MainWindow(Gtk.Window):
 
         if show_library:
             self.actiongroup.get_action('library').activate()
+
+        # Once the window stands, and only if no book is on its way in.
+        GLib.idle_add(self.update_shelf)
 
         self.cursor_handler.auto_hide_on()
 
@@ -1105,8 +1114,27 @@ class MainWindow(Gtk.Window):
         else:
             self.filehandler.file_opened += opened
 
+    def update_shelf(self) -> bool:
+        """Show the library's covers where the pages would be, while
+        no book is open and the preference asks for them, and take them
+        away otherwise.  Answers False, for the idle queue."""
+        wanted = (prefs['show library without book']
+                  and not self._terminated
+                  and not self.filehandler.file_loaded
+                  and not self.filehandler.file_loading)
+        if wanted:
+            if self._shelf is None:
+                self._shelf = shelf.Shelf(self)
+                self._page_overlay.add_overlay(self._shelf)
+            self._shelf.show_books()
+            self._shelf.set_visible(True)
+        elif self._shelf is not None:
+            self._shelf.set_visible(False)
+        return False
+
     def _on_file_opened(self) -> None:
         """Follow a book being opened: menus, lens and statusbar."""
+        self.update_shelf()
         self.lens.file_changed()
         self.uimanager.set_sensitivities()
         number, count = self.filehandler.get_file_number()
@@ -1186,6 +1214,9 @@ class MainWindow(Gtk.Window):
         self.thumbnailsidebar.set_visible(False)
         self.thumbnailsidebar.clear()
         self.uimanager.set_sensitivities()
+        # Later, not now: a book closed to make room for the next one
+        # is not followed by the covers.
+        GLib.idle_add(self.update_shelf)
 
     def _forget_strip(self) -> None:
         """The book that was looked at for long strips is going: the
@@ -2824,6 +2855,7 @@ class MainWindow(Gtk.Window):
     def terminate_program(self) -> None:
         """Run clean-up tasks and exit the program."""
 
+        self._terminated = True
         self.set_visible(False)
 
         if _main_loop.is_running():
@@ -2845,6 +2877,10 @@ class MainWindow(Gtk.Window):
         library = main_dialog.get_dialog()
         if library is not None:
             library.close()
+        if self._shelf is not None:
+            self._shelf.close()
+            self._page_overlay.remove_overlay(self._shelf)
+            self._shelf = None
 
         # Wait for the threads that are still doing work which has to
         # finish - extracting, packing, deleting - before the process

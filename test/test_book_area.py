@@ -90,6 +90,10 @@ class _ControlArea:
 class _Library:
 
     backend = _Backend()
+    #: A library window's cover area: books are dragged, dropped and
+    #: searched for.
+    manages = True
+    window = None
 
 
 class _Recent:
@@ -133,6 +137,8 @@ class _LibraryWindow(Gtk.Window):
 
     def __init__(self):
         super().__init__()
+        self.manages = True
+        self.window = self
         self.backend = _Backend()
         self.recent = _Recent()
         self.open_book = _OpenBook()
@@ -601,6 +607,9 @@ class _RecordingBackend(_Backend):
 
 class _RecordingLibrary:
 
+    manages = True
+    window = None
+
     def __init__(self, refuse=False):
         self.backend = _RecordingBackend(refuse)
         self.control_area = _ControlArea()
@@ -1012,6 +1021,9 @@ class _CoverlessBackend(_Backend):
 
 class _CoverlessLibrary:
 
+    manages = True
+    window = None
+
     def __init__(self):
         self.backend = _CoverlessBackend()
         self.control_area = _ControlArea()
@@ -1166,6 +1178,9 @@ class _PathBackend(_Backend):
 
 class _PathLibrary:
 
+    manages = True
+    window = None
+
     def __init__(self):
         self.backend = _PathBackend()
         self.control_area = _ControlArea()
@@ -1240,6 +1255,8 @@ class _FilteredLibrary:
 
     """A library showing all books through <filter_string>."""
 
+    manages = True
+    window = None
     backend = _Backend()
 
     def __init__(self, filter_string,
@@ -1333,6 +1350,8 @@ class _CollectionArea:
 
 class _MenuLibrary:
 
+    manages = True
+    window = None
     backend = _Backend()
     collection_area = _CollectionArea()
 
@@ -1490,6 +1509,9 @@ class _MarkingLibrary:
 
     """A library window over the real backend, for what the menu
     writes into it."""
+
+    manages = True
+    window = None
 
     def __init__(self):
         from mcomix.library import backend

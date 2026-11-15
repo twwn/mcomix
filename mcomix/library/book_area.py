@@ -139,6 +139,17 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         # so the view carries a class for the rule to single it out.
         self._covers.add_css_class(self._BLACK_CSS_CLASS)
         _paint_black(self._covers.get_display(), self._BLACK_CSS_CLASS)
+        if library.manages:
+            self._take_drags_and_drops()
+        self.set_child(self._covers)
+
+        self._popup_actions = Gio.SimpleActionGroup()
+        self._book_menu = self._create_popup_menu()
+
+    def _take_drags_and_drops(self) -> None:
+        """Let books be dragged out and files and books be dropped in:
+        for the library window, which has collections to drag between
+        and adds what is dropped."""
         # Books drag out to the collection area, and files drop in from
         # a file manager.  GTK4 has neither a model drag source nor a
         # model drag destination; controllers do both, and a drop target
@@ -160,10 +171,6 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         place.connect('accept', self._accepts_books)
         place.connect('drop', self._books_dropped)
         self._covers.add_controller(place)
-        self.set_child(self._covers)
-
-        self._popup_actions = Gio.SimpleActionGroup()
-        self._book_menu = self._create_popup_menu()
 
     def release(self) -> None:
         """Take the book popup actions out, once the window is closed.
@@ -650,7 +657,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
             prefs['library cover size'] = chosen
         else:
             dialog = message_dialog.MessageDialog(
-                self._library, buttons=Gtk.ButtonsType.OK,
+                self._library.window, buttons=Gtk.ButtonsType.OK,
                 destroy_with_parent=True)
             dialog.set_text(_('Set library cover size'))
 
@@ -925,7 +932,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
                           for item in self._selected_items())
         if permanently:
             choice_dialog = message_dialog.MessageDialog(
-                self._library, buttons=Gtk.ButtonsType.NONE)
+                self._library.window, buttons=Gtk.ButtonsType.NONE)
             self._library.main_window.file_actions \
                 .add_delete_permanently_buttons(choice_dialog)
             choice_dialog.set_text(
@@ -938,7 +945,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
                 permanently=True))
             return
         choice_dialog = message_dialog.MessageDialog(
-            self._library, buttons=Gtk.ButtonsType.YES_NO)
+            self._library.window, buttons=Gtk.ButtonsType.YES_NO)
         # These books are deleted from the disk, so Enter must not be
         # what does it.  They go to the trash, from where they can be
         # restored, so the button that does it is the suggested action
@@ -990,7 +997,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
                 for_good = [path for path in paths
                             if tools.trash_refuses(path)]
                 deleted = file_actions.delete_files_permanently(
-                    for_good, parent=self._library)
+                    for_good, parent=self._library.window)
                 kept = [path for path in for_good if path not in deleted]
                 trashed = [path for path in paths if path not in for_good]
             else:
@@ -1029,7 +1036,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
                                      if path not in kept + not_trashed])
 
             file_actions.offer_to_delete_permanently(
-                refused, answered, parent=self._library)
+                refused, answered, parent=self._library.window)
 
     def _books_deleted(self, gone: "Sequence[str]") -> None:
         """Forget the books at <gone>, whose files have been deleted."""
@@ -1063,7 +1070,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         if not marked:
             return
         dialog = message_dialog.MessageDialog(
-            self._library, buttons=Gtk.ButtonsType.YES_NO)
+            self._library.window, buttons=Gtk.ButtonsType.YES_NO)
         dialog.set_should_remember_choice(
             message_dialog.RememberedDialog.REMOVE_BOOKMARKS_OF_DELETED_FILE)
         # Named rather than positional, so that a language whose
@@ -1102,7 +1109,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         selected = self._selected_items()
         if len(selected) == 1:
             self._library.main_window.file_actions.show_in_folder(
-                selected[0].path, self._library)
+                selected[0].path, self._library.window)
 
     def _middle_click(self, gesture: Gtk.GestureClick, n_press: int,
                       x: float, y: float) -> None:
@@ -1153,7 +1160,9 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
                        'completely-remove'):
             self._set_sensitive(action, books_selected)
 
-        self._set_sensitive('add', collection is not None)
+        manages = self._library.manages
+        self._set_sensitive('open-keep-library', books_selected and manages)
+        self._set_sensitive('add', collection is not None and manages)
         self._set_sensitive('cleanup', collection is not None)
         self._set_sensitive('remove-from-collection',
                             books_selected and not is_collection_all)
@@ -1255,6 +1264,8 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
             return False
         character = chr(Gdk.keyval_to_unicode(keyval) or 0)
         if not character.isprintable() or character.isspace():
+            return False
+        if not self._library.manages:
             return False
         entry = self._library.control_area.search_entry
         entry.set_text(entry.get_text() + character)
