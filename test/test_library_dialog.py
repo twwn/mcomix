@@ -1461,6 +1461,24 @@ class BookInfoTest(_OneBookTest):
         self.assertTrue(info._filelabel.get_text().startswith(
             '4 pages, %s, Finished reading on ' % self._size()))
 
+    def test_several_books_selected_are_summed_up(self):
+        """Not the first of them alone, as if it were all there was."""
+        other = os.path.join(self.tmp_dir, 'Other.cbz')
+        shutil.copy(self.path, other)
+        self.dialog.backend.add_book(other)
+        self.dialog.book_area.display_covers(constants.COLLECTION_ALL)
+        pump()
+        self._left_on(4)
+        covers = self.dialog.book_area._covers
+        covers.selection.select_all()
+        pump()
+        info = self.dialog.control_area
+        self.assertEqual('2 books', info._namelabel.get_text())
+        self.assertEqual('8 pages, %s' % tools.format_byte_size(
+            2 * os.path.getsize(self.path)), info._filelabel.get_text())
+        self.assertEqual('Started: 0, finished: 1', info._dirlabel.get_text())
+        self.assertTrue(info._open_button.get_sensitive())
+
     def test_selecting_nothing_tells_what_was_read_of_the_books_shown(self):
         """Upstream feature request 46: with no book selected, the box
         speaks for the books on show rather than standing empty."""

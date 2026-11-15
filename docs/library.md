@@ -47,6 +47,7 @@ While no book is open, the main window shows the covers of "Recent" itself, or o
 - A book read to its last page has a tick on its cover.
 - "Mark as read" in the books' right-click menu gives the selected books the tick; "Mark as unread" takes it away, with the page they were left at.
 - The line under the covers gives the selected book's folder, size, page count, and the page it was left on or when it was finished.
+- With several books selected, it sums them up: how many, their pages and size together, and how many of them are started and finished.
 - With no book selected, it counts the books on show: how many, how many of them are started and how many finished, the pages read, and when the last was read.
 - A double click or Enter opens a book. Enter on one of several books picked out opens them all as one book, as "Open" does.
 - Right-clicking the books offers "Open", "Open without closing library", "Mark as read", "Mark as unread", "Add...", "Clean up", "Copy", "Open containing folder", "Rename", "Move to", "Properties", "Open with" where [external commands](external-commands.md) are set up, and three ways to take them out:

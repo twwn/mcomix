@@ -140,6 +140,9 @@ class _ControlArea(Gtk.Box):
         if not selected:
             self._show_statistics()
             return
+        if len(selected) > 1:
+            self._show_selection(selected)
+            return
 
         book = None
         if selected:
@@ -186,6 +189,31 @@ class _ControlArea(Gtk.Box):
             self._dirlabel.set_text(i18n.to_unicode(dir_path))
         else:
             self._dirlabel.set_text('')
+
+    def _show_selection(self, selected: Sequence[int]) -> None:
+        """Sum up the several books <selected>: how many, their pages
+        and size together, and how many of them were started and
+        finished.  The first of them alone was described, as if it were
+        all that was selected."""
+        self._open_button.set_sensitive(True)
+        self._namelabel.set_has_tooltip(False)
+        library = self._library
+        ids = [book_id for book_id in (
+            library.book_area.get_book_at_path(position)
+            for position in selected) if book_id is not None]
+        books = [book for book in (library.backend.get_book_by_id(book_id)
+                                   for book_id in ids) if book is not None]
+        ngettext = i18n.get_translation().ngettext
+        self._namelabel.set_text(ngettext(
+            '%d book', '%d books', len(books)) % len(books))
+        pages = sum(book.pages for book in books)
+        self._filelabel.set_text(', '.join((
+            ngettext('%d page', '%d pages', pages) % pages,
+            tools.format_byte_size(sum(book.size for book in books)))))
+        stats = library.backend.reading_statistics(ids)
+        self._dirlabel.set_text(
+            _('Started: %(started)d, finished: %(finished)d') % {
+                'started': stats.started, 'finished': stats.finished})
 
     def _show_statistics(self) -> None:
         """Say how many books are on show, how many of them were started
