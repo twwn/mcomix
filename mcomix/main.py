@@ -1121,13 +1121,18 @@ class MainWindow(Gtk.Window):
         wanted = (prefs['show library without book']
                   and not self._terminated
                   and not self.filehandler.file_loaded
-                  and not self.filehandler.file_loading)
+                  and not self.filehandler.file_loading
+                  and not self.filehandler.file_opening)
         if wanted:
             if self._shelf is None:
                 self._shelf = shelf.Shelf(self)
+                self._shelf.set_visible(False)
                 self._page_overlay.add_overlay(self._shelf)
-            self._shelf.show_books()
-            self._shelf.set_visible(True)
+            # Covers already on show are left as they are: reading the
+            # collection again would draw every cover anew.
+            if not self._shelf.get_visible():
+                self._shelf.show_books()
+                self._shelf.set_visible(True)
         elif self._shelf is not None:
             self._shelf.set_visible(False)
         return False

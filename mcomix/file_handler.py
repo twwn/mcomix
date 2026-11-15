@@ -23,6 +23,7 @@ to reopen the book.
 """
 
 
+import contextlib
 import json
 import os
 import shutil
@@ -50,7 +51,7 @@ from mcomix import i18n
 from mcomix.i18n import _
 
 from collections import OrderedDict
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Iterable, Iterator, Mapping, Sequence
 from typing import NamedTuple, TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -160,6 +161,10 @@ class FileHandler:
         #: Indicates if files/archives are currently loaded/loading.
         self.file_loaded = False
         self.file_loading = False
+        #: True while one book is being put in the place of another:
+        #: the book going is closed first, and for that moment nothing
+        #: is open, but the window is to show nothing of that.
+        self.file_opening = False
         #: None if current file is not an archive, or unrecognized format.
         self.archive_type: int | None = None
 
@@ -447,12 +452,37 @@ class FileHandler:
         return self._open_file(path, start_page, keep_fileprovider,
                                start_member, listed)
 
+    @contextlib.contextmanager
+    def _replacing(self) -> Iterator[None]:
+        """Mark the book that is open as being replaced by another for
+        as long as the block runs.  Where nothing is open at the end,
+        the next book having failed to open, the window is told once
+        the block is over."""
+        if self.file_opening:
+            yield
+            return
+        self.file_opening = True
+        try:
+            yield
+        finally:
+            self.file_opening = False
+            if not (self.file_loaded or self.file_loading) \
+                    and self._window is not None:
+                GLib.idle_add(self._window.update_shelf)
+
     def _open_file(self, path: str | list[str], start_page: int = 0,
                    keep_fileprovider: bool = False,
                    start_member: str | None = None,
                    listed: Sequence[str] | None = None) -> bool:
         """Open <path>, the book that was open having been dealt with."""
+        with self._replacing():
+            return self._open_closed(path, start_page, keep_fileprovider,
+                                     start_member, listed)
 
+    def _open_closed(self, path: str | list[str], start_page: int,
+                     keep_fileprovider: bool, start_member: str | None,
+                     listed: Sequence[str] | None) -> bool:
+        """The body of _open_file(), run while the book is replaced."""
         self._close()
 
         # A book is kept by its path, so by its one spelling of it.
@@ -1512,8 +1542,9 @@ class FileHandler:
         if not self._file_provider.next_directory(has_books):
             return False
 
-        self._close()
-        self.open_file(files[0], keep_fileprovider=True)
+        with self._replacing():
+            self._close()
+            self.open_file(files[0], keep_fileprovider=True)
         # Whatever opened - a book of the other kind - the walk goes on
         # looking for the kind it set out over.
         self._directory_listmode = listmode
@@ -1567,12 +1598,13 @@ class FileHandler:
         if not self._file_provider.previous_directory(has_books):
             return False
 
-        self._close()
-        path = files[prefs['open first file in prev directory']-1]
-        self.open_file(path, (
-            prefs['open first file in prev archive'] or
-            prefs['open first file in prev directory'])-1,
-                       keep_fileprovider=True)
+        with self._replacing():
+            self._close()
+            path = files[prefs['open first file in prev directory']-1]
+            self.open_file(path, (
+                prefs['open first file in prev archive'] or
+                prefs['open first file in prev directory'])-1,
+                           keep_fileprovider=True)
         # See open_next_directory().
         self._directory_listmode = listmode
         return True

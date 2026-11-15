@@ -3,6 +3,7 @@
 import gc
 import os
 import shutil
+import unittest.mock
 import weakref
 
 from gi.repository import Gtk
@@ -128,6 +129,50 @@ class ShelfTest(MComixTest):
         self.window.filehandler.close_file()
         self.assertTrue(wait_for(
             lambda: self._shown() is not None, seconds=10))
+
+    def test_moving_to_the_next_book_shows_no_covers_between(self):
+        """The book going is closed before the next is listed, and the
+        covers came up for that moment: drawn, and taken away again
+        once the next book was there."""
+        backend.LibraryBackend().add_book(self.books[0])
+        self._window(self.books[0])
+        self.assertTrue(wait_for(self._has_pages, seconds=10))
+        shown = []
+        original = shelf.Shelf.show_books
+
+        def show_books(found):
+            shown.append(found)
+            original(found)
+        with unittest.mock.patch.object(shelf.Shelf, 'show_books',
+                                        show_books):
+            self.assertTrue(self.window.filehandler.open_next_archive())
+            self.assertTrue(wait_for(
+                lambda: self.window.filehandler.file_loaded
+                and self._has_pages(), seconds=10))
+            pump()
+        self.assertEqual(self.books[1],
+                         self.window.filehandler.get_path_to_base())
+        self.assertEqual([], shown)
+        self.assertIsNone(self._shown())
+
+    def test_a_book_that_fails_to_open_over_another_shows_the_covers(self):
+        backend.LibraryBackend().add_book(self.books[1])
+        self._window(self.books[0])
+        self.assertTrue(wait_for(self._has_pages, seconds=10))
+        self.window.filehandler.open_file(
+            os.path.join(self.tmp_dir, 'gone.zip'))
+        self.assertTrue(wait_for(lambda: self._shown() is not None,
+                                 seconds=10))
+        self.assertEqual([self.books[1]], self._shown().book_area.shown_paths())
+
+    def test_covers_on_show_are_not_drawn_again(self):
+        backend.LibraryBackend().add_book(self.books[0])
+        self._window()
+        found = self._shown()
+        self.assertIsNotNone(found)
+        with unittest.mock.patch.object(shelf.Shelf, 'show_books') as again:
+            self.window.update_shelf()
+        again.assert_not_called()
 
     def test_nothing_is_dragged_dropped_or_added_here(self):
         backend.LibraryBackend().add_book(self.books[0])
