@@ -206,6 +206,9 @@ class _ThumbnailViewBase(widgets.Releasable):
         self._label_width = 0
         #: The items whose cells are on screen right now.
         self._bound: set[ThumbnailItem] = set()
+        #: The entries bound since the main loop last turned, whose
+        #: thumbnails are to be asked for once it does.
+        self._unasked: list[ThumbnailItem] = []
         #: Every cell the factory has built, on screen or kept aside
         #: for rows to come; release() needs the ones kept aside too.
         self._cells: "weakref.WeakSet[_ThumbnailCell]" = weakref.WeakSet()
@@ -246,7 +249,7 @@ class _ThumbnailViewBase(widgets.Releasable):
         """Show <list_item>'s thumbnail, and ask for it if it has none.
 
         A cell is bound when it comes on screen, so this is where the
-        view says what has to be made.
+        view says what has to be made, once the binding is over.
         """
         cell = cast(_ThumbnailCell, list_item.get_child())
         item = cast(ThumbnailItem, list_item.get_item())
@@ -259,7 +262,31 @@ class _ThumbnailViewBase(widgets.Releasable):
         if self.style_cell is not None:
             self.style_cell(cell.picture, list_item.get_position())
         if item.thumbnail is None:
-            self._ask_for(item)
+            self._ask_soon(item)
+
+    def _ask_soon(self, item: ThumbnailItem) -> None:
+        """Ask for <item>'s thumbnail once the cells being bound now have
+        all been bound.
+
+        GTK binds the cells of some thirty rows in one go on the main
+        thread.  Asked for as each was bound, the first thumbnails were
+        being made while the rest were still being bound, which the
+        worker threads slowed, and those made waited for the binding to
+        end to be shown: the first covers of the library came up in
+        twice the time.  They are still asked for in the order bound.
+        """
+        if not self._unasked:
+            GLib.idle_add(self._ask_for_unasked)
+        self._unasked.append(item)
+
+    def _ask_for_unasked(self) -> bool:
+        items, self._unasked = self._unasked, []
+        for item in items:
+            # Not one that went off screen meanwhile, or whose thumbnail
+            # came by another way.
+            if item in self._bound and item.thumbnail is None:
+                self._ask_for(item)
+        return GLib.SOURCE_REMOVE
 
     def restyle(self) -> None:
         """Call style_cell() again for every cell on screen, after what it

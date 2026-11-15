@@ -91,9 +91,25 @@ class ThumbnailListViewTest(MComixTest):
         # set_pages() binds the rows that fit from inside the splice, so
         # the list has to be taking orders before it, not after: it used
         # to clear the stop flag afterwards and turn all of them away.
+        # They are asked for once the main loop turns.
         self.view.set_pages(range(1, self.ROWS + 1))
-        self.assertTrue(self.asked,
+        self.assertTrue(wait_for(lambda: self.asked, seconds=5),
                         'the rows were bound while the list was stopped')
+
+    def test_the_rows_bound_together_are_asked_for_after_and_in_order(self):
+        """Asked for as each was bound, the first thumbnails were made
+        while the rest were still being bound, which slowed both."""
+        self.view.set_pages(range(1, self.ROWS + 1))
+        self.assertEqual([], self.asked)
+        self.assertTrue(wait_for(lambda: self.asked, seconds=5))
+        self.assertEqual(sorted(self.asked[:10]), self.asked[:10])
+        self.assertEqual(1, self.asked[0])
+
+    def test_a_row_gone_before_it_was_asked_for_is_not_asked_for(self):
+        self.view.set_pages(range(1, self.ROWS + 1))
+        self.view.clear()
+        pump()
+        self.assertEqual([], self.asked)
 
     def test_a_thumbnail_that_arrives_reaches_its_item(self):
         self._fill()
