@@ -1035,6 +1035,26 @@ class RecursiveArchiveNestingTest(MComixTest):
         self.assertEqual(contents, [os.path.join('inner.zip', 'blue.png')])
         self.assertEqual(opened, 2)
 
+    def test_an_inner_archive_held_for_a_moment_is_still_followed(self):
+        """Windows refuses to move a file something has open, and a
+        virus scanner reads an archive the moment it is written: the
+        inner archive was then given up on."""
+        refusal = PermissionError(13, 'used by another process')
+        refusal.winerror = 32
+        rename = os.rename
+        answers = [refusal]
+
+        def held_once(source, destination):
+            if answers:
+                raise answers.pop()
+            rename(source, destination)
+        with unittest.mock.patch('os.rename', side_effect=held_once), \
+                unittest.mock.patch('time.sleep'):
+            contents, opened = self._list_nested(1)
+        self.assertEqual([], answers)
+        self.assertEqual(contents, [os.path.join('inner.zip', 'blue.png')])
+        self.assertEqual(opened, 2)
+
     def test_stops_following_at_the_nesting_limit(self):
 
         # An archive that holds a copy of itself would be followed for as

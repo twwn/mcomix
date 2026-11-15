@@ -3,6 +3,7 @@
 from mcomix.archive import archive_base
 from mcomix import archive_tools
 from mcomix import log
+from mcomix import portability
 
 import os
 from collections.abc import Iterable, Iterator
@@ -84,7 +85,10 @@ class RecursiveArchive(archive_base.BaseArchive):
                 self._destination_dir, 'sub-archives',
                 '%04u.%s' % (len(self._archive_list), sub_archive_ext))
             self._create_directory(os.path.dirname(sub_archive_path))
-            os.rename(os.path.join(destination_dir, f), sub_archive_path)
+            # Windows refuses for a moment while a virus scanner reads
+            # the archive just written.
+            portability.rename_once_closed(
+                os.rename, os.path.join(destination_dir, f), sub_archive_path)
             # And open it and list its contents.
             sub_archive = archive_tools.get_archive_handler(sub_archive_path)
             if sub_archive is None:
