@@ -1597,10 +1597,6 @@ class RightClickFocusTest(MComixTest):
         self.window.destroy()
         super().tearDown()
 
-    def _settle(self):
-        for _each in range(10):
-            pump()
-
     def _focused(self):
         """The position of the cover that holds the keyboard focus."""
         covers = self.area._covers
@@ -1618,13 +1614,16 @@ class RightClickFocusTest(MComixTest):
         covers = self.area._covers
         covers.grab_focus()
         covers.select_and_focus(0)
-        self._settle()
+        # The focus moves to a cell once the cell has been laid out,
+        # which on a loaded machine takes more turns of the main loop
+        # than a few turns give.
+        wait_for(lambda: self._focused() == 0)
         self.assertEqual(0, self._focused())
         x = next(x for x in range(10, 600, 10)
                  if covers.position_at(x, 60) == 2)
         gesture = types.SimpleNamespace(get_widget=lambda: covers)
         with unittest.mock.patch.object(self.area, '_popup_book_menu'):
             self.area._button_press(gesture, 1, x, 60)
-        self._settle()
+        wait_for(lambda: self._focused() == 2)
         self.assertEqual([2], covers.get_selected_positions())
         self.assertEqual(2, self._focused())
