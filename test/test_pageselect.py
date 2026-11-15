@@ -252,6 +252,18 @@ class ChapterTest(MComixTest):
         pump()
         self.assertEqual(3, self.window.imagehandler.get_current_page())
 
+    def test_choosing_the_chapter_shown_goes_to_its_first_page(self):
+        """The drop-down tells of no change then; its list does."""
+        self._open(self._COMICINFO)
+        selector = self.dialog._chapter_selector
+        adjustment = self.dialog._selector_adjustment
+        adjustment.set_value(4)
+        self.assertEqual(1, selector.get_selected())
+        row_list, = pageselect.Pageselector._lists_in(selector)
+        row_list.emit('activate', 1)
+        self.assertEqual(1, selector.get_selected())
+        self.assertEqual(3, adjustment.get_value())
+
     def test_the_list_shows_the_chapter_of_the_page_chosen(self):
         self._open(self._COMICINFO)
         selector = self.dialog._chapter_selector

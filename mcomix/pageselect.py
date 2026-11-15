@@ -142,6 +142,28 @@ class Pageselector(Dialog):
         self._look_for_chapters()
         self._chapter_selector.connect('notify::selected',
                                        self._chapter_chosen)
+        # Choosing the chapter the list already shows changes nothing
+        # the drop-down tells of, and is how the start of the chapter
+        # being read is gone back to: the list in its popup says so.
+        for row_list in self._lists_in(self._chapter_selector):
+            row_list.connect('activate', self._chapter_row_activated)
+
+    @staticmethod
+    def _lists_in(widget: Gtk.Widget) -> list[Gtk.ListView]:
+        """The list views inside <widget>, at any depth."""
+        found: list[Gtk.ListView] = []
+        child = widget.get_first_child()
+        while child is not None:
+            if isinstance(child, Gtk.ListView):
+                found.append(child)
+            found += Pageselector._lists_in(child)
+            child = child.get_next_sibling()
+        return found
+
+    def _chapter_row_activated(self, row_list: Gtk.ListView,
+                               position: int) -> None:
+        if position == self._chapter_selector.get_selected():
+            self._chapter_chosen()
 
     def _look_for_chapters(self) -> None:
         """List the chapters the book's ComicInfo.xml names, asking for
