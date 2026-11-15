@@ -27,7 +27,7 @@
 - "Skip this page", in the page's right-click menu, passes an advertisement or a blank page over when the pages are turned. The book is not changed.
   The page keeps its thumbnail, drawn faint; untick "Skip this page" there to read it again.
 - "Cover in the library", in the same menu, makes the page the book's cover in the [library](library.md). It is offered for books the library holds.
-- "Move to", in the page's right-click menu, moves the open file or archive to another folder.
+- "File → Move to", also in the right-click menu, moves the open file or archive to another folder.
   Its place in the library, last page, bookmarks and recent-files entry follow it, and so do the turns and marks given to its pages.
   Changes to its pages not yet written are offered to be saved first, as when it closes.
 - "File → Rename archive..." (SHIFT+F2), also in the right-click menu, renames the open archive in its folder.

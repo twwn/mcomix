@@ -353,7 +353,8 @@ _MENUBAR = (
                    'extract_page', 'properties', 'comments', None,
                    'menu_open_with', 'open_containing_folder', None,
                    'refresh_archive', None,
-                   'rename_book', 'delete', 'delete_permanently', None,
+                   'rename_book', 'menu_move_to', None,
+                   'delete', 'delete_permanently', None,
                    'close', 'save_and_quit', 'quit')),
     ('menu_edit', ('undo', 'redo', None,
                    'copy_page', 'unpick_pages', None,
@@ -508,6 +509,9 @@ class MainUI:
             _Entry('menu_edit', None, _('_Edit')),
             _Entry('menu_open_with', 'document-open', _('Open _with')),
             _Entry('menu_open_with_popup', 'document-open', _('Open _with')),
+            # Its own access key: M is Comments' in the File menu.
+            _Entry('menu_move_to', 'folder-symbolic', _('Mo_ve to'),
+                   _('Moves the file, or the archive the page is in, to another folder.')),
             _Entry('menu_move_to_popup', 'folder-symbolic', _('_Move to'),
                    _('Moves the file, or the archive the page is in, to another folder.')),
             _Entry('menu_file', None, _('_File')),
@@ -730,6 +734,7 @@ class MainUI:
                 'menu_open_with_popup': self._openwith.model,
                 'menu_bookmarks': self.bookmarks.model,
                 'menu_bookmarks_popup': self.bookmarks.model,
+                'menu_move_to': self.move_to.model,
                 'menu_move_to_popup': self.move_to.model}.get(name)
 
     def _build(self, layout: _Layout,

@@ -4044,6 +4044,13 @@ class MainWindowTest(MComixTest):
                       self._menu_actions(self.window.uimanager.popup
                                          .get_menu_model()))
 
+    def test_the_file_menu_offers_to_move_the_file_too(self):
+        """It was in the right-click menu alone, beside Delete and the
+        rest of what is done to the file in the File menu."""
+        self.assertIn('moveto.other',
+                      self._menu_actions(self.window.uimanager.menubar
+                                         .get_menu_model()))
+
     # -- Moving the file, or the archive it is a page of ------------------
 
     def _movable_book(self):
