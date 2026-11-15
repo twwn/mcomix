@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 0.90.4\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-15 19:07+0100\n"
+"POT-Creation-Date: 2026-11-15 19:13+0100\n"
 "PO-Revision-Date: 2018-02-24 08:43+0100\n"
 "Last-Translator: Jonatan Nyberg <jonatan@autistici.org>\n"
 "Language-Team: Swedish <LL@li.org>\n"
@@ -56,7 +56,7 @@ msgstr "! Kunde inte läsa %s"
 #
 # File: src/comment.py, line: 53
 #: mcomix/archive_packer.py:213 mcomix/file_actions.py:1253
-#: mcomix/library/book_area.py:1044
+#: mcomix/library/book_area.py:1051
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! Kunde inte ta bort %(file)s: %(error)s"
@@ -191,7 +191,7 @@ msgstr "_Ta bort"
 #: mcomix/bookmark_dialog.py:34 mcomix/comment_dialog.py:29
 #: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:74
 #: mcomix/properties_dialog.py:38 mcomix/ui.py:492
-#: mcomix/library/watchlist.py:41
+#: mcomix/library/book_properties.py:53 mcomix/library/watchlist.py:41
 msgid "_Close"
 msgstr "Stäng _fil"
 
@@ -210,14 +210,15 @@ msgstr "Namn"
 #
 # File: src/bookmark.py, line: 256
 #: mcomix/bookmark_dialog.py:67 mcomix/main.py:2620
-#: mcomix/library/control_area.py:169
+#: mcomix/library/book_properties.py:94 mcomix/library/control_area.py:169
 msgid "Page"
 msgstr "Sida"
 
 #
 # File: src/properties.py, line: 124
 # File: src/properties.py, line: 159
-#: mcomix/bookmark_dialog.py:70 mcomix/properties_dialog.py:228
+#: mcomix/bookmark_dialog.py:70 mcomix/properties_dialog.py:239
+#: mcomix/library/book_properties.py:129
 msgid "Location"
 msgstr "Plats"
 
@@ -288,7 +289,8 @@ msgstr ""
 
 #
 # File: src/edit.py, line: 270
-#: mcomix/edit_comment_area.py:45 mcomix/properties_dialog.py:245
+#: mcomix/edit_comment_area.py:45 mcomix/properties_dialog.py:255
+#: mcomix/library/book_properties.py:88
 msgid "Size"
 msgstr "Storlek"
 
@@ -637,7 +639,7 @@ msgstr "Ta bort \"%s\" permanent?"
 msgid "Could not move \"%s\" to the trash"
 msgstr "Kunde inte flytta \"%s\" till papperskorgen"
 
-#: mcomix/file_actions.py:1212 mcomix/library/book_area.py:1056
+#: mcomix/file_actions.py:1212 mcomix/library/book_area.py:1063
 #, python-format
 msgid "%d book could not be moved to the trash."
 msgid_plural "%d books could not be moved to the trash."
@@ -693,7 +695,8 @@ msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "Kunde inte flytta \"%(file)s\" till \"%(directory)s\""
 
 #: mcomix/file_chooser_base_dialog.py:75 mcomix/file_chooser_base_dialog.py:886
-#: mcomix/properties_dialog.py:138 mcomix/library/control_area.py:172
+#: mcomix/properties_dialog.py:138 mcomix/library/book_properties.py:82
+#: mcomix/library/book_properties.py:121 mcomix/library/control_area.py:172
 #, python-format
 msgid "%d page"
 msgid_plural "%d pages"
@@ -710,7 +713,7 @@ msgstr "Öppna"
 #
 # File: src/filechooser.py, line: 35
 # File: src/library.py, line: 489
-#: mcomix/file_chooser_base_dialog.py:237 mcomix/library/book_area.py:224
+#: mcomix/file_chooser_base_dialog.py:237 mcomix/library/book_area.py:226
 msgid "_Open"
 msgstr "Ö_ppna"
 
@@ -1366,6 +1369,7 @@ msgstr "Arkiv kommentarer"
 #
 # File: src/properties.py, line: 89
 #: mcomix/keybindings.py:167 mcomix/properties_dialog.py:37
+#: mcomix/library/book_properties.py:51
 msgid "Properties"
 msgstr "Egenskaper"
 
@@ -1376,7 +1380,7 @@ msgid "Preferences"
 msgstr "Inställningar"
 
 #: mcomix/keybindings.py:171 mcomix/ui.py:450 mcomix/ui.py:453
-#: mcomix/library/book_area.py:255
+#: mcomix/library/book_area.py:257
 msgid "Open containing folder"
 msgstr "Öppna innehållande katalog"
 
@@ -2516,7 +2520,7 @@ msgstr "Filnamn"
 msgid "File name (GLib)"
 msgstr "Filnamn (GLib)"
 
-#: mcomix/preferences_dialog.py:753 mcomix/library/book_area.py:314
+#: mcomix/preferences_dialog.py:753 mcomix/library/book_area.py:321
 msgid "File size"
 msgstr "Filstorlek"
 
@@ -2525,12 +2529,12 @@ msgid "Last modified"
 msgstr "Senast ändrad"
 
 #: mcomix/preferences_dialog.py:760 mcomix/preferences_dialog.py:806
-#: mcomix/library/book_area.py:322
+#: mcomix/library/book_area.py:329
 msgid "Ascending"
 msgstr "Stigande"
 
 #: mcomix/preferences_dialog.py:761 mcomix/preferences_dialog.py:807
-#: mcomix/library/book_area.py:323
+#: mcomix/library/book_area.py:330
 msgid "Descending"
 msgstr "Fallande"
 
@@ -2680,7 +2684,7 @@ msgstr ""
 "färgprofil för skärmen är angiven. Perceptuell behåller färgernas "
 "proportioner; relativ kolorimetri behåller de färger skärmen kan visa exakt."
 
-#: mcomix/preferences_dialog.py:981 mcomix/library/book_area.py:330
+#: mcomix/preferences_dialog.py:981 mcomix/library/book_area.py:337
 msgid "Normal"
 msgstr "Normal"
 
@@ -2764,28 +2768,28 @@ msgstr "Förlag"
 #
 # File: src/properties.py, line: 126
 # File: src/properties.py, line: 160
-#: mcomix/properties_dialog.py:246
+#: mcomix/properties_dialog.py:256
 msgid "Accessed"
 msgstr "Åtkomsttid"
 
 #
 # File: src/properties.py, line: 128
 # File: src/properties.py, line: 162
-#: mcomix/properties_dialog.py:248
+#: mcomix/properties_dialog.py:258
 msgid "Modified"
 msgstr "Modifieringstid"
 
 #
 # File: src/properties.py, line: 130
 # File: src/properties.py, line: 164
-#: mcomix/properties_dialog.py:257
+#: mcomix/properties_dialog.py:267
 msgid "Permissions"
 msgstr "Rättigheter"
 
 #
 # File: src/properties.py, line: 131
 # File: src/properties.py, line: 165
-#: mcomix/properties_dialog.py:258
+#: mcomix/properties_dialog.py:268
 msgid "Owner"
 msgstr "Ägare"
 
@@ -3220,7 +3224,7 @@ msgstr "! Kunde inte spara miniatyrbild \"%(thumbpath)s\": %(error)s"
 #
 # File: src/librarybackend.py, line: 272
 # File: src/librarybackend.py, line: 274
-#: mcomix/ui.py:441 mcomix/library/book_area.py:252
+#: mcomix/ui.py:441 mcomix/library/book_area.py:254
 msgid "_Copy"
 msgstr "Kopi_era"
 
@@ -3875,164 +3879,172 @@ msgstr "Alla böcker"
 msgid "! Could not scan for new books: %s"
 msgstr "! Kunde inte leta efter nya böcker: %s"
 
-#: mcomix/library/book_area.py:225
+#: mcomix/library/book_area.py:227
 msgid "Opens the selected books for viewing."
 msgstr "Öppnar de valda böckerna för visning."
 
-#: mcomix/library/book_area.py:227
+#: mcomix/library/book_area.py:229
 msgid "Open _without closing library"
 msgstr "_Öppna utan att stänga bibliotek"
 
-#: mcomix/library/book_area.py:228
+#: mcomix/library/book_area.py:230
 msgid "Opens the selected books, but keeps the library window open."
 msgstr "Öppnar de valda böckerna, men håller biblioteksfönstret öppet."
 
-#: mcomix/library/book_area.py:230
+#: mcomix/library/book_area.py:232
 msgid "_Mark as read"
 msgstr "_Markera som läst"
 
-#: mcomix/library/book_area.py:231
+#: mcomix/library/book_area.py:233
 msgid "Marks the selected books as read to the end."
 msgstr "Markerar de valda böckerna som lästa till slutet."
 
-#: mcomix/library/book_area.py:233
+#: mcomix/library/book_area.py:235
 msgid "Mark as u_nread"
 msgstr "M_arkera som oläst"
 
-#: mcomix/library/book_area.py:234
+#: mcomix/library/book_area.py:236
 msgid "Forgets the page the selected books were left at."
 msgstr "Glömmer sidan där de valda böckerna lämnades."
 
-#: mcomix/library/book_area.py:236 mcomix/library/collection_area.py:142
+#: mcomix/library/book_area.py:238 mcomix/library/collection_area.py:142
 msgid "_Add..."
 msgstr "_Lägg till..."
 
 #
 # File: src/library.py, line: 793
-#: mcomix/library/book_area.py:237 mcomix/library/collection_area.py:143
+#: mcomix/library/book_area.py:239 mcomix/library/collection_area.py:143
 msgid "Add more books to the library."
 msgstr "Lägg till fler böcker till biblioteket."
 
 #
 # File: src/library.py, line: 492
-#: mcomix/library/book_area.py:240
+#: mcomix/library/book_area.py:242
 msgid "Remove _from this collection"
 msgstr "Ta bort från den här _samlingen"
 
-#: mcomix/library/book_area.py:241
+#: mcomix/library/book_area.py:243
 msgid "Removes the selected books from the current collection."
 msgstr "Tar bort de valda böckerna från den aktuella samlingen."
 
 #
 # File: src/library.py, line: 495
-#: mcomix/library/book_area.py:243
+#: mcomix/library/book_area.py:245
 msgid "Remove from the _library"
 msgstr "Ta bort från _biblioteket"
 
-#: mcomix/library/book_area.py:244
+#: mcomix/library/book_area.py:246
 msgid "Completely removes the selected books from the library."
 msgstr "Tar helt bort de valda böckerna från biblioteket."
 
-#: mcomix/library/book_area.py:246
+#: mcomix/library/book_area.py:248
 msgid "_Remove and move to the trash"
 msgstr "_Radera och flytta till papperskorgen"
 
-#: mcomix/library/book_area.py:247
+#: mcomix/library/book_area.py:249
 msgid "Deletes the selected books from disk."
 msgstr "Tar bort de valda böckerna från disken."
 
-#: mcomix/library/book_area.py:249 mcomix/library/collection_area.py:153
+#: mcomix/library/book_area.py:251 mcomix/library/collection_area.py:153
 msgid "Clean _up"
 msgstr "Städa _upp"
 
-#: mcomix/library/book_area.py:250 mcomix/library/collection_area.py:154
+#: mcomix/library/book_area.py:252 mcomix/library/collection_area.py:154
 msgid "Removes no longer existent books from the collection."
 msgstr "Tar bort inte längre befintliga böcker från samlingen."
 
 #
 # File: src/library.py, line: 806
-#: mcomix/library/book_area.py:253
+#: mcomix/library/book_area.py:255
 msgid "Copies the selected book's path to clipboard."
 msgstr "Kopierar den valda bokens väg till urklipp."
 
-#: mcomix/library/book_area.py:256
+#: mcomix/library/book_area.py:258
 msgid "Shows the selected book in the file manager."
 msgstr "Visar den markerade boken i filhanteraren."
 
-#: mcomix/library/book_area.py:293
+#: mcomix/library/book_area.py:262
+msgid "_Properties"
+msgstr "E_genskaper"
+
+#: mcomix/library/book_area.py:263
+msgid "Describes the selected books."
+msgstr "Beskriver de markerade böckerna."
+
+#: mcomix/library/book_area.py:300
 msgid "Library books"
 msgstr "Biblioteksböcker"
 
-#: mcomix/library/book_area.py:312
+#: mcomix/library/book_area.py:319
 msgid "Book name"
 msgstr "Boknamn"
 
-#: mcomix/library/book_area.py:313
+#: mcomix/library/book_area.py:320
 msgid "Full path"
 msgstr "Fullständig sökväg"
 
-#: mcomix/library/book_area.py:315
+#: mcomix/library/book_area.py:322
 msgid "Pages"
 msgstr "Sidor"
 
-#: mcomix/library/book_area.py:316
+#: mcomix/library/book_area.py:323 mcomix/library/book_properties.py:89
 msgid "Date added"
 msgstr "Datum tillagd"
 
-#: mcomix/library/book_area.py:317
+#: mcomix/library/book_area.py:324
 msgid "Date modified"
 msgstr "Ändringsdatum"
 
-#: mcomix/library/book_area.py:318
+#: mcomix/library/book_area.py:325 mcomix/library/book_properties.py:93
 msgid "Last read"
 msgstr "Senast läst"
 
-#: mcomix/library/book_area.py:319
+#: mcomix/library/book_area.py:326
 msgid "By hand"
 msgstr "Manuellt"
 
-#: mcomix/library/book_area.py:328
+#: mcomix/library/book_area.py:335
 msgid "Huge"
 msgstr "Jättestor"
 
-#: mcomix/library/book_area.py:329
+#: mcomix/library/book_area.py:336
 msgid "Large"
 msgstr "Stor"
 
-#: mcomix/library/book_area.py:331
+#: mcomix/library/book_area.py:338
 msgid "Small"
 msgstr "Liten"
 
-#: mcomix/library/book_area.py:332
+#: mcomix/library/book_area.py:339
 msgid "Tiny"
 msgstr "Mycket liten"
 
-#: mcomix/library/book_area.py:336
+#: mcomix/library/book_area.py:343
 msgid "Custom..."
 msgstr "Anpassa..."
 
-#: mcomix/library/book_area.py:340
+#: mcomix/library/book_area.py:347
 msgid "_Sort"
 msgstr "Sor_tera"
 
-#: mcomix/library/book_area.py:341
+#: mcomix/library/book_area.py:348
 msgid "Cover si_ze"
 msgstr "Omslagsstorle_k"
 
-#: mcomix/library/book_area.py:688
+#: mcomix/library/book_area.py:695
 msgid "Set library cover size"
 msgstr "Ställ in bibliotekets omslagsstorlek"
 
 #
 # File: src/library.py, line: 588
-#: mcomix/library/book_area.py:920
+#: mcomix/library/book_area.py:927
 #, python-format
 msgid "Removed %(num)d book from '%(collection)s'."
 msgid_plural "Removed %(num)d books from '%(collection)s'."
 msgstr[0] "Tog bort %(num)d bokr från '%(collection)s'."
 msgstr[1] "Tog bort %(num)d böcker från '%(collection)s'."
 
-#: mcomix/library/book_area.py:943 mcomix/library/collection_area.py:301
+#: mcomix/library/book_area.py:950 mcomix/library/collection_area.py:301
 #, python-format
 msgid "Removed %d book from the library."
 msgid_plural "Removed %d books from the library."
@@ -4041,11 +4053,11 @@ msgstr[1] "Tog bort %d böcker från biblioteket."
 
 #
 # File: src/library.py, line: 597
-#: mcomix/library/book_area.py:965 mcomix/library/book_area.py:986
+#: mcomix/library/book_area.py:972 mcomix/library/book_area.py:993
 msgid "Remove books from the library?"
 msgstr "Ta bort böcker från biblioteket?"
 
-#: mcomix/library/book_area.py:966
+#: mcomix/library/book_area.py:973
 msgid ""
 "The selected books will be removed from the library. Any in a folder with no "
 "trash is deleted permanently and cannot be restored."
@@ -4053,22 +4065,50 @@ msgstr ""
 "De valda böckerna tas bort från biblioteket. Böcker i en katalog utan "
 "papperskorg tas bort permanent och kan inte återställas."
 
-#: mcomix/library/book_area.py:987
+#: mcomix/library/book_area.py:994
 msgid ""
 "The selected books will be removed from the library and moved to the trash."
 msgstr ""
 "De valda böckerna tas bort från biblioteket och flyttas till papperskorgen."
 
-#: mcomix/library/book_area.py:1107
+#: mcomix/library/book_area.py:1114
 #, python-format
 msgid "Remove the bookmarks in the deleted book?"
 msgid_plural "Remove the bookmarks in the %(count)d deleted books?"
 msgstr[0] "Ta bort bokmärkena i den borttagna boken?"
 msgstr[1] "Ta bort bokmärkena i de %(count)d borttagna böckerna?"
 
-#: mcomix/library/book_area.py:1230
+#: mcomix/library/book_area.py:1237
 msgid "Open with"
 msgstr "Öppna med"
+
+#
+# File: src/library.py, line: 862
+#: mcomix/library/book_properties.py:98 mcomix/library/watchlist.py:53
+msgid "Collection"
+msgstr "Samling"
+
+#: mcomix/library/book_properties.py:108 mcomix/library/control_area.py:200
+#, python-format
+msgid "%d book"
+msgid_plural "%d books"
+msgstr[0] "%d bok"
+msgstr[1] "%d böcker"
+
+#: mcomix/library/book_properties.py:115 mcomix/library/control_area.py:204
+#, python-format
+msgid "Pages read: %d"
+msgstr "Lästa sidor: %d"
+
+#: mcomix/library/book_properties.py:117 mcomix/library/control_area.py:206
+#, python-format
+msgid "last read on %(date)s, %(time)s"
+msgstr "senast läst den %(date)s, %(time)s"
+
+#: mcomix/library/book_properties.py:123 mcomix/library/control_area.py:202
+#, python-format
+msgid "Started: %(started)d, finished: %(finished)d"
+msgstr "Påbörjade: %(started)d, utlästa: %(finished)d"
 
 #: mcomix/library/collection_area.py:146
 msgid "New"
@@ -4252,28 +4292,6 @@ msgstr "Öppna den markerade boken."
 msgid "Finished reading on %(date)s, %(time)s"
 msgstr "Avslutade läsning den %(date)s, %(time)s"
 
-#: mcomix/library/control_area.py:200
-#, python-format
-msgid "%d book"
-msgid_plural "%d books"
-msgstr[0] "%d bok"
-msgstr[1] "%d böcker"
-
-#: mcomix/library/control_area.py:202
-#, python-format
-msgid "Started: %(started)d, finished: %(finished)d"
-msgstr "Påbörjade: %(started)d, utlästa: %(finished)d"
-
-#: mcomix/library/control_area.py:204
-#, python-format
-msgid "Pages read: %d"
-msgstr "Lästa sidor: %d"
-
-#: mcomix/library/control_area.py:206
-#, python-format
-msgid "last read on %(date)s, %(time)s"
-msgstr "senast läst den %(date)s, %(time)s"
-
 #: mcomix/library/main_dialog.py:156
 msgid "Scanning for new books..."
 msgstr "Letar efter nya böcker..."
@@ -4340,12 +4358,6 @@ msgstr "_Skanna nu"
 #: mcomix/library/watchlist.py:52
 msgid "Folder"
 msgstr "Katalog"
-
-#
-# File: src/library.py, line: 862
-#: mcomix/library/watchlist.py:53
-msgid "Collection"
-msgstr "Samling"
 
 #: mcomix/library/watchlist.py:57
 msgid "With subfolders"

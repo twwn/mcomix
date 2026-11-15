@@ -223,40 +223,50 @@ class _PropertiesDialog(Dialog):
         what the file system knows of it.  All in one call, since each
         call to set_secondary_info() adds another pair of columns.
         """
-        secondary_info = [
-            *described,
-            (_('Location'), i18n.to_display_string(i18n.to_unicode(os.path.dirname(location)))),
-        ]
+        page.set_secondary_info([*described, *file_rows(location)])
+
+
+def file_rows(location: str) -> list[tuple[str, str]]:
+    """Where the file at <location> is and what the file system knows
+    of it, as rows for a properties page: its folder, then its size,
+    its dates and, outside Windows, its permissions and owner.  The
+    folder alone where the file cannot be read.
+
+    The library's book properties describe a book's file by the same
+    rows.
+    """
+    rows = [
+        (_('Location'), i18n.to_display_string(i18n.to_unicode(os.path.dirname(location)))),
+    ]
+    try:
+        stats = os.stat(location)
+    except OSError as error:
+        log.debug('Could not stat "%s": %s', location, error)
+        return rows
+    # The number where there is no name for it: a file brought from
+    # another system may belong to a user this one does not know.
+    uid = str(stats.st_uid)
+    if _has_pwd:
         try:
-            stats = os.stat(location)
-        except OSError as error:
-            log.debug('Could not stat "%s": %s', location, error)
-            page.set_secondary_info(secondary_info)
-            return
-        # The number where there is no name for it: a file brought from
-        # another system may belong to a user this one does not know.
-        uid = str(stats.st_uid)
-        if _has_pwd:
-            try:
-                uid = pwd.getpwuid(stats.st_uid).pw_name
-            except KeyError:
-                pass
-        secondary_info.extend((
-            (_('Size'), tools.format_byte_size(stats.st_size)),
-            (_('Accessed'), time.strftime('%Y-%m-%d, %H:%M:%S',
-                                          time.localtime(stats.st_atime))),
-            (_('Modified'), time.strftime('%Y-%m-%d, %H:%M:%S',
-                                          time.localtime(stats.st_mtime))),
+            uid = pwd.getpwuid(stats.st_uid).pw_name
+        except KeyError:
+            pass
+    rows.extend((
+        (_('Size'), tools.format_byte_size(stats.st_size)),
+        (_('Accessed'), time.strftime('%Y-%m-%d, %H:%M:%S',
+                                      time.localtime(stats.st_atime))),
+        (_('Modified'), time.strftime('%Y-%m-%d, %H:%M:%S',
+                                      time.localtime(stats.st_mtime))),
+    ))
+    # Windows keeps neither: os.stat() there gives every file the
+    # owner 0, and permission bits made up from the read-only
+    # attribute alone, which said nothing true.
+    if sys.platform != 'win32':
+        rows.extend((
+            # As ls -l writes them; oct() wrote Python's own "0o644".
+            (_('Permissions'), stat.filemode(stats.st_mode)),
+            (_('Owner'), uid)
         ))
-        # Windows keeps neither: os.stat() there gives every file the
-        # owner 0, and permission bits made up from the read-only
-        # attribute alone, which said nothing true.
-        if sys.platform != 'win32':
-            secondary_info.extend((
-                # As ls -l writes them; oct() wrote Python's own "0o644".
-                (_('Permissions'), stat.filemode(stats.st_mode)),
-                (_('Owner'), uid)
-            ))
-        page.set_secondary_info(secondary_info)
+    return rows
 
 # vim: expandtab:sw=4:ts=4

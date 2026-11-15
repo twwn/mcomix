@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Comix 4.0.3\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-15 19:07+0100\n"
+"POT-Creation-Date: 2026-11-15 19:13+0100\n"
 "PO-Revision-Date: 2009-01-26 19:34+0100\n"
 "Last-Translator: Ernő Drabik <drerno@gmail.com>\n"
 "Language-Team: \n"
@@ -48,7 +48,7 @@ msgid "! Could not read %s"
 msgstr "! Nem sikerült beolvasni: %s"
 
 #: mcomix/archive_packer.py:213 mcomix/file_actions.py:1253
-#: mcomix/library/book_area.py:1044
+#: mcomix/library/book_area.py:1051
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! Nem sikerült törölni: %(file)s: %(error)s"
@@ -166,7 +166,7 @@ msgstr "_Eltávolítás"
 #: mcomix/bookmark_dialog.py:34 mcomix/comment_dialog.py:29
 #: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:74
 #: mcomix/properties_dialog.py:38 mcomix/ui.py:492
-#: mcomix/library/watchlist.py:41
+#: mcomix/library/book_properties.py:53 mcomix/library/watchlist.py:41
 msgid "_Close"
 msgstr "_Bezárás"
 
@@ -180,11 +180,12 @@ msgid "Name"
 msgstr "Név"
 
 #: mcomix/bookmark_dialog.py:67 mcomix/main.py:2620
-#: mcomix/library/control_area.py:169
+#: mcomix/library/book_properties.py:94 mcomix/library/control_area.py:169
 msgid "Page"
 msgstr "Oldal"
 
-#: mcomix/bookmark_dialog.py:70 mcomix/properties_dialog.py:228
+#: mcomix/bookmark_dialog.py:70 mcomix/properties_dialog.py:239
+#: mcomix/library/book_properties.py:129
 msgid "Location"
 msgstr "Hely"
 
@@ -244,7 +245,8 @@ msgstr ""
 "Ehhez a listához csak azok az archívumbeli fájlok adódnak hozzá "
 "automatikusan, amelyeket az MComix megjegyzésként ismer fel."
 
-#: mcomix/edit_comment_area.py:45 mcomix/properties_dialog.py:245
+#: mcomix/edit_comment_area.py:45 mcomix/properties_dialog.py:255
+#: mcomix/library/book_properties.py:88
 msgid "Size"
 msgstr "Méret"
 
@@ -555,7 +557,7 @@ msgstr "Véglegesen törli ezt: „%s”?"
 msgid "Could not move \"%s\" to the trash"
 msgstr "Nem sikerült a Kukába helyezni: „%s”"
 
-#: mcomix/file_actions.py:1212 mcomix/library/book_area.py:1056
+#: mcomix/file_actions.py:1212 mcomix/library/book_area.py:1063
 #, python-format
 msgid "%d book could not be moved to the trash."
 msgid_plural "%d books could not be moved to the trash."
@@ -612,7 +614,8 @@ msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "Nem sikerült áthelyezni: „%(file)s” ide: „%(directory)s”"
 
 #: mcomix/file_chooser_base_dialog.py:75 mcomix/file_chooser_base_dialog.py:886
-#: mcomix/properties_dialog.py:138 mcomix/library/control_area.py:172
+#: mcomix/properties_dialog.py:138 mcomix/library/book_properties.py:82
+#: mcomix/library/book_properties.py:121 mcomix/library/control_area.py:172
 #, python-format
 msgid "%d page"
 msgid_plural "%d pages"
@@ -623,7 +626,7 @@ msgstr[1] "%d oldal"
 msgid "Open"
 msgstr "Megnyitás"
 
-#: mcomix/file_chooser_base_dialog.py:237 mcomix/library/book_area.py:224
+#: mcomix/file_chooser_base_dialog.py:237 mcomix/library/book_area.py:226
 msgid "_Open"
 msgstr "_Megnyitás"
 
@@ -1170,6 +1173,7 @@ msgid "Archive comments"
 msgstr "Az archívum megjegyzései"
 
 #: mcomix/keybindings.py:167 mcomix/properties_dialog.py:37
+#: mcomix/library/book_properties.py:51
 msgid "Properties"
 msgstr "Tulajdonságok"
 
@@ -1178,7 +1182,7 @@ msgid "Preferences"
 msgstr "Beállítások"
 
 #: mcomix/keybindings.py:171 mcomix/ui.py:450 mcomix/ui.py:453
-#: mcomix/library/book_area.py:255
+#: mcomix/library/book_area.py:257
 msgid "Open containing folder"
 msgstr "Tartalmazó mappa megnyitása"
 
@@ -2208,7 +2212,7 @@ msgstr "Fájlnév"
 msgid "File name (GLib)"
 msgstr "Fájlnév (GLib)"
 
-#: mcomix/preferences_dialog.py:753 mcomix/library/book_area.py:314
+#: mcomix/preferences_dialog.py:753 mcomix/library/book_area.py:321
 msgid "File size"
 msgstr "Fájlméret"
 
@@ -2217,12 +2221,12 @@ msgid "Last modified"
 msgstr "Módosítás ideje"
 
 #: mcomix/preferences_dialog.py:760 mcomix/preferences_dialog.py:806
-#: mcomix/library/book_area.py:322
+#: mcomix/library/book_area.py:329
 msgid "Ascending"
 msgstr "Növekvő"
 
 #: mcomix/preferences_dialog.py:761 mcomix/preferences_dialog.py:807
-#: mcomix/library/book_area.py:323
+#: mcomix/library/book_area.py:330
 msgid "Descending"
 msgstr "Csökkenő"
 
@@ -2371,7 +2375,7 @@ msgstr ""
 "arányosan tartja a színeket; a relatív színmérési pontosan megtartja azokat, "
 "amelyeket a képernyő meg tud jeleníteni."
 
-#: mcomix/preferences_dialog.py:981 mcomix/library/book_area.py:330
+#: mcomix/preferences_dialog.py:981 mcomix/library/book_area.py:337
 msgid "Normal"
 msgstr "Normál"
 
@@ -2449,19 +2453,19 @@ msgstr "Rajzoló"
 msgid "Publisher"
 msgstr "Kiadó"
 
-#: mcomix/properties_dialog.py:246
+#: mcomix/properties_dialog.py:256
 msgid "Accessed"
 msgstr "Utolsó elérés"
 
-#: mcomix/properties_dialog.py:248
+#: mcomix/properties_dialog.py:258
 msgid "Modified"
 msgstr "Módosítva"
 
-#: mcomix/properties_dialog.py:257
+#: mcomix/properties_dialog.py:267
 msgid "Permissions"
 msgstr "Jogosultságok"
 
-#: mcomix/properties_dialog.py:258
+#: mcomix/properties_dialog.py:268
 msgid "Owner"
 msgstr "Tulajdonos"
 
@@ -2831,7 +2835,7 @@ msgstr "Vektoros ikon"
 msgid "! Could not save thumbnail \"%(thumbpath)s\": %(error)s"
 msgstr "! Nem sikerült menteni a(z) „%(thumbpath)s” bélyegképet: %(error)s"
 
-#: mcomix/ui.py:441 mcomix/library/book_area.py:252
+#: mcomix/ui.py:441 mcomix/library/book_area.py:254
 msgid "_Copy"
 msgstr "Má_solás"
 
@@ -3390,166 +3394,174 @@ msgstr "Minden könyv"
 msgid "! Could not scan for new books: %s"
 msgstr "! Nem sikerült új könyveket keresni: %s"
 
-#: mcomix/library/book_area.py:225
+#: mcomix/library/book_area.py:227
 msgid "Opens the selected books for viewing."
 msgstr "Megnyitja megtekintésre a kiválasztott könyveket."
 
-#: mcomix/library/book_area.py:227
+#: mcomix/library/book_area.py:229
 msgid "Open _without closing library"
 msgstr "Megnyitás a könyvtár _bezárása nélkül"
 
-#: mcomix/library/book_area.py:228
+#: mcomix/library/book_area.py:230
 msgid "Opens the selected books, but keeps the library window open."
 msgstr ""
 "Megnyitja a kiválasztott könyveket, de a könyvtárablakot nyitva hagyja."
 
-#: mcomix/library/book_area.py:230
+#: mcomix/library/book_area.py:232
 msgid "_Mark as read"
 msgstr "Megjelölés _olvasottként"
 
-#: mcomix/library/book_area.py:231
+#: mcomix/library/book_area.py:233
 msgid "Marks the selected books as read to the end."
 msgstr "A kijelölt könyveket a végéig olvasottnak jelöli."
 
-#: mcomix/library/book_area.py:233
+#: mcomix/library/book_area.py:235
 msgid "Mark as u_nread"
 msgstr "Megjelölés olvasatla_nként"
 
-#: mcomix/library/book_area.py:234
+#: mcomix/library/book_area.py:236
 msgid "Forgets the page the selected books were left at."
 msgstr "Elfelejti az oldalt, ahol a kijelölt könyveket abbahagyták."
 
-#: mcomix/library/book_area.py:236 mcomix/library/collection_area.py:142
+#: mcomix/library/book_area.py:238 mcomix/library/collection_area.py:142
 msgid "_Add..."
 msgstr "Hozzá_adás..."
 
-#: mcomix/library/book_area.py:237 mcomix/library/collection_area.py:143
+#: mcomix/library/book_area.py:239 mcomix/library/collection_area.py:143
 msgid "Add more books to the library."
 msgstr "Több könyv hozzáadása a könyvtárhoz."
 
-#: mcomix/library/book_area.py:240
+#: mcomix/library/book_area.py:242
 msgid "Remove _from this collection"
 msgstr "Eltávolítás a _gyűjteményből"
 
-#: mcomix/library/book_area.py:241
+#: mcomix/library/book_area.py:243
 msgid "Removes the selected books from the current collection."
 msgstr "Eltávolítja a kiválasztott könyveket a jelenlegi gyűjteményből."
 
-#: mcomix/library/book_area.py:243
+#: mcomix/library/book_area.py:245
 msgid "Remove from the _library"
 msgstr "Eltávolítás a _könyvtárból"
 
-#: mcomix/library/book_area.py:244
+#: mcomix/library/book_area.py:246
 msgid "Completely removes the selected books from the library."
 msgstr "Teljesen eltávolítja a kiválasztott könyveket a könyvtárból."
 
-#: mcomix/library/book_area.py:246
+#: mcomix/library/book_area.py:248
 msgid "_Remove and move to the trash"
 msgstr "Eltávolítás és át_helyezés a Kukába"
 
-#: mcomix/library/book_area.py:247
+#: mcomix/library/book_area.py:249
 msgid "Deletes the selected books from disk."
 msgstr "Törli a lemezről a kiválasztott könyveket."
 
-#: mcomix/library/book_area.py:249 mcomix/library/collection_area.py:153
+#: mcomix/library/book_area.py:251 mcomix/library/collection_area.py:153
 msgid "Clean _up"
 msgstr "T_isztítás"
 
-#: mcomix/library/book_area.py:250 mcomix/library/collection_area.py:154
+#: mcomix/library/book_area.py:252 mcomix/library/collection_area.py:154
 msgid "Removes no longer existent books from the collection."
 msgstr "Eltávolítja a gyűjteményből a már nem létező könyveket."
 
-#: mcomix/library/book_area.py:253
+#: mcomix/library/book_area.py:255
 msgid "Copies the selected book's path to clipboard."
 msgstr "A kiválasztott könyv útvonalát a vágólapra másolja."
 
-#: mcomix/library/book_area.py:256
+#: mcomix/library/book_area.py:258
 msgid "Shows the selected book in the file manager."
 msgstr "Megjeleníti a kijelölt könyvet a fájlkezelőben."
 
-#: mcomix/library/book_area.py:293
+#: mcomix/library/book_area.py:262
+msgid "_Properties"
+msgstr "T_ulajdonságok"
+
+#: mcomix/library/book_area.py:263
+msgid "Describes the selected books."
+msgstr "Leírja a kijelölt könyveket."
+
+#: mcomix/library/book_area.py:300
 msgid "Library books"
 msgstr "A könyvtár könyvei"
 
-#: mcomix/library/book_area.py:312
+#: mcomix/library/book_area.py:319
 msgid "Book name"
 msgstr "A könyv neve"
 
-#: mcomix/library/book_area.py:313
+#: mcomix/library/book_area.py:320
 msgid "Full path"
 msgstr "Teljes útvonal"
 
-#: mcomix/library/book_area.py:315
+#: mcomix/library/book_area.py:322
 msgid "Pages"
 msgstr "Oldalak"
 
-#: mcomix/library/book_area.py:316
+#: mcomix/library/book_area.py:323 mcomix/library/book_properties.py:89
 msgid "Date added"
 msgstr "Hozzáadás dátuma"
 
-#: mcomix/library/book_area.py:317
+#: mcomix/library/book_area.py:324
 msgid "Date modified"
 msgstr "Módosítás dátuma"
 
-#: mcomix/library/book_area.py:318
+#: mcomix/library/book_area.py:325 mcomix/library/book_properties.py:93
 msgid "Last read"
 msgstr "Utoljára olvasva"
 
-#: mcomix/library/book_area.py:319
+#: mcomix/library/book_area.py:326
 msgid "By hand"
 msgstr "Kézzel"
 
-#: mcomix/library/book_area.py:328
+#: mcomix/library/book_area.py:335
 msgid "Huge"
 msgstr "Óriási"
 
-#: mcomix/library/book_area.py:329
+#: mcomix/library/book_area.py:336
 msgid "Large"
 msgstr "Nagy"
 
-#: mcomix/library/book_area.py:331
+#: mcomix/library/book_area.py:338
 msgid "Small"
 msgstr "Kicsi"
 
-#: mcomix/library/book_area.py:332
+#: mcomix/library/book_area.py:339
 msgid "Tiny"
 msgstr "Apró"
 
-#: mcomix/library/book_area.py:336
+#: mcomix/library/book_area.py:343
 msgid "Custom..."
 msgstr "Egyéni..."
 
-#: mcomix/library/book_area.py:340
+#: mcomix/library/book_area.py:347
 msgid "_Sort"
 msgstr "_Rendezés"
 
-#: mcomix/library/book_area.py:341
+#: mcomix/library/book_area.py:348
 msgid "Cover si_ze"
 msgstr "Borí_tó mérete"
 
-#: mcomix/library/book_area.py:688
+#: mcomix/library/book_area.py:695
 msgid "Set library cover size"
 msgstr "A borítók méretének beállítása a könyvtárban"
 
-#: mcomix/library/book_area.py:920
+#: mcomix/library/book_area.py:927
 #, python-format
 msgid "Removed %(num)d book from '%(collection)s'."
 msgid_plural "Removed %(num)d books from '%(collection)s'."
 msgstr[0] "%(num)d könyv eltávolítva innen: „%(collection)s”."
 msgstr[1] "%(num)d könyv eltávolítva innen: „%(collection)s”."
 
-#: mcomix/library/book_area.py:943 mcomix/library/collection_area.py:301
+#: mcomix/library/book_area.py:950 mcomix/library/collection_area.py:301
 #, python-format
 msgid "Removed %d book from the library."
 msgid_plural "Removed %d books from the library."
 msgstr[0] "%d könyv eltávolítva a könyvtárból."
 msgstr[1] "%d könyv eltávolítva a könyvtárból."
 
-#: mcomix/library/book_area.py:965 mcomix/library/book_area.py:986
+#: mcomix/library/book_area.py:972 mcomix/library/book_area.py:993
 msgid "Remove books from the library?"
 msgstr "Eltávolítja a könyveket a könyvtárból?"
 
-#: mcomix/library/book_area.py:966
+#: mcomix/library/book_area.py:973
 msgid ""
 "The selected books will be removed from the library. Any in a folder with no "
 "trash is deleted permanently and cannot be restored."
@@ -3557,23 +3569,49 @@ msgstr ""
 "A kiválasztott könyvek eltávolításra kerülnek a könyvtárból. A Kuka nélküli "
 "mappában lévők véglegesen törlődnek, és nem lehet visszaállítani őket."
 
-#: mcomix/library/book_area.py:987
+#: mcomix/library/book_area.py:994
 msgid ""
 "The selected books will be removed from the library and moved to the trash."
 msgstr ""
 "A kiválasztott könyvek eltávolításra kerülnek a könyvtárból, és a Kukába "
 "kerülnek."
 
-#: mcomix/library/book_area.py:1107
+#: mcomix/library/book_area.py:1114
 #, python-format
 msgid "Remove the bookmarks in the deleted book?"
 msgid_plural "Remove the bookmarks in the %(count)d deleted books?"
 msgstr[0] "Eltávolítja a törölt könyv könyvjelzőit?"
 msgstr[1] "Eltávolítja a(z) %(count)d törölt könyv könyvjelzőit?"
 
-#: mcomix/library/book_area.py:1230
+#: mcomix/library/book_area.py:1237
 msgid "Open with"
 msgstr "Megnyitás ezzel"
+
+#: mcomix/library/book_properties.py:98 mcomix/library/watchlist.py:53
+msgid "Collection"
+msgstr "Gyűjtemény"
+
+#: mcomix/library/book_properties.py:108 mcomix/library/control_area.py:200
+#, python-format
+msgid "%d book"
+msgid_plural "%d books"
+msgstr[0] "%d könyv"
+msgstr[1] "%d könyv"
+
+#: mcomix/library/book_properties.py:115 mcomix/library/control_area.py:204
+#, python-format
+msgid "Pages read: %d"
+msgstr "Elolvasott oldalak: %d"
+
+#: mcomix/library/book_properties.py:117 mcomix/library/control_area.py:206
+#, python-format
+msgid "last read on %(date)s, %(time)s"
+msgstr "utoljára olvasva: %(date)s, %(time)s"
+
+#: mcomix/library/book_properties.py:123 mcomix/library/control_area.py:202
+#, python-format
+msgid "Started: %(started)d, finished: %(finished)d"
+msgstr "Elkezdve: %(started)d, befejezve: %(finished)d"
 
 #: mcomix/library/collection_area.py:146
 msgid "New"
@@ -3724,28 +3762,6 @@ msgstr "A kiválasztott könyv megnyitása."
 msgid "Finished reading on %(date)s, %(time)s"
 msgstr "Elolvasva ekkor: %(date)s, %(time)s"
 
-#: mcomix/library/control_area.py:200
-#, python-format
-msgid "%d book"
-msgid_plural "%d books"
-msgstr[0] "%d könyv"
-msgstr[1] "%d könyv"
-
-#: mcomix/library/control_area.py:202
-#, python-format
-msgid "Started: %(started)d, finished: %(finished)d"
-msgstr "Elkezdve: %(started)d, befejezve: %(finished)d"
-
-#: mcomix/library/control_area.py:204
-#, python-format
-msgid "Pages read: %d"
-msgstr "Elolvasott oldalak: %d"
-
-#: mcomix/library/control_area.py:206
-#, python-format
-msgid "last read on %(date)s, %(time)s"
-msgstr "utoljára olvasva: %(date)s, %(time)s"
-
 #: mcomix/library/main_dialog.py:156
 msgid "Scanning for new books..."
 msgstr "Új könyvek keresése..."
@@ -3812,10 +3828,6 @@ msgstr "_Keresés most"
 #: mcomix/library/watchlist.py:52
 msgid "Folder"
 msgstr "Mappa"
-
-#: mcomix/library/watchlist.py:53
-msgid "Collection"
-msgstr "Gyűjtemény"
 
 #: mcomix/library/watchlist.py:57
 msgid "With subfolders"
@@ -4456,9 +4468,6 @@ msgstr "Új könyvek automatikus keresése a könyvtár _megnyitásakor"
 
 #~ msgid "_View comments..."
 #~ msgstr "Megjegy_zések megtekintése"
-
-#~ msgid "_Properties"
-#~ msgstr "_Tulajdonságok"
 
 #~ msgid "_Enhance image..."
 #~ msgstr "Kép k_iemelése"

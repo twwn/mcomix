@@ -1465,7 +1465,8 @@ class MenuKeyTest(MComixTest):
                 if action is not None and accel is not None:
                     accels[action.get_string()] = accel.get_string()
         self.assertEqual({'books.remove-from-collection': 'Delete',
-                          'books.copy-to-clipboard': '<Control>c'}, accels)
+                          'books.copy-to-clipboard': '<Control>c',
+                          'books.properties': '<Alt>Return'}, accels)
 
 
 class OpenAndClickTest(MComixTest):

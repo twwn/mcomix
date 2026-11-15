@@ -35,6 +35,7 @@ from mcomix import openwith
 from mcomix import openwith_menu
 from mcomix import tools
 from mcomix.library import backend_types
+from mcomix.library import book_properties
 from mcomix.library.pixbuf_cache import get_pixbuf_cache
 from mcomix.i18n import _
 from mcomix.dialog import Response
@@ -216,7 +217,8 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
 
     #: The keys _key_press() answers for a popup entry, shown beside it.
     _MENU_KEYS = {'remove-from-collection': 'Delete',
-                  'copy-to-clipboard': '<Control>c'}
+                  'copy-to-clipboard': '<Control>c',
+                  'properties': '<Alt>Return'}
 
     #: The popup's plain entries: action name, label, tooltip, handler.
     def _menu_entries(self) -> "tuple[tuple[str, str, str, Callable[..., None]], ...]":  # type: ignore[explicit-any]  # the menu items differ in what their handlers take
@@ -255,6 +257,11 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
             ('open-containing-folder', _('Open containing folder'),
              _('Shows the selected book in the file manager.'),
              self._show_selected_in_folder),
+            # Not the File menu's "Proper_ties": its letter is taken here
+            # in several languages.
+            ('properties', _('_Properties'),
+             _('Describes the selected books.'),
+             self.show_properties),
         )
 
     def _create_popup_menu(self) -> Gtk.PopoverMenu:
@@ -292,7 +299,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         entries = self._menu_entries()
         for heading, group in ((_('Library books'), entries[0:2]),
                                (None, entries[2:4]), (None, entries[4:5]),
-                               (None, entries[5:9]), (None, entries[9:11])):
+                               (None, entries[5:9]), (None, entries[9:12])):
             section = Gio.Menu()
             for name, label, tooltip, handler in group:
                 item = Gio.MenuItem.new(label, 'books.' + name)
@@ -1185,7 +1192,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
 
         for action in ('open', 'open-keep-library', 'mark-read',
                        'mark-unread', 'remove-from-library',
-                       'completely-remove'):
+                       'completely-remove', 'properties'):
             self._set_sensitive(action, books_selected)
 
         manages = self._library.manages
@@ -1235,6 +1242,24 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         for item in self._selected_items():
             command.execute_on_book(item.path, self._library.set_status_message)
 
+    def show_properties(self, *args: object) -> None:
+        """Describe the selected books, in a window of their own.
+
+        A single book is shown with the cover the library has drawn for
+        it already, rather than read again from the book.
+        """
+        backend = self._library.backend
+        books = [book for book in (backend.get_book_by_id(item.uid)
+                                   for item in self._selected_items())
+                 if book is not None]
+        if not books:
+            return
+        cover = self._cache.get(books[0].path) if len(books) == 1 else None
+        root = self.get_root()
+        book_properties.BookPropertiesDialog(
+            root if isinstance(root, Gtk.Window) else None, backend, books,
+            cover, self.get_scale_factor())
+
     def _clean_up(self, *args: object) -> None:
         """Take the books of the collection on show whose files have
         gone out of the library, as the collection's own menu does."""
@@ -1259,6 +1284,11 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         if state & Gdk.ModifierType.CONTROL_MASK \
                 and Gdk.keyval_to_lower(keyval) == Gdk.KEY_c:
             self._copy_selected()
+            return Gdk.EVENT_STOP
+        # As the main window's Properties are reached.
+        if state & Gdk.ModifierType.ALT_MASK \
+                and keyval in (Gdk.KEY_Return, Gdk.KEY_KP_Enter):
+            self.show_properties()
             return Gdk.EVENT_STOP
         # A GTK4 widget has no popup-menu signal, so the keys that
         # asked for a menu through it are heard here.

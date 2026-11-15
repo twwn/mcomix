@@ -26,6 +26,7 @@ from mcomix import icons
 from mcomix import main
 from mcomix import message_dialog
 from mcomix.library import add_progress_dialog
+from mcomix.library import book_properties
 from mcomix.library import main_dialog
 from mcomix.library import relocate_dialog
 from mcomix.library import watchlist
@@ -279,6 +280,19 @@ class MainWindowDialogsFreedTest(MComixTest):
                                   add_progress_dialog._AddLibraryProgressDialog)]
             self.assertFalse(left, 'the progress dialog is still alive, '
                              'held by %s' % (left and _holders(left[0])))
+        finally:
+            library.close()
+
+    def test_the_properties_of_a_book_in_the_library(self):
+        library = self._open_library()
+        try:
+            library.add_books(
+                [get_testfile_path('archives', '01-ZIP-Normal.zip')])
+            book = library.backend.get_book_by_path(
+                get_testfile_path('archives', '01-ZIP-Normal.zip'))
+            self.assertFreedOnClose(
+                lambda: book_properties.BookPropertiesDialog(
+                    library, library.backend, [book]))
         finally:
             library.close()
 
