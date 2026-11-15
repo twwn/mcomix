@@ -30,6 +30,9 @@
 - "Move to", in the page's right-click menu, moves the open file or archive to another folder.
   Its place in the library, last page, bookmarks and recent-files entry follow it, and so do the turns and marks given to its pages.
   Changes to its pages not yet written are offered to be saved first, as when it closes.
+- "File → Rename archive..." (SHIFT+F2), also in the right-click menu, renames the open archive in its folder.
+  It goes on at the same page, and what follows a moved book follows a renamed one.
+  A name typed without an extension keeps the old one. A name another file holds is refused.
 
 ## Opening books
 

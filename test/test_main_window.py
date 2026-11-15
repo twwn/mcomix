@@ -2600,7 +2600,7 @@ class MainWindowTest(MComixTest):
         paths = []
         for number in range(1, count + 1):
             path = os.path.join(folder, '%02d.png' % number)
-            shutil.copy(get_testfile_path('images', 'blue.png'), path)
+            shutil.copy(get_testfile_path('images', '03-PNG-RGB.png'), path)
             paths.append(path)
         self.window.filehandler.open_file(paths[0])
         self.assertTrue(wait_for(
@@ -3319,7 +3319,7 @@ class MainWindowTest(MComixTest):
         os.mkdir(second)
         book = os.path.join(first, 'book.zip')
         shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), book)
-        shutil.copy(get_testfile_path('images', 'blue.png'), second)
+        shutil.copy(get_testfile_path('images', '03-PNG-RGB.png'), second)
         prefs['auto open next archive'] = True
         prefs['auto open next directory'] = True
         self.window.filehandler.open_file(book)
@@ -4342,6 +4342,110 @@ class MainWindowTest(MComixTest):
                         'the book moved though the save was stopped')
         self.assertEqual(os.listdir(destination), [])
 
+    # -- Renaming the archive being read -----------------------------------
+
+    def _rename_book_as(self, typed):
+        """Rename the open archive as if <typed> were typed and OK
+        pressed, and answer with the clash the dialog was handed."""
+        asked = {}
+
+        def ask(parent, *, title, prompt, name, clash, answered):
+            asked['name'] = name
+            asked['clash'] = clash
+            answered(Response.OK, typed)
+
+        with unittest.mock.patch.object(rename_dialog, 'ask', ask):
+            self.window.file_actions.rename_book()
+        self._pump()
+        return asked
+
+    def test_renaming_the_archive_goes_on_reading_it_under_its_new_name(self):
+        source = self._movable_book()
+        library = backend.LibraryBackend()
+        self.assertTrue(library.add_book(source))
+        self.window.set_page(3)
+        self._pump()
+
+        asked = self._rename_book_as('Renamed.cbz')
+
+        self.assertEqual(asked['name'], 'Movable.cbz')
+        renamed = os.path.join(self.tmp_dir, 'Renamed.cbz')
+        self.assertTrue(os.path.isfile(renamed))
+        self.assertFalse(os.path.exists(source))
+        self.assertTrue(wait_for(
+            lambda: self.window.imagehandler.get_current_page() == 3,
+            seconds=20), 'the book did not come back to the page being read')
+        self.assertEqual(self.window.filehandler.get_path_to_base(), renamed)
+        self.assertIsNone(library.get_book_by_path(source))
+        self.assertIsNotNone(library.get_book_by_path(renamed))
+
+    def test_a_name_without_an_extension_keeps_the_archive_s_own(self):
+        self._movable_book()
+        self._rename_book_as('Renamed')
+        self.assertTrue(os.path.isfile(
+            os.path.join(self.tmp_dir, 'Renamed.cbz')))
+
+    def test_a_name_another_file_holds_is_flagged_and_refused(self):
+        source = self._movable_book()
+        taken = os.path.join(self.tmp_dir, 'Taken.cbz')
+        with open(taken, 'wb') as handle:
+            handle.write(b'not the book')
+
+        with unittest.mock.patch.object(rename_dialog, 'ask') as ask:
+            self.window.file_actions.rename_book()
+        clash = ask.call_args.kwargs['clash']
+        self.assertIsNotNone(clash('Taken'))
+        self.assertFalse(clash('Taken').answers,
+                         'a file outside the book cannot be swapped or replaced')
+        self.assertIsNone(clash('Free'))
+        self.assertIsNone(clash('Movable.cbz'))
+
+        # Taken between the question and the answer.
+        self.window.file_actions._rename_book_now(source, 'Taken.cbz')
+        self._pump()
+        self.assertTrue(os.path.isfile(source))
+        with open(taken, 'rb') as handle:
+            self.assertEqual(handle.read(), b'not the book')
+        self.assertEqual(len(self._delete_dialogs()), 1,
+                         'nothing said why the rename did not happen')
+        for dialog in self._delete_dialogs():
+            dialog.destroy()
+        self._pump()
+
+    def test_a_change_not_written_is_saved_before_the_archive_is_renamed(self):
+        source, before = self._movable_changed_book()
+        self._remember_answer(Response.YES)
+
+        self._rename_book_as('Renamed.cbz')
+        renamed = os.path.join(self.tmp_dir, 'Renamed.cbz')
+        self.assertTrue(wait_for(
+            lambda: self.window.filehandler.get_path_to_base() == renamed
+            and self.window.imagehandler.get_number_of_pages() > 2,
+            seconds=20), 'the book did not open under its new name')
+        self._pump()
+
+        self.assertFalse(os.path.exists(source))
+        with zipfile.ZipFile(renamed) as archive:
+            self.assertNotEqual(before, archive.namelist())
+
+    def test_only_an_archive_is_offered_to_be_renamed(self):
+        """A folder of images has no one file to rename."""
+        action = self.window.uimanager._actions.get_action('rename_book')
+        self._ready()
+        self.assertTrue(action.get_sensitive())
+        self.window.filehandler.open_file(
+            get_testfile_path('images', '03-PNG-RGB.png'))
+        self.assertTrue(wait_for(
+            lambda: self.window.filehandler.file_loaded
+            and self.window.filehandler.archive_type is None, seconds=20))
+        self._pump()
+        self.assertFalse(action.get_sensitive())
+
+    def test_the_menus_offer_to_rename_the_archive(self):
+        for menu in (self.window.uimanager.menubar.get_menu_model(),
+                     self.window.uimanager.popup.get_menu_model()):
+            self.assertIn('win.rename-book', self._menu_actions(menu))
+
     def test_a_move_that_fails_leaves_the_changes_to_be_asked_about(self):
         """The answer on the way out was for a book that was leaving;
         one that stays asks again when it is closed."""
@@ -4544,7 +4648,7 @@ class MainWindowTest(MComixTest):
         directory = os.path.join(self.tmp_dir, 'loose')
         os.makedirs(directory)
         for number in range(3):
-            shutil.copy(get_testfile_path('images', 'blue.png'),
+            shutil.copy(get_testfile_path('images', '03-PNG-RGB.png'),
                         os.path.join(directory, '%d.png' % number))
         self.window.filehandler.open_file(
             os.path.join(directory, '0.png'))
@@ -4564,7 +4668,7 @@ class MainWindowTest(MComixTest):
         directory = os.path.join(self.tmp_dir, 'loose2')
         os.makedirs(directory)
         for number in range(3):
-            shutil.copy(get_testfile_path('images', 'blue.png'),
+            shutil.copy(get_testfile_path('images', '03-PNG-RGB.png'),
                         os.path.join(directory, '%d.png' % number))
         self.window.filehandler.open_file(
             os.path.join(directory, '0.png'))
@@ -4621,7 +4725,7 @@ class MainWindowTest(MComixTest):
         directory = os.path.join(self.tmp_dir, name)
         os.makedirs(directory)
         for number in range(pages):
-            shutil.copy(get_testfile_path('images', 'blue.png'),
+            shutil.copy(get_testfile_path('images', '03-PNG-RGB.png'),
                         os.path.join(directory, '%d.png' % number))
         self.window.filehandler.open_file(os.path.join(directory, '0.png'))
         self.assertTrue(wait_for(
@@ -5459,7 +5563,7 @@ class MainWindowTest(MComixTest):
         image.show_pixbuf(image_tools.load_pixbuf(
             get_testfile_path('images', 'animated.gif')))
         still.show_pixbuf(image_tools.load_pixbuf(
-            get_testfile_path('images', 'blue.png')))
+            get_testfile_path('images', '03-PNG-RGB.png')))
         manager = keybindings.keybinding_manager(self.window)
         manager.execute(keybindings.parse_accelerator('p'))
         self.assertTrue(image.is_paused())
@@ -6290,7 +6394,7 @@ class StartUpOptionsTest(MComixTest):
         # Once: the next book opened does not start it again.
         self.window.actiongroup.get_action('slideshow').activate()
         self.window.filehandler.open_file(
-            get_testfile_path('images', 'blue.png'))
+            get_testfile_path('images', '03-PNG-RGB.png'))
         self.assertTrue(wait_for(lambda: self.window.filehandler.file_loaded))
         pump()
         self.assertFalse(self.window.slideshow.is_running())
@@ -6298,7 +6402,7 @@ class StartUpOptionsTest(MComixTest):
     def test_a_slideshow_asked_for_with_a_picture_starts_at_once(self):
         """A picture is open by the time the window has opened it, and
         the slideshow starts then rather than waiting for a book."""
-        self._start(open_path=get_testfile_path('images', 'blue.png'),
+        self._start(open_path=get_testfile_path('images', '03-PNG-RGB.png'),
                     is_slideshow=True)
         self.assertTrue(self.window.filehandler.file_loaded)
         self.assertTrue(self.window.slideshow.is_running())

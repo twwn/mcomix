@@ -353,7 +353,7 @@ _MENUBAR = (
                    'extract_page', 'properties', 'comments', None,
                    'menu_open_with', 'open_containing_folder', None,
                    'refresh_archive', None,
-                   'delete', 'delete_permanently', None,
+                   'rename_book', 'delete', 'delete_permanently', None,
                    'close', 'save_and_quit', 'quit')),
     ('menu_edit', ('undo', 'redo', None,
                    'copy_page', 'unpick_pages', None,
@@ -390,7 +390,7 @@ _POPUP = (
     None,
     'open', 'menu_recent', 'library',
     None,
-    'menu_move_to_popup',
+    'menu_move_to_popup', 'rename_book',
     None,
     'edit_archive',
     None,
@@ -455,6 +455,8 @@ class MainUI:
             _Entry('rename_page_popup', 'document-edit', _('Re_name page...'),
                    _('Renames the page the menu was opened over.'),
                    window.file_actions.rename_popup_page),
+            _Entry('rename_book', 'document-edit', _('Rename arc_hive...'), None,
+                   window.file_actions.rename_book),
             _Entry('delete_page_popup', 'edit-delete', _('_Delete page'),
                    _('Removes the page the menu was opened over from the book. The archive on disk is not changed until it is saved.'),
                    window.file_actions.delete_popup_page),
@@ -886,6 +888,12 @@ class MainUI:
 
         for name in comment:
             self._actions.get_action(name).set_sensitive(comment_sensitive)
+
+        # A folder of images has no one file to rename; its pages are
+        # renamed one by one.
+        self._actions.get_action('rename_book').set_sensitive(
+            general_sensitive
+            and self._window.filehandler.archive_type is not None)
 
         # A page stands alone only where two are shown side by side.
         self._actions.get_action('page_alone_popup').set_sensitive(

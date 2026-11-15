@@ -424,6 +424,10 @@ class EventHandler:
                          ['F2'],
                          self._window.file_actions.rename_page_being_read)
 
+        manager.register('rename_book',
+                         ['<Shift>F2'],
+                         self._window.file_actions.rename_book)
+
         manager.register('undo',
                          ['<Control>z'],
                          self._window.file_actions.undo)

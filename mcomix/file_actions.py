@@ -1358,6 +1358,73 @@ class FileActions:
         self._window.uimanager.move_to.remember(directory)
         self._book_moved(current_file, target)
 
+    def rename_book(self, *args: object) -> None:
+        """Ask what to call the archive being read, and rename it.
+
+        The page being read comes back, as after "Move to", and so does
+        everything recorded under the old name (_book_moved()).  A name
+        typed without an extension keeps the old one, as a page's does;
+        a name another file in the folder holds is refused, since a
+        rename is no way to write over a file.  A folder of images is
+        not an archive, and has its pages renamed instead.
+        """
+        filehandler = self._window.filehandler
+        path = filehandler.get_path_to_base()
+        if filehandler.archive_type is None or path is None:
+            return
+        folder, name = os.path.split(path)
+
+        def clash(typed: str) -> "rename_dialog.Clash | None":
+            """What holds the name typed in the folder, if anything."""
+            new_name = rename_dialog.read(name, typed)
+            if new_name is None:
+                return None
+            target = os.path.join(folder, new_name)
+            if not os.path.lexists(target) \
+                    or _same_file_recased(path, target):
+                return None
+            return rename_dialog.Clash(
+                _('A file of that name is there already.'), False)
+
+        rename_dialog.ask(
+            self._window,
+            title=_('Rename archive?'),
+            prompt=_('Please enter a new name for this archive.'),
+            name=name, clash=clash,
+            answered=lambda response, typed: self._book_rename_answered(
+                response, path, typed))
+
+    def _book_rename_answered(self, response: int, path: str,
+                              typed: str) -> None:
+        """Rename the archive at <path> as <typed> says, if that was
+        the answer and it is still the book being read."""
+        if response != Response.OK \
+                or self._window.filehandler.get_path_to_base() != path:
+            return
+        name = rename_dialog.read(os.path.basename(path), typed)
+        if name is None:
+            return
+        # Its changes are written or let go first, as for a move.
+        self.before_closing(lambda: self._rename_book_now(path, name))
+
+    def _rename_book_now(self, path: str, name: str) -> None:
+        """Call the archive at <path> <name>, in the folder it is in."""
+        target = os.path.join(os.path.dirname(path), name)
+        self._window.filehandler.release_archive()
+        try:
+            if os.path.lexists(target) and not _same_file_recased(path,
+                                                                  target):
+                raise FileExistsError(errno.EEXIST,
+                                      os.strerror(errno.EEXIST), target)
+            # Windows refuses a rename for a moment while something
+            # still reads the file.
+            portability.rename_once_closed(os.rename, path, target)
+        except OSError as error:
+            self._stayed()
+            self._rename_failed(path, error)
+            return
+        self._book_moved(path, target)
+
     def _stayed(self) -> None:
         """The book did not go after all: the next close asks about its
         changes again, the answer given on the way having been for a

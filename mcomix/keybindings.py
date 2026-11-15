@@ -153,6 +153,7 @@ BINDING_INFO: "dict[str, dict[str, str]]" = {
     'delete_permanently': {'title': _('Delete permanently'),
                            'group': _('File')},
     'rename_page': {'title': _('Rename page'), 'group': _('File')},
+    'rename_book': {'title': _('Rename archive'), 'group': _('File')},
     'undo': {'title': _('Undo'), 'group': _('Edit')},
     'redo': {'title': _('Redo'), 'group': _('Edit')},
     'copy_page': {'title': _('Copy'), 'group': _('Edit')},

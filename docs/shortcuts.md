@@ -108,6 +108,7 @@ Swap two pages side by side | CTRL+SHIFT+LeftMouse dragged onto the other page
 Delete the page or the file | Delete, KeyPadDelete
 Delete the file permanently | SHIFT+Delete, SHIFT+KeyPadDelete
 Rename page | F2
+Rename archive | SHIFT+F2
 Undo | CTRL+Z
 Redo | CTRL+Y, CTRL+SHIFT+Z
 Copy the page, or both pages in double page mode | CTRL+C
