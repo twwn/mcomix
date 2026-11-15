@@ -524,8 +524,20 @@ class FileHandler:
             self._window.osd.show(error_message)
             return False
 
+        archive_type = archive_tools.archive_mime_type(path)
+        if archive_type is None and os.path.isfile(path) \
+                and archive_tools.is_archive_file(path) \
+                and not image_tools.is_image_file(path):
+            # Named as a book and not readable as one: a download cut
+            # short.  Opened as a file that is no book, it showed the
+            # pictures of its folder as though they were its pages.
+            error_message = _('Could not read %s') % os.path.basename(path)
+            self._window.statusbar.set_message(error_message)
+            self._window.osd.show(error_message)
+            return False
+
         self.filelist = self._opened_provider.list_files()
-        self.archive_type = archive_tools.archive_mime_type(path)
+        self.archive_type = archive_type
         self._directory_listmode = (file_provider.FileProvider.ARCHIVES
                                     if self.archive_type is not None
                                     else file_provider.FileProvider.IMAGES)

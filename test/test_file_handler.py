@@ -892,6 +892,35 @@ class AnArchiveThatCannotBeListedTest(_WindowTest):
             lambda: self.window.imagehandler.get_number_of_pages() > 0))
 
 
+class AnArchiveCutShortTest(_WindowTest):
+
+    """A .cbz whose download stopped half way reads as no zip at all,
+    and was opened as a file that is no book: the book shown was the
+    pictures of its folder, and nothing said the .cbz was damaged."""
+
+    def test_the_reader_is_told_and_no_other_pages_are_shown(self):
+        folder = os.path.join(self.tmp_dir, 'books')
+        os.mkdir(folder)
+        for name in ('red.png', 'blue.png'):
+            shutil.copy(get_testfile_path('images', name),
+                        os.path.join(folder, name))
+        with open(get_testfile_path('archives', '01-ZIP-Normal.zip'),
+                  'rb') as whole:
+            data = whole.read()
+        path = os.path.join(folder, 'book.cbz')
+        with open(path, 'wb') as cut:
+            cut.write(data[:len(data) // 2])
+        with mock.patch.object(self.window.osd, 'show') as shown:
+            self.assertFalse(self.handler.open_file(path))
+            pump()
+        message = 'Could not read book.cbz'
+        shown.assert_called_once_with(message)
+        self.assertEqual(message,
+                         self.window.statusbar.message.get_text())
+        self.assertFalse(self.handler.file_loaded)
+        self.assertEqual(0, self.window.imagehandler.get_number_of_pages())
+
+
 class AFullUnpackFolderTest(_WindowTest):
 
     """Pages that cannot be unpacked because the folder they go to is
