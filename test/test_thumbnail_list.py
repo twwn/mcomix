@@ -5,10 +5,12 @@ Gtk.TreeView for its visible range - a question it answered with None
 until it had been laid out, so the code around it kept a timer that
 asked again up to forty times before giving up.
 
-How many rows are bound is GTK's business and cannot be measured here:
-under Xvfb a plain Gtk.ListView with no MComix in it binds every row of
-a two hundred row model, so nothing below asserts that only what is on
-screen is asked for.
+How many rows a list binds is GTK's business and cannot be measured
+here: under Xvfb a plain Gtk.ListView with no MComix in it binds every
+row of a two hundred row model, so nothing below asserts that only what
+is on screen is asked for.  A grid binds some thirty rows of the most
+columns it may have, which ThumbnailGridViewTest holds to the columns
+it lays out.
 """
 
 import threading
@@ -190,3 +192,74 @@ class ThumbnailListViewTest(MComixTest):
         self.assertEqual(self.view.store.get_n_items(), 0)
 
 # vim: expandtab:sw=4:ts=4
+
+
+class ThumbnailGridViewTest(MComixTest):
+
+    #: More entries than any window in a test can show at once, and
+    #: more than GTK's thirty rows of the most columns a grid allows.
+    ITEMS = 2500
+
+    def setUp(self):
+        super().setUp()
+        self.view = thumbnail_list.ThumbnailGridView()
+        self.view.generate_thumbnail = lambda uid: None
+        self.view.set_thumbnail_size(64)
+        self.scroller = Gtk.ScrolledWindow()
+        self.scroller.set_child(self.view)
+        self.window = Gtk.Window()
+        self.window.set_default_size(600, 400)
+        self.window.set_child(self.scroller)
+
+    def tearDown(self):
+        self.view.stop_update()
+        self.window.destroy()
+        pump()
+        super().tearDown()
+
+    def _settle(self):
+        for _ in range(40):
+            pump()
+            self.scroller.allocate(600, 400, -1, None)
+
+    def _fill(self):
+        self.view.set_items(thumbnail_list.ThumbnailItem(uid)
+                            for uid in range(self.ITEMS))
+
+    def _columns(self):
+        """How many cells the grid lays out side by side."""
+        tops: dict[float, set[float]] = {}
+        for cell in self.view._each_cell():
+            bounds = cell.get_parent().compute_bounds(self.view)
+            if bounds[0] and cell.get_width() > 0:
+                tops.setdefault(round(bounds[1].get_y()), set()).add(
+                    round(bounds[1].get_x()))
+        return len(tops[min(tops)])
+
+    def test_entries_shown_before_the_grid_is_laid_out_bind_few_cells(self):
+        """GTK binds every entry of some thirty rows of the most columns
+        the grid may have; at 64 that was the first 1,920 entries, all
+        asked for at once, before the grid had a size."""
+        self._fill()
+        self.assertLessEqual(len(self.view._bound), 40)
+
+    def test_the_grid_binds_rows_of_the_columns_it_lays_out(self):
+        self.window.present()
+        self._fill()
+        self._settle()
+        columns = self._columns()
+        self.assertGreater(columns, 1)
+        self.assertLess(len(self.view._bound), columns * 40)
+
+    def test_as_many_columns_are_laid_out_as_the_width_holds(self):
+        """The most columns is never what stops the grid: it lays out
+        one fewer than it is allowed, at every width."""
+        self.window.present()
+        self._fill()
+        self._settle()
+        for width in (600, 1500, 300):
+            for _ in range(40):
+                pump()
+                self.scroller.allocate(width, 400, -1, None)
+            self.assertEqual(self.view.get_max_columns() - 1,
+                             self._columns(), width)

@@ -585,6 +585,10 @@ class ThumbnailListView(Gtk.ListView, _ThumbnailViewBase):
             self.scroll_to(row, Gtk.ListScrollFlags.NONE, None)
 
 
+#: The most columns a grid of thumbnails lays its cells out in.
+_MOST_COLUMNS = 64
+
+
 class ThumbnailGridView(Gtk.GridView, _ThumbnailViewBase):
 
     """A grid of thumbnails, as the library and the archive editor show.
@@ -616,7 +620,38 @@ class ThumbnailGridView(Gtk.GridView, _ThumbnailViewBase):
         #: for its undo.
         self.about_to_reorder: "Callable[[], None] | None" = None
         super().__init__(model=self.selection, factory=self._make_factory())
-        self.set_max_columns(64)
+        # One until the view knows how wide it and its cells are: see
+        # do_size_allocate().
+        self.set_max_columns(1)
+
+    def do_size_allocate(self, width: int, height: int,
+                         baseline: int) -> None:
+        """Lay the cells out <width> wide, in as many columns as fit.
+
+        GTK keeps a cell for every entry in some thirty rows of the
+        most columns the view may have, on screen or not, and binds
+        each: with that left at 64, a library of a thousand books had
+        all its covers built and asked for at once, where twenty fit
+        in the window.  The most columns is therefore what the width
+        holds, and one more, which GTK then lays out as it would have.
+        """
+        self._fit_columns(width)
+        Gtk.GridView.do_size_allocate(self, width, height, baseline)
+
+    def _fit_columns(self, width: int) -> None:
+        """Let the view have as many columns as <width> holds cells,
+        the cells as wide as the narrowest GTK lays one out."""
+        cell = next(self._each_cell(), None)
+        if cell is None:
+            # Nothing to measure yet: whatever is bound before the
+            # view is laid out is one column's worth.
+            return
+        child = cell.get_parent()
+        assert child is not None
+        least = child.measure(Gtk.Orientation.HORIZONTAL, -1)[0]
+        columns = min(_MOST_COLUMNS, width // max(1, least) + 1)
+        if columns != self.get_max_columns():
+            self.set_max_columns(columns)
 
     def set_sorter(self, sorter: "Gtk.Sorter | None") -> None:
         """Show the entries in the order <sorter> puts them in.
