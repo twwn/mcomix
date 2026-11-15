@@ -422,7 +422,7 @@ class _StagedWriter(_Writer):
             self.clean_up()
 
     def clean_up(self) -> None:
-        shutil.rmtree(self._staging, ignore_errors=True)
+        tools.remove_tree(self._staging)
 
 
 class _SevenZipWriter(_StagedWriter):

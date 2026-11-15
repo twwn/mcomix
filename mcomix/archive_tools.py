@@ -3,7 +3,6 @@
 import functools
 import os
 import re
-import shutil
 import zipfile
 import tarfile
 import tempfile
@@ -470,7 +469,7 @@ def get_archive_info(path: str) -> tuple[int, int, int] | None:
     cleanup: list[Callable[[], object]] = []
     try:
         tmpdir = tempfile.mkdtemp(prefix='mcomix_archive_info.')
-        cleanup.append(lambda: shutil.rmtree(tmpdir, True))
+        cleanup.append(lambda: tools.remove_tree(tmpdir))
 
         mime = archive_mime_type(path)
         if mime is None:

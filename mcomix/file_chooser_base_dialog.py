@@ -1,7 +1,6 @@
 """file_chooser_base_dialog.py - Custom FileChooserDialog implementations."""
 
 import os
-import shutil
 import tempfile
 import threading
 import weakref
@@ -122,7 +121,7 @@ def _count_pages(path: str, mime: int) -> int | None:
     finally:
         if archive is not None:
             archive.close()
-        shutil.rmtree(tmpdir, True)
+        tools.remove_tree(tmpdir)
 
 
 def _by_familiarity(names: Iterable[str], common: Sequence[str]) -> list[str]:

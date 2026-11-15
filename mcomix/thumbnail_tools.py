@@ -13,7 +13,6 @@ thumbnail without storing it at all.
 
 import os
 import re
-import shutil
 import tempfile
 import threading
 import PIL.Image as Image
@@ -226,7 +225,7 @@ class Thumbnailer:
             cleanup: list[Callable[[], object]] = []
             try:
                 tmpdir = tempfile.mkdtemp(prefix='mcomix_archive_thumb.')
-                cleanup.append(lambda: shutil.rmtree(tmpdir, True))
+                cleanup.append(lambda: tools.remove_tree(tmpdir))
                 archive = archive_tools.get_recursive_archive_handler(filepath,
                                                                       tmpdir,
                                                                       type=mime)

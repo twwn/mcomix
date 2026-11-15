@@ -1723,7 +1723,7 @@ class FileHandler:
         """Start a threaded removal of the directory tree rooted at <path>.
         This is to avoid long blockings when removing large temporary dirs.
         """
-        del_thread = threading.Thread(target=shutil.rmtree, args=(path, True))
+        del_thread = threading.Thread(target=tools.remove_tree, args=(path,))
         del_thread.name += '-delete'
         del_thread.daemon = False
         del_thread.start()

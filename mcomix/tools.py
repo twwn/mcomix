@@ -9,6 +9,8 @@ import math
 import operator
 import os
 import re
+import shutil
+import stat
 import sys
 import tempfile
 import types
@@ -526,6 +528,28 @@ def directory_size(path: str) -> int:
             except OSError:
                 pass
     return total
+
+
+def remove_tree(path: str) -> None:
+    """Remove the folder at <path> and all that is in it, as far as it
+    can be removed.  Never raises.
+
+    A RAR made on Windows keeps the read-only attribute of each file in
+    it, which every file copied off a CD has, and the UnRAR library sets
+    it again on what it extracts.  Windows refuses to remove a read-only
+    file: shutil.rmtree() told to ignore errors left the folder, and the
+    pages in it, in the temporary folder for good.
+    """
+    def writable(function: Any, name: str, error: BaseException) -> None:  # type: ignore[explicit-any]  # whichever os function failed
+        if not isinstance(error, PermissionError):
+            return
+        try:
+            os.chmod(name, stat.S_IWRITE)
+            function(name)
+        except OSError:
+            pass
+
+    shutil.rmtree(path, onexc=writable)
 
 
 def replaced_path(path: str) -> str:

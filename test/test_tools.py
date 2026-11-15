@@ -545,3 +545,66 @@ class TestTrashRefuses(unittest.TestCase):
         with warnings.catch_warnings():
             warnings.simplefilter('error')
             self.assertIsInstance(tools._mount_has_no_trash(glib, '/'), bool)
+
+
+class TestRemoveTree(unittest.TestCase):
+
+    def setUp(self):
+        self.folder = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, self.folder, True)
+
+    def _windows_unlink(self):
+        """os.unlink as Windows has it: a read-only file is refused."""
+        unlink = os.unlink
+
+        def refusing(name, *, dir_fd=None):
+            if not os.stat(name, dir_fd=dir_fd).st_mode & 0o200:
+                raise PermissionError(13, 'Access is denied', name)
+            unlink(name, dir_fd=dir_fd)
+        return unittest.mock.patch('os.unlink', side_effect=refusing)
+
+    def test_a_read_only_file_is_removed_with_its_folder(self):
+        """The UnRAR library extracts a file of a RAR made on Windows
+        read-only, where it was; the book's temporary folder stayed."""
+        tree = os.path.join(self.folder, 'book')
+        os.makedirs(os.path.join(tree, 'inner'))
+        for name in ('page.png', os.path.join('inner', 'page.png')):
+            path = os.path.join(tree, name)
+            with open(path, 'wb') as page:
+                page.write(b'page')
+            os.chmod(path, 0o444)
+        with self._windows_unlink():
+            tools.remove_tree(tree)
+        self.assertFalse(os.path.exists(tree))
+
+    def test_a_folder_that_is_not_there_is_nothing_to_remove(self):
+        tools.remove_tree(os.path.join(self.folder, 'gone'))
+
+    def test_what_cannot_be_removed_is_left_without_a_word(self):
+        tree = os.path.join(self.folder, 'held')
+        os.makedirs(tree)
+        with open(os.path.join(tree, 'page.png'), 'wb'):
+            pass
+        with unittest.mock.patch(
+                'os.unlink', side_effect=PermissionError(13, 'held')):
+            tools.remove_tree(tree)
+        self.assertTrue(os.path.isdir(tree))
+
+    def test_the_read_only_pages_of_a_rar_made_on_windows_are_removed(self):
+        from mcomix.archive import rar
+        if not rar.RarArchive.is_available():
+            self.skipTest('no UnRAR library')
+        archive = rar.RarArchive(os.path.join(
+            os.path.dirname(__file__), 'files', 'archives',
+            'ReadOnlyFromWindows.rar'))
+        tree = os.path.join(self.folder, 'book')
+        os.makedirs(tree)
+        try:
+            names = list(archive.iter_contents())
+            for name in names:
+                archive.extract(name, tree)
+        finally:
+            archive.close()
+        self.assertEqual(['01.png', '02.png'], sorted(os.listdir(tree)))
+        tools.remove_tree(tree)
+        self.assertFalse(os.path.exists(tree))
