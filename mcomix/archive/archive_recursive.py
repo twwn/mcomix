@@ -98,8 +98,19 @@ class RecursiveArchive(archive_base.BaseArchive):
             sub_root = f
             if root is not None:
                 sub_root = os.path.join(root, sub_root)
-            for name in self._iter_contents(sub_archive, sub_root, depth + 1):
-                yield name
+            # An archive within, cut short by a download or locked by a
+            # password the reader would not give, keeps what it listed
+            # before it failed; the book around it is whole, and was
+            # lost with it.  Each handler raises errors of its own kind,
+            # so any is taken.
+            try:
+                for name in self._iter_contents(
+                        sub_archive, sub_root, depth + 1):
+                    yield name
+            except Exception as error:
+                log.warning('Could not read %s in %s: %s', f,
+                            root or os.path.basename(archive.archive),
+                            error)
 
     def _check_concurrent_extraction_support(self) -> None:
         """Settle whether extractions may run side by side.

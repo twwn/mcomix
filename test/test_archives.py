@@ -1055,6 +1055,28 @@ class RecursiveArchiveNestingTest(MComixTest):
         self.assertEqual(contents, [os.path.join('inner.zip', 'blue.png')])
         self.assertEqual(opened, 2)
 
+    def test_an_inner_archive_that_cannot_be_listed_leaves_the_rest(self):
+        """A tar inside a zip, cut short by a download, took the whole
+        book with it: its listing raised out of the outer one, and the
+        reader got "Could not read" for a book whose own pages were
+        whole."""
+        with open(get_testfile_path('archives', '02-TAR-Normal.tar'),
+                  'rb') as whole:
+            data = whole.read()
+        path = os.path.join(self.tmp_dir, 'outer.zip')
+        with zipfile.ZipFile(path, 'w') as archive:
+            archive.write(get_testfile_path('images', 'blue.png'), '01.png')
+            archive.writestr('inner.tar', data[:len(data) // 2])
+        destination_dir = os.path.join(self.tmp_dir, 'dest')
+        os.mkdir(destination_dir)
+        recursive = archive_recursive.RecursiveArchive(
+            zip.ZipArchive(path), destination_dir)
+        try:
+            contents = recursive.list_contents()
+        finally:
+            recursive.close()
+        self.assertIn('01.png', contents)
+
     def test_stops_following_at_the_nesting_limit(self):
 
         # An archive that holds a copy of itself would be followed for as
