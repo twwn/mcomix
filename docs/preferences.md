@@ -14,7 +14,7 @@ Option | Explanation
 Language (needs restart) | "Auto-detect (Default)" follows the system.
 Theme | "Follow the system" takes the desktop's colour scheme; "Light" or "Dark" picks one; "Pitch black" is dark with black backgrounds, for OLED screens.
 Use this colour as background | The colour behind the page.
-Use dynamic background colour | A colour taken from the page's edges instead: a page with a white border is shown on white. For the page and for the thumbnails.
+Use dynamic background colour | A colour taken from the page's edges instead: a page with a white border is shown on white. For the page, where it is the default, and for the thumbnails.
 Use checkered background for transparent images | A grey checkerboard behind transparent parts, instead of white.
 Use this colour as the thumbnail background | The colour behind the sidebar's thumbnails.
 Show page numbers on thumbnails |

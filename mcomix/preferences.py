@@ -241,7 +241,7 @@ _DEFAULTS: Preferences = {
     'sort archive order': constants.SORT_ASCENDING,
     'bg colour': list(DEFAULT_BG_COLOUR),
     'thumb bg colour': list(DEFAULT_BG_COLOUR),
-    'smart bg': False,
+    'smart bg': True,
     'smart thumb bg': False,
     'checkered bg for transparent images': True,
     'stretch': False,
