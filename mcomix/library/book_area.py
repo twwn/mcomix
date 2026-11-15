@@ -1315,7 +1315,10 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         """Describe the selected books, in a window of their own.
 
         A single book is shown with the cover the library has drawn for
-        it already, rather than read again from the book.
+        it, read again where the cache has let it go: the cache holds
+        500 covers, and a full-width library at a small cover size asks
+        for more than that, so the cover of the book picked out could be
+        gone already, and the Properties showed none.
         """
         backend = self._library.backend
         books = [book for book in (backend.get_book_by_id(item.uid)
@@ -1323,7 +1326,8 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
                  if book is not None]
         if not books:
             return
-        cover = self._cache.get(books[0].path) if len(books) == 1 else None
+        cover = (self._cover_of(books[0], self._covers.device_scale)
+                 if len(books) == 1 else None)
         root = self.get_root()
         book_properties.BookPropertiesDialog(
             root if isinstance(root, Gtk.Window) else None, backend, books,

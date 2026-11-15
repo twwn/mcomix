@@ -156,6 +156,17 @@ class BookAreaPropertiesTest(MComixTest):
         books = dialog.call_args.args[2]
         self.assertEqual([self.book.id], [book.id for book in books])
 
+    def test_a_cover_the_cache_let_go_is_read_again(self):
+        # A full-width library at a small cover size asks for more
+        # covers than the cache holds; the one picked out was gone, and
+        # the Properties showed none.
+        self.area._cache.invalidate_all()
+        self.area._covers.selection.select_all()
+        with unittest.mock.patch.object(
+                book_properties, 'BookPropertiesDialog') as dialog:
+            self.area.show_properties()
+        self.assertIsNotNone(dialog.call_args.args[3])
+
     def test_with_nothing_selected_nothing_is_described(self):
         with unittest.mock.patch.object(
                 book_properties, 'BookPropertiesDialog') as dialog:
