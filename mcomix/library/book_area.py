@@ -40,7 +40,7 @@ from mcomix.i18n import _
 from mcomix.dialog import Response
 
 from collections.abc import Callable, Iterable, Sequence
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Literal, cast
 
 if TYPE_CHECKING:
     from mcomix.library import main_dialog
@@ -70,6 +70,7 @@ class _BookItem(thumbnail_list.ThumbnailItem):
         super().__init__(book.id)
         self.path = book.path
         self.size = book.size
+        self.pages = book.pages
         self.added = book.added
         #: The place the book was given by hand in the collection on
         #: show, or None if it has none there.
@@ -77,6 +78,21 @@ class _BookItem(thumbnail_list.ThumbnailItem):
         #: When the book was last read, an ISO timestamp, or None if it
         #: never was.
         self.read: str | None = None
+        #: When the file was last changed, read from the disk the first
+        #: time a sort asks; False until then.
+        self._modified: float | None | Literal[False] = False
+
+    @property
+    def modified(self) -> float | None:
+        """When the book's file was last changed, as a timestamp, or
+        None if the file cannot be read.  Read once, and only when the
+        covers are sorted by it: the library does not keep it."""
+        if self._modified is False:
+            try:
+                self._modified = os.stat(self.path).st_mtime
+            except OSError:
+                self._modified = None
+        return self._modified
 
 
 class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
@@ -296,7 +312,9 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         radio(by, ((_('Book name'), constants.SORT_NAME),
                    (_('Full path'), constants.SORT_PATH),
                    (_('File size'), constants.SORT_SIZE),
+                   (_('Pages'), constants.SORT_PAGES),
                    (_('Date added'), constants.SORT_LAST_MODIFIED),
+                   (_('Date modified'), constants.SORT_FILE_MODIFIED),
                    (_('Last read'), constants.SORT_LAST_READ),
                    (_('By hand'), constants.SORT_HAND)), 'sort-key')
         sort_menu.append_section(None, by)
@@ -556,6 +574,10 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
                 # Books never read come last, whichever way the order
                 # runs: they have no time to sort by.
                 return 1 if first.read is None else -1
+            if key == constants.SORT_FILE_MODIFIED \
+                    and (first.modified is None) != (second.modified is None):
+                # So do books whose file is gone.
+                return 1 if first.modified is None else -1
             answer = _BookArea._compare_books(key, first, second)
             return answer if ascending else -answer
 
@@ -564,9 +586,9 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
     @staticmethod
     def _compare_books(key: int, left: _BookItem, right: _BookItem) -> int:
         """Order two covers by <key>, one of the SORT_ constants: the
-        name of the file, its size, the date the book was added, when it
-        was last read, the place it was given by hand, or else the whole
-        path.  A book with
+        name of the file, its size, the date the book was added, when its
+        file was last changed, how many pages it has, when it was last
+        read, the place it was given by hand, or else the whole path.  A book with
         no place by hand comes after those that have one.
 
         Covers the key cannot tell apart - books added in one go, each
@@ -582,6 +604,10 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
             answer = tools.cmp(left.size, right.size)
         elif key == constants.SORT_LAST_MODIFIED:
             answer = tools.cmp(left.added, right.added)
+        elif key == constants.SORT_FILE_MODIFIED:
+            answer = tools.cmp(left.modified or 0, right.modified or 0)
+        elif key == constants.SORT_PAGES:
+            answer = tools.cmp(left.pages, right.pages)
         elif key == constants.SORT_LAST_READ:
             answer = tools.cmp(left.read or '', right.read or '')
         elif key == constants.SORT_HAND:

@@ -204,11 +204,12 @@ class _Book:
 
     """Enough of a library book for a cover to be made from it."""
 
-    def __init__(self, id, path, size=0, added='2000-01-01'):
+    def __init__(self, id, path, size=0, added='2000-01-01', pages=1):
         self.id = id
         self.path = path
         self.size = size
         self.added = added
+        self.pages = pages
 
 
 class _CoverBackend(_Backend):
@@ -320,17 +321,17 @@ class CoverOrderTest(MComixTest):
     instead, so the two are no longer tied together.
     """
 
-    BOOKS = (_Book(1, '/b/zeta.cbz', size=30, added='2003'),
-             _Book(2, '/a/alpha.cbz', size=10, added='2001'),
-             _Book(3, '/c/mid.cbz', size=20, added='2002'))
+    BOOKS = (_Book(1, '/b/zeta.cbz', size=30, added='2003', pages=5),
+             _Book(2, '/a/alpha.cbz', size=10, added='2001', pages=40),
+             _Book(3, '/c/mid.cbz', size=20, added='2002', pages=12))
 
-    def _order(self, key, ascending=True, read=None):
+    def _order(self, key, ascending=True, read=None, books=None):
         prefs['lib sort key'] = key
         prefs['lib sort order'] = (constants.SORT_ASCENDING if ascending
                                    else constants.SORT_DESCENDING)
         self.library = _Library()
         area = book_area._BookArea(self.library)
-        items = [book_area._BookItem(book) for book in self.BOOKS]
+        items = [book_area._BookItem(book) for book in books or self.BOOKS]
         for item in items:
             item.read = (read or {}).get(item.uid)
         area._covers.set_items(items)
@@ -350,6 +351,44 @@ class CoverOrderTest(MComixTest):
 
     def test_by_date_added(self):
         self.assertEqual(self._order(constants.SORT_LAST_MODIFIED), [2, 3, 1])
+
+    def test_by_pages(self):
+        self.assertEqual(self._order(constants.SORT_PAGES), [1, 3, 2])
+
+    def _files_changed_at(self, *times):
+        """Three books whose files were last changed at <times>, the
+        third's file missing when its time is None."""
+        books = []
+        for uid, when in enumerate(times, 1):
+            path = os.path.join(self.tmp_dir, 'book%d.cbz' % uid)
+            if when is not None:
+                with open(path, 'wb'):
+                    pass
+                os.utime(path, (when, when))
+            books.append(_Book(uid, path))
+        return books
+
+    def test_by_the_date_the_file_was_modified(self):
+        """Not the date the book was added: the file's own date."""
+        books = self._files_changed_at(2_000_000_000, 1_000_000_000,
+                                       1_500_000_000)
+        self.assertEqual(
+            self._order(constants.SORT_FILE_MODIFIED, books=books),
+            [2, 3, 1])
+        self.assertEqual(
+            self._order(constants.SORT_FILE_MODIFIED, ascending=False,
+                        books=books),
+            [1, 3, 2])
+
+    def test_a_book_whose_file_is_gone_comes_last_either_way(self):
+        books = self._files_changed_at(2_000_000_000, None, 1_000_000_000)
+        self.assertEqual(
+            self._order(constants.SORT_FILE_MODIFIED, books=books),
+            [3, 1, 2])
+        self.assertEqual(
+            self._order(constants.SORT_FILE_MODIFIED, ascending=False,
+                        books=books),
+            [1, 3, 2])
 
     def test_by_last_read_newest_first_descending(self):
         read = {1: '2026-10-01 10:00:00', 2: '2026-10-29 09:00:00'}

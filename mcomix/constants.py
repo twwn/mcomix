@@ -118,6 +118,10 @@ SORT_NAME, SORT_PATH, SORT_SIZE, SORT_LAST_MODIFIED, SORT_NAME_LITERAL, SORT_NAM
 SORT_HAND = 7
 #: The library's covers only: when each book was last read.
 SORT_LAST_READ = 8
+#: The library's covers only: when each book's file was last changed.
+SORT_FILE_MODIFIED = 9
+#: The library's covers only: how many pages each book has.
+SORT_PAGES = 10
 SORT_DESCENDING, SORT_ASCENDING = 1, 2
 SIZE_HUGE, SIZE_LARGE, SIZE_NORMAL, SIZE_SMALL, SIZE_TINY = MAX_LIBRARY_COVER_SIZE, 300, 250, 125, 80
 RENDER_SIZE_LIMIT = 100000
