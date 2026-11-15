@@ -5024,6 +5024,34 @@ class MainWindowTest(MComixTest):
             dialog.destroy()
         self._pump()
 
+    def test_a_page_saved_over_a_file_held_for_a_moment_is_saved(self):
+        """Windows refuses to replace a file something has open, and a
+        virus scanner reads the copy just written: the save failed at
+        the first refusal, where every other rename tries again."""
+        self._ready()
+        self.assertTrue(
+            wait_for(lambda: self.window.imagehandler.page_is_available(1),
+                     seconds=10))
+        page = self.window.imagehandler.get_path_to_page(1)
+        target = os.path.join(self.tmp_dir, 'page.png')
+        with open(target, 'wb') as old:
+            old.write(b'old')
+        refusal = PermissionError(13, 'used by another process')
+        refusal.winerror = 32
+        replace = os.replace
+        answers = [refusal]
+
+        def held_once(source, destination):
+            if answers:
+                raise answers.pop()
+            replace(source, destination)
+        with unittest.mock.patch('os.replace', side_effect=held_once), \
+                unittest.mock.patch('time.sleep'):
+            self.window.file_actions._save_page_to(page, target)
+        self._pump()
+        self.assertEqual([], self._delete_dialogs())
+        self.assertEqual(os.path.getsize(page), os.path.getsize(target))
+
     def test_a_page_saved_where_there_is_no_room_says_how_large_it_is(self):
         self._ready()
         self.assertTrue(

@@ -995,7 +995,9 @@ class FileActions:
                 prefix=os.path.basename(final) + '.', suffix='.tmp')
             os.close(handle)
             shutil.copy2(file_path, partial)
-            os.replace(partial, final)
+            # Windows refuses for a moment while something reads the
+            # copy just written: a virus scanner, Explorer's preview.
+            portability.rename_once_closed(os.replace, partial, final)
         except OSError as error:
             if partial is not None:
                 try:
