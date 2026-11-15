@@ -8,6 +8,7 @@ an archive to describe.
 import os
 import shutil
 import sys
+import types
 import unittest
 import zipfile
 from unittest import mock
@@ -266,6 +267,22 @@ class PropertiesDialogTest(MComixTest):
                                  seconds=10))
         self.assertIn('-rw-r-----', self._texts(page))
         self.assertNotIn('0o640', self._texts(page))
+
+    def test_windows_is_not_said_to_keep_an_owner_or_permissions(self):
+        """os.stat() on Windows gives every file the owner 0 and the
+        mode bits of its read-only attribute: the page said "Owner: 0"
+        and "-rw-rw-rw-" of every file."""
+        picture = os.path.join(self.tmp_dir, 'blue.png')
+        shutil.copy(get_testfile_path('images', 'blue.png'), picture)
+        windows = types.SimpleNamespace(platform='win32')
+        with unittest.mock.patch.object(properties_dialog, 'sys', windows,
+                                        create=True):
+            page = self._open(picture)._image_page
+            self.assertTrue(wait_for(lambda: 'Size:' in self._texts(page),
+                                     seconds=10))
+        self.assertNotIn('Owner:', self._texts(page))
+        self.assertNotIn('Permissions:', self._texts(page))
+        self.assertIn('Modified:', self._texts(page))
 
     def test_a_file_whose_owner_has_no_name_here_is_described(self):
         """A file from another system - a USB stick, an unpacked

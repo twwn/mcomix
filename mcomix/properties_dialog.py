@@ -4,6 +4,7 @@ from gi.repository import Gtk
 import os
 import time
 import stat
+import sys
 try:
     import pwd
     _has_pwd = True
@@ -246,10 +247,16 @@ class _PropertiesDialog(Dialog):
                                           time.localtime(stats.st_atime))),
             (_('Modified'), time.strftime('%Y-%m-%d, %H:%M:%S',
                                           time.localtime(stats.st_mtime))),
-            # As ls -l writes them; oct() wrote Python's own "0o644".
-            (_('Permissions'), stat.filemode(stats.st_mode)),
-            (_('Owner'), uid)
         ))
+        # Windows keeps neither: os.stat() there gives every file the
+        # owner 0, and permission bits made up from the read-only
+        # attribute alone, which said nothing true.
+        if sys.platform != 'win32':
+            secondary_info.extend((
+                # As ls -l writes them; oct() wrote Python's own "0o644".
+                (_('Permissions'), stat.filemode(stats.st_mode)),
+                (_('Owner'), uid)
+            ))
         page.set_secondary_info(secondary_info)
 
 # vim: expandtab:sw=4:ts=4
