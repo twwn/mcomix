@@ -10,6 +10,7 @@ Gtk.DropTarget, since a real drag needs a pointer no test has.
 """
 
 import os
+import time
 import unittest.mock
 
 from gi.repository import Gdk, Gio, GLib, Gtk
@@ -396,7 +397,7 @@ class CollectionAreaTest(MComixTest):
         expanded Comics while Manga was shown selected."""
         self.area._list.grab_focus()
         self.area._list.select_row(self._row_for(self.comics), focus=True)
-        self._settle()
+        self._settle_until(lambda: self._focused_collection() == self.comics)
         self.assertEqual(self.comics, self._focused_collection())
         _, y = self._middle_of(self.manga)
         gesture = unittest.mock.Mock()
@@ -404,8 +405,16 @@ class CollectionAreaTest(MComixTest):
         with unittest.mock.patch.object(collection_area.widgets,
                                         'popup_at'):
             self.area._button_press(gesture, 1, 60.0, y)
-        self._settle()
+        self._settle_until(lambda: self._focused_collection() == self.manga)
         self.assertEqual(self.manga, self._focused_collection())
+
+    def _settle_until(self, done):
+        """Settle until <done>() holds: the focus moves to a row once
+        the row has been laid out, which on a loaded machine takes more
+        turns of the main loop than _settle() gives."""
+        deadline = time.monotonic() + 5
+        while not done() and time.monotonic() < deadline:
+            self._settle()
 
     def _focused_collection(self):
         """The collection of the row the window's focus widget shows."""
