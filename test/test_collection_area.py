@@ -390,6 +390,38 @@ class CollectionAreaTest(MComixTest):
         self.assertNotIn(self.manga, self._shown())
         self.assertIn(self.comics, self._shown())
 
+    def test_a_right_click_moves_the_keyboard_focus_too(self):
+        """Enter opens or closes the row with the focus.  A right click
+        left it on the row clicked before, so Enter after the menu
+        expanded Comics while Manga was shown selected."""
+        self.area._list.grab_focus()
+        self.area._list.select_row(self._row_for(self.comics), focus=True)
+        self._settle()
+        self.assertEqual(self.comics, self._focused_collection())
+        _, y = self._middle_of(self.manga)
+        gesture = unittest.mock.Mock()
+        gesture.get_widget.return_value = self.area._list
+        with unittest.mock.patch.object(collection_area.widgets,
+                                        'popup_at'):
+            self.area._button_press(gesture, 1, 60.0, y)
+        self._settle()
+        self.assertEqual(self.manga, self._focused_collection())
+
+    def _focused_collection(self):
+        """The collection of the row the window's focus widget shows."""
+        stack = [self.window.get_focus()]
+        while stack:
+            widget = stack.pop()
+            if widget is None:
+                continue
+            row = getattr(widget, 'row', None)
+            if row is not None:
+                return row.collection
+            stack.append(widget.get_first_child())
+            if widget is not self.window.get_focus():
+                stack.append(widget.get_next_sibling())
+        return None
+
     def test_the_menu_key_and_shift_f10_both_open_the_menu(self):
         """A GTK3 widget's popup-menu signal answered both keys.
 

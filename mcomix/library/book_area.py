@@ -1140,7 +1140,9 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
 
         if position >= 0 \
                 and position not in self._covers.get_selected_positions():
-            self._covers.select_only(position)
+            # With the focus, which a right click leaves where it was:
+            # Enter after the menu opened the book clicked before.
+            self._covers.select_and_focus(position)
 
         self._popup_book_menu(gesture.get_widget() or self._covers, x, y)
 

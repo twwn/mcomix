@@ -749,6 +749,18 @@ class ThumbnailGridView(Gtk.GridView, _ThumbnailViewBase):
         """Make <position> the one selected entry."""
         self.selection.select_item(position, True)
 
+    def select_and_focus(self, position: int) -> None:
+        """Make <position> the one selected entry and give it the
+        keyboard focus, scrolling to it where it is not in view.
+
+        Enter, the menu key and the arrow keys act on the entry with the
+        focus, not on the one highlighted: a right click selects without
+        moving the focus, and Enter then opened the entry clicked
+        before.  The focus moves only within a view that has it.
+        """
+        self.select_only(position)
+        self.scroll_to(position, Gtk.ListScrollFlags.FOCUS, None)
+
     def select_positions(self, positions: Iterable[int]) -> None:
         """Select <positions> and nothing else."""
         self.selection.unselect_all()

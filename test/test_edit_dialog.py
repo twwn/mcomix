@@ -21,6 +21,7 @@ from mcomix import file_chooser_simple_dialog
 from mcomix import icons
 from mcomix import main
 from mcomix import page_marks
+from mcomix import thumbnail_list
 from mcomix import widgets
 from mcomix import message_dialog
 from mcomix.dialog import Response
@@ -685,6 +686,47 @@ class EditArchiveDialogTest(MComixTest):
         finally:
             area._popup_menu.popdown()
             pump()
+
+    def test_a_right_click_on_a_page_gives_it_the_keyboard_focus(self):
+        """The arrow keys go on from the page with the focus, which a
+        right click left on the page clicked before."""
+        self.dialog._load_original_files()
+        self.dialog.present()
+        pump()
+        area = self.dialog._image_area
+        area._grid.grab_focus()
+        area._grid.select_only(0)
+        for _each in range(10):
+            pump()
+        with unittest.mock.patch.object(area._grid, 'position_at',
+                                        return_value=1), \
+                unittest.mock.patch.object(widgets, 'popup_at'):
+            area._button_press(None, 1, 10.0, 10.0)
+        for _each in range(10):
+            pump()
+        self.assertEqual(1, self._focused_page(area._grid))
+        # GTK 4.22 reports a critical, gtk_root_get_focus on no root,
+        # when a window is destroyed with the focus in a grid view's
+        # cell; it does so without the right click too.
+        self.dialog.set_focus(None)
+
+    def _focused_page(self, grid):
+        """The position of the page whose cell holds the focus."""
+        cell = self.dialog.get_focus()
+        while cell is not None and cell.get_parent() is not grid:
+            cell = cell.get_parent()
+        if cell is None:
+            return None
+        stack = [cell]
+        while stack:
+            widget = stack.pop()
+            if isinstance(widget, thumbnail_list._ThumbnailCell):
+                return widget.position
+            child = widget.get_first_child()
+            while child is not None:
+                stack.append(child)
+                child = child.get_next_sibling()
+        return None
 
     def test_a_right_click_on_a_page_already_picked_keeps_the_others(self):
         self.dialog._load_original_files()

@@ -410,7 +410,10 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable):
         # the menu is built for has to be the selected one, as a right
         # click on a cover selects it.
         if row is not None:
-            self._list.select_row(row)
+            # With the focus, which a right click leaves where it was:
+            # Enter after the menu opened or closed the row clicked
+            # before.
+            self._list.select_row(row, focus=True)
         self._popup_collection_menu(row.collection if row is not None
                                     else None,
                                     gesture.get_widget() or self._list, x, y)

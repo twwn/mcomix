@@ -1309,11 +1309,15 @@ class ColumnListView(Gtk.ColumnView, widgets.Releasable):
         self.select_only(position)
         self.scroll_to(position, None, Gtk.ListScrollFlags.FOCUS, None)
 
-    def select_row(self, row: Row) -> bool:
-        """Select <row>; False if it is not shown."""
+    def select_row(self, row: Row, focus: bool = False) -> bool:
+        """Select <row>, and with <focus> give it the keyboard focus as
+        select_and_focus() does; False if it is not shown."""
         for position, shown in enumerate(self.each_row()):
             if shown is row:
-                self.select_only(position)
+                if focus:
+                    self.select_and_focus(position)
+                else:
+                    self.select_only(position)
                 return True
         return False
 

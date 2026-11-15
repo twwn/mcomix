@@ -242,7 +242,10 @@ class _ImageArea(Gtk.ScrolledWindow, widgets.Releasable):
             return
 
         if position not in self._grid.get_selected_positions():
-            self._grid.select_only(position)
+            # With the focus, which a right click leaves where it was:
+            # the arrow keys after the menu went on from the page
+            # clicked before.
+            self._grid.select_and_focus(position)
 
         widgets.popup_at(self._popup_menu, self._grid, x, y)
 

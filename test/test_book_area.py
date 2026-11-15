@@ -1569,3 +1569,62 @@ class MarkReadTest(MComixTest):
         for name in ('mark-read', 'mark-unread'):
             self.assertFalse(self.area._popup_actions.lookup_action(name)
                              .get_enabled(), name)
+
+
+class RightClickFocusTest(MComixTest):
+
+    """A right click on a cover selects it and gives it the keyboard
+    focus.  It used to leave the focus on the cover clicked before, and
+    Enter, after the menu, opened that book rather than the one shown
+    selected."""
+
+    def setUp(self):
+        super().setUp()
+        self.library = _PathLibrary()
+        self.area = book_area._BookArea(self.library)
+        self.area._covers.set_items(
+            book_area._BookItem(_Book(index, '/books/%d.cbz' % index))
+            for index in range(4))
+        self.window = Gtk.Window()
+        self.window.set_default_size(600, 400)
+        self.window.set_child(self.area)
+        self.window.present()
+        self.assertTrue(wait_for(
+            lambda: self.area._covers.position_at(60, 60) >= 0))
+
+    def tearDown(self):
+        self.area.close()
+        self.window.destroy()
+        super().tearDown()
+
+    def _settle(self):
+        for _each in range(10):
+            pump()
+
+    def _focused(self):
+        """The position of the cover that holds the keyboard focus."""
+        covers = self.area._covers
+        cell = self.window.get_focus()
+        while cell is not None and cell.get_parent() is not covers:
+            cell = cell.get_parent()
+        if cell is None:
+            return None
+        bounds = cell.compute_bounds(covers)[1]
+        return covers.position_at(
+            bounds.get_x() + bounds.get_width() / 2,
+            bounds.get_y() + bounds.get_height() / 2)
+
+    def test_the_cover_right_clicked_takes_the_focus(self):
+        covers = self.area._covers
+        covers.grab_focus()
+        covers.select_and_focus(0)
+        self._settle()
+        self.assertEqual(0, self._focused())
+        x = next(x for x in range(10, 600, 10)
+                 if covers.position_at(x, 60) == 2)
+        gesture = types.SimpleNamespace(get_widget=lambda: covers)
+        with unittest.mock.patch.object(self.area, '_popup_book_menu'):
+            self.area._button_press(gesture, 1, x, 60)
+        self._settle()
+        self.assertEqual([2], covers.get_selected_positions())
+        self.assertEqual(2, self._focused())
