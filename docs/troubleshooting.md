@@ -64,6 +64,9 @@ Thumbnails of books and images | `~/.cache/thumbnails`, shared with other progra
 
 On Linux, `XDG_CONFIG_HOME`, `XDG_DATA_HOME` and `XDG_CACHE_HOME` move these.
 
+Preferences MComix cannot read (`preferences.conf`) are renamed `preferences.conf.broken`, and the defaults are used.
+Preferences from an older version are copied to `preferences.conf.v<N>` before they are converted, `<N>` being the old format's number.
+
 A library MComix cannot read (`library.db`) is renamed `library.db.broken`, and an empty one is started.
 One it cannot open at all is left alone; the library then lasts until MComix quits.
 
