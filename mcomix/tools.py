@@ -541,9 +541,16 @@ def remove_file(path: str) -> None:
     """
     try:
         os.remove(path)
-    except PermissionError:
+    except PermissionError as refusal:
         if sys.platform == 'win32':
-            os.chmod(path, stat.S_IWRITE)
+            try:
+                os.chmod(path, stat.S_IWRITE)
+            except OSError:
+                # What the reader needs to hear is why the file stayed,
+                # not why its attribute could not be changed: a file
+                # gone meanwhile is "cannot find the file", which says
+                # nothing.
+                raise refusal from None
             os.remove(path)
         else:
             raise

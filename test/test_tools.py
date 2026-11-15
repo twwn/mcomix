@@ -594,6 +594,20 @@ class TestRemoveTree(unittest.TestCase):
             tools.remove_file(path)
         self.assertFalse(os.path.exists(path))
 
+    def test_the_refusal_is_raised_when_the_attribute_cannot_change(self):
+        """Not the error os.chmod() gave: Windows' "cannot find the
+        file" replaced "Permission denied" in the message the window
+        shows."""
+        path = os.path.join(self.folder, 'book.cbz')
+        refusal = PermissionError(13, 'Permission denied', path)
+        with unittest.mock.patch('os.remove', side_effect=refusal), \
+                unittest.mock.patch('os.chmod', side_effect=FileNotFoundError(
+                    2, 'The system cannot find the file specified', path)), \
+                unittest.mock.patch('sys.platform', 'win32'):
+            with self.assertRaises(PermissionError) as raised:
+                tools.remove_file(path)
+        self.assertIs(refusal, raised.exception)
+
     def test_a_file_refused_elsewhere_is_left_as_it_was(self):
         """Off Windows a refusal is the folder's, and the file keeps
         its mode."""
