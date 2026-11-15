@@ -49,6 +49,7 @@ class _Backend:
     book_added = _Event()
     book_added_to_collection = _Event()
     book_cover_changed = _Event()
+    book_moved = _Event()
 
     def __init__(self):
         #: The book ids remove_book() was given.
@@ -1706,13 +1707,19 @@ class RenameFromLibraryTest(MComixTest):
         self.area._covers.set_items([self.item])
         self.ask = self.library.main_window.file_actions.ask_to_rename_book
 
-    def test_the_book_selected_is_renamed_and_shown_under_its_new_name(self):
+    def test_the_book_selected_is_renamed(self):
         self.area._covers.selection.select_all()
         self.area.rename_selected()
-        path, parent, renamed = self.ask.call_args.args
+        path, parent = self.ask.call_args.args
         self.assertEqual(self.book.path, path)
-        renamed('/elsewhere/Renamed.cbz')
-        self.assertEqual('/elsewhere/Renamed.cbz', self.item.path)
+
+    def test_a_book_moved_is_shown_where_it_went(self):
+        """Whichever window moved it: the main window renames and moves
+        the book being read with the library open over it."""
+        renamed = os.path.join(os.path.dirname(self.book.path), 'Renamed.cbz')
+        self.assertTrue(self.library.backend.update_book_path(
+            self.book.path, renamed))
+        self.assertEqual(renamed, self.item.path)
 
     def test_with_nothing_selected_nothing_is_renamed(self):
         self.area.rename_selected()
@@ -1758,15 +1765,13 @@ class MoveFromLibraryTest(MComixTest):
         self.area._covers.set_items(self.items)
         self.move = self.library.main_window.file_actions.move_books
 
-    def test_the_books_selected_are_moved_and_shown_where_they_went(self):
+    def test_the_books_selected_are_moved(self):
         self.area._covers.selection.select_all()
         self.area._move_selected_to('/elsewhere')
-        paths, directory, parent, moved = self.move.call_args.args
+        paths, directory, parent = self.move.call_args.args
         self.assertEqual(sorted(item.path for item in self.items),
                          sorted(paths))
         self.assertEqual('/elsewhere', directory)
-        moved(self.items[1].path, '/elsewhere/Moved.cbz')
-        self.assertEqual('/elsewhere/Moved.cbz', self.items[1].path)
 
     def test_the_menu_offers_it_for_a_selection_only(self):
         actions = self.area._move_to._actions

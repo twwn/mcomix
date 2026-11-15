@@ -4441,9 +4441,14 @@ class MainWindowTest(MComixTest):
         self.assertTrue(library.add_book(source))
         moved = []
 
+        def listener(*paths):
+            moved.append(paths)
+
+        library.book_moved += listener
+        self.addCleanup(library.book_moved.__isub__, listener)
+
         self.window.file_actions.move_books(
-            [source, *others], destination, self.window,
-            lambda path, target: moved.append((path, target)))
+            [source, *others], destination, self.window)
         self._pump()
 
         landed = os.path.join(destination, 'Movable.cbz')
@@ -4474,19 +4479,16 @@ class MainWindowTest(MComixTest):
         # Added once GIO has read what kind of file it is.
         self.assertTrue(wait_for(lambda: recent._manager.has_item(
             Gio.File.new_for_path(other).get_uri())))
-        told = []
 
         def ask(parent, *, title, prompt, name, clash, answered):
             self.assertEqual(name, 'Other.cbz')
             answered(Response.OK, 'Renamed')
 
         with unittest.mock.patch.object(rename_dialog, 'ask', ask):
-            self.window.file_actions.ask_to_rename_book(
-                other, self.window, told.append)
+            self.window.file_actions.ask_to_rename_book(other, self.window)
         self._pump()
 
         renamed = os.path.join(self.tmp_dir, 'Renamed.cbz')
-        self.assertEqual(told, [renamed])
         self.assertTrue(os.path.isfile(renamed))
         self.assertFalse(os.path.exists(other))
         self.assertIsNotNone(library.get_book_by_path(renamed))

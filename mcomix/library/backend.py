@@ -642,7 +642,18 @@ class _LibraryBackend:
             return False
         if changed > 0:
             self._covers().follow(old_path, new_path)
+            self.book_moved(old_path, new_path)
         return changed > 0
+
+    @callback.Callback
+    def book_moved(self, old_path: str, new_path: str) -> None:
+        """Called when update_book_path() has followed a book to
+        <new_path>, for whatever shows it under <old_path>: the main
+        window moves and renames the book being read, and the library
+        its own, and either may be open over the other.  Like
+        book_added(), the body is empty and the listeners are the
+        point."""
+        pass
 
     @staticmethod
     def _covers() -> thumbnail_tools.Thumbnailer:

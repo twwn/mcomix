@@ -122,6 +122,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         self._library.backend.book_added += self._new_book_in_library
         self._library.backend.book_added_to_collection += self._new_book_added
         self._library.backend.book_cover_changed += self._cover_changed
+        self._library.backend.book_moved += self._book_path_changed
 
         self.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
 
@@ -391,6 +392,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         # from then on.
         self._library.backend.book_added -= self._new_book_in_library
         self._library.backend.book_added_to_collection -= self._new_book_added
+        self._library.backend.book_moved -= self._book_path_changed
         self._library.backend.book_cover_changed -= self._cover_changed
 
         # Unselect first, or closing with several books selected sends a
@@ -1174,8 +1176,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
             return
         item = selected[0]
         self._library.main_window.file_actions.ask_to_rename_book(
-            item.path, self._library.window,
-            lambda target: self._book_moved(item, target))
+            item.path, self._library.window)
 
     def _selected_paths(self) -> list[str]:
         """The paths of the books selected."""
@@ -1188,14 +1189,19 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
     def _move_selected_to(self, directory: str) -> None:
         """Move the books selected into <directory>, as the main
         window's "Move to" moves the book being read."""
-        items = {item.path: item for item in self._selected_items()}
         self._library.main_window.file_actions.move_books(
-            list(items), directory, self._library.window,
-            lambda path, target: self._book_moved(items[path], target))
+            self._selected_paths(), directory, self._library.window)
+
+    def _book_path_changed(self, old_path: str, new_path: str) -> None:
+        """Bound to the backend's book_moved: show the book that was at
+        <old_path> at <new_path>, where its name now puts it, whichever
+        window moved or renamed it."""
+        for item in self._each_item():
+            if item.path == old_path:
+                self._book_moved(item, new_path)
 
     def _book_moved(self, item: _BookItem, target: str) -> None:
-        """Show <item>'s book, renamed or moved to <target>, where its
-        name now puts it."""
+        """Show <item>'s book, renamed or moved to <target>."""
         # The library moved its cover to the new name.
         self._cache.invalidate(item.path)
         item.path = target

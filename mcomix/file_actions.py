@@ -1345,11 +1345,8 @@ class FileActions:
         self.before_closing(lambda: self._move_now(directory))
 
     def _move_now(self, directory: str,
-                  parent: "Gtk.Window | None" = None,
-                  moved: "Callable[[str, str], None] | None" = None
-                  ) -> None:
-        """Move the book into <directory>, its changes dealt with;
-        <moved> is told where it was and where it went."""
+                  parent: "Gtk.Window | None" = None) -> None:
+        """Move the book into <directory>, its changes dealt with."""
         current_file = self._window.imagehandler.get_real_path()
         if current_file is None:
             return
@@ -1362,14 +1359,11 @@ class FileActions:
             return
         self._window.uimanager.move_to.remember(directory)
         self._book_moved(current_file, target)
-        if moved is not None:
-            moved(current_file, target)
 
     def move_books(self, paths: "Iterable[str]", directory: str,
-                   parent: Gtk.Window,
-                   moved: "Callable[[str, str], None]") -> None:
+                   parent: Gtk.Window) -> None:
         """Move the books at <paths> into <directory>, as the library
-        asks; <moved> is told where each was and where it went.
+        asks.
 
         What was recorded under each book's old path follows it, as for
         the book being read (_follow()).  That one, if it is among them,
@@ -1393,7 +1387,6 @@ class FileActions:
             self._follow(path, target)
             self._window.uimanager.recent.move_path(path, target)
             went = True
-            moved(path, target)
         if went:
             self._window.uimanager.move_to.remember(directory)
         if failed:
@@ -1405,8 +1398,7 @@ class FileActions:
                                            'directory': directory,
                                            'error': why})
         if is_open is not None:
-            self.before_closing(lambda: self._move_now(directory, parent,
-                                                       moved))
+            self.before_closing(lambda: self._move_now(directory, parent))
 
     def rename_book(self, *args: object) -> None:
         """Ask what to call the archive being read, and rename it.
@@ -1421,11 +1413,9 @@ class FileActions:
             return
         self.ask_to_rename_book(path, self._window)
 
-    def ask_to_rename_book(self, path: str, parent: Gtk.Window,
-                           renamed: "Callable[[str], None] | None" = None
-                           ) -> None:
+    def ask_to_rename_book(self, path: str, parent: Gtk.Window) -> None:
         """Ask, over <parent>, what to call the book at <path>, and
-        rename it; <renamed> is told the new path once it has one.
+        rename it.
 
         A name typed without an extension keeps the old one, as a
         page's does; a name another file in the folder holds is refused,
@@ -1454,7 +1444,7 @@ class FileActions:
             prompt=_('Please enter a new name for this archive.'),
             name=name, clash=clash,
             answered=lambda response, typed: self._book_rename_answered(
-                response, path, typed, parent, renamed))
+                response, path, typed, parent))
 
     def _is_open_book(self, path: str) -> bool:
         """Whether <path> is the archive being read."""
@@ -1465,9 +1455,7 @@ class FileActions:
             and os.path.abspath(open_book) == os.path.abspath(path)
 
     def _book_rename_answered(self, response: int, path: str, typed: str,
-                              parent: Gtk.Window,
-                              renamed: "Callable[[str], None] | None"
-                              ) -> None:
+                              parent: Gtk.Window) -> None:
         """Rename the book at <path> as <typed> says, if that was the
         answer."""
         if response != Response.OK:
@@ -1478,14 +1466,12 @@ class FileActions:
         if self._is_open_book(path):
             # Its changes are written or let go first, as for a move.
             self.before_closing(lambda: self._rename_book_now(
-                path, name, parent, renamed))
+                path, name, parent))
         else:
-            self._rename_book_now(path, name, parent, renamed)
+            self._rename_book_now(path, name, parent)
 
     def _rename_book_now(self, path: str, name: str,
-                         parent: "Gtk.Window | None" = None,
-                         renamed: "Callable[[str], None] | None" = None
-                         ) -> None:
+                         parent: "Gtk.Window | None" = None) -> None:
         """Call the book at <path> <name>, in the folder it is in."""
         target = os.path.join(os.path.dirname(path), name)
         is_open = self._is_open_book(path)
@@ -1510,8 +1496,6 @@ class FileActions:
             self._follow(path, target)
             # Where it stood among the recent files, under its new name.
             self._window.uimanager.recent.move_path(path, target)
-        if renamed is not None:
-            renamed(target)
 
     def _stayed(self) -> None:
         """The book did not go after all: the next close asks about its
