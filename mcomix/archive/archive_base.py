@@ -3,10 +3,12 @@ extraction and adding new archive formats. """
 
 import calendar
 import datetime
+import errno
 import itertools
 import lzma
 import os
 import re
+import shutil
 import sys
 import threading
 import time
@@ -110,6 +112,29 @@ def fit_name(name: str) -> str:
     numbers = ' '.join(re.findall(r'\d+', stem[len(start):])).encode(
         'utf-8')[-_NUMBERS_KEPT:].decode('utf-8', 'ignore')
     return '%s~%s%s%s' % (start, numbers, checksum, extension)
+
+
+#: What a folder has left when an outside program could not write a file
+#: of a size nobody knows there, for the folder to count as full.
+_LEAST_ROOM = 1 << 20
+
+
+def raise_if_no_room(path: str, size: int | None = None) -> None:
+    """Raise as the system does over a full disk, where the folder of
+    <path> has less room left than the <size> bytes of the file an
+    outside program has just failed to write there, or next to none
+    where the size is not known.
+
+    Such a program says why it failed in words of its own, if at all,
+    and a full folder is to be told to the reader as it is for the
+    formats MComix writes itself.
+    """
+    try:
+        free = shutil.disk_usage(os.path.dirname(path)).free
+    except OSError:
+        return
+    if free < (_LEAST_ROOM if size is None else size):
+        raise OSError(errno.ENOSPC, os.strerror(errno.ENOSPC), path)
 
 
 class BaseArchive:

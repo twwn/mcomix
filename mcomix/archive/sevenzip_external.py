@@ -310,6 +310,11 @@ class SevenZipArchive(archive_base.ExternalExecutableArchive):
                 # from 2 on the program gave up, as over a wrong
                 # password, and what it wrote is not the file.
                 if proc.returncode >= 2:
+                    output.close()
+                    archive_base.raise_if_no_room(
+                        os.path.join(destination_dir, filename),
+                        dict(self._contents).get(
+                            self._original_filename(filename)))
                     raise ExtractionError('%s: %s' % (filename, error or (
                         'exit code %d' % proc.returncode)))
                 if error:

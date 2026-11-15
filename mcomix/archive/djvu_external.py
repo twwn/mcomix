@@ -82,7 +82,9 @@ class DjvuArchive(archive_base.BaseArchive):
                os.path.abspath(self.archive),
                os.path.abspath(os.path.join(destination_dir, filename))]
         log.debug('rendering %s: %s', filename, ' '.join(cmd))
-        process.call(cmd)
+        if not process.call(cmd):
+            archive_base.raise_if_no_room(
+                os.path.join(destination_dir, filename))
 
     @staticmethod
     def is_available() -> bool:

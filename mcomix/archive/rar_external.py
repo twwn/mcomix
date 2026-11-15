@@ -211,9 +211,14 @@ class RarArchive(archive_base.ExternalExecutableArchive):
         cmd = self._get_extract_arguments() + [desired_filename]
         output = self._create_file(os.path.join(destination_dir, filename))
         try:
-            process.call(cmd, stdout=output, env=archive_base.utf8_environment())
+            done = process.call(cmd, stdout=output,
+                                env=archive_base.utf8_environment())
         finally:
             output.close()
+        if not done:
+            archive_base.raise_if_no_room(
+                os.path.join(destination_dir, filename),
+                dict(self._contents).get(desired_filename))
 
     def iter_extract(self, entries: Iterable[str], destination_dir: str) -> Iterator[str]:
         """Extract <entries> to <destination_dir>, yielding as each lands.
