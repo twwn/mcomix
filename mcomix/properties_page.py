@@ -90,27 +90,30 @@ class _Page(Gtk.ScrolledWindow):
         """Set the information below the main info box to the values in the
         sequence <info>. Each entry in info should be a tuple (desc, value).
         """
-        # A grid rather than a column of names beside a column of
+        # A row each, rather than a column of names beside a column of
         # values: a value that wraps onto a second line keeps its name
-        # beside its first.
-        grid = Gtk.Grid()
-        grid.set_row_spacing(8)
-        grid.set_column_spacing(10)
-        grid.set_hexpand(True)
-        widgets.pack(self._extrabox, grid, True, True, 0)
-        for row, (desc, value) in enumerate(info):
+        # beside its first.  Not a Gtk.Grid, which reserves for a
+        # wrapping label the height it would need at its narrowest,
+        # several times what it takes at the width it is given.  The
+        # size group keeps the names one column wide.
+        rows = Gtk.Box.new(Gtk.Orientation.VERTICAL, 8)
+        rows.set_hexpand(True)
+        widgets.pack(self._extrabox, rows, True, True, 0)
+        names = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
+        for desc, value in info:
+            row = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 10)
             desc_label = labels.BoldLabel('%s:' % desc)
             desc_label.set_xalign(1.0)
             desc_label.set_valign(Gtk.Align.START)
-            grid.attach(desc_label, 0, row, 1, 1)
+            names.add_widget(desc_label)
+            widgets.pack(row, desc_label, False, False, 0)
             value_label = Gtk.Label(label=value)
             _wrapping(value_label)
             value_label.set_xalign(0)
             value_label.set_valign(Gtk.Align.START)
-            value_label.set_hexpand(True)
             value_label.set_selectable(True)
-            grid.attach(value_label, 1, row, 1, 1)
-
+            widgets.pack(row, value_label, True, True, 0)
+            widgets.pack(rows, row, False, False, 0)
 
 def _wrapping(label: Gtk.Label) -> None:
     """Have <label> break a long text over several lines, between

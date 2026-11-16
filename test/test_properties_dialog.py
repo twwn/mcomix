@@ -339,6 +339,19 @@ class LongTextTest(PropertiesDialogTest):
                                label.get_text())
 
 
+    def test_a_short_name_leaves_nothing_to_scroll(self):
+        """Wrapping labels in a Gtk.Grid were given the height they
+        would take at their narrowest: a page about blue.png scrolled
+        down over three times its height of empty space."""
+        dialog = self._open(get_testfile_path('images', 'blue.png'))
+        dialog.present()
+        page = dialog._image_page
+        self.assertTrue(wait_for(lambda: page.get_height() > 0))
+        wait_for(lambda: False, seconds=0.3)
+        adjustment = page.get_vadjustment()
+        self.assertLessEqual(adjustment.get_upper(),
+                             adjustment.get_page_size())
+
 def _labels(widget):
     child = widget.get_first_child()
     while child is not None:
