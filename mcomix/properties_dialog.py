@@ -160,23 +160,7 @@ class _PropertiesDialog(Dialog):
             self._awaited_comicinfo = path
             filehandler.ask_for_files([path])
             return []
-        labels = {
-            'Series': _('Series'),
-            # TRANSLATORS: Which issue of its series a comic is, as the
-            # archive's ComicInfo.xml gives it.
-            'Number': _('Number'),
-            'Title': _('Title'),
-            'Writer': _('Writer'),
-            # TRANSLATORS: Which volume of its series a comic is, as the
-            # archive's ComicInfo.xml gives it.
-            'Volume': _('Volume'),
-            'Year': _('Year'),
-            # TRANSLATORS: Who drew the comic: ComicInfo.xml's Penciller.
-            'Penciller': _('Artist'),
-            'Publisher': _('Publisher'),
-        }
-        return [(labels[field], text)
-                for field, text in comicinfo.describe(path)]
+        return comicinfo_rows(comicinfo.describe(path))
 
     def _update_image_page(self) -> None:
         page = self._image_page
@@ -220,10 +204,35 @@ class _PropertiesDialog(Dialog):
             described: Sequence[tuple[str, str]] = ()) -> None:
         """Fill the rows under the page's main box: what <described>
         says about the comic, then where the file at <location> is and
-        what the file system knows of it.  All in one call, since each
-        call to set_secondary_info() adds another pair of columns.
+        what the file system knows of it.
         """
         page.set_secondary_info([*described, *file_rows(location)])
+
+
+def comicinfo_rows(
+        described: Sequence[tuple[str, str]]) -> list[tuple[str, str]]:
+    """The rows for what comicinfo.describe() read from a ComicInfo.xml,
+    under the labels a reader knows them by.
+
+    The library's book properties show a book's ComicInfo.xml in the
+    same rows.
+    """
+    labels = {
+        'Series': _('Series'),
+        # TRANSLATORS: Which issue of its series a comic is, as the
+        # archive's ComicInfo.xml gives it.
+        'Number': _('Number'),
+        'Title': _('Title'),
+        'Writer': _('Writer'),
+        # TRANSLATORS: Which volume of its series a comic is, as the
+        # archive's ComicInfo.xml gives it.
+        'Volume': _('Volume'),
+        'Year': _('Year'),
+        # TRANSLATORS: Who drew the comic: ComicInfo.xml's Penciller.
+        'Penciller': _('Artist'),
+        'Publisher': _('Publisher'),
+    }
+    return [(labels[field], text) for field, text in described]
 
 
 def file_rows(location: str) -> list[tuple[str, str]]:

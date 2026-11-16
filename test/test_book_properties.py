@@ -3,14 +3,17 @@
 import datetime
 import os
 import shutil
+import tempfile
 import unittest.mock
+import zipfile
 
 from gi.repository import Gdk, Gtk
 
-from . import MComixTest, get_testfile_path, pump
+from . import MComixTest, get_testfile_path, pump, wait_for
 from .test_book_area import _MarkingLibrary
 
 from mcomix import image_tools
+from mcomix.archive import password as archive_password
 from mcomix.library import book_area
 from mcomix.library import book_properties
 
@@ -48,8 +51,20 @@ class BookPropertiesTest(MComixTest):
     def tearDown(self):
         for dialog in self.dialogs:
             dialog.destroy()
+            if dialog.reading is not None:
+                dialog.reading.join(10)
         pump()
         super().tearDown()
+
+    def _described_book(self, comicinfo):
+        """A book of the library whose ComicInfo.xml is <comicinfo>."""
+        path = os.path.join(self.tmp_dir, 'Described.cbz')
+        with zipfile.ZipFile(path, 'w') as book:
+            for name in ('01-JPG-Indexed.jpg', '02-JPG-RGB.jpg'):
+                book.write(get_testfile_path('images', name), name)
+            book.writestr('ComicInfo.xml', comicinfo)
+        self.assertTrue(self.backend.add_book(path))
+        return self.backend.get_book_by_path(path)
 
     def _open(self, books, cover=None):
         dialog = book_properties.BookPropertiesDialog(
@@ -115,6 +130,75 @@ class BookPropertiesTest(MComixTest):
                  self.backend.get_book_by_path(moved)]
         texts = _texts(self._open(books).page)
         self.assertNotIn('Location:', texts)
+
+    # -- What the book's ComicInfo.xml says ---------------------------------
+
+    def test_a_book_s_comicinfo_is_described(self):
+        """The rows the main window's Archive tab shows, though the book
+        is not open, above the file's own."""
+        book = self._described_book(
+            '<ComicInfo><Title>The Long Night</Title>'
+            '<Series>Night Watch</Series><Number>3</Number>'
+            '<Penciller>B. Artist</Penciller></ComicInfo>')
+        dialog = self._open([book])
+        # Read off the main thread: the dialog is up before it is.
+        self.assertIsNotNone(dialog.reading)
+        self.assertTrue(
+            wait_for(lambda: 'Night Watch' in _texts(dialog.page),
+                     seconds=10),
+            'the series never appeared: %r' % _texts(dialog.page))
+        texts = _texts(dialog.page)
+        for label, value in (('Series:', 'Night Watch'), ('Number:', '3'),
+                             ('Title:', 'The Long Night'),
+                             ('Artist:', 'B. Artist')):
+            self.assertIn(label, texts)
+            self.assertIn(value, texts)
+        self.assertLess(texts.index('Series:'), texts.index('Location:'))
+        self.assertIn('Date added:', texts)
+
+    def test_a_book_without_comicinfo_names_no_series(self):
+        dialog = self._open([self.books[0]])
+        dialog.reading.join(10)
+        pump()
+        texts = _texts(dialog.page)
+        self.assertNotIn('Series:', texts)
+        self.assertIn('Location:', texts)
+
+    def test_a_dialog_closed_before_the_comicinfo_is_read_is_left_alone(self):
+        book = self._described_book(
+            '<ComicInfo><Series>Night Watch</Series></ComicInfo>')
+        dialog = self._open([book])
+        page = dialog.page
+        dialog.destroy()
+        dialog.reading.join(10)
+        pump()
+        self.assertNotIn('Night Watch', _texts(page))
+
+    def test_no_password_is_asked_for(self):
+        """The library never asks for a password: the archive is opened
+        with every request for one answered with none."""
+        withheld = []
+
+        def handler(*args, **kwargs):
+            withheld.append(archive_password.withheld_here())
+            return None
+
+        with unittest.mock.patch(
+                'mcomix.archive_tools.get_recursive_archive_handler',
+                side_effect=handler):
+            dialog = self._open([self.books[0]])
+            dialog.reading.join(10)
+        self.assertEqual(withheld, [True])
+
+    def test_a_book_that_is_no_archive_describes_nothing(self):
+        path = os.path.join(self.tmp_dir, 'Broken.cbz')
+        with open(path, 'wb') as handle:
+            handle.write(b'PK\x03\x04 not really')
+        self.assertEqual(book_properties._comicinfo_of(path), [])
+        # Nothing is left behind in the temporary folder.
+        self.assertEqual(
+            [name for name in os.listdir(tempfile.gettempdir())
+             if name.startswith('mcomix_book_properties.')], [])
 
 
 class _PropertiesLibrary(_MarkingLibrary):

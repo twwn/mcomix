@@ -60,7 +60,7 @@ While no book is open, the main window shows the covers of "Recent" itself, or o
 - "Open containing folder" shows a single book in the file manager.
 - "Rename", or F2, renames a single book's file, as "Rename archive..." in the main window does: the library, bookmarks and the page it was left at follow it, and the book being read is reopened under its new name.
 - "Move to" moves the selected books into another folder, offering the folders the main window's "Move to" offers. What is recorded of each follows it, and the book being read is reopened where it landed.
-- "Properties", or ALT+Return, describes the selected book: its file, format and pages, when it was added and last read, and its collections. Several books are summed up: how many, their pages and size, how many were started and finished, and their folder where they share one.
+- "Properties", or ALT+Return, describes the selected book: its file, format and pages, when it was added and last read, its collections, and what its ComicInfo.xml says. Several books are summed up: how many, their pages and size, how many were started and finished, and their folder where they share one.
 - "Sort" orders by name, full path, file size, pages, date added, date modified (the file's own date), last read or by hand; "Cover size" sets how large covers are drawn. Books never read come last under "Last read", and books whose file is gone under "Date modified"; "Descending" puts the latest read first.
 - A middle click on a cover starts a second MComix on that book.
 - A book opened from the library is one of the books shown. The next and previous archive are the next and previous of those, in the order shown, not of its folder. Past the last one shown there is no next.

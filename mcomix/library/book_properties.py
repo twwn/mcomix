@@ -5,21 +5,28 @@ describe the books picked out among the library's covers, which need
 not be open: what the library holds of each - its pages, its format,
 when it was added and read, the collections it is filed in - and what
 the file system knows of its file, in the rows the main window uses.
-Several books are described together, as a file manager describes a
-selection: how many, how many pages and bytes, how far they were read.
+A single book's ComicInfo.xml is read too, as the main window's
+Archive tab reads it.  Several books are described together, as a file
+manager describes a selection: how many, how many pages and bytes, how
+far they were read.
 """
 
 import os
+import tempfile
+import threading
 
-from gi.repository import GdkPixbuf, Gtk
+from gi.repository import GdkPixbuf, GLib, Gtk
 
 from mcomix import archive_tools
+from mcomix import comicinfo
 from mcomix import i18n
 from mcomix import image_tools
+from mcomix import log
 from mcomix import properties_dialog
 from mcomix import properties_page
 from mcomix import tools
 from mcomix import widgets
+from mcomix.archive import password as archive_password
 from mcomix.dialog import Dialog, Response
 from mcomix.i18n import _
 from mcomix.library import backend_types
@@ -55,6 +62,13 @@ class BookPropertiesDialog(Dialog):
         self.set_default_size(500, 430)
         self.set_resizable(True)
         widgets.set_border(self, 4)
+
+        #: The thread reading a single book's ComicInfo.xml, while it
+        #: runs or once it has run; None for several books.
+        self.reading: threading.Thread | None = None
+        #: The rows the book's file and the library give, under which
+        #: what its ComicInfo.xml says goes once it is read.
+        self._rows: list[tuple[str, str]] = []
 
         self.page = properties_page._Page()
         widgets.set_border(self.page, 6)
@@ -98,6 +112,31 @@ class BookPropertiesDialog(Dialog):
             rows.append((_('Collection'), ', '.join(sorted(
                 names, key=i18n.to_unicode))))
         page.set_secondary_info(rows)
+        self._rows = rows
+        if os.path.isfile(book.path):
+            # The book need not be open, so the file comes out of the
+            # archive here; off the main thread, since a large RAR or 7z
+            # archive takes a while to list.
+            self.reading = threading.Thread(
+                target=self._read_comicinfo, args=(book.path,),
+                name='Book properties')
+            self.reading.start()
+
+    def _read_comicinfo(self, path: str) -> None:
+        """Read what the ComicInfo.xml in the book at <path> says, on a
+        thread of its own, and hand it to the main thread."""
+        described = _comicinfo_of(path)
+        if described:
+            GLib.idle_add(self._show_comicinfo, described)
+
+    def _show_comicinfo(self, described: list[tuple[str, str]]) -> bool:
+        """Put the rows of <described> above the book's file's, as the
+        main window's Archive tab does; nothing once the dialog has
+        closed."""
+        if self.get_realized():
+            self.page.set_secondary_info(
+                [*properties_dialog.comicinfo_rows(described), *self._rows])
+        return GLib.SOURCE_REMOVE
 
     def _describe_books(self, library: "backend._LibraryBackend",
                         books: "Sequence[backend_types._Book]") -> None:
@@ -128,6 +167,45 @@ class BookPropertiesDialog(Dialog):
         if len(folders) == 1:
             page.set_secondary_info([(_('Location'), i18n.to_display_string(
                 i18n.to_unicode(folders.pop())))])
+
+
+def _comicinfo_of(path: str) -> list[tuple[str, str]]:
+    """What the ComicInfo.xml in the book at <path> says, as
+    comicinfo.describe() gives it; nothing for a book that carries none
+    or cannot be read.
+
+    The library never asks for a password, so an encrypted archive
+    describes nothing.  The file comes out into a folder of its own,
+    removed again before this returns.
+    """
+    with archive_password.never_asked():
+        tmpdir = tempfile.mkdtemp(prefix='mcomix_book_properties.')
+        try:
+            mime = archive_tools.archive_mime_type(path)
+            if mime is None:
+                return []
+            archive = archive_tools.get_recursive_archive_handler(
+                path, tmpdir, type=mime)
+            if archive is None:
+                return []
+            try:
+                carried = comicinfo.carried({
+                    os.path.join(tmpdir, name): name
+                    for name in archive.list_contents()})
+                if carried is None:
+                    return []
+                archive.extract(carried[1], tmpdir)
+                return comicinfo.describe(carried[0])
+            finally:
+                archive.close()
+        except Exception as error:
+            # A damaged archive shows in the file's own rows; the
+            # comic's are left out.
+            log.debug('Could not read the ComicInfo.xml of "%s": %s',
+                      path, error)
+            return []
+        finally:
+            tools.remove_tree(tmpdir)
 
 
 def _written(text: str) -> str:

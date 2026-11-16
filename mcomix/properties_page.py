@@ -89,7 +89,9 @@ class _Page(Gtk.ScrolledWindow):
     def set_secondary_info(self, info: Sequence[tuple[str, str]]) -> None:
         """Set the information below the main info box to the values in the
         sequence <info>. Each entry in info should be a tuple (desc, value).
+        What an earlier call set is replaced.
         """
+        widgets.empty(self._extrabox)
         # A row each, rather than a column of names beside a column of
         # values: a value that wraps onto a second line keeps its name
         # beside its first.  Not a Gtk.Grid, which reserves for a
