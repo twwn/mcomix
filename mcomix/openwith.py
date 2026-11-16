@@ -3,7 +3,7 @@ import operator
 import sys
 import os
 import re
-from gi.repository import Gdk, Gtk
+from gi.repository import Gdk, Gtk, Pango
 
 from mcomix.dialog import Dialog
 from mcomix import column_list
@@ -449,6 +449,12 @@ class OpenWithEditor(Dialog):
         self._test_field = Gtk.Entry()
         self._test_field.set_property('editable', False)
         self._exec_label = Gtk.Label()
+        # It names the command, whose label can be as long as the
+        # reader made it: broken over lines rather than widening the
+        # window past the screen.
+        self._exec_label.set_wrap(True)
+        self._exec_label.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
+        self._exec_label.set_width_chars(1)
         self._exec_label.set_xalign(0)
         self._exec_label.set_yalign(0)
         self._set_exec_text('')

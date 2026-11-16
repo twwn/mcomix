@@ -10,7 +10,7 @@ from unittest import mock
 
 from gi.repository import Gdk, Gtk
 
-from . import MComixTest, pump
+from . import MComixTest, pump, wait_for
 
 from mcomix import callback
 from mcomix import column_list
@@ -196,6 +196,16 @@ class OpenWithEditorTest(MComixTest):
         self.editor.test_command()
         return (self.editor._test_field.get_text(),
                 self.editor._exec_label.get_text())
+
+    def test_a_long_command_label_does_not_widen_the_window(self):
+        """The warning names the command by its label, which made the
+        editor 1670 pixels wide for a 150-character one."""
+        self.assertTrue(wait_for(lambda: self.editor.get_width() > 0))
+        width = self.editor.get_width()
+        self._tried('Label ' + 'n' * 150, 'no-such-program', '')
+        # The resize, if any, comes with the next frames.
+        wait_for(lambda: self.editor.get_width() != width, seconds=0.5)
+        self.assertEqual(width, self.editor.get_width())
 
     def test_a_command_that_can_run_is_shown_as_it_would_run(self):
         self.assertEqual(('sh -c ls ""', ''),
