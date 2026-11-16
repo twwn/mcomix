@@ -11,7 +11,7 @@ import time
 
 from gi.repository import GdkPixbuf, Gtk
 
-from . import MComixTest, pump
+from . import MComixTest, pump, wait_for
 
 from mcomix import thumbnail_list
 
@@ -71,7 +71,10 @@ class ThumbnailGridViewTest(MComixTest):
         self.assertEqual(self._order(), list(self.NAMES) + ['six'])
 
     def test_a_thumbnail_is_asked_for(self):
-        self.assertTrue(self.asked, 'nothing was asked for at all')
+        # A worker thread asks, once the cells are bound; under load it
+        # has not always been reached by the time setUp() is done.
+        self.assertTrue(wait_for(lambda: self.asked),
+                        'nothing was asked for at all')
 
     # -- Reordering -------------------------------------------------------
 
