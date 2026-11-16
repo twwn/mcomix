@@ -8,7 +8,7 @@ main window.
 """
 
 import os
-from gi.repository import Gdk, Gio, GLib, Gtk
+from gi.repository import Gdk, Gio, GLib, Gtk, Pango
 
 from mcomix.preferences import prefs
 from mcomix import bookmark_backend
@@ -80,6 +80,10 @@ class _LibraryDialog(Gtk.Window):
         # ever shows is a label's worth.
         self._statusbar = Gtk.Label()
         self._statusbar.set_xalign(0)
+        # One line, as a status bar's: a message that names a long
+        # folder is cut short, not let widen the window past the
+        # screen, and is whole in the tooltip.
+        self._statusbar.set_ellipsize(Pango.EllipsizeMode.END)
         self.backend = library_backend.LibraryBackend()
         self.book_area = library_book_area._BookArea(self)
         self.control_area = library_control_area._ControlArea(self)
@@ -232,8 +236,9 @@ class _LibraryDialog(Gtk.Window):
         """Set a specific message on the statusbar, replacing whatever was
         there earlier.
         """
-        self._statusbar.set_text(
-            ' ' * status.Statusbar.SPACING + '%s' % i18n.to_unicode(message))
+        message = i18n.to_unicode(message)
+        self._statusbar.set_text(' ' * status.Statusbar.SPACING + message)
+        self._statusbar.set_tooltip_text(message or None)
 
     def close(self, *args: object) -> None:
         """Close the library and do required cleanup tasks."""

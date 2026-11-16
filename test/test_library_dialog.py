@@ -122,6 +122,20 @@ class LibraryDialogTest(_LibraryWindowTest):
             pump()
         set_items.assert_not_called()
 
+    def test_a_long_status_message_does_not_widen_the_window(self):
+        """A watched folder named in the status line made the library
+        1495 pixels wide for a 150-character path."""
+        dialog = self._open()
+        dialog.present()
+        self.assertTrue(wait_for(lambda: dialog.get_width() > 0))
+        width = dialog.get_width()
+        message = '/a/watched/folder/' + 'n' * 150
+        dialog.set_status_message(message)
+        pump()
+        wait_for(lambda: dialog.get_width() != width, seconds=0.3)
+        self.assertEqual(width, dialog.get_width())
+        self.assertEqual(message, dialog._statusbar.get_tooltip_text())
+
     def test_the_window_lets_go_of_the_focus_before_its_surface(self):
         # See DialogTest's test of the same name.
         dialog = self._open()
