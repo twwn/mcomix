@@ -60,13 +60,16 @@ class SkipBrokenPagesTest(MComixTest):
 
     def _settled(self):
         """The page on screen once the redraws, and the turns past pages
-        that would not load, have run out."""
-        for _round in range(50):
+        that would not load, have run out.
+
+        Only a page that has been extracted is drawn, or found not to
+        load and turned past: until then nothing waits for a redraw,
+        and a slow extraction would pass for a settled page."""
+        def settled():
             pump()
-            if not self.window._waiting_for_redraw:
-                pump()
-                if not self.window._waiting_for_redraw:
-                    break
+            return (not self.window._waiting_for_redraw
+                    and self.window.imagehandler.page_is_available())
+        self.assertTrue(wait_for(lambda: settled() and settled()))
         return self.window.imagehandler.get_current_page()
 
     def _turn(self, turn, *args):
