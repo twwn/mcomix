@@ -80,6 +80,9 @@ class _StubWindow(Gtk.Window):
     def set_page(self, page):
         self.pages.append(page)
 
+    def jump_to_page(self, page):
+        self.pages.append(page)
+
 
 class _StubUI:
 

@@ -376,7 +376,7 @@ class ThumbnailSidebar(Gtk.ScrolledWindow, widgets.Releasable):
         if page is None:
             return
         self._select_page(page, scroll=False)
-        self._window.set_page(page)
+        self._window.jump_to_page(page)
 
     def _pointer_left(self, controller: Gtk.EventControllerMotion) -> None:
         """Put the highlight back on the page being read."""

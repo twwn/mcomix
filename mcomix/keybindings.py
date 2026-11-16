@@ -58,6 +58,8 @@ BINDING_INFO: "dict[str, dict[str, str]]" = {
     'first_page': {'title': _('First page'), 'group': _('Navigation')},
     'last_page': {'title': _('Last page'), 'group': _('Navigation')},
     'go_to': {'title': _('Go to page'), 'group': _('Navigation')},
+    'go_back': {'title': _('Back'), 'group': _('Navigation')},
+    'go_forward': {'title': _('Forward'), 'group': _('Navigation')},
 
     'next_archive': {'title': _('Next book'), 'group': _('Navigation')},
     'previous_archive': {'title': _('Previous book'), 'group': _('Navigation')},

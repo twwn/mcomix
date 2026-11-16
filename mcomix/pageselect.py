@@ -264,7 +264,7 @@ class Pageselector(Dialog):
     def _response(self, widget: Gtk.Widget, event: int,
                   *args: object) -> None:
         if event == Response.OK:
-            self._window.set_page(int(self._selector_adjustment.props.value))
+            self._window.jump_to_page(int(self._selector_adjustment.props.value))
 
         self._window.imagehandler.page_available -= self._page_available
         self.destroy()

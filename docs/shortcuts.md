@@ -4,6 +4,7 @@
 - Every key can be changed: see the last section.
 - `KeyPad` is the numeric keypad: `KeyPadHome` is its Home key.
 - `BackMouse` and `ForwardMouse` are the mouse's thumb buttons.
+- `BackKey` and `ForwardKey` are the Back and Forward keys some keyboards have.
 - Two fingers spread apart or pinched together on a touchpad or a touch screen zoom in or out.
 
 ## Opening files and moving from page to page
@@ -28,6 +29,8 @@ One page to the left (in double page mode) | CTRL+Left, CTRL+KeyPadLeft
 First page | Home, KeyPadHome
 Last page | End, KeyPadEnd
 Go to page | G
+Back to the page a jump left | CTRL+[, BackKey
+Forward again to the page Back left | CTRL+], ForwardKey
 Next book | CTRL+SHIFT+N
 Previous book | CTRL+SHIFT+P
 Next folder | CTRL+N

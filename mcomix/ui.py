@@ -343,6 +343,7 @@ _VIEW = ('fullscreen', None,
 #: the wheel move through a page, so which way it goes is chosen here.
 _GO = ('next_page', 'previous_page', 'go_to',
        'first_page', 'last_page', None,
+       'go_back', 'go_forward', None,
        'next_archive', 'previous_archive', 'shuffle_books', None,
        'next_directory', 'previous_directory', None,
        'invert_scroll')
@@ -478,6 +479,12 @@ class MainUI:
             _Entry('first_page', 'go-first-symbolic', _('_First page'), _('First page'), _action_lambda(window.first_page)),
             _Entry('last_page', 'go-last-symbolic', _('_Last page'), _('Last page'), _action_lambda(window.last_page)),
             _Entry('go_to', 'go-jump-symbolic', _('_Go to page...'), _('Go to page...'), window.page_select),
+            # TRANSLATORS: Go back to the page a jump (Home, End, Go to
+            # page, a thumbnail, a bookmark) left, as a browser goes back.
+            _Entry('go_back', 'go-previous-symbolic', _('Back'), _('Back'), window.go_back),
+            # TRANSLATORS: Go again to the page "Back" left, as a browser
+            # goes forward.
+            _Entry('go_forward', 'go-next-symbolic', _('Forward'), _('Forward'), window.go_forward),
             _Entry('refresh_archive', 'view-refresh', _('Re_fresh'), _('Reloads the currently opened files or archive.'),
                    window.filehandler.refresh_file),
             _Entry('next_archive', 'media-skip-forward-symbolic', _('Next _book'), _('Next book'), window.filehandler.next_archive),
@@ -919,6 +926,15 @@ class MainUI:
         self._actions.get_action('unpick_pages').set_sensitive(
             general_sensitive and bool(self._window.selected_pages))
 
+        self.set_history_sensitivities()
+
         self.bookmarks.set_sensitive(general_sensitive)
+
+    def set_history_sensitivities(self) -> None:
+        """Offer Back and Forward only where there is a page to go to."""
+        self._actions.get_action('go_back').set_sensitive(
+            self._window.can_go_back())
+        self._actions.get_action('go_forward').set_sensitive(
+            self._window.can_go_forward())
 
 # vim: expandtab:sw=4:ts=4

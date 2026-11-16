@@ -223,6 +223,14 @@ class EventHandler:
         manager.register('go_to',
                          ['G'],
                          self._window.page_select)
+        # Issue 72.  Not ALT and the arrows, which a browser goes back
+        # with: those turn pages here.
+        manager.register('go_back',
+                         ['<Control>bracketleft', 'Back'],
+                         self._window.go_back)
+        manager.register('go_forward',
+                         ['<Control>bracketright', 'Forward'],
+                         self._window.go_forward)
 
         # Numpad (without numlock) aligns the image depending on the key.
         manager.register('scroll_left_bottom',
@@ -796,9 +804,9 @@ class EventHandler:
                                         self._window.page_at(x, y))
 
         elif button == 8:
-            # The thumb button marked "back".  A book has no history to
-            # go back through, so the page before this one is what going
-            # back means in one.
+            # The thumb button marked "back" turns back a page, as it did
+            # before Go back went back over jumps; its key is the Back
+            # key of a keyboard that has one.
             self._flip_page(-1)
 
         elif button == 9:

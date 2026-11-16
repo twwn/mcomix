@@ -137,6 +137,12 @@ class MainWindow(Gtk.Window):
         #: any: a swap takes two pages, and they are picked one at a
         #: time.
         self.swap_page: "int | None" = None
+        #: The pages jumps left, the latest last, for Go back to return
+        #: to; and the pages Go back left, for Go forward.  Page turns
+        #: are not remembered, only jumps (jump_to_page()), and both
+        #: lists stand against the pages of the open book.
+        self._jumped_from: list[int] = []
+        self._went_back_from: list[int] = []
         #: Saving, deleting and moving the files of the book, and the
         #: undo stack they are taken back through.
         self.file_actions = file_actions.FileActions(self)
@@ -1211,6 +1217,7 @@ class MainWindow(Gtk.Window):
         self._end_pending = None
         self.selected_pages = set()
         self.swap_page = None
+        self._forget_jumps()
         self._forget_strip()
         self._forget_direction()
         self.file_actions.forget_changes()
@@ -1352,6 +1359,7 @@ class MainWindow(Gtk.Window):
         """
         self.imagehandler.replace_pages(image_files)
         self._skip_origin = None
+        self._forget_jumps()
         self.thumbnailsidebar.clear()
         count = self.imagehandler.get_number_of_pages()
         if not count:
@@ -1606,12 +1614,66 @@ class MainWindow(Gtk.Window):
     def first_page(self) -> None:
         number_of_pages = self.imagehandler.get_number_of_pages()
         if number_of_pages:
-            self.set_page(1)
+            self.jump_to_page(1)
 
     def last_page(self) -> None:
         number_of_pages = self.imagehandler.get_number_of_pages()
         if number_of_pages:
-            self.set_page(number_of_pages)
+            self.jump_to_page(number_of_pages)
+
+    def jump_to_page(self, num: int) -> None:
+        """Go to page <num> of the open book by a jump - Home or End,
+        Go to page, a thumbnail, a bookmark, a random page - rather
+        than a turn of the page, and remember the page left for Go back.
+
+        A jump drops whatever Go forward could have gone to, as a link
+        followed in a browser does.
+        """
+        number_of_pages = self.imagehandler.get_number_of_pages()
+        current = self.imagehandler.get_current_page()
+        num = min(max(num, 1), number_of_pages)
+        if number_of_pages and current and num != current:
+            _remember_page(self._jumped_from, current)
+            self._went_back_from.clear()
+            self.uimanager.set_history_sensitivities()
+        self.set_page(num)
+
+    def go_back(self, *args: object) -> None:
+        """Return to the page the last jump left."""
+        self._go_through(self._jumped_from, self._went_back_from)
+
+    def go_forward(self, *args: object) -> None:
+        """Go again to the page Go back last left."""
+        self._go_through(self._went_back_from, self._jumped_from)
+
+    def can_go_back(self) -> bool:
+        return bool(self._jumped_from)
+
+    def can_go_forward(self) -> bool:
+        return bool(self._went_back_from)
+
+    def _go_through(self, pages: list[int], other: list[int]) -> None:
+        """Go to the latest of <pages> and put the page left on <other>.
+
+        A page the reader has turned to since is passed over: going
+        there would change nothing on screen.
+        """
+        current = self.imagehandler.get_current_page()
+        while pages and pages[-1] == current:
+            pages.pop()
+        if not pages or not current:
+            return
+        page = pages.pop()
+        _remember_page(other, current)
+        self.uimanager.set_history_sensitivities()
+        self.set_page(page)
+
+    def _forget_jumps(self) -> None:
+        """Forget the pages jumped from: they stand against pages that
+        are no longer the book's."""
+        self._jumped_from.clear()
+        self._went_back_from.clear()
+        self.uimanager.set_history_sensitivities()
 
     def page_select(self, *args: object) -> None:
         """Open "Go to page"; with no page to go to, as before a book
@@ -1626,7 +1688,7 @@ class MainWindow(Gtk.Window):
         others = [page for page in range(1, number_of_pages + 1)
                   if page != current]
         if others:
-            self.set_page(random.choice(others))
+            self.jump_to_page(random.choice(others))
 
     def toggle_animation(self, *args: object) -> None:
         """Pause the animated pages on screen, or let them go on where
@@ -2911,6 +2973,18 @@ class MainWindow(Gtk.Window):
 
 #: Seconds after the last page turn that the reading position is stored.
 _POSITION_DELAY_S = 2
+
+#: The most pages Go back, and Go forward, remember; the oldest go
+#: first.
+_JUMPS_KEPT = 100
+
+
+def _remember_page(pages: list[int], page: int) -> None:
+    """Put <page> last on <pages>, unless it is last already, keeping
+    no more than _JUMPS_KEPT."""
+    if not pages or pages[-1] != page:
+        pages.append(page)
+        del pages[:-_JUMPS_KEPT]
 
 #: The loop the program runs in, on GLib's default main context,
 #: which is the one GTK dispatches its events on.

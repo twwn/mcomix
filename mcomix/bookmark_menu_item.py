@@ -105,7 +105,7 @@ class _Bookmark:
             raise ValueError('The bookmark has no window to open in.')
         page = self.page_in_open_book()
         if page is not None:
-            self._window.set_page(page)
+            self._window.jump_to_page(page)
             return
         self._file_handler.open_file(self._path, self._page,
                                      start_member=self._member)
