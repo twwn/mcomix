@@ -73,6 +73,23 @@ class CommentsDialogTest(MComixTest):
         wait_for(lambda: len(self._tabs()) == 2, seconds=20)
         self.assertEqual(sorted(self._tabs()), ['one.txt', 'two.txt'])
 
+    def test_a_long_file_name_does_not_widen_the_window(self):
+        """A tab named for a 150-character file made the window 1385
+        pixels wide, past a 1280-pixel screen."""
+        name = 'n' * 150 + '.txt'
+        self._open(self._archive_with_comments(
+            'commented.zip', (name, 'first')))
+        self.dialog = comment_dialog._CommentsDialog(self.window)
+        self.assertTrue(wait_for(lambda: len(self._tabs()) == 1,
+                                 seconds=20))
+        self.dialog.present()
+        notebook = self.dialog._notebook
+        tab = notebook.get_tab_label(notebook.get_nth_page(0))
+        self.assertTrue(wait_for(lambda: self.dialog.get_width() > 0))
+        # 600 is the width it opens at; the screen is 1280 wide.
+        self.assertLessEqual(self.dialog.get_width(), 800)
+        self.assertEqual(name, tab.get_tooltip_text())
+
     def _shown_text(self, index):
         """The text the tab at <index> shows."""
         widget = self.dialog._notebook.get_nth_page(index)

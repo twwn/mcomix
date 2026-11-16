@@ -7,7 +7,7 @@ still being extracted has its page added when the file turns up.
 """
 
 import os
-from gi.repository import Gtk
+from gi.repository import Gtk, Pango
 
 from mcomix.dialog import Dialog
 from mcomix import i18n
@@ -141,6 +141,12 @@ class _CommentsDialog(Dialog):
         scrolled.set_child(text_view)
 
         tab_label = Gtk.Label(label=i18n.to_unicode(name))
+        # A long file name would widen the window past the screen:
+        # shortened in the middle, which keeps the extension, and
+        # whole in the tooltip.
+        tab_label.set_ellipsize(Pango.EllipsizeMode.MIDDLE)
+        tab_label.set_max_width_chars(30)
+        tab_label.set_tooltip_text(tab_label.get_text())
         self._notebook.insert_page(page, tab_label, -1)
 
 
