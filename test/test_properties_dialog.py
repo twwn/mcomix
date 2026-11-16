@@ -304,4 +304,47 @@ class PropertiesDialogTest(MComixTest):
         uid = str(os.stat(get_testfile_path('images', 'blue.png')).st_uid)
         self.assertIn(uid, self._texts(page))
 
+
+
+class LongTextTest(PropertiesDialogTest):
+
+    # Not the tests of the class it borrows its set-up from again.
+    locals().update({name: None for name in dir(PropertiesDialogTest)
+                     if name.startswith('test_')})
+
+    def test_a_long_name_and_folder_wrap_inside_the_window(self):
+        """Overlong names and folders ran past the window's edge behind
+        a scroll bar, instead of breaking over several lines."""
+        folder = os.path.join(self.tmp_dir, 'a-folder-' + 'f' * 150)
+        os.makedirs(folder)
+        book = os.path.join(folder, 'a-picture-' + 'b' * 150 + '.png')
+        shutil.copyfile(get_testfile_path('images', 'blue.png'), book)
+        dialog = self._open(book)
+        dialog.present()
+        self.assertTrue(wait_for(lambda: dialog.get_width() > 0))
+        pump()
+        page = dialog._image_page
+        self.assertTrue(wait_for(lambda: page.get_width() > 0))
+        width = page.get_width()
+        self.assertLessEqual(dialog.get_width(), 600)
+        long_labels = [label for label in _labels(page)
+                       if 'b' * 150 in label.get_text()
+                       or 'f' * 150 in label.get_text()]
+        self.assertGreaterEqual(len(long_labels), 2)
+        for label in long_labels:
+            self.assertLessEqual(label.get_width(), width, label.get_text())
+            # Broken over lines: taller than one.
+            single = label.create_pango_layout('x').get_pixel_size()[1]
+            self.assertGreater(label.get_height(), single * 1.5,
+                               label.get_text())
+
+
+def _labels(widget):
+    child = widget.get_first_child()
+    while child is not None:
+        if isinstance(child, Gtk.Label):
+            yield child
+        yield from _labels(child)
+        child = child.get_next_sibling()
+
 # vim: expandtab:sw=4:ts=4

@@ -1,6 +1,6 @@
 """properties_page.py - A page to put in the properties dialog window."""
 
-from gi.repository import GdkPixbuf, Gtk
+from gi.repository import GdkPixbuf, Gtk, Pango
 
 from collections.abc import Sequence
 
@@ -18,7 +18,10 @@ class _Page(Gtk.ScrolledWindow):
 
     def __init__(self) -> None:
         super().__init__()
-        self.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+        # Never across: a long name or folder wraps instead (see
+        # _wrapping()), and a page wider than the window would hide
+        # the end of every row behind a scroll bar.
+        self.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         widgets.set_border(self, 12)
 
         self._vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 12)
@@ -65,6 +68,7 @@ class _Page(Gtk.ScrolledWindow):
         set_main_info().
         """
         label = labels.BoldLabel(i18n.to_display_string(i18n.to_unicode(filename)))
+        _wrapping(label)
         label.set_xalign(0)
         label.set_yalign(0.5)
         label.set_selectable(True)
@@ -76,6 +80,7 @@ class _Page(Gtk.ScrolledWindow):
         """
         for text in info:
             label = Gtk.Label(label=text)
+            _wrapping(label)
             label.set_xalign(0)
             label.set_yalign(0.5)
             label.set_selectable(True)
@@ -85,21 +90,37 @@ class _Page(Gtk.ScrolledWindow):
         """Set the information below the main info box to the values in the
         sequence <info>. Each entry in info should be a tuple (desc, value).
         """
-        left_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 8)
-        left_box.set_homogeneous(True)
-        right_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 8)
-        right_box.set_homogeneous(True)
-        widgets.pack(self._extrabox, left_box, False, False, 0)
-        widgets.pack(self._extrabox, right_box, False, False, 0)
-        for desc, value in info:
+        # A grid rather than a column of names beside a column of
+        # values: a value that wraps onto a second line keeps its name
+        # beside its first.
+        grid = Gtk.Grid()
+        grid.set_row_spacing(8)
+        grid.set_column_spacing(10)
+        grid.set_hexpand(True)
+        widgets.pack(self._extrabox, grid, True, True, 0)
+        for row, (desc, value) in enumerate(info):
             desc_label = labels.BoldLabel('%s:' % desc)
             desc_label.set_xalign(1.0)
-            desc_label.set_yalign(1.0)
-            widgets.pack(left_box, desc_label, True, True, 0)
+            desc_label.set_valign(Gtk.Align.START)
+            grid.attach(desc_label, 0, row, 1, 1)
             value_label = Gtk.Label(label=value)
+            _wrapping(value_label)
             value_label.set_xalign(0)
-            value_label.set_yalign(1.0)
+            value_label.set_valign(Gtk.Align.START)
+            value_label.set_hexpand(True)
             value_label.set_selectable(True)
-            widgets.pack(right_box, value_label, True, True, 0)
+            grid.attach(value_label, 1, row, 1, 1)
+
+
+def _wrapping(label: Gtk.Label) -> None:
+    """Have <label> break a long text over several lines, between
+    words where it can and anywhere in a word that is too long by
+    itself, as a file name without spaces often is."""
+    label.set_wrap(True)
+    label.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
+    # Its natural width stays the whole text's, so a short one keeps
+    # its line; a few characters is all it asks for at least.
+    label.set_width_chars(1)
+
 
 # vim: expandtab:sw=4:ts=4
