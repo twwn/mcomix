@@ -113,6 +113,9 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         super().__init__()
 
         self._library_ref = weakref.ref(library)
+        #: Set by close(): an idle that asks for the covers afterwards
+        #: finds nothing to draw them in.
+        self._closed = False
         self._cache = get_pixbuf_cache()
         #: The paths of the books whose covers a worker is reading, and
         #: what the others wait on for one to be done.
@@ -385,6 +388,8 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
     def close(self) -> None:
         """Run clean-up tasks for the _BookArea prior to closing."""
 
+        self._closed = True
+
         # Not waited for: a cover deep in a solid archive takes seconds,
         # and the window would hang that long on its way out. The read
         # needs only the backend and the cover cache, which outlive the
@@ -407,6 +412,12 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
     def display_covers(self, collection_id: int | None) -> None:
         """Display the books that make up <collection_id>, the whole
         library where it is None."""
+
+        if self._closed or self._library_ref() is None:
+            # Asked for from an idle (a search, a collection picked,
+            # books removed) that a busy main loop ran only after the
+            # library had closed, or had been destroyed without close().
+            return
 
         adjustment = self.get_vadjustment()
         if adjustment:

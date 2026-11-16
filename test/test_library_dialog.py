@@ -108,6 +108,20 @@ class LibraryDialogTest(_LibraryWindowTest):
         closed.assert_called_once_with()
         self.assertIsNone(main_dialog.get_dialog())
 
+    def test_covers_asked_for_just_before_closing_are_not_drawn(self):
+        """A search, a collection picked or books removed ask for the
+        covers from an idle; a main loop busy elsewhere, extracting a
+        book, can run that idle only after the library has closed."""
+        dialog = self._open()
+        area = dialog.book_area
+        GLib.idle_add(area.display_covers, constants.COLLECTION_ALL)
+        dialog.close()
+        del dialog
+        with unittest.mock.patch.object(
+                area._covers, 'set_items') as set_items:
+            pump()
+        set_items.assert_not_called()
+
     def test_the_window_lets_go_of_the_focus_before_its_surface(self):
         # See DialogTest's test of the same name.
         dialog = self._open()
