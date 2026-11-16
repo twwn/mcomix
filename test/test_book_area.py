@@ -66,6 +66,13 @@ class _Backend:
         # No book is found, so a cover is drawn as the missing image.
         return None
 
+    def get_sized_book_cover(self, path, made_for):
+        # No cover is kept as it was drawn: each is drawn anew.
+        return None
+
+    def keep_sized_book_cover(self, path, pixbuf, made_for, thumbnail):
+        pass
+
     #: Which collection each collection is filed under, where any is.
     supercollections: dict = {}
 
@@ -233,6 +240,139 @@ class _CoverBackend(_Backend):
             dst_dir=self._store, store_on_disk=True, archive_support=True,
             size=(constants.MAX_LIBRARY_COVER_SIZE,) * 2,
             cover_orientation_required=True).thumbnail(path)
+
+
+class _KeepingBackend(_CoverBackend):
+
+    """One that keeps each cover as it was drawn, as the library's
+    does."""
+
+    def _covers(self):
+        from mcomix import thumbnail_tools
+        return thumbnail_tools.Thumbnailer(dst_dir=self._store)
+
+    def get_sized_book_cover(self, path, made_for):
+        return self._covers().sized(path, made_for)
+
+    def keep_sized_book_cover(self, path, pixbuf, made_for, thumbnail):
+        self._covers().keep_sized(path, pixbuf, made_for, thumbnail)
+
+
+class KeptCoverTest(MComixTest):
+
+    """A cover is kept on disk as it was drawn, and read back as that.
+
+    The cover stored is 500 pixels high, for the largest size there is;
+    drawn 125 high it was decoded whole and scaled down, 5 ms a cover,
+    for every cover in view each time the program started."""
+
+    def setUp(self):
+        super().setUp()
+        import zipfile
+        from . import get_testfile_path
+        self.archive = os.path.join(self.tmp_dir, 'book.cbz')
+        with zipfile.ZipFile(self.archive, 'w') as book:
+            book.write(get_testfile_path(
+                'images', 'landscape-exif-270-rotation.jpg'), '01.jpg')
+        self.library = _Library()
+        self.backend = self.library.backend = _KeepingBackend(
+            self.archive, os.path.join(self.tmp_dir, 'covers'))
+        self.library.main_window = types.SimpleNamespace(
+            enhancer=types.SimpleNamespace(enhance=lambda pixbuf: pixbuf))
+        self.area = book_area._BookArea(self.library)
+        self.area._cache.invalidate_all()
+        prefs['library cover size'] = constants.SIZE_NORMAL
+        self.first = self.area._get_pixbuf(1)
+        # As after a start of the program: nothing in memory.
+        self.area._cache.invalidate_all()
+
+    def tearDown(self):
+        self.area.close()
+        self.area._cache.invalidate_all()
+        super().tearDown()
+
+    def _again(self):
+        """The cover asked for again, and whether the cover stored at
+        its largest was read for it."""
+        with unittest.mock.patch.object(
+                self.backend, 'get_book_thumbnail',
+                wraps=self.backend.get_book_thumbnail) as read:
+            pixbuf = self.area._get_pixbuf(1)
+        return pixbuf, read.called
+
+    def test_it_is_the_cover_drawn_before(self):
+        again, read = self._again()
+        self.assertFalse(read, 'the cover stored was decoded again')
+        self.assertEqual(
+            (self.first.get_width(), self.first.get_height()),
+            (again.get_width(), again.get_height()))
+        self.assertEqual(self.first.get_pixels(), again.get_pixels())
+
+    def test_another_size_is_drawn_from_the_cover_stored(self):
+        prefs['library cover size'] = constants.SIZE_NORMAL * 2
+        again, read = self._again()
+        self.assertTrue(read)
+        self.assertGreater(again.get_width(), self.first.get_width())
+        # And is what is kept from then on.
+        self.area._cache.invalidate_all()
+        self.assertFalse(self._again()[1])
+
+    def test_what_the_drawing_depends_on_is_part_of_what_it_was_kept_for(self):
+        """The cover is turned as its Exif orientation says only where
+        the preference says so, and scaled by the filter chosen."""
+        for name, value in (('auto rotate from exif', False),
+                            ('scaling quality', 0),
+                            ('checkered bg for transparent images', False)):
+            with self.subTest(preference=name):
+                self.assertNotEqual(value, prefs[name])
+                was, prefs[name] = prefs[name], value
+                try:
+                    self.area._cache.invalidate_all()
+                    self.assertTrue(self._again()[1])
+                finally:
+                    prefs[name] = was
+                    self.area._cache.invalidate_all()
+                    self._again()
+
+    def test_a_changed_book_has_its_cover_drawn_anew(self):
+        later = os.stat(self.archive).st_mtime + 10
+        os.utime(self.archive, (later, later))
+        self.assertTrue(self._again()[1])
+
+    def test_a_cover_that_cannot_be_kept_is_shown_all_the_same(self):
+        prefs['library cover size'] = constants.SIZE_NORMAL * 2
+        with unittest.mock.patch.object(
+                self.backend, 'keep_sized_book_cover',
+                side_effect=OSError('no room')), \
+            unittest.mock.patch.object(
+                self.backend, 'get_sized_book_cover',
+                side_effect=OSError('unreadable')):
+            again, read = self._again()
+        self.assertTrue(read)
+        self.assertGreater(again.get_width(), self.first.get_width())
+
+    def test_the_missing_image_is_not_kept(self):
+        """It is drawn, not read, and a book whose cover could not be
+        read once is tried again."""
+        import zipfile
+        with zipfile.ZipFile(self.archive, 'w') as book:
+            book.writestr('01.jpg', b'not an image')
+        # Written within the second the first was, by the clock a
+        # stored cover goes by.
+        later = os.stat(self.archive).st_mtime + 10
+        os.utime(self.archive, (later, later))
+        directory = os.path.join(self.tmp_dir, 'covers_sized')
+        (name,) = os.listdir(directory)
+        with open(os.path.join(directory, name), 'rb') as file:
+            kept = file.read()
+        for _attempt in range(2):
+            self.area._cache.invalidate_all()
+            self.assertTrue(self._again()[1])
+        # What is there is the cover of the book as it was, which is
+        # not used for the book as it is.
+        with open(os.path.join(directory, name), 'rb') as file:
+            self.assertEqual(kept, file.read())
+        self.assertEqual([name], os.listdir(directory))
 
 
 class TurnedCoverTest(MComixTest):

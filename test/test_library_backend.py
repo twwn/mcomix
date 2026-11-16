@@ -1404,6 +1404,55 @@ class ChosenCoverTest(LibraryDatabaseTest):
         self.assertEqual('b.png', self._cover())
         self.assertEqual(1, len(os.listdir(constants.LIBRARY_COVERS_PATH)))
 
+    def _kept_as_drawn(self):
+        """Keep the book's cover as drawn 30 by 40, and answer the page
+        whose colour the cover kept has, or None where none is kept."""
+        kept = self.backend.get_sized_book_cover(self.path, (30, 40))
+        if kept is None:
+            cover = self.backend.get_book_thumbnail(self.path)
+            self.backend.keep_sized_book_cover(
+                self.path, cover.scale_simple(30, 40, 0), (30, 40), cover)
+            return None
+        pixel = tuple(kept.get_pixels()[:3])
+        return next(name for name, colour in self.COLOURS.items()
+                    if colour == pixel)
+
+    def test_the_cover_kept_as_drawn_is_read_back(self):
+        self.assertIsNone(self._kept_as_drawn())
+        with unittest.mock.patch.object(
+                thumbnail_tools.Image, 'open',
+                side_effect=AssertionError('decoded')):
+            self.assertEqual('a.png', self._kept_as_drawn())
+
+    def test_the_cover_kept_as_drawn_goes_when_another_is_chosen(self):
+        """It was drawn from the picture chosen before."""
+        self.assertIsNone(self._kept_as_drawn())
+        self.assertTrue(self.backend.set_chosen_cover(self.path, 'b.png'))
+        self.assertEqual([], os.listdir(
+            constants.LIBRARY_COVERS_PATH + '_sized'))
+        self.assertIsNone(self._kept_as_drawn())
+        self.assertEqual('b.png', self._kept_as_drawn())
+
+    def test_the_cover_kept_as_drawn_goes_with_the_book(self):
+        self.assertIsNone(self._kept_as_drawn())
+        self.backend.remove_book(self.backend.get_book_by_path(self.path).id)
+        self.assertEqual([], os.listdir(
+            constants.LIBRARY_COVERS_PATH + '_sized'))
+        self.assertEqual([], os.listdir(constants.LIBRARY_COVERS_PATH))
+
+    def test_the_cover_kept_as_drawn_follows_the_file(self):
+        self.assertIsNone(self._kept_as_drawn())
+        moved = os.path.join(self.tmp_dir, 'moved.zip')
+        shutil.move(self.path, moved)
+        self.assertTrue(self.backend.update_book_path(self.path, moved))
+        self.path = moved
+        with unittest.mock.patch.object(
+                thumbnail_tools.Image, 'open',
+                side_effect=AssertionError('decoded')):
+            self.assertEqual('a.png', self._kept_as_drawn())
+        self.assertEqual(1, len(os.listdir(
+            constants.LIBRARY_COVERS_PATH + '_sized')))
+
     def test_a_cover_being_made_as_another_is_chosen_does_not_stay(self):
         """The read in flight stored the old picture after the choice had
         deleted what was stored, and every later read found it there."""

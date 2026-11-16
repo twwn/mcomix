@@ -846,8 +846,22 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
             self._being_read.add(book.path)
         try:
             width, height = self._pixbuf_size(border_size=0, scale=scale)
+            backend = self._library.backend
+            # The size, and the preferences the turning and the scaling
+            # below read: a cover kept on disk as it was drawn is one
+            # drawn under these.
+            made_for = (width, height, int(prefs['scaling quality']),
+                        int(prefs['auto rotate from exif']),
+                        int(prefs['checkered bg for transparent images']))
             try:
-                thumbnail = self._library.backend.get_book_thumbnail(book.path)
+                kept = backend.get_sized_book_cover(book.path, made_for)
+            except Exception:
+                kept = None
+            if kept is not None:
+                self._cache.add(book.path, kept, begun_at)
+                return kept
+            try:
+                thumbnail = backend.get_book_thumbnail(book.path)
             except Exception:
                 thumbnail = None
             if thumbnail is None:
@@ -859,6 +873,12 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
                 pixbuf = image_tools.fit_in_rectangle(
                     image_tools.turned_as_shown(thumbnail, book.path),
                     width, height, scale_up=True)
+                try:
+                    backend.keep_sized_book_cover(book.path, pixbuf,
+                                                  made_for, thumbnail)
+                except Exception:
+                    # A cover that cannot be kept is a cover all the same.
+                    pass
             self._cache.add(book.path, pixbuf, begun_at)
             return pixbuf
         finally:

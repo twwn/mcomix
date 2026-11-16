@@ -631,3 +631,190 @@ class ForeignThumbnailOrientationTest(MComixTest):
             pixbuf = self._thumbnailer.thumbnail(small)
         self.assertFalse(made.called, 'the stored thumbnail was not reused')
         self.assertEqual((90, 60), (pixbuf.get_width(), pixbuf.get_height()))
+
+
+class SizedThumbnailTest(MComixTest):
+
+    """A thumbnail kept as it was drawn: at the size shown, as the bytes
+    of its pixels.  A library cover is stored 500 pixels high and drawn
+    125 high, and every cover in view was decoded whole and scaled down
+    each time the program started."""
+
+    MADE_FOR = (40, 60, 1)
+
+    def setUp(self):
+        super().setUp()
+        self._store = os.path.join(self.tmp_dir, 'thumbnails')
+        self._thumbnailer = thumbnail_tools.Thumbnailer(
+            dst_dir=self._store, store_on_disk=True, size=(128, 128))
+        self._source = os.path.join(self.tmp_dir, 'source.png')
+        shutil.copy(get_testfile_path('images', 'red.png'), self._source)
+        self._thumbnail = self._thumbnailer.thumbnail(self._source)
+        self._drawn = image_tools.fit_in_rectangle(
+            self._thumbnail, 40, 60, scale_up=True)
+        self._kept = self._thumbnailer._path_to_sizedpath(self._source)
+
+    def _keep(self, thumbnail=None):
+        self._thumbnailer.keep_sized(self._source, self._drawn,
+                                     self.MADE_FOR,
+                                     thumbnail or self._thumbnail)
+
+    def _sized(self, made_for=MADE_FOR):
+        return self._thumbnailer.sized(self._source, made_for)
+
+    def test_none_is_kept_until_one_is(self):
+        self.assertIsNone(self._sized())
+
+    def test_what_was_kept_is_what_comes_back(self):
+        self._keep()
+        kept = self._sized()
+        self.assertEqual(
+            (self._drawn.get_width(), self._drawn.get_height(),
+             self._drawn.get_has_alpha(), self._drawn.get_rowstride()),
+            (kept.get_width(), kept.get_height(),
+             kept.get_has_alpha(), kept.get_rowstride()))
+        self.assertEqual(self._drawn.get_pixels(), kept.get_pixels())
+
+    def test_one_with_transparency_comes_back_with_it(self):
+        self._drawn = self._drawn.add_alpha(False, 0, 0, 0)
+        self._keep()
+        kept = self._sized()
+        self.assertTrue(kept.get_has_alpha())
+        self.assertEqual(self._drawn.get_pixels(), kept.get_pixels())
+
+    def test_it_comes_back_without_the_thumbnail_being_opened(self):
+        self._keep()
+        with unittest.mock.patch.object(
+                thumbnail_tools.Image, 'open',
+                side_effect=AssertionError('decoded')) as opened:
+            self.assertIsNotNone(self._sized())
+        opened.assert_not_called()
+
+    def test_one_drawn_from_a_thumbnail_read_back_is_kept_too(self):
+        """Not only from the one just made: at the next start every
+        thumbnail is read from the store."""
+        with unittest.mock.patch.object(
+                self._thumbnailer, '_create_thumbnail') as made:
+            again = self._thumbnailer.thumbnail(self._source)
+        made.assert_not_called()
+        self._keep(again)
+        self.assertIsNotNone(self._sized())
+
+    def test_it_is_not_one_of_the_thumbnails(self):
+        """The store holds picture files, one per source, and is listed
+        as that."""
+        self._keep()
+        self.assertTrue(os.path.isfile(self._kept))
+        self.assertEqual(
+            [os.path.basename(
+                self._thumbnailer._path_to_thumbpath(self._source))],
+            os.listdir(self._store))
+
+    def test_it_is_not_answered_for_anything_else_it_could_be_made_for(self):
+        self._keep()
+        for other in ((41, 60, 1), (40, 60, 2), (40, 60), (40, 60, 1, 0)):
+            with self.subTest(made_for=other):
+                self.assertIsNone(self._sized(other))
+
+    def test_a_changed_source_makes_it_stale(self):
+        self._keep()
+        later = os.stat(self._source).st_mtime + 10
+        os.utime(self._source, (later, later))
+        self.assertIsNone(self._sized())
+
+    def test_a_source_that_is_gone_does_not(self):
+        """As for the thumbnail itself, which is shown for a file on a
+        drive that is not there."""
+        self._keep()
+        os.remove(self._source)
+        self.assertIsNotNone(self._sized())
+
+    def test_another_thumbnail_in_its_place_makes_it_stale(self):
+        """Of the same source and with the same modification time: the
+        library's cover of a book for which another page was chosen."""
+        self._keep()
+        stored = self._thumbnailer._path_to_thumbpath(self._source)
+        stat = os.stat(stored)
+        os.utime(stored, ns=(stat.st_atime_ns,
+                             stat.st_mtime_ns + 2_000_000_000))
+        self.assertIsNone(self._sized())
+
+    def test_a_thumbnail_that_is_gone_makes_it_stale(self):
+        self._keep()
+        os.remove(self._thumbnailer._path_to_thumbpath(self._source))
+        self.assertIsNone(self._sized())
+
+    def test_it_is_not_kept_of_a_thumbnail_that_went_meanwhile(self):
+        """delete() removes the thumbnail and then what was kept of it;
+        one kept between the two would be left for good."""
+        os.remove(self._thumbnailer._path_to_thumbpath(self._source))
+        self._keep()
+        self.assertFalse(os.path.exists(self._kept))
+        self.assertEqual([], os.listdir(os.path.dirname(self._kept)))
+
+    def test_it_is_not_kept_of_a_thumbnail_that_is_not_stored(self):
+        unstored = thumbnail_tools.Thumbnailer(
+            dst_dir=self._store, store_on_disk=False, size=(128, 128))
+        other = os.path.join(self.tmp_dir, 'other.png')
+        shutil.copy(self._source, other)
+        unstored.keep_sized(other, self._drawn, self.MADE_FOR,
+                            unstored.thumbnail(other))
+        self.assertFalse(os.path.exists(
+            self._thumbnailer._path_to_sizedpath(other)))
+
+    def test_it_is_deleted_with_the_thumbnail(self):
+        self._keep()
+        self._thumbnailer.delete(self._source)
+        self.assertFalse(os.path.exists(self._kept))
+
+    def test_it_follows_the_thumbnail(self):
+        self._keep()
+        moved = os.path.join(self.tmp_dir, 'moved.png')
+        shutil.move(self._source, moved)
+        self._thumbnailer.follow(self._source, moved)
+        self.assertFalse(os.path.exists(self._kept))
+        kept = self._thumbnailer.sized(moved, self.MADE_FOR)
+        self.assertIsNotNone(kept)
+        self.assertEqual(self._drawn.get_pixels(), kept.get_pixels())
+
+    def test_one_cut_short_is_not_used(self):
+        self._keep()
+        with open(self._kept, 'rb') as file:
+            whole = file.read()
+        for length in (0, 10, len(whole) // 2, len(whole) - 1):
+            with self.subTest(length=length):
+                with open(self._kept, 'wb') as file:
+                    file.write(whole[:length])
+                self.assertIsNone(self._sized())
+
+    def test_a_file_that_is_something_else_is_not_used(self):
+        self._keep()
+        with open(self._kept, 'rb') as file:
+            magic, numbers, pixels = file.read().split(b'\n', 2)
+        for content in (b'\x89PNG\r\n\x1a\n' + pixels,
+                        magic + b'\nfour words not numbers\n' + pixels,
+                        magic + b'\n1 2 3\n' + pixels,
+                        magic + b'\n-' + numbers + b'\n' + pixels):
+            with self.subTest(content=content[:40]):
+                with open(self._kept, 'wb') as file:
+                    file.write(content)
+                self.assertIsNone(self._sized())
+
+    def test_a_thumbnailer_told_to_make_everything_anew_does_not_use_it(self):
+        self._keep()
+        anew = thumbnail_tools.Thumbnailer(
+            dst_dir=self._store, store_on_disk=True, size=(128, 128),
+            force_recreation=True)
+        self.assertIsNone(anew.sized(self._source, self.MADE_FOR))
+
+    def test_a_store_that_cannot_be_written_keeps_nothing_and_says_nothing(self):
+        with unittest.mock.patch.object(thumbnail_tools.tempfile, 'mkstemp',
+                                        side_effect=OSError('read-only')):
+            self._keep()
+        self.assertIsNone(self._sized())
+
+    def test_nothing_is_left_behind_where_it_cannot_be_put_in_place(self):
+        with unittest.mock.patch.object(thumbnail_tools.os, 'replace',
+                                        side_effect=OSError('refused')):
+            self._keep()
+        self.assertEqual([], os.listdir(os.path.dirname(self._kept)))

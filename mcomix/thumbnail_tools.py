@@ -9,6 +9,10 @@ that one left behind by an edited file can be told from a current one.
 A Thumbnailer can be pointed at a directory of its own instead, which is
 what the library does for its covers, and can be told to make a
 thumbnail without storing it at all.
+
+Beside such a directory of its own it also keeps, for whoever asks, the
+thumbnail as it was last drawn: scaled to the size shown, as the bytes
+of its pixels.  See Thumbnailer.sized().
 """
 
 import os
@@ -16,10 +20,9 @@ import re
 import tempfile
 import threading
 import PIL.Image as Image
-from collections.abc import Callable, Iterable, Mapping
-from typing import TYPE_CHECKING
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from hashlib import md5
-from gi.repository import Gio, GLib
+from gi.repository import GdkPixbuf, Gio, GLib
 
 from mcomix.preferences import prefs
 from mcomix import constants
@@ -32,9 +35,6 @@ from mcomix import callback
 from mcomix import log
 from mcomix.i18n import _
 
-if TYPE_CHECKING:
-    from gi.repository import GdkPixbuf
-
 
 #: The tEXt key the Exif orientation of an archive's cover is stored
 #: under, beside the thumbnail made of it.  Not one of the spec's own
@@ -46,6 +46,15 @@ _ORIENTATION_KEY = 'tEXt::X-MComix::Orientation'
 #: by its picture's Exif orientation - which one an older MComix stored
 #: is not.
 _UPRIGHT_KEY = 'tEXt::X-MComix::Upright'
+
+#: The attribute of a thumbnail read from the store, or just written to
+#: it, that says which stored file it is: that file's modification time
+#: in nanoseconds and its size, and its source's modification time as
+#: the file records it.  Thumbnailer.keep_sized() writes them down.
+_STORED = 'mcomix_stored_as'
+
+#: The first line of a file Thumbnailer.keep_sized() writes.
+_SIZED_MAGIC = b'MComix sized thumbnail 1\n'
 
 #: A file name that says the picture is not the book's cover: "credit"
 #: anywhere in it, or "banner" however its letters are spaced out.
@@ -182,7 +191,8 @@ class Thumbnailer:
         pass
 
     def delete(self, filepath: str) -> None:
-        """ Deletes the thumbnail for <filepath> (if it exists) """
+        """ Deletes the thumbnail for <filepath> (if it exists), and
+        what keep_sized() kept of it. """
         thumbpath = self._path_to_thumbpath(filepath)
         if os.path.isfile(thumbpath):
             try:
@@ -190,6 +200,13 @@ class Thumbnailer:
             except OSError as error:
                 log.error(_("! Could not remove file \"%s\""), thumbpath)
                 log.error(error)
+        # After the thumbnail, never before: keep_sized() looks for the
+        # thumbnail once it has written, and takes away what it wrote
+        # where this has been.
+        try:
+            os.remove(self._path_to_sizedpath(filepath))
+        except OSError:
+            pass
 
     def follow(self, old_path: str, new_path: str) -> None:
         """Keep the thumbnail stored for <old_path> for <new_path>, where
@@ -211,6 +228,132 @@ class Thumbnailer:
             log.error(_('! Could not move %(file)s to %(directory)s: %(error)s'),
                       {'file': stored, 'directory': self.dst_dir,
                        'error': error})
+            return
+        # What keep_sized() kept goes with it: it says which thumbnail
+        # it was made of by that file's time and size, which a move
+        # keeps.  One that will not move is made again.
+        sized = self._path_to_sizedpath(old_path)
+        try:
+            portability.rename_once_closed(
+                os.replace, sized, self._path_to_sizedpath(new_path))
+        except OSError:
+            try:
+                os.remove(sized)
+            except OSError:
+                pass
+
+    def sized(self, filepath: str,
+              made_for: Sequence[int]) -> "GdkPixbuf.Pixbuf | None":
+        """The picture keep_sized() kept for <filepath> and <made_for>,
+        or None where there is none to use.
+
+        A stored thumbnail is as large as the largest size it is ever
+        shown at, and showing it smaller means decoding all of it and
+        scaling it down: 4.7 ms for a library cover of 333x500 pixels
+        drawn 83x125, of every cover in view each time the program
+        starts.  What was drawn is therefore kept beside the thumbnails,
+        not as a picture file but as the bytes of its pixels under a line
+        of numbers, which takes a fraction of that to read back.
+
+        It is used while the thumbnail it was made of is the one stored
+        - by that file's time and size - while the source has the
+        modification time that thumbnail records, or is gone, as a
+        stored thumbnail is used, and while <made_for> is what it was
+        kept under: the size drawn, and whatever else the caller's
+        drawing depends on.
+        """
+        if self.force_recreation:
+            return None
+        try:
+            with open(self._path_to_sizedpath(filepath), 'rb') as file:
+                if file.readline() != _SIZED_MAGIC:
+                    return None
+                numbers = [int(number) for number in file.readline().split()]
+                pixels = file.read()
+        except (OSError, ValueError):
+            return None
+        if len(numbers) < 8 or numbers[8:] != list(made_for):
+            return None
+        (width, height, rowstride, has_alpha,
+         stored_mtime, stored_size, source_mtime, length) = numbers[:8]
+        row = width * (4 if has_alpha else 3)
+        if (width < 1 or height < 1 or rowstride < row
+                or length != len(pixels)
+                or length < (height - 1) * rowstride + row):
+            # Broken off partway through being written, or not written
+            # by keep_sized() at all.
+            return None
+        if self._stored_identity(filepath) != (stored_mtime, stored_size):
+            return None
+        try:
+            if source_mtime != int(os.stat(filepath).st_mtime):
+                return None
+        except OSError:
+            # A source that is no longer there: see _source_is_unchanged().
+            pass
+        return GdkPixbuf.Pixbuf.new_from_bytes(
+            GLib.Bytes.new(pixels), GdkPixbuf.Colorspace.RGB,
+            bool(has_alpha), 8, width, height, rowstride)
+
+    def keep_sized(self, filepath: str, pixbuf: "GdkPixbuf.Pixbuf",
+                   made_for: Sequence[int],
+                   made_of: "GdkPixbuf.Pixbuf") -> None:
+        """Keep <pixbuf>, which the caller drew from the thumbnail
+        <made_of> that thumbnail() answered for <filepath>, for sized()
+        to answer with for the same <made_for>.
+
+        Nothing is kept of a thumbnail that is not stored: there is
+        nothing to tell what was kept by once the source changes.
+        """
+        stored = getattr(made_of, _STORED, None)
+        if stored is None:
+            return
+        pixels = pixbuf.read_pixel_bytes().get_data()
+        numbers = (pixbuf.get_width(), pixbuf.get_height(),
+                   pixbuf.get_rowstride(), int(pixbuf.get_has_alpha()),
+                   *stored, len(pixels), *made_for)
+        path = self._path_to_sizedpath(filepath)
+        temporary = None
+        try:
+            directory = os.path.dirname(path)
+            os.makedirs(directory, 0o700, exist_ok=True)
+            handle, temporary = tempfile.mkstemp(
+                dir=directory, prefix=os.path.basename(path) + '.',
+                suffix='.tmp')
+            # Not synced to the disk: one cut short by a crash does not
+            # have the length it says, and is made again.
+            with os.fdopen(handle, 'wb') as file:
+                file.write(_SIZED_MAGIC)
+                file.write(' '.join(map(str, numbers)).encode('ascii'))
+                file.write(b'\n')
+                file.write(pixels)
+            portability.rename_once_closed(os.replace, temporary, path)
+            temporary = None
+            if self._stored_identity(filepath) != stored[:2]:
+                # The thumbnail went, or another took its place, while
+                # this was drawn from it.  delete() removes the thumbnail
+                # first, so one of the two always sees the other's work.
+                os.remove(path)
+        except OSError as error:
+            log.debug('Could not keep the thumbnail of "%s" as drawn: %s',
+                      filepath, error)
+        finally:
+            if temporary is not None:
+                try:
+                    os.unlink(temporary)
+                except OSError:
+                    pass
+
+    def _stored_identity(self, filepath: str) -> tuple[int, int] | None:
+        """The modification time, in nanoseconds, and the size of the
+        thumbnail stored for <filepath>, which tell it from the one a
+        changed source or another choice of cover puts in its place;
+        None where none is stored."""
+        try:
+            stat = os.stat(self._path_to_thumbpath(filepath))
+        except OSError:
+            return None
+        return stat.st_mtime_ns, stat.st_size
 
     def _create_thumbnail_pixbuf(self, filepath: str) \
             -> "tuple[GdkPixbuf.Pixbuf | None, dict[str, str] | None]":
@@ -362,8 +505,14 @@ class Thumbnailer:
             os.close(handle)
             pixbuf.savev(temporary, 'png',
                          list(tEXt_data), list(tEXt_data.values()))
+            # Of the file written here, before it is renamed: another
+            # thread or program may put its own in that place right after.
+            stat = os.stat(temporary)
             portability.rename_once_closed(os.replace, temporary, thumbpath)
             temporary = None
+            setattr(pixbuf, _STORED, (
+                stat.st_mtime_ns, stat.st_size,
+                int(tEXt_data['tEXt::Thumb::MTime'])))
 
         except Exception as ex:
             log.warning(_('! Could not save thumbnail "%(thumbpath)s": %(error)s'),
@@ -397,7 +546,7 @@ class Thumbnailer:
             return None
 
         try:
-            with Image.open(thumbpath) as img:
+            with open(thumbpath, 'rb') as file, Image.open(file) as img:
                 if not (self._source_is_unchanged(filepath, img.info)
                         and self._is_current_size(img.size, img.info)):
                     return None
@@ -419,6 +568,10 @@ class Thumbnailer:
                     # KDE's thumbnailers store theirs; one an older
                     # MComix stored is as the picture is in the file.
                     setattr(pixbuf, image_tools.UPRIGHT, True)
+                stat = os.fstat(file.fileno())
+                setattr(pixbuf, _STORED, (
+                    stat.st_mtime_ns, stat.st_size,
+                    int(float(str(img.info['Thumb::MTime'])))))
                 return pixbuf
         except OSError:
             # Not an image, not readable, or broken off partway through
@@ -495,6 +648,14 @@ class Thumbnailer:
         """
         md5hash = md5(uri.encode('utf-8')).hexdigest()
         return os.path.join(self.dst_dir, md5hash + '.png')
+
+    def _path_to_sizedpath(self, filepath: str) -> str:
+        """Return the path of what keep_sized() keeps for <filepath>: in
+        a directory beside <dst_dir>, which holds picture files only,
+        under the name the thumbnail has there."""
+        name = os.path.basename(self._path_to_thumbpath(filepath))
+        return os.path.join(self.dst_dir.rstrip('/' + os.sep) + '_sized',
+                            os.path.splitext(name)[0])
 
     def _chosen_cover(self, files: Iterable[str]) -> str | None:
         """The filename within <files> that is the picture the reader

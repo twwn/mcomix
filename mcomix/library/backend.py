@@ -340,6 +340,24 @@ class _LibraryBackend:
             log.warning(_('! Could not get cover for book "%s"'), path)
         return thumb
 
+    def get_sized_book_cover(
+            self, path: str,
+            made_for: "Sequence[int]") -> "GdkPixbuf.Pixbuf | None":
+        """The cover of the book at <path> as keep_sized_book_cover()
+        kept it for <made_for>, or None where get_book_thumbnail() has
+        to be asked: none was kept, or the cover stored has changed
+        since.  It reads one small file and decodes nothing."""
+        return self._covers().sized(path, made_for)
+
+    def keep_sized_book_cover(self, path: str, pixbuf: "GdkPixbuf.Pixbuf",
+                              made_for: "Sequence[int]",
+                              thumbnail: "GdkPixbuf.Pixbuf") -> None:
+        """Keep <pixbuf>, drawn from the <thumbnail>
+        get_book_thumbnail() answered for the book at <path>, for
+        get_sized_book_cover() to answer with for <made_for>: the size
+        drawn, and whatever else the drawing depended on."""
+        self._covers().keep_sized(path, pixbuf, made_for, thumbnail)
+
     def get_chosen_cover(self, path: str) -> str | None:
         """The picture the reader chose as the cover of the book at
         <path>, as FileHandler.page_member() names it, or None where

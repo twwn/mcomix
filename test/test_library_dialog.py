@@ -42,6 +42,7 @@ from mcomix.library import book_area
 from mcomix.library import collection_area
 from mcomix.library import folder_watcher
 from mcomix.library import main_dialog
+from mcomix.library import pixbuf_cache
 from mcomix.library import relocate_dialog
 from mcomix.library import watchlist
 from mcomix.preferences import prefs
@@ -812,6 +813,56 @@ class _OneBookTest(_LibraryWindowTest):
         lastread.set_page(self.path, page)
 
 
+class CoverAtTheNextStartTest(_OneBookTest):
+
+    """A cover drawn once is read back as it was drawn, from a file of
+    its own, where it used to be decoded from the cover stored at its
+    largest and scaled down for every book in view at every start."""
+
+    def setUp(self):
+        # The covers in memory are the program's, not the window's, and
+        # another test's cover of this book would be shown without one
+        # being drawn here at all.
+        pixbuf_cache.get_pixbuf_cache().invalidate_all()
+        super().setUp()
+        self._cover_made()
+
+    def _item(self):
+        return next(iter(self.dialog.book_area._covers.each_item()))
+
+    def _cover_made(self):
+        covers = self.dialog.book_area._covers
+        self.assertTrue(wait_for(
+            lambda: (self._item().thumbnail is not None
+                     and not covers._thread._orders_set),
+            seconds=10))
+        pump()
+
+    def _shown_again(self):
+        """Have the cover made again with nothing in memory, and answer
+        how often the cover stored was read for it."""
+        area = self.dialog.book_area
+        area._cache.invalidate_all()
+        backend = self.dialog.backend
+        shown = self._item().thumbnail
+        with unittest.mock.patch.object(
+                backend, 'get_book_thumbnail',
+                wraps=backend.get_book_thumbnail) as read:
+            area._covers.redraw_item(self._item())
+            self.assertTrue(wait_for(
+                lambda: self._item().thumbnail is not shown, seconds=10))
+            self._cover_made()
+        return read.call_count
+
+    def test_the_cover_stored_is_not_decoded_for_it(self):
+        self.assertEqual(0, self._shown_again())
+
+    def test_at_another_size_it_is_once(self):
+        prefs['library cover size'] = constants.SIZE_LARGE
+        self.assertEqual(1, self._shown_again())
+        self.assertEqual(0, self._shown_again())
+
+
 class CoverInFlightTest(_OneBookTest):
 
     """A cover a worker is making when what it should look like changes."""
@@ -829,6 +880,14 @@ class CoverInFlightTest(_OneBookTest):
                      and not covers._thread._orders_set),
             seconds=10))
         pump()
+
+    def _nothing_kept_as_drawn(self):
+        """While this holds, a cover is read from the one stored at its
+        largest, where a test parks its worker: the cover kept as it was
+        last drawn, which is read first, is not found."""
+        return unittest.mock.patch.object(
+            self.dialog.backend, 'get_sized_book_cover',
+            lambda path, made_for: None)
 
     def _with_a_cover_in_flight(self, meanwhile):
         """Run <meanwhile> with a worker parked in reading the cover."""
@@ -849,7 +908,8 @@ class CoverInFlightTest(_OneBookTest):
             return read(path)
 
         with unittest.mock.patch.object(self.dialog.backend,
-                                        'get_book_thumbnail', parked):
+                                        'get_book_thumbnail', parked), \
+                self._nothing_kept_as_drawn():
             area._covers.redraw_item(self._item())
             self.assertTrue(wait_for(entered.is_set, seconds=10))
             meanwhile()
@@ -935,6 +995,7 @@ class CoverInFlightTest(_OneBookTest):
 
         with unittest.mock.patch.object(self.dialog.backend,
                                         'get_book_thumbnail', parked), \
+                self._nothing_kept_as_drawn(), \
                 unittest.mock.patch.object(threading, 'excepthook',
                                            failures.append):
             area._covers.redraw_item(self._item())
@@ -967,7 +1028,8 @@ class CoverInFlightTest(_OneBookTest):
             return read(path)
 
         with unittest.mock.patch.object(self.dialog.backend,
-                                        'get_book_thumbnail', parked):
+                                        'get_book_thumbnail', parked), \
+                self._nothing_kept_as_drawn():
             area._covers.redraw_item(self._item())
             self.assertTrue(wait_for(entered.is_set, seconds=10))
         self.dialog.close()
