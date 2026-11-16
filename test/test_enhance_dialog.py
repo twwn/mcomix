@@ -25,9 +25,11 @@ class EnhanceDialogTest(MComixTest):
         self.window = main.MainWindow(
             open_path=get_testfile_path('archives', '01-ZIP-Normal.zip'))
         main.set_main_window(self.window)
+        # The page itself, not only the list of pages: the dialog draws
+        # no histogram for a page still being extracted, and a slow
+        # runner reaches the tests before the extraction has finished.
         self.assertTrue(wait_for(
-            lambda: self.window.imagehandler.get_number_of_pages() > 0,
-            seconds=20))
+            self.window.imagehandler.page_is_available, seconds=20))
         pump()
 
     def tearDown(self):
