@@ -531,6 +531,11 @@ class EventHandler:
                          ['<Control>L'],
                          self._window.actiongroup.get_action('library').activate)
 
+        # The covers the window shows while no book is open.
+        manager.register('search_library',
+                         ['<Control>f'],
+                         self._window.search_shelf)
+
         # The bookmarks menu keeps actions of its own rather than in
         # actiongroup, since its items are rebuilt with every bookmark.
         manager.register('add_bookmark',
@@ -632,7 +637,21 @@ class EventHandler:
     def key_press_event(self, controller: Gtk.EventControllerKey,
                         keyval: int, keycode: int,
                         state: Gdk.ModifierType) -> bool:
-        """Handle key press events on the main window."""
+        """Handle key press events on the main window, before anything
+        in it has them."""
+        # Typed into the search field over the covers shown while no
+        # book is open, a key is the field's first: letters are text
+        # there, and Escape closes it.  What the field leaves comes back
+        # up to the Shelf, which hands it to shortcut_key_press().
+        if self._window.shelf_search_has_focus():
+            return Gdk.EVENT_PROPAGATE
+        return self.shortcut_key_press(controller, keyval, keycode, state)
+
+    def shortcut_key_press(self, controller: Gtk.EventControllerKey,
+                           keyval: int, keycode: int,
+                           state: Gdk.ModifierType) -> bool:
+        """Run the shortcut the key pressed is, and keep the keys that
+        would move the thumbnail bar's selection from it."""
 
         # This is set on demand by callback functions
         self._scroll_protection = False

@@ -174,6 +174,7 @@ BINDING_INFO: "dict[str, dict[str, str]]" = {
     'open': {'title': _('Open'), 'group': _('File')},
     'enhance_image': {'title': _('Enhance image'), 'group': _('Image')},
     'library': {'title': _('Library'), 'group': _('File')},
+    'search_library': {'title': _("Search the library's covers"), 'group': _('File')},
     'invert_color': {'title': _('Invert image colors'), 'group': _('Image')},
 
     # Bookmarks

@@ -62,6 +62,17 @@ class _ShelfWindowTest(MComixTest):
     def _has_pages(self):
         return self.window.imagehandler.get_number_of_pages() > 0
 
+    def _press(self, keyval, state=Gdk.ModifierType(0)):
+        """Press the key that types <keyval> unshifted, with <state> held."""
+        display = self.window.get_display()
+        found, keys = display.map_keyval(keyval)
+        self.assertTrue(found, 'the keymap has no key for %r' % keyval)
+        key = min(keys, key=lambda key: (key.group, key.level))
+        _ok, typed, _group, _level, _consumed = \
+            display.translate_key(key.keycode, state, 0)
+        return self.window.event_handler.key_press_event(
+            _Controller(), typed, key.keycode, state)
+
 
 class ShelfTest(_ShelfWindowTest):
 
@@ -239,17 +250,6 @@ class ShelfKeysTest(_ShelfWindowTest):
         patcher.start()
         self.addCleanup(patcher.stop)
 
-    def _press(self, keyval, state=Gdk.ModifierType(0)):
-        """Press the key that types <keyval> unshifted, with <state> held."""
-        display = self.window.get_display()
-        found, keys = display.map_keyval(keyval)
-        self.assertTrue(found, 'the keymap has no key for %r' % keyval)
-        key = min(keys, key=lambda key: (key.group, key.level))
-        _ok, typed, _group, _level, _consumed = \
-            display.translate_key(key.keycode, state, 0)
-        return self.window.event_handler.key_press_event(
-            _Controller(), typed, key.keycode, state)
-
     def test_the_covers_have_the_keys_that_move_among_them(self):
         self.covers.grab_focus()
         self.assertTrue(wait_for(
@@ -275,6 +275,97 @@ class ShelfKeysTest(_ShelfWindowTest):
         self.window.set_focus(None)
         self.assertEqual(Gdk.EVENT_STOP, self._press(Gdk.KEY_Down))
         self.assertEqual(1, len(self.executed))
+
+
+class ShelfSearchTest(_ShelfWindowTest):
+
+    """There was no way to find a book on the covers the window shows
+    while no book is open by its name: the library window searches,
+    and every letter typed here is a shortcut.  CTRL+F opens a search
+    field over them, which looks among every book."""
+
+    def setUp(self):
+        super().setUp()
+        library = backend.LibraryBackend()
+        for path in self.books:
+            library.add_book(path)
+        # The zip was read: the shelf shows "Recent", which holds it
+        # alone.
+        library.add_book_to_collection(
+            library.get_book_by_path(self.books[0]).id,
+            constants.COLLECTION_RECENT)
+        self._window()
+        self.shelf = self._shown()
+        self.assertEqual([self.books[0]], self.shelf.book_area.shown_paths())
+
+    def _search_for(self, text):
+        self.shelf._search.set_text(text)
+        # At once, rather than once the typing pauses.
+        self.shelf._search.emit('activate')
+
+    def _field_has_focus(self):
+        return wait_for(self.shelf.search_has_focus)
+
+    def test_ctrl_f_opens_the_search_field_with_the_keyboard(self):
+        self.assertFalse(self.shelf._search_bar.get_search_mode())
+        self._press(Gdk.KEY_f, Gdk.ModifierType.CONTROL_MASK)
+        self.assertTrue(self.shelf._search_bar.get_search_mode())
+        self.assertTrue(self._field_has_focus())
+
+    def test_a_search_looks_among_every_book(self):
+        self.shelf.search()
+        self._search_for('tar')
+        self.assertEqual([self.books[1]], self.shelf.book_area.shown_paths())
+        self.assertEqual('All books', self.shelf._heading.get_text())
+        self._search_for('')
+        self.assertEqual([self.books[0]], self.shelf.book_area.shown_paths())
+        self.assertEqual('Recent', self.shelf._heading.get_text())
+
+    def test_escape_closes_it_and_shows_the_shelf_as_it_was(self):
+        self.shelf.search()
+        self.assertTrue(self._field_has_focus())
+        self._search_for('tar')
+        # What Escape does in a search field.
+        self.shelf._search.emit('stop-search')
+        self.assertFalse(self.shelf._search_bar.get_search_mode())
+        self.assertEqual('', self.shelf._search.get_text())
+        self.assertEqual([self.books[0]], self.shelf.book_area.shown_paths())
+        self.assertTrue(wait_for(self.window.shelf_has_focus))
+        self.assertFalse(self.shelf.search_has_focus())
+
+    def test_letters_typed_into_it_are_not_shortcuts(self):
+        executed = []
+        manager = keybindings.keybinding_manager(self.window)
+        with unittest.mock.patch.object(manager, 'execute',
+                                        side_effect=executed.append):
+            self.shelf.search()
+            self.assertTrue(self._field_has_focus())
+            for keyval in (Gdk.KEY_f, Gdk.KEY_space, Gdk.KEY_Escape):
+                with self.subTest(key=Gdk.keyval_name(keyval)):
+                    self.assertEqual(Gdk.EVENT_PROPAGATE,
+                                     self._press(keyval))
+            self.assertEqual([], executed)
+            # Over the covers, f is the window's again.
+            self.shelf.book_area.focus_covers()
+            self.assertTrue(wait_for(
+                lambda: not self.shelf.search_has_focus()))
+            self._press(Gdk.KEY_f)
+            self.assertEqual(1, len(executed))
+
+    def test_what_the_field_leaves_is_the_window_s(self):
+        """F11 or CTRL+O, which a text field has no use for, come back
+        up from it to the Shelf."""
+        executed = []
+        manager = keybindings.keybinding_manager(self.window)
+        with unittest.mock.patch.object(manager, 'execute',
+                                        side_effect=executed.append):
+            self.shelf.search()
+            self.assertTrue(self._field_has_focus())
+            self.shelf._key_left_by_search(
+                _Controller(), Gdk.KEY_F11,
+                self.window.get_display().map_keyval(Gdk.KEY_F11)[1][0].keycode,
+                Gdk.ModifierType(0))
+            self.assertEqual(1, len(executed))
 
 
 # vim: expandtab:sw=4:ts=4

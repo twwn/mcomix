@@ -3,7 +3,7 @@
 The library, CTRL+L, files books in collections and shows their covers.
 A book is an archive in any format MComix opens; folders cannot be added.
 Escape hides the window; CTRL+W closes it. In the search field, Escape first empties the search.
-While no book is open, the main window shows the covers of "Recent" itself, or of "All books" where nothing has been read: a double click or Enter opens one, and the right-click menu is the library's. Books are added, searched for and filed in the library window. [Preferences](preferences.md) turns this off.
+While no book is open, the main window shows the covers of "Recent" itself, or of "All books" where nothing has been read: a double click or Enter opens one, and the right-click menu is the library's. CTRL+F there opens a search field over the covers, which looks among every book by name or path; Escape closes it. Letters typed over the covers stay the window's shortcuts. Books are added and filed in the library window. [Preferences](preferences.md) turns this off.
 
 ![Library window](images/mcomix-library.png)
 

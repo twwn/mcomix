@@ -13,6 +13,7 @@ Function | Binding
 ---------|--------
 Open file | CTRL+O
 Open library | CTRL+L
+Search the library's covers, shown while no book is open | CTRL+F
 Close file | CTRL+W
 Next page | PageDown, KeyPadPageDown, LeftMouse
 Previous page | PageUp, KeyPadPageUp, Backspace, BackMouse, ALT+RightMouse

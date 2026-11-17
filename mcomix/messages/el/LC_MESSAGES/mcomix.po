@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-17 16:55+0100\n"
+"POT-Creation-Date: 2026-11-17 17:17+0100\n"
 "PO-Revision-Date: 2006-09-27 10:18+0200\n"
 "Last-Translator: Paul Chatzidimitriou <paulmedic555@gmail.com>\n"
 "Language-Team: \n"
@@ -54,7 +54,7 @@ msgstr "! Δεν ήταν δυνατή η ανάγνωση του %s"
 
 #
 #: mcomix/archive_packer.py:213 mcomix/file_actions.py:1254
-#: mcomix/library/book_area.py:1179
+#: mcomix/library/book_area.py:1183
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! Δεν ήταν δυνατή η αφαίρεση του %(file)s: %(error)s"
@@ -172,7 +172,7 @@ msgstr "Επεξεργασία σελιδοδεικτών"
 msgid "C_lear bookmarks..."
 msgstr "Εκκα_θάριση σελιδοδεικτών..."
 
-#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1511 mcomix/openwith.py:437
+#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1523 mcomix/openwith.py:437
 #: mcomix/library/collection_area.py:159 mcomix/library/watchlist.py:69
 msgid "_Remove"
 msgstr "Α_φαίρεση"
@@ -200,7 +200,7 @@ msgstr "Όνομα"
 
 #
 # File: src/bookmark.py, line: 256
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:2698
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:2710
 #: mcomix/library/book_properties.py:108 mcomix/library/control_area.py:172
 msgid "Page"
 msgstr "Σελίδα"
@@ -603,11 +603,11 @@ msgstr "Το αρχείο μετακινείται στα απορρίμματα
 msgid "_Move to Trash"
 msgstr "_Μετακίνηση στα Απορρίμματα"
 
-#: mcomix/file_actions.py:1101 mcomix/library/book_area.py:1122
+#: mcomix/file_actions.py:1101 mcomix/library/book_area.py:1126
 msgid "It does not go to the trash and cannot be restored."
 msgstr "Δεν μετακινείται στα απορρίμματα και δεν θα μπορεί να ανακτηθεί."
 
-#: mcomix/file_actions.py:1109 mcomix/library/book_area.py:1114
+#: mcomix/file_actions.py:1109 mcomix/library/book_area.py:1118
 #, python-format
 msgid "Delete \"%s\" permanently?"
 msgstr "Οριστική διαγραφή του «%s»;"
@@ -617,7 +617,7 @@ msgstr "Οριστική διαγραφή του «%s»;"
 msgid "Could not move \"%s\" to the trash"
 msgstr "Δεν ήταν δυνατή η μετακίνηση του «%s» στα απορρίμματα"
 
-#: mcomix/file_actions.py:1213 mcomix/library/book_area.py:1191
+#: mcomix/file_actions.py:1213 mcomix/library/book_area.py:1195
 #, python-format
 msgid "%d book could not be moved to the trash."
 msgid_plural "%d books could not be moved to the trash."
@@ -657,7 +657,7 @@ msgstr[1] ""
 "Το αρχείο χάθηκε και οι %d σελιδοδείκτες του δεν μπορούν πια να ανοίξουν."
 
 #: mcomix/file_actions.py:1396 mcomix/file_actions.py:1554
-#: mcomix/thumbnail_tools.py:379
+#: mcomix/thumbnail_tools.py:386
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr ""
@@ -1058,7 +1058,7 @@ msgstr "Διατήρηση μετασχηματισμού"
 #: mcomix/keybindings.py:99 mcomix/keybindings.py:100 mcomix/keybindings.py:101
 #: mcomix/keybindings.py:102 mcomix/keybindings.py:103
 #: mcomix/keybindings.py:104 mcomix/keybindings.py:105
-#: mcomix/keybindings.py:175 mcomix/keybindings.py:177
+#: mcomix/keybindings.py:175 mcomix/keybindings.py:178
 #: mcomix/properties_dialog.py:52 mcomix/ui.py:533
 msgid "Image"
 msgstr "Εικόνα"
@@ -1296,6 +1296,7 @@ msgstr "Διαγραφή"
 #: mcomix/keybindings.py:166 mcomix/keybindings.py:168
 #: mcomix/keybindings.py:169 mcomix/keybindings.py:173
 #: mcomix/keybindings.py:174 mcomix/keybindings.py:176
+#: mcomix/keybindings.py:177
 msgid "File"
 msgstr "Αρχείο"
 
@@ -1379,61 +1380,65 @@ msgstr "Άνοιγμα του καταλόγου που το περιέχει"
 msgid "Library"
 msgstr "Βιβλιοθήκη"
 
-#: mcomix/keybindings.py:177 mcomix/ui.py:574
+#: mcomix/keybindings.py:177
+msgid "Search the library's covers"
+msgstr "Αναζήτηση στα εξώφυλλα της βιβλιοθήκης"
+
+#: mcomix/keybindings.py:178 mcomix/ui.py:574
 msgid "Invert image colors"
 msgstr "Αντιστροφή χρωμάτων εικόνας"
 
 #
 # File: src/bookmark.py, line: 27
-#: mcomix/keybindings.py:180
+#: mcomix/keybindings.py:181
 msgid "Add bookmark"
 msgstr "Προσθήκη σελιδοδείκτη"
 
 #
 # File: src/ui.py, line: 64
-#: mcomix/keybindings.py:180 mcomix/keybindings.py:181
+#: mcomix/keybindings.py:181 mcomix/keybindings.py:182
 msgid "Bookmarks"
 msgstr "Σελιδοδείκτες"
 
-#: mcomix/keybindings.py:181
+#: mcomix/keybindings.py:182
 msgid "Edit bookmarks"
 msgstr "Επεξεργασία σελιδοδεικτών"
 
 #
-#: mcomix/keybindings.py:189 mcomix/openwith.py:664
+#: mcomix/keybindings.py:190 mcomix/openwith.py:664
 msgid "Command"
 msgstr "Εντολή"
 
 #
 # File: src/bookmark.py, line: 229
-#: mcomix/keybindings.py:190
+#: mcomix/keybindings.py:191
 msgid "External commands"
 msgstr "Εξωτερικές εντολές"
 
-#: mcomix/keybindings.py:267
+#: mcomix/keybindings.py:268
 #, python-format
 msgid "Keybinding for \"%(action)s\" overrides hotkey for another action."
 msgstr ""
 "Η συντόμευση για «%(action)s» υπερισχύει της συντόμευσης άλλης ενέργειας."
 
-#: mcomix/keybindings.py:460 mcomix/keybindings.py:468
+#: mcomix/keybindings.py:461 mcomix/keybindings.py:469
 #, python-format
 msgid "Couldn't load keybindings: %s"
 msgstr "Δεν ήταν δυνατή η φόρτωση των συντομεύσεων: %s"
 
-#: mcomix/last_read_page.py:255 mcomix/thumbnail_tools.py:351
+#: mcomix/last_read_page.py:255 mcomix/thumbnail_tools.py:358
 #, python-format
 msgid "! Could not remove file \"%s\""
 msgstr "! Δεν ήταν δυνατή η αφαίρεση του αρχείου «%s»"
 
-#: mcomix/main.py:1504
+#: mcomix/main.py:1516
 #, python-format
 msgid "Remove the page picked out of \"%s\"?"
 msgid_plural "Remove the pages picked out of \"%s\"?"
 msgstr[0] "Αφαίρεση της επιλεγμένης σελίδας από το «%s»;"
 msgstr[1] "Αφαίρεση των επιλεγμένων σελίδων από το «%s»;"
 
-#: mcomix/main.py:1507
+#: mcomix/main.py:1519
 msgid ""
 "They are taken out of the archive on disk, which is written again at once. "
 "Leaving the book without removing them forgets which pages they were."
@@ -1441,18 +1446,18 @@ msgstr ""
 "Αφαιρούνται από το αρχείο στον δίσκο, το οποίο γράφεται ξανά αμέσως. Αν "
 "φύγετε από το βιβλίο χωρίς να τις αφαιρέσετε, ξεχνιέται ποιες σελίδες ήταν."
 
-#: mcomix/main.py:1510
+#: mcomix/main.py:1522
 msgid "_Keep them"
 msgstr "_Διατήρηση"
 
-#: mcomix/main.py:1734
+#: mcomix/main.py:1746
 #, python-format
 msgid "Animation speed: %s"
 msgstr "Ταχύτητα κινούμενης εικόνας: %s"
 
 #
 # File: src/main.py, line: 666
-#: mcomix/main.py:2402
+#: mcomix/main.py:2414
 msgid "SLIDESHOW"
 msgstr "ΠΡΟΒΟΛΗ ΕΝΑΛΛΑΓΗΣ"
 
@@ -3195,7 +3200,7 @@ msgstr "Σχεδίαση εικονιδίων"
 msgid "Vector icon"
 msgstr "Διανυσματικό εικονίδιο"
 
-#: mcomix/thumbnail_tools.py:684
+#: mcomix/thumbnail_tools.py:691
 #, python-format
 msgid "! Could not save thumbnail \"%(thumbpath)s\": %(error)s"
 msgstr ""
@@ -3784,39 +3789,39 @@ msgstr "Προσθήκη του «%s»..."
 msgid "! Non-existent book #%i"
 msgstr "! Το βιβλίο #%i δεν υπάρχει"
 
-#: mcomix/library/backend.py:355
+#: mcomix/library/backend.py:356
 #, python-format
 msgid "! Could not get cover for book \"%s\""
 msgstr "! Δεν ήταν δυνατή η λήψη του εξωφύλλου του βιβλίου «%s»"
 
-#: mcomix/library/backend.py:459 mcomix/library/backend.py:476
-#: mcomix/library/backend.py:489 mcomix/library/backend.py:518
-#: mcomix/library/shelf.py:124
+#: mcomix/library/backend.py:460 mcomix/library/backend.py:477
+#: mcomix/library/backend.py:490 mcomix/library/backend.py:519
+#: mcomix/library/shelf.py:154
 msgid "Recent"
 msgstr "Πρόσφατα"
 
-#: mcomix/library/backend.py:598 mcomix/library/backend.py:645
+#: mcomix/library/backend.py:599 mcomix/library/backend.py:646
 #, python-format
 msgid "! Could not add book \"%s\" to the library"
 msgstr "! Δεν ήταν δυνατή η προσθήκη του βιβλίου «%s» στη βιβλιοθήκη"
 
-#: mcomix/library/backend.py:674 mcomix/library/backend.py:754
+#: mcomix/library/backend.py:675 mcomix/library/backend.py:757
 #, python-format
 msgid "! Could not move book \"%s\" in the library"
 msgstr "! Δεν ήταν δυνατή η μετακίνηση του βιβλίου «%s» στη βιβλιοθήκη"
 
-#: mcomix/library/backend.py:804
+#: mcomix/library/backend.py:807
 #, python-format
 msgid "! Could not add collection \"%s\""
 msgstr "! Δεν ήταν δυνατή η προσθήκη της συλλογής «%s»"
 
-#: mcomix/library/backend.py:836
+#: mcomix/library/backend.py:839
 #, python-format
 msgid "! Could not add book %(book)s to collection %(collection)s"
 msgstr ""
 "! Δεν ήταν δυνατή η προσθήκη του βιβλίου %(book)s στη συλλογή %(collection)s"
 
-#: mcomix/library/backend.py:863
+#: mcomix/library/backend.py:866
 #, python-format
 msgid "! Could not rename collection to \"%s\""
 msgstr "! Δεν ήταν δυνατή η μετονομασία της συλλογής σε «%s»"
@@ -3824,16 +3829,16 @@ msgstr "! Δεν ήταν δυνατή η μετονομασία της συλλ
 #
 # File: src/librarybackend.py, line: 272
 # File: src/librarybackend.py, line: 274
-#: mcomix/library/backend.py:880 mcomix/library/backend.py:882
+#: mcomix/library/backend.py:883 mcomix/library/backend.py:885
 msgid "(Copy)"
 msgstr "(αντίγραφο)"
 
-#: mcomix/library/backend.py:1181
+#: mcomix/library/backend.py:1184
 msgid "Could not determine library database version!"
 msgstr ""
 "Δεν ήταν δυνατός ο προσδιορισμός της έκδοσης της βάσης της βιβλιοθήκης!"
 
-#: mcomix/library/backend.py:1231
+#: mcomix/library/backend.py:1234
 #, python-format
 msgid "Upgrading library database version from %(from)d to %(to)d."
 msgstr ""
@@ -3842,7 +3847,7 @@ msgstr ""
 #
 # File: src/library.py, line: 202
 #: mcomix/library/backend_types.py:437 mcomix/library/collection_area.py:223
-#: mcomix/library/control_area.py:97 mcomix/library/shelf.py:128
+#: mcomix/library/control_area.py:97 mcomix/library/shelf.py:158
 msgid "All books"
 msgstr "Όλα τα βιβλία"
 
@@ -4010,18 +4015,18 @@ msgstr "_Ταξινόμηση"
 msgid "Cover si_ze"
 msgstr "Μέγεθος ε_ξωφύλλου"
 
-#: mcomix/library/book_area.py:734
+#: mcomix/library/book_area.py:738
 msgid "Set library cover size"
 msgstr "Ορίζει το μέγεθος των εξωφύλλων στη βιβλιοθήκη"
 
-#: mcomix/library/book_area.py:1026
+#: mcomix/library/book_area.py:1030
 #, python-format
 msgid "Removed %(num)d book from '%(collection)s'."
 msgid_plural "Removed %(num)d books from '%(collection)s'."
 msgstr[0] "Αφαιρέθηκε %(num)d βιβλίο από τη «%(collection)s»."
 msgstr[1] "Αφαιρέθηκαν %(num)d βιβλία από τη «%(collection)s»."
 
-#: mcomix/library/book_area.py:1049 mcomix/library/collection_area.py:301
+#: mcomix/library/book_area.py:1053 mcomix/library/collection_area.py:301
 #, python-format
 msgid "Removed %d book from the library."
 msgid_plural "Removed %d books from the library."
@@ -4030,11 +4035,11 @@ msgstr[1] "Αφαιρέθηκαν %d βιβλία από τη βιβλιοθήκ
 
 #
 # File: src/library.py, line: 597
-#: mcomix/library/book_area.py:1071 mcomix/library/book_area.py:1092
+#: mcomix/library/book_area.py:1075 mcomix/library/book_area.py:1096
 msgid "Remove books from the library?"
 msgstr "Αφαίρεση βιβλίων από τη βιβλιοθήκη;"
 
-#: mcomix/library/book_area.py:1072
+#: mcomix/library/book_area.py:1076
 msgid ""
 "The selected books will be removed from the library. Any in a folder with no "
 "trash is deleted permanently and cannot be restored."
@@ -4043,28 +4048,28 @@ msgstr ""
 "κατάλογο χωρίς απορρίμματα θα διαγραφούν οριστικά και δεν θα μπορούν να "
 "ανακτηθούν."
 
-#: mcomix/library/book_area.py:1093
+#: mcomix/library/book_area.py:1097
 msgid ""
 "The selected books will be removed from the library and moved to the trash."
 msgstr ""
 "Τα επιλεγμένα βιβλία θα αφαιρεθούν από τη βιβλιοθήκη και θα μετακινηθούν στα "
 "απορρίμματα."
 
-#: mcomix/library/book_area.py:1118
+#: mcomix/library/book_area.py:1122
 #, python-format
 msgid "Delete %d book permanently?"
 msgid_plural "Delete %d books permanently?"
 msgstr[0] "Οριστική διαγραφή %d βιβλίου;"
 msgstr[1] "Οριστική διαγραφή %d βιβλίων;"
 
-#: mcomix/library/book_area.py:1242
+#: mcomix/library/book_area.py:1246
 #, python-format
 msgid "Remove the bookmarks in the deleted book?"
 msgid_plural "Remove the bookmarks in the %(count)d deleted books?"
 msgstr[0] "Αφαίρεση των σελιδοδεικτών στο βιβλίο που διαγράφηκε;"
 msgstr[1] "Αφαίρεση των σελιδοδεικτών στα %(count)d βιβλία που διαγράφηκαν;"
 
-#: mcomix/library/book_area.py:1415
+#: mcomix/library/book_area.py:1419
 msgid "Open with"
 msgstr "Άνοιγμα με"
 
@@ -4236,7 +4241,7 @@ msgstr "_Αναζήτηση:"
 
 #
 # File: src/library.py, line: 774
-#: mcomix/library/control_area.py:89
+#: mcomix/library/control_area.py:89 mcomix/library/shelf.py:87
 msgid ""
 "Display only those books that have the specified text string in their full "
 "path. The search is not case sensitive."
@@ -4331,7 +4336,7 @@ msgstr ""
 "κρατούν τις συλλογές τους, τους σελιδοδείκτες τους και τις σελίδες μέχρι τις "
 "οποίες διαβάστηκαν."
 
-#: mcomix/library/shelf.py:85
+#: mcomix/library/shelf.py:114
 msgid "The library holds no books yet. Add some in the library window."
 msgstr ""
 "Η βιβλιοθήκη δεν έχει ακόμη βιβλία. Προσθέστε μερικά στο παράθυρο της "

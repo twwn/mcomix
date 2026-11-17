@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-17 16:55+0100\n"
+"POT-Creation-Date: 2026-11-17 17:17+0100\n"
 "PO-Revision-Date: 2013-04-26 18:00+0100\n"
 "Last-Translator: Giovanni Scafora <giovanni@archlinux.org>\n"
 "Language-Team: Arch Linux Italian Team <giovanni@archlinux.org>\n"
@@ -56,7 +56,7 @@ msgid "! Could not read %s"
 msgstr "! Impossibile leggere %s"
 
 #: mcomix/archive_packer.py:213 mcomix/file_actions.py:1254
-#: mcomix/library/book_area.py:1179
+#: mcomix/library/book_area.py:1183
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! Impossibile rimuovere %(file)s: %(error)s"
@@ -167,7 +167,7 @@ msgstr "Modifica i segnalibri"
 msgid "C_lear bookmarks..."
 msgstr "Cance_lla i segnalibri..."
 
-#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1511 mcomix/openwith.py:437
+#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1523 mcomix/openwith.py:437
 #: mcomix/library/collection_area.py:159 mcomix/library/watchlist.py:69
 msgid "_Remove"
 msgstr "_Rimuovi"
@@ -188,7 +188,7 @@ msgstr "Tipo"
 msgid "Name"
 msgstr "Nome"
 
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:2698
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:2710
 #: mcomix/library/book_properties.py:108 mcomix/library/control_area.py:172
 msgid "Page"
 msgstr "Pagina"
@@ -553,11 +553,11 @@ msgstr "Il file viene spostato nel cestino."
 msgid "_Move to Trash"
 msgstr "_Sposta nel cestino"
 
-#: mcomix/file_actions.py:1101 mcomix/library/book_area.py:1122
+#: mcomix/file_actions.py:1101 mcomix/library/book_area.py:1126
 msgid "It does not go to the trash and cannot be restored."
 msgstr "Non viene spostato nel cestino e non potrà essere ripristinato."
 
-#: mcomix/file_actions.py:1109 mcomix/library/book_area.py:1114
+#: mcomix/file_actions.py:1109 mcomix/library/book_area.py:1118
 #, python-format
 msgid "Delete \"%s\" permanently?"
 msgstr "Vuoi eliminare definitivamente \"%s\"?"
@@ -567,7 +567,7 @@ msgstr "Vuoi eliminare definitivamente \"%s\"?"
 msgid "Could not move \"%s\" to the trash"
 msgstr "Impossibile spostare \"%s\" nel cestino"
 
-#: mcomix/file_actions.py:1213 mcomix/library/book_area.py:1191
+#: mcomix/file_actions.py:1213 mcomix/library/book_area.py:1195
 #, python-format
 msgid "%d book could not be moved to the trash."
 msgid_plural "%d books could not be moved to the trash."
@@ -607,7 +607,7 @@ msgstr[1] ""
 "Il file non c'è più e i suoi %d segnalibri non possono più essere aperti."
 
 #: mcomix/file_actions.py:1396 mcomix/file_actions.py:1554
-#: mcomix/thumbnail_tools.py:379
+#: mcomix/thumbnail_tools.py:386
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr "! Impossibile spostare %(file)s in %(directory)s: %(error)s"
@@ -955,7 +955,7 @@ msgstr "Mantieni trasformazione"
 #: mcomix/keybindings.py:99 mcomix/keybindings.py:100 mcomix/keybindings.py:101
 #: mcomix/keybindings.py:102 mcomix/keybindings.py:103
 #: mcomix/keybindings.py:104 mcomix/keybindings.py:105
-#: mcomix/keybindings.py:175 mcomix/keybindings.py:177
+#: mcomix/keybindings.py:175 mcomix/keybindings.py:178
 #: mcomix/properties_dialog.py:52 mcomix/ui.py:533
 msgid "Image"
 msgstr "Immagine"
@@ -1146,6 +1146,7 @@ msgstr "Elimina"
 #: mcomix/keybindings.py:166 mcomix/keybindings.py:168
 #: mcomix/keybindings.py:169 mcomix/keybindings.py:173
 #: mcomix/keybindings.py:174 mcomix/keybindings.py:176
+#: mcomix/keybindings.py:177
 msgid "File"
 msgstr "File"
 
@@ -1217,55 +1218,59 @@ msgstr "Apri cartella contenente"
 msgid "Library"
 msgstr "Libreria"
 
-#: mcomix/keybindings.py:177 mcomix/ui.py:574
+#: mcomix/keybindings.py:177
+msgid "Search the library's covers"
+msgstr "Cerca nelle copertine della libreria"
+
+#: mcomix/keybindings.py:178 mcomix/ui.py:574
 msgid "Invert image colors"
 msgstr "Inverti i colori dell'immagine"
 
-#: mcomix/keybindings.py:180
+#: mcomix/keybindings.py:181
 msgid "Add bookmark"
 msgstr "Aggiungi un segnalibro"
 
-#: mcomix/keybindings.py:180 mcomix/keybindings.py:181
+#: mcomix/keybindings.py:181 mcomix/keybindings.py:182
 msgid "Bookmarks"
 msgstr "Segnalibri"
 
-#: mcomix/keybindings.py:181
+#: mcomix/keybindings.py:182
 msgid "Edit bookmarks"
 msgstr "Modifica i segnalibri"
 
-#: mcomix/keybindings.py:189 mcomix/openwith.py:664
+#: mcomix/keybindings.py:190 mcomix/openwith.py:664
 msgid "Command"
 msgstr "Comando"
 
-#: mcomix/keybindings.py:190
+#: mcomix/keybindings.py:191
 msgid "External commands"
 msgstr "Comandi esterni"
 
-#: mcomix/keybindings.py:267
+#: mcomix/keybindings.py:268
 #, python-format
 msgid "Keybinding for \"%(action)s\" overrides hotkey for another action."
 msgstr ""
 "L'associazione del tasto \"%(action)s\" sovrascrive il tasto di scelta "
 "rapida di un'altra azione."
 
-#: mcomix/keybindings.py:460 mcomix/keybindings.py:468
+#: mcomix/keybindings.py:461 mcomix/keybindings.py:469
 #, python-format
 msgid "Couldn't load keybindings: %s"
 msgstr "Impossibile caricare le associazioni dei tasti: %s"
 
-#: mcomix/last_read_page.py:255 mcomix/thumbnail_tools.py:351
+#: mcomix/last_read_page.py:255 mcomix/thumbnail_tools.py:358
 #, python-format
 msgid "! Could not remove file \"%s\""
 msgstr "! Impossibile rimuovere il file \"%s\""
 
-#: mcomix/main.py:1504
+#: mcomix/main.py:1516
 #, python-format
 msgid "Remove the page picked out of \"%s\"?"
 msgid_plural "Remove the pages picked out of \"%s\"?"
 msgstr[0] "Rimuovere la pagina scelta da «%s»?"
 msgstr[1] "Rimuovere le pagine scelte da «%s»?"
 
-#: mcomix/main.py:1507
+#: mcomix/main.py:1519
 msgid ""
 "They are taken out of the archive on disk, which is written again at once. "
 "Leaving the book without removing them forgets which pages they were."
@@ -1273,16 +1278,16 @@ msgstr ""
 "Vengono tolte dall'archivio su disco, che viene riscritto subito. Lasciare "
 "il libro senza rimuoverle fa dimenticare quali pagine erano."
 
-#: mcomix/main.py:1510
+#: mcomix/main.py:1522
 msgid "_Keep them"
 msgstr "_Mantieni"
 
-#: mcomix/main.py:1734
+#: mcomix/main.py:1746
 #, python-format
 msgid "Animation speed: %s"
 msgstr "Velocità dell'animazione: %s"
 
-#: mcomix/main.py:2402
+#: mcomix/main.py:2414
 msgid "SLIDESHOW"
 msgstr "PRESENTAZIONE"
 
@@ -2886,7 +2891,7 @@ msgstr "design dell'icona"
 msgid "Vector icon"
 msgstr "icona vettoriale"
 
-#: mcomix/thumbnail_tools.py:684
+#: mcomix/thumbnail_tools.py:691
 #, python-format
 msgid "! Could not save thumbnail \"%(thumbpath)s\": %(error)s"
 msgstr "! Impossibile salvare la miniatura \"%(thumbpath)s\": %(error)s"
@@ -3388,52 +3393,52 @@ msgstr "Aggiunta di '%s' in corso..."
 msgid "! Non-existent book #%i"
 msgstr "! #%i libro inesistente"
 
-#: mcomix/library/backend.py:355
+#: mcomix/library/backend.py:356
 #, python-format
 msgid "! Could not get cover for book \"%s\""
 msgstr "! Impossibile prelevare la copertina del libro \"%s\""
 
-#: mcomix/library/backend.py:459 mcomix/library/backend.py:476
-#: mcomix/library/backend.py:489 mcomix/library/backend.py:518
-#: mcomix/library/shelf.py:124
+#: mcomix/library/backend.py:460 mcomix/library/backend.py:477
+#: mcomix/library/backend.py:490 mcomix/library/backend.py:519
+#: mcomix/library/shelf.py:154
 msgid "Recent"
 msgstr "_Recente"
 
-#: mcomix/library/backend.py:598 mcomix/library/backend.py:645
+#: mcomix/library/backend.py:599 mcomix/library/backend.py:646
 #, python-format
 msgid "! Could not add book \"%s\" to the library"
 msgstr "! Impossibile aggiungere il libro \"%s\" alla libraria"
 
-#: mcomix/library/backend.py:674 mcomix/library/backend.py:754
+#: mcomix/library/backend.py:675 mcomix/library/backend.py:757
 #, python-format
 msgid "! Could not move book \"%s\" in the library"
 msgstr "! Impossibile spostare il libro \"%s\" nella libreria"
 
-#: mcomix/library/backend.py:804
+#: mcomix/library/backend.py:807
 #, python-format
 msgid "! Could not add collection \"%s\""
 msgstr "! Impossibile aggiungere la collezione \"%s\""
 
-#: mcomix/library/backend.py:836
+#: mcomix/library/backend.py:839
 #, python-format
 msgid "! Could not add book %(book)s to collection %(collection)s"
 msgstr ""
 "! Impossibile aggiungere il libro %(book)s alla collezione %(collection)s"
 
-#: mcomix/library/backend.py:863
+#: mcomix/library/backend.py:866
 #, python-format
 msgid "! Could not rename collection to \"%s\""
 msgstr "! Impossibile rinominare la collezione in \"%s\""
 
-#: mcomix/library/backend.py:880 mcomix/library/backend.py:882
+#: mcomix/library/backend.py:883 mcomix/library/backend.py:885
 msgid "(Copy)"
 msgstr "(Copia)"
 
-#: mcomix/library/backend.py:1181
+#: mcomix/library/backend.py:1184
 msgid "Could not determine library database version!"
 msgstr "Impossibile determinare la versione del database della libreria!"
 
-#: mcomix/library/backend.py:1231
+#: mcomix/library/backend.py:1234
 #, python-format
 msgid "Upgrading library database version from %(from)d to %(to)d."
 msgstr ""
@@ -3441,7 +3446,7 @@ msgstr ""
 "%(from)d a %(to)d."
 
 #: mcomix/library/backend_types.py:437 mcomix/library/collection_area.py:223
-#: mcomix/library/control_area.py:97 mcomix/library/shelf.py:128
+#: mcomix/library/control_area.py:97 mcomix/library/shelf.py:158
 msgid "All books"
 msgstr "Tutti i libri"
 
@@ -3607,29 +3612,29 @@ msgstr "_Ordina"
 msgid "Cover si_ze"
 msgstr "Dimensione della coper_tina"
 
-#: mcomix/library/book_area.py:734
+#: mcomix/library/book_area.py:738
 msgid "Set library cover size"
 msgstr "Imposta la dimensione della copertina della libreria"
 
-#: mcomix/library/book_area.py:1026
+#: mcomix/library/book_area.py:1030
 #, python-format
 msgid "Removed %(num)d book from '%(collection)s'."
 msgid_plural "Removed %(num)d books from '%(collection)s'."
 msgstr[0] "Rimosso %(num)d libro da '%(collection)s'."
 msgstr[1] "Rimossi %(num)d libri da '%(collection)s'."
 
-#: mcomix/library/book_area.py:1049 mcomix/library/collection_area.py:301
+#: mcomix/library/book_area.py:1053 mcomix/library/collection_area.py:301
 #, python-format
 msgid "Removed %d book from the library."
 msgid_plural "Removed %d books from the library."
 msgstr[0] "Rimossoo %d libro dalla libreria."
 msgstr[1] "Rimossi %d libri dalla libreria."
 
-#: mcomix/library/book_area.py:1071 mcomix/library/book_area.py:1092
+#: mcomix/library/book_area.py:1075 mcomix/library/book_area.py:1096
 msgid "Remove books from the library?"
 msgstr "Vuoi rimuovere i libri dalla libreria?"
 
-#: mcomix/library/book_area.py:1072
+#: mcomix/library/book_area.py:1076
 msgid ""
 "The selected books will be removed from the library. Any in a folder with no "
 "trash is deleted permanently and cannot be restored."
@@ -3638,27 +3643,27 @@ msgstr ""
 "senza cestino saranno eliminati definitivamente e non potranno essere "
 "ripristinati."
 
-#: mcomix/library/book_area.py:1093
+#: mcomix/library/book_area.py:1097
 msgid ""
 "The selected books will be removed from the library and moved to the trash."
 msgstr ""
 "I libri selezionati saranno rimossi dalla libreria e spostati nel cestino."
 
-#: mcomix/library/book_area.py:1118
+#: mcomix/library/book_area.py:1122
 #, python-format
 msgid "Delete %d book permanently?"
 msgid_plural "Delete %d books permanently?"
 msgstr[0] "Vuoi eliminare definitivamente %d libro?"
 msgstr[1] "Vuoi eliminare definitivamente %d libri?"
 
-#: mcomix/library/book_area.py:1242
+#: mcomix/library/book_area.py:1246
 #, python-format
 msgid "Remove the bookmarks in the deleted book?"
 msgid_plural "Remove the bookmarks in the %(count)d deleted books?"
 msgstr[0] "Eliminare i segnalibri nel libro eliminato?"
 msgstr[1] "Eliminare i segnalibri nei %(count)d libri eliminati?"
 
-#: mcomix/library/book_area.py:1415
+#: mcomix/library/book_area.py:1419
 msgid "Open with"
 msgstr "Apri con"
 
@@ -3796,7 +3801,7 @@ msgstr ""
 msgid "_Search:"
 msgstr "_Cerca:"
 
-#: mcomix/library/control_area.py:89
+#: mcomix/library/control_area.py:89 mcomix/library/shelf.py:87
 msgid ""
 "Display only those books that have the specified text string in their full "
 "path. The search is not case sensitive."
@@ -3889,7 +3894,7 @@ msgstr ""
 "conservano le loro collezioni, i segnalibri e le pagine fino a cui sono "
 "stati letti."
 
-#: mcomix/library/shelf.py:85
+#: mcomix/library/shelf.py:114
 msgid "The library holds no books yet. Add some in the library window."
 msgstr ""
 "La libreria non contiene ancora libri. Aggiungine nella finestra della "

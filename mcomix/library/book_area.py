@@ -554,6 +554,10 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         """The path of every book shown, in the order shown."""
         return [item.path for item in self._each_item()]
 
+    def focus_covers(self) -> None:
+        """Give the keyboard to the covers."""
+        self._covers.grab_focus()
+
     def remove_books(self, book_ids: Iterable[int]) -> None:
         """Remove the books with <book_ids> from the _BookArea."""
         wanted = set(book_ids)
