@@ -1417,24 +1417,7 @@ class FileHandler:
         """
         if prefs['shuffle books']:
             return self._open_shuffled_archive(+1)
-        if self.archive_type is not None:
-
-            files = self._opened_provider.list_files(
-                file_provider.FileProvider.ARCHIVES)
-            absolute_path = os.path.abspath(self._base_path or '')
-            if absolute_path not in files:
-                return False
-            current_index = files.index(absolute_path)
-
-            for path in files[current_index + 1:]:
-                if archive_tools.archive_mime_type(path) is not None \
-                        and not archive_tools.is_later_volume(path):
-                    # open_file() closes this book itself, once it has
-                    # asked about changes that have not been written.
-                    self.open_file(path, keep_fileprovider=True)
-                    return True
-
-        return False
+        return self._open_archive_beside(+1)
 
     def open_previous_archive(self, *args: object) -> bool:
         """Open the archive that comes directly before the currently loaded
@@ -1446,23 +1429,32 @@ class FileHandler:
         """
         if prefs['shuffle books']:
             return self._open_shuffled_archive(-1)
-        if self.archive_type is not None:
+        return self._open_archive_beside(-1)
 
-            files = self._opened_provider.list_files(
-                file_provider.FileProvider.ARCHIVES)
-            absolute_path = os.path.abspath(self._base_path or '')
-            if absolute_path not in files:
-                return False
-            current_index = files.index(absolute_path)
-
-            for path in reversed(files[:current_index]):
-                if archive_tools.archive_mime_type(path) is not None \
-                        and not archive_tools.is_later_volume(path):
-                    # See open_next_archive().
-                    self.open_file(path, prefs['open first file in prev archive']-1,
-                                   keep_fileprovider=True)
-                    return True
-
+    def _open_archive_beside(self, step: int) -> bool:
+        """Open the archive after (<step> +1) or before (-1) the open one
+        in its folder's listing, and say whether there was one.  A file
+        named as an archive that does not read as one is passed over,
+        as are the later volumes of RAR sets."""
+        if self.archive_type is None:
+            return False
+        files = self._opened_provider.list_files(
+            file_provider.FileProvider.ARCHIVES)
+        absolute_path = os.path.abspath(self._base_path or '')
+        if absolute_path not in files:
+            return False
+        current_index = files.index(absolute_path)
+        beside = (files[current_index + 1:] if step > 0
+                  else files[:current_index][::-1])
+        for path in beside:
+            if archive_tools.archive_mime_type(path) is not None \
+                    and not archive_tools.is_later_volume(path):
+                # open_file() closes this book itself, once it has
+                # asked about changes that have not been written.
+                start_page = 0 if step > 0 else \
+                    prefs['open first file in prev archive'] - 1
+                self.open_file(path, start_page, keep_fileprovider=True)
+                return True
         return False
 
     def next_archive(self, *args: object) -> bool:
@@ -1576,7 +1568,7 @@ class FileHandler:
 
         if self._file_provider is None:
             return False
-        return self._once_dealt_with(self._open_next_directory)
+        return self._once_dealt_with(lambda: self._open_directory_beside(+1))
 
     def _once_dealt_with(self, step: "Callable[[], bool]") -> bool:
         """Run <step> once the open book has been dealt with, and return
@@ -1585,8 +1577,9 @@ class FileHandler:
         self._window.file_actions.before_closing(lambda: answer.append(step()))
         return answer[0] if answer else True
 
-    def _open_next_directory(self) -> bool:
-        """open_next_directory(), the book having been dealt with."""
+    def _open_directory_beside(self, step: int) -> bool:
+        """open_next_directory() (<step> +1) or open_previous_directory()
+        (-1), the book having been dealt with."""
         if self._file_provider is None:
             return False
 
@@ -1599,12 +1592,20 @@ class FileHandler:
 
         # Directories with no book in them are passed over; at the end
         # of the shelf the provider is left where it was.
-        if not self._file_provider.next_directory(has_books):
+        move = (self._file_provider.next_directory if step > 0
+                else self._file_provider.previous_directory)
+        if not move(has_books):
             return False
 
         with self._replacing():
             self._close()
-            self.open_file(files[0], keep_fileprovider=True)
+            if step > 0:
+                path, start_page = files[0], 0
+            else:
+                path = files[prefs['open first file in prev directory'] - 1]
+                start_page = (prefs['open first file in prev archive']
+                              or prefs['open first file in prev directory']) - 1
+            self.open_file(path, start_page, keep_fileprovider=True)
         # Whatever opened - a book of the other kind - the walk goes on
         # looking for the kind it set out over.
         self._directory_listmode = listmode
@@ -1640,34 +1641,7 @@ class FileHandler:
 
         if self._file_provider is None:
             return False
-        return self._once_dealt_with(self._open_previous_directory)
-
-    def _open_previous_directory(self) -> bool:
-        """open_previous_directory(), the book having been dealt with."""
-        if self._file_provider is None:
-            return False
-
-        listmode = self._directory_listmode
-        files: list[str] = []
-
-        def has_books() -> bool:
-            files[:] = self._books_in_directory(listmode)
-            return bool(files)
-
-        # See _open_next_directory().
-        if not self._file_provider.previous_directory(has_books):
-            return False
-
-        with self._replacing():
-            self._close()
-            path = files[prefs['open first file in prev directory']-1]
-            self.open_file(path, (
-                prefs['open first file in prev archive'] or
-                prefs['open first file in prev directory'])-1,
-                           keep_fileprovider=True)
-        # See open_next_directory().
-        self._directory_listmode = listmode
-        return True
+        return self._once_dealt_with(lambda: self._open_directory_beside(-1))
 
     def file_is_available(self, filepath: str | None) -> bool:
         """ Returns True if the file specified by "filepath" is available
