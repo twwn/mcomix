@@ -105,9 +105,14 @@ class ThumbnailListViewTest(MComixTest):
     def test_the_rows_bound_together_are_asked_for_after_and_in_order(self):
         """Asked for as each was bound, the first thumbnails were made
         while the rest were still being bound, which slowed both."""
+        # One worker, so that the thumbnails are made in the order asked:
+        # several finish in whatever order they like.
+        self.view._thread._max_threads = 1
         self.view.set_pages(range(1, self.ROWS + 1))
         self.assertEqual([], self.asked)
-        self.assertTrue(wait_for(lambda: self.asked, seconds=5))
+        # Ten of them, not the first only: what the worker had reached by
+        # the first said nothing of the order of the rest.
+        self.assertTrue(wait_for(lambda: len(self.asked) >= 10, seconds=5))
         self.assertEqual(sorted(self.asked[:10]), self.asked[:10])
         self.assertEqual(1, self.asked[0])
 
