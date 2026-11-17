@@ -939,7 +939,13 @@ class FileHandler:
     def archive_written(self) -> None:
         """Say that MComix has just written the open archive itself."""
         if self._archive_stamp is not None:
+            before = self._written_stamp or self._archive_stamp
             self._written_stamp = self._stamp(self._archive_stamp[0])
+            if self._written_stamp is not None:
+                # Kept in its place in the folder's order, sorted by
+                # date or size: see file_provider.written_over().
+                file_provider.written_over(self._written_stamp[0],
+                                           before[1:], self._written_stamp[1:])
 
     def archive_changed_outside(self) -> bool:
         """Whether the open archive is no longer the file MComix opened

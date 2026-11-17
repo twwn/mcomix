@@ -28,24 +28,43 @@ from collections.abc import Callable, Sequence
 # ancient, losing its place, rather than taking the whole listing with it.
 
 
-def _modification_time(filename: str) -> float:
-    """ Returns the time <filename> was last modified, or 0 if it
-    cannot be read. """
+#: The books MComix has written over this session, by absolute path:
+#: the (modification time in ns, size) each is sorted by, and the
+#: (modification time in ns, size) of the file MComix wrote.
+_SORTED_AS: dict[str, tuple[tuple[int, int], tuple[int, int]]] = {}
 
+
+def written_over(path: str, before: tuple[int, int],
+                 after: tuple[int, int]) -> None:
+    """Say that MComix has written the book at <path> again, which was
+    the file of (modification time in ns, size) <before> and is now the
+    one of <after>.
+
+    Sorted by date or by size, the book would leave its place among
+    the books beside it: a save made it the newest of them and changed
+    its size.  Next and Previous archive then led on from wherever it
+    had landed, passing over books, and from the end of the folder into
+    the next one.  The book stays where it was for the rest of the
+    session, for as long as the file is the one MComix wrote; one that
+    another program writes after it sorts by what it is.
+    """
+    kept = _SORTED_AS.get(path)
+    sorted_as = kept[0] if kept is not None and kept[1] == before else before
+    _SORTED_AS[path] = (sorted_as, after)
+
+
+def _sort_stamp(filename: str) -> tuple[int, int]:
+    """The modification time in ns and the size <filename> is sorted
+    by (see written_over()), or 0 for each where it cannot be read."""
     try:
-        return os.path.getmtime(filename)
+        status = os.stat(filename)
     except OSError:
-        return 0.0
-
-
-def _file_size(filename: str) -> int:
-    """ Returns the size of <filename> in bytes, or 0 if it cannot be
-    read. """
-
-    try:
-        return os.path.getsize(filename)
-    except OSError:
-        return 0
+        return 0, 0
+    stamp = status.st_mtime_ns, status.st_size
+    kept = _SORTED_AS.get(filename)
+    if kept is not None and kept[1] == stamp:
+        return kept[0]
+    return stamp
 
 
 def _every_file(path: str) -> bool:
@@ -171,12 +190,12 @@ class FileProvider:
         elif preferences.prefs['sort by'] == constants.SORT_LAST_MODIFIED:
             # Most recently modified file first
             files.sort(key=lambda filename: (
-                -_modification_time(filename),
+                -_sort_stamp(filename)[0],
                 tools.AlphanumericSortKey(filename)))
         elif preferences.prefs['sort by'] == constants.SORT_SIZE:
             # Smallest file first
             files.sort(key=lambda filename: (
-                _file_size(filename), tools.AlphanumericSortKey(filename)))
+                _sort_stamp(filename)[1], tools.AlphanumericSortKey(filename)))
         # else: don't sort at all: use OS ordering.
 
         # Default is ascending.

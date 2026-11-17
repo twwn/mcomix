@@ -387,6 +387,81 @@ class SortFilesTest(MComixTest):
                     FileProvider.sort_files(ordered)
                     self.assertEqual(expected, ordered)
 
+    def _books(self) -> list[str]:
+        """Three books, each older and smaller than the one after it."""
+        directory = os.path.join(self.tmp_dir, 'series')
+        os.makedirs(directory)
+        books = []
+        for number in (1, 2, 3):
+            path = os.path.join(directory, 'Book %d.cbz' % number)
+            with open(path, 'wb') as book:
+                book.write(b'x' * 10 * number)
+            os.utime(path, (1_000_000_000 + number, 1_000_000_000 + number))
+            books.append(path)
+        self.addCleanup(file_provider._SORTED_AS.clear)
+        return books
+
+    @staticmethod
+    def _stamp(path: str) -> tuple[int, int]:
+        status = os.stat(path)
+        return status.st_mtime_ns, status.st_size
+
+    def _write(self, path: str, size: int, mtime: int) -> None:
+        with open(path, 'wb') as book:
+            book.write(b'x' * size)
+        os.utime(path, (mtime, mtime))
+
+    def _orders(self) -> dict[int, list[str]]:
+        """The books' names in the order each key sorts them in."""
+        orders = {}
+        directory = os.path.join(self.tmp_dir, 'series')
+        for key in (constants.SORT_LAST_MODIFIED, constants.SORT_SIZE):
+            prefs['sort by'] = key
+            prefs['sort order'] = constants.SORT_ASCENDING
+            files = [os.path.join(directory, name)
+                     for name in os.listdir(directory)]
+            FileProvider.sort_files(files)
+            orders[key] = [os.path.basename(path) for path in files]
+        return orders
+
+    def test_a_book_mcomix_wrote_keeps_its_place(self) -> None:
+        """A save made the book the newest and the largest, and Next
+        archive led on from where it landed: past the books between,
+        or out of the folder."""
+        books = self._books()
+        before = self._stamp(books[1])
+        self._write(books[1], 100, 1_000_000_100)
+        file_provider.written_over(books[1], before, self._stamp(books[1]))
+        self.assertEqual({
+            constants.SORT_LAST_MODIFIED: ['Book 3.cbz', 'Book 2.cbz',
+                                           'Book 1.cbz'],
+            constants.SORT_SIZE: ['Book 1.cbz', 'Book 2.cbz', 'Book 3.cbz'],
+        }, self._orders())
+
+    def test_a_book_mcomix_wrote_twice_keeps_its_first_place(self) -> None:
+        books = self._books()
+        before = self._stamp(books[1])
+        for time in (1_000_000_100, 1_000_000_200):
+            self._write(books[1], 100, time)
+            after = self._stamp(books[1])
+            file_provider.written_over(books[1], before, after)
+            before = after
+        self.assertEqual(['Book 1.cbz', 'Book 2.cbz', 'Book 3.cbz'],
+                         self._orders()[constants.SORT_SIZE])
+
+    def test_a_book_another_program_wrote_after_sorts_by_what_it_is(
+            self) -> None:
+        books = self._books()
+        before = self._stamp(books[1])
+        self._write(books[1], 100, 1_000_000_100)
+        file_provider.written_over(books[1], before, self._stamp(books[1]))
+        self._write(books[1], 200, 1_000_000_200)
+        self.assertEqual({
+            constants.SORT_LAST_MODIFIED: ['Book 2.cbz', 'Book 3.cbz',
+                                           'Book 1.cbz'],
+            constants.SORT_SIZE: ['Book 1.cbz', 'Book 3.cbz', 'Book 2.cbz'],
+        }, self._orders())
+
 class ExtensionlessPictureTest(MComixTest):
 
     """A picture saved without an extension is a page of its folder

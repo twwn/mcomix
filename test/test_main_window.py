@@ -39,6 +39,7 @@ from mcomix import keybindings
 from mcomix import layout
 from mcomix import file_actions
 from mcomix import file_mover
+from mcomix import file_provider
 from mcomix import main
 from mcomix import message_dialog
 from mcomix import rename_dialog
@@ -3075,6 +3076,36 @@ class MainWindowTest(MComixTest):
             self._pump()
             self.assertEqual([], self._overwrite_prompts())
         self.assertEqual([True, True], told)
+
+    def test_a_book_saved_leads_on_to_the_book_after_it(self):
+        """Sorted newest first, the save made the book the first of its
+        folder, and Next archive skipped the books that had come after
+        it; sorted oldest first, it was the last, and Next archive went
+        on into the next folder."""
+        self.addCleanup(file_provider._SORTED_AS.clear)
+        folder = os.path.join(self.tmp_dir, 'series')
+        os.makedirs(folder)
+        books = []
+        for number in (1, 2, 3, 4):
+            path = os.path.join(folder, 'Book %d.cbz' % number)
+            shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'),
+                        path)
+            # Newest first: Book 4, 3, 2, 1.
+            os.utime(path, (1_000_000_000 + number, 1_000_000_000 + number))
+            books.append(path)
+        prefs['sort by'] = constants.SORT_LAST_MODIFIED
+        handler = self.window.filehandler
+        handler.open_file(books[2])
+        self._ready()
+        self.window.select_page(1)
+        with self._quietly():
+            self.window.file_actions.delete_page()
+        self._pump()
+        self.assertTrue(self.window.file_actions.save_archive())
+        self.assertEqual((2, 4), handler.get_file_number())
+        self.assertTrue(handler.open_next_archive())
+        self.assertTrue(wait_for(lambda: handler.file_loaded, seconds=20))
+        self.assertEqual(books[1], handler.get_path_to_base())
 
     def test_an_archive_gone_meanwhile_is_written_back_unasked(self):
         """Ruled: an archive deleted from outside is still offered for
