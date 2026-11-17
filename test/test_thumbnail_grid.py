@@ -7,13 +7,15 @@ and reordering by dragging, which is a drag source and a drop target on
 every cell.
 """
 
-import time
-
-from gi.repository import GdkPixbuf, Gtk
+from gi.repository import GdkPixbuf, GLib, Gtk
 
 from . import MComixTest, pump, wait_for
 
 from mcomix import thumbnail_list
+
+#: How many frames a test lets go by for the grid to lay itself out and
+#: scroll.
+FRAMES = 6
 
 
 class ThumbnailGridViewTest(MComixTest):
@@ -256,13 +258,18 @@ class MovingAScrolledEntryTest(MComixTest):
         self.window.destroy()
         super().tearDown()
 
-    @staticmethod
-    def _settle():
+    def _settle(self):
         # The scroll happens when the view is next laid out, which is a
-        # frame away rather than an idle one.
-        for _ in range(25):
-            pump()
-            time.sleep(0.02)
+        # frame away rather than an idle one: let a few frames go by,
+        # counted on the window's frame clock rather than slept out.
+        ticks = []
+
+        def tick(widget, clock):
+            ticks.append(clock.get_frame_counter())
+            return GLib.SOURCE_CONTINUE if len(ticks) < FRAMES \
+                else GLib.SOURCE_REMOVE
+        self.window.add_tick_callback(tick)
+        self.assertTrue(wait_for(lambda: len(ticks) >= FRAMES, seconds=5))
 
     def _focused_cell(self):
         cells = [cell for cell in self.view._each_cell()

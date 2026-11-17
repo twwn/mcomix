@@ -162,10 +162,24 @@ class RecentFilesMenuTest(MComixTest):
                          recent.RecentFilesMenu._LIMIT)
 
     def test_the_most_recent_comes_first(self):
-        self._add('older.cbz')
-        time.sleep(1.1)  # the list stores whole seconds
-        self._add('newer.cbz')
-        menu = recent.RecentFilesMenu(None, self.window)
+        """By when each was last modified, not the order they were
+        added in.  The list keeps whole seconds, so the two are given
+        their times here rather than a second of waiting between them."""
+        newer = self._add('newer.cbz')
+        older = self._add('older.cbz')
+        stamps = {Gio.File.new_for_path(older).get_uri(): 1_000_000_000,
+                  Gio.File.new_for_path(newer).get_uri(): 1_000_000_001}
+        real = Gtk.RecentInfo.get_modified
+
+        def get_modified(info):
+            stamp = stamps.get(info.get_uri())
+            if stamp is None:
+                return real(info)
+            return GLib.DateTime.new_from_unix_utc(stamp)
+
+        with unittest.mock.patch.object(Gtk.RecentInfo, 'get_modified',
+                                        get_modified):
+            menu = recent.RecentFilesMenu(None, self.window)
         self.assertEqual(self._labels(menu)[:2], ['newer.cbz', 'older.cbz'])
 
     def test_an_underscore_in_a_file_name_is_not_eaten(self):

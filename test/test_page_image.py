@@ -1,8 +1,10 @@
+import os
 import statistics
 import time
 import unittest.mock
 
 from gi.repository import Gdk, GdkPixbuf, Gtk
+from PIL import Image
 
 from . import MComixTest, get_testfile_path, pump, wait_for
 
@@ -13,6 +15,22 @@ from mcomix.page_image import PageImage
 
 def get_image_path(basename):
     return get_testfile_path('images', basename)
+
+
+#: How long each frame of a quick animation lasts, in milliseconds.
+QUICK_FRAME = 40
+
+
+def quick_animation(directory):
+    """An animated GIF of five frames of QUICK_FRAME each, written into
+    <directory>.  animated.gif shows its first frame for a second, so
+    seeing that nothing more was drawn took two seconds of waiting."""
+    path = os.path.join(directory, 'quick.gif')
+    frames = [Image.new('RGB', (8, 8), colour)
+              for colour in ('red', 'green', 'blue', 'white', 'black')]
+    frames[0].save(path, save_all=True, append_images=frames[1:],
+                   duration=QUICK_FRAME, loop=0)
+    return path
 
 
 class PageImageTest(MComixTest):
@@ -129,22 +147,22 @@ class PageImageTest(MComixTest):
                           'a single picture left a thread running')
 
     def test_a_still_page_stops_the_animation_before_it(self):
-        animation = image_tools.load_pixbuf(get_image_path('animated.gif'))
+        animation = image_tools.load_pixbuf(quick_animation(self.tmp_dir))
         self.image.show_pixbuf(animation)
         self.image.show_pixbuf(image_tools.load_pixbuf(get_image_path('blue.png')))
         still = self.image.get_paintable()
         wait_for(lambda: self.image.get_paintable() is not still,
-                 seconds=2)
+                 seconds=10 * QUICK_FRAME / 1000)
         self.assertIs(self.image.get_paintable(), still,
                       'the page went on animating after it had been replaced')
 
     def test_clearing_a_page_stops_the_animation(self):
-        animation = image_tools.load_pixbuf(get_image_path('animated.gif'))
+        animation = image_tools.load_pixbuf(quick_animation(self.tmp_dir))
         self.image.show_pixbuf(animation)
         self.image.clear()
         self.assertIsNone(self.image.get_paintable())
         wait_for(lambda: self.image.get_paintable() is not None,
-                 seconds=2)
+                 seconds=10 * QUICK_FRAME / 1000)
         self.assertIsNone(self.image.get_paintable(),
                           'the page went on animating after it was cleared')
 
@@ -229,14 +247,14 @@ class PageImageTest(MComixTest):
 
     def test_a_paused_animation_draws_no_more_frames(self):
         self.image.show_pixbuf(
-            image_tools.load_pixbuf(get_image_path('animated.gif')))
+            image_tools.load_pixbuf(quick_animation(self.tmp_dir)))
         self.assertTrue(self.image.is_animating())
         self.image.set_paused(True)
         self.assertTrue(self.image.is_paused())
         # A frame already handed to the main loop may still arrive.
         pump()
         frames = self._frames_of(self.image.get_paintable())
-        wait_for(lambda: bool(frames), seconds=1)
+        wait_for(lambda: bool(frames), seconds=10 * QUICK_FRAME / 1000)
         self.assertEqual([], frames, 'a paused animation went on')
 
     def test_a_resumed_animation_goes_on(self):
