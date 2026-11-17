@@ -7,9 +7,9 @@ and reordering by dragging, which is a drag source and a drop target on
 every cell.
 """
 
-from gi.repository import GdkPixbuf, GLib, Gtk
+from gi.repository import GdkPixbuf, Gtk
 
-from . import MComixTest, pump, wait_for
+from . import MComixTest, pump, wait_for, wait_frames
 
 from mcomix import thumbnail_list
 
@@ -260,16 +260,8 @@ class MovingAScrolledEntryTest(MComixTest):
 
     def _settle(self):
         # The scroll happens when the view is next laid out, which is a
-        # frame away rather than an idle one: let a few frames go by,
-        # counted on the window's frame clock rather than slept out.
-        ticks = []
-
-        def tick(widget, clock):
-            ticks.append(clock.get_frame_counter())
-            return GLib.SOURCE_CONTINUE if len(ticks) < FRAMES \
-                else GLib.SOURCE_REMOVE
-        self.window.add_tick_callback(tick)
-        self.assertTrue(wait_for(lambda: len(ticks) >= FRAMES, seconds=5))
+        # frame away rather than an idle one.
+        self.assertTrue(wait_frames(self.window, FRAMES))
 
     def _focused_cell(self):
         cells = [cell for cell in self.view._each_cell()

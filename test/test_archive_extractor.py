@@ -14,7 +14,7 @@ import os
 import threading
 import unittest.mock
 
-from . import MComixTest, get_testfile_path, wait_for
+from . import MComixTest, get_testfile_path, pump, wait_for
 
 from mcomix import archive_extractor
 from mcomix import archive_tools
@@ -386,8 +386,9 @@ class NoRoomTest(_ExtractorTest):
             self.assertTrue(
                 wait_for(lambda: all(self.extractor.is_ready(name)
                                      for name in names), seconds=5))
-            # The answer comes back through the idle queue.
-            wait_for(lambda: told, seconds=1)
+            # The answer comes back through the idle queue, put there
+            # before the page it is about was marked done.
+            pump()
         return told
 
     def _assert_said_once(self, told):

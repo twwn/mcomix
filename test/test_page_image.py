@@ -1,5 +1,6 @@
 import os
 import statistics
+import threading
 import time
 import unittest.mock
 
@@ -291,11 +292,21 @@ class PageImageTest(MComixTest):
     def test_stopping_a_paused_animation_ends_its_thread(self):
         self.image.show_pixbuf(
             image_tools.load_pixbuf(get_image_path('animated.gif')))
+        # The decoder parks on the pause by waiting with no time limit,
+        # which is where a stop that did not wake it would leave it:
+        # wait for it to be there rather than for a guessed while.
+        condition = self.image._playback._condition
+        parked = threading.Event()
+        real_wait = condition.wait
+
+        def wait(timeout=None):
+            if timeout is None:
+                parked.set()
+            return real_wait(timeout)
+        condition.wait = wait
         self.image.set_paused(True)
         worker = self.image._worker
-        # Long enough for the decoder to have parked on the pause, which
-        # is where a stop that did not wake it would leave it.
-        time.sleep(0.5)
+        self.assertTrue(wait_for(parked.is_set, seconds=5))
         self.image.clear()
         worker.join(5)
         self.assertFalse(worker.is_alive(),

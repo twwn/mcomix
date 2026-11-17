@@ -377,9 +377,13 @@ class ThumbnailsOnScreenFirstTest(MComixTest):
         del self.asked[:]
         was = item.thumbnail
         self.view.redraw_item(item)
-        # Made on a worker, so its being asked for takes a moment.
-        self.assertFalse(wait_for(lambda: 5 in self.asked, seconds=0.5),
-                         'made for no cell to show it')
+        # Kept for when it is shown, not handed to the worker: once the
+        # worker holds no order, nothing for it can still be on its way.
+        self.assertIn(item, self.view._stale)
+        pump()
+        self.assertTrue(wait_for(lambda: not self.view._thread._orders_set,
+                                 seconds=5))
+        self.assertNotIn(5, self.asked, 'made for no cell to show it')
         self._jump(0.0)
         self.assertTrue(wait_for(lambda: item.thumbnail is not was,
                                  seconds=10))
@@ -573,10 +577,22 @@ class ThumbnailGridViewTest(MComixTest):
         pump()
         super().tearDown()
 
-    def _settle(self):
-        for _ in range(40):
+    def _settle(self, width=600):
+        """Lay the grid out <width> wide until what it lays out holds
+        from one allocation to the next.
+
+        Each allocation of a grid wider than its window costs some 30
+        ms, so a fixed forty of them made the widest step over a second
+        long; the columns hold after the first.
+        """
+        seen = []
+
+        def steady():
             pump()
-            self.scroller.allocate(600, 400, -1, None)
+            self.scroller.allocate(width, 400, -1, None)
+            seen.append((self.view.get_max_columns(), self._columns()))
+            return len(seen) >= 3 and seen[-1] == seen[-2] == seen[-3]
+        self.assertTrue(wait_for(steady), seen)
 
     def _fill(self):
         self.view.set_items(thumbnail_list.ThumbnailItem(uid)
@@ -612,10 +628,7 @@ class ThumbnailGridViewTest(MComixTest):
         one fewer than it is allowed, at every width."""
         self.window.present()
         self._fill()
-        self._settle()
         for width in (600, 1500, 300):
-            for _ in range(40):
-                pump()
-                self.scroller.allocate(width, 400, -1, None)
+            self._settle(width)
             self.assertEqual(self.view.get_max_columns() - 1,
                              self._columns(), width)

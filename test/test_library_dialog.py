@@ -40,6 +40,7 @@ from mcomix.dialog import Response
 from mcomix.library import backend_types
 from mcomix.library import book_area
 from mcomix.library import collection_area
+from mcomix.library import control_area
 from mcomix.library import folder_watcher
 from mcomix.library import main_dialog
 from mcomix.library import pixbuf_cache
@@ -178,6 +179,15 @@ class LibraryDialogTest(_LibraryWindowTest):
                 dialog, keyval, Gdk.ModifierType(0)))
         self.assertIs(dialog, main_dialog.get_dialog())
 
+    #: The pause the search waits for, in the tests that wait it out:
+    #: a later search a keystroke put off would come within it of the
+    #: first.
+    PAUSE_MS = 50
+
+    def _pausing(self):
+        return unittest.mock.patch.object(
+            control_area._ControlArea, 'SEARCH_DELAY_MS', self.PAUSE_MS)
+
     def test_the_search_follows_the_typing_once_it_pauses(self):
         """Books were filtered only on Enter.  Each keystroke now waits
         for the next; the books follow once the typing pauses."""
@@ -185,7 +195,7 @@ class LibraryDialogTest(_LibraryWindowTest):
         entry = dialog.control_area.search_entry
         # Run from the idle queue, where a true answer, as a bare mock
         # gives, would have it run again for ever.
-        with unittest.mock.patch.object(
+        with self._pausing(), unittest.mock.patch.object(
                 dialog.book_area, 'display_covers',
                 return_value=False) as shown:
             entry.set_text('nig')
@@ -195,7 +205,7 @@ class LibraryDialogTest(_LibraryWindowTest):
             self.assertTrue(wait_for(
                 lambda: dialog.filter_string == 'night', seconds=3))
             pump()
-            wait_for(lambda: False, seconds=0.5)
+            wait_for(lambda: False, seconds=3 * self.PAUSE_MS / 1000)
         self.assertEqual(1, shown.call_count,
                          'the books were filtered more than once')
 
@@ -204,13 +214,13 @@ class LibraryDialogTest(_LibraryWindowTest):
         entry = dialog.control_area.search_entry
         # Run from the idle queue, where a true answer, as a bare mock
         # gives, would have it run again for ever.
-        with unittest.mock.patch.object(
+        with self._pausing(), unittest.mock.patch.object(
                 dialog.book_area, 'display_covers',
                 return_value=False) as shown:
             entry.set_text('night')
             entry.emit('activate')
             self.assertEqual('night', dialog.filter_string)
-            wait_for(lambda: False, seconds=0.6)
+            wait_for(lambda: False, seconds=3 * self.PAUSE_MS / 1000)
         self.assertEqual(1, shown.call_count)
 
     def test_a_reading_state_picked_narrows_the_books_at_once(self):
@@ -496,6 +506,28 @@ class FolderWatchTest(_LibraryWindowTest):
         shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), path)
         return path
 
+    def _no_scan_after(self, folder, scan, act):
+        """Assert that what <act> does in <folder> is not followed by
+        <scan>.
+
+        Not by waiting a second and hoping that was long enough: a
+        monitor of the test's own on <folder> says when the file has
+        arrived whole, which is when the watcher's monitors say so too,
+        and with no DELAY the scan would follow at once.
+        """
+        arrived = []
+        control = Gio.File.new_for_path(folder).monitor_directory(
+            Gio.FileMonitorFlags.NONE, None)
+        self.addCleanup(control.cancel)
+        control.connect('changed', lambda monitor, file, other, event:
+                        arrived.append(event))
+        with unittest.mock.patch.object(folder_watcher, 'DELAY', 0):
+            act()
+            self.assertTrue(wait_for(
+                lambda: Gio.FileMonitorEvent.CHANGES_DONE_HINT in arrived,
+                seconds=20))
+            self.assertFalse(wait_for(lambda: scan.called, seconds=0.1))
+
     def test_a_book_copied_in_is_added(self):
         folder = self._watched()
         dialog = self._open_watching((folder, False))
@@ -554,10 +586,11 @@ class FolderWatchTest(_LibraryWindowTest):
     def test_what_is_no_book_scans_nothing(self):
         folder = self._watched()
         dialog = self._open_watching((folder, False))
-        with unittest.mock.patch.object(dialog._watcher, '_scan') as scan:
+        def write():
             with open(os.path.join(folder, 'notes.txt'), 'w') as fp:
                 fp.write('x')
-            self.assertFalse(wait_for(lambda: scan.called, seconds=1))
+        with unittest.mock.patch.object(dialog._watcher, '_scan') as scan:
+            self._no_scan_after(folder, scan, write)
 
     def test_nothing_is_watched_with_the_scan_at_opening_off(self):
         folder = self._watched()
@@ -574,8 +607,7 @@ class FolderWatchTest(_LibraryWindowTest):
         pump()
         self.assertEqual([], watcher.folders)
         with unittest.mock.patch.object(watcher, '_scan') as scan:
-            self._arrive(folder)
-            self.assertFalse(wait_for(lambda: scan.called, seconds=1))
+            self._no_scan_after(folder, scan, lambda: self._arrive(folder))
 
     def test_a_library_destroyed_without_close_stops_watching(self):
         """_close_dialog() destroys the window without close().  A scan
@@ -586,12 +618,14 @@ class FolderWatchTest(_LibraryWindowTest):
         folder = self._watched()
         dialog = self._open_watching((folder, False))
         watcher = dialog._watcher
-        with unittest.mock.patch.object(watcher, '_scan') as scan:
+        with unittest.mock.patch.object(watcher, '_scan') as scan, \
+                unittest.mock.patch.object(folder_watcher, 'DELAY', 0):
+            # Due as soon as the main loop turns.
             watcher._later()
             main_dialog._close_dialog()
             pump()
             self.assertEqual([], watcher.folders)
-            self.assertFalse(wait_for(lambda: scan.called, seconds=1))
+            self.assertFalse(wait_for(lambda: scan.called, seconds=0.1))
 
     def test_an_edited_watch_list_is_watched_as_it_now_stands(self):
         dialog = self._open()

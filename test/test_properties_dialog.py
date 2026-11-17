@@ -15,7 +15,7 @@ from unittest import mock
 
 from gi.repository import Gtk
 
-from . import MComixTest, get_testfile_path, pump, wait_for
+from . import MComixTest, get_testfile_path, pump, wait_for, wait_frames
 
 from mcomix import constants
 from mcomix import icons
@@ -250,9 +250,11 @@ class PropertiesDialogTest(MComixTest):
     def test_a_comicinfo_that_does_not_parse_leaves_the_page_as_it_was(self):
         dialog = self._open(self._book('<ComicInfo><Series>Broken'))
         page = dialog._archive_page
-        self.assertTrue(wait_for(lambda: 'Location:' in self._texts(page),
+        # Described once more when the ComicInfo.xml is out, and then
+        # waiting for nothing.
+        self.assertTrue(wait_for(lambda: 'Location:' in self._texts(page)
+                                 and dialog._awaited_comicinfo is None,
                                  seconds=10))
-        wait_for(lambda: False, seconds=0.5)
         self.assertNotIn('Series:', self._texts(page))
 
     @unittest.skipIf(sys.platform == 'win32',
@@ -347,7 +349,9 @@ class LongTextTest(PropertiesDialogTest):
         dialog.present()
         page = dialog._image_page
         self.assertTrue(wait_for(lambda: page.get_height() > 0))
-        wait_for(lambda: False, seconds=0.3)
+        # The labels' heights settle as they are laid out at the width
+        # they were given, a frame on.
+        self.assertTrue(wait_frames(dialog))
         adjustment = page.get_vadjustment()
         self.assertLessEqual(adjustment.get_upper(),
                              adjustment.get_page_size())

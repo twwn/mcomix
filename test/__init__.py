@@ -279,6 +279,27 @@ def wait_for(predicate, seconds=5):
         GLib.source_remove(heartbeat)
 
 
+def wait_frames(widget, frames=3, seconds=5):
+    """Run the main loop until <widget>'s frame clock has ticked
+    <frames> times, and say whether it did within <seconds>.
+
+    For what GTK does at a frame rather than when the loop is idle: a
+    new style, a layout, a paint.  A tick comes before the frame's
+    layout and paint, so after <frames> ticks the frames before the last
+    are whole.  Counted on the clock rather than slept out, a wait as
+    long as the frames take and no longer, on a fast system or a slow
+    one.  <widget> has to be on screen: one that is not has no clock.
+    """
+    ticks = []
+
+    def tick(widget, clock):
+        ticks.append(clock.get_frame_counter())
+        return GLib.SOURCE_CONTINUE if len(ticks) < frames \
+            else GLib.SOURCE_REMOVE
+    widget.add_tick_callback(tick)
+    return wait_for(lambda: len(ticks) >= frames, seconds=seconds)
+
+
 def take_activation_from(test, window):
     """Present a window of the test's own, so that <window> is no longer
     the active one, and wait until it is not.

@@ -8,7 +8,7 @@ import weakref
 
 from gi.repository import Gdk, Graphene, Gtk
 
-from . import MComixTest, get_testfile_path, pump, wait_for
+from . import MComixTest, get_testfile_path, pump, wait_for, wait_frames
 from .test_key_press import _Controller
 
 from mcomix import constants
@@ -358,7 +358,8 @@ class ShelfDrawnAgainTest(_ShelfWindowTest):
         first = self._entries()[0]
         shelf.filter_string = None
         self._again()
-        wait_for(lambda: False, seconds=0.3)
+        # GTK scrolls to the entry it keeps its place by at the layout.
+        self.assertTrue(wait_frames(self.window))
         self.assertEqual(10, len(self._entries()))
         # Kept, and no longer first.
         self.assertIn(first, self._entries()[1:])
@@ -438,7 +439,8 @@ class ShelfSearchTest(_ShelfWindowTest):
         self.shelf.search()
         revealer = self.shelf._search_bar.get_first_child()
         self.assertTrue(wait_for(revealer.get_child_revealed))
-        wait_for(lambda: top() != before, seconds=0.5)
+        # Laid out with the field shown.
+        self.assertTrue(wait_frames(self.window))
         self.assertEqual(before, top())
 
     def test_the_covers_start_at_the_top_and_the_field_is_centred(self):

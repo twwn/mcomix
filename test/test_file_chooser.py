@@ -685,8 +685,14 @@ class FileChooserTest(MComixTest):
         self.dialog._update_preview()
         self.dialog._previewed = None
         self.dialog._update_preview()
-        self.assertFalse(wait_for(
-            lambda: self.dialog._namelabel.get_text(), seconds=1))
+        # The folder's thread hands its cover over through the idle
+        # queue: once it has ended, one turn of the main loop shows
+        # whatever it found.
+        for thread in threading.enumerate():
+            if thread.name.endswith('-preview-folder'):
+                thread.join(10)
+        pump()
+        self.assertEqual('', self.dialog._namelabel.get_text())
         self.assertIsNone(self.dialog._preview_image.get_paintable())
 
     def test_a_file_gone_before_its_preview_came_is_shown_with_no_size(self):

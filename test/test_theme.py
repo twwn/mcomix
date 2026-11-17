@@ -17,7 +17,7 @@ import unittest.mock
 import gi
 from gi.repository import Gdk, Gio, GLib, Gsk, Gtk
 
-from . import MComixTest, wait_for
+from . import MComixTest, wait_for, wait_frames
 
 from mcomix import theme
 from mcomix.preferences import prefs
@@ -574,7 +574,7 @@ class ViewColourTest(MComixTest):
             view.queue_draw()
             # The new style is worked out on the next frame; a snapshot
             # taken before it shows the scheme before.
-            wait_for(lambda: False, seconds=0.2)
+            self.assertTrue(wait_frames(self.window))
             painted[scheme] = background_of(self.window, covering=view)
         return painted
 
