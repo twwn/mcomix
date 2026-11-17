@@ -364,6 +364,117 @@ class ThumbnailsOnScreenFirstTest(MComixTest):
                                  seconds=10))
         self.assertEqual(1, self.asked.count(5))
 
+class ThumbnailsAtHandTest(MComixTest):
+
+    """An owner that holds some thumbnails already hands them over as
+    their cells are bound, rather than through a worker.
+
+    A collection drawn again in the library had every cover in memory,
+    and still showed every cell blank for a frame or more while the
+    workers looked them up and handed them back."""
+
+    ITEMS = 400
+
+    def setUp(self):
+        super().setUp()
+        self.asked = []
+        #: The uids thumbnail_at_hand() was asked about.
+        self.looked_up = []
+        self.view = thumbnail_list.ThumbnailGridView()
+        self.view.generate_thumbnail = self._generate
+        self.view.thumbnail_at_hand = self._at_hand
+        self.view.set_thumbnail_size(64)
+        self.scroller = Gtk.ScrolledWindow()
+        self.scroller.set_child(self.view)
+        self.window = Gtk.Window()
+        self.window.set_default_size(600, 400)
+        self.window.set_child(self.scroller)
+        self.window.present()
+        self._settle()
+        self.items = [thumbnail_list.ThumbnailItem(uid)
+                      for uid in range(self.ITEMS)]
+
+    def tearDown(self):
+        self.view.stop_update()
+        self.window.destroy()
+        pump()
+        super().tearDown()
+
+    @staticmethod
+    def _pixbuf():
+        pixbuf = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, True, 8,
+                                      32, 48)
+        pixbuf.fill(0x336699ff)
+        return pixbuf
+
+    def _generate(self, uid):
+        self.asked.append(uid)
+        return self._pixbuf()
+
+    def _at_hand(self, item):
+        """Even uids are at hand."""
+        self.looked_up.append(item.uid)
+        return self._pixbuf() if item.uid % 2 == 0 else None
+
+    def _settle(self):
+        for _ in range(40):
+            pump()
+            self.scroller.allocate(600, 400, -1, None)
+
+    def _drawn(self):
+        return wait_for(lambda: all(item.thumbnail is not None
+                                    for item in self.view._bound), seconds=10)
+
+    def test_a_thumbnail_at_hand_is_shown_as_its_cell_is_bound(self):
+        self.view.set_items(self.items)
+        # The cells that fit are bound inside the splice: before the main
+        # loop has turned, those at hand show their thumbnails already.
+        bound = list(self.view._bound)
+        self.assertTrue(bound)
+        for item in bound:
+            self.assertEqual(item.uid % 2 == 0, item.thumbnail is not None,
+                             item.uid)
+        self._settle()
+        self.assertTrue(self._drawn())
+        self.assertTrue(self.asked)
+        self.assertEqual([], [uid for uid in self.asked if uid % 2 == 0],
+                         'a thumbnail at hand was made on a worker')
+        cells = {cell.position: cell for cell in self.view._each_cell()}
+        self.assertIsNotNone(cells[0].picture.get_paintable())
+
+    def test_a_thumbnail_to_be_made_again_is_not_taken_from_at_hand(self):
+        """What the owner holds may be what is to be replaced."""
+        self.view.set_items(self.items)
+        self._settle()
+        self.assertTrue(self._drawn())
+        item = self.items[4]
+        was = item.thumbnail
+        del self.asked[:], self.looked_up[:]
+        # Off screen, so that it is made when it is next bound.
+        adjustment = self.scroller.get_vadjustment()
+        adjustment.set_value(adjustment.get_upper())
+        self._settle()
+        self.assertNotIn(item, self.view._bound)
+        self.view.redraw_item(item)
+        adjustment.set_value(0)
+        self._settle()
+        self.assertTrue(wait_for(lambda: item.thumbnail is not was,
+                                 seconds=10))
+        self.assertEqual([4], [uid for uid in self.asked if uid == 4])
+        self.assertNotIn(4, self.looked_up)
+
+    def test_a_stopped_view_takes_nothing_from_at_hand(self):
+        """As one turns away the thumbnails it asked for: what the owner
+        holds may have gone with it."""
+        self.view.stop_update()
+        # Filled behind the stopped view's back, the store binds cells
+        # all the same.
+        self.view.store.splice(0, 0, self.items)
+        self._settle()
+        self.assertTrue(self.view._bound)
+        self.assertEqual([], self.looked_up)
+
+
 # vim: expandtab:sw=4:ts=4
 
 

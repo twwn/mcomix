@@ -134,6 +134,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         # item.
         self._covers = thumbnail_list.ThumbnailGridView()
         self._covers.generate_thumbnail = self._get_pixbuf
+        self._covers.thumbnail_at_hand = self._cover_at_hand
         #: The finished-book tick at each scale other than 1 it was
         #: asked for.
         self._scaled_marks: dict[float, GdkPixbuf.Pixbuf | None] = {}
@@ -896,8 +897,32 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
                 border_size=0, scale=self._covers.device_scale))
         # The view's scale, which it records on the cover it is made for.
         scale = self._covers.device_scale
-        pixbuf = self._cover_of(book, scale)
+        return self._dressed(book, self._cover_of(book, scale), scale)
 
+    def _cover_at_hand(self, item: thumbnail_list.ThumbnailItem
+                       ) -> GdkPixbuf.Pixbuf | None:
+        """The cover of <item> if the memory cache holds it, dressed as
+        _get_pixbuf() dresses it, or None: the view's thumbnail_at_hand,
+        run on the main thread as a cell is bound.
+
+        What a collection switched back to or a search cleared shows is
+        mostly what was on show a moment ago; a worker found it in the
+        cache in 0.02 ms, and the round trip to it and back left every
+        cell blank for a frame or more.
+        """
+        book_item = cast(_BookItem, item)
+        pixbuf = self._cache.get(book_item.path)
+        if pixbuf is None:
+            return None
+        book = self._library.backend.get_book_by_id(book_item.uid)
+        if book is None:
+            return None
+        return self._dressed(book, pixbuf, self._covers.device_scale)
+
+    def _dressed(self, book: 'backend_types._Book',
+                 pixbuf: GdkPixbuf.Pixbuf, scale: float) -> GdkPixbuf.Pixbuf:
+        """<book>'s cover <pixbuf> as the view draws it at <scale>:
+        enhanced, framed, and ticked if the book was read to the end."""
         pixbuf = self._library.main_window.enhancer.enhance(pixbuf)
         pixbuf = image_tools.add_border(pixbuf, max(1, round(scale)),
                                         0xFFFFFFFF)

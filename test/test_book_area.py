@@ -375,6 +375,66 @@ class KeptCoverTest(MComixTest):
         self.assertEqual([name], os.listdir(directory))
 
 
+class CoverAtHandTest(MComixTest):
+
+    """The cover a cell is bound to is handed over at once where the
+    memory cache holds it, dressed as a worker dresses it, and only
+    then: anything else is read on a worker."""
+
+    def setUp(self):
+        super().setUp()
+        import zipfile
+        from . import get_testfile_path
+        self.archive = os.path.join(self.tmp_dir, 'book.cbz')
+        with zipfile.ZipFile(self.archive, 'w') as book:
+            book.write(get_testfile_path('images', 'landscape-no-exif.jpg'),
+                       '01.jpg')
+        self.library = _Library()
+        self.backend = self.library.backend = _KeepingBackend(
+            self.archive, os.path.join(self.tmp_dir, 'covers'))
+        self.library.main_window = types.SimpleNamespace(
+            enhancer=types.SimpleNamespace(enhance=lambda pixbuf: pixbuf))
+        prefs['library cover size'] = constants.SIZE_NORMAL
+        self.area = book_area._BookArea(self.library)
+        self.area._cache.invalidate_all()
+        self.item = book_area._BookItem(self.backend.get_book_by_id(1))
+
+    def tearDown(self):
+        self.area.close()
+        self.area._cache.invalidate_all()
+        super().tearDown()
+
+    def test_it_is_what_the_view_asks_at_bind(self):
+        self.assertEqual(self.area._cover_at_hand,
+                         self.area._covers.thumbnail_at_hand)
+
+    def test_a_cover_not_in_memory_is_not_read_for_it(self):
+        with unittest.mock.patch.object(
+                self.backend, 'get_sized_book_cover') as kept, \
+            unittest.mock.patch.object(
+                self.backend, 'get_book_thumbnail') as read:
+            self.assertIsNone(self.area._cover_at_hand(self.item))
+        self.assertFalse(kept.called)
+        self.assertFalse(read.called)
+
+    def test_a_cover_in_memory_is_the_one_a_worker_hands_over(self):
+        made = self.area._get_pixbuf(1)
+        at_hand = self.area._cover_at_hand(self.item)
+        self.assertIsNotNone(at_hand)
+        self.assertEqual((made.get_width(), made.get_height()),
+                         (at_hand.get_width(), at_hand.get_height()))
+        self.assertEqual(made.get_pixels(), at_hand.get_pixels())
+        # Framed, as the cover in the cache is not.
+        cached = self.area._cache.get(self.archive)
+        self.assertEqual(cached.get_width() + 2, at_hand.get_width())
+
+    def test_a_book_gone_from_the_library_has_no_cover_at_hand(self):
+        self.area._get_pixbuf(1)
+        with unittest.mock.patch.object(self.backend, 'get_book_by_id',
+                                        return_value=None):
+            self.assertIsNone(self.area._cover_at_hand(self.item))
+
+
 class TurnedCoverTest(MComixTest):
 
     """A cover is drawn turned as the page it is shows when the book is

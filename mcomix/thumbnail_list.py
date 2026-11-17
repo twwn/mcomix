@@ -188,6 +188,12 @@ class _ThumbnailViewBase(widgets.Releasable):
     def _init_thumbnails(self) -> None:
         #: Replaced by whoever knows how to make a thumbnail for a uid.
         self.generate_thumbnail: "Callable[..., GdkPixbuf.Pixbuf | None] | None" = None  # type: ignore[explicit-any]  # the view does not care what a uid is
+        #: Replaced by whoever can hand some thumbnails over at once:
+        #: called on the main thread with an entry whose cell is being
+        #: bound and that has no thumbnail, it answers with one only
+        #: where that costs no more than a lookup, and None otherwise,
+        #: which leaves the entry to generate_thumbnail().
+        self.thumbnail_at_hand: "Callable[[ThumbnailItem], GdkPixbuf.Pixbuf | None] | None" = None
         #: Replaced by whoever marks some rows out: called with a cell's
         #: picture and the row it shows whenever the cell is bound, and
         #: by restyle().
@@ -257,6 +263,16 @@ class _ThumbnailViewBase(widgets.Releasable):
         """
         cell = cast(_ThumbnailCell, list_item.get_child())
         item = cast(ThumbnailItem, list_item.get_item())
+        if (item.thumbnail is None and self.thumbnail_at_hand is not None
+                and not self._updates_stopped):
+            # Shown in the frame that shows the cell.  Asked for, it came
+            # back from a worker a frame or more later, and every cell of
+            # a collection drawn again was blank first.
+            pixbuf = self.thumbnail_at_hand(item)
+            if pixbuf is not None:
+                # Before the thumbnail, as _thumbnail_finished() does.
+                item.scale = self.device_scale
+                item.thumbnail = image_tools.pixbuf_to_texture(pixbuf)
         cell.label.set_text(item.label)
         cell.set_tooltip_text(item.tooltip or None)
         cell.picture.set_paintable(_shown(item))
