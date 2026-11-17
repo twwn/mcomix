@@ -139,6 +139,34 @@ class DirectoryWalkTest(MComixTest):
         self.assertTrue(self.handler.open_previous_directory())
         self.assertEqual(archive, self._opened_file())
 
+    def _page_walked_back_to(self, first_in_archive, first_in_directory):
+        """The page the archive of the directory before opens at."""
+        archive = self._put_archive('a')
+        self._open(self._put_archive('c'))
+        with mock.patch.dict(prefs, {
+                'open first file in prev archive': first_in_archive,
+                'open first file in prev directory': first_in_directory}):
+            self.assertTrue(self.handler.open_previous_directory())
+            self.assertEqual(archive, self._opened_file())
+            imagehandler = self.window.imagehandler
+            self.assertTrue(wait_for(
+                lambda: imagehandler.get_number_of_pages() == 4))
+            return imagehandler.get_current_page()
+
+    def test_walking_back_opens_the_last_page_when_neither_says_first(self):
+        self.assertEqual(4, self._page_walked_back_to(False, False))
+
+    def test_walking_back_opens_the_first_page_when_either_says_first(self):
+        """Its first page where the archive preference asks for it, and
+        where the directory one does: a directory walked back into from
+        its start is read from its start."""
+        for first_in_archive, first_in_directory in ((True, False),
+                                                     (False, True)):
+            with self.subTest(archive=first_in_archive,
+                              directory=first_in_directory):
+                self.assertEqual(1, self._page_walked_back_to(
+                    first_in_archive, first_in_directory))
+
     def test_the_walk_goes_into_a_series_and_out_again(self):
         """Volumes kept in a directory of their own are walked into
         from the book before the series, and out of to the one after."""
