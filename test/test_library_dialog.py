@@ -9,6 +9,7 @@ backend made unreachable.
 
 import datetime
 import gettext
+import io
 import os
 import shutil
 import threading
@@ -801,10 +802,14 @@ class _OneBookTest(_LibraryWindowTest):
         super().setUp()
         prefs['last library collection'] = constants.COLLECTION_ALL
         self.dialog = self._open()
-        self.path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        self.path = self._book()
         self.dialog.backend.add_book(self.path)
         self.dialog.book_area.display_covers(constants.COLLECTION_ALL)
         pump()
+
+    def _book(self):
+        """The book the library holds."""
+        return get_testfile_path('archives', '01-ZIP-Normal.zip')
 
     def _left_on(self, page):
         lastread = last_read_page.LastReadPage(self.dialog.backend)
@@ -825,6 +830,18 @@ class CoverAtTheNextStartTest(_OneBookTest):
         pixbuf_cache.get_pixbuf_cache().invalidate_all()
         super().setUp()
         self._cover_made()
+
+    def _book(self):
+        # With a cover large enough to be stored 500 pixels high: one
+        # drawn at nearly the size it is stored at is not kept.
+        import zipfile
+        import PIL.Image
+        path = os.path.join(self.tmp_dir, 'book.cbz')
+        page = io.BytesIO()
+        PIL.Image.new('RGB', (1000, 1500), 'teal').save(page, 'JPEG')
+        with zipfile.ZipFile(path, 'w') as book:
+            book.writestr('01.jpg', page.getvalue())
+        return path
 
     def _item(self):
         return next(iter(self.dialog.book_area._covers.each_item()))
@@ -857,7 +874,7 @@ class CoverAtTheNextStartTest(_OneBookTest):
         self.assertEqual(0, self._shown_again())
 
     def test_at_another_size_it_is_once(self):
-        prefs['library cover size'] = constants.SIZE_LARGE
+        prefs['library cover size'] = constants.SIZE_TINY
         self.assertEqual(1, self._shown_again())
         self.assertEqual(0, self._shown_again())
 

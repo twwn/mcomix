@@ -450,7 +450,9 @@ class WebPStoreTest(MComixTest):
         pixbuf = self._reused()
         self.assertEqual((made.get_width(), made.get_height()),
                          (pixbuf.get_width(), pixbuf.get_height()))
-        self._thumbnailer.keep_sized(self._source, pixbuf, (1,), pixbuf)
+        drawn = image_tools.fit_in_rectangle(
+            pixbuf, pixbuf.get_width() // 2, pixbuf.get_height() // 2)
+        self._thumbnailer.keep_sized(self._source, drawn, (1,), pixbuf)
         self.assertIsNotNone(self._thumbnailer.sized(self._source, (1,)))
 
     def test_a_png_an_older_mcomix_stored_becomes_webp(self):
@@ -868,6 +870,17 @@ class SizedThumbnailTest(MComixTest):
             (kept.get_width(), kept.get_height(),
              kept.get_has_alpha(), kept.get_rowstride()))
         self.assertEqual(self._drawn.get_pixels(), kept.get_pixels())
+
+    def test_none_is_kept_of_one_drawn_as_large_as_it_is_stored(self):
+        # Kept as raw pixels it would weigh ten times the stored picture,
+        # and drawing it costs no scaling; one kept before at a smaller
+        # size goes.
+        self._keep()
+        self.assertTrue(os.path.exists(self._kept))
+        self._drawn = self._thumbnail.copy()
+        self._keep()
+        self.assertFalse(os.path.exists(self._kept))
+        self.assertIsNone(self._sized())
 
     def test_one_with_transparency_comes_back_with_it(self):
         self._drawn = self._drawn.add_alpha(False, 0, 0, 0)

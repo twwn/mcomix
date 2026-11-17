@@ -464,10 +464,26 @@ class Thumbnailer:
         to answer with for the same <made_for>.
 
         Nothing is kept of a thumbnail that is not stored: there is
-        nothing to tell what was kept by once the source changes.
+        nothing to tell what was kept by once the source changes.  Nor
+        of one drawn with more than a quarter of the stored one's
+        pixels, and whatever was kept for <filepath> before goes: such
+        a copy weighs several times the stored picture, and spares
+        decoding fewer than four times its own pixels.  A library
+        cover 500 pixels high, the Huge size, is 489 kB of them against
+        41 kB of WebP that decodes in 1.9 ms; 1000 high, on a screen of
+        twice the scale, 2 MB against 127 kB and 6 ms.  Drawn 125 high
+        from 500, the default size, they are 31 kB and spare decoding
+        and scaling down sixteen times as many.
         """
         stored = getattr(made_of, _STORED, None)
         if stored is None:
+            return
+        if (4 * pixbuf.get_width() * pixbuf.get_height()
+                > made_of.get_width() * made_of.get_height()):
+            try:
+                os.remove(self._path_to_sizedpath(filepath))
+            except OSError:
+                pass
             return
         pixels = pixbuf.read_pixel_bytes().get_data()
         numbers = (pixbuf.get_width(), pixbuf.get_height(),

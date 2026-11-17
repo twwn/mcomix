@@ -271,10 +271,17 @@ class KeptCoverTest(MComixTest):
         super().setUp()
         import zipfile
         from . import get_testfile_path
+        import PIL.Image
         self.archive = os.path.join(self.tmp_dir, 'book.cbz')
+        # Three times the picture's size, its Exif kept: large enough
+        # for the cover stored to be 500 pixels across.
+        page = os.path.join(self.tmp_dir, '01.jpg')
+        with PIL.Image.open(get_testfile_path(
+                'images', 'landscape-exif-270-rotation.jpg')) as picture:
+            picture.resize((picture.width * 3, picture.height * 3)).save(
+                page, exif=picture.info['exif'])
         with zipfile.ZipFile(self.archive, 'w') as book:
-            book.write(get_testfile_path(
-                'images', 'landscape-exif-270-rotation.jpg'), '01.jpg')
+            book.write(page, '01.jpg')
         self.library = _Library()
         self.backend = self.library.backend = _KeepingBackend(
             self.archive, os.path.join(self.tmp_dir, 'covers'))
@@ -310,13 +317,23 @@ class KeptCoverTest(MComixTest):
         self.assertEqual(self.first.get_pixels(), again.get_pixels())
 
     def test_another_size_is_drawn_from_the_cover_stored(self):
-        prefs['library cover size'] = constants.SIZE_NORMAL * 2
+        prefs['library cover size'] = constants.SIZE_LARGE
         again, read = self._again()
         self.assertTrue(read)
         self.assertGreater(again.get_width(), self.first.get_width())
         # And is what is kept from then on.
         self.area._cache.invalidate_all()
         self.assertFalse(self._again()[1])
+
+    def test_none_is_kept_at_the_size_the_cover_is_stored_at(self):
+        """Its pixels would weigh about ten times the cover stored, and
+        drawing it means little more than decoding that."""
+        prefs['library cover size'] = constants.SIZE_HUGE
+        self.assertTrue(self._again()[1])
+        self.assertEqual(
+            [], os.listdir(os.path.join(self.tmp_dir, 'covers_sized')))
+        self.area._cache.invalidate_all()
+        self.assertTrue(self._again()[1])
 
     def test_what_the_drawing_depends_on_is_part_of_what_it_was_kept_for(self):
         """The cover is turned as its Exif orientation says only where
