@@ -102,6 +102,12 @@ class ThumbnailListViewTest(MComixTest):
         self._fill()
         self.assertTrue(wait_for(lambda: self.asked))
         self._settle()
+        # A thumbnail still being made, or made and not yet handed over,
+        # is on its way: refresh() rightly passes over its row, and one
+        # row short of all of them was asked for (200 != 199).
+        self.assertTrue(wait_for(lambda: all(
+            item.thumbnail is not None for item in self.view._bound)
+            and not self.view._coming))
         rows = list(self.view._bound)
         for item in rows:
             item.thumbnail = None
