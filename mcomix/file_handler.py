@@ -296,6 +296,28 @@ class FileHandler:
             self.open_file(current_file, start_page, keep_fileprovider=keep,
                            start_member=start_member)
 
+    def book_moved(self, old: str, new: str) -> bool:
+        """Put the open book, moved or renamed from <old> to <new>, in
+        its place among the books it is walked among, where those are
+        a list - the library's, or the files opened together - and say
+        whether they are.
+
+        Reopened at <new> as a book opened afresh, it lost the list:
+        it was alone in it, and Next archive went on through the
+        folders.  Among the books of its folder it goes on among those
+        of the folder it is now in, which is what opening it there
+        does.
+        """
+        provider = self._file_provider
+        old, new = os.path.abspath(old), os.path.abspath(new)
+        if not (isinstance(provider, file_provider.PreDefinedFileProvider)
+                and provider.moved(old, new)):
+            return False
+        kept = listed_with(old)
+        if kept is not None:
+            _keep_listed([new if book == old else book for book in kept])
+        return True
+
     def nearest_in_folder(self, gone: str) -> str | None:
         """The file of the open book's kind that is nearest to <gone> in
         its folder's order, or None where there is none."""

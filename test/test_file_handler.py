@@ -512,6 +512,22 @@ class ResumedLibraryListTest(_WindowTest):
         self._opened(self.handler, 'c')
         self.assertEqual(self.listed, file_handler.listed_with(self.books['c']))
 
+    def test_a_book_moved_is_walked_among_them_still(self):
+        """Reopened where it landed as if opened afresh, it was alone
+        in its list, and Next archive went on through the folders."""
+        self.handler.open_file(self.books['a'], listed=self.listed)
+        self._opened(self.handler, 'a')
+        destination = os.path.join(self.tmp_dir, 'read')
+        os.makedirs(destination)
+        self.window.file_actions.move_current_file(destination)
+        self.books['a'] = os.path.join(destination, 'a.cbz')
+        self._opened(self.handler, 'a')
+        moved = [self.books[key] for key in 'acb']
+        self.assertEqual(moved, file_handler.listed_with(self.books['a']))
+        self.assertEqual((1, 3), self.handler.get_file_number())
+        self.handler.open_next_archive()
+        self._opened(self.handler, 'c')
+
     def test_a_book_opened_afresh_forgets_them(self):
         self.handler.open_file(self.books['a'], listed=self.listed)
         self._opened(self.handler, 'a')

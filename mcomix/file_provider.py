@@ -493,5 +493,16 @@ class PreDefinedFileProvider(FileProvider):
             return self.__files[mode]
         return [path for listed in self.__files.values() for path in listed]
 
+    def moved(self, old: str, new: str) -> bool:
+        """List <new> where <old> was, the file having been moved or
+        renamed there, and say whether <old> was listed."""
+        found = False
+        for listed in self.__files.values():
+            for index, path in enumerate(listed):
+                if path == old:
+                    listed[index] = new
+                    found = True
+        return found
+
 
 # vim: expandtab:sw=4:ts=4

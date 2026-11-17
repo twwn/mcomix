@@ -1552,9 +1552,13 @@ class FileActions:
         # The book is about to be opened where it landed, which records
         # that; the entry for where it was would open nothing.
         self._window.uimanager.recent.remove_path(current_file)
+        # The books it was being read among go on with it: a library's
+        # list, which a book opened afresh would have forgotten.
+        listed = self._window.filehandler.book_moved(current_file, target)
         # A loose image works out its own page from the file it is
         # opened on; only an archive has to be told which one to show.
-        self._window.filehandler.open_file(target, page if in_archive else 0)
+        self._window.filehandler.open_file(target, page if in_archive else 0,
+                                           keep_fileprovider=listed)
         # Opening the book closed it first, which wrote the page being
         # read back under the path the file no longer has.
         self._window.filehandler.last_read_page.clear_page(current_file)
