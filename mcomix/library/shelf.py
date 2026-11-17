@@ -34,10 +34,18 @@ _CSS_CLASS = 'mcomix-shelf'
 def _paint_black(display: Gdk.Display) -> None:
     """Give <display> the rule that paints the Shelf as the library
     paints its covers' ground, with writing that shows on it, once: the
-    provider stays with the display."""
+    provider stays with the display.
+
+    The search field floats over the covers' corner: the bar a search
+    field is put in otherwise would lay a strip of the theme's colour
+    across them."""
     provider = Gtk.CssProvider()
     provider.load_from_string(
-        '.%s { background-color: black; color: white; }' % _CSS_CLASS)
+        '.%s { background-color: black; color: white; }'
+        '.%s searchbar > revealer > box { background: none;'
+        ' border-style: none; box-shadow: none; }'
+        '.%s searchbar .close { color: inherit; }'
+        % (_CSS_CLASS, _CSS_CLASS, _CSS_CLASS))
     Gtk.StyleContext.add_provider_for_display(
         display, provider, theme.VIEW_COLOUR_PRIORITY)
 
@@ -71,11 +79,17 @@ class Shelf(Gtk.Box):
         self.add_css_class(_CSS_CLASS)
         _paint_black(self.get_display())
 
+        # The search field lies over the covers, so that opening it
+        # moves nothing under it.
+        content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        overlay = Gtk.Overlay(child=content, vexpand=True)
+        self.append(overlay)
+
         self._heading = Gtk.Label(xalign=0)
         self._heading.add_css_class('heading')
         for side in ('top', 'bottom', 'start', 'end'):
             getattr(self._heading, 'set_margin_' + side)(6)
-        self.append(self._heading)
+        content.append(self._heading)
 
         #: What the books shown hold in their name or path, as the
         #: search field says; None shows them all.
@@ -91,7 +105,9 @@ class Shelf(Gtk.Box):
         self._search.connect('search-changed', self._search_changed)
         self._search.connect('activate', self._search_changed)
         self._search_bar = Gtk.SearchBar(child=self._search,
-                                         show_close_button=True)
+                                         show_close_button=True,
+                                         halign=Gtk.Align.END,
+                                         valign=Gtk.Align.START)
         self._search_bar.connect_entry(self._search)
         self._search_bar.connect('notify::search-mode-enabled',
                                  self._search_mode_changed)
@@ -101,21 +117,21 @@ class Shelf(Gtk.Box):
         leftover = Gtk.EventControllerKey()
         leftover.connect('key-pressed', self._key_left_by_search)
         self._search_bar.add_controller(leftover)
-        self.append(self._search_bar)
+        overlay.add_overlay(self._search_bar)
 
         # The cover area takes the library window; what it asks of one
         # is what this class has.
         self.book_area = library_book_area._BookArea(
             cast('main_dialog._LibraryDialog', self))
         self.book_area.set_vexpand(True)
-        self.append(self.book_area)
+        content.append(self.book_area)
 
         self._empty = Gtk.Label(
             label=_('The library holds no books yet. '
                     'Add some in the library window.'),
             wrap=True, justify=Gtk.Justification.CENTER)
         self._empty.set_vexpand(True)
-        self.append(self._empty)
+        content.append(self._empty)
 
     @property
     def main_window(self) -> 'main.MainWindow':

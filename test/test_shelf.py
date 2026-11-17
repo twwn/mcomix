@@ -312,6 +312,19 @@ class ShelfSearchTest(_ShelfWindowTest):
         self.assertTrue(self.shelf._search_bar.get_search_mode())
         self.assertTrue(self._field_has_focus())
 
+    def test_the_field_moves_no_cover(self):
+        """It lies over the covers' corner: in a bar of its own above
+        them, it pushed every cover down by its height."""
+        def top():
+            return self.shelf.book_area.compute_bounds(self.window)[1].get_y()
+        self.assertTrue(wait_for(lambda: self.shelf.book_area.get_height() > 0))
+        before = top()
+        self.shelf.search()
+        revealer = self.shelf._search_bar.get_first_child()
+        self.assertTrue(wait_for(revealer.get_child_revealed))
+        wait_for(lambda: top() != before, seconds=0.5)
+        self.assertEqual(before, top())
+
     def test_a_search_looks_among_every_book(self):
         self.shelf.search()
         self._search_for('tar')
