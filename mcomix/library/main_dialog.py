@@ -127,14 +127,16 @@ class _LibraryDialog(Gtk.Window):
         self.present()
 
     def open_book(self, books: Sequence[int],
-                  keep_library_open: bool = False) -> None:
+                  keep_library_open: bool = False,
+                  among_shown: bool = True) -> None:
         """Open the books whose ids are in <books>, in the main window.
 
         More than one is opened as a book of its own pages, in the order
         given.  One is opened among the books shown, in the order shown,
-        which Next and Previous archive walk rather than its folder.
-        The library window hides itself unless <keep_library_open> says
-        otherwise.
+        which Next and Previous archive walk rather than its folder;
+        unless <among_shown> is False, when it is opened as a book opened
+        by hand is, among its folder's.  The library window hides itself
+        unless <keep_library_open> says otherwise.
         """
 
         # get_book_path() answers None for a book that is no longer in
@@ -150,8 +152,9 @@ class _LibraryDialog(Gtk.Window):
         if len(paths) > 1:
             self._file_handler.open_file(paths)
         elif len(paths) == 1:
-            self._file_handler.open_file(paths[0],
-                                         listed=self.book_area.shown_paths())
+            self._file_handler.open_file(
+                paths[0],
+                listed=self.book_area.shown_paths() if among_shown else None)
 
     def scan_for_new_files(self) -> None:
         """ Start scanning for new files from the watch list. """

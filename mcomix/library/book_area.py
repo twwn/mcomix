@@ -605,11 +605,13 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         for item in items:
             self._cache.invalidate(item.path)
 
-    def _open_books(self, keep_library_open: bool) -> None:
+    def _open_books(self, keep_library_open: bool,
+                    among_shown: bool = True) -> None:
         books = [item.uid for item in self._selected_items()]
         if not books:
             return
-        self._library.open_book(books, keep_library_open=keep_library_open)
+        self._library.open_book(books, keep_library_open=keep_library_open,
+                                among_shown=among_shown)
 
     def open_selected_book(self, *args: object) -> None:
         """Open the currently selected book."""
@@ -1526,6 +1528,16 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
                 Gdk.ModifierType.CONTROL_MASK | Gdk.ModifierType.ALT_MASK
                 | Gdk.ModifierType.SHIFT_MASK):
             self.rename_selected()
+            return Gdk.EVENT_STOP
+        # CTRL+Enter opens the book as one opened by hand: Next and
+        # Previous book walk its folder, not the covers shown.  A middle
+        # click does the same in an MComix of its own.
+        if state & Gdk.ModifierType.CONTROL_MASK \
+                and not state & (Gdk.ModifierType.ALT_MASK
+                                 | Gdk.ModifierType.SHIFT_MASK) \
+                and keyval in (Gdk.KEY_Return, Gdk.KEY_KP_Enter,
+                               Gdk.KEY_ISO_Enter):
+            self._open_books(False, among_shown=False)
             return Gdk.EVENT_STOP
         # As the main window's Properties are reached.
         if state & Gdk.ModifierType.ALT_MASK \

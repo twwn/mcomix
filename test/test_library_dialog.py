@@ -1680,6 +1680,38 @@ class OpenFromLibraryTest(_LibraryWindowTest):
         self._open_while_drawing(open_selected)
 
 
+class OpenAsByHandTest(_OneBookTest):
+
+    """CTRL+Enter opens a book as one opened by hand is opened."""
+
+    def _open_with(self, state):
+        area = self.dialog.book_area
+        area._covers.select_only(0)
+        pump()
+        handler = self.dialog.main_window.filehandler
+        with unittest.mock.patch.object(handler, 'open_file') as open_file:
+            stopped = area._key_press(None, Gdk.KEY_Return, 0, state)
+        self.assertTrue(stopped)
+        open_file.assert_called_once()
+        self.assertEqual((self.path,), open_file.call_args.args)
+        return open_file.call_args.kwargs.get('listed')
+
+    def test_ctrl_enter_leaves_the_neighbours_to_its_folder(self):
+        # Without the covers shown, Next and Previous book walk the
+        # book's folder in natural order.
+        self.assertIsNone(self._open_with(Gdk.ModifierType.CONTROL_MASK))
+        self.assertFalse(self.dialog.get_visible())
+
+    def test_enter_still_opens_it_among_the_covers_shown(self):
+        area = self.dialog.book_area
+        area._covers.select_only(0)
+        pump()
+        handler = self.dialog.main_window.filehandler
+        with unittest.mock.patch.object(handler, 'open_file') as open_file:
+            area._book_activated(area._covers, 0)
+        self.assertEqual([self.path], open_file.call_args.kwargs['listed'])
+
+
 class CopyBookTest(_OneBookTest):
 
     """"Copy" in the menu over the covers."""

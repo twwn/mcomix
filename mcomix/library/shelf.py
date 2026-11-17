@@ -246,17 +246,21 @@ class Shelf(Gtk.Box):
         """Nothing is added from here."""
 
     def open_book(self, books: Sequence[int],
-                  keep_library_open: bool = False) -> None:
+                  keep_library_open: bool = False,
+                  among_shown: bool = True) -> None:
         """Open the books whose ids are in <books>: one among the books
-        shown, which Next and Previous book then walk; several as one
-        book of their pages."""
+        shown, which Next and Previous book then walk, or among its
+        folder's unless <among_shown>; several as one book of their
+        pages."""
         paths = [path for path in map(self.backend.get_book_path, books)
                  if path is not None]
         handler = self.main_window.filehandler
         if len(paths) > 1:
             handler.open_file(paths)
         elif paths:
-            handler.open_file(paths[0], listed=self.book_area.shown_paths())
+            handler.open_file(
+                paths[0],
+                listed=self.book_area.shown_paths() if among_shown else None)
 
     def close(self) -> None:
         """Stop the cover area's work, before the window goes."""

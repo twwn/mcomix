@@ -1844,7 +1844,7 @@ class OpenAndClickTest(MComixTest):
         self.library.control_area = _ControlArea()
         self.opened = []
         self.library.open_book = (
-            lambda books, keep_library_open: self.opened.append(
+            lambda books, keep_library_open, among_shown=True: self.opened.append(
                 (books, keep_library_open)))
         self.area = book_area._BookArea(self.library)
         self.area._covers.set_items(
