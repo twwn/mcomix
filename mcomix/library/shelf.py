@@ -172,7 +172,7 @@ class Shelf(Gtk.Box):
         else:
             self._collection = constants.COLLECTION_ALL
             self._heading.set_text(_('All books'))
-            books = bool(self.backend.get_books_in_collection(None))
+            books = self.backend.has_books()
         self._heading.set_visible(books)
         self.book_area.set_visible(books)
         self._empty.set_visible(not books)

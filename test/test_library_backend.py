@@ -298,6 +298,15 @@ class NothingThereTest(LibraryDatabaseTest):
     def test_a_book_it_does_not_hold_has_no_cover(self):
         self.assertIsNone(self.library.get_book_cover(9999))
 
+    def test_whether_it_holds_any_book(self):
+        self.assertFalse(self.library.has_books())
+        path = os.path.join(self.tmp_dir, 'Book.cbz')
+        shutil.copy(self._archive(), path)
+        self.assertTrue(self.library.add_book(path))
+        self.assertTrue(self.library.has_books())
+        self.library.remove_book(self.library.get_book_by_path(path).id)
+        self.assertFalse(self.library.has_books())
+
     def test_a_collection_it_does_not_hold_is_none(self):
         self.assertIsNone(self.library.get_collection_by_id(9999))
 
