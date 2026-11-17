@@ -83,7 +83,13 @@ class ThumbnailListViewTest(MComixTest):
 
     def test_every_row_is_asked_for_at_most_once(self):
         self._fill()
-        self.assertTrue(self.asked, 'nothing was asked for at all')
+        # A worker thread asks, once the cells are bound; on a loaded
+        # runner it has not always been reached by the time the list has
+        # settled.  Let the list settle again afterwards, so a row queued
+        # twice has the time to be asked for twice.
+        self.assertTrue(wait_for(lambda: self.asked),
+                        'nothing was asked for at all')
+        self._settle()
         self.assertEqual(len(self.asked), len(set(self.asked)),
                          'the same row was queued more than once')
 
