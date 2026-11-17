@@ -1,5 +1,7 @@
+import functools
 import itertools
 import os
+import random
 import shutil
 import subprocess
 import sys
@@ -111,6 +113,47 @@ class TestAlphanumericSort(unittest.TestCase):
         lst = ['page10.jpg', 'Page2.jpg', 'page2.jpg']
         tools.alphanumeric_sort(lst)
         self.assertListEqual(lst, ['Page2.jpg', 'page2.jpg', 'page10.jpg'])
+
+    def test_the_key_orders_names_as_comparing_them_run_by_run_does(self) -> None:
+        """The key is a tuple Python compares by itself; the order is
+        the one of comparing the runs of two names one by one, a run of
+        digits against a run of anything else as text, and the names
+        themselves where the runs are all the same."""
+        def runs(name: str) -> list[int | str]:
+            return [int(run) if run.isdecimal() else run
+                    for run in tools.NUMERIC_REGEXP.findall(name.lower())]
+
+        def before(left_name: str, right_name: str) -> bool:
+            for left, right in itertools.zip_longest(
+                    runs(left_name), runs(right_name), fillvalue=''):
+                if isinstance(left, int) and isinstance(right, int):
+                    if left != right:
+                        return left < right
+                elif str(left) != str(right):
+                    return str(left) < str(right)
+            return left_name < right_name
+
+        alphabet = list('0123456789aAzZ .-_/(~:') + [
+            '²', '٣', 'é', 'É', '①', '１']
+        chooser = random.Random(1234)
+
+        def name() -> str:
+            return ''.join(chooser.choice(alphabet)
+                           for _ in range(chooser.randint(0, 7)))
+
+        for _ in range(3000):
+            left = name()
+            right = (left[:chooser.randint(0, len(left))] + name()
+                     if chooser.random() < 0.3 else name())
+            expected = sorted([left, right], key=functools.cmp_to_key(
+                lambda a, b: before(b, a) - before(a, b)))
+            got = [left, right]
+            tools.alphanumeric_sort(got)
+            self.assertEqual(expected, got)
+            self.assertEqual(
+                before(left, right),
+                tools.AlphanumericSortKey(left)
+                < tools.AlphanumericSortKey(right), (left, right))
 
 class TestAtomicWrite(unittest.TestCase):
     def setUp(self) -> None:

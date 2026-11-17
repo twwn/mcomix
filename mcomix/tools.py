@@ -3,6 +3,7 @@
 import bisect
 import contextlib
 import ctypes
+import functools
 import gc
 import itertools
 import math
@@ -42,38 +43,63 @@ def cmp(a: Comparable, b: Comparable) -> int:
     return (b < a) - (a < b)
 
 
+#: A name's natural order key (see _natural_key()).
+NaturalKey = tuple[str, tuple[int | str, ...], str]
+
+
+@functools.lru_cache(maxsize=8192)
+def _natural_key(filename: str) -> NaturalKey:
+    """What puts <filename> in its natural order (1 before 10), as a
+    tuple Python compares by itself.
+
+    The name, lower-cased, is split into runs of digits, which compare
+    as numbers, and runs of anything else, which compare as text.  The
+    runs alternate, so two names that both start with digits, or both
+    with something else, have runs of one kind at each place, and the
+    runs of the two compare one by one.  A name that starts with digits
+    against one that does not is decided by its first run as text,
+    which is the first character of the other name against a digit:
+    the first item of the key stands for that, "0" for any run of
+    digits and the first character for a run of anything else (no
+    character that is not a digit falls between "0" and "9").
+
+    Names whose runs are all the same - differing only in case or in
+    leading zeros - are put in order by the names themselves, so that
+    the order of a book's pages does not depend on the order they were
+    listed in.
+
+    Comparing names run by run in Python, in an __lt__, made sorting a
+    folder of 2000 books take 10 ms, and splitting the names takes most
+    of what is left: the keys are kept, since the same folder is listed
+    again on each book opened in it and the key of a name never
+    changes.
+    """
+    # isdecimal() rather than isdigit(), which is also true of the
+    # superscripts and the circled numbers - "m²" in a page's name
+    # made int() raise and the book could not be listed at all.
+    # What the regular expression splits off as a number is exactly
+    # what isdecimal() is true of.
+    parts = tuple(int(part) if part.isdecimal() else part
+                  for part in NUMERIC_REGEXP.findall(filename.lower()))
+    if not parts:
+        first = ''
+    elif isinstance(parts[0], int):
+        first = '0'
+    else:
+        first = parts[0][0]
+    return first, parts, filename
+
+
 class AlphanumericSortKey:
     """ Compares two strings by their natural order (i.e. 1 before 10) """
+
+    __slots__ = ('key',)
+
     def __init__(self, filename: str) -> None:
-        # isdecimal() rather than isdigit(), which is also true of the
-        # superscripts and the circled numbers - "m²" in a page's name
-        # made int() raise and the book could not be listed at all.
-        # What the regular expression splits off as a number is exactly
-        # what isdecimal() is true of.
-        self.filename_parts: list[int | str] = [
-            int(part) if part.isdecimal() else part
-            for part in NUMERIC_REGEXP.findall(filename.lower())
-        ]
-        #: What decides between two names the parts cannot tell apart,
-        #: such as "Page1" and "page01".
-        self.filename = filename
+        self.key = _natural_key(filename)
 
     def __lt__(self, other: 'AlphanumericSortKey') -> bool:
-        for left, right in itertools.zip_longest(self.filename_parts, other.filename_parts, fillvalue=''):
-            if isinstance(left, int) and isinstance(right, int):
-                if left != right:
-                    return left < right
-            else:
-                # A run of digits against a run of letters, and any two
-                # runs of letters, are put in order as text.
-                left_text, right_text = str(left), str(right)
-                if left_text != right_text:
-                    return left_text < right_text
-
-        # Names that differ only in case or in leading zeros are put in
-        # order by the names themselves, so that the order of a book's
-        # pages does not depend on the order they were listed in.
-        return self.filename < other.filename
+        return self.key < other.key
 
 
 def alphanumeric_sort(filenames: list[str]) -> None:
@@ -82,7 +108,7 @@ def alphanumeric_sort(filenames: list[str]) -> None:
     ordering.
     """
 
-    filenames.sort(key=AlphanumericSortKey)
+    filenames.sort(key=_natural_key)
 
 
 def bin_search(lst: "list[Comparable]", value: Comparable) -> int:
