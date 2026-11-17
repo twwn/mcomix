@@ -67,7 +67,7 @@ While no book is open, the main window shows the covers of "Recent" itself, or o
 - Reopened at the next start, by "Reopen the last book read" or "Save and quit", it still walks those books. Opened any other way, a book walks its folder.
 - A book that cannot be read is not added. The status bar names it.
 - A RAR book in volumes is added as its first volume; the others are left out.
-  Deleting the book deletes all of its volumes.
+  Deleting or moving the book takes all of its volumes.
 - An encrypted book is added without asking its password. Its cover is a padlock; the password is asked when it is opened.
 
 ## Reading lists

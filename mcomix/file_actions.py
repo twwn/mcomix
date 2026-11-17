@@ -1360,7 +1360,7 @@ class FileActions:
             return
         self._window.filehandler.release_archive()
         try:
-            target = file_mover.move_file(current_file, directory)
+            target = file_mover.move_book(current_file, directory)
         except OSError as error:
             self._stayed()
             self._move_failed(current_file, directory, error, parent)
@@ -1388,7 +1388,7 @@ class FileActions:
                 is_open = path
                 continue
             try:
-                target = file_mover.move_file(path, directory)
+                target = file_mover.move_book(path, directory)
             except OSError as error:
                 failed.append((path, error))
                 continue

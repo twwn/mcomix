@@ -2466,6 +2466,38 @@ class MainWindowTest(MComixTest):
                          sorted(name.split('-', 1)[1]
                                 for name in os.listdir(self.trash_dir)))
 
+    def test_moving_a_rar_set_moves_every_volume(self):
+        folder, _volumes = self._volume_set()
+        destination = os.path.join(self.tmp_dir, 'destination')
+        os.makedirs(destination)
+        self.window.file_actions.move_current_file(destination)
+        self._pump()
+        self.assertEqual([], os.listdir(folder))
+        self.assertEqual(['Set.part1.rar', 'Set.part2.rar', 'Set.part3.rar'],
+                         sorted(os.listdir(destination)))
+        moved = os.path.join(destination, 'Set.part1.rar')
+        self.assertTrue(wait_for(
+            lambda: self.window.filehandler.get_path_to_base() == moved))
+
+    def test_the_library_moves_a_rar_set_whole(self):
+        """A book that is not open, as the library's "Move to" moves
+        it."""
+        folder = os.path.join(self.tmp_dir, 'shelf')
+        destination = os.path.join(self.tmp_dir, 'destination')
+        os.makedirs(folder)
+        os.makedirs(destination)
+        for part in (1, 2, 3):
+            shutil.copy(get_testfile_path(
+                'archives', 'Multivolume.part%d.rar' % part),
+                os.path.join(folder, 'Set.part%d.rar' % part))
+        self.window.file_actions.move_books(
+            [os.path.join(folder, 'Set.part1.rar')], destination,
+            self.window)
+        self._pump()
+        self.assertEqual([], os.listdir(folder))
+        self.assertEqual(['Set.part1.rar', 'Set.part2.rar', 'Set.part3.rar'],
+                         sorted(os.listdir(destination)))
+
     def test_a_rar_set_deleted_permanently_goes_whole(self):
         folder, volumes = self._volume_set()
         dialog = self._asked_to_delete_permanently(volumes[0])

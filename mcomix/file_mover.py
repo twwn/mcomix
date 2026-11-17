@@ -61,6 +61,45 @@ def move_file(path: str, directory: str) -> str:
     return target
 
 
+def move_book(path: str, directory: str) -> str:
+    """Move the book at <path> into <directory>, and return where it now
+    is: move_file(), with the later volumes of the RAR set <path> is
+    the first of (archive_tools.volume_set()).
+
+    The set is listed as one book and read from its first volume, which
+    without the rest beside it is a book cut short, and the rest would
+    be listed nowhere.  So it moves whole or not at all: every name is
+    checked free, and the room for all of them, before the first file
+    goes, and a volume that fails on the way takes the ones moved
+    before it back.
+    """
+    # Deferred: archive_tools imports the archive handlers, which
+    # moving a loose image has no use for.
+    from mcomix import archive_tools
+    volumes = archive_tools.volume_set(path)
+    if len(volumes) == 1:
+        return move_file(path, directory)
+    for volume in volumes:
+        target = os.path.join(directory, os.path.basename(volume))
+        if os.path.lexists(target):
+            raise FileExistsError(errno.EEXIST, os.strerror(errno.EEXIST),
+                                  target)
+    if not same_file_system(path, directory) and sum(
+            os.path.getsize(volume) for volume in volumes) \
+            > shutil.disk_usage(directory).free:
+        raise OSError(errno.ENOSPC, os.strerror(errno.ENOSPC), directory)
+    moved: list[tuple[str, str]] = []
+    try:
+        for volume in volumes:
+            moved.append((volume, move_file(volume, directory)))
+    except OSError:
+        for volume, target in reversed(moved):
+            with contextlib.suppress(OSError):
+                move_file(target, os.path.dirname(volume))
+        raise
+    return moved[0][1]
+
+
 def _move_across_file_systems(path: str, target: str) -> None:
     """Copy <path> to <target>, which is free, and remove the original.
 

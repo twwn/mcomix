@@ -103,6 +103,73 @@ class FileMoverTest(MComixTest):
 
         self.assertTrue(os.path.isfile(moved))
 
+    def _volume_set(self):
+        """The three volumes of Multivolume.rar in the source folder."""
+        import shutil
+        from . import get_testfile_path
+        volumes = []
+        for part in (1, 2, 3):
+            volume = os.path.join(self.source, 'Set.part%d.rar' % part)
+            shutil.copy(get_testfile_path(
+                'archives', 'Multivolume.part%d.rar' % part), volume)
+            volumes.append(volume)
+        return volumes
+
+    def test_a_rar_set_moves_whole(self):
+        """Its first volume is the book; the rest, left behind, were
+        listed nowhere, and the book that moved was cut short."""
+        volumes = self._volume_set()
+        moved = file_mover.move_book(volumes[0], self.target)
+        self.assertEqual(os.path.join(self.target, 'Set.part1.rar'), moved)
+        self.assertEqual(['Set.part1.rar', 'Set.part2.rar', 'Set.part3.rar'],
+                         sorted(os.listdir(self.target)))
+        self.assertEqual(['book.cbz'], os.listdir(self.source))
+
+    def test_a_rar_set_with_a_volume_s_name_taken_does_not_move(self):
+        volumes = self._volume_set()
+        with open(os.path.join(self.target, 'Set.part3.rar'), 'wb') as taken:
+            taken.write(b'something else')
+        with unittest.mock.patch.object(
+                file_mover, 'move_file', wraps=file_mover.move_file) as moving, \
+                self.assertRaises(FileExistsError):
+            file_mover.move_book(volumes[0], self.target)
+        moving.assert_not_called()
+        self.assertTrue(all(os.path.isfile(volume) for volume in volumes))
+        self.assertEqual(['Set.part3.rar'], os.listdir(self.target))
+
+    def test_a_rar_set_that_would_not_fit_does_not_move(self):
+        volumes = self._volume_set()
+        # Room for each volume, not for all of them.
+        free = max(os.path.getsize(volume) for volume in volumes)
+        with unittest.mock.patch.object(file_mover, 'same_file_system',
+                                        return_value=False), \
+                unittest.mock.patch('shutil.disk_usage',
+                                    return_value=types.SimpleNamespace(free=free)):
+            with self.assertRaises(OSError) as raised:
+                file_mover.move_book(volumes[0], self.target)
+        self.assertEqual(raised.exception.errno, errno.ENOSPC)
+        self.assertTrue(all(os.path.isfile(volume) for volume in volumes))
+        self.assertEqual([], os.listdir(self.target))
+
+    def test_a_volume_that_fails_takes_the_ones_moved_back(self):
+        volumes = self._volume_set()
+        move_file = file_mover.move_file
+
+        def failing(path, directory):
+            if path == volumes[2]:
+                raise OSError(errno.EIO, os.strerror(errno.EIO), path)
+            return move_file(path, directory)
+
+        with unittest.mock.patch.object(file_mover, 'move_file', failing), \
+                self.assertRaises(OSError):
+            file_mover.move_book(volumes[0], self.target)
+        self.assertTrue(all(os.path.isfile(volume) for volume in volumes))
+        self.assertEqual([], os.listdir(self.target))
+
+    def test_a_book_in_one_file_moves_as_before(self):
+        self.assertEqual(os.path.join(self.target, 'book.cbz'),
+                         file_mover.move_book(self.book, self.target))
+
     def _move_across_with(self, name, stand_in):
         """Move the book as across file systems, with <stand_in> for the
         function called <name>."""

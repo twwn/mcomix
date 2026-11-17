@@ -47,7 +47,7 @@ The archive on disk is untouched until the changes are written.
 - An archive another program has written since the book was opened is not written over unasked: what that program changed would be lost. "Cancel" leaves it as it is, and on the way out keeps the book open.
 - A save that takes more than half a second shows its progress, and "Cancel" stops it. The archive on disk is then left as it was, and the changes stay to be written later. Cancelling a save made on the way out keeps the book open. A book closed or opened meanwhile waits for the save.
 - Deleting the open file takes it out of the recent files and the library. Bookmarks in it are asked about first.
-- A RAR book in volumes is deleted whole: name.part1.rar and every volume after it.
+- A RAR book in volumes is deleted or moved whole: name.part1.rar and every volume after it.
 - Once the file is gone, the next one in its folder opens, or the last one. A file that could not be deleted stays open, on the same page.
 
 ## Saved archives
