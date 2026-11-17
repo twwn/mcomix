@@ -14,6 +14,7 @@ it lays out.
 """
 
 import threading
+import time
 
 from gi.repository import GdkPixbuf, Gtk
 
@@ -92,6 +93,40 @@ class ThumbnailListViewTest(MComixTest):
         self._settle()
         self.assertEqual(len(self.asked), len(set(self.asked)),
                          'the same row was queued more than once')
+
+    def test_a_thumbnail_on_its_way_is_not_asked_for_again(self):
+        """Made, and waiting for the main loop to hand it over: the
+        sidebar asks again for every row without a thumbnail each time
+        a page comes out of the archive, and made the same page's
+        thumbnail up to ten times while opening a book."""
+        self._fill()
+        self.assertTrue(wait_for(lambda: self.asked))
+        self._settle()
+        rows = list(self.view._bound)
+        for item in rows:
+            item.thumbnail = None
+        del self.asked[:]
+        self.view.refresh()
+
+        def made_without_the_main_loop():
+            # Not wait_for(): the main loop must not turn, or the
+            # thumbnails made would be handed over.  An order is held
+            # until its worker is done with it.
+            end = time.monotonic() + 5
+            while time.monotonic() < end and self.view._thread._orders_set:
+                time.sleep(0.01)
+            return len(self.asked)
+        self.assertEqual(len(rows), made_without_the_main_loop())
+        self.view.refresh()
+        self.assertEqual(len(rows), made_without_the_main_loop())
+        # Nor by a cell bound again meanwhile.
+        for item in rows:
+            self.view._ask_soon(item)
+        self.view._ask_for_unasked()
+        self.assertEqual(len(rows), made_without_the_main_loop())
+        self._settle()
+        self.assertEqual(len(rows), len(self.asked))
+        self.assertTrue(all(item.thumbnail is not None for item in rows))
 
     def test_a_row_is_asked_for_as_soon_as_the_rows_are_there(self):
         # set_pages() binds the rows that fit from inside the splice, so

@@ -219,6 +219,13 @@ class _ThumbnailViewBase(widgets.Releasable):
         #: off screen when that was asked or left it before it was done:
         #: they are asked for when they are next bound.
         self._stale: set[ThumbnailItem] = set()
+        #: The entries whose thumbnail has been made and waits for the
+        #: main loop to hand it over: out of the workers' queue, and not
+        #: on the entry yet, so not to be asked for again.  The sidebar
+        #: asks again for every row without one each time a page comes
+        #: out of the archive, and made the same page up to ten times
+        #: while a book was opened.
+        self._coming: set[ThumbnailItem] = set()
         #: Every cell the factory has built, on screen or kept aside
         #: for rows to come; release() needs the ones kept aside too.
         self._cells: "weakref.WeakSet[_ThumbnailCell]" = weakref.WeakSet()
@@ -330,8 +337,8 @@ class _ThumbnailViewBase(widgets.Releasable):
         for item in unasked:
             # Not one that went off screen meanwhile, or whose thumbnail
             # came by another way.
-            if item in self._bound and (item.thumbnail is None
-                                        or item in self._stale):
+            if item in self._bound and (item in self._stale or (
+                    item.thumbnail is None and item not in self._coming)):
                 wanted[item] = None
         first, last = self._positions_on_screen()
         bound = self._bound
@@ -542,7 +549,7 @@ class _ThumbnailViewBase(widgets.Releasable):
         """
         self._updates_stopped = False
         for item in tuple(self._bound):
-            if item.thumbnail is None:
+            if item.thumbnail is None and item not in self._coming:
                 self._ask_for(item)
 
     def _ask_for(self, item: ThumbnailItem) -> None:
@@ -558,11 +565,15 @@ class _ThumbnailViewBase(widgets.Releasable):
         scale = self.device_scale
         pixbuf = generate(item.uid) if generate is not None else None
         if pixbuf is not None:
+            # Before the worker gives the order up: until then the queue
+            # turns away the same order.
+            self._coming.add(item)
             GLib.idle_add(self._thumbnail_finished, item, pixbuf, scale)
 
     def _thumbnail_finished(self, item: ThumbnailItem,
                             pixbuf: GdkPixbuf.Pixbuf,
                             scale: float = 1.0) -> bool:
+        self._coming.discard(item)
         if not self._updates_stopped:
             # Before the thumbnail, whose notification redraws the cell.
             item.scale = scale
