@@ -23,7 +23,7 @@ class PageRotationsTest(MComixTest):
     def test_it_follows_a_book_that_is_moved(self):
         page_rotations.remember('/books/a.cbz', 'p02.jpg', 90)
         page_rotations.follow('/books/a.cbz', '/shelf/a.cbz')
-        page_rotations._loaded = None
+        page_rotations._store.forget()
         self.assertEqual(90, page_rotations.rotation('/shelf/a.cbz', 'p02.jpg'))
         self.assertEqual(0, page_rotations.rotation('/books/a.cbz', 'p02.jpg'))
         # A book nothing was said of leaves the file as it is.
@@ -39,15 +39,33 @@ class PageRotationsTest(MComixTest):
         page_rotations.remember(inside, 'p02.jpg', 90)
         page_rotations.remember(outside, 'p02.jpg', 90)
         self.assertEqual(1, page_rotations.relocate(old, new))
-        page_rotations._loaded = None
+        page_rotations._store.forget()
         self.assertTrue(page_rotations.rotation(os.path.join(new, 'sub', 'a.cbz'), 'p02.jpg'))
         self.assertFalse(page_rotations.rotation(inside, 'p02.jpg'))
         self.assertTrue(page_rotations.rotation(outside, 'p02.jpg'))
         self.assertEqual(0, page_rotations.relocate(old, new))
 
+    def test_it_follows_pages_renamed_by_a_book_written_again(self):
+        """The pages swap names at once; a turn kept for a page the
+        book no longer holds goes, and a book left with none leaves the
+        file."""
+        page_rotations.remember('/books/a.cbz', 'p01.jpg', 90)
+        page_rotations.remember('/books/a.cbz', 'p02.jpg', 180)
+        page_rotations.remember('/books/a.cbz', 'p03.jpg', 270)
+        page_rotations.rename_pages(
+            '/books/a.cbz', {'p01.jpg': 'p02.jpg', 'p02.jpg': 'p01.jpg'},
+            ['p01.jpg', 'p02.jpg'])
+        page_rotations._store.forget()
+        self.assertEqual(180, page_rotations.rotation('/books/a.cbz', 'p01.jpg'))
+        self.assertEqual(90, page_rotations.rotation('/books/a.cbz', 'p02.jpg'))
+        self.assertEqual(0, page_rotations.rotation('/books/a.cbz', 'p03.jpg'))
+        page_rotations.rename_pages('/books/a.cbz', {}, ['p04.jpg'])
+        with open(self._file(), encoding='utf-8') as fd:
+            self.assertEqual({}, json.load(fd))
+
     def test_it_is_read_back_from_the_file(self):
         page_rotations.remember('/books/a.cbz', 'p02.jpg', 270)
-        page_rotations._loaded = None
+        page_rotations._store.forget()
         self.assertEqual(270, page_rotations.rotation('/books/a.cbz', 'p02.jpg'))
 
     def test_upright_again_is_forgotten(self):
@@ -60,12 +78,12 @@ class PageRotationsTest(MComixTest):
         os.makedirs(constants.DATA_DIR, exist_ok=True)
         with open(self._file(), 'w', encoding='utf-8') as fd:
             fd.write('{"/books/a.cbz": {"p01.jpg": 45, "p02.jpg": 180}, "x": 3')
-        page_rotations._loaded = None
+        page_rotations._store.forget()
         self.assertEqual(0, page_rotations.rotation('/books/a.cbz', 'p02.jpg'))
         with open(self._file(), 'w', encoding='utf-8') as fd:
             json.dump({'/books/a.cbz': {'p01.jpg': 45, 'p02.jpg': 180},
                        'x': 3}, fd)
-        page_rotations._loaded = None
+        page_rotations._store.forget()
         self.assertEqual(0, page_rotations.rotation('/books/a.cbz', 'p01.jpg'))
         self.assertEqual(180, page_rotations.rotation('/books/a.cbz', 'p02.jpg'))
 

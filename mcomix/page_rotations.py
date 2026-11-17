@@ -1,58 +1,30 @@
 """page_rotations.py - The turn a reader has given each page."""
 
-import json
-import os
-
-from collections.abc import Collection, Mapping
-
-from mcomix import constants
-from mcomix import log
-from mcomix import tools
-from mcomix.i18n import _
-
-#: What has been read from or written to the file, with the file's path:
-#: the data folder is read when the store is first used, not at import.
-_loaded: "tuple[str, dict[str, dict[str, int]]] | None" = None
+from mcomix import book_store
 
 
-def _path() -> str:
-    return os.path.join(constants.DATA_DIR, 'page_rotations.json')
-
-
-def _pages() -> dict[str, dict[str, int]]:
+def _read(stored: dict[object, object]) -> dict[str, dict[str, int]]:
     """Every remembered turn: book, then page within it, to degrees."""
-    global _loaded
-    path = _path()
-    if _loaded is not None and _loaded[0] == path:
-        return _loaded[1]
-    pages: dict[str, dict[str, int]] = {}
-    if os.path.isfile(path):
-        try:
-            with open(path, encoding='utf-8') as fd:
-                stored = json.load(fd)
-            if isinstance(stored, dict):
-                pages = {
-                    book: {page: degrees for page, degrees in turns.items()
-                           if isinstance(degrees, int)
-                           and degrees in (90, 180, 270)}
-                    for book, turns in stored.items()
-                    if isinstance(book, str) and isinstance(turns, dict)}
-        except (OSError, ValueError) as error:
-            log.debug('%s: %s', path, error)
-            log.warning(_('! Could not read %s'), path)
-    _loaded = (path, pages)
-    return pages
+    return {
+        book: {page: degrees for page, degrees in turns.items()
+               if isinstance(degrees, int)
+               and degrees in (90, 180, 270)}
+        for book, turns in stored.items()
+        if isinstance(book, str) and isinstance(turns, dict)}
+
+
+_store = book_store.PageStore('page_rotations.json', _read)
 
 
 def rotation(book: str, page: str) -> int:
     """The turn given to <page> of <book>, in degrees clockwise; 0 where
     none was."""
-    return _pages().get(book, {}).get(page, 0)
+    return _store.books().get(book, {}).get(page, 0)
 
 
 def remember(book: str, page: str, degrees: int) -> None:
     """Keep <degrees> as the turn of <page> of <book>; 0 forgets it."""
-    pages = _pages()
+    pages = _store.books()
     turns = pages.setdefault(book, {})
     if degrees % 360:
         turns[page] = degrees % 360
@@ -60,67 +32,14 @@ def remember(book: str, page: str, degrees: int) -> None:
         turns.pop(page, None)
         if not turns:
             del pages[book]
-    _save(pages)
+    _store.save()
 
 
-def follow(old: str, new: str) -> None:
-    """Keep the turns of the book at <old> for it at <new>, where it
-    has been moved to."""
-    pages = _pages()
-    turns = pages.pop(old, None)
-    if turns is not None:
-        pages[new] = turns
-        _save(pages)
-
-
-def rename_pages(book: str, renamed: "Mapping[str, str]",
-                 pages: "Collection[str]") -> None:
-    """Keep the turns of <book> for its pages under the names they
-    have now: <renamed> maps the name a page had to the one it has,
-    and <pages> is every name the book now holds.
-
-    A book written again has its pages numbered anew, so a page's name
-    is another's old one as often as not: all of them are moved at
-    once, and what was kept for a page the book no longer holds goes,
-    rather than wait for a page that is one day called that.
-    """
-    stored = _pages()
-    kept = stored.get(book)
-    if kept is None:
-        return
-    moved = {renamed.get(page, page): value for page, value in kept.items()}
-    moved = {page: value for page, value in moved.items() if page in pages}
-    if moved == kept:
-        return
-    if moved:
-        stored[book] = moved
-    else:
-        del stored[book]
-    _save(stored)
-
-
-def relocate(old_folder: str, new_folder: str) -> int:
-    """Keep the turns of every book in <old_folder> for it in
-    <new_folder>, where the folder has been moved to, and say how many
-    books that was."""
-    pages = _pages()
-    moved = {book: target for book in pages
-             if (target := tools.relocated(book, old_folder, new_folder))
-             is not None and target not in pages}
-    for book, target in moved.items():
-        pages[target] = pages.pop(book)
-    if moved:
-        _save(pages)
-    return len(moved)
-
-
-def _save(pages: dict[str, dict[str, int]]) -> None:
-    path = _path()
-    try:
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        with tools.atomic_write(path) as fd:
-            json.dump(pages, fd, ensure_ascii=False, indent=0)
-    except OSError as error:
-        log.warning(_('! Could not save %(file)s to %(directory)s: %(error)s'),
-                    {'file': os.path.basename(path),
-                     'directory': os.path.dirname(path), 'error': error})
+#: Keep the turns of the book at <old> for it at <new>, where it has
+#: been moved to.
+follow = _store.follow
+#: Keep the turns of every book in <old_folder> for it in <new_folder>,
+#: where the folder has been moved to, and say how many books that was.
+relocate = _store.relocate
+#: Keep the turns of <book> for its pages under the names they have now.
+rename_pages = _store.rename_pages

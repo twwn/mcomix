@@ -7,15 +7,7 @@ by them, under the names page_identity() gives: the archive and the
 file's name within it.
 """
 
-import json
-import os
-
-from collections.abc import Collection, Mapping
-
-from mcomix import constants
-from mcomix import log
-from mcomix import tools
-from mcomix.i18n import _
+from mcomix import book_store
 
 #: The page is passed over when the pages are turned.
 SKIP = 'skip'
@@ -25,58 +17,40 @@ ALONE = 'alone'
 #: Every mark there is; anything else in the file is dropped on reading.
 _MARKS = frozenset({SKIP, ALONE})
 
-#: What has been read from or written to the file, with the file's path:
-#: the data folder is read when the store is first used, not at import.
-_loaded: "tuple[str, dict[str, dict[str, list[str]]]] | None" = None
 
-
-def _path() -> str:
-    return os.path.join(constants.DATA_DIR, 'page_marks.json')
-
-
-def _books() -> dict[str, dict[str, list[str]]]:
+def _read(stored: dict[object, object]) -> dict[str, dict[str, list[str]]]:
     """Every mark: book, then page within it, to the marks it carries."""
-    global _loaded
-    path = _path()
-    if _loaded is not None and _loaded[0] == path:
-        return _loaded[1]
     books: dict[str, dict[str, list[str]]] = {}
-    if os.path.isfile(path):
-        try:
-            with open(path, encoding='utf-8') as fd:
-                stored = json.load(fd)
-            if isinstance(stored, dict):
-                for book, pages in stored.items():
-                    if not isinstance(book, str) or not isinstance(pages, dict):
-                        continue
-                    kept = {page: sorted(_MARKS.intersection(marks))
-                            for page, marks in pages.items()
-                            if isinstance(marks, list)
-                            and all(isinstance(mark, str) for mark in marks)}
-                    kept = {page: marks for page, marks in kept.items()
-                            if marks}
-                    if kept:
-                        books[book] = kept
-        except (OSError, ValueError) as error:
-            log.debug('%s: %s', path, error)
-            log.warning(_('! Could not read %s'), path)
-    _loaded = (path, books)
+    for book, pages in stored.items():
+        if not isinstance(book, str) or not isinstance(pages, dict):
+            continue
+        kept = {page: sorted(_MARKS.intersection(marks))
+                for page, marks in pages.items()
+                if isinstance(marks, list)
+                and all(isinstance(mark, str) for mark in marks)}
+        kept = {page: marks for page, marks in kept.items()
+                if marks}
+        if kept:
+            books[book] = kept
     return books
+
+
+_store = book_store.PageStore('page_marks.json', _read)
 
 
 def marked(book: str, page: str, mark: str) -> bool:
     """Whether <page> of <book> carries <mark>."""
-    return mark in _books().get(book, {}).get(page, ())
+    return mark in _store.books().get(book, {}).get(page, ())
 
 
 def any_marked(book: str, mark: str) -> bool:
     """Whether any page of <book> carries <mark>."""
-    return any(mark in marks for marks in _books().get(book, {}).values())
+    return any(mark in marks for marks in _store.books().get(book, {}).values())
 
 
 def mark(book: str, page: str, mark: str, on: bool) -> None:
     """Put <mark> on <page> of <book>, or take it off."""
-    books = _books()
+    books = _store.books()
     pages = books.setdefault(book, {})
     marks = set(pages.get(page, ()))
     if on:
@@ -89,67 +63,14 @@ def mark(book: str, page: str, mark: str, on: bool) -> None:
         pages.pop(page, None)
     if not pages:
         del books[book]
-    _save(books)
+    _store.save()
 
 
-def follow(old: str, new: str) -> None:
-    """Keep the marks of the book at <old> for it at <new>, where it
-    has been moved to."""
-    books = _books()
-    pages = books.pop(old, None)
-    if pages is not None:
-        books[new] = pages
-        _save(books)
-
-
-def rename_pages(book: str, renamed: "Mapping[str, str]",
-                 pages: "Collection[str]") -> None:
-    """Keep the marks of <book> for its pages under the names they
-    have now: <renamed> maps the name a page had to the one it has,
-    and <pages> is every name the book now holds.
-
-    A book written again has its pages numbered anew, so a page's name
-    is another's old one as often as not: all of them are moved at
-    once, and what was kept for a page the book no longer holds goes,
-    rather than wait for a page that is one day called that.
-    """
-    stored = _books()
-    kept = stored.get(book)
-    if kept is None:
-        return
-    moved = {renamed.get(page, page): value for page, value in kept.items()}
-    moved = {page: value for page, value in moved.items() if page in pages}
-    if moved == kept:
-        return
-    if moved:
-        stored[book] = moved
-    else:
-        del stored[book]
-    _save(stored)
-
-
-def relocate(old_folder: str, new_folder: str) -> int:
-    """Keep the marks of every book in <old_folder> for it in
-    <new_folder>, where the folder has been moved to, and say how many
-    books that was."""
-    books = _books()
-    moved = {book: target for book in books
-             if (target := tools.relocated(book, old_folder, new_folder))
-             is not None and target not in books}
-    for book, target in moved.items():
-        books[target] = books.pop(book)
-    if moved:
-        _save(books)
-    return len(moved)
-
-
-def _save(books: dict[str, dict[str, list[str]]]) -> None:
-    path = _path()
-    try:
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        with tools.atomic_write(path) as fd:
-            json.dump(books, fd, ensure_ascii=False, indent=0)
-    except OSError as error:
-        log.warning(_('! Could not save %(file)s to %(directory)s: %(error)s'),
-                    {'file': os.path.basename(path),
-                     'directory': os.path.dirname(path), 'error': error})
+#: Keep the marks of the book at <old> for it at <new>, where it has
+#: been moved to.
+follow = _store.follow
+#: Keep the marks of every book in <old_folder> for it in <new_folder>,
+#: where the folder has been moved to, and say how many books that was.
+relocate = _store.relocate
+#: Keep the marks of <book> for its pages under the names they have now.
+rename_pages = _store.rename_pages

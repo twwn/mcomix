@@ -70,7 +70,7 @@ class StoreTest(MComixTest):
         return os.path.join(constants.DATA_DIR, 'reading_directions.json')
 
     def _reload(self):
-        reading_directions._loaded = None
+        reading_directions._store.forget()
 
     def test_a_direction_is_kept_across_a_start(self):
         self.assertIsNone(reading_directions.direction(self.book))

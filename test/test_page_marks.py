@@ -37,7 +37,7 @@ class PageMarksTest(MComixTest):
     def test_it_follows_a_book_that_is_moved(self):
         page_marks.mark('/books/a.cbz', 'p02.jpg', page_marks.SKIP, True)
         page_marks.follow('/books/a.cbz', '/shelf/a.cbz')
-        page_marks._loaded = None
+        page_marks._store.forget()
         self.assertTrue(
             page_marks.marked('/shelf/a.cbz', 'p02.jpg', page_marks.SKIP))
         self.assertFalse(
@@ -55,7 +55,7 @@ class PageMarksTest(MComixTest):
         page_marks.mark(inside, 'p02.jpg', page_marks.SKIP, True)
         page_marks.mark(outside, 'p02.jpg', page_marks.SKIP, True)
         self.assertEqual(1, page_marks.relocate(old, new))
-        page_marks._loaded = None
+        page_marks._store.forget()
         self.assertTrue(page_marks.marked(os.path.join(new, 'sub', 'a.cbz'), 'p02.jpg', page_marks.SKIP))
         self.assertFalse(page_marks.marked(inside, 'p02.jpg', page_marks.SKIP))
         self.assertTrue(page_marks.marked(outside, 'p02.jpg', page_marks.SKIP))
@@ -63,7 +63,7 @@ class PageMarksTest(MComixTest):
 
     def test_it_is_read_back_from_the_file(self):
         page_marks.mark('/books/a.cbz', 'p02.jpg', page_marks.SKIP, True)
-        page_marks._loaded = None
+        page_marks._store.forget()
         self.assertTrue(
             page_marks.marked('/books/a.cbz', 'p02.jpg', page_marks.SKIP))
 
@@ -81,7 +81,7 @@ class PageMarksTest(MComixTest):
         os.makedirs(constants.DATA_DIR, exist_ok=True)
         with open(self._file(), 'w', encoding='utf-8') as fd:
             fd.write('{"/books/a.cbz": {"p01.jpg": ["skip"]}, "x": 3')
-        page_marks._loaded = None
+        page_marks._store.forget()
         self.assertFalse(
             page_marks.marked('/books/a.cbz', 'p01.jpg', page_marks.SKIP))
         # What is not a mark is dropped, and what is one is kept.
@@ -91,8 +91,8 @@ class PageMarksTest(MComixTest):
                                         'p03.jpg': ['sideways'],
                                         'p04.jpg': [3]},
                        '/books/b.cbz': ['skip'], 'x': 3}, fd)
-        page_marks._loaded = None
+        page_marks._store.forget()
         self.assertTrue(
             page_marks.marked('/books/a.cbz', 'p01.jpg', page_marks.SKIP))
         self.assertEqual({'/books/a.cbz': {'p01.jpg': ['skip']}},
-                         page_marks._books())
+                         page_marks._store.books())
