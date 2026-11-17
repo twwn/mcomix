@@ -1120,6 +1120,13 @@ class MainWindow(Gtk.Window):
         else:
             self.filehandler.file_opened += opened
 
+    def shelf_has_focus(self) -> bool:
+        """Whether the keyboard is on the library's covers, shown where
+        the pages would be."""
+        focus = self.get_focus()
+        return (self._shelf is not None and self._shelf.get_visible()
+                and focus is not None and focus.is_ancestor(self._shelf))
+
     def update_shelf(self) -> bool:
         """Show the library's covers where the pages would be, while
         no book is open and the preference asks for them, and take them

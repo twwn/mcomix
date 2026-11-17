@@ -6,9 +6,10 @@ import shutil
 import unittest.mock
 import weakref
 
-from gi.repository import Gtk
+from gi.repository import Gdk, Gtk
 
 from . import MComixTest, get_testfile_path, pump, wait_for
+from .test_key_press import _Controller
 
 from mcomix import constants
 from mcomix import icons
@@ -19,7 +20,9 @@ from mcomix.library import shelf
 from mcomix.preferences import prefs
 
 
-class ShelfTest(MComixTest):
+class _ShelfWindowTest(MComixTest):
+
+    """A main window of its own, with two books to show."""
 
     def setUp(self):
         super().setUp()
@@ -58,6 +61,9 @@ class ShelfTest(MComixTest):
 
     def _has_pages(self):
         return self.window.imagehandler.get_number_of_pages() > 0
+
+
+class ShelfTest(_ShelfWindowTest):
 
     def test_a_window_without_a_book_shows_every_book(self):
         for path in self.books:
@@ -210,5 +216,65 @@ class ShelfTest(MComixTest):
         main.set_main_window(None)
         self.window = None
         pump()
+
+
+class ShelfKeysTest(_ShelfWindowTest):
+
+    """Up and Down did nothing on the covers the window shows while no
+    book is open, nor did Enter, Space, Home, End or the page keys:
+    the window takes every key before anything in it, for its own
+    shortcuts, and kept these from the thumbnail bar. The covers in
+    the library window had them."""
+
+    def setUp(self):
+        super().setUp()
+        for path in self.books:
+            backend.LibraryBackend().add_book(path)
+        self._window()
+        self.covers = self._shown().book_area._covers
+        self.executed = []
+        manager = keybindings.keybinding_manager(self.window)
+        patcher = unittest.mock.patch.object(
+            manager, 'execute', side_effect=self.executed.append)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def _press(self, keyval, state=Gdk.ModifierType(0)):
+        """Press the key that types <keyval> unshifted, with <state> held."""
+        display = self.window.get_display()
+        found, keys = display.map_keyval(keyval)
+        self.assertTrue(found, 'the keymap has no key for %r' % keyval)
+        key = min(keys, key=lambda key: (key.group, key.level))
+        _ok, typed, _group, _level, _consumed = \
+            display.translate_key(key.keycode, state, 0)
+        return self.window.event_handler.key_press_event(
+            _Controller(), typed, key.keycode, state)
+
+    def test_the_covers_have_the_keys_that_move_among_them(self):
+        self.covers.grab_focus()
+        self.assertTrue(wait_for(
+            lambda: self.window.get_focus() is not None))
+        for keyval in (Gdk.KEY_Up, Gdk.KEY_Down, Gdk.KEY_Left,
+                       Gdk.KEY_Right, Gdk.KEY_Home, Gdk.KEY_End,
+                       Gdk.KEY_Page_Up, Gdk.KEY_Page_Down, Gdk.KEY_Return,
+                       Gdk.KEY_KP_Enter, Gdk.KEY_space, Gdk.KEY_KP_Down):
+            with self.subTest(key=Gdk.keyval_name(keyval)):
+                self.assertEqual(Gdk.EVENT_PROPAGATE, self._press(keyval))
+                self.assertEqual(
+                    Gdk.EVENT_PROPAGATE,
+                    self._press(keyval, Gdk.ModifierType.SHIFT_MASK))
+        self.assertEqual([], self.executed)
+
+    def test_the_window_s_shortcuts_still_work_there(self):
+        self.covers.grab_focus()
+        self._press(Gdk.KEY_o, Gdk.ModifierType.CONTROL_MASK)
+        self._press(Gdk.KEY_Left, Gdk.ModifierType.ALT_MASK)
+        self.assertEqual(2, len(self.executed))
+
+    def test_away_from_the_covers_the_keys_are_the_window_s(self):
+        self.window.set_focus(None)
+        self.assertEqual(Gdk.EVENT_STOP, self._press(Gdk.KEY_Down))
+        self.assertEqual(1, len(self.executed))
+
 
 # vim: expandtab:sw=4:ts=4

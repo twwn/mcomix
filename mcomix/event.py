@@ -16,6 +16,17 @@ if TYPE_CHECKING:
     from mcomix import main
 
 
+#: The keys that move among the covers the window shows while no book
+#: is open, and open the one picked out, as they do in the library.
+_SHELF_KEYS = frozenset((
+    Gdk.KEY_Up, Gdk.KEY_Down, Gdk.KEY_Left, Gdk.KEY_Right,
+    Gdk.KEY_Home, Gdk.KEY_End, Gdk.KEY_Page_Up, Gdk.KEY_Page_Down,
+    Gdk.KEY_KP_Up, Gdk.KEY_KP_Down, Gdk.KEY_KP_Left, Gdk.KEY_KP_Right,
+    Gdk.KEY_KP_Home, Gdk.KEY_KP_End, Gdk.KEY_KP_Page_Up,
+    Gdk.KEY_KP_Page_Down, Gdk.KEY_Return, Gdk.KEY_KP_Enter,
+    Gdk.KEY_ISO_Enter, Gdk.KEY_space, Gdk.KEY_KP_Space))
+
+
 def is_swap_gesture(state: Gdk.ModifierType) -> bool:
     """Whether <state> is the modifiers a swap is asked for with."""
     return bool(state & Gdk.ModifierType.CONTROL_MASK
@@ -625,6 +636,17 @@ class EventHandler:
 
         # This is set on demand by callback functions
         self._scroll_protection = False
+
+        # The covers shown while no book is open have the keys that move
+        # among them, which there are bound to the pages there are not,
+        # and below would be kept from them for the thumbnail bar's sake.
+        # Alt and the Super key are the window's still: Alt+Left goes
+        # back.
+        if (keyval in _SHELF_KEYS
+                and not state & (Gdk.ModifierType.ALT_MASK
+                                 | Gdk.ModifierType.SUPER_MASK)
+                and self._window.shelf_has_focus()):
+            return Gdk.EVENT_PROPAGATE
 
         # Dispatch keyboard input handling
         manager = keybindings.keybinding_manager(self._window)
