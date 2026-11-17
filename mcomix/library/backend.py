@@ -43,13 +43,13 @@ if TYPE_CHECKING:
 _COVERS_STORED_AS = 'webp'
 
 
-def _name_order(name: str) -> tools.AlphanumericSortKey:
+def _name_order(name: str) -> tools.NaturalKey:
     """The key collections are put in order by: their names as a
     folder's files are, case aside and runs of digits by value, so
     "Vol 2" comes before "Vol 10" and "manga" before "Zeta".  SQL's
     "order by name" compared the bytes, which put both the other way.
     """
-    return tools.AlphanumericSortKey(name)
+    return tools.natural_key(name)
 
 
 class _LibraryBackend:
@@ -934,7 +934,7 @@ class _LibraryBackend:
             from Contain join Book on Book.id = Contain.book
             where Contain.collection = ?''', (collection,))
         rows.sort(key=lambda row: (row[1] is None, row[1] or 0,
-                                   tools.AlphanumericSortKey(row[2])))
+                                   tools.natural_key(row[2])))
         return [row[0] for row in rows]
 
     def set_collection_order(self, collection: int,

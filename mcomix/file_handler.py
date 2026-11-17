@@ -1156,7 +1156,7 @@ class FileHandler:
             # order, rather than left in the order the archive lists them.
             filelist.sort(key=lambda filename: (
                 GLib.utf8_collate_key_for_filename(os.path.basename(filename), -1),
-                tools.AlphanumericSortKey(filename)))
+                tools.natural_key(filename)))
         else:
             # No sorting
             pass

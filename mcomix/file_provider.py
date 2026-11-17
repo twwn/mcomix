@@ -186,16 +186,16 @@ class FileProvider:
         elif preferences.prefs['sort by'] == constants.SORT_NAME_GLIB:
             files.sort(key=lambda filename: (
                 GLib.utf8_collate_key_for_filename(os.path.basename(filename), -1),
-                tools.AlphanumericSortKey(filename)))
+                tools.natural_key(filename)))
         elif preferences.prefs['sort by'] == constants.SORT_LAST_MODIFIED:
             # Most recently modified file first
             files.sort(key=lambda filename: (
                 -_sort_stamp(filename)[0],
-                tools.AlphanumericSortKey(filename)))
+                tools.natural_key(filename)))
         elif preferences.prefs['sort by'] == constants.SORT_SIZE:
             # Smallest file first
             files.sort(key=lambda filename: (
-                _sort_stamp(filename)[1], tools.AlphanumericSortKey(filename)))
+                _sort_stamp(filename)[1], tools.natural_key(filename)))
         # else: don't sort at all: use OS ordering.
 
         # Default is ascending.

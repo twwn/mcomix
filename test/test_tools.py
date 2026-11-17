@@ -152,8 +152,8 @@ class TestAlphanumericSort(unittest.TestCase):
             self.assertEqual(expected, got)
             self.assertEqual(
                 before(left, right),
-                tools.AlphanumericSortKey(left)
-                < tools.AlphanumericSortKey(right), (left, right))
+                tools.natural_key(left) < tools.natural_key(right),
+                (left, right))
 
 class TestAtomicWrite(unittest.TestCase):
     def setUp(self) -> None:

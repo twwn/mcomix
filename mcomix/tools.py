@@ -90,18 +90,6 @@ def natural_key(filename: str) -> NaturalKey:
     return first, parts, filename
 
 
-class AlphanumericSortKey:
-    """ Compares two strings by their natural order (i.e. 1 before 10) """
-
-    __slots__ = ('key',)
-
-    def __init__(self, filename: str) -> None:
-        self.key = natural_key(filename)
-
-    def __lt__(self, other: 'AlphanumericSortKey') -> bool:
-        return self.key < other.key
-
-
 def alphanumeric_sort(filenames: list[str]) -> None:
     """Do an in-place alphanumeric sort of the strings in <filenames>,
     such that for an example "1.jpg", "2.jpg", "10.jpg" is a sorted
