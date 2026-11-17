@@ -6,7 +6,7 @@ import shutil
 import unittest.mock
 import weakref
 
-from gi.repository import Gdk, Gtk
+from gi.repository import Gdk, Graphene, Gtk
 
 from . import MComixTest, get_testfile_path, pump, wait_for
 from .test_key_press import _Controller
@@ -439,6 +439,34 @@ class ShelfSearchTest(_ShelfWindowTest):
                         # The close button beside the field.
                         40)
         self.assertLess(field.get_y() - shelf.get_y(), 20)
+
+    def test_the_field_is_drawn_solid_over_the_covers(self):
+        """libadwaita draws an entry as a tenth of its writing's colour
+        over whatever lies behind it: over the shelf, white writing on
+        black and on the covers' tops, barely to be read."""
+        translucent = Gtk.CssProvider()
+        translucent.load_from_string(
+            'entry { background-color: alpha(currentColor, 0.1); }')
+        display = self.window.get_display()
+        Gtk.StyleContext.add_provider_for_display(
+            display, translucent, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+        self.addCleanup(Gtk.StyleContext.remove_provider_for_display,
+                        display, translucent)
+        self.shelf.search()
+        revealer = self.shelf._search_bar.get_first_child()
+        self.assertTrue(wait_for(revealer.get_child_revealed))
+        field = self.shelf._search
+        width, height = field.get_width(), field.get_height()
+        snapshot = Gtk.Snapshot()
+        Gtk.WidgetPaintable(widget=field).snapshot(snapshot, width, height)
+        texture = self.window.get_renderer().render_texture(
+            snapshot.to_node(), Graphene.Rect().init(0, 0, width, height))
+        downloader = Gdk.TextureDownloader.new(texture)
+        downloader.set_format(Gdk.MemoryFormat.R8G8B8A8)
+        pixels, stride = downloader.download_bytes()
+        # Its middle, among the letters of no text.
+        middle = height // 2 * stride + width // 2 * 4
+        self.assertEqual(255, pixels.get_data()[middle + 3])
 
     def test_a_search_looks_among_every_book(self):
         self.shelf.search()

@@ -38,14 +38,20 @@ def _paint_black(display: Gdk.Display) -> None:
 
     The search field floats over the top of the covers: the bar a
     search field is put in otherwise would lay a strip of the theme's
-    colour across them."""
+    colour across them.  The field itself is drawn solid, in the colours
+    of a list or a text view (libadwaita names them as plain GTK does):
+    libadwaita draws an entry as a tenth of the writing's colour laid
+    over whatever is behind it, which over the shelf was white writing
+    on black and on the covers' tops."""
     provider = Gtk.CssProvider()
     provider.load_from_string(
         '.%s { background-color: black; color: white; }'
         '.%s searchbar > revealer > box { background: none;'
         ' border-style: none; box-shadow: none; }'
         '.%s searchbar .close { color: inherit; }'
-        % (_CSS_CLASS, _CSS_CLASS, _CSS_CLASS))
+        '.%s searchbar entry { background-color: @theme_base_color;'
+        ' color: @theme_text_color; }'
+        % (_CSS_CLASS, _CSS_CLASS, _CSS_CLASS, _CSS_CLASS))
     Gtk.StyleContext.add_provider_for_display(
         display, provider, theme.VIEW_COLOUR_PRIORITY)
 
