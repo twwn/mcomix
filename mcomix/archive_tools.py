@@ -6,6 +6,7 @@ import re
 import zipfile
 import tarfile
 import tempfile
+import time
 from collections.abc import Callable
 
 from mcomix import image_tools
@@ -358,13 +359,43 @@ def is_later_volume(path: str) -> bool:
     if not is_archive_file(path):
         return False
     try:
-        with open(path, 'rb') as archive:
-            head = archive.read(32)
+        stat = os.stat(path)
     except OSError:
         return False
-    if head.startswith(kfx.CONTAINER_SIGNATURE):
+    known = _LATER_VOLUME.get(path)
+    if known is not None and known[:2] == (stat.st_mtime_ns, stat.st_size):
+        later = known[2]
+    else:
+        try:
+            with open(path, 'rb') as archive:
+                head = archive.read(32)
+        except OSError:
+            return False
+        later = (None if head.startswith(kfx.CONTAINER_SIGNATURE)
+                 else _is_later_rar_volume(head))
+        # A file written within the last seconds may be written again
+        # within the same tick of the clock its time comes from, under
+        # the same size and time: it is read again next time.
+        if time.time_ns() - stat.st_mtime_ns > _SETTLED_NS:
+            if len(_LATER_VOLUME) >= _LATER_VOLUME_KEPT:
+                _LATER_VOLUME.clear()
+            _LATER_VOLUME[path] = (stat.st_mtime_ns, stat.st_size, later)
+    if later is None:
+        # Whether a KFX part is a later one depends on the parts beside
+        # it, which its own size and time do not tell.
         return kfx.is_later_part(path)
-    return _is_later_rar_volume(head)
+    return later
+
+
+#: What is_later_volume() read of a file, by its path, with the file's
+#: modification time and size then: True or False, or None for a KFX
+#: container.  The open book's number among its folder's books asks
+#: about every archive in the folder each time a book opens, Next
+#: archive included, and reading the start of each of 2000 took 36 ms
+#: on a tmpfs, far more on a disk or a share; a stat costs a fraction.
+_LATER_VOLUME: dict[str, tuple[int, int, bool | None]] = {}
+_LATER_VOLUME_KEPT = 50000
+_SETTLED_NS = 2_000_000_000
 
 
 #: A volume of a set named the way RAR 3 and later name them:

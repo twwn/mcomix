@@ -3,6 +3,8 @@ import io
 import lzma
 import os
 import tarfile
+import time
+import unittest.mock
 import zipfile
 
 from . import MComixTest, get_testfile_path
@@ -185,6 +187,49 @@ class ArchiveToolsTest(MComixTest):
                 with open(path, 'wb') as volume_file:
                     volume_file.write(header(flags))
                 self.assertEqual(later, archive_tools.is_later_volume(path))
+
+    def _later_rar_4_volume(self, name, later=True, age=3600):
+        """A RAR 4 main header, of a later volume or a first one, written
+        <age> seconds ago."""
+        flags = 0x0011 if later else 0x0111
+        path = os.path.join(self.tmp_dir, name)
+        with open(path, 'wb') as volume_file:
+            volume_file.write(b'Rar!\x1a\x07\x00' + b'\x00\x00\x73'
+                              + flags.to_bytes(2, 'little')
+                              + b'\x0d\x00' + bytes(6))
+        then = time.time() - age
+        os.utime(path, (then, then))
+        return path
+
+    def _reads(self, path):
+        """How often is_later_volume(<path>) opens the file."""
+        real_open = open
+        with unittest.mock.patch('builtins.open',
+                                 side_effect=real_open) as opened:
+            archive_tools.is_later_volume(path)
+        return sum(1 for call in opened.call_args_list
+                   if call.args and call.args[0] == path)
+
+    def test_a_file_asked_about_again_is_not_read_again(self):
+        """The book's number among its folder's asks about every archive
+        in the folder each time a book opens, Next archive included."""
+        path = self._later_rar_4_volume('kept.part2.rar')
+        self.assertEqual(1, self._reads(path))
+        self.assertEqual(0, self._reads(path))
+        self.assertTrue(archive_tools.is_later_volume(path))
+
+    def test_a_file_written_again_is_read_again(self):
+        path = self._later_rar_4_volume('changed.part2.rar')
+        self.assertTrue(archive_tools.is_later_volume(path))
+        self._later_rar_4_volume('changed.part2.rar', later=False, age=1800)
+        self.assertFalse(archive_tools.is_later_volume(path))
+
+    def test_a_file_written_just_now_is_read_each_time(self):
+        """It may be written again within the same tick of the clock its
+        time comes from, under the same size: nothing tells that apart."""
+        path = self._later_rar_4_volume('new.part2.rar', age=0)
+        self.assertEqual(1, self._reads(path))
+        self.assertEqual(1, self._reads(path))
 
     def test_a_rar_that_ends_inside_its_header_is_not_a_later_volume(self):
         path = os.path.join(self.tmp_dir, 'short.rar')
