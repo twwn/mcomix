@@ -205,10 +205,14 @@ class _ThumbnailViewBase(widgets.Releasable):
         self._labels_visible = False
         self._label_width = 0
         #: The items whose cells are on screen right now.
-        self._bound: set[ThumbnailItem] = set()
+        self._bound: dict[ThumbnailItem, int] = {}
         #: The entries bound since the main loop last turned, whose
         #: thumbnails are to be asked for once it does.
         self._unasked: list[ThumbnailItem] = []
+        #: The entries whose thumbnail is to be made again, which were
+        #: off screen when that was asked or left it before it was done:
+        #: they are asked for when they are next bound.
+        self._stale: set[ThumbnailItem] = set()
         #: Every cell the factory has built, on screen or kept aside
         #: for rows to come; release() needs the ones kept aside too.
         self._cells: "weakref.WeakSet[_ThumbnailCell]" = weakref.WeakSet()
@@ -258,10 +262,10 @@ class _ThumbnailViewBase(widgets.Releasable):
         cell.picture.set_paintable(_shown(item))
         # The thumbnail and the badge are the only properties there are.
         cell.handler = item.connect('notify', self._thumbnail_arrived, cell)
-        self._bound.add(item)
+        self._bound[item] = list_item.get_position()
         if self.style_cell is not None:
             self.style_cell(cell.picture, list_item.get_position())
-        if item.thumbnail is None:
+        if item.thumbnail is None or item in self._stale:
             self._ask_soon(item)
 
     def _ask_soon(self, item: ThumbnailItem) -> None:
@@ -273,20 +277,70 @@ class _ThumbnailViewBase(widgets.Releasable):
         being made while the rest were still being bound, which the
         worker threads slowed, and those made waited for the binding to
         end to be shown: the first covers of the library came up in
-        twice the time.  They are still asked for in the order bound.
+        twice the time.
         """
         if not self._unasked:
             GLib.idle_add(self._ask_for_unasked)
         self._unasked.append(item)
 
     def _ask_for_unasked(self) -> bool:
-        items, self._unasked = self._unasked, []
-        for item in items:
+        """Ask for the thumbnails of the cells bound since the main loop
+        last turned: those on screen first, then the others, nearest
+        first.
+
+        GTK binds some thirty rows for the few on screen, and after a
+        jump to another part of a long list it binds the rows on screen
+        last.  Asked for in the order bound, behind what the cells bound
+        before were still waiting for, the covers in view of a library
+        scrolled on while its first covers were read came after 900
+        others.
+
+        What is still waiting is therefore taken back and sorted in with
+        the rest, and left out where its cell has gone.  In one go, not
+        as each cell is unbound: with the workers busy, every turn the
+        main thread takes at their queue is one it waits for.
+        """
+        unasked, self._unasked = self._unasked, []
+        if self.generate_thumbnail is None or self._updates_stopped:
+            return GLib.SOURCE_REMOVE
+        wanted: dict[ThumbnailItem, None] = {}
+        for item in self._thread.clear_orders():
+            if item in self._bound:
+                wanted[item] = None
+            elif item.thumbnail is not None:
+                # It was to be made again: when it is next bound, then.
+                self._stale.add(item)
+        for item in unasked:
             # Not one that went off screen meanwhile, or whose thumbnail
             # came by another way.
-            if item in self._bound and item.thumbnail is None:
-                self._ask_for(item)
+            if item in self._bound and (item.thumbnail is None
+                                        or item in self._stale):
+                wanted[item] = None
+        first, last = self._positions_on_screen()
+        bound = self._bound
+        # A stable sort: what is as far away stays in the order asked.
+        ordered = sorted(wanted, key=lambda item: max(
+            first - bound[item], bound[item] - last, 0))
+        self._stale.difference_update(ordered)
+        self._thread.extend_orders(ordered)
         return GLib.SOURCE_REMOVE
+
+    def _positions_on_screen(self) -> tuple[float, float]:
+        """The first and the last position on screen, about: the share
+        of the list the scroll bar shows, taken of its entries, which is
+        exact where every row is as high as the next.  Where nothing has
+        been laid out yet, every position."""
+        count = self.model.get_n_items()
+        adjustment = cast(Gtk.Scrollable, self).get_vadjustment()
+        if adjustment is None:
+            return 0, count
+        start = adjustment.get_lower()
+        length = adjustment.get_upper() - start
+        if length <= 0:
+            return 0, count
+        top = adjustment.get_value() - start
+        return (count * top / length,
+                count * (top + adjustment.get_page_size()) / length)
 
     def restyle(self) -> None:
         """Call style_cell() again for every cell on screen, after what it
@@ -306,7 +360,7 @@ class _ThumbnailViewBase(widgets.Releasable):
         if cell.handler is not None:
             item.disconnect(cell.handler)
             cell.handler = None
-        self._bound.discard(item)
+        self._bound.pop(item, None)
         cell.picture.set_paintable(None)
 
     def _thumbnail_arrived(self, item: ThumbnailItem,
@@ -389,6 +443,7 @@ class _ThumbnailViewBase(widgets.Releasable):
         """
         items = list(items)
         self._thread.clear_orders()
+        self._stale.clear()
         # Before the splice, not after it: the cells that fit on screen
         # are bound from inside it, and a stopped view turns away every
         # thumbnail those cells ask for.
@@ -404,6 +459,7 @@ class _ThumbnailViewBase(widgets.Releasable):
         """Drop every entry."""
         self.stop_update()
         self._bound.clear()
+        self._stale.clear()
         self.store.remove_all()
 
     def stop_update(self) -> None:
@@ -513,12 +569,18 @@ class _ThumbnailViewBase(widgets.Releasable):
 
     def redraw_item(self, item: ThumbnailItem) -> None:
         """Make <item>'s thumbnail again, after something drawn on it
-        has changed.  The one on screen stays until the new one comes."""
-        self._ask_for(item)
+        has changed.  The one on screen stays until the new one comes;
+        one that is not on screen is made when it next is."""
+        if item in self._bound:
+            self._stale.discard(item)
+            self._ask_for(item)
+        elif item.thumbnail is not None:
+            self._stale.add(item)
 
     def remove_items(self, items: Iterable[ThumbnailItem]) -> None:
         """Drop <items>, wherever the store happens to hold them."""
         for item in items:
+            self._stale.discard(item)
             found, position = self.store.find(item)
             if found:
                 self.store.remove(position)

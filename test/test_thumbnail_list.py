@@ -207,6 +207,152 @@ class ThumbnailListViewTest(MComixTest):
         self.view.clear()
         self.assertEqual(self.view.store.get_n_items(), 0)
 
+
+class ThumbnailsOnScreenFirstTest(MComixTest):
+
+    """A grid binds some thirty rows for the few it shows, and after a
+    jump it binds the ones it shows last."""
+
+    #: Far more entries than the grid binds at once.
+    ITEMS = 2500
+
+    def setUp(self):
+        super().setUp()
+        self.asked = []
+        self.view = thumbnail_list.ThumbnailGridView()
+        self.view.generate_thumbnail = self._generate
+        # One worker makes the thumbnails in the order they wait in.
+        self.view._thread._max_threads = 1
+        self.view.set_thumbnail_size(64)
+        self.scroller = Gtk.ScrolledWindow()
+        self.scroller.set_child(self.view)
+        self.window = Gtk.Window()
+        self.window.set_default_size(600, 400)
+        self.window.set_child(self.scroller)
+        self.window.present()
+        #: Set, a thumbnail being made waits for go_on.
+        self.parking = False
+        self.entered, self.go_on = threading.Event(), threading.Event()
+        self.addCleanup(self.go_on.set)
+        self.items = [thumbnail_list.ThumbnailItem(uid)
+                      for uid in range(self.ITEMS)]
+        self.view.set_items(self.items)
+        self._settle()
+        self.assertTrue(self._drawn())
+
+    def tearDown(self):
+        self.go_on.set()
+        self.view.stop_update()
+        self.window.destroy()
+        pump()
+        super().tearDown()
+
+    def _generate(self, uid):
+        self.asked.append(uid)
+        if self.parking:
+            self.entered.set()
+            self.go_on.wait(10)
+        pixbuf = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, True, 8,
+                                      32, 48)
+        pixbuf.fill(0x336699ff)
+        return pixbuf
+
+    def _settle(self):
+        for _ in range(40):
+            pump()
+            self.scroller.allocate(600, 400, -1, None)
+
+    def _drawn(self):
+        """Wait for every bound entry to have its thumbnail."""
+        return wait_for(lambda: all(item.thumbnail is not None
+                                    for item in self.view._bound), seconds=10)
+
+    def _jump(self, share):
+        """Scroll to <share> of the way down, in one step."""
+        adjustment = self.scroller.get_vadjustment()
+        adjustment.set_value(
+            (adjustment.get_upper() - adjustment.get_page_size()) * share)
+        self._settle()
+
+    def _on_screen(self):
+        """The positions of the cells in view.  An entry's uid is its
+        position here."""
+        height = self.scroller.get_height()
+        seen = set()
+        for cell in self.view._each_cell():
+            found, bounds = cell.compute_bounds(self.scroller)
+            if found and cell.get_mapped() and bounds.get_y() < height \
+                    and bounds.get_y() + bounds.get_height() > 0:
+                seen.add(cell.position)
+        return seen
+
+    def test_after_a_jump_what_is_on_screen_is_asked_for_first(self):
+        """In the order bound, the covers in view of a library scrolled
+        to its middle came after those of the rows above them."""
+        del self.asked[:]
+        self._jump(0.5)
+        self.assertTrue(self._drawn())
+        seen = self._on_screen()
+        self.assertGreater(len(seen), 6)
+        self.assertGreater(len(self.asked), 4 * len(seen),
+                           'the grid bound little more than it shows')
+        self.assertIn(self.asked[0], seen)
+        # The scroll bar says which rows are in view to within one.
+        columns = self.view.get_max_columns()
+        self.assertLess(max(self.asked.index(uid) for uid in seen),
+                        len(seen) + 2 * columns)
+
+    def test_what_waits_for_a_cell_that_has_gone_is_not_made(self):
+        """A library scrolled on while its first covers were being read
+        made all of those before the first of the ones in view."""
+        self.parking = True
+        self._jump(0.3)
+        self.assertTrue(wait_for(self.entered.is_set, seconds=10))
+        in_flight = self.asked[-1]
+        self._jump(1.0)
+        del self.asked[:]
+        self.go_on.set()
+        self.assertTrue(self._drawn())
+        bound = {item.uid for item in self.view._bound}
+        self.assertTrue(self.asked)
+        self.assertEqual(set(), set(self.asked) - bound - {in_flight})
+
+    def test_a_thumbnail_made_again_off_screen_is_made_when_it_is_shown(self):
+        item = self.items[5]
+        self._jump(1.0)
+        self.assertTrue(self._drawn())
+        self.assertNotIn(item, self.view._bound)
+        del self.asked[:]
+        was = item.thumbnail
+        self.view.redraw_item(item)
+        # Made on a worker, so its being asked for takes a moment.
+        self.assertFalse(wait_for(lambda: 5 in self.asked, seconds=0.5),
+                         'made for no cell to show it')
+        self._jump(0.0)
+        self.assertTrue(wait_for(lambda: item.thumbnail is not was,
+                                 seconds=10))
+        self.assertEqual(1, self.asked.count(5))
+
+    def test_a_thumbnail_to_be_made_again_is_when_its_cell_went_first(self):
+        """What waits for a cell that has gone is not made, but one that
+        was to replace a thumbnail must not be forgotten for that."""
+        first, second = self.items[3], self.items[5]
+        was = second.thumbnail
+        del self.asked[:]
+        self.parking = True
+        self.view.redraw_item(first)
+        self.assertTrue(wait_for(self.entered.is_set, seconds=10))
+        self.view.redraw_item(second)
+        self._jump(1.0)
+        self.assertNotIn(second, self.view._bound)
+        self.go_on.set()
+        self.assertTrue(self._drawn())
+        self.assertNotIn(5, self.asked)
+        self._jump(0.0)
+        self.assertTrue(wait_for(lambda: second.thumbnail is not was,
+                                 seconds=10))
+        self.assertEqual(1, self.asked.count(5))
+
 # vim: expandtab:sw=4:ts=4
 
 

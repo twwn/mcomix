@@ -96,8 +96,9 @@ class WorkerThread(Generic[Order]):
         """
         return self._stop
 
-    def clear_orders(self) -> None:
-        """Clear the current orders queue."""
+    def clear_orders(self) -> list[Order]:
+        """Clear the current orders queue, and return what was waiting
+        in it, for an owner that wants some of it done after all."""
         with self._condition:
             if self._unique_orders:
                 # We can't just clear the set, as some orders
@@ -105,7 +106,8 @@ class WorkerThread(Generic[Order]):
                 for order in self._orders_queue:
                     order_uid = self._order_uid(order)
                     self._orders_set.remove(order_uid)
-            self._orders_queue = []
+            waiting, self._orders_queue = self._orders_queue, []
+            return waiting
 
     def append_order(self, order: Order) -> None:
         """Append work order to the thread orders queue."""
