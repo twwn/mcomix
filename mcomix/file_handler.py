@@ -536,7 +536,10 @@ class FileHandler:
             self._window.osd.show(error_message)
             return False
 
-        self.filelist = self._opened_provider.list_files()
+        # The pictures of the folder are the book only where no archive
+        # is opened; an archive's folder was listed for nothing.
+        self.filelist = (self._opened_provider.list_files()
+                         if archive_type is None else [])
         self.archive_type = archive_type
         self._directory_listmode = (file_provider.FileProvider.ARCHIVES
                                     if self.archive_type is not None

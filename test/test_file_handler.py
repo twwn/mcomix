@@ -21,6 +21,7 @@ from . import MComixTest, get_testfile_path, pump, wait_for
 from mcomix import archive_extractor
 from mcomix import constants
 from mcomix import file_handler
+from mcomix import file_provider
 from mcomix import icons
 from mcomix import main
 from mcomix import message_dialog
@@ -83,6 +84,30 @@ class DirectoryWalkTest(MComixTest):
         pump()
         wait_for(lambda: not self.handler.file_loading, seconds=3)
         return self.handler._current_file
+
+    def test_an_archive_opened_lists_no_pictures_beside_it(self):
+        """The pictures of the folder are the book only where no archive
+        is opened; the archive's were listed and sorted for nothing."""
+        archive = self._put_archive('a')
+        self._put_image('a')
+        listed = []
+        real = file_provider.OrderedFileProvider.list_files
+
+        def list_files(provider, mode=file_provider.FileProvider.IMAGES):
+            listed.append(mode)
+            return real(provider, mode)
+
+        with mock.patch.object(file_provider.OrderedFileProvider,
+                               'list_files', list_files):
+            self._open(archive)
+        self.assertTrue(listed)
+        self.assertNotIn(file_provider.FileProvider.IMAGES, listed)
+
+    def test_an_image_opened_still_has_its_folder_s_pictures(self):
+        image = self._put_image('a')
+        shutil.copy(image, os.path.join(self.root, 'a', '02.jpg'))
+        self._open(image)
+        self.assertEqual(2, self.window.imagehandler.get_number_of_pages())
 
     def test_with_no_book_ahead_the_walk_stays_where_it_is(self):
         """A directory with nothing to open used to be opened, as a book
