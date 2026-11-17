@@ -62,16 +62,22 @@ class _ShelfWindowTest(MComixTest):
     def _has_pages(self):
         return self.window.imagehandler.get_number_of_pages() > 0
 
-    def _press(self, keyval, state=Gdk.ModifierType(0)):
-        """Press the key that types <keyval> unshifted, with <state> held."""
+    def _key(self, keyval, state=Gdk.ModifierType(0)):
+        """The keycode of the key that types <keyval> unshifted, and what
+        it types with <state> held."""
         display = self.window.get_display()
         found, keys = display.map_keyval(keyval)
         self.assertTrue(found, 'the keymap has no key for %r' % keyval)
         key = min(keys, key=lambda key: (key.group, key.level))
         _ok, typed, _group, _level, _consumed = \
             display.translate_key(key.keycode, state, 0)
+        return key.keycode, typed
+
+    def _press(self, keyval, state=Gdk.ModifierType(0)):
+        """Press the key that types <keyval> unshifted, with <state> held."""
+        keycode, typed = self._key(keyval, state)
         return self.window.event_handler.key_press_event(
-            _Controller(), typed, key.keycode, state)
+            _Controller(), typed, keycode, state)
 
 
 class ShelfTest(_ShelfWindowTest):
@@ -258,6 +264,11 @@ class ShelfKeysTest(_ShelfWindowTest):
                        Gdk.KEY_Page_Up, Gdk.KEY_Page_Down, Gdk.KEY_Return,
                        Gdk.KEY_KP_Enter, Gdk.KEY_space, Gdk.KEY_KP_Down):
             with self.subTest(key=Gdk.keyval_name(keyval)):
+                if self._key(keyval)[1] != keyval:
+                    # Windows' keymap has the keypad's 2 type "2", one of
+                    # the window's own shortcuts, rather than its Down.
+                    self.skipTest('the keymap types %s with this key'
+                                  % Gdk.keyval_name(self._key(keyval)[1]))
                 self.assertEqual(Gdk.EVENT_PROPAGATE, self._press(keyval))
                 self.assertEqual(
                     Gdk.EVENT_PROPAGATE,
@@ -408,6 +419,15 @@ class ShelfSearchTest(_ShelfWindowTest):
         self.assertTrue(self.shelf._search_bar.get_search_mode())
         self.assertTrue(self._field_has_focus())
 
+    def _reveal_the_field(self):
+        """Open the search field and wait until it is laid out.  Where
+        animations are off, as on the Windows runner, the revealer says
+        its child is revealed before the child has a size."""
+        self.shelf.search()
+        revealer = self.shelf._search_bar.get_first_child()
+        self.assertTrue(wait_for(revealer.get_child_revealed))
+        self.assertTrue(wait_for(lambda: self.shelf._search.get_width() > 0))
+
     def test_the_field_moves_no_cover(self):
         """It lies over the top of the covers: in a bar of its own above
         them, it pushed every cover down by its height."""
@@ -429,9 +449,7 @@ class ShelfSearchTest(_ShelfWindowTest):
         self.assertEqual(
             self.shelf.compute_bounds(self.window)[1].get_y(),
             self.shelf.book_area.compute_bounds(self.window)[1].get_y())
-        self.shelf.search()
-        revealer = self.shelf._search_bar.get_first_child()
-        self.assertTrue(wait_for(revealer.get_child_revealed))
+        self._reveal_the_field()
         shelf = self.shelf.compute_bounds(self.window)[1]
         field = self.shelf._search.compute_bounds(self.window)[1]
         middle = field.get_x() + field.get_width() / 2
@@ -452,9 +470,7 @@ class ShelfSearchTest(_ShelfWindowTest):
             display, translucent, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
         self.addCleanup(Gtk.StyleContext.remove_provider_for_display,
                         display, translucent)
-        self.shelf.search()
-        revealer = self.shelf._search_bar.get_first_child()
-        self.assertTrue(wait_for(revealer.get_child_revealed))
+        self._reveal_the_field()
         field = self.shelf._search
         width, height = field.get_width(), field.get_height()
         snapshot = Gtk.Snapshot()

@@ -297,6 +297,12 @@ def take_activation_from(test, window):
         pump()
 
     test.addCleanup(destroy)
+    if window.get_modal():
+        # GTK on Windows hands the activation straight back to a modal
+        # window when another of the program's windows takes it; a modal
+        # window over it is the one that may.
+        other.set_transient_for(window)
+        other.set_modal(True)
     other.present()
     return wait_for(lambda: not window.is_active(), 5)
 
