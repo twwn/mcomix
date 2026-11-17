@@ -528,6 +528,32 @@ class ResumedLibraryListTest(_WindowTest):
         self.handler.open_next_archive()
         self._opened(self.handler, 'c')
 
+    def _deleted(self, key):
+        """The library's list over two folders, a and c in one and b in
+        the other, with <key> opened from it and then deleted."""
+        other = os.path.join(self.tmp_dir, 'other')
+        os.makedirs(other)
+        moved = os.path.join(other, 'b.cbz')
+        os.rename(self.books['b'], moved)
+        self.books['b'] = moved
+        self.handler.open_file(self.books[key],
+                               listed=[self.books[key] for key in 'abc'])
+        self._opened(self.handler, key)
+        # Windows deletes no file that is open.
+        self.handler.release_archive()
+        os.remove(self.books[key])
+        self.handler.refresh_file()
+
+    def test_a_book_deleted_gives_way_to_the_next_of_them(self):
+        """Not to the next of its folder, c."""
+        self._deleted('a')
+        self._opened(self.handler, 'b')
+
+    def test_the_last_of_them_deleted_gives_way_to_the_one_before(self):
+        """Not to the one before in its folder, a."""
+        self._deleted('c')
+        self._opened(self.handler, 'b')
+
     def test_a_book_opened_afresh_forgets_them(self):
         self.handler.open_file(self.books['a'], listed=self.listed)
         self._opened(self.handler, 'a')

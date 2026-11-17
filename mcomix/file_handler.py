@@ -320,11 +320,28 @@ class FileHandler:
 
     def nearest_in_folder(self, gone: str) -> str | None:
         """The file of the open book's kind that is nearest to <gone> in
-        its folder's order, or None where there is none."""
+        its folder's order, or None where there is none.
+
+        Where the books are a list - the library's, or the files opened
+        together - that still names <gone>, it is the nearest in the
+        list's order: the next book there, or the one before where
+        <gone> was the last.  The folder's order took the book next to
+        it on disk, which may be any of the list's, or none of them.
+        """
         mode = (file_provider.FileProvider.ARCHIVES
                 if self.archive_type is not None
                 else file_provider.FileProvider.IMAGES)
-        files = [path for path in self._opened_provider.list_files(mode)
+        provider = self._opened_provider
+        listed = provider.list_files(mode)
+        if isinstance(provider, file_provider.PreDefinedFileProvider) \
+                and gone in listed:
+            index = listed.index(gone)
+            for path in listed[index + 1:] + listed[:index][::-1]:
+                if path != gone and os.path.exists(path) \
+                        and not archive_tools.is_later_volume(path):
+                    return path
+            return None
+        files = [path for path in listed
                  if path != gone and not archive_tools.is_later_volume(path)]
         if not files:
             return None
