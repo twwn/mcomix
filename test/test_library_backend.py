@@ -55,6 +55,7 @@ class LibraryDatabaseTest(unittest.TestCase):
         'LIBRARY_DATABASE_PATH': 'library.db',
         'LASTPAGE_DATABASE_PATH': 'lastreadpage.db',
         'LIBRARY_COVERS_PATH': 'library_covers',
+        'LIBRARY_COVERS_SIZED_PATH': 'cache/library_covers_sized',
         'THUMBNAIL_PATH': 'thumbnails',
     }
 
@@ -1433,15 +1434,44 @@ class ChosenCoverTest(LibraryDatabaseTest):
         self.assertIsNone(self._kept_as_drawn())
         self.assertTrue(self.backend.set_chosen_cover(self.path, 'b.png'))
         self.assertEqual([], os.listdir(
-            constants.LIBRARY_COVERS_PATH + '_sized'))
+            constants.LIBRARY_COVERS_SIZED_PATH))
         self.assertIsNone(self._kept_as_drawn())
         self.assertEqual('b.png', self._kept_as_drawn())
+
+    def test_the_cover_kept_as_drawn_is_in_the_cache(self):
+        """Not beside the stored covers, with the library's data: it is
+        as large again as they are, and is made again where missing."""
+        self.assertIsNone(self._kept_as_drawn())
+        self.assertEqual(1, len(os.listdir(
+            constants.LIBRARY_COVERS_SIZED_PATH)))
+        self.assertFalse(os.path.exists(
+            constants.LIBRARY_COVERS_PATH + '_sized'))
+
+    def test_the_cover_is_made_where_it_is_kept(self):
+        """get_book_thumbnail() makes the cover with a Thumbnailer of its
+        own, which takes away what it made where a race leaves it to
+        no book: it looks where every other one does."""
+        made = []
+        real = thumbnail_tools.Thumbnailer
+
+        def recording(*args, **kwargs):
+            made.append(tuple(kwargs.get(name) for name in
+                              ('dst_dir', 'sized_dir', 'stored_as')))
+            return real(*args, **kwargs)
+
+        with unittest.mock.patch.object(thumbnail_tools, 'Thumbnailer',
+                                        side_effect=recording):
+            self.assertIsNotNone(self.backend.get_book_thumbnail(self.path))
+            self.backend.get_sized_book_cover(self.path, (30, 40))
+        self.assertEqual(2, len(made))
+        self.assertEqual(made[0], made[1])
+        self.assertEqual(constants.LIBRARY_COVERS_SIZED_PATH, made[0][1])
 
     def test_the_cover_kept_as_drawn_goes_with_the_book(self):
         self.assertIsNone(self._kept_as_drawn())
         self.backend.remove_book(self.backend.get_book_by_path(self.path).id)
         self.assertEqual([], os.listdir(
-            constants.LIBRARY_COVERS_PATH + '_sized'))
+            constants.LIBRARY_COVERS_SIZED_PATH))
         self.assertEqual([], os.listdir(constants.LIBRARY_COVERS_PATH))
 
     def test_the_cover_kept_as_drawn_follows_the_file(self):
@@ -1455,7 +1485,7 @@ class ChosenCoverTest(LibraryDatabaseTest):
                 side_effect=AssertionError('decoded')):
             self.assertEqual('a.png', self._kept_as_drawn())
         self.assertEqual(1, len(os.listdir(
-            constants.LIBRARY_COVERS_PATH + '_sized')))
+            constants.LIBRARY_COVERS_SIZED_PATH)))
 
     def test_a_cover_being_made_as_another_is_chosen_does_not_stay(self):
         """The read in flight stored the old picture after the choice had

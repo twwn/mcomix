@@ -329,6 +329,7 @@ class _LibraryBackend:
             # Use the maximum image size the library draws, so that thumbnails
             # might be downscaled, but never need to be upscaled (and look ugly).
             thumbnailer = thumbnail_tools.Thumbnailer(dst_dir=constants.LIBRARY_COVERS_PATH,
+                                                      sized_dir=constants.LIBRARY_COVERS_SIZED_PATH,
                                                       store_on_disk=True,
                                                       archive_support=True,
                                                       size=(size, size),
@@ -690,9 +691,11 @@ class _LibraryBackend:
 
     @staticmethod
     def _covers() -> thumbnail_tools.Thumbnailer:
-        """What keeps the covers of the library's books."""
+        """What keeps the covers of the library's books: where, and as
+        what, as get_book_thumbnail() makes them."""
         return thumbnail_tools.Thumbnailer(
             dst_dir=constants.LIBRARY_COVERS_PATH,
+            sized_dir=constants.LIBRARY_COVERS_SIZED_PATH,
             stored_as=_COVERS_STORED_AS)
 
     def relocate(self, old_folder: str, new_folder: str) -> int:

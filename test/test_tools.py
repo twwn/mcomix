@@ -281,6 +281,7 @@ class TestXdgDirectories(unittest.TestCase):
     CASES = (
         (tools.get_config_directory, 'XDG_CONFIG_HOME', ('.config', 'mcomix')),
         (tools.get_data_directory, 'XDG_DATA_HOME', ('.local/share', 'mcomix')),
+        (tools.get_cache_directory, 'XDG_CACHE_HOME', ('.cache', 'mcomix')),
         (tools.get_thumbnail_directory, 'XDG_CACHE_HOME',
          ('.cache', 'thumbnails', 'normal')),
     )
@@ -329,6 +330,8 @@ class TestWindowsDirectories(unittest.TestCase):
                              tools.get_config_directory())
             self.assertEqual(os.path.join(roaming, 'MComix'),
                              tools.get_data_directory())
+            self.assertEqual(os.path.join(roaming, 'MComix'),
+                             tools.get_cache_directory())
             self.assertEqual(
                 os.path.join(roaming, 'MComix', '.thumbnails', 'normal'),
                 tools.get_thumbnail_directory())

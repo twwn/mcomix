@@ -159,6 +159,22 @@ def get_data_directory() -> str:
         return os.path.join(base_path, 'mcomix')
 
 
+def get_cache_directory() -> str:
+    """Return the path to MComix' own cache, of what it keeps only to be
+    quicker and can make again. On UNIX, this will be
+    $XDG_CACHE_HOME/mcomix, on Windows it will be the same directory as
+    get_data_directory().
+
+    See http://standards.freedesktop.org/basedir-spec/latest/ for more
+    information on the $XDG_CACHE_HOME environmental variable.
+    """
+    if sys.platform == 'win32':
+        return get_data_directory()
+    else:
+        base_path = _xdg_base('XDG_CACHE_HOME', '.cache')
+        return os.path.join(base_path, 'mcomix')
+
+
 def get_thumbnail_directory() -> str:
     """Return the path to the MComix thumbnail directory. On UNIX, this will
     be in $XDG_CACHE_HOME. On Windows, DATA_DIR will be used. Refer to

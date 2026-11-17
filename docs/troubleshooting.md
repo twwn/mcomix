@@ -61,6 +61,7 @@ What | Linux | Windows
 Preferences (`preferences.conf`), keys (`keybindings.conf`) | `~/.config/mcomix` | `%APPDATA%\MComix`
 Library, bookmarks, last pages, page turns, reading directions, pages to skip or to show alone, library covers | `~/.local/share/mcomix` | `%APPDATA%\MComix`
 Thumbnails of books and images | `~/.cache/thumbnails`, shared with other programs | `%APPDATA%\MComix\.thumbnails`
+Library covers as last drawn, to show them sooner | `~/.cache/mcomix` | `%APPDATA%\MComix`
 
 On Linux, `XDG_CONFIG_HOME`, `XDG_DATA_HOME` and `XDG_CACHE_HOME` move these.
 

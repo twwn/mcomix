@@ -464,9 +464,11 @@ class MComixTest(unittest.TestCase):
     #: constants resolves these once, at import time, so setting the
     #: environment above is not enough to keep tests off the real
     #: configuration - they have to be repointed as well.
-    REDIRECTED_PATHS = ('HOME_DIR', 'CONFIG_DIR', 'DATA_DIR', 'THUMBNAIL_PATH',
+    REDIRECTED_PATHS = ('HOME_DIR', 'CONFIG_DIR', 'DATA_DIR', 'CACHE_DIR',
+                        'THUMBNAIL_PATH',
                         'LIBRARY_DATABASE_PATH', 'LASTPAGE_DATABASE_PATH',
-                        'LIBRARY_COVERS_PATH', 'PREFERENCE_PATH',
+                        'LIBRARY_COVERS_PATH', 'LIBRARY_COVERS_SIZED_PATH',
+                        'PREFERENCE_PATH',
                         'KEYBINDINGS_CONF_PATH', 'BOOKMARK_PICKLE_PATH',
                         'FILEINFO_PICKLE_PATH', 'LIBRARY_LIST_PATH',
                         'PREFERENCE_PICKLE_PATH')
@@ -565,10 +567,12 @@ class MComixTest(unittest.TestCase):
         constants.HOME_DIR = home_dir
         constants.CONFIG_DIR = os.path.join(home_dir, 'config', 'mcomix')
         constants.DATA_DIR = os.path.join(home_dir, 'data', 'mcomix')
+        constants.CACHE_DIR = os.path.join(home_dir, 'cache', 'mcomix')
         constants.THUMBNAIL_PATH = os.path.join(home_dir, 'cache', 'thumbnails', 'normal')
         constants.LIBRARY_DATABASE_PATH = os.path.join(constants.DATA_DIR, 'library.db')
         constants.LASTPAGE_DATABASE_PATH = os.path.join(constants.DATA_DIR, 'lastreadpage.db')
         constants.LIBRARY_COVERS_PATH = os.path.join(constants.DATA_DIR, 'library_covers')
+        constants.LIBRARY_COVERS_SIZED_PATH = os.path.join(constants.CACHE_DIR, 'library_covers_sized')
         constants.PREFERENCE_PATH = os.path.join(constants.CONFIG_DIR, 'preferences.conf')
         constants.KEYBINDINGS_CONF_PATH = os.path.join(constants.CONFIG_DIR, 'keybindings.conf')
         constants.BOOKMARK_PICKLE_PATH = os.path.join(constants.DATA_DIR, 'bookmarks.pickle')

@@ -12,9 +12,10 @@ what the library does for its covers, and can be told to make a
 thumbnail without storing it at all.  A directory nothing but MComix
 reads can hold WebP instead of PNG, with the same keys in its XMP.
 
-Beside such a directory of its own it also keeps, for whoever asks, the
+For such a directory of its own it also keeps, for whoever asks, the
 thumbnail as it was last drawn: scaled to the size shown, as the bytes
-of its pixels.  See Thumbnailer.sized().
+of its pixels, in a directory beside it or one the caller names.  See
+Thumbnailer.sized().
 """
 
 import functools
@@ -186,7 +187,8 @@ class Thumbnailer:
                  cover_orientation_required: bool = False,
                  cover: str | None = None,
                  stored_as: str = 'png',
-                 larger_is_current: bool = False) -> None:
+                 larger_is_current: bool = False,
+                 sized_dir: str | None = None) -> None:
         """
         <dst_dir> set the thumbnailer's storage directory.  None is the
         store every program shares, in the specification's folder for
@@ -232,12 +234,17 @@ class Thumbnailer:
         is given: the library's covers are stored as large as the
         screen they were last drawn on wants them, and one stored for a
         screen of twice the scale is not made again on the next.
+
+        <sized_dir> is where keep_sized() keeps what it is given, which
+        is beside <dst_dir> where it is None: the library keeps it in
+        the cache, as it is made again wherever it is missing.
         """
         if stored_as == 'webp' and _webp_keeps_xmp():
             self._extensions: tuple[str, ...] = ('.webp', '.png')
         else:
             self._extensions = ('.png',)
         self._dst_dir = dst_dir
+        self._sized_dir = sized_dir
         if store_on_disk is None:
             self.store_on_disk = prefs['create thumbnails']
         else:
@@ -849,11 +856,12 @@ class Thumbnailer:
 
     def _path_to_sizedpath(self, filepath: str) -> str:
         """Return the path of what keep_sized() keeps for <filepath>: in
-        a directory beside <dst_dir>, which holds picture files only,
-        under the name the thumbnail has there."""
+        <sized_dir>, or a directory beside <dst_dir>, which holds picture
+        files only, under the name the thumbnail has there."""
         name = os.path.basename(self._path_to_thumbpath(filepath))
-        return os.path.join(self.dst_dir.rstrip('/' + os.sep) + '_sized',
-                            os.path.splitext(name)[0])
+        directory = (self._sized_dir
+                     or self.dst_dir.rstrip('/' + os.sep) + '_sized')
+        return os.path.join(directory, os.path.splitext(name)[0])
 
     def _chosen_cover(self, files: Iterable[str]) -> str | None:
         """The filename within <files> that is the picture the reader

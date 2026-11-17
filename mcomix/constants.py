@@ -13,12 +13,16 @@ MANUAL_URL = 'https://twwn.github.io/mcomix/docs/'
 HOME_DIR = tools.get_home_directory()
 CONFIG_DIR = tools.get_config_directory()
 DATA_DIR = tools.get_data_directory()
+CACHE_DIR = tools.get_cache_directory()
 
 BASE_PATH = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 THUMBNAIL_PATH = tools.get_thumbnail_directory()
 LIBRARY_DATABASE_PATH = os.path.join(DATA_DIR, 'library.db')
 LASTPAGE_DATABASE_PATH = os.path.join(DATA_DIR, 'lastreadpage.db')
 LIBRARY_COVERS_PATH = os.path.join(DATA_DIR, 'library_covers')
+# The library's covers as last drawn: see Thumbnailer.sized().  Named so
+# on Windows too, where the cache is the data directory.
+LIBRARY_COVERS_SIZED_PATH = os.path.join(CACHE_DIR, 'library_covers_sized')
 PREFERENCE_PATH = os.path.join(CONFIG_DIR, 'preferences.conf')
 KEYBINDINGS_CONF_PATH = os.path.join(CONFIG_DIR, 'keybindings.conf')
 
