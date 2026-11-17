@@ -900,6 +900,7 @@ class ThumbnailGridView(Gtk.GridView, _ThumbnailViewBase):
         """
         self.select_only(position)
         self.scroll_to(position, Gtk.ListScrollFlags.FOCUS, None)
+        widgets.focus_where_scrolled(self)
 
     def select_positions(self, positions: Iterable[int]) -> None:
         """Select <positions> and nothing else."""

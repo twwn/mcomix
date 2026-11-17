@@ -237,6 +237,28 @@ def popup_at(popover: Gtk.Popover, widget: Gtk.Widget,
     popover.popup()
 
 
+def focus_where_scrolled(view: Gtk.Widget) -> None:
+    """Give the keyboard focus to the entry <view>, a list or a grid,
+    was just told to scroll_to() with Gtk.ListScrollFlags.FOCUS, where
+    GTK left it behind.
+
+    GTK moves the focus there only in a list it finds with the focus
+    within, a state it sets only while the window is the active one; in
+    any other window it moves no more than its own note of where the
+    focus is to go.  A right click on a window not yet active selected
+    one entry and left the focus on another, and Enter afterwards opened
+    that other one.  A list grabbing the focus gives it to the entry so
+    noted, which is the one scrolled to.  Only where the list has its
+    window's focus: elsewhere, as GTK does, it leaves the focus alone.
+    """
+    if view.get_state_flags() & Gtk.StateFlags.FOCUS_WITHIN:
+        return
+    root = view.get_root()
+    focus = root.get_focus() if root is not None else None
+    if focus is not None and (focus is view or focus.is_ancestor(view)):
+        view.grab_focus()
+
+
 def menu_key(keyval: int, state: Gdk.ModifierType) -> bool:
     """Whether a key press is the one that asks for a context menu.
 

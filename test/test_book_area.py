@@ -10,7 +10,7 @@ import warnings
 
 from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk
 
-from . import MComixTest, hold_open, pump, wait_for
+from . import MComixTest, hold_open, pump, take_activation_from, wait_for
 from .test_theme import background_of
 
 from mcomix import bookmark_backend
@@ -1903,6 +1903,18 @@ class RightClickFocusTest(MComixTest):
             bounds.get_y() + bounds.get_height() / 2)
 
     def test_the_cover_right_clicked_takes_the_focus(self):
+        self._right_click_on_the_third_cover()
+
+    def test_so_it_does_in_a_window_not_active(self):
+        """GTK moves the focus by itself only in the active window: the
+        selection moved and the focus stayed, also once the window was
+        active again."""
+        self._right_click_on_the_third_cover(take_activation=True)
+        self.window.present()
+        wait_for(self.window.is_active)
+        self.assertEqual(2, self._focused())
+
+    def _right_click_on_the_third_cover(self, take_activation=False):
         covers = self.area._covers
         covers.grab_focus()
         covers.select_and_focus(0)
@@ -1911,6 +1923,8 @@ class RightClickFocusTest(MComixTest):
         # than a few turns give.
         wait_for(lambda: self._focused() == 0)
         self.assertEqual(0, self._focused())
+        if take_activation:
+            self.assertTrue(take_activation_from(self, self.window))
         x = next(x for x in range(10, 600, 10)
                  if covers.position_at(x, 60) == 2)
         gesture = types.SimpleNamespace(get_widget=lambda: covers)

@@ -12,7 +12,8 @@ import zipfile
 
 from gi.repository import Gdk, Gtk
 
-from . import MComixTest, get_testfile_path, hold_open, pump, wait_for
+from . import (MComixTest, get_testfile_path, hold_open, pump,
+               take_activation_from, wait_for)
 
 from mcomix import archive_packer
 from mcomix import constants
@@ -690,6 +691,13 @@ class EditArchiveDialogTest(MComixTest):
     def test_a_right_click_on_a_page_gives_it_the_keyboard_focus(self):
         """The arrow keys go on from the page with the focus, which a
         right click left on the page clicked before."""
+        self._right_click_on_the_second_page()
+
+    def test_so_it_does_in_a_window_not_active(self):
+        """GTK moves the focus by itself only in the active window."""
+        self._right_click_on_the_second_page(take_activation=True)
+
+    def _right_click_on_the_second_page(self, take_activation=False):
         self.dialog._load_original_files()
         self.dialog.present()
         pump()
@@ -698,6 +706,8 @@ class EditArchiveDialogTest(MComixTest):
         area._grid.select_only(0)
         for _each in range(10):
             pump()
+        if take_activation:
+            self.assertTrue(take_activation_from(self, self.dialog))
         with unittest.mock.patch.object(area._grid, 'position_at',
                                         return_value=1), \
                 unittest.mock.patch.object(widgets, 'popup_at'):

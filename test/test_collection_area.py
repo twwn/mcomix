@@ -15,7 +15,7 @@ import unittest.mock
 
 from gi.repository import Gdk, Gio, GLib, Gtk
 
-from . import MComixTest, hold_open, pump
+from . import MComixTest, hold_open, pump, take_activation_from, wait_for
 
 from mcomix import constants
 from mcomix.dialog import Response
@@ -395,6 +395,18 @@ class CollectionAreaTest(MComixTest):
         """Enter opens or closes the row with the focus.  A right click
         left it on the row clicked before, so Enter after the menu
         expanded Comics while Manga was shown selected."""
+        self._right_click_on_manga()
+
+    def test_so_it_does_in_a_window_not_active(self):
+        """GTK moves the focus by itself only in the active window: the
+        selection moved and the focus stayed, also once the window was
+        active again."""
+        self._right_click_on_manga(take_activation=True)
+        self.window.present()
+        wait_for(self.window.is_active)
+        self.assertEqual(self.manga, self._focused_collection())
+
+    def _right_click_on_manga(self, take_activation=False):
         # Where it starts from.  Under eight workers the window has been
         # seen to take the focus only after a first request was spent,
         # so it is asked for until it holds.
@@ -406,6 +418,8 @@ class CollectionAreaTest(MComixTest):
                                        focus=True)
             self._settle()
         self.assertEqual(self.comics, self._focused_collection())
+        if take_activation:
+            self.assertTrue(take_activation_from(self, self.window))
         _, y = self._middle_of(self.manga)
         gesture = unittest.mock.Mock()
         gesture.get_widget.return_value = self.area._list

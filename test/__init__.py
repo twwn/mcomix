@@ -279,6 +279,28 @@ def wait_for(predicate, seconds=5):
         GLib.source_remove(heartbeat)
 
 
+def take_activation_from(test, window):
+    """Present a window of the test's own, so that <window> is no longer
+    the active one, and wait until it is not.
+
+    GTK moves the focus by itself only in the active window, and the
+    suite's workers share one display, where any of their windows may
+    take the activation from another's: a test that moves the focus
+    meets this state now and then.  This makes it certain.
+    """
+    from gi.repository import Gtk
+    other = Gtk.Window()
+    other.set_default_size(100, 100)
+
+    def destroy():
+        other.destroy()
+        pump()
+
+    test.addCleanup(destroy)
+    other.present()
+    return wait_for(lambda: not window.is_active(), 5)
+
+
 # Use a custom testcase class:
 # - isolate tests: do not use or modify the user current
 #   configuration for MComix (preferences, library, ...)
