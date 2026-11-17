@@ -83,6 +83,19 @@ class _BookItem(thumbnail_list.ThumbnailItem):
         self.read: str | None = None
         self.renew(book)
 
+    @functools.cached_property
+    def name_key(self) -> tools.NaturalKey:
+        """What the sort by name puts the cover in order by: the natural
+        order of the file's name, lower-cased.  Made the first time a
+        sort asks, and kept: a sort compares each cover with many."""
+        return tools.natural_key(os.path.basename(self.path).lower())
+
+    @functools.cached_property
+    def path_key(self) -> tools.NaturalKey:
+        """What covers every other sort leaves tied are put in order by:
+        the natural order of the whole path."""
+        return tools.natural_key(self.path)
+
     def renew(self, book: 'backend_types._Book') -> None:
         """Take what the library now says of <book>, this entry's book,
         for the entry to be shown again."""
@@ -687,9 +700,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         """
         answer = 0
         if key == constants.SORT_NAME:
-            answer = tools.cmp(
-                tools.AlphanumericSortKey(os.path.basename(left.path).lower()),
-                tools.AlphanumericSortKey(os.path.basename(right.path).lower()))
+            answer = tools.cmp(left.name_key, right.name_key)
         elif key == constants.SORT_SIZE:
             answer = tools.cmp(left.size, right.size)
         elif key == constants.SORT_LAST_MODIFIED:
@@ -705,8 +716,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
                                (right.position is None, right.position or 0))
         if answer:
             return answer
-        return tools.cmp(tools.AlphanumericSortKey(left.path),
-                         tools.AlphanumericSortKey(right.path))
+        return tools.cmp(left.path_key, right.path_key)
 
     def _sort_key_changed(self, action: Gio.SimpleAction,
                           value: GLib.Variant) -> None:

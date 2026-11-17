@@ -43,12 +43,12 @@ def cmp(a: Comparable, b: Comparable) -> int:
     return (b < a) - (a < b)
 
 
-#: A name's natural order key (see _natural_key()).
+#: A name's natural order key (see natural_key()).
 NaturalKey = tuple[str, tuple[int | str, ...], str]
 
 
 @functools.lru_cache(maxsize=8192)
-def _natural_key(filename: str) -> NaturalKey:
+def natural_key(filename: str) -> NaturalKey:
     """What puts <filename> in its natural order (1 before 10), as a
     tuple Python compares by itself.
 
@@ -96,7 +96,7 @@ class AlphanumericSortKey:
     __slots__ = ('key',)
 
     def __init__(self, filename: str) -> None:
-        self.key = _natural_key(filename)
+        self.key = natural_key(filename)
 
     def __lt__(self, other: 'AlphanumericSortKey') -> bool:
         return self.key < other.key
@@ -108,7 +108,7 @@ def alphanumeric_sort(filenames: list[str]) -> None:
     ordering.
     """
 
-    filenames.sort(key=_natural_key)
+    filenames.sort(key=natural_key)
 
 
 def bin_search(lst: "list[Comparable]", value: Comparable) -> int:
