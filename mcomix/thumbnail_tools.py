@@ -8,13 +8,16 @@ that one left behind by an edited file can be told from a current one.
 
 A Thumbnailer can be pointed at a directory of its own instead, which is
 what the library does for its covers, and can be told to make a
-thumbnail without storing it at all.
+thumbnail without storing it at all.  A directory nothing but MComix
+reads can hold WebP instead of PNG, with the same keys in its XMP.
 
 Beside such a directory of its own it also keeps, for whoever asks, the
 thumbnail as it was last drawn: scaled to the size shown, as the bytes
 of its pixels.  See Thumbnailer.sized().
 """
 
+import functools
+import io
 import os
 import re
 import tempfile
@@ -22,6 +25,8 @@ import threading
 import PIL.Image as Image
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from hashlib import md5
+from xml.etree import ElementTree
+from xml.sax.saxutils import quoteattr
 from gi.repository import GdkPixbuf, Gio, GLib
 
 from mcomix.preferences import prefs
@@ -55,6 +60,66 @@ _STORED = 'mcomix_stored_as'
 
 #: The first line of a file Thumbnailer.keep_sized() writes.
 _SIZED_MAGIC = b'MComix sized thumbnail 1\n'
+
+#: The quality a thumbnail is stored at as WebP.  A cover 500 pixels
+#: high takes 44 kB where PNG takes 198, and decodes in 1.9 ms against
+#: PNG's 2.2 (the medians of nine covers); what WebP loses is colour at
+#: sharp edges, which drawing the cover smaller than that hides.
+_WEBP_QUALITY = 90
+
+#: The namespace of the keys a thumbnail stored as WebP carries in its
+#: XMP: those a PNG one carries in its tEXt chunks, "Thumb::URI" there
+#: written "Thumb.URI" here.  Only MComix reads them.  A name, not a
+#: link: nothing is to be found under it.
+_XMP_NAMESPACE = 'urn:x-mcomix:thumbnail:1:'
+
+_RDF_NAMESPACE = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#'
+
+
+def _xmp_of(tEXt_data: Mapping[str, str]) -> bytes:
+    """The XMP that carries <tEXt_data>, the tEXt chunks a PNG
+    thumbnail would be written with, in a WebP one."""
+    attributes = ''.join(
+        ' mcomix:%s=%s' % (key.removeprefix('tEXt::').replace('::', '.'),
+                           quoteattr(value))
+        for key, value in tEXt_data.items())
+    return ('<x:xmpmeta xmlns:x="adobe:ns:meta/">'
+            '<rdf:RDF xmlns:rdf="%s">'
+            '<rdf:Description rdf:about="" xmlns:mcomix="%s"%s/>'
+            '</rdf:RDF></x:xmpmeta>'
+            % (_RDF_NAMESPACE, _XMP_NAMESPACE, attributes)).encode('utf-8')
+
+
+def _info_of_xmp(xmp: object) -> "dict[str | tuple[int, int], object]":
+    """The keys _xmp_of() wrote into <xmp>, as PIL reads those of a PNG
+    out of its tEXt chunks; none from anything else."""
+    if isinstance(xmp, str):
+        xmp = xmp.encode('utf-8')
+    if not isinstance(xmp, bytes):
+        return {}
+    try:
+        root = ElementTree.fromstring(xmp)
+    except ElementTree.ParseError:
+        return {}
+    ours = '{%s}' % _XMP_NAMESPACE
+    return {name[len(ours):].replace('.', '::'): value
+            for description in root.iter('{%s}Description' % _RDF_NAMESPACE)
+            for name, value in description.attrib.items()
+            if name.startswith(ours)}
+
+
+@functools.cache
+def _webp_keeps_xmp() -> bool:
+    """Whether Pillow writes WebP here and keeps XMP in it.  A thumbnail
+    stored without its keys says nothing of what it was made of, and
+    would be made again every time it is looked for."""
+    written = io.BytesIO()
+    try:
+        Image.new('RGB', (1, 1)).save(written, 'WEBP', xmp=b'<x/>')
+        with Image.open(io.BytesIO(written.getvalue())) as image:
+            return image.info.get('xmp') == b'<x/>'
+    except (KeyError, OSError, ValueError):
+        return False
 
 #: A file name that says the picture is not the book's cover: "credit"
 #: anywhere in it, or "banner" however its letters are spaced out.
@@ -110,7 +175,8 @@ class Thumbnailer:
                  force_recreation: bool = False,
                  archive_support: bool = False,
                  cover_orientation_required: bool = False,
-                 cover: str | None = None) -> None:
+                 cover: str | None = None,
+                 stored_as: str = 'png') -> None:
         """
         <dst_dir> set the thumbnailer's storage directory.
 
@@ -138,7 +204,18 @@ class Thumbnailer:
         FileHandler.page_member() names a page, where the reader chose
         one; the archive's cover is guessed where it is None, or names
         a picture the archive no longer holds.
+
+        <stored_as> is what thumbnails are stored as: 'png', which the
+        specification asks of the store every program shares, or
+        'webp', a fifth of the size, for a store only MComix reads, such
+        as the library's.  Such a store reads the PNG thumbnails an
+        older MComix stored there, and puts a WebP one in the place of
+        each; it stays PNG where Pillow cannot write WebP with XMP.
         """
+        if stored_as == 'webp' and _webp_keeps_xmp():
+            self._extensions: tuple[str, ...] = ('.webp', '.png')
+        else:
+            self._extensions = ('.png',)
         self.dst_dir = dst_dir
         if store_on_disk is None:
             self.store_on_disk = prefs['create thumbnails']
@@ -193,8 +270,9 @@ class Thumbnailer:
     def delete(self, filepath: str) -> None:
         """ Deletes the thumbnail for <filepath> (if it exists), and
         what keep_sized() kept of it. """
-        thumbpath = self._path_to_thumbpath(filepath)
-        if os.path.isfile(thumbpath):
+        for thumbpath in self._stored_paths(filepath):
+            if not os.path.isfile(thumbpath):
+                continue
             try:
                 os.remove(thumbpath)
             except OSError as error:
@@ -218,16 +296,20 @@ class Thumbnailer:
         now - for a book, by opening the archive.  The modification time
         is what tells a stored thumbnail from a stale one, and a move
         keeps it."""
-        stored = self._path_to_thumbpath(old_path)
-        if not os.path.isfile(stored):
-            return
-        try:
-            portability.rename_once_closed(
-                os.replace, stored, self._path_to_thumbpath(new_path))
-        except OSError as error:
-            log.error(_('! Could not move %(file)s to %(directory)s: %(error)s'),
-                      {'file': stored, 'directory': self.dst_dir,
-                       'error': error})
+        moved = False
+        for stored, new in zip(self._stored_paths(old_path),
+                               self._stored_paths(new_path)):
+            if not os.path.isfile(stored):
+                continue
+            try:
+                portability.rename_once_closed(os.replace, stored, new)
+            except OSError as error:
+                log.error(_('! Could not move %(file)s to %(directory)s: %(error)s'),
+                          {'file': stored, 'directory': self.dst_dir,
+                           'error': error})
+                return
+            moved = True
+        if not moved:
             return
         # What keep_sized() kept goes with it: it says which thumbnail
         # it was made of by that file's time and size, which a move
@@ -349,11 +431,13 @@ class Thumbnailer:
         thumbnail stored for <filepath>, which tell it from the one a
         changed source or another choice of cover puts in its place;
         None where none is stored."""
-        try:
-            stat = os.stat(self._path_to_thumbpath(filepath))
-        except OSError:
-            return None
-        return stat.st_mtime_ns, stat.st_size
+        for thumbpath in self._stored_paths(filepath):
+            try:
+                stat = os.stat(thumbpath)
+            except OSError:
+                continue
+            return stat.st_mtime_ns, stat.st_size
+        return None
 
     def _create_thumbnail_pixbuf(self, filepath: str) \
             -> "tuple[GdkPixbuf.Pixbuf | None, dict[str, str] | None]":
@@ -446,7 +530,8 @@ class Thumbnailer:
 
         if pixbuf and self.store_on_disk and tEXt_data is not None:
             thumbpath = self._path_to_thumbpath(filepath)
-            self._save_thumbnail(pixbuf, thumbpath, tEXt_data)
+            if self._save_thumbnail(pixbuf, thumbpath, tEXt_data):
+                self._remove_older(filepath)
 
         return pixbuf
 
@@ -484,9 +569,11 @@ class Thumbnailer:
         }
 
     def _save_thumbnail(self, pixbuf: "GdkPixbuf.Pixbuf", thumbpath: str,
-                        tEXt_data: dict[str, str]) -> None:
+                        tEXt_data: dict[str, str]) -> bool:
         """ Saves <pixbuf> as <thumbpath>, with additional metadata
         from <tEXt_data>. If <thumbpath> already exists, it is overwritten.
+        As WebP where <thumbpath> says so, the metadata in its XMP; and
+        whether it was stored.
 
         Written to a temporary file in the same directory, private from
         the start, and renamed into place, as the thumbnail specification
@@ -503,8 +590,13 @@ class Thumbnailer:
                 dir=directory, prefix=os.path.basename(thumbpath) + '.',
                 suffix='.tmp')
             os.close(handle)
-            pixbuf.savev(temporary, 'png',
-                         list(tEXt_data), list(tEXt_data.values()))
+            if thumbpath.endswith('.webp'):
+                image_tools.pixbuf_to_pil(pixbuf).save(
+                    temporary, 'WEBP', quality=_WEBP_QUALITY, method=4,
+                    xmp=_xmp_of(tEXt_data))
+            else:
+                pixbuf.savev(temporary, 'png',
+                             list(tEXt_data), list(tEXt_data.values()))
             # Of the file written here, before it is renamed: another
             # thread or program may put its own in that place right after.
             stat = os.stat(temporary)
@@ -513,10 +605,12 @@ class Thumbnailer:
             setattr(pixbuf, _STORED, (
                 stat.st_mtime_ns, stat.st_size,
                 int(tEXt_data['tEXt::Thumb::MTime'])))
+            return True
 
         except Exception as ex:
             log.warning(_('! Could not save thumbnail "%(thumbpath)s": %(error)s'),
                         {'thumbpath': thumbpath, 'error': ex})
+            return False
         finally:
             if temporary is not None:
                 try:
@@ -541,16 +635,20 @@ class Thumbnailer:
 
         if self.force_recreation:
             return None
-        thumbpath = self._path_to_thumbpath(filepath)
-        if not os.path.isfile(thumbpath):
+        for thumbpath in self._stored_paths(filepath):
+            if os.path.isfile(thumbpath):
+                break
+        else:
             return None
 
         try:
             with open(thumbpath, 'rb') as file, Image.open(file) as img:
-                if not (self._source_is_unchanged(filepath, img.info)
-                        and self._is_current_size(img.size, img.info)):
+                info = (_info_of_xmp(img.info.get('xmp'))
+                        if img.format == 'WEBP' else img.info)
+                if not (self._source_is_unchanged(filepath, info)
+                        and self._is_current_size(img.size, info)):
                     return None
-                orientation = img.info.get(_ORIENTATION_KEY[len('tEXt::'):])
+                orientation = info.get(_ORIENTATION_KEY[len('tEXt::'):])
                 if (self.cover_orientation_required
                         and not isinstance(orientation, str)
                         and not image_tools.is_image_file(filepath)):
@@ -560,8 +658,8 @@ class Thumbnailer:
                 pixbuf = image_tools.pil_to_pixbuf(img, keep_orientation=True)
                 if isinstance(orientation, str):
                     setattr(pixbuf, 'orientation', orientation)
-                software = img.info.get('Software')
-                if (img.info.get(_UPRIGHT_KEY[len('tEXt::'):]) == '1'
+                software = info.get('Software')
+                if (info.get(_UPRIGHT_KEY[len('tEXt::'):]) == '1'
                         or not (isinstance(software, str)
                                 and software.startswith('MComix'))):
                     # MComix' own are stored upright, as GNOME's and
@@ -571,14 +669,32 @@ class Thumbnailer:
                 stat = os.fstat(file.fileno())
                 setattr(pixbuf, _STORED, (
                     stat.st_mtime_ns, stat.st_size,
-                    int(float(str(img.info['Thumb::MTime'])))))
-                return pixbuf
+                    int(float(str(info['Thumb::MTime'])))))
         except OSError:
             # Not an image, not readable, or broken off partway through
             # being written: there is nothing to reuse, and one that
             # cannot be decoded is one to make again rather than one to
             # raise over.
             return None
+        stored_as = self._path_to_thumbpath(filepath)
+        if thumbpath != stored_as and self._save_thumbnail(
+                pixbuf, stored_as,
+                {'tEXt::' + key: value for key, value in info.items()
+                 if isinstance(key, str) and isinstance(value, str)}):
+            # A PNG an older MComix stored, in a store that is WebP now,
+            # which becomes WebP once it is read.
+            self._remove_older(filepath)
+        return pixbuf
+
+    def _remove_older(self, filepath: str) -> None:
+        """Take away the PNG an older MComix stored for <filepath> in a
+        store that is WebP now, once a WebP one is in its place: nothing
+        looks at it while that one is there."""
+        for older in self._stored_paths(filepath)[1:]:
+            try:
+                os.remove(older)
+            except OSError:
+                pass
 
     def _source_is_unchanged(
             self, filepath: str,
@@ -647,7 +763,14 @@ class Thumbnailer:
         of the answer.
         """
         md5hash = md5(uri.encode('utf-8')).hexdigest()
-        return os.path.join(self.dst_dir, md5hash + '.png')
+        return os.path.join(self.dst_dir, md5hash + self._extensions[0])
+
+    def _stored_paths(self, filepath: str) -> list[str]:
+        """Where a thumbnail of <filepath> may be stored: under the name
+        _path_to_thumbpath() gives it, then, in a store that is WebP, as
+        the PNG an older MComix stored."""
+        base = os.path.splitext(self._path_to_thumbpath(filepath))[0]
+        return [base + extension for extension in self._extensions]
 
     def _path_to_sizedpath(self, filepath: str) -> str:
         """Return the path of what keep_sized() keeps for <filepath>: in

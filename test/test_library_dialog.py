@@ -34,7 +34,6 @@ from mcomix import page_marks
 from mcomix import page_rotations
 from mcomix import reading_directions
 from mcomix import thumbnail_list
-from mcomix import thumbnail_tools
 from mcomix import widgets
 from mcomix.dialog import Response
 from mcomix.library import backend_types
@@ -2195,8 +2194,7 @@ class RelocateBooksTest(_LibraryWindowTest):
             self.dialog.backend.add_book(book)
             self.assertIsNotNone(self.dialog.backend.get_book_thumbnail(book))
         self.dialog.book_area.stop_update()
-        self.covers = thumbnail_tools.Thumbnailer(
-            dst_dir=constants.LIBRARY_COVERS_PATH)
+        self.covers = self.dialog.backend._covers()
 
     def _books(self, folder):
         return [os.path.join(folder, *name) for name in self.names]

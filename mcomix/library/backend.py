@@ -37,6 +37,12 @@ if TYPE_CHECKING:
     from gi.repository import GdkPixbuf
 
 
+#: What the covers of the library's books are stored as.  Nothing but
+#: MComix reads them, so they need not be the PNG every program's
+#: thumbnails are: WebP takes a fifth of the room.
+_COVERS_STORED_AS = 'webp'
+
+
 def _name_order(name: str) -> tools.AlphanumericSortKey:
     """The key collections are put in order by: their names as a
     folder's files are, case aside and runs of digits by value, so
@@ -320,7 +326,8 @@ class _LibraryBackend:
                                                       size=(constants.MAX_LIBRARY_COVER_SIZE,
                                                             constants.MAX_LIBRARY_COVER_SIZE),
                                                       cover_orientation_required=True,
-                                                      cover=cover)
+                                                      cover=cover,
+                                                      stored_as=_COVERS_STORED_AS)
             thumb = thumbnailer.thumbnail(path)
             if self.get_chosen_cover(path) == cover:
                 break
@@ -677,7 +684,8 @@ class _LibraryBackend:
     def _covers() -> thumbnail_tools.Thumbnailer:
         """What keeps the covers of the library's books."""
         return thumbnail_tools.Thumbnailer(
-            dst_dir=constants.LIBRARY_COVERS_PATH)
+            dst_dir=constants.LIBRARY_COVERS_PATH,
+            stored_as=_COVERS_STORED_AS)
 
     def relocate(self, old_folder: str, new_folder: str) -> int:
         """Follow every book kept in <old_folder>, at any depth, to

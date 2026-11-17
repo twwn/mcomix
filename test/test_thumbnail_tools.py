@@ -394,6 +394,119 @@ class ThumbnailFollowTest(MComixTest):
         moved.assert_not_called()
 
 
+class WebPStoreTest(MComixTest):
+
+    """A store nothing but MComix reads, such as the library's, keeps
+    its thumbnails as WebP, a fifth of the size of PNG, with the keys a
+    PNG one has in its tEXt chunks in its XMP; and the PNG ones an older
+    MComix stored there become WebP as they are read."""
+
+    def setUp(self):
+        super().setUp()
+        self._store = os.path.join(self.tmp_dir, 'covers')
+        self._source = os.path.join(self.tmp_dir, 'source.jpg')
+        shutil.copy(get_testfile_path('images', 'landscape-no-exif.jpg'),
+                    self._source)
+        self._thumbnailer = self._in(self._store, 'webp')
+        self._png = self._thumbnailer._stored_paths(self._source)[1]
+
+    @staticmethod
+    def _in(store, stored_as):
+        return thumbnail_tools.Thumbnailer(
+            dst_dir=store, store_on_disk=True, size=(128, 128),
+            stored_as=stored_as)
+
+    @staticmethod
+    def _keys(path):
+        with PIL.Image.open(path) as stored:
+            info = (thumbnail_tools._info_of_xmp(stored.info.get('xmp'))
+                    if stored.format == 'WEBP' else stored.info)
+            return stored.format, {key: value for key, value in info.items()
+                                   if isinstance(value, str)}
+
+    def _reused(self, thumbnailer=None):
+        with unittest.mock.patch.object(
+                thumbnail_tools.Thumbnailer, '_create_thumbnail') as made:
+            pixbuf = (thumbnailer or self._thumbnailer).thumbnail(self._source)
+        made.assert_not_called()
+        self.assertIsNotNone(pixbuf)
+        return pixbuf
+
+    def test_it_is_webp_with_the_keys_a_png_one_has(self):
+        self._thumbnailer.thumbnail(self._source)
+        stored = self._thumbnailer._path_to_thumbpath(self._source)
+        self.assertTrue(stored.endswith('.webp'), stored)
+        png = self._in(os.path.join(self.tmp_dir, 'shared'), 'png')
+        png.thumbnail(self._source)
+        format, keys = self._keys(stored)
+        self.assertEqual('WEBP', format)
+        self.assertEqual(self._keys(png._path_to_thumbpath(self._source)),
+                         ('PNG', keys))
+        self.assertIn('Thumb::MTime', keys)
+
+    def test_it_is_used_again_and_drawn_from(self):
+        made = self._thumbnailer.thumbnail(self._source)
+        pixbuf = self._reused()
+        self.assertEqual((made.get_width(), made.get_height()),
+                         (pixbuf.get_width(), pixbuf.get_height()))
+        self._thumbnailer.keep_sized(self._source, pixbuf, (1,), pixbuf)
+        self.assertIsNotNone(self._thumbnailer.sized(self._source, (1,)))
+
+    def test_a_png_an_older_mcomix_stored_becomes_webp(self):
+        self._in(self._store, 'png').thumbnail(self._source)
+        _format, keys = self._keys(self._png)
+        self._reused()
+        self.assertFalse(os.path.exists(self._png))
+        self.assertEqual(('WEBP', keys), self._keys(
+            self._thumbnailer._path_to_thumbpath(self._source)))
+        self._reused()
+
+    def test_one_made_anew_takes_the_png_s_place(self):
+        self._in(self._store, 'png').thumbnail(self._source)
+        os.utime(self._source, (0, 0))
+        self._thumbnailer.thumbnail(self._source)
+        self.assertFalse(os.path.exists(self._png))
+        self.assertEqual(
+            [os.path.basename(self._thumbnailer._path_to_thumbpath(
+                self._source))], os.listdir(self._store))
+
+    def test_one_without_its_keys_is_made_again(self):
+        os.makedirs(self._store)
+        PIL.Image.new('RGB', (128, 96)).save(
+            self._thumbnailer._path_to_thumbpath(self._source), 'WEBP')
+        with unittest.mock.patch.object(
+                thumbnail_tools.Thumbnailer, '_create_thumbnail') as made:
+            self._thumbnailer.thumbnail(self._source)
+        made.assert_called_once()
+
+    def test_both_are_deleted(self):
+        self._thumbnailer.thumbnail(self._source)
+        self._in(self._store, 'png').thumbnail(self._source)
+        self.assertEqual(2, len(os.listdir(self._store)))
+        self._thumbnailer.delete(self._source)
+        self.assertEqual([], os.listdir(self._store))
+
+    def test_a_png_follows_its_file(self):
+        self._in(self._store, 'png').thumbnail(self._source)
+        new = os.path.join(self.tmp_dir, 'new.jpg')
+        self._thumbnailer.follow(self._source, new)
+        self.assertEqual([self._thumbnailer._stored_paths(new)[1]],
+                         [os.path.join(self._store, name)
+                          for name in os.listdir(self._store)])
+
+    def test_where_webp_cannot_keep_the_keys_it_stays_png(self):
+        with unittest.mock.patch.object(thumbnail_tools, '_webp_keeps_xmp',
+                                        return_value=False):
+            thumbnailer = self._in(self._store, 'webp')
+        thumbnailer.thumbnail(self._source)
+        self.assertEqual('PNG', self._keys(
+            thumbnailer._path_to_thumbpath(self._source))[0])
+        self._reused(thumbnailer)
+
+    def test_this_pillow_keeps_them(self):
+        self.assertTrue(thumbnail_tools._webp_keeps_xmp())
+
+
 class ArchiveCoverOrientationTest(MComixTest):
 
     """The thumbnail of an archive is of its cover, and is turned the

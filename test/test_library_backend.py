@@ -1389,10 +1389,14 @@ class ChosenCoverTest(LibraryDatabaseTest):
 
     def _cover(self):
         """The name of the page whose colour the book's cover has."""
-        cover = self.backend.get_book_thumbnail(self.path)
+        return self._page_coloured(self.backend.get_book_thumbnail(self.path))
+
+    def _page_coloured(self, cover):
+        """The name of the page whose colour <cover> has, near enough:
+        the store is WebP, which keeps a colour to within a few steps."""
         pixel = tuple(cover.get_pixels()[:3])
         return next(name for name, colour in self.COLOURS.items()
-                    if colour == pixel)
+                    if max(map(abs, map(int.__sub__, colour, pixel))) <= 8)
 
     def test_the_cover_is_the_picture_chosen(self):
         self.assertEqual('a.png', self._cover())
@@ -1482,8 +1486,7 @@ class ChosenCoverTest(LibraryDatabaseTest):
 
         # What is kept, and what the reader was given, which goes on screen.
         self.assertEqual('b.png', self._cover())
-        self.assertEqual(self.COLOURS['b.png'],
-                         tuple(answers[0].get_pixels()[:3]))
+        self.assertEqual('b.png', self._page_coloured(answers[0]))
 
     def _while_the_cover_is_read(self, act):
         """Run <act> while another thread reads the book's cover, between
@@ -1795,8 +1798,7 @@ class RelocatedShelfTest(LibraryDatabaseTest):
 
     def _draw_covers(self):
         """Something stored as the cover of every book, saying whose."""
-        covers = thumbnail_tools.Thumbnailer(
-            dst_dir=constants.LIBRARY_COVERS_PATH)
+        covers = self.backend._covers()
         os.makedirs(constants.LIBRARY_COVERS_PATH, exist_ok=True)
         for book, path in self.backend._con.execute(
                 'select id, path from book').fetchall():
