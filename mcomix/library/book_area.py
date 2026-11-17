@@ -19,6 +19,7 @@ import PIL.ImageDraw as ImageDraw
 
 from mcomix.preferences import prefs
 from mcomix import thumbnail_list
+from mcomix import archive_tools
 from mcomix import file_chooser_library_dialog
 from mcomix import image_tools
 from mcomix import constants
@@ -1180,6 +1181,10 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
             # The paths have to be read before the books go: removing
             # them from the library takes their rows with them.
             paths = [item.path for item in self._selected_items()]
+            # A RAR set goes with its first volume, the book listed:
+            # the later ones are listed nowhere.
+            volumes = {path: archive_tools.volume_set(path)
+                       for path in paths}
 
             # Remove books from library
             self._remove_books_from_library()
@@ -1200,7 +1205,8 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
                 for_good = [path for path in paths
                             if everything or tools.trash_refuses(path)]
                 deleted = file_actions.delete_files_permanently(
-                    for_good, parent=self._library.window)
+                    [volume for path in for_good for volume in volumes[path]],
+                    parent=self._library.window)
                 kept = [path for path in for_good if path not in deleted]
                 trashed = [path for path in paths if path not in for_good]
             else:
@@ -1213,21 +1219,24 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
             # was gone while it was still there.  It is offered to be
             # deleted permanently instead, as the window's delete does.
             refused: dict[str, str] = {}
-            for book_path in trashed:
+            for volume in [volume for path in trashed
+                           for volume in volumes[path]]:
                 try:
-                    tools.move_to_trash(book_path)
+                    tools.move_to_trash(volume)
                 except GLib.Error as error:
-                    refused[book_path] = error.message
+                    refused[volume] = error.message
                     log.error(_('! Could not remove %(file)s: %(error)s'),
-                              {'file': book_path, 'error': error.message})
+                              {'file': volume, 'error': error.message})
             if not refused:
                 self._books_deleted([path for path in paths
                                      if path not in kept])
                 return
 
             def answered(deleted: list[str]) -> None:
-                not_trashed = [path for path in refused
-                               if path not in deleted]
+                # Counted by the books still there, which are their
+                # first volumes.
+                not_trashed = [path for path in trashed
+                               if path in refused and path not in deleted]
                 if not_trashed:
                     message = i18n.get_translation().ngettext(
                         '%d book could not be moved to the trash.',

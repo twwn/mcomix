@@ -18,6 +18,7 @@ import tempfile
 from gi.repository import Gio, GLib, Gtk
 
 from mcomix import archive_packer
+from mcomix import archive_tools
 from mcomix import bookmark_backend
 from mcomix import constants
 from mcomix import edit_dialog
@@ -1113,9 +1114,10 @@ class FileActions:
 
     def _remove_permanently(self, path: str,
                             then: "Callable[[], None]") -> None:
-        """Delete <path> for good, then run <then>."""
+        """Delete <path> for good, and the later volumes of the set it
+        is the first of (archive_tools.volume_set()), then run <then>."""
         if os.path.isfile(path):
-            self.delete_files_permanently([path])
+            self.delete_files_permanently(archive_tools.volume_set(path))
         then()
 
     def _delete_answered(
@@ -1167,9 +1169,10 @@ class FileActions:
             self._offer_to_remove_bookmarks(path)
 
     def _trash(self, path: str, then: "Callable[[], None]") -> None:
-        """Move <path> to the trash, then run <then>.
+        """Move <path> to the trash, and the later volumes of the set it
+        is the first of (archive_tools.volume_set()), then run <then>.
 
-        Where the trash will not take the file, the reader is offered to
+        Where the trash will not take a file, the reader is offered to
         delete it permanently instead, and <then> runs once that has
         been answered.  delete() asks that up front wherever
         tools.trash_refuses() foresees the refusal, so this is for one
@@ -1178,12 +1181,17 @@ class FileActions:
         if not os.path.isfile(path):
             then()
             return
-        try:
-            tools.move_to_trash(path)
-        except GLib.Error as error:
-            log.error('Could not move %s to the trash: %s', path, error.message)
+        refused: dict[str, str] = {}
+        for volume in archive_tools.volume_set(path):
+            try:
+                tools.move_to_trash(volume)
+            except GLib.Error as error:
+                log.error('Could not move %s to the trash: %s', volume,
+                          error.message)
+                refused[volume] = error.message
+        if refused:
             self.offer_to_delete_permanently(
-                {path: error.message}, lambda deleted: then())
+                refused, lambda deleted: then())
             return
         then()
 

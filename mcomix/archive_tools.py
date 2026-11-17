@@ -397,6 +397,36 @@ def first_volume(path: str) -> str | None:
     return first
 
 
+def volume_set(path: str) -> list[str]:
+    """The files of the book at <path>: <path> itself, and where it is
+    the first volume of a RAR set named name.part1.rar on, the later
+    volumes beside it, in order.
+
+    MComix lists a set as one book, the first volume, and leaves the
+    later ones out wherever it lists books, so what is done to the book
+    on disk - deleted, moved - is done to all of them: a later volume
+    left behind is listed nowhere, and the first one apart from it is a
+    book cut short.  A later volume is one only if it says so in its
+    header (is_later_volume()); the set ends at the first number
+    missing.  A set named the way RAR 2 named them (name.rar, name.r00
+    on) is not followed.
+    """
+    named = _VOLUME_NAME.match(path)
+    if named is None or int(named.group('number')) != 1 \
+            or is_later_volume(path):
+        return [path]
+    width = len(named.group('number'))
+    volumes = [path]
+    number = 2
+    while True:
+        later = (named.group('stem') + str(number).zfill(width)
+                 + named.group('ext'))
+        if not os.path.isfile(later) or not is_later_volume(later):
+            return volumes
+        volumes.append(later)
+        number += 1
+
+
 def describe(path: str, archive_type: int) -> str:
     """How the archive at <path>, of <archive_type>, is described to the
     reader.

@@ -2438,6 +2438,41 @@ class MainWindowTest(MComixTest):
         self.assertNotEqual(self.window.filehandler.get_path_to_base(),
                             source, 'the deleted book is still open')
 
+    def _volume_set(self):
+        """A copy of the three volumes of Multivolume.rar in a folder of
+        their own, opened at the first; the folder and the volumes."""
+        folder = os.path.join(self.tmp_dir, 'set')
+        os.makedirs(folder)
+        volumes = []
+        for part in (1, 2, 3):
+            volume = os.path.join(folder, 'Set.part%d.rar' % part)
+            shutil.copy(get_testfile_path(
+                'archives', 'Multivolume.part%d.rar' % part), volume)
+            volumes.append(volume)
+        self.window.filehandler.open_file(volumes[0])
+        self._ready()
+        return folder, volumes
+
+    def test_a_deleted_rar_set_goes_to_the_trash_whole(self):
+        """The later volumes are listed nowhere, the set being one book
+        under its first volume: left behind, they were never seen
+        again."""
+        folder, _volumes = self._volume_set()
+        self.window.file_actions._delete_answered(
+            Response.OK, self.window.filehandler.get_path_to_base())
+        self._pump()
+        self.assertEqual([], os.listdir(folder))
+        self.assertEqual(['Set.part1.rar', 'Set.part2.rar', 'Set.part3.rar'],
+                         sorted(name.split('-', 1)[1]
+                                for name in os.listdir(self.trash_dir)))
+
+    def test_a_rar_set_deleted_permanently_goes_whole(self):
+        folder, volumes = self._volume_set()
+        dialog = self._asked_to_delete_permanently(volumes[0])
+        dialog.get_widget_for_response(Response.OK).emit('clicked')
+        self._pump()
+        self.assertEqual([], os.listdir(folder))
+
     def test_a_read_only_book_is_deleted_permanently_on_windows(self):
         """Windows refuses to remove a file with the read-only
         attribute, which every book copied off a CD has; Explorer asks

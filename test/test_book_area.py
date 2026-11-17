@@ -1218,6 +1218,38 @@ class DeleteFromDiskTest(MComixTest):
                          [name.split('-', 1)[1]
                           for name in os.listdir(self.trash_dir)])
 
+    def _volume_set_selected(self):
+        """The three volumes of Multivolume.rar in a folder of their
+        own, the first selected as the book; the folder."""
+        import shutil
+        from . import get_testfile_path
+        folder = os.path.join(self.tmp_dir, 'set')
+        os.makedirs(folder)
+        for part in (1, 2, 3):
+            shutil.copy(get_testfile_path(
+                'archives', 'Multivolume.part%d.rar' % part),
+                os.path.join(folder, 'Set.part%d.rar' % part))
+        self.area._covers.set_items([book_area._BookItem(
+            _Book(1, os.path.join(folder, 'Set.part1.rar')))])
+        self.area._covers.selection.select_all()
+        return folder
+
+    def test_a_deleted_rar_set_goes_to_the_trash_whole(self):
+        """The later volumes are not books of the library, nor listed
+        anywhere else: left behind, they were never seen again."""
+        folder = self._volume_set_selected()
+        self.area._remove_answered(Response.YES)
+        self.assertEqual([], os.listdir(folder))
+        self.assertEqual(['Set.part1.rar', 'Set.part2.rar', 'Set.part3.rar'],
+                         sorted(name.split('-', 1)[1]
+                                for name in os.listdir(self.trash_dir)))
+
+    def test_a_rar_set_deleted_for_good_goes_whole(self):
+        folder = self._volume_set_selected()
+        self.area._remove_answered(Response.YES, permanently=True,
+                                   everything=True)
+        self.assertEqual([], os.listdir(folder))
+
     def test_a_deleted_book_leaves_the_recent_files(self):
         """The window's own delete forgets the path there; the library
         deleted the file and the recent files went on offering it."""

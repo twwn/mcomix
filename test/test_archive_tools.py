@@ -103,6 +103,46 @@ class ArchiveToolsTest(MComixTest):
                 os.remove(first)
                 self.assertIsNone(archive_tools.first_volume(second))
 
+    def _copy_set(self, directory, width=1, parts=(1, 2, 3)):
+        import shutil
+        os.makedirs(directory, exist_ok=True)
+        names = []
+        for part in parts:
+            name = os.path.join(directory,
+                                'Set.part%s.rar' % str(part).zfill(width))
+            shutil.copy(get_testfile_path(
+                'archives', 'Multivolume.part%d.rar' % part), name)
+            names.append(name)
+        return names
+
+    def test_the_first_volume_of_a_set_has_the_rest_with_it(self):
+        for width in (1, 2):
+            with self.subTest(width=width):
+                names = self._copy_set(
+                    os.path.join(self.tmp_dir, 'width%d' % width), width)
+                self.assertEqual(names, archive_tools.volume_set(names[0]))
+                # A later volume is not a book: it has no set of its own.
+                self.assertEqual([names[1]],
+                                 archive_tools.volume_set(names[1]))
+
+    def test_a_set_ends_at_the_first_volume_missing(self):
+        first, _second, third = self._copy_set(self.tmp_dir)
+        os.remove(_second)
+        self.assertEqual([first], archive_tools.volume_set(first))
+
+    def test_a_file_named_as_a_later_volume_that_is_none_is_left(self):
+        import shutil
+        first = self._copy_set(self.tmp_dir, parts=(1,))[0]
+        shutil.copy(get_testfile_path('archives', 'RAR5.rar'),
+                    os.path.join(self.tmp_dir, 'Set.part2.rar'))
+        self.assertEqual([first], archive_tools.volume_set(first))
+
+    def test_a_book_in_one_file_is_its_own_set(self):
+        for name in ('03-RAR-Normal.rar', '01-ZIP-Normal.zip'):
+            with self.subTest(name=name):
+                path = get_testfile_path('archives', name)
+                self.assertEqual([path], archive_tools.volume_set(path))
+
     def test_a_book_that_is_no_later_volume_leads_nowhere(self):
         self.assertIsNone(archive_tools.first_volume(
             get_testfile_path('archives', '03-RAR-Normal.rar')))
