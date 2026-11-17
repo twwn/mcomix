@@ -82,7 +82,7 @@ class ShelfTest(_ShelfWindowTest):
         self._window()
         found = self._shown()
         self.assertIsInstance(found, shelf.Shelf)
-        self.assertEqual('All books', found._heading.get_text())
+        self.assertEqual(constants.COLLECTION_ALL, found._collection)
         self.assertTrue(found.book_area.get_visible())
         self.assertFalse(found._empty.get_visible())
         self.assertCountEqual(self.books, found.book_area.shown_paths())
@@ -96,7 +96,7 @@ class ShelfTest(_ShelfWindowTest):
             constants.COLLECTION_RECENT)
         self._window()
         found = self._shown()
-        self.assertEqual('Recent', found._heading.get_text())
+        self.assertEqual(constants.COLLECTION_RECENT, found._collection)
         self.assertEqual([self.books[1]], found.book_area.shown_paths())
 
     def test_an_empty_library_says_where_books_come_from(self):
@@ -105,7 +105,6 @@ class ShelfTest(_ShelfWindowTest):
         self.assertIsNotNone(found)
         self.assertTrue(found._empty.get_visible())
         self.assertFalse(found.book_area.get_visible())
-        self.assertFalse(found._heading.get_visible())
 
     def test_the_preference_turned_off_shows_nothing(self):
         prefs['show library without book'] = False
@@ -410,7 +409,7 @@ class ShelfSearchTest(_ShelfWindowTest):
         self.assertTrue(self._field_has_focus())
 
     def test_the_field_moves_no_cover(self):
-        """It lies over the covers' corner: in a bar of its own above
+        """It lies over the top of the covers: in a bar of its own above
         them, it pushed every cover down by its height."""
         def top():
             return self.shelf.book_area.compute_bounds(self.window)[1].get_y()
@@ -422,14 +421,33 @@ class ShelfSearchTest(_ShelfWindowTest):
         wait_for(lambda: top() != before, seconds=0.5)
         self.assertEqual(before, top())
 
+    def test_the_covers_start_at_the_top_and_the_field_is_centred(self):
+        """A heading line, "Recent" or "All books", was a bar across the
+        top of the window whenever no book was open, and the field sat
+        in the corner at its end."""
+        self.assertTrue(wait_for(lambda: self.shelf.book_area.get_height() > 0))
+        self.assertEqual(
+            self.shelf.compute_bounds(self.window)[1].get_y(),
+            self.shelf.book_area.compute_bounds(self.window)[1].get_y())
+        self.shelf.search()
+        revealer = self.shelf._search_bar.get_first_child()
+        self.assertTrue(wait_for(revealer.get_child_revealed))
+        shelf = self.shelf.compute_bounds(self.window)[1]
+        field = self.shelf._search.compute_bounds(self.window)[1]
+        middle = field.get_x() + field.get_width() / 2
+        self.assertLess(abs(middle - (shelf.get_x() + shelf.get_width() / 2)),
+                        # The close button beside the field.
+                        40)
+        self.assertLess(field.get_y() - shelf.get_y(), 20)
+
     def test_a_search_looks_among_every_book(self):
         self.shelf.search()
         self._search_for('tar')
         self.assertEqual([self.books[1]], self.shelf.book_area.shown_paths())
-        self.assertEqual('All books', self.shelf._heading.get_text())
+        self.assertEqual(constants.COLLECTION_ALL, self.shelf._collection)
         self._search_for('')
         self.assertEqual([self.books[0]], self.shelf.book_area.shown_paths())
-        self.assertEqual('Recent', self.shelf._heading.get_text())
+        self.assertEqual(constants.COLLECTION_RECENT, self.shelf._collection)
 
     def test_escape_closes_it_and_shows_the_shelf_as_it_was(self):
         self.shelf.search()

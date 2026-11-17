@@ -36,9 +36,9 @@ def _paint_black(display: Gdk.Display) -> None:
     paints its covers' ground, with writing that shows on it, once: the
     provider stays with the display.
 
-    The search field floats over the covers' corner: the bar a search
-    field is put in otherwise would lay a strip of the theme's colour
-    across them."""
+    The search field floats over the top of the covers: the bar a
+    search field is put in otherwise would lay a strip of the theme's
+    colour across them."""
     provider = Gtk.CssProvider()
     provider.load_from_string(
         '.%s { background-color: black; color: white; }'
@@ -52,7 +52,7 @@ def _paint_black(display: Gdk.Display) -> None:
 
 class Shelf(Gtk.Box):
 
-    """The covers, under a line that says which books they are.
+    """The covers, with nothing above them.
 
     The cover area asks the library window it is part of for what is
     around it; here it asks the Shelf, which answers for the window,
@@ -80,16 +80,12 @@ class Shelf(Gtk.Box):
         _paint_black(self.get_display())
 
         # The search field lies over the covers, so that opening it
-        # moves nothing under it.
+        # moves nothing under it.  No line above them says whether they
+        # are the books last read or all of them: it was a bar across
+        # the top of the window, there whenever a book was not.
         content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         overlay = Gtk.Overlay(child=content, vexpand=True)
         self.append(overlay)
-
-        self._heading = Gtk.Label(xalign=0)
-        self._heading.add_css_class('heading')
-        for side in ('top', 'bottom', 'start', 'end'):
-            getattr(self._heading, 'set_margin_' + side)(6)
-        content.append(self._heading)
 
         #: What the books shown hold in their name or path, as the
         #: search field says; None shows them all.
@@ -106,7 +102,7 @@ class Shelf(Gtk.Box):
         self._search.connect('activate', self._search_changed)
         self._search_bar = Gtk.SearchBar(child=self._search,
                                          show_close_button=True,
-                                         halign=Gtk.Align.END,
+                                         halign=Gtk.Align.CENTER,
                                          valign=Gtk.Align.START)
         self._search_bar.connect_entry(self._search)
         self._search_bar.connect('notify::search-mode-enabled',
@@ -167,13 +163,10 @@ class Shelf(Gtk.Box):
         # A search looks among every book: those last read are a few.
         if self.filter_string is None and recent.get_books():
             self._collection = constants.COLLECTION_RECENT
-            self._heading.set_text(_('Recent'))
             books = True
         else:
             self._collection = constants.COLLECTION_ALL
-            self._heading.set_text(_('All books'))
             books = self.backend.has_books()
-        self._heading.set_visible(books)
         self.book_area.set_visible(books)
         self._empty.set_visible(not books)
         self.book_area.display_covers(self._collection)
