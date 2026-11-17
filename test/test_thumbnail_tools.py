@@ -13,6 +13,7 @@ from gi.repository import Gio
 
 from . import MComixTest, get_testfile_path, wait_for
 
+from mcomix import constants
 from mcomix import image_tools
 from mcomix.archive import password as archive_password
 from mcomix import thumbnail_tools
@@ -505,6 +506,86 @@ class WebPStoreTest(MComixTest):
 
     def test_this_pillow_keeps_them(self):
         self.assertTrue(thumbnail_tools._webp_keeps_xmp())
+
+
+class SharedFoldersTest(MComixTest):
+
+    """The store every program shares has a folder for each size of
+    thumbnail, as the specification names them: "normal" for 128
+    pixels, "large" for 256, "x-large" for 512 and "xx-large" for 1024.
+    MComix stored every size in "normal", where its file chooser put
+    previews 256 pixels high on a screen of twice the scale, and any
+    other size made the thumbnail stored there over again."""
+
+    def setUp(self):
+        super().setUp()
+        self._source = os.path.join(self.tmp_dir, 'page.jpg')
+        PIL.Image.new('RGB', (1200, 1800), (30, 60, 90)).save(self._source)
+        self._root = os.path.dirname(constants.THUMBNAIL_PATH)
+
+    def _shown(self, size, store_on_disk=True):
+        """The thumbnail answered for <size>, and how often one was made
+        for it."""
+        thumbnailer = thumbnail_tools.Thumbnailer(
+            store_on_disk=store_on_disk, size=(size, size))
+        with unittest.mock.patch.object(
+                thumbnail_tools.Thumbnailer, '_create_thumbnail_pixbuf',
+                wraps=thumbnail_tools.Thumbnailer._create_thumbnail_pixbuf,
+                autospec=True) as made:
+            pixbuf = thumbnailer.thumbnail(self._source)
+        return pixbuf, made.call_count
+
+    def _stored(self, folder):
+        """The largest side of the thumbnail stored in <folder>."""
+        (name,) = os.listdir(os.path.join(self._root, folder))
+        with PIL.Image.open(os.path.join(self._root, folder, name)) as stored:
+            return max(stored.size)
+
+    def test_each_size_is_stored_in_its_folder_at_the_folder_s_size(self):
+        for asked, folder, size in ((80, 'normal', 128),
+                                    (170, 'large', 256),
+                                    (300, 'x-large', 512),
+                                    (1000, 'xx-large', 1024)):
+            with self.subTest(asked=asked):
+                pixbuf, made = self._shown(asked)
+                self.assertEqual(1, made)
+                self.assertEqual(asked, pixbuf.get_height())
+                self.assertEqual(size, self._stored(folder))
+
+    def test_one_larger_than_every_folder_is_the_largest_s(self):
+        pixbuf, _made = self._shown(1500)
+        self.assertEqual(1024, pixbuf.get_height())
+        self.assertEqual(1024, self._stored('xx-large'))
+
+    def test_another_size_of_the_same_folder_is_not_made_again(self):
+        self.assertEqual(1, self._shown(80)[1])
+        self.assertEqual(0, self._shown(128)[1])
+        self.assertEqual(0, self._shown(100)[1])
+        self.assertEqual(['normal'], os.listdir(self._root))
+
+    def test_what_another_program_stored_for_the_size_is_used(self):
+        thumbnail_tools.Thumbnailer(
+            dst_dir=os.path.join(self._root, 'large'), store_on_disk=True,
+            size=(256, 256)).thumbnail(self._source)
+        pixbuf, made = self._shown(200)
+        self.assertEqual(0, made)
+        self.assertEqual(200, pixbuf.get_height())
+
+    def test_one_fitted_to_the_size_asked_is_still_upright(self):
+        pixbuf, _made = self._shown(80)
+        self.assertIs(True, getattr(pixbuf, image_tools.UPRIGHT, None))
+        pixbuf, made = self._shown(80)
+        self.assertEqual(0, made)
+        self.assertIs(True, getattr(pixbuf, image_tools.UPRIGHT, None))
+
+    def test_one_not_stored_is_made_at_the_size_asked(self):
+        with unittest.mock.patch.object(
+                thumbnail_tools.image_tools, 'load_pixbuf_size',
+                wraps=thumbnail_tools.image_tools.load_pixbuf_size) as load:
+            pixbuf, _made = self._shown(80, store_on_disk=False)
+        self.assertEqual(80, pixbuf.get_height())
+        self.assertEqual((80, 80), load.call_args.args[1:])
+        self.assertFalse(os.path.exists(self._root))
 
 
 class ArchiveCoverOrientationTest(MComixTest):

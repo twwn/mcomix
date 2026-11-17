@@ -1,8 +1,9 @@
 """thumbnail_tools.py - The thumbnails of pages, books and archives.
 
 Most of the freedesktop.org thumbnail specification: a thumbnail is a
-PNG named after a hash of the source file's URI, kept in the "normal"
-directory of the thumbnail cache, with the URI it was made from and
+PNG named after a hash of the source file's URI, kept in the directory
+of the thumbnail cache for its size ("normal" for 128 pixels, "large"
+for 256, and so on), with the URI it was made from and
 that file's size and modification time written into its tEXt chunks, so
 that one left behind by an edited file can be told from a current one.
 
@@ -60,6 +61,14 @@ _STORED = 'mcomix_stored_as'
 
 #: The first line of a file Thumbnailer.keep_sized() writes.
 _SIZED_MAGIC = b'MComix sized thumbnail 1\n'
+
+#: The folders of the store every program shares, each with the size
+#: its thumbnails fit in, as the specification names them.  MComix
+#: stored every size in "normal", whose thumbnails are no larger than
+#: 128: its file chooser's previews were 256 on a screen of twice the
+#: scale, which every other program found there in place of its own.
+_SHARED_FOLDERS = ((128, 'normal'), (256, 'large'),
+                   (512, 'x-large'), (1024, 'xx-large'))
 
 #: The quality a thumbnail is stored at as WebP.  A cover 500 pixels
 #: high takes 44 kB where PNG takes 198, and decodes in 1.9 ms against
@@ -169,7 +178,7 @@ class Thumbnailer:
     it either stores thumbnails on disk and retrieves them later,
     or simply creates new thumbnails each time it is called. """
 
-    def __init__(self, dst_dir: str = constants.THUMBNAIL_PATH,
+    def __init__(self, dst_dir: str | None = None,
                  store_on_disk: bool | None = None,
                  size: tuple[int, int] | None = None,
                  force_recreation: bool = False,
@@ -179,7 +188,12 @@ class Thumbnailer:
                  stored_as: str = 'png',
                  larger_is_current: bool = False) -> None:
         """
-        <dst_dir> set the thumbnailer's storage directory.
+        <dst_dir> set the thumbnailer's storage directory.  None is the
+        store every program shares, in the specification's folder for
+        the size: "normal" up to 128 pixels, then "large" (256),
+        "x-large" (512) and "xx-large" (1024).  A thumbnail is made and
+        stored there at the folder's size, which is what other programs
+        look for in it, and answered fitted in <size>.
 
         If <store_on_disk> on disk is True, it changes the thumbnailer's
         behaviour to store files on disk, or just create new thumbnails each
@@ -223,7 +237,7 @@ class Thumbnailer:
             self._extensions: tuple[str, ...] = ('.webp', '.png')
         else:
             self._extensions = ('.png',)
-        self.dst_dir = dst_dir
+        self._dst_dir = dst_dir
         if store_on_disk is None:
             self.store_on_disk = prefs['create thumbnails']
         else:
@@ -240,6 +254,56 @@ class Thumbnailer:
         self.cover = cover
         self.larger_is_current = larger_is_current
 
+    @property
+    def _shared(self) -> bool:
+        """Whether this stores in the store every program shares."""
+        return self._dst_dir is None
+
+    def _shared_folder(self) -> tuple[int, str]:
+        """The size and the name of the shared store's folder for the
+        size asked for: the smallest that holds it, else the largest."""
+        asked = max(self.width, self.height)
+        return next((folder for folder in _SHARED_FOLDERS
+                     if asked <= folder[0]), _SHARED_FOLDERS[-1])
+
+    @property
+    def dst_dir(self) -> str:
+        """The directory thumbnails are stored in."""
+        if self._dst_dir is not None:
+            return self._dst_dir
+        # Beside "normal", wherever that has been put.
+        return os.path.join(os.path.dirname(constants.THUMBNAIL_PATH),
+                            self._shared_folder()[1])
+
+    @property
+    def _stored_box(self) -> int:
+        """The size a stored thumbnail fits in."""
+        if self._shared:
+            return self._shared_folder()[0]
+        return max(self.width, self.height)
+
+    def _made_at(self) -> tuple[int, int]:
+        """The box a thumbnail is made in: the size it is stored at,
+        where it is going to be stored; the size asked for otherwise."""
+        if self._shared and self.store_on_disk:
+            return self._stored_box, self._stored_box
+        return self.width, self.height
+
+    def _as_asked(self, pixbuf: "GdkPixbuf.Pixbuf | None"
+                  ) -> "GdkPixbuf.Pixbuf | None":
+        """<pixbuf>, made or stored at the size of a folder of the shared
+        store, fitted in the size asked for, with what was noted on it:
+        the orientation of its picture, and whether it is upright."""
+        if (pixbuf is None or not self._shared
+                or (pixbuf.get_width() <= self.width
+                    and pixbuf.get_height() <= self.height)):
+            return pixbuf
+        fitted = image_tools.fit_in_rectangle(pixbuf, self.width, self.height)
+        for noted in ('orientation', image_tools.UPRIGHT):
+            if hasattr(pixbuf, noted):
+                setattr(fitted, noted, getattr(pixbuf, noted))
+        return fitted
+
     def thumbnail(self, filepath: str, threaded: bool = False) -> "GdkPixbuf.Pixbuf | None":
         """ Returns a thumbnail pixbuf for <filepath>, transparently handling
         both normal image files and archives. If a thumbnail file already exists,
@@ -253,7 +317,7 @@ class Thumbnailer:
             self.width = prefs['thumbnail size']
             self.height = prefs['thumbnail size']
 
-        pixbuf = self._stored_thumbnail(filepath)
+        pixbuf = self._as_asked(self._stored_thumbnail(filepath))
         if pixbuf is not None:
             self.thumbnail_finished(filepath, pixbuf)
             return pixbuf
@@ -479,7 +543,7 @@ class Thumbnailer:
                     return None, None
 
                 pixbuf = _upright(image_tools.load_pixbuf_size(
-                    image_path, self.width, self.height))
+                    image_path, *self._made_at()))
                 tEXt_data: dict[str, str] | None
                 if self.store_on_disk:
                     tEXt_data = self._get_text_data(filepath, image_path)
@@ -501,7 +565,7 @@ class Thumbnailer:
 
         elif image_tools.is_image_file(filepath):
             pixbuf = _upright(image_tools.load_pixbuf_size(
-                filepath, self.width, self.height))
+                filepath, *self._made_at()))
             if self.store_on_disk:
                 tEXt_data = self._get_text_data(filepath)
             else:
@@ -534,14 +598,15 @@ class Thumbnailer:
             # Not stored: it is not a thumbnail of the archive.
             pixbuf, tEXt_data = image_tools.locked_image_icon(
                 min(self.width, self.height)), None
-        self.thumbnail_finished(filepath, pixbuf)
+        asked = self._as_asked(pixbuf)
+        self.thumbnail_finished(filepath, asked)
 
         if pixbuf and self.store_on_disk and tEXt_data is not None:
             thumbpath = self._path_to_thumbpath(filepath)
             if self._save_thumbnail(pixbuf, thumbpath, tEXt_data):
                 self._remove_older(filepath)
 
-        return pixbuf
+        return asked
 
     def _get_text_data(self, filepath: str,
                        picture: str | None = None) -> dict[str, str]:
@@ -737,7 +802,7 @@ class Thumbnailer:
         The source's own dimensions are in the tEXt chunks this writes, so
         the size to expect is the box or the source, whichever is smaller.
         """
-        box = max(self.width, self.height)
+        box = self._stored_box
         if max(stored) == box or (self.larger_is_current
                                   and max(stored) > box):
             return True
@@ -751,7 +816,7 @@ class Thumbnailer:
         # Stored upright, a small picture turned a quarter by its Exif
         # orientation is its own size the other way round.
         return (stored in (source, source[::-1])
-                and max(source) <= max(self.width, self.height))
+                and max(source) <= box)
 
     def _path_to_thumbpath(self, filepath: str) -> str:
         """Return the path of the thumbnail for <filepath> in <dst_dir>.
