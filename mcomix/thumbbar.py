@@ -44,9 +44,6 @@ class ThumbnailSidebar(Gtk.ScrolledWindow, widgets.Releasable):
 
     """A thumbnail sidebar including scrollbar for the main window."""
 
-    # Thumbnail border width in pixels.
-    _BORDER_SIZE = 1
-
     def __init__(self, window: "main.MainWindow") -> None:
         super().__init__()
 
@@ -279,7 +276,7 @@ class ThumbnailSidebar(Gtk.ScrolledWindow, widgets.Releasable):
     @property
     def _pixbuf_size(self) -> int:
         # Don't forget the extra pixels for the border!
-        return self._thumbnail_size + 2 * self._BORDER_SIZE
+        return self._thumbnail_size + 2 * prefs['thumbnail border width']
 
     def load_thumbnails(self) -> None:
         """Load the thumbnails, if it is appropriate to do so."""
@@ -332,8 +329,9 @@ class ThumbnailSidebar(Gtk.ScrolledWindow, widgets.Releasable):
                 GLib.idle_add(self._found_broken, path)
         if pixbuf is not None:
             pixbuf = self._window.enhancer.enhance(pixbuf)
-            pixbuf = image_tools.add_border(
-                pixbuf, max(1, round(self._BORDER_SIZE * scale)))
+            frame = round(prefs['thumbnail border width'] * scale)
+            if frame:
+                pixbuf = image_tools.add_border(pixbuf, frame)
 
         return pixbuf
 

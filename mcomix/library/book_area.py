@@ -62,6 +62,12 @@ def _paint_black(display: Gdk.Display, css_class: str) -> None:
         display, provider, theme.VIEW_COLOUR_PRIORITY)
 
 
+def _frame_width(scale: float) -> int:
+    """The width of the frame round a cover, in pixels of a screen with
+    <scale> of them to each of the window's: the thumbnails' frame."""
+    return round(prefs['thumbnail border width'] * scale)
+
+
 class _BookItem(thumbnail_list.ThumbnailItem):
 
     """One cover in the view, and what the sorters compare."""
@@ -102,9 +108,6 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
     """The _BookArea is the central area in the library where the book
     covers are displayed.
     """
-
-    # Thumbnail border width in pixels.
-    _BORDER_SIZE = 1
 
     #: The class the covers' black background is written against.
     _BLACK_CSS_CLASS = 'mcomix-library-covers'
@@ -764,15 +767,14 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         if prefs['library cover size'] != old_size:
             self.load_covers()
 
-    def _pixbuf_size(self, border_size: int = _BORDER_SIZE,
-                     scale: float = 1) -> tuple[int, int]:
+    def _pixbuf_size(self, scale: float = 1,
+                     framed: bool = True) -> tuple[int, int]:
         """The size of a cover in the window's pixels, or with <scale>
-        of the screen's to each of them."""
-        # Don't forget the extra pixels for the border!
+        of the screen's to each of them; with its frame, if <framed>."""
         # The ratio (0.67) is just above the normal aspect ratio for books.
         size = preview.scaled(prefs['library cover size'], self) * scale
-        border = round(border_size * scale)
-        return (int(0.67 * size) + 2 * border, int(size) + 2 * border)
+        frame = 2 * _frame_width(scale) if framed else 0
+        return int(0.67 * size) + frame, int(size) + frame
 
     @functools.cached_property
     def _finished_mark(self) -> GdkPixbuf.Pixbuf | None:
@@ -846,7 +848,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
                 return pixbuf
             self._being_read.add(book.path)
         try:
-            width, height = self._pixbuf_size(border_size=0, scale=scale)
+            width, height = self._pixbuf_size(scale=scale, framed=False)
             backend = self._library.backend
             # The size, and the preferences the turning and the scaling
             # below read: a cover kept on disk as it was drawn is one
@@ -899,7 +901,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         if book is None:
             # The book went while its cover was being drawn.
             return image_tools.missing_image_icon(*self._pixbuf_size(
-                border_size=0, scale=self._covers.device_scale))
+                scale=self._covers.device_scale, framed=False))
         # The view's scale, which it records on the cover it is made for.
         scale = self._covers.device_scale
         return self._dressed(book, self._cover_of(book, scale), scale)
@@ -927,10 +929,17 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
     def _dressed(self, book: 'backend_types._Book',
                  pixbuf: GdkPixbuf.Pixbuf, scale: float) -> GdkPixbuf.Pixbuf:
         """<book>'s cover <pixbuf> as the view draws it at <scale>:
-        enhanced, framed, and ticked if the book was read to the end."""
+        enhanced, framed in white as wide as the thumbnails' frame, and
+        ticked if the book was read to the end.
+
+        The frame can be none: a white one round each cover stands out
+        on the black the covers are shown on, which the main window
+        shows them on too.
+        """
         pixbuf = self._library.main_window.enhancer.enhance(pixbuf)
-        pixbuf = image_tools.add_border(pixbuf, max(1, round(scale)),
-                                        0xFFFFFFFF)
+        frame = _frame_width(scale)
+        if frame:
+            pixbuf = image_tools.add_border(pixbuf, frame, 0xFFFFFFFF)
 
         # Display indicator of having finished reading the book.
         # This information isn't cached in the pixbuf cache, as it changes frequently.
@@ -947,6 +956,11 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         book_pixbuf = self._finished_mark_at(scale)
         if book_pixbuf is None:
             return pixbuf
+        # The tick is drawn on a copy: without a frame, what the enhancer
+        # hands back may be the cover the cache holds.
+        copied = pixbuf.copy()
+        assert copied is not None, 'the cover could not be copied'
+        pixbuf = copied
         translation_x = pixbuf.get_width() - book_pixbuf.get_width() - 1
         translation_y = pixbuf.get_height() - book_pixbuf.get_height() - 1
         book_pixbuf.composite(pixbuf, translation_x, translation_y,

@@ -173,6 +173,12 @@ class _PreferencesDialog(Dialog):
                          'thumbnail size',
                          1, 20, 500, 1, 10, 0, None))
 
+        page.add_row(Gtk.Label(label=_('Thumbnail border width (in pixels):')),
+                     self._create_pref_spinner(
+                         'thumbnail border width',
+                         1, 0, 10, 1, 2, 0,
+                         _('The frame round the thumbnails of pages, and round the covers of the library. 0 draws none.')))
+
         page.new_section(_('Fullscreen'))
 
         page.add_row(self._create_pref_check_button(
@@ -1220,6 +1226,11 @@ class _PreferencesDialog(Dialog):
         elif preference == 'thumbnail size':
             self._window.thumbnailsidebar.resize()
             self._window.draw_image()
+
+        elif preference == 'thumbnail border width':
+            self._window.thumbnailsidebar.resize()
+            self._window.draw_image()
+            self._window.load_library_covers()
 
         elif preference == 'max pages to cache':
             self._window.imagehandler.do_cacheing()

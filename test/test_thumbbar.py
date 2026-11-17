@@ -90,6 +90,26 @@ class ThumbnailSidebarTest(MComixTest):
         self.assertLessEqual(max(thumbnail.get_width(),
                                  thumbnail.get_height()), limit)
 
+    def test_the_frame_is_as_wide_as_the_preference_says(self):
+        """The black frame round each thumbnail is the preference's
+        width, and none at all at 0."""
+        for frame in (0, 3):
+            with self.subTest(frame=frame):
+                prefs['thumbnail border width'] = frame
+                self.sidebar.resize()
+                self.assertEqual(
+                    self.sidebar._thumbnail_size + 2 * frame,
+                    self.sidebar._list._thumbnail_width)
+                made = []
+                self.assertTrue(wait_for(
+                    lambda: made.append(self.sidebar._generate_thumbnail(1))
+                    or made[-1] is not None, seconds=20))
+                corner = made[-1].get_pixels()[:4]
+                if frame:
+                    self.assertEqual(b'\x00\x00\x00\xff', corner)
+                else:
+                    self.assertNotEqual(b'\x00\x00\x00\xff', corner)
+
     def test_clearing_drops_every_row(self):
         self.sidebar.load_thumbnails()
         self.assertTrue(self._items())

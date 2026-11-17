@@ -570,7 +570,8 @@ class PreferenceCallbacksTest(MComixTest):
                'event_handler.reset_extra_scroll_events',
                'filehandler.update_comment_extensions',
                'filehandler.refresh_file',
-               'thumbnailsidebar.change_thumbnail_background_color')
+               'thumbnailsidebar.change_thumbnail_background_color',
+               'load_library_covers')
 
     def setUp(self):
         super().setUp()
@@ -626,6 +627,9 @@ class PreferenceCallbacksTest(MComixTest):
                 ('lens magnification', 2.5, 2.5, set()),
                 ('thumbnail size', 90, 90,
                  {'thumbnailsidebar.resize', 'draw_image'}),
+                ('thumbnail border width', 3, 3,
+                 {'thumbnailsidebar.resize', 'draw_image',
+                  'load_library_covers'}),
                 ('max pages to cache', 5, 5, {'imagehandler.do_cacheing'}),
                 ('number of key presses before page turn', 2, 2,
                  {'event_handler.reset_extra_scroll_events'}),

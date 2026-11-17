@@ -510,18 +510,64 @@ class UnreadableCoverTest(MComixTest):
     def test_the_missing_image_is_drawn_at_the_size_of_a_cover(self):
         from mcomix import image_tools
         prefs['library cover size'] = constants.SIZE_NORMAL
-        width, height = self.area._pixbuf_size(border_size=0)
+        width, height = self.area._pixbuf_size(framed=False)
         icon = image_tools.missing_image_icon(width, height)
         self.assertEqual(width, icon.get_width())
 
         cover = self.area._get_pixbuf(1)
-        # Inside the one pixel border every cover has.
+        # Inside the one pixel frame every cover has by default.
         self.assertEqual((icon.get_width() + 2, icon.get_height() + 2),
                          (cover.get_width(), cover.get_height()))
         drawn = image_tools.pixbuf_to_pil(cover).crop(
             (1, 1, icon.get_width() + 1, icon.get_height() + 1))
         self.assertEqual(image_tools.pixbuf_to_pil(icon).tobytes(),
                          drawn.tobytes())
+        self.assertEqual((255, 255, 255, 255),
+                         image_tools.pixbuf_to_pil(cover).getpixel((0, 0)))
+
+    def test_the_frame_is_as_wide_as_the_thumbnails_frame(self):
+        """The white frame round each cover stood out on the black they
+        are shown on; it is the thumbnails' frame, which can be none."""
+        from mcomix import image_tools
+        prefs['library cover size'] = constants.SIZE_NORMAL
+        width, height = self.area._pixbuf_size(framed=False)
+        icon = image_tools.missing_image_icon(width, height)
+        for frame in (0, 3):
+            with self.subTest(frame=frame):
+                prefs['thumbnail border width'] = frame
+                self.area._cache.invalidate_all()
+                cover = self.area._get_pixbuf(1)
+                inner =(icon.get_width(), icon.get_height())
+                self.assertEqual((inner[0] + 2 * frame, inner[1] + 2 * frame),
+                                 (cover.get_width(), cover.get_height()))
+                self.assertEqual(
+                    tuple(side + 2 * frame for side in
+                          self.area._pixbuf_size(framed=False)),
+                    self.area._pixbuf_size())
+                drawn = image_tools.pixbuf_to_pil(cover).crop(
+                    (frame, frame, inner[0] + frame, inner[1] + frame))
+                self.assertEqual(image_tools.pixbuf_to_pil(icon).tobytes(),
+                                 drawn.tobytes())
+
+    def test_the_tick_of_a_finished_book_leaves_the_cover_as_it_was(self):
+        """The cache's covers are drawn again and again, so the tick
+        goes on a copy, which without a frame nothing else makes."""
+        from mcomix import image_tools
+        prefs['library cover size'] = constants.SIZE_NORMAL
+        prefs['thumbnail border width'] = 0
+        cover = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, True, 8,
+                                     100, 150)
+        cover.fill(0x336699FF)
+        before = image_tools.pixbuf_to_pil(cover).tobytes()
+        book = unittest.mock.Mock(pages=3)
+        book.get_last_read_page.return_value = 3
+
+        dressed = self.area._dressed(book, cover, 1)
+
+        self.assertEqual(before, image_tools.pixbuf_to_pil(cover).tobytes())
+        self.assertEqual((100, 150), (dressed.get_width(), dressed.get_height()))
+        self.assertNotEqual(before,
+                            image_tools.pixbuf_to_pil(dressed).tobytes())
 
 
 class CoverOrderTest(MComixTest):

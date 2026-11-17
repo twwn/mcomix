@@ -19,6 +19,7 @@ Use checkered background for transparent images | A grey checkerboard behind tra
 Use this colour as the thumbnail background | The colour behind the sidebar's thumbnails.
 Show page numbers on thumbnails |
 Thumbnail size (in pixels) | 80 by default.
+Thumbnail border width (in pixels) | The frame round the sidebar's thumbnails (black) and the library's covers (white), 1 by default; 0 draws none.
 Start in fullscreen |
 Automatically hide all toolbars in fullscreen | Menu bar, toolbar, status bar, thumbnails and scrollbars go away in fullscreen.
 Page number in fullscreen | The pages on screen and the number of pages, in the lower right corner: "Never" (the default), "Always", or "For a few seconds after a page turn", three seconds.

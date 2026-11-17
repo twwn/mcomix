@@ -1120,6 +1120,15 @@ class MainWindow(Gtk.Window):
         else:
             self.filehandler.file_opened += opened
 
+    def load_library_covers(self) -> None:
+        """Draw the library's covers anew, in the library window and on
+        the shelf, after a preference they are drawn by has changed."""
+        library = main_dialog.get_dialog()
+        if library is not None:
+            library.book_area.load_covers()
+        if self._shelf is not None:
+            self._shelf.book_area.load_covers()
+
     def shelf_has_focus(self) -> bool:
         """Whether the keyboard is on the library's covers, shown where
         the pages would be."""
