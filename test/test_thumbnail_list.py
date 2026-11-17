@@ -364,6 +364,37 @@ class ThumbnailsOnScreenFirstTest(MComixTest):
                                  seconds=10))
         self.assertEqual(1, self.asked.count(5))
 
+    def test_an_entry_shown_again_is_still_made_as_it_was_to_be(self):
+        """An entry shown again keeps its cell, and GTK does not bind
+        it again: what it was waiting for when the entries were
+        replaced, it would wait for forever."""
+        first, second = self.items[3], self.items[4]
+        was = second.thumbnail
+        self.parking = True
+        self.view.redraw_item(first)
+        self.assertTrue(wait_for(self.entered.is_set, seconds=10))
+        # Waits behind the first, which is parked.
+        self.view.redraw_item(second)
+        self.view.set_items(self.items)
+        self._settle()
+        self.go_on.set()
+        self.assertTrue(wait_for(lambda: second.thumbnail is not was,
+                                 seconds=10))
+
+    def test_an_entry_shown_again_is_made_again_when_it_is_shown(self):
+        item = self.items[5]
+        self._jump(1.0)
+        self.assertTrue(self._drawn())
+        self.assertNotIn(item, self.view._bound)
+        was = item.thumbnail
+        self.view.redraw_item(item)
+        self.view.set_items(self.items)
+        # GTK puts the view back where it was once the entries are in.
+        self._settle()
+        self._jump(0.0)
+        self.assertTrue(wait_for(lambda: item.thumbnail is not was,
+                                 seconds=10))
+
 class ThumbnailsAtHandTest(MComixTest):
 
     """An owner that holds some thumbnails already hands them over as

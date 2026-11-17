@@ -458,13 +458,26 @@ class _ThumbnailViewBase(widgets.Releasable):
         to the new ones.
         """
         items = list(items)
-        self._thread.clear_orders()
-        self._stale.clear()
+        waiting = self._thread.clear_orders()
+        # An entry shown again may still be due to be made again.
+        self._stale.intersection_update(items)
         # Before the splice, not after it: the cells that fit on screen
         # are bound from inside it, and a stopped view turns away every
         # thumbnail those cells ask for.
         self._updates_stopped = False
         self.store.splice(0, self.store.get_n_items(), items)
+        # An entry that was on show before and is again keeps its cell,
+        # and GTK does not bind it again: what it was waiting for is
+        # asked for here, and its place is read anew.
+        for cell in self._each_cell():
+            if cell.list_item is None:
+                continue
+            shown = cell.list_item.get_item()
+            if isinstance(shown, ThumbnailItem) and shown in self._bound:
+                self._bound[shown] = cell.position
+        again = [item for item in waiting if item in self._bound]
+        if again and self.generate_thumbnail is not None:
+            self._thread.extend_orders(again)
 
     def append_item(self, item: ThumbnailItem) -> None:
         """Add one entry to the end."""

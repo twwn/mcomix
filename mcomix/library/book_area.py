@@ -77,15 +77,20 @@ class _BookItem(thumbnail_list.ThumbnailItem):
     def __init__(self, book: 'backend_types._Book') -> None:
         super().__init__(book.id)
         self.path = book.path
+        #: When the book was last read, an ISO timestamp, or None if it
+        #: never was.
+        self.read: str | None = None
+        self.renew(book)
+
+    def renew(self, book: 'backend_types._Book') -> None:
+        """Take what the library now says of <book>, this entry's book,
+        for the entry to be shown again."""
         self.size = book.size
         self.pages = book.pages
         self.added = book.added
         #: The place the book was given by hand in the collection on
         #: show, or None if it has none there.
         self.position: int | None = None
-        #: When the book was last read, an ISO timestamp, or None if it
-        #: never was.
-        self.read: str | None = None
         #: When the file was last changed, read from the disk the first
         #: time a sort asks; False until then.
         self._modified: float | None | Literal[False] = False
@@ -124,6 +129,10 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         #: what the others wait on for one to be done.
         self._being_read: set[str] = set()
         self._reading = threading.Condition()
+        #: Whether display_covers() may show again the entries on show,
+        #: with their covers, rather than new ones: not once the covers
+        #: are to be drawn anew (load_covers()).
+        self._entries_reusable = True
 
         self._library.backend.book_added += self._new_book_in_library
         self._library.backend.book_added_to_collection += self._new_book_added
@@ -435,12 +444,40 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
             return
         books = collection.get_books(self._library.filter_string,
                                      self._library.read_state)
-        items = [_BookItem(book) for book in books]
+        # A book on show already keeps its entry, and the entry its cell
+        # and its cover: GTK builds a cell anew for every new entry,
+        # which cost a collection switched back to 12 of its 44 ms, and
+        # binding them, with each cover dressed again, 24 more.
+        shown: dict[int, _BookItem] = {}
+        if self._entries_reusable:
+            shown = {item.uid: item for item in self._each_item()}
+        self._entries_reusable = True
         read = self._library.backend.last_read_times()
-        for item in items:
+        items = []
+        redraw = []
+        for book in books:
+            item = shown.get(book.id)
+            if item is None or item.path != book.path:
+                item = _BookItem(book)
+            else:
+                item.renew(book)
+                if item.read != read.get(item.uid):
+                    # Read since, maybe to the end: the tick for it is
+                    # drawn on the cover.
+                    redraw.append(item)
             item.read = read.get(item.uid)
+            items.append(item)
         self._place(items, collection_id)
+        # An entry shown again would stay selected.
+        self._covers.unselect_all()
         self._covers.set_items(items)
+        if items:
+            # GTK keeps the place of the entry it was scrolled to, kept
+            # as well, and a search that left it further down showed the
+            # covers from there: the adjustment set above is not enough.
+            self._covers.scroll_to(0, Gtk.ListScrollFlags.NONE, None)
+        for item in redraw:
+            self._covers.redraw_item(item)
         # Nothing is selected in a collection just shown, and the info
         # box speaks for the books on show.
         self._library.control_area.update_info(
@@ -716,6 +753,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
 
     def load_covers(self) -> None:
         self._cache.invalidate_all()
+        self._entries_reusable = False
         self.set_thumbnail_size()
         collection = self._library.collection_area.get_current_collection()
         GLib.idle_add(self.display_covers, collection)

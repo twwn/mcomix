@@ -277,6 +277,103 @@ class ShelfKeysTest(_ShelfWindowTest):
         self.assertEqual(1, len(self.executed))
 
 
+class ShelfDrawnAgainTest(_ShelfWindowTest):
+
+    """A collection drawn again showed every cover in an entry and a
+    cell built anew, 44 ms for 400 covers against 3 once the entries
+    on show are kept.  What a kept entry shows has to be what a new
+    one would."""
+
+    def setUp(self):
+        super().setUp()
+        library = backend.LibraryBackend()
+        for path in self.books:
+            library.add_book(path)
+        self._window()
+        self.area = self._shown().book_area
+        self.assertTrue(wait_for(lambda: len(self._entries()) == 2))
+        self.assertTrue(wait_for(lambda: all(
+            item.thumbnail is not None for item in self._entries())))
+
+    def _entries(self):
+        return list(self.area._each_item())
+
+    def _again(self):
+        self.area.display_covers(constants.COLLECTION_ALL)
+        return self._entries()
+
+    def _cells(self):
+        """Each book's cell, by book id."""
+        return {cell.list_item.get_item().uid: cell
+                for cell in self.area._covers._each_cell()
+                if cell.list_item.get_item() is not None}
+
+    def test_the_entries_on_show_are_kept_with_their_cells(self):
+        before, cells = self._entries(), self._cells()
+        self.assertEqual(2, len(cells))
+        after = self._again()
+        pump()
+        self.assertEqual([id(item) for item in before],
+                         [id(item) for item in after])
+        self.assertEqual(cells, self._cells())
+
+    def test_none_is_kept_once_the_covers_are_drawn_anew(self):
+        before = {id(item) for item in self._entries()}
+        self.area.load_covers()
+        self.assertTrue(wait_for(lambda: len(self._entries()) == 2
+                                 and not before & {id(item) for item in self._entries()}))
+
+    def test_a_book_moved_meanwhile_has_an_entry_of_its_own(self):
+        moved = self._entries()[0]
+        moved.path += '.old'
+        self.assertNotIn(moved, self._again())
+
+    def test_what_is_shown_again_is_shown_from_the_top(self):
+        """GTK keeps the place of the first entry: a search cleared,
+        which brought back books before it, showed the covers from
+        that one on."""
+        library = backend.LibraryBackend()
+        for index in range(8):
+            path = os.path.join(self.tmp_dir, 'b%02d.zip' % index)
+            shutil.copy(self.books[0], path)
+            library.add_book(path)
+        prefs['library cover size'] = constants.SIZE_HUGE
+        shelf = self._shown()
+        shelf.filter_string = 'b0'
+        self.area.load_covers()
+        adjustment = self.area.get_vadjustment()
+        self.assertTrue(wait_for(lambda: len(self._entries()) == 8
+                                 and adjustment.get_upper()
+                                 > 2 * adjustment.get_page_size()))
+        first = self._entries()[0]
+        shelf.filter_string = None
+        self._again()
+        wait_for(lambda: False, seconds=0.3)
+        self.assertEqual(10, len(self._entries()))
+        # Kept, and no longer first.
+        self.assertIn(first, self._entries()[1:])
+        self.assertEqual(0, adjustment.get_value())
+
+    def test_nothing_stays_selected(self):
+        self.area._covers.select_all()
+        self._again()
+        self.assertEqual([], self.area._covers.get_selected_positions())
+
+    def test_a_book_read_since_has_its_cover_drawn_again(self):
+        """The cover of a book read to the end carries a tick."""
+        library = backend.LibraryBackend()
+        book = library.get_book_by_path(self.books[0])
+        book.set_last_read_page(book.pages)
+        drawn = []
+        with unittest.mock.patch.object(
+                self.area._covers, 'redraw_item', side_effect=drawn.append):
+            after = self._again()
+        self.assertEqual([book.id], [item.uid for item in drawn])
+        self.assertEqual(library.last_read_times()[book.id],
+                         next(item.read for item in after
+                              if item.uid == book.id))
+
+
 class ShelfSearchTest(_ShelfWindowTest):
 
     """There was no way to find a book on the covers the window shows
