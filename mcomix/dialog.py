@@ -198,6 +198,27 @@ class Dialog(Gtk.Window):
         self._let_go_of_parent()
         super().destroy()
 
+    def do_map(self) -> None:
+        """Give the focus out as a Gtk.Dialog did when it was shown.
+
+        A window shown with nothing focused gives the focus to the first
+        widget that takes it, and a label that can be selected - the
+        name at the top of Properties - takes it by selecting the whole
+        of its text, as if the reader had dragged over it.  A
+        Gtk.Dialog moved the focus itself and let go of that selection;
+        the focus stays where it is, for the keys.  Here rather than
+        after the window is shown, which is where GTK moves the focus
+        of a window that has none: by then it is too late to undo.
+        """
+        Gtk.Window.do_map(self)
+        if self.get_focus() is not None:
+            return
+        self.child_focus(Gtk.DirectionType.TAB_FORWARD)
+        focus = self.get_focus()
+        # (has one, start, end): a label answers whether it has one.
+        if isinstance(focus, Gtk.Label) and focus.get_selection_bounds()[0]:
+            focus.select_region(0, 0)
+
     def _release(self) -> None:
         """Let go of everything that would keep the closed dialog alive."""
         widgets.release(self)

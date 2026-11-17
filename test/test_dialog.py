@@ -148,6 +148,35 @@ class DialogTest(MComixTest):
         self.assertTrue(self.dialog._escaped())
         self.assertEqual(self.answers, [Response.DELETE_EVENT])
 
+    def _shown_with_label(self, label):
+        self.dialog.get_content_area().append(label)
+        self.dialog.add_button('_Close', Response.CLOSE)
+        self.dialog.set_default_response(Response.CLOSE)
+        self.dialog.present()
+        self.assertTrue(wait_for(lambda: self.dialog.get_mapped()))
+        pump()
+
+    def test_a_label_that_takes_the_first_focus_selects_nothing(self):
+        """A selectable label first in a dialog took the focus as it
+        was shown, and the focus selected the whole of its text - the
+        book's name at the top of the library's Properties, as if the
+        reader had dragged over it. A Gtk.Dialog let go of that."""
+        label = Gtk.Label(label='First.cbz')
+        label.set_selectable(True)
+        self._shown_with_label(label)
+        self.assertIs(label, self.dialog.get_focus())
+        has_selection, _start, _end = label.get_selection_bounds()
+        self.assertFalse(has_selection)
+
+    def test_what_was_focused_before_it_was_shown_keeps_the_focus(self):
+        label = Gtk.Label(label='First.cbz')
+        label.set_selectable(True)
+        entry = Gtk.Entry()
+        self.dialog.get_content_area().append(entry)
+        entry.grab_focus()
+        self._shown_with_label(label)
+        self.assertIs(entry.get_delegate(), self.dialog.get_focus())
+
 
 class ResponseTest(MComixTest):
 

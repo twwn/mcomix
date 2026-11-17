@@ -72,6 +72,26 @@ class BookPropertiesTest(MComixTest):
         self.dialogs.append(dialog)
         return dialog
 
+    def test_the_name_is_not_selected_as_it_opens(self):
+        """The book's name at the top took the focus as the dialog was
+        shown, which selected the whole of it."""
+        dialog = self._open([self.books[0]])
+        dialog.present()
+        self.assertTrue(wait_for(lambda: dialog.get_mapped()))
+        pump()
+        selected = []
+        widget = dialog.page
+        stack = [widget]
+        while stack:
+            widget = stack.pop()
+            if isinstance(widget, Gtk.Label) and widget.get_selection_bounds()[0]:
+                selected.append(widget.get_text())
+            child = widget.get_first_child()
+            while child is not None:
+                stack.append(child)
+                child = child.get_next_sibling()
+        self.assertEqual([], selected)
+
     def test_one_book_is_described_by_its_file_and_the_library(self):
         book = self.books[0]
         self.backend.add_collection('Westerns')
