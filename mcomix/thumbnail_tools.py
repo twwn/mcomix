@@ -176,7 +176,8 @@ class Thumbnailer:
                  archive_support: bool = False,
                  cover_orientation_required: bool = False,
                  cover: str | None = None,
-                 stored_as: str = 'png') -> None:
+                 stored_as: str = 'png',
+                 larger_is_current: bool = False) -> None:
         """
         <dst_dir> set the thumbnailer's storage directory.
 
@@ -211,6 +212,12 @@ class Thumbnailer:
         as the library's.  Such a store reads the PNG thumbnails an
         older MComix stored there, and puts a WebP one in the place of
         each; it stays PNG where Pillow cannot write WebP with XMP.
+
+        If <larger_is_current> is True, a stored thumbnail larger than
+        <size> is used as it is, for a caller that scales whatever it
+        is given: the library's covers are stored as large as the
+        screen they were last drawn on wants them, and one stored for a
+        screen of twice the scale is not made again on the next.
         """
         if stored_as == 'webp' and _webp_keeps_xmp():
             self._extensions: tuple[str, ...] = ('.webp', '.png')
@@ -231,6 +238,7 @@ class Thumbnailer:
         self.archive_support = archive_support
         self.cover_orientation_required = cover_orientation_required
         self.cover = cover
+        self.larger_is_current = larger_is_current
 
     def thumbnail(self, filepath: str, threaded: bool = False) -> "GdkPixbuf.Pixbuf | None":
         """ Returns a thumbnail pixbuf for <filepath>, transparently handling
@@ -729,7 +737,9 @@ class Thumbnailer:
         The source's own dimensions are in the tEXt chunks this writes, so
         the size to expect is the box or the source, whichever is smaller.
         """
-        if max(stored) == max(self.width, self.height):
+        box = max(self.width, self.height)
+        if max(stored) == box or (self.larger_is_current
+                                  and max(stored) > box):
             return True
         try:
             source = (int(str(info['Thumb::Image::Width'])),

@@ -862,7 +862,12 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
                 self._cache.add(book.path, kept, begun_at)
                 return kept
             try:
-                thumbnail = backend.get_book_thumbnail(book.path)
+                # As large as the largest cover this screen draws, in
+                # its own pixels: a cover stored 500 high was drawn at
+                # twice that on a screen of twice the scale.
+                thumbnail = backend.get_book_thumbnail(
+                    book.path, round(preview.scaled(
+                        constants.MAX_LIBRARY_COVER_SIZE, self) * scale))
             except Exception:
                 thumbnail = None
             if thumbnail is None:

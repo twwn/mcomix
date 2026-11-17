@@ -312,22 +312,30 @@ class _LibraryBackend:
                                          (constants.COLLECTION_RECENT,))
         return paths
 
-    def get_book_thumbnail(self, path: str) -> "GdkPixbuf.Pixbuf | None":
+    def get_book_thumbnail(self, path: str,
+                           size: int = constants.MAX_LIBRARY_COVER_SIZE
+                           ) -> "GdkPixbuf.Pixbuf | None":
         """ Returns a pixbuf with a thumbnail of the cover of the book at <path>,
-        or None, if no thumbnail could be generated. """
+        or None, if no thumbnail could be generated.
 
+        <size> is the height, in the screen's pixels, of the largest
+        cover the caller may draw of it; the cover is made at least that
+        large, and at least as large as the largest cover size.  One
+        stored larger is answered as it is. """
+
+        size = max(size, constants.MAX_LIBRARY_COVER_SIZE)
         while True:
             cover = self.get_chosen_cover(path)
-            # Use the maximum image size allowed by the library, so that thumbnails
+            # Use the maximum image size the library draws, so that thumbnails
             # might be downscaled, but never need to be upscaled (and look ugly).
             thumbnailer = thumbnail_tools.Thumbnailer(dst_dir=constants.LIBRARY_COVERS_PATH,
                                                       store_on_disk=True,
                                                       archive_support=True,
-                                                      size=(constants.MAX_LIBRARY_COVER_SIZE,
-                                                            constants.MAX_LIBRARY_COVER_SIZE),
+                                                      size=(size, size),
                                                       cover_orientation_required=True,
                                                       cover=cover,
-                                                      stored_as=_COVERS_STORED_AS)
+                                                      stored_as=_COVERS_STORED_AS,
+                                                      larger_is_current=True)
             thumb = thumbnailer.thumbnail(path)
             if self.get_chosen_cover(path) == cover:
                 break

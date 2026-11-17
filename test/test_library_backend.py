@@ -1581,6 +1581,58 @@ class ChosenCoverTest(LibraryDatabaseTest):
             self.assertNotIn('SCAN', plan)
 
 
+class CoverSizeTest(LibraryDatabaseTest):
+
+    """A cover is stored as large as the largest the screen draws: 500
+    pixels high was the largest cover size on a screen of scale one,
+    and was drawn at twice that, scaled up, on one of twice the scale."""
+
+    def setUp(self):
+        super().setUp()
+        self.backend = backend.LibraryBackend()
+        self.path = os.path.join(self.tmp_dir, 'book.zip')
+        with zipfile.ZipFile(self.path, 'w') as book:
+            page = io.BytesIO()
+            PIL.Image.new('RGB', (1000, 1500), (0, 90, 0)).save(page, 'PNG')
+            book.writestr('01.png', page.getvalue())
+        self.assertTrue(self.backend.add_book(self.path))
+
+    def tearDown(self):
+        self.backend.close()
+        super().tearDown()
+
+    def _height(self, *size):
+        """The height of the cover answered for <size>, and whether the
+        archive was opened for it."""
+        with unittest.mock.patch.object(
+                thumbnail_tools.Thumbnailer, '_create_thumbnail_pixbuf',
+                wraps=thumbnail_tools.Thumbnailer._create_thumbnail_pixbuf,
+                autospec=True) as made:
+            cover = self.backend.get_book_thumbnail(self.path, *size)
+        return cover.get_height(), made.called
+
+    def test_by_default_it_is_the_largest_cover_size(self):
+        self.assertEqual((constants.MAX_LIBRARY_COVER_SIZE, True),
+                         self._height())
+
+    def test_it_is_made_as_large_as_asked(self):
+        self.assertEqual((1000, True), self._height(1000))
+        self.assertEqual((1000, False), self._height(1000))
+
+    def test_never_smaller_than_the_largest_cover_size(self):
+        self.assertEqual((constants.MAX_LIBRARY_COVER_SIZE, True),
+                         self._height(125))
+
+    def test_one_stored_larger_is_answered_as_it_is(self):
+        self._height(1000)
+        self.assertEqual((1000, False), self._height())
+
+    def test_one_stored_smaller_is_made_again(self):
+        self._height()
+        self.assertEqual((1000, True), self._height(1000))
+        self.assertEqual(1, len(os.listdir(constants.LIBRARY_COVERS_PATH)))
+
+
 class CollectionOrderTest(LibraryDatabaseTest):
 
     """A collection's books are kept in an order set by hand: a reading

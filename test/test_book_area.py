@@ -234,8 +234,9 @@ class _CoverBackend(_Backend):
     def get_book_by_id(self, book):
         return self._book if book == 1 else None
 
-    def get_book_thumbnail(self, path):
+    def get_book_thumbnail(self, path, size=constants.MAX_LIBRARY_COVER_SIZE):
         from mcomix import thumbnail_tools
+        self.asked_for = size
         return thumbnail_tools.Thumbnailer(
             dst_dir=self._store, store_on_disk=True, archive_support=True,
             size=(constants.MAX_LIBRARY_COVER_SIZE,) * 2,
@@ -338,6 +339,17 @@ class KeptCoverTest(MComixTest):
         later = os.stat(self.archive).st_mtime + 10
         os.utime(self.archive, (later, later))
         self.assertTrue(self._again()[1])
+
+    def test_the_cover_is_read_as_large_as_the_screen_draws_the_largest(self):
+        """In the screen's own pixels: on one of twice the scale, the
+        largest cover size is drawn twice as many pixels high."""
+        from mcomix import preview
+        largest = preview.scaled(constants.MAX_LIBRARY_COVER_SIZE, self.area)
+        self.assertEqual(largest, self.backend.asked_for)
+        self.area._covers.device_scale = 2.0
+        self.area._cache.invalidate_all()
+        self.assertTrue(self._again()[1])
+        self.assertEqual(2 * largest, self.backend.asked_for)
 
     def test_a_cover_that_cannot_be_kept_is_shown_all_the_same(self):
         prefs['library cover size'] = constants.SIZE_NORMAL * 2

@@ -899,12 +899,12 @@ class CoverInFlightTest(_OneBookTest):
         self.cover_read = threading.Event()
         self.reads = []
 
-        def parked(path):
+        def parked(path, *size):
             self.reads.append(path)
             entered.set()
             go_on.wait(10)
             self.cover_read.set()
-            return read(path)
+            return read(path, *size)
 
         with unittest.mock.patch.object(self.dialog.backend,
                                         'get_book_thumbnail', parked), \
@@ -983,12 +983,12 @@ class CoverInFlightTest(_OneBookTest):
         read = self.dialog.backend.get_book_thumbnail
         failures, workers = [], []
 
-        def parked(path):
+        def parked(path, *size):
             workers.append(threading.current_thread())
             entered.set()
             go_on.wait(10)
             try:
-                return read(path)
+                return read(path, *size)
             finally:
                 done.set()
 
@@ -1021,10 +1021,10 @@ class CoverInFlightTest(_OneBookTest):
         entered, go_on = threading.Event(), threading.Event()
         read = self.dialog.backend.get_book_thumbnail
 
-        def parked(path):
+        def parked(path, *size):
             entered.set()
             go_on.wait(10)
-            return read(path)
+            return read(path, *size)
 
         with unittest.mock.patch.object(self.dialog.backend,
                                         'get_book_thumbnail', parked), \
