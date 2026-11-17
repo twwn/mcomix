@@ -2,6 +2,7 @@
 
 
 import threading
+import time
 import traceback
 from collections.abc import Callable, Iterable
 from types import TracebackType
@@ -14,12 +15,20 @@ from mcomix.i18n import _
 #: function that processes them takes.
 Order = TypeVar('Order')
 
+#: How many orders a pool works on at once until one of them proves
+#: slow, and again once it has nothing left to do.
+FIRST_AT_ONCE = 2
+#: How long, in seconds, an order takes that opens the pool up to all
+#: its threads.
+SLOW_ORDER = 0.005
+
 
 class WorkerThread(Generic[Order]):
 
     def __init__(self, process_order: Callable[[Order], object],
                  name: str | None = None, max_threads: int = 1,
-                 sort_orders: bool = False, unique_orders: bool = False) -> None:
+                 sort_orders: bool = False, unique_orders: bool = False,
+                 narrow_first: bool = False) -> None:
         """Create a new pool of worker threads.
 
         Optional <name> will be added to spawned thread names.
@@ -27,7 +36,21 @@ class WorkerThread(Generic[Order]):
         At most <max_threads> will be started for processing.
         If <sort_orders> is True, the orders queue will be sorted
         after each addition. If <unique_orders> is True, duplicate
-        orders will not be added to the queue. """
+        orders will not be added to the queue.
+
+        With <narrow_first>, only FIRST_AT_ONCE orders are worked on at
+        once until one takes SLOW_ORDER or longer, and again once the
+        queue is empty and no order is in hand.  An order that costs a
+        fraction of a millisecond, a cover the library has stored, gains
+        nothing from more threads, and every thread more running Python
+        takes the interpreter lock from the main thread: 400 such covers
+        came last at 147 to 313 ms with 24 at once against 110 to 117
+        with one, and the cover grid took up to four times as long to
+        settle after a jump.  An order that reads a book gains from all
+        of them: 400 covers read from their books took 1.5 s with 8, 7 s
+        with one.  Not for a pool whose quick orders still gain from
+        threads: a ZIP's pages unpacked in 0.19 s instead of 0.08 with 8
+        threads so, each well under SLOW_ORDER. """
         self._name = name
         self._process_order = process_order
         self._max_threads = max_threads
@@ -42,6 +65,12 @@ class WorkerThread(Generic[Order]):
         # Track orders, when they have to be unique.
         self._orders_set: set[object] = set()
         self._condition = threading.Condition()
+        #: How many orders may be worked on at once while none has
+        #: proved slow, how many now, and how many are.
+        self._first_at_once = (min(FIRST_AT_ONCE, max_threads)
+                               if narrow_first else max_threads)
+        self._at_once = self._first_at_once
+        self._in_hand = 0
 
     def __enter__(self) -> bool:
         return self._condition.__enter__()
@@ -75,19 +104,33 @@ class WorkerThread(Generic[Order]):
                     # Gone already where retire() or a stop() after it
                     # emptied the set while this order was processed.
                     self._orders_set.discard(order_uid)
-                while not self._stop and not self._orders_queue:
+                while not self._stop and (
+                        not self._orders_queue
+                        or self._in_hand >= self._at_once):
                     self._condition.wait()
                 if self._stop:
                     return
                 order = self._orders_queue.pop(0)
+                self._in_hand += 1
                 if self._unique_orders:
                     order_uid = self._order_uid(order)
+            begun = time.perf_counter()
             try:
                 self._process_order(order)
             except Exception as e:
                 log.error(_('! Worker thread processing %(function)r failed: %(error)s'),
                           {'function': self._process_order, 'error': e})
                 log.debug('Traceback:\n%s', traceback.format_exc())
+            slow = time.perf_counter() - begun >= SLOW_ORDER
+            with self._condition:
+                self._in_hand -= 1
+                if slow and self._at_once < self._max_threads:
+                    self._at_once = self._max_threads
+                    self._condition.notify_all()
+                elif not self._orders_queue and not self._in_hand:
+                    self._at_once = self._first_at_once
+                elif self._orders_queue:
+                    self._condition.notify()
 
     def must_stop(self) -> bool:
         """Return true if we've been asked to stop processing.
@@ -162,6 +205,7 @@ class WorkerThread(Generic[Order]):
         self._threads = []
         self._stop = self._retired
         self._orders_queue = []
+        self._at_once = self._first_at_once
         if self._unique_orders:
             self._orders_set.clear()
 

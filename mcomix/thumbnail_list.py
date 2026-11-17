@@ -227,6 +227,7 @@ class _ThumbnailViewBase(widgets.Releasable):
         self._thread = WorkerThread(self._thumbnail_worker,
                                     name='thumbview',
                                     unique_orders=True,
+                                    narrow_first=True,
                                     max_threads=tools.thread_count(
                                         prefs['max threads']))
         #: The style provider carrying the background colour.
