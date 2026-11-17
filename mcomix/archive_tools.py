@@ -427,6 +427,34 @@ def volume_set(path: str) -> list[str]:
         number += 1
 
 
+def volume_set_renamed(volumes: list[str], name: str) -> list[str]:
+    """The paths the files of a book take when it is renamed <name>, in
+    the same folder: <volumes> as volume_set() gives them, in order.
+
+    The RAR reader finds a set's next volume by the number in the name
+    of the one before, so a set is renamed whole and keeps its
+    numbering: <name> is the first volume's, and where it carries no
+    ".part1" before its extension, that is put in.  Typed with ".part1"
+    and no extension, it keeps the old extension.
+    """
+    folder = os.path.dirname(volumes[0])
+    if len(volumes) == 1:
+        return [os.path.join(folder, name)]
+    old = _VOLUME_NAME.match(volumes[0])
+    assert old is not None
+    width = len(old.group('number'))
+    named = _VOLUME_NAME.match(name)
+    if named is not None and int(named.group('number')) == 1:
+        stem, extension = named.group('stem'), named.group('ext')
+    else:
+        stem, extension = os.path.splitext(name)
+        if re.fullmatch(r'\.part\d+', extension, re.IGNORECASE):
+            extension = old.group('ext')
+        stem += '.part'
+    return [os.path.join(folder, stem + str(number).zfill(width) + extension)
+            for number in range(1, len(volumes) + 1)]
+
+
 def describe(path: str, archive_type: int) -> str:
     """How the archive at <path>, of <archive_type>, is described to the
     reader.

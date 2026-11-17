@@ -9,6 +9,7 @@ book that is open, for the pages picked out of it and for the page a
 popup menu was opened over, and for nothing else.
 """
 
+import contextlib
 import errno
 import os
 import shutil
@@ -1432,16 +1433,20 @@ class FileActions:
         renamed where it lies.  Either way, what was recorded under the
         old name follows it (_follow()).
         """
-        folder, name = os.path.split(path)
+        name = os.path.basename(path)
+        # A RAR set is renamed whole (_rename_book_now()), so a name is
+        # free only where every volume's new name is.
+        volumes = archive_tools.volume_set(path)
 
         def clash(typed: str) -> "rename_dialog.Clash | None":
             """What holds the name typed in the folder, if anything."""
             new_name = rename_dialog.read(name, typed)
             if new_name is None:
                 return None
-            target = os.path.join(folder, new_name)
-            if not os.path.lexists(target) \
-                    or _same_file_recased(path, target):
+            targets = archive_tools.volume_set_renamed(volumes, new_name)
+            if all(not os.path.lexists(target)
+                   or _same_file_recased(volume, target)
+                   for volume, target in zip(volumes, targets)):
                 return None
             return rename_dialog.Clash(
                 _('A file of that name is there already.'), False)
@@ -1480,20 +1485,40 @@ class FileActions:
 
     def _rename_book_now(self, path: str, name: str,
                          parent: "Gtk.Window | None" = None) -> None:
-        """Call the book at <path> <name>, in the folder it is in."""
-        target = os.path.join(os.path.dirname(path), name)
+        """Call the book at <path> <name>, in the folder it is in.
+
+        A RAR set in volumes is renamed whole, keeping its numbering
+        (archive_tools.volume_set_renamed()): the RAR reader finds each
+        volume by the name of the one before, and the later volumes are
+        listed nowhere, so the first one renamed alone was a book cut
+        short and the rest were lost to sight.  All of it or none: a
+        volume that will not be renamed takes back the ones renamed
+        before it.
+        """
+        volumes = archive_tools.volume_set(path)
+        targets = archive_tools.volume_set_renamed(volumes, name)
+        target = targets[0]
         is_open = self._is_open_book(path)
         if is_open:
             self._window.filehandler.release_archive()
+        renamed: list[tuple[str, str]] = []
         try:
-            if os.path.lexists(target) and not _same_file_recased(path,
-                                                                  target):
-                raise FileExistsError(errno.EEXIST,
-                                      os.strerror(errno.EEXIST), target)
-            # Windows refuses a rename for a moment while something
-            # still reads the file.
-            portability.rename_once_closed(os.rename, path, target)
+            for volume, volume_target in zip(volumes, targets):
+                if os.path.lexists(volume_target) \
+                        and not _same_file_recased(volume, volume_target):
+                    raise FileExistsError(errno.EEXIST,
+                                          os.strerror(errno.EEXIST),
+                                          volume_target)
+            for volume, volume_target in zip(volumes, targets):
+                # Windows refuses a rename for a moment while something
+                # still reads the file.
+                portability.rename_once_closed(os.rename, volume,
+                                               volume_target)
+                renamed.append((volume, volume_target))
         except OSError as error:
+            for volume, volume_target in reversed(renamed):
+                with contextlib.suppress(OSError):
+                    os.rename(volume_target, volume)
             if is_open:
                 self._stayed()
             self._rename_failed(path, error, parent)

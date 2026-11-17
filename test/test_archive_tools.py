@@ -137,6 +137,26 @@ class ArchiveToolsTest(MComixTest):
                     os.path.join(self.tmp_dir, 'Set.part2.rar'))
         self.assertEqual([first], archive_tools.volume_set(first))
 
+    def test_a_set_renamed_keeps_its_numbering(self):
+        folder = os.path.join(self.tmp_dir, 'set')
+        for width, typed, expected in (
+                (1, 'New.rar', ['New.part1.rar', 'New.part2.rar']),
+                (1, 'New.part1.cbr', ['New.part1.cbr', 'New.part2.cbr']),
+                # Typed with the volume number and no extension.
+                (1, 'New.part1', ['New.part1.rar', 'New.part2.rar']),
+                (2, 'New.rar', ['New.part01.rar', 'New.part02.rar']),
+                (2, 'New.part1.rar', ['New.part01.rar', 'New.part02.rar'])):
+            with self.subTest(width=width, typed=typed):
+                volumes = [os.path.join(folder, 'Set.part%s.rar'
+                                        % str(part).zfill(width))
+                           for part in (1, 2)]
+                self.assertEqual(
+                    [os.path.join(folder, name) for name in expected],
+                    archive_tools.volume_set_renamed(volumes, typed))
+        self.assertEqual([os.path.join(folder, 'New.cbz')],
+                         archive_tools.volume_set_renamed(
+                             [os.path.join(folder, 'Old.cbz')], 'New.cbz'))
+
     def test_a_book_in_one_file_is_its_own_set(self):
         for name in ('03-RAR-Normal.rar', '01-ZIP-Normal.zip'):
             with self.subTest(name=name):

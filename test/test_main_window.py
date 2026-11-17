@@ -4453,6 +4453,50 @@ class MainWindowTest(MComixTest):
         self.assertIsNone(library.get_book_by_path(source))
         self.assertIsNotNone(library.get_book_by_path(renamed))
 
+    def test_renaming_a_rar_set_renames_every_volume(self):
+        """The RAR reader finds each volume by the name of the one
+        before: the first one renamed alone would not open, and the
+        rest were listed nowhere."""
+        folder, _volumes = self._volume_set()
+        self._rename_book_as('Renamed')
+        self.assertEqual(['Renamed.part1.rar', 'Renamed.part2.rar',
+                          'Renamed.part3.rar'], sorted(os.listdir(folder)))
+        renamed = os.path.join(folder, 'Renamed.part1.rar')
+        self.assertTrue(wait_for(
+            lambda: self.window.filehandler.get_path_to_base() == renamed
+            and self.window.imagehandler.get_number_of_pages() > 0,
+            seconds=20), 'the renamed set did not open')
+
+    def test_a_rar_set_with_a_volume_s_new_name_taken_is_not_renamed(self):
+        folder, volumes = self._volume_set()
+        with open(os.path.join(folder, 'Renamed.part3.rar'), 'wb') as taken:
+            taken.write(b'not the book')
+        asked = self._rename_book_as('Renamed')
+        self.assertIsNotNone(asked['clash']('Renamed'))
+        self.assertIsNone(asked['clash']('Other'))
+        for dialog in self._delete_dialogs():
+            dialog.destroy()
+        self.assertTrue(all(os.path.isfile(volume) for volume in volumes))
+        self.assertFalse(os.path.exists(
+            os.path.join(folder, 'Renamed.part1.rar')))
+
+    def test_a_volume_that_will_not_be_renamed_takes_the_others_back(self):
+        folder, volumes = self._volume_set()
+        rename = os.rename
+
+        def refused(source, target):
+            if source == volumes[2]:
+                raise PermissionError(errno.EACCES,
+                                      os.strerror(errno.EACCES), source)
+            rename(source, target)
+
+        with unittest.mock.patch('os.rename', refused):
+            self._rename_book_as('Renamed')
+        for dialog in self._delete_dialogs():
+            dialog.destroy()
+        self.assertEqual(['Set.part1.rar', 'Set.part2.rar', 'Set.part3.rar'],
+                         sorted(os.listdir(folder)))
+
     def test_a_name_without_an_extension_keeps_the_archive_s_own(self):
         self._movable_book()
         self._rename_book_as('Renamed')
