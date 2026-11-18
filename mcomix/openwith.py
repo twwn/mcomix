@@ -344,23 +344,30 @@ class OpenWithCommand:
             raise OpenWithException(
                 _("Archive-related variables can only be used for archives."))
 
-        # Both of these answer None where there is nothing open, and
-        # every variable below is built out of one of them, so None is
-        # turned into the complaint this method raises for everything
-        # else it cannot do before it can reach os.path.
-        def base_path() -> str:
-            answer = subject.base_path()
+        # The page's and the book's paths answer None where there is
+        # nothing open, and every variable below is built out of one of
+        # them, so None is turned into the complaint this method raises
+        # for everything else it cannot do before it can reach os.path.
+        def known(answer: str | None) -> str:
             if answer is None:
                 raise OpenWithException(
                     _("File-related variables can only be used for files."))
             return answer
 
+        def base_path() -> str:
+            return known(subject.base_path())
+
         def page_path() -> str:
-            answer = subject.page_path()
-            if answer is None:
-                raise OpenWithException(
-                    _("File-related variables can only be used for files."))
-            return answer
+            return known(subject.page_path())
+
+        # %b, %s, %B and %S name the book and its folder: an archive's
+        # as %a, %c, %A and %C do, a folder of images' as %d and %D do
+        # (%s and %S, there, go one folder further up).
+        if context_type & ARCHIVE_CONTEXT:
+            identifier = {'b': 'a', 's': 'c', 'B': 'A', 'S': 'C'}.get(
+                identifier, identifier)
+        else:
+            identifier = {'b': 'd', 'B': 'D'}.get(identifier, identifier)
 
         if identifier == '/':
             return os.path.sep
@@ -380,16 +387,8 @@ class OpenWithCommand:
             return name
         elif identifier == 'c':
             return os.path.basename(os.path.dirname(base_path()))
-        elif identifier == 'b':
-            if (context_type & ARCHIVE_CONTEXT):
-                return subject.base_filename()  # same as %a
-            else:
-                return os.path.basename(os.path.dirname(page_path()))  # same as %d
         elif identifier == 's':
-            if (context_type & ARCHIVE_CONTEXT):
-                return os.path.basename(os.path.dirname(base_path()))  # same as %c
-            else:
-                return os.path.basename(os.path.dirname(os.path.dirname(page_path())))
+            return os.path.basename(os.path.dirname(os.path.dirname(page_path())))
         elif identifier == 'A':
             return base_path()
         elif identifier == 'D':
@@ -398,16 +397,8 @@ class OpenWithCommand:
             return os.path.normpath(page_path())
         elif identifier == 'C':
             return os.path.dirname(base_path())
-        elif identifier == 'B':
-            if (context_type & ARCHIVE_CONTEXT):
-                return base_path()  # same as %A
-            else:
-                return os.path.normpath(os.path.dirname(page_path()))  # same as %D
         elif identifier == 'S':
-            if (context_type & ARCHIVE_CONTEXT):
-                return os.path.dirname(base_path())  # same as %C
-            else:
-                return os.path.dirname(os.path.dirname(page_path()))
+            return os.path.dirname(os.path.dirname(page_path()))
         else:
             raise OpenWithException(
                 _("Invalid escape sequence: %%%s") % identifier)
