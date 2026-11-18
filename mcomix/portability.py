@@ -3,6 +3,7 @@
 import ctypes
 import locale
 import os
+import platform
 import sys
 import time
 from collections.abc import Callable
@@ -16,6 +17,45 @@ def invalid_filesystem_chars() -> str:
         return r':*?"<>|' + "".join([chr(i) for i in range(0, 32)])
     else:
         return ""
+
+
+#: The windowing system each of GDK's display classes talks to.
+_WINDOWING = {
+    'GdkWaylandDisplay': 'Wayland',
+    'GdkX11Display': 'X11',
+    'GdkWin32Display': 'Windows',
+    'GdkMacosDisplay': 'macOS',
+    'GdkBroadwayDisplay': 'Broadway',
+}
+
+#: What a free desktop session says of itself, in the order logged.
+_SESSION_VARIABLES = ('XDG_CURRENT_DESKTOP', 'XDG_SESSION_DESKTOP',
+                      'DESKTOP_SESSION', 'XDG_SESSION_TYPE')
+
+
+def describe_desktop(display: str) -> str:
+    """One line on the desktop MComix runs on, for the log: the windowing
+    system GDK talks to, named from the class of its display (<display>,
+    such as 'GdkWaylandDisplay'), then what the system or the session
+    says of itself.
+
+    A report of how the window behaves (the pointer, fullscreen, the
+    title bar) depends on these more than on anything else, and the
+    reporter does not always know them.
+    """
+    parts = [_WINDOWING.get(display, display)]
+    if sys.platform == 'win32':
+        parts.append(platform.platform())
+    elif sys.platform == 'darwin':
+        parts.append('macOS ' + platform.mac_ver()[0])
+    else:
+        if display == 'GdkX11Display' and os.environ.get('WAYLAND_DISPLAY'):
+            parts[0] = 'X11 (Xwayland)'
+        parts.extend(f'{name}={os.environ[name]}'
+                     for name in _SESSION_VARIABLES if os.environ.get(name))
+        if os.path.exists('/.flatpak-info'):
+            parts.append('in a Flatpak')
+    return ', '.join(parts)
 
 
 #: The variables that name the language of messages, in the order

@@ -17,6 +17,7 @@ On Windows, in PowerShell (the installer puts MComix in `C:\Program Files\MComix
 - `-W` sets the detail: `all`, `debug`, `info`, `warn` (default) or `error`.
 - `-o` writes the log to a file as well. `MComix.exe` has no console, so on Windows the file is the only way to see it.
 - An error MComix did not expect is logged with its traceback.
+- From `info` on, the log names the desktop: Wayland, X11 or Windows, and the desktop and session type the system reports.
 
 ## A book does not open
 

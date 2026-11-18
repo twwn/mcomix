@@ -7,7 +7,7 @@ import unittest.mock
 
 from gi.repository import Gio, GLib
 
-from . import MComixTest
+from . import MComixTest, pump
 
 from mcomix import constants
 from mcomix import portability
@@ -246,5 +246,77 @@ class ColourSchemeTest(MComixTest):
         with unittest.mock.patch.object(Gio, 'bus_get_sync', side_effect=error):
             self.assertEqual(portability.is_system_ui_dark_themed(),
                              constants.SystemThemeLightness.UNKNOWN)
+
+
+class DescribeDesktopTest(MComixTest):
+
+    """The log's line on the desktop, which a report of how the window
+    behaves needs and its reporter may not know (issue 73)."""
+
+    _SESSION = {'XDG_CURRENT_DESKTOP': 'GNOME', 'XDG_SESSION_TYPE': 'wayland'}
+
+    def _describe(self, display, environment, platform='linux',
+                  flatpak=False):
+        names = ('XDG_CURRENT_DESKTOP', 'XDG_SESSION_DESKTOP',
+                 'DESKTOP_SESSION', 'XDG_SESSION_TYPE', 'WAYLAND_DISPLAY')
+        cleared = {name: '' for name in names}
+        with unittest.mock.patch.dict(os.environ, cleared), \
+                unittest.mock.patch.dict(os.environ, environment), \
+                unittest.mock.patch.object(sys, 'platform', platform), \
+                unittest.mock.patch.object(portability.os.path, 'exists',
+                                           return_value=flatpak):
+            return portability.describe_desktop(display)
+
+    def test_a_wayland_session_names_the_desktop_and_the_session(self):
+        self.assertEqual(
+            'Wayland, XDG_CURRENT_DESKTOP=GNOME, XDG_SESSION_TYPE=wayland',
+            self._describe('GdkWaylandDisplay', self._SESSION))
+
+    def test_x11_on_a_wayland_session_is_xwayland(self):
+        environment = dict(self._SESSION, WAYLAND_DISPLAY='wayland-0')
+        self.assertTrue(self._describe('GdkX11Display', environment)
+                        .startswith('X11 (Xwayland), '))
+
+    def test_a_flatpak_says_so(self):
+        self.assertTrue(self._describe('GdkWaylandDisplay', self._SESSION,
+                                       flatpak=True)
+                        .endswith(', in a Flatpak'))
+
+    def test_a_bare_x_server_names_only_x11(self):
+        self.assertEqual('X11', self._describe('GdkX11Display', {}))
+
+    def test_windows_names_its_version(self):
+        with unittest.mock.patch.object(portability.platform, 'platform',
+                                        return_value='Windows-11-10.0.26100'):
+            self.assertEqual('Windows, Windows-11-10.0.26100',
+                             self._describe('GdkWin32Display',
+                                            self._SESSION, 'win32'))
+
+    def test_an_unknown_display_is_named_by_its_class(self):
+        self.assertTrue(self._describe('GdkOtherDisplay', {})
+                        .startswith('GdkOtherDisplay'))
+
+    def test_the_main_window_logs_it(self):
+        from mcomix import icons, main
+        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
+                          constants.THUMBNAIL_PATH):
+            os.makedirs(directory, exist_ok=True)
+        icons.load_icons()
+        with self.assertLogs('mcomix', 'INFO') as logs:
+            window = main.MainWindow()
+            main.set_main_window(window)
+            self.addCleanup(self._close, window)
+        expected = 'Desktop: ' + portability.describe_desktop(
+            type(window.get_display()).__name__)
+        self.assertTrue(any(line.endswith(expected) for line in logs.output),
+                        logs.output)
+
+    @staticmethod
+    def _close(window):
+        from mcomix import main
+        window.terminate_program()
+        window.destroy()
+        main.set_main_window(None)
+        pump()
 
 # vim: expandtab:sw=4:ts=4

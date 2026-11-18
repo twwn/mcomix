@@ -32,6 +32,7 @@ from mcomix import theme
 from mcomix import thumbbar
 from mcomix import clipboard
 from mcomix import pageselect
+from mcomix import portability
 from mcomix import osd
 from mcomix import page_image
 from mcomix import keybindings
@@ -360,6 +361,8 @@ class MainWindow(Gtk.Window):
         renderer = self.get_renderer()
         if renderer is not None:
             log.debug('Drawing with %s', type(renderer).__name__)
+        log.info('Desktop: %s',
+                 portability.describe_desktop(type(self.get_display()).__name__))
 
         if prefs['default fullscreen'] or fullscreen:
             toggleaction = self.actiongroup.get_action('fullscreen')
