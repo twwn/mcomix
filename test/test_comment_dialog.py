@@ -199,4 +199,20 @@ class CommentsDialogTest(MComixTest):
             pump()
         added.assert_not_called()
 
+    def test_comments_are_offered_only_for_a_book_that_has_some(self):
+        """The Comments entry is offered for a book that carries a text
+        file, and not for one without any or once the book is closed."""
+        def offered():
+            return self.window.actiongroup.get_action(
+                'comments').get_sensitive()
+
+        self._open(self._archive_with_comments('plain.zip'))
+        self.assertFalse(offered())
+        self._open(self._archive_with_comments(
+            'commented.zip', ('one.txt', 'first')))
+        self.assertTrue(wait_for(offered, seconds=20))
+        self.window.filehandler.close_file()
+        pump()
+        self.assertFalse(offered())
+
 # vim: expandtab:sw=4:ts=4

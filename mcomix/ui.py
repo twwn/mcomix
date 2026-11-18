@@ -907,22 +907,14 @@ class MainUI:
                    'keep_transformation',
                    'enhance_image') + self._NEEDS_A_BOOK
 
-        comment = ('comments',)
-
-        general_sensitive = False
-        comment_sensitive = False
-
-        if self._window.filehandler.file_loaded:
-            general_sensitive = True
-
-            if self._window.filehandler.get_number_of_comments():
-                comment_sensitive = True
+        general_sensitive = self._window.filehandler.file_loaded
 
         for name in general:
             self._actions.get_action(name).set_sensitive(general_sensitive)
 
-        for name in comment:
-            self._actions.get_action(name).set_sensitive(comment_sensitive)
+        self._actions.get_action('comments').set_sensitive(
+            general_sensitive
+            and self._window.filehandler.get_number_of_comments() > 0)
 
         # A folder of images has no one file to rename; its pages are
         # renamed one by one.
