@@ -212,8 +212,11 @@ class CollectionAreaTest(MComixTest):
 
     # -- Selection --------------------------------------------------------
 
-    def test_nothing_is_selected_to_begin_with(self):
-        self.assertIsNone(self.area.get_current_collection())
+    def test_all_books_is_selected_to_begin_with(self):
+        # With no collection recorded as last on show: nothing was
+        # selected, and no cover shown until a collection was clicked.
+        self.assertEqual(constants.COLLECTION_ALL,
+                         self.area.get_current_collection())
 
     def test_the_selected_collection_is_the_one_the_row_names(self):
         self.area._list.select_row(self._row_for(self.manga))
@@ -647,6 +650,7 @@ class CollectionAreaTest(MComixTest):
 
     def test_a_collection_is_dragged_under_a_picture_of_its_row(self):
         source = _StubDragSource()
+        self.area._list.unselect_all()
         self.area._drag_begin(source, None)
         self.assertEqual([], source.icons, 'an icon with nothing selected')
         self.area._list.select_row(self._row_for(self.manga))
@@ -714,6 +718,7 @@ class CollectionAreaTest(MComixTest):
                 Gdk.ContentProvider, 'new_for_value',
                 wraps=Gdk.ContentProvider.new_for_value) as made:
             # From below every row, where the drag is of the selection.
+            self.area._list.unselect_all()
             self.assertIsNone(self.area._drag_prepare(None, 0.0, 10000.0))
             self.area._list.select_row(self._row_for(self.manga))
             self.assertIsNotNone(

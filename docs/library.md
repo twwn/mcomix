@@ -13,6 +13,7 @@ While no book is open, the main window shows the covers of "Recent" itself, or o
 
 - Collections are on the left; the selected one's books on the right, with those of the collections under it.
 - "All books" holds every book.
+- The library opens on the collection on show when it last closed, or on "All books".
 - Drag a collection onto another to file it there, to any depth. Dropped on the edge of a row, it goes beside that collection.
 - Drag books onto a collection to move them there from the collection on show; from "All books" they are added and stay where they were.
 - Hold CTRL while dragging to copy them instead: they stay in the collection on show as well.

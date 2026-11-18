@@ -110,6 +110,28 @@ class LibraryDialogTest(_LibraryWindowTest):
         closed.assert_called_once_with()
         self.assertIsNone(main_dialog.get_dialog())
 
+    def test_it_opens_on_all_books_where_none_was_chosen_before(self):
+        """The collection last on show is opened on again; with none
+        recorded - the library opened the first time, or its collection
+        gone - nothing was selected and no cover shown, until one was
+        clicked."""
+        dialog = self._open()
+        dialog.backend.add_book(get_testfile_path(
+            'archives', '01-ZIP-Normal.zip'))
+        dialog.close()
+        pump()
+        for chosen in (None, 12345):
+            with self.subTest(chosen=chosen):
+                prefs['last library collection'] = chosen
+                dialog = self._open()
+                self.assertEqual(
+                    constants.COLLECTION_ALL,
+                    dialog.collection_area.get_current_collection())
+                self.assertTrue(wait_for(
+                    lambda: any(dialog.book_area._each_item())))
+                dialog.close()
+                pump()
+
     def test_covers_asked_for_just_before_closing_are_not_drawn(self):
         """A search, a collection picked or books removed ask for the
         covers from an idle; a main loop busy elsewhere, extracting a

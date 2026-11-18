@@ -230,8 +230,15 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable):
                 yield row
                 yield from _each_row(row.children)
 
+        # The collection on show when the library last closed, or else
+        # "All books": with none recorded - the library opened the first
+        # time - or the one recorded gone, nothing was selected and no
+        # cover shown until a collection was clicked.
+        chosen = prefs['last library collection']
+        if not any(row.collection == chosen for row in _each_row(rows)):
+            chosen = constants.COLLECTION_ALL
         for row in list(_each_row(rows)):
-            if row.collection == prefs['last library collection']:
+            if row.collection == chosen:
                 # Reset to trigger update of book area.
                 prefs['last library collection'] = None
                 self._list.expand_to(row)
