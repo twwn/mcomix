@@ -484,7 +484,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         self._place(items, collection_id)
         # An entry shown again would stay selected.
         self._covers.unselect_all()
-        self._covers.set_items(items)
+        self._covers.set_items(self._in_order(items))
         if items:
             # GTK keeps the place of the entry it was scrolled to, kept
             # as well, and a search that left it further down showed the
@@ -717,6 +717,50 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         if answer:
             return answer
         return tools.cmp(left.path_key, right.path_key)
+
+    @staticmethod
+    def _in_order(items: list[_BookItem]) -> list[_BookItem]:
+        """<items> in the order set_sort_order()'s sorter puts them in,
+        sorted by Python on keys rather than by GTK one pair at a time.
+
+        The order the view is handed them in is what GTK sorts: its
+        sort takes runs already in order as they come, and needs one
+        comparison per cover for a list that is sorted already, where
+        10000 covers in the database's order took 58409, each a call
+        from GTK into Python.
+        """
+        key = prefs['lib sort key']
+        descending = prefs['lib sort order'] != constants.SORT_ASCENDING
+
+        def value(item: _BookItem) -> object:
+            if key == constants.SORT_NAME:
+                return item.name_key
+            if key == constants.SORT_SIZE:
+                return item.size
+            if key == constants.SORT_LAST_MODIFIED:
+                return item.added
+            if key == constants.SORT_FILE_MODIFIED:
+                return item.modified or 0
+            if key == constants.SORT_PAGES:
+                return item.pages
+            if key == constants.SORT_LAST_READ:
+                return item.read or ''
+            if key == constants.SORT_HAND:
+                return (item.position is None, item.position or 0)
+            return 0
+
+        def unknown(item: _BookItem) -> bool:
+            # Last whichever way the order runs, as in compare().
+            return (key == constants.SORT_LAST_READ and item.read is None
+                    or key == constants.SORT_FILE_MODIFIED
+                    and item.modified is None)
+
+        known = [item for item in items if not unknown(item)]
+        rest = [item for item in items if unknown(item)]
+        for part in (known, rest):
+            part.sort(key=lambda item: (value(item), item.path_key),
+                      reverse=descending)
+        return known + rest
 
     def _sort_key_changed(self, action: Gio.SimpleAction,
                           value: GLib.Variant) -> None:
