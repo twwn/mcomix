@@ -550,8 +550,7 @@ class FileHandler:
             path = self._initialize_fileprovider(path, keep_fileprovider)
             path, start_member = self._book_in_folder(path, start_member)
         except ValueError as ex:
-            self._window.statusbar.set_message(str(ex))
-            self._window.osd.show(str(ex))
+            self._tell(str(ex))
             return False
 
         error_message = self._check_access(path)
@@ -559,8 +558,7 @@ class FileHandler:
             # Nothing is open now: _close() has told the window about the
             # book that went, and file_opened() would mark this failure
             # as a book loaded.
-            self._window.statusbar.set_message(error_message)
-            self._window.osd.show(error_message)
+            self._tell(error_message)
             return False
 
         archive_type = archive_tools.archive_mime_type(path)
@@ -570,9 +568,7 @@ class FileHandler:
             # Named as a book and not readable as one: a download cut
             # short.  Opened as a file that is no book, it showed the
             # pictures of its folder as though they were its pages.
-            error_message = _('Could not read %s') % os.path.basename(path)
-            self._window.statusbar.set_message(error_message)
-            self._window.osd.show(error_message)
+            self._tell(_('Could not read %s') % os.path.basename(path))
             return False
 
         # The pictures of the folder are the book only where no archive
@@ -593,8 +589,7 @@ class FileHandler:
             try:
                 self._open_archive(self._current_file)
             except Exception as ex:
-                self._window.statusbar.set_message(str(ex))
-                self._window.osd.show(str(ex))
+                self._tell(str(ex))
                 # No archive is open, and nothing may take one for open:
                 # _close() would wait on the condition it never got, and
                 # raise, for this book and every one opened after it.
@@ -622,9 +617,7 @@ class FileHandler:
 
         current_file = self._current_file or ''
         if not image_files:
-            msg = _("No images in '%s'") % os.path.basename(current_file)
-            self._window.statusbar.set_message(msg)
-            self._window.osd.show(msg)
+            self._tell(_("No images in '%s'") % os.path.basename(current_file))
 
         else:
             if self.archive_type is None:
@@ -1118,9 +1111,7 @@ class FileHandler:
         if not self.file_loading or path != self._base_path:
             return
         self._close()
-        message = _('Could not read %s') % os.path.basename(path)
-        self._window.statusbar.set_message(message)
-        self._window.osd.show(message)
+        self._tell(_('Could not read %s') % os.path.basename(path))
 
     def _unpacking_failed(self, archive: archive_extractor.Extractor,
                           path: str, folder: str) -> None:
@@ -1134,8 +1125,13 @@ class FileHandler:
         """
         if path != self._base_path:
             return
-        message = (_('There is no room left to unpack the pages in %s.')
+        self._tell(_('There is no room left to unpack the pages in %s.')
                    % os.path.dirname(os.path.normpath(folder)))
+
+    def _tell(self, message: str) -> None:
+        """Tell the reader <message>, why a book did not open or what
+        went wrong with it: in the status bar, which keeps it, and over
+        the page, since the status bar may be hidden."""
         self._window.statusbar.set_message(message)
         self._window.osd.show(message)
 
