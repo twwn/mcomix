@@ -23,6 +23,13 @@ from . import MComixTest, pump, wait_for
 from mcomix import thumbnail_list
 
 
+def _cover():
+    """What a test's generate_thumbnail makes of every entry."""
+    pixbuf = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, True, 8, 32, 48)
+    pixbuf.fill(0x336699ff)
+    return pixbuf
+
+
 class ThumbnailListViewTest(MComixTest):
 
     #: More rows than any window in a test can show at once.
@@ -52,10 +59,7 @@ class ThumbnailListViewTest(MComixTest):
 
     def _generate(self, uid):
         self.asked.append(uid)
-        pixbuf = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, True, 8,
-                                      32, 48)
-        pixbuf.fill(0x336699ff)
-        return pixbuf
+        return _cover()
 
     def _settle(self):
         """Give the list frames to lay itself out in.
@@ -304,10 +308,7 @@ class ThumbnailsOnScreenFirstTest(MComixTest):
         if self.parking:
             self.entered.set()
             self.go_on.wait(10)
-        pixbuf = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, True, 8,
-                                      32, 48)
-        pixbuf.fill(0x336699ff)
-        return pixbuf
+        return _cover()
 
     def _settle(self):
         for _ in range(40):
@@ -440,6 +441,7 @@ class ThumbnailsOnScreenFirstTest(MComixTest):
         self.assertTrue(wait_for(lambda: item.thumbnail is not was,
                                  seconds=10))
 
+
 class ThumbnailsAtHandTest(MComixTest):
 
     """An owner that holds some thumbnails already hands them over as
@@ -476,21 +478,14 @@ class ThumbnailsAtHandTest(MComixTest):
         pump()
         super().tearDown()
 
-    @staticmethod
-    def _pixbuf():
-        pixbuf = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, True, 8,
-                                      32, 48)
-        pixbuf.fill(0x336699ff)
-        return pixbuf
-
     def _generate(self, uid):
         self.asked.append(uid)
-        return self._pixbuf()
+        return _cover()
 
     def _at_hand(self, item):
         """Even uids are at hand."""
         self.looked_up.append(item.uid)
-        return self._pixbuf() if item.uid % 2 == 0 else None
+        return _cover() if item.uid % 2 == 0 else None
 
     def _settle(self):
         for _ in range(40):
@@ -549,9 +544,6 @@ class ThumbnailsAtHandTest(MComixTest):
         self._settle()
         self.assertTrue(self.view._bound)
         self.assertEqual([], self.looked_up)
-
-
-# vim: expandtab:sw=4:ts=4
 
 
 class ThumbnailGridViewTest(MComixTest):
@@ -632,3 +624,6 @@ class ThumbnailGridViewTest(MComixTest):
             self._settle(width)
             self.assertEqual(self.view.get_max_columns() - 1,
                              self._columns(), width)
+
+
+# vim: expandtab:sw=4:ts=4
