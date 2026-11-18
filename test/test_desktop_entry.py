@@ -57,14 +57,18 @@ class DesktopEntryTest(unittest.TestCase):
             books.append(os.path.join(self.tmp_dir, name))
             open(books[-1], 'wb').close()
 
+        # GIO starts every process a launch takes within launch(), and
+        # tells the context of each one as it does.
+        context = Gio.AppLaunchContext()
+        started = []
+        context.connect('launched', lambda *args: started.append(args))
         _desktop_app_info(probe).launch(
-            [Gio.File.new_for_path(book) for book in books], None)
+            [Gio.File.new_for_path(book) for book in books], context)
+        self.assertEqual(1, len(started))
 
         deadline = time.monotonic() + 10
         while time.monotonic() < deadline and not os.path.exists(launches):
             time.sleep(0.05)
-        # Long enough for a second launch, had there been one, to write.
-        time.sleep(0.3)
         with open(launches) as handle:
             self.assertEqual(['2'], handle.read().split())
 

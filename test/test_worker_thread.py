@@ -11,6 +11,17 @@ from mcomix.worker_thread import WorkerThread
 THREADS = 8
 
 
+def wait_until(condition, seconds=5):
+    """Whether <condition> came true within <seconds>, asked every
+    millisecond; no main loop turns here."""
+    end = time.monotonic() + seconds
+    while not condition():
+        if time.monotonic() > end:
+            return False
+        time.sleep(0.001)
+    return True
+
+
 class OrdersAtOnceTest(unittest.TestCase):
 
     def setUp(self):
@@ -21,12 +32,19 @@ class OrdersAtOnceTest(unittest.TestCase):
         self.go_on = threading.Event()
         self.addCleanup(self.go_on.set)
         self._waits_from = 0
+        #: Threads waiting for go_on, and threads waiting in the pool.
+        self._held = 0
+        self._parked = 0
 
     def _order(self, number):
         with self._lock:
             self._in_hand += 1
         if number >= self._waits_from:
+            with self._lock:
+                self._held += 1
             self.go_on.wait(10)
+            with self._lock:
+                self._held -= 1
         with self._lock:
             self._in_hand -= 1
             self._done += 1
@@ -36,21 +54,35 @@ class OrdersAtOnceTest(unittest.TestCase):
                             narrow_first=narrow_first)
         self.addCleanup(pool.stop)
         self.addCleanup(self.go_on.set)
+        wait = pool._condition.wait
+
+        def parked(*args, **kwargs):
+            # Called, and back, with the pool's lock held.
+            self._parked += 1
+            try:
+                return wait(*args, **kwargs)
+            finally:
+                self._parked -= 1
+        pool._condition.wait = parked
         return pool
 
-    def _settled_in_hand(self, at_least=0):
-        """How many orders are in hand once that stops changing."""
-        end = time.monotonic() + 5
-        last, since = -1, time.monotonic()
-        while time.monotonic() < end:
-            with self._lock:
-                now = self._in_hand
-            if now != last:
-                last, since = now, time.monotonic()
-            elif now >= at_least and time.monotonic() - since > 0.2:
-                break
-            time.sleep(0.01)
-        return last
+    def _settled_in_hand(self, pool):
+        """How many orders are in hand once every thread of <pool> waits:
+        in an order for go_on, or in the pool where it may not take an
+        order.  Nothing moves after that until the test moves it, so no
+        stretch of quiet has to be waited out to say no more will start.
+        """
+        def settled():
+            with pool._condition:
+                held_back = (not pool._orders_queue
+                             or pool._in_hand >= pool._at_once)
+                with self._lock:
+                    return ((held_back or not self._parked)
+                            and self._held + self._parked
+                            == len(pool._threads))
+        self.assertTrue(wait_until(settled), 'the pool never settled')
+        with self._lock:
+            return self._in_hand
 
     def _wait_done(self, count):
         end = time.monotonic() + 5
@@ -63,7 +95,7 @@ class OrdersAtOnceTest(unittest.TestCase):
         with unittest.mock.patch.object(worker_thread, 'SLOW_ORDER', 60):
             pool.extend_orders(range(20))
             self.assertEqual(worker_thread.FIRST_AT_ONCE,
-                             self._settled_in_hand())
+                             self._settled_in_hand(pool))
             self.go_on.set()
             self._wait_done(20)
 
@@ -72,7 +104,7 @@ class OrdersAtOnceTest(unittest.TestCase):
         self._waits_from = 2
         with unittest.mock.patch.object(worker_thread, 'SLOW_ORDER', 0):
             pool.extend_orders(range(20))
-            self.assertEqual(THREADS, self._settled_in_hand(THREADS))
+            self.assertEqual(THREADS, self._settled_in_hand(pool))
             self.go_on.set()
             self._wait_done(20)
 
@@ -86,7 +118,7 @@ class OrdersAtOnceTest(unittest.TestCase):
         with unittest.mock.patch.object(worker_thread, 'SLOW_ORDER', 60):
             pool.extend_orders(range(10, 30))
             self.assertEqual(worker_thread.FIRST_AT_ONCE,
-                             self._settled_in_hand())
+                             self._settled_in_hand(pool))
             self.go_on.set()
             self._wait_done(30)
 
@@ -97,7 +129,7 @@ class OrdersAtOnceTest(unittest.TestCase):
             for number in range(20):
                 pool.append_order(number)
             self.assertEqual(worker_thread.FIRST_AT_ONCE,
-                             self._settled_in_hand())
+                             self._settled_in_hand(pool))
             self.go_on.set()
             self._wait_done(20)
 
@@ -105,7 +137,7 @@ class OrdersAtOnceTest(unittest.TestCase):
         pool = self._pool(narrow_first=False)
         with unittest.mock.patch.object(worker_thread, 'SLOW_ORDER', 60):
             pool.extend_orders(range(20))
-            self.assertEqual(THREADS, self._settled_in_hand(THREADS))
+            self.assertEqual(THREADS, self._settled_in_hand(pool))
             self.go_on.set()
             self._wait_done(20)
 
@@ -114,7 +146,7 @@ class OrdersAtOnceTest(unittest.TestCase):
         with unittest.mock.patch.object(worker_thread, 'SLOW_ORDER', 0):
             self._waits_from = 2
             pool.extend_orders(range(20))
-            self.assertEqual(THREADS, self._settled_in_hand(THREADS))
+            self.assertEqual(THREADS, self._settled_in_hand(pool))
             self.go_on.set()
             pool.stop()
         self.go_on.clear()
@@ -122,7 +154,7 @@ class OrdersAtOnceTest(unittest.TestCase):
         with unittest.mock.patch.object(worker_thread, 'SLOW_ORDER', 60):
             pool.extend_orders(range(20))
             self.assertEqual(worker_thread.FIRST_AT_ONCE,
-                             self._settled_in_hand())
+                             self._settled_in_hand(pool))
 
 
 class ThumbnailViewPoolTest(unittest.TestCase):

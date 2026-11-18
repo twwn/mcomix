@@ -405,6 +405,11 @@ class ShelfSearchTest(_ShelfWindowTest):
         self._window()
         self.shelf = self._shown()
         self.assertEqual([self.books[0]], self.shelf.book_area.shown_paths())
+        # The field slides in over a quarter of a second, which the
+        # tests that look at it laid out waited out; shown at once, it
+        # is where it is when animations are off, as on the Windows
+        # runner.
+        self.shelf._search_bar.get_first_child().set_transition_duration(0)
 
     def _search_for(self, text):
         self.shelf._search.set_text(text)

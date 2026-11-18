@@ -308,7 +308,7 @@ class FileChooserTest(MComixTest):
         self.dialog.response(Response.OK)
         self.assertEqual(chosen, [path])
 
-    def _select(self, path):
+    def _select(self, path, ask=True):
         """Select the file or folder <path> in the chooser, and wait
         until the chooser says it is selected.
 
@@ -342,6 +342,11 @@ class FileChooserTest(MComixTest):
             wait_for(selected, seconds=10),
             'the chooser selected %r, not %r'
             % (widgets.chooser_paths(chooser), path))
+        # The dialog notices a selection by asking for it every 200 ms,
+        # which test_a_selected_file_is_previewed leaves to it (<ask>
+        # false); a test that only needs the preview asks at once.
+        if ask:
+            self.dialog._poll_preview()
 
     def _unlisted_folder(self, name):
         """Make and return a folder the chooser has not listed.
@@ -598,7 +603,7 @@ class FileChooserTest(MComixTest):
         # takes it used to ask the chooser what was being previewed with
         # an API GTK4 had removed, so it never arrived at all.
         path = get_testfile_path('images', 'blue.png')
-        self._select(path)
+        self._select(path, ask=False)
         wait_for(lambda: self.dialog._preview_image.get_paintable() is not None)
         self.assertIsNotNone(self.dialog._preview_image.get_paintable(),
                              'the preview never appeared')
