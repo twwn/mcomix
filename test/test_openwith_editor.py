@@ -10,7 +10,7 @@ from unittest import mock
 
 from gi.repository import Gdk, Gtk
 
-from . import MComixTest, pump, wait_for
+from . import MComixTest, pump, wait_for, wait_frames
 
 from mcomix import callback
 from mcomix import column_list
@@ -203,8 +203,8 @@ class OpenWithEditorTest(MComixTest):
         self.assertTrue(wait_for(lambda: self.editor.get_width() > 0))
         width = self.editor.get_width()
         self._tried('Label ' + 'n' * 150, 'no-such-program', '')
-        # The resize, if any, comes with the next frames.
-        wait_for(lambda: self.editor.get_width() != width, seconds=0.5)
+        # The resize, if any, comes with the next frame's layout.
+        self.assertTrue(wait_frames(self.editor))
         self.assertEqual(width, self.editor.get_width())
 
     def test_a_command_that_can_run_is_shown_as_it_would_run(self):
