@@ -682,56 +682,9 @@ class MainWindow(Gtk.Window):
             content_boxes = self.layout.get_content_boxes()
             scaled_sizes = list(map(box.Box.get_size, content_boxes))
 
-            self.transforms = [Transform.ID] * pixbuf_count
-            fitted: "dict[tuple[object, ...], GdkPixbuf.Pixbuf]" = {}
-            # The pages are laid out in the window's pixels and scaled to
-            # the screen's: on a screen with two of them to each of the
-            # window's, a page scaled to its layout alone was drawn
-            # enlarged and blurred.  The page widget draws the larger
-            # pixbuf into the box the layout gave it.
-            device_scale = self.device_scale()
-            device_sizes = [
-                size if device_scale == 1
-                else [max(1, round(side * device_scale)) for side in size]
-                for size in scaled_sizes]
-            for i in range(pixbuf_count):
-                if do_not_transform[i]:
-                    continue
-                if missing[i]:
-                    # Drawn from its SVG at the size shown, turned as the
-                    # page would be, so that the fitting below only turns it.
-                    width, height = device_sizes[i]
-                    if tools.rotation_swaps_axes(rotation_list[i]):
-                        width, height = height, width
-                    pixbuf_list[i] = image_tools.missing_image_icon(
-                        max(1, int(width)), max(1, int(height)))
-                # Everything fit_pixbuf_to_rectangle() reads.
-                key = (pixbuf_list[i], *device_sizes[i], rotation_list[i],
-                       prefs['scaling quality'],
-                       prefs['checkered bg for transparent images'])
-                pixbuf_list[i] = fitted[key] = self._strip_fitted.get(key) \
-                    or image_tools.fit_pixbuf_to_rectangle(
-                        pixbuf_list[i], device_sizes[i], rotation_list[i])
-                # The turn only.  fit_pixbuf_to_rectangle() also scaled
-                # the page to the content box, which the lens - the one
-                # reader of these - takes from the box itself rather
-                # than from here.
-                self.transforms[i] += Transform.from_rotation(rotation_list[i])
-            # Only this draw's pages, and only in a strip: a single page
-            # drawn again is drawn at another size, or is the screen's
-            # worth of pixels it is cheap to scale anew.
-            self._strip_fitted = fitted if continuous else {}
-
-            for i in range(pixbuf_count):
-                if do_not_transform[i]:
-                    continue
-                if prefs['horizontal flip']:
-                    pixbuf_list[i] = image_tools.flip_pixbuf(pixbuf_list[i], 0)
-                    self.transforms[i] += Transform.from_flips(True, False)
-                if prefs['vertical flip']:
-                    pixbuf_list[i] = image_tools.flip_pixbuf(pixbuf_list[i], 1)
-                    self.transforms[i] += Transform.from_flips(False, True)
-                pixbuf_list[i] = self.enhancer.enhance(pixbuf_list[i])
+            pixbuf_list = self._fit_pages(
+                pixbuf_list, scaled_sizes, rotation_list, do_not_transform,
+                missing, continuous)
 
             for i in range(pixbuf_count):
                 if not left_out[i]:
@@ -853,6 +806,72 @@ class MainWindow(Gtk.Window):
         self._waiting_for_redraw = False
 
         return False
+
+    def _fit_pages(self, pixbuf_list: "list[GdkPixbuf.Pixbuf]",
+                   scaled_sizes: list[tuple[int, ...]],
+                   rotation_list: list[int],
+                   do_not_transform: list[bool], missing: list[bool],
+                   continuous: bool) -> "list[GdkPixbuf.Pixbuf]":
+        """The pages of this draw scaled to their boxes, turned, flipped
+        and enhanced, and the transforms that record it.
+
+        A page in <do_not_transform> - an animation, a page left out of
+        the strip - is handed back as it came.  One <missing> is drawn
+        anew from its icon at the size shown.
+        """
+        pixbuf_list = list(pixbuf_list)
+        pixbuf_count = len(pixbuf_list)
+        self.transforms = [Transform.ID] * pixbuf_count
+        fitted: "dict[tuple[object, ...], GdkPixbuf.Pixbuf]" = {}
+        # The pages are laid out in the window's pixels and scaled to
+        # the screen's: on a screen with two of them to each of the
+        # window's, a page scaled to its layout alone was drawn
+        # enlarged and blurred.  The page widget draws the larger
+        # pixbuf into the box the layout gave it.
+        device_scale = self.device_scale()
+        device_sizes = [
+            size if device_scale == 1
+            else [max(1, round(side * device_scale)) for side in size]
+            for size in scaled_sizes]
+        for i in range(pixbuf_count):
+            if do_not_transform[i]:
+                continue
+            if missing[i]:
+                # Drawn from its SVG at the size shown, turned as the
+                # page would be, so that the fitting below only turns it.
+                width, height = device_sizes[i]
+                if tools.rotation_swaps_axes(rotation_list[i]):
+                    width, height = height, width
+                pixbuf_list[i] = image_tools.missing_image_icon(
+                    max(1, int(width)), max(1, int(height)))
+            # Everything fit_pixbuf_to_rectangle() reads.
+            key = (pixbuf_list[i], *device_sizes[i], rotation_list[i],
+                   prefs['scaling quality'],
+                   prefs['checkered bg for transparent images'])
+            pixbuf_list[i] = fitted[key] = self._strip_fitted.get(key) \
+                or image_tools.fit_pixbuf_to_rectangle(
+                    pixbuf_list[i], device_sizes[i], rotation_list[i])
+            # The turn only.  fit_pixbuf_to_rectangle() also scaled
+            # the page to the content box, which the lens - the one
+            # reader of these - takes from the box itself rather
+            # than from here.
+            self.transforms[i] += Transform.from_rotation(rotation_list[i])
+        # Only this draw's pages, and only in a strip: a single page
+        # drawn again is drawn at another size, or is the screen's
+        # worth of pixels it is cheap to scale anew.
+        self._strip_fitted = fitted if continuous else {}
+
+        for i in range(pixbuf_count):
+            if do_not_transform[i]:
+                continue
+            if prefs['horizontal flip']:
+                pixbuf_list[i] = image_tools.flip_pixbuf(pixbuf_list[i], 0)
+                self.transforms[i] += Transform.from_flips(True, False)
+            if prefs['vertical flip']:
+                pixbuf_list[i] = image_tools.flip_pixbuf(pixbuf_list[i], 1)
+                self.transforms[i] += Transform.from_flips(False, True)
+            pixbuf_list[i] = self.enhancer.enhance(pixbuf_list[i])
+        return pixbuf_list
 
     def _show_resolutions(self, size_list: list[list[int]],
                           scaled_sizes: list[tuple[int, ...]],
