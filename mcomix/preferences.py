@@ -559,6 +559,14 @@ def _migrate_preferences(saved_prefs: dict[str, object]) -> None:
         if saved_prefs.pop('escape quits', False) is True:
             keybinding_moves.append(('quit', 'Escape', None))
 
+    if version < 6:
+        # Three thumbnail threads was MComix 3's default, written into
+        # every file it saved and carried forward since; left there, it
+        # would keep the thumbnails from the automatic setting that is
+        # the default now, as format 4 found of the extraction threads.
+        if saved_prefs.get('max threads') == 3:
+            del saved_prefs['max threads']
+
     if version < 7:
         # The ten-page turns on SHIFT+ALT and the arrows ignored manga
         # mode (upstream bug 57), and have actions of their own now.  A
@@ -569,14 +577,6 @@ def _migrate_preferences(saved_prefs: dict[str, object]) -> None:
              'previous_page_ff'))
         keybinding_moves.append(
             ('next_page_ff_dynamic', '<Shift><Alt>Right', 'next_page_ff'))
-
-    if version < 6:
-        # Three thumbnail threads was MComix 3's default, written into
-        # every file it saved and carried forward since; left there, it
-        # would keep the thumbnails from the automatic setting that is
-        # the default now, as format 4 found of the extraction threads.
-        if saved_prefs.get('max threads') == 3:
-            del saved_prefs['max threads']
 
     if version < 8:
         # Two check buttons, one under the other, became one dropdown.
