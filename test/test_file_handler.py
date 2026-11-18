@@ -1570,7 +1570,14 @@ class ABookOpenedAtItsEndUnderATitleBarTest(ABookOpenedAtItsEndTest):
             super().setUp()
 
     def test_the_room_for_the_pages_leaves_out_the_title_bar(self):
-        self.assertEqual(self.window.page_area.get_height(),
+        # The window may still be taking its size when setUp's pump is
+        # done, as on the Windows runner (553 against 458 once): the
+        # page area and the window's content are then allocated at two
+        # sizes. Compare once the layout has settled.
+        area = self.window.page_area
+        wait_for(lambda: area.get_height() > 0 and area.get_height()
+                 == self.window.get_visible_area_size()[1])
+        self.assertEqual(area.get_height(),
                          self.window.get_visible_area_size()[1])
 
 
