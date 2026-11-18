@@ -70,7 +70,6 @@ class _Page(Gtk.ScrolledWindow):
         label = labels.BoldLabel(i18n.to_display_string(i18n.to_unicode(filename)))
         _wrapping(label)
         label.set_xalign(0)
-        label.set_yalign(0.5)
         label.set_selectable(True)
         widgets.pack(self._mainbox, label, False, False, 0)
 
@@ -82,7 +81,6 @@ class _Page(Gtk.ScrolledWindow):
             label = Gtk.Label(label=text)
             _wrapping(label)
             label.set_xalign(0)
-            label.set_yalign(0.5)
             label.set_selectable(True)
             widgets.pack(self._mainbox, label, False, False, 0, end=True)
 

@@ -33,8 +33,6 @@ class _CommentArea(Gtk.Box, widgets.Releasable):
         widgets.pack(self, scrolled, True, True, 0)
 
         info = Gtk.Label(label=_('Please note that the only files that are automatically added to this list are those files in archives that MComix recognizes as comments.'))
-        info.set_xalign(0.5)
-        info.set_yalign(0.5)
         info.set_wrap(True)
         widgets.pack(self, info, False, False, 10)
 

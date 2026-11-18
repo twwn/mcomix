@@ -91,7 +91,6 @@ class _AddLibraryProgressDialog(Dialog):
 
         added_label = labels.ItalicLabel()
         added_label.set_xalign(0)
-        added_label.set_yalign(0.5)
         added_label.set_width_chars(64)
         added_label.set_max_width_chars(64)
         added_label.set_ellipsize(Pango.EllipsizeMode.MIDDLE)

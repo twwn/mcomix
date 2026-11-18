@@ -48,7 +48,6 @@ class _PreferencePage(Gtk.Box):
         """
         if isinstance(left_item, Gtk.Label):
             left_item.set_xalign(0)
-            left_item.set_yalign(0.5)
 
         # Nothing in a row takes the height that is left over: the
         # dialog is as tall as its longest tab, and a row that asked for

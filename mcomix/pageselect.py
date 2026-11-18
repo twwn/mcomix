@@ -66,7 +66,6 @@ class Pageselector(Dialog):
         self._page_spinner.add_controller(keys)
         self._pages_label = Gtk.Label(label=_(' of %s') % self._number_of_pages)
         self._pages_label.set_xalign(0)
-        self._pages_label.set_yalign(0.5)
 
         # A Gtk.Image draws whatever it is given at an icon size; a
         # picture draws it at its own.

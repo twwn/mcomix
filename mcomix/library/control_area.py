@@ -51,7 +51,6 @@ class _ControlArea(Gtk.Box):
 
         self._namelabel = labels.BoldLabel()
         self._namelabel.set_xalign(0)
-        self._namelabel.set_yalign(0.5)
         self._namelabel.set_selectable(True)
         self._namelabel.set_ellipsize(Pango.EllipsizeMode.MIDDLE)
         widgets.pack(infobox, self._namelabel, False, False, 0)
@@ -59,13 +58,11 @@ class _ControlArea(Gtk.Box):
         self._filelabel = Gtk.Label()
         self._filelabel.set_ellipsize(Pango.EllipsizeMode.MIDDLE)
         self._filelabel.set_xalign(0)
-        self._filelabel.set_yalign(0.5)
         widgets.pack(infobox, self._filelabel, False, False, 0)
 
         self._dirlabel = Gtk.Label()
         self._dirlabel.set_ellipsize(Pango.EllipsizeMode.MIDDLE)
         self._dirlabel.set_xalign(0)
-        self._dirlabel.set_yalign(0.5)
         self._dirlabel.set_selectable(True)
         widgets.pack(infobox, self._dirlabel, False, False, 0)
 

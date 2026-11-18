@@ -25,7 +25,6 @@ class _PreferenceSection(Gtk.Box):
         self.contentbox.set_margin_start(9)
         label = labels.BoldLabel(header)
         label.set_xalign(0)
-        label.set_yalign(0.5)
         label.set_margin_bottom(6)
         widgets.pack(self, label, False, False, 0)
         widgets.pack(self, self.contentbox)
