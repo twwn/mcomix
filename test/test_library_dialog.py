@@ -851,6 +851,37 @@ class _OneBookTest(_LibraryWindowTest):
         lastread.set_page(self.path, page)
 
 
+class SortKeysKeptTest(_OneBookTest):
+
+    """The keys a sort puts the covers in order by are made once a book
+    while the library is open.  Entries are made anew for the books a
+    search had hidden, and tools.natural_key() keeps only the keys it
+    made last: over 10000 books every display made all of them again,
+    13 of the 79 ms it took to clear a search."""
+
+    def test_an_entry_made_again_takes_the_key_made_before(self):
+        area = self.dialog.book_area
+        shown = next(area._each_item())
+        key = shown.path_key
+        # New entries, as for the books a search had hidden.
+        area._entries_reusable = False
+        with unittest.mock.patch.object(
+                book_area.tools, 'natural_key',
+                side_effect=AssertionError('a key made again')):
+            area.display_covers(constants.COLLECTION_ALL)
+        again = next(area._each_item())
+        self.assertIsNot(shown, again)
+        self.assertIs(key, again.path_key)
+
+    def test_the_keys_go_with_the_window(self):
+        area = self.dialog.book_area
+        self.assertTrue(area._keys)
+        # What the window's close button does.
+        self.dialog.close()
+        pump()
+        self.assertEqual({}, area._keys)
+
+
 class CoverAtTheNextStartTest(_OneBookTest):
 
     """A cover drawn once is read back as it was drawn, from a file of

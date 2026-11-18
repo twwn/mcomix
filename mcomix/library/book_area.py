@@ -75,9 +75,14 @@ class _BookItem(thumbnail_list.ThumbnailItem):
 
     __gtype_name__ = 'MComixLibraryBookItem'
 
-    def __init__(self, book: 'backend_types._Book') -> None:
+    def __init__(self, book: 'backend_types._Book',
+                 keys: dict[str, tools.NaturalKey] | None = None) -> None:
         super().__init__(book.id)
         self.path = book.path
+        #: The natural-order keys made so far, by the text each is the
+        #: key of: the area's, shared by every entry it makes, or one of
+        #: this entry's own.
+        self._keys = {} if keys is None else keys
         #: When the book was last read, an ISO timestamp, or None if it
         #: never was.
         self.read: str | None = None
@@ -88,13 +93,25 @@ class _BookItem(thumbnail_list.ThumbnailItem):
         """What the sort by name puts the cover in order by: the natural
         order of the file's name, lower-cased.  Made the first time a
         sort asks, and kept: a sort compares each cover with many."""
-        return tools.natural_key(os.path.basename(self.path).lower())
+        return self._key(os.path.basename(self.path).lower())
 
     @functools.cached_property
     def path_key(self) -> tools.NaturalKey:
         """What covers every other sort leaves tied are put in order by:
         the natural order of the whole path."""
-        return tools.natural_key(self.path)
+        return self._key(self.path)
+
+    def _key(self, text: str) -> tools.NaturalKey:
+        """The natural-order key of <text>, from the keys made so far.
+
+        Entries are made anew for every book a search had hidden, and
+        tools.natural_key() keeps only the 8192 it made last: in a
+        library of 10000 books, each display made all of them again.
+        """
+        key = self._keys.get(text)
+        if key is None:
+            key = self._keys[text] = tools.natural_key(text)
+        return key
 
     def renew(self, book: 'backend_types._Book') -> None:
         """Take what the library now says of <book>, this entry's book,
@@ -147,6 +164,9 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         #: with their covers, rather than new ones: not once the covers
         #: are to be drawn anew (load_covers()).
         self._entries_reusable = True
+        #: The natural-order keys of the books' paths and names made
+        #: while the window is open, for the entries made for them again.
+        self._keys: dict[str, tools.NaturalKey] = {}
 
         self._library.backend.book_added += self._new_book_in_library
         self._library.backend.book_added_to_collection += self._new_book_added
@@ -435,6 +455,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         # selection-changed for each one that goes.
         self._covers.unselect_all()
         self._covers.clear()
+        self._keys.clear()
 
     def display_covers(self, collection_id: int | None) -> None:
         """Display the books that make up <collection_id>, the whole
@@ -472,7 +493,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         for book in books:
             item = shown.get(book.id)
             if item is None or item.path != book.path:
-                item = _BookItem(book)
+                item = _BookItem(book, self._keys)
             else:
                 item.renew(book)
                 if item.read != read.get(item.uid):
@@ -512,7 +533,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
     def add_books(self, books: Iterable['backend_types._Book']) -> None:
         """ Adds a cover to the grid for each of <books>. """
         for book in books:
-            self._covers.append_item(_BookItem(book))
+            self._covers.append_item(_BookItem(book, self._keys))
 
     def _cover_changed(self, path: str) -> None:
         """Bound to the backend's book_cover_changed: draws the cover of
