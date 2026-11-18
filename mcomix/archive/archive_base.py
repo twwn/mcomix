@@ -77,6 +77,39 @@ _DEVICE_NAMES = frozenset(
        for number in '123456789\u00b9\u00b2\u00b3'])
 
 
+def safe_name(filename: str) -> str:
+    """<filename> as a file can be called on this platform's disks.
+
+    Characters that cannot be in a name become underscores, a part
+    too long to be a file's name is shortened (fit_name()), and a
+    part Windows keeps for a device gets an underscore in front.  A
+    name that would climb out of the folder it is put in - absolute,
+    or with ".." in it - is kept inside.
+    """
+    unsafe_chars = portability.invalid_filesystem_chars()
+    translation_table = {}
+    replacement_char = '_'
+    for char in unsafe_chars:
+        translation_table[ord(char)] = replacement_char
+
+    new_name = filename.translate(translation_table)
+
+    # Make sure the filename does not contain portions that might
+    # traverse directories, i.e. do not allow absolute paths
+    # and paths containing ../
+    # Note that str.lstrip() cannot be used to drop the leading "../"
+    # and separators here, as it strips a set of characters rather than
+    # a prefix, and would eat the leading dot of names like ".foo.jpg".
+    normalized = os.path.splitdrive(os.path.normpath(new_name))[1]
+    parts = [fit_name(part) for part in normalized.split(os.sep)
+             if part not in ('', os.curdir, os.pardir)]
+    if _DEVICES_NAMED:
+        parts = ['_' + part
+                 if part.split('.')[0].rstrip(' ').upper() in _DEVICE_NAMES
+                 else part for part in parts]
+    return os.sep.join(parts)
+
+
 def file_key(name: str) -> str:
     """<name> as the file system tells files apart: two names with the
     same key are one file once unpacked."""
@@ -230,32 +263,8 @@ class BaseArchive:
         return False
 
     def _replace_invalid_filesystem_chars(self, filename: str) -> str:
-        """ Replaces characters in <filename> that cannot be saved to the disk
-        with underscore, and shortens any part too long to be a file's
-        name (fit_name()), and returns the cleaned-up name. """
-
-        unsafe_chars = portability.invalid_filesystem_chars()
-        translation_table = {}
-        replacement_char = '_'
-        for char in unsafe_chars:
-            translation_table[ord(char)] = replacement_char
-
-        new_name = filename.translate(translation_table)
-
-        # Make sure the filename does not contain portions that might
-        # traverse directories, i.e. do not allow absolute paths
-        # and paths containing ../
-        # Note that str.lstrip() cannot be used to drop the leading "../"
-        # and separators here, as it strips a set of characters rather than
-        # a prefix, and would eat the leading dot of names like ".foo.jpg".
-        normalized = os.path.splitdrive(os.path.normpath(new_name))[1]
-        parts = [fit_name(part) for part in normalized.split(os.sep)
-                 if part not in ('', os.curdir, os.pardir)]
-        if _DEVICES_NAMED:
-            parts = ['_' + part
-                     if part.split('.')[0].rstrip(' ').upper() in _DEVICE_NAMES
-                     else part for part in parts]
-        return os.sep.join(parts)
+        """ <filename> made safe to extract to: safe_name(). """
+        return safe_name(filename)
 
     @staticmethod
     def _next_free_name(name: str, taken: set[str]) -> str:

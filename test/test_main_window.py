@@ -46,6 +46,7 @@ from mcomix import rename_dialog
 from mcomix import tools
 from mcomix import ui
 from mcomix import widgets
+from mcomix.archive import archive_base
 from mcomix.archive import password as archive_password
 from mcomix.dialog import Response
 from mcomix.library import backend
@@ -4809,6 +4810,24 @@ class MainWindowTest(MComixTest):
         with self._quietly():
             self.window.file_actions.rename_page(1, '/books/Cover.png')
         self.assertEqual(self.window.file_actions.page_name(1), 'Cover.png')
+
+    def test_a_name_windows_cannot_hold_is_made_one_it_can(self):
+        """As the names an archive lists are when it is opened.  A ':'
+        named an NTFS stream, and a page saved as 7z or RAR, written
+        from a folder of the files under their names, went into the
+        stream and out of the book."""
+        self._ready()
+        with unittest.mock.patch.object(
+                archive_base.portability, 'invalid_filesystem_chars',
+                return_value=r':*?"<>|'), \
+                unittest.mock.patch.object(archive_base, '_DEVICES_NAMED',
+                                           True), \
+                self._quietly():
+            self.window.file_actions.rename_page(1, 'Cover: part 1.png')
+            self.window.file_actions.rename_page(2, 'con.png')
+        self.assertEqual(self.window.file_actions.page_name(1),
+                         'Cover_ part 1.png')
+        self.assertEqual(self.window.file_actions.page_name(2), '_con.png')
 
     def test_a_name_that_says_nothing_renames_nothing(self):
         self._ready()

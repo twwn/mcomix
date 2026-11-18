@@ -11,6 +11,7 @@ The archive on disk is untouched until the changes are written.
 - "Rename page...", in the page's menu or F2, names the page for the next save.
   - The name replaces the whole old one; the entry picks out everything but the extension.
   - A name without an extension keeps the old extension.
+  - On Windows, a character Windows refuses in a file name (`: * ? " < > |`) becomes `_`, as in the names of an opened archive.
   - Renaming can change the book's order next time it opens, since an archive is ordered by name.
   - In a folder of images the file is renamed at once; a name a file that is not a page already has is refused.
 - A name another page holds is flagged in the dialog, with two choices:

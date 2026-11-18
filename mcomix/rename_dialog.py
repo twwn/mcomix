@@ -14,6 +14,7 @@ import os
 from gi.repository import GLib, Gtk
 
 from mcomix import message_dialog
+from mcomix.archive import archive_base
 from mcomix import widgets
 from mcomix.dialog import Response
 from mcomix.i18n import _
@@ -51,8 +52,14 @@ def read(current: str, typed: str) -> "str | None":
     a name typed without an extension keeps the old one, since what
     MComix and every other reader take a file in a book for is decided
     by that.
+
+    The name is made one the disk takes, as the names an archive lists
+    are when it is opened: on Windows a ':' typed into it named an NTFS
+    stream of a file called what came before it, and a page saved as 7z
+    or RAR, which are written from a folder of the files under their
+    names, went into the stream and out of the book.
     """
-    name = os.path.basename(typed.strip())
+    name = archive_base.safe_name(os.path.basename(typed.strip()))
     if not name:
         return None
     if not os.path.splitext(name)[1]:
