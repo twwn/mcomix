@@ -940,10 +940,6 @@ def pil_to_texture(im: Image.Image) -> Gdk.Texture:
                                  width * (4 if has_alpha else 3))
 
 
-#: The providers load_pixbuf() tries, in order.
-_PIXBUF_PROVIDERS = (constants.IMAGEIO_GDKPIXBUF, constants.IMAGEIO_PIL)
-
-
 def _first_provider_that_loads(
         attempts: "Sequence[tuple[int, Callable[[], GdkPixbuf.Pixbuf | None]]]",
         subject: str) -> GdkPixbuf.Pixbuf:
