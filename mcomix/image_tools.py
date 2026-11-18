@@ -581,10 +581,20 @@ def pil_to_pixbuf(im: Image.Image,
 
 
 def pixbuf_to_pil(pixbuf: GdkPixbuf.Pixbuf) -> Image.Image:
-    """Return a PIL image created from <pixbuf>."""
+    """Return a PIL image created from <pixbuf>.
+
+    A pixbuf's last row ends with its last pixel, short of a whole
+    rowstride where the rows are padded, and Pillow asks for every row
+    in full: that last row is made up to a stride.  A page cut out of a
+    wider one (without_borders()) keeps the whole page's stride, and a
+    transparent one raised "buffer is not large enough" here.
+    """
     dimensions = pixbuf.get_width(), pixbuf.get_height()
     stride = pixbuf.get_rowstride()
     pixels = pixbuf.get_pixels()
+    short = stride * dimensions[1] - len(pixels)
+    if short > 0:
+        pixels += bytes(short)
     mode = 'RGBA' if pixbuf.get_has_alpha() else 'RGB'
     im = Image.frombuffer(mode, dimensions, pixels, 'raw', mode, stride, 1)
     return im

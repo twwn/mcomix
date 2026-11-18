@@ -500,6 +500,24 @@ class ImageToolsTest(MComixTest):
             )
             self.assertImagesEqual(im, pixbuf, msg=msg)
 
+    def test_a_page_cut_out_of_a_wider_one_converts(self):
+        """A page with its borders cut off shares the whole page's
+        pixels and their rowstride, and its last row ends where the
+        page does, short of a whole stride.  Pillow asks for every row
+        in full: a transparent page cropped so raised "buffer is not
+        large enough" while being scaled, and nothing was drawn."""
+        for alpha in (True, False):
+            with self.subTest(alpha=alpha):
+                whole = GdkPixbuf.Pixbuf.new(
+                    GdkPixbuf.Colorspace.RGB, alpha, 8, 10, 6)
+                whole.fill(0x336699ff)
+                part = whole.new_subpixbuf(2, 1, 5, 4)
+                self.assertLess(len(part.get_pixels()),
+                                part.get_rowstride() * part.get_height())
+                im = image_tools.pixbuf_to_pil(part)
+                self.assertEqual((5, 4), im.size)
+                self.assertImagesEqual(im, part)
+
     def test_pil_to_pixbuf(self):
         base_im = Image.open(get_image_path('transparent.png'))
         for _, expected_pixbuf_mode, mode in _IMAGE_MODES:
